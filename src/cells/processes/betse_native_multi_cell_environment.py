@@ -6,7 +6,6 @@ grid, phase, cache hydration or physical/checkpoint admission is provided.
 Actual native execution remains a separately coordinated source trial.
 """
 
-import ast
 import hashlib
 import sys
 import warnings
@@ -20,6 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_multi_cell_caller as multi
 from cells.processes import betse_native_single_cell_ecm_source as ecm_source
 from cells.processes import betse_native_single_cell_environment_source as environment_source
+from cells.processes import betse_native_source_structure as structure
 
 core, geometry, aliases = multi.core, multi.captures, multi.atoms
 LAW_ID = "betse_owned_non_SVG_multi_cell_ordinary_environment@1"
@@ -122,6 +122,7 @@ class _CaptureStop(Exception):
 def _verify_sources():
     pins = multi._verify_sources()
     native = multi.callers.NATIVE_ROOT
+    sources, owned_sources = {}, {}
     for relative, expected, clsname, owned, methods in (
         (
             "betse/science/cells.py",
@@ -147,13 +148,11 @@ def _verify_sources():
         ),
     ):
         path = native / relative
-        if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+        if relative not in sources:
+            sources[relative] = path.read_bytes()
+        raw = sources[relative]
+        if hashlib.sha256(raw).hexdigest() != expected:
             raise ValueError("Original ordinary multi-cell source changed")
-        original = next(
-            n
-            for n in ast.parse(path.read_text()).body
-            if isinstance(n, ast.ClassDef) and n.name == clsname
-        )
         owned_name = {
             geometry.source: "CellKernel",
             ecm_source: "CellsECM",
@@ -161,45 +160,20 @@ def _verify_sources():
         }[owned]
         if clsname == "FiniteDiffSolver":
             owned_name = clsname
-        dst = next(
-            n
-            for n in ast.parse(Path(owned.__file__).read_text()).body
-            if isinstance(n, ast.ClassDef) and n.name == owned_name
-        )
+        if owned not in owned_sources:
+            owned_sources[owned] = Path(owned.__file__).read_bytes()
         for name in methods:
-            left = next(
-                n for n in original.body if isinstance(n, ast.FunctionDef) and n.name == name
-            )
-            right = next(n for n in dst.body if isinstance(n, ast.FunctionDef) and n.name == name)
-            if ast.dump(ast.Module(body=left.body, type_ignores=[])) != ast.dump(
-                ast.Module(body=right.body, type_ignores=[])
-            ):
+            left = structure.method(raw, clsname, name)[1]
+            right = structure.method(owned_sources[owned], owned_name, name)[1]
+            if left != right:
                 raise ValueError("Literal ordinary multi-cell body changed: " + name)
-    cells = next(
-        n
-        for n in ast.parse((native / "betse/science/cells.py").read_text()).body
-        if isinstance(n, ast.ClassDef) and n.name == "Cells"
+    assignment = structure.assignment(
+        sources["betse/science/cells.py"], "Cells", "make_world", "grid_len"
     )
-    world = next(n for n in cells.body if isinstance(n, ast.FunctionDef) and n.name == "make_world")
-    assignment = next(
-        n
-        for n in world.body
-        if isinstance(n, ast.Assign)
-        and any(isinstance(t, ast.Attribute) and t.attr == "grid_len" for t in n.targets)
-    )
-    destination = next(
-        n
-        for n in ast.parse(Path(environment_source.__file__).read_text()).body
-        if isinstance(n, ast.ClassDef) and n.name == "CellsEnvironment"
-    )
-    copied_assignment = next(
-        n
-        for n in destination.body
-        if isinstance(n, ast.FunctionDef) and n.name == "assign_grid_len"
-    )
-    if ast.dump(ast.Module(body=[assignment], type_ignores=[])) != ast.dump(
-        ast.Module(body=copied_assignment.body, type_ignores=[])
-    ):
+    copied_assignment = structure.method(
+        owned_sources[environment_source], "CellsEnvironment", "assign_grid_len"
+    )[1]
+    if assignment != copied_assignment:
         raise ValueError("Literal grid_len assignment changed")
     pins.update(aliases.source_pins())
     for module in (
@@ -207,10 +181,12 @@ def _verify_sources():
         geometry.source,
         ecm_source,
         environment_source,
+        structure,
         sys.modules[__name__],
     ):
         file = Path(module.__file__).resolve()
-        pins[str(file)] = hashlib.sha256(file.read_bytes()).hexdigest()
+        raw = owned_sources[module] if module in owned_sources else file.read_bytes()
+        pins[str(file)] = hashlib.sha256(raw).hexdigest()
     return pins
 
 
@@ -598,6 +574,7 @@ def _grid_numpy_bindings():
 
 def _bindings():
     functions = (
+        structure.bindings,
         *_METHODS.values(),
         _INIT,
         _GRID,
@@ -628,6 +605,8 @@ def _bindings():
         geometry.source.np.linalg.pinv,
     )
     return (
+        structure,
+        *structure.bindings(),
         *[
             atom
             for cls in (_GridRuntime, _TreeRuntime, geometry._Logs)

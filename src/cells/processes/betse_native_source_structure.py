@@ -26,9 +26,10 @@ def _target(statement):
 
 
 @lru_cache(maxsize=CACHE_SIZE)
-def _method(raw, class_name, method_name, lines):
+def _method(raw, class_name, method_name, lines, last_class):
     tree = ast.parse(raw.decode("utf-8"))
-    cls = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == class_name)
+    nodes = reversed(tree.body) if last_class else tree.body
+    cls = next(n for n in nodes if isinstance(n, ast.ClassDef) and n.name == class_name)
     fn = next(
         n
         for n in cls.body
@@ -43,8 +44,7 @@ def _method(raw, class_name, method_name, lines):
     return arguments, body_dump, tuple(arg.arg for arg in fn.args.args), rows
 
 
-def method(raw, class_name, method_name, lines=None):
-    """Return argument/body dumps, positional names and ordered statement rows."""
+def _selectors(raw, class_name, method_name, last_class=False):
     if type(raw) is not bytes or len(raw) > MAX_SOURCE_BYTES:
         raise ValueError("Require bounded exact source bytes")
     if type(class_name) is not str or (method_name is not None and type(method_name) is not str):
@@ -53,6 +53,13 @@ def method(raw, class_name, method_name, lines=None):
         method_name is not None and len(method_name) > MAX_SELECTOR_CHARS
     ):
         raise ValueError("Bounded source selector exceeds metadata capacity")
+    if type(last_class) is not bool:
+        raise TypeError("Require exact class occurrence selector")
+
+
+def method(raw, class_name, method_name, lines=None, *, last_class=False):
+    """Return argument/body dumps, positional names and ordered statement rows."""
+    _selectors(raw, class_name, method_name, last_class)
     if lines is not None and type(lines) is not tuple:
         raise TypeError("Require immutable exact source-line selectors")
     if lines is not None and len(lines) > MAX_SELECTED_LINES:
@@ -61,7 +68,56 @@ def method(raw, class_name, method_name, lines=None):
         raise TypeError("Require immutable exact source-line selectors")
     if lines is not None and (any(not 0 < line <= MAX_SOURCE_BYTES for line in lines)):
         raise ValueError("Bounded source lines exceed metadata capacity")
-    return _method(raw, class_name, method_name, lines)
+    return _method(raw, class_name, method_name, lines, last_class)
+
+
+@lru_cache(maxsize=CACHE_SIZE)
+def _definition(raw, class_name, method_name, last_class):
+    tree = ast.parse(raw.decode("utf-8"))
+    nodes = reversed(tree.body) if last_class else tree.body
+    cls = next(n for n in nodes if isinstance(n, ast.ClassDef) and n.name == class_name)
+    fn = next(
+        n
+        for n in cls.body
+        if isinstance(n, ast.FunctionDef) and (method_name is None or n.name == method_name)
+    )
+    value = ast.dump(fn)
+    if len(value) > MAX_SIGNATURE_CHARS:
+        raise ValueError("Bounded source structure exceeds metadata capacity")
+    return value
+
+
+def definition(raw, class_name, method_name, *, last_class=False):
+    """Full FunctionDef dump, including name, decorators, returns and type metadata."""
+    _selectors(raw, class_name, method_name, last_class)
+    return _definition(raw, class_name, method_name, last_class)
+
+
+@lru_cache(maxsize=CACHE_SIZE)
+def _assignment(raw, class_name, method_name, target):
+    tree = ast.parse(raw.decode("utf-8"))
+    cls = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == class_name)
+    fn = next(n for n in cls.body if isinstance(n, ast.FunctionDef) and n.name == method_name)
+    statement = next(
+        n
+        for n in fn.body
+        if isinstance(n, ast.Assign)
+        and any(isinstance(t, ast.Attribute) and t.attr == target for t in n.targets)
+    )
+    value = ast.dump(ast.Module(body=[statement], type_ignores=[]))
+    if len(value) > MAX_SIGNATURE_CHARS:
+        raise ValueError("Bounded source structure exceeds metadata capacity")
+    return value
+
+
+def assignment(raw, class_name, method_name, target):
+    """First direct Assign with the named attribute in any target position."""
+    _selectors(raw, class_name, method_name)
+    if type(target) is not str:
+        raise TypeError("Require exact source attribute selector")
+    if len(target) > MAX_SELECTOR_CHARS:
+        raise ValueError("Bounded source selector exceeds metadata capacity")
+    return _assignment(raw, class_name, method_name, target)
 
 
 def target_attribute(row):
@@ -125,9 +181,16 @@ def _atoms(function):
 def bindings():
     """Include the cache's actual Python body, not just wrapper identity."""
     functions = (
+        _selectors,
         method,
         _method,
         _method.__wrapped__,
+        definition,
+        _definition,
+        _definition.__wrapped__,
+        assignment,
+        _assignment,
+        _assignment.__wrapped__,
         _target,
         target_attribute,
         _atoms,
@@ -146,5 +209,7 @@ def bindings():
         ast.ClassDef,
         ast.FunctionDef,
         ast.Module,
+        ast.Assign,
+        ast.Attribute,
         *(atom for fn in functions for atom in _atoms(fn)),
     )

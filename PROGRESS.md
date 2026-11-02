@@ -65,8 +65,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   undecorated helpers' actual outer code and NumPy's actual implementation
   slot; reject inherited line-trace changes before foreign registry dispatch;
   and protect error attachment plus final hook identities after evidence
-  callbacks. Key will finish the current WorldReady repair checkpoint, then
-  close these together in the same four colormap files. State/constants keep
+  callbacks. Key has sealed the WorldReady repair checkpoint and is closing
+  these together in the same four colormap files. State/constants keep
   their historical producer pins; successor adoption and software remain held.
   Synthetic helper substitutions do not establish actual library admission.
   The subsequent
@@ -163,9 +163,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   384.63 seconds and test 84.75 seconds. Saved empty guards do not complete that
   failed worker's provenance. All 35 frozen source maps and the 34 completed
   loaded-producer inventories verify; five historical integration notices
-  remain separate. Specialist will address setup/finalization cost after the
-  current coordinator repair batch, preserving issued chains and resource
-  limits. No automatic resume or retry occurred. This remains SEED-only
+  remain separate. The [tail cost successor is now reviewed](/mnt/workspaces/Cells/native-phase-tail-cost-repair-20261102-01/root-review.json):
+  five cheap controls and one fresh issued-chain pilot pass; the pilot finished
+  in **251.15 seconds / 236.6 MiB sampled RSS**, with complete runtime evidence
+  and zero native attempts. Its missing-overlay and reporter failures remain
+  preserved. Source acceptance still needs live binding of the original guard's
+  closure/global slots and protected finalization-marker calls. Specialist will
+  close both with cheap controls after the current coordinator batch; no second
+  owner pilot or automatic batch resume is released. This remains SEED-only
   software evidence; native construction, full phase, INIT/SIM, physical and
   checkpoint admission remain held.
   Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
@@ -192,18 +197,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Key's coverage inspection identifies the remaining contiguous load tail as
   `load.body[203:218]`: late world stores from line 1127 and the final native
   ion-profile call. The six new remainder/construction source, test and runner
-  files now have a [completed source review](/mnt/workspaces/Cells/native-parameter-world-ready-source-preparation-20261102-01/root-review.json).
-  All 541 frozen payloads and six current owned files verify;
-  **16 test functions are written, uncollected and unrun**. The exact native
-  slice, profile field rosters and replacement order have no additional
-  correspondence finding. Adoption remains held for one consolidated repair:
-  stop further work after return-observer failure; authenticate helper entry
-  and reject caught reentry; verify both restored hooks; make the observed
-  SEED flag transition irreversible; authenticate the frozen software worker;
-  and preserve primary errors across runtime-evidence failures. The inherited
-  colormap fixture cleanup is the existing CM-L5 assignment, not a second
-  repair. Key owns these source-only corrections within the six new files;
-  the constants handoff and existing phase hook windows remain closed.
+  files retain their [original source review](/mnt/workspaces/Cells/native-parameter-world-ready-source-preparation-20261102-01/root-review.json).
+  The [consolidated repair successor is now source-reviewed](/mnt/workspaces/Cells/native-parameter-world-ready-WR-L1-L6-source-repair-20261102-01/root-review-02.json):
+  all 541 frozen payloads, six current owned pins and declared AST deltas verify.
+  **50 new parameterized WR controls across 14 new definitions remain unrun**;
+  35 colormap cases are separate, also unrun. The exact native load/profile
+  correspondence bodies remain unchanged. The irreversible SEED transition
+  and explicit frozen-worker authorization are source-closed. Two cleanup gaps
+  remain: protect the final recovery helper's entry from masking a primary
+  error, and resample both hooks after evidence writers. Key will batch these
+  after the four colormap residuals; inherited CM-L5 cleanup remains the same
+  assignment. The constants handoff, producer adoption and existing phase hook
+  windows remain closed.
   The world-ready owner must retain complete same-parameter load history and
   reject any ancestral phase-construction attempt. Its exclusive claim would
   span fresh phase birth through SEED, allowing only native `_run_sim=False`
@@ -407,9 +412,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   observed inclusive wall time**, including 895.52 seconds in nested caller
   checks; these overlapping timings include observation overhead and must not
   be added. Source verification accounts for 142.35 seconds within that path.
-  Root's next bounded change reuses the existing byte-keyed structural parser
-  for repeated caller/environment source checks, while continuing fresh byte
-  hashing and all live ownership, array, alias, callable and RNG validation.
+  Root's [caller/environment parser reuse is now implemented and reviewed](/mnt/workspaces/Cells/native-multi-cell-source-structure-reuse-20261102-01/root-review.json):
+  **34 metadata controls pass, 23 existing and 11 new**, in **0.76 seconds /
+  31.8 MiB sampled RSS**, with no scientific imports or native entries. Fresh
+  source hashes and all live ownership, array, alias, callable and RNG checks
+  remain. Full-function versus body-only comparisons and original first/last
+  class selection are preserved; only immutable syntax descriptions are reused.
+  The earlier six fixture errors and 32-pass source image remain separately bound.
   Caller lineage/cache subcost is not separately measured, so parser reuse
   alone is not claimed to resolve the timeout. No numerical failure, speedup
   or new scientific acceptance is inferred; no unchanged rerun was launched.

@@ -28,6 +28,7 @@ from cells.processes import betse_native_single_cell_caller_completion as accoun
 from cells.processes import betse_native_single_cell_grid_alias as atoms
 from cells.processes import betse_native_single_cell_image_mask as images
 from cells.processes import betse_native_single_cell_initial_geometry as captures
+from cells.processes import betse_native_source_structure as structure
 
 callers, core, clipped, initial = images.callers, images.core, lifecycle.clipped, lifecycle.initial
 LAW_ID = "betse_owned_non_SVG_multi_cell_caller@1"
@@ -295,6 +296,7 @@ def from_lifecycle_ordinary(request, state, configuration, *, law_id):
 
 def _verify_sources():
     pins = images._verify_sources()
+    sources = {}
     for module in (
         initial,
         initial.source,
@@ -306,48 +308,33 @@ def _verify_sources():
         sys.modules[__name__],
         accounting,
         atoms,
+        structure,
     ):
         path = Path(module.__file__).resolve()
-        pins[str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()
+        raw = path.read_bytes()
+        pins[str(path)] = hashlib.sha256(raw).hexdigest()
+        if module is source:
+            owned = raw
     for relative, expected in source.NATIVE_PINS.items():
         path = callers.NATIVE_ROOT / "betse/science" / relative
-        if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+        raw = path.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != expected:
             raise ValueError("Original multi-cell source changed")
-    parsed = ast.parse(Path(source.__file__).read_text())
-    classes = {n.name: n for n in parsed.body if isinstance(n, ast.ClassDef)}
+        sources[relative] = raw
     for name, method, expected in (
         ("ParameterStores", "initialize_source_stores", source.STORES_AST_SHA256),
         ("CellsMulti", "make_voronoi_non_svg", source.CALLER_AST_SHA256),
     ):
-        body = next(
-            n for n in classes[name].body if isinstance(n, ast.FunctionDef) and n.name == method
-        ).body
-        if (
-            hashlib.sha256(ast.dump(ast.Module(body=body, type_ignores=[])).encode()).hexdigest()
-            != expected
-        ):
+        body = structure.method(owned, name, method, last_class=True)[1]
+        if hashlib.sha256(body.encode()).hexdigest() != expected:
             raise ValueError("Selected multi-cell source projection changed")
-    native = ast.parse((callers.NATIVE_ROOT / "betse/science/math/mesh.py").read_text())
-    cls = next(n for n in native.body if isinstance(n, ast.ClassDef) and n.name == "DECMesh")
-    original = next(
-        n for n in cls.body if isinstance(n, ast.FunctionDef) and n.name == "clip_and_refine"
-    )
-    copied = next(n for n in classes["MeshPipeline"].body if isinstance(n, ast.FunctionDef))
-    if ast.dump(original) != ast.dump(copied):
+    original = structure.definition(sources["math/mesh.py"], "DECMesh", "clip_and_refine")
+    copied = structure.definition(owned, "MeshPipeline", None, last_class=True)
+    if original != copied:
         raise ValueError("Literal clip_and_refine signature/body changed")
-    native_cells = ast.parse((callers.NATIVE_ROOT / "betse/science/cells.py").read_text())
-    cells_class = next(
-        n for n in native_cells.body if isinstance(n, ast.ClassDef) and n.name == "Cells"
-    )
-    left = next(
-        n for n in cells_class.body if isinstance(n, ast.FunctionDef) and n.name == "cell_index"
-    )
-    right = next(
-        n
-        for n in classes["CellsMulti"].body
-        if isinstance(n, ast.FunctionDef) and n.name == "cell_index"
-    )
-    if ast.dump(left) != ast.dump(right):
+    left = structure.definition(sources["cells.py"], "Cells", "cell_index")
+    right = structure.definition(owned, "CellsMulti", "cell_index", last_class=True)
+    if left != right:
         raise ValueError("Literal cell_index signature/body changed")
     return pins
 
@@ -943,6 +930,7 @@ def _bindings():
         callers._equal,
         np.dtype,
         _verify_sources,
+        structure.bindings,
         _Runtime.clip_and_refine,
         _Caller.__init__,
         _Caller._make_cell_lattice,
@@ -992,6 +980,8 @@ def _bindings():
         _READ_LEASES,
         _MASK_TOKEN_FIELDS,
         _MASK_BRIDGE,
+        structure,
+        *structure.bindings(),
         np.ndarray,
         *[atom for cls in classes for atom in atoms._dispatch_bindings(cls)],
         *[atom for fn in functions for atom in atoms._atoms(fn)],
