@@ -422,6 +422,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Caller lineage/cache subcost is not separately measured, so parser reuse
   alone is not claimed to resolve the timeout. No numerical failure, speedup
   or new scientific acceptance is inferred; no unchanged rerun was launched.
+  [Diagnostic 07 is now launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-07/LAUNCH.json).
+  Its [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-07.json)
+  verifies all **828 frozen files / 609 external pins**: only the three
+  reviewed parser/caller/environment files differ from diagnostic 06. The
+  case, numerical bodies, inputs and timing recorder remain unchanged.
+  CPU 2, one thread, **1 GiB / 1,800 seconds / 8 GiB reserve** remain fixed;
+  the endpoint is `make_maskM`. Metadata preparation passed in 110.36 seconds
+  with no scientific entries; one review-helper import refusal was preserved
+  before using the existing frozen inventory helper. Completion is unqueried;
+  durable result/failure artifacts await the next requested status check.
+  No automatic polling, retry, reference comparison or parity credit.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
