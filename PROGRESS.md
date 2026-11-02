@@ -46,8 +46,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   retain their attempted entries separately from ordinary empty guards. The
   unchanged production candidate and original 35-control image retain separate
   source/evidence scope. The three current files are integrated as guarded source.
-  Key reports delivery of the four original colormap assignments at lines
-  1007–1014; their source/result review remains pending. The subsequent
+  The four original colormap assignments at lines 1007–1014 now have a
+  [completed source and saved-result review](/mnt/workspaces/Cells/native-parameter-colormap-load-development-20261102-01/root-review.json).
+  **24 blocked controls pass at the final source; 14 older-image passes remain
+  separate.** All 18 terminal outcomes, four 532-file snapshots and 1,693
+  selected loaded-producer bindings verify, including the preserved timeout
+  and lint failure. Source acceptance remains held for five batched repairs:
+  authenticate the historical metadata callable before calling it; validate
+  the reached API error helper; bind NumPy copy's dispatch association; guard
+  registry class/attribute dispatch; and protect the new test guard's cleanup
+  independently. Key owns one source-only correction in the four specified
+  existing colormap files after the current remainder-preparation checkpoint.
+  Synthetic helper substitutions do not establish actual library admission.
+  The subsequent
   [initializer-constant block through line 1125 is implemented with ten
   remaining software cases detached](/mnt/workspaces/Cells/native-parameter-initializer-constants-development-20261102-01/pending.json).
   That job remains unqueried. Key is inspecting the remaining parameter stores
