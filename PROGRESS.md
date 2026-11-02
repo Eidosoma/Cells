@@ -70,9 +70,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   their historical producer pins; successor adoption and software remain held.
   Synthetic helper substitutions do not establish actual library admission.
   The subsequent
-  [initializer-constant block through line 1125 is implemented with ten
-  remaining software cases detached](/mnt/workspaces/Cells/native-parameter-initializer-constants-development-20261102-01/pending.json).
-  That job remains unqueried. Key has prepared the remaining parameter stores
+  [initializer-constant block's ten remaining software cases are reviewed](/mnt/workspaces/Cells/native-parameter-initializer-constants-development-20261102-01/root-batch-01-review.json).
+  **Nine completed; the skipped-store worker exceeded the 1-GiB RSS guard**
+  at 204.37 seconds, with 1,209,188,352 bytes sampled. Its final JUnit, runtime,
+  guards and refusal archive are absent; the allocation cause is unproved.
+  Static review found that the test expects a later store-order diagnostic,
+  while production correctly rejects the incomplete field prefix earlier.
+  Key will correct that assertion and save the bounded refusal before asserting,
+  preserving production checks and limits. Earlier 23 executions / 22 distinct
+  controls remain separate. No retry was launched. Key has prepared the remaining parameter stores
   and the fresh world-ready construction contract before phase birth. Their
   source review below requires repairs; actual native parameter construction
   remains held.
@@ -148,14 +154,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The initial selector timeout, isolated fixture failure and controller
   pre-launch refusal remain preserved. The timeout has no complete aggregate
   zero-entry certification. Lint and format checks pass.
-  **Full software acceptance remains pending.** Detached integration batch 02
-  declares 73 single-control groups: 62 tail controls plus 11 original dyna
-  repair controls, under unchanged CPU 6, one-thread, 1 GiB / 480-second /
-  8 GiB-reserve guards. Only launch/controller metadata has been reviewed;
-  no terminal or per-group status was queried. All seven selected source bytes
-  stay fixed during the batch, with no automatic polling or retry. This is
-  SEED-only source/software work; INIT/SIM, actual native construction, full
-  phase, physical and checkpoint admission remain held.
+  **Full software acceptance remains pending.** The requested
+  [batch 02 completion review](/mnt/workspaces/Cells/native-phase-integration-20261102-01/root-batch-02-review.json)
+  verifies **34 complete guarded controls, one saved pytest pass with incomplete
+  final provenance, and 38 never launched**. The 35th worker reached 480.06
+  seconds after its expected cache-tuple refusal, passing test and teardown;
+  runtime inventory and producer bindings were not persisted. Its setup took
+  384.63 seconds and test 84.75 seconds. Saved empty guards do not complete that
+  failed worker's provenance. All 35 frozen source maps and the 34 completed
+  loaded-producer inventories verify; five historical integration notices
+  remain separate. Specialist will address setup/finalization cost after the
+  current coordinator repair batch, preserving issued chains and resource
+  limits. No automatic resume or retry occurred. This remains SEED-only
+  software evidence; native construction, full phase, INIT/SIM, physical and
+  checkpoint admission remain held.
   Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
   **46 distinct blocked controls pass across two batches (5 + 41)**, with 46
   empty native guards and four complete diagnostics. The larger batch took
@@ -382,17 +394,22 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   unobserved, and periodic durability requires profile events. The two Git
   tools/tests are integrated for future diagnostic preparation; production
   checks and numerical equations are unchanged.
-  The [sixth tissue diagnostic is now launched, unqueried](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-06/LAUNCH.json).
-  Its [exact preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-06.json)
-  verifies all 828 payloads against the reviewed timing-software image and all
-  609 unchanged external inputs. One square-tissue case runs detached on CPU 2,
-  one thread, with the unchanged **1,800-second / 1-GiB / 8-GiB reserve** limits
-  and 12-GiB launch gate. Inputs, equations and the `make_maskM` endpoint are
-  unchanged. The added timing records target the unresolved authority-check
-  cost; they do not themselves establish a performance or parity result.
-  Durable result/failure and timing evidence will be reviewed on a requested
-  status check; no automatic polling or retry. The earlier failed images stay
-  unchanged, and this launch grants no scientific or physical acceptance.
+  The [sixth tissue diagnostic is reviewed as a wall-time failure](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-diagnostic-review-06.json):
+  **1,800.04 seconds / 340.3 MiB sampled RSS**, with memory and reserve limits
+  respected. Eight actions/captures completed through `cell_index`; literal
+  `cellVerts` entered but did not complete. All 828 frozen payloads, 609
+  external pins and 391 timing snapshots verify. Final runtime provenance,
+  continuation capture and independent comparison remain unavailable.
+  Repeated environment ownership checks account for **1,516.62 seconds of
+  observed inclusive wall time**, including 895.52 seconds in nested caller
+  checks; these overlapping timings include observation overhead and must not
+  be added. Source verification accounts for 142.35 seconds within that path.
+  Root's next bounded change reuses the existing byte-keyed structural parser
+  for repeated caller/environment source checks, while continuing fresh byte
+  hashing and all live ownership, array, alias, callable and RNG validation.
+  Caller lineage/cache subcost is not separately measured, so parser reuse
+  alone is not claimed to resolve the timeout. No numerical failure, speedup
+  or new scientific acceptance is inferred; no unchanged rerun was launched.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
