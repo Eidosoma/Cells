@@ -41,8 +41,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   1000; source review found no production blocker. Its first software batch
   reached the wall limit. Key is fixing setup cleanup and merged attempt counts
   in the consolidated test guard before further software acceptance. Specialist
-  is repairing an active constructor-method re-entry gap found in the
-  same-phase handler consumer; its validation remains pending. The relayed mapping alias
+  has prepared the same-phase handler entry repair; review leaves one combined
+  refusal/capture-error classification fix, and validation remains pending.
+  The relayed mapping alias
   notice is historical: all six current files match the reviewed
   [list-to-ndarray repair](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/tail-contract-repairs-01/root-review.json),
   including its 49 blocked software controls. Positive native/reference
@@ -597,6 +598,25 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   inventory producer. The completed isolated images do not qualify the failed
   combined process. Existing solver equations, limits and tolerances are
   unchanged; native tissue/phase, ionic updates and full simulation remain open.
+  [The membrane-current bridge](src/cells/processes/rectangular_membrane_coupling.py)
+  now connects the existing complete normal-current readout to this field law.
+  It uses outward membrane current density times the same membrane's area;
+  junction currents and smoothing stay in their separate readouts. Every
+  membrane ID must match its explicitly declared grid assignment. Original
+  inputs, area conversion and all downstream refusal gates remain available.
+  [Source review](/mnt/workspaces/Cells/rectangular-membrane-coupling-development-20261102-01/source-review.json)
+  and [saved-result review](/mnt/workspaces/Cells/rectangular-membrane-coupling-development-20261102-01/saved-results-review.json)
+  cover **18 final CPU checks**, **3.02 seconds / 52.0 MiB sampled peak RSS**:
+  exact charge/area/network references, junction and smoothing separation,
+  assignment refusals, conversion extremes and failure retention. The first
+  image's **15 passes / one failed exact-zero assertion** is preserved: volume
+  conversion left a **-2.78e-16 A** residual. An independent roundoff bound
+  corrects that test; production tolerances are unchanged. The intermediate
+  16-pass image precedes the protected conversion-retention repair and retains
+  its own source binding. Compact refusal records do not claim complete raw
+  failed-object archives. This is an unbatched CPU component composition;
+  native ECM correspondence, live tissue/phase authority and ion evolution
+  remain unqualified.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).

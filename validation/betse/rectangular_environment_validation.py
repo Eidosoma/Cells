@@ -46,6 +46,7 @@ TRANSFER_TEST = "tests/unit/test_rectangular_current_transfer.py"
 TRANSFER_JAX_TEST = "tests/unit/test_rectangular_current_transfer_jax.py"
 COUPLING_TEST = "tests/unit/test_rectangular_current_coupling.py"
 COUPLING_JAX_TEST = "tests/unit/test_rectangular_current_coupling_jax.py"
+MEMBRANE_TEST = "tests/unit/test_rectangular_membrane_coupling.py"
 SAVED_EXTRA = (
     "validation/betse/rectangular_environment_saved.py",
     "validation/betse/rectangular_environment_reference.py",
@@ -123,6 +124,21 @@ def suite_files(suite):
             COUPLING_TEST,
             *([CONDUCTION_JAX_TEST, COUPLING_JAX_TEST] if suite.endswith("_jax") else []),
         ), COUPLING_JAX_TEST if suite.endswith("_jax") else COUPLING_TEST
+    if suite == "membrane_coupling":
+        return (
+            *FILES,
+            "tests/__init__.py",
+            "src/cells/core/__init__.py",
+            "src/cells/core/errors.py",
+            "src/cells/processes/betse_normal_current.py",
+            "src/cells/processes/rectangular_environment_stencil.py",
+            "src/cells/processes/rectangular_environment_iterative.py",
+            "src/cells/processes/rectangular_environment_conduction.py",
+            "src/cells/processes/rectangular_current_transfer.py",
+            "src/cells/processes/rectangular_current_coupling.py",
+            "src/cells/processes/rectangular_membrane_coupling.py",
+            MEMBRANE_TEST,
+        ), MEMBRANE_TEST
     if suite == "reference":
         return (
             OWN,
@@ -283,6 +299,8 @@ def child(output, suite="small", analysis_inputs=None, analysis_sha256=None, tes
         ("cells.processes.rectangular_current_transfer", "gather_potential"),
         ("cells.processes.rectangular_current_coupling", "solve"),
         ("cells.processes.rectangular_current_coupling", "compile_jax_solver"),
+        ("cells.processes.betse_normal_current", "evaluate"),
+        ("cells.processes.rectangular_membrane_coupling", "solve"),
     }
     original_profile = profile
 
@@ -548,6 +566,7 @@ def main():
             "current_transfer_jax",
             "current_coupling",
             "current_coupling_jax",
+            "membrane_coupling",
         ),
         default="small",
     )
