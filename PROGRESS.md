@@ -64,8 +64,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   registry mutation is checked before foreign dispatch. Its 35 prior plus 19
   written controls retain their original evidence scope. The subsequent
   combined CM/WR cleanup repairs independent hook recovery, sticky reporting
-  stops and first-error precedence. The consolidated source review below
-  identifies three remaining seams; its new software batch is not yet accepted.
+  stops and first-error precedence. The three subsequent seams are now
+  source-reviewed with five focused software passes; the broader detached
+  batch remains pending, as recorded below.
   State/constants
   keep their historical producer pins; no actual library or native admission
   follows from synthetic helper controls.
@@ -223,17 +224,22 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   ion-profile call. The six new remainder/construction source, test and runner
   files retain their [original source review](/mnt/workspaces/Cells/native-parameter-world-ready-source-preparation-20261102-01/root-review.json).
   The [earlier cleanup successor remains source-reviewed](/mnt/workspaces/Cells/native-parameter-WR-cleanup-residual-source-repair-20261102-01/root-review.json)
-  at its own 541-file image. Key's [combined CM/WR preparation](/mnt/workspaces/Cells/native-parameter-CM-WR-guarded-cleanup-repair-20261102-01/preparation.json)
-  declares **150 blocked controls across 39 exact groups**, with results pending.
-  Root's [consolidated source review](/mnt/workspaces/Cells/native-parameter-CM-WR-guarded-cleanup-repair-20261102-01/root-source-review.json)
-  confirms sticky stops before later reporting callbacks and independent
-  cleanup. Three corrections remain: retain the original CM exception in
-  `source_error` as well as its cause; create the launcher's directory before
-  guard entry; prevent cause-attribute dispatch after a hook-clearing formatter.
-  These are source findings, not inferred batch outcomes. One current terminal
-  artifact check is authorized before changing bound files, then one combined
-  repair batch starting with cheap blocked seam/launcher controls. Exact
-  selectors, limits, failure retention and native load/profile bodies stay fixed.
+  at its own 541-file image. The [first combined batch failed before its first worker](/mnt/workspaces/Cells/native-parameter-CM-WR-seam-repair-20261102-01/batch01-local-review.json):
+  the launcher directory was absent, so all **150 planned controls remain
+  unrun**. That failure and its original source image are preserved.
+  Root's [source and focused-result review closes all three corrections](/mnt/workspaces/Cells/native-parameter-CM-WR-seam-repair-20261102-01/root-review.json):
+  canonical CM `source_error` retains the original primary; the launcher
+  directory precedes guard entry; exception metadata avoids custom dispatch
+  before the final string conversion. **Five focused controls pass: four new
+  and one continuity control**, with five native and five Matplotlib guard
+  receipts and no forbidden entries. Both 540-file images, six current/frozen
+  producers, 5,486 loaded-file bindings and all nine guarded process records
+  verify. The four workers total 19.373 seconds; maximum sampled process-tree
+  RSS including launchers is 279,851,008 bytes, within unchanged limits.
+  The [fresh 154-control, 42-group batch is detached](/mnt/workspaces/Cells/native-parameter-CM-WR-seam-repair-20261102-01/prepared/LAUNCH.json)
+  on CPU0 using those same immutable images; its terminal result has not been
+  queried or accepted. Bound source stays fixed, with no automatic polling or
+  retry. Native load/profile bodies and numerical policies are unchanged.
   The genuine constants-to-remainder handoff is still absent, with its producer
   pin explicitly unbound; source and native owner execution remain held.
   The world-ready owner must retain complete same-parameter load history and
@@ -296,7 +302,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Unreviewed provider/stage pins remain unbound; no owner pilot, source/native
   execution or scientific release is authorized. Both developers will deliver
   consolidated batches; Root owns integration, saved-result review and
-  populated-tissue/electrical qualification.
+  populated-tissue/electrical qualification. A [read-only eight-file preview](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/root-interface-preview-01/review.json)
+  found two issues for that same integration batch: final in-claim sealing
+  still compares completed fields against earlier-stage rosters, and reciprocal
+  embedded whole-file hashes would prevent later source adoption. Specialist
+  is addressing both together while preserving strict stage checks and an
+  acyclic source-binding contract. This is a work-in-progress source finding;
+  no tests or actual owner/native execution were run for the preview.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
