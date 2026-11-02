@@ -236,21 +236,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   tail use separate claims. The proposed WorldReady route must instead retain
   one active claim from before phase allocation through the constructor tail.
   The three new `betse_native_world_phase_construction` driver, test and runner
-  files now have a [consolidated source review](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/preparation-01/root-review.json).
+  files now have a [reviewed consolidated repair successor](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/source-repairs-01/root-review.json).
   The draft performs fallible phase sealing inside the claim and requires
-  exact successful closed-record validation before publication. **Seventeen
-  written control functions remain uncollected and unrun.** Specialist owns
-  one repair batch: authenticate binding-check helpers before use; reserve
-  closed-owner validation against reentry; fix the native-path guard that
-  would reject the runner's own callbacks; and protect fixture cleanup and
-  evidence independently. All three frozen/current source pins verify. This
-  is a source review, with no software or native execution credit. Missing
-  producers and hooks remain explicit refusals. The five existing phase and
-  world-prefix drivers
-  are a deferred integration scope; their edit window is not
-  open. Legacy APIs, all literal modules, the accepted prefix and seven phase
-  batch files stay fixed. No software/native execution or detached-job query
-  is authorized by this source preparation.
+  exact successful closed-record validation before publication. **26 written
+  control functions remain uncollected and unrun.** All three frozen payloads
+  match the reviewed checkout; nine static commands are verified, including
+  the retained lint/format failures and final passing checks. The native-path
+  guard and independent fixture cleanup are source-closed. Three residuals
+  remain in the same batch: authenticate the comparator's resolved globals;
+  refuse a current read poisoned by caught reentry during reservation release;
+  and retire the exact token if an observer rejects reservation publication's
+  return. Specialist will fix these together, then run fresh isolated blocked
+  controls for the fixes and directly affected private coordinator paths under
+  unchanged resource limits. No actual owner construction is authorized.
+  Missing Key/stage producers remain explicit refusals, and the five existing
+  phase/world-prefix drivers' integration window stays closed. Existing
+  production hooks, legacy APIs and literals are outside this repair scope;
+  separate phase test/runner cost work remains disjoint. No native, reference
+  or scientific release follows from the static checks.
   Root owns integration, saved
   result review and populated-tissue/electrical qualification.
 
