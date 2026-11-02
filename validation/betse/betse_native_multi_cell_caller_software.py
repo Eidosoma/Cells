@@ -15,9 +15,42 @@ ROOT = Path(__file__).resolve().parents[2]
 OWN = "validation/betse/betse_native_multi_cell_caller_software.py"
 TEST = "tests/unit/test_betse_native_multi_cell_caller.py"
 GROUPS = {"focused": "software"}
+LINEAGE_ITEMS = (
+    "test_lineage_descriptor_cold_warm_matches_canonical",
+    "test_lineage_descriptor_warm_rechecks_live_mutations",
+    "test_lineage_descriptor_repeated_numeric_order_and_final_membership",
+    "test_lineage_descriptor_cold_error_precedence",
+    "test_lineage_descriptor_fallback_preserves_canonical_outcome",
+    "test_lineage_descriptor_eviction_and_retained_bounds",
+    "test_lineage_descriptor_exact_text_keys_and_immutable_payloads",
+    "test_lineage_descriptor_forged_warm_plan_never_authenticates_values",
+    "test_lineage_descriptor_key_lookup_retarget_refuses_before_dispatch",
+    "test_lineage_descriptor_private_eviction_uses_canonical_fallback",
+    "test_lineage_descriptor_unissued_key_preserves_column_before_parser",
+    "test_lineage_descriptor_preserves_references_and_digest",
+    "test_lineage_descriptor_binding_drift_refuses",
+    "test_lineage_descriptor_inherited_entry_rejection_is_not_a_miss",
+    "test_lineage_descriptor_item_selection_is_exact",
+)
 
 
-def child(output, group):
+def _selection(group, items):
+    if group not in GROUPS:
+        raise ValueError("Unknown existing software group")
+    if items is None:
+        return [str(ROOT / TEST), "-k", GROUPS[group]]
+    if (
+        type(items) is not tuple
+        or not items
+        or any(type(item) is not str or item not in LINEAGE_ITEMS for item in items)
+        or len(items) != len(set(items))
+    ):
+        raise ValueError("Exact distinct declared lineage test item names required")
+    return [str(ROOT / TEST) + "::" + item for item in items]
+
+
+def child(output, group, *, items=None):
+    selected = _selection(group, items)
     resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
     (output / "case-reports").mkdir(exist_ok=False)
     import pytest
@@ -148,9 +181,7 @@ def child(output, group):
         "/dev/null",
         "-p",
         "no:cacheprovider",
-        str(ROOT / TEST),
-        "-k",
-        GROUPS[group],
+        *selected,
         "--junitxml=" + str(output / "tests.xml"),
         "--basetemp=" + str(output / "tmp"),
     ]
@@ -212,13 +243,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--group", choices=tuple(GROUPS), required=True)
+    parser.add_argument("--item", action="append", choices=LINEAGE_ITEMS)
     parser.add_argument("--_child", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
+    items = None if args.item is None else tuple(args.item)
+    selected = _selection(args.group, items)
     output = args.output.absolute()
     if not output.is_relative_to(runner.BASE) or os.sched_getaffinity(0) != {6}:
         parser.error("Require CPU6 and a fresh /mnt/workspaces/Cells output")
     if args._child:
-        return child(output, args.group)
+        return child(output, args.group, items=items)
     resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
     output.mkdir(parents=True, exist_ok=False)
     (output / "process").mkdir()
@@ -235,7 +269,9 @@ def main():
             source_sha256={name: row["sha256"] for name, row in snapshot["files"].items()},
             selected_tests=[TEST],
             software_group=args.group,
-            pytest_selection=GROUPS[args.group],
+            pytest_selection=GROUPS[args.group] if items is None else selected,
+            selected_item_names=items,
+            pytest_item_selection=selected,
             synthetic_only=True,
             actual_source_replay_released=False,
         ),
@@ -270,6 +306,7 @@ def main():
             str(output),
             "--group",
             args.group,
+            *(argument for item in items or () for argument in ("--item", item)),
             "--_child",
         ],
         directory=output / "process",

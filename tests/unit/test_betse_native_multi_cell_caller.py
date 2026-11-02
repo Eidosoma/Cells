@@ -6,9 +6,10 @@ import json
 import os
 import pickle
 import sys
-from dataclasses import fields, replace
+from collections import OrderedDict
+from dataclasses import dataclass, fields, make_dataclass, replace
 from pathlib import Path
-from types import SimpleNamespace
+from types import FunctionType, SimpleNamespace
 
 import numpy as np
 import pytest
@@ -978,3 +979,698 @@ def test_software_mask_token_bridge_full_blocked_caller_keeps_actual_mask_and_se
     save(
         evidence, "live-view", dict(layout=multi.core.caches.layout(h.live_view), base=h.live_base)
     )
+
+
+@pytest.fixture
+def lineage_plans(monkeypatch):
+    # This is a descriptor-only test cache, never an issued caller or parent.
+    plans = OrderedDict()
+    monkeypatch.setattr(multi, "_LINEAGE_PLANS", plans)
+    multi._lineage_memoized_descriptor.cache_clear()
+    try:
+        yield plans
+    finally:
+        multi._lineage_memoized_descriptor.cache_clear()
+
+
+def _lineage_cache_fixture(kind="mixed"):
+    if kind == "empty":
+        value = dict(empty=(), scalar=7)
+    elif kind == "nonfinite":
+        value = dict(array=np.asarray([np.inf, np.nan]), scalar=np.float64(np.inf), raw=-np.inf)
+    elif kind == "object":
+        value = np.empty(2, dtype=object)
+        value[0], value[1] = np.asarray([1, 2], dtype=np.int16), [None, -0.0]
+    elif kind == "complex":
+        value = dict(array=np.asarray([1 + 2j, 0j]), scalar=np.complex128(3 - 4j))
+    else:
+        value = dict(
+            array=np.asarray([[-0.0, 1.25]], dtype=">f8"),
+            second=np.asarray([2, 3], dtype=np.int32),
+            scalar=np.float64(-0.0),
+            raw=-0.0,
+            nested=(None, True, "text", [1, 2]),
+        )
+    return multi.core.caches.snapshot(value)
+
+
+def _lineage_outcome(function, value):
+    try:
+        result = function(value)
+    except Exception as error:
+        return dict(
+            type=type(error).__module__ + "." + type(error).__qualname__, message=str(error)
+        )
+    return dict(returned_same_object=result is value)
+
+
+def _lineage_descriptor_cache(descriptor, columns=(), finite=True):
+    raw = json.dumps(descriptor, separators=(",", ":"), ensure_ascii=False)
+    return multi.core.caches.Cache(
+        raw, tuple(columns), finite, hashlib.sha256(raw.encode()).hexdigest()
+    )
+
+
+@pytest.mark.parametrize("kind", ["mixed", "nonfinite", "empty", "object", "complex"])
+def test_lineage_descriptor_cold_warm_matches_canonical(kind, monkeypatch, lineage_plans, evidence):
+    cache = _lineage_cache_fixture(kind)
+    canonical = multi.core.caches.validate
+    assert canonical(cache) is cache
+    calls = []
+
+    def original(value):
+        calls.append(value)
+        return canonical(value)
+
+    monkeypatch.setattr(multi.core.caches, "validate", original)
+    assert multi._lineage_validate_cache(cache) is cache
+    assert cache.descriptor_json in lineage_plans
+    assert multi._lineage_validate_cache(cache) is cache
+    separate = replace(cache)
+    assert multi._lineage_validate_cache(separate) is separate
+    assert calls == [cache]
+    save(
+        evidence,
+        "cold-warm",
+        dict(kind=kind, canonical_calls=len(calls), entries=len(lineage_plans)),
+    )
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "identity",
+        "bits",
+        "dtype",
+        "shape",
+        "writeable",
+        "missing",
+        "duplicate",
+        "extra",
+        "name",
+        "finite",
+    ],
+)
+def test_lineage_descriptor_warm_rechecks_live_mutations(change, lineage_plans, evidence):
+    cache = _lineage_cache_fixture()
+    multi._lineage_validate_cache(cache)
+    first, *rest = cache.columns
+    changed = replace(cache)
+    if change == "identity":
+        changed = replace(cache, identity="0" * 64)
+    elif change == "finite":
+        changed = replace(cache, all_finite=not cache.all_finite)
+    elif change == "missing":
+        changed = replace(cache, columns=tuple(rest))
+    elif change == "duplicate":
+        changed = replace(cache, columns=(*cache.columns, first))
+    elif change == "extra":
+        changed = replace(cache, columns=(*cache.columns, replace(first, name="extra")))
+    elif change == "name":
+        changed = replace(cache, columns=(replace(first, name="renamed"), *rest))
+    else:
+        values = first.values.copy()
+        if change == "bits":
+            values.flat[0] = 5.0
+        elif change == "dtype":
+            values = values.astype(np.float32)
+        elif change == "shape":
+            values = values.reshape(-1)
+        if change != "writeable":
+            values.flags.writeable = False
+        changed = replace(cache, columns=(replace(first, values=values), *rest))
+    expected = _lineage_outcome(multi.core.caches.validate, changed)
+    actual = _lineage_outcome(multi._lineage_validate_cache, changed)
+    assert "type" in expected and actual == expected
+    save(evidence, "mutation", dict(change=change, expected=expected, actual=actual))
+
+
+def test_lineage_descriptor_repeated_numeric_order_and_final_membership(
+    monkeypatch, lineage_plans, evidence
+):
+    single = multi.core.caches.snapshot(np.asarray([np.inf]))
+    node = json.loads(single.descriptor_json)
+    cache = _lineage_descriptor_cache(dict(kind="list", items=[node, node]), single.columns, False)
+    multi._lineage_validate_cache(cache)
+    finite, hashes = np.isfinite, hashlib.sha256
+    observed = []
+
+    def finite_call(value):
+        observed.append(("finite", id(value)))
+        return finite(value)
+
+    def hash_call(value=b"", *args, **kwargs):
+        observed.append(("hash", bytes(value)))
+        return hashes(value, *args, **kwargs)
+
+    monkeypatch.setattr(np, "isfinite", finite_call)
+    monkeypatch.setattr(hashlib, "sha256", hash_call)
+    assert multi.core.caches.validate(cache) is cache
+    expected = tuple(observed)
+    observed.clear()
+    assert multi._lineage_validate_cache(cache) is cache
+    assert tuple(observed) == expected
+    assert sum(kind == "finite" for kind, _ in observed) == 2
+    duplicate = replace(cache, columns=(cache.columns[0], cache.columns[0]))
+    observed.clear()
+    oracle = _lineage_outcome(multi.core.caches.validate, duplicate)
+    calls = tuple(observed)
+    observed.clear()
+    actual = _lineage_outcome(multi._lineage_validate_cache, duplicate)
+    assert actual == oracle and tuple(observed) == calls
+    save(evidence, "repeated-order", dict(finite_checks=2, failure=actual))
+
+
+@pytest.mark.parametrize(
+    "change", ["descriptor_identity", "malformed_json", "column_before_json", "array_before_scalar"]
+)
+def test_lineage_descriptor_cold_error_precedence(change, monkeypatch, lineage_plans, evidence):
+    cache = _lineage_cache_fixture()
+    if change == "descriptor_identity":
+        cache = replace(cache, identity="bad", columns=(object(),))
+    elif change in ("malformed_json", "column_before_json"):
+        cache = replace(cache, descriptor_json="{", identity=hashlib.sha256(b"{").hexdigest())
+        if change == "column_before_json":
+            cache = replace(cache, columns=(object(),))
+    else:
+        node = json.loads(multi.core.caches.snapshot(np.asarray([1.0])).descriptor_json)
+        column = multi.core.caches.CacheColumn(node["column"], np.asarray([2.0]))
+        cache = _lineage_descriptor_cache(
+            dict(kind="list", items=[node, dict(kind="float", bits="invalid")]), (column,)
+        )
+    expected = _lineage_outcome(multi.core.caches.validate, cache)
+
+    def forbidden_plan(raw):
+        raise AssertionError("A refused cold cache must not reach plan compilation")
+
+    monkeypatch.setattr(multi, "_lineage_descriptor_plan", forbidden_plan)
+    assert _lineage_outcome(multi._lineage_validate_cache, cache) == expected
+    assert not lineage_plans and "type" in expected
+    save(evidence, "cold-refusal", dict(change=change, expected=expected))
+
+
+@pytest.mark.parametrize(
+    "reason",
+    [
+        "descriptor",
+        "utf8",
+        "nodes",
+        "depth",
+        "instructions",
+        "entry_bytes",
+        "total_bytes",
+        "unknown",
+        "shape_type",
+        "text_subclass",
+    ],
+)
+def test_lineage_descriptor_fallback_preserves_canonical_outcome(
+    reason, monkeypatch, lineage_plans, evidence
+):
+    cache = _lineage_cache_fixture()
+    constants = {
+        "descriptor": "_LINEAGE_DESCRIPTOR_BYTES",
+        "nodes": "_LINEAGE_PLAN_NODES",
+        "depth": "_LINEAGE_PLAN_DEPTH",
+        "instructions": "_LINEAGE_PLAN_INSTRUCTIONS",
+        "entry_bytes": "_LINEAGE_PLAN_BYTES",
+        "total_bytes": "_LINEAGE_RETAINED_BYTES",
+    }
+    if reason in constants:
+        monkeypatch.setattr(
+            multi, constants[reason], 0 if reason in ("nodes", "depth", "instructions") else 1
+        )
+    elif reason == "utf8":
+        cache = _lineage_descriptor_cache(dict(kind="str", value="\u03b4" * 20))
+        monkeypatch.setattr(multi, "_LINEAGE_DESCRIPTOR_BYTES", len(cache.descriptor_json))
+        assert len(cache.descriptor_json.encode()) > multi._LINEAGE_DESCRIPTOR_BYTES
+    elif reason == "unknown":
+        cache = _lineage_descriptor_cache(dict(kind="accepted_unknown_leaf", value=7))
+    elif reason == "shape_type":
+        cache = multi.core.caches.snapshot(np.asarray([1.0]))
+        descriptor = json.loads(cache.descriptor_json)
+        descriptor["source_layout"]["shape"] = [True]
+        cache = _lineage_descriptor_cache(descriptor, cache.columns)
+    else:
+
+        class Text(str):
+            pass
+
+        cache = replace(cache, descriptor_json=Text(cache.descriptor_json))
+    canonical = multi.core.caches.validate
+    expected = _lineage_outcome(canonical, cache)
+    calls = []
+
+    def original(value):
+        calls.append(value)
+        return canonical(value)
+
+    monkeypatch.setattr(multi.core.caches, "validate", original)
+    assert _lineage_outcome(multi._lineage_validate_cache, cache) == expected
+    assert _lineage_outcome(multi._lineage_validate_cache, cache) == expected
+    assert len(calls) == 2 and not lineage_plans
+    assert expected == dict(returned_same_object=True)
+    save(evidence, "fallback", dict(reason=reason, canonical_calls=len(calls), expected=expected))
+
+
+def test_lineage_descriptor_eviction_and_retained_bounds(monkeypatch, lineage_plans, evidence):
+    monkeypatch.setattr(multi, "_LINEAGE_PLAN_ENTRIES", 2)
+    values = [multi.core.caches.snapshot(dict(value=i)) for i in range(3)]
+    canonical = multi.core.caches.validate
+    calls = []
+
+    def original(value):
+        calls.append(value)
+        return canonical(value)
+
+    monkeypatch.setattr(multi.core.caches, "validate", original)
+    for value in values[:2]:
+        multi._lineage_validate_cache(value)
+    multi._lineage_validate_cache(values[0])
+    multi._lineage_validate_cache(values[2])
+    assert list(lineage_plans) == [values[0].descriptor_json, values[2].descriptor_json]
+    multi._lineage_validate_cache(values[1])
+    assert calls == [values[0], values[1], values[2], values[1]]
+    assert len(lineage_plans) == 2
+    assert sum(size for _, size in lineage_plans.values()) <= multi._LINEAGE_RETAINED_BYTES
+    lineage_plans.clear()
+    multi._lineage_validate_cache(values[0])
+    first_size = next(iter(lineage_plans.values()))[1]
+    monkeypatch.setattr(multi, "_LINEAGE_RETAINED_BYTES", first_size)
+    multi._lineage_validate_cache(values[1])
+    assert len(lineage_plans) <= 1
+    assert sum(size for _, size in lineage_plans.values()) <= first_size
+    save(
+        evidence,
+        "bounds",
+        dict(max_entries=2, payload_budget=first_size, canonical_calls=len(calls)),
+    )
+
+
+def test_lineage_descriptor_exact_text_keys_and_immutable_payloads(lineage_plans, evidence):
+    first = _lineage_cache_fixture()
+    second_raw = json.dumps(json.loads(first.descriptor_json), indent=1)
+    second = replace(
+        first, descriptor_json=second_raw, identity=hashlib.sha256(second_raw.encode()).hexdigest()
+    )
+    assert multi._lineage_validate_cache(first) is first
+    assert multi._lineage_validate_cache(second) is second
+    assert set(lineage_plans) == {first.descriptor_json, second_raw}
+    seen = []
+
+    def immutable(value):
+        seen.append(type(value).__name__)
+        assert type(value) in (tuple, str, int)
+        if type(value) is tuple:
+            for child in value:
+                immutable(child)
+
+    for raw, (plan, size) in lineage_plans.items():
+        immutable(plan)
+        assert size == multi._lineage_plan_size(raw, plan)
+        assert size <= multi._LINEAGE_PLAN_BYTES
+    save(evidence, "immutable", dict(entries=2, payload_types=sorted(set(seen))))
+
+
+@pytest.mark.parametrize("change", ["forged_hash", "retarget", "empty_nonfinite"])
+def test_lineage_descriptor_forged_warm_plan_never_authenticates_values(
+    change, lineage_plans, evidence
+):
+    original = multi.core.caches.snapshot(
+        np.asarray([np.inf if change == "empty_nonfinite" else 1.0])
+    )
+    replacement = multi.core.caches.snapshot(np.asarray([2.0]))
+    multi._lineage_validate_cache(original)
+    multi._lineage_validate_cache(replacement)
+    baseline = multi._bindings()
+    plan, size = lineage_plans[original.descriptor_json]
+    if change == "empty_nonfinite":
+        changed = replace(original, all_finite=True)
+        forged = ((), size)
+    else:
+        changed = replace(original, columns=replacement.columns)
+        if change == "retarget":
+            forged = lineage_plans[replacement.descriptor_json]
+        else:
+            instruction = (
+                *plan[0][:-1],
+                hashlib.sha256(replacement.columns[0].values.tobytes()).hexdigest(),
+            )
+            forged = ((instruction,), size)
+    lineage_plans[original.descriptor_json] = forged
+    # Map identity, source/helper bindings, descriptor text and cache identity
+    # are unchanged. Only authenticated plan issuance can reject this forgery.
+    multi.accounting._check_binding_identity(multi._bindings(), baseline)
+    expected = _lineage_outcome(multi.core.caches.validate, changed)
+    actual = _lineage_outcome(multi._lineage_validate_cache, changed)
+    assert "type" in expected and actual == expected
+    assert (
+        changed.descriptor_json == original.descriptor_json
+        and changed.identity == original.identity
+    )
+    save(evidence, "forged-plan", dict(change=change, expected=expected, actual=actual))
+
+
+def test_lineage_descriptor_key_lookup_retarget_refuses_before_dispatch(
+    monkeypatch, lineage_plans, evidence
+):
+    original = multi.core.caches.snapshot(np.asarray([1.0]))
+    replacement = multi.core.caches.snapshot(np.asarray([2.0]))
+    multi._lineage_validate_cache(original)
+    multi._lineage_validate_cache(replacement)
+    baseline = multi._bindings()
+    changed = replace(original, columns=replacement.columns)
+    expected = _lineage_outcome(multi.core.caches.validate, changed)
+    assert expected["type"] == "builtins.ValueError"
+    getter, dispatched = multi._LineagePlanKey.__getattribute__, []
+
+    def retarget(self, name):
+        value = getter(self, name)
+        if name == "raw" and value == original.descriptor_json:
+            dispatched.append(name)
+            return replacement.descriptor_json
+        return value
+
+    monkeypatch.setattr(multi._LineagePlanKey, "__getattribute__", retarget)
+    lineage_plans[original.descriptor_json] = lineage_plans[replacement.descriptor_json]
+    with pytest.raises(ValueError, match="callable or code identity"):
+        multi.accounting._check_binding_identity(multi._bindings(), baseline)
+    with pytest.raises(ValueError, match="callable or code identity"):
+        multi._lineage_validate_cache(changed)
+    assert not dispatched
+    assert (
+        changed.descriptor_json == original.descriptor_json
+        and changed.identity == original.identity
+    )
+    save(evidence, "key-retarget", dict(canonical_refusal=expected, key_dispatches=[]))
+
+
+def test_lineage_descriptor_private_eviction_uses_canonical_fallback(
+    monkeypatch, lineage_plans, evidence
+):
+    cache = _lineage_cache_fixture()
+    multi._lineage_validate_cache(cache)
+    old = lineage_plans[cache.descriptor_json]
+    multi._lineage_memoized_descriptor.cache_clear()
+    canonical, calls = multi.core.caches.validate, []
+
+    def original(value):
+        calls.append(value)
+        return canonical(value)
+
+    monkeypatch.setattr(multi.core.caches, "validate", original)
+    assert multi._lineage_validate_cache(cache) is cache and calls == [cache]
+    assert lineage_plans[cache.descriptor_json] is not old
+    info = multi._lineage_memoized_descriptor.cache_info()
+    assert info.maxsize == multi._LINEAGE_CANONICAL_ENTRIES and info.currsize <= info.maxsize
+    save(evidence, "private-eviction", dict(canonical_calls=1, max_entries=info.maxsize))
+
+
+@pytest.mark.parametrize("change", ["forged_unseen", "private_miss"])
+def test_lineage_descriptor_unissued_key_preserves_column_before_parser(
+    change, lineage_plans, evidence
+):
+    cache = _lineage_cache_fixture()
+    if change == "forged_unseen":
+        cache = replace(cache, descriptor_json="{", identity=hashlib.sha256(b"{").hexdigest())
+        lineage_plans[cache.descriptor_json] = ((), 0)
+    else:
+        multi._lineage_validate_cache(cache)
+        multi._lineage_memoized_descriptor.cache_clear()
+    cache = replace(cache, columns=(object(),))
+    expected = _lineage_outcome(multi.core.caches.validate, cache)
+    assert expected["type"] == "builtins.AttributeError"
+    previous, attempted, caught = sys.getprofile(), [], None
+    sentinel = LookupError("Parser must not precede malformed current columns")
+
+    def profile(frame, event, arg):
+        if previous is not None:
+            previous(frame, event, arg)
+        if event == "call" and frame.f_code is json.loads.__code__:
+            attempted.append("parser")
+            raise sentinel
+
+    try:
+        sys.setprofile(profile)
+        try:
+            multi._lineage_validate_cache(cache)
+        except BaseException as error:
+            caught = error
+    finally:
+        sys.setprofile(previous)
+    assert sys.getprofile() is previous and not attempted
+    assert type(caught) is AttributeError and str(caught) == expected["message"]
+    save(evidence, "unissued-order", dict(change=change, expected=expected, parser_attempts=[]))
+
+
+def test_lineage_descriptor_preserves_references_and_digest(monkeypatch, lineage_plans, evidence):
+    @dataclass(frozen=True)
+    class Metadata:
+        fields: object
+        raw: object
+
+    cache = _lineage_cache_fixture()
+    equal_cache = replace(cache)
+    cycle = []
+    cycle.append(cycle)
+    request = Metadata(
+        dict(first=cache, repeated=cache, equal=equal_cache, cycle=cycle), np.asarray([1.0, -0.0])
+    )
+    canonical = multi.core.caches.validate
+    oracle = FunctionType(
+        multi._lineage.__code__,
+        dict(vars(multi), _lineage_validate_cache=canonical),
+        "lineage_oracle",
+    )
+    expected_refs, expected_digest = oracle(request)
+    checks = []
+    replay = multi._lineage_validate_cache
+
+    def fresh(value):
+        checks.append(value)
+        return replay(value)
+
+    monkeypatch.setattr(multi, "_lineage_validate_cache", fresh)
+    for _ in range(2):
+        actual_refs, actual_digest = multi._lineage(request)
+        assert actual_digest == expected_digest
+        assert len(actual_refs) == len(expected_refs)
+        assert all(a is b for a, b in zip(actual_refs, expected_refs, strict=True))
+    assert len(checks) == 4
+    assert checks[0] is checks[2] is cache and checks[1] is checks[3] is equal_cache
+    request.fields["equal"] = replace(equal_cache)
+    changed_refs, changed_digest = multi._lineage(request)
+    oracle_refs, oracle_digest = oracle(request)
+    assert changed_digest == oracle_digest
+    assert all(a is b for a, b in zip(changed_refs, oracle_refs, strict=True))
+    assert any(a is not b for a, b in zip(changed_refs, expected_refs, strict=True))
+    save(
+        evidence,
+        "lineage",
+        dict(signature=expected_digest, references=len(expected_refs), cache_checks=len(checks)),
+    )
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "helper_code",
+        "compiled_body",
+        "memo_body",
+        "memo_key",
+        "key_slot",
+        "key_allocator",
+        "key_ancestor",
+        "key_fallback",
+        "defaults",
+        "keyword_defaults",
+        "parser",
+        "decoder",
+        "finite",
+        "constant",
+        "memo",
+        "descriptor",
+    ],
+)
+def test_lineage_descriptor_binding_drift_refuses(change, monkeypatch, lineage_plans, evidence):
+    baseline = multi._bindings()
+    multi.accounting._check_binding_identity(multi._bindings(), baseline)
+    if change == "helper_code":
+        monkeypatch.setattr(multi._lineage_descriptor_plan, "__code__", (lambda raw: ()).__code__)
+    elif change == "compiled_body":
+        monkeypatch.setattr(
+            multi._lineage_compiled_descriptor, "__code__", (lambda raw: ()).__code__
+        )
+    elif change == "memo_body":
+        monkeypatch.setattr(
+            multi._lineage_memoized_descriptor.__wrapped__, "__code__", (lambda key: ()).__code__
+        )
+    elif change == "memo_key":
+        monkeypatch.setattr(multi._LineagePlanKey, "__eq__", lambda self, other: True)
+    elif change == "key_slot":
+        monkeypatch.setattr(multi._LineagePlanKey, "raw", property(lambda self: "{}"))
+    elif change == "key_allocator":
+        # Installing/deleting __new__ can leave CPython's allocator slot
+        # changed despite exact restoration of the visible class namespace.
+        # Exercise that drift on a disposable metadata type, never the real key.
+        original_type, original_authority = multi._LineagePlanKey, multi._LINEAGE_KEY_BASELINE
+        assert type(multi._lineage_plan_key("{}", True)) is original_type
+        disposable = make_dataclass(
+            "DisposableLineageKey",
+            [("raw", str), ("publish", bool), ("miss", object, None)],
+            namespace={
+                "__module__": __name__,
+                "__hash__": original_type.__hash__,
+                "__eq__": original_type.__eq__,
+            },
+            frozen=True,
+            slots=True,
+            eq=False,
+        )
+        allocations = []
+
+        def forbidden_allocator(cls, *args, **kwargs):
+            allocations.append(cls)
+            raise AssertionError("Changed allocator must refuse before construction")
+
+        with monkeypatch.context() as patch:
+            patch.setattr(multi, "_LineagePlanKey", disposable)
+            patch.setattr(multi, "_LINEAGE_KEY_BASELINE", multi._lineage_key_class_bindings())
+            disposable_bindings = multi._bindings()
+            multi.accounting._check_binding_identity(multi._bindings(), disposable_bindings)
+            assert type(multi._lineage_plan_key("{}", True)) is disposable
+            patch.setattr(disposable, "__new__", staticmethod(forbidden_allocator))
+            with pytest.raises(ValueError, match="callable or code identity"):
+                multi.accounting._check_binding_identity(multi._bindings(), disposable_bindings)
+            with pytest.raises(ValueError, match="callable or code identity"):
+                multi._lineage_plan_key("{}", False, LookupError("unissued"))
+            assert not allocations
+        assert multi._LineagePlanKey is original_type
+        assert multi._LINEAGE_KEY_BASELINE is original_authority
+        multi.accounting._check_binding_identity(multi._bindings(), baseline)
+        restored = multi._lineage_plan_key("{}", True)
+        assert type(restored) is original_type
+        assert (restored.raw, restored.publish, restored.miss) == ("{}", True, None)
+        save(
+            evidence,
+            "binding-refusal",
+            dict(change=change, allocator_calls=0, original_constructs_after_cleanup=True),
+        )
+        return
+    elif change == "key_ancestor":
+        subclass = type("ChangedDescriptorKey", (multi._LineagePlanKey,), {})
+        monkeypatch.setattr(multi, "_LineagePlanKey", subclass)
+    elif change == "key_fallback":
+        monkeypatch.setattr(
+            multi._LineagePlanKey, "__getattr__", lambda self, name: None, raising=False
+        )
+    elif change == "defaults":
+        monkeypatch.setattr(multi._lineage_descriptor_plan, "__defaults__", (None,))
+    elif change == "keyword_defaults":
+        monkeypatch.setattr(multi._lineage_descriptor_plan, "__kwdefaults__", {"unexpected": None})
+    elif change == "parser":
+        monkeypatch.setattr(json, "loads", lambda raw: {})
+    elif change == "decoder":
+        monkeypatch.setattr(json._default_decoder, "scan_once", lambda raw, index: ({}, len(raw)))
+    elif change == "finite":
+        monkeypatch.setattr(np, "isfinite", lambda value: True)
+    elif change == "constant":
+        monkeypatch.setattr(multi, "_LINEAGE_PLAN_ENTRIES", multi._LINEAGE_PLAN_ENTRIES + 1)
+    elif change == "memo":
+        monkeypatch.setattr(multi, "_LINEAGE_PLANS", OrderedDict())
+    else:
+        monkeypatch.setattr(multi.core.caches.Cache, "descriptor", property(lambda self: {}))
+    with pytest.raises(ValueError):
+        multi.accounting._check_binding_identity(multi._bindings(), baseline)
+    if change in ("memo_key", "key_slot", "key_allocator", "key_ancestor", "key_fallback"):
+        with pytest.raises(ValueError, match="callable or code identity"):
+            multi._lineage_plan_key("{}", False, LookupError("unissued"))
+    save(evidence, "binding-refusal", dict(change=change))
+
+
+@pytest.mark.parametrize(
+    "target", ["canonical", "plan", "warm", "parser", "lookup_miss", "lookup_token"]
+)
+def test_lineage_descriptor_inherited_entry_rejection_is_not_a_miss(
+    target, monkeypatch, lineage_plans, evidence
+):
+    class Refusal(BaseException):
+        def __bool__(self):
+            return False
+
+    class LookupRefusal(LookupError):
+        def __bool__(self):
+            return False
+
+    cache = _lineage_cache_fixture()
+    if target in ("warm", "parser", "lookup_miss", "lookup_token"):
+        multi._lineage_validate_cache(cache)
+    if target in ("parser", "lookup_miss", "lookup_token"):
+        multi._lineage_memoized_descriptor.cache_clear()
+    if target == "warm":
+        finite = np.isfinite
+
+        def finite_call(value):
+            return finite(value)
+
+        monkeypatch.setattr(np, "isfinite", finite_call)
+    exception_type = LookupRefusal if target == "lookup_miss" else Refusal
+    original, cause = exception_type("inherited metadata guard"), LookupError("original cause")
+    original.__cause__ = cause
+    selected = {
+        "canonical": multi.core.caches.validate.__code__,
+        "plan": multi._lineage_descriptor_plan.__code__,
+        "warm": finite_call.__code__ if target == "warm" else None,
+        "parser": json.loads.__code__,
+        "lookup_miss": multi._lineage_memoized_descriptor.__wrapped__.__code__,
+        "lookup_token": multi._lineage_memoized_descriptor.__wrapped__.__code__,
+    }[target]
+    previous, attempted, caught = sys.getprofile(), [], None
+
+    def profile(frame, event, arg):
+        nonlocal original
+        if previous is not None:
+            previous(frame, event, arg)
+        if event == "call" and frame.f_code is selected:
+            attempted.append(target)
+            if target == "lookup_token":
+                original = frame.f_locals["key"].miss
+                original.__cause__ = cause
+            raise original
+
+    try:
+        sys.setprofile(profile)
+        try:
+            multi._lineage_validate_cache(cache)
+        except BaseException as error:
+            caught = error
+    finally:
+        sys.setprofile(previous)
+    assert sys.getprofile() is previous
+    assert caught is original and caught.__cause__ is cause and attempted == [target]
+    if target in ("canonical", "plan"):
+        assert not lineage_plans
+    save(
+        evidence,
+        "observer-refusal",
+        dict(target=target, primary_retained=True, cause_retained=True),
+    )
+
+
+def test_lineage_descriptor_item_selection_is_exact(evidence):
+    from validation.betse import betse_native_multi_cell_caller_software as software
+
+    assert software._selection("focused", None) == [
+        str(software.ROOT / software.TEST),
+        "-k",
+        "software",
+    ]
+    selected = software._selection("focused", software.LINEAGE_ITEMS)
+    assert len(selected) == len(software.LINEAGE_ITEMS)
+    assert selected == [
+        str(software.ROOT / software.TEST) + "::" + item for item in software.LINEAGE_ITEMS
+    ]
+    for bad in ((), ("test_unknown",), (software.LINEAGE_ITEMS[0],) * 2, ("-k software",)):
+        with pytest.raises(ValueError):
+            software._selection("focused", bad)
+    save(evidence, "item-selection", dict(items=software.LINEAGE_ITEMS, selected=selected))

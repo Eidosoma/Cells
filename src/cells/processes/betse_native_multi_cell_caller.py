@@ -10,11 +10,15 @@ release; source ownership alone grants no numerical or physical admission.
 import ast
 import hashlib
 import json
+import math
+import struct
 import sys
 import warnings
+from collections import OrderedDict
 from collections.abc import Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, fields, is_dataclass, replace
+from functools import lru_cache
 from pathlib import Path
 from threading import RLock, get_ident
 from types import CodeType, FunctionType, SimpleNamespace
@@ -59,6 +63,17 @@ _ACTIVE, _ISSUED = WeakKeyDictionary(), WeakKeyDictionary()
 _FORWARDED = WeakKeyDictionary()
 _READ_LEASES = WeakKeyDictionary()
 _LOCK = RLock()
+_LINEAGE_PLAN_ENTRIES = 128
+_LINEAGE_CANONICAL_ENTRIES = 128
+_LINEAGE_DESCRIPTOR_BYTES = 65536
+_LINEAGE_PLAN_NODES = 2048
+_LINEAGE_PLAN_DEPTH = 32
+_LINEAGE_PLAN_INSTRUCTIONS = 1024
+_LINEAGE_PLAN_BYTES = 131072
+_LINEAGE_RETAINED_BYTES = 8 * 2**20
+# Only immutable descriptor instructions live here, never a Cache, column,
+# array, finite result, lineage signature or successful authority check.
+_LINEAGE_PLANS = OrderedDict()
 _MASK_TOKEN_FIELDS = (
     "kind",
     "identity",
@@ -916,6 +931,7 @@ def _bindings():
         _stop,
         _observe,
         _lineage,
+        _lineage_plan_bindings,
         _helper_bindings,
         _entry_codes,
         _compare_mesh,
@@ -982,6 +998,7 @@ def _bindings():
         _MASK_BRIDGE,
         structure,
         *structure.bindings(),
+        *_lineage_plan_bindings(),
         np.ndarray,
         *[atom for cls in classes for atom in atoms._dispatch_bindings(cls)],
         *[atom for fn in functions for atom in atoms._atoms(fn)],
@@ -1058,6 +1075,345 @@ def _namespace_bindings(context):
     )
 
 
+@dataclass(frozen=True, slots=True, eq=False)
+class _LineagePlanKey:
+    raw: str
+    publish: bool
+    miss: object = None
+
+    def __hash__(self):
+        return hash(self.raw)
+
+    def __eq__(self, other):
+        return type(other) is _LineagePlanKey and self.raw == other.raw
+
+
+def _lineage_key_class_bindings():
+    cls = _LineagePlanKey
+    if type(cls) is not type:
+        raise ValueError("Changed private descriptor key class")
+    bases = type.__getattribute__(cls, "__mro__")
+    if len(bases) > 4:
+        raise ValueError("Changed private descriptor key ancestry")
+    result = [cls, type(cls), "key_mro", bases]
+    for base in bases:
+        namespace = type.__getattribute__(base, "__dict__")
+        if len(namespace) > 64:
+            raise ValueError("Changed private descriptor key namespace")
+        result.extend(("key_base", base))
+        for name, value in namespace.items():
+            result.extend(("key_attribute", name, *structure._atoms(value)))
+            if type(value) in (staticmethod, classmethod):
+                result.extend(structure._atoms(value.__func__))
+        result.append("key_base_end")
+    return tuple(result)
+
+
+_LINEAGE_KEY_BASELINE = _lineage_key_class_bindings()
+
+
+def _lineage_plan_key(raw, publish, miss=None):
+    # Namespace membership, inherited lookup/allocation and exact slot
+    # descriptors remain authenticated, not only the original method bodies.
+    accounting._check_binding_identity(_lineage_key_class_bindings(), _LINEAGE_KEY_BASELINE)
+    key = _LineagePlanKey(raw, publish, miss)
+    accounting._check_binding_identity(_lineage_key_class_bindings(), _LINEAGE_KEY_BASELINE)
+    return key
+
+
+@lru_cache(maxsize=_LINEAGE_CANONICAL_ENTRIES)
+def _lineage_memoized_descriptor(key):
+    if type(key) is not _LineagePlanKey or type(key.publish) is not bool:
+        raise ValueError("Require the private descriptor memo key")
+    if (
+        type(key.raw) is not str
+        or len(key.raw) > _LINEAGE_DESCRIPTOR_BYTES
+        or len(key.raw.encode()) > _LINEAGE_DESCRIPTOR_BYTES
+        or sys.getsizeof(key.raw) > _LINEAGE_PLAN_BYTES
+    ):
+        raise ValueError("Descriptor is outside the local memoization budget")
+    if not key.publish:
+        # A lookup miss never parses: the caller must run the canonical live
+        # validator first. Exceptions are not retained by functools.lru_cache.
+        raise key.miss
+    return _lineage_descriptor_plan(key.raw)
+
+
+def _lineage_lookup_plan(raw):
+    miss = LookupError("Unissued caller descriptor plan")
+    try:
+        return _lineage_memoized_descriptor(_lineage_plan_key(raw, False, miss))
+    except LookupError as error:
+        if error is not miss:
+            raise
+        tb = error.__traceback__
+        if (
+            tb is None
+            or tb.tb_frame.f_code is not _lineage_lookup_plan.__code__
+            or tb.tb_next is None
+            or tb.tb_next.tb_frame.f_code is not _lineage_memoized_descriptor.__wrapped__.__code__
+            or tb.tb_next.tb_next is not None
+        ):
+            # An inherited callback can reject with any exception, including
+            # this lookup's token. Only the direct memo-body miss is handled.
+            raise
+        return None
+
+
+def _lineage_compiled_descriptor(raw):
+    """Compile only the bounded, ordinary snapshot descriptor vocabulary.
+
+    This is called after canonical validation. Unrepresented structures and
+    capacity excesses remain on that original path; they are not new refusals.
+    Instructions preserve every numeric/scalar occurrence and its visit order.
+    """
+    # Direct private calls must not retain oversized keys as cached misses.
+    # The facade below returns to the canonical validator for these inputs.
+    if (
+        type(raw) is not str
+        or len(raw) > _LINEAGE_DESCRIPTOR_BYTES
+        or len(raw.encode()) > _LINEAGE_DESCRIPTOR_BYTES
+        or sys.getsizeof(raw) > _LINEAGE_PLAN_BYTES
+    ):
+        raise ValueError("Descriptor is outside the local memoization budget")
+    pending = [(json.loads(raw), 0)]
+    instructions, nodes = [], 0
+    while pending:
+        node, depth = pending.pop()
+        nodes += 1
+        if nodes > _LINEAGE_PLAN_NODES or depth > _LINEAGE_PLAN_DEPTH:
+            return None
+        if type(node) is not dict or type(node.get("kind")) is not str:
+            return None
+        kind = node["kind"]
+        if kind == "numeric_array":
+            source = node.get("source_layout")
+            if (
+                type(source) is not dict
+                or type(source.get("dtype")) is not str
+                or type(source.get("shape")) is not list
+                or any(type(value) is not int for value in source["shape"])
+                or type(node.get("column")) is not str
+                or type(node.get("sha256")) is not str
+            ):
+                return None
+            instructions.append(
+                (kind, node["column"], source["dtype"], tuple(source["shape"]), node["sha256"])
+            )
+        elif kind == "numpy_scalar":
+            if type(node.get("bits")) is not str or type(node.get("dtype")) is not str:
+                return None
+            instructions.append((kind, node["bits"], node["dtype"]))
+        elif kind == "float":
+            if type(node.get("bits")) is not str:
+                return None
+            instructions.append((kind, node["bits"]))
+        elif kind == "dict":
+            items = node.get("items")
+            if type(items) is not list or any(
+                type(pair) is not list or len(pair) != 2 for pair in items
+            ):
+                return None
+            for key, value in reversed(items):
+                pending.extend(((value, depth + 1), (key, depth + 1)))
+        elif kind in ("list", "tuple", "set", "frozenset", "object_array"):
+            items = node.get("items")
+            if type(items) is not list:
+                return None
+            pending.extend((value, depth + 1) for value in reversed(items))
+        elif kind not in ("NoneType", "str", "int", "bool") or "items" in node:
+            return None
+        if len(instructions) > _LINEAGE_PLAN_INSTRUCTIONS:
+            return None
+    plan = tuple(instructions)
+    size = _lineage_plan_size(raw, plan)
+    return None if size is None else (plan, size)
+
+
+def _lineage_descriptor_plan(raw):
+    if (
+        type(raw) is not str
+        or len(raw) > _LINEAGE_DESCRIPTOR_BYTES
+        or len(raw.encode()) > _LINEAGE_DESCRIPTOR_BYTES
+        or sys.getsizeof(raw) > _LINEAGE_PLAN_BYTES
+    ):
+        return None
+    return _lineage_compiled_descriptor(raw)
+
+
+def _lineage_plan_size(raw, plan):
+    """Bound retained immutable payloads, independently of scientific limits."""
+    pending, seen, size = [raw, plan], set(), 0
+    while pending:
+        item = pending.pop()
+        if id(item) in seen:
+            continue
+        seen.add(id(item))
+        size += sys.getsizeof(item)
+        if size > _LINEAGE_PLAN_BYTES:
+            return None
+        if type(item) is tuple:
+            pending.extend(item)
+    return size
+
+
+def _lineage_remember_plan(raw, entry):
+    _, size = entry
+    if size > _LINEAGE_RETAINED_BYTES or _LINEAGE_PLAN_ENTRIES <= 0:
+        return
+    # This map only indexes candidates. Warm replay authenticates its entry
+    # against the private memoizer; mutable index contents are never authority.
+    if any(
+        type(key) is not str
+        or type(row) is not tuple
+        or len(row) != 2
+        or type(row[1]) is not int
+        or not 0 <= row[1] <= _LINEAGE_PLAN_BYTES
+        for key, row in _LINEAGE_PLANS.items()
+    ):
+        _LINEAGE_PLANS.clear()
+    _LINEAGE_PLANS.pop(raw, None)
+    while _LINEAGE_PLANS and (
+        len(_LINEAGE_PLANS) >= _LINEAGE_PLAN_ENTRIES
+        or sum(row[1] for row in _LINEAGE_PLANS.values()) + size > _LINEAGE_RETAINED_BYTES
+    ):
+        _LINEAGE_PLANS.popitem(last=False)
+    _LINEAGE_PLANS[raw] = entry
+
+
+def _lineage_validate_cache(cache):
+    """Fresh canonical checks with caller-local immutable traversal reuse."""
+    if type(cache) is not core.caches.Cache:
+        return core.caches.validate(cache)
+    raw = cache.descriptor_json
+    if type(raw) is not str or len(raw) > _LINEAGE_DESCRIPTOR_BYTES:
+        return core.caches.validate(cache)
+    encoded = raw.encode()
+    if len(encoded) > _LINEAGE_DESCRIPTOR_BYTES or sys.getsizeof(raw) > _LINEAGE_PLAN_BYTES:
+        return core.caches.validate(cache)
+    entry = _LINEAGE_PLANS.get(raw)
+    if entry is None:
+        # Preserve original errors and their precedence before inspecting a
+        # previously unseen descriptor. No observer/parser exception is hidden.
+        result = core.caches.validate(cache)
+        compiled = _lineage_memoized_descriptor(_lineage_plan_key(raw, True))
+        if compiled is not None:
+            _lineage_remember_plan(raw, compiled)
+        return result
+    if hashlib.sha256(encoded).hexdigest() != cache.identity:
+        raise ValueError("Changed typed mesh cache descriptor")
+    compiled = _lineage_lookup_plan(raw)
+    if compiled is None or entry is not compiled:
+        # Forged/retargeted index entries or private memoizer eviction only
+        # cause canonical validation, never replay of unauthenticated operands.
+        result = core.caches.validate(cache)
+        compiled = _lineage_memoized_descriptor(_lineage_plan_key(raw, True))
+        if compiled is None:
+            _LINEAGE_PLANS.pop(raw, None)
+        else:
+            _lineage_remember_plan(raw, compiled)
+        return result
+    plan, _ = compiled
+    _LINEAGE_PLANS.move_to_end(raw)
+    columns = cache.numeric_columns()
+    seen, all_finite = set(), True
+    for instruction in plan:
+        kind = instruction[0]
+        if kind == "numeric_array":
+            _, name, dtype, shape, expected = instruction
+            seen.add(name)
+            value = columns[name]
+            if (
+                value.dtype.str != dtype
+                or list(value.shape) != list(shape)
+                or value.flags.writeable
+                or hashlib.sha256(value.tobytes()).hexdigest() != expected
+            ):
+                raise ValueError("Changed owned mesh cache column")
+            all_finite = bool(np.isfinite(value).all()) and all_finite
+        elif kind == "numpy_scalar":
+            value = np.frombuffer(bytes.fromhex(instruction[1]), dtype=np.dtype(instruction[2]))
+            all_finite = bool(np.isfinite(value).all()) and all_finite
+        else:
+            all_finite = (
+                math.isfinite(struct.unpack("<d", bytes.fromhex(instruction[1]))[0]) and all_finite
+            )
+    if seen != set(columns) or len(columns) != len(cache.columns) or all_finite != cache.all_finite:
+        raise ValueError("Missing or duplicated mesh cache columns")
+    return cache
+
+
+def _lineage_plan_bindings():
+    decoder = json._default_decoder
+    functions = (
+        _lineage_key_class_bindings,
+        _lineage_plan_key,
+        _LineagePlanKey.__init__,
+        _LineagePlanKey.__hash__,
+        _LineagePlanKey.__eq__,
+        _LineagePlanKey.__setattr__,
+        _LineagePlanKey.__delattr__,
+        _lineage_lookup_plan,
+        _lineage_memoized_descriptor,
+        _lineage_memoized_descriptor.__wrapped__,
+        _lineage_memoized_descriptor.cache_parameters,
+        _lineage_descriptor_plan,
+        _lineage_compiled_descriptor,
+        lru_cache,
+        _lineage_plan_size,
+        _lineage_remember_plan,
+        _lineage_validate_cache,
+        _lineage_plan_bindings,
+        core.caches.Cache.descriptor.fget,
+        core.caches.Cache.numeric_columns,
+        json.loads,
+        json.JSONDecoder.__init__,
+        json.JSONDecoder.decode,
+        json.JSONDecoder.raw_decode,
+        decoder.parse_object,
+        decoder.parse_array,
+        decoder.parse_string,
+        decoder.scan_once,
+        decoder.parse_float,
+        decoder.parse_int,
+        decoder.parse_constant,
+        hashlib.sha256,
+        math.isfinite,
+        struct.unpack,
+        sys.getsizeof,
+        np.isfinite,
+        np.frombuffer,
+        np.dtype,
+    )
+    return (
+        _LINEAGE_PLANS,
+        _LineagePlanKey,
+        _LINEAGE_KEY_BASELINE,
+        *_lineage_key_class_bindings(),
+        OrderedDict,
+        _LINEAGE_PLAN_ENTRIES,
+        _LINEAGE_CANONICAL_ENTRIES,
+        _LINEAGE_DESCRIPTOR_BYTES,
+        _LINEAGE_PLAN_NODES,
+        _LINEAGE_PLAN_DEPTH,
+        _LINEAGE_PLAN_INSTRUCTIONS,
+        _LINEAGE_PLAN_BYTES,
+        _LINEAGE_RETAINED_BYTES,
+        core.caches,
+        core.caches.Cache,
+        core.caches.CacheColumn,
+        json,
+        json.JSONDecoder,
+        decoder,
+        decoder.object_hook,
+        decoder.object_pairs_hook,
+        decoder.strict,
+        math,
+        struct,
+        *(atom for fn in functions for atom in structure._atoms(fn)),
+    )
+
+
 def _lineage(request):
     """Read-only proof of retained typed evidence; never replay or hydration."""
     seen, retained = {}, []
@@ -1073,7 +1429,7 @@ def _lineage(request):
         seen[id(value)] = token
         retained.append(value)
         if isinstance(value, core.caches.Cache):
-            core.caches.validate(value)
+            _lineage_validate_cache(value)
             result = dict(cache=value.identity)
         elif isinstance(value, (np.ndarray, np.generic)):
             result = dict(array=core.caches.snapshot(value).identity)

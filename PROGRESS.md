@@ -252,11 +252,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   bytecode for the same imported-module helper. Both checks cannot succeed
   together. The default-slot correction remains valid. The
   [seven-file compiler-context successor has a consolidated source review](/mnt/workspaces/Cells/native-parameter-CM-compiler-context-source-repair-20261102-01/root-review.json):
-  full-module/body-only compilation is consistent, but actual compiler and
-  keyword-default authority still need binding, and the conditional registry
-  fixture needs the required Mapping/ABCMeta shape. Key is batching both fixes
-  before focused validation. Its 29 new variations remain unrun; seven live and
-  frozen sources, the exact delta and all 29 saved artifacts verify. Both
+  full-module/body-only compilation is consistent. The
+  [combined eight-file successor closes compiler/default authority and registry-model findings in source](/mnt/workspaces/Cells/native-parameter-CM-compiler-context-R1-R2-source-repair-20261102-01/root-review.json).
+  A separate controlled fixture still needs the valid registry associations
+  before its lifetime-mutation checks. Key is authorized to correct that test
+  fixture and proceed directly to one exact **73-case / 20-function** blocked
+  batch, retaining all source/native gates. No intermediate source-only
+  approval round is required. These cases remain unrun at this entry. Both
   earlier 540-file images, 1,368 runtime rows and complete empty guards
   verify. The **118-control remaining batch has not launched**. Earlier passes
   stay bound to their own images; no native or numerical execution occurred.
@@ -341,9 +343,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   the wrapper's 512-MiB hard address-space limit prevented the runner from
   setting its already-approved 1-GiB worker ceiling. That failed invocation
   remains separate from the corrected run; no source or budget changed.
-  The reviewed eight-file implementation can be integrated with all provider
+  The reviewed eight-file implementation is integrated with all provider
   pins unbound. Genuine owner construction, native/world qualification and
   provider adoption still require the actual parameter handoff.
+  Specialist's next [seven-file same-phase image continuation has a consolidated source review](/mnt/workspaces/Cells/native-seed-voronoi-image-20261102-01/preparation-01/root-review.json).
+  The literal matches the first four original `make_voronoi` statements and
+  stops before mesh construction. Seven current/frozen files and 72 artifacts
+  verify; 28 written controls are unrun. One repair batch must bind the reached
+  interpolation helper's live code, authenticate the loaded root literal before
+  cloning, and protect finalization observations and primary errors. Parent
+  hooks and provider gates remain held; no new source execution is credited.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
@@ -527,10 +536,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   identify **916.15 seconds of inclusive lineage checking**, including
   **557.29 seconds in 797,778 cache-validation entries**, within 1,001.20
   seconds of caller checks. These intervals overlap and include observer costs;
-  they are neither additive nor a speedup measurement. Root is preparing a
-  bounded caller-local descriptor traversal optimization, retaining fresh
-  array-bit, shape, finite, source, owner and reference checks. Common cache
-  behavior and numerical bodies stay unchanged; no repeat diagnostic is released.
+  they are neither additive nor a speedup measurement. Root's
+  [caller-local descriptor traversal reuse is source/software reviewed](/mnt/workspaces/Cells/native-multi-cell-lineage-descriptor-reuse-20261102-01/source-result.json),
+  retaining fresh array-bit, shape, finite, source, owner and reference checks.
+  The first image has **58 passes / five fixture-cleanup failures**; a test-only
+  allocator-isolation correction has **22 affected passes**, including those
+  five. This covers 63 distinct controls across two test images on identical
+  production bytes, with 17 repeated passes, not one current 63-case run.
+  The affected worker took 5.533 seconds / 245,043,200 bytes sampled RSS; both
+  400-file images and loaded producers verify with empty native guards.
+  Common cache behavior and numerical bodies are unchanged. Added metadata
+  overhead and any speedup remain unmeasured; no repeat diagnostic is released.
   Its [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-08.json)
   verifies **828 frozen files / 609 external pins**; only the two reviewed
   timing files differ from diagnostic 07. CPU 2, one thread, **1 GiB /
