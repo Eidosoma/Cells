@@ -33,11 +33,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Key's tested constructor-continuation API for same-phase tissue-handler
   attachment. The standalone handler attachment is already
   reviewed; its earlier scope message does not reopen that work.
-  Specialist's requested cache status check found a controller failure after
-  13 passing controls; 31 were not launched by that failed batch. The repaired
-  controller launched those 31 controls in a fresh image, excluding the
-  completed 13. Specialist's requested single completion check now finds a
-  31-pass terminal result; saved-producer and integration review is in progress.
+  The cache software prerequisite is now reviewed and clear for the coordinated
+  handler/tail integration described below; its earlier failed controller and
+  separately bound execution images remain preserved.
   Key's [contiguous modulator/bitmap parameter block is reviewed](/mnt/workspaces/Cells/native-parameter-modulators-development-20261102-01/root-review.json)
   through native line 1000: 26 original statements and eight stores. All 13
   original outcomes are checked, including the wall-time and style failures;
@@ -49,7 +47,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   unchanged production candidate and original 35-control image retain separate
   source/evidence scope. The three current files are integrated as guarded source.
   Key is implementing the next four original colormap assignments at lines
-  1007–1014, with genuine lookup/result ownership and actual execution held.
+  1007–1014. The current prerequisite captures the selected registry entries'
+  arrays, aliases and callback source without evaluating callbacks; genuine
+  lookup/result ownership and actual execution remain held.
   Specialist's
   same-phase handler entry and error-precedence repairs are source-reviewed and
   integrated with qualification still held.
@@ -83,23 +83,26 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   this interface; its own cache ancestry, handler execution and phase attachment
   remain separate prerequisites. The source-only intermediate and prior 52
   controls retain their original evidence scope.
-  The [phase-cache source and saved-result review](/mnt/workspaces/Cells/native-phase-caches-20261101-01/root-review-01.json)
-  retains **13 passing controls and 31 unrun controls**: the controller failed
-  while writing its mutable progress receipt a second time. This is a software
-  orchestration failure, without completed cache or native-phase qualification.
+  The [phase-cache source and initial saved-result review](/mnt/workspaces/Cells/native-phase-caches-20261101-01/root-review-01.json)
+  retains **13 passing controls** and the original controller failure while
+  writing its mutable progress receipt a second time.
   The [controller repair is reviewed](/mnt/workspaces/Cells/native-phase-caches-20261101-01/root-controller-review-01.json):
   two atomic progress updates succeed, terminal receipts remain exclusive, and
   the selector excludes the original 13 passes. Two preparation failures
   executed no controls and remain preserved. The five cache source/test/runner
   files are integrated with their existing holds. The
-  [remaining-only launch](/mnt/workspaces/Cells/native-phase-caches-20261101-01/batch-02/LAUNCH.json)
-  uses seven sequential groups under the unchanged CPU 6, one-thread,
-  1 GiB / 480-second / 8 GiB-reserve guards. The requested completion check
-  found 31 passes; Specialist is reviewing the frozen producers and recorded
-  integration notices. Complete-cache acceptance and the handler consumer's
-  own validation remain pending that disposition. Specialist has explicitly
-  bound Key's reviewed closed-claim API
-  without changing the running cache image.
+  [remaining 31 controls are now reviewed and accepted as a software prerequisite](/mnt/workspaces/Cells/native-phase-caches-20261101-01/root-batch-02-review.json).
+  Seven groups completed under unchanged CPU 6, one-thread,
+  1 GiB / 480-second / 8 GiB-reserve guards: **1200.54 seconds total worker
+  time, 240.4 MiB maximum sampled RSS**, no forbidden native entries. Root
+  verified 93 setup/call/teardown reports, 31 guard/refusal pairs, eight frozen
+  snapshots and all five current owned files. The earlier 13 and remaining 31
+  cover the original 44 controls across retained images, not one new run.
+  Six groups retain the older runtime-inventory implementation; only the last
+  uses the reviewed streaming successor. Historical Git/checkout notices in
+  two groups remain distinct from passed frozen execution. This clears the
+  cache software prerequisite; actual native construction and the new
+  handler/tail consumer's own validation remain held.
   The [same-phase tissue-handler consumer is now integrated as guarded source](/mnt/workspaces/Cells/native-phase-dyna-20261102-01/root-integration-review-01.json).
   It retains the actual phase and parameter claim, rejects callback re-entry
   before selected handler bodies execute, and preserves the first entry refusal
@@ -107,16 +110,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   the initial one-character line-length failure is preserved, and the formatting
   correction has an identical syntax tree. **Eleven repair controls are written
   but unrun; no native handler body or behavioural test was executed in this
-  integration.** Required cache-continuation hooks remain unavailable, so the
-  positive path still refuses. Cache completion review, consumer validation and
-  genuine phase/INIT qualification remain separate pending work.
+  integration.** Required cache-continuation hooks are now assigned in the
+  coordinated seven-file integration; the positive path remains held until
+  those hooks and the consumer controls are complete.
   The next source feature is the **SEED constructor tail**: the original helpers
   attach `sim.dyna`, create `p._run_sim = False`, return before temporal stores,
   and retain `p.init_export_dirname` as the phase export path. Source inspection
   confirms that Key's existing read-only closed claim cannot authorize this
-  parameter mutation. After the current modulator checks, Key owns a separate
-  one-shot mutation/closed-validation contract on the exact retained claim,
-  lease and parameter object. A second verified prerequisite is dispatch:
+  parameter mutation. Key's separately reviewed one-shot mutation and closed
+  validation contract now supplies that prerequisite on the exact retained
+  claim, lease and parameter object. A second verified prerequisite is dispatch:
   the actual phase's two helper wrappers still bind the closed assembly context.
   Specialist owns four new tail source/test/runner files and, in a later
   integration window, narrowly scoped assembly dispatch, dyna forwarding and
@@ -159,8 +162,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   46 controls retain their own source binding; actual phase construction and
   scientific release remain held. Key's next assignment is the next contiguous
   parameter prerequisite after the modulator block, selected by inspection of
-  the genuine initialization path. Specialist owns the pending cache-result
-  disposition and subsequent cache/handler/tail integration. Root owns saved
+  the genuine initialization path. Specialist owns the cleared
+  cache/handler/tail integration. Root owns saved
   result review, integration and the populated-tissue/electrical qualification.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
