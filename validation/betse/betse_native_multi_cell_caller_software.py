@@ -24,13 +24,15 @@ LINEAGE_ITEMS = (
     "test_lineage_descriptor_eviction_and_retained_bounds",
     "test_lineage_descriptor_exact_text_keys_and_immutable_payloads",
     "test_lineage_descriptor_forged_warm_plan_never_authenticates_values",
-    "test_lineage_descriptor_key_lookup_retarget_refuses_before_dispatch",
+    "test_lineage_descriptor_string_keys_refuse_substitution",
     "test_lineage_descriptor_private_eviction_uses_canonical_fallback",
     "test_lineage_descriptor_unissued_key_preserves_column_before_parser",
+    "test_lineage_descriptor_cold_publication_authenticates_live_result",
     "test_lineage_descriptor_preserves_references_and_digest",
     "test_lineage_descriptor_binding_drift_refuses",
     "test_lineage_descriptor_inherited_entry_rejection_is_not_a_miss",
     "test_lineage_descriptor_item_selection_is_exact",
+    "test_lineage_descriptor_metadata_cost_observation",
 )
 
 

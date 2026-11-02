@@ -7,7 +7,7 @@ import os
 import pickle
 import sys
 from collections import OrderedDict
-from dataclasses import dataclass, fields, make_dataclass, replace
+from dataclasses import dataclass, fields, replace
 from pathlib import Path
 from types import FunctionType, SimpleNamespace
 
@@ -1331,38 +1331,59 @@ def test_lineage_descriptor_forged_warm_plan_never_authenticates_values(
     save(evidence, "forged-plan", dict(change=change, expected=expected, actual=actual))
 
 
-def test_lineage_descriptor_key_lookup_retarget_refuses_before_dispatch(
-    monkeypatch, lineage_plans, evidence
+@pytest.mark.parametrize("kind", ["subclass", "opaque"])
+def test_lineage_descriptor_string_keys_refuse_substitution(
+    kind, monkeypatch, lineage_plans, evidence
 ):
     original = multi.core.caches.snapshot(np.asarray([1.0]))
     replacement = multi.core.caches.snapshot(np.asarray([2.0]))
     multi._lineage_validate_cache(original)
     multi._lineage_validate_cache(replacement)
-    baseline = multi._bindings()
     changed = replace(original, columns=replacement.columns)
     expected = _lineage_outcome(multi.core.caches.validate, changed)
     assert expected["type"] == "builtins.ValueError"
-    getter, dispatched = multi._LineagePlanKey.__getattribute__, []
+    assert (
+        multi._lineage_lookup_plan(original.descriptor_json)
+        is lineage_plans[original.descriptor_json]
+    )
+    dispatched = []
 
-    def retarget(self, name):
-        value = getter(self, name)
-        if name == "raw" and value == original.descriptor_json:
-            dispatched.append(name)
+    class Substitution(str if kind == "subclass" else object):
+        def __hash__(self):
+            dispatched.append("hash")
+            return hash(replacement.descriptor_json)
+
+        def __eq__(self, other):
+            dispatched.append("equal")
+            return other == replacement.descriptor_json
+
+        def __str__(self):
+            dispatched.append("text")
             return replacement.descriptor_json
-        return value
 
-    monkeypatch.setattr(multi._LineagePlanKey, "__getattribute__", retarget)
+    candidate = Substitution(original.descriptor_json) if kind == "subclass" else Substitution()
+    with pytest.raises(ValueError, match="exact descriptor string"):
+        multi._lineage_lookup_plan(candidate)
+    assert not dispatched
+
+    # Even a direct call to the private C wrapper cannot borrow an exact-str
+    # entry through equality with a string subclass: its cache is typed.
+    class EqualText(str):
+        pass
+
+    hits = multi._lineage_memoized_descriptor.cache_info().hits
+    with pytest.raises(ValueError, match="memoization budget"):
+        multi._lineage_memoized_descriptor(EqualText(replacement.descriptor_json))
+    assert multi._lineage_memoized_descriptor.cache_info().hits == hits
+    assert multi._lineage_memoized_descriptor.cache_parameters()["typed"] is True
     lineage_plans[original.descriptor_json] = lineage_plans[replacement.descriptor_json]
-    with pytest.raises(ValueError, match="callable or code identity"):
-        multi.accounting._check_binding_identity(multi._bindings(), baseline)
-    with pytest.raises(ValueError, match="callable or code identity"):
-        multi._lineage_validate_cache(changed)
+    assert _lineage_outcome(multi._lineage_validate_cache, changed) == expected
     assert not dispatched
     assert (
         changed.descriptor_json == original.descriptor_json
         and changed.identity == original.identity
     )
-    save(evidence, "key-retarget", dict(canonical_refusal=expected, key_dispatches=[]))
+    save(evidence, "string-key", dict(kind=kind, canonical_refusal=expected, key_dispatches=[]))
 
 
 def test_lineage_descriptor_private_eviction_uses_canonical_fallback(
@@ -1383,6 +1404,7 @@ def test_lineage_descriptor_private_eviction_uses_canonical_fallback(
     assert lineage_plans[cache.descriptor_json] is not old
     info = multi._lineage_memoized_descriptor.cache_info()
     assert info.maxsize == multi._LINEAGE_CANONICAL_ENTRIES and info.currsize <= info.maxsize
+    assert multi._lineage_memoized_descriptor.cache_parameters()["typed"] is True
     save(evidence, "private-eviction", dict(canonical_calls=1, max_entries=info.maxsize))
 
 
@@ -1421,6 +1443,78 @@ def test_lineage_descriptor_unissued_key_preserves_column_before_parser(
     assert sys.getprofile() is previous and not attempted
     assert type(caught) is AttributeError and str(caught) == expected["message"]
     save(evidence, "unissued-order", dict(change=change, expected=expected, parser_attempts=[]))
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "wrong_result",
+        "wrong_raw",
+        "equal_raw_object",
+        "subclass",
+        "changed_after_validation",
+        "direct_miss",
+        "foreign_globals",
+    ],
+)
+def test_lineage_descriptor_cold_publication_authenticates_live_result(
+    change, monkeypatch, lineage_plans, evidence
+):
+    baseline = multi.core.caches.snapshot(dict(value=1))
+    valid, issued = multi._lineage_publish_plan(baseline, baseline.descriptor_json)
+    assert valid is baseline and issued is not None
+    assert multi._lineage_lookup_plan(baseline.descriptor_json) is issued
+    cache = multi.core.caches.snapshot(dict(value=2))
+    raw = cache.descriptor_json
+    canonical, compile_plan = multi.core.caches.validate, multi._lineage_descriptor_plan
+    validations, compilations = [], []
+
+    def validate(value):
+        validations.append(value)
+        result = canonical(value)
+        if change == "wrong_result":
+            return replace(result)
+        if change == "changed_after_validation":
+            object.__setattr__(value, "descriptor_json", baseline.descriptor_json)
+        return result
+
+    def compile_current(value):
+        compilations.append(value)
+        return compile_plan(value)
+
+    monkeypatch.setattr(multi.core.caches, "validate", validate)
+    monkeypatch.setattr(multi, "_lineage_descriptor_plan", compile_current)
+    publisher = multi._lineage_publish_plan
+    if change == "wrong_raw":
+        raw = baseline.descriptor_json
+    elif change == "equal_raw_object":
+        raw = (raw + " ")[:-1]
+        assert raw == cache.descriptor_json and raw is not cache.descriptor_json
+    elif change == "subclass":
+
+        class Text(str):
+            pass
+
+        raw = Text(raw)
+    elif change == "foreign_globals":
+        publisher = FunctionType(publisher.__code__, dict(vars(multi)), "foreign_publisher")
+    if change == "direct_miss":
+        with pytest.raises(ValueError, match="private descriptor memo caller"):
+            multi._lineage_memoized_descriptor(raw)
+        assert not validations
+    else:
+        with pytest.raises(
+            ValueError, match="descriptor publication|private descriptor memo caller"
+        ):
+            publisher(cache, raw)
+        assert len(validations) == 1 and validations[0] is cache
+    assert not compilations
+    assert not lineage_plans
+    save(
+        evidence,
+        "publication",
+        dict(change=change, positive_issued=True, canonical_calls=len(validations), parser_calls=0),
+    )
 
 
 def test_lineage_descriptor_preserves_references_and_digest(monkeypatch, lineage_plans, evidence):
@@ -1477,11 +1571,8 @@ def test_lineage_descriptor_preserves_references_and_digest(monkeypatch, lineage
         "helper_code",
         "compiled_body",
         "memo_body",
-        "memo_key",
-        "key_slot",
-        "key_allocator",
-        "key_ancestor",
-        "key_fallback",
+        "publisher",
+        "frame_reader",
         "defaults",
         "keyword_defaults",
         "parser",
@@ -1505,65 +1596,20 @@ def test_lineage_descriptor_binding_drift_refuses(change, monkeypatch, lineage_p
         monkeypatch.setattr(
             multi._lineage_memoized_descriptor.__wrapped__, "__code__", (lambda key: ()).__code__
         )
-    elif change == "memo_key":
-        monkeypatch.setattr(multi._LineagePlanKey, "__eq__", lambda self, other: True)
-    elif change == "key_slot":
-        monkeypatch.setattr(multi._LineagePlanKey, "raw", property(lambda self: "{}"))
-    elif change == "key_allocator":
-        # Installing/deleting __new__ can leave CPython's allocator slot
-        # changed despite exact restoration of the visible class namespace.
-        # Exercise that drift on a disposable metadata type, never the real key.
-        original_type, original_authority = multi._LineagePlanKey, multi._LINEAGE_KEY_BASELINE
-        assert type(multi._lineage_plan_key("{}", True)) is original_type
-        disposable = make_dataclass(
-            "DisposableLineageKey",
-            [("raw", str), ("publish", bool), ("miss", object, None)],
-            namespace={
-                "__module__": __name__,
-                "__hash__": original_type.__hash__,
-                "__eq__": original_type.__eq__,
-            },
-            frozen=True,
-            slots=True,
-            eq=False,
-        )
-        allocations = []
-
-        def forbidden_allocator(cls, *args, **kwargs):
-            allocations.append(cls)
-            raise AssertionError("Changed allocator must refuse before construction")
-
-        with monkeypatch.context() as patch:
-            patch.setattr(multi, "_LineagePlanKey", disposable)
-            patch.setattr(multi, "_LINEAGE_KEY_BASELINE", multi._lineage_key_class_bindings())
-            disposable_bindings = multi._bindings()
-            multi.accounting._check_binding_identity(multi._bindings(), disposable_bindings)
-            assert type(multi._lineage_plan_key("{}", True)) is disposable
-            patch.setattr(disposable, "__new__", staticmethod(forbidden_allocator))
-            with pytest.raises(ValueError, match="callable or code identity"):
-                multi.accounting._check_binding_identity(multi._bindings(), disposable_bindings)
-            with pytest.raises(ValueError, match="callable or code identity"):
-                multi._lineage_plan_key("{}", False, LookupError("unissued"))
-            assert not allocations
-        assert multi._LineagePlanKey is original_type
-        assert multi._LINEAGE_KEY_BASELINE is original_authority
-        multi.accounting._check_binding_identity(multi._bindings(), baseline)
-        restored = multi._lineage_plan_key("{}", True)
-        assert type(restored) is original_type
-        assert (restored.raw, restored.publish, restored.miss) == ("{}", True, None)
-        save(
-            evidence,
-            "binding-refusal",
-            dict(change=change, allocator_calls=0, original_constructs_after_cleanup=True),
-        )
-        return
-    elif change == "key_ancestor":
-        subclass = type("ChangedDescriptorKey", (multi._LineagePlanKey,), {})
-        monkeypatch.setattr(multi, "_LineagePlanKey", subclass)
-    elif change == "key_fallback":
+    elif change == "publisher":
         monkeypatch.setattr(
-            multi._LineagePlanKey, "__getattr__", lambda self, name: None, raising=False
+            multi._lineage_publish_plan, "__code__", (lambda cache, raw: (cache, None)).__code__
         )
+    elif change == "frame_reader":
+        # Restore the process-wide helper before assertions or report writers.
+        with monkeypatch.context() as patch:
+            patch.setattr(sys, "_getframe", lambda depth=0: None)
+            current = multi._bindings()
+        with pytest.raises(ValueError, match="callable or code identity"):
+            multi.accounting._check_binding_identity(current, baseline)
+        multi.accounting._check_binding_identity(multi._bindings(), baseline)
+        save(evidence, "binding-refusal", dict(change=change, frame_reader_restored=True))
+        return
     elif change == "defaults":
         monkeypatch.setattr(multi._lineage_descriptor_plan, "__defaults__", (None,))
     elif change == "keyword_defaults":
@@ -1582,9 +1628,6 @@ def test_lineage_descriptor_binding_drift_refuses(change, monkeypatch, lineage_p
         monkeypatch.setattr(multi.core.caches.Cache, "descriptor", property(lambda self: {}))
     with pytest.raises(ValueError):
         multi.accounting._check_binding_identity(multi._bindings(), baseline)
-    if change in ("memo_key", "key_slot", "key_allocator", "key_ancestor", "key_fallback"):
-        with pytest.raises(ValueError, match="callable or code identity"):
-            multi._lineage_plan_key("{}", False, LookupError("unissued"))
     save(evidence, "binding-refusal", dict(change=change))
 
 
@@ -1634,7 +1677,7 @@ def test_lineage_descriptor_inherited_entry_rejection_is_not_a_miss(
         if event == "call" and frame.f_code is selected:
             attempted.append(target)
             if target == "lookup_token":
-                original = frame.f_locals["key"].miss
+                original = frame.f_back.f_locals["miss"]
                 original.__cause__ = cause
             raise original
 
@@ -1674,3 +1717,108 @@ def test_lineage_descriptor_item_selection_is_exact(evidence):
         with pytest.raises(ValueError):
             software._selection("focused", bad)
     save(evidence, "item-selection", dict(items=software.LINEAGE_ITEMS, selected=selected))
+
+
+@pytest.mark.parametrize("workload", ["empty", "state-shaped", "mesh-shaped"])
+def test_lineage_descriptor_metadata_cost_observation(workload, lineage_plans, evidence):
+    """Observe toy metadata cost; no speed threshold or tissue-performance claim."""
+    from statistics import median
+    from time import perf_counter_ns, process_time_ns
+
+    if workload == "empty":
+        values = {}
+    elif workload == "state-shaped":
+        values = dict(words=np.arange(624, dtype=np.uint32), position=0, cached=0.0)
+    else:
+        values = dict(
+            points=np.arange(128, dtype=np.float64).reshape(64, 2),
+            ids=np.arange(64, dtype=np.int64),
+            edges=np.arange(64, dtype=np.int64).reshape(32, 2),
+            mask=np.arange(64, dtype=np.uint8).reshape(8, 8),
+            bounds=(0.0, 8.0, 0.0, 8.0),
+        )
+    cache = multi.core.caches.snapshot(values)
+    request = (cache, replace(cache), {"repeated_reference": cache})
+    canonical = FunctionType(
+        multi._lineage.__code__,
+        dict(vars(multi), _lineage_validate_cache=multi.core.caches.validate),
+        "canonical_lineage",
+    )
+    functions = dict(canonical=canonical, descriptor_reuse=multi._lineage)
+    expected_refs, expected_digest = canonical(request)
+    previous_profile, previous_trace = sys.getprofile(), sys.gettrace()
+    assert previous_profile is not None, "The inherited native blockade must remain active"
+
+    def same(result):
+        refs, digest = result
+        assert digest == expected_digest and len(refs) == len(expected_refs)
+        assert all(a is b for a, b in zip(refs, expected_refs, strict=True))
+
+    for function in functions.values():
+        same(function(request))
+    iterations, rounds = 32, 3
+    samples = {name: [] for name in functions}
+    for round_index in range(rounds):
+        order = tuple(functions) if round_index % 2 == 0 else tuple(reversed(functions))
+        for name in order:
+            function = functions[name]
+            cpu_start, wall_start = process_time_ns(), perf_counter_ns()
+            for _ in range(iterations):
+                result = function(request)
+            wall_ns, cpu_ns = perf_counter_ns() - wall_start, process_time_ns() - cpu_start
+            same(result)
+            samples[name].append(dict(round=round_index, wall_ns=wall_ns, cpu_ns=cpu_ns))
+    calls = {}
+    for name, function in functions.items():
+        counts = dict(call=0, c_call=0)
+
+        def profile(frame, event, arg, counts=counts):
+            previous_profile(frame, event, arg)
+            if event in counts:
+                counts[event] += 1
+
+        try:
+            sys.setprofile(profile)
+            result = function(request)
+        finally:
+            sys.setprofile(previous_profile)
+        same(result)
+        calls[name] = counts
+    assert sys.getprofile() is previous_profile and sys.gettrace() is previous_trace
+    per_call = {
+        name: {
+            metric: median(row[metric] / iterations for row in rows)
+            for metric in ("wall_ns", "cpu_ns")
+        }
+        for name, rows in samples.items()
+    }
+    save(
+        evidence,
+        "metadata-cost-observation",
+        dict(
+            workload=workload,
+            synthetic_only=True,
+            actual_rng_or_owner_created=False,
+            performance_extrapolation=False,
+            descriptor_bytes=len(cache.descriptor_json.encode()),
+            numeric_columns=len(cache.columns),
+            cache_identity=cache.identity,
+            lineage_digest=expected_digest,
+            retained_reference_count=len(expected_refs),
+            iterations=iterations,
+            rounds=rounds,
+            warm_only=True,
+            inherited_guard_active=True,
+            timed_with_extra_counter=False,
+            counting_note="Separate call counts exclude profiler callbacks and their descendants",
+            raw_samples=samples,
+            median_per_call=per_call,
+            calls_per_lineage=calls,
+            reuse_over_canonical={
+                metric: per_call["descriptor_reuse"][metric] / per_call["canonical"][metric]
+                for metric in ("wall_ns", "cpu_ns")
+            },
+            exact_references_and_digest_preserved=True,
+            final_hooks_restored=True,
+        ),
+    )

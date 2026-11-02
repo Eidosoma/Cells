@@ -76,6 +76,7 @@ _BODIES = {
 }
 MAX_WORK = 100000
 _REQUESTS, _CONSUMED, _ISSUED = (WeakKeyDictionary() for _ in range(3))
+_FORWARDED = WeakKeyDictionary()
 _LOCK, _ACTIVE = RLock(), []
 
 
@@ -205,6 +206,9 @@ def source_plan(*, mode=None):
         accepted_key_api=None,
         dispatch_hooks=PARENT_HOOKS,
         next_method="make_voronoi",
+        voronoi_image_continuation_prepared=True,
+        voronoi_image_binding="one-way coordinator pin; no new prefix back-reference slot",
+        voronoi_image_or_mesh_released=False,
         progress_ranged_before_phase_birth_outside_boundary=True,
         no_supplied_world_parameter_or_stream=True,
         no_rng_reset_or_new_stream=True,
@@ -355,6 +359,10 @@ def _bindings():
         trial_record,
         prepare,
         _validate,
+        _check_sealed,
+        _claim_for_voronoi_image,
+        _voronoi_route,
+        _check_voronoi_authority,
         _failure_stage,
         *(_BODIES.values()),
     )
@@ -365,6 +373,7 @@ def _bindings():
         _REQUESTS,
         _CONSUMED,
         _ISSUED,
+        _FORWARDED,
         _LOCK,
         _ACTIVE,
         LAW_ID,
@@ -1654,23 +1663,18 @@ def _validate(owner):
     if type(owner) is not SeedWorldPrefixOwner or owner not in _ISSUED:
         raise WorldPrefixRejected("Actual issued world-prefix owner required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "voronoi_image"):
+        raise WorldPrefixRejected(
+            "World-prefix epoch was irreversibly consumed by a Voronoi image attempt",
+            stage="consumed",
+            request=context.request,
+            trial=context.trial,
+            partial=context,
+        )
     try:
         if context.active or context.owner is not owner:
             raise ValueError("Active or replaced world-prefix owner")
-        _check(context)
-        if (
-            not context.trial.source_completed
-            or context.stack
-            or tuple(context.stages) != RETURN_ORDER
-            or not context.root_claimed
-            or _snapshot(context).identity != context.trial.cache.identity
-            or _digest(trial_record(context.trial)) != context.trial.identity
-        ):
-            raise ValueError("Sealed world-prefix state changed")
-        graph = _graph(context)
-        literal._same(graph[0], context.graph[0])
-        if graph[1] != context.graph[1]:
-            raise ValueError("Sealed world-prefix reference edges changed")
+        _check_sealed(context)
     except BaseException as error:
         context.invalid = True
         raise WorldPrefixRejected(
@@ -1682,6 +1686,96 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _check_sealed(context):
+    """Original sealed fields remain exact; image work permits no caller stores."""
+    _check(context)
+    if (
+        not context.trial.source_completed
+        or context.stack
+        or tuple(context.stages) != RETURN_ORDER
+        or not context.root_claimed
+        or _snapshot(context).identity != context.trial.cache.identity
+        or _digest(trial_record(context.trial)) != context.trial.identity
+    ):
+        raise ValueError("Sealed world-prefix state changed")
+    graph = _graph(context)
+    literal._same(graph[0], context.graph[0])
+    if graph[1] != context.graph[1]:
+        raise ValueError("Sealed world-prefix reference edges changed")
+
+
+def _claim_for_voronoi_image(owner, *, expected, transition, entries):
+    module = previous._world_api()._world_voronoi_api()
+    caller = sys._getframe(1)
+    with _LOCK:
+        parent = _validate(owner)
+        if (
+            parent is not expected
+            or parent.active
+            or parent.invalid
+            or type(transition.request) is not module.Request
+            or module._REQUESTS.get(transition.request) is not transition.refs
+            or module._CONSUMED.get(transition.request) is not transition
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+            or caller.f_code is not module.prepare.__code__
+            or transition.driver_frame is not caller
+            or transition.request.prefix_owner is not owner
+            or transition.parent is not parent
+            or transition.phase is not parent.phase
+            or transition.p is not parent.p
+            or transition.cells is not parent.cells
+            or entries is not transition.entries
+            or tuple(entries) != (module.ROOT_METHOD,)
+            or transition.thread != get_ident()
+        ):
+            raise ValueError("Actual issued same-instance image transition required")
+        # Marker precedes fallible registry publication; failure never rearms.
+        parent.voronoi_image = transition
+        try:
+            _FORWARDED[owner] = transition
+            if _voronoi_route(parent) is not transition:
+                raise ValueError("Original image retirement returned another transition")
+        except BaseException:
+            parent.invalid = transition.invalid = True
+            raise
+        return parent
+
+
+def _voronoi_route(parent):
+    module = previous._world_api()._world_voronoi_api()
+    transition = getattr(parent, "voronoi_image", None)
+    owner = getattr(parent, "owner", None)
+    if (
+        transition is None
+        or owner is None
+        or _ISSUED.get(owner) is not parent
+        or _FORWARDED.get(owner) is not transition
+        or transition.parent is not parent
+        or type(transition.request) is not module.Request
+        or transition.request.prefix_owner is not owner
+        or module._REQUESTS.get(transition.request) is not transition.refs
+        or module._CONSUMED.get(transition.request) is not transition
+        or transition.phase is not parent.phase
+        or transition.p is not parent.p
+        or transition.cells is not parent.cells
+        or transition.refs[1] is not parent.trial
+        or transition.thread != parent.thread
+    ):
+        raise ValueError("Original prefix/image issuance and retirement links changed")
+    return transition
+
+
+def _check_voronoi_authority(transition):
+    parent = transition.parent
+    if _voronoi_route(parent) is not transition or parent.active or parent.invalid:
+        raise ValueError("Unavailable original retired world-prefix authority")
+    # This image prefix permits no phase/Cells/p/RNG mutation. Reuse exact
+    # sealed checks without reopening the consumed public prefix owner.
+    _check_sealed(parent)
+    return parent
 
 
 def require_voronoi(owner):

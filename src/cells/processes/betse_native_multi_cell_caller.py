@@ -1075,74 +1075,47 @@ def _namespace_bindings(context):
     )
 
 
-@dataclass(frozen=True, slots=True, eq=False)
-class _LineagePlanKey:
-    raw: str
-    publish: bool
-    miss: object = None
-
-    def __hash__(self):
-        return hash(self.raw)
-
-    def __eq__(self, other):
-        return type(other) is _LineagePlanKey and self.raw == other.raw
-
-
-def _lineage_key_class_bindings():
-    cls = _LineagePlanKey
-    if type(cls) is not type:
-        raise ValueError("Changed private descriptor key class")
-    bases = type.__getattribute__(cls, "__mro__")
-    if len(bases) > 4:
-        raise ValueError("Changed private descriptor key ancestry")
-    result = [cls, type(cls), "key_mro", bases]
-    for base in bases:
-        namespace = type.__getattribute__(base, "__dict__")
-        if len(namespace) > 64:
-            raise ValueError("Changed private descriptor key namespace")
-        result.extend(("key_base", base))
-        for name, value in namespace.items():
-            result.extend(("key_attribute", name, *structure._atoms(value)))
-            if type(value) in (staticmethod, classmethod):
-                result.extend(structure._atoms(value.__func__))
-        result.append("key_base_end")
-    return tuple(result)
-
-
-_LINEAGE_KEY_BASELINE = _lineage_key_class_bindings()
-
-
-def _lineage_plan_key(raw, publish, miss=None):
-    # Namespace membership, inherited lookup/allocation and exact slot
-    # descriptors remain authenticated, not only the original method bodies.
-    accounting._check_binding_identity(_lineage_key_class_bindings(), _LINEAGE_KEY_BASELINE)
-    key = _LineagePlanKey(raw, publish, miss)
-    accounting._check_binding_identity(_lineage_key_class_bindings(), _LINEAGE_KEY_BASELINE)
-    return key
-
-
-@lru_cache(maxsize=_LINEAGE_CANONICAL_ENTRIES)
-def _lineage_memoized_descriptor(key):
-    if type(key) is not _LineagePlanKey or type(key.publish) is not bool:
-        raise ValueError("Require the private descriptor memo key")
+@lru_cache(maxsize=_LINEAGE_CANONICAL_ENTRIES, typed=True)
+def _lineage_memoized_descriptor(raw):
+    # Exact built-in strings have no mutable lookup/hash dispatch. typed=True
+    # also prevents an equal string subclass from borrowing a cached result.
     if (
-        type(key.raw) is not str
-        or len(key.raw) > _LINEAGE_DESCRIPTOR_BYTES
-        or len(key.raw.encode()) > _LINEAGE_DESCRIPTOR_BYTES
-        or sys.getsizeof(key.raw) > _LINEAGE_PLAN_BYTES
+        type(raw) is not str
+        or len(raw) > _LINEAGE_DESCRIPTOR_BYTES
+        or len(raw.encode()) > _LINEAGE_DESCRIPTOR_BYTES
+        or sys.getsizeof(raw) > _LINEAGE_PLAN_BYTES
     ):
         raise ValueError("Descriptor is outside the local memoization budget")
-    if not key.publish:
-        # A lookup miss never parses: the caller must run the canonical live
-        # validator first. Exceptions are not retained by functools.lru_cache.
-        raise key.miss
-    return _lineage_descriptor_plan(key.raw)
+    caller = sys._getframe(1)
+    if caller.f_globals is not _lineage_lookup_plan.__globals__:
+        raise ValueError("Unrecognised private descriptor memo caller")
+    current = caller.f_locals
+    if current.get("raw") is not raw:
+        raise ValueError("Changed private descriptor memo argument")
+    if caller.f_code is _lineage_lookup_plan.__code__:
+        miss = current.get("miss")
+        if type(miss) is not LookupError:
+            raise ValueError("Changed private descriptor lookup token")
+        # Misses never parse and are not retained by functools.lru_cache.
+        raise miss
+    if caller.f_code is not _lineage_publish_plan.__code__:
+        raise ValueError("Unrecognised private descriptor memo caller")
+    cache = current.get("cache")
+    if (
+        type(cache) is not core.caches.Cache
+        or current.get("validated") is not cache
+        or cache.descriptor_json is not raw
+    ):
+        raise ValueError("Changed canonical descriptor publication")
+    return _lineage_descriptor_plan(raw)
 
 
 def _lineage_lookup_plan(raw):
+    if type(raw) is not str:
+        raise ValueError("Require an exact descriptor string")
     miss = LookupError("Unissued caller descriptor plan")
     try:
-        return _lineage_memoized_descriptor(_lineage_plan_key(raw, False, miss))
+        return _lineage_memoized_descriptor(raw)
     except LookupError as error:
         if error is not miss:
             raise
@@ -1158,6 +1131,26 @@ def _lineage_lookup_plan(raw):
             # this lookup's token. Only the direct memo-body miss is handled.
             raise
         return None
+
+
+def _lineage_publish_plan(cache, raw):
+    # Even publication hits validate the actual current cache. No successful
+    # validation, cache object or numeric column is retained by the memoizer.
+    validated = core.caches.validate(cache)
+    if (
+        type(cache) is not core.caches.Cache
+        or validated is not cache
+        or type(raw) is not str
+        or cache.descriptor_json is not raw
+    ):
+        raise ValueError("Changed canonical descriptor publication")
+    if (
+        len(raw) > _LINEAGE_DESCRIPTOR_BYTES
+        or len(raw.encode()) > _LINEAGE_DESCRIPTOR_BYTES
+        or sys.getsizeof(raw) > _LINEAGE_PLAN_BYTES
+    ):
+        return validated, None
+    return validated, _lineage_memoized_descriptor(raw)
 
 
 def _lineage_compiled_descriptor(raw):
@@ -1295,8 +1288,7 @@ def _lineage_validate_cache(cache):
     if entry is None:
         # Preserve original errors and their precedence before inspecting a
         # previously unseen descriptor. No observer/parser exception is hidden.
-        result = core.caches.validate(cache)
-        compiled = _lineage_memoized_descriptor(_lineage_plan_key(raw, True))
+        result, compiled = _lineage_publish_plan(cache, raw)
         if compiled is not None:
             _lineage_remember_plan(raw, compiled)
         return result
@@ -1306,8 +1298,7 @@ def _lineage_validate_cache(cache):
     if compiled is None or entry is not compiled:
         # Forged/retargeted index entries or private memoizer eviction only
         # cause canonical validation, never replay of unauthenticated operands.
-        result = core.caches.validate(cache)
-        compiled = _lineage_memoized_descriptor(_lineage_plan_key(raw, True))
+        result, compiled = _lineage_publish_plan(cache, raw)
         if compiled is None:
             _LINEAGE_PLANS.pop(raw, None)
         else:
@@ -1346,14 +1337,8 @@ def _lineage_validate_cache(cache):
 def _lineage_plan_bindings():
     decoder = json._default_decoder
     functions = (
-        _lineage_key_class_bindings,
-        _lineage_plan_key,
-        _LineagePlanKey.__init__,
-        _LineagePlanKey.__hash__,
-        _LineagePlanKey.__eq__,
-        _LineagePlanKey.__setattr__,
-        _LineagePlanKey.__delattr__,
         _lineage_lookup_plan,
+        _lineage_publish_plan,
         _lineage_memoized_descriptor,
         _lineage_memoized_descriptor.__wrapped__,
         _lineage_memoized_descriptor.cache_parameters,
@@ -1380,6 +1365,7 @@ def _lineage_plan_bindings():
         hashlib.sha256,
         math.isfinite,
         struct.unpack,
+        sys._getframe,
         sys.getsizeof,
         np.isfinite,
         np.frombuffer,
@@ -1387,9 +1373,6 @@ def _lineage_plan_bindings():
     )
     return (
         _LINEAGE_PLANS,
-        _LineagePlanKey,
-        _LINEAGE_KEY_BASELINE,
-        *_lineage_key_class_bindings(),
         OrderedDict,
         _LINEAGE_PLAN_ENTRIES,
         _LINEAGE_CANONICAL_ENTRIES,
@@ -1410,6 +1393,7 @@ def _lineage_plan_bindings():
         decoder.strict,
         math,
         struct,
+        sys,
         *(atom for fn in functions for atom in structure._atoms(fn)),
     )
 

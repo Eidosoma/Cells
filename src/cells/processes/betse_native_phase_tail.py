@@ -1699,6 +1699,12 @@ def _check_world_authority(context):
 
 def _dispatch_seed_world(prefix, label, delegate, actual, *args, **kwargs):
     api = _world_api()
+    retained = api._world_forwarded(prefix.world_transition)
+    if retained is not None and hasattr(retained, "voronoi_image"):
+        context = prefix.world_transition.api.helpers._voronoi_route(retained)
+        return api._world_voronoi_api()._dispatch(
+            context, prefix, label, delegate, actual, args, kwargs, sys._getframe()
+        )
     context = api._world_prefix_route(prefix)
     caller = sys._getframe(1)
     wrapper = caller.f_back

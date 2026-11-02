@@ -49,6 +49,10 @@ HELPER_INTERFACE_SHA256 = None  # Separate reviewed adoption remains required.
 HELPER_CONSTRUCTION_REVIEW_SHA256 = None
 HELPER_BINDING_KIND = "exact_helper_bytes_except_two_validated_backref_literals@1"
 HELPER_BACK_REFERENCE_SLOTS = ("CONSTRUCTION_SOURCE_SHA256", "CONSTRUCTION_REVIEW_SHA256")
+VORONOI_IMAGE_MODULE = "cells.processes.betse_native_seed_voronoi_image"
+VORONOI_IMAGE_MODE = "fresh_world_seed_lattice_make_voronoi_image_prefix"
+VORONOI_IMAGE_SOURCE_SHA256 = None
+VORONOI_IMAGE_REVIEW_SHA256 = None
 CALLBACK_MODULE = "cells.processes.betse_native_phase_callbacks"
 CALLBACK_SHA256 = "4fa19547caac95257162e6678092c3e55ce4fe43b05b2d16f7908f9196740f2d"
 BASE_FIELDS = ("callbacks", "cells", "kind", "p", "sim")
@@ -180,6 +184,15 @@ def source_plan():
         helper_back_reference_slots=HELPER_BACK_REFERENCE_SLOTS,
         helper_non_back_reference_bytes_exact=True,
         helper_back_references_checked_against_full_constructor_bytes=True,
+        voronoi_image=dict(
+            module=VORONOI_IMAGE_MODULE,
+            mode=VORONOI_IMAGE_MODE,
+            source=VORONOI_IMAGE_SOURCE_SHA256,
+            review=VORONOI_IMAGE_REVIEW_SHA256,
+            binding="one-way full image-module source from this coordinator",
+            boundary="before lattice_to_mesh_type/DECMesh",
+            released=False,
+        ),
         binding_adoption_order=(
             "review helper byte template with only two back-reference literals normalized",
             "bind that template and the independent producer/stage pins in the constructor",
@@ -418,6 +431,24 @@ def _dependencies():
     )
 
 
+def _world_voronoi_api():
+    """Optional next source boundary; no reciprocal embedded source hash."""
+    _ready()
+    if not _pin(VORONOI_IMAGE_SOURCE_SHA256) or not _pin(VORONOI_IMAGE_REVIEW_SHA256):
+        raise WorldPhaseRejected(
+            "Actual reviewed same-phase Voronoi image source remains unbound",
+            stage="unbound_voronoi_image_contract",
+        )
+    module = _import_bound(VORONOI_IMAGE_MODULE, VORONOI_IMAGE_SOURCE_SHA256)
+    if module.PARENT_MODULE != HELPER_MODULE or module.MODE != VORONOI_IMAGE_MODE:
+        raise ValueError("Exact same-instance Voronoi image source mode required")
+    for name in ("source_plan", "prepare", "_guard", "_authority", "_wrapper_guard", "_dispatch"):
+        function = getattr(module, name, None)
+        if type(function) is not FunctionType or function.__globals__ is not vars(module):
+            raise ValueError("Original Voronoi image source interface required: " + name)
+    return module
+
+
 def request_record(value):
     return dict(
         law=LAW_ID,
@@ -603,6 +634,7 @@ def _bindings(context):
         _check_helper_backrefs,
         _import_helper_bound,
         _dependencies,
+        _world_voronoi_api,
         request_record,
         from_world_ready,
         _retain_failure,
@@ -706,6 +738,10 @@ def _bindings(context):
         HELPER_CONSTRUCTION_REVIEW_SHA256,
         HELPER_BINDING_KIND,
         HELPER_BACK_REFERENCE_SLOTS,
+        VORONOI_IMAGE_MODULE,
+        VORONOI_IMAGE_MODE,
+        VORONOI_IMAGE_SOURCE_SHA256,
+        VORONOI_IMAGE_REVIEW_SHA256,
         CONSTRUCT_HOOK,
         CHECK_HOOK,
         SEAL_HOOK,
@@ -1936,8 +1972,12 @@ def _world_phase_wrapper_guard(prefix, caller):
     if not valid:
         _world_reject(transition, "Detached/raw original phase wrapper entry", prefix)
     if _world_has_prefix_route(prefix):
-        route = _world_prefix_route(prefix)
         module = transition.api.helpers
+        retained = _world_forwarded(transition)
+        if hasattr(retained, "voronoi_image"):
+            route = module._voronoi_route(retained)
+            return _world_voronoi_api()._wrapper_guard(route, prefix, wrapper)
+        route = _world_prefix_route(prefix)
         if role + "." + method not in module.METHODS:
             module._reject(route, None, "Method outside exact world-prefix dispatch")
         module._guard(route)

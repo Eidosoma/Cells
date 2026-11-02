@@ -254,11 +254,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [seven-file compiler-context successor has a consolidated source review](/mnt/workspaces/Cells/native-parameter-CM-compiler-context-source-repair-20261102-01/root-review.json):
   full-module/body-only compilation is consistent. The
   [combined eight-file successor closes compiler/default authority and registry-model findings in source](/mnt/workspaces/Cells/native-parameter-CM-compiler-context-R1-R2-source-repair-20261102-01/root-review.json).
-  A separate controlled fixture still needs the valid registry associations
-  before its lifetime-mutation checks. Key is authorized to correct that test
-  fixture and proceed directly to one exact **73-case / 20-function** blocked
-  batch, retaining all source/native gates. No intermediate source-only
-  approval round is required. These cases remain unrun at this entry. Both
+  The controlled fixture now supplies the valid registry associations before
+  lifetime-mutation checks. The fresh **73-case / 20-function** blocked batch
+  [stopped after its first two tests passed](/mnt/workspaces/Cells/native-parameter-CM-context-focused73-development-20261102-01/BATCH-FAILURE.json):
+  its controller incorrectly required a pre-return cleanup receipt to claim
+  final success. The corrected reader passed its metadata checks. The
+  [continuation then exposed a missing-helper refusal mismatch](/mnt/workspaces/Cells/native-parameter-CM-context-focused73-development-20261102-01/results.json):
+  **seven cases passed, one failed and 65 remain unrun** across the two attempts.
+  Helper binding resolves a missing later helper before the named roster check.
+  Key is validating the complete roster first, then checking the failed
+  three-case group plus the 65 unrun cases. Prior failures remain preserved;
+  no producer adoption is granted. Both
   earlier 540-file images, 1,368 runtime rows and complete empty guards
   verify. The **118-control remaining batch has not launched**. Earlier passes
   stay bound to their own images; no native or numerical execution occurred.
@@ -346,13 +352,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The reviewed eight-file implementation is integrated with all provider
   pins unbound. Genuine owner construction, native/world qualification and
   provider adoption still require the actual parameter handoff.
-  Specialist's next [seven-file same-phase image continuation has a consolidated source review](/mnt/workspaces/Cells/native-seed-voronoi-image-20261102-01/preparation-01/root-review.json).
+  Specialist's next [seven-file same-phase image continuation has a consolidated source review](/mnt/workspaces/Cells/native-seed-voronoi-image-20261102-01/source-repairs-01/root-review.json).
   The literal matches the first four original `make_voronoi` statements and
   stops before mesh construction. Seven current/frozen files and 72 artifacts
-  verify; 28 written controls are unrun. One repair batch must bind the reached
-  interpolation helper's live code, authenticate the loaded root literal before
-  cloning, and protect finalization observations and primary errors. Parent
-  hooks and provider gates remain held; no new source execution is credited.
+  verify. All three source findings are closed: live interpolation-helper code,
+  loaded literal authentication before cloning, and protected finalization and
+  primary-error retention. The selected **22 new plus six affected controls now pass** in the
+  [reviewed corrected image](/mnt/workspaces/Cells/native-seed-voronoi-image-20261102-01/source-repairs-software-03/root-review.json),
+  with 84 passing phase reports, 28 empty ordinary guards and restored hooks.
+  All 416 frozen payloads, 1,216 runtime origins and 86 producer bindings verify.
+  Software took 6.291 seconds / 248,553,472 bytes sampled RSS. Preparation now
+  defers library imports and the actual source-plan record to the verified
+  worker; the reused fixture checks the actual image stage and cleanup module.
+  The earlier preparation import failure and 28 setup errors remain separate.
+  Twenty-two other written forms are unrun; parent/provider gates remain held.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
@@ -545,8 +558,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   production bytes, with 17 repeated passes, not one current 63-case run.
   The affected worker took 5.533 seconds / 245,043,200 bytes sampled RSS; both
   400-file images and loaded producers verify with empty native guards.
-  Common cache behavior and numerical bodies are unchanged. Added metadata
-  overhead and any speedup remain unmeasured; no repeat diagnostic is released.
+  Common cache behavior and numerical bodies are unchanged. A subsequent
+  [three-workload guarded metadata observation found a cost regression](/mnt/workspaces/Cells/native-multi-cell-lineage-descriptor-reuse-20261102-01/cost-observation-01/source-result.json):
+  reuse took **16.20–36.45 times** canonical validation time on these small
+  synthetic caches. Repeated key authentication adds thousands of Python calls.
+  All three controls preserved exact references/digests and empty native guards.
+  The [exact-string key successor passes 68 contracts plus the same three cost observations](/mnt/workspaces/Cells/native-multi-cell-lineage-descriptor-reuse-20261102-01/string-key-successor-01/source-result.json).
+  It removes mutable key-class dispatch, keeps lookup misses separate from
+  validated publication, and retains all fresh data checks. On the three toy
+  workloads, validation now takes **14.46–26.22% less time** than the canonical
+  path, with fewer Python calls. All 71 cases, 400 frozen files and 74 loaded
+  origins verify; the worker took 6.537 seconds / 245,944,320 bytes sampled RSS.
+  The original regression remains preserved. This is a bounded cost observation,
+  not a whole-tissue measurement; **no repeat diagnostic is released**.
   Its [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-08.json)
   verifies **828 frozen files / 609 external pins**; only the two reviewed
   timing files differ from diagnostic 07. CPU 2, one thread, **1 GiB /
