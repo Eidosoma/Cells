@@ -162,7 +162,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   window remain explicit prerequisites; the seven running-image files stay
   fixed, with no new validation or batch query. This method boundary does not
   claim the runner's earlier `progress_ranged` history. Genuine ion/material
-  ownership for `init_core` remains later work. Root owns integration, saved
+  ownership for `init_core` remains later work.
+  The four world-prefix files are now present as
+  [reviewed source preparation requiring repairs](/mnt/workspaces/Cells/native-seed-world-prefix-20261102-01/preparation-01/root-review-01.json).
+  Saved static checks pass; the initial B009 lint failure remains disclosed as
+  transcript-only evidence. **Sixteen test functions are written, uncollected
+  and unrun**; the four-file review snapshot is not an execution closure.
+  Specialist has one source-only repair batch for missing live helper bindings,
+  protected observer/runner cleanup, falsey failure-stage retention and exact
+  callback wrapper/body admission. The parent gate remains unconditionally
+  closed; no source or software execution is released by this preparation.
+  Root owns integration, saved
   result review and populated-tissue/electrical qualification.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
