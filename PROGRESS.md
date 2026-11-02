@@ -250,9 +250,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Its positive baseline exposed inconsistent production authentication:
   isolated-function and full-module compilation produce different Python 3.13
   bytecode for the same imported-module helper. Both checks cannot succeed
-  together. The default-slot correction remains valid; canonical compiler
-  context now needs one consolidated source repair with exact-body checks
-  preserved. Both 540-file images, 1,368 runtime rows and complete empty guards
+  together. The default-slot correction remains valid. The
+  [seven-file compiler-context successor has a consolidated source review](/mnt/workspaces/Cells/native-parameter-CM-compiler-context-source-repair-20261102-01/root-review.json):
+  full-module/body-only compilation is consistent, but actual compiler and
+  keyword-default authority still need binding, and the conditional registry
+  fixture needs the required Mapping/ABCMeta shape. Key is batching both fixes
+  before focused validation. Its 29 new variations remain unrun; seven live and
+  frozen sources, the exact delta and all 29 saved artifacts verify. Both
+  earlier 540-file images, 1,368 runtime rows and complete empty guards
   verify. The **118-control remaining batch has not launched**. Earlier passes
   stay bound to their own images; no native or numerical execution occurred.
   The genuine constants-to-remainder handoff is still absent, with its producer
