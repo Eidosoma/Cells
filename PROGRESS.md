@@ -311,11 +311,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   the full coordinator hash and exact review pin. Adoption is now acyclic.
   All eight frozen/current payloads, 36 artifact pins and eight saved static
   outcomes verify. Five paths, all prefix executable ASTs and prior test bodies
-  are unchanged; earlier literal evidence retains its own scope. **One fresh
-  45-control metadata group is authorized: twelve integration forms plus 33
-  repair forms**, using the existing native blockade and unchanged limits.
-  Those controls remain pending; no genuine owner pilot or provider adoption
-  is released. The eight-file source snapshot is not an executable closure.
+  are unchanged; earlier literal evidence retains its own scope. **The [fresh
+  45-control metadata group passed saved-evidence review](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/eight-path-metadata-software-02/root-review.json): twelve integration forms plus 33
+  repair forms**, with 97 older cases deselected. All 135 phase reports and
+  45 empty attempt guards verify, along with 435 snapshot files, 644 artifact
+  pins, 269 runtime origins and twelve loaded producers. Software took
+  **4.535 seconds / 53,575,680 bytes sampled peak RSS** under unchanged limits.
+  Its [first launch failed before snapshot preparation or any test](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/eight-path-metadata-software-01/root-review.json):
+  the wrapper's 512-MiB hard address-space limit prevented the runner from
+  setting its already-approved 1-GiB worker ceiling. That failed invocation
+  remains separate from the corrected run; no source or budget changed.
+  The reviewed eight-file implementation can be integrated with all provider
+  pins unbound. Genuine owner construction, native/world qualification and
+  provider adoption still require the actual parameter handoff.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,

@@ -56,6 +56,12 @@ _METHODS = dict(
 _REQUESTS, _CONSUMED, _ISSUED, _OBJECTS = (WeakKeyDictionary() for _ in range(4))
 _FORWARDED = WeakKeyDictionary()
 _LOCK, _ACTIVE = RLock(), []
+WORLD_MODE = "fresh_world_ready_prephase_single_claim_seed_constructor"
+_WORLD = WeakKeyDictionary()
+
+
+def _world_api():
+    return previous._world_api()
 
 
 class CacheConstructionRejected(ValueError):
@@ -158,10 +164,15 @@ def _source_method(cls, relative):
     return method
 
 
-def source_plan():
-    if hashlib.sha256(Path(previous.__file__).read_bytes()).hexdigest() != PARENT_SHA256:
+def source_plan(*, mode=None):
+    if mode is not None and (type(mode) is not str or mode != WORLD_MODE):
+        raise ValueError("Exact explicit fresh-world source mode required")
+    if (
+        mode is None
+        and hashlib.sha256(Path(previous.__file__).read_bytes()).hexdigest() != PARENT_SHA256
+    ):
         raise ValueError("Explicit phase-prefix producer changed")
-    parent = previous.source_plan()
+    parent = previous.source_plan(mode=mode)
     owned = ast.parse(Path(source.__file__).read_bytes())
     phase = ast.parse((aliases.NATIVE / previous.PHASE).read_bytes())
     assignment = next(
@@ -206,9 +217,9 @@ def source_plan():
         raise ValueError("Original weak-proxy/idempotence body changed")
     return dict(
         law=LAW_ID,
-        mode=MODE,
+        mode=WORLD_MODE if mode is not None else MODE,
         native_pins=parent["native_pins"],
-        parent_producer_sha256=PARENT_SHA256,
+        parent_producer_sha256=None if mode is not None else PARENT_SHA256,
         literal_sha256=hashlib.sha256(Path(source.__file__).read_bytes()).hexdigest(),
         phase_store_lines=[assignment.lineno, assignment.end_lineno],
         constructor_lines=lines,
@@ -241,6 +252,9 @@ def from_phase(owner, *, law_id, mode):
 
 def _bindings():
     functions = (
+        _world_api,
+        _world_phase_construct,
+        _world_phase_check,
         _method,
         _method_code,
         _source_method,
@@ -285,6 +299,8 @@ def _bindings():
     )
     hook = getattr(previous, "_claim_for_caches", None)
     return (
+        WORLD_MODE,
+        _WORLD,
         _REQUESTS,
         _CONSUMED,
         _ISSUED,
@@ -308,6 +324,8 @@ def _bindings():
 
 
 def _guard(context):
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return _world_api()._world_stage_guard(context)
     previous.inherited._stop(context)
     if (
         not context.active
@@ -320,6 +338,8 @@ def _guard(context):
 
 
 def _check_runtime_authority(context):
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return _world_api()._world_stage_runtime(context)
     if (
         context.invalid
         or context.thread != get_ident()
@@ -380,6 +400,8 @@ def _check_runtime_authority(context):
 
 def _check(context):
     _check_runtime_authority(context)
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return
     previous._check(context.parent)
     if _old_snapshot(context).identity != context.before.identity:
         raise ValueError("A field outside the single cache assignment changed")
@@ -682,7 +704,9 @@ def _cache_relationships(context):
     ):
         raise ValueError("Original phase-cache construction/assignment incomplete")
     extra = tuple(vars(phase))[len(previous.FIELDS) + 1 :]
-    if extra:
+    if extra and getattr(context, "world_mode", None) == WORLD_MODE:
+        _world_api()._world_cache_extensions(context, extra)
+    elif extra:
         dyna = getattr(context, "dyna_transition", None)
         if (
             dyna is None
@@ -1131,3 +1155,59 @@ def require_phase(owner):
         trial=context.trial,
         partial=context,
     )
+
+
+def _world_phase_construct(
+    transition, *, world_owner, construction_claim, callback_owner, predecessor
+):
+    api = _world_api()
+    context = api._world_stage_begin(
+        sys.modules[__name__],
+        1,
+        transition,
+        world_owner,
+        construction_claim,
+        callback_owner,
+        predecessor,
+        sys._getframe(),
+    )
+    context.parent_trial = predecessor.trial
+    context.object_issuance, context.factory_attempts, context.factory_returns = [], [], []
+    context.constructed, context.methods = {}, {}
+    context.body_attempts, context.body_returns = [], []
+    context.proxy_attempts, context.proxy_returns, context.import_order = [], [], []
+    context.driver_frame = sys._getframe()
+    primary = None
+    try:
+        with _account(context):
+            context.stage = "fresh_world_original_cache_classes"
+            _acquire(context)
+            context.native_bindings = _native_bindings(context)
+            _namespace(context)
+            context.stage = "fresh_world_original_cache_attachment"
+            with api._world_body_scope(context):
+                context.methods["attach"](context.phase)
+            previous.inherited._stop(context)
+            _check(context)
+            _associations(context)
+            context.completed = True
+    except BaseException as error:
+        if not isinstance(error, literal._CaptureStop) or context.observation_error is None:
+            primary = error
+    return api._world_stage_finish(context, primary)
+
+
+def _world_phase_check(
+    evidence, *, transition, world_owner, construction_claim, predecessor, closed_record
+):
+    result = _world_api()._world_stage_check(
+        sys.modules[__name__],
+        evidence,
+        transition,
+        world_owner,
+        construction_claim,
+        predecessor,
+        closed_record,
+    )
+    _cache_relationships(result.authority)
+    return result

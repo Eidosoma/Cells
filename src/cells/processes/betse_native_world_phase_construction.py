@@ -1,11 +1,12 @@
 """Prepared fresh WorldReady -> same-claim SEED constructor coordination.
 
-Every producer and stage hook is intentionally unbound. The proposed route
+Every new producer/stage pin is intentionally unbound. The prepared route
 creates its phase only inside one genuine parameter-construction claim, seals
 phase evidence before that claim exits, and publishes only after successful
 closed validation. Existing seven-load/d9/47 owners are never cast or reopened.
 """
 
+import ast
 import hashlib
 import importlib
 import json
@@ -27,7 +28,7 @@ KEY_SOURCE_SHA256 = None
 KEY_REVIEW_SHA256 = None
 PARAMETER_SOURCE_SHA256 = None
 PARAMETER_REVIEW_SHA256 = None
-# Names/signatures below are a source proposal, not an adopted producer API.
+# Stable public preparation interface; no producer/review adoption is implied.
 KEY_LAW = "betse_fresh_world_ready_pre_phase_seed_construction@1"
 KEY_ERROR_ATTRIBUTE = "world_construction_claim"
 STAGES = ("phase_prefix", "caches", "dyna", "seed_tail")
@@ -44,7 +45,10 @@ CHECK_HOOK = "_world_phase_check"
 SEAL_HOOK = "_world_phase_seal"
 CHECK_SEAL_HOOK = "_world_phase_check_seal"
 HELPER_MODULE = "cells.processes.betse_native_seed_world_prefix"
-HELPER_SHA256 = "fee5e9fc72c19882fab27c479d8ae718762ed9697cc1082e6896d146009e83e0"
+HELPER_INTERFACE_SHA256 = None  # Separate reviewed adoption remains required.
+HELPER_CONSTRUCTION_REVIEW_SHA256 = None
+HELPER_BINDING_KIND = "exact_helper_bytes_except_two_validated_backref_literals@1"
+HELPER_BACK_REFERENCE_SLOTS = ("CONSTRUCTION_SOURCE_SHA256", "CONSTRUCTION_REVIEW_SHA256")
 CALLBACK_MODULE = "cells.processes.betse_native_phase_callbacks"
 CALLBACK_SHA256 = "4fa19547caac95257162e6678092c3e55ce4fe43b05b2d16f7908f9196740f2d"
 BASE_FIELDS = ("callbacks", "cells", "kind", "p", "sim")
@@ -52,6 +56,7 @@ MAX_WORK = 128
 _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
 _LOCK, _ACTIVE = RLock(), []
 _VALIDATION = SimpleNamespace(current=None)
+_FORWARDED = WeakKeyDictionary()
 
 
 class WorldPhaseRejected(ValueError):
@@ -141,6 +146,16 @@ class Trial:
     identity: str
 
 
+@dataclass(frozen=True, slots=True)
+class SourceStageTrial:
+    mode: str
+    stage: str
+    cache: object
+    events: tuple
+    work: tuple
+    identity: str
+
+
 def _digest(value):
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
@@ -158,6 +173,19 @@ def source_plan():
         parameter_review=PARAMETER_REVIEW_SHA256,
         stage_sources=STAGE_SOURCE_SHA256,
         stage_reviews=STAGE_REVIEW_SHA256,
+        helper_source=None,  # Complete source bytes belong to the external snapshot.
+        helper_interface=HELPER_INTERFACE_SHA256,
+        helper_constructor_review=HELPER_CONSTRUCTION_REVIEW_SHA256,
+        helper_binding_kind=HELPER_BINDING_KIND,
+        helper_back_reference_slots=HELPER_BACK_REFERENCE_SLOTS,
+        helper_non_back_reference_bytes_exact=True,
+        helper_back_references_checked_against_full_constructor_bytes=True,
+        binding_adoption_order=(
+            "review helper byte template with only two back-reference literals normalized",
+            "bind that template and the independent producer/stage pins in the constructor",
+            "bind final full constructor bytes and review in the helper back-references",
+            "freeze and authenticate both complete source files externally",
+        ),
         stages=STAGES,
         construction_before_any_phase_allocation=True,
         one_active_claim_through_all_stages=True,
@@ -166,6 +194,10 @@ def source_plan():
         closed_owner_validation_reserved_through_key_and_stage_checks=True,
         phase_sealing_inside_claim=True,
         public_closed_records_between_stages=False,
+        private_same_claim_stage_hooks_implemented=True,
+        exact_same_instance_seed_and_world_dispatch_prepared=True,
+        legacy_seven_d9_47_claims_not_used_by_world_mode=True,
+        legacy_file_pins_unchanged_pending_separate_successor_adoption=True,
         publication_after_exact_closed_owner_claim_parameter_validation=True,
         proposed_hooks=dict(
             construct=(
@@ -212,6 +244,8 @@ def _ready():
         PARAMETER_REVIEW_SHA256,
         *STAGE_SOURCE_SHA256,
         *STAGE_REVIEW_SHA256,
+        HELPER_INTERFACE_SHA256,
+        HELPER_CONSTRUCTION_REVIEW_SHA256,
     )
     if not all(_pin(value) for value in pins):
         raise WorldPhaseRejected(
@@ -238,9 +272,121 @@ def _import_bound(name, expected):
     return module
 
 
+def _helper_binding(payload):
+    """Exact bytes except two top-level literal values; never execute the image.
+
+    Unlike an AST fingerprint, this retains comments, whitespace and every
+    other source byte. The two omitted values are separately authenticated
+    against the complete constructor image and its explicit review pin.
+    """
+    if type(payload) is not bytes:
+        raise ValueError("Actual helper source bytes required")
+    tree = ast.parse(payload.decode("utf-8"), type_comments=True)
+    slots, spans = {}, []
+    lines = payload.splitlines(keepends=True)
+    offsets, offset = [], 0
+    for line in lines:
+        offsets.append(offset)
+        offset += len(line)
+    for name in HELPER_BACK_REFERENCE_SLOTS:
+        writes = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store) and node.id == name
+        ]
+        assignments = [
+            node
+            for node in tree.body
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == name
+        ]
+        if len(writes) != 1 or len(assignments) != 1:
+            raise ValueError("One original top-level helper back-reference required: " + name)
+        value = assignments[0].value
+        if (
+            not isinstance(value, ast.Constant)
+            or (value.value is not None and not _pin(value.value))
+            or value.lineno != value.end_lineno
+        ):
+            raise ValueError("Canonical None or SHA256 back-reference literal required: " + name)
+        start = offsets[value.lineno - 1] + value.col_offset
+        end = offsets[value.end_lineno - 1] + value.end_col_offset
+        literal = payload[start:end]
+        permitted = (
+            (b"None",)
+            if value.value is None
+            else (
+                repr(value.value).encode(),
+                json.dumps(value.value).encode(),
+            )
+        )
+        if literal not in permitted:
+            raise ValueError("Plain canonical helper back-reference literal required: " + name)
+        slots[name] = value.value
+        spans.append((start, end))
+    normalized, cursor = [], 0
+    for start, end in sorted(spans):
+        normalized.extend((payload[cursor:start], b"None"))
+        cursor = end
+    normalized.append(payload[cursor:])
+    identity = hashlib.sha256(
+        HELPER_BINDING_KIND.encode() + b"\0" + b"".join(normalized)
+    ).hexdigest()
+    return identity, tuple((name, slots[name]) for name in HELPER_BACK_REFERENCE_SLOTS)
+
+
+def _check_helper_backrefs(backrefs, constructor_source, expected_review):
+    """Pure binding comparison, not producer adoption or owner authentication."""
+    if (
+        type(backrefs) is not tuple
+        or len(backrefs) != len(HELPER_BACK_REFERENCE_SLOTS)
+        or any(
+            type(item) is not tuple or len(item) != 2 or type(item[0]) is not str
+            for item in backrefs
+        )
+        or tuple(item[0] for item in backrefs) != HELPER_BACK_REFERENCE_SLOTS
+        or type(constructor_source) is not bytes
+    ):
+        raise ValueError("Exact helper back-reference roster and constructor bytes required")
+    source, review = (item[1] for item in backrefs)
+    if (
+        not _pin(source)
+        or not _pin(review)
+        or not _pin(expected_review)
+        or review != expected_review
+        or source != hashlib.sha256(constructor_source).hexdigest()
+    ):
+        raise ValueError("Exact full constructor source/review back-reference required")
+
+
+def _import_helper_bound(expected):
+    path = _module_file(HELPER_MODULE)
+    if not _pin(expected) or path.is_symlink() or not path.is_file():
+        raise ValueError("Reviewed canonical helper byte binding required")
+    payload = path.read_bytes()
+    identity, backrefs = _helper_binding(payload)
+    if identity != expected:
+        raise ValueError("Exact helper source bytes outside back-reference literals changed")
+    _check_helper_backrefs(backrefs, Path(__file__).read_bytes(), HELPER_CONSTRUCTION_REVIEW_SHA256)
+    module = importlib.import_module(HELPER_MODULE)
+    if (
+        sys.modules.get(HELPER_MODULE) is not module
+        or Path(module.__file__).resolve() != path
+        or path.read_bytes() != payload
+        or any(
+            type(getattr(module, name)) is not str or getattr(module, name) != value
+            for name, value in backrefs
+        )
+    ):
+        raise ValueError("Actual helper module/back-reference or source epoch changed")
+    return module
+
+
 def _dependencies():
     _ready()  # Refuse before even importing an unsealed Key or stage producer.
-    helpers = _import_bound(HELPER_MODULE, HELPER_SHA256)
+    helpers = _import_helper_bound(HELPER_INTERFACE_SHA256)
     key = _import_bound(KEY_MODULE, KEY_SOURCE_SHA256)
     parameters = _import_bound(PARAMETER_MODULE, PARAMETER_SOURCE_SHA256)
     callbacks = _import_bound(CALLBACK_MODULE, CALLBACK_SHA256)
@@ -250,6 +396,8 @@ def _dependencies():
     )
     if key.WORLD_CONSTRUCTION_LAW != KEY_LAW:
         raise ValueError("Explicitly reviewed fresh-world construction law required")
+    if any(module.WORLD_MODE != MODE for module in stages):
+        raise ValueError("Exact fresh-world mode must match every original source stage")
     functions = [
         (key, "construction"),
         (key, "validate_closed_seed"),
@@ -451,6 +599,9 @@ def _bindings(context):
         _ready,
         _module_file,
         _import_bound,
+        _helper_binding,
+        _check_helper_backrefs,
+        _import_helper_bound,
         _dependencies,
         request_record,
         from_world_ready,
@@ -473,6 +624,7 @@ def _bindings(context):
         _closed_lineage,
         _validate_reserved,
         _active_claim,
+        _evidence_fields,
         _check_evidence,
         _step,
         _trial_record,
@@ -489,6 +641,35 @@ def _bindings(context):
         api.key.WorldConstructionClaim.check,
         api.key.WorldConstructionClaim.record.fget,
         api.callbacks._validate,
+        _world_reject,
+        _world_parameter_authority,
+        _world_stage_begin,
+        _world_objects,
+        _world_projector,
+        _world_state,
+        _world_live_aliases,
+        _world_stage_runtime,
+        _world_stage_guard,
+        _world_stage_finish,
+        _world_stage_check,
+        _world_observation_atoms,
+        _world_capture_locals,
+        _world_admit_body,
+        _world_body_scope,
+        _world_body_scope.__wrapped__,
+        _world_observer_atoms,
+        _world_cache_extensions,
+        _world_tail_module,
+        _world_tail_route,
+        _world_phase_wrapper_guard,
+        _world_seal,
+        _world_check_seal,
+        _world_forwarded,
+        _world_has_prefix_route,
+        _world_prefix_route,
+        _world_parent,
+        _world_claim_prefix,
+        _world_after_prefix_claim,
     ]
     functions.extend(
         getattr(module, name) for module in api.stages for name in (CONSTRUCT_HOOK, CHECK_HOOK)
@@ -499,6 +680,7 @@ def _bindings(context):
         _CONSUMED,
         _CLAIMED,
         _ISSUED,
+        _FORWARDED,
         _ACTIVE,
         _LOCK,
         _VALIDATION,
@@ -519,6 +701,11 @@ def _bindings(context):
         PARAMETER_REVIEW_SHA256,
         STAGE_SOURCE_SHA256,
         STAGE_REVIEW_SHA256,
+        HELPER_MODULE,
+        HELPER_INTERFACE_SHA256,
+        HELPER_CONSTRUCTION_REVIEW_SHA256,
+        HELPER_BINDING_KIND,
+        HELPER_BACK_REFERENCE_SLOTS,
         CONSTRUCT_HOOK,
         CHECK_HOOK,
         SEAL_HOOK,
@@ -529,12 +716,13 @@ def _bindings(context):
         api.parameters,
         api.callbacks,
         *api.stages,
+        *(atom for module in api.stages for atom in (module.WORLD_MODE, module._WORLD)),
         api.key.WorldConstructionClaim,
         api.key.ClosedSeedRecord,
         api.parameters.WorldReadyParametersOwner,
         *(
             atom
-            for cls in (Request, StageEvidence, PhaseSeal, Trial, WorldPhaseOwner)
+            for cls in (Request, StageEvidence, PhaseSeal, Trial, SourceStageTrial, WorldPhaseOwner)
             for atom in api.helpers.literal._surface(cls)
         ),
         *(atom for fn in functions for atom in api.helpers._atoms(fn)),
@@ -584,7 +772,41 @@ def _active_claim(context):
         raise ValueError("Original world-ready claim/p association changed")
 
 
-def _check_evidence(context, evidence, index, *, closed_record=None):
+def _evidence_fields(index, *, final_active=False, closed=False):
+    """Field epoch declaration only; flags cannot authenticate a live claim."""
+    if (
+        type(index) is not int
+        or not 0 <= index < len(STAGES)
+        or type(final_active) is not bool
+        or type(closed) is not bool
+        or (final_active and closed)
+    ):
+        raise ValueError("One exact immediate, completed-active or closed field epoch required")
+    reached = len(STAGES) - 1 if final_active or closed else index
+    return (
+        *BASE_FIELDS,
+        *(("cache",) if reached >= 1 else ()),
+        *(("dyna",) if reached >= 2 else ()),
+        *(("export_dirname",) if reached == 3 else ()),
+    )
+
+
+def _check_evidence(context, evidence, index, *, closed_record=None, final_active=False):
+    names = _evidence_fields(index, final_active=final_active, closed=closed_record is not None)
+    if final_active:
+        caller = sys._getframe(1)
+        if (
+            caller.f_code is not _world_seal.__code__
+            or caller.f_locals.get("transition") is not context
+            or context.stage != "phase_sealing_inside_claim"
+            or context.executing is not None
+            or context.parameter_record is not None
+            or len(context.evidence) != len(STAGES)
+            or context.evidence[index] is not evidence
+        ):
+            raise ValueError("Completed active epoch is reserved for the actual full-phase seal")
+        _active_claim(context)
+        _guard(context)
     if type(evidence) is not StageEvidence or evidence.stage != STAGES[index]:
         raise ValueError("Actual exact stage evidence required")
     predecessor = None if index == 0 else context.evidence[index - 1]
@@ -601,15 +823,10 @@ def _check_evidence(context, evidence, index, *, closed_record=None):
         raise ValueError("Original stage issuer/p/evidence reference changed")
     phase = evidence.phase
     fields = vars(phase)
-    # Old stage witnesses retain their original objects, not a stale field
-    # roster. After SEED closure, every witness sees the completed phase.
-    reached = index if closed_record is None else len(STAGES) - 1
-    names = (
-        *BASE_FIELDS,
-        *(("cache",) if reached >= 1 else ()),
-        *(("dyna",) if reached >= 2 else ()),
-        *(("export_dirname",) if reached == 3 else ()),
-    )
+    # Historical witnesses keep their original objects. Only the actual
+    # in-claim seal or successful closed validation sees the final field epoch.
+    completed = final_active or closed_record is not None
+    reached = len(STAGES) - 1 if completed else index
     if tuple(fields) != names:
         raise ValueError("Original constructor stage field order changed")
     pairs = (
@@ -631,22 +848,24 @@ def _check_evidence(context, evidence, index, *, closed_record=None):
             or evidence.kind is not first.kind
         ):
             raise ValueError("Stage substituted an already constructed phase/Cells/Simulator")
-    if index >= 1 and fields["cache"] is not evidence.cache:
+    cache = evidence.cache if index >= 1 else context.evidence[1].cache if completed else None
+    handler = evidence.handler if index >= 2 else context.evidence[2].handler if completed else None
+    if reached >= 1 and fields["cache"] is not cache:
         raise ValueError("Actual phase-cache assignment changed")
-    if index >= 2 and fields["dyna"] is not evidence.handler:
+    if reached >= 2 and fields["dyna"] is not handler:
         raise ValueError("Actual fresh same-parameter handler assignment changed")
     if index > 1 and evidence.cache is not context.evidence[1].cache:
         raise ValueError("Original actual cache object was replaced")
     if index > 2 and evidence.handler is not context.evidence[2].handler:
         raise ValueError("Original actual TissueHandler was replaced")
-    if index == 3:
+    if reached == 3:
         if (
             vars(context.p).get("_run_sim") is not False
-            or vars(evidence.sim).get("dyna") is not evidence.handler
+            or vars(evidence.sim).get("dyna") is not handler
             or fields["export_dirname"] is not vars(context.p)["init_export_dirname"]
         ):
             raise ValueError("Original SEED constructor-tail stores changed")
-    elif closed_record is None and "_run_sim" in vars(context.p):
+    elif "_run_sim" in vars(context.p):
         raise ValueError("SEED flag appeared before its literal tail")
     return evidence
 
@@ -1001,6 +1220,898 @@ def _reject_validation(reservation, kind, other=None):
     raise reservation.rejection
 
 
+def _world_reject(transition, reason, context=None):
+    transition.invalid = True
+    if context is not None:
+        context.invalid = True
+    if transition.entry_error is None:
+        original = None if context is None else getattr(context, "entry_error", None)
+        transition.entry_error = (
+            original
+            if original is not None
+            else WorldPhaseRejected(reason, stage="world_stage_entry", partial=context)
+        )
+    if context is not None and getattr(context, "entry_error", None) is None:
+        context.entry_error = transition.entry_error
+    raise transition.entry_error
+
+
+def _world_parameter_authority(transition):
+    """Use the one actual claim, never an old owner/Lease numeric validator."""
+    if (
+        type(transition.request) is not Request
+        or type(transition.request.mode) is not str
+        or transition.request.mode != MODE
+    ):
+        _world_reject(transition, "Original explicit fresh-world request mode changed")
+    if transition.parameter_record is None:
+        _active_claim(transition)
+        _guard(transition)
+    else:
+        _same_dependencies(transition)
+        _compare_bindings(transition)
+        callback = transition.api.callbacks._validate(transition.request.callbacks)
+        if (
+            callback is not transition.parents[2]
+            or callback.callback is not transition.parents[3]
+            or callback.trial is not transition.parents[4]
+        ):
+            _world_reject(transition, "Original prepared callback ancestry changed")
+        record = transition.api.key.validate_closed_seed(
+            transition.claim, original_owner=transition.request.world_parameters
+        )
+        if (
+            record is not transition.parameter_record
+            or transition.claim.record is not record
+            or record.succeeded is not True
+            or record.primary_error_present is not False
+            or record.seed_flag_created is not True
+            or record.secondary_error_stages
+            or record.parameter_load_identity != transition.parents[0].identity
+        ):
+            _world_reject(transition, "Original successful closed world claim changed")
+        if transition.invalid:
+            if transition.entry_error is not None:
+                raise transition.entry_error
+            raise WorldPhaseRejected(
+                "Closed world authority was poisoned by an observer", stage="world_entry"
+            )
+
+
+def _world_stage_begin(
+    module, index, transition, world_owner, claim, callback_owner, predecessor, frame
+):
+    """A private stage witness, not a new public owner or a closed claim."""
+    _ready()  # Explicit refusal before any unadopted object/claim is inspected.
+    if (
+        type(transition.request) is not Request
+        or _CONSUMED.get(transition.request) is not transition
+        or _CLAIMED.get(world_owner) is not transition
+        or world_owner is not transition.request.world_parameters
+        or claim is not transition.claim
+        or callback_owner is not transition.request.callbacks
+        or transition.executing != index
+        or transition.api.stages[index] is not module
+        or frame.f_code is not getattr(module, CONSTRUCT_HOOK).__code__
+        or frame.f_back is not transition.step_frame
+        or transition.step_frame.f_code is not _step.__code__
+        or predecessor is not (None if index == 0 else transition.evidence[index - 1])
+    ):
+        _world_reject(transition, "Unclaimed/reentrant fresh-world stage")
+    _world_parameter_authority(transition)
+    with module._LOCK:
+        if module._ACTIVE or transition.request in module._WORLD:
+            _world_reject(transition, "Fresh-world stage epoch was already attempted")
+        context = SimpleNamespace(
+            world_mode=MODE,
+            world_transition=transition,
+            world_module=module,
+            world_index=index,
+            world_predecessor=predecessor,
+            world_ticket=(
+                transition,
+                world_owner,
+                claim,
+                callback_owner,
+                transition.p,
+                predecessor,
+            ),
+            request=transition.request,
+            p=transition.p,
+            thread=get_ident(),
+            active=True,
+            invalid=False,
+            stage=STAGES[index],
+            parent=None if predecessor is None else predecessor.authority,
+            phase=None if predecessor is None else predecessor.phase,
+            callback=transition.parents[3],
+            callback_parent=transition.parents[2],
+            objects=[],
+            runtime_types={},
+            runtime_bindings={},
+            events=[],
+            work=[],
+            locals={},
+            observation_error=None,
+            observation_errors=(),
+            observation_origin=None,
+            observation_raw=None,
+            graph_view=SimpleNamespace(),
+            graph_fields=[],
+            world_views={},
+            world_proxy_roots={},
+            completed=False,
+            entry_error=None,
+            primary=None,
+            capture_error=None,
+            trial=None,
+            evidence=None,
+        )
+        context.tape = SimpleNamespace(
+            rng=None, events=context.events, draws=(), locals=context.locals
+        )
+        context.world_stable_tape = SimpleNamespace(rng=None, events=(), draws=(), locals=())
+        if not hasattr(transition, "world_roots"):
+            transition.world_roots = [
+                ("parameters", transition.p),
+                ("callback", transition.parents[3]),
+            ]
+            transition.world_root_tokens = (transition.world_roots, tuple(transition.world_roots))
+        # Publication precedes any source/observer call and is never undone.
+        module._WORLD[transition.request] = context
+        module._ACTIVE.append(context)
+        transition.stage_partials = (*transition.stage_partials, (STAGES[index], context))
+        try:
+            context.world_plan = module.source_plan(mode=MODE)
+            context.world_source_files = {
+                str(path): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in (
+                    Path(module.source.__file__),
+                    transition.api.helpers.aliases.NATIVE / "betse/science/phase/phasecls.py",
+                )
+            }
+            context.world_base_objects = _world_objects(transition, index - 1)
+            context.world_before, context.world_before_graph = _world_state(context, baseline=True)
+            context.bindings = module._bindings()
+        except BaseException as error:
+            context.capture_error = error
+            context.invalid = transition.invalid = True
+            context.active = False
+            if module._ACTIVE and module._ACTIVE[-1] is context:
+                module._ACTIVE.pop()
+            raise WorldPhaseRejected(
+                "Fresh-world baseline capture failed",
+                stage="capture",
+                partial=context,
+                capture_error=error,
+            ) from error
+        return context
+
+
+def _world_objects(transition, index):
+    result, seen = [], set()
+    roots, pairs = transition.world_root_tokens
+    if (
+        transition.world_roots is not roots
+        or len(roots) != 2
+        or len(pairs) != 2
+        or any(a is not b for a, b in zip(roots, pairs, strict=True))
+        or any(type(pair) is not tuple or len(pair) != 2 for pair in pairs)
+        or pairs[0][0] != "parameters"
+        or pairs[0][1] is not transition.p
+        or pairs[1][0] != "callback"
+        or pairs[1][1] is not transition.parents[3]
+    ):
+        _world_reject(transition, "Original parameter/callback root references changed")
+    candidates = list(transition.world_roots)
+    for module in transition.api.stages[: index + 1]:
+        context = module._WORLD.get(transition.request)
+        if context is not None:
+            candidates.extend(context.objects)
+    for pair in candidates:
+        if id(pair[1]) not in seen:
+            seen.add(id(pair[1]))
+            result.append(pair)
+    return result
+
+
+def _world_projector(context):
+    transition = context.world_transition
+    objects = _world_objects(transition, context.world_index)
+    for module in transition.api.stages[: context.world_index + 1]:
+        owner = module._WORLD.get(transition.request)
+        for _, proxy in getattr(owner, "proxy_returns", ()):
+            context.world_proxy_roots.setdefault(id(proxy), ("weak_phase_proxy", proxy))
+    return SimpleNamespace(objects=[*objects, *context.world_proxy_roots.values()])
+
+
+def _world_state(context, *, baseline=False):
+    """Stable holder maps exclude only the still-unreached literal stores."""
+    transition, index = context.world_transition, context.world_index
+    first = transition.api.stages[0]._WORLD.get(transition.request)
+    phase = None if first is None else first.phase
+    sim = None if phase is None else vars(phase).get("sim")
+    cells = None if phase is None else vars(phase).get("cells")
+    forwarded = _world_forwarded(transition)
+    objects = context.world_base_objects if baseline else _world_objects(transition, index)
+    view = context.world_views.setdefault(
+        "baseline" if baseline else "sealed", SimpleNamespace(objects=[], fields=[])
+    )
+    view.objects[:] = objects
+    while len(view.fields) < len(objects):
+        view.fields.append({})
+    if len(view.fields) != len(objects):
+        raise ValueError("Original fresh-world object roster shrank")
+    projector = _world_projector(context)
+    rows = []
+    for fields, (role, actual) in zip(view.fields, objects, strict=True):
+        omitted = set()
+        if actual is phase:
+            omitted.update(
+                name
+                for at, name in ((1, "cache"), (2, "dyna"), (3, "export_dirname"))
+                if at > index or (baseline and at == index)
+            )
+        if actual is sim and (index < 3 or baseline):
+            omitted.add("dyna")
+        if forwarded is not None and actual is cells:
+            omitted.update(transition.api.helpers.STORES)
+        fields.clear()
+        # Parameter bytes/edges belong to Key's actual active/closed checker.
+        # The stage captures its actual parameter reference and permitted flag.
+        if actual is transition.p:
+            fields["parameter_identity"] = transition.request.parameter_identity
+            if index == 3 and not baseline:
+                fields["_run_sim"] = vars(actual).get("_run_sim")
+        elif actual is transition.parents[3]:
+            fields["callback_identity"] = transition.request.callback_identity
+        else:
+            fields.update((k, v) for k, v in vars(actual).items() if k not in omitted)
+        rows.append(
+            dict(role=role, fields=transition.api.helpers.literal._project(projector, fields))
+        )
+    cache = transition.api.helpers.core.caches.snapshot(rows)
+    graph = transition.api.helpers.literal.callers._graph(view, view, context.world_stable_tape)
+    return cache, graph
+
+
+def _world_live_aliases(transition):
+    prefix = transition.api.stages[0]._WORLD[transition.request]
+    if prefix.phase is None:
+        return
+    fields = vars(prefix.phase)
+    expected = BASE_FIELDS + ("cache", "dyna", "export_dirname")
+    if tuple(fields) != expected[: len(fields)]:
+        _world_reject(transition, "Original fresh constructor field order changed", prefix)
+    pairs = dict(
+        callbacks=prefix.callback,
+        cells=prefix.constructed.get("Cells"),
+        kind=getattr(prefix, "kind", None),
+        p=transition.p,
+        sim=prefix.constructed.get("Simulator"),
+    )
+    for name, actual in pairs.items():
+        if name in fields and fields[name] is not actual:
+            _world_reject(transition, "Original constructor alias changed: " + name, prefix)
+    if "cache" in fields:
+        cache = transition.api.stages[1]._WORLD.get(transition.request)
+        if (
+            cache is None
+            or fields["cache"] is not cache.constructed.get("SimPhaseCaches")
+            or not cache.factory_returns
+            or cache.factory_returns[-1] != "SimPhaseCaches"
+        ):
+            _world_reject(transition, "Actual completed cache assignment changed", cache)
+    if "dyna" in fields:
+        dyna = transition.api.stages[2]._WORLD.get(transition.request)
+        if dyna is None or not dyna.constructor_completed or fields["dyna"] is not dyna.handler:
+            _world_reject(transition, "Actual completed handler assignment changed", dyna)
+    if "export_dirname" in fields and (
+        fields["export_dirname"] is not vars(transition.p)["init_export_dirname"]
+        or vars(transition.p).get("_run_sim") is not False
+    ):
+        _world_reject(transition, "Original literal SEED export/flag changed")
+    tail = transition.api.stages[-1]._WORLD.get(transition.request)
+    if (
+        tail is not None
+        and getattr(tail, "world_route_issued", False)
+        and (
+            getattr(prefix, "world_tail", None) is not tail
+            or transition.api.stages[0]._TAIL_ROUTES.get(prefix.phase) is not tail
+        )
+    ):
+        _world_reject(transition, "Original same-instance SEED route registry edge changed", tail)
+
+
+def _world_stage_runtime(context):
+    transition, module, index = context.world_transition, context.world_module, context.world_index
+    if (
+        context.world_mode != MODE
+        or context.invalid
+        or transition.invalid
+        or context.thread != get_ident()
+        or transition.thread != context.thread
+        or module is not transition.api.stages[index]
+        or module._WORLD.get(transition.request) is not context
+        or _CONSUMED.get(transition.request) is not transition
+        or _CLAIMED.get(transition.request.world_parameters) is not transition
+        or context.parent is not (None if index == 0 else context.world_predecessor.authority)
+        or any(
+            a is not b
+            for a, b in zip(
+                context.world_ticket,
+                (
+                    transition,
+                    transition.request.world_parameters,
+                    transition.claim,
+                    transition.request.callbacks,
+                    transition.p,
+                    context.world_predecessor,
+                ),
+                strict=True,
+            )
+        )
+    ):
+        _world_reject(transition, "Fresh-world stage/claim ancestry changed", context)
+    _world_parameter_authority(transition)
+    _world_live_aliases(transition)
+    for filename, expected in context.world_source_files.items():
+        path = Path(filename)
+        if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+            _world_reject(transition, "Literal/native source correspondence bytes changed", context)
+    literal = transition.api.helpers.literal
+    literal._same(module._bindings(), context.bindings)
+    if context.parent is not None:
+        _world_stage_runtime(context.parent)
+    if hasattr(context, "native_bindings"):
+        literal._same(module._native_bindings(context), context.native_bindings)
+    for attribute, function in (
+        ("scope_bindings", "_scope_bindings"),
+        ("namespace_bindings", "_namespace_bindings"),
+    ):
+        if hasattr(context, attribute):
+            retained = getattr(context, attribute)
+            actual = getattr(module, function)(context)
+            literal._same(actual[: len(retained)], retained)
+    for role, cls in context.runtime_types.items():
+        surface = (
+            module._surface(cls)
+            if hasattr(module, "_surface")
+            else transition.api.stages[0]._surface(cls)
+        )
+        literal._same(surface, context.runtime_bindings[role])
+    if index < 3:
+        for position, (role, actual) in enumerate(context.objects):
+            issued = module._OBJECTS.get(actual)
+            if index == 1:
+                if (
+                    issued is not context.object_issuance[position]
+                    or issued[0] is not context
+                    or issued[1] != role
+                ):
+                    _world_reject(
+                        transition, "Original cache (context, role) tuple changed", context
+                    )
+            elif issued is not context:
+                _world_reject(transition, "Original fresh native object issuance changed", context)
+    if hasattr(context, "modules"):
+        aliases = transition.api.helpers.aliases
+        aliases._check_modules()
+        current = aliases._module_records()
+        for name, old in context.modules.items():
+            now = current.get(name)
+            if type(now) is not tuple or now[0] is not old[0] or now[1:] != old[1:]:
+                _world_reject(transition, "Original native module changed", context)
+    current, graph = _world_state(context, baseline=True)
+    literal._same(graph[0], context.world_before_graph[0])
+    if (
+        current.identity != context.world_before.identity
+        or graph[1] != context.world_before_graph[1]
+    ):
+        _world_reject(
+            transition, "Inherited fields/reference edges outside the stage changed", context
+        )
+    if hasattr(context, "world_observations"):
+        literal._same(_world_observation_atoms(context), context.world_observations)
+    if hasattr(context, "world_observer_bindings"):
+        literal._same(_world_observer_atoms(context), context.world_observer_bindings)
+    if context.evidence is not None and not context.active:
+        sealed, graph = _world_state(context)
+        literal._same(graph[0], context.world_graph[0])
+        if sealed.identity != context.trial.cache.identity or graph[1] != context.world_graph[1]:
+            _world_reject(transition, "Retained source stage changed before continuation", context)
+
+
+def _world_stage_guard(context):
+    transition, module = context.world_transition, context.world_module
+    if context.entry_error is not None:
+        transition.invalid = True
+        if transition.entry_error is None:
+            transition.entry_error = context.entry_error
+        raise context.entry_error
+    if (
+        context.entry_error is not None
+        or context.invalid
+        or transition.invalid
+        or not context.active
+        or not module._ACTIVE
+        or module._ACTIVE[-1] is not context
+        or transition.executing != context.world_index
+        or context.thread != get_ident()
+    ):
+        _world_reject(transition, "Raw fresh-world source entry is unavailable", context)
+    _world_parameter_authority(transition)
+    module = transition.api.stages[2].handler
+    module._stop(context)
+
+
+def _world_stage_finish(context, primary=None):
+    transition, module = context.world_transition, context.world_module
+    if context.entry_error is not None:
+        primary = context.entry_error
+        if transition.entry_error is None:
+            transition.entry_error = primary
+    context.primary = primary
+    try:
+        if primary is not None or context.observation_error is not None:
+            raise WorldPhaseRejected(
+                "Original fresh-world source stage failed",
+                stage=context.stage,
+                partial=context,
+                source_error=primary,
+                capture_error=context.observation_error,
+            ) from (primary if primary is not None else context.observation_error)
+        _world_stage_runtime(context)
+        cache, graph = _world_state(context)
+        document = dict(
+            mode=MODE,
+            stage=STAGES[context.world_index],
+            cache=cache.identity,
+            events=tuple(name for name, _ in context.events),
+            work=tuple(context.work),
+        )
+        context.trial = SourceStageTrial(
+            MODE, document["stage"], cache, document["events"], document["work"], _digest(document)
+        )
+        context.world_graph = graph
+        context.world_observations = _world_observation_atoms(context)
+        first = transition.api.stages[0]._WORLD[transition.request]
+        phase = first.phase
+        value = StageEvidence(
+            STAGES[context.world_index],
+            context,
+            phase,
+            context.p,
+            phase.cells,
+            phase.sim,
+            phase.callbacks,
+            phase.kind,
+            vars(phase).get("cache"),
+            vars(phase).get("dyna"),
+            context.trial,
+            context.trial.work,
+            context.trial.identity,
+        )
+        context.evidence = value
+        return value
+    except BaseException as error:
+        context.invalid = transition.invalid = True
+        if primary is None and context.observation_error is None:
+            context.capture_error = error
+            raise WorldPhaseRejected(
+                "Fresh-world stage sealing failed",
+                stage="capture",
+                partial=context,
+                capture_error=error,
+            ) from error
+        raise
+    finally:
+        context.active = False
+        if module._ACTIVE and module._ACTIVE[-1] is context:
+            module._ACTIVE.pop()
+        else:
+            context.invalid = transition.invalid = True
+
+
+def _world_stage_check(
+    module, evidence, transition, world_owner, claim, predecessor, closed_record
+):
+    _ready()
+    context = module._WORLD.get(transition.request)
+    if (
+        type(evidence) is not StageEvidence
+        or context is None
+        or context.evidence is not evidence
+        or evidence.authority is not context
+        or context.world_transition is not transition
+        or context.world_predecessor is not predecessor
+        or world_owner is not transition.request.world_parameters
+        or claim is not transition.claim
+        or closed_record is not transition.parameter_record
+        or context.active
+        or context.trial is not evidence.trial
+    ):
+        _world_reject(transition, "Unissued/replaced fresh-world stage witness", context)
+    _world_stage_runtime(context)
+    cache, graph = _world_state(context)
+    literal = transition.api.helpers.literal
+    literal._same(graph[0], context.world_graph[0])
+    if (
+        cache.identity != context.trial.cache.identity
+        or graph[1] != context.world_graph[1]
+        or evidence.identity != context.trial.identity
+    ):
+        _world_reject(transition, "Sealed fresh-world stage state/reference edges changed", context)
+    document = dict(
+        mode=MODE,
+        stage=STAGES[context.world_index],
+        cache=cache.identity,
+        events=context.trial.events,
+        work=context.trial.work,
+    )
+    if _digest(document) != context.trial.identity:
+        _world_reject(transition, "Original fresh-world stage trial changed", context)
+    return evidence
+
+
+def _world_observation_atoms(context):
+    """Retain completed observation containers without traversing lifecycle locals."""
+    atoms = [context.events, context.locals, context.work]
+    for row in context.events:
+        atoms.extend((row, *row))
+    for key, fields in context.locals.items():
+        atoms.extend((key, fields))
+        for name, value in fields.items():
+            atoms.extend((name, value))
+    for row in context.work:
+        atoms.append(row)
+        for name, value in row.items():
+            atoms.extend((name, value))
+    return tuple(atoms)
+
+
+def _world_capture_locals(context, frame, event):
+    context.locals[(frame.f_code.co_filename, frame.f_code.co_qualname)] = dict(frame.f_locals)
+
+
+def _world_admit_body(context, frame):
+    old = context.admitted_frames.get(id(frame))
+    if old is not None and old["frame"] is frame:
+        return old
+    module, index = context.world_module, context.world_index
+    method = next(
+        (name for name, fn in context.bodies.items() if fn.__code__ is frame.f_code), None
+    )
+    row = dict(
+        sequence=len(context.work),
+        layer="fresh_world_literal_admission",
+        phase=context.stage,
+        method=method,
+        admission="pending",
+        body_started=False,
+        entry_is_case=False,
+    )
+    attempt = dict(frame=frame, method=method, work=row, status="attempted", body_started=False)
+    context.work.append(row)
+    context.last_body_attempt = attempt
+    parent = frame.f_back
+    valid = (
+        context.active
+        and not context.invalid
+        and method is not None
+        and len(context.work) <= 100000
+    )
+    if method in ("prefix", "attach"):
+        valid = (
+            valid
+            and not context.world_root_claimed
+            and parent is context.driver_frame
+            and frame.f_locals.get("self") is context.phase
+        )
+        if method == "prefix":
+            valid = (
+                valid
+                and frame.f_locals.get("p") is context.p
+                and frame.f_locals.get("callbacks") is context.callback
+                and frame.f_locals.get("kind") is context.kind
+            )
+    elif index == 1 and method == "proxy":
+        valid = (
+            valid
+            and parent is not None
+            and parent.f_code is module._proxy.__code__
+            and parent.f_locals.get("context") is context
+        )
+    elif index == 1:
+        valid = (
+            valid
+            and parent is not None
+            and parent.f_code is module._body_call.__code__
+            and parent.f_locals.get("context") is context
+            and parent.f_locals.get("delegate") is context.bodies[method]
+            and parent.f_locals.get("actual") is frame.f_locals.get("self")
+        )
+    else:
+        valid = False
+    if not valid:
+        row["admission"] = attempt["status"] = "rejected"
+        _world_reject(
+            context.world_transition, "Unclaimed/reentrant fresh-world literal body", context
+        )
+    if method in ("prefix", "attach"):
+        context.world_root_claimed = True
+    row["admission"] = attempt["status"] = "claimed"
+    context.admitted_frames[id(frame)] = attempt
+    return attempt
+
+
+@contextmanager
+def _world_body_scope(context):
+    """Reuse protected dual-hook admission for the prefix/cache body roots."""
+    _ready()
+    tail = context.world_transition.api.stages[-1]
+    context.bodies = {"prefix": context.method} if context.world_index == 0 else context.methods
+    context.admitted_frames = {}
+    context.pending_source_error = None
+    context.world_root_claimed = False
+    scope = dict(
+        vars(tail),
+        _guard=_world_stage_guard,
+        _check=_world_stage_runtime,
+        _admit_body=_world_admit_body,
+        _capture_state=_world_capture_locals,
+    )
+    context.world_observer_scope = scope
+    context.world_observer_bindings = _world_observer_atoms(context)
+    observer = contextmanager(FunctionType(tail._account.__wrapped__.__code__, scope))
+    with observer(context):
+        yield
+
+
+def _world_observer_atoms(context):
+    scope = context.world_observer_scope
+    result = [scope, scope["previous"], scope["literal"], scope["sys"]]
+    for name in ("_guard", "_check", "_admit_body", "_capture_state"):
+        result.extend((name, *_independent_atoms(scope[name])))
+    for name in ("getprofile", "gettrace", "setprofile", "settrace"):
+        result.extend((name, *_independent_atoms(getattr(scope["sys"], name))))
+    return tuple(result)
+
+
+def _world_cache_extensions(context, extra):
+    transition = context.world_transition
+    dyna = transition.api.stages[2]._WORLD.get(transition.request)
+    if (
+        dyna is None
+        or not dyna.constructor_completed
+        or context.phase.dyna is not dyna.handler
+        or extra not in (("dyna",), ("dyna", "export_dirname"))
+    ):
+        _world_reject(transition, "Unowned extension of the same actual cache phase", context)
+    if len(extra) == 2:
+        tail = transition.api.stages[3]._WORLD.get(transition.request)
+        if tail is None or getattr(dyna.parent.parent, "world_tail", None) is not tail:
+            _world_reject(transition, "Original fresh-world SEED route changed", context)
+
+
+def _world_tail_module(prefix):
+    return prefix.world_transition.api.stages[3]
+
+
+def _world_tail_route(prefix, *, active=False):
+    transition = prefix.world_transition
+    tail, dyna = transition.api.stages[3], transition.api.stages[2]
+    context = tail._WORLD.get(transition.request)
+    if (
+        context is None
+        or getattr(prefix, "world_tail", None) is not context
+        or transition.api.stages[0]._TAIL_ROUTES.get(prefix.phase) is not context
+        or context.refs[8] is not prefix
+        or context.phase is not prefix.phase
+        or context.claim is not transition.claim
+    ):
+        _world_reject(transition, "Original same-instance fresh-world tail route changed")
+    if active:
+        _world_stage_guard(context)
+    return tail, dyna, context
+
+
+def _world_phase_wrapper_guard(prefix, caller):
+    transition = prefix.world_transition
+    wrapper = (
+        caller.f_back if caller.f_code is transition.api.stages[0]._native_call.__code__ else caller
+    )
+    role, method = wrapper.f_locals.get("name"), wrapper.f_locals.get("method")
+    actual = wrapper.f_locals.get("actual")
+    expected = prefix.phase if role == "SimPhase" else prefix.constructed.get(role)
+    member = None if expected is None else vars(type(expected)).get(method)
+    valid = (
+        role in ("SimPhase", "Cells")
+        and actual is expected
+        and wrapper.f_locals.get("context") is prefix
+        and type(member) is FunctionType
+        and wrapper.f_code is member.__code__
+        and wrapper.f_locals.get("delegate") is getattr(prefix.factories[role], method, None)
+    )
+    if not valid:
+        _world_reject(transition, "Detached/raw original phase wrapper entry", prefix)
+    if _world_has_prefix_route(prefix):
+        route = _world_prefix_route(prefix)
+        module = transition.api.helpers
+        if role + "." + method not in module.METHODS:
+            module._reject(route, None, "Method outside exact world-prefix dispatch")
+        module._guard(route)
+    else:
+        tail, _, context = _world_tail_route(prefix, active=True)
+        if role != "SimPhase" or method not in tail.METHODS:
+            tail._reject_entry(context, None, "Method outside exact SEED helper dispatch")
+
+
+def _world_seal(evidence, transition, world_owner, claim, stages):
+    _ready()
+    caller = sys._getframe(1)
+    if (
+        caller.f_code is not transition.api.stages[-1]._world_phase_seal.__code__
+        or caller.f_back is None
+        or caller.f_back.f_code is not _seal_active.__code__
+        or caller.f_back.f_locals.get("context") is not transition
+        or world_owner is not transition.request.world_parameters
+        or claim is not transition.claim
+        or len(stages) != 4
+        or any(a is not b for a, b in zip(stages, transition.evidence, strict=True))
+        or evidence is not transition.evidence[-1]
+    ):
+        _world_reject(transition, "Unclaimed full fresh-world phase seal")
+    _world_parameter_authority(transition)
+    for index, item in enumerate(stages):
+        _check_evidence(transition, item, index, final_active=True)
+    context = evidence.authority
+    cache, graph = _world_state(context)
+    document = dict(
+        mode=MODE,
+        request=transition.request.identity,
+        stages=tuple(item.identity for item in stages),
+        cache=cache.identity,
+    )
+    value = PhaseSeal(
+        evidence,
+        evidence.phase,
+        transition.p,
+        stages,
+        cache,
+        graph,
+        _bindings(transition),
+        _digest(document),
+    )
+    context.world_seal = value
+    return value
+
+
+def _world_check_seal(seal, transition, world_owner, claim, closed_record):
+    _ready()
+    context = transition.api.stages[-1]._WORLD.get(transition.request)
+    if (
+        type(seal) is not PhaseSeal
+        or context is None
+        or getattr(context, "world_seal", None) is not seal
+        or seal.evidence is not context.evidence
+        or world_owner is not transition.request.world_parameters
+        or claim is not transition.claim
+        or closed_record is not transition.parameter_record
+    ):
+        _world_reject(transition, "Actual fresh-world seal/claim association changed")
+    _world_parameter_authority(transition)
+    cache, graph = _world_state(context)
+    transition.api.helpers.literal._same(_bindings(transition), seal.bindings)
+    transition.api.helpers.literal._same(graph[0], seal.graph[0])
+    document = dict(
+        mode=MODE,
+        request=transition.request.identity,
+        stages=tuple(item.identity for item in seal.stages),
+        cache=cache.identity,
+    )
+    if (
+        cache.identity != seal.cache.identity
+        or graph[1] != seal.graph[1]
+        or _digest(document) != seal.identity
+    ):
+        _world_reject(transition, "Original full-phase seal changed")
+    return seal
+
+
+def _world_forwarded(transition):
+    route = getattr(transition, "world_prefix", None)
+    if route is None:
+        return None
+    owner = getattr(transition, "owner", None)
+    helper, tail = transition.api.helpers, transition.api.stages[-1]
+    if (
+        owner is None
+        or _ISSUED.get(owner) is not transition
+        or _FORWARDED.get(owner) is not route
+        or tail._FORWARDED.get(owner) is not route
+        or helper._REQUESTS.get(route.request) is not route.refs
+        or helper._CONSUMED.get(route.request) is not route
+        or route.request.phase_owner is not owner
+        or route.parent is not transition.evidence[-1].authority
+        or route.phase is not transition.seal.phase
+        or route.p is not transition.p
+        or route.thread != transition.thread
+    ):
+        _world_reject(transition, "Original one-shot phase-to-world registry links changed")
+    return route
+
+
+def _world_has_prefix_route(prefix):
+    return _world_forwarded(prefix.world_transition) is not None
+
+
+def _world_prefix_route(prefix):
+    transition = prefix.world_transition
+    route = _world_forwarded(transition)
+    if route is None or prefix is not transition.evidence[0].authority:
+        _world_reject(transition, "Issued phase-to-world route unavailable")
+    transition.api.helpers._guard(route)
+    return route
+
+
+def _world_parent(owner):
+    _ready()
+    context = _validate(owner)
+    return context.evidence[-1].authority
+
+
+def _world_claim_prefix(owner, expected, transition, entries):
+    _ready()
+    with _LOCK:
+        world = _validate(owner)
+        helper, tail = world.api.helpers, world.api.stages[-1]
+        if (
+            world.evidence[-1].authority is not expected
+            or type(transition.request) is not helper.Request
+            or helper._REQUESTS.get(transition.request) is not transition.refs
+            or helper._CONSUMED.get(transition.request) is not transition
+            or transition.parent is not expected
+            or transition.request.phase_owner is not owner
+            or transition.phase is not world.seal.phase
+            or transition.p is not world.p
+            or entries is not transition.entries
+            or tuple(entries) != helper.METHODS
+            or owner in _FORWARDED
+            or owner in tail._FORWARDED
+            or hasattr(world, "world_prefix")
+            or world.active
+            or world.invalid
+            or transition.thread != get_ident()
+        ):
+            _world_reject(world, "Unissued/repeated phase-to-world continuation")
+        # Marker first; neither failed partial registry publication nor loss
+        # of a registry edge may rearm this phase epoch.
+        world.world_prefix = transition
+        try:
+            _FORWARDED[owner] = transition
+            tail._FORWARDED[owner] = transition
+            _world_forwarded(world)
+        except BaseException:
+            world.invalid = transition.invalid = True
+            raise
+        return expected
+
+
+def _world_after_prefix_claim(tail):
+    world = tail.world_transition
+    _closed_lineage(world)
+    route = _world_forwarded(world)
+    if route is None or tail is not world.evidence[-1].authority or world.invalid:
+        _world_reject(world, "Original forwarded whole-phase history unavailable")
+    # All caches/graphs below omit exactly the literal lattice fields on the
+    # actual Cells object. The lattice driver checks its own fields/RNG epoch.
+    # No consumed public phase owner or pre-mutation numeric parent is reopened.
+    with _validation_scope(world.owner, world) as reservation:
+        _closed(world, validation=reservation)
+    return tail
+
+
 def _construction_entry(kind):
     reservation = _VALIDATION.current
     if reservation is not None:
@@ -1263,6 +2374,13 @@ def _validate(owner):
         raise WorldPhaseRejected(
             "Actual successfully sealed world-phase child required", stage="owner"
         )
+    if owner in _FORWARDED or hasattr(context, "world_prefix"):
+        raise WorldPhaseRejected(
+            "Phase epoch was irreversibly consumed by its world prefix",
+            stage="forwarded",
+            trial=context.trial,
+            partial=context,
+        )
     try:
         with _validation_scope(owner, context) as reservation:
             _validate_reserved(context, reservation)
@@ -1285,6 +2403,9 @@ def _closed_lineage(context):
         or _CONSUMED.get(context.request) is not context
         or _CLAIMED.get(context.request.world_parameters) is not context
         or _digest(source_plan()) != context.request.source_identity
+        or type(context.request.mode) is not str
+        or context.request.mode != MODE
+        or _digest(request_record(context.request)) != context.request.identity
     ):
         raise ValueError("World phase original issuance/source changed")
 

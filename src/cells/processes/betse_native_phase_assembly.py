@@ -1,9 +1,9 @@
 """Fresh native phase/Cells/Simulator prefix with an issued callback input.
 
-Only the explicit prepared-callback route is owned. No old Simulator, handler,
-world, serialized cache or inspection container becomes a phase. The original
-phase constructor remains incomplete: cache/dyna/kludge/time/export and all
-phase use, world or physical admission are unavailable.
+The legacy prepared-callback prefix is preserved. A separately gated fresh
+WorldReady mode lends this same runtime to the coordinator's one active claim.
+No old Simulator/phase or serialized inspection state becomes a fresh phase;
+the new mode has source/static preparation only, with all admission held.
 """
 
 import ast
@@ -51,6 +51,15 @@ _TAIL_ROUTES = WeakKeyDictionary()
 TAIL_METHODS = ("_init_kludge", "_init_kludge_time")
 _LOCK, _ACTIVE = RLock(), []
 _DESCRIPTORS = WeakSet()
+WORLD_MODE = "fresh_world_ready_prephase_single_claim_seed_constructor"
+_WORLD = WeakKeyDictionary()
+
+
+def _world_api():
+    module = sys.modules.get("cells.processes.betse_native_world_phase_construction")
+    if module is None:
+        raise AssemblyRejected("Actual fresh-world coordinator unavailable", stage="world_parent")
+    return module
 
 
 class AssemblyRejected(ValueError):
@@ -110,7 +119,9 @@ def _body(node):
     return body
 
 
-def source_plan():
+def source_plan(*, mode=None):
+    if mode is not None and (type(mode) is not str or mode != WORLD_MODE):
+        raise ValueError("Exact explicit fresh-world source mode required")
     for module in (inherited, callbacks):
         if (
             hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()
@@ -142,14 +153,18 @@ def source_plan():
         raise ValueError("Original phase constructor prefix/import/store order changed")
     return dict(
         law=LAW_ID,
-        mode=MODE,
+        mode=WORLD_MODE if mode is not None else MODE,
         native_pins=parent["native_pins"],
         literal_source=hashlib.sha256(Path(source.__file__).read_bytes()).hexdigest(),
         source_lines=[selected[0].lineno, selected[-1].end_lineno],
         fields=FIELDS,
         constructor_order=("Cells(p)", "Simulator()"),
         callback_route="actual issued prepared input; not default factory order",
-        parameters="actual fresh seven-load owner; not numeric/event-complete",
+        parameters=(
+            "actual fresh WorldReady claim; no provider adoption"
+            if mode is not None
+            else "actual fresh seven-load owner; not numeric/event-complete"
+        ),
         stopped_before=("SimPhaseCaches", "TissueHandler", "_init_kludge"),
         complete_phase_or_world_or_physical_or_checkpoint_admitted=False,
     )
@@ -203,6 +218,9 @@ def from_owners(parameters, callback_owner, *, law_id, mode):
 
 def _bindings():
     functions = (
+        _world_api,
+        _world_phase_construct,
+        _world_phase_check,
         source_plan,
         request_record,
         from_owners,
@@ -239,6 +257,8 @@ def _bindings():
         callbacks._bindings,
     )
     return (
+        WORLD_MODE,
+        _WORLD,
         _REQUESTS,
         _CONSUMED,
         _CLAIMED,
@@ -301,6 +321,10 @@ def _native_bindings(context):
 
 
 def _guard(context):
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        if context.active:
+            return _world_api()._world_stage_guard(context)
+        return _world_api()._world_phase_wrapper_guard(context, sys._getframe(1))
     if not context.active and (
         hasattr(context, "tail_transition") or getattr(context, "phase", None) in _TAIL_ROUTES
     ):
@@ -333,6 +357,8 @@ def _guard(context):
 
 
 def _tail_route(context, *, active=False):
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return _world_api()._world_tail_route(context, active=active)
     transition = getattr(context, "tail_transition", None)
     tail = sys.modules.get("cells.processes.betse_native_phase_tail")
     dyna = sys.modules.get("cells.processes.betse_native_phase_dyna")
@@ -390,6 +416,8 @@ def _claim_tail_route(context, *, transition):
 
 
 def _check_runtime_authority(context):
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return _world_api()._world_stage_runtime(context)
     if (
         context.invalid
         or context.thread != get_ident()
@@ -483,6 +511,8 @@ def _check_runtime_authority(context):
 
 def _check(context):
     _check_runtime_authority(context)
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return
     if previous._validate(context.request.parameters) is not context.parents[0]:
         raise ValueError("Original parameter source association changed")
 
@@ -490,6 +520,14 @@ def _check(context):
 def _native_call(context, label, delegate, *args, **kwargs):
     _guard(context)
     if not context.active:
+        if getattr(
+            context, "world_mode", None
+        ) == WORLD_MODE and _world_api()._world_has_prefix_route(context):
+            return (
+                _world_api()
+                ._world_tail_module(context)
+                ._dispatch_seed_world(context, label, delegate, *args, **kwargs)
+            )
         _, dyna, _ = _tail_route(context, active=True)
         return dyna._dispatch_tail(context, label, delegate, *args, **kwargs)
     _check(context)
@@ -958,4 +996,62 @@ def require_phase(owner):
         "Cache/dyna/kludge/time/export and complete required parameter stores remain missing",
         stage="phase_incomplete",
         trial=context.trial,
+    )
+
+
+def _world_phase_construct(
+    transition, *, world_owner, construction_claim, callback_owner, predecessor
+):
+    api = _world_api()
+    context = api._world_stage_begin(
+        sys.modules[__name__],
+        0,
+        transition,
+        world_owner,
+        construction_claim,
+        callback_owner,
+        predecessor,
+        sys._getframe(),
+    )
+    context.parents = transition.parents
+    context.constructor_attempts, context.constructor_returns = [], []
+    context.constructed, context.import_order = {}, []
+    context.driver_frame = sys._getframe()
+    primary = None
+    try:
+        scope = dict(
+            vars(inherited),
+            _NATIVE={"construct": _PREFIX},
+            _acquire=_acquire,
+            _namespace=_namespace,
+        )
+        account = contextmanager(FunctionType(inherited._account.__wrapped__.__code__, scope))
+        with account(context):
+            context.stage = "fresh_world_native_prefix_classes"
+            _acquire(context)
+            context.native_bindings = _native_bindings(context)
+            _namespace(context)
+            context.stage = "fresh_world_original_prefix"
+            with api._world_body_scope(context):
+                context.method(context.phase, context.kind, context.p, callbacks=context.callback)
+            inherited._stop(context)
+            _associations(context)
+            context.completed = True
+    except BaseException as error:
+        if not isinstance(error, literal._CaptureStop) or context.observation_error is None:
+            primary = error
+    return api._world_stage_finish(context, primary)
+
+
+def _world_phase_check(
+    evidence, *, transition, world_owner, construction_claim, predecessor, closed_record
+):
+    return _world_api()._world_stage_check(
+        sys.modules[__name__],
+        evidence,
+        transition,
+        world_owner,
+        construction_claim,
+        predecessor,
+        closed_record,
     )

@@ -19,7 +19,16 @@ TEST = "tests/unit/test_betse_native_world_phase_construction.py"
 FILE = "validation/betse/betse_native_world_phase_construction_software.py"
 MODULE = "validation.betse.betse_native_world_phase_construction_software"
 SOFTWARE_RELEASE = "BETSE_NATIVE_WORLD_PHASE_CONSTRUCTION_SOFTWARE_RELEASED"
-OWNED = (SOURCE, TEST, FILE)
+OWNED = (
+    SOURCE,
+    TEST,
+    FILE,
+    "src/cells/processes/betse_native_phase_assembly.py",
+    "src/cells/processes/betse_native_phase_caches.py",
+    "src/cells/processes/betse_native_phase_dyna.py",
+    "src/cells/processes/betse_native_phase_tail.py",
+    "src/cells/processes/betse_native_seed_world_prefix.py",
+)
 _RAW_FAILURES = ()
 NATIVE_ROOT = "/mnt/workspaces/Cells/betse-v1.5.0"
 FORBIDDEN_MODULES = frozenset(
@@ -31,6 +40,7 @@ FORBIDDEN_MODULES = frozenset(
         "cells.processes.betse_native_phase_assembly_source",
         "cells.processes.betse_native_phase_dyna_source",
         "cells.processes.betse_native_phase_tail_source",
+        "cells.processes.betse_native_seed_world_prefix_source",
         "cells.processes.betse_native_parameter_world_construction",
         "cells.processes.betse_native_parameter_load_remainder",
         "betse.science.phase.phasecls",
@@ -112,7 +122,12 @@ def prepare(output, select):
     # authority to those unreviewed/unbound implementations.
     explicit = [
         "src/" + name.replace(".", "/") + ".py"
-        for name in (*stage.STAGE_MODULES, stage.KEY_MODULE, stage.PARAMETER_MODULE)
+        for name in (
+            *stage.STAGE_MODULES,
+            stage.HELPER_MODULE,
+            stage.KEY_MODULE,
+            stage.PARAMETER_MODULE,
+        )
     ]
     files = runpy.run_path(str(ROOT / inherited.CLOSURE))["closure"](ROOT, [*OWNED, *explicit])
     for name in (inherited.CLOSURE, "tests/__init__.py", "pyproject.toml"):
@@ -136,6 +151,8 @@ def prepare(output, select):
             software_release_requested=os.environ.get(SOFTWARE_RELEASE) == "1",
             actual_source_native_reference_or_scientific_release=False,
             dynamic_source_inclusion_is_not_producer_adoption=True,
+            fresh_world_integration_sources=OWNED,
+            fresh_world_providers_and_stages_bound=False,
             native_guard_policy=dict(root=NATIVE_ROOT, modules=sorted(FORBIDDEN_MODULES)),
         ),
     )

@@ -1,8 +1,9 @@
 """Prepared same-object SEED constructor tail; unavailable claims refuse.
 
-This is not a full-Parameters/phase/world admission. The new Key mutation
-issuer and the coordinated dyna dispatch/retirement hooks are intentionally
-unbound. No old read-only dyna claim authorizes the _run_sim store.
+Legacy47 mutation remains distinct from the prepared fresh-world interval,
+which uses the coordinator's already-active actual claim through sealing.
+Fresh-world provider/stage adoption remains unbound. No old read-only claim,
+inspection or serialized phase authorizes _run_sim or complete phase use.
 """
 
 import ast
@@ -47,6 +48,12 @@ _TAIL = source.PhaseConstructorTail.complete
 _METHODS = {name: getattr(source.PhaseConstructorTail, name) for name in METHODS}
 _REQUESTS, _CONSUMED, _ISSUED = (WeakKeyDictionary() for _ in range(3))
 _LOCK, _ACTIVE = RLock(), []
+WORLD_MODE = "fresh_world_ready_prephase_single_claim_seed_constructor"
+_WORLD, _FORWARDED = WeakKeyDictionary(), WeakKeyDictionary()
+
+
+def _world_api():
+    return previous._world_api()
 
 
 class TailRejected(ValueError):
@@ -117,13 +124,18 @@ def _statements(nodes):
     return ast.dump(ast.Module(body=nodes, type_ignores=[]))
 
 
-def source_plan():
-    if hashlib.sha256(Path(previous.__file__).read_bytes()).hexdigest() != DYNA_SHA256:
+def source_plan(*, mode=None):
+    if mode is not None and (type(mode) is not str or mode != WORLD_MODE):
+        raise ValueError("Exact explicit fresh-world source mode required")
+    if (
+        mode is None
+        and hashlib.sha256(Path(previous.__file__).read_bytes()).hexdigest() != DYNA_SHA256
+    ):
         raise ValueError("Explicitly adopted dyna producer required")
     path = aliases.NATIVE / PHASE
     if hashlib.sha256(path.read_bytes()).hexdigest() != PHASE_SHA256:
         raise ValueError("Pinned original phase source changed")
-    parent = previous.source_plan()
+    parent = previous.source_plan(mode=mode)
     helper = previous.caches.previous.callbacks.simulator
     native = helper._class(ast.parse(path.read_bytes()), "SimPhase")
     own = helper._class(ast.parse(Path(source.__file__).read_bytes()), "PhaseConstructorTail")
@@ -147,7 +159,7 @@ def source_plan():
         lines[name] = (original.lineno, original.end_lineno)
     return dict(
         law=LAW_ID,
-        dyna_producer=DYNA_SHA256,
+        dyna_producer=None if mode is not None else DYNA_SHA256,
         native_pins=parent["native_pins"],
         original_phase_sha256=PHASE_SHA256,
         literal_sha256=hashlib.sha256(Path(source.__file__).read_bytes()).hexdigest(),
@@ -157,9 +169,9 @@ def source_plan():
         native_store_order=STORES,
         parameter_fields_allowed=("_run_sim",),
         temporal_stores_allowed=(),
-        parameter_contract_bound=_key_bound(),
-        key_producer=KEY_SHA256,
-        key_dependency_review_sha256=KEY_REVIEW_SHA256,
+        parameter_contract_bound=mode is None and _key_bound(),
+        key_producer=None if mode is not None else KEY_SHA256,
+        key_dependency_review_sha256=None if mode is not None else KEY_REVIEW_SHA256,
         required_parent_hooks=PARENT_HOOKS,
         path_creation=False,
         INIT_SIM_full_Parameters_world_physics_or_checkpoint_admitted=False,
@@ -259,6 +271,14 @@ def from_dyna(owner, *, law_id):
 
 def _bindings():
     functions = (
+        _world_api,
+        _world_phase_construct,
+        _world_phase_check,
+        _world_phase_seal,
+        _world_phase_check_seal,
+        _claim_for_seed_world,
+        _check_world_authority,
+        _dispatch_seed_world,
         _digest,
         _body,
         _statements,
@@ -310,6 +330,9 @@ def _bindings():
         *_METHODS.values(),
     )
     return (
+        WORLD_MODE,
+        _WORLD,
+        _FORWARDED,
         _REQUESTS,
         _CONSUMED,
         _ISSUED,
@@ -604,6 +627,8 @@ def _helper_body(context, name, actual, invocation):
 def _guard(context):
     if context.entry_error is not None:
         raise context.entry_error
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return _world_api()._world_stage_guard(context)
     previous.handler._stop(context)
     if (
         not context.active
@@ -645,6 +670,11 @@ def _allowed_state(context):
 
 
 def _check(context):
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        _world_api()._world_stage_runtime(context)
+        if hasattr(context, "field_names"):
+            _allowed_state(context)
+        return
     if (
         context.invalid
         or context.thread != get_ident()
@@ -708,6 +738,8 @@ def _objects(parent):
 
 
 def _projector(context):
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return _world_api()._world_projector(context)
     # Parameter/configuration wrappers and weak proxies stay references to
     # their original issued producers; they are not serialized or hydrated as
     # fresh objects by this tail snapshot.
@@ -1550,3 +1582,134 @@ def require_phase(owner):
         trial=context.trial,
         partial=context,
     )
+
+
+def _world_phase_construct(
+    transition, *, world_owner, construction_claim, callback_owner, predecessor
+):
+    api = _world_api()
+    context = api._world_stage_begin(
+        sys.modules[__name__],
+        3,
+        transition,
+        world_owner,
+        construction_claim,
+        callback_owner,
+        predecessor,
+        sys._getframe(),
+    )
+    prefix = transition.api.stages[0]._WORLD[transition.request]
+    context.phase, context.sim, context.handler = (
+        predecessor.phase,
+        predecessor.sim,
+        predecessor.handler,
+    )
+    context.claim = construction_claim  # Same ACTIVE interval; no d9/47 claim or record.
+    context.refs = (
+        context.parent,
+        predecessor.trial,
+        context.phase,
+        context.p,
+        context.sim,
+        context.phase.cells,
+        predecessor.cache,
+        context.handler,
+        prefix,
+    )
+    context.objects = api._world_objects(transition, 2)
+    context.stages, context.stores, context.attempts, context.stack = [], [], [], []
+    context.claims, context.admitted_frames = {}, {}
+    context.root_claimed = False
+    context.driver_frame = sys._getframe()
+    context.complete_frame = context.complete_invocation = None
+    context.pending_source_error = None
+    primary = None
+    try:
+        context.field_names = {
+            role: tuple(vars(actual))
+            for role, actual in (
+                ("phase", context.phase),
+                ("sim", context.sim),
+                ("parameters", context.p),
+            )
+        }
+        if any(name in context.field_names[role] for role, name in STORES):
+            raise ValueError("Fresh-world SEED tail may not retrofit existing stores")
+        context.export_path = vars(context.p)["init_export_dirname"]
+        _acquire(context)
+        _namespace(context)
+        assembly = transition.api.stages[0]
+        with assembly._LOCK:
+            if hasattr(prefix, "world_tail") or context.phase in assembly._TAIL_ROUTES:
+                raise ValueError("Fresh-world helper route was already attempted")
+            prefix.world_tail = context
+            assembly._TAIL_ROUTES[context.phase] = context
+            context.world_route_issued = True
+        context.stage = "fresh_world_original_seed_tail"
+        with _account(context):
+            context.complete(context.phase, context.enum.SEED, context.p)
+            context.last_completed = ("complete", context.phase, None)
+            context.stages.append("complete")
+            _guard(context)
+            _check(context)
+        if _allowed_state(context) != STORES or tuple(context.stages) != RETURN_ORDER:
+            raise ValueError("Original same-claim SEED tail incomplete")
+        context.completed = True
+    except BaseException as error:
+        if not isinstance(error, literal._CaptureStop) or context.observation_error is None:
+            primary = error
+    return api._world_stage_finish(context, primary)
+
+
+def _world_phase_check(
+    evidence, *, transition, world_owner, construction_claim, predecessor, closed_record
+):
+    result = _world_api()._world_stage_check(
+        sys.modules[__name__],
+        evidence,
+        transition,
+        world_owner,
+        construction_claim,
+        predecessor,
+        closed_record,
+    )
+    context = result.authority
+    if _allowed_state(context) != STORES or tuple(context.stages) != RETURN_ORDER or context.stack:
+        raise ValueError("Original fresh-world SEED helper/store order changed")
+    return result
+
+
+def _world_phase_seal(evidence, *, transition, world_owner, construction_claim, stages):
+    return _world_api()._world_seal(evidence, transition, world_owner, construction_claim, stages)
+
+
+def _world_phase_check_seal(seal, *, transition, world_owner, construction_claim, closed_record):
+    return _world_api()._world_check_seal(
+        seal, transition, world_owner, construction_claim, closed_record
+    )
+
+
+def _claim_for_seed_world(owner, *, expected, transition, entries):
+    return _world_api()._world_claim_prefix(owner, expected, transition, entries)
+
+
+def _check_world_authority(context):
+    return _world_api()._world_after_prefix_claim(context)
+
+
+def _dispatch_seed_world(prefix, label, delegate, actual, *args, **kwargs):
+    api = _world_api()
+    context = api._world_prefix_route(prefix)
+    caller = sys._getframe(1)
+    wrapper = caller.f_back
+    module = sys.modules["cells.processes.betse_native_seed_world_prefix"]
+    if (
+        caller.f_code is not previous.caches.previous._native_call.__code__
+        or caller.f_locals.get("context") is not prefix
+        or label not in module.METHODS
+        or label.split(".")[0] not in ("Cells", "SimPhase")
+        or actual is not (context.cells if label.startswith("Cells.") else context.phase)
+        or delegate is not getattr(prefix.factories[label.split(".")[0]], label.split(".")[1])
+    ):
+        module._reject(context, None, "Unadmitted actual world-prefix dispatch")
+    return context.entries[label](actual, *args, source_frame=wrapper.f_back, **kwargs)

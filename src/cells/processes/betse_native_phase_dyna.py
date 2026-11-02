@@ -1,9 +1,10 @@
-"""Genuine same-phase dyna consumer preparation, gated on Key's public claim.
+"""Genuine same-phase dyna consumer preparation with distinct claim modes.
 
 No prior HandlerOwner is attached. Only a fresh selected TissueHandler
 constructor can produce phase.dyna, on the actual p retained by the issued
-phase-cache child. The Key interface and cache retirement hooks must be bound
-before any source attempt; neither inspection nor a serialized record suffices.
+phase-cache child. Legacy d9 remains separate from the unadopted fresh-world
+coordinator interval: the latter never enters a second or intermediate claim.
+Neither inspection nor a serialized record supplies construction authority.
 """
 
 import ast
@@ -55,6 +56,12 @@ _REQUESTS, _CONSUMED, _ISSUED, _OBJECTS = (WeakKeyDictionary() for _ in range(4)
 _FORWARDED = WeakKeyDictionary()
 _LOCK, _ACTIVE = RLock(), []
 _DESCRIPTOR_TYPES = WeakSet()
+WORLD_MODE = "fresh_world_ready_prephase_single_claim_seed_constructor"
+_WORLD = WeakKeyDictionary()
+
+
+def _world_api():
+    return caches.previous._world_api()
 
 
 class DynaRejected(ValueError):
@@ -105,11 +112,15 @@ def _digest(value):
     return caches.previous.previous._digest(value)
 
 
-def source_plan():
+def source_plan(*, mode=None):
+    if mode is not None and (type(mode) is not str or mode != WORLD_MODE):
+        raise ValueError("Exact explicit fresh-world source mode required")
     for module, expected in ((caches, CACHE_SHA256), (handler, HANDLER_SHA256)):
+        if mode is not None and module is caches:
+            continue
         if hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest() != expected:
             raise ValueError("Explicit dyna source prerequisite changed")
-    parent, leaf = caches.source_plan(), handler.source_plan()
+    parent, leaf = caches.source_plan(mode=mode), handler.source_plan()
     tree = ast.parse((aliases.NATIVE / caches.previous.PHASE).read_bytes())
     cls = caches.previous.callbacks.simulator._class(tree, "SimPhase")
     ctor = caches.previous.callbacks.simulator._method(cls, "__init__")
@@ -129,7 +140,7 @@ def source_plan():
     return dict(
         law=LAW_ID,
         native_pins=parent["native_pins"],
-        parent_producer=CACHE_SHA256,
+        parent_producer=None if mode is not None else CACHE_SHA256,
         handler_producer=HANDLER_SHA256,
         handler_source=leaf,
         literal_sha256=hashlib.sha256(Path(source.__file__).read_bytes()).hexdigest(),
@@ -138,9 +149,10 @@ def source_plan():
         entry_policy=(
             "one claim per method; exact active source-body caller and ordered child slots"
         ),
-        key_producer=KEY_SHA256,
-        key_dependency_review_sha256=KEY_REVIEW_SHA256,
-        key_contract_bound=all(
+        key_producer=None if mode is not None else KEY_SHA256,
+        key_dependency_review_sha256=None if mode is not None else KEY_REVIEW_SHA256,
+        key_contract_bound=mode is None
+        and all(
             type(value) is str and value
             for value in (
                 KEY_SHA256,
@@ -151,7 +163,11 @@ def source_plan():
             )
         ),
         required_cache_hooks=CACHE_HOOKS,
-        parameters="same actual seven-load p; no added stores or changed configuration",
+        parameters=(
+            "one actual active WorldReady construction claim; no d9 claim"
+            if mode is not None
+            else "same actual seven-load p; no added stores or changed configuration"
+        ),
         original_missing_event_stores_are_failures=True,
         stopped_before=("_init_kludge", "init_profiles", "redo_gj", "init_core"),
         full_phase_parameters_world_or_physical_or_checkpoint_admitted=False,
@@ -228,6 +244,9 @@ def from_cache(owner, *, law_id):
 
 def _bindings():
     functions = (
+        _world_api,
+        _world_phase_construct,
+        _world_phase_check,
         _digest,
         source_plan,
         _key_api,
@@ -273,6 +292,8 @@ def _bindings():
         *_NATIVE.values(),
     )
     return (
+        WORLD_MODE,
+        _WORLD,
         _REQUESTS,
         _CONSUMED,
         _ISSUED,
@@ -320,6 +341,8 @@ def _key_bindings(api):
 
 
 def _guard(context):
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return _world_api()._world_stage_guard(context)
     # A rejected source entry is the primary failure even when its observer
     # subsequently fails to capture the event. Keep that capture separately.
     if getattr(context, "entry_error", None) is not None:
@@ -349,6 +372,8 @@ def _closed_claim(context):
 
 
 def _check_runtime_authority(context):
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return _world_api()._world_stage_runtime(context)
     if (
         context.invalid
         or context.thread != get_ident()
@@ -413,6 +438,8 @@ def _check_runtime_authority(context):
 
 def _check(context):
     _check_runtime_authority(context)
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        return
     if hasattr(context, "before") and _old_snapshot(context).identity != context.before.identity:
         raise ValueError("A field outside phase.dyna changed")
     current = _old_graph(context)
@@ -1345,4 +1372,56 @@ def require_phase(owner):
         request=context.request,
         trial=context.trial,
         partial=context,
+    )
+
+
+def _world_phase_construct(
+    transition, *, world_owner, construction_claim, callback_owner, predecessor
+):
+    api = _world_api()
+    context = api._world_stage_begin(
+        sys.modules[__name__],
+        2,
+        transition,
+        world_owner,
+        construction_claim,
+        callback_owner,
+        predecessor,
+        sys._getframe(),
+    )
+    context.handler, context.constructor_completed = None, False
+    context.stages, context.entry_attempts, context.method_stack = [], [], []
+    context.entry_wrappers, context.method_claims = {}, {}
+    context.driver_frame = sys._getframe()
+    primary = None
+    try:
+        with _account(context):
+            context.stage = "fresh_world_original_tissue_classes"
+            _acquire(context)
+            context.native_bindings = _native_bindings(context)
+            _namespace(context)
+            context.stage = "fresh_world_original_tissue_handler_attachment"
+            context.attach(context.phase, context.p)
+            _guard(context)
+            _check(context)
+            if tuple(context.stages) != RETURN_ORDER or not context.constructor_completed:
+                raise ValueError("Original fresh handler method order incomplete")
+            context.completed = True
+    except BaseException as error:
+        if not isinstance(error, literal._CaptureStop) or context.observation_error is None:
+            primary = error
+    return api._world_stage_finish(context, primary)
+
+
+def _world_phase_check(
+    evidence, *, transition, world_owner, construction_claim, predecessor, closed_record
+):
+    return _world_api()._world_stage_check(
+        sys.modules[__name__],
+        evidence,
+        transition,
+        world_owner,
+        construction_claim,
+        predecessor,
+        closed_record,
     )

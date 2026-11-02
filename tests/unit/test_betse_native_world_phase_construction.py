@@ -1,5 +1,7 @@
 """Written, unrun coordinator controls; no stand-in grants source ownership."""
 
+import ast
+import hashlib
 import json
 import os
 import sys
@@ -1073,3 +1075,423 @@ def test_residual_failed_reservation_does_not_retire_another_acquisition(monkeyp
         assert caught.value is original and stage._VALIDATION.current is foreign
     finally:
         stage._VALIDATION.current = None
+
+
+def _world_integration_tree(module):
+    path = software.ROOT / ("src/" + module.replace(".", "/") + ".py")
+    return ast.parse(path.read_bytes())
+
+
+def test_world_integration_declares_explicit_fresh_mode_without_provider_adoption():
+    plan = stage.source_plan()
+    assert plan["mode"] == "fresh_world_ready_prephase_single_claim_seed_constructor"
+    assert plan["private_same_claim_stage_hooks_implemented"] is True
+    assert plan["exact_same_instance_seed_and_world_dispatch_prepared"] is True
+    assert plan["public_closed_records_between_stages"] is False
+    assert plan["helper_source"] is None
+    assert plan["key_source"] is None and plan["parameter_source"] is None
+    assert plan["stage_sources"] == plan["stage_reviews"] == (None,) * 4
+    assert plan["source_native_scientific_release"] is False
+
+
+@pytest.mark.parametrize("index", range(4))
+def test_world_integration_source_hooks_keep_one_actual_claim_and_exact_surface(index):
+    tree = _world_integration_tree(stage.STAGE_MODULES[index])
+    functions = {node.name: node for node in tree.body if isinstance(node, ast.FunctionDef)}
+    construct = functions[stage.CONSTRUCT_HOOK]
+    check = functions[stage.CHECK_HOOK]
+    assert [v.arg for v in construct.args.args] == ["transition"]
+    assert [v.arg for v in construct.args.kwonlyargs] == [
+        "world_owner",
+        "construction_claim",
+        "callback_owner",
+        "predecessor",
+    ]
+    assert [v.arg for v in check.args.kwonlyargs] == [
+        "transition",
+        "world_owner",
+        "construction_claim",
+        "predecessor",
+        "closed_record",
+    ]
+    starts = [
+        node
+        for node in ast.walk(construct)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "_world_stage_begin"
+    ]
+    assert len(starts) == 1 and ast.literal_eval(starts[0].args[1]) == index
+    # Only the coordinator may enter construction. There is no new legacy
+    # Lease/d9/47 claim and no closure/record synthesized between stages.
+    forbidden = {"construction", "continuation", "seed_tail", "inspection", "_claim"}
+    assert not any(
+        isinstance(node, ast.Call)
+        and (
+            (isinstance(node.func, ast.Name) and node.func.id in forbidden)
+            or (isinstance(node.func, ast.Attribute) and node.func.attr in forbidden)
+        )
+        for node in ast.walk(construct)
+    )
+    assert any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "_world_stage_finish"
+        for node in ast.walk(construct)
+    )
+    if index < 2:
+        assert any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "_world_body_scope"
+            for node in ast.walk(construct)
+        )
+        assert any(
+            isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Attribute) and target.attr == "driver_frame"
+                for target in node.targets
+            )
+            for node in ast.walk(construct)
+        )
+
+
+def test_world_integration_execution_closure_explicitly_selects_all_eight_paths():
+    expected = {
+        "src/cells/processes/betse_native_phase_assembly.py",
+        "src/cells/processes/betse_native_phase_caches.py",
+        "src/cells/processes/betse_native_phase_dyna.py",
+        "src/cells/processes/betse_native_phase_tail.py",
+        "src/cells/processes/betse_native_seed_world_prefix.py",
+        software.SOURCE,
+        software.TEST,
+        software.FILE,
+    }
+    assert len(software.OWNED) == 8 and set(software.OWNED) == expected
+    assert "cells.processes.betse_native_seed_world_prefix_source" in software.FORBIDDEN_MODULES
+
+
+@pytest.mark.parametrize("entry", ["request", "prepare", "private_stage"])
+def test_world_integration_unbound_gate_precedes_any_claim_or_foreign_object_inspection(
+    monkeypatch, entry
+):
+    class Unavailable:
+        def __getattribute__(self, name):
+            raise AssertionError("An unadopted predecessor must not be inspected")
+
+    unavailable = Unavailable()
+    monkeypatch.setenv(stage.RELEASE, "1")
+    with pytest.raises(stage.WorldPhaseRejected) as caught:
+        if entry == "request":
+            stage.from_world_ready(unavailable, unavailable, law_id=stage.LAW_ID, mode=stage.MODE)
+        elif entry == "prepare":
+            stage.prepare(unavailable, enabled=True)
+        else:
+            stage._world_stage_begin(
+                None, 0, unavailable, unavailable, unavailable, unavailable, unavailable, None
+            )
+    assert caught.value.stage == "unbound_contract"
+    assert not stage._ACTIVE and not stage._ISSUED
+
+
+@pytest.mark.parametrize("captured", [False, True])
+def test_world_integration_failed_stage_retains_entry_primary_and_capture_separately(captured):
+    # Private failure-flow metadata only: no owner, p, source class or claim
+    # is fabricated, issued or accepted by these controls.
+    original, cause = FalseFailure("original entry rejection"), KeyError("original cause")
+    try:
+        raise original from cause
+    except FalseFailure:
+        pass
+    capture = OSError("observation") if captured else None
+    transition = NS(invalid=False, entry_error=None)
+    module = NS(_ACTIVE=[])
+    context = NS(
+        world_transition=transition,
+        world_module=module,
+        entry_error=original,
+        observation_error=capture,
+        primary=None,
+        invalid=False,
+        active=True,
+        stage="metadata_only_failed_stage",
+    )
+    module._ACTIVE.append(context)
+    with pytest.raises(stage.WorldPhaseRejected) as caught:
+        stage._world_stage_finish(context, primary=None)
+    assert caught.value.source_error is original and original.__cause__ is cause
+    assert caught.value.capture_error is capture and caught.value.partial is context
+    assert transition.entry_error is original and context.primary is original
+    assert not context.active and context.invalid and not module._ACTIVE
+    assert not stage._ISSUED
+
+
+def test_world_integration_prepares_only_exact_same_instance_phase_world_dispatch():
+    assembly = _world_integration_tree(stage.STAGE_MODULES[0])
+    tail = _world_integration_tree(stage.STAGE_MODULES[-1])
+    helpers = _world_integration_tree(stage.HELPER_MODULE)
+    tail_functions = {node.name for node in tail.body if isinstance(node, ast.FunctionDef)}
+    assert {
+        "_claim_for_seed_world",
+        "_check_world_authority",
+        "_dispatch_seed_world",
+    } <= tail_functions
+    assert {stage.SEAL_HOOK, stage.CHECK_SEAL_HOOK} <= tail_functions
+    parent = next(
+        node
+        for node in helpers.body
+        if isinstance(node, ast.FunctionDef) and node.name == "_world_parent"
+    )
+    assert "WorldPhaseOwner" in ast.unparse(parent)
+    assert "PhaseTailOwner" not in ast.unparse(parent)
+    # No phase class or per-instance method replacement is an integration tool.
+    for tree in (assembly, tail, helpers):
+        assert not any(
+            isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Attribute) and target.attr == "__class__"
+                for target in node.targets
+            )
+            for node in ast.walk(tree)
+        )
+
+
+def _field_epoch_metadata():
+    """Private code seams only: no Request, claim, issued parent or native body.
+
+    The real seal/check code runs against field witnesses with authentication
+    and capture replaced by explicit metadata seams. This proves the field
+    transition, not that any genuine producer or phase has been admitted.
+    """
+    callback, cells, kind, cache, handler, export = (object() for _ in range(6))
+    p, sim = NS(init_export_dirname=export, _run_sim=False), NS(dyna=handler)
+    phase = NS(
+        callbacks=callback,
+        cells=cells,
+        kind=kind,
+        p=p,
+        sim=sim,
+        cache=cache,
+        dyna=handler,
+        export_dirname=export,
+    )
+    authority = NS()
+    evidence = [
+        stage.StageEvidence(
+            name,
+            authority,
+            phase,
+            p,
+            cells,
+            sim,
+            callback,
+            kind,
+            None if index == 0 else cache,
+            None if index < 2 else handler,
+            "metadata trial " + name,
+            (),
+            str(index),
+        )
+        for index, name in enumerate(stage.STAGES)
+    ]
+    checks = []
+    context = NS(
+        request=NS(world_parameters=object(), identity="metadata request"),
+        claim=object(),
+        p=p,
+        parents=(None, p, None, callback),
+        evidence=evidence,
+        executing=None,
+        parameter_record=None,
+        work=[],
+        stage="before metadata seal",
+        metadata_authenticated=True,
+    )
+
+    def authenticate(actual):
+        assert actual is context and actual.parameter_record is None
+        if not actual.metadata_authenticated:
+            raise ValueError("Metadata authentication seam refused")
+        checks.append("active metadata seam; no closed record")
+
+    def issued_witness(actual, **kwargs):
+        assert kwargs["closed_record"] is None
+        assert kwargs["transition"] is context
+        checks.append(actual.stage)
+        return actual
+
+    namespace = dict(vars(stage))
+    namespace.update(
+        __name__=__name__,
+        _ready=lambda: None,
+        _active_claim=authenticate,
+        _guard=authenticate,
+        _world_parameter_authority=authenticate,
+        _world_state=lambda actual: (NS(identity="metadata cache"), ((), ())),
+        _bindings=lambda actual: (),
+    )
+    for name in ("_seal_active", "_world_seal", "_check_evidence"):
+        original = getattr(stage, name)
+        fn = FunctionType(original.__code__, namespace, name, original.__defaults__)
+        fn.__kwdefaults__ = dict(original.__kwdefaults__ or {})
+        namespace[name] = fn
+
+    def seal_hook(actual, *, transition, world_owner, construction_claim, stages):
+        return namespace["_world_seal"](actual, transition, world_owner, construction_claim, stages)
+
+    context.api = NS(stages=tuple(NS(_world_phase_check=issued_witness) for _ in stage.STAGES))
+    context.api.stages[-1]._world_phase_seal = seal_hook
+    context.api.stages[-1]._world_phase_check_seal = lambda actual, **kwargs: actual
+    return context, namespace, checks
+
+
+def test_interface_final_in_claim_seal_accepts_historical_witnesses_without_closed_record():
+    context, code, checks = _field_epoch_metadata()
+    before = tuple(stage._ISSUED.items())
+    code["_seal_active"](context)
+    assert type(context.seal) is stage.PhaseSeal and type(context.trial) is stage.Trial
+    assert context.seal.stages == tuple(context.evidence)
+    assert context.parameter_record is None and context.p._run_sim is False
+    assert [name for name in checks if name in stage.STAGES] == list(stage.STAGES)
+    assert tuple(stage._ISSUED.items()) == before
+
+
+@pytest.mark.parametrize("index", range(3))
+@pytest.mark.parametrize("premature", ["later_fields", "seed_flag"])
+def test_interface_immediate_epoch_still_refuses_premature_fields_and_seed_flag(index, premature):
+    context, code, _ = _field_epoch_metadata()
+    if premature == "seed_flag":
+        allowed = stage._evidence_fields(index)
+        for name in tuple(vars(context.evidence[index].phase)):
+            if name not in allowed:
+                delattr(context.evidence[index].phase, name)
+    with pytest.raises(ValueError, match="field order|before its literal tail"):
+        code["_check_evidence"](context, context.evidence[index], index)
+
+
+@pytest.mark.parametrize("index", range(4))
+def test_interface_unchanged_immediate_epoch_keeps_original_stage_semantics(index):
+    context, code, _ = _field_epoch_metadata()
+    for name in tuple(vars(context.evidence[index].phase)):
+        if name not in stage._evidence_fields(index):
+            delattr(context.evidence[index].phase, name)
+    if index < 3:
+        del context.p._run_sim
+    assert (
+        code["_check_evidence"](context, context.evidence[index], index) is context.evidence[index]
+    )
+
+
+@pytest.mark.parametrize("change", ["extra", "flag", "cache", "handler", "callback", "auth"])
+def test_interface_final_in_claim_epoch_keeps_exact_fields_aliases_and_flag(change):
+    context, code, _ = _field_epoch_metadata()
+    if change == "extra":
+        context.evidence[0].phase.extra = None
+    elif change == "flag":
+        context.p._run_sim = True
+    elif change == "cache":
+        context.evidence[0].phase.cache = object()
+    elif change == "handler":
+        context.evidence[0].sim.dyna = object()
+    elif change == "callback":
+        context.evidence[0].phase.callbacks = object()
+    else:
+        context.metadata_authenticated = False
+    with pytest.raises(ValueError):
+        code["_seal_active"](context)
+    assert not hasattr(context, "seal") and context.parameter_record is None
+
+
+def test_interface_completed_active_flag_cannot_authorize_an_outside_check():
+    context, code, checks = _field_epoch_metadata()
+    context.stage = "phase_sealing_inside_claim"
+    with pytest.raises(ValueError, match="reserved for the actual full-phase seal"):
+        code["_check_evidence"](context, context.evidence[0], 0, final_active=True)
+    assert not checks and context.parameter_record is None
+
+
+def _helper_image(source=None, review=None, *, extra=b""):
+    return (
+        ("CONSTRUCTION_SOURCE_SHA256 = " + repr(source) + "\n").encode()
+        + ("CONSTRUCTION_REVIEW_SHA256 = " + repr(review) + "\n").encode()
+        + b"OTHER = 3\ndef helper():\n    return OTHER\n"
+        + extra
+    )
+
+
+def test_interface_binding_topology_adopts_two_unequal_images_without_a_hash_fixed_point():
+    unbound = _helper_image()
+    interface, _ = stage._helper_binding(unbound)
+    constructors = [
+        (
+            "HELPER_INTERFACE_SHA256 = "
+            + repr(interface)
+            + "\nHELPER_CONSTRUCTION_REVIEW_SHA256 = "
+            + repr("a" * 64)
+            + "\nREVISION = "
+            + repr(value)
+        ).encode()
+        for value in ("first independent image", "second independent image")
+    ]
+    assert constructors[0] != constructors[1]
+    bound_helpers = []
+    for constructor in constructors:
+        image = _helper_image(hashlib.sha256(constructor).hexdigest(), "a" * 64)
+        actual, backrefs = stage._helper_binding(image)
+        assert image != unbound and actual == interface
+        stage._check_helper_backrefs(backrefs, constructor, "a" * 64)
+        bound_helpers.append(image)
+        with pytest.raises(ValueError, match="full constructor"):
+            stage._check_helper_backrefs(
+                backrefs, constructor + b"\n# exact byte drift\n", "a" * 64
+            )
+        with pytest.raises(ValueError, match="source/review"):
+            stage._check_helper_backrefs(backrefs, constructor, "b" * 64)
+    assert bound_helpers[0] != bound_helpers[1]
+    assert stage.source_plan()["helper_interface"] is None
+    assert stage.source_plan()["helper_constructor_review"] is None
+    assert stage.source_plan()["helper_non_back_reference_bytes_exact"] is True
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda image: image.replace(b"return OTHER", b"return OTHER + 1"),
+        lambda image: image.replace(b"OTHER = 3", b"OTHER = 4"),
+        lambda image: image + b"# comment byte drift\n",
+        lambda image: image.replace(b"    return OTHER", b"  return OTHER"),
+        lambda image: image.replace(b"\n", b"\r\n"),
+    ],
+    ids=["body", "constant", "comment", "whitespace", "line_endings"],
+)
+def test_interface_helper_binding_preserves_every_non_back_reference_source_byte(change):
+    original = _helper_image()
+    baseline, _ = stage._helper_binding(original)
+    changed = change(original)
+    assert changed != original and stage._helper_binding(changed)[0] != baseline
+
+
+@pytest.mark.parametrize(
+    "image",
+    [
+        b"CONSTRUCTION_SOURCE_SHA256 = None\n",
+        _helper_image() + b"CONSTRUCTION_REVIEW_SHA256 = None\n",
+        _helper_image().replace(b"CONSTRUCTION_SOURCE_SHA256 = None", b"X = None"),
+        _helper_image().replace(b"= None", b"= str(None)", 1),
+        _helper_image().replace(b"= None", b"= 'not a pin'", 1),
+        _helper_image().replace(b"= None", b"= r'" + b"a" * 64 + b"'", 1),
+    ],
+    ids=["missing", "duplicate", "renamed", "expression", "invalid_pin", "prefixed_literal"],
+)
+def test_interface_helper_binding_refuses_ambiguous_or_nonliteral_back_reference_slots(image):
+    with pytest.raises(ValueError):
+        stage._helper_binding(image)
+
+
+@pytest.mark.parametrize("review", [None, "wrong", "A" * 64])
+def test_interface_valid_constructor_bytes_do_not_substitute_for_a_review_binding(review):
+    constructor = b"independent full constructor bytes"
+    _, slots = stage._helper_binding(_helper_image(hashlib.sha256(constructor).hexdigest(), None))
+    invalid = (slots[0], (slots[1][0], review))
+    with pytest.raises(ValueError, match="source/review"):
+        stage._check_helper_backrefs(invalid, constructor, "a" * 64)

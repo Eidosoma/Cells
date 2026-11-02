@@ -1,9 +1,11 @@
 """Prepared same-instance SEED make_world prefix; real prerequisites stay closed.
 
-The current PhaseTailOwner is not a world-ready parameter owner. No public
-Key API is guessed here: _world_parent deliberately refuses until the real
-fresh pre-phase contract and its exact producer have been adopted in source.
-The prepared dispatch never attaches a separately constructed Cells/mesh.
+Only the actual closed fresh-world coordinator child can supply this route;
+a legacy PhaseTailOwner is never cast into it. Constructor/review pins stay
+unbound until a separate adoption. The coordinator binds all helper bytes
+except these two separately checked back-reference literals, avoiding a
+reciprocal whole-file hash. Prepared dispatch retains the original
+phase/Cells/classes/wrappers and never attaches a standalone lattice or mesh.
 """
 
 import ast
@@ -25,6 +27,12 @@ literal, aliases, core = previous.literal, previous.aliases, previous.core
 LAW_ID = "betse_same_seed_phase_make_world_through_lattice@1"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_PREFIX_RELEASED"
 PARENT_SHA256 = "1bc45a82b78ba239ba7c39fd5340b1fa273cd9373012d88711a401f9eabc78aa"
+WORLD_MODE = "fresh_world_ready_prephase_single_claim_seed_constructor"
+# Only these two literal values are omitted from the coordinator's exact byte
+# template. Each actual value is checked against the full constructor/review;
+# all complete source files remain bound by the immutable external snapshot.
+CONSTRUCTION_SOURCE_SHA256 = None
+CONSTRUCTION_REVIEW_SHA256 = None
 CELLS, PHASE = "betse/science/cells.py", "betse/science/phase/phasecls.py"
 NATIVE_PINS = {
     CELLS: "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
@@ -90,10 +98,11 @@ class WorldPrefixRejected(ValueError):
 
 @dataclass(frozen=True, slots=True, weakref_slot=True, eq=False)
 class Request:
-    phase_owner: previous.PhaseTailOwner
+    phase_owner: object
     parent_identity: str
     source_identity: str
     identity: str
+    mode: str = WORLD_MODE
 
     def __reduce_ex__(self, protocol):
         raise TypeError("An actual fresh phase/parameter lineage is required")
@@ -131,9 +140,14 @@ def _ast(nodes):
     return ast.dump(ast.Module(body=nodes, type_ignores=[]))
 
 
-def source_plan():
+def source_plan(*, mode=None):
     """Read exact source only; no parameter/phase validation or replay."""
-    if hashlib.sha256(Path(previous.__file__).read_bytes()).hexdigest() != PARENT_SHA256:
+    if mode is not None and (type(mode) is not str or mode != WORLD_MODE):
+        raise ValueError("Exact explicit fresh-world source mode required")
+    if (
+        mode is None
+        and hashlib.sha256(Path(previous.__file__).read_bytes()).hexdigest() != PARENT_SHA256
+    ):
         raise ValueError("Explicit current phase-tail producer required")
     trees = {}
     for name, expected in NATIVE_PINS.items():
@@ -176,7 +190,7 @@ def source_plan():
         raise ValueError("Original lattice field roster changed")
     return dict(
         law=LAW_ID,
-        parent_producer=PARENT_SHA256,
+        parent_producer=None if mode is not None else PARENT_SHA256,
         native_pins=NATIVE_PINS,
         literal_sha256=hashlib.sha256(Path(source.__file__).read_bytes()).hexdigest(),
         reused_lattice_sha256=hashlib.sha256(
@@ -199,19 +213,21 @@ def source_plan():
 
 
 def _world_parent(owner):
-    # This is intentionally not a provider callback or an inspection escape.
-    # Key must supply the real pre-phase typed constructor/closed-SEED owner;
-    # only an explicitly reviewed source successor can adopt its actual API.
-    raise WorldPrefixRejected(
-        "Fresh world-ready pre-phase parameter/closed-SEED contract is unbound",
-        stage="world_ready_parameter_parent",
-        partial=dict(
-            phase_owner=owner,
-            accepted_key_api=None,
-            current_seven_load_or_normalized_world_is_not_authority=True,
-            late_stores_begin_at_native_line=1118,
-        ),
-    )
+    api = previous._world_api()
+    if not api._pin(CONSTRUCTION_SOURCE_SHA256) or not api._pin(CONSTRUCTION_REVIEW_SHA256):
+        raise WorldPrefixRejected(
+            "Reviewed fresh-world constructor producer remains unbound",
+            stage="world_ready_parameter_parent",
+            partial=dict(phase_owner=owner),
+        )
+    if hashlib.sha256(Path(api.__file__).read_bytes()).hexdigest() != CONSTRUCTION_SOURCE_SHA256:
+        raise WorldPrefixRejected("Exact constructor producer changed", stage="world_producer")
+    api._ready()
+    if type(owner) is not api.WorldPhaseOwner:
+        raise WorldPrefixRejected(
+            "Actual fresh-world phase child required; no old-tail cast", stage="phase_parent"
+        )
+    return api._world_parent(owner)
 
 
 def _parent_hooks():
@@ -229,6 +245,7 @@ def request_record(value):
     return dict(
         law=LAW_ID,
         parent=value.parent_identity,
+        mode=value.mode,
         source=value.source_identity,
         boundary="before make_voronoi",
         fresh_world_parameters_required=True,
@@ -236,14 +253,14 @@ def request_record(value):
     )
 
 
-def from_phase(owner, *, law_id):
+def from_phase(owner, *, law_id, mode=WORLD_MODE):
     if type(law_id) is not str or law_id != LAW_ID:
         raise WorldPrefixRejected("Explicit SEED world-prefix law required", stage="law")
-    if type(owner) is not previous.PhaseTailOwner or owner not in previous._ISSUED:
-        raise WorldPrefixRejected("Actual issued phase-tail parent required", stage="phase_parent")
-    parent = _world_parent(owner)  # Remains an explicit refusal, not old p validation.
+    if type(mode) is not str or mode != WORLD_MODE:
+        raise WorldPrefixRejected("Exact fresh-world constructor mode required", stage="mode")
+    parent = _world_parent(owner)
     _parent_hooks()
-    value = Request(owner, parent.trial.identity, _digest(source_plan()), "")
+    value = Request(owner, parent.trial.identity, _digest(source_plan(mode=mode)), "", mode)
     value = replace(value, identity=_digest(request_record(value)))
     _REQUESTS[value] = (
         parent,
@@ -342,6 +359,9 @@ def _bindings():
         *(_BODIES.values()),
     )
     return (
+        WORLD_MODE,
+        CONSTRUCTION_SOURCE_SHA256,
+        CONSTRUCTION_REVIEW_SHA256,
         _REQUESTS,
         _CONSUMED,
         _ISSUED,
@@ -425,15 +445,26 @@ def _remember(context, error, origin, raw):
 
 
 def _observer_bindings():
-    return (inspect, inspect.CO_VARARGS, inspect.CO_VARKEYWORDS, *(
-        atom
-        for function in (
-            _admit, _remember, _capture_failure, _capture,
-            _callback_values, _callback_receiver, _admit_callback, _callback_return,
-            previous.previous.handler.captures._remember_observation_error,
-        )
-        for atom in _atoms(function)
-    ))
+    return (
+        inspect,
+        inspect.CO_VARARGS,
+        inspect.CO_VARKEYWORDS,
+        *(
+            atom
+            for function in (
+                _admit,
+                _remember,
+                _capture_failure,
+                _capture,
+                _callback_values,
+                _callback_receiver,
+                _admit_callback,
+                _callback_return,
+                previous.previous.handler.captures._remember_observation_error,
+            )
+            for atom in _atoms(function)
+        ),
+    )
 
 
 def _capture_failure(context, error, origin, raw):
@@ -449,7 +480,8 @@ def _capture_failure(context, error, origin, raw):
         _remember(context, error, origin, raw)
     except BaseException as reporting_error:
         context.capture_reporting_errors = (
-            *context.capture_reporting_errors, (origin, reporting_error, error, raw),
+            *context.capture_reporting_errors,
+            (origin, reporting_error, error, raw),
         )
 
 
@@ -581,8 +613,7 @@ def _admit(context, frame):
     if old is not None and old["frame"] is frame:
         return old
     name = context.body_codes.get(frame.f_code)
-    row = _attempt(context, name if name is not None else CALLBACK, frame,
-                   "literal_body_attempt")
+    row = _attempt(context, name if name is not None else CALLBACK, frame, "literal_body_attempt")
     _guard(context)
     record = context.stack[-1] if context.stack else None
     if name is not None:
@@ -605,7 +636,7 @@ def _admit(context, frame):
 def _callback_values(frame):
     """Read actual positional/variadic bindings, independent of receiver name."""
     code, local = frame.f_code, frame.f_locals
-    positional = tuple(local[name] for name in code.co_varnames[:code.co_argcount])
+    positional = tuple(local[name] for name in code.co_varnames[: code.co_argcount])
     offset = code.co_argcount + code.co_kwonlyargcount
     if code.co_flags & inspect.CO_VARARGS:
         extra = local[code.co_varnames[offset]]
@@ -624,9 +655,7 @@ def _callback_values(frame):
         if "status" in keywords:
             raise ValueError("Duplicate callback status argument")
         status = positional[1]
-    elif "status" in code.co_varnames[
-        code.co_argcount:code.co_argcount + code.co_kwonlyargcount
-    ]:
+    elif "status" in code.co_varnames[code.co_argcount : code.co_argcount + code.co_kwonlyargcount]:
         status = local["status"]
     elif "status" in keywords:
         status = keywords["status"]
@@ -658,15 +687,18 @@ def _admit_callback(context, frame, record, row):
     if index == 0:
         children = () if record is None else CHILDREN[record["name"]]
         valid = (
-            record is not None and record["name"] == METHODS[0]
+            record is not None
+            and record["name"] == METHODS[0]
             and record["next_child"] < len(children)
             and children[record["next_child"]] == CALLBACK
             and frame.f_back is record["body"]
-            and type(status) is str and status == CALLBACK_STATUS
+            and type(status) is str
+            and status == CALLBACK_STATUS
         )
     else:
         valid = (
-            record is occurrence["parent"] and occurrence["state"] == "entering"
+            record is occurrence["parent"]
+            and occurrence["state"] == "entering"
             and frame.f_back is occurrence["frames"][-1]
             and status is occurrence["status"]
         )
@@ -674,13 +706,21 @@ def _admit_callback(context, frame, record, row):
         _reject(context, row, "Callback must follow its actual wrapper/native-body frame chain")
     if index == 0:
         record["next_child"] += 1  # Irreversible before either inherited observer.
-        occurrence = dict(parent=record, receiver=receiver, status=status, frames=[],
-                          returned=(), state="entering", source_error=None)
+        occurrence = dict(
+            parent=record,
+            receiver=receiver,
+            status=status,
+            frames=[],
+            returned=(),
+            state="entering",
+            source_error=None,
+        )
         context.callback_occurrence = occurrence
     occurrence["frames"].append(frame)
     row["callback_index"] = index
     row["layer"] = (
-        "native_callback_body" if index == len(context.callback_chain) - 1
+        "native_callback_body"
+        if index == len(context.callback_chain) - 1
         else "actual_callback_wrapper"
     )
 
@@ -691,9 +731,11 @@ def _callback_return(context, frame, source_error):
     if occurrence is None or row is None or "callback_index" not in row:
         raise ValueError("Unclaimed callback return")
     index = row["callback_index"]
-    if (len(occurrence["frames"]) != len(context.callback_chain)
-            or index != len(context.callback_chain) - 1 - len(occurrence["returned"])
-            or occurrence["frames"][index] is not frame):
+    if (
+        len(occurrence["frames"]) != len(context.callback_chain)
+        or index != len(context.callback_chain) - 1 - len(occurrence["returned"])
+        or occurrence["frames"][index] is not frame
+    ):
         raise ValueError("Callback wrapper/native-body returns are incomplete or out of order")
     occurrence["returned"] = (*occurrence["returned"], index)
     if source_error is not None and occurrence["source_error"] is None:
@@ -813,8 +855,9 @@ def _acquire(context):
         raise ValueError("Original NumPy global rand lost its actual MT owner")
     context.callback_method = type(context.callback).progress_stated
     context.callback_chain = tuple(context.chain(context.callback_method))
-    if not context.callback_chain or any(type(fn) is not FunctionType
-                                         for fn in context.callback_chain):
+    if not context.callback_chain or any(
+        type(fn) is not FunctionType for fn in context.callback_chain
+    ):
         raise ValueError("Exact actual callback function chain required")
     callback_body = context.callback_chain[-1]
     callback_path = Path(callback_body.__code__.co_filename)
@@ -835,7 +878,9 @@ def _acquire(context):
         if type(member) is FunctionType
     )
     context.forbidden_callback_codes = {
-        part.__code__ for fn in context.callback_functions for part in context.chain(fn)
+        part.__code__
+        for fn in context.callback_functions
+        for part in context.chain(fn)
         if part.__code__ not in context.callback_codes
     }
     context.native_bindings = _native_bindings(context)
@@ -1040,7 +1085,8 @@ def _check(context):
     literal._same(_namespace_bindings(context), context.namespace_bindings)
     if (
         _digest(request_record(context.request)) != context.request.identity
-        or _digest(source_plan()) != context.request.source_identity
+        or context.request.mode != WORLD_MODE
+        or _digest(source_plan(mode=context.request.mode)) != context.request.source_identity
     ):
         raise ValueError("Exact world-prefix request/source identity changed")
     current = _immutable(context)
@@ -1195,33 +1241,38 @@ def _account(context):
                 context.hook_attempts.append(name + "_restore")
             except BaseException as error:
                 context.cleanup_errors = (
-                    *context.cleanup_errors, (name + "_restore_attempt", error, old),
+                    *context.cleanup_errors,
+                    (name + "_restore_attempt", error, old),
                 )
             try:
                 setter(old)
             except BaseException as error:
                 context.cleanup_errors = (
-                    *context.cleanup_errors, (name + "_restore", error, old),
+                    *context.cleanup_errors,
+                    (name + "_restore", error, old),
                 )
             needs_recovery = True
             try:
                 needs_recovery = getter() is not old
             except BaseException as error:
                 context.cleanup_errors = (
-                    *context.cleanup_errors, (name + "_state", error, old),
+                    *context.cleanup_errors,
+                    (name + "_state", error, old),
                 )
             if needs_recovery:
                 try:
                     context.hook_attempts.append(name + "_recovery")
                 except BaseException as error:
                     context.cleanup_errors = (
-                        *context.cleanup_errors, (name + "_recovery_attempt", error, old),
+                        *context.cleanup_errors,
+                        (name + "_recovery_attempt", error, old),
                     )
                 try:
                     setter(old)
                 except BaseException as error:
                     context.cleanup_errors = (
-                        *context.cleanup_errors, (name + "_recovery", error, old),
+                        *context.cleanup_errors,
+                        (name + "_recovery", error, old),
                     )
         actual = []
         for name, getter in (("profile", get_profile), ("trace", get_trace)):
@@ -1230,7 +1281,8 @@ def _account(context):
             except BaseException as error:
                 actual.append(error)
                 context.cleanup_errors = (
-                    *context.cleanup_errors, (name + "_final_state", error, None),
+                    *context.cleanup_errors,
+                    (name + "_final_state", error, None),
                 )
         context.hook_after = tuple(actual)
         context.hook_after_restore = context.hook_after
@@ -1255,7 +1307,8 @@ def _account(context):
                 # Even rejection at the recorder's entry cannot mask the
                 # source primary, discard raw cleanup, or re-arm this epoch.
                 context.capture_reporting_errors = (
-                    *context.capture_reporting_errors, (origin, reporting_error, error, raw),
+                    *context.capture_reporting_errors,
+                    (origin, reporting_error, error, raw),
                 )
         # A recorder entry can itself be rejected by the inherited profiler,
         # which Python may then disable. Recheck after reporting; do not call
@@ -1270,20 +1323,23 @@ def _account(context):
                 changed = getter() is not old
             except BaseException as error:
                 context.cleanup_errors = (
-                    *context.cleanup_errors, (name + "_post_report_read", error, old),
+                    *context.cleanup_errors,
+                    (name + "_post_report_read", error, old),
                 )
             if changed:
                 try:
                     context.hook_attempts.append(name + "_post_report_restore")
                 except BaseException as error:
                     context.cleanup_errors = (
-                        *context.cleanup_errors, (name + "_post_report_attempt", error, old),
+                        *context.cleanup_errors,
+                        (name + "_post_report_attempt", error, old),
                     )
                 try:
                     setter(old)
                 except BaseException as error:
                     context.cleanup_errors = (
-                        *context.cleanup_errors, (name + "_post_report_restore", error, old),
+                        *context.cleanup_errors,
+                        (name + "_post_report_restore", error, old),
                     )
         # No restoration occurs after these samples. A second pair in reverse
         # read order also detects a getter invalidating the other saved value.
@@ -1298,19 +1354,23 @@ def _account(context):
                 except BaseException as error:
                     final[index] = error
                     context.cleanup_errors = (
-                        *context.cleanup_errors, (name + "_post_report_final", error, None),
+                        *context.cleanup_errors,
+                        (name + "_post_report_final", error, None),
                     )
         context.hook_samples = ((first[0], first[1]), (second[0], second[1]))
         context.hook_after = context.hook_samples[-1]
         context.hook_identities_restored = (
-            first[0] is prior_profile and first[1] is prior_trace
-            and second[0] is prior_profile and second[1] is prior_trace
+            first[0] is prior_profile
+            and first[1] is prior_trace
+            and second[0] is prior_profile
+            and second[1] is prior_trace
         )
         if context.hook_identities_restored is not True:
             context.invalid = True
             mismatch = ValueError("Final profile/trace identities remain different")
             context.cleanup_errors = (
-                *context.cleanup_errors, ("final_hook_identity_mismatch", mismatch, context.hook_after),
+                *context.cleanup_errors,
+                ("final_hook_identity_mismatch", mismatch, context.hook_after),
             )
             if context.observation_error is None:
                 context.observation_error = mismatch
@@ -1495,7 +1555,10 @@ def prepare(request, *, enabled=False):
                 _check(context)
             if tuple(context.stages) != RETURN_ORDER:
                 raise ValueError("Original callback/guard/lattice return order changed")
-            if context.callback_occurrence is None or context.callback_occurrence["state"] != "returned":
+            if (
+                context.callback_occurrence is None
+                or context.callback_occurrence["state"] != "returned"
+            ):
                 raise ValueError("Actual callback wrapper/native-body occurrence is incomplete")
         except BaseException as error:
             primary = context.entry_error
