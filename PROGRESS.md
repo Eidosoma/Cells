@@ -61,9 +61,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The subsequent
   [initializer-constant block through line 1125 is implemented with ten
   remaining software cases detached](/mnt/workspaces/Cells/native-parameter-initializer-constants-development-20261102-01/pending.json).
-  That job remains unqueried. Key is inspecting the remaining parameter stores
-  and the fresh world-ready construction contract before phase birth; actual
-  native parameter construction remains held.
+  That job remains unqueried. Key has prepared the remaining parameter stores
+  and the fresh world-ready construction contract before phase birth. Their
+  source review below requires repairs; actual native parameter construction
+  remains held.
   Specialist's
   same-phase handler entry and error-precedence repairs are source-reviewed and
   integrated with qualification still held.
@@ -167,9 +168,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   objects and cannot supply this phase's world by attachment.
   Key's coverage inspection identifies the remaining contiguous load tail as
   `load.body[203:218]`: late world stores from line 1127 and the final native
-  ion-profile call. Source-only implementation is assigned in six new
-  remainder/construction source, test and runner paths. The proposed
-  world-ready owner must retain complete same-parameter load history and
+  ion-profile call. The six new remainder/construction source, test and runner
+  files now have a [completed source review](/mnt/workspaces/Cells/native-parameter-world-ready-source-preparation-20261102-01/root-review.json).
+  All 541 frozen payloads and six current owned files verify;
+  **16 test functions are written, uncollected and unrun**. The exact native
+  slice, profile field rosters and replacement order have no additional
+  correspondence finding. Adoption remains held for one consolidated repair:
+  stop further work after return-observer failure; authenticate helper entry
+  and reject caught reentry; verify both restored hooks; make the observed
+  SEED flag transition irreversible; authenticate the frozen software worker;
+  and preserve primary errors across runtime-evidence failures. The inherited
+  colormap fixture cleanup is the existing CM-L5 assignment, not a second
+  repair. Key owns these source-only corrections within the six new files;
+  the constants handoff and existing phase hook windows remain closed.
+  The world-ready owner must retain complete same-parameter load history and
   reject any ancestral phase-construction attempt. Its exclusive claim would
   span fresh phase birth through SEED, allowing only native `_run_sim=False`
   creation. This interface remains proposed, with adoption held. Native early
