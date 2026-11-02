@@ -174,16 +174,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   supplement](/mnt/workspaces/Cells/native-phase-tail-cost-repair-20261102-01/guard-binding-repair-01/root-pillow-binding-review.json)
   verifies the exact `PIL` and `PIL.Image` files loaded in both images; it does
   not retrospectively add an overlay roster to the original inputs. These
-  timings establish no general speedup. Live original guard/closure/global binding is source-closed,
-  and marker failures retain the original primary. One recovery gap still
-  blocks source acceptance: a rejected marker can clear an inherited hook,
-  after which metadata callbacks run before restoration. Specialist has one
-  narrow correction to restore and confirm hooks before continuing, or stop
-  that continuation while retaining the failure. The user's latest instruction
-  authorizes one fresh focused cheap suite covering affected entry, return and
-  failed-restoration paths, with the existing overlay declared in fresh inputs.
-  No duplicate 36-control run, further owner pilot or automatic batch resume is
-  authorized. This remains SEED-only
+  timings establish no general speedup. Live original guard/closure/global
+  binding remains source-closed. The [marker-recovery successor now passes
+  source and focused software review](/mnt/workspaces/Cells/native-phase-tail-cost-repair-20261102-01/marker-restoration-software-01/root-review.json):
+  both exact inherited hooks are restored and checked before each metadata
+  callback. Failed recovery permanently stops that continuation, preserving
+  the primary and secondary errors; final cleanup cannot reauthorize it.
+  COST-1 and the five phase production files remain unchanged. **All 48 affected
+  controls pass**: 16 marker entry/return forms and 32 failed-restoration forms,
+  with 144 passing reports and 48 ordinary plus 48 tail guard receipts.
+  Runtime is **8.291 seconds / 246,439,936 bytes sampled peak RSS**; no native
+  attempts, skips or limit breaches occurred. Root verified all 862 artifact
+  pins, 414 frozen files, 83 selected producers and 1,213 runtime origins.
+  Fresh inputs predeclare the exact Pillow files, and loaded origins match.
+  The tested test/runner bytes are already tracked in Git. This closes COST-1
+  and COST-2 without repeating the earlier 36 controls or owner pilot; older
+  source-only preparations and results retain their own bindings. No further
+  repair validation, owner pilot or automatic batch resume is authorized.
+  This remains SEED-only
   software evidence; native construction, full phase, INIT/SIM, physical and
   checkpoint admission remain held.
   Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
