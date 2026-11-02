@@ -12,6 +12,7 @@ a runtime prerequisite; the complete source/observer/commit path is below.
 import ast
 import builtins
 import copy
+import dis
 import enum
 import hashlib
 import os
@@ -43,6 +44,12 @@ REPLACED = ("wsx", "wsy")
 prefix, claims = previous.prefix, previous.claims
 _LOCK, _ACTIVE = Lock(), []
 _ISSUED, _CONSUMED, _CONSTRUCTED = (WeakKeyDictionary() for _ in range(3))
+_HOOK_GUARDS, _AUDIT_INSTALLED = [], False
+_CALL_TRACING = sys.call_tracing
+
+
+class _ObservationStop(RuntimeError):
+    """One retained control sentinel, never a successful native return."""
 
 
 class LoadRejected(ValueError):
@@ -443,9 +450,270 @@ def _returned(context, role, frame, value):
     context.locals[role] = _copy_locals(frame)
 
 
+def _spans(code, nodes, operation):
+    instructions = tuple(dis.get_instructions(code))
+    rows = []
+    for node in nodes:
+        matches = []
+        for index, item in enumerate(instructions):
+            position = item.positions
+            if (
+                item.opname.startswith(operation)
+                and position.lineno == node.lineno
+                and position.col_offset == node.col_offset
+                and position.end_lineno == node.end_lineno
+                and position.end_col_offset == node.end_col_offset
+            ):
+                end = (
+                    instructions[index + 1].offset
+                    if index + 1 < len(instructions)
+                    else len(code.co_code)
+                )
+                matches.append((item.offset, end))
+        if len(matches) != 1:
+            raise ValueError("Exact original source call/attribute instruction required")
+        rows.append(matches[0])
+    return tuple(rows)
+
+
+def _call_sites(context):
+    _, _, _, tail, ion, _ = _source()
+    balances = sorted(
+        (
+            n
+            for n in ast.walk(ion)
+            if isinstance(n, ast.Call)
+            and isinstance(n.func, ast.Name)
+            and n.func.id == "_balance_charge"
+        ),
+        key=lambda n: n.lineno,
+    )
+    aliases = sorted(
+        (n for n in ast.walk(ion) if isinstance(n, ast.Attribute) and n.attr == "ion_profile"),
+        key=lambda n: n.lineno,
+    )
+    if len(balances) != 2 * len(PROFILE_NAMES) or any(
+        len(n.args) != 2 or any(not isinstance(arg, ast.Name) for arg in n.args) for n in balances
+    ):
+        raise ValueError("Original profile helper argument/order declaration changed")
+    return dict(
+        ion=_spans(context.function.__code__, [tail[-1].value], "CALL"),
+        balance=_spans(context.api.ion.__code__, balances, "CALL"),
+        balance_arguments=tuple(tuple(arg.id for arg in n.args) for n in balances),
+        ion_alias=_spans(context.api.ion.__code__, aliases, "LOAD_ATTR"),
+    )
+
+
+def _fault(context, state, stage, error):
+    state.errors.append((stage, error))
+    state.pending = True
+    context.invalid = True
+
+
+def _reject_entry(context, state, reason):
+    error = ValueError(reason)
+    state.rejections.append(error)
+    _fault(context, state, "entry_refusal", error)
+    raise error
+
+
+def _hook_audit(event, args):
+    if event not in ("sys.setprofile", "sys.settrace"):
+        return
+    for state in tuple(_HOOK_GUARDS):
+        if state.thread == get_ident() and state.inherited_depth:
+            state.context.hook_mutation_attempts.append((event, args))
+            _reject_entry(state.context, state, "Inherited observer may not disable source guards")
+
+
+def _install_hook_audit():
+    global _AUDIT_INSTALLED
+    if not _AUDIT_INSTALLED:
+        sys.addaudithook(_hook_audit)
+        _AUDIT_INSTALLED = True
+
+
+def _inside(frame, spans):
+    return next((index for index, (lo, hi) in enumerate(spans) if lo <= frame.f_lasti < hi), None)
+
+
+def _frame_role(context, state, frame):
+    role = state.roles.get(frame.f_code)
+    if role is not None:
+        return role
+    parent = frame.f_back
+    if parent is not None and parent is context.invoker_frame:
+        return "tail"
+    if parent is state.live.get("tail") and _inside(parent, state.sites["ion"]) is not None:
+        return "ion"
+    if parent is not None and parent is state.live.get("ion"):
+        if _inside(parent, state.sites["balance"]) is not None:
+            return "balance"
+        if _inside(parent, state.sites["ion_alias"]) is not None:
+            return "ion_alias"
+    return None
+
+
+def _admit(context, state, frame, role):
+    if frame in state.frames:
+        if (
+            state.inherited_depth
+            or state.pending
+            or context.invalid
+            or not context.active
+            or context.thread != get_ident()
+            or frame.f_code is not state.codes[role]
+            or state.frames[frame] != role
+        ):
+            _reject_entry(context, state, "Existing original frame lost its admission epoch")
+        return  # Trace/profile report the same actual frame, not two entries.
+    context.raw_entry = (role, frame)
+    context.entry_witnesses.append((role, frame, frame.f_back, frame.f_lasti))
+    context.entries[role] += 1
+    if (
+        state.inherited_depth
+        or state.pending
+        or context.invalid
+        or not context.active
+        or context.thread != get_ident()
+        or frame.f_code is not state.codes[role]
+        or context.entries[role] > dict(tail=1, ion=1, balance=2, ion_alias=6)[role]
+    ):
+        _reject_entry(context, state, "Rejected original source entry is sticky")
+    parent, local = frame.f_back, frame.f_locals
+    if role == "tail":
+        valid = (
+            parent is context.invoker_frame and not state.stack and local.get("self") is context.p
+        )
+    elif role == "ion":
+        valid = (
+            parent is state.live.get("tail")
+            and state.stack[-1:] == [parent]
+            and _inside(parent, state.sites["ion"]) == 0
+            and local.get("self") is context.p
+        )
+    elif role == "ion_alias":
+        index = (
+            _inside(parent, state.sites["ion_alias"]) if parent is state.live.get("ion") else None
+        )
+        valid = (
+            index is not None
+            and state.stack[-1:] == [parent]
+            and index > state.alias_site
+            and local.get("self_descriptor") is context.api.alias
+            and local.get("self") is context.p
+        )
+        if valid:
+            state.alias_site = index
+    else:
+        index = _inside(parent, state.sites["balance"]) if parent is state.live.get("ion") else None
+        selected = context.returns["ion_alias"][-1] if context.returns["ion_alias"] else None
+        profile = next(
+            (i for i, (_, member) in enumerate(context.api.members) if selected is member), None
+        )
+        valid = (
+            index is not None
+            and profile is not None
+            and state.stack[-1:] == [parent]
+            and index == profile * 2 + context.entries["balance"] - 1
+        )
+        concentrations, zs = local.get("concentrations"), local.get("zs")
+        context.balance_inputs.append((concentrations, zs))
+        if valid:
+            names = state.sites["balance_arguments"][index]
+            valid = (
+                concentrations is parent.f_locals.get(names[0])
+                and zs is parent.f_locals.get(names[1])
+                and type(concentrations) is list
+                and type(zs) is list
+                and 3 <= len(concentrations) == len(zs) <= 5
+            )
+    if not valid:
+        _reject_entry(context, state, "Exact original helper parent/frame/order/arguments required")
+    state.frames[frame] = role
+    state.live[role] = frame
+    state.stack.append(frame)
+    frame.f_trace = state.traced
+    frame.f_trace_lines = True
+    frame.f_trace_opcodes = True
+
+
+def _safe_boundary(context, state):
+    if state.pending or context.invalid:
+        raise state.stop
+
+
+def _recover_hooks(
+    expected_profile, expected_trace, *, set_profile, set_trace, get_profile, get_trace
+):
+    """Independent operations; two bounded state-based recovery rounds."""
+    errors, samples = [], []
+    current = dict(profile=object(), trace=object())
+    for attempt in range(3):
+        for name, setter, expected in (
+            ("profile", set_profile, expected_profile),
+            ("trace", set_trace, expected_trace),
+        ):
+            if attempt == 0 or current[name] is not expected:
+                try:
+                    setter(expected)
+                except BaseException as error:
+                    errors.append((name + "_restore_" + str(attempt), error))
+        # Sample both after *all* setters; one setter/callback can clear the other.
+        for name, getter in (("profile", get_profile), ("trace", get_trace)):
+            try:
+                current[name] = getter()
+                samples.append((attempt, name, current[name]))
+            except BaseException as error:
+                current[name] = object()
+                errors.append((name + "_sample_" + str(attempt), error))
+        if current["profile"] is expected_profile and current["trace"] is expected_trace:
+            break
+        errors.append(
+            (
+                "hook_identity_drift_" + str(attempt),
+                ValueError("A restoration action cleared or replaced a hook"),
+            )
+        )
+    clean = current["profile"] is expected_profile and current["trace"] is expected_trace
+    if not clean:
+        errors.append(("final_hook_identity", ValueError("Both original hooks must be restored")))
+    return dict(
+        errors=tuple(errors),
+        samples=tuple(samples),
+        expected_profile=expected_profile,
+        expected_trace=expected_trace,
+        final_profile=current["profile"],
+        final_trace=current["trace"],
+        identities_match=clean,
+        clean=clean and not errors,
+    )
+
+
+def _observer_bookkeeping(context, errors, recovery):
+    context.capture_errors += tuple(errors)
+    context.observer_recovery = recovery
+
+
+def _invoke(context):
+    state = context.observer_state
+    context.invocation_attempts += 1
+    if state.inherited_depth or context.invoker_frame is not None:
+        _reject_entry(context, state, "Original tail may be invoked once only")
+    _safe_boundary(context, state)
+    context.invoker_frame = sys._getframe()
+    return context.function(context.p, **{LOCAL_KEY: context.internal})
+
+
 @contextmanager
 def _observe(context):
     prior, trace = sys.getprofile(), sys.gettrace()
+    codes = dict(
+        tail=context.function.__code__,
+        ion=context.api.ion.__code__,
+        balance=context.api.balance.__code__,
+        ion_alias=context.api.getter.__code__,
+    )
     roles = {
         context.function.__code__: "tail",
         context.api.ion.__code__: "ion",
@@ -453,37 +721,185 @@ def _observe(context):
         context.api.getter.__code__: "ion_alias",
     }
     native = str(prefix.parameters.inherited.tissue.aliases.NATIVE) + "/"
+    state = SimpleNamespace(
+        context=context,
+        thread=get_ident(),
+        roles=roles,
+        codes=codes,
+        sites=_call_sites(context),
+        frames={},
+        live={},
+        stack=[],
+        alias_site=-1,
+        inherited_depth=0,
+        errors=[],
+        rejections=[],
+        pending=False,
+        stop=_ObservationStop("Original load observation refused continuation"),
+        primary=None,
+        primary_traceback=None,
+        prior_traces={},
+        delegated=set(),
+        active_recoveries=[],
+        hooks_ready=False,
+    )
+    context.observer_state = state
+    context.invoker_frame = None
+    context.invocation_attempts = 0
+    context.entry_witnesses, context.exception_witnesses, context.hook_mutation_attempts = (
+        [],
+        [],
+        [],
+    )
+    context.delegates = dict.fromkeys(roles.values(), 0)
+    context.source_instructions = 0
+    original_errors = context.capture_errors
+    setters = dict(
+        set_profile=sys.setprofile,
+        set_trace=sys.settrace,
+        get_profile=sys.getprofile,
+        get_trace=sys.gettrace,
+    )
+
+    def forward(function, frame, event, arg):
+        if function is None or state.inherited_depth:
+            return None
+        state.inherited_depth += 1
+        callback_primary = None
+        try:
+            # CPython disables tracing inside profile callbacks. Restore it
+            # while calling the inherited observer so raw helper reentry is
+            # subject to the same before-bytecode admission checks.
+            return _CALL_TRACING(function, (frame, event, arg))
+        except BaseException as error:
+            callback_primary = error
+            _fault(context, state, "inherited_" + event, error)
+            if event != "return":
+                raise  # Immediate call-entry guard refusals stay immediate.
+        finally:
+            state.inherited_depth -= 1
+            current_profile, current_trace = profile, traced
+            if state.hooks_ready and not state.inherited_depth:
+                observed = {}
+                for name in ("profile", "trace"):
+                    try:
+                        observed[name] = setters["get_" + name]()
+                    except BaseException as error:
+                        observed[name] = object()
+                        _fault(context, state, "active_" + name + "_sample", error)
+                current_profile, current_trace = observed["profile"], observed["trace"]
+            if (
+                state.hooks_ready
+                and not state.inherited_depth
+                and (current_profile is not profile or current_trace is not traced)
+            ):
+                _fault(
+                    context,
+                    state,
+                    "active_hook_change",
+                    ValueError("Observer entry cleared a source hook"),
+                )
+                recovered = _recover_hooks(profile, traced, **setters)
+                state.active_recoveries.append(recovered)
+                for stage, error in recovered["errors"]:
+                    _fault(context, state, "active_" + stage, error)
+                for live_frame in tuple(state.frames):
+                    try:
+                        live_frame.f_trace = traced
+                        live_frame.f_trace_opcodes = True
+                    except BaseException as error:
+                        _fault(context, state, "active_frame_trace_recovery", error)
+                if not recovered["identities_match"] and (
+                    callback_primary is None or event == "return"
+                ):
+                    raise state.stop
+            if state.hooks_ready and not state.inherited_depth:
+                for live_frame in tuple(state.frames):
+                    if (
+                        live_frame.f_trace is not traced
+                        or not live_frame.f_trace_lines
+                        or not live_frame.f_trace_opcodes
+                    ):
+                        _fault(
+                            context,
+                            state,
+                            "active_frame_trace_change",
+                            ValueError("Inherited observer changed a source frame trace"),
+                        )
+                        try:
+                            live_frame.f_trace = traced
+                            live_frame.f_trace_lines = True
+                            live_frame.f_trace_opcodes = True
+                        except BaseException as error:
+                            _fault(context, state, "frame_trace_recovery", error)
+                            if callback_primary is None or event == "return":
+                                raise state.stop from error
+
+    def traced(frame, event, arg):
+        role = _frame_role(context, state, frame)
+        if event == "call" and role is not None:
+            _admit(context, state, frame, role)
+            frame.f_trace_opcodes = True
+        elif (
+            event == "call"
+            and state.inherited_depth
+            and frame.f_code.co_filename.startswith(native)
+        ):
+            _reject_entry(context, state, "Inherited observer cannot enter unowned native source")
+        source_frame = frame
+        if event == "exception" and not state.inherited_depth:
+            while source_frame is not None and source_frame not in state.frames:
+                source_frame = source_frame.f_back
+        if event == "exception" and not state.inherited_depth and source_frame is not None:
+            context.raw_exception = (frame, arg)
+            error = arg[1]
+            if error is not state.stop and not any(error is e for _, e in state.errors):
+                if state.primary is None:
+                    state.primary, state.primary_traceback = error, arg[2]
+                context.exception_witnesses.append((frame, arg))
+        if role is not None and event in ("line", "opcode"):
+            _safe_boundary(context, state)
+        if not state.inherited_depth:
+            inherited = trace if event == "call" else state.prior_traces.get(frame)
+            if event != "opcode":  # The original tracer did not request new opcode work.
+                result = forward(inherited, frame, event, arg)
+                if event == "call" or result is not None:
+                    state.prior_traces[frame] = result
+        if role is not None and event in ("line", "opcode"):
+            _safe_boundary(context, state)
+            if frame not in state.delegated:
+                state.delegated.add(frame)
+                context.delegates[role] += 1
+            if event == "opcode":
+                context.source_instructions += 1
+                if context.source_instructions > MAX_WORK:
+                    _reject_entry(
+                        context, state, "Bounded original source instruction work exhausted"
+                    )
+        if event == "return":
+            if frame in state.frames:
+                if not state.stack or state.stack[-1] is not frame:
+                    _fault(
+                        context,
+                        state,
+                        "return_frame_order",
+                        ValueError("Original frame stack changed"),
+                    )
+                else:
+                    state.stack.pop()
+                state.live.pop(state.frames.pop(frame), None)
+            state.prior_traces.pop(frame, None)
+        return traced if role is not None or state.prior_traces.get(frame) is not None else None
 
     def profile(frame, event, arg):
-        role = roles.get(frame.f_code)
+        role = _frame_role(context, state, frame)
         if event == "call":
-            if role and (context.invalid or not context.active or context.thread != get_ident()):
-                raise ValueError("Poisoned/foreign load-remainder entry")
-            if role:
-                context.entries[role] += 1
-                if context.entries[role] > dict(tail=1, ion=1, balance=2, ion_alias=5)[role]:
-                    raise ValueError("Duplicate original load/profile/helper attempt")
-                if role in ("tail", "ion") and frame.f_locals.get("self") is not context.p:
-                    raise ValueError("Foreign native parameter receiver")
-                if role == "balance":
-                    context.raw_entry = (role, frame)
-                    local = frame.f_locals
-                    concentrations, zs = local.get("concentrations"), local.get("zs")
-                    context.balance_inputs.append((concentrations, zs))
-                    if (
-                        type(concentrations) is not list
-                        or type(zs) is not list
-                        or not 3 <= len(concentrations) == len(zs) <= 5
-                    ):
-                        raise ValueError("Original bounded profile helper inputs required")
-                if role == "ion_alias" and (
-                    frame.f_locals.get("self_descriptor") is not context.api.alias
-                    or frame.f_locals.get("self") is not context.p
-                ):
-                    raise ValueError("Original ion-profile alias/receiver changed")
+            if role is not None:
+                _admit(context, state, frame, role)
+                _safe_boundary(context, state)
             if role or frame.f_code.co_filename.startswith(native):
                 if len(context.work) >= MAX_WORK:
-                    raise ValueError("Bounded original load/profile work exhausted")
+                    _reject_entry(context, state, "Bounded original load/profile work exhausted")
                 context.work.append(
                     (
                         len(context.work),
@@ -497,28 +913,63 @@ def _observe(context):
             try:
                 _returned(context, role, frame, arg)
             except BaseException as error:
-                context.capture_errors += ((role + "_return", error),)
-        if prior is not None:
-            if event == "return":
-                try:
-                    prior(frame, event, arg)
-                except BaseException as error:
-                    context.capture_errors += (("inherited_return", error),)
-            else:
-                prior(frame, event, arg)
+                _fault(context, state, role + "_return", error)
+        forward(prior, frame, event, arg)
+        if event == "call" and role is not None:
+            _safe_boundary(context, state)
 
+    primary = None
+    recovery = None
+    state.traced = traced
     try:
-        sys.setprofile(profile)
+        _install_hook_audit()
+        _HOOK_GUARDS.append(state)
+        setup = _recover_hooks(profile, traced, **setters)
+        context.observer_setup = setup
+        for stage, error in setup["errors"]:
+            _fault(context, state, "setup_" + stage, error)
+        state.hooks_ready = True
+        _safe_boundary(context, state)
         yield
+        _safe_boundary(context, state)
+    except BaseException as error:
+        primary = error
+        if error is state.stop and state.primary is not None:
+            context.source_error = state.primary
+            # Rethrow the exact original source exception and its existing cause.
+            raise BaseException.with_traceback(state.primary, state.primary_traceback)  # noqa: B904
+        raise
     finally:
-        for name, setter, value in (
-            ("profile_restore", sys.setprofile, prior),
-            ("trace_restore", sys.settrace, trace),
-        ):
-            try:
-                setter(value)
-            except BaseException as error:
-                context.capture_errors += ((name, error),)
+        state.hooks_ready = False
+        recovery = _recover_hooks(prior, trace, **setters)
+        for stage, error in recovery["errors"]:
+            _fault(context, state, stage, error)
+        for index, guard in enumerate(_HOOK_GUARDS):
+            if guard is state:
+                _HOOK_GUARDS.pop(index)
+                break
+        try:
+            _observer_bookkeeping(context, state.errors, recovery)
+        except BaseException as error:
+            _fault(context, state, "observer_bookkeeping", error)
+        finally:
+            # A bookkeeping failure must not erase either the original error
+            # or the independently sampled hook identities/recovery errors.
+            vars(context)["capture_errors"] = (*original_errors, *state.errors)
+            vars(context)["observer_recovery"] = recovery
+        if primary is None and state.errors:
+            raise state.stop
+
+
+def _accounting(context):
+    return (
+        tuple(context.entries.items()),
+        tuple(context.delegates.items()),
+        context.invocation_attempts,
+        context.source_instructions,
+        len(context.entry_witnesses),
+        len(context.raw_returns),
+    )
 
 
 def _outputs(context):
@@ -540,6 +991,9 @@ def _outputs(context):
         context.entries["tail"] != 1
         or context.entries["ion"] != 1
         or context.entries["balance"] != 2
+        or context.delegates != context.entries
+        or context.invocation_attempts != 1
+        or not 0 < context.source_instructions <= MAX_WORK
         or len(context.returns["tail"]) != 1
         or context.returns["tail"][0] is not None
         or len(context.returns["ion"]) != 1
@@ -668,9 +1122,10 @@ def complete_load(owner, *, law_id, enabled=False):
             grant.check()
             with _observe(context):
                 try:
-                    context.function(context.p, **{LOCAL_KEY: context.internal})
+                    _invoke(context)
                 except BaseException as error:
-                    context.source_error = error
+                    if error is not context.observer_state.stop:
+                        context.source_error = error
                     raise
             context.source_completed = True
             if context.capture_errors or context.invalid:
@@ -681,6 +1136,14 @@ def complete_load(owner, *, law_id, enabled=False):
             context.after_cm = _colormaps(context)
         context.grant_record = grant.record
         _history(context)
+        context.accounting = _accounting(context)
+        context.work.append(
+            (
+                len(context.work),
+                "source_attempt_delegate_instruction_accounting",
+                context.accounting,
+            )
+        )
         value = LoadRecord(
             parent.trial.identity,
             context.source_identity,
@@ -777,6 +1240,7 @@ def validate_completed_history(owner):
         )
         or context.after_cm.identity != context.parent.parent.original_trial.after_identity
         or context.record.work != tuple(context.work)
+        or context.accounting != _accounting(context)
         or _digest(record_document(context.record)) != context.record.identity
     ):
         raise LoadRejected(
@@ -873,9 +1337,23 @@ def _bindings():
         _history,
         _copy_locals,
         _returned,
+        _spans,
+        _call_sites,
+        _fault,
+        _reject_entry,
+        _hook_audit,
+        _install_hook_audit,
+        _inside,
+        _frame_role,
+        _admit,
+        _safe_boundary,
+        _recover_hooks,
+        _observer_bookkeeping,
+        _invoke,
         _observe,
         _observe.__wrapped__,
         _outputs,
+        _accounting,
         record_document,
         complete_load,
         _context,
@@ -907,6 +1385,9 @@ def _bindings():
         _ISSUED,
         _CONSUMED,
         _CONSTRUCTED,
+        _HOOK_GUARDS,
+        _CALL_TRACING,
+        _ObservationStop,
         WorldReadyParametersOwner,
         *previous._bindings()[1],
         *(

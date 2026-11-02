@@ -7,7 +7,7 @@ import io
 import sys
 from gc import get_referents
 from pathlib import Path
-from types import ModuleType, SimpleNamespace
+from types import GetSetDescriptorType, MemberDescriptorType, ModuleType, SimpleNamespace
 
 from cells.processes import betse_native_parameter_colormap_state as state
 
@@ -96,6 +96,15 @@ def _copy_exports(np, module):
 
 
 def _copy_delegates(value, core, module):
+    implementation = object.__getattribute__(value, "_implementation")
+    if implementation is not core or object.__getattribute__(value, "__wrapped__") is not core:
+        raise ValueError("Original NumPy C implementation role changed")
+    path = SITE / "numpy/lib/_function_base_impl.py"
+    tree = ast.parse(path.read_bytes())
+    copy_node = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "copy")
+    state.previous._undecorated(
+        core, module, path, copy_node, decorators=("array_function_dispatch(_copy_dispatcher)",)
+    )
     argument = vars(module).get("_copy_dispatcher")
     if (
         type(argument) is not state.FunctionType
@@ -109,7 +118,7 @@ def _copy_delegates(value, core, module):
         for n in ast.parse((SITE / "numpy/lib/_function_base_impl.py").read_bytes()).body
         if isinstance(n, ast.FunctionDef) and n.name == "_copy_dispatcher"
     )
-    bindings = state.previous._canonical(
+    bindings = state.previous._undecorated(
         argument, module, SITE / "numpy/lib/_function_base_impl.py", node
     )
     # CPython GC traversal reads the authenticated C object's actual owned
@@ -155,9 +164,16 @@ def _numpy_copy(np, report):
         or type.__getattribute__(dispatcher, "__name__") != "_ArrayFunctionDispatcher"
     ):
         raise ValueError("Original immutable NumPy dispatcher class required before access")
-    core = object.__getattribute__(value, "__wrapped__")
+    slot = type.__getattribute__(dispatcher, "__dict__").get("_implementation")
+    if (
+        type(slot) not in (MemberDescriptorType, GetSetDescriptorType)
+        or slot.__objclass__ is not dispatcher
+        or slot.__name__ != "_implementation"
+    ):
+        raise ValueError("Original NumPy C implementation slot unavailable")
+    core = slot.__get__(value, dispatcher)
     argument, bindings, direct = _copy_delegates(value, core, source)
-    return value, core, argument, bindings, direct, (np, source, module, dispatcher)
+    return value, core, argument, bindings, direct, (np, source, module, dispatcher, slot)
 
 
 def _method(cls, name, module, tree, filename):
@@ -172,10 +188,17 @@ def _method(cls, name, module, tree, filename):
         core.__code__
     ) != prefix.parameters.inherited._code(code):
         raise ValueError("Original colormap copy method changed")
+    if not prefix.parameters.inherited._method(node, name).decorator_list:
+        method_node = prefix.parameters.inherited._method(node, name)
+        rows = state.previous._undecorated(function, module, Path(filename), method_node)
+    else:
+        rows = tuple(
+            prefix._function_bindings(fn) for fn in prefix.parameters.inherited._chain(function)
+        )
     return (
         function,
         core,
-        tuple(prefix._function_bindings(fn) for fn in prefix.parameters.inherited._chain(function)),
+        rows,
     )
 
 
@@ -198,7 +221,7 @@ def _functions(module):
             or value.__qualname__ != name
         ):
             raise ValueError("Original named retained API helper required: " + name)
-        state.previous._canonical(value, module, Path(filename), node)
+        state.previous._undecorated(value, module, Path(filename), node)
     code = compile(tree, filename, "exec", dont_inherit=True)
     expected = []
 
@@ -251,7 +274,7 @@ def bind(bound, kinds):
         for n in ast.parse((SITE / "matplotlib/_api/__init__.py").read_bytes()).body
         if isinstance(n, ast.FunctionDef) and n.name == "getitem_checked"
     )
-    checked_bindings = state.previous._canonical(
+    checked_bindings = state.previous._undecorated(
         checked, api, SITE / "matplotlib/_api/__init__.py", node
     )
     np_copy, np_core, np_dispatcher, np_dispatcher_bindings, np_edges, np_exports = _numpy_copy(
@@ -263,8 +286,12 @@ def bind(bound, kinds):
         for n in ast.parse((SITE / "numpy/lib/_function_base_impl.py").read_bytes()).body
         if isinstance(n, ast.FunctionDef) and n.name == "copy"
     )
-    np_bindings = state.previous._canonical(
-        np_core, np_module, SITE / "numpy/lib/_function_base_impl.py", np_node
+    np_bindings = state.previous._undecorated(
+        np_core,
+        np_module,
+        SITE / "numpy/lib/_function_base_impl.py",
+        np_node,
+        decorators=("array_function_dispatch(_copy_dispatcher)",),
     )
     return SimpleNamespace(
         report=report,

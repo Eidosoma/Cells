@@ -11,11 +11,11 @@ import importlib
 import json
 import os
 import sys
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from pathlib import Path
 from threading import RLock, get_ident
 from types import FunctionType, MethodType, SimpleNamespace
-from contextlib import contextmanager
 from weakref import WeakKeyDictionary
 
 LAW_ID = "betse_fresh_world_ready_same_claim_seed_phase_construction@1"
@@ -56,8 +56,15 @@ _VALIDATION = SimpleNamespace(current=None)
 
 class WorldPhaseRejected(ValueError):
     def __init__(
-        self, reason, *, stage, request=None, trial=None, partial=None,
-        source_error=None, capture_error=None,
+        self,
+        reason,
+        *,
+        stage,
+        request=None,
+        trial=None,
+        partial=None,
+        source_error=None,
+        capture_error=None,
     ):
         super().__init__(reason)
         self.stage, self.request, self.trial = stage, request, trial
@@ -143,14 +150,20 @@ def _digest(value):
 def source_plan():
     """Pure declaration; no import, parameter check, constructor or replay."""
     return dict(
-        law=LAW_ID, mode=MODE,
-        key_source=KEY_SOURCE_SHA256, key_review=KEY_REVIEW_SHA256,
-        parameter_source=PARAMETER_SOURCE_SHA256, parameter_review=PARAMETER_REVIEW_SHA256,
-        stage_sources=STAGE_SOURCE_SHA256, stage_reviews=STAGE_REVIEW_SHA256,
+        law=LAW_ID,
+        mode=MODE,
+        key_source=KEY_SOURCE_SHA256,
+        key_review=KEY_REVIEW_SHA256,
+        parameter_source=PARAMETER_SOURCE_SHA256,
+        parameter_review=PARAMETER_REVIEW_SHA256,
+        stage_sources=STAGE_SOURCE_SHA256,
+        stage_reviews=STAGE_REVIEW_SHA256,
         stages=STAGES,
         construction_before_any_phase_allocation=True,
         one_active_claim_through_all_stages=True,
         stage_hooks_require_exact_claimed_coordinator_frame=True,
+        checker_helpers_authenticated_independently_before_use=True,
+        closed_owner_validation_reserved_through_key_and_stage_checks=True,
         phase_sealing_inside_claim=True,
         public_closed_records_between_stages=False,
         publication_after_exact_closed_owner_claim_parameter_validation=True,
@@ -182,7 +195,8 @@ def source_plan():
         existing_legacy_apis_changed=False,
         make_world_lattice_or_init_core_or_phase_use_admitted=False,
         source_native_scientific_release=False,
-        postcut_owners_invalidated=11, postcut_scientific_cases_held=12,
+        postcut_owners_invalidated=11,
+        postcut_scientific_cases_held=12,
     )
 
 
@@ -192,9 +206,12 @@ def _pin(value):
 
 def _ready():
     pins = (
-        KEY_SOURCE_SHA256, KEY_REVIEW_SHA256,
-        PARAMETER_SOURCE_SHA256, PARAMETER_REVIEW_SHA256,
-        *STAGE_SOURCE_SHA256, *STAGE_REVIEW_SHA256,
+        KEY_SOURCE_SHA256,
+        KEY_REVIEW_SHA256,
+        PARAMETER_SOURCE_SHA256,
+        PARAMETER_REVIEW_SHA256,
+        *STAGE_SOURCE_SHA256,
+        *STAGE_REVIEW_SHA256,
     )
     if not all(_pin(value) for value in pins):
         raise WorldPhaseRejected(
@@ -209,7 +226,11 @@ def _module_file(name):
 
 def _import_bound(name, expected):
     path = _module_file(name)
-    if path.is_symlink() or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+    if (
+        path.is_symlink()
+        or not path.is_file()
+        or hashlib.sha256(path.read_bytes()).hexdigest() != expected
+    ):
         raise ValueError("Exact reviewed consumer dependency unavailable: " + name)
     module = importlib.import_module(name)
     if sys.modules.get(name) is not module or Path(module.__file__).resolve() != path:
@@ -230,7 +251,8 @@ def _dependencies():
     if key.WORLD_CONSTRUCTION_LAW != KEY_LAW:
         raise ValueError("Explicitly reviewed fresh-world construction law required")
     functions = [
-        (key, "construction"), (key, "validate_closed_seed"),
+        (key, "construction"),
+        (key, "validate_closed_seed"),
         (parameters, "validate_completed_history"),
     ]
     functions.extend((module, name) for module in stages for name in (CONSTRUCT_HOOK, CHECK_HOOK))
@@ -240,15 +262,23 @@ def _dependencies():
         if type(fn) is not FunctionType or fn.__globals__ is not vars(module):
             raise ValueError("Missing actual same-claim source hook: " + name)
     return SimpleNamespace(
-        helpers=helpers, key=key, parameters=parameters, callbacks=callbacks, stages=stages,
+        helpers=helpers,
+        key=key,
+        parameters=parameters,
+        callbacks=callbacks,
+        stages=stages,
     )
 
 
 def request_record(value):
     return dict(
-        law=LAW_ID, mode=value.mode, parameters=value.parameter_identity,
-        callbacks=value.callback_identity, source=value.source_identity,
-        fresh_phase_required=True, legacy_owner_cast=False,
+        law=LAW_ID,
+        mode=value.mode,
+        parameters=value.parameter_identity,
+        callbacks=value.callback_identity,
+        source=value.source_identity,
+        fresh_phase_required=True,
+        legacy_owner_cast=False,
     )
 
 
@@ -264,8 +294,15 @@ def from_world_ready(owner, callback_owner, *, law_id, mode):
     callback = api.callbacks._validate(callback_owner)
     if callback.callback is None or not callback.trial.factory_completed:
         raise WorldPhaseRejected("Actual prepared callback required", stage="callback")
-    value = Request(owner, callback_owner, record.identity, callback.trial.identity,
-                    _digest(source_plan()), mode, "")
+    value = Request(
+        owner,
+        callback_owner,
+        record.identity,
+        callback.trial.identity,
+        _digest(source_plan()),
+        mode,
+        "",
+    )
     value = replace(value, identity=_digest(request_record(value)))
     _REQUESTS[value] = (record, p, callback, callback.callback, callback.trial)
     return value
@@ -277,16 +314,29 @@ def _guard(context):
     if context.primary is not None:
         raise context.primary
     if context.capture_error is not None:
-        raise WorldPhaseRejected("Retained phase observation/sealing failure", stage=context.stage,
-                                 capture_error=context.capture_error)
-    if (context.invalid or not context.active or context.thread != get_ident()
-            or not _ACTIVE or _ACTIVE[-1] is not context):
+        raise WorldPhaseRejected(
+            "Retained phase observation/sealing failure",
+            stage=context.stage,
+            capture_error=context.capture_error,
+        )
+    if (
+        context.invalid
+        or not context.active
+        or context.thread != get_ident()
+        or not _ACTIVE
+        or _ACTIVE[-1] is not context
+    ):
         raise WorldPhaseRejected("Unavailable world-construction epoch", stage="entry")
 
 
 def _attempt(context, name, state):
-    row = dict(sequence=len(context.work), stage=name, state=state, layer="coordinator",
-               source_call_count_is_not_case_count=True)
+    row = dict(
+        sequence=len(context.work),
+        stage=name,
+        state=state,
+        layer="coordinator",
+        source_call_count_is_not_case_count=True,
+    )
     if len(context.work) >= MAX_WORK:
         context.overflow_attempt = row
         raise WorldPhaseRejected("Bounded coordinator work exhausted", stage="work")
@@ -309,7 +359,9 @@ def _independent_atoms(function):
             result.extend((value.__self__, value.__func__))
             pending.append(value.__func__)
         elif type(value) is FunctionType:
-            result.extend((value.__code__, value.__globals__, value.__defaults__, value.__closure__))
+            result.extend(
+                (value.__code__, value.__globals__, value.__defaults__, value.__closure__)
+            )
             for item in value.__defaults__ or ():
                 result.append(item)
                 if type(item) in (FunctionType, MethodType):
@@ -339,17 +391,42 @@ def _independent_atoms(function):
 
 def _helper_authority(api):
     helpers, literal = api.helpers, api.helpers.literal
-    return (
-        helpers, literal,
-        *_independent_atoms(helpers._atoms),
-        *_independent_atoms(literal._surface),
-        *_independent_atoms(literal._same),
-    )
+    functions = (helpers._atoms, literal._surface, literal._same)
+    if any(type(fn) is not FunctionType for fn in functions):
+        raise ValueError("Actual Python checker helpers required before use")
+    result = [helpers, literal]
+    for function in functions:
+        result.extend(_independent_atoms(function))
+        # Both retained atom/surface helpers reach their original global
+        # aliases._atoms. Authenticate that delegate without executing it.
+        aliases = function.__globals__.get("aliases")
+        result.append(aliases)
+        if aliases is not None:
+            delegate = vars(aliases).get("_atoms")
+            if type(delegate) is not FunctionType:
+                raise ValueError("Original aliases atom delegate required")
+            result.extend(_independent_atoms(delegate))
+        descriptor = function.__globals__.get("_Descriptor")
+        result.append(descriptor)
+        if descriptor is not None:
+            result.extend((type(descriptor), descriptor.__mro__))
+    comparator = literal._same
+    namespace, builtins = comparator.__globals__, comparator.__builtins__
+    if type(builtins) is not dict:
+        raise ValueError("Actual comparator builtin namespace required")
+    result.append(builtins)
+    for name in ("len", "any", "zip", "ValueError"):
+        origin = namespace if name in namespace else builtins
+        value = origin[name]
+        result.extend((name, origin, *_independent_atoms(value)))
+    return tuple(result)
 
 
 def _check_helpers(context):
     actual, retained = _helper_authority(context.api), context.helper_authority
-    if len(actual) != len(retained) or any(a is not b for a, b in zip(actual, retained, strict=True)):
+    if len(actual) != len(retained) or any(
+        a is not b for a, b in zip(actual, retained, strict=True)
+    ):
         raise ValueError("Original checker/atom/surface helper identity or code changed")
 
 
@@ -357,6 +434,10 @@ def _compare_bindings(context):
     _check_helpers(context)
     actual = _bindings(context)
     _check_helpers(context)
+    if len(actual) != len(context.bindings) or any(
+        a is not b for a, b in zip(actual, context.bindings, strict=True)
+    ):
+        raise ValueError("Independent coordinator binding identity changed")
     context.api.helpers.literal._same(actual, context.bindings)
 
 
@@ -364,35 +445,98 @@ def _bindings(context):
     _check_helpers(context)  # Independently BEFORE the first helper invocation.
     api = context.api
     functions = [
-        _digest, source_plan, _pin, _ready, _module_file, _import_bound, _dependencies,
-        request_record, from_world_ready, _retain_failure,
-        _guard, _attempt, _independent_atoms, _helper_authority, _check_helpers,
-        _compare_bindings, _bindings, _check_bindings, _same_dependencies,
-        _construction_entry, _reject_validation, _reserve_validation,
-        _validation_check, _release_validation, _validation_scope,
-        _active_claim, _check_evidence,
-        _step, _trial_record, _seal_active, _coordinate, _closed, _partial, _validate, prepare,
-        api.key.construction, api.key.validate_closed_seed,
+        _digest,
+        source_plan,
+        _pin,
+        _ready,
+        _module_file,
+        _import_bound,
+        _dependencies,
+        request_record,
+        from_world_ready,
+        _retain_failure,
+        _guard,
+        _attempt,
+        _independent_atoms,
+        _helper_authority,
+        _check_helpers,
+        _compare_bindings,
+        _bindings,
+        _check_bindings,
+        _same_dependencies,
+        _construction_entry,
+        _reject_validation,
+        _reserve_validation,
+        _validation_check,
+        _release_validation,
+        _validation_scope,
+        _closed_lineage,
+        _validate_reserved,
+        _active_claim,
+        _check_evidence,
+        _step,
+        _trial_record,
+        _seal_active,
+        _coordinate,
+        _closed,
+        _partial,
+        _validate,
+        prepare,
+        api.key.construction,
+        api.key.validate_closed_seed,
         api.parameters.validate_completed_history,
-        api.key.WorldConstructionClaim.parameters.fget, api.key.WorldConstructionClaim.check,
+        api.key.WorldConstructionClaim.parameters.fget,
+        api.key.WorldConstructionClaim.check,
         api.key.WorldConstructionClaim.record.fget,
         api.callbacks._validate,
     ]
-    functions.extend(getattr(module, name) for module in api.stages
-                     for name in (CONSTRUCT_HOOK, CHECK_HOOK))
+    functions.extend(
+        getattr(module, name) for module in api.stages for name in (CONSTRUCT_HOOK, CHECK_HOOK)
+    )
     functions.extend(getattr(api.stages[-1], name) for name in (SEAL_HOOK, CHECK_SEAL_HOOK))
     return (
-        _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED, _ACTIVE, _LOCK, _VALIDATION,
-        LAW_ID, MODE, RELEASE, STAGES, STAGE_MODULES, BASE_FIELDS, MAX_WORK,
-        KEY_MODULE, KEY_LAW, KEY_ERROR_ATTRIBUTE, PARAMETER_MODULE,
-        KEY_SOURCE_SHA256, KEY_REVIEW_SHA256, PARAMETER_SOURCE_SHA256, PARAMETER_REVIEW_SHA256,
-        STAGE_SOURCE_SHA256, STAGE_REVIEW_SHA256,
-        CONSTRUCT_HOOK, CHECK_HOOK, SEAL_HOOK, CHECK_SEAL_HOOK,
-        api.helpers, api.key, api.parameters, api.callbacks, *api.stages,
-        api.key.WorldConstructionClaim, api.key.ClosedSeedRecord,
+        _REQUESTS,
+        _CONSUMED,
+        _CLAIMED,
+        _ISSUED,
+        _ACTIVE,
+        _LOCK,
+        _VALIDATION,
+        LAW_ID,
+        MODE,
+        RELEASE,
+        STAGES,
+        STAGE_MODULES,
+        BASE_FIELDS,
+        MAX_WORK,
+        KEY_MODULE,
+        KEY_LAW,
+        KEY_ERROR_ATTRIBUTE,
+        PARAMETER_MODULE,
+        KEY_SOURCE_SHA256,
+        KEY_REVIEW_SHA256,
+        PARAMETER_SOURCE_SHA256,
+        PARAMETER_REVIEW_SHA256,
+        STAGE_SOURCE_SHA256,
+        STAGE_REVIEW_SHA256,
+        CONSTRUCT_HOOK,
+        CHECK_HOOK,
+        SEAL_HOOK,
+        CHECK_SEAL_HOOK,
+        context.helper_authority,
+        api.helpers,
+        api.key,
+        api.parameters,
+        api.callbacks,
+        *api.stages,
+        api.key.WorldConstructionClaim,
+        api.key.ClosedSeedRecord,
         api.parameters.WorldReadyParametersOwner,
-        *(atom for cls in (Request, StageEvidence, PhaseSeal, Trial, WorldPhaseOwner)
-          for atom in api.helpers.literal._surface(cls)),
+        *(
+            atom
+            for cls in (Request, StageEvidence, PhaseSeal, Trial, WorldPhaseOwner)
+            for atom in api.helpers.literal._surface(cls)
+        ),
         *(atom for fn in functions for atom in api.helpers._atoms(fn)),
     )
 
@@ -402,23 +546,32 @@ def _check_bindings(context):
     _same_dependencies(context)
     _compare_bindings(context)
     callback = context.api.callbacks._validate(context.request.callbacks)
-    if (callback is not context.parents[2] or callback.callback is not context.parents[3]
-            or callback.trial is not context.parents[4]):
+    if (
+        callback is not context.parents[2]
+        or callback.callback is not context.parents[3]
+        or callback.trial is not context.parents[4]
+    ):
         raise ValueError("Original issued prepared callback changed")
-    if (_REQUESTS.get(context.request) is not context.parents
-            or _CONSUMED.get(context.request) is not context
-            or _CLAIMED.get(context.request.world_parameters) is not context
-            or _digest(source_plan()) != context.request.source_identity
-            or _digest(request_record(context.request)) != context.request.identity):
+    if (
+        _REQUESTS.get(context.request) is not context.parents
+        or _CONSUMED.get(context.request) is not context
+        or _CLAIMED.get(context.request.world_parameters) is not context
+        or _digest(source_plan()) != context.request.source_identity
+        or _digest(request_record(context.request)) != context.request.identity
+    ):
         raise ValueError("Original request/source/one-shot ancestry changed")
 
 
 def _same_dependencies(context):
     actual = _dependencies()
-    if (any(getattr(actual, name) is not getattr(context.api, name)
-            for name in ("helpers", "key", "parameters", "callbacks"))
-            or len(actual.stages) != len(context.api.stages)
-            or any(a is not b for a, b in zip(actual.stages, context.api.stages, strict=True))):
+    if (
+        any(
+            getattr(actual, name) is not getattr(context.api, name)
+            for name in ("helpers", "key", "parameters", "callbacks")
+        )
+        or len(actual.stages) != len(context.api.stages)
+        or any(a is not b for a, b in zip(actual.stages, context.api.stages, strict=True))
+    ):
         raise ValueError("Actual reviewed producer/module identity changed")
 
 
@@ -437,8 +590,12 @@ def _check_evidence(context, evidence, index, *, closed_record=None):
     predecessor = None if index == 0 else context.evidence[index - 1]
     module = context.api.stages[index]
     actual = getattr(module, CHECK_HOOK)(
-        evidence, transition=context, world_owner=context.request.world_parameters,
-        construction_claim=context.claim, predecessor=predecessor, closed_record=closed_record,
+        evidence,
+        transition=context,
+        world_owner=context.request.world_parameters,
+        construction_claim=context.claim,
+        predecessor=predecessor,
+        closed_record=closed_record,
     )
     if actual is not evidence or evidence.parameters is not context.p:
         raise ValueError("Original stage issuer/p/evidence reference changed")
@@ -447,14 +604,19 @@ def _check_evidence(context, evidence, index, *, closed_record=None):
     # Old stage witnesses retain their original objects, not a stale field
     # roster. After SEED closure, every witness sees the completed phase.
     reached = index if closed_record is None else len(STAGES) - 1
-    names = (*BASE_FIELDS, *(("cache",) if reached >= 1 else ()),
-             *(("dyna",) if reached >= 2 else ()),
-             *(("export_dirname",) if reached == 3 else ()))
+    names = (
+        *BASE_FIELDS,
+        *(("cache",) if reached >= 1 else ()),
+        *(("dyna",) if reached >= 2 else ()),
+        *(("export_dirname",) if reached == 3 else ()),
+    )
     if tuple(fields) != names:
         raise ValueError("Original constructor stage field order changed")
     pairs = (
-        (fields["p"], context.p), (fields["callbacks"], context.parents[3]),
-        (fields["cells"], evidence.cells), (fields["sim"], evidence.sim),
+        (fields["p"], context.p),
+        (fields["callbacks"], context.parents[3]),
+        (fields["cells"], evidence.cells),
+        (fields["sim"], evidence.sim),
         (evidence.callbacks, context.parents[3]),
         (fields["kind"], evidence.kind),
     )
@@ -462,8 +624,12 @@ def _check_evidence(context, evidence, index, *, closed_record=None):
         raise ValueError("Actual same-phase constructor aliases changed")
     if index:
         first = context.evidence[0]
-        if (phase is not first.phase or evidence.cells is not first.cells
-                or evidence.sim is not first.sim or evidence.kind is not first.kind):
+        if (
+            phase is not first.phase
+            or evidence.cells is not first.cells
+            or evidence.sim is not first.sim
+            or evidence.kind is not first.kind
+        ):
             raise ValueError("Stage substituted an already constructed phase/Cells/Simulator")
     if index >= 1 and fields["cache"] is not evidence.cache:
         raise ValueError("Actual phase-cache assignment changed")
@@ -474,9 +640,11 @@ def _check_evidence(context, evidence, index, *, closed_record=None):
     if index > 2 and evidence.handler is not context.evidence[2].handler:
         raise ValueError("Original actual TissueHandler was replaced")
     if index == 3:
-        if (vars(context.p).get("_run_sim") is not False
-                or vars(evidence.sim).get("dyna") is not evidence.handler
-                or fields["export_dirname"] is not vars(context.p)["init_export_dirname"]):
+        if (
+            vars(context.p).get("_run_sim") is not False
+            or vars(evidence.sim).get("dyna") is not evidence.handler
+            or fields["export_dirname"] is not vars(context.p)["init_export_dirname"]
+        ):
             raise ValueError("Original SEED constructor-tail stores changed")
     elif closed_record is None and "_run_sim" in vars(context.p):
         raise ValueError("SEED flag appeared before its literal tail")
@@ -487,19 +655,26 @@ def _step(context, index):
     caller = sys._getframe(1)
     ticket = context.dispatch_ticket
     valid = (
-        ticket is not None and ticket[0] == index and ticket[1] is caller
-        and caller is context.driver_frame and context.executing is None
-        and index == len(context.evidence) and not context.invalid
+        ticket is not None
+        and ticket[0] == index
+        and ticket[1] is caller
+        and caller is context.driver_frame
+        and context.executing is None
+        and index == len(context.evidence)
+        and not context.invalid
     )
     if not valid:
         context.invalid = True
         if context.entry_error is None:
-            context.entry_error = WorldPhaseRejected("Repeated/reentrant/out-of-order stage", stage="entry")
+            context.entry_error = WorldPhaseRejected(
+                "Repeated/reentrant/out-of-order stage", stage="entry"
+            )
         try:
             row = _attempt(context, STAGES[index], "rejected")
         except BaseException as capture:
             context.capture_errors = (
-                *context.capture_errors, ("rejected_stage_attempt", capture, context.entry_error),
+                *context.capture_errors,
+                ("rejected_stage_attempt", capture, context.entry_error),
             )
             if context.capture_error is None:
                 context.capture_error = capture
@@ -517,8 +692,10 @@ def _step(context, index):
             raise ValueError("SEED flag must be absent before the tail's actual source entry")
         predecessor = None if index == 0 else context.evidence[-1]
         value = getattr(context.api.stages[index], CONSTRUCT_HOOK)(
-            context, world_owner=context.request.world_parameters,
-            construction_claim=context.claim, callback_owner=context.request.callbacks,
+            context,
+            world_owner=context.request.world_parameters,
+            construction_claim=context.claim,
+            callback_owner=context.request.callbacks,
             predecessor=predecessor,
         )
         context.last_returned = value  # Retain raw result before any observation/check.
@@ -543,18 +720,28 @@ def _seal_active(context):
     _active_claim(context)
     tail = context.evidence[-1]
     seal = getattr(context.api.stages[-1], SEAL_HOOK)(
-        tail, transition=context, world_owner=context.request.world_parameters,
-        construction_claim=context.claim, stages=tuple(context.evidence),
+        tail,
+        transition=context,
+        world_owner=context.request.world_parameters,
+        construction_claim=context.claim,
+        stages=tuple(context.evidence),
     )
     context.raw_seal = seal
-    if (type(seal) is not PhaseSeal or seal.evidence is not tail
-            or seal.phase is not tail.phase or seal.parameters is not context.p
-            or len(seal.stages) != len(context.evidence)
-            or any(a is not b for a, b in zip(seal.stages, context.evidence, strict=True))):
+    if (
+        type(seal) is not PhaseSeal
+        or seal.evidence is not tail
+        or seal.phase is not tail.phase
+        or seal.parameters is not context.p
+        or len(seal.stages) != len(context.evidence)
+        or any(a is not b for a, b in zip(seal.stages, context.evidence, strict=True))
+    ):
         raise ValueError("Actual full-phase source seal required")
     actual = getattr(context.api.stages[-1], CHECK_SEAL_HOOK)(
-        seal, transition=context, world_owner=context.request.world_parameters,
-        construction_claim=context.claim, closed_record=None,
+        seal,
+        transition=context,
+        world_owner=context.request.world_parameters,
+        construction_claim=context.claim,
+        closed_record=None,
     )
     if actual is not seal:
         raise ValueError("Actual in-claim phase seal reference changed")
@@ -562,12 +749,16 @@ def _seal_active(context):
     row["state"] = "phase_capture_returned"
     # All fallible capture/digest/Trial creation is inside the ACTIVE claim.
     trial = Trial(
-        context.request.identity, MODE, seal.identity,
+        context.request.identity,
+        MODE,
+        seal.identity,
         tuple(value.identity for value in context.evidence),
         tuple(value.trial for value in context.evidence),
         tuple(value.work for value in context.evidence),
-        tuple((item["sequence"], item["stage"], item["state"], item["layer"])
-              for item in context.work), "",
+        tuple(
+            (item["sequence"], item["stage"], item["state"], item["layer"]) for item in context.work
+        ),
+        "",
     )
     identity = _digest(_trial_record(trial))
     context.trial = replace(trial, identity=identity)
@@ -576,8 +767,11 @@ def _seal_active(context):
 
 def _trial_record(value):
     return dict(
-        request=value.request_identity, mode=value.mode, phase=value.phase_identity,
-        stages=value.stage_identities, coordinator_work=value.coordinator_work,
+        request=value.request_identity,
+        mode=value.mode,
+        phase=value.phase_identity,
+        stages=value.stage_identities,
+        coordinator_work=value.coordinator_work,
         stage_work_is_separate_nonadditive_source_evidence=True,
         successful_closed_parameter_record_is_not_invented_inside_claim=True,
     )
@@ -592,12 +786,16 @@ def _closed(context, *, validation=None):
     )
     if validation is not None:
         _validation_check(validation)
-    if (type(record) is not context.api.key.ClosedSeedRecord
-            or context.claim.record is not record or record is not context.parameter_record
-            or record.succeeded is not True or record.primary_error_present is not False
-            or record.seed_flag_created is not True
-            or record.parameter_load_identity != context.parents[0].identity
-            or record.secondary_error_stages):
+    if (
+        type(record) is not context.api.key.ClosedSeedRecord
+        or context.claim.record is not record
+        or record is not context.parameter_record
+        or record.succeeded is not True
+        or record.primary_error_present is not False
+        or record.seed_flag_created is not True
+        or record.parameter_load_identity != context.parents[0].identity
+        or record.secondary_error_stages
+    ):
         raise ValueError("Exact successful closed WorldReady owner/claim/record required")
     if validation is not None:
         _validation_check(validation)
@@ -605,25 +803,31 @@ def _closed(context, *, validation=None):
         _check_evidence(context, evidence, index, closed_record=record)
         if validation is not None:
             _validation_check(validation)
-    if getattr(context.api.stages[-1], CHECK_SEAL_HOOK)(
-        context.seal, transition=context, world_owner=context.request.world_parameters,
-        construction_claim=context.claim, closed_record=record,
-    ) is not context.seal:
+    if (
+        getattr(context.api.stages[-1], CHECK_SEAL_HOOK)(
+            context.seal,
+            transition=context,
+            world_owner=context.request.world_parameters,
+            construction_claim=context.claim,
+            closed_record=record,
+        )
+        is not context.seal
+    ):
         raise ValueError("Retained whole-phase source seal changed")
     if validation is not None:
         _validation_check(validation)
     trial = context.trial
-    if (type(trial) is not Trial or trial.request_identity != context.request.identity
-            or trial.mode != MODE or trial.phase_identity != context.seal.identity
-            or trial.stage_identities != tuple(value.identity for value in context.evidence)
-            or _digest(_trial_record(trial)) != trial.identity
-            or len(trial.stage_trials) != len(context.evidence)
-            or any(a is not b.trial for a, b in zip(
-                trial.stage_trials, context.evidence, strict=True
-            ))
-            or any(a is not b.work for a, b in zip(
-                trial.stage_work, context.evidence, strict=True
-            ))):
+    if (
+        type(trial) is not Trial
+        or trial.request_identity != context.request.identity
+        or trial.mode != MODE
+        or trial.phase_identity != context.seal.identity
+        or trial.stage_identities != tuple(value.identity for value in context.evidence)
+        or _digest(_trial_record(trial)) != trial.identity
+        or len(trial.stage_trials) != len(context.evidence)
+        or any(a is not b.trial for a, b in zip(trial.stage_trials, context.evidence, strict=True))
+        or any(a is not b.work for a, b in zip(trial.stage_work, context.evidence, strict=True))
+    ):
         raise ValueError("Original in-claim phase Trial/stage evidence changed")
     return record
 
@@ -664,7 +868,8 @@ def _coordinate(context):
                     if context.capture_error is None:
                         context.capture_error = capture
                     context.capture_errors = (
-                        *context.capture_errors, ("stage_failure_recording", capture, error),
+                        *context.capture_errors,
+                        ("stage_failure_recording", capture, error),
                     )
                 raise
     except BaseException as error:
@@ -677,7 +882,8 @@ def _coordinate(context):
                 if context.capture_error is None:
                     context.capture_error = capture
                 context.capture_errors = (
-                    *context.capture_errors, ("claim_failure_recording", capture, error),
+                    *context.capture_errors,
+                    ("claim_failure_recording", capture, error),
                 )
         elif error is not context.primary and error is not context.capture_error:
             context.claim_errors = (*context.claim_errors, error)
@@ -689,7 +895,8 @@ def _coordinate(context):
             if context.capture_error is None:
                 context.capture_error = capture
             context.capture_errors = (
-                *context.capture_errors, ("parameter_claim_failure_evidence", capture, error),
+                *context.capture_errors,
+                ("parameter_claim_failure_evidence", capture, error),
             )
     finally:
         if context.claim is not None:
@@ -700,7 +907,8 @@ def _coordinate(context):
                 if context.capture_error is None:
                     context.capture_error = capture
                 context.capture_errors = (
-                    *context.capture_errors, ("closed_parameter_record", capture, context.claim),
+                    *context.capture_errors,
+                    ("closed_parameter_record", capture, context.claim),
                 )
     if context.primary is None and context.capture_error is None:
         try:
@@ -722,7 +930,8 @@ def _retain_failure(context, error, origin):
         context.stage_partials = (*context.stage_partials, (origin, partial))
     except BaseException as observation:
         context.capture_errors = (
-            *context.capture_errors, ("stage_error_attributes", observation, error),
+            *context.capture_errors,
+            ("stage_error_attributes", observation, error),
         )
         context.invalid = True
         if context.capture_error is None:
@@ -739,28 +948,193 @@ def _retain_failure(context, error, origin):
         context.invalid = True
         if context.capture_error is None:
             context.capture_error = capture
-    if (context.primary is None and primary is None and capture is None
-            and error is not context.capture_error):
+    if (
+        context.primary is None
+        and primary is None
+        and capture is None
+        and error is not context.capture_error
+    ):
         context.primary = error
 
 
 def _partial(context):
     return dict(
-        context=context, request=context.request, original_world_owner=context.request.world_parameters,
-        original_parameter_record=context.parents[0], parameters=context.p,
-        actual_claim=context.claim, closed_parameter_record=context.parameter_record,
-        retained_stage_evidence=context.evidence, last_raw_stage_return=context.last_returned,
-        raw_phase_seal=context.raw_seal, phase_seal=context.seal, trial=context.trial,
-        coordinator_work=context.work, primary=context.primary, entry_error=context.entry_error,
-        driver_frame=context.driver_frame, current_step_frame=context.step_frame,
+        context=context,
+        request=context.request,
+        original_world_owner=context.request.world_parameters,
+        original_parameter_record=context.parents[0],
+        parameters=context.p,
+        actual_claim=context.claim,
+        closed_parameter_record=context.parameter_record,
+        retained_stage_evidence=context.evidence,
+        last_raw_stage_return=context.last_returned,
+        raw_phase_seal=context.raw_seal,
+        phase_seal=context.seal,
+        trial=context.trial,
+        coordinator_work=context.work,
+        primary=context.primary,
+        entry_error=context.entry_error,
+        driver_frame=context.driver_frame,
+        current_step_frame=context.step_frame,
         pending_dispatch_ticket=context.dispatch_ticket,
-        capture_errors=context.capture_errors, claim_errors=context.claim_errors,
-        failed_stages=context.failed_stages, stage_partials=context.stage_partials,
-        failed_claim=context.failed_claim, failed_claim_partial=context.failed_claim_partial,
-        usable_child_available=False, complete_raw_serialization_claimed=False,
+        capture_errors=context.capture_errors,
+        claim_errors=context.claim_errors,
+        failed_stages=context.failed_stages,
+        stage_partials=context.stage_partials,
+        failed_claim=context.failed_claim,
+        failed_claim_partial=context.failed_claim_partial,
+        usable_child_available=False,
+        complete_raw_serialization_claimed=False,
         last_validation=getattr(context, "last_validation", None),
         validation_failures=getattr(context, "validation_failures", ()),
     )
+
+
+def _reject_validation(reservation, kind, other=None):
+    reservation.invalid = True
+    reservation.context.invalid = True
+    row = (kind, other)
+    if len(reservation.attempts) < MAX_WORK:
+        reservation.attempts = (*reservation.attempts, row)
+    else:
+        reservation.overflow_attempt = row
+    raise reservation.rejection
+
+
+def _construction_entry(kind):
+    reservation = _VALIDATION.current
+    if reservation is not None:
+        _reject_validation(reservation, kind)
+
+
+def _reserve_validation(owner, context, *, acquisition):
+    # The lock protects publication only, never fallible external checkers.
+    acquired = _LOCK.acquire(blocking=False)
+    if not acquired:
+        reservation = _VALIDATION.current
+        if reservation is not None:
+            _reject_validation(reservation, "competing_validation", owner)
+        if _ACTIVE:
+            _ACTIVE[-1].invalid = True
+        context.invalid = True
+        raise WorldPhaseRejected("Coordinator reservation busy", stage="validation_entry")
+    try:
+        reservation = _VALIDATION.current
+        if reservation is not None:
+            _reject_validation(reservation, "recursive_or_competing_owner_read", owner)
+        if _ACTIVE:
+            _ACTIVE[-1].invalid = context.invalid = True
+            raise WorldPhaseRejected(
+                "Construction overlaps closed-owner read", stage="validation_entry"
+            )
+        if context.invalid:
+            raise WorldPhaseRejected("Invalid closed-owner epoch", stage="validation_entry")
+        reservation = SimpleNamespace(
+            owner=owner,
+            context=context,
+            acquisition=acquisition,
+            thread=get_ident(),
+            active=True,
+            invalid=False,
+            attempts=(),
+            cleanup_errors=(),
+            primary=None,
+            rejection=WorldPhaseRejected(
+                "Recursive/competing closed validation", stage="validation_entry"
+            ),
+        )
+        context.last_validation = reservation
+        _VALIDATION.current = reservation
+        return reservation
+    finally:
+        _LOCK.release()
+
+
+def _validation_check(reservation):
+    if (
+        not reservation.active
+        or reservation.invalid
+        or reservation.context.invalid
+        or reservation.thread != get_ident()
+        or _VALIDATION.current is not reservation
+        or reservation.context.last_validation is not reservation
+    ):
+        _reject_validation(reservation, "poisoned_validation")
+
+
+def _release_validation(reservation):
+    # Exact-token retirement contains no external helper or callback. A new
+    # reservation cannot publish while this token is still present.
+    if _VALIDATION.current is not reservation:
+        raise ValueError("Original validation reservation changed")
+    _VALIDATION.current = None
+    reservation.active = False
+
+
+@contextmanager
+def _validation_scope(owner, context):
+    acquisition = object()
+    reservation = None
+    try:
+        reservation = _reserve_validation(owner, context, acquisition=acquisition)
+        yield reservation
+        _validation_check(reservation)
+    except BaseException as error:
+        context.invalid = True
+        if reservation is None:
+            # An inherited return observer may reject AFTER publication and
+            # BEFORE the helper's result reaches this frame. Recover only
+            # this acquisition's exact owner/context token, never a neighbour.
+            candidate = _VALIDATION.current
+            try:
+                if (
+                    candidate is not None
+                    and candidate.acquisition is acquisition
+                    and candidate.owner is owner
+                    and candidate.context is context
+                    and context.last_validation is candidate
+                ):
+                    reservation = candidate
+            except BaseException as capture:
+                context.validation_acquisition_errors = (
+                    *getattr(context, "validation_acquisition_errors", ()),
+                    (error, capture),
+                )
+        if reservation is not None:
+            reservation.primary = error
+        raise
+    finally:
+        if reservation is not None:
+            try:
+                _release_validation(reservation)
+            except BaseException as capture:
+                # A rejection at cleanup entry/return cannot replace a
+                # primary or strand this exact published acquisition.
+                context.invalid = True
+                reservation.invalid = True
+                reservation.cleanup_errors = (*reservation.cleanup_errors, capture)
+                if _VALIDATION.current is reservation:
+                    _VALIDATION.current = None
+                reservation.active = False
+            poisoned = bool(reservation.attempts) or (
+                (reservation.invalid or context.invalid) and not reservation.cleanup_errors
+            )
+            if reservation.primary is None and poisoned:
+                reservation.primary = reservation.rejection
+            if reservation.primary is not None or reservation.cleanup_errors:
+                context.validation_failures = (
+                    *getattr(context, "validation_failures", ()),
+                    reservation,
+                )
+            if reservation.primary is reservation.rejection:
+                raise reservation.rejection
+            if reservation.primary is None and reservation.cleanup_errors:
+                raise WorldPhaseRejected(
+                    "Closed-owner reservation cleanup failed",
+                    stage="validation_cleanup",
+                    partial=reservation,
+                    capture_error=reservation.cleanup_errors[0],
+                ) from reservation.cleanup_errors[0]
 
 
 def prepare(request, *, enabled=False):
@@ -774,18 +1148,41 @@ def prepare(request, *, enabled=False):
             _ACTIVE[-1].invalid = True
             raise WorldPhaseRejected("Reentrant world-construction attempt", stage="reentrant")
         if type(request) is not Request or request not in _REQUESTS:
-            raise WorldPhaseRejected("Actual issued WorldReady/callback request required", stage="request")
+            raise WorldPhaseRejected(
+                "Actual issued WorldReady/callback request required", stage="request"
+            )
         if request in _CONSUMED or request.world_parameters in _CLAIMED:
             raise WorldPhaseRejected("World construction attempt consumed", stage="consumed")
         context = SimpleNamespace(
-            request=request, parents=_REQUESTS[request], api=api, p=_REQUESTS[request][1],
-            thread=get_ident(), active=True, invalid=False, entry_error=None,
-            primary=None, capture_error=None, capture_errors=(), claim_errors=(),
-            failed_stages=(), stage_partials=(),
-            claim=None, parameter_record=None, failed_claim=None, failed_claim_partial=None,
-            evidence=[], last_returned=None, raw_seal=None, seal=None, trial=None,
-            work=[], executing=None, stage="construction_claim_before_phase_birth",
-            dispatch_ticket=None, driver_frame=None, step_frame=None,
+            request=request,
+            parents=_REQUESTS[request],
+            api=api,
+            p=_REQUESTS[request][1],
+            thread=get_ident(),
+            active=True,
+            invalid=False,
+            entry_error=None,
+            primary=None,
+            capture_error=None,
+            capture_errors=(),
+            claim_errors=(),
+            failed_stages=(),
+            stage_partials=(),
+            claim=None,
+            parameter_record=None,
+            failed_claim=None,
+            failed_claim_partial=None,
+            evidence=[],
+            last_returned=None,
+            raw_seal=None,
+            seal=None,
+            trial=None,
+            work=[],
+            executing=None,
+            stage="construction_claim_before_phase_birth",
+            dispatch_ticket=None,
+            driver_frame=None,
+            step_frame=None,
         )
         _CONSUMED[request] = _CLAIMED[request.world_parameters] = context
         _ACTIVE.append(context)
@@ -807,13 +1204,23 @@ def prepare(request, *, enabled=False):
                 if context.capture_error is None:
                     context.capture_error = capture
                 context.capture_errors = (
-                    *context.capture_errors, ("coordinator_stack_release", capture, context),
+                    *context.capture_errors,
+                    ("coordinator_stack_release", capture, context),
                 )
-        if (context.primary is not None or context.capture_error is not None
-                or context.trial is None or context.parameter_record is None or context.invalid):
+        if (
+            context.primary is not None
+            or context.capture_error is not None
+            or context.trial is None
+            or context.parameter_record is None
+            or context.invalid
+        ):
             raise WorldPhaseRejected(
-                "Actual world-phase construction refused", stage=context.stage, request=request,
-                trial=context.trial, partial=_partial(context), source_error=context.primary,
+                "Actual world-phase construction refused",
+                stage=context.stage,
+                request=request,
+                trial=context.trial,
+                partial=_partial(context),
+                source_error=context.primary,
                 capture_error=context.capture_error,
             ) from (context.primary if context.primary is not None else context.capture_error)
         owner = object.__new__(WorldPhaseOwner)
@@ -846,23 +1253,51 @@ class WorldPhaseOwner:
 
 def _validate(owner):
     context = _ISSUED.get(owner) if type(owner) is WorldPhaseOwner else None
-    if (context is None or context.owner is not owner or context.active or context.invalid
-            or context.thread != get_ident()):
-        raise WorldPhaseRejected("Actual successfully sealed world-phase child required", stage="owner")
+    if (
+        context is None
+        or context.owner is not owner
+        or context.active
+        or context.invalid
+        or context.thread != get_ident()
+    ):
+        raise WorldPhaseRejected(
+            "Actual successfully sealed world-phase child required", stage="owner"
+        )
     try:
-        # Runtime registry/source checks remain live; no stale numeric parent
-        # validator or closed claim's active .check() is reopened here.
-        if (_REQUESTS.get(context.request) is not context.parents
-                or _CONSUMED.get(context.request) is not context
-                or _CLAIMED.get(context.request.world_parameters) is not context
-                or _digest(source_plan()) != context.request.source_identity):
-            raise ValueError("World phase original issuance/source changed")
-        _same_dependencies(context)
-        context.api.helpers.literal._same(_bindings(context), context.bindings)
-        _closed(context)
+        with _validation_scope(owner, context) as reservation:
+            _validate_reserved(context, reservation)
     except BaseException as error:
         context.invalid = True
-        raise WorldPhaseRejected("Stale world-phase owner", stage="owner_drift",
-                                 request=context.request, trial=context.trial,
-                                 partial=_partial(context), source_error=error) from error
+        raise WorldPhaseRejected(
+            "Stale world-phase owner",
+            stage="owner_drift",
+            request=context.request,
+            trial=context.trial,
+            partial=_partial(context),
+            source_error=error,
+        ) from error
     return context
+
+
+def _closed_lineage(context):
+    if (
+        _REQUESTS.get(context.request) is not context.parents
+        or _CONSUMED.get(context.request) is not context
+        or _CLAIMED.get(context.request.world_parameters) is not context
+        or _digest(source_plan()) != context.request.source_identity
+    ):
+        raise ValueError("World phase original issuance/source changed")
+
+
+def _validate_reserved(context, reservation):
+    # The reservation spans BOTH sides of Key validation and every later
+    # stage check, without reopening old numeric owners or active claims.
+    _validation_check(reservation)
+    _closed_lineage(context)
+    _validation_check(reservation)
+    _same_dependencies(context)
+    _validation_check(reservation)
+    _compare_bindings(context)
+    _validation_check(reservation)
+    _closed(context, validation=reservation)
+    _validation_check(reservation)

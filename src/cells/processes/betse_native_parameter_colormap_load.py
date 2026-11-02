@@ -485,6 +485,18 @@ def _copy_locals(frame):
     return dict(frame.f_locals)
 
 
+def _trace_registry(context, frame, stage):
+    context.trace_observations.append((stage, frame, frame.f_lasti))
+    try:
+        if context.invalid:
+            raise ValueError("Poisoned registry trace admission")
+        _registry_check(context)
+    except BaseException as error:
+        context.invalid = True
+        context.observation_errors += (("registry_trace_" + stage, error),)
+        raise
+
+
 def _returned(context, role, frame, value):
     context.raw_last = (role, frame, value)
     context.raw.append(context.raw_last)  # Before every fallible observer copy.
@@ -496,6 +508,8 @@ def _returned(context, role, frame, value):
 def _observe(context):
     prior, trace = sys.getprofile(), sys.gettrace()
     roles = _roles(context)
+    watcher = SimpleNamespace(depth=0, ready=False, locals={}, frames=set(), opcodes={})
+    context.trace_observations = []
     forbidden = {
         value.__code__ for value in context.source.capture.objects if type(value) is FunctionType
     }
@@ -504,6 +518,62 @@ def _observe(context):
             value = getattr(cls, name, None)
             if type(value) is FunctionType:
                 forbidden.add(value.__code__)
+
+    def inherited(function, frame, event, arg, *, kind="profile"):
+        if function is None or watcher.depth:
+            return None
+        watcher.depth += 1
+        try:
+            return sys.call_tracing(function, (frame, event, arg))
+        except BaseException as error:
+            label = "inherited_" if kind == "profile" else "inherited_trace_"
+            context.observation_errors += ((label + event, error),)
+            if event not in ("return", "exception"):
+                raise
+        finally:
+            watcher.depth -= 1
+            if watcher.ready:
+                # Keep owned source-frame boundaries installed even if an
+                # inherited callback changed its local trace or global hooks.
+                if sys.getprofile() is not profile or sys.gettrace() is not traced:
+                    context.invalid = True
+                    context.observation_errors += (
+                        ("inherited_hook_change", ValueError("Source hooks changed")),
+                    )
+                    sys.setprofile(profile)
+                    sys.settrace(traced)
+                for active in tuple(watcher.frames):
+                    active.f_trace = traced
+                    active.f_trace_lines = True
+                    active.f_trace_opcodes = True
+
+    def traced(frame, event, arg):
+        role = roles.get(frame.f_code)
+        guarded = role is not None or watcher.depth > 0
+        if event in ("call", "line", "opcode") and guarded and watcher.ready:
+            _trace_registry(context, frame, "before_" + event)
+        if event == "call" and role is not None:
+            watcher.frames.add(frame)
+            watcher.opcodes[frame] = frame.f_trace_opcodes
+        function = trace if event == "call" else watcher.locals.get(frame)
+        if event != "opcode" or watcher.opcodes.get(frame, False):
+            result = inherited(function, frame, event, arg, kind="trace")
+            if result is not None:
+                watcher.locals[frame] = result
+            elif event == "call":
+                watcher.locals.pop(frame, None)
+        if event == "call" and role is not None:
+            watcher.opcodes[frame] = watcher.opcodes[frame] or frame.f_trace_opcodes
+            frame.f_trace = traced
+            frame.f_trace_lines = True
+            frame.f_trace_opcodes = True
+        if event in ("call", "line", "opcode") and guarded and watcher.ready:
+            _trace_registry(context, frame, "after_" + event)
+        if event == "return":
+            watcher.frames.discard(frame)
+            watcher.locals.pop(frame, None)
+            watcher.opcodes.pop(frame, None)
+        return traced if role is not None or watcher.locals.get(frame) is not None else None
 
     def profile(frame, event, arg):
         code = frame.f_code
@@ -537,17 +607,7 @@ def _observe(context):
                 _returned(context, role, frame, arg)
             except BaseException as error:
                 context.observation_errors += ((role + "_return_capture", error),)
-        if prior is not None:
-            if event == "return":
-                # An enclosing _invoke or a reached helper can also emit a
-                # return(None) while the original exception unwinds. A
-                # secondary observer must never replace that primary error.
-                try:
-                    prior(frame, event, arg)
-                except BaseException as error:
-                    context.observation_errors += (("inherited_return", error),)
-            else:
-                prior(frame, event, arg)
+        inherited(prior, frame, event, arg)
         if event == "call" and role is not None:
             # The inherited call hook also precedes the native body. Recheck
             # its final registry surface before returning permission to enter.
@@ -555,8 +615,11 @@ def _observe(context):
 
     try:
         sys.setprofile(profile)
+        sys.settrace(traced)
+        watcher.ready = True
         yield
     finally:
+        watcher.ready = False
         for name, setter, value in (
             ("profile_restore", sys.setprofile, prior),
             ("trace_restore", sys.settrace, trace),
@@ -853,6 +916,7 @@ def _bindings():
         _registry_check,
         _entry,
         _copy_locals,
+        _trace_registry,
         _returned,
         _observe,
         _observe.__wrapped__,

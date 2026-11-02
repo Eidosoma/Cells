@@ -9,41 +9,142 @@ from types import SimpleNamespace as NS
 import pytest
 
 from cells.processes import betse_native_world_phase_construction as stage
+from validation.betse import betse_native_world_phase_construction_software as software
 
 SOFTWARE_RELEASE = "BETSE_NATIVE_WORLD_PHASE_CONSTRUCTION_SOFTWARE_RELEASED"
+_BLOCKADE_FAILURES = ()
 
 
 @pytest.fixture(autouse=True)
 def blocked(request, tmp_path):
     if os.environ.get(SOFTWARE_RELEASE) != "1":
         pytest.skip("Source preparation only; no software execution released")
-    prior, trace = sys.getprofile(), sys.gettrace()
+    with _blockade(request, tmp_path):
+        yield
+
+
+@contextmanager
+def _blockade(request, tmp_path):
+    global _BLOCKADE_FAILURES
+    setters, getters = (sys.setprofile, sys.settrace), (sys.getprofile, sys.gettrace)
+    prior, trace = getters[0](), getters[1]()
     attempted = []
-    forbidden = {*stage.STAGE_MODULES, stage.KEY_MODULE, stage.PARAMETER_MODULE}
+    state = software.reuse._run_state()
+    state.hook_before = (prior, trace)
+    state.restore_setters, state.restore_getters = setters, getters
 
     def profile(frame, event, arg):
-        if event == "call" and (
-            frame.f_globals.get("__name__") in forbidden
-            or "/betse/" in frame.f_code.co_filename
-        ):
+        if event == "call" and software.is_forbidden_frame(frame):
             attempted.append((frame.f_code.co_filename, frame.f_code.co_qualname))
             raise AssertionError("Actual phase/parameter/native source entry forbidden")
         if prior is not None:
             prior(frame, event, arg)
 
     before = tuple(stage._ISSUED.items())
-    sys.setprofile(profile)
     try:
-        yield
+        setters[0](profile)
+        yield state
         assert not attempted and tuple(stage._ISSUED.items()) == before
-        assert sys.getprofile() is profile and sys.gettrace() is trace
+        assert getters[0]() is profile and getters[1]() is trace
+        state.status = 0
+    except BaseException as error:
+        state.primary, state.primary_stage = error, "fixture_body_or_guard"
+        raise
     finally:
-        sys.settrace(trace)
-        sys.setprofile(prior)
-        (tmp_path / "native-blocked.json").write_text(json.dumps(dict(
-            nodeid=request.node.nodeid, attempted=attempted,
-            source_native_or_scientific_credit=0,
-        )))
+        try:
+            software.reuse._restore_hooks(state, (prior, trace), (profile, trace), setters, getters)
+        except BaseException as error:
+            state.cleanup_errors = (*state.cleanup_errors, ("fixture_restore_entry", error, None))
+            for index in (1, 0):
+                try:
+                    setters[index]((prior, trace)[index])
+                except BaseException as capture:
+                    state.cleanup_errors = (
+                        *state.cleanup_errors,
+                        ("fixture_emergency", capture, index),
+                    )
+        # Receipt is independent of either restoration's success. It logs
+        # attempts/partial cleanup; final identity sampling follows the writer.
+        try:
+            software.snapshot.write_json(
+                tmp_path / "native-blocked.json",
+                dict(
+                    nodeid=request.node.nodeid,
+                    attempted=attempted,
+                    source_native_or_scientific_credit=0,
+                    primary=software.reuse._error_record(state.primary),
+                    secondary_cleanup=[
+                        software.reuse._error_record(row[1]) for row in state.cleanup_errors
+                    ],
+                    final_cleanup_pending=True,
+                    final_hook_restoration_claimed=False,
+                ),
+            )
+        except BaseException as error:
+            state.evidence_errors = (*state.evidence_errors, ("fixture_receipt", error, tmp_path))
+        if state.primary is not None:
+            try:
+                state.primary.world_phase_blockade = state
+            except BaseException as error:
+                state.secondary = (
+                    *state.secondary,
+                    ("fixture_primary_attachment", error, state.primary),
+                )
+        try:
+            software.reuse._restore_hooks(
+                state,
+                (prior, trace),
+                (prior, trace),
+                setters,
+                getters,
+                record_active=False,
+            )
+        except BaseException as error:
+            state.cleanup_errors = (
+                *state.cleanup_errors,
+                ("fixture_final_restore_entry", error, None),
+            )
+            for index in (1, 0):
+                try:
+                    setters[index]((prior, trace)[index])
+                except BaseException as capture:
+                    state.cleanup_errors = (
+                        *state.cleanup_errors,
+                        ("fixture_final_emergency", capture, index),
+                    )
+        first, second = [None, None], [None, None]
+        for values, order in ((first, (0, 1)), (second, (1, 0))):
+            for index in order:
+                try:
+                    values[index] = getters[index]()
+                except BaseException as error:
+                    values[index] = error
+                    state.cleanup_errors = (
+                        *state.cleanup_errors,
+                        ("fixture_final_read", error, index),
+                    )
+        state.hook_samples = ((first[0], first[1]), (second[0], second[1]))
+        state.hook_after = state.hook_samples[-1]
+        state.hooks_restored = (
+            first[0] is prior and first[1] is trace and second[0] is prior and second[1] is trace
+        )
+        if not state.hooks_restored:
+            state.cleanup_errors = (
+                *state.cleanup_errors,
+                ("fixture_final_identity_mismatch", None, state.hook_samples),
+            )
+        failed = (
+            state.primary is not None
+            or state.cleanup_errors
+            or state.evidence_errors
+            or state.secondary
+            or not state.guard_active_on_cleanup
+            or not state.hooks_restored
+        )
+        if failed:
+            _BLOCKADE_FAILURES = (*_BLOCKADE_FAILURES, state)
+        if state.primary is None and failed:
+            raise AssertionError("Native-blocked fixture cleanup/evidence incomplete")
 
 
 def test_preparation_declares_one_claim_and_no_intermediate_closed_record():
@@ -151,14 +252,33 @@ def _controller(monkeypatch):
             log.append("claim exit")
 
     context = NS(
-        request=NS(world_parameters=world_token), parents=(object(), parameter_token),
-        api=NS(key=NS(construction=construction)), p=parameter_token,
-        stage="construction_claim_before_phase_birth", invalid=False, entry_error=None,
-        primary=None, capture_error=None, capture_errors=(), claim_errors=(),
-        claim=None, parameter_record=None, failed_claim=None, failed_claim_partial=None,
-        failed_stages=(), stage_partials=(), evidence=[], last_returned=None,
-        raw_seal=None, seal=None, trial=None, work=[], executing=None,
-        driver_frame=None, step_frame=None, dispatch_ticket=None,
+        request=NS(world_parameters=world_token),
+        parents=(object(), parameter_token),
+        api=NS(key=NS(construction=construction)),
+        p=parameter_token,
+        stage="construction_claim_before_phase_birth",
+        invalid=False,
+        entry_error=None,
+        primary=None,
+        capture_error=None,
+        capture_errors=(),
+        claim_errors=(),
+        claim=None,
+        parameter_record=None,
+        failed_claim=None,
+        failed_claim_partial=None,
+        failed_stages=(),
+        stage_partials=(),
+        evidence=[],
+        last_returned=None,
+        raw_seal=None,
+        seal=None,
+        trial=None,
+        work=[],
+        executing=None,
+        driver_frame=None,
+        step_frame=None,
+        dispatch_ticket=None,
     )
 
     def active(actual):
@@ -192,8 +312,16 @@ def _controller(monkeypatch):
     monkeypatch.setattr(stage, "_seal_active", seal)
     monkeypatch.setattr(stage, "_check_bindings", lambda actual: None)
     monkeypatch.setattr(stage, "_closed", closed)
-    return NS(context=context, log=log, state=claim_state, claim=claim,
-              record=record, active=active, step=step, seal=seal)
+    return NS(
+        context=context,
+        log=log,
+        state=claim_state,
+        claim=claim,
+        record=record,
+        active=active,
+        step=step,
+        seal=seal,
+    )
 
 
 def test_ordering_claim_spans_all_stages_and_fallible_sealing_before_closed_validation(monkeypatch):
@@ -201,8 +329,11 @@ def test_ordering_claim_spans_all_stages_and_fallible_sealing_before_closed_vali
     before = tuple(stage._ISSUED.items())
     stage._coordinate(metadata.context)
     assert metadata.log == [
-        "claim enter before any phase", *stage.STAGES,
-        "fallible phase seal inside claim", "claim exit", "closed record",
+        "claim enter before any phase",
+        *stage.STAGES,
+        "fallible phase seal inside claim",
+        "claim exit",
+        "closed record",
         "exact closed validation",
     ]
     assert metadata.context.primary is None and metadata.context.capture_error is None
@@ -261,7 +392,11 @@ def test_ordering_closed_record_failure_keeps_original_source_and_secondary_capt
     stage._coordinate(metadata.context)
     assert metadata.context.primary is primary and primary.__cause__ is cause
     assert metadata.context.capture_error is capture
-    assert metadata.context.capture_errors[-1] == ("closed_parameter_record", capture, metadata.claim)
+    assert metadata.context.capture_errors[-1] == (
+        "closed_parameter_record",
+        capture,
+        metadata.claim,
+    )
 
 
 def test_ordering_closed_authentication_refusal_cannot_publish_private_seal(monkeypatch):
@@ -281,7 +416,12 @@ def test_ordering_closed_authentication_refusal_cannot_publish_private_seal(monk
 
 def test_ordering_claim_entry_failure_retains_failed_claim_parent_and_primary(monkeypatch):
     metadata = _controller(monkeypatch)
-    primary, cause, failed, partial = FalseFailure("claim entry"), KeyError("cause"), object(), object()
+    primary, cause, failed, partial = (
+        FalseFailure("claim entry"),
+        KeyError("cause"),
+        object(),
+        object(),
+    )
     primary.world_construction_claim, primary.partial = failed, partial
 
     @contextmanager
@@ -319,9 +459,16 @@ def test_ordering_claim_exit_failure_retains_in_claim_seal_without_publication(m
     assert tuple(stage._ISSUED.items()) == before
 
 
-def test_failure_envelope_retains_actual_primary_capture_and_partial_without_truthiness(monkeypatch):
+def test_failure_envelope_retains_actual_primary_capture_and_partial_without_truthiness(
+    monkeypatch,
+):
     metadata = _controller(monkeypatch)
-    primary, cause, capture, partial = FalseFailure("source"), KeyError("cause"), OSError("capture"), object()
+    primary, cause, capture, partial = (
+        FalseFailure("source"),
+        KeyError("cause"),
+        OSError("capture"),
+        object(),
+    )
     primary.__cause__ = cause
     error = NS(source_error=primary, capture_error=capture, partial=partial)
     stage._retain_failure(metadata.context, error, "actual stage")
@@ -353,11 +500,21 @@ def test_step_claim_precedes_hook_and_caught_reentry_stays_poisoned(monkeypatch,
     # Only the private stage-call controller is exercised. No real phase,
     # parameter claim, stage evidence or public child is manufactured.
     context = NS(
-        work=[], evidence=[], executing=None, entry_error=None, invalid=False,
-        stage="metadata", request=NS(world_parameters=object(), callbacks=object()),
-        claim=object(), last_returned=None, p=NS(),
-        dispatch_ticket=None, driver_frame=None, step_frame=None,
-        capture_errors=(), capture_error=None,
+        work=[],
+        evidence=[],
+        executing=None,
+        entry_error=None,
+        invalid=False,
+        stage="metadata",
+        request=NS(world_parameters=object(), callbacks=object()),
+        claim=object(),
+        last_returned=None,
+        p=NS(),
+        dispatch_ticket=None,
+        driver_frame=None,
+        step_frame=None,
+        capture_errors=(),
+        capture_error=None,
     )
     delegates = []
     raw = object()
@@ -385,11 +542,21 @@ def test_step_claim_precedes_hook_and_caught_reentry_stays_poisoned(monkeypatch,
 def test_step_raw_return_precedes_any_failed_result_observation(monkeypatch):
     raw, refusal = object(), ValueError("stage evidence refused")
     context = NS(
-        work=[], evidence=[], executing=None, entry_error=None, invalid=False,
-        stage="metadata", request=NS(world_parameters=object(), callbacks=object()),
-        claim=object(), last_returned=None, p=NS(),
-        dispatch_ticket=None, driver_frame=None, step_frame=None,
-        capture_errors=(), capture_error=None,
+        work=[],
+        evidence=[],
+        executing=None,
+        entry_error=None,
+        invalid=False,
+        stage="metadata",
+        request=NS(world_parameters=object(), callbacks=object()),
+        claim=object(),
+        last_returned=None,
+        p=NS(),
+        dispatch_ticket=None,
+        driver_frame=None,
+        step_frame=None,
+        capture_errors=(),
+        capture_error=None,
         api=NS(stages=(NS(**{stage.CONSTRUCT_HOOK: lambda *args, **kwargs: raw}),)),
     )
 
@@ -411,3 +578,445 @@ def _dispatch_metadata_step(context, index):
     context.driver_frame = sys._getframe()
     context.dispatch_ticket = (index, context.driver_frame)
     return stage._step(context, index)
+
+
+def _checker_controller():
+    """Helper references only; this cannot produce an issued source owner."""
+    counts = []
+
+    def function(tag):
+        def delegate(*args, **kwargs):
+            counts.append(tag + " delegate")
+
+        def wrapper(*args, __delegate=delegate, **kwargs):
+            counts.append(tag)
+            return __delegate(*args, **kwargs)
+
+        wrapper.__wrapped__ = delegate
+        wrapper._implementation = delegate
+        return wrapper
+
+    helpers = NS(
+        _atoms=function("atoms"),
+        literal=NS(
+            _surface=function("surface"),
+            _same=function("same"),
+        ),
+    )
+    context = NS(api=NS(helpers=helpers), invalid=False, bindings=())
+    context.helper_authority = stage._helper_authority(context.api)
+    return context, counts
+
+
+@pytest.mark.parametrize("boundary", ["active", "closed"])
+@pytest.mark.parametrize("name", ["atoms", "surface", "same"])
+@pytest.mark.parametrize(
+    "mutation", ["replace", "code", "wrapped_code", "implementation", "keyword"]
+)
+def test_helper_mutation_refuses_before_any_changed_helper_or_delegate(
+    monkeypatch, boundary, name, mutation
+):
+    context, counts = _checker_controller()
+    container, attribute = (
+        (context.api.helpers, "_atoms")
+        if name == "atoms"
+        else (context.api.helpers.literal, "_" + name)
+    )
+    original = getattr(container, attribute)
+    delegate = original.__wrapped__
+    code, delegated_code = original.__code__, delegate.__code__
+
+    def foreign(*args, **kwargs):
+        counts.append("altered helper ran")
+
+    monkeypatch.setattr(stage, "_guard", lambda actual: None)
+    monkeypatch.setattr(stage, "_same_dependencies", lambda actual: None)
+    try:
+        if mutation == "replace":
+            setattr(container, attribute, foreign)
+        elif mutation == "code":
+            original.__code__ = code.replace(co_name="accepting_changed_checker")
+        elif mutation == "wrapped_code":
+            delegate.__code__ = delegated_code.replace(co_name="changed_wrapped_checker")
+        elif mutation == "implementation":
+            original._implementation = foreign
+        else:
+            original.__kwdefaults__["__delegate"] = foreign
+            assert original.__wrapped__ is delegate and original.__code__ is code
+        with pytest.raises(ValueError, match="helper"):
+            if boundary == "active":
+                stage._check_bindings(context)
+            else:
+                with stage._validation_scope(object(), context):
+                    stage._compare_bindings(context)
+        assert counts == []
+        assert stage._VALIDATION.current is None
+    finally:
+        original.__code__, delegate.__code__ = code, delegated_code
+
+
+def test_unchanged_helper_bootstrap_does_not_invoke_any_comparator_or_atom_helper():
+    context, counts = _checker_controller()
+    stage._check_helpers(context)
+    assert counts == []
+
+
+def test_original_global_atom_delegate_is_authenticated_without_calling_it(monkeypatch):
+    context, counts = _checker_controller()
+    namespace = dict(aliases=NS(_atoms=lambda value: counts.append("old atoms")))
+    exec("def helper(*args):\n    return aliases._atoms(args)\n", namespace)
+    context.api.helpers._atoms = namespace["helper"]
+    context.helper_authority = stage._helper_authority(context.api)
+
+    def altered(value):
+        counts.append("changed atoms")
+
+    monkeypatch.setattr(namespace["aliases"], "_atoms", altered)
+    with pytest.raises(ValueError, match="helper"):
+        stage._compare_bindings(context)
+    assert counts == []
+
+
+@pytest.mark.parametrize("boundary", ["pre_key", "post_key"])
+@pytest.mark.parametrize("entry", ["owner_read", "prepare", "declare"])
+def test_validation_reservation_is_sticky_before_and_after_parameter_checker(
+    monkeypatch, boundary, entry
+):
+    # A private reservation on metadata tokens, never a fabricated source owner.
+    context = NS(invalid=False)
+    owner, log = object(), []
+
+    def recursive():
+        with pytest.raises(stage.WorldPhaseRejected):
+            if entry == "owner_read":
+                with stage._validation_scope(owner, context):
+                    log.append("forbidden recursive body")
+            elif entry == "prepare":
+                stage.prepare(None, enabled=False)
+            else:
+                stage.from_world_ready(None, None, law_id=stage.LAW_ID, mode=stage.MODE)
+
+    def compare(actual):
+        if boundary == "pre_key":
+            recursive()
+
+    def key_check(*args, **kwargs):
+        log.append("Key metadata checker")
+        if boundary == "post_key":
+            recursive()
+        return object()  # Refusal must precede any interpretation of this token.
+
+    context.api = NS(key=NS(validate_closed_seed=key_check))
+    context.request, context.claim = NS(world_parameters=object()), object()
+    monkeypatch.setattr(stage, "_closed_lineage", lambda actual: None)
+    monkeypatch.setattr(stage, "_same_dependencies", lambda actual: None)
+    monkeypatch.setattr(stage, "_compare_bindings", compare)
+    monkeypatch.setattr(stage, "_check_evidence", lambda *args, **kwargs: log.append("late stage"))
+    with pytest.raises(stage.WorldPhaseRejected) as caught:
+        with stage._validation_scope(owner, context) as reservation:
+            stage._validate_reserved(context, reservation)
+    assert caught.value is reservation.rejection
+    assert context.invalid and reservation.attempts
+    assert log == ([] if boundary == "pre_key" else ["Key metadata checker"])
+    assert stage._VALIDATION.current is None and reservation.active is False
+    assert context.validation_failures[-1] is reservation
+
+
+@pytest.mark.parametrize("has_primary", [False, True])
+def test_validation_release_rejection_retains_primary_and_retires_exact_scope(
+    monkeypatch, has_primary
+):
+    context, owner = NS(invalid=False), object()
+    primary, cause, capture = (
+        FalseFailure("original checker"),
+        KeyError("cause"),
+        OSError("release"),
+    )
+
+    def reject(reservation):
+        raise capture
+
+    monkeypatch.setattr(stage, "_release_validation", reject)
+    expected = FalseFailure if has_primary else stage.WorldPhaseRejected
+    with pytest.raises(expected) as caught:
+        with stage._validation_scope(owner, context) as reservation:
+            if has_primary:
+                raise primary from cause
+    if has_primary:
+        assert caught.value is primary and primary.__cause__ is cause
+    else:
+        assert caught.value.capture_error is capture
+    assert reservation.cleanup_errors == (capture,)
+    assert context.validation_failures[-1] is reservation
+    assert stage._VALIDATION.current is None and reservation.active is False
+
+
+def test_reserved_source_failure_cleans_scope_without_reopening_any_claim():
+    context, owner = NS(invalid=False), object()
+    primary, cause = FalseFailure("post-Key failure"), LookupError("cause")
+    with pytest.raises(FalseFailure) as caught:
+        with stage._validation_scope(owner, context) as reservation:
+            raise primary from cause
+    assert caught.value is primary and primary.__cause__ is cause
+    assert reservation.primary is primary and not reservation.cleanup_errors
+    assert stage._VALIDATION.current is None
+
+
+def test_actual_validation_reports_callback_is_allowed_by_exact_native_guard(tmp_path):
+    directory = tmp_path / "allowed_callback"
+    directory.mkdir()
+    request = NS(node=NS(nodeid="metadata::actual_reports_callback"))
+    state = software.reuse._run_state()
+    plugin = software.Reports(directory, state, "", [])
+    call = NS(excinfo=None, when="call")
+    with _blockade(request, directory):
+        plugin.pytest_runtest_makereport(None, call)
+        plugin.pytest_runtest_logreport(
+            NS(
+                skipped=False,
+                nodeid="metadata::report",
+                when="call",
+                outcome="passed",
+                duration=0.0,
+                longrepr="",
+            )
+        )
+    assert not state.evidence_errors and state.primary is None
+    assert len(list((directory / "reports").iterdir())) == 1
+
+
+@pytest.mark.parametrize("policy", ["native_path", "forbidden_module", "misleading_path"])
+def test_exact_guard_distinguishes_native_root_from_metadata_labels(tmp_path, policy):
+    directory = tmp_path / policy
+    directory.mkdir()
+    request = NS(node=NS(nodeid="metadata::exact_guard::" + policy))
+    filename = {
+        "native_path": software.NATIVE_ROOT + "/betse/controlled_guard_probe.py",
+        "forbidden_module": "/tmp/metadata_only.py",
+        "misleading_path": "/tmp/project/validation/betse/metadata_only.py",
+    }[policy]
+    calls = []
+    namespace = dict(
+        calls=calls,
+        __name__=(
+            "betse.science.cells"
+            if policy == "forbidden_module"
+            else "validation.betse.metadata_probe"
+        ),
+    )
+    exec(compile("def probe():\n    calls.append('body')\n", filename, "exec"), namespace)
+    if policy == "misleading_path":
+        with _blockade(request, directory):
+            namespace["probe"]()
+        assert calls == ["body"]
+    else:
+        with pytest.raises(AssertionError, match="entry forbidden"):
+            with _blockade(request, directory):
+                namespace["probe"]()
+        assert calls == []
+    saved = json.loads((directory / "native-blocked.json").read_text())
+    assert len(saved["attempted"]) == (0 if policy == "misleading_path" else 1)
+    assert saved["source_native_or_scientific_credit"] == 0
+
+
+@pytest.mark.parametrize("primary_kind", ["none", "normal", "falsey"])
+@pytest.mark.parametrize("failure", ["trace", "profile", "receipt", "all"])
+def test_fixture_cleanup_receipt_failures_preserve_primary_and_attempt_both_hooks(
+    monkeypatch, tmp_path, primary_kind, failure
+):
+    directory = tmp_path / "cleanup"
+    directory.mkdir()
+    request = NS(node=NS(nodeid="metadata::fixture_cleanup"))
+    getters, setters = (sys.getprofile, sys.gettrace), (sys.setprofile, sys.settrace)
+    before = (getters[0](), getters[1]())
+    primary = (
+        None
+        if primary_kind == "none"
+        else (
+            FalseFailure("falsey original") if primary_kind == "falsey" else ValueError("original")
+        )
+    )
+    cause, capture = KeyError("original cause"), OSError("cleanup observer")
+    attempted, once = [], set()
+    original_writer = software.snapshot.write_json
+
+    def setter(index, value):
+        if value is before[index]:
+            attempted.append(index)
+            name = ("profile", "trace")[index]
+            if failure in (name, "all") and index not in once:
+                once.add(index)
+                raise capture
+        setters[index](value)
+
+    def writer(path, value):
+        if failure in ("receipt", "all") and path.parent == directory:
+            raise capture
+        original_writer(path, value)
+
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(sys, "setprofile", lambda value: setter(0, value))
+            patch.setattr(sys, "settrace", lambda value: setter(1, value))
+            patch.setattr(software.snapshot, "write_json", writer)
+            expected = AssertionError if primary is None else type(primary)
+            with pytest.raises(expected) as caught:
+                with _blockade(request, directory) as state:
+                    if primary is not None:
+                        raise primary from cause
+        if primary is not None:
+            assert caught.value is primary and primary.__cause__ is cause
+            assert primary.world_phase_blockade is state
+        assert 0 in attempted and 1 in attempted
+        assert state.hooks_restored is True
+        assert state.cleanup_errors or state.evidence_errors
+        assert getters[0]() is before[0] and getters[1]() is before[1]
+        if failure not in ("receipt", "all"):
+            assert (directory / "native-blocked.json").is_file()
+    finally:
+        setters[1](before[1])
+        setters[0](before[0])
+
+
+@pytest.mark.parametrize("boundary", ["active", "closed"])
+@pytest.mark.parametrize("shadow", ["len", "any", "zip", "ValueError"])
+def test_residual_resolved_comparator_shadow_refuses_equal_length_drift(
+    monkeypatch, boundary, shadow
+):
+    context, calls = _checker_controller()
+    namespace = {"__name__": "metadata_comparator"}
+    exec(
+        "def compare(actual, retained):\n"
+        "    if len(actual) != len(retained) or any(\n"
+        "        a is not b for a,b in zip(actual,retained,strict=True)):\n"
+        "        raise ValueError('binding drift')\n",
+        namespace,
+    )
+    comparator = namespace["compare"]
+    context.api.helpers.literal._same = comparator
+    context.helper_authority = stage._helper_authority(context.api)
+    old_code, old_namespace = comparator.__code__, comparator.__globals__
+    context.bindings = (object(), object())
+    changed = (context.bindings[0], object())
+
+    def accepting(*args, **kwargs):
+        calls.append("changed resolved comparator dependency")
+        return False
+
+    namespace[shadow] = accepting
+    monkeypatch.setattr(stage, "_bindings", lambda actual: changed)
+    monkeypatch.setattr(stage, "_guard", lambda actual: None)
+    monkeypatch.setattr(stage, "_same_dependencies", lambda actual: None)
+    assert comparator.__code__ is old_code and comparator.__globals__ is old_namespace
+    assert len(changed) == len(context.bindings)
+    with pytest.raises(ValueError, match="helper"):
+        if boundary == "active":
+            stage._check_bindings(context)
+        else:
+            with stage._validation_scope(object(), context):
+                stage._compare_bindings(context)
+    assert calls == [] and stage._VALIDATION.current is None
+
+
+def test_residual_independent_binding_comparison_precedes_accepting_checker(monkeypatch):
+    calls = []
+
+    def accepting(*args):
+        calls.append("accepting comparator")
+
+    retained = (object(), object())
+    context = NS(bindings=retained, api=NS(helpers=NS(literal=NS(_same=accepting))))
+    monkeypatch.setattr(stage, "_check_helpers", lambda actual: None)
+    monkeypatch.setattr(stage, "_bindings", lambda actual: (retained[0], object()))
+    with pytest.raises(ValueError, match="Independent coordinator"):
+        stage._compare_bindings(context)
+    assert calls == []
+
+
+@pytest.mark.parametrize("entry", ["prepare", "owner_read"])
+@pytest.mark.parametrize("has_primary", [False, True])
+def test_residual_release_entry_reentry_cannot_return_poisoned_authority(entry, has_primary):
+    context, owner, later = NS(invalid=False), object(), []
+    primary, cause = FalseFailure("original validation"), KeyError("cause")
+    prior, trace = sys.getprofile(), sys.gettrace()
+    release_code = stage._release_validation.__code__
+    attempted = []
+
+    def observer(frame, event, arg):
+        if event == "call" and frame.f_code is release_code and not attempted:
+            attempted.append("release entry")
+            with pytest.raises(stage.WorldPhaseRejected):
+                if entry == "prepare":
+                    stage.prepare(None, enabled=False)
+                else:
+                    with stage._validation_scope(owner, context):
+                        later.append("recursive body must not run")
+        if prior is not None:
+            prior(frame, event, arg)
+
+    try:
+        sys.setprofile(observer)
+        expected = FalseFailure if has_primary else stage.WorldPhaseRejected
+        with pytest.raises(expected) as caught:
+            with stage._validation_scope(owner, context) as reservation:
+                if has_primary:
+                    raise primary from cause
+            later.append("poisoned read returned")
+        if has_primary:
+            assert caught.value is primary and primary.__cause__ is cause
+        else:
+            assert caught.value is reservation.rejection
+        assert context.invalid and reservation.attempts and attempted == ["release entry"]
+        assert later == [] and stage._VALIDATION.current is None and not reservation.active
+        assert context.validation_failures[-1] is reservation
+    finally:
+        sys.settrace(trace)
+        sys.setprofile(prior)
+
+
+def test_residual_reservation_return_observer_failure_retires_its_published_token():
+    context, owner, yielded = NS(invalid=False), object(), []
+    original, cause = FalseFailure("reservation return observer"), KeyError("original cause")
+    prior, trace = sys.getprofile(), sys.gettrace()
+    reserve_code = stage._reserve_validation.__code__
+    attempts = []
+
+    def observer(frame, event, arg):
+        if event == "return" and frame.f_code is reserve_code and not attempts:
+            assert stage._VALIDATION.current is arg
+            attempts.append(arg)
+            raise original from cause
+        if prior is not None:
+            prior(frame, event, arg)
+
+    try:
+        sys.setprofile(observer)
+        with pytest.raises(FalseFailure) as caught:
+            with stage._validation_scope(owner, context):
+                yielded.append("must never yield")
+        assert caught.value is original and original.__cause__ is cause
+        reservation = attempts[0]
+        assert context.last_validation is reservation and reservation.primary is original
+        assert not reservation.active and stage._VALIDATION.current is None and not yielded
+        assert context.validation_failures[-1] is reservation
+    finally:
+        sys.settrace(trace)
+        sys.setprofile(prior)
+
+
+def test_residual_failed_reservation_does_not_retire_another_acquisition(monkeypatch):
+    context, owner, foreign = NS(invalid=False), object(), NS(acquisition=object())
+    original = FalseFailure("failed before own token returned")
+
+    def reserve(actual_owner, actual_context, *, acquisition):
+        stage._VALIDATION.current = foreign
+        raise original
+
+    monkeypatch.setattr(stage, "_reserve_validation", reserve)
+    try:
+        with pytest.raises(FalseFailure) as caught:
+            with stage._validation_scope(owner, context):
+                raise AssertionError("no body after failed acquisition")
+        assert caught.value is original and stage._VALIDATION.current is foreign
+    finally:
+        stage._VALIDATION.current = None

@@ -5,9 +5,10 @@ import hashlib
 import resource
 import runpy
 import sys
+import time
 import traceback
 from pathlib import Path
-from types import FunctionType
+from types import CodeType, FunctionType, SimpleNamespace
 
 from validation.betse import betse_native_phase_assembly_software as phase
 from validation.betse import betse_native_phase_caches_software as batch
@@ -25,6 +26,111 @@ HOOKS = (
     "src/cells/processes/betse_native_phase_dyna.py",
 )
 OWNED = (SOURCE, LITERAL, TEST, FILE, *HOOKS)
+_RAW_FAILURES = ()
+
+
+def native_profile(codes, owner, attempted, previous, reason):
+    """Same blockade/delegation, with one root conversion per guard lifetime."""
+    aliases = owner.aliases
+    native_root = aliases.NATIVE
+    prefix = str(native_root) + "/"
+
+    def profile(frame, event, arg):
+        if owner.aliases is not aliases or aliases.NATIVE is not native_root:
+            attempted.append("native_root_identity_changed")
+            raise AssertionError("Native guard root changed during its lifetime")
+        if event == "call":
+            code = frame.f_code
+            if code in codes or code.co_filename.startswith(prefix):
+                attempted.append(code.co_qualname)
+                raise AssertionError(reason)
+        if previous is not None:
+            previous(frame, event, arg)
+
+    return profile
+
+
+def adapt_upstream_guard(original, source):
+    """Adapt only the exact installed dyna fixture guard, not an arbitrary hook."""
+    if type(original) is not FunctionType or type(source) is not FunctionType:
+        raise TypeError("Actual original fixture/profile functions required")
+    expected = tuple(
+        value
+        for value in source.__code__.co_consts
+        if type(value) is CodeType and value.co_name == "profile"
+    )
+    if (
+        len(expected) != 1
+        or original.__code__ is not expected[0]
+        or original.__globals__ is not source.__globals__
+    ):
+        raise ValueError("Original upstream guard code/globals changed")
+    original_code, source_code = original.__code__, source.__code__
+    namespace, closure = original.__globals__, original.__closure__
+    cells = dict(zip(original_code.co_freevars, closure or (), strict=True))
+    if set(cells) != {"attempts", "codes", "previous"}:
+        raise ValueError("Exact original guard closure roster required")
+    codes_cell, attempts_cell, previous_cell = (
+        cells[name] for name in ("codes", "attempts", "previous")
+    )
+    codes, attempted, previous = (
+        cell.cell_contents for cell in (codes_cell, attempts_cell, previous_cell)
+    )
+    roster, owner = frozenset(codes), namespace["stage"]
+    delegate = native_profile(
+        codes,
+        owner,
+        attempted,
+        previous,
+        "Actual source/native dyna/phase work forbidden",
+    )
+
+    def profile(frame, event, arg):
+        if (
+            original.__code__ is not original_code
+            or source.__code__ is not source_code
+            or original.__globals__ is not namespace
+            or source.__globals__ is not namespace
+            or original.__closure__ is not closure
+            or namespace.get("stage") is not owner
+            or codes_cell.cell_contents is not codes
+            or attempts_cell.cell_contents is not attempted
+            or previous_cell.cell_contents is not previous
+            or codes != roster
+        ):
+            attempted.append("upstream_guard_authority_changed")
+            raise AssertionError("Original upstream guard authority changed during use")
+        return delegate(frame, event, arg)
+
+    return profile
+
+
+def boundary(output, name, started):
+    try:
+        snapshot.write_json(
+            output / ("boundary-" + name + ".json"),
+            dict(
+                stage=name,
+                elapsed_seconds=time.monotonic() - started,
+                wall_limit_seconds=480,
+                source_or_scientific_credit=0,
+            ),
+        )
+    except BaseException as error:
+        return error
+    return None
+
+
+def stamp(output, name, started, errors):
+    # boundary's own try cannot protect rejection BEFORE its body starts.
+    try:
+        error = boundary(output, name, started)
+    except BaseException as rejected:
+        error = rejected
+    if error is not None:
+        errors.append((name, error))
+
+
 # One issued-chain control per guarded worker; the pilot took 264 seconds.
 # Reuse the reviewed cache controller, atomic progress and exclusive terminals.
 GROUPS = {
@@ -277,6 +383,7 @@ def prepare(output, select):
 
 
 def child(output, select):
+    global _RAW_FAILURES
     import pytest
 
     from cells.processes import betse_native_phase_tail as stage
@@ -289,17 +396,24 @@ def child(output, select):
         *(fn.__code__ for fn in stage._METHODS.values()),
     }
 
-    def profile(frame, event, arg):
-        if event == "call" and (
-            frame.f_code in codes
-            or frame.f_code.co_filename.startswith(str(stage.aliases.NATIVE) + "/")
-        ):
-            attempted.append(frame.f_code.co_qualname)
-            raise AssertionError("Actual native tail/phase source forbidden")
-        if previous is not None:
-            previous(frame, event, arg)
+    profile = native_profile(
+        codes, stage, attempted, previous, "Actual native tail/phase source forbidden"
+    )
+    started = time.monotonic()
+    state = SimpleNamespace(
+        primary=None,
+        timing_errors=[],
+        cleanup_errors=[],
+        restored=False,
+        final_hooks_restored=False,
+        hook_samples=(),
+    )
 
     class Reports:
+        def pytest_runtest_makereport(self, item, call):
+            if call.excinfo is not None and state.primary is None:
+                state.primary = call.excinfo.value
+
         def pytest_collection_modifyitems(self, config, items):
             try:
                 declared = [name for names in GROUPS.values() for name in names]
@@ -341,7 +455,14 @@ def child(output, select):
                 skipped.append(report.nodeid)
 
     status = 2
+    pytest.hookimpl(tryfirst=True)(Reports.pytest_runtest_makereport)
     try:
+        try:
+            stamp(output, "pytest-start", started, state.timing_errors)
+        except BaseException as error:
+            state.timing_errors.append(("pytest-start_entry", error))
+        if state.timing_errors:
+            raise state.timing_errors[0][1]
         sys.setprofile(profile)
         args = [
             "-q",
@@ -357,23 +478,127 @@ def child(output, select):
             str(output / "tests.xml"),
         ]
         status = pytest.main(args, plugins=[Reports()])
+    except BaseException as error:
+        if state.primary is None:
+            state.primary = error
+        elif state.primary is not error:
+            state.cleanup_errors.append(("pytest_return", error))
     finally:
-        restored = sys.getprofile() is profile and sys.gettrace() is trace
-        sys.setprofile(previous)
-        sys.settrace(trace)
-        snapshot.write_json(
-            output / "native-entry-guard.json",
-            dict(
-                attempted=attempted,
-                prior_profile_trace_restored=restored,
-                skipped_prerequisites=skipped,
-                actual_source_or_scientific_credit=0,
-            ),
-        )
-        snapshot.write_json(output / "runtime.json", inherited.runtime.inventory())
+        try:
+            state.restored = sys.getprofile() is profile and sys.gettrace() is trace
+        except BaseException as error:
+            state.cleanup_errors.append(("active_hooks", error))
+        for setter, target, name in (
+            (sys.setprofile, previous, "profile"),
+            (sys.settrace, trace, "trace"),
+        ):
+            try:
+                setter(target)
+            except BaseException as error:
+                state.cleanup_errors.append((name + "_restore", error))
+        try:
+            stamp(output, "pytest-finished", started, state.timing_errors)
+        except BaseException as error:
+            state.timing_errors.append(("pytest-finished_entry", error))
+        try:
+            snapshot.write_json(
+                output / "native-entry-guard.json",
+                dict(
+                    attempted=attempted,
+                    prior_profile_trace_restored=state.restored,
+                    skipped_prerequisites=skipped,
+                    actual_source_or_scientific_credit=0,
+                ),
+            )
+        except BaseException as error:
+            state.cleanup_errors.append(("guard_receipt", error))
+        try:
+            stamp(output, "runtime-start", started, state.timing_errors)
+        except BaseException as error:
+            state.timing_errors.append(("runtime-start_entry", error))
+        try:
+            inventory = inherited.runtime.inventory()
+        except BaseException as error:
+            state.cleanup_errors.append(("runtime_inventory", error))
+        else:
+            try:
+                stamp(output, "runtime-returned", started, state.timing_errors)
+            except BaseException as error:
+                state.timing_errors.append(("runtime-returned_entry", error))
+            try:
+                snapshot.write_json(output / "runtime.json", inventory)
+            except BaseException as error:
+                state.cleanup_errors.append(("runtime_write", error))
+            else:
+                try:
+                    stamp(output, "runtime-written", started, state.timing_errors)
+                except BaseException as error:
+                    state.timing_errors.append(("runtime-written_entry", error))
     # Missing real producer prerequisites cannot turn held controls into a
     # positive full-suite result. A preparation-only selector remains explicit.
-    return int(status) if not attempted and not skipped and restored else 1
+    if state.primary is not None or state.timing_errors or state.cleanup_errors:
+        try:
+            snapshot.write_json(
+                output / "timing-errors.json",
+                dict(
+                    status="software_or_metadata_failed",
+                    primary_type=(
+                        type(state.primary).__name__ if state.primary is not None else None
+                    ),
+                    errors=[
+                        dict(stage=name, type=type(error).__name__)
+                        for name, error in (*state.timing_errors, *state.cleanup_errors)
+                    ],
+                    final_hook_restoration_pending=True,
+                    raw_errors_retained_in_memory=True,
+                    complete_raw_serialization_claimed=False,
+                    scientific_credit=0,
+                ),
+            )
+        except BaseException as error:
+            state.cleanup_errors.append(("timing_errors_receipt", error))
+    # An inherited observer may disable itself while rejecting ANY recorder.
+    # Independently restore both exact originals after ALL evidence writes.
+    for setter, target, name in (
+        (sys.setprofile, previous, "profile"),
+        (sys.settrace, trace, "trace"),
+    ):
+        try:
+            setter(target)
+        except BaseException as error:
+            state.cleanup_errors.append((name + "_final_restore", error))
+    try:
+        first = (sys.getprofile(), sys.gettrace())
+        second_trace, second_profile = sys.gettrace(), sys.getprofile()
+        state.hook_samples = (first, (second_profile, second_trace))
+        state.final_hooks_restored = all(
+            a is previous and b is trace for a, b in state.hook_samples
+        )
+    except BaseException as error:
+        state.cleanup_errors.append(("final_hook_sample", error))
+    if (
+        state.primary is not None
+        or state.timing_errors
+        or state.cleanup_errors
+        or not state.final_hooks_restored
+    ):
+        _RAW_FAILURES = (*_RAW_FAILURES, state)
+    if state.primary is not None:
+        try:
+            state.primary.tail_software = state
+        except BaseException as error:
+            state.cleanup_errors.append(("primary_context", error))
+        raise state.primary
+    return (
+        int(status)
+        if not attempted
+        and not skipped
+        and state.restored
+        and state.final_hooks_restored
+        and not state.timing_errors
+        and not state.cleanup_errors
+        else 1
+    )
 
 
 def software(output, select):

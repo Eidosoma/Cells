@@ -9,6 +9,7 @@ import sys
 from collections.abc import Mapping
 from contextlib import contextmanager
 from dataclasses import replace
+from pathlib import Path
 from types import FunctionType, ModuleType, SimpleNamespace
 
 import numpy as np
@@ -26,6 +27,45 @@ from validation.betse.betse_native_single_cell_core_synthetic import (
 
 blocked = earlier.blocked
 ORIGINAL_REGISTRY_STATE = stage.boundary._registry_state
+_GUARD_ATTACHMENT_FAILURES = []  # Forensic fallback, never admission authority.
+
+
+def _guard_hooks(record, phase, prior, trace, *, set_profile, set_trace, get_profile, get_trace):
+    current = dict(profile=object(), trace=object())
+    for attempt in range(3):
+        for name, setter, expected in (
+            ("profile", set_profile, prior),
+            ("trace", set_trace, trace),
+        ):
+            if attempt == 0 or current[name] is not expected:
+                try:
+                    setter(expected)
+                except BaseException as error:
+                    record["cleanup_errors"].append((phase + "_restore_" + name, error))
+        for name, getter in (("profile", get_profile), ("trace", get_trace)):
+            try:
+                current[name] = getter()
+            except BaseException as error:
+                current[name] = object()
+                record["cleanup_errors"].append((phase + "_sample_" + name, error))
+        record["hook_samples"].append((phase, attempt, current["profile"], current["trace"]))
+        if current["profile"] is prior and current["trace"] is trace:
+            break
+        record["cleanup_errors"].append(
+            (phase + "_hook_identity", AssertionError("Both hooks must match"))
+        )
+    record["final_profile"], record["final_trace"] = current["profile"], current["trace"]
+
+
+def _guard_attach(record, error):
+    if error is not None and not any(error is item for item in record["attachment_attempts"]):
+        record["attachment_attempts"].append(error)
+        try:
+            error.matplotlib_guard = record
+        except BaseException as secondary:
+            record["cleanup_errors"].append(("primary_attachment", secondary))
+            if not any(record is item for item in _GUARD_ATTACHMENT_FAILURES):
+                _GUARD_ATTACHMENT_FAILURES.append(record)
 
 
 def _guard_cleanup(
@@ -50,26 +90,29 @@ def _guard_cleanup(
         final_trace=None,
         evidence_persisted=False,
         clean_guard=False,
+        attachment_attempts=[],
+        hook_samples=[],
     )
-    for name, function, value in (
-        ("restore_profile", set_profile, prior),
-        ("restore_trace", set_trace, trace),
-    ):
-        try:
-            function(value)
-        except BaseException as error:
-            record["cleanup_errors"].append((name, error))
-    for name, function in (("final_profile", get_profile), ("final_trace", get_trace)):
-        try:
-            record[name] = function()
-        except BaseException as error:
-            record["cleanup_errors"].append((name, error))
+    operations = dict(
+        set_profile=set_profile, set_trace=set_trace, get_profile=get_profile, get_trace=get_trace
+    )
+    _guard_hooks(record, "initial", prior, trace, **operations)
     profile_restored = record["final_profile"] is prior
     trace_restored = record["final_trace"] is trace
     if not profile_restored or not trace_restored:
         record["cleanup_errors"].append(
             ("hook_identity", AssertionError("Matplotlib guard hook restoration incomplete"))
         )
+    if attempts:
+        record["cleanup_errors"].append(
+            ("blocked_attempt", AssertionError("Matplotlib guard recorded forbidden attempts"))
+        )
+    error = (
+        primary
+        if primary is not None
+        else (record["cleanup_errors"][0][1] if record["cleanup_errors"] else None)
+    )
+    _guard_attach(record, error)
     try:
         write(
             dict(
@@ -94,16 +137,25 @@ def _guard_cleanup(
                 # errored/partial evidence write completed successfully.
                 clean_guard=False,
                 certification="Successful cleanup return is also required",
+                hook_evidence_phase=(
+                    "Before evidence callback; returned final samples also required"
+                ),
             )
         )
         record["evidence_persisted"] = True
     except BaseException as error:
         record["cleanup_errors"].append(("guard_evidence", error))
-    if attempts and not record["cleanup_errors"]:
-        record["cleanup_errors"].append(
-            ("blocked_attempt", AssertionError("Matplotlib guard recorded forbidden attempts"))
-        )
-    record["clean_guard"] = not attempts and not record["cleanup_errors"]
+    # Evidence serialization/writing and exception attachment are callbacks.
+    # Inspect both hooks *after* them, retain late drift, and recover both.
+    for name, getter, expected in (("profile", get_profile, prior), ("trace", get_trace, trace)):
+        try:
+            actual = getter()
+            if actual is not expected:
+                record["cleanup_errors"].append(
+                    ("post_evidence_" + name, AssertionError("Evidence callback changed a hook"))
+                )
+        except BaseException as secondary:
+            record["cleanup_errors"].append(("post_evidence_" + name, secondary))
     error = (
         primary
         if primary is not None
@@ -111,8 +163,21 @@ def _guard_cleanup(
         if record["cleanup_errors"]
         else None
     )
-    if error is not None:
-        error.matplotlib_guard = record
+    _guard_attach(record, error)
+    _guard_hooks(record, "final", prior, trace, **operations)
+    # A setter may itself supply the first secondary error. Attach it without
+    # replacing a primary, then verify both hooks after that callback too.
+    if primary is None and error is None and record["cleanup_errors"]:
+        error = record["cleanup_errors"][0][1]
+        _guard_attach(record, error)
+        _guard_hooks(record, "after_attachment", prior, trace, **operations)
+    record["clean_guard"] = (
+        not attempts
+        and not record["cleanup_errors"]
+        and record["evidence_persisted"]
+        and record["final_profile"] is prior
+        and record["final_trace"] is trace
+    )
     if primary is None and error is not None:
         raise error
     return record
@@ -155,7 +220,9 @@ def _reference_guard(monkeypatch, tmp_path):
         primary = error
         raise
     finally:
-        _guard_cleanup(
+        # Retain forensic context in this exception traceback frame even if
+        # both exception attachment and the evidence writer refused it.
+        _guard_record = _guard_cleanup(
             primary,
             attempts,
             prior,
@@ -581,6 +648,8 @@ def _api_metadata_model(tmp_path):
     for name in stage.runtime.REACHED_API_HELPERS:
         node = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == name)
         function = FunctionType(stage.boundary._code(node, str(path), name), vars(module), name)
+        if name == "getitem_checked":
+            function.__kwdefaults__ = {"_error_cls": ValueError}
         vars(module)[name] = function
     return module
 
@@ -607,7 +676,9 @@ def test_named_missing_name_helper_authenticates_before_any_delegate(tmp_path, d
         )
     else:
         module.list_suggestion_error_msg.__code__ = module.getitem_checked.__code__
-    with pytest.raises(ValueError, match="(named retained API helper|helper executable/globals)"):
+    with pytest.raises(
+        ValueError, match="(named retained API helper|helper outer executable/globals)"
+    ):
         stage.runtime._functions(module)
     assert entries == []
 
@@ -640,21 +711,9 @@ def test_numpy_copy_export_substitution_refuses_without_any_delegate(which):
 def test_numpy_argument_delegate_requires_actual_direct_owned_edge(monkeypatch, drift):
     # Synthetic traversal result models C metadata, not actual C construction or
     # copy work. Genuine traversal support remains a runtime prerequisite.
-    module = ModuleType("conditional.numpy.impl")
-    vars(module).update(__builtins__=vars(builtins))
-    path = stage.runtime.SITE / "numpy/lib/_function_base_impl.py"
-    node = next(
-        n
-        for n in ast.parse(path.read_bytes()).body
-        if isinstance(n, ast.FunctionDef) and n.name == "_copy_dispatcher"
-    )
-    argument = FunctionType(
-        stage.boundary._code(node, str(path), node.name), vars(module), node.name
-    )
-    module._copy_dispatcher = argument
-    core = _changed_metadata  # Identity only; neither function is called.
+    module, argument, core = _numpy_metadata_model()
     edges = [argument, core, {"__wrapped__": core}]
-    sentinel = object()
+    sentinel = SimpleNamespace(_implementation=core, __wrapped__=core)
     monkeypatch.setattr(
         stage.runtime, "get_referents", lambda value: edges if value is sentinel else ()
     )
@@ -672,6 +731,107 @@ def test_numpy_argument_delegate_requires_actual_direct_owned_edge(monkeypatch, 
         edges.append(argument)
     with pytest.raises(ValueError, match="argument-dispatch ownership is opaque or changed"):
         stage.runtime._copy_delegates(sentinel, core, module)
+
+
+def _numpy_metadata_model():
+    """Compile original declarations only; neither numerical body is called."""
+    module = ModuleType("conditional.numpy.impl")
+    vars(module).update(__builtins__=vars(builtins), array=np.array)
+    path = stage.runtime.SITE / "numpy/lib/_function_base_impl.py"
+    nodes = {n.name: n for n in ast.parse(path.read_bytes()).body if isinstance(n, ast.FunctionDef)}
+    argument = FunctionType(
+        stage.boundary._code(nodes["_copy_dispatcher"], str(path), "_copy_dispatcher"),
+        vars(module),
+        "_copy_dispatcher",
+        (None, None),
+    )
+    core = FunctionType(
+        stage.boundary._code(nodes["copy"], str(path), "copy"), vars(module), "copy", ("K", False)
+    )
+    module._copy_dispatcher = argument
+    return module, argument, core
+
+
+@pytest.mark.parametrize("helper", ["list_suggestion_error_msg", "_copy_dispatcher"])
+def test_undecorated_outer_body_cannot_hide_behind_canonical_wrapped_helper(tmp_path, helper):
+    if helper == "list_suggestion_error_msg":
+        module = _api_metadata_model(tmp_path)
+        original = vars(module)[helper]
+        path = Path(vars(module)["__file__"])
+    else:
+        module, original, _ = _numpy_metadata_model()
+        path = stage.runtime.SITE / "numpy/lib/_function_base_impl.py"
+    node = next(
+        n
+        for n in ast.parse(path.read_bytes()).body
+        if isinstance(n, ast.FunctionDef) and n.name == helper
+    )
+    assert stage.boundary._undecorated(original, module, path, node)
+    entries = []
+    vars(module)["changed_entries"] = entries
+    outer_node = ast.parse(
+        "def " + helper + "(*args, **kwargs):\n"
+        "    changed_entries.append('outer')\n"
+        "    raise AssertionError('changed helper entry forbidden')\n"
+    ).body[0]
+    outer = FunctionType(
+        stage.boundary._code(outer_node, "conditional_spoofed_helper.py", helper),
+        vars(module),
+        helper,
+    )
+    outer.__wrapped__ = original
+    vars(module)[helper] = outer
+    with pytest.raises(ValueError, match="undecorated helper outer"):
+        stage.boundary._undecorated(outer, module, path, node)
+    if helper == "list_suggestion_error_msg":
+        with pytest.raises(ValueError, match="undecorated helper outer"):
+            stage.runtime._functions(module)
+    assert entries == []
+
+
+@pytest.mark.parametrize("drift", ["positional", "keyword", "wrapped"])
+def test_undecorated_helper_defaults_and_delegates_are_exact(tmp_path, drift):
+    if drift == "keyword":
+        module = _api_metadata_model(tmp_path)
+        function = module.getitem_checked
+        path = Path(vars(module)["__file__"])
+        name = "getitem_checked"
+    else:
+        module, function, _ = _numpy_metadata_model()
+        path = stage.runtime.SITE / "numpy/lib/_function_base_impl.py"
+        name = "_copy_dispatcher"
+    node = next(
+        n
+        for n in ast.parse(path.read_bytes()).body
+        if isinstance(n, ast.FunctionDef) and n.name == name
+    )
+    assert stage.boundary._undecorated(function, module, path, node)
+    if drift == "positional":
+        function.__defaults__ = (None,)
+    elif drift == "keyword":
+        function.__kwdefaults__ = {"_error_cls": KeyError}
+    else:
+        function.__wrapped__ = function
+    with pytest.raises(ValueError, match="undecorated helper"):
+        stage.boundary._undecorated(function, module, path, node)
+
+
+@pytest.mark.parametrize("drift", ["valid", "swapped", "wrapped-only", "swapped-and-wrapped"])
+def test_numpy_actual_implementation_role_is_distinct_from_unordered_gc_membership(
+    monkeypatch, drift
+):
+    module, argument, core = _numpy_metadata_model()
+    value = SimpleNamespace(_implementation=core, __wrapped__=core)
+    monkeypatch.setattr(stage.runtime, "get_referents", lambda obj: (core, argument))
+    if drift in ("swapped", "swapped-and-wrapped"):
+        value._implementation = argument
+    if drift in ("wrapped-only", "swapped-and-wrapped"):
+        value.__wrapped__ = argument
+    if drift == "valid":
+        assert stage.runtime._copy_delegates(value, core, module)[0] is argument
+    else:
+        with pytest.raises(ValueError, match="C implementation role changed"):
+            stage.runtime._copy_delegates(value, core, module)
 
 
 def _registry_metadata_model():
@@ -785,6 +945,67 @@ def test_registry_rechecks_surface_after_inherited_call_hook(controlled, monkeyp
     empty()
 
 
+@pytest.mark.parametrize("drift", ["getattribute", "mapping-descriptor"])
+def test_inherited_getter_line_mutation_refuses_before_foreign_attribute_body(
+    controlled, monkeypatch, drift
+):
+    h = controlled
+    api = h.h.parent.api
+    before_namespace = object.__getattribute__(api.registry, "__dict__")
+    before_mapping, getter_code = api.mapping, api.getter.__code__
+    prior, foreign_entries, mutations = sys.gettrace(), [], []
+
+    def foreign(*args):
+        foreign_entries.append(args)
+        return before_mapping  # Equal mapping/cache is not dispatch authority.
+
+    def line_trace(frame, event, arg):
+        if frame.f_code is getter_code and event == "line" and not mutations:
+            mutations.append((frame, frame.f_lineno))
+            if drift == "getattribute":
+                monkeypatch.setattr(api.kind, "__getattribute__", foreign)
+            else:
+                monkeypatch.setattr(api.kind, "_cmaps", property(foreign), raising=False)
+        return line_trace
+
+    sys.settrace(line_trace)
+    try:
+        with pytest.raises(stage.ColormapLoadRejected) as caught:
+            h.run()
+    finally:
+        sys.settrace(prior)
+    context = stage._CONSUMED[h.source]
+    assert mutations and foreign_entries == [] and context.invalid
+    assert isinstance(caught.value.source_error, ValueError)
+    assert context.calls["checked"] == 0 and context.trace_observations
+    assert api.getter.__code__ is getter_code and api.mapping is before_mapping
+    assert object.__getattribute__(api.registry, "__dict__") is before_namespace
+    assert any(name.startswith("registry_trace_") for name, _ in context.observation_errors)
+    empty()
+
+
+def test_inherited_trace_unwind_error_retains_actual_primary_and_cause(controlled):
+    h = controlled
+    h.control["fail_at"] = 2
+    prior = sys.gettrace()
+
+    def line_trace(frame, event, arg):
+        if frame.f_code is h.helper.__code__ and event == "return" and h.control["helper"] == 2:
+            raise SyntheticCaptureFailure("trace unwind observation refused")
+        return line_trace
+
+    sys.settrace(line_trace)
+    try:
+        with pytest.raises(stage.ColormapLoadRejected) as caught:
+            h.run()
+    finally:
+        sys.settrace(prior)
+    context = caught.value.partial
+    assert caught.value.source_error is h.primary and h.primary.__cause__ is h.cause
+    assert any(name == "inherited_trace_return" for name, _ in context.observation_errors)
+    assert context.raw and context.invalid
+
+
 @pytest.mark.parametrize("failed", ["profile", "trace", "evidence", "all"])
 @pytest.mark.parametrize("has_primary", [False, True])
 def test_matplotlib_guard_cleanup_keeps_primary_and_all_independent_attempts(failed, has_primary):
@@ -829,7 +1050,9 @@ def test_matplotlib_guard_cleanup_keeps_primary_and_all_independent_attempts(fai
         record = cleanup()
         assert primary.matplotlib_guard is record
         assert record["primary"] is primary and primary.__cause__ is cause
-    assert calls == ["profile", "trace", "evidence"]
+    at = calls.index("evidence")
+    assert "profile" in calls[:at] and "trace" in calls[:at]
+    assert "profile" in calls[at + 1 :] and "trace" in calls[at + 1 :]
     assert record["attempts"] == tuple(attempts) and not record["clean_guard"]
     assert record["final_profile"] is hooks["profile"]
     assert record["final_trace"] is hooks["trace"]
@@ -837,7 +1060,7 @@ def test_matplotlib_guard_cleanup_keeps_primary_and_all_independent_attempts(fai
     assert written[0]["actual_import_factory_entries"] is None
     assert record["evidence_persisted"] is (failed not in ("evidence", "all"))
     expected = "restore_" + failed if failed in ("profile", "trace") else "guard_evidence"
-    assert any(name == expected for name, _ in record["cleanup_errors"])
+    assert any(name.endswith(expected) for name, _ in record["cleanup_errors"])
 
 
 def test_matplotlib_guard_unchanged_valid_cleanup_requires_evidence_return():
@@ -856,6 +1079,86 @@ def test_matplotlib_guard_unchanged_valid_cleanup_requires_evidence_return():
     )
     assert record["clean_guard"] and record["evidence_persisted"]
     assert record["cleanup_errors"] == [] and written[0]["attempts"] == []
+
+
+def test_guard_attachment_rejection_preserves_exact_primary_and_secondary_failure():
+    class AttachmentRefused(SyntheticSourceFailure):
+        def __setattr__(self, name, value):
+            if name == "matplotlib_guard":
+                raise OSError("exception attachment refused")
+            super().__setattr__(name, value)
+
+    primary, cause = AttachmentRefused("original"), SyntheticSourceCause("cause")
+    primary.__cause__ = cause
+    prior, trace = object(), object()
+    hooks, written = dict(profile=object(), trace=object()), []
+    record = _guard_cleanup(
+        primary,
+        [("import", "blocked")],
+        prior,
+        trace,
+        written.append,
+        set_profile=lambda value: hooks.update(profile=value),
+        set_trace=lambda value: hooks.update(trace=value),
+        get_profile=lambda: hooks["profile"],
+        get_trace=lambda: hooks["trace"],
+    )
+    assert record["primary"] is primary and primary.__cause__ is cause
+    assert any(name == "primary_attachment" for name, _ in record["cleanup_errors"])
+    assert any(record is item for item in _GUARD_ATTACHMENT_FAILURES)
+    assert any(name == "primary_attachment" for name, _, _ in written[0]["cleanup_errors"])
+    assert hooks["profile"] is prior and hooks["trace"] is trace and not record["clean_guard"]
+
+
+@pytest.mark.parametrize("which", ["profile", "trace", "both"])
+@pytest.mark.parametrize("primary_present", [False, True])
+def test_guard_writer_hook_changes_are_recovered_after_callback_and_never_clean(
+    which, primary_present
+):
+    primary = SyntheticSourceFailure("original") if primary_present else None
+    cause = SyntheticSourceCause("cause")
+    if primary is not None:
+        primary.__cause__ = cause
+    prior, trace = object(), object()
+    hooks, actions = dict(profile=object(), trace=object()), []
+
+    def restore(name, value):
+        actions.append("restore_" + name)
+        hooks[name] = value
+
+    def write(value):
+        actions.append("write")
+        if which in ("profile", "both"):
+            hooks["profile"] = None
+        if which in ("trace", "both"):
+            hooks["trace"] = None
+
+    def cleanup():
+        return _guard_cleanup(
+            primary,
+            [],
+            prior,
+            trace,
+            write,
+            set_profile=lambda value: restore("profile", value),
+            set_trace=lambda value: restore("trace", value),
+            get_profile=lambda: hooks["profile"],
+            get_trace=lambda: hooks["trace"],
+        )
+
+    if primary is None:
+        with pytest.raises(AssertionError) as caught:
+            cleanup()
+        record = caught.value.matplotlib_guard
+    else:
+        record = cleanup()
+        assert primary.matplotlib_guard is record and primary.__cause__ is cause
+    after = actions[actions.index("write") + 1 :]
+    assert "restore_profile" in after and "restore_trace" in after
+    assert record["final_profile"] is prior and record["final_trace"] is trace
+    assert hooks["profile"] is prior and hooks["trace"] is trace
+    assert not record["clean_guard"] and record["evidence_persisted"]
+    assert any(name.startswith("post_evidence_") for name, _ in record["cleanup_errors"])
 
 
 def test_nested_matplotlib_guard_blocks_real_import_attempt_and_retains_primary(

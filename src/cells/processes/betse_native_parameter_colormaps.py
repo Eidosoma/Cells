@@ -6,6 +6,7 @@ ownership, parameter advancement or remaining load/ion/phase admission.
 """
 
 import ast
+import builtins
 import copy
 import hashlib
 import sys
@@ -271,7 +272,65 @@ def _code(node, filename, name):
     return next(c for c in value.co_consts if type(c) is CodeType and c.co_name == name)
 
 
+def _undecorated(function, module, path, node, *, decorators=()):
+    """Authenticate the executable function itself, never a spoofed wrapped core."""
+    if (
+        type(function) is not FunctionType
+        or function.__globals__ is not vars(module)
+        or function.__name__ != node.name
+        or function.__closure__ is not None
+        or "__wrapped__" in vars(function)
+        or tuple(ast.unparse(value) for value in node.decorator_list) != decorators
+        or prefix.parameters.inherited._code(function.__code__)
+        != prefix.parameters.inherited._code(_code(node, str(path), node.name))
+    ):
+        raise ValueError("Original undecorated helper outer executable/globals required")
+
+    def default(value):
+        if isinstance(value, ast.Constant) and type(value.value) in (type(None), bool, int, str):
+            return value.value
+        if isinstance(value, ast.Name) and value.id in ("ValueError", "KeyError"):
+            original = vars(builtins)[value.id]
+            if value.id in vars(module) or function.__builtins__.get(value.id) is not original:
+                raise ValueError("Original helper default builtin resolution changed")
+            return original
+        raise ValueError("Undeclared original helper default")
+
+    def same(actual, expected):
+        if type(expected) is type:
+            return actual is expected
+        return type(actual) is type(expected) and actual == expected
+
+    expected = tuple(default(value) for value in node.args.defaults)
+    actual = function.__defaults__
+    if (
+        actual is not None
+        if not expected
+        else type(actual) is not tuple
+        or len(actual) != len(expected)
+        or any(not same(a, b) for a, b in zip(actual, expected, strict=True))
+    ):
+        raise ValueError("Original undecorated helper positional defaults changed")
+    keywords = {
+        arg.arg: default(value)
+        for arg, value in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True)
+        if value is not None
+    }
+    actual_keywords = function.__kwdefaults__
+    if (
+        actual_keywords is not None
+        if not keywords
+        else type(actual_keywords) is not dict
+        or tuple(actual_keywords) != tuple(keywords)
+        or any(not same(actual_keywords[name], value) for name, value in keywords.items())
+    ):
+        raise ValueError("Original undecorated helper keyword defaults changed")
+    return (prefix._function_bindings(function),)
+
+
 def _canonical(function, module, path, node):
+    if not node.decorator_list:
+        return _undecorated(function, module, path, node)
     if type(function) is not FunctionType:
         raise ValueError("Exact original colormap helper callable required")
     core = prefix.parameters.inherited._chain(function)[-1]
@@ -584,6 +643,7 @@ def _bindings():
         _configuration,
         _compile,
         _code,
+        _undecorated,
         _canonical,
         _registry_surface,
         _registry_state,

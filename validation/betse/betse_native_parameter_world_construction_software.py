@@ -22,14 +22,16 @@ def prepare(repository, directory):
     return reused.prepare_sources(repo, directory, file=FILE, owned=OWNED, plan=stage.source_plan())
 
 
-def child(output):
-    return reused.callbacks.delegate(reused.inherited.child, TEST=TEST)(output)
+def child(output, *, authorization=None, authorization_sha256=None):
+    return reused._child(
+        output, authorization, authorization_sha256, file=FILE, entry_path=__file__
+    )
 
 
 def software(packet, output):
     if os.environ.get(SOFTWARE_RELEASE) != "1":
         raise ValueError("World-construction software execution remains held for Root")
-    return reused.callbacks.delegate(reused.inherited.software, FILE=FILE)(packet, output)
+    return reused._software(packet, output, file=FILE)
 
 
 def main():
@@ -40,9 +42,15 @@ def main():
     mode.add_argument("--child", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--repository", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--authorization", type=Path, help=argparse.SUPPRESS)
+    parser.add_argument("--authorization-sha256", help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.child:
-        return child(args.child)
+        return child(
+            args.child,
+            authorization=args.authorization,
+            authorization_sha256=args.authorization_sha256,
+        )
     if args.prepare:
         print(json.dumps(prepare(args.repository, args.prepare)))
         return 0

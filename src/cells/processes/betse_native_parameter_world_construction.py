@@ -98,7 +98,9 @@ def source_plan():
         parameters=parameters.source_plan(),
         input="actual completed WorldReadyParametersOwner only",
         mode="fresh phase birth through SEED closure; not a continuation of an earlier phase",
-        allowed_parameter_mutation="Create _run_sim once, exact bool False, at the original SEED tail",
+        allowed_parameter_mutation=(
+            "Create _run_sim once, exact bool False, at the original SEED tail"
+        ),
         no_temporal_stores_or_other_parameter_changes=True,
         original_Seven_d9_47_API_changed=False,
         phase_constructor_or_handler_or_world_admitted=False,
@@ -196,6 +198,9 @@ def _source(context):
 def _bytes(context, *, complete):
     fields = vars(context.p)
     present = "_run_sim" in fields
+    if context.seed_flag_observed and not present:
+        context.invalid = context.guard.invalid = True
+        raise ValueError("Observed original SEED flag disappeared; constructor claim is poisoned")
     expected = (*context.before_names, "_run_sim") if present else context.before_names
     if tuple(fields) != expected:
         raise ValueError("Constructor changed parameter layout outside the sole SEED flag")

@@ -239,6 +239,25 @@ def test_swallowed_reentry_cannot_issue_closed_success(conditional):
     assert claim.record.succeeded is False
 
 
+def test_observed_seed_flag_cannot_disappear_and_recreate_after_caught_refusal(conditional):
+    h = conditional
+    with pytest.raises(stage.WorldConstructionRejected):
+        with h.enter() as claim:
+            h.p._run_sim = False
+            claim.check()
+            del h.p._run_sim
+            with pytest.raises(ValueError, match="SEED flag disappeared"):
+                claim.check()
+            h.p._run_sim = False
+            with pytest.raises(stage.WorldConstructionRejected, match="poisoned"):
+                claim.check()
+    context = stage.failed_context(claim)
+    assert context.seed_flag_observed and context.invalid
+    assert context.record is claim.record and claim.record.succeeded is False
+    with pytest.raises(stage.WorldConstructionRejected):
+        stage.validate_closed_seed(claim, original_owner=h.owner)
+
+
 @pytest.mark.parametrize("mode", ["owner", "registry", "record", "protected-data", "seed-flag"])
 def test_closed_lifetime_refuses_stale_edges_without_reopening(conditional, mode):
     h = conditional
@@ -265,3 +284,19 @@ def test_software_launch_remains_explicitly_held(monkeypatch, tmp_path):
     with pytest.raises(ValueError, match="remains held"):
         runner.software(tmp_path / "missing", tmp_path / "output")
     assert not (tmp_path / "output").exists()
+
+
+def test_worker_routes_only_through_shared_owned_frozen_authorization(monkeypatch, tmp_path):
+    observed = []
+
+    def authenticated(output, authorization, pin, *, file, entry_path):
+        observed.append((output, authorization, pin, file, entry_path))
+        return "conditional-no-pytest-entry"
+
+    monkeypatch.setattr(runner.reused, "_child", authenticated)
+    output, authorization = tmp_path / "held", tmp_path / "authorization"
+    assert (
+        runner.child(output, authorization=authorization, authorization_sha256="conditional-pin")
+        == "conditional-no-pytest-entry"
+    )
+    assert observed == [(output, authorization, "conditional-pin", runner.FILE, runner.__file__)]

@@ -2,14 +2,17 @@
 
 import json
 import sys
+import time
 from contextlib import contextmanager
 from enum import Enum
+from types import CellType, CodeType, FunctionType
 from types import SimpleNamespace as NS
 
 import pytest
 
 from cells.processes import betse_native_phase_tail as stage
 from tests.unit import test_betse_native_phase_dyna as dyna_controls
+from validation.betse import betse_native_phase_tail_software as software
 from validation.betse.betse_native_single_cell_core_synthetic import save
 
 
@@ -19,7 +22,7 @@ def blocked(monkeypatch, request, tmp_path):
     # this module's three actual source bodies. No test executes those bodies.
     upstream = dyna_controls.blocked.__wrapped__(monkeypatch, request, tmp_path)
     next(upstream)
-    previous, trace = sys.getprofile(), sys.gettrace()
+    original, trace = sys.getprofile(), sys.gettrace()
     attempted = []
     codes = {
         stage._acquire.__code__,
@@ -27,19 +30,18 @@ def blocked(monkeypatch, request, tmp_path):
         *(fn.__code__ for fn in stage._METHODS.values()),
     }
 
-    def profile(frame, event, arg):
-        if event == "call" and frame.f_code in codes:
-            attempted.append(frame.f_code.co_qualname)
-            raise AssertionError("Actual source/native tail work forbidden")
-        if previous is not None:
-            previous(frame, event, arg)
-
-    sys.setprofile(profile)
     try:
+        adapted = software.adapt_upstream_guard(original, dyna_controls.blocked.__wrapped__)
+        profile = software.native_profile(
+            codes, stage, attempted, adapted, "Actual source/native tail work forbidden"
+        )
+        sys.setprofile(profile)
         yield
         assert not attempted and sys.getprofile() is profile and sys.gettrace() is trace
     finally:
-        sys.setprofile(previous)
+        # The original generator still owns imports/RNG and its own guard
+        # receipt. Restore its exact profile object before its normal exit.
+        sys.setprofile(original)
         sys.settrace(trace)
         (tmp_path / "tail-native-blocked.json").write_text(
             json.dumps(
@@ -47,6 +49,7 @@ def blocked(monkeypatch, request, tmp_path):
                     nodeid=request.node.nodeid,
                     attempted=attempted,
                     actual_source_credit=0,
+                    native_root_formatting="once_per_guard_with_live_identity_check",
                 )
             )
         )
@@ -54,6 +57,290 @@ def blocked(monkeypatch, request, tmp_path):
             next(upstream)
         except StopIteration:
             pass
+
+
+def test_cost_native_guard_preserves_all_inherited_events_and_blockade(tmp_path):
+    received, attempted = [], []
+    native = NS(aliases=NS(NATIVE="/exact/native"))
+    code = test_cost_native_guard_preserves_all_inherited_events_and_blockade.__code__
+    frame = NS(f_code=code)
+
+    def prior(actual, event, value):
+        received.append((actual, event, value))
+
+    profile = software.native_profile({code}, native, attempted, prior, "blocked native")
+    for event in ("return", "c_call", "c_return", "c_exception"):
+        profile(frame, event, None)
+    with pytest.raises(AssertionError, match="blocked native"):
+        profile(frame, "call", None)
+    assert [event for _, event, _ in received] == ["return", "c_call", "c_return", "c_exception"]
+    assert attempted == [code.co_qualname]
+    save(
+        tmp_path,
+        "cost-event-delegation",
+        dict(events=[event for _, event, _ in received], attempted=attempted, native_credit=0),
+    )
+
+
+def test_cost_native_root_identity_drift_refuses_before_inherited_callback():
+    received, attempted = [], []
+    native = NS(aliases=NS(NATIVE="/exact/native"))
+    profile = software.native_profile(
+        set(), native, attempted, lambda *args: received.append(args), "blocked"
+    )
+    native.aliases = NS(NATIVE=native.aliases.NATIVE)
+    frame = NS(
+        f_code=test_cost_native_root_identity_drift_refuses_before_inherited_callback.__code__
+    )
+    with pytest.raises(AssertionError, match="root changed"):
+        profile(frame, "call", None)
+    assert received == [] and attempted == ["native_root_identity_changed"]
+
+
+def test_cost_guard_adapter_rejects_foreign_code_before_installing_it():
+    def foreign(frame, event, arg):
+        raise AssertionError("foreign delegate must not run")
+
+    before = sys.getprofile()
+    with pytest.raises(ValueError, match="guard code"):
+        software.adapt_upstream_guard(foreign, dyna_controls.blocked.__wrapped__)
+    assert sys.getprofile() is before
+
+
+def test_cost_guard_formats_native_root_once_without_caching_a_source_result(tmp_path):
+    class Root:
+        def __init__(self):
+            self.calls = 0
+
+        def __str__(self):
+            self.calls += 1
+            return "/exact/native"
+
+    root = Root()
+    native = NS(aliases=NS(NATIVE=root))
+    frame = NS(
+        f_code=test_cost_guard_formats_native_root_once_without_caching_a_source_result.__code__
+    )
+    repeats = 20000
+    started = time.monotonic()
+    for _ in range(repeats):
+        assert not frame.f_code.co_filename.startswith(str(native.aliases.NATIVE) + "/")
+    old_seconds, old_calls = time.monotonic() - started, root.calls
+    profile = software.native_profile(set(), native, [], None, "blocked")
+    initial_calls = root.calls
+    started = time.monotonic()
+    for _ in range(repeats):
+        profile(frame, "call", None)
+    seconds = time.monotonic() - started
+    assert old_calls == repeats and initial_calls == old_calls + 1 and root.calls == initial_calls
+    save(
+        tmp_path,
+        "cost-root-formatting",
+        dict(
+            metadata_events=repeats,
+            baseline_seconds=old_seconds,
+            successor_seconds=seconds,
+            baseline_root_formats=old_calls,
+            successor_root_formats=1,
+            whole_chain_performance_claim=False,
+            native_credit=0,
+        ),
+    )
+
+
+def test_cost_finalization_boundary_failure_is_retained_without_raising_primary(
+    monkeypatch, tmp_path
+):
+    error = OSError("timing receipt")
+
+    def rejected(path, value):
+        raise error
+
+    with monkeypatch.context() as patch:
+        patch.setattr(software.snapshot, "write_json", rejected)
+        assert software.boundary(tmp_path, "probe", time.monotonic()) is error
+
+
+def _cost_adapter_metadata():
+    """Actual upstream code/cells, with no constructor or native body entry."""
+    source = dyna_controls.blocked.__wrapped__
+    namespace = dict(source.__globals__)
+    namespace["stage"] = NS(aliases=NS(NATIVE="/exact/native"))
+    source = FunctionType(source.__code__, namespace)
+    code = next(
+        value
+        for value in source.__code__.co_consts
+        if type(value) is CodeType and value.co_name == "profile"
+    )
+    calls, attempts = [], []
+
+    def previous(*args):
+        calls.append(args)
+
+    values = dict(
+        codes={test_cost_guard_adapter_rejects_foreign_code_before_installing_it.__code__},
+        attempts=attempts,
+        previous=previous,
+    )
+    cells = {name: CellType(value) for name, value in values.items()}
+    original = FunctionType(
+        code, namespace, closure=tuple(cells[name] for name in code.co_freevars)
+    )
+    return NS(
+        source=source,
+        original=original,
+        cells=cells,
+        calls=calls,
+        attempts=attempts,
+        namespace=namespace,
+    )
+
+
+@pytest.mark.parametrize("event", ["call", "return", "c_call", "c_return", "c_exception"])
+def test_cost_adapter_unchanged_actual_cells_preserve_event_and_reference_identity(event):
+    metadata = _cost_adapter_metadata()
+    closure = metadata.original.__closure__
+    adapted = software.adapt_upstream_guard(metadata.original, metadata.source)
+    frame = NS(
+        f_code=test_cost_adapter_unchanged_actual_cells_preserve_event_and_reference_identity.__code__
+    )
+    adapted(frame, event, None)
+    assert metadata.original.__closure__ is closure
+    assert metadata.cells["attempts"].cell_contents is metadata.attempts
+    assert metadata.calls == [(frame, event, None)] and metadata.attempts == []
+
+
+@pytest.mark.parametrize("event", ["call", "return"])
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "original_code",
+        "source_code",
+        "codes_cell",
+        "roster",
+        "attempts_cell",
+        "previous_cell",
+        "stage",
+    ],
+)
+def test_cost_adapter_live_rebinding_refuses_before_any_captured_or_foreign_delegate(
+    event, mutation
+):
+    metadata, foreign = _cost_adapter_metadata(), []
+    adapted = software.adapt_upstream_guard(metadata.original, metadata.source)
+    if mutation == "original_code":
+        metadata.original.__code__ = metadata.original.__code__.replace(co_name="retargeted")
+    elif mutation == "source_code":
+        metadata.source.__code__ = metadata.source.__code__.replace(co_name="retargeted")
+    elif mutation == "codes_cell":
+        old = metadata.cells["codes"].cell_contents
+        metadata.cells["codes"].cell_contents = set(old)
+        assert old == metadata.cells["codes"].cell_contents
+    elif mutation == "roster":
+        metadata.cells["codes"].cell_contents.clear()
+    elif mutation == "attempts_cell":
+        metadata.cells["attempts"].cell_contents = []
+    elif mutation == "previous_cell":
+        metadata.cells["previous"].cell_contents = lambda *args: foreign.append(args)
+    else:
+        owner = metadata.namespace["stage"]
+        metadata.namespace["stage"] = NS(aliases=owner.aliases)
+    frame = NS(
+        f_code=(
+            test_cost_adapter_live_rebinding_refuses_before_any_captured_or_foreign_delegate.__code__
+        )
+    )
+    with pytest.raises(AssertionError, match="upstream guard authority"):
+        adapted(frame, event, None)
+    assert metadata.calls == foreign == []
+    assert metadata.attempts == ["upstream_guard_authority_changed"]
+
+
+@pytest.mark.parametrize("event", ["call", "return"])
+@pytest.mark.parametrize("mutation", ["holder", "root"])
+def test_cost_adapter_root_and_holder_drift_refuse_before_inherited_callback(event, mutation):
+    metadata = _cost_adapter_metadata()
+    adapted = software.adapt_upstream_guard(metadata.original, metadata.source)
+    owner = metadata.namespace["stage"]
+    if mutation == "holder":
+        owner.aliases = NS(NATIVE=owner.aliases.NATIVE)
+    else:
+        old = owner.aliases.NATIVE
+        replacement = (" " + old).lstrip()
+        assert replacement == old and replacement is not old
+        owner.aliases.NATIVE = replacement
+    frame = NS(
+        f_code=test_cost_adapter_root_and_holder_drift_refuse_before_inherited_callback.__code__
+    )
+    with pytest.raises(AssertionError, match="root changed"):
+        adapted(frame, event, None)
+    assert not metadata.calls and metadata.attempts == ["native_root_identity_changed"]
+
+
+@pytest.mark.parametrize("hook", ["profile", "trace"])
+@pytest.mark.parametrize("target", ["stamp", "boundary"])
+@pytest.mark.parametrize("falsey", [False, True])
+def test_cost_marker_entry_rejection_on_unwind_keeps_primary_cause_and_exact_hooks(
+    monkeypatch, tmp_path, hook, target, falsey
+):
+    class Primary(ValueError):
+        def __bool__(self):
+            return not falsey
+
+    primary, cause, secondary = (
+        Primary("source primary"),
+        KeyError("cause"),
+        OSError("marker entry"),
+    )
+    attempts, body, inventory_calls = [], [], []
+    before = (sys.getprofile(), sys.gettrace())
+    code = getattr(software, target).__code__
+    index = 0 if hook == "profile" else 1
+
+    def observer(frame, event, arg):
+        if (
+            event == "call"
+            and frame.f_code is code
+            and frame.f_locals.get("name") == "pytest-finished"
+            and not attempts
+        ):
+            attempts.append(frame)
+            raise secondary
+        previous = before[index]
+        if previous is not None:
+            previous(frame, event, arg)
+        return observer if hook == "trace" else None
+
+    def failing_pytest(*args, **kwargs):
+        body.append("synthetic pytest body")
+        raise primary from cause
+
+    def inventory():
+        inventory_calls.append("metadata inventory")
+        return dict(synthetic_metadata_only=True)
+
+    directory = tmp_path / "marker-child"
+    directory.mkdir()
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(pytest, "main", failing_pytest)
+            patch.setattr(software.inherited.runtime, "inventory", inventory)
+            (sys.setprofile if index == 0 else sys.settrace)(observer)
+            with pytest.raises(Primary) as caught:
+                software.child(directory, "unused synthetic metadata dispatch")
+            assert caught.value is primary and primary.__cause__ is cause
+            state = primary.tail_software
+            assert len(attempts) == 1 and body == ["synthetic pytest body"]
+            assert inventory_calls == ["metadata inventory"]
+            assert len(state.timing_errors) == 1 and state.timing_errors[0][1] is secondary
+            assert state.final_hooks_restored is True and state.cleanup_errors == []
+            expected = list(before)
+            expected[index] = observer
+            assert sys.getprofile() is expected[0] and sys.gettrace() is expected[1]
+            assert not (directory / "boundary-pytest-finished.json").exists()
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
 
 
 @pytest.fixture(scope="module")
