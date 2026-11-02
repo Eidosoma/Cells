@@ -36,9 +36,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Specialist's requested cache status check found a controller failure after
   13 passing controls; 31 were not launched by that failed batch. The repaired
   controller has now detached those 31 controls in a fresh image, excluding
-  the completed 13. Its terminal outcome has not been queried. Key is building
-  the contiguous modulator/bitmap parameter block through line 1000; Specialist
-  is preparing the same-phase handler consumer. The relayed mapping alias
+  the completed 13. Its terminal outcome has not been queried. Key has
+  implemented the contiguous modulator/bitmap parameter block through line
+  1000; source review found no production blocker. Its first software batch
+  reached the wall limit. Key is fixing setup cleanup and merged attempt counts
+  in the consolidated test guard before further software acceptance. Specialist
+  is repairing an active constructor-method re-entry gap found in the
+  same-phase handler consumer; its validation remains pending. The relayed mapping alias
   notice is historical: all six current files match the reviewed
   [list-to-ndarray repair](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/tail-contract-repairs-01/root-review.json),
   including its 49 blocked software controls. Positive native/reference
