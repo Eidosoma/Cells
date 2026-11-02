@@ -311,40 +311,85 @@ def test_conditional_primary_and_capture_failures_keep_prefix(
             return dict(frame.f_locals)
 
         monkeypatch.setattr(stage, "_copy_locals", bad)
-    with pytest.raises(stage.ConstantsRejected) as caught:
+    refusal = None
+    try:
         h.run()
-    context = caught.value.partial
+    except BaseException as error:
+        refusal = error
+    context = getattr(refusal, "partial", None)
+    if context is None:
+        context = stage._CONSUMED.get(h.parent)
+    before_names = getattr(context, "before_names", tuple(vars(h.p)))
+    stores = tuple(vars(h.p))[len(before_names) :]
+    # Persist before pytest can format a failed assertion. The partial graph is
+    # the existing closed, bounded YAML capture, never the live owner/namespace.
+    # An unexpected refusal is retained too; this is not evidence of admission.
+    try:
+        save(
+            tmp_path,
+            "conditional-constants-refusal",
+            dict(
+                mode=mode,
+                refusal=refusal,
+                refusal_stage=getattr(refusal, "stage", None),
+                partial_context_present=context is not None,
+                source_error=getattr(context, "source_error", None),
+                operation_error=getattr(context, "operation_error", None),
+                observation_errors=getattr(context, "observation_errors", ()),
+                capture_errors=getattr(context, "capture_errors", ()),
+                partial_graph=(
+                    None
+                    if getattr(context, "failure_capture", None) is None
+                    else context.failure_capture[1]
+                ),
+                stores=stores,
+                graph_capture_bounds=dict(
+                    nodes=stage.prefix.graphs.MAX_NODES,
+                    bytes=stage.prefix.graphs.MAX_BYTES,
+                    depth=stage.prefix.graphs.MAX_DEPTH,
+                ),
+                raw_source_return=getattr(context, "raw_return", None) is not None,
+                raw_source_return_is_none=(
+                    getattr(context, "raw_return", None) is not None
+                    and context.raw_return[2] is None
+                ),
+                no_success_record=context is None or not hasattr(context, "trial"),
+                conditional_evidence_only=True,
+                actual_native_entries_require_final_guard_receipts=True,
+            ),
+        )
+    except BaseException as capture_error:
+        if refusal is not None:
+            _refusal_save_failures = [capture_error]  # Retained by this traceback frame.
+            try:
+                refusal.constants_refusal_save_error = capture_error
+            except BaseException as attachment_error:
+                _refusal_save_failures.append(attachment_error)
+            # Keep the original refusal/cause primary if its evidence I/O fails.
+            raise refusal  # noqa: B904
+        raise
+    assert type(refusal) is stage.ConstantsRejected
     assert context is stage._CONSUMED[h.parent] and context.invalid and not context.active
     assert context.raw_return is not None and context.raw_return[0] == "source"
     assert context.raw_return[2] is None and not hasattr(context, "trial")
     if mode in ("primary", "combined"):
-        assert caught.value.source_error is h.primary and h.primary.__cause__ is h.cause
+        assert refusal.source_error is h.primary and h.primary.__cause__ is h.cause
         assert "Do_Na" in vars(h.p) and "Do_Cl" not in vars(h.p)
     else:
         assert context.source_completed and context.source_error is None
         if mode == "capture":
             assert context.observation_errors
         elif mode == "skipped-store":
-            assert "store order" in str(context.operation_error)
+            assert type(context.operation_error) is ValueError
+            assert context.operation_error.args == (
+                "Original field layout/new constants prefix changed",
+            )
+            assert refusal.__cause__ is context.operation_error
+            assert stores == tuple(name for name in context.plan["stores"] if name != "Do_Cl")
+            assert "Do_Cl" not in stores and stores != context.plan["stores"][: len(stores)]
         else:
             assert "config associations" in str(context.operation_error)
     empty()
-    save(
-        tmp_path,
-        "conditional-constants-refusal",
-        dict(
-            mode=mode,
-            source_error=context.source_error,
-            operation_error=context.operation_error,
-            observation_errors=context.observation_errors,
-            capture_errors=context.capture_errors,
-            partial_graph=None if context.failure_capture is None else context.failure_capture[1],
-            stores=tuple(vars(h.p))[len(context.before_names) :],
-            raw_source_unwind_retained=True,
-            no_success=True,
-            actual_native_entries=0,
-        ),
-    )
 
 
 @pytest.mark.parametrize("mode", ["old-data", "new-data", "record", "plot-descriptor"])

@@ -318,12 +318,20 @@ def _child(output, authorization, authorization_sha256, *, file, entry_path):
     output = Path(output)
     before, bindings = None, None
     original_profile, original_trace = object(), object()
+    originals_known = False
+    hook_api = dict(
+        get_profile=sys.getprofile,
+        get_trace=sys.gettrace,
+        set_profile=sys.setprofile,
+        set_trace=sys.settrace,
+    )
     context = SimpleNamespace(
         primary=None, pytest_status=None, errors=[], values={}, writes={}, image=image
     )
     try:
+        original_profile, original_trace = hook_api["get_profile"](), hook_api["get_trace"]()
+        originals_known = True
         before, bindings = _producers(image)
-        original_profile, original_trace = sys.getprofile(), sys.gettrace()
         context.pytest_status = _pytest_driver(ENTRY_CONFIG[file][0])(output)
     except BaseException as error:
         context.primary = error
@@ -345,9 +353,9 @@ def _child(output, authorization, authorization_sha256, *, file, entry_path):
 
     def hooks():
         observed, failures = {}, []
-        for name, getter in (("profile", sys.getprofile), ("trace", sys.gettrace)):
+        for name in ("profile", "trace"):
             try:
-                observed[name] = getter()
+                observed[name] = hook_api["get_" + name]()
             except BaseException as error:
                 observed[name] = object()
                 failures.append((name, error))
@@ -357,14 +365,18 @@ def _child(output, authorization, authorization_sha256, *, file, entry_path):
             trace=id(trace),
             expected_profile=id(original_profile),
             expected_trace=id(original_trace),
-            restored=profile is original_profile and trace is original_trace,
+            restored=originals_known and profile is original_profile and trace is original_trace,
+            sample_scope="before_later_worker_writers_not_final",
+            final_restoration_requires_terminal=True,
         )
         context.values["hook_identities"] = result
         if failures:
             context.errors.extend(("hook_" + name, error) for name, error in failures)
             raise failures[0][1]
         if not result["restored"]:
-            raise ValueError("Worker final profile/trace identities changed")
+            raise ValueError(
+                "Worker profile/trace identities changed before later evidence writers"
+            )
         return result
 
     for name, function in (
@@ -400,6 +412,7 @@ def _child(output, authorization, authorization_sha256, *, file, entry_path):
                     and not context.errors,
                     pytest_returned_zero=context.pytest_status == 0,
                     final_worker_success_requires_terminal=True,
+                    final_hook_sample_after_all_writers_pending=True,
                     authorization_sha256=authorization_sha256,
                     native_or_scientific_admission=False,
                 ),
@@ -411,6 +424,69 @@ def _child(output, authorization, authorization_sha256, *, file, entry_path):
             context.primary.world_ready_worker = context
         except BaseException as error:
             context.errors.append(("primary_context_attachment", error))
+
+    # All evidence writers and primary attachment above are fallible callbacks.
+    # Inline cleanup cannot itself be skipped by a rejected helper call-entry.
+    # Persisted hook samples are explicitly preliminary; terminal success is
+    # conditional on these final independent samples, with drift sticky even
+    # when a bounded restoration succeeds. No further writer runs below.
+    cleanup_errors, samples = [], []
+    current = dict(profile=object(), trace=object())
+    for attempt in range(4):
+        if attempt and originals_known:
+            for name, expected in (("profile", original_profile), ("trace", original_trace)):
+                try:
+                    hook_api["set_" + name](expected)
+                except BaseException as error:
+                    cleanup_errors += [("final_" + name + "_restore_" + str(attempt), error)]
+        for name in ("profile", "trace"):
+            try:
+                current[name] = hook_api["get_" + name]()
+                samples += [(attempt, name, current[name])]
+            except BaseException as error:
+                current[name] = object()
+                cleanup_errors += [("final_" + name + "_sample_" + str(attempt), error)]
+        if (
+            originals_known
+            and current["profile"] is original_profile
+            and current["trace"] is original_trace
+        ):
+            break
+        cleanup_errors += [
+            (
+                "final_hook_identity_" + str(attempt),
+                ValueError("Worker hooks changed after evidence callbacks"),
+            )
+        ]
+        if not originals_known:
+            break  # Never install an invented original hook after a failed sample.
+    restored = (
+        originals_known
+        and current["profile"] is original_profile
+        and current["trace"] is original_trace
+    )
+    context.hook_recovery = dict(
+        originals_known=originals_known,
+        samples=tuple(samples),
+        errors=tuple(cleanup_errors),
+        final_profile=current["profile"],
+        final_trace=current["trace"],
+        expected_profile=original_profile,
+        expected_trace=original_trace,
+        identities_match=restored,
+        clean=restored and not cleanup_errors,
+    )
+    context.values["final_hook_identities"] = dict(
+        profile=id(current["profile"]),
+        trace=id(current["trace"]),
+        expected_profile=id(original_profile),
+        expected_trace=id(original_trace),
+        restored=restored,
+        clean=restored and not cleanup_errors,
+        sample_scope="after_all_worker_writers_and_primary_attachment",
+    )
+    context.errors += cleanup_errors
+    if context.primary is not None:
         raise context.primary
     if context.errors:
         raise WorkerEvidenceRejected("Worker evidence incomplete; no success receipt", context)

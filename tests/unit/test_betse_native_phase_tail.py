@@ -280,8 +280,9 @@ def test_cost_adapter_root_and_holder_drift_refuse_before_inherited_callback(eve
 @pytest.mark.parametrize("hook", ["profile", "trace"])
 @pytest.mark.parametrize("target", ["stamp", "boundary"])
 @pytest.mark.parametrize("falsey", [False, True])
+@pytest.mark.parametrize("event", ["call", "return"])
 def test_cost_marker_entry_rejection_on_unwind_keeps_primary_cause_and_exact_hooks(
-    monkeypatch, tmp_path, hook, target, falsey
+    monkeypatch, tmp_path, hook, target, falsey, event
 ):
     class Primary(ValueError):
         def __bool__(self):
@@ -292,14 +293,14 @@ def test_cost_marker_entry_rejection_on_unwind_keeps_primary_cause_and_exact_hoo
         KeyError("cause"),
         OSError("marker entry"),
     )
-    attempts, body, inventory_calls = [], [], []
+    attempts, body, inventory_calls, writer_calls = [], [], [], []
     before = (sys.getprofile(), sys.gettrace())
     code = getattr(software, target).__code__
     index = 0 if hook == "profile" else 1
 
-    def observer(frame, event, arg):
+    def observer(frame, actual_event, arg):
         if (
-            event == "call"
+            actual_event == event
             and frame.f_code is code
             and frame.f_locals.get("name") == "pytest-finished"
             and not attempts
@@ -308,16 +309,31 @@ def test_cost_marker_entry_rejection_on_unwind_keeps_primary_cause_and_exact_hoo
             raise secondary
         previous = before[index]
         if previous is not None:
-            previous(frame, event, arg)
+            previous(frame, actual_event, arg)
         return observer if hook == "trace" else None
+
+    expected = list(before)
+    expected[index] = observer
+
+    def covered():
+        assert sys.getprofile() is expected[0] and sys.gettrace() is expected[1]
 
     def failing_pytest(*args, **kwargs):
         body.append("synthetic pytest body")
         raise primary from cause
 
     def inventory():
+        covered()
         inventory_calls.append("metadata inventory")
         return dict(synthetic_metadata_only=True)
+
+    original_writer = software.snapshot.write_json
+
+    def writer(path, value):
+        covered()
+        if path.name in ("native-entry-guard.json", "runtime.json", "timing-errors.json"):
+            writer_calls.append(path.name)
+        return original_writer(path, value)
 
     directory = tmp_path / "marker-child"
     directory.mkdir()
@@ -325,6 +341,7 @@ def test_cost_marker_entry_rejection_on_unwind_keeps_primary_cause_and_exact_hoo
         with monkeypatch.context() as patch:
             patch.setattr(pytest, "main", failing_pytest)
             patch.setattr(software.inherited.runtime, "inventory", inventory)
+            patch.setattr(software.snapshot, "write_json", writer)
             (sys.setprofile if index == 0 else sys.settrace)(observer)
             with pytest.raises(Primary) as caught:
                 software.child(directory, "unused synthetic metadata dispatch")
@@ -332,15 +349,113 @@ def test_cost_marker_entry_rejection_on_unwind_keeps_primary_cause_and_exact_hoo
             state = primary.tail_software
             assert len(attempts) == 1 and body == ["synthetic pytest body"]
             assert inventory_calls == ["metadata inventory"]
+            assert writer_calls == ["native-entry-guard.json", "runtime.json", "timing-errors.json"]
             assert len(state.timing_errors) == 1 and state.timing_errors[0][1] is secondary
             assert state.final_hooks_restored is True and state.cleanup_errors == []
-            expected = list(before)
-            expected[index] = observer
+            assert not state.metadata_stopped
+            assert all(ready for _, _, ready in state.recovery_checks)
+            assert any(name == "runtime_inventory" for name, _, _ in state.recovery_checks)
             assert sys.getprofile() is expected[0] and sys.gettrace() is expected[1]
-            assert not (directory / "boundary-pytest-finished.json").exists()
+            assert (directory / "boundary-pytest-finished.json").exists() is (event == "return")
     finally:
         sys.settrace(before[1])
         sys.setprofile(before[0])
+
+
+@pytest.mark.parametrize("hook", ["profile", "trace"])
+@pytest.mark.parametrize("target", ["stamp", "boundary"])
+@pytest.mark.parametrize("event", ["call", "return"])
+@pytest.mark.parametrize("failure", ["setter_raises", "silent_noop"])
+@pytest.mark.parametrize("source_failed", [False, True])
+def test_cost_failed_marker_hook_recovery_stops_all_later_metadata_callbacks(
+    monkeypatch, tmp_path, hook, target, event, failure, source_failed
+):
+    class Primary(ValueError):
+        def __bool__(self):
+            return False
+
+    primary, cause = Primary("source error"), KeyError("original cause")
+    marker_error, restore_error = OSError("marker observer"), OSError("restore setter")
+    attempts, restore_attempts, later_callbacks = [], [], []
+    before = (sys.getprofile(), sys.gettrace())
+    setters = (sys.setprofile, sys.settrace)
+    code = getattr(software, target).__code__
+    index = 0 if hook == "profile" else 1
+
+    def observer(frame, actual_event, arg):
+        if (
+            actual_event == event
+            and frame.f_code is code
+            and frame.f_locals.get("name") == "pytest-finished"
+            and not attempts
+        ):
+            attempts.append(frame)
+            raise marker_error
+        previous = before[index]
+        if previous is not None:
+            previous(frame, actual_event, arg)
+        return observer if hook == "trace" else None
+
+    required = list(before)
+    required[index] = observer
+
+    def setter(position, target_hook):
+        if attempts and target_hook is required[position]:
+            restore_attempts.append(position)
+            if position == index:
+                if failure == "setter_raises":
+                    raise restore_error
+                return  # Hook remains cleared: successful setter return is insufficient.
+        setters[position](target_hook)
+
+    def synthetic_pytest(*args, **kwargs):
+        if source_failed:
+            raise primary from cause
+        return 0
+
+    def inventory():
+        later_callbacks.append("inventory")
+        raise AssertionError("Inventory without required hooks must not run")
+
+    original_writer = software.snapshot.write_json
+
+    def writer(path, value):
+        if path.name in ("native-entry-guard.json", "runtime.json", "timing-errors.json"):
+            later_callbacks.append(path.name)
+            raise AssertionError("Writer after failed hook recovery must not run")
+        return original_writer(path, value)
+
+    directory = tmp_path / "failed-recovery-child"
+    directory.mkdir()
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(pytest, "main", synthetic_pytest)
+            patch.setattr(software.inherited.runtime, "inventory", inventory)
+            patch.setattr(software.snapshot, "write_json", writer)
+            patch.setattr(sys, "setprofile", lambda value: setter(0, value))
+            patch.setattr(sys, "settrace", lambda value: setter(1, value))
+            setters[index](observer)
+            if source_failed:
+                with pytest.raises(Primary) as caught:
+                    software.child(directory, "synthetic metadata only")
+                assert caught.value is primary and primary.__cause__ is cause
+            else:
+                assert software.child(directory, "synthetic metadata only") == 1
+            state = software._RAW_FAILURES[-1]
+            assert state.primary is (primary if source_failed else None)
+            assert state.metadata_stopped and not state.final_hooks_restored
+            assert len(attempts) == 1 and later_callbacks == []
+            assert 0 in restore_attempts and 1 in restore_attempts
+            assert len(state.timing_errors) == 1 and state.timing_errors[0][1] is marker_error
+            assert any(not ready for _, _, ready in state.recovery_checks)
+            if failure == "setter_raises":
+                assert any(error is restore_error for _, error in state.cleanup_errors)
+            assert not (directory / "native-entry-guard.json").exists()
+            assert not (directory / "runtime.json").exists()
+    finally:
+        # These originals are independent of the intentionally failing wrappers.
+        setters[1](before[1])
+        setters[0](before[0])
 
 
 @pytest.fixture(scope="module")

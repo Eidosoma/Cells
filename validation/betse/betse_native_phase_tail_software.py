@@ -27,6 +27,18 @@ HOOKS = (
 )
 OWNED = (SOURCE, LITERAL, TEST, FILE, *HOOKS)
 _RAW_FAILURES = ()
+PILLOW_PINS = (
+    (
+        "PIL",
+        "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/__init__.py",
+        "7361b6ad3878589affe5956e4a4da24d71398b0891fd3a8c15e9362217b4ca01",
+    ),
+    (
+        "PIL.Image",
+        "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/Image.py",
+        "04af3f2db7ffdd61e829fa7aa8f5481d394a0a4129a8fd8aa5b13908928fcd6d",
+    ),
+)
 
 
 def native_profile(codes, owner, attempted, previous, reason):
@@ -344,6 +356,12 @@ def select_items(items, selector):
 
 
 def prepare(output, select):
+    external_runtime_pins = {}
+    for module, path, expected in PILLOW_PINS:
+        if snapshot.digest(Path(path)) != expected:
+            raise ValueError("Reviewed existing Pillow producer changed: " + module)
+        external_runtime_pins[module] = dict(path=path, sha256=expected)
+
     from cells.processes import betse_native_phase_tail as stage
 
     if Path(__file__).resolve() != ROOT / FILE or (output / "source").exists():
@@ -368,6 +386,7 @@ def prepare(output, select):
             owned_files={name: manifest["files"][name]["sha256"] for name in OWNED},
             snapshot_sha256=snapshot.digest(output / "source/SNAPSHOT.json"),
             git_revision=manifest["git_revision"],
+            external_runtime_pins=external_runtime_pins,
             selection=select,
             cpu=6,
             threads=1,
@@ -380,6 +399,51 @@ def prepare(output, select):
         ),
     )
     snapshot.assert_checkout_unchanged(output / "source")
+
+
+def _restore_required_hooks(state, name):
+    """No metadata callback is authorized by final restoration alone."""
+    errors_before = len(state.cleanup_errors)
+    for index, label in ((0, "profile"), (1, "trace")):
+        try:
+            state.hook_setters[index](state.required_hooks[index])
+        except BaseException as error:
+            state.cleanup_errors.append((name + "_" + label + "_restore", error))
+    # Read BOTH only after BOTH setters, then repeat in the reverse order.
+    first, second = [None, None], [None, None]
+    for sample, order in ((first, (0, 1)), (second, (1, 0))):
+        for index in order:
+            try:
+                sample[index] = state.hook_getters[index]()
+            except BaseException as error:
+                sample[index] = error
+                state.cleanup_errors.append((name + "_hook_read", error))
+    state.hook_samples = ((first[0], first[1]), (second[0], second[1]))
+    ready = len(state.cleanup_errors) == errors_before and all(
+        a is state.required_hooks[0] and b is state.required_hooks[1] for a, b in state.hook_samples
+    )
+    state.recovery_checks.append((name, state.hook_samples, ready))
+    if not ready:
+        state.metadata_stopped = True
+        state.cleanup_errors.append((name + "_required_hooks_unavailable", None))
+    return ready
+
+
+def _metadata_step(state, name, operation, *args):
+    if state.metadata_stopped:
+        return False, None
+    state.callback_stage = name
+    if not _restore_required_hooks(state, name):
+        return False, None
+    try:
+        returned = operation(*args)
+    except BaseException as error:
+        if operation is stamp:
+            state.timing_errors.append((name + "_entry_or_return", error))
+        else:
+            state.cleanup_errors.append((name, error))
+        return False, None
+    return True, returned
 
 
 def child(output, select):
@@ -407,6 +471,12 @@ def child(output, select):
         restored=False,
         final_hooks_restored=False,
         hook_samples=(),
+        required_hooks=(previous, trace),
+        hook_setters=(sys.setprofile, sys.settrace),
+        hook_getters=(sys.getprofile, sys.gettrace),
+        recovery_checks=[],
+        metadata_stopped=False,
+        callback_stage=None,
     )
 
     class Reports:
@@ -488,57 +558,90 @@ def child(output, select):
             state.restored = sys.getprofile() is profile and sys.gettrace() is trace
         except BaseException as error:
             state.cleanup_errors.append(("active_hooks", error))
-        for setter, target, name in (
-            (sys.setprofile, previous, "profile"),
-            (sys.settrace, trace, "trace"),
-        ):
-            try:
-                setter(target)
-            except BaseException as error:
-                state.cleanup_errors.append((name + "_restore", error))
         try:
-            stamp(output, "pytest-finished", started, state.timing_errors)
-        except BaseException as error:
-            state.timing_errors.append(("pytest-finished_entry", error))
-        try:
-            snapshot.write_json(
-                output / "native-entry-guard.json",
-                dict(
-                    attempted=attempted,
-                    prior_profile_trace_restored=state.restored,
-                    skipped_prerequisites=skipped,
-                    actual_source_or_scientific_credit=0,
-                ),
+            _metadata_step(
+                state,
+                "pytest-finished",
+                stamp,
+                output,
+                "pytest-finished",
+                started,
+                state.timing_errors,
             )
+            if not state.metadata_stopped:
+                _metadata_step(
+                    state,
+                    "guard_receipt",
+                    snapshot.write_json,
+                    output / "native-entry-guard.json",
+                    dict(
+                        attempted=attempted,
+                        prior_profile_trace_restored=state.restored,
+                        skipped_prerequisites=skipped,
+                        actual_source_or_scientific_credit=0,
+                    ),
+                )
+            if not state.metadata_stopped:
+                _metadata_step(
+                    state,
+                    "runtime-start",
+                    stamp,
+                    output,
+                    "runtime-start",
+                    started,
+                    state.timing_errors,
+                )
+            complete = False
+            if not state.metadata_stopped:
+                complete, inventory = _metadata_step(
+                    state, "runtime_inventory", inherited.runtime.inventory
+                )
+            if complete:
+                _metadata_step(
+                    state,
+                    "runtime-returned",
+                    stamp,
+                    output,
+                    "runtime-returned",
+                    started,
+                    state.timing_errors,
+                )
+                written = False
+                if not state.metadata_stopped:
+                    written, _ = _metadata_step(
+                        state,
+                        "runtime_write",
+                        snapshot.write_json,
+                        output / "runtime.json",
+                        inventory,
+                    )
+                if written:
+                    _metadata_step(
+                        state,
+                        "runtime-written",
+                        stamp,
+                        output,
+                        "runtime-written",
+                        started,
+                        state.timing_errors,
+                    )
         except BaseException as error:
-            state.cleanup_errors.append(("guard_receipt", error))
-        try:
-            stamp(output, "runtime-start", started, state.timing_errors)
-        except BaseException as error:
-            state.timing_errors.append(("runtime-start_entry", error))
-        try:
-            inventory = inherited.runtime.inventory()
-        except BaseException as error:
-            state.cleanup_errors.append(("runtime_inventory", error))
-        else:
-            try:
-                stamp(output, "runtime-returned", started, state.timing_errors)
-            except BaseException as error:
-                state.timing_errors.append(("runtime-returned_entry", error))
-            try:
-                snapshot.write_json(output / "runtime.json", inventory)
-            except BaseException as error:
-                state.cleanup_errors.append(("runtime_write", error))
-            else:
-                try:
-                    stamp(output, "runtime-written", started, state.timing_errors)
-                except BaseException as error:
-                    state.timing_errors.append(("runtime-written_entry", error))
+            # Includes observer rejection BEFORE a recovery/step body enters.
+            # Do not call another writer/inventory with an unverified hook.
+            state.metadata_stopped = True
+            state.cleanup_errors.append(
+                ("metadata_continuation_" + str(state.callback_stage), error)
+            )
     # Missing real producer prerequisites cannot turn held controls into a
     # positive full-suite result. A preparation-only selector remains explicit.
-    if state.primary is not None or state.timing_errors or state.cleanup_errors:
+    if not state.metadata_stopped and (
+        state.primary is not None or state.timing_errors or state.cleanup_errors
+    ):
         try:
-            snapshot.write_json(
+            _metadata_step(
+                state,
+                "timing_errors_receipt",
+                snapshot.write_json,
                 output / "timing-errors.json",
                 dict(
                     status="software_or_metadata_failed",
@@ -556,38 +659,28 @@ def child(output, select):
                 ),
             )
         except BaseException as error:
+            state.metadata_stopped = True
             state.cleanup_errors.append(("timing_errors_receipt", error))
     # An inherited observer may disable itself while rejecting ANY recorder.
     # Independently restore both exact originals after ALL evidence writes.
-    for setter, target, name in (
-        (sys.setprofile, previous, "profile"),
-        (sys.settrace, trace, "trace"),
-    ):
-        try:
-            setter(target)
-        except BaseException as error:
-            state.cleanup_errors.append((name + "_final_restore", error))
     try:
-        first = (sys.getprofile(), sys.gettrace())
-        second_trace, second_profile = sys.gettrace(), sys.getprofile()
-        state.hook_samples = (first, (second_profile, second_trace))
-        state.final_hooks_restored = all(
-            a is previous and b is trace for a, b in state.hook_samples
-        )
+        state.final_hooks_restored = _restore_required_hooks(state, "final_cleanup")
     except BaseException as error:
         state.cleanup_errors.append(("final_hook_sample", error))
     if (
         state.primary is not None
         or state.timing_errors
         or state.cleanup_errors
+        or state.metadata_stopped
         or not state.final_hooks_restored
     ):
         _RAW_FAILURES = (*_RAW_FAILURES, state)
     if state.primary is not None:
-        try:
-            state.primary.tail_software = state
-        except BaseException as error:
-            state.cleanup_errors.append(("primary_context", error))
+        if state.final_hooks_restored and not state.metadata_stopped:
+            try:
+                state.primary.tail_software = state
+            except BaseException as error:
+                state.cleanup_errors.append(("primary_context", error))
         raise state.primary
     return (
         int(status)
@@ -597,6 +690,7 @@ def child(output, select):
         and state.final_hooks_restored
         and not state.timing_errors
         and not state.cleanup_errors
+        and not state.metadata_stopped
         else 1
     )
 

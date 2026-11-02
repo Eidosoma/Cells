@@ -941,22 +941,71 @@ def _observe(context):
         raise
     finally:
         state.hooks_ready = False
-        recovery = _recover_hooks(prior, trace, **setters)
-        for stage, error in recovery["errors"]:
-            _fault(context, state, stage, error)
-        for index, guard in enumerate(_HOOK_GUARDS):
-            if guard is state:
-                _HOOK_GUARDS.pop(index)
-                break
+        cleanup_errors, samples = [], []
+        helper_recovery = None
         try:
-            _observer_bookkeeping(context, state.errors, recovery)
-        except BaseException as error:
-            _fault(context, state, "observer_bookkeeping", error)
+            # An inherited profiler/tracer can reject the helper's *entry*,
+            # before its internal protection exists. Keep that secondary error
+            # separate and still perform the independent cleanup below.
+            try:
+                helper_recovery = _recover_hooks(prior, trace, **setters)
+                cleanup_errors += helper_recovery["errors"]
+            except BaseException as error:
+                cleanup_errors += [("final_hook_recovery", error)]
+            try:
+                _observer_bookkeeping(context, (*state.errors, *cleanup_errors), helper_recovery)
+            except BaseException as error:
+                cleanup_errors += [("observer_bookkeeping", error)]
         finally:
-            # A bookkeeping failure must not erase either the original error
-            # or the independently sampled hook identities/recovery errors.
-            vars(context)["capture_errors"] = (*original_errors, *state.errors)
-            vars(context)["observer_recovery"] = recovery
+            # No helper entry is needed to retire the guard or recover both
+            # hooks. This also samples after fallible bookkeeping callbacks.
+            for index in range(len(_HOOK_GUARDS) - 1, -1, -1):
+                if _HOOK_GUARDS[index] is state:
+                    del _HOOK_GUARDS[index]
+            current = dict(profile=object(), trace=object())
+            for attempt in range(4):
+                if attempt:
+                    for name, expected in (("profile", prior), ("trace", trace)):
+                        try:
+                            setters["set_" + name](expected)
+                        except BaseException as error:
+                            cleanup_errors += [
+                                ("final_" + name + "_restore_" + str(attempt), error)
+                            ]
+                # Both samples follow *both* setters, independently of errors.
+                for name in ("profile", "trace"):
+                    try:
+                        current[name] = setters["get_" + name]()
+                        samples += [(attempt, name, current[name])]
+                    except BaseException as error:
+                        current[name] = object()
+                        cleanup_errors += [("final_" + name + "_sample_" + str(attempt), error)]
+                if current["profile"] is prior and current["trace"] is trace:
+                    break
+                cleanup_errors += [
+                    (
+                        "final_hook_identity_" + str(attempt),
+                        ValueError("Both original hooks must be independently restored"),
+                    )
+                ]
+            identities_match = current["profile"] is prior and current["trace"] is trace
+            recovery = dict(
+                helper=helper_recovery,
+                errors=tuple(cleanup_errors),
+                samples=tuple(samples),
+                expected_profile=prior,
+                expected_trace=trace,
+                final_profile=current["profile"],
+                final_trace=current["trace"],
+                identities_match=identities_match,
+                clean=identities_match and not cleanup_errors,
+            )
+            state.errors += cleanup_errors
+            if cleanup_errors:
+                state.pending = context.invalid = True
+            # These plain data stores are after the last fallible callback.
+            context.capture_errors = (*original_errors, *state.errors)
+            context.observer_recovery = recovery
         if primary is None and state.errors:
             raise state.stop
 

@@ -792,3 +792,264 @@ def test_inherited_callback_cannot_disable_parent_safe_boundaries(observed, chan
     assert h.bodies.count("balance") == 1 and not hasattr(h.context.p, "env")
     assert h.context.invalid
     assert any(name == "active_frame_trace_change" for name, _ in h.context.capture_errors)
+
+
+@pytest.mark.parametrize("which", ["profile", "trace"])
+@pytest.mark.parametrize("source_error", [False, True])
+def test_final_recovery_helper_entry_refusal_preserves_primary_and_retires_guard(
+    observed, which, source_error
+):
+    h = observed
+    h.control["fail"] = source_error
+    prior, trace = sys.getprofile(), sys.gettrace()
+    original_guards = tuple(stage._HOOK_GUARDS)
+    secondary = SyntheticCaptureFailure("inherited hook rejected final recovery entry")
+    refused = []
+
+    def inherited_hook(frame, event, arg):
+        if (
+            event == "call"
+            and frame.f_code is stage._recover_hooks.__code__
+            and frame.f_locals["expected_profile"] is expected_profile
+            and frame.f_locals["expected_trace"] is expected_trace
+        ):
+            # The actual profiled/traced call is rejected before the helper body.
+            refused.append((frame, dict(frame.f_locals)))
+            raise secondary
+        previous = prior if which == "profile" else trace
+        if previous is not None:
+            previous(frame, event, arg)
+        return inherited_hook if which == "trace" else None
+
+    expected_profile = inherited_hook if which == "profile" else prior
+    expected_trace = inherited_hook if which == "trace" else trace
+    (sys.setprofile if which == "profile" else sys.settrace)(inherited_hook)
+    try:
+        expected = _FalseySourceFailure if source_error else stage._ObservationStop
+        with pytest.raises(expected) as caught:
+            with stage._observe(h.context):
+                stage._invoke(h.context)
+        final_profile, final_trace = sys.getprofile(), sys.gettrace()
+    finally:
+        sys.setprofile(prior)
+        sys.settrace(trace)
+    assert len(refused) == 1 and "errors" not in refused[0][1]
+    if source_error:
+        assert caught.value is h.primary and h.primary.__cause__ is h.cause
+        assert h.context.raw_returns and h.context.observer_state.primary is h.primary
+    else:
+        assert h.context.p.after_ion and h.context.p.tail_finalized
+    assert final_profile is expected_profile and final_trace is expected_trace
+    assert len(stage._HOOK_GUARDS) == len(original_guards)
+    assert all(a is b for a, b in zip(stage._HOOK_GUARDS, original_guards, strict=True))
+    recovery = h.context.observer_recovery
+    assert recovery["helper"] is None and recovery["identities_match"] and not recovery["clean"]
+    assert any(
+        name == "final_hook_recovery" and error is secondary for name, error in recovery["errors"]
+    )
+    assert h.context.invalid and any(error is secondary for _, error in h.context.capture_errors)
+    assert {name for _, name, _ in recovery["samples"]} == {"profile", "trace"}
+
+
+@pytest.mark.parametrize("source_error", [False, True])
+def test_observer_final_samples_follow_mutating_bookkeeping(observed, monkeypatch, source_error):
+    h = observed
+    h.control["fail"] = source_error
+    prior, trace = sys.getprofile(), sys.gettrace()
+    calls = []
+
+    def inherited_hook(frame, event, arg):
+        if prior is not None:
+            prior(frame, event, arg)
+
+    def bookkeeping(*args):
+        calls.append(args)
+        sys.setprofile(None)
+        sys.settrace(None)
+
+    monkeypatch.setattr(stage, "_observer_bookkeeping", bookkeeping)
+    sys.setprofile(inherited_hook)
+    try:
+        expected = _FalseySourceFailure if source_error else stage._ObservationStop
+        with pytest.raises(expected) as caught:
+            with stage._observe(h.context):
+                stage._invoke(h.context)
+        final_profile, final_trace = sys.getprofile(), sys.gettrace()
+    finally:
+        sys.setprofile(prior)
+        sys.settrace(trace)
+    assert len(calls) == 1
+    assert final_profile is inherited_hook and final_trace is trace
+    assert h.context.observer_recovery["identities_match"]
+    assert not h.context.observer_recovery["clean"] and h.context.invalid
+    assert any(name == "final_hook_identity_0" for name, _ in h.context.capture_errors)
+    if source_error:
+        assert caught.value is h.primary and h.primary.__cause__ is h.cause
+
+
+@pytest.fixture
+def worker_probes(monkeypatch, tmp_path):
+    """Real worker evidence control flow with source/pytest/native bodies blocked."""
+    output = tmp_path / "conditional-worker-final-hooks"
+    output.mkdir()
+    primary, cause = _FalseySourceFailure("toy pytest primary"), SyntheticSourceCause("cause")
+    primary.__cause__ = cause
+    h = SimpleNamespace(output=output, primary=primary, cause=cause, fail=False, calls=[])
+    binding = object()
+    monkeypatch.setattr(
+        runner, "_authorization", lambda *a, **kw: dict(source=tmp_path, manifest={})
+    )
+    monkeypatch.setattr(runner, "_producers", lambda *a, **kw: ({"conditional": {}}, (binding,)))
+    monkeypatch.setattr(runner, "_identity", lambda: dict(conditional_identity=True))
+    monkeypatch.setattr(runner, "_inventory", lambda: dict(conditional_inventory=True))
+
+    def driver(directory):
+        h.calls.append("blocked-pytest-body")
+        if h.fail:
+            raise h.primary
+        return 0
+
+    monkeypatch.setattr(runner, "_pytest_driver", lambda target: driver)
+    h.run = lambda: runner._child(
+        output, "conditional", "hash", file=runner.FILE, entry_path=runner.__file__
+    )
+    return h
+
+
+def test_worker_final_cleanup_accepts_unchanged_conditional_evidence(worker_probes):
+    h = worker_probes
+    prior, trace = sys.getprofile(), sys.gettrace()
+    assert h.run() == 0
+    assert h.calls == ["blocked-pytest-body"]
+    assert sys.getprofile() is prior and sys.gettrace() is trace
+    saved = json.loads((h.output / "worker-evidence.json").read_text())
+    assert saved["pytest_returned_zero"] and saved["final_worker_success_requires_terminal"]
+    assert saved["final_hook_sample_after_all_writers_pending"]
+    assert saved["available"]["hooks"]["sample_scope"] == "before_later_worker_writers_not_final"
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "identity.json",
+        "inventory.json",
+        "producers.json",
+        "hooks.json",
+        "runtime.json",
+        "worker-evidence.json",
+    ],
+)
+@pytest.mark.parametrize("source_error", [False, True])
+def test_worker_samples_after_every_writer_and_refuses_recovered_hook_drift(
+    worker_probes, monkeypatch, filename, source_error
+):
+    h = worker_probes
+    h.fail = source_error
+    prior, trace = sys.getprofile(), sys.gettrace()
+    original_write, payloads, writes = runner.snapshot.write_json, {}, []
+
+    def foreign_profile(frame, event, arg):
+        return None
+
+    def foreign_trace(frame, event, arg):
+        return foreign_trace
+
+    def write(path, value):
+        writes.append(path.name)
+        payloads[path.name] = json.loads(json.dumps(value))
+        result = original_write(path, value)
+        if path.name == filename:
+            sys.setprofile(foreign_profile)
+            sys.settrace(foreign_trace)
+        return result
+
+    monkeypatch.setattr(runner.snapshot, "write_json", write)
+    try:
+        expected = _FalseySourceFailure if source_error else runner.WorkerEvidenceRejected
+        with pytest.raises(expected) as caught:
+            h.run()
+        final_profile, final_trace = sys.getprofile(), sys.gettrace()
+    finally:
+        sys.setprofile(prior)
+        sys.settrace(trace)
+    context = caught.value.world_ready_worker
+    assert h.calls == ["blocked-pytest-body"] and writes.count(filename) == 1
+    assert writes[-1] == "worker-evidence.json"
+    assert final_profile is prior and final_trace is trace
+    assert context.hook_recovery["identities_match"] and not context.hook_recovery["clean"]
+    assert any(name == "final_hook_identity_0" for name, _ in context.errors)
+    final = context.values["final_hook_identities"]
+    assert final["restored"] and not final["clean"]
+    assert final["sample_scope"] == "after_all_worker_writers_and_primary_attachment"
+    assert payloads["hooks.json"]["sample_scope"] == "before_later_worker_writers_not_final"
+    assert payloads["worker-evidence.json"]["final_hook_sample_after_all_writers_pending"]
+    assert payloads["worker-evidence.json"]["final_worker_success_requires_terminal"]
+    if source_error:
+        assert caught.value is h.primary and h.primary.__cause__ is h.cause
+
+
+@pytest.mark.parametrize("failure", ["profile", "trace", "clear-other", "persistent-profile"])
+@pytest.mark.parametrize("source_error", [False, True])
+def test_worker_final_hook_cleanup_is_bounded_independent_and_keeps_primary(
+    worker_probes, monkeypatch, failure, source_error
+):
+    h = worker_probes
+    h.fail = source_error
+    prior, trace = sys.getprofile(), sys.gettrace()
+    set_profile, set_trace, write = sys.setprofile, sys.settrace, runner.snapshot.write_json
+    attempts = dict(profile=0, trace=0)
+    secondary = SyntheticCaptureFailure("conditional final setter refusal")
+
+    def foreign_profile(frame, event, arg):
+        return None
+
+    def foreign_trace(frame, event, arg):
+        return foreign_trace
+
+    def profile(value):
+        if value is prior:
+            attempts["profile"] += 1
+            if failure == "persistent-profile" or (
+                failure == "profile" and attempts["profile"] == 1
+            ):
+                raise secondary
+        set_profile(value)
+
+    def traced(value):
+        if value is trace:
+            attempts["trace"] += 1
+            if failure == "trace" and attempts["trace"] == 1:
+                raise secondary
+        set_trace(value)
+        if failure == "clear-other" and attempts["trace"] == 1:
+            set_profile(None)
+
+    def writer(path, value):
+        result = write(path, value)
+        if path.name == "worker-evidence.json":
+            set_profile(foreign_profile)
+            set_trace(foreign_trace)
+        return result
+
+    monkeypatch.setattr(sys, "setprofile", profile)
+    monkeypatch.setattr(sys, "settrace", traced)
+    monkeypatch.setattr(runner.snapshot, "write_json", writer)
+    try:
+        expected = _FalseySourceFailure if source_error else runner.WorkerEvidenceRejected
+        with pytest.raises(expected) as caught:
+            h.run()
+        final_profile, final_trace = sys.getprofile(), sys.gettrace()
+    finally:
+        set_profile(prior)
+        set_trace(trace)
+    context = caught.value.world_ready_worker
+    assert 1 <= attempts["profile"] <= 3 and 1 <= attempts["trace"] <= 3
+    assert final_trace is trace
+    assert (final_profile is prior) is (failure != "persistent-profile")
+    assert context.hook_recovery["identities_match"] is (failure != "persistent-profile")
+    assert not context.hook_recovery["clean"] and context.errors
+    if failure != "clear-other":
+        assert any(error is secondary for _, error in context.hook_recovery["errors"])
+    assert {name for _, name, _ in context.hook_recovery["samples"]} == {"profile", "trace"}
+    if source_error:
+        assert caught.value is h.primary and h.primary.__cause__ is h.cause
