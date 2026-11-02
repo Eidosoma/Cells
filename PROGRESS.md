@@ -241,24 +241,31 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   tail use separate claims. The proposed WorldReady route must instead retain
   one active claim from before phase allocation through the constructor tail.
   The three new `betse_native_world_phase_construction` driver, test and runner
-  files now have a [reviewed consolidated repair successor](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/source-repairs-01/root-review.json).
+  files now have a [source-reviewed residual repair successor](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/residual-repairs-01/root-review.json).
   The draft performs fallible phase sealing inside the claim and requires
-  exact successful closed-record validation before publication. **26 written
-  control functions remain uncollected and unrun.** All three frozen payloads
-  match the reviewed checkout; nine static commands are verified, including
-  the retained lint/format failures and final passing checks. The native-path
-  guard and independent fixture cleanup are source-closed. Three residuals
-  remain in the same batch: authenticate the comparator's resolved globals;
-  refuse a current read poisoned by caught reentry during reservation release;
-  and retire the exact token if an observer rejects reservation publication's
-  return. Specialist will fix these together, then run fresh isolated blocked
-  controls for the fixes and directly affected private coordinator paths under
-  unchanged resource limits. No actual owner construction is authorized.
+  exact successful closed-record validation before publication. All three
+  residuals are source-closed: actual comparator name resolution plus an
+  independent identity comparison; refusal after caught release-time reentry;
+  and exact-token recovery after reservation-return observation failure.
+  **The new isolated group remains failed: 87 distinct cases selected, 85 call
+  passes and two call failures plus teardown errors on those same two cases.**
+  All 15 new residual cases passed setup, call and teardown. JUnit's 89 entries
+  include the two extra teardown errors; they are not 89 distinct cases.
+  Root verified 825 artifact pins, 435 frozen source files, 269 runtime origins
+  and 12 loaded producers. The worker used 4.781 seconds and 48,578,560 bytes
+  sampled peak RSS, within its limits. The failed group has no aggregate
+  zero-entry certification. Its harness executes forbidden-labelled module
+  metadata before the intended probe and mixes nested control receipts with
+  ordinary case guards. Specialist has one batched harness correction and
+  one fresh same-87-case blocked run authorized, retaining the production
+  driver and shared runners. Earlier images and failures stay separate;
+  compile, format and lint passed at this successor's final source. No actual
+  owner construction is authorized.
   Missing Key/stage producers remain explicit refusals, and the five existing
   phase/world-prefix drivers' integration window stays closed. Existing
   production hooks, legacy APIs and literals are outside this repair scope;
   separate phase test/runner cost work remains disjoint. No native, reference
-  or scientific release follows from the static checks.
+  or scientific release follows from this source/software review.
   Root owns integration, saved
   result review and populated-tissue/electrical qualification.
 
