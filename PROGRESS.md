@@ -143,12 +143,27 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   outcomes are checked, including the preserved pre-fix counterexample.
   Specialist explicitly adopted the repaired producer and review in the
   integrated tail. The prior 46 controls retain their own source binding;
-  actual phase construction and
-  scientific release remain held. Key's next assignment is the next contiguous
-  parameter prerequisite after the modulator block, selected by inspection of
-  the genuine initialization path. Specialist owns the cleared
-  cache/handler/tail integration. Root owns saved
-  result review, integration and the populated-tissue/electrical qualification.
+  actual phase construction and scientific release remain held.
+  The next concrete dependency is **fresh parameter ownership before world
+  construction**. Original `seed` constructs the phase, then calls that same
+  phase's `cells.make_world`, `sim.init_core`, `dyna.init_profiles` and
+  `cells.redo_gj` in order. Current phase construction accepts only the original
+  seven-load parameter owner. That object lacks later world stores; the
+  normalized multi-cell constructor creates different parameter and Cells
+  objects and cannot supply this phase's world by attachment.
+  Key will complete the contiguous parameter remainder after the current
+  colormap block and provide a typed construction/closed-SEED handoff from a
+  fresh world-ready parameter lineage. Native early world stores at 531–573
+  and late stores at 1118–1140 must precede phase/Cells birth on that same
+  object. Specialist owns four new `betse_native_seed_world_prefix` source,
+  driver, test and runner paths for source-only preparation: original progress
+  callback, SEED guard and non-SVG lattice on the exact phase's Cells, stopping
+  before `make_voronoi`. The new parameter handoff and later dispatch hook
+  window remain explicit prerequisites; the seven running-image files stay
+  fixed, with no new validation or batch query. This method boundary does not
+  claim the runner's earlier `progress_ranged` history. Genuine ion/material
+  ownership for `init_core` remains later work. Root owns integration, saved
+  result review and populated-tissue/electrical qualification.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
