@@ -294,21 +294,28 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [19-pass worker with failed aggregate accounting](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/guard-policy-control-repair-01/root-review.json)
   remain failed at their own source images. The separate tail hook-recovery
   correction is also closed, as recorded above. **Specialist's eight-path
-  source-only integration window is now open:** the five phase/world-prefix
-  drivers plus the coordinator driver/test/runner. It will implement an explicit
+  source-only integration draft is sealed:** the five phase/world-prefix
+  drivers plus the coordinator driver/test/runner. It contains an explicit
   fresh-WorldReady route using the stable public single-claim contract, preserving
   legacy routes, original classes/wrappers, weak cache links and literal bodies.
   Key owns the separate parameter fixes and genuine predecessor handoff.
   Unreviewed provider/stage pins remain unbound; no owner pilot, source/native
   execution or scientific release is authorized. Both developers will deliver
   consolidated batches; Root owns integration, saved-result review and
-  populated-tissue/electrical qualification. A [read-only eight-file preview](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/root-interface-preview-01/review.json)
-  found two issues for that same integration batch: final in-claim sealing
-  still compares completed fields against earlier-stage rosters, and reciprocal
-  embedded whole-file hashes would prevent later source adoption. Specialist
-  is addressing both together while preserving strict stage checks and an
-  acyclic source-binding contract. This is a work-in-progress source finding;
-  no tests or actual owner/native execution were run for the preview.
+  populated-tissue/electrical qualification. The [sealed draft review](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/eight-path-integration-01/root-review.json)
+  retained two findings: stale stage-field checks during final sealing and
+  reciprocal embedded source hashes. The [combined successor closes both in source](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/eight-path-integration-repairs-01/root-review.json).
+  Only the authenticated in-claim seal may select the completed field epoch;
+  immediate-stage checks stay strict. The helper binding hashes every byte
+  except two canonical back-reference literals, whose values separately require
+  the full coordinator hash and exact review pin. Adoption is now acyclic.
+  All eight frozen/current payloads, 36 artifact pins and eight saved static
+  outcomes verify. Five paths, all prefix executable ASTs and prior test bodies
+  are unchanged; earlier literal evidence retains its own scope. **One fresh
+  45-control metadata group is authorized: twelve integration forms plus 33
+  repair forms**, using the existing native blockade and unchanged limits.
+  Those controls remain pending; no genuine owner pilot or provider adoption
+  is released. The eight-file source snapshot is not an executable closure.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
