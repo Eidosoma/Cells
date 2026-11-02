@@ -116,13 +116,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   kind change or additional native/physical admission is authorized by this
   source preparation.
   The four new tail files are present as unvalidated preparation. The
-  [bounded source review](/mnt/workspaces/Cells/native-phase-tail-20261102-01/root-source-review-01.json)
+  [bounded source review](/mnt/workspaces/Cells/native-phase-tail-20261102-01/root-source-review-02.json)
   requests one repair batch: separate growing tail observations from unchanged
   parent graphs; protect hook setup and both cleanup attempts; admit body entry
   before trace as well as profile callbacks; and retain rejected direct-entry
-  work records. Specialist owns these source/test corrections. The review
-  preserves the original preparation binding and discloses concurrent driver
-  changes; no tests, native execution, cache query or source acceptance occurred.
+  work records. The second preparation adds runtime/registry checks but leaves
+  those four findings open. Its cache registry check also needs to retain the
+  actual `(context, role)` issuance tuple instead of expecting a bare context.
+  Specialist owns all five corrections in the same source/test batch. Both
+  preparation snapshots retain their exact source bindings; no tests, native
+  execution, cache query or source acceptance occurred.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
