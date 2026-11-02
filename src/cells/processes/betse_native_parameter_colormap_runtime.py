@@ -183,13 +183,16 @@ def _method(cls, name, module, tree, filename):
         function = function.__func__
     core = prefix.parameters.inherited._chain(function)[-1]
     node = prefix.parameters.inherited._class(tree, owner.__name__)
-    code = prefix.parameters._method_code(node, name, filename)
-    if core.__globals__ is not vars(module) or prefix.parameters.inherited._code(
-        core.__code__
-    ) != prefix.parameters.inherited._code(code):
+    method_node = prefix.parameters.inherited._method(node, name)
+    code = state.previous._context_code(method_node, filename)
+    if (
+        core.__globals__ is not vars(module)
+        or core.__code__.co_qualname != code.co_qualname
+        or prefix.parameters.inherited._code(core.__code__)
+        != prefix.parameters.inherited._code(code)
+    ):
         raise ValueError("Original colormap copy method changed")
     if not prefix.parameters.inherited._method(node, name).decorator_list:
-        method_node = prefix.parameters.inherited._method(node, name)
         rows = state.previous._undecorated(function, module, Path(filename), method_node)
     else:
         rows = tuple(
@@ -208,6 +211,7 @@ def _functions(module):
     tree = ast.parse(Path(filename).read_bytes())
     # These names are reached by getitem_checked, including its missing-name
     # path. A foreign-globals replacement must not disappear from inventory.
+    required = []
     for name in REACHED_API_HELPERS:
         value = vars(module).get(name)
         node = next(
@@ -221,6 +225,10 @@ def _functions(module):
             or value.__qualname__ != name
         ):
             raise ValueError("Original named retained API helper required: " + name)
+        required.append((value, node))
+    # Authenticate the complete roster before an earlier helper traverses its
+    # globals and encounters a missing later sibling during binding capture.
+    for value, node in required:
         state.previous._undecorated(value, module, Path(filename), node)
     code = compile(tree, filename, "exec", dont_inherit=True)
     expected = []

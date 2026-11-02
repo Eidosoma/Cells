@@ -140,10 +140,14 @@ def _classes(bound):
         init = vars(cls).get("__init__")
         if init is not None:
             function = prefix.parameters.inherited._chain(init)[-1]
-            expected = prefix.parameters._method_code(node, "__init__", filename)
-            if function.__globals__ is not vars(colors) or prefix.parameters.inherited._code(
-                function.__code__
-            ) != prefix.parameters.inherited._code(expected):
+            method = prefix.parameters.inherited._method(node, "__init__")
+            expected = previous._context_code(method, filename)
+            if (
+                function.__globals__ is not vars(colors)
+                or function.__code__.co_qualname != expected.co_qualname
+                or prefix.parameters.inherited._code(function.__code__)
+                != prefix.parameters.inherited._code(expected)
+            ):
                 raise ValueError("Colormap constructor source changed")
         kinds.append(cls)
         objects.extend(prefix.parameters.inherited.tissue._surface(cls))

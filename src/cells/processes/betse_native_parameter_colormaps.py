@@ -24,6 +24,8 @@ LAW_ID = "betse_native_parameter_colormap_input_source_boundary@1"
 PREVIOUS_SHA256 = "18fa6a451c4dfd7951d6d699e1ce6d3332a8754e126eba40adc18acc453d2dc2"
 COLORMAP_SHA256 = "d19b467347ea69ea090241dbee61735bcd57f77777ea3a086c41cef5dcd3f820"
 START, STOP = 135, 139
+_CONTEXT_MAX_BYTES, _CONTEXT_MAX_NODES, _CONTEXT_MAX_CODES = 4 * 2**20, 100000, 100000
+_CONTEXT_COMPILER = builtins.compile
 ROLES = (
     ("default_cm", "colormap_diverging_name", "default colormap"),
     ("background_cm", "colormap_sequential_name", "background colormap"),
@@ -150,6 +152,7 @@ def _stacks(context):
 
 @contextmanager
 def _inspection(owner):
+    _compiler_contract()  # Refuse compiler drift before inherited metadata work.
     if type(owner) is not previous.ModulatorsOwner or owner not in previous._ISSUED:
         previous._validate(owner)
         raise AssertionError("Unissued modulator validator returned")
@@ -254,9 +257,10 @@ def _compile(parent):
     if original.__globals__ is not vars(module):
         raise ValueError("Actual original parameter namespace required")
     path, cls, _, selected = _ast()
-    cls = copy.deepcopy(cls)
-    prefix.parameters.inherited._method(cls, "load").body = copy.deepcopy(selected)
-    code = prefix.parameters._method_code(cls, "load", str(path))
+    method = prefix.parameters.inherited._method(cls, "load")
+    replacement = copy.deepcopy(method)
+    replacement.body = copy.deepcopy(selected)
+    code = _context_code(method, str(path), replacement=replacement)
     if code.co_freevars:
         raise ValueError("Colormap slice unexpectedly requires a closure")
     function = FunctionType(code, original.__globals__, original.__name__, None, None)
@@ -272,6 +276,103 @@ def _code(node, filename, name):
     return next(c for c in value.co_consts if type(c) is CodeType and c.co_name == name)
 
 
+def _context_code(node, filename, *, replacement=None):
+    """Compile complete source context and select one declared lexical body.
+
+    Compilation never imports/executes the module, decorators, defaults, class
+    bodies or helpers. Keep the standalone _code compiler separate for explicit
+    synthetic fragments and unchanged out-of-CM legacy callers.
+    """
+    compiler_binding = _compiler_contract()
+    compiler = compiler_binding[1][0]
+    if type(node) not in (ast.FunctionDef, ast.AsyncFunctionDef):
+        raise ValueError("Declared source function required for contextual compilation")
+    path = Path(filename)
+    if path.stat().st_size > _CONTEXT_MAX_BYTES:
+        raise ValueError("Bounded complete compiler source exhausted")
+    raw = path.read_bytes()
+    if len(raw) > _CONTEXT_MAX_BYTES:
+        raise ValueError("Bounded complete compiler source exhausted")
+    tree = ast.parse(raw, filename=str(path))
+    fingerprint = ast.dump(node, include_attributes=True)
+    pending, found, visited = [(tree, "")], [], 0
+    while pending:
+        current, scope = pending.pop()
+        visited += 1
+        if visited > _CONTEXT_MAX_NODES:
+            raise ValueError("Bounded compiler AST exhausted")
+        nested_scope = scope
+        if type(current) in (ast.FunctionDef, ast.AsyncFunctionDef):
+            qualified = scope + current.name
+            if (
+                current.name == node.name
+                and current.lineno == node.lineno
+                and current.col_offset == node.col_offset
+                and ast.dump(current, include_attributes=True) == fingerprint
+            ):
+                found.append((current, qualified))
+            nested_scope = qualified + ".<locals>."
+        elif type(current) is ast.ClassDef:
+            nested_scope = scope + current.name + "."
+        pending.extend((child, nested_scope) for child in ast.iter_child_nodes(current))
+    if len(found) != 1:
+        raise ValueError("One exact declared function/source span required")
+    target, qualified = found[0]
+    if replacement is not None:
+        if type(replacement) is not type(target):
+            raise ValueError("Contextual rewrite may replace the declared body only")
+        old_header, new_header = copy.deepcopy(target), copy.deepcopy(replacement)
+        old_header.body = new_header.body = []
+        if ast.dump(old_header, include_attributes=True) != ast.dump(
+            new_header, include_attributes=True
+        ):
+            raise ValueError("Contextual rewrite changed the original header or scope")
+        target.body = copy.deepcopy(replacement.body)
+    first_line = min([node.lineno, *(value.lineno for value in node.decorator_list)])
+    prefix.parameters.inherited._same(_compiler_contract(), compiler_binding)
+    compiled = compiler(tree, str(path), "exec", dont_inherit=True, optimize=0)
+    prefix.parameters.inherited._same(_compiler_contract(), compiler_binding)
+    pending, found, visited = [compiled], [], 0
+    while pending:
+        current = pending.pop()
+        visited += 1
+        if visited > _CONTEXT_MAX_CODES:
+            raise ValueError("Bounded compiled-code traversal exhausted")
+        if current.co_qualname == qualified and current.co_firstlineno == first_line:
+            found.append(current)
+        pending.extend(value for value in current.co_consts if type(value) is CodeType)
+    if len(found) != 1:
+        raise ValueError("One exact lexical code body required")
+    return found[0]
+
+
+_CONTEXT_FUNCTION = _context_code
+_CONTEXT_KEYWORD_DEFAULTS = _context_code.__kwdefaults__
+_CONTEXT_REPLACEMENT_KEY = next(iter(_CONTEXT_KEYWORD_DEFAULTS))
+
+
+def _compiler_contract():
+    """Authenticate the reached compiler and original implicit-rewrite default."""
+    function = _context_code
+    if type(function) is not FunctionType or function is not _CONTEXT_FUNCTION:
+        raise ValueError("Original contextual compiler function required")
+    namespace, cached = function.__globals__, function.__builtins__
+    declared = namespace.get("__builtins__")
+    declared = vars(declared) if type(declared) is ModuleType else declared
+    if declared is not cached or cached is not vars(builtins):
+        raise ValueError("Contextual compiler cached builtins association changed")
+    compiler = cached.get("compile")
+    if "compile" in namespace or compiler is not _CONTEXT_COMPILER:
+        raise ValueError("Original resolved contextual compiler required")
+    keywords = function.__kwdefaults__
+    if type(keywords) is not dict or keywords is not _CONTEXT_KEYWORD_DEFAULTS:
+        raise ValueError("Original contextual compiler keyword-default mapping required")
+    items = tuple(dict.items(keywords))
+    if len(items) != 1 or items[0][0] is not _CONTEXT_REPLACEMENT_KEY or items[0][1] is not None:
+        raise ValueError("Original contextual compiler replacement keyword/key/value required")
+    return (), (compiler, function, namespace, cached, declared, keywords, *items[0])
+
+
 def _undecorated(function, module, path, node, *, decorators=()):
     """Authenticate the executable function itself, never a spoofed wrapped core."""
     if (
@@ -281,8 +382,13 @@ def _undecorated(function, module, path, node, *, decorators=()):
         or function.__closure__ is not None
         or "__wrapped__" in vars(function)
         or tuple(ast.unparse(value) for value in node.decorator_list) != decorators
+    ):
+        raise ValueError("Original undecorated helper outer executable/globals required")
+    expected_code = _context_code(node, str(path))
+    if (
+        function.__code__.co_qualname != expected_code.co_qualname
         or prefix.parameters.inherited._code(function.__code__)
-        != prefix.parameters.inherited._code(_code(node, str(path), node.name))
+        != prefix.parameters.inherited._code(expected_code)
     ):
         raise ValueError("Original undecorated helper outer executable/globals required")
 
@@ -334,10 +440,13 @@ def _canonical(function, module, path, node):
     if type(function) is not FunctionType:
         raise ValueError("Exact original colormap helper callable required")
     core = prefix.parameters.inherited._chain(function)[-1]
-    expected = _code(node, str(path), node.name)
-    if core.__globals__ is not vars(module) or prefix.parameters.inherited._code(
-        core.__code__
-    ) != prefix.parameters.inherited._code(expected):
+    expected = _context_code(node, str(path))
+    if (
+        core.__globals__ is not vars(module)
+        or core.__code__.co_qualname != expected.co_qualname
+        or prefix.parameters.inherited._code(core.__code__)
+        != prefix.parameters.inherited._code(expected)
+    ):
         raise ValueError("Original colormap helper executable/globals changed")
     return tuple(
         prefix._function_bindings(fn) for fn in prefix.parameters.inherited._chain(function)
@@ -643,6 +752,8 @@ def _bindings():
         _configuration,
         _compile,
         _code,
+        _context_code,
+        _compiler_contract,
         _undecorated,
         _canonical,
         _registry_surface,
@@ -666,6 +777,14 @@ def _bindings():
         COLORMAP_SHA256,
         START,
         STOP,
+        _CONTEXT_MAX_BYTES,
+        _CONTEXT_MAX_NODES,
+        _CONTEXT_MAX_CODES,
+        _CONTEXT_COMPILER,
+        _CONTEXT_FUNCTION,
+        _CONTEXT_KEYWORD_DEFAULTS,
+        _CONTEXT_REPLACEMENT_KEY,
+        *_compiler_contract()[1],
         ROLES,
         _ISSUED,
         _ACTIVE,

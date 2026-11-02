@@ -261,10 +261,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   final success. The corrected reader passed its metadata checks. The
   [continuation then exposed a missing-helper refusal mismatch](/mnt/workspaces/Cells/native-parameter-CM-context-focused73-development-20261102-01/results.json):
   **seven cases passed, one failed and 65 remain unrun** across the two attempts.
-  Helper binding resolves a missing later helper before the named roster check.
-  Key is validating the complete roster first, then checking the failed
-  three-case group plus the 65 unrun cases. Prior failures remain preserved;
-  no producer adoption is granted. Both
+  Helper binding resolved a missing later helper before the named roster check.
+  The [complete-roster successor passes all 68 fresh checks](/mnt/workspaces/Cells/native-parameter-CM-required-helper-repair68-20261102-01/results.json):
+  the failed three-case group plus the 65 unrun cases, across 18 functions.
+  All 68 native and 18 Matplotlib guard records are clear. Its immutable
+  535-file image retains the original revision; 2,606 loaded producer rows and
+  1,122 external runtime paths verify. The batch took 195.121 seconds with
+  308,555,776 bytes sampled peak RSS. The other five passes retain their old
+  producers; this is not a fresh 73-case run. Frozen summary-count errors are
+  disclosed separately, with exact selectors and test reports authoritative.
+  Prior failures remain preserved; no producer adoption is granted. Both
   earlier 540-file images, 1,368 runtime rows and complete empty guards
   verify. The **118-control remaining batch has not launched**. Earlier passes
   stay bound to their own images; no native or numerical execution occurred.

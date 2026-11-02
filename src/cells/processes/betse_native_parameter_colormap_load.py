@@ -93,7 +93,7 @@ def _metadata_code():
         raise ValueError("Original modulator stable-field guard boundary changed")
     selected = copy.deepcopy(node)
     selected.body = selected.body[:-3]
-    code = boundary._code(selected, str(path), "_parent")
+    code = boundary._context_code(node, str(path), replacement=selected)
     original = mod._parent
     prefix._function_bindings(original)
     function = FunctionType(code, original.__globals__, "_parent")
@@ -508,7 +508,25 @@ def _returned(context, role, frame, value):
 def _observe(context):
     prior, trace = sys.getprofile(), sys.gettrace()
     roles = _roles(context)
-    watcher = SimpleNamespace(depth=0, ready=False, locals={}, frames=set(), opcodes={})
+    watcher = SimpleNamespace(
+        depth=0,
+        ready=False,
+        locals={},
+        frames=set(),
+        opcodes={},
+        primary=None,
+        primary_traceback=None,
+        stopped=False,
+        exceptions={},
+        stop=ValueError("Colormap source guard recovery refused continuation"),
+    )
+    context.observer_state = watcher
+    hooks = dict(
+        set_profile=sys.setprofile,
+        set_trace=sys.settrace,
+        get_profile=sys.getprofile,
+        get_trace=sys.gettrace,
+    )
     context.trace_observations = []
     forbidden = {
         value.__code__ for value in context.source.capture.objects if type(value) is FunctionType
@@ -520,6 +538,8 @@ def _observe(context):
                 forbidden.add(value.__code__)
 
     def inherited(function, frame, event, arg, *, kind="profile"):
+        if watcher.stopped:
+            return None  # Final recovery never rearms inherited callbacks.
         if function is None or watcher.depth:
             return None
         watcher.depth += 1
@@ -533,22 +553,56 @@ def _observe(context):
         finally:
             watcher.depth -= 1
             if watcher.ready:
-                # Keep owned source-frame boundaries installed even if an
-                # inherited callback changed its local trace or global hooks.
-                if sys.getprofile() is not profile or sys.gettrace() is not traced:
-                    context.invalid = True
+                observed = {}
+                for name in ("profile", "trace"):
+                    try:
+                        observed[name] = hooks["get_" + name]()
+                    except BaseException as error:
+                        observed[name] = object()
+                        context.observation_errors += (("active_sample_" + name, error),)
+                        watcher.stopped = context.invalid = True
+                if observed["profile"] is not profile or observed["trace"] is not traced:
+                    watcher.stopped = context.invalid = True
                     context.observation_errors += (
                         ("inherited_hook_change", ValueError("Source hooks changed")),
                     )
-                    sys.setprofile(profile)
-                    sys.settrace(traced)
+                    for name, value in (("profile", profile), ("trace", traced)):
+                        try:
+                            hooks["set_" + name](value)
+                        except BaseException as error:
+                            context.observation_errors += (("active_restore_" + name, error),)
+                            watcher.stopped = True
+                    for name, expected in (("profile", profile), ("trace", traced)):
+                        try:
+                            if hooks["get_" + name]() is not expected:
+                                raise ValueError("Required source hook restoration incomplete")
+                        except BaseException as error:
+                            context.observation_errors += (("active_verify_" + name, error),)
+                            watcher.stopped = True
                 for active in tuple(watcher.frames):
-                    active.f_trace = traced
-                    active.f_trace_lines = True
-                    active.f_trace_opcodes = True
+                    for name, value in (
+                        ("f_trace", traced),
+                        ("f_trace_lines", True),
+                        ("f_trace_opcodes", True),
+                    ):
+                        try:
+                            setattr(active, name, value)
+                        except BaseException as error:
+                            context.observation_errors += (("active_frame_" + name, error),)
+                            watcher.stopped = context.invalid = True
+                if watcher.stopped and watcher.primary is None and event in ("return", "exception"):
+                    raise watcher.stop
 
     def traced(frame, event, arg):
         role = roles.get(frame.f_code)
+        if event == "exception" and role is not None and not watcher.depth:
+            context.raw_exception = (frame, arg)
+            if arg[1] is not watcher.stop:
+                watcher.exceptions[frame] = (arg[1], arg[2])
+        if event == "return" and role is not None and arg is None and frame in watcher.exceptions:
+            watcher.primary, watcher.primary_traceback = watcher.exceptions[frame]
+        if watcher.stopped and role is not None and event in ("call", "line", "opcode"):
+            raise watcher.stop
         guarded = role is not None or watcher.depth > 0
         if event in ("call", "line", "opcode") and guarded and watcher.ready:
             _trace_registry(context, frame, "before_" + event)
@@ -577,6 +631,8 @@ def _observe(context):
 
     def profile(frame, event, arg):
         code = frame.f_code
+        if event == "return" and arg is None and frame in watcher.exceptions:
+            watcher.primary, watcher.primary_traceback = watcher.exceptions[frame]
         if event == "call":
             if code in forbidden:
                 raise ValueError("Colormap evaluator/initializer callback is outside lookup scope")
@@ -614,20 +670,41 @@ def _observe(context):
             _registry_check(context)
 
     try:
-        sys.setprofile(profile)
-        sys.settrace(traced)
+        hooks["set_profile"](profile)
+        hooks["set_trace"](traced)
         watcher.ready = True
         yield
+    except BaseException as error:
+        if watcher.primary is not None:
+            # The caller's inner catch may already have retained our recovery
+            # sentinel. Keep the public source error canonical with the exact
+            # primary rethrown here, preserving the displaced error separately.
+            retained = vars(context).get("source_error")
+            if retained is not None and retained is not watcher.primary:
+                context.observation_errors += (("displaced_source_error", retained),)
+            if error is not watcher.primary and error is not retained:
+                context.observation_errors += (("displaced_observer_error", error),)
+            context.source_error = watcher.primary
+            if error is not watcher.primary:
+                raise BaseException.with_traceback(watcher.primary, watcher.primary_traceback)  # noqa: B904
+        raise
     finally:
         watcher.ready = False
         for name, setter, value in (
-            ("profile_restore", sys.setprofile, prior),
-            ("trace_restore", sys.settrace, trace),
+            ("profile_restore", hooks["set_profile"], prior),
+            ("trace_restore", hooks["set_trace"], trace),
         ):
             try:
                 setter(value)
             except BaseException as error:
                 context.observation_errors += ((name, error),)
+        for name, expected in (("profile", prior), ("trace", trace)):
+            try:
+                if hooks["get_" + name]() is not expected:
+                    raise ValueError("Final source hook restoration incomplete")
+            except BaseException as error:
+                context.observation_errors += (("final_sample_" + name, error),)
+                watcher.stopped = context.invalid = True
 
 
 def _invoke(context):
