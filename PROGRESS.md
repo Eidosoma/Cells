@@ -20,27 +20,37 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   are separate requirements. This milestone does not cover every BETSE feature,
   including the still-held post-cut continuation.
 
-- **Current mapping software batch:** Root launched the [remaining 15 controls
-  in seven detached groups](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/current-owner-controls-01/LAUNCH.json)
-  on CPU 2, one thread, with **1 GiB / 480 seconds per group / 8 GiB host
-  reserve**. They cover ownership, callbacks, capture and failure retention;
-  actual native and scientific execution stays blocked. The already-passing
-  smoke is excluded. The [CPU-dispatch change passed 15 metadata controls](/mnt/workspaces/Cells/native-mapping-batch-dispatch-20261101-01/root-review.json)
-  and is committed; its initial test-harness failure is preserved. Launch
-  inputs and frozen source are verified. Terminal results have not been
-  queried; Root owns their review on the next requested status check. Key's
+- **Current mapping software batch:** [All 15 remaining controls are reviewed](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/current-owner-controls-01/root-review.json).
+  Seven groups completed on CPU 2, one thread, within **1 GiB / 480 seconds
+  per group / 8 GiB host reserve**. Ownership, callbacks, capture and failure
+  retention checks passed with no forbidden native entries; all prior hooks
+  were restored. Each group took 41.74–82.42 seconds, with at most 236.5 MiB
+  sampled RSS. The identical frozen payloads, loaded producers and current five
+  sources verify. Two historical Git-bookkeeping notices remain separate from
+  passed immutable execution. The earlier smoke receives no additional credit.
+  Actual mapping/reference and scientific qualification remain held. Key's
   network/GRN and closed-claim repairs are reviewed. Specialist can now bind
   Key's tested constructor-continuation API for same-phase tissue-handler
   attachment. The standalone handler attachment is already
   reviewed; its earlier scope message does not reopen that work.
   Specialist's requested cache status check found a controller failure after
   13 passing controls; 31 were not launched by that failed batch. The repaired
-  controller has now detached those 31 controls in a fresh image, excluding
-  the completed 13. Its terminal outcome has not been queried. Key has
-  implemented the contiguous modulator/bitmap parameter block through line
-  1000; source review found no production blocker. Its first software batch
-  reached the wall limit. Key is fixing setup cleanup and merged attempt counts
-  in the consolidated test guard before further software acceptance. Specialist's
+  controller launched those 31 controls in a fresh image, excluding the
+  completed 13. Specialist's requested single completion check now finds a
+  31-pass terminal result; saved-producer and integration review is in progress.
+  Key's [contiguous modulator/bitmap parameter block is reviewed](/mnt/workspaces/Cells/native-parameter-modulators-development-20261102-01/root-review.json)
+  through native line 1000: 26 original statements and eight stores. All 13
+  original outcomes are checked, including the wall-time and style failures;
+  the original test image has 35 passing controls. Its
+  [test-guard repair is reviewed separately](/mnt/workspaces/Cells/native-parameter-modulator-guard-repair-20261102-01/root-review.json):
+  17 focused controls pass, six new and eleven affected, with independent hook
+  cleanup and complete attempt aggregation. The two deliberate blocked probes
+  retain their attempted entries separately from ordinary empty guards. The
+  unchanged production candidate and original 35-control image retain separate
+  source/evidence scope. The three current files are ready for held integration.
+  Key is implementing the next four original colormap assignments at lines
+  1007–1014, with genuine lookup/result ownership and actual execution held.
+  Specialist's
   same-phase handler entry and error-precedence repairs are source-reviewed and
   integrated with qualification still held.
   The relayed mapping alias
@@ -84,9 +94,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   files are integrated with their existing holds. The
   [remaining-only launch](/mnt/workspaces/Cells/native-phase-caches-20261101-01/batch-02/LAUNCH.json)
   uses seven sequential groups under the unchanged CPU 6, one-thread,
-  1 GiB / 480-second / 8 GiB-reserve guards. Its final result is unqueried;
-  complete-cache acceptance and the handler consumer's own validation remain
-  pending. Specialist has explicitly bound Key's reviewed closed-claim API
+  1 GiB / 480-second / 8 GiB-reserve guards. The requested completion check
+  found 31 passes; Specialist is reviewing the frozen producers and recorded
+  integration notices. Complete-cache acceptance and the handler consumer's
+  own validation remain pending that disposition. Specialist has explicitly
+  bound Key's reviewed closed-claim API
   without changing the running cache image.
   The [same-phase tissue-handler consumer is now integrated as guarded source](/mnt/workspaces/Cells/native-phase-dyna-20261102-01/root-integration-review-01.json).
   It retains the actual phase and parameter claim, rejects callback re-entry
@@ -266,12 +278,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **47 recorder/timing controls** and **29 controller/resource controls** pass
   in separate final images. Earlier images remain bound separately, including
   an overly broad 240-case software selection and a retained reporter failure.
-  The [fifth tissue diagnostic is launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-05-controller/LAUNCH.json)
-  with an explicit **1,800-second wall limit**, CPU 3, one thread, **1 GiB**
-  worker memory and **8 GiB** host reserve. Its numerical source, inputs and
-  nine-method endpoint are unchanged. This is an explicitly longer run,
-  not a reclassification of the previous timeouts. No terminal result has
-  been queried; result review is pending the next requested status check.
+  The [fifth tissue diagnostic is now reviewed as a wall-time failure](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-05/root-review.json).
+  It stopped at **1,800.02 seconds**, with **332.5 MiB sampled peak RSS**;
+  memory and host-reserve limits were respected. Eight action/capture pairs
+  completed through `cell_index`. The ordinary continuation reached literal
+  `cellVerts` but produced no completed geometry trial or independent comparison.
+  Final runtime/work-counter records and the active partial geometry are absent.
+  Late durable rows show repeated tree-query/check cycles with about 4.10 million
+  counted entries between consecutive native append observations. These counts
+  do not attribute CPU time or establish a speed comparison. Root is adding
+  bounded timing around the exact ownership/source/graph checks and tree calls,
+  preserving all existing guards, before selecting the next performance change.
+  No actual retry has been launched; the earlier failed images remain unchanged.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
