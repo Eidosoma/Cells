@@ -163,14 +163,22 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   384.63 seconds and test 84.75 seconds. Saved empty guards do not complete that
   failed worker's provenance. All 35 frozen source maps and the 34 completed
   loaded-producer inventories verify; five historical integration notices
-  remain separate. The [tail cost successor is now reviewed](/mnt/workspaces/Cells/native-phase-tail-cost-repair-20261102-01/root-review.json):
-  five cheap controls and one fresh issued-chain pilot pass; the pilot finished
-  in **251.15 seconds / 236.6 MiB sampled RSS**, with complete runtime evidence
-  and zero native attempts. Its missing-overlay and reporter failures remain
-  preserved. Source acceptance still needs live binding of the original guard's
-  closure/global slots and protected finalization-marker calls. Specialist will
-  close both with cheap controls after the current coordinator batch; no second
-  owner pilot or automatic batch resume is released. This remains SEED-only
+  remain separate. The [earlier tail cost checkpoint](/mnt/workspaces/Cells/native-phase-tail-cost-repair-20261102-01/root-review.json)
+  retains five cheap passes and its **251.15-second** issued-chain pilot, along
+  with the missing-overlay and reporter failures. The [new guard-binding
+  successor is reviewed separately](/mnt/workspaces/Cells/native-phase-tail-cost-repair-20261102-01/guard-binding-repair-01/root-review.json):
+  **36 cheap controls pass (31 new, five repeated)**, and one fresh issued-chain
+  pilot passes in **405.77 seconds / 245,428,224 bytes sampled peak RSS**.
+  All 1,142 artifact pins, both 414-file images, loaded producers and complete
+  guards verify; no native attempts were recorded. These timings establish no
+  general speedup. Live original guard/closure/global binding is source-closed,
+  and marker failures retain the original primary. One recovery gap still
+  blocks source acceptance: a rejected marker can clear an inherited hook,
+  after which metadata callbacks run before restoration. Specialist has one
+  narrow source-only correction to restore and confirm hooks before continuing,
+  or stop that continuation while retaining the failure. Affected cheap controls
+  should cover entry, return and failed restoration; no further owner pilot,
+  validation launch or automatic batch resume is authorized. This remains SEED-only
   software evidence; native construction, full phase, INIT/SIM, physical and
   checkpoint admission remain held.
   Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
