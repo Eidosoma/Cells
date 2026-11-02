@@ -170,15 +170,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **36 cheap controls pass (31 new, five repeated)**, and one fresh issued-chain
   pilot passes in **405.77 seconds / 245,428,224 bytes sampled peak RSS**.
   All 1,142 artifact pins, both 414-file images, loaded producers and complete
-  guards verify; no native attempts were recorded. These timings establish no
-  general speedup. Live original guard/closure/global binding is source-closed,
+  guards verify; no native attempts were recorded. A [post-execution Pillow
+  supplement](/mnt/workspaces/Cells/native-phase-tail-cost-repair-20261102-01/guard-binding-repair-01/root-pillow-binding-review.json)
+  verifies the exact `PIL` and `PIL.Image` files loaded in both images; it does
+  not retrospectively add an overlay roster to the original inputs. These
+  timings establish no general speedup. Live original guard/closure/global binding is source-closed,
   and marker failures retain the original primary. One recovery gap still
   blocks source acceptance: a rejected marker can clear an inherited hook,
   after which metadata callbacks run before restoration. Specialist has one
-  narrow source-only correction to restore and confirm hooks before continuing,
-  or stop that continuation while retaining the failure. Affected cheap controls
-  should cover entry, return and failed restoration; no further owner pilot,
-  validation launch or automatic batch resume is authorized. This remains SEED-only
+  narrow correction to restore and confirm hooks before continuing, or stop
+  that continuation while retaining the failure. The user's latest instruction
+  authorizes one fresh focused cheap suite covering affected entry, return and
+  failed-restoration paths, with the existing overlay declared in fresh inputs.
+  No duplicate 36-control run, further owner pilot or automatic batch resume is
+  authorized. This remains SEED-only
   software evidence; native construction, full phase, INIT/SIM, physical and
   checkpoint admission remain held.
   Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
