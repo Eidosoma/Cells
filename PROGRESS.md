@@ -245,10 +245,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Matplotlib guards report zero attempts; the original failure stays preserved.
   The [two-file fixture correction is source-reviewed](/mnt/workspaces/Cells/native-parameter-CM-api-default-fixture-repair-20261102-01/root-review.json):
   the valid helper baseline now precedes deliberate mutation, with the exact
-  rejection and zero-delegate assertions retained. Eight affected controls are
-  authorized on a fresh immutable image; only the unfinished groups will then
-  be considered for continuation. Production, numerical policies and resource
-  limits are unchanged; no automatic retry or scientific admission follows.
+  rejection and zero-delegate assertions retained. The
+  [corrected image stopped at one pass and one failure, with six affected controls unrun](/mnt/workspaces/Cells/native-parameter-CM-affected-eight-remaining-preparation-20261102-01/root-review.json).
+  Its positive baseline exposed inconsistent production authentication:
+  isolated-function and full-module compilation produce different Python 3.13
+  bytecode for the same imported-module helper. Both checks cannot succeed
+  together. The default-slot correction remains valid; canonical compiler
+  context now needs one consolidated source repair with exact-body checks
+  preserved. Both 540-file images, 1,368 runtime rows and complete empty guards
+  verify. The **118-control remaining batch has not launched**. Earlier passes
+  stay bound to their own images; no native or numerical execution occurred.
   The genuine constants-to-remainder handoff is still absent, with its producer
   pin explicitly unbound; source and native owner execution remain held.
   The world-ready owner must retain complete same-parameter load history and
