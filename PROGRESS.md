@@ -98,6 +98,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   integration.** Required cache-continuation hooks remain unavailable, so the
   positive path still refuses. Cache completion review, consumer validation and
   genuine phase/INIT qualification remain separate pending work.
+  The next source feature is the **SEED constructor tail**: the original helpers
+  attach `sim.dyna`, create `p._run_sim = False`, return before temporal stores,
+  and retain `p.init_export_dirname` as the phase export path. Source inspection
+  confirms that Key's existing read-only closed claim cannot authorize this
+  parameter mutation. After the current modulator checks, Key owns a separate
+  one-shot mutation/closed-validation contract on the exact retained claim,
+  lease and parameter object. Specialist owns four new tail source/test/runner
+  files; Root owns integration and review. Existing cache and dyna files stay
+  fixed while their prerequisites remain pending. No tail execution, INIT/SIM
+  kind change or additional native/physical admission is authorized by this
+  source preparation.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
