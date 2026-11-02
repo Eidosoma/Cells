@@ -53,17 +53,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   retain their attempted entries separately from ordinary empty guards. The
   unchanged production candidate and original 35-control image retain separate
   source/evidence scope. The three current files are integrated as guarded source.
-  The four original colormap assignments at lines 1007–1014 now have a
+  The four original colormap assignments at lines 1007–1014 have a
   [completed source and saved-result review](/mnt/workspaces/Cells/native-parameter-colormap-load-development-20261102-01/root-review.json).
-  **24 blocked controls pass at the final source; 14 older-image passes remain
-  separate.** All 18 terminal outcomes, four 532-file snapshots and 1,693
+  **24 blocked controls pass at that delivery's final source; 14 older-image
+  passes remain separate.** All 18 terminal outcomes, four 532-file snapshots and 1,693
   selected loaded-producer bindings verify, including the preserved timeout
-  and lint failure. Source acceptance remains held for five batched repairs:
-  authenticate the historical metadata callable before calling it; validate
-  the reached API error helper; bind NumPy copy's dispatch association; guard
-  registry class/attribute dispatch; and protect the new test guard's cleanup
-  independently. Key owns one source-only correction in the four specified
-  existing colormap files after the current remainder-preparation checkpoint.
+  and lint failure. The [source repair successor is now reviewed](/mnt/workspaces/Cells/native-parameter-colormap-CM-L1-L5-source-repair-20261102-01/root-review.json):
+  its 532 payloads, four current owned files and declared AST changes verify.
+  **35 new declared controls remain unrun.** Metadata callable validation now
+  precedes invocation, closing CM-L1. Four narrower residuals remain: bind
+  undecorated helpers' actual outer code and NumPy's actual implementation
+  slot; reject inherited line-trace changes before foreign registry dispatch;
+  and protect error attachment plus final hook identities after evidence
+  callbacks. Key will finish the current WorldReady repair checkpoint, then
+  close these together in the same four colormap files. State/constants keep
+  their historical producer pins; successor adoption and software remain held.
   Synthetic helper substitutions do not establish actual library admission.
   The subsequent
   [initializer-constant block through line 1125 is implemented with ten
