@@ -20,6 +20,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   are separate requirements. This milestone does not cover every BETSE feature,
   including the still-held post-cut continuation.
 
+  Work is organized in coherent batches: Key finishes parameter readiness,
+  Specialist builds the same-object phase/world connection, and Root reviews
+  complete batches and owns performance and end-to-end qualification. Related
+  findings and controls travel in one handoff. Verification starts with cheap
+  controls and one integration pilot before the affected suite; unchanged
+  evidence is not repeatedly audited. Adjacent features wait for these gaps.
+
 - **Current mapping software batch:** [All 15 remaining controls are reviewed](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/current-owner-controls-01/root-review.json).
   Seven groups completed on CPU 2, one thread, within **1 GiB / 480 seconds
   per group / 8 GiB host reserve**. Ownership, callbacks, capture and failure
@@ -212,12 +219,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   prefix closes its construction lease before caches, then dyna and the SEED
   tail use separate claims. The proposed WorldReady route must instead retain
   one active claim from before phase allocation through the constructor tail.
-  Source preparation is now assigned in three new
-  `betse_native_world_phase_construction` driver, test and runner files. The
-  coordinator must perform fallible phase sealing inside the claim and publish
-  a usable child only after exact successful closed-record validation against
-  the original owner, claim and parameter object. Missing producers and hooks
-  remain explicit refusals. The five existing phase and world-prefix drivers
+  The three new `betse_native_world_phase_construction` driver, test and runner
+  files now have a [consolidated source review](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/preparation-01/root-review.json).
+  The draft performs fallible phase sealing inside the claim and requires
+  exact successful closed-record validation before publication. **Seventeen
+  written control functions remain uncollected and unrun.** Specialist owns
+  one repair batch: authenticate binding-check helpers before use; reserve
+  closed-owner validation against reentry; fix the native-path guard that
+  would reject the runner's own callbacks; and protect fixture cleanup and
+  evidence independently. All three frozen/current source pins verify. This
+  is a source review, with no software or native execution credit. Missing
+  producers and hooks remain explicit refusals. The five existing phase and
+  world-prefix drivers
   are a deferred integration scope; their edit window is not
   open. Legacy APIs, all literal modules, the accepted prefix and seven phase
   batch files stay fixed. No software/native execution or detached-job query
