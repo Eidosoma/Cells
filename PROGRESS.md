@@ -116,15 +116,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   kind change or additional native/physical admission is authorized by this
   source preparation.
   The four new tail files are present as unvalidated preparation. The
-  [third preparation's source review](/mnt/workspaces/Cells/native-phase-tail-20261102-01/root-source-review-03.json)
-  closes the four source findings: stable ancestry excludes growing tail logs;
-  hook setup/cleanup preserves primary errors; trace/profile share admission
-  before inherited callbacks; and rejected direct calls retain attempt records.
-  Their controls remain unrun. Two corrections remain in that frozen image:
-  retain the cache registry's actual `(context, role)` tuple, and supply the
-  exception class required by an isolated metadata test fixture. Specialist
-  owns that source/test batch; later live edits are not credited to the reviewed
-  image. Existing assembly/cache/dyna files and all execution gates remain held.
+  [consolidated source review closes TAIL-S1 through TAIL-S6](/mnt/workspaces/Cells/native-phase-tail-20261102-01/root-source-review-04.json):
+  stable ancestry excludes growing tail logs; hook setup/cleanup preserves
+  primary errors; trace/profile share admission before inherited callbacks;
+  rejected direct calls retain attempt records; and cache checks retain the
+  actual producer-issued `(context, role)` tuple and its identity. Preparation
+  04 binds those production repairs. The separately inspected live test adds
+  only the exception class required by its isolated metadata fixture; that
+  correction is not attributed to frozen preparation 04. **All controls remain
+  unrun.** No further source repair is requested for these six findings.
+  Existing assembly/cache/dyna files and all execution gates remain held pending
+  the upstream contracts and coordinated integration.
   Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
   **46 distinct blocked controls pass across two batches (5 + 41)**, with 46
   empty native guards and four complete diagnostics. The larger batch took
