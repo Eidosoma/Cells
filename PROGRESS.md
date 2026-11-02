@@ -154,11 +154,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   seven-load parameter owner. That object lacks later world stores; the
   normalized multi-cell constructor creates different parameter and Cells
   objects and cannot supply this phase's world by attachment.
-  Key will complete the contiguous parameter remainder after the current
-  colormap block and provide a typed construction/closed-SEED handoff from a
-  fresh world-ready parameter lineage. Native early world stores at 531–573
-  and late stores at 1118–1140 must precede phase/Cells birth on that same
-  object. Specialist owns four new `betse_native_seed_world_prefix` source,
+  Key's coverage inspection identifies the remaining contiguous load tail as
+  `load.body[203:218]`: late world stores from line 1127 and the final native
+  ion-profile call. Source-only implementation is assigned in six new
+  remainder/construction source, test and runner paths. The proposed
+  world-ready owner must retain complete same-parameter load history and
+  reject any ancestral phase-construction attempt. Its exclusive claim would
+  span fresh phase birth through SEED, allowing only native `_run_sim=False`
+  creation. This interface remains proposed, with adoption held. Native early
+  world stores and late world/ion stores must precede phase/Cells birth on that
+  same object; grid counts must retain their original position before the
+  later dimension updates. Specialist owns four new `betse_native_seed_world_prefix` source,
   driver, test and runner paths for source-only preparation: original progress
   callback, SEED guard and non-SVG lattice on the exact phase's Cells, stopping
   before `make_voronoi`. The new parameter handoff and later dispatch hook
@@ -167,18 +173,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   claim the runner's earlier `progress_ranged` history. Genuine ion/material
   ownership for `init_core` remains later work.
   The four world-prefix files are now present as
-  [reviewed source preparation with two remaining repair areas](/mnt/workspaces/Cells/native-seed-world-prefix-20261102-01/preparation-02/root-review-01.json).
-  The successor fixes the named helper omissions, falsey failure-stage label
-  and callback receiver/frame handling. It still needs keyword-default
-  delegate binding and complete cleanup failure gating/final hook verification
-  in the driver and runner. Specialist owns that source-only correction in
-  the same three mutable files; the literal remains unchanged.
-  **Thirty-one test functions are written, uncollected and unrun**; no compile,
-  lint or software execution is credited to this successor. Earlier static
+  [source-reviewed preparation with the remaining repairs closed](/mnt/workspaces/Cells/native-seed-world-prefix-20261102-01/preparation-03/root-review-01.json).
+  The final source binds actual keyword-default mappings and their callable
+  delegates. Driver and runner protect restoration bookkeeping independently,
+  retain late cleanup failures despite recovered identities, and sample both
+  hooks after all restoration actions. Written controls cover altered delegates,
+  rejected bookkeeping, misleading earlier hook samples and falsey primary
+  errors. The literal remains unchanged and all four frozen/current hashes
+  match. **Thirty-eight test functions are written, uncollected and unrun**;
+  no compile, lint or software execution is credited to this successor. Earlier static
   checks and the transcript-only B009 failure retain their original image.
   The four-file review snapshot is not an execution closure. The parent gate
   remains unconditionally closed; no source or software execution is released
-  by this preparation.
+  by this preparation. Specialist is now mapping the genuine consumer changes
+  required by Key's proposed construction claim, read-only; current phase
+  sources and all detached jobs remain untouched.
   Root owns integration, saved
   result review and populated-tissue/electrical qualification.
 
