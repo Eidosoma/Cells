@@ -47,7 +47,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   cleanup and complete attempt aggregation. The two deliberate blocked probes
   retain their attempted entries separately from ordinary empty guards. The
   unchanged production candidate and original 35-control image retain separate
-  source/evidence scope. The three current files are ready for held integration.
+  source/evidence scope. The three current files are integrated as guarded source.
   Key is implementing the next four original colormap assignments at lines
   1007–1014, with genuine lookup/result ownership and actual execution held.
   Specialist's
@@ -121,9 +121,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Specialist owns four new tail source/test/runner files and, in a later
   integration window, narrowly scoped assembly dispatch, dyna forwarding and
   dependent cache/dyna producer-pin updates. The original phase instance,
-  runtime methods and registry relationships must be retained. Existing
-  assembly/cache/dyna files stay fixed until their pending source/software
-  prerequisites permit those changes; pin updates alone do not satisfy them.
+  runtime methods and registry relationships must be retained. The cache batch
+  is now terminal and the repaired Key interface is reviewed. Specialist has an
+  explicit implementation window for the minimal coordinated hooks and producer
+  bindings, followed by isolated controls and a valid issued synthetic-chain
+  pilot. Historical execution images stay fixed; pin updates alone do not
+  satisfy the runtime prerequisites.
   Root owns integration and review. No tail execution, INIT/SIM
   kind change or additional native/physical admission is authorized by this
   source preparation.
@@ -139,8 +142,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   now freezes exactly those four already-reviewed files, including the fixture
   correction; preparation 04 and prior evidence remain unchanged. **All controls
   remain unrun.** No further source repair is requested for these six findings.
-  Existing assembly/cache/dyna files and all execution gates remain held pending
-  the upstream contracts and coordinated integration.
+  Coordinated assembly/cache/dyna source integration is now assigned to Specialist;
+  native execution and scientific gates remain held.
   Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
   **46 distinct blocked controls pass across two batches (5 + 41)**, with 46
   empty native guards and four complete diagnostics. The larger batch took
