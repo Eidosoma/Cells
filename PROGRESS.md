@@ -260,20 +260,22 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   residuals are source-closed: actual comparator name resolution plus an
   independent identity comparison; refusal after caught release-time reentry;
   and exact-token recovery after reservation-return observation failure.
-  **The new isolated group remains failed: 87 distinct cases selected, 85 call
-  passes and two call failures plus teardown errors on those same two cases.**
-  All 15 new residual cases passed setup, call and teardown. JUnit's 89 entries
-  include the two extra teardown errors; they are not 89 distinct cases.
-  Root verified 825 artifact pins, 435 frozen source files, 269 runtime origins
-  and 12 loaded producers. The worker used 4.781 seconds and 48,578,560 bytes
-  sampled peak RSS, within its limits. The failed group has no aggregate
-  zero-entry certification. Its harness executes forbidden-labelled module
-  metadata before the intended probe and mixes nested control receipts with
-  ordinary case guards. Specialist has one batched harness correction and
-  one fresh same-87-case blocked run authorized, retaining the production
-  driver and shared runners. Earlier images and failures stay separate;
-  compile, format and lint passed at this successor's final source. No actual
-  owner construction is authorized.
+  The earlier 87-case image remains failed: 85 call passes, two call failures
+  and teardown errors on those same two cases; its 15 residual controls passed.
+  The [new probe-construction correction is reviewed](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/guard-policy-control-repair-01/root-review.json):
+  **all 19 selected cases pass all three phases, but the aggregate remains
+  failed because 21 ordinary-named guard receipts include two nested metadata
+  controls.** This is a 19-case image, not completion of the authorized 87-case
+  suite. The 15 residual cases are repeated, alongside four guard controls.
+  Root verified 555 artifact pins, 435 frozen files and 12 actual producers;
+  the worker completed in 9.862 seconds with 48,488,448 bytes sampled peak RSS.
+  Two deliberately rejected generated probes retain separate classified
+  receipts, while aggregate zero-entry certification remains unavailable.
+  Current test-only source also classifies passing callback, misleading-path
+  and cleanup-control receipts; it awaits its own result binding. The existing
+  one-run 87-case authorization continues without a duplicate launch. Production
+  and shared runners stay fixed; all earlier failures and source images remain
+  separate. No actual owner construction is authorized.
   Missing Key/stage producers remain explicit refusals, and the five existing
   phase/world-prefix drivers' integration window stays closed. Existing
   production hooks, legacy APIs and literals are outside this repair scope;
