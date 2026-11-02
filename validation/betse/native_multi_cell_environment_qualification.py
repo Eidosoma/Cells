@@ -115,6 +115,39 @@ def _authority_targets():
         raise ValueError("Actual loaded ordinary tree wrapper required")
     for name in ("__init__", "query", "query_ball_point"):
         selected.append((environment.__name__ + "._TreeRuntime." + name, vars(tree), name))
+    # Subdivide the measured caller-check cost without changing any check or
+    # reading the objects it validates. Keep the original sixteen targets.
+    for name in ("_bindings", "_lineage", "_namespace_bindings", "_helper_bindings"):
+        selected.append((multi.__name__ + "." + name, vars(multi), name))
+    core_name = "cells.processes.betse_native_single_cell_core_preparation"
+    core = sys.modules.get(core_name)
+    if core is None or vars(multi).get("core") is not core:
+        raise ValueError("Actual loaded caller core module required")
+    for owner, alias, module_name, names in (
+        (
+            multi,
+            "atoms",
+            "cells.processes.betse_native_single_cell_grid_alias",
+            ("validate",),
+        ),
+        (
+            multi,
+            "accounting",
+            "cells.processes.betse_native_single_cell_caller_completion",
+            ("_check_binding_identity",),
+        ),
+        (
+            core,
+            "caches",
+            "cells.processes.betse_initial_mesh_preparation_cache",
+            ("validate", "snapshot"),
+        ),
+    ):
+        dependency = sys.modules.get(module_name)
+        if dependency is None or vars(owner).get(alias) is not dependency:
+            raise ValueError("Actual loaded caller dependency required: " + alias)
+        for name in names:
+            selected.append((module_name + "." + name, vars(dependency), name))
     return tuple(selected)
 
 

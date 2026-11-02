@@ -456,17 +456,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Caller lineage/cache subcost is not separately measured, so parser reuse
   alone is not claimed to resolve the timeout. No numerical failure, speedup
   or new scientific acceptance is inferred; no unchanged rerun was launched.
-  [Diagnostic 07 is now launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-07/LAUNCH.json).
-  Its [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-07.json)
-  verifies all **828 frozen files / 609 external pins**: only the three
-  reviewed parser/caller/environment files differ from diagnostic 06. The
-  case, numerical bodies, inputs and timing recorder remain unchanged.
-  CPU 2, one thread, **1 GiB / 1,800 seconds / 8 GiB reserve** remain fixed;
-  the endpoint is `make_maskM`. Metadata preparation passed in 110.36 seconds
-  with no scientific entries; one review-helper import refusal was preserved
-  before using the existing frozen inventory helper. Completion is unqueried;
-  durable result/failure artifacts await the next requested status check.
-  No automatic polling, retry, reference comparison or parity credit.
+  [Diagnostic 07 is terminal and reviewed](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-07/root-review.json):
+  **1,800.04-second wall stop, 336.8 MiB sampled peak RSS**. Eight captures
+  through `cell_index` remain valid; the ordinary continuation was still in
+  `cellVerts`, with no completed geometry/grid/mask result. Its 393 timing
+  snapshots show **929.77 seconds of inclusive caller-check time** within the
+  continuation, mostly nested under tree queries; these intervals overlap
+  other checks and include observer costs. The final runtime/cleanup records
+  and independent comparison are absent. All **828 frozen files / 609 external
+  pins** and retained captures were verified; the failed result stays frozen.
+  Root's [caller-check timing extension is source/software reviewed](/mnt/workspaces/Cells/native-multi-cell-caller-check-timing-20261102-01/root-review.json):
+  **77 blocked controls pass, 68 repeated plus nine new**, in **6.29 seconds /
+  123.8 MiB sampled RSS**, with zero native entries. Eight additional exact
+  loaded targets separate callable, descriptor, lineage and cache checks;
+  the recorder, 32-target cap, production validation and numerical code are
+  unchanged. The new image binds 828 payloads / 279 loaded producers with no
+  checkout drift. No diagnostic retry, speedup claim or new parity credit;
+  a future actual diagnostic requires its own prepared image and review.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked

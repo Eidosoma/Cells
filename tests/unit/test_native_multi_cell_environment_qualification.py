@@ -312,19 +312,128 @@ def test_authority_timing_equal_but_distinct_code_is_not_the_retained_target(tmp
     assert observer.rows[0]["entries"] == observer.rows[0]["observed_returns"] == 1
 
 
-def test_authority_timing_loaded_target_roster_reads_only_named_bindings(monkeypatch):
+def authority_loaded_modules(monkeypatch):
     prefix = "cells.processes.betse_native_multi_cell_"
     multi = NS(__name__=prefix + "caller", _check=len, _verify_sources=abs)
     env = NS(__name__=prefix + "environment", multi=multi, _TreeRuntime=type("Tree", (), {}))
-    monkeypatch.setitem(sys.modules, env.__name__, env)
-    monkeypatch.setitem(sys.modules, multi.__name__, multi)
+    atoms = NS(__name__="cells.processes.betse_native_single_cell_grid_alias")
+    accounting = NS(__name__="cells.processes.betse_native_single_cell_caller_completion")
+    caches = NS(__name__="cells.processes.betse_initial_mesh_preparation_cache")
+    core = NS(__name__="cells.processes.betse_native_single_cell_core_preparation", caches=caches)
+    multi.atoms, multi.accounting, multi.core = atoms, accounting, core
+    modules = dict(environment=env, multi=multi, atoms=atoms, accounting=accounting, core=core)
+    modules["caches"] = caches
+    for module in modules.values():
+        monkeypatch.setitem(sys.modules, module.__name__, module)
+    return modules
+
+
+def test_authority_timing_loaded_target_roster_reads_only_named_bindings(monkeypatch):
+    modules = authority_loaded_modules(monkeypatch)
     targets = q._authority_targets()
-    assert len(targets) == 16
-    assert {x[2] for x in targets} >= {"_check", "_verify_sources", "_TREE_QUERY", "query"}
+    assert len(targets) == 24 <= q.AUTHORITY_TIMING_POLICY["max_targets"]
+    assert {x[2] for x in targets[:16]} >= {"_check", "_verify_sources", "_TREE_QUERY", "query"}
+    assert [x[2] for x in targets[16:]] == [
+        "_bindings",
+        "_lineage",
+        "_namespace_bindings",
+        "_helper_bindings",
+        "validate",
+        "_check_binding_identity",
+        "validate",
+        "snapshot",
+    ]
     assert all(len(x) == 3 for x in targets)
-    monkeypatch.delitem(sys.modules, multi.__name__)
+    assert targets[-1][1] is vars(modules["caches"])
+    monkeypatch.delitem(sys.modules, modules["multi"].__name__)
     with pytest.raises(ValueError, match="loaded"):
         q._authority_targets()
+
+
+@pytest.mark.parametrize("alias", ["atoms", "accounting", "core", "caches"])
+@pytest.mark.parametrize("change", ["missing_loaded", "foreign_alias"])
+def test_authority_timing_caller_dependency_requires_actual_loaded_alias(
+    monkeypatch, alias, change
+):
+    modules = authority_loaded_modules(monkeypatch)
+    if change == "missing_loaded":
+        monkeypatch.delitem(sys.modules, modules[alias].__name__)
+    else:
+        owner = modules["core" if alias == "caches" else "multi"]
+        monkeypatch.setattr(owner, alias, NS(**vars(modules[alias])))
+    with pytest.raises(ValueError, match="Actual loaded caller"):
+        q._authority_targets()
+
+
+def test_authority_timing_caller_breakdown_records_nested_metadata_only(tmp_path, monkeypatch):
+    modules = authority_loaded_modules(monkeypatch)
+    multi, caches = modules["multi"], modules["caches"]
+    calls = []
+
+    class Opaque:
+        def __repr__(self):
+            raise AssertionError("Timing must not inspect validated data")
+
+    value = Opaque()
+
+    def helper_bindings():
+        calls.append("helpers")
+
+    def bindings():
+        multi._helper_bindings()
+
+    def namespace_bindings():
+        multi._helper_bindings()
+
+    def cache_validate(argument):
+        assert argument is value
+        calls.append("validate-cache")
+
+    def cache_snapshot(argument):
+        assert argument is value
+        calls.append("snapshot")
+
+    def lineage():
+        caches.validate(value)
+        caches.snapshot(value)
+
+    def descriptor_validate(argument):
+        assert argument is value
+        calls.append("descriptor")
+
+    def binding_identity(argument):
+        assert argument is value
+        calls.append("identity")
+
+    def check():
+        multi._bindings()
+        multi._lineage()
+        multi._namespace_bindings()
+        multi.atoms.validate(value)
+        multi.accounting._check_binding_identity(value)
+
+    multi._check, multi._bindings, multi._lineage = check, bindings, lineage
+    multi._namespace_bindings, multi._helper_bindings = namespace_bindings, helper_bindings
+    multi.atoms.validate = descriptor_validate
+    multi.accounting._check_binding_identity = binding_identity
+    caches.validate, caches.snapshot = cache_validate, cache_snapshot
+    targets = q._authority_targets()
+    selected = (targets[11], *targets[16:])
+    assert selected[0][1] is vars(multi) and selected[0][2] == "_check"
+    work = NS(failure=None, count=0, phase="make_maskM")
+    observer = q.AuthorityTimings(tmp_path, work, selected)
+    previous, trace = sys.getprofile(), sys.gettrace()
+    with observer.active():
+        multi._check()
+    assert sys.getprofile() is previous and sys.gettrace() is trace and work.failure is None
+    final = authority_rows(tmp_path)[-1]
+    for row in final["targets"]:
+        expected = 2 if row["target"].endswith("._helper_bindings") else 1
+        assert row["entries"] == row["observed_returns"] == expected
+    assert calls == ["helpers", "validate-cache", "snapshot", "helpers", "descriptor", "identity"]
+    assert final["scientific_values_observed"] is False
+    assert final["inclusive_times_are_additive"] is False
+    assert final["independent_case_credit"] == 0
 
 
 def test_authority_timing_worker_uses_loaded_observer_before_mock_stage(tmp_path, monkeypatch):
