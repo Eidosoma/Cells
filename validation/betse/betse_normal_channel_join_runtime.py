@@ -7,6 +7,13 @@ import sys
 from pathlib import Path
 
 
+def _digest(path):
+    # Compiled libraries can be larger than the worker's remaining address
+    # space. Hash all bytes in bounded chunks without changing the wire format.
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
 def inventory():
     files, no_file = {}, []
     for name, module in sorted(tuple(sys.modules.items())):
@@ -18,14 +25,12 @@ def inventory():
         if not path.is_file():
             files[name] = dict(path=str(path), unavailable=True)
             continue
-        files[name] = dict(path=str(path), sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+        files[name] = dict(path=str(path), sha256=_digest(path))
     executable = Path(sys.executable).resolve()
     return dict(
         python=platform.python_version(),
         measured_cpu_affinity=sorted(os.sched_getaffinity(0)),
-        executable=dict(
-            path=str(executable), sha256=hashlib.sha256(executable.read_bytes()).hexdigest()
-        ),
+        executable=dict(path=str(executable), sha256=_digest(executable)),
         loaded_files=files,
         modules_without_files=no_file,
     )

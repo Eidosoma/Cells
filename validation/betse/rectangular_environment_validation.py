@@ -9,6 +9,7 @@ import hashlib
 import importlib.abc
 import json
 import os
+import re
 import resource
 import sys
 from pathlib import Path
@@ -43,6 +44,8 @@ CONDUCTION_TEST = "tests/unit/test_rectangular_environment_conduction.py"
 CONDUCTION_JAX_TEST = "tests/unit/test_rectangular_environment_conduction_jax.py"
 TRANSFER_TEST = "tests/unit/test_rectangular_current_transfer.py"
 TRANSFER_JAX_TEST = "tests/unit/test_rectangular_current_transfer_jax.py"
+COUPLING_TEST = "tests/unit/test_rectangular_current_coupling.py"
+COUPLING_JAX_TEST = "tests/unit/test_rectangular_current_coupling_jax.py"
 SAVED_EXTRA = (
     "validation/betse/rectangular_environment_saved.py",
     "validation/betse/rectangular_environment_reference.py",
@@ -112,6 +115,14 @@ def suite_files(suite):
             TRANSFER_TEST,
             *([TRANSFER_JAX_TEST] if suite.endswith("_jax") else []),
         ), TRANSFER_JAX_TEST if suite.endswith("_jax") else TRANSFER_TEST
+    if suite in ("current_coupling", "current_coupling_jax"):
+        files, _ = suite_files("current_transfer")
+        return (
+            *files,
+            "src/cells/processes/rectangular_current_coupling.py",
+            COUPLING_TEST,
+            *([CONDUCTION_JAX_TEST, COUPLING_JAX_TEST] if suite.endswith("_jax") else []),
+        ), COUPLING_JAX_TEST if suite.endswith("_jax") else COUPLING_TEST
     if suite == "reference":
         return (
             OWN,
@@ -212,7 +223,7 @@ def verify_runtime(frozen, source, producers, expected_cpu, required_files=FILES
     return loaded
 
 
-def child(output, suite="small", analysis_inputs=None, analysis_sha256=None):
+def child(output, suite="small", analysis_inputs=None, analysis_sha256=None, test_names=()):
     resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
     if analysis_inputs is None:
         import pytest
@@ -270,6 +281,8 @@ def child(output, suite="small", analysis_inputs=None, analysis_sha256=None):
         ("cells.processes.rectangular_current_transfer", "bind"),
         ("cells.processes.rectangular_current_transfer", "deposit"),
         ("cells.processes.rectangular_current_transfer", "gather_potential"),
+        ("cells.processes.rectangular_current_coupling", "solve"),
+        ("cells.processes.rectangular_current_coupling", "compile_jax_solver"),
     }
     original_profile = profile
 
@@ -312,7 +325,11 @@ def child(output, suite="small", analysis_inputs=None, analysis_sha256=None):
                     "/dev/null",
                     "-p",
                     "no:cacheprovider",
-                    suite_files(suite)[1],
+                    *(
+                        [suite_files(suite)[1] + "::" + name for name in test_names]
+                        if test_names
+                        else [suite_files(suite)[1]]
+                    ),
                     "--junitxml=" + str(output / "junit.xml"),
                     "--basetemp=" + str(output / "tmp"),
                 ],
@@ -341,13 +358,22 @@ def child(output, suite="small", analysis_inputs=None, analysis_sha256=None):
     return int(code) if not attempts else 1
 
 
-def prepare(output, run, *, suite="small", analysis_inputs=None):
+def prepare(output, run, *, suite="small", analysis_inputs=None, test_names=()):
     output = output.absolute()
     base = Path("/mnt/workspaces/Cells")
     if not output.is_relative_to(base) or output == base or output.resolve() != output:
         raise ValueError("Require a new regular output directory below /mnt/workspaces/Cells")
     if analysis_inputs is not None and suite not in ("saved", "iterative_saved"):
         raise ValueError("Retained-grid evaluation uses the explicit saved-grid suite")
+    if (
+        len(set(test_names)) != len(test_names)
+        or any(
+            re.fullmatch(r"test_[A-Za-z0-9_]+(?:\[[A-Za-z0-9_-]+\])?", name) is None
+            for name in test_names
+        )
+        or (test_names and analysis_inputs is not None)
+    ):
+        raise ValueError("Require unique exact test names for a test suite")
     numerical_inputs, numerical_copy, raw = None, None, None
     if analysis_inputs is not None:
         if suite == "iterative_saved":
@@ -375,6 +401,8 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
         "--suite",
         suite,
     ]
+    for name in test_names:
+        command.extend(("--test-name", name))
     if analysis_inputs is not None:
         from validation.betse import native_single_cell_prefix_qualification as prior
 
@@ -397,9 +425,10 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
             threads=1,
             source_manifest_sha256=manifest_sha,
             suite=suite,
+            selected_test_names=list(test_names),
             jax_execution_policy=(
                 dict(platform="cpu", enable_x64=True, disable_jit=False)
-                if suite in ("jax", "iterative_saved", "conduction_jax", "current_transfer_jax")
+                if suite == "iterative_saved" or suite == "jax" or suite.endswith("_jax")
                 else None
             ),
             analysis_inputs=numerical_inputs,
@@ -433,7 +462,7 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
         CELLS_RECTANGULAR_EVIDENCE=str(output / "evidence"),
         TMPDIR=str(output / "tmp"),
     )
-    if suite in ("jax", "iterative_saved", "conduction_jax", "current_transfer_jax"):
+    if suite == "iterative_saved" or suite == "jax" or suite.endswith("_jax"):
         env["JAX_DISABLE_JIT"] = "0"
     (output / "tmp").mkdir()
     try:
@@ -517,16 +546,25 @@ def main():
             "conduction_jax",
             "current_transfer",
             "current_transfer_jax",
+            "current_coupling",
+            "current_coupling_jax",
         ),
         default="small",
     )
     parser.add_argument("--analysis-inputs", type=Path)
+    parser.add_argument("--test-name", action="append", default=[])
     parser.add_argument("--analysis-sha256", help=argparse.SUPPRESS)
     args = parser.parse_args()
     return (
-        child(args.output, args.suite, args.analysis_inputs, args.analysis_sha256)
+        child(args.output, args.suite, args.analysis_inputs, args.analysis_sha256, args.test_name)
         if args.child
-        else prepare(args.output, args.run, suite=args.suite, analysis_inputs=args.analysis_inputs)
+        else prepare(
+            args.output,
+            args.run,
+            suite=args.suite,
+            analysis_inputs=args.analysis_inputs,
+            test_names=args.test_name,
+        )
     )
 
 

@@ -573,6 +573,26 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   production and existing solver kernels are unchanged between those images.
   These are small declared maps, with no native membrane, retained-tissue,
   GPU or complete simulator qualification.
+  [The current-to-voltage composition API](src/cells/processes/rectangular_current_coupling.py)
+  now retains deposition, the field solution and site voltages together; both
+  stages' refusal gates remain mandatory. Independent transfer tolerances in
+  amperes and field residual tolerances in A/m³ are explicit. A strict transfer
+  failure remains refused even when the scattered field solves successfully.
+  [Source review](/mnt/workspaces/Cells/rectangular-current-coupling-development-20261102-01/source-review.json)
+  and [saved-result review](/mnt/workspaces/Cells/rectangular-current-coupling-development-20261102-01/saved-results-review.json)
+  cover **11 NumPy numerical checks plus one evidence-hashing control** in
+  **4.80 seconds / 52.9 MiB sampled peak RSS**, and **four compiled CPU checks
+  in separate processes**, totaling **50.64 seconds**, peak **432.9 MiB**.
+  Exact small-network references, mixed batches, warm starts and conversion
+  refusals are retained. The original combined JAX process crashed during
+  compilation after one saved pass; its cause remains undetermined and final
+  runtime/guard evidence is absent. A later isolated calculation passed but
+  whole-library evidence hashing raised `MemoryError`. Streaming the same
+  SHA-256 calculation fixes that observed recorder allocation; all failed
+  evidence remains preserved. The warm-start image retains its earlier
+  inventory producer. The completed isolated images do not qualify the failed
+  combined process. Existing solver equations, limits and tolerances are
+  unchanged; native tissue/phase, ionic updates and full simulation remain open.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).
