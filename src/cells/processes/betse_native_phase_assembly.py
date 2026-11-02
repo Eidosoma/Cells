@@ -45,6 +45,7 @@ IMPORTS = {
 FIELDS = ("callbacks", "cells", "kind", "p", "sim")
 _PREFIX = source.PhaseConstructorPrefix.construct
 _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED, _OBJECTS = (WeakKeyDictionary() for _ in range(5))
+_FORWARDED = WeakKeyDictionary()
 _LOCK, _ACTIVE = RLock(), []
 _DESCRIPTORS = WeakSet()
 
@@ -216,6 +217,7 @@ def _bindings():
         _snapshot,
         _graph,
         _validate,
+        _claim_for_caches,
         trial_record,
         prepare,
         require_phase,
@@ -236,6 +238,7 @@ def _bindings():
         _CLAIMED,
         _ISSUED,
         _OBJECTS,
+        _FORWARDED,
         _LOCK,
         _ACTIVE,
         LAW_ID,
@@ -609,6 +612,14 @@ def _validate(owner):
     if type(owner) is not AssemblyOwner or owner not in _ISSUED:
         raise AssemblyRejected("Issued original phase prefix owner required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "cache_transition"):
+        raise AssemblyRejected(
+            "Phase prefix was consumed by its cache continuation",
+            stage="forwarded",
+            request=context.request,
+            trial=context.trial,
+            partial=context,
+        )
     try:
         if context.active or context.owner is not owner:
             raise ValueError("Active/replaced phase prefix owner")
@@ -634,6 +645,23 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _claim_for_caches(owner, *, expected, transition):
+    """Consume the issued prefix once, retaining its original trial/raw state."""
+    with _LOCK:
+        context = _validate(owner)
+        if context is not expected:
+            raise AssemblyRejected("Original phase prefix changed", stage="phase_owner")
+        # Validation calls inherited observers. A reentrant claim that somehow
+        # reached this boundary cannot be overwritten by the outer claim.
+        if owner in _FORWARDED or hasattr(context, "cache_transition"):
+            raise AssemblyRejected("Phase prefix already consumed", stage="forwarded")
+        # Keep the consumed epoch on the original retained context as well as
+        # its registry edge. Losing that edge must not rearm a failed attempt.
+        context.cache_transition = transition
+        _FORWARDED[owner] = transition
+        return context
 
 
 def prepare(request, *, enabled=False):

@@ -34,10 +34,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   attachment. The standalone handler attachment is already
   reviewed; its earlier scope message does not reopen that work.
   Specialist's requested cache status check found a controller failure after
-  13 passing controls; 31 were not launched. Controller repair and a fresh
-  continuation of those remaining checks are assigned. The relayed
-  original mapping-tool handoff is historical; its reviewed replacements remain
-  in Git, with positive native/reference executions held.
+  13 passing controls; 31 were not launched by that failed batch. The repaired
+  controller has now detached those 31 controls in a fresh image, excluding
+  the completed 13. Its terminal outcome has not been queried. Key is building
+  the contiguous modulator/bitmap parameter block through line 1000; Specialist
+  is preparing the same-phase handler consumer. The relayed mapping alias
+  notice is historical: all six current files match the reviewed
+  [list-to-ndarray repair](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/tail-contract-repairs-01/root-review.json),
+  including its 49 blocked software controls. Positive native/reference
+  executions remain held.
 
 - **Phase constructor prefix:** [Source and saved results are reviewed](/mnt/workspaces/Cells/native-phase-assembly-20261101-01/root-review.json)
   for the original statements through `self.sim`: prepared callbacks and a
@@ -62,12 +67,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   this interface; its own cache ancestry, handler execution and phase attachment
   remain separate prerequisites. The source-only intermediate and prior 52
   controls retain their original evidence scope.
-  The [phase-cache batch disposition](/mnt/workspaces/Cells/native-phase-caches-20261101-01/source-result-02.json)
+  The [phase-cache source and saved-result review](/mnt/workspaces/Cells/native-phase-caches-20261101-01/root-review-01.json)
   retains **13 passing controls and 31 unrun controls**: the controller failed
   while writing its mutable progress receipt a second time. This is a software
   orchestration failure, without completed cache or native-phase qualification.
-  The failed output is preserved; the assigned repair will use a fresh image
-  for the unrun controls.
+  The [controller repair is reviewed](/mnt/workspaces/Cells/native-phase-caches-20261101-01/root-controller-review-01.json):
+  two atomic progress updates succeed, terminal receipts remain exclusive, and
+  the selector excludes the original 13 passes. Two preparation failures
+  executed no controls and remain preserved. The five cache source/test/runner
+  files are integrated with their existing holds. The
+  [remaining-only launch](/mnt/workspaces/Cells/native-phase-caches-20261101-01/batch-02/LAUNCH.json)
+  uses seven sequential groups under the unchanged CPU 6, one-thread,
+  1 GiB / 480-second / 8 GiB-reserve guards. Its final result is unqueried;
+  complete-cache acceptance and the handler consumer's own validation remain
+  pending. Specialist has explicitly bound Key's reviewed closed-claim API
+  without changing the running cache image.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
