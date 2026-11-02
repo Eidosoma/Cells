@@ -65,8 +65,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   written controls retain their original evidence scope. The subsequent
   combined CM/WR cleanup repairs independent hook recovery, sticky reporting
   stops and first-error precedence. The three subsequent seams are now
-  source-reviewed with five focused software passes; the broader detached
-  batch remains pending, as recorded below.
+  source-reviewed with five focused software passes. The broader batch stopped
+  at **29 passes, one synthetic fixture failure and 124 unrun controls**;
+  the fixture correction and remaining validation are recorded below.
   State/constants
   keep their historical producer pins; no actual library or native admission
   follows from synthetic helper controls.
@@ -236,10 +237,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   producers, 5,486 loaded-file bindings and all nine guarded process records
   verify. The four workers total 19.373 seconds; maximum sampled process-tree
   RSS including launchers is 279,851,008 bytes, within unchanged limits.
-  The [fresh 154-control, 42-group batch is detached](/mnt/workspaces/Cells/native-parameter-CM-WR-seam-repair-20261102-01/prepared/LAUNCH.json)
-  on CPU0 using those same immutable images; its terminal result has not been
-  queried or accepted. Bound source stays fixed, with no automatic polling or
-  retry. Native load/profile bodies and numerical policies are unchanged.
+  The [154-control batch's saved failure is reviewed](/mnt/workspaces/Cells/native-parameter-CM-WR-seam-repair-20261102-01/root-batch-review.json):
+  **29 passed, one failed and 124 remain unrun**. Eight groups completed;
+  group 08 stopped because a synthetic helper fixture put a positional default
+  in the keyword-only slot. Production correctly rejected that malformed
+  baseline before the intended wrapper check. All 30 native and 30 outer
+  Matplotlib guards report zero attempts; the original failure stays preserved.
+  The [two-file fixture correction is source-reviewed](/mnt/workspaces/Cells/native-parameter-CM-api-default-fixture-repair-20261102-01/root-review.json):
+  the valid helper baseline now precedes deliberate mutation, with the exact
+  rejection and zero-delegate assertions retained. Eight affected controls are
+  authorized on a fresh immutable image; only the unfinished groups will then
+  be considered for continuation. Production, numerical policies and resource
+  limits are unchanged; no automatic retry or scientific admission follows.
   The genuine constants-to-remainder handoff is still absent, with its producer
   pin explicitly unbound; source and native owner execution remain held.
   The world-ready owner must retain complete same-parameter load history and
