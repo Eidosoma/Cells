@@ -68,6 +68,7 @@ SOFTWARE_GROUPS = {
     "worklog": "",
     "authority-timing": "",
     "execution-overhead": "",
+    "long-diagnostic": "",
 }
 AUTHORITY_TIMING_POLICY = dict(
     kind="cells.exact_function_timing@1",
@@ -852,8 +853,8 @@ def _native_inputs(repository):
 
 
 def _diagnostic_limits(wall_seconds):
-    if type(wall_seconds) is not int or wall_seconds not in (480, 1800):
-        raise ValueError("Declare the 480-second or 1800-second diagnostic wall allowance")
+    if type(wall_seconds) is not int or wall_seconds not in (480, 1800, 7200):
+        raise ValueError("Declare a 480-, 1800- or 7200-second diagnostic wall allowance")
     return dict(shared.LIMITS, timeout=wall_seconds)
 
 
@@ -1300,10 +1301,12 @@ def supervised_launch(prepared, digest, release, case, output):
 
 def _software_selection(group, items):
     """Select by function name, excluding output-directory pytest keywords."""
-    if group not in ("worklog", "authority-timing", "execution-overhead"):
+    if group not in ("worklog", "authority-timing", "execution-overhead", "long-diagnostic"):
         return list(items), []
     terms = (
-        ("execution_overhead", "worker_uses_loaded_observer", "repair_c5")
+        ("diagnostic_wall", "diagnostic_supervisor")
+        if group == "long-diagnostic"
+        else ("execution_overhead", "worker_uses_loaded_observer", "repair_c5")
         if group == "execution-overhead"
         else ("authority_timing", "stage_timing", "repair_c5")
         if group == "authority-timing"
@@ -1391,7 +1394,9 @@ def software_child(output, group="all"):
             *(
                 str(ROOT / p)
                 for p in (
-                    TESTS[:1] if group in ("authority-timing", "execution-overhead") else TESTS
+                    TESTS[:1]
+                    if group in ("authority-timing", "execution-overhead", "long-diagnostic")
+                    else TESTS
                 )
             ),
             "--junitxml=" + str(output / "tests.xml"),
@@ -1477,7 +1482,7 @@ def main():
     item.add_argument("--output", type=Path, required=True)
     item.add_argument("--cpu", type=int, default=6)
     item.add_argument("--runtime-path", type=Path, action="append", default=[])
-    item.add_argument("--wall-seconds", type=int, choices=(480, 1800), default=480)
+    item.add_argument("--wall-seconds", type=int, choices=(480, 1800, 7200), default=480)
     item.add_argument("--no-authority-timing", action="store_true")
     for name in ("software", "software-child"):
         item = sub.add_parser(name)

@@ -1467,7 +1467,7 @@ def test_capture_metadata_plan_cannot_drop_or_widen_policy(tmp_path, monkeypatch
     assert snapshots == ["verified"]
 
 
-@pytest.mark.parametrize("wall_seconds", [480, 1800])
+@pytest.mark.parametrize("wall_seconds", [480, 1800, 7200])
 def test_diagnostic_wall_allowance_changes_only_time(wall_seconds):
     original = dict(q.shared.LIMITS)
     limits = q._diagnostic_limits(wall_seconds)
@@ -1485,8 +1485,9 @@ def test_diagnostic_wall_allowance_refuses_unknown_budget(wall_seconds):
 @pytest.mark.parametrize(
     "field,value", [("timeout", 3600), ("max_rss_bytes", 2**31), ("min_available_bytes", 0)]
 )
+@pytest.mark.parametrize("wall_seconds", [480, 1800, 7200])
 def test_diagnostic_wall_plan_preserves_all_other_resource_guards(
-    tmp_path, monkeypatch, field, value
+    tmp_path, monkeypatch, field, value, wall_seconds
 ):
     plan = dict(
         kind=q.KINDS[0],
@@ -1494,7 +1495,7 @@ def test_diagnostic_wall_plan_preserves_all_other_resource_guards(
         cases=list(q.CASES),
         configuration=q.configuration(),
         fixture_controls=q.CONTROLS,
-        limits=q._diagnostic_limits(1800),
+        limits=q._diagnostic_limits(wall_seconds),
         stop_after=q.ENDPOINT,
         execution_stages=list(q.STAGES),
         ordinary_methods=list(q.native.METHODS),

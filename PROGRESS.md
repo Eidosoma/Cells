@@ -73,6 +73,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   stores. Callback admission, unchanged-parent projections and raw unwind
   retention were repaired together. Actual same-world routing and producer
   adoption remain held; this is not a completed native world or INIT run.
+  The [whole original `init_core`/`initDenv` batch is also source/software reviewed](/mnt/workspaces/Cells/native-seed-init-core-20261103-01/source-repairs-01/root-review.json):
+  **43 affected controls pass**, 19 new and 24 repeated, in 8.553 seconds /
+  250,572,800 bytes sampled RSS. Callback admission, raw source/return retention
+  and independent hook cleanup were corrected as one batch. The original
+  39/42-control images and the repair fixture failure remain separate. Genuine
+  parent/Simulator routing and adoption remain held. Key is now implementing
+  original profile initialization; Root's next separate batch covers junction
+  rebuilding and the cell-network operator on that same phase.
 
 - **Current mapping software batch:** [All 15 remaining controls are reviewed](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/current-owner-controls-01/root-review.json).
   Seven groups completed on CPU 2, one thread, within **1 GiB / 480 seconds
@@ -761,7 +769,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   inherited guards, stage timing, captures and failure retention remain active.
   Default profiling, numerical equations and all resource limits are unchanged.
   These controls do not establish actual tissue speedup or native qualification.
-  [Diagnostic 12 is launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-12/LAUNCH.json).
+  [Diagnostic 12 is terminal and reviewed](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-12/root-review.json):
+  **1,800.024-second wall stop / 351,612,928 bytes sampled RSS**. It reached
+  all five ordinary geometry methods and `makeECM`, beyond the earlier
+  `cellVerts` bottleneck, but did not save a completed geometry/grid/mask trial.
+  Eight outer captures and 48,179 work rows survive; no numerical failure or
+  exact speedup is inferred from the time-censored result.
   Its [prepared image is reviewed](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-12.json):
   828 frozen files and the same 609 external inputs, with only the reviewed
   caller compiler and timing tool/test differing from diagnostic 11. CPU 2,
@@ -769,8 +782,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   remain unchanged. Detailed profiling is explicitly disabled; source work,
   stage/capture/failure accounting remain active. Metadata preparation passed
   in 74.846 seconds / 44,044,288 bytes sampled RSS. Its one review-reader schema
-  error is retained separately. Actual completion is unreviewed; no automatic
-  polling or retry is scheduled.
+  error is retained separately.
+  The user authorized longer detached jobs and independent parallel runs.
+  [The explicit longer-budget policy passes 30 focused controls](/mnt/workspaces/Cells/native-multi-cell-long-diagnostic-20261103-01/source-result.json),
+  with numerical code, memory limits and host reserve unchanged.
+  [Diagnostic 13 is launched detached with a two-hour allowance](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-13/LAUNCH.json):
+  CPU 2, one thread, 1 GiB RSS and 8 GiB reserve. Its [reviewed image](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-13.json)
+  keeps the same 828 source files, 609 external inputs and diagnostic case;
+  only the declared budget/tool tests differ. Completion is unreviewed.
+  Developers continue separate implementation while detached jobs run; no
+  repeated polling, automatic retry or idle waiting is scheduled.
   Its [preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-10.json)
   verifies 828 frozen files, 609 external inputs and 116 loaded metadata files;
   only the caller entry-capacity change differs from diagnostic 09. The first
