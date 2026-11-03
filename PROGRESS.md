@@ -761,6 +761,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   inherited guards, stage timing, captures and failure retention remain active.
   Default profiling, numerical equations and all resource limits are unchanged.
   These controls do not establish actual tissue speedup or native qualification.
+  [Diagnostic 12 is launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-12/LAUNCH.json).
+  Its [prepared image is reviewed](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-12.json):
+  828 frozen files and the same 609 external inputs, with only the reviewed
+  caller compiler and timing tool/test differing from diagnostic 11. CPU 2,
+  one thread, 1 GiB / 1,800 seconds / 8 GiB reserve and all numerical inputs
+  remain unchanged. Detailed profiling is explicitly disabled; source work,
+  stage/capture/failure accounting remain active. Metadata preparation passed
+  in 74.846 seconds / 44,044,288 bytes sampled RSS. Its one review-reader schema
+  error is retained separately. Actual completion is unreviewed; no automatic
+  polling or retry is scheduled.
   Its [preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-10.json)
   verifies 828 frozen files, 609 external inputs and 116 loaded metadata files;
   only the caller entry-capacity change differs from diagnostic 09. The first
