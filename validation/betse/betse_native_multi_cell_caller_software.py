@@ -33,6 +33,7 @@ LINEAGE_ITEMS = (
     "test_lineage_descriptor_inherited_entry_rejection_is_not_a_miss",
     "test_lineage_descriptor_item_selection_is_exact",
     "test_lineage_descriptor_metadata_cost_observation",
+    "test_lineage_descriptor_crowded_working_set_stays_warm",
 )
 
 

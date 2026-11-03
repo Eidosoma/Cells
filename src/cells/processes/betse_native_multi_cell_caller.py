@@ -63,8 +63,11 @@ _ACTIVE, _ISSUED = WeakKeyDictionary(), WeakKeyDictionary()
 _FORWARDED = WeakKeyDictionary()
 _READ_LEASES = WeakKeyDictionary()
 _LOCK = RLock()
-_LINEAGE_PLAN_ENTRIES = 128
-_LINEAGE_CANONICAL_ENTRIES = 128
+# The retained multi-cell request has more than a thousand distinct descriptor
+# texts. Keep its traversal plans warm without changing the 8-MiB index budget
+# or retaining any numeric columns or successful validation results.
+_LINEAGE_PLAN_ENTRIES = 2048
+_LINEAGE_CANONICAL_ENTRIES = 2048
 _LINEAGE_DESCRIPTOR_BYTES = 65536
 _LINEAGE_PLAN_NODES = 2048
 _LINEAGE_PLAN_DEPTH = 32

@@ -1700,6 +1700,65 @@ def test_lineage_descriptor_inherited_entry_rejection_is_not_a_miss(
     )
 
 
+def test_lineage_descriptor_crowded_working_set_stays_warm(monkeypatch, lineage_plans, evidence):
+    """A tissue-sized metadata roster retains no arrays or authority decisions."""
+    caches = tuple(
+        multi.core.caches.snapshot(dict(index=index, values=np.asarray([index, index + 0.5])))
+        for index in range(1200)
+    )
+    canonical_validate = multi.core.caches.validate
+    canonical_lineage = FunctionType(
+        multi._lineage.__code__,
+        dict(vars(multi), _lineage_validate_cache=canonical_validate),
+        "canonical_lineage",
+    )
+    references, signature = canonical_lineage(caches)
+    calls = []
+
+    def counted_validate(cache):
+        calls.append(cache.identity)
+        return canonical_validate(cache)
+
+    monkeypatch.setattr(multi.core.caches, "validate", counted_validate)
+    for sweep in range(3):
+        actual_references, actual_signature = multi._lineage(caches)
+        assert actual_signature == signature
+        assert len(actual_references) == len(references)
+        assert all(a is b for a, b in zip(actual_references, references, strict=True))
+        assert len(calls) == len(caches), sweep
+    info = multi._lineage_memoized_descriptor.cache_info()
+    assert len(lineage_plans) == info.currsize == len(caches)
+    assert info.currsize <= info.maxsize == multi._LINEAGE_CANONICAL_ENTRIES
+    retained_bytes = sum(size for _, size in lineage_plans.values())
+    assert retained_bytes <= multi._LINEAGE_RETAINED_BYTES
+
+    # A warm descriptor still authenticates the current column bytes.
+    sample = caches[len(caches) // 2]
+    column = sample.columns[0]
+    changed_values = column.values.copy()
+    changed_values.flat[0] += 1.0
+    changed_values.flags.writeable = False
+    changed = replace(sample, columns=(replace(column, values=changed_values),))
+    expected = _lineage_outcome(canonical_validate, changed)
+    actual = _lineage_outcome(multi._lineage_validate_cache, changed)
+    assert "type" in expected and actual == expected
+    assert len(calls) == len(caches)
+    save(
+        evidence,
+        "crowded-working-set",
+        dict(
+            descriptors=len(caches),
+            sweeps=3,
+            canonical_validations=len(calls),
+            retained_descriptor_bytes=retained_bytes,
+            cache_info=info._asdict(),
+            exact_references_and_digest=True,
+            changed_column_refused=actual,
+            synthetic_metadata_only=True,
+        ),
+    )
+
+
 def test_lineage_descriptor_item_selection_is_exact(evidence):
     from validation.betse import betse_native_multi_cell_caller_software as software
 

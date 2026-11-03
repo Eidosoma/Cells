@@ -13,12 +13,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   established; complete tissue simulation qualification remains open. The next
   target is a small, populated tissue that initializes, evolves, responds to a
   controlled perturbation and restarts consistently. Priorities are populated
-  multi-cell geometry/grid/masks; a separately qualified electrical solver;
+  multi-cell geometry/grid/masks;
   genuine tissue/parameter/Simulator/phase and ion-profile initialization;
   profile-to-junction-to-field connection; sustained SIM updates; and complete
   restart equivalence. Source correspondence and physical/numerical validity
   are separate requirements. This milestone does not cover every BETSE feature,
   including the still-held post-cut continuation.
+
+  **Current user priority is an end-to-end demonstration**, with explicit
+  modes that construct the original BETSE flux-boundary inverse or omit that
+  operator. The known nullspace defect will be documented, not repaired in
+  this work. Normal membrane/junction ion transport remains enabled. The
+  selected current/field path uses the separate value-boundary inverse;
+  omitting the flux-boundary inverse is an explicit demonstration variant,
+  not a claim of complete native constructor correspondence. Numerical and
+  physical qualification remain separate from demonstrating execution.
 
   Work is organized in coherent batches: Key finishes parameter readiness,
   Specialist builds the same-object phase/world connection, and Root reviews
@@ -277,15 +286,22 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   old five and repaired three cases, requires exact unique parameterized test
   and guard identities, checks the appropriate Matplotlib receipts and retains
   legacy `None` parameter IDs. Failed preparations and the pre-test memory-limit
-  failure remain separate. The [118-control remaining batch is launched detached](/mnt/workspaces/Cells/native-parameter-CM-WR-remaining118-20261103-01/launch.json):
-  31 original functions, 29 colormap and 89 world-ready controls, with no overlap
-  with the completed 68. CPU 0, one thread, **1 GiB / 480 seconds per worker /
-  8 GiB reserve** remain unchanged; stop on failure, no automatic retry or
-  polling. Its terminal outcome has not been reviewed. Earlier passes
-  stay bound to their own images; no native or numerical execution occurred.
-  The genuine constants-to-remainder handoff is still absent, with its producer
-  pin explicitly unbound. Key's five-path source-only implementation window
-  is open; provider adoption and native owner execution remain held.
+  failure remain separate. The [118-control batch's saved outcomes are now reviewed](/mnt/workspaces/Cells/native-parameter-remaining118-terminal-review-20261103-02/root-review.json):
+  **38 passed, zero test failures and 80 unrun**. Its controller stopped because
+  the exact-ID reader predicted `entry0/entry1` for module parameters, while
+  pytest used their module names. The four tests in that group passed; the
+  controller remains failed. Root verified both 540-file images, 473 loaded
+  source paths, 1,122 external paths and all 38 native/Matplotlib guard pairs.
+  No completed tests or prior 68 controls are scheduled for replay.
+  The genuine constants-to-remainder grant is implemented but not adopted.
+  Its [source review found three contract defects](/mnt/workspaces/Cells/native-parameter-constants-remainder-handoff-source-20261103-02/root-source-review.json):
+  non-sticky authority refusal, closure-error precedence and a work-bound
+  off-by-one. Key's [six-file consolidated successor](/mnt/workspaces/Cells/native-parameter-constants-reader-source-repair-20261103-02/results.json)
+  combines those repairs with the module-ID reader correction. Its
+  [source review is clear](/mnt/workspaces/Cells/native-parameter-constants-reader-source-repair-20261103-02/root-source-review.json).
+  A single immutable 42-control blocked image is underway; its outcome has
+  not been reviewed. Its producer pin remains explicitly unbound;
+  provider/native admission and the remaining 80-control resume are held.
   The world-ready owner must retain complete same-parameter load history and
   reject any ancestral phase-construction attempt. Its exclusive claim would
   span fresh phase birth through SEED, allowing only native `_run_sim=False`
@@ -396,6 +412,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   1,219 runtime origins and 89 producers verify; the worker took 6.035 seconds /
   249,110,528 bytes sampled RSS. Original 31/6 evidence remains bound to its old test image. All provider
   pins remain closed; these controls grant no positive owner or native admission.
+  The next same-mesh lifecycle source follows original `init_mesh` or
+  `clip_and_refine`, stopping before the four tail aliases. Its
+  [consolidated source repair](/mnt/workspaces/Cells/native-seed-voronoi-lifecycle-20261103-01/source-repairs-01/source-preparation.json)
+  addresses generator suspension/resumption and reached `math.atan2` binding.
+  A subsequent dual-hook mask-capture correction preserves profile-only mask
+  recording while trace capture handles generator suspension. The
+  [first 57-control image reports 19 passes, one fixture failure and 37 unrun](/mnt/workspaces/Cells/native-seed-voronoi-lifecycle-20261103-01/mask-observation-software-01/source-result.json):
+  the reentry fixture supplied an incomplete parent-frame marker. Root's saved
+  result review remains pending; no retry or positive owner credit is granted.
+  Specialist is preparing the four new geometry-continuation files within
+  its declared eight-path scope. No standalone mesh or normalized owner is
+  attached to a phase.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
@@ -600,13 +628,37 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   path, with fewer Python calls. All 71 cases, 400 frozen files and 74 loaded
   origins verify; the worker took 6.537 seconds / 245,944,320 bytes sampled RSS.
   The original regression remains preserved. This is a bounded cost observation,
-  not a whole-tissue measurement. [Fresh diagnostic 09 is launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-09/LAUNCH.json)
-  on CPU 2 with one thread and unchanged **1 GiB / 1,800 seconds / 8 GiB reserve**.
+  not a whole-tissue measurement. [Diagnostic 09 is reviewed as a wall-limit failure](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-09/root-review.json)
+  after **1,800.039 seconds / 350,445,568 bytes sampled RSS**. It retained eight
+  captures through cell indexing and entered `cellVerts`, but did not complete
+  that first geometry method. Its 1,424.065 seconds of inclusive lineage time
+  includes 204.654 seconds in canonical cache validation; these overlap.
+  Final runtime, completed geometry and hook-cleanup evidence are absent.
   Its [preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-09.json)
   verifies 828 frozen files and 609 external inputs: only the accepted caller
   optimization differs from diagnostic 08. Numerical inputs, source and timing
-  policy are unchanged. The terminal outcome has not been reviewed; there is no automatic
-  retry or polling, independent comparison or new scientific credit.
+  policy are unchanged. A descriptor-text-only observation found **1,113
+  reusable plans occupying 3,779,529 bytes**, against a 128-entry memo.
+  The [bounded entry-capacity successor is source/software reviewed](/mnt/workspaces/Cells/native-multi-cell-lineage-descriptor-reuse-20261102-01/working-set-capacity-01/source-result.json):
+  72 blocked controls pass, one new and 71 affected, in 9.549 seconds with
+  246,575,104 bytes sampled RSS. The new 1,200-descriptor control retains exact
+  references/digests, uses only 1,200 canonical validations over three sweeps,
+  and still refuses changed array bytes. Only the two caller-local entry limits
+  rise to 2,048; the 8-MiB index budget and all numerical/worker limits stay
+  unchanged. The private memo's theoretical payload ceiling is now 256 MiB
+  plus bounded bookkeeping; the 1-GiB worker guard remains controlling.
+  All 400 frozen files and 74 loaded producers verify. Actual tissue speedup
+  and completed geometry remain unproved; no scientific credit is added.
+  [Diagnostic 10 is now launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-10/LAUNCH.json)
+  on CPU 2, one thread, under unchanged **1 GiB / 1,800 seconds / 8 GiB reserve**.
+  Its [preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-10.json)
+  verifies 828 frozen files, 609 external inputs and 116 loaded metadata files;
+  only the caller entry-capacity change differs from diagnostic 09. The first
+  preparation's CPU-affinity refusal is preserved and occurred before snapshot
+  construction. The corrected metadata preparation passed in 72.879 seconds.
+  The actual run stops at geometry/grid/mask completion, before Poisson; it is
+  a prerequisite to the end-to-end demonstration, not the completed demo.
+  Its terminal outcome is unreviewed. No automatic polling or retry is scheduled.
   Diagnostic 08's [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-08.json)
   verifies **828 frozen files / 609 external pins**; only the two reviewed
   timing files differ from diagnostic 07. CPU 2, one thread, **1 GiB /
