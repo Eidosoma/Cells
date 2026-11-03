@@ -19,6 +19,7 @@ from cells.processes import betse_environment_field as geometry_source
 from cells.processes import betse_normal_current as current
 
 LAW_ID = "betse_ecm_transport_material_source_v1_5_0@1"
+DEMO_LAW_ID = "betse_ecm_transport_unused_flux_demo_v1_5_0@1"
 INPUT_KIND = "cells.betse_ecm_transport_inputs@1"
 NONCE = 1e-25
 MAX_STEPS = 3
@@ -146,6 +147,19 @@ class ECMTransportRejected(NumericalError):
 
 
 def binding_record(binding):
+    if binding.geometry_binding.definition["kind"] == geometry_source.DEMO_INPUT_KIND:
+        return dict(
+            law=DEMO_LAW_ID,
+            material_law=LAW_ID,
+            flux_operator=binding.geometry_binding.definition["flux_operator"],
+            flux_operator_used=False,
+            scientific_acceptance=False,
+            native_phase_admission=False,
+            definition=binding.definition,
+            geometry_binding=geometry_source.binding_record(binding.geometry_binding),
+            geometry_identity=binding.geometry_binding.identity,
+            kernel=binding.kernel,
+        )
     return dict(
         law=LAW_ID,
         definition=binding.definition,
@@ -190,7 +204,13 @@ def bind(raw):
         or not raw["provenance"].strip()
     ):
         raise ValueError("Require the separate complete ECM material declaration")
-    gb = geometry_source.bind(raw["environment_geometry_definition"])
+    if (
+        type(raw["environment_geometry_definition"]) is dict
+        and raw["environment_geometry_definition"].get("kind") == geometry_source.DEMO_INPUT_KIND
+    ):
+        gb = geometry_source.bind_demo(raw["environment_geometry_definition"])
+    else:
+        gb = geometry_source.bind(raw["environment_geometry_definition"])
     if gb.definition["is_ecm"] is not True:
         raise ValueError("Require the native ECM branch")
     cb, g = gb.current_binding, gb.geometry

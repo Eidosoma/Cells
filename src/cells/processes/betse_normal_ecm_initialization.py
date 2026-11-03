@@ -537,6 +537,19 @@ def _same(actual, expected, name):
         raise ValueError("Changed source owner: " + name)
 
 
+def _same_flux_operator(actual, binding):
+    """Explicit absence is confined to the separate disabled demonstration."""
+    definition = binding.definition
+    if (
+        definition["kind"] == material.geometry_source.DEMO_INPUT_KIND
+        and definition["flux_operator"] == "disabled"
+    ):
+        if actual is not None or binding.geometry.neumann_inverse_m2 is not None:
+            raise ValueError("Demo-disabled cells.lapENV_P_inv must be explicitly None")
+    else:
+        _same(actual, binding.geometry.neumann_inverse_m2, "cells.lapENV_P_inv")
+
+
 def _binding(binding):
     if type(binding) not in (field.Binding, calcium.Binding):
         raise ValueError("Require an existing field or calcium/field binding")
@@ -623,7 +636,10 @@ def _check_owners(binding, boundary):
         lapENV_P_inv=g.neumann_inverse_m2,
     )
     for key, expected in cell_pairs.items():
-        _same(c(key), expected, "cells." + key)
+        if key == "lapENV_P_inv":
+            _same_flux_operator(c(key), gb)
+        else:
+            _same(c(key), expected, "cells." + key)
     vectors = np.asarray(c("mem_vects_flat"))
     if vectors.shape != (m, 4):
         raise ValueError("Require original four-column native membrane vectors")

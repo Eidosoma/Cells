@@ -22,6 +22,8 @@ from cells.processes import betse_normal_current as current
 
 LAW_ID = "betse_environment_field_source_v1_5_0@1"
 INPUT_KIND = "cells.betse_environment_field_inputs@1"
+DEMO_INPUT_KIND = "cells.betse_environment_field_demo_inputs@1"
+DEMO_LAW_ID = "betse_environment_field_unused_flux_demo_v1_5_0@1"
 REVISION = current.SOURCE_REVISION
 MAX_GRID_POINTS = 49
 OPERATOR_RESIDUAL_LIMIT = 1e-10
@@ -265,6 +267,25 @@ def _geometry(raw, cb, parameters):
             source=raw,
             trial=dict(true_volume=frozen(true_volume), correction=frozen(correction)),
         )
+    if raw["kind"] == DEMO_INPUT_KIND:
+        return _demo_operators(
+            raw,
+            (
+                (ny, nx),
+                delta,
+                frozen(x),
+                frozen(y),
+                frozen(points),
+                frozen(np.asarray([(i, j) for i in range(ny) for j in range(nx)], dtype=np.int64)),
+                cell_map,
+                membrane_map,
+                frozen(area),
+                frozen(counts),
+                frozen(true_volume),
+                frozen(divergence_map),
+                frozen(correction),
+            ),
+        )
     with np.errstate(all="ignore"):
         ad = _laplacian((ny, nx), delta, flux=False)
         an = _laplacian((ny, nx), delta, flux=True)
@@ -323,6 +344,105 @@ def _geometry(raw, cb, parameters):
     )
 
 
+def _demo_operators(raw, prefix):
+    """Keep an unused original flux result or its explicit absence, never repair it.
+
+    The strict constructor below this separate branch is unchanged. Both modes
+    retain its finite geometry/Dirichlet requirements. Failed finite Neumann
+    diagnostics are observations only: no solve using that inverse is admitted.
+    """
+    shape, delta = prefix[:2]
+    mode = raw["flux_operator"]
+    available = dict(
+        dirichlet_laplacian_per_m2=None,
+        dirichlet_inverse_m2=None,
+        neumann_laplacian_per_m2=None,
+        neumann_inverse_m2=None,
+        diagnostics=None,
+    )
+    try:
+        with np.errstate(all="ignore"):
+            ad = _laplacian(shape, delta, flux=False)
+            available["dirichlet_laplacian_per_m2"] = frozen(ad)
+            an = None
+            if mode == "original":
+                an = _laplacian(shape, delta, flux=True)
+                available["neumann_laplacian_per_m2"] = frozen(an)
+        if not np.isfinite(ad).all() or (an is not None and not np.isfinite(an).all()):
+            raise ValueError("Nonfinite source Laplacian")
+        # Preserve the original scaled-matrix/default-pinv operation order.
+        invd = np.linalg.pinv(ad)
+        available["dirichlet_inverse_m2"] = frozen(invd)
+        invn = None
+        if mode == "original":
+            invn = np.linalg.pinv(an)
+            available["neumann_inverse_m2"] = frozen(invn)
+
+        def norm(a):
+            return float(np.linalg.norm(a, ord=np.inf))
+
+        e = math.prod(shape)
+        diagnostics = dict(
+            dirichlet_inverse_residual=norm(ad @ invd - np.eye(e)),
+            neumann_penrose_operator_residual=None,
+            neumann_penrose_inverse_residual=None,
+            neumann_projection_symmetry=None,
+            neumann_zero_mean_gauge=None,
+            HH_uses_dirichlet_inverse=True,
+            nearest_ties_admitted=False,
+            source_pinv_default_rcond=1e-15,
+            flux_operator=mode,
+            neumann_diagnostics_passed=None,
+            neumann_diagnostic_failures=(),
+            flux_operator_constructed=mode == "original",
+            flux_operator_used=False,
+            operator_acceptance=False,
+            scientific_acceptance=False,
+            native_phase_admission=False,
+            scope="Declared small-grid demonstration; unused flux operator only",
+        )
+        available["diagnostics"] = diagnostics
+        if invn is not None:
+            diagnostics.update(
+                neumann_penrose_operator_residual=norm(an @ invn @ an - an) / norm(an),
+                neumann_penrose_inverse_residual=norm(invn @ an @ invn - invn) / norm(invn),
+                neumann_projection_symmetry=norm(an @ invn - (an @ invn).T),
+                neumann_zero_mean_gauge=norm((invn @ np.ones(e))[:, None]) / norm(invn),
+            )
+            failures = tuple(
+                key
+                for key, value in diagnostics.items()
+                if key.startswith("neumann_")
+                and key.endswith(("residual", "symmetry", "gauge"))
+                and (not math.isfinite(value) or value > OPERATOR_RESIDUAL_LIMIT)
+            )
+            diagnostics.update(
+                neumann_diagnostics_passed=not failures,
+                neumann_diagnostic_failures=failures,
+            )
+        residual = diagnostics["dirichlet_inverse_residual"]
+        if (
+            not np.isfinite(invd).all()
+            or not math.isfinite(residual)
+            or residual > OPERATOR_RESIDUAL_LIMIT
+        ):
+            raise ValueError("Source Dirichlet inverse residual exceeds fixed limit")
+        if invn is not None and not np.isfinite(invn).all():
+            raise ValueError("Nonfinite unused source flux inverse")
+        return Geometry(
+            *prefix,
+            available["dirichlet_laplacian_per_m2"],
+            available["dirichlet_inverse_m2"],
+            available["neumann_laplacian_per_m2"],
+            available["neumann_inverse_m2"],
+            MappingProxyType(diagnostics),
+        )
+    except Exception as error:
+        raise EnvironmentFieldRejected(
+            error, stage="demo_operators", source=raw, trial=MappingProxyType(available)
+        ) from error
+
+
 PARAMETERS = (
     "q_C",
     "kb_J_K",
@@ -339,6 +459,20 @@ PARAMETERS = (
 
 
 def binding_record(binding):
+    if binding.definition.get("kind") == DEMO_INPUT_KIND:
+        return dict(
+            law=DEMO_LAW_ID,
+            revision=REVISION,
+            definition=binding.definition,
+            current_binding=current.binding_record(binding.current_binding),
+            geometry=binding.geometry,
+            cache=binding.cache,
+            flux_operator=binding.definition["flux_operator"],
+            gauge_policy="original_unused_flux_observed_or_explicitly_absent@1",
+            operator_acceptance=False,
+            scientific_acceptance=False,
+            supplied_geometry="Original centres/midpoints/measures; no Voronoi seeding",
+        )
     return dict(
         law=LAW_ID,
         revision=REVISION,
@@ -351,7 +485,7 @@ def binding_record(binding):
     )
 
 
-def bind(raw):
+def _bind(raw, *, demo):
     stage, trial = "source_declaration", None
     try:
         if (
@@ -367,9 +501,16 @@ def bind(raw):
                 "parameters",
                 "cache_initial_state",
             }
-            or raw["kind"] != INPUT_KIND
+            | ({"flux_operator"} if demo else set())
+            or raw["kind"] != (DEMO_INPUT_KIND if demo else INPUT_KIND)
         ):
             raise ValueError("Require the complete separate environment-field declaration")
+        if demo and (
+            type(raw["flux_operator"]) is not str
+            or raw["flux_operator"] not in ("original", "disabled")
+            or raw["is_ecm"] is not True
+        ):
+            raise ValueError("Demo requires explicit original/disabled flux operator and ECM on")
         if type(raw["provenance"]) is not str or not raw["provenance"].strip():
             raise ValueError("Require explicit source geometry/cache provenance")
         if type(raw["is_ecm"]) is not bool or set(raw["parameters"]) != set(PARAMETERS):
@@ -432,10 +573,26 @@ def bind(raw):
         raise EnvironmentFieldRejected(error, stage=stage, source=raw, trial=trial) from error
 
 
+def bind(raw):
+    """The unchanged strict declaration, operators and numerical admission."""
+    return _bind(raw, demo=False)
+
+
+def bind_demo(raw):
+    """Explicit unqualified ECM demonstration; never infer or disable ion transport.
+
+    ``original`` retains the original finite flux inverse even when its recorded
+    Neumann diagnostics fail. ``disabled`` never constructs it. Neither grants
+    its use, numerical acceptance, native phase authority or full INIT parity.
+    """
+    return _bind(raw, demo=True)
+
+
 def validate_binding(binding):
     if type(binding) is not Binding:
         raise ValueError("Require the original complete environment-field binding")
-    expected = bind(binding.definition)
+    constructor = bind_demo if binding.definition.get("kind") == DEMO_INPUT_KIND else bind
+    expected = constructor(binding.definition)
     if (
         binding.identity != expected.identity
         or current.record(binding_record(binding)) != current.record(binding_record(expected))
@@ -552,7 +709,7 @@ def _packet(binding, raw):
 
 def readout_record(readout):
     return dict(
-        law=LAW_ID,
+        law=DEMO_LAW_ID if "flux_operator" in readout.diagnostics else LAW_ID,
         binding_identity=readout.binding_identity,
         source_current=readout_current_record(readout.source_current),
         packet=readout.packet,
@@ -689,7 +846,7 @@ def evaluate(binding, source_current, raw):
                 current_prefix_revalidated=True,
                 geometry_and_inverse_derived=True,
                 HH_uses_dirichlet_inverse=True,
-                neumann_pseudoinverse_prepared_but_unused=True,
+                neumann_pseudoinverse_prepared_but_unused=geometry.neumann_inverse_m2 is not None,
                 boundary_assignment_order=("R", "L", "T", "B"),
                 HH_boundary_order=("L", "R", "B", "T"),
                 gaussian_mode="constant" if definition["is_ecm"] else "reflect",
@@ -700,6 +857,18 @@ def evaluate(binding, source_current, raw):
                 source_inputs_advanced=False,
             )
         )
+        if definition["kind"] == DEMO_INPUT_KIND:
+            diagnostics = MappingProxyType(
+                dict(
+                    diagnostics,
+                    flux_operator=definition["flux_operator"],
+                    flux_operator_constructed=geometry.neumann_inverse_m2 is not None,
+                    flux_operator_used=False,
+                    operator_acceptance=False,
+                    scientific_acceptance=False,
+                    native_phase_admission=False,
+                )
+            )
         trial = Readout(
             binding.identity, source_current, packet, values, smoothing, hodge, diagnostics, ""
         )
@@ -736,7 +905,7 @@ def voltage_dependencies(binding):
         operator_provenance=json.dumps(
             dict(
                 binding_identity=binding.identity,
-                law=LAW_ID,
+                law=DEMO_LAW_ID if binding.definition["kind"] == DEMO_INPUT_KIND else LAW_ID,
                 gauge="source all-value rows; no additional gauge pin",
             ),
             sort_keys=True,

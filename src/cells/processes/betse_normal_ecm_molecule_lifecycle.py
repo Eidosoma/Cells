@@ -195,6 +195,15 @@ def validate_setup_inputs(raw):
         raise ValueError("Config equality is supplied association, not a native loader attestation")
 
 
+def _check_environment_policy(before, after):
+    """Keep the explicit field policy across a supplied INIT-to-SIM handoff."""
+    if before["kind"] != after["kind"] or (
+        before["kind"] == material.geometry_source.DEMO_INPUT_KIND
+        and before["flux_operator"] != after["flux_operator"]
+    ):
+        raise ValueError("Transition may not change the declared environment operator policy")
+
+
 def check_owners(binding, completed):
     raw = setup.legacy_setup_inputs(binding.inputs)
     if binding.expected_init_identity != completed.binding.identity:
@@ -217,6 +226,7 @@ def check_owners(binding, completed):
     if declared != bound.definition_json:
         raise ValueError("SIM owner template differs from its bound geometry declaration")
     new = bound.definition
+    _check_environment_policy(old, new)
     if (
         not catalog.equal_tree(old["geometry"], new["geometry"])
         or not catalog.equal_tree(old["world"], new["world"])

@@ -1021,7 +1021,14 @@ base_validate = base.validate
 
 
 def build_grid(cells, p, inputs):
-    binding = field.bind(inputs["material_definition"]["environment_geometry_definition"])
+    if (
+        type(inputs["material_definition"]["environment_geometry_definition"]) is dict
+        and inputs["material_definition"]["environment_geometry_definition"].get("kind")
+        == field.DEMO_INPUT_KIND
+    ):
+        binding = field.bind_demo(inputs["material_definition"]["environment_geometry_definition"])
+    else:
+        binding = field.bind(inputs["material_definition"]["environment_geometry_definition"])
     g = binding.geometry
     for target, attr in (
         ("X", "X_m"),
