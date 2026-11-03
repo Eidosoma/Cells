@@ -17,6 +17,393 @@ from validation.betse import native_seed_demo_launch_software as software
 _RAW_GUARDS = []
 
 
+@pytest.fixture
+def write_policy(tmp_path):
+    output, native, home = tmp_path / "output", tmp_path / "native", tmp_path / "home"
+    for folder in (output, native, home):
+        folder.mkdir()
+    link = home / ".betse"
+    link.symlink_to(native, target_is_directory=True)
+    parameter_directory = tmp_path / "inputs/RESULTS/GRN"
+    policy = launch.WritePolicy(
+        output,
+        native_home=link,
+        native_target=native,
+        native_link=launch._link_record(link),
+        directories=(parameter_directory,),
+    )
+    return NS(
+        policy=policy,
+        output=output,
+        native=native,
+        home=home,
+        link=link,
+        parameter_directory=parameter_directory,
+    )
+
+
+@pytest.mark.parametrize("role", ["evidence", "cache", "native_link", "native_target", "mkdir"])
+def test_launch_filesystem_exact_declared_writes(write_policy, role):
+    b = write_policy
+    targets = {
+        "evidence": b.output / "result.json",
+        "cache": b.output / "runtime-cache/matplotlib/fontlist.json",
+        "native_link": b.link / "betse.log",
+        "native_target": b.native / "betse.log",
+        "mkdir": b.parameter_directory,
+    }
+    if role == "mkdir":
+        b.policy.audit("os.mkdir", (str(targets[role]), 0o755, -1))
+    else:
+        b.policy.audit("open", (str(targets[role]), "w", os.O_CREAT | os.O_WRONLY))
+    b.policy.check()
+    assert len(b.policy.events) == 1 and b.policy.record()["failures"] == []
+
+
+@pytest.mark.parametrize(
+    "role", ["input", "sibling", "parameter_file", "nested_mkdir", "fd", "new_link"]
+)
+def test_launch_filesystem_refuses_unowned_writes_and_keeps_first_failure(write_policy, role):
+    b = write_policy
+    target = {
+        "input": b.output.parent / "inputs/sim_config.yaml",
+        "sibling": b.output.parent / "different/output.json",
+        "parameter_file": b.parameter_directory / "model.dat",
+        "nested_mkdir": b.parameter_directory / "unrequested",
+        "fd": 88,
+        "new_link": b.output / "link",
+    }[role]
+    event = "os.mkdir" if role == "nested_mkdir" else "open"
+    args = (target if type(target) is int else str(target), "w", os.O_WRONLY)
+    if role == "new_link":
+        event, args = "os.symlink", (str(b.native), str(target), -1)
+    with pytest.raises(ValueError) as caught:
+        b.policy.audit(event, args)
+    with pytest.raises(ValueError) as check:
+        b.policy.check()
+    assert check.value is caught.value is b.policy.first_error
+    # Retaining a refusal is still possible; this does not clear the failed epoch.
+    b.policy.audit("open", (str(b.output / "failure.json"), "w", os.O_WRONLY))
+    assert b.policy.record()["first_error"] is not None
+
+
+@pytest.mark.parametrize("mutation", ["remove", "retarget", "same_target_new_link", "nested_link"])
+def test_launch_filesystem_native_link_drift_never_authorizes_a_write(write_policy, mutation):
+    b = write_policy
+    target = b.link / "betse.log"
+    if mutation == "nested_link":
+        (b.native / "nested").symlink_to(b.output.parent, target_is_directory=True)
+        target = b.link / "nested/escaped"
+    else:
+        b.link.unlink()
+        if mutation != "remove":
+            b.link.symlink_to(b.output if mutation == "retarget" else b.native)
+    with pytest.raises(ValueError):
+        b.policy.audit("open", (str(target), "w", os.O_WRONLY))
+    assert b.policy.first_error is not None
+    assert not target.exists()
+
+
+def test_launch_filesystem_native_canonical_path_does_not_bypass_link_epoch(write_policy):
+    b = write_policy
+    b.link.unlink()
+    with pytest.raises(ValueError, match="Native log link"):
+        b.policy.audit("open", (str(b.native / "betse.log"), "w", os.O_WRONLY))
+    assert b.policy.record()["failures"]
+
+
+def test_launch_filesystem_readonly_access_is_not_write_permission(write_policy):
+    b = write_policy
+    b.policy.audit("open", ("/unowned/source.py", "r", os.O_RDONLY))
+    assert b.policy.events == []
+    with pytest.raises(ValueError):
+        b.policy.audit("os.rename", (str(b.output / "x"), "/unowned/y", -1, -1))
+
+
+@pytest.mark.parametrize(
+    "mode,flags", [("r+", os.O_RDWR), ("w", os.O_WRONLY | os.O_CREAT | os.O_TRUNC)]
+)
+def test_launch_filesystem_null_device_supports_library_type_probes(write_policy, mode, flags):
+    policy = write_policy.policy
+    policy.audit("open", ("/dev/null", mode, flags))
+    with open("/dev/null", "r+b" if mode == "r+" else "wb") as stream:
+        assert stream.write(b"metadata probe") == 14
+        if mode == "r+":
+            assert stream.read() == b""
+    policy.check()
+    assert policy.record()["null_device"] == launch._null_device()
+    assert policy.record()["failures"] == []
+
+
+@pytest.mark.parametrize("event", ["os.remove", "os.truncate", "os.chmod", "os.rename"])
+def test_launch_filesystem_null_device_is_not_mutable_path_authority(write_policy, event):
+    policy = write_policy.policy
+    args = (
+        ("/dev/null", str(write_policy.output / "renamed"), -1, -1)
+        if event == "os.rename"
+        else ("/dev/null", 0)
+    )
+    with pytest.raises(ValueError, match="Only null-device opens") as caught:
+        policy.audit(event, args)
+    assert policy.first_error is caught.value
+
+
+@pytest.mark.parametrize("change", ["inode", "rdev", "ordinary_file"])
+def test_launch_filesystem_null_device_identity_drift_is_sticky(write_policy, monkeypatch, change):
+    policy = write_policy.policy
+    if change == "ordinary_file":
+        original = Path.lstat
+
+        def changed(path):
+            if path == Path("/dev/null"):
+                return NS(st_mode=0o100666, st_rdev=os.makedev(1, 3))
+            return original(path)
+
+        monkeypatch.setattr(Path, "lstat", changed)
+    else:
+        observed = dict(policy.null_device)
+        observed[change] += 1
+        monkeypatch.setattr(launch, "_null_device", lambda: observed)
+    with pytest.raises(ValueError) as caught:
+        policy.audit("open", ("/dev/null", "w", os.O_WRONLY))
+    assert policy.first_error is caught.value
+    assert policy.record()["failures"]
+
+
+@pytest.mark.parametrize("target", ["/dev/zero", "/dev/random", "/tmp/null"])
+def test_launch_filesystem_null_device_exception_does_not_admit_other_paths(write_policy, target):
+    with pytest.raises(ValueError, match="Undeclared demonstration write"):
+        write_policy.policy.audit("open", (target, "w", os.O_WRONLY))
+
+
+def test_launch_filesystem_null_device_alias_is_not_authorized(write_policy):
+    alias = write_policy.output / "null-alias"
+    alias.symlink_to("/dev/null")
+    with pytest.raises(ValueError):
+        write_policy.policy.audit("open", (str(alias), "w", os.O_WRONLY))
+
+
+@pytest.mark.parametrize("cached", [False, True])
+def test_launch_filesystem_temporary_probe_and_default_files_stay_in_output(
+    write_policy, monkeypatch, cached
+):
+    b = write_policy
+    directory = b.output / "runtime-cache/tmp"
+    for key in ("TMPDIR", "TEMP", "TMP"):
+        monkeypatch.setenv(key, str(directory))
+    monkeypatch.setattr(launch.tempfile, "tempdir", str(directory) if cached else None)
+    record = launch._temporary_directory(b.output, b.policy)
+    assert record == launch._temporary_binding(directory)
+    assert record is b.policy.temporary_directory
+    assert list(directory.iterdir()) == []  # Both startup probes were removed.
+    with launch.tempfile.NamedTemporaryFile() as stream:
+        assert Path(stream.name).parent == directory
+        stream.write(b"library bootstrap bytes")
+        stream.seek(0)
+        assert stream.read() == b"library bootstrap bytes"
+    b.policy.check()
+    assert b.policy.record()["temporary_directory"] == record
+    assert not (b.output / "runtime-cache/matplotlib").exists()
+
+
+@pytest.mark.parametrize("cached", ["/tmp", b"/tmp", Path("/tmp")])
+def test_launch_filesystem_foreign_cached_temporary_path_refuses_without_reset(
+    write_policy, monkeypatch, cached
+):
+    b = write_policy
+    directory = b.output / "runtime-cache/tmp"
+    for key in ("TMPDIR", "TEMP", "TMP"):
+        monkeypatch.setenv(key, str(directory))
+    monkeypatch.setattr(launch.tempfile, "tempdir", cached)
+    with pytest.raises(ValueError, match="Foreign cached temporary"):
+        launch._temporary_directory(b.output, b.policy)
+    assert launch.tempfile.tempdir is cached
+    assert not directory.exists() and b.policy.temporary_directory is None
+
+
+@pytest.mark.parametrize("key", ["TMPDIR", "TEMP", "TMP"])
+def test_launch_filesystem_temporary_environment_drift_refuses_before_probe(
+    write_policy, monkeypatch, key
+):
+    b = write_policy
+    directory = b.output / "runtime-cache/tmp"
+    for name in ("TMPDIR", "TEMP", "TMP"):
+        monkeypatch.setenv(name, str(directory))
+    monkeypatch.setenv(key, "/tmp")
+    monkeypatch.setattr(launch.tempfile, "tempdir", None)
+    with pytest.raises(ValueError, match="Exact worker temporary environment"):
+        launch._temporary_directory(b.output, b.policy)
+    assert not directory.exists() and launch.tempfile.tempdir is None
+
+
+@pytest.mark.parametrize("change", ["directory", "link", "cache", "environment"])
+def test_launch_filesystem_temporary_binding_drift_is_sticky(write_policy, monkeypatch, change):
+    b = write_policy
+    directory = b.output / "runtime-cache/tmp"
+    for key in ("TMPDIR", "TEMP", "TMP"):
+        monkeypatch.setenv(key, str(directory))
+    monkeypatch.setattr(launch.tempfile, "tempdir", None)
+    launch._temporary_directory(b.output, b.policy)
+    if change in ("directory", "link"):
+        directory.rename(directory.with_name("original-tmp"))
+        if change == "directory":
+            directory.mkdir(mode=0o700)
+        else:
+            directory.symlink_to(directory.with_name("original-tmp"), target_is_directory=True)
+    elif change == "cache":
+        monkeypatch.setattr(launch.tempfile, "tempdir", "/tmp")
+    else:
+        monkeypatch.setenv("TEMP", "/tmp")
+    with pytest.raises(ValueError) as caught:
+        b.policy.check()
+    assert b.policy.first_error is caught.value
+    assert b.policy.record()["failures"]
+
+
+@pytest.mark.parametrize("root", ["link", "native"])
+@pytest.mark.parametrize("event", ["os.remove", "os.rename"])
+def test_launch_filesystem_root_replacement_refuses_before_mutation(write_policy, root, event):
+    b = write_policy
+    target = getattr(b, root)
+    args = (str(target), -1) if event == "os.remove" else (str(b.output / "x"), str(target), -1, -1)
+    with pytest.raises(ValueError, match="cannot be replaced or removed"):
+        b.policy.audit(event, args)
+    assert b.link.is_symlink() and b.native.is_dir()
+
+
+@pytest.mark.parametrize("installed", [True, False])
+def test_launch_filesystem_installation_is_observed_before_entry(
+    write_policy, tmp_path, monkeypatch, installed
+):
+    b = write_policy
+    bootstrap = write(
+        tmp_path / "bootstrap.json",
+        dict(
+            environment=dict(
+                HOME=str(b.home),
+                MPLCONFIGDIR=str(b.output / "runtime-cache/matplotlib"),
+                PYTHONDONTWRITEBYTECODE="1",
+            ),
+            native_links={str(b.link): launch._link_record(b.link)},
+            native_write_roots=[
+                str(b.link),
+                str(b.native),
+                str(b.output / "runtime-cache/matplotlib"),
+            ],
+        ),
+    )
+    demo = write(
+        tmp_path / "demo.json",
+        dict(callback_bootstrap=bootstrap["path"], callback_bootstrap_sha256=bootstrap["sha256"]),
+    )
+    inputs = write(
+        tmp_path / "parameters.json", dict(program=dict(directories=[str(b.parameter_directory)]))
+    )
+    callbacks = []
+    with monkeypatch.context() as patch:
+        patch.setattr(launch.Path, "home", classmethod(lambda cls: b.home))
+        patch.setattr(
+            launch.sys, "addaudithook", lambda fn: callbacks.append(fn) if installed else None
+        )
+        patch.setattr(
+            launch.sys, "audit", lambda event, *args: [fn(event, args) for fn in callbacks]
+        )
+        if installed:
+            policy = launch._filesystem(dict(demo_plan=demo, parameter_inputs=inputs), b.output)
+            assert policy.installed is True and callbacks[0].__self__ is policy
+        else:
+            with pytest.raises(ValueError, match="Actual demonstration filesystem audit"):
+                launch._filesystem(dict(demo_plan=demo, parameter_inputs=inputs), b.output)
+
+
+def test_launch_filesystem_caught_violation_prevents_worker_success(
+    bundle, write_policy, monkeypatch
+):
+    b, policy = bundle, write_policy.policy
+
+    def public(*_args, **_kwargs):
+        try:
+            policy.audit("open", ("/unowned/path", "w", os.O_WRONLY))
+        except ValueError:
+            pass
+        return NS(methods_completed=True, evidence_completed=True, primary=None, secondary=[])
+
+    worker_setup(b, monkeypatch, public)
+    monkeypatch.setattr(launch, "_filesystem", lambda *_a: policy)
+    with pytest.raises(ValueError) as caught:
+        launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert caught.value is policy.first_error
+    assert not (b.root / "worker/result.json").exists()
+    assert (b.root / "worker/filesystem.json").is_file()
+
+
+def test_launch_filesystem_final_record_failure_preserves_original_falsey_source(
+    bundle, monkeypatch
+):
+    b, primary = bundle, primary_error()
+
+    def public(*_args, **_kwargs):
+        raise primary
+
+    def bad_record():
+        raise OSError("filesystem record")
+
+    worker_setup(b, monkeypatch, public)
+    monkeypatch.setattr(
+        launch, "_filesystem", lambda *_a: NS(check=lambda: None, record=bad_record)
+    )
+    with pytest.raises(FalseyError) as caught:
+        launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert caught.value is primary and caught.value.__cause__ is primary.__cause__
+    data = launch.read(launch.pin(b.root / "worker/failure.json"))
+    assert any(row["stage"] == "filesystem-record" for row in data["secondary"])
+
+
+@pytest.mark.parametrize(
+    "boundary,has_source_error",
+    [("runtime-after", False), ("runtime-after", True), ("result-write", False)],
+)
+def test_launch_filesystem_late_caught_violation_never_promotes_success(
+    bundle, write_policy, monkeypatch, boundary, has_source_error
+):
+    b, policy, primary = bundle, write_policy.policy, primary_error()
+    observed = []
+
+    def prohibited():
+        try:
+            policy.audit("open", ("/unowned/postrun", "w", os.O_WRONLY))
+        except ValueError:
+            pass
+
+    def public(*_args, **_kwargs):
+        if has_source_error:
+            raise primary
+        return NS(methods_completed=True, evidence_completed=True, primary=None, secondary=[])
+
+    worker_setup(b, monkeypatch, public)
+    monkeypatch.setattr(launch, "_filesystem", lambda *_a: policy)
+    original_write = launch.snapshot.write_json
+
+    def observe():
+        observed.append("runtime")
+        if len(observed) == 2 and boundary == "runtime-after":
+            prohibited()
+        return runtime(b)
+
+    def writer(path, value):
+        if Path(path).name == "result.json" and boundary == "result-write":
+            prohibited()
+        return original_write(path, value)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(launch, "observe_runtime", observe)
+        patch.setattr(launch.snapshot, "write_json", writer)
+        with pytest.raises((ValueError, FalseyError)) as caught:
+            launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert caught.value is (primary if has_source_error else policy.first_error)
+    assert policy.first_error is not None and (b.root / "worker/failure.json").is_file()
+
+
 @pytest.fixture(autouse=True)
 def blocked(request, tmp_path):
     if os.environ.get(software.SOFTWARE_RELEASE) != "1":
@@ -235,6 +622,34 @@ def test_launch_prepare_preserves_held_gates_and_explicit_environment(bundle):
     assert not (b.root / "worker").exists()
 
 
+@pytest.mark.parametrize("endpoint", ["seed", "init_setup", "init_prelude"])
+def test_launch_endpoint_is_bound_to_exact_demo_declaration(bundle, endpoint):
+    b = bundle
+    declaration = launch.read(b.plan["demo_plan"])
+    declaration["endpoint"] = endpoint
+    changed = write(b.packet / "demo-plan.json", declaration)
+    made = launch.prepare(
+        b.packet,
+        b.root / "endpoint-plan",
+        demo_plan_sha256=changed["sha256"],
+        release_environment=b.env,
+        input_bundle=b.plan["input_bundle"],
+    )
+    plan = launch.read(made["plan"])
+    assert launch.verify(Path(made["plan"]["path"]), made["plan"]["sha256"])["endpoint"] == endpoint
+    plan["endpoint"] = "init_setup" if endpoint == "seed" else "seed"
+    with pytest.raises(ValueError, match="endpoint binding"):
+        launch._immutable(plan)
+
+
+@pytest.mark.parametrize("endpoint", [None, True, "sim", "INIT"])
+def test_launch_endpoint_refuses_unknown_or_untyped_value(bundle, endpoint):
+    plan = copy.deepcopy(bundle.plan)
+    plan["endpoint"] = endpoint
+    with pytest.raises(ValueError, match="endpoint binding"):
+        launch._immutable(plan)
+
+
 @pytest.mark.parametrize("mutation", ["enable", "environment", "snapshot", "demo", "plan", "extra"])
 def test_launch_release_refuses_unbound_authority(bundle, mutation):
     b = bundle
@@ -289,11 +704,17 @@ def test_launch_output_cannot_replace_any_input(bundle, role):
 def test_launch_environment_does_not_inherit_or_invent_release_flags(bundle, monkeypatch):
     monkeypatch.setenv("CELLS_UNREVIEWED_RELEASED", "1")
     monkeypatch.setenv("PYTHONHOME", "/wrong")
+    for key in ("TMPDIR", "TEMP", "TMP"):
+        monkeypatch.setenv(key, "/inherited/temporary")
     value = launch.environment(bundle.plan, bundle.root / "run")
     assert {k: v for k, v in value.items() if k.startswith("CELLS_")} == bundle.env
     assert "PYTHONHOME" not in value
     assert all(value[k] == "1" for k in launch.THREADS)
     assert value["PYTHONPYCACHEPREFIX"] == str(bundle.source / ".unused-bytecode-cache")
+    assert all(
+        value[key] == str(bundle.root / "run/worker/runtime-cache/tmp")
+        for key in ("TMPDIR", "TEMP", "TMP")
+    )
 
 
 def test_launch_immutable_checks_do_not_reopen_consumed_directory_epoch(bundle):
@@ -532,8 +953,12 @@ def test_launch_runtime_refuses_real_metadata_mismatch(bundle, mutation):
 
 def worker_setup(b, monkeypatch, action):
     authorize_metadata(monkeypatch, b)
-    monkeypatch.setattr(launch, "_worker_environment", lambda plan: None)
+    monkeypatch.setattr(launch, "_worker_environment", lambda *_a: None)
+    monkeypatch.setattr(launch, "_temporary_directory", lambda *_a: None)
     monkeypatch.setattr(launch, "observe_runtime", lambda: runtime(b))
+    monkeypatch.setattr(
+        launch, "_filesystem", lambda *_a: NS(check=lambda: None, record=lambda: {})
+    )
     monkeypatch.setattr(
         launch, "_demo", lambda: NS(__file__=str(b.source / launch.DEMO), run_demo=action)
     )
@@ -616,7 +1041,7 @@ def test_launch_worker_preentry_failure_never_calls_public_api(bundle, monkeypat
     b = bundle
     worker_setup(b, monkeypatch, lambda *_a, **_k: pytest.fail("Unexpected public entry"))
 
-    def fail(_plan):
+    def fail(_plan, _output):
         raise ValueError("actual environment mismatch")
 
     monkeypatch.setattr(launch, "_worker_environment", fail)
@@ -625,6 +1050,25 @@ def test_launch_worker_preentry_failure_never_calls_public_api(bundle, monkeypat
         launch.worker(b.path, output, **kwargs(b))
     row = launch.read(launch.pin(output / "failure.json"))
     assert row["state"]["public_entry_attempted"] is False
+
+
+def test_launch_worker_temporary_probe_failure_retains_primary_before_library_entry(
+    bundle, monkeypatch
+):
+    b = bundle
+    worker_setup(b, monkeypatch, lambda *_a, **_k: pytest.fail("Unexpected public entry"))
+    primary = primary_error()
+
+    def probe(_output, _policy):
+        raise primary
+
+    monkeypatch.setattr(launch, "_temporary_directory", probe)
+    with pytest.raises(FalseyError) as caught:
+        launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert caught.value is primary and caught.value.__cause__ is primary.__cause__
+    row = launch.read(launch.pin(b.root / "worker/failure.json"))
+    assert row["state"]["public_entry_attempted"] is False
+    assert row["state"]["runtime_before_available"] is False
 
 
 def test_launch_error_formatter_failure_keeps_primary_and_cause(tmp_path, monkeypatch):
@@ -689,18 +1133,23 @@ def test_launch_worker_environment_requires_exact_release_limits_threads(bundle,
             *launch.THREADS,
             "CUDA_VISIBLE_DEVICES",
             "JAX_PLATFORMS",
+            "MPLCONFIGDIR",
+            "XDG_CACHE_HOME",
+            "TMPDIR",
+            "TEMP",
+            "TMP",
         ):
             monkeypatch.setenv(name, value)
     monkeypatch.setattr(launch.resource, "getrlimit", lambda _kind: (2**30, 2**30))
     monkeypatch.setattr(launch.resources, "memory_available", lambda: 9 * 2**30)
-    launch._worker_environment(b.plan)
+    launch._worker_environment(b.plan, b.root / "run/worker")
     monkeypatch.setenv("CELLS_UNDECLARED_RELEASED", "1")
     with pytest.raises(ValueError, match="release environment"):
-        launch._worker_environment(b.plan)
+        launch._worker_environment(b.plan, b.root / "run/worker")
     monkeypatch.delenv("CELLS_UNDECLARED_RELEASED")
     monkeypatch.setenv("OMP_NUM_THREADS", "2")
     with pytest.raises(ValueError, match="environment mismatch"):
-        launch._worker_environment(b.plan)
+        launch._worker_environment(b.plan, b.root / "run/worker")
 
 
 def test_launch_worker_startup_verification_failure_has_terminal(bundle, monkeypatch):

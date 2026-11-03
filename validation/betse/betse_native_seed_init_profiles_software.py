@@ -1,4 +1,4 @@
-"""Frozen CPU0 software controls for held whole native tissue-profile mapping.
+"""Frozen CPU5 software controls for held whole native tissue-profile mapping.
 
 Uses the existing source snapshot, process resource and runtime inventory tools.
 There is no native/phase/source execution mode in this software runner.
@@ -25,6 +25,7 @@ TEST = "tests/unit/test_betse_native_seed_init_profiles.py"
 FILE = "validation/betse/betse_native_seed_init_profiles_software.py"
 MODULE = "validation.betse.betse_native_seed_init_profiles_software"
 SOFTWARE_RELEASE = "CELLS_NATIVE_SEED_INIT_PROFILES_SOFTWARE_RELEASED"
+SOFTWARE_CPU = 5
 OWNED = (SOURCE, LITERAL, TEST, FILE)
 CLOSURE = "agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_resources.py"
 NATIVE_ROOT = "/mnt/workspaces/Cells/betse-v1.5.0"
@@ -71,7 +72,7 @@ def prepare(directory, select=""):
             snapshot_sha256=snapshot.digest(directory / "source/SNAPSHOT.json"),
             git_revision=manifest["git_revision"],
             select=select,
-            cpu=0,
+            cpu=SOFTWARE_CPU,
             threads=1,
             metadata_bytes=512 * 2**20,
             software_bytes=2**30,
@@ -85,8 +86,12 @@ def prepare(directory, select=""):
 
 
 def child(directory):
-    if os.environ.get(SOFTWARE_RELEASE) != "1" or os.sched_getaffinity(0) != {0} or not __debug__:
-        raise ValueError("Explicit CPU0 blocked-software release/assertions required")
+    if (
+        os.environ.get(SOFTWARE_RELEASE) != "1"
+        or os.sched_getaffinity(0) != {SOFTWARE_CPU}
+        or not __debug__
+    ):
+        raise ValueError("Explicit software CPU5 release/assertions required")
     inputs = json.loads((directory / "inputs.json").read_text())
     if not inputs["software_release_requested"] or ROOT != directory / "source":
         raise ValueError("Actual fresh frozen software child required")
@@ -161,8 +166,8 @@ def child(directory):
 
 
 def software(directory, select=""):
-    if os.environ.get(SOFTWARE_RELEASE) != "1" or os.sched_getaffinity(0) != {0}:
-        raise ValueError("Explicit CPU0 software scope required")
+    if os.environ.get(SOFTWARE_RELEASE) != "1" or os.sched_getaffinity(0) != {SOFTWARE_CPU}:
+        raise ValueError("Explicit CPU5 software scope required")
     directory = Path(directory).absolute()
     if (
         not directory.is_relative_to(BASE)

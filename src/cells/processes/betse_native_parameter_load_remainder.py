@@ -32,10 +32,10 @@ RELEASE = "CELLS_NATIVE_PARAMETER_LOAD_REMAINDER_RELEASED"
 BASE_PREDECESSOR_SHA256 = "3fc51886956ae7f4fc0880b0fb6b5ec25f7c939c14a3ba31e0b012f717774f69"
 # A separately pinned source candidate permits inspection only, never _hook admission.
 SOURCE_CANDIDATE_PREDECESSOR_SHA256 = (
-    "dba5e3328a4e0726cb138919c99128d5c82782a23911bd25d0b0fe101aa97275"
+    "0e402bf35a591d4e0119ad3c8be8db99eaeccc9f8422face9610068829fb4429"
 )
 # Exact fresh source connection; no release or actual parent authority is inferred.
-HANDOFF_PRODUCER_SHA256 = "dba5e3328a4e0726cb138919c99128d5c82782a23911bd25d0b0fe101aa97275"
+HANDOFF_PRODUCER_SHA256 = "0e402bf35a591d4e0119ad3c8be8db99eaeccc9f8422face9610068829fb4429"
 HANDOFF_LAW = "betse_native_parameter_original_load_remainder_handoff@1"
 HANDOFF_FACTORY = "remainder_handoff"
 HANDOFF_CHECK = "validate_remainder_history"

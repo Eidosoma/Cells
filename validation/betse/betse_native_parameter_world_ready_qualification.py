@@ -76,10 +76,10 @@ MODULES = {
     "remainder": "betse_native_parameter_load_remainder",
 }
 KNOWN_PINS = {
-    "colormap_state": "7380129b5eb2b0177144785adaa410ed053e714403a168fe66a6d938d1ae4489",
-    "colormap_load": "4701ffece1d829bd8d18898dfcedce3f20fd885c5aaebd4ff92705807a465e26",
-    "initializer_constants": "dba5e3328a4e0726cb138919c99128d5c82782a23911bd25d0b0fe101aa97275",
-    "load_remainder": "8f98febfa385b34e46e2a73fa36e68f546a26eb2583fb7786fd6ea6c58c52610",
+    "colormap_state": "817a5310c59541643af5f7e358678013d5b0fe78062c088fd08042e4a8dab677",
+    "colormap_load": "cfe5d3baf710f5a7f1b1e53b5f10716c133e3c59c91db8e003a3bd10e3a14004",
+    "initializer_constants": "0e402bf35a591d4e0119ad3c8be8db99eaeccc9f8422face9610068829fb4429",
+    "load_remainder": "3cfe176984e251275f930606d31c733c681bd5f9f4271c78a67123f54bfe4488",
 }
 GATES = (
     "CELLS_ECM_MOLECULE_RUN_LIFECYCLE_RELEASED",

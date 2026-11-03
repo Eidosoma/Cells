@@ -25,10 +25,10 @@ from cells.processes import betse_native_tissue_configuration as literal
 
 LAW_ID = "betse_actual_same_parameter_selected_tissue_handler@1"
 RELEASE = "CELLS_NATIVE_TISSUE_HANDLER_ATTACHMENT_RELEASED"
-PARENT_SHA256 = "22e4a0db41a14d9fabd761b02583742004b162a1866d1769611b9e9ad8013b3b"
+PARENT_SHA256 = "3c0fa5c67928c266420780e5feb9c9abdcc91c511456da58a2659c9bd071b0ea"
 SEALED_PARENT_SHA256 = "397c453df7fb4fc397cbd23c7e785c1c4fe7e5a5c46b02f156819958610be0ee"
-CLAIMS_SHA256 = "5e942391adc112382e6bc38dcf252f5f615d22ef2f98dbdaa6c00484cdb89ff4"
-LITERAL_SHA256 = "0dd4e51887e5975e5356e5efe946a3c19a2c969c54049955c6886bc199f98bb5"
+CLAIMS_SHA256 = "c07488ea046eaa78b2a8d97ff96d757e8fad0f298546b559e5b36427d8db5f62"
+LITERAL_SHA256 = "78549327ada27bb943245b9d6e9692b7d86de96660f1bd41bbd6f3119e0e4dac"
 METHODS = literal.METHODS
 _NATIVE = dict(literal._NATIVE)
 core, captures, aliases = literal.core, literal.captures, literal.aliases

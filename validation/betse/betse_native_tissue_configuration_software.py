@@ -1,4 +1,4 @@
-"""Immutable CPU6 native-blocked tissue prelude controls; no real constructors."""
+"""Immutable native-blocked tissue controls on declared CPU; default remains CPU6."""
 
 import argparse
 import json
@@ -17,7 +17,45 @@ metadata = inherited.parent.inherited._metadata
 ROOT = Path(__file__).resolve().parents[2]
 OWN = "validation/betse/betse_native_tissue_configuration_software.py"
 TEST = "tests/unit/test_betse_native_tissue_configuration.py"
-GROUPS = {"focused": "software", "smoke": "software_complete_fresh or software_ast"}
+GROUPS = {
+    "focused": "software",
+    "smoke": "software_complete_fresh or software_ast",
+    "factory": "software_factory_ or software_complete_fresh or software_ast",
+}
+BEARTYPE_OVERLAY = Path("/mnt/workspaces/Cells/beartype-overlay-0.22.9-20261031-01")
+BEARTYPE_INIT_SHA256 = "8b89846b9967a46362f9bf4a6d4e0f03681974d1a63243126d5d6768f0274f33"
+
+
+def _beartype_inputs(group):
+    if group == "smoke":
+        return {}
+    root = BEARTYPE_OVERLAY / "beartype"
+    if runner.source_snapshot.digest(root / "__init__.py") != BEARTYPE_INIT_SHA256:
+        raise ValueError("Exact existing decorator-library producer required")
+    return {
+        str(path): runner.source_snapshot.digest(path)
+        for path in sorted(root.rglob("*"))
+        if path.is_file() and "__pycache__" not in path.parts
+    }
+
+
+def _beartype_runtime(output):
+    inputs = json.loads((output / "inputs.json").read_text())
+    declared = inputs.get("external_beartype_files", {})
+    loaded = {}
+    for name, module in tuple(sys.modules.items()):
+        if name != "beartype" and not name.startswith("beartype."):
+            continue
+        path = getattr(module, "__file__", None)
+        if path is None:
+            continue
+        actual = runner.source_snapshot.digest(Path(path))
+        if declared.get(path) != actual:
+            raise ValueError("Loaded decorator library differs from declared inputs: " + name)
+        loaded[name] = dict(path=path, sha256=actual)
+    runner.write(
+        output / "beartype-runtime.json", dict(loaded=loaded, declared_files=len(declared))
+    )
 
 
 def child(output, group):
@@ -76,6 +114,7 @@ def child(output, group):
         )
     if attempted:
         raise RuntimeError("A control attempted original tissue work")
+    _beartype_runtime(output)
     tissue._verify_sources()
     return code
 
@@ -84,16 +123,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--group", choices=GROUPS, required=True)
+    parser.add_argument("--cpu", type=int, choices=(4, 6), default=6)
     parser.add_argument("--_child", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     output = args.output.absolute()
-    if not output.is_relative_to(runner.BASE) or os.sched_getaffinity(0) != {6}:
-        parser.error("Require CPU6 and fresh output below /mnt/workspaces/Cells")
+    if not output.is_relative_to(runner.BASE) or os.sched_getaffinity(0) != {args.cpu}:
+        parser.error("Require declared CPU affinity and fresh output below /mnt/workspaces/Cells")
     if args._child:
         return child(output, args.group)
     resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
     output.mkdir(parents=True, exist_ok=False)
     (output / "process").mkdir()
+    external = _beartype_inputs(args.group)
     closure = runpy.run_path(str(ROOT / runner.CLOSURE_TOOL))["closure"]
     files = closure(ROOT, [OWN, TEST])
     files[runner.CLOSURE_TOOL] = runner.source_snapshot.digest(ROOT / runner.CLOSURE_TOOL)
@@ -107,6 +148,8 @@ def main():
             snapshot_manifest_sha256=manifest,
             source_sha256={name: row["sha256"] for name, row in snapshot["files"].items()},
             software_group=args.group,
+            cpu=args.cpu,
+            external_beartype_files=external,
             pytest_selection=GROUPS[args.group],
             synthetic_only=True,
             actual_native_release=False,
@@ -118,6 +161,8 @@ def main():
         for p in environment.get("PYTHONPATH", "").split(os.pathsep)
         if p and not Path(p).resolve().is_relative_to(ROOT)
     ]
+    if external:
+        paths.append(str(BEARTYPE_OVERLAY))
     environment.update(
         PYTHONPATH=os.pathsep.join(paths),
         PYTHONDONTWRITEBYTECODE="1",
@@ -143,6 +188,8 @@ def main():
                 str(output),
                 "--group",
                 args.group,
+                "--cpu",
+                str(args.cpu),
                 "--_child",
             ],
             directory=output / "process",
@@ -162,6 +209,7 @@ def main():
         "tail-native-entry-guard.json",
         "post-world-native-entry-guard.json",
         "tissue-native-entry-guard.json",
+        "beartype-runtime.json",
     ]
     missing = [name for name in required if not (output / name).is_file()]
     if missing:
@@ -207,6 +255,7 @@ def main():
         actual_native_release=False,
         snapshot_manifest_sha256=manifest,
         runtime_producers_sha256=runner.source_snapshot.digest(output / "runtime-producers.json"),
+        beartype_runtime_sha256=runner.source_snapshot.digest(output / "beartype-runtime.json"),
         junit_sha256=runner.source_snapshot.digest(output / "tests.xml"),
         guard_pins={name: runner.source_snapshot.digest(output / name) for name in guards},
         frozen_execution_authority=authority,

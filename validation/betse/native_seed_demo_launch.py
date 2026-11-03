@@ -16,6 +16,7 @@ import stat
 import subprocess
 import sys
 import sysconfig
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -32,7 +33,7 @@ DEMO = "validation/betse/native_seed_demo.py"
 PARAMETER = "validation/betse/betse_native_parameter_world_ready_qualification.py"
 INPUTS = "validation/betse/native_seed_demo_inputs.py"
 PRODUCERS = (*OWNED, DEMO, PARAMETER, INPUTS)
-KIND = "cells.genuine_seed_demo_detached_launch@2"
+KIND = "cells.genuine_seed_demo_detached_launch@7"
 RELEASE_KIND = "cells.genuine_seed_demo_detached_release@1"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_LAUNCH_RELEASED"
 DEMO_RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
@@ -48,11 +49,248 @@ THREADS = (
     "RAYON_NUM_THREADS",
 )
 _RAW_FAILURES = []
+_WRITE_POLICIES = []
 
 
 def require(value, message):
     if not value:
         raise ValueError(message)
+
+
+def _link_record(value):
+    info = value.lstat()
+    return dict(
+        text=os.readlink(value),
+        resolved=str(value.resolve(strict=True)),
+        device=info.st_dev,
+        inode=info.st_ino,
+        mode=info.st_mode,
+        mtime_ns=info.st_mtime_ns,
+        ctime_ns=info.st_ctime_ns,
+    )
+
+
+def _null_device():
+    """The existing Linux discard device is not a filesystem output domain."""
+    value = Path("/dev/null")
+    info = value.lstat()
+    require(
+        not any(p.is_symlink() for p in (value, *value.parents))
+        and stat.S_ISCHR(info.st_mode)
+        and (os.major(info.st_rdev), os.minor(info.st_rdev)) == (1, 3),
+        "Original null character device required",
+    )
+    return dict(
+        path=str(value), device=info.st_dev, inode=info.st_ino, mode=info.st_mode, rdev=info.st_rdev
+    )
+
+
+class WritePolicy:
+    """Process-lifetime writes for the declared native bootstrap and outputs.
+
+    The one existing native-home link is authenticated, not generally followed.
+    Parameter permissions allow only their original directory creations. A
+    caught violation still prevents a successful worker result; evidence writes
+    remain available so the original failure can be retained.
+    """
+
+    def __init__(self, output, *, native_home, native_target, native_link, directories):
+        self.output = path(output)
+        self.native_home = Path(native_home)
+        self.native_target = path(native_target)
+        require(
+            self.output.is_dir() and self.native_target.is_dir(),
+            "Actual write directories required",
+        )
+        self.native_link = native_link
+        self.null_device = _null_device()
+        self.temporary_directory = None
+        self.directories = tuple(path(value, exists=False) for value in directories)
+        self.events, self.failures = [], []
+        self.first_error = None
+        self.installed = False
+        self.check()
+
+    def _native_link(self):
+        if self.native_link is None:
+            require(
+                self.native_home == self.native_target and not self.native_home.is_symlink(),
+                "Native log root changed",
+            )
+        else:
+            require(
+                self.native_home.is_symlink()
+                and _link_record(self.native_home) == self.native_link
+                and self.native_link["resolved"] == str(self.native_target),
+                "Native log link changed",
+            )
+
+    def _target(self, value):
+        require(type(value) in (str, bytes), "Unowned write descriptor refused")
+        value = Path(os.fsdecode(value))
+        require(value.is_absolute() and ".." not in value.parts, "Absolute write path required")
+        if value == self.native_home or value.is_relative_to(self.native_home):
+            self._native_link()
+            require(
+                not any(parent.is_symlink() for parent in self.native_home.parents),
+                "Native-home parent link changed",
+            )
+            relative = value.relative_to(self.native_home)
+            value = self.native_target / relative
+        return path(value, exists=False)
+
+    def _retain(self, error, event, targets):
+        if self.first_error is None:
+            self.first_error = error
+        if len(self.failures) < 64:
+            self.failures.append((event, targets, error))
+
+    def audit(self, event, args):
+        if event == "cells.seed_demo.filesystem_installed":
+            if len(args) == 1 and args[0] is self:
+                self.installed = True
+            return
+        if event == "open":
+            if type(args[2]) is not int or not args[2] & (
+                os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_TRUNC | os.O_APPEND
+            ):
+                return
+            targets = args[:1]
+        elif event in ("os.mkdir", "os.remove", "os.rmdir", "os.chmod", "os.truncate"):
+            targets = args[:1]
+        elif event in ("os.rename", "os.link", "os.symlink"):
+            targets = args[:2]
+        else:
+            return
+        try:
+            require(len(self.events) < 4096, "Bounded diagnostic filesystem events")
+            self.events.append((event, targets))
+            require(event != "os.symlink", "New native links are not declared")
+            for target in targets:
+                if type(target) in (str, bytes) and os.fsdecode(target) == "/dev/null":
+                    require(event == "open", "Only null-device opens are declared")
+                    require(_null_device() == self.null_device, "Null device identity changed")
+                    continue
+                if type(target) in (str, bytes) and Path(os.fsdecode(target)) in (
+                    self.native_home,
+                    self.native_target,
+                ):
+                    require(event == "os.mkdir", "Native log roots cannot be replaced or removed")
+                actual = self._target(target)
+                output = actual == self.output or actual.is_relative_to(self.output)
+                native = actual == self.native_target or actual.is_relative_to(self.native_target)
+                if native:
+                    self._native_link()
+                mkdir = event == "os.mkdir" and actual in self.directories
+                require(output or native or mkdir, "Undeclared demonstration write refused")
+        except BaseException as error:
+            self._retain(error, event, targets)
+            raise
+
+    def check(self):
+        try:
+            self._native_link()
+            require(_null_device() == self.null_device, "Null device identity changed")
+            if self.temporary_directory is not None:
+                directory = self.temporary_directory["path"]
+                require(
+                    _temporary_binding(Path(directory)) == self.temporary_directory
+                    and type(tempfile.tempdir) is str
+                    and tempfile.tempdir == directory
+                    and all(os.environ.get(key) == directory for key in ("TMPDIR", "TEMP", "TMP")),
+                    "Worker temporary directory changed",
+                )
+        except BaseException as error:
+            self._retain(error, "filesystem-binding-check", ())
+            raise
+        if self.first_error is not None:
+            raise self.first_error
+
+    def record(self):
+        return dict(
+            events=[
+                dict(
+                    event=event, targets=[os.fsdecode(v) if type(v) is bytes else v for v in values]
+                )
+                for event, values in self.events
+            ],
+            failures=[
+                dict(event=event, error=error_record(error)) for event, _, error in self.failures
+            ],
+            first_error=None if self.first_error is None else error_record(self.first_error),
+            lifetime="through_worker_process_exit",
+            native_link=self.native_link,
+            null_device=self.null_device,
+            temporary_directory=self.temporary_directory,
+        )
+
+
+def _temporary_binding(directory):
+    info = path(directory).stat()
+    require(
+        stat.S_ISDIR(info.st_mode) and not info.st_mode & 0o077,
+        "Private temporary directory required",
+    )
+    return dict(path=str(directory), device=info.st_dev, inode=info.st_ino, mode=info.st_mode)
+
+
+def _temporary_directory(output, policy):
+    """Select and probe the declared worker directory before library bootstrap."""
+    directory = path(output / "runtime-cache/tmp", exists=False)
+    require(
+        all(os.environ.get(key) == str(directory) for key in ("TMPDIR", "TEMP", "TMP")),
+        "Exact worker temporary environment required",
+    )
+    require(
+        tempfile.tempdir is None
+        or (type(tempfile.tempdir) is str and tempfile.tempdir == str(directory)),
+        "Foreign cached temporary directory refused",
+    )
+    directory.mkdir(parents=True, mode=0o700, exist_ok=False)
+    policy.temporary_directory = _temporary_binding(directory)
+    require(tempfile.gettempdir() == str(directory), "Temporary selection escaped worker output")
+    with tempfile.NamedTemporaryFile(prefix=".bootstrap-", dir=str(directory)) as probe:
+        probe.write(b"worker temporary directory probe")
+        probe.seek(0)
+        require(probe.read() == b"worker temporary directory probe", "Temporary write probe failed")
+    policy.check()
+    return policy.temporary_directory
+
+
+def _filesystem(plan, output):
+    """Authenticate the existing declarations before installing the audit."""
+    declaration = read(plan["demo_plan"])
+    bootstrap = read(
+        dict(
+            path=declaration["callback_bootstrap"],
+            sha256=declaration["callback_bootstrap_sha256"],
+        )
+    )
+    inputs = read(plan["parameter_inputs"])
+    home = Path.home() / ".betse"
+    links = bootstrap["native_links"]
+    require(type(links) is dict and set(links) <= {str(home)}, "Exact native link declaration")
+    link = links.get(str(home))
+    target = home if link is None else Path(link["resolved"])
+    mpl = output / "runtime-cache/matplotlib"
+    require(
+        bootstrap["environment"]
+        == dict(HOME=str(Path.home()), MPLCONFIGDIR=str(mpl), PYTHONDONTWRITEBYTECODE="1")
+        and set(bootstrap["native_write_roots"]) == {str(home), str(target), str(mpl)},
+        "Exact bootstrap write domains required",
+    )
+    policy = WritePolicy(
+        output,
+        native_home=home,
+        native_target=target,
+        native_link=link,
+        directories=inputs["program"]["directories"],
+    )
+    _WRITE_POLICIES.append(policy)
+    sys.addaudithook(policy.audit)
+    sys.audit("cells.seed_demo.filesystem_installed", policy)
+    require(policy.installed is True, "Actual demonstration filesystem audit required")
+    return policy
 
 
 def source_plan():
@@ -66,8 +304,17 @@ def source_plan():
         automatic_retry=False,
         automatic_polling=False,
         fresh_process_per_flux_mode=True,
+        endpoint="Exact plan choice: seed, init_setup or init_prelude; no time evolution claim",
         complete_original_inputs="Exact pair manifest; selected mode only before consumption",
         postrun_inputs="Original selected file bytes only, never fresh directory epochs",
+        filesystem="Authenticated native-home link, worker output/cache, exact parameter mkdirs",
+        discard_device="Only opens of exact unlinked Linux /dev/null character device (1:3)",
+        temporary_directory=(
+            "Exact private worker/runtime-cache/tmp; "
+            "environment/cache/identity and actual I/O checked before imports"
+        ),
+        filesystem_lifetime="Installed and retained through worker process exit",
+        source_call_count="Stage work records; not standalone ParameterCalls aggregate credit",
         owner_hydration=False,
         source_or_independent_physical_acceptance=False,
         runtime_scope="Actual loaded file/map inventories; not a complete prelaunch library proof",
@@ -238,6 +485,12 @@ def _immutable(plan):
     )
     require(plan["flux_operator"] == declaration["flux_operator"], "Flux binding")
     require(
+        type(plan["endpoint"]) is str
+        and plan["endpoint"] in ("seed", "init_setup", "init_prelude")
+        and plan["endpoint"] == declaration.get("endpoint", "seed"),
+        "Exact demonstration endpoint binding",
+    )
+    require(
         inputs["source_snapshot"] == plan["source_snapshot"]
         and inputs["runtime"] == plan["runtime"],
         "Parameter runtime/snapshot binding",
@@ -350,6 +603,7 @@ def prepare(prepared, destination, *, demo_plan_sha256, release_environment, inp
         external_files=list({row["path"]: row for row in external}.values()),
         release_environment=environment,
         flux_operator=declaration["flux_operator"],
+        endpoint=declaration.get("endpoint", "seed"),
         limitations=source_plan(),
     )
     _immutable(value)
@@ -385,6 +639,7 @@ def verify(plan_path, plan_sha256, *, initial=True):
             "external_files",
             "release_environment",
             "flux_operator",
+            "endpoint",
             "limitations",
         },
         "Exact launch-plan schema required",
@@ -444,6 +699,9 @@ def environment(plan, output):
         JAX_PLATFORMS="cpu",
         MPLCONFIGDIR=str(output / "worker/runtime-cache/matplotlib"),
         XDG_CACHE_HOME=str(output / "worker/runtime-cache"),
+        TMPDIR=str(output / "worker/runtime-cache/tmp"),
+        TEMP=str(output / "worker/runtime-cache/tmp"),
+        TMP=str(output / "worker/runtime-cache/tmp"),
     )
     env.update({key: "1" for key in THREADS})
     env.update(plan["release_environment"])
@@ -775,8 +1033,8 @@ def check_runtime(value, plan, *, before=None):
     return producers
 
 
-def _worker_environment(plan):
-    expected = environment(plan, BASE / "unused")
+def _worker_environment(plan, output):
+    expected = environment(plan, output.parent)
     for name in (
         *THREADS,
         "PYTHONDONTWRITEBYTECODE",
@@ -786,6 +1044,11 @@ def _worker_environment(plan):
         "PYTHONPATH",
         "CUDA_VISIBLE_DEVICES",
         "JAX_PLATFORMS",
+        "MPLCONFIGDIR",
+        "XDG_CACHE_HOME",
+        "TMPDIR",
+        "TEMP",
+        "TMP",
     ):
         require(os.environ.get(name) == expected[name], "Worker environment mismatch: " + name)
     require(
@@ -807,10 +1070,13 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
     output = _safe_output(output, plan)
     output.mkdir(parents=True, exist_ok=False)
     primary, secondary, returned, before, after = None, [], None, None, None
+    filesystem = None
     entered = False
     try:
         plan = _entry(plan_path, plan_sha256, release_path, release_sha256, enabled)
-        _worker_environment(plan)
+        _worker_environment(plan, output)
+        filesystem = _filesystem(plan, output)
+        _temporary_directory(output, filesystem)
         before = observe_runtime()
         snapshot.write_json(output / "runtime-before.json", before)
         check_runtime(before, plan)
@@ -827,6 +1093,7 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
             plan_sha256=plan["demo_plan"]["sha256"],
             enabled=True,
         )
+        filesystem.check()
         require(
             returned.methods_completed is True
             and returned.evidence_completed is True
@@ -837,6 +1104,17 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
     except BaseException as error:
         primary = error
     finally:
+        if filesystem is not None:
+            for stage, action in (
+                ("filesystem-check", filesystem.check),
+                ("filesystem-record", lambda: filesystem.record()),
+            ):
+                try:
+                    value = action()
+                    if stage == "filesystem-record":
+                        snapshot.write_json(output / "filesystem.json", value)
+                except BaseException as error:
+                    secondary.append((stage, error))
         # Each independent observation is attempted; none may replace an API primary.
         for stage, action in (
             ("runtime-after", lambda: observe_runtime()),
@@ -857,6 +1135,11 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
                     )
             except BaseException as error:
                 secondary.append((stage, error))
+        if filesystem is not None:
+            try:
+                filesystem.check()
+            except BaseException as error:
+                secondary.append(("filesystem-final-check", error))
     state = dict(
         plan_sha256=plan_sha256,
         public_entry_attempted=entered,
@@ -865,6 +1148,7 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
         runtime_after_available=after is not None,
         demo_directory=str(output / "demo"),
         live_owner_serialized=False,
+        filesystem_audit_installed=filesystem is not None,
     )
     if primary is None and secondary:
         primary = secondary[0][1]
@@ -876,11 +1160,13 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
         status="source_completed_unqualified",
         scientific_credit=0,
         flux_operator=plan["flux_operator"],
+        endpoint=plan["endpoint"],
         **state,
         utc=utc(),
     )
     try:
         snapshot.write_json(output / "result.json", terminal)
+        filesystem.check()
     except BaseException as error:
         _failure(output, error, [], "worker-terminal", state=state)
         raise

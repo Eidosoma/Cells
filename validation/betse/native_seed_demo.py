@@ -2,8 +2,10 @@
 
 This is orchestration of existing public issuers, not a new scientific owner.
 Every live parent is born in this process. Saved evidence cannot supply a
-parameter, callback, phase, mesh, operator or material state. The selected
-endpoint precedes deformation/save, INIT histories and evolving SIM.
+parameter, callback, phase, mesh, operator or material state. Optional INIT setup
+retains the actual Cells and parameters in a fresh INIT phase. Its optional
+dynamics prelude continues on that same phase, stopping before profile remapping
+and random draws. None of these endpoints claims time evolution or restart parity.
 """
 
 import argparse
@@ -26,10 +28,22 @@ FILE = "validation/betse/native_seed_demo.py"
 TEST = "tests/unit/test_native_seed_demo.py"
 RUNNER = "validation/betse/native_seed_demo_software.py"
 INPUT_METADATA = "validation/betse/native_seed_demo_inputs.py"
-INPUT_METADATA_SHA256 = "e28af58ae9f881e3887fab9b9882ba3e54826249dec60e3038163d29dfc66685"
+INPUT_METADATA_SHA256 = "4f6c5f5ec30825484fe3ec8fbae1da9ea217b8368bf3d27619f298486ba0a053"
+EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
+EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
-KIND = "cells.genuine_seed_core_profiles_junctions_demo@1"
+KIND = "cells.genuine_seed_core_profiles_junctions_demo@3"
 FLUX_MODES = ("original", "disabled")
+ENDPOINTS = ("seed", "init_setup", "init_prelude")
+INIT_MODULES = {
+    "init_setup": "cells.processes.betse_native_init_retained_world",
+    "init_parameters": "cells.processes.betse_native_parameter_seed_init_transition",
+}
+INIT_SOURCE_PINS = dict.fromkeys(INIT_MODULES)
+INIT_REVIEW_PINS = dict.fromkeys(INIT_MODULES)
+PRELUDE_MODULES = {"init_prelude": "cells.processes.betse_native_init_dynamics_prelude"}
+PRELUDE_SOURCE_PINS = dict.fromkeys(PRELUDE_MODULES)
+PRELUDE_REVIEW_PINS = dict.fromkeys(PRELUDE_MODULES)
 POLICY = dict(cpu=0, threads=1, max_rss_bytes=2**30, wall_seconds=7200, reserve_bytes=8 * 2**30)
 MODULES = {
     "callback": "validation.betse.native_seed_world_callback_prelude",
@@ -40,11 +54,27 @@ MODULES = {
     "profiles": "cells.processes.betse_native_seed_init_profiles",
     "junctions": "cells.processes.betse_native_seed_junctions",
 }
-SOURCE_PINS = dict.fromkeys(MODULES)
-REVIEW_PINS = dict.fromkeys(MODULES)
+SOURCE_PINS = {
+    "callback": "267cd6fe57807468128bd684b9fbc7af75770e66f1aa1cfc7c66bf71684c62ee",
+    "parameters": "9ab32160019edaa0ab0fa49bf8ae64fbe1cb4baba87ff1bd99d16e9f978b07a7",
+    "geometry": "d1e6d47e684e0b413689b4899bbd912b13fd7499fa3907d29928205f11746e2f",
+    "poisson": "39539d52b750fd75787a2897efc564ad4ca886381ab09acf1560159aa815ba33",
+    "core": "96ebd0104a4a5ba2a05f3ab959c25a3046ef6e1019f08e4e9f7fef2240e8e419",
+    "profiles": "3d1b0987ec7c823a61e3d0baa343f5a6ab9c93f513a0f7deea58362cffda4c29",
+    "junctions": "862ecdd970034b6e039b4038ca768266faa74e07e0154e4f55dba27e987457c0",
+}
+REVIEW_PINS = {
+    "callback": "cc2ba3a07cb2177e6b6ba6c0190009f9f03086bdb4a33bd3c7d2f4ef00f9d967",
+    "parameters": "e0e3a4270321ffbd08f2ce14dfdb2c39b7d0108d0e90741c7a509586fd3f0604",
+    "geometry": "aa5cddf4c36998d3a99bcc576af94ba6fb4993c020de402bdd6ae8b134613f6e",
+    "poisson": "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb",
+    "core": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
+    "profiles": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
+    "junctions": "a9f6d6fa62d2eb5e46cf903546f754b2c8eb204b216343f8cb7bf4752ac85bba",
+}
 # Root's release must coordinate all native log writers. Advisory locking alone
 # cannot establish the absence of writers that do not use this protocol.
-SESSION_REVIEW_SHA256 = None
+SESSION_REVIEW_SHA256 = "2f6b64bb8cfb7a7eb70f203e51f1444849d7c0ed19adc580b02d044b1c799af0"
 STAGES = ("callback", "parameters", "geometry", "poisson", "core", "profiles", "junctions")
 _ACTIVE = []
 _ATTEMPT = None
@@ -60,11 +90,22 @@ class DemoRejected(ValueError):
 @dataclass(slots=True)
 class Execution:
     flux_operator: str
+    endpoint: str = "seed"
     stage: str = "preflight"
     phase: object = None
     parameters: object = None
     input_root: object = None
     phase_links: tuple = ()
+    seed_phase: object = None
+    seed_links: tuple = ()
+    seed_trial: object = None
+    init_phase: object = None
+    init_trial: object = None
+    init_links: tuple = ()
+    prelude_phase: object = None
+    prelude_trial: object = None
+    init_setup_completed: bool = False
+    init_prelude_completed: bool = False
     callback: object = None
     session: object = None
     world_ready: object = None
@@ -94,11 +135,46 @@ def _relative(module):
     return ("" if module.startswith("validation.") else "src/") + module.replace(".", "/") + ".py"
 
 
-def source_plan():
+def source_plan(*, endpoint="seed"):
+    if type(endpoint) is not str or endpoint not in ENDPOINTS:
+        raise DemoRejected("Choose exactly seed or init_setup or init_prelude", stage="endpoint")
     return dict(
         kind=KIND,
-        stages=STAGES,
-        endpoint="original graphLaplacian after whole init_core, init_profiles and redo_gj",
+        stages=(
+            STAGES
+            if endpoint == "seed"
+            else (*STAGES, "init_setup")
+            if endpoint == "init_setup"
+            else (*STAGES, "init_setup", "init_prelude")
+        ),
+        selected_endpoint=endpoint,
+        endpoint=(
+            "original graphLaplacian after whole init_core, init_profiles and redo_gj"
+            if endpoint == "seed"
+            else "fresh retained-world INIT phase and whole init_core; before run_sim_core"
+            if endpoint == "init_setup"
+            else "same INIT phase dynamics prelude; before profile remapping and RNG"
+        ),
+        optional_init_setup=dict(
+            modules=dict(INIT_MODULES),
+            source_pins=dict(INIT_SOURCE_PINS),
+            review_pins=dict(INIT_REVIEW_PINS),
+            same_process=True,
+            same_parameters_cells_callbacks=True,
+            new_phase_simulator_cache_handler=True,
+            checkpoint_or_time_loop_admission=False,
+        ),
+        optional_init_prelude=dict(
+            modules=dict(PRELUDE_MODULES),
+            source_pins=dict(PRELUDE_SOURCE_PINS),
+            review_pins=dict(PRELUDE_REVIEW_PINS),
+            entry="from_init(actual InitOwner, law_id=LAW_ID) -> prepare(enabled=True)",
+            same_phase_parameters_cells_simulator_handler_callbacks_cache=True,
+            parent_trial_retained_before_consumption=True,
+            original_prefix="Simulator.init_dynamics 758-806 with original reached helpers",
+            stops_before="init_profiles, channel_noise_factor RNG and INIT timesteps",
+            checkpoint_or_time_loop_admission=False,
+        ),
         source_pins=dict(SOURCE_PINS),
         review_pins=dict(REVIEW_PINS),
         shared_log_session_api="Root process-lifetime canonical log-target lease",
@@ -116,6 +192,10 @@ def source_plan():
         stage_trials="non-additive work and retained evidence, not independent cases",
         profile_images="Actual retained picker filenames, issued immutable original input files",
         input_metadata_sha256=INPUT_METADATA_SHA256,
+        evidence_profile="seed_demo",
+        evidence_source=EVIDENCE_SOURCE_SHA256,
+        evidence_reader=EVIDENCE_MODULE + ".read/files with capture root SHA",
+        evidence_scope="lossless bounded transport; partial captures never establish completion",
         native_policy=dict(POLICY),
         native_or_scientific_release=False,
         complete_seed_runner_order_claim=False,
@@ -125,29 +205,96 @@ def source_plan():
     )
 
 
-def _dependencies():
+def _dependencies(endpoint="seed"):
     """Check every producer before importing even a callback definition."""
+    if type(endpoint) is not str or endpoint not in ENDPOINTS:
+        raise DemoRejected("Choose exactly seed or init_setup or init_prelude", stage="endpoint")
     if (
         set(SOURCE_PINS) != set(MODULES)
         or set(REVIEW_PINS) != set(MODULES)
         or not all(_pin(p) for p in (*SOURCE_PINS.values(), *REVIEW_PINS.values()))
         or not _pin(SESSION_REVIEW_SHA256)
+        or not _pin(EVIDENCE_SOURCE_SHA256)
     ):
         raise DemoRejected("Combined producer/route/session adoption remains held", stage="unbound")
+    if endpoint != "seed" and (
+        set(INIT_SOURCE_PINS) != set(INIT_MODULES)
+        or set(INIT_REVIEW_PINS) != set(INIT_MODULES)
+        or not all(_pin(p) for p in (*INIT_SOURCE_PINS.values(), *INIT_REVIEW_PINS.values()))
+    ):
+        raise DemoRejected("Retained-world INIT producers remain unadopted", stage="init_unbound")
+    if endpoint == "init_prelude" and (
+        set(PRELUDE_SOURCE_PINS) != set(PRELUDE_MODULES)
+        or set(PRELUDE_REVIEW_PINS) != set(PRELUDE_MODULES)
+        or not all(_pin(p) for p in (*PRELUDE_SOURCE_PINS.values(), *PRELUDE_REVIEW_PINS.values()))
+    ):
+        raise DemoRejected("INIT prelude producers remain unadopted", stage="prelude_unbound")
     for key, name in MODULES.items():
         path = ROOT / _relative(name)
         if path.is_symlink() or not path.is_file() or snapshot.digest(path) != SOURCE_PINS[key]:
             raise DemoRejected("Reviewed source changed: " + key, stage="producer")
-    return Modules()
+    path = ROOT / _relative(EVIDENCE_MODULE)
+    if path.is_symlink() or not path.is_file() or snapshot.digest(path) != EVIDENCE_SOURCE_SHA256:
+        raise DemoRejected("Reviewed evidence source changed", stage="producer")
+    if endpoint != "seed":
+        for key, name in INIT_MODULES.items():
+            path = ROOT / _relative(name)
+            if (
+                path.is_symlink()
+                or not path.is_file()
+                or snapshot.digest(path) != INIT_SOURCE_PINS[key]
+            ):
+                raise DemoRejected("Reviewed INIT source changed: " + key, stage="producer")
+    if endpoint == "init_prelude":
+        for key, name in PRELUDE_MODULES.items():
+            path = ROOT / _relative(name)
+            if (
+                path.is_symlink()
+                or not path.is_file()
+                or snapshot.digest(path) != PRELUDE_SOURCE_PINS[key]
+            ):
+                raise DemoRejected("Reviewed INIT prelude source changed: " + key, stage="producer")
+    return Modules(endpoint)
+
+
+def _evidence_writer():
+    path = ROOT / _relative(EVIDENCE_MODULE)
+    if (
+        not _pin(EVIDENCE_SOURCE_SHA256)
+        or path.is_symlink()
+        or not path.is_file()
+        or snapshot.digest(path) != EVIDENCE_SOURCE_SHA256
+    ):
+        raise DemoRejected("Exact evidence transport unavailable", stage="evidence")
+    module = importlib.import_module(EVIDENCE_MODULE)
+    if sys.modules.get(EVIDENCE_MODULE) is not module or Path(module.__file__).resolve() != path:
+        raise DemoRejected("Actual frozen evidence origin required", stage="evidence")
+    return _function(module, "capture_writer")
 
 
 class Modules:
     """Lazy imports preserve native application bootstrap before parameter birth."""
 
+    def __init__(self, endpoint="seed"):
+        self.endpoint = endpoint
+
     def __getitem__(self, key):
-        name = MODULES[key]
+        if key in INIT_MODULES:
+            if self.endpoint not in ("init_setup", "init_prelude") or not _pin(
+                INIT_SOURCE_PINS[key]
+            ):
+                raise DemoRejected(
+                    "INIT producer unavailable in this endpoint", stage="init_unbound"
+                )
+            name, expected = INIT_MODULES[key], INIT_SOURCE_PINS[key]
+        elif key in PRELUDE_MODULES:
+            if self.endpoint != "init_prelude" or not _pin(PRELUDE_SOURCE_PINS[key]):
+                raise DemoRejected("INIT prelude producer unavailable", stage="prelude_unbound")
+            name, expected = PRELUDE_MODULES[key], PRELUDE_SOURCE_PINS[key]
+        else:
+            name, expected = MODULES[key], SOURCE_PINS[key]
         path = ROOT / _relative(name)
-        if path.is_symlink() or snapshot.digest(path) != SOURCE_PINS[key]:
+        if path.is_symlink() or snapshot.digest(path) != expected:
             raise DemoRejected("Selected producer changed: " + key, stage="producer")
         module = importlib.import_module(name)
         if sys.modules.get(name) is not module or Path(module.__file__).resolve() != path:
@@ -219,11 +366,14 @@ def _read_plan(path, expected):
             "auxiliary_configuration",
             "shared_writer_review",
             "flux_operator",
+            "endpoint",
             "policy",
             "held",
         }
         or value["kind"] != KIND
-        or value["source_plan"] != json.loads(json.dumps(source_plan()))
+        or type(value["endpoint"]) is not str
+        or value["endpoint"] not in ENDPOINTS
+        or value["source_plan"] != json.loads(json.dumps(source_plan(endpoint=value["endpoint"])))
         or value["flux_operator"] not in FLUX_MODES
         or type(value["flux_operator"]) is not str
         or value["policy"] != POLICY
@@ -425,6 +575,12 @@ def _retain(state, evidence, name, owner, module):
 
 def _execute(state, modules, plan, directory, evidence):
     """One complete source chain; private adapters are used only by blocked tests."""
+    if (
+        type(state.endpoint) is not str
+        or state.endpoint not in ENDPOINTS
+        or state.endpoint != plan.get("endpoint", "seed")
+    ):
+        raise ValueError("Exact declared demonstration endpoint required")
     callback = modules["callback"]
     state.callback = _call(
         state,
@@ -460,6 +616,7 @@ def _execute(state, modules, plan, directory, evidence):
         state.callback,
         directory / "geometry",
         enabled=True,
+        evidence_profile="seed_demo",
     )
     # The qualifier retains its own six-stage records. Its final GeometryOwner
     # is authenticated by the actual next public issuer, never by JSON.
@@ -493,8 +650,93 @@ def _execute(state, modules, plan, directory, evidence):
         state.requests.append((name, request))
         owner = _call(state, name, module.prepare, request, enabled=True)
         _retain(state, evidence, name, owner, module)
+    if state.endpoint != "seed":
+        owner = _init_setup(state, modules["init_setup"], owner, evidence)
+    if state.endpoint == "init_prelude":
+        owner = _init_prelude(state, modules["init_prelude"], owner, evidence)
     state.result, state.methods_completed = owner, True
     return owner
+
+
+def _init_setup(state, module, owner, evidence):
+    """Consume the issued endpoint once; keep raw history without rereading it."""
+    state.seed_phase = state.phase
+    state.seed_links = (*state.phase_links, state.phase.cache)
+    state.seed_trial = state.last_trial
+    request = _call(state, "init_setup_request", module.from_seed, owner, law_id=module.LAW_ID)
+    state.requests.append(("init_setup", request))
+    child = _call(state, "init_setup", module.prepare, request, enabled=True)
+    state.owners.append(("init_setup", child))
+    trial = child.trial
+    state.init_trial = trial
+    state.last_trial = trial
+    state.trials.append(("init_setup", trial))
+    phase = child.phase
+    state.init_phase = phase
+    old_p, old_cells, old_sim, old_dyna, old_callbacks, old_cache = state.seed_links
+    if (
+        phase is state.seed_phase
+        or phase.p is not state.parameters
+        or phase.p is not old_p
+        or phase.cells is not old_cells
+        or phase.callbacks is not old_callbacks
+        or phase.sim is old_sim
+        or phase.dyna is old_dyna
+        or phase.cache is old_cache
+        or any(value is None for value in (phase.sim, phase.dyna, phase.cache))
+        or trial.source_completed is not True
+        or trial.parent_identity != state.seed_trial.identity
+        or trial.parameter_record is None
+    ):
+        raise ValueError("Completed fresh INIT phase must retain exact p/Cells/callback/parent")
+    state.phase = phase
+    state.phase_links = (phase.p, phase.cells, phase.sim, phase.dyna, phase.callbacks)
+    state.init_links = (*state.phase_links, phase.cache)
+    _capture(state, evidence, "init_setup.record", module.trial_record(trial))
+    _capture(state, evidence, "init_setup.before", trial.before)
+    _capture(state, evidence, "init_setup.after", trial.after)
+    state.init_setup_completed = True
+    return child
+
+
+def _init_prelude(state, module, owner, evidence):
+    """Continue the issued INIT owner; never reopen it after its retirement."""
+    parent_trial = state.init_trial
+    request = _call(state, "init_prelude_request", module.from_init, owner, law_id=module.LAW_ID)
+    state.requests.append(("init_prelude", request))
+    child = _call(state, "init_prelude", module.prepare, request, enabled=True)
+    state.owners.append(("init_prelude", child))
+    trial = child.trial
+    state.prelude_trial = state.last_trial = trial
+    state.trials.append(("init_prelude", trial))
+    phase = child.phase
+    state.prelude_phase = phase
+    if (
+        not state.init_setup_completed
+        or phase is not state.init_phase
+        or phase is not state.phase
+        or any(
+            actual is not expected
+            for actual, expected in zip(
+                (phase.p, phase.cells, phase.sim, phase.dyna, phase.callbacks, phase.cache),
+                state.init_links,
+                strict=True,
+            )
+        )
+        or trial.source_completed is not True
+        or trial.parent_identity != parent_trial.identity
+    ):
+        raise ValueError("Completed INIT prelude must retain the exact phase, objects and parent")
+    _capture(state, evidence, "init_prelude.record", module.trial_record(trial))
+    _capture(state, evidence, "init_prelude.before", trial.before)
+    _capture(state, evidence, "init_prelude.after", trial.after)
+    # Trial retains the actual frames. The record names their identities;
+    # persist the original returned values without trying to serialize frames.
+    _capture(
+        state, evidence, "init_prelude.raw_returns", tuple(raw for _, raw in trial.raw_returns)
+    )
+    state.init_prelude_completed = True
+    return child
 
 
 def _profile_image_inputs(state, module):
@@ -556,6 +798,10 @@ def _finish(state, evidence, directory):
                 if state.methods_completed and state.primary is None
                 else "failed",
                 flux_operator=state.flux_operator,
+                endpoint=state.endpoint,
+                init_setup_completed=state.init_setup_completed,
+                init_prelude_completed=state.init_prelude_completed,
+                init_time_steps_completed=0,
                 original_flux_defect_repaired=False,
                 methods_completed=state.methods_completed,
                 stage=state.stage,
@@ -610,9 +856,11 @@ def run_demo(plan, directory, *, plan_sha256, enabled=False):
         raise DemoRejected("Each mode/attempt requires a fresh worker", stage="consumed")
     modules = _dependencies()
     declaration = _read_plan(plan, plan_sha256)
+    if declaration["endpoint"] != "seed":
+        modules = _dependencies(declaration["endpoint"])
     output, input_root = _validate_output(directory, declaration, modules["parameters"])
     _resources()
-    state = Execution(declaration["flux_operator"])
+    state = Execution(declaration["flux_operator"], endpoint=declaration["endpoint"])
     state.input_root = input_root
     _ATTEMPT = state
     _ACTIVE.append(state)
@@ -622,7 +870,8 @@ def run_demo(plan, directory, *, plan_sha256, enabled=False):
         output.mkdir(parents=True)
         from validation.betse.native_single_cell_prefix_qualification import Evidence
 
-        result = _run(state, modules, declaration, output, Evidence(output, sidecars=True), session)
+        evidence = Evidence(output, sidecars=True, capture_writer=_evidence_writer())
+        result = _run(state, modules, declaration, output, evidence, session)
     except BaseException as error:
         _fail(state, "run", error)
         result = None
@@ -653,6 +902,7 @@ def prepare(
     bootstrap_sha256,
     auxiliary_configuration,
     flux_operator,
+    endpoint="seed",
     shared_writer_review=None,
     extra_sources=(),
 ):
@@ -667,7 +917,7 @@ def prepare(
             raise DemoRejected(
                 "Only checkout execution sources may extend the image", stage="source_roster"
             )
-    modules = _dependencies()
+    modules = _dependencies(endpoint)
     if Path(repository).resolve() != ROOT:
         raise DemoRejected("One-way canonical checkout preparation required", stage="checkout")
     parameter = modules["parameters"]
@@ -676,7 +926,10 @@ def prepare(
         TEST,
         RUNNER,
         INPUT_METADATA,
+        _relative(EVIDENCE_MODULE),
         *(_relative(name) for name in MODULES.values()),
+        *(_relative(name) for name in INIT_MODULES.values() if endpoint != "seed"),
+        *(_relative(name) for name in PRELUDE_MODULES.values() if endpoint == "init_prelude"),
         *extra_sources,
     )
     value = _function(parameter, "prepare")(
@@ -692,7 +945,7 @@ def prepare(
         directory / "demo-plan.json",
         dict(
             kind=KIND,
-            source_plan=source_plan(),
+            source_plan=source_plan(endpoint=endpoint),
             snapshot_sha256=snapshot.digest(directory / "source/SNAPSHOT.json"),
             parameter_packet=str(directory),
             parameter_sha256=snapshot.digest(directory / "inputs.json"),
@@ -701,6 +954,7 @@ def prepare(
             auxiliary_configuration=auxiliary_configuration,
             shared_writer_review=str(shared_writer_review),
             flux_operator=flux_operator,
+            endpoint=endpoint,
             policy=dict(POLICY),
             held=True,
         ),

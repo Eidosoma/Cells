@@ -21,7 +21,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_modulators as previous
 
 LAW_ID = "betse_native_parameter_colormap_input_source_boundary@1"
-PREVIOUS_SHA256 = "18fa6a451c4dfd7951d6d699e1ce6d3332a8754e126eba40adc18acc453d2dc2"
+PREVIOUS_SHA256 = "1f2fcf10ffc0a81d82e05f85e2eb658af6ee4e563daeb79a7fdde0862e750417"
 COLORMAP_SHA256 = "d19b467347ea69ea090241dbee61735bcd57f77777ea3a086c41cef5dcd3f820"
 START, STOP = 135, 139
 _CONTEXT_MAX_BYTES, _CONTEXT_MAX_NODES, _CONTEXT_MAX_CODES = 4 * 2**20, 100000, 100000

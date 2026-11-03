@@ -33,8 +33,10 @@ from cells.processes import betse_native_seed_world_poisson as previous
 
 LAW_ID = "betse_same_completed_seed_world_whole_init_core@1"
 RELEASE = "CELLS_NATIVE_SEED_INIT_CORE_RELEASED"
-PARENT_SOURCE_SHA256 = PARENT_REVIEW_SHA256 = None
-COORDINATOR_SOURCE_SHA256 = COORDINATOR_REVIEW_SHA256 = None
+PARENT_SOURCE_SHA256 = "39539d52b750fd75787a2897efc564ad4ca886381ab09acf1560159aa815ba33"
+PARENT_REVIEW_SHA256 = "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb"
+COORDINATOR_SOURCE_SHA256 = "025d28d2a5917f053ab7a2db1121c103d479ac3238e5ebd7b4b2df149b426127"
+COORDINATOR_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 LITERAL_SHA256 = "e5583ce17462e47e78b47556253429ecdabfc29ebb509f166c54cb283bc2ed1c"
 PROPOSED_CLAIM = "_claim_for_seed_init_core"
 PROPOSED_CHECK = "_check_seed_init_core_authority"
@@ -82,6 +84,7 @@ CELL_READS = (
 )
 MAX_WORK = 100000
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
+_FORWARDED = WeakKeyDictionary()
 _ACTIVE, _FAILED, _LOCK = [], (), RLock()
 _LAST_FAILED = None
 _BASE, _PREFIX, _CORE, _LITERAL = (
@@ -502,6 +505,20 @@ def _bindings(context):
         _wrapper_guard,
         _guard,
         _check,
+        _check_fields,
+        _profiles_route,
+        _profile_ancestor_members,
+        _profile_ancestor_bindings,
+        _profile_ancestor_edges,
+        _check_profile_ancestor_edges,
+        _profile_lease_views,
+        _profile_lease_values,
+        _profile_lease_graph,
+        _capture_profile_lease,
+        _claim_for_seed_profiles,
+        _check_seed_profiles_authority,
+        _claim_profile_junction_permission,
+        _check_profile_lease_projection,
         _record,
         _helper,
         _account.__wrapped__,
@@ -532,6 +549,7 @@ def _bindings(context):
         _CONSUMED,
         _RETIRED,
         _ISSUED,
+        _FORWARDED,
         _ACTIVE,
         _LOCK,
         context.api,
@@ -618,6 +636,7 @@ def _resolved_bindings(functions):
 
 def _check(context):
     _guard(context) if context.active else None
+    _check_fields(context)
     if (
         _ready() is not context.api
         or context.parent_check(context) is not context.parent
@@ -647,6 +666,35 @@ def _check(context):
     previous._same(_bindings(context), context.bindings)
     if _immutable(context) != context.immutable:
         raise ValueError("Core changed a completed-world/prefix field or global MT")
+
+
+def _check_fields(context):
+    """Registry-only Simulator projection permission; never stale parent caches."""
+    _bootstrap(context)
+    if (
+        type(context.request) is not Request
+        or _REQUESTS.get(context.request) is not context.refs
+        or _CONSUMED.get(context.request) is not context
+        or _RETIRED.get(context.request.world_owner) is not context
+        or context.invalid
+        or context.thread != get_ident()
+        or context.parent is not context.refs[0]
+        or context.parent.trial is not context.refs[1]
+        or context.phase is not context.parent.phase
+        or context.phase.sim is not context.sim
+        or context.phase.p is not context.p
+        or context.phase.cells is not context.cells
+        or type(context.original_sim_fields) is not tuple
+    ):
+        raise ValueError("Actual irreversible same-Simulator core ownership changed")
+    names = tuple(vars(context.sim))
+    if names[: len(context.original_sim_fields)] != context.original_sim_fields:
+        raise ValueError("Original Simulator field roster was removed or reordered")
+    if not context.entered and names != context.original_sim_fields:
+        raise ValueError("Simulator fields appeared before actual core body entry")
+    if tuple(context.entered) not in ((), ("init_core",), ("init_core", "initDenv")):
+        raise ValueError("Unowned Simulator body entry roster")
+    return names
 
 
 def _namespace(context):
@@ -1550,6 +1598,7 @@ def prepare(request, *, enabled=False):
                 raise ValueError("Final original observer identities not safely restored")
             context.active = False
             owner = object.__new__(InitCoreOwner)
+            context.owner = owner
             _ISSUED[owner] = context
             return owner
         except BaseException as error:
@@ -1617,6 +1666,13 @@ def _authority(owner):
     if type(owner) is not InitCoreOwner or owner not in _ISSUED:
         raise InitCoreRejected("Actual issued core child required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "profiles"):
+        raise InitCoreRejected(
+            "Core epoch was irreversibly forwarded to profiles",
+            stage="forwarded",
+            trial=context.trial,
+            partial=context,
+        )
     if context.active or context.invalid or context.validating:
         raise InitCoreRejected("Core child unavailable", stage="owner")
     context.validating = True
@@ -1646,6 +1702,413 @@ def _authority(owner):
     finally:
         context.validating = False
     return context
+
+
+def _profiles_route(parent):
+    module = _ready()._seed_init_profiles_api()
+    child, owner = getattr(parent, "profiles", None), getattr(parent, "owner", None)
+    if (
+        child is None
+        or owner is None
+        or _ISSUED.get(owner) is not parent
+        or _FORWARDED.get(owner) is not child
+        or parent.active
+        or parent.invalid
+        or child.invalid
+        or type(child.request) is not module.Request
+        or child.request.core_owner is not owner
+        or module._REQUESTS.get(child.request) is not child.refs
+        or module._CONSUMED.get(child.request) is not child
+        or module._RETIRED.get(owner) is not child
+        or child.parent is not parent
+        or child.refs[0] is not parent
+        or child.refs[1] is not parent.trial
+        or child.phase is not parent.phase
+        or child.sim is not parent.sim
+        or child.p is not parent.p
+        or child.cells is not parent.cells
+        or child.grid is not parent.grid
+        or child.dyna is not parent.phase.dyna
+        or child.thread != parent.thread
+        or child.thread != get_ident()
+        or tuple(child.entries) != ("wrapper_guard", "dispatch", "picker_dispatch")
+        or any(child.entries[name] is not getattr(module, "_" + name) for name in child.entries)
+    ):
+        raise ValueError("Actual core/profile issuance or retirement edge changed")
+    return child, module
+
+
+def _profile_ancestor_members(parent):
+    operators = parent.parent
+    geometry, lifecycle = operators.parent, operators.parent.parent
+    constructor, image = lifecycle.parent, lifecycle.parent.parent
+    return (
+        (previous, operators),
+        (previous.previous, geometry),
+        (previous.previous.previous, lifecycle),
+        (_BASE, constructor),
+        (_BASE.image, image),
+        (_PREFIX, image.parent),
+        (sys.modules[__name__], parent),
+    )
+
+
+def _profile_ancestor_bindings(parent):
+    """Reauthenticate real code/issuance links; never invoke a retired state validator."""
+    operators, geometry = parent.parent, parent.parent.parent
+    lifecycle, constructor = geometry.parent, geometry.parent.parent
+    image, prefix = constructor.parent, constructor.parent.parent
+    api, construction = parent.api, parent.assembly.world_transition
+    _bootstrap(parent)
+    if (
+        previous._seed_core_route(operators)[0] is not parent
+        or previous.previous._poisson_route(geometry)[0] is not operators
+        or previous.previous.previous._geometry_route(lifecycle)[0] is not geometry
+        or _BASE._lifecycle_route(constructor)[0] is not lifecycle
+        or _BASE.image._mesh_route(image) is not constructor
+        or _PREFIX._voronoi_route(prefix) is not image
+    ):
+        raise ValueError("Original prefix/image/mesh/lifecycle/geometry chain changed")
+    api._world_parameter_authority(construction)
+    api._world_live_aliases(construction)
+    api._compare_bindings(construction)
+    api._world_stage_authority(construction.evidence[-1].authority)
+    _BASE.image._check_mesh_authority(constructor)
+    for module, context, function in (
+        (previous, operators, "_bindings"),
+        (previous.previous, geometry, "_binding"),
+        (previous.previous.previous, lifecycle, "_bindings"),
+        (_BASE, constructor, "_bindings"),
+    ):
+        _same = previous._same
+        _same(getattr(module, function)(context), context.bindings)
+    previous._same(_bindings(parent), parent.bindings)
+    _complete(parent)
+
+
+def _profile_ancestor_edges(parent):
+    """Strong references to existing registry objects and their exact issued entries."""
+    edges = []
+    members = list(_profile_ancestor_members(parent))
+    world = parent.assembly.world_transition
+    members.extend((module, module._WORLD[world.request]) for module in world.api.stages)
+    attributes = (
+        "request",
+        "refs",
+        "trial",
+        "parent",
+        "phase",
+        "p",
+        "cells",
+        "sim",
+        "mesh",
+        "mask",
+        "rng",
+        "grid",
+        "objects",
+        "holders",
+        "projector",
+        "entries",
+        "runtime_types",
+    )
+    registry_names = (
+        "_REQUESTS",
+        "_CONSUMED",
+        "_RETIRED",
+        "_ISSUED",
+        "_FORWARDED",
+        "_OBJECTS",
+        "_WORLD",
+        "_MESHES",
+        "_GRIDS",
+        "_MESH_ANCESTRY",
+        "_TAIL_ROUTES",
+    )
+    for module, context in members:
+        roots = [context, getattr(context, "request", None), getattr(context, "refs", None)]
+        roots.extend(value for _, value in getattr(context, "objects", ()))
+        fields = tuple(
+            (name, getattr(context, name)) for name in attributes if hasattr(context, name)
+        )
+        registries = []
+        for name in registry_names:
+            registry = vars(module).get(name)
+            if registry is None:
+                continue
+            records = []
+            for key, value in registry.items():
+                target = value[0] if type(value) is tuple and value else value
+                if target is context or any(key is root or value is root for root in roots):
+                    records.append((key, value, tuple(value) if type(value) is tuple else ()))
+            registries.append((name, registry, tuple(records)))
+        edges.append((module, context, fields, tuple(registries)))
+    return tuple(edges)
+
+
+def _check_profile_ancestor_edges(lease):
+    for module, context, fields, registries in lease.edges:
+        if any(getattr(context, name) is not value for name, value in fields):
+            raise ValueError("Retained original context/request/trial/holder identity changed")
+        for name, registry, records in registries:
+            if vars(module).get(name) is not registry:
+                raise ValueError("Original inherited issuance registry replaced")
+            for key, value, elements in records:
+                if registry.get(key) is not value or (
+                    type(value) is tuple
+                    and (
+                        len(value) != len(elements)
+                        or any(a is not b for a, b in zip(value, elements, strict=True))
+                    )
+                ):
+                    raise ValueError("Original inherited issuance/retirement tuple changed")
+
+
+def _profile_lease_views(parent, profile, *, junctions):
+    module = parent.api._seed_init_profiles_api()
+    current, expected = _profiles_route(parent)
+    if current is not profile or expected is not module:
+        raise ValueError("Different actual profile continuation")
+    lease = parent.profile_lease
+    view, fields = lease.views[int(junctions)]
+    for (role, actual), holder, names, target in zip(
+        lease.objects, lease.holders, lease.names, fields, strict=True
+    ):
+        if vars(actual) is not holder:
+            raise ValueError("Original source object's attribute dictionary was replaced")
+        current_names = tuple(holder)
+        if actual is parent.phase.dyna:
+            module._check_fields(profile)
+        elif actual is parent.cells and junctions:
+            child, issuer = module._junctions_route(profile)
+            issuer._check_fields(child)
+        elif current_names != names:
+            raise ValueError("An unowned source field was added, removed or reordered: " + role)
+        target.clear()
+        target.update(
+            (name, holder[name])
+            for name in names
+            if not (actual is parent.cells and junctions and name in lease.junction_fields)
+        )
+    view.fields = fields
+    return view
+
+
+def _profile_lease_values(parent, profile, *, junctions):
+    view = _profile_lease_views(parent, profile, junctions=junctions)
+    projected = previous._project(parent.parent, view.fields)
+    buffers = [("Dm_cells", profile.dm)]
+    if parent.profile_lease.percent:
+        buffers.append(("cell_i", profile.cell_i))
+
+    def observe(value):
+        for role, actual in buffers:
+            if value is actual:
+                return dict(
+                    source_owned_buffer=role,
+                    dtype=actual.dtype.str,
+                    shape=actual.shape,
+                    strides=actual.strides,
+                    writeable=actual.flags.writeable,
+                    pointer=actual.__array_interface__["data"][0],
+                )
+        if type(value) is dict:
+            return {key: observe(item) for key, item in value.items()}
+        if type(value) is list:
+            return [observe(item) for item in value]
+        if type(value) is tuple:
+            return tuple(observe(item) for item in value)
+        return value
+
+    return previous._scope(parent.parent).snapshot(observe(projected))
+
+
+def _profile_lease_graph(parent, profile, *, junctions):
+    view = _profile_lease_views(parent, profile, junctions=junctions)
+    return previous._scope(parent.parent).graph(view, view, parent.profile_lease.tape)
+
+
+def _capture_profile_lease(parent, profile):
+    parent.api._seed_init_profiles_api()
+    dyna = parent.assembly.world_transition.api.stages[2]
+    origin = dyna._OBJECTS.get(profile.dyna)
+    if origin is None or origin.handler is not profile.dyna or origin.phase is not parent.phase:
+        raise ValueError("Actual preborn same-parameter handler required")
+    percent = any(
+        role == "TissuePickerPercent" and any(item.picker is actual for _, item in profile.profiles)
+        for role, actual in origin.objects
+    )
+    objects = list(parent.parent.parent.objects)
+    for role, actual in (
+        ("cells", parent.cells),
+        ("simulator", parent.sim),
+        ("handler", profile.dyna),
+        ("mesh", parent.mesh),
+        ("grid", parent.grid),
+    ):
+        if not any(item is actual for _, item in objects):
+            objects.append((role, actual))
+    objects = tuple((role, actual) for role, actual in objects if hasattr(actual, "__dict__"))
+    views = []
+    for _ in (False, True):
+        fields = [{} for _ in objects]
+        views.append((SimpleNamespace(objects=objects, fields=fields), fields))
+    # Both projections start from the SAME actual sealed pre-profile state.
+    # The second is usable only after the typed future junction retirement.
+    junction_fields = parent.api._seed_junctions_api().STORES
+    lease = SimpleNamespace(
+        parent=parent,
+        profile=profile,
+        origin=origin,
+        percent=percent,
+        objects=objects,
+        holders=tuple(vars(actual) for _, actual in objects),
+        names=tuple(tuple(vars(actual)) for _, actual in objects),
+        views=tuple(views),
+        tape=SimpleNamespace(rng=parent.rng, events=(), draws=(), locals={}),
+        junction_fields=junction_fields,
+        edges=_profile_ancestor_edges(parent),
+    )
+    parent.profile_lease = lease
+    # No junction source/owner exists yet. Populate the immutable second
+    # projection directly from the same holders; use requires the real route.
+    for target, holder, names in zip(views[1][1], lease.holders, lease.names, strict=True):
+        target.update(
+            (name, holder[name])
+            for name in names
+            if holder is not vars(parent.cells) or name not in junction_fields
+        )
+    lease.values = (_profile_lease_values(parent, profile, junctions=False), None)
+    lease.graphs = (_profile_lease_graph(parent, profile, junctions=False), None)
+    # The optional descendant projection is sealed lazily at its real claim,
+    # after first checking the current non-junction lease. No parent reset.
+    return lease
+
+
+def _claim_for_seed_profiles(owner, *, expected, transition, entries):
+    module = _ready()._seed_init_profiles_api()
+    caller = sys._getframe(1)
+    with _LOCK:
+        parent = _ISSUED.get(owner) if type(owner) is InitCoreOwner else None
+        if (
+            parent is None
+            or parent.trial is not expected
+            or caller.f_code is not module.prepare.__code__
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+        ):
+            raise InitCoreRejected("Actual active profile issuer required", stage="entry")
+        if owner in _FORWARDED or hasattr(parent, "profiles"):
+            raise InitCoreRejected("Core profile epoch consumed", stage="consumed")
+        if (
+            parent.active
+            or parent.validating
+            or parent.invalid
+            or parent.owner is not owner
+            or transition.driver_frame is not caller
+            or transition.parent is not parent
+            or type(transition.request) is not module.Request
+            or transition.request.core_owner is not owner
+            or module._REQUESTS.get(transition.request) is not transition.refs
+            or module._CONSUMED.get(transition.request) is not transition
+            or module._RETIRED.get(owner) is not transition
+            or transition.refs[0] is not parent
+            or transition.refs[1] is not expected
+            or any(
+                getattr(transition, name) is not getattr(parent, name)
+                for name in ("phase", "p", "cells", "sim", "grid")
+            )
+            or transition.dyna is not parent.phase.dyna
+            or transition.thread != parent.thread
+            or transition.thread != get_ident()
+            or entries is not transition.entries
+            or tuple(entries) != ("wrapper_guard", "dispatch", "picker_dispatch")
+            or any(entries[name] is not getattr(module, "_" + name) for name in entries)
+        ):
+            parent.invalid = transition.invalid = True
+            raise ValueError("Actual same-phase core/profile entry or ancestry changed")
+        parent.profiles = transition
+        try:
+            _FORWARDED[owner] = transition
+            _check(parent)
+            _complete(parent)
+            if (
+                parent.trial.identity != _digest(trial_record(parent.trial))
+                or parent.trial.cache.identity != _snapshot(parent).identity
+            ):
+                raise ValueError("Original complete core trial/cache changed before profiles")
+            graph = _graph(parent)
+            previous._same(graph[0], parent.graph[0])
+            if graph[1] != parent.graph[1]:
+                raise ValueError("Original complete core reference edges changed")
+            _capture_profile_lease(parent, transition)
+        except BaseException:
+            parent.invalid = transition.invalid = True
+            raise
+        return parent
+
+
+def _check_seed_profiles_authority(transition):
+    parent = transition.parent
+    if (
+        _profiles_route(parent)[0] is not transition
+        or parent.profile_lease.profile is not transition
+    ):
+        raise ValueError("Different actual profile continuation/lease")
+    lease = parent.profile_lease
+    _check_profile_ancestor_edges(lease)
+    _profile_ancestor_bindings(parent)
+    junctions = hasattr(transition, "junctions")
+    if junctions:
+        _ready()._seed_init_profiles_api()._junctions_route(transition)
+    index = int(junctions)
+    _check_profile_lease_projection(parent, transition, index)
+    return parent
+
+
+def _check_profile_lease_projection(parent, profile, index):
+    lease = parent.profile_lease
+    if index not in (0, 1) or lease.values[index] is None or lease.graphs[index] is None:
+        raise ValueError("No sealed actual junction continuation permission")
+    if (
+        _profile_lease_values(parent, profile, junctions=bool(index)).identity
+        != lease.values[index].identity
+    ):
+        raise ValueError("Profiles changed an immutable inherited value/buffer layout")
+    graph = _profile_lease_graph(parent, profile, junctions=bool(index))
+    previous._same(graph[0], lease.graphs[index][0])
+    if graph[1] != lease.graphs[index][1]:
+        raise ValueError("Profiles changed an inherited object/alias/reference edge")
+
+
+def _claim_profile_junction_permission(profile, junction):
+    """One typed handoff selects a new observation projection, never old source data."""
+    parent = profile.parent
+    module = _ready()._seed_init_profiles_api()
+    issuer = _ready()._seed_junctions_api()
+    caller = sys._getframe(1)
+    if (
+        caller.f_code is not module._claim_for_seed_junctions.__code__
+        or caller.f_locals.get("transition") is not junction
+        or _profiles_route(parent)[0] is not profile
+        or module._junctions_route(profile)[0] is not junction
+        or not issuer._ACTIVE
+        or issuer._ACTIVE[-1] is not junction
+        or junction.entered
+        or junction.method_returns
+        or parent.profile_lease.values[1] is not None
+        or parent.profile_lease.graphs[1] is not None
+    ):
+        raise ValueError("Actual fresh profile/junction transition required")
+    lease = parent.profile_lease
+    _check_profile_ancestor_edges(lease)
+    _profile_ancestor_bindings(parent)
+    _check_profile_lease_projection(parent, profile, 0)
+    # Both new observations precede the first original junction body/helper.
+    # A failed observation leaves the already-consumed parents consumed.
+    lease.junction_permission = junction
+    values = _profile_lease_values(parent, profile, junctions=True)
+    graph = _profile_lease_graph(parent, profile, junctions=True)
+    lease.values, lease.graphs = (lease.values[0], values), (lease.graphs[0], graph)
 
 
 def require_INIT(owner):

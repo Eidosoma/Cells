@@ -24,7 +24,9 @@ from cells.processes import betse_native_seed_world_geometry_source as source
 MODE = "fresh_seed_same_caller_geometry_grid_mask"
 LAW_ID = "betse_same_seed_native_caller_through_make_maskM@1"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_GEOMETRY_RELEASED"
-SOURCE_SHA256 = PARENT_SOURCE_SHA256 = PARENT_REVIEW_SHA256 = None
+SOURCE_SHA256 = "178af651cd36274ddaae81d36ae8ff70cb8a585b5abe747a35d659a8eb983abc"
+PARENT_SOURCE_SHA256 = "2ad275b33cd123f0cf266d262dcee5609924b72a91c6c8b86328bed1116eac1e"
+PARENT_REVIEW_SHA256 = "aa5cddf4c36998d3a99bcc576af94ba6fb4993c020de402bdd6ae8b134613f6e"
 PARENT_MODULE = "cells.processes.betse_native_seed_voronoi_lifecycle"
 METHODS = (
     "cell_index",
@@ -70,6 +72,7 @@ PROPOSED_CHECK = "_check_world_geometry_authority"
 PROPOSED_ROUTER = "_world_seed_geometry_api"
 MAX_WORK = previous.MAX_WORK
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED, _GRIDS = (WeakKeyDictionary() for _ in range(5))
+_FORWARDED = WeakKeyDictionary()
 _ACTIVE, _LOCK = [], RLock()
 _LITERAL_FILE, _PARENT_FILE = Path(source.__file__), Path(previous.__file__)
 _LITERAL_CLASS = source.SeedWorldGeometry
@@ -360,6 +363,10 @@ def _check_fields(context):
     ):
         raise ValueError("Actual geometry retirement/Cells link changed")
     fields = tuple(vars(context.cells))
+    if hasattr(context, "poisson"):
+        child, module = _poisson_route(context)
+        module._check_fields(child)
+        return fields
     old = context.original_names
     if fields[: len(old)] != old or any(
         name not in context.plan["caller_fields"] for name in fields[len(old) :]
@@ -377,7 +384,7 @@ def _core_values(context):
                     context,
                     {
                         k: v
-                        for k, v in vars(actual).items()
+                        for k, v in context.api._world_sim_fields(context, actual).items()
                         if actual is not context.cells or k in context.original_names
                     },
                 ),
@@ -393,7 +400,7 @@ def _core_graph(context):
         target.update(
             {
                 k: v
-                for k, v in vars(actual).items()
+                for k, v in context.api._world_sim_fields(context, actual).items()
                 if actual is not context.cells or k in context.original_names
             }
         )
@@ -447,6 +454,7 @@ def _binding(context):
         _CONSUMED,
         _RETIRED,
         _ISSUED,
+        _FORWARDED,
         _GRIDS,
         _ACTIVE,
         _LOCK,
@@ -936,6 +944,11 @@ def _grid_factory(context, frame):
 
 
 def _grid_call(context, name, delegate, actual, args, kwargs, wrapper):
+    if hasattr(context, "poisson"):
+        child, module = _poisson_route(context)
+        if name != "makeLaplacian" or actual is not context.grid:
+            module._reject(child, None, "Grid method outside actual Poisson continuation")
+        return child.entries["Grid.makeLaplacian"](child, delegate, actual, args, kwargs, wrapper)
     row = _attempt(context, "Grid." + name, wrapper, "wrapper_dispatch")
     _guard(context)
     if (
@@ -1572,6 +1585,13 @@ def _authority(owner):
     if type(owner) is not GeometryOwner or owner not in _ISSUED:
         raise GeometryRejected("Actually issued geometry child required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "poisson"):
+        raise GeometryRejected(
+            "Geometry epoch was irreversibly consumed",
+            stage="forwarded",
+            trial=context.trial,
+            partial=context,
+        )
     if context.active or context.validating or context.invalid:
         _reject(context, None, "Unavailable geometry child")
     context.validating = True
@@ -1592,6 +1612,109 @@ def _authority(owner):
     finally:
         context.validating = False
     return context
+
+
+def _claim_for_world_poisson(owner, *, expected, transition, entries):
+    module = _ready()._world_seed_poisson_api()
+    caller = sys._getframe(1)
+    with _LOCK:
+        if (
+            caller.f_code is not module.prepare.__code__
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+            or type(owner) is not GeometryOwner
+            or _ISSUED.get(owner) is not expected
+        ):
+            raise GeometryRejected("Actual active Poisson issuer required", stage="entry")
+        parent = expected
+        if owner in _FORWARDED or hasattr(parent, "poisson"):
+            raise GeometryRejected("Geometry Poisson epoch consumed", stage="consumed")
+        if (
+            parent.active
+            or parent.invalid
+            or parent.validating
+            or parent.owner is not owner
+            or transition.driver_frame is not caller
+            or transition.parent is not parent
+            or type(transition.request) is not module.Request
+            or module._REQUESTS.get(transition.request) is not transition.refs
+            or module._CONSUMED.get(transition.request) is not transition
+            or module._RETIRED.get(owner) is not transition
+            or transition.request.geometry_owner is not owner
+            or transition.refs[0] is not parent
+            or transition.refs[1] is not parent.trial
+            or any(
+                getattr(transition, name) is not getattr(parent, name)
+                for name in ("phase", "p", "cells", "mesh", "mask", "rng", "grid")
+            )
+            or transition.thread != parent.thread
+            or transition.thread != get_ident()
+            or entries is not transition.entries
+            or tuple(entries) != ("Grid.makeLaplacian",)
+            or entries["Grid.makeLaplacian"] is not module._grid_call
+        ):
+            parent.invalid = transition.invalid = True
+            raise ValueError("Original same-caller geometry/Poisson claim required")
+        parent.poisson = transition
+        try:
+            _FORWARDED[owner] = transition
+            _check(parent)
+            if (
+                parent.trial.source_completed is not True
+                or parent.trial.identity != _digest(trial_record(parent.trial))
+                or parent.trial.cache.identity != _snapshot(parent).identity
+            ):
+                raise ValueError("Original geometry seal changed before Poisson")
+            graph = _graph(parent)
+            _same(graph[0], parent.graph[0])
+            if graph[1] != parent.graph[1] or _poisson_route(parent)[0] is not transition:
+                raise ValueError("Original geometry graph/retirement changed")
+        except BaseException:
+            parent.invalid = transition.invalid = True
+            raise
+        return parent
+
+
+def _poisson_route(parent):
+    module = _ready()._world_seed_poisson_api()
+    child, owner = getattr(parent, "poisson", None), getattr(parent, "owner", None)
+    if (
+        child is None
+        or owner is None
+        or _ISSUED.get(owner) is not parent
+        or _FORWARDED.get(owner) is not child
+        or parent.active
+        or parent.invalid
+        or child.invalid
+        or child.parent is not parent
+        or type(child.request) is not module.Request
+        or child.request.geometry_owner is not owner
+        or module._REQUESTS.get(child.request) is not child.refs
+        or module._CONSUMED.get(child.request) is not child
+        or module._RETIRED.get(owner) is not child
+        or child.refs[0] is not parent
+        or child.refs[1] is not parent.trial
+        or any(
+            getattr(child, name) is not getattr(parent, name)
+            for name in ("phase", "p", "cells", "mesh", "mask", "rng", "grid")
+        )
+        or child.thread != parent.thread
+        or child.thread != get_ident()
+        or tuple(child.entries) != ("Grid.makeLaplacian",)
+        or child.entries["Grid.makeLaplacian"] is not module._grid_call
+    ):
+        raise ValueError("Actual geometry/Poisson issuance or retirement changed")
+    return child, module
+
+
+def _check_world_poisson_authority(transition):
+    parent = transition.parent
+    if _poisson_route(parent)[0] is not transition:
+        raise ValueError("Different actual Poisson transition")
+    _check(parent)
+    if parent.trial is not transition.refs[1] or not parent.trial.source_completed:
+        raise ValueError("Retained actual geometry trial changed")
+    return parent
 
 
 def require_Poisson(owner):

@@ -19,7 +19,7 @@ from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 from threading import RLock, get_ident
-from types import FunctionType, SimpleNamespace
+from types import CellType, FunctionType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_single_cell_caller_lattice as callers
@@ -268,7 +268,97 @@ def _surface(cls):
                     result += list(aliases._atoms(getattr(type(value), method, None)))
             if isinstance(value, _Descriptor):
                 result += [value.native, value.name]
+            if name == "make_list":
+                function = value.__func__ if isinstance(value, classmethod) else value
+                if type(function) is FunctionType:
+                    result += list(_factory_atoms(function))
     return tuple(result)
+
+
+def _factory_atoms(function):
+    """Bind the decorator's actual defaults/delegate, not only its outer code."""
+    seen, atoms = set(), []
+
+    def visit(value):
+        atoms.append(value)
+        if type(value) is not FunctionType or id(value) in seen:
+            return
+        seen.add(id(value))
+        if len(seen) > 128:
+            raise ValueError("Bounded factory callable graph exceeded")
+        atoms.extend((value.__code__, value.__globals__, value.__defaults__, value.__kwdefaults__))
+        visit(value.__globals__.get("YamlList"))
+        for item in value.__defaults__ or ():
+            visit(item)
+        for key, item in (value.__kwdefaults__ or {}).items():
+            atoms.append(key)
+            visit(item)
+        atoms.append(value.__closure__)
+        for cell in value.__closure__ or ():
+            atoms.append(cell)
+            visit(cell.cell_contents)
+        visit(vars(value).get("__wrapped__"))
+
+    visit(function)
+    return tuple(atoms)
+
+
+def _copy_factory(original, constructor):
+    """Keep decorator checks while redirecting only the owned list constructor.
+
+    Beartype stores its delegate in keyword defaults. Copying only the outer
+    CodeType either loses those arguments or calls the unredirected original
+    body. Clone the bounded wrapped chain and its exact delegate references;
+    all source functions, cells, defaults and module namespaces stay untouched.
+    """
+    chain, function = [], original
+    while function is not None:
+        if type(function) is not FunctionType or function in chain or len(chain) >= 16:
+            raise ValueError("Exact acyclic Python factory wrapper chain required")
+        chain.append(function)
+        function = vars(function).get("__wrapped__")
+    copies, cells = {}, {}
+    for function in reversed(chain):
+        closure = None
+        if function.__closure__ is not None:
+            closure = []
+            for cell in function.__closure__:
+                if any(cell.cell_contents is item for item in chain):
+                    pair = cells.setdefault(id(cell), (cell, CellType()))
+                    closure.append(pair[1])
+                else:
+                    closure.append(cell)
+            closure = tuple(closure)
+        copies[function] = FunctionType(
+            function.__code__,
+            dict(function.__globals__, YamlList=constructor),
+            function.__name__,
+            function.__defaults__,
+            closure,
+        )
+
+    def copied(value):
+        return copies[value] if type(value) is FunctionType and value in copies else value
+
+    for old_cell, new_cell in cells.values():
+        new_cell.cell_contents = copied(old_cell.cell_contents)
+    for function, clone in copies.items():
+        if function.__defaults__ is not None:
+            clone.__defaults__ = tuple(copied(value) for value in function.__defaults__)
+        if function.__kwdefaults__ is not None:
+            clone.__kwdefaults__ = {
+                key: copied(value) for key, value in function.__kwdefaults__.items()
+            }
+        clone.__dict__.update(vars(function))
+        if "__wrapped__" in vars(function):
+            clone.__wrapped__ = copied(function.__wrapped__)
+        clone.__annotations__ = dict(function.__annotations__)
+        clone.__qualname__, clone.__module__, clone.__doc__ = (
+            function.__qualname__,
+            function.__module__,
+            function.__doc__,
+        )
+    return copies[original]
 
 
 def _native_bindings(context):
@@ -306,6 +396,8 @@ def _bindings():
                 _bindings,
                 _native_bindings,
                 _surface,
+                _factory_atoms,
+                _copy_factory,
                 _invoke,
                 _native_call,
                 _make,
@@ -512,19 +604,10 @@ def _runtime_type(context, name):
     # only that constructor to the owned subclass, without patching the module.
     if hasattr(native, "make_list"):
         original = native.make_list.__func__
+        delegate = _copy_factory(original, lambda *x, **y: _make(context, "YamlList", *x, **y))
 
         def make_list(cls, *a, **k):
             _guard(context)
-            delegate = FunctionType(
-                original.__code__,
-                dict(
-                    original.__globals__,
-                    YamlList=lambda *x, **y: _make(context, "YamlList", *x, **y),
-                ),
-                original.__name__,
-                original.__defaults__,
-                original.__closure__,
-            )
             return _native_call(context, name + ".make_list", delegate, cls, *a, **k)
 
         namespace["make_list"] = classmethod(make_list)

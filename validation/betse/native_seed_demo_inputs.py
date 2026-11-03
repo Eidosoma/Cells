@@ -23,7 +23,7 @@ KIND = "cells.original_betse_seed_demo_input_pair@1"
 MODES = ("original", "disabled")
 MAX_FILES, MAX_BYTES, MAX_FILE_BYTES = 512, 16 * 2**20, 8 * 2**20
 BUNDLE_SHA256 = "a46d83ac79195a2e15078feccd5e0fc62804ca1976042cc9516c30a9f859db27"
-PARAMETER_METADATA_SHA256 = "bb8d28c473299e111127bb109e1f956a35a4d4fe4e3ec8d4344d07273882325f"
+PARAMETER_METADATA_SHA256 = "9ab32160019edaa0ab0fa49bf8ae64fbe1cb4baba87ff1bd99d16e9f978b07a7"
 CORE = {
     "sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
     "extra_configs/expression_data.yaml": (

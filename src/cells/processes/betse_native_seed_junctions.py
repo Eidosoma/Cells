@@ -10,6 +10,7 @@ import ast
 import builtins
 import copy
 import hashlib
+import importlib
 import os
 import sys
 from contextlib import contextmanager
@@ -27,11 +28,23 @@ from cells.processes import betse_post_cut_mesh_contact_source as vector_source
 
 LAW_ID = "betse_same_profiles_seed_junction_network@1"
 RELEASE = "CELLS_NATIVE_SEED_JUNCTIONS_RELEASED"
-PARENT_SOURCE_SHA256 = PARENT_REVIEW_SHA256 = None
-COORDINATOR_SOURCE_SHA256 = COORDINATOR_REVIEW_SHA256 = None
+PARENT_SOURCE_SHA256 = "3d1b0987ec7c823a61e3d0baa343f5a6ab9c93f513a0f7deea58362cffda4c29"
+PARENT_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
+COORDINATOR_SOURCE_SHA256 = "025d28d2a5917f053ab7a2db1121c103d479ac3238e5ebd7b4b2df149b426127"
+COORDINATOR_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 PROPOSED_CLAIM = "_claim_for_seed_junctions"
 PROPOSED_CHECK = "_check_seed_junctions_authority"
 PROPOSED_ROUTER = "_seed_junctions_api"
+INIT_CONSUMER_MODULE = "cells.processes.betse_native_init_retained_world"
+INIT_CONSUMER_INTERFACE_SHA256 = INIT_CONSUMER_REVIEW_SHA256 = None
+INIT_PARENT_REVIEW_SHA256 = INIT_KEY_REVIEW_SHA256 = None
+INIT_BINDING_KIND = "exact_retained_INIT_bytes_except_four_validated_backrefs@1"
+INIT_BACK_REFERENCE_SLOTS = (
+    "PARENT_SOURCE_SHA256",
+    "PARENT_REVIEW_SHA256",
+    "KEY_SOURCE_SHA256",
+    "KEY_REVIEW_SHA256",
+)
 METHODS = ("redo_gj", "calc_gj_vects", "graphLaplacian")
 RETURN_ORDER = ("calc_gj_vects", "redo_gj", "graphLaplacian")
 CALLBACK_STATUSES = (
@@ -84,6 +97,7 @@ _WORLD, _PREFIX, _BASE, _CORE, _LITERAL = (
 )
 _PARENT_FILE, _SOURCE_FILE = Path(previous.__file__), Path(source.__file__)
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
+_FORWARDED = WeakKeyDictionary()
 _ACTIVE, _FAILED, _LOCK = [], (), RLock()
 _LAST_FAILED = None
 _PROOFS = (
@@ -426,6 +440,23 @@ def _immutable(context):
 
 
 def _check_fields(context):
+    _bootstrap(context)
+    if (
+        type(context.request) is not Request
+        or _REQUESTS.get(context.request) is not context.refs
+        or _CONSUMED.get(context.request) is not context
+        or _RETIRED.get(context.request.profiles_owner) is not context
+        or context.invalid
+        or context.thread != get_ident()
+        or context.parent is not context.refs[0]
+        or context.parent.trial is not context.refs[1]
+        or context.phase is not context.parent.phase
+        or context.phase.cells is not context.cells
+        or context.phase.p is not context.p
+        or context.phase.sim is not context.sim
+        or context.phase.dyna is not context.dyna
+    ):
+        raise ValueError("Actual irreversible profile/junction relation changed")
     names = tuple(vars(context.cells))
     expected = [n for n in context.original_names]
     for method in context.entered:
@@ -462,6 +493,11 @@ def _bindings(context):
         _WORLD._scope,
         _WORLD._project,
         _WORLD._rng,
+        _init_consumer_binding,
+        _init_consumer_api,
+        _init_route,
+        _claim_for_init_phase,
+        _check_init_phase_authority,
         *context.restore_setters,
         *context.restore_getters,
         context.call_tracing,
@@ -471,8 +507,16 @@ def _bindings(context):
         _CONSUMED,
         _RETIRED,
         _ISSUED,
+        _FORWARDED,
         _ACTIVE,
         _LOCK,
+        INIT_CONSUMER_MODULE,
+        INIT_CONSUMER_INTERFACE_SHA256,
+        INIT_CONSUMER_REVIEW_SHA256,
+        INIT_PARENT_REVIEW_SHA256,
+        INIT_KEY_REVIEW_SHA256,
+        INIT_BINDING_KIND,
+        INIT_BACK_REFERENCE_SLOTS,
         context.api,
         context.required_hooks,
         *context.required_hooks,
@@ -1206,6 +1250,7 @@ def prepare(request, *, enabled=False):
                 raise ValueError("Final observer identities not safely restored")
             context.active = False
             owner = object.__new__(JunctionsOwner)
+            context.owner = owner
             _ISSUED[owner] = context
             return owner
         except BaseException as error:
@@ -1257,6 +1302,13 @@ def _authority(owner):
     if type(owner) is not JunctionsOwner or owner not in _ISSUED:
         raise JunctionsRejected("Actual issued junction child required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "init_transition"):
+        raise JunctionsRejected(
+            "SEED endpoint was irreversibly consumed by INIT",
+            stage="forwarded",
+            trial=context.trial,
+            partial=context,
+        )
     if context.active or context.invalid or context.validating:
         raise JunctionsRejected("Junction epoch unavailable", stage="owner")
     context.validating = True
@@ -1277,6 +1329,202 @@ def _authority(owner):
     finally:
         context.validating = False
     return context
+
+
+def _init_consumer_binding(payload):
+    api = _ready()
+    scope = dict(
+        vars(api),
+        HELPER_BACK_REFERENCE_SLOTS=INIT_BACK_REFERENCE_SLOTS,
+        HELPER_BINDING_KIND=INIT_BINDING_KIND,
+    )
+    return FunctionType(api._helper_binding.__code__, scope)(payload)
+
+
+def _init_consumer_api():
+    api = _ready()
+    if not all(
+        core._pin(value)
+        for value in (
+            INIT_CONSUMER_INTERFACE_SHA256,
+            INIT_CONSUMER_REVIEW_SHA256,
+            INIT_PARENT_REVIEW_SHA256,
+            INIT_KEY_REVIEW_SHA256,
+        )
+    ):
+        raise JunctionsRejected(
+            "Reviewed actual INIT continuation remains unbound", stage="INIT_held"
+        )
+    path = Path(__file__).parents[3] / ("src/" + INIT_CONSUMER_MODULE.replace(".", "/") + ".py")
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Original INIT consumer source required")
+    raw = path.read_bytes()
+    identity, backrefs = _init_consumer_binding(raw)
+    if (
+        identity != INIT_CONSUMER_INTERFACE_SHA256
+        or tuple(name for name, _ in backrefs) != INIT_BACK_REFERENCE_SLOTS
+    ):
+        raise ValueError("Exact INIT consumer bytes outside four back-reference literals changed")
+    refs = dict(backrefs)
+    if (
+        refs["PARENT_SOURCE_SHA256"] != hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        or refs["PARENT_REVIEW_SHA256"] != INIT_PARENT_REVIEW_SHA256
+        or refs["KEY_REVIEW_SHA256"] != INIT_KEY_REVIEW_SHA256
+        or not core._pin(refs["KEY_SOURCE_SHA256"])
+    ):
+        raise ValueError("Actual full endpoint/Key source/review back-reference changed")
+    module = importlib.import_module(INIT_CONSUMER_MODULE)
+    if (
+        sys.modules.get(INIT_CONSUMER_MODULE) is not module
+        or Path(module.__file__).resolve() != path
+        or path.read_bytes() != raw
+        or any(getattr(module, name) != value for name, value in backrefs)
+        or module.previous is not sys.modules[__name__]
+    ):
+        raise ValueError("Original actual INIT consumer namespace changed")
+    api._source_interface(
+        module,
+        raw,
+        path,
+        (
+            "prepare",
+            "_ready",
+            "_capture_seed_lease",
+            "_check_seed_lease",
+        ),
+    )
+    key = module._ready()
+    if hashlib.sha256(Path(key.__file__).read_bytes()).hexdigest() != refs["KEY_SOURCE_SHA256"]:
+        raise ValueError("Actual full reviewed INIT parameter producer changed")
+    return module
+
+
+def _init_route(parent):
+    module = _init_consumer_api()
+    child, owner = getattr(parent, "init_transition", None), getattr(parent, "owner", None)
+    if (
+        child is None
+        or owner is None
+        or _ISSUED.get(owner) is not parent
+        or _FORWARDED.get(owner) is not child
+        or parent.active
+        or parent.invalid
+        or child.invalid
+        or type(child.request) is not module.Request
+        or child.request.seed_owner is not owner
+        or module._REQUESTS.get(child.request) is not child.refs
+        or module._CONSUMED.get(child.request) is not child
+        or module._RETIRED.get(owner) is not child
+        or child.parent is not parent
+        or child.refs[0] is not parent
+        or child.refs[1] is not parent.trial
+        or child.p is not parent.p
+        or child.cells is not parent.cells
+        or child.callback is not parent.phase.callbacks
+        or child.refs[4] is not parent.world.world
+        or child.seed_claim is not child.refs[4].claim
+        or child.refs[5] is not child.seed_claim
+        or child.refs[6] is not child.refs[4].parameter_record
+        or child.seed_owner is not child.refs[4].request.world_parameters
+        or child.thread != parent.thread
+        or child.thread != get_ident()
+    ):
+        raise ValueError(
+            "Actual SEED/INIT issuance, retirement or same-p/Cells relationship changed"
+        )
+    return child, module
+
+
+def _claim_for_init_phase(owner, *, expected, transition):
+    module = _init_consumer_api()
+    caller = sys._getframe(1)
+    with _LOCK:
+        parent = _ISSUED.get(owner) if type(owner) is JunctionsOwner else None
+        if (
+            parent is None
+            or parent.trial is not expected
+            or caller.f_code is not module.prepare.__code__
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+        ):
+            raise JunctionsRejected(
+                "Actual active retained-world INIT issuer required", stage="entry"
+            )
+        if owner in _FORWARDED or hasattr(parent, "init_transition"):
+            raise JunctionsRejected("SEED-to-INIT endpoint epoch consumed", stage="consumed")
+        if (
+            parent.active
+            or parent.invalid
+            or parent.validating
+            or parent.owner is not owner
+            or transition.driver_frame is not caller
+            or transition.parent is not parent
+            or transition.claim is not None
+            or transition.parameter_record is not None
+            or type(transition.request) is not module.Request
+            or transition.request.seed_owner is not owner
+            or module._REQUESTS.get(transition.request) is not transition.refs
+            or module._CONSUMED.get(transition.request) is not transition
+            or module._RETIRED.get(owner) is not transition
+            or transition.refs[0] is not parent
+            or transition.refs[1] is not expected
+            or transition.p is not parent.p
+            or transition.cells is not parent.cells
+            or transition.callback is not parent.phase.callbacks
+            or transition.thread != parent.thread
+            or transition.thread != get_ident()
+        ):
+            parent.invalid = transition.invalid = True
+            raise ValueError("Original SEED endpoint/INIT claim ancestry changed")
+        parent.init_transition = transition
+        try:
+            _FORWARDED[owner] = transition
+            _check(parent)
+            _complete(parent)
+            if (
+                parent.trial.identity != _digest(trial_record(parent.trial))
+                or parent.trial.cache.identity != _snapshot(parent).identity
+            ):
+                raise ValueError("Original completed SEED endpoint changed before INIT")
+            graph = _graph(parent)
+            _WORLD._same(graph[0], parent.graph[0])
+            if graph[1] != parent.graph[1] or _init_route(parent)[0] is not transition:
+                raise ValueError("Original endpoint graph or retirement changed")
+            module._capture_seed_lease(transition)
+        except BaseException:
+            parent.invalid = transition.invalid = True
+            raise
+        return parent
+
+
+def _check_init_phase_authority(transition, *, parameter_claim, parameter_record):
+    parent = transition.parent
+    child, module = _init_route(parent)
+    if (
+        child is not transition
+        or parameter_claim is not transition.claim
+        or parameter_record is not transition.parameter_record
+    ):
+        raise ValueError("Different actual INIT parameter transition/record")
+    module._check_seed_lease(transition)
+    if parameter_claim is None:
+        if parameter_record is not None or transition.phase is not None:
+            raise ValueError("No phase/closed record may appear before its real parameter claim")
+    elif parameter_record is None:
+        if (
+            type(parameter_claim) is not getattr(transition.key, module.PARAMETER_CLAIM)
+            or parameter_claim.parameters is not transition.p
+        ):
+            raise ValueError("Actual active same-p INIT claim required")
+        parameter_claim.check()
+    elif (
+        getattr(transition.key, module.PARAMETER_CHECK)(
+            parameter_claim, seed_claim=transition.seed_claim, original_owner=transition.seed_owner
+        )
+        is not parameter_record
+    ):
+        raise ValueError("Exact successful closed INIT parameter record required")
+    return parent
 
 
 def require_later_seed(owner):
@@ -1397,7 +1645,11 @@ def _helper(context, name, delegate, args, kwargs, wrapper):
         try:
             result = delegate(*args, **kwargs)
         except BaseException as error:
-            if context.primary is None:
+            if (
+                context.primary is None
+                and context.observation_error is None
+                and context.entry_error is None
+            ):
                 context.primary = error
             raise
         context.last_helper = (name, args, kwargs, result)

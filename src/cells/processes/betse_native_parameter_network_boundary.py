@@ -19,7 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_event_declarations as previous
 
 LAW_ID = "betse_native_parameter_network_boundary_inputs@1"
-PREVIOUS_SHA256 = "4661752422e2311cb1b5443e0084d71163aa7023e9a326fee592d44116be8fc2"
+PREVIOUS_SHA256 = "afc935c5cd9d7b3888441bbb9b69e3719cfbfdca18efa18023c07fa62fff5be8"
 START, STOP = 61, 62
 LOCAL_KEY = "_cells_original_yaml_version"
 prefix, claims = previous.prefix, previous.claims

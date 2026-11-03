@@ -29,7 +29,7 @@ literal, aliases, core = handler.literal, handler.aliases, handler.core
 LAW_ID = "betse_same_issued_phase_selected_dyna_attachment@1"
 RELEASE = "CELLS_NATIVE_PHASE_DYNA_RELEASED"
 CACHE_SHA256 = "c8c6298b55d7eb0c41f3aedce411d275462135ef75d5f8a7a193285368d77a16"
-HANDLER_SHA256 = "c0d9b1f5375620464167c13bc07815c996284e1d78eb753942c560f80a15470b"
+HANDLER_SHA256 = "9d788de993d572d9187d68a521a848f28a093fab92935439c9dec2e46133de63"
 KEY_MODULE = "cells.processes.betse_native_parameter_dyna_construction"
 KEY_FILE = "src/cells/processes/betse_native_parameter_dyna_construction.py"
 # Public names and producer match Key's reviewed source/software handoff.
@@ -342,6 +342,8 @@ def _key_bindings(api):
 
 def _guard(context):
     if getattr(context, "world_mode", None) == WORLD_MODE:
+        if not context.active and _world_api()._world_has_seed_profiles_route(context):
+            return _world_api()._world_profiles_wrapper_guard(context, sys._getframe(1))
         return _world_api()._world_stage_guard(context)
     # A rejected source entry is the primary failure even when its observer
     # subsequently fails to capture the event. Keep that capture separately.
@@ -622,6 +624,16 @@ def _namespace(context):
         return invoke
 
     fields.update({name: entry(name) for name in METHODS})
+    if getattr(context, "world_mode", None) == WORLD_MODE:
+        # Declare the future entry BEFORE the actual runtime class/object is
+        # born. Its original delegate is guarded, never attached afterward.
+        def profile_entry(delegate):
+            def invoke(self, phase):
+                return _world_api()._seed_profiles_call(context, delegate, self, phase)
+
+            return invoke
+
+        fields["init_profiles"] = profile_entry(context.native_handler.init_profiles)
     fields["__reduce_ex__"] = unavailable
     cls = type("OwnedPhaseTissueHandler", (context.native_handler,), fields)
     context.runtime_types["TissueHandler"] = cls
@@ -878,6 +890,13 @@ def _invoke(context, name, actual, p):
 
 
 def _native_call(context, label, delegate, *args, **kwargs):
+    if (
+        getattr(context, "world_mode", None) == WORLD_MODE
+        and not context.active
+        and _world_api()._world_has_seed_profiles_route(context)
+    ):
+        _guard(context)
+        return _world_api()._seed_profiles_picker_call(context, label, delegate, *args, **kwargs)
     _guard(context)
     _check(context)
     handler._event(context, label + "_enter", (args, kwargs))

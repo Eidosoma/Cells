@@ -31,7 +31,7 @@ SIM_FILE = "betse/science/sim.py"
 PHASE_FILE = "betse/science/phase/phasecls.py"
 UPSTREAM_PINS = {
     "betse_native_tissue_configuration": (
-        "0dd4e51887e5975e5356e5efe946a3c19a2c969c54049955c6886bc199f98bb5"
+        "78549327ada27bb943245b9d6e9692b7d86de96660f1bd41bbd6f3119e0e4dac"
     ),
     "betse_native_tissue_configuration_source": (
         "dc31809ca02a4a9de222da33d58bce1684db0f13f75fa128a288e9cba8dd45ae"

@@ -40,16 +40,192 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Report milestone completion or a material blocker. Adjacent features wait
   for these gaps.
 
-  The current assignments have complete integration targets. Key has delivered
-  the whole native tissue-profile initializer and its consolidated repairs;
-  its next disjoint batch supplies genuine fresh INIT/SIM parameter construction
-  and timing. Specialist has delivered the geometry → Poisson/data-tail → whole
-  core connection and now owns core → profiles → junction/network operators on
-  the same phase and cells. Root owns the combined demonstration runner, fresh
-  original inputs, detached execution and actual integration. Each developer
+  The current assignments have complete integration targets. Key's genuine
+  post-SEED parameter transition and Specialist's fresh retained-world INIT
+  constructor have passed their consolidated source/software reviews. They
+  have a joint dynamics-prelude checkpoint and detached integration pilot.
+  While those jobs run, Key owns the remaining ordinary INIT dynamics setup;
+  Specialist owns profile/event integration on the same INIT objects. Root's
+  optional INIT-setup/prelude endpoints are implemented in the demonstration
+  runner; Root owns fresh original inputs, detached execution and actual
+  integration. Each developer
   handles routine repairs within the batch and reports at completion or a real
   blocker. Independent software uses separate CPUs; detached jobs do not prevent
   disjoint coding. Their terminal outcomes are checked when requested, not polled.
+
+  **Current execution milestone:** the [fifth original-flux SEED attempt](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-05/LAUNCH.json)
+  launched detached at 22:18:08 UTC on November 3 from `prepared-original-06`.
+  One terminal-artifact check found no result yet; there has been no repeat
+  polling. The repaired callback check, reviewed optional
+  endpoint implementation and exact dependency adoption are included; the
+  selected endpoint remains SEED. Both flux-mode images contain the same 581
+  source files and fresh copies of unchanged original inputs. The disabled-flux
+  counterpart is prepared and unlaunched. Preparation passed in 148.127 seconds
+  / 48,513,024 bytes sampled RSS, with empty native guards and restored hooks.
+  Limits remain CPU0, one thread, 7,200 seconds, 1 GiB and an 8-GiB host reserve.
+  There is no automatic status polling, retry or mode fallback.
+
+  Root's [saved-run checker](validation/betse/native_seed_demo_report.py) now
+  passes **73 blocked metadata controls** in
+  [software-02](/mnt/workspaces/Cells/native-seed-demo-report-20261103-01/software-02/result.json)
+  (38.416 seconds / 57,290,752 bytes sampled RSS, zero native entries).
+  It checks frozen source, original inputs, external files, loaded producers,
+  resource records and required raw captures, and distinguishes completion,
+  explicit failure and missing evidence for the original/disabled modes.
+  Empty-mask diagnostics and capture gaps remain visible; paired execution
+  does not imply numerical, physical, INIT/SIM or restart parity. The earlier
+  49-control image is preserved separately. [Saved verification](/mnt/workspaces/Cells/native-seed-demo-report-20261103-01/software-review-02.json)
+  covers all 421 source files, 280 loaded origins and 73 case guards;
+  [source and saved-result review is complete](/mnt/workspaces/Cells/native-seed-demo-report-20261103-01/source-result.json).
+  This work did not query either detached
+  job again or rerun any model.
+
+  The INIT-prelude source review identified two execution prerequisites for
+  Key's repair batch: preserve the original conditional unknown-ion logger
+  failure, and authenticate genuine helper code in its full native module
+  compilation context. The old synthetic pilot retains its original source
+  image; these findings grant no actual INIT admission.
+
+  The [fourth original-flux SEED attempt](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-04/root-review.json)
+  remains terminal failed, after 547.887 seconds / 279,990,272 bytes sampled RSS.
+  The decorated-factory repair worked: selected tissue configuration and the
+  auxiliary Simulator constructor completed. Callback acquisition then refused
+  `make_default` because its isolated-function recompilation differed from
+  Python 3.13's full-module bytecode. Compile-only diagnosis reproduced this
+  mismatch. The [callback compilation-context repair](/mnt/workspaces/Cells/native-phase-callback-compile-context-repair-20261103-01/source-result.json)
+  now passes **62 blocked controls, 10 new plus 52 affected**, in 6.032 seconds
+  / 231,620,608 bytes sampled RSS, with no native entries. It compiles the full
+  original module without executing it, then extracts the selected function or
+  class method; exact code, filename and globals checks remain. Only that
+  production definition changed. The initial preparation's overly restrictive
+  address-space wrapper failed to map Pillow before any snapshot/test and is
+  preserved; preparation RSS and software/resource limits remain unchanged.
+  The [adoption](/mnt/workspaces/Cells/native-seed-demo-20261103-01/producer-adoption-04/bindings.json)
+  updates 18 literal pins in nine SEED consumers; all other bytes and function,
+  class and import ASTs, four helper templates, Key parameters and new INIT
+  gates are unchanged. No old software outcomes are recredited.
+  In the failed fourth attempt, no usable callback, WorldReady owner or
+  world phase was issued. All 581 frozen files, original inputs and actual
+  runtime producers verified; four callback captures are complete and an outer
+  live-owner capture limitation is explicit. Filesystem and resource checks
+  passed. The original
+  flux defect is retained, not repaired; fresh INIT execution remains held.
+  Native limits remain CPU0, one thread, 7,200 seconds, 1 GiB and an 8-GiB
+  host reserve. There is no automatic status polling or retry.
+
+  The [third original-flux SEED attempt](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-03/root-review.json)
+  finished unsuccessfully after 96.939 seconds / 272,744,448 bytes sampled RSS.
+  The filesystem repairs passed. During callback tissue construction, a copied
+  decorated `make_list` function lacked five required keyword defaults. Native
+  bootstrap and partial configuration work occurred, but no callback completion,
+  WorldReady owner or phase was issued. Root's
+  [decorated factory repair is source/software reviewed](/mnt/workspaces/Cells/native-tissue-factory-copy-repair-20261103-01/source-result.json):
+  **23 controls pass, 21 new plus two existing construction checks**, in 17.582
+  seconds / 243,765,248 bytes sampled RSS. The copy retains decorator checks,
+  keyword defaults and wrapped delegates, while preserving owned list
+  construction and refusing constructor-lookup drift. The exact existing
+  decorator library was declared and its 294 loaded origins verified. The
+  initial eight missing-test-dependency failures and intermediate images remain
+  separate. Numerical source and resource limits are unchanged. The
+  [dependency adoption is complete](/mnt/workspaces/Cells/native-seed-demo-20261103-01/producer-adoption-03/bindings.json):
+  31 existing SEED consumers bind the repair through 58 exact constant slots.
+  All other bytes and function/class/import ASTs are unchanged; every full-file
+  and canonical-template binding verifies, and static checks pass. The initial
+  metadata edit-script error is retained. New INIT files and admission pins
+  remain untouched. The [fresh image preparation](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-preparation-05/prepared-results.json)
+  passed in 147.711 seconds / 48,771,072 bytes sampled RSS, with empty native
+  entry guards and both hooks restored. Its predecessor's
+  [480-second metadata timeout](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-preparation-04/terminal-review.json)
+  and completed partial artifacts remain failed and preserved. The successor
+  computes the same guard filename prefixes once; source checks and limits
+  are unchanged. All 421 actual decorator-library files also match the
+  reviewed software library before launch.
+  The 581-file image, original cause chain, 20 saved captures and 13 explicit
+  unsupported-object capture failures are preserved. No resource limit was
+  exceeded. The envelope remains 7,200 seconds, one thread on CPU0, 1 GiB and
+  an 8-GiB host reserve; no end-to-end completion or scientific credit is claimed.
+
+  The [second attempt](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-02/root-review.json)
+  failed during library bootstrap after 38.683 seconds / 264,630,272 bytes
+  sampled RSS. The null-device repair worked; `dill` then called Python's
+  temporary-directory probe, whose `/tmp` write the audit refused. No world
+  parameter owner or phase was issued. The original failure and capture gaps
+  are preserved. The historical
+  [disabled-flux packet](/mnt/workspaces/Cells/native-seed-demo-20261103-01/launch-plan-disabled-03/launch-plan.json)
+  remains unlaunched and is superseded for the next execution by
+  [disabled image05](/mnt/workspaces/Cells/native-seed-demo-20261103-01/launch-plan-disabled-05/launch-plan.json).
+  Modes use separate processes and the shared native-log lease prevents
+  concurrent writers. There is no automatic retry,
+  fallback or status polling.
+
+  The [temporary-directory successor](/mnt/workspaces/Cells/native-seed-demo-launch-development-20261103-01/temporary-directory-01/source-result.json)
+  passed **70 focused blocked controls, 13 new plus 57 affected**, in 12.058
+  seconds / 55,283,712 bytes sampled RSS. Each worker explicitly selects and
+  tests a private temporary directory inside its run output before library
+  bootstrap; foreign cached paths and later path/environment drift refuse.
+  Numerical bodies, inputs and resource limits are unchanged. The
+  [explicit endpoint adoption](/mnt/workspaces/Cells/native-seed-demo-20261103-01/producer-adoption-02/bindings.json)
+  changes seven files' source/review constants only; function/class/import ASTs
+  remain exact. Both new mode images contain the same 581 source payloads.
+  INIT's new entry pins remain held and its unfinished consumer is outside
+  these execution images.
+
+  The [first attempt failed during library bootstrap](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-01/root-review.json),
+  after 40.452 seconds / 263,974,912 bytes sampled RSS: `dill` opened `/dev/null`
+  to discover a file type, and the write audit refused it. No world parameters
+  or phase were issued. Original failure/capture gaps remain preserved.
+  The [narrow launcher repair](/mnt/workspaces/Cells/native-seed-demo-launch-development-20261103-01/null-device-01/source-result.json)
+  permits only opens of the exact unlinked Linux null character device and
+  retains its identity checks. **49 blocked controls pass, 13 new plus 36
+  affected**. No scientific source or input changed between actual attempts;
+  only the launcher and its test changed in the two new 581-file snapshots.
+
+  Key's post-SEED parameter transition and Specialist's fresh retained-world
+  INIT construction have delivered substantial source/software batches:
+  [59 parameter controls](/mnt/workspaces/Cells/native-parameter-seed-init-transition-development-20261103-01/root-review.json)
+  and [78 distinct consumer controls across seven images](/mnt/workspaces/Cells/native-init-retained-world-20261103-01/delivery-01/root-review.json).
+  Key's [three monitor/harness repairs are closed](/mnt/workspaces/Cells/native-parameter-seed-init-monitor-repair-20261103-01/root-review.json):
+  **83 controls pass, 24 new plus 59 affected**. Specialist's
+  [28-control endpoint/consumer checkpoint](/mnt/workspaces/Cells/native-init-retained-world-20261103-01/software-10/root-review.json)
+  closes both sealing/retention findings. Its
+  [final registry repair is also reviewed](/mnt/workspaces/Cells/native-init-retained-world-20261103-01/delivery-03/root-review.json):
+  **16 focused controls pass**, with exact module aliases distinguished from
+  dictionary registries. The ordinary SEED endpoint remains separate from
+  the held INIT route. Key and Specialist are coordinating the next actual
+  owner transition directly, with one combined implementation/test milestone.
+  Original saved outcomes retain their own source versions; genuine INIT
+  execution is not yet admitted.
+
+  Root's [optional INIT-prelude demonstration endpoint is implemented and reviewed](/mnt/workspaces/Cells/native-seed-init-prelude-demo-development-20261103-01/source-result.json).
+  **139 blocked demo controls pass, 32 new plus 107 affected**, in 106.477
+  seconds / 322,441,216 bytes sampled RSS. The separate affected launcher group
+  passes **18, one new plus 17 affected**, in 11.312 seconds / 55,336,960 bytes.
+  Exact endpoint selection travels through the plan, snapshot, release and
+  worker. INIT setup retains the SEED parameters, Cells and callback in a fresh
+  phase/Simulator/handler/cache; the prelude then requires those exact INIT
+  objects and the original parent trial. It never rereads the consumed INIT
+  owner. Failed calls or captures retain the completed setup, actual child,
+  original returns and primary/cause without promoting the endpoint to success.
+  The route stops before profile remapping, channel-noise RNG and timesteps.
+  Both flux modes remain explicit; default SEED behavior, numerical bodies and
+  transport are unchanged. All reports, guards, immutable sources and loaded
+  producers were verified; there were no native entries. The
+  [earlier setup result and failure](/mnt/workspaces/Cells/native-seed-init-demo-development-20261103-01/source-result.json)
+  remain at their own source versions. All new INIT/prelude producer pins are
+  still unadopted. These private orchestration controls do not establish actual
+  INIT execution, full simulation or scientific parity.
+
+  The [final evidence integration](/mnt/workspaces/Cells/native-seed-demo-20261103-01/evidence-integration-01/source-result.json)
+  passed **76 blocked controls, 12 new plus 64 affected**, in 124.113 seconds
+  with 323,911,680 bytes sampled RSS and complete empty entry guards. The real
+  recorder preserves a 70,000-entry ledger beyond the ordinary tree limit;
+  geometry selects this finite transport explicitly, while ordinary limits and
+  numerical code remain unchanged. Failed or partial captures do not become
+  successful evidence. The [filesystem envelope](/mnt/workspaces/Cells/native-seed-demo-launch-development-20261103-01/filesystem-01/source-result.json)
+  passed its final 36 affected controls; the prior 80-pass image and interrupted
+  preparation remain separate. Both native-mode snapshots contain the same
+  581 source payloads, with original input bytes, declared runtime providers and
+  exact native-home link/write permissions bound before launch.
 
   Root's [combined SEED orchestration source/software review](/mnt/workspaces/Cells/native-seed-demo-20261103-01/software-review-02.json)
   covers callback → fresh parameters → world geometry → explicit original/disabled
@@ -115,6 +291,28 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   original 82-control image stays separate. These completed source/software
   batches do not establish a completed native world or initialized simulation.
 
+  [The final core/profile/junction integration is reviewed](/mnt/workspaces/Cells/native-seed-profiles-junctions-integration-20261103-01/delivery-02/root-review.json):
+  **55 distinct blocked controls across three images**, with 165 test-phase
+  reports and complete guards. The real prebirth handler delegate, same-instance
+  routes and permitted profile/junction mutations remain explicit. Root has
+  [bound the complete SEED producer graph](/mnt/workspaces/Cells/native-seed-demo-20261103-01/producer-adoption-01/bindings.json)
+  in 13 files, verifying four exact templates and all full-file dependency edges.
+  Function/class/import ASTs and numerical bodies are unchanged; session release
+  is still separate. Two static binding/format findings were repaired before
+  the final snapshot; no source execution occurred during adoption.
+
+  A [single saved-terminal check](/mnt/workspaces/Cells/native-seed-demo-20261103-01/producer-adoption-01/prior-terminal-check.json)
+  found both earlier actual attempts **failed and terminal**. The parameter-only
+  run stopped at birth after 110.097 seconds when its standalone write policy
+  refused the existing native log-directory link. The combined callback-first
+  route declares that bootstrap separately. Multi-cell diagnostic 13 reached
+  the final mask capture after 2,766.753 seconds / 371,724,288 bytes sampled RSS;
+  eight captures were saved, while the ninth exceeded the evidence tree bound.
+  Its source-error field is empty, but the incomplete capture is not a pass or
+  independent comparison. Root is batching an enclosing filesystem audit and
+  lossless bounded evidence transport before the first composed demonstration.
+  Original failed outputs remain unchanged; no retry or repeated polling occurred.
+
   The [field-level demonstration policy is source/software reviewed](/mnt/workspaces/Cells/betse-environment-field-demo-20261103-01/root-review.json):
   **19 synthetic controls pass** in 4.280 seconds / 84,631,552 bytes sampled
   RSS. `original` retains the source-scaled inverse and failed finite flux
@@ -147,6 +345,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   parent/Simulator routing and adoption remain held. Key is now implementing
   original profile initialization; Root's next separate batch covers junction
   rebuilding and the cell-network operator on that same phase.
+
+- **Literature test notes (3 November):** [The T-cell organelle preprint review](docs/PAPER_REVIEW_T_CELL_ORGANELLES.md)
+  records proposed spatial/contact/arrival tests and separates ER-linked
+  clustering from directed delivery. Main-text methods and figures were reviewed;
+  raw data and supplementary material remain unavailable here. No tests or model
+  changes were made, and the BETSE demonstration/flux-mode scope is unchanged.
 
 - **Current mapping software batch:** [All 15 remaining controls are reviewed](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/current-owner-controls-01/root-review.json).
   Seven groups completed on CPU 2, one thread, within **1 GiB / 480 seconds

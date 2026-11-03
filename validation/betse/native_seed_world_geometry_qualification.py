@@ -27,7 +27,10 @@ MODULE = "validation.betse.native_seed_world_geometry_qualification"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_GEOMETRY_QUALIFICATION_RELEASED"
 SOFTWARE_RELEASE = "BETSE_NATIVE_SEED_WORLD_GEOMETRY_QUALIFICATION_SOFTWARE_RELEASED"
 PARAMETER_ENTRY_MODULE = "validation.betse.betse_native_parameter_world_ready_qualification"
-PARAMETER_ENTRY_SOURCE_SHA256 = PARAMETER_ENTRY_REVIEW_SHA256 = None
+PARAMETER_ENTRY_SOURCE_SHA256 = "9ab32160019edaa0ab0fa49bf8ae64fbe1cb4baba87ff1bd99d16e9f978b07a7"
+PARAMETER_ENTRY_REVIEW_SHA256 = "e0e3a4270321ffbd08f2ce14dfdb2c39b7d0108d0e90741c7a509586fd3f0604"
+EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
+EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 POLICY = dict(cpu=6, threads=1, software_bytes=2**30, wall_seconds=480, reserve_bytes=8 * 2**30)
 NATIVE_CPU = 0  # Key's exact public acquisition contract; never switch affinity here.
 FORBIDDEN_MODULES = controls_runner.FORBIDDEN_MODULES
@@ -43,8 +46,24 @@ MODULES = {
     "geometry": "cells.processes.betse_native_seed_world_geometry",
     "callbacks": "cells.processes.betse_native_phase_callbacks",
 }
-MODULE_SOURCE_SHA256 = {name: None for name in MODULES}
-MODULE_REVIEW_SHA256 = {name: None for name in MODULES}
+MODULE_SOURCE_SHA256 = {
+    "world": "025d28d2a5917f053ab7a2db1121c103d479ac3238e5ebd7b4b2df149b426127",
+    "prefix": "d13ae1ec202d19c4559c5de5a942b867d8850893c47e8b3283c129c033094dfc",
+    "image": "98bcd55b9e00e28bf7f9dd5d5a20261217e640e901affaa1b1686d0f458b45e0",
+    "mesh": "c73fd24847158223373c6d77783b8e27857bede8ff59b3b6094ceba20fa2f23f",
+    "lifecycle": "2ad275b33cd123f0cf266d262dcee5609924b72a91c6c8b86328bed1116eac1e",
+    "geometry": "2b8701f0fd4f59731d69d7a244fc3bdf8b347e683a9335fb561b83f90ab2f22a",
+    "callbacks": "f5e807c61cfd36a7f6d2da6e23418559a2527c221f2c8ce8ddf0a908020721f2",
+}
+MODULE_REVIEW_SHA256 = {
+    "world": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
+    "prefix": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
+    "image": "aa5cddf4c36998d3a99bcc576af94ba6fb4993c020de402bdd6ae8b134613f6e",
+    "mesh": "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb",
+    "lifecycle": "aa5cddf4c36998d3a99bcc576af94ba6fb4993c020de402bdd6ae8b134613f6e",
+    "geometry": "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb",
+    "callbacks": "cc2ba3a07cb2177e6b6ba6c0190009f9f03086bdb4a33bd3c7d2f4ef00f9d967",
+}
 STAGES = ("phase", "lattice", "image", "mesh", "lifecycle", "geometry")
 OWNED = (
     FILE,
@@ -116,6 +135,10 @@ def source_plan():
         parameter_review=PARAMETER_ENTRY_REVIEW_SHA256,
         module_sources=dict(MODULE_SOURCE_SHA256),
         module_reviews=dict(MODULE_REVIEW_SHA256),
+        evidence_profiles=("ordinary", "seed_demo"),
+        evidence_default="ordinary",
+        seed_demo_evidence_source=EVIDENCE_SOURCE_SHA256,
+        seed_demo_evidence_reader=EVIDENCE_MODULE + ".read/files with capture root SHA",
         stages=STAGES,
         one_parameter_claim="only WPC.prepare opens Key construction; no intermediate closed claim",
         callback_provision=(
@@ -505,9 +528,25 @@ def _seal_execution(state, evidence, directory):
         state.capture_errors.append(("final_outcome", capture, state))
 
 
-def evaluate_live(world_ready, callback_owner, directory, *, enabled=False):
+def _evidence_writer(profile):
+    """Explicit finite observation capacity, independent of native authority."""
+    if type(profile) is not str or profile not in ("ordinary", "seed_demo"):
+        raise QualificationRejected("Unknown evidence profile", stage="evidence")
+    if profile == "ordinary":
+        return None
+    module = _bound_module(EVIDENCE_MODULE, EVIDENCE_SOURCE_SHA256)
+    writer = module.capture_writer
+    if type(writer) is not FunctionType or writer.__globals__ is not vars(module):
+        raise QualificationRejected("Actual evidence writer required", stage="evidence")
+    return writer
+
+
+def evaluate_live(
+    world_ready, callback_owner, directory, *, enabled=False, evidence_profile="ordinary"
+):
     """Complete the genuine issued chain; no JSON or cache can supply parents."""
     _released(enabled)
+    writer = _evidence_writer(evidence_profile)
     _, modules = _dependencies()
     _resources()
     directory = Path(directory)
@@ -516,7 +555,7 @@ def evaluate_live(world_ready, callback_owner, directory, *, enabled=False):
     directory.mkdir(parents=True)
     from validation.betse.native_single_cell_prefix_qualification import Evidence
 
-    evidence = Evidence(directory, sidecars=True)
+    evidence = Evidence(directory, sidecars=True, capture_writer=writer)
     state = Execution(world_ready=world_ready, callback_owner=callback_owner)
     try:
         modules["callbacks"]._validate(callback_owner)

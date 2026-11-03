@@ -26,9 +26,9 @@ from cells.processes import betse_native_seed_voronoi_mesh_source as source
 MODE = "fresh_world_seed_voronoi_mesh_constructor_assignment"
 LAW_ID = "betse_same_seed_phase_actual_mesh_constructor_assignment@1"
 RELEASE = "CELLS_NATIVE_SEED_VORONOI_MESH_RELEASED"
-SOURCE_SHA256 = None
-PARENT_SOURCE_SHA256 = None
-PARENT_REVIEW_SHA256 = None
+SOURCE_SHA256 = "68d367b585d1051b70dd1dda4f795b407ccd6d99e14d1122ef566442da5817df"
+PARENT_SOURCE_SHA256 = "98bcd55b9e00e28bf7f9dd5d5a20261217e640e901affaa1b1686d0f458b45e0"
+PARENT_REVIEW_SHA256 = "aa5cddf4c36998d3a99bcc576af94ba6fb4993c020de402bdd6ae8b134613f6e"
 PARENT_MODULE = "cells.processes.betse_native_seed_voronoi_image"
 PROPOSED_PARENT_CLAIM = "_claim_for_voronoi_mesh"
 PROPOSED_PARENT_CHECK = "_check_mesh_authority"
@@ -504,6 +504,10 @@ def _geometry_context(context):
     return image.prefix.previous._world_api()._world_geometry_context(constructor)
 
 
+def _inherited_fields(context, geometry, actual):
+    return vars(actual) if geometry is None else context.api._world_sim_fields(geometry, actual)
+
+
 def _graph(context, *, final=False):
     # Persistent view dictionaries preserve real edges without incorporating
     # growing observation lists into the immutable inherited baseline.
@@ -516,7 +520,7 @@ def _graph(context, *, final=False):
         target.update(
             {
                 k: v
-                for k, v in vars(actual).items()
+                for k, v in _inherited_fields(context, geometry, actual).items()
                 if (
                     actual is not context.cells
                     or (k != "mesh" and (original_names is None or k in original_names))
@@ -546,7 +550,7 @@ def _values(context):
                     projector,
                     {
                         key: value
-                        for key, value in vars(actual).items()
+                        for key, value in _inherited_fields(context, geometry, actual).items()
                         if actual is not context.cells
                         or (key != "mesh" and (geometry is None or key in context.caller_names))
                     },

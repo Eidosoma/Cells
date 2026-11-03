@@ -26,16 +26,17 @@ FILE = "validation/betse/native_seed_world_callback_prelude.py"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_CALLBACK_PRELUDE_RELEASED"
 KIND = "cells.native_seed_world_callback_bootstrap@1"
 RUNTIME_MODULE = "validation.betse.betse_native_parameter_world_ready_qualification"
-RUNTIME_SOURCE_SHA256 = RUNTIME_REVIEW_SHA256 = None
+RUNTIME_SOURCE_SHA256 = "9ab32160019edaa0ab0fa49bf8ae64fbe1cb4baba87ff1bd99d16e9f978b07a7"
+RUNTIME_REVIEW_SHA256 = "e0e3a4270321ffbd08f2ce14dfdb2c39b7d0108d0e90741c7a509586fd3f0604"
 MODULES = {
     "tissue": "cells.processes.betse_native_tissue_configuration",
     "simulator": "cells.processes.betse_native_simulator_construction",
     "callbacks": "cells.processes.betse_native_phase_callbacks",
 }
 SOURCE_PINS = dict(
-    tissue="0dd4e51887e5975e5356e5efe946a3c19a2c969c54049955c6886bc199f98bb5",
-    simulator="8f68eaa22a6225b044e0dbd87475ace0439443aa490369fb42612b54f3ae12ce",
-    callbacks="4fa19547caac95257162e6678092c3e55ce4fe43b05b2d16f7908f9196740f2d",
+    tissue="78549327ada27bb943245b9d6e9692b7d86de96660f1bd41bbd6f3119e0e4dac",
+    simulator="1d554db61804879a1246f03394e30864a43fcf36fd30fd3a54156395a5ebc889",
+    callbacks="f5e807c61cfd36a7f6d2da6e23418559a2527c221f2c8ce8ddf0a908020721f2",
 )
 POLICY = dict(cpu=0, threads=1, bytes=2**30, wall_seconds=480, reserve_bytes=8 * 2**30)
 _RETAINED = WeakKeyDictionary()
@@ -68,6 +69,8 @@ class Execution:
     runtime_before: object = None
     entry_error: object = None
     path_links: tuple = ()
+    later_errors: list = field(default_factory=list)
+    later_error_overflow: int = 0
 
     def __reduce_ex__(self, protocol):
         raise TypeError("Prelude live ancestry is not checkpoint/hydration authority")
@@ -112,6 +115,24 @@ def source_plan():
             ),
             strict_mnt_output_policy_conflicts_with_default_native_dot_directory=True,
             explicit_Root_bootstrap_exception_and_enclosing_audit_required=True,
+            fresh_MPLCONFIGDIR_required=True,
+            shared_writer_lease=dict(
+                required=True,
+                owner="Root enclosing launcher, before first native import",
+                lifetime="entire callback/parameter/world worker through native logging shutdown",
+                mechanism="nonblocking exclusive lease on stable canonical runtime-log target",
+                stable_lock_path=str(
+                    (Path.home() / ".betse").resolve(strict=False) / ".cells-seed-world-writer.lock"
+                ),
+                lock_open="0600 regular no-follow stable lock file; keep actual fd/inode held",
+                all_cooperating_writers_use_same_lease=True,
+                unknown_or_uncoordinated_writers=(
+                    "refuse release; a free advisory lock is not proof"
+                ),
+                process_query_or_polling_required=False,
+                symlink_binding_alone_is_writer_isolation=False,
+                release_at_acquire_callback_return=False,
+            ),
         ),
         native_or_scientific_release=False,
         invalidated_owners=11,
@@ -251,7 +272,12 @@ def _bootstrap_input(path, sha256, directory):
         )
     if declaration["kind"] != KIND or not _pin(declaration["Root_review"]):
         raise PreludeRejected("Root-reviewed bootstrap policy required", stage="bootstrap")
-    if not directory.is_absolute() or not directory.is_relative_to("/mnt/workspaces/Cells"):
+    if (
+        not directory.is_absolute()
+        or ".." in directory.parts
+        or directory != directory.resolve(strict=False)
+        or not directory.resolve(strict=False).is_relative_to("/mnt/workspaces/Cells")
+    ):
         raise PreludeRejected(
             "Evidence outputs must be under /mnt/workspaces/Cells", stage="output"
         )
@@ -316,6 +342,10 @@ def _bootstrap_input(path, sha256, directory):
     mpl = environment["MPLCONFIGDIR"]
     if type(mpl) is not str or not Path(mpl).is_absolute() or mpl not in roots:
         raise PreludeRejected("Exact Matplotlib cache root must be declared", stage="native_writes")
+    if Path(mpl).exists() or not Path(mpl).is_relative_to("/mnt/workspaces/Cells"):
+        raise PreludeRejected(
+            "Fresh per-worker Matplotlib cache under /mnt required", stage="native_writes"
+        )
     return declaration
 
 
@@ -361,6 +391,8 @@ def _resources():
 
 
 def _operation(state, name, function, *args, **kwargs):
+    if state.primary is not None:
+        raise state.primary
     if state.entry_error is not None:
         raise state.entry_error
     _check_links(state)
@@ -370,8 +402,13 @@ def _operation(state, name, function, *args, **kwargs):
     try:
         returned = function(*args, **kwargs)
     except BaseException as primary:
+        # Preserve before any path checker, observer or forensic callback can
+        # reenter. Error objects may be falsey; never use boolean selection.
+        if state.primary is None:
+            state.primary = primary
+        if state.source_error is None:
+            state.source_error = primary
         row["status"], row["primary"] = "source_failed", primary
-        state.source_error = primary
         try:
             _check_links(state)
         except BaseException as capture:
@@ -390,6 +427,8 @@ def _capture(state, evidence, label, value):
         if not evidence.save(label, value):
             raise RuntimeError("Prelude typed observation refused: " + label)
     except BaseException as capture:
+        if state.primary is None:
+            state.primary = capture
         state.capture_errors.append((label, capture, value))
         raise
 
@@ -457,10 +496,16 @@ def _acquire_callback(state, configuration, directory, *, bootstrap, bootstrap_s
         evidence = Evidence(directory, sidecars=True)
         _execute(state, modules, configuration, evidence)
     except BaseException as primary:
-        state.primary = primary
+        if state.primary is None:
+            state.primary = primary
+        elif state.primary is not primary:
+            try:
+                _later_error(state, "acquisition", primary)
+            except BaseException as capture:
+                state.capture_errors.append(("acquisition_secondary", capture, primary))
         if evidence is not None:
             try:
-                evidence.failure(primary)
+                evidence.failure(state.primary)
             except BaseException as capture:
                 state.capture_errors.append(("failure_forensics", capture, primary))
     try:
@@ -475,6 +520,11 @@ def _acquire_callback(state, configuration, directory, *, bootstrap, bootstrap_s
                     for label, error, _ in state.capture_errors
                 ],
                 captures=[] if evidence is None else evidence.rows,
+                later_errors=[
+                    dict(stage=label, type=type(error).__qualname__)
+                    for label, error in state.later_errors
+                ],
+                later_error_overflow=state.later_error_overflow,
                 api_operations=len(state.operations),
                 computational_calls_are_not_cases=True,
                 raw_owner_state_serialization_claimed=False,
@@ -502,7 +552,16 @@ def acquire_callback(configuration, directory, *, bootstrap, bootstrap_sha256, e
         raise PreludeRejected("Actual callback prelude remains held", stage="release")
     if _ACTIVE:
         error = PreludeRejected("Reentrant callback prelude attempt", stage="reentrant")
-        _ACTIVE[-1].entry_error = error
+        retained = _ACTIVE[-1]
+        if retained.entry_error is None:
+            retained.entry_error = error
+        if retained.primary is None:
+            retained.primary = error
+        elif retained.primary is not error:
+            try:
+                _later_error(retained, "reentry", error)
+            except BaseException as capture:
+                retained.capture_errors.append(("reentry_secondary", capture, error))
         raise error
     state = Execution()
     _ACTIVE.append(state)
@@ -518,6 +577,11 @@ def acquire_callback(configuration, directory, *, bootstrap, bootstrap_sha256, e
     except BaseException as primary:
         if state.primary is None:
             state.primary = primary
+        elif state.primary is not primary:
+            try:
+                _later_error(state, "public_unwind", primary)
+            except BaseException as capture:
+                state.capture_errors.append(("public_secondary", capture, primary))
     finally:
         try:
             if not _ACTIVE or _ACTIVE[-1] is not state:
@@ -525,7 +589,7 @@ def acquire_callback(configuration, directory, *, bootstrap, bootstrap_sha256, e
             _ACTIVE.pop()
         except BaseException as capture:
             state.capture_errors.append(("reservation_release", capture, state))
-    primary = state.entry_error if state.entry_error is not None else state.primary
+    primary = state.primary if state.primary is not None else state.entry_error
     if primary is not None or state.capture_errors or returned is None:
         if primary is None:
             primary = (
@@ -553,3 +617,10 @@ def acquire_callback(configuration, directory, *, bootstrap, bootstrap_sha256, e
             capture_errors=state.capture_errors,
         ) from capture
     return returned
+
+
+def _later_error(state, stage, error):
+    if len(state.later_errors) < 64:
+        state.later_errors.append((stage, error))
+    else:
+        state.later_error_overflow += 1

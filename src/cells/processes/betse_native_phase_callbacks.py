@@ -21,7 +21,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_simulator_construction as simulator
 
 LAW_ID = "betse_observed_application_native_phase_callbacks@1"
-SIMULATOR_SHA256 = "8f68eaa22a6225b044e0dbd87475ace0439443aa490369fb42612b54f3ae12ce"
+SIMULATOR_SHA256 = "1d554db61804879a1246f03394e30864a43fcf36fd30fd3a54156395a5ebc889"
 CALLBACKS = "betse/science/phase/phasecallbacks.py"
 BASE = "betse/util/type/call/callbacks.py"
 APP = "betse/util/app/meta/appmetaabc.py"
@@ -114,17 +114,22 @@ def _code_from_node(node, filename):
 
 
 def _source_function(function, relative, name, cls=None):
-    tree = ast.parse((simulator.tissue.aliases.NATIVE / relative).read_bytes())
-    body = tree.body if cls is None else simulator._class(tree, cls).body
-    node = next(n for n in body if isinstance(n, ast.FunctionDef) and n.name == name)
+    filename = str(simulator.tissue.aliases.NATIVE / relative)
+    tree = ast.parse(Path(filename).read_bytes())
+    # Imported-module lookups affect Python's call bytecode. Compile the complete
+    # original scope without executing it; an isolated FunctionDef is not the
+    # executable produced when Python imports this module.
+    scope = compile(tree, filename, "exec", dont_inherit=True)
+    if cls is not None:
+        scope = next(c for c in scope.co_consts if type(c) is CodeType and c.co_name == cls)
+    expected = next(c for c in scope.co_consts if type(c) is CodeType and c.co_name == name)
     original = simulator._chain(function)[-1]
     module_name = relative[:-3].replace("/", ".")
     module = sys.modules.get(module_name)
-    expected = _code_from_node(node, str(simulator.tissue.aliases.NATIVE / relative))
     if (
         module is None
         or original.__globals__ is not vars(module)
-        or original.__code__.co_filename != str(simulator.tissue.aliases.NATIVE / relative)
+        or original.__code__.co_filename != filename
         or simulator._code(original.__code__) != simulator._code(expected)
     ):
         raise ValueError("Original callback dependency executable changed: " + name)

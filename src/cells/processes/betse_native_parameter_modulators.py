@@ -21,7 +21,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_grn_variables as previous
 
 LAW_ID = "betse_native_parameter_contiguous_modulators@1"
-PREVIOUS_SHA256 = "1aa036b617a99fd33eddd1ca2e889da66a7b3956a4ca4fd082bb6d1588a2f0af"
+PREVIOUS_SHA256 = "807a95be3521e60721af0d2cfd49dd0048a110e908851c63fd0f357ab703c949"
 RELEASE = "CELLS_NATIVE_PARAMETER_MODULATORS_RELEASED"
 START, STOP = 109, 135
 prefix, claims, subconfigs = previous.prefix, previous.claims, previous.subconfigs

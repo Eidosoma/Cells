@@ -19,9 +19,17 @@ from dataclasses import dataclass, replace
 from functools import lru_cache
 from pathlib import Path
 from threading import RLock, get_ident
-from types import CodeType, FunctionType, MappingProxyType, ModuleType, SimpleNamespace
+from types import (
+    CodeType,
+    FunctionType,
+    MappingProxyType,
+    MethodType,
+    ModuleType,
+    SimpleNamespace,
+)
 from weakref import WeakKeyDictionary
 
+from cells.processes import betse_native_parameter_yaml_prefix as files
 from cells.processes import betse_native_phase_callbacks as callbacks
 from cells.processes import betse_native_seed_init_core as previous
 from cells.processes import betse_native_seed_init_profiles_source as source
@@ -30,9 +38,12 @@ from cells.processes import betse_native_tissue_configuration_source as tissue_s
 
 LAW_ID = "betse_same_seed_core_whole_init_profiles@1"
 RELEASE = "CELLS_NATIVE_SEED_INIT_PROFILES_RELEASED"
-PARENT_SOURCE_SHA256 = PARENT_REVIEW_SHA256 = None
-COORDINATOR_SOURCE_SHA256 = COORDINATOR_REVIEW_SHA256 = None
-DYNA_SOURCE_SHA256 = DYNA_REVIEW_SHA256 = None
+PARENT_SOURCE_SHA256 = "96ebd0104a4a5ba2a05f3ab959c25a3046ef6e1019f08e4e9f7fef2240e8e419"
+PARENT_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
+COORDINATOR_SOURCE_SHA256 = "025d28d2a5917f053ab7a2db1121c103d479ac3238e5ebd7b4b2df149b426127"
+COORDINATOR_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
+DYNA_SOURCE_SHA256 = "4a930b68f6ce4f0140a96d00c03400e7e176e3639ef94cfdd160164af477a033"
+DYNA_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 PROPOSED_CLAIM = "_claim_for_seed_profiles"
 PROPOSED_CHECK = "_check_seed_profiles_authority"
 PROPOSED_ROUTER = "_seed_init_profiles_api"
@@ -77,6 +88,7 @@ HELPERS = (
     ("betse/lib/numpy/nparray.py", None, "from_iterable"),
 )
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
+_FORWARDED = WeakKeyDictionary()
 _ACTIVE, _FAILED, _LOCK = [], [], RLock()
 _PROOFS = (source.SeedProfiles.init_profiles, source.SeedProfilesCallSite.continue_seed)
 _SOURCE_FILE, _PARENT_FILE = Path(source.__file__), Path(previous.__file__)
@@ -93,6 +105,7 @@ class Request:
     core_owner: object
     parent_identity: str
     source_identity: str
+    image_inputs: tuple
     identity: str
 
     def __reduce_ex__(self, protocol):
@@ -106,6 +119,8 @@ class Trial:
     before: object
     after: object
     events: tuple
+    work: tuple
+    rng_events: tuple
     stream_before: object
     stream_after: object
     callback_completed: bool
@@ -253,8 +268,16 @@ def source_plan():
             "factored core handoff; no stale pre-core constructor validator"
         ),
         picker_semantics="Original order/duplicates/empty selections; no normalized targets",
+        percent_native_effect=(
+            "cell_i_copy = cells.cell_i[:] may be a view; retain native shuffle mutation of "
+            "the same cell_i buffer and original All-picker aliases, never insert a copy"
+        ),
         image_or_percent_requires=(
             "Actual retained image-file/runtime or global-MT owner; no fixture"
+        ),
+        image_authority=(
+            "Optional explicit issued FileInput tuple bound to every actually retained "
+            "image-picker filename; file bytes alone grant no geometry or phase authority"
         ),
         stopped_before=("redo_gj", "init_events", "INIT", "SIM"),
         original_helpers_reused=True,
@@ -285,7 +308,7 @@ def _ready():
     api = previous._ready()
     if hashlib.sha256(Path(api.__file__).read_bytes()).hexdigest() != COORDINATOR_SOURCE_SHA256:
         raise ProfilesRejected("Exact coordinator producer changed", stage="producer")
-    dyna = api._ready().stages[2]
+    dyna = api._dependencies().stages[2]
     if hashlib.sha256(Path(dyna.__file__).read_bytes()).hexdigest() != DYNA_SOURCE_SHA256:
         raise ProfilesRejected("Exact dyna producer changed", stage="producer")
     route = vars(api).get(PROPOSED_ROUTER)
@@ -310,16 +333,36 @@ def _ready():
 
 def request_record(value):
     return dict(
-        law_id=LAW_ID, parent_identity=value.parent_identity, source_identity=value.source_identity
+        law_id=LAW_ID,
+        parent_identity=value.parent_identity,
+        source_identity=value.source_identity,
+        image_inputs=tuple(item.identity for item in value.image_inputs),
     )
 
 
-def from_core(owner, *, law_id):
+def _image_authority(inputs, profiles):
+    if type(inputs) is not tuple or len(inputs) > 64:
+        raise ValueError("Bounded explicit immutable image-file tuple required")
+    actual = []
+    for value in inputs:
+        files._verify_file(value)
+        if value.filename in actual:
+            raise ValueError("Duplicate image-file authority")
+        actual.append(value.filename)
+    wanted = []
+    for role, picker in profiles:
+        if role == "TissuePickerImage":
+            wanted.append(picker.filename)
+    if set(actual) != set(wanted):
+        raise ValueError("Missing or foreign source-selected image-file authority")
+
+
+def from_core(owner, *, law_id, image_inputs=()):
     if type(law_id) is not str or law_id != LAW_ID:
         raise ProfilesRejected("Exact profile-source law required", stage="law")
     if _ACTIVE:
         _reject(_ACTIVE[-1], "Reentrant profile declaration")
-    _ready()
+    api = _ready()
     with _LOCK:
         if _ACTIVE:
             _reject(_ACTIVE[-1], "Reentrant profile declaration")
@@ -330,7 +373,22 @@ def from_core(owner, *, law_id):
             name in vars(parent.phase.dyna) for name in MAPS
         ):
             raise ProfilesRejected("Profiles require a complete unconsumed core", stage="parent")
-        request = Request(owner, parent.trial.identity, _digest(source_plan()), "")
+        dyna_module = api._dependencies().stages[2]
+        proof = SimpleNamespace(
+            dyna=parent.phase.dyna,
+            phase=parent.phase,
+            p=parent.p,
+            dyna_module=dyna_module,
+            dyna_origin=dyna_module._OBJECTS.get(parent.phase.dyna),
+            profiles=tuple(parent.phase.dyna.tissue_name_to_profile.items()),
+        )
+        if proof.dyna_origin is None:
+            raise ProfilesRejected(
+                "Original dyna constructor ancestry unavailable", stage="dyna_ancestry"
+            )
+        _profile_bindings(proof)
+        _image_authority(image_inputs, _selected_pickers(proof))
+        request = Request(owner, parent.trial.identity, _digest(source_plan()), image_inputs, "")
         request = replace(request, identity=_digest(request_record(request)))
         _REQUESTS[request] = (
             parent,
@@ -359,6 +417,16 @@ def _reject(context, reason):
 def _guard(context):
     if context.entry_error is not None:
         raise context.entry_error
+    if getattr(context, "inherited_hook_active", False):
+        _reject(context, "Inherited observer may not enter a source continuation")
+    if (
+        sys.call_tracing is not context.call_tracing
+        or sys.getprofile is not context.restore_getters[0]
+        or sys.gettrace is not context.restore_getters[1]
+        or sys.setprofile is not context.restore_setters[0]
+        or sys.settrace is not context.restore_setters[1]
+    ):
+        _reject(context, "Original observer/cleanup builtins changed")
     if context.observation_error is not None:
         raise ProfilesRejected(
             "Incomplete observation; no further source work",
@@ -383,10 +451,13 @@ def _guard(context):
 
 def _raw(context, role, frame, value):
     # The source return witness precedes every fallible copy/encoder/callback.
-    old = context.last_raw
+    old = context.last_raw_history
+    context.last_raw = (role, frame, value)
     if old is not None and old[0] == role and old[1] is frame and old[2] is value:
         return
-    context.last_raw = (role, frame, value)
+    # A failed history append remains an incomplete attempt, never an implicit
+    # retry by the second observation layer. last_raw still retains the roots.
+    context.last_raw_history = context.last_raw
     context.raw_returns.append(context.last_raw)
 
 
@@ -424,7 +495,11 @@ def _values(context, *, stable=False):
         simulator={k: v for k, v in sim.items() if not stable or k != "Dm_cells"},
         membrane_material=None if stable else sim["Dm_cells"],
         parameters=vars(context.p),
-        cells=vars(context.cells),
+        cells={
+            k: v
+            for k, v in vars(context.cells).items()
+            if not stable or not context.percent_declared or k != "cell_i"
+        },
         grid=vars(context.grid),
         profile_fields=tuple(
             (name, vars(profile), vars(profile.picker)) for name, profile in context.profiles
@@ -445,6 +520,7 @@ def _edges(context):
     root.cells = vars(context.cells)
     root.grid = vars(context.grid)
     root.profile_fields = context.profile_fields
+    root.percent_views = context.percent_views
     parent = context.parent.parent
     return previous.previous._scope(parent).graph(root, root, context.graph_tape)
 
@@ -602,9 +678,27 @@ def _profile_bindings(context):
     return tuple(atoms)
 
 
+def _selected_pickers(context):
+    selected = []
+    for _, profile in context.profiles:
+        picker = profile.picker
+        roles = [role for role, item in context.dyna_origin.objects if item is picker]
+        if len(roles) != 1:
+            raise ValueError("Exact actual selected picker issuance required")
+        selected.append((roles[0], picker))
+    return tuple(selected)
+
+
 def _bindings(context):
     _bootstrap(context)
     result = [
+        _REQUESTS,
+        _CONSUMED,
+        _RETIRED,
+        _ISSUED,
+        _FORWARDED,
+        _ACTIVE,
+        _LOCK,
         context.api,
         context.parent_claim,
         context.parent_check,
@@ -615,11 +709,30 @@ def _bindings(context):
         context.picker_forwarder,
         *context.source_globals.values(),
         *_profile_bindings(context),
+        context.call_tracing,
+        context.required_hooks,
+        *context.required_hooks,
+        context.restore_getters,
+        *context.restore_getters,
+        context.restore_setters,
+        *context.restore_setters,
     ]
     for function in (*context.native_functions, *context.methods.values(), *context.callback_chain):
         result.extend(previous.previous._atoms(function))
     result.extend(previous._resolved_bindings(context.native_functions))
     result.extend((context.dm, context.dm.dtype, context.dm.base, context.parent.rng))
+    if context.percent_declared:
+        random = context.parent.numpy.random
+        result.extend(
+            (
+                random,
+                random.shuffle,
+                random.mtrand,
+                random.mtrand._rand,
+                type(random.mtrand._rand),
+                vars(type(random.mtrand._rand))["shuffle"],
+            )
+        )
     return tuple(result)
 
 
@@ -634,6 +747,7 @@ def _same_bindings(actual, expected):
 def _check(context, *, closed=False):
     if not closed:
         _guard(context)
+    _check_fields(context)
     if (
         _REQUESTS.get(context.request) is not context.refs
         or _CONSUMED.get(context.request) is not context
@@ -652,6 +766,7 @@ def _check(context, *, closed=False):
     ):
         raise ValueError("Exact same-phase core/profile source association changed")
     _same_bindings(_bindings(context), context.bindings)
+    _image_authority(context.request.image_inputs, _selected_pickers(context))
     if _cache(context, _values(context, stable=True)).identity != context.stable:
         raise ValueError("Profiles changed stores outside native target maps/Dm_cells")
     current = (
@@ -663,6 +778,45 @@ def _check(context, *, closed=False):
     )
     if current != context.dm_layout:
         raise ValueError("Core-issued material buffer/layout changed")
+    if vars(context.cells)["cell_i"] is not context.cell_i:
+        raise ValueError("Native percent picker may not replace the issued cell_i owner")
+    if not context.percent_active and _cell_epoch(context) != context.cell_epoch:
+        raise ValueError("Cell index state changed outside the actual native percent call")
+    if (
+        not context.percent_active
+        and previous.previous._rng(context.parent.parent).identity != context.expected_rng.identity
+    ):
+        raise ValueError("Global MT changed outside the original percent source call")
+
+
+def _cell_epoch(context):
+    return previous._CORE.caches.snapshot(context.cell_i).identity
+
+
+def _accept_percent_view(context, view):
+    cell_i = context.cell_i
+    np = context.parent.numpy
+    if (
+        not context.percent_declared
+        or not context.percent_active
+        or type(view) is not np.ndarray
+        or view is cell_i
+        or view.dtype != cell_i.dtype
+        or view.shape != cell_i.shape
+        or view.strides != cell_i.strides
+        or view.__array_interface__["data"][0] != cell_i.__array_interface__["data"][0]
+    ):
+        raise ValueError("Exact original percent slice/view association required")
+
+    def root(value):
+        for _ in range(16):
+            if type(value.base) is not np.ndarray:
+                return value
+            value = value.base
+        raise ValueError("Bounded original array base chain required")
+
+    if root(view) is not root(cell_i) or (cell_i.size and not np.shares_memory(view, cell_i)):
+        raise ValueError("Original percent view must retain the same actual storage root")
 
 
 def _namespace(context):
@@ -677,7 +831,7 @@ def _namespace(context):
         )
     )
     delegate = closure.get("delegate")
-    context.dyna_module = context.api._ready().stages[2]
+    context.dyna_module = context.api._dependencies().stages[2]
     context.dyna_origin = context.dyna_module._OBJECTS.get(context.dyna)
     if context.dyna_origin is None or closure.get("context") is not context.dyna_origin:
         raise ValueError("Actual original dyna constructor/wrapper context required")
@@ -694,6 +848,8 @@ def _namespace(context):
     )
     context.original_wrapper, context.delegate = wrapper, delegate
     context.original, context.source_globals = original, original.__globals__
+    if context.source_globals["np"] is not context.parent.numpy:
+        raise ValueError("Actual core/profile NumPy owner must be identical")
     context.methods = {
         name: FunctionType(code, context.source_globals, name) for name, code in _codes().items()
     }
@@ -722,6 +878,34 @@ def _namespace(context):
             delegate = getattr(native_cls, name, None)
             if type(delegate) is FunctionType:
                 context.picker_delegates[role + "." + name] = delegate
+    context.percent_code = next(
+        fn.__code__
+        for fn in context.native_functions
+        if fn.__qualname__ == "TissuePickerPercent.pick_cells"
+    )
+    used = tuple(profile.picker for _, profile in context.profiles)
+    context.percent_declared = any(
+        role == "TissuePickerPercent" and any(value is picker for picker in used)
+        for role, value in context.dyna_origin.objects
+    )
+    context.shuffle = None
+    context.shuffle_code = None
+    if context.percent_declared:
+        random = context.parent.numpy.random
+        context.shuffle = random.shuffle
+        if (
+            type(context.shuffle) is not MethodType
+            or context.shuffle.__self__ is not context.parent.rng
+            or context.shuffle.__name__ != "shuffle"
+            or context.shuffle.__func__ is not vars(type(context.parent.rng))["shuffle"]
+            or type(context.parent.rng) is not vars(random.mtrand)["RandomState"]
+            or random.mtrand._rand is not context.parent.rng
+            or vars(random.mtrand).get("shuffle") is not context.shuffle
+        ):
+            raise ValueError("Actual source-owned global NumPy shuffle required")
+        context.shuffle_code = context.shuffle.__func__.__code__
+    context.cell_epoch = _cell_epoch(context)
+    _image_authority(context.request.image_inputs, _selected_pickers(context))
     context.pick_code = _compile(
         _node(_trees()[PICKER_FILE], "TissuePickerABC", "pick_cells_and_mems"),
         str(NATIVE / PICKER_FILE),
@@ -771,12 +955,15 @@ def _dispatch(context, original, label, delegate, actual, args, kwargs, frame):
         or len(args) != 1
         or args[0] is not context.phase
         or kwargs
+        or frame is not sys._getframe(1)
         or frame.f_back is not context.wrapper_frame
+        or context.forwarding_frame is not None
         or context.dispatch_frame is not None
     ):
         _reject(context, "Exact native profile method/phase dispatch required")
     _check(context)
-    context.dispatch_frame = frame
+    context.forwarding_frame = frame
+    context.dispatch_frame = sys._getframe()
     return context.methods["init_profiles"](context.dyna, context.phase)
 
 
@@ -800,11 +987,29 @@ def _picker_dispatch(context, original, label, delegate, args, kwargs, frame):
     if cells is not context.cells or (name != "get_image_mask" and p is not context.p):
         _reject(context, "Actual same-phase picker arguments required")
     _check(context)
+    percent = label == "TissuePickerPercent.pick_cells"
+    if percent:
+        if context.percent_active:
+            _reject(context, "Reentrant percent picker mutation")
+        context.percent_active = True
+        before = len(context.percent_views)
     context.helper_frames.append(sys._getframe())
     try:
-        return delegate(*args, **kwargs)
+        returned = delegate(*args, **kwargs)
+        if percent:
+            if len(context.percent_views) != before + 1:
+                _reject(context, "Exact actual percent source view witness required")
+            picker, view = context.percent_views[-1]
+            if picker is not args[0]:
+                _reject(context, "Percent view lost its actual picker owner")
+            _accept_percent_view(context, view)
+            context.cell_epoch = _cell_epoch(context)
+            context.expected_rng = previous.previous._rng(context.parent.parent)
+        return returned
     finally:
         context.helper_frames.pop()
+        if percent:
+            context.percent_active = False
 
 
 def _observe(context, frame, event, arg):
@@ -822,6 +1027,11 @@ def _observe(context, frame, event, arg):
     if event == "return" and (native or is_body or is_callback):
         _raw(context, code.co_qualname, frame, arg)
         context.events.append((code.co_qualname, arg))
+        if code is context.percent_code and _normal_return(frame):
+            fields = frame.f_locals
+            view = fields["cell_i_copy"]
+            _accept_percent_view(context, view)
+            context.percent_views.append((fields["self"], view))
         if code is context.pick_code and _normal_return(frame):
             body = frame.f_back
             if (
@@ -857,7 +1067,12 @@ def _observe(context, frame, event, arg):
                 _reject(context, "Single original callback/profile call-site entry required")
             context.caller_frame = frame
         elif code is context.methods["init_profiles"].__code__:
-            if context.body_frame is not None or frame.f_back is not context.dispatch_frame:
+            if (
+                context.body_frame is not None
+                or frame.f_back is not context.dispatch_frame
+                or context.dispatch_frame.f_back is not context.forwarding_frame
+                or context.forwarding_frame.f_back is not context.wrapper_frame
+            ):
                 _reject(context, "Profile body requires exact original dyna dispatch")
             context.body_frame = frame
         if is_callback:
@@ -899,23 +1114,46 @@ def _account(context):
     previous_locals = {}
 
     def profile(frame, event, arg):
+        if context.inherited_hook_active:
+            if event == "call" and (
+                frame.f_code in context.source_codes
+                or frame.f_code in context.allowed_codes
+                or frame.f_code.co_filename.startswith(str(NATIVE) + os.sep)
+            ):
+                _reject(context, "Inherited observer attempted a raw native/source entry")
+            return
+        if (
+            context.percent_active
+            and (arg is context.shuffle or frame.f_code is context.shuffle_code)
+            and event in ("call", "return", "c_call", "c_return", "c_exception")
+        ):
+            context.rng_events.append((event, frame, context.shuffle))
         if old_profile is not None:
             try:
-                old_profile(frame, event, arg)
+                _inherited_observer(context, old_profile, frame, event, arg)
             except BaseException as error:
                 _capture_error(context, error, "inherited_profile", (frame, event, arg))
                 if event not in ("return", "c_return", "c_exception"):
                     raise
-        if (
+        if context.observing and (
             sys.getprofile() is not context.observer_hooks[0]
             or sys.gettrace() is not context.observer_hooks[1]
         ):
+            first = context.observation_error
             error = ValueError("Inherited profile callback changed an active hook")
             _capture_error(context, error, "hook_identity", (frame, event, arg))
             if context.primary is None or event not in ("return", "c_return", "c_exception"):
-                raise error
+                raise first if first is not None else error
 
     def trace(frame, event, arg):
+        if context.inherited_hook_active:
+            if event == "call" and (
+                frame.f_code in context.source_codes
+                or frame.f_code in context.allowed_codes
+                or frame.f_code.co_filename.startswith(str(NATIVE) + os.sep)
+            ):
+                _reject(context, "Inherited observer attempted a raw native/source entry")
+            return trace
         # Our direct error/return witness is installed before inherited hooks.
         known = frame.f_code in context.source_codes or frame.f_code in context.allowed_codes
         if event == "exception" and known:
@@ -923,14 +1161,22 @@ def _account(context):
             if frame.f_code in context.source_codes and context.primary is None:
                 context.primary = arg[1]
         if event == "return" and known:
-            _raw(context, frame.f_code.co_qualname, frame, arg)
+            # The helper unwind and live return roots precede every fallible
+            # history append, including helpers outside source_codes.
+            context.last_raw = (frame.f_code.co_qualname, frame, arg)
             if not _normal_return(frame) and context.primary is None:
                 context.primary = context.pending_errors.get(id(frame))
+            try:
+                _raw(context, frame.f_code.co_qualname, frame, arg)
+            except BaseException as error:
+                _capture_error(context, error, "raw_return_history", context.last_raw)
+                if context.primary is None:
+                    raise
         prior = old_trace if event == "call" else previous_locals.get(id(frame))
         try:
             if prior is not None:
                 try:
-                    local = prior(frame, event, arg)
+                    local = _inherited_observer(context, prior, frame, event, arg)
                     if callable(local):
                         previous_locals[id(frame)] = local
                 except BaseException as error:
@@ -954,11 +1200,134 @@ def _account(context):
     try:
         context.restore_setters[0](profile)
         context.restore_setters[1](trace)
+        if (
+            context.restore_getters[0]() is not profile
+            or context.restore_getters[1]() is not trace
+            or context.observation_error is not None
+        ):
+            raise ProfilesRejected(
+                "Both original hooks must be installed before source work",
+                stage="observation_setup",
+            )
         context.observing = True
         yield
+    except BaseException as error:
+        selected = context.primary if context.primary is not None else context.entry_error
+        if selected is not None and selected is not error:
+            _capture_error(context, error, "interrupted_primary", selected)
+            raise selected  # noqa: B904 - preserve the exact original exception/cause.
+        raise
     finally:
         context.observing = False
-        _restore(context)
+        context.hooks_safe = False
+        try:
+            if not _restore(context):
+                raise ValueError("Original restoration did not recover both hooks")
+        except BaseException as error:
+            context.cleanup_errors += (("restore_entry_or_return", error, None),)
+        # A prior hook may reject _restore itself before its body can recover.
+        # These independent caller-boundary attempts must still reach BOTH.
+        for index in (1, 0):
+            try:
+                context.restore_setters[index](context.required_hooks[index])
+            except BaseException as error:
+                context.cleanup_errors += (("caller_restore", error, index),)
+        samples = []
+        for order in ((0, 1), (1, 0)):
+            pair = [None, None]
+            for index in order:
+                try:
+                    pair[index] = context.restore_getters[index]()
+                except BaseException as error:
+                    context.cleanup_errors += (("caller_sample", error, index),)
+            samples.append(tuple(pair))
+        context.final_hook_samples = tuple(samples)
+        context.hooks_safe = all(
+            pair[0] is context.required_hooks[0] and pair[1] is context.required_hooks[1]
+            for pair in samples
+        )
+        if not context.hooks_safe:
+            context.invalid = True
+        if context.cleanup_errors and context.observation_error is None:
+            context.observation_error = context.cleanup_errors[0][1]
+
+
+def _observer_epoch(context):
+    # Only the newly mutable source buffers/maps need per-callback content
+    # witnesses. Full immutable ancestry is still checked by the parent lease.
+    values = dict(
+        Dm_cells=context.dm,
+        cell_i=context.cell_i,
+        maps={name: vars(context.dyna)[name] for name in MAPS if name in vars(context.dyna)},
+    )
+    metadata = tuple(
+        id(getattr(context, name))
+        for name in (
+            "request",
+            "refs",
+            "parent",
+            "api",
+            "phase",
+            "p",
+            "cells",
+            "sim",
+            "dyna",
+            "dm",
+            "cell_i",
+            "expected_rng",
+            "percent_active",
+            "active",
+            "invalid",
+            "thread",
+            "entries",
+            "parent_claim",
+            "parent_check",
+            "call_tracing",
+        )
+    )
+    maps = tuple(
+        (name, id(vars(context.dyna)[name])) for name in MAPS if name in vars(context.dyna)
+    )
+    return (
+        _cache(context, values).identity,
+        previous.previous._rng(context.parent.parent).identity,
+        metadata,
+        maps,
+    )
+
+
+def _observer_delegate(observer, frame, event, arg):
+    return observer(frame, event, arg)
+
+
+def _inherited_observer(context, observer, frame, event, arg):
+    if context.inherited_hook_active:
+        _reject(context, "Reentrant inherited source observer")
+    before = _observer_epoch(context)
+    context.inherited_hook_active = True
+    primary = None
+    try:
+        return context.call_tracing(_observer_delegate, (observer, frame, event, arg))
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        context.inherited_hook_active = False
+        capture = None
+        try:
+            if _observer_epoch(context) != before:
+                raise ValueError("Inherited observer changed material/maps/indices/MT or authority")
+        except BaseException as error:
+            capture = error
+            context.last_observer_capture = (error, frame, event, arg)
+            try:
+                _capture_error(context, error, "inherited_mutation_or_capture", (frame, event, arg))
+            except BaseException as secondary:
+                context.observer_capture_error = (secondary, context.last_observer_capture)
+        if context.entry_error is not None:
+            raise context.entry_error
+        if primary is None and context.primary is None and capture is not None:
+            raise capture
 
 
 def _restore(context):
@@ -1022,6 +1391,10 @@ def trial_record(value):
         callback_completed=value.callback_completed,
         profile_order=value.profile_order,
         events=tuple((name, id(raw)) for name, raw in value.events),
+        work=tuple((file, name, id(frame)) for file, name, frame in value.work),
+        rng_events=tuple(
+            (event, id(frame), id(delegate)) for event, frame, delegate in value.rng_events
+        ),
         source_completed=value.source_completed,
     )
 
@@ -1041,11 +1414,14 @@ def _failure(context, primary):
         parameters=context.p,
         cells=context.cells,
         raw_returns=context.raw_returns,
+        last_raw=context.last_raw,
+        last_raw_history=context.last_raw_history,
         source_exceptions=context.source_exceptions,
         locals=context.locals,
         work=context.work,
         primary=selected,
         capture_errors=context.capture_errors,
+        cleanup_errors=context.cleanup_errors,
     )
     try:
         selected.seed_init_profiles_partial = context
@@ -1086,6 +1462,8 @@ def _context(request, refs, api):
         invalid=False,
         validating=False,
         observing=False,
+        inherited_hook_active=False,
+        call_tracing=sys.call_tracing,
         thread=get_ident(),
         stage="claim",
         trial=None,
@@ -1101,8 +1479,14 @@ def _context(request, refs, api):
         helper_frames=[],
         environment_returns=[],
         last_raw=None,
+        last_raw_history=None,
         source_exceptions=[],
         pending_errors={},
+        percent_declared=False,
+        percent_active=False,
+        percent_views=[],
+        rng_events=[],
+        cell_i=phase.cells.cell_i,
         work=[],
         events=[],
         locals={},
@@ -1113,6 +1497,7 @@ def _context(request, refs, api):
         body_return=None,
         caller_frame=None,
         wrapper_frame=None,
+        forwarding_frame=None,
         dispatch_frame=None,
         body_frame=None,
         required_hooks=(sys.getprofile(), sys.gettrace()),
@@ -1184,6 +1569,7 @@ def prepare(request, *, enabled=False):
             context.stable = _cache(context, _values(context, stable=True)).identity
             context.before = _snapshot(context)
             context.stream_before = previous.previous._rng(parent.parent)
+            context.expected_rng = context.stream_before
             _check(context)
             with _account(context):
                 context.stage = "original_callback_then_profiles"
@@ -1199,6 +1585,8 @@ def prepare(request, *, enabled=False):
                 context.before,
                 context.after,
                 tuple(context.events),
+                tuple(context.work),
+                tuple(context.rng_events),
                 context.stream_before,
                 context.stream_after,
                 context.callback_completed,
@@ -1207,10 +1595,38 @@ def prepare(request, *, enabled=False):
                 "",
             )
             context.trial = replace(trial, identity=_digest(trial_record(trial)))
-            if not _restore(context):
+            # Recheck after all fallible completion/graph capture work. As at
+            # the observer boundary, helper-entry rejection cannot prevent
+            # independent restoration or mask an earlier source exception.
+            try:
+                if not _restore(context):
+                    raise ValueError("Original restoration did not recover both hooks")
+            except BaseException as error:
+                context.cleanup_errors += (("publication_restore_entry_or_return", error, None),)
+            for index in (1, 0):
+                try:
+                    context.restore_setters[index](context.required_hooks[index])
+                except BaseException as error:
+                    context.cleanup_errors += (("publication_restore", error, index),)
+            samples = []
+            for order in ((0, 1), (1, 0)):
+                pair = [None, None]
+                for index in order:
+                    try:
+                        pair[index] = context.restore_getters[index]()
+                    except BaseException as error:
+                        context.cleanup_errors += (("publication_sample", error, index),)
+                samples.append(tuple(pair))
+            context.final_hook_samples = tuple(samples)
+            context.hooks_safe = all(
+                pair[0] is context.required_hooks[0] and pair[1] is context.required_hooks[1]
+                for pair in samples
+            )
+            if not context.hooks_safe or context.cleanup_errors:
                 raise ValueError("Both original hooks must be restored before publication")
             context.active = False
             owner = object.__new__(ProfilesOwner)
+            context.owner = owner
             _ISSUED[owner] = context
             return owner
         except BaseException as error:
@@ -1221,6 +1637,190 @@ def prepare(request, *, enabled=False):
                 _ACTIVE.pop()
             else:
                 context.invalid = True
+
+
+def _check_fields(context):
+    """Only the actual profile stage may append the three original handler maps."""
+    _bootstrap(context)
+    if (
+        type(context.request) is not Request
+        or _REQUESTS.get(context.request) is not context.refs
+        or _CONSUMED.get(context.request) is not context
+        or _RETIRED.get(context.request.core_owner) is not context
+        or context.invalid
+        or context.thread != get_ident()
+        or context.parent is not context.refs[0]
+        or context.parent.trial is not context.refs[1]
+        or context.phase is not context.parent.phase
+        or context.phase.dyna is not context.dyna
+        or context.phase.sim is not context.sim
+        or context.phase.p is not context.p
+        or context.phase.cells is not context.cells
+    ):
+        raise ValueError("Actual irreversible core/profile relation changed")
+    names = tuple(vars(context.dyna))
+    added = names[len(context.original_names) :]
+    if names != (*context.original_names, *MAPS[: len(added)]) or len(added) > len(MAPS):
+        raise ValueError("Handler stores escaped the original three-map roster")
+    for name in added:
+        if type(vars(context.dyna)[name]) is not dict:
+            raise ValueError("Original profile target maps must remain actual dictionaries")
+    return names
+
+
+def _junctions_route(parent):
+    module = _ready()._seed_junctions_api()
+    child, owner = getattr(parent, "junctions", None), getattr(parent, "owner", None)
+    if (
+        child is None
+        or owner is None
+        or _ISSUED.get(owner) is not parent
+        or _FORWARDED.get(owner) is not child
+        or parent.active
+        or parent.invalid
+        or child.invalid
+        or type(child.request) is not module.Request
+        or child.request.profiles_owner is not owner
+        or module._REQUESTS.get(child.request) is not child.refs
+        or module._CONSUMED.get(child.request) is not child
+        or module._RETIRED.get(owner) is not child
+        or child.parent is not parent
+        or child.refs[0] is not parent
+        or child.refs[1] is not parent.trial
+        or any(
+            getattr(child, name) is not getattr(parent, name)
+            for name in ("phase", "sim", "p", "cells", "dyna", "grid")
+        )
+        or child.world is not parent.parent.parent
+        or child.thread != parent.thread
+        or child.thread != get_ident()
+        or tuple(child.entries) != ("wrapper_guard", "dispatch")
+        or child.entries["wrapper_guard"] is not module._wrapper_guard
+        or child.entries["dispatch"] is not module._dispatch
+    ):
+        raise ValueError("Actual profile/junction issuance or retirement edge changed")
+    return child, module
+
+
+def _junctions_values(parent):
+    module = _ready()._seed_junctions_api()
+    values = _values(parent)
+    values["cells"] = {
+        name: value for name, value in vars(parent.cells).items() if name not in module.STORES
+    }
+    return _cache(parent, values)
+
+
+def _junctions_graph(parent):
+    module = _ready()._seed_junctions_api()
+    view = parent.junctions_view
+    parent.junctions_cells.clear()
+    parent.junctions_cells.update(
+        (name, value) for name, value in vars(parent.cells).items() if name not in module.STORES
+    )
+    view.cells = parent.junctions_cells
+    view.simulator, view.parameters, view.handler = (
+        vars(parent.sim),
+        vars(parent.p),
+        vars(parent.dyna),
+    )
+    view.mesh, view.grid = vars(parent.parent.mesh), vars(parent.grid)
+    view.profiles, view.percent_views = parent.profile_fields, parent.percent_views
+    return previous.previous._scope(parent.parent.parent).graph(view, view, parent.graph_tape)
+
+
+def _claim_for_seed_junctions(owner, *, expected, transition, entries):
+    module = _ready()._seed_junctions_api()
+    caller = sys._getframe(1)
+    with _LOCK:
+        parent = _ISSUED.get(owner) if type(owner) is ProfilesOwner else None
+        if (
+            parent is None
+            or parent.trial is not expected
+            or caller.f_code is not module.prepare.__code__
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+        ):
+            raise ProfilesRejected("Actual active junction issuer required", stage="entry")
+        if owner in _FORWARDED or hasattr(parent, "junctions"):
+            raise ProfilesRejected("Profile junction epoch consumed", stage="consumed")
+        if (
+            parent.active
+            or parent.validating
+            or parent.invalid
+            or parent.owner is not owner
+            or transition.driver_frame is not caller
+            or transition.parent is not parent
+            or type(transition.request) is not module.Request
+            or transition.request.profiles_owner is not owner
+            or module._REQUESTS.get(transition.request) is not transition.refs
+            or module._CONSUMED.get(transition.request) is not transition
+            or module._RETIRED.get(owner) is not transition
+            or transition.refs[0] is not parent
+            or transition.refs[1] is not expected
+            or any(
+                getattr(transition, name) is not getattr(parent, name)
+                for name in ("phase", "p", "cells", "sim", "grid", "dyna")
+            )
+            or transition.world is not parent.parent.parent
+            or transition.thread != parent.thread
+            or transition.thread != get_ident()
+            or entries is not transition.entries
+            or tuple(entries) != ("wrapper_guard", "dispatch")
+            or entries["wrapper_guard"] is not module._wrapper_guard
+            or entries["dispatch"] is not module._dispatch
+        ):
+            parent.invalid = transition.invalid = True
+            raise ValueError("Actual same-phase profile/junction entry or ancestry changed")
+        parent.junctions = transition
+        try:
+            _FORWARDED[owner] = transition
+            previous._claim_profile_junction_permission(parent, transition)
+            _check(parent, closed=True)
+            _complete(parent)
+            if (
+                parent.trial.identity != _digest(trial_record(parent.trial))
+                or parent.trial.after.identity != _snapshot(parent).identity
+            ):
+                raise ValueError("Original completed profile trial/cache changed")
+            graph = _edges(parent)
+            previous.previous._same(graph[0], parent.graph[0])
+            if graph[1] != parent.graph[1]:
+                raise ValueError("Original completed profile aliases changed")
+            parent.junctions_view, parent.junctions_cells = SimpleNamespace(), {}
+            parent.junctions_values = _junctions_values(parent)
+            parent.junctions_graph = _junctions_graph(parent)
+        except BaseException:
+            parent.invalid = transition.invalid = True
+            raise
+        return parent
+
+
+def _check_seed_junctions_authority(transition):
+    parent = transition.parent
+    if _junctions_route(parent)[0] is not transition:
+        raise ValueError("Different actual junction continuation")
+    _bootstrap(parent)
+    _check_fields(parent)
+    if previous._check_seed_profiles_authority(parent) is not parent.parent:
+        raise ValueError("Different original core/profile ancestry")
+    _same_bindings(_bindings(parent), parent.bindings)
+    _image_authority(parent.request.image_inputs, _selected_pickers(parent))
+    _complete(parent)
+    if (
+        parent.trial is not transition.refs[1]
+        or parent.trial.source_completed is not True
+        or parent.trial.identity != _digest(trial_record(parent.trial))
+        or _junctions_values(parent).identity != parent.junctions_values.identity
+        or _cell_epoch(parent) != parent.cell_epoch
+        or previous.previous._rng(parent.parent.parent).identity != parent.stream_after.identity
+    ):
+        raise ValueError("Junctions changed a retained profile/material/index/MT value")
+    graph = _junctions_graph(parent)
+    previous.previous._same(graph[0], parent.junctions_graph[0])
+    if graph[1] != parent.junctions_graph[1]:
+        raise ValueError("Junctions changed a retained profile/material/reference edge")
+    return parent
 
 
 class ProfilesOwner:
@@ -1245,6 +1845,13 @@ def _authority(owner):
     if type(owner) is not ProfilesOwner or owner not in _ISSUED:
         raise ProfilesRejected("Actual issued profile owner required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "junctions"):
+        raise ProfilesRejected(
+            "Profile epoch was irreversibly consumed by junctions",
+            stage="forwarded",
+            trial=context.trial,
+            partial=context,
+        )
     if context.active or context.invalid or context.validating:
         raise ProfilesRejected("Profile epoch unavailable", stage="owner")
     context.validating = True

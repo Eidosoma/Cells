@@ -26,6 +26,23 @@ def is_forbidden_frame(frame):
     if base.is_forbidden_frame(frame):
         return True
     module, name = frame.f_globals.get("__name__", ""), frame.f_code.co_name
+    if module == "cells.processes.betse_native_init_dynamics_prelude" and name in (
+        "from_init",
+        "prepare",
+        "_execute",
+    ):
+        return True
+    if module == "cells.processes.betse_native_init_retained_world" and name in (
+        "from_seed",
+        "prepare",
+        "_execute",
+    ):
+        return True
+    if module == "cells.processes.betse_native_parameter_seed_init_transition" and name in (
+        "seed_to_init",
+        "__enter__",
+    ):
+        return True
     return name in ("prepare", "acquire_callback", "acquire_world_ready", "evaluate_live") and (
         module.startswith("cells.processes.betse_native_seed_")
         or module

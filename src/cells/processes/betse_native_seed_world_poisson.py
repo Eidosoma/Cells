@@ -35,7 +35,8 @@ from cells.processes import betse_native_single_cell_poisson_source as source
 LAW_ID = "betse_same_seed_actual_environment_Poisson_modes@1"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_POISSON_RELEASED"
 FLUX_OPERATORS = ("original", "disabled")
-PARENT_SOURCE_SHA256 = PARENT_REVIEW_SHA256 = None
+PARENT_SOURCE_SHA256 = "2b8701f0fd4f59731d69d7a244fc3bdf8b347e683a9335fb561b83f90ab2f22a"
+PARENT_REVIEW_SHA256 = "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb"
 PARENT_MODULE = "cells.processes.betse_native_seed_world_geometry"
 LITERAL_SHA256 = "418f3c47ee93b606554c2dce7ceeba500f6731e96b7a2e8f04c65fc28be58141"
 OBSERVATION_SHA256 = "5d770e303966342898ff4c6d420997041934ccc873a0f62c3277fb2628b3dafb"
@@ -63,6 +64,7 @@ CALLBACK_STATUSES = (
 CALLER_LINES = ((499, 500, 503, 504), (507, 508, 511, 512))
 MAX_WORK = previous.MAX_WORK
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
+_FORWARDED = WeakKeyDictionary()
 _ACTIVE, _LOCK = [], RLock()
 _BASE = previous._BASE
 _PREFIX = _BASE.image.prefix
@@ -475,10 +477,19 @@ def _bind_holder_views(context):
     for pair, holder in zip(parent.objects, parent.holders, strict=True):
         if type(pair) is not tuple or len(pair) != 2 or vars(pair[1]) is not holder:
             raise ValueError("Original geometry holder is not its actual object dictionary")
-        projected = context.stable_view.caller if pair[1] is context.cells else holder
+        projected = (
+            context.stable_view.caller
+            if pair[1] is context.cells
+            else context.stable_view.simulator
+            if pair[1] is context.phase.sim
+            else holder
+        )
         links.append((pair, holder, projected))
     context.holder_links = tuple(links)
     context.baseline_holders = tuple(projected for _, _, projected in links)
+    context.final_holders = tuple(
+        projected if pair[1] is context.phase.sim else holder for pair, holder, projected in links
+    )
 
 
 def _holder_views(context):
@@ -497,9 +508,20 @@ def _holder_views(context):
             pair is not original_pair
             or holder is not original_holder
             or vars(pair[1]) is not holder
-            or projected is not (context.stable_view.caller if pair[1] is context.cells else holder)
+            or projected
+            is not (
+                context.stable_view.caller
+                if pair[1] is context.cells
+                else context.stable_view.simulator
+                if pair[1] is context.phase.sim
+                else holder
+            )
         ):
             raise ValueError("Original geometry holder/reference identity changed")
+    context.stable_view.simulator.clear()
+    context.stable_view.simulator.update(
+        context.api._world_sim_fields(context.parent, context.phase.sim)
+    )
     return context.baseline_holders
 
 
@@ -518,7 +540,7 @@ def _graph(context, *, baseline=False):
     view.issued_roots = context.parent.projector.objects
     view.helper_buffers = context.parent.helper_views
     view.objects = context.parent.objects
-    view.holders = holders if baseline else context.parent.holders
+    view.holders = holders if baseline else context.final_holders
     view.original_cell_i = context.original_cell_i
     view.tail_inputs = () if baseline else context.tail_inputs
     view.tail_results = () if baseline else context.tail_results
@@ -660,6 +682,7 @@ def _bindings(context):
         _CONSUMED,
         _RETIRED,
         _ISSUED,
+        _FORWARDED,
         _ACTIVE,
         _LOCK,
         previous,
@@ -1539,7 +1562,7 @@ def prepare(request, *, enabled=False):
             restore_setters=(sys.setprofile, sys.settrace),
             restore_getters=(sys.getprofile, sys.gettrace),
             native_root=str(_PREFIX.aliases.NATIVE),
-            stable_view=SimpleNamespace(caller={}, grid=None, operator_roots={}),
+            stable_view=SimpleNamespace(caller={}, simulator={}, grid=None, operator_roots={}),
             final_view=SimpleNamespace(caller={}, grid=None, operator_roots={}),
             stable_tape=SimpleNamespace(rng=parent.rng, events=(), draws=(), locals={}),
         )
@@ -1787,6 +1810,13 @@ def _authority(owner):
     if type(owner) is not PoissonOwner or owner not in _ISSUED:
         raise PoissonRejected("Actually issued SEED Poisson child required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "core"):
+        raise PoissonRejected(
+            "Completed world epoch irreversibly consumed by core",
+            stage="forwarded",
+            trial=context.trial,
+            partial=context,
+        )
     if context.active or context.invalid or context.validating:
         _reject(context, None, "Unavailable Poisson child")
     context.validating = True
@@ -1813,6 +1843,125 @@ def _authority(owner):
     finally:
         context.validating = False
     return context
+
+
+def _claim_for_seed_init_core(owner, *, expected, transition, entries):
+    module = _ready()._seed_init_core_api()
+    caller = sys._getframe(1)
+    with _LOCK:
+        parent = _ISSUED.get(owner) if type(owner) is PoissonOwner else None
+        if (
+            parent is None
+            or parent.trial is not expected
+            or caller.f_code is not module.prepare.__code__
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+        ):
+            raise PoissonRejected(
+                "Actual active same-Simulator core issuer required", stage="entry"
+            )
+        if owner in _FORWARDED or hasattr(parent, "core"):
+            raise PoissonRejected("Completed-world core epoch consumed", stage="consumed")
+        if (
+            parent.active
+            or parent.invalid
+            or parent.validating
+            or parent.owner is not owner
+            or transition.driver_frame is not caller
+            or transition.parent is not parent
+            or type(transition.request) is not module.Request
+            or transition.request.world_owner is not owner
+            or module._REQUESTS.get(transition.request) is not transition.refs
+            or module._CONSUMED.get(transition.request) is not transition
+            or module._RETIRED.get(owner) is not transition
+            or transition.refs[0] is not parent
+            or transition.refs[1] is not expected
+            or any(
+                getattr(transition, name) is not getattr(parent, name)
+                for name in ("phase", "p", "cells", "mesh", "mask", "rng", "grid")
+            )
+            or transition.sim is not parent.phase.sim
+            or transition.thread != parent.thread
+            or transition.thread != get_ident()
+            or entries is not transition.entries
+            or tuple(entries) != ("wrapper_guard", "dispatch")
+            or entries["wrapper_guard"] is not module._wrapper_guard
+            or entries["dispatch"] is not module._dispatch
+        ):
+            parent.invalid = transition.invalid = True
+            raise ValueError("Actual world/core ancestry or entry bindings changed")
+        parent.core = transition
+        try:
+            _FORWARDED[owner] = transition
+            _check(parent)
+            _complete(parent)
+            if (
+                parent.trial.source_completed is not True
+                or parent.trial.identity != _digest(trial_record(parent.trial))
+                or parent.trial.cache.identity != _snapshot(parent).identity
+            ):
+                raise ValueError("Original completed-world source seal changed")
+            graph = _graph(parent)
+            _same(graph[0], parent.graph[0])
+            if graph[1] != parent.graph[1] or _seed_core_route(parent)[0] is not transition:
+                raise ValueError("Original world graph or core retirement changed")
+        except BaseException:
+            parent.invalid = transition.invalid = True
+            raise
+        return parent
+
+
+def _seed_core_route(parent):
+    module = _ready()._seed_init_core_api()
+    child, owner = getattr(parent, "core", None), getattr(parent, "owner", None)
+    if (
+        child is None
+        or owner is None
+        or _ISSUED.get(owner) is not parent
+        or _FORWARDED.get(owner) is not child
+        or parent.active
+        or parent.invalid
+        or child.invalid
+        or child.parent is not parent
+        or type(child.request) is not module.Request
+        or child.request.world_owner is not owner
+        or module._REQUESTS.get(child.request) is not child.refs
+        or module._CONSUMED.get(child.request) is not child
+        or module._RETIRED.get(owner) is not child
+        or child.refs[0] is not parent
+        or child.refs[1] is not parent.trial
+        or any(
+            getattr(child, name) is not getattr(parent, name)
+            for name in ("phase", "p", "cells", "mesh", "mask", "rng", "grid")
+        )
+        or child.sim is not parent.phase.sim
+        or child.thread != parent.thread
+        or child.thread != get_ident()
+        or tuple(child.entries) != ("wrapper_guard", "dispatch")
+        or child.entries["wrapper_guard"] is not module._wrapper_guard
+        or child.entries["dispatch"] is not module._dispatch
+    ):
+        raise ValueError("Original world/core issuance or retirement link changed")
+    return child, module
+
+
+def _check_seed_init_core_authority(transition):
+    parent = transition.parent
+    if _seed_core_route(parent)[0] is not transition:
+        raise ValueError("Different actual core transition")
+    _check(parent)
+    _complete(parent)
+    if (
+        parent.trial is not transition.refs[1]
+        or parent.trial.source_completed is not True
+        or parent.trial.cache.identity != _snapshot(parent).identity
+    ):
+        raise ValueError("Retained full operators/caller/world source changed")
+    graph = _graph(parent)
+    _same(graph[0], parent.graph[0])
+    if graph[1] != parent.graph[1]:
+        raise ValueError("Retained completed-world references changed")
+    return parent
 
 
 def require_INIT(owner):

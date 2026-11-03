@@ -17,6 +17,8 @@ import pytest
 from cells.processes import betse_native_seed_init_profiles as stage
 from validation.betse import betse_native_seed_init_profiles_software as software
 
+_ORIGINAL_SHUFFLE = np.random.shuffle
+
 
 @pytest.fixture(autouse=True)
 def native_blocked(request, tmp_path, monkeypatch):
@@ -118,10 +120,16 @@ def context():
         cleanup_errors=(),
         raw_returns=[],
         last_raw=None,
+        last_raw_history=None,
         events=[],
         work=[],
         locals={},
         picks=[],
+        pick_code=None,
+        percent_code=None,
+        percent_active=False,
+        shuffle=None,
+        rng_events=[],
         source_exceptions=[],
         pending_errors={},
         helper_frames=[],
@@ -341,6 +349,229 @@ def test_direct_return_witness_precedes_observer_locals_failure(returned):
     assert caught.value is secondary
     assert value.last_raw[1] is frame and value.last_raw[2] is returned
     assert value.raw_returns == [value.last_raw]
+
+
+@pytest.mark.parametrize("route", ["valid", "foreign_forwarder", "direct_body"])
+def test_real_local_dispatch_chain_authenticates_forwarder_and_immediate_body_caller(
+    route, tmp_path
+):
+    value, owner, phase, returned = context(), object(), object(), object()
+    entered = []
+
+    def body(actual, actual_phase):
+        entered.append((actual, actual_phase))
+        return returned
+
+    def other():
+        return None
+
+    def metadata_check(context):
+        # Only frame admission is selected; this supplies no phase authority.
+        return None
+
+    def metadata_bindings(context):
+        return ()
+
+    observe = clone(stage._observe, _check=metadata_check, _bindings=metadata_bindings)
+    dispatch = clone(stage._dispatch, _check=metadata_check)
+    account = contextmanager(clone(stage._account.__wrapped__, _observe=observe))
+    value.methods = dict(init_profiles=body, continue_seed=other)
+    value.callback_chain = (other,)
+    value.source_codes = frozenset((body.__code__,))
+    value.allowed_codes = frozenset()
+    value.bindings = ()
+    value.dyna_origin, value.dyna, value.phase = owner, owner, phase
+    value.delegate = body
+    value.forwarding_frame = value.dispatch_frame = value.body_frame = None
+    value.environment_store_line = -1
+    value.body_returned = False
+
+    def forward():
+        frame = sys._getframe()
+        if route == "foreign_forwarder":
+            frame = NS(f_back=value.wrapper_frame)
+        return dispatch(value, owner, "init_profiles", body, owner, (phase,), {}, frame)
+
+    def wrapper():
+        value.wrapper_frame = sys._getframe()
+        if route == "direct_body":
+            return body(owner, phase)
+        return forward()
+
+    with active(value):
+        if route == "valid":
+            with account(value):
+                assert wrapper() is returned
+        else:
+            with pytest.raises(stage.ProfilesRejected) as caught:
+                with account(value):
+                    wrapper()
+            assert caught.value is value.entry_error
+    if route == "valid":
+        assert entered == [(owner, phase)] and value.body_returned
+        assert value.body_frame.f_back is value.dispatch_frame
+        assert value.dispatch_frame.f_back is value.forwarding_frame
+        assert value.forwarding_frame.f_code is forward.__code__
+        assert value.forwarding_frame.f_back is value.wrapper_frame
+        assert value.body_return is returned
+    else:
+        assert entered == [] and value.invalid
+    assert value.hooks_safe and not stage._ISSUED
+    software.snapshot.write_json(
+        tmp_path / "dispatch-chain.json",
+        dict(
+            route=route,
+            delegate_entries=len(entered),
+            exact_local_chain=route == "valid",
+            issued_phase_or_profile_owner=False,
+        ),
+    )
+
+
+@pytest.mark.parametrize("unwind", [False, True])
+@pytest.mark.parametrize("returned", [None, (1, 2)])
+def test_installed_helper_unwind_keeps_primary_and_raw_before_history_append_failure(
+    unwind, returned, tmp_path
+):
+    value = context()
+    primary, cause = RuntimeError("original helper failure"), LookupError("helper cause")
+    primary.__cause__ = cause
+    secondary = OSError("return history append failed")
+
+    class FailedHistory(list):
+        def append(self, row):
+            raise secondary
+
+    def helper():
+        if unwind:
+            raise primary
+        return returned
+
+    def metadata_observer(context, frame, event, arg):
+        return None
+
+    value.raw_returns = FailedHistory()
+    value.source_codes = frozenset()
+    value.allowed_codes = frozenset((helper.__code__,))
+    account = contextmanager(clone(stage._account.__wrapped__, _observe=metadata_observer))
+    with pytest.raises(RuntimeError if unwind else OSError) as caught:
+        with account(value):
+            helper()
+    assert caught.value is (primary if unwind else secondary)
+    assert value.primary is (primary if unwind else None)
+    if unwind:
+        assert caught.value.__cause__ is cause
+    assert value.last_raw[1].f_code is helper.__code__
+    assert value.last_raw[2] is (None if unwind else returned)
+    assert value.last_raw_history[1] is value.last_raw[1]
+    assert value.raw_returns == []
+    assert value.observation_error is secondary
+    assert any(
+        row[0] == "raw_return_history" and row[1] is secondary for row in value.capture_errors
+    )
+    assert value.hooks_safe and not stage._ISSUED
+    software.snapshot.write_json(
+        tmp_path / "raw-unwind.json",
+        dict(
+            unwind=unwind,
+            primary_identity_preserved=caught.value is primary if unwind else None,
+            cause_identity_preserved=caught.value.__cause__ is cause if unwind else None,
+            direct_return_witness=True,
+            history_complete=False,
+            original_return_kind="none" if returned is None else "tuple",
+            cleanup_safe=value.hooks_safe,
+        ),
+    )
+
+
+@pytest.mark.parametrize("layer", ["profile", "trace"])
+@pytest.mark.parametrize("unwind", [False, True])
+def test_restore_helper_entry_rejection_keeps_primary_and_independently_recovers_both_hooks(
+    layer, unwind, tmp_path
+):
+    before = (sys.getprofile(), sys.gettrace())
+    primary, cause = RuntimeError("source before cleanup"), LookupError("source cause")
+    primary.__cause__ = cause
+    secondary = OSError("inherited rejection of restore entry")
+    rejections, attempts = [], []
+
+    def helper():
+        if unwind:
+            raise primary
+        return None
+
+    def prior_profile(frame, event, arg):
+        if frame.f_code is stage._restore.__code__ and event == "call":
+            rejections.append((layer, frame))
+            raise secondary
+        if before[0] is not None:
+            before[0](frame, event, arg)
+
+    def prior_trace(frame, event, arg):
+        if frame.f_code is stage._restore.__code__ and event == "call":
+            rejections.append((layer, frame))
+            raise secondary
+        if before[1] is not None:
+            before[1](frame, event, arg)
+        return prior_trace
+
+    def metadata_observer(context, frame, event, arg):
+        return None
+
+    if layer == "profile":
+        sys.setprofile(prior_profile)
+    else:
+        sys.settrace(prior_trace)
+    value = context()
+    value.source_codes = frozenset((helper.__code__,))
+    value.allowed_codes = frozenset()
+
+    def set_profile(hook):
+        attempts.append((0, hook))
+        sys.setprofile(hook)
+
+    def set_trace(hook):
+        attempts.append((1, hook))
+        sys.settrace(hook)
+
+    value.restore_setters = (set_profile, set_trace)
+    account = contextmanager(clone(stage._account.__wrapped__, _observe=metadata_observer))
+    try:
+        if unwind:
+            with pytest.raises(RuntimeError) as caught:
+                with account(value):
+                    helper()
+            assert caught.value is primary and caught.value.__cause__ is cause
+            assert value.primary is primary
+        else:
+            with account(value):
+                helper()
+        assert len(rejections) == 1
+        assert any(row[0] == "restore_entry_or_return" and row[1] is secondary
+                   for row in value.cleanup_errors)
+        assert value.observation_error is secondary
+        assert any(index == 0 and hook is value.required_hooks[0] for index, hook in attempts)
+        assert any(index == 1 and hook is value.required_hooks[1] for index, hook in attempts)
+        assert value.final_hook_samples == (value.required_hooks, value.required_hooks)
+        assert value.hooks_safe and not stage._ISSUED
+        assert sys.getprofile() is value.required_hooks[0]
+        assert sys.gettrace() is value.required_hooks[1]
+        software.snapshot.write_json(
+            tmp_path / "helper-entry-cleanup.json",
+            dict(
+                layer=layer,
+                unwind=unwind,
+                actual_entry_rejections=len(rejections),
+                original_primary_and_cause_preserved=unwind,
+                independent_profile_attempt=True,
+                independent_trace_attempt=True,
+                both_final_samples_match=True,
+                child_admitted=False,
+            ),
+        )
+    finally:
+        sys.setprofile(before[0])
+        sys.settrace(before[1])
 
 
 @pytest.mark.parametrize("hook", ["profile", "trace"])
@@ -634,4 +865,102 @@ def test_no_call_helper_guard_binds_outer_code_reached_names_and_exact_cached_bu
     else:
         with pytest.raises(ValueError):
             native(function, filename, None, "probe")
+    assert not stage._ISSUED
+
+
+@pytest.mark.parametrize(
+    "drift", ["none", "empty", "copy", "offset", "stride", "self", "inactive", "undeclared"]
+)
+def test_percent_view_metadata_keeps_actual_storage_without_inserting_a_copy(drift):
+    root = np.arange(0 if drift == "empty" else 6)
+    view = root[:]
+    value = NS(cell_i=root, percent_declared=True, percent_active=True, parent=NS(numpy=np))
+    if drift == "copy":
+        view = root.copy()
+    elif drift == "offset":
+        view = root[1:]
+    elif drift == "stride":
+        view = root[::-1]
+    elif drift == "self":
+        view = root
+    elif drift == "inactive":
+        value.percent_active = False
+    elif drift == "undeclared":
+        value.percent_declared = False
+    if drift in ("none", "empty"):
+        assert stage._accept_percent_view(value, view) is None
+        assert view.base is root and value.cell_i is root
+    else:
+        with pytest.raises(ValueError):
+            stage._accept_percent_view(value, view)
+    assert not stage._ISSUED
+
+
+def test_shuffle_export_owner_metadata_is_inspected_without_invocation():
+    from types import MethodType
+
+    assert type(_ORIGINAL_SHUFFLE) is MethodType
+    assert _ORIGINAL_SHUFFLE.__self__ is np.random.mtrand._rand
+    assert _ORIGINAL_SHUFFLE.__name__ == "shuffle"
+    assert vars(np.random.mtrand)["shuffle"] is _ORIGINAL_SHUFFLE
+    assert _ORIGINAL_SHUFFLE.__func__ is vars(type(np.random.mtrand._rand))["shuffle"]
+    assert _ORIGINAL_SHUFFLE.__func__.__code__.co_filename == "numpy/random/mtrand.pyx"
+
+
+@pytest.mark.parametrize("ignored", [0, 1])
+def test_observer_setup_requires_both_installed_hooks_before_any_delegate(ignored):
+    value = context()
+    value.source_codes = value.allowed_codes = frozenset()
+    setters = list(value.restore_setters)
+    setters[ignored] = lambda hook: None
+    value.restore_setters = tuple(setters)
+    account = contextmanager(clone(stage._account.__wrapped__, _observe=lambda *args: None))
+    entered = []
+    with pytest.raises(stage.ProfilesRejected, match="Both original hooks"):
+        with account(value):
+            entered.append(True)
+    assert entered == []
+    assert sys.getprofile() is value.required_hooks[0]
+    assert sys.gettrace() is value.required_hooks[1]
+
+
+@pytest.mark.parametrize(
+    "drift", ["none", "missing", "foreign", "dict", "duplicate", "mutated", "unissued"]
+)
+def test_image_byte_authority_requires_actual_issued_file_and_exact_selected_filename(
+    tmp_path, drift
+):
+    path = tmp_path / "source-bytes.png"
+    path.write_bytes(b"synthetic file metadata only; never parsed or decoded")
+    path.chmod(0o444)
+    source = stage.files.input_file(
+        path,
+        sha256=software.snapshot.digest(path),
+        origin="Software byte-authority control, no image loaded",
+    )
+    inputs = (source,)
+    selected = (("TissuePickerImage", NS(filename=str(path))),)
+    if drift == "missing":
+        inputs = ()
+    elif drift == "foreign":
+        selected = (("TissuePickerImage", NS(filename=str(path.with_name("elsewhere.png")))),)
+    elif drift == "dict":
+        inputs = (dict(filename=str(path)),)
+    elif drift == "duplicate":
+        inputs = (source, source)
+    elif drift == "mutated":
+        path.chmod(0o644)
+        path.write_bytes(b"changed")
+        path.chmod(0o444)
+    elif drift == "unissued":
+        inputs = (
+            stage.files.FileInput(
+                source.filename, source.sha256, source.origin, source.stat, source.identity
+            ),
+        )
+    if drift == "none":
+        assert stage._image_authority(inputs, selected) is None
+    else:
+        with pytest.raises(ValueError):
+            stage._image_authority(inputs, selected)
     assert not stage._ISSUED

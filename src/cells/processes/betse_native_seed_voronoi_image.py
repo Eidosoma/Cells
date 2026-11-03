@@ -25,9 +25,9 @@ PARENT_MODULE = "cells.processes.betse_native_seed_world_prefix"
 MODE = "fresh_world_seed_lattice_make_voronoi_image_prefix"
 LAW_ID = "betse_same_seed_phase_voronoi_actual_image_prefix@1"
 RELEASE = "CELLS_NATIVE_SEED_VORONOI_IMAGE_RELEASED"
-SOURCE_SHA256 = None
-IMAGE_SOURCE_SHA256 = None
-IMAGE_HELPERS_SHA256 = None
+SOURCE_SHA256 = "b4c484017efe107b75503d36a363312d0708925133db8ff710a0bc833235888d"
+IMAGE_SOURCE_SHA256 = "7c5fef4effb8c56b2dfad374a328a1f033d32452e927149cc5bc0e39975ffac4"
+IMAGE_HELPERS_SHA256 = "aaffa10717ca980c57eb47c884fd38c2eedc718871937e077a64591b656652fc"
 ROOT_METHOD = "Cells.make_voronoi"
 CORE_METHODS = (
     "TissuePickerImage.__init__",

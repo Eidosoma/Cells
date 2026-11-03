@@ -475,3 +475,243 @@ def test_software_import_issuance_exact_pins_and_no_failed_authorization(
         assert "betse.new" not in stage.aliases._MODULE_AUTH
         save(evidence, "import-refusal", caught.value)
     save(evidence, "import-state", dict(pins=pins, authorized=list(auth)))
+
+
+def _factory_probe(mode):
+    """Synthetic factory bodies, optionally using the real decorator library."""
+    marker, calls = object(), []
+
+    class YamlList:
+        def __init__(self, *, item_type, token, flag):
+            self.item_type, self.token, self.flag = item_type, token, flag
+
+    namespace = dict(YamlList=YamlList, marker=marker, calls=calls, __name__=__name__)
+    exec(
+        "def make_list(cls, token=marker, *, flag=marker):\n"
+        "    calls.append((cls, token, flag))\n"
+        "    return YamlList(item_type=cls, token=token, flag=flag)\n",
+        namespace,
+    )
+    body = function = namespace["make_list"]
+    if mode == "beartype":
+        from beartype import beartype
+
+        function.__annotations__ = {"return": YamlList}
+        function = beartype(function)
+        assert function is not body and function.__wrapped__ is body
+        assert function.__kwdefaults__["__beartype_func"] is body
+    elif mode == "closure":
+
+        def wrapper(*args, **kwargs):
+            return body(*args, **kwargs)
+
+        wrapper.__wrapped__ = body
+        function = wrapper
+    native = type("SyntheticListItem", (), {"make_list": classmethod(function)})
+    return SimpleNamespace(
+        function=function, body=body, native=native, yaml=YamlList, calls=calls, marker=marker
+    )
+
+
+@pytest.mark.parametrize("mode", ["plain", "beartype", "closure"])
+def test_software_factory_copy_preserves_decorators_defaults_and_owned_return(mode, evidence):
+    probe = _factory_probe(mode)
+    original = stage._factory_atoms(probe.function)
+    issued = []
+
+    def owned(**kwargs):
+        result = probe.yaml(**kwargs)
+        issued.append(result)
+        return result
+
+    copied = stage._copy_factory(probe.function, owned)
+    result = copied(probe.native)
+    assert result is issued[0] and result.item_type is probe.native
+    assert result.token is result.flag is probe.marker
+    assert probe.calls == [(probe.native, probe.marker, probe.marker)]
+    stage._same(stage._factory_atoms(probe.function), original)
+    assert probe.body.__globals__["YamlList"] is probe.yaml
+    if mode == "beartype":
+        assert copied.__kwdefaults__["__beartype_func"] is copied.__wrapped__
+        assert copied.__wrapped__ is not probe.body
+        assert copied.__kwdefaults__ is not probe.function.__kwdefaults__
+        for name, value in probe.function.__kwdefaults__.items():
+            if name != "__beartype_func":
+                assert copied.__kwdefaults__[name] is value
+    save(evidence, "factory-copy", dict(mode=mode, owned_return=True, original_unchanged=True))
+
+
+def test_software_factory_copy_keeps_actual_beartype_return_check(evidence):
+    probe = _factory_probe("beartype")
+    from beartype.roar import BeartypeCallHintReturnViolation
+
+    copied = stage._copy_factory(probe.function, lambda **_kwargs: object())
+    with pytest.raises(BeartypeCallHintReturnViolation) as caught:
+        copied(probe.native)
+    assert len(probe.calls) == 1
+    save(evidence, "return-type-refusal", dict(error=type(caught.value).__qualname__))
+
+
+@pytest.mark.parametrize("mode", ["plain", "beartype", "closure"])
+def test_software_factory_copy_preserves_original_exception_and_cause(mode, evidence):
+    probe = _factory_probe(mode)
+    primary = SyntheticSourceFailure("synthetic original constructor failure")
+    cause = SyntheticSourceCause("same original cause")
+
+    def failed(**_kwargs):
+        raise primary from cause
+
+    copied = stage._copy_factory(probe.function, failed)
+    with pytest.raises(SyntheticSourceFailure) as caught:
+        copied(probe.native)
+    assert caught.value is primary and caught.value.__cause__ is cause
+    save(evidence, "original-failure", dict(mode=mode, same_primary=True, same_cause=True))
+
+
+@pytest.mark.parametrize("mutation", ["keywords", "keyword_value", "delegate", "code", "closure"])
+def test_software_factory_binding_refuses_drift_with_outer_identity_unchanged(
+    mutation, monkeypatch, evidence
+):
+    probe = _factory_probe("closure" if mutation == "closure" else "beartype")
+    retained = stage._surface(probe.native)
+    original = probe.function
+    if mutation == "keywords":
+        monkeypatch.setattr(original, "__kwdefaults__", dict(original.__kwdefaults__))
+    elif mutation == "keyword_value":
+        monkeypatch.setitem(probe.body.__kwdefaults__, "flag", object())
+    elif mutation == "delegate":
+        replacement = types.FunctionType(
+            probe.body.__code__, probe.body.__globals__, argdefs=probe.body.__defaults__
+        )
+        replacement.__kwdefaults__ = dict(probe.body.__kwdefaults__)
+        monkeypatch.setitem(original.__kwdefaults__, "__beartype_func", replacement)
+    elif mutation == "code":
+        monkeypatch.setattr(probe.body, "__code__", probe.body.__code__.replace())
+    else:
+        original.__closure__[0].cell_contents = lambda *a, **k: None
+    assert probe.native.make_list.__func__ is original and not probe.calls
+    with pytest.raises(ValueError, match="binding changed"):
+        stage._same(stage._surface(probe.native), retained)
+    save(evidence, "factory-drift", dict(mutation=mutation, delegates=0))
+
+
+@pytest.mark.parametrize("kind", ["cycle", "non_function", "too_deep"])
+def test_software_factory_copy_refuses_unbounded_or_invalid_wrapped_chain(kind, evidence):
+    probe = _factory_probe("plain")
+    if kind == "cycle":
+        probe.function.__wrapped__ = probe.function
+    elif kind == "non_function":
+        probe.function.__wrapped__ = object()
+    else:
+        current = probe.function
+        for _ in range(16):
+            following = types.FunctionType(probe.body.__code__, probe.body.__globals__)
+            current.__wrapped__ = following
+            current = following
+    with pytest.raises(ValueError, match="acyclic Python factory wrapper chain"):
+        stage._copy_factory(probe.function, lambda **kwargs: None)
+    assert not probe.calls
+    save(evidence, "invalid-chain", dict(kind=kind, delegates=0))
+
+
+@pytest.mark.parametrize("mode", ["plain", "beartype", "closure"])
+def test_software_factory_runtime_class_uses_actual_owned_list_and_preserves_input(
+    mode, monkeypatch, evidence
+):
+    probe = _factory_probe(mode)
+    context = SimpleNamespace(
+        active=True,
+        thread=stage.get_ident(),
+        observation_error=None,
+        runtime_types={},
+        runtime_bindings={},
+        objects=[],
+        work=[],
+        events=[],
+        factories={"SimConfCutListItem": probe.native, "YamlList": probe.yaml},
+    )
+    native = stage._surface(probe.native)
+
+    def check(actual):
+        assert actual is context
+        stage._same(stage._surface(probe.native), native)
+        for name, cls in context.runtime_types.items():
+            stage._same(stage._surface(cls), context.runtime_bindings[name])
+
+    # Isolated factory metadata adapter, not an issued parameter/phase owner.
+    monkeypatch.setattr(stage, "_ACTIVE", [context])
+    monkeypatch.setattr(stage, "_check", check)
+    cls = stage._runtime_type(context, "SimConfCutListItem")
+    result = cls.make_list()
+    assert type(result) is context.runtime_types["YamlList"]
+    assert isinstance(result, probe.yaml) and result.item_type is cls
+    assert stage._OBJECTS[result] is context
+    assert result.token is result.flag is probe.marker
+    assert probe.body.__globals__["YamlList"] is probe.yaml and len(probe.calls) == 1
+    check(context)
+    context.active = False
+    with pytest.raises(stage.ConfigurationRejected):
+        cls.make_list()
+    assert len(probe.calls) == 1
+    save(evidence, "runtime-factory", dict(mode=mode, owned_result=True, raw_entry_refused=True))
+
+
+@pytest.mark.parametrize("mutation", ["lookup", "constructor_code", "constructor_closure"])
+def test_software_factory_copied_namespace_retarget_refuses_before_constructor(
+    mutation, monkeypatch, evidence
+):
+    probe = _factory_probe("beartype")
+    context = SimpleNamespace(
+        active=True,
+        thread=stage.get_ident(),
+        observation_error=None,
+        runtime_types={},
+        runtime_bindings={},
+        objects=[],
+        work=[],
+        events=[],
+        factories={"SimConfCutListItem": probe.native, "YamlList": probe.yaml},
+    )
+
+    def check(actual):
+        assert actual is context
+        for name, cls in context.runtime_types.items():
+            stage._same(stage._surface(cls), context.runtime_bindings[name])
+
+    monkeypatch.setattr(stage, "_ACTIVE", [context])
+    monkeypatch.setattr(stage, "_check", check)
+    cls = stage._runtime_type(context, "SimConfCutListItem")
+    wrapper = vars(cls)["make_list"].__func__
+    values = dict(zip(wrapper.__code__.co_freevars, wrapper.__closure__, strict=True))
+    delegate = values["delegate"].cell_contents
+    body = delegate.__wrapped__
+    constructor = body.__globals__["YamlList"]
+    original = (wrapper, wrapper.__code__, delegate, delegate.__code__, delegate.__kwdefaults__)
+    replacements = []
+
+    def foreign(**kwargs):
+        replacements.append(kwargs)
+        return probe.yaml(**kwargs)  # Valid native base type, but unissued.
+
+    if mutation == "lookup":
+        monkeypatch.setitem(body.__globals__, "YamlList", foreign)
+    elif mutation == "constructor_code":
+        monkeypatch.setattr(constructor, "__code__", constructor.__code__.replace())
+    else:
+        constructor.__closure__[0].cell_contents = SimpleNamespace(
+            active=True, thread=stage.get_ident(), observation_error=None
+        )
+    assert all(
+        a is b
+        for a, b in zip(
+            original,
+            (wrapper, wrapper.__code__, delegate, delegate.__code__, delegate.__kwdefaults__),
+            strict=True,
+        )
+    )
+    with pytest.raises(ValueError, match="binding changed"):
+        check(context)
+    with pytest.raises(ValueError):
+        cls.make_list()
+    assert not replacements and not probe.calls and not context.objects
+    save(evidence, "namespace-retarget", dict(mutation=mutation, constructor_calls=0))

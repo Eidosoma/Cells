@@ -25,7 +25,9 @@ from cells.processes import betse_native_seed_voronoi_mesh as previous
 MODE = "fresh_world_seed_same_mesh_original_lifecycle"
 LAW_ID = "betse_same_seed_phase_observed_mesh_lifecycle@1"
 RELEASE = "CELLS_NATIVE_SEED_VORONOI_LIFECYCLE_RELEASED"
-SOURCE_SHA256 = PARENT_SOURCE_SHA256 = PARENT_REVIEW_SHA256 = None
+SOURCE_SHA256 = "442b2f4eaf3827874bf32dfa6bc9faa0f44285bc056ccce0186ffad455bdee70"
+PARENT_SOURCE_SHA256 = "c73fd24847158223373c6d77783b8e27857bede8ff59b3b6094ceba20fa2f23f"
+PARENT_REVIEW_SHA256 = "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb"
 PARENT_MODULE = "cells.processes.betse_native_seed_voronoi_mesh"
 DISPATCH_LABEL = "Cells.make_voronoi"
 ROOT, WRAPPER = "Cells.make_voronoi.lifecycle", previous.WRAPPER

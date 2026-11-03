@@ -558,6 +558,85 @@ def test_junction_restore_call_rejection_cannot_replace_primary(monkeypatch):
     assert any(row[1] is secondary for row in case.ctx.cleanup_errors)
 
 
+def test_junction_helper_inherited_entry_rejection_is_observation_not_source(monkeypatch, tmp_path):
+    case = observation_case(monkeypatch)
+    raw = np.asarray([1.0, -0.0])
+    args, kwargs, calls = (raw,), {"order": "C"}, []
+    error, cause = ValueError("inherited helper entry guard"), KeyError("guard cause")
+    error.__cause__ = cause
+
+    def delegate(shape, *, order):
+        calls.append((shape, order))
+        raise AssertionError("The helper body must not execute")
+
+    def observed():
+        return stage._helper(case.ctx, "ones", delegate, args, kwargs, sys._getframe())
+
+    def redo(self, phase):
+        observed()
+        case.delivered.append("after helper")
+
+    original = case.ctx.original_wrappers["redo_gj"]
+    closure = dict(zip(original.__code__.co_freevars, original.__closure__, strict=True))
+    cell = (lambda value: lambda: value)(redo).__closure__[0]
+    wrapper = FunctionType(
+        original.__code__,
+        original.__globals__,
+        original.__name__,
+        original.__defaults__,
+        tuple(
+            cell if name == "delegate" else closure[name] for name in original.__code__.co_freevars
+        ),
+    )
+    case.ctx.methods["redo_gj"], case.ctx.native_delegates["redo_gj"] = redo, redo
+    case.ctx.original_wrappers["redo_gj"] = wrapper
+    type(case.ctx.cells).redo_gj = wrapper
+    case.ctx.body_codes = {case.ctx.methods[n].__code__: n for n in stage.METHODS}
+    case.ctx.helpers = {"ones": delegate}
+    entries = []
+
+    def prior(frame, event, arg):
+        if event == "call" and frame.f_code is delegate.__code__:
+            entries.append((frame, case.ctx.admitted[id(frame)]["role"]))
+            assert case.ctx.helper_inputs[0][1] is args
+            assert case.ctx.helper_inputs[0][2] is kwargs
+            raise error
+
+    with pytest.raises(ValueError) as caught:
+        case.run(profile=prior)
+    assert caught.value is error and error.__cause__ is cause
+    assert len(entries) == 1 and entries[0][1] == "helper"
+    assert calls == [] and case.ctx.primary is None and case.ctx.entry_error is None
+    assert case.ctx.observation_error is error
+    assert case.ctx.helper_inputs[0][1] is args and case.ctx.helper_inputs[0][2] is kwargs
+    assert case.ctx.last_helper[1] is args and case.ctx.last_helper[2] is kwargs
+    assert case.ctx.last_helper[3] is None
+    assert case.ctx.last_helper_return[:2] == ("ones", None)
+    assert case.ctx.last_helper_return[2] is error  # Raw unwind, not a successful helper return.
+    assert case.ctx.helper_returns == [] and not case.ctx.helper_busy
+    assert case.ctx.entered == ["redo_gj"] and case.ctx.method_returns == []
+    assert "after helper" not in case.delivered and "vectors" not in case.delivered
+    assert "graph" not in case.delivered and not stage._ISSUED and case.ctx.hooks_safe
+    assert any(
+        origin == "inherited_profile_call" and captured is error
+        for origin, captured, retained in case.ctx.capture_errors
+    )
+    save(tmp_path, "rejected-helper-raw-inputs", dict(args=args, kwargs=kwargs))
+    software.snapshot.write_json(
+        tmp_path / "helper-entry-classification.json",
+        dict(
+            installed_profile=True,
+            real_observe_and_dispatch=True,
+            helper_body_calls=len(calls),
+            source_primary_present=case.ctx.primary is not None,
+            exact_observer_error=True,
+            raw_input_identity_preserved=True,
+            following_methods=[],
+            native_or_scientific_credit=0,
+        ),
+    )
+
+
 @pytest.mark.parametrize("kind", ["unrecoverable", "partial_clears"])
 def test_junction_failure_capture_stops_after_hook_loss(kind):
     ctx, primary = context(), FalseySource("source")

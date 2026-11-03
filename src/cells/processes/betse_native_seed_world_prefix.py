@@ -31,8 +31,8 @@ WORLD_MODE = "fresh_world_ready_prephase_single_claim_seed_constructor"
 # Only these two literal values are omitted from the coordinator's exact byte
 # template. Each actual value is checked against the full constructor/review;
 # all complete source files remain bound by the immutable external snapshot.
-CONSTRUCTION_SOURCE_SHA256 = None
-CONSTRUCTION_REVIEW_SHA256 = None
+CONSTRUCTION_SOURCE_SHA256 = "025d28d2a5917f053ab7a2db1121c103d479ac3238e5ebd7b4b2df149b426127"
+CONSTRUCTION_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 CELLS, PHASE = "betse/science/cells.py", "betse/science/phase/phasecls.py"
 NATIVE_PINS = {
     CELLS: "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
@@ -1798,11 +1798,7 @@ def _mesh_ancestry_values(evidence):
                 role=role,
                 fields=literal._project(
                     parent.projector,
-                    {
-                        key: value
-                        for key, value in vars(actual).items()
-                        if actual is not parent.cells or key in evidence.caller_names
-                    },
+                    _mesh_ancestry_fields(evidence, actual),
                 ),
             )
             for role, actual in evidence.objects
@@ -1815,12 +1811,23 @@ def _mesh_ancestry_graph(evidence):
     # identity. No projected object is ever supplied to native source methods.
     for target, (_, actual) in zip(evidence.fields, evidence.objects, strict=True):
         target.clear()
-        target.update(
-            (key, value)
-            for key, value in vars(actual).items()
-            if actual is not evidence.prefix.cells or key in evidence.caller_names
-        )
+        target.update(_mesh_ancestry_fields(evidence, actual))
     return literal.callers._graph(evidence.view, evidence.view, evidence.tape)
+
+
+def _mesh_ancestry_fields(evidence, actual):
+    parent = evidence.prefix
+    if actual is parent.cells:
+        return {key: value for key, value in vars(actual).items() if key in evidence.caller_names}
+    phase = getattr(parent, "phase", None)
+    if (
+        phase is not None
+        and (actual is vars(phase).get("sim") or actual is vars(phase).get("dyna"))
+        and hasattr(evidence.transition, "lifecycle")
+    ):
+        api = previous._world_api()
+        return api._world_sim_fields(api._world_geometry_context(evidence.transition), actual)
+    return vars(actual)
 
 
 def _capture_mesh_ancestry(image_context, transition):
@@ -1890,7 +1897,7 @@ def _check_mesh_ancestry(image_context, transition):
     current_names = tuple(vars(parent.cells))
     names_valid = current_names in (evidence.caller_names, (*evidence.caller_names, "mesh"))
     if geometry is not None:
-        previous._world_api()._world_seed_geometry_api()._check_fields(geometry)
+        previous._world_api()._world_inherited_caller_fields(geometry)
         names_valid = current_names[: len(evidence.caller_names)] == evidence.caller_names
     if (
         not parent.trial.source_completed

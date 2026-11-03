@@ -7,6 +7,7 @@ closed validation. Existing seven-load/d9/47 owners are never cast or reopened.
 """
 
 import ast
+import builtins
 import hashlib
 import importlib
 import json
@@ -16,7 +17,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from pathlib import Path
 from threading import RLock, get_ident
-from types import FunctionType, MethodType, SimpleNamespace
+from types import CodeType, FunctionType, MethodType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
 LAW_ID = "betse_fresh_world_ready_same_claim_seed_phase_construction@1"
@@ -24,10 +25,10 @@ MODE = "fresh_world_ready_prephase_single_claim_seed_constructor"
 RELEASE = "CELLS_NATIVE_WORLD_PHASE_CONSTRUCTION_RELEASED"
 KEY_MODULE = "cells.processes.betse_native_parameter_world_construction"
 PARAMETER_MODULE = "cells.processes.betse_native_parameter_load_remainder"
-KEY_SOURCE_SHA256 = None
-KEY_REVIEW_SHA256 = None
-PARAMETER_SOURCE_SHA256 = None
-PARAMETER_REVIEW_SHA256 = None
+KEY_SOURCE_SHA256 = "bda0ab87e293af18eb30ff38a0cb356162bc74269fbeb0cd1d41aa8d52176b73"
+KEY_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
+PARAMETER_SOURCE_SHA256 = "3cfe176984e251275f930606d31c733c681bd5f9f4271c78a67123f54bfe4488"
+PARAMETER_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
 # Stable public preparation interface; no producer/review adoption is implied.
 KEY_LAW = "betse_fresh_world_ready_pre_phase_seed_construction@1"
 KEY_ERROR_ATTRIBUTE = "world_construction_claim"
@@ -38,35 +39,82 @@ STAGE_MODULES = (
     "cells.processes.betse_native_phase_dyna",
     "cells.processes.betse_native_phase_tail",
 )
-STAGE_SOURCE_SHA256 = (None, None, None, None)
-STAGE_REVIEW_SHA256 = (None, None, None, None)
+STAGE_SOURCE_SHA256 = (
+    "de6cfeb763c2f78bb34387d54ce78ed66ddd9b8ad2193fd7cf7fae1bcbf690d0",
+    "a23c8fd6af0c91de8b5c7bb1d19fd0990b38bfcc01452c3f24961ae0974eff41",
+    "4a930b68f6ce4f0140a96d00c03400e7e176e3639ef94cfdd160164af477a033",
+    "539ba4363317707d4731f102d20b67ed86ea4dc813cccac013314291641dcd42",
+)
+STAGE_REVIEW_SHA256 = (
+    "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
+    "92ed29376b519ae9cb6e1e13df7aeea94d4997213305eb72112c2ad281c834e6",
+    "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
+    "aa5cddf4c36998d3a99bcc576af94ba6fb4993c020de402bdd6ae8b134613f6e",
+)
 CONSTRUCT_HOOK = "_world_phase_construct"
 CHECK_HOOK = "_world_phase_check"
 SEAL_HOOK = "_world_phase_seal"
 CHECK_SEAL_HOOK = "_world_phase_check_seal"
 HELPER_MODULE = "cells.processes.betse_native_seed_world_prefix"
-HELPER_INTERFACE_SHA256 = None  # Separate reviewed adoption remains required.
-HELPER_CONSTRUCTION_REVIEW_SHA256 = None
+# Reviewed source binding; execution still requires its explicit release.
+HELPER_INTERFACE_SHA256 = "95907a594bf65f87a3bdf9aa8417aa1c8b272c1d513382653ab23f41ad376452"
+HELPER_CONSTRUCTION_REVIEW_SHA256 = (
+    "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
+)
 HELPER_BINDING_KIND = "exact_helper_bytes_except_two_validated_backref_literals@1"
 HELPER_BACK_REFERENCE_SLOTS = ("CONSTRUCTION_SOURCE_SHA256", "CONSTRUCTION_REVIEW_SHA256")
 VORONOI_IMAGE_MODULE = "cells.processes.betse_native_seed_voronoi_image"
 VORONOI_IMAGE_MODE = "fresh_world_seed_lattice_make_voronoi_image_prefix"
-VORONOI_IMAGE_SOURCE_SHA256 = None
-VORONOI_IMAGE_REVIEW_SHA256 = None
+VORONOI_IMAGE_SOURCE_SHA256 = "98bcd55b9e00e28bf7f9dd5d5a20261217e640e901affaa1b1686d0f458b45e0"
+VORONOI_IMAGE_REVIEW_SHA256 = "aa5cddf4c36998d3a99bcc576af94ba6fb4993c020de402bdd6ae8b134613f6e"
 VORONOI_MESH_MODULE = "cells.processes.betse_native_seed_voronoi_mesh"
 VORONOI_MESH_MODE = "fresh_world_seed_voronoi_mesh_constructor_assignment"
-VORONOI_MESH_SOURCE_SHA256 = None
-VORONOI_MESH_REVIEW_SHA256 = None
+VORONOI_MESH_SOURCE_SHA256 = "c73fd24847158223373c6d77783b8e27857bede8ff59b3b6094ceba20fa2f23f"
+VORONOI_MESH_REVIEW_SHA256 = "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb"
 VORONOI_LIFECYCLE_MODULE = "cells.processes.betse_native_seed_voronoi_lifecycle"
 VORONOI_LIFECYCLE_MODE = "fresh_world_seed_same_mesh_original_lifecycle"
-VORONOI_LIFECYCLE_SOURCE_SHA256 = None
-VORONOI_LIFECYCLE_REVIEW_SHA256 = None
+VORONOI_LIFECYCLE_SOURCE_SHA256 = "2ad275b33cd123f0cf266d262dcee5609924b72a91c6c8b86328bed1116eac1e"
+VORONOI_LIFECYCLE_REVIEW_SHA256 = "aa5cddf4c36998d3a99bcc576af94ba6fb4993c020de402bdd6ae8b134613f6e"
 SEED_GEOMETRY_MODULE = "cells.processes.betse_native_seed_world_geometry"
 SEED_GEOMETRY_MODE = "fresh_seed_same_caller_geometry_grid_mask"
-SEED_GEOMETRY_SOURCE_SHA256 = None
-SEED_GEOMETRY_REVIEW_SHA256 = None
+SEED_GEOMETRY_SOURCE_SHA256 = "2b8701f0fd4f59731d69d7a244fc3bdf8b347e683a9335fb561b83f90ab2f22a"
+SEED_GEOMETRY_REVIEW_SHA256 = "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb"
+SEED_POISSON_MODULE = "cells.processes.betse_native_seed_world_poisson"
+SEED_POISSON_SOURCE_SHA256 = "39539d52b750fd75787a2897efc564ad4ca886381ab09acf1560159aa815ba33"
+SEED_POISSON_REVIEW_SHA256 = "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb"
+SEED_INIT_CORE_MODULE = "cells.processes.betse_native_seed_init_core"
+SEED_INIT_CORE_INTERFACE_SHA256 = "7576379f80d1ae3930a43901a3422fdd5115f57b1770a822adef1cf65c168ad9"
+SEED_INIT_CORE_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
+SEED_INIT_CORE_COORDINATOR_REVIEW_SHA256 = (
+    "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
+)
+SEED_INIT_CORE_BINDING_KIND = "exact_core_bytes_except_two_validated_coordinator_literals@1"
+SEED_INIT_CORE_BACK_REFERENCE_SLOTS = (
+    "COORDINATOR_SOURCE_SHA256",
+    "COORDINATOR_REVIEW_SHA256",
+)
+SEED_PROFILES_MODULE = "cells.processes.betse_native_seed_init_profiles"
+SEED_PROFILES_INTERFACE_SHA256 = "3ed8e1a1a893b7d72d6315d543cceec244d510ba89dc66caad42a39b1289c0fb"
+SEED_PROFILES_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
+SEED_PROFILES_COORDINATOR_REVIEW_SHA256 = (
+    "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
+)
+SEED_JUNCTIONS_MODULE = "cells.processes.betse_native_seed_junctions"
+SEED_JUNCTIONS_INTERFACE_SHA256 = "bae9cddf7d0967ac2ee105c3c00c325b1e2d9034f8bf3cb61176affd29897093"
+SEED_JUNCTIONS_REVIEW_SHA256 = "a9f6d6fa62d2eb5e46cf903546f754b2c8eb204b216343f8cb7bf4752ac85bba"
+SEED_JUNCTIONS_COORDINATOR_REVIEW_SHA256 = (
+    "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
+)
+SEED_CHILD_BACK_REFERENCE_SLOTS = (
+    "PARENT_SOURCE_SHA256",
+    "PARENT_REVIEW_SHA256",
+    "COORDINATOR_SOURCE_SHA256",
+    "COORDINATOR_REVIEW_SHA256",
+)
+SEED_PROFILES_BINDING_KIND = "exact_profiles_bytes_except_four_validated_backrefs@1"
+SEED_JUNCTIONS_BINDING_KIND = "exact_junctions_bytes_except_four_validated_backrefs@1"
 CALLBACK_MODULE = "cells.processes.betse_native_phase_callbacks"
-CALLBACK_SHA256 = "4fa19547caac95257162e6678092c3e55ce4fe43b05b2d16f7908f9196740f2d"
+CALLBACK_SHA256 = "f5e807c61cfd36a7f6d2da6e23418559a2527c221f2c8ce8ddf0a908020721f2"
 BASE_FIELDS = ("callbacks", "cells", "kind", "p", "sim")
 MAX_WORK = 128
 _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
@@ -231,6 +279,46 @@ def source_plan():
             ),
             released=False,
         ),
+        seed_poisson=dict(
+            module=SEED_POISSON_MODULE,
+            source=SEED_POISSON_SOURCE_SHA256,
+            review=SEED_POISSON_REVIEW_SHA256,
+            flux_modes=("original", "disabled"),
+            boundary="same actual grid value/flux operators and six-store data tail",
+            released=False,
+        ),
+        seed_init_core=dict(
+            module=SEED_INIT_CORE_MODULE,
+            interface=SEED_INIT_CORE_INTERFACE_SHA256,
+            review=SEED_INIT_CORE_REVIEW_SHA256,
+            coordinator_review=SEED_INIT_CORE_COORDINATOR_REVIEW_SHA256,
+            binding_kind=SEED_INIT_CORE_BINDING_KIND,
+            back_reference_slots=SEED_INIT_CORE_BACK_REFERENCE_SLOTS,
+            immutable_parent="actual original Simulator fields and holder identities",
+            child_capture="entire actual Simulator after core, without saved-value substitution",
+            boundary="whole init_core and conditional initDenv; before init_profiles",
+            released=False,
+        ),
+        seed_profiles=dict(
+            module=SEED_PROFILES_MODULE,
+            interface=SEED_PROFILES_INTERFACE_SHA256,
+            review=SEED_PROFILES_REVIEW_SHA256,
+            coordinator_review=SEED_PROFILES_COORDINATOR_REVIEW_SHA256,
+            binding_kind=SEED_PROFILES_BINDING_KIND,
+            back_reference_slots=SEED_CHILD_BACK_REFERENCE_SLOTS,
+            boundary="same issued handler/core material; whole init_profiles",
+            released=False,
+        ),
+        seed_junctions=dict(
+            module=SEED_JUNCTIONS_MODULE,
+            interface=SEED_JUNCTIONS_INTERFACE_SHA256,
+            review=SEED_JUNCTIONS_REVIEW_SHA256,
+            coordinator_review=SEED_JUNCTIONS_COORDINATOR_REVIEW_SHA256,
+            binding_kind=SEED_JUNCTIONS_BINDING_KIND,
+            back_reference_slots=SEED_CHILD_BACK_REFERENCE_SLOTS,
+            boundary="same Cells redo_gj/calc_gj_vects/graphLaplacian; before init_events",
+            released=False,
+        ),
         binding_adoption_order=(
             "review helper byte template with only two back-reference literals normalized",
             "bind that template and the independent producer/stage pins in the constructor",
@@ -307,6 +395,47 @@ def _ready():
 
 def _module_file(name):
     return Path(__file__).resolve().parents[3] / ("src/" + name.replace(".", "/") + ".py")
+
+
+def _source_interface(module, payload, path, names):
+    """Compile exact owned bytes as metadata; execute no module or function body."""
+    code = builtins.compile(payload, str(path), "exec", dont_inherit=True, optimize=0)
+    definitions = {
+        node.name: node for node in ast.parse(payload).body if isinstance(node, ast.FunctionDef)
+    }
+    codes = {value.co_name: value for value in code.co_consts if type(value) is CodeType}
+    for name in names:
+        fn, node = getattr(module, name, None), definitions.get(name)
+        if (
+            type(fn) is not FunctionType
+            or fn.__globals__ is not vars(module)
+            or node is None
+            or node.decorator_list
+            or fn.__code__ != codes.get(name)
+            or fn.__code__.co_filename != str(path)
+            or fn.__closure__ is not None
+            or fn.__name__ != name
+            or fn.__qualname__ != name
+        ):
+            raise ValueError("Actual exact source function/code required: " + name)
+        defaults = tuple(ast.literal_eval(item) for item in node.args.defaults)
+        keywords = {
+            arg.arg: ast.literal_eval(value)
+            for arg, value in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True)
+            if value is not None
+        }
+        if (
+            (fn.__defaults__ or ()) != defaults
+            or (fn.__kwdefaults__ or {}) != keywords
+            or any(
+                type(a) is not type(b) for a, b in zip(fn.__defaults__ or (), defaults, strict=True)
+            )
+            or any(
+                type((fn.__kwdefaults__ or {})[key]) is not type(value)
+                for key, value in keywords.items()
+            )
+        ):
+            raise ValueError("Original source interface defaults changed: " + name)
 
 
 def _import_bound(name, expected):
@@ -548,7 +677,16 @@ def _world_seed_geometry_api():
     module = _import_bound(SEED_GEOMETRY_MODULE, SEED_GEOMETRY_SOURCE_SHA256)
     if module.PARENT_MODULE != VORONOI_LIFECYCLE_MODULE or module.MODE != SEED_GEOMETRY_MODE:
         raise ValueError("Exact native lifecycle-to-geometry mode required")
-    for name in ("prepare", "_authority", "_wrapper_guard", "_dispatch", "_check_fields"):
+    for name in (
+        "prepare",
+        "_authority",
+        "_wrapper_guard",
+        "_dispatch",
+        "_check_fields",
+        "_claim_for_world_poisson",
+        "_check_world_poisson_authority",
+        "_poisson_route",
+    ):
         fn = getattr(module, name, None)
         if type(fn) is not FunctionType or fn.__globals__ is not vars(module):
             raise ValueError("Original same-caller geometry interface required: " + name)
@@ -563,6 +701,389 @@ def _world_geometry_context(constructor):
     if _world_voronoi_mesh_api()._lifecycle_route(constructor)[0] is not lifecycle:
         raise ValueError("Original constructor/lifecycle registry edge changed")
     return _world_voronoi_lifecycle_api()._geometry_route(lifecycle)[0]
+
+
+def _world_seed_poisson_api():
+    _world_seed_geometry_api()
+    if not _pin(SEED_POISSON_SOURCE_SHA256) or not _pin(SEED_POISSON_REVIEW_SHA256):
+        raise WorldPhaseRejected(
+            "Reviewed original/disabled Poisson route unbound", stage="unbound_seed_poisson"
+        )
+    module = _import_bound(SEED_POISSON_MODULE, SEED_POISSON_SOURCE_SHA256)
+    if module.PARENT_MODULE != SEED_GEOMETRY_MODULE or module.FLUX_OPERATORS != (
+        "original",
+        "disabled",
+    ):
+        raise ValueError("Exact same-world Poisson parent/modes required")
+    for name in (
+        "prepare",
+        "_authority",
+        "_grid_call",
+        "_check_fields",
+        "_seed_core_route",
+        "_claim_for_seed_init_core",
+        "_check_seed_init_core_authority",
+    ):
+        fn = getattr(module, name, None)
+        if type(fn) is not FunctionType or fn.__globals__ is not vars(module):
+            raise ValueError("Actual same-world Poisson interface unavailable: " + name)
+    return module
+
+
+def _seed_core_binding(payload):
+    # Reuse exact canonical two-slot byte normalization. ONLY coordinator
+    # back-reference values differ; all other bytes remain authenticated.
+    scope = dict(
+        globals(),
+        HELPER_BACK_REFERENCE_SLOTS=SEED_INIT_CORE_BACK_REFERENCE_SLOTS,
+        HELPER_BINDING_KIND=SEED_INIT_CORE_BINDING_KIND,
+    )
+    return FunctionType(_helper_binding.__code__, scope)(payload)
+
+
+def _seed_init_core_api():
+    _world_seed_poisson_api()
+    if not all(
+        _pin(value)
+        for value in (
+            SEED_INIT_CORE_INTERFACE_SHA256,
+            SEED_INIT_CORE_REVIEW_SHA256,
+            SEED_INIT_CORE_COORDINATOR_REVIEW_SHA256,
+        )
+    ):
+        raise WorldPhaseRejected(
+            "Reviewed whole-core source route unbound", stage="unbound_seed_core"
+        )
+    path = _module_file(SEED_INIT_CORE_MODULE)
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Original whole-core module source required")
+    raw = path.read_bytes()
+    identity, backrefs = _seed_core_binding(raw)
+    if identity != SEED_INIT_CORE_INTERFACE_SHA256:
+        raise ValueError("Whole-core bytes outside coordinator references changed")
+    if (
+        tuple(name for name, _ in backrefs) != SEED_INIT_CORE_BACK_REFERENCE_SLOTS
+        or backrefs[0][1] != hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        or backrefs[1][1] != SEED_INIT_CORE_COORDINATOR_REVIEW_SHA256
+    ):
+        raise ValueError("Whole-core actual coordinator source/review changed")
+    module = importlib.import_module(SEED_INIT_CORE_MODULE)
+    if (
+        sys.modules.get(SEED_INIT_CORE_MODULE) is not module
+        or Path(module.__file__).resolve() != path
+        or path.read_bytes() != raw
+        or any(getattr(module, name) != value for name, value in backrefs)
+    ):
+        raise ValueError("Actual whole-core source/back-reference epoch changed")
+    for name in ("prepare", "_authority", "_wrapper_guard", "_dispatch", "_check_fields"):
+        fn = getattr(module, name, None)
+        if type(fn) is not FunctionType or fn.__globals__ is not vars(module):
+            raise ValueError("Actual same-Simulator whole-core interface required")
+    _source_interface(
+        module,
+        raw,
+        path,
+        (
+            "prepare",
+            "_authority",
+            "_wrapper_guard",
+            "_dispatch",
+            "_check_fields",
+            "_profiles_route",
+            "_claim_for_seed_profiles",
+            "_check_seed_profiles_authority",
+            "_claim_profile_junction_permission",
+        ),
+    )
+    return module
+
+
+def _world_core_context(geometry):
+    if geometry is None or not hasattr(geometry, "poisson"):
+        return None
+    world, module = _world_seed_geometry_api()._poisson_route(geometry)
+    if not hasattr(world, "core"):
+        return None
+    core, issuer = module._seed_core_route(world)
+    issuer._check_fields(core)
+    return core
+
+
+def _seed_child_binding(payload, *, kind):
+    """Exact bytes except the declared, separately authenticated four literals."""
+    if kind not in (SEED_PROFILES_BINDING_KIND, SEED_JUNCTIONS_BINDING_KIND):
+        raise ValueError("Unknown exact post-core binding kind")
+    scope = dict(
+        globals(),
+        HELPER_BACK_REFERENCE_SLOTS=SEED_CHILD_BACK_REFERENCE_SLOTS,
+        HELPER_BINDING_KIND=kind,
+    )
+    return FunctionType(_helper_binding.__code__, scope)(payload)
+
+
+def _import_seed_child(name, *, kind, interface, review, coordinator_review, parent, parent_review):
+    if not all(_pin(value) for value in (interface, review, coordinator_review, parent_review)):
+        raise WorldPhaseRejected("Reviewed post-core route unbound", stage="unbound_seed_child")
+    path, parent_path = _module_file(name), _module_file(parent.__name__)
+    if path.is_symlink() or not path.is_file() or parent_path.is_symlink():
+        raise ValueError("Original canonical post-core sources required")
+    raw, parent_raw, coordinator_raw = (
+        path.read_bytes(),
+        parent_path.read_bytes(),
+        Path(__file__).read_bytes(),
+    )
+    identity, backrefs = _seed_child_binding(raw, kind=kind)
+    expected = (
+        hashlib.sha256(parent_raw).hexdigest(),
+        parent_review,
+        hashlib.sha256(coordinator_raw).hexdigest(),
+        coordinator_review,
+    )
+    if (
+        identity != interface
+        or tuple(key for key, _ in backrefs) != SEED_CHILD_BACK_REFERENCE_SLOTS
+        or tuple(value for _, value in backrefs) != expected
+        or Path(parent.__file__).resolve() != parent_path
+        or sys.modules.get(parent.__name__) is not parent
+    ):
+        raise ValueError("Actual full parent/coordinator source or review back-reference changed")
+    module = importlib.import_module(name)
+    if (
+        sys.modules.get(name) is not module
+        or Path(module.__file__).resolve() != path
+        or path.read_bytes() != raw
+        or parent_path.read_bytes() != parent_raw
+        or Path(__file__).read_bytes() != coordinator_raw
+        or any(getattr(module, key) != value for key, value in backrefs)
+        or module.previous is not parent
+    ):
+        raise ValueError("Loaded post-core producer/back-reference epoch changed")
+    for method in ("prepare", "_authority", "_dispatch", "_check_fields"):
+        fn = getattr(module, method, None)
+        if type(fn) is not FunctionType or fn.__globals__ is not vars(module):
+            raise ValueError("Actual post-core implementation required: " + method)
+    interface_names = ("prepare", "_authority", "_dispatch", "_wrapper_guard", "_check_fields")
+    if name == SEED_PROFILES_MODULE:
+        interface_names += (
+            "_picker_dispatch",
+            "_junctions_route",
+            "_claim_for_seed_junctions",
+            "_check_seed_junctions_authority",
+        )
+    _source_interface(module, raw, path, interface_names)
+    return module
+
+
+def _seed_init_profiles_api():
+    parent = _seed_init_core_api()
+    module = _import_seed_child(
+        SEED_PROFILES_MODULE,
+        kind=SEED_PROFILES_BINDING_KIND,
+        interface=SEED_PROFILES_INTERFACE_SHA256,
+        review=SEED_PROFILES_REVIEW_SHA256,
+        coordinator_review=SEED_PROFILES_COORDINATOR_REVIEW_SHA256,
+        parent=parent,
+        parent_review=SEED_INIT_CORE_REVIEW_SHA256,
+    )
+    dyna = _dependencies().stages[2]
+    if (
+        module.DYNA_SOURCE_SHA256 != hashlib.sha256(Path(dyna.__file__).read_bytes()).hexdigest()
+        or module.DYNA_REVIEW_SHA256 != STAGE_REVIEW_SHA256[2]
+    ):
+        raise ValueError("Exact preborn original dyna source/review required")
+    return module
+
+
+def _seed_junctions_api():
+    return _import_seed_child(
+        SEED_JUNCTIONS_MODULE,
+        kind=SEED_JUNCTIONS_BINDING_KIND,
+        interface=SEED_JUNCTIONS_INTERFACE_SHA256,
+        review=SEED_JUNCTIONS_REVIEW_SHA256,
+        coordinator_review=SEED_JUNCTIONS_COORDINATOR_REVIEW_SHA256,
+        parent=_seed_init_profiles_api(),
+        parent_review=SEED_PROFILES_REVIEW_SHA256,
+    )
+
+
+def _world_sim_fields(geometry, actual):
+    """Actual old fields; typed core/profile children capture their new fields."""
+    fields = vars(actual)
+    if geometry is None:
+        return fields
+    if actual is getattr(geometry.phase, "dyna", None):
+        profiles = _world_profiles_context(geometry)
+        if profiles is None:
+            return fields
+        return {name: fields[name] for name in profiles.original_names}
+    if actual is not geometry.phase.sim:
+        return fields
+    core = _world_core_context(geometry)
+    if core is None:
+        return fields
+    if core.sim is not actual:
+        raise ValueError("Different actual Simulator in inherited projection")
+    return {name: fields[name] for name in core.original_sim_fields}
+
+
+def _world_profiles_context(geometry):
+    core = _world_core_context(geometry)
+    if core is None or not hasattr(core, "profiles"):
+        return None
+    profiles, issuer = _seed_init_core_api()._profiles_route(core)
+    issuer._check_fields(profiles)
+    return profiles
+
+
+def _world_junctions_context(geometry):
+    profiles = _world_profiles_context(geometry)
+    if profiles is None or not hasattr(profiles, "junctions"):
+        return None
+    junctions, issuer = _seed_init_profiles_api()._junctions_route(profiles)
+    issuer._check_fields(junctions)
+    return junctions
+
+
+def _world_inherited_caller_fields(geometry):
+    junctions = _world_junctions_context(geometry)
+    if junctions is not None:
+        return _seed_junctions_api()._check_fields(junctions)
+    return _world_seed_geometry_api()._check_fields(geometry)
+
+
+def _world_geometry_for_transition(transition):
+    prefix = _world_forwarded(transition)
+    if prefix is None or not hasattr(prefix, "voronoi_image"):
+        return None
+    image = transition.api.helpers._voronoi_route(prefix)
+    if not hasattr(image, "voronoi_mesh"):
+        return None
+    constructor = _world_voronoi_api()._mesh_route(image)
+    return _world_geometry_context(constructor)
+
+
+def _world_has_seed_core_route(prefix):
+    geometry = _world_geometry_for_transition(prefix.world_transition)
+    return _world_core_context(geometry) is not None
+
+
+def _world_dispatch_seed_core(prefix, label, delegate, *args, **kwargs):
+    core = _world_core_context(_world_geometry_for_transition(prefix.world_transition))
+    if core is None or not args or args[0] is not core.sim:
+        _world_reject(prefix.world_transition, "No actual same-Simulator core route", prefix)
+    return core.entries["dispatch"](
+        core,
+        prefix,
+        label,
+        delegate,
+        args[0],
+        args[1:],
+        kwargs,
+        sys._getframe(),
+    )
+
+
+def _world_has_seed_profiles_route(origin):
+    geometry = _world_geometry_for_transition(origin.world_transition)
+    profiles = _world_profiles_context(geometry)
+    if profiles is None:
+        return False
+    if (
+        origin.world_transition.api.stages[2]._WORLD.get(origin.world_transition.request)
+        is not origin
+        or origin.handler is not profiles.dyna
+        or origin.phase is not profiles.phase
+        or origin.p is not profiles.p
+    ):
+        _world_reject(origin.world_transition, "Different original handler/profile phase", origin)
+    return True
+
+
+def _world_profile_origin(origin):
+    if not _world_has_seed_profiles_route(origin):
+        _world_reject(origin.world_transition, "No actual profile continuation", origin)
+    profiles = _world_profiles_context(_world_geometry_for_transition(origin.world_transition))
+    module = _seed_init_profiles_api()
+    module._guard(profiles)
+    if (
+        getattr(profiles, "dyna_origin", None) is not origin
+        or origin.world_transition.api.stages[2]._OBJECTS.get(profiles.dyna) is not origin
+    ):
+        module._reject(profiles, "Original same-instance handler issuance changed")
+    return profiles, module
+
+
+def _world_profiles_wrapper_guard(origin, caller):
+    profiles, module = _world_profile_origin(origin)
+    dyna = origin.world_transition.api.stages[2]
+    wrapper = caller.f_back if caller.f_code is dyna._native_call.__code__ else caller
+    role, name = wrapper.f_locals.get("name"), wrapper.f_locals.get("method")
+    actual, delegate = wrapper.f_locals.get("actual"), wrapper.f_locals.get("delegate")
+    cls = origin.runtime_types.get(role)
+    member = None if cls is None else vars(cls).get(name)
+    label = str(role) + "." + str(name)
+    if (
+        actual is None
+        or dyna._OBJECTS.get(actual) is not origin
+        or type(actual) is not cls
+        or type(member) is not FunctionType
+        or wrapper.f_code is not member.__code__
+        or wrapper.f_locals.get("context") is not origin
+        or profiles.picker_delegates.get(label) is not delegate
+    ):
+        module._reject(profiles, "Unclaimed original picker wrapper/delegate")
+    parent = wrapper.f_back
+    valid = parent is profiles.body_frame
+    if (
+        not valid
+        and parent is not None
+        and parent.f_code in {fn.__code__ for fn in profiles.native_functions}
+    ):
+        ancestor = parent
+        while ancestor is not None and not any(ancestor is item for item in profiles.helper_frames):
+            ancestor = ancestor.f_back
+        valid = ancestor is not None
+    if not valid:
+        module._reject(profiles, "Picker entry requires genuine current profile/helper nesting")
+    return profiles
+
+
+def _seed_profiles_call(origin, delegate, actual, phase):
+    profiles, module = _world_profile_origin(origin)
+    frame = sys._getframe()
+    wrapper = frame.f_back
+    if actual is not profiles.dyna or phase is not profiles.phase:
+        module._reject(profiles, "Only the same actual handler/phase may map profiles")
+    profiles.entries["wrapper_guard"](profiles, origin, wrapper)
+    return profiles.entries["dispatch"](
+        profiles, origin, "init_profiles", delegate, actual, (phase,), {}, frame
+    )
+
+
+def _seed_profiles_picker_call(origin, label, delegate, *args, **kwargs):
+    profiles, _ = _world_profile_origin(origin)
+    dyna = origin.world_transition.api.stages[2]
+    native = sys._getframe(1)
+    if native.f_code is not dyna._native_call.__code__:
+        _seed_init_profiles_api()._reject(profiles, "Only original picker dispatch may forward")
+    _world_profiles_wrapper_guard(origin, native)
+    return profiles.entries["picker_dispatch"](
+        profiles, origin, label, delegate, args, kwargs, sys._getframe()
+    )
+
+
+def _world_has_seed_junctions_route(prefix):
+    geometry = _world_geometry_for_transition(prefix.world_transition)
+    return _world_junctions_context(geometry) is not None
+
+
+def _world_dispatch_seed_junctions(prefix, label, delegate, *args, **kwargs):
+    junctions = _world_junctions_context(_world_geometry_for_transition(prefix.world_transition))
+    if junctions is None or not args or args[0] is not junctions.cells:
+        _world_reject(prefix.world_transition, "No actual same-Cells junction continuation", prefix)
+    return junctions.entries["dispatch"](
+        junctions, prefix, label, delegate, args[0], args[1:], kwargs, sys._getframe()
+    )
 
 
 def request_record(value):
@@ -745,6 +1266,8 @@ def _bindings(context):
         _pin,
         _ready,
         _module_file,
+        _source_interface,
+        builtins.compile,
         _import_bound,
         _helper_binding,
         _check_helper_backrefs,
@@ -752,6 +1275,31 @@ def _bindings(context):
         _dependencies,
         _world_voronoi_api,
         _world_voronoi_mesh_api,
+        _world_voronoi_lifecycle_api,
+        _world_seed_geometry_api,
+        _world_geometry_context,
+        _world_seed_poisson_api,
+        _seed_core_binding,
+        _seed_init_core_api,
+        _world_core_context,
+        _world_sim_fields,
+        _world_geometry_for_transition,
+        _world_has_seed_core_route,
+        _world_dispatch_seed_core,
+        _world_has_seed_profiles_route,
+        _world_profile_origin,
+        _world_profiles_wrapper_guard,
+        _seed_profiles_call,
+        _seed_profiles_picker_call,
+        _world_has_seed_junctions_route,
+        _world_dispatch_seed_junctions,
+        _world_profiles_context,
+        _world_junctions_context,
+        _world_inherited_caller_fields,
+        _seed_child_binding,
+        _import_seed_child,
+        _seed_init_profiles_api,
+        _seed_junctions_api,
         request_record,
         from_world_ready,
         _retain_failure,
@@ -799,6 +1347,7 @@ def _bindings(context):
         _world_cells_omissions,
         _world_live_aliases,
         _world_stage_runtime,
+        _world_stage_authority,
         _world_stage_guard,
         _world_stage_finish,
         _world_stage_check,
@@ -872,6 +1421,26 @@ def _bindings(context):
         SEED_GEOMETRY_MODE,
         SEED_GEOMETRY_SOURCE_SHA256,
         SEED_GEOMETRY_REVIEW_SHA256,
+        SEED_POISSON_MODULE,
+        SEED_POISSON_SOURCE_SHA256,
+        SEED_POISSON_REVIEW_SHA256,
+        SEED_INIT_CORE_MODULE,
+        SEED_INIT_CORE_INTERFACE_SHA256,
+        SEED_INIT_CORE_REVIEW_SHA256,
+        SEED_INIT_CORE_COORDINATOR_REVIEW_SHA256,
+        SEED_INIT_CORE_BINDING_KIND,
+        SEED_INIT_CORE_BACK_REFERENCE_SLOTS,
+        SEED_PROFILES_MODULE,
+        SEED_PROFILES_INTERFACE_SHA256,
+        SEED_PROFILES_REVIEW_SHA256,
+        SEED_PROFILES_COORDINATOR_REVIEW_SHA256,
+        SEED_PROFILES_BINDING_KIND,
+        SEED_JUNCTIONS_MODULE,
+        SEED_JUNCTIONS_INTERFACE_SHA256,
+        SEED_JUNCTIONS_REVIEW_SHA256,
+        SEED_JUNCTIONS_COORDINATOR_REVIEW_SHA256,
+        SEED_JUNCTIONS_BINDING_KIND,
+        SEED_CHILD_BACK_REFERENCE_SLOTS,
         CONSTRUCT_HOOK,
         CHECK_HOOK,
         SEAL_HOOK,
@@ -1632,7 +2201,12 @@ def _world_state(context, *, baseline=False):
         elif actual is transition.parents[3]:
             fields["callback_identity"] = transition.request.callback_identity
         else:
-            fields.update((k, v) for k, v in vars(actual).items() if k not in omitted)
+            actual_fields = (
+                _world_sim_fields(_world_geometry_for_transition(transition), actual)
+                if forwarded is not None
+                else vars(actual)
+            )
+            fields.update((k, v) for k, v in actual_fields.items() if k not in omitted)
         rows.append(
             dict(role=role, fields=transition.api.helpers.literal._project(projector, fields))
         )
@@ -1716,7 +2290,8 @@ def _world_live_aliases(transition):
         _world_reject(transition, "Original same-instance SEED route registry edge changed", tail)
 
 
-def _world_stage_runtime(context):
+def _world_stage_authority(context):
+    """Original issuance/code/weak links without a retired numerical-state check."""
     transition, module, index = context.world_transition, context.world_module, context.world_index
     if (
         context.world_mode != MODE
@@ -1755,7 +2330,7 @@ def _world_stage_runtime(context):
     literal = transition.api.helpers.literal
     literal._same(module._bindings(), context.bindings)
     if context.parent is not None:
-        _world_stage_runtime(context.parent)
+        _world_stage_authority(context.parent)
     if hasattr(context, "native_bindings"):
         literal._same(module._native_bindings(context), context.native_bindings)
     for attribute, function in (
@@ -1795,24 +2370,38 @@ def _world_stage_runtime(context):
             now = current.get(name)
             if type(now) is not tuple or now[0] is not old[0] or now[1:] != old[1:]:
                 _world_reject(transition, "Original native module changed", context)
+    if hasattr(context, "world_observations"):
+        literal._same(_world_observation_atoms(context), context.world_observations)
+    if hasattr(context, "world_observer_bindings"):
+        literal._same(_world_observer_atoms(context), context.world_observer_bindings)
+
+
+def _world_stage_runtime(context):
+    """Default constructor epoch still checks its complete original state."""
+    _world_stage_authority(context)
+    if context.parent is not None:
+        _world_stage_runtime(context.parent)
     current, graph = _world_state(context, baseline=True)
+    literal = context.world_transition.api.helpers.literal
     literal._same(graph[0], context.world_before_graph[0])
     if (
         current.identity != context.world_before.identity
         or graph[1] != context.world_before_graph[1]
     ):
         _world_reject(
-            transition, "Inherited fields/reference edges outside the stage changed", context
+            context.world_transition,
+            "Inherited fields/reference edges outside the stage changed",
+            context,
         )
-    if hasattr(context, "world_observations"):
-        literal._same(_world_observation_atoms(context), context.world_observations)
-    if hasattr(context, "world_observer_bindings"):
-        literal._same(_world_observer_atoms(context), context.world_observer_bindings)
     if context.evidence is not None and not context.active:
         sealed, graph = _world_state(context)
         literal._same(graph[0], context.world_graph[0])
         if sealed.identity != context.trial.cache.identity or graph[1] != context.world_graph[1]:
-            _world_reject(transition, "Retained source stage changed before continuation", context)
+            _world_reject(
+                context.world_transition,
+                "Retained source stage changed before continuation",
+                context,
+            )
 
 
 def _world_stage_guard(context):
@@ -2118,8 +2707,9 @@ def _world_phase_wrapper_guard(prefix, caller):
     actual = wrapper.f_locals.get("actual")
     expected = prefix.phase if role == "SimPhase" else prefix.constructed.get(role)
     member = None if expected is None else vars(type(expected)).get(method)
+    core = _world_core_context(_world_geometry_for_transition(transition))
     valid = (
-        role in ("SimPhase", "Cells")
+        (role in ("SimPhase", "Cells") or (role == "Simulator" and core is not None))
         and actual is expected
         and wrapper.f_locals.get("context") is prefix
         and type(member) is FunctionType
@@ -2128,6 +2718,12 @@ def _world_phase_wrapper_guard(prefix, caller):
     )
     if not valid:
         _world_reject(transition, "Detached/raw original phase wrapper entry", prefix)
+    if role == "Cells":
+        junctions = _world_junctions_context(_world_geometry_for_transition(transition))
+        if junctions is not None:
+            return junctions.entries["wrapper_guard"](junctions, prefix, wrapper)
+    if role == "Simulator":
+        return core.entries["wrapper_guard"](core, prefix, wrapper)
     if _world_has_prefix_route(prefix):
         module = transition.api.helpers
         retained = _world_forwarded(transition)

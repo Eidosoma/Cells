@@ -22,7 +22,7 @@ from cells.processes import betse_native_phase_parameters as parameters
 
 LAW_ID = parameters.YAML_PREFIX_LAW
 PATHS_LAW = "betse_native_parameter_compatibility_paths@1"
-PARAMETERS_SHA256 = "0ed6fe83c691efece972a93d560fed7e732d3f4580f0198657c7421700e601dc"
+PARAMETERS_SHA256 = "93116b2688e37d248d0bb410f4c483587f8378e4ad1e12be4930bd7021e1d6d4"
 MAX_FILE_BYTES = 8 * 2**20
 BASE = Path("/mnt/workspaces/Cells")
 _FILES, _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(5))

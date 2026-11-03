@@ -5,7 +5,7 @@ import builtins
 import json
 import sys
 from dataclasses import replace
-from types import FunctionType, SimpleNamespace
+from types import CodeType, FunctionType, ModuleType, SimpleNamespace
 
 import pytest
 
@@ -519,6 +519,72 @@ def test_native_cache_template_reflection_is_no_call_and_target_identity_exact(n
     with pytest.raises(ValueError, match="Foreign cached-function target"):
         stage._cache_target(fn)
     assert calls == []
+
+
+def compiled_callback_metadata(monkeypatch, native_blocked, relative, name, cls=None):
+    """Create metadata from complete pinned text; never import or execute it."""
+    path = stage.simulator.tissue.aliases.NATIVE / relative
+    filename = str(path)
+    scope = compile(path.read_bytes(), filename, "exec", dont_inherit=True)
+    if cls is not None:
+        scope = next(c for c in scope.co_consts if type(c) is CodeType and c.co_name == cls)
+    code = next(c for c in scope.co_consts if type(c) is CodeType and c.co_name == name)
+    module = ModuleType(relative[:-3].replace("/", "."))
+    module.__dict__["__builtins__"] = vars(builtins)
+    function = FunctionType(code, vars(module), name)
+    native_blocked.add(code)
+    monkeypatch.setitem(sys.modules, module.__name__, module)
+    return module, function
+
+
+@pytest.mark.parametrize(
+    "relative,name,cls",
+    [
+        (stage.CALLBACKS, "make_default", None),
+        (stage.TESTING, "is_testing", None),
+        (stage.MEMO, "func_cached", None),
+        (stage.BASE, "__init__", "CallbacksBC"),
+        (stage.BASE, "_clear_progress", "CallbacksBC"),
+    ],
+)
+def test_source_reflection_preserves_complete_native_compiler_scope(
+    monkeypatch, native_blocked, relative, name, cls
+):
+    _, function = compiled_callback_metadata(monkeypatch, native_blocked, relative, name, cls)
+    assert stage._source_function(function, relative, name, cls) is function
+    # The original generated caching wrapper is still checked independently by
+    # test_native_cache_template_reflection_is_no_call_and_target_identity_exact.
+
+
+@pytest.mark.parametrize("mutation", ["isolated", "constants", "flags", "filename", "globals"])
+def test_source_reflection_refuses_changed_executable_without_factory_call(
+    monkeypatch, native_blocked, mutation
+):
+    module, function = compiled_callback_metadata(
+        monkeypatch, native_blocked, stage.CALLBACKS, "make_default"
+    )
+    original = function.__code__
+    if mutation == "isolated":
+        tree = ast.parse((stage.simulator.tissue.aliases.NATIVE / stage.CALLBACKS).read_bytes())
+        node = next(
+            n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "make_default"
+        )
+        code = stage._code_from_node(node, original.co_filename)
+        # Reproduces the actual Python 3.13 false refusal: importing the full
+        # module and compiling only this definition produce different bytecode.
+        assert stage.simulator._code(code) != stage.simulator._code(original)
+        function.__code__ = code
+    elif mutation == "constants":
+        function.__code__ = original.replace(co_consts=(*original.co_consts, "foreign constant"))
+    elif mutation == "flags":
+        function.__code__ = original.replace(co_flags=original.co_flags ^ 0x10)
+    elif mutation == "filename":
+        function.__code__ = original.replace(co_filename="<foreign callback source>")
+    else:
+        function = FunctionType(original, dict(vars(module)), "make_default")
+    native_blocked.add(function.__code__)
+    with pytest.raises(ValueError, match="Original callback dependency executable changed"):
+        stage._source_function(function, stage.CALLBACKS, "make_default")
 
 
 @pytest.mark.parametrize("mutation", ["shadow", "cached-builtins"])

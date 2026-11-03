@@ -116,6 +116,9 @@ the [project README](../README.md) gives the short feature overview.
 - [Cortical culture learning review](PAPER_REVIEW_CORTICAL_LEARNING.md) adds a
   future wet-lab benchmark for learning, persistence and error recovery, with
   data requirements, experimental limitations and missing simulator features.
+- [T cell organelle coordination review](PAPER_REVIEW_T_CELL_ORGANELLES.md)
+  proposes tests for calcium-linked clustering, directed delivery and imaging
+  metrics, with explicit data and model prerequisites beyond BETSE parity.
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.

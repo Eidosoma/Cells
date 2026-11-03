@@ -30,10 +30,10 @@ MODE = "prepared_callback_seven_load_seed_prefix"
 RELEASE = "CELLS_NATIVE_PHASE_ASSEMBLY_RELEASED"
 PRODUCERS = {
     "betse_native_tissue_handler_attachment": (
-        "c0d9b1f5375620464167c13bc07815c996284e1d78eb753942c560f80a15470b"
+        "9d788de993d572d9187d68a521a848f28a093fab92935439c9dec2e46133de63"
     ),
     "betse_native_phase_callbacks": (
-        "4fa19547caac95257162e6678092c3e55ce4fe43b05b2d16f7908f9196740f2d"
+        "f5e807c61cfd36a7f6d2da6e23418559a2527c221f2c8ce8ddf0a908020721f2"
     ),
 }
 PHASE = "betse/science/phase/phasecls.py"
@@ -520,6 +520,20 @@ def _check(context):
 def _native_call(context, label, delegate, *args, **kwargs):
     _guard(context)
     if not context.active:
+        if (
+            getattr(context, "world_mode", None) == WORLD_MODE
+            and label.startswith("Cells.")
+            and _world_api()._world_has_seed_junctions_route(context)
+        ):
+            return _world_api()._world_dispatch_seed_junctions(
+                context, label, delegate, *args, **kwargs
+            )
+        if (
+            getattr(context, "world_mode", None) == WORLD_MODE
+            and _world_api()._world_has_seed_core_route(context)
+            and label.startswith("Simulator.")
+        ):
+            return _world_api()._world_dispatch_seed_core(context, label, delegate, *args, **kwargs)
         if getattr(
             context, "world_mode", None
         ) == WORLD_MODE and _world_api()._world_has_prefix_route(context):

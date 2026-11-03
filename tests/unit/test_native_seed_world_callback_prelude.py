@@ -235,7 +235,9 @@ def test_callable_authentication_uses_original_typed_code_and_never_executes_it(
         assert stage._function(module, "declared") is module.declared
 
 
-@pytest.mark.parametrize("mutation", [None, "strict_mnt_only", "broad_root", "foreign_env"])
+@pytest.mark.parametrize(
+    "mutation", [None, "strict_mnt_only", "broad_root", "foreign_env", "reused_mpl"]
+)
 def test_bootstrap_declares_native_home_conflict_without_changing_HOME_or_any_runtime(
     tmp_path, mutation
 ):
@@ -259,6 +261,8 @@ def test_bootstrap_declares_native_home_conflict_without_changing_HOME_or_any_ru
         declaration["native_write_roots"].append("/")
     if mutation == "foreign_env":
         declaration["environment"]["HOME"] = "/never-set-or-used"
+    if mutation == "reused_mpl":
+        stage.Path(mpl).mkdir()
     path = tmp_path / "bootstrap.json"
     path.write_text(json.dumps(declaration))
     namespace = dict(vars(stage), os=NS(environ=environment))
@@ -269,7 +273,8 @@ def test_bootstrap_declares_native_home_conflict_without_changing_HOME_or_any_ru
         with pytest.raises(stage.PreludeRejected):
             validate(path, stage.snapshot.digest(path), tmp_path / "fresh")
     assert environment["HOME"] == os.environ.get("HOME")
-    assert not (tmp_path / "fresh").exists() and not (tmp_path / "mpl-cache").exists()
+    assert not (tmp_path / "fresh").exists()
+    assert (tmp_path / "mpl-cache").exists() is (mutation == "reused_mpl")
 
 
 def test_no_live_prelude_state_checkpoint_or_native_import_at_module_scope():
@@ -350,3 +355,131 @@ def test_original_cache_link_binding_refuses_retarget_and_retains_return_or_prim
         assert state.capture_errors[-1][0] == "failed_source_path_check"
     assert state.path_links == ((str(link), record),)
     assert len(calls) == (0 if when == "before" else 1)
+
+
+@pytest.mark.parametrize("shape", ["escape", "still_inside", "relative"])
+def test_output_canonical_containment_refuses_before_any_mkdir_or_runtime_delegate(
+    tmp_path, monkeypatch, shape
+):
+    bootstrap = tmp_path / "bootstrap.json"
+    bootstrap.write_text(
+        json.dumps(
+            dict(
+                kind=stage.KIND,
+                runtime={},
+                environment={},
+                native_write_roots=[],
+                native_links={},
+                Root_review="a" * 64,
+            )
+        )
+    )
+    directory = {
+        "escape": stage.Path("/mnt/workspaces/Cells") / ".." / "escape-witness-never-created",
+        "still_inside": tmp_path / "unused" / ".." / "fresh-never-created",
+        "relative": stage.Path("relative-never-created"),
+    }[shape]
+    calls = []
+
+    def forbidden(*args, **kwargs):
+        calls.append((args, kwargs))
+        raise AssertionError("No directory creation or bootstrap delegate may run")
+
+    namespace = dict(
+        vars(stage),
+        _dependencies=lambda: object(),
+        _fresh_native=lambda: None,
+        _resources=lambda: None,
+        _function=forbidden,
+    )
+    private = FunctionType(stage._acquire_callback.__code__, namespace)
+    with monkeypatch.context() as patch:
+        patch.setattr(stage.Path, "mkdir", forbidden)
+        with pytest.raises(stage.PreludeRejected) as caught:
+            private(
+                stage.Execution(),
+                {},
+                directory,
+                bootstrap=bootstrap,
+                bootstrap_sha256=stage.snapshot.digest(bootstrap),
+            )
+    assert caught.value.stage == "output" and calls == []
+    assert not (tmp_path / "fresh-never-created").exists()
+
+
+def test_repeated_caught_reentry_retains_first_identity_and_separates_later_attempts(monkeypatch):
+    monkeypatch.setenv(stage.RELEASE, "1")
+    namespace = dict(vars(stage), _ACTIVE=[], _RETAINED={})
+    public = FunctionType(stage.acquire_callback.__code__, namespace)
+    rejected, states, calls = [], [], []
+
+    def actual(state, *args, **kwargs):
+        states.append(state)
+        for _ in range(3):
+            try:
+                public({}, "unused", bootstrap="unused", bootstrap_sha256="x", enabled=True)
+            except stage.PreludeRejected as error:
+                rejected.append(error)
+        with pytest.raises(stage.PreludeRejected) as stopped:
+            stage._operation(state, "never-next", lambda: calls.append("forbidden"))
+        assert stopped.value is rejected[0]
+        state.completed = True
+        return object()
+
+    namespace["_acquire_callback"] = actual
+    with pytest.raises(stage.PreludeRejected) as caught:
+        public({}, "unused", bootstrap="unused", bootstrap_sha256="x", enabled=True)
+    state = states[0]
+    assert caught.value.__cause__ is state.primary is state.entry_error is rejected[0]
+    assert [error for _, error in state.later_errors] == rejected[1:]
+    assert len({id(error) for error in rejected}) == 3
+    assert calls == [] and namespace["_ACTIVE"] == [] and namespace["_RETAINED"] == {}
+
+
+@pytest.mark.parametrize("secondary_capture", [False, True])
+def test_falsey_source_primary_survives_reentrant_forensics_and_later_capture_failure(
+    monkeypatch, secondary_capture
+):
+    monkeypatch.setenv(stage.RELEASE, "1")
+    bool_calls, states, reentries, later_calls = [], [], [], []
+
+    class FalseySource(ValueError):
+        def __bool__(self):
+            bool_calls.append("never-coerce-primary")
+            return False
+
+    primary = FalseySource("original source")
+    cause, capture = KeyError("original cause"), OSError("secondary capture")
+    primary.__cause__ = cause
+    namespace = dict(vars(stage), _ACTIVE=[], _RETAINED={})
+    public = FunctionType(stage.acquire_callback.__code__, namespace)
+
+    def actual(state, *args, **kwargs):
+        states.append(state)
+        try:
+            stage._operation(state, "original_source", lambda: (_ for _ in ()).throw(primary))
+        except FalseySource:
+            # Models failed-result forensic callbacks, after source retention.
+            for _ in range(2):
+                try:
+                    public({}, "unused", bootstrap="unused", bootstrap_sha256="x", enabled=True)
+                except stage.PreludeRejected as error:
+                    reentries.append(error)
+            if secondary_capture:
+                state.capture_errors.append(("forensics", capture, primary))
+            with pytest.raises(FalseySource) as stopped:
+                stage._operation(state, "never-next", lambda: later_calls.append("forbidden"))
+            assert stopped.value is primary
+            raise
+
+    namespace["_acquire_callback"] = actual
+    with pytest.raises(stage.PreludeRejected) as caught:
+        public({}, "unused", bootstrap="unused", bootstrap_sha256="x", enabled=True)
+    state = states[0]
+    assert caught.value.__cause__ is state.source_error is state.primary is primary
+    assert primary.__cause__ is cause and state.entry_error is reentries[0]
+    assert [error for _, error in state.later_errors] == reentries
+    assert bool_calls == later_calls == []
+    if secondary_capture:
+        assert state.capture_errors[-1][1] is capture
+    assert namespace["_ACTIVE"] == [] and namespace["_RETAINED"] == {}
