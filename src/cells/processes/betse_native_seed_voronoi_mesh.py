@@ -8,6 +8,7 @@ core operators, caller tail, phase/package and physical admission remain held.
 """
 
 import ast
+import dis
 import hashlib
 import os
 import sys
@@ -40,6 +41,7 @@ POINTS = "DECMesh.make_single_cell_points"
 NUMPY_HELPERS = ("mean", "cos", "sin", "hstack", "column_stack")
 MAX_WORK = image.MAX_WORK
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED, _MESHES = (WeakKeyDictionary() for _ in range(5))
+_WITNESSES, _FORWARDED = WeakKeyDictionary(), WeakKeyDictionary()
 _ACTIVE, _LOCK = [], RLock()
 _LITERAL_CLASS = source.VoronoiMeshPrefix
 _LITERAL_FUNCTION = _LITERAL_CLASS.make_voronoi
@@ -72,6 +74,7 @@ class Request:
     source_identity: str
     mode: str
     identity: str
+    callsite_identity: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,6 +94,146 @@ class Trial:
     source_failure_type: str | None
     capture_failure_type: str | None
     identity: str
+    call_witness: object = None
+
+
+@dataclass(frozen=True, slots=True)
+class ConstructorCallWitness:
+    request_identity: str
+    catalog_identity: str
+    branch: str
+    offset: int
+    call_offset: int
+    call_span: tuple
+    assignment_span: tuple
+    identity: str
+
+
+def _call_sites(code=None):
+    """Authenticate CALL positions, without reading any branch descriptor.
+
+    The issuing factory observes the real caller's suspended CALL (including
+    its interpreter inline-cache offsets). Arguments and equal scalar values
+    never choose the branch. This catalog is metadata, not executed source.
+    """
+    code = _LITERAL_CODE if code is None else code
+    tree = ast.parse(_LITERAL_FILE.read_bytes())
+    cls = next(n for n in tree.body if isinstance(n, ast.ClassDef))
+    method = next(n for n in cls.body if isinstance(n, ast.FunctionDef))
+    branch = _body(method)[1]
+    other = branch.orelse[0]
+    stores = (branch.body[0], other.body[0], other.orelse[0])
+    instructions = tuple(dis.get_instructions(code, show_caches=True, adaptive=False))
+    result = []
+    for label, store in zip(("single", "svg", "multi_nonSVG"), stores, strict=True):
+        call = store.value
+        if not isinstance(call, ast.Call) or not isinstance(call.func, ast.Name):
+            raise ValueError("Original DECMesh assignment call required")
+        if call.func.id != "DECMesh":
+            raise ValueError("Original DECMesh constructor target changed")
+        span = (call.lineno, call.end_lineno, call.col_offset, call.end_col_offset)
+        matches = []
+        for index, instruction in enumerate(instructions):
+            pos = instruction.positions
+            if (
+                instruction.opname not in ("CALL", "CALL_KW", "CALL_FUNCTION_EX")
+                or (pos.lineno, pos.end_lineno, pos.col_offset, pos.end_col_offset) != span
+            ):
+                continue
+            offsets = [instruction.offset]
+            for following in instructions[index + 1 :]:
+                if following.opname != "CACHE":
+                    break
+                offsets.append(following.offset)
+            matches.append((instruction.offset, tuple(offsets)))
+        if len(matches) != 1:
+            raise ValueError("One actual interpreter constructor CALL per original branch required")
+        result.append(
+            (
+                label,
+                span,
+                (store.lineno, store.end_lineno, store.col_offset, store.end_col_offset),
+                *matches[0],
+            )
+        )
+    return tuple(result)
+
+
+def witness_record(value):
+    return dict(
+        request=value.request_identity,
+        catalog=value.catalog_identity,
+        branch=value.branch,
+        offset=value.offset,
+        call_offset=value.call_offset,
+        call_span=value.call_span,
+        assignment_span=value.assignment_span,
+    )
+
+
+def _claim_callsite(context, root):
+    if (
+        type(root) is not FrameType
+        or root is not context.root_frame
+        or root.f_code is not context.method.__code__
+        or context.call_witness is not None
+        or context.request in _WITNESSES
+    ):
+        _reject(context, None, "Constructor callsite lacks its actual original source frame")
+    catalog = _call_sites(context.method.__code__)
+    if _digest(catalog) != context.request.callsite_identity:
+        _reject(context, None, "Constructor CALL/assignment catalog changed")
+    reached = [entry for entry in catalog if root.f_lasti in entry[4]]
+    if len(reached) != 1:
+        _reject(context, None, "Actual suspended constructor CALL is not source-bound")
+    label, span, store, offset, _ = reached[0]
+    value = ConstructorCallWitness(
+        context.request.identity,
+        context.request.callsite_identity,
+        label,
+        root.f_lasti,
+        offset,
+        span,
+        store,
+        "",
+    )
+    value = replace(value, identity=_digest(witness_record(value)))
+    context.call_witness = value
+    # Retain the ACTUAL frame/code and the original issuance tuple. A public
+    # record cannot recreate this process-local authority.
+    link = (context, value, root, root.f_code)
+    context.callsite_link = link
+    _WITNESSES[context.request] = link
+
+
+def _check_callsite(context):
+    value = context.call_witness
+    if value is None:
+        if context.request in _WITNESSES:
+            raise ValueError("Unclaimed constructor witness was inserted")
+        return
+    link = _WITNESSES.get(context.request)
+    if (
+        link is not context.callsite_link
+        or link[0] is not context
+        or link[1] is not value
+        or link[2] is not context.root_frame
+        or link[3] is not context.method.__code__
+        or link[2].f_code is not link[3]
+        or type(value) is not ConstructorCallWitness
+        or value.request_identity != context.request.identity
+        or value.catalog_identity != context.request.callsite_identity
+        or value.identity != _digest(witness_record(value))
+    ):
+        raise ValueError("Actual observed constructor CALL issuance changed")
+    expected = [entry for entry in _call_sites(link[3]) if value.offset in entry[4]]
+    if len(expected) != 1 or expected[0][:4] != (
+        value.branch,
+        value.call_span,
+        value.assignment_span,
+        value.call_offset,
+    ):
+        raise ValueError("Observed constructor branch/assignment witness changed")
 
 
 def _digest(value):
@@ -155,6 +298,8 @@ def source_plan():
         parent_pin=PARENT_SOURCE_SHA256,
         parent_review=PARENT_REVIEW_SHA256,
         native_source=dict(source.NATIVE_PINS),
+        constructor_callsite_catalog=_call_sites(),
+        observed_branch="actual suspended original CALL/assignment span, before callbacks",
         constructor_helpers=("__init__", "make_single_cell_points"),
         numpy_helpers=NUMPY_HELPERS,
         native_single_cell_random_draws=2,
@@ -239,6 +384,7 @@ def request_record(request):
         mode=request.mode,
         parent=request.parent_identity,
         source=request.source_identity,
+        callsite_catalog=request.callsite_identity,
         stop_before="mesh lifecycle",
     )
 
@@ -259,7 +405,7 @@ def from_image(owner, *, law_id, mode=MODE):
     # This authenticates the genuine parent once; it is work, not another case.
     epoch = image._epoch(parent)
     plan = source_plan()
-    value = Request(owner, parent.trial.identity, _digest(plan), mode, "")
+    value = Request(owner, parent.trial.identity, _digest(plan), mode, "", _digest(_call_sites()))
     value = replace(value, identity=_digest(request_record(value)))
     _REQUESTS[value] = (
         parent,
@@ -349,17 +495,33 @@ def _rng(context):
     return value
 
 
+def _geometry_context(context):
+    request = getattr(context, "request", None)
+    constructor = context if type(request) is Request else getattr(context, "parent", None)
+    request = None if constructor is None else getattr(constructor, "request", None)
+    if type(request) is not Request or _CONSUMED.get(request) is not constructor:
+        return None  # Pure graph metadata is not a constructor/child capability.
+    return image.prefix.previous._world_api()._world_geometry_context(constructor)
+
+
 def _graph(context, *, final=False):
     # Persistent view dictionaries preserve real edges without incorporating
     # growing observation lists into the immutable inherited baseline.
     fields = context.final_fields if final else context.stable_fields
+    constructor = context if hasattr(context, "caller_names") else getattr(context, "parent", None)
+    geometry = _geometry_context(context)
+    original_names = None if geometry is None else constructor.caller_names
     for target, (_, actual) in zip(fields, context.objects, strict=True):
         target.clear()
         target.update(
             {
                 k: v
                 for k, v in vars(actual).items()
-                if final or actual is not context.cells or k != "mesh"
+                if (
+                    actual is not context.cells
+                    or (k != "mesh" and (original_names is None or k in original_names))
+                    or (final and k == "mesh")
+                )
             }
         )
     view = context.final_view if final else context.stable_view
@@ -374,6 +536,7 @@ def _graph(context, *, final=False):
 
 def _values(context):
     projector = context.parent.parent.projector
+    geometry = _geometry_context(context)
     project = image.prefix.literal._project
     return dict(
         inherited=[
@@ -384,7 +547,8 @@ def _values(context):
                     {
                         key: value
                         for key, value in vars(actual).items()
-                        if actual is not context.cells or key != "mesh"
+                        if actual is not context.cells
+                        or (key != "mesh" and (geometry is None or key in context.caller_names))
                     },
                 ),
             )
@@ -495,6 +659,8 @@ def _bindings(context):
         _RETIRED,
         _ISSUED,
         _MESHES,
+        _WITNESSES,
+        _FORWARDED,
         _ACTIVE,
         _LOCK,
         context.parent_claim,
@@ -543,7 +709,13 @@ def _bindings(context):
         *(atom for cls in (_Numpy, _Random, _Logs) for atom in image.prefix.literal._surface(cls)),
         *(
             atom
-            for cls in (Request, Trial, MeshConstructionRejected, MeshConstructorOwner)
+            for cls in (
+                Request,
+                Trial,
+                ConstructorCallWitness,
+                MeshConstructionRejected,
+                MeshConstructorOwner,
+            )
             for atom in image.prefix.literal._surface(cls)
         ),
     )
@@ -578,6 +750,7 @@ def _check(context):
     ):
         raise ValueError("Original typed request or parent trial changed")
     _same(_bindings(context), context.bindings)
+    _check_callsite(context)
     # These are the immutable IMAGE-only cache/edges. They contain neither the
     # newly assigned caller.mesh nor a pre-constructor caller/RNG validator.
     image_graph = image.images._graph(context.parent.tape)
@@ -599,8 +772,11 @@ def _check(context):
     if context.mesh is not None and vars(context.mesh) is not context.mesh_dict:
         raise ValueError("Actual native mesh attribute dictionary was replaced")
     fields = tuple(vars(context.cells))
-    if fields not in (context.caller_names, (*context.caller_names, "mesh")):
+    geometry = context.api._world_geometry_context(context)
+    if geometry is None and fields not in (context.caller_names, (*context.caller_names, "mesh")):
         raise ValueError("Constructor changed an unrelated caller store")
+    if geometry is not None:
+        context.api._world_seed_geometry_api()._check_fields(geometry)
     if "mesh" in vars(context.cells) and vars(context.cells)["mesh"] is not context.mesh:
         raise ValueError("Original caller.mesh assignment was retargeted")
 
@@ -663,6 +839,7 @@ def _admit(context, frame):
     elif name == "constructor_factory_wrapper":
         valid = parent is context.root_frame and not context.factory_claimed
         if valid:
+            _claim_callsite(context, parent)  # BEFORE either inherited callback.
             context.factory_claimed, context.factory_frame = True, frame
     elif name == "mesh_method_wrapper":
         method = frame.f_locals.get("name")
@@ -876,6 +1053,9 @@ def _literal_code():
 
 
 def _invoke_mesh(context, name, delegate, actual, args, kwargs, wrapper):
+    if getattr(context, "lifecycle", None) is not None:
+        child, module = _lifecycle_route(context)
+        return module._mesh_call(child, context, name, delegate, actual, args, kwargs, wrapper)
     row = _attempt(context, name + "_dispatch", wrapper, "wrapper_dispatch")
     _guard(context)
     if (
@@ -904,6 +1084,9 @@ def _construct(context, kwargs, factory_frame):
     _check(context)
     if context.mesh is not None or factory_frame is not context.factory_frame:
         _reject(context, None, "Repeated/foreign mesh constructor factory")
+    _check_callsite(context)
+    if context.call_witness is None:
+        _reject(context, None, "Constructor body requires its observed original CALL witness")
     context.constructor_kwargs = kwargs
     context.stage = "native_constructor"
     context.constructor_dispatch_frame = sys._getframe()
@@ -1046,6 +1229,9 @@ def _namespace(context):
 
 
 def _wrapper_guard(context, original, wrapper):
+    if getattr(context, "lifecycle", None) is not None:
+        child, module = _lifecycle_route(context)
+        return module._wrapper_guard(child, original, wrapper)
     row = _attempt(context, DISPATCH_LABEL, wrapper, "original_wrapper_guard")
     _guard(context)
     if (
@@ -1068,6 +1254,11 @@ def _wrapper_guard(context, original, wrapper):
 
 
 def _dispatch(context, original, label, delegate, actual, args, kwargs, dispatch_frame):
+    if getattr(context, "lifecycle", None) is not None:
+        child, module = _lifecycle_route(context)
+        return module._dispatch(
+            child, original, label, delegate, actual, args, kwargs, dispatch_frame
+        )
     row = _attempt(context, label, dispatch_frame, "original_native_wrapper_dispatch")
     _guard(context)
     caller = sys._getframe(1)
@@ -1168,6 +1359,9 @@ def trial_record(trial):
         failure_stage=trial.failure_stage,
         source_failure=trial.source_failure_type,
         capture_failure=trial.capture_failure_type,
+        constructor_call_witness=(
+            None if trial.call_witness is None else witness_record(trial.call_witness)
+        ),
     )
 
 
@@ -1215,6 +1409,8 @@ def _partial(context):
         actual_image_mask=context.refs[6],
         mesh=context.mesh,
         constructor_kwargs=getattr(context, "constructor_kwargs", None),
+        constructor_call_witness=context.call_witness,
+        constructor_callsite_link=getattr(context, "callsite_link", None),
         raw_locals=context.locals,
         work=context.work,
         events=context.events,
@@ -1304,6 +1500,7 @@ def prepare(request, *, enabled=False):
             mesh_dict=None,
             source_ready=False,
             constructor_cache=None,
+            call_witness=None,
             stream_before=None,
             expected_rng=None,
             wrapper_claimed=False,
@@ -1397,6 +1594,14 @@ def prepare(request, *, enabled=False):
                 "_dispatch",
                 "_wrapper_guard",
                 "_literal_code",
+                "_call_sites",
+                "_claim_callsite",
+                "_check_callsite",
+                "witness_record",
+                "_claim_for_voronoi_lifecycle",
+                "_lifecycle_route",
+                "_check_lifecycle_authority",
+                "_geometry_context",
                 "_operation",
                 "_observe",
                 "_observer_bindings",
@@ -1446,6 +1651,7 @@ def prepare(request, *, enabled=False):
                 or not context.constructor_returned
                 or context.mesh is None
                 or context.cells.mesh is not context.mesh
+                or context.call_witness is None
             ):
                 raise ValueError("Original constructor/assignment boundary did not complete")
         except BaseException as error:
@@ -1515,6 +1721,7 @@ def prepare(request, *, enabled=False):
                     None if primary is None else type(primary).__qualname__,
                     None if capture is None else type(capture).__qualname__,
                     "",
+                    context.call_witness,
                 )
                 context.trial = replace(value, identity=_digest(trial_record(value)))
                 if primary is None and capture is None:
@@ -1592,6 +1799,10 @@ def _authority(owner):
     if type(owner) is not MeshConstructorOwner or owner not in _ISSUED:
         raise MeshConstructionRejected("Actually issued constructor child required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or getattr(context, "lifecycle", None) is not None:
+        raise MeshConstructionRejected(
+            "Constructor epoch consumed by lifecycle", stage="consumed", trial=context.trial
+        )
     if context.active or context.validating or context.invalid:
         _reject(context, None, "Unavailable/reentrant constructor child")
     context.validating = True
@@ -1624,3 +1835,123 @@ def require_lifecycle(owner):
         request=context.request,
         trial=context.trial,
     )
+
+
+def _claim_for_voronoi_lifecycle(owner, *, expected, transition, entries):
+    """Retire one actual constructor epoch, without rearming on any failure."""
+    module = image.prefix.previous._world_api()._world_voronoi_lifecycle_api()
+    caller = sys._getframe(1)
+    with _LOCK:
+        if (
+            caller.f_code is not module.prepare.__code__
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+            or type(owner) is not MeshConstructorOwner
+            or _ISSUED.get(owner) is not expected
+        ):
+            raise MeshConstructionRejected("Actual active lifecycle issuer required", stage="entry")
+        parent = expected
+        if owner in _FORWARDED or getattr(parent, "lifecycle", None) is not None:
+            raise MeshConstructionRejected("Constructor lifecycle epoch consumed", stage="consumed")
+        if (
+            parent.active
+            or parent.invalid
+            or parent.validating
+            or parent.owner is not owner
+            or transition.driver_frame is not caller
+            or transition.parent is not parent
+            or type(transition.request) is not module.Request
+            or module._REQUESTS.get(transition.request) is not transition.refs
+            or module._CONSUMED.get(transition.request) is not transition
+            or module._RETIRED.get(owner) is not transition
+            or transition.request.constructor_owner is not owner
+            or transition.refs[0] is not parent
+            or transition.refs[1] is not parent.trial
+            or transition.refs[2] is not parent.call_witness
+            or transition.phase is not parent.phase
+            or transition.p is not parent.p
+            or transition.cells is not parent.cells
+            or transition.mesh is not parent.mesh
+            or transition.mask is not parent.refs[6]
+            or transition.rng is not parent.rng
+            or transition.thread != parent.thread
+            or transition.thread != get_ident()
+            or entries is not transition.entries
+            or tuple(entries) != (module.DISPATCH_LABEL,)
+            or entries[module.DISPATCH_LABEL] is not module._dispatch
+        ):
+            parent.invalid = transition.invalid = True
+            raise ValueError("Actual same-instance lifecycle transition required")
+        parent.lifecycle = transition  # Sticky before any authentication callback.
+        try:
+            _FORWARDED[owner] = transition
+            _check(parent)  # Factored ancestry only: never stale current-mesh cache validation.
+            if (
+                parent.trial.call_witness is not parent.call_witness
+                or parent.trial.identity != _digest(trial_record(parent.trial))
+                or parent.trial.source_completed is not True
+                or parent.trial.cache.identity
+                != image.images.core.caches.snapshot(_values(parent)).identity
+            ):
+                raise ValueError("Original constructor seal changed before retirement")
+            graph = _graph(parent, final=True)
+            _same(graph[0], parent.graph[0])
+            if graph[1] != parent.graph[1]:
+                raise ValueError("Constructor final graph changed before lifecycle")
+            if _lifecycle_route(parent)[0] is not transition:
+                raise ValueError("Different constructor epoch was retired")
+        except BaseException:
+            parent.invalid = transition.invalid = True
+            raise
+        return parent
+
+
+def _lifecycle_route(parent):
+    """Resolve registry links, without reopening the consumed numeric cache."""
+    module = image.prefix.previous._world_api()._world_voronoi_lifecycle_api()
+    child = getattr(parent, "lifecycle", None)
+    owner = getattr(parent, "owner", None)
+    if (
+        child is None
+        or owner is None
+        or _ISSUED.get(owner) is not parent
+        or _FORWARDED.get(owner) is not child
+        or parent.active
+        or parent.invalid
+        or child.invalid
+        or child.parent is not parent
+        or type(child.request) is not module.Request
+        or child.request.constructor_owner is not owner
+        or module._REQUESTS.get(child.request) is not child.refs
+        or module._CONSUMED.get(child.request) is not child
+        or module._RETIRED.get(owner) is not child
+        or child.refs[0] is not parent
+        or child.refs[1] is not parent.trial
+        or child.refs[2] is not parent.call_witness
+        or child.phase is not parent.phase
+        or child.p is not parent.p
+        or child.cells is not parent.cells
+        or child.mesh is not parent.mesh
+        or child.mask is not parent.refs[6]
+        or child.rng is not parent.rng
+        or child.thread != parent.thread
+        or tuple(child.entries) != (module.DISPATCH_LABEL,)
+        or child.entries[module.DISPATCH_LABEL] is not module._dispatch
+    ):
+        raise ValueError("Original constructor/lifecycle issuance or retirement links changed")
+    return child, module
+
+
+def _check_lifecycle_authority(transition):
+    parent = transition.parent
+    if _lifecycle_route(parent)[0] is not transition:
+        raise ValueError("Different actual lifecycle transition")
+    _check(parent)
+    if (
+        parent.trial is not transition.refs[1]
+        or parent.trial.source_completed is not True
+        or parent.trial.call_witness is not transition.refs[2]
+        or parent.trial.identity != _digest(trial_record(parent.trial))
+    ):
+        raise ValueError("Retained constructor trial or observed CALL witness changed")
+    return parent

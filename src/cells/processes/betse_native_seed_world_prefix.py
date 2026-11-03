@@ -1801,7 +1801,7 @@ def _mesh_ancestry_values(evidence):
                     {
                         key: value
                         for key, value in vars(actual).items()
-                        if actual is not parent.cells or key != "mesh"
+                        if actual is not parent.cells or key in evidence.caller_names
                     },
                 ),
             )
@@ -1818,7 +1818,7 @@ def _mesh_ancestry_graph(evidence):
         target.update(
             (key, value)
             for key, value in vars(actual).items()
-            if actual is not evidence.prefix.cells or key != "mesh"
+            if actual is not evidence.prefix.cells or key in evidence.caller_names
         )
     return literal.callers._graph(evidence.view, evidence.view, evidence.tape)
 
@@ -1886,6 +1886,12 @@ def _check_mesh_ancestry(image_context, transition):
     ):
         raise ValueError("Original prefix/image/mesh inherited issuance links changed")
     _check_ancestry(parent)
+    geometry = previous._world_api()._world_geometry_context(transition)
+    current_names = tuple(vars(parent.cells))
+    names_valid = current_names in (evidence.caller_names, (*evidence.caller_names, "mesh"))
+    if geometry is not None:
+        previous._world_api()._world_seed_geometry_api()._check_fields(geometry)
+        names_valid = current_names[: len(evidence.caller_names)] == evidence.caller_names
     if (
         not parent.trial.source_completed
         or parent.stack
@@ -1903,8 +1909,7 @@ def _check_mesh_ancestry(image_context, transition):
             vars(actual) is not original
             for (_, actual), original in zip(evidence.objects, evidence.holder_dicts, strict=True)
         )
-        or tuple(vars(parent.cells))
-        not in (evidence.caller_names, (*evidence.caller_names, "mesh"))
+        or not names_valid
         or _mesh_ancestry_values(evidence).identity != parent.trial.cache.identity
     ):
         raise ValueError("Original pre-mesh fields, holder dictionaries or lattice trial changed")

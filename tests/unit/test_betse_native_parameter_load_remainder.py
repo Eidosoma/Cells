@@ -28,6 +28,80 @@ from validation.betse.betse_native_single_cell_core_synthetic import (
 
 blocked = inherited.blocked
 prevent_reference_execution = inherited.prevent_reference_execution
+conditional_grant_contract = inherited.conditional_grant_contract
+
+
+def test_candidate_grant_api_keeps_actual_hook_refusing_before_retirement(monkeypatch):
+    assert stage._hook() is stage.previous
+    assert stage.HANDOFF_PRODUCER_SHA256 == stage.SOURCE_CANDIDATE_PREDECESSOR_SHA256
+    # Retain the missing-connection control explicitly in the fresh source regime.
+    monkeypatch.setattr(stage, "HANDOFF_PRODUCER_SHA256", None)
+    for gate in (
+        stage.RELEASE,
+        stage.previous.RELEASE,
+        stage.previous.previous.RELEASE,
+        stage.previous.previous.mod.RELEASE,
+    ):
+        monkeypatch.setenv(gate, "1")
+    before = len(stage._CONSUMED)
+    with pytest.raises(stage.LoadRejected) as caught:
+        stage.complete_load(None, law_id=stage.LAW_ID, enabled=True)
+    assert caught.value.stage == "predecessor_handoff" and len(stage._CONSUMED) == before
+    assert stage.source_plan()["candidate_source_grants_runtime_admission"] is False
+    assert stage.source_plan()["runtime_hook_available"] is False
+
+
+def test_actual_grant_object_survives_failed_enter_without_source_or_fake_owner(
+    conditional_grant_contract,
+    monkeypatch,
+):
+    h = conditional_grant_contract
+    primary = SyntheticSourceFailure("conditional authority refusal before tail")
+    h.flags["primary"] = primary
+    calls = []
+
+    def forbidden(self, **kwargs):
+        calls.append(True)
+        raise AssertionError("Tail/native work must not be entered")
+
+    # Use the actual source-bound hook; only initial authority is conditional.
+    # The refused parent never enters the original tail or issues a WorldReady owner.
+    assert stage._hook() is stage.previous
+    monkeypatch.setattr(stage, "_native", lambda context: SimpleNamespace(bindings=()))
+    monkeypatch.setattr(stage, "_compile", lambda context: forbidden)
+    monkeypatch.setenv(stage.RELEASE, "1")
+    with pytest.raises(stage.LoadRejected) as caught:
+        stage.complete_load(h.owner, law_id=stage.LAW_ID, enabled=True)
+    context = caught.value.partial
+    assert caught.value.__cause__ is primary and context.operation_error is primary
+    assert type(context.grant) is stage.previous.RemainderGrant
+    assert context.grant.record.succeeded is False and primary.remainder_grant is context.grant
+    assert context.parent_owner is h.owner and context.p is h.p and context.work == []
+    assert calls == [] and context.owner is None and not stage._ACTIVE
+    assert stage._hook() is stage.previous
+
+
+def test_load_record_retains_separate_closed_grant_identity_and_metadata_work():
+    metadata = ((0, "graph_capture", "attempted_metadata_only"),)
+    value = stage.LoadRecord(
+        "parent",
+        "source",
+        218,
+        "BASIC",
+        "before",
+        "after",
+        (),
+        (),
+        True,
+        "",
+        handoff_identity="actual-grant",
+        handoff_work=metadata,
+    )
+    document = stage.record_document(value)
+    assert document["handoff_identity"] == "actual-grant" and document["handoff_work"] is metadata
+    assert document["work"] == () and document["biological_cases"] == 0
+    with pytest.raises(stage.LoadRejected):
+        stage._context(value)  # An immutable declaration never issues a live owner.
 
 
 def _reviewed_cleanup_reference():
@@ -216,12 +290,89 @@ def test_remaining_literal_selector_preserves_parameter_order_without_evaluation
     opaque = runner._literal_selector(
         source, runner.TEST, "test_direct_child_and_cli_refuse_before_pytest_or_output"
     )
+    modules = (
+        "validation.betse.betse_native_parameter_load_remainder_software",
+        "validation.betse.betse_native_parameter_world_construction_software",
+    )
     assert opaque["expected_item_names"] == [
-        "test_direct_child_and_cli_refuse_before_pytest_or_output[False-entry0]",
-        "test_direct_child_and_cli_refuse_before_pytest_or_output[False-entry1]",
-        "test_direct_child_and_cli_refuse_before_pytest_or_output[True-entry0]",
-        "test_direct_child_and_cli_refuse_before_pytest_or_output[True-entry1]",
+        "test_direct_child_and_cli_refuse_before_pytest_or_output[" + str(flag) + "-" + module + "]"
+        for flag in (False, True)
+        for module in modules
     ]
+
+
+def test_named_module_selector_agrees_with_actual_pinned_pytest_policy_without_importing_targets(
+    tmp_path,
+):
+    from _pytest.python import IdMaker
+
+    policy_path = Path(IdMaker._idval_from_value.__code__.co_filename).resolve()
+    assert (
+        runner.snapshot.digest(policy_path)
+        == "b04488f5e46bf1ffe2e8344f81756e10b970dbfaf2f7f2f4d312becd6404df76"
+    )
+    modules = (
+        "validation.betse.betse_native_parameter_load_remainder_software",
+        "validation.betse.betse_native_parameter_world_construction_software",
+    )
+    target = "test_direct_child_and_cli_refuse_before_pytest_or_output"
+    path = tmp_path / runner.TEST
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        "from validation.betse import betse_native_parameter_load_remainder_software as runner\n"
+        "from validation.betse import betse_native_parameter_world_construction_software"
+        " as world_runner\n"
+        "@pytest.mark.parametrize('entry', [runner, world_runner])\n"
+        "@pytest.mark.parametrize('cli', [False, True])\n"
+        "def " + target + "(entry, cli): raise AssertionError('must not run')\n"
+    )
+    named_ids = [IdMaker._idval_from_value(None, ModuleType(name)) for name in modules]
+    assert named_ids == list(modules) and named_ids != ["entry0", "entry1"]
+    expected = [
+        target + "[" + str(flag) + "-" + name + "]" for flag in (False, True) for name in named_ids
+    ]
+    selector = runner._literal_selector(tmp_path, runner.TEST, target)
+    assert selector["expected_item_names"] == expected and selector["expected_cases"] == 4
+
+
+@pytest.mark.parametrize(
+    "drift",
+    ["foreign-import", "relative-import", "unknown-alias", "shadowed", "duplicate", "reordered"],
+)
+def test_named_module_selector_refuses_foreign_or_ambiguous_import_authority(tmp_path, drift):
+    target = "test_direct_child_and_cli_refuse_before_pytest_or_output"
+    first = (
+        "from validation.betse import betse_native_parameter_load_remainder_software as runner\n"
+    )
+    second = (
+        "from validation.betse import betse_native_parameter_world_construction_software"
+        " as world_runner\n"
+    )
+    values = "runner, world_runner"
+    extra = ""
+    if drift == "foreign-import":
+        first = "from foreign import betse_native_parameter_load_remainder_software as runner\n"
+    elif drift == "relative-import":
+        first = (
+            "from .validation.betse import betse_native_parameter_load_remainder_software"
+            " as runner\n"
+        )
+    elif drift == "unknown-alias":
+        values = "unknown, world_runner"
+    elif drift == "shadowed":
+        extra = "runner = supplied_namespace\n"
+    elif drift == "duplicate":
+        first += first
+    elif drift == "reordered":
+        values = "world_runner, runner"
+    path = tmp_path / runner.TEST
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        first + second + extra + "@pytest.mark.parametrize('entry', [" + values + "])\n"
+        "def " + target + "(entry): raise AssertionError('must not run')\n"
+    )
+    with pytest.raises(ValueError):
+        runner._literal_selector(tmp_path, runner.TEST, target)
 
 
 def test_remaining_legacy_none_selector_keeps_original_builtin_id_without_collection():

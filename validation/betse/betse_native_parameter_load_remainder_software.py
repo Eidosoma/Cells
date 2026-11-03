@@ -728,15 +728,12 @@ def _bound_cleanup_record(reference):
 
 def _literal_selector(source, test, target):
     """Read this bounded pytest roster without importing tests or evaluating values."""
-    nodes = [
-        n
-        for n in ast.parse((Path(source) / test).read_bytes()).body
-        if isinstance(n, ast.FunctionDef) and n.name == target
-    ]
+    tree = ast.parse((Path(source) / test).read_bytes())
+    nodes = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == target]
     if len(nodes) != 1:
         raise ValueError("Exactly one declared test function required")
     parameters = []
-    # pytest applies the bottom decorator first; opaque module values use arg+index IDs.
+    # pytest applies the bottom decorator first. These declared modules have __name__ IDs.
     for decorator in reversed(nodes[0].decorator_list):
         if (
             not isinstance(decorator, ast.Call)
@@ -767,7 +764,38 @@ def _literal_selector(source, test, target):
                 and len(values) == 2
                 and value.id == ("runner", "world_runner")[index]
             ):
-                text = name + str(index)
+                qualified = "validation.betse.betse_native_parameter_" + (
+                    "load_remainder_software"
+                    if value.id == "runner"
+                    else "world_construction_software"
+                )
+                aliases = [
+                    (n.level, n.module + "." + alias.name)
+                    for n in tree.body
+                    if isinstance(n, ast.ImportFrom) and n.module is not None
+                    for alias in n.names
+                    if (alias.asname or alias.name) == value.id
+                ]
+                shadowed = any(
+                    (isinstance(n, (ast.FunctionDef, ast.ClassDef)) and n.name == value.id)
+                    or (
+                        isinstance(n, (ast.Assign, ast.AnnAssign, ast.AugAssign))
+                        and any(
+                            isinstance(item, ast.Name)
+                            and isinstance(item.ctx, ast.Store)
+                            and item.id == value.id
+                            for item in ast.walk(n)
+                        )
+                    )
+                    or (
+                        isinstance(n, ast.Import)
+                        and any((a.asname or a.name.split(".")[0]) == value.id for a in n.names)
+                    )
+                    for n in tree.body
+                )
+                if aliases != [(0, qualified)] or shadowed:
+                    raise ValueError("Exact unshadowed declared module alias required")
+                text = qualified
             else:
                 raise ValueError("Undeclared executable parameter value refused")
             ids.append(text)

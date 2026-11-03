@@ -57,6 +57,14 @@ VORONOI_MESH_MODULE = "cells.processes.betse_native_seed_voronoi_mesh"
 VORONOI_MESH_MODE = "fresh_world_seed_voronoi_mesh_constructor_assignment"
 VORONOI_MESH_SOURCE_SHA256 = None
 VORONOI_MESH_REVIEW_SHA256 = None
+VORONOI_LIFECYCLE_MODULE = "cells.processes.betse_native_seed_voronoi_lifecycle"
+VORONOI_LIFECYCLE_MODE = "fresh_world_seed_same_mesh_original_lifecycle"
+VORONOI_LIFECYCLE_SOURCE_SHA256 = None
+VORONOI_LIFECYCLE_REVIEW_SHA256 = None
+SEED_GEOMETRY_MODULE = "cells.processes.betse_native_seed_world_geometry"
+SEED_GEOMETRY_MODE = "fresh_seed_same_caller_geometry_grid_mask"
+SEED_GEOMETRY_SOURCE_SHA256 = None
+SEED_GEOMETRY_REVIEW_SHA256 = None
 CALLBACK_MODULE = "cells.processes.betse_native_phase_callbacks"
 CALLBACK_SHA256 = "4fa19547caac95257162e6678092c3e55ce4fe43b05b2d16f7908f9196740f2d"
 BASE_FIELDS = ("callbacks", "cells", "kind", "p", "sim")
@@ -203,6 +211,24 @@ def source_plan():
             source=VORONOI_MESH_SOURCE_SHA256,
             review=VORONOI_MESH_REVIEW_SHA256,
             boundary="constructor completion -> caller.mesh assignment; before lifecycle",
+            released=False,
+        ),
+        voronoi_lifecycle=dict(
+            module=VORONOI_LIFECYCLE_MODULE,
+            mode=VORONOI_LIFECYCLE_MODE,
+            source=VORONOI_LIFECYCLE_SOURCE_SHA256,
+            review=VORONOI_LIFECYCLE_REVIEW_SHA256,
+            boundary="observed constructor CALL -> original lifecycle; before caller aliases",
+            released=False,
+        ),
+        seed_geometry=dict(
+            module=SEED_GEOMETRY_MODULE,
+            mode=SEED_GEOMETRY_MODE,
+            source=SEED_GEOMETRY_SOURCE_SHA256,
+            review=SEED_GEOMETRY_REVIEW_SHA256,
+            boundary=(
+                "same caller aliases/cell_index -> ordinary geometry/grid/mask; before Poisson"
+            ),
             released=False,
         ),
         binding_adoption_order=(
@@ -481,6 +507,62 @@ def _world_voronoi_mesh_api():
         if type(function) is not FunctionType or function.__globals__ is not vars(module):
             raise ValueError("Original constructor source interface required: " + name)
     return module
+
+
+def _world_voronoi_lifecycle_api():
+    """Optional one-way child binding; never a constructor/physical release."""
+    _world_voronoi_mesh_api()
+    if not _pin(VORONOI_LIFECYCLE_SOURCE_SHA256) or not _pin(VORONOI_LIFECYCLE_REVIEW_SHA256):
+        raise WorldPhaseRejected(
+            "Actual reviewed same-mesh lifecycle route remains unbound",
+            stage="unbound_voronoi_lifecycle_contract",
+        )
+    module = _import_bound(VORONOI_LIFECYCLE_MODULE, VORONOI_LIFECYCLE_SOURCE_SHA256)
+    if (
+        module.PARENT_MODULE != VORONOI_MESH_MODULE
+        or module.MODE != VORONOI_LIFECYCLE_MODE
+        or module.DISPATCH_LABEL != "Cells.make_voronoi"
+    ):
+        raise ValueError("Exact observed-branch same-mesh lifecycle mode required")
+    for name in (
+        "source_plan",
+        "prepare",
+        "_guard",
+        "_authority",
+        "_wrapper_guard",
+        "_dispatch",
+        "_mesh_call",
+    ):
+        function = getattr(module, name, None)
+        if type(function) is not FunctionType or function.__globals__ is not vars(module):
+            raise ValueError("Original lifecycle source interface required: " + name)
+    return module
+
+
+def _world_seed_geometry_api():
+    _world_voronoi_lifecycle_api()
+    if not _pin(SEED_GEOMETRY_SOURCE_SHA256) or not _pin(SEED_GEOMETRY_REVIEW_SHA256):
+        raise WorldPhaseRejected(
+            "Reviewed same-caller geometry route remains unbound", stage="unbound_seed_geometry"
+        )
+    module = _import_bound(SEED_GEOMETRY_MODULE, SEED_GEOMETRY_SOURCE_SHA256)
+    if module.PARENT_MODULE != VORONOI_LIFECYCLE_MODULE or module.MODE != SEED_GEOMETRY_MODE:
+        raise ValueError("Exact native lifecycle-to-geometry mode required")
+    for name in ("prepare", "_authority", "_wrapper_guard", "_dispatch", "_check_fields"):
+        fn = getattr(module, name, None)
+        if type(fn) is not FunctionType or fn.__globals__ is not vars(module):
+            raise ValueError("Original same-caller geometry interface required: " + name)
+    return module
+
+
+def _world_geometry_context(constructor):
+    """Registry-only descendant lookup; never an old numeric cache validator."""
+    lifecycle = getattr(constructor, "lifecycle", None)
+    if lifecycle is None or getattr(lifecycle, "geometry", None) is None:
+        return None
+    if _world_voronoi_mesh_api()._lifecycle_route(constructor)[0] is not lifecycle:
+        raise ValueError("Original constructor/lifecycle registry edge changed")
+    return _world_voronoi_lifecycle_api()._geometry_route(lifecycle)[0]
 
 
 def request_record(value):
@@ -782,6 +864,14 @@ def _bindings(context):
         VORONOI_MESH_MODE,
         VORONOI_MESH_SOURCE_SHA256,
         VORONOI_MESH_REVIEW_SHA256,
+        VORONOI_LIFECYCLE_MODULE,
+        VORONOI_LIFECYCLE_MODE,
+        VORONOI_LIFECYCLE_SOURCE_SHA256,
+        VORONOI_LIFECYCLE_REVIEW_SHA256,
+        SEED_GEOMETRY_MODULE,
+        SEED_GEOMETRY_MODE,
+        SEED_GEOMETRY_SOURCE_SHA256,
+        SEED_GEOMETRY_REVIEW_SHA256,
         CONSTRUCT_HOOK,
         CHECK_HOOK,
         SEAL_HOOK,
@@ -1570,6 +1660,11 @@ def _world_cells_omissions(transition, cells):
             ):
                 _world_reject(transition, "Foreign caller in constructor projection")
             omitted += ("mesh",)
+            geometry = _world_geometry_context(route)
+            if geometry is not None:
+                module = _world_seed_geometry_api()
+                module._check_fields(geometry)
+                omitted += tuple(geometry.plan["caller_fields"])
     return omitted
 
 

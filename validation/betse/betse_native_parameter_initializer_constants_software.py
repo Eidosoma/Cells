@@ -16,6 +16,39 @@ from validation.betse import betse_native_simulator_construction_software as inh
 FILE = "validation/betse/betse_native_parameter_initializer_constants_software.py"
 TEST = "tests/unit/test_betse_native_parameter_initializer_constants.py"
 OWNED = ("src/cells/processes/betse_native_parameter_initializer_constants.py", FILE, TEST)
+HANDOFF_OWNED = (
+    *OWNED,
+    "src/cells/processes/betse_native_parameter_load_remainder.py",
+    "tests/unit/test_betse_native_parameter_load_remainder.py",
+    "validation/betse/betse_native_parameter_load_remainder_software.py",
+)
+HANDOFF_TARGETS = (
+    "test_remainder_handoff_scope_matches_original_tail_profile_and_balance_ast_without_calls",
+    "test_remainder_handoff_reserves_before_fallible_validation_and_never_rearms",
+    "test_remainder_handoff_conditional_active_closed_identity_and_history_without_replay",
+    "test_remainder_handoff_closed_history_refuses_original_edge_drift",
+    "test_remainder_handoff_rejects_undeclared_changes_and_keeps_failed_prefix",
+    "test_remainder_handoff_ancestral_constructor_marker_is_not_reset",
+    "test_remainder_handoff_reentry_poison_is_irreversible",
+    "test_remainder_handoff_entry_lock_refuses_without_wait_or_verification",
+    "test_remainder_handoff_record_capture_error_preserves_primary_and_cause",
+    "test_remainder_handoff_caught_restore_cannot_erase_first_active_refusal",
+    "test_remainder_handoff_closed_restore_cannot_erase_first_history_refusal",
+    "test_remainder_handoff_swallowed_recursive_history_poisons_outer_validation",
+    "test_remainder_handoff_closure_primary_survives_later_record_capture_failure",
+    "test_remainder_handoff_every_history_row_respects_exact_declared_budget",
+    "test_remainder_handoff_runner_routes_each_consumer_control_to_its_actual_file",
+)
+HANDOFF_CONSUMER_TEST = "tests/unit/test_betse_native_parameter_load_remainder.py"
+HANDOFF_CONSUMER_TARGETS = (
+    "test_candidate_grant_api_keeps_actual_hook_refusing_before_retirement",
+    "test_actual_grant_object_survives_failed_enter_without_source_or_fake_owner",
+    "test_load_record_retains_separate_closed_grant_identity_and_metadata_work",
+)
+HANDOFF_READER_TARGETS = (
+    "test_named_module_selector_agrees_with_actual_pinned_pytest_policy_without_importing_targets",
+    "test_named_module_selector_refuses_foreign_or_ambiguous_import_authority",
+)
 BASE_TARGETS = (
     "test_source_scope_stops_before_geometry_and_ions",
     "test_all_release_gates_precede_authority_or_work",
@@ -40,10 +73,16 @@ BATCH = (
     ),
     ("reentrant", "test_reentrant_attempt_cannot_issue_success"),
 )
-TARGETS = (*BASE_TARGETS, *(node for _, node in BATCH if node not in BASE_TARGETS))
+TARGETS = (
+    *BASE_TARGETS,
+    *(node for _, node in BATCH if node not in BASE_TARGETS),
+    *HANDOFF_TARGETS,
+    *HANDOFF_CONSUMER_TARGETS,
+    *HANDOFF_READER_TARGETS,
+)
 
 
-def prepare(repository, directory):
+def prepare(repository, directory, *, handoff=False):
     from cells.processes import betse_native_parameter_initializer_constants as stage
 
     repo = Path(repository).resolve(strict=True)
@@ -53,8 +92,9 @@ def prepare(repository, directory):
         directory, repo, stage.prefix.parameters.inherited.tissue.aliases.NATIVE
     )
     directory.mkdir(parents=True, exist_ok=False)
-    plan = stage.source_plan()
-    files = runpy.run_path(str(repo / inherited.CLOSURE_TOOL))["closure"](repo, list(OWNED))
+    plan = stage._remainder_scope() if handoff else stage.source_plan()
+    owned = HANDOFF_OWNED if handoff else OWNED
+    files = runpy.run_path(str(repo / inherited.CLOSURE_TOOL))["closure"](repo, list(owned))
     for name in ("pyproject.toml", "tests/__init__.py", inherited.CLOSURE_TOOL):
         files[name] = snapshot.digest(repo / name)
     manifest = snapshot.freeze(repo, directory / "source", {name: name for name in files})
@@ -62,14 +102,25 @@ def prepare(repository, directory):
     snapshot.write_json(
         directory / "inputs.json",
         dict(
-            law=stage.LAW_ID,
+            law=plan["law"],
             held=True,
             automatic_launch=False,
             snapshot=inherited.ref(directory / "source/SNAPSHOT.json"),
             source_plan=inherited.ref(directory / "source-plan.json"),
             repository=str(repo),
             git_revision=manifest["git_revision"],
-            owned_files={name: manifest["files"][name]["sha256"] for name in OWNED},
+            owned_files={name: manifest["files"][name]["sha256"] for name in owned},
+            handoff_source_candidate_only=handoff,
+            handoff_or_upstream_producer_adoption=False,
+            allowed_handoff_metadata_targets=(
+                {name: TEST for name in HANDOFF_TARGETS}
+                | {
+                    name: HANDOFF_CONSUMER_TEST
+                    for name in (*HANDOFF_CONSUMER_TARGETS, *HANDOFF_READER_TARGETS)
+                }
+            )
+            if handoff
+            else {},
             external_runtime_paths=[
                 str(Path(p).resolve())
                 for p in os.environ.get("PYTHONPATH", "").split(os.pathsep)
@@ -99,7 +150,12 @@ def prepare(repository, directory):
 def _target(target):
     if type(target) is not str or target not in TARGETS:
         raise ValueError("Choose one declared bounded software target")
-    return TEST + "::" + target
+    test = (
+        HANDOFF_CONSUMER_TEST
+        if target in (*HANDOFF_CONSUMER_TARGETS, *HANDOFF_READER_TARGETS)
+        else TEST
+    )
+    return test + "::" + target
 
 
 def child(output, *, target):
@@ -232,6 +288,11 @@ def batch(packet, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prepare", type=Path)
+    parser.add_argument(
+        "--handoff-source",
+        action="store_true",
+        help="Prepare the held five-file handoff candidate only",
+    )
     parser.add_argument("--repository", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--software", type=Path)
     parser.add_argument("--output", type=Path)
@@ -241,10 +302,12 @@ def main():
         "--batch", type=Path, help="Held packet; launch this long software chain detached"
     )
     args = parser.parse_args()
+    if args.handoff_source and (not args.prepare or args.child or args.software or args.batch):
+        parser.error("--handoff-source requires source-only --prepare")
     if args.child and args.target:
         return child(args.child, target=args.target)
     if args.prepare and not args.software:
-        print(json.dumps(prepare(args.repository, args.prepare)))
+        print(json.dumps(prepare(args.repository, args.prepare, handoff=args.handoff_source)))
         return 0
     if args.batch and args.output and not args.prepare and not args.software:
         result = batch(args.batch, args.output)

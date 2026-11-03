@@ -5,8 +5,9 @@ Parameters._load_ion_profile, which calls the actual _balance_charge. Expected
 code is compiled independently from pinned AST, never substituted for a live
 method/helper. No source or factory runs at import or metadata preparation.
 
-Execution awaits the explicit predecessor handoff window. The missing hook is
-a runtime prerequisite; the complete source/observer/commit path is below.
+The exact fresh predecessor connection is declared below. Actual use still
+requires its release gates and genuine completed parent; a source connection
+alone grants no parameter, phase or numerical admission.
 """
 
 import ast
@@ -29,8 +30,12 @@ from cells.processes import betse_native_parameter_initializer_constants as prev
 LAW_ID = "betse_native_parameter_complete_load_remainder@1"
 RELEASE = "CELLS_NATIVE_PARAMETER_LOAD_REMAINDER_RELEASED"
 BASE_PREDECESSOR_SHA256 = "3fc51886956ae7f4fc0880b0fb6b5ec25f7c939c14a3ba31e0b012f717774f69"
-# Adoption is explicit after Root opens/reviews the predecessor hook window.
-HANDOFF_PRODUCER_SHA256 = None
+# A separately pinned source candidate permits inspection only, never _hook admission.
+SOURCE_CANDIDATE_PREDECESSOR_SHA256 = (
+    "dba5e3328a4e0726cb138919c99128d5c82782a23911bd25d0b0fe101aa97275"
+)
+# Exact fresh source connection; no release or actual parent authority is inferred.
+HANDOFF_PRODUCER_SHA256 = "dba5e3328a4e0726cb138919c99128d5c82782a23911bd25d0b0fe101aa97275"
 HANDOFF_LAW = "betse_native_parameter_original_load_remainder_handoff@1"
 HANDOFF_FACTORY = "remainder_handoff"
 HANDOFF_CHECK = "validate_remainder_history"
@@ -71,6 +76,8 @@ class LoadRecord:
     observations: tuple
     source_completed: bool
     identity: str
+    handoff_identity: str = ""
+    handoff_work: tuple = ()
 
 
 class WorldReadyParametersOwner:
@@ -162,7 +169,11 @@ def _branches(ion):
 def source_plan():
     path, _, load, selected, ion, balance = _source()
     producer = hashlib.sha256(Path(previous.__file__).read_bytes()).hexdigest()
-    if producer not in (BASE_PREDECESSOR_SHA256, HANDOFF_PRODUCER_SHA256):
+    if producer not in (
+        BASE_PREDECESSOR_SHA256,
+        SOURCE_CANDIDATE_PREDECESSOR_SHA256,
+        HANDOFF_PRODUCER_SHA256,
+    ):
         raise ValueError("Explicit constants predecessor/successor producer required")
     return dict(
         law=LAW_ID,
@@ -183,6 +194,8 @@ def source_plan():
         balance_ast=_digest(ast.dump(balance)),
         predecessor_base=BASE_PREDECESSOR_SHA256,
         adopted_handoff_producer=HANDOFF_PRODUCER_SHA256,
+        source_candidate_producer=SOURCE_CANDIDATE_PREDECESSOR_SHA256,
+        candidate_source_grants_runtime_admission=False,
         hook=dict(
             factory=HANDOFF_FACTORY,
             law=HANDOFF_LAW,
@@ -422,7 +435,14 @@ def _history(context):
     ):
         raise ValueError("Original completed parameter lineage changed")
     api = _hook()
+    before_work = context.grant.metadata_work
     record = vars(api)[HANDOFF_CHECK](context.grant, original_owner=context.parent_owner)
+    after_work = context.grant.metadata_work
+    if after_work[: len(before_work)] != before_work:
+        raise ValueError("Retained grant metadata work prefix changed")
+    context.metadata_work.append(
+        ("actual_grant_history_validation", after_work[len(before_work) :])
+    )
     if (
         record is not context.grant_record
         or context.grant.record is not record
@@ -943,6 +963,10 @@ def _observe(context):
         state.hooks_ready = False
         cleanup_errors, samples = [], []
         helper_recovery = None
+        metadata_stopped = any(
+            name.startswith(("setup_", "active_", "frame_trace_")) for name, _ in state.errors
+        )
+        bookkeeping_called = False
         try:
             # An inherited profiler/tracer can reject the helper's *entry*,
             # before its internal protection exists. Keep that secondary error
@@ -950,12 +974,29 @@ def _observe(context):
             try:
                 helper_recovery = _recover_hooks(prior, trace, **setters)
                 cleanup_errors += helper_recovery["errors"]
+                metadata_stopped = metadata_stopped or not helper_recovery["clean"]
             except BaseException as error:
                 cleanup_errors += [("final_hook_recovery", error)]
-            try:
-                _observer_bookkeeping(context, (*state.errors, *cleanup_errors), helper_recovery)
-            except BaseException as error:
-                cleanup_errors += [("observer_bookkeeping", error)]
+                metadata_stopped = True
+            # A later successful final cleanup cannot grant continuation after
+            # this checkpoint has failed. In particular, do not enter a
+            # bookkeeping callback while an inherited hook is absent.
+            if not metadata_stopped:
+                for name, expected in (("profile", prior), ("trace", trace)):
+                    try:
+                        if setters["get_" + name]() is not expected:
+                            raise ValueError("Required hooks absent before bookkeeping")
+                    except BaseException as error:
+                        cleanup_errors += [("before_bookkeeping_" + name, error)]
+                        metadata_stopped = True
+            if not metadata_stopped:
+                try:
+                    bookkeeping_called = True
+                    _observer_bookkeeping(
+                        context, (*state.errors, *cleanup_errors), helper_recovery
+                    )
+                except BaseException as error:
+                    cleanup_errors += [("observer_bookkeeping", error)]
         finally:
             # No helper entry is needed to retire the guard or recover both
             # hooks. This also samples after fallible bookkeeping callbacks.
@@ -999,6 +1040,8 @@ def _observe(context):
                 final_trace=current["trace"],
                 identities_match=identities_match,
                 clean=identities_match and not cleanup_errors,
+                metadata_stopped=metadata_stopped or bool(cleanup_errors),
+                bookkeeping_called=bookkeeping_called,
             )
             state.errors += cleanup_errors
             if cleanup_errors:
@@ -1087,6 +1130,8 @@ def record_document(value):
         after=value.after_identity,
         work=value.work,
         observations=value.observations,
+        handoff_identity=value.handoff_identity,
+        handoff_work=value.handoff_work,
         source_completed=value.source_completed,
         phase_admitted=False,
         material_admitted=False,
@@ -1164,8 +1209,9 @@ def complete_load(owner, *, law_id, enabled=False):
         context.function_bindings = prefix._function_bindings(context.function)
         context.bindings = _bindings()
         context.stage = "original_load_tail_profile"
-        with vars(api)[HANDOFF_FACTORY](owner, law_id=HANDOFF_LAW, enabled=True) as grant:
-            context.grant = grant
+        # Retain the actual object even when __enter__ refuses; no successful grant is inferred.
+        context.grant = vars(api)[HANDOFF_FACTORY](owner, law_id=HANDOFF_LAW, enabled=True)
+        with context.grant as grant:
             if type(grant) is not vars(api)[HANDOFF_TYPE] or grant.parameters is not context.p:
                 raise ValueError("Actual typed predecessor mutation grant required")
             grant.check()
@@ -1207,6 +1253,8 @@ def complete_load(owner, *, law_id, enabled=False):
             ),
             True,
             "",
+            handoff_identity=context.grant_record.identity,
+            handoff_work=context.grant_record.work,
         )
         context.record = replace(value, identity=_digest(record_document(value)))
         context.original_record = context.record
@@ -1289,6 +1337,8 @@ def validate_completed_history(owner):
         )
         or context.after_cm.identity != context.parent.parent.original_trial.after_identity
         or context.record.work != tuple(context.work)
+        or context.record.handoff_identity != context.grant_record.identity
+        or context.record.handoff_work != context.grant_record.work
         or context.accounting != _accounting(context)
         or _digest(record_document(context.record)) != context.record.identity
     ):
@@ -1416,6 +1466,7 @@ def _bindings():
         LAW_ID,
         RELEASE,
         BASE_PREDECESSOR_SHA256,
+        SOURCE_CANDIDATE_PREDECESSOR_SHA256,
         HANDOFF_PRODUCER_SHA256,
         HANDOFF_LAW,
         HANDOFF_FACTORY,

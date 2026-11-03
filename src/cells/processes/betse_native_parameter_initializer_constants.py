@@ -19,7 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_colormap_load as previous
 
 LAW_ID = "betse_native_parameter_plotting_initializer_constants@1"
-PREVIOUS_SHA256 = "47d681438c40a98cc986516611d11e43aef19b896892622d39da836866aed669"
+PREVIOUS_SHA256 = "4701ffece1d829bd8d18898dfcedce3f20fd885c5aaebd4ff92705807a465e26"
 RELEASE = "CELLS_NATIVE_PARAMETER_INITIALIZER_CONSTANTS_RELEASED"
 START, STOP, MAX_WORK = 139, 203, 20000
 _FLOAT = float
@@ -27,6 +27,12 @@ prefix, claims = previous.prefix, previous.claims
 _LOCK, _ACTIVE = Lock(), []
 _ISSUED, _CONSUMED, _CLAIMED = (WeakKeyDictionary() for _ in range(3))
 CM_STORES = tuple(row[0] for row in previous.boundary.ROLES)
+REMAINDER_HANDOFF_LAW = "betse_native_parameter_original_load_remainder_handoff@1"
+_REMAINDER_LOCK, _REMAINDER_ACTIVE = Lock(), []
+_REMAINDER_ISSUED, _REMAINDER_CONSUMED, _REMAINDER_CLOSED, _REMAINDER_SEALS = (
+    WeakKeyDictionary() for _ in range(4)
+)
+_REMAINDER_TOKEN = object()
 
 
 class ConstantsRejected(ValueError):
@@ -65,6 +71,72 @@ class ConstantsOwner:
     @property
     def trial(self):
         return _validate(self).trial
+
+
+@dataclass(frozen=True, slots=True)
+class RemainderRecord:
+    parent_identity: str
+    source_identity: str
+    scope_identity: str
+    before_identity: str
+    after_identity: str
+    before_names: tuple
+    after_names: tuple
+    work: tuple
+    succeeded: bool
+    failure_stage: str
+    failure_type: str
+    capture_stages: tuple
+    identity: str
+    parent_verified: bool = False
+
+
+class RemainderGrant:
+    """Opaque one-shot mutation scope, never a complete-load or phase owner."""
+
+    __slots__ = ("__weakref__",)
+
+    def __init__(self, token):
+        if token is not _REMAINDER_TOKEN:
+            raise TypeError("Use remainder_handoff with the actual ConstantsOwner")
+
+    def __reduce_ex__(self, protocol):
+        raise TypeError("Live parameter mutation grants cannot be serialized")
+
+    def __enter__(self):
+        return _remainder_enter(self)
+
+    def __exit__(self, kind, error, traceback):
+        try:
+            _remainder_close(self, error)
+        except BaseException as secondary:
+            if error is None:
+                raise
+            entry = _REMAINDER_ISSUED.get(self)
+            if entry is not None:
+                entry[0].invalid = True
+                entry[0].capture_errors += (("close_primary_recovery", secondary),)
+        return False
+
+    @property
+    def parameters(self):
+        return self.check()
+
+    def check(self):
+        return _remainder_check(self)
+
+    @property
+    def record(self):
+        context = _remainder_context(self)
+        closed = _REMAINDER_CLOSED.get(self)
+        if context.active or closed is None or closed[0] is not context:
+            raise ConstantsRejected("Remainder grant has no closed record", stage="grant_record")
+        return closed[1]  # Failed records are forensic data, never successful authority.
+
+    @property
+    def metadata_work(self):
+        context = _remainder_context(self)
+        return (*context.work, *context.validation_work)
 
 
 def _digest(value):
@@ -671,6 +743,14 @@ def prepare(owner, *, law_id, enabled=False):
 
 
 def _validate(owner):
+    if type(owner) is ConstantsOwner and owner in _REMAINDER_CONSUMED:
+        raise ConstantsRejected(
+            "Constants owner irreversibly reserved for load remainder", stage="remainder_retired"
+        )
+    return _validate_state(owner)
+
+
+def _validate_state(owner):
     if type(owner) is not ConstantsOwner or owner not in _ISSUED:
         raise ConstantsRejected("Actual issued initializer-constants owner required", stage="owner")
     context = _ISSUED[owner]
@@ -771,6 +851,688 @@ def require_continuation(owner):
     )
 
 
+def _remainder_scope():
+    """Derive mutation names/order from the pinned original source, without running it."""
+    path, cls, load, _ = _ast()
+    tail = load.body[203:218]
+    if len(load.body) != 218 or ast.unparse(tail[-1]) != "self._load_ion_profile()":
+        raise ValueError("Original complete-load tail extent changed")
+    ion = prefix.parameters.inherited._method(cls, "_load_ion_profile")
+    balance = next(
+        n
+        for n in ast.parse(path.read_bytes()).body
+        if isinstance(n, ast.FunctionDef) and n.name == "_balance_charge"
+    )
+
+    def stores(nodes):
+        names = []
+        for statement in nodes:
+            for node in ast.walk(statement):
+                if isinstance(node, ast.Assign):
+                    for target in node.targets:
+                        for item in ast.walk(target):
+                            if (
+                                isinstance(item, ast.Attribute)
+                                and isinstance(item.value, ast.Name)
+                                and item.value.id == "self"
+                                and item.attr not in names
+                            ):
+                                names.append(item.attr)
+        return tuple(names)
+
+    names = ("BASIC", "BASIC_CA", "MAMMAL", "AMPHIBIAN", "CUSTOM")
+    node = next(n for n in ion.body if isinstance(n, ast.If))
+    rows = []
+    for name in names:
+        if ast.unparse(node.test) != "self.ion_profile is IonProfileType." + name:
+            raise ValueError("Original ion profile dispatch changed")
+        rows.append((name, stores(node.body)))
+        if name != names[-1]:
+            if len(node.orelse) != 1 or not isinstance(node.orelse[0], ast.If):
+                raise ValueError("Original ion profile elif order changed")
+            node = node.orelse[0]
+    if len(node.orelse) != 1 or not isinstance(node.orelse[0], ast.Raise):
+        raise ValueError("Original unknown ion-profile refusal changed")
+    tail_stores = stores(tail)
+    replaced = ("wsx", "wsy")
+    return dict(
+        law=REMAINDER_HANDOFF_LAW,
+        source=str(path),
+        statement_slice=(203, 218),
+        parameters_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+        tail_ast=_digest(ast.dump(ast.Module(body=tail, type_ignores=[]))),
+        ion_ast=_digest(ast.dump(ion)),
+        balance_ast=_digest(ast.dump(balance)),
+        replaced=replaced,
+        profiles=tuple(rows),
+        append_orders=tuple(
+            tuple(n for n in tail_stores if n not in replaced) + fields for _, fields in rows
+        ),
+        permits_source_execution=False,
+        permits_phase_or_INIT=False,
+    )
+
+
+def remainder_record_document(value):
+    return dict(
+        law=REMAINDER_HANDOFF_LAW,
+        parent=value.parent_identity,
+        source=value.source_identity,
+        scope=value.scope_identity,
+        before=value.before_identity,
+        after=value.after_identity,
+        before_names=value.before_names,
+        after_names=value.after_names,
+        work=value.work,
+        succeeded=value.succeeded,
+        failure_stage=value.failure_stage,
+        failure_type=value.failure_type,
+        capture_stages=value.capture_stages,
+        complete_load_or_phase_admission=False,
+        live_state_validation=False,
+        parent_verified=value.parent_verified,
+    )
+
+
+def _remainder_context(grant):
+    if type(grant) is not RemainderGrant or grant not in _REMAINDER_ISSUED:
+        raise ConstantsRejected("Actual issued remainder grant required", stage="grant")
+    context, owner, base, guard = _REMAINDER_ISSUED[grant]
+    if (
+        context.claim is not grant
+        or context.owner is not owner
+        or context.base is not base
+        or context.guard is not guard
+        or context.thread != get_ident()
+        or guard.thread != context.thread
+        or _REMAINDER_CONSUMED.get(owner) is not context
+    ):
+        raise ConstantsRejected("Remainder issuance/consumption association changed", stage="grant")
+    sealed = _REMAINDER_SEALS.get(grant)
+    if sealed is not None and any(vars(context).get(name) is not value for name, value in sealed):
+        raise ConstantsRejected(
+            "Original remainder source/context references changed", stage="grant"
+        )
+    return context
+
+
+def remainder_handoff(owner, *, law_id, enabled=False):
+    if enabled is not True or any(
+        os.environ.get(gate) != "1" for gate in (RELEASE, previous.RELEASE, previous.mod.RELEASE)
+    ):
+        raise ConstantsRejected("Original remainder handoff stays held", stage="release")
+    if type(law_id) is not str or law_id != REMAINDER_HANDOFF_LAW:
+        raise ConstantsRejected("Explicit original remainder handoff law required", stage="law")
+    if type(owner) is not ConstantsOwner or owner not in _ISSUED:
+        raise ConstantsRejected("Actual completed constants owner required", stage="owner")
+    if not _REMAINDER_LOCK.acquire(blocking=False):
+        raise ConstantsRejected("Remainder reservation busy", stage="reservation")
+    try:
+        if _REMAINDER_ACTIVE:
+            _REMAINDER_ACTIVE[-1].invalid = True
+            raise ConstantsRejected("Reentrant remainder handoff", stage="reentrant")
+        if owner in _REMAINDER_CONSUMED:
+            raise ConstantsRejected("Constants remainder handoff consumed", stage="consumed")
+        claim = object.__new__(RemainderGrant)
+        guard = SimpleNamespace(
+            thread=get_ident(),
+            active=False,
+            invalid=False,
+            audit_ready=False,
+            directory_depth=0,
+            directory_calls=0,
+            directory_targets=(),
+            filesystem=[],
+        )
+        context = SimpleNamespace(
+            claim=claim,
+            owner=owner,
+            base=_ISSUED[owner],
+            guard=guard,
+            thread=get_ident(),
+            entered=False,
+            active=False,
+            invalid=False,
+            checking=False,
+            registered=False,
+            rows=(),
+            p=None,
+            record=None,
+            work=[],
+            validation_work=[],
+            source_error=None,
+            capture_errors=(),
+            stage="reservation",
+            before_values=None,
+            after_values=None,
+            before_graph=None,
+            after_graph=None,
+            before_names=(),
+            after_names=(),
+            parent_identity="",
+            source_identity="",
+            scope_identity="",
+            parent_verified=False,
+            first_refusal=None,
+            refusal_stage="",
+            refusals=[],
+        )
+        # Reserve before validation, capture, caller callbacks or any p work. Never rearm.
+        _REMAINDER_CONSUMED[owner] = context
+        _REMAINDER_ISSUED[claim] = (context, owner, context.base, guard)
+        return claim
+    finally:
+        _REMAINDER_LOCK.release()
+
+
+def _remainder_poison(context, stage, error):
+    context.invalid = True
+    entry = _REMAINDER_ISSUED.get(context.claim)
+    if entry is not None and entry[0] is context:
+        entry[3].invalid = True
+    if context.first_refusal is None:
+        context.first_refusal, context.refusal_stage = error, stage
+    context.refusals.append((stage, error))
+
+
+def _remainder_checked_context(grant, stage):
+    try:
+        return _remainder_context(grant)
+    except BaseException as error:
+        entry = _REMAINDER_ISSUED.get(grant) if type(grant) is RemainderGrant else None
+        if entry is not None:
+            _remainder_poison(entry[0], stage, error)
+        raise
+
+
+def _remainder_work(context, validation, role, detail):
+    if len(context.work) + len(context.validation_work) >= MAX_WORK:
+        error = ConstantsRejected(
+            "Remainder metadata work bound exceeded", stage="grant_work", partial=context
+        )
+        _remainder_poison(context, "grant_work", error)
+        raise error
+    target = context.validation_work if validation else context.work
+    target.append((len(target), role, detail))
+
+
+def _remainder_capture(context, values, phase):
+    _remainder_work(context, False, phase, "graph_capture_attempt")
+    return prefix.graphs.capture(
+        values,
+        yaml_base=context.base.parent.parent.birth.source.yaml,
+        runtime_types=context.base.parent.parent.runtime.runtime_types,
+    )
+
+
+def _remainder_ancestry(base):
+    cm, mod = base.parent, base.parent.parent
+    grn, seven = mod.parent, previous.mod.subconfigs
+    loaded = grn.authority.loaded
+    if (
+        previous._ISSUED.get(cm.owner) is not cm
+        or previous.mod._ISSUED.get(mod.owner) is not mod
+        or previous.mod.previous._ISSUED.get(grn.owner) is not grn
+        or seven._ISSUED.get(loaded.owner) is not loaded
+        or any(item.p is not base.p for item in (cm, mod, grn, loaded))
+        or loaded.owner in claims._CONSTRUCTED
+    ):
+        raise ValueError("Actual same-p unconstructed constants/GRN/seven lineage required")
+    return loaded
+
+
+def _remainder_history(context):
+    """Authenticate historical metadata only: never run a stale full-p validator."""
+    base = context.base
+    _remainder_work(
+        context, not context.active, "source_binding_and_history_check", "attempted_metadata"
+    )
+    if any(vars(base).get(name) is not value for name, value in context.source_edges):
+        raise ValueError("Original constants before/work/bindings/guard references changed")
+    if (
+        context.thread != get_ident()
+        or _ISSUED.get(context.owner) is not base
+        or base.owner is not context.owner
+        or base.p is not context.p
+        or base.active
+        or base.validating
+        or base.invalid
+        or base.guard is not context.base_guard
+        or base.guard.active
+        or base.guard.invalid
+        or not base.guard.audit_ready
+        or base.thread != get_ident()
+        or base.guard.thread != base.thread
+        or base.retired is not context.base_retired
+        or base.source_completed is not True
+        or base.source_error is not None
+        or base.capture_errors
+        or base.observation_errors
+        or base.trial is not context.trial
+        or base.original_trial is not context.trial
+        or base.work is not context.source_work
+        or base.bindings is not context.source_bindings
+        or base.trial.work != tuple(base.work)
+        or base.trial.source_completed is not True
+        or _digest(base.before_graph[1]) != base.trial.before_identity
+        or _digest(base.after_graph[1]) != base.trial.after_identity
+        or _digest(context.before_graph[1]) != base.trial.after_identity
+        or _digest(trial_record(base.trial)) != context.parent_identity
+        or _CONSUMED.get(base.parent_owner) is not base
+        or _CLAIMED.get(base.parent.source_owner) is not base
+        or _remainder_ancestry(base) is not context.loaded
+        or vars(context.p).get("_conf") is not context.config
+        or context.config.get("internal parameters") is not context.internal
+        or base.locals.get("iu") is not context.internal
+        or vars(context.p).get("vol_env") is not context.volume
+    ):
+        raise ValueError("Original constants/grant ancestry, trial or retained inputs changed")
+    prefix.parameters.inherited._same(_bindings(), context.bindings)
+    prefix.parameters.inherited._same(_bindings(), base.bindings)
+    prefix.parameters.inherited._same(
+        prefix._function_bindings(base.function), base.function_bindings
+    )
+    if (
+        _digest(_remainder_scope()) != context.scope_identity
+        or base.source_identity != context.source_identity
+        or _digest(source_plan()) != context.source_identity
+    ):
+        raise ValueError("Original constants/remainder source identities changed")
+
+
+def _remainder_check(grant):
+    context = _remainder_checked_context(grant, "grant_check_context")
+    if not context.active:
+        raise ConstantsRejected(
+            "Closed/unentered remainder grant grants no p access",
+            stage="grant_state",
+            partial=context,
+        )
+    if (
+        context.invalid
+        or context.checking
+        or context.guard.invalid
+        or not context.guard.active
+        or not context.guard.audit_ready
+        or context.guard.directory_depth != 0
+        or context.guard.directory_calls != 0
+        or context.guard.filesystem
+        or not _REMAINDER_ACTIVE
+        or _REMAINDER_ACTIVE[-1] is not context
+    ):
+        error = ConstantsRejected(
+            "Inactive/poisoned remainder grant", stage="grant_state", partial=context
+        )
+        _remainder_poison(context, "grant_check_admission", error)
+        raise error from context.first_refusal if error is not context.first_refusal else None
+    context.checking = True
+    try:
+        if any(not stack or stack[-1] is not value for stack, value in context.rows):
+            raise ValueError("Shared remainder exclusion changed")
+        _remainder_history(context)
+        fields = vars(context.p)
+        if tuple(fields)[: len(context.before_names)] != context.before_names:
+            raise ValueError("Original pre-tail parameter order changed")
+        appended = tuple(fields)[len(context.before_names) :]
+        if not any(appended == order[: len(appended)] for order in context.scope["append_orders"]):
+            raise ValueError("Only the literal ordered load-tail/profile prefix may be added")
+        for name, value in context.before_values.items():
+            if name not in context.scope["replaced"] and fields.get(name) is not value:
+                raise ValueError("Unowned original parameter field replacement")
+        prefix.parameters.inherited._same_graph(
+            _remainder_capture(context, context.before_values, "active_old_values"),
+            context.before_graph,
+        )
+        _same_cm(_cm_graph(context.base.parent), context.colormaps)
+        if context.invalid or context.guard.invalid:
+            raise ValueError("Read-only capture/reentrant remainder check poisoned")
+        return context.p
+    except BaseException as error:
+        _remainder_poison(context, "grant_check", error)
+        raise
+    finally:
+        context.checking = False
+
+
+def _remainder_enter(grant):
+    context = _remainder_context(grant)
+    if context.entered:
+        context.invalid = True
+        raise ConstantsRejected(
+            "Remainder entry already attempted", stage="grant_entry", partial=context
+        )
+    context.entered = True
+    if not _REMAINDER_LOCK.acquire(blocking=False):
+        context.invalid = True
+        raise ConstantsRejected(
+            "Remainder entry reservation busy", stage="grant_entry", partial=context
+        )
+    try:
+        if _REMAINDER_ACTIVE:
+            context.invalid = True
+            _REMAINDER_ACTIVE[-1].invalid = True
+            raise ConstantsRejected(
+                "Remainder entry already attempted/busy", stage="grant_entry", partial=context
+            )
+        context.active = True
+        _REMAINDER_ACTIVE.append(context)
+    finally:
+        _REMAINDER_LOCK.release()
+    try:
+        context.stage = "constants_admission"
+        # Retain available original input identity even when validation itself refuses.
+        input_trial = vars(context.base).get("original_trial")
+        if type(input_trial) is Trial:
+            context.parent_identity = input_trial.identity
+            context.source_identity = input_trial.source_identity
+        _remainder_work(context, False, "actual_constants_validation", "attempted")
+        metadata_start = len(context.base.metadata_work)
+        validation_error = None
+        try:
+            base = _validate_state(context.owner)
+        except BaseException as error:
+            validation_error = error
+            raise
+        finally:
+            try:
+                _remainder_work(
+                    context,
+                    False,
+                    "parent_validation_metadata_delta",
+                    tuple(context.base.metadata_work[metadata_start:]),
+                )
+            except BaseException as secondary:
+                context.capture_errors += (("parent_validation_accounting", secondary),)
+                if validation_error is None:
+                    raise
+        if base is not context.base:
+            raise ValueError("Constants validator replaced actual source context")
+        context.parent_verified = True
+        context.p, context.trial = base.p, base.trial
+        context.parent_identity = context.trial.identity
+        context.source_identity = base.source_identity
+        context.source_work, context.source_bindings = base.work, base.bindings
+        context.base_guard, context.base_retired = base.guard, base.retired
+        context.source_edges = tuple(
+            (name, vars(base)[name])
+            for name in (
+                "p",
+                "trial",
+                "original_trial",
+                "source_identity",
+                "owner",
+                "parent_owner",
+                "parent",
+                "parent_trial",
+                "before_graph",
+                "after_graph",
+                "guard",
+                "plot",
+                "function",
+                "function_bindings",
+                "historical",
+                "historical_bindings",
+                "parent_refs",
+                "plan",
+                "source_return_graph",
+                "work",
+                "metadata_work",
+                "validations",
+            )
+        )
+        context.config = vars(context.p)["_conf"]
+        context.internal = base.locals["iu"]
+        context.volume = vars(context.p)["vol_env"]
+        context.loaded = _remainder_ancestry(base)
+        context.scope = _remainder_scope()
+        context.scope_identity = _digest(context.scope)
+        context.bindings = _bindings()
+        context.before_names = tuple(vars(context.p))
+        if (
+            "_run_sim" in context.before_names
+            or context.internal is not context.config["internal parameters"]
+        ):
+            raise ValueError("Original iu/fresh pre-phase p required")
+        context.before_values = {
+            n: vars(context.p)[n] for n in context.before_names if n not in CM_STORES
+        }
+        context.before_graph = _remainder_capture(
+            context, context.before_values, "initial_old_values"
+        )
+        prefix.parameters.inherited._same_graph(context.before_graph, base.after_graph)
+        context.colormaps = _cm_graph(base.parent)
+        with claims._registry(context.loaded.owner):
+            stacks = _stacks(base)
+            if any(stack for stack, _ in stacks):
+                claims._busy(context.loaded.owner, "remainder_conflict")
+            context.rows = tuple(
+                (
+                    stack,
+                    context.guard if stack is previous.mod.subconfigs.paths._ACTIVE else context,
+                )
+                for stack, _ in stacks
+            )
+            for stack, value in context.rows:
+                stack.append(value)
+            context.registered = True
+            context.guard.active = True
+            previous.mod.subconfigs.paths._install_audit(context.guard)
+        context.stage = "original_tail_scope"
+        _REMAINDER_SEALS[grant] = tuple(
+            (name, vars(context)[name])
+            for name in (
+                "claim",
+                "owner",
+                "base",
+                "guard",
+                "p",
+                "trial",
+                "source_identity",
+                "source_edges",
+                "source_work",
+                "source_bindings",
+                "base_guard",
+                "base_retired",
+                "config",
+                "internal",
+                "volume",
+                "loaded",
+                "scope",
+                "scope_identity",
+                "bindings",
+                "before_names",
+                "before_values",
+                "before_graph",
+                "colormaps",
+                "rows",
+            )
+        )
+        grant.check()
+        return grant
+    except BaseException as error:
+        try:
+            _remainder_close(grant, error)
+        except BaseException as secondary:
+            context.invalid = True
+            context.capture_errors += (("enter_primary_recovery", secondary),)
+        raise
+
+
+def _remainder_close(grant, primary):
+    entry = _REMAINDER_ISSUED.get(grant) if type(grant) is RemainderGrant else None
+    if entry is None:
+        raise ConstantsRejected("Actual issued remainder closure required", stage="grant_closure")
+    context = entry[0]
+    if grant in _REMAINDER_CLOSED or not context.entered:
+        context.invalid = True
+        raise ConstantsRejected(
+            "Remainder closure unavailable or already consumed",
+            stage="grant_closure",
+            partial=context,
+        )
+    if primary is not None:
+        context.source_error = primary
+        _remainder_poison(context, "body_failure", primary)
+    closure_error = context.first_refusal
+    try:
+        _remainder_context(grant)
+    except BaseException as error:
+        _remainder_poison(context, "closure_association", error)
+        if closure_error is None:
+            closure_error = error
+        context.capture_errors += (("closure_association", error),)
+    sealed = dict(_REMAINDER_SEALS.get(grant, ()))
+    original_rows = sealed.get("rows", context.rows)
+    original_guard = entry[3]
+    try:
+        if primary is None and closure_error is None:
+            grant.check()
+            context.after_names = tuple(vars(context.p))
+            appended = context.after_names[len(context.before_names) :]
+            if appended not in context.scope["append_orders"]:
+                raise ValueError("Complete original tail/profile store extent required at closure")
+            context.after_values = {
+                n: vars(context.p)[n] for n in context.after_names if n not in CM_STORES
+            }
+            context.after_graph = _remainder_capture(
+                context, context.after_values, "closed_new_values"
+            )
+            grant.check()
+    except BaseException as error:
+        _remainder_poison(context, "scope_closure", error)
+        if closure_error is None:
+            closure_error = error
+        context.capture_errors += (("scope_closure", error),)
+    finally:
+        if context.registered or original_rows:
+            try:
+                with claims._registry(sealed.get("loaded", context.loaded).owner):
+                    for stack, value in reversed(original_rows):
+                        if not stack or stack[-1] is not value:
+                            error = ValueError("Remainder shared registry changed at closure")
+                            _remainder_poison(context, "registry_release", error)
+                            context.capture_errors += (("registry_release", error),)
+                            if closure_error is None:
+                                closure_error = error
+                        else:
+                            stack.pop()
+            except BaseException as error:
+                _remainder_poison(context, "registry_release", error)
+                context.capture_errors += (("registry_release", error),)
+                if closure_error is None:
+                    closure_error = error
+        context.active = original_guard.active = False
+        if _REMAINDER_ACTIVE and _REMAINDER_ACTIVE[-1] is context:
+            _REMAINDER_ACTIVE.pop()
+        else:
+            error = ValueError("Remainder reservation changed")
+            _remainder_poison(context, "reservation_release", error)
+            context.capture_errors += (("reservation_release", error),)
+            if closure_error is None:
+                closure_error = error
+    error = primary if primary is not None else closure_error
+    context.closure_error = closure_error
+    context.effective_primary = error
+    try:
+        record = RemainderRecord(
+            context.parent_identity,
+            context.source_identity,
+            context.scope_identity,
+            _digest(context.before_graph[1]) if context.before_graph is not None else "",
+            _digest(context.after_graph[1]) if context.after_graph is not None else "",
+            context.before_names,
+            context.after_names,
+            tuple(context.work),
+            error is None and not context.invalid and not context.capture_errors,
+            context.stage if error is not None or context.capture_errors else "",
+            type.__getattribute__(type(error), "__qualname__") if error is not None else "",
+            tuple(stage for stage, _ in context.capture_errors),
+            "",
+            parent_verified=context.parent_verified,
+        )
+        context.record = replace(record, identity=_digest(remainder_record_document(record)))
+        _REMAINDER_CLOSED[grant] = (context, context.record)
+    except BaseException as secondary:
+        _remainder_poison(context, "record_capture", secondary)
+        context.capture_errors += (("record_capture", secondary),)
+        if error is None:
+            error = secondary
+            context.effective_primary = secondary
+    if error is not None:
+        try:
+            error.remainder_grant = grant
+        except BaseException as secondary:
+            context.capture_errors += (("exception_attachment", secondary),)
+    if primary is None and (context.record is None or not context.record.succeeded):
+        raise ConstantsRejected(
+            "Remainder scope closure refused",
+            stage="grant_closure",
+            partial=context,
+            source_error=error,
+            capture_errors=context.capture_errors,
+        ) from error
+
+
+def validate_remainder_history(grant, *, original_owner):
+    """Closed historical record only; no p access permission or old full-p replay.
+
+    The complete-load/WorldReady owner separately validates live post-tail state.
+    Later SEED-only additions therefore do not become a false stale-parent failure.
+    """
+    context = _remainder_checked_context(grant, "grant_history_context")
+    closed = _REMAINDER_CLOSED.get(grant)
+    if (
+        original_owner is not context.owner
+        or context.active
+        or context.checking
+        or context.invalid
+        or context.guard.active
+        or context.guard.invalid
+        or not context.guard.audit_ready
+        or context.guard.directory_depth != 0
+        or context.guard.directory_calls != 0
+        or context.guard.filesystem
+        or context.source_error is not None
+        or context.capture_errors
+        or closed is None
+        or closed[0] is not context
+        or closed[1] is not context.record
+        or context.record.succeeded is not True
+        or context.record.parent_verified is not True
+        or context.parent_verified is not True
+    ):
+        error = ConstantsRejected(
+            "Actual successful closed remainder grant required",
+            stage="grant_history",
+            partial=context,
+        )
+        _remainder_poison(context, "grant_history_admission", error)
+        raise error from context.first_refusal if error is not context.first_refusal else None
+    context.checking = True
+    try:
+        _remainder_work(context, True, "closed_history_validation", "attempted")
+        _remainder_history(context)
+        record = context.record
+        if (
+            record.work != tuple(context.work)
+            or record.parent_identity != context.trial.identity
+            or record.before_identity != _digest(context.before_graph[1])
+            or record.after_identity != _digest(context.after_graph[1])
+            or _digest(remainder_record_document(record)) != record.identity
+        ):
+            raise ValueError("Original immutable remainder record/capture changed")
+        if context.invalid or context.guard.invalid:
+            raise ValueError("Closed history validation became poisoned") from context.first_refusal
+        _remainder_work(context, True, "closed_history_validation", "completed")
+        _remainder_checked_context(grant, "grant_history_commit")
+        return record
+    except BaseException as error:
+        _remainder_poison(context, "grant_history", error)
+        raise
+    finally:
+        context.checking = False
+
+
 def _bindings():
     functions = (
         _digest,
@@ -798,7 +1560,30 @@ def _bindings():
         trial_record,
         prepare,
         _validate,
+        _validate_state,
         require_continuation,
+        _remainder_scope,
+        remainder_record_document,
+        _remainder_context,
+        _remainder_poison,
+        _remainder_checked_context,
+        _remainder_work,
+        remainder_handoff,
+        _remainder_capture,
+        _remainder_ancestry,
+        _remainder_history,
+        _remainder_check,
+        _remainder_enter,
+        _remainder_close,
+        validate_remainder_history,
+        RemainderGrant.__init__,
+        RemainderGrant.__reduce_ex__,
+        RemainderGrant.__enter__,
+        RemainderGrant.__exit__,
+        RemainderGrant.parameters.fget,
+        RemainderGrant.check,
+        RemainderGrant.record.fget,
+        RemainderGrant.metadata_work.fget,
         _bindings,
         ConstantsOwner.__init__,
         ConstantsOwner.__reduce_ex__,
@@ -822,6 +1607,16 @@ def _bindings():
         ConstantsOwner,
         ConstantsRejected,
         Trial,
+        REMAINDER_HANDOFF_LAW,
+        _REMAINDER_LOCK,
+        _REMAINDER_ACTIVE,
+        _REMAINDER_ISSUED,
+        _REMAINDER_CONSUMED,
+        _REMAINDER_CLOSED,
+        _REMAINDER_SEALS,
+        _REMAINDER_TOKEN,
+        RemainderGrant,
+        RemainderRecord,
         get_ident,
         *previous._bindings()[1],
         *(
