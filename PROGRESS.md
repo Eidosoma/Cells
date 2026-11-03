@@ -40,14 +40,33 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Report milestone completion or a material blocker. Adjacent features wait
   for these gaps.
 
-  The current assignments have complete integration targets. Key owns the
-  fresh parameter-to-WorldReady handoff and the remaining native `init_core`
-  parameter prerequisites. Specialist owns the continuous same-phase tissue
-  path through geometry, grid and mask. Root owns the actual tissue diagnostic,
-  the explicit flux-inverse demonstration modes, and their propagation into
-  INIT/SIM and restart identity. The two developers may prepare the next
-  dependent source block while their bounded verification runs; related source
-  findings are returned together. The demonstration is not yet complete.
+  The current assignments have complete integration targets. Key is building
+  the whole native tissue-profile initializer while its separate parameter
+  diagnostic remains detached. Specialist has completed the callback/bootstrap
+  repair batch and now owns the genuine geometry → Poisson/data-tail → whole
+  core-initializer connection on the same phase and cells. Root owns the combined
+  demonstration runner and actual diagnostic/integration work. Each developer
+  handles routine repairs within the batch and reports at completion or a real
+  blocker. Independent software uses separate CPUs; detached jobs do not prevent
+  disjoint coding. Their terminal outcomes are checked when requested, not polled.
+
+  Root's [combined SEED orchestration source/software review](/mnt/workspaces/Cells/native-seed-demo-20261103-01/software-review-02.json)
+  cover callback → fresh parameters → world geometry → explicit original/disabled
+  flux inverse and data tail → core → profiles → junction/network operators.
+  **56 blocked controls passed**, 5.281 seconds / 54,370,304 bytes sampled RSS,
+  with all 168 test-phase reports and empty native-entry guards verified. The
+  earlier image's 47 test calls passed but its reporter failed after an injected
+  writer outlived the test-call scope; that failed image and missing call report
+  remain preserved; the first complete 47-pass image is also separate. The final
+  nine controls close the consolidated review findings: output cannot overlap
+  frozen source, the parameter packet or raw configuration; a lease-entry error
+  retains its original cause even if descriptor cleanup also fails. The current
+  runner retains actual stage trials before parent
+  retirement, stops on failure without mode fallback, and holds the shared log
+  descriptor through worker process exit. Producer, routing and shared-writer
+  release bindings remain closed pending genuine route/runtime integration.
+  This is orchestration software coverage, not a genuine SEED execution, evolving
+  SIM, independent numerical comparison or restart qualification.
 
   The [field-level demonstration policy is source/software reviewed](/mnt/workspaces/Cells/betse-environment-field-demo-20261103-01/root-review.json):
   **19 synthetic controls pass** in 4.280 seconds / 84,631,552 bytes sampled
