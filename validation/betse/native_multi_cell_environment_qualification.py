@@ -67,6 +67,7 @@ SOFTWARE_GROUPS = {
     "stage-timing": "stage_timing or failed_capture_stops or repair_c5",
     "worklog": "",
     "authority-timing": "",
+    "execution-overhead": "",
 }
 AUTHORITY_TIMING_POLICY = dict(
     kind="cells.exact_function_timing@1",
@@ -79,6 +80,25 @@ AUTHORITY_TIMING_POLICY = dict(
     periodic_ns=5 * 10**9,
     max_raw_errors=32,
 )
+AUTHORITY_TIMING_DISABLED_POLICY = dict(
+    kind="cells.authority_timing_disabled@1",
+    source_work_log=True,
+    stage_timings=True,
+    scientific_guards="unchanged",
+)
+
+
+def _authority_policy(enabled):
+    if type(enabled) is not bool:
+        raise ValueError("Declare whether authority profiling is enabled")
+    return dict(AUTHORITY_TIMING_POLICY if enabled else AUTHORITY_TIMING_DISABLED_POLICY)
+
+
+def _authority_enabled(policy):
+    for enabled in (True, False):
+        if prior._same(policy, _authority_policy(enabled)):
+            return enabled
+    raise ValueError("Unknown or widened authority timing policy")
 
 
 def _authority_targets():
@@ -837,13 +857,22 @@ def _diagnostic_limits(wall_seconds):
     return dict(shared.LIMITS, timeout=wall_seconds)
 
 
-def prepare(destination, *, repository=ROOT, cpu=6, runtime_paths=(), wall_seconds=480):
+def prepare(
+    destination,
+    *,
+    repository=ROOT,
+    cpu=6,
+    runtime_paths=(),
+    wall_seconds=480,
+    authority_timing=True,
+):
     """One-way current-checkout snapshot; original files are pinned, not copied."""
     repository = Path(repository).absolute()
     destination = shared.execution_output(destination, repository, {"runtime_paths": runtime_paths})
     if type(cpu) is not int or cpu not in os.sched_getaffinity(0):
         raise ValueError("Select an available single CPU")
     limits = _diagnostic_limits(wall_seconds)
+    authority_policy = _authority_policy(authority_timing)
     destination.mkdir(parents=True, exist_ok=False)
     try:
         closure = runpy.run_path(str(repository / shared.CLOSURE))["closure"]
@@ -886,7 +915,7 @@ def prepare(destination, *, repository=ROOT, cpu=6, runtime_paths=(), wall_secon
             ordinary_methods=list(native.METHODS),
             capture_transport=payload.KIND,
             capture_policy=CAPTURE_POLICY,
-            authority_timing_policy=AUTHORITY_TIMING_POLICY,
+            authority_timing_policy=authority_policy,
             source_review_required_before_release=True,
             automatic_retry=False,
             **shared.NO_CREDIT,
@@ -923,7 +952,9 @@ def verify_plan(prepared, expected_sha256):
         ordinary_methods=list(native.METHODS),
         capture_transport=payload.KIND,
         capture_policy=CAPTURE_POLICY,
-        authority_timing_policy=AUTHORITY_TIMING_POLICY,
+        authority_timing_policy=_authority_policy(
+            _authority_enabled(plan.get("authority_timing_policy"))
+        ),
         source_review_required_before_release=True,
         automatic_retry=False,
         **shared.NO_CREDIT,
@@ -1064,9 +1095,12 @@ def worker(prepared, digest, release, case, output):
     try:
         with work.active():
             steps = _steps(case, output)
-            authority = AuthorityTimings(output, work, _authority_targets())
-            timings.authority = authority
-            with authority.active():
+            if _authority_enabled(plan["authority_timing_policy"]):
+                authority = AuthorityTimings(output, work, _authority_targets())
+                timings.authority = authority
+            # The optional profiler measures metadata calls; the source work
+            # ledger, inherited guards, stage timings and captures remain live.
+            with authority.active() if authority is not None else nullcontext():
                 result = shared.run_stages(timings.steps(steps), evidence, work)
                 stage = "postprocessing.source_observer_finalization"
         stage = "postprocessing.saved_geometry_diagnostics"
@@ -1135,6 +1169,8 @@ def worker(prepared, digest, release, case, output):
             stop_after=ENDPOINT,
             timing_observation_failures=timings.failures,
             authority_timing=dict(
+                enabled=_authority_enabled(plan["authority_timing_policy"]),
+                policy=plan["authority_timing_policy"],
                 folder="authority-timings",
                 snapshots_attempted=0 if authority is None else authority.sequence,
                 observation_failure=None
@@ -1264,10 +1300,12 @@ def supervised_launch(prepared, digest, release, case, output):
 
 def _software_selection(group, items):
     """Select by function name, excluding output-directory pytest keywords."""
-    if group not in ("worklog", "authority-timing"):
+    if group not in ("worklog", "authority-timing", "execution-overhead"):
         return list(items), []
     terms = (
-        ("authority_timing", "stage_timing", "repair_c5")
+        ("execution_overhead", "worker_uses_loaded_observer", "repair_c5")
+        if group == "execution-overhead"
+        else ("authority_timing", "stage_timing", "repair_c5")
         if group == "authority-timing"
         else (
             "worklog",
@@ -1350,7 +1388,12 @@ def software_child(output, group="all"):
             "/dev/null",
             "-p",
             "no:cacheprovider",
-            *(str(ROOT / p) for p in (TESTS[:1] if group == "authority-timing" else TESTS)),
+            *(
+                str(ROOT / p)
+                for p in (
+                    TESTS[:1] if group in ("authority-timing", "execution-overhead") else TESTS
+                )
+            ),
             "--junitxml=" + str(output / "tests.xml"),
             "--basetemp=" + str(output / "tmp"),
         ]
@@ -1435,6 +1478,7 @@ def main():
     item.add_argument("--cpu", type=int, default=6)
     item.add_argument("--runtime-path", type=Path, action="append", default=[])
     item.add_argument("--wall-seconds", type=int, choices=(480, 1800), default=480)
+    item.add_argument("--no-authority-timing", action="store_true")
     for name in ("software", "software-child"):
         item = sub.add_parser(name)
         item.add_argument("--output", type=Path, required=True)
@@ -1454,6 +1498,7 @@ def main():
             cpu=args.cpu,
             runtime_paths=args.runtime_path,
             wall_seconds=args.wall_seconds,
+            authority_timing=not args.no_authority_timing,
         )
     elif args.command == "software":
         return int(software(args.output, args.group)["status"] != "passed")

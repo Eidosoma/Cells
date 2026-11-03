@@ -45,6 +45,9 @@ LINEAGE_ITEMS = (
     "test_lineage_encoding_binding_drift_refuses",
     "test_lineage_encoding_inherited_rejection_never_falls_back",
     "test_lineage_encoding_metadata_cost_observation",
+    "test_lineage_compact_descriptor_keeps_all_occurrences_under_same_budget",
+    "test_lineage_compact_descriptor_revalidates_live_columns",
+    "test_lineage_compact_descriptor_warm_path_is_fresh_without_reparsing",
 )
 
 

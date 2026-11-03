@@ -2377,6 +2377,7 @@ def test_lineage_encoding_metadata_cost_observation(
             bounds=(0.0, 8.0, 0.0, 4.0),
         )
     )
+
     array = np.arange(48, dtype=np.float64).reshape(6, 8)[::2, ::-1]
     branch = Metadata(
         OrderedDict(first=cache, equal_cache=replace(cache), array=array, scalar=np.float64(-0.0)),
@@ -2475,3 +2476,113 @@ def test_lineage_encoding_metadata_cost_observation(
     assert calls["predecessor"]["record_calls"] > 0
     assert calls["candidate"]["record_calls"] == 0
     assert sys.getprofile() is previous and sys.gettrace() is trace
+
+
+def _compact_descriptor_fixture():
+    # Many tiny, distinct arrays model the retained ragged-mesh descriptors;
+    # these are declared synthetic values, not a reconstructed native owner.
+    return multi.core.caches.snapshot(
+        [[np.array([float(i), float(i + 1)]), float(i)] for i in range(192)]
+    )
+
+
+def _unshared_descriptor_instructions(raw):
+    pending, instructions = [json.loads(raw)], []
+    while pending:
+        node = pending.pop()
+        kind = node["kind"]
+        if kind == "numeric_array":
+            source = node["source_layout"]
+            instructions.append(
+                (kind, node["column"], source["dtype"], tuple(source["shape"]), node["sha256"])
+            )
+        elif kind == "numpy_scalar":
+            instructions.append((kind, node["bits"], node["dtype"]))
+        elif kind == "float":
+            instructions.append((kind, node["bits"]))
+        elif kind == "dict":
+            for key, value in reversed(node["items"]):
+                pending.extend((value, key))
+        elif "items" in node:
+            pending.extend(reversed(node["items"]))
+    return tuple(instructions)
+
+
+def test_lineage_compact_descriptor_keeps_all_occurrences_under_same_budget(
+    lineage_plans, evidence
+):
+    cache = _compact_descriptor_fixture()
+    raw = cache.descriptor_json
+    unshared = _unshared_descriptor_instructions(raw)
+    assert multi._lineage_plan_size(raw, unshared) is None
+    assert len(raw.encode()) <= multi._LINEAGE_DESCRIPTOR_BYTES
+    assert multi._lineage_validate_cache(cache) is cache
+    plan, size = multi._LINEAGE_PLANS[raw]
+    assert plan == unshared and len(plan) == 384
+    assert size <= multi._LINEAGE_PLAN_BYTES == 131072
+    assert multi._LINEAGE_RETAINED_BYTES == 8 * 2**20
+    assert multi.core.caches.MAX_ARRAY_ELEMENTS == 262144
+    arrays = [row for row in plan if row[0] == "numeric_array"]
+    assert all(row[0] is arrays[0][0] for row in arrays)
+    assert all(row[2] is arrays[0][2] and row[3] is arrays[0][3] for row in arrays)
+    assert len({row[1] for row in arrays}) == 192  # No occurrence was deduplicated.
+    save(evidence, "compact-descriptor", cache)
+    save(evidence, "compact-plan", dict(size=size, instructions=plan, raw_bytes=len(raw.encode())))
+
+
+@pytest.mark.parametrize("fault", ["bits", "writeable", "finite", "identity"])
+def test_lineage_compact_descriptor_revalidates_live_columns(fault, lineage_plans, evidence):
+    cache = _compact_descriptor_fixture()
+    multi._lineage_validate_cache(cache)
+    original = cache.columns[0]
+    if fault in ("bits", "writeable"):
+        value = original.values.copy()
+        if fault == "bits":
+            value[0] = -7.0
+            value = multi.core.caches.arrays.frozen(value)
+        cache = replace(cache, columns=(replace(original, values=value), *cache.columns[1:]))
+    elif fault == "finite":
+        cache = replace(cache, all_finite=False)
+    else:
+        cache = replace(cache, identity="0" * 64)
+    expected = _lineage_outcome(multi.core.caches.validate, cache)
+    actual = _lineage_outcome(multi._lineage_validate_cache, cache)
+    save(evidence, "compact-refusal", dict(fault=fault, expected=expected, actual=actual))
+    assert expected == actual and "type" in expected
+
+
+def test_lineage_compact_descriptor_warm_path_is_fresh_without_reparsing(
+    monkeypatch, lineage_plans, evidence
+):
+    cache = _compact_descriptor_fixture()
+    canonical = FunctionType(
+        multi._lineage.__code__,
+        dict(vars(multi), _lineage_validate_cache=multi.core.caches.validate),
+    )
+    request = (cache, replace(cache), {"same": cache})
+    expected = canonical(request)
+    first = multi._lineage(request)
+    _lineage_encoding_equal(expected, first)
+    calls = []
+    original = multi.core.caches.validate
+
+    def counted(value):
+        calls.append(value)
+        return original(value)
+
+    monkeypatch.setattr(multi.core.caches, "validate", counted)
+    for _ in range(3):
+        _lineage_encoding_equal(expected, multi._lineage(request))
+    assert calls == []  # Compiled validation still hashes each current column.
+    value = cache.columns[0].values.copy()
+    value[1] = 1000.0
+    changed = replace(
+        cache,
+        columns=(
+            replace(cache.columns[0], values=multi.core.caches.arrays.frozen(value)),
+            *cache.columns[1:],
+        ),
+    )
+    with pytest.raises(ValueError, match="Changed owned mesh cache column"):
+        multi._lineage((changed,))
+    save(evidence, "compact-warm", dict(digest=first[1], canonical_reparses=len(calls)))

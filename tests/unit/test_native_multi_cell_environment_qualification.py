@@ -1880,7 +1880,11 @@ def repair_c5_worker(tmp_path, monkeypatch, where, source_kind="complete"):
         def active(self):
             return nullcontext()
 
-    plan = dict(interpreter=str(Path(q.sys.executable).absolute()), runtime_paths=[])
+    plan = dict(
+        interpreter=str(Path(q.sys.executable).absolute()),
+        runtime_paths=[],
+        authority_timing_policy=q._authority_policy(True),
+    )
     monkeypatch.setattr(q, "ROOT", source)
     monkeypatch.setattr(q, "verify_release", lambda *a: plan)
     monkeypatch.setattr(q.resource, "setrlimit", lambda *a: None)
@@ -1990,3 +1994,177 @@ def test_repair_c5_actual_source_exception_stays_a_source_error(tmp_path, monkey
     assert result["source_error"]["nodes"][0]["message"] == "source execution exception"
     assert result["source_error"]["nodes"][1]["message"] == "source execution cause"
     assert "postprocessing_error" not in result
+
+
+@pytest.mark.parametrize("enabled", [True, False])
+def test_execution_overhead_policy_is_explicit_and_preserves_default(enabled):
+    policy = q._authority_policy(enabled)
+    assert q._authority_enabled(policy) is enabled
+    assert q.prepare.__kwdefaults__["authority_timing"] is True
+    assert q._authority_policy(enabled) is not policy
+    if not enabled:
+        assert policy == dict(
+            kind="cells.authority_timing_disabled@1",
+            source_work_log=True,
+            stage_timings=True,
+            scientific_guards="unchanged",
+        )
+    assert q.shared.LIMITS == dict(timeout=480, max_rss_bytes=2**30, min_available_bytes=8 * 2**30)
+
+
+@pytest.mark.parametrize("value", [None, 0, 1, "false", {}, []])
+def test_execution_overhead_requires_exact_boolean_declaration(value):
+    with pytest.raises(ValueError, match="profiling is enabled"):
+        q._authority_policy(value)
+
+
+@pytest.mark.parametrize(
+    "policy",
+    [
+        None,
+        {},
+        dict(q.AUTHORITY_TIMING_DISABLED_POLICY, source_work_log=False),
+        dict(q.AUTHORITY_TIMING_DISABLED_POLICY, stage_timings=False),
+        dict(q.AUTHORITY_TIMING_DISABLED_POLICY, scientific_guards="disabled"),
+        dict(q.AUTHORITY_TIMING_DISABLED_POLICY, undeclared=True),
+        dict(q.AUTHORITY_TIMING_POLICY, max_raw_errors=64),
+    ],
+)
+def test_execution_overhead_plan_rejects_missing_or_widened_policy(tmp_path, monkeypatch, policy):
+    plan = dict(
+        kind=q.KINDS[0],
+        purpose=q.PURPOSE,
+        cases=list(q.CASES),
+        configuration=q.configuration(),
+        fixture_controls=q.CONTROLS,
+        limits=q.shared.LIMITS,
+        stop_after=q.ENDPOINT,
+        execution_stages=list(q.STAGES),
+        ordinary_methods=list(q.native.METHODS),
+        capture_transport=q.payload.KIND,
+        capture_policy=q.CAPTURE_POLICY,
+        authority_timing_policy=q._authority_policy(False),
+        source_review_required_before_release=True,
+        automatic_retry=False,
+        cpu=3,
+        snapshot_sha256="a" * 64,
+        runner_sha256="a" * 64,
+        external_inputs=[],
+        **q.shared.NO_CREDIT,
+    )
+    verified = []
+    monkeypatch.setattr(q.shared, "output_path", lambda p: p)
+    monkeypatch.setattr(q.source_snapshot, "digest", lambda p: "a" * 64)
+    monkeypatch.setattr(q.shared, "read", lambda p: plan)
+    monkeypatch.setattr(q.source_snapshot, "verify", lambda *a, **k: verified.append("snapshot"))
+    monkeypatch.setattr(q.shared, "verify_pins", lambda p: None)
+    monkeypatch.setattr(q, "_native_inputs", lambda p: {})
+    assert q.verify_plan(tmp_path, "a" * 64) is plan
+    plan["authority_timing_policy"] = policy
+    with pytest.raises(ValueError, match="authority timing policy"):
+        q.verify_plan(tmp_path, "a" * 64)
+    assert verified == ["snapshot"]
+
+
+@pytest.mark.parametrize("fault", ["none", "source", "capture", "inherited_guard"])
+def test_execution_overhead_disabled_retains_real_work_and_stage_accounting(
+    tmp_path, monkeypatch, fault
+):
+    """Real recorder and stage controller; only declared metadata actions run."""
+    from types import FunctionType
+
+    work_type, run_stages = q.shared.WorkLog, q.shared.run_stages
+    prepared, output, _ = repair_c5_worker(tmp_path, monkeypatch, "none")
+    plan = q.verify_release(None, None, None, None)
+    plan["authority_timing_policy"] = q._authority_policy(False)
+    delegates, failures, hook_samples = [], [], []
+    primary = ValueError("metadata action source failure")
+    primary.__cause__ = RuntimeError("metadata action cause")
+
+    def action():
+        delegates.append("first")
+        if fault == "source":
+            raise primary
+        return ("declared synthetic metadata", 7)
+
+    action = FunctionType(
+        action.__code__.replace(
+            co_filename=str(prepared / "source/validation/betse/declared_metadata.py")
+        ),
+        action.__globals__,
+        closure=action.__closure__,
+    )
+
+    def later():
+        delegates.append("later")
+        return ("second metadata action", 8)
+
+    class Evidence:
+        def __init__(self, *args, **kwargs):
+            self.rows = []
+
+        def save(self, label, value):
+            hook_samples.append((sys.getprofile() is not None, sys.gettrace() is trace))
+            self.rows.append(dict(label=label, path="synthetic-capture.json", status="saved"))
+            return fault != "capture"
+
+        def failure(self, error):
+            failures.append(error)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Disabled optional profiler must not be initialized")
+
+    previous, trace = sys.getprofile(), sys.gettrace()
+    entries = []
+
+    def inherited(frame, event, arg):
+        if previous is not None:
+            previous(frame, event, arg)
+        if event == "call" and frame.f_code is action.__code__:
+            entries.append("action")
+            if fault == "inherited_guard":
+                raise primary
+
+    monkeypatch.setattr(q.shared, "WorkLog", work_type)
+    monkeypatch.setattr(q.shared, "run_stages", run_stages)
+    monkeypatch.setattr(q.shared, "Evidence", Evidence)
+    monkeypatch.setattr(q, "AuthorityTimings", forbidden)
+    monkeypatch.setattr(q, "_authority_targets", forbidden)
+    monkeypatch.setattr(q, "_steps", lambda *a: ((q.STAGES[0], action), (q.STAGES[1], later)))
+    try:
+        sys.setprofile(inherited)
+        rc = q.worker(prepared, "synthetic-plan", "synthetic-release", q.CASES[0], output)
+        assert sys.getprofile() is inherited and sys.gettrace() is trace
+    finally:
+        sys.setprofile(previous)
+    result = q.shared.read(output / "diagnostic.json")
+    assert rc == (fault != "none")
+    assert result["authority_timing"]["enabled"] is False
+    assert result["authority_timing"]["initialized"] is False
+    assert result["authority_timing"]["snapshots_attempted"] == 0
+    assert not (output / "authority-timings").exists()
+    counts = q.shared.read(output / "work-counts.json")
+    assert counts["independent_case_credit"] == result["accepted_cases"] == 0
+    assert entries == ["action"]
+    assert (output / "work.jsonl").is_file()
+    assert list((output / "stage-timings").glob("*.json"))
+    if fault == "none":
+        assert delegates == ["first", "later"]
+        assert result["completed_stages"] == list(q.STAGES[:2])
+        assert counts["observed_entry_attempts"] > 0
+    else:
+        assert delegates == ([] if fault == "inherited_guard" else ["first"])
+        assert result["completed_stages"] == []
+    if fault in ("source", "inherited_guard"):
+        assert failures == [primary] and failures[0].__cause__ is primary.__cause__
+        assert result["source_error"]["nodes"][0]["message"] == str(primary)
+    assert all(profile and trace_ok for profile, trace_ok in hook_samples)
+
+
+def test_execution_overhead_selection_uses_only_function_names():
+    selected = NS(originalname="test_execution_overhead_policy", name="x")
+    excluded = NS(originalname="test_unrelated", name="execution_overhead")
+    assert q._software_selection("execution-overhead", [selected, excluded]) == (
+        [selected],
+        [excluded],
+    )

@@ -1174,6 +1174,11 @@ def _lineage_compiled_descriptor(raw):
         raise ValueError("Descriptor is outside the local memoization budget")
     pending = [(json.loads(raw), 0)]
     instructions, nodes = [], 0
+    # Share only immutable descriptor vocabulary. Scientific arrays, hashes
+    # read from arrays, finite flags and validation outcomes are never pooled.
+    # Repeated dtype/shape strings otherwise push ordinary retained mesh
+    # descriptors above the unchanged per-plan memory budget.
+    dtypes, shapes = {}, {}
     while pending:
         node, depth = pending.pop()
         nodes += 1
@@ -1193,17 +1198,19 @@ def _lineage_compiled_descriptor(raw):
                 or type(node.get("sha256")) is not str
             ):
                 return None
-            instructions.append(
-                (kind, node["column"], source["dtype"], tuple(source["shape"]), node["sha256"])
-            )
+            dtype = dtypes.setdefault(source["dtype"], source["dtype"])
+            shape = tuple(source["shape"])
+            shape = shapes.setdefault(shape, shape)
+            instructions.append(("numeric_array", node["column"], dtype, shape, node["sha256"]))
         elif kind == "numpy_scalar":
             if type(node.get("bits")) is not str or type(node.get("dtype")) is not str:
                 return None
-            instructions.append((kind, node["bits"], node["dtype"]))
+            dtype = dtypes.setdefault(node["dtype"], node["dtype"])
+            instructions.append(("numpy_scalar", node["bits"], dtype))
         elif kind == "float":
             if type(node.get("bits")) is not str:
                 return None
-            instructions.append((kind, node["bits"]))
+            instructions.append(("float", node["bits"]))
         elif kind == "dict":
             items = node.get("items")
             if type(items) is not list or any(

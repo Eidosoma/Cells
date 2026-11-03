@@ -32,9 +32,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Work is organized in coherent batches: Key finishes parameter readiness,
   Specialist builds the same-object phase/world connection, and Root reviews
   complete batches and owns performance and end-to-end qualification. Related
-  findings and controls travel in one handoff. Verification starts with cheap
-  controls and one integration pilot before the affected suite; unchanged
-  evidence is not repeatedly audited. Adjacent features wait for these gaps.
+  findings and controls travel in one handoff. Complete each feature's related
+  implementation before its integration pilot, affected tests and consolidated
+  review. Cheap controls catch setup failures first. Individual hooks and
+  routine repairs do not each trigger a new handoff or sign-off; unchanged
+  evidence is not repeatedly audited. Existing launched runs remain untouched.
+  Report milestone completion or a material blocker. Adjacent features wait
+  for these gaps.
 
   The current assignments have complete integration targets. Key owns the
   fresh parameter-to-WorldReady handoff and the remaining native `init_core`
@@ -61,6 +65,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   contracts remain unchanged. These are typed-binding, isolated continuity and
   codec controls, not actual INIT/SIM or complete restart qualification. The
   original 19 controls retain their separate execution image.
+
+  The [same-world Poisson and data-tail batch is source/software reviewed](/mnt/workspaces/Cells/native-seed-world-poisson-development-20261103-01/root-review-02.json):
+  **60 blocked controls pass**, 41 repeated and 19 new, in 9.547 seconds /
+  252,248,064 bytes sampled RSS. One continuation carries the original value
+  solve, explicit original/disabled flux-inverse mode and six native tail
+  stores. Callback admission, unchanged-parent projections and raw unwind
+  retention were repaired together. Actual same-world routing and producer
+  adoption remain held; this is not a completed native world or INIT run.
 
 - **Current mapping software batch:** [All 15 remaining controls are reviewed](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/current-owner-controls-01/root-review.json).
   Seven groups completed on CPU 2, one thread, within **1 GiB / 480 seconds
@@ -473,10 +485,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   the bound `YIELD_VALUE` at 32; the protocol issued no suspension token and
   refused the next admission. The 12-event journal retains this sequence and
   context rejection; its top-level primary field is null, a disclosed limitation.
-  No native entry or resource breach occurred. Specialist is correcting the
-  canonical yield-token/observed-offset association in one batch, followed by
-  one pilot and affected groups only on success. The same-phase geometry path
-  never attaches a standalone mesh or normalized owner.
+  No native entry or resource breach occurred. The [corrected ordered
+  image](/mnt/workspaces/Cells/native-seed-world-geometry-20261103-01/ordered-software-02/source-result.json)
+  passes the two-yield pilot and 39 lifecycle controls, then fails one existing
+  early-`all(False)` assertion; 17 lifecycle forms and all 43 geometry forms
+  remain unrun. Its saved journal proves a successful first yield and suspended
+  token, with no observed `GeneratorExit`; the assertion incorrectly requires
+  a recorded close. Specialist is batching a deterministic short-circuit/explicit
+  close test correction with the failed/unrun controls and geometry group.
+  The passed pilot and 39 unchanged cases are excluded from that test-only
+  continuation. Source/native admission remains held. The same-phase geometry
+  path never attaches a standalone mesh or normalized owner.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
@@ -719,8 +738,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   4.080 milliseconds. This is not a tissue-speedup estimate. No validation
   result or numerical state is cached; arbitrary observer/resource-failure
   timing is not claimed identical.
-  [Diagnostic 11 is launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-11/LAUNCH.json),
-  on CPU 2 with the same one-thread, 1-GiB / 1,800-second / 8-GiB-reserve limits.
+  [Diagnostic 11 is terminal and reviewed](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-11/root-review.json):
+  **1,800.036-second wall stop / 347,791,360 bytes sampled RSS**. Eight
+  captures complete through `cell_index`; literal `cellVerts` remains
+  incomplete. Final runtime, geometry capture and cleanup are unavailable.
+  The 698,761,216 profile events include substantial observer and metadata
+  work; inclusive timings are neither additive nor relative-speed evidence.
   Its [preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-11.json)
   verifies 828 immutable payloads, 609 external inputs and 116 metadata producers.
   Relative to diagnostic 10, only caller encoding and the reviewed field-demo
@@ -728,7 +751,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   fixed. Metadata preparation passed in 75.842 seconds / 44,220,416 bytes
   sampled RSS. The actual endpoint remains geometry/grid/mask before Poisson;
   this is a component prerequisite, not the genuine phase-to-SIM demonstration.
-  Terminal completion is unreviewed, with no automatic polling or retry.
+  The [execution-overhead successor is source/software reviewed](/mnt/workspaces/Cells/native-multi-cell-execution-overhead-20261103-01/source-result.json):
+  **13 descriptor controls and 28 timing/accounting controls pass** at their
+  two exact images, in 5.788 and 3.775 guarded seconds. Equal immutable
+  descriptor operands now share storage: all 1,136 retained request descriptors
+  fit the existing per-plan budget, including 23 previously over-budget plans.
+  Every array occurrence is still validated freshly. An explicit plan option
+  disables only the optional detailed profiler; real source work logging,
+  inherited guards, stage timing, captures and failure retention remain active.
+  Default profiling, numerical equations and all resource limits are unchanged.
+  These controls do not establish actual tissue speedup or native qualification.
   Its [preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-10.json)
   verifies 828 frozen files, 609 external inputs and 116 loaded metadata files;
   only the caller entry-capacity change differs from diagnostic 09. The first
