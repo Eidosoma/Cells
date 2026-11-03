@@ -47,15 +47,120 @@ class Evidence:
             raise self.forensic_error
 
 
+def test_demo_profile_images_empty_selection_needs_no_file_authority():
+    state = stage.Execution("disabled")
+    state.phase = NS(dyna=NS(tissue_name_to_profile={"all": NS(picker=object())}))
+    assert stage._profile_image_inputs(state, object()) == ()
+    assert state.operations == []
+
+
+def test_demo_profile_images_issue_original_bytes_once_per_actual_filename(image_declarations):
+    b = image_declarations
+    b.profiles["shared"] = b.profiles["0"]
+    values = stage._profile_image_inputs(b.state, b.module)
+    assert len(values) == 2 and len(b.state.operations) == 2
+    for name, value in zip(b.names, values, strict=True):
+        assert type(value) is b.module.files.FileInput
+        assert value.filename == str(b.root / name)
+        assert value.sha256 == stage.snapshot.digest(b.root / name)
+        b.module.files._verify_file(value)
+    assert b.state.last_return is values[-1]
+
+
+@pytest.mark.parametrize("mutation", ["outside", "unknown", "bits", "type"])
+def test_demo_profile_images_refuse_unbound_or_changed_files(image_declarations, mutation):
+    b = image_declarations
+    picker = b.profiles["0"].picker
+    path = b.root / b.names[0]
+    if mutation == "outside":
+        picker.filename = str(b.root.parent / "same.png")
+    elif mutation == "unknown":
+        picker.filename = str(b.root / "new.png")
+    elif mutation == "type":
+        picker.filename = path
+    else:
+        path.chmod(0o644)
+        path.write_bytes(b"changed pixels, never decoded")
+        path.chmod(0o444)
+    with pytest.raises(ValueError):
+        stage._profile_image_inputs(b.state, b.module)
+    assert b.state.last_return is None
+
+
+def test_demo_profile_images_second_failure_retains_first_actual_file_declaration(
+    image_declarations,
+):
+    b = image_declarations
+    path = b.root / b.names[1]
+    path.chmod(0o644)
+    path.write_bytes(b"changed second image")
+    path.chmod(0o444)
+    with pytest.raises(ValueError) as got:
+        stage._profile_image_inputs(b.state, b.module)
+    assert b.state.primary is got.value and b.state.delegate_error is got.value
+    assert b.state.last_return.filename == str(b.root / b.names[0])
+    assert [row["status"] for row in b.state.operations] == ["returned", "failed"]
+
+
+def test_demo_profile_images_are_forwarded_to_the_actual_next_public_request(
+    image_declarations, tmp_path
+):
+    b = image_declarations
+    model = chain()
+    model.state.input_root = b.root
+    model.phase.dyna = b.state.phase.dyna
+    module = model.modules["profiles"]
+    module.files = b.module.files
+    seen = []
+
+    def request(parent, *, law_id, image_inputs):
+        model.calls.append("profiles_request")
+        assert law_id == "profiles" and not parent.consumed
+        for value in image_inputs:
+            module.files._verify_file(value)
+        seen.extend(image_inputs)
+        return NS(parent=parent)
+
+    module.from_core = request
+    assert execute(model, tmp_path).methods_completed
+    assert [value.filename for value in seen] == [str(b.root / name) for name in b.names]
+
+
 class Falsey(ValueError):
     def __bool__(self):
         return False
 
 
+@pytest.fixture
+def image_declarations(tmp_path):
+    from cells.processes import betse_native_parameter_yaml_prefix as files
+    from validation.betse import native_seed_demo_inputs as inputs
+
+    root = tmp_path / "config"
+    names = ("geo/circle/spot_2.png", "geo/circle/spot_3.png")
+    for name in names:
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes((inputs.NATIVE / name).read_bytes())
+        path.chmod(0o444)
+    state = stage.Execution("original", input_root=root)
+    profiles = {
+        str(index): NS(picker=NS(filename=str(root / name))) for index, name in enumerate(names)
+    }
+    state.phase = NS(dyna=NS(tissue_name_to_profile=profiles))
+    return NS(state=state, module=NS(files=files), root=root, names=names, profiles=profiles)
+
+
 def chain(*, mode="original", fail=None, primary=None, mutate=None):
     """Stateful private protocol, with old-owner reads rejected after retirement."""
     p, calls, owners = object(), [], []
-    phase = NS(p=p, cells=object(), sim=object(), dyna=object(), callbacks=object())
+    phase = NS(
+        p=p,
+        cells=object(),
+        sim=object(),
+        dyna=NS(tissue_name_to_profile={}),
+        callbacks=object(),
+    )
     primary = primary if primary is not None else ValueError("same delegated failure")
     primary.__cause__ = KeyError("original cause")
     state = stage.Execution(mode)
@@ -121,7 +226,10 @@ def chain(*, mode="original", fail=None, primary=None, mutate=None):
         def request(parent, *, law_id, label=label, **kwargs):
             check(label + "_request")
             assert law_id == label
-            assert kwargs == (dict(flux_operator=mode) if label == "poisson" else {})
+            expected = dict(flux_operator=mode) if label == "poisson" else {}
+            if label == "profiles":
+                expected = dict(image_inputs=())
+            assert kwargs == expected
             assert not parent.consumed
             return NS(parent=parent)
 

@@ -78,6 +78,11 @@ def child(output, select):
         or actual != manifest["files"][SOURCE]["sha256"]
     ):
         raise ValueError("Actual frozen orchestration producer required")
+    # The public immutable FileInput metadata API imports NumPy definitions
+    # through its existing dependency graph. Load those definitions before the
+    # case blockade; all native owners, source bodies and numerical calls remain
+    # forbidden during every control. No file/parameter authority is issued here.
+    importlib.import_module("cells.processes.betse_native_parameter_yaml_prefix")
     snapshot.write_json(
         output / "source-plan.json",
         dict(
@@ -85,6 +90,7 @@ def child(output, select):
             source=SOURCE,
             sha256=actual,
             no_native_or_owner_execution=True,
+            metadata_definition_preload="cells.processes.betse_native_parameter_yaml_prefix",
         ),
     )
     namespace = dict(

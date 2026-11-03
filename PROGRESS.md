@@ -40,18 +40,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Report milestone completion or a material blocker. Adjacent features wait
   for these gaps.
 
-  The current assignments have complete integration targets. Key is building
-  the whole native tissue-profile initializer while its separate parameter
-  diagnostic remains detached. Specialist has completed the callback/bootstrap
-  repair batch and now owns the genuine geometry → Poisson/data-tail → whole
-  core-initializer connection on the same phase and cells. Root owns the combined
-  demonstration runner and actual diagnostic/integration work. Each developer
+  The current assignments have complete integration targets. Key has delivered
+  the whole native tissue-profile initializer and its consolidated repairs;
+  its next disjoint batch supplies genuine fresh INIT/SIM parameter construction
+  and timing. Specialist has delivered the geometry → Poisson/data-tail → whole
+  core connection and now owns core → profiles → junction/network operators on
+  the same phase and cells. Root owns the combined demonstration runner, fresh
+  original inputs, detached execution and actual integration. Each developer
   handles routine repairs within the batch and reports at completion or a real
   blocker. Independent software uses separate CPUs; detached jobs do not prevent
   disjoint coding. Their terminal outcomes are checked when requested, not polled.
 
   Root's [combined SEED orchestration source/software review](/mnt/workspaces/Cells/native-seed-demo-20261103-01/software-review-02.json)
-  cover callback → fresh parameters → world geometry → explicit original/disabled
+  covers callback → fresh parameters → world geometry → explicit original/disabled
   flux inverse and data tail → core → profiles → junction/network operators.
   **56 blocked controls passed**, 5.281 seconds / 54,370,304 bytes sampled RSS,
   with all 168 test-phase reports and empty native-entry guards verified. The
@@ -67,6 +68,52 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   release bindings remain closed pending genuine route/runtime integration.
   This is orchestration software coverage, not a genuine SEED execution, evolving
   SIM, independent numerical comparison or restart qualification.
+
+  Root has now [prepared the complete original input bundle for both modes](/mnt/workspaces/Cells/native-seed-demo-inputs-20261103-01/source-result.json):
+  **25 blocked controls pass**, 5.286 seconds / 55,222,272 bytes sampled RSS.
+  The [two fresh input trees](/mnt/workspaces/Cells/native-seed-demo-inputs-20261103-01/paired-inputs-02/inputs.json)
+  each contain the same 141 original files / 1,419,701 bytes, with independent
+  read-only input inodes, unchanged YAML/image bytes and the original output
+  directory placeholders. Actual metadata-only preparation and verification
+  completed from the frozen checkout. The earlier copy refused those original
+  placeholders after copying the first mode; its partial tree and failure remain
+  preserved. No parameters or native image/model code ran. The combined runner
+  also accepts a validated extra-source roster so its detached launcher can be
+  included in the same execution snapshot.
+
+  The [detached launcher and full input binding are complete in software](/mnt/workspaces/Cells/native-seed-demo-launch-development-20261103-01/full-input-binding-01/source-result.json):
+  **59 blocked controls pass**, 19.092 seconds / 55,963,648 bytes sampled RSS.
+  Before a native callback, it checks the complete selected input tree and its
+  exact Key program; the whole pair is protected from output overlap. After
+  consumption it checks retained input bytes without reopening fresh-directory
+  epochs or the other mode's outputs. The frozen worker has the explicit
+  7,200-second / 1-GiB / one-thread / 8-GiB-reserve envelope, durable terminals,
+  and no automatic retry or polling. The initial 46-call wrapper failure and
+  its separately corrected control remain preserved. Actual producer/session
+  adoption and live execution remain held.
+
+  Root's [profile-image input integration](/mnt/workspaces/Cells/native-seed-demo-20261103-01/profile-images-01/source-result.json)
+  now has **64 blocked passes, 8 new and 56 affected**, 7.792 seconds /
+  248,184,832 bytes sampled RSS. The combined runner retains the actual input
+  root before parameter consumption, observes the retained picker filenames,
+  issues genuine immutable `FileInput` declarations for their original bytes,
+  and forwards them to the profile issuer. That issuer still authenticates the
+  actual picker ancestry. No images are decoded by these controls. The first
+  fixture failed because importing the file-metadata API reached NumPy library
+  definitions under the case blockade; its setup/teardown errors remain failed.
+  The final runner preloads those definitions before the unchanged case
+  blockade, and all 64 cases have complete clean guards. Actual owner/source
+  execution remains unavailable until the live integration is adopted.
+
+  [Specialist's same-phase geometry-to-core integration is reviewed](/mnt/workspaces/Cells/native-seed-core-integration-20261103-01/delivery-02/root-review.json):
+  **48 distinct blocked controls across six images** retain actual grid/Simulator
+  wrapper dispatch, irreversible handoffs and original field/reference checks.
+  Precollection and fixture failures remain preserved; the genuine issued-chain
+  pilot is explicitly unrun. [Key's three profile repairs are reviewed](/mnt/workspaces/Cells/native-seed-init-profiles-review-repair-20261103-01/root-review.json):
+  **26 passes, 11 new and 15 affected**, close dispatch-frame authentication,
+  original helper-error retention and independent observer restoration. The
+  original 82-control image stays separate. These completed source/software
+  batches do not establish a completed native world or initialized simulation.
 
   The [field-level demonstration policy is source/software reviewed](/mnt/workspaces/Cells/betse-environment-field-demo-20261103-01/root-review.json):
   **19 synthetic controls pass** in 4.280 seconds / 84,631,552 bytes sampled

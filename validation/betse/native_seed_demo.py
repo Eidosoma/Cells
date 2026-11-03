@@ -25,6 +25,8 @@ BASE = Path("/mnt/workspaces/Cells")
 FILE = "validation/betse/native_seed_demo.py"
 TEST = "tests/unit/test_native_seed_demo.py"
 RUNNER = "validation/betse/native_seed_demo_software.py"
+INPUT_METADATA = "validation/betse/native_seed_demo_inputs.py"
+INPUT_METADATA_SHA256 = "e28af58ae9f881e3887fab9b9882ba3e54826249dec60e3038163d29dfc66685"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
 KIND = "cells.genuine_seed_core_profiles_junctions_demo@1"
 FLUX_MODES = ("original", "disabled")
@@ -61,6 +63,7 @@ class Execution:
     stage: str = "preflight"
     phase: object = None
     parameters: object = None
+    input_root: object = None
     phase_links: tuple = ()
     callback: object = None
     session: object = None
@@ -111,6 +114,8 @@ def source_plan():
         one_mode_per_fresh_process=True,
         no_retry_or_fallback=True,
         stage_trials="non-additive work and retained evidence, not independent cases",
+        profile_images="Actual retained picker filenames, issued immutable original input files",
+        input_metadata_sha256=INPUT_METADATA_SHA256,
         native_policy=dict(POLICY),
         native_or_scientific_release=False,
         complete_seed_runner_order_claim=False,
@@ -187,7 +192,7 @@ def _validate_output(path, declaration, parameter):
     )
     if checked != output:
         raise DemoRejected("No output rewrite permitted", stage="output")
-    return output
+    return output, inputs["program"]["root"]
 
 
 def _read_plan(path, expected):
@@ -482,12 +487,58 @@ def _execute(state, modules, plan, directory, evidence):
         keywords = dict(law_id=module.LAW_ID)
         if name == "poisson":
             keywords["flux_operator"] = state.flux_operator
+        elif name == "profiles":
+            keywords["image_inputs"] = _profile_image_inputs(state, module)
         request = _call(state, name + "_request", getattr(module, factory), owner, **keywords)
         state.requests.append((name, request))
         owner = _call(state, name, module.prepare, request, enabled=True)
         _retain(state, evidence, name, owner, module)
     state.result, state.methods_completed = owner, True
     return owner
+
+
+def _profile_image_inputs(state, module):
+    """Declare bytes for observed filenames; from_core authenticates picker ancestry."""
+    selected = []
+    for profile in state.phase.dyna.tissue_name_to_profile.values():
+        filename = getattr(profile.picker, "filename", None)
+        if filename is not None:
+            if type(filename) is not str:
+                raise ValueError("Original native picker filename required")
+            if filename in selected:
+                continue  # Multiple actual profiles may share the same original image.
+            selected.append(filename)
+    if not selected:
+        return ()
+    producer = ROOT / INPUT_METADATA
+    if producer.is_symlink() or snapshot.digest(producer) != INPUT_METADATA_SHA256:
+        raise ValueError("Reviewed original input metadata producer changed")
+    metadata = importlib.import_module("validation.betse.native_seed_demo_inputs")
+    if Path(metadata.__file__).resolve() != producer:
+        raise ValueError("Actual frozen original input metadata required")
+    original = _function(metadata, "_source")()
+    root = Path(state.input_root)
+    if not root.is_absolute() or root.resolve() != root:
+        raise ValueError("Original acquired parameter input root required")
+    result = []
+    for filename in selected:
+        path = Path(filename)
+        if not path.is_absolute() or not path.is_relative_to(root):
+            raise ValueError("Profile image is outside the actual parameter input tree")
+        name = str(path.relative_to(root))
+        row = original["files"].get(name)
+        if row is None:
+            raise ValueError("Profile image is absent from the original data bundle")
+        value = _call(
+            state,
+            "profile_image_file",
+            _function(module.files, "input_file"),
+            filename,
+            sha256=row["sha256"],
+            origin="original BETSE input bundle: " + metadata.BUNDLE_SHA256 + "/" + name,
+        )
+        result.append(value)
+    return tuple(result)
 
 
 def _finish(state, evidence, directory):
@@ -559,9 +610,10 @@ def run_demo(plan, directory, *, plan_sha256, enabled=False):
         raise DemoRejected("Each mode/attempt requires a fresh worker", stage="consumed")
     modules = _dependencies()
     declaration = _read_plan(plan, plan_sha256)
-    output = _validate_output(directory, declaration, modules["parameters"])
+    output, input_root = _validate_output(directory, declaration, modules["parameters"])
     _resources()
     state = Execution(declaration["flux_operator"])
+    state.input_root = input_root
     _ATTEMPT = state
     _ACTIVE.append(state)
     try:
@@ -602,15 +654,31 @@ def prepare(
     auxiliary_configuration,
     flux_operator,
     shared_writer_review=None,
+    extra_sources=(),
 ):
     """Freeze the full closure once via Key's existing current-checkout prepare."""
     if type(flux_operator) is not str or flux_operator not in FLUX_MODES:
         raise DemoRejected("Choose exactly original or disabled flux inverse", stage="mode")
+    if type(extra_sources) is not tuple:
+        raise DemoRejected("Explicit immutable extra source roster required", stage="source_roster")
+    for name in extra_sources:
+        snapshot.relative_path(name)
+        if Path(name).parts[0] not in ("src", "validation", "scripts", "tests"):
+            raise DemoRejected(
+                "Only checkout execution sources may extend the image", stage="source_roster"
+            )
     modules = _dependencies()
     if Path(repository).resolve() != ROOT:
         raise DemoRejected("One-way canonical checkout preparation required", stage="checkout")
     parameter = modules["parameters"]
-    extra = (FILE, TEST, RUNNER, *(_relative(name) for name in MODULES.values()))
+    extra = (
+        FILE,
+        TEST,
+        RUNNER,
+        INPUT_METADATA,
+        *(_relative(name) for name in MODULES.values()),
+        *extra_sources,
+    )
     value = _function(parameter, "prepare")(
         repository,
         directory,
