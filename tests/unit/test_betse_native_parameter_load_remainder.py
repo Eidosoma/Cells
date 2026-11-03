@@ -7,8 +7,10 @@ positive continuity run requires Root's actual constants/handoff authority.
 
 import ast
 import builtins
+import copy
 import json
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from types import FunctionType, ModuleType, SimpleNamespace
 
@@ -28,6 +30,383 @@ blocked = inherited.blocked
 prevent_reference_execution = inherited.prevent_reference_execution
 
 
+def _reviewed_cleanup_reference():
+    path, pin = runner.REVIEWED_CLEANUP_REFS["current"]
+    return dict(path=path, sha256=pin)
+
+
+def test_remaining_split_source_selection_binds_actual_eight_and_held118(monkeypatch):
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Metadata reader may not prepare or launch work")
+
+    monkeypatch.setattr(runner, "prepare_cleanup_batch", forbidden)
+    monkeypatch.setattr(runner.inherited.guard, "run_bounded", forbidden)
+    selection = runner._remaining_selection(_reviewed_cleanup_reference())
+    split = selection["split_affected"]
+    assert (split["earlier_source_cases"], split["current_source_cases"]) == (5, 3)
+    assert split["single_current_source_run"] is False and split["cases"] == 8
+    assert [(r["original_index"], r["execution_index"], r["bank"]) for r in split["groups"]] == [
+        (8, 0, "earlier"),
+        (9, 1, "earlier"),
+        (10, 2, "current"),
+    ]
+    assert split["banks"]["earlier"]["test_sha256"] != split["banks"]["current"]["test_sha256"]
+    assert split["banks"]["current"]["test_sha256"] == runner.CM_GUARD_SHA256
+    assert selection["indices"] == list(range(11, 42))
+    assert selection["functions"] == 31 and selection["cases"] == 118
+    assert selection["cases_by_family"] == dict(CM=29, WR=89)
+    assert sum(selection["case_counts"].values()) == 118
+    assert len(selection["current68"]["nodeids"]) == 68
+    held_nodes = [n for row in selection["selectors"].values() for n in row["expected_nodeids"]]
+    assert len(held_nodes) == len(set(held_nodes)) == 118
+    assert set(held_nodes).isdisjoint(selection["current68"]["nodeids"])
+    assert selection["overlap_with_current68"] == []
+    assert selection["held_for_Root_disposition"] is True
+    assert len(selection["preserved_failures"]) == 3
+    assert len(selection["preserved_failed_processes"]) == 4
+    assert len(selection["producers"]) == 3
+    assert runner._selected_cleanup_groups(
+        dict(groups=[list(runner.CLEANUP_GROUPS[i]) for i in range(11, 42)], selection=selection)
+    ) == tuple((i, runner.CLEANUP_GROUPS[i]) for i in range(11, 42))
+
+
+@pytest.mark.parametrize("drift", ["old-eight-receipt", "wrong-pin", "foreign-review"])
+def test_remaining_refuses_unreviewed_affected_receipts_before_read(monkeypatch, drift):
+    reference = _reviewed_cleanup_reference()
+    if drift == "old-eight-receipt":
+        reference = dict(path="/tmp/synthetic-current-eight.json", sha256="0" * 64)
+    elif drift == "wrong-pin":
+        reference["sha256"] = "0" * 64
+    else:
+        reference["path"] += ".foreign"
+
+    def forbidden(reference):
+        raise AssertionError("Unreviewed reference reached evidence read")
+
+    monkeypatch.setattr(runner, "_bound_cleanup_record", forbidden)
+    with pytest.raises(ValueError, match="Exact Root-reviewed split-source"):
+        runner._remaining_selection(reference)
+
+
+@pytest.mark.parametrize(
+    "drift,message",
+    [
+        ("current-review", "Exact reviewed68"),
+        ("prior-association", "bind original source bank"),
+        ("prior-resources", "plan/resources"),
+        ("controller-success", "controllers must remain failed"),
+        ("group-success", "failed group must remain failed"),
+        ("execution-index", "actual execution indices"),
+        ("foreign-bank", "current fixture successor"),
+        ("wrong-current-item", "ordered unique JUnit"),
+        ("duplicate-current-function", "unique current68"),
+    ],
+)
+def test_remaining_reader_refuses_changed_review_banks_and_failed_parents(
+    monkeypatch, drift, message
+):
+    original = runner._bound_cleanup_record
+    current = original(_reviewed_cleanup_reference())
+    prior_path, prior_pin = runner.REVIEWED_CLEANUP_REFS["prior"]
+    prior = original(dict(path=prior_path, sha256=prior_pin))
+
+    def changed(reference):
+        record = copy.deepcopy(original(reference))
+        if reference == _reviewed_cleanup_reference():
+            if drift == "current-review":
+                record["fresh_software"]["passed"] = 8
+            elif drift == "prior-association":
+                record["historical_scope"]["prior_root_review"]["sha256"] = "0" * 64
+        if (
+            reference["path"] == runner.PRIOR_CLEANUP_REFS["inputs"][0]
+            and drift == "prior-resources"
+        ):
+            record["resources"]["cpu"] = 3
+        if (
+            reference == prior["preserved_failures"][0]["artifact"]
+            and drift == "controller-success"
+        ):
+            record["status"] = "completed"
+        if reference == prior["groups"][2]["software"] and drift == "group-success":
+            record["status"] = "completed"
+        if (
+            reference["path"] == runner.REVIEWED_CLEANUP_REFS["prior"][0]
+            and drift == "execution-index"
+        ):
+            record["groups"][0]["index"] = 8
+        if reference == current["bound_evidence"]["batch_inputs"] and drift == "foreign-bank":
+            record["packet"] = next(
+                ref
+                for ref in prior["bound_evidence"]
+                if ref["path"].endswith("/packet/inputs.json")
+            )
+        if reference == current["bound_evidence"]["selection"]:
+            if drift == "wrong-current-item":
+                name = record["selectors"][0]["runner_target"] + "[foreign]"
+                record["selectors"][0]["expected_nodeids"][0] = runner.CM_GUARD_TEST + "::" + name
+                record["selectors"][0]["expected_item_names"][0] = name
+            elif drift == "duplicate-current-function":
+                record["selectors"][1] = copy.deepcopy(record["selectors"][0])
+        if (
+            reference == current["bound_evidence"]["batch_result"]
+            and drift == "duplicate-current-function"
+        ):
+            record["groups"][1] = copy.deepcopy(record["groups"][0])
+        return record
+
+    monkeypatch.setattr(runner, "_bound_cleanup_record", changed)
+    with pytest.raises(ValueError, match=message):
+        runner._remaining_selection(_reviewed_cleanup_reference())
+
+
+def test_remaining_counts_derive_from_exact_selectors_and_junit_not_stale_summary(monkeypatch):
+    original = runner._bound_cleanup_record
+    review = original(_reviewed_cleanup_reference())
+
+    def changed(reference):
+        record = original(reference)
+        if reference == review["bound_evidence"]["selection"]:
+            record = copy.deepcopy(record)
+            record["counts"] = {"stale": 7300}
+            record["cases_by_module"] = {"stale": 7300}
+            record["expected_existing_case_guards"] = {"stale": 7300}
+        return record
+
+    monkeypatch.setattr(runner, "_bound_cleanup_record", changed)
+    selection = runner._remaining_selection(_reviewed_cleanup_reference())
+    assert selection["cases"] == 118 and selection["cases_by_family"] == dict(CM=29, WR=89)
+    assert len(selection["current68"]["nodeids"]) == 68 and selection["functions"] == 31
+
+
+def test_remaining_overlap_with_completed68_refuses_before_preparation(monkeypatch):
+    original = runner._bound_cleanup_record
+    changed_groups = list(runner.CLEANUP_GROUPS)
+    changed_groups[11] = changed_groups[10]
+    monkeypatch.setattr(runner, "CLEANUP_GROUPS", tuple(changed_groups))
+
+    def changed(reference):
+        record = original(reference)
+        if reference["path"] == runner.PRIOR_CLEANUP_REFS["inputs"][0]:
+            record["groups"] = [list(row) for row in changed_groups]
+        return record
+
+    monkeypatch.setattr(runner, "_bound_cleanup_record", changed)
+    with pytest.raises(ValueError, match="overlap completed68"):
+        runner._remaining_selection(_reviewed_cleanup_reference())
+
+
+def test_remaining_literal_selector_preserves_parameter_order_without_evaluation(tmp_path):
+    test = runner.TEST
+    path = tmp_path / test
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        "@pytest.mark.parametrize('a', ['x', 'y'])\n"
+        "@pytest.mark.parametrize('b', [False, True])\n"
+        "def test_roster(a,b): raise AssertionError('must not run')\n"
+    )
+    exact = runner._literal_selector(tmp_path, test, "test_roster")
+    assert exact["expected_item_names"] == [
+        "test_roster[False-x]",
+        "test_roster[False-y]",
+        "test_roster[True-x]",
+        "test_roster[True-y]",
+    ]
+    assert exact["expected_cases"] == 4
+    source = Path(runner.__file__).resolve().parents[2]
+    opaque = runner._literal_selector(
+        source, runner.TEST, "test_direct_child_and_cli_refuse_before_pytest_or_output"
+    )
+    assert opaque["expected_item_names"] == [
+        "test_direct_child_and_cli_refuse_before_pytest_or_output[False-entry0]",
+        "test_direct_child_and_cli_refuse_before_pytest_or_output[False-entry1]",
+        "test_direct_child_and_cli_refuse_before_pytest_or_output[True-entry0]",
+        "test_direct_child_and_cli_refuse_before_pytest_or_output[True-entry1]",
+    ]
+
+
+def test_remaining_legacy_none_selector_keeps_original_builtin_id_without_collection():
+    source = Path(runner.__file__).resolve().parents[2]
+    target = runner.CLEANUP_GROUPS[6][1]
+    exact = runner._literal_selector(source, runner.CM_GUARD_TEST, target)
+    assert exact["expected_cases"] == 4
+    assert exact["expected_item_names"] == [
+        target + "[None]",
+        target + "[]",
+        target + "[foreign]",
+        target + "[1]",
+    ]
+
+
+def _copied_reader_group(tmp_path):
+    # Deliberate metadata corruption stays outside pytest's real guard-receipt tree.
+    # These copies test a reader, and are never execution receipts or owner authority.
+    directory = tmp_path.parent.parent / ("reader-evidence-copy-" + tmp_path.name)
+    directory.mkdir()
+    review = runner._bound_cleanup_record(_reviewed_cleanup_reference())
+    batch = runner._bound_cleanup_record(review["bound_evidence"]["batch_result"])
+    actual = batch["groups"][0]
+    row = {}
+    for key, filename in (
+        ("software", "result.json"),
+        ("runtime", "runtime.json"),
+        ("junit", "junit.xml"),
+    ):
+        path = directory / filename
+        path.write_bytes(Path(actual[key]["path"]).read_bytes())
+        row[key] = runner.inherited.ref(path)
+    for index, path in enumerate(
+        sorted((Path(actual["junit"]["path"]).parent / "pytest").rglob("native-blocked.json"))
+    ):
+        case = directory / "pytest" / str(index)
+        case.mkdir(parents=True)
+        for name in ("native-blocked.json", "matplotlib-blocked.json"):
+            (case / name).write_bytes(path.with_name(name).read_bytes())
+    fixture_source = Path(review["source_and_runtime_integrity"]["worker_snapshot"]["path"]).parent
+    selector = runner._literal_selector(fixture_source, runner.CM_GUARD_TEST, actual["target"])
+    return row, selector, fixture_source, directory
+
+
+@pytest.mark.parametrize(
+    "drift",
+    [
+        "valid",
+        "missing",
+        "corrupt",
+        "attempt",
+        "hook",
+        "primary",
+        "after-callback",
+        "foreign-fixture",
+        "extra-diagnostic",
+    ],
+)
+def test_remaining_group_requires_actual_paired_reference_evidence_not_receipt_counts(
+    tmp_path, drift
+):
+    row, selector, fixture_source, directory = _copied_reader_group(tmp_path)
+    valid = runner._group_evidence(row, selector, fixture_source=fixture_source)
+    assert len(valid["nodeids"]) == 3 and len(valid["matplotlib_references"]) == 3
+    assert valid["additional_matplotlib_diagnostics"] == []
+    assert all(
+        r["fixture_sha256"] == runner.CM_GUARD_SHA256
+        and r["persisted_record_is_final_certificate"] is False
+        for r in valid["matplotlib_references"]
+    )
+    if drift == "valid":
+        return
+    reference = directory / "pytest/0/matplotlib-blocked.json"
+    if drift == "extra-diagnostic":
+        nested = directory / "pytest/0/nested-control/matplotlib-blocked.json"
+        nested.parent.mkdir()
+        nested.write_text(json.dumps(dict(attempts=["declared nested blocked probe"])))
+        result = runner._group_evidence(row, selector, fixture_source=fixture_source)
+        assert len(result["nodeids"]) == 3 and len(result["matplotlib_references"]) == 3
+        assert result["additional_matplotlib_diagnostics"] == [runner.inherited.ref(nested)]
+        return
+    if drift == "missing":
+        reference.unlink()
+    elif drift == "corrupt":
+        reference.write_text("{truncated")
+    elif drift == "foreign-fixture":
+        fixture_source = directory / "foreign-source"
+        fixture = fixture_source / runner.CM_GUARD_TEST
+        fixture.parent.mkdir(parents=True)
+        fixture.write_text("# foreign unexecuted fixture declaration\n")
+    else:
+        record = json.loads(reference.read_text())
+        if drift == "attempt":
+            record["attempts"] = ["blocked import"]
+        elif drift == "hook":
+            record["final_profile_identity"] += 1
+        elif drift == "primary":
+            record["primary_identity"] = 1
+        elif drift == "after-callback":
+            record["clean_guard"] = True
+        reference.write_text(json.dumps(record))
+    with pytest.raises(ValueError):
+        runner._group_evidence(row, selector, fixture_source=fixture_source)
+
+
+@pytest.mark.parametrize(
+    "declaration",
+    [
+        "@pytest.mark.parametrize('a', ['same', 'same'])",
+        "@pytest.mark.parametrize('a', arbitrary())",
+        "@pytest.mark.parametrize('a', [object()])",
+        "@pytest.mark.parametrize('a', ['x'], ids=['hidden'])",
+        "@foreign",
+        "@pytest.mark.parametrize('a,b', [('x','y')])",
+        "@pytest.mark.parametrize('a', [])",
+    ],
+)
+def test_remaining_literal_selector_refuses_ambiguous_or_executable_rosters(tmp_path, declaration):
+    path = tmp_path / "tests/unit/probe.py"
+    path.parent.mkdir(parents=True)
+    path.write_text(declaration + "\ndef test_probe(a): raise AssertionError('must not run')\n")
+    with pytest.raises(ValueError):
+        runner._literal_selector(tmp_path, "tests/unit/probe.py", "test_probe")
+
+
+@pytest.mark.parametrize(
+    "drift",
+    [
+        "valid",
+        "duplicate-item",
+        "wrong-parameter",
+        "wrong-module",
+        "reordered-items",
+        "duplicate-guard",
+        "foreign-guard",
+        "missing-guard",
+        "missing-cleanup",
+        "attempt",
+        "boolean-count",
+        "failed-item",
+        "duplicate-expected",
+    ],
+)
+def test_remaining_exact_item_guard_association_refuses_equal_count_substitutions(drift):
+    review = runner._bound_cleanup_record(_reviewed_cleanup_reference())
+    batch = runner._bound_cleanup_record(review["bound_evidence"]["batch_result"])
+    row = batch["groups"][0]
+    source = Path(review["source_and_runtime_integrity"]["worker_snapshot"]["path"]).parent
+    selector = runner._literal_selector(source, runner.CM_GUARD_TEST, row["target"])
+    cases = list(ET.parse(row["junit"]["path"]).iter("testcase"))
+    guards = [
+        json.loads(p.read_text())
+        for p in sorted((Path(row["junit"]["path"]).parent / "pytest").rglob("native-blocked.json"))
+    ]
+    assert runner._case_roster(selector, cases, guards) == selector["expected_nodeids"]
+    if drift == "valid":
+        return
+    if drift == "duplicate-item":
+        cases[1].set("name", cases[0].get("name"))
+    elif drift == "wrong-parameter":
+        cases[0].set("name", row["target"] + "[unlisted]")
+    elif drift == "wrong-module":
+        cases[0].set("classname", "tests.unit.foreign")
+    elif drift == "reordered-items":
+        cases.reverse()
+    elif drift == "duplicate-guard":
+        guards[1] = copy.deepcopy(guards[0])
+    elif drift == "foreign-guard":
+        guards[0]["nodeid"] = runner.CM_GUARD_TEST + "::foreign"
+    elif drift == "missing-guard":
+        guards.pop()
+    elif drift == "missing-cleanup":
+        guards[0]["inherited_generator_closed"] = False
+    elif drift == "attempt":
+        guards[0]["flattened_attempted"] = ["forbidden"]
+    elif drift == "boolean-count":
+        guards[0]["final_blocked_attempt_count"] = False
+    elif drift == "failed-item":
+        ET.SubElement(cases[0], "failure")
+    elif drift == "duplicate-expected":
+        selector["expected_nodeids"][1] = selector["expected_nodeids"][0]
+    with pytest.raises(ValueError):
+        runner._case_roster(selector, cases, guards)
+
+
 def test_exact_tail_profile_branches_and_helper_source_without_execution():
     plan = stage.source_plan()
     assert plan["statement_slice"] == (203, 218) and plan["source_lines"] == (1127, 1154)
@@ -42,6 +421,36 @@ def test_exact_tail_profile_branches_and_helper_source_without_execution():
     _, _, _, tail, _, _ = stage._source()
     assert [node.targets[0].attr for node in tail[:5]] == ["d_cell", "nx", "ny", "wsx", "wsy"]
     assert all("vol_env" not in ast.unparse(node) for node in tail)
+
+
+def test_remaining_reviewed_context_group_has_native_guard_without_invented_matplotlib_receipt(
+    monkeypatch,
+):
+    review = runner._bound_cleanup_record(_reviewed_cleanup_reference())
+    batch = runner._bound_cleanup_record(review["bound_evidence"]["batch_result"])
+    selected = runner._bound_cleanup_record(review["bound_evidence"]["selection"])
+    index = next(
+        i
+        for i, row in enumerate(selected["selectors"])
+        if row["function_nodeid"].startswith(runner.CM_CONTEXT_TEST + "::")
+    )
+    selector = selected["selectors"][index]
+    fixture_source = Path(review["source_and_runtime_integrity"]["worker_snapshot"]["path"]).parent
+    evidence = runner._group_evidence(
+        batch["groups"][index], selector, fixture_source=fixture_source
+    )
+    assert evidence["reference_fixture_installed"] is False
+    assert len(evidence["native_guards"]) == selector["expected_cases"]
+    assert evidence["matplotlib_references"] == []
+    assert evidence["fixture_source"]["sha256"] == runner.CM_CONTEXT_SHA256
+    original = runner.snapshot.digest
+
+    def changed(path):
+        return "0" * 64 if Path(path) == fixture_source / runner.CM_CONTEXT_TEST else original(path)
+
+    monkeypatch.setattr(runner.snapshot, "digest", changed)
+    with pytest.raises(ValueError, match="Exact reviewed bank fixture"):
+        runner._group_evidence(batch["groups"][index], selector, fixture_source=fixture_source)
 
 
 def _compiled_shape():
@@ -797,7 +1206,7 @@ def test_inherited_callback_cannot_disable_parent_safe_boundaries(observed, chan
 @pytest.mark.parametrize("which", ["profile", "trace"])
 @pytest.mark.parametrize("source_error", [False, True])
 def test_final_recovery_helper_entry_refusal_preserves_primary_and_retires_guard(
-    observed, which, source_error
+    observed, monkeypatch, which, source_error
 ):
     h = observed
     h.control["fail"] = source_error
@@ -805,6 +1214,8 @@ def test_final_recovery_helper_entry_refusal_preserves_primary_and_retires_guard
     original_guards = tuple(stage._HOOK_GUARDS)
     secondary = SyntheticCaptureFailure("inherited hook rejected final recovery entry")
     refused = []
+    bookkeeping = []
+    monkeypatch.setattr(stage, "_observer_bookkeeping", lambda *args: bookkeeping.append(args))
 
     def inherited_hook(frame, event, arg):
         if (
@@ -844,6 +1255,7 @@ def test_final_recovery_helper_entry_refusal_preserves_primary_and_retires_guard
     assert all(a is b for a, b in zip(stage._HOOK_GUARDS, original_guards, strict=True))
     recovery = h.context.observer_recovery
     assert recovery["helper"] is None and recovery["identities_match"] and not recovery["clean"]
+    assert recovery["metadata_stopped"] and not recovery["bookkeeping_called"] and bookkeeping == []
     assert any(
         name == "final_hook_recovery" and error is secondary for name, error in recovery["errors"]
     )
@@ -894,14 +1306,23 @@ def worker_probes(monkeypatch, tmp_path):
     output.mkdir()
     primary, cause = _FalseySourceFailure("toy pytest primary"), SyntheticSourceCause("cause")
     primary.__cause__ = cause
-    h = SimpleNamespace(output=output, primary=primary, cause=cause, fail=False, calls=[])
+    prior, trace = sys.getprofile(), sys.gettrace()
+    h = SimpleNamespace(
+        output=output, primary=primary, cause=cause, fail=False, calls=[], probes=[]
+    )
     binding = object()
     monkeypatch.setattr(
         runner, "_authorization", lambda *a, **kw: dict(source=tmp_path, manifest={})
     )
-    monkeypatch.setattr(runner, "_producers", lambda *a, **kw: ({"conditional": {}}, (binding,)))
-    monkeypatch.setattr(runner, "_identity", lambda: dict(conditional_identity=True))
-    monkeypatch.setattr(runner, "_inventory", lambda: dict(conditional_inventory=True))
+
+    def probe(name):
+        assert sys.getprofile() is prior and sys.gettrace() is trace
+        h.probes.append(name)
+        return ({"conditional": {}}, (binding,)) if name == "producers" else dict(conditional=name)
+
+    monkeypatch.setattr(runner, "_producers", lambda *a, **kw: probe("producers"))
+    monkeypatch.setattr(runner, "_identity", lambda: probe("identity"))
+    monkeypatch.setattr(runner, "_inventory", lambda: probe("inventory"))
 
     def driver(directory):
         h.calls.append("blocked-pytest-body")
@@ -955,6 +1376,7 @@ def test_worker_samples_after_every_writer_and_refuses_recovered_hook_drift(
         return foreign_trace
 
     def write(path, value):
+        assert sys.getprofile() is prior and sys.gettrace() is trace
         writes.append(path.name)
         payloads[path.name] = json.loads(json.dumps(value))
         result = original_write(path, value)
@@ -974,16 +1396,18 @@ def test_worker_samples_after_every_writer_and_refuses_recovered_hook_drift(
         sys.settrace(trace)
     context = caught.value.world_ready_worker
     assert h.calls == ["blocked-pytest-body"] and writes.count(filename) == 1
-    assert writes[-1] == "worker-evidence.json"
+    assert writes[-1] == filename and context.metadata_stopped
     assert final_profile is prior and final_trace is trace
     assert context.hook_recovery["identities_match"] and not context.hook_recovery["clean"]
     assert any(name == "final_hook_identity_0" for name, _ in context.errors)
     final = context.values["final_hook_identities"]
     assert final["restored"] and not final["clean"]
     assert final["sample_scope"] == "after_all_worker_writers_and_primary_attachment"
-    assert payloads["hooks.json"]["sample_scope"] == "before_later_worker_writers_not_final"
-    assert payloads["worker-evidence.json"]["final_hook_sample_after_all_writers_pending"]
-    assert payloads["worker-evidence.json"]["final_worker_success_requires_terminal"]
+    if "hooks.json" in payloads:
+        assert payloads["hooks.json"]["sample_scope"] == "before_later_worker_writers_not_final"
+    if "worker-evidence.json" in payloads:
+        assert payloads["worker-evidence.json"]["final_hook_sample_after_all_writers_pending"]
+        assert payloads["worker-evidence.json"]["final_worker_success_requires_terminal"]
     if source_error:
         assert caught.value is h.primary and h.primary.__cause__ is h.cause
 
@@ -1053,3 +1477,270 @@ def test_worker_final_hook_cleanup_is_bounded_independent_and_keeps_primary(
     assert {name for _, name, _ in context.hook_recovery["samples"]} == {"profile", "trace"}
     if source_error:
         assert caught.value is h.primary and h.primary.__cause__ is h.cause
+
+
+@pytest.mark.parametrize("which", ["profile", "trace"])
+@pytest.mark.parametrize("source_error", [False, True])
+def test_failed_observer_restore_stops_bookkeeping_even_after_recovery(
+    observed, monkeypatch, which, source_error
+):
+    h = observed
+    h.control["fail"] = source_error
+    prior, trace = sys.getprofile(), sys.gettrace()
+    real_profile, real_trace = sys.setprofile, sys.settrace
+    calls, refused = [], []
+    secondary = SyntheticCaptureFailure("first restore failed")
+
+    def setter(value):
+        expected = prior if which == "profile" else trace
+        if value is expected and not refused:
+            refused.append(value)
+            (real_profile if which == "profile" else real_trace)(None)
+            raise secondary
+        return (real_profile if which == "profile" else real_trace)(value)
+
+    monkeypatch.setattr(sys, "set" + which, setter)
+
+    def bookkeeping(*args):
+        calls.append(args)
+        assert sys.getprofile() is prior and sys.gettrace() is trace
+
+    monkeypatch.setattr(stage, "_observer_bookkeeping", bookkeeping)
+    try:
+        with pytest.raises(
+            _FalseySourceFailure if source_error else stage._ObservationStop
+        ) as caught:
+            with stage._observe(h.context):
+                stage._invoke(h.context)
+        final_profile, final_trace = sys.getprofile(), sys.gettrace()
+    finally:
+        real_profile(prior)
+        real_trace(trace)
+    recovery = h.context.observer_recovery
+    assert refused and calls == [] and recovery["metadata_stopped"]
+    assert not recovery["bookkeeping_called"] and recovery["identities_match"]
+    assert any(error is secondary for _, error in recovery["errors"])
+    assert final_profile is prior and final_trace is trace
+    if source_error:
+        assert caught.value is h.primary and h.primary.__cause__ is h.cause
+
+
+def _worker_context(error):
+    trace = error.__traceback__
+    while trace is not None:
+        if trace.tb_frame.f_code is runner._child.__code__:
+            return trace.tb_frame.f_locals["context"]
+        trace = trace.tb_next
+    raise AssertionError("Actual worker traceback/context missing")
+
+
+@pytest.mark.parametrize("source_error", [False, True])
+def test_worker_hook_loss_stops_all_later_metadata_even_after_final_recovery(
+    worker_probes, monkeypatch, source_error
+):
+    h = worker_probes
+    prior, trace = sys.getprofile(), sys.gettrace()
+
+    def foreign(frame, event, arg):
+        return foreign
+
+    def driver(output):
+        h.calls.append("blocked-pytest-body")
+        sys.setprofile(foreign)
+        sys.settrace(foreign)
+        if source_error:
+            raise h.primary
+        return 0
+
+    monkeypatch.setattr(runner, "_pytest_driver", lambda target: driver)
+    try:
+        with pytest.raises(
+            _FalseySourceFailure if source_error else runner.WorkerEvidenceRejected
+        ) as caught:
+            h.run()
+        final_profile, final_trace = sys.getprofile(), sys.gettrace()
+    finally:
+        sys.setprofile(prior)
+        sys.settrace(trace)
+    context = _worker_context(caught.value)
+    assert h.probes == ["producers"] and h.calls == ["blocked-pytest-body"]
+    assert context.callback_calls == ["initial_producers", "pytest_driver", "pytest"]
+    assert context.metadata_stopped and context.values.keys() == {"final_hook_identities"}
+    assert list(h.output.iterdir()) == []
+    assert context.hook_recovery["identities_match"] and not context.hook_recovery["clean"]
+    assert final_profile is prior and final_trace is trace
+    if source_error:
+        assert caught.value is h.primary and h.primary.__cause__ is h.cause
+
+
+def test_worker_formatter_hook_loss_stops_later_formatters_attachment_and_writers(worker_probes):
+    h = worker_probes
+    h.fail = True
+    prior, trace = sys.getprofile(), sys.gettrace()
+    calls = []
+
+    def foreign(frame, event, arg):
+        return foreign
+
+    class Primary(_FalseySourceFailure):
+        def __str__(self):
+            assert sys.getprofile() is prior and sys.gettrace() is trace
+            calls.append("str")
+            sys.setprofile(foreign)
+            sys.settrace(foreign)
+            return "original primary"
+
+    h.primary = Primary("primary")
+    h.primary.__cause__ = h.cause
+    try:
+        with pytest.raises(Primary) as caught:
+            h.run()
+        final_profile, final_trace = sys.getprofile(), sys.gettrace()
+    finally:
+        sys.setprofile(prior)
+        sys.settrace(trace)
+    context = _worker_context(caught.value)
+    assert caught.value is h.primary and h.primary.__cause__ is h.cause and calls == ["str"]
+    assert context.callback_calls[-1] == "format_primary" and context.metadata_stopped
+    assert (
+        not (h.output / "runtime.json").exists()
+        and not (h.output / "worker-evidence.json").exists()
+    )
+    assert final_profile is prior and final_trace is trace
+
+
+@pytest.mark.parametrize("target", ["unknown", "-k", "test_missing", "test_x[1]"])
+def test_exact_function_selection_refuses_foreign_targets_before_packet(
+    monkeypatch, tmp_path, target
+):
+    monkeypatch.setenv(runner.SOFTWARE_RELEASE, "1")
+    with pytest.raises(ValueError, match="owned software test function"):
+        runner.software(tmp_path / "missing", tmp_path / "output", target=target)
+    assert not (tmp_path / "output").exists()
+
+
+def test_cleanup_batch_launch_stays_held_before_snapshot(monkeypatch, tmp_path):
+    monkeypatch.delenv(runner.SOFTWARE_RELEASE, raising=False)
+    with pytest.raises(ValueError, match="launch remains held"):
+        runner.launch_cleanup_batch(tmp_path / "output")
+    assert not (tmp_path / "output").exists()
+
+
+def test_first_group_creates_launcher_before_guard_without_starting_worker(monkeypatch, tmp_path):
+    batch = tmp_path / "conditional-batch"
+    packet = batch / "CM-packet"
+    packet.mkdir(parents=True)
+    target = "test_matplotlib_guard_unchanged_valid_cleanup_requires_evidence_return"
+    groups = (("CM", target),)
+    monkeypatch.setattr(runner, "CLEANUP_GROUPS", groups)
+    runner.snapshot.write_json(packet / "inputs.json", dict(conditional_metadata_only=True))
+    inputs = dict(
+        groups=groups,
+        resources=runner.RESOURCES,
+        controller_manifest=dict(sha256="conditional-source"),
+        packets=dict(CM=runner.inherited.ref(packet / "inputs.json")),
+    )
+    runner.snapshot.write_json(batch / "batch-inputs.json", inputs)
+    source = Path(runner.__file__).resolve().parents[2]
+    verify_calls, calls = [], []
+
+    def verify(actual, *, manifest_sha256):
+        verify_calls.append(actual)
+        assert actual == source and manifest_sha256 == "conditional-source"
+
+    monkeypatch.setattr(runner.snapshot, "verify", verify)
+    secondary = SyntheticCaptureFailure("conditional guard entry stop; no process")
+
+    def guarded(command, **kwargs):
+        calls.append((command, kwargs))
+        launcher = batch / "00-CM/launcher"
+        assert kwargs["directory"] == launcher and launcher.is_dir()
+        assert command[-2:] == ["--target", target] and "-k" not in command
+        assert command[command.index("--output") + 1] == str(batch / "00-CM/software")
+        assert kwargs["cwd"] == packet / "source" and kwargs["timeout"] == 480
+        assert kwargs["max_rss_bytes"] == 2**30 and kwargs["min_available_bytes"] == 8 * 2**30
+        runner.snapshot.write_json(
+            launcher / "process-inputs.json", dict(conditional_metadata_only=True)
+        )
+        raise secondary
+
+    monkeypatch.setattr(runner.inherited.guard, "run_bounded", guarded)
+    assert (
+        runner.cleanup_batch_child(batch, runner.snapshot.digest(batch / "batch-inputs.json")) == 1
+    )
+    failure = json.loads((batch / "BATCH-FAILURE.json").read_text())
+    assert len(calls) == 1 and verify_calls == [source]
+    assert failure["error_type"] == "SyntheticCaptureFailure" and failure["outcomes"] == []
+    assert failure["active"] == dict(index=0, family="CM", target=target)
+    assert not (batch / "00-CM/software").exists() and not (batch / "BATCH-RESULT.json").exists()
+
+
+def test_worker_formatter_bypasses_custom_cause_and_type_access_before_hook_loss(
+    worker_probes, monkeypatch
+):
+    h = worker_probes
+    h.fail = True
+    prior, trace = sys.getprofile(), sys.gettrace()
+    cause_accesses, type_accesses, strings = [], [], []
+    formatting = []
+
+    def foreign(frame, event, arg):
+        return foreign
+
+    class Meta(type):
+        def __getattribute__(cls, name):
+            if name == "__qualname__" and formatting:
+                type_accesses.append(name)
+                assert sys.getprofile() is prior and sys.gettrace() is trace
+            return super().__getattribute__(name)
+
+    class Primary(_FalseySourceFailure, metaclass=Meta):
+        def __getattribute__(self, name):
+            if name == "__cause__" and formatting:
+                cause_accesses.append(name)
+                assert sys.getprofile() is prior and sys.gettrace() is trace
+                raise AssertionError("Custom cause dispatch is forbidden")
+            return super().__getattribute__(name)
+
+        def __str__(self):
+            assert sys.getprofile() is prior and sys.gettrace() is trace
+            strings.append(True)
+            sys.setprofile(foreign)
+            sys.settrace(foreign)
+            return "original primary"
+
+    primary = Primary("primary")
+    BaseException.__cause__.__set__(primary, h.cause)
+    h.primary = primary
+    actual_formatter = runner._exception
+
+    def measured_formatter(error):
+        formatting.append(True)
+        try:
+            return actual_formatter(error)
+        finally:
+            formatting.pop()
+
+    monkeypatch.setattr(runner, "_exception", measured_formatter)
+    try:
+        with pytest.raises(Primary) as caught:
+            h.run()
+        final_profile, final_trace = sys.getprofile(), sys.gettrace()
+    finally:
+        sys.setprofile(prior)
+        sys.settrace(trace)
+    context = _worker_context(caught.value)
+    assert (
+        caught.value is primary
+        and BaseException.__cause__.__get__(primary, BaseException) is h.cause
+    )
+    assert cause_accesses == [] and type_accesses == [] and strings == [True]
+    retained = context.raw_results["format_primary"]
+    assert retained["identity"] == id(primary) and retained["cause_identity"] == id(h.cause)
+    assert retained["type"] == type.__getattribute__(Primary, "__qualname__")
+    assert context.callback_calls[-1] == "format_primary" and context.metadata_stopped
+    assert final_profile is prior and final_trace is trace
+    assert (
+        not (h.output / "runtime.json").exists()
+        and not (h.output / "worker-evidence.json").exists()
+    )

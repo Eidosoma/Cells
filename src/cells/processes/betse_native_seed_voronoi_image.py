@@ -42,6 +42,7 @@ IMPORT = "betse.science.tissue.picker.tispickimage"
 MAX_WORK = prefix.MAX_WORK
 _REQUESTS, _CONSUMED, _ISSUED = (WeakKeyDictionary() for _ in range(3))
 _PLANS = WeakKeyDictionary()
+_FORWARDED = WeakKeyDictionary()
 _ACTIVE, _LOCK = [], RLock()
 _LITERAL_CLASS = source.VoronoiImagePrefix
 _LITERAL_FUNCTION = vars(_LITERAL_CLASS)["make_voronoi"]
@@ -428,6 +429,11 @@ def _bindings(context):
         _observer_bindings,
         _bindings,
         _check,
+        _check_image_bindings,
+        _check_image_seal,
+        _claim_for_voronoi_mesh,
+        _mesh_route,
+        _check_mesh_authority,
         _admit,
         _capture,
         _observe,
@@ -473,6 +479,7 @@ def _bindings(context):
         _ACTIVE,
         _LOCK,
         _PLANS,
+        _FORWARDED,
         source,
         images,
         prefix,
@@ -544,6 +551,12 @@ def _check(context):
         or prefix._check_voronoi_authority(context) is not context.parent
     ):
         raise ValueError("Actual retained prefix/image authority changed")
+    _check_image_bindings(context)
+
+
+def _check_image_bindings(context):
+    """Image-local identity/callables; no old caller or old MT numeric check."""
+    _check_bootstrap(context)
     if (
         _REQUESTS.get(context.request) is not context.refs
         or _CONSUMED.get(context.request) is not context
@@ -1632,6 +1645,14 @@ def _authority(owner):
     if type(owner) is not VoronoiImageOwner or owner not in _ISSUED:
         raise VoronoiImageRejected("Actual issued same-phase image owner required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "voronoi_mesh"):
+        raise VoronoiImageRejected(
+            "Image epoch was irreversibly consumed by a mesh constructor attempt",
+            stage="consumed",
+            request=context.request,
+            trial=context.trial,
+            partial=context,
+        )
     if context.validating:
         _reject(context, None, "Recursive/competing image-owner validation")
     context.validating = True
@@ -1639,18 +1660,7 @@ def _authority(owner):
         if context.active or context.owner is not owner or context.invalid:
             raise ValueError("Unavailable image owner")
         _check(context)
-        if (
-            not context.trial.source_completed
-            or tuple(context.return_order) != RETURN_ORDER
-            or _digest(trial_record(context.trial)) != context.trial.identity
-            or images.core.caches.snapshot(_values(context)).identity
-            != context.trial.cache.identity
-        ):
-            raise ValueError("Original image trial/value cache changed")
-        graph = images._graph(context.tape)
-        prefix.literal._same(graph[0], context.graph[0])
-        if graph[1] != context.graph[1]:
-            raise ValueError("Original image references, bases or closure edges changed")
+        _check_image_seal(context)
         if context.invalid or context.entry_error is not None:
             raise (
                 context.entry_error
@@ -1681,6 +1691,131 @@ def _authority(owner):
     finally:
         context.validating = False
     return context
+
+
+def _check_image_seal(context):
+    if (
+        not context.trial.source_completed
+        or tuple(context.return_order) != RETURN_ORDER
+        or _digest(trial_record(context.trial)) != context.trial.identity
+        or images.core.caches.snapshot(_values(context)).identity != context.trial.cache.identity
+    ):
+        raise ValueError("Original image trial/value cache changed")
+    graph = images._graph(context.tape)
+    prefix.literal._same(graph[0], context.graph[0])
+    if graph[1] != context.graph[1]:
+        raise ValueError("Original image references, bases or closure edges changed")
+
+
+def _claim_for_voronoi_mesh(owner, *, expected, transition, entries):
+    """Reserve the actual image before any constructor/preflight callbacks."""
+    module = prefix.previous._world_api()._world_voronoi_mesh_api()
+    caller = sys._getframe(1)
+    with _LOCK:
+        if (
+            caller.f_code is not module.prepare.__code__
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+        ):
+            raise VoronoiImageRejected(
+                "Only the active constructor driver may claim image", stage="source_entry"
+            )
+        if type(owner) is not VoronoiImageOwner or owner not in _ISSUED:
+            raise VoronoiImageRejected("Actual issued image owner required", stage="owner")
+        parent = _ISSUED[owner]
+        if owner in _FORWARDED or hasattr(parent, "voronoi_mesh"):
+            raise VoronoiImageRejected("Image constructor epoch consumed", stage="consumed")
+        if (
+            parent is not expected
+            or parent.owner is not owner
+            or parent.active
+            or parent.invalid
+            or parent.validating
+            or type(transition.request) is not module.Request
+            or module._REQUESTS.get(transition.request) is not transition.refs
+            or module._CONSUMED.get(transition.request) is not transition
+            or module._RETIRED.get(owner) is not transition
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+            or caller.f_code is not module.prepare.__code__
+            or transition.driver_frame is not caller
+            or transition.request.image_owner is not owner
+            or transition.parent is not parent
+            or transition.refs[1] is not parent.trial
+            or transition.phase is not parent.phase
+            or transition.p is not parent.p
+            or transition.cells is not parent.cells
+            or transition.rng is not parent.parent.rng
+            or transition.refs[6] is not parent.tape.mask
+            or entries is not transition.entries
+            or tuple(entries) != (module.DISPATCH_LABEL,)
+            or transition.thread != get_ident()
+        ):
+            parent.invalid = transition.invalid = True
+            raise ValueError("Actual fresh same-instance constructor transition required")
+        # Marker first: a failed authentication, observer, publication or
+        # constructor never makes the old image owner usable again.
+        parent.voronoi_mesh = transition
+        try:
+            _FORWARDED[owner] = transition
+            if _ready() is not parent.api:
+                raise ValueError("Original image producer changed during retirement")
+            _check_image_bindings(parent)
+            _check_image_seal(parent)
+            prefix._capture_mesh_ancestry(parent, transition)
+            if _mesh_route(parent) is not transition:
+                raise ValueError("Different constructor transition retired image")
+        except BaseException:
+            parent.invalid = transition.invalid = True
+            raise
+        return parent
+
+
+def _mesh_route(parent):
+    """Registry-only resolver, also safe for the central phase projection."""
+    module = prefix.previous._world_api()._world_voronoi_mesh_api()
+    transition = getattr(parent, "voronoi_mesh", None)
+    owner = getattr(parent, "owner", None)
+    if (
+        transition is None
+        or owner is None
+        or _ISSUED.get(owner) is not parent
+        or _FORWARDED.get(owner) is not transition
+        or parent.active
+        or parent.invalid
+        or transition.invalid
+        or transition.parent is not parent
+        or type(transition.request) is not module.Request
+        or transition.request.image_owner is not owner
+        or module._REQUESTS.get(transition.request) is not transition.refs
+        or module._CONSUMED.get(transition.request) is not transition
+        or module._RETIRED.get(owner) is not transition
+        or transition.refs[0] is not parent
+        or transition.refs[1] is not parent.trial
+        or transition.phase is not parent.phase
+        or transition.p is not parent.p
+        or transition.cells is not parent.cells
+        or transition.rng is not parent.parent.rng
+        or transition.refs[6] is not parent.tape.mask
+        or transition.refs[7] is not parent.tape.picker
+        or tuple(transition.entries) != (module.DISPATCH_LABEL,)
+        or transition.thread != parent.thread
+    ):
+        raise ValueError("Original image/mesh issuance and retirement links changed")
+    return transition
+
+
+def _check_mesh_authority(transition):
+    parent = transition.parent
+    if (
+        _ready() is not parent.api
+        or _mesh_route(parent) is not transition
+        or prefix._check_mesh_ancestry(parent, transition) is not parent.parent
+    ):
+        raise ValueError("Original forwarded image/prefix authority changed")
+    _check_image_bindings(parent)
+    _check_image_seal(parent)
+    return parent
 
 
 def require_mesh(owner):

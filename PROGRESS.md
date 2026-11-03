@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-02 UTC.
+Last updated: 2026-11-03 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -272,10 +272,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   disclosed separately, with exact selectors and test reports authoritative.
   Prior failures remain preserved; no producer adoption is granted. Both
   earlier 540-file images, 1,368 runtime rows and complete empty guards
-  verify. The **118-control remaining batch has not launched**. Earlier passes
+  verify. The [two-file evidence-reader repair is reviewed](/mnt/workspaces/Cells/native-parameter-remaining118-reader-development-20261103-05/root-review.json):
+  **47 focused metadata controls pass**. It retains the separately produced
+  old five and repaired three cases, requires exact unique parameterized test
+  and guard identities, checks the appropriate Matplotlib receipts and retains
+  legacy `None` parameter IDs. Failed preparations and the pre-test memory-limit
+  failure remain separate. The [118-control remaining batch is launched detached](/mnt/workspaces/Cells/native-parameter-CM-WR-remaining118-20261103-01/launch.json):
+  31 original functions, 29 colormap and 89 world-ready controls, with no overlap
+  with the completed 68. CPU 0, one thread, **1 GiB / 480 seconds per worker /
+  8 GiB reserve** remain unchanged; stop on failure, no automatic retry or
+  polling. Its terminal outcome has not been reviewed. Earlier passes
   stay bound to their own images; no native or numerical execution occurred.
   The genuine constants-to-remainder handoff is still absent, with its producer
-  pin explicitly unbound; source and native owner execution remain held.
+  pin explicitly unbound. Key's five-path source-only implementation window
+  is open; provider adoption and native owner execution remain held.
   The world-ready owner must retain complete same-parameter load history and
   reject any ancestral phase-construction attempt. Its exclusive claim would
   span fresh phase birth through SEED, allowing only native `_run_sim=False`
@@ -372,6 +382,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   worker; the reused fixture checks the actual image stage and cleanup module.
   The earlier preparation import failure and 28 setup errors remain separate.
   Twenty-two other written forms are unrun; parent/provider gates remain held.
+  Specialist's [four-file mesh-constructor preparation is source-reviewed](/mnt/workspaces/Cells/native-seed-voronoi-mesh-20261102-01/root-source-review.json).
+  It continues the actual issued image
+  through the original constructor and same-caller mesh assignment, stopping
+  before `init_mesh` or `clip_and_refine`. The [eight-path integration is source-reviewed](/mnt/workspaces/Cells/native-seed-voronoi-mesh-20261102-01/integration-preparation-01/root-source-review.json),
+  including sticky image retirement, exact inherited ancestry and same-instance
+  routing. Its [first 37-control image has 31 passes and six fixture failures](/mnt/workspaces/Cells/native-seed-voronoi-mesh-20261102-01/integration-software-01/root-results-review.json):
+  omitted closures, an incomplete code-object stand-in and a substring assertion
+  that matched its own definition. All setup/teardown reports and native guards
+  passed; no production defect was established. The [test-only successor passes
+  the exact six affected cases, now independently reviewed](/mnt/workspaces/Cells/native-seed-voronoi-mesh-20261102-01/fixture-repairs-01/root-review.json),
+  with 31 deselected and unchanged production/runner bytes. All 419 frozen files,
+  1,219 runtime origins and 89 producers verify; the worker took 6.035 seconds /
+  249,110,528 bytes sampled RSS. Original 31/6 evidence remains bound to its old test image. All provider
+  pins remain closed; these controls grant no positive owner or native admission.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
@@ -576,8 +600,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   path, with fewer Python calls. All 71 cases, 400 frozen files and 74 loaded
   origins verify; the worker took 6.537 seconds / 245,944,320 bytes sampled RSS.
   The original regression remains preserved. This is a bounded cost observation,
-  not a whole-tissue measurement; **no repeat diagnostic is released**.
-  Its [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-08.json)
+  not a whole-tissue measurement. [Fresh diagnostic 09 is launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-09/LAUNCH.json)
+  on CPU 2 with one thread and unchanged **1 GiB / 1,800 seconds / 8 GiB reserve**.
+  Its [preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-09.json)
+  verifies 828 frozen files and 609 external inputs: only the accepted caller
+  optimization differs from diagnostic 08. Numerical inputs, source and timing
+  policy are unchanged. The terminal outcome has not been reviewed; there is no automatic
+  retry or polling, independent comparison or new scientific credit.
+  Diagnostic 08's [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-08.json)
   verifies **828 frozen files / 609 external pins**; only the two reviewed
   timing files differ from diagnostic 07. CPU 2, one thread, **1 GiB /
   1,800 seconds / 8 GiB reserve**, inputs and numerical code are unchanged.

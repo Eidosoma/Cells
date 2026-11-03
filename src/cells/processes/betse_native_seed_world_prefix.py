@@ -77,6 +77,7 @@ _BODIES = {
 MAX_WORK = 100000
 _REQUESTS, _CONSUMED, _ISSUED = (WeakKeyDictionary() for _ in range(3))
 _FORWARDED = WeakKeyDictionary()
+_MESH_ANCESTRY = WeakKeyDictionary()
 _LOCK, _ACTIVE = RLock(), []
 
 
@@ -349,6 +350,7 @@ def _bindings():
         _log_bindings,
         _namespace_bindings,
         _check,
+        _check_ancestry,
         _immutable,
         _snapshot,
         _graph,
@@ -363,6 +365,10 @@ def _bindings():
         _claim_for_voronoi_image,
         _voronoi_route,
         _check_voronoi_authority,
+        _capture_mesh_ancestry,
+        _mesh_ancestry_graph,
+        _mesh_ancestry_values,
+        _check_mesh_ancestry,
         _failure_stage,
         *(_BODIES.values()),
     )
@@ -374,6 +380,7 @@ def _bindings():
         _CONSUMED,
         _ISSUED,
         _FORWARDED,
+        _MESH_ANCESTRY,
         _LOCK,
         _ACTIVE,
         LAW_ID,
@@ -1065,7 +1072,8 @@ def _same_epoch(context, retained):
         raise ValueError("Observer changed actual caller/reference/RNG state")
 
 
-def _check(context):
+def _check_ancestry(context):
+    """Object/callable/closed-claim identity, independent of caller stores/MT."""
     if context.active:
         _guard(context)
     if (
@@ -1098,6 +1106,10 @@ def _check(context):
         or _digest(source_plan(mode=context.request.mode)) != context.request.source_identity
     ):
         raise ValueError("Exact world-prefix request/source identity changed")
+
+
+def _check(context):
+    _check_ancestry(context)
     current = _immutable(context)
     literal._same(current[0], context.inherited_graph[0])
     if current[1] != context.inherited_graph[1]:
@@ -1775,6 +1787,131 @@ def _check_voronoi_authority(transition):
     # This image prefix permits no phase/Cells/p/RNG mutation. Reuse exact
     # sealed checks without reopening the consumed public prefix owner.
     _check_sealed(parent)
+    return parent
+
+
+def _mesh_ancestry_values(evidence):
+    parent = evidence.prefix
+    return core.caches.snapshot(
+        [
+            dict(
+                role=role,
+                fields=literal._project(
+                    parent.projector,
+                    {
+                        key: value
+                        for key, value in vars(actual).items()
+                        if actual is not parent.cells or key != "mesh"
+                    },
+                ),
+            )
+            for role, actual in evidence.objects
+        ]
+    )
+
+
+def _mesh_ancestry_graph(evidence):
+    # Metadata projections retain every actual holder and holder dictionary by
+    # identity. No projected object is ever supplied to native source methods.
+    for target, (_, actual) in zip(evidence.fields, evidence.objects, strict=True):
+        target.clear()
+        target.update(
+            (key, value)
+            for key, value in vars(actual).items()
+            if actual is not evidence.prefix.cells or key != "mesh"
+        )
+    return literal.callers._graph(evidence.view, evidence.view, evidence.tape)
+
+
+def _capture_mesh_ancestry(image_context, transition):
+    module = previous._world_api()._world_voronoi_api()
+    caller = sys._getframe(1)
+    if caller.f_code is not module._claim_for_voronoi_mesh.__code__:
+        raise ValueError("Only the actual image claim may transfer prefix ancestry")
+    parent = _check_voronoi_authority(image_context)
+    owner = image_context.owner
+    if (
+        caller.f_code is not module._claim_for_voronoi_mesh.__code__
+        or module._mesh_route(image_context) is not transition
+        or owner in _MESH_ANCESTRY
+        or "mesh" in vars(parent.cells)
+    ):
+        raise ValueError("Only actual first image retirement may capture mesh ancestry")
+    objects = tuple(parent.objects)
+    fields = [{} for _ in objects]
+    evidence = SimpleNamespace(
+        prefix=parent,
+        image=image_context,
+        transition=transition,
+        owner=owner,
+        prefix_trial=parent.trial,
+        objects=objects,
+        holder_dicts=tuple(vars(actual) for _, actual in objects),
+        caller_names=tuple(vars(parent.cells)),
+        fields=fields,
+        view=SimpleNamespace(objects=objects, fields=fields),
+        tape=SimpleNamespace(rng=parent.rng, events=(), draws=(), locals={}),
+        completed=False,
+    )
+    # All numerical old-parent checks above precede native construction. Later
+    # checks use only this authenticated unchanged subset and the same objects.
+    evidence.graph = _mesh_ancestry_graph(evidence)
+    if _mesh_ancestry_values(evidence).identity != parent.trial.cache.identity:
+        raise ValueError("Pre-constructor ancestry differs from the genuine lattice trial")
+    image_context.mesh_ancestry = transition.mesh_ancestry = evidence
+    _MESH_ANCESTRY[owner] = evidence
+    evidence.completed = True
+    return evidence
+
+
+def _check_mesh_ancestry(image_context, transition):
+    module = previous._world_api()._world_voronoi_api()
+    parent = image_context.parent
+    owner = image_context.owner
+    evidence = _MESH_ANCESTRY.get(owner)
+    if (
+        _voronoi_route(parent) is not image_context
+        or module._mesh_route(image_context) is not transition
+        or evidence is None
+        or getattr(image_context, "mesh_ancestry", None) is not evidence
+        or getattr(transition, "mesh_ancestry", None) is not evidence
+        or evidence.completed is not True
+        or evidence.prefix is not parent
+        or evidence.image is not image_context
+        or evidence.transition is not transition
+        or evidence.owner is not owner
+        or evidence.prefix_trial is not parent.trial
+        or parent.active
+        or parent.invalid
+    ):
+        raise ValueError("Original prefix/image/mesh inherited issuance links changed")
+    _check_ancestry(parent)
+    if (
+        not parent.trial.source_completed
+        or parent.stack
+        or tuple(parent.stages) != RETURN_ORDER
+        or not parent.root_claimed
+        or _digest(trial_record(parent.trial)) != parent.trial.identity
+        or len(parent.objects) != len(evidence.objects)
+        or any(
+            role != old_role or actual is not old
+            for (role, actual), (old_role, old) in zip(
+                parent.objects, evidence.objects, strict=True
+            )
+        )
+        or any(
+            vars(actual) is not original
+            for (_, actual), original in zip(evidence.objects, evidence.holder_dicts, strict=True)
+        )
+        or tuple(vars(parent.cells))
+        not in (evidence.caller_names, (*evidence.caller_names, "mesh"))
+        or _mesh_ancestry_values(evidence).identity != parent.trial.cache.identity
+    ):
+        raise ValueError("Original pre-mesh fields, holder dictionaries or lattice trial changed")
+    graph = _mesh_ancestry_graph(evidence)
+    literal._same(graph[0], evidence.graph[0])
+    if graph[1] != evidence.graph[1]:
+        raise ValueError("Inherited non-mesh reference edges changed")
     return parent
 
 

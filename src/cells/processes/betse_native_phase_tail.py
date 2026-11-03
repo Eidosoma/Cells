@@ -1702,6 +1702,11 @@ def _dispatch_seed_world(prefix, label, delegate, actual, *args, **kwargs):
     retained = api._world_forwarded(prefix.world_transition)
     if retained is not None and hasattr(retained, "voronoi_image"):
         context = prefix.world_transition.api.helpers._voronoi_route(retained)
+        if hasattr(context, "voronoi_mesh"):
+            route = api._world_voronoi_api()._mesh_route(context)
+            return api._world_voronoi_mesh_api()._dispatch(
+                route, prefix, label, delegate, actual, args, kwargs, sys._getframe()
+            )
         return api._world_voronoi_api()._dispatch(
             context, prefix, label, delegate, actual, args, kwargs, sys._getframe()
         )

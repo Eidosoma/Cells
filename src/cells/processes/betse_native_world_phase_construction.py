@@ -53,6 +53,10 @@ VORONOI_IMAGE_MODULE = "cells.processes.betse_native_seed_voronoi_image"
 VORONOI_IMAGE_MODE = "fresh_world_seed_lattice_make_voronoi_image_prefix"
 VORONOI_IMAGE_SOURCE_SHA256 = None
 VORONOI_IMAGE_REVIEW_SHA256 = None
+VORONOI_MESH_MODULE = "cells.processes.betse_native_seed_voronoi_mesh"
+VORONOI_MESH_MODE = "fresh_world_seed_voronoi_mesh_constructor_assignment"
+VORONOI_MESH_SOURCE_SHA256 = None
+VORONOI_MESH_REVIEW_SHA256 = None
 CALLBACK_MODULE = "cells.processes.betse_native_phase_callbacks"
 CALLBACK_SHA256 = "4fa19547caac95257162e6678092c3e55ce4fe43b05b2d16f7908f9196740f2d"
 BASE_FIELDS = ("callbacks", "cells", "kind", "p", "sim")
@@ -191,6 +195,14 @@ def source_plan():
             review=VORONOI_IMAGE_REVIEW_SHA256,
             binding="one-way full image-module source from this coordinator",
             boundary="before lattice_to_mesh_type/DECMesh",
+            released=False,
+        ),
+        voronoi_mesh=dict(
+            module=VORONOI_MESH_MODULE,
+            mode=VORONOI_MESH_MODE,
+            source=VORONOI_MESH_SOURCE_SHA256,
+            review=VORONOI_MESH_REVIEW_SHA256,
+            boundary="constructor completion -> caller.mesh assignment; before lifecycle",
             released=False,
         ),
         binding_adoption_order=(
@@ -449,6 +461,28 @@ def _world_voronoi_api():
     return module
 
 
+def _world_voronoi_mesh_api():
+    """Optional constructor boundary; no pin grants lifecycle authority."""
+    _world_voronoi_api()
+    if not _pin(VORONOI_MESH_SOURCE_SHA256) or not _pin(VORONOI_MESH_REVIEW_SHA256):
+        raise WorldPhaseRejected(
+            "Actual reviewed same-phase constructor route remains unbound",
+            stage="unbound_voronoi_mesh_contract",
+        )
+    module = _import_bound(VORONOI_MESH_MODULE, VORONOI_MESH_SOURCE_SHA256)
+    if (
+        module.PARENT_MODULE != VORONOI_IMAGE_MODULE
+        or module.MODE != VORONOI_MESH_MODE
+        or module.DISPATCH_LABEL != "Cells.make_voronoi"
+    ):
+        raise ValueError("Exact actual image-to-mesh constructor mode required")
+    for name in ("source_plan", "prepare", "_guard", "_authority", "_wrapper_guard", "_dispatch"):
+        function = getattr(module, name, None)
+        if type(function) is not FunctionType or function.__globals__ is not vars(module):
+            raise ValueError("Original constructor source interface required: " + name)
+    return module
+
+
 def request_record(value):
     return dict(
         law=LAW_ID,
@@ -635,6 +669,7 @@ def _bindings(context):
         _import_helper_bound,
         _dependencies,
         _world_voronoi_api,
+        _world_voronoi_mesh_api,
         request_record,
         from_world_ready,
         _retain_failure,
@@ -679,6 +714,7 @@ def _bindings(context):
         _world_objects,
         _world_projector,
         _world_state,
+        _world_cells_omissions,
         _world_live_aliases,
         _world_stage_runtime,
         _world_stage_guard,
@@ -742,6 +778,10 @@ def _bindings(context):
         VORONOI_IMAGE_MODE,
         VORONOI_IMAGE_SOURCE_SHA256,
         VORONOI_IMAGE_REVIEW_SHA256,
+        VORONOI_MESH_MODULE,
+        VORONOI_MESH_MODE,
+        VORONOI_MESH_SOURCE_SHA256,
+        VORONOI_MESH_REVIEW_SHA256,
         CONSTRUCT_HOOK,
         CHECK_HOOK,
         SEAL_HOOK,
@@ -1491,7 +1531,7 @@ def _world_state(context, *, baseline=False):
         if actual is sim and (index < 3 or baseline):
             omitted.add("dyna")
         if forwarded is not None and actual is cells:
-            omitted.update(transition.api.helpers.STORES)
+            omitted.update(_world_cells_omissions(transition, cells))
         fields.clear()
         # Parameter bytes/edges belong to Key's actual active/closed checker.
         # The stage captures its actual parameter reference and permitted flag.
@@ -1509,6 +1549,28 @@ def _world_state(context, *, baseline=False):
     cache = transition.api.helpers.core.caches.snapshot(rows)
     graph = transition.api.helpers.literal.callers._graph(view, view, context.world_stable_tape)
     return cache, graph
+
+
+def _world_cells_omissions(transition, cells):
+    """Only downstream stores owned by authenticated typed retirement links."""
+    prefix = _world_forwarded(transition)
+    if prefix is None:
+        return ()
+    if prefix.cells is not cells or prefix.phase.cells is not cells:
+        _world_reject(transition, "Foreign caller in forwarded field projection")
+    omitted = tuple(transition.api.helpers.STORES)
+    if hasattr(prefix, "voronoi_image"):
+        parent = transition.api.helpers._voronoi_route(prefix)
+        if hasattr(parent, "voronoi_mesh"):
+            route = _world_voronoi_api()._mesh_route(parent)
+            if (
+                route.cells is not cells
+                or route.phase is not prefix.phase
+                or route.p is not transition.p
+            ):
+                _world_reject(transition, "Foreign caller in constructor projection")
+            omitted += ("mesh",)
+    return omitted
 
 
 def _world_live_aliases(transition):
@@ -1976,6 +2038,9 @@ def _world_phase_wrapper_guard(prefix, caller):
         retained = _world_forwarded(transition)
         if hasattr(retained, "voronoi_image"):
             route = module._voronoi_route(retained)
+            if hasattr(route, "voronoi_mesh"):
+                child = _world_voronoi_api()._mesh_route(route)
+                return _world_voronoi_mesh_api()._wrapper_guard(child, prefix, wrapper)
             return _world_voronoi_api()._wrapper_guard(route, prefix, wrapper)
         route = _world_prefix_route(prefix)
         if role + "." + method not in module.METHODS:

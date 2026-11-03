@@ -4,6 +4,7 @@ import argparse
 import ast
 import copy
 import hashlib
+import itertools
 import json
 import marshal
 import os
@@ -36,6 +37,9 @@ ENTRY_CONFIG = {
 }
 CM_GUARD_TEST = "tests/unit/test_betse_native_parameter_colormap_load.py"
 CM_GUARD_SHA256 = "577460cd94e1204b1248db07b3a0cfe20f6b028f7b943f2f9cba797641601a2e"
+CM_GUARD_LEGACY_SHA256 = "442f17dd8f8187c43966ccf6c26715b7c5c929aa7dfd697d81de3a465d7d3460"
+CM_CONTEXT_TEST = "tests/unit/test_betse_native_parameter_colormaps.py"
+CM_CONTEXT_SHA256 = "04a2e766779826524d10daaf5f233feb9572067e08cf68af183d4f8e40505ea4"
 AUTH_FILE = "worker-authorization.json"
 RESOURCES = dict(
     cpu=0,
@@ -703,6 +707,16 @@ PRIOR_CLEANUP_REFS = {
         "33a393f7258b8bf7302c4ac5424c8e8fbafa7c3b245d8d683fa1a89010d74c94",
     ),
 }
+REVIEWED_CLEANUP_REFS = {
+    "prior": (
+        "/mnt/workspaces/Cells/native-parameter-CM-context-focused73-development-20261102-01/root-review.json",
+        "a5b8ef340bc089e595460cb3f18a2d0951cde28f8792388cc7e575858a0628b6",
+    ),
+    "current": (
+        "/mnt/workspaces/Cells/native-parameter-CM-required-helper-repair68-20261102-01/root-review.json",
+        "cda13b1ff629d0cc0790d388e5002e53c856e8482fd6959947f053091672ce0f",
+    ),
+}
 
 
 def _bound_cleanup_record(reference):
@@ -710,6 +724,235 @@ def _bound_cleanup_record(reference):
     if not path.is_absolute() or path.is_symlink() or snapshot.digest(path) != reference["sha256"]:
         raise ValueError("Bound cleanup evidence changed")
     return json.loads(path.read_text())
+
+
+def _literal_selector(source, test, target):
+    """Read this bounded pytest roster without importing tests or evaluating values."""
+    nodes = [
+        n
+        for n in ast.parse((Path(source) / test).read_bytes()).body
+        if isinstance(n, ast.FunctionDef) and n.name == target
+    ]
+    if len(nodes) != 1:
+        raise ValueError("Exactly one declared test function required")
+    parameters = []
+    # pytest applies the bottom decorator first; opaque module values use arg+index IDs.
+    for decorator in reversed(nodes[0].decorator_list):
+        if (
+            not isinstance(decorator, ast.Call)
+            or ast.unparse(decorator.func) != "pytest.mark.parametrize"
+            or len(decorator.args) != 2
+            or decorator.keywords
+            or not isinstance(decorator.args[0], ast.Constant)
+            or type(decorator.args[0].value) is not str
+            or not isinstance(decorator.args[1], (ast.List, ast.Tuple))
+        ):
+            raise ValueError("Explicit supported pytest parameter roster required")
+        name, values = decorator.args[0].value, decorator.args[1].elts
+        if not name.isidentifier() or not values:
+            raise ValueError("Single nonempty declared parameter axis required")
+        ids = []
+        for index, value in enumerate(values):
+            if isinstance(value, ast.Constant) and (
+                value.value is None or type(value.value) in (str, bool, int)
+            ):
+                text = str(value.value)
+                if not text.isascii() or any(c in text for c in "\\\n\r\t"):
+                    raise ValueError("Unambiguous literal pytest parameter ID required")
+            elif (
+                test == TEST
+                and target == "test_direct_child_and_cli_refuse_before_pytest_or_output"
+                and name == "entry"
+                and isinstance(value, ast.Name)
+                and len(values) == 2
+                and value.id == ("runner", "world_runner")[index]
+            ):
+                text = name + str(index)
+            else:
+                raise ValueError("Undeclared executable parameter value refused")
+            ids.append(text)
+        if len(set(ids)) != len(ids):
+            raise ValueError("Duplicate pytest parameter IDs refused")
+        parameters.append(ids)
+    names = (
+        [target]
+        if not parameters
+        else [target + "[" + "-".join(parts) + "]" for parts in itertools.product(*parameters)]
+    )
+    nodeids = [test + "::" + name for name in names]
+    if len(set(nodeids)) != len(nodeids):
+        raise ValueError("Duplicate expanded pytest node IDs refused")
+    return dict(
+        function_nodeid=test + "::" + target,
+        expected_item_names=names,
+        expected_nodeids=nodeids,
+        expected_cases=len(nodeids),
+    )
+
+
+def _case_roster(selector, cases, guards):
+    """Require each exact successful item and its own complete post-teardown guard."""
+    expected = selector["expected_nodeids"]
+    test, target = selector["function_nodeid"].split("::")
+    if (
+        type(expected) is not list
+        or not expected
+        or any(type(node) is not str for node in expected)
+        or len(expected) != len(set(expected))
+        or type(selector["expected_cases"]) is not int
+        or selector["expected_cases"] != len(expected)
+        or selector["expected_item_names"] != [n.split("::")[1] for n in expected]
+        or any(
+            n != test + "::" + target and not n.startswith(test + "::" + target + "[")
+            for n in expected
+        )
+    ):
+        raise ValueError("Unique exact expected node roster required")
+    actual = []
+    for case in cases:
+        if (
+            case.tag != "testcase"
+            or case.get("classname") != test[:-3].replace("/", ".")
+            or any(c.tag in ("failure", "error", "skipped") for c in case)
+        ):
+            raise ValueError("Successful exact-module JUnit items required")
+        actual.append(test + "::" + case.get("name", ""))
+    if actual != expected or len(guards) != len(expected):
+        raise ValueError("Exact ordered unique JUnit item/node IDs required")
+    by_node = {}
+    for guard in guards:
+        node = guard.get("nodeid")
+        if node not in expected or node in by_node:
+            raise ValueError("Exact unique item/guard association required")
+        for name in ("attempted", "flattened_attempted", "cleanup_error_stages"):
+            if type(guard.get(name)) is not list or guard[name]:
+                raise ValueError("Guard attempts or incomplete cleanup refused")
+        for name in (
+            "fixture_setup_completed",
+            "inherited_receipt_complete",
+            "inherited_generator_closed",
+            "profile_restored",
+            "trace_restored",
+        ):
+            if guard.get(name) is not True:
+                raise ValueError("Complete post-teardown guard required")
+        for name in (
+            "actual_native_numeric_parser_RNG_path_writes",
+            "actual_event_source_numeric_parser_RNG_file_entries",
+            "final_blocked_attempt_count",
+        ):
+            if type(guard.get(name)) is not int or guard[name] != 0:
+                raise ValueError("Zero actual/attempted work guard required")
+        by_node[node] = guard
+    return list(actual)
+
+
+def _reference_contract(record):
+    """Shared data contract of the two reviewed full-file fixture producers.
+
+    As in the existing CM reader, persisted False is before the evidence callback;
+    this record requires the independently checked successful full pytest teardown.
+    """
+    if type(record) is not dict:
+        raise ValueError("Complete Matplotlib reference receipt required")
+    for name in ("attempts", "cleanup_errors"):
+        if type(record.get(name)) is not list or record[name]:
+            raise ValueError("Matplotlib attempts or cleanup failure refused")
+    for name in ("primary_type", "primary_identity", "primary_cause_identity"):
+        if name not in record or record[name] is not None:
+            raise ValueError("Matplotlib receipt retained a primary failure")
+    for kind in ("profile", "trace"):
+        actual = record.get("final_" + kind + "_identity")
+        expected = record.get("expected_" + kind + "_identity")
+        if (
+            record.get(kind + "_restored") is not True
+            or type(actual) is not int
+            or type(expected) is not int
+            or actual <= 0
+            or actual != expected
+        ):
+            raise ValueError("Matplotlib hook identity mismatch")
+    if (
+        type(record.get("actual_import_factory_entries")) is not int
+        or record["actual_import_factory_entries"] != 0
+    ):
+        raise ValueError("Matplotlib actual import/factory entries refused")
+    if (
+        record.get("clean_guard") is not False
+        or record.get("certification") != "Successful cleanup return is also required"
+        or record.get("hook_evidence_phase")
+        != "Before evidence callback; returned final samples also required"
+    ):
+        raise ValueError("Exact pre-return Matplotlib receipt phase required")
+
+
+def _group_evidence(row, selector, *, fixture_source):
+    saved = _bound_cleanup_record(row["software"])
+    runtime = _bound_cleanup_record(row["runtime"])
+    junit = Path(row["junit"]["path"])
+    if snapshot.digest(junit) != row["junit"]["sha256"] or junit.is_symlink():
+        raise ValueError("Bound group JUnit changed")
+    if (
+        saved["status"] != "completed"
+        or type(saved["returncode"]) is not int
+        or saved["returncode"] != 0
+        or saved["complete_guards"] is not True
+        or type(saved["guard_attempts"]) is not int
+        or saved["guard_attempts"] != 0
+        or type(saved["guard_receipts"]) is not int
+        or saved["guard_receipts"] != selector["expected_cases"]
+        or type(runtime["pytest_status"]) is not int
+        or runtime["pytest_status"] != 0
+    ):
+        raise ValueError("Successful full group/pytest teardown required")
+    paths = sorted((junit.parent / "pytest").rglob("native-blocked.json"))
+    if any(p.is_symlink() for p in paths):
+        raise ValueError("Original native guard files required")
+    guards = [json.loads(p.read_text()) for p in paths]
+    nodes = _case_roster(selector, list(ET.parse(junit).iter("testcase")), guards)
+    test = selector["function_nodeid"].split("::")[0]
+    if test not in (CM_GUARD_TEST, TEST, CM_CONTEXT_TEST):
+        raise ValueError("Exact reviewed test/fixture route required")
+    reference_installed = test != CM_CONTEXT_TEST
+    fixture = Path(fixture_source) / (CM_GUARD_TEST if reference_installed else CM_CONTEXT_TEST)
+    fixture_pin = snapshot.digest(fixture)
+    allowed = (
+        (CM_GUARD_SHA256, CM_GUARD_LEGACY_SHA256) if reference_installed else (CM_CONTEXT_SHA256,)
+    )
+    if fixture.is_symlink() or fixture_pin not in allowed:
+        raise ValueError("Exact reviewed bank fixture producer required")
+    references, matched = [], set()
+    for path, guard in zip(paths, guards, strict=True) if reference_installed else ():
+        sibling = path.with_name("matplotlib-blocked.json")
+        if not sibling.is_file() or sibling.is_symlink():
+            raise ValueError("Case Matplotlib sibling receipt missing or foreign")
+        _reference_contract(json.loads(sibling.read_text()))
+        matched.add(sibling)
+        references.append(
+            dict(
+                nodeid=guard["nodeid"],
+                reference=inherited.ref(sibling),
+                fixture_sha256=fixture_pin,
+                persisted_record_is_final_certificate=False,
+            )
+        )
+    # Nested deliberate guard probes are diagnostics, not additional pytest cases.
+    extras = [
+        inherited.ref(p)
+        for p in sorted((junit.parent / "pytest").rglob("matplotlib-blocked.json"))
+        if p not in matched
+    ]
+    return dict(
+        nodeids=nodes,
+        native_guards=[inherited.ref(p) for p in paths],
+        matplotlib_references=references,
+        additional_matplotlib_diagnostics=extras,
+        fixture_source=dict(path=str(fixture), sha256=fixture_pin),
+        reference_fixture_installed=reference_installed,
+        software=row["software"],
+        runtime=row["runtime"],
+        junit=row["junit"],
+    )
 
 
 def _remaining_shape(prior, terminal, review, fixture_review, affected):
@@ -739,30 +982,28 @@ def _remaining_shape(prior, terminal, review, fixture_review, affected):
         or fixture_review["software_release"]["cases"] != 8
     ):
         raise ValueError("Exact affected-eight source disposition required")
+    fresh = affected["fresh_software"]
     if (
-        affected["status"] != "completed_reviewed"
-        or type(affected["cases"]) is not int
-        or affected["cases"] != 8
-        or affected["original_batch_inputs_sha256"] != PRIOR_CLEANUP_REFS["inputs"][1]
-        or affected["source"][CM_GUARD_TEST] != fixture_review["source_sha256"][CM_GUARD_TEST]
-        or len(affected["groups"]) != 3
+        affected["kind"] != "cells.Root_CM_required_helper68_source_saved_review@1"
+        or affected["disposition"]
+        != "clear_for_scoped_Git_integration_held_source_and_blocked_software_only"
+        or affected["blockers"] != []
+        or (fresh["passed"], fresh["failed"], fresh["selected_unique"]) != (68, 0, 68)
+        or fresh["by_module"]
+        != {CM_GUARD_TEST: 18, "tests/unit/test_betse_native_parameter_colormaps.py": 50}
+        or fresh["forbidden_attempts"] != 0
+        or fresh["new_scientific_calls"] != 0
     ):
-        raise ValueError("Complete corrected affected-eight evidence required")
-    for index, count, row in zip(range(8, 11), (2, 3, 3), affected["groups"], strict=True):
-        if (
-            type(row["index"]) is not int
-            or row["index"] != index
-            or row["family"] != "CM"
-            or row["target"] != CLEANUP_GROUPS[index][1]
-            or row["status"] != "completed_reviewed"
-            or type(row["cases"]) is not int
-            or row["cases"] != count
-        ):
-            raise ValueError("Affected groups must be exactly original08-10")
+        raise ValueError("Exact reviewed68 disposition required; no synthetic current-source eight")
     return tuple(range(11, 42))
 
 
 def _remaining_selection(affected_reference):
+    reviewed = {
+        name: dict(path=path, sha256=pin) for name, (path, pin) in REVIEWED_CLEANUP_REFS.items()
+    }
+    if affected_reference != reviewed["current"]:
+        raise ValueError("Exact Root-reviewed split-source evidence required")
     references = {
         name: dict(path=path, sha256=pin) for name, (path, pin) in PRIOR_CLEANUP_REFS.items()
     }
@@ -775,17 +1016,126 @@ def _remaining_selection(affected_reference):
         records["fixture_review"],
         affected,
     )
-    for row in affected["groups"]:
-        saved = _bound_cleanup_record(row["result"])
+    earlier = _bound_cleanup_record(reviewed["prior"])
+    if (
+        earlier["disposition"] != "saved_evidence_verified_terminal_failure_preserved"
+        or earlier["integrity_blockers"] != []
+    ):
+        raise ValueError("Reviewed earlier successes and failed controllers required")
+    if affected["historical_scope"]["prior_root_review"] != reviewed["prior"]:
+        raise ValueError("Current review must bind original source bank")
+    failures = []
+    for row in earlier["preserved_failures"]:
+        record = _bound_cleanup_record(row["artifact"])
+        if record["status"] != "failed_stopped_no_retry":
+            raise ValueError("Failed controllers must remain failed")
+        failures.append(dict(classification=row["classification"], artifact=row["artifact"]))
+    if len(failures) != 2:
+        raise ValueError("Both original controller failures required")
+    failed = earlier["groups"][2]
+    if _bound_cleanup_record(failed["software"])["status"] != "failed":
+        raise ValueError("Original missing-helper failed group must remain failed")
+    if snapshot.digest(Path(failed["junit"]["path"])) != failed["junit"]["sha256"]:
+        raise ValueError("Original failed JUnit must remain bound")
+    failures.append(
+        dict(
+            classification="failed_group_not_recredited",
+            artifact=failed["software"],
+            junit=failed["junit"],
+        )
+    )
+    failed_processes = [
+        row["terminal"] for row in earlier["terminal_outcomes"] if row["status"] == "failed"
+    ]
+    if len(failed_processes) != 4 or any(
+        _bound_cleanup_record(ref)["status"] != "failed" for ref in failed_processes
+    ):
+        raise ValueError("All four earlier failed process terminals must remain failed")
+    bound = affected["bound_evidence"]
+    batch = _bound_cleanup_record(bound["batch_result"])
+    inputs68 = _bound_cleanup_record(bound["batch_inputs"])
+    selected68 = _bound_cleanup_record(bound["selection"])
+    # Bind the correction to frozen inherited summary fields, never use those fields as counts.
+    _bound_cleanup_record(bound["selection_summary_reconciliation"])
+    packet_refs = {
+        "earlier": next(
+            ref
+            for ref in earlier["bound_evidence"]
+            if ref["path"] == str(Path(reviewed["prior"]["path"]).parent / "packet/inputs.json")
+        ),
+        "current": inputs68["packet"],
+    }
+    banks = {}
+    for name, ref in packet_refs.items():
+        packet = _bound_cleanup_record(ref)
+        manifest = _bound_cleanup_record(packet["snapshot"])
+        source = Path(packet["snapshot"]["path"]).parent
+        pin = manifest["files"][CM_GUARD_TEST]["sha256"]
+        if snapshot.digest(source / CM_GUARD_TEST) != pin:
+            raise ValueError("Actual affected test producer changed")
+        banks[name] = dict(packet=ref, snapshot=packet["snapshot"], test_sha256=pin)
+    if banks["current"]["test_sha256"] != CM_GUARD_SHA256:
+        raise ValueError("Explicit current fixture successor required")
+    split_groups, all_affected = [], []
+    for original, bank_name, actual_index, row in (
+        (8, "earlier", 0, earlier["groups"][0]),
+        (9, "earlier", 1, earlier["groups"][1]),
+        (10, "current", 2, batch["groups"][0]),
+    ):
+        target = CLEANUP_GROUPS[original][1]
+        if row["index"] != actual_index:
+            raise ValueError("Retain actual execution indices; no original-index relabel")
+        bank = banks[bank_name]
+        if _bound_cleanup_record(row["software"])["packet"] != bank["packet"]:
+            raise ValueError("Actual execution packet must match its source bank")
+        source = Path(bank["snapshot"]["path"]).parent
+        selector = _literal_selector(source, CM_GUARD_TEST, target)
+        evidence = _group_evidence(row, selector, fixture_source=source)
+        all_affected.extend(evidence["nodeids"])
+        split_groups.append(
+            dict(
+                original_index=original,
+                execution_index=actual_index,
+                bank=bank_name,
+                selector=selector,
+                evidence=evidence,
+            )
+        )
+    if len(all_affected) != 8 or len(set(all_affected)) != 8:
+        raise ValueError("Exactly eight unique affected node identities required")
+    current_nodes = []
+    current_functions = []
+    current_source = Path(banks["current"]["snapshot"]["path"]).parent
+    current_manifest = _bound_cleanup_record(banks["current"]["snapshot"])
+    for row, group in zip(selected68["selectors"], batch["groups"], strict=True):
+        test, target = row["function_nodeid"].split("::")
         if (
-            saved["status"] != "completed"
-            or saved["returncode"] != 0
-            or saved["complete_guards"] is not True
-            or saved["guard_attempts"] != 0
-            or saved["guard_receipts"] != row["cases"]
+            group["target"] != target
+            or group["status"] != "completed_reviewed"
+            or _bound_cleanup_record(group["software"])["packet"] != banks["current"]["packet"]
+            or snapshot.digest(current_source / test) != current_manifest["files"][test]["sha256"]
         ):
-            raise ValueError("Affected-eight terminal/guard record is incomplete")
-    counts = {}
+            raise ValueError("Current68 group and actual source must match selector")
+        exact = {
+            key: row[key]
+            for key in (
+                "function_nodeid",
+                "expected_item_names",
+                "expected_nodeids",
+                "expected_cases",
+            )
+        }
+        evidence = _group_evidence(group, exact, fixture_source=current_source)
+        current_functions.append(row["function_nodeid"])
+        current_nodes.extend(evidence["nodeids"])
+    if (
+        len(current_functions) != 18
+        or len(set(current_functions)) != 18
+        or len(current_nodes) != 68
+        or len(set(current_nodes)) != 68
+    ):
+        raise ValueError("Exact unique current68 roster required")
+    counts, selectors, producers, family_counts = {}, {}, {}, dict(CM=0, WR=0)
     prior_root = Path(PRIOR_CLEANUP_REFS["inputs"][0]).parent
     for index in indices:
         family, target = CLEANUP_GROUPS[index]
@@ -800,30 +1150,55 @@ def _remaining_selection(affected_reference):
         manifest = _bound_cleanup_record(packet["snapshot"])
         if snapshot.digest(source / test) != manifest["files"][test]["sha256"]:
             raise ValueError("Original exact-function source changed")
-        node = next(
-            n
-            for n in ast.parse((source / test).read_bytes()).body
-            if isinstance(n, ast.FunctionDef) and n.name == target
-        )
-        count = 1
-        for decorator in node.decorator_list:
-            if (
-                isinstance(decorator, ast.Call)
-                and ast.unparse(decorator.func) == "pytest.mark.parametrize"
-            ):
-                if not isinstance(decorator.args[1], (ast.List, ast.Tuple)):
-                    raise ValueError("Explicit original case roster required")
-                count *= len(decorator.args[1].elts)
-        counts[str(index)] = count
-    if sum(counts.values()) != 118:
+        selector = _literal_selector(source, test, target)
+        checkout = Path(__file__).resolve().parents[2]
+        if _literal_selector(checkout, test, target) != selector:
+            raise ValueError("Current source must preserve exact original remaining item IDs")
+        if selector["function_nodeid"] in current_functions or set(
+            selector["expected_nodeids"]
+        ) & set(current_nodes):
+            raise ValueError("Remaining selectors overlap completed68")
+        selectors[str(index)] = selector
+        counts[str(index)] = selector["expected_cases"]
+        producers[test] = snapshot.digest(checkout / test)
+        family_counts[family] += selector["expected_cases"]
+    producers[FILE] = snapshot.digest(Path(__file__))
+    if producers[CM_GUARD_TEST] != CM_GUARD_SHA256:
+        raise ValueError("Current exact CM fixture producer required before preparation")
+    remaining_nodes = [node for row in selectors.values() for node in row["expected_nodeids"]]
+    if len(remaining_nodes) != len(set(remaining_nodes)):
+        raise ValueError("Unique remaining item/node IDs required")
+    if sum(counts.values()) != 118 or family_counts != dict(CM=29, WR=89):
         raise ValueError("Original remaining118 case roster changed")
     return dict(
         kind="original_remaining_only",
         indices=list(indices),
         cases=118,
         case_counts=counts,
+        selectors=selectors,
+        cases_by_family=family_counts,
+        functions=len(selectors),
+        producers=producers,
         prior=references,
         affected=affected_reference,
+        split_affected=dict(
+            cases=8,
+            earlier_source_cases=5,
+            current_source_cases=3,
+            single_current_source_run=False,
+            banks=banks,
+            groups=split_groups,
+        ),
+        current68=dict(
+            review=reviewed["current"],
+            selectors=bound["selection"],
+            nodeids=current_nodes,
+            functions=current_functions,
+        ),
+        preserved_failures=failures,
+        preserved_failed_processes=failed_processes,
+        prior_review=reviewed["prior"],
+        overlap_with_current68=[],
         held_for_Root_disposition=True,
     )
 
@@ -1094,39 +1469,32 @@ def cleanup_batch_child(directory, inputs_sha):
                 max_rss_bytes=2**30,
                 min_available_bytes=8 * 2**30,
             )
-            saved = json.loads((group / "software/result.json").read_text())
-            cases = list(ET.parse(group / "software/junit.xml").iter("testcase"))
-            guards = sorted((group / "software/pytest").rglob("native-blocked.json"))
-            if (
-                saved["status"] != "completed"
-                or saved["returncode"] != 0
-                or not saved["complete_guards"]
-            ):
-                raise ValueError("Current-byte software group failed or lacks complete guards")
-            if (
-                not cases
-                or len(cases) != len(guards)
-                or any(
-                    c.find("failure") is not None
-                    or c.find("error") is not None
-                    or c.find("skipped") is not None
-                    or c.get("name", "").split("[")[0] != target
-                    for c in cases
-                )
-            ):
-                raise ValueError("Incomplete or foreign exact-function result")
+            test = CM_GUARD_TEST if family == "CM" else TEST
+            selector = _literal_selector(packet / "source", test, target)
             if (
                 inputs.get("selection") is not None
-                and len(cases) != inputs["selection"]["case_counts"][str(index)]
+                and selector != inputs["selection"]["selectors"][str(index)]
             ):
-                raise ValueError("Original remaining case count changed")
-            if any(json.loads(p.read_text())["attempted"] for p in guards):
-                raise ValueError("Forbidden actual source work attempted")
+                raise ValueError("Original remaining item/node IDs changed")
+            evidence = _group_evidence(
+                {
+                    key: inherited.ref(group / "software" / leaf)
+                    for key, leaf in (
+                        ("software", "result.json"),
+                        ("runtime", "runtime.json"),
+                        ("junit", "junit.xml"),
+                    )
+                },
+                selector,
+                fixture_source=packet / "source",
+            )
             review = dict(
                 **active,
                 status="completed_reviewed",
-                cases=len(cases),
-                guards=len(guards),
+                cases=len(evidence["nodeids"]),
+                guards=len(evidence["native_guards"]),
+                exact_selector=selector,
+                evidence=evidence,
                 result=inherited.ref(group / "software/result.json"),
                 source=inputs["packets"][family],
                 actual_source_entries=0,
