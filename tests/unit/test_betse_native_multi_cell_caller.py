@@ -5,8 +5,9 @@ import hashlib
 import json
 import os
 import pickle
+import struct
 import sys
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from dataclasses import dataclass, fields, replace
 from pathlib import Path
 from types import FunctionType, SimpleNamespace
@@ -1881,3 +1882,596 @@ def test_lineage_descriptor_metadata_cost_observation(workload, lineage_plans, e
             final_hooks_restored=True,
         ),
     )
+
+
+# Frozen independently of the candidate body; this is the exact c891f01f parent.
+_LINEAGE_ENCODING_PARENT_SHA256 = "c891f01f642c297f19438094a098aa397f0e5a65d5afbb58f081b6a807f1d1d3"
+_LINEAGE_ENCODING_ORACLE_SHA256 = "406fa8be13beaee2280bbf41f0497ea23970d7e86a5e782b9e4f095f5b113a53"
+_LINEAGE_ENCODING_RECORDS_SHA256 = (
+    "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7"
+)
+_LINEAGE_ENCODING_ORACLE = '''def _lineage(request):
+    """Read-only proof of retained typed evidence; never replay or hydration."""
+    seen, retained = {}, []
+
+    def visit(value):
+        if value is None or type(value) in (str, bool, int, float):
+            return value
+        if type(value) is bytes:
+            return dict(bytes_sha256=hashlib.sha256(value).hexdigest(), length=len(value))
+        if id(value) in seen:
+            return dict(ref=seen[id(value)])
+        token = len(retained)
+        seen[id(value)] = token
+        retained.append(value)
+        if isinstance(value, core.caches.Cache):
+            _lineage_validate_cache(value)
+            result = dict(cache=value.identity)
+        elif isinstance(value, (np.ndarray, np.generic)):
+            result = dict(array=core.caches.snapshot(value).identity)
+        elif isinstance(value, Mapping):
+            result = dict(items=[(visit(key), visit(item)) for key, item in value.items()])
+        elif isinstance(value, (tuple, list)):
+            result = dict(items=[visit(item) for item in value])
+        elif is_dataclass(value) and not isinstance(value, type):
+            result = dict(
+                type=type(value).__module__ + "." + type(value).__qualname__,
+                fields={field.name: visit(getattr(value, field.name)) for field in fields(value)},
+            )
+        else:
+            raise ValueError("Unsupported retained upstream authority object")
+        return dict(token=token, **result)
+
+    record = visit(request)
+    return tuple(retained), core.records._digest(record)
+'''
+
+
+@pytest.fixture
+def lineage_encoding_oracle():
+    assert hashlib.sha256(_LINEAGE_ENCODING_ORACLE.encode()).hexdigest() == (
+        _LINEAGE_ENCODING_ORACLE_SHA256
+    )
+    with Path(multi.core.records.__file__).open("rb") as stream:
+        assert hashlib.file_digest(stream, "sha256").hexdigest() == (
+            _LINEAGE_ENCODING_RECORDS_SHA256
+        )
+    namespace = dict(vars(multi), _lineage_validate_cache=multi.core.caches.validate)
+    exec(compile(_LINEAGE_ENCODING_ORACLE, "<pinned-c891f01f-lineage>", "exec"), namespace)
+    oracle = namespace["_lineage"]
+    assert oracle.__code__ is not multi._lineage.__code__
+    return oracle
+
+
+def _lineage_encoding_equal(expected, actual):
+    expected_refs, expected_digest = expected
+    actual_refs, actual_digest = actual
+    assert actual_digest == expected_digest
+    assert len(actual_refs) == len(expected_refs)
+    assert all(a is b for a, b in zip(actual_refs, expected_refs, strict=True))
+
+
+def test_lineage_encoding_pinned_predecessor(lineage_encoding_oracle, lineage_plans, evidence):
+    value = (None, True, 17, "unicode \u03bc", -0.0, b"original bytes")
+    expected, actual = lineage_encoding_oracle(value), multi._lineage(value)
+    save(
+        evidence,
+        "pinned-oracle",
+        dict(
+            predecessor_sha256=_LINEAGE_ENCODING_PARENT_SHA256,
+            function_sha256=_LINEAGE_ENCODING_ORACLE_SHA256,
+            records_sha256=_LINEAGE_ENCODING_RECORDS_SHA256,
+            oracle_source=_LINEAGE_ENCODING_ORACLE,
+            value=value,
+            expected=expected,
+            actual=actual,
+            scope="Metadata traversal only; no caller or numerical authority",
+        ),
+    )
+    _lineage_encoding_equal(expected, actual)
+
+
+@pytest.mark.parametrize(
+    "bits",
+    [
+        "0000000000000000",
+        "0000000000000080",
+        "0100000000000000",
+        "0000000000001000",
+        "ffffffffffffef7f",
+        "000000000000f07f",
+        "000000000000f0ff",
+        "010000000000f87f",
+        "020000000000f87f",
+        "010000000000f8ff",
+    ],
+)
+def test_lineage_encoding_exact_scalar_bits(bits, lineage_encoding_oracle, evidence):
+    value = struct.unpack("<d", bytes.fromhex(bits))[0]
+    expected, actual = lineage_encoding_oracle(value), multi._lineage(value)
+    wire = json.dumps(
+        dict(float64_bits=bits), sort_keys=True, separators=(",", ":"), allow_nan=False
+    )
+    independent = hashlib.sha256(wire.encode()).hexdigest()
+    save(evidence, "scalar-bits", dict(bits=bits, value=value, expected=expected, actual=actual))
+    _lineage_encoding_equal(expected, actual)
+    assert actual == ((), independent)
+    assert struct.pack("<d", value).hex() == bits
+
+
+@pytest.mark.parametrize("kind", ["aliases", "cycles", "dataclass", "ordered", "bytes"])
+def test_lineage_encoding_structural_graphs(kind, lineage_encoding_oracle, evidence):
+    @dataclass(frozen=True)
+    class Metadata:
+        first: object
+        second: object
+
+    shared = [-0.0, True, 3]
+    if kind == "aliases":
+        value = [shared, shared, list(shared)]
+    elif kind == "cycles":
+        value = [shared]
+        value.append(value)
+        value.append({"root": value})
+    elif kind == "dataclass":
+        value = Metadata(shared, {"same": shared, "separate": Metadata(2.5, None)})
+    elif kind == "ordered":
+        value = OrderedDict([("z", shared), (7, -0.0), ("a", shared)])
+    else:
+        value = [b"", b"\x00\xff", bytes(range(256)), (b"same", b"same")]
+    save(evidence, "input", value)
+    expected, actual = lineage_encoding_oracle(value), multi._lineage(value)
+    save(evidence, "graph", dict(expected=expected, actual=actual))
+    _lineage_encoding_equal(expected, actual)
+    if kind == "aliases":
+        different = [list(shared), list(shared), list(shared)]
+        changed = multi._lineage(different)
+        save(evidence, "different-aliases", dict(input=different, actual=changed))
+        assert changed[1] != actual[1]
+    if kind == "ordered":
+        reverse = OrderedDict(reversed(tuple(value.items())))
+        changed = multi._lineage(reverse)
+        save(evidence, "reversed-order", dict(input=reverse, actual=changed))
+        assert changed[1] != actual[1]
+
+
+@pytest.mark.parametrize(
+    "kind", ["array", "endian", "strided", "scalar", "integer", "complex", "object", "cache"]
+)
+def test_lineage_encoding_numeric_observations(
+    kind, lineage_encoding_oracle, lineage_plans, evidence
+):
+    if kind == "array":
+        item = np.asarray([[1.0, -0.0], [np.inf, np.nan]])
+    elif kind == "endian":
+        item = np.asarray([1.25, -0.0], dtype=">f8")
+    elif kind == "strided":
+        item = np.arange(12, dtype=np.float64).reshape(3, 4)[::-1, ::2]
+    elif kind == "scalar":
+        item = np.float64(-0.0)
+    elif kind == "integer":
+        item = np.int32(-7)
+    elif kind == "complex":
+        item = np.asarray([1 + 2j, -3j])
+    elif kind == "object":
+        item = np.empty(2, dtype=object)
+        item[0], item[1] = np.asarray([1, 2]), [None, -0.0]
+    else:
+        item = _lineage_cache_fixture()
+    value = (item, {"repeated": item})
+    save(evidence, "input", value)
+    expected = lineage_encoding_oracle(value)
+    first, second = multi._lineage(value), multi._lineage(value)
+    save(evidence, "observed", dict(expected=expected, first=first, second=second))
+    _lineage_encoding_equal(expected, first)
+    _lineage_encoding_equal(expected, second)
+
+
+@pytest.mark.parametrize(
+    "change", ["array", "scalar", "mapping", "cache_bits", "cache_writeable", "cache_finite"]
+)
+def test_lineage_encoding_fresh_mutations(change, lineage_encoding_oracle, lineage_plans, evidence):
+    cache = _lineage_cache_fixture()
+    array = np.asarray([1.0, -0.0])
+    value = [cache, array, np.float64(-0.0), {"scalar": 1.0}]
+    save(evidence, "before", value)
+    baseline = multi._lineage(value)
+    if change == "array":
+        array[0] = 2.0
+    elif change == "scalar":
+        value[2] = np.float64(0.0)
+    elif change == "mapping":
+        value[3]["scalar"] = -0.0
+    elif change == "cache_finite":
+        value[0] = replace(cache, all_finite=False)
+    else:
+        first, *rest = cache.columns
+        changed = first.values.copy()
+        if change == "cache_bits":
+            changed.flat[0] = 5.0
+            changed.flags.writeable = False
+        value[0] = replace(cache, columns=(replace(first, values=changed), *rest))
+    save(evidence, "mutated-input", value)
+    if change.startswith("cache_"):
+        expected = _lineage_outcome(lineage_encoding_oracle, value)
+        actual = _lineage_outcome(multi._lineage, value)
+        save(evidence, "refusal", dict(expected=expected, actual=actual))
+        assert "type" in expected and actual == expected
+    else:
+        expected, actual = lineage_encoding_oracle(value), multi._lineage(value)
+        save(evidence, "fresh", dict(baseline=baseline, expected=expected, actual=actual))
+        _lineage_encoding_equal(expected, actual)
+        assert actual[1] != baseline[1]
+
+
+@pytest.mark.parametrize("route", ["cache", "snapshot"])
+@pytest.mark.parametrize("kind", ["string_subclass", "namedtuple", "mapping"])
+def test_lineage_encoding_atypical_identity_record_fallback(
+    route, kind, monkeypatch, lineage_encoding_oracle, lineage_plans, evidence
+):
+    # Preserve the old accepted metadata semantics; these are not owner tokens.
+    raw = np.asarray([1.0, -0.0])
+    canonical_snapshot = multi.core.caches.snapshot
+    cache = canonical_snapshot(raw)
+    digest = cache.identity
+
+    class Text(str):
+        pass
+
+    class TupleIdentity(namedtuple("IdentityFields", "label scalar")):
+        def __eq__(self, other):
+            return other == digest if type(other) is str else tuple.__eq__(self, other)
+
+        def __ne__(self, other):
+            return not self.__eq__(other)
+
+    class MappingIdentity(dict):
+        def __eq__(self, other):
+            return other == digest if type(other) is str else dict.__eq__(self, other)
+
+        def __ne__(self, other):
+            return not self.__eq__(other)
+
+    identity = {
+        "string_subclass": Text(digest),
+        "namedtuple": TupleIdentity("retained", -0.0),
+        "mapping": MappingIdentity(label="retained", scalar=-0.0),
+    }[kind]
+    observed = replace(cache, identity=identity)
+    if route == "cache":
+        assert multi.core.caches.validate(observed) is observed
+        value = observed
+    else:
+
+        def snapshot(value):
+            return replace(canonical_snapshot(value), identity=identity)
+
+        monkeypatch.setattr(multi.core.caches, "snapshot", snapshot)
+        value = raw
+    save(evidence, "input", dict(route=route, kind=kind, observed=observed, value=value))
+    expected, actual = lineage_encoding_oracle(value), multi._lineage(value)
+    save(evidence, "fallback", dict(expected=expected, actual=actual))
+    _lineage_encoding_equal(expected, actual)
+
+
+def test_lineage_encoding_skips_only_second_record_walk(
+    monkeypatch, lineage_encoding_oracle, lineage_plans, evidence
+):
+    cache = _lineage_cache_fixture()
+    repeated = [cache, np.asarray([1.0, -0.0]), np.int64(3), b"bytes", -0.0]
+    value = {"values": repeated, "again": repeated}
+    expected = lineage_encoding_oracle(value)
+    calls = []
+
+    def forbidden(*args, **kwargs):
+        calls.append("redundant record walk")
+        raise AssertionError("Ordinary encoded leaves require no second record traversal")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(multi.core.records, "record", forbidden)
+        patch.setattr(multi.core.records, "_digest", forbidden)
+        actual = multi._lineage(value)
+    save(evidence, "single-walk", dict(expected=expected, actual=actual, calls=calls))
+    _lineage_encoding_equal(expected, actual)
+    assert not calls
+
+
+@pytest.mark.parametrize("stage", ["cache", "snapshot", "mapping", "dataclass", "encoder"])
+def test_lineage_encoding_preserves_primary_and_cause(
+    stage, monkeypatch, lineage_encoding_oracle, lineage_plans, evidence
+):
+    class FalseyFailure(BaseException):
+        def __bool__(self):
+            return False
+
+    cause = LookupError("retained original cause")
+    original = FalseyFailure("exact metadata failure")
+    original.__cause__ = cause
+    calls = []
+
+    def fail(*args, **kwargs):
+        calls.append(stage)
+        raise original
+
+    class BrokenMapping(dict):
+        def items(self):
+            return fail()
+
+    @dataclass
+    class BrokenMetadata:
+        item: object
+
+        def __getattribute__(self, name):
+            if name == "item":
+                return fail()
+            return object.__getattribute__(self, name)
+
+    cache = _lineage_cache_fixture()
+    value = {
+        "cache": cache,
+        "snapshot": np.asarray([1.0]),
+        "mapping": BrokenMapping(item=1),
+        "dataclass": BrokenMetadata(None),
+        "encoder": -0.0,
+    }[stage]
+    caught = []
+    with monkeypatch.context() as patch:
+        if stage == "cache":
+            patch.setattr(multi, "_lineage_validate_cache", fail)
+            patch.setitem(lineage_encoding_oracle.__globals__, "_lineage_validate_cache", fail)
+        elif stage == "snapshot":
+            patch.setattr(multi.core.caches, "snapshot", fail)
+        elif stage == "encoder":
+            patch.setattr(json, "dumps", fail)
+        for function in (lineage_encoding_oracle, multi._lineage):
+            try:
+                function(value)
+            except BaseException as error:
+                caught.append(error)
+    save(evidence, "primary", dict(stage=stage, errors=caught, calls=calls))
+    assert len(caught) == 2 and all(error is original for error in caught)
+    assert all(error.__cause__ is cause for error in caught) and calls == [stage, stage]
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "dumps_replacement",
+        "dumps_code",
+        "encoder_global",
+        "encode_code",
+        "encode_defaults",
+        "encode_dispatch",
+        "ascii_delegate",
+        "string_delegate",
+        "c_delegate",
+        "python_delegate",
+        "pack_delegate",
+        "record_code",
+        "encoder_infinity",
+        "record_struct",
+    ],
+)
+def test_lineage_encoding_binding_drift_refuses(change, monkeypatch, lineage_plans, evidence):
+    baseline = multi._bindings()
+    multi.accounting._check_binding_identity(multi._bindings(), baseline)
+    delegates, caught = [], None
+
+    def forbidden(*args, **kwargs):
+        delegates.append(change)
+        raise AssertionError("Changed encoder must not execute during binding checks")
+
+    class ForeignEncoder(json.JSONEncoder):
+        pass
+
+    with monkeypatch.context() as patch:
+        if change == "dumps_replacement":
+            patch.setattr(json, "dumps", forbidden)
+        elif change == "dumps_code":
+            patch.setattr(json.dumps, "__code__", (lambda *args, **kwargs: None).__code__)
+        elif change == "encoder_global":
+            patch.setitem(json.dumps.__globals__, "JSONEncoder", ForeignEncoder)
+        elif change == "encode_code":
+            patch.setattr(json.JSONEncoder.encode, "__code__", (lambda self, obj: None).__code__)
+        elif change == "encode_defaults":
+            patch.setattr(json.JSONEncoder.encode, "__defaults__", (None,))
+        elif change == "encode_dispatch":
+            patch.setattr(json.JSONEncoder, "encode", forbidden)
+        elif change == "pack_delegate":
+            patch.setattr(struct, "pack", forbidden)
+        elif change == "record_code":
+            patch.setattr(multi.core.records.record, "__code__", (lambda value: value).__code__)
+        elif change == "encoder_infinity":
+            patch.setitem(json.JSONEncoder.iterencode.__globals__, "INFINITY", 0.0)
+        elif change == "record_struct":
+            patch.setitem(
+                multi.core.records.record.__globals__, "struct", SimpleNamespace(pack=forbidden)
+            )
+        else:
+            name = {
+                "ascii_delegate": "encode_basestring_ascii",
+                "string_delegate": "encode_basestring",
+                "c_delegate": "c_make_encoder",
+                "python_delegate": "_make_iterencode",
+            }[change]
+            patch.setattr(json.encoder, name, forbidden)
+        try:
+            multi.accounting._check_binding_identity(multi._bindings(), baseline)
+        except (ValueError, KeyError) as error:
+            caught = error
+    save(evidence, "binding", dict(change=change, refusal=caught, delegate_calls=delegates))
+    assert caught is not None and not delegates
+    multi.accounting._check_binding_identity(multi._bindings(), baseline)
+
+
+@pytest.mark.parametrize("stage", ["lineage", "cache", "snapshot", "pack", "dumps", "iterencode"])
+def test_lineage_encoding_inherited_rejection_never_falls_back(
+    stage, monkeypatch, lineage_plans, evidence
+):
+    class FalseyGuard(BaseException):
+        def __bool__(self):
+            return False
+
+    original, cause = FalseyGuard("inherited encoder guard"), LookupError("guard cause")
+    original.__cause__ = cause
+    value = -0.0
+    if stage == "cache":
+        value = _lineage_cache_fixture()
+    elif stage == "snapshot":
+        value = np.asarray([1.0, -0.0])
+    selected = {
+        "lineage": multi._lineage.__code__,
+        "cache": multi._lineage_validate_cache.__code__,
+        "snapshot": multi.core.caches.snapshot.__code__,
+        "pack": None,
+        "dumps": json.dumps.__code__,
+        "iterencode": json.JSONEncoder.iterencode.__code__,
+    }[stage]
+    previous, trace = sys.getprofile(), sys.gettrace()
+    attempts, fallback, caught = [], [], None
+
+    def forbidden(*args, **kwargs):
+        fallback.append(stage)
+        raise AssertionError("Inherited rejection cannot trigger a fallback traversal")
+
+    def profile(frame, event, arg):
+        if previous is not None:
+            previous(frame, event, arg)
+        if (event == "call" and frame.f_code is selected) or (
+            stage == "pack" and event == "c_call" and arg is struct.pack
+        ):
+            attempts.append(stage)
+            raise original
+
+    with monkeypatch.context() as patch:
+        patch.setattr(multi.core.records, "_digest", forbidden)
+        try:
+            sys.setprofile(profile)
+            try:
+                multi._lineage(value)
+            except BaseException as error:
+                caught = error
+        finally:
+            sys.setprofile(previous)
+    save(evidence, "inherited-refusal", dict(stage=stage, error=caught, attempts=attempts))
+    assert caught is original and caught.__cause__ is cause
+    assert attempts == [stage] and not fallback
+    assert sys.getprofile() is previous and sys.gettrace() is trace
+
+
+def test_lineage_encoding_metadata_cost_observation(
+    monkeypatch, lineage_encoding_oracle, lineage_plans, evidence
+):
+    """Short inclusive cost observation; no timing threshold or tissue claim."""
+    from time import perf_counter_ns, process_time_ns
+
+    @dataclass(frozen=True)
+    class Metadata:
+        payload: object
+        declarations: object
+
+    cache = multi.core.caches.snapshot(
+        dict(
+            points=np.arange(64, dtype=np.float64).reshape(32, 2),
+            ids=np.arange(32, dtype=np.int32),
+            bounds=(0.0, 8.0, 0.0, 4.0),
+        )
+    )
+    array = np.arange(48, dtype=np.float64).reshape(6, 8)[::2, ::-1]
+    branch = Metadata(
+        OrderedDict(first=cache, equal_cache=replace(cache), array=array, scalar=np.float64(-0.0)),
+        tuple(float(index) / 8 for index in range(32)),
+    )
+    request = Metadata(
+        {"branch": branch, "same_branch": branch, "same_array": array, "same_cache": cache},
+        (None, True, b"retained metadata", -0.0),
+    )
+    save(evidence, "cost-input", request)
+    validator = multi._lineage_validate_cache
+    # Keep the predecessor body exact while giving both versions the SAME
+    # fresh validator; otherwise this would also time descriptor-plan changes.
+    monkeypatch.setitem(lineage_encoding_oracle.__globals__, "_lineage_validate_cache", validator)
+    functions = dict(predecessor=lineage_encoding_oracle, candidate=multi._lineage)
+    expected = lineage_encoding_oracle(request)
+    for function in functions.values():
+        _lineage_encoding_equal(expected, function(request))
+    previous, trace = sys.getprofile(), sys.gettrace()
+    assert previous is not None, "The inherited native blockade must remain active"
+    rounds, iterations, samples = 3, 4, []
+    for round_index in range(rounds):
+        names = tuple(functions) if round_index % 2 == 0 else tuple(reversed(functions))
+        for name in names:
+            function = functions[name]
+            cpu_start, wall_start = process_time_ns(), perf_counter_ns()
+            returned = [function(request) for _ in range(iterations)]
+            wall_ns, cpu_ns = perf_counter_ns() - wall_start, process_time_ns() - cpu_start
+            samples.append(
+                dict(
+                    round=round_index,
+                    order=list(names),
+                    implementation=name,
+                    iterations=iterations,
+                    wall_ns=wall_ns,
+                    cpu_ns=cpu_ns,
+                    digests=[result[1] for result in returned],
+                )
+            )
+            save(evidence, f"cost-{round_index}-{name}", samples[-1])
+            for result in returned:
+                _lineage_encoding_equal(expected, result)
+
+    calls = {}
+    for name, function in functions.items():
+        counts = dict(python_calls=0, c_calls=0, cache_validations=0, snapshots=0, record_calls=0)
+
+        def profile(frame, event, arg, counts=counts):
+            previous(frame, event, arg)
+            if event == "call":
+                counts["python_calls"] += 1
+                if frame.f_code is validator.__code__:
+                    counts["cache_validations"] += 1
+                if frame.f_code is multi.core.caches.snapshot.__code__:
+                    counts["snapshots"] += 1
+                if frame.f_code is multi.core.records.record.__code__:
+                    counts["record_calls"] += 1
+            elif event == "c_call":
+                counts["c_calls"] += 1
+
+        try:
+            sys.setprofile(profile)
+            result = function(request)
+        finally:
+            sys.setprofile(previous)
+        calls[name] = counts
+        save(evidence, "cost-counts-" + name, dict(counts=counts, result=result))
+        _lineage_encoding_equal(expected, result)
+        assert counts["cache_validations"] == 2 and counts["snapshots"] == 2
+    save(
+        evidence,
+        "metadata-cost-observation",
+        dict(
+            predecessor_sha256=_LINEAGE_ENCODING_PARENT_SHA256,
+            oracle_function_sha256=_LINEAGE_ENCODING_ORACLE_SHA256,
+            records_sha256=_LINEAGE_ENCODING_RECORDS_SHA256,
+            candidate_sha256=hashlib.sha256(Path(multi.__file__).read_bytes()).hexdigest(),
+            raw_samples=samples,
+            calls_per_lineage=calls,
+            rounds=rounds,
+            iterations_per_round=iterations,
+            same_fresh_validator=True,
+            fresh_cache_validations_per_counted_call=2,
+            fresh_numeric_snapshots_per_counted_call=2,
+            descriptor_plans_warm=True,
+            inherited_guard_active=True,
+            extra_counting_outside_timed_samples=True,
+            timing_scope="Inclusive calls under inherited guard; not exclusive CPU attribution",
+            count_scope="Callbacks and descendants suppressed by CPython profiling are excluded",
+            synthetic_only=True,
+            actual_owner_created=False,
+            speed_threshold=None,
+            performance_extrapolation=False,
+        ),
+    )
+    assert calls["predecessor"]["record_calls"] > 0
+    assert calls["candidate"]["record_calls"] == 0
+    assert sys.getprofile() is previous and sys.gettrace() is trace

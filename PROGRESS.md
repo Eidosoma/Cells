@@ -36,6 +36,32 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   controls and one integration pilot before the affected suite; unchanged
   evidence is not repeatedly audited. Adjacent features wait for these gaps.
 
+  The current assignments have complete integration targets. Key owns the
+  fresh parameter-to-WorldReady handoff and the remaining native `init_core`
+  parameter prerequisites. Specialist owns the continuous same-phase tissue
+  path through geometry, grid and mask. Root owns the actual tissue diagnostic,
+  the explicit flux-inverse demonstration modes, and their propagation into
+  INIT/SIM and restart identity. The two developers may prepare the next
+  dependent source block while their bounded verification runs; related source
+  findings are returned together. The demonstration is not yet complete.
+
+  The [field-level demonstration policy is source/software reviewed](/mnt/workspaces/Cells/betse-environment-field-demo-20261103-01/root-review.json):
+  **19 synthetic controls pass** in 4.280 seconds / 84,631,552 bytes sampled
+  RSS. `original` retains the source-scaled inverse and failed finite flux
+  diagnostics; `disabled` skips that inverse and retains explicit `None`.
+  The strict default contract, Dirichlet/current formulas and tolerances remain
+  unchanged. The earlier 18-pass/one-test-comparison-failure image is preserved.
+  These checks use synthetic inverse and smoothing stand-ins, not real SVD,
+  INIT/SIM or physical qualification. The [consumer integration is now
+  source/software reviewed](/mnt/workspaces/Cells/betse-environment-field-demo-20261103-01/consumer-root-review-01.json):
+  **45 focused controls pass** in 13.876 seconds / 89,419,776 bytes sampled RSS.
+  ECM bindings carry the explicit policy, INIT-to-SIM rejects mode changes,
+  disabled mode retains the absent flux inverse, and the existing checkpoint
+  codec preserves mode identity. Normal ion transport and strict default
+  contracts remain unchanged. These are typed-binding, isolated continuity and
+  codec controls, not actual INIT/SIM or complete restart qualification. The
+  original 19 controls retain their separate execution image.
+
 - **Current mapping software batch:** [All 15 remaining controls are reviewed](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/current-owner-controls-01/root-review.json).
   Seven groups completed on CPU 2, one thread, within **1 GiB / 480 seconds
   per group / 8 GiB host reserve**. Ownership, callbacks, capture and failure
@@ -299,9 +325,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   off-by-one. Key's [six-file consolidated successor](/mnt/workspaces/Cells/native-parameter-constants-reader-source-repair-20261103-02/results.json)
   combines those repairs with the module-ID reader correction. Its
   [source review is clear](/mnt/workspaces/Cells/native-parameter-constants-reader-source-repair-20261103-02/root-source-review.json).
-  A single immutable 42-control blocked image is underway; its outcome has
-  not been reviewed. Its producer pin remains explicitly unbound;
-  provider/native admission and the remaining 80-control resume are held.
+  The [42-control image and fixture-only successor are now reviewed](/mnt/workspaces/Cells/native-parameter-constants-fixture-source-repair-20261103-01/root-review.json):
+  **two passed, one fixture `KeyError` failed and 39 were unrun**. The fixture
+  omitted its actual retained parent trial; production and guards are unchanged.
+  Its original failed raw partial is unavailable and remains disclosed. A fresh
+  [remaining-only image and six-file WorldReady candidate are reviewed](/mnt/workspaces/Cells/native-parameter-WorldReady-source-candidate-20261103-01/root-review.json):
+  **40 distinct blocked controls pass**, excluding the prior two. The source
+  candidate binds four producer links without changing the 140 production
+  function/class bodies. Its field roster covers the inspected world and
+  `init_core` reads, but does not establish actual parameter ownership or
+  native execution. [The four affected candidate controls now pass review](/mnt/workspaces/Cells/native-parameter-WorldReady-pilot4-20261103-01/root-review.json),
+  with exact source/runtime/guard bindings. One metadata-reader failure remains
+  preserved separately. Key is preparing the actual parameter-only diagnostic
+  through `WorldReady`, using declared original configuration files and path
+  permissions. Callback/phase construction and the separate 80-control resume
+  remain held.
   The world-ready owner must retain complete same-parameter load history and
   reject any ancestral phase-construction attempt. Its exclusive claim would
   span fresh phase birth through SEED, allowing only native `_run_sim=False`
@@ -419,11 +457,26 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   A subsequent dual-hook mask-capture correction preserves profile-only mask
   recording while trace capture handles generator suspension. The
   [first 57-control image reports 19 passes, one fixture failure and 37 unrun](/mnt/workspaces/Cells/native-seed-voronoi-lifecycle-20261103-01/mask-observation-software-01/source-result.json):
-  the reentry fixture supplied an incomplete parent-frame marker. Root's saved
-  result review remains pending; no retry or positive owner credit is granted.
-  Specialist is preparing the four new geometry-continuation files within
-  its declared eight-path scope. No standalone mesh or normalized owner is
-  attached to a phase.
+  the reentry fixture supplied an incomplete parent-frame marker. Root verified
+  the frozen source, runtime and saved reports; the narrow fixture correction
+  preserves the original refusal and zero-body assertions. A fresh image is
+  authorized for the exact **38 failed/unrun cases**, excluding the earlier 19.
+  That [image stopped at 23 passes, one generator-protocol failure and 14 unrun](/mnt/workspaces/Cells/native-seed-voronoi-lifecycle-20261103-01/focused-software-02/source-result.json).
+  The first two-yield control was refused as a completed frame; its complete
+  raw event/token history was not serialized; that historical limitation remains.
+  The [combined geometry source repair is reviewed](/mnt/workspaces/Cells/native-seed-world-geometry-20261103-01/integration-source-02/root-source-review.json),
+  including actual grid/tree tracking, local generator projection, helper
+  code/delegate bindings, `grid_len` accounting and inherited registry checks.
+  Its [first ordered pilot failed](/mnt/workspaces/Cells/native-seed-world-geometry-20261103-01/ordered-software-01/root-review.json):
+  **zero passes, one failure and 91 unrun**, in 8.299 seconds / 250,826,752 bytes
+  sampled RSS. Both hooks observed a return at `RESUME` offset 34, paired with
+  the bound `YIELD_VALUE` at 32; the protocol issued no suspension token and
+  refused the next admission. The 12-event journal retains this sequence and
+  context rejection; its top-level primary field is null, a disclosed limitation.
+  No native entry or resource breach occurred. Specialist is correcting the
+  canonical yield-token/observed-offset association in one batch, followed by
+  one pilot and affected groups only on success. The same-phase geometry path
+  never attaches a standalone mesh or normalized owner.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
@@ -649,8 +702,33 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   plus bounded bookkeeping; the 1-GiB worker guard remains controlling.
   All 400 frozen files and 74 loaded producers verify. Actual tissue speedup
   and completed geometry remain unproved; no scientific credit is added.
-  [Diagnostic 10 is now launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-10/LAUNCH.json)
-  on CPU 2, one thread, under unchanged **1 GiB / 1,800 seconds / 8 GiB reserve**.
+  [Diagnostic 10 is terminal and reviewed](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-10/root-review.json):
+  **1,800.019-second wall stop / 348,532,736 bytes sampled RSS**, with memory
+  and reserve limits respected. Eight captures completed through `cell_index`;
+  literal `cellVerts` entered but did not finish, and no later literal method
+  entered. Final runtime, geometry capture and hook cleanup are unavailable.
+  The latest saved checkpoint records 858.591 seconds of inclusive lineage
+  time inside 1,625.308 seconds of environment checks. These overlap and include
+  observation overhead; no relative speedup or numerical failure is inferred.
+  Root's [record-encoding optimization is now source/software reviewed](/mnt/workspaces/Cells/native-multi-cell-lineage-encoding-20261103-01/root-review.json):
+  **65 blocked controls pass**, 63 new and two affected, in 12.322 seconds /
+  248,991,744 bytes sampled RSS. A separately pinned predecessor verifies exact
+  scalar bits, hashes, aliases and fresh mutation refusal. One synthetic graph
+  removes 92 recursive record calls while retaining both cache validations and
+  both array snapshots; its median four-call wall time changes from 5.656 to
+  4.080 milliseconds. This is not a tissue-speedup estimate. No validation
+  result or numerical state is cached; arbitrary observer/resource-failure
+  timing is not claimed identical.
+  [Diagnostic 11 is launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-11/LAUNCH.json),
+  on CPU 2 with the same one-thread, 1-GiB / 1,800-second / 8-GiB-reserve limits.
+  Its [preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-11.json)
+  verifies 828 immutable payloads, 609 external inputs and 116 metadata producers.
+  Relative to diagnostic 10, only caller encoding and the reviewed field-demo
+  API differ; native inputs, default numerical behavior and timing policy stay
+  fixed. Metadata preparation passed in 75.842 seconds / 44,220,416 bytes
+  sampled RSS. The actual endpoint remains geometry/grid/mask before Poisson;
+  this is a component prerequisite, not the genuine phase-to-SIM demonstration.
+  Terminal completion is unreviewed, with no automatic polling or retry.
   Its [preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-10.json)
   verifies 828 frozen files, 609 external inputs and 116 loaded metadata files;
   only the caller entry-capacity change differs from diagnostic 09. The first
@@ -658,7 +736,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   construction. The corrected metadata preparation passed in 72.879 seconds.
   The actual run stops at geometry/grid/mask completion, before Poisson; it is
   a prerequisite to the end-to-end demonstration, not the completed demo.
-  Its terminal outcome is unreviewed. No automatic polling or retry is scheduled.
+  All 454 saved artifacts verify. No automatic polling or retry is scheduled.
   Diagnostic 08's [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-08.json)
   verifies **828 frozen files / 609 external pins**; only the two reviewed
   timing files differ from diagnostic 07. CPU 2, one thread, **1 GiB /

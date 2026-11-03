@@ -34,6 +34,17 @@ LINEAGE_ITEMS = (
     "test_lineage_descriptor_item_selection_is_exact",
     "test_lineage_descriptor_metadata_cost_observation",
     "test_lineage_descriptor_crowded_working_set_stays_warm",
+    "test_lineage_encoding_pinned_predecessor",
+    "test_lineage_encoding_exact_scalar_bits",
+    "test_lineage_encoding_structural_graphs",
+    "test_lineage_encoding_numeric_observations",
+    "test_lineage_encoding_fresh_mutations",
+    "test_lineage_encoding_atypical_identity_record_fallback",
+    "test_lineage_encoding_skips_only_second_record_walk",
+    "test_lineage_encoding_preserves_primary_and_cause",
+    "test_lineage_encoding_binding_drift_refuses",
+    "test_lineage_encoding_inherited_rejection_never_falls_back",
+    "test_lineage_encoding_metadata_cost_observation",
 )
 
 

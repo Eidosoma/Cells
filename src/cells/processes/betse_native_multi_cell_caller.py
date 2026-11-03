@@ -1339,6 +1339,29 @@ def _lineage_validate_cache(cache):
 
 def _lineage_plan_bindings():
     decoder = json._default_decoder
+    encoder = json.encoder
+    encoder_type = json.dumps.__globals__["JSONEncoder"]
+    record_globals = core.records.record.__globals__
+    resolved = []
+    for function, names in (
+        (json.dumps, ("JSONEncoder",)),
+        (encoder_type.encode, ("encode_basestring", "encode_basestring_ascii")),
+        (
+            encoder_type.iterencode,
+            (
+                "encode_basestring",
+                "encode_basestring_ascii",
+                "INFINITY",
+                "c_make_encoder",
+                "_make_iterencode",
+            ),
+        ),
+        (core.records.record, ("np", "MappingProxyType", "hashlib", "struct", "record")),
+    ):
+        namespace = function.__globals__
+        resolved.append(namespace)
+        for name in names:
+            resolved.extend(structure._atoms(namespace[name]))
     functions = (
         _lineage_lookup_plan,
         _lineage_publish_plan,
@@ -1365,8 +1388,21 @@ def _lineage_plan_bindings():
         decoder.parse_float,
         decoder.parse_int,
         decoder.parse_constant,
+        json.dumps,
+        encoder_type.__init__,
+        encoder_type.default,
+        encoder_type.encode,
+        encoder_type.iterencode,
+        encoder.encode_basestring,
+        encoder.encode_basestring_ascii,
+        encoder.c_make_encoder,
+        encoder._make_iterencode,
+        core.records.record,
+        record_globals["hashlib"].sha256,
+        record_globals["struct"].pack,
         hashlib.sha256,
         math.isfinite,
+        struct.pack,
         struct.unpack,
         sys._getframe,
         sys.getsizeof,
@@ -1394,6 +1430,13 @@ def _lineage_plan_bindings():
         decoder.object_hook,
         decoder.object_pairs_hook,
         decoder.strict,
+        encoder,
+        json.JSONEncoder,
+        encoder_type,
+        core.records,
+        record_globals["np"].ndarray,
+        *resolved,
+        *atoms._dispatch_bindings(encoder_type),
         math,
         struct,
         sys,
@@ -1406,8 +1449,10 @@ def _lineage(request):
     seen, retained = {}, []
 
     def visit(value):
-        if value is None or type(value) in (str, bool, int, float):
+        if value is None or type(value) in (str, bool, int):
             return value
+        if type(value) is float:
+            return dict(float64_bits=struct.pack("<d", value).hex())
         if type(value) is bytes:
             return dict(bytes_sha256=hashlib.sha256(value).hexdigest(), length=len(value))
         if id(value) in seen:
@@ -1417,9 +1462,15 @@ def _lineage(request):
         retained.append(value)
         if isinstance(value, core.caches.Cache):
             _lineage_validate_cache(value)
-            result = dict(cache=value.identity)
+            identity = value.identity
+            result = dict(
+                cache=identity if type(identity) is str else core.records.record(identity)
+            )
         elif isinstance(value, (np.ndarray, np.generic)):
-            result = dict(array=core.caches.snapshot(value).identity)
+            identity = core.caches.snapshot(value).identity
+            result = dict(
+                array=identity if type(identity) is str else core.records.record(identity)
+            )
         elif isinstance(value, Mapping):
             result = dict(items=[(visit(key), visit(item)) for key, item in value.items()])
         elif isinstance(value, (tuple, list)):
@@ -1434,7 +1485,10 @@ def _lineage(request):
         return dict(token=token, **result)
 
     record = visit(request)
-    return tuple(retained), core.records._digest(record)
+    # Every ordinary leaf is already in the original record() wire format.
+    # Arrays/caches above are still freshly observed on every traversal.
+    encoded = json.dumps(record, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return tuple(retained), hashlib.sha256(encoded.encode()).hexdigest()
 
 
 def _entry_codes(context):
