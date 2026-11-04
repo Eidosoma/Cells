@@ -1653,11 +1653,18 @@ def test_report_import_incomplete_or_resealed_wrong_link_never_promotes(mutation
 
 def test_report_import_legacy_enabled_claim_without_record_is_not_promoted(tmp_path):
     value = molecule_fixture(tmp_path)
+    assert inspect(value)["status"] == "completed_unqualified"
     plan = read(value.plan)
-    declaration = read(plan["demo_plan"]["path"])
+    declaration = read(report.Path(plan["demo_plan"]["path"]))
     declaration.pop("source_plan")
     plan["demo_plan"] = write(report.Path(plan["demo_plan"]["path"]), declaration)
     value.digest = write(value.plan, plan)["sha256"]
+    worker = read(value.worker / "result.json")
+    worker["plan_sha256"] = value.digest
+    worker_pin = write(value.worker / "result.json", worker)
+    terminal = read(value.output / "result.json")
+    terminal.update(plan_sha256=value.digest, worker=worker_pin)
+    write(value.output / "result.json", terminal)
 
     def old(row):
         for name in (

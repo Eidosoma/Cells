@@ -72,9 +72,7 @@ def conditional_grant_contract(monkeypatch, tmp_path):
         True,
         "",
     )
-    cm_trial = replace(
-        cm_trial, identity=stage._digest(stage.previous.trial_record(cm_trial))
-    )
+    cm_trial = replace(cm_trial, identity=stage._digest(stage.previous.trial_record(cm_trial)))
     cm.trial = cm.original_trial = cm_trial
     trial = stage.Trial(
         cm.trial.identity,
@@ -243,6 +241,149 @@ def conditional_grant_contract(monkeypatch, tmp_path):
     )
 
 
+@pytest.mark.parametrize(
+    "bits",
+    [
+        "bff0000000000000",
+        "3ff0000000000000",
+        "0000000000000000",
+        "8000000000000000",
+        "7ff0000000000000",
+        "fff0000000000000",
+        "7ff8000000000001",
+        "fff8000000001234",
+    ],
+)
+def test_remainder_handoff_numpy_scalar_closes_with_unchanged_bits(
+    conditional_grant_contract, bits
+):
+    import numpy as np
+
+    h = conditional_grant_contract
+    scalar = np.frombuffer(bytes.fromhex(bits), dtype=">f8")[0]
+    grant = h.factory()
+    try:
+        with grant:
+            h.finish()  # Conditional metadata stores; no native calculations.
+            h.p.z_M_env = h.p.z_M_cell = scalar
+            h.p.ion_charge = {"M": scalar}
+            grant.check()
+            # Only a graph-reader adapter, not a replacement issued parent.
+            ancestor = SimpleNamespace(
+                birth=h.base.parent.parent.birth,
+                runtime=SimpleNamespace(runtime_types=frozenset()),
+            )
+            reader = SimpleNamespace(
+                p=h.p, parent=SimpleNamespace(parent=SimpleNamespace(parent=ancestor))
+            )
+            consumer_graph = remainder._capture(reader)
+        h.retain("scalar-closed", grant=grant)
+        context = stage._remainder_context(grant)
+        stage.prefix.parameters.inherited._same_graph(context.after_graph, consumer_graph)
+        record = grant.record
+        assert (
+            record.succeeded
+            and stage.validate_remainder_history(grant, original_owner=h.owner) is record
+        )
+        objects, graph = context.after_graph
+        scalar_node = next(row for row in graph["nodes"] if row["type"] == "numpy.float64")
+        assert scalar_node["float64_value"] == bits
+        roots = dict(graph["roots"])
+        assert roots["z_M_env"] == roots["z_M_cell"] == ("ref", scalar_node["token"])
+        assert any(value is scalar for value in objects)
+        assert h.p.z_M_env is h.p.z_M_cell is h.p.ion_charge["M"] is scalar
+        assert type(scalar) is np.float64
+        assert h.base.parent.parent.runtime.runtime_types == ()
+        with pytest.raises(stage.prefix.graphs.UnsupportedYamlGraph, match="numpy.float64"):
+            stage.prefix.graphs.capture(
+                {"value": scalar}, yaml_base=SimpleNamespace, runtime_types=()
+            )
+        assert (
+            stage.prefix.graphs.MAX_NODES,
+            stage.prefix.graphs.MAX_BYTES,
+            stage.prefix.graphs.MAX_DEPTH,
+        ) == (100000, 16 * 2**20, 96)
+        with pytest.raises(stage.ConstantsRejected):
+            _ = grant.parameters
+        assert not stage._REMAINDER_ACTIVE and not context.active
+    except BaseException as primary:
+        h.retain("scalar-first-failure", grant=grant, primary=primary)
+        raise
+
+
+@pytest.mark.parametrize("kind", ["float32", "int64", "array", "scalar_subclass"])
+def test_remainder_handoff_unselected_scalar_closure_refuses(conditional_grant_contract, kind):
+    import numpy as np
+
+    class Subclass(np.float64):
+        def __float__(self):
+            raise AssertionError("Unknown scalar conversion must never run")
+
+    h = conditional_grant_contract
+    value = {
+        "float32": lambda: np.float32(-1),
+        "int64": lambda: np.int64(-1),
+        "array": lambda: np.array([-1.0]),
+        "scalar_subclass": lambda: Subclass(-1),
+    }[kind]()
+    grant = h.factory()
+    with pytest.raises(stage.ConstantsRejected) as caught:
+        with grant:
+            h.finish()
+            h.p.z_M_cell = value
+    h.retain("unselected-scalar-refused", grant=grant, primary=caught.value)
+    context = stage._remainder_context(grant)
+    assert type(caught.value.__cause__) is stage.prefix.graphs.UnsupportedYamlGraph
+    assert caught.value.source_error is context.closure_error is caught.value.__cause__
+    assert context.after_values["z_M_cell"] is h.p.z_M_cell is value
+    assert context.after_graph is None and not grant.record.succeeded
+    assert not context.active and not stage._REMAINDER_ACTIVE
+    with pytest.raises(stage.ConstantsRejected):
+        h.factory()
+
+
+@pytest.mark.parametrize("drift", ["float32", "python_float", "fake_class", "registry", "module"])
+def test_remainder_handoff_scalar_namespace_drift_refuses(
+    conditional_grant_contract, monkeypatch, drift
+):
+    import numpy as np
+
+    h = conditional_grant_contract
+    original = np.float64
+    scalar = original(-1)
+    registry = stage.previous.state
+    grant = h.factory()
+    with monkeypatch.context() as drift_patch:
+        with pytest.raises(ValueError) as caught:
+            with grant:
+                h.finish()
+                h.p.z_M_cell = scalar
+                if drift == "registry":
+                    drift_patch.setattr(
+                        registry,
+                        "NUMPY_SCALARS",
+                        tuple(k for k in registry.NUMPY_SCALARS if k is not original),
+                    )
+                elif drift == "module":
+                    copied = ModuleType("numpy")
+                    vars(copied).update(vars(np))
+                    drift_patch.setattr(registry, "np", copied)
+                else:
+                    replacement = {
+                        "float32": np.float32,
+                        "python_float": float,
+                        "fake_class": type("float64", (float,), {"__module__": "numpy"}),
+                    }[drift]
+                    drift_patch.setattr(np, "float64", replacement)
+                grant.check()
+    # Library metadata is restored before the independent failure evidence writer.
+    h.retain("scalar-namespace-refused", grant=grant, primary=caught.value)
+    context = stage._remainder_context(grant)
+    assert h.p.z_M_cell is scalar and type(scalar) is original
+    assert context.effective_primary is caught.value and not grant.record.succeeded
+    assert not context.active and not stage._REMAINDER_ACTIVE
+
+
 def test_remainder_handoff_scope_matches_original_tail_profile_and_balance_ast_without_calls(
     monkeypatch,
 ):
@@ -260,14 +401,34 @@ def test_remainder_handoff_scope_matches_original_tail_profile_and_balance_ast_w
     assert stage.source_plan()["previous_producer"] == stage.PREVIOUS_SHA256
     assert remainder.source_plan()["runtime_hook_available"] is True
     checks = (
-        (stage.previous.state, "PREVIOUS_SHA256", stage.previous.state.source_plan,
-         ValueError, "Exact explicitly bound colormap input producer required"),
-        (stage.previous, "STATE_SHA256", stage.previous.source_plan,
-         ValueError, "Exact selected-registry source producer required"),
-        (stage, "PREVIOUS_SHA256", stage.source_plan,
-         ValueError, "Explicit original four-colormap producer required"),
-        (remainder, "HANDOFF_PRODUCER_SHA256", remainder._hook,
-         remainder.LoadRejected, "Explicit hook producer mismatch"),
+        (
+            stage.previous.state,
+            "PREVIOUS_SHA256",
+            stage.previous.state.source_plan,
+            ValueError,
+            "Exact explicitly bound colormap input producer required",
+        ),
+        (
+            stage.previous,
+            "STATE_SHA256",
+            stage.previous.source_plan,
+            ValueError,
+            "Exact selected-registry source producer required",
+        ),
+        (
+            stage,
+            "PREVIOUS_SHA256",
+            stage.source_plan,
+            ValueError,
+            "Explicit original four-colormap producer required",
+        ),
+        (
+            remainder,
+            "HANDOFF_PRODUCER_SHA256",
+            remainder._hook,
+            remainder.LoadRejected,
+            "Explicit hook producer mismatch",
+        ),
     )
     issued_before = (len(stage._ISSUED), len(remainder._ISSUED), len(remainder._CONSUMED))
     for consumer, field, check, error_type, reason in checks:

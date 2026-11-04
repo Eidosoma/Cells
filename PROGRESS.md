@@ -312,6 +312,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   occurred during this status check; the omitted-inverse counterpart remains
   prepared and unlaunched. Full saved-evidence review and the remaining closure
   repair are next, with no end-to-end, INIT, physical or restart credit.
+  The [saved-result review](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-11/root-review-01.json)
+  confirms the tail and ion returns, both charge-balance returns, and exact
+  matching remainder after/failure captures. It verifies 56 archives / 396 NPY
+  occurrences; both offending native valences retain the bits for -1.0. No
+  further scalar-policy omission was found in later remainder or construction
+  captures. Root's closing-scope repair now has **21 passing affected controls**
+  in [the focused batch](/mnt/workspaces/Cells/native-parameter-constants-scalar-closure-20261104-01/inputs.json).
+  An additional existing producer-binding control refused the still-old
+  handoff pin, before adoption; that failed image is retained. The production
+  fix admits only the exact retained NumPy float64 class in the local scope,
+  with no value conversion or shared graph-policy change. Literal pin adoption
+  and its fresh boundary check follow the consolidated review.
 
   Root's [release-metadata helper](/mnt/workspaces/Cells/native-seed-demo-release-metadata-20261104-01/source-result.json)
   removes the handwritten schema step that caused the prelaunch refusal.

@@ -13,7 +13,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from pathlib import Path
 from threading import Lock, get_ident
-from types import FunctionType, SimpleNamespace
+from types import FunctionType, ModuleType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_parameter_colormap_load as previous
@@ -1056,12 +1056,32 @@ def _remainder_work(context, validation, role, detail):
     target.append((len(target), role, detail))
 
 
+def _remainder_scalar_type():
+    """Retain the original charge-balance scalar under this mutation scope only."""
+    registry = previous.state
+    array = registry.np
+    if type(array) is not ModuleType or sys.modules.get("numpy") is not array:
+        raise ValueError("Actual retained NumPy metadata namespace required")
+    scalar = vars(array).get("float64")
+    if (
+        type(scalar) is not type
+        or scalar.__module__ != "numpy"
+        or scalar.__name__ != "float64"
+        or scalar.__flags__ & (1 << 9)
+        or not issubclass(scalar, float)
+        or not any(scalar is kind for kind in registry.NUMPY_SCALARS)
+    ):
+        raise ValueError("Exact retained NumPy float64 class required")
+    return scalar
+
+
 def _remainder_capture(context, values, phase):
     _remainder_work(context, False, phase, "graph_capture_attempt")
     return prefix.graphs.capture(
         values,
         yaml_base=context.base.parent.parent.birth.source.yaml,
-        runtime_types=context.base.parent.parent.runtime.runtime_types,
+        runtime_types=frozenset(context.base.parent.parent.runtime.runtime_types)
+        | {_remainder_scalar_type()},
     )
 
 
@@ -1569,6 +1589,7 @@ def _bindings():
         _remainder_checked_context,
         _remainder_work,
         remainder_handoff,
+        _remainder_scalar_type,
         _remainder_capture,
         _remainder_ancestry,
         _remainder_history,

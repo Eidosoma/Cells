@@ -579,6 +579,12 @@ def _binding(context):
         DYNAMICS_BACK_REFERENCE_SLOTS,
         DYNAMICS_HELPERS,
         DYNAMICS_STORES,
+        metadata_api,
+        _METADATA_FILE,
+        _METADATA_TOOLS,
+        _METADATA_CACHES,
+        _source_templates,
+        _dynamics_template,
         _SURFACE_ORIGINAL,
         _SURFACE_CODE,
         _SURFACE_ALIASES,
@@ -602,6 +608,12 @@ def _binding(context):
                 result.extend((name, value))
                 if type(value) in (FunctionType, MethodType):
                     result.extend(_atoms(value))
+    for _, _, original, state in _METADATA_TOOLS:
+        result.append(original)
+        if state is not None:
+            result.extend(_metadata_function_state(original))
+    for _, wrapper, body, _ in _METADATA_CACHES:
+        result.extend((wrapper, wrapper.__wrapped__, *_metadata_function_state(body)))
     return tuple(result)
 
 
@@ -1992,7 +2004,10 @@ def _metadata_function_state(function):
         values.extend((cell, cell.cell_contents))
     for name in function.__code__.co_names:
         if name in namespace:
-            values.extend((name, namespace[name]))
+            value = namespace[name]
+            values.extend((name, value))
+            if type(value) is FunctionType:
+                values.extend((value.__code__, value.__defaults__, value.__kwdefaults__))
         elif name in cached:
             values.extend((name, cached[name]))
     return tuple(values)
@@ -2050,6 +2065,7 @@ def _live_source_interface(module, payload, path, names):
     ):
         raise ValueError("Bounded exact source bytes and immutable selectors required")
     filename = str(path)
+    checked = []
     for name, code, defaults, keywords in _source_templates(payload, filename, names):
         function = vars(module).get(name)
         if (
@@ -2071,6 +2087,8 @@ def _live_source_interface(module, payload, path, names):
             or any(type(declared[key]) is not type(value) for key, value in keywords)
         ):
             raise ValueError("Original source interface defaults changed: " + name)
+        checked.append(function)
+    return tuple(checked)
 
 
 def _check_metadata_tools(api):
@@ -2090,9 +2108,12 @@ def _check_metadata_tools(api):
         _same_metadata(_metadata_function_state(body), state)
 
 
-def _metadata_source_interface(api, module, payload, path, names):
+def _check_metadata_api(api):
     _check_metadata_tools(api)
-    original_path = Path(api.__file__)
+    filename = vars(api).get("__file__")
+    if type(filename) is not str:
+        raise ValueError("Original source metadata file association changed")
+    original_path = Path(filename)
     if original_path.is_symlink() or original_path.resolve() != _METADATA_FILE:
         raise ValueError("Original source metadata file association changed")
     # Fresh bytes and live functions are checked on EVERY use. Only immutable
@@ -2103,14 +2124,16 @@ def _metadata_source_interface(api, module, payload, path, names):
         original_path,
         ("_helper_binding", "_source_interface", "_pin"),
     )
-    _live_source_interface(module, payload, path, names)
+
+
+def _metadata_source_interface(api, module, payload, path, names):
+    _check_metadata_api(api)
+    return _live_source_interface(module, payload, path, names)
 
 
 @lru_cache(maxsize=16, typed=True)
 def _dynamics_template(payload, kind, slots):
-    scope = dict(
-        vars(metadata_api), HELPER_BACK_REFERENCE_SLOTS=slots, HELPER_BINDING_KIND=kind
-    )
+    scope = dict(vars(metadata_api), HELPER_BACK_REFERENCE_SLOTS=slots, HELPER_BINDING_KIND=kind)
     return FunctionType(metadata_api._helper_binding.__code__, scope)(payload)
 
 
@@ -2118,8 +2141,35 @@ _METADATA_FILE = Path(metadata_api.__file__).resolve()
 _METADATA_TOOLS = tuple(
     (owner, name, value, _metadata_function_state(value) if type(value) is FunctionType else None)
     for owner, names in (
-        (metadata_api, ("_helper_binding", "_source_interface", "_pin", "ast", "builtins", "hashlib", "json", "CodeType", "FunctionType")),
-        (ast, ("parse", "walk", "iter_fields", "iter_child_nodes", "literal_eval", "Name", "Store", "Assign", "Constant", "FunctionDef")),
+        (
+            metadata_api,
+            (
+                "_helper_binding",
+                "_source_interface",
+                "_pin",
+                "ast",
+                "builtins",
+                "hashlib",
+                "json",
+                "CodeType",
+                "FunctionType",
+            ),
+        ),
+        (
+            ast,
+            (
+                "parse",
+                "walk",
+                "iter_fields",
+                "iter_child_nodes",
+                "literal_eval",
+                "Name",
+                "Store",
+                "Assign",
+                "Constant",
+                "FunctionDef",
+            ),
+        ),
         (builtins, ("compile",)),
         (hashlib, ("sha256",)),
         (json, ("dumps",)),
@@ -2129,16 +2179,17 @@ _METADATA_TOOLS = tuple(
 )
 _METADATA_CACHES = tuple(
     (name, wrapper, wrapper.__wrapped__, _metadata_function_state(wrapper.__wrapped__))
-    for name, wrapper in (("_source_templates", _source_templates), ("_dynamics_template", _dynamics_template))
+    for name, wrapper in (
+        ("_source_templates", _source_templates),
+        ("_dynamics_template", _dynamics_template),
+    )
 )
 
 
 def _dynamics_binding(payload):
     """Existing exact-byte binder; only the two validated parent literals vary."""
     api = previous._ready()
-    _metadata_source_interface(
-        api, api, Path(api.__file__).read_bytes(), Path(api.__file__), ("_helper_binding",)
-    )
+    _check_metadata_api(api)
     if (
         type(payload) is not bytes
         or len(payload) > 2**21
@@ -2184,10 +2235,11 @@ def _dynamics_api():
     ):
         raise ValueError("Actual original dynamics namespace/method/store contract changed")
     api = previous._ready()
-    _metadata_source_interface(
-        api, module, raw, path, ("prepare", "_ready", "_wrapper_guard", "_dispatch")
-    )
-    module._ready()
+    names = ("prepare", "_ready", "_wrapper_guard", "_dispatch")
+    functions = _metadata_source_interface(api, module, raw, path, names)
+    if any(vars(module).get(name) is not fn for name, fn in zip(names, functions, strict=True)):
+        raise ValueError("Original dynamics source alias changed before readiness")
+    functions[1]()
     return module
 
 
@@ -2255,9 +2307,11 @@ def _completion_runtime(parent):
     raw = path.read_bytes()
     if _dynamics_binding(raw)[0] != DYNAMICS_INTERFACE_SHA256:
         raise ValueError("Original completion route producer changed before entry")
-    _metadata_source_interface(
+    proved = _metadata_source_interface(
         previous._ready(), module, raw, path, ("_completion_route",)
     )
+    if proved != (route,) or vars(module).get("_completion_route") is not route:
+        raise ValueError("Original completion route changed before invocation")
     transition, api = route(prelude)
     if (
         transition is not marker

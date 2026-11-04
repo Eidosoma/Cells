@@ -23,6 +23,9 @@ HANDOFF_OWNED = (
     "validation/betse/betse_native_parameter_load_remainder_software.py",
 )
 HANDOFF_TARGETS = (
+    "test_remainder_handoff_numpy_scalar_closes_with_unchanged_bits",
+    "test_remainder_handoff_unselected_scalar_closure_refuses",
+    "test_remainder_handoff_scalar_namespace_drift_refuses",
     "test_remainder_handoff_scope_matches_original_tail_profile_and_balance_ast_without_calls",
     "test_remainder_handoff_reserves_before_fallible_validation_and_never_rearms",
     "test_remainder_handoff_conditional_active_closed_identity_and_history_without_replay",

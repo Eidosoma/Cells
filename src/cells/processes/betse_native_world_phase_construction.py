@@ -27,7 +27,7 @@ KEY_MODULE = "cells.processes.betse_native_parameter_world_construction"
 PARAMETER_MODULE = "cells.processes.betse_native_parameter_load_remainder"
 KEY_SOURCE_SHA256 = "bda0ab87e293af18eb30ff38a0cb356162bc74269fbeb0cd1d41aa8d52176b73"
 KEY_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
-PARAMETER_SOURCE_SHA256 = "75147d407cccf81cdc30aebd263953096028f652df56282cc668a6a98681ec88"
+PARAMETER_SOURCE_SHA256 = "397e3bf1e7ff666371075033f12074e7d8c11b91e1a517d9d84d2d907c6c7aef"
 PARAMETER_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
 # Stable public preparation interface; no producer/review adoption is implied.
 KEY_LAW = "betse_fresh_world_ready_pre_phase_seed_construction@1"

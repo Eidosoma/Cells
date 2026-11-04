@@ -33,7 +33,7 @@ FILE = "validation/betse/native_seed_demo.py"
 TEST = "tests/unit/test_native_seed_demo.py"
 RUNNER = "validation/betse/native_seed_demo_software.py"
 INPUT_METADATA = "validation/betse/native_seed_demo_inputs.py"
-INPUT_METADATA_SHA256 = "0240727d450a69660d317d26b8a9c24dd1e4875d184b951b7b3d32bfd939153e"
+INPUT_METADATA_SHA256 = "c11b7a28255ba4fad94fd0bac5673c430b88cb4de7270f2ed35fc39868c02887"
 EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
 EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
@@ -101,13 +101,13 @@ MODULES = {
     "junctions": "cells.processes.betse_native_seed_junctions",
 }
 SOURCE_PINS = {
-    "callback": "901572a51b4134f99f1dde2474532a53df7bd24c5d30e4d884bf8ef1d89c7350",
-    "parameters": "1b5a82adfd4d0d5bc70ceef39df4e687c371370e894ebbeec98a49cdcc08b792",
-    "geometry": "94e7b01f2fc0b2fe9e26fe06f047c62d7f0f7eb36b533fde9acb5b289d04e16b",
+    "callback": "2c27c3e148bd46edd33b826ac73b6b811fad465346ca1745f84608f38c81fb69",
+    "parameters": "4d4428fd3c9bf1e98ae2725e79f40f39be5052c6a36d2d333bfc98516254757e",
+    "geometry": "8ba02c7452a9a5cc334dcbd195ca08a922bd6b99f5fb3ecaf7c2707c00a591d7",
     "poisson": "39539d52b750fd75787a2897efc564ad4ca886381ab09acf1560159aa815ba33",
-    "core": "53c42b2191a553ed78180fe37094cdcafa38d7f3893c2c76ce881418b7fc8b76",
-    "profiles": "09b2e52b609bb6d22364a9e8560fc30d8e011dbeb8c03d9caacf3a7911ad3688",
-    "junctions": "668afac769521c78b945c97d1710838bbba54c6921cd27ffa27ffee3079bf975",
+    "core": "f9159a5bc7b941f8b3d86c5fe8596cd3c2fc944dda139248b8f5d3888e288763",
+    "profiles": "7ed52c746da9b3da4f82d9088b7a1d972bdbbaf42e18247640a0f194105a7fbb",
+    "junctions": "047f19dc26fdbf4e5c398a53a13b93509c66f7603e9fa28c804434987246ae72",
 }
 REVIEW_PINS = {
     "callback": "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e",

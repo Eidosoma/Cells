@@ -26,7 +26,7 @@ FILE = "validation/betse/native_seed_world_callback_prelude.py"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_CALLBACK_PRELUDE_RELEASED"
 KIND = "cells.native_seed_world_callback_bootstrap@1"
 RUNTIME_MODULE = "validation.betse.betse_native_parameter_world_ready_qualification"
-RUNTIME_SOURCE_SHA256 = "1b5a82adfd4d0d5bc70ceef39df4e687c371370e894ebbeec98a49cdcc08b792"
+RUNTIME_SOURCE_SHA256 = "4d4428fd3c9bf1e98ae2725e79f40f39be5052c6a36d2d333bfc98516254757e"
 RUNTIME_REVIEW_SHA256 = "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e"
 MODULES = {
     "tissue": "cells.processes.betse_native_tissue_configuration",

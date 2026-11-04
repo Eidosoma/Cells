@@ -3847,8 +3847,8 @@ def test_demo_molecular_unadopted_gate_and_actual_entry_blockade_stay_closed(mon
 def test_demo_import_window_closes_before_parameters_and_actual_runtime_claim(endpoint, tmp_path):
     model = molecule_chain() if endpoint == "init_dynamics" else short_history_chain()
     evidence = Evidence()
-    callback = model.modules["callback"]
-    parameter = model.modules["parameters"]
+    callback = dict.__getitem__(model.modules, "callback")
+    parameter = dict.__getitem__(model.modules, "parameters")
     acquire, parameters = callback.acquire_callback, parameter.acquire_world_ready
     boundaries = []
 

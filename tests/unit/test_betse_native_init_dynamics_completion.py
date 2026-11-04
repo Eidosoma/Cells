@@ -59,9 +59,7 @@ def monitored_public_model_guard(tmp_path):
         namespace = fn.__globals__
         declared_builtins = namespace.get("__builtins__")
         resolved_builtins = (
-            vars(declared_builtins)
-            if type(declared_builtins) is ModuleType
-            else declared_builtins
+            vars(declared_builtins) if type(declared_builtins) is ModuleType else declared_builtins
         )
         if resolved_builtins is not fn.__builtins__:
             raise ValueError("Actual cached software guard builtins required")
@@ -846,6 +844,299 @@ def test_monitor_authenticates_actual_dash_m_runner_instead_of_arbitrary_main(
                 assert sys.getprofile() is guard
     finally:
         sys.setprofile(original)
+
+
+def _isolated_software_trace():
+    original = sys.gettrace()
+    assert type(original) is FunctionType
+    attempts = []
+
+    def cell(value):
+        return (lambda: value).__closure__[0]
+
+    closure = {
+        name: cell(
+            attempts
+            if name == "attempts"
+            else (None, None)
+            if name == "before"
+            else value.cell_contents
+        )
+        for name, value in zip(original.__code__.co_freevars, original.__closure__, strict=True)
+    }
+    guard = FunctionType(
+        original.__code__,
+        dict(original.__globals__),
+        closure=tuple(closure[name] for name in original.__code__.co_freevars),
+    )
+    return original, guard, closure, attempts
+
+
+def test_monitor_hoists_canonical_resolution_but_still_observes_every_entry(tmp_path, monkeypatch):
+    resolutions, original = [], Path.resolve
+
+    def resolving(path, *args, **kwargs):
+        resolutions.append(str(path))
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", resolving)
+
+    def metadata_leaf():
+        return None
+
+    with monitored_public_model_guard(tmp_path) as state:
+        before = len(resolutions)
+        starts = state.starts
+        for _ in range(200):
+            metadata_leaf()
+        assert state.starts >= starts + 200
+        assert len(resolutions) == before
+    assert len(resolutions) > before  # Canonical path proof is repeated at exit.
+
+
+@pytest.mark.parametrize(
+    "drift", ("code", "closure", "previous", "predicate", "file", "builtins", "filesystem")
+)
+def test_monitor_live_drift_refuses_before_probe_with_original_hooks_restored(tmp_path, drift):
+    original, guard, closure, attempts = _isolated_software_trace()
+    entered = []
+    namespace, code = guard.__globals__, guard.__code__
+    prior = closure["before"].cell_contents
+    old_attempts = closure["attempts"].cell_contents
+    source = namespace["runner"]
+    predicate = source.is_forbidden_frame
+    module = sys.modules[predicate.__module__]
+    filename, declared, lstat = module.__file__, namespace["__builtins__"], os.lstat
+    foreign_filename = str(tmp_path / "foreign.py")
+    copied_predicate = FunctionType(predicate.__code__, predicate.__globals__)
+
+    def probe():
+        entered.append(True)
+
+    def foreign(*args, **kwargs):
+        pytest.fail("A changed metadata dependency must never execute")
+
+    try:
+        sys.settrace(guard)
+        with pytest.raises((AssertionError, ValueError)) as caught:
+            with monitored_public_model_guard(tmp_path):
+                if drift == "code":
+                    guard.__code__ = code.replace(co_name="changed_guard")
+                elif drift == "closure":
+                    closure["attempts"].cell_contents = []
+                elif drift == "previous":
+                    closure["before"].cell_contents = (foreign, None)
+                elif drift == "predicate":
+                    namespace["runner"] = NS(is_forbidden_frame=copied_predicate)
+                elif drift == "file":
+                    module.__file__ = foreign_filename
+                elif drift == "builtins":
+                    namespace["__builtins__"] = dict(declared)
+                else:
+                    os.lstat = foreign
+                try:
+                    probe()
+                finally:
+                    # C-level assignments restore the checked objects before
+                    # any Python cleanup callback can attempt entry.
+                    guard.__code__ = code
+                    closure["attempts"].cell_contents = old_attempts
+                    closure["before"].cell_contents = prior
+                    namespace["runner"] = source
+                    namespace["__builtins__"] = declared
+                    module.__file__ = filename
+                    os.lstat = lstat
+        expected = {
+            "code": "known software guard layout",
+            "closure": "guard code/closure/global binding changed",
+            "previous": "guard code/closure/global binding changed",
+            "predicate": "frozen native blacklist predicate",
+            "file": "guard code/closure/global binding changed",
+            "builtins": "cached software guard builtins",
+            "filesystem": "filesystem identity lookup",
+        }
+        assert expected[drift] in str(caught.value)
+        assert sys.gettrace() is guard and not entered and not attempts
+    finally:
+        sys.settrace(original)
+
+
+def test_monitor_cost_refactor_preserves_falsey_primary_and_cause(tmp_path):
+    class FalseyError(ValueError):
+        def __bool__(self):
+            return False
+
+    primary, cause = FalseyError("primary metadata error"), KeyError("original cause")
+    primary.__cause__ = cause
+    before = sys.getprofile(), sys.gettrace()
+    with pytest.raises(FalseyError) as caught:
+        with monitored_public_model_guard(tmp_path):
+            raise primary
+    assert caught.value is primary and primary.__cause__ is cause
+    assert sys.getprofile() is before[0] and sys.gettrace() is before[1]
+
+
+def test_monitor_checks_each_filesystem_component_even_when_namespace_is_unchanged(
+    tmp_path, monkeypatch
+):
+    original, entered = os.lstat, []
+    model = {"changed": False, "checked": 0}
+
+    def observed_lstat(path):
+        value = original(path)
+        if model["changed"]:
+            model["checked"] += 1
+            return NS(st_dev=value.st_dev, st_ino=value.st_ino + 1, st_mode=value.st_mode)
+        return value
+
+    def probe():
+        entered.append(True)
+
+    # Read-only syscall-result model; no frozen file/path or actual source
+    # authority is changed, and every original guard remains installed.
+    monkeypatch.setattr(os, "lstat", observed_lstat)
+    with pytest.raises(AssertionError, match="path identity changed"):
+        with monitored_public_model_guard(tmp_path):
+            model["changed"] = True
+            try:
+                probe()
+            finally:
+                model["changed"] = False
+    assert model["checked"] and not entered
+
+
+def test_source_metadata_templates_reuse_syntax_but_freshly_read_original_api(monkeypatch):
+    initial, api = retained.stage, retained.guards.stage
+    initial._source_templates.cache_clear()
+    initial._dynamics_template.cache_clear()
+    source = Path(stage.previous.__file__).read_bytes()
+    reads, original = [], Path.read_bytes
+
+    def reading(path):
+        reads.append(path)
+        return original(path)
+
+    monkeypatch.setattr(Path, "read_bytes", reading)
+    binder = retained.clone(initial._dynamics_binding, previous=NS(_ready=lambda: api))
+    first = binder(source)
+    second = binder(bytes(bytearray(source)))
+    assert second is first
+    assert sum(path == Path(api.__file__) for path in reads) == 2
+    assert initial._dynamics_template.cache_info().misses == 1
+    assert initial._dynamics_template.cache_info().hits == 1
+    assert initial._source_templates.cache_info().misses == 1
+    assert initial._source_templates.cache_info().hits == 1
+    scope = dict(
+        vars(api),
+        HELPER_BACK_REFERENCE_SLOTS=initial.DYNAMICS_BACK_REFERENCE_SLOTS,
+        HELPER_BINDING_KIND=initial.DYNAMICS_BINDING_KIND,
+    )
+    assert first == FunctionType(api._helper_binding.__code__, scope)(source)
+
+
+@pytest.mark.parametrize("drift", ("equal_bytes_subclass", "source_bound"))
+def test_source_metadata_input_checks_precede_warm_cache_lookup(drift):
+    initial, api = retained.stage, retained.guards.stage
+    raw = Path(stage.previous.__file__).read_bytes()
+    binder = retained.clone(initial._dynamics_binding, previous=NS(_ready=lambda: api))
+    binder(raw)
+    before = initial._dynamics_template.cache_info()
+
+    class ForeignBytes(bytes):
+        def __hash__(self):
+            pytest.fail("A foreign hash dispatch must not enter the source cache")
+
+    value = ForeignBytes(raw) if drift == "equal_bytes_subclass" else b" " * (2**21 + 1)
+    with pytest.raises(ValueError, match="Bounded exact source template"):
+        binder(value)
+    assert initial._dynamics_template.cache_info() == before
+
+
+@pytest.mark.parametrize(
+    "drift",
+    (
+        "helper_alias",
+        "helper_code",
+        "defaults",
+        "builtins",
+        "ast_alias",
+        "parser_code",
+        "cache_alias",
+        "cache_code",
+        "file",
+    ),
+)
+def test_source_metadata_drift_cannot_borrow_a_warm_template(monkeypatch, tmp_path, drift):
+    initial, api = retained.stage, retained.guards.stage
+    raw = Path(stage.previous.__file__).read_bytes()
+    binder = retained.clone(initial._dynamics_binding, previous=NS(_ready=lambda: api))
+    binder(raw)
+    before = initial._dynamics_template.cache_info()
+
+    def foreign(*args, **kwargs):
+        pytest.fail("Unproved metadata body must not execute")
+
+    with monkeypatch.context() as patch:
+        if drift == "helper_alias":
+            patch.setattr(
+                api, "_helper_binding", FunctionType(api._helper_binding.__code__, vars(api))
+            )
+        elif drift == "helper_code":
+            patch.setattr(api._helper_binding, "__code__", (lambda *args: None).__code__)
+        elif drift == "defaults":
+            patch.setattr(api._helper_binding, "__defaults__", ())
+        elif drift == "builtins":
+            patch.setitem(vars(api), "__builtins__", dict(api._helper_binding.__builtins__))
+        elif drift == "ast_alias":
+            patch.setattr(api, "ast", ModuleType("ast"))
+        elif drift == "parser_code":
+            patch.setattr(ast.parse, "__code__", (lambda *args: None).__code__)
+        elif drift == "cache_alias":
+            patch.setattr(initial, "_dynamics_template", foreign)
+        elif drift == "cache_code":
+            patch.setattr(
+                initial._dynamics_template.__wrapped__, "__code__", (lambda *args: None).__code__
+            )
+        else:
+            patch.setattr(api, "__file__", str(tmp_path / "foreign-source.py"))
+        with pytest.raises(ValueError, match="metadata|builtins|template"):
+            binder(raw)
+    assert initial._dynamics_template.cache_info() == before
+
+
+@pytest.mark.parametrize("drift", ("none", "source", "code", "namespace", "name", "defaults"))
+def test_source_metadata_cache_compares_live_target_functions_each_use(tmp_path, drift):
+    initial, api = retained.stage, retained.guards.stage
+    path = tmp_path / "read_only_metadata_function.py"
+    raw = b"def selected(value=None, *, enabled=False):\n    return value\n"
+    path.write_bytes(raw)
+    module = ModuleType("read_only_metadata_not_an_owner")
+    code = next(
+        value for value in compile(raw, str(path), "exec").co_consts if type(value) is CodeType
+    )
+    function = FunctionType(code, vars(module), "selected", (None,))
+    function.__kwdefaults__ = {"enabled": False}
+    module.selected = function
+    assert initial._metadata_source_interface(
+        api, module, path.read_bytes(), path, ("selected",)
+    ) == (function,)
+    if drift == "none":
+        assert initial._metadata_source_interface(
+            api, module, path.read_bytes(), path, ("selected",)
+        ) == (function,)
+    else:
+        if drift == "source":
+            path.write_bytes(raw.replace(b"return value", b"return None"))
+        elif drift == "code":
+            function.__code__ = function.__code__.replace(co_name="foreign")
+        elif drift == "namespace":
+            module.selected = FunctionType(code, dict(vars(module)), "selected", (None,))
+        elif drift == "name":
+            function.__name__ = "foreign"
+        else:
+            function.__kwdefaults__["enabled"] = 0  # Equal value, wrong default type.
+        with pytest.raises(ValueError, match="source.*code|defaults"):
+            initial._metadata_source_interface(api, module, path.read_bytes(), path, ("selected",))
 
 
 def test_public_input_preflight_uses_supported_closed_metadata_not_enum_hydration(

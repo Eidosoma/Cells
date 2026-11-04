@@ -28,9 +28,9 @@ from cells.processes import betse_post_cut_mesh_contact_source as vector_source
 
 LAW_ID = "betse_same_profiles_seed_junction_network@1"
 RELEASE = "CELLS_NATIVE_SEED_JUNCTIONS_RELEASED"
-PARENT_SOURCE_SHA256 = "09b2e52b609bb6d22364a9e8560fc30d8e011dbeb8c03d9caacf3a7911ad3688"
+PARENT_SOURCE_SHA256 = "7ed52c746da9b3da4f82d9088b7a1d972bdbbaf42e18247640a0f194105a7fbb"
 PARENT_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
-COORDINATOR_SOURCE_SHA256 = "c3f799e24f384c44f248e501b43ba1d827455ebe2142319fbd80a6140093e617"
+COORDINATOR_SOURCE_SHA256 = "df9e0e0e260a2df648015d4bd5c15dfbacbaa9f0302145e2b7deb8aec6af07d0"
 COORDINATOR_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 PROPOSED_CLAIM = "_claim_for_seed_junctions"
 PROPOSED_CHECK = "_check_seed_junctions_authority"
