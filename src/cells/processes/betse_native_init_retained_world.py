@@ -5,6 +5,7 @@ optional Cells argument is the original retained object; the Simulator,
 caches, handler and phase are newly constructed by the selected source.
 """
 
+import ast
 import builtins
 import contextlib
 import hashlib
@@ -63,6 +64,11 @@ MAX_WORK = 100000
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED, _OBJECTS = (WeakKeyDictionary() for _ in range(5))
 _FORWARDED = WeakKeyDictionary()
 _DYNAMICS_LEASES = WeakKeyDictionary()
+_COMPLETION_INITIAL_LEASES = WeakKeyDictionary()
+_STORAGE_INITIAL_LEASES = WeakKeyDictionary()
+_ELECTRICAL_INITIAL_LEASES = WeakKeyDictionary()
+_FIRST_STEP_INITIAL_LEASES = WeakKeyDictionary()
+_MOLECULE_INITIAL_LEASES = WeakKeyDictionary()
 _ACTIVE, _FAILED, _LOCK = [], [], RLock()
 _LAST_FAILED = None
 _SOURCE_FILE = Path(source.__file__)
@@ -196,6 +202,28 @@ def source_plan():
             permitted_Simulator_fields=DYNAMICS_STORES,
             prefix_only=True,
             full_init_dynamics_or_time_loop_admitted=False,
+        ),
+        completion_handoff=dict(
+            actual_provider_route="Prelude._completion_route(actual_prelude_context)",
+            ancestor_claim=(
+                "_claim_completion_ancestor(actual_INIT, actual_Prelude, actual_completion)"
+            ),
+            claim_before_any_completion_body=True,
+            permitted_changes="Exact source-derived handler stores and Key Simulator stores",
+            cell_i=(
+                "Same object/base/layout; bits and global MT audited by actual successor witnesses"
+            ),
+            supplied_phase_parameter_cache_RNG_or_rearmed_epoch_authority=False,
+            native_source_or_time_loop_release=False,
+        ),
+        storage_handoff=dict(
+            ancestor_claim=(
+                "_claim_storage_ancestor(actual_INIT, actual_completion, actual_storage)"
+            ),
+            wrapper="Original same-instance Simulator.clear_storage only",
+            permitted_changes="Original 52 ordered stores/51 Simulator fields",
+            previous_trials_leases_and_raw_objects_preserved=True,
+            native_source_or_time_loop_release=False,
         ),
         stop_before=("sim_info_report", "run_sim_core", "init_dynamics", "INIT time loop"),
         invalidated_owners=11,
@@ -382,9 +410,29 @@ def _reject(context, reason):
 
 def _guard(context):
     if getattr(context, "dynamics_transition", None) is not None:
+        completion = getattr(context.dynamics_transition, "completion_transition", None)
+        storage = getattr(completion, "storage_transition", None)
+        electrical = getattr(storage, "electrical_transition", None)
+        first_step = getattr(electrical, "first_step_transition", None)
+        if first_step is not None:
+            first = getattr(first_step, "first_failure", None)
+            if first is not None and first[0] == "source":
+                raise first[1]
+            if first_step.entry_error is not None:
+                raise first_step.entry_error
+            if getattr(first_step, "failure_error", None) is not None:
+                raise first_step.failure_error
+            current, api, *_ = _first_step_runtime(context)
+            current.entries["wrapper_guard"](current, context, sys._getframe(1))
+            return
         for error in (
             context.entry_error,
             getattr(context.dynamics_transition, "entry_error", None),
+            getattr(completion, "entry_error", None),
+            getattr(storage, "entry_error", None),
+            getattr(electrical, "entry_error", None),
+            getattr(storage, "electrical_error", None),
+            getattr(completion, "storage_error", None),
             getattr(context, "dynamics_error", None),
         ):
             if error is not None:
@@ -496,6 +544,11 @@ def _binding(context):
         _OBJECTS,
         _FORWARDED,
         _DYNAMICS_LEASES,
+        _COMPLETION_INITIAL_LEASES,
+        _STORAGE_INITIAL_LEASES,
+        _ELECTRICAL_INITIAL_LEASES,
+        _FIRST_STEP_INITIAL_LEASES,
+        _MOLECULE_INITIAL_LEASES,
         _ACTIVE,
         _LOCK,
         context.key,
@@ -760,9 +813,11 @@ def _check_seed_lease(context):
         actual = tuple(fn(*args))
         if len(actual) != len(saved) or any(a is not b for a, b in zip(actual, saved, strict=True)):
             raise ValueError("Retained original source/callable/runtime binding changed")
-    if (
-        _seed_values(context).identity != lease.values.identity
-        or _rng(context).identity != lease.stream.identity
+    completion = _completion_initial_lease(context)
+    values = _seed_values(context) if completion is None else _completion_seed_values(context)
+    expected = lease.values if completion is None else completion.seed_values
+    if values.identity != expected.identity or (
+        completion is None and _rng(context).identity != lease.stream.identity
     ):
         raise ValueError("INIT changed a historical source value or continuing MT")
     graph = _seed_graph(context)
@@ -845,7 +900,10 @@ def _check(context, *, closed=False):
         is not context.parameter_record
     ):
         raise ValueError("Exact successful closed INIT parameter record required")
-    if _rng(context).identity != context.stream_before.identity:
+    if (
+        _completion_initial_lease(context) is None
+        and _rng(context).identity != context.stream_before.identity
+    ):
         raise ValueError("Constructor/init_core unexpectedly changed the continuing MT")
     for actual, holder in context.holders:
         if vars(actual) is not holder or _OBJECTS.get(actual) is not context:
@@ -1295,9 +1353,30 @@ def _sync_objects(context):
 
 def _invoke(context, label, delegate, *args, **kwargs):
     if getattr(context, "dynamics_transition", None) is not None:
+        completion = getattr(context.dynamics_transition, "completion_transition", None)
+        storage = getattr(completion, "storage_transition", None)
+        electrical = getattr(storage, "electrical_transition", None)
+        first_step = getattr(electrical, "first_step_transition", None)
+        if first_step is not None:
+            first = getattr(first_step, "first_failure", None)
+            if first is not None and first[0] == "source":
+                raise first[1]
+            if first_step.entry_error is not None:
+                raise first_step.entry_error
+            if getattr(first_step, "failure_error", None) is not None:
+                raise first_step.failure_error
+            current, api, *_ = _first_step_runtime(context)
+            return current.entries["dispatch"](
+                current, context, label, delegate, args[0], args[1:], kwargs, sys._getframe()
+            )
         for error in (
             context.entry_error,
             getattr(context.dynamics_transition, "entry_error", None),
+            getattr(completion, "entry_error", None),
+            getattr(storage, "entry_error", None),
+            getattr(electrical, "entry_error", None),
+            getattr(storage, "electrical_error", None),
+            getattr(completion, "storage_error", None),
             getattr(context, "dynamics_error", None),
         ):
             if error is not None:
@@ -1308,6 +1387,24 @@ def _invoke(context, label, delegate, *args, **kwargs):
             _dynamics_dispatch_guard(
                 context, transition, label, delegate, args, kwargs, sys._getframe()
             )
+            electrical = _electrical_runtime(context)
+            if electrical is not None:
+                current = electrical[0]
+                return current.entries["dispatch"](
+                    current, context, label, delegate, args[0], args[1:], kwargs, sys._getframe()
+                )
+            storage = _storage_runtime(context)
+            if storage is not None:
+                current = storage[0]
+                return current.entries["dispatch"](
+                    current, context, label, delegate, args[0], args[1:], kwargs, sys._getframe()
+                )
+            forwarded = _completion_runtime(context)
+            if forwarded is not None:
+                current, _, _, _ = forwarded
+                return current.entries["dispatch"](
+                    current, context, label, delegate, args[0], args[1:], kwargs, sys._getframe()
+                )
             # Keep this DIRECT call: Key authenticates this actual _invoke
             # frame and its original wrapper/prefix caller, not a substitute.
             return transition.entries["dispatch"](
@@ -1970,6 +2067,747 @@ def _dynamics_route(parent):
     return child, module
 
 
+def _completion_runtime(parent):
+    """Authenticate Key's real forwarded claim, preserving the original route."""
+    prelude, module = _dynamics_route(parent)
+    marker = getattr(prelude, "completion_transition", None)
+    if marker is None:
+        return None
+    route = vars(module).get("_completion_route")
+    if type(route) is not FunctionType or route.__globals__ is not vars(module):
+        raise ValueError("Actual reviewed prelude completion routing is unavailable")
+    path = Path(module.__file__)
+    raw = path.read_bytes()
+    if _dynamics_binding(raw)[0] != DYNAMICS_INTERFACE_SHA256:
+        raise ValueError("Original completion route producer changed before entry")
+    previous._ready()._source_interface(module, raw, path, ("_completion_route",))
+    transition, api = route(prelude)
+    if (
+        transition is not marker
+        or transition.parent is not prelude
+        or transition.init_parent is not parent
+        or type(transition.claim) is not api.CompletionClaim
+        or api._CLAIMS.get(transition.claim) is not transition
+        or transition.phase is not parent.phase
+        or transition.p is not parent.p
+        or transition.cells is not parent.cells
+        or transition.sim is not parent.phase.sim
+        or transition.handler is not parent.phase.dyna
+    ):
+        raise ValueError("Actual same-INIT CompletionClaim ancestry changed")
+    return transition, api, prelude, module
+
+
+def _completion_initial_lease(parent):
+    owner = getattr(parent, "owner", None)
+    if owner is None:
+        return None
+    lease = _COMPLETION_INITIAL_LEASES.get(owner)
+    if lease is None:
+        return None
+    if lease.status == "claiming":
+        frame = sys._getframe(1)
+        while frame is not None and frame is not lease.claim_frame:
+            frame = frame.f_back
+        if frame is None:
+            raise ValueError("Incomplete completion reservation cannot authenticate a caller")
+        return None
+    actual = _completion_runtime(parent)
+    if (
+        lease.status != "ready"
+        or actual is None
+        or actual[0] is not lease.transition
+        or actual[2] is not lease.prelude
+        or lease.parent is not parent
+        or getattr(parent, "completion_initial_lease", None) is not lease
+        or parent.dynamics_lease is not lease.original_lease
+        or parent.seed_lease is not lease.seed_lease
+        or parent.trial is not lease.trial
+        or parent.parameter_record is not lease.parameter_record
+    ):
+        raise ValueError("Original irreversible completion/INIT lease association changed")
+    _completion_cell_layout(parent, lease)
+    return lease
+
+
+def _completion_cell_layout(parent, lease):
+    array = parent.cells.cell_i
+    shape = (
+        array.dtype.str,
+        tuple(array.shape),
+        tuple(array.strides),
+        array.ctypes.data,
+        bool(array.flags.writeable),
+        bool(array.flags.c_contiguous),
+        bool(array.flags.f_contiguous),
+    )
+    if (
+        array is not lease.cell_i
+        or type(array) is not lease.cell_type
+        or array.base is not lease.cell_base
+        or shape != lease.cell_layout
+    ):
+        raise ValueError("Original cell_i identity/base/layout changed during source shuffle")
+
+
+def _completion_projection(parent, lease):
+    for (_, actual), holder, names, target in zip(
+        lease.objects, lease.holders, lease.names, lease.fields, strict=True
+    ):
+        if vars(actual) is not holder:
+            raise ValueError("Original INIT holder changed during completion")
+        allowed = (
+            lease.sim_fields
+            if actual is parent.phase.sim
+            else (lease.handler_fields if actual is parent.phase.dyna else frozenset())
+        )
+        if tuple(name for name in holder if name not in allowed) != tuple(
+            name for name in names if name not in allowed
+        ):
+            raise ValueError("Completion changed an unowned original field roster")
+        target.clear()
+        target.update((name, holder[name]) for name in names if name not in allowed)
+    return lease.view
+
+
+def _completion_initial_values(parent, lease):
+    view = _completion_projection(parent, lease)
+    # Observation projection only. The actual original array is retained and
+    # layout-checked; its bits/MT are owned by the real successor's source-call
+    # witnesses and full final snapshot, never an old pre-shuffle validator.
+    fields = tuple(
+        {
+            name: value
+            for name, value in target.items()
+            if actual is not parent.cells or name != "cell_i"
+        }
+        for (_, actual), target in zip(lease.objects, view.fields, strict=True)
+    )
+    projector = _projector(parent)
+    projector.objects.extend(("actual_cell_i_alias", value) for value in lease.cell_aliases)
+    return core.previous._scope(parent.parent.world).snapshot(
+        core._LITERAL._project(projector, fields)
+    )
+
+
+def _completion_seed_values(parent):
+    view = _seed_projection(parent)
+    fields = tuple(
+        {
+            name: value
+            for name, value in target.items()
+            if actual is not parent.cells or name != "cell_i"
+        }
+        for (_, actual), target in zip(parent.seed_lease.objects, view.fields, strict=True)
+    )
+    lease = _COMPLETION_INITIAL_LEASES[parent.owner]
+    projector = SimpleNamespace(
+        objects=[
+            *parent.seed_lease.projector.objects,
+            *(("actual_cell_i_alias", value) for value in lease.cell_aliases),
+        ]
+    )
+    return core.previous._scope(parent.parent.world).snapshot(
+        core._LITERAL._project(projector, fields)
+    )
+
+
+def _completion_cell_aliases(parent):
+    """Retain preexisting true array aliases, including old All-picker views.
+
+    Only the actual cell_i or views whose actual .base chain reaches it are
+    opaque to the historical bit comparison. Their objects/base/layout remain
+    in the original full reference graph; unrelated equal arrays stay numeric.
+    """
+    original = parent.cells.cell_i
+    array_type = type(original)
+    seen, result = set(), []
+
+    def visit(value, depth=0):
+        if depth > 48 or len(seen) > 100000:
+            raise ValueError("Bounded historical cell-index alias graph exhausted")
+        if id(value) in seen:
+            return
+        seen.add(id(value))
+        if isinstance(value, array_type):
+            base, bases = value, set()
+            while isinstance(base, array_type) and id(base) not in bases:
+                if base is original:
+                    result.append(value)
+                    break
+                bases.add(id(base))
+                base = base.base
+            if value.dtype.hasobject:
+                for item in value.flat:
+                    visit(item, depth + 1)
+        elif type(value) is dict:
+            for item in value.values():
+                visit(item, depth + 1)
+        elif type(value) in (tuple, list):
+            for item in value:
+                visit(item, depth + 1)
+
+    visit(_seed_projection(parent).fields)
+    visit(_dynamics_projection(parent).fields)
+    if not any(value is original for value in result):
+        result.append(original)
+    return tuple(result)
+
+
+def _claim_completion_ancestor(parent, prelude, transition):
+    """Called by the genuine Key prelude claim before any completion body."""
+    actual = _completion_runtime(parent)
+    if actual is None or actual[0] is not transition or actual[2] is not prelude:
+        raise ValueError("Actual provider-issued completion transition required")
+    module = actual[3]
+    frame = sys._getframe(1)
+    if (
+        frame.f_code is not module._claim_for_init_dynamics_completion.__code__
+        or frame.f_globals is not vars(module)
+        or frame.f_locals.get("context") is not prelude
+        or frame.f_locals.get("transition") is not transition
+        or transition.body_frame is not None
+        or not transition.active
+    ):
+        raise ValueError("Actual original prelude transfer must precede every completion body")
+    if parent.owner in _COMPLETION_INITIAL_LEASES:
+        _reject_completion_reservation(parent, transition)
+    lease = SimpleNamespace(
+        parent=parent,
+        prelude=prelude,
+        transition=transition,
+        claim_frame=sys._getframe(),
+        status="claiming",
+        original_lease=parent.dynamics_lease,
+        seed_lease=parent.seed_lease,
+        trial=parent.trial,
+        parameter_record=parent.parameter_record,
+        frames={},
+        attempts=[],
+    )
+    _COMPLETION_INITIAL_LEASES[parent.owner] = lease
+    parent.completion_initial_lease = lease
+    try:
+        # Authenticate the OLD epoch exactly once before excluding the newly
+        # owned fields. A refused attempt is never lazily captured later.
+        _check(parent, closed=True)
+        _completion(parent)
+        if _dynamics_values(parent).identity != parent.dynamics_lease.values.identity:
+            raise ValueError("Original INIT state changed before completion retirement")
+        graph = _dynamics_graph(parent)
+        core.previous._same(graph[0], parent.dynamics_lease.graph[0])
+        if graph[1] != parent.dynamics_lease.graph[1]:
+            raise ValueError("Original INIT aliases changed before completion retirement")
+        tissue = transition.tissue
+        nodes = tissue._source_nodes()
+        lease.handler_fields = frozenset(
+            node.attr
+            for method in nodes.values()
+            for node in ast.walk(method)
+            if isinstance(node, ast.Attribute)
+            and isinstance(node.ctx, ast.Store)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == "self"
+        )
+        lease.sim_fields = frozenset((*DYNAMICS_STORES, *actual[1].SIM_STORES))
+        lease.objects = parent.dynamics_lease.objects
+        lease.holders = tuple(vars(value) for _, value in lease.objects)
+        lease.names = tuple(tuple(vars(value)) for _, value in lease.objects)
+        lease.fields = [{} for _ in lease.objects]
+        lease.view = SimpleNamespace(
+            objects=lease.objects, fields=lease.fields, weak_proxies=parent.proxies
+        )
+        lease.tape = SimpleNamespace(rng=parent.parent.rng, events=(), draws=(), locals={})
+        lease.cell_i, lease.cell_type = parent.cells.cell_i, type(parent.cells.cell_i)
+        array = lease.cell_i
+        lease.cell_base = array.base
+        lease.cell_layout = (
+            array.dtype.str,
+            tuple(array.shape),
+            tuple(array.strides),
+            array.ctypes.data,
+            bool(array.flags.writeable),
+            bool(array.flags.c_contiguous),
+            bool(array.flags.f_contiguous),
+        )
+        lease.cell_aliases = _completion_cell_aliases(parent)
+        lease.values = _completion_initial_values(parent, lease)
+        lease.seed_values = _completion_seed_values(parent)
+        lease.graph = core.previous._scope(parent.parent.world).graph(
+            lease.view, lease.view, lease.tape
+        )
+        lease.status = "ready"
+        return parent
+    except BaseException as error:
+        primary = parent.entry_error if parent.entry_error is not None else error
+        lease.status, lease.primary = "failed", primary
+        if error is not primary:
+            lease.secondary = (error, primary)
+        parent.invalid = transition.invalid = True
+        raise primary  # noqa: B904 -- preserve the original cause; secondary is retained above.
+
+
+def _reject_completion_reservation(parent, transition):
+    transition.invalid = True
+    _reject(parent, "Original completion/INIT ancestry epoch was already attempted")
+
+
+def _storage_runtime(parent):
+    """Authenticate the real completion's original storage registry route."""
+    actual = _completion_runtime(parent)
+    if actual is None or getattr(actual[0], "storage_transition", None) is None:
+        return None
+    completion, provider, _, _ = actual
+    route = vars(provider).get("_storage_route")
+    if type(route) is not FunctionType or route.__globals__ is not vars(provider):
+        raise ValueError("Actual original completion/storage route unavailable")
+    path = Path(provider.__file__)
+    raw = path.read_bytes()
+    # The original prelude route has already authenticated the complete
+    # producer bytes/backrefs. Also authenticate the reached callable before
+    # invoking it; a retained module or file hash alone is not code authority.
+    previous._ready()._source_interface(provider, raw, path, ("_storage_route",))
+    transition, api = route(completion)
+    if (
+        transition is not completion.storage_transition
+        or transition.parent is not completion
+        or completion.init_parent is not parent
+        or transition.phase is not parent.phase
+        or transition.p is not parent.p
+        or transition.cells is not parent.cells
+        or transition.sim is not parent.phase.sim
+        or transition.handler is not parent.phase.dyna
+    ):
+        raise ValueError("Actual same-INIT storage/phase ancestry changed")
+    return transition, api, completion, provider
+
+
+def _molecule_initial_lease(parent):
+    """Custody of the original material epoch, never an executable owner."""
+    lease = _MOLECULE_INITIAL_LEASES.get(parent.owner)
+    if lease is None:
+        return None
+    if lease.status == "claiming":
+        frame = sys._getframe(1)
+        while frame is not None and frame is not lease.claim_frame:
+            frame = frame.f_back
+        if frame is None:
+            raise ValueError("Incomplete material reservation cannot authenticate a caller")
+        return None
+    actual = _completion_runtime(parent)
+    if (
+        lease.status != "ready"
+        or actual is None
+        or actual[0] is not lease.completion
+        or getattr(parent, "molecule_initial_lease", None) is not lease
+        or _COMPLETION_INITIAL_LEASES.get(parent.owner) is not lease.original
+        or parent.completion_initial_lease is not lease.original
+        or lease.parent is not parent
+        or lease.completion.molecule is not lease.module
+        or lease.completion.molecule_session is not lease.session
+        or lease.module._SESSIONS is not lease.sessions
+        or lease.module._CLAIMED is not lease.claims
+        or lease.sessions.get(lease.session) is not lease.participant
+        or lease.claims.get(lease.completion.claim) is not lease.participant
+        or lease.participant.completion is not lease.completion
+        or lease.participant.session is not lease.session
+        or lease.participant.ancestor_claim is not _claim_completion_molecule_ancestor
+        or lease.participant.ancestor_check is not _check_completion_molecule_ancestor
+        or lease.module.SIM_STORES is not lease.stores
+    ):
+        raise ValueError("Original molecular material/Completion registry links changed")
+    for name, function, atoms in lease.functions:
+        if vars(lease.module).get(name) is not function:
+            raise ValueError("Original material participant callable replaced: " + name)
+        core.previous._same(parent.atoms(function), atoms)
+    return lease
+
+
+def _claim_completion_molecule_ancestor(parent, completion, session):
+    """Retire material fields only from the real, still-unrun molecular binder."""
+    actual = _completion_runtime(parent)
+    module, frame = getattr(completion, "molecule", None), sys._getframe(1)
+    function = vars(module).get("bind_completion") if type(module) is ModuleType else None
+    participant = (
+        module._SESSIONS.get(session)
+        if type(function) is FunctionType and type(session) is module.MoleculeSession
+        else None
+    )
+    if (
+        actual is None
+        or actual[0] is not completion
+        or completion.request.native_molecules is not True
+        or function.__globals__ is not vars(module)
+        or frame.f_code is not function.__code__
+        or frame.f_globals is not vars(module)
+        or frame.f_locals.get("session") is not session
+        or frame.f_locals.get("context") is not participant
+        or participant is None
+        or participant.completion is not completion
+        or participant.session is not session
+        or module._CLAIMED.get(completion.claim) is not participant
+        or completion.molecule_session is not session
+        or not completion.active
+        or completion.body_frame is not None
+        or participant.factory_attempted
+    ):
+        raise ValueError("Actual pre-constructor molecular binder/claim required")
+    with _LOCK:
+        if parent.owner in _MOLECULE_INITIAL_LEASES:
+            completion.invalid = participant.invalid = True
+            _reject(parent, "Original molecular material epoch already attempted")
+        lease = SimpleNamespace(
+            parent=parent,
+            completion=completion,
+            session=session,
+            participant=participant,
+            module=module,
+            sessions=module._SESSIONS,
+            claims=module._CLAIMED,
+            original=parent.completion_initial_lease,
+            claim_frame=sys._getframe(),
+            status="claiming",
+        )
+        _MOLECULE_INITIAL_LEASES[parent.owner] = parent.molecule_initial_lease = lease
+        try:
+            # Authenticate the complete old epoch BEFORE excluding any field.
+            _check_init_dynamics_prelude_authority(completion.parent)
+            stores = module.SIM_STORES
+            if stores != (
+                "molecules",
+                "cc_cells",
+                "cc_env",
+                "c_env_bound",
+                "extra_rho_cells",
+                "extra_rho_env",
+            ):
+                raise ValueError("Exact original molecular Simulator material stores required")
+            lease.stores = stores
+            lease.functions = tuple(
+                (name, fn, parent.atoms(fn))
+                for name in ("bind_completion", "_context", "project_state", "state_roots")
+                for fn in (vars(module)[name],)
+            )
+            original = lease.original
+            lease.sim_fields = original.sim_fields | frozenset(stores)
+            lease.handler_fields, lease.objects = original.handler_fields, original.objects
+            lease.holders = tuple(vars(value) for _, value in lease.objects)
+            lease.names = tuple(tuple(holder) for holder in lease.holders)
+            lease.fields = [{} for _ in lease.objects]
+            lease.view = SimpleNamespace(
+                objects=lease.objects, fields=lease.fields, weak_proxies=parent.proxies
+            )
+            lease.tape = SimpleNamespace(rng=parent.parent.rng, events=(), draws=(), locals={})
+            for name in ("cell_i", "cell_type", "cell_base", "cell_layout", "cell_aliases"):
+                setattr(lease, name, getattr(original, name))
+            lease.values = _completion_initial_values(parent, lease)
+            lease.graph = core.previous._scope(parent.parent.world).graph(
+                lease.view, lease.view, lease.tape
+            )
+            lease.status = "ready"
+            return parent
+        except BaseException as error:
+            primary = parent.entry_error if parent.entry_error is not None else error
+            lease.status, lease.primary = "failed", primary
+            if error is not primary:
+                lease.secondary = (error, primary)
+            parent.invalid = completion.invalid = participant.invalid = True
+            raise primary  # noqa: B904 -- preserve original cause, retain secondary separately.
+
+
+def _check_completion_molecule_ancestor(parent, completion, session):
+    lease = _molecule_initial_lease(parent)
+    if lease is None or lease.completion is not completion or lease.session is not session:
+        raise ValueError("Original molecular material reservation required")
+    if _check_init_dynamics_prelude_authority(completion.parent) is not parent:
+        raise ValueError("Different original material ancestry")
+    return parent
+
+
+def _storage_initial_lease(parent):
+    owner = getattr(parent, "owner", None)
+    lease = _STORAGE_INITIAL_LEASES.get(owner) if owner is not None else None
+    if lease is None:
+        return None
+    if lease.status == "claiming":
+        frame = sys._getframe(1)
+        while frame is not None and frame is not lease.claim_frame:
+            frame = frame.f_back
+        if frame is None:
+            raise ValueError("Incomplete storage reservation cannot authenticate a caller")
+        return None
+    actual = _storage_runtime(parent)
+    if (
+        lease.status != "ready"
+        or actual is None
+        or actual[0] is not lease.transition
+        or actual[2] is not lease.completion
+        or lease.parent is not parent
+        or getattr(parent, "storage_initial_lease", None) is not lease
+        or _COMPLETION_INITIAL_LEASES.get(owner) is not lease.original_lease
+        or parent.completion_initial_lease is not lease.original_lease
+        or parent.dynamics_lease is not lease.dynamics_lease
+        or parent.seed_lease is not lease.seed_lease
+        or parent.trial is not lease.trial
+        or parent.parameter_record is not lease.parameter_record
+    ):
+        raise ValueError("Original irreversible storage/INIT lease association changed")
+    _completion_cell_layout(parent, lease)
+    return lease
+
+
+def _storage_initial_values(parent, lease):
+    # The same projection/typed codec and actual array aliases are retained.
+    # Only the original Simulator's explicitly declared storage fields are
+    # additionally owned by the once-retired successor, never other objects.
+    return _completion_initial_values(parent, lease)
+
+
+def _claim_storage_ancestor(parent, completion, transition):
+    """Claimed by the actual DynamicsOwner issuer before any storage body."""
+    actual = _storage_runtime(parent)
+    if actual is None or actual[0] is not transition or actual[2] is not completion:
+        raise ValueError("Actual provider-issued storage transition required")
+    provider, frame = actual[3], sys._getframe(1)
+    if (
+        frame.f_code is not provider._claim_for_init_storage.__code__
+        or frame.f_globals is not vars(provider)
+        or frame.f_locals.get("context") is not completion
+        or frame.f_locals.get("transition") is not transition
+        or transition.body_frame is not None
+        or not transition.active
+    ):
+        raise ValueError("Actual original Dynamics transfer must precede storage source")
+    with _LOCK:
+        if parent.owner in _STORAGE_INITIAL_LEASES:
+            transition.invalid = completion.invalid = True
+            _reject(parent, "Original storage/INIT ancestry epoch was already attempted")
+        lease = SimpleNamespace(
+            parent=parent,
+            completion=completion,
+            transition=transition,
+            claim_frame=sys._getframe(),
+            status="claiming",
+            original_lease=parent.completion_initial_lease,
+            dynamics_lease=parent.dynamics_lease,
+            seed_lease=parent.seed_lease,
+            trial=parent.trial,
+            parameter_record=parent.parameter_record,
+            frames={},
+            attempts=[],
+        )
+        _STORAGE_INITIAL_LEASES[parent.owner] = lease
+        parent.storage_initial_lease = lease
+        try:
+            # This is the final validation of the previous data epoch. Once
+            # sealed, the new projection is used instead of stale histories
+            # or flux arrays; the old lease is preserved, never rewritten.
+            _check_init_dynamics_prelude_authority(completion.parent)
+            original = _molecule_initial_lease(parent) or lease.original_lease
+            fields = tuple(name for _, name in actual[1]._stores())
+            if len(fields) != 52 or len(set(fields)) != 51:
+                raise ValueError("Exact original 52 stores/51 Simulator fields required")
+            lease.sim_fields = original.sim_fields | frozenset(fields)
+            lease.handler_fields = original.handler_fields
+            lease.objects = original.objects
+            lease.holders = tuple(vars(value) for _, value in lease.objects)
+            lease.names = tuple(tuple(vars(value)) for _, value in lease.objects)
+            lease.fields = [{} for _ in lease.objects]
+            lease.view = SimpleNamespace(
+                objects=lease.objects, fields=lease.fields, weak_proxies=parent.proxies
+            )
+            lease.tape = SimpleNamespace(rng=parent.parent.rng, events=(), draws=(), locals={})
+            for name in ("cell_i", "cell_type", "cell_base", "cell_layout", "cell_aliases"):
+                setattr(lease, name, getattr(original, name))
+            lease.values = _storage_initial_values(parent, lease)
+            lease.graph = core.previous._scope(parent.parent.world).graph(
+                lease.view, lease.view, lease.tape
+            )
+            lease.status = "ready"
+            return parent
+        except BaseException as error:
+            primary = next(
+                (
+                    value
+                    for value in (
+                        parent.entry_error,
+                        getattr(completion, "entry_error", None),
+                        getattr(transition, "entry_error", None),
+                    )
+                    if value is not None
+                ),
+                error,
+            )
+            lease.status, lease.primary = "failed", primary
+            if error is not primary:
+                lease.secondary = (error, primary)
+            parent.invalid = completion.invalid = transition.invalid = True
+            raise primary  # noqa: B904 -- keep original cause; secondary is retained above.
+
+
+def _electrical_runtime(parent):
+    """Authenticate the actual leaf without changing the original routes."""
+    actual = _storage_runtime(parent)
+    if actual is None or getattr(actual[0], "electrical_transition", None) is None:
+        return None
+    storage, provider, completion, completion_api = actual
+    route = vars(provider).get("_electrical_route")
+    if type(route) is not FunctionType or route.__globals__ is not vars(provider):
+        raise ValueError("Actual storage/electrical source route unavailable")
+    retained = _atoms(route)
+    path = Path(provider.__file__)
+    previous._ready()._source_interface(provider, path.read_bytes(), path, ("_electrical_route",))
+    current = _atoms(route)
+    if (
+        vars(provider).get("_electrical_route") is not route
+        or len(current) != len(retained)
+        or any(a is not b for a, b in zip(current, retained, strict=True))
+    ):
+        raise ValueError("Authenticated original electrical route changed before invocation")
+    transition, api = route(storage)
+    if (
+        transition is not storage.electrical_transition
+        or transition.storage_parent is not storage
+        or transition.parent is not completion
+        or transition.phase is not parent.phase
+        or transition.sim is not parent.phase.sim
+        or transition.cells is not parent.cells
+        or transition.p is not parent.p
+        or transition.handler is not parent.phase.dyna
+    ):
+        raise ValueError("Actual same-INIT electrical ancestry changed")
+    return transition, api, storage, completion, completion_api
+
+
+def _electrical_initial_lease(parent):
+    owner = getattr(parent, "owner", None)
+    lease = _ELECTRICAL_INITIAL_LEASES.get(owner) if owner is not None else None
+    if lease is None:
+        return None
+    if lease.status == "claiming":
+        frame = sys._getframe(1)
+        while frame is not None and frame is not lease.claim_frame:
+            frame = frame.f_back
+        if frame is None:
+            raise ValueError("Incomplete electrical reservation cannot authenticate a caller")
+        return None
+    actual = _electrical_runtime(parent)
+    if (
+        lease.status != "ready"
+        or actual is None
+        or actual[0] is not lease.transition
+        or actual[2] is not lease.storage
+        or actual[3] is not lease.completion
+        or lease.parent is not parent
+        or getattr(parent, "electrical_initial_lease", None) is not lease
+        or _STORAGE_INITIAL_LEASES.get(owner) is not lease.original_lease
+        or parent.storage_initial_lease is not lease.original_lease
+        or parent.completion_initial_lease is not lease.completion_lease
+        or parent.dynamics_lease is not lease.dynamics_lease
+        or parent.seed_lease is not lease.seed_lease
+        or parent.trial is not lease.trial
+        or parent.parameter_record is not lease.parameter_record
+    ):
+        raise ValueError("Original irreversible electrical/INIT lease association changed")
+    _completion_cell_layout(parent, lease)
+    return lease
+
+
+def _claim_electrical_ancestor(parent, completion, storage, transition):
+    """The actual Completion grandchild issuer claims this once before stores."""
+    actual = _electrical_runtime(parent)
+    if (
+        actual is None
+        or actual[0] is not transition
+        or actual[2] is not storage
+        or actual[3] is not completion
+    ):
+        raise ValueError("Actual provider-issued electrical transition required")
+    provider, frame = actual[4], sys._getframe(1)
+    claim = vars(provider).get("_claim_electrical_ancestor")
+    if (
+        type(claim) is not FunctionType
+        or claim.__globals__ is not vars(provider)
+        or frame.f_code is not claim.__code__
+        or frame.f_globals is not vars(provider)
+        or claim.__code__.co_argcount != 3
+        or any(
+            frame.f_locals.get(name) is not expected
+            for name, expected in zip(
+                claim.__code__.co_varnames[:3], (completion, storage, transition), strict=True
+            )
+        )
+        or transition.body_frame is not None
+        or not transition.active
+    ):
+        raise ValueError("Actual original Completion claim must precede electrical source")
+    with _LOCK:
+        if parent.owner in _ELECTRICAL_INITIAL_LEASES:
+            transition.invalid = storage.invalid = completion.invalid = True
+            _reject(parent, "Original electrical/INIT ancestry epoch already attempted")
+        lease = SimpleNamespace(
+            parent=parent,
+            completion=completion,
+            storage=storage,
+            transition=transition,
+            claim_frame=sys._getframe(),
+            status="claiming",
+            original_lease=parent.storage_initial_lease,
+            completion_lease=parent.completion_initial_lease,
+            dynamics_lease=parent.dynamics_lease,
+            seed_lease=parent.seed_lease,
+            trial=parent.trial,
+            parameter_record=parent.parameter_record,
+            frames={},
+            attempts=[],
+        )
+        _ELECTRICAL_INITIAL_LEASES[parent.owner] = lease
+        parent.electrical_initial_lease = lease
+        try:
+            _check_init_dynamics_prelude_authority(completion.parent)
+            original = lease.original_lease
+            fields = frozenset(name for _, _, name in actual[1]._stores(actual[1]._definitions()))
+            if len(fields) != 27:
+                raise ValueError("Exact source-derived27 electrical fields required")
+            lease.sim_fields = original.sim_fields | fields
+            lease.handler_fields = original.handler_fields
+            lease.objects = original.objects
+            lease.holders = tuple(vars(value) for _, value in lease.objects)
+            lease.names = tuple(tuple(vars(value)) for _, value in lease.objects)
+            lease.fields = [{} for _ in lease.objects]
+            lease.view = SimpleNamespace(
+                objects=lease.objects, fields=lease.fields, weak_proxies=parent.proxies
+            )
+            lease.tape = SimpleNamespace(rng=parent.parent.rng, events=(), draws=(), locals={})
+            for name in ("cell_i", "cell_type", "cell_base", "cell_layout", "cell_aliases"):
+                setattr(lease, name, getattr(original, name))
+            lease.values = _storage_initial_values(parent, lease)
+            lease.graph = core.previous._scope(parent.parent.world).graph(
+                lease.view, lease.view, lease.tape
+            )
+            lease.status = "ready"
+            return parent
+        except BaseException as error:
+            primary = next(
+                (
+                    value
+                    for value in (
+                        parent.entry_error,
+                        getattr(completion, "entry_error", None),
+                        getattr(storage, "entry_error", None),
+                        getattr(transition, "entry_error", None),
+                    )
+                    if value is not None
+                ),
+                error,
+            )
+            lease.status, lease.primary = "failed", primary
+            if error is not primary:
+                lease.secondary = (error, primary)
+            parent.invalid = completion.invalid = storage.invalid = transition.invalid = True
+            raise primary  # noqa: B904 -- preserve primary/cause; retain secondary separately.
+
+
 def _dynamics_projection(context):
     lease = context.dynamics_lease
     for (_, actual), holder, names, target in zip(
@@ -2102,10 +2940,50 @@ def _claim_for_init_dynamics_prelude(owner, *, expected, transition, entries):
 def _check_init_dynamics_prelude_authority(transition):
     """Live source/registry authority plus immutable projection, no stale cache check."""
     parent = transition.parent
+    completion = getattr(transition, "completion_transition", None)
+    storage = getattr(completion, "storage_transition", None)
+    electrical = getattr(storage, "electrical_transition", None)
+    step = getattr(electrical, "first_step_transition", None)
+    if step is not None and getattr(step, "claimed", False):
+        return _check_first_step_ancestor(parent, completion, storage, electrical, step)
     if _dynamics_route(parent)[0] is not transition:
         raise ValueError("Different original dynamics transition")
     _check(parent, closed=True)
     _completion(parent)
+    electrical = _electrical_initial_lease(parent)
+    if electrical is not None:
+        if _storage_initial_values(parent, electrical).identity != electrical.values.identity:
+            raise ValueError("Electrical source changed an unowned original INIT value")
+        graph = core.previous._scope(parent.parent.world).graph(
+            electrical.view, electrical.view, electrical.tape
+        )
+        core.previous._same(graph[0], electrical.graph[0])
+        if graph[1] != electrical.graph[1]:
+            raise ValueError("Electrical source changed an immutable original reference edge")
+        return parent
+    storage = _storage_initial_lease(parent)
+    if storage is not None:
+        if _storage_initial_values(parent, storage).identity != storage.values.identity:
+            raise ValueError("Storage changed an unowned original INIT value")
+        graph = core.previous._scope(parent.parent.world).graph(
+            storage.view, storage.view, storage.tape
+        )
+        core.previous._same(graph[0], storage.graph[0])
+        if graph[1] != storage.graph[1]:
+            raise ValueError("Storage changed an original immutable reference edge")
+        return parent
+    forwarded = _completion_initial_lease(parent)
+    if forwarded is not None:
+        forwarded = _molecule_initial_lease(parent) or forwarded
+        if _completion_initial_values(parent, forwarded).identity != forwarded.values.identity:
+            raise ValueError("Completion changed an unowned original INIT value")
+        graph = core.previous._scope(parent.parent.world).graph(
+            forwarded.view, forwarded.view, forwarded.tape
+        )
+        core.previous._same(graph[0], forwarded.graph[0])
+        if graph[1] != forwarded.graph[1]:
+            raise ValueError("Completion changed an original immutable reference edge")
+        return parent
     lease = parent.dynamics_lease
     core._check_profile_ancestor_edges(lease)
     if _dynamics_values(parent).identity != lease.values.identity:
@@ -2117,6 +2995,109 @@ def _check_init_dynamics_prelude_authority(transition):
     return parent
 
 
+def _first_step_runtime(parent):
+    actual = _electrical_runtime(parent)
+    if actual is None or getattr(actual[0], "first_step_transition", None) is None:
+        return None
+    electrical, provider, storage, completion, completion_api = actual
+    function = vars(provider).get("_first_step_route")
+    if type(function) is not FunctionType:
+        raise ValueError("Actual original electrical first-step route unavailable")
+    retained = _atoms(function)
+    path = Path(provider.__file__)
+    previous._ready()._source_interface(provider, path.read_bytes(), path, ("_first_step_route",))
+    if vars(provider).get("_first_step_route") is not function:
+        raise ValueError("Proved first-step routing slot changed")
+    current = _atoms(function)
+    if len(current) != len(retained) or any(
+        a is not b for a, b in zip(current, retained, strict=True)
+    ):
+        raise ValueError("Proved first-step route code/default changed")
+    step, module = function(electrical)
+    if (
+        step.electrical_parent is not electrical
+        or step.parent is not completion
+        or step.initial is not parent
+        or step.phase is not parent.phase
+        or step.sim is not parent.phase.sim
+        or step.cells is not parent.cells
+        or step.p is not parent.p
+    ):
+        raise ValueError("Original same-INIT first-step ancestry changed")
+    return step, module, electrical, storage, completion, completion_api
+
+
+def _claim_first_step_ancestor(parent, completion, storage, electrical, transition):
+    """Reserved for Key's actual reviewed first-step ancestor transfer."""
+    # Obtain Key only from the genuine issued completion/runtime ancestry.
+    actual = _first_step_runtime(parent)
+    if (
+        actual is None
+        or actual[0] is not transition
+        or any(
+            a is not b for a, b in zip(actual[2:5], (electrical, storage, completion), strict=True)
+        )
+    ):
+        raise ValueError("Actual original first-step runtime ancestry required")
+    module = actual[5]
+    storage_api = sys.modules.get("cells.processes.betse_native_init_storage")
+    name = (
+        vars(storage_api).get("FIRST_STEP_ANCESTOR_CLAIM")
+        if type(storage_api) is ModuleType
+        else None
+    )
+    function = vars(module).get(name) if type(name) is str else None
+    frame = sys._getframe(1)
+    if (
+        type(function) is not FunctionType
+        or frame.f_code is not function.__code__
+        or frame.f_globals is not vars(module)
+        or not transition.active
+        or transition.setup_frame is not None
+        or transition.claimed
+        or parent.owner in _FIRST_STEP_INITIAL_LEASES
+    ):
+        parent.invalid = transition.invalid = True
+        raise ValueError("Actual once-only Key first-step reservation required")
+    lease = SimpleNamespace(
+        parent=parent,
+        completion=completion,
+        storage=storage,
+        electrical=electrical,
+        child=transition,
+        original=parent.electrical_initial_lease,
+        status="claiming",
+    )
+    _FIRST_STEP_INITIAL_LEASES[parent.owner] = parent.first_step_initial_lease = lease
+    # Old numerical validation belongs exclusively to the upstream electrical
+    # retirement, before this claim. This record preserves all original links.
+    lease.status = "reserved"
+    return parent
+
+
+def _check_first_step_ancestor(parent, completion, storage, electrical, transition):
+    lease = _FIRST_STEP_INITIAL_LEASES.get(parent.owner)
+    actual = _first_step_runtime(parent)
+    if (
+        lease is None
+        or lease is not getattr(parent, "first_step_initial_lease", None)
+        or lease.status != "reserved"
+        or actual is None
+        or actual[0] is not transition
+        or lease.parent is not parent
+        or lease.completion is not completion
+        or lease.storage is not storage
+        or lease.electrical is not electrical
+        or lease.child is not transition
+        or lease.original is not parent.electrical_initial_lease
+        or _ELECTRICAL_INITIAL_LEASES.get(parent.owner) is not lease.original
+    ):
+        raise ValueError("Retained original first-step ancestor lease changed")
+    if actual[1]._check_ancestor_metadata(transition) is not electrical:
+        raise ValueError("Different factored first-step electrical ancestry")
+    return parent
+
+
 def _dynamics_wrapper_guard(parent, frame):
     child, module = _dynamics_route(parent)
     raw = (frame, dict(frame.f_locals))
@@ -2124,6 +3105,15 @@ def _dynamics_wrapper_guard(parent, frame):
     if len(parent.dynamics_attempts) >= MAX_WORK:
         _reject(parent, "Bounded original helper wrapper attempt ledger exhausted")
     parent.dynamics_attempts.append(raw)
+    if _electrical_runtime(parent) is not None:
+        _electrical_wrapper_guard(parent, frame)
+        return
+    if _storage_runtime(parent) is not None:
+        _storage_wrapper_guard(parent, frame)
+        return
+    if _completion_runtime(parent) is not None:
+        _completion_wrapper_guard(parent, frame)
+        return
     name = frame.f_locals.get("method")
     function = vars(parent.runtime_types["Simulator"]).get(name)
     if (
@@ -2174,6 +3164,15 @@ def _dynamics_wrapper_guard(parent, frame):
 
 
 def _dynamics_dispatch_guard(parent, child, label, delegate, args, kwargs, frame):
+    if _electrical_runtime(parent) is not None:
+        _electrical_dispatch_guard(parent, label, delegate, args, kwargs, frame)
+        return
+    if _storage_runtime(parent) is not None:
+        _storage_dispatch_guard(parent, label, delegate, args, kwargs, frame)
+        return
+    if _completion_runtime(parent) is not None:
+        _completion_dispatch_guard(parent, label, delegate, args, kwargs, frame)
+        return
     wrapper = frame.f_back
     claim = parent.dynamics_frames.get(id(wrapper))
     method = label.removeprefix("Simulator.")
@@ -2206,4 +3205,260 @@ def _dynamics_dispatch_guard(parent, child, label, delegate, args, kwargs, frame
         and (len(args) != 2 or type(args[1]) is not str)
     ):
         _reject(parent, "Original helper arguments changed before dispatch")
+    claim.dispatched, claim.invocation = True, frame
+
+
+def _completion_wrapper_guard(parent, frame):
+    current, api, _, _ = _completion_runtime(parent)
+    lease = _completion_initial_lease(parent)
+    lease.last_attempt = (frame, dict(frame.f_locals))
+    if len(lease.attempts) >= MAX_WORK:
+        _reject(parent, "Bounded original completion wrapper attempts exhausted")
+    lease.attempts.append(lease.last_attempt)
+    api._guard(current)
+    role, method = frame.f_locals.get("name"), frame.f_locals.get("method")
+    permitted = (
+        ("init_profiles", "init_events", "_finalize_events_global", "_finalize_events_tissue")
+        if role == "TissueHandler"
+        else (
+            ("pick_cells_and_mems", "pick_cells", "get_image_mask")
+            if role
+            in (
+                "TissuePickerAll",
+                "TissuePickerColor",
+                "TissuePickerIndices",
+                "TissuePickerPercent",
+                "TissuePickerImage",
+            )
+            else ()
+        )
+    )
+    function = (
+        vars(parent.runtime_types[role]).get(method) if role in parent.runtime_types else None
+    )
+    actual = frame.f_locals.get("actual")
+    if (
+        method not in permitted
+        or type(function) is not FunctionType
+        or frame.f_code is not function.__code__
+        or frame.f_globals is not function.__globals__
+        or frame.f_locals.get("context") is not parent
+        or type(actual) is not parent.runtime_types[role]
+        or _OBJECTS.get(actual) is not parent
+        or frame.f_locals.get("delegate") is not getattr(parent.factories[role], method)
+        or id(frame) in lease.frames
+    ):
+        _reject(parent, "Actual original INIT handler/picker runtime wrapper required")
+    for name, cell in zip(function.__code__.co_freevars, function.__closure__ or (), strict=True):
+        if frame.f_locals.get(name) is not cell.cell_contents:
+            _reject(parent, "Original completion wrapper closure/cell changed")
+    args, kwargs = frame.f_locals.get("args"), frame.f_locals.get("kwargs")
+    if type(args) is not tuple or type(kwargs) is not dict:
+        _reject(parent, "Actual original wrapper argument containers required")
+    claim = SimpleNamespace(
+        frame=frame,
+        function=function,
+        actual=actual,
+        role=role,
+        method=method,
+        args=args,
+        kwargs=kwargs,
+        arg_refs=tuple(args),
+        keyword_refs=tuple(kwargs.items()),
+        dispatched=False,
+    )
+    lease.frames[id(frame)] = claim
+    api._wrapper_guard(current, parent, frame)
+    if lease.frames.get(id(frame)) is not claim or claim.dispatched:
+        _reject(parent, "Original completion entry claim changed during observation")
+
+
+def _completion_dispatch_guard(parent, label, delegate, args, kwargs, frame):
+    current, api, _, _ = _completion_runtime(parent)
+    lease = _completion_initial_lease(parent)
+    api._guard(current)
+    wrapper = frame.f_back
+    claim = lease.frames.get(id(wrapper))
+    if (
+        claim is None
+        or claim.frame is not wrapper
+        or claim.dispatched
+        or label != claim.role + "." + claim.method
+        or claim.function is not vars(parent.runtime_types[claim.role]).get(claim.method)
+        or delegate is not getattr(parent.factories[claim.role], claim.method)
+        or not args
+        or args[0] is not claim.actual
+        or frame.f_code is not _invoke.__code__
+        or frame.f_globals is not globals()
+        or wrapper.f_locals.get("args") is not claim.args
+        or wrapper.f_locals.get("kwargs") is not claim.kwargs
+        or len(args) != len(claim.arg_refs) + 1
+        or any(a is not b for a, b in zip(args[1:], claim.arg_refs, strict=True))
+        or tuple(kwargs.items()) != claim.keyword_refs
+    ):
+        _reject(parent, "Actual once-claimed same-instance completion dispatch required")
+    claim.dispatched, claim.invocation = True, frame
+
+
+def _storage_wrapper_guard(parent, frame):
+    current, api, _, _ = _storage_runtime(parent)
+    lease = _storage_initial_lease(parent)
+    lease.last_attempt = (frame, dict(frame.f_locals))
+    if len(lease.attempts) >= MAX_WORK:
+        _reject(parent, "Bounded original storage wrapper attempts exhausted")
+    lease.attempts.append(lease.last_attempt)
+    api._guard(current)
+    function = vars(parent.runtime_types["Simulator"]).get("clear_storage")
+    if (
+        frame.f_locals.get("name") != "Simulator"
+        or frame.f_locals.get("method") != "clear_storage"
+        or type(function) is not FunctionType
+        or frame.f_code is not function.__code__
+        or frame.f_globals is not function.__globals__
+        or frame.f_locals.get("context") is not parent
+        or frame.f_locals.get("actual") is not parent.phase.sim
+        or type(parent.phase.sim) is not parent.runtime_types["Simulator"]
+        or _OBJECTS.get(parent.phase.sim) is not parent
+        or frame.f_locals.get("delegate") is not parent.factories["Simulator"].clear_storage
+        or frame.f_back is not current.driver_frame
+        or id(frame) in lease.frames
+    ):
+        _reject(parent, "Only the actual same-instance original storage wrapper may enter")
+    for name, cell in zip(function.__code__.co_freevars, function.__closure__ or (), strict=True):
+        if frame.f_locals.get(name) is not cell.cell_contents:
+            _reject(parent, "Original storage wrapper closure/frame changed")
+    args, kwargs = frame.f_locals.get("args"), frame.f_locals.get("kwargs")
+    if type(args) is not tuple or type(kwargs) is not dict:
+        _reject(parent, "Actual original storage wrapper argument containers required")
+    claim = SimpleNamespace(
+        frame=frame,
+        function=function,
+        args=args,
+        kwargs=kwargs,
+        arg_refs=tuple(args),
+        keyword_refs=tuple(kwargs.items()),
+        dispatched=False,
+    )
+    lease.frames[id(frame)] = claim
+    api._wrapper_guard(current, parent, frame)
+    if (
+        lease.frames.get(id(frame)) is not claim
+        or claim.dispatched
+        or frame.f_locals.get("args") is not claim.args
+        or frame.f_locals.get("kwargs") is not claim.kwargs
+    ):
+        _reject(parent, "Original storage wrapper claim changed during observation")
+
+
+def _storage_dispatch_guard(parent, label, delegate, args, kwargs, frame):
+    current, api, _, _ = _storage_runtime(parent)
+    lease = _storage_initial_lease(parent)
+    api._guard(current)
+    wrapper = frame.f_back
+    claim = lease.frames.get(id(wrapper))
+    if (
+        claim is None
+        or claim.frame is not wrapper
+        or claim.dispatched
+        or label != "Simulator.clear_storage"
+        or claim.function is not vars(parent.runtime_types["Simulator"]).get("clear_storage")
+        or delegate is not parent.factories["Simulator"].clear_storage
+        or frame.f_code is not _invoke.__code__
+        or frame.f_globals is not globals()
+        or wrapper.f_back is not current.driver_frame
+        or not args
+        or args[0] is not parent.phase.sim
+        or len(args) != 3
+        or args[1] is not parent.cells
+        or args[2] is not parent.p
+        or kwargs
+        or wrapper.f_locals.get("args") is not claim.args
+        or wrapper.f_locals.get("kwargs") is not claim.kwargs
+        or len(args) != len(claim.arg_refs) + 1
+        or any(a is not b for a, b in zip(args[1:], claim.arg_refs, strict=True))
+        or tuple(kwargs.items()) != claim.keyword_refs
+    ):
+        _reject(parent, "Actual once-claimed original storage dispatch required")
+    claim.dispatched, claim.invocation = True, frame
+
+
+def _electrical_wrapper_guard(parent, frame):
+    current, api, _, _, _ = _electrical_runtime(parent)
+    lease = _electrical_initial_lease(parent)
+    lease.last_attempt = (frame, dict(frame.f_locals))
+    if len(lease.attempts) >= MAX_WORK:
+        _reject(parent, "Bounded original electrical wrapper attempts exhausted")
+    lease.attempts.append(lease.last_attempt)
+    api._guard(current)
+    function = vars(parent.runtime_types["Simulator"]).get("update_V")
+    if (
+        frame.f_locals.get("name") != "Simulator"
+        or frame.f_locals.get("method") != "update_V"
+        or type(function) is not FunctionType
+        or frame.f_code is not function.__code__
+        or frame.f_globals is not function.__globals__
+        or frame.f_locals.get("context") is not parent
+        or frame.f_locals.get("actual") is not parent.phase.sim
+        or type(parent.phase.sim) is not parent.runtime_types["Simulator"]
+        or _OBJECTS.get(parent.phase.sim) is not parent
+        or frame.f_locals.get("delegate") is not parent.factories["Simulator"].update_V
+        or frame.f_back is not current.driver_frame
+        or id(frame) in lease.frames
+    ):
+        _reject(parent, "Only the actual original Simulator.update_V wrapper may enter")
+    for name, cell in zip(function.__code__.co_freevars, function.__closure__ or (), strict=True):
+        if frame.f_locals.get(name) is not cell.cell_contents:
+            _reject(parent, "Original electrical wrapper closure/frame changed")
+    args, kwargs = frame.f_locals.get("args"), frame.f_locals.get("kwargs")
+    if type(args) is not tuple or type(kwargs) is not dict:
+        _reject(parent, "Actual original electrical argument containers required")
+    claim = SimpleNamespace(
+        frame=frame,
+        function=function,
+        args=args,
+        kwargs=kwargs,
+        arg_refs=tuple(args),
+        keyword_refs=tuple(kwargs.items()),
+        dispatched=False,
+    )
+    lease.frames[id(frame)] = claim
+    api._wrapper_guard(current, parent, frame)
+    if (
+        lease.frames.get(id(frame)) is not claim
+        or claim.dispatched
+        or frame.f_locals.get("args") is not claim.args
+        or frame.f_locals.get("kwargs") is not claim.kwargs
+    ):
+        _reject(parent, "Original electrical wrapper claim changed during observation")
+
+
+def _electrical_dispatch_guard(parent, label, delegate, args, kwargs, frame):
+    current, api, _, _, _ = _electrical_runtime(parent)
+    lease = _electrical_initial_lease(parent)
+    api._guard(current)
+    wrapper = frame.f_back
+    claim = lease.frames.get(id(wrapper))
+    if (
+        claim is None
+        or claim.frame is not wrapper
+        or claim.dispatched
+        or label != "Simulator.update_V"
+        or claim.function is not vars(parent.runtime_types["Simulator"]).get("update_V")
+        or delegate is not parent.factories["Simulator"].update_V
+        or frame.f_code is not _invoke.__code__
+        or frame.f_globals is not globals()
+        or wrapper.f_back is not current.driver_frame
+        or not args
+        or args[0] is not parent.phase.sim
+        or len(args) != 3
+        or args[1] is not parent.cells
+        or args[2] is not parent.p
+        or kwargs
+        or wrapper.f_locals.get("args") is not claim.args
+        or wrapper.f_locals.get("kwargs") is not claim.kwargs
+        or len(args) != len(claim.arg_refs) + 1
+        or any(a is not b for a, b in zip(args[1:], claim.arg_refs, strict=True))
+        or tuple(kwargs.items()) != claim.keyword_refs
+    ):
+        _reject(parent, "Actual once-claimed original electrical dispatch required")
     claim.dispatched, claim.invocation = True, frame

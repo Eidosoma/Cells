@@ -38,11 +38,11 @@ from cells.processes import betse_native_tissue_configuration_source as tissue_s
 
 LAW_ID = "betse_same_seed_core_whole_init_profiles@1"
 RELEASE = "CELLS_NATIVE_SEED_INIT_PROFILES_RELEASED"
-PARENT_SOURCE_SHA256 = "96ebd0104a4a5ba2a05f3ab959c25a3046ef6e1019f08e4e9f7fef2240e8e419"
+PARENT_SOURCE_SHA256 = "1e95cb6a7b8c668979a96211c3fce1bec5ca65da11963e23d8c5e60b65f67f5e"
 PARENT_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
-COORDINATOR_SOURCE_SHA256 = "025d28d2a5917f053ab7a2db1121c103d479ac3238e5ebd7b4b2df149b426127"
+COORDINATOR_SOURCE_SHA256 = "ed62776c568a57c6b86c84959e20a3e4901bb358b55d050ca810f4dd1a4e7eea"
 COORDINATOR_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
-DYNA_SOURCE_SHA256 = "4a930b68f6ce4f0140a96d00c03400e7e176e3639ef94cfdd160164af477a033"
+DYNA_SOURCE_SHA256 = "919d61000c9fa87b58e92cc5f8d08832da3cbcd1af287638bb26cc3436d2c9ce"
 DYNA_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 PROPOSED_CLAIM = "_claim_for_seed_profiles"
 PROPOSED_CHECK = "_check_seed_profiles_authority"
@@ -532,6 +532,13 @@ def _native(function, filename, cls, name):
         raise ValueError("Original undecorated native helper required")
     core, chain = function, (function,)
     node = _node(_trees()[filename], cls, name)
+    qualified = ((cls + ".") if cls else "") + name
+    first_line = min((node.lineno, *(item.lineno for item in node.decorator_list)))
+    expected = next(
+        code
+        for qualname, line, code in _native_module_codes(filename, NATIVE_PINS[filename])
+        if qualname == qualified and line == first_line
+    )
     module = sys.modules.get(filename[:-3].replace("/", "."))
     if (
         len(chain) != 1
@@ -542,12 +549,14 @@ def _native(function, filename, cls, name):
         or core.__globals__ is not vars(module)
         or core.__builtins__ is not vars(builtins)
         or core.__name__ != name
-        or core.__qualname__ != ((cls + ".") if cls else "") + name
+        or core.__qualname__ != qualified
         or core.__defaults__ is not None
         or core.__kwdefaults__ is not None
         or core.__closure__ is not None
         or core.__code__.co_filename != str(NATIVE / filename)
-        or _code_key(core.__code__) != _code_key(_compile(node, str(NATIVE / filename)))
+        or core.__code__.co_qualname != expected.co_qualname
+        or core.__code__.co_firstlineno != expected.co_firstlineno
+        or _code_key(core.__code__) != _code_key(expected)
     ):
         raise ValueError("Original helper code/global/builtins required: " + name)
     for name in core.__code__.co_names:
@@ -906,15 +915,11 @@ def _namespace(context):
         context.shuffle_code = context.shuffle.__func__.__code__
     context.cell_epoch = _cell_epoch(context)
     _image_authority(context.request.image_inputs, _selected_pickers(context))
-    context.pick_code = _compile(
-        _node(_trees()[PICKER_FILE], "TissuePickerABC", "pick_cells_and_mems"),
-        str(NATIVE / PICKER_FILE),
-    )
+    # These originals have already passed _native in their complete module context.
     context.pick_code = next(
         fn.__code__
         for fn in context.native_functions
-        if fn.__code__.co_name == "pick_cells_and_mems"
-        and _code_key(fn.__code__) == _code_key(context.pick_code)
+        if fn.__qualname__ == "TissuePickerABC.pick_cells_and_mems"
     )
     context.allowed_codes = frozenset(
         code

@@ -22,7 +22,7 @@ from cells.processes import betse_native_phase_parameters as parameters
 
 LAW_ID = parameters.YAML_PREFIX_LAW
 PATHS_LAW = "betse_native_parameter_compatibility_paths@1"
-PARAMETERS_SHA256 = "93116b2688e37d248d0bb410f4c483587f8378e4ad1e12be4930bd7021e1d6d4"
+PARAMETERS_SHA256 = "36d4b0f667c9ba177e6c06e004673efcee40e0de7c579dad03a70a919365cb20"
 MAX_FILE_BYTES = 8 * 2**20
 BASE = Path("/mnt/workspaces/Cells")
 _FILES, _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(5))
@@ -223,15 +223,12 @@ def from_unloaded(parent, file, *, law_id):
 
 
 def _prefix(context):
-    chain = parameters.inherited._chain(context.parent.source.cls.load)
-    if len(chain) != 1 or vars(context.parent.source.cls).get("load") is not chain[0]:
-        raise ValueError("Original undecorated Parameters.load required")
-    original = chain[0]
+    original = parameters._method_original(context.parent.source, "load")
     if original.__defaults__ is not None or original.__kwdefaults__ is not None:
         raise ValueError("Original Parameters.load defaults/header changed")
     path = parameters.inherited.tissue.aliases.NATIVE / parameters.PARAMETERS
     cls = parameters.inherited._class(ast.parse(path.read_bytes()), "Parameters")
-    expected = parameters._method_code(cls, "load", str(path))
+    expected = parameters._method_code(cls, "load", str(path), native_context=True)
     if original.__globals__ is not vars(
         context.parent.source.modules["betse.science.parameters"]
     ) or parameters.inherited._code(original.__code__) != parameters.inherited._code(expected):

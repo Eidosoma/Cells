@@ -1,8 +1,10 @@
 """Freeze the guarded original four-store continuation and run native-blocked software controls."""
 
 import argparse
+import ast
 import json
 import os
+import resource
 import runpy
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -53,6 +55,7 @@ TARGETS = (
     "test_undecorated_outer_body_cannot_hide_behind_canonical_wrapped_helper",
     "test_undecorated_helper_defaults_and_delegates_are_exact",
     "test_numpy_actual_implementation_role_is_distinct_from_unordered_gc_membership",
+    "test_numpy_empty_gc_edges_require_exact_observed_origin",
     "test_registry_dispatch_retarget_refuses_before_attribute_or_load_entry",
     "test_registry_rechecks_surface_after_inherited_call_hook",
     "test_inherited_getter_line_mutation_refuses_before_foreign_attribute_body",
@@ -72,7 +75,7 @@ TARGETS = (
     "test_constructor_and_copy_authentication_require_complete_module_and_class_context",
     *CONTEXT_TARGETS,
 )
-REFERENCE_GUARD_SHA256 = "577460cd94e1204b1248db07b3a0cfe20f6b028f7b943f2f9cba797641601a2e"
+REFERENCE_GUARD_SHA256 = "0b274dc8084cc26119bb11d0c0c1deeedeaf13d71bc25e72b07e320c5ccd8666"
 
 
 def classify_reference_guard(case, record, *, native_record, pytest_status, fixture_sha256):
@@ -198,16 +201,32 @@ def classify_reference_guard(case, record, *, native_record, pytest_status, fixt
 
 
 def prepare(repository, directory):
-    from cells.processes import betse_native_parameter_colormap_load as stage
-
     repo = Path(repository).resolve(strict=True)
     if Path(__file__).resolve() != repo / FILE:
         raise ValueError("Prepare current Git checkout only")
-    directory = inherited.separate(
-        directory, repo, stage.prefix.parameters.inherited.tissue.aliases.NATIVE
-    )
+    directory = inherited.separate(directory, repo, Path("/mnt/workspaces/Cells/betse-v1.5.0"))
     directory.mkdir(parents=True, exist_ok=False)
-    plan = stage.source_plan()
+    # Freeze without loading the production dependency tree under the metadata
+    # cap. The existing 1 GiB child captures the actual source plan before tests.
+    source = "src/cells/processes/betse_native_parameter_colormap_load.py"
+    tree = ast.parse((repo / source).read_bytes())
+    laws = [
+        ast.literal_eval(node.value)
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and node.targets[0].id == "LAW_ID"
+    ]
+    if len(laws) != 1 or type(laws[0]) is not str:
+        raise ValueError("One literal source law required")
+    plan = dict(
+        source_plan_deferred=True,
+        source_plan_capture="verified_frozen_child_before_tests",
+        source=source,
+        law=laws[0],
+        native_or_owner_execution=False,
+    )
     files = runpy.run_path(str(repo / inherited.CLOSURE_TOOL))["closure"](repo, list(OWNED))
     for name in ("pyproject.toml", "tests/__init__.py", inherited.CLOSURE_TOOL):
         files[name] = snapshot.digest(repo / name)
@@ -216,7 +235,7 @@ def prepare(repository, directory):
     snapshot.write_json(
         directory / "inputs.json",
         dict(
-            law=stage.LAW_ID,
+            law=laws[0],
             held=True,
             automatic_launch=False,
             snapshot=inherited.ref(directory / "source/SNAPSHOT.json"),
@@ -258,6 +277,27 @@ def _target(target):
 
 
 def child(output, *, target):
+    resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
+    root = Path(__file__).resolve().parents[2]
+    manifest = snapshot.verify(root)
+    from cells.processes import betse_native_parameter_colormap_load as stage
+
+    source = "src/cells/processes/betse_native_parameter_colormap_load.py"
+    if (
+        Path(stage.__file__).resolve() != root / source
+        or snapshot.digest(root / source) != manifest["files"][source]["sha256"]
+    ):
+        raise ValueError("Actual frozen colormap producer required")
+    snapshot.write_json(
+        output / "source-plan-observed.json",
+        dict(
+            source=source,
+            sha256=manifest["files"][source]["sha256"],
+            source_plan=stage.source_plan(),
+            source_plan_capture="verified_frozen_child_before_tests",
+            native_or_owner_execution=False,
+        ),
+    )
     return callbacks.delegate(inherited.child, TEST=_target(target))(output)
 
 

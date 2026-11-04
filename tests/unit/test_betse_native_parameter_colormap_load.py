@@ -1001,6 +1001,98 @@ def _numpy_metadata_model():
     return module, argument, core
 
 
+@pytest.mark.parametrize(
+    "drift",
+    [
+        "valid",
+        "unbound",
+        "file",
+        "module",
+        "code",
+        "globals",
+        "refusal",
+        "retarget",
+        "return_code",
+        "return_defaults",
+        "nonfunction",
+    ],
+)
+def test_numpy_empty_gc_edges_require_exact_observed_origin(monkeypatch, tmp_path, drift):
+    """Isolated consumer protocol; the fixture never establishes C-object provenance."""
+    module, argument, core = _numpy_metadata_model()
+    value = SimpleNamespace(_implementation=core, __wrapped__=core)
+    origin = ModuleType("cells.processes.betse_native_numpy_copy_origin")
+    path = tmp_path / "betse_native_numpy_copy_origin.py"
+    path.write_text(
+        "def require_copy(value, core, argument):\n"
+        "    global require_copy\n"
+        "    calls.append((value, core, argument))\n"
+        "    if refusal:\n"
+        "        raise ValueError('Original import construction was not observed')\n"
+        "    if retarget:\n"
+        "        require_copy = replacement\n"
+        "    if return_code:\n"
+        "        require_copy.__code__ = replacement_code\n"
+        "    if return_defaults:\n"
+        "        require_copy.__defaults__ = (None,)\n"
+        "    return proof\n"
+    )
+    code = compile(path.read_bytes(), str(path), "exec", dont_inherit=True)
+    body = next(c for c in code.co_consts if type(c) is CodeType and c.co_name == "require_copy")
+    proof, calls = object(), []
+    vars(origin).update(
+        __file__=str(path),
+        __builtins__=vars(builtins),
+        calls=calls,
+        proof=proof,
+        refusal=drift == "refusal",
+        retarget=drift == "retarget",
+        return_code=drift == "return_code",
+        return_defaults=drift == "return_defaults",
+        replacement_code=compile(
+            "lambda value, core, argument: None", "foreign.py", "eval"
+        ).co_consts[0],
+        replacement=object(),
+    )
+    origin.require_copy = FunctionType(body, vars(origin), "require_copy")
+    monkeypatch.setitem(sys.modules, origin.__name__, origin)
+    monkeypatch.setattr(stage.runtime, "__file__", str(tmp_path / "runtime.py"))
+    monkeypatch.setattr(stage.runtime, "ORIGIN_SOURCE_SHA256", stage.state._file(str(path))[1])
+    monkeypatch.setattr(stage.runtime, "get_referents", lambda _value: [])
+    if drift == "unbound":
+        monkeypatch.setattr(stage.runtime, "ORIGIN_SOURCE_SHA256", None)
+    elif drift == "file":
+        path.write_text(path.read_text() + "# changed origin producer\n")
+    elif drift == "module":
+        monkeypatch.delitem(sys.modules, origin.__name__)
+    elif drift == "code":
+        origin.require_copy.__code__ = compile(
+            "lambda value, core, argument: None", "foreign.py", "eval"
+        ).co_consts[0]
+    elif drift == "globals":
+        origin.require_copy = FunctionType(body, dict(vars(origin)), "require_copy")
+    elif drift == "nonfunction":
+
+        class Foreign:
+            def __getattribute__(self, name):
+                calls.append(name)
+                raise AssertionError("Foreign validator must refuse before attribute access")
+
+        origin.require_copy = Foreign()
+    if drift == "valid":
+        actual, bindings, edges = stage.runtime._copy_delegates(value, core, module)
+        assert actual is argument and bindings and edges == (argument, core, proof)
+        assert calls == [(value, core, argument)]
+    else:
+        with pytest.raises(ValueError):
+            stage.runtime._copy_delegates(value, core, module)
+        assert calls == (
+            [(value, core, argument)]
+            if drift in ("refusal", "retarget", "return_code", "return_defaults")
+            else []
+        )
+
+
 @pytest.mark.parametrize("helper", ["list_suggestion_error_msg", "_copy_dispatcher"])
 def test_undecorated_outer_body_cannot_hide_behind_canonical_wrapped_helper(tmp_path, helper):
     if helper == "list_suggestion_error_msg":

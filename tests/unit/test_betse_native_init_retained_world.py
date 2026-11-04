@@ -30,6 +30,306 @@ def clone(fn, **values):
     return value
 
 
+def test_completion_default_without_owned_successor_keeps_original_epoch_checks():
+    assert stage._completion_initial_lease(NS()) is None
+
+
+def test_completion_ancestor_claim_refuses_unbound_real_provider_before_foreign_read():
+    class Foreign:
+        def __getattribute__(self, name):
+            raise AssertionError("No foreign owner inspection before provider adoption")
+
+    with pytest.raises(stage.InitRejected) as caught:
+        stage._claim_completion_ancestor(Foreign(), Foreign(), Foreign())
+    assert caught.value.stage == "dynamics_held"
+
+
+@pytest.mark.parametrize("mutation", ("equal_copy", "shape", "writeable"))
+def test_completion_cell_layout_metadata_retains_actual_array_and_base(mutation):
+    # Array-layout helper only, not an issued completion or a permitted draw.
+    array = np.asarray([1, 1, 1], dtype=np.int64)
+    parent = NS(cells=NS(cell_i=array))
+    lease = NS(
+        cell_i=array,
+        cell_type=type(array),
+        cell_base=array.base,
+        cell_layout=(
+            array.dtype.str,
+            tuple(array.shape),
+            tuple(array.strides),
+            array.ctypes.data,
+            bool(array.flags.writeable),
+            bool(array.flags.c_contiguous),
+            bool(array.flags.f_contiguous),
+        ),
+    )
+    stage._completion_cell_layout(parent, lease)
+    if mutation == "equal_copy":
+        parent.cells.cell_i = array.copy()
+        assert np.array_equal(parent.cells.cell_i, array)
+    elif mutation == "shape":
+        array.shape = (1, 3)
+    else:
+        array.flags.writeable = False
+    with pytest.raises(ValueError, match="identity/base/layout"):
+        stage._completion_cell_layout(parent, lease)
+
+
+def test_completion_ancestor_metadata_does_not_rearm_or_replace_retained_instances():
+    tree = ast.parse(stage.Path(stage.__file__).read_bytes())
+    names = (
+        "_claim_completion_ancestor",
+        "_completion_projection",
+        "_completion_runtime",
+        "_completion_wrapper_guard",
+        "_completion_dispatch_guard",
+    )
+    nodes = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
+    assert len(nodes) == len(names)
+    for method in nodes:
+        for node in ast.walk(method):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+                assert node.func.id not in ("exec", "eval", "setattr")
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    assert not (isinstance(target, ast.Attribute) and target.attr == "__class__")
+
+
+def test_completion_historical_alias_projection_keeps_true_views_not_equal_copies(monkeypatch):
+    root = np.asarray([0, 1, 2, 3], dtype=np.int64)
+    view, equal = root[:2], root.copy()
+    parent = NS(cells=NS(cell_i=root))
+    fields = [
+        {
+            "cell_i": root,
+            "old_All_target": root,
+            "old_partial_target": view,
+            "unrelated_equal": equal,
+        }
+    ]
+    monkeypatch.setattr(stage, "_seed_projection", lambda actual: NS(fields=fields))
+    monkeypatch.setattr(stage, "_dynamics_projection", lambda actual: NS(fields=[]))
+    aliases = stage._completion_cell_aliases(parent)
+    assert any(value is root for value in aliases)
+    assert any(value is view for value in aliases)
+    assert all(value is not equal for value in aliases)
+
+
+def test_completion_live_route_is_source_authenticated_before_invocation():
+    tree = ast.parse(stage.Path(stage.__file__).read_bytes())
+    node = next(
+        n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "_completion_runtime"
+    )
+    text = ast.unparse(node)
+    assert text.index("_dynamics_binding(raw)") < text.index("_source_interface(")
+    assert text.index("_source_interface(") < text.index("route(prelude)")
+    assert "('_completion_route',)" in text
+
+
+def test_completion_caught_duplicate_reservation_stays_poisoned_before_source():
+    parent = NS(entry_error=None, invalid=False, stage="metadata", request=None, trial=None)
+    successor = NS(invalid=False)
+    with pytest.raises(stage.InitRejected) as caught:
+        stage._reject_completion_reservation(parent, successor)
+    assert parent.invalid and successor.invalid
+    assert caught.value is parent.entry_error
+    with pytest.raises(stage.InitRejected) as sticky:
+        stage._guard(parent)
+    assert sticky.value is caught.value
+
+
+def test_storage_default_without_successor_preserves_original_completion_epoch():
+    assert stage._storage_initial_lease(NS()) is None
+
+
+def test_storage_ancestor_refuses_unbound_provider_before_foreign_owner_read():
+    class Foreign:
+        def __getattribute__(self, name):
+            pytest.fail("No supplied ancestor inspection before producer adoption")
+
+    with pytest.raises(stage.InitRejected) as caught:
+        stage._claim_storage_ancestor(Foreign(), Foreign(), Foreign())
+    assert caught.value.stage == "dynamics_held"
+
+
+@pytest.mark.parametrize("mutation", ("allowed_storage", "foreign_sim", "foreign_handler", "cells"))
+def test_storage_factored_values_keep_original_nonstorage_bits_and_aliases(mutation, monkeypatch):
+    from cells.processes import betse_native_single_cell_poisson_observation as observation
+
+    # Codec-only objects, not owners or entries in any issuance registry.
+    array = np.asarray([0, 1], dtype=np.int64)
+    sim = NS(fluxes_mem=np.asarray([-0.0, 2.0]), vm_time=[1], retained=-0.0)
+    handler, cells = NS(retained=3), NS(cell_i=array, retained=4)
+    objects = (("Simulator", sim), ("TissueHandler", handler), ("Cells", cells))
+    parent = NS(phase=NS(sim=sim, dyna=handler), cells=cells, parent=NS(world=object()))
+    lease = NS(
+        objects=objects,
+        holders=tuple(vars(actual) for _, actual in objects),
+        names=tuple(tuple(vars(actual)) for _, actual in objects),
+        fields=[{} for _ in objects],
+        sim_fields=frozenset(("fluxes_mem", "vm_time")),
+        handler_fields=frozenset(),
+        cell_aliases=(array,),
+    )
+    lease.view = NS(objects=objects, fields=lease.fields)
+    tape, scope = NS(rng=object(), events=(), draws=(), locals={}), observation.Scope()
+    monkeypatch.setattr(stage, "_projector", lambda actual: NS(objects=list(objects)))
+    monkeypatch.setattr(stage.core.previous, "_scope", lambda ignored: scope)
+    before = stage._storage_initial_values(parent, lease)
+    graph = scope.graph(lease.view, lease.view, tape)
+    old_flux, old_history = sim.fluxes_mem, sim.vm_time
+    sim.fluxes_mem, sim.vm_time = np.asarray([0.0, 0.0]), []
+    if mutation == "foreign_sim":
+        sim.retained = 0.0  # Equal arithmetic value; different typed bits.
+    elif mutation == "foreign_handler":
+        handler.retained = 4
+    elif mutation == "cells":
+        cells.retained = 5
+    after = stage._storage_initial_values(parent, lease)
+    current = scope.graph(lease.view, lease.view, tape)
+    assert old_flux is not sim.fluxes_mem and old_history is not sim.vm_time
+    assert cells.cell_i is array
+    if mutation == "allowed_storage":
+        assert before.identity == after.identity
+        assert len(graph[0]) == len(current[0])
+        assert all(a is b for a, b in zip(graph[0], current[0], strict=True))
+        assert graph[1] == current[1]
+    else:
+        assert before.identity != after.identity
+
+
+def test_storage_observation_does_not_weaken_other_object_field_rosters():
+    sim, foreign = NS(time=[]), NS(time=[])
+    parent = NS(phase=NS(sim=sim, dyna=NS()))
+    lease = NS(
+        objects=(("Simulator", sim), ("Other", foreign)),
+        holders=(vars(sim), vars(foreign)),
+        names=(("time",), ("time",)),
+        fields=[{}, {}],
+        sim_fields=frozenset(("time", "new_history")),
+        handler_fields=frozenset(),
+        view=object(),
+    )
+    sim.new_history = []
+    assert stage._completion_projection(parent, lease) is lease.view
+    foreign.new_history = []
+    with pytest.raises(ValueError, match="unowned original field roster"):
+        stage._completion_projection(parent, lease)
+
+
+def test_storage_dispatch_uses_original_invoke_frame_without_replacing_methods():
+    tree = ast.parse(stage.Path(stage.__file__).read_bytes())
+    functions = {n.name: n for n in tree.body if isinstance(n, ast.FunctionDef)}
+    for name in ("_storage_wrapper_guard", "_storage_dispatch_guard", "_claim_storage_ancestor"):
+        source = ast.unparse(functions[name])
+        assert "__class__ =" not in source
+        assert "setattr(parent.phase.sim" not in source
+    invoke = ast.unparse(functions["_invoke"])
+    assert invoke.index("_storage_runtime(context)") < invoke.index("_completion_runtime(context)")
+    assert "frame.f_code is not _invoke.__code__" in ast.unparse(
+        functions["_storage_dispatch_guard"]
+    )
+
+
+@pytest.mark.parametrize("entry", ("guard", "invoke"))
+@pytest.mark.parametrize("origin", ("completion", "storage", "storage_claim"))
+def test_storage_retained_entry_preserves_first_rejection_before_any_later_delegate(entry, origin):
+    primary, cause = ValueError("original entry rejection"), OSError("original cause")
+    primary.__cause__ = cause
+    storage = NS(entry_error=primary if origin == "storage" else None)
+    completion = NS(
+        entry_error=primary if origin == "completion" else None,
+        storage_error=primary if origin == "storage_claim" else None,
+        storage_transition=storage,
+    )
+    parent = NS(
+        entry_error=None,
+        dynamics_transition=NS(entry_error=None, completion_transition=completion),
+        dynamics_error=RuntimeError("secondary stale/capture error"),
+    )
+    calls = []
+
+    def delegate(*args, **kwargs):
+        calls.append((args, kwargs))
+
+    with pytest.raises(ValueError) as caught:
+        if entry == "guard":
+            stage._guard(parent)
+        else:
+            stage._invoke(parent, "Simulator.clear_storage", delegate, object())
+    assert caught.value is primary and caught.value.__cause__ is cause
+    assert calls == []
+
+
+def test_electrical_default_keeps_original_unforwarded_ancestry():
+    assert stage._electrical_initial_lease(NS()) is None
+
+
+def test_electrical_ancestor_refuses_unavailable_authority_before_foreign_parent_read():
+    class Foreign:
+        def __getattribute__(self, name):
+            pytest.fail("No supplied electrical/phase/parent data can grant a claim")
+
+    with pytest.raises(stage.InitRejected) as caught:
+        stage._claim_electrical_ancestor(Foreign(), Foreign(), Foreign(), Foreign())
+    assert caught.value.stage == "dynamics_held"
+
+
+@pytest.mark.parametrize("entry", ("guard", "invoke"))
+def test_electrical_retained_rejection_precedes_later_registry_or_capture_error(entry):
+    primary, cause = ValueError("electrical entry rejected"), RuntimeError("original cause")
+    primary.__cause__ = cause
+    electrical = NS(entry_error=primary)
+    storage = NS(entry_error=None, electrical_transition=electrical, electrical_error=None)
+    completion = NS(entry_error=None, storage_transition=storage, storage_error=None)
+    parent = NS(
+        entry_error=None,
+        dynamics_transition=NS(entry_error=None, completion_transition=completion),
+        dynamics_error=OSError("later observation failure"),
+    )
+    calls = []
+
+    def forbidden(*args, **kwargs):
+        calls.append((args, kwargs))
+
+    with pytest.raises(ValueError) as caught:
+        if entry == "guard":
+            stage._guard(parent)
+        else:
+            stage._invoke(parent, "Simulator.update_V", forbidden, object())
+    assert caught.value is primary and caught.value.__cause__ is cause
+    assert calls == []
+
+
+def test_electrical_route_replaced_during_proof_never_invokes_unproved_capture(tmp_path):
+    module = ModuleType("metadata_route_not_an_owner")
+    module.__file__ = str(tmp_path / "route-source.py")
+    stage.Path(module.__file__).write_text("# metadata source; no executable owner\n")
+    calls = []
+
+    def template(value):
+        value.calls.append("unproved route called")
+
+    captured = FunctionType(template.__code__, vars(module), "_electrical_route")
+    proved = FunctionType(template.__code__, vars(module), "_electrical_route")
+    module._electrical_route = captured
+    storage = NS(electrical_transition=object(), calls=calls)
+
+    def proof(actual, raw, path, names):
+        assert actual is module and names == ("_electrical_route",)
+        assert raw.startswith(b"# metadata")
+        module._electrical_route = proved
+
+    function = clone(
+        stage._electrical_runtime,
+        _storage_runtime=lambda parent: (storage, module, object(), object()),
+        previous=NS(_ready=lambda: NS(_source_interface=proof)),
+    )
+    with pytest.raises(ValueError, match="changed before invocation"):
+        function(object())
+    assert calls == [] and module._electrical_route is proved
+
+
 @pytest.fixture(autouse=True)
 def blocked(request, tmp_path, monkeypatch):
     if os.environ.get(software.SOFTWARE_RELEASE) != "1":
@@ -1712,6 +2012,30 @@ def synthetic_init_inputs(monkeypatch, tmp_path):
         assert owner is upstream_owner and expected is seed.trial
         assert not hasattr(seed, "attempted")
         seed.attempted = transition
+        assert transition.phase is None and transition.claim is None
+        # This predecessor is explicitly synthetic. Capture its ACTUAL live
+        # metadata before the real INIT constructor, instead of inventing a
+        # missing lease after an owner is issued. Empty native source edges
+        # grant no real upstream authority; every buffer/alias is observed by
+        # the same original projection and graph functions used downstream.
+        objects = tuple(old_objects)
+        fields = [{} for _ in objects]
+        lease = NS(
+            edges=(),
+            files=(),
+            samplers=(),
+            objects=objects,
+            holders=tuple(vars(value) for _, value in objects),
+            names=tuple(tuple(vars(value)) for _, value in objects),
+            fields=fields,
+            view=NS(objects=objects, fields=fields),
+            tape=tape,
+            projector=NS(objects=list(old_objects)),
+            stream=stage._rng(transition),
+        )
+        transition.seed_lease = lease
+        lease.values, lease.graph = stage._seed_values(transition), stage._seed_graph(transition)
+        h.synthetic_seed_lease = lease
 
     def live(transition, *, parameter_claim, parameter_record):
         assert seed.attempted is transition
@@ -1897,9 +2221,11 @@ class Gap_Junction:
     monkeypatch.setattr(stage.core.previous, "_rng", lambda ignored: NS(identity="metadata-no-RNG"))
     monkeypatch.setenv(stage.RELEASE, "1")
     h.upstream_owner, h.old_phase, h.old_sim = upstream_owner, old_phase, old_sim
+    h.upstream, h.predecessor = seed, predecessor
     h.scope, h.factories, h.namespace = scope, factories, namespace
     h.seams = (
         "synthetic upstream predecessor",
+        "synthetic predecessor live metadata lease captured before actual phase allocation",
         "synthetic active/closed parameter provider",
         "synthetic constructor/core/helper bodies acquired before allocation",
         "ordinary observation scope and unchanged non-RNG stream metadata",
@@ -1933,6 +2259,103 @@ def issued_synthetic_init(synthetic_init_inputs, tmp_path):
     assert h.context.phase is not h.old_phase and h.context.phase.sim is not h.old_sim
     assert h.context.p is h.p and h.context.cells is h.cells
     return h
+
+
+def test_synthetic_predecessor_captures_actual_old_metadata_before_any_phase_or_claim(
+    synthetic_init_inputs,
+):
+    h = synthetic_init_inputs
+    request = stage.from_seed(h.upstream_owner, law_id=stage.LAW_ID)
+    refs = stage._REQUESTS[request]
+    context = stage._raw_context(request, refs, stage._ready())
+    assert context.phase is None and context.claim is None
+    h.predecessor._claim_for_init_phase(
+        h.upstream_owner, expected=h.upstream.trial, transition=context
+    )
+    lease = context.seed_lease
+    assert lease is h.synthetic_seed_lease
+    assert context.phase is None and context.claim is None
+    assert not context.objects and not hasattr(context, "owner")
+    assert not lease.edges and not lease.files and not lease.samplers
+    assert any(actual is h.p for _, actual in lease.objects)
+    assert any(actual is h.cells for _, actual in lease.objects)
+    assert stage._seed_values(context).identity == lease.values.identity
+    current = stage._seed_graph(context)
+    assert len(current[0]) == len(lease.graph[0])
+    assert all(a is b for a, b in zip(current[0], lease.graph[0], strict=True))
+    assert current[1] == lease.graph[1]
+    h.cells.weights[0] = 99.0
+    assert stage._seed_values(context).identity != lease.values.identity
+    assert all(value is not context for value in stage._ISSUED.values())
+
+
+@pytest.mark.parametrize("entry", ("guard", "invoke"))
+@pytest.mark.parametrize("falsey", (False, True))
+def test_first_step_retained_entry_keeps_leaf_primary_before_any_runtime_route(
+    entry, falsey, monkeypatch
+):
+    class Falsey(ValueError):
+        def __bool__(self):
+            return False
+
+    primary = (Falsey if falsey else ValueError)("first-step original entry failure")
+    primary.__cause__ = TypeError("original cause")
+    leaf = NS(entry_error=primary)
+    electrical = NS(first_step_transition=leaf)
+    storage = NS(electrical_transition=electrical)
+    completion = NS(storage_transition=storage)
+    prelude = NS(completion_transition=completion)
+    initial = NS(dynamics_transition=prelude)
+    calls = []
+
+    def forbidden(*args, **kwargs):
+        calls.append((args, kwargs))
+        pytest.fail("No route/validator/delegate may replace an existing primary")
+
+    monkeypatch.setattr(stage, "_first_step_runtime", forbidden)
+    with pytest.raises(ValueError) as caught:
+        if entry == "guard":
+            stage._guard(initial)
+        else:
+            stage._invoke(initial, "Simulator.update_V", forbidden)
+    assert caught.value is primary and caught.value.__cause__ is primary.__cause__
+    assert calls == []
+
+
+@pytest.mark.parametrize("entry", ("guard", "invoke"))
+@pytest.mark.parametrize("falsey", (False, True))
+def test_first_step_retained_source_precedes_secondary_entry_and_runtime_route(
+    entry, falsey, monkeypatch
+):
+    class Falsey(ValueError):
+        def __bool__(self):
+            return False
+
+    original, cause = (Falsey if falsey else ValueError)("raw source"), OSError("source cause")
+    original.__cause__ = cause
+    leaf = NS(
+        first_failure=("source", original),
+        entry_error=RuntimeError("secondary entry failure"),
+        failure_error=OSError("secondary capture"),
+    )
+    electrical = NS(first_step_transition=leaf)
+    storage = NS(electrical_transition=electrical)
+    completion = NS(storage_transition=storage)
+    prelude = NS(completion_transition=completion)
+    initial, calls = NS(dynamics_transition=prelude), []
+
+    def forbidden(*args, **kwargs):
+        calls.append((args, kwargs))
+        pytest.fail("A retained first source failure must precede all live routes/delegates")
+
+    monkeypatch.setattr(stage, "_first_step_runtime", forbidden)
+    with pytest.raises(ValueError) as caught:
+        if entry == "guard":
+            stage._guard(initial)
+        else:
+            stage._invoke(initial, "Simulator.update_V", forbidden)
+    assert caught.value is original and original.__cause__ is cause
+    assert calls == []
 
 
 def test_dynamics_setup_namespace_and_epoch_cost_without_issuing_or_allocating_source_objects(

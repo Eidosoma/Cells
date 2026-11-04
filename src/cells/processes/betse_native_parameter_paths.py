@@ -20,7 +20,7 @@ from cells.processes import betse_native_parameter_yaml_prefix as prefix
 
 LAW_ID = prefix.PATHS_LAW
 SUBCONFIGURATION_LAW = "betse_native_same_parameter_subconfigurations@1"
-YAML_SHA256 = "e89b880b7d4fdfaec56b2c0ef1c3523fa768aab8f7704a49854677c21b8cbe32"
+YAML_SHA256 = "efdccb05c9d2d11b2e29452af60181559dfbc29bceb0a7c8cb644b69e00d4a98"
 RELEASE = "CELLS_NATIVE_PARAMETER_PATHS_RELEASED"
 BASE = Path("/mnt/workspaces")
 COMPAT = "betse/science/compat/compatconf.py"
@@ -211,10 +211,18 @@ def source_plan():
     )
 
 
-def _function(node, filename):
-    code = compile(
-        ast.Module(body=[node], type_ignores=[]), str(filename), "exec", dont_inherit=True
-    )
+def _function(node, filename, *, native_context=False):
+    if type(native_context) is not bool:
+        raise ValueError("Explicit native compilation context required")
+    tree = ast.Module(body=[node], type_ignores=[])
+    if native_context:
+        tree = ast.parse(Path(filename).read_bytes(), filename=str(filename))
+        originals = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == node.name]
+        if len(originals) != 1 or ast.dump(originals[0], include_attributes=True) != ast.dump(
+            node, include_attributes=True
+        ):
+            raise ValueError("Exact original function AST required for native compilation context")
+    code = compile(tree, str(filename), "exec", dont_inherit=True)
     return next(v for v in code.co_consts if type(v) is CodeType and v.co_name == node.name)
 
 
@@ -248,7 +256,8 @@ def _native(yaml):
         )
     prefix.parameters.inherited.tissue.aliases._check_modules()
     reload = yaml.parent.source.cls.reload_paths
-    dirs = reload.__globals__["dirs"]
+    original = prefix.parameters._method_original(yaml.parent.source, "reload_paths")
+    dirs = original.__globals__["dirs"]
     if dirs is not sys.modules.get("betse.util.path.dirs"):
         raise ValueError("Original reload directory helper module changed")
     return SimpleNamespace(
@@ -273,7 +282,9 @@ def _native_bindings(context):
             context.native.compat
         ) or prefix.parameters.inherited._code(
             original.__code__
-        ) != prefix.parameters.inherited._code(_function(node, native / COMPAT)):
+        ) != prefix.parameters.inherited._code(
+            _function(node, native / COMPAT, native_context=True)
+        ):
             raise ValueError("Original compatibility executable/namespace changed")
         for part in chain:
             label, refs = prefix._function_bindings(part)
@@ -283,16 +294,18 @@ def _native_bindings(context):
         ast.parse((native / prefix.parameters.PARAMETERS).read_bytes()), "Parameters"
     )
     chain = prefix.parameters.inherited._chain(context.native.reload)
-    if len(chain) != 1 or chain[0] is not context.parent.source.cls.reload_paths:
+    original = prefix.parameters._method_original(context.parent.source, "reload_paths")
+    if chain[0] is not context.parent.source.cls.reload_paths or chain[-1] is not original:
         raise ValueError("Original reload method identity changed")
     expected = prefix.parameters._method_code(
-        cls, "reload_paths", str(native / prefix.parameters.PARAMETERS)
+        cls, "reload_paths", str(native / prefix.parameters.PARAMETERS), native_context=True
     )
-    if prefix.parameters.inherited._code(chain[0].__code__) != prefix.parameters.inherited._code(
+    if prefix.parameters.inherited._code(original.__code__) != prefix.parameters.inherited._code(
         expected
     ):
         raise ValueError("Original reload executable changed")
-    for fn in (context.native.reload, *prefix.parameters.inherited._chain(context.native.mkdir)):
+    objects.extend(prefix.parameters._method_wrapper_bindings(chain[0], context.parent.source.cls))
+    for fn in (*chain, *prefix.parameters.inherited._chain(context.native.mkdir)):
         label, refs = prefix._function_bindings(fn)
         labels.append(label)
         objects.extend(refs)

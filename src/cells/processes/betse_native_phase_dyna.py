@@ -29,7 +29,7 @@ literal, aliases, core = handler.literal, handler.aliases, handler.core
 LAW_ID = "betse_same_issued_phase_selected_dyna_attachment@1"
 RELEASE = "CELLS_NATIVE_PHASE_DYNA_RELEASED"
 CACHE_SHA256 = "c8c6298b55d7eb0c41f3aedce411d275462135ef75d5f8a7a193285368d77a16"
-HANDLER_SHA256 = "9d788de993d572d9187d68a521a848f28a093fab92935439c9dec2e46133de63"
+HANDLER_SHA256 = "572e59e2f30d090f2bbf2b650673e98b315e1fbb6c10ee693ff6a2592e9c70a6"
 KEY_MODULE = "cells.processes.betse_native_parameter_dyna_construction"
 KEY_FILE = "src/cells/processes/betse_native_parameter_dyna_construction.py"
 # Public names and producer match Key's reviewed source/software handoff.

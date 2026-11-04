@@ -14,12 +14,21 @@ from validation.betse import native_seed_demo_evidence as evidence
 from validation.betse import native_single_cell_prefix_payload as payload
 
 KIND = "cells.saved_seed_demo_report@1"
-LAUNCH_KINDS = tuple(f"cells.genuine_seed_demo_detached_launch@{v}" for v in (6, 7))
-DEMO_KINDS = tuple(f"cells.genuine_seed_core_profiles_junctions_demo@{v}" for v in (2, 3))
-ENDPOINTS = ("seed", "init_setup", "init_prelude")
+LAUNCH_KINDS = tuple(f"cells.genuine_seed_demo_detached_launch@{v}" for v in (6, 7, 8, 9))
+DEMO_KINDS = tuple(f"cells.genuine_seed_core_profiles_junctions_demo@{v}" for v in (2, 3, 4, 5))
+ENDPOINTS = (
+    "seed",
+    "init_setup",
+    "init_prelude",
+    "init_dynamics",
+    "init_electrical",
+    "init_first_step",
+)
 DEMO = "validation/betse/native_seed_demo.py"
 LAUNCH = "validation/betse/native_seed_demo_launch.py"
 PARAMETER = "validation/betse/betse_native_parameter_world_ready_qualification.py"
+NUMPY_ORIGIN = "src/cells/processes/betse_native_numpy_copy_origin.py"
+NUMPY_ORIGIN_KIND = "cells.original_numpy_copy_import_origin@1"
 GEOMETRY_STAGES = (
     "four_aliases",
     "cell_index",
@@ -117,6 +126,16 @@ def _plan(reader, path, digest):
         all(files.get(name) == sha for name, sha in producers.items()), "Producer source mismatch"
     )
     demo, parameters = reader.bound(plan["demo_plan"]), reader.bound(plan["parameter_inputs"])
+    if plan.get("endpoint") == "init_electrical":
+        require(
+            plan["kind"] in LAUNCH_KINDS[2:] and demo.get("kind") in DEMO_KINDS[2:],
+            "Electrical endpoint requires its declared plan schemas",
+        )
+    if plan.get("endpoint") == "init_first_step":
+        require(
+            plan["kind"] == LAUNCH_KINDS[3] and demo.get("kind") == DEMO_KINDS[3],
+            "First-step endpoint requires its declared plan schemas",
+        )
     require(
         demo["snapshot_sha256"] == plan["source_snapshot"]["sha256"]
         and Path(demo["parameter_packet"]) / "source" == source
@@ -129,17 +148,29 @@ def _plan(reader, path, digest):
         "Prepared source/input/endpoint association changed",
     )
     bundle = reader.bound(plan["input_bundle"])
+    from validation.betse import native_seed_demo_input_profiles as profiles
+
+    require(
+        bundle.get("configuration_profile", "original")
+        == parameters["program"].get("input_profile", "original"),
+        "Saved configuration profile and parameter program differ",
+    )
     selected = bundle["modes"][plan["flux_operator"]]
     require(
         selected["program"] == parameters["program"]["manifest"]
         and selected["config"] == parameters["program"]["root"],
         "Actual input mode association changed",
     )
-    reader.bind(selected["program"])
+    declared_program = reader.bound(selected["program"])
+    require(
+        declared_program.get("input_profile", "original")
+        == bundle.get("configuration_profile", "original"),
+        "Saved raw input program profile changed",
+    )
     for row in plan["external_files"]:
         reader.bind(row)
     originals = {}
-    for name, row in sorted(bundle["source_inventory"]["files"].items()):
+    for name, row in sorted(profiles.selected_inventory(bundle)["files"].items()):
         snapshot.relative_path(name)
         originals[name] = row["sha256"]
     require(bool(originals), "Empty original input inventory")
@@ -179,6 +210,7 @@ def _captures(reader, directory, rows):
                         key: value[key]
                         for key in (
                             "before",
+                            "after",
                             "cache",
                             "helper_cache",
                             "rng_before",
@@ -188,9 +220,41 @@ def _captures(reader, directory, rows):
                             "before_MT",
                             "after_MT",
                             "stages",
+                            "calendar",
+                            "sampled",
+                            "t",
+                            "dt",
+                            "index",
+                            "complete",
+                            "loop_returned",
+                            "selected_stop",
+                            "molecule_record",
+                            "tissue_record",
+                            "tail_source_completed",
+                            "timesteps_completed",
+                            "completed_INIT_or_independent_case",
                         )
                         if key in value
                     }
+                if row["label"] in (
+                    "init_dynamics.tissue_record",
+                    "init_dynamics.molecule_record",
+                ):
+                    record["references"] = {
+                        key: value[key]
+                        for key in (
+                            "record_identity",
+                            "completion_claim_identity",
+                            "molecules_identity",
+                            "core_identity",
+                            "source_completed",
+                            "work_views_are_non_additive",
+                            "live_claim_or_frame_serialization",
+                        )
+                        if key in value
+                    }
+            if row["label"] in ("init_first_step.stream_before", "init_first_step.stream_after"):
+                record["stream_identities"] = value
         else:
             require("error" in row, "Capture failure must retain its error")
         summary.append(record)
@@ -202,6 +266,144 @@ def _required_captures(captures, labels):
     require(
         all(saved.count(label) == 1 for label in labels),
         "Missing or duplicate required raw capture",
+    )
+
+
+def _molecule_captures(value, captures, endpoint):
+    """Validate optional saved molecular linkage, never reconstruct live authority."""
+    fields = ("init_native_molecules", "init_molecule_network_completed")
+    present = tuple(name in value for name in fields)
+    require(present[0] == present[1], "Both optional molecular route flags required")
+    selected = value.get(fields[0])
+    completed = value.get(fields[1], False)
+    require(
+        (selected is None or type(selected) is bool) and type(completed) is bool,
+        "Exact optional molecular selection/completion flags required",
+    )
+    labels = ("init_dynamics.molecule_record", "init_dynamics.molecule_raw_returns")
+    rows = {row["label"]: row for row in captures if row["status"] == "saved"}
+    completion = rows.get("init_dynamics.record", {}).get("references", {})
+    if selected is not True:
+        require(
+            not completed
+            and not any(row["label"] in labels for row in captures)
+            and completion.get("molecule_record") is None,
+            "Molecular evidence cannot be promoted without explicit enabled selection",
+        )
+    if present[0]:
+        dynamics = endpoint in ("init_dynamics", "init_electrical", "init_first_step")
+        require(selected is None or dynamics, "Molecular route selected before its endpoint")
+        if value["status"] == "completed" and dynamics:
+            require(type(selected) is bool, "Completed dynamics requires its molecular selection")
+            require(completed is selected, "Completed dynamics molecular flags disagree")
+    if completed:
+        require(
+            selected is True
+            and value.get("init_dynamics_completed") is True
+            and type(value.get("completed_stage_trials")) is list
+            and value["completed_stage_trials"].count("init_dynamics") == 1,
+            "Completed molecular stage requires completed INIT dynamics evidence",
+        )
+        _required_captures(
+            captures, (*labels, "init_dynamics.record", "init_dynamics.tissue_record")
+        )
+    molecular = rows.get(labels[0])
+    if molecular is not None:
+        identity = molecular.get("identity")
+        require(
+            type(identity) is str
+            and len(identity) == 64
+            and all(char in "0123456789abcdef" for char in identity),
+            "Original molecular record hash identity required",
+        )
+        record = molecular.get("references", {})
+        tissue = rows.get("init_dynamics.tissue_record", {}).get("references", {})
+        for name, metadata in (("molecular", record), ("tissue", tissue)):
+            require(
+                metadata.get("source_completed") is True
+                and metadata.get("work_views_are_non_additive") is True
+                and metadata.get("live_claim_or_frame_serialization") is False,
+                "Completed non-additive metadata without live serialization required: " + name,
+            )
+            for key in ("record_identity", "completion_claim_identity"):
+                require(
+                    type(metadata.get(key)) is int and metadata[key] > 0,
+                    "Exact saved object identity required: " + name + "." + key,
+                )
+        for key in ("molecules_identity", "core_identity"):
+            require(
+                type(record.get(key)) is int and record[key] > 0,
+                "Exact original molecular object identity required: " + key,
+            )
+        require(
+            record["completion_claim_identity"] == tissue["completion_claim_identity"],
+            "Molecular and tissue completion claims differ",
+        )
+        require(
+            type(completion.get("molecule_record")) is int
+            and completion["molecule_record"] == record["record_identity"]
+            and type(completion.get("tissue_record")) is int
+            and completion["tissue_record"] == tissue["record_identity"]
+            and completion.get("tail_source_completed") is True
+            and type(completion.get("timesteps_completed")) is int
+            and completion["timesteps_completed"] == 0
+            and completion.get("completed_INIT_or_independent_case") is False,
+            "Completion trial molecular/tissue linkage or execution scope changed",
+        )
+    return dict(
+        selected=selected,
+        completed=completed,
+        identity=(molecular.get("identity") if completed else None),
+    )
+
+
+def _first_step_captures(captures):
+    """Check saved first-iteration linkage without decoding or advancing model state."""
+    rows = {row["label"]: row for row in captures if row["status"] == "saved"}
+    record = rows["init_first_step.record"].get("references", {})
+    require(
+        record.get("complete") is True
+        and type(record.get("index")) is int
+        and record["index"] == 0
+        and type(record.get("loop_returned")) is bool
+        and type(record.get("selected_stop")) is bool
+        and record["loop_returned"] != record["selected_stop"],
+        "Exactly one completed original INIT iteration required",
+    )
+    for key, label in (
+        ("before", "before"),
+        ("after", "after"),
+        ("calendar", "calendar"),
+        ("sampled", "sampled"),
+        ("t", "source_time_label"),
+        ("dt", "configured_dt"),
+    ):
+        identity = record.get(key)
+        require(
+            type(identity) is str
+            and len(identity) == 64
+            and all(char in "0123456789abcdef" for char in identity)
+            and rows["init_first_step." + label].get("identity") == identity,
+            "First-step original snapshot linkage changed: " + label,
+        )
+    for key, label in (("rng_before", "stream_before"), ("rng_after", "stream_after")):
+        identities = record.get(key)
+        require(
+            type(identities) is list
+            and len(identities) == 2
+            and all(
+                type(value) is str
+                and len(value) == 64
+                and all(char in "0123456789abcdef" for char in value)
+                for value in identities
+            )
+            and rows["init_first_step." + label].get("stream_identities") == identities,
+            "First-step original RNG capture changed: " + label,
+        )
+    electrical = rows["init_electrical.record"].get("references", {})
+    require(
+        electrical.get("rng_after") == record["rng_before"],
+        "First-step RNG handoff differs from retained electrical trial",
     )
 
 
@@ -354,24 +556,39 @@ def _outcome(reader, root, plan, value):
         "Outcome mode/endpoint changed",
     )
     require(value["status"] in ("completed", "failed"), "Unknown demo disposition")
+    endpoint = plan.get("endpoint", "seed")
+    first_step = endpoint == "init_first_step"
+    if first_step:
+        require(value["kind"] == DEMO_KINDS[3], "First-step endpoint requires its declared schema")
     require(
         value["original_flux_defect_repaired"] is False
         and type(value["scientific_or_physical_credit"]) is int
         and value["scientific_or_physical_credit"] == 0
         and type(value["init_time_steps_completed"]) is int
-        and value["init_time_steps_completed"] == 0
+        and value["init_time_steps_completed"] == int(first_step and value["status"] == "completed")
+        and value.get("init_first_step_completed", False)
+        is (first_step and value["status"] == "completed")
         and value["complete_seed_runner_or_INIT_SIM_restart_claim"] is False
         and value["stage_work_is_non_additive"] is True,
         "Outcome exceeds the supported demonstration claim",
     )
     captures = _captures(reader, root, value["captures"])
+    molecules = _molecule_captures(value, captures, endpoint)
     if value["status"] == "completed":
         stages = ["geometry", "poisson", "core", "profiles", "junctions"]
-        endpoint = plan.get("endpoint", "seed")
         if endpoint != "seed":
             stages.append("init_setup")
-        if endpoint == "init_prelude":
+        if endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"):
             stages.append("init_prelude")
+        if endpoint in ("init_dynamics", "init_electrical", "init_first_step"):
+            stages.append("init_dynamics")
+        if endpoint in ("init_electrical", "init_first_step"):
+            require(
+                value["kind"] in DEMO_KINDS[2:], "Electrical endpoint requires its declared schema"
+            )
+            stages.extend(("init_storage", "init_electrical"))
+        if first_step:
+            stages.append("init_first_step")
         require(
             value["methods_completed"] is True
             and value["primary"] is None
@@ -381,15 +598,33 @@ def _outcome(reader, root, plan, value):
         require(value["completed_stage_trials"] == stages, "Incomplete or reordered stage trials")
         require(
             value["init_setup_completed"] is (endpoint != "seed")
-            and value.get("init_prelude_completed", False) is (endpoint == "init_prelude"),
+            and value.get("init_prelude_completed", False)
+            is (endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"))
+            and value.get("init_dynamics_completed", False)
+            is (endpoint in ("init_dynamics", "init_electrical", "init_first_step"))
+            and value.get("init_storage_completed", False)
+            is (endpoint in ("init_electrical", "init_first_step"))
+            and value.get("init_electrical_completed", False)
+            is (endpoint in ("init_electrical", "init_first_step")),
             "Endpoint completion flags changed",
         )
         required = ["callback", "parameters", "geometry"]
         for name in stages[1:]:
             required.extend((name + "_request", name))
-        observed = [
-            row["name"] for row in value["operations"] if row["name"] != "profile_image_file"
-        ]
+        observed = []
+        file_entries = {
+            "profile_image_file": "profiles_request",
+            "init_dynamics_file": "init_dynamics_request",
+        }
+        for row in value["operations"]:
+            target = file_entries.get(row["name"])
+            if target is None:
+                observed.append(row["name"])
+            else:
+                require(
+                    len(observed) < len(required) and required[len(observed)] == target,
+                    "File declaration outside its next public request",
+                )
         require(
             observed == required
             and all(row["status"] == "returned" for row in value["operations"]),
@@ -406,16 +641,80 @@ def _outcome(reader, root, plan, value):
         ]
         if endpoint != "seed":
             labels.extend(("init_setup.before", "init_setup.after"))
-        if endpoint == "init_prelude":
+        if endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"):
             labels.extend(("init_prelude.before", "init_prelude.after", "init_prelude.raw_returns"))
+        if endpoint in ("init_dynamics", "init_electrical", "init_first_step"):
+            labels.extend(
+                "init_dynamics." + name
+                for name in (
+                    "before",
+                    "after",
+                    "stream_before",
+                    "stream_after",
+                    "rng_calls",
+                    "tissue_record",
+                    "raw_returns",
+                )
+            )
+        if endpoint in ("init_electrical", "init_first_step"):
+            for name, streams in (
+                ("init_storage", ("stream_before", "stream_after")),
+                ("init_electrical", ("rng_before", "rng_after")),
+            ):
+                labels.extend(
+                    name + "." + field
+                    for field in ("before", "after", *streams, "stores", "raw_returns")
+                )
+        if first_step:
+            labels.extend(
+                "init_first_step." + field
+                for field in (
+                    "before",
+                    "after",
+                    "calendar",
+                    "sampled",
+                    "source_time_label",
+                    "configured_dt",
+                    "stream_before",
+                    "stream_after",
+                    "stores",
+                    "raw_returns",
+                )
+            )
         _required_captures(captures, labels)
-    return dict(outcome=value, captures=captures)
+        if first_step:
+            _first_step_captures(captures)
+    return dict(outcome=value, captures=captures, molecule_network=molecules)
+
+
+def _numpy_origin(reader, root):
+    value = reader.read(root / "numpy-copy-origin.json")
+    require(
+        value.get("kind") == NUMPY_ORIGIN_KIND and type(value.get("completed")) is bool,
+        "Original NumPy construction evidence schema changed",
+    )
+    files = value.get("source_files")
+    require(type(files) is dict, "Original NumPy construction source roster required")
+    for path, digest in files.items():
+        require(type(path) is str and Path(path).is_absolute(), "Absolute original source path")
+        reader.bind(dict(path=path, sha256=digest))
+    if value["completed"]:
+        require(
+            bool(files)
+            and value.get("hooks_restored") is True
+            and value.get("source_error") is None
+            and value.get("capture_errors") == []
+            and value.get("cleanup_errors") == [],
+            "Completed NumPy construction evidence retains an observation failure",
+        )
+    return value
 
 
 def inspect_attempt(plan_path, *, plan_sha256, output=None):
     """One explicit read of saved terminal paths; never query or wait on a job."""
     reader = Reader()
     plan, files, originals = _plan(reader, Path(plan_path), plan_sha256)
+    bundle = reader.bound(plan["input_bundle"])
     report = dict(
         kind=KIND,
         status="prepared_only",
@@ -423,12 +722,20 @@ def inspect_attempt(plan_path, *, plan_sha256, output=None):
         flux_operator=plan["flux_operator"],
         endpoint=plan.get("endpoint", "seed"),
         source_files=files,
-        original_input_files=originals,
+        original_input_files={
+            name: row["sha256"] for name, row in bundle["source_inventory"]["files"].items()
+        },
+        selected_input_files=originals,
+        configuration_profile=bundle.get("configuration_profile", "original"),
+        configuration_changes=bundle.get("configuration_changes", []),
         policy=plan["policy"],
         original_flux_defect_repaired=False,
         numerical_comparison=False,
         scientific_credit=0,
         time_steps_qualified=0,
+        init_iterations_completed=0,
+        init_native_molecules=None,
+        init_molecule_network_completed=False,
         restart_qualified=False,
         source_execution_complete=False,
         source_evidence_complete=False,
@@ -470,6 +777,10 @@ def inspect_attempt(plan_path, *, plan_sha256, output=None):
                 lambda: _resources(reader, output, plan_path, plan, plan_sha256, terminal),
             )
             report["runtime"] = reader.check("runtime", lambda: _runtime(reader, root, plan, files))
+            if NUMPY_ORIGIN in plan["producers"]:
+                report["numpy_copy_origin"] = reader.check(
+                    "numpy_copy_origin", lambda: _numpy_origin(reader, root)
+                )
             raw_outcome = reader.check(
                 "outcome_read", lambda: reader.read(root / "demo/outcome.json")
             )
@@ -479,6 +790,11 @@ def inspect_attempt(plan_path, *, plan_sha256, output=None):
                 else None
             )
             report["demonstration"] = result
+            if result is not None:
+                report.update(
+                    init_native_molecules=result["molecule_network"]["selected"],
+                    init_molecule_network_completed=result["molecule_network"]["completed"],
+                )
             if raw_outcome is not None and raw_outcome.get("status") == "failed":
                 report["status"] = "failed"
                 failures.append(dict(path="worker/demo/outcome.json", failure=raw_outcome))
@@ -554,6 +870,14 @@ def inspect_attempt(plan_path, *, plan_sha256, output=None):
                         ),
                         "Incomplete worker observations",
                     )
+                    if NUMPY_ORIGIN in plan["producers"]:
+                        require(
+                            worker.get("numpy_copy_origin_available") is True
+                            and worker.get("numpy_copy_origin_completed") is True
+                            and type(report.get("numpy_copy_origin")) is dict
+                            and report["numpy_copy_origin"].get("completed") is True,
+                            "Incomplete original NumPy construction proof",
+                        )
                     require(
                         result is not None and result["outcome"]["status"] == "completed",
                         "Missing completed demonstration",
@@ -569,6 +893,7 @@ def inspect_attempt(plan_path, *, plan_sha256, output=None):
                         status="completed_unqualified",
                         source_execution_complete=True,
                         source_evidence_complete=True,
+                        init_iterations_completed=result["outcome"]["init_time_steps_completed"],
                     )
     report["verification_issues"] = reader.issues
     report["observed_file_pins"] = [dict(path=k, sha256=v) for k, v in sorted(reader.pins.items())]
@@ -586,6 +911,18 @@ def compare_modes(original, disabled):
         name: original[name] == disabled[name]
         for name in ("source_files", "original_input_files", "policy", "endpoint")
     }
+    checks["configuration_profile"] = original.get(
+        "configuration_profile", "original"
+    ) == disabled.get("configuration_profile", "original")
+    checks["selected_input_files"] = original.get(
+        "selected_input_files", original["original_input_files"]
+    ) == disabled.get("selected_input_files", disabled["original_input_files"])
+    checks["configuration_changes"] = original.get("configuration_changes", []) == disabled.get(
+        "configuration_changes", []
+    )
+    checks["init_native_molecules"] = original.get("init_native_molecules") is disabled.get(
+        "init_native_molecules"
+    )
     complete = all(
         value.get("source_execution_complete") is True
         and value.get("source_evidence_complete") is True

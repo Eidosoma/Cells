@@ -53,6 +53,7 @@ MODULATORS = (
 NATIVE = Path("/mnt/workspaces/Cells/betse-v1.5.0")
 HANDLER = "betse/science/tissue/tishandler.py"
 MODULATE = "betse/science/math/modulate.py"
+MASK_ROLE = "TissuePickerImageMask"
 PINS = {
     **{
         name: value
@@ -64,6 +65,7 @@ PINS = {
 MAX_WORK = 100000
 _SESSIONS, _CLAIMED = WeakKeyDictionary(), WeakKeyDictionary()
 _WITNESSES = WeakKeyDictionary()
+_MASKS = WeakKeyDictionary()
 _FAILED, _LOCK = [], RLock()
 
 
@@ -228,7 +230,15 @@ def source_plan():
         helpers=profiles.HELPERS,
         modulators=MODULATORS,
         bitmap_source_requires_actual_owned_input_authority=True,
-        image_picker_file_and_new_mask_ownership_remain_unavailable=True,
+        image_file_contract=(
+            "Actual completion Request.file_inputs: issued immutable FileInput tuple; "
+            "file identity never grants phase/geometry authority"
+        ),
+        new_masks=(
+            "New guarded subtype of actual loaded native ImageMask; original body on new object",
+            "Existing phase/handler/picker classes and instances remain identical",
+            "Original selected-file load, interpolation and hull failures remain unmodified",
+        ),
         required_provider_hooks=(
             "original INIT wrapper guard/dispatch through actual active completion",
             "factored original prelude authority after witnessed RNG/cell_i changes",
@@ -334,6 +344,7 @@ def _bindings(context):
     atoms = _sampler(context)
     values = [
         _SESSIONS,
+        _MASKS,
         _CLAIMED,
         _WITNESSES,
         context.initial,
@@ -356,6 +367,12 @@ def _bindings(context):
     for role in ("TissueHandler", *context.picker_methods):
         values.extend(initial._surface(context.initial.runtime_types[role]))
         values.extend(initial._surface(context.initial.factories[role]))
+    if context.mask_runtime is not None:
+        values.extend(initial._surface(context.mask_native))
+        values.extend(initial._surface(context.mask_runtime))
+    for value in context.file_inputs:
+        values.extend((value, profiles.files._FILES, value.identity, value.filename))
+    values.extend(atoms(profiles.files._verify_file))
     for function in (*context.native_functions, *context.private_functions):
         values.extend(atoms(function))
         if type(function) is FunctionType:
@@ -365,15 +382,22 @@ def _bindings(context):
                     value = function.__globals__[name]
                     values.extend((name, value, *atoms(value)))
     for namespace, original, keys in context.namespace_bindings:
-        values.extend((namespace, original))
-        for name in keys:
-            value = vars(namespace).get(name)
-            actual = vars(original).get(name)
-            values.extend((name, value, *atoms(value), actual, *atoms(actual)))
+        values.extend(_facade_atoms(namespace, original, keys, atoms))
     if context.stdlib_binding is not None:
         values.extend(atoms(context.stdlib_shuffle))
         values.extend(atoms(context.stdlib_getstate))
     values.extend(_api_bindings(context))
+    return tuple(values)
+
+
+def _facade_atoms(namespace, original, keys, atoms):
+    if type(namespace) is not SimpleNamespace or tuple(vars(namespace)) != keys:
+        raise ValueError("Exact private helper export roster changed")
+    values = [namespace, original]
+    for name in keys:
+        value = vars(namespace)[name]
+        actual = vars(original).get(name)
+        values.extend((name, value, *atoms(value), actual, *atoms(actual)))
     return tuple(values)
 
 
@@ -386,6 +410,9 @@ def _check(context, *, closed=False):
         _check_stdlib(context)
     if context.initial.phase is not context.phase or context.phase.p is not context.p:
         _reject(context, "Actual retained INIT phase/parameter ancestry changed")
+    _check_masks(context)
+    for value in context.file_inputs:
+        profiles.files._verify_file(value)
 
 
 def _context(session, completion_claim=None):
@@ -508,6 +535,25 @@ def _raw_return(context, origin, raw):
         _capture(context, "raw_return_history", capture, context.last_raw_return)
 
 
+def _claim_top_slot(context, method, caller, frame):
+    if (
+        context.stack
+        or context.pending_top is not None
+        or caller is not context.completion.body_frame
+    ):
+        _reject(context, "Tissue entry detached from actual completion source")
+    expected = (
+        ("init_profiles", "init_events")[len(context.top_entered)]
+        if len(context.top_entered) < 2
+        else None
+    )
+    if method != expected:
+        _reject(context, "Original tissue entry order was repeated or changed")
+    # Irreversible before either source/observer delegate can enter.
+    context.pending_top = frame
+    context.top_entered.append(method)
+
+
 def _wrapper_guard(context, original, frame):
     attempt = dict(original=original, frame=frame, admitted=False)
     context.last_wrapper_attempt = attempt
@@ -549,21 +595,7 @@ def _wrapper_guard(context, original, frame):
     outer = frame.f_back
     if role == "TissueHandler":
         if method in ("init_profiles", "init_events"):
-            if (
-                context.stack
-                or context.pending_top is not None
-                or outer is not context.completion.body_frame
-            ):
-                _reject(context, "Tissue entry detached from actual completion source")
-            expected = (
-                ("init_profiles", "init_events")[len(context.top_entered)]
-                if len(context.top_entered) < 2
-                else None
-            )
-            if method != expected:
-                _reject(context, "Original tissue entry order was repeated or changed")
-            context.pending_top = frame
-            context.top_entered.append(method)
+            _claim_top_slot(context, method, outer, frame)
         elif (
             not context.stack
             or context.stack[-1]["name"] != "init_events"
@@ -734,6 +766,18 @@ def _bind_methods(context):
             originals.extend(chain)
             roster.append(name)
         context.picker_methods[role] = tuple(roster)
+    image_module = sys.modules.get(profiles.IMAGE_FILE[:-3].replace("/", "."))
+    if type(image_module) is not ModuleType:
+        raise ValueError("Original already-loaded image picker namespace required")
+    context.mask_native = vars(image_module)[MASK_ROLE]
+    if context.mask_native.__new__ is not object.__new__:
+        raise ValueError("Original native image-mask allocation surface required")
+    for name in ("__init__", "get_clipped_points_index"):
+        original, chain = _original(
+            getattr(context.mask_native, name), profiles.IMAGE_FILE, MASK_ROLE, name
+        )
+        context.methods[(MASK_ROLE, name)] = original
+        originals.extend(chain)
     mod = globals_["mod"]
     if (
         type(mod) is not ModuleType
@@ -754,6 +798,7 @@ def _bind_methods(context):
     _verify_functions(context.native_functions)
     context.original_methods = MappingProxyType(dict(context.methods))
     _private_namespaces(context)
+    _image_runtime(context)
     original_codes = {
         value.__code__
         for value in (*context.original_methods.values(), *context.modulators.values())
@@ -767,6 +812,8 @@ def _bind_methods(context):
         (value.__code__, value)
         for value in (*context.methods.values(), *context.private_modulators.values())
     )
+    for function in (*context.mask_wrappers.values(), context.mask_factory):
+        context.source_functions[function.__code__] = function
     context.source_codes = frozenset(
         code
         for value in context.source_functions.values()
@@ -929,6 +976,204 @@ def _private_namespaces(context):
     context.private_globals = tuple(private_globals.values())
 
 
+def _check_masks(context):
+    if context.finished:
+        _same_refs(tuple(actual for actual, _ in context.mask_objects), context.sealed_masks)
+    for actual, token in context.mask_objects:
+        if (
+            _MASKS.get(actual) is not token
+            or token[0] is not context
+            or type(actual) is not context.mask_runtime
+            or not any(profile.picker is token[1] for _, profile in context.profiles)
+        ):
+            _reject(context, "Original image-mask issuance/context/picker links changed")
+
+
+def _file_for_source(context, filename):
+    if type(filename) is not str:
+        _reject(context, "Actual original source-selected image filename required")
+    selected = tuple(value for value in context.file_inputs if value.filename == filename)
+    if len(selected) != 1:
+        _reject(context, "Source-selected image bytes lack one genuine declared FileInput")
+    profiles.files._verify_file(selected[0])
+    return selected[0]
+
+
+def _image_runtime(context):
+    """Fresh guarded masks; retained phase/handler/picker classes never change."""
+    fields = {}
+    context.mask_wrappers = {}
+    for name in ("__init__", "get_clipped_points_index"):
+
+        def invoke(actual, *args, _name=name, **kwargs):
+            return _mask_invoke(context, _name, actual, args, kwargs, sys._getframe())
+
+        fields[name] = invoke
+        context.mask_wrappers[name] = invoke
+        context.private_functions.append(invoke)
+    context.mask_wrapper_code = fields["__init__"].__code__
+    context.mask_runtime = type("OwnedINITTissueImageMask", (context.mask_native,), fields)
+
+    def factory(*args, **kwargs):
+        return _make_mask(context, args, kwargs, sys._getframe())
+
+    context.mask_factory = factory
+    context.private_functions.append(factory)
+    image_getter = context.methods.get(("TissuePickerImage", "get_image_mask"))
+    if image_getter is not None:
+        image_getter.__globals__[MASK_ROLE] = factory
+    # File loading remains the original helper, reached only after its actual
+    # filename is matched to an issued immutable FileInput. No shared module
+    # or existing class/instance is patched.
+    for function in (
+        context.methods[(MASK_ROLE, "__init__")],
+        context.private_modulators["gradient_bitmap"],
+    ):
+        original_pil = function.__globals__["pilnumpy"]
+        delegate = original_pil.load_image
+
+        def load(*args, _delegate=delegate, **kwargs):
+            frame = sys._getframe(1)
+            _guard(context)
+            if not any(frame is body for body in context.source_frames):
+                _reject(context, "Original admitted image reader call frame required")
+            filename = args[0] if args else kwargs.get("filename")
+            _file_for_source(context, filename)
+            return _helper_call(context, "pilnumpy.load_image", _delegate, args, kwargs, frame)
+
+        facade = SimpleNamespace(load_image=load)
+        function.__globals__["pilnumpy"] = facade
+        context.private_functions.append(load)
+        context.namespace_bindings.append((facade, original_pil, ("load_image",)))
+
+
+def _mask_entry_guard(context, frame):
+    attempt = dict(original=context.mask_native, frame=frame, admitted=False)
+    context.last_wrapper_attempt = attempt
+    try:
+        if len(context.wrapper_attempts) >= MAX_WORK:
+            _reject(context, "Bounded original mask wrapper attempts exhausted")
+        context.wrapper_attempts.append(attempt)
+    except BaseException as capture:
+        if capture is context.entry_error:
+            raise
+        _capture(context, "mask_wrapper_attempt", capture, attempt)
+    _guard(context)
+    fields = frame.f_locals
+    name, actual = fields.get("_name"), fields.get("actual")
+    function = context.mask_wrappers.get(name)
+    if (
+        function is None
+        or frame.f_code is not function.__code__
+        or frame.f_globals is not function.__globals__
+        or fields.get("context") is not context
+        or type(actual) is not context.mask_runtime
+        or id(frame) in context.mask_entries
+        or not context.stack
+    ):
+        _reject(context, "Actual original once-admitted mask wrapper required")
+    token = _MASKS.get(actual)
+    if token is None or token[0] is not context:
+        _reject(context, "Actual newly issued image-mask receiver required")
+    if name == "__init__":
+        if (
+            context.mask_pending is None
+            or context.mask_pending[0] is not actual
+            or frame.f_back is not context.mask_pending[1]
+            or actual in context.mask_initialized
+        ):
+            _reject(context, "Original mask constructor must follow its real allocation")
+        context.mask_initialized.add(actual)
+    elif (
+        context.stack[-1]["role"] != "TissuePickerImage"
+        or context.stack[-1]["name"] != "pick_cells"
+        or frame.f_back is not context.stack[-1]["body"]
+        or context.stack[-1]["actual"] is not token[1]
+        or actual in context.mask_queried
+    ):
+        _reject(context, "Original mask query must come from its actual picker body")
+    else:
+        context.mask_queried.add(actual)
+    context.mask_entries[id(frame)] = (frame, name, actual)
+    attempt["admitted"] = True
+
+
+def _make_mask(context, args, kwargs, factory_frame):
+    _guard(context)
+    caller = factory_frame.f_back
+    current = context.stack[-1] if context.stack else None
+    if (
+        current is None
+        or current["role"] != "TissuePickerImage"
+        or current["name"] != "get_image_mask"
+        or caller is not current["body"]
+        or context.mask_factory_frames.get(id(factory_frame)) is not factory_frame
+        or context.mask_pending is not None
+        or args
+        or set(kwargs) != {"filename", "x_min", "x_max", "y_min", "y_max"}
+        or kwargs["filename"] is not current["actual"].filename
+    ):
+        _reject(context, "Original image picker/constructor call and exact arguments required")
+    for key, field in (("x_min", "xmin"), ("x_max", "xmax"), ("y_min", "ymin"), ("y_max", "ymax")):
+        if kwargs[key] is not getattr(context.cells, field):
+            _reject(context, "Original same-caller image bounds changed")
+    _file_for_source(context, kwargs["filename"])
+    actual = object.__new__(context.mask_runtime)
+    context.last_raw_mask = actual
+    token = (context, current["actual"], factory_frame)
+    context.last_mask_token = token
+    try:
+        _MASKS[actual] = token
+        context.mask_objects.append((actual, token))
+        context.added_objects.append((MASK_ROLE, actual))
+    except BaseException as capture:
+        _capture(context, "mask_issuance", capture, (actual, token))
+        _guard(context)
+    context.mask_pending = (actual, sys._getframe())
+    try:
+        returned = context.mask_wrappers["__init__"](actual, **kwargs)
+        if returned is not None:
+            _reject(context, "Original image-mask constructor must return None")
+        _raw_return(context, MASK_ROLE, actual)
+        _guard(context)
+        return actual
+    finally:
+        context.mask_pending = None
+
+
+def _mask_invoke(context, name, actual, args, kwargs, wrapper_frame):
+    _guard(context)
+    entry = context.mask_entries.get(id(wrapper_frame))
+    if entry is None or entry[0] is not wrapper_frame or entry[1] != name or entry[2] is not actual:
+        _reject(context, "Original pre-observer mask entry claim required")
+    if id(wrapper_frame) in context.mask_dispatched:
+        _reject(context, "Mask invocation epoch is already consumed")
+    context.mask_dispatched.add(id(wrapper_frame))
+    call = dict(
+        name=name, role=MASK_ROLE, actual=actual, frame=sys._getframe(), body=None, returned=False
+    )
+    context.stack.append(call)
+    try:
+        returned = context.methods[(MASK_ROLE, name)](actual, *args, **kwargs)
+        _raw_return(context, MASK_ROLE + "." + name, returned)
+        call["returned"] = True
+        _guard(context)
+        return returned
+    except BaseException as primary:
+        if (
+            context.primary is None
+            and context.entry_error is None
+            and not isinstance(primary, CaptureStop)
+        ):
+            context.primary = primary
+        raise
+    finally:
+        if context.stack and context.stack[-1] is call:
+            context.stack.pop()
+        else:
+            context.invalid = True
+
+
 def _rng_bridge(context, library, operation, args, kwargs, source_frame):
     _guard(context)
     if context.pending_rng is not None:
@@ -1035,6 +1280,25 @@ def _ancestor(expected, frame):
 
 def _observe(context, frame, event, arg):
     """Source-body observation entry for the single completion-owned observer."""
+    if frame.f_code is context.mask_wrapper_code:
+        if event == "call":
+            _mask_entry_guard(context, frame)
+        return
+    if frame.f_code is context.mask_factory.__code__:
+        if event == "call":
+            context.last_factory_attempt = frame
+            _guard(context)
+            current = context.stack[-1] if context.stack else None
+            if (
+                current is None
+                or current["role"] != "TissuePickerImage"
+                or current["name"] != "get_image_mask"
+                or frame.f_back is not current["body"]
+                or id(frame) in context.mask_factory_frames
+            ):
+                _reject(context, "Raw/reentrant image-mask factory entry")
+            context.mask_factory_frames[id(frame)] = frame
+        return
     selected = frame.f_code in context.source_codes
     if event == "call":
         native = frame.f_code.co_filename.startswith(str(NATIVE) + "/")
@@ -1073,15 +1337,13 @@ def _observe(context, frame, event, arg):
                 _reject(context, "Original tissue body detached from guarded dispatch")
             call["body"] = frame
         else:
+            if call["body"] is None:
+                _reject(context, "A helper cannot precede its admitted original body")
             ancestor = frame.f_back
             while ancestor is not None and ancestor is not call["body"]:
                 ancestor = ancestor.f_back
             if ancestor is not call["body"]:
                 _reject(context, "Helper detached from actual original tissue body")
-        if frame.f_code.co_name == "gradient_bitmap":
-            _reject(context, "Selected bitmap modulator needs its genuine owned file prerequisite")
-        if call["role"] == "TissuePickerImage":
-            _reject(context, "Selected image picker needs its genuine owned file/mask prerequisite")
         context.frames[id(frame)] = row
         context.source_frames.add(frame)
         row["body_started"] = True
@@ -1151,6 +1413,7 @@ def _seal(context):
         True,
     )
     context.evidence = evidence
+    context.sealed_masks = tuple(actual for actual, _ in context.mask_objects)
     return evidence
 
 
@@ -1239,6 +1502,18 @@ def bind_completion(completion_claim, *, original_owner):
             pending_rng=None,
             witnesses=[],
             added_objects=[],
+            file_inputs=(),
+            mask_native=None,
+            mask_runtime=None,
+            mask_wrappers={},
+            mask_objects=[],
+            mask_entries={},
+            mask_dispatched=set(),
+            mask_initialized=set(),
+            mask_queried=set(),
+            mask_pending=None,
+            mask_factory_frames={},
+            sealed_masks=(),
             last_raw_return=None,
             last_capture=None,
         )
@@ -1248,6 +1523,16 @@ def bind_completion(completion_claim, *, original_owner):
             context.api_binding = _api_bindings(context)
             _registry(context)
             context.numpy = completion.numpy
+            inputs = getattr(completion.request, "file_inputs", None)
+            if type(inputs) is not tuple or len(inputs) > 64:
+                _reject(context, "Real completion Request.file_inputs contract remains unavailable")
+            context.file_inputs = inputs
+            names = []
+            for value in inputs:
+                profiles.files._verify_file(value)
+                if value.filename in names:
+                    _reject(context, "Duplicate original immutable image-file authority")
+                names.append(value.filename)
             table = vars(context.handler)["tissue_name_to_profile"]
             context.profiles = tuple(table.items())
             _bind_methods(context)

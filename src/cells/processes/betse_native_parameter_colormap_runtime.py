@@ -12,6 +12,7 @@ from types import GetSetDescriptorType, MemberDescriptorType, ModuleType, Simple
 from cells.processes import betse_native_parameter_colormap_state as state
 
 SITE = Path("/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages")
+ORIGIN_SOURCE_SHA256 = "aff11a16508bd4026d3ef4f241af66c584fb081cc584e1428f9c6149d5de5542"
 PINS = {
     "matplotlib/__init__.py": "37abb78e74e9e0085a4e306a919606ffa8ff3c263def80ae2f4d938cfa79cd32",
     "matplotlib/cm.py": "a5d73bc2645cbb3b341490f68f9042683ce710cd6a89efd4c0bf5052d274ebaa",
@@ -46,6 +47,7 @@ def declaration():
         files=dict(PINS),
         install_or_shared_runtime_change=False,
         actual_import_or_factory=False,
+        numpy_copy_origin_source_sha256=ORIGIN_SOURCE_SHA256,
         execution_python="/mnt/workspaces/Cells/venv-betse/bin/python",
         preparation="Source inspection only; genuine issued parent and explicit release required.",
     )
@@ -125,6 +127,40 @@ def _copy_delegates(value, core, module):
     # edges. A public __wrapped__ or a function stored in its attribute dict
     # alone cannot authenticate the separate argument-dispatch delegate.
     direct = tuple(item for item in get_referents(value) if type(item) is state.FunctionType)
+    if not direct:
+        # The pinned NumPy C dispatcher is not GC-tracked. Its hidden argument
+        # delegate must instead have been observed at original construction,
+        # before NumPy was imported. Wrapped/export metadata alone is no proof.
+        origin = sys.modules.get("cells.processes.betse_native_numpy_copy_origin")
+        path = Path(__file__).with_name("betse_native_numpy_copy_origin.py")
+        if (
+            type(ORIGIN_SOURCE_SHA256) is not str
+            or len(ORIGIN_SOURCE_SHA256) != 64
+            or type(origin) is not ModuleType
+            or sys.modules.get(origin.__name__) is not origin
+            or Path(vars(origin).get("__file__", "")).resolve() != path
+            or path.is_symlink()
+            or state._file(str(path))[1] != ORIGIN_SOURCE_SHA256
+        ):
+            raise ValueError("Original NumPy argument-dispatch ownership is opaque or changed")
+        validator = vars(origin).get("require_copy")
+        if type(validator) is not state.FunctionType:
+            raise ValueError("Original NumPy construction validator function required")
+        validator_atoms = prefix._function_bindings(validator)
+        node = next(
+            n
+            for n in ast.parse(path.read_bytes()).body
+            if isinstance(n, ast.FunctionDef) and n.name == "require_copy"
+        )
+        origin_bindings = state.previous._undecorated(validator, origin, path, node)
+        prefix.parameters.inherited._same(prefix._function_bindings(validator), validator_atoms)
+        if vars(origin).get("require_copy") is not validator:
+            raise ValueError("Original NumPy construction validator changed")
+        proof = validator(value, core, argument)
+        prefix.parameters.inherited._same(prefix._function_bindings(validator), validator_atoms)
+        if vars(origin).get("require_copy") is not validator:
+            raise ValueError("Original NumPy construction validator changed")
+        return argument, (*bindings, *origin_bindings), (argument, core, proof)
     if (
         len(direct) != 2
         or sum(item is argument for item in direct) != 1

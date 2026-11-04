@@ -37,6 +37,9 @@ ENTRY_CONFIG = {
 }
 CM_GUARD_TEST = "tests/unit/test_betse_native_parameter_colormap_load.py"
 CM_GUARD_SHA256 = "577460cd94e1204b1248db07b3a0cfe20f6b028f7b943f2f9cba797641601a2e"
+# Current reviewed fixture for the package-wrapper repair. Historical cleanup
+# banks retain their original constant and are never rebound to these bytes.
+WRAPPER_GUARD_SHA256 = "0b274dc8084cc26119bb11d0c0c1deeedeaf13d71bc25e72b07e320c5ccd8666"
 CM_GUARD_LEGACY_SHA256 = "442f17dd8f8187c43966ccf6c26715b7c5c929aa7dfd697d81de3a465d7d3460"
 CM_CONTEXT_TEST = "tests/unit/test_betse_native_parameter_colormaps.py"
 CM_CONTEXT_SHA256 = "04a2e766779826524d10daaf5f233feb9572067e08cf68af183d4f8e40505ea4"
@@ -65,6 +68,9 @@ def prepare_sources(repository, directory, *, file, owned, plan):
     directory = inherited.separate(directory, repo, Path("/mnt/workspaces/Cells/betse-v1.5.0"))
     directory.mkdir(parents=True, exist_ok=False)
     files = runpy.run_path(str(repo / inherited.CLOSURE_TOOL))["closure"](repo, list(owned))
+    fixture_sha = snapshot.digest(repo / CM_GUARD_TEST)
+    if fixture_sha not in (CM_GUARD_SHA256, WRAPPER_GUARD_SHA256):
+        raise ValueError("Explicit reviewed blocked fixture version required")
     for name in ("pyproject.toml", "tests/__init__.py", inherited.CLOSURE_TOOL):
         files[name] = snapshot.digest(repo / name)
     manifest = snapshot.freeze(repo, directory / "source", {name: name for name in files})
@@ -95,7 +101,7 @@ def prepare_sources(repository, directory, *, file, owned, plan):
                 release=ENTRY_CONFIG[file][2],
                 native_release=False,
             ),
-            fixture_producer=dict(path=CM_GUARD_TEST, sha256=CM_GUARD_SHA256),
+            fixture_producer=dict(path=CM_GUARD_TEST, sha256=fixture_sha),
             resources=dict(
                 cpu=0,
                 threads=1,
@@ -128,13 +134,17 @@ def _image(packet, file):
     source = packet / "source"
     manifest = snapshot.verify(source, manifest_sha256=inputs["snapshot"]["sha256"])
     test, production, release = ENTRY_CONFIG[file]
+    fixture = inputs.get("fixture_producer")
     if (
         inputs["software_entry"]
         != dict(file=file, test=test, release=release, native_release=False)
         or inputs["resources"] != RESOURCES
         or inputs.get("actual_source_native_parser_RNG_phase_or_science_release") is not False
-        or inputs["fixture_producer"] != dict(path=CM_GUARD_TEST, sha256=CM_GUARD_SHA256)
-        or manifest["files"][CM_GUARD_TEST]["sha256"] != CM_GUARD_SHA256
+        or type(fixture) is not dict
+        or set(fixture) != {"path", "sha256"}
+        or fixture["path"] != CM_GUARD_TEST
+        or fixture["sha256"] not in (CM_GUARD_SHA256, WRAPPER_GUARD_SHA256)
+        or manifest["files"][CM_GUARD_TEST]["sha256"] != fixture["sha256"]
         or snapshot.digest(packet / "source-plan.json") != inputs["source_plan"]["sha256"]
     ):
         raise ValueError("Exact held software image/resources/fixture required")

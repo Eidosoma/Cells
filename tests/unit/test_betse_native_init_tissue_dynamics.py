@@ -10,24 +10,23 @@ from types import SimpleNamespace as NS
 import pytest
 
 from cells.processes import betse_native_init_tissue_dynamics as stage
-from tests.unit import test_betse_native_world_phase_construction as guards
+from tests.unit import test_betse_native_init_retained_world as retained_guards
 from validation.betse import betse_native_init_tissue_dynamics_software as software
 
 
 @pytest.fixture(autouse=True)
-def blocked(request, tmp_path):
+def blocked(request, tmp_path, monkeypatch):
     if os.environ.get(software.SOFTWARE_RELEASE) != "1":
         pytest.skip("Source-only preparation; native-blocked software release required")
-    adapter = NS(**dict(vars(software), reuse=software.inherited.base.reuse.reuse))
-    namespace = dict(vars(guards), software=adapter, _BLOCKADE_FAILURES=())
-    fn = FunctionType(guards._blockade.__wrapped__.__code__, namespace)
-    with contextmanager(fn)(request, tmp_path):
+    namespace = dict(vars(retained_guards), software=software, _RAW_GUARDS=[])
+    fn = FunctionType(retained_guards.blocked.__wrapped__.__code__, namespace)
+    with contextmanager(fn)(request, tmp_path, monkeypatch):
         yield
 
 
 def test_original_tissue_method_bodies_and_module_compile_context_are_exact_without_calls():
     plan, methods, codes = stage.source_plan(), stage._source_nodes(), stage._codes()
-    assert plan["methods"]["init_profiles"] == (363, 449)
+    assert plan["methods"]["init_profiles"] == (363, 443)
     assert plan["methods"]["init_events"] == (454, 465)
     assert tuple(methods) == tuple(codes) == stage.METHODS
     assert all(
@@ -183,7 +182,13 @@ def test_metadata_attempt_is_retained_before_entry_guard_and_zero_body(monkeypat
     # phase or owner. Its actual frame is never labelled native or executed as
     # an original tissue body.
     frame = sys._getframe()
-    context = NS(source_codes={frame.f_code}, work=[], last_attempt=None)
+    context = NS(
+        source_codes={frame.f_code},
+        work=[],
+        last_attempt=None,
+        mask_wrapper_code=None,
+        mask_factory=NS(__code__=None),
+    )
     primary = RuntimeError("entry refused")
 
     def refuse(actual):
@@ -217,6 +222,8 @@ def test_observation_append_failure_keeps_raw_attempt_before_guard(monkeypatch):
         last_attempt=None,
         capture_error=None,
         capture_errors=(),
+        mask_wrapper_code=None,
+        mask_factory=NS(__code__=None),
     )
     sentinel = RuntimeError("capture boundary stopped")
 
@@ -299,3 +306,230 @@ def test_runner_requires_declared_overlay_before_inspecting_loaded_modules(monke
 def test_fresh_and_read_only_literal_bodies_are_still_software_forbidden(name):
     frame = NS(f_globals={"__name__": name})
     assert software.is_forbidden_frame(frame) is True
+
+
+def test_unrelated_helper_before_body_is_sticky_refused_without_delegate(monkeypatch):
+    frame = sys._getframe()
+    sentinel = object()
+    context = NS(
+        mask_wrapper_code=None,
+        mask_factory=NS(__code__=None),
+        source_codes={frame.f_code},
+        work=[],
+        last_attempt=None,
+        frames={},
+        source_frames=set(),
+        source_functions={},
+        stack=[dict(role="metadata", name="original", body=None)],
+        methods={("metadata", "original"): NS(__code__=sentinel)},
+        entry_error=None,
+        invalid=False,
+        stage="metadata",
+    )
+    monkeypatch.setattr(stage, "_guard", lambda value: None)
+    with pytest.raises(stage.TissueDynamicsRejected) as caught:
+        stage._observe(context, frame, "call", None)
+    assert caught.value is context.entry_error
+    assert context.invalid and not context.work[0]["body_started"]
+    assert not context.frames and not context.source_frames
+
+
+def test_added_dynamic_modulator_export_is_refused_before_any_callable():
+    calls = []
+
+    def existing():
+        calls.append("existing")
+
+    def added():
+        calls.append("foreign")
+
+    facade = NS(periodic=existing)
+    original = NS(periodic=existing)
+    keys = tuple(vars(facade))
+    stage._facade_atoms(facade, original, keys, lambda value: (value,))
+    facade.configured_extra = added
+    # Scalar values and every retained original export remain unchanged.
+    assert facade.periodic is original.periodic
+    with pytest.raises(ValueError, match="roster"):
+        stage._facade_atoms(
+            facade, original, keys, lambda value: pytest.fail("No sampler after roster drift")
+        )
+    assert calls == []
+
+
+@pytest.mark.parametrize("action", ("remove", "replace", "wrong_context", "wrong_picker"))
+def test_new_mask_registry_edge_drift_is_not_value_authority(monkeypatch, action):
+    # Isolated registry algorithm, not an issued TissueSession/phase chain.
+    class MetadataMask:
+        pass
+
+    mask, picker = MetadataMask(), object()
+    context = NS(
+        finished=False,
+        mask_objects=[],
+        mask_runtime=MetadataMask,
+        profiles=(("metadata", NS(picker=picker)),),
+        invalid=False,
+        entry_error=None,
+        stage="metadata",
+    )
+    token = (context, picker, object())
+    context.mask_objects.append((mask, token))
+    registry = {mask: token}
+    monkeypatch.setattr(stage, "_MASKS", registry)
+    stage._check_masks(context)
+    if action == "remove":
+        registry.pop(mask)
+    elif action == "replace":
+        registry[mask] = tuple([*token])
+        assert registry[mask] == token and registry[mask] is not token
+    elif action == "wrong_context":
+        registry[mask] = (object(), picker, token[2])
+    else:
+        registry[mask] = (context, object(), token[2])
+    with pytest.raises(stage.TissueDynamicsRejected) as caught:
+        stage._check_masks(context)
+    assert caught.value is context.entry_error and context.invalid
+
+
+def test_mask_factory_refuses_without_real_picker_body_before_allocation(monkeypatch):
+    context = NS(
+        stack=[],
+        mask_pending=None,
+        mask_factory_frames={},
+        invalid=False,
+        entry_error=None,
+        stage="metadata",
+    )
+    monkeypatch.setattr(stage, "_guard", lambda value: None)
+    with pytest.raises(stage.TissueDynamicsRejected) as caught:
+        stage._make_mask(context, (), {}, sys._getframe())
+    assert caught.value is context.entry_error
+    assert not hasattr(context, "last_raw_mask")
+
+
+@pytest.mark.parametrize("filename", (None, 1, "undeclared.png"))
+def test_image_file_bytes_alone_do_not_supply_an_issued_file_lease(filename):
+    context = NS(file_inputs=(), invalid=False, entry_error=None, stage="metadata")
+    with pytest.raises(stage.TissueDynamicsRejected) as caught:
+        stage._file_for_source(context, filename)
+    assert caught.value is context.entry_error
+
+
+def test_constructor_retains_raw_mask_before_registry_and_partial_capture():
+    tree = ast.parse(stage.Path(stage.__file__).read_bytes())
+    method = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "_make_mask")
+    text = ast.unparse(method)
+    assert text.index("context.last_raw_mask = actual") < text.index("_MASKS[actual] = token")
+    assert text.index("_MASKS[actual] = token") < text.index("context.mask_pending =")
+    assert text.index("context.mask_pending =") < text.index("context.mask_wrappers['__init__']")
+
+
+@pytest.mark.parametrize("attempt", ("init_profiles", "init_events"))
+def test_top_slot_is_consumed_before_same_or_next_callback_attempt(attempt):
+    # Entry-order metadata only: no claim, handler or phase is fabricated.
+    parent, first = object(), object()
+    context = NS(
+        stack=[],
+        pending_top=None,
+        completion=NS(body_frame=parent),
+        top_entered=[],
+        invalid=False,
+        entry_error=None,
+        stage="metadata",
+    )
+    stage._claim_top_slot(context, "init_profiles", parent, first)
+    assert context.pending_top is first and context.top_entered == ["init_profiles"]
+    with pytest.raises(stage.TissueDynamicsRejected) as caught:
+        stage._claim_top_slot(context, attempt, parent, object())
+    assert caught.value is context.entry_error and context.invalid
+    assert context.pending_top is first and context.top_entered == ["init_profiles"]
+    with pytest.raises(stage.TissueDynamicsRejected) as sticky:
+        stage._guard(context)
+    assert sticky.value is caught.value
+
+
+def test_top_slot_metadata_order_does_not_issue_live_authority():
+    parent, first, second = object(), object(), object()
+    context = NS(
+        stack=[],
+        pending_top=None,
+        completion=NS(body_frame=parent),
+        top_entered=[],
+        invalid=False,
+        entry_error=None,
+        stage="metadata",
+    )
+    stage._claim_top_slot(context, "init_profiles", parent, first)
+    # Model a finished slot; this is not a real issued handle or retirement.
+    context.pending_top = None
+    stage._claim_top_slot(context, "init_events", parent, second)
+    assert context.top_entered == ["init_profiles", "init_events"]
+    assert context.pending_top is second
+    assert context not in stage._SESSIONS.values()
+
+
+def test_an_admitted_body_allows_its_actual_metadata_descendant_frame(monkeypatch):
+    body = sys._getframe()
+    context = NS(
+        mask_wrapper_code=None,
+        mask_factory=NS(__code__=None),
+        source_codes=set(),
+        work=[],
+        frames={},
+        source_frames=set(),
+        source_functions={},
+        entry_error=None,
+        invalid=False,
+        stage="metadata",
+        stack=[dict(role="metadata", name="original", body=body)],
+        methods={("metadata", "original"): NS(__code__=object())},
+    )
+    monkeypatch.setattr(stage, "_guard", lambda value: None)
+
+    def descendant():
+        frame = sys._getframe()
+        context.source_codes.add(frame.f_code)
+        context.source_functions[frame.f_code] = descendant
+        stage._observe(context, frame, "call", None)
+        return frame
+
+    frame = descendant()
+    assert context.frames[id(frame)]["body_started"] is True
+    assert frame in context.source_frames
+    assert context.entry_error is None and not context.invalid
+    assert all(value is not context for value in stage._SESSIONS.values())
+
+
+def test_forged_file_record_does_not_replace_actual_public_file_issuance():
+    value = stage.profiles.files.FileInput(
+        "/mnt/workspaces/Cells/unissued.png", "0" * 64, "metadata", (), "unissued"
+    )
+    context = NS(file_inputs=(value,), invalid=False, entry_error=None, stage="metadata")
+    with pytest.raises(stage.profiles.files.YamlPrefixRejected) as caught:
+        stage._file_for_source(context, value.filename)
+    assert caught.value.stage == "file_authority"
+    assert value not in stage.profiles.files._FILES
+
+
+def test_source_global_stdlib_rng_is_distinct_from_framework_private_naming_rng():
+    module = software.sys.modules["random"]
+    frame = NS(
+        f_globals={"__name__": "random"},
+        f_code=NS(co_name="shuffle", co_filename=module.__file__),
+        f_locals={"self": module._inst},
+    )
+    assert software.is_forbidden_frame(frame) is True
+    frame.f_locals["self"] = object()  # No actual RNG is constructed or drawn.
+    assert software.is_forbidden_frame(frame) is False
+
+
+def test_reused_worker_has_its_real_global_namespace_and_owned_overrides():
+    namespace = software._child_scope()
+    for name in ("reuse", "_scope", "_integration_policy", "snapshot", "importlib", "json"):
+        assert name in namespace
+    assert namespace["reuse"] is software.inherited.reuse
+    assert namespace["_scope"] is software._scope
+    assert namespace["SOURCE"] == software.SOURCE
+    assert namespace["TEST"] == software.TEST
+    assert namespace["is_forbidden_frame"] is software.is_forbidden_frame

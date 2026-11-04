@@ -32,13 +32,22 @@ _RAW_FAILURES = ()
 
 def is_forbidden_frame(frame):
     name = frame.f_globals.get("__name__", "")
+    random_module = sys.modules.get("random")
+    actual_global_rng = vars(random_module).get("_inst") if random_module is not None else None
     return (
         name in FORBIDDEN_MODULES
         or (
             name == "cells.processes.betse_native_init_tissue_dynamics"
             and frame.f_code.co_name == "_bind_methods"
         )
-        or (name == "random" and frame.f_code.co_name != "<module>")
+        # pytest/tempfile owns a separate private naming RNG during bootstrap.
+        # Protect the actual original tissue global stream, never mistake that
+        # framework private object for the source-authoritative instance.
+        or (
+            name == "random"
+            and actual_global_rng is not None
+            and frame.f_locals.get("self") is actual_global_rng
+        )
         or inherited.is_forbidden_frame(frame)
     )
 
@@ -81,6 +90,13 @@ def _external_producers(inputs, *, loaded):
     return observed
 
 
+def _child_scope():
+    namespace = dict(vars(inherited), **_scope())
+    namespace["_integration_policy"] = inherited._integration_policy
+    namespace["_scope"] = _scope
+    return namespace
+
+
 def child(output, select):
     inputs = json.loads((output / "inputs.json").read_text())
     if inputs.get("software_release_requested") is not True:
@@ -108,10 +124,14 @@ def child(output, select):
             actual_source_constructor_RNG_operator_reference_or_scientific_credit=0,
         ),
     )
-    namespace = _scope()
+    namespace = _child_scope()
+    # Reuse the reviewed retained-INIT definition bootstrap as well as its
+    # worker. The readonly fixture adapter imports that exact definition
+    # namespace; collection must not be its first import under the whole-module
+    # source blockade. No constructor or source body is entered here.
     required_hooks = sys.getprofile(), sys.gettrace()
     try:
-        result = FunctionType(inherited.reuse.child.__code__, namespace)(output, select)
+        result = FunctionType(inherited.child.__code__, namespace)(output, select)
         if sys.getprofile() is not required_hooks[0] or sys.gettrace() is not required_hooks[1]:
             raise ValueError("Exact inherited hooks required before post-run producer callbacks")
         snapshot.write_json(

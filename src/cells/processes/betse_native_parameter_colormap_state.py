@@ -29,7 +29,7 @@ from cells.processes import betse_native_parameter_colormaps as previous
 from cells.processes import betse_normal_ecm_molecule_checkpoint_codec as codec
 
 LAW_ID = "betse_native_parameter_selected_colormap_registry_state@1"
-PREVIOUS_SHA256 = "44868982437cf0c2c458ee2479de27f1de3f8bc76d70d2c84d925054c5ec9c80"
+PREVIOUS_SHA256 = "edbc46a6581b70db7a9d7d2831c36d529e27211e8d165bc0572ed297faf4a341"
 MAX_OBJECTS, MAX_DEPTH, MAX_CALLBACKS = 25000, 64, 256
 NUMPY_SCALARS = tuple(
     cls for cls in np.sctypeDict.values() if type(cls) is type and issubclass(cls, np.generic)

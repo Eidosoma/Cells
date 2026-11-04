@@ -270,3 +270,168 @@ def test_inputs_execution_snapshot_extension_refuses_mutable_or_outside_roster(r
             flux_operator="original",
             extra_sources=roster,
         )
+
+
+@pytest.fixture
+def headless(tmp_path, monkeypatch):
+    from validation.betse import betse_native_parameter_world_ready_qualification as parameter
+
+    monkeypatch.setattr(stage, "BASE", tmp_path)
+    monkeypatch.setattr(parameter, "BASE", tmp_path)
+    # Actual metadata function and immutable producer, never a successful owner stand-in.
+    assert stage.PARAMETER_METADATA_SHA256 == stage.snapshot.digest(Path(parameter.__file__))
+    return NS(output=tmp_path / "headless-pair", parameter=parameter)
+
+
+def test_inputs_headless_exact_two_switches_preserve_all_other_source_bytes():
+    raw = (stage.NATIVE / "sim_config.yaml").read_bytes()
+    changed = stage.profiles.transform(raw)
+    different = [
+        (i, before, after)
+        for i, (before, after) in enumerate(
+            zip(raw.splitlines(), changed.splitlines(), strict=True), 1
+        )
+        if before != after
+    ]
+    assert [row[0] for row in different] == [795, 796]
+    assert all(before.replace(b": True ", b": False ") == after for _, before, after in different)
+    assert hashlib.sha256(changed).hexdigest() == stage.profiles.HEADLESS_SHA256
+    assert hashlib.sha256(raw).hexdigest() == stage.CORE["sim_config.yaml"]
+
+
+@pytest.mark.parametrize("mutation", ["extra", "transport", "missing", "duplicate", "already"])
+def test_inputs_headless_transform_refuses_any_unpinned_origin(mutation):
+    raw = (stage.NATIVE / "sim_config.yaml").read_bytes()
+    if mutation == "extra":
+        raw += b"\n"
+    elif mutation == "transport":
+        raw = raw.replace(b"True", b"False", 1)
+    elif mutation == "missing":
+        raw = raw.replace(stage.profiles._BEFORE, b"", 1)
+    elif mutation == "duplicate":
+        raw += stage.profiles._BEFORE
+    else:
+        raw = stage.profiles.transform(raw)
+    with pytest.raises(ValueError):
+        stage.profiles.transform(raw)
+
+
+def test_inputs_headless_pair_uses_actual_parameter_metadata_and_independent_complete_inputs(
+    headless,
+):
+    before = stage.inventory(stage.NATIVE)
+    value = stage.prepare(headless.output, profile="headless")
+    assert value["kind"] == stage.HEADLESS_KIND
+    assert value["configuration_changes"] == stage.profiles.changes()
+    assert value["raw_configuration_and_images_unchanged"] is False
+    assert value["source_inventory"] == before
+    selected = stage.profiles.selected_inventory(value)
+    assert [
+        name for name in before["files"] if before["files"][name] != selected["files"][name]
+    ] == ["sim_config.yaml"]
+    seen = set()
+    for mode in stage.MODES:
+        row = value["modes"][mode]
+        checked = headless.parameter.input_program(row["program"]["path"], row["program"]["sha256"])
+        assert checked["input_profile"] == "headless"
+        assert checked["configuration_changes"] == stage.profiles.changes()
+        for name in selected["files"]:
+            path = Path(row["config"]) / name
+            info = path.stat()
+            assert info.st_nlink == 1 and not info.st_mode & 0o222
+            assert (info.st_dev, info.st_ino) not in seen
+            seen.add((info.st_dev, info.st_ino))
+    pin = stage.snapshot.digest(headless.output / "inputs.json")
+    assert stage.verify(headless.output, pin) == value
+    # A selected unused sibling remains inspectable after native output on the other side.
+    used = headless.output / "original/config/INITS/new-native-output"
+    used.parent.mkdir(exist_ok=True)
+    used.write_bytes(b"test-only consumed directory epoch")
+    assert stage.verify(headless.output, pin, mode="disabled") == value
+    with pytest.raises(ValueError):
+        stage.verify(headless.output, pin, mode="original")
+    assert stage.inventory(stage.NATIVE) == before
+
+
+def test_inputs_headless_profile_does_not_change_original_default_program(headless):
+    value = stage.prepare(headless.output)
+    assert value["kind"] == stage.KIND and value["raw_configuration_and_images_unchanged"]
+    assert "configuration_profile" not in value and "input_inventory" not in value
+    for row in value["modes"].values():
+        checked = headless.parameter.input_program(row["program"]["path"], row["program"]["sha256"])
+        assert "input_profile" not in checked and "configuration_changes" not in checked
+        assert checked["files"]["sim_config.yaml"]["sha256"] == stage.CORE["sim_config.yaml"]
+
+
+@pytest.mark.parametrize("profile", [None, True, "other", 1])
+def test_inputs_headless_unknown_profile_refuses_before_output(headless, profile):
+    with pytest.raises(ValueError):
+        stage.prepare(headless.output, profile=profile)
+    assert not headless.output.exists()
+
+
+@pytest.mark.parametrize("profile", [None, "original", "other", True])
+def test_inputs_headless_bytes_require_exact_explicit_program_profile(headless, profile):
+    value = stage.prepare(headless.output, profile="headless")
+    program = value["modes"]["original"]["program"]
+    raw = json.loads(Path(program["path"]).read_bytes())
+    if profile is None:
+        raw.pop("input_profile")
+    else:
+        raw["input_profile"] = profile
+    path = headless.output / "incorrect-profile.json"
+    stage.snapshot.write_json(path, raw)
+    with pytest.raises(ValueError):
+        headless.parameter.input_program(path, stage.snapshot.digest(path))
+
+
+@pytest.mark.parametrize("mutation", ["extra_file", "wrong_hash", "lost_label", "wrong_changes"])
+def test_inputs_headless_inventory_refuses_rehashed_variant_metadata(headless, mutation):
+    value = stage.prepare(headless.output, profile="headless")
+    if mutation == "extra_file":
+        value["input_inventory"]["files"]["foreign"] = dict(sha256="0" * 64, size_bytes=1)
+    elif mutation == "wrong_hash":
+        value["input_inventory"]["files"]["sim_config.yaml"]["sha256"] = "0" * 64
+    elif mutation == "lost_label":
+        value.pop("configuration_profile")
+    else:
+        value["configuration_changes"][0]["after"] = True
+    with pytest.raises(ValueError):
+        stage.profiles.selected_inventory(value)
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "extra_configs/grn_basic.yaml",
+        "extra_configs/expression_data.yaml",
+        "geo/circle/circle_base.png",
+    ],
+)
+def test_inputs_headless_other_files_cannot_be_modified_or_relabelled(headless, name):
+    value = stage.prepare(headless.output, profile="headless")
+    path = Path(value["modes"]["original"]["config"]) / name
+    assert path.is_file()
+    path.chmod(0o644)
+    path.write_bytes(path.read_bytes() + b"\n")
+    path.chmod(0o444)
+    with pytest.raises(ValueError):
+        stage.verify(headless.output, stage.snapshot.digest(headless.output / "inputs.json"))
+
+
+def test_inputs_headless_transform_failure_preserves_partial_copy_and_original_cause(
+    headless, monkeypatch
+):
+    primary, cause = OSError("transform output"), LookupError("same cause")
+    primary.__cause__ = cause
+
+    def failed(*args):
+        raise primary
+
+    monkeypatch.setattr(stage, "_copy_headless", failed)
+    with pytest.raises(OSError) as caught:
+        stage.prepare(headless.output, profile="headless")
+    assert caught.value is primary and caught.value.__cause__ is cause
+    assert (headless.output / "failure.json").is_file()
+    assert list((headless.output / "original/config").rglob("*.png"))
+    assert not (headless.output / "disabled").exists()

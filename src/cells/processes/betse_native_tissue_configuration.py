@@ -13,6 +13,7 @@ import importlib
 import json
 import sys
 import warnings
+from collections.abc import Reversible
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from enum import Enum
@@ -37,6 +38,9 @@ _REQUESTS, _CONSUMED, _ISSUED, _OBJECTS = (WeakKeyDictionary() for _ in range(4)
 _LOCK = RLock()
 _ACTIVE = []
 INVALIDATED_OWNERS = core.INVALIDATED_OWNERS
+_REVERSIBLE_HOOK = vars(Reversible)["__subclasshook__"]
+_REVERSIBLE_HOOK_FUNCTION = _REVERSIBLE_HOOK.__func__
+_REVERSIBLE_HOOK_CODE = _REVERSIBLE_HOOK_FUNCTION.__code__
 
 
 @dataclass(frozen=True, slots=True, weakref_slot=True, eq=False)
@@ -384,6 +388,11 @@ def _bindings():
         _ACTIVE,
         _LOCK,
         aliases._MODULE_AUTH,
+        Reversible,
+        _REVERSIBLE_HOOK,
+        _REVERSIBLE_HOOK_FUNCTION,
+        _REVERSIBLE_HOOK_CODE,
+        _REVERSIBLE_HOOK_FUNCTION.__globals__.get("Reversible"),
         *(
             atom
             for function in (
@@ -577,6 +586,20 @@ def _runtime_type(context, name):
             if method in seen:
                 continue
             seen.add(method)
+            if method == "__subclasshook__" and base is Reversible:
+                if (
+                    member is not _REVERSIBLE_HOOK
+                    or member.__func__ is not _REVERSIBLE_HOOK_FUNCTION
+                    or member.__func__.__code__ is not _REVERSIBLE_HOOK_CODE
+                    or member.__func__.__globals__.get("Reversible") is not Reversible
+                ):
+                    raise ValueError("Original stdlib Reversible subclass hook required")
+                # ABCMeta visits registered subclasses during unrelated type
+                # checks (including YAML return validation). Keep this exact
+                # inherited metadata hook; it returns NotImplemented for our
+                # derived class and grants no native method/factory entry.
+                # Its class/function/code remain in the full MRO surface.
+                continue
             if isinstance(member, FunctionType):
                 namespace[method] = guarded(method, member)
             elif isinstance(member, classmethod):

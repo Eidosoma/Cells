@@ -31,7 +31,7 @@ WORLD_MODE = "fresh_world_ready_prephase_single_claim_seed_constructor"
 # Only these two literal values are omitted from the coordinator's exact byte
 # template. Each actual value is checked against the full constructor/review;
 # all complete source files remain bound by the immutable external snapshot.
-CONSTRUCTION_SOURCE_SHA256 = "025d28d2a5917f053ab7a2db1121c103d479ac3238e5ebd7b4b2df149b426127"
+CONSTRUCTION_SOURCE_SHA256 = "ed62776c568a57c6b86c84959e20a3e4901bb358b55d050ca810f4dd1a4e7eea"
 CONSTRUCTION_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 CELLS, PHASE = "betse/science/cells.py", "betse/science/phase/phasecls.py"
 NATIVE_PINS = {

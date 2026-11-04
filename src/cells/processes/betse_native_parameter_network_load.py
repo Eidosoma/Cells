@@ -19,7 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_network_boundary as previous
 
 LAW_ID = "betse_native_parameter_network_file_load@1"
-PREVIOUS_SHA256 = "4b358f56a63bca33d2988c825b3017e88c3f2532689f5d4dc9d37574c7f6e2c2"
+PREVIOUS_SHA256 = "15d73328ffdeee700656d1a44bec0ba9e68ca9e1e5a605342618923de77cdea8"
 RELEASE = "CELLS_NATIVE_PARAMETER_NETWORK_LOAD_RELEASED"
 MAX_PARSER_CALLS = 200000
 _OPEN = open
@@ -142,7 +142,9 @@ def _native(boundary):
             for n in ast.parse(path.read_bytes()).body
             if isinstance(n, ast.FunctionDef) and n.name == name
         )
-        expected_code = declarations.previous.previous.paths._function(node, str(path))
+        expected_code = declarations.previous.previous.paths._function(
+            node, str(path), native_context=True
+        )
         if prefix.parameters.inherited._code(raw.__code__) != prefix.parameters.inherited._code(
             expected_code
         ) or raw.__globals__ is not vars(module):

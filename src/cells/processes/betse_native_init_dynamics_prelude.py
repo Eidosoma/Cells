@@ -28,6 +28,7 @@ PARENT_SOURCE_SHA256 = None
 PARENT_REVIEW_SHA256 = None
 PARENT_CLAIM = "_claim_for_init_dynamics_prelude"
 PARENT_CHECK = "_check_init_dynamics_prelude_authority"
+PARENT_COMPLETION_CLAIM = "_claim_completion_ancestor"
 NATIVE = Path("/mnt/workspaces/Cells/betse-v1.5.0")
 SIM_FILE = "betse/science/sim.py"
 GAP_FILE = "betse/science/channels/gap_junction.py"
@@ -49,8 +50,15 @@ SIM_STORES = (
 )
 GAP_STORES = ("lamb", "A1", "A2", "Ao", "alpha", "beta", "gjopen")
 METHODS = ("init_dynamics", "initDenv", "get_ion")
+COMPLETION_MODULE = "cells.processes.betse_native_init_dynamics_completion"
+COMPLETION_INTERFACE_SHA256 = COMPLETION_REVIEW_SHA256 = None
+COMPLETION_PARENT_REVIEW_SHA256 = None
+COMPLETION_BINDING_KIND = "exact_INIT_completion_bytes_except_two_validated_parent_backrefs@1"
+COMPLETION_BACK_REFERENCE_SLOTS = ("PARENT_SOURCE_SHA256", "PARENT_REVIEW_SHA256")
+COMPLETION_ENTRIES = ("wrapper_guard", "dispatch", "validate_active", "rng_call")
 MAX_WORK = 100000
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
+_FORWARDED, _COMPLETION_LEASES = WeakKeyDictionary(), WeakKeyDictionary()
 _ACTIVE, _FAILED, _LOCK = [], [], RLock()
 
 
@@ -254,6 +262,22 @@ def source_plan():
                 "args_tuple, kwargs, actual_parent_invoke_frame)"
             ),
         },
+        completion_handoff={
+            "interface": COMPLETION_INTERFACE_SHA256,
+            "review": COMPLETION_REVIEW_SHA256,
+            "parent_review": COMPLETION_PARENT_REVIEW_SHA256,
+            "binding": COMPLETION_BINDING_KIND,
+            "claim": "_claim_for_init_dynamics_completion(owner, *, expected, transition, entries)",
+            "route": (
+                "_completion_route(actual_prelude_context) -> (actual_completion_context, module)"
+            ),
+            "check": (
+                "_check_init_dynamics_completion_authority(transition) -> actual_prelude_context"
+            ),
+            "original_INIT_edge_preserved": True,
+            "retained_INIT_claim": PARENT_COMPLETION_CLAIM,
+            "stale_full_state_or_RNG_validation_after_source_work": False,
+        },
         effects=SIM_STORES,
         gap_state=GAP_STORES,
         actual_parent="Actual completed same-phase InitOwner; no supplied material/cache authority",
@@ -452,12 +476,15 @@ def _binding(context):
         _CONSUMED,
         _RETIRED,
         _ISSUED,
+        _FORWARDED,
+        _COMPLETION_LEASES,
         _ACTIVE,
         _LOCK,
         *context.setters,
         *context.getters,
         context.call_tracing,
     ]
+    result.extend(previous._atoms(vars(previous).get(PARENT_COMPLETION_CLAIM)))
     for cls in (
         type(context.phase),
         type(context.sim),
@@ -1249,6 +1276,12 @@ def prepare(request, *, enabled=False):
                     "failed_context",
                     "trial_record",
                     "source_plan",
+                    "_completion_binding",
+                    "_completion_api",
+                    "_completion_route",
+                    "_completion_ancestry",
+                    "_claim_for_init_dynamics_completion",
+                    "_check_init_dynamics_completion_authority",
                 )
             )
             context.stream_before = previous._rng(parent)
@@ -1330,6 +1363,7 @@ def prepare(request, *, enabled=False):
                 "No complete dynamics prefix publication", stage="closure", partial=context
             )
         owner = object.__new__(PreludeOwner)
+        context.owner = owner
         _ISSUED[owner] = (context, context.trial)
         return owner
 
@@ -1356,6 +1390,13 @@ def _authority(owner):
     if type(owner) is not PreludeOwner or owner not in _ISSUED:
         raise DynamicsRejected("Actual issued prelude owner required", stage="owner")
     context, issued_trial = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "completion_transition"):
+        raise DynamicsRejected(
+            "Prelude epoch consumed by its actual completion",
+            stage="forwarded",
+            trial=issued_trial,
+            partial=context,
+        )
     if context.active or context.invalid or context.validating:
         raise DynamicsRejected("Prelude epoch unavailable", stage="owner")
     context.validating = True
@@ -1387,4 +1428,295 @@ def failed_context(value):
     context = _CONSUMED[value]
     if context.active or not context.invalid:
         raise DynamicsRejected("Request has no closed failed attempt", stage="failure")
+    return context
+
+
+def _completion_binding(payload):
+    """Reuse the exact-byte binder with two separately checked parent refs."""
+    namespace = dict(
+        vars(previous),
+        DYNAMICS_BACK_REFERENCE_SLOTS=COMPLETION_BACK_REFERENCE_SLOTS,
+        DYNAMICS_BINDING_KIND=COMPLETION_BINDING_KIND,
+    )
+    return FunctionType(previous._dynamics_binding.__code__, namespace)(payload)
+
+
+def _completion_api():
+    if not all(
+        type(value) is str and len(value) == 64
+        for value in (
+            COMPLETION_INTERFACE_SHA256,
+            COMPLETION_REVIEW_SHA256,
+            COMPLETION_PARENT_REVIEW_SHA256,
+        )
+    ):
+        raise DynamicsRejected(
+            "Reviewed actual completion route remains held", stage="completion_held"
+        )
+    path = Path(__file__).parents[3] / ("src/" + COMPLETION_MODULE.replace(".", "/") + ".py")
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Original actual completion source required")
+    raw = path.read_bytes()
+    identity, backrefs = _completion_binding(raw)
+    if identity != COMPLETION_INTERFACE_SHA256 or backrefs != (
+        ("PARENT_SOURCE_SHA256", hashlib.sha256(Path(__file__).read_bytes()).hexdigest()),
+        ("PARENT_REVIEW_SHA256", COMPLETION_PARENT_REVIEW_SHA256),
+    ):
+        raise ValueError("Exact completion bytes or original parent back-reference changed")
+    module = sys.modules.get(COMPLETION_MODULE)
+    if (
+        type(module) is not ModuleType
+        or Path(module.__file__).resolve() != path
+        or module.previous is not sys.modules[__name__]
+        or path.read_bytes() != raw
+        or any(getattr(module, name) != value for name, value in backrefs)
+        or module.PARENT_CLAIM != "_claim_for_init_dynamics_completion"
+        or module.PARENT_CHECK != "_check_init_dynamics_completion_authority"
+    ):
+        raise ValueError("Actual completion module/source namespace association changed")
+    api = previous.previous._ready()
+    api._source_interface(
+        module,
+        raw,
+        path,
+        ("prepare", "_ready", "_wrapper_guard", "_dispatch", "validate_active", "rng_call"),
+    )
+    module._ready()
+    hook = vars(previous).get(PARENT_COMPLETION_CLAIM)
+    if type(hook) is not FunctionType or hook.__globals__ is not vars(previous):
+        raise DynamicsRejected(
+            "Actual retained INIT completion claim is unavailable", stage="handoff"
+        )
+    return module
+
+
+def _completion_route(context):
+    """Registry/frame routing only; never read stale prelude values or RNG.
+
+    The original INIT -> prelude transition and its entries remain untouched.
+    Retained INIT wrappers may use this route while their factored immutable
+    ancestor audit permits only the completion's separately witnessed stores.
+    """
+    module = _completion_api()
+    owner = getattr(context, "owner", None)
+    if type(owner) is not PreludeOwner:
+        raise ValueError("Actual issued original Prelude context required")
+    transition = getattr(context, "completion_transition", None)
+    lease = _COMPLETION_LEASES.get(owner)
+    issued = _ISSUED.get(owner)
+    if (
+        issued is None
+        or issued[0] is not context
+        or issued[1] is not context.trial
+        or transition is None
+        or _FORWARDED.get(owner) is not transition
+        or lease is None
+        or getattr(context, "completion_lease", None) is not lease
+        or lease.owner is not owner
+        or lease.context is not context
+        or lease.transition is not transition
+        or context.active
+        or context.invalid
+        or context.thread != get_ident()
+        or transition.invalid
+        or transition.thread != context.thread
+        or type(transition.request) is not module.Request
+        or transition.request.prelude_owner is not owner
+        or module._REQUESTS.get(transition.request) is not transition.refs
+        or module._CONSUMED.get(transition.request) is not transition
+        or module._RETIRED.get(owner) is not transition
+        or type(transition.claim) is not module.CompletionClaim
+        or module._CLAIMS.get(transition.claim) is not transition
+        or transition.parent is not context
+        or transition.refs[0] is not context
+        or transition.refs[1] is not lease.trial
+        or transition.parent_trial is not lease.trial
+        or transition.init_parent is not context.parent
+        or transition.phase is not context.phase
+        or transition.p is not context.p
+        or transition.cells is not context.cells
+        or transition.sim is not context.sim
+        or transition.handler is not context.phase.dyna
+        or transition.callback is not context.callback
+        or transition.entries is not lease.entries
+        or getattr(context, "completion_entries", None) is not lease.entries
+        or tuple(lease.entries) != COMPLETION_ENTRIES
+        or any(
+            lease.entries[name]
+            is not vars(module)["_" + name if name in ("wrapper_guard", "dispatch") else name]
+            for name in COMPLETION_ENTRIES
+        )
+    ):
+        raise ValueError("Original one-shot Prelude/completion/phase issuance edge changed")
+    if transition.active:
+        if not module._ACTIVE or module._ACTIVE[-1] is not transition:
+            raise ValueError("Actual exclusive active completion required")
+    else:
+        completed_owner = getattr(transition, "owner", None)
+        if type(completed_owner) is not module.DynamicsOwner:
+            raise ValueError("Actual successful closed completion owner required")
+        published = module._ISSUED.get(completed_owner)
+        if (
+            published is None
+            or published[0] is not transition
+            or published[1] is not transition.trial
+            or transition.trial is None
+            or transition.trial.source_completed is not True
+        ):
+            raise ValueError("Actual successful closed completion required")
+    frame = transition.body_frame
+    if frame is None:
+        if lease.body_frame is not None:
+            raise ValueError("Observed original completion frame disappeared")
+    else:
+        row = transition.frames.get(id(frame))
+        if (
+            type(frame) is not FrameType
+            or row is None
+            or row["frame"] is not frame
+            or row["body_started"] is not True
+            or frame.f_code is not transition.expected_body
+            or frame.f_globals is not transition.namespace
+            or frame.f_locals.get("self") is not context.sim
+            or frame.f_locals.get("phase") is not context.phase
+            or frame.f_back is not transition.driver_frame
+            or transition.driver_frame.f_code is not module._run.__code__
+            or transition.driver_frame.f_globals is not vars(module)
+            or (lease.body_frame is not None and lease.body_frame is not frame)
+        ):
+            raise ValueError("Original observed completion source frame changed")
+        lease.body_frame = frame
+    return transition, module
+
+
+def _completion_ancestry(context):
+    transition, _ = _completion_route(context)
+    lease = context.completion_lease
+    if (
+        context.trial is not lease.trial
+        or _REQUESTS.get(context.request) is not context.refs
+        or _CONSUMED.get(context.request) is not context
+        or _RETIRED.get(context.request.init_owner) is not context
+        or context.refs is not lease.refs
+        or context.before is not lease.before
+        or context.after is not lease.after
+        or context.after_graph is not lease.after_graph
+        or context.bindings is not lease.bindings
+        or context.work is not lease.work
+        or context.raw_returns is not lease.raw_returns
+        or context.c_calls is not lease.c_calls
+        or context.trial.source_completed is not True
+        or context.trial.identity != _digest(trial_record(context.trial))
+        or context.primary is not None
+        or context.capture_error is not None
+        or context.cleanup_errors
+        or context.request.identity != _digest(request_record(context.request))
+        or context.request.source_identity != _digest(source_plan())
+        or context.phase.p is not context.p
+        or context.phase.cells is not context.cells
+        or context.phase.sim is not context.sim
+        or context.phase.callbacks is not context.callback
+        or context.parent.trial is not context.parent_trial
+        or context.parent.parameter_record is not context.parent_record
+        or vars(previous).get(PARENT_COMPLETION_CLAIM) is not lease.parent_claim
+        or vars(context.sim).get("D_env") is not context.original_D_env
+        or vars(context.sim).get("c_env_bound") is not context.original_c_env_bound
+        or vars(context.sim).get("gj_funk") is not context.gap
+        or context.parent_check(context) is not context.parent
+    ):
+        raise ValueError("Original completed Prelude source/record/ancestor metadata changed")
+    current = _binding(context)
+    if len(current) != len(lease.bindings) or any(
+        a is not b for a, b in zip(current, lease.bindings, strict=True)
+    ):
+        raise ValueError("Original Prelude source/function/global association changed")
+    if lease.body_frame is None:
+        graph = _graph(context)
+        previous.core.previous._same(graph[0], lease.after_graph[0])
+        if (
+            graph[1] != lease.after_graph[1]
+            or _snapshot(context).identity != lease.after.identity
+            or previous._rng(context.parent).identity != context.stream_before.identity
+        ):
+            raise ValueError("Prelude state changed before original completion source entry")
+    return transition
+
+
+def _claim_for_init_dynamics_completion(owner, *, expected, transition, entries):
+    """One irreversible transfer from the actual successful closed prelude."""
+    module = _completion_api()
+    frame = sys._getframe(1)
+    with _LOCK:
+        issued = _ISSUED.get(owner) if type(owner) is PreludeOwner else None
+        if (
+            issued is None
+            or issued[1] is not expected
+            or frame.f_code is not module.prepare.__code__
+            or frame.f_globals is not vars(module)
+            or frame.f_locals.get("context") is not transition
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+        ):
+            raise DynamicsRejected(
+                "Actual active completion issuer required", stage="completion_entry"
+            )
+        context = issued[0]
+        if owner in _FORWARDED or hasattr(context, "completion_transition"):
+            raise DynamicsRejected("Prelude epoch already attempted", stage="completion_consumed")
+        if (
+            context.active
+            or context.invalid
+            or context.validating
+            or context.owner is not owner
+            or transition.parent is not context
+            or transition.parent_trial is not expected
+            or transition.entries is not entries
+            or transition.thread != context.thread
+            or context.thread != get_ident()
+        ):
+            context.invalid = transition.invalid = True
+            raise ValueError("Original closed Prelude/completion association changed")
+        # Mark consumption before any fallible original state/source checks.
+        context.completion_transition = transition
+        _FORWARDED[owner] = transition
+        context.completion_entries = entries
+        lease = SimpleNamespace(
+            context=context,
+            owner=owner,
+            trial=expected,
+            transition=transition,
+            entries=entries,
+            refs=context.refs,
+            before=context.before,
+            after=context.after,
+            after_graph=context.after_graph,
+            bindings=context.bindings,
+            work=context.work,
+            raw_returns=context.raw_returns,
+            c_calls=context.c_calls,
+            body_frame=None,
+            parent_claim=vars(previous).get(PARENT_COMPLETION_CLAIM),
+        )
+        context.completion_lease = lease
+        _COMPLETION_LEASES[owner] = lease
+        try:
+            _check(context, closed=True)
+            if (
+                type(lease.parent_claim) is not FunctionType
+                or lease.parent_claim.__globals__ is not vars(previous)
+                or lease.parent_claim(context.parent, context, transition) is not context.parent
+            ):
+                raise ValueError("Actual retained INIT completion ancestry claim required")
+            _completion_ancestry(context)
+        except BaseException as error:
+            context.completion_error = error
+            context.invalid = transition.invalid = True
+            raise
+        return context
+
+
+def _check_init_dynamics_completion_authority(transition):
+    context = transition.parent
+    if _completion_ancestry(context) is not transition:
+        raise ValueError("Different original completion transition")
     return context

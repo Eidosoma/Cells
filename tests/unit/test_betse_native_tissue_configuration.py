@@ -3,7 +3,9 @@
 import hashlib
 import os
 import pickle
+import sys
 import types
+from collections.abc import Mapping, MutableSequence, Reversible, Sequence
 from dataclasses import replace
 from enum import Enum
 from pathlib import Path
@@ -715,3 +717,160 @@ def test_software_factory_copied_namespace_retarget_refuses_before_constructor(
         cls.make_list()
     assert not replacements and not probe.calls and not context.objects
     save(evidence, "namespace-retarget", dict(mutation=mutation, constructor_calls=0))
+
+
+def _abc_probe(monkeypatch, *, hook_base=None):
+    calls = []
+
+    class SyntheticYamlList(MutableSequence if hook_base is None else hook_base):
+        def __init__(self):
+            calls.append("construct")
+
+        def __getitem__(self, index):
+            calls.append("getitem")
+
+        def __setitem__(self, index, value):
+            calls.append("setitem")
+
+        def __delitem__(self, index):
+            calls.append("delitem")
+
+        def __len__(self):
+            calls.append("len")
+            return 0
+
+        def insert(self, index, value):
+            calls.append("insert")
+
+        @classmethod
+        def make_default(cls):
+            calls.append("factory")
+
+    context = SimpleNamespace(
+        active=True,
+        thread=stage.get_ident(),
+        observation_error=None,
+        runtime_types={},
+        runtime_bindings={},
+        objects=[],
+        work=[],
+        events=[],
+        factories={"YamlList": SyntheticYamlList},
+    )
+    monkeypatch.setattr(stage, "_ACTIVE", [context])
+    # Only stdlib protocol metadata is exercised, never an issued native owner.
+    return context, SyntheticYamlList, calls
+
+
+@pytest.mark.parametrize("state", ["closed", "no_active_context", "other_thread"])
+def test_software_abc_hook_keeps_unrelated_type_checks_outside_source_epoch(
+    state, monkeypatch, evidence
+):
+    context, native, calls = _abc_probe(monkeypatch)
+    cls = stage._runtime_type(context, "YamlList")
+    assert "__subclasshook__" not in vars(cls)
+    assert cls.__subclasshook__.__func__ is Reversible.__subclasshook__.__func__
+    if state == "closed":
+        context.active = False
+    elif state == "no_active_context":
+        stage._ACTIVE.clear()
+    else:
+        context.thread = -1
+    reached = []
+    previous, trace = sys.getprofile(), sys.gettrace()
+
+    def observer(frame, event, arg):
+        if event == "call" and frame.f_code is stage._REVERSIBLE_HOOK_CODE:
+            reached.append(frame.f_locals["cls"])
+        if previous is not None:
+            previous(frame, event, arg)
+
+    class Unrelated:
+        pass
+
+    try:
+        sys.setprofile(observer)
+        assert not issubclass(Unrelated, Sequence)
+        assert not isinstance(Unrelated(), Sequence)
+    finally:
+        sys.setprofile(previous)
+    assert any(actual is cls for actual in reached)
+    assert sys.getprofile() is previous and sys.gettrace() is trace
+    assert not calls and not context.work and not context.events and not context.objects
+    assert issubclass(cls, native) and issubclass(cls, MutableSequence)
+    with pytest.raises(stage.ConfigurationRejected):
+        cls()
+    with pytest.raises(stage.ConfigurationRejected):
+        cls.make_default()
+    assert not calls
+    save(evidence, "abc-closed-check", dict(state=state, actual_stdlib_hook_reached=True))
+
+
+@pytest.mark.parametrize("value", [{"configuration": True}, [1, 2], object()])
+def test_software_abc_hook_preserves_real_decorator_yaml_return_validation(
+    value, monkeypatch, evidence
+):
+    from beartype import beartype
+    from beartype.roar import BeartypeCallHintReturnViolation
+
+    context, _native, calls = _abc_probe(monkeypatch)
+    cls = stage._runtime_type(context, "YamlList")
+    context.active = False
+
+    @beartype
+    def yaml_return() -> Mapping | Sequence:
+        return value
+
+    if type(value) is object:
+        with pytest.raises(BeartypeCallHintReturnViolation):
+            yaml_return()
+    else:
+        assert yaml_return() is value
+    assert cls.__subclasshook__(type(value)) is NotImplemented
+    assert not calls and not context.work and not context.events
+    save(evidence, "abc-decorator-check", dict(type=type(value).__name__, unchanged_result=True))
+
+
+@pytest.mark.parametrize("mode", ["override", "stdlib_label"])
+def test_software_abc_hook_does_not_exempt_other_classmethods(mode, monkeypatch, evidence):
+    calls = []
+
+    class Foreign:
+        @classmethod
+        def __subclasshook__(cls, candidate):
+            calls.append(candidate)
+            return True
+
+    if mode == "stdlib_label":
+        Foreign.__module__, Foreign.__name__ = "collections.abc", "Reversible"
+    context, _native, _methods = _abc_probe(monkeypatch, hook_base=Foreign)
+    cls = stage._runtime_type(context, "YamlList")
+    context.active = False
+    with pytest.raises(stage.ConfigurationRejected):
+        cls.__subclasshook__(dict)
+    assert not calls
+    save(evidence, "abc-foreign-refused", dict(mode=mode, source_calls=0))
+
+
+@pytest.mark.parametrize("mode", ["descriptor", "function", "code", "global"])
+def test_software_abc_hook_refuses_changed_stdlib_before_class_issuance(
+    mode, monkeypatch, evidence
+):
+    context, _native, calls = _abc_probe(monkeypatch)
+    original = vars(Reversible)["__subclasshook__"]
+    with monkeypatch.context() as patch:
+        if mode == "descriptor":
+            patch.setattr(Reversible, "__subclasshook__", classmethod(original.__func__))
+        elif mode == "function":
+            replacement = types.FunctionType(
+                original.__func__.__code__, original.__func__.__globals__
+            )
+            patch.setattr(Reversible, "__subclasshook__", classmethod(replacement))
+        elif mode == "code":
+            patch.setattr(original.__func__, "__code__", original.__func__.__code__.replace())
+        else:
+            patch.setitem(original.__func__.__globals__, "Reversible", object())
+        with pytest.raises(ValueError, match="Original stdlib Reversible"):
+            stage._runtime_type(context, "YamlList")
+    assert not context.runtime_types and not context.objects and not calls
+    save(evidence, "abc-mutated-refused", dict(mode=mode, class_issued=False))

@@ -27,8 +27,8 @@ MODULE = "validation.betse.native_seed_world_geometry_qualification"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_GEOMETRY_QUALIFICATION_RELEASED"
 SOFTWARE_RELEASE = "BETSE_NATIVE_SEED_WORLD_GEOMETRY_QUALIFICATION_SOFTWARE_RELEASED"
 PARAMETER_ENTRY_MODULE = "validation.betse.betse_native_parameter_world_ready_qualification"
-PARAMETER_ENTRY_SOURCE_SHA256 = "9ab32160019edaa0ab0fa49bf8ae64fbe1cb4baba87ff1bd99d16e9f978b07a7"
-PARAMETER_ENTRY_REVIEW_SHA256 = "e0e3a4270321ffbd08f2ce14dfdb2c39b7d0108d0e90741c7a509586fd3f0604"
+PARAMETER_ENTRY_SOURCE_SHA256 = "89137b398d15ba435c34ea696b608c7a44c9163eaa8088a2b02465161d26cafd"
+PARAMETER_ENTRY_REVIEW_SHA256 = "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e"
 EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
 EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 POLICY = dict(cpu=6, threads=1, software_bytes=2**30, wall_seconds=480, reserve_bytes=8 * 2**30)
@@ -47,13 +47,13 @@ MODULES = {
     "callbacks": "cells.processes.betse_native_phase_callbacks",
 }
 MODULE_SOURCE_SHA256 = {
-    "world": "025d28d2a5917f053ab7a2db1121c103d479ac3238e5ebd7b4b2df149b426127",
-    "prefix": "d13ae1ec202d19c4559c5de5a942b867d8850893c47e8b3283c129c033094dfc",
+    "world": "ed62776c568a57c6b86c84959e20a3e4901bb358b55d050ca810f4dd1a4e7eea",
+    "prefix": "def8a5646d4ee1719fe5710e5cf2bb70f488764187898f1321c6fcad8bf86db1",
     "image": "98bcd55b9e00e28bf7f9dd5d5a20261217e640e901affaa1b1686d0f458b45e0",
     "mesh": "c73fd24847158223373c6d77783b8e27857bede8ff59b3b6094ceba20fa2f23f",
     "lifecycle": "2ad275b33cd123f0cf266d262dcee5609924b72a91c6c8b86328bed1116eac1e",
     "geometry": "2b8701f0fd4f59731d69d7a244fc3bdf8b347e683a9335fb561b83f90ab2f22a",
-    "callbacks": "f5e807c61cfd36a7f6d2da6e23418559a2527c221f2c8ce8ddf0a908020721f2",
+    "callbacks": "9a680cf6b6ccad865bce3365c8dff2f0d5b2e7ad845f00321a0cc26cd235d4b8",
 }
 MODULE_REVIEW_SHA256 = {
     "world": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",

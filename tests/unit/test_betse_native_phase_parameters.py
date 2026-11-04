@@ -2,13 +2,15 @@
 
 import ast
 import builtins
+import copy
 import json
 import sys
 from dataclasses import replace
-from types import SimpleNamespace
+from types import CellType, CodeType, FunctionType, ModuleType, SimpleNamespace
 
 import pytest
 
+from cells.processes import betse_native_parameter_paths as paths
 from cells.processes import betse_native_phase_parameters as stage
 from validation.betse.betse_native_single_cell_core_synthetic import (
     SyntheticCaptureFailure,
@@ -134,6 +136,10 @@ def controlled(monkeypatch, plan):
 
     monkeypatch.setattr(stage, "_acquire", acquire)
     monkeypatch.setattr(stage, "_canonical", canonical)
+    # This fixture supplies synthetic constructors only; genuine native method
+    # admission is exercised separately by the compiled-metadata controls.
+    monkeypatch.setattr(stage, "_acquired_parameter_methods", lambda source: None)
+    monkeypatch.setattr(stage, "_live_parameter_method_bindings", lambda source: ())
     monkeypatch.setattr(stage, "_invoke", invoke)
     monkeypatch.setattr(stage, "source_plan", lambda: dict(plan, synthetic_only=True))
     monkeypatch.setenv(stage.inherited.RELEASE, "1")
@@ -340,6 +346,348 @@ def test_super_code_has_exact_class_cell_without_executing_constructor():
     tree = ast.parse("class Example(object):\n def __init__(self): super().__init__()")
     code = stage._method_code(tree.body[0], "__init__", "<metadata-only>")
     assert code.co_freevars == ("__class__",)
+
+
+def _original_parameter_codes():
+    path = stage.inherited.tissue.aliases.NATIVE / stage.PARAMETERS
+    tree = ast.parse(path.read_bytes(), filename=str(path))
+    node = stage.inherited._class(tree, "Parameters")
+    module = compile(path.read_bytes(), str(path), "exec", dont_inherit=True)
+    cls = next(c for c in module.co_consts if type(c) is CodeType and c.co_name == "Parameters")
+    return path, node, {c.co_name: c for c in cls.co_consts if type(c) is CodeType}
+
+
+def _wrapped_parameter_metadata(name, monkeypatch):
+    """Real decorator, compiled native metadata; no native class/body execution."""
+    from beartype import beartype
+    from beartype.claw._clawstate import claw_state
+
+    path, _, codes = _original_parameter_codes()
+    module = ModuleType("metadata_only_parameters")
+    module.__file__ = str(path)
+    module.__dict__["__builtins__"] = vars(builtins)
+    cls = type("Parameters", (), {"__module__": module.__name__})
+    originals = {}
+    for method in ("__init__", "_unload_paths", "load", "reload_paths"):
+        code = codes[method]
+        original = FunctionType(
+            code,
+            vars(module),
+            method,
+            closure=tuple(CellType(cls) for _ in code.co_freevars) or None,
+        )
+        original.__annotations__ = {"return": None}
+        setattr(cls, method, original)
+        originals[method] = original
+    assert beartype(cls) is cls
+    wrapper = vars(cls)[name]
+    # This isolated module exercises the genuine configuration association;
+    # it never imports BETSE, installs a hook or issues a parameter owner.
+    module.__dict__["__claw_state_beartype__"] = claw_state
+    monkeypatch.setitem(
+        claw_state.module_name_to_beartype_conf,
+        module.__name__,
+        wrapper.__kwdefaults__["__beartype_conf"],
+    )
+    return SimpleNamespace(
+        source=SimpleNamespace(cls=cls, modules={"betse.science.parameters": module}),
+        wrapper=wrapper,
+        original=originals[name],
+        module=module,
+    )
+
+
+@pytest.mark.parametrize("name", ["__init__", "_unload_paths", "load", "reload_paths"])
+def test_wrapper_metadata_accepts_real_return_none_wrapper_without_body_execution(
+    name, tmp_path, monkeypatch
+):
+    h = _wrapped_parameter_metadata(name, monkeypatch)
+    assert h.wrapper is not h.original
+    assert stage._method_original(h.source, name) is h.original
+    before = stage._method_wrapper_bindings(h.wrapper, h.source.cls)
+    after = stage._method_wrapper_bindings(h.wrapper, h.source.cls)
+    assert len(before) == len(after) and all(a is b for a, b in zip(before, after, strict=True))
+    save(tmp_path, "real-wrapper-metadata", dict(method=name, original_body_calls=0))
+
+
+@pytest.mark.parametrize("removed", [None, "__init__", "_unload_paths", "load", "reload_paths"])
+def test_wrapper_metadata_native_acquisition_requires_package_wrappers(removed, monkeypatch):
+    h = _wrapped_parameter_metadata("load", monkeypatch)
+    if removed is None:
+        stage._acquired_parameter_methods(h.source)
+    else:
+        setattr(h.source.cls, removed, vars(h.source.cls)[removed].__wrapped__)
+        with pytest.raises(ValueError, match="package-installed"):
+            stage._acquired_parameter_methods(h.source)
+
+
+@pytest.mark.parametrize("name", ["__init__", "_unload_paths", "load", "reload_paths"])
+@pytest.mark.parametrize("change", ["unwrap", "remove"])
+def test_wrapper_metadata_rechecks_acquisition_return_before_runtime_baseline(
+    name, change, monkeypatch
+):
+    h = _wrapped_parameter_metadata("load", monkeypatch)
+    h.module.Parameters = h.source.cls
+    h.source.modules["betse.lib.yaml.abc.yamlfileabc"] = SimpleNamespace(YamlFileDefaultABC=object)
+    h.source.yaml = object
+    monkeypatch.setitem(sys.modules, "betse.science.parameters", h.module)
+    monkeypatch.setattr(stage.inherited.tissue.aliases, "_check_modules", lambda: None)
+    stage._acquired_parameter_methods(h.source)
+    stage._runtime(h.source)
+    original = vars(h.source.cls)[name].__wrapped__
+    if change == "unwrap":
+        setattr(h.source.cls, name, original)
+    else:
+        delattr(h.source.cls, name)
+    with pytest.raises((ValueError, AttributeError)):
+        stage._runtime(h.source)
+
+
+@pytest.mark.parametrize("name", ["__init__", "_unload_paths", "load", "reload_paths"])
+@pytest.mark.parametrize("change", ["unwrap", "remove"])
+def test_wrapper_metadata_refuses_mutation_in_validation_return_observer(name, change, monkeypatch):
+    h = _wrapped_parameter_metadata("load", monkeypatch)
+    h.module.Parameters = h.source.cls
+    h.source.modules["betse.lib.yaml.abc.yamlfileabc"] = SimpleNamespace(YamlFileDefaultABC=object)
+    h.source.yaml = object
+    monkeypatch.setitem(sys.modules, "betse.science.parameters", h.module)
+    monkeypatch.setattr(stage.inherited.tissue.aliases, "_check_modules", lambda: None)
+    stage._acquired_parameter_methods(h.source)
+    before, trace, events = sys.getprofile(), sys.gettrace(), []
+
+    def inherited_observer(frame, event, arg):
+        if before is not None:
+            before(frame, event, arg)
+        if (
+            event == "return"
+            and frame.f_code is stage._acquired_parameter_methods.__code__
+            and frame.f_locals.get("source") is h.source
+            and not events
+        ):
+            events.append(name)
+            method = vars(h.source.cls)[name]
+            if change == "unwrap":
+                setattr(h.source.cls, name, method.__wrapped__)
+            else:
+                delattr(h.source.cls, name)
+
+    sys.setprofile(inherited_observer)
+    try:
+        with pytest.raises(ValueError):
+            stage._runtime(h.source)
+    finally:
+        sys.setprofile(before)
+        sys.settrace(trace)
+    assert events == [name] and sys.getprofile() is before and sys.gettrace() is trace
+
+
+@pytest.mark.parametrize(
+    "change", ["delegate", "code", "globals", "defaults", "config", "state", "config_entry"]
+)
+def test_wrapper_metadata_rejects_preexisting_violation_and_hook_drift(change, monkeypatch):
+    h = _wrapped_parameter_metadata("load", monkeypatch)
+    error_module = sys.modules["beartype._check.error.errmain"]
+    helper = error_module.get_hint_object_violation
+    if change == "delegate":
+        monkeypatch.setattr(
+            error_module, "get_hint_object_violation", lambda **kwargs: ValueError()
+        )
+    elif change == "code":
+        monkeypatch.setattr(
+            helper,
+            "__code__",
+            helper.__code__.replace(co_consts=(*helper.__code__.co_consts, "drift")),
+        )
+    elif change == "globals":
+        clone = FunctionType(
+            helper.__code__, dict(helper.__globals__), helper.__name__, helper.__defaults__
+        )
+        monkeypatch.setattr(error_module, "get_hint_object_violation", clone)
+    elif change == "defaults":
+        monkeypatch.setattr(helper, "__defaults__", (1,) * 5)
+    elif change == "state":
+        h.original.__globals__["__claw_state_beartype__"] = object()
+    elif change == "config_entry":
+        state = h.original.__globals__["__claw_state_beartype__"]
+        monkeypatch.setitem(state.module_name_to_beartype_conf, h.module.__name__, object())
+    else:
+        from beartype import BeartypeConf
+
+        foreign = BeartypeConf(is_color=True)
+        h.wrapper.__kwdefaults__["__beartype_conf"] = foreign
+        h.wrapper.__kwdefaults__["__beartype_check_meta"].conf = foreign
+    with pytest.raises(ValueError, match="violation executable|import-hook"):
+        stage._method_wrapper_bindings(h.wrapper, h.source.cls)
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "code",
+        "equal_code",
+        "delegate",
+        "wrapped",
+        "kwdefaults",
+        "extra_default",
+        "metadata_function",
+        "metadata_conf",
+        "metadata_annotations",
+        "class_stack",
+        "annotation",
+        "globals",
+        "cached_builtins",
+        "violation",
+        "library_bytes",
+    ],
+)
+def test_wrapper_metadata_rejects_changed_live_wrapper_edges(monkeypatch, tmp_path, change):
+    h = _wrapped_parameter_metadata("load", monkeypatch)
+    before = stage._method_wrapper_bindings(h.wrapper, h.source.cls)
+    meta = h.wrapper.__kwdefaults__["__beartype_check_meta"]
+    if change in ("code", "equal_code"):
+        h.wrapper.__code__ = h.wrapper.__code__.replace(
+            **({"co_consts": (*h.wrapper.__code__.co_consts, "drift")} if change == "code" else {})
+        )
+    elif change == "delegate":
+        h.wrapper.__kwdefaults__["__beartype_func"] = lambda: None
+    elif change == "wrapped":
+        h.wrapper.__wrapped__ = lambda: None
+    elif change == "kwdefaults":
+        h.wrapper.__kwdefaults__ = dict(h.wrapper.__kwdefaults__)
+    elif change == "extra_default":
+        h.wrapper.__kwdefaults__["extra"] = None
+    elif change == "metadata_function":
+        meta.func = lambda: None
+    elif change == "metadata_conf":
+        meta.conf = object()
+    elif change == "metadata_annotations":
+        meta.func_annotations = dict(meta.func_annotations)
+    elif change == "class_stack":
+        meta.cls_stack = (type("Foreign", (), {}),)
+    elif change == "annotation":
+        h.original.__annotations__["return"] = int
+    elif change == "globals":
+        monkeypatch.setitem(h.wrapper.__globals__, "isinstance", lambda *args: True)
+    elif change == "cached_builtins":
+        monkeypatch.setitem(h.wrapper.__globals__, "__builtins__", dict(vars(builtins)))
+    elif change == "violation":
+        h.wrapper.__kwdefaults__["__beartype_get_violation"] = lambda **kwargs: ValueError()
+    else:
+        monkeypatch.setattr(
+            stage, "RETURN_NONE_WRAPPER_PINS", (("beartype._check.error.errmain", "0" * 64),)
+        )
+    with pytest.raises(ValueError):
+        after = stage._method_wrapper_bindings(h.wrapper, h.source.cls)
+        stage.inherited._same(((), after), ((), before))
+    save(tmp_path, "wrapper-drift", dict(change=change, original_body_calls=0))
+
+
+@pytest.mark.parametrize("name", ["load", "reload_paths"])
+def test_wrapper_metadata_ignores_no_wrapper_when_authenticating_original_body(name, monkeypatch):
+    h = _wrapped_parameter_metadata(name, monkeypatch)
+    setattr(h.source.cls, name, h.original)
+    assert stage._method_original(h.source, name) is h.original
+    h.original.__code__ = h.original.__code__.replace(
+        co_consts=(*h.original.__code__.co_consts, 123)
+    )
+    with pytest.raises(ValueError, match="executable/header/globals"):
+        stage._method_original(h.source, name)
+
+
+@pytest.mark.parametrize(
+    "name", ["__init__", "_unload_paths", "load", "reload_paths", "_load_ion_profile"]
+)
+def test_contextual_metadata_original_class_compilation_without_execution(name):
+    path, node, original = _original_parameter_codes()
+    actual = stage._method_code(node, name, str(path), native_context=True)
+    assert actual == original[name]
+    assert actual.co_qualname == "Parameters." + name
+    assert actual.co_filename == str(path)
+    isolated = compile(
+        ast.Module(body=[node], type_ignores=[]), str(path), "exec", dont_inherit=True
+    )
+    cls = next(c for c in isolated.co_consts if type(c) is CodeType and c.co_name == "Parameters")
+    expected_copy = next(c for c in cls.co_consts if type(c) is CodeType and c.co_name == name)
+    assert stage._method_code(node, name, str(path)) == expected_copy
+    if name in ("__init__", "load", "reload_paths"):
+        assert expected_copy.co_code != actual.co_code
+
+
+@pytest.mark.parametrize("change", ["body", "location", "mode"])
+def test_contextual_metadata_original_class_rejects_changed_input(change):
+    path, original, _ = _original_parameter_codes()
+    node = copy.deepcopy(original)
+    if change == "body":
+        node.body.pop()
+    elif change == "location":
+        node.lineno += 1
+    with pytest.raises(ValueError, match="compilation context|original class AST"):
+        stage._method_code(
+            node, "__init__", str(path), native_context=1 if change == "mode" else True
+        )
+
+
+@pytest.mark.parametrize(
+    "change",
+    [None, "isolated", "constants", "flags", "filename", "qualname", "globals", "class_cell"],
+)
+def test_contextual_metadata_real_constructor_authentication_without_call(monkeypatch, change):
+    path, node, original = _original_parameter_codes()
+    module = ModuleType("betse.science.parameters")
+    module.__file__ = str(path)
+    module.__dict__["__builtins__"] = vars(builtins)
+    base = type("YamlFileDefaultABC", (), {})
+    cls = type("Parameters", (base,), {"__module__": module.__name__})
+    module.Parameters = cls
+    for name in ("__init__", "_unload_paths"):
+        code = original[name]
+        globals_ = vars(module)
+        cell_value = cls
+        if name == "__init__":
+            if change == "isolated":
+                code = stage._method_code(node, name, str(path))
+            elif change == "constants":
+                code = code.replace(co_consts=(*code.co_consts, "foreign constant"))
+            elif change == "flags":
+                code = code.replace(co_flags=code.co_flags ^ 64)
+            elif change == "filename":
+                code = code.replace(co_filename="<foreign>")
+            elif change == "qualname":
+                code = code.replace(co_qualname="Other.__init__")
+            elif change == "globals":
+                globals_ = dict(vars(module))
+            elif change == "class_cell":
+                cell_value = base
+        closure = tuple(CellType(cell_value) for _ in code.co_freevars) or None
+        setattr(cls, name, FunctionType(code, globals_, name, closure=closure))
+    monkeypatch.setitem(sys.modules, module.__name__, module)
+    monkeypatch.setattr(stage.inherited.tissue.aliases, "_check_modules", lambda: None)
+    yaml = SimpleNamespace(YamlFileDefaultABC=base)
+    if change is None:
+        assert stage._canonical(module, yaml) is cls
+    else:
+        with pytest.raises(ValueError, match="executable changed|closure association"):
+            stage._canonical(module, yaml)
+
+
+@pytest.mark.parametrize("name", paths.VERSIONS)
+def test_contextual_metadata_original_function_and_selected_copy_remain_distinct(name):
+    path = stage.inherited.tissue.aliases.NATIVE / paths.COMPAT
+    tree = ast.parse(path.read_bytes(), filename=str(path))
+    node = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == name)
+    module = compile(path.read_bytes(), str(path), "exec", dont_inherit=True)
+    expected = next(c for c in module.co_consts if type(c) is CodeType and c.co_name == name)
+    assert paths._function(node, str(path), native_context=True) == expected
+    isolated = compile(
+        ast.Module(body=[node], type_ignores=[]), str(path), "exec", dont_inherit=True
+    )
+    assert paths._function(node, str(path)) == next(
+        c for c in isolated.co_consts if type(c) is CodeType
+    )
+    changed = copy.deepcopy(node)
+    changed.lineno += 1
+    with pytest.raises(ValueError, match="original function AST"):
+        paths._function(changed, str(path), native_context=True)
 
 
 def test_native_parameter_owner_is_unloaded_not_phase_or_pickle_parent(controlled):

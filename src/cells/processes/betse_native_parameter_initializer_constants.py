@@ -19,7 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_colormap_load as previous
 
 LAW_ID = "betse_native_parameter_plotting_initializer_constants@1"
-PREVIOUS_SHA256 = "cfe5d3baf710f5a7f1b1e53b5f10716c133e3c59c91db8e003a3bd10e3a14004"
+PREVIOUS_SHA256 = "b49eccca3d5915c66bb14c94959ba7fce2b2a11d0b67275baecb00080e2b09ff"
 RELEASE = "CELLS_NATIVE_PARAMETER_INITIALIZER_CONSTANTS_RELEASED"
 START, STOP, MAX_WORK = 139, 203, 20000
 _FLOAT = float

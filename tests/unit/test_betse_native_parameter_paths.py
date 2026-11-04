@@ -21,6 +21,54 @@ from validation.betse.betse_native_single_cell_core_synthetic import (
 ORIGINAL_NATIVE = stage._native
 
 
+def test_wrapper_metadata_reload_uses_body_globals_but_retains_actual_wrapper(
+    monkeypatch, tmp_path
+):
+    from types import ModuleType
+
+    from tests.unit.test_betse_native_phase_parameters import _wrapped_parameter_metadata
+
+    h = _wrapped_parameter_metadata("reload_paths", monkeypatch)
+    dirs = ModuleType("betse.util.path.dirs")
+    dirs.make_unless_dir = lambda *args: (_ for _ in ()).throw(AssertionError("No directory calls"))
+    h.original.__globals__["dirs"] = dirs
+    compat = ModuleType("betse.science.compat.compatconf")
+    compat.__file__ = str(stage.prefix.parameters.inherited.tissue.aliases.NATIVE / stage.COMPAT)
+    for name in (*stage.VERSIONS, stage.EXPORT_UPGRADE, "upgrade_sim_conf"):
+        setattr(
+            compat,
+            name,
+            lambda *args: (_ for _ in ()).throw(AssertionError("No compatibility calls")),
+        )
+    monkeypatch.setitem(sys.modules, dirs.__name__, dirs)
+    monkeypatch.setitem(sys.modules, compat.__name__, compat)
+    monkeypatch.setattr(
+        stage.prefix.parameters.inherited.tissue.aliases, "_check_modules", lambda: None
+    )
+    p = object()
+    filename = "metadata-only.yaml"
+    native = stage.prefix.parameters.inherited.tissue.aliases.NATIVE
+    yaml = SimpleNamespace(
+        p=p,
+        parent=SimpleNamespace(source=h.source),
+        request=SimpleNamespace(file=SimpleNamespace(filename=filename)),
+        locals={
+            (str(native / stage.prefix.parameters.PARAMETERS), "Parameters.load"): dict(
+                self=p,
+                args=(filename,),
+                kwargs={},
+                YAML_VERSION="1.2",
+                __class__=h.source.cls,
+                compatconf=compat,
+            )
+        },
+    )
+    value = ORIGINAL_NATIVE(yaml)
+    assert value.reload is h.wrapper and value.mkdir is dirs.make_unless_dir
+    assert "dirs" not in h.wrapper.__globals__
+    save(tmp_path, "wrapped-path-lookup", dict(source_body_calls=0, directory_calls=0))
+
+
 @pytest.fixture(autouse=True)
 def blocked(monkeypatch, request, tmp_path):
     attempts = []

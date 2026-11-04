@@ -19,7 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_paths as paths
 
 LAW_ID = paths.SUBCONFIGURATION_LAW
-PATHS_SHA256 = "c14f2c9fd7edf0d4862167a45ab81e63f65eb403d3de3d93fdb2c1ef61282829"
+PATHS_SHA256 = "08ebef6854cc58c8590236c58f3fff3ed664bfa55edde509910c1651d3f5fec4"
 RELEASE = "CELLS_NATIVE_PARAMETER_SUBCONFIGURATIONS_RELEASED"
 MAX_NEW_WRAPPERS = 4096
 ORDER = ("cut_profiles", "tissue_default", "tissue_profiles", "anim", "csv", "plot", "visual")
@@ -228,7 +228,9 @@ def _native_bindings(context):
             tree = ast.parse(filename.read_bytes())
             owner = original.__qualname__.split(".")[0]
             node = paths.prefix.parameters.inherited._class(tree, owner)
-            expected = paths.prefix.parameters._method_code(node, original.__name__, str(filename))
+            expected = paths.prefix.parameters._method_code(
+                node, original.__name__, str(filename), native_context=True
+            )
             if paths.prefix.parameters.inherited._code(
                 original.__code__
             ) != paths.prefix.parameters.inherited._code(expected):

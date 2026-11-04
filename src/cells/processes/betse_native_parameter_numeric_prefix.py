@@ -20,7 +20,7 @@ from cells.processes import betse_native_parameter_construction_lease as claims
 from cells.processes import betse_native_parameter_subconfigurations as previous
 
 LAW_ID = "betse_native_parameter_general_time_world_prefix@1"
-PREVIOUS_SHA256 = "3c0fa5c67928c266420780e5feb9c9abdcc91c511456da58a2659c9bd071b0ea"
+PREVIOUS_SHA256 = "3c0c6ba9b3e677acebe2d35f7d008eeca447165537d4870ec28884ff96f0e192"
 RELEASE = "CELLS_NATIVE_PARAMETER_NUMERIC_PREFIX_RELEASED"
 START, STOP = 12, 29
 _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
@@ -126,11 +126,10 @@ def source_plan():
 
 def _compile(context):
     path, cls, load, selected = _ast()
-    native = context.birth.source.cls.load
-    chain = previous.paths.prefix.parameters.inherited._chain(native)
-    if len(chain) != 1 or vars(context.birth.source.cls).get("load") is not native:
-        raise ValueError("Original undecorated Parameters.load required")
-    expected = previous.paths.prefix.parameters._method_code(cls, "load", str(path))
+    native = previous.paths.prefix.parameters._method_original(context.birth.source, "load")
+    expected = previous.paths.prefix.parameters._method_code(
+        cls, "load", str(path), native_context=True
+    )
     if (
         native.__globals__ is not vars(context.birth.source.modules["betse.science.parameters"])
         or previous.paths.prefix.parameters.inherited._code(native.__code__)

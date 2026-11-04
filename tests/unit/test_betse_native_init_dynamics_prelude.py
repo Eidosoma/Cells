@@ -9,8 +9,9 @@ import sys
 from dataclasses import replace
 from enum import Enum
 from pathlib import Path
-from types import CodeType, FunctionType, ModuleType
+from types import CodeType, FunctionType, MappingProxyType, ModuleType
 from types import SimpleNamespace as NS
+from weakref import WeakKeyDictionary
 
 import numpy as np
 import pytest
@@ -862,3 +863,391 @@ def test_restamped_trial_cannot_replace_original_issue_record_or_work(conditiona
     with pytest.raises(ValueError, match="state changed"):
         stage._authority(owner)
     assert context.invalid and stage._ISSUED[owner][1] is original
+
+
+@pytest.fixture
+def completion_handoff(monkeypatch):
+    """Explicit registry/frame model; not a genuine INIT or Prelude authority.
+
+    Upstream source/parent admission is replaced by declared metadata seams.
+    The real transfer/route/ancestry functions and identity checks run; no
+    native body, source equation, RNG constructor or draw can enter.
+    """
+    from cells.processes import betse_native_init_dynamics_completion as consumer
+
+    class Token:
+        pass
+
+    h = NS(value="original-values", stream="original-stream", checked=0, parent_checks=0)
+    api = ModuleType("conditional_completion_metadata")
+    api.__dict__.update(
+        stage=stage,
+        sys=sys,
+        Request=consumer.Request,
+        CompletionClaim=consumer.CompletionClaim,
+        DynamicsOwner=consumer.DynamicsOwner,
+        _wrapper_guard=consumer._wrapper_guard,
+        _dispatch=consumer._dispatch,
+        validate_active=consumer.validate_active,
+        rng_call=consumer.rng_call,
+        _ACTIVE=[],
+    )
+    for name in ("_REQUESTS", "_CONSUMED", "_RETIRED", "_CLAIMS", "_ISSUED"):
+        setattr(api, name, WeakKeyDictionary())
+    for name in (
+        "_REQUESTS",
+        "_CONSUMED",
+        "_RETIRED",
+        "_ISSUED",
+        "_FORWARDED",
+        "_COMPLETION_LEASES",
+    ):
+        monkeypatch.setattr(stage, name, WeakKeyDictionary())
+    parent = NS(trial=Token(), parameter_record=Token())
+    p, cells, callback, handler = NS(), NS(), Token(), NS()
+    sim = NS(D_env=Token(), c_env_bound=Token(), gj_funk=None)
+    phase = NS(p=p, cells=cells, sim=sim, callbacks=callback, dyna=handler)
+    init_owner, owner = Token(), object.__new__(stage.PreludeOwner)
+    plan = dict(conditional_metadata_only=True, genuine_parent_admission=False)
+    request = stage.Request(init_owner, "parent", stage._digest(plan), "")
+    request = replace(request, identity=stage._digest(stage.request_record(request)))
+    before, after = NS(identity="before"), NS(identity=h.value)
+    trial = stage.Trial(request.identity, "parent", before, after, (), (), (), (), False, True, "")
+    trial = replace(trial, identity=stage._digest(stage.trial_record(trial)))
+    refs = (parent, parent.trial, before, ((), "graph"))
+    context = NS(
+        owner=owner,
+        request=request,
+        refs=refs,
+        parent=parent,
+        parent_trial=parent.trial,
+        parent_record=parent.parameter_record,
+        phase=phase,
+        p=p,
+        cells=cells,
+        sim=sim,
+        callback=callback,
+        original_D_env=sim.D_env,
+        original_c_env_bound=sim.c_env_bound,
+        gap=None,
+        active=False,
+        invalid=False,
+        validating=False,
+        thread=stage.get_ident(),
+        trial=trial,
+        before=before,
+        after=after,
+        after_graph=((), "graph"),
+        bindings=(parent, phase, p, cells, sim),
+        work=[],
+        raw_returns=[],
+        c_calls=[],
+        primary=None,
+        capture_error=None,
+        cleanup_errors=(),
+        stream_before=NS(identity=h.stream),
+    )
+
+    def parent_check(value):
+        assert value is context
+        h.parent_checks += 1
+        return parent
+
+    context.parent_check = parent_check
+
+    def claim_initial(parent, prelude, transition):
+        assert parent is h.context.parent
+        assert prelude is h.context and transition is h.child
+        return parent
+
+    monkeypatch.setattr(
+        stage.previous,
+        stage.PARENT_COMPLETION_CLAIM,
+        FunctionType(
+            claim_initial.__code__, vars(stage.previous), closure=claim_initial.__closure__
+        ),
+        raising=False,
+    )
+    stage._REQUESTS[request] = refs
+    stage._CONSUMED[request] = stage._RETIRED[init_owner] = context
+    stage._ISSUED[owner] = (context, trial)
+    child_request = consumer.Request(owner, trial.identity, "conditional", (), "conditional")
+    child_refs = (context, trial, after, context.after_graph)
+    claim = object.__new__(consumer.CompletionClaim)
+    child = NS(
+        request=child_request,
+        refs=child_refs,
+        claim=claim,
+        parent=context,
+        parent_trial=trial,
+        init_parent=parent,
+        phase=phase,
+        p=p,
+        cells=cells,
+        sim=sim,
+        handler=handler,
+        callback=callback,
+        active=True,
+        invalid=False,
+        thread=context.thread,
+        body_frame=None,
+        frames={},
+        trial=None,
+        entries=MappingProxyType(
+            {
+                name: vars(api)["_" + name if name in ("wrapper_guard", "dispatch") else name]
+                for name in stage.COMPLETION_ENTRIES
+            }
+        ),
+    )
+    api._REQUESTS[child_request] = child_refs
+    api._CONSUMED[child_request] = api._RETIRED[owner] = api._CLAIMS[claim] = child
+    api._ACTIVE.append(child)
+
+    def issuer(context, owner, expected):
+        return stage._claim_for_init_dynamics_completion(
+            owner, expected=expected, transition=context, entries=context.entries
+        )
+
+    def body(self, phase):
+        current = globals()["transition"]
+        frame = sys._getframe()
+        current.body_frame = frame
+        current.frames[id(frame)] = dict(frame=frame, body_started=True)
+        return stage._completion_route(globals()["original"])
+
+    def run():
+        current = globals()["transition"]
+        current.driver_frame = sys._getframe()
+        return globals()["method"](current.sim, current.phase)
+
+    # No source supplied by a caller is executed. These three fixed synthetic
+    # functions provide actual Python issuer/caller frames for the controls.
+    api.__dict__.update(transition=child, original=context)
+    api.prepare = FunctionType(issuer.__code__, vars(api))
+    method = FunctionType(body.__code__, vars(api))
+    api.__dict__["method"] = method
+    api._run = FunctionType(run.__code__, vars(api))
+    child.expected_body, child.namespace = method.__code__, vars(api)
+
+    def check(value, *, closed=False):
+        assert value is context and closed
+        h.checked += 1
+        if getattr(h, "check_error", None) is not None:
+            raise h.check_error
+
+    monkeypatch.setattr(stage, "_completion_api", lambda: api)
+    monkeypatch.setattr(stage, "source_plan", lambda: plan)
+    monkeypatch.setattr(stage, "_check", check)
+    monkeypatch.setattr(stage, "_binding", lambda value: context.bindings)
+    monkeypatch.setattr(stage, "_snapshot", lambda value: NS(identity=h.value))
+    monkeypatch.setattr(stage, "_graph", lambda value: ((), "graph"))
+    monkeypatch.setattr(stage.previous, "_rng", lambda value: NS(identity=h.stream))
+    h.api, h.owner, h.context, h.child = api, owner, context, child
+    h.issue = lambda: api.prepare(child, owner, trial)
+    return h
+
+
+def test_completion_transfer_preserves_original_edge_and_irreversible_epoch(completion_handoff):
+    h = completion_handoff
+    assert h.issue() is h.context
+    assert h.checked == 1
+    assert stage._completion_route(h.context) == (h.child, h.api)
+    assert stage._check_init_dynamics_completion_authority(h.child) is h.context
+    assert h.child.init_parent is h.context.parent
+    assert stage._FORWARDED[h.owner] is h.child
+    with pytest.raises(stage.DynamicsRejected) as caught:
+        stage._authority(h.owner)
+    assert caught.value.stage == "forwarded" and not h.context.invalid
+    with pytest.raises(stage.DynamicsRejected) as caught:
+        h.issue()
+    assert caught.value.stage == "completion_consumed"
+
+
+def test_completion_transfer_failure_is_retained_and_cannot_rearm(completion_handoff):
+    h = completion_handoff
+    original, cause = RuntimeError("conditional original failure"), LookupError("cause")
+    original.__cause__ = cause
+    h.check_error = original
+    with pytest.raises(RuntimeError) as caught:
+        h.issue()
+    assert caught.value is original and caught.value.__cause__ is cause
+    assert h.context.completion_error is original
+    assert stage._FORWARDED[h.owner] is h.child
+    assert h.context.invalid and h.child.invalid
+    with pytest.raises(stage.DynamicsRejected) as caught:
+        h.issue()
+    assert caught.value.stage == "completion_consumed"
+
+
+def test_completion_claim_rejects_foreign_direct_caller_before_consumption(completion_handoff):
+    h = completion_handoff
+    with pytest.raises(stage.DynamicsRejected) as caught:
+        stage._claim_for_init_dynamics_completion(
+            h.owner, expected=h.context.trial, transition=h.child, entries=h.child.entries
+        )
+    assert caught.value.stage == "completion_entry"
+    assert h.owner not in stage._FORWARDED and not hasattr(h.context, "completion_transition")
+    assert h.issue() is h.context
+
+
+@pytest.mark.parametrize("field", ["values", "stream"])
+def test_completion_before_first_source_entry_keeps_original_full_state_refusal(
+    completion_handoff, field
+):
+    h = completion_handoff
+    h.issue()
+    if field == "values":
+        h.value = "unwitnessed drift"
+    else:
+        h.stream = "unwitnessed stream drift"
+    with pytest.raises(ValueError, match="before original completion source entry"):
+        stage._check_init_dynamics_completion_authority(h.child)
+
+
+def test_completion_actual_frame_is_sticky_and_closed_route_keeps_record_identity(
+    completion_handoff,
+):
+    h = completion_handoff
+    h.issue()
+    assert h.api._run() == (h.child, h.api)
+    original_frame = h.child.body_frame
+    # The routing surface does not invoke stale buffers/MT readers after the
+    # real witnessed frame. Full permitted-state audit belongs to Completion.
+    h.value, h.stream = "declared post-source epoch", "declared post-source stream"
+    assert stage._check_init_dynamics_completion_authority(h.child) is h.context
+    h.child.trial = NS(source_completed=True)
+    h.child.owner = object.__new__(h.api.DynamicsOwner)
+    h.api._ISSUED[h.child.owner] = (h.child, h.child.trial)
+    h.child.active = False
+    h.api._ACTIVE.clear()
+    assert stage._completion_route(h.context) == (h.child, h.api)
+    h.child.body_frame = None
+    with pytest.raises(ValueError, match="frame disappeared"):
+        stage._completion_route(h.context)
+    h.child.body_frame = original_frame
+    assert stage._completion_route(h.context) == (h.child, h.api)
+    h.child.trial = NS(source_completed=True)
+    with pytest.raises(ValueError, match="successful closed completion"):
+        stage._completion_route(h.context)
+
+
+@pytest.mark.parametrize(
+    "edge",
+    [
+        "issued",
+        "forwarded",
+        "lease",
+        "request",
+        "consumed",
+        "retired",
+        "claim",
+        "child_refs",
+        "parent_trial",
+        "initial",
+        "callback",
+        "entries",
+        "thread",
+        "original_request",
+        "original_consumed",
+        "original_retired",
+        "original_trial",
+        "original_after",
+        "original_bindings",
+        "original_work",
+        "original_D_env",
+    ],
+)
+def test_completion_metadata_edges_refuse_drift_after_valid_baseline(completion_handoff, edge):
+    h = completion_handoff
+    h.issue()
+    assert stage._check_init_dynamics_completion_authority(h.child) is h.context
+    child, context = h.child, h.context
+    if edge == "issued":
+        del stage._ISSUED[h.owner]
+    elif edge == "forwarded":
+        del stage._FORWARDED[h.owner]
+    elif edge == "lease":
+        context.completion_lease = NS()
+    elif edge == "request":
+        del h.api._REQUESTS[child.request]
+    elif edge == "consumed":
+        del h.api._CONSUMED[child.request]
+    elif edge == "retired":
+        del h.api._RETIRED[h.owner]
+    elif edge == "claim":
+        del h.api._CLAIMS[child.claim]
+    elif edge == "child_refs":
+        child.refs = tuple([*child.refs])
+    elif edge == "parent_trial":
+        child.parent_trial = NS()
+    elif edge == "initial":
+        child.init_parent = NS()
+    elif edge == "callback":
+        context.phase.callbacks = NS()
+    elif edge == "entries":
+        child.entries = MappingProxyType(dict(child.entries))
+    elif edge == "thread":
+        child.thread = -1
+    elif edge == "original_request":
+        del stage._REQUESTS[context.request]
+    elif edge == "original_consumed":
+        del stage._CONSUMED[context.request]
+    elif edge == "original_retired":
+        del stage._RETIRED[context.request.init_owner]
+    elif edge == "original_trial":
+        context.trial = replace(context.trial)
+    elif edge == "original_after":
+        context.after = NS(identity=context.after.identity)
+    elif edge == "original_bindings":
+        context.bindings = tuple([*context.bindings])
+    elif edge == "original_work":
+        context.work = []
+    elif edge == "original_D_env":
+        context.sim.D_env = NS()
+    with pytest.raises(ValueError, match="(changed|required)"):
+        stage._check_init_dynamics_completion_authority(child)
+
+
+@pytest.mark.parametrize("slot", stage.COMPLETION_BACK_REFERENCE_SLOTS)
+def test_completion_interface_binds_every_byte_except_two_explicit_backrefs(monkeypatch, slot):
+    from cells.processes import betse_native_init_dynamics_completion as consumer
+    from cells.processes import betse_native_world_phase_construction as binder
+
+    monkeypatch.setattr(stage.previous.previous, "_ready", lambda: binder)
+    payload = Path(consumer.__file__).read_bytes()
+    identity, before = stage._completion_binding(payload)
+    literal = slot.encode() + b" = None"
+    assert payload.count(literal) == 1
+    replacement = slot.encode() + b" = '" + b"0" * 64 + b"'"
+    changed, after = stage._completion_binding(payload.replace(literal, replacement))
+    assert changed == identity and tuple(dict(before)) == stage.COMPLETION_BACK_REFERENCE_SLOTS
+    assert dict(before)[slot] is None and dict(after)[slot] == "0" * 64
+    assert all(dict(before)[name] == dict(after)[name] for name in dict(before) if name != slot)
+    assert stage._completion_binding(payload + b"\n# unrelated byte drift\n")[0] != identity
+
+
+@pytest.mark.parametrize("mutation", ["duplicate", "computed"])
+def test_completion_interface_refuses_reassigned_or_computed_backrefs(monkeypatch, mutation):
+    from cells.processes import betse_native_init_dynamics_completion as consumer
+    from cells.processes import betse_native_world_phase_construction as binder
+
+    monkeypatch.setattr(stage.previous.previous, "_ready", lambda: binder)
+    payload = Path(consumer.__file__).read_bytes()
+    if mutation == "duplicate":
+        payload += b"\nPARENT_SOURCE_SHA256 = None\n"
+    else:
+        payload = payload.replace(b"PARENT_SOURCE_SHA256 = None", b"PARENT_SOURCE_SHA256 = str()")
+    with pytest.raises(ValueError, match="(top-level|literal)"):
+        stage._completion_binding(payload)
+
+
+def test_completion_source_review_binding_gate_precedes_module_or_parent_use(monkeypatch):
+    monkeypatch.setattr(
+        stage,
+        "_completion_binding",
+        lambda raw: pytest.fail("No source/owner access before adoption"),
+    )
+    with pytest.raises(stage.DynamicsRejected) as caught:
+        stage._completion_api()
+    assert caught.value.stage == "completion_held"

@@ -26,19 +26,36 @@ from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from pathlib import Path
 from threading import RLock, get_ident
-from types import CodeType, FunctionType, MappingProxyType, MethodType, SimpleNamespace
+from types import CodeType, FunctionType, MappingProxyType, MethodType, ModuleType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_init_dynamics_completion_source as source
 from cells.processes import betse_native_init_dynamics_prelude as previous
+from cells.processes import betse_native_parameter_yaml_prefix as files
 
 LAW_ID = "betse_same_actual_INIT_ordinary_dynamics_completion@1"
+MOLECULE_LAW_ID = "betse_same_actual_INIT_native_molecules_dynamics_completion@1"
 RELEASE = "CELLS_NATIVE_INIT_DYNAMICS_COMPLETION_RELEASED"
 PARENT_SOURCE_SHA256 = None
 PARENT_REVIEW_SHA256 = None
-TISSUE_SOURCE_SHA256 = None
+TISSUE_INTERFACE_SHA256 = None
 TISSUE_REVIEW_SHA256 = None
 TISSUE_MODULE = "cells.processes.betse_native_init_tissue_dynamics"
+TISSUE_BINDING_KIND = "exact_INIT_tissue_bytes_except_two_validated_completion_backrefs@1"
+TISSUE_BACK_REFERENCE_SLOTS = ("COMPLETION_SOURCE_SHA256", "COMPLETION_REVIEW_SHA256")
+MOLECULE_MODULE = "cells.processes.betse_native_init_molecule_network"
+MOLECULE_INTERFACE_SHA256 = None
+MOLECULE_REVIEW_SHA256 = None
+MOLECULE_BINDING_KIND = "exact_INIT_molecule_bytes_except_two_validated_completion_backrefs@1"
+MOLECULE_BACK_REFERENCE_SLOTS = ("COMPLETION_SOURCE_SHA256", "COMPLETION_REVIEW_SHA256")
+STORAGE_MODULE = "cells.processes.betse_native_init_storage"
+STORAGE_INTERFACE_SHA256 = None
+STORAGE_REVIEW_SHA256 = None
+STORAGE_PARENT_REVIEW_SHA256 = None
+STORAGE_BINDING_KIND = "exact_INIT_storage_bytes_except_two_validated_dynamics_backrefs@1"
+STORAGE_BACK_REFERENCE_SLOTS = ("PARENT_SOURCE_SHA256", "PARENT_REVIEW_SHA256")
+STORAGE_ANCESTOR_CLAIM = "_claim_storage_ancestor"
+ELECTRICAL_ANCESTOR_CLAIM = "_claim_electrical_ancestor"
 PARENT_CLAIM = "_claim_for_init_dynamics_completion"
 PARENT_CHECK = "_check_init_dynamics_completion_authority"
 NATIVE = previous.NATIVE
@@ -89,8 +106,75 @@ TISSUE_API = (
     "finish",
     "validate_rng_call",
     "observe",
+    "_context",
+    "_registry",
+)
+MOLECULE_API = (
+    "bind_completion",
+    "validate_active",
+    "validate_closed",
+    "source_members",
+    "state_roots",
+    "graph_roots",
+    "project_state",
+    "construct",
+    "wrapper_guard",
+    "dispatch",
+    "observe",
+    "bind_storage",
+    "bind_first_step",
+    "runtime_members",
+    "runtime_codes",
+    "observes_runtime_frame",
+    "runtime_wrapper_guard",
+    "runtime_dispatch",
+    "runtime_permissions",
+    "observe_runtime",
+    "finish_runtime",
+    "validate_runtime",
+    "validate_runtime_active",
+    "runtime_failed_context",
+    "_effect_fields",
+    "_runtime_field_table",
+    "_runtime_route",
+    "_runtime_expressions",
+    "_runtime_mappings",
+    "_runtime_context",
+    "_bind_runtime",
+    "_runtime_error",
+    "_runtime_observer",
+    "_runtime_entry",
+    "_runtime_resolution",
+    "_runtime_record_data",
+    "finish",
+    "_context",
+    "_registry",
+    "_configuration",
+    "_ready",
+    "_pin",
+    "_reject",
+    "_check",
+    "_bindings",
+    "_function_bindings",
+    "_callback_pair",
+    "_dynamic_associations",
+    "_argument_links",
+    "_class_associations",
+    "_class_header",
+    "_source_entry",
+    "_actual_functions",
+    "_capture",
+    "_observe_event",
+    "_descended",
+    "source_plan",
+    "failed_context",
+    "owns_source_frame",
+    "observes_source_frame",
 )
 _REQUESTS, _CONSUMED, _RETIRED, _CLAIMS, _ISSUED = (WeakKeyDictionary() for _ in range(5))
+_STORAGE_FORWARDED, _STORAGE_LEASES = WeakKeyDictionary(), WeakKeyDictionary()
+_ELECTRICAL_DESCENDANTS = WeakKeyDictionary()
+_FIRST_STEP_DESCENDANTS = WeakKeyDictionary()
 _ACTIVE, _FAILED, _LOCK = [], [], RLock()
 
 
@@ -105,7 +189,9 @@ class Request:
     prelude_owner: object
     parent_identity: str
     source_identity: str
+    file_inputs: tuple
     identity: str
+    native_molecules: bool = False
 
     def __reduce_ex__(self, protocol):
         raise TypeError("Actual live prelude lineage cannot be decoded from data")
@@ -126,6 +212,7 @@ class Trial:
     tissue_record: object
     source_completed: bool
     identity: str
+    molecule_record: object = None
 
 
 def _digest(value):
@@ -226,13 +313,126 @@ def source_plan():
         maximum_rng_source_calls=MAX_RNG_CALLS,
         parent_source=PARENT_SOURCE_SHA256,
         parent_review=PARENT_REVIEW_SHA256,
-        tissue_source=TISSUE_SOURCE_SHA256,
+        tissue_interface=TISSUE_INTERFACE_SHA256,
         tissue_review=TISSUE_REVIEW_SHA256,
+        tissue_binding_kind=TISSUE_BINDING_KIND,
+        tissue_backrefs=TISSUE_BACK_REFERENCE_SLOTS,
+        storage_handoff=dict(
+            module=STORAGE_MODULE,
+            interface=STORAGE_INTERFACE_SHA256,
+            review=STORAGE_REVIEW_SHA256,
+            parent_review=STORAGE_PARENT_REVIEW_SHA256,
+            claim="_claim_for_init_storage",
+            check="_check_init_storage_authority",
+            route="_storage_route",
+            retained_INIT_claim=STORAGE_ANCESTOR_CLAIM,
+            no_run_sim_core_or_voltage_time_loop_credit=True,
+        ),
         parent_hooks=(PARENT_CLAIM, PARENT_CHECK),
         tissue_API=TISSUE_API,
+        native_molecule_opt_in=dict(
+            law=MOLECULE_LAW_ID,
+            declaration=(
+                "from_prelude_native_molecules(actual PreludeOwner, law_id=..., file_inputs=())"
+            ),
+            default_ordinary_route_still_refuses_enabled_network=True,
+            original_tail_factory_and_branch_order_unchanged=True,
+            interface=MOLECULE_INTERFACE_SHA256,
+            review=MOLECULE_REVIEW_SHA256,
+            binding=MOLECULE_BINDING_KIND,
+            required_same_INIT_material_ancestor_before_constructor=True,
+            native_storage_and_first_step_participant_API_implemented=True,
+            native_outer_wrapper_authority_and_review_still_required=True,
+            API=MOLECULE_API,
+        ),
+        electrical_grandchild=dict(
+            claim="_claim_electrical_ancestor(completion, storage, electrical)",
+            check="_check_electrical_ancestor(completion, storage, electrical)",
+            original_retained_INIT_claim=ELECTRICAL_ANCESTOR_CLAIM,
+            permitted_fields="exact source-derived27 update_V/get_current Simulator fields",
+            no_old_numeric_epoch_reopened=True,
+        ),
         actual_native_RNG_source_or_reference_release=False,
         time_vector_solver_storage_updateV_pickle_or_completed_INIT_admission=False,
     )
+
+
+def _tissue_binding(payload):
+    """Existing exact-byte recipe; only the two peer backrefs may vary."""
+    parent = previous.previous
+    namespace = dict(
+        vars(parent),
+        DYNAMICS_BACK_REFERENCE_SLOTS=TISSUE_BACK_REFERENCE_SLOTS,
+        DYNAMICS_BINDING_KIND=TISSUE_BINDING_KIND,
+    )
+    return FunctionType(parent._dynamics_binding.__code__, namespace)(payload)
+
+
+def _check_tissue_backrefs(backrefs):
+    expected = (
+        ("COMPLETION_SOURCE_SHA256", hashlib.sha256(Path(__file__).read_bytes()).hexdigest()),
+        ("COMPLETION_REVIEW_SHA256", previous.COMPLETION_REVIEW_SHA256),
+    )
+    if (
+        type(backrefs) is not tuple
+        or len(backrefs) != 2
+        or any(type(row) is not tuple or len(row) != 2 for row in backrefs)
+        or any(type(item) is not str for row in backrefs for item in row)
+        or not _pin(previous.COMPLETION_REVIEW_SHA256)
+        or backrefs != expected
+    ):
+        raise CompletionRejected(
+            "Original tissue actual Completion source/review back-reference changed",
+            stage="tissue_source",
+        )
+
+
+def _molecule_api():
+    """Exact held participant bytes; do not recursively call its _ready here."""
+    if not all(
+        _pin(value)
+        for value in (
+            MOLECULE_INTERFACE_SHA256,
+            MOLECULE_REVIEW_SHA256,
+            previous.COMPLETION_REVIEW_SHA256,
+        )
+    ):
+        raise CompletionRejected(
+            "Reviewed molecular source transport remains held", stage="molecule_held"
+        )
+    path = Path(__file__).parents[3] / ("src/" + MOLECULE_MODULE.replace(".", "/") + ".py")
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Actual original molecule participant source required")
+    raw = path.read_bytes()
+    identity, backrefs = FunctionType(
+        previous.previous._dynamics_binding.__code__,
+        dict(
+            vars(previous.previous),
+            DYNAMICS_BACK_REFERENCE_SLOTS=MOLECULE_BACK_REFERENCE_SLOTS,
+            DYNAMICS_BINDING_KIND=MOLECULE_BINDING_KIND,
+        ),
+    )(raw)
+    expected = (
+        ("COMPLETION_SOURCE_SHA256", hashlib.sha256(Path(__file__).read_bytes()).hexdigest()),
+        ("COMPLETION_REVIEW_SHA256", previous.COMPLETION_REVIEW_SHA256),
+    )
+    module = sys.modules.get(MOLECULE_MODULE)
+    if (
+        identity != MOLECULE_INTERFACE_SHA256
+        or backrefs != expected
+        or type(module) is not ModuleType
+        or Path(module.__file__).resolve() != path
+        or module.COMPLETION_MODULE != __name__
+        or module.CONTRACT != module.PROPOSED_CONTRACT
+        or any(getattr(module, name) != value for name, value in backrefs)
+    ):
+        raise ValueError("Original molecule transport/source/back-reference changed")
+    previous.previous.previous._ready()._source_interface(module, raw, path, MOLECULE_API)
+    for name in MOLECULE_API:
+        fn = vars(module).get(name)
+        if type(fn) is not FunctionType or fn.__globals__ is not vars(module):
+            raise ValueError("Actual molecule participant function required: " + name)
+    return module
 
 
 def _ready():
@@ -241,8 +441,9 @@ def _ready():
         for value in (
             PARENT_SOURCE_SHA256,
             PARENT_REVIEW_SHA256,
-            TISSUE_SOURCE_SHA256,
+            TISSUE_INTERFACE_SHA256,
             TISSUE_REVIEW_SHA256,
+            previous.COMPLETION_REVIEW_SHA256,
         )
     ):
         raise CompletionRejected(
@@ -257,17 +458,25 @@ def _ready():
                 "Actual prelude retirement/advanced-stream authority unavailable", stage="handoff"
             )
     tissue = sys.modules.get(TISSUE_MODULE)
-    if tissue is None:
+    if type(tissue) is not ModuleType:
         raise CompletionRejected(
             "Actual source-backed tissue participant must already be loaded", stage="tissue"
         )
-    if (
-        Path(tissue.__file__).is_symlink()
-        or hashlib.sha256(Path(tissue.__file__).read_bytes()).hexdigest() != TISSUE_SOURCE_SHA256
+    path = Path(__file__).parents[3] / ("src/" + TISSUE_MODULE.replace(".", "/") + ".py")
+    if path.is_symlink() or Path(tissue.__file__).resolve() != path:
+        raise CompletionRejected("Original tissue source path changed", stage="tissue_source")
+    raw = path.read_bytes()
+    identity, backrefs = _tissue_binding(raw)
+    _check_tissue_backrefs(backrefs)
+    if identity != TISSUE_INTERFACE_SHA256 or any(
+        getattr(tissue, name) != value for name, value in backrefs
     ):
         raise CompletionRejected(
-            "Original tissue participant producer changed", stage="tissue_source"
+            "Original tissue bytes or actual Completion back-reference changed",
+            stage="tissue_source",
         )
+    api = previous.previous.previous._ready()
+    api._source_interface(tissue, raw, path, TISSUE_API)
     for name in TISSUE_API:
         function = vars(tissue).get(name)
         if type(function) is not FunctionType or function.__globals__ is not vars(tissue):
@@ -278,10 +487,32 @@ def _ready():
 
 
 def request_record(value):
-    return dict(law=LAW_ID, parent=value.parent_identity, source=value.source_identity)
+    result = dict(
+        law=LAW_ID,
+        parent=value.parent_identity,
+        source=value.source_identity,
+        files=tuple(item.identity for item in value.file_inputs),
+    )
+    if value.native_molecules:
+        result.update(law=MOLECULE_LAW_ID, native_molecules=True)
+    return result
 
 
-def _domain(parent):
+def _file_inputs(values):
+    if type(values) is not tuple or len(values) > 64:
+        raise CompletionRejected("Explicit bounded issued FileInput tuple required", stage="files")
+    names = []
+    for value in values:
+        files._verify_file(value)
+        if value.filename in names:
+            raise CompletionRejected("Duplicate file authority", stage="files")
+        names.append(value.filename)
+    return values
+
+
+def _domain(parent, *, native_molecules=False):
+    if type(native_molecules) is not bool:
+        raise CompletionRejected("Exact declared native molecule mode required", stage="domain")
     p, phase = parent.p, parent.phase
     if phase.kind.name != "INIT" or p._run_sim is not False or p.is_ecm is not True:
         raise CompletionRejected("Actual ordinary normal-ECM INIT phase required", stage="domain")
@@ -295,7 +526,7 @@ def _domain(parent):
         ("fluid_flow", 907),
         ("deformation", 927),
     ):
-        if getattr(p, name):
+        if getattr(p, name) and not (name == "molecules_enabled" and native_molecules):
             requested.append((line, name))
     namespace = parent.original_globals
     solver_type = namespace["SolverType"]
@@ -305,20 +536,49 @@ def _domain(parent):
         raise CompletionRejected(
             "Genuine optional owners unavailable: " + repr(requested), stage="unavailable_branch"
         )
+    if native_molecules:
+        module = _molecule_api()
+        module._ready()
+        module._configuration(
+            SimpleNamespace(
+                p=p, phase=phase, sim=parent.sim, request=SimpleNamespace(native_molecules=True)
+            )
+        )
 
 
-def from_prelude(owner, *, law_id):
+def from_prelude(owner, *, law_id, file_inputs=()):
     if type(law_id) is not str or law_id != LAW_ID:
         raise CompletionRejected("Exact completion law required", stage="law")
+    return _declare(owner, file_inputs=file_inputs, native_molecules=False)
+
+
+def from_prelude_native_molecules(owner, *, law_id, file_inputs=()):
+    if type(law_id) is not str or law_id != MOLECULE_LAW_ID:
+        raise CompletionRejected("Exact molecular completion law required", stage="law")
+    # Both source gates and real ancestor prerequisites precede owner lookup.
+    module = _molecule_api()
+    module._ready()
+    return _declare(owner, file_inputs=file_inputs, native_molecules=True)
+
+
+def _declare(owner, *, file_inputs, native_molecules):
     _ready()
+    _file_inputs(file_inputs)
     with _LOCK:
         if _ACTIVE:
             _reject(_ACTIVE[-1], "Reentrant completion declaration")
         if type(owner) is not previous.PreludeOwner or owner in _RETIRED:
             raise CompletionRejected("Actual unconsumed PreludeOwner required", stage="owner")
         parent = previous._authority(owner)
-        _domain(parent)
-        value = Request(owner, parent.trial.identity, _digest(source_plan()), "")
+        _domain(parent, native_molecules=native_molecules)
+        value = Request(
+            owner,
+            parent.trial.identity,
+            _digest(source_plan()),
+            file_inputs,
+            "",
+            native_molecules=native_molecules,
+        )
         value = replace(value, identity=_digest(request_record(value)))
         _REQUESTS[value] = (
             parent,
@@ -354,6 +614,10 @@ class CompletionClaim:
 
     def check(self):
         _check(_active(self))
+
+    @property
+    def file_inputs(self):
+        return _active(self).request.file_inputs
 
     @property
     def record(self):
@@ -410,6 +674,10 @@ def _objects(context):
         for role, value in context.tissue.state_roots(context.tissue_session):
             if not any(value is actual for _, actual in objects):
                 objects.append((role, value))
+    if context.molecule_session is not None:
+        for role, value in context.molecule.state_roots(context.molecule_session):
+            if not any(value is actual for _, actual in objects):
+                objects.append((role, value))
     return objects
 
 
@@ -417,18 +685,28 @@ def _values(context, *, stable=False):
     projector = previous.previous._projector(context.init_parent)
     projector.objects = [*projector.objects, *_objects(context)]
     project = previous.previous.core._LITERAL._project
-    sim = {k: v for k, v in vars(context.sim).items() if not stable or k not in SIM_STORES}
+    stores = SIM_STORES
+    if context.request.native_molecules:
+        stores = (*stores, *context.molecule.SIM_STORES)
+    sim = {k: v for k, v in vars(context.sim).items() if not stable or k not in stores}
     cells = {k: v for k, v in vars(context.cells).items() if not stable or k != "cell_i"}
+
+    def values(value):
+        if context.molecule_session is not None:
+            value = context.molecule.project_state(context.molecule_session, value)
+        return project(projector, value)
+
     return dict(
-        simulator=project(projector, sim),
-        cells=project(projector, cells),
-        parameters=project(projector, vars(context.p)),
+        simulator=values(sim),
+        cells=values(cells),
+        parameters=values(vars(context.p)),
         objects=tuple(
-            (role, project(projector, vars(actual)))
-            for role, actual in _objects(context)
-            if not stable or all(actual is not item for item in (context.sim, context.phase.dyna))
+            (role, values(vars(actual)))
+            for role, actual in (context.original_objects if stable else _objects(context))
+            if not stable
+            or all(actual is not item for item in (context.sim, context.phase.dyna, context.cells))
         ),
-        handler=None if stable else project(projector, vars(context.phase.dyna)),
+        handler=None if stable else values(vars(context.phase.dyna)),
     )
 
 
@@ -438,6 +716,8 @@ def _snapshot(context, *, stable=False):
 
 def _graph(context):
     context.graph_fields[:] = [vars(value) for _, value in _objects(context)]
+    if context.molecule_session is not None:
+        context.graph_view.molecular = context.molecule.graph_roots(context.molecule_session)
     return _scope(context).graph(context.graph_view, context.graph_view, context.graph_tape)
 
 
@@ -472,6 +752,21 @@ def _same_refs(actual, expected):
     previous.previous.core.previous._same(actual, expected)
 
 
+def _observer_bindings(context):
+    namespace = context.observer_namespace
+    if (
+        tuple(namespace) != tuple(name for name, _ in context.observer_refs)
+        or any(namespace[name] is not value for name, value in context.observer_refs)
+        or context.account is not context.observer_account
+    ):
+        raise ValueError("Actual private observer namespace/entry changed")
+    result = [context.observer_refs, context.observer_functions, context.observer_account]
+    for function in context.observer_functions:
+        result.extend(previous.previous._atoms(function))
+    result.extend(previous.previous.core._resolved_bindings(context.observer_functions))
+    return tuple(result)
+
+
 def _binding(context):
     functions = (
         context.parent_claim,
@@ -494,6 +789,11 @@ def _binding(context):
         context.claim,
         context.tissue,
         context.tissue_session,
+        context.molecule,
+        context.molecule_session,
+        None if context.molecule is None else context.molecule.SIM_STORES,
+        MOLECULE_INTERFACE_SHA256,
+        MOLECULE_REVIEW_SHA256,
         context.np_rng,
         context.std_rng,
         context.np_random,
@@ -501,14 +801,37 @@ def _binding(context):
         context.entries,
         context.namespace,
         context.observer_namespace,
+        context.metadata,
+        _STORAGE_FORWARDED,
+        _STORAGE_LEASES,
+        _ELECTRICAL_DESCENDANTS,
+        _FIRST_STEP_DESCENDANTS,
+        STORAGE_INTERFACE_SHA256,
+        STORAGE_REVIEW_SHA256,
+        STORAGE_PARENT_REVIEW_SHA256,
+        *_observer_bindings(context),
     ]
+    for name, function in context.metadata:
+        if globals().get(name) is not function:
+            raise ValueError("Original completion checker replaced: " + name)
+        values.extend(previous.previous._atoms(function))
     for function in functions:
         values.extend(previous.previous._atoms(function))
-    for name in TISSUE_API:
-        values.extend(previous.previous._atoms(vars(context.tissue)[name]))
+    tissue_functions = tuple(vars(context.tissue)[name] for name in TISSUE_API)
+    molecule_functions = (
+        ()
+        if context.molecule is None
+        else tuple(vars(context.molecule)[name] for name in MOLECULE_API)
+    )
+    for function in (*tissue_functions, *molecule_functions):
+        values.extend(previous.previous._atoms(function))
     values.extend(
         previous.previous.core._resolved_bindings(
-            tuple(f for f in functions if type(f) is FunctionType)
+            tuple(
+                f
+                for f in (*functions, *tissue_functions, *molecule_functions)
+                if type(f) is FunctionType
+            )
         )
     )
     values.extend((context.numpy, *(getattr(context.numpy, n) for n in NUMPY_HELPERS)))
@@ -533,6 +856,7 @@ def _registry(context):
         or context.invalid
         or context.thread != get_ident()
         or context.request.identity != _digest(request_record(context.request))
+        or type(context.request.native_molecules) is not bool
         or context.request.source_identity != _digest(source_plan())
     ):
         raise ValueError("Original one-shot completion/Prelude/phase/source association changed")
@@ -561,10 +885,24 @@ def _check(context, *, closed=False):
             is not context.tissue_session
         ):
             raise ValueError("Different actual active tissue participation")
+    if not closed and context.molecule_session is not None:
+        if (
+            context.molecule.validate_active(
+                context.molecule_session, completion_claim=context.claim
+            )
+            is not context.molecule_session
+        ):
+            raise ValueError("Different actual active molecule participation")
 
 
 def _capture(context, origin, error, raw):
-    return context.observer_namespace["_record_capture"](context, origin, error, raw)
+    context.last_capture = (origin, error, raw)
+    if context.capture_error is None:
+        context.capture_error = error
+    try:
+        return context.observer_namespace["_record_capture"](context, origin, error, raw)
+    except BaseException as secondary:
+        context.reporting_failure = (secondary, context.last_capture)
 
 
 def _helper(context, name, delegate, args, kwargs, frame):
@@ -729,8 +1067,13 @@ def _wrapper_guard(context, original, frame):
     _check(context)
     if original is not context.init_parent:
         _reject(context, "Original retained INIT constructor context required")
-    return context.tissue.wrapper_guard(
-        context.tissue_session, completion_claim=context.claim, original=original, frame=frame
+    participant, session = context.tissue, context.tissue_session
+    if context.molecule_session is not None and context.molecule.owns_source_frame(
+        context.molecule_session, frame
+    ):
+        participant, session = context.molecule, context.molecule_session
+    return participant.wrapper_guard(
+        session, completion_claim=context.claim, original=original, frame=frame
     )
 
 
@@ -738,8 +1081,13 @@ def _dispatch(context, original, label, delegate, actual, args, kwargs, frame):
     _check(context)
     if original is not context.init_parent:
         _reject(context, "Actual same-INIT source context required")
-    return context.tissue.dispatch(
-        context.tissue_session,
+    participant, session = context.tissue, context.tissue_session
+    if context.molecule_session is not None and context.molecule.owns_source_frame(
+        context.molecule_session, frame
+    ):
+        participant, session = context.molecule, context.molecule_session
+    return participant.dispatch(
+        session,
         completion_claim=context.claim,
         original=original,
         label=label,
@@ -805,6 +1153,14 @@ def _namespace(context):
     def unavailable(*args, **kwargs):
         _reject(context, "Unowned optional native factory/helper attempted entry")
 
+    def native_molecules(p):
+        return context.molecule.construct(
+            context.molecule_session,
+            p,
+            completion_claim=context.claim,
+            source_frame=sys._getframe(1),
+        )
+
     namespace = dict(
         globals_before,
         np=SimpleNamespace(
@@ -814,7 +1170,7 @@ def _namespace(context):
         copy=SimpleNamespace(copy=wrappers["python_copy"], deepcopy=unavailable),
         gaussian_filter=wrappers["gaussian_filter"],
         EndoRetic=unavailable,
-        MasterOfMolecules=unavailable,
+        MasterOfMolecules=native_molecules if context.request.native_molecules else unavailable,
         MasterOfGenes=unavailable,
     )
     context.namespace = namespace
@@ -834,19 +1190,53 @@ def _observe(context, frame, event, arg):
     # A directly retained raw return/exception precedes the participant's
     # fallible locals copy. Its observer precedes every inherited callback.
     if event == "exception":
-        context.pending[id(frame)] = arg[1]
+        context.last_source_error = (frame, arg[1])
+        try:
+            context.pending[id(frame)] = arg[1]
+        except BaseException as capture:
+            if context.primary is None:
+                context.primary = arg[1]
+            _capture(context, "source_exception_record", capture, (frame, event, arg))
     if event == "return" and any(frame.f_code is code for code in context.allowed_codes):
         context.observer_namespace["_witness"](context, frame, arg)
     if context.tissue_session is not None and any(
         frame.f_code is code for code in context.tissue_codes
     ):
-        context.tissue.observe(
-            context.tissue_session,
-            completion_claim=context.claim,
-            frame=frame,
-            event=event,
-            arg=arg,
-        )
+        try:
+            context.tissue.observe(
+                context.tissue_session,
+                completion_claim=context.claim,
+                frame=frame,
+                event=event,
+                arg=arg,
+            )
+        except context.tissue.CaptureStop as signal:
+            context.tissue_capture_signal = signal
+            context.observation_error = signal.__cause__
+            capture = signal if signal.__cause__ is None else signal.__cause__
+            _capture(context, "tissue_observation", capture, (frame, event, arg, signal.partial))
+            if context.primary is None:
+                raise
+    if (
+        context.molecule_session is not None
+        and any(frame.f_code is code for code in context.molecule_codes)
+        and context.molecule.observes_source_frame(context.molecule_session, frame)
+    ):
+        try:
+            context.molecule.observe(
+                context.molecule_session,
+                completion_claim=context.claim,
+                frame=frame,
+                event=event,
+                arg=arg,
+            )
+        except context.molecule.CaptureStop as signal:
+            context.molecule_capture_signal = signal
+            context.observation_error = signal.__cause__
+            capture = signal if signal.__cause__ is None else signal.__cause__
+            _capture(context, "molecule_observation", capture, (frame, event, arg, signal.partial))
+            if context.primary is None:
+                raise
     if event == "call":
         selected = any(frame.f_code is code for code in context.allowed_codes)
         native = frame.f_code.co_filename.startswith(str(NATIVE) + os.sep)
@@ -888,8 +1278,6 @@ def _observe(context, frame, event, arg):
         return
     if row["frame"] is not frame or row["globals"] is not frame.f_globals:
         _reject(context, "Original admitted source frame/namespace changed")
-    if event == "exception":
-        context.pending[id(frame)] = arg[1]
     if event == "line":
         _check(context)
     if event == "return":
@@ -952,6 +1340,24 @@ def _observer_recipe(context):
     )
     context.observer_namespace = namespace
     context.account = contextmanager(account)
+    context.observer_account = context.account
+    context.observer_refs = tuple(namespace.items())
+    context.observer_functions = tuple(
+        namespace[name]
+        for name in (
+            "_record_capture",
+            "_guard",
+            "_check",
+            "_reject",
+            "_observe",
+            "_witness",
+            "_delegate",
+            "_same_epoch",
+            "_inherited",
+            "_epoch",
+            "_recover_hooks",
+        )
+    ) + (account, context.account)
 
 
 def _context(request, refs, parent, tissue):
@@ -973,6 +1379,11 @@ def _context(request, refs, parent, tissue):
         tissue_record=None,
         tissue_functions=(),
         tissue_codes=frozenset(),
+        molecule=None,
+        molecule_session=None,
+        molecule_record=None,
+        molecule_functions=(),
+        molecule_codes=frozenset(),
         claim=None,
         bindings=None,
         stable=None,
@@ -982,6 +1393,10 @@ def _context(request, refs, parent, tissue):
         invalid=False,
         validating=False,
         primary=None,
+        failure_error=None,
+        observation_error=None,
+        tissue_capture_signal=None,
+        molecule_capture_signal=None,
         entry_error=None,
         capture_error=None,
         capture_errors=(),
@@ -1018,6 +1433,67 @@ def _context(request, refs, parent, tissue):
         last_raw=None,
         cell_i=parent.cells.cell_i,
     )
+    value.original_objects = tuple(_objects(value))
+    value.metadata = tuple(
+        (name, globals()[name])
+        for name in (
+            "_ready",
+            "_tissue_binding",
+            "_check_tissue_backrefs",
+            "_molecule_api",
+            "source_plan",
+            "_registry",
+            "_check",
+            "_binding",
+            "_observer_bindings",
+            "_scope",
+            "_objects",
+            "_values",
+            "_snapshot",
+            "_graph",
+            "_streams",
+            "_epoch",
+            "_cell_snapshot",
+            "_active",
+            "_guard",
+            "_reject",
+            "_observe",
+            "_namespace",
+            "_helper",
+            "rng_call",
+            "_capture",
+            "_run",
+            "_finish",
+            "_observer_recipe",
+            "prepare",
+            "_authority",
+            "validate_active",
+            "_file_inputs",
+            "_domain",
+            "_declare",
+            "from_prelude_native_molecules",
+            "_closed_epoch",
+            "_storage_binding",
+            "_storage_api",
+            "_storage_route",
+            "_storage_values",
+            "_storage_graph",
+            "_claim_for_init_storage",
+            "_check_init_storage_authority",
+            "_storage_metadata",
+            "_electrical_route",
+            "_electrical_values",
+            "_electrical_graph",
+            "_claim_electrical_ancestor",
+            "_check_electrical_ancestor",
+            "_first_step_route",
+            "_first_step_values",
+            "_first_step_graph",
+            "_first_step_permissions",
+            "_claim_first_step_ancestor",
+            "_check_first_step_ancestor",
+        )
+    )
     value.graph_view = SimpleNamespace(
         fields=value.graph_fields,
         parameters=vars(value.p),
@@ -1053,6 +1529,12 @@ def _finish(context):
     )
     if context.tissue_record is None:
         raise ValueError("Actual successful tissue participation record required")
+    if context.molecule_session is not None:
+        context.molecule_record = context.molecule.finish(
+            context.molecule_session, completion_claim=context.claim
+        )
+        if context.molecule_record is None:
+            raise ValueError("Actual successful molecular participation record required")
     _check(context)
 
 
@@ -1074,7 +1556,7 @@ def _rng_record(row):
 
 
 def trial_record(value):
-    return dict(
+    result = dict(
         request=value.request_identity,
         parent=value.parent_identity,
         before=value.before.identity,
@@ -1094,6 +1576,9 @@ def trial_record(value):
         timesteps_completed=0,
         completed_INIT_or_independent_case=False,
     )
+    if value.molecule_record is not None:
+        result["molecule_record"] = id(value.molecule_record)
+    return result
 
 
 def prepare(request, *, enabled=False):
@@ -1111,7 +1596,8 @@ def prepare(request, *, enabled=False):
             raise CompletionRejected("Original prelude epoch already attempted", stage="consumed")
         refs = _REQUESTS[request]
         parent = previous._authority(request.prelude_owner)
-        _domain(parent)
+        _file_inputs(request.file_inputs)
+        _domain(parent, native_molecules=request.native_molecules)
         graph = previous._graph(parent)
         _same_refs(graph[0], refs[3][0])
         if (
@@ -1146,6 +1632,8 @@ def prepare(request, *, enabled=False):
                 request.prelude_owner, expected=refs[1], transition=context, entries=context.entries
             )
             _observer_recipe(context)
+            if request.native_molecules:
+                context.molecule = _molecule_api()
             _namespace(context)
             context.current_streams = context.stream_before = _streams(context)
             context.current_cell_i = _cell_snapshot(context)
@@ -1175,6 +1663,24 @@ def prepare(request, *, enabled=False):
                 for fn in context.tissue_functions
                 for code in previous.previous._code_tree(fn.__code__)
             )
+            if request.native_molecules:
+                context.stage = "molecule_source_binding"
+                session = context.molecule.bind_completion(
+                    claim, original_owner=request.prelude_owner
+                )
+                if session is None or session is not context.molecule_session:
+                    raise ValueError("Actual original molecule session/claim association required")
+                context.molecule_functions = context.molecule.source_members(session)
+                if type(context.molecule_functions) is not tuple or any(
+                    type(fn) is not FunctionType for fn in context.molecule_functions
+                ):
+                    raise ValueError("Original molecule source function roster required")
+                context.molecule_codes = frozenset(
+                    code
+                    for fn in context.molecule_functions
+                    for code in previous.previous._code_tree(fn.__code__)
+                )
+                context.allowed_codes = frozenset((*context.allowed_codes, *context.molecule_codes))
             context.bindings = _binding(context)
             context.before = _snapshot(context)
             context.stable = _snapshot(context, stable=True)
@@ -1199,11 +1705,19 @@ def prepare(request, *, enabled=False):
                 context.tissue_record,
                 True,
                 "",
+                context.molecule_record,
             )
             context.trial = replace(record, identity=_digest(trial_record(record)))
         except BaseException as error:
             primary = context.primary if context.primary is not None else error
-            context.primary, context.invalid = primary, True
+            context.failure_error, context.invalid = primary, True
+            if (
+                primary is context.tissue_capture_signal
+                or primary is context.molecule_capture_signal
+            ):
+                context.primary = None
+            else:
+                context.primary = primary
             _FAILED.append(context)
             try:
                 primary.init_dynamics_completion_partial = context
@@ -1246,6 +1760,7 @@ def prepare(request, *, enabled=False):
                 "Completion observation/publication refused", stage="closure", partial=context
             )
         owner = object.__new__(DynamicsOwner)
+        context.owner = owner
         _ISSUED[owner] = (context, context.trial)
         return owner
 
@@ -1272,26 +1787,18 @@ def _authority(owner):
     if type(owner) is not DynamicsOwner or owner not in _ISSUED:
         raise CompletionRejected("Actual issued DynamicsOwner required", stage="owner")
     context, issued = _ISSUED[owner]
+    if owner in _STORAGE_FORWARDED or hasattr(context, "storage_transition"):
+        raise CompletionRejected(
+            "Dynamics epoch consumed by its actual storage successor",
+            stage="storage_forwarded",
+            trial=issued,
+            partial=context,
+        )
     if context.active or context.invalid or context.validating:
         raise CompletionRejected("Closed completion epoch unavailable", stage="owner")
     context.validating = True
     try:
-        _ready()
-        _check(context, closed=True)
-        if (
-            context.tissue.validate_closed(context.tissue_session, completion_claim=context.claim)
-            is not context.tissue_record
-        ):
-            raise ValueError("Original successful tissue participation record changed")
-        graph = _graph(context)
-        _same_refs(graph[0], context.after_graph[0])
-        if (
-            graph[1] != context.after_graph[1]
-            or _snapshot(context).identity != context.after.identity
-            or context.trial is not issued
-            or issued.identity != _digest(trial_record(issued))
-        ):
-            raise ValueError("Closed original tail values/aliases/work/record changed")
+        _closed_epoch(context, issued)
         return context
     except BaseException:
         context.invalid = True
@@ -1300,10 +1807,827 @@ def _authority(owner):
         context.validating = False
 
 
+def _closed_epoch(context, issued):
+    """Original complete state proof, before any storage ownership transfer."""
+    _ready()
+    _file_inputs(context.request.file_inputs)
+    _check(context, closed=True)
+    if (
+        context.tissue.validate_closed(context.tissue_session, completion_claim=context.claim)
+        is not context.tissue_record
+    ):
+        raise ValueError("Original successful tissue participation record changed")
+    if context.molecule_session is not None:
+        if (
+            context.molecule.validate_closed(
+                context.molecule_session, completion_claim=context.claim
+            )
+            is not context.molecule_record
+        ):
+            raise ValueError("Original successful molecular participation record changed")
+    graph = _graph(context)
+    _same_refs(graph[0], context.after_graph[0])
+    if (
+        graph[1] != context.after_graph[1]
+        or _snapshot(context).identity != context.after.identity
+        or context.trial is not issued
+        or issued.identity != _digest(trial_record(issued))
+    ):
+        raise ValueError("Closed original tail values/aliases/work/record changed")
+
+
 def failed_context(claim):
     if type(claim) is not CompletionClaim or claim not in _CLAIMS:
         raise CompletionRejected("Actual issued completion claim required", stage="claim")
     context = _CLAIMS[claim]
     if context.active or not context.invalid:
         raise CompletionRejected("No closed failed completion attempt", stage="failure")
+    return context
+
+
+def _storage_binding(payload):
+    return FunctionType(
+        previous.previous._dynamics_binding.__code__,
+        dict(
+            vars(previous.previous),
+            DYNAMICS_BACK_REFERENCE_SLOTS=STORAGE_BACK_REFERENCE_SLOTS,
+            DYNAMICS_BINDING_KIND=STORAGE_BINDING_KIND,
+        ),
+    )(payload)
+
+
+def _storage_api():
+    if not all(
+        _pin(value)
+        for value in (STORAGE_INTERFACE_SHA256, STORAGE_REVIEW_SHA256, STORAGE_PARENT_REVIEW_SHA256)
+    ):
+        raise CompletionRejected(
+            "Reviewed actual storage successor remains held", stage="storage_held"
+        )
+    path = Path(__file__).parents[3] / ("src/" + STORAGE_MODULE.replace(".", "/") + ".py")
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Actual original storage consumer source required")
+    raw = path.read_bytes()
+    identity, backrefs = _storage_binding(raw)
+    if identity != STORAGE_INTERFACE_SHA256 or backrefs != (
+        ("PARENT_SOURCE_SHA256", hashlib.sha256(Path(__file__).read_bytes()).hexdigest()),
+        ("PARENT_REVIEW_SHA256", STORAGE_PARENT_REVIEW_SHA256),
+    ):
+        raise ValueError(
+            "Original storage bytes or Dynamics producer/review back-reference changed"
+        )
+    module = sys.modules.get(STORAGE_MODULE)
+    if (
+        type(module) is not ModuleType
+        or Path(module.__file__).resolve() != path
+        or module.previous is not sys.modules[__name__]
+        or any(getattr(module, name) != value for name, value in backrefs)
+        or module.PARENT_CLAIM != "_claim_for_init_storage"
+        or module.PARENT_CHECK != "_check_init_storage_authority"
+    ):
+        raise ValueError("Actual original storage namespace/handoff changed")
+    api = previous.previous.previous._ready()
+    api._source_interface(
+        module,
+        raw,
+        path,
+        (
+            "prepare",
+            "_ready",
+            "_wrapper_guard",
+            "_dispatch",
+            "_run",
+            "_stores",
+            "trial_record",
+            "_check",
+            "_binding",
+            "_bootstrap",
+            "_observer_bindings",
+            "_observer_recipe",
+            "_electrical_api",
+            "_electrical_route",
+            "_claim_for_electrical",
+            "_check_electrical_authority",
+            "_closed_storage_epoch",
+            "_first_step_key_api",
+            "_check_first_step_key_binding",
+            "_claim_first_step_ancestor",
+            "_check_first_step_ancestor",
+        ),
+    )
+    module._ready()
+    return module
+
+
+def _storage_route(context):
+    """Original registry/frame permission; no stale before-storage data read."""
+    module = _storage_api()
+    owner = getattr(context, "owner", None)
+    if type(owner) is not DynamicsOwner:
+        raise ValueError("Original actual completed DynamicsOwner required")
+    issued, lease = _ISSUED.get(owner), _STORAGE_LEASES.get(owner)
+    child = getattr(context, "storage_transition", None)
+    if (
+        issued is None
+        or issued[0] is not context
+        or issued[1] is not context.trial
+        or lease is None
+        or context.storage_lease is not lease
+        or lease.parent is not context
+        or lease.owner is not owner
+        or lease.child is not child
+        or _STORAGE_FORWARDED.get(owner) is not child
+        or context.active
+        or context.invalid
+        or context.thread != get_ident()
+        or child.invalid
+        or child.thread != context.thread
+        or type(child.request) is not module.Request
+        or child.request.dynamics_owner is not owner
+        or module._REQUESTS.get(child.request) is not child.refs
+        or module._CONSUMED.get(child.request) is not child
+        or module._RETIRED.get(owner) is not child
+        or child.parent is not context
+        or child.refs[0] is not context
+        or child.refs[1] is not lease.trial
+        or child.phase is not context.phase
+        or child.p is not context.p
+        or child.cells is not context.cells
+        or child.sim is not context.sim
+        or child.handler is not context.handler
+        or child.cache is not lease.cache
+        or context.phase.cache is not lease.cache
+        or context.phase.callbacks is not context.callback
+        or child.entries is not lease.entries
+        or context.storage_entries is not lease.entries
+        or tuple(lease.entries) != ("wrapper_guard", "dispatch")
+        or lease.entries["wrapper_guard"] is not module._wrapper_guard
+        or lease.entries["dispatch"] is not module._dispatch
+    ):
+        raise ValueError("Original one-shot Dynamics/storage/phase registry association changed")
+    if child.active:
+        if not module._ACTIVE or module._ACTIVE[-1] is not child:
+            raise ValueError("Actual exclusive active storage attempt required")
+    else:
+        if type(getattr(child, "owner", None)) is not module.StorageOwner:
+            raise ValueError("Actual successfully closed StorageOwner required")
+        published = module._ISSUED.get(child.owner)
+        if (
+            published is None
+            or published[0] is not child
+            or published[1] is not child.trial
+            or child.trial is None
+            or child.trial.source_completed is not True
+        ):
+            raise ValueError("Original successful closed storage record changed")
+    frame = child.body_frame
+    if frame is None:
+        if lease.body_frame is not None:
+            raise ValueError("Observed original storage body frame disappeared")
+    else:
+        row = child.frames.get(id(frame))
+        if (
+            row is None
+            or row["frame"] is not frame
+            or row["body_started"] is not True
+            or frame.f_code is not child.expected_body
+            or frame.f_globals is not child.namespace
+            or frame.f_locals.get("self") is not context.sim
+            or frame.f_locals.get("cells") is not context.cells
+            or frame.f_locals.get("p") is not context.p
+            or frame.f_back is not child.body_driver
+            or child.body_driver.f_code is not module._dispatch.__code__
+            or child.body_driver.f_globals is not vars(module)
+            or (lease.body_frame is not None and lease.body_frame is not frame)
+        ):
+            raise ValueError("Original once-dispatched storage source frame changed")
+        lease.body_frame = frame
+    return child, module
+
+
+def _storage_values(context):
+    lease = context.storage_lease
+    project = previous.previous.core._LITERAL._project
+    projector = previous.previous._projector(context.init_parent)
+    projector.objects = [*projector.objects, *lease.objects]
+    for (_, actual), holder, names, target in zip(
+        lease.objects, lease.holders, lease.names, lease.fields, strict=True
+    ):
+        if vars(actual) is not holder:
+            raise ValueError("Original retained Dynamics holder changed during storage")
+        ignored = lease.allowed if actual is context.sim else frozenset()
+        ignored |= next(
+            (
+                fields
+                for owner, fields in getattr(lease, "molecule_permissions", ())
+                if owner is actual
+            ),
+            frozenset(),
+        )
+        if tuple(name for name in holder if name not in ignored) != tuple(
+            name for name in names if name not in ignored
+        ):
+            raise ValueError("Storage changed an unowned original field roster")
+        target.clear()
+        target.update((name, holder[name]) for name in names if name not in ignored)
+    values = tuple(lease.fields)
+    if getattr(context, "molecule_session", None) is not None:
+        values = context.molecule.project_state(context.molecule_session, values)
+    return _scope(context).snapshot(project(projector, values))
+
+
+def _storage_graph(context):
+    _storage_values(context)
+    lease = context.storage_lease
+    return _scope(context).graph(lease.view, lease.view, lease.tape)
+
+
+def _claim_for_init_storage(owner, *, expected, transition, entries):
+    """Consume exactly one actual successful Dynamics epoch before source work."""
+    module = _storage_api()
+    frame = sys._getframe(1)
+    with _LOCK:
+        issued = _ISSUED.get(owner) if type(owner) is DynamicsOwner else None
+        if (
+            issued is None
+            or issued[1] is not expected
+            or frame.f_code is not module.prepare.__code__
+            or frame.f_globals is not vars(module)
+            or frame.f_locals.get("context") is not transition
+            or not module._ACTIVE
+            or module._ACTIVE[-1] is not transition
+        ):
+            raise CompletionRejected("Actual active storage issuer required", stage="storage_entry")
+        context = issued[0]
+        if owner in _STORAGE_FORWARDED or hasattr(context, "storage_transition"):
+            raise CompletionRejected(
+                "Dynamics storage epoch already attempted", stage="storage_consumed"
+            )
+        if (
+            context.active
+            or context.invalid
+            or context.validating
+            or context.owner is not owner
+            or transition.parent is not context
+            or transition.refs[1] is not expected
+            or transition.entries is not entries
+            or transition.thread != context.thread
+            or context.thread != get_ident()
+        ):
+            context.invalid = transition.invalid = True
+            raise ValueError("Original closed Dynamics/storage association changed")
+        _STORAGE_FORWARDED[owner] = transition
+        context.storage_transition = transition
+        try:
+            _closed_epoch(context, expected)
+            fields = tuple(name for _, name in module._stores())
+            if len(fields) != 52 or len(set(fields)) != 51:
+                raise ValueError("Exact original storage field declaration required")
+            objects = tuple(_objects(context))
+            ancestor = vars(previous.previous).get(STORAGE_ANCESTOR_CLAIM)
+            lease = SimpleNamespace(
+                parent=context,
+                owner=owner,
+                child=transition,
+                trial=expected,
+                entries=entries,
+                cache=context.phase.cache,
+                bindings=context.bindings,
+                refs=context.refs,
+                metadata=context.metadata,
+                allowed=frozenset(fields),
+                objects=objects,
+                holders=tuple(vars(actual) for _, actual in objects),
+                names=tuple(tuple(vars(actual)) for _, actual in objects),
+                fields=[{} for _ in objects],
+                body_frame=None,
+                streams=tuple(value.identity for value in _streams(context)),
+                cell_i=context.cell_i,
+                cell_state=_cell_snapshot(context),
+                tissue_context=context.tissue._context(context.tissue_session, context.claim),
+                ancestor=ancestor,
+            )
+            lease.view = SimpleNamespace(objects=objects, fields=lease.fields)
+            lease.tape = SimpleNamespace(rng=context.np_rng, events=(), draws=(), locals={})
+            context.storage_lease = lease
+            context.storage_entries = entries
+            _STORAGE_LEASES[owner] = lease
+            if (
+                type(ancestor) is not FunctionType
+                or ancestor.__globals__ is not vars(previous.previous)
+                or ancestor(context.init_parent, context, transition) is not context.init_parent
+            ):
+                raise ValueError("Actual retained INIT storage ancestor claim is unavailable")
+            if context.request.native_molecules:
+                lease.molecule_claim = context.molecule.bind_storage(
+                    context.molecule_session, completion=context, storage=transition
+                )
+                lease.molecule_permissions = context.molecule.runtime_permissions(
+                    lease.molecule_claim
+                )
+            lease.values, lease.graph = _storage_values(context), _storage_graph(context)
+            _check_init_storage_authority(transition)
+            return context
+        except BaseException as error:
+            context.storage_error = error
+            context.invalid = transition.invalid = True
+            raise
+
+
+def _check_init_storage_authority(transition):
+    context = transition.parent
+    if _storage_route(context)[0] is not transition:
+        raise ValueError("Different original storage transition")
+    successor = _ELECTRICAL_DESCENDANTS.get(context.owner)
+    if successor is not None:
+        return _check_electrical_ancestor(context, transition, successor.child)
+    _storage_metadata(context)
+    lease = context.storage_lease
+    if _storage_values(context).identity != lease.values.identity:
+        raise ValueError("Storage changed an unowned original Dynamics value")
+    graph = _storage_graph(context)
+    _same_refs(graph[0], lease.graph[0])
+    if graph[1] != lease.graph[1]:
+        raise ValueError("Storage changed an original unowned reference/alias edge")
+    return context
+
+
+def _storage_metadata(context):
+    """Original closed metadata/streams only; no historical numeric snapshot."""
+    lease = context.storage_lease
+    _ready()
+    _file_inputs(context.request.file_inputs)
+    _registry(context)
+    if (
+        context.trial is not lease.trial
+        or context.trial.source_completed is not True
+        or context.trial.identity != _digest(trial_record(context.trial))
+        or context.bindings is not lease.bindings
+        or context.metadata is not lease.metadata
+        or context.refs is not lease.refs
+        or context.cell_i is not lease.cell_i
+        or vars(previous.previous).get(STORAGE_ANCESTOR_CLAIM) is not lease.ancestor
+        or context.tissue._context(context.tissue_session, context.claim)
+        is not lease.tissue_context
+        or _cell_snapshot(context).identity != lease.cell_state.identity
+        or tuple(value.identity for value in _streams(context)) != lease.streams
+    ):
+        raise ValueError("Original closed Dynamics state/source/stream ancestry changed")
+    # Metadata-only session/producer registry audit. Its old full-state reader
+    # is intentionally not called after the separately owned storage mutation.
+    context.tissue._registry(lease.tissue_context, closed=True)
+    _same_refs(_binding(context), lease.bindings)
+    return context
+
+
+def _electrical_route(context, storage, electrical):
+    """Authenticate the actual grandchild registries without stale value reads."""
+    actual_storage, module = _storage_route(context)
+    if actual_storage is not storage:
+        raise ValueError("Different actual Storage context")
+    child, producer = module._electrical_route(storage)
+    lease = _ELECTRICAL_DESCENDANTS.get(context.owner)
+    if (
+        child is not electrical
+        or lease is None
+        or getattr(context, "electrical_descendant", None) is not lease
+        or lease.parent is not context
+        or lease.storage is not storage
+        or lease.child is not electrical
+        or lease.module is not module
+        or lease.producer is not producer
+        or lease.status != "ready"
+        or electrical.parent is not context
+        or electrical.storage_parent is not storage
+        or electrical.phase is not context.phase
+        or electrical.p is not context.p
+        or electrical.sim is not context.sim
+        or electrical.cells is not context.cells
+        or electrical.handler is not context.handler
+        or electrical.cache is not context.phase.cache
+        or storage.electrical_lease is not lease.storage_lease
+        or storage.trial is not lease.storage_trial
+        or storage.trial.source_completed is not True
+        or storage.trial.identity != module._digest(module.trial_record(storage.trial))
+        or storage.refs is not lease.storage_refs
+        or storage.bindings is not lease.storage_bindings
+        or storage.metadata is not lease.storage_metadata
+        or storage.electrical_lease.ancestor is not _claim_electrical_ancestor
+        or module.ELECTRICAL_ANCESTOR_CLAIM != "_claim_electrical_ancestor"
+        or vars(previous.previous).get(ELECTRICAL_ANCESTOR_CLAIM) is not lease.ancestor
+    ):
+        raise ValueError("Original Completion/storage/electrical ancestry changed")
+    current = frozenset(name for _, _, name in producer._stores(producer._definitions()))
+    if len(current) != 27 or current != lease.allowed:
+        raise ValueError("Exact source-derived27 electrical fields changed")
+    module._bootstrap(storage)
+    _same_refs(module._binding(storage), lease.storage_bindings)
+    return lease
+
+
+def _electrical_values(context):
+    """Factor only storage fields and the separately owned27 electrical fields."""
+    lease = context.electrical_descendant
+    project = previous.previous.core._LITERAL._project
+    projector = previous.previous._projector(context.init_parent)
+    projector.objects = [*projector.objects, *lease.objects]
+    for (_, actual), holder, names, target in zip(
+        lease.objects, lease.holders, lease.names, lease.fields, strict=True
+    ):
+        if vars(actual) is not holder:
+            raise ValueError("Original Completion holder replaced during electrical work")
+        ignored = lease.allowed | lease.storage_allowed if actual is context.sim else frozenset()
+        ignored |= next(
+            (
+                fields
+                for owner, fields in getattr(
+                    getattr(context, "storage_lease", None), "molecule_permissions", ()
+                )
+                if owner is actual
+            ),
+            frozenset(),
+        )
+        if tuple(name for name in holder if name not in ignored) != tuple(
+            name for name in names if name not in ignored
+        ):
+            raise ValueError("Electrical work changed an unowned Completion field roster")
+        target.clear()
+        target.update((name, holder[name]) for name in names if name not in ignored)
+    values = tuple(lease.fields)
+    if getattr(context, "molecule_session", None) is not None:
+        values = context.molecule.project_state(context.molecule_session, values)
+    return _scope(context).snapshot(project(projector, values))
+
+
+def _electrical_graph(context):
+    _electrical_values(context)
+    lease = context.electrical_descendant
+    return _scope(context).graph(lease.view, lease.view, lease.tape)
+
+
+def _claim_electrical_ancestor(context, storage, electrical):
+    """One actual storage-issuer call, before any original electrical source."""
+    module = _storage_api()
+    frame = sys._getframe(1)
+    with _LOCK:
+        if (
+            frame.f_code is not module._claim_for_electrical.__code__
+            or frame.f_globals is not vars(module)
+            or frame.f_locals.get("context") is not storage
+            or frame.f_locals.get("transition") is not electrical
+            or _storage_route(context)[0] is not storage
+            or storage.parent is not context
+            or storage.electrical_transition is not electrical
+            or storage.electrical_lease.child is not electrical
+            or storage.electrical_lease.ancestor is not _claim_electrical_ancestor
+            or module._ELECTRICAL_FORWARDED.get(storage.owner) is not electrical
+            or not electrical.active
+            or electrical.invalid
+            or electrical.body_frame is not None
+            or electrical.thread != get_ident()
+        ):
+            raise CompletionRejected(
+                "Actual once-only storage electrical ancestor issuer required",
+                stage="electrical_entry",
+            )
+        if context.owner in _ELECTRICAL_DESCENDANTS or hasattr(context, "electrical_descendant"):
+            context.invalid = storage.invalid = electrical.invalid = True
+            raise CompletionRejected(
+                "Completion electrical descendant already attempted", stage="electrical_consumed"
+            )
+        lease = SimpleNamespace(
+            parent=context,
+            storage=storage,
+            child=electrical,
+            module=module,
+            storage_lease=storage.electrical_lease,
+            storage_trial=storage.trial,
+            storage_refs=storage.refs,
+            storage_bindings=storage.bindings,
+            storage_metadata=storage.metadata,
+            status="authenticating_original",
+            primary=None,
+        )
+        _ELECTRICAL_DESCENDANTS[context.owner] = context.electrical_descendant = lease
+        try:
+            # This proof runs once, before the grandchild can mutate anything.
+            # Later checks authenticate only retained metadata and new factored
+            # projections; neither closed old numeric reader is re-entered.
+            _storage_metadata(context)
+            old = context.storage_lease
+            if _storage_values(context).identity != old.values.identity:
+                raise ValueError(
+                    "Original Completion/storage values changed before electrical claim"
+                )
+            graph = _storage_graph(context)
+            _same_refs(graph[0], old.graph[0])
+            if graph[1] != old.graph[1]:
+                raise ValueError(
+                    "Original Completion/storage aliases changed before electrical claim"
+                )
+            child, producer = module._electrical_route(storage)
+            if child is not electrical:
+                raise ValueError("Different original electrical child")
+            lease.producer = producer
+            lease.allowed = frozenset(
+                name for _, _, name in producer._stores(producer._definitions())
+            )
+            if len(lease.allowed) != 27:
+                raise ValueError("Exactly27 source-derived electrical Simulator fields required")
+            lease.storage_allowed = old.allowed
+            objects = list(old.objects)
+            for role, actual in (("parameters", context.p), ("cells", context.cells)):
+                if not any(value is actual for _, value in objects):
+                    objects.append((role, actual))
+            lease.objects = tuple(objects)
+            lease.holders = tuple(vars(value) for _, value in lease.objects)
+            lease.names = tuple(tuple(holder) for holder in lease.holders)
+            lease.fields = [{} for _ in lease.objects]
+            lease.view = SimpleNamespace(objects=lease.objects, fields=lease.fields)
+            lease.tape = SimpleNamespace(rng=context.np_rng, events=(), draws=(), locals={})
+            # The new owner has not run yet: freeze even its future fields
+            # across fallible ancestor publication, rather than laundering an
+            # inherited callback mutation into the new baseline.
+            entry = {
+                name: value for name, value in vars(context.sim).items() if name in lease.allowed
+            }
+            entry_view = SimpleNamespace(fields=entry)
+            entry_value = _scope(context).snapshot(entry)
+            entry_graph = _scope(context).graph(entry_view, entry_view, lease.tape)
+            lease.ancestor = vars(previous.previous).get(ELECTRICAL_ANCESTOR_CLAIM)
+            if type(lease.ancestor) is not FunctionType or lease.ancestor.__globals__ is not vars(
+                previous.previous
+            ):
+                raise ValueError("Actual retained INIT electrical ancestor hooks unavailable")
+            if (
+                lease.ancestor(context.init_parent, context, storage, electrical)
+                is not context.init_parent
+            ):
+                raise ValueError("Different actual retained INIT electrical ancestor")
+            current_entry = {
+                name: value for name, value in vars(context.sim).items() if name in lease.allowed
+            }
+            if (
+                electrical.body_frame is not None
+                or tuple(current_entry) != tuple(entry)
+                or _scope(context).snapshot(current_entry).identity != entry_value.identity
+            ):
+                raise ValueError("Electrical fields changed before original source entry")
+            entry.clear()
+            entry.update(current_entry)
+            current_graph = _scope(context).graph(entry_view, entry_view, lease.tape)
+            _same_refs(current_graph[0], entry_graph[0])
+            if current_graph[1] != entry_graph[1]:
+                raise ValueError("Electrical field aliases changed before original source entry")
+            lease.values, lease.graph = _electrical_values(context), _electrical_graph(context)
+            lease.status = "ready"
+            _check_electrical_ancestor(context, storage, electrical)
+            return context
+        except BaseException as error:
+            lease.status, lease.primary = "failed", error
+            context.invalid = storage.invalid = electrical.invalid = True
+            raise
+
+
+def _check_electrical_ancestor(context, storage, electrical):
+    """Current metadata and factored graph; no stale Completion/Storage reader."""
+    leaf = _FIRST_STEP_DESCENDANTS.get(getattr(context, "owner", None))
+    if leaf is not None:
+        return _check_first_step_ancestor(context, storage, electrical, leaf.child)
+    lease = _electrical_route(context, storage, electrical)
+    _storage_metadata(context)
+    if _electrical_values(context).identity != lease.values.identity:
+        raise ValueError("Electrical work changed an unowned original Completion value")
+    graph = _electrical_graph(context)
+    _same_refs(graph[0], lease.graph[0])
+    if graph[1] != lease.graph[1]:
+        raise ValueError("Electrical work changed an unowned Completion reference/alias edge")
+    return context
+
+
+def _first_step_route(context, storage, electrical, transition):
+    """Actual live first-step route, never a record or old numeric validator."""
+    original = _electrical_route(context, storage, electrical)
+    binding = original.module._electrical_api()
+    producer = binding.module
+    child, module = producer._first_step_route(electrical)
+    lease = _FIRST_STEP_DESCENDANTS.get(context.owner)
+    if (
+        child is not transition
+        or lease is None
+        or getattr(context, "first_step_descendant", None) is not lease
+        or lease.parent is not context
+        or lease.storage is not storage
+        or lease.electrical is not electrical
+        or lease.child is not transition
+        or lease.original is not original
+        or lease.producer is not producer
+        or lease.module is not module
+        or lease.status not in ("reserved", "sealed")
+        or transition.parent is not context
+        or transition.storage_parent is not storage
+        or transition.initial is not context.init_parent
+        or transition.phase is not context.phase
+        or transition.sim is not context.sim
+        or transition.p is not context.p
+        or transition.cells is not context.cells
+        or transition.handler is not context.handler
+        or transition.cache is not context.phase.cache
+        or vars(previous.previous).get("_claim_first_step_ancestor") is not lease.ancestor
+        or vars(previous.previous).get("_check_first_step_ancestor") is not lease.ancestor_check
+    ):
+        raise ValueError("Original Completion/storage/electrical/first-step ancestry changed")
+    return lease
+
+
+def _first_step_values(context, *, stable):
+    lease = context.first_step_descendant
+    fields = lease.fields if stable else lease.full_fields
+    for (_, actual), holder, names, target in zip(
+        lease.objects, lease.holders, lease.names, fields, strict=True
+    ):
+        if vars(actual) is not holder:
+            raise ValueError("Original first-step ancestor holder changed")
+        ignored = (
+            next((allowed for owner, allowed in lease.permissions if owner is actual), frozenset())
+            if stable
+            else frozenset()
+        )
+        if stable and actual is context.sim:
+            ignored = ignored | lease.original.allowed | lease.original.storage_allowed
+        if tuple(name for name in holder if name not in ignored) != tuple(
+            name for name in names if name not in ignored
+        ):
+            raise ValueError("First-step changed an unowned ancestor field roster")
+        target.clear()
+        target.update((name, holder[name]) for name in names if name not in ignored)
+    projector = previous.previous._projector(context.init_parent)
+    projector.objects = [*projector.objects, *lease.objects]
+    project = previous.previous.core._LITERAL._project
+    values = tuple(fields)
+    if getattr(context, "molecule_session", None) is not None:
+        values = context.molecule.project_state(context.molecule_session, values)
+    return _scope(context).snapshot(project(projector, values))
+
+
+def _first_step_graph(context, *, stable):
+    _first_step_values(context, stable=stable)
+    lease = context.first_step_descendant
+    view = lease.view if stable else lease.full_view
+    return _scope(context).graph(view, view, lease.tape)
+
+
+def _first_step_permissions(lease):
+    step, module = lease.child, lease.module
+    actual, expected = step.permissions, module._mutation_contract(step)
+    if type(actual) is not tuple or type(expected) is not tuple or len(actual) != len(expected):
+        raise ValueError("Complete source-derived first-step permission tuple required")
+    seen = []
+    for (owner, fields), (original, allowed) in zip(actual, expected, strict=True):
+        if (
+            owner is not original
+            or any(owner is prior for prior in seen)
+            or not any(owner is obj for _, obj in lease.objects)
+            or type(fields) is not frozenset
+            or fields != allowed
+            or any(type(name) is not str for name in fields)
+        ):
+            raise ValueError("Actual first-step holder/field source correspondence changed")
+        seen.append(owner)
+    if not any(owner is lease.parent.sim for owner, _ in actual):
+        raise ValueError("Actual first-step Simulator permission is missing")
+    return actual
+
+
+def _claim_first_step_ancestor(context, storage, electrical, transition):
+    """Reserve once; immutable whole-state proof precedes permission sealing."""
+    module = _storage_api()
+    frame = sys._getframe(1)
+    with _LOCK:
+        if (
+            frame.f_code is not module._claim_first_step_ancestor.__code__
+            or frame.f_globals is not vars(module)
+            or frame.f_locals.get("context") is not storage
+            or frame.f_locals.get("electrical") is not electrical
+            or frame.f_locals.get("transition") is not transition
+        ):
+            raise CompletionRejected(
+                "Actual first-step ancestor issuer required", stage="first_step_entry"
+            )
+        if context.owner in _FIRST_STEP_DESCENDANTS or hasattr(context, "first_step_descendant"):
+            context.invalid = storage.invalid = electrical.invalid = transition.invalid = True
+            raise CompletionRejected(
+                "First-step ancestor already attempted", stage="first_step_consumed"
+            )
+        original = _electrical_route(context, storage, electrical)
+        producer = module._electrical_api().module
+        child, consumer = producer._first_step_route(electrical)
+        if (
+            child is not transition
+            or not transition.active
+            or transition.invalid
+            or transition.claimed
+            or transition.setup_frame is not None
+            or transition.loop_frame is not None
+            or transition.thread != get_ident()
+            or storage.first_step_transition is not transition
+        ):
+            raise ValueError("Actual still-unrun first-step reservation required")
+        lease = SimpleNamespace(
+            parent=context,
+            storage=storage,
+            electrical=electrical,
+            child=transition,
+            original=original,
+            producer=producer,
+            module=consumer,
+            status="reserving",
+            primary=None,
+            permissions=(),
+        )
+        _FIRST_STEP_DESCENDANTS[context.owner] = context.first_step_descendant = lease
+        try:
+            objects = list(original.objects)
+            for role, obj in (("callback", context.phase.callbacks), ("gap", context.parent.gap)):
+                if obj is not None and not any(value is obj for _, value in objects):
+                    objects.append((role, obj))
+            lease.objects = tuple(objects)
+            lease.holders = tuple(vars(value) for _, value in lease.objects)
+            lease.names = tuple(tuple(holder) for holder in lease.holders)
+            lease.fields, lease.full_fields = ([{} for _ in objects] for _ in range(2))
+            lease.view = SimpleNamespace(objects=lease.objects, fields=lease.fields)
+            lease.full_view = SimpleNamespace(objects=lease.objects, fields=lease.full_fields)
+            lease.tape = SimpleNamespace(rng=context.np_rng, events=(), draws=(), locals={})
+            lease.before = _first_step_values(context, stable=False)
+            lease.before_graph = _first_step_graph(context, stable=False)
+            lease.ancestor = vars(previous.previous).get("_claim_first_step_ancestor")
+            lease.ancestor_check = vars(previous.previous).get("_check_first_step_ancestor")
+            if any(
+                type(fn) is not FunctionType or fn.__globals__ is not vars(previous.previous)
+                for fn in (lease.ancestor, lease.ancestor_check)
+            ):
+                raise ValueError("Actual retained first-step ancestor hooks unavailable")
+            if (
+                lease.ancestor(context.init_parent, context, storage, electrical, transition)
+                is not context.init_parent
+            ):
+                raise ValueError("Different retained first-step ancestor")
+            lease.status = "reserved"
+            if context.request.native_molecules:
+                lease.molecule_claim = context.molecule.bind_first_step(
+                    context.molecule_session,
+                    completion=context,
+                    storage=storage,
+                    electrical=electrical,
+                    step=transition,
+                )
+            return context
+        except BaseException as error:
+            lease.status, lease.primary = "failed", error
+            context.invalid = storage.invalid = electrical.invalid = transition.invalid = True
+            raise
+
+
+def _check_first_step_ancestor(context, storage, electrical, transition):
+    """Seal only before setup, then audit the actual factored fourth epoch."""
+    lease = _first_step_route(context, storage, electrical, transition)
+    if lease.module._check_ancestor_metadata(transition) is not electrical:
+        raise ValueError("Different actual first-step metadata owner")
+    permissions = _first_step_permissions(lease)
+    if lease.status == "reserved":
+        if (
+            transition.setup_frame is not None
+            or transition.loop_frame is not None
+            or transition.work
+        ):
+            raise ValueError("First-step ancestor permissions were not sealed before source entry")
+        if _first_step_values(context, stable=False).identity != lease.before.identity:
+            raise ValueError("Original state changed before first-step permission publication")
+        graph = _first_step_graph(context, stable=False)
+        _same_refs(graph[0], lease.before_graph[0])
+        if graph[1] != lease.before_graph[1]:
+            raise ValueError("Original aliases changed before first-step permission publication")
+        lease.permissions = permissions
+        lease.values, lease.graph = (
+            _first_step_values(context, stable=True),
+            _first_step_graph(context, stable=True),
+        )
+        lease.status = "sealed"
+    elif len(permissions) != len(lease.permissions) or any(
+        owner is not actual or fields != allowed
+        for (owner, fields), (actual, allowed) in zip(permissions, lease.permissions, strict=True)
+    ):
+        raise ValueError("Sealed first-step permission ownership changed")
+    _storage_metadata(context)
+    if (
+        lease.ancestor_check(context.init_parent, context, storage, electrical, transition)
+        is not context.init_parent
+    ):
+        raise ValueError("Different retained checked first-step ancestor")
+    if _first_step_values(context, stable=True).identity != lease.values.identity:
+        raise ValueError("First-step changed an unowned Completion value")
+    graph = _first_step_graph(context, stable=True)
+    _same_refs(graph[0], lease.graph[0])
+    if graph[1] != lease.graph[1]:
+        raise ValueError("First-step changed an unowned Completion alias/layout")
     return context

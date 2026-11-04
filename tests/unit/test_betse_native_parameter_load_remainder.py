@@ -8,11 +8,13 @@ positive continuity run requires Root's actual constants/handoff authority.
 import ast
 import builtins
 import copy
+import dis
 import json
 import sys
 import xml.etree.ElementTree as ET
+from collections.abc import Sequence
 from pathlib import Path
-from types import FunctionType, ModuleType, SimpleNamespace
+from types import CodeType, FunctionType, ModuleType, SimpleNamespace
 
 import pytest
 
@@ -29,6 +31,279 @@ from validation.betse.betse_native_single_cell_core_synthetic import (
 blocked = inherited.blocked
 prevent_reference_execution = inherited.prevent_reference_execution
 conditional_grant_contract = inherited.conditional_grant_contract
+
+
+def _package_wrapper_metadata(monkeypatch):
+    """Real library decoration of compiled metadata; never run native bodies."""
+    import numpy as np
+    from beartype import beartype
+    from beartype.claw._clawstate import claw_state
+
+    path, node, _, _, _, balance_ast = stage._source()
+    compiled = compile(path.read_bytes(), str(path), "exec", dont_inherit=True)
+    class_code = next(
+        c for c in compiled.co_consts if type(c) is CodeType and c.co_name == "Parameters"
+    )
+    ion_code = next(
+        c for c in class_code.co_consts if type(c) is CodeType and c.co_name == "_load_ion_profile"
+    )
+    balance_code = next(
+        c for c in compiled.co_consts if type(c) is CodeType and c.co_name == "_balance_charge"
+    )
+    module = ModuleType("metadata_only_remainder")
+    namespace = vars(module)
+    namespace.update(__builtins__=vars(builtins), np=np, SequenceTypes=(Sequence, np.ndarray))
+    ion = FunctionType(ion_code, namespace)
+    ion.__annotations__ = {"return": None}
+    cls = type("Parameters", (), {"__module__": module.__name__, "_load_ion_profile": ion})
+    assert beartype(cls) is cls
+    balance = FunctionType(balance_code, namespace)
+    balance.__annotations__ = dict(
+        concentrations=namespace["SequenceTypes"], zs=namespace["SequenceTypes"], return_=tuple
+    )
+    balance.__annotations__["return"] = balance.__annotations__.pop("return_")
+    namespace["_balance_charge"] = beartype(balance)
+    # Opaque bindings complete the compile-only module's lookup surface. The
+    # native entry guard remains active; none of these bodies may execute.
+    for code in (ion_code, balance_code):
+        for instruction in dis.get_instructions(code):
+            if instruction.opname == "LOAD_GLOBAL" and instruction.argval not in vars(builtins):
+                namespace.setdefault(instruction.argval, object())
+    namespace["__claw_state_beartype__"] = claw_state
+    monkeypatch.setitem(
+        claw_state.module_name_to_beartype_conf,
+        module.__name__,
+        cls._load_ion_profile.__kwdefaults__["__beartype_conf"],
+    )
+    types_module = ModuleType("betse.util.type.types")
+    types_module.SequenceTypes = namespace["SequenceTypes"]
+    monkeypatch.setitem(sys.modules, types_module.__name__, types_module)
+    return SimpleNamespace(
+        cls=cls,
+        namespace=namespace,
+        ion=ion,
+        balance=balance,
+        node=node,
+        balance_ast=balance_ast,
+        path=path,
+    )
+
+
+def _wrapped_observation(observed, monkeypatch):
+    """Real type wrappers and real trace/profile calls around toy bodies only."""
+    import numpy as np
+    from beartype import beartype
+
+    h, context = observed, observed.context
+    union = (Sequence, np.ndarray)
+    context.api.balance.__annotations__ = {"concentrations": union, "zs": union, "return": tuple}
+    balance_wrapper = beartype(context.api.balance)
+    context.api.ion.__annotations__ = {"return": None}
+    assert beartype(context.api.cls) is context.api.cls
+    # Toy closure dispatch is changed before the observer starts. Production
+    # retains native module globals and its actual installed class slots.
+    cells = dict(
+        zip(context.api.ion.__code__.co_freevars, context.api.ion.__closure__, strict=True)
+    )
+    cells["balance"].cell_contents = balance_wrapper
+    context.api.ion_wrapper = vars(context.api.cls)["_load_ion_profile"]
+    context.api.balance_wrapper = balance_wrapper
+    context.api.namespace = {"_balance_charge": balance_wrapper}
+    return h
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "metadata-valid",
+        "metadata-ion-unwrapped",
+        "metadata-balance-unwrapped",
+        "metadata-ion-code",
+        "metadata-balance-code",
+        "metadata-ion-delegate",
+        "metadata-balance-delegate",
+        "metadata-balance-default-copy",
+        "metadata-balance-annotations",
+        "metadata-balance-meta",
+        "metadata-balance-config",
+        "metadata-balance-class-stack",
+        "metadata-original-globals",
+        "metadata-original-body",
+        "metadata-sequence-member",
+        "metadata-balance-argument-cache",
+        "observe-valid",
+        "observe-body-failure",
+        "observe-direct-ion",
+        "observe-direct-balance",
+        "observe-ion-delegate",
+        "observe-balance-delegate",
+        "observe-wrapper-code",
+        "observe-caught-reentry",
+        "observe-wrapper-return-capture",
+        "observe-falsey-primary",
+        "observe-trace-entry-rejection",
+        "observe-profile-entry-rejection",
+        "observe-trace-exception-rejection",
+    ],
+)
+def test_installed_package_wrapper_repair(case, monkeypatch, observed):
+    if case.startswith("metadata-"):
+        h = _package_wrapper_metadata(monkeypatch)
+        before = stage._native_helpers(h.cls, h.namespace, h.node, h.balance_ast, h.path)
+        wrapper = h.cls._load_ion_profile if "ion" in case else h.namespace["_balance_charge"]
+        if case == "metadata-ion-unwrapped":
+            h.cls._load_ion_profile = h.ion
+        elif case == "metadata-balance-unwrapped":
+            h.namespace["_balance_charge"] = h.balance
+        elif case in ("metadata-ion-code", "metadata-balance-code"):
+            wrapper.__code__ = (lambda *args, **kwargs: None).__code__
+        elif case in ("metadata-ion-delegate", "metadata-balance-delegate"):
+            original = wrapper.__wrapped__
+            wrapper.__kwdefaults__["__beartype_func"] = FunctionType(
+                original.__code__, original.__globals__
+            )
+        elif case == "metadata-balance-default-copy":
+            value = next(iter(wrapper.__kwdefaults__))
+            wrapper.__kwdefaults__[value] = tuple(list(wrapper.__kwdefaults__[value]))
+        elif case == "metadata-balance-annotations":
+            h.balance.__annotations__["zs"] = tuple
+        elif case == "metadata-balance-meta":
+            wrapper.__kwdefaults__["__beartype_check_meta"] = (
+                h.cls._load_ion_profile.__kwdefaults__["__beartype_check_meta"]
+            )
+        elif case == "metadata-balance-config":
+            wrapper.__kwdefaults__["__beartype_conf"] = object()
+        elif case == "metadata-balance-class-stack":
+            meta = wrapper.__kwdefaults__["__beartype_check_meta"]
+            object.__setattr__(meta, "cls_stack", (h.cls,))
+        elif case == "metadata-original-globals":
+            foreign = FunctionType(h.balance.__code__, dict(h.namespace))
+            foreign.__annotations__ = h.balance.__annotations__
+            wrapper.__wrapped__ = foreign
+        elif case == "metadata-original-body":
+            h.balance.__code__ = (lambda a, b: None).__code__
+        elif case == "metadata-sequence-member":
+            h.namespace["SequenceTypes"] = (Sequence, list)
+        elif case == "metadata-balance-argument-cache":
+            wrapper.__beartype_args_lens = (2, False, False, False)
+        if case == "metadata-valid":
+            after = stage._native_helpers(h.cls, h.namespace, h.node, h.balance_ast, h.path)
+            assert before.ion is after.ion is h.ion and before.balance is after.balance is h.balance
+            assert len(before.atoms) == len(after.atoms)
+            assert all(a is b for a, b in zip(before.atoms, after.atoms, strict=True))
+        else:
+            with pytest.raises(ValueError):
+                stage._native_helpers(h.cls, h.namespace, h.node, h.balance_ast, h.path)
+        assert not observed.bodies  # Native metadata and toy bodies were never called.
+        return
+
+    h = _wrapped_observation(observed, monkeypatch)
+    context = h.context
+    prior, trace = sys.getprofile(), sys.gettrace()
+    callbacks, nested = [], []
+    capture = SyntheticCaptureFailure("wrapper return observation failed")
+    if case in (
+        "observe-body-failure",
+        "observe-falsey-primary",
+        "observe-trace-exception-rejection",
+    ):
+        h.control["fail"] = True
+    if case == "observe-direct-ion":
+        h.context.api.cls._load_ion_profile = h.context.api.ion
+    elif case == "observe-direct-balance":
+        cells = dict(zip(h.ion.__code__.co_freevars, h.ion.__closure__, strict=True))
+        cells["balance"].cell_contents = context.api.balance
+
+    def inherited_profile(frame, event, value):
+        if prior is not None:
+            prior(frame, event, value)
+        if event == "call" and frame.f_code is context.api.ion_wrapper.__code__ and not callbacks:
+            callbacks.append("ion")
+            if case == "observe-profile-entry-rejection":
+                raise capture
+            elif case in ("observe-ion-delegate", "observe-balance-delegate"):
+                role = "ion" if case == "observe-ion-delegate" else "balance"
+                original = getattr(context.api, role)
+                getattr(context.api, role + "_wrapper").__kwdefaults__["__beartype_func"] = (
+                    FunctionType(
+                        original.__code__, original.__globals__, closure=original.__closure__
+                    )
+                )
+            elif case == "observe-wrapper-code":
+                context.api.balance_wrapper.__code__ = (lambda *args, **kwargs: None).__code__
+            elif case == "observe-caught-reentry":
+                try:
+                    context.api.ion(context.p)
+                except BaseException as error:
+                    nested.append(error)
+        if (
+            event == "return"
+            and frame.f_code is context.api.balance_wrapper.__code__
+            and case in ("observe-wrapper-return-capture", "observe-falsey-primary")
+        ):
+            raise capture
+
+    def inherited_trace(frame, event, value):
+        if trace is not None:
+            trace(frame, event, value)
+        if (
+            case == "observe-trace-entry-rejection"
+            and event == "call"
+            and frame.f_code is context.api.ion_wrapper.__code__
+        ) or (
+            case == "observe-trace-exception-rejection"
+            and event == "exception"
+            and frame.f_code is context.api.balance.__code__
+            and value[1] is h.primary
+        ):
+            raise capture
+        return inherited_trace
+
+    sys.setprofile(inherited_profile)
+    selected_trace = inherited_trace if case.startswith("observe-trace-") else trace
+    sys.settrace(selected_trace)
+    try:
+        if case == "observe-valid":
+            with stage._observe(context):
+                stage._invoke(context)
+            assert context.entries == context.delegates
+            assert context.entries["ion_wrapper"] == context.entries["ion"] == 1
+            assert context.entries["balance_wrapper"] == context.entries["balance"] == 2
+            assert all(
+                a is b
+                for a, b in zip(
+                    context.returns["balance"], context.returns["balance_wrapper"], strict=True
+                )
+            )
+            assert h.bodies == ["tail", "ion", "alias", "balance", "balance"]
+        else:
+            with pytest.raises(BaseException) as caught:
+                with stage._observe(context):
+                    stage._invoke(context)
+            assert not hasattr(context.p, "after_second")
+            if case in (
+                "observe-body-failure",
+                "observe-falsey-primary",
+                "observe-trace-exception-rejection",
+            ):
+                assert caught.value is h.primary and caught.value.__cause__ is h.cause
+                assert context.source_error is h.primary
+                if case != "observe-body-failure":
+                    assert any(error is capture for _, error in context.capture_errors)
+            if case in ("observe-trace-entry-rejection", "observe-profile-entry-rejection"):
+                assert caught.value is capture and context.source_error is None
+                assert context.delegates["ion_wrapper"] == context.delegates["ion"] == 0
+                assert any(error is capture for _, error in context.capture_errors)
+            if case == "observe-wrapper-return-capture":
+                assert context.returns["balance"][0] is context.returns["balance_wrapper"][0]
+                assert any(error is capture for _, error in context.capture_errors)
+            if case == "observe-caught-reentry":
+                assert nested and "ion" not in h.bodies
+                assert nested[0] is context.observer_state.rejections[0]
+        assert sys.getprofile() is inherited_profile and sys.gettrace() is selected_trace
+    finally:
+        sys.setprofile(prior)
+        sys.settrace(trace)
 
 
 def test_candidate_grant_api_keeps_actual_hook_refusing_before_retirement(monkeypatch):
@@ -607,6 +882,7 @@ def test_remaining_reviewed_context_group_has_native_guard_without_invented_matp
 def _compiled_shape():
     module = ModuleType("conditional-original-parameter-namespace")
     vars(module)["__builtins__"] = vars(builtins)
+    module.np = object()  # Lookup metadata only; original helper execution stays blocked.
 
     def forbidden(self):
         raise AssertionError("Source compilation is not permission to run")

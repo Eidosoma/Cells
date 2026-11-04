@@ -20,6 +20,63 @@ from validation.betse import betse_native_seed_init_profiles_software as softwar
 _ORIGINAL_SHUFFLE = np.random.shuffle
 
 
+def _original_profile_function(monkeypatch, filename, cls, name):
+    path = stage.NATIVE / filename
+    module_code = compile(path.read_bytes(), str(path), "exec", dont_inherit=True)
+    parent = module_code
+    if cls is not None:
+        parent = next(c for c in module_code.co_consts if type(c) is CodeType and c.co_name == cls)
+    code = next(c for c in parent.co_consts if type(c) is CodeType and c.co_name == name)
+    module = ModuleType(filename[:-3].replace("/", "."))
+    module.__dict__["__builtins__"] = vars(builtins)
+    module.__file__ = str(path)
+    function = FunctionType(code, vars(module), name)
+    monkeypatch.setitem(sys.modules, module.__name__, module)
+    return function
+
+
+@pytest.mark.parametrize(
+    "filename,cls,name",
+    [("betse/science/tissue/tishandler.py", "TissueHandler", "init_profiles"), *stage.HELPERS],
+)
+def test_contextual_metadata_original_profile_helpers_are_authenticated_without_execution(
+    monkeypatch, filename, cls, name
+):
+    function = _original_profile_function(monkeypatch, filename, cls, name)
+    core, chain = stage._native(function, filename, cls, name)
+    assert core is function and chain == (function,)
+    assert core.__code__.co_qualname == ((cls + ".") if cls else "") + name
+
+
+@pytest.mark.parametrize(
+    "change", ["isolated", "constants", "flags", "filename", "qualname", "line", "globals"]
+)
+def test_contextual_metadata_profile_helper_drift_refuses_before_any_call(monkeypatch, change):
+    filename, cls, name = stage.IMAGE_FILE, "TissuePickerImageMask", "__init__"
+    function = _original_profile_function(monkeypatch, filename, cls, name)
+    code, globals_ = function.__code__, function.__globals__
+    if change == "isolated":
+        code = stage._compile(
+            stage._node(stage._trees()[filename], cls, name), str(stage.NATIVE / filename)
+        )
+    elif change == "constants":
+        code = code.replace(co_consts=(*code.co_consts, "foreign"))
+    elif change == "flags":
+        code = code.replace(co_flags=code.co_flags ^ 64)
+    elif change == "filename":
+        code = code.replace(co_filename="<foreign>")
+    elif change == "qualname":
+        code = code.replace(co_qualname="Other.__init__")
+    elif change == "line":
+        code = code.replace(co_firstlineno=code.co_firstlineno + 1)
+    elif change == "globals":
+        globals_ = dict(globals_)
+    replacement = FunctionType(code, globals_, name)
+    replacement.__qualname__ = cls + "." + name
+    with pytest.raises(ValueError, match="Original helper code/global/builtins"):
+        stage._native(replacement, filename, cls, name)
+
+
 @pytest.fixture(autouse=True)
 def native_blocked(request, tmp_path, monkeypatch):
     if os.environ.get(software.SOFTWARE_RELEASE) != "1":
@@ -547,8 +604,10 @@ def test_restore_helper_entry_rejection_keeps_primary_and_independently_recovers
             with account(value):
                 helper()
         assert len(rejections) == 1
-        assert any(row[0] == "restore_entry_or_return" and row[1] is secondary
-                   for row in value.cleanup_errors)
+        assert any(
+            row[0] == "restore_entry_or_return" and row[1] is secondary
+            for row in value.cleanup_errors
+        )
         assert value.observation_error is secondary
         assert any(index == 0 and hook is value.required_hooks[0] for index, hook in attempts)
         assert any(index == 1 and hook is value.required_hooks[1] for index, hook in attempts)

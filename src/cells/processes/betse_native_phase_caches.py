@@ -123,18 +123,13 @@ def _statements(nodes):
 
 
 def _method_code(relative, cls):
-    """Compile metadata within a class so zero-argument super keeps its cell.
+    """Compile the original module, preserving import context and class cells.
 
-    The compiled class/module is never executed. Compiling the vector method
-    as a module-level function would lose __class__ and reject genuine code.
+    No module, class, decorator, default or constructor body is executed.
     """
-    node = _method(ast.parse((aliases.NATIVE / relative).read_bytes()), cls, "__init__")
-    node.decorator_list = []
-    shell = ast.ClassDef(
-        name=cls, bases=[], keywords=[], body=[node], decorator_list=[], type_params=[]
-    )
-    module = ast.fix_missing_locations(ast.Module(body=[shell], type_ignores=[]))
-    code = compile(module, str(aliases.NATIVE / relative), "exec", dont_inherit=True)
+    filename = str(aliases.NATIVE / relative)
+    tree = ast.parse(Path(filename).read_bytes())
+    code = compile(tree, filename, "exec", dont_inherit=True)
     body = next(
         value for value in code.co_consts if type(value) is CodeType and value.co_name == cls
     )

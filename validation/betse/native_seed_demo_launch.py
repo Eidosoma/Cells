@@ -19,6 +19,7 @@ import sysconfig
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+from types import FunctionType, ModuleType
 
 from validation import source_snapshot as snapshot
 from validation.betse import betse_normal_ecm_molecule_qualification_resources as resources
@@ -32,8 +33,11 @@ OWNED = (FILE, TEST, SOFTWARE)
 DEMO = "validation/betse/native_seed_demo.py"
 PARAMETER = "validation/betse/betse_native_parameter_world_ready_qualification.py"
 INPUTS = "validation/betse/native_seed_demo_inputs.py"
-PRODUCERS = (*OWNED, DEMO, PARAMETER, INPUTS)
-KIND = "cells.genuine_seed_demo_detached_launch@7"
+NUMPY_ORIGIN = "src/cells/processes/betse_native_numpy_copy_origin.py"
+NUMPY_ORIGIN_KIND = "cells.original_numpy_copy_import_origin@1"
+INPUT_PROFILES = "validation/betse/native_seed_demo_input_profiles.py"
+PRODUCERS = (*OWNED, DEMO, PARAMETER, INPUTS, NUMPY_ORIGIN, INPUT_PROFILES)
+KIND = "cells.genuine_seed_demo_detached_launch@9"
 RELEASE_KIND = "cells.genuine_seed_demo_detached_release@1"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_LAUNCH_RELEASED"
 DEMO_RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
@@ -304,7 +308,10 @@ def source_plan():
         automatic_retry=False,
         automatic_polling=False,
         fresh_process_per_flux_mode=True,
-        endpoint="Exact plan choice: seed, init_setup or init_prelude; no time evolution claim",
+        endpoint=(
+            "Exact plan choice: seed, init_setup, init_prelude, init_dynamics, init_electrical"
+            " or init_first_step; at most one original INIT iteration, no full-loop claim"
+        ),
         complete_original_inputs="Exact pair manifest; selected mode only before consumption",
         postrun_inputs="Original selected file bytes only, never fresh directory epochs",
         filesystem="Authenticated native-home link, worker output/cache, exact parameter mkdirs",
@@ -405,6 +412,42 @@ def _demo():
     return importlib.import_module("validation.betse.native_seed_demo")
 
 
+def _numpy_origin(plan):
+    """Load only the declared stdlib observer, before the first NumPy import."""
+    expected = Path(plan["source"]) / NUMPY_ORIGIN
+    require(
+        pin(expected)["sha256"] == plan["producers"][NUMPY_ORIGIN],
+        "Original NumPy construction observer producer changed",
+    )
+    module = importlib.import_module("cells.processes.betse_native_numpy_copy_origin")
+    require(
+        type(module) is ModuleType and Path(module.__file__).resolve() == expected,
+        "Actual frozen NumPy construction observer required",
+    )
+    for name in ("capture", "record"):
+        function = vars(module).get(name)
+        require(
+            type(function) is FunctionType and function.__globals__ is vars(module),
+            "Original NumPy observer interface required: " + name,
+        )
+    return module
+
+
+def _numpy_origin_complete(value):
+    require(
+        type(value) is dict
+        and value.get("kind") == NUMPY_ORIGIN_KIND
+        and value.get("completed") is True
+        and value.get("hooks_restored") is True
+        and value.get("source_error") is None
+        and value.get("capture_errors") == []
+        and value.get("cleanup_errors") == []
+        and type(value.get("source_files")) is dict
+        and bool(value["source_files"]),
+        "Original NumPy copy construction proof incomplete",
+    )
+
+
 def _interpreter(row):
     # The invocation is the original venv symlink, the executable has a separate pin.
     require(type(row) is dict and type(row.get("entry")) is str, "Runtime entry required")
@@ -432,7 +475,9 @@ def _input_files(bundle, mode):
     value = read(bundle)
     config = path(value["modes"][mode]["config"])
     result = []
-    for name, row in sorted(value["source_inventory"]["files"].items()):
+    from validation.betse import native_seed_demo_input_profiles as profiles
+
+    for name, row in sorted(profiles.selected_inventory(value)["files"].items()):
         snapshot.relative_path(name)
         require(_hash(row["sha256"]), "Exact original input digest required")
         result.append(dict(path=str(config / name), sha256=row["sha256"]))
@@ -445,6 +490,12 @@ def _inputs(plan, parameter_inputs, *, initial):
     value = read(bundle)
     mode = plan["flux_operator"]
     row = value["modes"][mode]
+    require(
+        value.get("configuration_profile", "original")
+        == parameter_inputs["program"].get("input_profile", "original")
+        == read(row["program"]).get("input_profile", "original"),
+        "Selected configuration profile must match actual parameter inputs",
+    )
     require(
         row["program"] == parameter_inputs["program"]["manifest"]
         and row["config"] == parameter_inputs["program"]["root"],
@@ -486,10 +537,23 @@ def _immutable(plan):
     require(plan["flux_operator"] == declaration["flux_operator"], "Flux binding")
     require(
         type(plan["endpoint"]) is str
-        and plan["endpoint"] in ("seed", "init_setup", "init_prelude")
+        and plan["endpoint"]
+        in (
+            "seed",
+            "init_setup",
+            "init_prelude",
+            "init_dynamics",
+            "init_electrical",
+            "init_first_step",
+        )
         and plan["endpoint"] == declaration.get("endpoint", "seed"),
         "Exact demonstration endpoint binding",
     )
+    if plan["endpoint"] == "init_first_step":
+        require(
+            declaration.get("kind") == "cells.genuine_seed_core_profiles_junctions_demo@5",
+            "First-step endpoint requires its explicit demo schema",
+        )
     require(
         inputs["source_snapshot"] == plan["source_snapshot"]
         and inputs["runtime"] == plan["runtime"],
@@ -1071,39 +1135,59 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
     output.mkdir(parents=True, exist_ok=False)
     primary, secondary, returned, before, after = None, [], None, None, None
     filesystem = None
+    numpy_origin, origin_record = None, None
     entered = False
     try:
         plan = _entry(plan_path, plan_sha256, release_path, release_sha256, enabled)
         _worker_environment(plan, output)
         filesystem = _filesystem(plan, output)
         _temporary_directory(output, filesystem)
+        numpy_origin = _numpy_origin(plan)
         before = observe_runtime()
         snapshot.write_json(output / "runtime-before.json", before)
         check_runtime(before, plan)
-        module = _demo()
-        require(
-            Path(module.__file__).resolve() == Path(plan["source"]) / DEMO
-            and pin(module.__file__)["sha256"] == plan["producers"][DEMO],
-            "Actual frozen public entry",
-        )
-        entered = True
-        returned = module.run_demo(
-            plan["demo_plan"]["path"],
-            output / "demo",
-            plan_sha256=plan["demo_plan"]["sha256"],
-            enabled=True,
-        )
-        filesystem.check()
-        require(
-            returned.methods_completed is True
-            and returned.evidence_completed is True
-            and returned.primary is None
-            and not returned.secondary,
-            "Incomplete demonstration return",
-        )
+        # Observe the original import reached by the existing source chain;
+        # do not preload NumPy or invoke copy with synthetic probe arguments.
+        with numpy_origin.capture():
+            try:
+                module = _demo()
+                require(
+                    Path(module.__file__).resolve() == Path(plan["source"]) / DEMO
+                    and pin(module.__file__)["sha256"] == plan["producers"][DEMO],
+                    "Actual frozen public entry",
+                )
+                entered = True
+                returned = module.run_demo(
+                    plan["demo_plan"]["path"],
+                    output / "demo",
+                    plan_sha256=plan["demo_plan"]["sha256"],
+                    enabled=True,
+                )
+                filesystem.check()
+                require(
+                    returned.methods_completed is True
+                    and returned.evidence_completed is True
+                    and returned.primary is None
+                    and not returned.secondary,
+                    "Incomplete demonstration return",
+                )
+            except BaseException as error:
+                primary = error
+                raise
     except BaseException as error:
-        primary = error
+        if primary is None:
+            primary = error
+        elif error is not primary:
+            secondary.append(("numpy-copy-origin-exit", error))
     finally:
+        if numpy_origin is not None:
+            try:
+                origin_record = numpy_origin.record()
+                snapshot.write_json(output / "numpy-copy-origin.json", origin_record)
+                if primary is None:
+                    _numpy_origin_complete(origin_record)
+            except BaseException as error:
+                secondary.append(("numpy-copy-origin", error))
         if filesystem is not None:
             for stage, action in (
                 ("filesystem-check", filesystem.check),
@@ -1149,6 +1233,10 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
         demo_directory=str(output / "demo"),
         live_owner_serialized=False,
         filesystem_audit_installed=filesystem is not None,
+        numpy_copy_origin_available=origin_record is not None,
+        numpy_copy_origin_completed=(
+            type(origin_record) is dict and origin_record.get("completed") is True
+        ),
     )
     if primary is None and secondary:
         primary = secondary[0][1]

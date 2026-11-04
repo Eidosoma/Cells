@@ -15,7 +15,12 @@ FILE = "validation/betse/native_seed_demo_software.py"
 MODULE = "validation.betse.native_seed_demo_software"
 SOFTWARE_RELEASE = "BETSE_NATIVE_SEED_DEMO_SOFTWARE_RELEASED"
 OWNED = (SOURCE, TEST, FILE)
-FORBIDDEN_MODULES = base.FORBIDDEN_MODULES
+FORBIDDEN_MODULES = base.FORBIDDEN_MODULES | frozenset(
+    (
+        "cells.processes.betse_native_init_first_step_source",
+        "cells.processes.betse_native_init_molecule_network_source",
+    )
+)
 NATIVE_ROOT, Reports = base.NATIVE_ROOT, base.Reports
 snapshot, inherited, reuse = base.snapshot, base.inherited, base.reuse
 BASE, guard, runtime = base.BASE, base.guard, base.runtime
@@ -23,9 +28,63 @@ _RAW_FAILURES = ()
 
 
 def is_forbidden_frame(frame):
-    if base.is_forbidden_frame(frame):
+    if frame.f_globals.get("__name__") in FORBIDDEN_MODULES or base.is_forbidden_frame(frame):
         return True
     module, name = frame.f_globals.get("__name__", ""), frame.f_code.co_name
+    if module == "cells.processes.betse_native_init_molecule_network":
+        return True
+    if module == "cells.processes.betse_native_init_first_step" and name in (
+        "from_electrical",
+        "prepare",
+        "_run",
+        "_authority",
+        "_namespace",
+        "_context",
+        "_dispatch",
+        "_operation",
+        "_account",
+    ):
+        return True
+    if module in (
+        "cells.processes.betse_native_init_storage",
+        "cells.processes.betse_native_init_storage_source",
+        "cells.processes.betse_native_init_electrical",
+        "cells.processes.betse_native_init_electrical_source",
+    ) and name in (
+        "from_dynamics",
+        "from_storage",
+        "prepare",
+        "dispatch",
+        "_run",
+        "_authority",
+        "_operation_source",
+        "clear_storage",
+        "update_V",
+        "get_current",
+        "HH_Decomp",
+        "gradient",
+        "diff",
+        "divergence",
+        "smooth_flux",
+    ):
+        return True
+    if module == "cells.processes.betse_native_init_dynamics_completion" and name in (
+        "from_prelude",
+        "from_prelude_native_molecules",
+        "prepare",
+        "_execute",
+        "_finish",
+        "rng_call",
+    ):
+        return True
+    if module == "cells.processes.betse_native_init_tissue_dynamics" and name in (
+        "bind_completion",
+        "dispatch",
+        "finish",
+        "_helper_call",
+        "_make_mask",
+    ):
+        return True
     if module == "cells.processes.betse_native_init_dynamics_prelude" and name in (
         "from_init",
         "prepare",

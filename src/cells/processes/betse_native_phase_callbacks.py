@@ -21,7 +21,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_simulator_construction as simulator
 
 LAW_ID = "betse_observed_application_native_phase_callbacks@1"
-SIMULATOR_SHA256 = "1d554db61804879a1246f03394e30864a43fcf36fd30fd3a54156395a5ebc889"
+SIMULATOR_SHA256 = "ee535e5cd577da3a788154291a41738be456867f4f3891f61f1345c6d7c90f4d"
 CALLBACKS = "betse/science/phase/phasecallbacks.py"
 BASE = "betse/util/type/call/callbacks.py"
 APP = "betse/util/app/meta/appmetaabc.py"

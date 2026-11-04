@@ -21,7 +21,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_network_load as previous
 
 LAW_ID = "betse_native_parameter_grn_variables@1"
-PREVIOUS_SHA256 = "bcb1de34fa4eb2fb3677b16d8c8d5b946bf54b5934b94f5806ba7465550f2f46"
+PREVIOUS_SHA256 = "8082bc8044a3fe0121bdf2c3625ef874a3f30f6c044a35268c8b21e4e09593e1"
 RELEASE = "CELLS_NATIVE_PARAMETER_GRN_VARIABLES_RELEASED"
 START, STOP = 62, 109
 _FLOAT = float
@@ -250,7 +250,7 @@ def _native(context):
             raise ValueError("Foreign native GRN method globals/source")
         tree = ast.parse(filename.read_bytes())
         node = prefix.parameters.inherited._class(tree, cls.__name__)
-        expected = prefix.parameters._method_code(node, name, str(filename))
+        expected = prefix.parameters._method_code(node, name, str(filename), native_context=True)
         if prefix.parameters.inherited._code(raw.__code__) != prefix.parameters.inherited._code(
             expected
         ):

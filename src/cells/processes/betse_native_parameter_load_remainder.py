@@ -18,11 +18,13 @@ import enum
 import hashlib
 import os
 import sys
+import typing
+from collections.abc import Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from pathlib import Path
 from threading import Lock, get_ident
-from types import FunctionType, ModuleType, SimpleNamespace
+from types import CodeType, FunctionType, ModuleType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_parameter_initializer_constants as previous
@@ -32,10 +34,10 @@ RELEASE = "CELLS_NATIVE_PARAMETER_LOAD_REMAINDER_RELEASED"
 BASE_PREDECESSOR_SHA256 = "3fc51886956ae7f4fc0880b0fb6b5ec25f7c939c14a3ba31e0b012f717774f69"
 # A separately pinned source candidate permits inspection only, never _hook admission.
 SOURCE_CANDIDATE_PREDECESSOR_SHA256 = (
-    "0e402bf35a591d4e0119ad3c8be8db99eaeccc9f8422face9610068829fb4429"
+    "5c3d9538c50398eeaaf5437d93c60e8ec7b2c8f93ae95535a321d11e5b97274a"
 )
 # Exact fresh source connection; no release or actual parent authority is inferred.
-HANDOFF_PRODUCER_SHA256 = "0e402bf35a591d4e0119ad3c8be8db99eaeccc9f8422face9610068829fb4429"
+HANDOFF_PRODUCER_SHA256 = "5c3d9538c50398eeaaf5437d93c60e8ec7b2c8f93ae95535a321d11e5b97274a"
 HANDOFF_LAW = "betse_native_parameter_original_load_remainder_handoff@1"
 HANDOFF_FACTORY = "remainder_handoff"
 HANDOFF_CHECK = "validate_remainder_history"
@@ -205,6 +207,8 @@ def source_plan():
         ),
         local_transport=(LOCAL_KEY, "actual retained iu from completed constants return"),
         native_bodies_copied_or_rewritten=False,
+        native_dispatch=("tail", "ion_wrapper", "ion", "balance_wrapper", "balance"),
+        wrappers="Original installed beartype return-None and two-sequence/tuple wrappers",
         public_module_globals_patched=False,
         full_source_path_implemented=True,
         runtime_hook_available=HANDOFF_PRODUCER_SHA256 is not None,
@@ -268,12 +272,169 @@ def _canonical(function, expected, namespace):
         or function.__defaults__ is not None
         or function.__kwdefaults__ is not None
         or function.__closure__ is not None
+        or function.__code__.co_filename != expected.co_filename
+        or function.__code__.co_qualname != expected.co_qualname
         or prefix.parameters.inherited._code(function.__code__)
         != prefix.parameters.inherited._code(expected)
     ):
         raise ValueError("Original executable header/body/namespace changed")
     _cached(function)
     return prefix._function_bindings(function)
+
+
+def _balance_wrapper_code(sequence_name):
+    """Compile the pinned library's narrow wrapper shape, without calling it."""
+    checks = ""
+    for index, name in enumerate(("concentrations", "zs")):
+        checks += f"""
+    __beartype_pith_0 = (args[{index}] if __beartype_args_len > {index}
+        else kwargs.get({name!r}, __beartype_get_violation))
+    if __beartype_pith_0 is not __beartype_get_violation:
+        if not isinstance(__beartype_pith_0, {sequence_name}):
+            __beartype_violation = __beartype_get_violation(
+                check_meta=__beartype_check_meta, pith_name={name!r}, pith_value=__beartype_pith_0)
+            raise __beartype_violation
+"""
+    text = f"""def wrapper(*args, {sequence_name}=None,
+    __beartype_get_violation=None, __beartype_conf=None,
+    __beartype_check_meta=None, __beartype_func=None, **kwargs):
+    __beartype_args_len = len(args)
+{checks}
+    __beartype_pith_0 = __beartype_func(*args, **kwargs)
+    if True:
+        if not isinstance(__beartype_pith_0, tuple):
+            __beartype_violation = __beartype_get_violation(
+                check_meta=__beartype_check_meta, pith_name='return', pith_value=__beartype_pith_0)
+            raise __beartype_violation
+    return __beartype_pith_0
+"""
+    module = compile(text, "<balance-wrapper-metadata>", "exec", dont_inherit=True)
+    return next(code for code in module.co_consts if type(code) is CodeType)
+
+
+def _balance_wrapper_bindings(wrapper, original, ion_wrapper, namespace):
+    """Bind the installed module-level wrapper to the authenticated package hook.
+
+    The ion wrapper has already authenticated the pinned library's violation
+    helpers and configuration. The module helper must use those exact objects,
+    with its own original function/annotations and no class stack.
+    """
+    chain = prefix.parameters.inherited._chain(wrapper)
+    if len(chain) != 2 or chain[1] is not original:
+        raise ValueError("Actual installed balance wrapper/delegate required")
+    defaults, source_defaults = wrapper.__kwdefaults__, ion_wrapper.__kwdefaults__
+    types_module, array_module = sys.modules.get("betse.util.type.types"), namespace.get("np")
+    if type(types_module) is not ModuleType or type(array_module) is not ModuleType:
+        raise ValueError("Actual native sequence/array providers required")
+    sequences = namespace.get("SequenceTypes")
+    if (
+        type(sequences) is not tuple
+        or len(sequences) != 2
+        or vars(types_module).get("SequenceTypes") is not sequences
+        or sequences[0] is not Sequence
+        or sequences[1] is not vars(array_module).get("ndarray")
+    ):
+        raise ValueError("Actual native SequenceTypes members required")
+    if type(defaults) is not dict or len(defaults) != 5:
+        raise ValueError("Original balance wrapper keyword roster required")
+    sequence_name = next(iter(defaults))
+    union = defaults[sequence_name]
+    annotations = original.__annotations__
+    hint = annotations.get("concentrations")
+    arguments = vars(original).get("__beartype_args_lens")
+    meta, conf = defaults.get("__beartype_check_meta"), defaults.get("__beartype_conf")
+    if (
+        type(union) is not tuple
+        or len(union) != 2
+        # The pinned union factory may canonicalize class order using its
+        # process-local cache. Retain that actual tuple; admit only these exact
+        # two members, never replace/reorder the installed union.
+        or not (
+            union[0] is sequences[0]
+            and union[1] is sequences[1]
+            or union[0] is sequences[1]
+            and union[1] is sequences[0]
+        )
+        or sequence_name != "__beartype_object_" + str(id(union))
+        or tuple(defaults)[1:] != tuple(source_defaults)[1:]
+        or defaults["__beartype_func"] is not original
+        or defaults["__beartype_get_violation"] is not source_defaults["__beartype_get_violation"]
+        or conf is not source_defaults["__beartype_conf"]
+        or type(meta) is not type(source_defaults["__beartype_check_meta"])
+        or tuple(annotations) != ("concentrations", "zs", "return")
+        or annotations["zs"] is not hint
+        or annotations["return"] is not tuple
+        or typing.get_origin(hint) is not typing.Union
+        or typing.get_args(hint) != sequences
+        or wrapper.__annotations__ is not annotations
+        or vars(wrapper).get("__wrapped__") is not original
+        or vars(wrapper).get("__beartype_wrapper") is not True
+        or set(vars(wrapper)) != {"__wrapped__", "__beartype_wrapper", "__beartype_args_lens"}
+        or type(arguments) is not tuple
+        or len(arguments) != 4
+        or tuple(type(value) for value in arguments) != (int, int, bool, bool)
+        or arguments != (2, 0, False, False)
+        or vars(wrapper)["__beartype_args_lens"] is not arguments
+        or wrapper.__defaults__ is not None
+        or wrapper.__closure__ is not None
+        or tuple(wrapper.__globals__) != ("__builtins__",)
+        or wrapper.__builtins__ is not vars(builtins)
+        or object.__getattribute__(meta, "func") is not original
+        or object.__getattribute__(meta, "conf") is not conf
+        or object.__getattribute__(meta, "func_annotations") is not annotations
+        or object.__getattribute__(meta, "cls_stack") is not None
+        or object.__getattribute__(conf, "_is_violation_param_warn") is not False
+        or prefix.parameters.inherited._code(wrapper.__code__)
+        != prefix.parameters.inherited._code(_balance_wrapper_code(sequence_name))
+    ):
+        raise ValueError("Original balance wrapper code/default/metadata association changed")
+    _cached(wrapper)
+    return (
+        *prefix.parameters.inherited.tissue._factory_atoms(wrapper),
+        types_module,
+        sequences,
+        *sequences,
+        union,
+        *union,
+        annotations,
+        *annotations.keys(),
+        *annotations.values(),
+        meta,
+        conf,
+        arguments,
+        *arguments,
+    )
+
+
+def _native_helpers(cls, namespace, cls_ast, balance_ast, path):
+    ion_wrapper, balance_wrapper = (
+        vars(cls).get("_load_ion_profile"),
+        namespace.get("_balance_charge"),
+    )
+    ion_chain = prefix.parameters.inherited._chain(ion_wrapper)
+    balance_chain = prefix.parameters.inherited._chain(balance_wrapper)
+    if len(ion_chain) != 2 or len(balance_chain) != 2:
+        raise ValueError("Actual package-installed ion and balance wrappers required")
+    ion, balance = ion_chain[1], balance_chain[1]
+    ion_atoms = prefix.parameters._method_wrapper_bindings(ion_wrapper, cls)
+    ion_binding = _canonical(
+        ion,
+        prefix.parameters._method_code(
+            cls_ast, "_load_ion_profile", str(path), native_context=True
+        ),
+        namespace,
+    )
+    balance_binding = _canonical(
+        balance, previous.previous.boundary._context_code(balance_ast, str(path)), namespace
+    )
+    balance_atoms = _balance_wrapper_bindings(balance_wrapper, balance, ion_wrapper, namespace)
+    return SimpleNamespace(
+        ion=ion,
+        balance=balance,
+        ion_wrapper=ion_wrapper,
+        balance_wrapper=balance_wrapper,
+        atoms=(*ion_atoms, *balance_atoms, *ion_binding[1], *balance_binding[1]),
+    )
 
 
 def _descriptor(cls, name):
@@ -301,16 +462,8 @@ def _native(context):
         or "_load_ion_profile" in vars(context.p)
     ):
         raise ValueError("Original actual Parameters class/module/receiver required")
-    ion = vars(cls).get("_load_ion_profile")
-    balance = namespace.get("_balance_charge")
-    ion_binding = _canonical(
-        ion, prefix.parameters._method_code(cls_ast, "_load_ion_profile", str(path)), namespace
-    )
-    balance_binding = _canonical(
-        balance,
-        previous.previous.boundary._code(balance_ast, str(path), balance_ast.name),
-        namespace,
-    )
+    helpers = _native_helpers(cls, namespace, cls_ast, balance_ast, path)
+    ion, balance = helpers.ion, helpers.balance
     # These are reached by the original helper; no constructor/evaluator call.
     for function, names in ((ion, ("float",)), (balance, ("zip", "abs"))):
         for name in names:
@@ -364,11 +517,13 @@ def _native(context):
     references.extend(prefix.parameters.inherited.tissue._surface(type(base)))
     for name, descriptor, function in dm:
         references.extend((name, descriptor, function, *prefix._function_bindings(function)[1]))
-    references.extend((*ion_binding[1], *balance_binding[1], *prefix._function_bindings(getter)[1]))
+    references.extend((*helpers.atoms, *prefix._function_bindings(getter)[1]))
     references.extend(value for _, value in members)
     return SimpleNamespace(
         ion=ion,
         balance=balance,
+        ion_wrapper=helpers.ion_wrapper,
+        balance_wrapper=helpers.balance_wrapper,
         cls=cls,
         namespace=namespace,
         base=base,
@@ -524,6 +679,54 @@ def _call_sites(context):
     )
 
 
+def _wrapper_delegate_span(function):
+    instructions = tuple(dis.get_instructions(function))
+    calls = [i for i, value in enumerate(instructions) if value.opname == "CALL_FUNCTION_EX"]
+    if len(calls) != 1 or not any(
+        value.opname == "LOAD_FAST" and value.argval == "__beartype_func"
+        for value in instructions[: calls[0]]
+    ):
+        raise ValueError("One original wrapper delegate call required")
+    index = calls[0]
+    return ((instructions[index].offset, instructions[index + 1].offset),)
+
+
+def _wrapper_state(function):
+    """Cheap identity checks at source boundaries, including hidden delegates."""
+    atoms = list(prefix.parameters.inherited.tissue._factory_atoms(function))
+    atoms.extend((function.__globals__, function.__builtins__, function.__annotations__))
+    atoms.extend(function.__annotations__.keys())
+    atoms.extend(function.__annotations__.values())
+    for candidate in (function, function.__wrapped__):
+        arguments = vars(candidate).get("__beartype_args_lens")
+        atoms.append(arguments)
+        if type(arguments) is tuple:
+            atoms.extend(arguments)
+    for name in ("len", "isinstance", "tuple"):
+        atoms.extend((function.__globals__.get(name), function.__builtins__.get(name)))
+    meta = function.__kwdefaults__["__beartype_check_meta"]
+    for name in ("func", "func_annotations", "conf", "cls_stack"):
+        atoms.append(object.__getattribute__(meta, name))
+    return tuple(atoms)
+
+
+def _check_wrappers(context, state):
+    for role, wrapper, retained in state.wrapper_states:
+        if getattr(context.api, role + "_wrapper") is not wrapper:
+            raise ValueError("Retained original wrapper association changed")
+        if role == "ion":
+            slot = vars(context.api.cls).get("_load_ion_profile")
+        else:
+            slot = context.api.namespace.get("_balance_charge")
+        current = _wrapper_state(wrapper)
+        if (
+            slot is not wrapper
+            or len(current) != len(retained)
+            or any(a is not b for a, b in zip(current, retained, strict=True))
+        ):
+            raise ValueError("Installed original wrapper/delegate state changed")
+
+
 def _fault(context, state, stage, error):
     state.errors.append((stage, error))
     state.pending = True
@@ -543,6 +746,11 @@ def _hook_audit(event, args):
     for state in tuple(_HOOK_GUARDS):
         if state.thread == get_ident() and state.inherited_depth:
             state.context.hook_mutation_attempts.append((event, args))
+            if state.rejections:
+                # CPython can clear tracing while propagating a rejected raw
+                # call. Refuse that change too, preserving the first sticky
+                # rejection instead of replacing it with a cleanup exception.
+                raise state.rejections[0]
             _reject_entry(state.context, state, "Inherited observer may not disable source guards")
 
 
@@ -565,10 +773,15 @@ def _frame_role(context, state, frame):
     if parent is not None and parent is context.invoker_frame:
         return "tail"
     if parent is state.live.get("tail") and _inside(parent, state.sites["ion"]) is not None:
-        return "ion"
+        return "ion_wrapper" if "ion_wrapper" in state.codes else "ion"
+    for role in ("ion", "balance"):
+        wrapper = role + "_wrapper"
+        if parent is not None and parent is state.live.get(wrapper):
+            if _inside(parent, state.sites[wrapper]) is not None:
+                return role
     if parent is not None and parent is state.live.get("ion"):
         if _inside(parent, state.sites["balance"]) is not None:
-            return "balance"
+            return "balance_wrapper" if "balance_wrapper" in state.codes else "balance"
         if _inside(parent, state.sites["ion_alias"]) is not None:
             return "ion_alias"
     return None
@@ -597,7 +810,8 @@ def _admit(context, state, frame, role):
         or not context.active
         or context.thread != get_ident()
         or frame.f_code is not state.codes[role]
-        or context.entries[role] > dict(tail=1, ion=1, balance=2, ion_alias=6)[role]
+        or context.entries[role]
+        > dict(tail=1, ion_wrapper=1, ion=1, balance_wrapper=2, balance=2, ion_alias=6)[role]
     ):
         _reject_entry(context, state, "Rejected original source entry is sticky")
     parent, local = frame.f_back, frame.f_locals
@@ -605,12 +819,28 @@ def _admit(context, state, frame, role):
         valid = (
             parent is context.invoker_frame and not state.stack and local.get("self") is context.p
         )
-    elif role == "ion":
+    elif role == "ion" and "ion_wrapper" in state.codes:
+        valid = (
+            parent is state.live.get("ion_wrapper")
+            and state.stack[-1:] == [parent]
+            and _inside(parent, state.sites["ion_wrapper"]) == 0
+            and parent.f_locals.get("__beartype_func") is context.api.ion
+            and local.get("self") is context.p
+        )
+    elif role in ("ion", "ion_wrapper"):
         valid = (
             parent is state.live.get("tail")
             and state.stack[-1:] == [parent]
             and _inside(parent, state.sites["ion"]) == 0
-            and local.get("self") is context.p
+            and (
+                local.get("self") is context.p
+                if role == "ion"
+                else type(local.get("args")) is tuple
+                and len(local["args"]) == 1
+                and local["args"][0] is context.p
+                and local.get("kwargs") == {}
+                and local.get("__beartype_func") is context.api.ion
+            )
         )
     elif role == "ion_alias":
         index = (
@@ -625,6 +855,20 @@ def _admit(context, state, frame, role):
         )
         if valid:
             state.alias_site = index
+    elif role == "balance" and "balance_wrapper" in state.codes:
+        args = parent.f_locals.get("args") if parent is not None else None
+        valid = (
+            parent is state.live.get("balance_wrapper")
+            and state.stack[-1:] == [parent]
+            and _inside(parent, state.sites["balance_wrapper"]) == 0
+            and parent.f_locals.get("__beartype_func") is context.api.balance
+            and type(args) is tuple
+            and len(args) == 2
+            and local.get("concentrations") is args[0]
+            and local.get("zs") is args[1]
+        )
+        if valid:
+            context.balance_inputs.append(args)
     else:
         index = _inside(parent, state.sites["balance"]) if parent is state.live.get("ion") else None
         selected = context.returns["ion_alias"][-1] if context.returns["ion_alias"] else None
@@ -635,10 +879,21 @@ def _admit(context, state, frame, role):
             index is not None
             and profile is not None
             and state.stack[-1:] == [parent]
-            and index == profile * 2 + context.entries["balance"] - 1
+            and index == profile * 2 + context.entries[role] - 1
         )
-        concentrations, zs = local.get("concentrations"), local.get("zs")
-        context.balance_inputs.append((concentrations, zs))
+        if role == "balance_wrapper":
+            args = local.get("args")
+            valid = (
+                valid
+                and type(args) is tuple
+                and len(args) == 2
+                and local.get("kwargs") == {}
+                and local.get("__beartype_func") is context.api.balance
+            )
+            concentrations, zs = args if type(args) is tuple and len(args) == 2 else (None, None)
+        else:
+            concentrations, zs = local.get("concentrations"), local.get("zs")
+            context.balance_inputs.append((concentrations, zs))
         if valid:
             names = state.sites["balance_arguments"][index]
             valid = (
@@ -661,6 +916,11 @@ def _admit(context, state, frame, role):
 def _safe_boundary(context, state):
     if state.pending or context.invalid:
         raise state.stop
+    try:
+        _check_wrappers(context, state)
+    except BaseException as error:
+        _fault(context, state, "wrapper_drift", error)
+        raise
 
 
 def _recover_hooks(
@@ -734,19 +994,25 @@ def _observe(context):
         balance=context.api.balance.__code__,
         ion_alias=context.api.getter.__code__,
     )
-    roles = {
-        context.function.__code__: "tail",
-        context.api.ion.__code__: "ion",
-        context.api.balance.__code__: "balance",
-        context.api.getter.__code__: "ion_alias",
-    }
+    sites = _call_sites(context)
+    wrapper_states = []
+    for role in ("ion", "balance"):
+        wrapper = getattr(context.api, role + "_wrapper", None)
+        if wrapper is not None:
+            codes[role + "_wrapper"] = wrapper.__code__
+            sites[role + "_wrapper"] = _wrapper_delegate_span(wrapper)
+            wrapper_states.append((role, wrapper, _wrapper_state(wrapper)))
+            context.entries[role + "_wrapper"] = 0
+            context.returns[role + "_wrapper"] = []
+    roles = {code: role for role, code in codes.items()}
     native = str(prefix.parameters.inherited.tissue.aliases.NATIVE) + "/"
     state = SimpleNamespace(
         context=context,
         thread=get_ident(),
         roles=roles,
         codes=codes,
-        sites=_call_sites(context),
+        sites=sites,
+        wrapper_states=tuple(wrapper_states),
         frames={},
         live={},
         stack=[],
@@ -758,6 +1024,8 @@ def _observe(context):
         stop=_ObservationStop("Original load observation refused continuation"),
         primary=None,
         primary_traceback=None,
+        observer_entry_error=None,
+        observer_entry_traceback=None,
         prior_traces={},
         delegated=set(),
         active_recoveries=[],
@@ -793,6 +1061,14 @@ def _observe(context):
             return _CALL_TRACING(function, (frame, event, arg))
         except BaseException as error:
             callback_primary = error
+            if (
+                event == "call"
+                and state.observer_entry_error is None
+                and error is not state.stop
+                and not any(error is item for item in state.rejections)
+            ):
+                state.observer_entry_error = error
+                state.observer_entry_traceback = error.__traceback__
             _fault(context, state, "inherited_" + event, error)
             if event != "return":
                 raise  # Immediate call-entry guard refusals stay immediate.
@@ -954,10 +1230,20 @@ def _observe(context):
         _safe_boundary(context, state)
     except BaseException as error:
         primary = error
-        if error is state.stop and state.primary is not None:
+        observation_error = any(error is item for _, item in state.errors)
+        if state.primary is not None and (error is state.stop or observation_error):
             context.source_error = state.primary
+            primary = state.primary
             # Rethrow the exact original source exception and its existing cause.
             raise BaseException.with_traceback(state.primary, state.primary_traceback)  # noqa: B904
+        if error is state.stop and state.observer_entry_error is not None:
+            # A guarded native finally can encounter the sticky stop while
+            # unwinding the immediate entry rejection. Retain that original
+            # observer exception without labelling it as a source failure.
+            primary = state.observer_entry_error
+            raise BaseException.with_traceback(primary, state.observer_entry_traceback)  # noqa: B904
+        if error is not state.stop and not observation_error:
+            context.source_error = error
         raise
     finally:
         state.hooks_ready = False
@@ -1065,6 +1351,16 @@ def _accounting(context):
 
 
 def _outputs(context):
+    for role, count in (("ion", 1), ("balance", 2)):
+        if getattr(context.api, role + "_wrapper", None) is not None:
+            returned, wrapped = context.returns[role], context.returns[role + "_wrapper"]
+            if (
+                context.entries[role + "_wrapper"] != count
+                or len(returned) != count
+                or len(wrapped) != count
+                or any(a is not b for a, b in zip(returned, wrapped, strict=True))
+            ):
+                raise ValueError("Actual original wrapper/body return identity required")
     aliases = context.returns["ion_alias"]
     selected = next(
         (
@@ -1216,12 +1512,7 @@ def complete_load(owner, *, law_id, enabled=False):
                 raise ValueError("Actual typed predecessor mutation grant required")
             grant.check()
             with _observe(context):
-                try:
-                    _invoke(context)
-                except BaseException as error:
-                    if error is not context.observer_state.stop:
-                        context.source_error = error
-                    raise
+                _invoke(context)
             context.source_completed = True
             if context.capture_errors or context.invalid:
                 raise ValueError("Original reached-output capture/exclusion incomplete")
@@ -1427,6 +1718,9 @@ def _bindings():
         _ancestry,
         _cached,
         _canonical,
+        _balance_wrapper_code,
+        _balance_wrapper_bindings,
+        _native_helpers,
         _descriptor,
         _native,
         _compile,
@@ -1438,6 +1732,9 @@ def _bindings():
         _returned,
         _spans,
         _call_sites,
+        _wrapper_delegate_span,
+        _wrapper_state,
+        _check_wrappers,
         _fault,
         _reject_entry,
         _hook_audit,

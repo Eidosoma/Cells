@@ -755,7 +755,7 @@ def test_native_loader_executable_prefix_metadata_without_execution(mutation, tm
     # This metadata-only class is never issued as Parameters/INIT authority.
     path = stage.parameters.inherited.tissue.aliases.NATIVE / stage.parameters.PARAMETERS
     node = stage.parameters.inherited._class(ast.parse(path.read_bytes()), "Parameters")
-    code = stage.parameters._method_code(node, "load", str(path))
+    code = stage.parameters._method_code(node, "load", str(path), native_context=True)
     cls = type("MetadataParameters", (), {})
     module = ModuleType("metadata_only_parameters")
     namespace = vars(module)
@@ -808,6 +808,18 @@ def test_native_loader_executable_prefix_metadata_without_execution(mutation, tm
         "loader-metadata",
         dict(mutation=mutation, source_method_invocations=0, synthetic_only=True),
     )
+
+
+def test_wrapper_metadata_yaml_slice_uses_original_globals_and_class_cell(tmp_path, monkeypatch):
+    from tests.unit.test_betse_native_phase_parameters import _wrapped_parameter_metadata
+
+    h = _wrapped_parameter_metadata("load", monkeypatch)
+    value = stage._prefix(SimpleNamespace(parent=SimpleNamespace(source=h.source)))
+    assert value.__globals__ is h.original.__globals__
+    assert value.__closure__ is h.original.__closure__
+    assert value.__builtins__ is h.original.__builtins__
+    assert "compatconf" in value.__code__.co_names and "reload_paths" not in value.__code__.co_names
+    save(tmp_path, "wrapped-yaml-slice", dict(source_body_calls=0, wrapper_calls=0))
 
 
 @pytest.mark.parametrize("same_name", [False, True])

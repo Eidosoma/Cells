@@ -21,6 +21,7 @@ GROUPS = {
     "focused": "software",
     "smoke": "software_complete_fresh or software_ast",
     "factory": "software_factory_ or software_complete_fresh or software_ast",
+    "abc": "software_abc_hook_ or software_factory_",
 }
 BEARTYPE_OVERLAY = Path("/mnt/workspaces/Cells/beartype-overlay-0.22.9-20261031-01")
 BEARTYPE_INIT_SHA256 = "8b89846b9967a46362f9bf4a6d4e0f03681974d1a63243126d5d6768f0274f33"

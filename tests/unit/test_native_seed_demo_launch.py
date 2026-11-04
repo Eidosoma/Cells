@@ -622,11 +622,16 @@ def test_launch_prepare_preserves_held_gates_and_explicit_environment(bundle):
     assert not (b.root / "worker").exists()
 
 
-@pytest.mark.parametrize("endpoint", ["seed", "init_setup", "init_prelude"])
+@pytest.mark.parametrize(
+    "endpoint",
+    ["seed", "init_setup", "init_prelude", "init_dynamics", "init_electrical", "init_first_step"],
+)
 def test_launch_endpoint_is_bound_to_exact_demo_declaration(bundle, endpoint):
     b = bundle
     declaration = launch.read(b.plan["demo_plan"])
     declaration["endpoint"] = endpoint
+    if endpoint == "init_first_step":
+        declaration["kind"] = "cells.genuine_seed_core_profiles_junctions_demo@5"
     changed = write(b.packet / "demo-plan.json", declaration)
     made = launch.prepare(
         b.packet,
@@ -640,6 +645,22 @@ def test_launch_endpoint_is_bound_to_exact_demo_declaration(bundle, endpoint):
     plan["endpoint"] = "init_setup" if endpoint == "seed" else "seed"
     with pytest.raises(ValueError, match="endpoint binding"):
         launch._immutable(plan)
+
+
+@pytest.mark.parametrize("kind", [None, "cells.genuine_seed_core_profiles_junctions_demo@4"])
+def test_launch_first_step_refuses_pre_iteration_demo_schema(bundle, kind):
+    b = bundle
+    declaration = launch.read(b.plan["demo_plan"])
+    declaration.update(endpoint="init_first_step", kind=kind)
+    changed = write(b.packet / "demo-plan.json", declaration)
+    with pytest.raises(ValueError, match="explicit demo schema"):
+        launch.prepare(
+            b.packet,
+            b.root / "first-step-plan",
+            demo_plan_sha256=changed["sha256"],
+            release_environment=b.env,
+            input_bundle=b.plan["input_bundle"],
+        )
 
 
 @pytest.mark.parametrize("endpoint", [None, True, "sim", "INIT"])
@@ -962,6 +983,34 @@ def worker_setup(b, monkeypatch, action):
     monkeypatch.setattr(
         launch, "_demo", lambda: NS(__file__=str(b.source / launch.DEMO), run_demo=action)
     )
+    b.origin_events = []
+    b.origin_record = dict(
+        kind=launch.NUMPY_ORIGIN_KIND,
+        completed=True,
+        hooks_restored=True,
+        source_error=None,
+        capture_errors=[],
+        cleanup_errors=[],
+        source_files={
+            str(b.source / launch.NUMPY_ORIGIN): b.plan["producers"][launch.NUMPY_ORIGIN]
+        },
+        synthetic_protocol_fixture=True,
+    )
+
+    @contextmanager
+    def capture():
+        b.origin_events.append("enter")
+        try:
+            yield
+        finally:
+            b.origin_events.append("exit")
+
+    def record():
+        b.origin_events.append("record")
+        return b.origin_record
+
+    b.origin = NS(capture=capture, record=record)
+    monkeypatch.setattr(launch, "_numpy_origin", lambda _plan: b.origin)
 
 
 def test_launch_worker_calls_only_public_demo_in_fresh_directory(bundle, monkeypatch):
@@ -986,7 +1035,109 @@ def test_launch_worker_calls_only_public_demo_in_fresh_directory(bundle, monkeyp
         )
     ]
     assert (output / "runtime-before.json").is_file() and (output / "runtime-after.json").is_file()
+    assert b.origin_events == ["enter", "exit", "record"]
+    assert value["numpy_copy_origin_available"] is value["numpy_copy_origin_completed"] is True
+    assert json.loads((output / "numpy-copy-origin.json").read_text()) == b.origin_record
     assert b.calls == ["initial-directory-epoch"]
+
+
+@pytest.mark.parametrize(
+    "mutation", ["kind", "completed", "hooks", "source", "capture", "cleanup", "files"]
+)
+def test_launch_numpy_origin_incomplete_evidence_prevents_success(bundle, monkeypatch, mutation):
+    b = bundle
+    worker_setup(
+        b,
+        monkeypatch,
+        lambda *_a, **_k: NS(
+            methods_completed=True, evidence_completed=True, primary=None, secondary=[]
+        ),
+    )
+    key, value = {
+        "kind": ("kind", "foreign"),
+        "completed": ("completed", False),
+        "hooks": ("hooks_restored", False),
+        "source": ("source_error", {"type": "SourceError"}),
+        "capture": ("capture_errors", [{"type": "OSError"}]),
+        "cleanup": ("cleanup_errors", [{"type": "OSError"}]),
+        "files": ("source_files", {}),
+    }[mutation]
+    b.origin_record[key] = value
+    output = b.root / "worker"
+    with pytest.raises(ValueError, match="construction proof incomplete"):
+        launch.worker(b.path, output, **kwargs(b))
+    assert json.loads((output / "numpy-copy-origin.json").read_text()) == b.origin_record
+    assert (output / "runtime-after.json").is_file() and not (output / "result.json").exists()
+
+
+@pytest.mark.parametrize(
+    "boundary,source_failed",
+    [
+        ("enter", False),
+        ("exit", False),
+        ("exit", True),
+        ("record", False),
+        ("record", True),
+        ("writer", False),
+        ("writer", True),
+        ("suppressed", True),
+    ],
+)
+def test_launch_numpy_origin_boundary_failure_keeps_original_primary_and_other_evidence(
+    bundle, monkeypatch, boundary, source_failed
+):
+    b = bundle
+    primary, secondary = primary_error(), OSError("origin observation failed")
+    calls = []
+
+    def public(*_args, **_kwargs):
+        calls.append("public")
+        if source_failed:
+            raise primary
+        return NS(methods_completed=True, evidence_completed=True, primary=None, secondary=[])
+
+    worker_setup(b, monkeypatch, public)
+
+    @contextmanager
+    def capture():
+        if boundary == "enter":
+            raise secondary
+        try:
+            yield
+        except BaseException:
+            if boundary != "suppressed":
+                raise
+        finally:
+            if boundary == "exit":
+                raise secondary
+
+    def record():
+        if boundary == "record":
+            raise secondary
+        return b.origin_record
+
+    b.origin.capture, b.origin.record = capture, record
+    writer = launch.snapshot.write_json
+
+    def write_origin(path, value):
+        if boundary == "writer" and path.name == "numpy-copy-origin.json":
+            raise secondary
+        return writer(path, value)
+
+    monkeypatch.setattr(launch.snapshot, "write_json", write_origin)
+    output = b.root / "worker"
+    expected = primary if source_failed else secondary
+    with pytest.raises(type(expected)) as caught:
+        launch.worker(b.path, output, **kwargs(b))
+    assert caught.value is expected
+    if source_failed:
+        assert caught.value.__cause__ is primary.__cause__
+    assert calls == ([] if boundary == "enter" else ["public"])
+    assert (output / "runtime-after.json").is_file() and (output / "source-after.json").is_file()
+    assert not (output / "result.json").exists()
+    if boundary in ("exit", "record", "writer") and source_failed:
+        failure = launch.read(launch.pin(output / "failure.json"))
+        assert any(row["error"]["type"] == "builtins.OSError" for row in failure["secondary"])
 
 
 def test_launch_worker_primary_cause_survive_all_postsource_reporting_failures(bundle, monkeypatch):
@@ -1199,6 +1350,48 @@ def test_launch_inputs_complete_selected_bundle_is_checked_before_consumption(bu
     assert launch.INPUTS in b.plan["producers"]
     launch.verify(b.path, b.sha)
     assert b.input_checks == ["original", "original"]
+
+
+def test_launch_inputs_headless_roster_uses_selected_bytes_without_source_or_owner(tmp_path):
+    from validation.betse import native_seed_demo_input_profiles as profiles
+
+    source = dict(files={profiles.MAIN: dict(sha256=profiles.ORIGINAL_SHA256, size_bytes=63375)})
+    value = dict(
+        source_inventory=source,
+        input_inventory=profiles.inventory(source, "headless"),
+        configuration_profile="headless",
+        configuration_changes=profiles.changes(),
+        raw_configuration_and_images_unchanged=False,
+        modes={mode: dict(config=str(tmp_path / mode)) for mode in ("original", "disabled")},
+    )
+    bundle = write(tmp_path / "headless-bundle.json", value)
+    for mode in ("original", "disabled"):
+        (tmp_path / mode).mkdir()
+        assert launch._input_files(bundle, mode) == [
+            dict(path=str(tmp_path / mode / profiles.MAIN), sha256=profiles.HEADLESS_SHA256)
+        ]
+    assert value["source_inventory"] == source
+
+
+@pytest.mark.parametrize("where", ["bundle", "parameters", "raw_program"])
+def test_launch_inputs_headless_profile_disagreement_refuses_before_callback(bundle, where):
+    b = bundle
+    plan, inputs = copy.deepcopy(b.plan), copy.deepcopy(b.inputs)
+    if where == "bundle":
+        value = launch.read(b.pair_pin)
+        value["configuration_profile"] = "headless"
+        plan["input_bundle"] = write(b.root / "other-bundle.json", value)
+    elif where == "parameters":
+        inputs["program"]["input_profile"] = "headless"
+    else:
+        value = launch.read(b.pair_pin)
+        row = write(b.root / "other-program.json", dict(input_profile="headless"))
+        value["modes"]["original"]["program"] = row
+        inputs["program"]["manifest"] = row
+        plan["input_bundle"] = write(b.root / "other-bundle.json", value)
+    with pytest.raises(ValueError, match="profile"):
+        launch._inputs(plan, inputs, initial=False)
+    assert b.input_checks == ["original"]
 
 
 @pytest.mark.parametrize("role", ["image", "core"])

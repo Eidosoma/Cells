@@ -475,7 +475,9 @@ def test_original_scalar_slice_compilation_and_reached_bindings_without_calling_
     change, tmp_path
 ):
     path, cls, load, selected = stage._ast()
-    code = stage.previous.paths.prefix.parameters._method_code(cls, "load", str(path))
+    code = stage.previous.paths.prefix.parameters._method_code(
+        cls, "load", str(path), native_context=True
+    )
     metadata_cls = type("MetadataOnlyParameters", (), {})
     module = ModuleType("metadata_only_parameters")
     namespace = vars(module)
@@ -525,3 +527,13 @@ def test_original_scalar_slice_compilation_and_reached_bindings_without_calling_
         "compiled-original-slice",
         dict(change=change, original_numeric_evaluations=0, metadata_only_class=True),
     )
+
+
+def test_wrapper_metadata_numeric_slice_keeps_actual_body_namespace(tmp_path, monkeypatch):
+    from tests.unit.test_betse_native_phase_parameters import _wrapped_parameter_metadata
+
+    h = _wrapped_parameter_metadata("load", monkeypatch)
+    value, original = ORIGINAL_COMPILE(SimpleNamespace(birth=SimpleNamespace(source=h.source)))
+    assert original is h.original and value.__globals__ is h.original.__globals__
+    assert value.__builtins__ is h.original.__builtins__ and value.__closure__ is None
+    save(tmp_path, "wrapped-numeric-slice", dict(source_body_calls=0, wrapper_calls=0))

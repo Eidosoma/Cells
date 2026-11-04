@@ -9265,3 +9265,362 @@ authority/evidence, compatible explicit SIM declaration and release/resources.
 The new packet never manufactures that parent or substitutes a component
 fixture. Historical INIT/science, frozen inputs and all failed evidence remain.
 
+## 2026-11-03 — ordinary INIT dynamics completion, held
+
+Implemented the remaining ordinary `Simulator.init_dynamics` source extent,
+native lines 809–1012, on the actual retained Prelude lineage. Compilation
+retains the whole original module/class context and only adds the original
+cell/parameter alias reads; it does not replay the prefix. The new opaque
+CompletionClaim spans tissue profiles, material bases, mandatory channel RNG,
+event finalization and final source factors. Optional calcium, molecule/GRN,
+pressure/flow/deformation and FAST branches explicitly refuse their missing
+owners. No equation, source order, fixture, tolerance or native default changed.
+
+Prelude now provides one-shot retirement, `_completion_route` and factored
+ancestor checks. Its original INIT edge remains historical and intact. The
+actual same-frame retained-INIT ancestor hook is mandatory before any tail work.
+Before the first witnessed body frame the original full values/MT are required;
+the observed frame cannot subsequently disappear or change. Later full audits
+use the completion's actual streams, cell_i source-call witnesses and complete
+state/alias graph. Foreign classes/receipts/dictionaries cannot supply a parent.
+
+Preserved the original percent-picker `cell_i[:]` view mutation and stdlib
+ignored-copy shuffle behavior, plus native `single_cell` choice. NumPy and
+stdlib RNG operations are recorded separately from source/helper calls and
+software controls. Actual original return/error/frames precede fallible capture;
+native primaries/causes, capture stops and reporting failures remain separate.
+Private observer namespace, function code and entry bindings are checked.
+Image inputs reuse the issued immutable FileInput facility; file bytes do not
+grant parsed configuration, image, INIT or profile authority.
+
+Repaired two prelude source prerequisites in the authorized source/test window:
+logging warning is captured only if the original export exists (the native
+unknown-ion failure stays unchanged), and genuine methods use whole-module
+CodeTypes rather than isolated projections. Frozen 534d/51 evidence is untouched.
+
+Final blocked groups: completion05 has 52 controls; prelude-forward04 has 39
+(32 forwarding/interface plus 7 compile/logging controls). Every case has a
+complete empty native/RNG guard and restored hooks. Earlier candidate groups
+remain separately bound, including the superseded four-back-reference draft;
+they are not additional independent cases or acceptance of later source.
+
+The final acyclic binding uses the existing exact-byte recipe: Prelude binds
+Completion except its two parent refs; Completion binds tissue except its two
+Completion refs, then validates both against the actual producer/review; tissue
+keeps its full Completion producer check. The peer's joined placeholder pin
+declaration must be split into separate literal assignments before adoption.
+All producer/review and scientific gates remain held. No native source body,
+actual RNG, solver, time loop, reference or scientific run was launched, and no
+old/Root/Specialist detached job was queried. The earlier genuine-parent pilot
+remains incomplete; conditional metadata controls do not manufacture that parent.
+
+Outputs: /mnt/workspaces/Cells/native-init-dynamics-completion-development-20261103-01
+Final source/interface and reviewed local terminal records are sealed there.
+No shared status edit, staging or commit; other developers' files are unchanged.
+The first metadata seal retained a KeyError from assuming both test families
+belonged to every dependency closure. The correction verifies each actual
+per-target closure and their complete candidate union; software/source bytes
+are unchanged, and the failed script, primary and terminal remain preserved.
+
+## 2026-11-04 — storage successor and fresh molecule-network work
+
+Implemented the public one-shot DynamicsOwner storage transfer in Completion:
+`_claim_for_init_storage`, `_check_init_storage_authority`, `_storage_route`.
+The actual original closed epoch is checked before the required same-frame
+retained-INIT ancestor claim. Subsequent validation factors only the native
+storage fields, preserves other values/holder/alias/RNG relationships, and never
+reopens the stale before-storage snapshot. Source and review gates remain None.
+Specialist owns the retained-world ancestor/routing and storage consumer paths.
+
+Current candidate receipt:
+/mnt/workspaces/Cells/native-init-dynamics-storage-handoff-development-20261104-01/storage-api-candidate-01.json
+SHA c9d8ca8d9e789222ee85a7974b711ad6e2b16288610eecc331009ef584712723.
+Six guarded outcomes reviewed: four completed, two failed. The first public
+fixture attempt refused an unsupported synthetic enum before issuance; the
+first cheap group retained two passes and failed on the test's obsolete Cache
+finite-property name. Both failures/source images remain. Cheap-controls02
+passed63 controls with the public chain excluded; no original native body or
+actual RNG execution. The latest fixture-only source-binding preflight remains
+unrun and receives no retroactive63 credit.
+
+Reusable `synthetic_init_inputs` and `issued_synthetic_completion` are in the
+Completion test module. Actual public issuers allocate all three live owner
+types; the fixture never allocates/inserts owners. Upstream/provider/source
+bodies, tissue and stream labels are explicit synthetic seams and never prove
+native/biological parent authority. Its independent monitoring preserves the
+known software blacklist while production observers/checks stay unchanged.
+Specifically unknown/user hooks refuse; original code, closure-cell and reached
+global/predicate bindings are rechecked before each monitored invocation.
+
+Specialist owns the ONE combined detached CPU6 Completion-to-storage public
+chain (explicit <=7200s software envelope,1thread1GiB8GiBreserve). No further
+standalone costly chain is launched here; no old job was queried. Actual source,
+operator, RNG/reference/science remain held. The earlier public prefix timeout
+and original91 images are unchanged.
+
+Next owned feature is in four new `betse_native_init_molecule_network` source,
+driver/test/software paths. The source compiler now pins the actual original
+MasterOfMolecules/MasterOfNetworks/Molecule/DynamicValue setup methods and keeps
+the original full-module compilation context. Driver/integration and blocked
+tests are still in progress, not a delivered enabled-network route. Original
+paired `implement network=True` is never silently disabled. Fresh native same-p
+construction/configuration must be implemented; old component setup/reload
+objects grant no original fresh owner authority. Existing Root loader/voltage
+files and Specialist paths remain read-only from this lane.
+
+### 2026-11-04 current batch — electrical ancestor and native molecule preparation
+
+Electrical ancestor contract is sealed separately at
+`/mnt/workspaces/Cells/native-init-electrical-ancestor-development-20261104-01/source-result.json`
+SHA7075ddf0c0d099c4d611719ebc69d579c7bf556f6d750abafec91f95733a1192.
+Completion producer122c30f8/test9262d809 implement the actual three-argument
+`_claim_electrical_ancestor`/`_check_electrical_ancestor` contract. The original
+Completion and Storage records/leases remain historical, the new attempt is
+sticky, and only Root's source-derived27 fields join the storage projection.
+Before native source entry, even those future fields retain their exact values
+and alias graph across ancestor publication. Later checks use current factored
+metadata and values, without reopening stale closed numeric validators. The
+retained four-argument claim is mandatory; no extra retained checker API is
+invented. Twelve focused controls pass; no actual public electrical chain or
+native field calculation was run here. The exact Completion source/test stay
+stable for review/adoption.
+
+The four new `betse_native_init_molecule_network` paths now implement the held
+fresh constructor/source adapter and reusable blocked runner. Full original
+module CodeTypes, typed defaults, factory exports, cached builtin resolutions,
+native method order and same-phase/configuration arguments are checked before
+source work. Actual DynamicValue slots/backing maps and their original nested
+closure/default/owner relationships are retained without calling the callbacks;
+the evidence projection never replaces live mappings or arrays. Genuine
+DynamicValueDict uses the original MutableMapping/ABCMeta base, rather than
+being rejected as a non-plain type. Unissued outer/type-check wrappers refuse
+instead of trusting a spoofable __wrapped__ marker.
+
+Final molecules06 has56 distinct blocked software passes, empty native/RNG
+guards and restored hooks. Earlier37/45/50/54 controls remain bound only to
+their own frozen images. molecules01 remains failed (23pass, one failed body
+plus teardown error): its no-call builtin-shadow probe changed the shared test
+namespace. The corrected test uses a private namespace. All own guarded
+preparation/software outcomes, including that failure, are retained and reviewed;
+there was no native constructor/body/RNG/reference/scientific entry.
+
+Enabled-network execution is NOT ready/adopted. The unchanged current
+Completion Request/observer has no explicit typed native_molecules transport;
+the same-INIT material/alias ancestor claim/check for native bal_charge writes
+is also absent. The new adapter requires both before any constructor admission.
+Instrumented outer factory/type-check execution additionally needs genuine
+issued runtime authority. No parameter flags are toggled, no fixtures become
+native parents, and the ordinary completion/default guards stay unchanged.
+
+Specialist owns the one corrected issued-chain retry and its terminal review;
+no duplicate public chain or job query was made here. Their reported seed_lease
+failure is in the original retained fixture's upstream retirement seam, which
+they own and will repair before phase birth using actual lease capture. No
+Key edit to that fixture/retained source or Root's loader/voltage/runtime files.
+
+### Graph identity successor
+
+Inspection found `graph_roots()` allocated fresh dictionaries/tuples on every
+read. That would falsely trip the existing reference-identity observer proof
+even with unchanged live state. The new driver now keeps persistent actual
+graph holders and append-only constructor/callback/mapping edges, refusing
+replacement or omission of the original captured constructor rows. Native
+equations, SourceEvidence/public session authority and default admission gates
+are unchanged. Only the new driver/test changed; Completion122c/test9262 stay
+fixed. Cheap molecules07-graph passed6 (5new+1affected), with complete empty
+guards and restored hooks. The earlier56 controls remain valid only for their
+frozen bytes; no current61-pass claim is made.
+
+Root's NumPy copy-origin file is Root-owned, and its earlier eager import was
+removed by Root before the graph image was prepared. No dependency repair,
+shared source edit or borrowed NumPy authority was made here. The exact prior
+delivered work-log bytes were preserved as molecule-work-log-delivered.md;
+the old receipt is untouched. The genuine Completion transport/material and
+outer-wrapper prerequisites remain held and explicit. No native/source/model,
+RNG, original factory, reference, qualification or extra public issuer chain ran.
+
+### Typed enabled-network transport
+
+Implemented the necessary next Completion source revision directly in my owned
+source/test. `from_prelude_native_molecules` selects a separate exact law and a
+typed `Request.native_molecules=True`; ordinary from_prelude keeps its original
+law/record shape/default false and enabled-network refusal. Other calcium,
+GRN, pressure/flow/deformation and FAST owners remain unavailable. The original
+literal tail is unchanged: only its MasterOfMolecules namespace slot can select
+the new actual-source participant. No parameter/configuration flag is toggled.
+
+The same actual CompletionClaim carries the molecule session through binding,
+native factory/reader observation, same-Simulator ion lookup, value/alias/slot
+transport, final record and closed validation. Shared logger/NumPy helpers are
+attributed to the molecule participant only within the actual factory/reader
+ancestry. Original return/exception and capture failures remain separate. The
+ordinary SIM_STORES and electrical27 contract stay unchanged; the six literal
+molecule/charge effects are factored only on the explicitly selected mode and
+require genuine retained material authority. Native molecule clear_cache/reset
+is a later missing source epoch, explicitly refused before storage admission.
+
+Fresh results are transport03:33 focused controls and molecules08-transport:65
+controls, in separate immutable images. Their production source pins agree.
+Transport02 preserved25 passes and a failure from the new synthetic shared-
+helper observation test lacking `primary`; adding that test-only field fixed
+the probe. The molecule image's unused dependent Completion test has that one
+test-body pre-fix delta, which is explicit and grants no positive source credit.
+All24 guarded processes are terminal/reviewed:22 completed,2 failed. Earlier
+12/56/6/29 evidence remains historical to its exact frozen source. No actual
+public issued chain, native body/factory/RNG, numerical or reference run occurred.
+
+Current actual enabled-network release is still held on real retained material
+ancestor hooks and genuine outer/type-check wrapper authority. The transport
+itself is now implemented, rather than encoded as an absent permanent gate.
+Root alone owns source/result acceptance and scientific release; no review hash
+or native authority was invented. The standalone electrical claim/check and
+their three projection/route functions have byte-identical operational AST to
+the earlier122c image; the full new producer requires explicit fresh adoption.
+
+Root's requested one numeric GUARD_PINS entry was updated in the owned modulator
+test to35c584c3; new test pinb76f1a90. Independent AST comparison against packet03
+confirms unchanged imports/guard/other definitions, one changed scalar test and
+one added metadata test. No modulator-suite rerun or production change. Receipt
+modulator-numeric-guard-adoption.json records that exact narrow dependency.
+
+For Specialist's first-step source-only preparation, a distinct fourth-epoch
+ancestor contract is required; electrical27 is not widened. Exact mutable
+holders/buffers and any RNG transport must be derived from that original loop
+closure. Enabled molecule/GRN/ER stepping delegates require their actual source
+owners and remain held where absent. No first-step Key API or numerical state
+has been issued merely from this proposed interface.
+
+### First-step ancestor source successor
+
+Implemented the next four-argument `_claim_first_step_ancestor` and
+`_check_first_step_ancestor` in Completion, with a separate irreversible registry
+and original Completion/Storage/Electrical ancestry. The five-argument retained
+claim/check are mandatory genuine-source delegates; no original lease is reset.
+The reservation captures the full current value/reference graph before any
+permission exclusion. Because Specialist's actual source builds its permission
+roster after the parent claim, the checker seals it only while setup/loop/work
+remain unstarted, matching actual holder identities to the original derived
+mutation contract. Late roster publication refuses. Subsequent checks use
+persistent factored graph holders and retain the source's unchanged-RNG policy.
+Electrical27 and ordinary/default source paths remain distinct.
+
+first-step-ancestor01 passes16 metadata projection/refusal controls with empty
+guards and restored hooks; no actual first-step or native/owner chain ran.
+The previously sent33/65 evidence remains frozen at3b9 and is not rebound to
+this later source. Current source awaits Root review/adoption. Specialist still
+must correct the consumer's repeated graph-container allocation and ensure a
+pre-setup check after its source-defined roster/metadata are ready; no Key edit
+to their source was made. Enabled molecule/GRN/ER numerical delegates remain
+unavailable; no supplied dictionaries or original-owner cache reset can fill
+that authority. Source/results and prior failures are preserved separately.
+
+
+
+### Enabled native-network participant/runtime candidate — 2026-11-04
+
+Completion now admits its explicitly selected actual MoleculeSession through
+separate one-shot storage and first-step runtime claims. The ordinary API/law
+and original native literal tail remain unchanged. Runtime arithmetic is not
+copied: the source helper compiles the pinned original MasterOfNetworks and
+Molecule methods in their whole-module context. Runtime permissions derive
+from those source bodies and actual constructor objects. Unsupported pumping,
+gating, changing boundaries/clamps, channel/modulator and mitochondrial owners
+remain explicit refusals; no input flags are suppressed to admit them.
+
+Public participant contract in betse_native_init_molecule_network.py:
+- bind_storage(session, *, completion, storage) is called by the actual Key
+  _claim_for_init_storage frame AFTER the original storage lease exists.
+- bind_first_step(session, *, completion, storage, electrical, step) is called
+  by the actual Key _claim_first_step_ancestor frame after reservation and
+  before setup/work. Both return opaque MoleculeRuntimeClaim capabilities.
+- runtime_members / runtime_codes / runtime_permissions expose authenticated
+  source functions, compiled original initialized expressions and actual
+  holder/frozenset field rows. First-step consumers must merge fields for an
+  already present Simulator holder, never duplicate or replace that holder.
+- observe_runtime(claim, *, child, frame, event, arg) must be called DIRECTLY
+  from the actual child's observer_namespace['_observe'] with the same child,
+  frame/event/arg. Python entries, C-event descriptors, exceptions and returns
+  are separate transcripts; return events do not count as extra C work.
+- finish_runtime(claim, *, child) must be called directly from actual child
+  prepare after source/account completion, before publishing the child Trial.
+  validate_runtime_active returns the same active claim; validate_runtime
+  returns the identical closed RuntimeEvidence. A record is not a capability.
+- Failed binding retains the opaque claim in its actual Key lease before
+  fallible work and attaches molecule_runtime_partial where possible.
+  runtime_failed_context returns actual failed forensic context only.
+
+Initialized dynamic backing/key/order/slot aliases are latched at the verified
+storage handoff and carried unchanged into first-step, not regenerated there.
+Actual initialized eval strings retain owner/field/text/code associations and
+cached builtin/global/helper lookup bindings. Metadata probes never execute.
+Top-level clear/run/sample calls reject duplicate or omitted/order drift;
+phase/parameter/Cells/Simulator and the exact source time object stay bound.
+Raw None/unwind and falsey primary/cause survive independent capture errors.
+C-unwind evidence errors defer until the real source error is visible; loss
+of observation prevents the next source callback. Scientific admission is held.
+
+New fixture issued_synthetic_enabled_completion configures True BEFORE all
+public issuers and uses the actual production MoleculeSession registry/API and
+real required retained hooks. Only acquisition/numerical bodies and the earlier
+upstream/tissue/RNG seams are declared synthetic. It does not manufacture a
+completed network/owner or reset an issued p. The old fixture's default remains
+False. The shared namespace/clear_storage fixture source changed, so old images
+are historical; no old public-chain result is rebound. A separate refusal-only
+builder prototype was removed before any freeze or execution.
+
+Final fresh source/blocked evidence: runtime03 has44 controls; affected
+Completion enabled-prebirth02 has53. These are distinct final-source software
+cases, not native or biological cases. Runtime01/02 and enabled-prebirth01 keep
+their separate23/38/5 scopes and bytes. All10 new bounded processes completed
+and were reviewed locally; previous failed images remain unchanged. No costly
+public owner chain, native constructor/factory, original numeric helper/RNG,
+reference, qualification or old job query was run by Key. Specialist owns the
+retained/storage consumer hooks and one combined synthetic issued-chain pilot.
+Native outer/type-check wrapper provenance and Root source/release review remain
+real prerequisites; actual native/scientific readiness is not claimed. Exact
+candidate pins/results are in enabled-network-runtime-result.json under the
+existing native-init-electrical-ancestor-development-20261104-01 output root.
+
+Metadata sealing attempt01 refused an assumed sibling-test entry that is intentionally absent from the Completion snapshot import closure. No packet file had been written. Packaging now binds only present closure rows and declares absent sibling tests explicitly; no source fix or software rerun is needed. The failed metadata attempt remains separate from all10 completed guarded processes.
+
+### Original default channels and imported wrapper authority — 2026-11-04
+
+Added a fresh-import observer for the pinned existing beartype decorator,
+generator, maker and source-loader operations. It never invokes them itself;
+Root must open the window before any original target import. Actual returned
+wrapper/code/default/metadata/class/module/cached-builtin identities and the
+post-import original method bindings remain authenticated; copied helpers or
+retrospective supplied wrappers refuse. No callback or constructor is hydrated.
+
+The owned channel participant now retains original Nav1p3/Kv1p5/KLeak declarations,
+construction order, native inherited methods, exact target/voltage objects,
+complete normal returns, channel histories and active INIT KLeak state/flux
+permissions. Arithmetic is reused from pinned whole-module original code.
+Inactive Nav/Kv channels are still constructed. New runtime routing and original
+same-Simulator get_ion hooks are additive; Specialist owns consumer integration.
+NR-1 refuses configured transporters before work; NR-2 checks positional and
+keyword-only sim/cells/p/phase/time and admitted immediate helper parents.
+Observer call refusals are latched before a caller could swallow them.
+
+Latest per-family images: wrapper07=34, channels05=34, network02=67,
+completion01=8. Each remains bound to its own exact image/dependency scope;
+143 is software controls, never native/biological cases or inherited credit.
+All30 guarded processes in this new output root were checked:27 completed,
+3 failed. Failed wrapper02 hook witness, channels02 duplicate-prefix expectation
+and wrapper05 class-publication probe remain intact, as do all intermediate
+passes. Prelaunch/packaging command mistakes produced no scientific child.
+
+An unnecessary explicit-before-class prototype was abandoned after tracing
+the real pinned type_check helper: it returns its function unchanged; genuine
+wrapping is the later Claw class pass. Its wrapper05/06 bytes/evidence remain
+frozen and grant no native-path claim. Only our two unreviewed helper/test files
+were restored from their own wrapper04 preimage, then given the module-export
+guard and exact static native-helper control. No other lane was restored.
+
+Root review/adoption, genuine import issuance and positive retained INIT/material
+parents remain prerequisites. No actual native/factory/RNG/reference/numerical
+work, expensive issued owner-chain, detached launch or old-job query occurred.
+Continuous N-iteration INIT needs a later separate pre-source claim; the current
+storage/first-step claims cannot be rebound or reopened. Source/result receipt
+is default-network-result.json under native-init-default-network-development-
+20261104-01. Source and tests remain directly in Git; shared status is Root-owned.

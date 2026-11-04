@@ -1,4 +1,4 @@
-"""Held original-default Parameters diagnostic, ending before any phase birth.
+"""Held exact-input Parameters diagnostic, ending before any phase birth.
 
 All live returns stay in one process. Evidence contains closed observations,
 never a decoded or manufactured replacement for an issued request or owner.
@@ -19,6 +19,7 @@ from types import CodeType, FunctionType, SimpleNamespace
 
 from validation import source_snapshot as snapshot
 from validation.betse import betse_normal_ecm_molecule_qualification_resources as resources
+from validation.betse import native_seed_demo_input_profiles as input_profiles
 
 FILE = "validation/betse/betse_native_parameter_world_ready_qualification.py"
 TEST = "tests/unit/test_betse_native_parameter_world_ready_qualification.py"
@@ -76,10 +77,10 @@ MODULES = {
     "remainder": "betse_native_parameter_load_remainder",
 }
 KNOWN_PINS = {
-    "colormap_state": "817a5310c59541643af5f7e358678013d5b0fe78062c088fd08042e4a8dab677",
-    "colormap_load": "cfe5d3baf710f5a7f1b1e53b5f10716c133e3c59c91db8e003a3bd10e3a14004",
-    "initializer_constants": "0e402bf35a591d4e0119ad3c8be8db99eaeccc9f8422face9610068829fb4429",
-    "load_remainder": "3cfe176984e251275f930606d31c733c681bd5f9f4271c78a67123f54bfe4488",
+    "colormap_state": "3a7ccab528955d3ff5751d06758ccf38b7ac020780083d58b1995354fc213eef",
+    "colormap_load": "b49eccca3d5915c66bb14c94959ba7fce2b2a11d0b67275baecb00080e2b09ff",
+    "initializer_constants": "5c3d9538c50398eeaaf5437d93c60e8ec7b2c8f93ae95535a321d11e5b97274a",
+    "load_remainder": "3551bf9e01a85da4f0d76bd05c57005f70e0f4e62af316d3658f11fe5707898b",
 }
 GATES = (
     "CELLS_ECM_MOLECULE_RUN_LIFECYCLE_RELEASED",
@@ -198,9 +199,13 @@ def input_program(path, sha256):
     """Permissions and raw bytes only; this never parses YAML or issues owners."""
     path = bound(dict(path=str(path), sha256=sha256))
     value = read(path)
+    profile = input_profiles.require_profile(value.get("input_profile", input_profiles.ORIGINAL))
+    raw_files = dict(RAW_FILES)
+    if profile == input_profiles.HEADLESS:
+        raw_files[input_profiles.MAIN] = input_profiles.HEADLESS_SHA256
     require(set(value["files"]) == set(RAW_FILES), "Exact original default file set required")
     files = {}
-    for name, pin in RAW_FILES.items():
+    for name, pin in raw_files.items():
         row = value["files"][name]
         actual = bound(row["input"])
         info = actual.stat()
@@ -234,7 +239,7 @@ def input_program(path, sha256):
     )
     supplied = tuple(tuple(row) for row in value["ordered_path_permission"])
     require(supplied == expected, "Exact ordered original path permissions required")
-    return dict(
+    result = dict(
         manifest=ref(path),
         files=files,
         path_permission=[list(row) for row in expected],
@@ -245,6 +250,13 @@ def input_program(path, sha256):
             for p in ("INITS", "SIMS", "RESULTS/init_1", "RESULTS/sim_1", "RESULTS/GRN")
         ],
     )
+    if profile == input_profiles.HEADLESS:
+        result.update(
+            input_profile=profile,
+            configuration_changes=input_profiles.changes(),
+            origin="Retained BETSE1.5.0 bundled default with only while-solving show/save False",
+        )
+    return result
 
 
 def directory_state(program):

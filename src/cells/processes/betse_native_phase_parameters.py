@@ -5,6 +5,8 @@ loads YAML/paths/ions. Its live native object is not a phase or INIT authority.
 """
 
 import ast
+import builtins
+import dis
 import hashlib
 import importlib
 import os
@@ -13,16 +15,35 @@ from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from pathlib import Path
 from threading import RLock, get_ident
-from types import CodeType, SimpleNamespace
+from types import CodeType, FunctionType, ModuleType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_simulator_construction as inherited
 
 LAW_ID = "betse_native_fresh_unloaded_parameters_constructor@1"
-SIMULATOR_SHA256 = "1d554db61804879a1246f03394e30864a43fcf36fd30fd3a54156395a5ebc889"
+SIMULATOR_SHA256 = "ee535e5cd577da3a788154291a41738be456867f4f3891f61f1345c6d7c90f4d"
 PARAMETERS = "betse/science/parameters.py"
 YAML_FILE = "betse/lib/yaml/abc/yamlfileabc.py"
 YAML_BASE = "betse/lib/yaml/abc/yamlabc.py"
+RETURN_NONE_WRAPPER_PINS = (
+    (
+        "beartype._check.error.errmain",
+        "96c94fbfb6dd3a132014347e7878dac009f01a5f8c99f51499a69f04d27b82b8",
+    ),
+    (
+        "beartype._check.metadata.metacheck",
+        "029a5dab742c77b1a3cc44fd75751a35cb5664913bc5499374de6abc1e74e558",
+    ),
+    ("beartype._conf.confmain", "4fbe9f5482c9f82b98737e91c3b4b6d3e338342906863d4bfcad8d98eb0ddf22"),
+    (
+        "beartype.claw._clawstate",
+        "26d127daefb8ac782caf31e91e6e8004d87ef472d4dfc515152d3164a87b2efe",
+    ),
+    (
+        "beartype.claw._importlib.clawimpcache",
+        "77ea6518ebfd478a755bafd79dc7fb873afe7204cf30bf3bb9ca38e6c2cf0f8c",
+    ),
+)
 _ROSTER = (
     "cut_profiles",
     "tissue_default",
@@ -100,6 +121,7 @@ def source_plan():
         law=LAW_ID,
         native_pins=plan["native_pins"],
         simulator_sha256=SIMULATOR_SHA256,
+        return_none_wrapper_pins=dict(RETURN_NONE_WRAPPER_PINS),
         constructor_lines=(init.lineno, init.end_lineno),
         path_fields=paths,
         subconfigurations=_ROSTER,
@@ -144,10 +166,19 @@ def declare(*, law_id, run_id):
     return request
 
 
-def _method_code(cls_node, name, filename):
-    code = compile(
-        ast.Module(body=[cls_node], type_ignores=[]), filename, "exec", dont_inherit=True
-    )
+def _method_code(cls_node, name, filename, *, native_context=False):
+    """Keep authentic module code distinct from deliberate selected AST slices."""
+    if type(native_context) is not bool:
+        raise ValueError("Explicit native compilation context required")
+    tree = ast.Module(body=[cls_node], type_ignores=[])
+    if native_context:
+        tree = ast.parse(Path(filename).read_bytes(), filename=str(filename))
+        original = inherited._class(tree, cls_node.name)
+        if ast.dump(original, include_attributes=True) != ast.dump(
+            cls_node, include_attributes=True
+        ):
+            raise ValueError("Exact original class AST required for native compilation context")
+    code = compile(tree, str(filename), "exec", dont_inherit=True)
     class_code = next(
         c for c in code.co_consts if type(c) is CodeType and c.co_name == cls_node.name
     )
@@ -168,11 +199,17 @@ def _canonical(module, yaml):
         ast.parse((inherited.tissue.aliases.NATIVE / PARAMETERS).read_bytes()), "Parameters"
     )
     for name in ("__init__", "_unload_paths"):
-        function = inherited._chain(getattr(cls, name))[-1]
-        if function.__globals__ is not vars(module) or inherited._code(
-            function.__code__
-        ) != inherited._code(
-            _method_code(node, name, str(inherited.tissue.aliases.NATIVE / PARAMETERS))
+        outer = getattr(cls, name)
+        _method_wrapper_bindings(outer, cls)
+        function = inherited._chain(outer)[-1]
+        expected = _method_code(
+            node, name, str(inherited.tissue.aliases.NATIVE / PARAMETERS), native_context=True
+        )
+        if (
+            function.__globals__ is not vars(module)
+            or function.__code__.co_filename != expected.co_filename
+            or function.__code__.co_qualname != expected.co_qualname
+            or inherited._code(function.__code__) != inherited._code(expected)
         ):
             raise ValueError("Native Parameters constructor executable changed")
         for key, cell in zip(
@@ -181,6 +218,214 @@ def _canonical(module, yaml):
             if key == "__class__" and cell.cell_contents is not cls:
                 raise ValueError("Original super/class closure association changed")
     return cls
+
+
+def _return_none_wrapper_code(none_name):
+    """Compile the selected beartype return-None wrapper without running it."""
+    text = f"""def wrapper(*args,
+    {none_name}=None, __beartype_get_violation=None, __beartype_conf=None,
+    __beartype_check_meta=None, __beartype_func=None, **kwargs):
+    __beartype_pith_0 = __beartype_func(*args, **kwargs)
+    if True:
+        if not isinstance(__beartype_pith_0, {none_name}):
+            __beartype_violation = __beartype_get_violation(
+                check_meta=__beartype_check_meta,
+                pith_name='return', pith_value=__beartype_pith_0)
+            raise __beartype_violation
+    return __beartype_pith_0
+"""
+    code = compile(text, "<return-None-wrapper-metadata>", "exec", dont_inherit=True)
+    return next(value for value in code.co_consts if type(value) is CodeType)
+
+
+def _method_wrapper_bindings(function, cls):
+    """Authenticate the reached wrapper and retain its mutable delegate edges.
+
+    Package-wide beartype decoration is separate from the original method body.
+    Only the observed return-None wrapper is admitted; arbitrary wrapped chains
+    do not acquire original-source authority.
+    """
+    chain = inherited._chain(function)
+    objects = list(inherited.tissue._factory_atoms(function))
+    if len(chain) == 1:
+        return tuple(objects)
+    if len(chain) != 2:
+        raise ValueError("Exact native return-None wrapper chain required")
+    wrapper, original = chain
+    none_name = "__beartype_object_" + str(id(type(None)))
+    keys = (
+        none_name,
+        "__beartype_get_violation",
+        "__beartype_conf",
+        "__beartype_check_meta",
+        "__beartype_func",
+    )
+    defaults = wrapper.__kwdefaults__
+    if (
+        type(defaults) is not dict
+        or tuple(defaults) != keys
+        or defaults[none_name] is not type(None)
+        or defaults["__beartype_func"] is not original
+        or vars(wrapper).get("__beartype_wrapper") is not True
+        or set(vars(wrapper)) != {"__wrapped__", "__beartype_wrapper"}
+        or wrapper.__defaults__ is not None
+        or wrapper.__closure__ is not None
+        or tuple(wrapper.__globals__) != ("__builtins__",)
+        or wrapper.__builtins__ is not vars(builtins)
+        or (
+            wrapper.__globals__["__builtins__"] is not builtins
+            and wrapper.__globals__["__builtins__"] is not vars(builtins)
+        )
+        or wrapper.__annotations__ is not original.__annotations__
+        or tuple(original.__annotations__) != ("return",)
+        or original.__annotations__["return"] is not None
+        or inherited._code(wrapper.__code__)
+        != inherited._code(_return_none_wrapper_code(none_name))
+    ):
+        raise ValueError("Original native return-None wrapper executable/delegate changed")
+    modules = []
+    for name, digest in RETURN_NONE_WRAPPER_PINS:
+        module = sys.modules.get(name)
+        if (
+            type(module) is not ModuleType
+            or hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest() != digest
+        ):
+            raise ValueError("Pinned return-None wrapper library required")
+        modules.append(module)
+        objects.extend((module, vars(module)))
+    errors, metadata, configuration, hook, hook_cache = modules
+    violation = defaults["__beartype_get_violation"]
+    meta, conf = defaults["__beartype_check_meta"], defaults["__beartype_conf"]
+    if (
+        violation is not errors.get_func_pith_violation
+        or type(violation) is not FunctionType
+        or violation.__globals__ is not vars(errors)
+        or type(meta) is not metadata.BeartypeCheckMeta
+        or type(conf) is not configuration.BeartypeConf
+        or object.__getattribute__(meta, "func") is not original
+        or object.__getattribute__(meta, "conf") is not conf
+        or object.__getattribute__(meta, "func_annotations") is not original.__annotations__
+    ):
+        raise ValueError("Original return-None wrapper metadata associations changed")
+    stack = object.__getattribute__(meta, "cls_stack")
+    if type(stack) is not tuple or len(stack) != 1 or stack[0] is not cls:
+        raise ValueError("Original return-None wrapper class stack changed")
+    state = original.__globals__.get("__claw_state_beartype__")
+    if state is not hook.claw_state or type(state) is not hook.BeartypeClawState:
+        raise ValueError("Original parameter module import-hook state changed")
+    configurations = object.__getattribute__(state, "module_name_to_beartype_conf")
+    if (
+        type(configurations) is not hook_cache.ModuleNameToBeartypeConf
+        or dict.get(configurations, original.__globals__.get("__name__")) is not conf
+        or object.__getattribute__(conf, "_is_violation_return_warn") is not False
+    ):
+        raise ValueError("Original parameter module import-hook configuration changed")
+    objects.extend((state, type(state), configurations, type(configurations), conf))
+    library_code = compile(
+        Path(errors.__file__).read_bytes(), errors.__file__, "exec", dont_inherit=True
+    )
+    helpers = (violation, errors.get_hint_object_violation)
+    for helper, name, defaults in (
+        (helpers[0], "get_func_pith_violation", None),
+        (helpers[1], "get_hint_object_violation", (None,) * 5),
+    ):
+        expected = next(
+            c for c in library_code.co_consts if type(c) is CodeType and c.co_name == name
+        )
+        if (
+            type(helper) is not FunctionType
+            or helper.__globals__ is not vars(errors)
+            or inherited._code(helper.__code__) != inherited._code(expected)
+            or helper.__code__.co_filename != expected.co_filename
+            or (
+                helper.__defaults__ is not None
+                if defaults is None
+                else type(helper.__defaults__) is not tuple
+                or len(helper.__defaults__) != 5
+                or any(item is not None for item in helper.__defaults__)
+            )
+            or helper.__kwdefaults__ is not None
+            or helper.__closure__ is not None
+        ):
+            raise ValueError("Original return-None violation executable changed")
+    objects.extend((meta, conf, stack, original.__annotations__))
+    objects.extend(original.__annotations__.keys())
+    objects.extend(original.__annotations__.values())
+    for helper in helpers:
+        objects.extend(inherited.tissue._factory_atoms(helper))
+        for instruction in dis.get_instructions(helper):
+            if instruction.opname == "LOAD_GLOBAL":
+                key = instruction.argval
+                namespace = helper.__globals__ if key in helper.__globals__ else helper.__builtins__
+                objects.extend((key, namespace, *inherited.tissue._factory_atoms(namespace[key])))
+    objects.extend(inherited.tissue._surface(type(meta)))
+    objects.extend(inherited.tissue._surface(type(conf)))
+    for name in type(conf).__slots__:
+        if name == "_repr":  # Lazy presentation cache, never reached by this wrapper.
+            continue
+        value = object.__getattribute__(conf, name)
+        objects.extend((name, value))
+        if type(value) is dict:
+            for key, item in value.items():
+                objects.extend((key, item))
+        elif type(value) is tuple:
+            objects.extend(value)
+    return tuple(objects)
+
+
+def _method_original(source, name):
+    """Return only the exact original body behind an authenticated class slot."""
+    outer = vars(source.cls).get(name)
+    if type(outer) is not FunctionType or getattr(source.cls, name) is not outer:
+        raise ValueError("Original native Parameters method slot required")
+    _method_wrapper_bindings(outer, source.cls)
+    original = inherited._chain(outer)[-1]
+    path = inherited.tissue.aliases.NATIVE / PARAMETERS
+    cls = inherited._class(ast.parse(path.read_bytes()), "Parameters")
+    expected = _method_code(cls, name, str(path), native_context=True)
+    if (
+        original.__globals__ is not vars(source.modules["betse.science.parameters"])
+        or original.__defaults__ is not None
+        or original.__kwdefaults__ is not None
+        or original.__code__.co_filename != expected.co_filename
+        or original.__code__.co_qualname != expected.co_qualname
+        or inherited._code(original.__code__) != inherited._code(expected)
+    ):
+        raise ValueError("Original native Parameters method executable/header/globals changed")
+    for name, cell in zip(original.__code__.co_freevars, original.__closure__ or (), strict=True):
+        if name != "__class__" or cell.cell_contents is not source.cls:
+            raise ValueError("Original native Parameters method class cell changed")
+    namespace = original.__globals__["__builtins__"]
+    if type(namespace) is not dict:
+        namespace = vars(namespace)
+    if namespace is not original.__builtins__:
+        raise ValueError("Original native Parameters cached builtins changed")
+    return original
+
+
+def _acquired_parameter_methods(source):
+    """Native acquisition must include the actual package-installed wrappers.
+
+    Unwrapped functions remain useful for compile-only correspondence checks;
+    they cannot pass this live acquisition boundary or replace retained slots.
+    """
+    for name in ("__init__", "_unload_paths", "load", "reload_paths"):
+        if len(inherited._chain(vars(source.cls).get(name))) != 2:
+            raise ValueError("Actual package-installed Parameters wrapper required")
+        _method_original(source, name)
+
+
+def _live_parameter_method_bindings(source):
+    """Collect only still-installed wrappers, even after validation observers."""
+    objects = []
+    for name in ("__init__", "_unload_paths", "load", "reload_paths"):
+        method = vars(source.cls).get(name)
+        if len(inherited._chain(method)) != 2:
+            raise ValueError("Live Parameters package wrapper required")
+        objects.extend(_method_wrapper_bindings(method, source.cls))
+        if vars(source.cls).get(name) is not method:
+            raise ValueError("Live Parameters method changed during binding collection")
+    return tuple(objects)
 
 
 def _acquire():
@@ -196,9 +441,11 @@ def _acquire():
     module = modules["betse.science.parameters"]
     yaml = modules["betse.lib.yaml.abc.yamlfileabc"]
     cls = _canonical(module, yaml)
-    return SimpleNamespace(
+    source = SimpleNamespace(
         modules=modules, cls=cls, yaml=modules["betse.lib.yaml.abc.yamlabc"].YamlABC
     )
+    _acquired_parameter_methods(source)
+    return source
 
 
 def _runtime(source):
@@ -206,6 +453,9 @@ def _runtime(source):
     yaml = source.modules["betse.lib.yaml.abc.yamlfileabc"]
     if _canonical(module, yaml) is not source.cls:
         raise ValueError("Original native Parameters class identity changed")
+    # Acquisition return observers run before the first retained baseline.
+    # Reauthenticate here so they cannot turn an unwrapped slot into a baseline.
+    _acquired_parameter_methods(source)
     objects = [source.cls, source.yaml]
     labels = []
     for name, module in source.modules.items():
@@ -213,6 +463,7 @@ def _runtime(source):
         objects.extend((module, vars(module)))
     objects.extend(inherited.tissue._surface(source.cls))
     objects.extend(inherited.tissue._surface(type(source.cls)))
+    objects.extend(_live_parameter_method_bindings(source))
     return tuple(labels), tuple(objects)
 
 
@@ -352,6 +603,11 @@ def _bindings():
         request_record,
         declare,
         _method_code,
+        _return_none_wrapper_code,
+        _method_wrapper_bindings,
+        _method_original,
+        _acquired_parameter_methods,
+        _live_parameter_method_bindings,
         _canonical,
         _acquire,
         _runtime,
@@ -381,6 +637,9 @@ def _bindings():
             _YAML_LEASES,
             _LOCK,
             _ACTIVE,
+            RETURN_NONE_WRAPPER_PINS,
+            dis,
+            dis.get_instructions,
             *(atom for fn in functions for atom in inherited.tissue.aliases._atoms(fn)),
         ),
     )

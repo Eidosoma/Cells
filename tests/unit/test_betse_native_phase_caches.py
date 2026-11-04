@@ -4,7 +4,7 @@ import builtins
 import json
 import sys
 import weakref
-from types import FunctionType
+from types import CodeType, FunctionType
 from types import SimpleNamespace as NS
 
 import pytest
@@ -12,6 +12,26 @@ import pytest
 from cells.processes import betse_native_phase_caches as stage
 from tests.unit import test_betse_native_phase_assembly as phase_controls
 from validation.betse.betse_native_single_cell_core_synthetic import save
+
+
+@pytest.mark.parametrize(
+    "relative,name",
+    [
+        ("betse/science/math/cache/cacheabc.py", "SimPhaseCaches"),
+        ("betse/science/math/cache/cacheabc.py", "SimPhaseCacheABC"),
+        ("betse/science/math/cache/cachevec.py", "SimPhaseCacheVectorCells"),
+    ],
+)
+def test_contextual_metadata_cache_constructor_is_original_module_code(relative, name):
+    path = stage.aliases.NATIVE / relative
+    module = compile(path.read_bytes(), str(path), "exec", dont_inherit=True)
+    cls = next(c for c in module.co_consts if type(c) is CodeType and c.co_name == name)
+    expected = next(c for c in cls.co_consts if type(c) is CodeType and c.co_name == "__init__")
+    actual = stage._method_code(relative, name)
+    assert actual == expected
+    assert actual.co_qualname == name + ".__init__"
+    assert actual.co_filename == str(path)
+    assert actual.co_freevars == (("__class__",) if name == "SimPhaseCacheVectorCells" else ())
 
 
 @pytest.fixture(autouse=True)

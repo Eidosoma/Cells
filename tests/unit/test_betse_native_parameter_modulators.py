@@ -32,7 +32,7 @@ GUARD_PINS = dict(
             "325cff1d0f45f1b31c373ea8e26120e99f513bdf15f25dd051c49b7840f73eeb",
             "8b822ff0f4789b44791860dfbd463089918124a1fbecf5bc1ca9e45011996e68",
             "2bc57049a2f84de04ac553521dec1c656fdc108e2b8268d468c4936dc3c07b65",
-            "a3b5620b5361b1feb80407190ae363648b90482ab9f9414ad91f75a742872c44",
+            "35c584c35f6b710944c3dddbc182f43fab514a23f3f617a3f1ce80bf3af9fd93",
         ),
         strict=True,
     )

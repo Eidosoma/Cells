@@ -27,7 +27,7 @@ KEY_MODULE = "cells.processes.betse_native_parameter_world_construction"
 PARAMETER_MODULE = "cells.processes.betse_native_parameter_load_remainder"
 KEY_SOURCE_SHA256 = "bda0ab87e293af18eb30ff38a0cb356162bc74269fbeb0cd1d41aa8d52176b73"
 KEY_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
-PARAMETER_SOURCE_SHA256 = "3cfe176984e251275f930606d31c733c681bd5f9f4271c78a67123f54bfe4488"
+PARAMETER_SOURCE_SHA256 = "3551bf9e01a85da4f0d76bd05c57005f70e0f4e62af316d3658f11fe5707898b"
 PARAMETER_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
 # Stable public preparation interface; no producer/review adoption is implied.
 KEY_LAW = "betse_fresh_world_ready_pre_phase_seed_construction@1"
@@ -40,9 +40,9 @@ STAGE_MODULES = (
     "cells.processes.betse_native_phase_tail",
 )
 STAGE_SOURCE_SHA256 = (
-    "de6cfeb763c2f78bb34387d54ce78ed66ddd9b8ad2193fd7cf7fae1bcbf690d0",
-    "a23c8fd6af0c91de8b5c7bb1d19fd0990b38bfcc01452c3f24961ae0974eff41",
-    "4a930b68f6ce4f0140a96d00c03400e7e176e3639ef94cfdd160164af477a033",
+    "7b1551f1af2cf0fbb80a61d58d045ef6234d273ae36c52f08fd0cd71cedd2530",
+    "c7fb2664ad744dbae609551296f2f6b96908ec311c9b4c33d92e04bc552f82e5",
+    "919d61000c9fa87b58e92cc5f8d08832da3cbcd1af287638bb26cc3436d2c9ce",
     "539ba4363317707d4731f102d20b67ed86ea4dc813cccac013314291641dcd42",
 )
 STAGE_REVIEW_SHA256 = (
@@ -94,7 +94,7 @@ SEED_INIT_CORE_BACK_REFERENCE_SLOTS = (
     "COORDINATOR_REVIEW_SHA256",
 )
 SEED_PROFILES_MODULE = "cells.processes.betse_native_seed_init_profiles"
-SEED_PROFILES_INTERFACE_SHA256 = "3ed8e1a1a893b7d72d6315d543cceec244d510ba89dc66caad42a39b1289c0fb"
+SEED_PROFILES_INTERFACE_SHA256 = "7e71bc2ad4ca2ab6bae67543fdbefdc60fe8b573e53f4c4d36e406de052fa26b"
 SEED_PROFILES_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 SEED_PROFILES_COORDINATOR_REVIEW_SHA256 = (
     "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
@@ -114,7 +114,7 @@ SEED_CHILD_BACK_REFERENCE_SLOTS = (
 SEED_PROFILES_BINDING_KIND = "exact_profiles_bytes_except_four_validated_backrefs@1"
 SEED_JUNCTIONS_BINDING_KIND = "exact_junctions_bytes_except_four_validated_backrefs@1"
 CALLBACK_MODULE = "cells.processes.betse_native_phase_callbacks"
-CALLBACK_SHA256 = "f5e807c61cfd36a7f6d2da6e23418559a2527c221f2c8ce8ddf0a908020721f2"
+CALLBACK_SHA256 = "9a680cf6b6ccad865bce3365c8dff2f0d5b2e7ad845f00321a0cc26cd235d4b8"
 BASE_FIELDS = ("callbacks", "cells", "kind", "p", "sim")
 MAX_WORK = 128
 _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(4))

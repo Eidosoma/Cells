@@ -26,17 +26,17 @@ FILE = "validation/betse/native_seed_world_callback_prelude.py"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_CALLBACK_PRELUDE_RELEASED"
 KIND = "cells.native_seed_world_callback_bootstrap@1"
 RUNTIME_MODULE = "validation.betse.betse_native_parameter_world_ready_qualification"
-RUNTIME_SOURCE_SHA256 = "9ab32160019edaa0ab0fa49bf8ae64fbe1cb4baba87ff1bd99d16e9f978b07a7"
-RUNTIME_REVIEW_SHA256 = "e0e3a4270321ffbd08f2ce14dfdb2c39b7d0108d0e90741c7a509586fd3f0604"
+RUNTIME_SOURCE_SHA256 = "89137b398d15ba435c34ea696b608c7a44c9163eaa8088a2b02465161d26cafd"
+RUNTIME_REVIEW_SHA256 = "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e"
 MODULES = {
     "tissue": "cells.processes.betse_native_tissue_configuration",
     "simulator": "cells.processes.betse_native_simulator_construction",
     "callbacks": "cells.processes.betse_native_phase_callbacks",
 }
 SOURCE_PINS = dict(
-    tissue="78549327ada27bb943245b9d6e9692b7d86de96660f1bd41bbd6f3119e0e4dac",
-    simulator="1d554db61804879a1246f03394e30864a43fcf36fd30fd3a54156395a5ebc889",
-    callbacks="f5e807c61cfd36a7f6d2da6e23418559a2527c221f2c8ce8ddf0a908020721f2",
+    tissue="ab519cde82ced4f81a9e6c7fe43c8a2dd7a23490db0bfb21d10d07b2a773dd2c",
+    simulator="ee535e5cd577da3a788154291a41738be456867f4f3891f61f1345c6d7c90f4d",
+    callbacks="9a680cf6b6ccad865bce3365c8dff2f0d5b2e7ad845f00321a0cc26cd235d4b8",
 )
 POLICY = dict(cpu=0, threads=1, bytes=2**30, wall_seconds=480, reserve_bytes=8 * 2**30)
 _RETAINED = WeakKeyDictionary()

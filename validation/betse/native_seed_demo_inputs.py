@@ -1,8 +1,10 @@
-"""Prepare complete, unchanged BETSE input data for two independent demo modes.
+"""Prepare complete BETSE input data for two independent flux-operator modes.
 
 This copies original data bytes and emits Key's existing path-permission input
-program. It never parses YAML, decodes an image, imports BETSE or issues live
-parameters. Original output-directory placeholders are retained; no simulation
+program. The explicit headless profile changes only the two while-solving
+animation switches in fresh files. It never parses YAML, decodes an image,
+imports BETSE or issues live parameters. Original output-directory placeholders
+are retained; no simulation
 output is produced until a separately released worker.
 """
 
@@ -14,16 +16,18 @@ import stat
 from pathlib import Path
 
 from validation import source_snapshot as snapshot
+from validation.betse import native_seed_demo_input_profiles as profiles
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = Path("/mnt/workspaces/Cells")
 NATIVE = BASE / "betse-v1.5.0/betse/data/yaml"
 FILE = "validation/betse/native_seed_demo_inputs.py"
 KIND = "cells.original_betse_seed_demo_input_pair@1"
+HEADLESS_KIND = "cells.headless_betse_seed_demo_input_pair@1"
 MODES = ("original", "disabled")
 MAX_FILES, MAX_BYTES, MAX_FILE_BYTES = 512, 16 * 2**20, 8 * 2**20
 BUNDLE_SHA256 = "a46d83ac79195a2e15078feccd5e0fc62804ca1976042cc9516c30a9f859db27"
-PARAMETER_METADATA_SHA256 = "9ab32160019edaa0ab0fa49bf8ae64fbe1cb4baba87ff1bd99d16e9f978b07a7"
+PARAMETER_METADATA_SHA256 = "89137b398d15ba435c34ea696b608c7a44c9163eaa8088a2b02465161d26cafd"
 CORE = {
     "sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
     "extra_configs/expression_data.yaml": (
@@ -49,6 +53,8 @@ def source_plan():
         core_yaml_pins=dict(CORE),
         parameter_metadata_sha256=PARAMETER_METADATA_SHA256,
         modes=MODES,
+        configuration_profiles=profiles.PROFILES,
+        headless_configuration_changes=profiles.changes(),
         full_original_geo_and_extra_configs=True,
         unchanged_numeric_or_image_bytes=True,
         native_execution=False,
@@ -109,7 +115,8 @@ def _source():
     return value
 
 
-def _program(root):
+def _program(root, profile=profiles.ORIGINAL):
+    profiles.require_profile(profile)
     values = (
         ("init_pickle_dirname", "INITS"),
         ("sim_pickle_dirname", "SIMS"),
@@ -123,14 +130,20 @@ def _program(root):
         ("grn_pickle_filename", "RESULTS/GRN/GRN_1.betse.gz"),
         ("grn_unpickle_filename", None),
     )
-    return dict(
+    core = dict(CORE)
+    if profile == profiles.HEADLESS:
+        core[profiles.MAIN] = profiles.HEADLESS_SHA256
+    value = dict(
         files={
-            name: dict(input=dict(path=str(root / name), sha256=pin)) for name, pin in CORE.items()
+            name: dict(input=dict(path=str(root / name), sha256=pin)) for name, pin in core.items()
         },
         ordered_path_permission=[
             [name, None if value is None else str(root / value)] for name, value in values
         ],
     )
+    if profile == profiles.HEADLESS:
+        value["input_profile"] = profile
+    return value
 
 
 def _parameter_metadata():
@@ -179,7 +192,35 @@ def _copy_file(source, target, expected):
     target.chmod(0o444)
 
 
-def _prepare(output, source, parameter):
+def _copy_headless(source, target, expected):
+    # The source is a bounded exact file, and the result is born in a fresh
+    # independent inode. Never rewrite an already-issued configuration.
+    descriptor = os.open(source, os.O_RDONLY | os.O_NOFOLLOW)
+    with os.fdopen(descriptor, "rb") as read:
+        before = os.fstat(read.fileno())
+        if not stat.S_ISREG(before.st_mode) or before.st_size != profiles.ORIGINAL_BYTES:
+            raise ValueError("Exact bounded original main YAML required")
+        original = read.read(profiles.ORIGINAL_BYTES + 1)
+        after = os.fstat(read.fileno())
+        if (before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (
+            after.st_ino,
+            after.st_size,
+            after.st_mtime_ns,
+            after.st_ctime_ns,
+        ):
+            raise ValueError("Original main YAML changed during reading")
+    value = profiles.transform(original)
+    if dict(size_bytes=len(value), sha256=hashlib.sha256(value).hexdigest()) != expected:
+        raise ValueError("Headless target inventory changed")
+    with target.open("xb") as stream:
+        stream.write(value)
+        stream.flush()
+        os.fsync(stream.fileno())
+    target.chmod(0o444)
+
+
+def _prepare(output, source, parameter, profile=profiles.ORIGINAL):
+    selected = profiles.inventory(source, profile)
     output.mkdir(parents=True)
     cases = {}
     try:
@@ -189,16 +230,21 @@ def _prepare(output, source, parameter):
             for directory in source["directories"]:
                 (config / directory).mkdir(parents=True, exist_ok=True)
             for name, row in source["files"].items():
-                _copy_file(NATIVE / name, config / name, row)
-            if inventory(config) != source:
+                if profile == profiles.HEADLESS and name == profiles.MAIN:
+                    _copy_headless(NATIVE / name, config / name, selected["files"][name])
+                else:
+                    _copy_file(NATIVE / name, config / name, row)
+            if inventory(config) != selected:
                 raise ValueError("Complete copied input bytes/layout changed")
             program = output / mode / "input-program.json"
-            snapshot.write_json(program, _program(config))
+            snapshot.write_json(program, _program(config, profile))
             program.chmod(0o444)
             pin = snapshot.digest(program)
             checked = parameter.input_program(program, pin)
             if checked["root"] != str(config):
                 raise ValueError("Actual copied input program root required")
+            if checked.get("input_profile", profiles.ORIGINAL) != profile:
+                raise ValueError("Actual parameter program must retain the declared profile")
             cases[mode] = dict(
                 config=str(config),
                 program=dict(path=str(program), sha256=pin),
@@ -222,6 +268,14 @@ def _prepare(output, source, parameter):
             physical_or_scientific_claim=False,
             held=True,
         )
+        if profile == profiles.HEADLESS:
+            result.update(
+                kind=HEADLESS_KIND,
+                configuration_profile=profile,
+                configuration_changes=profiles.changes(),
+                input_inventory=selected,
+                raw_configuration_and_images_unchanged=False,
+            )
         snapshot.write_json(output / "inputs.json", result)
         (output / "inputs.json").chmod(0o444)
         return result
@@ -246,10 +300,11 @@ def _prepare(output, source, parameter):
         raise
 
 
-def prepare(output):
+def prepare(output, *, profile=profiles.ORIGINAL):
+    profiles.require_profile(profile)
     output = _output(output)
     source, parameter = _source(), _parameter_metadata()
-    return _prepare(output, source, parameter)
+    return _prepare(output, source, parameter, profile)
 
 
 def verify(output, expected_sha256, *, mode=None):
@@ -259,8 +314,10 @@ def verify(output, expected_sha256, *, mode=None):
     if path.is_symlink() or path.stat().st_size > 2**20 or snapshot.digest(path) != expected_sha256:
         raise ValueError("Exact bounded paired input manifest required")
     value = json.loads(path.read_text())
+    selected_inventory = profiles.selected_inventory(value)
+    profile = value.get("configuration_profile", profiles.ORIGINAL)
     if (
-        value["kind"] != KIND
+        value["kind"] != (HEADLESS_KIND if profile == profiles.HEADLESS else KIND)
         or value["held"] is not True
         or value["source_origin"] != str(NATIVE)
         or value["source_tree_sha256"] != BUNDLE_SHA256
@@ -274,7 +331,7 @@ def verify(output, expected_sha256, *, mode=None):
     parameter, inodes = _parameter_metadata(), set()
     for selected in MODES if mode is None else (mode,):
         row, config = value["modes"][selected], output / selected / "config"
-        if row["config"] != str(config) or inventory(config) != value["source_inventory"]:
+        if row["config"] != str(config) or inventory(config) != selected_inventory:
             raise ValueError("Copied mode input tree changed")
         for name in value["source_inventory"]["files"]:
             info = (config / name).stat()
@@ -289,6 +346,7 @@ def verify(output, expected_sha256, *, mode=None):
         if (
             checked["root"] != str(config)
             or checked["directories"] != row["initial_native_directories"]
+            or checked.get("input_profile", profiles.ORIGINAL) != profile
         ):
             raise ValueError("Original output permission program changed")
         if _directory_state(checked["directories"]) != row["initial_directory_state"]:
@@ -302,9 +360,10 @@ def main():
     parser.add_argument("--verify", type=Path)
     parser.add_argument("--sha256")
     parser.add_argument("--mode", choices=MODES)
+    parser.add_argument("--profile", choices=profiles.PROFILES, default=profiles.ORIGINAL)
     args = parser.parse_args()
     if args.prepare is not None:
-        prepare(args.prepare)
+        prepare(args.prepare, profile=args.profile)
         print(
             json.dumps(
                 dict(
