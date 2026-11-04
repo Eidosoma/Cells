@@ -1,7 +1,9 @@
 """Saved JSON/byte fixtures only; no BETSE source, owner or numerical execution."""
 
+import hashlib
 import json
 import os
+import struct
 from contextlib import contextmanager
 from types import FunctionType
 from types import SimpleNamespace as NS
@@ -44,7 +46,15 @@ def read(path):
     return json.loads(path.read_text())
 
 
-def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_origin=False):
+def fixture(
+    tmp_path,
+    mode="original",
+    endpoint="seed",
+    version=None,
+    numpy_origin=False,
+    iterations=3,
+    import_observation=False,
+):
     """A tiny explicitly synthetic snapshot passes the real byte verifier.
 
     Its files are inert text; these saved records grant no live source authority.
@@ -52,7 +62,9 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
     """
     if version is None:
         version = (
-            9
+            10
+            if endpoint == "init_short_history"
+            else 9
             if endpoint == "init_first_step"
             else (8 if endpoint == "init_electrical" or numpy_origin else 7)
         )
@@ -63,6 +75,8 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
     sources = (report.DEMO, report.LAUNCH, report.PARAMETER)
     if numpy_origin:
         sources += (report.NUMPY_ORIGIN,)
+    if import_observation:
+        sources += (report.MOLECULE_WRAPPER,)
     for name in sources:
         path = source / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -114,6 +128,27 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
             parameter_sha256=parameters["sha256"],
             flux_operator=mode,
             endpoint=endpoint,
+            **({"init_iterations": iterations} if endpoint == "init_short_history" else {}),
+            **(
+                {
+                    "source_plan": {
+                        "optional_molecule_import_authority": dict(
+                            protocol=report.IMPORT_PROTOCOL,
+                            modules={
+                                "molecule_wrappers": (
+                                    "cells.processes.betse_native_init_molecule_wrapper_authority"
+                                )
+                            },
+                            source_pins={
+                                "molecule_wrappers": files[report.MOLECULE_WRAPPER]["sha256"]
+                            },
+                            review_pins={"molecule_wrappers": "a" * 64},
+                        )
+                    }
+                }
+                if import_observation
+                else {}
+            ),
         ),
     )
     bundle = write(
@@ -141,6 +176,7 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
         flux_operator=mode,
         endpoint=endpoint,
         policy=policy,
+        **({"init_iterations": iterations} if endpoint == "init_short_history" else {}),
     )
     plan_path = base / "launch-plan.json"
     plan_pin = write(plan_path, plan)
@@ -210,24 +246,90 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
     stages = ["geometry", "poisson", "core", "profiles", "junctions"]
     if endpoint != "seed":
         stages.append("init_setup")
-    if endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"):
+    if endpoint in (
+        "init_prelude",
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+    ):
         stages.append("init_prelude")
-    if endpoint in ("init_dynamics", "init_electrical", "init_first_step"):
+    if endpoint in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history"):
         stages.append("init_dynamics")
-    if endpoint in ("init_electrical", "init_first_step"):
+    if endpoint in ("init_electrical", "init_first_step", "init_short_history"):
         stages.extend(("init_storage", "init_electrical"))
     if endpoint == "init_first_step":
         stages.append("init_first_step")
+    if endpoint == "init_short_history":
+        stages.append("init_short_history")
     first_step_ids = {
         key: str(index) * 64
         for index, key in enumerate(("before", "after", "calendar", "sampled", "t", "dt"), 1)
     }
     first_step_streams = dict(rng_before=["a" * 64, "b" * 64], rng_after=["c" * 64, "d" * 64])
+    short_ids = {k: v for k, v in first_step_ids.items() if k != "t"}
+    short_rows, short_links = [], []
+    for i in range(iterations if endpoint == "init_short_history" else 0):
+        after = (
+            short_ids["after"]
+            if i == iterations - 1
+            else hashlib.sha256(str(i).encode()).hexdigest()
+        )
+        bits = struct.pack("!d", i * 0.00123456789).hex()
+        short_rows.append(
+            [
+                i,
+                bits,
+                i % 2 == 0,
+                after,
+                10 + i * 7,
+                i + 1,
+                1000 + i,
+                {"fixture": True, "conservation_assessed": False},
+            ]
+        )
+        short_links.append(
+            dict(
+                ordinal=i,
+                source_time_bits=bits,
+                sampled=i % 2 == 0,
+                after_identity=after,
+                work_end=10 + i * 7,
+                callbacks_end=i + 1,
+                molecular_record_identity=1000 + i,
+            )
+        )
+    short_record = dict(
+        short_ids,
+        identity="9" * 64,
+        request="e" * 64,
+        parent="f" * 64,
+        iterations=short_rows,
+        work=10 + iterations * 7,
+        helpers=iterations * 2,
+        callbacks=iterations,
+        source_completed=True,
+        loop_returned=False,
+        selected_stop=True,
+        initial_diagnostics={"fixture": True, "conservation_assessed": False},
+        **first_step_streams,
+    )
+    short_linkage = dict(
+        request_identity="e" * 64,
+        parent_identity="f" * 64,
+        trial_identity="9" * 64,
+        requested_iterations=iterations,
+        operator_mode="original_value_and_flux"
+        if mode == "original"
+        else "original_value_only_flux_omitted",
+        iterations=short_links,
+        **first_step_streams,
+    )
     captures = []
     for i, stage in enumerate(stages[1:]):
         path = worker / f"demo/capture-{i:04d}.json"
         value = dict(source_completed=True, recorded_stage=stage, fixture=True)
-        if endpoint == "init_first_step":
+        if endpoint in ("init_first_step", "init_short_history"):
             if stage == "init_electrical":
                 value["rng_after"] = first_step_streams["rng_before"]
             elif stage == "init_first_step":
@@ -239,6 +341,8 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
                     loop_returned=False,
                     selected_stop=True,
                 )
+            elif stage == "init_short_history":
+                value = short_record
         write(path, value)
         captures.append(
             dict(
@@ -248,9 +352,15 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
     raw_labels = ["poisson.cache", "core.cache", "profiles.after", "junctions.cache"]
     if endpoint != "seed":
         raw_labels.extend(("init_setup.before", "init_setup.after"))
-    if endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"):
+    if endpoint in (
+        "init_prelude",
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+    ):
         raw_labels.extend(("init_prelude.before", "init_prelude.after", "init_prelude.raw_returns"))
-    if endpoint in ("init_dynamics", "init_electrical", "init_first_step"):
+    if endpoint in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history"):
         raw_labels.extend(
             "init_dynamics." + name
             for name in (
@@ -263,7 +373,7 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
                 "raw_returns",
             )
         )
-    if endpoint in ("init_electrical", "init_first_step"):
+    if endpoint in ("init_electrical", "init_first_step", "init_short_history"):
         for name, streams in (
             ("init_storage", ("stream_before", "stream_after")),
             ("init_electrical", ("rng_before", "rng_after")),
@@ -288,6 +398,26 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
                 "raw_returns",
             )
         )
+    if endpoint == "init_short_history":
+        raw_labels.extend(
+            "init_short_history." + name
+            for name in (
+                "linkage",
+                "before",
+                "after",
+                "calendar",
+                "sampled",
+                "configured_dt",
+                "stream_before",
+                "stream_after",
+                "work",
+                "helpers",
+                "callbacks",
+                "raw_returns",
+                "initial_diagnostics",
+            )
+        )
+        raw_labels.extend(f"init_short_history.iteration.{i:04d}.after" for i in range(iterations))
     for label in raw_labels:
         path = worker / f"demo/capture-{len(captures):04d}.json"
         value = dict(fixture=True, raw_stage=label, identity=label)
@@ -302,6 +432,25 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
                     value["float64_bits"] = "fca9f1d24d62503f"
             if name in ("stream_before", "stream_after"):
                 value = first_step_streams[name.replace("stream_", "rng_")]
+        if label.startswith("init_short_history."):
+            name = label.removeprefix("init_short_history.")
+            key = "dt" if name == "configured_dt" else name
+            if key in short_ids:
+                value["identity"] = short_ids[key]
+            elif name == "linkage":
+                value = short_linkage
+            elif name in ("stream_before", "stream_after"):
+                value = first_step_streams[name.replace("stream_", "rng_")]
+            elif name.startswith("iteration."):
+                value["identity"] = short_rows[int(name.split(".")[1])][3]
+            elif name == "work":
+                value = [
+                    ["inert-synthetic-body.py", 10, True, True] for _ in range(short_record[name])
+                ]
+            elif name == "helpers":
+                value = [["inert-helper", True, True] for _ in range(short_record[name])]
+            elif name == "callbacks":
+                value = [["progressed", 1, [0], True, None] for _ in range(short_record[name])]
         write(path, value)
         captures.append(
             dict(path=path.name, sha256=pin(path)["sha256"], label=label, status="saved")
@@ -320,12 +469,28 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
         endpoint=endpoint,
         init_setup_completed=endpoint != "seed",
         init_prelude_completed=endpoint
-        in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"),
-        init_dynamics_completed=endpoint in ("init_dynamics", "init_electrical", "init_first_step"),
-        init_storage_completed=endpoint in ("init_electrical", "init_first_step"),
-        init_electrical_completed=endpoint in ("init_electrical", "init_first_step"),
+        in (
+            "init_prelude",
+            "init_dynamics",
+            "init_electrical",
+            "init_first_step",
+            "init_short_history",
+        ),
+        init_dynamics_completed=endpoint
+        in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history"),
+        init_storage_completed=endpoint
+        in ("init_electrical", "init_first_step", "init_short_history"),
+        init_electrical_completed=endpoint
+        in ("init_electrical", "init_first_step", "init_short_history"),
         init_first_step_completed=endpoint == "init_first_step",
-        init_time_steps_completed=int(endpoint == "init_first_step"),
+        init_time_steps_completed=iterations
+        if endpoint == "init_short_history"
+        else int(endpoint == "init_first_step"),
+        **(
+            {"init_short_history_completed": True, "init_iterations": iterations}
+            if endpoint == "init_short_history"
+            else {}
+        ),
         original_flux_defect_repaired=False,
         methods_completed=True,
         stage=stages[-1],
@@ -405,6 +570,11 @@ def fixture(tmp_path, mode="original", endpoint="seed", version=None, numpy_orig
         runtime_before_available=True,
         runtime_after_available=True,
         filesystem_audit_installed=True,
+        **(
+            {"init_iterations": iterations if endpoint == "init_short_history" else None}
+            if version == 10
+            else {}
+        ),
     )
     if numpy_origin:
         terminal.update(numpy_copy_origin_available=True, numpy_copy_origin_completed=True)
@@ -1325,7 +1495,7 @@ def test_report_known_failure_survives_missing_final_publication(tmp_path, avail
 
 def molecule_fixture(tmp_path, *, mode="original", endpoint="init_dynamics"):
     """Inert saved records exercise the reader, without issuing molecular authority."""
-    value = fixture(tmp_path, mode=mode, endpoint=endpoint)
+    value = fixture(tmp_path, mode=mode, endpoint=endpoint, import_observation=True)
     change_capture(
         value,
         "init_dynamics.record",
@@ -1362,6 +1532,7 @@ def molecule_fixture(tmp_path, *, mode="original", endpoint="init_dynamics"):
         dynamic_callbacks=[[701, 702, 703, 604]],
         work_views_are_non_additive=True,
         live_claim_or_frame_serialization=False,
+        import_record_identity=801,
     )
     outcome = read(value.worker / "demo/outcome.json")
     for name, raw in (
@@ -1380,7 +1551,145 @@ def molecule_fixture(tmp_path, *, mode="original", endpoint="init_dynamics"):
         )
     outcome.update(init_native_molecules=True, init_molecule_network_completed=True)
     write(value.worker / "demo/outcome.json", outcome)
+    attach_import_capture(value)
     return value
+
+
+def attach_import_capture(value):
+    outcome = read(value.worker / "demo/outcome.json")
+    plan = read(value.plan)
+    source = report.Path(plan["source"])
+    record = dict(
+        protocol=report.IMPORT_PROTOCOL,
+        law="fresh_original_molecule_channel_imported_beartype_factory@1",
+        context_identity=800,
+        record_identity=801,
+        producer_sha256=pin(source / report.MOLECULE_WRAPPER)["sha256"],
+        source_completed=True,
+        published=True,
+        active=False,
+        hooks_restored=True,
+        monitor_restored=True,
+        factories=1,
+        generated=1,
+        raw_returns=1,
+        source_errors=0,
+        work_views_are_non_additive=True,
+        live_claim_or_frame_serialization=False,
+    )
+    for name, raw in (("record", record), ("raw_returns", [{"synthetic_raw_identity": 802}])):
+        path = value.worker / "demo" / ("imports-" + name + ".json")
+        write(path, raw)
+        outcome["captures"].append(
+            dict(
+                label="molecule_imports." + name,
+                path=path.name,
+                sha256=pin(path)["sha256"],
+                status="saved",
+            )
+        )
+    outcome.update(
+        molecule_import_protocol=report.IMPORT_PROTOCOL,
+        molecule_import_completed=True,
+        molecule_import_record_identity=801,
+        molecule_import_operations=[
+            dict(name="enter", status="returned"),
+            dict(name="exit", status="returned"),
+        ],
+    )
+    write(value.worker / "demo/outcome.json", outcome)
+
+
+def test_report_import_closed_record_is_required_and_linked_to_enabled_network(tmp_path):
+    value = molecule_fixture(tmp_path)
+    result = inspect(value)
+    assert result["status"] == "completed_unqualified"
+    imported = result["demonstration"]["molecule_imports"]
+    assert imported["declared"] and imported["completed"]
+    assert imported["record"]["record_identity"] == 801
+    assert result["scientific_credit"] == 0
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["missing", "duplicate", "active", "unpublished", "record_link", "producer", "work", "flag"],
+)
+def test_report_import_incomplete_or_resealed_wrong_link_never_promotes(mutation, tmp_path):
+    value = molecule_fixture(tmp_path)
+    if mutation in ("missing", "duplicate", "flag"):
+
+        def mutate(row):
+            if mutation == "flag":
+                row["molecule_import_completed"] = 1
+            elif mutation == "missing":
+                row["captures"] = [
+                    x for x in row["captures"] if x["label"] != "molecule_imports.record"
+                ]
+            else:
+                row["captures"].append(
+                    next(x for x in row["captures"] if x["label"] == "molecule_imports.record")
+                )
+
+        change(value, "worker/demo/outcome.json", mutate)
+    elif mutation == "record_link":
+        change_capture(
+            value,
+            "init_dynamics.molecule_record",
+            lambda row: row.update(import_record_identity=999),
+        )
+    else:
+        key, changed = {
+            "active": ("active", True),
+            "unpublished": ("published", False),
+            "producer": ("producer_sha256", "f" * 64),
+            "work": ("raw_returns", 2),
+        }[mutation]
+        change_capture(value, "molecule_imports.record", lambda row: row.update({key: changed}))
+    result = inspect(value)
+    assert result["status"] == "incomplete_evidence"
+    assert result["source_execution_complete"] is False
+    assert result["verification_issues"]
+
+
+def test_report_import_legacy_enabled_claim_without_record_is_not_promoted(tmp_path):
+    value = molecule_fixture(tmp_path)
+    plan = read(value.plan)
+    declaration = read(plan["demo_plan"]["path"])
+    declaration.pop("source_plan")
+    plan["demo_plan"] = write(report.Path(plan["demo_plan"]["path"]), declaration)
+    value.digest = write(value.plan, plan)["sha256"]
+
+    def old(row):
+        for name in (
+            "molecule_import_protocol",
+            "molecule_import_completed",
+            "molecule_import_record_identity",
+            "molecule_import_operations",
+        ):
+            row.pop(name)
+        row["captures"] = [
+            x for x in row["captures"] if not x["label"].startswith("molecule_imports.")
+        ]
+
+    change(value, "worker/demo/outcome.json", old)
+    result = inspect(value)
+    assert result["status"] == "incomplete_evidence"
+    assert any(
+        "required import evidence" in row["message"] for row in result["verification_issues"]
+    )
+
+
+def test_report_import_successful_prefix_does_not_promote_later_source_failure(tmp_path):
+    value = molecule_fixture(tmp_path)
+
+    def failed(row):
+        row.update(status="failed", primary="OriginalSourceError", methods_completed=False)
+
+    change(value, "worker/demo/outcome.json", failed)
+    result = inspect(value)
+    assert result["status"] == "failed"
+    assert result["demonstration"]["molecule_imports"]["completed"] is True
+    assert result["source_execution_complete"] is False and result["scientific_credit"] == 0
 
 
 def molecule_refusal(value, message):
@@ -1738,3 +2047,297 @@ def test_report_molecule_paired_flux_modes_require_same_molecular_route(tmp_path
     assert paired["matching"]["init_native_molecules"] is same_selection
     assert paired["paired_execution_complete"] is same_selection
     assert paired["physical_parity"] is paired["restart_qualified"] is False
+
+
+@pytest.mark.parametrize("mode", ["original", "disabled"])
+@pytest.mark.parametrize("iterations", [1, 3, 64])
+def test_report_short_history_keeps_contiguous_states_and_original_time_bits(
+    tmp_path, mode, iterations
+):
+    value = fixture(tmp_path, mode=mode, endpoint="init_short_history", iterations=iterations)
+    result = inspect(value)
+    assert result["status"] == "completed_unqualified" and result["verification_issues"] == []
+    assert result["init_iterations_requested"] == result["init_iterations_completed"] == iterations
+    history = result["demonstration"]["short_history"]
+    assert history["recorded_iterations"] == iterations
+    assert history["original_time_bits"] == [
+        struct.pack("!d", i * 0.00123456789).hex() for i in range(iterations)
+    ]
+    assert history["initial_diagnostics"]["conservation_assessed"] is False
+    assert history["numerical_or_conservation_qualification"] is False
+    assert result["time_steps_qualified"] == result["scientific_credit"] == 0
+    assert result["original_flux_defect_repaired"] is result["restart_qualified"] is False
+
+
+@pytest.mark.parametrize("bad", [None, True, False, 0, -1, 65, 3.0, "3"])
+def test_report_short_history_requires_exact_count_before_reading_outcome(tmp_path, bad):
+    value = fixture(tmp_path, endpoint="init_short_history")
+    plan = read(value.plan)
+    plan["init_iterations"] = bad
+    value.digest = write(value.plan, plan)["sha256"]
+    with pytest.raises(ValueError, match="count"):
+        inspect(value)
+
+
+@pytest.mark.parametrize("version", [6, 7, 8, 9])
+def test_report_short_history_cannot_relabel_historical_schemas(tmp_path, version):
+    value = fixture(tmp_path, endpoint="init_short_history", version=version)
+    with pytest.raises(ValueError, match="plan schemas"):
+        inspect(value)
+
+
+@pytest.mark.parametrize("bad", [True, 2, 4, None])
+def test_report_short_history_prepared_demo_and_plan_count_must_agree(tmp_path, bad):
+    value = fixture(tmp_path, endpoint="init_short_history")
+    plan = read(value.plan)
+    path = value.source.parent / "demo-plan.json"
+    demo = read(path)
+    demo["init_iterations"] = bad
+    plan["demo_plan"] = write(path, demo)
+    value.digest = write(value.plan, plan)["sha256"]
+    with pytest.raises(ValueError, match="Prepared iteration count"):
+        inspect(value)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "count",
+        "bool_count",
+        "operator",
+        "request",
+        "parent",
+        "trial",
+        "row_count",
+        "ordinal",
+        "bool_ordinal",
+        "time_bits",
+        "sample_type",
+        "snapshot",
+        "work_backwards",
+        "work_overflow",
+        "callback_overflow",
+        "molecular",
+        "stream_before",
+        "stream_after",
+    ],
+)
+def test_report_short_history_refuses_count_state_epoch_or_work_retarget(tmp_path, mutation):
+    value = fixture(tmp_path, endpoint="init_short_history")
+
+    def mutate(row):
+        if mutation in ("count", "bool_count"):
+            row["requested_iterations"] = 2 if mutation == "count" else True
+        elif mutation == "operator":
+            row["operator_mode"] = "original_value_only_flux_omitted"
+        elif mutation in ("request", "parent", "trial"):
+            row[mutation + "_identity"] = "7" * 64
+        elif mutation == "row_count":
+            row["iterations"].pop()
+        elif mutation in ("stream_before", "stream_after"):
+            row[mutation.replace("stream_", "rng_")][0] = "7" * 64
+        else:
+            part = row["iterations"][1]
+            key, replacement = {
+                "ordinal": ("ordinal", 0),
+                "bool_ordinal": ("ordinal", True),
+                "time_bits": ("source_time_bits", "0000000000000000"),
+                "sample_type": ("sampled", 1),
+                "snapshot": ("after_identity", "7" * 64),
+                "work_backwards": ("work_end", 0),
+                "work_overflow": ("work_end", 9999),
+                "callback_overflow": ("callbacks_end", 9999),
+                "molecular": ("molecular_record_identity", True),
+            }[mutation]
+            part[key] = replacement
+
+    change_capture(value, "init_short_history.linkage", mutate)
+    result = inspect(value)
+    assert result["verification_issues"] and result["status"] != "completed_unqualified"
+    assert result["init_iterations_completed"] == result["scientific_credit"] == 0
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "linkage",
+        "record",
+        "before",
+        "after",
+        "calendar",
+        "sampled",
+        "configured_dt",
+        "stream_before",
+        "stream_after",
+        "work",
+        "helpers",
+        "callbacks",
+        "raw_returns",
+        "initial_diagnostics",
+        "iteration.0001.after",
+    ],
+)
+def test_report_short_history_needs_every_original_capture(tmp_path, field):
+    value = fixture(tmp_path, endpoint="init_short_history")
+    change(
+        value,
+        "worker/demo/outcome.json",
+        lambda row: row.update(
+            captures=[c for c in row["captures"] if c["label"] != "init_short_history." + field]
+        ),
+    )
+    result = inspect(value)
+    assert result["verification_issues"] and result["status"] != "completed_unqualified"
+
+
+@pytest.mark.parametrize(
+    "mutation", ["after", "time", "work", "callbacks", "rows", "completion", "flags"]
+)
+def test_report_short_history_original_record_cannot_drift_behind_linkage(tmp_path, mutation):
+    value = fixture(tmp_path, endpoint="init_short_history")
+
+    def mutate(row):
+        if mutation == "after":
+            row["after"] = "7" * 64
+        elif mutation == "time":
+            row["iterations"][1][1] = "0000000000000000"
+        elif mutation in ("work", "callbacks"):
+            row[mutation] = 0
+        elif mutation == "rows":
+            row["iterations"].reverse()
+        elif mutation == "completion":
+            row["source_completed"] = False
+        elif mutation == "flags":
+            row["loop_returned"] = row["selected_stop"] = True
+
+    change_capture(value, "init_short_history.record", mutate)
+    result = inspect(value)
+    assert result["verification_issues"] and result["status"] != "completed_unqualified"
+
+
+@pytest.mark.parametrize("mutation", ["request", "count", "flag", "first_step"])
+def test_report_short_history_outcome_cannot_overstate_or_relabel_work(tmp_path, mutation):
+    value = fixture(tmp_path, endpoint="init_short_history")
+    key, changed = {
+        "request": ("init_iterations", 2),
+        "count": ("init_time_steps_completed", 4),
+        "flag": ("init_short_history_completed", False),
+        "first_step": ("init_first_step_completed", True),
+    }[mutation]
+    change(value, "worker/demo/outcome.json", lambda row: row.update({key: changed}))
+    result = inspect(value)
+    assert result["verification_issues"] and result["init_iterations_completed"] == 0
+
+
+@pytest.mark.parametrize("promote", [False, True])
+def test_report_short_history_failure_retains_completed_rows_without_promotion(tmp_path, promote):
+    value = fixture(tmp_path, endpoint="init_short_history")
+    primary = dict(type="OriginalSourceError", message="retained", cause="original cause")
+    (value.output / "result.json").unlink()
+    write(value.output / "failure.json", dict(error=primary))
+    change(
+        value,
+        "worker/demo/outcome.json",
+        lambda row: row.update(
+            status="failed",
+            primary=primary,
+            methods_completed=False,
+            init_short_history_completed=promote,
+            init_time_steps_completed=3 if promote else 0,
+        ),
+    )
+    result = inspect(value)
+    assert result["status"] == "failed" and result["init_iterations_completed"] == 0
+    assert result["failures"][-1]["failure"]["primary"] == primary
+    assert bool(result["verification_issues"]) is promote
+    if not promote:
+        record = next(
+            r
+            for r in result["demonstration"]["captures"]
+            if r["label"] == "init_short_history.record"
+        )
+        assert len(record["references"]["iterations"]) == 3
+        assert result["demonstration"]["short_history"] is None
+
+
+def test_report_short_history_pair_requires_same_declared_count(tmp_path):
+    original = inspect(fixture(tmp_path, endpoint="init_short_history", iterations=3))
+    disabled = inspect(
+        fixture(tmp_path, mode="disabled", endpoint="init_short_history", iterations=2)
+    )
+    paired = report.compare_modes(original, disabled)
+    assert original["status"] == disabled["status"] == "completed_unqualified"
+    assert paired["matching"]["init_iterations_requested"] is False
+    assert paired["paired_execution_complete"] is paired["numerical_equality_checked"] is False
+
+
+@pytest.mark.parametrize("count", [None, True, 2])
+def test_report_short_history_worker_count_must_match_completed_plan(tmp_path, count):
+    value = fixture(tmp_path, endpoint="init_short_history")
+    worker = read(value.worker / "result.json")
+    worker["init_iterations"] = count
+    worker_pin = write(value.worker / "result.json", worker)
+    change(value, "result.json", lambda row: row.update(worker=worker_pin))
+    result = inspect(value)
+    assert result["verification_issues"] and result["status"] != "completed_unqualified"
+    assert result["init_iterations_completed"] == 0
+
+
+def test_report_short_history_cannot_promote_natural_loop_return(tmp_path):
+    value = fixture(tmp_path, endpoint="init_short_history")
+    change_capture(
+        value,
+        "init_short_history.record",
+        lambda row: row.update(loop_returned=True, selected_stop=False),
+    )
+    result = inspect(value)
+    assert result["verification_issues"] and result["init_iterations_completed"] == 0
+
+
+@pytest.mark.parametrize("field", ["work", "helpers", "callbacks"])
+@pytest.mark.parametrize("mutation", ["empty", "short", "long", "wrong_type"])
+def test_report_short_history_actual_work_capture_lengths_match_original_totals(
+    tmp_path, field, mutation
+):
+    value = fixture(tmp_path, endpoint="init_short_history")
+
+    def mutate(rows):
+        assert type(rows) is list and len(rows) > 1
+        if mutation == "empty":
+            return []
+        if mutation == "short":
+            return rows[:-1]
+        if mutation == "long":
+            return [*rows, rows[-1]]
+        return {"declared_length": len(rows)}
+
+    change_capture(value, "init_short_history." + field, mutate)
+    result = inspect(value)
+    assert result["verification_issues"] and result["status"] != "completed_unqualified"
+    assert result["init_iterations_completed"] == 0
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["legacy_seven", "sampled_false", "sampled_int", "rng_before", "rng_after", "rng_missing"],
+)
+def test_report_short_history_requires_original_sample_and_stream_witnesses(tmp_path, mutation):
+    value = fixture(tmp_path, endpoint="init_short_history")
+
+    def mutate(row):
+        if mutation == "legacy_seven":
+            for iteration in row["iterations"]:
+                iteration.pop(2)
+        elif mutation == "sampled_false":
+            row["iterations"][0][2] = False
+        elif mutation == "sampled_int":
+            row["iterations"][0][2] = 1
+        elif mutation == "rng_missing":
+            del row["rng_before"]
+        else:
+            row[mutation][0] = "7" * 64
+
+    change_capture(value, "init_short_history.record", mutate)
+    result = inspect(value)
+    assert result["verification_issues"] and result["status"] != "completed_unqualified"
+    assert result["init_iterations_completed"] == result["scientific_credit"] == 0

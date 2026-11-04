@@ -9,11 +9,12 @@ bounded loop epoch, callback accounting and publication/observation lifecycle.
 import hashlib
 import os
 import struct
+import sys
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from threading import RLock
-from types import FunctionType, MappingProxyType
+from types import CodeType, FunctionType, MappingProxyType, ModuleType
 from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_init_first_step as base
@@ -24,15 +25,20 @@ SELECTION = "contiguous_original_INIT_iterations_before_next_advance"
 RELEASE = "CELLS_NATIVE_INIT_SHORT_HISTORY_RELEASED"
 MAX_ITERATIONS = 64
 BASE_SOURCE_SHA256 = "adaf98d4ef08e9c04c36f18dc1d7b89e17d585ab6460443246fc808425614043"
-PARENT_SOURCE_SHA256 = PARENT_REVIEW_SHA256 = None
+PARENT_SOURCE_SHA256 = None
+PARENT_REVIEW_SHA256 = None
 PARENT_CLAIM = PARENT_CHECK = None
 PROPOSED_PARENT_CLAIM = "_claim_for_short_init"
 PROPOSED_PARENT_CHECK = "_check_short_init_authority"
 # Proposed names only. No accepted Key API is inferred from these strings.
-RUNTIME_SOURCE_SHA256 = RUNTIME_REVIEW_SHA256 = RUNTIME_CONTRACT = None
+RUNTIME_SOURCE_SHA256 = None
+RUNTIME_REVIEW_SHA256 = None
+RUNTIME_CONTRACT = None
+RUNTIME_MODULE = "cells.processes.betse_native_init_molecule_short_runtime"
 RUNTIME_BEGIN = RUNTIME_END = None
 PROPOSED_RUNTIME_BEGIN = "begin_iteration"
 PROPOSED_RUNTIME_END = "finish_iteration"
+PROPOSED_RUNTIME_CONTRACT = "actual_original_INIT_network_single_continuous_bounded_runtime@1"
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
 _ACTIVE, _FAILED, _LOCK = [], [], RLock()
 
@@ -50,6 +56,9 @@ class Request:
     operator_mode: str
     iterations: int
     identity: str
+
+    def __reduce_ex__(self, protocol):
+        raise TypeError("A short-history request cannot be supplied or hydrated")
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,6 +94,8 @@ class Trial:
     selected_stop: bool
     initial_diagnostics: object
     identity: str
+    c_calls: tuple = ()
+    stores: tuple = ()
 
 
 def _count(value):
@@ -140,7 +151,7 @@ def _ready():
         or PARENT_CHECK != PROPOSED_PARENT_CHECK
         or RUNTIME_BEGIN != PROPOSED_RUNTIME_BEGIN
         or RUNTIME_END != PROPOSED_RUNTIME_END
-        or RUNTIME_CONTRACT is None
+        or RUNTIME_CONTRACT != PROPOSED_RUNTIME_CONTRACT
     ):
         raise ShortHistoryRejected(
             "Actual parent and per-iteration molecular contracts remain unadopted",
@@ -175,12 +186,17 @@ def _parent(binding):
 
 
 def from_electrical(owner, *, iterations, law_id):
+    with _LOCK:
+        if _ACTIVE:
+            base._reject(_ACTIVE[-1], "Reentrant short-history declaration")
     count = _count(iterations)
     if law_id != LAW_ID or type(law_id) is not str:
         raise ShortHistoryRejected("Explicit short-history law required", stage="law")
     binding = _ready()
     with _LOCK:
-        if _ACTIVE or type(owner) is not base.previous.ElectricalOwner or owner in _RETIRED:
+        if _ACTIVE:
+            base._reject(_ACTIVE[-1], "Reentrant short-history declaration")
+        if type(owner) is not base.previous.ElectricalOwner or owner in _RETIRED:
             raise ShortHistoryRejected(
                 "Fresh actual unconsumed ElectricalOwner required", stage="owner"
             )
@@ -213,7 +229,9 @@ class _Timeline:
 
     def begin(self, source_time, sampled):
         if (
-            self.invalid
+            self.invalid is not False
+            or type(self.completed) is not int
+            or type(self.target) is not int
             or self.current is not None
             or self.completed >= self.target
             or type(sampled) is not bool
@@ -224,12 +242,13 @@ class _Timeline:
         return self.current
 
     def end(self, record):
-        if self.invalid or self.current is None or type(record) is not Iteration:
+        if self.invalid is not False or self.current is None or type(record) is not Iteration:
             self.invalid = True
             raise ValueError("Original active iteration record required")
         ordinal, label, sampled = self.current
         if (
-            record.ordinal != ordinal
+            type(record.ordinal) is not int
+            or record.ordinal != ordinal
             or record.source_time is not label
             or record.sampled is not sampled
         ):
@@ -245,26 +264,43 @@ class _Timeline:
             if self.current is None
             else (
                 self.current[0],
+                type(self.current[0]),
                 id(self.current[1]),
+                type(self.current[1]),
                 struct.pack("!d", self.current[1]),
                 self.current[2],
+                type(self.current[2]),
             )
         )
         rows = tuple(
             (
                 id(row),
                 row.ordinal,
+                type(row.ordinal),
                 id(row.source_time),
+                type(row.source_time),
                 struct.pack("!d", row.source_time),
                 row.sampled,
+                type(row.sampled),
                 row.after.identity,
                 row.work_end,
+                type(row.work_end),
                 row.callbacks_end,
+                type(row.callbacks_end),
                 id(row.molecular_record),
             )
             for row in self.records
         )
-        return self.target, self.completed, current, rows, self.invalid
+        return (
+            self.target,
+            type(self.target),
+            self.completed,
+            type(self.completed),
+            current,
+            rows,
+            self.invalid,
+            type(self.invalid),
+        )
 
 
 class _CallbackClaims:
@@ -299,7 +335,11 @@ def _local(context):
         or context.timeline is not context.timeline_record
     ):
         raise ValueError("Original short-history engine/ledger replaced")
-    if context.request.iterations != context.timeline.target:
+    if (
+        context.request.iterations != _count(context.timeline.target)
+        or type(context.timeline.completed) is not int
+        or type(context.timeline.invalid) is not bool
+    ):
         raise ValueError("Bound request count changed")
     if (
         _REQUESTS.get(context.request) is not context.refs
@@ -353,10 +393,17 @@ def _callback_enter(context, row):
 
 
 def _runtime(context):
-    api, claim = context.molecule, context.molecule_claim
-    if api is not context.parent.molecule or claim is None:
+    api, claim = context.short_runtime, context.molecule_claim
+    if (
+        type(api) is not ModuleType
+        or sys.modules.get(RUNTIME_MODULE) is not api
+        or context.molecule is not context.parent.molecule
+        or claim is None
+        or getattr(api, "LAW_ID", None) != RUNTIME_CONTRACT
+    ):
         raise ValueError("Actual enabled molecular runtime claimant required")
-    if hashlib.sha256(Path(api.__file__).read_bytes()).hexdigest() != RUNTIME_SOURCE_SHA256:
+    path = Path(api.__file__)
+    if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != RUNTIME_SOURCE_SHA256:
         raise ValueError("Actual adopted runtime producer changed")
     return api, claim
 
@@ -439,7 +486,7 @@ def _observe(context, frame, event, arg):
         if (event != "call" or admitted is not frame) and (
             event != "return" or returned is not frame
         ):
-            context.molecule.observe_runtime(
+            context.short_runtime.observe_runtime(
                 context.molecule_claim, child=context, frame=frame, event=event, arg=arg
             )
             if event == "call":
@@ -448,9 +495,15 @@ def _observe(context, frame, event, arg):
                 context.molecule_returns[id(frame)] = frame
         if event in ("call", "c_call", "c_return", "c_exception"):
             return
+    if event == "call":
+        scope["_admit"](context, frame)
     row = context.frames.get(id(frame))
     if row is None:
         return
+    if event in ("call", "line"):
+        # A profile-call admission can precede trace-call delivery. Re-arm at
+        # each trace boundary before original bytecode/iterator advancement.
+        frame.f_trace_opcodes = True
     if event == "opcode":
         _guard(context)
         _loop_boundary(context, frame)
@@ -493,6 +546,7 @@ def _observe(context, frame, event, arg):
                 or frame.f_locals["time_steps"] is not raw[0]
                 or frame.f_locals.get("time_steps_sampled") is not raw[1]
                 or frame.f_locals.get("solver_context") is not raw[2]
+                or raw[2] is not context.solver_context
             ):
                 scope["_reject"](
                     context, "Original complete calendar/sample/context lineage changed"
@@ -507,8 +561,9 @@ def _bind_runtime(context):
         raise ShortHistoryRejected(
             "Actual repeated-runtime claim unavailable", stage="runtime_held", partial=context
         )
-    api, claim = context.parent.molecule, descendant.molecule_claim
-    context.molecule, context.molecule_claim = api, claim
+    api, claim = sys.modules.get(RUNTIME_MODULE), descendant.molecule_claim
+    context.short_runtime = api
+    context.molecule, context.molecule_claim = context.parent.molecule, claim
     context.molecule_record = None
     _runtime(context)
     names = (
@@ -519,25 +574,51 @@ def _bind_runtime(context):
         "runtime_permissions",
         "observe_runtime",
         "finish_runtime",
-        "project_state",
         "runtime_failed_context",
+        "session_of",
+        "session_provider",
+        "validate_iteration",
         RUNTIME_BEGIN,
         RUNTIME_END,
     )
-    functions = tuple((name, vars(api).get(name)) for name in names)
-    if any(type(fn) is not FunctionType or fn.__globals__ is not vars(api) for _, fn in functions):
+    path = Path(api.__file__)
+    base.previous.interfaces._source_interface(api, path.read_bytes(), path, names)
+    projector_path = Path(context.molecule.__file__)
+    base.previous.interfaces._source_interface(
+        context.molecule, projector_path.read_bytes(), projector_path, ("project_state",)
+    )
+    functions = tuple((api, name, vars(api).get(name)) for name in names)
+    functions += ((context.molecule, "project_state", context.molecule.project_state),)
+    if any(
+        type(fn) is not FunctionType or fn.__globals__ is not vars(provider)
+        for provider, _, fn in functions
+    ):
         raise ShortHistoryRejected(
             "Actual adopted runtime functions unavailable", stage="runtime_held", partial=context
         )
     if api.validate_runtime_active(claim, child=context) is not claim:
         raise ValueError("Different actual short-history runtime claimant")
-    context.molecule_functions = functions
-    context.molecule_function_atoms = tuple(context.atoms(fn) for _, fn in functions)
+    context.short_runtime_functions = functions
+    context.short_runtime_function_atoms = tuple(context.atoms(fn) for _, _, fn in functions)
+    context.short_runtime_source_sha256 = RUNTIME_SOURCE_SHA256
+    if (
+        api.session_of(claim, child=context) is not context.parent.molecule_session
+        or api.session_provider(claim, child=context) is not context.molecule
+    ):
+        raise ValueError("Original session and separate short-runtime provider required")
     context.molecule_members, context.molecule_expressions = (
         api.runtime_members(claim),
         api.runtime_codes(claim),
     )
     context.molecule_permissions = api.runtime_permissions(claim)
+    if type(context.molecule_members) is not tuple or any(
+        type(fn) is not FunctionType for fn in context.molecule_members
+    ):
+        raise ValueError("Actual original short-runtime callable roster required")
+    if type(context.molecule_expressions) is not tuple or any(
+        type(code) is not CodeType for code in context.molecule_expressions
+    ):
+        raise ValueError("Actual original short-runtime expression roster required")
     context.molecule_codes = frozenset(
         (
             *context.molecule_expressions,
@@ -586,6 +667,18 @@ def _dispatch(context, original, label, delegate, actual, args, kwargs, frame):
     )
 
 
+def _claim_wrapper(context, original, frame):
+    return context.runtime["_base_claim_wrapper"](context, original, frame)
+
+
+def _check_ancestor_metadata(context):
+    return context.runtime["_base_check_ancestor_metadata"](context)
+
+
+def _mutation_contract(context):
+    return context.runtime["_base_mutation_contract"](context)
+
+
 def _engine(context):
     """Private observer namespace, not a module/owner or hydrated state."""
     raw = Path(base.__file__).read_bytes()
@@ -619,7 +712,16 @@ def _engine(context):
             base.previous._native_defaults(fn, nodes[name])
             scope[name] = FunctionType(fn.__code__, scope, name, fn.__defaults__, fn.__closure__)
             scope[name].__kwdefaults__ = fn.__kwdefaults__
-    for name in ("_bootstrap", "_guard", "_epoch", "_callback_enter", "_observe"):
+    for name in (
+        "_bootstrap",
+        "_guard",
+        "_epoch",
+        "_callback_enter",
+        "_observe",
+        "_claim_wrapper",
+        "_check_ancestor_metadata",
+        "_mutation_contract",
+    ):
         scope["_base" + name] = scope[name]
         scope[name] = globals()[name]
     scope["_loop_boundary"] = _loop_boundary
@@ -685,6 +787,7 @@ def trial_record(value):
             (
                 row.ordinal,
                 struct.pack("!d", row.source_time).hex(),
+                row.sampled,
                 row.after.identity,
                 row.work_end,
                 row.callbacks_end,
@@ -696,19 +799,28 @@ def trial_record(value):
         work=len(value.work),
         helpers=len(value.helpers),
         callbacks=len(value.callbacks),
+        c_calls=len(value.c_calls),
+        stores=len(value.stores),
         source_completed=value.source_completed,
         loop_returned=value.loop_returned,
         selected_stop=value.selected_stop,
+        rng_before=value.rng_before,
+        rng_after=value.rng_after,
         initial_diagnostics=asdict(value.initial_diagnostics),
     )
 
 
 def prepare(request, *, enabled=False):
+    with _LOCK:
+        if _ACTIVE:
+            base._reject(_ACTIVE[-1], "Reentrant short-history preparation")
     if enabled is not True or os.environ.get(RELEASE) != "1":
         raise ShortHistoryRejected("Short-history source remains held", stage="release")
     binding = _ready()
     with _LOCK:
-        if _ACTIVE or type(request) is not Request or request not in _REQUESTS:
+        if _ACTIVE:
+            base._reject(_ACTIVE[-1], "Reentrant short-history preparation")
+        if type(request) is not Request or request not in _REQUESTS:
             raise ShortHistoryRejected(
                 "Actual fresh issued short-history request required", stage="request"
             )
@@ -799,7 +911,7 @@ def prepare(request, *, enabled=False):
                 raise ShortHistoryRejected(
                     "Continuous source history incomplete", stage="sealing", partial=context
                 )
-            context.molecule_record = context.molecule.finish_runtime(
+            context.molecule_record = context.short_runtime.finish_runtime(
                 context.molecule_claim, child=context
             )
             context.after, context.after_graph = (
@@ -830,10 +942,12 @@ def prepare(request, *, enabled=False):
                 context.selected_stopped,
                 context.initial_diagnostics,
                 "",
+                c_calls=tuple(context.c_calls),
+                stores=tuple(context.stores),
             )
             context.trial = replace(value, identity=base._digest(trial_record(value)))
         except BaseException as error:
-            primary = context.entry_error if context.entry_error is not None else context.primary
+            primary = base._primary(context)
             if primary is None:
                 primary = error
             context.invalid, context.failure_error = True, primary
@@ -853,7 +967,11 @@ def prepare(request, *, enabled=False):
                 try:
                     context.setters[index](context.required_hooks[index])
                 except BaseException as error:
-                    context.cleanup_errors += (("terminal_restore", error, index),)
+                    context.last_cleanup_error = ("terminal_restore", error, index)
+                    try:
+                        context.cleanup_errors += (context.last_cleanup_error,)
+                    except BaseException as capture:
+                        context.cleanup_journal_error = (capture, error)
             samples = []
             for order in ((0, 1), (1, 0)):
                 pair = [None, None]
@@ -861,8 +979,13 @@ def prepare(request, *, enabled=False):
                     try:
                         pair[index] = context.getters[index]()
                     except BaseException as error:
-                        context.cleanup_errors += (("terminal_sample", error, index),)
+                        context.last_cleanup_error = ("terminal_sample", error, index)
+                        try:
+                            context.cleanup_errors += (context.last_cleanup_error,)
+                        except BaseException as capture:
+                            context.cleanup_journal_error = (capture, error)
                 samples.append(tuple(pair))
+            context.final_hooks = tuple(samples)
             context.hooks_safe = all(
                 a is context.required_hooks[0] and b is context.required_hooks[1]
                 for a, b in samples
@@ -875,7 +998,12 @@ def prepare(request, *, enabled=False):
                 trial=context.trial,
                 partial=context,
             ) from primary
-        if context.invalid or context.cleanup_errors or not context.hooks_safe:
+        if (
+            context.invalid
+            or context.cleanup_errors
+            or not context.hooks_safe
+            or getattr(context, "cleanup_journal_error", None) is not None
+        ):
             raise ShortHistoryRejected(
                 "Short-history closure incomplete", stage="closure", partial=context
             )
@@ -918,6 +1046,7 @@ def _authority(owner):
         scope = context.runtime
         scope["_check"](context, closed=True)
         scope["_callbacks_complete"](context)
+        _closed_protocol(context, trial)
         graph = scope["_graph"](context)
         base._same(graph[0], context.after_graph[0])
         if (
@@ -934,3 +1063,61 @@ def _authority(owner):
         raise
     finally:
         context.validating = False
+
+
+def _closed_protocol(context, trial):
+    """Published evidence and closed iteration epoch, not a parent issuer."""
+    raw = context.calendar_raw
+    if (
+        context.timeline.invalid is not False
+        or _count(context.timeline.target) != _count(context.request.iterations)
+        or type(context.timeline.completed) is not int
+        or context.timeline.current is not None
+        or context.timeline.completed != context.request.iterations
+        or len(context.timeline.records) != context.request.iterations
+        or trial.source_completed is not True
+        or trial.selected_stop is not True
+        or trial.loop_returned is not False
+        or trial.rng_before != context.stream_ids
+        or trial.rng_after
+        != tuple(v.identity for v in base.previous.storage.previous._streams(context.parent))
+        or len(trial.iterations) != context.request.iterations
+        or type(raw) is not tuple
+        or len(raw) != 3
+        or context.time_steps is not raw[0]
+        or context.sampled is not raw[1]
+    ):
+        raise ValueError("Complete closed short-history protocol/stream evidence required")
+    codec = base.previous.storage.previous._scope(context.parent)
+    if (
+        codec.snapshot(context.time_steps).identity != trial.calendar.identity
+        or codec.snapshot(tuple(context.sampled)).identity != trial.sampled.identity
+        or codec.snapshot(context.p.dt).identity != trial.dt.identity
+    ):
+        raise ValueError("Original complete calendar/sampling/dt evidence changed")
+    for ordinal, (saved, actual) in enumerate(
+        zip(trial.iterations, context.timeline.records, strict=True)
+    ):
+        if (
+            saved is not actual
+            or type(actual.ordinal) is not int
+            or actual.ordinal != ordinal
+            or type(actual.sampled) is not bool
+            or actual.sampled != (actual.source_time in context.sampled)
+            or struct.pack("!d", actual.source_time)
+            != struct.pack("!d", context.time_steps[ordinal])
+        ):
+            raise ValueError("Original iteration/sampling/calendar evidence changed")
+    api, claim = _runtime(context)
+    for row in trial.iterations:
+        if (
+            api.validate_iteration(
+                claim,
+                row.molecular_record,
+                child=context,
+                ordinal=row.ordinal,
+                source_time=row.source_time,
+            )
+            is not row.molecular_record
+        ):
+            raise ValueError("Actual completed molecular iteration record changed")

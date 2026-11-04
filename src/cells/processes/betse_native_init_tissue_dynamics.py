@@ -33,7 +33,8 @@ from cells.processes import betse_native_seed_init_profiles as profiles
 LAW_ID = "betse_same_INIT_completion_tissue_profiles_events@1"
 MODE = "actual_active_completion_claim_same_handler_two_ordered_entries@1"
 COMPLETION_MODULE = "cells.processes.betse_native_init_dynamics_completion"
-COMPLETION_SOURCE_SHA256 = COMPLETION_REVIEW_SHA256 = None
+COMPLETION_SOURCE_SHA256 = None
+COMPLETION_REVIEW_SHA256 = None
 # This is NOT an accepted or injectable API. Key's real public contract must
 # replace None in a reviewed source successor before any owner is inspected.
 COMPLETION_CONTRACT = None

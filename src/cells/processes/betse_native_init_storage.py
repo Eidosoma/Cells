@@ -35,6 +35,7 @@ ELECTRICAL_BINDING_KIND = "exact_INIT_electrical_bytes_except_two_storage_backre
 ELECTRICAL_ANCESTOR_CLAIM = None
 ELECTRICAL_ANCESTOR_CHECK = None
 FIRST_STEP_ANCESTOR_CLAIM = FIRST_STEP_ANCESTOR_CHECK = None
+SHORT_INIT_ANCESTOR_CLAIM = SHORT_INIT_ANCESTOR_CHECK = None
 NATIVE = previous.NATIVE
 SIM_FILE = previous.SIM_FILE
 MAX_WORK = 100000
@@ -441,6 +442,8 @@ def _merge_permissions(original, additional):
 
 
 def _molecule_runtime_bindings(context):
+    if getattr(context, "short_runtime", None) is not None:
+        return _short_runtime_bindings(context)
     if context.molecule_claim is None:
         if context.parent.request.native_molecules:
             raise ValueError("Enabled molecular runtime cannot lose its issued claimant")
@@ -466,6 +469,51 @@ def _molecule_runtime_bindings(context):
             raise ValueError("Original active runtime claim changed")
     elif api.validate_runtime(claim, child=context) is not context.molecule_record:
         raise ValueError("Original closed runtime record changed")
+    for fn in context.molecule_members:
+        values.extend(context.atoms(fn))
+    values.extend(context.molecule_expressions)
+    return tuple(values)
+
+
+def _short_runtime_bindings(context):
+    """Separate N-runtime provider; the original session projector stays real."""
+    api, claim = context.short_runtime, context.molecule_claim
+    if (
+        type(api) is not ModuleType
+        or sys.modules.get("cells.processes.betse_native_init_molecule_short_runtime") is not api
+        or context.molecule is not context.parent.molecule
+        or claim is None
+        or not previous._pin(context.short_runtime_source_sha256)
+    ):
+        raise ValueError("Actual separate short-runtime/session authority required")
+    path = Path(api.__file__)
+    if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != (
+        context.short_runtime_source_sha256
+    ):
+        raise ValueError("Original short-runtime producer changed")
+    values = [api, claim, context.molecule, context.molecule_permissions, context.molecule_codes]
+    for (provider, name, fn), expected in zip(
+        context.short_runtime_functions, context.short_runtime_function_atoms, strict=True
+    ):
+        if provider not in (api, context.molecule) or vars(provider).get(name) is not fn:
+            raise ValueError("Original short-runtime/session function replaced: " + name)
+        current = context.atoms(fn)
+        previous._same_refs(current, expected)
+        values.extend((provider, name, *current))
+    if (
+        api.session_of(claim, child=context) is not context.parent.molecule_session
+        or api.session_provider(claim, child=context) is not context.molecule
+    ):
+        raise ValueError("Original molecular session/provider association changed")
+    previous._same_refs(api.runtime_members(claim), context.molecule_members)
+    previous._same_refs(api.runtime_codes(claim), context.molecule_expressions)
+    if api.runtime_permissions(claim) is not context.molecule_permissions:
+        raise ValueError("Original short-runtime permission association changed")
+    if context.molecule_record is None:
+        if api.validate_runtime_active(claim, child=context) is not claim:
+            raise ValueError("Original active short-runtime claim changed")
+    elif api.validate_runtime(claim, child=context) is not context.molecule_record:
+        raise ValueError("Original closed short-runtime record changed")
     for fn in context.molecule_members:
         values.extend(context.atoms(fn))
     values.extend(context.molecule_expressions)
@@ -499,6 +547,8 @@ def _binding(context):
         ELECTRICAL_ANCESTOR_CHECK,
         FIRST_STEP_ANCESTOR_CLAIM,
         FIRST_STEP_ANCESTOR_CHECK,
+        SHORT_INIT_ANCESTOR_CLAIM,
+        SHORT_INIT_ANCESTOR_CHECK,
         context.entries,
         context.metadata,
         *_observer_bindings(context),
@@ -1468,7 +1518,14 @@ def _retain_electrical_failure(context, transition, error):
 
 
 def _check_electrical_authority(transition):
+    history = getattr(transition, "short_init_transition", None)
     forwarded = getattr(transition, "first_step_transition", None)
+    if history is not None and forwarded is not None:
+        transition.invalid = history.invalid = forwarded.invalid = True
+        raise ValueError("Electrical epoch cannot have two selected descendants")
+    if history is not None and getattr(history, "claimed", False):
+        _check_short_init_ancestor(transition, history)
+        return transition.storage_parent
     if forwarded is not None and getattr(forwarded, "claimed", False):
         _check_first_step_ancestor(transition, forwarded)
         return transition.storage_parent
@@ -1596,6 +1653,83 @@ def _check_first_step_ancestor(electrical, transition):
     _check_first_step_key_binding(functions)
     if result is not context.parent:
         raise ValueError("Different actual checked Completion ancestor")
+    return context
+
+
+def _short_init_key_api():
+    """Exact distinct Completion seam, unavailable until explicitly adopted."""
+    names = (SHORT_INIT_ANCESTOR_CLAIM, SHORT_INIT_ANCESTOR_CHECK)
+    if names != ("_claim_short_init_ancestor", "_check_short_init_ancestor"):
+        raise StorageRejected(
+            "Reviewed Key short-history ancestor contract unavailable",
+            stage="short_init_ancestor_held",
+        )
+    _ready()
+    path = Path(previous.__file__)
+    raw = path.read_bytes()
+    compiled = compile(raw, str(path), "exec", dont_inherit=True)
+    codes = {code.co_name: code for code in compiled.co_consts if type(code) is CodeType}
+    functions = []
+    for name in names:
+        function = vars(previous).get(name)
+        if (
+            type(function) is not FunctionType
+            or function.__globals__ is not vars(previous)
+            or function.__code__ != codes.get(name)
+            or function.__closure__ is not None
+            or function.__defaults__ is not None
+            or function.__kwdefaults__ is not None
+        ):
+            raise ValueError("Actual original Key short-history source/defaults required")
+        functions.append((name, function, _electrical_atoms(function)))
+    return tuple(functions)
+
+
+def _claim_short_init_ancestor(electrical, transition):
+    functions = _short_init_key_api()
+    context = electrical.storage_parent
+    binding = _electrical_api()
+    module = binding.module
+    frame = sys._getframe(1)
+    if (
+        frame.f_code is not module._claim_for_short_init.__code__
+        or frame.f_globals is not vars(module)
+        or frame.f_locals.get("context") is not electrical
+        or frame.f_locals.get("transition") is not transition
+        or module._FORWARDED.get(electrical.owner) is not transition
+        or context.electrical_transition is not electrical
+        or hasattr(context, "short_init_transition")
+        or hasattr(context, "first_step_transition")
+    ):
+        raise ValueError("Actual once-only electrical short-history claim frame required")
+    context.short_init_transition = transition
+    context.short_init_key_functions = functions
+    try:
+        _check_first_step_key_binding(functions)
+        result = functions[0][1](context.parent, context, electrical, transition)
+        _check_first_step_key_binding(functions)
+        if result is not context.parent:
+            raise ValueError("Different actual Completion short-history ancestor")
+    except BaseException as error:
+        _retain_electrical_failure(context, transition, error)
+        raise
+    return context
+
+
+def _check_short_init_ancestor(electrical, transition):
+    context = electrical.storage_parent
+    if (
+        context.short_init_transition is not transition
+        or context.electrical_transition is not electrical
+        or getattr(context, "first_step_transition", None) is not None
+    ):
+        raise ValueError("Original Storage/short-history parent association changed")
+    functions = context.short_init_key_functions
+    _check_first_step_key_binding(functions)
+    result = functions[1][1](context.parent, context, electrical, transition)
+    _check_first_step_key_binding(functions)
+    if result is not context.parent:
+        raise ValueError("Different checked Completion short-history ancestor")
     return context
 
 

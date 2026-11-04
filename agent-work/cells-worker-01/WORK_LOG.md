@@ -9624,3 +9624,91 @@ Continuous N-iteration INIT needs a later separate pre-source claim; the current
 storage/first-step claims cannot be rebound or reopened. Source/result receipt
 is default-network-result.json under native-init-default-network-development-
 20261104-01. Source and tests remain directly in Git; shared status is Root-owned.
+
+### Continuous short INIT runtime and ancestry successor — 2026-11-04
+
+Root assigned the separate Electrical/storage transfer to Specialist and the
+Completion/molecular/retained ancestry to Key. Added the three new owned
+molecule_short_runtime source/test/runner paths plus narrowly declared
+Completion, retained-world and shared metadata-admission hooks. The original
+network module still owns MoleculeSession/project_state. The new provider owns
+one bounded pre-source claim, ordered begin/finish pairs, exact retained time,
+frame/sample associations, per-iteration records and one final closure. Old
+first-step claims/owners are never rebound. New registries and the shared
+ancestor exclusions retain failed reservations irreversibly.
+
+Local public wrappers satisfy the exact source checker. Private reused bodies
+retain original code/default/global identities and an authenticated table;
+the observer adapter preserves the real child's calling frame and raw return
+before fallible audits. C-unwind observation failures defer to the original
+source exception. Four exact consumer backref literals use the established
+exact-byte binder, resolving the raw-hash cycle without generic omissions.
+All actual adoption/source gates remain None.
+
+Root's requested pilot31 triage found __name__ in the builtin dictionary was
+mistakenly treated as an illegal override of the actual module name. Network
+and wrapper binders now retain five standard module metadata values as globals;
+callable shadows and cached-builtin dictionary identity still reject. No pilot
+or SEED job was queried/restarted and no old result was rebound.
+
+Latest software03 has67 blocked controls; affected-completion01 has17. Their
+processes and the earlier61 image were reviewed. All10 Key preparation/software
+outcomes are terminal:8 completed,2 failed. The wrong-family snapshot launch
+and40-case foreign-return refusal failure remain preserved. Exact ancestor
+check extraction/legacy route/numerical namespace correspondence was checked
+against the frozen predecessor without importing its code. No actual native,
+parent-owner, RNG, reference or numerical source ran. Receipt key-results-01.json
+e1c9b99f is under native-init-molecule-short-runtime-development-20261104-01.
+Specialist froze the six announced production pins in bc8ad93e and released
+the write hold; its34-control CPU4 image is separate, with no adoption inferred.
+
+Specialist's coherent consumer/Electrical/storage successor is now sealed4113c62d:
+34 final controls with the exact six Key production pins loaded; its failed
+installed-history fixture dispatch image remains failed. Root can review both
+receipts together through source-result.json in the Key short-runtime output
+root. Latest per-producer software scopes are67+17+34, not new biological cases.
+No actual parent/native execution or producer/review adoption was added.
+
+### Continuous runtime unwind and producer-cycle repair — 2026-11-04
+
+Root's KEY-SHORT-UNWIND-1 review found the local observer authenticated its
+delegate before recovering a pending abnormal-return exception. The adapter
+now retains the actual pending source exception before that fallible audit;
+the real bytecode return classification still distinguishes handled errors.
+Four installed CPython trace controls retain exact ordinary/falsey/caused
+exception identities and reject a handled normal return with a separate audit
+failure. They use private frame/registry models, never a positive INIT parent.
+
+The runtime-to-network source edge now uses the existing exact-byte network
+interface, excluding exactly its two Completion backref literals. Both values
+are independently checked against the full actual Completion bytes/review;
+the actual network/Completion namespaces, declared contracts, parent adapter
+and existing live session/ancestor checks remain required. Completion's only
+delta since the preceding image splits its two runtime pin assignments into
+separate literal slots. Finite metadata-only image filling closes all three
+reported raw-hash-cycle edges and the existing consumer/runtime edge without
+a fixed point, source execution or a live gate change. Review tokens in that
+control are expressly synthetic and unaccepted.
+
+Fresh unwind-cycle02 passed23 focused blocked controls:12 new plus11 affected.
+The first unwind-cycle01 failed one metadata control because its comparison
+called the original readiness wrapper instead of the pure existing binder;
+that frozen failure, its empty guard and all unrun controls remain separate.
+The corrected test alone changed between those two images. Both metadata
+processes completed, first software failed, final software completed. Earlier
+provider-namespaces01 contributes its own5 passes/two completed terminals,
+not five additional final-source cases. All six processes are reviewed locally;
+the final test/producer pins and saved artifacts are bound in
+unwind-cycle-results.json under the existing short-runtime output root.
+
+No native/source/numerical/actual INIT/RNG/reference work, detached launch,
+parent manufacture, gate adoption or prior-job query was performed. Root's
+independent review remains required. Specialist's separate issued-chain pilot
+timed out at480s with only setup evidence; its receipt3e994dc6 is a concrete
+unresolved positive-path prerequisite, not a completed or qualified case.
+
+Final receipt5de9181c2caa4fb081028e4e3fb168fa37fb85efdfa176755e46c8fd810e3c0c
+binds runtimeb2d7d898 and Completion1acb5721. Direct substantive handoff attempts
+to both Chief and Specialist failed at the stale127.0.0.1:43257 MCP connector;
+the exact receipt/current API pins were relayed in this thread instead. The
+immutable receipt/log copy precedes this delivery note and stays unchanged.

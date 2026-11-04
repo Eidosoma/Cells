@@ -2,6 +2,7 @@
 
 import ast
 import hashlib
+import os
 import sys
 import time
 from contextlib import contextmanager
@@ -56,6 +57,14 @@ def monitored_public_model_guard(tmp_path):
 
     def callable_state(fn):
         namespace = fn.__globals__
+        declared_builtins = namespace.get("__builtins__")
+        resolved_builtins = (
+            vars(declared_builtins)
+            if type(declared_builtins) is ModuleType
+            else declared_builtins
+        )
+        if resolved_builtins is not fn.__builtins__:
+            raise ValueError("Actual cached software guard builtins required")
         values = [
             fn,
             fn.__code__,
@@ -64,6 +73,7 @@ def monitored_public_model_guard(tmp_path):
             fn.__defaults__,
             fn.__kwdefaults__,
             fn.__closure__,
+            declared_builtins,
         ]
         values.extend(cell.cell_contents for cell in fn.__closure__ or ())
         for key in fn.__code__.co_names:
@@ -73,7 +83,9 @@ def monitored_public_model_guard(tmp_path):
                 values.extend((key, fn.__builtins__[key]))
         return tuple(values)
 
-    def guard_state(fn):
+    predicate_files = []
+
+    def guard_state(fn, *, verify_path=False):
         if any(
             fn.__code__ is value
             for value in choices[2].co_consts
@@ -103,20 +115,35 @@ def monitored_public_model_guard(tmp_path):
             None if type(predicate) is not FunctionType else sys.modules.get(predicate.__module__)
         )
         canonical = None if module is None else module.__name__
+        spec = None
         if canonical == "__main__":
             spec = vars(module).get("__spec__")
             canonical = spec.name if type(spec) is ModuleSpec else None
+        filename = None if module is None else vars(module).get("__file__")
         if (
             type(module) is not ModuleType
             or predicate.__globals__ is not vars(module)
             or vars(module).get("is_forbidden_frame") is not predicate
             or type(canonical) is not str
             or not canonical.startswith("validation.betse.betse_native_")
-            or Path(module.__file__).resolve()
-            != runner.ROOT / (canonical.replace(".", "/") + ".py")
+            or type(filename) is not str
         ):
             raise ValueError("Actual frozen native blacklist predicate required")
-        return (source, *callable_state(fn), *callable_state(predicate))
+        if verify_path:
+            if Path(filename).resolve() != runner.ROOT / (canonical.replace(".", "/") + ".py"):
+                raise ValueError("Actual frozen native blacklist predicate required")
+            predicate_files.append(filename)
+        return (
+            source,
+            module,
+            module.__name__,
+            spec,
+            canonical,
+            filename,
+            runner.ROOT,
+            *callable_state(fn),
+            *callable_state(predicate),
+        )
 
     pending, bindings = list(guards), []
     while pending:
@@ -125,7 +152,7 @@ def monitored_public_model_guard(tmp_path):
             continue
         if type(fn) is not FunctionType or not any(fn.__code__ is code for code in permitted):
             raise ValueError("An external profile/trace observer must retain its full epoch audit")
-        bindings.append((fn, guard_state(fn)))
+        bindings.append((fn, guard_state(fn, verify_path=True)))
         closure = dict(
             zip(
                 fn.__code__.co_freevars,
@@ -142,6 +169,32 @@ def monitored_public_model_guard(tmp_path):
             pending.extend(item for item in predecessor if item is not None)
         else:
             pending.append(predecessor)
+    # These are exact path-chain identities, not a source-proof cache. Resolve
+    # canonical module paths at both boundaries; authenticate every filesystem
+    # component and all live guard bindings at each PY_START. Fresh production
+    # source-byte/AST checks are neither replaced nor memoized here.
+    lstat = os.lstat
+    paths = tuple(
+        dict.fromkeys(
+            str(part)
+            for filename in predicate_files
+            for part in (*reversed(Path(filename).parents), Path(filename))
+        )
+    )
+    path_bindings = tuple(
+        (path, (value.st_dev, value.st_ino, value.st_mode))
+        for path in paths
+        for value in (lstat(path),)
+    )
+
+    def check_paths():
+        if os.lstat is not lstat:
+            raise AssertionError("Original filesystem identity lookup required")
+        for path, original in path_bindings:
+            value = lstat(path)
+            if (value.st_dev, value.st_ino, value.st_mode) != original:
+                raise AssertionError("Frozen software guard path identity changed")
+
     monitor = sys.monitoring
     initial = tuple((monitor.get_tool(i), monitor.get_events(i)) for i in range(6))
     free = [i for i, (name, _) in enumerate(initial) if name is None]
@@ -159,6 +212,7 @@ def monitored_public_model_guard(tmp_path):
         frame = sys._getframe(1)
         if frame.f_code is not code:
             raise AssertionError("Actual monitored source-entry frame required")
+        check_paths()
         for fn, original in bindings:
             current = guard_state(fn)
             if len(current) != len(original) or any(
@@ -211,6 +265,16 @@ def monitored_public_model_guard(tmp_path):
                     operation(*args)
                 except BaseException as error:
                     errors.append((operation.__name__, error))
+        try:
+            check_paths()
+            for fn, original in bindings:
+                current = guard_state(fn, verify_path=True)
+                if len(current) != len(original) or any(
+                    a is not b for a, b in zip(current, original, strict=True)
+                ):
+                    raise AssertionError("Frozen software guard final binding changed")
+        except BaseException as error:
+            errors.append(("final_guard_binding", error))
         final = tuple((monitor.get_tool(i), monitor.get_events(i)) for i in range(6))
         intact = sys.getprofile() is before[0] and sys.gettrace() is before[1]
         receipt = dict(

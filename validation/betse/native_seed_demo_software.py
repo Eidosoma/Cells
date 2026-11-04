@@ -19,6 +19,8 @@ FORBIDDEN_MODULES = base.FORBIDDEN_MODULES | frozenset(
     (
         "cells.processes.betse_native_init_first_step_source",
         "cells.processes.betse_native_init_molecule_network_source",
+        "cells.processes.betse_native_init_short_history",
+        "cells.processes.betse_native_init_short_history_diagnostics",
     )
 )
 NATIVE_ROOT, Reports = base.NATIVE_ROOT, base.Reports

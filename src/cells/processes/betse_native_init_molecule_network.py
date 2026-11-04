@@ -421,7 +421,11 @@ def _function_bindings(fn):
     for name in fn.__code__.co_names:
         if name in namespace:
             value = namespace[name]
-            if name in cached and value is not cached[name]:
+            if (
+                name in cached
+                and value is not cached[name]
+                and name not in ("__name__", "__doc__", "__package__", "__loader__", "__spec__")
+            ):
                 raise ValueError("Original source builtin was shadowed: " + name)
             result.extend(("global", name, value))
         elif name in cached:
@@ -1571,7 +1575,7 @@ def runtime_wrapper_guard(claim, *, child, original, frame):
     caller = frame.f_back
     source_function = context.functions[("MasterOfNetworks", "run_loop_channels")]
     if (
-        runtime.kind != "first_step"
+        runtime.kind not in ("first_step", "short_history")
         or child is not runtime.child
         or original is not context.completion.init_parent
         or type(wrapper) is not FunctionType
@@ -1782,7 +1786,7 @@ def _runtime_entry(runtime, frame):
                     wrapped_parent is not None
                     or caller is root
                     or (
-                        runtime.kind == "first_step"
+                        runtime.kind in ("first_step", "short_history")
                         and name in ("write_data", "report")
                         and stored is not None
                         and stored["frame"] is caller

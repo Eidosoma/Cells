@@ -101,9 +101,79 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The earlier 36-pass image stays separate, and the metadata counter failure
   remains preserved. No provider adoption or native execution is claimed.
 
+  Root's [short-INIT demo and report milestone](/mnt/workspaces/Cells/native-init-short-history-demo-20261104-01/source-result-02.json)
+  now accepts a declared **1–64 contiguous iterations** from a fresh electrical
+  owner. It preserves original time-label bits, configured timestep, sampling
+  flags, per-iteration state, molecular records and RNG handoffs. Both flux
+  modes remain explicit; failures retain partial evidence without completion
+  credit. Final focused groups passed **49 consumer and 91 report controls**;
+  the unchanged launcher has 32 passing controls at its own image. Earlier
+  70-consumer and 99-report images retain their prior seven-field contract and
+  are not recredited to the final eight-field format. Missing-overlay and
+  synthetic-fixture failures remain preserved. Producer gates stay closed:
+  this is implemented demonstration plumbing, not an executed INIT history.
+
   Key owns the enabled network/material construction and runtime contract;
-  Specialist owns the same-object Completion → storage → electrical → first-step
-  integration pilot and required retained/storage handoff. The original input
+  Specialist owns the same-object Completion → storage → electrical loop and
+  required retained/storage handoff. Root's [consolidated short-history review](/mnt/workspaces/Cells/native-init-short-history-20261104-01/integration-repairs-01/root-source-software-review.json)
+  closes the five lifecycle/observer findings and verifies **34 distinct blocked
+  controls**, 30.893 seconds / 291,254,272 bytes sampled RSS. Both 505-file
+  source images, runtime bindings and all 14 current consumer/dependency pins
+  verify. The initial four-pass/one-fixture-failure image and older 45 controls
+  remain separate. Specialist now owns the complete issued-chain integration
+  milestone against Key's finished molecular runtime, including both operator
+  modes and mid-history failure retention. Routine repairs and affected checks
+  are handled independently; actual INIT adoption awaits the complete milestone.
+  Key has delivered the [consolidated runtime/ancestry packet](/mnt/workspaces/Cells/native-init-molecule-short-runtime-development-20261104-01/source-result.json):
+  67 runtime and 17 affected ancestry controls, plus the separately reviewed
+  Specialist 34, total 118 across their own images. Root's [complete Key review](/mnt/workspaces/Cells/native-init-molecule-short-runtime-development-20261104-01/root-key-source-software-review.json)
+  verifies those 84 Key controls and all ten process outcomes. It found one
+  error-retention gap: a delegate audit during unwind could replace an existing
+  molecular source exception. Root's adoption preparation also exposed a
+  circular full-file pin dependency through Completion, short runtime and
+  network. Key is repairing both in the same integration batch. Specialist
+  continues the public-API chain; neither needs per-fix approval.
+  Specialist's [issued-chain checkpoint](/mnt/workspaces/Cells/native-init-short-history-20261104-01/issued-chain-01/source-result.json)
+  reports five cheap passes, followed by a value-only synthetic pilot stopped
+  at 480.058 seconds / 294,289,408 bytes sampled RSS during setup. No iteration
+  completed; final runtime/guard and call/teardown evidence are absent, and the
+  remaining three cases were not launched. The last durable body boundary was
+  dynamics completion; it does not locate the subsequent bottleneck. Root
+  assigned one changed-image, bounded setup/stack diagnostic with compact
+  failure retention before any cap increase or further full-chain cases.
+  That [diagnostic](/mnt/workspaces/Cells/native-init-short-history-20261104-01/issued-chain-01/diagnostic-result.json)
+  also stopped at 480.049 seconds with no completed owner control. Fourteen of
+  fifteen sampled stacks show repeated provider guard/path resolution and
+  source-template AST parsing inside Completion validation. This localizes
+  observation cost, without establishing a numerical defect or final guard
+  certification. Key owns the metadata-cost repair. After changed-source cheap
+  checks, Specialist may run one detached value-only pilot with an explicit
+  1,800-second envelope; default limits, 1-GiB RSS and 8-GiB reserve stay fixed.
+  The other three cases remain unlaunched.
+  Specialist has now delivered the [extended pilot envelope](/mnt/workspaces/Cells/native-init-short-history-20261104-01/issued-chain-01/extended-envelope-01/source-result.json):
+  19 cheap controls passed in 15.327 seconds / 275,755,008 bytes sampled RSS,
+  with 57 phase reports and empty saved guards. The declaration splits needed
+  by the exact source binder are included without changing function/class
+  bodies. This is a locally reviewed preparation milestone, not an issued-chain
+  pass. The conditional pilot has not launched; Key's changed provider and
+  focused evidence remain its prerequisite.
+
+  Root's [complete INIT adoption plan](/mnt/workspaces/Cells/native-init-short-history-demo-20261104-01/adoption-plan.json)
+  binds 40 source files and 12 template recipes, with a conditional acyclic
+  fill order after Key's correction. It also identifies required declaration
+  splits for the exact-byte binder and two Root consumer integrations: explicit
+  molecular runtime loading, and genuine wrapper-import observation before
+  callback-triggered original imports. Those are being implemented together;
+  the observation must close before network validation. No new provider pins
+  or source execution gates have been adopted by this plan.
+  Their earlier
+  [enabled first-iteration pilot 31](/mnt/workspaces/Cells/native-init-first-step-20261104-01/software-31-issued-enabled-chain-pilot/LAUNCH.json)
+  is now terminal failed: the user-requested status check found a namespace
+  validator rejecting `__name__` during synthetic Completion/network setup,
+  before the full handoff. Runtime was 148.636 seconds, sampled RSS 288,526,336
+  bytes; the saved aggregate native guard is empty and both hooks were restored.
+  Key is folding this finding into the existing runtime batch. No unchanged
+  pilot retry was launched. The original input
   enables the general molecular network and leaves GRN disabled. Key's new
   public runtime contract has [97 verified blocked passes](/mnt/workspaces/Cells/native-init-electrical-ancestor-development-20261104-01/saved-results-review-root.json)
   across two final images. Its [source review](/mnt/workspaces/Cells/native-init-electrical-ancestor-development-20261104-01/source-review-root.json)
@@ -114,10 +184,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   One requested terminal check found failure after 24.868 seconds: five
   unintentionally selected metadata cases passed, but the intended chain case
   failed during fixture setup because its parameter snapshot received an
-  unsupported `SimpleNamespace`. It did not reach the full handoff. Complete
-  guard certification is absent. The separate, subsequently corrected module
-  lookup defect was not the observed failure; no corrected-image retry has run.
-  Specialist is batching fixture, exact-selection and lookup corrections.
+  unsupported `SimpleNamespace`. It did not reach the full handoff, and complete
+  guard certification is absent. That historical failure and the separate
+  module-lookup correction remain preserved separately from pilot 31's newly
+  observed namespace refusal.
   Root owns demonstration consumers, fresh inputs and later producer
   adoption/actual execution. Each developer
   handles routine repairs within the batch and reports at completion or a real
@@ -198,7 +268,61 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   update, timestep, SIM or restart is claimed. The original and disabled flux
   inverse modes remain explicit; no numerical defect or native input was changed.
 
-  **Latest terminal result:** one user-requested terminal check found the
+  **Latest completed attempt:** the [user-requested terminal check](/mnt/workspaces/Cells/betse-status-20261104-1221.json)
+  found the tenth original-flux SEED attempt failed after **888.567 seconds /
+  484,945,920 bytes sampled RSS**, within its limits. Parameter snapshot
+  validation rejected `numpy.float64` as an unsupported exact YAML graph type.
+  No WorldReady owner or world completed; this is an integration/capture blocker,
+  not evidence that the flux solver failed. The [saved-report review](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-10/root-saved-report-review-01.json)
+  verifies the failed disposition and 2,315 files without source replay. Both checked
+  detached attempts are terminal; no retry or numerical launch occurred during
+  the status check. The current implementation and blocked software coverage
+  therefore remain ahead of actual end-to-end execution evidence.
+
+  Root's [scalar-capture repair](/mnt/workspaces/Cells/native-parameter-remainder-scalar-capture-20261104-01/source-result.json)
+  is complete and independently reviewed: **21 distinct blocked controls pass**
+  across five groups. The parameter graph now admits only the exact retained
+  `numpy.float64` class, preserving its original object, type, bits and aliases.
+  Shared YAML defaults, numerical bodies, live parameter values and resource
+  limits are unchanged. WorldConstruction already uses this same capture path.
+  [Consumer adoption](/mnt/workspaces/Cells/native-seed-demo-20261103-01/producer-adoption-09/source-review.json)
+  changes only 20 source-pin literals in ten files; existing binding templates,
+  function bodies and held INIT gates are preserved. The prior 46 wrapper
+  controls and failed actual attempt retain their own evidence.
+
+  [Fresh paired preparation and prelaunch review](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-preparation-13/prelaunch-review-02.json)
+  completed in 153.444 seconds / 52,125,696 bytes sampled RSS. Both headless
+  modes bind identical 597-file images. Fourteen added INIT files are static
+  test-closure dependencies only; all INIT source/review gates remain closed.
+  One old-shape release-metadata rejection is preserved; it occurred before
+  launch and was corrected without changing the frozen source or inputs.
+  The [eleventh original-flux SEED attempt](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-11/LAUNCH.json)
+  launched detached at **12:57:05 UTC**, CPU0 / one thread / 7,200 seconds /
+  1-GiB RSS / 8-GiB reserve. The latest requested terminal check found
+  [failure after 880.338 seconds](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-11/worker/failure.json),
+  with 494,362,624 bytes sampled RSS and 20,220,194,816 bytes minimum available
+  host memory. The original remainder and ion/charge-balance bodies returned,
+  and the repaired remainder capture retained its post-source graph. A separate
+  initializer-constants scope-closure path still used the ordinary YAML graph
+  policy and rejected the actual `numpy.float64`. No WorldReady owner, phase
+  or world was issued. The outer failed-owner sidecar also retains its explicit
+  unsupported-SimpleNamespace serialization limitation. This is a parameter
+  observation/closure failure; the flux operators were not reached. The earlier
+  478.041-second live sample remains only an intermediate observation. No retry
+  occurred during this status check; the omitted-inverse counterpart remains
+  prepared and unlaunched. Full saved-evidence review and the remaining closure
+  repair are next, with no end-to-end, INIT, physical or restart credit.
+
+  Root's [release-metadata helper](/mnt/workspaces/Cells/native-seed-demo-release-metadata-20261104-01/source-result.json)
+  removes the handwritten schema step that caused the prelaunch refusal.
+  It verifies the plan and creates an exclusive sibling release file carrying
+  the exact endpoint and iteration count. **13 focused blocked checks pass**
+  (seven new, six affected). The initial ten-pass/one negative-fixture failure
+  and two unrun cases are preserved; production was unchanged by that fixture
+  correction. Existing launch/worker/validation bodies, resource policies and
+  the detached SEED image remain untouched. No additional actual run occurred.
+
+  The earlier user-requested terminal check found the
   [ninth original-flux SEED attempt failed](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-09/worker/failure.json)
   after **860.430 seconds / 480,493,568 bytes sampled RSS**, within its limits.
   The NumPy construction-origin step completed and the callback returned;
@@ -226,8 +350,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   identical 583-file source images; numeric/network/transport settings remain
   original. The [tenth original-flux SEED run](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-10/LAUNCH.json)
   launched detached at 11:32:54 UTC on CPU0 with the unchanged 7200-second,
-  1-GiB RSS and 8-GiB reserve limits. Its outcome is unobserved; no automatic
-  polling/retry is scheduled. The omitted-flux counterpart is prepared and
+  1-GiB RSS and 8-GiB reserve limits. Its terminal failure is recorded above;
+  no automatic retry is scheduled. The omitted-flux counterpart is prepared and
   unlaunched. INIT gates and scientific qualification remain held.
   The prior [prelaunch review](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-preparation-11/prelaunch-review.json)
   binds the reviewed NumPy construction-origin repair, current consumers and

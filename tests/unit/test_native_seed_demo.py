@@ -1,12 +1,15 @@
 """Blocked orchestration controls; private protocol fakes never issue authority."""
 
+import ast
+import hashlib
 import json
 import os
 import sys
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
-from types import FunctionType
+from types import FunctionType, ModuleType
 from types import SimpleNamespace as NS
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -17,6 +20,748 @@ from validation.betse import native_seed_demo_software as software
 from validation.betse import native_seed_world_geometry_qualification as geometry
 
 _RAW_GUARDS = []
+_import_model = None
+LAW = "fresh_original_molecule_channel_imported_beartype_factory@1"
+
+
+@dataclass(frozen=True)
+class ImportEvidence:
+    law: str
+    source_completed: bool
+    factories: int
+    generated: int
+    raw_returns: tuple
+    source_errors: tuple
+
+
+@contextmanager
+def observing_native_imports(*, enabled=False):
+    """Inert contextmanager protocol; no native factory or owner is invoked."""
+    if enabled is not True:
+        raise ValueError("explicit synthetic observation required")
+    model = _import_model
+    context = model.import_context
+    model.import_events.append("enter")
+    if model.import_entry_error is not None:
+        raise model.import_entry_error
+    context.active = True
+    try:
+        yield context
+    except BaseException as error:
+        context.primary = error
+        raise
+    finally:
+        context.active = False
+        model.import_events.append("exit")
+        if model.import_exit_error is not None:
+            raise model.import_exit_error
+    context.raw_returns.append((sys._getframe(), "return", "unchanged generated text"))
+    context.record = ImportEvidence(
+        LAW, True, 1, 1, tuple(context.raw_returns), tuple(context.source_errors)
+    )
+    context.published = True
+    model.import_events.append("published")
+
+
+def import_observer_model(model):
+    """Actual stdlib contextmanager shape with a synthetic, globals-correct body."""
+    module = ModuleType("private_demo_import_observer")
+    module.__file__ = __file__
+    module.LAW = "fresh_original_molecule_channel_imported_beartype_factory@1"
+    module.ImportEvidence = ImportEvidence
+    module.sys = sys
+    module._import_model = model
+    function = FunctionType(observing_native_imports.__wrapped__.__code__, vars(module))
+    function.__kwdefaults__ = {"enabled": False}
+    module.observing_native_imports = contextmanager(function)
+    model.import_events = []
+    model.import_entry_error = model.import_exit_error = None
+    model.import_context = NS(
+        active=False,
+        published=False,
+        primary=None,
+        capture_error=None,
+        capture_errors=[],
+        hook_losses=[],
+        cleanup=(),
+        hooks_restored=True,
+        monitor_restored=True,
+        raw_returns=[],
+        source_errors=[],
+        record=None,
+    )
+    return module
+
+
+# The source closure follows this static dependency. The provider is never
+# imported: controls parse its frozen bytes and evaluate only its inert predicate.
+if TYPE_CHECKING:
+    from cells.processes import (
+        betse_native_init_first_step,  # noqa: F401
+        betse_native_init_molecule_short_runtime,  # noqa: F401
+        betse_native_init_molecule_wrapper_authority,  # noqa: F401
+        betse_native_init_short_history,  # noqa: F401
+    )
+
+
+@dataclass(frozen=True)
+class HistoryDiagnostic:
+    ordinal: int
+
+
+def short_history_chain(*, mode="original", count=2, fail=None, mutate=None):
+    """Inert public protocol; the actual short-history producer stays blocked."""
+    model = electrical_chain(mode=mode)
+    model.state.endpoint = model.plan["endpoint"] = "init_short_history"
+    model.state.init_iterations = model.plan["init_iterations"] = count
+    model.history_objects = []
+
+    def point(label):
+        model.calls.append("init_short_history." + label)
+        if fail == label:
+            raise model.primary
+
+    def request(parent, *, iterations, law_id):
+        point("request")
+        assert parent is model.field_objects["init_electrical"][0] and not parent.consumed
+        assert model.state.electrical_trial is model.field_objects["init_electrical"][2]
+        assert type(iterations) is int and iterations == count and law_id == "short-history"
+        return NS(
+            electrical_owner=parent,
+            iterations=iterations,
+            operator_mode={
+                "original": "original_value_and_flux",
+                "disabled": "original_value_only_flux_omitted",
+            }[mode],
+            parent_identity=model.state.electrical_trial.identity,
+            identity="7" * 64,
+        )
+
+    def prepare(request, *, enabled):
+        assert enabled is True
+        request.electrical_owner.consumed = True
+        point("source")
+        _, phase, parent = model.field_objects["init_electrical"]
+        rows = tuple(
+            NS(
+                ordinal=i,
+                source_time=-0.0 if i == 0 else i * 0.13,
+                sampled=i % 2 == 0,
+                after=StepSnapshot(f"{i + 16:064x}", ("after", i)),
+                work_end=i + 1,
+                callbacks_end=0,
+                molecular_record=object(),
+                diagnostics=HistoryDiagnostic(i),
+            )
+            for i in range(count)
+        )
+        trial = NS(
+            request_identity=request.identity,
+            parent_identity=parent.identity,
+            identity="9" * 64,
+            before=StepSnapshot("1" * 64, ("before",)),
+            after=rows[-1].after,
+            calendar=StepSnapshot("3" * 64, tuple(row.source_time for row in rows)),
+            sampled=StepSnapshot("4" * 64, tuple(row.source_time for row in rows if row.sampled)),
+            dt=StepSnapshot("6" * 64, 0.4),
+            iterations=rows,
+            work=tuple(dict(code=prepare.__code__, body_started=True, returned=True) for _ in rows),
+            helpers=(),
+            callbacks=(),
+            c_calls=(),
+            stores=(),
+            raw_returns=((sys._getframe(), None), (sys._getframe(), [-0.0, b"\x00\xff"])),
+            rng_before=parent.rng_after,
+            rng_after=("c" * 64, "d" * 64),
+            source_completed=True,
+            loop_returned=False,
+            selected_stop=True,
+            initial_diagnostics=HistoryDiagnostic(-1),
+        )
+        if mutate is not None:
+            replacement = mutate(model, phase, trial)
+            if replacement is not None:
+                phase = replacement
+
+        class Child:
+            @property
+            def trial(self):
+                point("trial")
+                return trial
+
+            @property
+            def phase(self):
+                point("phase")
+                return phase
+
+        child = Child()
+        model.history_objects.append((child, phase, trial))
+        return child
+
+    def record(trial):
+        point("record")
+        return dict(
+            request=trial.request_identity,
+            parent=trial.parent_identity,
+            before=trial.before.identity,
+            after=trial.after.identity,
+            calendar=trial.calendar.identity,
+            sampled=trial.sampled.identity,
+            dt=trial.dt.identity,
+            iterations=tuple(
+                (
+                    row.ordinal,
+                    stage.struct.pack("!d", row.source_time).hex(),
+                    row.sampled,
+                    row.after.identity,
+                    row.work_end,
+                    row.callbacks_end,
+                    id(row.molecular_record),
+                    stage.asdict(row.diagnostics),
+                )
+                for row in trial.iterations
+            ),
+            work=len(trial.work),
+            helpers=len(trial.helpers),
+            callbacks=len(trial.callbacks),
+            c_calls=len(trial.c_calls),
+            stores=len(trial.stores),
+            source_completed=trial.source_completed,
+            loop_returned=trial.loop_returned,
+            selected_stop=trial.selected_stop,
+            rng_before=trial.rng_before,
+            rng_after=trial.rng_after,
+            initial_diagnostics=stage.asdict(trial.initial_diagnostics),
+        )
+
+    model.modules["init_short_history"] = NS(
+        LAW_ID="short-history", from_electrical=request, prepare=prepare, trial_record=record
+    )
+    return model
+
+
+def original_operator_mode_metadata():
+    """Frozen original predicate only; no provider import, owner, array or operator."""
+    path = stage.ROOT / "src/cells/processes/betse_native_init_first_step.py"
+    raw = path.read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == (
+        "adaf98d4ef08e9c04c36f18dc1d7b89e17d585ab6460443246fc808425614043"
+    )
+    nodes = [
+        node
+        for node in ast.parse(raw).body
+        if isinstance(node, ast.FunctionDef) and node.name == "_operator_mode"
+    ]
+    assert len(nodes) == 1
+    namespace = {"__name__": "tests.blocked_original_mode_predicate"}
+    code = compile(ast.Module(body=nodes, type_ignores=[]), "synthetic-mode-predicate.py", "exec")
+    exec(code, namespace)
+    return namespace["_operator_mode"]
+
+
+def original_history_record_metadata():
+    """Correspondence with the provider's exact data projection, without importing it."""
+    raw = (stage.ROOT / "src/cells/processes/betse_native_init_short_history.py").read_bytes()
+    nodes = [
+        node
+        for node in ast.parse(raw).body
+        if isinstance(node, ast.FunctionDef) and node.name == "trial_record"
+    ]
+    assert len(nodes) == 1
+    assert hashlib.sha256(ast.dump(nodes[0], include_attributes=False).encode()).hexdigest() == (
+        "899ec3670c0cec0ce2dcd96efc91ba82c783fc413a443767d6e0f9f86d618bae"
+    )
+    namespace = {
+        "__name__": "tests.blocked_original_history_record",
+        "struct": stage.struct,
+        "asdict": stage.asdict,
+    }
+    exec(
+        compile(ast.Module(body=nodes, type_ignores=[]), "synthetic-history-record.py", "exec"),
+        namespace,
+    )
+    return namespace["trial_record"]
+
+
+@pytest.mark.parametrize("mode", stage.FLUX_MODES)
+def test_demo_init_short_history_record_wire_matches_actual_metadata_projection(mode, tmp_path):
+    original = original_history_record_metadata()
+    model, evidence = short_history_chain(mode=mode), Evidence()
+    fixture_record = model.modules["init_short_history"].trial_record
+
+    def record(trial):
+        value = original(trial)
+        assert value == fixture_record(trial)
+        return value
+
+    model.modules["init_short_history"].trial_record = record
+    execute(model, tmp_path, evidence)
+    trial = model.state.short_history_trial
+    saved = dict(evidence.values)["init_short_history.record"]
+    assert saved == dict(identity=trial.identity, **original(trial))
+    assert saved["rng_before"] == model.state.electrical_trial.rng_after
+    assert saved["rng_after"] == trial.rng_after
+    for raw, row in zip(saved["iterations"], trial.iterations, strict=True):
+        assert len(raw) == 8 and raw[2] is row.sampled
+    assert "cells.processes.betse_native_init_short_history" not in sys.modules
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "old_seven",
+        "sampled_flip",
+        "sampled_integer",
+        "before_missing",
+        "after_missing",
+        "before_changed",
+        "after_changed",
+        "before_list",
+        "after_list",
+    ],
+)
+def test_demo_init_short_history_record_wire_refuses_sample_or_stream_inconsistency(
+    mutation, tmp_path
+):
+    model = short_history_chain()
+    original = original_history_record_metadata()
+
+    def record(trial):
+        value = original(trial)
+        if mutation in ("old_seven", "sampled_flip", "sampled_integer"):
+            rows = list(value["iterations"])
+            row = list(rows[0])
+            if mutation == "old_seven":
+                del row[2]
+            elif mutation == "sampled_flip":
+                row[2] = not row[2]
+            else:
+                row[2] = int(row[2])
+            rows[0] = tuple(row)
+            value["iterations"] = tuple(rows)
+        else:
+            key = "rng_before" if mutation.startswith("before") else "rng_after"
+            if mutation.endswith("missing"):
+                del value[key]
+            elif mutation.endswith("changed"):
+                value[key] = ("e" * 64, "f" * 64)
+            else:
+                value[key] = list(value[key])
+        return value
+
+    model.modules["init_short_history"].trial_record = record
+    with pytest.raises(ValueError, match="record"):
+        execute(model, tmp_path)
+    assert model.state.short_history_trial is model.history_objects[0][2]
+    assert model.state.short_history_record is not None
+    assert (
+        model.state.init_time_steps_completed == 0 and not model.state.init_short_history_completed
+    )
+
+
+@pytest.mark.parametrize("mode", stage.FLUX_MODES)
+def test_demo_init_short_history_operator_mode_matches_actual_metadata_predicate(mode, tmp_path):
+    predicate = original_operator_mode_metadata()
+    cells = NS(lapENV_P_inv=None if mode == "disabled" else object())
+    expected = predicate(cells)
+    assert expected == stage.HISTORY_OPERATOR_MODES[mode]
+    model, evidence = short_history_chain(mode=mode), Evidence()
+    original = model.modules["init_short_history"].from_electrical
+
+    def request(*args, **kwargs):
+        value = original(*args, **kwargs)
+        value.operator_mode = expected
+        return value
+
+    model.modules["init_short_history"].from_electrical = request
+    execute(model, tmp_path, evidence)
+    assert dict(evidence.values)["init_short_history.linkage"]["operator_mode"] == expected
+    assert model.state.init_time_steps_completed == 2
+    assert "cells.processes.betse_native_init_first_step" not in sys.modules
+    (tmp_path / "original-mode-predicate.json").write_text(
+        json.dumps(
+            dict(
+                source="src/cells/processes/betse_native_init_first_step.py",
+                sha256="adaf98d4ef08e9c04c36f18dc1d7b89e17d585ab6460443246fc808425614043",
+                demo_mode=mode,
+                provider_mode=expected,
+                inert_cells_only=True,
+                provider_import_or_owner_or_operator_execution=False,
+            )
+        )
+    )
+
+
+@pytest.mark.parametrize("mode", stage.FLUX_MODES)
+@pytest.mark.parametrize("mutation", ["short_label", "opposite", "none", "bool", "str_subclass"])
+def test_demo_init_short_history_operator_mode_refuses_wrong_or_untyped_before_consumption(
+    mode, mutation, tmp_path
+):
+    predicate = original_operator_mode_metadata()
+    model = short_history_chain(mode=mode)
+    original = model.modules["init_short_history"].from_electrical
+
+    class Label(str):
+        pass
+
+    wrong = {
+        "short_label": mode,
+        "opposite": predicate(NS(lapENV_P_inv=object() if mode == "disabled" else None)),
+        "none": None,
+        "bool": True,
+        "str_subclass": Label(predicate(NS(lapENV_P_inv=None if mode == "disabled" else object()))),
+    }[mutation]
+
+    def request(*args, **kwargs):
+        value = original(*args, **kwargs)
+        value.operator_mode = wrong
+        return value
+
+    model.modules["init_short_history"].from_electrical = request
+    with pytest.raises(ValueError, match="request/count/operator"):
+        execute(model, tmp_path)
+    assert not model.field_objects["init_electrical"][0].consumed
+    assert "init_short_history.source" not in model.calls
+    assert (
+        model.state.init_time_steps_completed == 0 and not model.state.init_short_history_completed
+    )
+
+
+@pytest.mark.parametrize("mode", stage.FLUX_MODES)
+@pytest.mark.parametrize("count", [1, 3, 64])
+def test_demo_init_short_history_keeps_contiguous_original_values_and_fresh_parent(
+    mode, count, tmp_path
+):
+    model, evidence = short_history_chain(mode=mode, count=count), Evidence()
+    returned = execute(model, tmp_path, evidence)
+    child, phase, trial = model.history_objects[0]
+    assert returned.result is child and returned.short_history_trial is trial
+    assert phase is returned.phase is returned.init_phase is returned.short_history_phase
+    assert returned.electrical_trial is model.field_objects["init_electrical"][2]
+    assert model.field_objects["init_electrical"][0].consumed
+    assert model.calls.count("init_electrical.trial") == 1
+    assert not any("first_step" in name for name in model.calls)
+    assert "init_first_step" not in model.module_loads
+    values = dict(evidence.values)
+    assert values["init_short_history.record"] == dict(
+        identity=trial.identity, **model.modules["init_short_history"].trial_record(trial)
+    )
+    linkage = values["init_short_history.linkage"]
+    assert linkage["requested_iterations"] == count
+    assert (
+        linkage["operator_mode"]
+        == {
+            "original": "original_value_and_flux",
+            "disabled": "original_value_only_flux_omitted",
+        }[mode]
+    )
+    assert linkage["rng_before"] == returned.electrical_trial.rng_after
+    assert linkage["iterations"][0]["source_time_bits"] == "8000000000000000"
+    for i, row in enumerate(trial.iterations):
+        assert values[f"init_short_history.iteration.{i:04d}.after"] is row.after
+        assert (
+            linkage["iterations"][i]["source_time_bits"]
+            == stage.struct.pack("!d", row.source_time).hex()
+        )
+    assert values["init_short_history.configured_dt"] is trial.dt
+    assert values["init_short_history.raw_returns"][-1] is trial.raw_returns[-1][1]
+    outcome = json.loads((tmp_path / "outcome.json").read_text())
+    assert outcome["kind"] == stage.KIND and outcome["init_iterations"] == count
+    assert outcome["init_short_history_completed"] and outcome["init_time_steps_completed"] == count
+    assert (
+        outcome["init_first_step_completed"] is False
+        and outcome["scientific_or_physical_credit"] == 0
+    )
+
+
+@pytest.mark.parametrize("count", [None, True, False, 0, 65, 2.0, "2"])
+def test_demo_init_short_history_count_refuses_before_callback_or_dependency(
+    count, monkeypatch, tmp_path
+):
+    model = short_history_chain(count=count)
+    with pytest.raises(stage.DemoRejected, match="integer iteration"):
+        execute(model, tmp_path)
+    assert model.calls == [] and model.state.last_return is None
+    monkeypatch.setattr(stage, "_dependencies", lambda *a: pytest.fail("Count checked too late"))
+    with pytest.raises(stage.DemoRejected, match="integer iteration"):
+        stage.prepare(
+            stage.ROOT,
+            tmp_path / "held",
+            inputs="unused",
+            inputs_sha256="0" * 64,
+            python="unused",
+            bootstrap="unused",
+            bootstrap_sha256="0" * 64,
+            auxiliary_configuration={},
+            flux_operator="original",
+            endpoint="init_short_history",
+            init_iterations=count,
+        )
+
+
+@pytest.mark.parametrize("endpoint", ["seed", "init_electrical", "init_first_step"])
+def test_demo_init_short_history_count_cannot_relabel_other_endpoint(endpoint):
+    with pytest.raises(stage.DemoRejected, match="only to init_short_history"):
+        stage.source_plan(endpoint=endpoint, init_iterations=1)
+
+
+@pytest.mark.parametrize("edge", ["phase", "p", "cells", "sim", "dyna", "callbacks", "cache"])
+def test_demo_init_short_history_rejects_changed_same_owner_chain(edge, tmp_path):
+    def mutate(model, phase, trial):
+        if edge == "phase":
+            return NS(**vars(phase))
+        setattr(phase, edge, object())
+
+    model = short_history_chain(mutate=mutate)
+    with pytest.raises(ValueError, match="same retained chain"):
+        execute(model, tmp_path)
+    assert model.state.short_history_trial is model.history_objects[0][2]
+    assert (
+        model.state.init_time_steps_completed == 0 and not model.state.init_short_history_completed
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "parent",
+        "request",
+        "complete",
+        "loop_returned",
+        "selected_stop",
+        "count",
+        "ordinal",
+        "bool_ordinal",
+        "work",
+        "callbacks",
+        "last_after",
+        "rng",
+        "record",
+    ],
+)
+def test_demo_init_short_history_incomplete_or_relabelled_evidence_never_counts(mutation, tmp_path):
+    def mutate(model, phase, trial):
+        if mutation in ("parent", "request"):
+            setattr(trial, mutation + "_identity", "foreign")
+        elif mutation == "complete":
+            trial.source_completed = False
+        elif mutation == "loop_returned":
+            trial.loop_returned = True
+        elif mutation == "selected_stop":
+            trial.selected_stop = False
+        elif mutation == "count":
+            trial.iterations = trial.iterations[:-1]
+        elif mutation == "ordinal":
+            trial.iterations[1].ordinal = 0
+        elif mutation == "bool_ordinal":
+            trial.iterations[0].ordinal = False
+        elif mutation == "work":
+            trial.iterations[1].work_end = 0
+        elif mutation == "callbacks":
+            trial.iterations[0].callbacks_end = 1
+        elif mutation == "last_after":
+            trial.after = StepSnapshot("f" * 64, "foreign")
+        elif mutation == "rng":
+            trial.rng_before = ("e" * 64, "f" * 64)
+
+    model = short_history_chain(mutate=mutate)
+    if mutation == "record":
+        old = model.modules["init_short_history"].trial_record
+        model.modules["init_short_history"].trial_record = lambda trial: dict(old(trial), work=True)
+    with pytest.raises(ValueError):
+        execute(model, tmp_path)
+    assert model.state.short_history_trial is model.history_objects[0][2]
+    assert (
+        model.state.init_time_steps_completed == 0 and not model.state.init_short_history_completed
+    )
+
+
+@pytest.mark.parametrize("label", ["request", "source", "trial", "phase", "record"])
+def test_demo_init_short_history_original_failure_retains_raw_child_and_cause(label, tmp_path):
+    model = short_history_chain(fail=label)
+    model.primary = Falsey("original failure")
+    model.primary.__cause__ = ValueError("original cause")
+    with pytest.raises(Falsey) as caught:
+        execute(model, tmp_path)
+    assert caught.value is model.primary and model.state.primary is model.primary
+    assert model.state.primary.__cause__.args == ("original cause",)
+    assert model.field_objects["init_electrical"][0].consumed is (label != "request")
+    if label in ("trial", "phase", "record"):
+        assert model.state.owners[-1][1] is model.history_objects[0][0]
+        assert model.state.last_return is model.history_objects[0][0]
+    assert model.state.init_time_steps_completed == 0
+
+
+@pytest.mark.parametrize(
+    "label",
+    ["record", "linkage", "calendar", "configured_dt", "raw_returns", "iteration.0001.after"],
+)
+def test_demo_init_short_history_capture_failure_keeps_trial_but_zero_completion(label, tmp_path):
+    model, evidence = short_history_chain(), Evidence(fail="init_short_history." + label)
+    with pytest.raises(ValueError):
+        execute(model, tmp_path, evidence)
+    assert model.state.short_history_trial is model.history_objects[0][2]
+    assert (
+        model.state.init_time_steps_completed == 0 and not model.state.init_short_history_completed
+    )
+    assert "init_short_history.failure.raw_returns" in dict(evidence.values)
+    assert "init_short_history.failure.iteration.0001.after" in dict(evidence.values)
+
+
+def test_demo_init_short_history_durable_partial_iteration_survives_independent_writer_failure(
+    tmp_path,
+):
+    from validation.betse.native_single_cell_prefix_qualification import Evidence as Recorder
+
+    model = short_history_chain()
+    primary, secondary = Falsey("original second iteration failed"), OSError("one forensic write")
+    partial = NS(
+        before=("before",),
+        time_steps=(-0.0, 0.13),
+        sampled={-0.0},
+        stream_ids=("a" * 64, "b" * 64),
+        work=[dict(code=short_history_chain.__code__, body_started=True, returned=False)],
+        stores=[],
+        helper_calls=[],
+        callback_calls=[],
+        raw_returns=[(sys._getframe(), [-0.0, b"\xff"])],
+        last_raw=(sys._getframe(), b"raw failed return"),
+        last_iteration_raw=("actual record",),
+        timeline=NS(
+            current=(1, 0.13, False),
+            completed=1,
+            records=[
+                NS(
+                    ordinal=0,
+                    source_time=-0.0,
+                    sampled=True,
+                    after=("completed 0",),
+                    work_end=1,
+                    callbacks_end=0,
+                    molecular_record=object(),
+                    diagnostics=HistoryDiagnostic(0),
+                )
+            ],
+        ),
+    )
+    primary.partial, primary.trial = partial, None
+
+    def fail(request, *, enabled):
+        request.electrical_owner.consumed = True
+        raise primary
+
+    model.modules["init_short_history"].prepare = fail
+    evidence = Recorder(tmp_path, sidecars=True, capture_writer=transport.capture_writer)
+    save = evidence.save
+
+    def writer(label, value):
+        if label == "init_short_history.failure.before":
+            raise secondary
+        return save(label, value)
+
+    evidence.save = writer
+    with pytest.raises(Falsey) as caught:
+        execute(model, tmp_path, evidence)
+    assert caught.value is primary and model.state.short_history_failure_context is partial
+    assert ("init_short_history.failure.before", secondary) in model.state.secondary
+    saved = {
+        row["label"]: transport.read(
+            tmp_path / row["path"], expected_sha256=row["sha256"], expand=False
+        )
+        for row in evidence.rows
+        if row["status"] == "saved" and row["label"].startswith("init_short_history.failure.")
+    }
+    assert "init_short_history.failure.raw_returns" in saved
+    assert "init_short_history.failure.last_raw_return" in saved
+    assert "init_short_history.failure.iteration.0000.after" in saved
+    assert saved["init_short_history.failure.completed_iterations"] == 1
+    assert saved["init_short_history.failure.current_iteration"][0] == 1
+    assert model.state.init_time_steps_completed == 0
+
+
+@pytest.mark.parametrize("prefix", ["INIT", "PRELUDE", "COMPLETION", "ELECTRICAL", "HISTORY"])
+def test_demo_init_short_history_every_ancestor_gate_precedes_source_reads(prefix, monkeypatch):
+    for name in ("INIT", "PRELUDE", "COMPLETION", "ELECTRICAL", "HISTORY"):
+        for suffix in ("SOURCE_PINS", "REVIEW_PINS"):
+            key = name + "_" + suffix
+            monkeypatch.setattr(stage, key, {k: "a" * 64 for k in getattr(stage, key)})
+    monkeypatch.setattr(
+        stage, prefix + "_SOURCE_PINS", dict.fromkeys(getattr(stage, prefix + "_MODULES"))
+    )
+    monkeypatch.setattr(
+        stage.snapshot, "digest", lambda *_: pytest.fail("source read before complete gates")
+    )
+    with pytest.raises(stage.DemoRejected, match="unadopted|adoption remains held"):
+        stage._dependencies("init_short_history")
+    with pytest.raises(stage.DemoRejected):
+        stage.Modules("init_first_step")["init_short_history"]
+
+
+@pytest.mark.parametrize(
+    "module", ["betse_native_init_short_history", "betse_native_init_short_history_diagnostics"]
+)
+def test_demo_init_short_history_actual_entry_and_observation_are_blocked(module):
+    namespace = {"__name__": "cells.processes." + module}
+    container = compile("def prepare():\n return None\n", "synthetic.py", "exec")
+    code = next(value for value in container.co_consts if type(value) is stage.CodeType)
+    assert software.is_forbidden_frame(NS(f_globals=namespace, f_code=code))
+
+
+@pytest.mark.parametrize("failure", ["session", "outcome"])
+def test_demo_init_short_history_late_failure_clamps_count_without_erasing_trial(
+    failure, tmp_path, monkeypatch
+):
+    model, primary = short_history_chain(), Falsey("late failure")
+
+    @contextmanager
+    def session():
+        yield
+        if failure == "session":
+            raise primary
+
+    writer = stage.snapshot.write_json
+
+    def write(path, value):
+        if path == tmp_path / "outcome.json" and failure == "outcome":
+            raise primary
+        return writer(path, value)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(stage.snapshot, "write_json", write)
+        with pytest.raises(Falsey) as got:
+            execute(model, tmp_path, session=session())
+    assert got.value is primary and model.state.short_history_trial.source_completed is True
+    assert (
+        model.state.init_short_history_completed is False
+        and model.state.init_time_steps_completed == 0
+    )
+
+
+def test_demo_init_short_history_plan_count_drift_refuses_before_callbacks(tmp_path):
+    model = short_history_chain()
+    model.plan["init_iterations"] = True
+    with pytest.raises(ValueError, match="declared INIT iteration count"):
+        execute(model, tmp_path)
+    assert model.calls == []
+
+
+def test_demo_init_short_history_source_scalar_packing_preserves_original_object(tmp_path):
+    class SourceScalar:
+        def __float__(self):
+            return -0.0
+
+    label = SourceScalar()
+
+    def mutate(model, phase, trial):
+        trial.iterations[0].source_time = label
+
+    model, evidence = short_history_chain(mutate=mutate), Evidence()
+    execute(model, tmp_path, evidence)
+    assert model.state.short_history_trial.iterations[0].source_time is label
+    assert (
+        dict(evidence.values)["init_short_history.linkage"]["iterations"][0]["source_time_bits"]
+        == "8000000000000000"
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -24,7 +769,13 @@ def blocked(request, tmp_path):
     if os.environ.get(software.SOFTWARE_RELEASE) != "1":
         pytest.skip("Explicit native-blocked demonstration software release required")
     request.config.option.maxfail = 1
-    adapter = NS(**dict(vars(software), reuse=software.base.reuse.reuse))
+    adapter = NS(
+        **dict(
+            vars(software),
+            reuse=software.base.reuse.reuse,
+            is_forbidden_frame=consumer_forbidden_frame,
+        )
+    )
     namespace = dict(vars(guards), software=adapter, _BLOCKADE_FAILURES=())
     fn = FunctionType(guards._blockade.__wrapped__.__code__, namespace)
     try:
@@ -33,6 +784,13 @@ def blocked(request, tmp_path):
     finally:
         if namespace["_BLOCKADE_FAILURES"]:
             _RAW_GUARDS.append(namespace["_BLOCKADE_FAILURES"])
+
+
+def consumer_forbidden_frame(frame):
+    return software.is_forbidden_frame(frame) or frame.f_globals.get("__name__", "") in (
+        "cells.processes.betse_native_init_molecule_short_runtime",
+        "cells.processes.betse_native_init_molecule_wrapper_authority",
+    )
 
 
 class Evidence:
@@ -1377,7 +2135,9 @@ def test_demo_init_setup_plan_binds_selected_endpoint_and_full_stage_roster(
     path = tmp_path / "plan.json"
     value = dict(
         kind=stage.KIND,
-        source_plan=stage.source_plan(endpoint=endpoint),
+        source_plan=stage.source_plan(
+            endpoint=endpoint, init_iterations=2 if endpoint == "init_short_history" else None
+        ),
         snapshot_sha256="a" * 64,
         parameter_packet="packet",
         parameter_sha256="b" * 64,
@@ -1387,6 +2147,7 @@ def test_demo_init_setup_plan_binds_selected_endpoint_and_full_stage_roster(
         shared_writer_review="writer",
         flux_operator="original",
         endpoint=endpoint,
+        init_iterations=2 if endpoint == "init_short_history" else None,
         policy=stage.POLICY,
         held=True,
     )
@@ -1730,6 +2491,8 @@ def dynamics_chain(*, mode="original", fail=None, mutate=None):
         LAW_ID="init_dynamics", from_prelude=request, prepare=prepare, trial_record=record
     )
     model.modules["init_tissue"] = object()
+    model.modules["molecule_wrappers"] = import_observer_model(model)
+    model.modules["molecule_short_runtime"] = object()
     model.module_loads = []
 
     class Modules(dict):
@@ -2275,7 +3038,7 @@ def test_demo_init_first_step_retains_one_original_iteration_and_native_time_lab
     assert values["init_first_step.record"]["loop_returned"] is loop_returned
     assert values["init_first_step.record"]["selected_stop"] is not loop_returned
     outcome = json.loads((tmp_path / "outcome.json").read_text())
-    assert outcome["kind"].endswith("@5") and outcome["init_first_step_completed"] is True
+    assert outcome["kind"] == stage.KIND and outcome["init_first_step_completed"] is True
     assert (
         type(outcome["init_time_steps_completed"]) is int
         and outcome["init_time_steps_completed"] == 1
@@ -3078,3 +3841,309 @@ def test_demo_molecular_unadopted_gate_and_actual_entry_blockade_stay_closed(mon
                     f_code=NS(co_name=name, co_filename="<metadata-only>"),
                 )
             )
+
+
+@pytest.mark.parametrize("endpoint", ["init_dynamics", "init_short_history"])
+def test_demo_import_window_closes_before_parameters_and_actual_runtime_claim(endpoint, tmp_path):
+    model = molecule_chain() if endpoint == "init_dynamics" else short_history_chain()
+    evidence = Evidence()
+    callback = model.modules["callback"]
+    parameter = model.modules["parameters"]
+    acquire, parameters = callback.acquire_callback, parameter.acquire_world_ready
+    boundaries = []
+
+    def inside(*args, **kwargs):
+        assert model.import_context.active and not model.import_context.published
+        boundaries.append("callback")
+        return acquire(*args, **kwargs)
+
+    def after(*args, **kwargs):
+        assert not model.import_context.active and model.import_context.published
+        assert model.state.molecule_import_record is model.import_context.record
+        boundaries.append("parameters")
+        return parameters(*args, **kwargs)
+
+    callback.acquire_callback, parameter.acquire_world_ready = inside, after
+    execute(model, tmp_path, evidence)
+    assert boundaries == ["callback", "parameters"]
+    assert model.import_events == ["enter", "exit", "published"]
+    assert model.state.molecule_import_completed
+    assert model.state.molecule_import_binding[0].__globals__ is not vars(
+        model.state.molecule_import_api
+    )
+    if endpoint == "init_short_history":
+        first_load = model.module_loads.index("molecule_short_runtime")
+        assert first_load < model.module_loads.index("callback")
+        assert model.module_loads.count("molecule_short_runtime") == 2
+        assert model.state.short_runtime_api is dict.__getitem__(
+            model.modules, "molecule_short_runtime"
+        )
+    else:
+        record = dict(evidence.values)["init_dynamics.molecule_record"]
+        assert record["import_record_identity"] == id(model.import_context.record)
+    imports = dict(evidence.values)["molecule_imports.record"]
+    assert imports["record_identity"] == id(model.import_context.record)
+    assert imports["context_identity"] == id(model.import_context)
+    assert imports["live_claim_or_frame_serialization"] is False
+    assert model.calls.count("callback") == 1
+
+
+@pytest.mark.parametrize("mutation", ["unwrapped", "foreign_globals", "closure", "defaults"])
+def test_demo_import_public_decorator_binding_refuses_before_callback(mutation, tmp_path):
+    model = dynamics_chain()
+    module = dict.__getitem__(model.modules, "molecule_wrappers")
+    stage._import_observer_binding(module)  # Valid actual contextmanager baseline.
+    public = module.observing_native_imports
+    if mutation == "unwrapped":
+        module.observing_native_imports = public.__wrapped__
+    elif mutation == "foreign_globals":
+        module.observing_native_imports = contextmanager(observing_native_imports.__wrapped__)
+    elif mutation == "closure":
+        public.__wrapped__ = observing_native_imports.__wrapped__
+    else:
+        public.__wrapped__.__kwdefaults__["enabled"] = True
+    with pytest.raises(ValueError, match="decorated import-observer"):
+        execute(model, tmp_path)
+    assert "callback" not in model.calls and model.import_events == []
+    assert model.state.result is None
+
+
+@pytest.mark.parametrize("falsey", [False, True])
+@pytest.mark.parametrize("cleanup", [False, True])
+def test_demo_import_primary_cause_survives_exit_and_forensic_capture_failures(
+    falsey, cleanup, tmp_path
+):
+    model = dynamics_chain()
+    primary = (
+        Falsey("original callback source") if falsey else ValueError("original callback source")
+    )
+    cause, secondary = LookupError("original cause"), RuntimeError("observer exit")
+    primary.__cause__ = cause
+    model.import_exit_error = secondary if cleanup else None
+
+    def fail(*args, **kwargs):
+        model.calls.append("callback")
+        model.import_context.raw_returns.append((sys._getframe(), "return", b"\x00\xff"))
+        raise primary
+
+    model.modules["callback"].acquire_callback = fail
+    evidence = Evidence(fail="molecule_imports.failure.primary", forensic_error=OSError("archive"))
+    with pytest.raises(type(primary)) as caught:
+        execute(model, tmp_path, evidence)
+    assert caught.value is primary and primary.__cause__ is cause
+    assert (
+        model.state.primary is primary
+        and model.state.molecule_import_context is model.import_context
+    )
+    assert not model.import_context.active and not model.import_context.published
+    assert model.state.molecule_import_manager is not None
+    assert "parameters" not in model.calls and not model.state.molecule_import_completed
+    assert model.import_context.raw_returns[-1][2] == b"\x00\xff"
+    assert any(
+        row["status"] == "capture_failed" for row in model.state.molecule_import_failure_captures
+    )
+    if cleanup:
+        assert any(error is secondary for _, error in model.state.secondary)
+
+
+@pytest.mark.parametrize("failure", ["enter", "exit", "record_capture", "raw_capture", "exit_log"])
+def test_demo_import_partial_context_and_record_survive_observer_boundaries(failure, tmp_path):
+    model = dynamics_chain()
+    primary = Falsey(failure)
+    evidence = Evidence()
+    if failure == "enter":
+        primary.partial = model.import_context
+        model.import_entry_error = primary
+    elif failure == "exit":
+        model.import_exit_error = primary
+    elif failure == "exit_log":
+
+        class RejectExit(list):
+            def append(self, row):
+                if row["name"] == "exit":
+                    raise primary
+                super().append(row)
+
+        model.state.molecule_import_operations = RejectExit()
+    else:
+        evidence.fail = "molecule_imports." + (
+            "record" if failure == "record_capture" else "raw_returns"
+        )
+    with pytest.raises(ValueError):
+        execute(model, tmp_path, evidence)
+    assert model.state.result is None and not model.state.molecule_import_completed
+    assert "parameters" not in model.calls
+    if failure == "enter":
+        assert (
+            model.state.primary is primary
+            and model.state.molecule_import_partial is primary.partial
+        )
+        assert model.state.molecule_import_context is None and "callback" not in model.calls
+    else:
+        assert model.state.molecule_import_context is model.import_context
+        assert model.import_context.active is False
+        if failure != "exit":
+            assert model.state.molecule_import_record is model.import_context.record
+            assert model.state.molecule_import_record.raw_returns
+    if failure == "exit_log":
+        assert model.import_events == ["enter", "exit", "published"]
+
+
+@pytest.mark.parametrize("field,value", [("published", False), ("active", True), ("record", None)])
+def test_demo_import_closed_record_is_rechecked_before_enabled_network(field, value, tmp_path):
+    model = molecule_chain()
+    parameter = model.modules["parameters"]
+    acquire = parameter.acquire_world_ready
+
+    def mutate(*args, **kwargs):
+        result = acquire(*args, **kwargs)
+        setattr(model.import_context, field, value)
+        return result
+
+    parameter.acquire_world_ready = mutate
+    with pytest.raises(ValueError, match="Closed published original import"):
+        execute(model, tmp_path)
+    assert "molecular.request" not in model.calls
+    assert not model.state.init_molecule_network_completed
+
+
+@pytest.mark.parametrize("family", ["WRAPPER", "HISTORY"])
+@pytest.mark.parametrize("mutation", ["unadopted", "missing", "changed"])
+def test_demo_import_dependencies_refuse_before_any_callback_import(
+    family, mutation, monkeypatch, tmp_path
+):
+    endpoint = "init_short_history"
+    sha = hashlib.sha256(b"# inert definition\n").hexdigest()
+    monkeypatch.setattr(stage, "ROOT", tmp_path)
+    for prefix in ("", "INIT_", "PRELUDE_", "COMPLETION_", "ELECTRICAL_", "HISTORY_", "WRAPPER_"):
+        modules = getattr(stage, prefix + "MODULES")
+        for name in modules.values():
+            path = tmp_path / stage._relative(name)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"# inert definition\n")
+        monkeypatch.setattr(stage, prefix + "SOURCE_PINS", dict.fromkeys(modules, sha))
+        monkeypatch.setattr(stage, prefix + "REVIEW_PINS", dict.fromkeys(modules, "a" * 64))
+    path = tmp_path / stage._relative(stage.EVIDENCE_MODULE)
+    path.write_bytes(b"# inert definition\n")
+    monkeypatch.setattr(stage, "EVIDENCE_SOURCE_SHA256", sha)
+    calls = []
+    monkeypatch.setattr(stage.importlib, "import_module", lambda name: calls.append(name))
+    assert isinstance(stage._dependencies(endpoint), stage.Modules)
+    key = "molecule_wrappers" if family == "WRAPPER" else "molecule_short_runtime"
+    path = tmp_path / stage._relative(getattr(stage, family + "_MODULES")[key])
+    if mutation == "unadopted":
+        getattr(stage, family + "_SOURCE_PINS")[key] = None
+    elif mutation == "missing":
+        path.unlink()
+    else:
+        path.write_text("# changed producer\n")
+    with pytest.raises(stage.DemoRejected):
+        stage._dependencies(endpoint)
+    assert calls == []
+
+
+def test_demo_import_native_provider_and_runtime_bodies_are_blocked():
+    for module in (
+        *stage.WRAPPER_MODULES.values(),
+        stage.HISTORY_MODULES["molecule_short_runtime"],
+    ):
+        assert module not in sys.modules
+        for name in (
+            "<module>",
+            "observing_native_imports",
+            "bind_short_history",
+            "observe_runtime",
+        ):
+            assert consumer_forbidden_frame(
+                NS(
+                    f_globals={"__name__": module},
+                    f_code=NS(co_name=name, co_filename="<blocked metadata>"),
+                )
+            )
+
+
+@pytest.mark.parametrize("key", ["molecule_wrappers", "molecule_short_runtime"])
+@pytest.mark.parametrize("foreign", [False, True])
+def test_demo_import_loader_uses_exact_frozen_origin_before_return(
+    key, foreign, monkeypatch, tmp_path
+):
+    family = "WRAPPER" if key == "molecule_wrappers" else "HISTORY"
+    name = getattr(stage, family + "_MODULES")[key]
+    path = tmp_path / stage._relative(name)
+    path.parent.mkdir(parents=True)
+    path.write_text("# inert metadata only\n")
+    module = ModuleType(name)
+    module.__file__ = str(path if not foreign else tmp_path / "foreign.py")
+    monkeypatch.setattr(stage, "ROOT", tmp_path)
+    monkeypatch.setattr(stage, family + "_SOURCE_PINS", {key: stage.snapshot.digest(path)})
+    monkeypatch.setitem(sys.modules, name, module)
+    calls = []
+
+    def load(selected):
+        calls.append(selected)
+        return module
+
+    monkeypatch.setattr(stage.importlib, "import_module", load)
+    if foreign:
+        with pytest.raises(stage.DemoRejected, match="frozen producer origin"):
+            stage.Modules("init_short_history")[key]
+    else:
+        assert stage.Modules("init_short_history")[key] is module
+    assert calls == [name]
+
+
+def test_demo_import_prepare_includes_both_new_metadata_producers_in_immutable_roster(
+    monkeypatch, tmp_path
+):
+    module, observed = ModuleType("private_parameter_prepare"), []
+
+    def prepare(repository, directory, **kwargs):
+        observed.append(kwargs["extra_sources"])
+        (directory / "source").mkdir(parents=True)
+        (directory / "source/SNAPSHOT.json").write_text("{}\n")
+        (directory / "inputs.json").write_text("{}\n")
+        return "inert prepared metadata"
+
+    module.prepare = FunctionType(prepare.__code__, vars(module), closure=prepare.__closure__)
+    monkeypatch.setattr(stage, "_dependencies", lambda endpoint: {"parameters": module})
+    output = tmp_path / "prepared"
+    result = stage.prepare(
+        stage.ROOT,
+        output,
+        inputs=tmp_path / "inputs",
+        inputs_sha256="a" * 64,
+        python=tmp_path / "python",
+        bootstrap=tmp_path / "bootstrap",
+        bootstrap_sha256="b" * 64,
+        auxiliary_configuration={},
+        flux_operator="original",
+        endpoint="init_short_history",
+        init_iterations=3,
+        shared_writer_review=tmp_path / "review",
+    )
+    assert result == "inert prepared metadata" and len(observed) == 1
+    for name in (*stage.WRAPPER_MODULES.values(), stage.HISTORY_MODULES["molecule_short_runtime"]):
+        assert observed[0].count(stage._relative(name)) == 1
+    plan = json.loads((output / "demo-plan.json").read_text())
+    assert plan["held"] is True
+    assert (
+        plan["source_plan"]["optional_molecule_import_authority"]["protocol"]
+        == stage.IMPORT_PROTOCOL
+    )
+
+
+def test_demo_import_runtime_replacement_refuses_before_history_request(tmp_path):
+    model = short_history_chain()
+    module = model.modules["init_electrical"]
+    prepare = module.prepare
+
+    def replace(*args, **kwargs):
+        result = prepare(*args, **kwargs)
+        model.modules["molecule_short_runtime"] = object()
+        return result
+
+    module.prepare = replace
+    with pytest.raises(ValueError, match="preloaded short-runtime provider changed"):
+        execute(model, tmp_path)
+    assert "init_short_history.request" not in model.calls
+    assert model.state.short_history_trial is None and not model.state.init_short_history_completed

@@ -16,6 +16,7 @@ import sys
 import weakref
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
+from functools import lru_cache
 from pathlib import Path
 from threading import RLock, get_ident
 from types import CodeType, FunctionType, MethodType, ModuleType, SimpleNamespace
@@ -27,6 +28,7 @@ from cells.processes import betse_native_seed_init_core as core
 from cells.processes import betse_native_seed_junctions as previous
 from cells.processes import betse_native_tissue_configuration as factories
 from cells.processes import betse_native_tissue_configuration_source as tissue_source
+from cells.processes import betse_native_world_phase_construction as metadata_api
 
 LAW_ID = "betse_actual_retained_seed_cells_fresh_INIT_constructor_and_core@1"
 RELEASE = "CELLS_NATIVE_INIT_RETAINED_WORLD_RELEASED"
@@ -68,6 +70,7 @@ _COMPLETION_INITIAL_LEASES = WeakKeyDictionary()
 _STORAGE_INITIAL_LEASES = WeakKeyDictionary()
 _ELECTRICAL_INITIAL_LEASES = WeakKeyDictionary()
 _FIRST_STEP_INITIAL_LEASES = WeakKeyDictionary()
+_SHORT_INIT_INITIAL_LEASES = WeakKeyDictionary()
 _MOLECULE_INITIAL_LEASES = WeakKeyDictionary()
 _ACTIVE, _FAILED, _LOCK = [], [], RLock()
 _LAST_FAILED = None
@@ -413,7 +416,7 @@ def _guard(context):
         completion = getattr(context.dynamics_transition, "completion_transition", None)
         storage = getattr(completion, "storage_transition", None)
         electrical = getattr(storage, "electrical_transition", None)
-        first_step = getattr(electrical, "first_step_transition", None)
+        first_step, route = _advance_child(context, electrical)
         if first_step is not None:
             first = getattr(first_step, "first_failure", None)
             if first is not None and first[0] == "source":
@@ -422,7 +425,7 @@ def _guard(context):
                 raise first_step.entry_error
             if getattr(first_step, "failure_error", None) is not None:
                 raise first_step.failure_error
-            current, api, *_ = _first_step_runtime(context)
+            current, api, *_ = route(context)
             current.entries["wrapper_guard"](current, context, sys._getframe(1))
             return
         for error in (
@@ -548,6 +551,7 @@ def _binding(context):
         _STORAGE_INITIAL_LEASES,
         _ELECTRICAL_INITIAL_LEASES,
         _FIRST_STEP_INITIAL_LEASES,
+        _SHORT_INIT_INITIAL_LEASES,
         _MOLECULE_INITIAL_LEASES,
         _ACTIVE,
         _LOCK,
@@ -1356,7 +1360,7 @@ def _invoke(context, label, delegate, *args, **kwargs):
         completion = getattr(context.dynamics_transition, "completion_transition", None)
         storage = getattr(completion, "storage_transition", None)
         electrical = getattr(storage, "electrical_transition", None)
-        first_step = getattr(electrical, "first_step_transition", None)
+        first_step, route = _advance_child(context, electrical)
         if first_step is not None:
             first = getattr(first_step, "first_failure", None)
             if first is not None and first[0] == "source":
@@ -1365,7 +1369,7 @@ def _invoke(context, label, delegate, *args, **kwargs):
                 raise first_step.entry_error
             if getattr(first_step, "failure_error", None) is not None:
                 raise first_step.failure_error
-            current, api, *_ = _first_step_runtime(context)
+            current, api, *_ = route(context)
             return current.entries["dispatch"](
                 current, context, label, delegate, args[0], args[1:], kwargs, sys._getframe()
             )
@@ -1966,15 +1970,184 @@ def _authority(owner):
     return context
 
 
+def _metadata_function_state(function):
+    namespace, cached = function.__globals__, function.__builtins__
+    declared = namespace.get("__builtins__")
+    if (vars(declared) if type(declared) is ModuleType else declared) is not cached:
+        raise ValueError("Original metadata cached builtins required")
+    values = [
+        function,
+        function.__code__,
+        namespace,
+        cached,
+        declared,
+        function.__defaults__,
+        function.__kwdefaults__,
+        function.__closure__,
+    ]
+    values.extend(function.__defaults__ or ())
+    for key, value in (function.__kwdefaults__ or {}).items():
+        values.extend((key, value))
+    for cell in function.__closure__ or ():
+        values.extend((cell, cell.cell_contents))
+    for name in function.__code__.co_names:
+        if name in namespace:
+            values.extend((name, namespace[name]))
+        elif name in cached:
+            values.extend((name, cached[name]))
+    return tuple(values)
+
+
+def _same_metadata(current, original):
+    if len(current) != len(original) or any(
+        a is not b for a, b in zip(current, original, strict=True)
+    ):
+        raise ValueError("Original source metadata dependency changed")
+
+
+def _immutable_metadata_default(value):
+    if type(value) in (type(None), bool, int, float, complex, str, bytes):
+        return value
+    if type(value) is tuple:
+        for child in value:
+            _immutable_metadata_default(child)
+        return value
+    raise ValueError("Only immutable defaults in this source interface are supported")
+
+
+@lru_cache(maxsize=16, typed=True)
+def _source_templates(payload, filename, names):
+    """Immutable syntax/code only, keyed by every exact source byte and path."""
+    code = builtins.compile(payload, filename, "exec", dont_inherit=True, optimize=0)
+    definitions = {
+        node.name: node for node in ast.parse(payload).body if isinstance(node, ast.FunctionDef)
+    }
+    codes = {value.co_name: value for value in code.co_consts if type(value) is CodeType}
+    rows = []
+    for name in names:
+        node = definitions.get(name)
+        if node is None or node.decorator_list or name not in codes:
+            raise ValueError("Actual undecorated source definition required: " + name)
+        defaults = tuple(
+            _immutable_metadata_default(ast.literal_eval(item)) for item in node.args.defaults
+        )
+        keywords = tuple(
+            (arg.arg, _immutable_metadata_default(ast.literal_eval(value)))
+            for arg, value in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True)
+            if value is not None
+        )
+        rows.append((name, codes[name], defaults, keywords))
+    return tuple(rows)
+
+
+def _live_source_interface(module, payload, path, names):
+    if (
+        type(payload) is not bytes
+        or len(payload) > 2**21
+        or type(names) is not tuple
+        or len(names) > 64
+        or any(type(name) is not str for name in names)
+    ):
+        raise ValueError("Bounded exact source bytes and immutable selectors required")
+    filename = str(path)
+    for name, code, defaults, keywords in _source_templates(payload, filename, names):
+        function = vars(module).get(name)
+        if (
+            type(function) is not FunctionType
+            or function.__globals__ is not vars(module)
+            or function.__code__ != code
+            or function.__code__.co_filename != filename
+            or function.__closure__ is not None
+            or function.__name__ != name
+            or function.__qualname__ != name
+        ):
+            raise ValueError("Actual exact source function/code required: " + name)
+        actual, declared = function.__defaults__ or (), function.__kwdefaults__ or {}
+        expected = dict(keywords)
+        if (
+            actual != defaults
+            or declared != expected
+            or any(type(a) is not type(b) for a, b in zip(actual, defaults, strict=True))
+            or any(type(declared[key]) is not type(value) for key, value in keywords)
+        ):
+            raise ValueError("Original source interface defaults changed: " + name)
+
+
+def _check_metadata_tools(api):
+    if (
+        api is not metadata_api
+        or sys.modules.get("cells.processes.betse_native_world_phase_construction") is not api
+    ):
+        raise ValueError("Actual original source metadata namespace required")
+    for owner, name, original, state in _METADATA_TOOLS:
+        if vars(owner).get(name) is not original:
+            raise ValueError("Original source metadata alias changed: " + name)
+        if state is not None:
+            _same_metadata(_metadata_function_state(original), state)
+    for name, wrapper, body, state in _METADATA_CACHES:
+        if globals().get(name) is not wrapper or wrapper.__wrapped__ is not body:
+            raise ValueError("Original immutable source template cache changed")
+        _same_metadata(_metadata_function_state(body), state)
+
+
+def _metadata_source_interface(api, module, payload, path, names):
+    _check_metadata_tools(api)
+    original_path = Path(api.__file__)
+    if original_path.is_symlink() or original_path.resolve() != _METADATA_FILE:
+        raise ValueError("Original source metadata file association changed")
+    # Fresh bytes and live functions are checked on EVERY use. Only immutable
+    # parsed syntax/compiled CodeTypes are reused, never a validation result.
+    _live_source_interface(
+        api,
+        original_path.read_bytes(),
+        original_path,
+        ("_helper_binding", "_source_interface", "_pin"),
+    )
+    _live_source_interface(module, payload, path, names)
+
+
+@lru_cache(maxsize=16, typed=True)
+def _dynamics_template(payload, kind, slots):
+    scope = dict(
+        vars(metadata_api), HELPER_BACK_REFERENCE_SLOTS=slots, HELPER_BINDING_KIND=kind
+    )
+    return FunctionType(metadata_api._helper_binding.__code__, scope)(payload)
+
+
+_METADATA_FILE = Path(metadata_api.__file__).resolve()
+_METADATA_TOOLS = tuple(
+    (owner, name, value, _metadata_function_state(value) if type(value) is FunctionType else None)
+    for owner, names in (
+        (metadata_api, ("_helper_binding", "_source_interface", "_pin", "ast", "builtins", "hashlib", "json", "CodeType", "FunctionType")),
+        (ast, ("parse", "walk", "iter_fields", "iter_child_nodes", "literal_eval", "Name", "Store", "Assign", "Constant", "FunctionDef")),
+        (builtins, ("compile",)),
+        (hashlib, ("sha256",)),
+        (json, ("dumps",)),
+    )
+    for name in names
+    for value in (vars(owner)[name],)
+)
+_METADATA_CACHES = tuple(
+    (name, wrapper, wrapper.__wrapped__, _metadata_function_state(wrapper.__wrapped__))
+    for name, wrapper in (("_source_templates", _source_templates), ("_dynamics_template", _dynamics_template))
+)
+
+
 def _dynamics_binding(payload):
     """Existing exact-byte binder; only the two validated parent literals vary."""
     api = previous._ready()
-    scope = dict(
-        vars(api),
-        HELPER_BACK_REFERENCE_SLOTS=DYNAMICS_BACK_REFERENCE_SLOTS,
-        HELPER_BINDING_KIND=DYNAMICS_BINDING_KIND,
+    _metadata_source_interface(
+        api, api, Path(api.__file__).read_bytes(), Path(api.__file__), ("_helper_binding",)
     )
-    return FunctionType(api._helper_binding.__code__, scope)(payload)
+    if (
+        type(payload) is not bytes
+        or len(payload) > 2**21
+        or type(DYNAMICS_BINDING_KIND) is not str
+        or type(DYNAMICS_BACK_REFERENCE_SLOTS) is not tuple
+        or any(type(name) is not str for name in DYNAMICS_BACK_REFERENCE_SLOTS)
+    ):
+        raise ValueError("Bounded exact source template and immutable backrefs required")
+    return _dynamics_template(payload, DYNAMICS_BINDING_KIND, DYNAMICS_BACK_REFERENCE_SLOTS)
 
 
 def _dynamics_api():
@@ -2011,7 +2184,9 @@ def _dynamics_api():
     ):
         raise ValueError("Actual original dynamics namespace/method/store contract changed")
     api = previous._ready()
-    api._source_interface(module, raw, path, ("prepare", "_ready", "_wrapper_guard", "_dispatch"))
+    _metadata_source_interface(
+        api, module, raw, path, ("prepare", "_ready", "_wrapper_guard", "_dispatch")
+    )
     module._ready()
     return module
 
@@ -2080,7 +2255,9 @@ def _completion_runtime(parent):
     raw = path.read_bytes()
     if _dynamics_binding(raw)[0] != DYNAMICS_INTERFACE_SHA256:
         raise ValueError("Original completion route producer changed before entry")
-    previous._ready()._source_interface(module, raw, path, ("_completion_route",))
+    _metadata_source_interface(
+        previous._ready(), module, raw, path, ("_completion_route",)
+    )
     transition, api = route(prelude)
     if (
         transition is not marker
@@ -3027,6 +3204,45 @@ def _first_step_runtime(parent):
     return step, module, electrical, storage, completion, completion_api
 
 
+def _advance_child(parent, electrical):
+    first = getattr(electrical, "first_step_transition", None)
+    short = getattr(electrical, "short_init_transition", None)
+    if first is not None and short is not None:
+        _reject(parent, "Mutually exclusive actual INIT advance routes required")
+    return (short, _short_init_runtime) if short is not None else (first, _first_step_runtime)
+
+
+def _short_init_runtime(parent):
+    actual = _electrical_runtime(parent)
+    if actual is None or getattr(actual[0], "short_init_transition", None) is None:
+        return None
+    electrical, provider, storage, completion, completion_api = actual
+    if getattr(electrical, "first_step_transition", None) is not None:
+        raise ValueError("Completed/active first-step cannot become continuous INIT")
+    function = vars(provider).get("_short_init_route")
+    if type(function) is not FunctionType or function.__globals__ is not vars(provider):
+        raise ValueError("Actual original short-history electrical route unavailable")
+    retained = _atoms(function)
+    path = Path(provider.__file__)
+    previous._ready()._source_interface(provider, path.read_bytes(), path, ("_short_init_route",))
+    if vars(provider).get("_short_init_route") is not function:
+        raise ValueError("Actual short-history routing slot changed")
+    core.previous._same(_atoms(function), retained)
+    child, module = function(electrical)
+    if (
+        child.electrical_parent is not electrical
+        or child.parent is not completion
+        or child.storage_parent is not storage
+        or child.initial is not parent
+        or child.phase is not parent.phase
+        or child.sim is not parent.phase.sim
+        or child.cells is not parent.cells
+        or child.p is not parent.p
+    ):
+        raise ValueError("Original same-INIT short-history ancestry changed")
+    return child, module, electrical, storage, completion, completion_api
+
+
 def _claim_first_step_ancestor(parent, completion, storage, electrical, transition):
     """Reserved for Key's actual reviewed first-step ancestor transfer."""
     # Obtain Key only from the genuine issued completion/runtime ancestry.
@@ -3056,6 +3272,7 @@ def _claim_first_step_ancestor(parent, completion, storage, electrical, transiti
         or transition.setup_frame is not None
         or transition.claimed
         or parent.owner in _FIRST_STEP_INITIAL_LEASES
+        or parent.owner in _SHORT_INIT_INITIAL_LEASES
     ):
         parent.invalid = transition.invalid = True
         raise ValueError("Actual once-only Key first-step reservation required")
@@ -3095,6 +3312,77 @@ def _check_first_step_ancestor(parent, completion, storage, electrical, transiti
         raise ValueError("Retained original first-step ancestor lease changed")
     if actual[1]._check_ancestor_metadata(transition) is not electrical:
         raise ValueError("Different factored first-step electrical ancestry")
+    return parent
+
+
+def _claim_short_init_ancestor(parent, completion, storage, electrical, transition):
+    actual = _short_init_runtime(parent)
+    if (
+        actual is None
+        or actual[0] is not transition
+        or any(
+            a is not b for a, b in zip(actual[2:5], (electrical, storage, completion), strict=True)
+        )
+    ):
+        raise ValueError("Actual original short-history runtime ancestry required")
+    module = actual[5]
+    function = vars(module).get("_claim_short_init_ancestor")
+    frame = sys._getframe(1)
+    with _LOCK:
+        if (
+            type(function) is not FunctionType
+            or function.__globals__ is not vars(module)
+            or frame.f_code is not function.__code__
+            or frame.f_globals is not vars(module)
+            or frame.f_locals.get("context") is not completion
+            or frame.f_locals.get("storage") is not storage
+            or frame.f_locals.get("electrical") is not electrical
+            or frame.f_locals.get("transition") is not transition
+            or not transition.active
+            or transition.setup_frame is not None
+            or transition.loop_frame is not None
+            or transition.claimed
+            or parent.owner in _FIRST_STEP_INITIAL_LEASES
+            or parent.owner in _SHORT_INIT_INITIAL_LEASES
+        ):
+            parent.invalid = transition.invalid = True
+            raise ValueError("Actual once-only Key short-history reservation required")
+        lease = SimpleNamespace(
+            parent=parent,
+            completion=completion,
+            storage=storage,
+            electrical=electrical,
+            child=transition,
+            original=parent.electrical_initial_lease,
+            iterations=transition.request.iterations,
+            status="reserved",
+        )
+        _SHORT_INIT_INITIAL_LEASES[parent.owner] = parent.short_init_initial_lease = lease
+        return parent
+
+
+def _check_short_init_ancestor(parent, completion, storage, electrical, transition):
+    lease = _SHORT_INIT_INITIAL_LEASES.get(parent.owner)
+    actual = _short_init_runtime(parent)
+    if (
+        lease is None
+        or lease is not getattr(parent, "short_init_initial_lease", None)
+        or lease.status != "reserved"
+        or actual is None
+        or actual[0] is not transition
+        or lease.parent is not parent
+        or lease.completion is not completion
+        or lease.storage is not storage
+        or lease.electrical is not electrical
+        or lease.child is not transition
+        or lease.original is not parent.electrical_initial_lease
+        or _ELECTRICAL_INITIAL_LEASES.get(parent.owner) is not lease.original
+        or transition.request.iterations != lease.iterations
+        or parent.owner in _FIRST_STEP_INITIAL_LEASES
+    ):
+        raise ValueError("Retained original bounded INIT ancestor lease changed")
+    if actual[1]._check_ancestor_metadata(transition) is not electrical:
+        raise ValueError("Different factored short-history electrical ancestry")
     return parent
 
 

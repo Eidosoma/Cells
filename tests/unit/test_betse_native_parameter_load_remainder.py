@@ -10,6 +10,7 @@ import builtins
 import copy
 import dis
 import json
+import struct
 import sys
 import xml.etree.ElementTree as ET
 from collections.abc import Sequence
@@ -31,6 +32,133 @@ from validation.betse.betse_native_single_cell_core_synthetic import (
 blocked = inherited.blocked
 prevent_reference_execution = inherited.prevent_reference_execution
 conditional_grant_contract = inherited.conditional_grant_contract
+
+
+def _scalar_capture_context(**fields):
+    """Only a graph-reader adapter; never an issued parameter or source owner."""
+    runtime = SimpleNamespace(runtime_types=frozenset())
+    birth = SimpleNamespace(source=SimpleNamespace(yaml=SimpleNamespace))
+    ancestor = SimpleNamespace(runtime=runtime, birth=birth)
+    return SimpleNamespace(
+        p=SimpleNamespace(**fields),
+        parent=SimpleNamespace(parent=SimpleNamespace(parent=ancestor)),
+    )
+
+
+@pytest.mark.parametrize(
+    "bits",
+    [
+        "bff0000000000000",
+        "3ff0000000000000",
+        "0000000000000000",
+        "8000000000000000",
+        "7ff0000000000000",
+        "fff0000000000000",
+        "7ff8000000000001",
+        "fff8000000001234",
+    ],
+)
+def test_remainder_scalar_capture_preserves_exact_type_bits_and_aliases(bits):
+    import numpy as np
+
+    scalar = np.frombuffer(bytes.fromhex(bits), dtype=">f8")[0]
+    assert type(scalar) is np.float64
+    context = _scalar_capture_context(z_M_env=scalar, z_M_cell=scalar, values={"M": scalar})
+    objects, graph = stage._capture(context)
+    node = next(row for row in graph["nodes"] if row["type"] == "numpy.float64")
+    assert node["float64_value"] == bits
+    assert any(value is scalar for value in objects) and any(
+        value is np.float64 for value in objects
+    )
+    roots = dict(graph["roots"])
+    assert roots["z_M_env"] == roots["z_M_cell"] == ("ref", node["token"])
+    nested = graph["nodes"][roots["values"][1]]["dict_storage"]
+    assert nested[0][1] == ("ref", node["token"])
+    assert context.p.z_M_env is context.p.z_M_cell is context.p.values["M"] is scalar
+    assert struct.pack(">d", float.__float__(scalar)).hex() == bits
+    assert context.parent.parent.parent.runtime.runtime_types == frozenset()
+
+
+def test_remainder_scalar_capture_keeps_ordinary_graph_and_default_refusal_unchanged():
+    import numpy as np
+
+    context = _scalar_capture_context(number=1.25, fields={"label": "untouched"})
+    before = stage.prefix.graphs.capture(
+        vars(context.p), yaml_base=SimpleNamespace, runtime_types=frozenset()
+    )
+    after = stage._capture(context)
+    stage.prefix.parameters.inherited._same_graph(before, after)
+    with pytest.raises(stage.prefix.graphs.UnsupportedYamlGraph, match="numpy.float64"):
+        stage.prefix.graphs.capture(
+            {"valence": np.float64(-1)}, yaml_base=SimpleNamespace, runtime_types=frozenset()
+        )
+    assert (
+        stage.prefix.graphs.MAX_NODES,
+        stage.prefix.graphs.MAX_BYTES,
+        stage.prefix.graphs.MAX_DEPTH,
+    ) == (100000, 16 * 2**20, 96)
+
+
+@pytest.mark.parametrize("kind", ["float32", "int64", "array", "scalar_subclass"])
+def test_remainder_scalar_capture_rejects_unselected_scalar_and_array_types(kind):
+    import numpy as np
+
+    class Subclass(np.float64):
+        def __float__(self):
+            raise AssertionError("Unknown scalar conversion must never run")
+
+    value = {
+        "float32": lambda: np.float32(-1),
+        "int64": lambda: np.int64(-1),
+        "array": lambda: np.array([-1.0]),
+        "scalar_subclass": lambda: Subclass(-1),
+    }[kind]()
+    with pytest.raises(stage.prefix.graphs.UnsupportedYamlGraph):
+        stage._capture(_scalar_capture_context(value=value))
+
+
+@pytest.mark.parametrize("retarget", ["same_bits_object", "python_float", "different_bits"])
+def test_remainder_scalar_capture_unchanged_bits_do_not_replace_original_object(retarget):
+    import numpy as np
+
+    value = np.float64(-1)
+    context = _scalar_capture_context(value=value, alias=value)
+    before = stage._capture(context)
+    context.p.value = {
+        "same_bits_object": lambda: np.float64(-1),
+        "python_float": lambda: -1.0,
+        "different_bits": lambda: np.float64(1),
+    }[retarget]()
+    assert context.p.value is not value and context.p.alias is value
+    with pytest.raises(ValueError):
+        stage.prefix.parameters.inherited._same_graph(before, stage._capture(context))
+
+
+@pytest.mark.parametrize("drift", ["float32", "python_float", "fake_class", "registry", "module"])
+def test_remainder_scalar_capture_requires_original_class_and_namespace(monkeypatch, drift):
+    import numpy as np
+
+    registry = stage.previous.previous.state
+    original = np.float64
+    context = _scalar_capture_context(value=original(-1))
+    stage._capture(context)
+    if drift == "registry":
+        monkeypatch.setattr(
+            registry, "NUMPY_SCALARS", tuple(k for k in registry.NUMPY_SCALARS if k is not original)
+        )
+    elif drift == "module":
+        copied = ModuleType("numpy")
+        vars(copied).update(vars(np))
+        monkeypatch.setattr(registry, "np", copied)
+    else:
+        replacement = {
+            "float32": np.float32,
+            "python_float": float,
+            "fake_class": type("float64", (float,), {"__module__": "numpy"}),
+        }[drift]
+        monkeypatch.setattr(np, "float64", replacement)
+    with pytest.raises(ValueError, match="retained NumPy"):
+        stage._capture(context)
 
 
 def _package_wrapper_metadata(monkeypatch):

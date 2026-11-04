@@ -106,7 +106,11 @@ def _function_state(function):
     for name in function.__code__.co_names:
         if name in namespace:
             value = namespace[name]
-            if name in cached and value is not cached[name]:
+            if (
+                name in cached
+                and value is not cached[name]
+                and name not in ("__name__", "__doc__", "__package__", "__loader__", "__spec__")
+            ):
                 raise ValueError("Source builtin lookup shadowed: " + name)
             values.extend((name, value))
         elif name in cached:

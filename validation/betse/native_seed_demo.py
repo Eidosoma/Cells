@@ -11,16 +11,19 @@ It preserves the native time label and does not claim a full INIT/SIM or restart
 """
 
 import argparse
+import contextlib
 import fcntl
+import hashlib
 import importlib
 import json
 import os
 import resource
 import stat
+import struct
 import sys
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from types import CodeType, FunctionType
+from types import CodeType, FrameType, FunctionType, ModuleType
 
 from validation import source_snapshot as snapshot
 
@@ -30,11 +33,11 @@ FILE = "validation/betse/native_seed_demo.py"
 TEST = "tests/unit/test_native_seed_demo.py"
 RUNNER = "validation/betse/native_seed_demo_software.py"
 INPUT_METADATA = "validation/betse/native_seed_demo_inputs.py"
-INPUT_METADATA_SHA256 = "8f5ffac15d79735d80d7b9d04910d6ea95b5e4b4ba1efb040a088e9b8573ef87"
+INPUT_METADATA_SHA256 = "0240727d450a69660d317d26b8a9c24dd1e4875d184b951b7b3d32bfd939153e"
 EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
 EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
-KIND = "cells.genuine_seed_core_profiles_junctions_demo@5"
+KIND = "cells.genuine_seed_core_profiles_junctions_demo@6"
 FLUX_MODES = ("original", "disabled")
 ENDPOINTS = (
     "seed",
@@ -43,6 +46,7 @@ ENDPOINTS = (
     "init_dynamics",
     "init_electrical",
     "init_first_step",
+    "init_short_history",
 )
 INIT_MODULES = {
     "init_setup": "cells.processes.betse_native_init_retained_world",
@@ -69,6 +73,23 @@ ELECTRICAL_REVIEW_PINS = dict.fromkeys(ELECTRICAL_MODULES)
 STEP_MODULES = {"init_first_step": "cells.processes.betse_native_init_first_step"}
 STEP_SOURCE_PINS = dict.fromkeys(STEP_MODULES)
 STEP_REVIEW_PINS = dict.fromkeys(STEP_MODULES)
+HISTORY_MODULES = {
+    "init_short_history": "cells.processes.betse_native_init_short_history",
+    "molecule_short_runtime": "cells.processes.betse_native_init_molecule_short_runtime",
+}
+HISTORY_SOURCE_PINS = dict.fromkeys(HISTORY_MODULES)
+HISTORY_REVIEW_PINS = dict.fromkeys(HISTORY_MODULES)
+WRAPPER_MODULES = {
+    "molecule_wrappers": "cells.processes.betse_native_init_molecule_wrapper_authority"
+}
+WRAPPER_SOURCE_PINS = dict.fromkeys(WRAPPER_MODULES)
+WRAPPER_REVIEW_PINS = dict.fromkeys(WRAPPER_MODULES)
+WRAPPER_ENDPOINTS = ("init_dynamics", "init_electrical", "init_first_step", "init_short_history")
+IMPORT_PROTOCOL = "closed_original_molecule_import_before_callback_handoff@1"
+HISTORY_OPERATOR_MODES = {
+    "original": "original_value_and_flux",
+    "disabled": "original_value_only_flux_omitted",
+}
 POLICY = dict(cpu=0, threads=1, max_rss_bytes=2**30, wall_seconds=7200, reserve_bytes=8 * 2**30)
 MODULES = {
     "callback": "validation.betse.native_seed_world_callback_prelude",
@@ -80,13 +101,13 @@ MODULES = {
     "junctions": "cells.processes.betse_native_seed_junctions",
 }
 SOURCE_PINS = {
-    "callback": "7d8de15e353998b19493f23f8cdfae62b22cabba3133ff5219b8d6558f1f0bd7",
-    "parameters": "89137b398d15ba435c34ea696b608c7a44c9163eaa8088a2b02465161d26cafd",
-    "geometry": "b46531bed35c4cd4674944c587b29769f6929a6b520914001234a8210912222a",
+    "callback": "901572a51b4134f99f1dde2474532a53df7bd24c5d30e4d884bf8ef1d89c7350",
+    "parameters": "1b5a82adfd4d0d5bc70ceef39df4e687c371370e894ebbeec98a49cdcc08b792",
+    "geometry": "94e7b01f2fc0b2fe9e26fe06f047c62d7f0f7eb36b533fde9acb5b289d04e16b",
     "poisson": "39539d52b750fd75787a2897efc564ad4ca886381ab09acf1560159aa815ba33",
-    "core": "1e95cb6a7b8c668979a96211c3fce1bec5ca65da11963e23d8c5e60b65f67f5e",
-    "profiles": "c7fe1339169e00614a982ed10804eafebc3bd81de3b477acf0719af295c4b25f",
-    "junctions": "49daf497ee903d2f1d9f2037bfdea0d10b90815d033bc690aa03f5ffb4df9de4",
+    "core": "53c42b2191a553ed78180fe37094cdcafa38d7f3893c2c76ce881418b7fc8b76",
+    "profiles": "09b2e52b609bb6d22364a9e8560fc30d8e011dbeb8c03d9caacf3a7911ad3688",
+    "junctions": "668afac769521c78b945c97d1710838bbba54c6921cd27ffa27ffee3079bf975",
 }
 REVIEW_PINS = {
     "callback": "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e",
@@ -116,6 +137,7 @@ class DemoRejected(ValueError):
 class Execution:
     flux_operator: str
     endpoint: str = "seed"
+    init_iterations: object = None
     stage: str = "preflight"
     phase: object = None
     parameters: object = None
@@ -139,6 +161,18 @@ class Execution:
     dynamics_molecule_api: object = None
     dynamics_molecule_record: object = None
     dynamics_molecule_failure_context: object = None
+    molecule_import_api: object = None
+    molecule_import_binding: object = None
+    molecule_import_manager: object = None
+    molecule_import_context: object = None
+    molecule_import_record: object = None
+    molecule_import_partial: object = None
+    molecule_import_error: object = None
+    molecule_import_exit_return: object = None
+    molecule_import_operations: list = field(default_factory=list)
+    molecule_import_failure_captures: list = field(default_factory=list)
+    molecule_import_completed: bool = False
+    short_runtime_api: object = None
     init_molecule_network_completed: bool = False
     storage_phase: object = None
     storage_trial: object = None
@@ -151,12 +185,19 @@ class Execution:
     first_step_record: object = None
     first_step_failure_context: object = None
     first_step_failure_captures: list = field(default_factory=list)
+    short_history_phase: object = None
+    short_history_trial: object = None
+    short_history_record: object = None
+    short_history_linkage: object = None
+    short_history_failure_context: object = None
+    short_history_failure_captures: list = field(default_factory=list)
     init_setup_completed: bool = False
     init_prelude_completed: bool = False
     init_dynamics_completed: bool = False
     init_storage_completed: bool = False
     init_electrical_completed: bool = False
     init_first_step_completed: bool = False
+    init_short_history_completed: bool = False
     init_time_steps_completed: int = 0
     callback: object = None
     session: object = None
@@ -187,13 +228,25 @@ def _relative(module):
     return ("" if module.startswith("validation.") else "src/") + module.replace(".", "/") + ".py"
 
 
-def source_plan(*, endpoint="seed"):
+def _iteration_selection(endpoint, count):
+    if endpoint == "init_short_history":
+        if type(count) is not int or not 1 <= count <= 64:
+            raise DemoRejected(
+                "Explicit INIT integer iteration count in [1,64] required", stage="iterations"
+            )
+    elif count is not None:
+        raise DemoRejected("Iteration count belongs only to init_short_history", stage="iterations")
+    return count
+
+
+def source_plan(*, endpoint="seed", init_iterations=None):
     if type(endpoint) is not str or endpoint not in ENDPOINTS:
         raise DemoRejected(
             "Choose exactly seed or init_setup or init_prelude or init_dynamics"
-            " or init_electrical or init_first_step",
+            " or init_electrical or init_first_step or init_short_history",
             stage="endpoint",
         )
+    _iteration_selection(endpoint, init_iterations)
     return dict(
         kind=KIND,
         stages=(
@@ -213,9 +266,11 @@ def source_plan(*, endpoint="seed"):
                 "init_storage",
                 "init_electrical",
                 *(("init_first_step",) if endpoint == "init_first_step" else ()),
+                *(("init_short_history",) if endpoint == "init_short_history" else ()),
             )
         ),
         selected_endpoint=endpoint,
+        init_iterations=init_iterations,
         endpoint=(
             "original graphLaplacian after whole init_core, init_profiles and redo_gj"
             if endpoint == "seed"
@@ -228,6 +283,8 @@ def source_plan(*, endpoint="seed"):
             else "same INIT Simulator clear_storage then original update_V; before INIT timesteps"
             if endpoint == "init_electrical"
             else "same INIT phase; one complete ordinary iteration at its original time label"
+            if endpoint == "init_first_step"
+            else "same INIT phase; selected contiguous original iterations before next advance"
         ),
         optional_init_setup=dict(
             modules=dict(INIT_MODULES),
@@ -309,6 +366,36 @@ def source_plan(*, endpoint="seed"):
             flux_inverse_rebuilt_repaired_or_required=False,
             full_INIT_SIM_or_restart_admission=False,
         ),
+        optional_init_short_history=dict(
+            modules=dict(HISTORY_MODULES),
+            source_pins=dict(HISTORY_SOURCE_PINS),
+            review_pins=dict(HISTORY_REVIEW_PINS),
+            entry=(
+                "from_electrical(actual ElectricalOwner, iterations=N, law_id=LAW_ID)"
+                " -> prepare(enabled=True)"
+            ),
+            selected_iterations=init_iterations,
+            count_domain="Exact int 1..64; no bool or implicit count",
+            same_phase_parameters_cells_simulator_handler_callbacks_cache=True,
+            parent_trial_retained_before_consumption=True,
+            first_step_owner_recycled=False,
+            original_calendar_sampling_time_labels_and_configured_dt=True,
+            selected_stop_distinct_from_full_loop_return=True,
+            source_library_and_metadata_work_non_additive=True,
+            full_INIT_SIM_or_restart_admission=False,
+        ),
+        optional_molecule_import_authority=dict(
+            protocol=IMPORT_PROTOCOL,
+            endpoints=WRAPPER_ENDPOINTS,
+            modules=dict(WRAPPER_MODULES),
+            source_pins=dict(WRAPPER_SOURCE_PINS),
+            review_pins=dict(WRAPPER_REVIEW_PINS),
+            window="Existing callback acquisition, including original Simulator imports",
+            closed_before_parameters_and_network_validation=True,
+            retrospective_authority_or_extra_native_invocation=False,
+            live_context_and_record_retained=True,
+            durable_evidence="Closed metadata and raw-return identities; no live frame hydration",
+        ),
         source_pins=dict(SOURCE_PINS),
         review_pins=dict(REVIEW_PINS),
         shared_log_session_api="Root process-lifetime canonical log-target lease",
@@ -344,7 +431,7 @@ def _dependencies(endpoint="seed"):
     if type(endpoint) is not str or endpoint not in ENDPOINTS:
         raise DemoRejected(
             "Choose exactly seed or init_setup or init_prelude or init_dynamics"
-            " or init_electrical or init_first_step",
+            " or init_electrical or init_first_step or init_short_history",
             stage="endpoint",
         )
     if (
@@ -361,13 +448,24 @@ def _dependencies(endpoint="seed"):
         or not all(_pin(p) for p in (*INIT_SOURCE_PINS.values(), *INIT_REVIEW_PINS.values()))
     ):
         raise DemoRejected("Retained-world INIT producers remain unadopted", stage="init_unbound")
-    if endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step") and (
+    if endpoint in (
+        "init_prelude",
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+    ) and (
         set(PRELUDE_SOURCE_PINS) != set(PRELUDE_MODULES)
         or set(PRELUDE_REVIEW_PINS) != set(PRELUDE_MODULES)
         or not all(_pin(p) for p in (*PRELUDE_SOURCE_PINS.values(), *PRELUDE_REVIEW_PINS.values()))
     ):
         raise DemoRejected("INIT prelude producers remain unadopted", stage="prelude_unbound")
-    if endpoint in ("init_dynamics", "init_electrical", "init_first_step") and (
+    if endpoint in (
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+    ) and (
         set(COMPLETION_SOURCE_PINS) != set(COMPLETION_MODULES)
         or set(COMPLETION_REVIEW_PINS) != set(COMPLETION_MODULES)
         or not all(
@@ -375,7 +473,7 @@ def _dependencies(endpoint="seed"):
         )
     ):
         raise DemoRejected("INIT dynamics producers remain unadopted", stage="dynamics_unbound")
-    if endpoint in ("init_electrical", "init_first_step") and (
+    if endpoint in ("init_electrical", "init_first_step", "init_short_history") and (
         set(ELECTRICAL_SOURCE_PINS) != set(ELECTRICAL_MODULES)
         or set(ELECTRICAL_REVIEW_PINS) != set(ELECTRICAL_MODULES)
         or not all(
@@ -389,6 +487,20 @@ def _dependencies(endpoint="seed"):
         or not all(_pin(p) for p in (*STEP_SOURCE_PINS.values(), *STEP_REVIEW_PINS.values()))
     ):
         raise DemoRejected("INIT first-step producers remain unadopted", stage="step_unbound")
+    if endpoint == "init_short_history" and (
+        set(HISTORY_SOURCE_PINS) != set(HISTORY_MODULES)
+        or set(HISTORY_REVIEW_PINS) != set(HISTORY_MODULES)
+        or not all(_pin(p) for p in (*HISTORY_SOURCE_PINS.values(), *HISTORY_REVIEW_PINS.values()))
+    ):
+        raise DemoRejected(
+            "Short-history source/review adoption remains held", stage="history_unbound"
+        )
+    if endpoint in WRAPPER_ENDPOINTS and (
+        set(WRAPPER_SOURCE_PINS) != set(WRAPPER_MODULES)
+        or set(WRAPPER_REVIEW_PINS) != set(WRAPPER_MODULES)
+        or not all(_pin(p) for p in (*WRAPPER_SOURCE_PINS.values(), *WRAPPER_REVIEW_PINS.values()))
+    ):
+        raise DemoRejected("Molecular import authority remains unadopted", stage="wrapper_unbound")
     for key, name in MODULES.items():
         path = ROOT / _relative(name)
         if path.is_symlink() or not path.is_file() or snapshot.digest(path) != SOURCE_PINS[key]:
@@ -405,7 +517,13 @@ def _dependencies(endpoint="seed"):
                 or snapshot.digest(path) != INIT_SOURCE_PINS[key]
             ):
                 raise DemoRejected("Reviewed INIT source changed: " + key, stage="producer")
-    if endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"):
+    if endpoint in (
+        "init_prelude",
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+    ):
         for key, name in PRELUDE_MODULES.items():
             path = ROOT / _relative(name)
             if (
@@ -414,7 +532,7 @@ def _dependencies(endpoint="seed"):
                 or snapshot.digest(path) != PRELUDE_SOURCE_PINS[key]
             ):
                 raise DemoRejected("Reviewed INIT prelude source changed: " + key, stage="producer")
-    if endpoint in ("init_dynamics", "init_electrical", "init_first_step"):
+    if endpoint in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history"):
         for key, name in COMPLETION_MODULES.items():
             path = ROOT / _relative(name)
             if (
@@ -425,7 +543,7 @@ def _dependencies(endpoint="seed"):
                 raise DemoRejected(
                     "Reviewed INIT dynamics source changed: " + key, stage="producer"
                 )
-    if endpoint in ("init_electrical", "init_first_step"):
+    if endpoint in ("init_electrical", "init_first_step", "init_short_history"):
         for key, name in ELECTRICAL_MODULES.items():
             path = ROOT / _relative(name)
             if (
@@ -447,6 +565,24 @@ def _dependencies(endpoint="seed"):
                 raise DemoRejected(
                     "Reviewed INIT first-step source changed: " + key, stage="producer"
                 )
+    if endpoint == "init_short_history":
+        for key, name in HISTORY_MODULES.items():
+            path = ROOT / _relative(name)
+            if (
+                path.is_symlink()
+                or not path.is_file()
+                or snapshot.digest(path) != HISTORY_SOURCE_PINS[key]
+            ):
+                raise DemoRejected("Reviewed short-history producer changed", stage="producer")
+    if endpoint in WRAPPER_ENDPOINTS:
+        for key, name in WRAPPER_MODULES.items():
+            path = ROOT / _relative(name)
+            if (
+                path.is_symlink()
+                or not path.is_file()
+                or snapshot.digest(path) != WRAPPER_SOURCE_PINS[key]
+            ):
+                raise DemoRejected("Reviewed import observer changed", stage="producer")
     return Modules(endpoint)
 
 
@@ -479,6 +615,7 @@ class Modules:
                 "init_dynamics",
                 "init_electrical",
                 "init_first_step",
+                "init_short_history",
             ) or not _pin(INIT_SOURCE_PINS[key]):
                 raise DemoRejected(
                     "INIT producer unavailable in this endpoint", stage="init_unbound"
@@ -490,6 +627,7 @@ class Modules:
                 "init_dynamics",
                 "init_electrical",
                 "init_first_step",
+                "init_short_history",
             ) or not _pin(PRELUDE_SOURCE_PINS[key]):
                 raise DemoRejected("INIT prelude producer unavailable", stage="prelude_unbound")
             name, expected = PRELUDE_MODULES[key], PRELUDE_SOURCE_PINS[key]
@@ -498,13 +636,16 @@ class Modules:
                 "init_dynamics",
                 "init_electrical",
                 "init_first_step",
+                "init_short_history",
             ) or not _pin(COMPLETION_SOURCE_PINS[key]):
                 raise DemoRejected("INIT dynamics producer unavailable", stage="dynamics_unbound")
             name, expected = COMPLETION_MODULES[key], COMPLETION_SOURCE_PINS[key]
         elif key in ELECTRICAL_MODULES:
-            if self.endpoint not in ("init_electrical", "init_first_step") or not _pin(
-                ELECTRICAL_SOURCE_PINS[key]
-            ):
+            if self.endpoint not in (
+                "init_electrical",
+                "init_first_step",
+                "init_short_history",
+            ) or not _pin(ELECTRICAL_SOURCE_PINS[key]):
                 raise DemoRejected(
                     "INIT electrical producer unavailable", stage="electrical_unbound"
                 )
@@ -513,6 +654,14 @@ class Modules:
             if self.endpoint != "init_first_step" or not _pin(STEP_SOURCE_PINS[key]):
                 raise DemoRejected("INIT first-step producer unavailable", stage="step_unbound")
             name, expected = STEP_MODULES[key], STEP_SOURCE_PINS[key]
+        elif key in HISTORY_MODULES:
+            if self.endpoint != "init_short_history" or not _pin(HISTORY_SOURCE_PINS[key]):
+                raise DemoRejected("Short-history producer unavailable", stage="history_unbound")
+            name, expected = HISTORY_MODULES[key], HISTORY_SOURCE_PINS[key]
+        elif key in WRAPPER_MODULES:
+            if self.endpoint not in WRAPPER_ENDPOINTS or not _pin(WRAPPER_SOURCE_PINS[key]):
+                raise DemoRejected("Molecular import observer unavailable", stage="wrapper_unbound")
+            name, expected = WRAPPER_MODULES[key], WRAPPER_SOURCE_PINS[key]
         else:
             name, expected = MODULES[key], SOURCE_PINS[key]
         path = ROOT / _relative(name)
@@ -529,6 +678,221 @@ def _function(module, name):
     if type(value) is not FunctionType or value.__globals__ is not vars(module):
         raise DemoRejected("Actual public producer function required: " + name, stage="interface")
     return value
+
+
+def _import_observer_binding(module):
+    """Authenticate the public contextmanager without bypassing its decorator."""
+    if type(module) is not ModuleType:
+        raise ValueError("Actual import-observer module required")
+    path = Path(module.__file__)
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Regular original import-observer source required")
+    raw = path.read_bytes()
+    full = compile(raw, str(path), "exec", dont_inherit=True)
+    original = next(
+        code
+        for code in full.co_consts
+        if type(code) is CodeType and code.co_name == "observing_native_imports"
+    )
+    function = vars(module).get("observing_native_imports")
+    inner = vars(function).get("__wrapped__") if type(function) is FunctionType else None
+    helper = next(
+        code
+        for code in contextlib.contextmanager.__code__.co_consts
+        if type(code) is CodeType and code.co_name == "helper"
+    )
+    if (
+        type(function) is not FunctionType
+        or function.__code__ is not helper
+        or function.__globals__ is not vars(contextlib)
+        or function.__defaults__ is not None
+        or function.__kwdefaults__ is not None
+        or type(inner) is not FunctionType
+        or inner.__globals__ is not vars(module)
+        or inner.__code__ != original
+        or inner.__defaults__ is not None
+        or type(inner.__kwdefaults__) is not dict
+        or set(inner.__kwdefaults__) != {"enabled"}
+        or inner.__kwdefaults__["enabled"] is not False
+        or inner.__closure__ is not None
+        or function.__closure__ is None
+        or len(function.__closure__) != 1
+        or function.__closure__[0].cell_contents is not inner
+    ):
+        raise ValueError("Exact public decorated import-observer function required")
+    record_type = vars(module).get("ImportEvidence")
+    if (
+        type(record_type) is not type
+        or vars(module).get("LAW") != "fresh_original_molecule_channel_imported_beartype_factory@1"
+    ):
+        raise ValueError("Actual import evidence type required")
+    return function, inner, record_type, hashlib.sha256(raw).hexdigest()
+
+
+def _check_import_binding(state):
+    current = _import_observer_binding(state.molecule_import_api)
+    retained = state.molecule_import_binding
+    if any(a is not b for a, b in zip(current[:3], retained[:3], strict=True)) or (
+        current[3] != retained[3]
+    ):
+        raise ValueError("Original import observer changed during callback acquisition")
+
+
+def _import_record(state):
+    """Closed source evidence; this never issues or reconstructs provider authority."""
+    _check_import_binding(state)
+    context, record = state.molecule_import_context, state.molecule_import_record
+    if (
+        context is None
+        or type(record) is not state.molecule_import_binding[2]
+        or context.record is not record
+        or context.active is not False
+        or context.published is not True
+        or context.primary is not None
+        or context.capture_error is not None
+        or context.capture_errors
+        or context.hook_losses
+        or context.cleanup
+        or context.hooks_restored is not True
+        or context.monitor_restored is not True
+        or record.law != state.molecule_import_api.LAW
+        or record.source_completed is not True
+        or type(record.factories) is not int
+        or not 1 <= record.factories <= 512
+        or type(record.generated) is not int
+        or not 0 <= record.generated <= record.factories
+        or type(record.raw_returns) is not tuple
+        or type(record.source_errors) is not tuple
+        or record.source_errors
+    ):
+        raise ValueError("Closed published original import evidence required before network use")
+    return dict(
+        protocol=IMPORT_PROTOCOL,
+        law=record.law,
+        context_identity=id(context),
+        record_identity=id(record),
+        producer_sha256=state.molecule_import_binding[3],
+        source_completed=True,
+        published=True,
+        active=False,
+        hooks_restored=True,
+        monitor_restored=True,
+        factories=record.factories,
+        generated=record.generated,
+        raw_returns=len(record.raw_returns),
+        source_errors=0,
+        work_views_are_non_additive=True,
+        live_claim_or_frame_serialization=False,
+    )
+
+
+def _import_raw_values(rows):
+    """Keep returned scalar/text data and exact opaque identities, never invoke serializers."""
+    if type(rows) not in (tuple, list) or len(rows) > 4096:
+        raise ValueError("Bounded original import observation rows required")
+    result = []
+    for row in rows:
+        if type(row) is not tuple or len(row) != 3 or type(row[0]) is not FrameType:
+            raise ValueError("Actual import frame/event/return row required")
+        frame, event, value = row
+        if type(event) is not str:
+            raise ValueError("Original import event label required")
+        code = frame.f_code
+        value_code = value.__code__ if type(value) is FunctionType else value
+        result.append(
+            dict(
+                frame_identity=id(frame),
+                code=(code.co_filename, code.co_firstlineno, code.co_qualname),
+                event=event,
+                value_identity=id(value),
+                value_type=type(value).__qualname__,
+                value=value if type(value) in (type(None), bool, int, float, str, bytes) else None,
+                returned_code=(
+                    (value_code.co_filename, value_code.co_firstlineno, value_code.co_qualname)
+                    if type(value_code) is CodeType
+                    else None
+                ),
+            )
+        )
+    return tuple(result)
+
+
+def _callback_with_imports(state, module, callback, plan, directory, evidence):
+    state.molecule_import_api = module
+    state.molecule_import_binding = _import_observer_binding(module)
+    factory, inner, _, _ = state.molecule_import_binding
+    manager = state.molecule_import_manager = factory(enabled=True)
+    if (
+        type(manager) is not contextlib._GeneratorContextManager
+        or manager.gen.gi_code is not inner.__code__
+        or manager.gen.gi_frame is None
+        or manager.gen.gi_frame.f_globals is not vars(module)
+    ):
+        raise ValueError("Actual public import context manager required")
+    entered, body_error, body_traceback = False, None, None
+    try:
+        state.stage = "molecule_imports.enter"
+        state.molecule_import_operations.append(dict(name="enter", status="attempted"))
+        state.molecule_import_context = type(manager).__enter__(manager)
+        entered = True
+        state.molecule_import_operations[-1]["status"] = "returned"
+        _check_import_binding(state)
+        state.callback = _acquire_callback(state, callback, plan, directory)
+    except BaseException as error:
+        state.molecule_import_error = error
+        body_error, body_traceback = error, error.__traceback__
+        _fail(state, "molecule_imports.entry_or_callback", error)
+        try:
+            state.molecule_import_partial = getattr(error, "partial", None)
+        except BaseException as secondary:
+            _fail(state, "molecule_imports.partial", secondary)
+    finally:
+        if entered:
+            try:
+                state.stage = "molecule_imports.exit"
+                state.molecule_import_operations.append(dict(name="exit", status="attempted"))
+            except BaseException as error:
+                _fail(state, "molecule_imports.exit_observation", error)
+            try:
+                state.molecule_import_exit_return = type(manager).__exit__(
+                    manager,
+                    None if body_error is None else type(body_error),
+                    body_error,
+                    body_traceback,
+                )
+                if state.molecule_import_operations[-1]["name"] == "exit":
+                    state.molecule_import_operations[-1]["status"] = "returned"
+            except BaseException as error:
+                state.molecule_import_error = error
+                _fail(state, "molecule_imports.exit", error)
+            finally:
+                try:
+                    state.molecule_import_record = state.molecule_import_context.record
+                except BaseException as error:
+                    _fail(state, "molecule_imports.record", error)
+    _stop(state)
+    record = _import_record(state)
+    _capture(state, evidence, "molecule_imports.record", record)
+    _capture(
+        state,
+        evidence,
+        "molecule_imports.raw_returns",
+        _import_raw_values(state.molecule_import_record.raw_returns),
+    )
+    state.molecule_import_completed = True
+
+
+def _acquire_callback(state, callback, plan, directory):
+    return _call(
+        state,
+        "callback",
+        callback.acquire_callback,
+        plan["auxiliary_configuration"],
+        directory / "callback",
+        bootstrap=plan["callback_bootstrap"],
+        bootstrap_sha256=plan["callback_bootstrap_sha256"],
+        enabled=True,
+    )
 
 
 def _output(path):
@@ -575,6 +939,10 @@ def _read_plan(path, expected):
     ):
         raise DemoRejected("Exact bounded demonstration plan required", stage="plan")
     value = json.loads(path.read_text())
+    try:
+        _iteration_selection(value.get("endpoint"), value.get("init_iterations"))
+    except DemoRejected as error:
+        raise DemoRejected("Declared complete single-mode plan changed", stage="plan") from error
     if (
         set(value)
         != {
@@ -589,13 +957,19 @@ def _read_plan(path, expected):
             "shared_writer_review",
             "flux_operator",
             "endpoint",
+            "init_iterations",
             "policy",
             "held",
         }
         or value["kind"] != KIND
         or type(value["endpoint"]) is not str
         or value["endpoint"] not in ENDPOINTS
-        or value["source_plan"] != json.loads(json.dumps(source_plan(endpoint=value["endpoint"])))
+        or value["source_plan"]
+        != json.loads(
+            json.dumps(
+                source_plan(endpoint=value["endpoint"], init_iterations=value["init_iterations"])
+            )
+        )
         or value["flux_operator"] not in FLUX_MODES
         or type(value["flux_operator"]) is not str
         or value["policy"] != POLICY
@@ -803,17 +1177,22 @@ def _execute(state, modules, plan, directory, evidence):
         or state.endpoint != plan.get("endpoint", "seed")
     ):
         raise ValueError("Exact declared demonstration endpoint required")
-    callback = modules["callback"]
-    state.callback = _call(
-        state,
-        "callback",
-        callback.acquire_callback,
-        plan["auxiliary_configuration"],
-        directory / "callback",
-        bootstrap=plan["callback_bootstrap"],
-        bootstrap_sha256=plan["callback_bootstrap_sha256"],
-        enabled=True,
-    )
+    _iteration_selection(state.endpoint, state.init_iterations)
+    if (
+        type(plan.get("init_iterations")) is not type(state.init_iterations)
+        or plan.get("init_iterations") != state.init_iterations
+    ):
+        raise ValueError("Exact declared INIT iteration count required")
+    if state.endpoint == "init_short_history":
+        # Completion resolves this exact provider through sys.modules during
+        # ancestor retirement. Loading only the history consumer is insufficient.
+        state.short_runtime_api = modules["molecule_short_runtime"]
+    if state.endpoint in WRAPPER_ENDPOINTS:
+        observer = modules["molecule_wrappers"]
+        callback = modules["callback"]
+        _callback_with_imports(state, observer, callback, plan, directory, evidence)
+    else:
+        state.callback = _acquire_callback(state, modules["callback"], plan, directory)
     parameter = modules["parameters"]
     pair = _call(
         state,
@@ -874,9 +1253,20 @@ def _execute(state, modules, plan, directory, evidence):
         _retain(state, evidence, name, owner, module)
     if state.endpoint != "seed":
         owner = _init_setup(state, modules["init_setup"], owner, evidence)
-    if state.endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"):
+    if state.endpoint in (
+        "init_prelude",
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+    ):
         owner = _init_prelude(state, modules["init_prelude"], owner, evidence)
-    if state.endpoint in ("init_dynamics", "init_electrical", "init_first_step"):
+    if state.endpoint in (
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+    ):
         # The completion producer authenticates an already-loaded participant;
         # import it through the same pinned loader before requesting its claim.
         p = state.init_phase.p
@@ -890,11 +1280,15 @@ def _execute(state, modules, plan, directory, evidence):
         if selected:
             state.dynamics_molecule_api = modules["init_molecules"]
         owner = _init_dynamics(state, modules["init_dynamics"], owner, evidence)
-    if state.endpoint in ("init_electrical", "init_first_step"):
+    if state.endpoint in ("init_electrical", "init_first_step", "init_short_history"):
         for name in ("init_storage", "init_electrical"):
             owner = _init_field_stage(state, modules[name], owner, evidence, name)
     if state.endpoint == "init_first_step":
         owner = _init_first_step(state, modules["init_first_step"], owner, evidence)
+    if state.endpoint == "init_short_history":
+        if modules["molecule_short_runtime"] is not state.short_runtime_api:
+            raise ValueError("Actual preloaded short-runtime provider changed before its claim")
+        owner = _init_short_history(state, modules["init_short_history"], owner, evidence)
     state.result, state.methods_completed = owner, True
     return owner
 
@@ -987,6 +1381,10 @@ def _init_dynamics(state, module, owner, evidence):
     selected = state.dynamics_native_molecules
     if type(selected) is not bool or state.init_phase.p.molecules_enabled is not selected:
         raise ValueError("Original molecular route changed before completion request")
+    if selected:
+        if not state.molecule_import_completed:
+            raise ValueError("Completed original import observation required before network use")
+        _import_record(state)
     files = _profile_image_inputs(state, module, include_bitmap=True)
     state.dynamics_file_inputs = files
     request = _call(
@@ -1092,7 +1490,15 @@ def _init_dynamics(state, module, owner, evidence):
         state, evidence, "init_dynamics.raw_returns", tuple(raw for _, raw in trial.raw_returns)
     )
     if selected:
-        _capture(state, evidence, "init_dynamics.molecule_record", _molecule_values(molecule))
+        _capture(
+            state,
+            evidence,
+            "init_dynamics.molecule_record",
+            dict(
+                _molecule_values(molecule),
+                import_record_identity=id(state.molecule_import_record),
+            ),
+        )
         _capture(
             state,
             evidence,
@@ -1189,9 +1595,15 @@ def _init_field_stage(state, module, owner, evidence, name):
 
 def _field_failure_evidence(state, evidence):
     """Recover available field-stage values without reopening consumed owners."""
-    if state.endpoint not in ("init_electrical", "init_first_step") or state.primary is None:
+    if (
+        state.endpoint not in ("init_electrical", "init_first_step", "init_short_history")
+        or state.primary is None
+    ):
         return
-    if state.endpoint == "init_first_step" and state.init_electrical_completed:
+    if (
+        state.endpoint in ("init_first_step", "init_short_history")
+        and state.init_electrical_completed
+    ):
         return
     names = [
         name
@@ -1338,6 +1750,338 @@ def _init_first_step(state, module, owner, evidence):
     state.init_first_step_completed = True
     state.init_time_steps_completed = 1
     return child
+
+
+def _history_helpers(rows):
+    if type(rows) not in (tuple, list) or len(rows) > 100000:
+        raise ValueError("Bounded retained helper rows required")
+    return tuple((row["name"], row["entered"], row["returned"]) for row in rows)
+
+
+def _history_callbacks(rows):
+    if type(rows) not in (tuple, list) or len(rows) > 100000:
+        raise ValueError("Bounded retained callback rows required")
+    return tuple(
+        (
+            row["name"],
+            len(row["chain"]),
+            tuple(row["return_order"]),
+            row["complete"],
+            _failure_identity(row["error"]),
+        )
+        for row in rows
+    )
+
+
+def _history_iteration(row):
+    # Store the original binary64 time label, never ordinal*dt or elapsed time.
+    if type(row.sampled) is not bool:
+        raise ValueError("Original typed iteration sampling required")
+    return dict(
+        ordinal=row.ordinal,
+        source_time_bits=struct.pack("!d", row.source_time).hex(),
+        sampled=row.sampled,
+        after_identity=row.after.identity,
+        work_end=row.work_end,
+        callbacks_end=row.callbacks_end,
+        molecular_record_identity=id(row.molecular_record),
+    )
+
+
+def _init_short_history(state, module, owner, evidence):
+    """One fresh electrical parent, one contiguous provider attempt, no step recycling."""
+    count = _iteration_selection(state.endpoint, state.init_iterations)
+    parent = state.electrical_trial
+    if state.init_electrical_completed is not True or parent is None:
+        raise ValueError("Completed retained electrical trial required before short history")
+    request = _call(
+        state,
+        "init_short_history_request",
+        module.from_electrical,
+        owner,
+        iterations=count,
+        law_id=module.LAW_ID,
+    )
+    state.requests.append(("init_short_history", request))
+    if (
+        type(request.iterations) is not int
+        or request.iterations != count
+        or request.operator_mode != HISTORY_OPERATOR_MODES[state.flux_operator]
+        or type(request.operator_mode) is not str
+        or request.parent_identity != parent.identity
+        or not _pin(request.identity)
+    ):
+        raise ValueError("Exact fresh short-history request/count/operator required")
+    child = _call(state, "init_short_history", module.prepare, request, enabled=True)
+    state.owners.append(("init_short_history", child))
+    trial = child.trial
+    state.short_history_trial = state.last_trial = trial
+    state.trials.append(("init_short_history", trial))
+    phase = child.phase
+    state.short_history_phase = phase
+    if (
+        phase is not state.phase
+        or phase is not state.init_phase
+        or any(
+            actual is not expected
+            for actual, expected in zip(
+                (phase.p, phase.cells, phase.sim, phase.dyna, phase.callbacks, phase.cache),
+                state.init_links,
+                strict=True,
+            )
+        )
+        or trial.parent_identity != parent.identity
+        or trial.request_identity != request.identity
+        or not _pin(trial.identity)
+        or trial.source_completed is not True
+        or trial.loop_returned is not False
+        or trial.selected_stop is not True
+        or type(trial.iterations) is not tuple
+        or len(trial.iterations) != count
+    ):
+        raise ValueError(
+            "Exact completed contiguous INIT history on the same retained chain required"
+        )
+    before, after = trial.rng_before, trial.rng_after
+    if (
+        type(before) is not tuple
+        or type(after) is not tuple
+        or len(before) != 2
+        or len(after) != 2
+        or not all(_pin(value) for value in (*before, *after))
+        or before != parent.rng_after
+    ):
+        raise ValueError("Short-history original stream handoff required")
+    for name in ("before", "after", "calendar", "sampled", "dt"):
+        if not _pin(getattr(trial, name).identity):
+            raise ValueError("Original short-history snapshot identity required: " + name)
+    work = _step_work_values(trial.work)
+    helpers, callbacks = _history_helpers(trial.helpers), _history_callbacks(trial.callbacks)
+    rows, last_work, last_callbacks = [], 0, 0
+    for ordinal, row in enumerate(trial.iterations):
+        value = _history_iteration(row)
+        if (
+            type(row.ordinal) is not int
+            or row.ordinal != ordinal
+            or not _pin(row.after.identity)
+            or type(row.work_end) is not int
+            or not last_work <= row.work_end <= len(work)
+            or type(row.callbacks_end) is not int
+            or not last_callbacks <= row.callbacks_end <= len(callbacks)
+        ):
+            raise ValueError("Ordered complete original iteration witnesses required")
+        rows.append(value)
+        last_work, last_callbacks = row.work_end, row.callbacks_end
+    if trial.iterations[-1].after.identity != trial.after.identity:
+        raise ValueError("Last original iteration and final history snapshot disagree")
+    raw_record = module.trial_record(trial)
+    state.short_history_record = dict(identity=trial.identity, **raw_record)
+    # Preserve the provider's record verbatim; consumer linkage is a separate capture.
+    expected = dict(
+        request=request.identity,
+        parent=parent.identity,
+        before=trial.before.identity,
+        after=trial.after.identity,
+        calendar=trial.calendar.identity,
+        sampled=trial.sampled.identity,
+        dt=trial.dt.identity,
+        work=len(work),
+        helpers=len(helpers),
+        callbacks=len(callbacks),
+        source_completed=True,
+        loop_returned=False,
+        selected_stop=True,
+        rng_before=before,
+        rng_after=after,
+    )
+    if any(
+        type(raw_record.get(key)) is not type(value) or raw_record[key] != value
+        for key, value in expected.items()
+    ):
+        raise ValueError("Original short-history record disagrees with retained trial")
+    if type(raw_record.get("iterations")) is not tuple or len(raw_record["iterations"]) != count:
+        raise ValueError("Original short-history iteration record required")
+    for row, raw in zip(rows, raw_record["iterations"], strict=True):
+        expected_row = (
+            row["ordinal"],
+            row["source_time_bits"],
+            row["sampled"],
+            row["after_identity"],
+            row["work_end"],
+            row["callbacks_end"],
+            row["molecular_record_identity"],
+        )
+        if (
+            type(raw) is not tuple
+            or len(raw) != 8
+            or any(
+                type(a) is not type(b) or a != b for a, b in zip(raw[:7], expected_row, strict=True)
+            )
+        ):
+            raise ValueError("Original iteration record/retained value correspondence required")
+    state.short_history_linkage = dict(
+        request_identity=request.identity,
+        parent_identity=parent.identity,
+        trial_identity=trial.identity,
+        operator_mode=request.operator_mode,
+        requested_iterations=count,
+        rng_before=before,
+        rng_after=after,
+        iterations=tuple(rows),
+        source_library_and_metadata_work_non_additive=True,
+        full_INIT_SIM_restart_or_physical_credit=False,
+    )
+    _capture(state, evidence, "init_short_history.record", state.short_history_record)
+    _capture(state, evidence, "init_short_history.linkage", state.short_history_linkage)
+    for label, raw in (
+        ("before", trial.before),
+        ("after", trial.after),
+        ("calendar", trial.calendar),
+        ("sampled", trial.sampled),
+        ("configured_dt", trial.dt),
+        ("stream_before", before),
+        ("stream_after", after),
+        ("work", work),
+        ("helpers", helpers),
+        ("callbacks", callbacks),
+        ("initial_diagnostics", raw_record["initial_diagnostics"]),
+        ("raw_returns", _raw_failure_values(trial.raw_returns)),
+    ):
+        _capture(state, evidence, "init_short_history." + label, raw)
+    for ordinal, row in enumerate(trial.iterations):
+        _capture(state, evidence, f"init_short_history.iteration.{ordinal:04d}.after", row.after)
+    state.init_short_history_completed = True
+    state.init_time_steps_completed = count
+    return child
+
+
+def _history_failure_evidence(state, evidence):
+    """Independent saved-value projections; no consumed owner, fresh snapshot or RNG read."""
+    if (
+        state.endpoint != "init_short_history"
+        or state.primary is None
+        or not any(
+            row["name"] in ("init_short_history_request", "init_short_history")
+            for row in state.operations
+        )
+    ):
+        return
+    failure = state.delegate_error if state.delegate_error is not None else state.primary
+    context, trial, missing = None, state.short_history_trial, object()
+    for name in ("partial", "trial"):
+        try:
+            found = getattr(failure, name, None)
+            if name == "partial":
+                context = state.short_history_failure_context = found
+            elif trial is None and found is not None:
+                trial = state.short_history_trial = found
+        except BaseException as error:
+            _fail(state, "init_short_history.failure." + name, error)
+
+    def value(name, partial_name=None):
+        found = getattr(trial, name, missing)
+        return found if found is not missing else getattr(context, partial_name or name, missing)
+
+    def project(name, function, partial_name=None):
+        found = value(name, partial_name)
+        return missing if found is missing else function(found)
+
+    def sampling(raw):
+        if type(raw) is set:
+            if len(raw) > 100000:
+                raise ValueError("Bounded retained sampling set required")
+            return tuple(raw)
+        return raw
+
+    def save(label, observe):
+        label = "init_short_history.failure." + label
+        row = dict(label=label, status="attempted")
+        state.short_history_failure_captures.append(row)
+        try:
+            raw = observe()
+            if raw is missing:
+                row["status"] = "unavailable"
+            elif not evidence.save(label, raw):
+                raise ValueError("Failure observation refused: " + label)
+            else:
+                row["status"] = "saved"
+                state.captures.append(label)
+        except BaseException as error:
+            row.update(status="capture_failed", error=_failure_identity(error))
+            _fail(state, label, error)
+
+    for name, observe in (
+        (
+            "record",
+            lambda: (
+                state.short_history_record if state.short_history_record is not None else missing
+            ),
+        ),
+        (
+            "linkage",
+            lambda: (
+                state.short_history_linkage if state.short_history_linkage is not None else missing
+            ),
+        ),
+        ("before", lambda: value("before")),
+        ("after", lambda: value("after")),
+        ("calendar", lambda: value("calendar", "time_steps")),
+        ("sampled", lambda: project("sampled", sampling)),
+        ("configured_dt", lambda: value("dt")),
+        ("stream_before", lambda: value("rng_before", "stream_ids")),
+        ("stream_after", lambda: value("rng_after")),
+        ("source_completed", lambda: value("source_completed")),
+        ("loop_returned", lambda: value("loop_returned")),
+        ("selected_stop", lambda: value("selected_stop", "selected_stopped")),
+        ("work", lambda: project("work", _step_work_values)),
+        ("helpers", lambda: project("helpers", _history_helpers, "helper_calls")),
+        ("callbacks", lambda: project("callbacks", _history_callbacks, "callback_calls")),
+        ("stores", lambda: project("stores", _store_values)),
+        ("raw_returns", lambda: project("raw_returns", _raw_failure_values)),
+        ("initial_diagnostics", lambda: project("initial_diagnostics", asdict)),
+        (
+            "last_raw_return",
+            lambda: (
+                missing if getattr(context, "last_raw", missing) is missing else context.last_raw[1]
+            ),
+        ),
+        ("last_iteration_raw", lambda: getattr(context, "last_iteration_raw", missing)),
+        (
+            "current_iteration",
+            lambda: getattr(getattr(context, "timeline", None), "current", missing),
+        ),
+        (
+            "completed_iterations",
+            lambda: getattr(getattr(context, "timeline", None), "completed", missing),
+        ),
+        ("last_store", lambda: getattr(context, "last_store", missing)),
+        (
+            "primary",
+            lambda: dict(
+                primary=_failure_identity(state.primary),
+                cause=_failure_identity(state.primary.__cause__),
+                live_claim_or_frame_serialization=False,
+            ),
+        ),
+    ):
+        save(name, observe)
+    # A failed later iteration must not hide any earlier completed iteration.
+    try:
+        rows = getattr(trial, "iterations", missing)
+        if rows is missing:
+            rows = getattr(getattr(context, "timeline", None), "records", ())
+        if type(rows) not in (tuple, list) or len(rows) > 64:
+            raise ValueError("Bounded retained iteration records required")
+    except BaseException as error:
+        _fail(state, "init_short_history.failure.iterations", error)
+        return
+    for ordinal, row in enumerate(rows):
+        save(f"iteration.{ordinal:04d}.linkage", lambda row=row: _history_iteration(row))
+        save(f"iteration.{ordinal:04d}.after", lambda row=row: row.after)
+        save(
+            f"iteration.{ordinal:04d}.diagnostics",
+            lambda row=row: None if row.diagnostics is None else asdict(row.diagnostics),
+        )
 
 
 def _step_work_values(rows):
@@ -1573,7 +2317,8 @@ def _raw_failure_values(rows):
 def _dynamics_failure_evidence(state, evidence):
     """Independent forensic writes; never validate a consumed owner or read RNG."""
     if (
-        state.endpoint not in ("init_dynamics", "init_electrical", "init_first_step")
+        state.endpoint
+        not in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history")
         or state.init_dynamics_completed
         or state.primary is None
     ):
@@ -1743,11 +2488,102 @@ def _profile_image_inputs(state, module, *, include_bitmap=False):
     return tuple(result)
 
 
+def _import_failure_evidence(state, evidence):
+    """Independent forensic observations; raw contexts remain on Execution."""
+    if state.molecule_import_api is None:
+        return
+    missing = object()
+
+    def field(name):
+        context = state.molecule_import_context
+        return missing if context is None else getattr(context, name, missing)
+
+    def exception(error):
+        if error is None:
+            return None
+        return dict(
+            _failure_identity(error),
+            cause=_failure_identity(BaseException.__getattribute__(error, "__cause__")),
+            context=_failure_identity(BaseException.__getattribute__(error, "__context__")),
+        )
+
+    observations = (
+        ("primary", lambda: exception(state.primary)),
+        ("observer_error", lambda: exception(state.molecule_import_error)),
+        (
+            "context",
+            lambda: dict(
+                identity=id(state.molecule_import_context),
+                partial_identity=id(state.molecule_import_partial),
+                manager_identity=id(state.molecule_import_manager),
+                context_available=state.molecule_import_context is not None,
+                partial_available=state.molecule_import_partial is not None,
+                live_context_or_frame_serialization=False,
+            ),
+        ),
+        (
+            "record",
+            lambda: (
+                missing
+                if state.molecule_import_record is None
+                else dict(
+                    record_identity=id(state.molecule_import_record),
+                    source_completed=state.molecule_import_record.source_completed,
+                    factories=state.molecule_import_record.factories,
+                    generated=state.molecule_import_record.generated,
+                )
+            ),
+        ),
+        (
+            "raw_returns",
+            lambda: (
+                missing
+                if field("raw_returns") is missing
+                else _import_raw_values(field("raw_returns"))
+            ),
+        ),
+        (
+            "source_errors",
+            lambda: (
+                missing
+                if field("source_errors") is missing
+                else _import_raw_values(field("source_errors"))
+            ),
+        ),
+        ("operations", lambda: tuple(state.molecule_import_operations)),
+    )
+    for name, observe in observations:
+        label = "molecule_imports.failure." + name
+        row = dict(label=label, status="attempted")
+        state.molecule_import_failure_captures.append(row)
+        try:
+            value = observe()
+            if value is missing:
+                row["status"] = "unavailable"
+            elif not evidence.save(label, value):
+                raise ValueError("Import failure observation refused: " + name)
+            else:
+                row["status"] = "saved"
+                state.captures.append(label)
+        except BaseException as error:
+            row.update(status="capture_failed", error=_failure_identity(error))
+            _fail(state, label, error)
+
+
 def _finish(state, evidence, directory):
     if state.primary is not None:
         # The raw trial still records an actually completed selected body.
         # Endpoint credit requires complete surrounding execution/evidence too.
         state.init_first_step_completed, state.init_time_steps_completed = False, 0
+        state.init_short_history_completed = False
+        try:
+            _import_failure_evidence(state, evidence)
+        except BaseException as error:
+            _fail(state, "molecule_imports.failure.finalizer", error)
+        try:
+            _history_failure_evidence(state, evidence)
+        except BaseException as error:
+            _fail(state, "init_short_history.failure.finalizer", error)
         try:
             _step_failure_evidence(state, evidence)
         except BaseException as error:
@@ -1774,14 +2610,28 @@ def _finish(state, evidence, directory):
                 else "failed",
                 flux_operator=state.flux_operator,
                 endpoint=state.endpoint,
+                init_iterations=state.init_iterations,
                 init_setup_completed=state.init_setup_completed,
                 init_prelude_completed=state.init_prelude_completed,
                 init_dynamics_completed=state.init_dynamics_completed,
                 init_native_molecules=state.dynamics_native_molecules,
                 init_molecule_network_completed=state.init_molecule_network_completed,
+                molecule_import_protocol=(
+                    IMPORT_PROTOCOL if state.endpoint in WRAPPER_ENDPOINTS else None
+                ),
+                molecule_import_completed=state.molecule_import_completed,
+                molecule_import_record_identity=(
+                    id(state.molecule_import_record)
+                    if state.molecule_import_record is not None
+                    else None
+                ),
+                molecule_import_operations=state.molecule_import_operations,
+                molecule_import_failure_captures=state.molecule_import_failure_captures,
                 init_storage_completed=state.init_storage_completed,
                 init_electrical_completed=state.init_electrical_completed,
                 init_first_step_completed=state.init_first_step_completed,
+                init_short_history_completed=state.init_short_history_completed,
+                short_history_failure_captures=state.short_history_failure_captures,
                 first_step_failure_captures=state.first_step_failure_captures,
                 electrical_failure_captures=state.electrical_failure_captures,
                 dynamics_failure_captures=state.dynamics_failure_captures,
@@ -1803,6 +2653,7 @@ def _finish(state, evidence, directory):
         state.evidence_completed = True
     except BaseException as error:
         state.init_first_step_completed, state.init_time_steps_completed = False, 0
+        state.init_short_history_completed = False
         _fail(state, "outcome", error)
 
 
@@ -1845,7 +2696,11 @@ def run_demo(plan, directory, *, plan_sha256, enabled=False):
         modules = _dependencies(declaration["endpoint"])
     output, input_root = _validate_output(directory, declaration, modules["parameters"])
     _resources()
-    state = Execution(declaration["flux_operator"], endpoint=declaration["endpoint"])
+    state = Execution(
+        declaration["flux_operator"],
+        endpoint=declaration["endpoint"],
+        init_iterations=declaration["init_iterations"],
+    )
     state.input_root = input_root
     _ATTEMPT = state
     _ACTIVE.append(state)
@@ -1888,12 +2743,14 @@ def prepare(
     auxiliary_configuration,
     flux_operator,
     endpoint="seed",
+    init_iterations=None,
     shared_writer_review=None,
     extra_sources=(),
 ):
     """Freeze the full closure once via Key's existing current-checkout prepare."""
     if type(flux_operator) is not str or flux_operator not in FLUX_MODES:
         raise DemoRejected("Choose exactly original or disabled flux inverse", stage="mode")
+    _iteration_selection(endpoint, init_iterations)
     if type(extra_sources) is not tuple:
         raise DemoRejected("Explicit immutable extra source roster required", stage="source_roster")
     for name in extra_sources:
@@ -1917,19 +2774,29 @@ def prepare(
         *(
             _relative(name)
             for name in PRELUDE_MODULES.values()
-            if endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step")
+            if endpoint
+            in (
+                "init_prelude",
+                "init_dynamics",
+                "init_electrical",
+                "init_first_step",
+                "init_short_history",
+            )
         ),
         *(
             _relative(name)
             for name in COMPLETION_MODULES.values()
-            if endpoint in ("init_dynamics", "init_electrical", "init_first_step")
+            if endpoint
+            in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history")
         ),
         *(
             _relative(name)
             for name in ELECTRICAL_MODULES.values()
-            if endpoint in ("init_electrical", "init_first_step")
+            if endpoint in ("init_electrical", "init_first_step", "init_short_history")
         ),
         *(_relative(name) for name in STEP_MODULES.values() if endpoint == "init_first_step"),
+        *(_relative(name) for name in HISTORY_MODULES.values() if endpoint == "init_short_history"),
+        *(_relative(name) for name in WRAPPER_MODULES.values() if endpoint in WRAPPER_ENDPOINTS),
         *extra_sources,
     )
     value = _function(parameter, "prepare")(
@@ -1945,7 +2812,7 @@ def prepare(
         directory / "demo-plan.json",
         dict(
             kind=KIND,
-            source_plan=source_plan(endpoint=endpoint),
+            source_plan=source_plan(endpoint=endpoint, init_iterations=init_iterations),
             snapshot_sha256=snapshot.digest(directory / "source/SNAPSHOT.json"),
             parameter_packet=str(directory),
             parameter_sha256=snapshot.digest(directory / "inputs.json"),
@@ -1955,6 +2822,7 @@ def prepare(
             shared_writer_review=str(shared_writer_review),
             flux_operator=flux_operator,
             endpoint=endpoint,
+            init_iterations=init_iterations,
             policy=dict(POLICY),
             held=True,
         ),

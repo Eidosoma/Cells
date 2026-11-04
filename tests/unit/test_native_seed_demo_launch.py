@@ -17,6 +17,149 @@ from validation.betse import native_seed_demo_launch_software as software
 _RAW_GUARDS = []
 
 
+def short_history_bundle(b, count=3):
+    declaration = launch.read(b.plan["demo_plan"])
+    declaration.update(
+        kind="cells.genuine_seed_core_profiles_junctions_demo@6",
+        endpoint="init_short_history",
+        init_iterations=count,
+    )
+    pin = write(b.packet / "demo-plan.json", declaration)
+    made = launch.prepare(
+        b.packet,
+        b.root / "short-history-plan",
+        demo_plan_sha256=pin["sha256"],
+        release_environment=b.env,
+        input_bundle=b.plan["input_bundle"],
+    )
+    b.path, b.sha = Path(made["plan"]["path"]), made["plan"]["sha256"]
+    b.plan = launch.read(made["plan"])
+    pin = write(
+        b.root / "short-history-release.json",
+        dict(
+            kind=launch.RELEASE_KIND,
+            authorized=True,
+            launch_plan_sha256=b.sha,
+            demo_plan_sha256=b.plan["demo_plan"]["sha256"],
+            snapshot_sha256=b.plan["source_snapshot"]["sha256"],
+            release_environment=b.env,
+            endpoint="init_short_history",
+            init_iterations=count,
+        ),
+    )
+    b.release, b.release_sha = Path(pin["path"]), pin["sha256"]
+    return b
+
+
+@pytest.mark.parametrize("count", [1, 3, 64])
+def test_launch_init_short_history_count_bound_through_preparation_release_and_worker(
+    bundle, monkeypatch, count
+):
+    b = short_history_bundle(bundle, count)
+    assert launch.verify(b.path, b.sha)["init_iterations"] == count
+    assert (
+        launch.verify_release(b.plan, b.sha, b.release, b.release_sha)["init_iterations"] == count
+    )
+    calls = []
+
+    def public(path, output, **kwargs):
+        declared = launch.read(b.plan["demo_plan"])
+        assert declared["init_iterations"] == count and path == b.plan["demo_plan"]["path"]
+        calls.append((path, kwargs))
+        output.mkdir()
+        return NS(
+            methods_completed=True,
+            evidence_completed=True,
+            primary=None,
+            secondary=[],
+            endpoint="init_short_history",
+            init_iterations=count,
+            init_short_history_completed=True,
+            init_first_step_completed=False,
+            init_time_steps_completed=count,
+        )
+
+    worker_setup(b, monkeypatch, public)
+    result = launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert result["init_iterations"] == count and result["endpoint"] == "init_short_history"
+    assert result["scientific_credit"] == 0 and len(calls) == 1
+
+
+@pytest.mark.parametrize("count", [None, True, False, 0, 65, 2.0, "2"])
+def test_launch_init_short_history_rejects_invalid_selection_before_output(bundle, count):
+    with pytest.raises(ValueError, match="iteration count"):
+        short_history_bundle(bundle, count)
+    assert not (bundle.root / "short-history-plan").exists()
+
+
+@pytest.mark.parametrize(
+    "mutation", ["plan", "bool_plan", "release", "bool_release", "release_endpoint", "old_schema"]
+)
+def test_launch_init_short_history_refuses_changed_count_or_endpoint(bundle, mutation):
+    b = short_history_bundle(bundle, 1)
+    if mutation in ("plan", "bool_plan"):
+        b.plan["init_iterations"] = True if mutation == "bool_plan" else 2
+        with pytest.raises(ValueError, match="iteration count"):
+            launch._immutable(b.plan)
+    elif mutation == "old_schema":
+        declaration = launch.read(b.plan["demo_plan"])
+        declaration["kind"] = "cells.genuine_seed_core_profiles_junctions_demo@5"
+        b.plan["demo_plan"] = write(b.packet / "demo-plan.json", declaration)
+        with pytest.raises(ValueError, match="explicit demo schema"):
+            launch._immutable(b.plan)
+    else:
+        release = launch.read(dict(path=str(b.release), sha256=b.release_sha))
+        if mutation == "release_endpoint":
+            release["endpoint"] = "init_first_step"
+        else:
+            release["init_iterations"] = True if mutation == "bool_release" else 2
+        pin = write(b.release, release)
+        with pytest.raises(ValueError, match="explicit release"):
+            launch.verify_release(b.plan, b.sha, b.release, pin["sha256"])
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("init_iterations", True),
+        ("init_iterations", 2),
+        ("init_time_steps_completed", True),
+        ("init_time_steps_completed", 2),
+        ("init_short_history_completed", False),
+        ("init_first_step_completed", True),
+    ],
+)
+def test_launch_init_short_history_incomplete_public_return_never_succeeds(
+    bundle, monkeypatch, field, value
+):
+    b = short_history_bundle(bundle, 1)
+    result = NS(
+        methods_completed=True,
+        evidence_completed=True,
+        primary=None,
+        secondary=[],
+        endpoint="init_short_history",
+        init_iterations=1,
+        init_time_steps_completed=1,
+        init_short_history_completed=True,
+        init_first_step_completed=False,
+    )
+    setattr(result, field, value)
+    worker_setup(b, monkeypatch, lambda *args, **kwargs: result)
+    with pytest.raises(ValueError, match="complete short-history"):
+        launch.worker(b.path, b.root / "worker", **kwargs(b))
+    failure = json.loads((b.root / "worker/failure.json").read_text())
+    assert failure["scientific_credit"] == 0
+    assert not (b.root / "worker/result.json").exists()
+
+
+def test_launch_init_short_history_guard_still_blocks_public_owner_entry():
+    namespace = {"__name__": "cells.processes.betse_native_init_short_history"}
+    container = compile("def prepare():\n return None\n", "synthetic.py", "exec")
+    code = next(value for value in container.co_consts if hasattr(value, "co_name"))
+    assert software.is_forbidden_frame(NS(f_globals=namespace, f_code=code))
+
+
 @pytest.fixture
 def write_policy(tmp_path):
     output, native, home = tmp_path / "output", tmp_path / "native", tmp_path / "home"
@@ -576,6 +719,8 @@ def bundle(tmp_path, monkeypatch):
             demo_plan_sha256=demo_pin["sha256"],
             snapshot_sha256=inputs["source_snapshot"]["sha256"],
             release_environment=release_environment,
+            endpoint=plan["endpoint"],
+            init_iterations=plan["init_iterations"],
         ),
     )
     return NS(
@@ -691,6 +836,48 @@ def test_launch_release_refuses_unbound_authority(bundle, mutation):
     ref = write(b.root / "bad-release.json", value)
     with pytest.raises(ValueError, match="Exact explicit release"):
         launch.verify_release(b.plan, b.sha, Path(ref["path"]), ref["sha256"])
+
+
+@pytest.mark.parametrize("count", [None, 1, 64])
+def test_launch_prepared_release_retains_verified_endpoint_and_count(bundle, monkeypatch, count):
+    b = bundle if count is None else short_history_bundle(bundle, count)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("Release metadata must not launch or execute a worker")
+
+    for name in ("launch", "controller", "worker"):
+        monkeypatch.setattr(launch, name, forbidden)
+    output = b.path.parent / "prepared-release.json"
+    bound = launch.prepare_release(b.path, output, plan_sha256=b.sha)
+    value = launch.verify_release(b.plan, b.sha, output, bound["sha256"])
+    assert value["endpoint"] == ("seed" if count is None else "init_short_history")
+    assert value["init_iterations"] is None if count is None else value["init_iterations"] == count
+    assert value["release_environment"] == b.env
+    before = output.read_bytes()
+    with pytest.raises(FileExistsError):
+        launch.prepare_release(b.path, output, plan_sha256=b.sha)
+    assert output.read_bytes() == before
+
+
+@pytest.mark.parametrize("change", ["plan", "source", "input", "destination"])
+def test_launch_prepared_release_refuses_unverified_inputs_before_write(bundle, change):
+    b = bundle
+    output = b.path.parent / "prepared-release.json"
+    sha = b.sha
+    if change == "plan":
+        sha = "0" * 64
+    elif change == "source":
+        declaration = copy.deepcopy(b.plan)
+        declaration["producers"][launch.DEMO] = "0" * 64
+        changed = write(b.path.parent / "changed-plan.json", declaration)
+        b.path, sha = Path(changed["path"]), changed["sha256"]
+    elif change == "input":
+        (Path(b.inputs["program"]["root"]) / "RESULTS").mkdir()
+    else:
+        output = b.root / "outside-release.json"
+    with pytest.raises((ValueError, RuntimeError)):
+        launch.prepare_release(b.path, output, plan_sha256=sha)
+    assert not output.exists()
 
 
 @pytest.mark.parametrize(

@@ -14,8 +14,8 @@ from validation.betse import native_seed_demo_evidence as evidence
 from validation.betse import native_single_cell_prefix_payload as payload
 
 KIND = "cells.saved_seed_demo_report@1"
-LAUNCH_KINDS = tuple(f"cells.genuine_seed_demo_detached_launch@{v}" for v in (6, 7, 8, 9))
-DEMO_KINDS = tuple(f"cells.genuine_seed_core_profiles_junctions_demo@{v}" for v in (2, 3, 4, 5))
+LAUNCH_KINDS = tuple(f"cells.genuine_seed_demo_detached_launch@{v}" for v in (6, 7, 8, 9, 10))
+DEMO_KINDS = tuple(f"cells.genuine_seed_core_profiles_junctions_demo@{v}" for v in (2, 3, 4, 5, 6))
 ENDPOINTS = (
     "seed",
     "init_setup",
@@ -23,12 +23,16 @@ ENDPOINTS = (
     "init_dynamics",
     "init_electrical",
     "init_first_step",
+    "init_short_history",
 )
 DEMO = "validation/betse/native_seed_demo.py"
 LAUNCH = "validation/betse/native_seed_demo_launch.py"
 PARAMETER = "validation/betse/betse_native_parameter_world_ready_qualification.py"
 NUMPY_ORIGIN = "src/cells/processes/betse_native_numpy_copy_origin.py"
 NUMPY_ORIGIN_KIND = "cells.original_numpy_copy_import_origin@1"
+MOLECULE_WRAPPER = "src/cells/processes/betse_native_init_molecule_wrapper_authority.py"
+IMPORT_PROTOCOL = "closed_original_molecule_import_before_callback_handoff@1"
+WRAPPER_ENDPOINTS = ("init_dynamics", "init_electrical", "init_first_step", "init_short_history")
 GEOMETRY_STAGES = (
     "four_aliases",
     "cell_index",
@@ -61,6 +65,23 @@ def source_plan():
 def require(value, message):
     if not value:
         raise ValueError(message)
+
+
+def _iterations(plan):
+    value = plan.get("init_iterations")
+    if plan.get("endpoint", "seed") == "init_short_history":
+        require(type(value) is int and 1 <= value <= 64, "Exact short-history count in [1,64]")
+    else:
+        require(value is None, "Iteration count belongs only to the short-history endpoint")
+    return value
+
+
+def _hash_identity(value):
+    return (
+        type(value) is str
+        and len(value) == 64
+        and all(char in "0123456789abcdef" for char in value)
+    )
 
 
 class Reader:
@@ -126,6 +147,23 @@ def _plan(reader, path, digest):
         all(files.get(name) == sha for name, sha in producers.items()), "Producer source mismatch"
     )
     demo, parameters = reader.bound(plan["demo_plan"]), reader.bound(plan["parameter_inputs"])
+    import_policy = demo.get("source_plan", {}).get("optional_molecule_import_authority")
+    if plan.get("endpoint", "seed") in WRAPPER_ENDPOINTS and import_policy is not None:
+        require(
+            type(import_policy) is dict
+            and import_policy.get("protocol") == IMPORT_PROTOCOL
+            and import_policy.get("modules")
+            == {"molecule_wrappers": "cells.processes.betse_native_init_molecule_wrapper_authority"}
+            and set(import_policy.get("source_pins", {})) == {"molecule_wrappers"}
+            and set(import_policy.get("review_pins", {})) == {"molecule_wrappers"}
+            and _hash_identity(import_policy["source_pins"]["molecule_wrappers"])
+            and _hash_identity(import_policy["review_pins"]["molecule_wrappers"])
+            and files.get(MOLECULE_WRAPPER) == import_policy["source_pins"]["molecule_wrappers"],
+            "Declared original import observer source/review is not in the immutable closure",
+        )
+    else:
+        import_policy = None
+    plan = dict(plan, _molecule_import_policy=import_policy)
     if plan.get("endpoint") == "init_electrical":
         require(
             plan["kind"] in LAUNCH_KINDS[2:] and demo.get("kind") in DEMO_KINDS[2:],
@@ -133,9 +171,19 @@ def _plan(reader, path, digest):
         )
     if plan.get("endpoint") == "init_first_step":
         require(
-            plan["kind"] == LAUNCH_KINDS[3] and demo.get("kind") == DEMO_KINDS[3],
+            plan["kind"] in LAUNCH_KINDS[3:] and demo.get("kind") in DEMO_KINDS[3:],
             "First-step endpoint requires its declared plan schemas",
         )
+    count = _iterations(plan)
+    if plan.get("endpoint") == "init_short_history":
+        require(
+            plan["kind"] == LAUNCH_KINDS[4] and demo.get("kind") == DEMO_KINDS[4],
+            "Short-history endpoint requires its declared plan schemas",
+        )
+    require(
+        type(demo.get("init_iterations")) is type(count) and demo.get("init_iterations") == count,
+        "Prepared iteration count changed",
+    )
     require(
         demo["snapshot_sha256"] == plan["source_snapshot"]["sha256"]
         and Path(demo["parameter_packet"]) / "source" == source
@@ -233,6 +281,14 @@ def _captures(reader, directory, rows):
                             "tail_source_completed",
                             "timesteps_completed",
                             "completed_INIT_or_independent_case",
+                            "request",
+                            "parent",
+                            "iterations",
+                            "work",
+                            "helpers",
+                            "callbacks",
+                            "source_completed",
+                            "initial_diagnostics",
                         )
                         if key in value
                     }
@@ -250,11 +306,35 @@ def _captures(reader, directory, rows):
                             "source_completed",
                             "work_views_are_non_additive",
                             "live_claim_or_frame_serialization",
+                            "import_record_identity",
                         )
                         if key in value
                     }
-            if row["label"] in ("init_first_step.stream_before", "init_first_step.stream_after"):
+            if row["label"] == "molecule_imports.record":
+                require(type(value) is dict, "Original import record metadata required")
+                record["references"] = value
+            if row["label"] == "molecule_imports.raw_returns":
+                require(type(value) is list and len(value) <= 4096, "Bounded import work required")
+                record["sequence_length"] = len(value)
+            if row["label"] in (
+                "init_first_step.stream_before",
+                "init_first_step.stream_after",
+                "init_short_history.stream_before",
+                "init_short_history.stream_after",
+            ):
                 record["stream_identities"] = value
+            if row["label"] == "init_short_history.linkage":
+                require(type(value) is dict, "Short-history linkage object required")
+                record["references"] = value
+            if row["label"] in (
+                "init_short_history.work",
+                "init_short_history.helpers",
+                "init_short_history.callbacks",
+            ):
+                require(
+                    type(value) is list and len(value) <= 100000, "Bounded work sequence required"
+                )
+                record["sequence_length"] = len(value)
         else:
             require("error" in row, "Capture failure must retain its error")
         summary.append(record)
@@ -291,7 +371,12 @@ def _molecule_captures(value, captures, endpoint):
             "Molecular evidence cannot be promoted without explicit enabled selection",
         )
     if present[0]:
-        dynamics = endpoint in ("init_dynamics", "init_electrical", "init_first_step")
+        dynamics = endpoint in (
+            "init_dynamics",
+            "init_electrical",
+            "init_first_step",
+            "init_short_history",
+        )
         require(selected is None or dynamics, "Molecular route selected before its endpoint")
         if value["status"] == "completed" and dynamics:
             require(type(selected) is bool, "Completed dynamics requires its molecular selection")
@@ -357,6 +442,67 @@ def _molecule_captures(value, captures, endpoint):
     )
 
 
+def _molecule_import_captures(value, captures, endpoint, policy):
+    """A saved import record proves recorded linkage, never live wrapper issuance."""
+    protocol = value.get("molecule_import_protocol")
+    completed = value.get("molecule_import_completed", False)
+    require(type(completed) is bool, "Exact import completion flag required")
+    declared = policy is not None
+    if declared:
+        require(protocol == IMPORT_PROTOCOL, "Required import protocol missing or changed")
+        if value["status"] == "completed":
+            require(completed, "Completed endpoint lacks its required import observation")
+    elif protocol is not None:
+        raise ValueError("Import observation is not bound by the prepared source declaration")
+    if value.get("init_molecule_network_completed", False) is True:
+        require(
+            completed and declared, "Enabled molecular completion lacks required import evidence"
+        )
+    labels = ("molecule_imports.record", "molecule_imports.raw_returns")
+    rows = {row["label"]: row for row in captures if row["status"] == "saved"}
+    record = rows.get(labels[0], {}).get("references", {})
+    if completed:
+        require(declared and endpoint in WRAPPER_ENDPOINTS, "Import work exceeds declared endpoint")
+        _required_captures(captures, labels)
+        require(
+            record.get("protocol") == IMPORT_PROTOCOL
+            and record.get("law") == "fresh_original_molecule_channel_imported_beartype_factory@1"
+            and record.get("source_completed") is True
+            and record.get("published") is True
+            and record.get("active") is False
+            and record.get("hooks_restored") is True
+            and record.get("monitor_restored") is True
+            and record.get("work_views_are_non_additive") is True
+            and record.get("live_claim_or_frame_serialization") is False
+            and record.get("producer_sha256") == policy["source_pins"]["molecule_wrappers"],
+            "Original import publication/source/cleanup metadata is incomplete",
+        )
+        for name in ("context_identity", "record_identity", "factories"):
+            require(type(record.get(name)) is int and record[name] > 0, "Exact import " + name)
+        require(
+            record["factories"] <= 512
+            and type(record.get("generated")) is int
+            and 0 <= record["generated"] <= record["factories"]
+            and type(record.get("raw_returns")) is int
+            and record["raw_returns"] == rows[labels[1]].get("sequence_length")
+            and type(record.get("source_errors")) is int
+            and record["source_errors"] == 0
+            and type(value.get("molecule_import_record_identity")) is int
+            and value["molecule_import_record_identity"] == record["record_identity"]
+            and value.get("molecule_import_operations")
+            == [dict(name="enter", status="returned"), dict(name="exit", status="returned")],
+            "Import record/work/operation linkage changed",
+        )
+        molecular = rows.get("init_dynamics.molecule_record")
+        if molecular is not None:
+            require(
+                type(molecular.get("references", {}).get("import_record_identity")) is int
+                and molecular["references"]["import_record_identity"] == record["record_identity"],
+                "Molecular completion does not retain the original closed import record",
+            )
+    return dict(declared=declared, completed=completed, record=record if completed else None)
+
+
 def _first_step_captures(captures):
     """Check saved first-iteration linkage without decoding or advancing model state."""
     rows = {row["label"]: row for row in captures if row["status"] == "saved"}
@@ -404,6 +550,144 @@ def _first_step_captures(captures):
     require(
         electrical.get("rng_after") == record["rng_before"],
         "First-step RNG handoff differs from retained electrical trial",
+    )
+
+
+def _short_history_captures(captures, count, mode):
+    """Check a recorded contiguous history without executing its numerical model."""
+    rows = {row["label"]: row for row in captures if row["status"] == "saved"}
+    record_row = rows["init_short_history.record"]
+    record = record_row.get("references", {})
+    linkage = rows["init_short_history.linkage"].get("references", {})
+    require(
+        [
+            row["label"]
+            for row in captures
+            if row["label"].startswith("init_short_history.iteration.")
+        ]
+        == [f"init_short_history.iteration.{i:04d}.after" for i in range(count)],
+        "Exact ordered iteration snapshot roster required",
+    )
+    require(
+        record.get("source_completed") is True
+        and record.get("loop_returned") is False
+        and record.get("selected_stop") is True,
+        "Completed bounded original-loop selection required",
+    )
+    require(
+        type(linkage.get("requested_iterations")) is int
+        and linkage["requested_iterations"] == count
+        and linkage.get("operator_mode")
+        == (
+            "original_value_and_flux" if mode == "original" else "original_value_only_flux_omitted"
+        ),
+        "Short-history count or retained operator mode changed",
+    )
+    for key, actual in (
+        ("trial_identity", record_row.get("identity")),
+        ("request_identity", record.get("request")),
+        ("parent_identity", record.get("parent")),
+    ):
+        require(
+            _hash_identity(actual) and linkage.get(key) == actual,
+            "Short-history request/parent/trial linkage changed: " + key,
+        )
+    for key, label in (
+        ("before", "before"),
+        ("after", "after"),
+        ("calendar", "calendar"),
+        ("sampled", "sampled"),
+        ("dt", "configured_dt"),
+    ):
+        identity = record.get(key)
+        require(
+            _hash_identity(identity)
+            and rows["init_short_history." + label].get("identity") == identity,
+            "Short-history original snapshot linkage changed: " + label,
+        )
+    for key, label in (("rng_before", "stream_before"), ("rng_after", "stream_after")):
+        identities = linkage.get(key)
+        require(
+            type(identities) is list
+            and len(identities) == 2
+            and all(_hash_identity(identity) for identity in identities)
+            and record.get(key) == identities
+            and rows["init_short_history." + label].get("stream_identities") == identities,
+            "Short-history original RNG capture changed: " + label,
+        )
+    require(
+        rows["init_electrical.record"].get("references", {}).get("rng_after")
+        == linkage["rng_before"],
+        "Short-history RNG handoff differs from retained electrical trial",
+    )
+    for key in ("work", "helpers", "callbacks"):
+        require(type(record.get(key)) is int and record[key] >= 0, "Exact work count required")
+        require(
+            rows["init_short_history." + key].get("sequence_length") == record[key],
+            "Original captured work/helper/callback count changed: " + key,
+        )
+    native_rows, linked_rows = record.get("iterations"), linkage.get("iterations")
+    require(
+        type(native_rows) is list
+        and type(linked_rows) is list
+        and len(native_rows) == len(linked_rows) == count,
+        "Exactly the requested contiguous history rows required",
+    )
+    work_end = callbacks_end = 0
+    for ordinal, (native, linked) in enumerate(zip(native_rows, linked_rows, strict=True)):
+        require(
+            type(native) is list and len(native) == 8 and type(linked) is dict,
+            "Original eight-field iteration record required",
+        )
+        require(
+            type(native[0]) is int
+            and type(linked.get("ordinal")) is int
+            and native[0] == linked["ordinal"] == ordinal,
+            "Contiguous original iteration ordinals required",
+        )
+        bits = native[1]
+        require(
+            type(bits) is str
+            and len(bits) == 16
+            and all(char in "0123456789abcdef" for char in bits)
+            and linked.get("source_time_bits") == bits
+            and type(linked.get("sampled")) is bool
+            and type(native[2]) is bool
+            and native[2] is linked["sampled"],
+            "Original time-label bits and sample flag required",
+        )
+        require(
+            _hash_identity(native[3])
+            and linked.get("after_identity") == native[3]
+            and rows[f"init_short_history.iteration.{ordinal:04d}.after"].get("identity")
+            == native[3],
+            "Actual per-iteration state snapshot changed",
+        )
+        require(
+            type(native[4]) is int
+            and type(native[5]) is int
+            and type(linked.get("work_end")) is int
+            and type(linked.get("callbacks_end")) is int
+            and work_end <= native[4] == linked["work_end"] <= record["work"]
+            and callbacks_end <= native[5] == linked["callbacks_end"] <= record["callbacks"],
+            "Ordered non-additive iteration work/callback boundaries required",
+        )
+        require(
+            type(native[6]) is int
+            and native[6] > 0
+            and type(linked.get("molecular_record_identity")) is int
+            and linked["molecular_record_identity"] == native[6],
+            "Retained molecular iteration record required",
+        )
+        work_end, callbacks_end = native[4], native[5]
+    require(native_rows[-1][3] == record["after"], "Final iteration state differs from final trial")
+    return dict(
+        requested_iterations=count,
+        recorded_iterations=count,
+        original_time_bits=[row[1] for row in native_rows],
+        initial_diagnostics=record.get("initial_diagnostics"),
+        iteration_diagnostics=[row[7] for row in native_rows],
+        numerical_or_conservation_qualification=False,
     )
 
 
@@ -558,37 +842,66 @@ def _outcome(reader, root, plan, value):
     require(value["status"] in ("completed", "failed"), "Unknown demo disposition")
     endpoint = plan.get("endpoint", "seed")
     first_step = endpoint == "init_first_step"
+    short_history = endpoint == "init_short_history"
+    count = _iterations(plan)
+    completed = value["status"] == "completed"
     if first_step:
-        require(value["kind"] == DEMO_KINDS[3], "First-step endpoint requires its declared schema")
+        require(value["kind"] in DEMO_KINDS[3:], "First-step endpoint requires its declared schema")
+    if short_history:
+        require(
+            value["kind"] == DEMO_KINDS[4], "Short-history endpoint requires its declared schema"
+        )
+    require(
+        type(value.get("init_iterations")) is type(count) and value.get("init_iterations") == count,
+        "Outcome requested iteration count changed",
+    )
     require(
         value["original_flux_defect_repaired"] is False
         and type(value["scientific_or_physical_credit"]) is int
         and value["scientific_or_physical_credit"] == 0
         and type(value["init_time_steps_completed"]) is int
-        and value["init_time_steps_completed"] == int(first_step and value["status"] == "completed")
-        and value.get("init_first_step_completed", False)
-        is (first_step and value["status"] == "completed")
+        and value["init_time_steps_completed"]
+        == (count if short_history and completed else int(first_step and completed))
+        and value.get("init_first_step_completed", False) is (first_step and completed)
+        and value.get("init_short_history_completed", False) is (short_history and completed)
         and value["complete_seed_runner_or_INIT_SIM_restart_claim"] is False
         and value["stage_work_is_non_additive"] is True,
         "Outcome exceeds the supported demonstration claim",
     )
     captures = _captures(reader, root, value["captures"])
     molecules = _molecule_captures(value, captures, endpoint)
+    imports = _molecule_import_captures(
+        value, captures, endpoint, plan.get("_molecule_import_policy")
+    )
+    history = None
     if value["status"] == "completed":
         stages = ["geometry", "poisson", "core", "profiles", "junctions"]
         if endpoint != "seed":
             stages.append("init_setup")
-        if endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"):
+        if endpoint in (
+            "init_prelude",
+            "init_dynamics",
+            "init_electrical",
+            "init_first_step",
+            "init_short_history",
+        ):
             stages.append("init_prelude")
-        if endpoint in ("init_dynamics", "init_electrical", "init_first_step"):
+        if endpoint in (
+            "init_dynamics",
+            "init_electrical",
+            "init_first_step",
+            "init_short_history",
+        ):
             stages.append("init_dynamics")
-        if endpoint in ("init_electrical", "init_first_step"):
+        if endpoint in ("init_electrical", "init_first_step", "init_short_history"):
             require(
                 value["kind"] in DEMO_KINDS[2:], "Electrical endpoint requires its declared schema"
             )
             stages.extend(("init_storage", "init_electrical"))
         if first_step:
             stages.append("init_first_step")
+        if short_history:
+            stages.append("init_short_history")
         require(
             value["methods_completed"] is True
             and value["primary"] is None
@@ -599,13 +912,25 @@ def _outcome(reader, root, plan, value):
         require(
             value["init_setup_completed"] is (endpoint != "seed")
             and value.get("init_prelude_completed", False)
-            is (endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"))
+            is (
+                endpoint
+                in (
+                    "init_prelude",
+                    "init_dynamics",
+                    "init_electrical",
+                    "init_first_step",
+                    "init_short_history",
+                )
+            )
             and value.get("init_dynamics_completed", False)
-            is (endpoint in ("init_dynamics", "init_electrical", "init_first_step"))
+            is (
+                endpoint
+                in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history")
+            )
             and value.get("init_storage_completed", False)
-            is (endpoint in ("init_electrical", "init_first_step"))
+            is (endpoint in ("init_electrical", "init_first_step", "init_short_history"))
             and value.get("init_electrical_completed", False)
-            is (endpoint in ("init_electrical", "init_first_step")),
+            is (endpoint in ("init_electrical", "init_first_step", "init_short_history")),
             "Endpoint completion flags changed",
         )
         required = ["callback", "parameters", "geometry"]
@@ -641,9 +966,20 @@ def _outcome(reader, root, plan, value):
         ]
         if endpoint != "seed":
             labels.extend(("init_setup.before", "init_setup.after"))
-        if endpoint in ("init_prelude", "init_dynamics", "init_electrical", "init_first_step"):
+        if endpoint in (
+            "init_prelude",
+            "init_dynamics",
+            "init_electrical",
+            "init_first_step",
+            "init_short_history",
+        ):
             labels.extend(("init_prelude.before", "init_prelude.after", "init_prelude.raw_returns"))
-        if endpoint in ("init_dynamics", "init_electrical", "init_first_step"):
+        if endpoint in (
+            "init_dynamics",
+            "init_electrical",
+            "init_first_step",
+            "init_short_history",
+        ):
             labels.extend(
                 "init_dynamics." + name
                 for name in (
@@ -656,7 +992,7 @@ def _outcome(reader, root, plan, value):
                     "raw_returns",
                 )
             )
-        if endpoint in ("init_electrical", "init_first_step"):
+        if endpoint in ("init_electrical", "init_first_step", "init_short_history"):
             for name, streams in (
                 ("init_storage", ("stream_before", "stream_after")),
                 ("init_electrical", ("rng_before", "rng_after")),
@@ -681,10 +1017,38 @@ def _outcome(reader, root, plan, value):
                     "raw_returns",
                 )
             )
+        if short_history:
+            labels.extend(
+                "init_short_history." + field
+                for field in (
+                    "linkage",
+                    "before",
+                    "after",
+                    "calendar",
+                    "sampled",
+                    "configured_dt",
+                    "stream_before",
+                    "stream_after",
+                    "work",
+                    "helpers",
+                    "callbacks",
+                    "raw_returns",
+                    "initial_diagnostics",
+                )
+            )
+            labels.extend(f"init_short_history.iteration.{i:04d}.after" for i in range(count))
         _required_captures(captures, labels)
         if first_step:
             _first_step_captures(captures)
-    return dict(outcome=value, captures=captures, molecule_network=molecules)
+        if short_history:
+            history = _short_history_captures(captures, count, plan["flux_operator"])
+    return dict(
+        outcome=value,
+        captures=captures,
+        molecule_network=molecules,
+        molecule_imports=imports,
+        short_history=history,
+    )
 
 
 def _numpy_origin(reader, root):
@@ -721,6 +1085,7 @@ def inspect_attempt(plan_path, *, plan_sha256, output=None):
         plan_sha256=plan_sha256,
         flux_operator=plan["flux_operator"],
         endpoint=plan.get("endpoint", "seed"),
+        init_iterations_requested=plan.get("init_iterations"),
         source_files=files,
         original_input_files={
             name: row["sha256"] for name, row in bundle["source_inventory"]["files"].items()
@@ -854,7 +1219,9 @@ def inspect_attempt(plan_path, *, plan_sha256, output=None):
                         and worker["status"] == terminal["status"]
                         and worker["plan_sha256"] == plan_sha256
                         and worker["flux_operator"] == plan["flux_operator"]
-                        and worker.get("endpoint", "seed") == report["endpoint"],
+                        and worker.get("endpoint", "seed") == report["endpoint"]
+                        and type(worker.get("init_iterations")) is type(plan.get("init_iterations"))
+                        and worker.get("init_iterations") == plan.get("init_iterations"),
                         "Worker completion binding",
                     )
                     require(
@@ -911,6 +1278,9 @@ def compare_modes(original, disabled):
         name: original[name] == disabled[name]
         for name in ("source_files", "original_input_files", "policy", "endpoint")
     }
+    checks["init_iterations_requested"] = type(original.get("init_iterations_requested")) is type(
+        disabled.get("init_iterations_requested")
+    ) and original.get("init_iterations_requested") == disabled.get("init_iterations_requested")
     checks["configuration_profile"] = original.get(
         "configuration_profile", "original"
     ) == disabled.get("configuration_profile", "original")

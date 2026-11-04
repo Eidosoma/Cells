@@ -209,6 +209,10 @@ def source_plan():
         native_bodies_copied_or_rewritten=False,
         native_dispatch=("tail", "ion_wrapper", "ion", "balance_wrapper", "balance"),
         wrappers="Original installed beartype return-None and two-sequence/tuple wrappers",
+        capture_scalars=(
+            "Existing YAML scalar types plus exact retained NumPy float64",
+            "Original scalar object/type/binary64 bits/aliases; no live-value conversion",
+        ),
         public_module_globals_patched=False,
         full_source_path_implemented=True,
         runtime_hook_available=HANDOFF_PRODUCER_SHA256 is not None,
@@ -560,6 +564,25 @@ def _compile(context):
     return function
 
 
+def _capture_scalar_type():
+    """Use the already-bound native scalar registry, not a caller-supplied type."""
+    registry = previous.previous.state
+    array = registry.np
+    if type(array) is not ModuleType or sys.modules.get("numpy") is not array:
+        raise ValueError("Actual retained NumPy metadata namespace required")
+    scalar = vars(array).get("float64")
+    if (
+        type(scalar) is not type
+        or scalar.__module__ != "numpy"
+        or scalar.__name__ != "float64"
+        or scalar.__flags__ & (1 << 9)
+        or not issubclass(scalar, float)
+        or not any(scalar is kind for kind in registry.NUMPY_SCALARS)
+    ):
+        raise ValueError("Exact retained NumPy float64 class required")
+    return scalar
+
+
 def _capture(context, *, names=None):
     names = tuple(vars(context.p)) if names is None else names
     birth = context.parent.parent.parent.birth
@@ -567,7 +590,7 @@ def _capture(context, *, names=None):
     return prefix.graphs.capture(
         {name: vars(context.p)[name] for name in names if name not in previous.CM_STORES},
         yaml_base=birth.source.yaml,
-        runtime_types=runtime.runtime_types,
+        runtime_types=runtime.runtime_types | {_capture_scalar_type()},
     )
 
 
@@ -1724,6 +1747,7 @@ def _bindings():
         _descriptor,
         _native,
         _compile,
+        _capture_scalar_type,
         _capture,
         _colormaps,
         _stacks,

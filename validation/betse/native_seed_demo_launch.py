@@ -37,8 +37,8 @@ NUMPY_ORIGIN = "src/cells/processes/betse_native_numpy_copy_origin.py"
 NUMPY_ORIGIN_KIND = "cells.original_numpy_copy_import_origin@1"
 INPUT_PROFILES = "validation/betse/native_seed_demo_input_profiles.py"
 PRODUCERS = (*OWNED, DEMO, PARAMETER, INPUTS, NUMPY_ORIGIN, INPUT_PROFILES)
-KIND = "cells.genuine_seed_demo_detached_launch@9"
-RELEASE_KIND = "cells.genuine_seed_demo_detached_release@1"
+KIND = "cells.genuine_seed_demo_detached_launch@10"
+RELEASE_KIND = "cells.genuine_seed_demo_detached_release@2"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_LAUNCH_RELEASED"
 DEMO_RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
 POLICY = dict(cpu=0, threads=1, max_rss_bytes=2**30, wall_seconds=7200, reserve_bytes=8 * 2**30)
@@ -310,8 +310,10 @@ def source_plan():
         fresh_process_per_flux_mode=True,
         endpoint=(
             "Exact plan choice: seed, init_setup, init_prelude, init_dynamics, init_electrical"
-            " or init_first_step; at most one original INIT iteration, no full-loop claim"
+            " or init_first_step or init_short_history; explicit original INIT count,"
+            " no full-loop claim"
         ),
+        init_iterations="Exact int 1..64 only for init_short_history; None for other endpoints",
         complete_original_inputs="Exact pair manifest; selected mode only before consumption",
         postrun_inputs="Original selected file bytes only, never fresh directory epochs",
         filesystem="Authenticated native-home link, worker output/cache, exact parameter mkdirs",
@@ -545,14 +547,35 @@ def _immutable(plan):
             "init_dynamics",
             "init_electrical",
             "init_first_step",
+            "init_short_history",
         )
         and plan["endpoint"] == declaration.get("endpoint", "seed"),
         "Exact demonstration endpoint binding",
     )
     if plan["endpoint"] == "init_first_step":
         require(
-            declaration.get("kind") == "cells.genuine_seed_core_profiles_junctions_demo@5",
+            declaration.get("kind")
+            in (
+                "cells.genuine_seed_core_profiles_junctions_demo@5",
+                "cells.genuine_seed_core_profiles_junctions_demo@6",
+            ),
             "First-step endpoint requires its explicit demo schema",
+        )
+    count = plan.get("init_iterations")
+    require(
+        type(count) is type(declaration.get("init_iterations"))
+        and count == declaration.get("init_iterations")
+        and (
+            type(count) is int and 1 <= count <= 64
+            if plan["endpoint"] == "init_short_history"
+            else count is None
+        ),
+        "Exact demonstration iteration count binding",
+    )
+    if plan["endpoint"] == "init_short_history":
+        require(
+            declaration.get("kind") == "cells.genuine_seed_core_profiles_junctions_demo@6",
+            "Short-history endpoint requires its explicit demo schema",
         )
     require(
         inputs["source_snapshot"] == plan["source_snapshot"]
@@ -668,6 +691,7 @@ def prepare(prepared, destination, *, demo_plan_sha256, release_environment, inp
         release_environment=environment,
         flux_operator=declaration["flux_operator"],
         endpoint=declaration.get("endpoint", "seed"),
+        init_iterations=declaration.get("init_iterations"),
         limitations=source_plan(),
     )
     _immutable(value)
@@ -704,6 +728,7 @@ def verify(plan_path, plan_sha256, *, initial=True):
             "release_environment",
             "flux_operator",
             "endpoint",
+            "init_iterations",
             "limitations",
         },
         "Exact launch-plan schema required",
@@ -724,10 +749,36 @@ def verify(plan_path, plan_sha256, *, initial=True):
     return value
 
 
+def prepare_release(plan_path, output, *, plan_sha256):
+    """Write a release for a verified plan without starting any computation.
+
+    Endpoint and iteration count come from that plan, including an explicit
+    None for SEED. Keep this metadata beside its plan and preserve prior files.
+    """
+    plan = verify(plan_path, plan_sha256)
+    output = path(output, exists=False)
+    require(output.parent == path(plan_path).parent, "Release must be beside its verified plan")
+    snapshot.write_json(
+        output,
+        dict(
+            kind=RELEASE_KIND,
+            authorized=True,
+            launch_plan_sha256=plan_sha256,
+            demo_plan_sha256=plan["demo_plan"]["sha256"],
+            snapshot_sha256=plan["source_snapshot"]["sha256"],
+            release_environment=plan["release_environment"],
+            endpoint=plan["endpoint"],
+            init_iterations=plan["init_iterations"],
+        ),
+    )
+    return pin(output)
+
+
 def verify_release(plan, plan_sha256, release_path, release_sha256):
     release = read(dict(path=str(release_path), sha256=release_sha256))
     require(
-        release
+        type(release.get("init_iterations")) is type(plan["init_iterations"])
+        and release
         == dict(
             kind=RELEASE_KIND,
             authorized=True,
@@ -735,6 +786,8 @@ def verify_release(plan, plan_sha256, release_path, release_sha256):
             demo_plan_sha256=plan["demo_plan"]["sha256"],
             snapshot_sha256=plan["source_snapshot"]["sha256"],
             release_environment=plan["release_environment"],
+            endpoint=plan["endpoint"],
+            init_iterations=plan["init_iterations"],
         ),
         "Exact explicit release required",
     )
@@ -1171,6 +1224,17 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
                     and not returned.secondary,
                     "Incomplete demonstration return",
                 )
+                if plan["endpoint"] == "init_short_history":
+                    require(
+                        returned.endpoint == "init_short_history"
+                        and type(returned.init_iterations) is int
+                        and returned.init_iterations == plan["init_iterations"]
+                        and returned.init_short_history_completed is True
+                        and returned.init_first_step_completed is False
+                        and type(returned.init_time_steps_completed) is int
+                        and returned.init_time_steps_completed == plan["init_iterations"],
+                        "Exact complete short-history worker return required",
+                    )
             except BaseException as error:
                 primary = error
                 raise
@@ -1249,6 +1313,7 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
         scientific_credit=0,
         flux_operator=plan["flux_operator"],
         endpoint=plan["endpoint"],
+        init_iterations=plan["init_iterations"],
         **state,
         utc=utc(),
     )

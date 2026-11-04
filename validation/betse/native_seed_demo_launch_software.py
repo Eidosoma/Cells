@@ -1,4 +1,4 @@
-"""Existing immutable CPU4 guard for native-blocked detached-launch controls."""
+"""Existing immutable CPU4 guard, including blocked short-history launch transport."""
 
 import argparse
 import importlib
