@@ -163,9 +163,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   fill order after Key's correction. It also identifies required declaration
   splits for the exact-byte binder and two Root consumer integrations: explicit
   molecular runtime loading, and genuine wrapper-import observation before
-  callback-triggered original imports. Those are being implemented together;
-  the observation must close before network validation. No new provider pins
-  or source execution gates have been adopted by this plan.
+  callback-triggered original imports. The [consumer/report milestone](/mnt/workspaces/Cells/native-init-short-history-demo-20261104-01/consumer-integration-01/source-result.json)
+  implements both with failure retention and saved import-record linkage.
+  Its [consolidated review](/mnt/workspaces/Cells/native-init-short-history-demo-20261104-01/consumer-integration-01/root-source-software-review.json)
+  verifies 322 distinct consumer and 170 report passes across their preserved
+  images and clears the unchanged SEED behavior. It identifies one held-INIT
+  cleanup gap: an inherited observer can reject the context-manager entry return
+  or exit entry before bookkeeping records the transition. Root's consumer
+  repair batch is covering those actual installed-hook boundaries before any
+  INIT release. All new provider pins remain None; the frozen SEED image does
+  not execute this import-observation route.
   Their earlier
   [enabled first-iteration pilot 31](/mnt/workspaces/Cells/native-init-first-step-20261104-01/software-31-issued-enabled-chain-pilot/LAUNCH.json)
   is now terminal failed: the user-requested status check found a namespace
@@ -322,8 +329,25 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   An additional existing producer-binding control refused the still-old
   handoff pin, before adoption; that failed image is retained. The production
   fix admits only the exact retained NumPy float64 class in the local scope,
-  with no value conversion or shared graph-policy change. Literal pin adoption
-  and its fresh boundary check follow the consolidated review.
+  with no value conversion or shared graph-policy change. The [completed repair](/mnt/workspaces/Cells/native-parameter-constants-scalar-closure-20261104-01/source-result-02.json)
+  now includes a fresh passing producer-binding control, 13.328 seconds /
+  260,055,040 bytes sampled RSS. Its 541-file image, runtime origins and empty
+  guard verify; the earlier 21 were not rerun or recredited. Exact literal
+  adoption binds the two constants references and downstream SEED chain,
+  preserving all other bytes and historical review scopes. An omitted
+  source-candidate metadata pin was caught before the full-chain write and
+  corrected; that preflight failure is preserved.
+  [Fresh paired metadata preparation](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-preparation-14/prepared-results.json)
+  completed in 159.764 seconds / 52,658,176 bytes sampled RSS. Both flux modes
+  have identical 603-file immutable images; all INIT/runtime/wrapper provider
+  gates remain closed. The [twelfth original-flux SEED attempt](/mnt/workspaces/Cells/native-seed-demo-20261103-01/actual-original-12/LAUNCH.json)
+  launched detached at **14:55:23 UTC**, CPU0 / one thread / 7,200 seconds /
+  1-GiB RSS / 8-GiB reserve. The reviewed release helper produced its exact
+  release metadata. Result is pending and has not been queried; no automatic
+  polling or retry is scheduled. The omitted-inverse image remains prepared
+  and unlaunched. Earlier failed runs are preserved; this launch grants no
+  end-to-end or scientific completion credit. Consumer cleanup work continues
+  in the checkout independently of the immutable execution image.
 
   Root's [release-metadata helper](/mnt/workspaces/Cells/native-seed-demo-release-metadata-20261104-01/source-result.json)
   removes the handwritten schema step that caused the prelaunch refusal.

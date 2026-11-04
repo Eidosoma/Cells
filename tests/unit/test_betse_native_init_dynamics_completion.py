@@ -1139,6 +1139,40 @@ def test_source_metadata_cache_compares_live_target_functions_each_use(tmp_path,
             initial._metadata_source_interface(api, module, path.read_bytes(), path, ("selected",))
 
 
+@pytest.mark.parametrize("slot", (None, "PARENT_SOURCE_SHA256", "PARENT_REVIEW_SHA256", "body"))
+def test_source_metadata_keeps_original_dynamics_backreference_controls(slot):
+    initial = retained.stage
+    raw = Path(stage.previous.__file__).read_bytes()
+    binding = retained.clone(
+        initial._dynamics_binding, previous=NS(_ready=lambda: retained.guards.stage)
+    )
+    identity, refs = binding(raw)
+    assert refs == (("PARENT_SOURCE_SHA256", None), ("PARENT_REVIEW_SHA256", None))
+    changed = raw
+    if slot == "body":
+        changed += b"\n# distinct exact prelude byte\n"
+    elif slot is not None:
+        # The old substring also matches COMPLETION_PARENT_REVIEW_SHA256.
+        # Match the complete declared line; all other bytes stay exact.
+        original = ("\n" + slot + " = None\n").encode()
+        assert raw.count(original) == 1
+        changed = raw.replace(original, ("\n" + slot + " = '" + "c" * 64 + "'\n").encode(), 1)
+    actual, _ = binding(changed)
+    assert (identity == actual) is (slot != "body")
+
+
+@pytest.mark.parametrize("entry", ("api", "claim"))
+def test_source_metadata_keeps_original_unbound_entry_refusal(entry, monkeypatch):
+    retained.test_dynamics_handoff_unbound_gate_precedes_any_foreign_owner_or_callback(
+        entry, monkeypatch
+    )
+
+
+def test_source_metadata_keeps_original_route_proof_and_midproof_alias_refusal(tmp_path):
+    retained.test_completion_live_route_is_source_authenticated_before_invocation()
+    retained.test_electrical_route_replaced_during_proof_never_invokes_unproved_capture(tmp_path)
+
+
 def test_public_input_preflight_uses_supported_closed_metadata_not_enum_hydration(
     synthetic_init_inputs,
 ):

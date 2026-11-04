@@ -164,12 +164,16 @@ class Execution:
     molecule_import_api: object = None
     molecule_import_binding: object = None
     molecule_import_manager: object = None
+    molecule_import_generator: object = None
     molecule_import_context: object = None
     molecule_import_record: object = None
     molecule_import_partial: object = None
     molecule_import_error: object = None
     molecule_import_exit_return: object = None
     molecule_import_operations: list = field(default_factory=list)
+    molecule_import_hooks: object = None
+    molecule_import_cleanup: dict = field(default_factory=dict)
+    molecule_import_cleanup_errors: list = field(default_factory=list)
     molecule_import_failure_captures: list = field(default_factory=list)
     molecule_import_completed: bool = False
     short_runtime_api: object = None
@@ -755,6 +759,8 @@ def _import_record(state):
         or context.cleanup
         or context.hooks_restored is not True
         or context.monitor_restored is not True
+        or state.molecule_import_cleanup.get("complete") is not True
+        or state.molecule_import_cleanup_errors
         or record.law != state.molecule_import_api.LAW
         or record.source_completed is not True
         or type(record.factories) is not int
@@ -829,6 +835,9 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
         or manager.gen.gi_frame.f_globals is not vars(module)
     ):
         raise ValueError("Actual public import context manager required")
+    generator = state.molecule_import_generator = manager.gen
+    getters, setters = (sys.getprofile, sys.gettrace), (sys.setprofile, sys.settrace)
+    hooks = state.molecule_import_hooks = (getters[0](), getters[1]())
     entered, body_error, body_traceback = False, None, None
     try:
         state.stage = "molecule_imports.enter"
@@ -847,6 +856,19 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
         except BaseException as secondary:
             _fail(state, "molecule_imports.partial", secondary)
     finally:
+        # A hook may reject __enter__'s return after the original generator
+        # yielded, before our assignment. Recover only that actual frame's
+        # retained local; never construct a replacement observer or owner.
+        if state.molecule_import_context is None:
+            try:
+                frame = generator.gi_frame
+                if frame is not None:
+                    if frame.f_code is not inner.__code__ or frame.f_globals is not vars(module):
+                        raise ValueError("Original import generator frame changed")
+                    state.molecule_import_context = frame.f_locals.get("context")
+            except BaseException as error:
+                state.molecule_import_cleanup_errors.append(("context_recovery", error))
+                _fail(state, "molecule_imports.context_recovery", error)
         if entered:
             try:
                 state.stage = "molecule_imports.exit"
@@ -854,11 +876,16 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
             except BaseException as error:
                 _fail(state, "molecule_imports.exit_observation", error)
             try:
+                # A failed exit-log observation cannot authorize normal
+                # publication. The first error still wins over later cleanup.
+                exit_error = body_error if body_error is not None else state.primary
                 state.molecule_import_exit_return = type(manager).__exit__(
                     manager,
-                    None if body_error is None else type(body_error),
-                    body_error,
-                    body_traceback,
+                    None if exit_error is None else type(exit_error),
+                    exit_error,
+                    body_traceback
+                    if body_error is not None
+                    else (None if exit_error is None else exit_error.__traceback__),
                 )
                 if state.molecule_import_operations[-1]["name"] == "exit":
                     state.molecule_import_operations[-1]["status"] = "returned"
@@ -870,6 +897,59 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
                     state.molecule_import_record = state.molecule_import_context.record
                 except BaseException as error:
                     _fail(state, "molecule_imports.record", error)
+        # Keep recovery here, not behind a Python helper whose CALL could be
+        # rejected before it restores either inherited hook. CPython can clear
+        # an observer that raises. Each setter is independently protected, and
+        # both hooks are sampled after both setters (including crossed clears).
+        recovery = state.molecule_import_cleanup
+        recovery.update(close_attempted=False, close_returned=False, complete=False)
+        for phase in ("before_close", "after_close"):
+            for _ in range(2):
+                for index in (0, 1):
+                    try:
+                        if getters[index]() is not hooks[index]:
+                            setters[index](hooks[index])
+                    except BaseException as error:
+                        state.molecule_import_cleanup_errors.append((phase, index, error))
+                        _fail(state, "molecule_imports.hook_recovery", error)
+            try:
+                restored = getters[0]() is hooks[0] and getters[1]() is hooks[1]
+            except BaseException as error:
+                restored = False
+                state.molecule_import_cleanup_errors.append((phase, "sample", error))
+                _fail(state, "molecule_imports.hook_sample", error)
+            recovery[phase + "_hooks_restored"] = restored
+            if phase == "before_close" and generator.gi_frame is not None:
+                if restored:
+                    # This is cleanup of the same suspended generator only.
+                    # GeneratorExit cannot take its normal publication path.
+                    recovery["close_attempted"] = True
+                    try:
+                        generator.close()
+                        recovery["close_returned"] = True
+                    except BaseException as error:
+                        state.molecule_import_cleanup_errors.append(("generator_close", error))
+                        _fail(state, "molecule_imports.generator_close", error)
+                else:
+                    recovery["close_skipped_without_inherited_hooks"] = True
+        try:
+            context = state.molecule_import_context
+            recovery.update(
+                generator_closed=generator.gi_frame is None,
+                context_available=context is not None,
+                context_inactive=context is None or context.active is False,
+                hooks_restored=getters[0]() is hooks[0] and getters[1]() is hooks[1],
+            )
+            recovery["complete"] = (
+                recovery["generator_closed"]
+                and recovery["context_inactive"]
+                and recovery["hooks_restored"]
+            )
+            if not recovery["complete"]:
+                raise ValueError("Import observer cleanup remains unresolved")
+        except BaseException as error:
+            state.molecule_import_cleanup_errors.append(("final_state", error))
+            _fail(state, "molecule_imports.cleanup", error)
     _stop(state)
     record = _import_record(state)
     _capture(state, evidence, "molecule_imports.record", record)
@@ -2551,6 +2631,14 @@ def _import_failure_evidence(state, evidence):
             ),
         ),
         ("operations", lambda: tuple(state.molecule_import_operations)),
+        ("cleanup", lambda: dict(state.molecule_import_cleanup)),
+        (
+            "cleanup_errors",
+            lambda: tuple(
+                dict(stage=row[0], error=exception(row[-1]))
+                for row in state.molecule_import_cleanup_errors
+            ),
+        ),
     )
     for name, observe in observations:
         label = "molecule_imports.failure." + name
@@ -2571,6 +2659,17 @@ def _import_failure_evidence(state, evidence):
 
 
 def _finish(state, evidence, directory):
+    if state.molecule_import_hooks is not None and (
+        state.molecule_import_cleanup.get("complete") is not True
+        or sys.getprofile() is not state.molecule_import_hooks[0]
+        or sys.gettrace() is not state.molecule_import_hooks[1]
+    ):
+        # Raw Execution still owns the actual manager/context/errors. An
+        # unresolved observer is not permission to call forensic writers.
+        state.init_first_step_completed, state.init_time_steps_completed = False, 0
+        state.init_short_history_completed = False
+        state.evidence_completed = False
+        return
     if state.primary is not None:
         # The raw trial still records an actually completed selected body.
         # Endpoint credit requires complete surrounding execution/evidence too.

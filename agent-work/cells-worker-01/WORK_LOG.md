@@ -9712,3 +9712,60 @@ binds runtimeb2d7d898 and Completion1acb5721. Direct substantive handoff attempt
 to both Chief and Specialist failed at the stale127.0.0.1:43257 MCP connector;
 the exact receipt/current API pins were relayed in this thread instead. The
 immutable receipt/log copy precedes this delivery note and stays unchanged.
+
+### Measured guard/provider metadata cost — 2026-11-04
+
+Specialist's saved setup-cost diagnostic05 localizes14/15 sampled stacks in
+the software guard's per-PY_START Path.resolve and the retained provider's
+repeated exact-byte binding AST traversal. Root assigned those metadata paths;
+the incomplete480s pilots are not retried or given completed-case credit here.
+
+Changed only the owned retained-world provider and Completion test fixture.
+The independent software monitor now hoists canonical path resolution to its
+entry/exit boundaries, checks every path component identity and all original
+guard/predicate code, cached builtins, closure, globals and predecessors at
+every monitored entry, and retains original trace/profile/callback ordering.
+Controls cover unchanged namespace with changed filesystem identity, exact
+first refusals, cleanup, foreign predecessors and falsey primary/cause identity.
+
+The provider retains fresh source reads and every live owner/registry check.
+Two bounded16-entry caches reuse immutable source syntax/CodeTypes/defaults
+and the original exact-byte binder's immutable result only. No mutable AST,
+successful live validation, material/field/clock/RNG state or owner is cached.
+Actual metadata helper aliases, bodies, globals and builtins are checked before
+cache use; the actual target functions and defaults are checked again on each
+use. Source/cache helper identities also join the existing retained-owner
+binding. Same-byte source uses the established original binder, and changed
+bytes/code/aliases/default types remain refusing. The real route captured before
+proof is rechecked before invocation. Native arithmetic and every unrelated
+existing retained function/default/law/cap remain unchanged.
+
+Final metadata-cost04 has42 blocked passes (28new+14affected); the dependent
+metadata-cost-runtime01 has23 fresh passes on the same final producer pins.
+Earlier32/35 images and the failed metadata-cost03 scope remain distinct.
+All13 new bounded process outcomes are terminal/reviewed locally:10completed,
+3failed. The Retained runner's wrong release prefix failed before preparation;
+its corrected-prefix attempt then refused before collection for a missing
+required --select child argument and also declared its independentCPU6 policy.
+Neither attempt ran tests or launchedCPU6. The existingCPU5 Completion runner
+was reused for the affected metadata checks instead. The first reused old
+backref control failed a substring count because COMPLETION_PARENT_REVIEW_SHA256
+also contains PARENT_REVIEW_SHA256; our own final control matches the complete
+declaration line, leaving the historical test/file untouched. That35pass/1fail
+image and its six unrun cases remain frozen, with no production change on retry.
+
+Current producer pins: retained0a4b01cc, runtimeb2d7d898, Completion1acb5721;
+fixturead0e6a92 and runtime test0f92e036. No reusable runner changed. The Git
+HEAD advanced during this work and captured intermediate bytes; actual tested
+full-file hashes, dirty/untracked provenance and immutable images remain the
+binding authority. Key staged/committed nothing and changed no other lane.
+No actual native/factory/INIT/SIM/RNG/reference/numerical or full issued-chain
+execution occurred. Source review/adoption and Specialist's one coordinated
+changed-image integration pilot remain pending. Final combined source/result
+bindings are in metadata-cost-results.json beside the earlier unwind receipt.
+
+Consolidated receipt d0ec4c4aca2e436dbba52f9ccb7dc0d39f0e66da0ed7ec0266aad38ee7af3aa5
+is sealed; all65 current-byte controls and13 terminal outcomes are bound.
+Substantive exact-pin delivery to Chief and Specialist again failed at the
+stale MCP endpoint. The full handoff is posted in this thread for their native
+queue/read path; no source/result bytes or immutable log copy were changed.

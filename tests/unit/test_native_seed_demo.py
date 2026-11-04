@@ -3982,11 +3982,12 @@ def test_demo_import_partial_context_and_record_survive_observer_boundaries(fail
     else:
         assert model.state.molecule_import_context is model.import_context
         assert model.import_context.active is False
-        if failure != "exit":
+        if failure not in ("exit", "exit_log"):
             assert model.state.molecule_import_record is model.import_context.record
             assert model.state.molecule_import_record.raw_returns
     if failure == "exit_log":
-        assert model.import_events == ["enter", "exit", "published"]
+        assert model.import_events == ["enter", "exit"]
+        assert model.import_context.record is None and not model.import_context.published
 
 
 @pytest.mark.parametrize("field,value", [("published", False), ("active", True), ("record", None)])
@@ -4147,3 +4148,245 @@ def test_demo_import_runtime_replacement_refuses_before_history_request(tmp_path
         execute(model, tmp_path)
     assert "init_short_history.request" not in model.calls
     assert model.state.short_history_trial is None and not model.state.init_short_history_completed
+
+
+@contextmanager
+def installed_import_boundary_fault(model, hook, boundary, error, *, close_error=None):
+    """Real CPython hooks around the actual stdlib manager and inert generator."""
+    getters, setters = (sys.getprofile, sys.gettrace), (sys.setprofile, sys.settrace)
+    prior = (getters[0](), getters[1]())
+    observed = NS(events=[], fired=False, close_fired=False, hooks=None, setters=setters)
+    target = (
+        stage.contextlib._GeneratorContextManager.__enter__.__code__
+        if boundary.startswith("enter")
+        else stage.contextlib._GeneratorContextManager.__exit__.__code__
+    )
+    wanted = "call" if boundary.endswith("call") else "return"
+
+    def visit(kind, frame, event, value):
+        if (
+            kind == hook
+            and not observed.fired
+            and frame.f_code is target
+            and frame.f_locals.get("self") is model.state.molecule_import_manager
+            and event == wanted
+        ):
+            observed.events.append((frame, event, value))
+            observed.fired = True
+            raise error
+        if (
+            kind == "profile"
+            and close_error is not None
+            and not observed.close_fired
+            and event == "c_call"
+            and getattr(value, "__name__", None) == "close"
+            and getattr(value, "__self__", None) is model.state.molecule_import_generator
+        ):
+            observed.close_fired = True
+            observed.events.append((frame, event, value))
+            raise close_error
+
+    def profile(frame, event, value):
+        if prior[0] is not None:
+            prior[0](frame, event, value)
+        visit("profile", frame, event, value)
+
+    def trace(frame, event, value):
+        if prior[1] is not None:
+            prior[1](frame, event, value)
+        visit("trace", frame, event, value)
+        return trace
+
+    observed.hooks = (profile, trace)
+    try:
+        setters[0](profile)
+        setters[1](trace)
+        yield observed
+    finally:
+        # Each outer guard restoration is independent even in refusal controls.
+        try:
+            setters[1](prior[1])
+        finally:
+            setters[0](prior[0])
+        assert getters[0]() is prior[0] and getters[1]() is prior[1]
+
+
+def save_import_boundary_proof(tmp_path, model, observed):
+    state = model.state
+    stage.snapshot.write_json(
+        tmp_path / "import-boundary.json",
+        dict(
+            actual_cpython_hooks=True,
+            original_stdlib_manager=True,
+            original_provider_or_native_entries=0,
+            events=[
+                dict(
+                    code=(frame.f_code.co_filename, frame.f_code.co_qualname),
+                    event=event,
+                    value_identity=id(value),
+                    value_is_context=value is model.import_context,
+                )
+                for frame, event, value in observed.events
+            ],
+            cleanup=dict(state.molecule_import_cleanup),
+            cleanup_errors=[
+                dict(stage=row[0], identity=id(row[-1]), type=type(row[-1]).__name__)
+                for row in state.molecule_import_cleanup_errors
+            ],
+            primary_identity=id(state.primary),
+            cause_identity=id(state.primary.__cause__),
+            context_identity=id(state.molecule_import_context),
+            published=model.import_context.published,
+            callback_calls=model.calls.count("callback"),
+            parameters_called="parameters" in model.calls,
+            endpoint_completed=state.molecule_import_completed,
+        ),
+    )
+
+
+@pytest.mark.parametrize("hook", ["profile", "trace"])
+@pytest.mark.parametrize("boundary", ["enter_call", "enter_return", "exit_call", "exit_return"])
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_import_installed_manager_boundary_preserves_primary_and_cleanup(
+    hook, boundary, falsey, tmp_path
+):
+    model, evidence = dynamics_chain(), Evidence()
+    primary = Falsey("inherited boundary") if falsey else ValueError("inherited boundary")
+    cause = primary.__cause__ = LookupError("original observer cause")
+    with installed_import_boundary_fault(model, hook, boundary, primary) as observed:
+        with pytest.raises(type(primary)) as caught:
+            execute(model, tmp_path, evidence)
+        assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+        assert observed.fired and len(observed.events) == 1
+        assert (sys.getprofile(), sys.gettrace()) == observed.hooks
+        assert model.state.molecule_import_cleanup["complete"] is True
+        assert model.state.molecule_import_generator.gi_frame is None
+        assert not model.import_context.active
+        assert not model.state.molecule_import_completed and "parameters" not in model.calls
+        if boundary.startswith("enter"):
+            assert "callback" not in model.calls
+        else:
+            assert model.calls.count("callback") == 1
+        if boundary == "enter_return":
+            assert model.state.molecule_import_context is observed.events[0][2]
+            assert model.state.molecule_import_context is model.import_context
+        if boundary == "enter_call":
+            assert model.state.molecule_import_context is None and model.import_events == []
+        elif boundary == "exit_return":
+            # Publication preceded this hook's rejection; retain it without
+            # promoting the failed surrounding execution or issuing it again.
+            assert model.import_context.published
+            assert model.state.molecule_import_record is model.import_context.record
+        else:
+            assert not model.import_context.published and model.import_context.record is None
+        save_import_boundary_proof(tmp_path, model, observed)
+
+
+@pytest.mark.parametrize("hook", ["profile", "trace"])
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_import_source_primary_survives_installed_exit_entry_rejection(hook, falsey, tmp_path):
+    model = dynamics_chain()
+    primary = Falsey("original callback") if falsey else ValueError("original callback")
+    primary.__cause__ = LookupError("callback cause")
+    secondary = RuntimeError("inherited exit entry")
+
+    def fail(*args, **kwargs):
+        model.calls.append("callback")
+        raise primary
+
+    model.modules["callback"].acquire_callback = fail
+    evidence = Evidence(fail="molecule_imports.failure.primary", forensic_error=OSError("disk"))
+    with installed_import_boundary_fault(model, hook, "exit_call", secondary) as observed:
+        with pytest.raises(type(primary)) as caught:
+            execute(model, tmp_path, evidence)
+        assert caught.value is primary and model.state.primary is primary
+        assert primary.__cause__.args == ("callback cause",)
+        assert any(error is secondary for _, error in model.state.secondary)
+        assert model.state.molecule_import_context is model.import_context
+        assert model.state.molecule_import_cleanup["complete"] is True
+        assert (sys.getprofile(), sys.gettrace()) == observed.hooks
+        assert not model.import_context.active and not model.import_context.published
+        assert "parameters" not in model.calls
+        assert any(
+            r["status"] == "capture_failed" for r in model.state.molecule_import_failure_captures
+        )
+        save_import_boundary_proof(tmp_path, model, observed)
+
+
+@pytest.mark.parametrize("cleared", [0, 1])
+def test_demo_import_recovery_resamples_both_hooks_after_crossed_setters(
+    cleared, monkeypatch, tmp_path
+):
+    model = dynamics_chain()
+    error, changes = ValueError("boundary"), []
+    hook = "trace" if cleared == 0 else "profile"
+    with installed_import_boundary_fault(model, hook, "enter_return", error) as observed:
+        index = 1 - cleared
+        original = observed.setters[index]
+
+        def crossed(value):
+            original(value)
+            if value is observed.hooks[index] and not changes:
+                changes.append(index)
+                observed.setters[cleared](None)
+
+        monkeypatch.setattr(sys, "settrace" if index else "setprofile", crossed)
+        with pytest.raises(ValueError) as caught:
+            execute(model, tmp_path)
+        assert caught.value is error and changes == [index]
+        assert (sys.getprofile(), sys.gettrace()) == observed.hooks
+        assert model.state.molecule_import_cleanup["complete"] is True
+        assert not model.import_context.active and not model.import_context.published
+        assert model.calls == []
+        save_import_boundary_proof(tmp_path, model, observed)
+
+
+@pytest.mark.parametrize("falsey", [False, True])
+@pytest.mark.parametrize("failure", ["close_entry", "profile_restore"])
+def test_demo_import_unresolved_cleanup_keeps_raw_context_and_never_calls_writers(
+    falsey, failure, monkeypatch, tmp_path
+):
+    model, evidence = dynamics_chain(), Evidence()
+    primary = Falsey("entry return") if falsey else ValueError("entry return")
+    primary.__cause__ = LookupError("first cause")
+    secondary = RuntimeError("cleanup unavailable")
+    try:
+        with installed_import_boundary_fault(
+            model,
+            "profile",
+            "enter_return",
+            primary,
+            close_error=secondary if failure == "close_entry" else None,
+        ) as observed:
+            if failure == "profile_restore":
+
+                def refuse(value):
+                    if value is observed.hooks[0]:
+                        raise secondary
+                    observed.setters[0](value)
+
+                monkeypatch.setattr(sys, "setprofile", refuse)
+            with pytest.raises(type(primary)) as caught:
+                execute(model, tmp_path, evidence)
+            assert caught.value is model.state.primary is primary
+            assert primary.__cause__.args == ("first cause",)
+            assert model.state.molecule_import_context is model.import_context
+            assert model.state.molecule_import_generator.gi_frame is not None
+            assert model.import_context.active and not model.import_context.published
+            assert model.state.molecule_import_cleanup["complete"] is False
+            assert any(row[-1] is secondary for row in model.state.molecule_import_cleanup_errors)
+            assert model.calls == [] and evidence.values == []
+            assert not (tmp_path / "outcome.json").exists()
+            assert not model.state.evidence_completed and not model.state.molecule_import_completed
+            if failure == "close_entry":
+                assert observed.close_fired
+                assert (sys.getprofile(), sys.gettrace()) == observed.hooks
+            else:
+                assert sys.getprofile() is None and sys.gettrace() is observed.hooks[1]
+        save_import_boundary_proof(tmp_path, model, observed)
+    finally:
+        # Release only this private inert fixture after the raw unresolved-state
+        # assertions. Production never retries or manufactures cleanup success.
+        generator = model.state.molecule_import_generator
+        if generator is not None and generator.gi_frame is not None:
+            generator.close()
