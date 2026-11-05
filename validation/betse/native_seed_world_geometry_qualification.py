@@ -27,7 +27,7 @@ MODULE = "validation.betse.native_seed_world_geometry_qualification"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_GEOMETRY_QUALIFICATION_RELEASED"
 SOFTWARE_RELEASE = "BETSE_NATIVE_SEED_WORLD_GEOMETRY_QUALIFICATION_SOFTWARE_RELEASED"
 PARAMETER_ENTRY_MODULE = "validation.betse.betse_native_parameter_world_ready_qualification"
-PARAMETER_ENTRY_SOURCE_SHA256 = "4d4428fd3c9bf1e98ae2725e79f40f39be5052c6a36d2d333bfc98516254757e"
+PARAMETER_ENTRY_SOURCE_SHA256 = "9a2623cbc466cd082e2d5472e946fb64b73366b2928eaaca8b10e95356e4e90e"
 PARAMETER_ENTRY_REVIEW_SHA256 = "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e"
 EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
 EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
@@ -47,13 +47,13 @@ MODULES = {
     "callbacks": "cells.processes.betse_native_phase_callbacks",
 }
 MODULE_SOURCE_SHA256 = {
-    "world": "df9e0e0e260a2df648015d4bd5c15dfbacbaa9f0302145e2b7deb8aec6af07d0",
-    "prefix": "7eac806b1756b1888f621fb576f527c6cc5095a7967b9edd3508d2b3e6f32725",
+    "world": "06c3bb8cba6b5038671f08a418d190842d146e91a6f9c3e655b11409587026d9",
+    "prefix": "74fe5be9165ae62e575af8b20cb752d5421b642b35fbade9f0eddceb1fb3428b",
     "image": "98bcd55b9e00e28bf7f9dd5d5a20261217e640e901affaa1b1686d0f458b45e0",
     "mesh": "c73fd24847158223373c6d77783b8e27857bede8ff59b3b6094ceba20fa2f23f",
     "lifecycle": "2ad275b33cd123f0cf266d262dcee5609924b72a91c6c8b86328bed1116eac1e",
     "geometry": "2b8701f0fd4f59731d69d7a244fc3bdf8b347e683a9335fb561b83f90ab2f22a",
-    "callbacks": "9a680cf6b6ccad865bce3365c8dff2f0d5b2e7ad845f00321a0cc26cd235d4b8",
+    "callbacks": "63ecf075fd2b781c84156c732366def11729349124ae3652ae72506c4c467698",
 }
 MODULE_REVIEW_SHA256 = {
     "world": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",

@@ -476,7 +476,10 @@ def _account(context):
     }
 
     def profile(frame, event, arg):
-        reached = frame.f_code.co_filename.startswith(native_root) or frame.f_code in selected
+        reached = False
+        if event in ("call", "return"):
+            code = frame.f_code
+            reached = code.co_filename.startswith(native_root) or code in selected
         if reached and event == "call":
             if len(context.work) >= 100000:
                 raise ValueError("Bounded tissue work ledger exhausted")
@@ -484,11 +487,11 @@ def _account(context):
                 dict(
                     sequence=len(context.work),
                     layer="actual_native_body"
-                    if frame.f_code.co_filename.startswith(native_root)
+                    if code.co_filename.startswith(native_root)
                     else "selected_source_body",
                     phase=context.stage,
-                    method=frame.f_code.co_qualname,
-                    source_file=frame.f_code.co_filename,
+                    method=code.co_qualname,
+                    source_file=code.co_filename,
                     status="entered_not_success_credit",
                 )
             )
@@ -496,14 +499,12 @@ def _account(context):
             reached
             and event == "return"
             and (
-                frame.f_code in selected
-                or frame.f_code.co_name in ("__init__", "load", "make_list", "__get__", *_NATIVE)
+                code in selected
+                or code.co_name in ("__init__", "load", "make_list", "__get__", *_NATIVE)
             )
         ):
             try:
-                context.locals[(frame.f_code.co_filename, frame.f_code.co_qualname)] = dict(
-                    frame.f_locals
-                )
+                context.locals[(code.co_filename, code.co_qualname)] = dict(frame.f_locals)
             except Exception as capture:
                 captures._remember_observation_error(
                     context, capture, origin="raw_locals", raw=frame
@@ -871,9 +872,15 @@ def _check(context):
             raise ValueError("Native object issuance changed")
     if hasattr(context, "modules"):
         aliases._check_modules()
+        current = aliases._module_records()
         for name, record in context.modules.items():
-            if aliases._module_records().get(name) != record:
+            if current.get(name) != record:
                 raise ValueError("Native factory import changed")
+        # Recheck the whole live inventory after the comparisons. This retains
+        # file/module drift detection without rescanning every module once per
+        # retained row. Nothing is cached across checks or source execution.
+        if aliases._module_records() != current:
+            raise ValueError("Native factory import changed during validation")
 
 
 def trial_record(trial):

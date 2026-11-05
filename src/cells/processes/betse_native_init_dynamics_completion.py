@@ -179,6 +179,9 @@ _SHORT_INIT_DESCENDANTS = WeakKeyDictionary()
 SHORT_RUNTIME_MODULE = "cells.processes.betse_native_init_molecule_short_runtime"
 SHORT_RUNTIME_SHA256 = None
 SHORT_RUNTIME_REVIEW_SHA256 = None
+_TERMINAL_INIT_DESCENDANTS = WeakKeyDictionary()
+TERMINAL_RUNTIME_MODULE = "cells.processes.betse_native_init_terminal_molecules"
+TERMINAL_RUNTIME_SHA256 = TERMINAL_RUNTIME_REVIEW_SHA256 = None
 _ACTIVE, _FAILED, _LOCK = [], [], RLock()
 
 
@@ -811,6 +814,10 @@ def _binding(context):
         _ELECTRICAL_DESCENDANTS,
         _FIRST_STEP_DESCENDANTS,
         _SHORT_INIT_DESCENDANTS,
+        _TERMINAL_INIT_DESCENDANTS,
+        TERMINAL_RUNTIME_MODULE,
+        TERMINAL_RUNTIME_SHA256,
+        TERMINAL_RUNTIME_REVIEW_SHA256,
         STORAGE_INTERFACE_SHA256,
         STORAGE_REVIEW_SHA256,
         STORAGE_PARENT_REVIEW_SHA256,
@@ -1440,63 +1447,76 @@ def _context(request, refs, parent, tissue):
     )
     value.original_objects = tuple(_objects(value))
     value.metadata = tuple(
-        (name, globals()[name])
-        for name in (
-            "_ready",
-            "_tissue_binding",
-            "_check_tissue_backrefs",
-            "_molecule_api",
-            "source_plan",
-            "_registry",
-            "_check",
-            "_binding",
-            "_observer_bindings",
-            "_scope",
-            "_objects",
-            "_values",
-            "_snapshot",
-            "_graph",
-            "_streams",
-            "_epoch",
-            "_cell_snapshot",
-            "_active",
-            "_guard",
-            "_reject",
-            "_observe",
-            "_namespace",
-            "_helper",
-            "rng_call",
-            "_capture",
-            "_run",
-            "_finish",
-            "_observer_recipe",
-            "prepare",
-            "_authority",
-            "validate_active",
-            "_file_inputs",
-            "_domain",
-            "_declare",
-            "from_prelude_native_molecules",
-            "_closed_epoch",
-            "_storage_binding",
-            "_storage_api",
-            "_storage_route",
-            "_storage_values",
-            "_storage_graph",
-            "_claim_for_init_storage",
-            "_check_init_storage_authority",
-            "_storage_metadata",
-            "_electrical_route",
-            "_electrical_values",
-            "_electrical_graph",
-            "_claim_electrical_ancestor",
-            "_check_electrical_ancestor",
-            "_first_step_route",
-            "_first_step_values",
-            "_first_step_graph",
-            "_first_step_permissions",
-            "_claim_first_step_ancestor",
-            "_check_first_step_ancestor",
+        (
+            (name, globals()[name])
+            for name in (
+                "_ready",
+                "_tissue_binding",
+                "_check_tissue_backrefs",
+                "_molecule_api",
+                "source_plan",
+                "_registry",
+                "_check",
+                "_binding",
+                "_observer_bindings",
+                "_scope",
+                "_objects",
+                "_values",
+                "_snapshot",
+                "_graph",
+                "_streams",
+                "_epoch",
+                "_cell_snapshot",
+                "_active",
+                "_guard",
+                "_reject",
+                "_observe",
+                "_namespace",
+                "_helper",
+                "rng_call",
+                "_capture",
+                "_run",
+                "_finish",
+                "_observer_recipe",
+                "prepare",
+                "_authority",
+                "validate_active",
+                "_file_inputs",
+                "_domain",
+                "_declare",
+                "from_prelude_native_molecules",
+                "_closed_epoch",
+                "_storage_binding",
+                "_storage_api",
+                "_storage_route",
+                "_storage_values",
+                "_storage_graph",
+                "_claim_for_init_storage",
+                "_check_init_storage_authority",
+                "_storage_metadata",
+                "_electrical_route",
+                "_electrical_values",
+                "_electrical_graph",
+                "_claim_electrical_ancestor",
+                "_check_electrical_ancestor",
+                "_first_step_route",
+                "_first_step_values",
+                "_first_step_graph",
+                "_first_step_permissions",
+                "_claim_first_step_ancestor",
+                "_check_first_step_ancestor",
+                "_first_step_runtime_permissions",
+                "_advance_lease",
+                "_check_advance_ancestor",
+                "_molecule_short_api",
+                "_short_init_route",
+                "_claim_short_init_ancestor",
+                "_check_short_init_ancestor",
+                "_molecule_terminal_api",
+                "_terminal_init_route",
+                "_claim_terminal_init_ancestor",
+                "_check_terminal_init_ancestor",
+            )
         )
     )
     value.graph_view = SimpleNamespace(
@@ -1863,8 +1883,14 @@ def _storage_binding(payload):
 
 def _storage_api():
     if not all(
-        _pin(value)
-        for value in (STORAGE_INTERFACE_SHA256, STORAGE_REVIEW_SHA256, STORAGE_PARENT_REVIEW_SHA256)
+        (
+            _pin(value)
+            for value in (
+                STORAGE_INTERFACE_SHA256,
+                STORAGE_REVIEW_SHA256,
+                STORAGE_PARENT_REVIEW_SHA256,
+            )
+        )
     ):
         raise CompletionRejected(
             "Reviewed actual storage successor remains held", stage="storage_held"
@@ -1886,9 +1912,9 @@ def _storage_api():
         type(module) is not ModuleType
         or Path(module.__file__).resolve() != path
         or module.previous is not sys.modules[__name__]
-        or any(getattr(module, name) != value for name, value in backrefs)
-        or module.PARENT_CLAIM != "_claim_for_init_storage"
-        or module.PARENT_CHECK != "_check_init_storage_authority"
+        or any((getattr(module, name) != value for name, value in backrefs))
+        or (module.PARENT_CLAIM != "_claim_for_init_storage")
+        or (module.PARENT_CHECK != "_check_init_storage_authority")
     ):
         raise ValueError("Actual original storage namespace/handoff changed")
     api = previous.previous.previous._ready()
@@ -1918,6 +1944,9 @@ def _storage_api():
             "_check_first_step_key_binding",
             "_claim_first_step_ancestor",
             "_check_first_step_ancestor",
+            "_terminal_init_key_api",
+            "_claim_terminal_init_ancestor",
+            "_check_terminal_init_ancestor",
         ),
     )
     module._ready()
@@ -2396,6 +2425,11 @@ def _claim_electrical_ancestor(context, storage, electrical):
 
 def _check_electrical_ancestor(context, storage, electrical):
     """Current metadata and factored graph; no stale Completion/Storage reader."""
+    terminal = _TERMINAL_INIT_DESCENDANTS.get(getattr(context, "owner", None))
+    if terminal is not None:
+        if context.owner in _FIRST_STEP_DESCENDANTS or context.owner in _SHORT_INIT_DESCENDANTS:
+            raise ValueError("Exclusive actual natural terminal descendant required")
+        return _check_terminal_init_ancestor(context, storage, electrical, terminal.child)
     leaf = _FIRST_STEP_DESCENDANTS.get(getattr(context, "owner", None))
     if leaf is not None:
         return _check_first_step_ancestor(context, storage, electrical, leaf.child)
@@ -2424,31 +2458,43 @@ def _first_step_route(context, storage, electrical, transition):
         child is not transition
         or lease is None
         or getattr(context, "first_step_descendant", None) is not lease
-        or lease.parent is not context
-        or lease.storage is not storage
-        or lease.electrical is not electrical
-        or lease.child is not transition
-        or lease.original is not original
-        or lease.producer is not producer
-        or lease.module is not module
-        or lease.status not in ("reserved", "sealed")
-        or transition.parent is not context
-        or transition.storage_parent is not storage
-        or transition.initial is not context.init_parent
-        or transition.phase is not context.phase
-        or transition.sim is not context.sim
-        or transition.p is not context.p
-        or transition.cells is not context.cells
-        or transition.handler is not context.handler
-        or transition.cache is not context.phase.cache
-        or vars(previous.previous).get("_claim_first_step_ancestor") is not lease.ancestor
-        or vars(previous.previous).get("_check_first_step_ancestor") is not lease.ancestor_check
+        or (lease.parent is not context)
+        or (lease.storage is not storage)
+        or (lease.electrical is not electrical)
+        or (lease.child is not transition)
+        or (lease.original is not original)
+        or (lease.producer is not producer)
+        or (lease.module is not module)
+        or (lease.status not in ("reserved", "sealed"))
+        or (transition.parent is not context)
+        or (transition.storage_parent is not storage)
+        or (transition.initial is not context.init_parent)
+        or (transition.phase is not context.phase)
+        or (transition.sim is not context.sim)
+        or (transition.p is not context.p)
+        or (transition.cells is not context.cells)
+        or (transition.handler is not context.handler)
+        or (transition.cache is not context.phase.cache)
+        or (vars(previous.previous).get("_claim_first_step_ancestor") is not lease.ancestor)
+        or (vars(previous.previous).get("_check_first_step_ancestor") is not lease.ancestor_check)
+    ) or (
+        getattr(context, "terminal_init_descendant", None) is not None
+        or context.owner in _TERMINAL_INIT_DESCENDANTS
     ):
         raise ValueError("Original Completion/storage/electrical/first-step ancestry changed")
     return lease
 
 
 def _advance_lease(context):
+    terminal = getattr(context, "terminal_init_descendant", None)
+    if terminal is not None:
+        if (
+            getattr(context, "first_step_descendant", None) is not None
+            or getattr(context, "short_init_descendant", None) is not None
+            or _TERMINAL_INIT_DESCENDANTS.get(context.owner) is not terminal
+        ):
+            raise ValueError("Mutually exclusive actual natural terminal ancestry required")
+        return terminal
     short = getattr(context, "short_init_descendant", None)
     if short is not None:
         if (
@@ -2497,8 +2543,69 @@ def _first_step_graph(context, *, stable):
     return _scope(context).graph(view, view, lease.tape)
 
 
+def _first_step_runtime_permissions(lease):
+    """Authenticate extensions from the retained actual molecular claimant.
+
+    The consumer's complete source contract is checked separately below. A
+    supplied or equal-copied permission tuple cannot become runtime authority.
+    This reads the current runtime epoch, never a stale pre-step value snapshot.
+    """
+    parent, step = lease.parent, lease.child
+    enabled = getattr(getattr(parent, "request", None), "native_molecules", False)
+    session = getattr(parent, "molecule_session", None)
+    if enabled is not True:
+        rows = getattr(step, "molecule_permissions", ())
+        if (
+            session is not None
+            or getattr(step, "molecule_claim", None) is not None
+            or type(rows) is not tuple
+            or rows
+        ):
+            raise ValueError("Molecular permissions require the actual enabled parent")
+        return ()
+    source = _molecule_api()
+    claim = getattr(lease, "molecule_claim", None)
+    if (
+        session is None
+        or parent.molecule is not source
+        or step.molecule is not source
+        or claim is None
+        or step.molecule_claim is not claim
+    ):
+        raise ValueError("Original molecular session/child/runtime claim association changed")
+    runtime = getattr(lease, "runtime_api", None)
+    if runtime is None:
+        runtime = source
+        if getattr(step, "short_runtime", None) is not None:
+            raise ValueError("A first-step runtime cannot adopt a continuous claimant")
+    else:
+        terminal = _TERMINAL_INIT_DESCENDANTS.get(getattr(parent, "owner", None))
+        if terminal is lease and getattr(parent, "terminal_init_descendant", None) is lease:
+            canonical, retained = _molecule_terminal_api(), step.terminal_runtime
+        else:
+            canonical, retained = _molecule_short_api(), step.short_runtime
+        if runtime is not canonical or retained is not runtime:
+            raise ValueError("Actual canonical current-runtime provider required")
+        if (
+            runtime.session_of(claim, child=step) is not session
+            or runtime.session_provider(claim, child=step) is not source
+        ):
+            raise ValueError("Original continuous-runtime session/provider association changed")
+    record = step.molecule_record
+    if record is None:
+        if runtime.validate_runtime_active(claim, child=step) is not claim:
+            raise ValueError("Actual active molecular runtime claim changed")
+    elif runtime.validate_runtime(claim, child=step) is not record:
+        raise ValueError("Actual closed molecular runtime record changed")
+    rows = runtime.runtime_permissions(claim)
+    if type(rows) is not tuple or rows is not step.molecule_permissions:
+        raise ValueError("Original molecular runtime permission tuple association changed")
+    return rows
+
+
 def _first_step_permissions(lease):
     step, module = lease.child, lease.module
+    extensions = _first_step_runtime_permissions(lease)
     actual, expected = step.permissions, module._mutation_contract(step)
     if type(actual) is not tuple or type(expected) is not tuple or len(actual) != len(expected):
         raise ValueError("Complete source-derived first-step permission tuple required")
@@ -2509,11 +2616,24 @@ def _first_step_permissions(lease):
             or any(owner is prior for prior in seen)
             or not any(owner is obj for _, obj in lease.objects)
             or type(fields) is not frozenset
+            or type(allowed) is not frozenset
             or fields != allowed
             or any(type(name) is not str for name in fields)
         ):
             raise ValueError("Actual first-step holder/field source correspondence changed")
         seen.append(owner)
+    extension_owners = []
+    for owner, fields in extensions:
+        selected = [allowed for original, allowed in actual if owner is original]
+        if (
+            any(owner is original for original in extension_owners)
+            or type(fields) is not frozenset
+            or any(type(name) is not str for name in fields)
+            or len(selected) != 1
+            or not fields <= selected[0]
+        ):
+            raise ValueError("Complete canonical runtime extension is missing from source contract")
+        extension_owners.append(owner)
     if not any(owner is lease.parent.sim for owner, _ in actual):
         raise ValueError("Actual first-step Simulator permission is missing")
     return actual
@@ -2528,8 +2648,8 @@ def _claim_first_step_ancestor(context, storage, electrical, transition):
             frame.f_code is not module._claim_first_step_ancestor.__code__
             or frame.f_globals is not vars(module)
             or frame.f_locals.get("context") is not storage
-            or frame.f_locals.get("electrical") is not electrical
-            or frame.f_locals.get("transition") is not transition
+            or (frame.f_locals.get("electrical") is not electrical)
+            or (frame.f_locals.get("transition") is not transition)
         ):
             raise CompletionRejected(
                 "Actual first-step ancestor issuer required", stage="first_step_entry"
@@ -2539,6 +2659,9 @@ def _claim_first_step_ancestor(context, storage, electrical, transition):
             or hasattr(context, "first_step_descendant")
             or context.owner in _SHORT_INIT_DESCENDANTS
             or hasattr(context, "short_init_descendant")
+        ) or (
+            context.owner in _TERMINAL_INIT_DESCENDANTS
+            or hasattr(context, "terminal_init_descendant")
         ):
             context.invalid = storage.invalid = electrical.invalid = transition.invalid = True
             raise CompletionRejected(
@@ -2552,10 +2675,10 @@ def _claim_first_step_ancestor(context, storage, electrical, transition):
             or not transition.active
             or transition.invalid
             or transition.claimed
-            or transition.setup_frame is not None
-            or transition.loop_frame is not None
-            or transition.thread != get_ident()
-            or storage.first_step_transition is not transition
+            or (transition.setup_frame is not None)
+            or (transition.loop_frame is not None)
+            or (transition.thread != get_ident())
+            or (storage.first_step_transition is not transition)
         ):
             raise ValueError("Actual still-unrun first-step reservation required")
         lease = SimpleNamespace(
@@ -2574,11 +2697,11 @@ def _claim_first_step_ancestor(context, storage, electrical, transition):
         try:
             objects = list(original.objects)
             for role, obj in (("callback", context.phase.callbacks), ("gap", context.parent.gap)):
-                if obj is not None and not any(value is obj for _, value in objects):
+                if obj is not None and (not any((value is obj for _, value in objects))):
                     objects.append((role, obj))
             lease.objects = tuple(objects)
-            lease.holders = tuple(vars(value) for _, value in lease.objects)
-            lease.names = tuple(tuple(holder) for holder in lease.holders)
+            lease.holders = tuple((vars(value) for _, value in lease.objects))
+            lease.names = tuple((tuple(holder) for holder in lease.holders))
             lease.fields, lease.full_fields = ([{} for _ in objects] for _ in range(2))
             lease.view = SimpleNamespace(objects=lease.objects, fields=lease.fields)
             lease.full_view = SimpleNamespace(objects=lease.objects, fields=lease.full_fields)
@@ -2588,8 +2711,10 @@ def _claim_first_step_ancestor(context, storage, electrical, transition):
             lease.ancestor = vars(previous.previous).get("_claim_first_step_ancestor")
             lease.ancestor_check = vars(previous.previous).get("_check_first_step_ancestor")
             if any(
-                type(fn) is not FunctionType or fn.__globals__ is not vars(previous.previous)
-                for fn in (lease.ancestor, lease.ancestor_check)
+                (
+                    type(fn) is not FunctionType or fn.__globals__ is not vars(previous.previous)
+                    for fn in (lease.ancestor, lease.ancestor_check)
+                )
             ):
                 raise ValueError("Actual retained first-step ancestor hooks unavailable")
             if (
@@ -2608,7 +2733,7 @@ def _claim_first_step_ancestor(context, storage, electrical, transition):
                 )
             return context
         except BaseException as error:
-            lease.status, lease.primary = "failed", error
+            lease.status, lease.primary = ("failed", error)
             context.invalid = storage.invalid = electrical.invalid = transition.invalid = True
             raise
 
@@ -2716,29 +2841,32 @@ def _short_init_route(context, storage, electrical, transition):
         lease is None
         or child is not transition
         or getattr(context, "short_init_descendant", None) is not lease
-        or getattr(context, "first_step_descendant", None) is not None
-        or lease.parent is not context
-        or lease.storage is not storage
-        or lease.electrical is not electrical
-        or lease.child is not transition
-        or lease.original is not original
-        or lease.producer is not producer
-        or lease.module is not module
-        or lease.status not in ("reserved", "sealed")
-        or transition.parent is not context
-        or transition.storage_parent is not storage
-        or transition.electrical_parent is not electrical
-        or transition.initial is not context.init_parent
-        or transition.phase is not context.phase
-        or transition.sim is not context.sim
-        or transition.p is not context.p
-        or transition.cells is not context.cells
-        or transition.handler is not context.handler
-        or transition.cache is not context.phase.cache
-        or type(transition.request.iterations) is not int
-        or transition.request.iterations != lease.iterations
-        or vars(previous.previous).get("_claim_short_init_ancestor") is not lease.ancestor
-        or vars(previous.previous).get("_check_short_init_ancestor") is not lease.ancestor_check
+        or (getattr(context, "first_step_descendant", None) is not None)
+        or (lease.parent is not context)
+        or (lease.storage is not storage)
+        or (lease.electrical is not electrical)
+        or (lease.child is not transition)
+        or (lease.original is not original)
+        or (lease.producer is not producer)
+        or (lease.module is not module)
+        or (lease.status not in ("reserved", "sealed"))
+        or (transition.parent is not context)
+        or (transition.storage_parent is not storage)
+        or (transition.electrical_parent is not electrical)
+        or (transition.initial is not context.init_parent)
+        or (transition.phase is not context.phase)
+        or (transition.sim is not context.sim)
+        or (transition.p is not context.p)
+        or (transition.cells is not context.cells)
+        or (transition.handler is not context.handler)
+        or (transition.cache is not context.phase.cache)
+        or (type(transition.request.iterations) is not int)
+        or (transition.request.iterations != lease.iterations)
+        or (vars(previous.previous).get("_claim_short_init_ancestor") is not lease.ancestor)
+        or (vars(previous.previous).get("_check_short_init_ancestor") is not lease.ancestor_check)
+    ) or (
+        getattr(context, "terminal_init_descendant", None) is not None
+        or context.owner in _TERMINAL_INIT_DESCENDANTS
     ):
         raise ValueError("Actual original continuous INIT ancestry changed")
     return lease
@@ -2747,7 +2875,7 @@ def _short_init_route(context, storage, electrical, transition):
 def _claim_short_init_ancestor(context, storage, electrical, transition):
     """Fresh N-bound ownership before source; never recycle a first-step lease."""
     runtime = _molecule_short_api()
-    module, frame = _storage_api(), sys._getframe(1)
+    module, frame = (_storage_api(), sys._getframe(1))
     path = Path(module.__file__)
     previous.previous.previous._ready()._source_interface(
         module,
@@ -2761,9 +2889,9 @@ def _claim_short_init_ancestor(context, storage, electrical, transition):
             type(function) is not FunctionType
             or frame.f_code is not function.__code__
             or frame.f_globals is not vars(module)
-            or frame.f_locals.get("context") is not storage
-            or frame.f_locals.get("electrical") is not electrical
-            or frame.f_locals.get("transition") is not transition
+            or (frame.f_locals.get("context") is not storage)
+            or (frame.f_locals.get("electrical") is not electrical)
+            or (frame.f_locals.get("transition") is not transition)
         ):
             raise CompletionRejected(
                 "Actual short-history ancestor issuer required", stage="short_init_entry"
@@ -2773,6 +2901,9 @@ def _claim_short_init_ancestor(context, storage, electrical, transition):
             or context.owner in _SHORT_INIT_DESCENDANTS
             or hasattr(context, "first_step_descendant")
             or hasattr(context, "short_init_descendant")
+        ) or (
+            context.owner in _TERMINAL_INIT_DESCENDANTS
+            or hasattr(context, "terminal_init_descendant")
         ):
             context.invalid = storage.invalid = electrical.invalid = transition.invalid = True
             raise CompletionRejected("INIT advance already attempted", stage="short_init_consumed")
@@ -2785,11 +2916,11 @@ def _claim_short_init_ancestor(context, storage, electrical, transition):
             or not transition.active
             or transition.invalid
             or transition.claimed
-            or transition.setup_frame is not None
-            or transition.loop_frame is not None
-            or transition.thread != get_ident()
-            or type(count) is not int
-            or not 1 <= count <= runtime.MAX_ITERATIONS
+            or (transition.setup_frame is not None)
+            or (transition.loop_frame is not None)
+            or (transition.thread != get_ident())
+            or (type(count) is not int)
+            or (not 1 <= count <= runtime.MAX_ITERATIONS)
         ):
             raise ValueError("Actual still-unrun bounded continuous INIT child required")
         lease = SimpleNamespace(
@@ -2810,11 +2941,11 @@ def _claim_short_init_ancestor(context, storage, electrical, transition):
         try:
             objects = list(original.objects)
             for role, obj in (("callback", context.phase.callbacks), ("gap", context.parent.gap)):
-                if obj is not None and not any(value is obj for _, value in objects):
+                if obj is not None and (not any((value is obj for _, value in objects))):
                     objects.append((role, obj))
             lease.objects = tuple(objects)
-            lease.holders = tuple(vars(value) for _, value in lease.objects)
-            lease.names = tuple(tuple(holder) for holder in lease.holders)
+            lease.holders = tuple((vars(value) for _, value in lease.objects))
+            lease.names = tuple((tuple(holder) for holder in lease.holders))
             lease.fields, lease.full_fields = ([{} for _ in objects] for _ in range(2))
             lease.view = SimpleNamespace(objects=lease.objects, fields=lease.fields)
             lease.full_view = SimpleNamespace(objects=lease.objects, fields=lease.full_fields)
@@ -2824,8 +2955,10 @@ def _claim_short_init_ancestor(context, storage, electrical, transition):
             lease.ancestor = vars(previous.previous).get("_claim_short_init_ancestor")
             lease.ancestor_check = vars(previous.previous).get("_check_short_init_ancestor")
             if any(
-                type(fn) is not FunctionType or fn.__globals__ is not vars(previous.previous)
-                for fn in (lease.ancestor, lease.ancestor_check)
+                (
+                    type(fn) is not FunctionType or fn.__globals__ is not vars(previous.previous)
+                    for fn in (lease.ancestor, lease.ancestor_check)
+                )
             ):
                 raise ValueError("Actual retained short-history ancestor hooks unavailable")
             if (
@@ -2848,11 +2981,229 @@ def _claim_short_init_ancestor(context, storage, electrical, transition):
             )
             return context
         except BaseException as error:
-            lease.status, lease.primary = "failed", error
+            lease.status, lease.primary = ("failed", error)
             context.invalid = storage.invalid = electrical.invalid = transition.invalid = True
             raise
 
 
 def _check_short_init_ancestor(context, storage, electrical, transition):
     lease = _short_init_route(context, storage, electrical, transition)
+    return _check_advance_ancestor(context, storage, electrical, transition, lease)
+
+
+# Separate held natural-terminal ancestry; no selected-history reuse.
+
+
+def _molecule_terminal_api():
+    if not _pin(TERMINAL_RUNTIME_SHA256) or not _pin(TERMINAL_RUNTIME_REVIEW_SHA256):
+        raise CompletionRejected(
+            "Reviewed natural-terminal runtime remains held", stage="terminal_init_held"
+        )
+    module = sys.modules.get(TERMINAL_RUNTIME_MODULE)
+    path = Path(__file__).with_name("betse_native_init_terminal_molecules.py")
+    if (
+        type(module) is not ModuleType
+        or path.is_symlink()
+        or Path(module.__file__).resolve() != path.resolve()
+        or (hashlib.sha256(path.read_bytes()).hexdigest() != TERMINAL_RUNTIME_SHA256)
+    ):
+        raise CompletionRejected(
+            "Exact actual natural-terminal runtime required", stage="terminal_init_producer"
+        )
+    names = (
+        "bind_terminal",
+        "runtime_members",
+        "runtime_codes",
+        "runtime_permissions",
+        "observe_runtime",
+        "begin_iteration",
+        "finish_iteration",
+        "finish_runtime",
+        "validate_iteration",
+        "validate_runtime_active",
+        "validate_runtime",
+        "session_of",
+        "session_provider",
+        "runtime_failed_context",
+    )
+    previous.previous.previous._ready()._source_interface(module, path.read_bytes(), path, names)
+    for name in names:
+        fn = vars(module).get(name)
+        if type(fn) is not FunctionType or fn.__globals__ is not vars(module):
+            raise ValueError("Actual natural-terminal definition export required: " + name)
+    return module
+
+
+def _terminal_init_route(context, storage, electrical, transition):
+    original = _electrical_route(context, storage, electrical)
+    producer = original.module._electrical_api().module
+    route = vars(producer).get("_terminal_init_route")
+    path = Path(producer.__file__)
+    previous.previous.previous._ready()._source_interface(
+        producer, path.read_bytes(), path, ("_terminal_init_route",)
+    )
+    child, module = route(electrical)
+    lease = _TERMINAL_INIT_DESCENDANTS.get(context.owner)
+    if (
+        lease is None
+        or child is not transition
+        or getattr(context, "terminal_init_descendant", None) is not lease
+        or (getattr(context, "first_step_descendant", None) is not None)
+        or (lease.parent is not context)
+        or (lease.storage is not storage)
+        or (lease.electrical is not electrical)
+        or (lease.child is not transition)
+        or (lease.original is not original)
+        or (lease.producer is not producer)
+        or (lease.module is not module)
+        or (lease.status not in ("reserved", "sealed"))
+        or (transition.parent is not context)
+        or (transition.storage_parent is not storage)
+        or (transition.electrical_parent is not electrical)
+        or (transition.initial is not context.init_parent)
+        or (transition.phase is not context.phase)
+        or (transition.sim is not context.sim)
+        or (transition.p is not context.p)
+        or (transition.cells is not context.cells)
+        or (transition.handler is not context.handler)
+        or (transition.cache is not context.phase.cache)
+        or (type(transition.request.iterations) is not int)
+        or (transition.request.iterations != lease.iterations)
+        or (vars(previous.previous).get("_claim_terminal_init_ancestor") is not lease.ancestor)
+        or (
+            vars(previous.previous).get("_check_terminal_init_ancestor") is not lease.ancestor_check
+        )
+    ) or (
+        getattr(context, "short_init_descendant", None) is not None
+        or context.owner in _SHORT_INIT_DESCENDANTS
+        or context.owner in _FIRST_STEP_DESCENDANTS
+        or (type(transition.request.maximum) is not int)
+        or (transition.request.maximum != lease.maximum)
+        or (
+            transition.request.iterations
+            != module._configured_count(context.p.init_tsteps, lease.maximum)
+        )
+    ):
+        raise ValueError("Actual original continuous INIT ancestry changed")
+    return lease
+
+
+def _claim_terminal_init_ancestor(context, storage, electrical, transition):
+    """Fresh N-bound ownership before source; never recycle a first-step lease."""
+    runtime = _molecule_terminal_api()
+    module, frame = (_storage_api(), sys._getframe(1))
+    path = Path(module.__file__)
+    previous.previous.previous._ready()._source_interface(
+        module,
+        path.read_bytes(),
+        path,
+        ("_claim_terminal_init_ancestor", "_check_terminal_init_ancestor"),
+    )
+    function = vars(module).get("_claim_terminal_init_ancestor")
+    with _LOCK:
+        if (
+            type(function) is not FunctionType
+            or frame.f_code is not function.__code__
+            or frame.f_globals is not vars(module)
+            or (frame.f_locals.get("context") is not storage)
+            or (frame.f_locals.get("electrical") is not electrical)
+            or (frame.f_locals.get("transition") is not transition)
+        ):
+            raise CompletionRejected(
+                "Actual natural-terminal ancestor issuer required", stage="terminal_init_entry"
+            )
+        if (
+            context.owner in _FIRST_STEP_DESCENDANTS
+            or context.owner in _TERMINAL_INIT_DESCENDANTS
+            or hasattr(context, "first_step_descendant")
+            or hasattr(context, "terminal_init_descendant")
+        ) or (
+            context.owner in _SHORT_INIT_DESCENDANTS or hasattr(context, "short_init_descendant")
+        ):
+            context.invalid = storage.invalid = electrical.invalid = transition.invalid = True
+            raise CompletionRejected(
+                "INIT advance already attempted", stage="terminal_init_consumed"
+            )
+        original = _electrical_route(context, storage, electrical)
+        producer = module._electrical_api().module
+        child, consumer = producer._terminal_init_route(electrical)
+        count = consumer._configured_count(context.p.init_tsteps, transition.request.maximum)
+        if (
+            child is not transition
+            or not transition.active
+            or transition.invalid
+            or transition.claimed
+            or (transition.setup_frame is not None)
+            or (transition.loop_frame is not None)
+            or (transition.thread != get_ident())
+            or (type(count) is not int)
+            or (not 1 <= count <= runtime.MAX_ITERATIONS)
+        ) or transition.request.iterations != count:
+            raise ValueError("Actual still-unrun bounded continuous INIT child required")
+        lease = SimpleNamespace(
+            parent=context,
+            storage=storage,
+            electrical=electrical,
+            child=transition,
+            original=original,
+            producer=producer,
+            module=consumer,
+            iterations=count,
+            runtime_api=runtime,
+            status="reserving",
+            primary=None,
+            permissions=(),
+            maximum=transition.request.maximum,
+        )
+        _TERMINAL_INIT_DESCENDANTS[context.owner] = context.terminal_init_descendant = lease
+        try:
+            objects = list(original.objects)
+            for role, obj in (("callback", context.phase.callbacks), ("gap", context.parent.gap)):
+                if obj is not None and (not any((value is obj for _, value in objects))):
+                    objects.append((role, obj))
+            lease.objects = tuple(objects)
+            lease.holders = tuple((vars(value) for _, value in lease.objects))
+            lease.names = tuple((tuple(holder) for holder in lease.holders))
+            lease.fields, lease.full_fields = ([{} for _ in objects] for _ in range(2))
+            lease.view = SimpleNamespace(objects=lease.objects, fields=lease.fields)
+            lease.full_view = SimpleNamespace(objects=lease.objects, fields=lease.full_fields)
+            lease.tape = SimpleNamespace(rng=context.np_rng, events=(), draws=(), locals={})
+            lease.before = _first_step_values(context, stable=False)
+            lease.before_graph = _first_step_graph(context, stable=False)
+            lease.ancestor = vars(previous.previous).get("_claim_terminal_init_ancestor")
+            lease.ancestor_check = vars(previous.previous).get("_check_terminal_init_ancestor")
+            if any(
+                (
+                    type(fn) is not FunctionType or fn.__globals__ is not vars(previous.previous)
+                    for fn in (lease.ancestor, lease.ancestor_check)
+                )
+            ):
+                raise ValueError("Actual retained natural-terminal ancestor hooks unavailable")
+            if (
+                lease.ancestor(context.init_parent, context, storage, electrical, transition)
+                is not context.init_parent
+            ):
+                raise ValueError("Different actual retained natural-terminal ancestor")
+            lease.status = "reserved"
+            if context.request.native_molecules is not True:
+                raise ValueError(
+                    "This natural-terminal molecular route requires its actual enabled session"
+                )
+            lease.molecule_claim = runtime.bind_terminal(
+                context.molecule_session,
+                completion=context,
+                storage=storage,
+                electrical=electrical,
+                child=transition,
+                maximum=transition.request.maximum,
+            )
+            return context
+        except BaseException as error:
+            lease.status, lease.primary = ("failed", error)
+            context.invalid = storage.invalid = electrical.invalid = transition.invalid = True
+            raise
+
+
+def _check_terminal_init_ancestor(context, storage, electrical, transition):
+    lease = _terminal_init_route(context, storage, electrical, transition)
     return _check_advance_ancestor(context, storage, electrical, transition, lease)

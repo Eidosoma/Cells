@@ -20,6 +20,125 @@ from tests.unit import test_betse_native_init_short_history_diagnostics as diagn
 from validation.betse import betse_native_init_short_history_software as software
 
 
+@pytest.mark.parametrize(
+    "mode",
+    (
+        "valid",
+        "parent_error",
+        "falsey_error",
+        "wrong_return",
+        "before_guard",
+        "after_guard",
+        "setup",
+        "loop",
+        "work",
+        "bindings",
+        "before",
+        "stable",
+        "stable_graph",
+        "unclaimed",
+    ),
+)
+def test_pre_source_parent_check_authenticates_exact_return_and_preserves_failures(
+    monkeypatch, mode
+):
+    class FalseyError(ValueError):
+        def __bool__(self):
+            return False
+
+    primary = FalseyError("primary") if mode == "falsey_error" else ValueError("primary")
+    cause = KeyError("original cause")
+    primary.__cause__ = cause
+    parent, foreign, calls = object(), object(), []
+    context = NS(
+        claimed=True,
+        setup_frame=None,
+        loop_frame=None,
+        work=[],
+        bindings=object(),
+        before=object(),
+        stable=object(),
+        stable_graph=object(),
+        electrical_parent=parent,
+    )
+
+    def check(actual):
+        calls.append(("check", actual))
+        if mode in ("parent_error", "falsey_error"):
+            raise primary
+        return foreign if mode == "wrong_return" else parent
+
+    binding = NS(check=check)
+
+    def guard(actual):
+        calls.append(("guard", actual))
+        if mode == "before_guard" or mode == "after_guard" and len(calls) == 3:
+            raise primary
+
+    monkeypatch.setattr(stage, "_parent", guard)
+    if mode in ("setup", "loop"):
+        setattr(context, mode + "_frame", object())
+    elif mode == "work":
+        context.work.append(dict(body_started=False))
+    elif mode in ("bindings", "before", "stable", "stable_graph"):
+        setattr(context, mode, None)
+    elif mode == "unclaimed":
+        context.claimed = False
+    if mode == "valid":
+        assert stage._pre_source_parent_check(context, binding) is parent
+        assert [row[0] for row in calls] == ["guard", "check", "guard"]
+        assert context.pre_source_parent_check_attempt is check
+        assert context.pre_source_parent_check_raw is parent
+    else:
+        with pytest.raises(ValueError) as caught:
+            stage._pre_source_parent_check(context, binding)
+        if mode in ("parent_error", "falsey_error", "before_guard", "after_guard"):
+            assert caught.value is primary and primary.__cause__ is cause
+        if mode in (
+            "setup",
+            "loop",
+            "work",
+            "bindings",
+            "before",
+            "stable",
+            "stable_graph",
+            "unclaimed",
+        ):
+            assert not calls
+        elif mode in ("parent_error", "falsey_error"):
+            assert [row[0] for row in calls] == ["guard", "check"]
+            assert context.pre_source_parent_check_attempt is check
+        elif mode in ("wrong_return", "after_guard"):
+            assert context.pre_source_parent_check_raw is (
+                foreign if mode == "wrong_return" else parent
+            )
+    assert not context.work or mode == "work"
+
+
+def test_pre_source_parent_check_is_after_full_alias_proof_before_source_accounting():
+    from pathlib import Path
+
+    tree = ast.parse(Path(stage.__file__).read_bytes())
+    prepare = next(
+        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "prepare"
+    )
+    calls = [node for node in ast.walk(prepare) if isinstance(node, ast.Call)]
+    seals = [
+        node
+        for node in calls
+        if isinstance(node.func, ast.Name) and node.func.id == "_pre_source_parent_check"
+    ]
+    assert len(seals) == 1
+    account = [node for node in calls if ast.unparse(node.func) == "scope['_account']"]
+    snapshots = [
+        node
+        for node in calls
+        if ast.unparse(node.func) in ("binding.module._graph", "binding.module._snapshot")
+    ]
+    assert len(account) == 1 and len(snapshots) >= 2
+    assert max(node.lineno for node in snapshots) < seals[0].lineno < account[0].lineno
+
+
 @pytest.fixture(autouse=True)
 def blocked(request, tmp_path, monkeypatch):
     if os.environ.get(software.SOFTWARE_RELEASE) != "1":
@@ -851,11 +970,49 @@ def update_intra(self, sim, cells, p):
 
     electrical, storage = base.previous, base.previous.storage
 
+    # These are source-interface NAME declarations, not producer/review
+    # admission. Bind the actual functions before any public issuer runs;
+    # production guards must resolve the same names at every later check.
+    for module, values in (
+        (
+            electrical,
+            dict(PARENT_CLAIM="_claim_for_electrical", PARENT_CHECK="_check_electrical_authority"),
+        ),
+        (
+            storage,
+            dict(
+                ELECTRICAL_ANCESTOR_CLAIM="_claim_electrical_ancestor",
+                ELECTRICAL_ANCESTOR_CHECK="_check_electrical_ancestor",
+                SHORT_INIT_ANCESTOR_CLAIM="_claim_short_init_ancestor",
+                SHORT_INIT_ANCESTOR_CHECK="_check_short_init_ancestor",
+            ),
+        ),
+    ):
+        for name, value in values.items():
+            monkeypatch.setattr(module, name, value)
+
+    electrical_functions = storage._claim_for_electrical, storage._check_electrical_authority
+    electrical_parent = electrical._ParentBinding(
+        storage,
+        *electrical_functions,
+        tuple(electrical._parent_atoms(fn) for fn in electrical_functions),
+    )
+
+    def electrical_ready():
+        electrical._check_parent_binding(electrical_parent)
+        return electrical_parent
+
+    monkeypatch.setattr(electrical, "_ready", electrical_ready)
+    parent_functions = electrical._claim_for_short_init, electrical._check_short_init_authority
+    history_parent = base._ParentBinding(
+        electrical,
+        *parent_functions,
+        tuple(electrical._parent_atoms(fn) for fn in parent_functions),
+    )
+
     def ready():
-        functions = electrical._claim_for_short_init, electrical._check_short_init_authority
-        return base._ParentBinding(
-            electrical, *functions, tuple(electrical._parent_atoms(fn) for fn in functions)
-        )
+        stage._parent(history_parent)
+        return history_parent
 
     def binding():
         names = (
@@ -888,11 +1045,17 @@ def update_intra(self, sim, cells, p):
     ).items():
         monkeypatch.setattr(stage, name, value)
     monkeypatch.setattr(electrical, "_short_init_api", binding)
-    monkeypatch.setattr(storage, "SHORT_INIT_ANCESTOR_CLAIM", "_claim_short_init_ancestor")
-    monkeypatch.setattr(storage, "SHORT_INIT_ANCESTOR_CHECK", "_check_short_init_ancestor")
     monkeypatch.setattr(completion_model.stage, "_molecule_short_api", lambda: runtime_provider)
     monkeypatch.setattr(runtime_provider, "_ready", lambda: stage)
     monkeypatch.setenv(stage.RELEASE, "1")
+    # Exercise the real non-mutating binding checkers while still pre-birth.
+    # An absent name or a foreign/currently retargeted function must fail here,
+    # not consume an expensive source-chain epoch before discovering it.
+    electrical._check_parent_binding(electrical._ready())
+    storage._check_electrical_binding(storage._electrical_api())
+    stage._parent(stage._ready())
+    electrical._check_step_binding(electrical._short_init_api())
+    h.synthetic_contract = (electrical_parent, history_parent)
     h.seams += (
         "fresh actual public issuer/claim chain; only declared pre-birth toy acquisition/readiness",
         "five-label unsliced calendar; three actual contiguous toy iterations; no FirstStepOwner",
@@ -1263,6 +1426,452 @@ def test_issued_history_extended_terminal_capture_cannot_replace_guard_primary(
     saved_primary, saved_capture, path = software._RAW_FAILURES[-1]
     assert saved_primary is primary and saved_capture is capture
     assert path == tmp_path / "controller-failure.json"
+
+
+def _history_permission_model(*, molecular, gap):
+    """Unissued holders; real pinned source effect derivation, no body/claim."""
+    sim, callback, network = NS(), NS(), NS()
+    context = NS(
+        sim=sim,
+        phase=NS(callbacks=callback),
+        gap=NS() if gap else None,
+        callback_nodes={
+            "progressed_next": ast.parse(
+                "def progressed_next(self):\n    self.progress += 1\n"
+            ).body[0]
+        },
+        molecule_permissions=(),
+    )
+    context.runtime = stage._engine(context)
+    original = context.runtime["_base_mutation_contract"](context)
+    table = runtime_provider.base._runtime_field_table("first_step")
+    if molecular:
+        context.molecule_permissions = (
+            (sim, table["Simulator"]),
+            (network, table["MasterOfNetworks"]),
+        )
+    return NS(context=context, original=original, table=table, network=network)
+
+
+@pytest.mark.parametrize("mode", ("source_only", "molecular", "molecular_gap"))
+def test_short_history_complete_permission_contract_preserves_source_and_runtime_holders(
+    tmp_path, mode
+):
+    h = _history_permission_model(molecular=mode != "source_only", gap=mode == "molecular_gap")
+    context = h.context
+    before = tuple((actual, vars(actual).copy()) for actual, _ in h.original)
+    actual = stage._mutation_contract(context)
+    expected = h.original
+    if mode != "source_only":
+        expected = (
+            (context.sim, h.original[0][1] | h.table["Simulator"]),
+            *h.original[1:],
+            (h.network, h.table["MasterOfNetworks"]),
+        )
+    assert len(actual) == len(expected) and len({id(owner) for owner, _ in actual}) == len(actual)
+    assert all(
+        owner is original and fields == allowed and type(fields) is frozenset
+        for (owner, fields), (original, allowed) in zip(actual, expected, strict=True)
+    )
+    assert context.runtime["_mutation_contract"] is stage._mutation_contract
+    assert all(vars(owner) == retained for owner, retained in before)
+    assert actual[0][0] is context.sim
+    assert any(owner is context.phase.callbacks for owner, _ in actual)
+    assert (len(actual) > len(h.original)) is (mode != "source_only")
+    software.snapshot.write_json(
+        tmp_path / "complete-permission-contract.json",
+        dict(
+            mode=mode,
+            source_rows=len(h.original),
+            complete_rows=len(actual),
+            source_and_runtime_fields=[sorted(fields) for _, fields in actual],
+            unique_actual_holders=True,
+            simulator_union_preserves_both_source_rosters=True,
+            no_claim_owner_or_native_body=True,
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "unchanged",
+        "missing_source_field",
+        "extra_source_field",
+        "equal_holder",
+        "duplicate_holder",
+        "missing_sim",
+        "foreign_holder",
+        "permissions_not_tuple",
+        "fields_not_frozen",
+        "runtime_without_enabled_parent",
+    ),
+)
+def test_short_history_complete_permission_contract_actual_ancestor_checker(tmp_path, mutation):
+    """Exercise the real checker with unissued source-only metadata, no owner."""
+    h = _history_permission_model(molecular=False, gap=True)
+    context = h.context
+    context.permissions = stage._mutation_contract(context)
+    lease = NS(
+        child=context,
+        module=stage,
+        parent=NS(sim=context.sim, request=NS(native_molecules=False), molecule_session=None),
+        objects=tuple((str(index), owner) for index, (owner, _) in enumerate(context.permissions)),
+    )
+    checker = stage.base.previous.storage.previous._first_step_permissions
+    original = context.permissions
+    assert checker(lease) is original
+    rows = list(original)
+    if mutation == "missing_source_field":
+        assert rows[0][1]
+        rows[0] = (rows[0][0], rows[0][1] - {next(iter(rows[0][1]))})
+    elif mutation == "extra_source_field":
+        rows[0] = (rows[0][0], rows[0][1] | {"unowned_permission_probe"})
+    elif mutation == "equal_holder":
+        equal = NS(**vars(context.sim))
+        assert equal == context.sim and equal is not context.sim
+        rows[0] = (equal, rows[0][1])
+    elif mutation == "duplicate_holder":
+        rows[1] = rows[0]
+    elif mutation == "missing_sim":
+        rows.pop(0)
+    elif mutation == "foreign_holder":
+        rows[0] = (object(), rows[0][1])
+    elif mutation == "fields_not_frozen":
+        rows[0] = (rows[0][0], set(rows[0][1]))
+    elif mutation == "runtime_without_enabled_parent":
+        context.molecule_permissions = ((context.sim, frozenset(("cc_cells",))),)
+        rows = list(stage._mutation_contract(context))
+    context.permissions = rows if mutation == "permissions_not_tuple" else tuple(rows)
+    caught = None
+    if mutation == "unchanged":
+        assert checker(lease) is context.permissions
+    else:
+        with pytest.raises(ValueError) as rejected:
+            checker(lease)
+        caught = rejected.value
+    software.snapshot.write_json(
+        tmp_path / "permission-ancestor-check.json",
+        dict(
+            mutation=mutation,
+            actual_production_checker=True,
+            refused=mutation != "unchanged",
+            error_type=None if caught is None else type(caught).__name__,
+            reason=None if caught is None else str(caught),
+            original_source_permission_rows=len(original),
+            no_issued_owner_or_runtime_claim_or_native_body=True,
+        ),
+    )
+
+
+def _parameter_projection_model(monkeypatch):
+    """Unissued metadata objects; real canonical projector and typed codec."""
+    from cells.processes import betse_native_single_cell_poisson_observation as observation
+
+    storage = stage.base.previous.storage
+    completion, initial = storage.previous, storage.previous.previous.previous
+    anim, equal_anim = NS(is_while_sim=False, retained=-0.0), NS(is_while_sim=False, retained=-0.0)
+    p, sim, cells, callback = NS(anim=anim, dt=0.01), NS(vm=1.0, vm_time=[1]), NS(cell_i=[0]), NS()
+    roots = [("animation_configuration", anim), ("already_retained_equal_animation", equal_anim)]
+    objects = [("Simulator", sim), ("parameters", p), ("Cells", cells)]
+    prefix = NS(
+        parent=NS(world=NS(parent=NS(projector=NS(objects=roots)))),
+        objects=objects,
+        proxies=(),
+        cells=cells,
+        p=p,
+        callback=callback,
+    )
+    parent = NS(init_parent=prefix, parent=NS(gap=None), tissue_session=None, molecule_session=None)
+    context = NS(
+        parent=parent,
+        sim=sim,
+        p=p,
+        cells=cells,
+        store_fields=frozenset(("vm_time",)),
+        molecule_permissions=(),
+        molecule_claim=None,
+        objects=objects,
+        permissions=((sim, frozenset(("vm_time",))),),
+    )
+    codec = observation.Scope()
+    monkeypatch.setattr(completion, "_scope", lambda actual: codec)
+    return NS(
+        storage=storage,
+        completion=completion,
+        initial=initial,
+        context=context,
+        roots=roots,
+        anim=anim,
+        equal_anim=equal_anim,
+        codec=codec,
+    )
+
+
+@pytest.mark.parametrize("consumer", ("storage", "history"))
+def test_short_history_parameter_projection_keeps_actual_original_registered_roots(
+    monkeypatch, consumer, tmp_path
+):
+    h = _parameter_projection_model(monkeypatch)
+    root_refs = tuple(actual for _, actual in h.roots)
+    snapshot = h.storage._snapshot if consumer == "storage" else stage._engine(NS())["_snapshot"]
+    if consumer == "history":
+        assert snapshot is stage._snapshot
+    before = snapshot(h.context)
+    after = snapshot(h.context)
+    assert before.identity == after.identity and h.context.p.anim is h.anim
+    projector = h.initial._projector(h.context.parent.init_parent)
+    assert projector.objects[0][1] is h.anim and projector.objects[1][1] is h.equal_anim
+    expected = h.initial.core._LITERAL._project(projector, h.anim)
+    # Decode only the declared cache, never a phase or executable owner.
+    from cells.processes import betse_initial_mesh_preparation_cache as codec
+
+    value = codec.plain(before)
+    fields = (
+        value["parameters"]
+        if consumer == "storage"
+        else next(data for role, data in value if role == "parameters")
+    )
+    assert fields["anim"] == expected and fields["anim"] is not h.anim
+    assert all(actual is retained for (_, actual), retained in zip(h.roots, root_refs, strict=True))
+    software.snapshot.write_json(
+        tmp_path / "projection.json",
+        dict(
+            consumer=consumer,
+            before=before.identity,
+            after=after.identity,
+            exact_original_wrapper=True,
+            predecessor_root_refs_unchanged=True,
+            no_issued_owner_or_native_entry=True,
+        ),
+    )
+
+
+@pytest.mark.parametrize("consumer", ("storage", "history"))
+@pytest.mark.parametrize(
+    "mutation", ("parameter_scalar", "wrapper_field", "unowned_wrapper", "equal_retained_root")
+)
+def test_short_history_parameter_projection_preserves_fields_and_distinguishes_retargets(
+    monkeypatch, consumer, mutation, tmp_path
+):
+    h = _parameter_projection_model(monkeypatch)
+    snapshot = h.storage._snapshot if consumer == "storage" else stage._engine(NS())["_snapshot"]
+    before = snapshot(h.context)
+    # The historical ancestor retains COMPLETE fields of the actual roots,
+    # not only the reference tokens used by the child cache. Exercise that
+    # original projector on the root fields rather than flattening vars(p).
+    projector = h.initial._projector(h.context.parent.init_parent)
+    project = h.initial.core._LITERAL._project
+
+    def inherited_fields():
+        return h.codec.snapshot(
+            tuple((role, project(projector, vars(actual))) for role, actual in h.roots)
+        )
+
+    original_fields = inherited_fields()
+    if mutation == "parameter_scalar":
+        h.context.p.dt = 0.02
+    elif mutation == "wrapper_field":
+        h.anim.is_while_sim = True
+    elif mutation == "unowned_wrapper":
+        h.context.p.anim = NS(is_while_sim=False, retained=-0.0)
+    else:
+        assert h.anim is not h.equal_anim and vars(h.anim) == vars(h.equal_anim)
+        h.context.p.anim = h.equal_anim
+    if mutation == "unowned_wrapper":
+        with pytest.raises(ValueError):
+            snapshot(h.context)
+        changed = "unregistered_actual_object_refused"
+    elif mutation == "wrapper_field":
+        assert h.context.p.anim is h.anim
+        assert inherited_fields().identity != original_fields.identity
+        # Reference identity intentionally stays the original object; the
+        # inherited field witness changes instead of replacing the wrapper.
+        assert snapshot(h.context).identity == before.identity
+        changed = "original_inherited_wrapper_fields_changed"
+    else:
+        assert snapshot(h.context).identity != before.identity
+        changed = "child_projection_changed"
+    software.snapshot.write_json(
+        tmp_path / "projection-mutation.json",
+        dict(
+            consumer=consumer,
+            mutation=mutation,
+            disposition=changed,
+            real_parent_validation_not_replaced=True,
+            private_codec_model_only=True,
+        ),
+    )
+
+
+@pytest.mark.parametrize("consumer", ("storage", "history"))
+def test_short_history_parameter_projection_keeps_only_existing_stable_permissions(
+    monkeypatch, consumer
+):
+    h = _parameter_projection_model(monkeypatch)
+    snapshot = h.storage._snapshot if consumer == "storage" else stage._engine(NS())["_snapshot"]
+    full, stable = snapshot(h.context), snapshot(h.context, stable=True)
+    h.context.sim.vm_time.append(2)
+    assert snapshot(h.context).identity != full.identity
+    assert snapshot(h.context, stable=True).identity == stable.identity
+    h.context.p.dt = -0.0
+    negative = snapshot(h.context, stable=True)
+    h.context.p.dt = 0.0
+    assert snapshot(h.context, stable=True).identity != negative.identity
+
+
+def test_short_history_parameter_projection_software_cpu5_cannot_launch_issued_owner(tmp_path):
+    assert software._cpu(5) == 5
+    with pytest.raises(ValueError, match="CPU6"):
+        software.prepare(tmp_path / "uncreated", software.ISSUED_CASES[0], cpu=5)
+    assert not (tmp_path / "uncreated").exists()
+    assert software.snapshot.digest(stage.Path(stage.base.__file__)) == stage.BASE_SOURCE_SHA256
+
+
+@pytest.mark.parametrize("selection", software.ISSUED_CASES)
+@pytest.mark.parametrize("count", (0, 1, 2))
+def test_short_history_exact_issued_selector_ignores_parameter_and_output_labels(selection, count):
+    exact = [NS(name=selection, originalname=selection) for _ in range(count)]
+    misleading = [
+        NS(name="test_metadata[" + selection + "]", originalname="test_metadata"),
+        NS(name=selection + "[parameter]", originalname=selection),
+        NS(name="prefix_" + selection, originalname="prefix_" + selection),
+        NS(name=selection, originalname="other_function"),
+        NS(name="test_other", originalname="test_other", nodeid=selection + "/output/test_other"),
+    ]
+    items = [misleading[0], *exact, *misleading[1:]]
+    if count != 1:
+        with pytest.raises(ValueError, match="Exactly one"):
+            software._select_items(items, selection)
+    else:
+        chosen, removed = software._select_items(items, selection)
+        assert len(chosen) == 1 and chosen[0] is exact[0]
+        assert len(removed) == len(misleading)
+        assert all(actual is expected for actual, expected in zip(removed, misleading, strict=True))
+
+
+def test_short_history_exact_issued_reporter_reaches_actual_core_namespace(tmp_path):
+    scope = software._scope()
+    assert scope["Reports"] is software.Reports
+    assert scope["base"].reuse.Reports is software.Reports
+    reporter = software.Reports(tmp_path, NS(), software.ISSUED_CASES[0], [])
+    wanted = NS(name=software.ISSUED_CASES[0], originalname=software.ISSUED_CASES[0])
+    unwanted = NS(
+        name="test_metadata[" + software.ISSUED_CASES[0] + "]", originalname="test_metadata"
+    )
+    removed = []
+    config = NS(hook=NS(pytest_deselected=lambda *, items: removed.extend(items)))
+    items = [unwanted, wanted]
+    reporter.pytest_collection_modifyitems(config, items)
+    assert items == [wanted] and removed == [unwanted]
+    saved = software.json.loads((tmp_path / "selection.json").read_text())
+    assert saved["selected"] == [software.ISSUED_CASES[0]]
+    assert saved["deselected"] == [unwanted.name] and saved["matching"].startswith("exact")
+
+
+@pytest.mark.parametrize(
+    "retained_flux,failed", ((False, False), (True, False), (False, True), (True, True))
+)
+def test_short_history_prebirth_contract_binds_all_actual_hooks_without_issuing_owners(
+    monkeypatch, tmp_path, retained_flux, failed
+):
+    completion = stage.base.previous.storage.previous
+    initial = completion.previous.previous
+    modules = (
+        initial,
+        completion.previous,
+        completion,
+        stage.base.previous.storage,
+        stage.base.previous,
+        stage,
+    )
+    prepares = tuple(module.prepare for module in modules)
+    registries = tuple((module._REQUESTS, module._CONSUMED, module._ISSUED) for module in modules)
+    counts = tuple(tuple(len(value) for value in row) for row in registries)
+    h = _issued_history_inputs(monkeypatch, tmp_path, retained_flux=retained_flux, failed=failed)
+    assert not hasattr(h, "owner") and not hasattr(h, "completion_owner")
+    assert all(module.prepare is fn for module, fn in zip(modules, prepares, strict=True))
+    assert tuple(tuple(len(value) for value in row) for row in registries) == counts
+    electrical, storage = stage.base.previous, stage.base.previous.storage
+    binding = electrical._ready()
+    assert binding is h.synthetic_contract[0] and binding.module is storage
+    assert electrical.PARENT_CLAIM == "_claim_for_electrical"
+    assert electrical.PARENT_CHECK == "_check_electrical_authority"
+    assert binding.claim is storage._claim_for_electrical
+    assert binding.check is storage._check_electrical_authority
+    assert stage._ready() is h.synthetic_contract[1]
+    electrical._check_parent_binding(binding)
+    storage._check_electrical_binding(storage._electrical_api())
+    stage._parent(stage._ready())
+    electrical._check_step_binding(electrical._short_init_api())
+    assert (h.cells.lapENV_P_inv is not None) is retained_flux
+    software.snapshot.write_json(
+        tmp_path / "prebirth-contract.json",
+        dict(
+            retained_flux=retained_flux,
+            declared_mid_failure=failed,
+            actual_hook_names_and_identities=True,
+            public_prepare_functions_unchanged=True,
+            zero_owner_issuance=True,
+            genuine_binding_checkers_executed=True,
+            actual_native_source_RNG_operator_or_physical_credit=0,
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation", ("none_name", "wrong_name", "foreign_function", "same_code_copy", "code", "keyword")
+)
+def test_short_history_prebirth_contract_rejects_parent_name_or_function_drift_before_delegation(
+    monkeypatch, tmp_path, mutation
+):
+    h = _issued_history_inputs(monkeypatch, tmp_path, retained_flux=False, failed=False)
+    electrical, storage = stage.base.previous, stage.base.previous.storage
+    original, called = storage._claim_for_electrical, []
+
+    def foreign(*args, **kwargs):
+        called.append(True)
+        pytest.fail("A retargeted claim must never execute")
+
+    if mutation == "none_name":
+        monkeypatch.setattr(electrical, "PARENT_CLAIM", None)
+    elif mutation == "wrong_name":
+        monkeypatch.setattr(electrical, "PARENT_CLAIM", "_check_electrical_authority")
+    elif mutation == "foreign_function":
+        monkeypatch.setattr(storage, "_claim_for_electrical", foreign)
+    elif mutation == "same_code_copy":
+        copied = FunctionType(
+            original.__code__,
+            original.__globals__,
+            original.__name__,
+            original.__defaults__,
+            original.__closure__,
+        )
+        copied.__kwdefaults__ = original.__kwdefaults__
+        monkeypatch.setattr(storage, "_claim_for_electrical", copied)
+    elif mutation == "code":
+
+        def foreign_code(*args, **kwargs):
+            pytest.fail("Changed claim code must not execute")
+
+        monkeypatch.setattr(original, "__code__", foreign_code.__code__)
+    else:
+        monkeypatch.setattr(
+            original, "__kwdefaults__", dict(original.__kwdefaults__ or {}, synthetic=True)
+        )
+    with pytest.raises((TypeError, ValueError)) as caught:
+        electrical._ready()
+    assert not called and not hasattr(h, "completion_owner")
+    software.snapshot.write_json(
+        tmp_path / "prebirth-contract-refusal.json",
+        dict(
+            mutation=mutation,
+            type=type(caught.value).__name__,
+            reason=str(caught.value),
+            retained_binding_is_original=True,
+            no_claim_or_native_body_called=True,
+        ),
+    )
 
 
 def test_setup_cost_diagnostic_exception_summary_never_renders_owner_arguments():

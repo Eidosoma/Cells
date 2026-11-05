@@ -1077,7 +1077,7 @@ def _account(context):
         )
 
     def profile(frame, event, arg):
-        selected = frame.f_code in codes
+        selected = event == "call" and frame.f_code in codes
         if selected and event == "call":
             attempt = _admit_body(context, frame)
             attempt["hooks"] = (*attempt.get("hooks", ()), "profile")

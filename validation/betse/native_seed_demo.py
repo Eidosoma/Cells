@@ -11,6 +11,7 @@ It preserves the native time label and does not claim a full INIT/SIM or restart
 """
 
 import argparse
+import ast
 import contextlib
 import fcntl
 import hashlib
@@ -24,8 +25,14 @@ import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from types import CodeType, FrameType, FunctionType, ModuleType
+from typing import TYPE_CHECKING
 
 from validation import source_snapshot as snapshot
+
+# The immutable source collector follows static imports. This dependency is
+# otherwise reached only by the coordinator's authenticated dynamic import.
+if TYPE_CHECKING:
+    from cells.processes import betse_native_parameter_world_construction  # noqa: F401
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = Path("/mnt/workspaces/Cells")
@@ -33,11 +40,18 @@ FILE = "validation/betse/native_seed_demo.py"
 TEST = "tests/unit/test_native_seed_demo.py"
 RUNNER = "validation/betse/native_seed_demo_software.py"
 INPUT_METADATA = "validation/betse/native_seed_demo_inputs.py"
-INPUT_METADATA_SHA256 = "c11b7a28255ba4fad94fd0bac5673c430b88cb4de7270f2ed35fc39868c02887"
+INPUT_METADATA_SHA256 = "b90731178aebe8b974cfa7b690365c9a4abf9d00996d4888745dc14a6fb90646"
 EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
 EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
+CAPTURE_BUDGET_MODULE = "validation.betse.native_init_capture_budget"
+CAPTURE_BUDGET_SHA256 = "2f9312f4fe5854ad53dccf97eb711ade7205d2a0fc05da4d2cbdfcfbf37dd23e"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
-KIND = "cells.genuine_seed_core_profiles_junctions_demo@6"
+KIND = "cells.genuine_seed_core_profiles_junctions_demo@8"
+SIM_KIND = "cells.genuine_seed_core_profiles_junctions_demo@9"
+SIM_ENDPOINT = "sim_terminal"
+TERMINAL_ENDPOINTS = ("init_terminal", SIM_ENDPOINT)
+SIM_MODULE = "validation.betse.native_sim_demo"
+SIM_SOURCE_SHA256 = SIM_REVIEW_SHA256 = None
 FLUX_MODES = ("original", "disabled")
 ENDPOINTS = (
     "seed",
@@ -47,6 +61,8 @@ ENDPOINTS = (
     "init_electrical",
     "init_first_step",
     "init_short_history",
+    "init_terminal",
+    "sim_terminal",
 )
 INIT_MODULES = {
     "init_setup": "cells.processes.betse_native_init_retained_world",
@@ -79,12 +95,26 @@ HISTORY_MODULES = {
 }
 HISTORY_SOURCE_PINS = dict.fromkeys(HISTORY_MODULES)
 HISTORY_REVIEW_PINS = dict.fromkeys(HISTORY_MODULES)
+TERMINAL_MODULES = {
+    "init_terminal": "cells.processes.betse_native_init_terminal",
+    "molecule_terminal_runtime": "cells.processes.betse_native_init_terminal_molecules",
+}
+TERMINAL_SOURCE_PINS = dict.fromkeys(TERMINAL_MODULES)
+TERMINAL_REVIEW_PINS = dict.fromkeys(TERMINAL_MODULES)
+TERMINAL_MAX_ITERATIONS = 512
 WRAPPER_MODULES = {
     "molecule_wrappers": "cells.processes.betse_native_init_molecule_wrapper_authority"
 }
 WRAPPER_SOURCE_PINS = dict.fromkeys(WRAPPER_MODULES)
 WRAPPER_REVIEW_PINS = dict.fromkeys(WRAPPER_MODULES)
-WRAPPER_ENDPOINTS = ("init_dynamics", "init_electrical", "init_first_step", "init_short_history")
+WRAPPER_ENDPOINTS = (
+    "init_dynamics",
+    "init_electrical",
+    "init_first_step",
+    "init_short_history",
+    "init_terminal",
+    "sim_terminal",
+)
 IMPORT_PROTOCOL = "closed_original_molecule_import_before_callback_handoff@1"
 HISTORY_OPERATOR_MODES = {
     "original": "original_value_and_flux",
@@ -92,6 +122,8 @@ HISTORY_OPERATOR_MODES = {
 }
 POLICY = dict(cpu=0, threads=1, max_rss_bytes=2**30, wall_seconds=7200, reserve_bytes=8 * 2**30)
 MODULES = {
+    "initial_rng": "validation.betse.native_seed_initial_rng",
+    "initial_rng_runtime": "validation.betse.native_rng_runtime",
     "callback": "validation.betse.native_seed_world_callback_prelude",
     "parameters": "validation.betse.betse_native_parameter_world_ready_qualification",
     "geometry": "validation.betse.native_seed_world_geometry_qualification",
@@ -101,17 +133,21 @@ MODULES = {
     "junctions": "cells.processes.betse_native_seed_junctions",
 }
 SOURCE_PINS = {
-    "callback": "2c27c3e148bd46edd33b826ac73b6b811fad465346ca1745f84608f38c81fb69",
-    "parameters": "4d4428fd3c9bf1e98ae2725e79f40f39be5052c6a36d2d333bfc98516254757e",
-    "geometry": "8ba02c7452a9a5cc334dcbd195ca08a922bd6b99f5fb3ecaf7c2707c00a591d7",
+    "initial_rng": "0702280573ea60c46a7d29e4b95b47a3edb3cae85b850f648548292a6fc9d04d",
+    "initial_rng_runtime": None,
+    "callback": "61b68cbe19216299aa9a28971902ce9948bfaab4c1cb2bd8a7aff75105eab6b6",
+    "parameters": "4e09252a35af064631839313c979b0e3e7ec74ed6153158c12f33a11f8741fe5",
+    "geometry": "d58fd20821bdc63e0d5461b4fc5b6bafaee36119c870639a7a2b036a29d74b37",
     "poisson": "39539d52b750fd75787a2897efc564ad4ca886381ab09acf1560159aa815ba33",
-    "core": "f9159a5bc7b941f8b3d86c5fe8596cd3c2fc944dda139248b8f5d3888e288763",
-    "profiles": "7ed52c746da9b3da4f82d9088b7a1d972bdbbaf42e18247640a0f194105a7fbb",
-    "junctions": "047f19dc26fdbf4e5c398a53a13b93509c66f7603e9fa28c804434987246ae72",
+    "core": "0b644d9b4b53dc167c8e2571d5a249bc7a42905fa845099dd21c7f730c5d3b46",
+    "profiles": "b7b26b2bc6f8c78ba84bef3f19c44ba4ece4ab5cbfabfe17f4e0e8b85d0beadc",
+    "junctions": "844bbae294e66230ddbc66a311c1bb4f0e30be0c0944866e2bb03afcc88d3665",
 }
 REVIEW_PINS = {
+    "initial_rng": "ea47020d0ef8a9517b4b6354660e10974cdcb6a3df79ab908f5ffb86f3e2266e",
+    "initial_rng_runtime": None,
     "callback": "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e",
-    "parameters": "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e",
+    "parameters": "980f32e508dd64daaff4baf32c60634819d6bf027f4eff0fcb56840a631ce553",
     "geometry": "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e",
     "poisson": "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb",
     "core": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
@@ -141,6 +177,13 @@ class Execution:
     stage: str = "preflight"
     phase: object = None
     parameters: object = None
+    initial_rng_attempted: bool = False
+    initial_rng_raw: object = None
+    initial_rng_witness: object = None
+    initial_rng_observation: object = None
+    initial_rng_capture_error: object = None
+    initial_rng_capture_secondary: list = field(default_factory=list)
+    initial_rng_capture_rows: list = field(default_factory=list)
     input_root: object = None
     phase_links: tuple = ()
     seed_phase: object = None
@@ -177,6 +220,7 @@ class Execution:
     molecule_import_failure_captures: list = field(default_factory=list)
     molecule_import_completed: bool = False
     short_runtime_api: object = None
+    terminal_runtime_api: object = None
     init_molecule_network_completed: bool = False
     storage_phase: object = None
     storage_trial: object = None
@@ -195,6 +239,12 @@ class Execution:
     short_history_linkage: object = None
     short_history_failure_context: object = None
     short_history_failure_captures: list = field(default_factory=list)
+    terminal_phase: object = None
+    terminal_trial: object = None
+    terminal_record: object = None
+    terminal_linkage: object = None
+    terminal_failure_context: object = None
+    terminal_failure_captures: list = field(default_factory=list)
     init_setup_completed: bool = False
     init_prelude_completed: bool = False
     init_dynamics_completed: bool = False
@@ -202,7 +252,33 @@ class Execution:
     init_electrical_completed: bool = False
     init_first_step_completed: bool = False
     init_short_history_completed: bool = False
+    init_terminal_completed: bool = False
     init_time_steps_completed: int = 0
+    sim_apis: object = None
+    sim_api_bindings: object = None
+    sim_imports: list = field(default_factory=list)
+    sim_import_hooks: object = None
+    sim_imports_complete: bool = False
+    sim_cleanup_complete: bool = True
+    sim_metadata_stopped: bool = False
+    sim_cleanup_errors: tuple = ()
+    sim_secondary: tuple = ()
+    sim_hook_samples: tuple = ()
+    sim_init_owner: object = None
+    sim_init_trial: object = None
+    sim_current_pair: object = None
+    sim_current_parameters: object = None
+    sim_preparation_trial: object = None
+    sim_assembly_trial: object = None
+    sim_trial: object = None
+    sim_surface: object = None
+    sim_failure_partial: object = None
+    sim_phase: object = None
+    sim_linkage: object = None
+    sim_completed: bool = False
+    sim_time_steps_completed: int = 0
+    sim_continuation: object = None
+    sim_observation: object = None
     callback: object = None
     session: object = None
     world_ready: object = None
@@ -232,6 +308,82 @@ def _relative(module):
     return ("" if module.startswith("validation.") else "src/") + module.replace(".", "/") + ".py"
 
 
+def _source_declarations(module, expected, names=()):
+    """Read authenticated local declarations without importing their producer."""
+    if (
+        type(module) is not str
+        or not module.startswith(("cells.", "validation."))
+        or not all(part.isidentifier() for part in module.split("."))
+        or not _pin(expected)
+    ):
+        raise DemoRejected("Exact local constructor source declaration required", stage="producer")
+    path = snapshot.regular_file(ROOT, _relative(module))
+    payload = path.read_bytes()
+    if hashlib.sha256(payload).hexdigest() != expected:
+        raise DemoRejected("Constructor source changed: " + module, stage="producer")
+    if not names:
+        return {}
+    values = {}
+    for node in ast.parse(payload).body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id in names:
+                    if target.id in values:
+                        raise DemoRejected("Duplicate constructor declaration", stage="producer")
+                    values[target.id] = ast.literal_eval(node.value)
+    if set(values) != set(names):
+        raise DemoRejected("Missing constructor source declaration", stage="producer")
+    return values
+
+
+def _constructor_sources():
+    """Freeze and preflight the entire dynamically imported phase constructor.
+
+    The reviewed geometry/coordinator bytes supply the roster and hashes. No
+    callback, parameter owner or construction claim is acquired by this check.
+    Runtime issuers still enforce their original interface and authority checks.
+    """
+    geometry = _source_declarations(
+        MODULES["geometry"], SOURCE_PINS["geometry"], ("MODULES", "MODULE_SOURCE_SHA256")
+    )
+    modules, pins = geometry["MODULES"], geometry["MODULE_SOURCE_SHA256"]
+    if type(modules) is not dict or type(pins) is not dict or set(modules) != set(pins):
+        raise DemoRejected("Exact geometry producer roster required", stage="producer")
+    selected = {}
+
+    def include(name, pin):
+        _source_declarations(name, pin)
+        path = _relative(name)
+        if path in selected and selected[path] != pin:
+            raise DemoRejected("Conflicting constructor producer pins", stage="producer")
+        selected[path] = pin
+
+    for key, name in modules.items():
+        include(name, pins[key])
+    names = (
+        "KEY_MODULE",
+        "KEY_SOURCE_SHA256",
+        "PARAMETER_MODULE",
+        "PARAMETER_SOURCE_SHA256",
+        "CALLBACK_MODULE",
+        "CALLBACK_SHA256",
+        "STAGE_MODULES",
+        "STAGE_SOURCE_SHA256",
+    )
+    world = _source_declarations(modules["world"], pins["world"], names)
+    for module_slot, pin_slot in (
+        ("KEY_MODULE", "KEY_SOURCE_SHA256"),
+        ("PARAMETER_MODULE", "PARAMETER_SOURCE_SHA256"),
+        ("CALLBACK_MODULE", "CALLBACK_SHA256"),
+    ):
+        include(world[module_slot], world[pin_slot])
+    if type(world["STAGE_MODULES"]) is not tuple or type(world["STAGE_SOURCE_SHA256"]) is not tuple:
+        raise DemoRejected("Exact constructor stage tuple required", stage="producer")
+    for name, pin in zip(world["STAGE_MODULES"], world["STAGE_SOURCE_SHA256"], strict=True):
+        include(name, pin)
+    return dict(sorted(selected.items()))
+
+
 def _iteration_selection(endpoint, count):
     if endpoint == "init_short_history":
         if type(count) is not int or not 1 <= count <= 64:
@@ -243,16 +395,34 @@ def _iteration_selection(endpoint, count):
     return count
 
 
+def _kind(endpoint):
+    return SIM_KIND if endpoint == SIM_ENDPOINT else KIND
+
+
+def _sim_producer():
+    if not _pin(SIM_SOURCE_SHA256) or not _pin(SIM_REVIEW_SHA256):
+        raise DemoRejected("Complete SIM continuation remains unadopted", stage="sim_unbound")
+    path = ROOT / _relative(SIM_MODULE)
+    if path.is_symlink() or not path.is_file() or snapshot.digest(path) != SIM_SOURCE_SHA256:
+        raise DemoRejected("Complete SIM continuation source changed", stage="producer")
+    module = importlib.import_module(SIM_MODULE)
+    if sys.modules.get(SIM_MODULE) is not module or Path(module.__file__).resolve() != path:
+        raise DemoRejected("Actual frozen SIM continuation required", stage="producer")
+    _function(module, "preflight")()
+    return module
+
+
 def source_plan(*, endpoint="seed", init_iterations=None):
     if type(endpoint) is not str or endpoint not in ENDPOINTS:
         raise DemoRejected(
             "Choose exactly seed or init_setup or init_prelude or init_dynamics"
-            " or init_electrical or init_first_step or init_short_history",
+            " or init_electrical or init_first_step or init_short_history"
+            " or init_terminal or sim_terminal",
             stage="endpoint",
         )
     _iteration_selection(endpoint, init_iterations)
     return dict(
-        kind=KIND,
+        kind=_kind(endpoint),
         stages=(
             STAGES
             if endpoint == "seed"
@@ -271,6 +441,12 @@ def source_plan(*, endpoint="seed", init_iterations=None):
                 "init_electrical",
                 *(("init_first_step",) if endpoint == "init_first_step" else ()),
                 *(("init_short_history",) if endpoint == "init_short_history" else ()),
+                *(("init_terminal",) if endpoint in TERMINAL_ENDPOINTS else ()),
+                *(
+                    ("current_parameters", "sim_preparation", "sim_assembly", "sim_run")
+                    if endpoint == SIM_ENDPOINT
+                    else ()
+                ),
             )
         ),
         selected_endpoint=endpoint,
@@ -289,6 +465,13 @@ def source_plan(*, endpoint="seed", init_iterations=None):
             else "same INIT phase; one complete ordinary iteration at its original time label"
             if endpoint == "init_first_step"
             else "same INIT phase; selected contiguous original iterations before next advance"
+            if endpoint == "init_short_history"
+            else "complete INIT then fresh current Parameters, retained tissue/Simulator"
+            " in fresh SIM"
+            "; full original SIM calendar/context return before native pickle"
+            if endpoint == SIM_ENDPOINT
+            else "same INIT phase; complete original calendar and normal context/caller return"
+            " before native pickle"
         ),
         optional_init_setup=dict(
             modules=dict(INIT_MODULES),
@@ -388,6 +571,50 @@ def source_plan(*, endpoint="seed", init_iterations=None):
             source_library_and_metadata_work_non_additive=True,
             full_INIT_SIM_or_restart_admission=False,
         ),
+        optional_init_terminal=dict(
+            modules=dict(TERMINAL_MODULES),
+            source_pins=dict(TERMINAL_SOURCE_PINS),
+            review_pins=dict(TERMINAL_REVIEW_PINS),
+            entry=(
+                "from_electrical(actual fresh ElectricalOwner, maximum=512, law_id=LAW_ID)"
+                " -> prepare(enabled=True)"
+            ),
+            maximum_iterations=TERMINAL_MAX_ITERATIONS,
+            configured_iterations="Original p.init_tsteps; never a selected count",
+            init_iterations=None,
+            full_original_calendar=True,
+            normal_loop_context_and_caller_return=True,
+            selected_stop=False,
+            before_native_pickle=True,
+            same_phase_parameters_cells_simulator_handler_callbacks_cache=True,
+            parent_trial_retained_before_consumption=True,
+            first_step_or_short_history_owner_recycled=False,
+            source_library_and_metadata_work_non_additive=True,
+            physical_checkpoint_SIM_or_scientific_admission=False,
+        ),
+        optional_sim_terminal=dict(
+            module=SIM_MODULE,
+            source_sha256=SIM_SOURCE_SHA256,
+            review_sha256=SIM_REVIEW_SHA256,
+            acquisition_sequence=("initial_world_ready", "fresh_current_world_ready"),
+            maximum_iterations=512,
+            complete_configured_calendar=True,
+            selected_stop=False,
+            same_retained_simulator_and_cells=True,
+            distinct_fresh_loaded_parameters_and_SIM_phase=True,
+            before_native_pickle=True,
+            imports_before_callback=True,
+            **(
+                dict(
+                    completed_observation=importlib.import_module(
+                        "validation.betse.native_sim_demo_observation"
+                    ).declaration()
+                )
+                if endpoint == SIM_ENDPOINT
+                else {}
+            ),
+            physical_checkpoint_or_scientific_admission=False,
+        ),
         optional_molecule_import_authority=dict(
             protocol=IMPORT_PROTOCOL,
             endpoints=WRAPPER_ENDPOINTS,
@@ -421,6 +648,26 @@ def source_plan(*, endpoint="seed", init_iterations=None):
         evidence_source=EVIDENCE_SOURCE_SHA256,
         evidence_reader=EVIDENCE_MODULE + ".read/files with capture root SHA",
         evidence_scope="lossless bounded transport; partial captures never establish completion",
+        terminal_capture_preflight=dict(
+            module=CAPTURE_BUDGET_MODULE,
+            source_sha256=CAPTURE_BUDGET_SHA256,
+            before_typed_archive_expansion=True,
+            actual_writer_checks_retained=True,
+            input_freezing_or_source_authority=False,
+        ),
+        initial_rng_observation=dict(
+            kind="cells.common_initial_rng_observation@2",
+            epoch="pre_SEED_before_world_construction",
+            boundary="after_issued_WorldReady_before_geometry_phase_construction",
+            full_numpy_MT_and_python_state=True,
+            complete_input_inventory_bound=True,
+            reset_draw_or_replacement=False,
+            common_starting_authority_established=False,
+            producer=MODULES["initial_rng"],
+            producer_sha256=SOURCE_PINS["initial_rng"],
+            runtime_producer=MODULES["initial_rng_runtime"],
+            runtime_producer_sha256=SOURCE_PINS["initial_rng_runtime"],
+        ),
         native_policy=dict(POLICY),
         native_or_scientific_release=False,
         complete_seed_runner_order_claim=False,
@@ -458,6 +705,7 @@ def _dependencies(endpoint="seed"):
         "init_electrical",
         "init_first_step",
         "init_short_history",
+        *TERMINAL_ENDPOINTS,
     ) and (
         set(PRELUDE_SOURCE_PINS) != set(PRELUDE_MODULES)
         or set(PRELUDE_REVIEW_PINS) != set(PRELUDE_MODULES)
@@ -469,6 +717,7 @@ def _dependencies(endpoint="seed"):
         "init_electrical",
         "init_first_step",
         "init_short_history",
+        *TERMINAL_ENDPOINTS,
     ) and (
         set(COMPLETION_SOURCE_PINS) != set(COMPLETION_MODULES)
         or set(COMPLETION_REVIEW_PINS) != set(COMPLETION_MODULES)
@@ -477,7 +726,12 @@ def _dependencies(endpoint="seed"):
         )
     ):
         raise DemoRejected("INIT dynamics producers remain unadopted", stage="dynamics_unbound")
-    if endpoint in ("init_electrical", "init_first_step", "init_short_history") and (
+    if endpoint in (
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+        *TERMINAL_ENDPOINTS,
+    ) and (
         set(ELECTRICAL_SOURCE_PINS) != set(ELECTRICAL_MODULES)
         or set(ELECTRICAL_REVIEW_PINS) != set(ELECTRICAL_MODULES)
         or not all(
@@ -499,12 +753,24 @@ def _dependencies(endpoint="seed"):
         raise DemoRejected(
             "Short-history source/review adoption remains held", stage="history_unbound"
         )
+    if endpoint in TERMINAL_ENDPOINTS and (
+        set(TERMINAL_SOURCE_PINS) != set(TERMINAL_MODULES)
+        or set(TERMINAL_REVIEW_PINS) != set(TERMINAL_MODULES)
+        or not all(
+            _pin(p) for p in (*TERMINAL_SOURCE_PINS.values(), *TERMINAL_REVIEW_PINS.values())
+        )
+    ):
+        raise DemoRejected(
+            "Natural INIT terminal source/review adoption remains held", stage="terminal_unbound"
+        )
     if endpoint in WRAPPER_ENDPOINTS and (
         set(WRAPPER_SOURCE_PINS) != set(WRAPPER_MODULES)
         or set(WRAPPER_REVIEW_PINS) != set(WRAPPER_MODULES)
         or not all(_pin(p) for p in (*WRAPPER_SOURCE_PINS.values(), *WRAPPER_REVIEW_PINS.values()))
     ):
         raise DemoRejected("Molecular import authority remains unadopted", stage="wrapper_unbound")
+    if endpoint == SIM_ENDPOINT:
+        _sim_producer()
     for key, name in MODULES.items():
         path = ROOT / _relative(name)
         if path.is_symlink() or not path.is_file() or snapshot.digest(path) != SOURCE_PINS[key]:
@@ -512,6 +778,15 @@ def _dependencies(endpoint="seed"):
     path = ROOT / _relative(EVIDENCE_MODULE)
     if path.is_symlink() or not path.is_file() or snapshot.digest(path) != EVIDENCE_SOURCE_SHA256:
         raise DemoRejected("Reviewed evidence source changed", stage="producer")
+    if endpoint in TERMINAL_ENDPOINTS:
+        path = ROOT / _relative(CAPTURE_BUDGET_MODULE)
+        if (
+            not _pin(CAPTURE_BUDGET_SHA256)
+            or path.is_symlink()
+            or not path.is_file()
+            or snapshot.digest(path) != CAPTURE_BUDGET_SHA256
+        ):
+            raise DemoRejected("Reviewed terminal capture preflight unavailable", stage="producer")
     if endpoint != "seed":
         for key, name in INIT_MODULES.items():
             path = ROOT / _relative(name)
@@ -527,6 +802,7 @@ def _dependencies(endpoint="seed"):
         "init_electrical",
         "init_first_step",
         "init_short_history",
+        *TERMINAL_ENDPOINTS,
     ):
         for key, name in PRELUDE_MODULES.items():
             path = ROOT / _relative(name)
@@ -536,7 +812,13 @@ def _dependencies(endpoint="seed"):
                 or snapshot.digest(path) != PRELUDE_SOURCE_PINS[key]
             ):
                 raise DemoRejected("Reviewed INIT prelude source changed: " + key, stage="producer")
-    if endpoint in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history"):
+    if endpoint in (
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+        *TERMINAL_ENDPOINTS,
+    ):
         for key, name in COMPLETION_MODULES.items():
             path = ROOT / _relative(name)
             if (
@@ -547,7 +829,12 @@ def _dependencies(endpoint="seed"):
                 raise DemoRejected(
                     "Reviewed INIT dynamics source changed: " + key, stage="producer"
                 )
-    if endpoint in ("init_electrical", "init_first_step", "init_short_history"):
+    if endpoint in (
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+        *TERMINAL_ENDPOINTS,
+    ):
         for key, name in ELECTRICAL_MODULES.items():
             path = ROOT / _relative(name)
             if (
@@ -578,6 +865,15 @@ def _dependencies(endpoint="seed"):
                 or snapshot.digest(path) != HISTORY_SOURCE_PINS[key]
             ):
                 raise DemoRejected("Reviewed short-history producer changed", stage="producer")
+    if endpoint in TERMINAL_ENDPOINTS:
+        for key, name in TERMINAL_MODULES.items():
+            path = ROOT / _relative(name)
+            if (
+                path.is_symlink()
+                or not path.is_file()
+                or snapshot.digest(path) != TERMINAL_SOURCE_PINS[key]
+            ):
+                raise DemoRejected("Reviewed terminal producer changed", stage="producer")
     if endpoint in WRAPPER_ENDPOINTS:
         for key, name in WRAPPER_MODULES.items():
             path = ROOT / _relative(name)
@@ -587,6 +883,7 @@ def _dependencies(endpoint="seed"):
                 or snapshot.digest(path) != WRAPPER_SOURCE_PINS[key]
             ):
                 raise DemoRejected("Reviewed import observer changed", stage="producer")
+    _constructor_sources()  # Fail before callback or costly parameter construction.
     return Modules(endpoint)
 
 
@@ -605,6 +902,61 @@ def _evidence_writer():
     return _function(module, "capture_writer")
 
 
+def _capture_preflight():
+    """Bind observation-only size checks; this does not release an INIT producer."""
+    path = ROOT / _relative(CAPTURE_BUDGET_MODULE)
+    if (
+        not _pin(CAPTURE_BUDGET_SHA256)
+        or path.is_symlink()
+        or not path.is_file()
+        or snapshot.digest(path) != CAPTURE_BUDGET_SHA256
+    ):
+        raise DemoRejected("Exact INIT capture preflight unavailable", stage="evidence")
+    module = importlib.import_module(CAPTURE_BUDGET_MODULE)
+    if (
+        sys.modules.get(CAPTURE_BUDGET_MODULE) is not module
+        or Path(module.__file__).resolve() != path
+    ):
+        raise DemoRejected("Actual frozen capture preflight origin required", stage="evidence")
+    return _function(module, "preflight")
+
+
+def _capture_recorder(output, *, endpoint):
+    from validation.betse.native_single_cell_prefix_qualification import Evidence, exception_record
+
+    writer = _evidence_writer()
+    if endpoint not in TERMINAL_ENDPOINTS:
+        return Evidence(output, sidecars=True, capture_writer=writer)
+    check = _capture_preflight()
+
+    class TerminalEvidence(Evidence):
+        """All normal and failure captures are checked before the archive expands them."""
+
+        def __init__(self):
+            super().__init__(output, sidecars=True, capture_writer=writer)
+            self.preflight_errors = []
+
+        def save(self, label, value):
+            try:
+                check(value)
+            except Exception as error:
+                # Preserve the same capture-row grammar and the raw refusal.
+                # No archive or writer is invoked after a preflight failure.
+                self.preflight_errors.append((label, error))
+                self.rows.append(
+                    dict(
+                        label=label,
+                        path=f"capture-{len(self.rows):04d}.json",
+                        status="capture_failed",
+                        error=exception_record(error),
+                    )
+                )
+                return False
+            return super().save(label, value)
+
+    return TerminalEvidence()
+
+
 class Modules:
     """Lazy imports preserve native application bootstrap before parameter birth."""
 
@@ -620,6 +972,7 @@ class Modules:
                 "init_electrical",
                 "init_first_step",
                 "init_short_history",
+                *TERMINAL_ENDPOINTS,
             ) or not _pin(INIT_SOURCE_PINS[key]):
                 raise DemoRejected(
                     "INIT producer unavailable in this endpoint", stage="init_unbound"
@@ -632,6 +985,7 @@ class Modules:
                 "init_electrical",
                 "init_first_step",
                 "init_short_history",
+                *TERMINAL_ENDPOINTS,
             ) or not _pin(PRELUDE_SOURCE_PINS[key]):
                 raise DemoRejected("INIT prelude producer unavailable", stage="prelude_unbound")
             name, expected = PRELUDE_MODULES[key], PRELUDE_SOURCE_PINS[key]
@@ -641,6 +995,7 @@ class Modules:
                 "init_electrical",
                 "init_first_step",
                 "init_short_history",
+                *TERMINAL_ENDPOINTS,
             ) or not _pin(COMPLETION_SOURCE_PINS[key]):
                 raise DemoRejected("INIT dynamics producer unavailable", stage="dynamics_unbound")
             name, expected = COMPLETION_MODULES[key], COMPLETION_SOURCE_PINS[key]
@@ -649,6 +1004,7 @@ class Modules:
                 "init_electrical",
                 "init_first_step",
                 "init_short_history",
+                *TERMINAL_ENDPOINTS,
             ) or not _pin(ELECTRICAL_SOURCE_PINS[key]):
                 raise DemoRejected(
                     "INIT electrical producer unavailable", stage="electrical_unbound"
@@ -662,6 +1018,12 @@ class Modules:
             if self.endpoint != "init_short_history" or not _pin(HISTORY_SOURCE_PINS[key]):
                 raise DemoRejected("Short-history producer unavailable", stage="history_unbound")
             name, expected = HISTORY_MODULES[key], HISTORY_SOURCE_PINS[key]
+        elif key in TERMINAL_MODULES:
+            if self.endpoint not in TERMINAL_ENDPOINTS or not _pin(TERMINAL_SOURCE_PINS[key]):
+                raise DemoRejected(
+                    "Natural terminal producer unavailable", stage="terminal_unbound"
+                )
+            name, expected = TERMINAL_MODULES[key], TERMINAL_SOURCE_PINS[key]
         elif key in WRAPPER_MODULES:
             if self.endpoint not in WRAPPER_ENDPOINTS or not _pin(WRAPPER_SOURCE_PINS[key]):
                 raise DemoRejected("Molecular import observer unavailable", stage="wrapper_unbound")
@@ -850,11 +1212,37 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
     except BaseException as error:
         state.molecule_import_error = error
         body_error, body_traceback = error, error.__traceback__
-        _fail(state, "molecule_imports.entry_or_callback", error)
+        # Retain first failure before a Python reporting CALL can be rejected
+        # by the other inherited hook. Reporting must never skip cleanup.
+        if state.primary is None:
+            state.primary = error
+        try:
+            _fail(state, "molecule_imports.entry_or_callback", error)
+        except BaseException as reporting_error:
+            state.molecule_import_cleanup_errors.append(
+                ("failure_reporting", "molecule_imports.entry_or_callback", error, reporting_error)
+            )
+            if state.primary is not error:
+                state.secondary.append(("molecule_imports.entry_or_callback", error))
+            if state.primary is not reporting_error:
+                state.secondary.append(
+                    ("molecule_imports.entry_or_callback.reporting", reporting_error)
+                )
         try:
             state.molecule_import_partial = getattr(error, "partial", None)
         except BaseException as secondary:
-            _fail(state, "molecule_imports.partial", secondary)
+            if state.primary is None:
+                state.primary = secondary
+            try:
+                _fail(state, "molecule_imports.partial", secondary)
+            except BaseException as reporting_error:
+                state.molecule_import_cleanup_errors.append(
+                    ("failure_reporting", "molecule_imports.partial", secondary, reporting_error)
+                )
+                if state.primary is not secondary:
+                    state.secondary.append(("molecule_imports.partial", secondary))
+                if state.primary is not reporting_error:
+                    state.secondary.append(("molecule_imports.partial.reporting", reporting_error))
     finally:
         # A hook may reject __enter__'s return after the original generator
         # yielded, before our assignment. Recover only that actual frame's
@@ -868,13 +1256,49 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
                     state.molecule_import_context = frame.f_locals.get("context")
             except BaseException as error:
                 state.molecule_import_cleanup_errors.append(("context_recovery", error))
-                _fail(state, "molecule_imports.context_recovery", error)
+                if state.primary is None:
+                    state.primary = error
+                try:
+                    _fail(state, "molecule_imports.context_recovery", error)
+                except BaseException as reporting_error:
+                    state.molecule_import_cleanup_errors.append(
+                        (
+                            "failure_reporting",
+                            "molecule_imports.context_recovery",
+                            error,
+                            reporting_error,
+                        )
+                    )
+                    if state.primary is not error:
+                        state.secondary.append(("molecule_imports.context_recovery", error))
+                    if state.primary is not reporting_error:
+                        state.secondary.append(
+                            ("molecule_imports.context_recovery.reporting", reporting_error)
+                        )
         if entered:
             try:
                 state.stage = "molecule_imports.exit"
                 state.molecule_import_operations.append(dict(name="exit", status="attempted"))
             except BaseException as error:
-                _fail(state, "molecule_imports.exit_observation", error)
+                if state.primary is None:
+                    state.primary = error
+                try:
+                    _fail(state, "molecule_imports.exit_observation", error)
+                except BaseException as reporting_error:
+                    state.molecule_import_cleanup_errors.append(
+                        (
+                            "failure_reporting",
+                            "molecule_imports.exit_observation",
+                            error,
+                            reporting_error,
+                        )
+                    )
+                    if state.primary is not error:
+                        state.secondary.append(("molecule_imports.exit_observation", error))
+                    if state.primary is not reporting_error:
+                        state.secondary.append(
+                            ("molecule_imports.exit_observation.reporting", reporting_error)
+                        )
             try:
                 # A failed exit-log observation cannot authorize normal
                 # publication. The first error still wins over later cleanup.
@@ -891,12 +1315,36 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
                     state.molecule_import_operations[-1]["status"] = "returned"
             except BaseException as error:
                 state.molecule_import_error = error
-                _fail(state, "molecule_imports.exit", error)
+                if state.primary is None:
+                    state.primary = error
+                try:
+                    _fail(state, "molecule_imports.exit", error)
+                except BaseException as reporting_error:
+                    state.molecule_import_cleanup_errors.append(
+                        ("failure_reporting", "molecule_imports.exit", error, reporting_error)
+                    )
+                    if state.primary is not error:
+                        state.secondary.append(("molecule_imports.exit", error))
+                    if state.primary is not reporting_error:
+                        state.secondary.append(("molecule_imports.exit.reporting", reporting_error))
             finally:
                 try:
                     state.molecule_import_record = state.molecule_import_context.record
                 except BaseException as error:
-                    _fail(state, "molecule_imports.record", error)
+                    if state.primary is None:
+                        state.primary = error
+                    try:
+                        _fail(state, "molecule_imports.record", error)
+                    except BaseException as reporting_error:
+                        state.molecule_import_cleanup_errors.append(
+                            ("failure_reporting", "molecule_imports.record", error, reporting_error)
+                        )
+                        if state.primary is not error:
+                            state.secondary.append(("molecule_imports.record", error))
+                        if state.primary is not reporting_error:
+                            state.secondary.append(
+                                ("molecule_imports.record.reporting", reporting_error)
+                            )
         # Keep recovery here, not behind a Python helper whose CALL could be
         # rejected before it restores either inherited hook. CPython can clear
         # an observer that raises. Each setter is independently protected, and
@@ -911,13 +1359,49 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
                             setters[index](hooks[index])
                     except BaseException as error:
                         state.molecule_import_cleanup_errors.append((phase, index, error))
-                        _fail(state, "molecule_imports.hook_recovery", error)
+                        if state.primary is None:
+                            state.primary = error
+                        try:
+                            _fail(state, "molecule_imports.hook_recovery", error)
+                        except BaseException as reporting_error:
+                            state.molecule_import_cleanup_errors.append(
+                                (
+                                    "failure_reporting",
+                                    "molecule_imports.hook_recovery",
+                                    error,
+                                    reporting_error,
+                                )
+                            )
+                            if state.primary is not error:
+                                state.secondary.append(("molecule_imports.hook_recovery", error))
+                            if state.primary is not reporting_error:
+                                state.secondary.append(
+                                    ("molecule_imports.hook_recovery.reporting", reporting_error)
+                                )
             try:
                 restored = getters[0]() is hooks[0] and getters[1]() is hooks[1]
             except BaseException as error:
                 restored = False
                 state.molecule_import_cleanup_errors.append((phase, "sample", error))
-                _fail(state, "molecule_imports.hook_sample", error)
+                if state.primary is None:
+                    state.primary = error
+                try:
+                    _fail(state, "molecule_imports.hook_sample", error)
+                except BaseException as reporting_error:
+                    state.molecule_import_cleanup_errors.append(
+                        (
+                            "failure_reporting",
+                            "molecule_imports.hook_sample",
+                            error,
+                            reporting_error,
+                        )
+                    )
+                    if state.primary is not error:
+                        state.secondary.append(("molecule_imports.hook_sample", error))
+                    if state.primary is not reporting_error:
+                        state.secondary.append(
+                            ("molecule_imports.hook_sample.reporting", reporting_error)
+                        )
             recovery[phase + "_hooks_restored"] = restored
             if phase == "before_close" and generator.gi_frame is not None:
                 if restored:
@@ -929,7 +1413,25 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
                         recovery["close_returned"] = True
                     except BaseException as error:
                         state.molecule_import_cleanup_errors.append(("generator_close", error))
-                        _fail(state, "molecule_imports.generator_close", error)
+                        if state.primary is None:
+                            state.primary = error
+                        try:
+                            _fail(state, "molecule_imports.generator_close", error)
+                        except BaseException as reporting_error:
+                            state.molecule_import_cleanup_errors.append(
+                                (
+                                    "failure_reporting",
+                                    "molecule_imports.generator_close",
+                                    error,
+                                    reporting_error,
+                                )
+                            )
+                            if state.primary is not error:
+                                state.secondary.append(("molecule_imports.generator_close", error))
+                            if state.primary is not reporting_error:
+                                state.secondary.append(
+                                    ("molecule_imports.generator_close.reporting", reporting_error)
+                                )
                 else:
                     recovery["close_skipped_without_inherited_hooks"] = True
         try:
@@ -949,7 +1451,18 @@ def _callback_with_imports(state, module, callback, plan, directory, evidence):
                 raise ValueError("Import observer cleanup remains unresolved")
         except BaseException as error:
             state.molecule_import_cleanup_errors.append(("final_state", error))
-            _fail(state, "molecule_imports.cleanup", error)
+            if state.primary is None:
+                state.primary = error
+            try:
+                _fail(state, "molecule_imports.cleanup", error)
+            except BaseException as reporting_error:
+                state.molecule_import_cleanup_errors.append(
+                    ("failure_reporting", "molecule_imports.cleanup", error, reporting_error)
+                )
+                if state.primary is not error:
+                    state.secondary.append(("molecule_imports.cleanup", error))
+                if state.primary is not reporting_error:
+                    state.secondary.append(("molecule_imports.cleanup.reporting", reporting_error))
     _stop(state)
     record = _import_record(state)
     _capture(state, evidence, "molecule_imports.record", record)
@@ -1035,13 +1548,14 @@ def _read_plan(path, expected):
             "callback_bootstrap_sha256",
             "auxiliary_configuration",
             "shared_writer_review",
+            "initial_rng_inputs",
             "flux_operator",
             "endpoint",
             "init_iterations",
             "policy",
             "held",
         }
-        or value["kind"] != KIND
+        or value["kind"] != _kind(value.get("endpoint"))
         or type(value["endpoint"]) is not str
         or value["endpoint"] not in ENDPOINTS
         or value["source_plan"]
@@ -1062,6 +1576,7 @@ def _read_plan(path, expected):
     ):
         raise DemoRejected("Declared complete single-mode plan changed", stage="plan")
     snapshot.verify(ROOT, manifest_sha256=value["snapshot_sha256"])
+    Modules(value["endpoint"])["initial_rng"].validate_declaration(value["initial_rng_inputs"])
     return value
 
 
@@ -1267,28 +1782,44 @@ def _execute(state, modules, plan, directory, evidence):
         # Completion resolves this exact provider through sys.modules during
         # ancestor retirement. Loading only the history consumer is insufficient.
         state.short_runtime_api = modules["molecule_short_runtime"]
+    if state.endpoint in TERMINAL_ENDPOINTS:
+        state.terminal_runtime_api = modules["molecule_terminal_runtime"]
     if state.endpoint in WRAPPER_ENDPOINTS:
         observer = modules["molecule_wrappers"]
         callback = modules["callback"]
-        _callback_with_imports(state, observer, callback, plan, directory, evidence)
+        if state.endpoint == SIM_ENDPOINT:
+            state.sim_continuation = _sim_producer()
+            state.sim_continuation.bootstrap(state, observer, callback, plan, directory, evidence)
+        else:
+            _callback_with_imports(state, observer, callback, plan, directory, evidence)
     else:
         state.callback = _acquire_callback(state, modules["callback"], plan, directory)
     parameter = modules["parameters"]
-    pair = _call(
-        state,
-        "parameters",
-        parameter.acquire_world_ready,
-        plan["parameter_packet"],
-        directory / "parameters",
-        packet_sha256=plan["parameter_sha256"],
-        enabled=True,
-    )
+    if state.endpoint == SIM_ENDPOINT:
+        state.sim_continuation.bind_parameters(state, parameter)
+    # Bootstrap must retain its native import order. Once it has completed,
+    # authenticate the loaded constructor interfaces before the costly load.
+    # This is metadata work only: no parameter/phase owner or claim is issued.
+    geometry = modules["geometry"]
+    _call(state, "constructor_preflight", geometry._dependencies)
+    if state.endpoint == SIM_ENDPOINT:
+        pair = state.sim_continuation.acquire_initial(state, plan, directory)
+    else:
+        pair = _call(
+            state,
+            "parameters",
+            parameter.acquire_world_ready,
+            plan["parameter_packet"],
+            directory / "parameters",
+            packet_sha256=plan["parameter_sha256"],
+            enabled=True,
+        )
     if type(pair) is not tuple or len(pair) != 2:
         raise ValueError("Exact actual WorldReady/parameter pair required")
     state.world_ready, state.parameters = pair
     if state.world_ready.parameters is not state.parameters:
         raise ValueError("Actual WorldReady owner and parameter instance disagree")
-    geometry = modules["geometry"]
+    _call(state, "initial_rng", modules["initial_rng"].observe, state, plan, evidence)
     owner = _call(
         state,
         "geometry",
@@ -1339,6 +1870,7 @@ def _execute(state, modules, plan, directory, evidence):
         "init_electrical",
         "init_first_step",
         "init_short_history",
+        *TERMINAL_ENDPOINTS,
     ):
         owner = _init_prelude(state, modules["init_prelude"], owner, evidence)
     if state.endpoint in (
@@ -1346,6 +1878,7 @@ def _execute(state, modules, plan, directory, evidence):
         "init_electrical",
         "init_first_step",
         "init_short_history",
+        *TERMINAL_ENDPOINTS,
     ):
         # The completion producer authenticates an already-loaded participant;
         # import it through the same pinned loader before requesting its claim.
@@ -1360,7 +1893,12 @@ def _execute(state, modules, plan, directory, evidence):
         if selected:
             state.dynamics_molecule_api = modules["init_molecules"]
         owner = _init_dynamics(state, modules["init_dynamics"], owner, evidence)
-    if state.endpoint in ("init_electrical", "init_first_step", "init_short_history"):
+    if state.endpoint in (
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+        *TERMINAL_ENDPOINTS,
+    ):
         for name in ("init_storage", "init_electrical"):
             owner = _init_field_stage(state, modules[name], owner, evidence, name)
     if state.endpoint == "init_first_step":
@@ -1369,6 +1907,12 @@ def _execute(state, modules, plan, directory, evidence):
         if modules["molecule_short_runtime"] is not state.short_runtime_api:
             raise ValueError("Actual preloaded short-runtime provider changed before its claim")
         owner = _init_short_history(state, modules["init_short_history"], owner, evidence)
+    if state.endpoint in TERMINAL_ENDPOINTS:
+        if modules["molecule_terminal_runtime"] is not state.terminal_runtime_api:
+            raise ValueError("Original preloaded terminal runtime changed before its claim")
+        owner = _init_terminal(state, modules["init_terminal"], owner, evidence)
+    if state.endpoint == SIM_ENDPOINT:
+        owner = state.sim_continuation.execute(state, modules, plan, directory, evidence, owner)
     state.result, state.methods_completed = owner, True
     return owner
 
@@ -1676,12 +2220,13 @@ def _init_field_stage(state, module, owner, evidence, name):
 def _field_failure_evidence(state, evidence):
     """Recover available field-stage values without reopening consumed owners."""
     if (
-        state.endpoint not in ("init_electrical", "init_first_step", "init_short_history")
+        state.endpoint
+        not in ("init_electrical", "init_first_step", "init_short_history", *TERMINAL_ENDPOINTS)
         or state.primary is None
     ):
         return
     if (
-        state.endpoint in ("init_first_step", "init_short_history")
+        state.endpoint in ("init_first_step", "init_short_history", "init_terminal")
         and state.init_electrical_completed
     ):
         return
@@ -1869,20 +2414,43 @@ def _history_iteration(row):
 
 
 def _init_short_history(state, module, owner, evidence):
+    return _init_iteration_sequence(state, module, owner, evidence, natural=False)
+
+
+def _init_terminal(state, module, owner, evidence):
+    return _init_iteration_sequence(state, module, owner, evidence, natural=True)
+
+
+def _init_iteration_sequence(state, module, owner, evidence, *, natural):
     """One fresh electrical parent, one contiguous provider attempt, no step recycling."""
+    name = "init_terminal" if natural else "init_short_history"
+    field = "terminal" if natural else "short_history"
+    if state.endpoint != name and not (natural and state.endpoint == SIM_ENDPOINT):
+        raise ValueError("Exact retained iteration endpoint required")
     count = _iteration_selection(state.endpoint, state.init_iterations)
+    if natural and (
+        type(getattr(module, "MAX_ITERATIONS", None)) is not int
+        or module.MAX_ITERATIONS != TERMINAL_MAX_ITERATIONS
+    ):
+        raise ValueError("Exact natural-calendar guard512 producer required")
     parent = state.electrical_trial
     if state.init_electrical_completed is not True or parent is None:
         raise ValueError("Completed retained electrical trial required before short history")
-    request = _call(
-        state,
-        "init_short_history_request",
-        module.from_electrical,
-        owner,
-        iterations=count,
-        law_id=module.LAW_ID,
-    )
-    state.requests.append(("init_short_history", request))
+    keywords = dict(law_id=module.LAW_ID)
+    keywords["maximum" if natural else "iterations"] = TERMINAL_MAX_ITERATIONS if natural else count
+    request = _call(state, name + "_request", module.from_electrical, owner, **keywords)
+    state.requests.append((name, request))
+    if natural:
+        count = request.iterations
+        if (
+            type(count) is not int
+            or not 1 <= count <= TERMINAL_MAX_ITERATIONS
+            or type(request.maximum) is not int
+            or request.maximum != TERMINAL_MAX_ITERATIONS
+            or type(state.parameters.init_tsteps) is not int
+            or count != state.parameters.init_tsteps
+        ):
+            raise ValueError("Complete configured natural INIT count required; no truncation")
     if (
         type(request.iterations) is not int
         or request.iterations != count
@@ -1892,13 +2460,14 @@ def _init_short_history(state, module, owner, evidence):
         or not _pin(request.identity)
     ):
         raise ValueError("Exact fresh short-history request/count/operator required")
-    child = _call(state, "init_short_history", module.prepare, request, enabled=True)
-    state.owners.append(("init_short_history", child))
+    child = _call(state, name, module.prepare, request, enabled=True)
+    state.owners.append((name, child))
     trial = child.trial
-    state.short_history_trial = state.last_trial = trial
-    state.trials.append(("init_short_history", trial))
+    setattr(state, field + "_trial", trial)
+    state.last_trial = trial
+    state.trials.append((name, trial))
     phase = child.phase
-    state.short_history_phase = phase
+    setattr(state, field + "_phase", phase)
     if (
         phase is not state.phase
         or phase is not state.init_phase
@@ -1914,8 +2483,9 @@ def _init_short_history(state, module, owner, evidence):
         or trial.request_identity != request.identity
         or not _pin(trial.identity)
         or trial.source_completed is not True
-        or trial.loop_returned is not False
-        or trial.selected_stop is not True
+        or trial.loop_returned is not natural
+        or (natural and trial.context_returned is not True)
+        or trial.selected_stop is not (not natural)
         or type(trial.iterations) is not tuple
         or len(trial.iterations) != count
     ):
@@ -1932,9 +2502,9 @@ def _init_short_history(state, module, owner, evidence):
         or before != parent.rng_after
     ):
         raise ValueError("Short-history original stream handoff required")
-    for name in ("before", "after", "calendar", "sampled", "dt"):
-        if not _pin(getattr(trial, name).identity):
-            raise ValueError("Original short-history snapshot identity required: " + name)
+    for snapshot_name in ("before", "after", "calendar", "sampled", "dt"):
+        if not _pin(getattr(trial, snapshot_name).identity):
+            raise ValueError("Original short-history snapshot identity required: " + snapshot_name)
     work = _step_work_values(trial.work)
     helpers, callbacks = _history_helpers(trial.helpers), _history_callbacks(trial.callbacks)
     rows, last_work, last_callbacks = [], 0, 0
@@ -1955,7 +2525,8 @@ def _init_short_history(state, module, owner, evidence):
     if trial.iterations[-1].after.identity != trial.after.identity:
         raise ValueError("Last original iteration and final history snapshot disagree")
     raw_record = module.trial_record(trial)
-    state.short_history_record = dict(identity=trial.identity, **raw_record)
+    record = dict(identity=trial.identity, **raw_record)
+    setattr(state, field + "_record", record)
     # Preserve the provider's record verbatim; consumer linkage is a separate capture.
     expected = dict(
         request=request.identity,
@@ -1969,8 +2540,9 @@ def _init_short_history(state, module, owner, evidence):
         helpers=len(helpers),
         callbacks=len(callbacks),
         source_completed=True,
-        loop_returned=False,
-        selected_stop=True,
+        loop_returned=natural,
+        selected_stop=not natural,
+        **({"context_returned": True} if natural else {}),
         rng_before=before,
         rng_after=after,
     )
@@ -1999,20 +2571,34 @@ def _init_short_history(state, module, owner, evidence):
             )
         ):
             raise ValueError("Original iteration record/retained value correspondence required")
-    state.short_history_linkage = dict(
+    linkage = dict(
         request_identity=request.identity,
         parent_identity=parent.identity,
         trial_identity=trial.identity,
         operator_mode=request.operator_mode,
-        requested_iterations=count,
+        **(
+            dict(
+                configured_iterations=count,
+                maximum_iterations=TERMINAL_MAX_ITERATIONS,
+                source_completed=True,
+                loop_returned=True,
+                context_returned=True,
+                selected_stop=False,
+                full_original_calendar=True,
+                before_native_pickle=True,
+            )
+            if natural
+            else dict(requested_iterations=count)
+        ),
         rng_before=before,
         rng_after=after,
         iterations=tuple(rows),
         source_library_and_metadata_work_non_additive=True,
         full_INIT_SIM_restart_or_physical_credit=False,
     )
-    _capture(state, evidence, "init_short_history.record", state.short_history_record)
-    _capture(state, evidence, "init_short_history.linkage", state.short_history_linkage)
+    setattr(state, field + "_linkage", linkage)
+    _capture(state, evidence, name + ".record", record)
+    _capture(state, evidence, name + ".linkage", linkage)
     for label, raw in (
         ("before", trial.before),
         ("after", trial.after),
@@ -2027,36 +2613,42 @@ def _init_short_history(state, module, owner, evidence):
         ("initial_diagnostics", raw_record["initial_diagnostics"]),
         ("raw_returns", _raw_failure_values(trial.raw_returns)),
     ):
-        _capture(state, evidence, "init_short_history." + label, raw)
+        _capture(state, evidence, name + "." + label, raw)
     for ordinal, row in enumerate(trial.iterations):
-        _capture(state, evidence, f"init_short_history.iteration.{ordinal:04d}.after", row.after)
-    state.init_short_history_completed = True
+        _capture(state, evidence, f"{name}.iteration.{ordinal:04d}.after", row.after)
+    setattr(state, name + "_completed", True)
     state.init_time_steps_completed = count
     return child
 
 
-def _history_failure_evidence(state, evidence):
+def _history_failure_evidence(state, evidence, *, natural=False):
     """Independent saved-value projections; no consumed owner, fresh snapshot or RNG read."""
+    name = "init_terminal" if natural else "init_short_history"
+    field = "terminal" if natural else "short_history"
     if (
-        state.endpoint != "init_short_history"
+        (state.endpoint != name and not (natural and state.endpoint == SIM_ENDPOINT))
         or state.primary is None
-        or not any(
-            row["name"] in ("init_short_history_request", "init_short_history")
-            for row in state.operations
-        )
+        or not any(row["name"] in (name + "_request", name) for row in state.operations)
     ):
         return
+    if natural and state.endpoint == SIM_ENDPOINT and state.sim_init_trial is not None:
+        # INIT already sealed and was captured before SIM consumed it. A later
+        # SIM partial must never be relabelled as an INIT failure context.
+        return
+    name_prefix = name + ".failure."
     failure = state.delegate_error if state.delegate_error is not None else state.primary
-    context, trial, missing = None, state.short_history_trial, object()
+    context, trial, missing = None, getattr(state, field + "_trial"), object()
     for name in ("partial", "trial"):
         try:
             found = getattr(failure, name, None)
             if name == "partial":
-                context = state.short_history_failure_context = found
+                context = found
+                setattr(state, field + "_failure_context", found)
             elif trial is None and found is not None:
-                trial = state.short_history_trial = found
+                trial = found
+                setattr(state, field + "_trial", found)
         except BaseException as error:
-            _fail(state, "init_short_history.failure." + name, error)
+            _fail(state, name_prefix + name, error)
 
     def value(name, partial_name=None):
         found = getattr(trial, name, missing)
@@ -2074,9 +2666,9 @@ def _history_failure_evidence(state, evidence):
         return raw
 
     def save(label, observe):
-        label = "init_short_history.failure." + label
+        label = name_prefix + label
         row = dict(label=label, status="attempted")
-        state.short_history_failure_captures.append(row)
+        getattr(state, field + "_failure_captures").append(row)
         try:
             raw = observe()
             if raw is missing:
@@ -2094,13 +2686,17 @@ def _history_failure_evidence(state, evidence):
         (
             "record",
             lambda: (
-                state.short_history_record if state.short_history_record is not None else missing
+                getattr(state, field + "_record")
+                if getattr(state, field + "_record") is not None
+                else missing
             ),
         ),
         (
             "linkage",
             lambda: (
-                state.short_history_linkage if state.short_history_linkage is not None else missing
+                getattr(state, field + "_linkage")
+                if getattr(state, field + "_linkage") is not None
+                else missing
             ),
         ),
         ("before", lambda: value("before")),
@@ -2113,6 +2709,7 @@ def _history_failure_evidence(state, evidence):
         ("source_completed", lambda: value("source_completed")),
         ("loop_returned", lambda: value("loop_returned")),
         ("selected_stop", lambda: value("selected_stop", "selected_stopped")),
+        ("context_returned", lambda: value("context_returned")),
         ("work", lambda: project("work", _step_work_values)),
         ("helpers", lambda: project("helpers", _history_helpers, "helper_calls")),
         ("callbacks", lambda: project("callbacks", _history_callbacks, "callback_calls")),
@@ -2150,10 +2747,12 @@ def _history_failure_evidence(state, evidence):
         rows = getattr(trial, "iterations", missing)
         if rows is missing:
             rows = getattr(getattr(context, "timeline", None), "records", ())
-        if type(rows) not in (tuple, list) or len(rows) > 64:
+        if type(rows) not in (tuple, list) or len(rows) > (
+            TERMINAL_MAX_ITERATIONS if natural else 64
+        ):
             raise ValueError("Bounded retained iteration records required")
     except BaseException as error:
-        _fail(state, "init_short_history.failure.iterations", error)
+        _fail(state, name_prefix + "iterations", error)
         return
     for ordinal, row in enumerate(rows):
         save(f"iteration.{ordinal:04d}.linkage", lambda row=row: _history_iteration(row))
@@ -2398,7 +2997,13 @@ def _dynamics_failure_evidence(state, evidence):
     """Independent forensic writes; never validate a consumed owner or read RNG."""
     if (
         state.endpoint
-        not in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history")
+        not in (
+            "init_dynamics",
+            "init_electrical",
+            "init_first_step",
+            "init_short_history",
+            "init_terminal",
+        )
         or state.init_dynamics_completed
         or state.primary is None
     ):
@@ -2659,6 +3264,12 @@ def _import_failure_evidence(state, evidence):
 
 
 def _finish(state, evidence, directory):
+    if state.endpoint == SIM_ENDPOINT and (
+        state.sim_metadata_stopped or not state.sim_cleanup_complete
+    ):
+        state.sim_completed, state.sim_time_steps_completed = False, 0
+        state.evidence_completed = False
+        return
     if state.molecule_import_hooks is not None and (
         state.molecule_import_cleanup.get("complete") is not True
         or sys.getprofile() is not state.molecule_import_hooks[0]
@@ -2668,6 +3279,8 @@ def _finish(state, evidence, directory):
         # unresolved observer is not permission to call forensic writers.
         state.init_first_step_completed, state.init_time_steps_completed = False, 0
         state.init_short_history_completed = False
+        state.init_terminal_completed = False
+        state.sim_completed, state.sim_time_steps_completed = False, 0
         state.evidence_completed = False
         return
     if state.primary is not None:
@@ -2675,6 +3288,24 @@ def _finish(state, evidence, directory):
         # Endpoint credit requires complete surrounding execution/evidence too.
         state.init_first_step_completed, state.init_time_steps_completed = False, 0
         state.init_short_history_completed = False
+        state.init_terminal_completed = False
+        state.sim_completed, state.sim_time_steps_completed = False, 0
+        if state.endpoint == SIM_ENDPOINT and state.sim_continuation is not None:
+            try:
+                state.sim_continuation.failure_evidence(state, evidence)
+            except BaseException as error:
+                _fail(state, "sim.failure.finalizer", error)
+        if state.initial_rng_observation is None:
+            for label, value in (
+                ("initial_rng.failure.raw_states", state.initial_rng_raw),
+                ("initial_rng.failure.witness", state.initial_rng_witness),
+            ):
+                if value is not None:
+                    try:
+                        if not evidence.save(label, value):
+                            raise ValueError("Partial initial RNG capture refused: " + label)
+                    except BaseException as error:
+                        _fail(state, label, error)
         try:
             _import_failure_evidence(state, evidence)
         except BaseException as error:
@@ -2683,6 +3314,10 @@ def _finish(state, evidence, directory):
             _history_failure_evidence(state, evidence)
         except BaseException as error:
             _fail(state, "init_short_history.failure.finalizer", error)
+        try:
+            _history_failure_evidence(state, evidence, natural=True)
+        except BaseException as error:
+            _fail(state, "init_terminal.failure.finalizer", error)
         try:
             _step_failure_evidence(state, evidence)
         except BaseException as error:
@@ -2703,7 +3338,7 @@ def _finish(state, evidence, directory):
         snapshot.write_json(
             directory / "outcome.json",
             dict(
-                kind=KIND,
+                kind=_kind(state.endpoint),
                 status="completed"
                 if state.methods_completed and state.primary is None
                 else "failed",
@@ -2730,11 +3365,35 @@ def _finish(state, evidence, directory):
                 init_electrical_completed=state.init_electrical_completed,
                 init_first_step_completed=state.init_first_step_completed,
                 init_short_history_completed=state.init_short_history_completed,
+                init_terminal_completed=state.init_terminal_completed,
+                **(
+                    dict(
+                        sim_completed=state.sim_completed,
+                        sim_time_steps_completed=state.sim_time_steps_completed,
+                        sim_imports_complete=state.sim_imports_complete,
+                        sim_cleanup_complete=state.sim_cleanup_complete,
+                        sim_linkage=state.sim_linkage,
+                        sim_observation=(
+                            importlib.import_module(
+                                "validation.betse.native_sim_demo_observation"
+                            ).summary(state)
+                        ),
+                        sim_secondary=[
+                            dict(stage=label, error=type(error).__qualname__)
+                            for label, error in state.sim_secondary
+                        ],
+                    )
+                    if state.endpoint == SIM_ENDPOINT
+                    else {}
+                ),
                 short_history_failure_captures=state.short_history_failure_captures,
+                terminal_failure_captures=state.terminal_failure_captures,
                 first_step_failure_captures=state.first_step_failure_captures,
                 electrical_failure_captures=state.electrical_failure_captures,
                 dynamics_failure_captures=state.dynamics_failure_captures,
                 init_time_steps_completed=state.init_time_steps_completed,
+                initial_rng_observation=state.initial_rng_observation,
+                common_starting_authority_established=False,
                 original_flux_defect_repaired=False,
                 methods_completed=state.methods_completed,
                 stage=state.stage,
@@ -2753,6 +3412,8 @@ def _finish(state, evidence, directory):
     except BaseException as error:
         state.init_first_step_completed, state.init_time_steps_completed = False, 0
         state.init_short_history_completed = False
+        state.init_terminal_completed = False
+        state.sim_completed, state.sim_time_steps_completed = False, 0
         _fail(state, "outcome", error)
 
 
@@ -2807,9 +3468,7 @@ def run_demo(plan, directory, *, plan_sha256, enabled=False):
         callback = modules["callback"]
         session = _writer_session(callback, declaration["shared_writer_review"])
         output.mkdir(parents=True)
-        from validation.betse.native_single_cell_prefix_qualification import Evidence
-
-        evidence = Evidence(output, sidecars=True, capture_writer=_evidence_writer())
+        evidence = _capture_recorder(output, endpoint=state.endpoint)
         result = _run(state, modules, declaration, output, evidence, session)
     except BaseException as error:
         _fail(state, "run", error)
@@ -2862,12 +3521,14 @@ def prepare(
     if Path(repository).resolve() != ROOT:
         raise DemoRejected("One-way canonical checkout preparation required", stage="checkout")
     parameter = modules["parameters"]
+    sim = _sim_producer() if endpoint == SIM_ENDPOINT else None
     extra = (
         FILE,
         TEST,
         RUNNER,
         INPUT_METADATA,
         _relative(EVIDENCE_MODULE),
+        *((_relative(CAPTURE_BUDGET_MODULE),) if endpoint in TERMINAL_ENDPOINTS else ()),
         *(_relative(name) for name in MODULES.values()),
         *(_relative(name) for name in INIT_MODULES.values() if endpoint != "seed"),
         *(
@@ -2880,22 +3541,33 @@ def prepare(
                 "init_electrical",
                 "init_first_step",
                 "init_short_history",
+                *TERMINAL_ENDPOINTS,
             )
         ),
         *(
             _relative(name)
             for name in COMPLETION_MODULES.values()
             if endpoint
-            in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history")
+            in (
+                "init_dynamics",
+                "init_electrical",
+                "init_first_step",
+                "init_short_history",
+                *TERMINAL_ENDPOINTS,
+            )
         ),
         *(
             _relative(name)
             for name in ELECTRICAL_MODULES.values()
-            if endpoint in ("init_electrical", "init_first_step", "init_short_history")
+            if endpoint
+            in ("init_electrical", "init_first_step", "init_short_history", *TERMINAL_ENDPOINTS)
         ),
         *(_relative(name) for name in STEP_MODULES.values() if endpoint == "init_first_step"),
         *(_relative(name) for name in HISTORY_MODULES.values() if endpoint == "init_short_history"),
+        *(_relative(name) for name in TERMINAL_MODULES.values() if endpoint in TERMINAL_ENDPOINTS),
         *(_relative(name) for name in WRAPPER_MODULES.values() if endpoint in WRAPPER_ENDPOINTS),
+        *((_relative(SIM_MODULE), *sim.preflight()) if sim is not None else ()),
+        *_constructor_sources(),
         *extra_sources,
     )
     value = _function(parameter, "prepare")(
@@ -2905,12 +3577,15 @@ def prepare(
         inputs_sha256=inputs_sha256,
         python=python,
         extra_sources=extra,
+        **(dict(acquisition_sequence=sim.ACQUISITION_SEQUENCE) if sim is not None else {}),
     )
     directory = Path(directory)
+    parameter_inputs = _function(parameter, "packet_inputs")(directory, value["packet"]["sha256"])
+    initial_rng_inputs = modules["initial_rng"].declaration(parameter_inputs["program"])
     snapshot.write_json(
         directory / "demo-plan.json",
         dict(
-            kind=KIND,
+            kind=_kind(endpoint),
             source_plan=source_plan(endpoint=endpoint, init_iterations=init_iterations),
             snapshot_sha256=snapshot.digest(directory / "source/SNAPSHOT.json"),
             parameter_packet=str(directory),
@@ -2919,6 +3594,7 @@ def prepare(
             callback_bootstrap_sha256=bootstrap_sha256,
             auxiliary_configuration=auxiliary_configuration,
             shared_writer_review=str(shared_writer_review),
+            initial_rng_inputs=initial_rng_inputs,
             flux_operator=flux_operator,
             endpoint=endpoint,
             init_iterations=init_iterations,

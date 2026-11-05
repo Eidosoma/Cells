@@ -2,7 +2,8 @@
 
 This copies original data bytes and emits Key's existing path-permission input
 program. The explicit headless profile changes only the two while-solving
-animation switches in fresh files. It never parses YAML, decodes an image,
+animation switches; headless_core also disables cutting and the custom network
+in fresh files. Neither changes numerical inputs. This never parses YAML, decodes an image,
 imports BETSE or issues live parameters. Original output-directory placeholders
 are retained; no simulation
 output is produced until a separately released worker.
@@ -24,10 +25,11 @@ NATIVE = BASE / "betse-v1.5.0/betse/data/yaml"
 FILE = "validation/betse/native_seed_demo_inputs.py"
 KIND = "cells.original_betse_seed_demo_input_pair@1"
 HEADLESS_KIND = "cells.headless_betse_seed_demo_input_pair@1"
+HEADLESS_CORE_KIND = "cells.headless_core_betse_seed_demo_input_pair@1"
 MODES = ("original", "disabled")
 MAX_FILES, MAX_BYTES, MAX_FILE_BYTES = 512, 16 * 2**20, 8 * 2**20
 BUNDLE_SHA256 = "a46d83ac79195a2e15078feccd5e0fc62804ca1976042cc9516c30a9f859db27"
-PARAMETER_METADATA_SHA256 = "4d4428fd3c9bf1e98ae2725e79f40f39be5052c6a36d2d333bfc98516254757e"
+PARAMETER_METADATA_SHA256 = "e23dbe4c9e124f1e022939895ad7c07fa199a1af36623a47397ffb6a7e46c1ad"
 CORE = {
     "sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
     "extra_configs/expression_data.yaml": (
@@ -55,12 +57,22 @@ def source_plan():
         modes=MODES,
         configuration_profiles=profiles.PROFILES,
         headless_configuration_changes=profiles.changes(),
+        headless_core_configuration_changes=profiles.changes(profiles.HEADLESS_CORE),
         full_original_geo_and_extra_configs=True,
         unchanged_numeric_or_image_bytes=True,
         native_execution=False,
         actual_parameter_or_phase_authority=False,
         limits=dict(files=MAX_FILES, total_bytes=MAX_BYTES, file_bytes=MAX_FILE_BYTES),
     )
+
+
+def kind_for_profile(profile):
+    profiles.require_profile(profile)
+    return {
+        profiles.ORIGINAL: KIND,
+        profiles.HEADLESS: HEADLESS_KIND,
+        profiles.HEADLESS_CORE: HEADLESS_CORE_KIND,
+    }[profile]
 
 
 def _unlinked(path):
@@ -131,8 +143,8 @@ def _program(root, profile=profiles.ORIGINAL):
         ("grn_unpickle_filename", None),
     )
     core = dict(CORE)
-    if profile == profiles.HEADLESS:
-        core[profiles.MAIN] = profiles.HEADLESS_SHA256
+    if profile != profiles.ORIGINAL:
+        core[profiles.MAIN] = profiles.main_file(profile)["sha256"]
     value = dict(
         files={
             name: dict(input=dict(path=str(root / name), sha256=pin)) for name, pin in core.items()
@@ -141,7 +153,7 @@ def _program(root, profile=profiles.ORIGINAL):
             [name, None if value is None else str(root / value)] for name, value in values
         ],
     )
-    if profile == profiles.HEADLESS:
+    if profile != profiles.ORIGINAL:
         value["input_profile"] = profile
     return value
 
@@ -192,7 +204,7 @@ def _copy_file(source, target, expected):
     target.chmod(0o444)
 
 
-def _copy_headless(source, target, expected):
+def _copy_headless(source, target, expected, profile=profiles.HEADLESS):
     # The source is a bounded exact file, and the result is born in a fresh
     # independent inode. Never rewrite an already-issued configuration.
     descriptor = os.open(source, os.O_RDONLY | os.O_NOFOLLOW)
@@ -209,9 +221,9 @@ def _copy_headless(source, target, expected):
             after.st_ctime_ns,
         ):
             raise ValueError("Original main YAML changed during reading")
-    value = profiles.transform(original)
+    value = profiles.transform(original, profile)
     if dict(size_bytes=len(value), sha256=hashlib.sha256(value).hexdigest()) != expected:
-        raise ValueError("Headless target inventory changed")
+        raise ValueError("Declared input-profile target inventory changed")
     with target.open("xb") as stream:
         stream.write(value)
         stream.flush()
@@ -230,8 +242,8 @@ def _prepare(output, source, parameter, profile=profiles.ORIGINAL):
             for directory in source["directories"]:
                 (config / directory).mkdir(parents=True, exist_ok=True)
             for name, row in source["files"].items():
-                if profile == profiles.HEADLESS and name == profiles.MAIN:
-                    _copy_headless(NATIVE / name, config / name, selected["files"][name])
+                if profile != profiles.ORIGINAL and name == profiles.MAIN:
+                    _copy_headless(NATIVE / name, config / name, selected["files"][name], profile)
                 else:
                     _copy_file(NATIVE / name, config / name, row)
             if inventory(config) != selected:
@@ -268,11 +280,11 @@ def _prepare(output, source, parameter, profile=profiles.ORIGINAL):
             physical_or_scientific_claim=False,
             held=True,
         )
-        if profile == profiles.HEADLESS:
+        if profile != profiles.ORIGINAL:
             result.update(
-                kind=HEADLESS_KIND,
+                kind=kind_for_profile(profile),
                 configuration_profile=profile,
-                configuration_changes=profiles.changes(),
+                configuration_changes=profiles.changes(profile),
                 input_inventory=selected,
                 raw_configuration_and_images_unchanged=False,
             )
@@ -317,7 +329,7 @@ def verify(output, expected_sha256, *, mode=None):
     selected_inventory = profiles.selected_inventory(value)
     profile = value.get("configuration_profile", profiles.ORIGINAL)
     if (
-        value["kind"] != (HEADLESS_KIND if profile == profiles.HEADLESS else KIND)
+        value["kind"] != kind_for_profile(profile)
         or value["held"] is not True
         or value["source_origin"] != str(NATIVE)
         or value["source_tree_sha256"] != BUNDLE_SHA256

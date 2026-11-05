@@ -1,12 +1,14 @@
 """Written, unrun coordinator controls; no stand-in grants source ownership."""
 
 import ast
+import contextlib
 import hashlib
 import json
 import os
 import sys
 from contextlib import contextmanager
-from types import CodeType, FunctionType
+from pathlib import Path
+from types import CodeType, FunctionType, ModuleType
 from types import SimpleNamespace as NS
 
 import pytest
@@ -16,6 +18,156 @@ from validation.betse import betse_native_world_phase_construction_software as s
 
 SOFTWARE_RELEASE = "BETSE_NATIVE_WORLD_PHASE_CONSTRUCTION_SOFTWARE_RELEASED"
 _BLOCKADE_FAILURES = ()
+
+
+def construction_interface_metadata():
+    """Actual pinned generator code; no module, factory or generator execution."""
+    path = stage._module_file(stage.KEY_MODULE)
+    raw = path.read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == stage.KEY_SOURCE_SHA256
+    module = ModuleType(stage.KEY_MODULE)
+    module.__file__, module.contextmanager = str(path), contextlib.contextmanager
+    code = compile(raw, str(path), "exec", dont_inherit=True)
+    original = next(
+        value
+        for value in code.co_consts
+        if type(value) is CodeType and value.co_name == "construction"
+    )
+    generator = FunctionType(original, vars(module))
+    generator.__kwdefaults__ = {"enabled": False}
+    module.construction = contextlib.contextmanager(generator)
+    return module, raw, path, generator
+
+
+def check_construction_interface(model):
+    module, raw, path, _ = model
+    stage._source_interface(module, raw, path, ("construction",), contextmanagers=("construction",))
+    stage._contextmanager_bindings()
+
+
+def test_constructor_interface_actual_key_contextmanager_metadata_passes():
+    model = construction_interface_metadata()
+    check_construction_interface(model)
+    check_construction_interface(model)  # Warm metadata cache still checks live objects.
+    module, _, _, generator = model
+    assert module.construction.__globals__ is vars(contextlib)
+    assert generator.__globals__ is vars(module)
+    assert module.construction.__closure__[0].cell_contents is generator
+    assert not stage._ACTIVE and not stage._CLAIMED
+
+
+def test_constructor_interface_dependency_gate_accepts_actual_decorated_shape(monkeypatch):
+    model = construction_interface_metadata()
+    key, raw, path, _ = model
+    key.WORLD_CONSTRUCTION_LAW = stage.KEY_LAW
+    modules = {stage.KEY_MODULE: key}
+    names = {
+        stage.KEY_MODULE: ("validate_closed_seed",),
+        stage.PARAMETER_MODULE: ("validate_completed_history",),
+        stage.CALLBACK_MODULE: (),
+        **dict.fromkeys(stage.STAGE_MODULES, (stage.CONSTRUCT_HOOK, stage.CHECK_HOOK)),
+    }
+    names[stage.STAGE_MODULES[-1]] += (stage.SEAL_HOOK, stage.CHECK_SEAL_HOOK)
+    for name, functions in names.items():
+        module = modules.setdefault(name, ModuleType(name))
+        module.WORLD_MODE = stage.MODE
+        source_path = stage._module_file(name)
+        codes = compile(source_path.read_bytes(), str(source_path), "exec", dont_inherit=True)
+        for function in functions:
+            code = next(
+                value
+                for value in codes.co_consts
+                if type(value) is CodeType and value.co_name == function
+            )
+            setattr(module, function, FunctionType(code, vars(module)))
+    helper = object()
+    monkeypatch.setattr(stage, "_import_helper_bound", lambda expected: helper)
+    monkeypatch.setattr(stage, "_import_bound", lambda name, expected: modules[name])
+    result = stage._dependencies()
+    assert result.key is key and result.helpers is helper
+    assert result.key.construction is key.construction
+    assert result.stages == tuple(modules[name] for name in stage.STAGE_MODULES)
+    assert raw == path.read_bytes() and not stage._CLAIMED
+
+
+@pytest.mark.parametrize(
+    "change",
+    (
+        "wrapper_code",
+        "wrapper_defaults",
+        "wrapper_keywords",
+        "wrapper_name",
+        "wrapped",
+        "closure",
+        "generator_code",
+        "generator_globals",
+        "generator_defaults",
+        "generator_keywords",
+        "decorator_alias",
+        "raw_generator",
+    ),
+)
+def test_constructor_interface_live_drift_refuses_after_warm_metadata(change):
+    model = construction_interface_metadata()
+    check_construction_interface(model)
+    module, _, _, generator = model
+    function = module.construction
+    if change == "wrapper_code":
+        function.__code__ = function.__code__.replace(co_name="retargeted")
+    elif change == "wrapper_defaults":
+        function.__defaults__ = (None,)
+    elif change == "wrapper_keywords":
+        function.__kwdefaults__ = {"enabled": False}
+    elif change == "wrapper_name":
+        function.__name__ = "other"
+    elif change == "wrapped":
+        function.__wrapped__ = FunctionType(generator.__code__, vars(module))
+    elif change == "closure":
+        function.__closure__[0].cell_contents = FunctionType(generator.__code__, vars(module))
+    elif change == "generator_code":
+        generator.__code__ = generator.__code__.replace(co_name="retargeted")
+    elif change == "generator_globals":
+        foreign = FunctionType(generator.__code__, dict(vars(module)))
+        foreign.__kwdefaults__ = {"enabled": False}
+        module.construction = contextlib.contextmanager(foreign)
+    elif change == "generator_defaults":
+        generator.__defaults__ = (None,)
+    elif change == "generator_keywords":
+        generator.__kwdefaults__["enabled"] = 0
+    elif change == "decorator_alias":
+        module.contextmanager = lambda value: value
+    elif change == "raw_generator":
+        module.construction = generator
+    with pytest.raises(ValueError):
+        check_construction_interface(model)
+
+
+@pytest.mark.parametrize("change", ("class", "base", "init", "enter", "exit"))
+def test_constructor_interface_stdlib_dispatch_drift_refuses(monkeypatch, change):
+    model = construction_interface_metadata()
+    check_construction_interface(model)
+    if change in ("class", "base"):
+        name = "_GeneratorContextManager" if change == "class" else "_GeneratorContextManagerBase"
+        original = getattr(contextlib, name)
+        replacement = type(original)(original.__name__, original.__bases__, dict(vars(original)))
+        monkeypatch.setattr(contextlib, name, replacement)
+    else:
+        cls = (
+            contextlib._GeneratorContextManagerBase
+            if change == "init"
+            else contextlib._GeneratorContextManager
+        )
+        function = getattr(cls, "__" + change + "__")
+        monkeypatch.setattr(function, "__code__", function.__code__.replace(co_name="retargeted"))
+    with pytest.raises(ValueError, match="contextmanager"):
+        check_construction_interface(model)
+
+
+def test_constructor_interface_undecorated_hook_remains_strict():
+    model = construction_interface_metadata()
+    module, raw, path, _ = model
+    with pytest.raises(ValueError, match="source function"):
+        stage._source_interface(module, raw, path, ("construction",))
 
 
 @pytest.fixture(autouse=True)
@@ -1417,6 +1569,520 @@ def _helper_image(source=None, review=None, *, extra=b""):
         + b"OTHER = 3\ndef helper():\n    return OTHER\n"
         + extra
     )
+
+
+def _module_record_fixture(tmp_path, monkeypatch):
+    from cells.processes import betse_native_single_cell_grid_alias as aliases
+
+    root = tmp_path / "native"
+    root.mkdir()
+    source = root / "module.py"
+    source.write_bytes(b"VALUE = 1\n")
+    module = ModuleType("betse.metadata_only")
+    module.__file__ = str(source)
+    modules = {module.__name__: module, "betse_unrelated": NS(__file__=None)}
+    monkeypatch.setattr(aliases, "NATIVE", root)
+    monkeypatch.setattr(aliases, "sys", NS(modules=modules))
+    monkeypatch.setattr(aliases, "_MODULE_AUTH", {})
+    return aliases, root, source, module, modules
+
+
+@pytest.mark.parametrize(
+    "form", ["ordinary", "pathlike", "relative_file", "dot_segments", "internal_symlink"]
+)
+def test_module_records_canonical_origins_retain_exact_paths_bytes_and_modules(
+    tmp_path, monkeypatch, form
+):
+    aliases, root, source, module, _ = _module_record_fixture(tmp_path, monkeypatch)
+    if form == "pathlike":
+        module.__file__ = source
+    elif form == "relative_file":
+        monkeypatch.chdir(tmp_path)
+        module.__file__ = "native/module.py"
+    elif form == "dot_segments":
+        (root / "sub").mkdir()
+        module.__file__ = str(root / "sub/../module.py")
+    elif form == "internal_symlink":
+        link = root / "inside.py"
+        link.symlink_to(source)
+        module.__file__ = str(link)
+    rows = aliases._module_records()
+    assert rows == {
+        module.__name__: (module, source, hashlib.sha256(source.read_bytes()).hexdigest())
+    }
+    assert rows[module.__name__][0] is module
+    assert rows[module.__name__][1].is_relative_to(root)
+
+
+@pytest.mark.parametrize(
+    "form",
+    [
+        "sibling",
+        "outside_symlink",
+        "relative_root",
+        "double_root",
+        "no_origin",
+        "missing_file",
+        "bytes_origin",
+    ],
+)
+def test_module_records_unavailable_or_noncontained_origins_still_refuse(
+    tmp_path, monkeypatch, form
+):
+    aliases, root, source, module, _ = _module_record_fixture(tmp_path, monkeypatch)
+    if form in {"sibling", "outside_symlink"}:
+        outside = tmp_path / "native_sibling.py"
+        outside.write_bytes(source.read_bytes())
+        if form == "sibling":
+            module.__file__ = str(outside)
+        else:
+            source.unlink()
+            source.symlink_to(outside)
+    elif form == "relative_root":
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(aliases, "NATIVE", Path("native"))
+    elif form == "double_root":
+        monkeypatch.setattr(aliases, "NATIVE", Path("/" + str(root)))
+    elif form == "no_origin":
+        module.__file__ = None
+    elif form == "missing_file":
+        source.unlink()
+    else:
+        module.__file__ = bytes(source)
+    with pytest.raises((ValueError, TypeError, FileNotFoundError)):
+        aliases._module_records()
+
+
+def test_module_records_root_and_fresh_file_roster_checks_are_not_cached(tmp_path, monkeypatch):
+    aliases, _, source, module, modules = _module_record_fixture(tmp_path, monkeypatch)
+    monkeypatch.setattr(aliases, "NATIVE", Path("/"))
+    first = aliases._module_records()
+    source.write_bytes(b"VALUE = 2\n")
+    second = aliases._module_records()
+    assert first[module.__name__][:2] == second[module.__name__][:2]
+    assert first[module.__name__][2] != second[module.__name__][2]
+    replacement = ModuleType(module.__name__)
+    replacement.__file__ = str(source)
+    modules[module.__name__] = replacement
+    assert aliases._module_records()[module.__name__][0] is replacement
+    modules.clear()
+    assert aliases._module_records() == {}
+
+
+@pytest.mark.parametrize("change", ["module", "code", "file"])
+def test_module_records_issuance_guards_remain_live_on_every_scan(tmp_path, monkeypatch, change):
+    aliases, _, source, module, modules = _module_record_fixture(tmp_path, monkeypatch)
+    code = compile("def helper():\n    return 1\n", str(source), "exec")
+    module.helper = FunctionType(
+        next(c for c in code.co_consts if type(c) is CodeType), vars(module)
+    )
+    records = aliases._module_records()
+    aliases._MODULE_AUTH[module.__name__] = (
+        records[module.__name__],
+        aliases._module_bindings(module),
+    )
+    aliases._check_modules()
+    if change == "module":
+        replacement = ModuleType(module.__name__)
+        replacement.__file__, replacement.helper = module.__file__, module.helper
+        modules[module.__name__] = replacement
+    elif change == "code":
+        module.helper.__code__ = module.helper.__code__.replace()
+    else:
+        source.write_bytes(b"VALUE = 2\n")
+    with pytest.raises(ValueError):
+        aliases._check_modules()
+
+
+def test_module_records_each_scan_resolves_and_reads_without_ancestor_enumeration(
+    tmp_path, monkeypatch
+):
+    aliases, root, source, module, _ = _module_record_fixture(tmp_path, monkeypatch)
+    calls = []
+
+    class ObservedPath(type(root)):
+        def resolve(self, *args, **kwargs):
+            calls.append("resolve")
+            return super().resolve(*args, **kwargs)
+
+        def read_bytes(self):
+            calls.append("read")
+            return super().read_bytes()
+
+        def is_relative_to(self, *args):
+            raise AssertionError("Parent traversal must not be used by the scan")
+
+    monkeypatch.setattr(aliases, "Path", ObservedPath)
+    for _ in range(3):
+        assert (
+            aliases._module_records()[module.__name__][2]
+            == hashlib.sha256(source.read_bytes()).hexdigest()
+        )
+    assert calls == ["resolve", "read"] * 3
+
+
+def _tissue_check_metadata(tmp_path, monkeypatch, count=4):
+    """Run the exact checker with isolated metadata; this issues no live owner."""
+    from threading import get_ident
+
+    aliases, root, source, module, modules = _module_record_fixture(tmp_path, monkeypatch)
+    modules.pop("betse_unrelated")
+    for index in range(1, count):
+        path = root / ("module_" + str(index) + ".py")
+        path.write_bytes(b"VALUE = 1\n")
+        extra = ModuleType("betse.metadata_" + str(index))
+        extra.__file__ = str(path)
+        modules[extra.__name__] = extra
+    records = aliases._module_records()
+    aliases._MODULE_AUTH.update(
+        (name, (record, aliases._module_bindings(record[0]))) for name, record in records.items()
+    )
+    request = type("MetadataRequest", (), {"identity": "metadata"})()
+    context = NS(
+        request=request,
+        thread=get_ident(),
+        configuration={},
+        configuration_cache=NS(identity="cache"),
+        configuration_graph=((), ()),
+        producers=(),
+        bindings=(),
+        runtime_types={},
+        objects=(),
+        modules=records,
+    )
+    path = stage._module_file("cells.processes.betse_native_tissue_configuration")
+    node = next(
+        n
+        for n in ast.parse(path.read_bytes()).body
+        if isinstance(n, ast.FunctionDef) and n.name == "_check"
+    )
+    scope = dict(
+        __name__="tissue_metadata_only",
+        _CONSUMED={request: context},
+        _REQUESTS={request: request.identity},
+        request_record=lambda actual: {},
+        core=NS(
+            records=NS(_digest=lambda _: "metadata"),
+            caches=NS(snapshot=lambda _: NS(identity="cache")),
+        ),
+        get_ident=get_ident,
+        _verify_sources=lambda: (),
+        _configuration_graph=lambda actual: ((), ()),
+        _same=lambda actual, retained: None,
+        _bindings=lambda: (),
+        aliases=aliases,
+    )
+    exec(compile(ast.Module(body=[node], type_ignores=[]), str(path), "exec"), scope)
+    return scope["_check"], context, aliases, modules, source
+
+
+@pytest.mark.parametrize("count", [1, 4, 32])
+def test_tissue_inventory_three_fresh_scans_per_check_independent_of_roster_size(
+    tmp_path, monkeypatch, count
+):
+    check, context, aliases, _, _ = _tissue_check_metadata(tmp_path, monkeypatch, count)
+    scans, reads = [], []
+    original, original_read = aliases._module_records, Path.read_bytes
+
+    def scan():
+        result = original()
+        scans.append(result)
+        return result
+
+    def read(path):
+        reads.append(path)
+        return original_read(path)
+
+    monkeypatch.setattr(aliases, "_module_records", scan)
+    monkeypatch.setattr(Path, "read_bytes", read)
+    for _ in range(2):
+        check(context)
+    assert len(scans) == 6 and len(reads) == 6 * count
+    assert len({id(value) for value in scans}) == 6
+
+
+@pytest.mark.parametrize("change", ["remove", "replace", "file", "symlink", "last_retained_row"])
+def test_tissue_inventory_detects_each_retained_row_and_mid_check_drift(
+    tmp_path, monkeypatch, change
+):
+    check, context, aliases, modules, _ = _tissue_check_metadata(tmp_path, monkeypatch)
+    last = next(reversed(context.modules))
+    original, count = aliases._module_records, []
+    if change == "last_retained_row":
+        module, path, _ = context.modules[last]
+        context.modules[last] = (module, path, "0" * 64)
+
+    def scan():
+        result = original()
+        count.append(None)
+        if len(count) == 2:
+            if change == "remove":
+                del modules[last]
+            elif change == "replace":
+                old = modules[last]
+                modules[last] = ModuleType(last)
+                modules[last].__file__ = old.__file__
+            elif change == "file":
+                Path(modules[last].__file__).write_bytes(b"VALUE = 2\n")
+            elif change == "symlink":
+                target = aliases.NATIVE / "new_target.py"
+                target.write_bytes(b"VALUE = 1\n")
+                path = Path(modules[last].__file__)
+                path.unlink()
+                path.symlink_to(target)
+        return result
+
+    monkeypatch.setattr(aliases, "_module_records", scan)
+    with pytest.raises(ValueError, match="Native factory import changed"):
+        check(context)
+    assert len(count) == (2 if change == "last_retained_row" else 3)
+
+
+def test_tissue_inventory_installed_observer_mutation_during_comparison_refuses(
+    tmp_path, monkeypatch
+):
+    check, context, _, modules, _ = _tissue_check_metadata(tmp_path, monkeypatch)
+    target = Path(modules[next(reversed(modules))].__file__)
+    prior, changed = sys.getprofile(), []
+
+    def observer(frame, event, arg):
+        if prior is not None:
+            prior(frame, event, arg)
+        if (
+            frame.f_code is check.__code__
+            and event == "c_return"
+            and getattr(arg, "__name__", None) == "get"
+            and "current" in frame.f_locals
+            and getattr(arg, "__self__", None) is frame.f_locals["current"]
+            and not changed
+        ):
+            target.write_bytes(b"VALUE = 2\n")
+            changed.append(True)
+
+    try:
+        sys.setprofile(observer)
+        with pytest.raises(ValueError, match="during validation"):
+            check(context)
+    finally:
+        sys.setprofile(prior)
+    assert changed == [True] and sys.getprofile() is prior
+
+
+@pytest.mark.parametrize("scan_number", [2, 3])
+@pytest.mark.parametrize("event", ["call", "return"])
+def test_tissue_inventory_inherited_observer_refusal_preserves_primary(
+    tmp_path, monkeypatch, scan_number, event
+):
+    check, context, aliases, _, _ = _tissue_check_metadata(tmp_path, monkeypatch)
+
+    class FalseyError(RuntimeError):
+        def __bool__(self):
+            return False
+
+    cause, primary = OSError("original observer cause"), FalseyError("stop metadata scan")
+    primary.__cause__ = cause
+    prior, visits = sys.getprofile(), []
+
+    def observer(frame, actual, arg):
+        if prior is not None:
+            prior(frame, actual, arg)
+        if frame.f_code is aliases._module_records.__code__:
+            if actual == "call":
+                visits.append(True)
+            if len(visits) == scan_number and actual == event:
+                raise primary
+
+    try:
+        sys.setprofile(observer)
+        with pytest.raises(FalseyError) as captured:
+            check(context)
+        assert captured.value is primary and primary.__cause__ is cause
+    finally:
+        sys.setprofile(prior)
+    assert len(visits) == scan_number and sys.getprofile() is prior
+
+
+def test_byte_metadata_same_bytes_parse_once_without_hiding_changed_bytes(monkeypatch):
+    stage._binding_metadata.cache_clear()
+    parsed, original = [], stage.ast.parse
+
+    def parse(payload, *args, **kwargs):
+        parsed.append(payload)
+        return original(payload, *args, **kwargs)
+
+    monkeypatch.setattr(stage.ast, "parse", parse)
+    image = _helper_image()
+    expected = hashlib.sha256(stage.HELPER_BINDING_KIND.encode() + b"\0" + image).hexdigest()
+    first = stage._helper_binding(image)
+    for _ in range(20):
+        assert stage._helper_binding(memoryview(image).tobytes()) == first
+    assert first == (
+        expected,
+        (("CONSTRUCTION_SOURCE_SHA256", None), ("CONSTRUCTION_REVIEW_SHA256", None)),
+    )
+    changed = image.replace(b"OTHER = 3", b"OTHER = 4")
+    assert len(changed) == len(image) and stage._helper_binding(changed)[0] != first[0]
+    assert len(parsed) == 2
+    assert stage._binding_metadata.cache_info().hits == 20
+
+
+def test_byte_metadata_backrefs_recomputed_and_each_clone_has_its_own_key():
+    stage._binding_metadata.cache_clear()
+    image = _helper_image()
+    first = stage._helper_binding(image)
+    bound = _helper_image("a" * 64, "b" * 64)
+    actual = stage._helper_binding(bound)
+    assert actual[0] == first[0] and actual[1] != first[1]
+    core = b"COORDINATOR_SOURCE_SHA256 = None\nCOORDINATOR_REVIEW_SHA256 = None\n"
+    children = b"PARENT_SOURCE_SHA256 = None\nPARENT_REVIEW_SHA256 = None\n" + core
+    for payload, names, kind, invoke in (
+        (
+            core,
+            stage.SEED_INIT_CORE_BACK_REFERENCE_SLOTS,
+            stage.SEED_INIT_CORE_BINDING_KIND,
+            stage._seed_core_binding,
+        ),
+        (
+            children,
+            stage.SEED_CHILD_BACK_REFERENCE_SLOTS,
+            stage.SEED_PROFILES_BINDING_KIND,
+            lambda raw: stage._seed_child_binding(raw, kind=stage.SEED_PROFILES_BINDING_KIND),
+        ),
+        (
+            children,
+            stage.SEED_CHILD_BACK_REFERENCE_SLOTS,
+            stage.SEED_JUNCTIONS_BINDING_KIND,
+            lambda raw: stage._seed_child_binding(raw, kind=stage.SEED_JUNCTIONS_BINDING_KIND),
+        ),
+    ):
+        expected = (
+            hashlib.sha256(kind.encode() + b"\0" + payload).hexdigest(),
+            tuple((name, None) for name in names),
+        )
+        assert invoke(payload) == expected
+        assert invoke(payload) == expected
+    info = stage._binding_metadata.cache_info()
+    assert info.misses == 5 and info.hits == 3
+
+
+@pytest.mark.parametrize("change", ["cache", "wrapped", "code", "defaults", "keywords"])
+def test_byte_metadata_warm_cache_refuses_delegate_drift_before_use(monkeypatch, change):
+    stage._binding_metadata.cache_clear()
+    image = _helper_image()
+    stage._helper_binding(image)
+    calls = []
+
+    def replacement(*args, **kwargs):
+        calls.append((args, kwargs))
+        return ("forged", ())
+
+    body = stage._BINDING_METADATA_BODY
+    if change == "cache":
+        monkeypatch.setattr(stage, "_binding_metadata", replacement)
+    elif change == "wrapped":
+        monkeypatch.setattr(stage._binding_metadata, "__wrapped__", replacement)
+    elif change == "code":
+        monkeypatch.setattr(body, "__code__", body.__code__.replace())
+    elif change == "defaults":
+        monkeypatch.setattr(body, "__defaults__", (None,))
+    else:
+        monkeypatch.setattr(body, "__kwdefaults__", {"kind": None})
+    with pytest.raises(ValueError, match="cache/delegate"):
+        stage._helper_binding(image)
+    assert not calls
+
+
+@pytest.mark.parametrize("change", ["source", "module_origin", "module_identity", "backref"])
+def test_byte_metadata_warm_cache_preserves_live_helper_checks(tmp_path, monkeypatch, change):
+    # Only a metadata module: never execute its source or issue an owner.
+    stage._binding_metadata.cache_clear()
+    source_hash = hashlib.sha256(Path(stage.__file__).read_bytes()).hexdigest()
+    raw = _helper_image(source_hash, "a" * 64)
+    path = tmp_path / "helper.py"
+    path.write_bytes(raw)
+    module = ModuleType("metadata_helper")
+    module.__file__ = str(path)
+    module.CONSTRUCTION_SOURCE_SHA256 = source_hash
+    module.CONSTRUCTION_REVIEW_SHA256 = "a" * 64
+    monkeypatch.setattr(stage, "HELPER_MODULE", module.__name__)
+    monkeypatch.setattr(stage, "HELPER_CONSTRUCTION_REVIEW_SHA256", "a" * 64)
+    monkeypatch.setattr(stage, "_module_file", lambda name: path)
+    monkeypatch.setitem(sys.modules, module.__name__, module)
+    original_import = stage.importlib.import_module
+    monkeypatch.setattr(
+        stage.importlib,
+        "import_module",
+        lambda name, *args, **kw: (
+            module if name == module.__name__ else original_import(name, *args, **kw)
+        ),
+    )
+    expected = stage._helper_binding(raw)[0]
+    assert stage._import_helper_bound(expected) is module
+    if change == "source":
+        path.write_bytes(raw.replace(b"OTHER = 3", b"OTHER = 4"))
+    elif change == "module_origin":
+        module.__file__ = str(tmp_path / "retargeted.py")
+    elif change == "module_identity":
+        monkeypatch.setitem(sys.modules, module.__name__, ModuleType(module.__name__))
+    else:
+        module.CONSTRUCTION_REVIEW_SHA256 = "b" * 64
+    with pytest.raises(ValueError):
+        stage._import_helper_bound(expected)
+    assert not stage._ACTIVE and not stage._CLAIMED
+
+
+def test_byte_metadata_cache_is_bounded_and_rejects_mutable_or_oversize_input():
+    stage._binding_metadata.cache_clear()
+    first = stage._helper_binding(_helper_image())
+    for index in range(20):
+        stage._helper_binding(_helper_image(extra=("# image " + str(index)).encode()))
+    assert stage._binding_metadata.cache_info().currsize == 16
+    assert stage._helper_binding(_helper_image()) == first
+    for invalid in (bytearray(_helper_image()), memoryview(_helper_image()), b" " * (2**21 + 1)):
+        with pytest.raises(ValueError, match="Bounded exact"):
+            stage._helper_binding(invalid)
+
+
+@pytest.mark.parametrize(
+    "change", ["bytes_subclass", "slots_subclass", "slot_subclass", "kind_subclass", "oversize"]
+)
+def test_byte_metadata_direct_miss_cannot_prime_a_later_exact_source_hit(change):
+    stage._binding_metadata.cache_clear()
+    invoked = []
+
+    class MisleadingBytes(bytes):
+        def decode(self, *args, **kwargs):
+            invoked.append("decode")
+            return super().decode(*args, **kwargs).replace("OTHER = 3", "OTHER = 4")
+
+    class SlotTuple(tuple):
+        pass
+
+    class Word(str):
+        pass
+
+    image, names, kind = (
+        _helper_image(),
+        stage.HELPER_BACK_REFERENCE_SLOTS,
+        stage.HELPER_BINDING_KIND,
+    )
+    payload, roster, label = image, names, kind
+    if change == "bytes_subclass":
+        payload = MisleadingBytes(image)
+        assert payload == image and hash(payload) == hash(image)
+    elif change == "slots_subclass":
+        roster = SlotTuple(names)
+    elif change == "slot_subclass":
+        roster = (Word(names[0]), *names[1:])
+    elif change == "kind_subclass":
+        label = Word(kind)
+    else:
+        payload = b" " * (2**21 + 1)
+    with pytest.raises(ValueError, match="Bounded exact"):
+        stage._binding_metadata(payload, roster, label)
+    assert not invoked and stage._binding_metadata.cache_info().currsize == 0
+    result = stage._helper_binding(image)
+    assert result[0] == hashlib.sha256(kind.encode() + b"\0" + image).hexdigest()
 
 
 def test_interface_binding_topology_adopts_two_unequal_images_without_a_hash_fixed_point():

@@ -4,9 +4,11 @@ import ast
 import hashlib
 import json
 import os
+import struct
 import sys
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
+from pathlib import Path
 from types import FunctionType, ModuleType
 from types import SimpleNamespace as NS
 from typing import TYPE_CHECKING
@@ -14,14 +16,534 @@ from typing import TYPE_CHECKING
 import pytest
 
 from tests.unit import test_betse_native_world_phase_construction as guards
+from validation.betse import native_init_capture_budget as capture_budget
 from validation.betse import native_seed_demo as stage
 from validation.betse import native_seed_demo_evidence as transport
 from validation.betse import native_seed_demo_software as software
+from validation.betse import native_seed_initial_rng as initial_rng
 from validation.betse import native_seed_world_geometry_qualification as geometry
 
 _RAW_GUARDS = []
 _import_model = None
 LAW = "fresh_original_molecule_channel_imported_beartype_factory@1"
+
+
+def rng_fixture(monkeypatch):
+    import numpy as np
+
+    observed = dict(
+        numpy_random=("MT19937", np.array(range(624), dtype="<u4"), 624, 1, -0.0),
+        python_random=(3, tuple(range(624)) + (624,), None),
+        initial_random_reset_or_replacement=False,
+    )
+    runtime = dict(
+        python="synthetic-version",
+        numpy_version="synthetic-version",
+        executable=dict(path="/synthetic/python", sha256="c" * 64),
+        files={
+            name: dict(path="/synthetic/" + name, sha256="d" * 64)
+            for name in initial_rng.RNG_RUNTIME_MODULES
+        },
+    )
+    calls = []
+
+    def read(state):
+        calls.append("states")
+        state.initial_rng_raw = observed
+        return observed
+
+    monkeypatch.setattr(initial_rng, "read_states", read)
+    monkeypatch.setattr(initial_rng, "runtime_binding", lambda: calls.append("runtime") or runtime)
+    monkeypatch.setattr(
+        initial_rng,
+        "input_binding",
+        lambda plan, state: dict(
+            input_inventory_sha256="a" * 64, mode=state.flux_operator, profile="headless"
+        ),
+    )
+    monkeypatch.setattr(initial_rng, "source_binding", lambda plan: dict(snapshot_sha256="b" * 64))
+    return observed, runtime, calls
+
+
+@pytest.mark.parametrize("cache", ["none", "negative_zero", "nan_payload"])
+@pytest.mark.parametrize("mode", stage.FLUX_MODES)
+def test_demo_initial_rng_actual_adapter_captures_full_states_before_geometry(
+    tmp_path, monkeypatch, cache, mode
+):
+    observed, runtime, calls = rng_fixture(monkeypatch)
+    value = (
+        None
+        if cache == "none"
+        else (
+            -0.0
+            if cache == "negative_zero"
+            else struct.unpack("<d", bytes.fromhex("010000000000f87f"))[0]
+        )
+    )
+    observed["python_random"] = (*observed["python_random"][:2], value)
+    model = chain(mode=mode)
+    model.modules["initial_rng"] = initial_rng
+    original = model.modules["geometry"].evaluate_live
+
+    def geometry_entry(*args, **kwargs):
+        assert model.state.initial_rng_observation is not None
+        return original(*args, **kwargs)
+
+    model.modules["geometry"].evaluate_live = geometry_entry
+    recorder = stage._capture_recorder(tmp_path, endpoint="seed")
+    result = execute(model, tmp_path, recorder)
+    assert result.methods_completed and calls == ["states", "runtime"]
+    witness = result.initial_rng_witness
+    assert witness["state"] is observed and witness["common_binding"]["runtime"] is runtime
+    assert witness["common_binding"]["mode"] == mode
+    assert witness["observed_states_equalized"] is False
+    assert witness["common_starting_authority_established"] is False
+    assert "runner_identity" not in witness["order"]
+    row = result.initial_rng_observation
+    saved = transport.read(tmp_path / row["path"], expected_sha256=row["sha256"])
+    from validation.betse.native_single_cell_prefix_qualification import archive
+
+    assert saved == archive.snapshot(witness)
+    assert row["label"] == "pre_seed_rng_witness"
+    assert [r["name"] for r in result.operations][:5] == [
+        "callback",
+        "constructor_preflight",
+        "parameters",
+        "initial_rng",
+        "geometry",
+    ]
+
+
+@pytest.mark.parametrize(
+    "where", ["second_getter", "runtime", "first_writer", "witness_writer", "serializer"]
+)
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_initial_rng_failure_retains_raw_primary_and_stops_before_geometry(
+    tmp_path, monkeypatch, where, falsey
+):
+    observed, _, _ = rng_fixture(monkeypatch)
+    primary = Falsey("original observation") if falsey else ValueError("original observation")
+    cause = OSError("original cause")
+    primary.__cause__ = cause
+    model = chain()
+    model.modules["initial_rng"] = initial_rng
+    recorder = stage._capture_recorder(tmp_path, endpoint="seed")
+    if where == "second_getter":
+
+        def read(state):
+            state.initial_rng_raw = dict(numpy_random=observed["numpy_random"])
+            raise primary
+
+        monkeypatch.setattr(initial_rng, "read_states", read)
+    elif where == "runtime":
+
+        def runtime():
+            raise primary
+
+        monkeypatch.setattr(initial_rng, "runtime_binding", runtime)
+    elif where == "serializer":
+        from validation.betse.native_single_cell_prefix_qualification import archive
+
+        original_snapshot = archive.snapshot
+
+        def snapshot(value):
+            if value is observed:
+                raise primary
+            return original_snapshot(value)
+
+        monkeypatch.setattr(archive, "snapshot", snapshot)
+    else:
+        original = recorder.capture_writer
+        label = "before_seed_random_states" if where == "first_writer" else "pre_seed_rng_witness"
+
+        def save(name, path, value):
+            if name == label:
+                raise primary
+            return original(name, path, value)
+
+        monkeypatch.setattr(recorder, "capture_writer", save)
+    with pytest.raises(type(primary)) as caught:
+        execute(model, tmp_path, recorder)
+    assert caught.value is primary and primary.__cause__ is cause
+    assert model.state.primary is primary and "geometry" not in model.calls
+    assert model.state.initial_rng_observation is None
+    assert model.state.initial_rng_raw["numpy_random"] is observed["numpy_random"]
+    assert model.state.initial_rng_attempted
+    assert any(row["label"] == "initial_rng.failure.raw_states" for row in recorder.rows)
+    if where in ("serializer", "first_writer", "witness_writer"):
+        assert model.state.initial_rng_capture_error is primary
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "numpy_words",
+        "numpy_bool_index",
+        "numpy_zero",
+        "python_words",
+        "python_bool_index",
+        "reset",
+        "runtime_roster",
+        "runtime_hash",
+        "runtime_path",
+    ],
+)
+def test_demo_initial_rng_rejects_incomplete_or_relabelled_observation(
+    tmp_path, monkeypatch, defect
+):
+    import numpy as np
+
+    observed, runtime, _ = rng_fixture(monkeypatch)
+    if defect == "numpy_words":
+        observed["numpy_random"] = ("MT19937", observed["numpy_random"][1][:-1], 624, 1, -0.0)
+    elif defect == "numpy_bool_index":
+        observed["numpy_random"] = (*observed["numpy_random"][:2], True, 1, -0.0)
+    elif defect == "numpy_zero":
+        observed["numpy_random"] = ("MT19937", np.zeros(624, dtype="<u4"), 624, 1, -0.0)
+    elif defect == "python_words":
+        observed["python_random"] = (3, tuple(range(624)), None)
+    elif defect == "python_bool_index":
+        observed["python_random"] = (3, tuple(range(624)) + (True,), None)
+    elif defect == "reset":
+        observed["initial_random_reset_or_replacement"] = True
+    elif defect == "runtime_roster":
+        del runtime["files"]["_random"]
+    elif defect == "runtime_hash":
+        runtime["files"]["_random"]["sha256"] = "changed"
+    else:
+        runtime["executable"]["path"] = "relative"
+    model = chain()
+    model.modules["initial_rng"] = initial_rng
+    with pytest.raises(ValueError):
+        execute(model, tmp_path, stage._capture_recorder(tmp_path, endpoint="seed"))
+    assert "geometry" not in model.calls and model.state.initial_rng_observation is None
+
+
+@pytest.mark.parametrize("edge", ["phase", "owners", "order", "second_attempt", "parameter"])
+def test_demo_initial_rng_rejects_wrong_epoch_before_any_getter(monkeypatch, edge):
+    _, _, calls = rng_fixture(monkeypatch)
+    p = object()
+    state = stage.Execution(
+        "original", parameters=p, world_ready=NS(parameters=p), callback=object()
+    )
+    state.operations = [
+        dict(name="parameters", status="returned"),
+        dict(name="initial_rng", status="attempted"),
+    ]
+    if edge == "phase":
+        state.phase = object()
+    elif edge == "owners":
+        state.owners.append(("geometry", object()))
+    elif edge == "order":
+        state.operations.insert(-1, dict(name="geometry", status="returned"))
+    elif edge == "second_attempt":
+        state.initial_rng_attempted = True
+    else:
+        state.world_ready.parameters = object()
+    with pytest.raises(ValueError):
+        initial_rng.observe(state, {}, Evidence())
+    assert calls == []
+
+
+@pytest.mark.parametrize("mutation", ["none", "file", "directory", "profile", "digest"])
+def test_demo_initial_rng_complete_input_binding_preserves_legitimate_parameter_directories(
+    tmp_path, mutation
+):
+    root, packet = tmp_path / "config", tmp_path / "packet"
+    root.mkdir()
+    packet.mkdir()
+    (root / "sim_config.yaml").write_bytes(b"declared raw input")
+    inventory = initial_rng.inputs.inventory(root)
+    selected = dict(
+        profile="headless", inventory=inventory, inventory_sha256=initial_rng.seal(inventory)
+    )
+    program = dict(
+        root=str(root), input_profile="headless", directories=[str(root / "RESULTS/init_1")]
+    )
+    initial_rng.snapshot.write_json(packet / "inputs.json", dict(program=program))
+    plan = dict(
+        parameter_packet=str(packet),
+        parameter_sha256=stage.snapshot.digest(packet / "inputs.json"),
+        initial_rng_inputs=selected,
+        flux_operator="original",
+    )
+    (root / "RESULTS/init_1").mkdir(parents=True)
+    if mutation == "file":
+        (root / "sim_config.yaml").write_bytes(b"changed")
+    elif mutation == "directory":
+        (root / "foreign").mkdir()
+    elif mutation == "profile":
+        selected["profile"] = "original"
+    elif mutation == "digest":
+        selected["inventory_sha256"] = "0" * 64
+    if mutation == "none":
+        assert initial_rng.input_binding(plan, NS(input_root=root))[
+            "input_inventory_sha256"
+        ] == initial_rng.seal(inventory)
+    else:
+        with pytest.raises(ValueError):
+            initial_rng.input_binding(plan, NS(input_root=root))
+
+
+@pytest.mark.parametrize("mutation", ["none", "helper", "demo", "manifest"])
+def test_demo_initial_rng_binds_actual_frozen_producers_before_observation(
+    tmp_path, monkeypatch, mutation
+):
+    files = {}
+    for name in (initial_rng.FILE, initial_rng.DEMO, initial_rng.rng_runtime.FILE):
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"frozen metadata source")
+        files[name] = dict(sha256=stage.snapshot.digest(path))
+    stage.snapshot.write_json(tmp_path / "SNAPSHOT.json", dict(files=files))
+    plan = dict(
+        snapshot_sha256=stage.snapshot.digest(tmp_path / "SNAPSHOT.json"), parameter_sha256="a" * 64
+    )
+    monkeypatch.setattr(initial_rng, "ROOT", tmp_path)
+    if mutation in ("helper", "demo"):
+        (tmp_path / (initial_rng.FILE if mutation == "helper" else initial_rng.DEMO)).write_bytes(
+            b"drift"
+        )
+    elif mutation == "manifest":
+        (tmp_path / "SNAPSHOT.json").write_text("{}")
+    if mutation == "none":
+        assert initial_rng.source_binding(plan)["files"] == {
+            name: row["sha256"] for name, row in files.items()
+        }
+    else:
+        with pytest.raises(ValueError):
+            initial_rng.source_binding(plan)
+
+
+def test_demo_initial_rng_original_getters_retain_partial_without_any_reset(monkeypatch):
+    raw = object()
+    cause = Falsey("Python getter failed")
+    calls = []
+
+    def numpy_state():
+        calls.append("numpy")
+        return raw
+
+    def python_state():
+        calls.append("python")
+        raise cause
+
+    namespace = dict(
+        vars(initial_rng),
+        sys=NS(modules={"numpy": NS(random=NS(get_state=numpy_state))}),
+        random=NS(getstate=python_state),
+    )
+    read = FunctionType(initial_rng.read_states.__code__, namespace)
+    state = stage.Execution("original")
+    with pytest.raises(Falsey) as caught:
+        read(state)
+    assert caught.value is cause and calls == ["numpy", "python"]
+    assert state.initial_rng_raw == {"numpy_random": raw}
+    tree = ast.parse(Path(initial_rng.__file__).read_text())
+    assert not any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in ("seed", "setstate", "set_state", "random", "RandomState")
+        for node in ast.walk(tree)
+    )
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_demo_initial_rng_declaration_binds_full_bundle_not_only_parameter_files(
+    tmp_path, monkeypatch, changed
+):
+    root = tmp_path / "config"
+    root.mkdir()
+    (root / "sim_config.yaml").write_bytes(b"configuration")
+    (root / "mask.png").write_bytes(b"original image")
+    expected = initial_rng.inputs.inventory(root)
+    monkeypatch.setattr(initial_rng.inputs, "_source", lambda: expected)
+    if changed:
+        (root / "mask.png").write_bytes(b"other image")
+        with pytest.raises(ValueError, match="Complete selected"):
+            initial_rng.declaration(dict(root=str(root)))
+    else:
+        declared = initial_rng.declaration(dict(root=str(root)))
+        assert declared["profile"] == "original" and declared["inventory"] == expected
+        assert set(declared["inventory"]["files"]) == {"sim_config.yaml", "mask.png"}
+
+
+@pytest.mark.parametrize("where", ["false_save", "wrong_receipt"])
+def test_demo_initial_rng_incomplete_evidence_never_publishes_witness(tmp_path, monkeypatch, where):
+    rng_fixture(monkeypatch)
+    model = chain()
+    model.modules["initial_rng"] = initial_rng
+    recorder = stage._capture_recorder(tmp_path, endpoint="seed")
+    original = initial_rng.save_observation
+
+    def save(state, evidence, label, value):
+        result = original(state, evidence, label, value)
+        if label == "pre_seed_rng_witness":
+            if where == "false_save":
+                return False
+            recorder.rows[-1]["sha256"] = "changed"
+        return result
+
+    monkeypatch.setattr(initial_rng, "save_observation", save)
+    with pytest.raises(ValueError):
+        execute(model, tmp_path, recorder)
+    assert model.state.initial_rng_witness is not None
+    assert model.state.initial_rng_observation is None and "geometry" not in model.calls
+
+
+def terminal_recorder(tmp_path, monkeypatch):
+    path = stage.ROOT / stage._relative(stage.CAPTURE_BUDGET_MODULE)
+    monkeypatch.setattr(stage, "CAPTURE_BUDGET_SHA256", stage.snapshot.digest(path))
+    return stage._capture_recorder(tmp_path, endpoint="init_terminal")
+
+
+def test_demo_capture_budget_preserves_exact_archive_and_checks_each_capture(tmp_path, monkeypatch):
+    observed, original = [], capture_budget.preflight
+
+    def check(value):
+        observed.append(value["counter"])
+        return original(value)
+
+    monkeypatch.setattr(stage, "_capture_preflight", lambda: check)
+    recorder = terminal_recorder(tmp_path, monkeypatch)
+    value = dict(counter=1, bits=-0.0, records=[("original", 3, False)])
+    assert recorder.save("first", value)
+    value["counter"] = 2
+    assert recorder.save("second", value)
+    assert observed == [1, 2] and recorder.preflight_errors == []
+    for row, expected in zip(recorder.rows, (1, 2), strict=True):
+        saved = transport.read(tmp_path / row["path"], expected_sha256=row["sha256"])
+        assert saved == dict(
+            counter=expected,
+            bits=dict(float64_bits="0000000000000080"),
+            records=[["original", 3, False]],
+        )
+
+
+@pytest.mark.parametrize("failure", ["cycle", "overlarge_array"])
+def test_demo_capture_budget_refuses_before_archive_or_writer(tmp_path, monkeypatch, failure):
+    import numpy as np
+
+    from validation.betse import native_single_cell_prefix_qualification as prefix_evidence
+
+    recorder = terminal_recorder(tmp_path, monkeypatch)
+    if failure == "cycle":
+        raw = []
+        raw.append(raw)
+    else:
+        # A genuine zero-stride view with a huge logical extent and eight owned bytes.
+        raw = np.ndarray((2**24,), dtype="<f8", buffer=bytearray(8), strides=(0,))
+    reached = []
+
+    def forbidden(*args, **kwargs):
+        reached.append(True)
+        raise AssertionError("Rejected evidence must not reach expansion or writing")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(prefix_evidence.archive, "snapshot", forbidden)
+        patch.setattr(recorder, "capture_writer", forbidden)
+        assert recorder.save("bounded-refusal", raw) is False
+    assert reached == [] and len(recorder.preflight_errors) == 1
+    error = recorder.preflight_errors[0][1]
+    assert isinstance(error, capture_budget.CaptureBudgetRejected)
+    assert error.counts["hashed_bytes"] == 0
+    assert recorder.rows[0]["status"] == "capture_failed"
+    assert not (tmp_path / recorder.rows[0]["path"]).exists()
+
+
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_capture_budget_keeps_raw_refusal_without_replacing_source_primary(
+    tmp_path, monkeypatch, falsey
+):
+    class Refusal(ValueError):
+        def __bool__(self):
+            return not falsey
+
+    refusal = Refusal("pre-expansion capture refusal")
+    cause = OSError("original source cause")
+    primary = RuntimeError("original source")
+    primary.__cause__ = cause
+
+    def check(value):
+        raise refusal
+
+    monkeypatch.setattr(stage, "_capture_preflight", lambda: check)
+    recorder = terminal_recorder(tmp_path, monkeypatch)
+    state = stage.Execution("original", endpoint="init_terminal")
+    state.primary = primary
+    state.delegate_error = primary
+    state.operations.append(dict(name="init_terminal", status="failed"))
+    partial = NS(before={"last": 3})
+    primary.partial, primary.trial = partial, None
+    # Exercise the actual independent failure-inventory path without a live owner.
+    stage._history_failure_evidence(state, recorder, natural=True)
+    assert state.primary is primary and primary.__cause__ is cause
+    assert state.terminal_failure_context is partial
+    assert recorder.preflight_errors and all(
+        error is refusal for _, error in recorder.preflight_errors
+    )
+    assert any(label == "init_terminal.failure.before" for label, _ in recorder.preflight_errors)
+    assert any(label.startswith("init_terminal.failure.") for label, _ in state.secondary)
+    assert recorder.rows[0]["error"]["nodes"][0]["message"] == str(refusal)
+
+
+@pytest.mark.parametrize("where", ["archive", "writer"])
+def test_demo_capture_budget_keeps_existing_downstream_capture_failure(
+    tmp_path, monkeypatch, where
+):
+    from validation.betse import native_single_cell_prefix_qualification as prefix_evidence
+
+    recorder = terminal_recorder(tmp_path, monkeypatch)
+    error = OSError("retained " + where + " failure")
+
+    def reject(*args, **kwargs):
+        raise error
+
+    with monkeypatch.context() as patch:
+        if where == "archive":
+            patch.setattr(prefix_evidence.archive, "snapshot", reject)
+        else:
+            patch.setattr(recorder, "capture_writer", reject)
+        assert not recorder.save("downstream", {"value": 3})
+    assert recorder.preflight_errors == []
+    assert recorder.rows[0]["status"] == "capture_failed"
+    assert recorder.rows[0]["error"]["nodes"][0]["message"] == str(error)
+
+
+@pytest.mark.parametrize("endpoint", ["seed", "init_short_history"])
+def test_demo_capture_budget_preserves_existing_nonterminal_recorder(
+    tmp_path, monkeypatch, endpoint
+):
+    from validation.betse.native_single_cell_prefix_qualification import Evidence
+
+    def forbidden():
+        raise AssertionError("No terminal-only preflight on this existing endpoint")
+
+    monkeypatch.setattr(stage, "_capture_preflight", forbidden)
+    recorder = stage._capture_recorder(tmp_path, endpoint=endpoint)
+    assert type(recorder) is Evidence
+    assert recorder.save("unchanged", {"value": 3})
+
+
+@pytest.mark.parametrize("pin", [None, "0" * 64])
+def test_demo_capture_budget_requires_exact_source_before_import(monkeypatch, pin):
+    monkeypatch.setattr(stage, "CAPTURE_BUDGET_SHA256", pin)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("No import before exact capture producer binding")
+
+    monkeypatch.setattr(stage.importlib, "import_module", forbidden)
+    with pytest.raises(stage.DemoRejected, match="preflight unavailable"):
+        stage._capture_preflight()
+
+
+def test_demo_capture_budget_rejects_foreign_loaded_preflight(tmp_path, monkeypatch):
+    path = stage.ROOT / stage._relative(stage.CAPTURE_BUDGET_MODULE)
+    monkeypatch.setattr(stage, "CAPTURE_BUDGET_SHA256", stage.snapshot.digest(path))
+    foreign = FunctionType(capture_budget.preflight.__code__, dict(vars(capture_budget)))
+    monkeypatch.setattr(capture_budget, "preflight", foreign)
+    with pytest.raises(stage.DemoRejected, match="Actual public producer function"):
+        stage._capture_recorder(tmp_path, endpoint="init_terminal")
 
 
 @dataclass(frozen=True)
@@ -101,6 +623,8 @@ if TYPE_CHECKING:
         betse_native_init_molecule_short_runtime,  # noqa: F401
         betse_native_init_molecule_wrapper_authority,  # noqa: F401
         betse_native_init_short_history,  # noqa: F401
+        betse_native_init_terminal,  # noqa: F401
+        betse_native_init_terminal_molecules,  # noqa: F401
     )
 
 
@@ -109,26 +633,32 @@ class HistoryDiagnostic:
     ordinal: int
 
 
-def short_history_chain(*, mode="original", count=2, fail=None, mutate=None):
+def short_history_chain(*, mode="original", count=2, fail=None, mutate=None, natural=False):
     """Inert public protocol; the actual short-history producer stays blocked."""
     model = electrical_chain(mode=mode)
-    model.state.endpoint = model.plan["endpoint"] = "init_short_history"
-    model.state.init_iterations = model.plan["init_iterations"] = count
+    endpoint = "init_terminal" if natural else "init_short_history"
+    model.state.endpoint = model.plan["endpoint"] = endpoint
+    model.state.init_iterations = model.plan["init_iterations"] = None if natural else count
+    if natural:
+        model.p.init_tsteps = count
+        model.modules["molecule_terminal_runtime"] = object()
     model.history_objects = []
 
     def point(label):
-        model.calls.append("init_short_history." + label)
+        model.calls.append(endpoint + "." + label)
         if fail == label:
             raise model.primary
 
-    def request(parent, *, iterations, law_id):
+    def request(parent, *, law_id, **selection):
         point("request")
         assert parent is model.field_objects["init_electrical"][0] and not parent.consumed
         assert model.state.electrical_trial is model.field_objects["init_electrical"][2]
-        assert type(iterations) is int and iterations == count and law_id == "short-history"
+        assert selection == ({"maximum": 512} if natural else {"iterations": count})
+        assert law_id == ("terminal" if natural else "short-history")
         return NS(
             electrical_owner=parent,
-            iterations=iterations,
+            iterations=count,
+            **({"maximum": 512} if natural else {}),
             operator_mode={
                 "original": "original_value_and_flux",
                 "disabled": "original_value_only_flux_omitted",
@@ -174,8 +704,9 @@ def short_history_chain(*, mode="original", count=2, fail=None, mutate=None):
             rng_before=parent.rng_after,
             rng_after=("c" * 64, "d" * 64),
             source_completed=True,
-            loop_returned=False,
-            selected_stop=True,
+            loop_returned=natural,
+            selected_stop=not natural,
+            **({"context_returned": True} if natural else {}),
             initial_diagnostics=HistoryDiagnostic(-1),
         )
         if mutate is not None:
@@ -229,13 +760,18 @@ def short_history_chain(*, mode="original", count=2, fail=None, mutate=None):
             source_completed=trial.source_completed,
             loop_returned=trial.loop_returned,
             selected_stop=trial.selected_stop,
+            **({"context_returned": trial.context_returned} if natural else {}),
             rng_before=trial.rng_before,
             rng_after=trial.rng_after,
             initial_diagnostics=stage.asdict(trial.initial_diagnostics),
         )
 
-    model.modules["init_short_history"] = NS(
-        LAW_ID="short-history", from_electrical=request, prepare=prepare, trial_record=record
+    model.modules[endpoint] = NS(
+        LAW_ID="terminal" if natural else "short-history",
+        MAX_ITERATIONS=512,
+        from_electrical=request,
+        prepare=prepare,
+        trial_record=record,
     )
     return model
 
@@ -790,7 +1326,141 @@ def consumer_forbidden_frame(frame):
     return software.is_forbidden_frame(frame) or frame.f_globals.get("__name__", "") in (
         "cells.processes.betse_native_init_molecule_short_runtime",
         "cells.processes.betse_native_init_molecule_wrapper_authority",
+        "cells.processes.betse_native_init_terminal",
+        "cells.processes.betse_native_init_terminal_molecules",
     )
+
+
+@pytest.mark.parametrize("mode", stage.FLUX_MODES)
+@pytest.mark.parametrize("count", (1, 3, 500, 512))
+def test_demo_init_terminal_retains_whole_configured_calendar_and_normal_returns(
+    mode, count, tmp_path
+):
+    model, evidence = short_history_chain(mode=mode, count=count, natural=True), Evidence()
+    execute(model, tmp_path, evidence)
+    state, trial = model.state, model.state.terminal_trial
+    assert state.methods_completed and state.evidence_completed and state.primary is None
+    assert state.init_terminal_completed and state.init_time_steps_completed == count
+    assert state.init_iterations is model.plan["init_iterations"] is None
+    assert not state.init_first_step_completed and not state.init_short_history_completed
+    assert trial.source_completed and trial.loop_returned and trial.context_returned
+    assert trial.selected_stop is False and len(trial.iterations) == count
+    assert state.terminal_phase is state.init_phase is state.phase
+    assert state.parameters.init_tsteps == count
+    assert not any(
+        "init_short_history" in name or "init_first_step" in name for name in model.calls
+    )
+    saved = dict(evidence.values)
+    record, linkage = saved["init_terminal.record"], saved["init_terminal.linkage"]
+    assert record["iterations"][-1][3] == record["after"]
+    assert record["context_returned"] is record["loop_returned"] is True
+    assert record["selected_stop"] is False
+    assert linkage["configured_iterations"] == count and linkage["maximum_iterations"] == 512
+    assert linkage["full_original_calendar"] and linkage["before_native_pickle"]
+    assert len([name for name in saved if name.startswith("init_terminal.iteration.")]) == count
+    assert saved["init_terminal.calendar"] is trial.calendar
+    assert record["rng_before"] == state.electrical_trial.rng_after
+    assert not state.terminal_failure_captures
+
+
+@pytest.mark.parametrize("count", (0, 513, True, False, 2.0, "3"))
+def test_demo_init_terminal_refuses_wrong_configured_count_without_truncation(count, tmp_path):
+    model = short_history_chain(count=count, natural=True)
+    with pytest.raises(ValueError):
+        execute(model, tmp_path)
+    assert model.state.primary is not None and not model.state.init_terminal_completed
+    assert not model.state.methods_completed and model.state.init_time_steps_completed == 0
+    assert "init_terminal.source" not in model.calls
+    assert not model.field_objects["init_electrical"][0].consumed
+    assert model.state.electrical_trial is model.field_objects["init_electrical"][2]
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    (
+        ("loop_returned", False),
+        ("context_returned", False),
+        ("selected_stop", True),
+        ("source_completed", False),
+        ("iterations", ()),
+        ("parent_identity", "0" * 64),
+    ),
+)
+def test_demo_init_terminal_selected_or_partial_trial_cannot_claim_completion(
+    field, value, tmp_path
+):
+    def mutate(model, phase, trial):
+        setattr(trial, field, value)
+
+    model = short_history_chain(natural=True, mutate=mutate)
+    with pytest.raises(ValueError):
+        execute(model, tmp_path)
+    assert model.state.primary is not None and model.state.terminal_trial is not None
+    assert not model.state.init_terminal_completed and model.state.init_time_steps_completed == 0
+    assert model.state.terminal_trial is model.history_objects[0][2]
+    assert model.state.terminal_failure_captures
+
+
+@pytest.mark.parametrize("edge", ("phase", "p", "cells", "sim", "dyna", "callbacks", "cache"))
+def test_demo_init_terminal_requires_actual_continuing_identity_chain(edge, tmp_path):
+    def mutate(model, phase, trial):
+        if edge == "phase":
+            return NS(**vars(phase))
+        setattr(phase, edge, NS())
+
+    model = short_history_chain(natural=True, mutate=mutate)
+    with pytest.raises(ValueError):
+        execute(model, tmp_path)
+    assert model.state.primary is not None and not model.state.init_terminal_completed
+    assert model.state.init_time_steps_completed == 0
+
+
+@pytest.mark.parametrize(
+    "label",
+    ("record", "linkage", "calendar", "work", "initial_diagnostics", "iteration.0001.after"),
+)
+def test_demo_init_terminal_capture_refusal_preserves_trial_and_zero_credit(label, tmp_path):
+    model = short_history_chain(natural=True)
+    with pytest.raises(ValueError):
+        execute(model, tmp_path, Evidence(fail="init_terminal." + label))
+    assert model.state.terminal_trial is model.history_objects[0][2]
+    assert model.state.terminal_trial.context_returned is True
+    assert model.state.primary is not None and not model.state.init_terminal_completed
+    assert model.state.init_time_steps_completed == 0 and model.state.terminal_failure_captures
+
+
+def test_demo_init_terminal_runtime_retarget_refuses_before_ancestor_consumption(tmp_path):
+    model = short_history_chain(natural=True)
+    original = model.modules["init_electrical"].trial_record
+
+    def changed(trial):
+        model.modules["molecule_terminal_runtime"] = object()
+        return original(trial)
+
+    model.modules["init_electrical"].trial_record = changed
+    with pytest.raises(ValueError):
+        execute(model, tmp_path)
+    assert model.state.primary is not None and "init_terminal.request" not in model.calls
+    assert not model.field_objects["init_electrical"][0].consumed
+
+
+def test_demo_init_terminal_explicit_count_and_unadopted_gates_stay_closed(monkeypatch):
+    for value in (1, 64, 500, True):
+        with pytest.raises(stage.DemoRejected, match="count"):
+            stage.source_plan(endpoint="init_terminal", init_iterations=value)
+    for family in ("INIT", "PRELUDE", "COMPLETION", "ELECTRICAL", "WRAPPER"):
+        for suffix in ("SOURCE_PINS", "REVIEW_PINS"):
+            original = getattr(stage, family + "_" + suffix)
+            monkeypatch.setattr(stage, family + "_" + suffix, dict.fromkeys(original, "1" * 64))
+    monkeypatch.setattr(stage.snapshot, "digest", lambda *a: pytest.fail("No producer read"))
+    with pytest.raises(stage.DemoRejected) as caught:
+        stage._dependencies("init_terminal")
+    assert caught.value.stage == "terminal_unbound"
+    plan = stage.source_plan(endpoint="init_terminal")
+    assert plan["init_iterations"] is None and plan["stages"][-1] == "init_terminal"
+    assert plan["optional_init_terminal"]["maximum_iterations"] == 512
+    assert all(value is None for value in stage.TERMINAL_SOURCE_PINS.values())
+    assert all(value is None for value in stage.TERMINAL_REVIEW_PINS.values())
 
 
 class Evidence:
@@ -965,6 +1635,10 @@ def chain(*, mode="original", fail=None, primary=None, mutate=None):
         assert kwargs["enabled"] is True
         return ready, p
 
+    def constructor_preflight():
+        check("constructor_preflight")
+        return None
+
     def evaluate_live(actual_ready, actual_callback, directory, **kwargs):
         check("geometry")
         assert actual_ready is ready and actual_callback is callback
@@ -975,9 +1649,12 @@ def chain(*, mode="original", fail=None, primary=None, mutate=None):
         return result
 
     modules = dict(
+        # Existing protocol-only controls do not claim RNG observation. Dedicated
+        # initial_rng controls exercise the real adapter with synthetic states.
+        initial_rng=NS(observe=lambda state, plan, evidence: None),
         callback=NS(acquire_callback=acquire_callback),
         parameters=NS(acquire_world_ready=acquire_world_ready),
-        geometry=NS(evaluate_live=evaluate_live),
+        geometry=NS(evaluate_live=evaluate_live, _dependencies=constructor_preflight),
     )
     for label, method in (
         ("poisson", "from_geometry"),
@@ -1181,6 +1858,7 @@ def test_demo_whole_order_same_objects_and_mode_without_reopening_consumed_owner
     assert all(o.consumed for o in model.owners[:-1]) and not model.owners[-1].consumed
     assert model.calls == [
         "callback",
+        "constructor_preflight",
         "parameters",
         "geometry",
         "geometry.trial",
@@ -1217,6 +1895,7 @@ def test_demo_whole_order_same_objects_and_mode_without_reopening_consumed_owner
     "failed",
     [
         "callback",
+        "constructor_preflight",
         "parameters",
         "geometry",
         "poisson_request",
@@ -1244,6 +1923,41 @@ def test_demo_each_api_failure_stops_without_fallback_and_retains_exact_previous
     )
     assert model.state.delegate_error is model.primary
     assert json.loads((tmp_path / "outcome.json").read_text())["status"] == "failed"
+
+
+@pytest.mark.parametrize("falsey", (False, True))
+def test_demo_constructor_preflight_failure_keeps_callback_but_never_allocates_parameters(
+    falsey, tmp_path
+):
+    class Failure(ValueError):
+        def __bool__(self):
+            return not falsey
+
+    primary = Failure("Loaded constructor interface rejected")
+    model = chain(fail="constructor_preflight", primary=primary)
+    with pytest.raises(Failure) as caught:
+        execute(model, tmp_path)
+    assert caught.value is primary and caught.value.__cause__.args == ("original cause",)
+    assert model.calls == ["callback", "constructor_preflight"]
+    assert model.state.callback is model.callback
+    assert model.state.world_ready is None and model.state.parameters is None
+    assert model.state.primary is primary and model.state.delegate_error is primary
+    assert not model.owners and not model.state.trials
+    assert model.state.operations[-1] == dict(name="constructor_preflight", status="failed")
+
+
+def test_demo_constructor_preflight_returns_before_parameter_delegate(tmp_path):
+    model = chain()
+    original = model.modules["parameters"].acquire_world_ready
+
+    def parameters(*args, **kwargs):
+        assert model.calls == ["callback", "constructor_preflight"]
+        assert model.state.operations[-2] == dict(name="constructor_preflight", status="returned")
+        return original(*args, **kwargs)
+
+    model.modules["parameters"].acquire_world_ready = parameters
+    execute(model, tmp_path)
+    assert model.state.methods_completed
 
 
 def electrical_chain(*, mode="original", fail=None, mutate=None):
@@ -2133,8 +2847,9 @@ def test_demo_init_setup_plan_binds_selected_endpoint_and_full_stage_roster(
     endpoint, tmp_path, monkeypatch
 ):
     path = tmp_path / "plan.json"
+    inventory = {"directories": [], "files": {}}
     value = dict(
-        kind=stage.KIND,
+        kind=stage._kind(endpoint),
         source_plan=stage.source_plan(
             endpoint=endpoint, init_iterations=2 if endpoint == "init_short_history" else None
         ),
@@ -2145,6 +2860,11 @@ def test_demo_init_setup_plan_binds_selected_endpoint_and_full_stage_roster(
         callback_bootstrap_sha256="c" * 64,
         auxiliary_configuration={},
         shared_writer_review="writer",
+        initial_rng_inputs=dict(
+            profile="headless",
+            inventory=inventory,
+            inventory_sha256=initial_rng.seal(inventory),
+        ),
         flux_operator="original",
         endpoint=endpoint,
         init_iterations=2 if endpoint == "init_short_history" else None,
@@ -4013,6 +4733,9 @@ def test_demo_import_closed_record_is_rechecked_before_enabled_network(field, va
 def test_demo_import_dependencies_refuse_before_any_callback_import(
     family, mutation, monkeypatch, tmp_path
 ):
+    # This fixture isolates optional wrapper/history pins. The complete
+    # constructor roster is exercised by the separate real-AST controls below.
+    monkeypatch.setattr(stage, "_constructor_sources", lambda: {})
     endpoint = "init_short_history"
     sha = hashlib.sha256(b"# inert definition\n").hexdigest()
     monkeypatch.setattr(stage, "ROOT", tmp_path)
@@ -4125,12 +4848,158 @@ def test_demo_import_prepare_includes_both_new_metadata_producers_in_immutable_r
     assert result == "inert prepared metadata" and len(observed) == 1
     for name in (*stage.WRAPPER_MODULES.values(), stage.HISTORY_MODULES["molecule_short_runtime"]):
         assert observed[0].count(stage._relative(name)) == 1
+    assert set(stage._constructor_sources()) <= set(observed[0])
     plan = json.loads((output / "demo-plan.json").read_text())
     assert plan["held"] is True
     assert (
         plan["source_plan"]["optional_molecule_import_authority"]["protocol"]
         == stage.IMPORT_PROTOCOL
     )
+
+
+def constructor_source_image(root, monkeypatch):
+    """Inert files that raise if executed; only their AST/data may be read."""
+    files = {}
+
+    def write(name, text):
+        path = root / stage._relative(name)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text + "\nraise RuntimeError('Source executed during metadata check')\n")
+        files[name] = path
+        return stage.snapshot.digest(path)
+
+    names = {
+        role: "cells.processes.synthetic_" + role
+        for role in ("key", "parameters", "callbacks", "prefix", "phase", "cache", "dyna", "tail")
+    }
+    pins = {role: write(name, "VALUE = None") for role, name in names.items()}
+    stages = ("phase", "cache", "dyna", "tail")
+    world = "cells.processes.synthetic_world"
+    world_pin = write(
+        world,
+        "\n".join(
+            f"{key} = {value!r}"
+            for key, value in {
+                "KEY_MODULE": names["key"],
+                "KEY_SOURCE_SHA256": pins["key"],
+                "PARAMETER_MODULE": names["parameters"],
+                "PARAMETER_SOURCE_SHA256": pins["parameters"],
+                "CALLBACK_MODULE": names["callbacks"],
+                "CALLBACK_SHA256": pins["callbacks"],
+                "STAGE_MODULES": tuple(names[role] for role in stages),
+                "STAGE_SOURCE_SHA256": tuple(pins[role] for role in stages),
+            }.items()
+        ),
+    )
+    geometry = "validation.betse.synthetic_geometry"
+    modules = dict(world=world, prefix=names["prefix"], callbacks=names["callbacks"])
+    module_pins = dict(world=world_pin, prefix=pins["prefix"], callbacks=pins["callbacks"])
+    geometry_pin = write(geometry, f"MODULES = {modules!r}\nMODULE_SOURCE_SHA256 = {module_pins!r}")
+    monkeypatch.setattr(stage, "ROOT", root)
+    monkeypatch.setattr(stage, "MODULES", {"geometry": geometry})
+    monkeypatch.setattr(stage, "SOURCE_PINS", {"geometry": geometry_pin})
+    return NS(files=files, names=names, geometry=geometry, world=world, write=write)
+
+
+def test_demo_constructor_dependency_roster_is_complete_without_producer_execution(
+    tmp_path, monkeypatch
+):
+    model = constructor_source_image(tmp_path, monkeypatch)
+    calls = []
+
+    def forbidden(*args, **kwargs):
+        calls.append(args)
+        raise AssertionError("Producer import attempted")
+
+    monkeypatch.setattr(stage.importlib, "import_module", forbidden)
+    selected = stage._constructor_sources()
+    expected = {
+        stage._relative(name): stage.snapshot.digest(path)
+        for name, path in model.files.items()
+        if name != model.geometry
+    }
+    assert selected == expected and not calls
+
+
+@pytest.mark.parametrize(
+    "role", ("key", "parameters", "callbacks", "prefix", "phase", "cache", "dyna", "tail")
+)
+@pytest.mark.parametrize("change", ("missing", "changed"))
+def test_demo_constructor_dependency_refuses_before_callback_or_parameter_work(
+    role, change, tmp_path, monkeypatch
+):
+    model = constructor_source_image(tmp_path, monkeypatch)
+    path = model.files[model.names[role]]
+    if change == "missing":
+        path.unlink()
+    else:
+        path.write_text("# wrong producer\n")
+    evidence = "validation.betse.synthetic_evidence"
+    evidence_pin = model.write(evidence, "VALUE = None")
+    monkeypatch.setattr(stage, "REVIEW_PINS", {"geometry": "a" * 64})
+    monkeypatch.setattr(stage, "EVIDENCE_MODULE", evidence)
+    monkeypatch.setattr(stage, "EVIDENCE_SOURCE_SHA256", evidence_pin)
+    monkeypatch.setattr(stage, "_ATTEMPT", None)
+    monkeypatch.setattr(stage, "_ACTIVE", [])
+    monkeypatch.setenv(stage.RELEASE, "1")
+    calls = []
+
+    def forbidden(*args, **kwargs):
+        calls.append(args)
+        raise AssertionError("Reached plan/import before complete dependency verification")
+
+    monkeypatch.setattr(stage, "_read_plan", forbidden)
+    monkeypatch.setattr(stage.importlib, "import_module", forbidden)
+    with pytest.raises(
+        ValueError, match="Missing regular checkout source|Constructor source changed"
+    ):
+        stage.run_demo(
+            tmp_path / "plan.json", tmp_path / "output", plan_sha256="b" * 64, enabled=True
+        )
+    assert not calls and stage._ATTEMPT is None and not (tmp_path / "output").exists()
+
+
+def test_demo_constructor_dependency_static_collector_includes_dynamic_key():
+    # Inspect the actual reusable collector and actual demo source. No provider
+    # module or claim is imported while calculating this metadata closure.
+    import runpy
+
+    from validation.betse import betse_native_parameter_world_ready_qualification as parameter
+
+    closure = runpy.run_path(str(stage.ROOT / parameter.CLOSURE))["closure"]
+    selected = closure(stage.ROOT, [stage.FILE])
+    key = "src/cells/processes/betse_native_parameter_world_construction.py"
+    assert key in selected and selected[key] == stage.snapshot.digest(stage.ROOT / key)
+    # prepare() explicitly supplies the dynamic constructor roster alongside
+    # ordinary imports; a static-only traversal cannot infer those strings.
+    selected = closure(stage.ROOT, [stage.FILE, *stage._constructor_sources()])
+    assert set(stage._constructor_sources()) <= set(selected)
+
+
+@pytest.mark.parametrize("change", ("duplicate", "missing", "expression", "linked"))
+def test_demo_constructor_dependency_metadata_refuses_untrusted_declarations(
+    change, tmp_path, monkeypatch
+):
+    model = constructor_source_image(tmp_path, monkeypatch)
+    path = model.files[model.geometry]
+    if change == "linked":
+        target = tmp_path / "elsewhere.py"
+        path.replace(target)
+        path.symlink_to(target)
+    else:
+        payload = path.read_text()
+        if change == "duplicate":
+            payload += "\nMODULES = {}\n"
+        elif change == "missing":
+            payload = payload.replace("MODULES =", "REMOVED =", 1)
+        else:
+            payload = (
+                "MODULES = __import__('forbidden_constructor_probe')\nMODULE_SOURCE_SHA256 = {}\n"
+            )
+        path.write_text(payload)
+    monkeypatch.setattr(stage, "SOURCE_PINS", {"geometry": stage.snapshot.digest(path)})
+    with pytest.raises(ValueError):
+        stage._constructor_sources()
 
 
 def test_demo_import_runtime_replacement_refuses_before_history_request(tmp_path):
@@ -4151,11 +5020,28 @@ def test_demo_import_runtime_replacement_refuses_before_history_request(tmp_path
 
 
 @contextmanager
-def installed_import_boundary_fault(model, hook, boundary, error, *, close_error=None):
+def installed_import_boundary_fault(
+    model,
+    hook,
+    boundary,
+    error,
+    *,
+    close_error=None,
+    reporting_error=None,
+    reporting_hook=None,
+    reporting_label="molecule_imports.entry_or_callback",
+):
     """Real CPython hooks around the actual stdlib manager and inert generator."""
     getters, setters = (sys.getprofile, sys.gettrace), (sys.setprofile, sys.settrace)
     prior = (getters[0](), getters[1]())
-    observed = NS(events=[], fired=False, close_fired=False, hooks=None, setters=setters)
+    observed = NS(
+        events=[],
+        fired=False,
+        close_fired=False,
+        reporting_fired=False,
+        hooks=None,
+        setters=setters,
+    )
     target = (
         stage.contextlib._GeneratorContextManager.__enter__.__code__
         if boundary.startswith("enter")
@@ -4164,6 +5050,19 @@ def installed_import_boundary_fault(model, hook, boundary, error, *, close_error
     wanted = "call" if boundary.endswith("call") else "return"
 
     def visit(kind, frame, event, value):
+        if (
+            reporting_error is not None
+            and observed.fired
+            and not observed.reporting_fired
+            and kind == reporting_hook
+            and event == "call"
+            and frame.f_code is stage._fail.__code__
+            and frame.f_locals.get("state") is model.state
+            and frame.f_locals.get("label") == reporting_label
+        ):
+            observed.reporting_fired = True
+            observed.events.append((frame, event, value))
+            raise reporting_error
         if (
             kind == hook
             and not observed.fired
@@ -4387,6 +5286,107 @@ def test_demo_import_unresolved_cleanup_keeps_raw_context_and_never_calls_writer
     finally:
         # Release only this private inert fixture after the raw unresolved-state
         # assertions. Production never retries or manufactures cleanup success.
+        generator = model.state.molecule_import_generator
+        if generator is not None and generator.gi_frame is not None:
+            generator.close()
+
+
+@pytest.mark.parametrize("hook", ["profile", "trace"])
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_import_simultaneous_hooks_preserve_primary_before_reporting(hook, falsey, tmp_path):
+    model = dynamics_chain()
+    primary = Falsey("manager return") if falsey else ValueError("manager return")
+    cause = primary.__cause__ = LookupError("original boundary cause")
+    reporting = RuntimeError("bookkeeping entry")
+    other = "trace" if hook == "profile" else "profile"
+    with installed_import_boundary_fault(
+        model,
+        hook,
+        "enter_return",
+        primary,
+        reporting_error=reporting,
+        reporting_hook=other,
+    ) as observed:
+        with pytest.raises(type(primary)) as caught:
+            execute(model, tmp_path)
+        assert observed.fired and observed.reporting_fired
+        assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+        assert any(error is reporting for _, error in model.state.secondary)
+        assert any(
+            row[0] == "failure_reporting" and row[-2] is primary and row[-1] is reporting
+            for row in model.state.molecule_import_cleanup_errors
+        )
+        assert (sys.getprofile(), sys.gettrace()) == observed.hooks
+        assert model.state.molecule_import_cleanup["complete"] is True
+        assert model.state.molecule_import_generator.gi_frame is None
+        assert model.state.molecule_import_context is model.import_context
+        assert not model.import_context.active and not model.import_context.published
+        assert model.calls == [] and not model.state.molecule_import_completed
+        save_import_boundary_proof(tmp_path, model, observed)
+
+
+@pytest.mark.parametrize("falsey", [False, True])
+@pytest.mark.parametrize("failure", ["restore", "close"])
+def test_demo_import_reporting_rejection_does_not_abort_hook_or_close_recovery(
+    falsey, failure, monkeypatch, tmp_path
+):
+    model, evidence = dynamics_chain(), Evidence()
+    primary = Falsey("manager return") if falsey else ValueError("manager return")
+    cause = primary.__cause__ = LookupError("original boundary cause")
+    cleanup = OSError("cleanup boundary")
+    reporting = RuntimeError("cleanup bookkeeping entry")
+    label = (
+        "molecule_imports.hook_recovery"
+        if failure == "restore"
+        else "molecule_imports.generator_close"
+    )
+    changes = []
+    try:
+        with installed_import_boundary_fault(
+            model,
+            "trace",
+            "enter_return",
+            primary,
+            close_error=cleanup if failure == "close" else None,
+            reporting_error=reporting,
+            reporting_hook="profile" if failure == "restore" else "trace",
+            reporting_label=label,
+        ) as observed:
+            if failure == "restore":
+
+                def refuse_once(value):
+                    if value is observed.hooks[1] and not changes:
+                        changes.append("restore")
+                        raise cleanup
+                    observed.setters[1](value)
+
+                monkeypatch.setattr(sys, "settrace", refuse_once)
+            with pytest.raises(type(primary)) as caught:
+                execute(model, tmp_path, evidence)
+            assert observed.fired and observed.reporting_fired
+            assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+            assert any(error is cleanup for _, error in model.state.secondary)
+            assert any(error is reporting for _, error in model.state.secondary)
+            assert (sys.getprofile(), sys.gettrace()) == observed.hooks
+            recovery = model.state.molecule_import_cleanup
+            assert recovery["after_close_hooks_restored"] is True
+            assert recovery["close_attempted"] is True
+            assert model.state.molecule_import_context is model.import_context
+            assert not model.import_context.published and model.calls == []
+            if failure == "restore":
+                assert changes == ["restore"] and recovery["complete"] is True
+                assert recovery["close_returned"] is True
+                assert model.state.molecule_import_generator.gi_frame is None
+                assert not model.import_context.active
+            else:
+                assert observed.close_fired and recovery["complete"] is False
+                assert recovery["close_returned"] is False
+                assert model.state.molecule_import_generator.gi_frame is not None
+                assert model.import_context.active and evidence.values == []
+                assert not (tmp_path / "outcome.json").exists()
+            assert not model.state.molecule_import_completed
+            save_import_boundary_proof(tmp_path, model, observed)
+    finally:
         generator = model.state.molecule_import_generator
         if generator is not None and generator.gi_frame is not None:
             generator.close()

@@ -14,7 +14,7 @@ TEST = "tests/unit/test_native_seed_demo.py"
 FILE = "validation/betse/native_seed_demo_software.py"
 MODULE = "validation.betse.native_seed_demo_software"
 SOFTWARE_RELEASE = "BETSE_NATIVE_SEED_DEMO_SOFTWARE_RELEASED"
-OWNED = (SOURCE, TEST, FILE)
+OWNED = (SOURCE, TEST, FILE, "validation/betse/native_seed_initial_rng.py")
 FORBIDDEN_MODULES = base.FORBIDDEN_MODULES | frozenset(
     (
         "cells.processes.betse_native_init_first_step_source",

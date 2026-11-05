@@ -20,7 +20,7 @@ from cells.processes import betse_native_parameter_yaml_prefix as prefix
 
 LAW_ID = prefix.PATHS_LAW
 SUBCONFIGURATION_LAW = "betse_native_same_parameter_subconfigurations@1"
-YAML_SHA256 = "efdccb05c9d2d11b2e29452af60181559dfbc29bceb0a7c8cb644b69e00d4a98"
+YAML_SHA256 = "89001b6408435b836a59400da2638a0667ec36e32b94c7c00db089125af09aac"
 RELEASE = "CELLS_NATIVE_PARAMETER_PATHS_RELEASED"
 BASE = Path("/mnt/workspaces")
 COMPAT = "betse/science/compat/compatconf.py"

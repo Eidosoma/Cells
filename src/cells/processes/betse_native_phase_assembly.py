@@ -30,10 +30,10 @@ MODE = "prepared_callback_seven_load_seed_prefix"
 RELEASE = "CELLS_NATIVE_PHASE_ASSEMBLY_RELEASED"
 PRODUCERS = {
     "betse_native_tissue_handler_attachment": (
-        "572e59e2f30d090f2bbf2b650673e98b315e1fbb6c10ee693ff6a2592e9c70a6"
+        "a5d08ad5baff1eb3ff64a8237a5911e74d47ac3f284ff1445055c2ce495100d0"
     ),
     "betse_native_phase_callbacks": (
-        "9a680cf6b6ccad865bce3365c8dff2f0d5b2e7ad845f00321a0cc26cd235d4b8"
+        "63ecf075fd2b781c84156c732366def11729349124ae3652ae72506c4c467698"
     ),
 }
 PHASE = "betse/science/phase/phasecls.py"

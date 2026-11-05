@@ -34,10 +34,10 @@ RELEASE = "CELLS_NATIVE_PARAMETER_LOAD_REMAINDER_RELEASED"
 BASE_PREDECESSOR_SHA256 = "3fc51886956ae7f4fc0880b0fb6b5ec25f7c939c14a3ba31e0b012f717774f69"
 # A separately pinned source candidate permits inspection only, never _hook admission.
 SOURCE_CANDIDATE_PREDECESSOR_SHA256 = (
-    "b848309d921d7898cf99bf1f64e3beeeec992ff51caaad16d0b3d0875f7d4d22"
+    "a6473b99cf2a74d27f4e0f83f507074fea39b8b658fbc21860a751e152bcd508"
 )
 # Exact fresh source connection; no release or actual parent authority is inferred.
-HANDOFF_PRODUCER_SHA256 = "b848309d921d7898cf99bf1f64e3beeeec992ff51caaad16d0b3d0875f7d4d22"
+HANDOFF_PRODUCER_SHA256 = "a6473b99cf2a74d27f4e0f83f507074fea39b8b658fbc21860a751e152bcd508"
 HANDOFF_LAW = "betse_native_parameter_original_load_remainder_handoff@1"
 HANDOFF_FACTORY = "remainder_handoff"
 HANDOFF_CHECK = "validate_remainder_history"
@@ -1683,15 +1683,19 @@ def _validate(owner):
         ),
     )
     context.validating = True
+    rows = ()
     registered = False
     primary = release_error = None
     paths = previous.previous.mod.subconfigs.paths
     try:
         with claims._registry(context.loaded.owner):
-            if any(stack for stack, _ in _stacks(context)):
+            # The source context deliberately has no live mutation guard after
+            # its grant closes. Reserve using this fresh read-only validation.
+            rows = _stacks(validation)
+            if any(stack for stack, _ in rows):
                 claims._busy(context.loaded.owner, "complete_load_validation_conflict")
-            for stack, _ in _stacks(context):
-                stack.append(validation.guard if stack is paths._ACTIVE else validation)
+            for stack, value in rows:
+                stack.append(value)
             registered = True
             paths._install_audit(validation.guard)
         validate_completed_history(owner)
@@ -1713,8 +1717,7 @@ def _validate(owner):
         if registered:
             try:
                 with claims._registry(context.loaded.owner):
-                    for stack, _ in reversed(_stacks(context)):
-                        expected = validation.guard if stack is paths._ACTIVE else validation
+                    for stack, expected in reversed(rows):
                         if not stack or stack[-1] is not expected:
                             raise ValueError("Complete-load validation registry changed")
                         stack.pop()

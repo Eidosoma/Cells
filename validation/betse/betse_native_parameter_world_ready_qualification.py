@@ -15,6 +15,7 @@ import struct
 import sys
 from contextvars import ContextVar
 from pathlib import Path
+from threading import RLock, get_ident
 from types import CodeType, FunctionType, SimpleNamespace
 
 from validation import source_snapshot as snapshot
@@ -77,10 +78,10 @@ MODULES = {
     "remainder": "betse_native_parameter_load_remainder",
 }
 KNOWN_PINS = {
-    "colormap_state": "3a7ccab528955d3ff5751d06758ccf38b7ac020780083d58b1995354fc213eef",
-    "colormap_load": "b49eccca3d5915c66bb14c94959ba7fce2b2a11d0b67275baecb00080e2b09ff",
-    "initializer_constants": "b848309d921d7898cf99bf1f64e3beeeec992ff51caaad16d0b3d0875f7d4d22",
-    "load_remainder": "397e3bf1e7ff666371075033f12074e7d8c11b91e1a517d9d84d2d907c6c7aef",
+    "colormap_state": "8664dea542a6653ab17183ff9bec2caa8aec6e17e0485b146e6fa0193594e399",
+    "colormap_load": "80420c878d4955030607f56cd353fbcdd5fd4eebfae74bdfa82bfa1ee230114d",
+    "initializer_constants": "a6473b99cf2a74d27f4e0f83f507074fea39b8b658fbc21860a751e152bcd508",
+    "load_remainder": "7874abf3991aeef188ab7d5a6f2538a88248bc686eb2f94845e18a735255a035",
 }
 GATES = (
     "CELLS_ECM_MOLECULE_RUN_LIFECYCLE_RELEASED",
@@ -103,6 +104,11 @@ GATES = (
 MAX_STEPS = 32
 MAX_OBSERVATIONS = 2000000
 _WORK_OBSERVER = ContextVar("cells_parameter_only_work_observer", default=None)
+ONE_LOAD = ("initial_world_ready",)
+CURRENT_LOADS = (*ONE_LOAD, "fresh_current_world_ready")
+_ACQUISITIONS, _ACQUISITION_PACKETS, _ACQUISITION_ACTIVE = {}, {}, []
+_ACQUISITION_LOCK = RLock()
+_ACQUISITION_ENTRY, _ACQUISITION_FAILURES = None, []
 
 
 def require(value, message):
@@ -201,8 +207,8 @@ def input_program(path, sha256):
     value = read(path)
     profile = input_profiles.require_profile(value.get("input_profile", input_profiles.ORIGINAL))
     raw_files = dict(RAW_FILES)
-    if profile == input_profiles.HEADLESS:
-        raw_files[input_profiles.MAIN] = input_profiles.HEADLESS_SHA256
+    if profile != input_profiles.ORIGINAL:
+        raw_files[input_profiles.MAIN] = input_profiles.main_file(profile)["sha256"]
     require(set(value["files"]) == set(RAW_FILES), "Exact original default file set required")
     files = {}
     for name, pin in raw_files.items():
@@ -250,17 +256,49 @@ def input_program(path, sha256):
             for p in ("INITS", "SIMS", "RESULTS/init_1", "RESULTS/sim_1", "RESULTS/GRN")
         ],
     )
-    if profile == input_profiles.HEADLESS:
+    if profile != input_profiles.ORIGINAL:
         result.update(
             input_profile=profile,
-            configuration_changes=input_profiles.changes(),
-            origin="Retained BETSE1.5.0 bundled default with only while-solving show/save False",
+            configuration_changes=input_profiles.changes(profile),
+            origin=(
+                "Retained BETSE1.5.0 bundled default with only while-solving show/save False"
+                if profile == input_profiles.HEADLESS
+                else "Retained BETSE1.5.0 bundled default with while-solving show/save, "
+                "cutting and custom general network False; numerical inputs unchanged"
+            ),
         )
     return result
 
 
 def directory_state(program):
     return [(name, unlinked(name).is_dir(), Path(name).exists()) for name in program["directories"]]
+
+
+def _directory_epoch(program):
+    """Retain actual directories made by the first load, never parsed p state."""
+    result, paths = [], {unlinked(program["root"], exists=True)}
+    root = next(iter(paths))
+    for name in program["directories"]:
+        path = unlinked(name, exists=True)
+        require(path.is_relative_to(root), "Native output directory outside original input root")
+        paths.add(path)
+        paths.update(parent for parent in path.parents if parent.is_relative_to(root))
+    for path in sorted(paths):
+        info = path.stat()
+        require(stat.S_ISDIR(info.st_mode), "Completed native output directory required")
+        result.append((str(path), info.st_dev, info.st_ino, info.st_mode))
+    return tuple(result)
+
+
+def _acquisition_sequence(inputs):
+    sequence = inputs.get("acquisition_sequence", ONE_LOAD)
+    require(type(sequence) in (list, tuple), "Explicit acquisition sequence required")
+    require(all(type(name) is str for name in sequence), "Exact acquisition labels required")
+    sequence = tuple(sequence)
+    require(
+        sequence in (ONE_LOAD, CURRENT_LOADS), "Only the declared one/two-load route is available"
+    )
+    return sequence
 
 
 def output_path(output, packet, program):
@@ -278,12 +316,20 @@ def output_path(output, packet, program):
 
 
 def prepare(
-    repository, directory, *, inputs, inputs_sha256, python=DEFAULT_PYTHON, extra_sources=()
+    repository,
+    directory,
+    *,
+    inputs,
+    inputs_sha256,
+    python=DEFAULT_PYTHON,
+    extra_sources=(),
+    acquisition_sequence=ONE_LOAD,
 ):
     import runpy
 
     repository = unlinked(repository, exists=True)
     require(Path(__file__).resolve() == repository / FILE, "Prepare from actual checkout only")
+    sequence = _acquisition_sequence(dict(acquisition_sequence=acquisition_sequence))
     require(snapshot.digest(SOURCE_REVIEW) == SOURCE_REVIEW_SHA256, "Accepted dependency review")
     program = input_program(inputs, inputs_sha256)
     directory = output_path(directory, repository, program)
@@ -340,6 +386,7 @@ def prepare(
             ),
         ),
         one_input_sequence=True,
+        acquisition_sequence=sequence,
         extra_sources=extra_sources,
         callback_phase_INIT_claim=False,
         review_and_explicit_Root_release_required=True,
@@ -354,7 +401,7 @@ def prepare(
     )
 
 
-def packet_inputs(packet, sha256):
+def _packet_inputs(packet, sha256, *, directory_epoch=None):
     packet = unlinked(packet, exists=True)
     require(snapshot.digest(packet / "inputs.json") == sha256, "Wrong parameter packet")
     inputs = read(packet / "inputs.json")
@@ -362,6 +409,7 @@ def packet_inputs(packet, sha256):
         inputs["kind"] == KIND and inputs["held"] is True and inputs["resources"] == POLICY,
         "Exact held domain/resources required",
     )
+    _acquisition_sequence(inputs)
     require(set(inputs["source_modules"]) == set(MODULES), "Exact parameter source roster")
     manifest = snapshot.verify(
         packet / "source", manifest_sha256=inputs["source_snapshot"]["sha256"]
@@ -374,10 +422,16 @@ def packet_inputs(packet, sha256):
         inputs["program"]["manifest"]["path"], inputs["program"]["manifest"]["sha256"]
     )
     require(program == inputs["program"], "Input/path program changed")
-    require(
-        directory_state(program) == [tuple(r) for r in inputs["initial_directory_state"]],
-        "Initial native directory epoch changed",
-    )
+    if directory_epoch is None:
+        require(
+            directory_state(program) == [tuple(r) for r in inputs["initial_directory_state"]],
+            "Initial native directory epoch changed",
+        )
+    else:
+        require(
+            _directory_epoch(program) == directory_epoch,
+            "Previously issued native directory epoch changed",
+        )
     require(inputs["runtime"] == runtime_plan(inputs["runtime"]["entry"]), "Runtime changed")
     for alias, row in inputs["source_modules"].items():
         require(
@@ -387,6 +441,11 @@ def packet_inputs(packet, sha256):
         )
         require(row["sha256"] == manifest["files"][row["file"]]["sha256"], "Module pin mismatch")
     return inputs
+
+
+def packet_inputs(packet, sha256):
+    """Initial preparation always requires the declared pre-first-load epoch."""
+    return _packet_inputs(packet, sha256)
 
 
 def _entry(packet, packet_sha256, enabled):
@@ -402,6 +461,50 @@ def _entry(packet, packet_sha256, enabled):
 
 
 def acquire_world_ready(packet, directory, *, packet_sha256, enabled=False):
+    return _acquisition_entry(
+        _acquire_world_ready, packet, directory, packet_sha256=packet_sha256, enabled=enabled
+    )
+
+
+def _acquisition_entry(operation, *args, **kwargs):
+    """Reserve before preflight helpers; caught recursive entry is sticky."""
+    global _ACQUISITION_ENTRY
+    if _ACQUISITION_ENTRY is not None:
+        _ACQUISITION_ENTRY[0] = True
+        if _ACQUISITION_ENTRY[1] is not None:
+            _ACQUISITION_ENTRY[1].invalid = True
+        raise ValueError("Reentrant parameter acquisition refused")
+    entry = [False, None, None, ()]
+    _ACQUISITION_ENTRY = entry
+    primary = None
+    try:
+        entry[2] = operation(*args, **kwargs)
+        _acquisition_stop()
+        return entry[2]
+    except BaseException as error:
+        primary = error
+        record = entry[1]
+        if record is not None:
+            record.invalid, record.published = True, False
+            if record.source_error is None:
+                record.source_error = error
+        try:
+            _ACQUISITION_FAILURES.append((entry, error))
+        except BaseException as cleanup:
+            entry[3] += (cleanup,)
+        try:
+            error.parameter_acquisition_entry = entry
+        except BaseException as cleanup:
+            entry[3] += (cleanup,)
+        raise
+    finally:
+        intact = _ACQUISITION_ENTRY is entry
+        _ACQUISITION_ENTRY = None
+        if not intact and primary is None:
+            raise ValueError("Acquisition entry reservation changed")
+
+
+def _acquire_world_ready(packet, directory, *, packet_sha256, enabled=False):
     """In-process genuine load, returning the exact ``(WorldReady owner, p)``.
 
     A combined caller can use ``prepare(extra_sources=...)`` and the same source
@@ -410,16 +513,58 @@ def acquire_world_ready(packet, directory, *, packet_sha256, enabled=False):
     spawns no child and never acquires callback/phase authority. Its output is
     an actual live return, not a persisted handoff or owner reconstruction.
     """
+    _acquisition_stop(entry=True)
     packet, inputs = _entry(packet, packet_sha256, enabled)
-    directory = output_path(directory, packet, inputs["program"])
-    directory.mkdir(parents=True, exist_ok=False)
-    (directory / "evidence").mkdir()
-    journal = []
+    _acquisition_stop()
+    sequence = _acquisition_sequence(inputs)
+    reload_record, journal, output, primary_error = None, [], None, None
+    if sequence == CURRENT_LOADS:
+        with _ACQUISITION_LOCK:
+            _acquisition_stop(entry=True)
+            key = (str(packet), packet_sha256)
+            require(
+                key not in _ACQUISITION_PACKETS, "Initial two-load acquisition already consumed"
+            )
+            require(
+                len(_ACQUISITION_PACKETS) < 32, "Bounded in-process acquisition roster exhausted"
+            )
+            reload_record = SimpleNamespace(
+                owner=None,
+                p=None,
+                packet=packet,
+                packet_sha256=packet_sha256,
+                directory_epoch=None,
+                thread=get_ident(),
+                process=os.getpid(),
+                attempted=False,
+                published=False,
+                invalid=False,
+                current_owner=None,
+                current_p=None,
+                source_error=None,
+                capture_errors=[],
+                cleanup_errors=(),
+                journal=[],
+                initial_journal=journal,
+                execution_state=None,
+            )
+            _ACQUISITION_PACKETS[key] = reload_record
+            _ACQUISITION_ENTRY[1] = reload_record
+            _ACQUISITION_ACTIVE.append(reload_record)
     try:
+        output = output_path(directory, packet, inputs["program"])
+        output.mkdir(parents=True, exist_ok=False)
+        (output / "evidence").mkdir()
         modules = _modules(inputs, packet / "source")
-        owner, p = _execute(modules, inputs["program"], directory / "evidence", journal)
+        _acquisition_stop()
+        owner, p = _execute(modules, inputs["program"], output / "evidence", journal)
+        _acquisition_stop()
+        if reload_record is not None:
+            require(id(owner) not in _ACQUISITIONS, "Initial owner already retained")
+            reload_record.owner, reload_record.p = owner, p
+            reload_record.directory_epoch = _directory_epoch(inputs["program"])
         snapshot.write_json(
-            directory / "acquisition.json",
+            output / "acquisition.json",
             dict(
                 packet=ref(packet / "inputs.json"),
                 operations=journal,
@@ -427,27 +572,217 @@ def acquire_world_ready(packet, directory, *, packet_sha256, enabled=False):
                 actual_p_identity=id(p),
                 construction_claim_opened=False,
                 phase_or_persisted_owner_admission=False,
+                acquisition_sequence=sequence,
             ),
         )
+        _acquisition_stop()
+        if reload_record is not None:
+            # Only an actually returned first pair creates this private receipt.
+            # It is not a new Parameters owner and cannot be read back from JSON.
+            _ACQUISITIONS[id(owner)] = reload_record
         return owner, p
     except BaseException as primary:
+        primary_error = primary
         capture_errors = []
-        try:
-            snapshot.write_json(
-                directory / "failure.json",
-                dict(
-                    primary=error_record(primary),
-                    operations=journal,
-                    source_or_evidence_incomplete=True,
-                ),
-            )
-        except BaseException as secondary:
-            capture_errors.append(error_record(secondary))
+        if output is not None:
+            try:
+                snapshot.write_json(
+                    output / "failure.json",
+                    dict(
+                        primary=error_record(primary),
+                        operations=journal,
+                        source_or_evidence_incomplete=True,
+                    ),
+                )
+            except BaseException as secondary:
+                capture_errors.append(error_record(secondary))
+        if reload_record is not None:
+            reload_record.source_error = primary
+            reload_record.invalid = True
+            reload_record.capture_errors.extend(capture_errors)
         try:
             primary.parameter_acquisition = dict(operations=journal, capture_errors=capture_errors)
         except BaseException:
             pass
         raise
+    finally:
+        if reload_record is not None:
+            try:
+                if _ACQUISITION_ACTIVE and _ACQUISITION_ACTIVE[-1] is reload_record:
+                    _ACQUISITION_ACTIVE.pop()
+                else:
+                    raise ValueError("Initial acquisition reservation changed")
+            except BaseException as cleanup:
+                reload_record.cleanup_errors += (cleanup,)
+                reload_record.invalid = True
+                # Avoid another fallible list method while restoring our own
+                # exclusive reservation. This never reopens a consumed slot.
+                _ACQUISITION_ACTIVE[:] = []
+                if primary_error is None:
+                    raise
+
+
+def _acquisition_stop(*, entry=False):
+    if _ACQUISITION_ENTRY is not None:
+        require(not _ACQUISITION_ENTRY[0], "Rejected recursive load poisons this acquisition")
+    if _ACQUISITION_ACTIVE:
+        record = _ACQUISITION_ACTIVE[-1]
+        if entry:
+            record.invalid = True
+            raise ValueError("Reentrant parameter acquisition refused")
+        require(not record.invalid, "Rejected recursive load poisons this acquisition")
+
+
+def acquire_current_world_ready(
+    packet,
+    directory,
+    *,
+    packet_sha256,
+    previous_owner,
+    previous_parameters,
+    enabled=False,
+):
+    return _acquisition_entry(
+        _acquire_current_world_ready,
+        packet,
+        directory,
+        packet_sha256=packet_sha256,
+        previous_owner=previous_owner,
+        previous_parameters=previous_parameters,
+        enabled=enabled,
+    )
+
+
+def _acquire_current_world_ready(
+    packet,
+    directory,
+    *,
+    packet_sha256,
+    previous_owner,
+    previous_parameters,
+    enabled=False,
+):
+    """One fresh complete load after the initial load's genuine directory work.
+
+    The enclosing caller must separately authenticate its completed INIT and
+    retain its actual Simulator/Cells. This function grants no INIT/SIM phase
+    authority. It uses the same declared immutable input/source/runtime and
+    calls the original public constructor/load pipeline again; no old p fields,
+    old validators, decoded owners or persisted caches feed the new load.
+    """
+    require(enabled is True and os.environ.get(RELEASE) == "1", "Fresh current load remains held")
+    with _ACQUISITION_LOCK:
+        if _ACQUISITION_ACTIVE:
+            _ACQUISITION_ACTIVE[-1].invalid = True
+            raise ValueError("Reentrant current-parameter acquisition refused")
+        record = _ACQUISITIONS.get(id(previous_owner))
+        require(
+            record is not None
+            and record.owner is previous_owner
+            and record.p is previous_parameters
+            and record.thread == get_ident(),
+            "Exact in-process initial WorldReady/Parameters pair required",
+        )
+        require(not record.attempted, "Current-parameter acquisition already consumed")
+        require(
+            record.process == os.getpid() and not record.invalid,
+            "Original live acquisition epoch required",
+        )
+        _ACQUISITION_ENTRY[1] = record
+        # Consumption precedes source/packet/runtime checks and never rearms on
+        # failure, including rejection by an inherited observer on their return.
+        record.attempted = True
+        _ACQUISITION_ACTIVE.append(record)
+        primary = None
+        output = None
+        try:
+            require(
+                Path(packet).resolve(strict=True) == record.packet
+                and packet_sha256 == record.packet_sha256,
+                "Exact original prepared packet required",
+            )
+            inputs = _packet_inputs(packet, packet_sha256, directory_epoch=record.directory_epoch)
+            require(_acquisition_sequence(inputs) == CURRENT_LOADS, "Two-load preparation required")
+            require(
+                Path(__file__).resolve() == record.packet / "source" / FILE,
+                "Actual frozen entry required",
+            )
+            require(
+                os.sched_getaffinity(0) == {0} and sys.flags.optimize == 0,
+                "CPU0/assertions required",
+            )
+            _runtime_entry(inputs["runtime"])
+            require(not record.invalid, "Rejected recursive current load poisons this attempt")
+            output = output_path(directory, record.packet, inputs["program"])
+            output.mkdir(parents=True, exist_ok=False)
+            (output / "evidence").mkdir()
+            modules = _modules(inputs, record.packet / "source")
+            require(not record.invalid, "Rejected recursive current load poisons this attempt")
+            pair = _execute(modules, inputs["program"], output / "evidence", record.journal)
+            require(
+                type(pair) is tuple and len(pair) == 2, "Exact fresh actual return pair required"
+            )
+            record.current_owner, record.current_p = pair
+            require(
+                record.current_owner is not record.owner and record.current_p is not record.p,
+                "Current load must return distinct genuine owner and Parameters",
+            )
+            require(not record.invalid, "Rejected recursive current load poisons this attempt")
+            require(
+                _directory_epoch(inputs["program"]) == record.directory_epoch,
+                "Current load replaced the retained native directory epoch",
+            )
+            snapshot.write_json(
+                output / "acquisition.json",
+                dict(
+                    packet=ref(record.packet / "inputs.json"),
+                    operations=record.journal,
+                    initial_owner_identity=id(record.owner),
+                    initial_p_identity=id(record.p),
+                    actual_world_ready_identity=id(record.current_owner),
+                    actual_p_identity=id(record.current_p),
+                    retained_directory_epoch=record.directory_epoch,
+                    acquisition_sequence=CURRENT_LOADS,
+                    distinct_fresh_native_load=True,
+                    INIT_SIM_or_persisted_owner_admission=False,
+                ),
+            )
+            require(not record.invalid, "Rejected recursive current load poisons this attempt")
+            record.published = True
+            return pair
+        except BaseException as error:
+            primary = error
+            record.source_error = error
+            if output is not None:
+                try:
+                    snapshot.write_json(
+                        output / "failure.json",
+                        dict(
+                            primary=error_record(error),
+                            operations=record.journal,
+                            current_parameters_returned=record.current_p is not None,
+                            source_or_evidence_incomplete=True,
+                        ),
+                    )
+                except BaseException as capture:
+                    record.capture_errors.append(capture)
+            try:
+                error.parameter_acquisition = record
+            except BaseException as capture:
+                record.capture_errors.append(capture)
+            raise
+        finally:
+            try:
+                if _ACQUISITION_ACTIVE and _ACQUISITION_ACTIVE[-1] is record:
+                    _ACQUISITION_ACTIVE.pop()
+                else:
+                    raise ValueError("Current-parameter acquisition reservation changed")
+            except BaseException as cleanup:
+                record.cleanup_errors += (cleanup,)
+                record.invalid = True
+                _ACQUISITION_ACTIVE[:] = []
+                if primary is None:
+                    raise
 
 
 def error_record(error):
@@ -576,6 +911,7 @@ class WritePolicy:
 
 def take(directory, name, operation, observe, journal):
     """Exclusive observation; always forward the identical successful live return."""
+    _acquisition_stop()
     _work_failure("before-operation", refuse=True)
     require(len(journal) < MAX_STEPS, "Bounded diagnostic operation count")
     path = directory / f"{len(journal):02d}-{name}"
@@ -585,6 +921,7 @@ def take(directory, name, operation, observe, journal):
     snapshot.write_json(path / "attempt.json", dict(name=name, attempt=len(journal)))
     returned, primary = None, None
     try:
+        _acquisition_stop()
         returned = operation()
         row["returned"] = True
         row["returned_identity"] = id(returned)
@@ -634,6 +971,7 @@ def take(directory, name, operation, observe, journal):
         if failed_work is not None:
             error.parameter_work_observation = _WORK_OBSERVER.get().failed_boundaries[-1]
         raise error
+    _acquisition_stop()
     return returned
 
 
@@ -842,6 +1180,8 @@ def _observer(modules, alias, schema, state):
 def _execute(modules, program, evidence, journal):
     """Exact public source path. No caller-supplied operations or intermediate owners."""
     state = dict(p=None)
+    if _ACQUISITION_ACTIVE:
+        _ACQUISITION_ACTIVE[-1].execution_state = state
     require(
         os.environ.get(RELEASE) == "1" and set(modules) == set(MODULES),
         "Actual released module set required",
@@ -993,6 +1333,7 @@ def _execute(modules, program, evidence, journal):
         law_id=m["remainder"].LAW_ID,
         enabled=True,
     )
+    state["owner"] = owner
     context = m["remainder"]._context(owner)
     require(
         context.p is state["p"] and context.record.load_cursor == 218, "Actual complete same-p load"

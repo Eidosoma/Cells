@@ -115,6 +115,7 @@ def source_plan():
         original_calendar_dt_sampled_set_and_objects_unchanged=True,
         completed_first_step_owner_is_not_a_parent=True,
         no_storage_reset_or_parameter_retrofit_between_iterations=True,
+        snapshot_projection="original retained parameter roots plus continuing participant roots",
         required_parent=(PARENT_SOURCE_SHA256, PARENT_REVIEW_SHA256, PARENT_CLAIM, PARENT_CHECK),
         required_runtime=(RUNTIME_SOURCE_SHA256, RUNTIME_REVIEW_SHA256, RUNTIME_CONTRACT),
         runtime_entry_names_unadopted=(RUNTIME_BEGIN, RUNTIME_END),
@@ -676,7 +677,41 @@ def _check_ancestor_metadata(context):
 
 
 def _mutation_contract(context):
-    return context.runtime["_base_mutation_contract"](context)
+    """Expose the complete source and actual runtime holder contract.
+
+    The private engine derives its original simulator/callback stores. Runtime
+    binding adds the authenticated molecular holders before source entry; the
+    public contract must retain that same identity union for ancestor checks.
+    """
+    return base.previous.storage._merge_permissions(
+        context.runtime["_base_mutation_contract"](context), context.molecule_permissions
+    )
+
+
+def _snapshot(context, *, stable=False):
+    """Keep genuine pre-phase wrapper references in the private history view.
+
+    The original first-step engine remains unchanged. This metadata projection
+    uses the same complete root roster as Completion and storage; no parameter
+    object is replaced, flattened, hydrated or granted new authority.
+    """
+    completion = base.previous.storage.previous
+    initial = completion.previous.previous
+    objects = completion._objects(context.parent)
+    projector = initial._projector(context.parent.init_parent)
+    projector.objects = [*projector.objects, *objects]
+    project, values = initial.core._LITERAL._project, []
+    for role, actual in context.objects:
+        ignored = (
+            next((fields for owner, fields in context.permissions if owner is actual), frozenset())
+            if stable
+            else frozenset()
+        )
+        fields = {key: value for key, value in vars(actual).items() if key not in ignored}
+        if getattr(context, "molecule_claim", None) is not None:
+            fields = context.molecule.project_state(context.parent.molecule_session, fields)
+        values.append((role, project(projector, fields)))
+    return completion._scope(context.parent).snapshot(tuple(values))
 
 
 def _engine(context):
@@ -721,12 +756,13 @@ def _engine(context):
         "_claim_wrapper",
         "_check_ancestor_metadata",
         "_mutation_contract",
+        "_snapshot",
     ):
         scope["_base" + name] = scope[name]
         scope[name] = globals()[name]
     scope["_loop_boundary"] = _loop_boundary
-    # Only the metadata dispatch stop comparison differs; original native
-    # kernels, signatures, operators, dt and fixtures are not transformed.
+    # The dispatch stop and complete inherited-root snapshot are metadata
+    # specializations; native kernels, signatures, operators and dt are unchanged.
     node = nodes["_dispatch"]
     changed = 0
     for item in ast.walk(node):
@@ -808,6 +844,30 @@ def trial_record(value):
         rng_after=value.rng_after,
         initial_diagnostics=asdict(value.initial_diagnostics),
     )
+
+
+def _pre_source_parent_check(context, binding):
+    """Seal the actual parent before source admission, retaining the raw result."""
+    if (
+        not context.claimed
+        or context.setup_frame is not None
+        or context.loop_frame is not None
+        or context.work
+        or context.bindings is None
+        or context.before is None
+        or context.stable is None
+        or context.stable_graph is None
+    ):
+        raise ValueError("Complete before-state proofs required before source permission seal")
+    _parent(binding)
+    check = binding.check
+    context.pre_source_parent_check_attempt = check
+    returned = check(context)
+    context.pre_source_parent_check_raw = returned
+    _parent(binding)
+    if returned is not context.electrical_parent:
+        raise ValueError("Different actual electrical parent at pre-source permission seal")
+    return returned
 
 
 def prepare(request, *, enabled=False):
@@ -895,6 +955,7 @@ def prepare(request, *, enabled=False):
             base._same(graph[0], refs[3][0])
             if graph[1] != refs[3][1]:
                 raise ValueError("Original aliases changed before the first iteration")
+            _pre_source_parent_check(context, binding)
             context.stage = "original_contiguous_bounded_FULL_INIT_history"
             with scope["_account"](context):
                 scope["_run"](context)

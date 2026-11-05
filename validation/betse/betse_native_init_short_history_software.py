@@ -51,6 +51,39 @@ _RAW_FAILURES = ()
 _DIAGNOSTIC = None
 
 
+def _select_items(items, select):
+    if select not in ISSUED_CASES:
+        return reused._select_items(items, select)
+    selected, removed = [], []
+    for item in items:
+        target = selected if item.name == select and item.originalname == select else removed
+        target.append(item)
+    if len(selected) != 1:
+        raise ValueError("Exactly one unparametrized short-history issued-chain item required")
+    return selected, removed
+
+
+class Reports(reused.Reports):
+    def pytest_collection_modifyitems(self, config, items):
+        selected, removed = _select_items(items, self.select)
+        snapshot.write_json(
+            self.output / "selection.json",
+            dict(
+                selection=self.select,
+                selector=self.select,
+                matching=(
+                    "exact item.name and originalname; one item only"
+                    if self.select in ISSUED_CASES
+                    else "literal item.name only"
+                ),
+                selected=[item.name for item in selected],
+                deselected=[item.name for item in removed],
+            ),
+        )
+        config.hook.pytest_deselected(items=removed)
+        items[:] = selected
+
+
 def compact_error(error):
     """Primitive exception metadata only; never render owner/local graphs."""
     if error is None:
@@ -265,8 +298,8 @@ def diagnostic_stage(name, error=None):
 
 
 def _cpu(value):
-    if type(value) is not int or value not in (4, 6):
-        raise ValueError("Explicit released software CPU4 or default CPU6 required")
+    if type(value) is not int or value not in (4, 5, 6):
+        raise ValueError("Explicit released software CPU4/CPU5 or default CPU6 required")
     return value
 
 
@@ -435,7 +468,7 @@ def _prepared_policy(inputs, select, *, cpu, seconds):
 
 
 def _scope():
-    return dict(
+    result = dict(
         reused._scope(),
         ROOT=ROOT,
         SOURCE=SOURCE,
@@ -450,8 +483,22 @@ def _scope():
         is_forbidden_frame=is_forbidden_frame,
         _scope=_scope,
         _integration_policy=_policy,
+        Reports=Reports,
         __file__=__file__,
     )
+    # The core worker constructs its reporter through this nested namespace.
+    # Retain all inherited controls while carrying the exact-case selector to
+    # that real seam; replacing only an unused outer Reports would do nothing.
+    inherited_base = result["base"]
+    if inherited_base.reuse.Reports is not reused.Reports:
+        raise ValueError("Original inherited reporter relationship required")
+    result["base"] = SimpleNamespace(
+        **dict(
+            vars(inherited_base),
+            reuse=SimpleNamespace(**dict(vars(inherited_base.reuse), Reports=Reports)),
+        )
+    )
+    return result
 
 
 def prepare(output, select, *, cpu=6, diagnostic=False, issued_chain_seconds=480):
@@ -719,7 +766,7 @@ def main():
     mode.add_argument("--child", type=Path)
     mode.add_argument("--run-prepared", type=Path)
     parser.add_argument("--select", required=True)
-    parser.add_argument("--cpu", type=int, default=6, choices=(4, 6))
+    parser.add_argument("--cpu", type=int, default=6, choices=(4, 5, 6))
     parser.add_argument("--setup-diagnostic", action="store_true")
     parser.add_argument("--issued-chain-seconds", type=int, default=480)
     parser.add_argument("--inputs-sha256")

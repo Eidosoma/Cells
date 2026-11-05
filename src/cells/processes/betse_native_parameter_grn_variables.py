@@ -21,7 +21,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_network_load as previous
 
 LAW_ID = "betse_native_parameter_grn_variables@1"
-PREVIOUS_SHA256 = "8082bc8044a3fe0121bdf2c3625ef874a3f30f6c044a35268c8b21e4e09593e1"
+PREVIOUS_SHA256 = "b12d8c960bd75c5df82fa126ad8ba2ea569ab4930f9c2d2b7ab27871124ec8bb"
 RELEASE = "CELLS_NATIVE_PARAMETER_GRN_VARIABLES_RELEASED"
 START, STOP = 62, 109
 _FLOAT = float

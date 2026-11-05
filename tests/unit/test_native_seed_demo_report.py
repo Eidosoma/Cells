@@ -1,12 +1,15 @@
 """Saved JSON/byte fixtures only; no BETSE source, owner or numerical execution."""
 
+import copy
 import hashlib
 import json
 import os
 import struct
+import zipfile
 from contextlib import contextmanager
 from types import FunctionType
 from types import SimpleNamespace as NS
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -14,14 +17,52 @@ from tests.unit import test_betse_native_world_phase_construction as guards
 from validation.betse import native_seed_demo_report as report
 from validation.betse import native_seed_demo_report_software as software
 
+if TYPE_CHECKING:
+    # Freeze the source-only AST fixture without importing its native dependencies.
+    from validation.betse import betse_native_parameter_world_ready_qualification  # noqa: F401
+
 _RAW_GUARDS = []
+LEGACY_REPORTER = dict(
+    path=(
+        "/mnt/workspaces/Cells/native-seed-demo-paired-comparison-20261104-01/"
+        "producer-label-repair-01/software-01-affected/source/"
+        "validation/betse/native_seed_demo_report.py"
+    ),
+    sha256="3034f07f3633ce1301a843e1340a41e26b0a2453c7f5721e3b68989b5548a634",
+)
+
+
+def consumer_forbidden_frame(frame):
+    return frame.f_globals.get("__name__") in (
+        "cells.processes.betse_native_init_terminal",
+        "cells.processes.betse_native_init_terminal_molecules",
+    ) or software.is_forbidden_frame(frame)
+
+
+@pytest.mark.parametrize(
+    "module",
+    (
+        "cells.processes.betse_native_init_terminal",
+        "cells.processes.betse_native_init_terminal_molecules",
+    ),
+)
+def test_report_init_terminal_native_surface_is_blocked(module):
+    for name in ("from_electrical", "prepare", "begin_iteration", "finish_runtime"):
+        code = consumer_forbidden_frame.__code__.replace(co_name=name)
+        assert consumer_forbidden_frame(NS(f_globals={"__name__": module}, f_code=code))
 
 
 @pytest.fixture(autouse=True)
 def blocked(request, tmp_path):
     if os.environ.get(software.SOFTWARE_RELEASE) != "1":
         pytest.skip("Explicit blocked saved-report software release required")
-    adapter = NS(**dict(vars(software), reuse=software.base.reuse.reuse))
+    adapter = NS(
+        **dict(
+            vars(software),
+            reuse=software.base.reuse.reuse,
+            is_forbidden_frame=consumer_forbidden_frame,
+        )
+    )
     namespace = dict(vars(guards), software=adapter, _BLOCKADE_FAILURES=())
     function = FunctionType(guards._blockade.__wrapped__.__code__, namespace)
     try:
@@ -46,6 +87,41 @@ def read(path):
     return json.loads(path.read_text())
 
 
+def terminal_calendar_cache(rows):
+    """Actual wire schema with explicit synthetic calendar bytes; no NumPy."""
+    raw = b"".join(bytes.fromhex(row[1])[::-1] for row in rows)
+    layout = dict(
+        dtype="<f8", shape=[len(rows)], strides_bytes=[8], C_contiguous=True, F_contiguous=True
+    )
+    descriptor = json.dumps(
+        dict(
+            kind="numeric_array",
+            source_layout=layout,
+            column="column_00000",
+            sha256=hashlib.sha256(raw).hexdigest(),
+        ),
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return dict(
+        descriptor_json=descriptor,
+        identity=hashlib.sha256(descriptor.encode()).hexdigest(),
+        all_finite=True,
+        columns=[
+            dict(
+                name="column_00000",
+                values=dict(
+                    __ndarray__=True,
+                    dtype="<f8",
+                    shape=[len(rows)],
+                    strides=[8],
+                    raw_bytes_hex=raw.hex(),
+                ),
+            )
+        ],
+    )
+
+
 def fixture(
     tmp_path,
     mode="original",
@@ -54,15 +130,23 @@ def fixture(
     numpy_origin=False,
     iterations=3,
     import_observation=False,
+    parameter_prefix=False,
 ):
     """A tiny explicitly synthetic snapshot passes the real byte verifier.
 
     Its files are inert text; these saved records grant no live source authority.
     No verifier, payload reader, runtime check or outcome check is substituted.
     """
+    natural = endpoint == "init_terminal"
+    if natural:
+        import_observation = True
+    multiple = endpoint in ("init_short_history", "init_terminal")
+    prefix = "init_terminal" if natural else "init_short_history"
     if version is None:
         version = (
-            10
+            11
+            if natural
+            else 10
             if endpoint == "init_short_history"
             else 9
             if endpoint == "init_first_step"
@@ -73,6 +157,8 @@ def fixture(
     source.mkdir(parents=True)
     files = {}
     sources = (report.DEMO, report.LAUNCH, report.PARAMETER)
+    if version == 12:
+        sources += (report.INITIAL_RNG,)
     if numpy_origin:
         sources += (report.NUMPY_ORIGIN,)
     if import_observation:
@@ -80,7 +166,11 @@ def fixture(
     for name in sources:
         path = source / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("# inert saved-report fixture; never imported\n")
+        path.write_bytes(
+            (report.Path(report.__file__).resolve().parents[2] / report.PARAMETER).read_bytes()
+            if parameter_prefix and name == report.PARAMETER
+            else b"# inert saved-report fixture; never imported\n"
+        )
         path.chmod(0o444)
         files[name] = dict(
             checkout_path=name,
@@ -143,7 +233,21 @@ def fixture(
                                 "molecule_wrappers": files[report.MOLECULE_WRAPPER]["sha256"]
                             },
                             review_pins={"molecule_wrappers": "a" * 64},
-                        )
+                        ),
+                        **(
+                            {
+                                "optional_init_terminal": dict(
+                                    maximum_iterations=512,
+                                    init_iterations=None,
+                                    full_original_calendar=True,
+                                    normal_loop_context_and_caller_return=True,
+                                    selected_stop=False,
+                                    before_native_pickle=True,
+                                )
+                            }
+                            if natural
+                            else {}
+                        ),
                     }
                 }
                 if import_observation
@@ -158,6 +262,38 @@ def fixture(
             source_inventory=dict(files={"original.yaml": dict(sha256=pin(input_file)["sha256"])}),
         ),
     )
+    if version == 12:
+        bundle_value = read(report.Path(bundle["path"]))
+        bundle_value["source_inventory"] = dict(
+            directories=[],
+            files={
+                "original.yaml": dict(
+                    size_bytes=input_file.stat().st_size, sha256=pin(input_file)["sha256"]
+                )
+            },
+        )
+        bundle = write(report.Path(bundle["path"]), bundle_value)
+        declaration = read(report.Path(demo["path"]))
+        inventory = bundle_value["source_inventory"]
+        declaration["initial_rng_inputs"] = dict(
+            profile="original",
+            inventory=inventory,
+            inventory_sha256=hashlib.sha256(
+                json.dumps(inventory, sort_keys=True, separators=(",", ":")).encode()
+            ).hexdigest(),
+        )
+        declaration.setdefault("source_plan", {})["initial_rng_observation"] = dict(
+            kind=report.INITIAL_RNG_KIND,
+            epoch=report.INITIAL_RNG_EPOCH,
+            boundary=report.INITIAL_RNG_BOUNDARY,
+            full_numpy_MT_and_python_state=True,
+            complete_input_inventory_bound=True,
+            reset_draw_or_replacement=False,
+            common_starting_authority_established=False,
+            producer="validation.betse.native_seed_initial_rng",
+            producer_sha256=files[report.INITIAL_RNG]["sha256"],
+        )
+        demo = write(report.Path(demo["path"]), declaration)
     policy = dict(cpu=0, threads=1, wall_seconds=7200, max_rss_bytes=2**30, reserve_bytes=8 * 2**30)
     plan = dict(
         kind=report.LAUNCH_KINDS[version - 6],
@@ -177,6 +313,7 @@ def fixture(
         endpoint=endpoint,
         policy=policy,
         **({"init_iterations": iterations} if endpoint == "init_short_history" else {}),
+        **({"initial_rng_inputs": declaration["initial_rng_inputs"]} if version == 12 else {}),
     )
     plan_path = base / "launch-plan.json"
     plan_pin = write(plan_path, plan)
@@ -252,16 +389,23 @@ def fixture(
         "init_electrical",
         "init_first_step",
         "init_short_history",
+        "init_terminal",
     ):
         stages.append("init_prelude")
-    if endpoint in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history"):
+    if endpoint in (
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+        "init_terminal",
+    ):
         stages.append("init_dynamics")
-    if endpoint in ("init_electrical", "init_first_step", "init_short_history"):
+    if endpoint in ("init_electrical", "init_first_step", "init_short_history", "init_terminal"):
         stages.extend(("init_storage", "init_electrical"))
     if endpoint == "init_first_step":
         stages.append("init_first_step")
-    if endpoint == "init_short_history":
-        stages.append("init_short_history")
+    if multiple:
+        stages.append(prefix)
     first_step_ids = {
         key: str(index) * 64
         for index, key in enumerate(("before", "after", "calendar", "sampled", "t", "dt"), 1)
@@ -269,7 +413,7 @@ def fixture(
     first_step_streams = dict(rng_before=["a" * 64, "b" * 64], rng_after=["c" * 64, "d" * 64])
     short_ids = {k: v for k, v in first_step_ids.items() if k != "t"}
     short_rows, short_links = [], []
-    for i in range(iterations if endpoint == "init_short_history" else 0):
+    for i in range(iterations if multiple else 0):
         after = (
             short_ids["after"]
             if i == iterations - 1
@@ -325,11 +469,26 @@ def fixture(
         iterations=short_links,
         **first_step_streams,
     )
+    if natural:
+        short_ids["calendar"] = terminal_calendar_cache(short_rows)["identity"]
+        short_record["calendar"] = short_ids["calendar"]
+        short_record.update(loop_returned=True, context_returned=True, selected_stop=False)
+        short_linkage.pop("requested_iterations")
+        short_linkage.update(
+            configured_iterations=iterations,
+            maximum_iterations=512,
+            source_completed=True,
+            loop_returned=True,
+            context_returned=True,
+            selected_stop=False,
+            full_original_calendar=True,
+            before_native_pickle=True,
+        )
     captures = []
     for i, stage in enumerate(stages[1:]):
         path = worker / f"demo/capture-{i:04d}.json"
         value = dict(source_completed=True, recorded_stage=stage, fixture=True)
-        if endpoint in ("init_first_step", "init_short_history"):
+        if endpoint in ("init_first_step", "init_short_history", "init_terminal"):
             if stage == "init_electrical":
                 value["rng_after"] = first_step_streams["rng_before"]
             elif stage == "init_first_step":
@@ -341,7 +500,7 @@ def fixture(
                     loop_returned=False,
                     selected_stop=True,
                 )
-            elif stage == "init_short_history":
+            elif stage == prefix:
                 value = short_record
         write(path, value)
         captures.append(
@@ -358,9 +517,16 @@ def fixture(
         "init_electrical",
         "init_first_step",
         "init_short_history",
+        "init_terminal",
     ):
         raw_labels.extend(("init_prelude.before", "init_prelude.after", "init_prelude.raw_returns"))
-    if endpoint in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history"):
+    if endpoint in (
+        "init_dynamics",
+        "init_electrical",
+        "init_first_step",
+        "init_short_history",
+        "init_terminal",
+    ):
         raw_labels.extend(
             "init_dynamics." + name
             for name in (
@@ -373,7 +539,7 @@ def fixture(
                 "raw_returns",
             )
         )
-    if endpoint in ("init_electrical", "init_first_step", "init_short_history"):
+    if endpoint in ("init_electrical", "init_first_step", "init_short_history", "init_terminal"):
         for name, streams in (
             ("init_storage", ("stream_before", "stream_after")),
             ("init_electrical", ("rng_before", "rng_after")),
@@ -398,9 +564,9 @@ def fixture(
                 "raw_returns",
             )
         )
-    if endpoint == "init_short_history":
+    if multiple:
         raw_labels.extend(
-            "init_short_history." + name
+            prefix + "." + name
             for name in (
                 "linkage",
                 "before",
@@ -417,7 +583,7 @@ def fixture(
                 "initial_diagnostics",
             )
         )
-        raw_labels.extend(f"init_short_history.iteration.{i:04d}.after" for i in range(iterations))
+        raw_labels.extend(f"{prefix}.iteration.{i:04d}.after" for i in range(iterations))
     for label in raw_labels:
         path = worker / f"demo/capture-{len(captures):04d}.json"
         value = dict(fixture=True, raw_stage=label, identity=label)
@@ -432,8 +598,8 @@ def fixture(
                     value["float64_bits"] = "fca9f1d24d62503f"
             if name in ("stream_before", "stream_after"):
                 value = first_step_streams[name.replace("stream_", "rng_")]
-        if label.startswith("init_short_history."):
-            name = label.removeprefix("init_short_history.")
+        if label.startswith(prefix + "."):
+            name = label.removeprefix(prefix + ".")
             key = "dt" if name == "configured_dt" else name
             if key in short_ids:
                 value["identity"] = short_ids[key]
@@ -451,6 +617,8 @@ def fixture(
                 value = [["inert-helper", True, True] for _ in range(short_record[name])]
             elif name == "callbacks":
                 value = [["progressed", 1, [0], True, None] for _ in range(short_record[name])]
+            if natural and name == "calendar":
+                value = terminal_calendar_cache(short_rows)
         write(path, value)
         captures.append(
             dict(path=path.name, sha256=pin(path)["sha256"], label=label, status="saved")
@@ -475,20 +643,27 @@ def fixture(
             "init_electrical",
             "init_first_step",
             "init_short_history",
+            "init_terminal",
         ),
         init_dynamics_completed=endpoint
-        in ("init_dynamics", "init_electrical", "init_first_step", "init_short_history"),
+        in (
+            "init_dynamics",
+            "init_electrical",
+            "init_first_step",
+            "init_short_history",
+            "init_terminal",
+        ),
         init_storage_completed=endpoint
-        in ("init_electrical", "init_first_step", "init_short_history"),
+        in ("init_electrical", "init_first_step", "init_short_history", "init_terminal"),
         init_electrical_completed=endpoint
-        in ("init_electrical", "init_first_step", "init_short_history"),
+        in ("init_electrical", "init_first_step", "init_short_history", "init_terminal"),
         init_first_step_completed=endpoint == "init_first_step",
-        init_time_steps_completed=iterations
-        if endpoint == "init_short_history"
-        else int(endpoint == "init_first_step"),
+        init_time_steps_completed=iterations if multiple else int(endpoint == "init_first_step"),
         **(
             {"init_short_history_completed": True, "init_iterations": iterations}
             if endpoint == "init_short_history"
+            else {"init_terminal_completed": True, "init_iterations": None}
+            if natural
             else {}
         ),
         original_flux_defect_repaired=False,
@@ -590,7 +765,7 @@ def fixture(
             worker=worker_pin,
         ),
     )
-    return NS(
+    value = NS(
         base=base,
         source=source,
         plan=plan_path,
@@ -598,6 +773,9 @@ def fixture(
         output=output,
         worker=worker,
     )
+    if version == 12:
+        attach_initial_rng(value)
+    return attach_molecular_records(value) if natural else value
 
 
 def inspect(value):
@@ -622,6 +800,157 @@ def change_capture(value, label, function):
     write(capture, data if replacement is None else replacement)
     row["sha256"] = pin(capture)["sha256"]
     write(path, outcome)
+
+
+@pytest.mark.parametrize(
+    "endpoint", ("seed", "init_electrical", "init_first_step", "init_short_history")
+)
+def test_report_init_terminal_preserves_exact_preextension_saved_report(tmp_path, endpoint):
+    """Run the pinned historical JSON verifier; preserve its saved report verbatim."""
+    value = fixture(tmp_path, endpoint=endpoint)
+    path = report.Path(LEGACY_REPORTER["path"])
+    assert not path.is_symlink() and report.snapshot.digest(path) == LEGACY_REPORTER["sha256"]
+    write(tmp_path / "legacy-reporter-input.json", LEGACY_REPORTER)
+    namespace = dict(__name__="tests.private_legacy_seed_report", __file__=str(path))
+    # This historical validation module only reads saved evidence. It imports no
+    # model and issues no owner; shared evidence/stdlib machinery is deliberate.
+    FunctionType(compile(path.read_bytes(), str(path), "exec", dont_inherit=True), namespace)()
+    before = namespace["inspect_attempt"](value.plan, plan_sha256=value.digest, output=value.output)
+    saved_path = tmp_path / "unchanged-preextension-report.json"
+    saved_pin = write(saved_path, before)
+    after = inspect(value)
+    assert after == before == read(saved_path)
+    assert pin(saved_path) == saved_pin
+    assert "natural_terminal" not in after["demonstration"]
+    write(
+        tmp_path / "legacy-report-continuity.json",
+        dict(
+            endpoint=endpoint,
+            historical_source=LEGACY_REPORTER,
+            saved_report=saved_pin,
+            exact_saved_and_fresh_equality=True,
+            old_report_unchanged=True,
+            source_native_or_scientific_credit=0,
+        ),
+    )
+
+
+@pytest.mark.parametrize("mode", ("original", "disabled"))
+@pytest.mark.parametrize("iterations", (1, 3, 500, 512))
+def test_report_init_terminal_verifies_complete_calendar_and_normal_context(
+    tmp_path, mode, iterations
+):
+    value = fixture(tmp_path, mode=mode, endpoint="init_terminal", iterations=iterations)
+    result = inspect(value)
+    assert result["status"] == "completed_unqualified" and not result["verification_issues"]
+    assert result["init_iterations_requested"] is None
+    assert result["init_iterations_completed"] == iterations and result["time_steps_qualified"] == 0
+    terminal = result["demonstration"]["natural_terminal"]
+    assert terminal["configured_iterations"] == terminal["recorded_iterations"] == iterations
+    assert terminal["maximum_iterations"] == 512
+    assert terminal["loop_returned"] is terminal["context_returned"] is True
+    assert terminal["selected_stop"] is False
+    assert terminal["original_time_bits"] == [
+        struct.pack("!d", index * 0.00123456789).hex() for index in range(iterations)
+    ]
+    assert result["scientific_credit"] == 0 and not result["restart_qualified"]
+
+
+@pytest.mark.parametrize(
+    "field,bad",
+    (
+        ("loop_returned", False),
+        ("context_returned", False),
+        ("selected_stop", True),
+        ("source_completed", False),
+    ),
+)
+@pytest.mark.parametrize("target", ("record", "linkage"))
+def test_report_init_terminal_cannot_promote_selected_or_partial_return(
+    tmp_path, field, bad, target
+):
+    value = fixture(tmp_path, endpoint="init_terminal")
+    change_capture(value, "init_terminal." + target, lambda row: row.update({field: bad}))
+    result = inspect(value)
+    assert result["verification_issues"] and result["init_iterations_completed"] == 0
+    assert result["status"] != "completed_unqualified"
+
+
+@pytest.mark.parametrize("bad", (0, 513, True))
+def test_report_init_terminal_configured_count_is_bounded_without_truncation(tmp_path, bad):
+    value = fixture(tmp_path, endpoint="init_terminal")
+    change(value, "worker/demo/outcome.json", lambda row: row.update(init_time_steps_completed=bad))
+    result = inspect(value)
+    assert result["verification_issues"] and result["init_iterations_completed"] == 0
+
+
+@pytest.mark.parametrize(
+    "field",
+    (
+        "record",
+        "linkage",
+        "calendar",
+        "stream_after",
+        "initial_diagnostics",
+        "iteration.0001.after",
+    ),
+)
+def test_report_init_terminal_requires_each_original_observation(tmp_path, field):
+    value = fixture(tmp_path, endpoint="init_terminal")
+    change(
+        value,
+        "worker/demo/outcome.json",
+        lambda row: row.update(
+            captures=[item for item in row["captures"] if item["label"] != "init_terminal." + field]
+        ),
+    )
+    result = inspect(value)
+    assert result["verification_issues"] and result["init_iterations_completed"] == 0
+
+
+def test_report_init_terminal_resealed_iteration_time_still_must_match_actual_calendar(tmp_path):
+    value = fixture(tmp_path, endpoint="init_terminal")
+    changed = struct.pack("!d", -0.0).hex()
+
+    def record(row):
+        row["iterations"][1][1] = changed
+
+    def linkage(row):
+        row["iterations"][1]["source_time_bits"] = changed
+
+    change_capture(value, "init_terminal.record", record)
+    change_capture(value, "init_terminal.linkage", linkage)
+    result = inspect(value)
+    assert result["verification_issues"] and result["init_iterations_completed"] == 0
+    assert "calendar" in str(result["verification_issues"])
+
+
+@pytest.mark.parametrize("bad", (64, 513, True))
+def test_report_init_terminal_guard_in_linkage_must_be_exact_512(tmp_path, bad):
+    value = fixture(tmp_path, endpoint="init_terminal")
+    change_capture(value, "init_terminal.linkage", lambda row: row.update(maximum_iterations=bad))
+    result = inspect(value)
+    assert result["verification_issues"] and result["init_iterations_completed"] == 0
+
+
+def test_report_init_terminal_invalid_domain_observation_is_retained_without_admission(tmp_path):
+    value = fixture(tmp_path, endpoint="init_terminal")
+
+    def invalid(row):
+        row["initial_diagnostics"] = dict(
+            finite_concentrations=False,
+            nonnegative_concentrations=False,
+            finite_positive_volumes=False,
+            finite_voltage=False,
+            physical_or_conservation_admission=False,
+        )
+
+    change_capture(value, "init_terminal.record", invalid)
+    result = inspect(value)
+    assert result["status"] == "completed_unqualified"
+    domain = result["demonstration"]["natural_terminal"]["initial_diagnostics"]
+    assert domain["finite_positive_volumes"] is False
+    assert result["scientific_credit"] == result["time_steps_qualified"] == 0
 
 
 @pytest.mark.parametrize("mode", ["original", "disabled"])
@@ -1496,6 +1825,11 @@ def test_report_known_failure_survives_missing_final_publication(tmp_path, avail
 def molecule_fixture(tmp_path, *, mode="original", endpoint="init_dynamics"):
     """Inert saved records exercise the reader, without issuing molecular authority."""
     value = fixture(tmp_path, mode=mode, endpoint=endpoint, import_observation=True)
+    return value if endpoint == "init_terminal" else attach_molecular_records(value)
+
+
+def attach_molecular_records(value):
+    """Shared inert saved records, never an actual session/claim or source callback."""
     change_capture(
         value,
         "init_dynamics.record",
@@ -2164,6 +2498,372 @@ def test_report_short_history_refuses_count_state_epoch_or_work_retarget(tmp_pat
     assert result["init_iterations_completed"] == result["scientific_credit"] == 0
 
 
+# Independent, named public-call sequence from the frozen qualifier. Its source is
+# read as AST only; neither the qualifier nor its codec/owners are imported here.
+PARAMETER_OPERATIONS = (
+    "birth-request",
+    "actual-birth",
+    "main-file",
+    "yaml-request",
+    "actual-yaml",
+    "path-permission",
+    "path-request",
+    "actual-paths",
+    "seven-request",
+    "actual-seven",
+    "numeric-request",
+    "actual-numeric",
+    "events-request",
+    "actual-events",
+    "expression-file",
+    "network-input",
+    "network-request",
+    "actual-network",
+    "grn-request",
+    "actual-grn",
+    "modulator-request",
+    "actual-modulators",
+    "colormap-input",
+    "registry-capture",
+    "actual-colormaps",
+    "actual-constants",
+    "actual-world-ready",
+    "final-history",
+    "final-live-parameters",
+)
+
+
+def parameter_archive(directory, *, numeric=False):
+    """Build literal codec/NPY bytes with stdlib, without a serializer or NumPy."""
+    directory.mkdir(parents=True)
+    tree = dict(
+        kind="cells.ordinary_ecm_molecule_checkpoint_graph@1",
+        root=["ref", 0],
+        nodes=[dict(tag="mapping", proxy=False, items=[[["str", "saved"], ["bool", True]]])],
+    )
+    raw = bytes.fromhex(
+        "0000000000000080000000000000f07f"
+    )  # -0.0 and +inf retained, not evaluated.
+    arrays = {}
+    if numeric:
+        tree["nodes"][0]["items"].append([["str", "raw"], ["ref", 1]])
+        tree["nodes"].append(
+            dict(
+                tag="array", key="a00000000", dtype="<f8", shape=[2], fortran=False, writable=False
+            )
+        )
+        arrays["a00000000"] = dict(dtype="<f8", shape=[2], sha256=hashlib.sha256(raw).hexdigest())
+    write(directory / "state.json", tree)
+    with zipfile.ZipFile(directory / "arrays.npz", "w", compression=zipfile.ZIP_STORED) as archive:
+        if numeric:
+            header = b"{'descr': '<f8', 'fortran_order': False, 'shape': (2,), }"
+            header += b" " * ((-10 - len(header) - 1) % 64) + b"\n"
+            archive.writestr(
+                "a00000000.npy",
+                b"\x93NUMPY\x01\x00" + struct.pack("<H", len(header)) + header + raw,
+            )
+    fingerprint = hashlib.sha256(
+        json.dumps(
+            dict(tree=tree, arrays=arrays), sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode()
+    ).hexdigest()
+    return write(
+        directory / "manifest.json",
+        dict(
+            kind="parameter_observation@1",
+            files={n: pin(directory / n) for n in ("state.json", "arrays.npz")},
+            fingerprint=fingerprint,
+            complete=True,
+            owner_admission=False,
+            reconstruct_live_owners=False,
+        ),
+    )
+
+
+def parameter_fixture(tmp_path, *, mode="original", count=29, acquired=False):
+    value = fixture(tmp_path, mode=mode, parameter_prefix=True)
+    directory = value.worker / "demo/parameters"
+    rows = []
+    primary = dict(
+        type="builtins.AttributeError",
+        identity=901,
+        argument_summary=["missing public guard"],
+        argument_summary_is_not_full_graph=True,
+        cause_identity=900,
+        context_identity=None,
+        frames=[dict(file="frozen/remainder.py", function="parameters", line=73)],
+        frames_truncated=False,
+    )
+    for index, name in enumerate(PARAMETER_OPERATIONS[:count]):
+        target = directory / "evidence" / f"{index:02d}-{name}"
+        row = dict(
+            name=name,
+            attempted=True,
+            returned=acquired or index + 1 < count,
+            evidence_complete=True,
+            errors=[],
+            graphs={},
+            captures={},
+        )
+        if row["returned"]:
+            row["returned_identity"] = 1000 + index
+        else:
+            row["primary"] = primary
+            write(target / "primary.json", primary)
+        write(target / "attempt.json", dict(name=name, attempt=index + 1))
+        row["payload"] = parameter_archive(target / "payload", numeric=True)
+        if name == "actual-world-ready":
+            row["graphs"]["actual_p"] = parameter_archive(target / "graph-actual_p", numeric=True)
+            row["captures"]["after"] = parameter_archive(target / "capture-after", numeric=True)
+        write(target / "outcome.json", row)
+        rows.append(row)
+    if acquired:
+        assert count == 29
+        journal = dict(
+            packet=read(value.plan)["parameter_inputs"],
+            operations=rows,
+            actual_world_ready_identity=rows[-3]["returned_identity"],
+            actual_p_identity=rows[-1]["returned_identity"],
+            construction_claim_opened=False,
+            phase_or_persisted_owner_admission=False,
+        )
+        journal_name = "acquisition.json"
+    else:
+        journal = dict(primary=primary, operations=rows, source_or_evidence_incomplete=True)
+        journal_name = "failure.json"
+        # This is one failed saved acquisition, not a completed worker with an invented owner.
+        (value.output / "result.json").unlink()
+        (value.worker / "result.json").unlink()
+        write(value.output / "failure.json", dict(status="failed", primary=primary))
+        process = read(value.output / "process/result.json")
+        process.update(status="failed", returncode=1)
+        (value.output / "process/result.json").unlink()
+        write(value.output / "process/failure.json", process)
+        change(
+            value,
+            "worker/demo/outcome.json",
+            lambda row: row.update(
+                status="failed",
+                methods_completed=False,
+                primary=primary,
+                completed_stage_trials=[],
+                captures=[],
+                operations=[
+                    dict(name="callback", status="returned"),
+                    dict(name="parameters", status="failed"),
+                ],
+            ),
+        )
+    write(directory / journal_name, journal)
+    value.parameter_dir, value.parameter_journal = directory, journal_name
+    return value
+
+
+def parameter_row(value, index, mutate):
+    path = value.parameter_dir / value.parameter_journal
+    journal = read(path)
+    row = journal["operations"][index]
+    mutate(row)
+    write(value.parameter_dir / "evidence" / f"{index:02d}-{row['name']}" / "outcome.json", row)
+    write(path, journal)
+
+
+@pytest.mark.parametrize("mode", ["original", "disabled"])
+def test_report_parameter_prefix_returns_survive_failed_public_access(tmp_path, mode):
+    value = parameter_fixture(tmp_path, mode=mode)
+    result = inspect(value)
+    prefix = result["parameter_load_prefix"]
+    assert not result["verification_issues"], result["verification_issues"]
+    assert result["status"] == "failed" and not result["source_execution_complete"]
+    assert result["time_steps_qualified"] == result["init_iterations_completed"] == 0
+    assert prefix["status"] == "failed_after_recorded_prefix" and prefix["evidence_complete"]
+    assert prefix["actual_world_ready_returned"] and prefix["completed_history_returned"]
+    assert not prefix["acquisition_returned"] and not prefix["usable_owner"]
+    assert not prefix["init_or_sim_credit"] and prefix["scientific_credit"] == 0
+    failed = prefix["final_live_parameters"]
+    assert failed["status"] == "failed" and failed["primary"]["cause_identity"] == 900
+    assert failed["primary"]["argument_summary"] == ["missing public guard"]
+    assert [row["name"] for row in prefix["operations"]] == list(PARAMETER_OPERATIONS)
+    assert prefix["archive_count"] == 31 and prefix["authenticated_payload_bytes"] > 31 * 16
+    assert all(
+        archive["verified"]["numeric_bytes"] == 16
+        for row in prefix["operations"]
+        for archive in row["archives"]
+    )
+    assert all(
+        archive["verified"]["graph_reconstructed"] is False
+        for row in prefix["operations"]
+        for archive in row["archives"]
+    )
+
+
+def test_report_parameter_prefix_uses_exact_frozen_operation_ast_without_import(tmp_path):
+    value = parameter_fixture(tmp_path, count=1)
+    assert report._parameter_roster(report.Reader(), read(value.plan)) == list(PARAMETER_OPERATIONS)
+    source = value.source / report.PARAMETER
+    source.chmod(0o644)
+    source.write_bytes(source.read_bytes() + b"\n# altered frozen source\n")
+    source.chmod(0o444)
+    with pytest.raises(ValueError):
+        inspect(value)
+
+
+@pytest.mark.parametrize("version", [6, 7, 8, 9, 10])
+@pytest.mark.parametrize("mode", ["original", "disabled"])
+def test_report_parameter_prefix_absent_historical_journal_is_explicit(tmp_path, version, mode):
+    result = inspect(fixture(tmp_path, version=version, mode=mode))
+    assert result["status"] == "completed_unqualified" and not result["verification_issues"]
+    prefix = result["parameter_load_prefix"]
+    assert prefix["status"] == "not_recorded" and prefix["journal_files"] == []
+    assert not prefix["actual_world_ready_returned"] and not prefix["acquisition_returned"]
+    assert not prefix["usable_owner"] and not prefix["evidence_complete"]
+
+
+def test_report_parameter_prefix_present_but_unpublished_is_incomplete(tmp_path):
+    value = fixture(tmp_path)
+    (value.worker / "demo/parameters/evidence").mkdir(parents=True)
+    result = inspect(value)
+    assert result["status"] == "incomplete_evidence"
+    assert result["parameter_load_prefix"]["status"] == "incomplete_evidence"
+    assert any(i["type"] == "MissingEvidence" for i in result["verification_issues"])
+
+
+@pytest.mark.parametrize("role", ["payload", "graph-actual_p", "capture-after"])
+def test_report_parameter_prefix_authenticates_all_archive_roles(tmp_path, role):
+    value = parameter_fixture(tmp_path)
+    target = value.parameter_dir / "evidence/26-actual-world-ready" / role / "arrays.npz"
+    target.write_bytes(target.read_bytes() + b"changed")
+    result = inspect(value)
+    prefix = result["parameter_load_prefix"]
+    assert result["status"] == "failed" and result["verification_issues"]
+    assert not prefix["actual_world_ready_returned"] and not prefix["evidence_complete"]
+    assert prefix["operations"][26]["journal_returned"] is True
+    assert prefix["final_live_parameters"]["primary"]["type"] == "builtins.AttributeError"
+    assert prefix["reader_charged_file_bytes"] > prefix["authenticated_payload_bytes"]
+    assert any(role in row["section"] for row in result["verification_issues"])
+
+
+@pytest.mark.parametrize("mutation", ["missing", "truncated", "fingerprint", "dtype", "duplicate"])
+def test_report_parameter_prefix_resealed_bad_archive_never_becomes_complete(tmp_path, mutation):
+    value = parameter_fixture(tmp_path, count=1)
+    directory = value.parameter_dir / "evidence/00-birth-request/payload"
+    manifest = read(directory / "manifest.json")
+    if mutation == "missing":
+        (directory / "arrays.npz").unlink()
+    elif mutation == "truncated":
+        target = directory / "arrays.npz"
+        target.write_bytes(target.read_bytes()[:-9])
+        manifest["files"]["arrays.npz"] = pin(target)
+    elif mutation == "fingerprint":
+        manifest["fingerprint"] = "f" * 64
+    else:
+        target = directory / "arrays.npz"
+        with zipfile.ZipFile(target) as archive:
+            raw = archive.read("a00000000.npy")
+        with zipfile.ZipFile(target, "w") as archive:
+            archive.writestr(
+                "a00000000.npy", raw.replace(b"<f8", b"<i8") if mutation == "dtype" else raw
+            )
+            if mutation == "duplicate":
+                with pytest.warns(UserWarning, match="Duplicate name"):
+                    archive.writestr("a00000000.npy", raw)
+        manifest["files"]["arrays.npz"] = pin(target)
+    newpin = write(directory / "manifest.json", manifest)
+    parameter_row(value, 0, lambda row: row.update(payload=newpin))
+    result = inspect(value)
+    assert result["status"] == "failed" and result["verification_issues"]
+    assert not result["parameter_load_prefix"]["evidence_complete"]
+    assert result["parameter_load_prefix"]["operations"][0]["status"] == "failed"
+
+
+@pytest.mark.parametrize("mutation", ["outcome", "attempt", "journal_order", "identity", "graphs"])
+def test_report_parameter_prefix_independent_outcome_and_journal_checks(tmp_path, mutation):
+    value = parameter_fixture(tmp_path, count=2)
+    operation = value.parameter_dir / "evidence/00-birth-request"
+    if mutation in ("outcome", "attempt"):
+        path = operation / (mutation + ".json")
+        row = read(path)
+        row["name"] = "wrong"
+        write(path, row)
+    elif mutation == "journal_order":
+        path = value.parameter_dir / "failure.json"
+        row = read(path)
+        row["operations"].reverse()
+        write(path, row)
+    elif mutation == "identity":
+        parameter_row(value, 0, lambda row: row.update(returned_identity=True))
+    else:
+        parameter_row(value, 0, lambda row: row.pop("graphs"))
+    result = inspect(value)
+    assert result["status"] == "failed" and result["verification_issues"]
+    assert not result["parameter_load_prefix"]["evidence_complete"]
+    assert not result["parameter_load_prefix"]["acquisition_returned"]
+
+
+def test_report_parameter_prefix_late_capture_gap_keeps_authenticated_returns(tmp_path):
+    value = parameter_fixture(tmp_path)
+    parameter_row(
+        value,
+        28,
+        lambda row: row.update(
+            evidence_complete=False,
+            errors=[dict(stage="observe-or-archive", type="CaptureError", identity=902)],
+        ),
+    )
+    result = inspect(value)
+    prefix = result["parameter_load_prefix"]
+    assert result["status"] == "failed" and not prefix["evidence_complete"]
+    assert prefix["actual_world_ready_returned"] and prefix["completed_history_returned"]
+    assert prefix["final_live_parameters"]["status"] == "failed"
+    assert prefix["final_live_parameters"]["capture_errors"][0]["identity"] == 902
+    assert prefix["primary"]["identity"] == 901 and prefix["primary"]["cause_identity"] == 900
+
+
+def test_report_parameter_prefix_early_failure_with_no_operation_retains_primary(tmp_path):
+    value = parameter_fixture(tmp_path, count=0)
+    result = inspect(value)
+    prefix = result["parameter_load_prefix"]
+    assert result["status"] == "failed" and not result["verification_issues"]
+    assert prefix["operations"] == [] and prefix["archive_count"] == 0
+    assert prefix["primary"]["identity"] == 901 and prefix["primary"]["cause_identity"] == 900
+    assert not prefix["actual_world_ready_returned"] and not prefix["acquisition_returned"]
+    assert not prefix["usable_owner"]
+
+
+def test_report_parameter_prefix_failure_archive_gap_does_not_erase_earlier_returns(tmp_path):
+    value = parameter_fixture(tmp_path)
+    path = value.parameter_dir / "evidence/28-final-live-parameters/payload/manifest.json"
+    path.write_text('{"kind":')
+    result = inspect(value)
+    prefix = result["parameter_load_prefix"]
+    assert result["status"] == "failed" and result["verification_issues"]
+    assert prefix["actual_world_ready_returned"] and prefix["completed_history_returned"]
+    assert not prefix["evidence_complete"] and prefix["final_live_parameters"]["status"] == "failed"
+    assert prefix["final_live_parameters"]["primary"]["cause_identity"] == 900
+
+
+def test_report_parameter_prefix_full_saved_acquisition_is_never_live_owner_authority(tmp_path):
+    result = inspect(parameter_fixture(tmp_path, acquired=True))
+    prefix = result["parameter_load_prefix"]
+    assert result["status"] == "completed_unqualified", result["verification_issues"]
+    assert prefix["status"] == "returned_acquisition" and prefix["acquisition_returned"]
+    assert prefix["actual_world_ready_returned"] and prefix["completed_history_returned"]
+    assert prefix["final_live_parameters"]["status"] == "returned"
+    assert not prefix["usable_owner"] and not prefix["init_or_sim_credit"]
+
+
+@pytest.mark.parametrize("field", ["actual_world_ready_identity", "actual_p_identity", "packet"])
+def test_report_parameter_prefix_acquisition_linkage_is_authenticated(tmp_path, field):
+    value = parameter_fixture(tmp_path, acquired=True)
+    path = value.parameter_dir / "acquisition.json"
+    row = read(path)
+    row[field] = 999 if field != "packet" else dict(path="/absent-inputs.json", sha256="f" * 64)
+    write(path, row)
+    result = inspect(value)
+    assert result["verification_issues"] and result["status"] == "incomplete_evidence"
+    assert not result["parameter_load_prefix"]["acquisition_returned"]
+
+
 @pytest.mark.parametrize(
     "field",
     [
@@ -2348,3 +3048,466 @@ def test_report_short_history_requires_original_sample_and_stream_witnesses(tmp_
     result = inspect(value)
     assert result["verification_issues"] and result["status"] != "completed_unqualified"
     assert result["init_iterations_completed"] == result["scientific_credit"] == 0
+
+
+def attach_initial_rng(value):
+    """Canonical archive.snapshot wire, not a cache; explicitly inert saved evidence."""
+    plan = read(value.plan)
+    state = dict(
+        numpy_random=[
+            "MT19937",
+            dict(
+                __ndarray__=True,
+                dtype="<u4",
+                shape=[624],
+                strides=[4],
+                raw_bytes_hex=struct.pack("<624I", *range(1, 625)).hex(),
+            ),
+            624,
+            0,
+            dict(float64_bits="0000000000000080"),
+        ],
+        python_random=[3, [*range(1, 625), 624], dict(float64_bits="010000000000f87f")],
+        initial_random_reset_or_replacement=False,
+    )
+    rng_files = {}
+    for name in report.RNG_MODULES:
+        path = value.base / "runtime" / (name + ".inert")
+        path.write_text("metadata-only runtime fixture: " + name + "\n")
+        rng_files[name] = pin(path)
+    for name in ("runtime-before.json", "runtime-after.json"):
+        path = value.worker / name
+        runtime = read(path)
+        runtime.update(python="3.13.synthetic")
+        runtime["loaded_files"].update(rng_files)
+        write(path, runtime)
+    witness = dict(
+        kind=report.INITIAL_RNG_KIND,
+        epoch=report.INITIAL_RNG_EPOCH,
+        common_binding=dict(
+            input_inventory_sha256=plan["initial_rng_inputs"]["inventory_sha256"],
+            mode=plan["flux_operator"],
+            profile="original",
+            runtime=dict(
+                python="3.13.synthetic",
+                executable=plan["runtime"]["executable"],
+                numpy_version="synthetic-wire-only",
+                files=rng_files,
+            ),
+        ),
+        state=state,
+        source=dict(
+            files={name: plan["producers"][name] for name in (report.INITIAL_RNG, report.DEMO)},
+            snapshot_sha256=plan["source_snapshot"]["sha256"],
+            parameter_packet_sha256=plan["parameter_inputs"]["sha256"],
+        ),
+        order=dict(
+            boundary=report.INITIAL_RNG_BOUNDARY,
+            parameter_identity=101,
+            world_ready_identity=102,
+            callback_identity=103,
+            same_parameter=True,
+            seed_entered=False,
+            selected_boundaries=[
+                ["callback", "returned"],
+                ["constructor_preflight", "returned"],
+                ["parameters", "returned"],
+                ["initial_rng", "attempted"],
+            ],
+        ),
+        observed_states_equalized=False,
+        common_starting_authority_established=False,
+        scientific_physical_checkpoint_credit=0,
+    )
+    rows = []
+    for label, data in (("before_seed_random_states", state), ("pre_seed_rng_witness", witness)):
+        path = value.worker / "demo" / (label + ".json")
+        write(path, data)
+        rows.append(dict(path=path.name, sha256=pin(path)["sha256"], label=label, status="saved"))
+    path = value.worker / "demo/outcome.json"
+    outcome = read(path)
+    outcome.update(initial_rng_observation=rows[1], common_starting_authority_established=False)
+    outcome["captures"] = rows + outcome["captures"]
+    outcome["operations"][1:1] = [dict(name="constructor_preflight", status="returned")]
+    outcome["operations"][3:3] = [dict(name="initial_rng", status="returned")]
+    write(path, outcome)
+    # New launch schemas bind the worker's explicit None selection too.
+    worker = read(value.worker / "result.json")
+    worker["init_iterations"] = plan.get("init_iterations")
+    worker_pin = write(value.worker / "result.json", worker)
+    controller = read(value.output / "result.json")
+    controller["worker"] = worker_pin
+    write(value.output / "result.json", controller)
+
+
+def initial_rng_capture_change(value, label, action):
+    change_capture(value, label, action)
+    path = value.worker / "demo/outcome.json"
+    outcome = read(path)
+    outcome["initial_rng_observation"] = next(
+        row for row in outcome["captures"] if row["label"] == "pre_seed_rng_witness"
+    )
+    write(path, outcome)
+
+
+@pytest.mark.parametrize("mode", ("original", "disabled"))
+def test_report_initial_rng_complete_canonical_wire_is_observation_only(tmp_path, mode):
+    value = fixture(tmp_path, mode=mode, version=12)
+    result = inspect(value)
+    write(tmp_path / "initial-rng-report.json", result)
+    assert result["verification_issues"] == [] and result["status"] == "completed_unqualified"
+    observed = result["demonstration"]["initial_rng"]
+    assert observed["observed"] is True and observed["state_bytes_preserved"] is True
+    assert observed["common_starting_authority_established"] is False
+    assert result["common_starting_authority_established"] is False
+    assert result["scientific_credit"] == 0 and result["numerical_comparison"] is False
+    wire = next(
+        row["initial_rng_wire"]
+        for row in result["demonstration"]["captures"]
+        if row["label"] == "before_seed_random_states"
+    )
+    assert wire["numpy_random"][4] == dict(float64_bits="0000000000000080")
+    assert wire["python_random"][2] == dict(float64_bits="010000000000f87f")
+    assert result["initial_rng_inputs"]["inventory"]["directories"] == []
+
+
+@pytest.mark.parametrize("present", (False, True))
+def test_report_initial_rng_legacy_seven_constructor_preflight_is_optional_exactly_once(
+    tmp_path, present
+):
+    value = fixture(tmp_path, version=11)
+    if present:
+        change(
+            value,
+            "worker/demo/outcome.json",
+            lambda data: data["operations"].insert(
+                1, dict(name="constructor_preflight", status="returned")
+            ),
+        )
+    result = inspect(value)
+    assert result["status"] == "completed_unqualified" and result["verification_issues"] == []
+    assert "initial_rng_inputs" not in result and "initial_rng" not in result["demonstration"]
+
+
+@pytest.mark.parametrize("version", (11, 12))
+@pytest.mark.parametrize("mutation", ("duplicate", "late", "failed"))
+def test_report_initial_rng_constructor_operation_is_not_ignored(tmp_path, version, mutation):
+    value = fixture(tmp_path, version=version)
+    if version == 11:
+        change(
+            value,
+            "worker/demo/outcome.json",
+            lambda data: data["operations"].insert(
+                1, dict(name="constructor_preflight", status="returned")
+            ),
+        )
+    assert inspect(value)["status"] == "completed_unqualified"
+
+    def change_ops(data):
+        row = data["operations"][1]
+        if mutation == "duplicate":
+            data["operations"].insert(1, dict(row))
+        elif mutation == "late":
+            data["operations"].insert(3, data["operations"].pop(1))
+        else:
+            row["status"] = "failed"
+
+    change(value, "worker/demo/outcome.json", change_ops)
+    result = inspect(value)
+    assert result["verification_issues"] and not result["source_evidence_complete"]
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "missing_witness",
+        "missing_state",
+        "failed_witness",
+        "duplicate_witness",
+        "wrong_observation_row",
+        "absent_observation",
+        "missing_preflight",
+        "missing_rng",
+        "late_rng",
+        "failed_rng",
+        "authority_flag",
+        "old_outcome_schema",
+    ),
+)
+def test_report_initial_rng_success_requires_complete_bound_capture_and_order(tmp_path, mutation):
+    value = fixture(tmp_path, version=12)
+    assert inspect(value)["status"] == "completed_unqualified"
+
+    def mutate(data):
+        if mutation in ("missing_witness", "missing_state"):
+            label = (
+                "pre_seed_rng_witness"
+                if mutation == "missing_witness"
+                else "before_seed_random_states"
+            )
+            data["captures"] = [row for row in data["captures"] if row["label"] != label]
+        elif mutation == "failed_witness":
+            data["captures"][1].update(status="capture_failed", error=dict(type="CaptureError"))
+            data["initial_rng_observation"] = dict(data["captures"][1])
+        elif mutation == "duplicate_witness":
+            data["captures"].append(dict(data["captures"][1]))
+        elif mutation == "wrong_observation_row":
+            data["initial_rng_observation"] = dict(data["captures"][0])
+        elif mutation == "absent_observation":
+            data["initial_rng_observation"] = None
+        elif mutation in ("missing_preflight", "missing_rng"):
+            name = "constructor_preflight" if mutation == "missing_preflight" else "initial_rng"
+            data["operations"] = [row for row in data["operations"] if row["name"] != name]
+        elif mutation == "late_rng":
+            data["operations"].insert(5, data["operations"].pop(3))
+        elif mutation == "failed_rng":
+            data["operations"][3]["status"] = "failed"
+        elif mutation == "authority_flag":
+            data["common_starting_authority_established"] = True
+        else:
+            data["kind"] = report.DEMO_KINDS[5]
+
+    change(value, "worker/demo/outcome.json", mutate)
+    result = inspect(value)
+    write(tmp_path / "initial-rng-refusal.json", result)
+    assert result["verification_issues"] and not result["source_evidence_complete"]
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "epoch",
+        "inventory",
+        "profile",
+        "mode",
+        "producer",
+        "snapshot",
+        "parameter_packet",
+        "equalized",
+        "authority",
+        "credit",
+        "seed_entered",
+        "parameter_identity",
+        "order",
+        "runtime_roster",
+        "runtime_python",
+        "runtime_executable",
+        "runtime_loaded_origin",
+    ),
+)
+def test_report_initial_rng_resealed_witness_retains_exact_provenance_and_no_authority(
+    tmp_path, mutation
+):
+    value = fixture(tmp_path, version=12)
+    assert inspect(value)["status"] == "completed_unqualified"
+
+    def mutate(data):
+        if mutation == "epoch":
+            data["epoch"] = "after_SEED"
+        elif mutation in ("inventory", "profile", "mode"):
+            key = "input_inventory_sha256" if mutation == "inventory" else mutation
+            data["common_binding"][key] = {
+                "inventory": "0" * 64,
+                "profile": "headless",
+                "mode": "disabled",
+            }[mutation]
+        elif mutation in ("producer", "snapshot", "parameter_packet"):
+            if mutation == "producer":
+                data["source"]["files"][report.INITIAL_RNG] = "0" * 64
+            else:
+                data["source"][mutation + "_sha256"] = "0" * 64
+        elif mutation in ("equalized", "authority", "credit"):
+            key = {
+                "equalized": "observed_states_equalized",
+                "authority": "common_starting_authority_established",
+                "credit": "scientific_physical_checkpoint_credit",
+            }[mutation]
+            data[key] = True
+        elif mutation == "seed_entered":
+            data["order"]["seed_entered"] = True
+        elif mutation == "parameter_identity":
+            data["order"]["parameter_identity"] = True
+        elif mutation == "order":
+            data["order"]["selected_boundaries"].pop(1)
+        elif mutation == "runtime_roster":
+            del data["common_binding"]["runtime"]["files"]["_random"]
+        elif mutation == "runtime_python":
+            data["common_binding"]["runtime"]["python"] = "foreign"
+        elif mutation == "runtime_executable":
+            data["common_binding"]["runtime"]["executable"] = data["common_binding"]["runtime"][
+                "files"
+            ]["_random"]
+        else:
+            data["common_binding"]["runtime"]["files"]["numpy"] = data["common_binding"]["runtime"][
+                "files"
+            ]["random"]
+
+    initial_rng_capture_change(value, "pre_seed_rng_witness", mutate)
+    result = inspect(value)
+    assert result["verification_issues"] and not result["source_evidence_complete"]
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "reset",
+        "dtype",
+        "shape",
+        "strides",
+        "truncated_bytes",
+        "zero_state",
+        "mt_position_bool",
+        "has_gauss",
+        "float_value",
+        "python_version",
+        "python_words",
+        "python_word_bool",
+        "python_position",
+        "python_gauss",
+        "cache_descriptor",
+        "state_mismatch",
+    ),
+)
+def test_report_initial_rng_canonical_full_states_are_checked_before_credit(tmp_path, mutation):
+    value = fixture(tmp_path, version=12)
+    assert inspect(value)["status"] == "completed_unqualified"
+
+    def state_change(data):
+        mt, py = data["numpy_random"], data["python_random"]
+        if mutation == "reset":
+            data["initial_random_reset_or_replacement"] = True
+        elif mutation in ("dtype", "shape", "strides"):
+            mt[1][mutation] = {"dtype": "<i4", "shape": [623], "strides": [8]}[mutation]
+        elif mutation == "truncated_bytes":
+            mt[1]["raw_bytes_hex"] = mt[1]["raw_bytes_hex"][:-2]
+        elif mutation == "zero_state":
+            mt[1]["raw_bytes_hex"] = "0" * (624 * 8)
+        elif mutation == "mt_position_bool":
+            mt[2] = True
+        elif mutation == "has_gauss":
+            mt[3] = 2
+        elif mutation == "float_value":
+            mt[4] = 0.0
+        elif mutation == "python_version":
+            py[0] = 2
+        elif mutation == "python_words":
+            py[1].pop()
+        elif mutation == "python_word_bool":
+            py[1][0] = True
+        elif mutation == "python_position":
+            py[1][-1] = 625
+        elif mutation == "python_gauss":
+            py[2] = dict(float64_bits="00")
+        elif mutation == "cache_descriptor":
+            mt[1] = terminal_calendar_cache([[0, "0000000000000000"]])
+        else:
+            mt[2] = 623
+
+    initial_rng_capture_change(value, "before_seed_random_states", state_change)
+    if mutation != "state_mismatch":
+        initial_rng_capture_change(
+            value, "pre_seed_rng_witness", lambda data: state_change(data["state"])
+        )
+    result = inspect(value)
+    assert result["verification_issues"] and not result["source_evidence_complete"]
+
+
+@pytest.mark.parametrize(
+    "mutation", ("missing", "profile", "directory", "size", "digest", "source_pin", "authority")
+)
+def test_report_initial_rng_prepared_plan_requires_whole_selected_inventory(tmp_path, mutation):
+    value = fixture(tmp_path, version=12)
+    assert inspect(value)["status"] == "completed_unqualified"
+    plan = read(value.plan)
+    demo = read(report.Path(plan["demo_plan"]["path"]))
+    selected = demo["initial_rng_inputs"]
+    if mutation == "missing":
+        del plan["initial_rng_inputs"]
+    elif mutation == "profile":
+        selected["profile"] = "headless"
+    elif mutation == "directory":
+        selected["inventory"]["directories"] = ["undeclared"]
+    elif mutation == "size":
+        selected["inventory"]["files"]["original.yaml"]["size_bytes"] = 0
+    elif mutation == "digest":
+        selected["inventory_sha256"] = "0" * 64
+    elif mutation == "source_pin":
+        demo["source_plan"]["initial_rng_observation"]["producer_sha256"] = "0" * 64
+    else:
+        demo["source_plan"]["initial_rng_observation"]["common_starting_authority_established"] = (
+            True
+        )
+    plan["demo_plan"] = write(report.Path(plan["demo_plan"]["path"]), demo)
+    value.digest = write(value.plan, plan)["sha256"]
+    with pytest.raises((ValueError, KeyError)):
+        report.inspect_attempt(value.plan, plan_sha256=value.digest)
+
+
+def test_report_initial_rng_later_failure_retains_observation_without_completion(tmp_path):
+    value = fixture(tmp_path, version=12)
+    assert inspect(value)["status"] == "completed_unqualified"
+
+    def fail(data):
+        data.update(
+            status="failed",
+            methods_completed=False,
+            primary=dict(type="SourceError", identity=901),
+            completed_stage_trials=[],
+        )
+        data["operations"] = data["operations"][:5]
+        data["operations"][-1]["status"] = "failed"
+
+    change(value, "worker/demo/outcome.json", fail)
+    (value.output / "result.json").unlink()
+    result = inspect(value)
+    assert result["status"] == "failed" and not result["source_execution_complete"]
+    assert result["demonstration"]["initial_rng"]["observed"] is True
+    assert result["common_starting_authority_established"] is False
+
+
+def test_report_initial_rng_failed_capture_does_not_issue_saved_observation(tmp_path):
+    value = fixture(tmp_path, version=12)
+
+    def fail(data):
+        data.update(
+            status="failed",
+            methods_completed=False,
+            initial_rng_observation=None,
+            primary=dict(type="CaptureError", identity=902),
+            completed_stage_trials=[],
+        )
+        data["operations"] = data["operations"][:4]
+        data["operations"][-1]["status"] = "failed"
+        data["captures"] = data["captures"][:2]
+        data["captures"][-1].update(status="capture_failed", error=dict(type="CaptureError"))
+
+    change(value, "worker/demo/outcome.json", fail)
+    (value.output / "result.json").unlink()
+    result = inspect(value)
+    assert (
+        result["status"] == "failed" and result["demonstration"]["initial_rng"]["observed"] is False
+    )
+    assert not result["source_evidence_complete"]
+
+
+def test_report_initial_rng_pair_checks_complete_inventory_not_state_equality(tmp_path):
+    first, second = fixture(tmp_path, version=12), fixture(tmp_path, mode="disabled", version=12)
+    initial_rng_capture_change(
+        second, "before_seed_random_states", lambda data: data["numpy_random"].__setitem__(2, 623)
+    )
+    initial_rng_capture_change(
+        second,
+        "pre_seed_rng_witness",
+        lambda data: data["state"]["numpy_random"].__setitem__(2, 623),
+    )
+    a, b = inspect(first), inspect(second)
+    assert a["status"] == b["status"] == "completed_unqualified"
+    result = report.compare_modes(a, b)
+    assert (
+        result["paired_execution_complete"] is True
+        and result["matching"]["initial_rng_inputs"] is True
+    )
+    assert result["numerical_equality_checked"] is False and result["physical_parity"] is False
+    changed = copy.deepcopy(b)
+    changed["initial_rng_inputs"]["inventory"]["directories"] = ["different"]
+    assert report.compare_modes(a, changed)["paired_execution_complete"] is False

@@ -8,6 +8,7 @@ closed validation. Existing seven-load/d9/47 owners are never cast or reopened.
 
 import ast
 import builtins
+import contextlib
 import hashlib
 import importlib
 import json
@@ -15,6 +16,7 @@ import os
 import sys
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
+from functools import lru_cache
 from pathlib import Path
 from threading import RLock, get_ident
 from types import CodeType, FunctionType, MethodType, SimpleNamespace
@@ -27,7 +29,7 @@ KEY_MODULE = "cells.processes.betse_native_parameter_world_construction"
 PARAMETER_MODULE = "cells.processes.betse_native_parameter_load_remainder"
 KEY_SOURCE_SHA256 = "bda0ab87e293af18eb30ff38a0cb356162bc74269fbeb0cd1d41aa8d52176b73"
 KEY_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
-PARAMETER_SOURCE_SHA256 = "397e3bf1e7ff666371075033f12074e7d8c11b91e1a517d9d84d2d907c6c7aef"
+PARAMETER_SOURCE_SHA256 = "7874abf3991aeef188ab7d5a6f2538a88248bc686eb2f94845e18a735255a035"
 PARAMETER_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
 # Stable public preparation interface; no producer/review adoption is implied.
 KEY_LAW = "betse_fresh_world_ready_pre_phase_seed_construction@1"
@@ -40,10 +42,10 @@ STAGE_MODULES = (
     "cells.processes.betse_native_phase_tail",
 )
 STAGE_SOURCE_SHA256 = (
-    "7b1551f1af2cf0fbb80a61d58d045ef6234d273ae36c52f08fd0cd71cedd2530",
+    "745a05ed73e075e523256489b0102dfe2c9bc173fa1d6dc5065e226a40c6473a",
     "c7fb2664ad744dbae609551296f2f6b96908ec311c9b4c33d92e04bc552f82e5",
-    "919d61000c9fa87b58e92cc5f8d08832da3cbcd1af287638bb26cc3436d2c9ce",
-    "539ba4363317707d4731f102d20b67ed86ea4dc813cccac013314291641dcd42",
+    "b4920dd0ce122f1ea5d009600388a5cef9321278d6cb9798382836a5d69b8d3a",
+    "0114dfbc190490b6c1400d61981fba4e4a6d9f760dda2df303b87276038df5c6",
 )
 STAGE_REVIEW_SHA256 = (
     "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
@@ -94,7 +96,7 @@ SEED_INIT_CORE_BACK_REFERENCE_SLOTS = (
     "COORDINATOR_REVIEW_SHA256",
 )
 SEED_PROFILES_MODULE = "cells.processes.betse_native_seed_init_profiles"
-SEED_PROFILES_INTERFACE_SHA256 = "7e71bc2ad4ca2ab6bae67543fdbefdc60fe8b573e53f4c4d36e406de052fa26b"
+SEED_PROFILES_INTERFACE_SHA256 = "9e74dc98105b056d325da3c6ba87331977a4894aaafe03187cffc4b6a16c48c6"
 SEED_PROFILES_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 SEED_PROFILES_COORDINATOR_REVIEW_SHA256 = (
     "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
@@ -114,13 +116,15 @@ SEED_CHILD_BACK_REFERENCE_SLOTS = (
 SEED_PROFILES_BINDING_KIND = "exact_profiles_bytes_except_four_validated_backrefs@1"
 SEED_JUNCTIONS_BINDING_KIND = "exact_junctions_bytes_except_four_validated_backrefs@1"
 CALLBACK_MODULE = "cells.processes.betse_native_phase_callbacks"
-CALLBACK_SHA256 = "9a680cf6b6ccad865bce3365c8dff2f0d5b2e7ad845f00321a0cc26cd235d4b8"
+CALLBACK_SHA256 = "63ecf075fd2b781c84156c732366def11729349124ae3652ae72506c4c467698"
 BASE_FIELDS = ("callbacks", "cells", "kind", "p", "sim")
 MAX_WORK = 128
 _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
 _LOCK, _ACTIVE = RLock(), []
 _VALIDATION = SimpleNamespace(current=None)
 _FORWARDED = WeakKeyDictionary()
+_CONTEXT_MANAGER_CLASS = contextlib._GeneratorContextManager
+_CONTEXT_MANAGER_BASE = contextlib._GeneratorContextManagerBase
 
 
 class WorldPhaseRejected(ValueError):
@@ -397,33 +401,146 @@ def _module_file(name):
     return Path(__file__).resolve().parents[3] / ("src/" + name.replace(".", "/") + ".py")
 
 
-def _source_interface(module, payload, path, names):
-    """Compile exact owned bytes as metadata; execute no module or function body."""
-    code = builtins.compile(payload, str(path), "exec", dont_inherit=True, optimize=0)
+@lru_cache(maxsize=16)
+def _interface_code(payload, path):
+    if type(payload) is not bytes or len(payload) > 2**21:
+        raise ValueError("Bounded exact interface source bytes required")
+    return builtins.compile(payload, path, "exec", dont_inherit=True, optimize=0)
+
+
+@lru_cache(maxsize=16)
+def _interface_metadata(payload, path, names):
+    """Reuse immutable code/signature metadata, never a successful live check."""
+    code = _interface_code(payload, path)
     definitions = {
         node.name: node for node in ast.parse(payload).body if isinstance(node, ast.FunctionDef)
     }
     codes = {value.co_name: value for value in code.co_consts if type(value) is CodeType}
-    for name in names:
-        fn, node = getattr(module, name, None), definitions.get(name)
+    return tuple(
+        (
+            name,
+            codes[name],
+            tuple(ast.dump(item) for item in definitions[name].decorator_list),
+            tuple(ast.literal_eval(item) for item in definitions[name].args.defaults),
+            tuple(
+                (arg.arg, ast.literal_eval(value))
+                for arg, value in zip(
+                    definitions[name].args.kwonlyargs,
+                    definitions[name].args.kw_defaults,
+                    strict=True,
+                )
+                if value is not None
+            ),
+        )
+        for name in names
+    )
+
+
+def _contextmanager_function(module, function):
+    """Authenticate the public stdlib wrapper without entering its generator."""
+    helper = next(
+        value
+        for value in contextlib.contextmanager.__code__.co_consts
+        if type(value) is CodeType and value.co_name == "helper"
+    )
+    inner = vars(function).get("__wrapped__") if type(function) is FunctionType else None
+    if (
+        vars(module).get("contextmanager") is not contextlib.contextmanager
+        or contextmanager is not contextlib.contextmanager
+        or type(function) is not FunctionType
+        or function.__code__ is not helper
+        or function.__globals__ is not vars(contextlib)
+        or function.__defaults__ is not None
+        or function.__kwdefaults__ is not None
+        or type(inner) is not FunctionType
+        or function.__name__ != inner.__name__
+        or function.__qualname__ != inner.__qualname__
+        or function.__closure__ is None
+        or len(function.__closure__) != 1
+        or function.__closure__[0].cell_contents is not inner
+    ):
+        raise ValueError("Exact public contextmanager wrapper and generator required")
+    return inner
+
+
+def _contextmanager_bindings():
+    """Include the class resolved by the wrapper, not only its closure."""
+    manager = contextlib._GeneratorContextManager
+    base = contextlib._GeneratorContextManagerBase
+    if (
+        manager is not _CONTEXT_MANAGER_CLASS
+        or base is not _CONTEXT_MANAGER_BASE
+        or manager.__module__ != "contextlib"
+        or manager.__name__ != "_GeneratorContextManager"
+        or manager.__bases__
+        != (base, contextlib.AbstractContextManager, contextlib.ContextDecorator)
+        or manager.__init__ is not base.__init__
+        or manager.__new__ is not object.__new__
+        or manager.__getattribute__ is not object.__getattribute__
+        or manager.__setattr__ is not object.__setattr__
+        or manager.__delattr__ is not object.__delattr__
+        or type(manager) is not type(contextlib.AbstractContextManager)
+    ):
+        raise ValueError("Original contextmanager class and construction dispatch required")
+    path = Path(contextlib.__file__).resolve()
+    code = _interface_code(path.read_bytes(), str(path))
+    codes = {value.co_name: value for value in code.co_consts if type(value) is CodeType}
+    for name in ("_GeneratorContextManagerBase", "_GeneratorContextManager"):
+        codes.update(
+            (value.co_qualname, value) for value in codes[name].co_consts if type(value) is CodeType
+        )
+    for function, qualified in (
+        (contextlib.contextmanager, "contextmanager"),
+        (manager.__init__, "_GeneratorContextManagerBase.__init__"),
+        (manager.__enter__, "_GeneratorContextManager.__enter__"),
+        (manager.__exit__, "_GeneratorContextManager.__exit__"),
+    ):
+        if (
+            type(function) is not FunctionType
+            or function.__globals__ is not vars(contextlib)
+            or function.__code__ != codes[qualified]
+            or function.__code__.co_filename != str(path)
+            or function.__defaults__ is not None
+            or function.__kwdefaults__ is not None
+            or function.__closure__ is not None
+        ):
+            raise ValueError("Original contextmanager construction/entry/exit code required")
+    return (
+        contextlib,
+        _CONTEXT_MANAGER_CLASS,
+        _CONTEXT_MANAGER_BASE,
+        manager,
+        base,
+        manager.__mro__,
+        *_independent_atoms(contextlib.contextmanager),
+        *_independent_atoms(manager.__init__),
+        *_independent_atoms(manager.__enter__),
+        *_independent_atoms(manager.__exit__),
+    )
+
+
+def _source_interface(module, payload, path, names, *, contextmanagers=()):
+    """Compile exact owned bytes as metadata; execute no module or function body."""
+    for name, code, decorators, defaults, keyword_items in _interface_metadata(
+        payload, str(path), tuple(names)
+    ):
+        fn = getattr(module, name, None)
+        expected_decorators = ()
+        if name in contextmanagers:
+            fn = _contextmanager_function(module, fn)
+            expected_decorators = ("Name(id='contextmanager', ctx=Load())",)
         if (
             type(fn) is not FunctionType
             or fn.__globals__ is not vars(module)
-            or node is None
-            or node.decorator_list
-            or fn.__code__ != codes.get(name)
+            or decorators != expected_decorators
+            or fn.__code__ != code
             or fn.__code__.co_filename != str(path)
             or fn.__closure__ is not None
             or fn.__name__ != name
             or fn.__qualname__ != name
         ):
             raise ValueError("Actual exact source function/code required: " + name)
-        defaults = tuple(ast.literal_eval(item) for item in node.args.defaults)
-        keywords = {
-            arg.arg: ast.literal_eval(value)
-            for arg, value in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True)
-            if value is not None
-        }
+        keywords = dict(keyword_items)
         if (
             (fn.__defaults__ or ()) != defaults
             or (fn.__kwdefaults__ or {}) != keywords
@@ -452,15 +569,21 @@ def _import_bound(name, expected):
     return module
 
 
-def _helper_binding(payload):
-    """Exact bytes except two top-level literal values; never execute the image.
-
-    Unlike an AST fingerprint, this retains comments, whitespace and every
-    other source byte. The two omitted values are separately authenticated
-    against the complete constructor image and its explicit review pin.
-    """
-    if type(payload) is not bytes:
-        raise ValueError("Actual helper source bytes required")
+@lru_cache(maxsize=16)
+def _binding_metadata(payload, names, kind):
+    """Cache immutable byte normalization, never source or owner validation."""
+    # Validate cache misses too: equal-hashing subclasses must not prime a
+    # value later retrieved by the exact-type public metadata wrapper.
+    if (
+        type(payload) is not bytes
+        or len(payload) > 2**21
+        or type(names) is not tuple
+        or not 1 <= len(names) <= 8
+        or any(type(name) is not str for name in names)
+        or len(set(names)) != len(names)
+        or type(kind) is not str
+    ):
+        raise ValueError("Bounded exact helper bytes, slot roster and binding kind required")
     tree = ast.parse(payload.decode("utf-8"), type_comments=True)
     slots, spans = {}, []
     lines = payload.splitlines(keepends=True)
@@ -468,7 +591,7 @@ def _helper_binding(payload):
     for line in lines:
         offsets.append(offset)
         offset += len(line)
-    for name in HELPER_BACK_REFERENCE_SLOTS:
+    for name in names:
         writes = [
             node
             for node in ast.walk(tree)
@@ -511,10 +634,43 @@ def _helper_binding(payload):
         normalized.extend((payload[cursor:start], b"None"))
         cursor = end
     normalized.append(payload[cursor:])
-    identity = hashlib.sha256(
-        HELPER_BINDING_KIND.encode() + b"\0" + b"".join(normalized)
-    ).hexdigest()
-    return identity, tuple((name, slots[name]) for name in HELPER_BACK_REFERENCE_SLOTS)
+    identity = hashlib.sha256(kind.encode() + b"\0" + b"".join(normalized)).hexdigest()
+    return identity, tuple((name, slots[name]) for name in names)
+
+
+_BINDING_METADATA_CACHE = _binding_metadata
+_BINDING_METADATA_BODY = _binding_metadata.__wrapped__
+_BINDING_METADATA_CODE = _BINDING_METADATA_BODY.__code__
+
+
+def _helper_binding(payload):
+    """Exact bytes except declared literals, with every live check still required.
+
+    Key normalization by the actual bytes, slot roster and binding kind. The
+    core/profile clones supply different rosters through their own globals.
+    Source reads, complete back-reference hashes, module identities and owner
+    validation remain outside this bounded metadata cache.
+    """
+    if (
+        type(payload) is not bytes
+        or len(payload) > 2**21
+        or type(HELPER_BACK_REFERENCE_SLOTS) is not tuple
+        or not 1 <= len(HELPER_BACK_REFERENCE_SLOTS) <= 8
+        or any(type(name) is not str for name in HELPER_BACK_REFERENCE_SLOTS)
+        or len(set(HELPER_BACK_REFERENCE_SLOTS)) != len(HELPER_BACK_REFERENCE_SLOTS)
+        or type(HELPER_BINDING_KIND) is not str
+    ):
+        raise ValueError("Bounded exact helper bytes, slot roster and binding kind required")
+    if (
+        _binding_metadata is not _BINDING_METADATA_CACHE
+        or _binding_metadata.__wrapped__ is not _BINDING_METADATA_BODY
+        or _BINDING_METADATA_BODY.__code__ is not _BINDING_METADATA_CODE
+        or _BINDING_METADATA_BODY.__defaults__ is not None
+        or _BINDING_METADATA_BODY.__kwdefaults__ is not None
+        or _BINDING_METADATA_BODY.__closure__ is not None
+    ):
+        raise ValueError("Original byte-normalization cache/delegate required")
+    return _binding_metadata(payload, HELPER_BACK_REFERENCE_SLOTS, HELPER_BINDING_KIND)
 
 
 def _check_helper_backrefs(backrefs, constructor_source, expected_review):
@@ -578,8 +734,15 @@ def _dependencies():
         raise ValueError("Explicitly reviewed fresh-world construction law required")
     if any(module.WORLD_MODE != MODE for module in stages):
         raise ValueError("Exact fresh-world mode must match every original source stage")
+    _source_interface(
+        key,
+        _module_file(KEY_MODULE).read_bytes(),
+        _module_file(KEY_MODULE),
+        ("construction", "validate_closed_seed"),
+        contextmanagers=("construction",),
+    )
+    _contextmanager_bindings()
     functions = [
-        (key, "construction"),
         (key, "validate_closed_seed"),
         (parameters, "validate_completed_history"),
     ]
@@ -1266,9 +1429,17 @@ def _bindings(context):
         _pin,
         _ready,
         _module_file,
+        _interface_code,
+        _interface_code.__wrapped__,
+        _interface_metadata,
+        _interface_metadata.__wrapped__,
+        _contextmanager_function,
+        _contextmanager_bindings,
         _source_interface,
         builtins.compile,
         _import_bound,
+        _binding_metadata,
+        _binding_metadata.__wrapped__,
         _helper_binding,
         _check_helper_backrefs,
         _import_helper_bound,
@@ -1455,6 +1626,7 @@ def _bindings(context):
         api.key.WorldConstructionClaim,
         api.key.ClosedSeedRecord,
         api.parameters.WorldReadyParametersOwner,
+        *_contextmanager_bindings(),
         *(
             atom
             for cls in (Request, StageEvidence, PhaseSeal, Trial, SourceStageTrial, WorldPhaseOwner)
@@ -1502,8 +1674,18 @@ def _active_claim(context):
     _check_bindings(context)
     if type(context.claim) is not context.api.key.WorldConstructionClaim:
         raise ValueError("Actual same active WorldConstructionClaim required")
-    context.claim.check()
-    if context.claim.parameters is not context.p or context.p is not context.parents[1]:
+    # The original public getter performs the full active-state validation.
+    # Call that retained getter directly: instance attribute dispatch or a
+    # property subclass must not bypass it when the duplicate check is removed.
+    descriptor = vars(type(context.claim)).get("parameters")
+    if type(descriptor) is not property:
+        raise ValueError("Original checked parameter descriptor required")
+    getter = descriptor.fget
+    if not any(value is getter for value in context.bindings) or not any(
+        value is getter.__code__ for value in context.bindings
+    ):
+        raise ValueError("Original checked parameter getter/code required")
+    if getter(context.claim) is not context.p or context.p is not context.parents[1]:
         raise ValueError("Original world-ready claim/p association changed")
 
 

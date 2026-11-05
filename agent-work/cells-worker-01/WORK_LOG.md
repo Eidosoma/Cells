@@ -9769,3 +9769,687 @@ is sealed; all65 current-byte controls and13 terminal outcomes are bound.
 Substantive exact-pin delivery to Chief and Specialist again failed at the
 stale MCP endpoint. The full handoff is posted in this thread for their native
 queue/read path; no source/result bytes or immutable log copy were changed.
+
+### Read-only INIT-to-SIM / restart boundary map — 2026-11-04
+
+Root accepted65 source/software via review060c601d. The exact providers remain
+fixed for Specialist's one detached changed-image pilot; Key queried no job.
+The next assignment was read-only source boundary mapping, not implementation.
+
+Map13865fff33ead02bc26703f1df844d3f09fd1f85821f1c1b6d5c151dcadd3fb2
+is init-sim-restart-boundary-map.json in the existing output root. It pins22
+repository files and16 complete original method direct-write/call rosters.
+No candidate import, code compilation/execution, owner getter, test or native/
+RNG/reference operation occurred. The first metadata extractor selected
+init_growth under the wrong original class and stopped before output; the
+correct roster identifies Molecule.init_growth. No source changed.
+
+Earliest missing authority: ShortHistoryOwner explicitly requires selected
+stop and no normal loop return. Its source_completed flag describes that
+bounded scope and cannot become exhausted INIT or a SIM/checkpoint parent.
+The actual native caller creates a new SIM phase around retained sim/cells
+and current p, with new cache/handler, sim.dyna and five native timing writes.
+Reinitialization, actual static RNG, events, native molecule/channel state,
+storage reset and independent source calendar must retain their real epochs.
+The native post-loop _pickle_phase also changes points_tree/cellso before IO;
+any headless terminal law must explicitly cover or exclude those effects.
+
+Old molecule54 lifecycle/checkpoint/INIT bridges are reusable implementations
+but accept a different supplied typed three-call domain. Their graph codec
+refuses the native claims/classes/functions/proxies, live RNG and writable
+view graph; neither a saved receipt nor copied buffers can bridge authority.
+Restart cannot rerun native run_sim_core setup or reconstruct success by INIT
+replay. Proposed next coherent package is a fresh natural-terminal owner plus
+molecular closure, from an unconsumed genuine ElectricalOwner. Exact new Key/
+Specialist paths and later shared ancestor hooks are proposed in the map;
+no files/API are created or adopted, and current pilot sources stay fixed.
+
+### Natural-terminal molecular runtime — 2026-11-04
+
+Implemented only the new betse_native_init_terminal_molecules production,
+paired unit-test and software-runner paths. Accepted retained0a4b/runtimeb2d/
+Completion1acb and existing providers remain byte-fixed. Root owns the new
+terminal consumer; no ancestor hook, producer adoption or existing owner was
+changed. Direct outgoing thread delivery still fails at the stale MCP URL;
+the substantive source/API handoff is also posted in this thread.
+
+The separate opaque claim reads the actual configured INIT count, retains the
+whole original calendar/sampling/context, and requires every original molecular
+iteration plus natural loop return and normal solver-context exit before native
+pickle. Raw return identity, admitted frame/code/globals/roles and actual normal
+context arguments are checked again at closure and later validation. Selected
+short-history claims are excluded. Original observer/numerical bodies are reused;
+only metadata accounting, source bindings and terminal closure are new. Closure
+failure is irreversible and retains primary/cause, raw partial and secondary
+recovery errors separately. No receipt or synthetic ledger issues a native owner.
+
+Final software04 has72 fresh distinct blocked controls, 72 empty guard records,
+and both hooks restored. The earlier software01/02/03 images retain29/39/64 on
+their respective source bytes; these are204 total test executions, not204 cases
+or scientific credit. All8 metadata/software processes completed and have been
+reviewed locally. CPU2/one thread, metadata512MiB/software1GiB,480s,8GiB reserve
+were enforced; final software peak269828096B,6.024803s. No actual native factory,
+INIT/SIM/RNG/reference/numerical/issued-owner work or detached query occurred.
+
+Current producer12416c0d/test9d745b59/runnerac3aab99 are frozen in software04.
+Consolidated receipt is native-init-terminal-molecules-development-20261104-01/
+terminal-runtime-results.json under /mnt/workspaces/Cells. All four adoption
+gates remain None. Root's actual typed terminal consumer and a coordinated
+fresh Completion/storage/electrical ancestor-hook window are prerequisites;
+there is no ShortHistoryOwner promotion, SIM/checkpoint or native pickle claim.
+
+### Molecular permission contract — 2026-11-04
+
+Root source/results review909f24f0 cleared the sealed natural-terminal72/runtime
+producer12416; its frozen Completion1acb remains historical. Root then reported
+the independent short-history pilot's permission-length refusal. Specialist
+owns the consumer union change; Key owns only Completion, its paired test and
+the existing Completion software runner's explicit focusedCPU2 mode. No change
+to first_step, storage, electrical, retained/world or the sealed terminal3.
+
+The full child tuple is still compared with its exact source-derived public
+contract, with unique actual holders, complete field sets and lease.objects
+membership unchanged. Added independent checks of the actual enabled molecular
+parent/session, original lease+child claimant, canonical source/runtime module,
+active or closed record identity and canonical permission tuple identity. The
+public contract must also cover every canonical runtime row/field. No ancestor
+filter silently drops new holders, and copied rows cannot acquire authority.
+The unchanged ordinary route does not consult a molecular provider. DefaultCPU5
+software remains available; the new CPU2 mode fixes the focused metadata selector
+and enforces the packet's actual CPU/selection before collection.
+
+Final software02 has29 fresh passes (24new+5affected),149deselected; software01's
+25 passes are retained on its earlier test bytes. All4 preparation/software
+processes completed and were reviewed locally, with29 empty guards on final
+bytes. Final software5.274273s/266915840B; CPU2/one thread/1GiB480s/8GiB reserve,
+metadata512MiB. No actual factory/native/INIT/SIM/RNG/reference/numerical or
+issued-owner work, new pilot, old-job query or broad regression occurred.
+
+Stable producerf5b39a58/test85e13833/runnerfa960934 are frozen in software02;
+Specialist's consumer1a984ddc is a separate candidate, not adopted here. The
+original282.2225s failure and reviewed9cebbfb7 remain failed/frozen. Source
+preimages are preserved beside the new permission-contract-results.json under
+native-init-molecular-permissions-repair-20261104-01. Terminal ancestor scope is
+included there as a future coordinated plan; no closed hook window was opened,
+no existing source pins were silently refreshed, and no code was staged/committed.
+
+The final base receiptff10c93d was already fully written before the interruption;
+read-only recovery verified all three stable pins without another test. Direct
+MCP delivery again failed at its stale URL; Specialist recovered/adopted the
+existing receipt explicitly. Additive final deliveryee96fc2f preservesff10 and
+records qualification-limitsb70cdc4e: the enabled legacy first_step public
+contract is still base-only. Noncontinuous positive controls substitute a
+merged contract on unissued metadata and grant no positive live legacy route
+credit. No legacy source was repaired or numerically accepted here. The sixth
+bounded process only sealed that disclosure/plan; all6outcomes are complete,
+with no extra test/native execution.
+
+Read-only terminal ancestor plan5b9884f5 is complete. Exact future hook scope is
+retained INIT, Completion, Storage and Electrical with paired focused controls,
+plus coordinated static producer/consumer gate bindings. It requires distinct
+one-shot terminal registries, strict three-route exclusion, same original
+owner/objects/calendars, a natural closed-result branch and an explicitly
+authenticated terminal runtime rather than the short-runtime getter. Existing
+ancestor dispatchers and source/registry rosters must route that factored epoch;
+no old numeric snapshot or completed ShortHistoryOwner is reused. Root owns the
+terminal consumer public-contract correction and source/release coordination.
+Parameter world provider remains fixed. No ancestor hook has been edited and
+Specialist's separately launched changed-image pilot has not been queried.
+
+### Held natural-terminal ancestor integration /512 — 2026-11-04
+
+Root opened the coherent ancestor batch after accepting the separate provider
+and consumer. Six owned ancestor paths (retained INIT/Completion/Storage/
+Electrical plus Completion test/runner) now carry distinct terminal routes,
+one-shot registries and three-route exclusion. Added canonical terminal-runtime
+authentication, configured-count/maximum correspondence, whole-state pre-source
+proof and natural closed-result checks. Numerical bodies and the parameter
+world-construction provider are untouched. All new adoption gates remain None.
+
+Root read the frozen H pilot terminal; Key inspected only that requested saved
+failure, no process query/retry. It reaches the first parent permission check
+after setup has begun. The existing no-source-attempt reserved gate stays
+unchanged: consumers must call their existing authenticated parent check after
+bindings/before-state proofs and BEFORE _account/_run. Root/Specialist own those
+call sites. Six focused controls exercise early full proof, mutation refusal,
+late setup/loop, and admission-versus-executed attempts without clearing ledgers.
+
+Root's unchanged config5s/.01 implies500 INIT steps. Only the separate terminal
+provider was extended to512 with its own metadata ledger constructor; unchanged
+pairing bodies are inherited and authenticated, not an old owner/constructor
+rearmed. Short runtime remains64, MAX_WORK100000/resources unchanged. New full
+500/512 ledgers and513 refusal are metadata controls, no numerical cases. The
+reviewed72/64-bound image stays frozen. Root owns separate consumer capacity.
+
+Current ancestors02:53 passes=24 new ancestor/seal checks+29 affected permission
+checks,149 deselected. Current runtime512-01:76 passes (72 affected+4 capacity/
+pairing controls). Earlier ancestors01:22 passes on its earlier image remain
+separate. All6 preparation/software processes completed; no native/factory/
+INIT/SIM/RNG/reference/issued-owner/numerical work or extra pilot. Storage source
+proof now uses the actual shared interface helper directly; a non-stubbed proof
+and changed issuer-code refusal cover that seam. Source preimages6 are bound
+at source-before.json SHAa74ffb4d in the new ancestor integration output root.
+The new inherited metadata fixture supplies a weak registry key only, never a
+DynamicsOwner. The enabled legacy first_step public contract remains unmodified
+and receives no positive credit. Gate/binding adoption and actual parent/source
+qualification remain external Root-owned prerequisites.
+
+### H/terminal pre-source caller seal — 2026-11-04
+
+Root transferred only the H/terminal drivers and their paired tests. Added the
+same local _pre_source_parent_check to each; prepare calls it after complete
+before/stable/alias proofs and before _account/_run. Existing parent metadata
+authentication runs before and after the exact retained check callable, the
+attempt/raw return remain forensic context, and returned electrical identity
+must be exact. Original primary/cause pass through unchanged. Missing proofs,
+late setup/loop or any attempted source work refuse before invoking the parent.
+No ancestor/runtime/runner, numerical body, count64/512 or work cap changed.
+
+Current focused controls:15H+15terminal passed onCPU4 with empty native guards,
+complete45reports each and both hooks restored. Both reusable runners are
+unchanged. Five bounded preparation/software processes (including the new
+CPU6 pilot preparation) completed and are locally reviewed. Driver AST deltas
+are only prepare+new helper; full preimages4 are preserved in source-before.json
+SHA849d01e7 under native-init-pre-source-permission-seal-20261104-01.
+
+Root explicitly authorized one corrected actual-issued H value-only synthetic
+diagnostic, using the existing CPU6/1800s/1GiB/8GiB envelope and durable detached
+controller. Its immutable inputsb0cd6559/sourcecf19ce42 bind the current checkout
+and exact dirty/untracked sources. The declared pre-birth toy acquisition is
+not native/operator/RNG/reference/science authority. Prior failed pilots remain
+failed; no other three cases, retry or terminal status query are authorized.
+Launch/result identities are recorded in this package; pending detached work
+requires a later requested saved-terminal review, not assistant polling.
+
+### Issued natural-terminal synthetic package — 2026-11-04
+
+Only two new reusable paths were added: test_betse_native_init_terminal_issued.py
+and betse_native_init_terminal_issued_software.py. The four caller files and all
+reviewed ancestors/runtime remain fixed. Fresh genuine public issuers consume
+declared pre-birth toy inputs; the new five-label calendar has a normal loop,
+solver-context exit and caller return, with separate retained-flux and mid-loop
+failure branches. This is synthetic ownership/transport work, not original
+BETSE/native/physical or biological admission. No H owner or selected stop is
+used. Inherited fixture declarations are explicitly distinguished from executed
+terminal work. Failure checkpoints use actual request/consumption edges; source
+primary/cause survive separate capture/writer/cleanup failures.
+
+controls01 failed before execution: literal selection used expression syntax
+and fixture definitions reached the source guard. Its process exit0 was not
+test success; the CLI now propagates the inherited pytest status. controls02
+failed at inherited fixture setup because its required base namespace alias was
+missing. Both frozen images and failure evidence remain. controls03 passed26
+software cases; controls04 passed30=26 affected+4 new pre-birth configurations,
+90 reports,30 native guards and30 operator/RNG guards, all empty, both hooks
+restored. No public terminal owner was issued by those cheap cases. All nine
+bounded metadata/software processes are locally reviewed: seven semantic
+completions and two preserved failures (one saved process exit was misleading).
+
+Root authorized exactly one issued value-only pilot onCPU7 with the existing
+1800s/1GiB/8GiB reserve envelope. Prepared immutable inputscaf938e6 and launch
+45ffb439 (PID177572 at launch) are in native-init-terminal-issued-development-
+20261104-01/issued-value-only-1800-01. It is detached and has not been queried;
+there is no completed-history credit. The other three issued branches remain
+unlaunched/held; no automatic retry. Existing H/SEED detached work was untouched
+and unqueried. No source was staged/committed and shared status was not edited.
+
+Root's requested saved-terminal check subsequently found the CPU7 pilot failed
+before collection after4.026s/255713280B, at retained_world_software.child's
+explicit long-preparation check. Root supplied process/failure.json SHAad64af5a;
+only that saved failure and its stderr were inspected. No test report, final
+guard or issued-history credit is claimed. The earlier8c95 source/result and
+45ff launch stay immutable; there is no retry. Root separately reported the H
+pilot completed, without any Key query or reuse of its owner here.
+
+The two-file source successor shares one exact integration envelope between
+prepare and validation: single_named_pilot and native_bodies_operators_RNG_
+reference_and_science_held now match the actual inherited child contract.
+Nested field types are exact. The existing unmodified inherited child call is
+factored into _inherited_child, used by the real child launch path. Eight new
+written controls exercise both480/1800 actual inherited preflights to a guarded
+stop at the final worker call BEFORE its body/collection; real JSON, frozen
+source verification, definition imports and producer checks are not stubbed.
+Four malformed fields and the exact failed packet vocabulary refuse; one AST
+control checks preparation/launch share those seams. No owner is supplied.
+
+Per Root's disposition this revision is SOURCE/STATIC ONLY. Syntax, Ruff and
+format checks pass; none of the eight new or thirty affected software cases
+were executed on these bytes, no fresh execution snapshot was released and no
+software/owner/native job was launched. Four caller/current ancestor/runtime
+files and all frozen images stay fixed. The source-only evidence is sealed
+separately under child-preflight-source-repair-01; software release/retry awaits
+Root disposition.
+
+Root then explicitly released the cheap blocked group and one fresh corrected
+value-only pilot after clear checks/source review, retaining the same caps.
+child-preflight-controls01 completed38=8 new+30 affected controls on the current
+613b1f25 test/6b4596da runner,114 reports,38 empty native and38 empty operator/RNG
+guards, both hooks restored. Actual unchanged inherited480/1800 preflights each
+reached the downstream worker call and stopped BEFORE its body, collection or
+owner setup. Four malformed required fields and the exact failed vocabulary
+were refused by the real inherited code. No positive owner was supplied or
+issued by this group. Local source reviewd4f8d62e finds the exact contract clear
+for this authorized synthetic pilot; independent Root admission is not claimed.
+
+All three newly bounded metadata/software/preparation outcomes completed and
+were locally reviewed. Root's prior provided failed pilot remains failed,
+separate from these passes. Fresh issued-value-only-1800-02 was detached onCPU7,
+PID196784 at launch, input2ef7003a/launch07f41248;1800s/1GiB/8GiB reserve and one
+thread unchanged. No polling, automatic retry or completed-history credit.
+Other three issued branches/native/operator/RNG/reference/science stay held.
+The new complete milestone is child-preflight-controls01/source-result.json;
+old receipts/images and all production/ancestor/runtime bytes remain fixed.
+
+### Genuine retained INIT/current-parameter SIM preparation — 2026-11-04
+
+Root assigned the next source-only boundary while the CPU7 terminal pilot is
+detached. Four NEW owned checkout paths implement init_sim_preparation source,
+driver, test and reusable software runner. Existing production, Root/Specialist
+and launcher paths were not edited; neither detached pilot nor SEED was queried.
+Cheap controls useCPU4/one thread,512MiB metadata/1GiB software/480s/8GiB reserve,
+leavingCPU7 to its independent pilot.
+
+Inspection pins original SimRunner/SimPhase/Simulator ordering. Native sim()
+loads sim/cells/p_old, compares old/current general/world configuration, then
+creates a NEW SIM phase/cache/handler with retained sim/cells and current p.
+The constructor changes sim.dyna, sets current p._run_sim=True and SIM timing;
+run_sim_core later invokes init_dynamics, clear_storage, update_V and _plot_loop
+in that order. This package selects only actual SimRunner construction plus
+the original configuration-compatibility method on genuine full INIT and a
+distinct fresh WorldReady current-parameter owner. Same-p mutation, saved
+loadSim/autoInit/pickle/full-caller history and ordinary supplied N3 authority
+are not inferred. Old material/gates/network/calendar/RNG/value/layout graphs
+must remain unchanged. Current parameter reads share existing exclusion/audit;
+entry reentrancy is refused before metadata/source, attempts remain one-shot.
+Actual verification/history attempts and observed native work are distinct
+journals, not cases. Reused source/callback observers preserve source/capture
+failures separately, with exact raw partials retained in their failure context.
+
+The native prefix is implemented behind explicit release and review gates;
+none of those gates was adopted or executed. Source and executable code are
+read from the existing pinned originals. Initial standalone method compilation
+did not preserve CPython class-context bytecode; the final extractor compiles
+the COMPLETE original module, executes none of it and extracts its class method
+CodeTypes unchanged. Final independent whole-module comparisons are exact.
+
+All12 bounded outcomes reviewed:9completed/3failed. controls01 failed during
+pytest collection inspecting a Foreign sentinel; corrected construction is
+inside the case body. controls02 had1pass/1fail on a raw AST docstring/compiler
+expectation; controls03 had1pass/1fail when the stronger check exposed the REAL
+standalone extraction mismatch (not labelled test-only). controls04 and05 each
+passed33 on their own bytes. Final controls06 passed35=33affected+2guard-closure
+controls,105reports,35empty native+35empty operator/RNG receipts, both hooks
+restored. Earlier passes do not count as current-source or independent credit.
+No actual INIT/SimRunner constructor/compatibility/SIM/reference/RNG execution
+or phase owner was created by the controls; observer toys are metadata only.
+
+Concrete remaining boundary: terminal.InitTerminalOwner has no genuine SIM
+forwarding lease. Before a fresh phase can reassign retained sim.dyna or later
+profiles/events/material, that owner and the new SIM cache/handler lineage need
+an explicit typed handoff; stale INIT snapshot validators cannot be reused
+after mutation. Existing fresh phase-parameter construction can serve only the
+genuine fresh current parameter owner, not a cast retired INIT p. construct_sim
+refuses at SIM_parent_forwarding_prerequisite before any SIM attempt. Native
+positive prefix additionally needs Root-adopted producers, original runtime
+and actual successful complete INIT/current-parameter input authority. No
+source/software result supplies those biological or runtime prerequisites.
+
+### Terminal span admission and compact failure repair — 2026-11-04
+
+Root requested one saved-terminal review: value-only02 failed657.176s/623501312B,
+not timeout. Saved stdout shows _observe indexing a missing loop_span; rich
+pytest function-argument/context repr also reaches MemoryError. This is the
+declared toy adapter omitting canonical namespace setup, not evidence that
+legitimate iterator exhaustion clears the span. Production _namespace always
+bound it; the toy route bypassed that builder and left prepare's None in place.
+The old installed-loop fixture had initialized it manually, hiding that seam.
+No failed source/image/launch was overwritten or given completion credit.
+
+Root transferred exactly terminal.py, its paired test, and the issued test/
+runner. Extracted one-shot canonical _bind_loop_span from the existing namespace
+body and reused it in both production and toy namespace setup. Added exact
+sealed-span admission for loop call/line/opcode events, including normal final
+exhaustion; absence/replacement/bool/reversed bounds refuse before loop work.
+No iterator/calendar replacement, selected stop, numerical-body/tolerance or
+iteration/resource cap change. Installed controls cover full1/3/5 calendars,
+extra iteration, missing span before first body and loss at actual exhaustion.
+
+The owned reporter now sets live short traceback/no locals/fulltrace=False,
+retains compact primary/cause metadata before formatting, and keeps failed
+writers as separate evidence errors. Actual source contexts and supported
+checkpoints remain separate; complete raw failed-owner serialization is not
+claimed. A real separately released failed-child probe retains the exact
+ValueError/OSError cause while an unrenderable object stays in its locals;
+three reports, empty final guards and restored hooks verify cleanup. It remains
+a FAILED diagnostic, not a passing scientific or owner case.
+
+Affected terminal metadata178 passed before Root's pin-only adoption window;
+its original source/runtime image is retained. After Root closed the window
+(adoption13/2a74a698), current issued42 passed and the one expected-failure probe
+was reviewed on coherent ancestry. All7 guarded metadata/software/preparation
+outcomes reviewed:6completed/1intentional failed child. One separate launch
+metadata check failed BEFORE Popen because a validation-only unit test is not
+a reached pilot source; corrected role binding uses its frozen control image.
+No frozen file was added/modified and no pilot was launched by that failure.
+
+Exactly one newly authorized changed-image value-only03 is now detachedCPU7,
+PID222716 at launch, inputa5a309e8/launch13a5fbcc,1800s/1GiB/8GiB reserve/one
+thread. No polling, automatic retry or completed-history credit; all other
+issued branches/native/operator/RNG/reference/science remain held. Root CPU0
+and H jobs were untouched/unqueried. Parent/ancestor/H files were not edited;
+the separately sealed SIM35/8d42 package keeps its historical parent/observer
+pins and remains held, without silent cost-adoption or terminal-source refresh.
+
+
+## 2026-11-04 SIM wrapper/dispatch repair
+
+Receipt: /mnt/workspaces/Cells/native-init-sim-wrapper-repair-20261104-01/source-result.json SHA256 929a5ea8609e4c767aa846ba32cec54eee106c0e54aec5adfe72960c8d5b8a88.
+
+Changed only owned SIM driver/test; source catalog and runner remain byte-identical. Fresh import/factory provenance uses the unchanged reviewed observer in a private SimRunner scope. Selected outer/delegate/class dispatch, receiver and actual arguments are checked after inherited hooks and before stores. Sticky refusals allow independent hook cleanup, preserving primary/cause and secondary capture evidence. Source checker declares authentic stdlib contextmanager wrappers.
+
+Final source: {"src/cells/processes/betse_native_init_sim_preparation.py": "0869a7a052a6499071aaba9b373abfc39ced6ab447aa10e72ebc03c1a4d57aad", "src/cells/processes/betse_native_init_sim_preparation_source.py": "a835006ca4bcc1d848e3c5337560aec91527eae54bdcc0bc64ce15cc2fbe2242", "tests/unit/test_betse_native_init_sim_preparation.py": "1a7539b443f20d98b7bd0b0dbe12703bc484b2af2943a05f015390a25987a6a9", "validation/betse/betse_native_init_sim_preparation_software.py": "14d105d5787e3d0ccc6314399d63c273aa7d4954f8db66a1da56090955a9ed18"}. Final67 =35 existing IDs rerun on final bytes +32 new; native entries0. Software73.276s,274292736B peak; CPU4,one thread,1GiB/480s/8GiB reserve. Ten guarded outcomes checked:6completed/4failed; initial lint and prelaunch failures also preserved. Final static binds exact controls07 bytes; old static artifact untouched. Failed source images remain failed.
+
+No producer adoption, terminal-to-SIM forwarding, native/INIT/SIM/RNG/reference/science or new detached launch. Existing issued terminal pilot stays untouched/unqueried. Root review pending. Next assigned source scope is terminal-local immutable-column retention; frame/alias/owner validation remains live, shared cache/numerical bodies unchanged.
+
+
+## 2026-11-04 terminal immutable-column retention
+
+Receipt /mnt/workspaces/Cells/native-init-terminal-retention-development-20261104-01/source-result.json SHA256 8f1954010f764287fb7c97bb03fc97fd26bd2560c50c3ba0e03e386334041d28. Source51082cdbf7bf574fb7963b4502ee62be2ff64c086f5b103ece53a3f208b862f8; test078d7fe30c680b926a007b7e0c973560f50fc66a5575b634cd8da392bba70112. Existing software runner4f3f1c6d unchanged during this batch, exact current producer recorded.
+
+Fresh complete live snapshot projection and validation remain; pooling applies only to retained caches after capture. Weak terminal-local pool shares immutable bytes with exact dtype/shape/stride/data matching. Each retained column keeps its own ndarray header and original descriptor. Invalid/mutable/shifted backing, header/pool drift, changed NaN/signed-zero/dtype/shape refuse or remain separate; no old owner/cache becomes current authority. Raw fresh capture retained on refusal. Original numerical bodies, live graph/source/RNG checks, frames/locals/raw-return evidence and caps unchanged.
+
+44 distinct blocked controls =20new+24affected across38+6 on identical owned source bytes. All6 guarded outcomes reviewed:5complete/1failed collection-only selector attempt; failed metadata seal path lookup retained separately, no test rerun for sealing. Actual500 fresh625x625 binary64 Cache captures:3,125,000 shared retained matrix bytes +3,125,000 last raw-fresh bytes +181,390descriptor bytes;500independent ndarray headers. Unshared matrix payload lower bound1,562,500,000B. Software controls02 peak533,696,512B,35.177s; CPU4one-thread1GiB/480s/8GiBreserve. Metadata/style check and source-function delta review saved.
+
+This is one synthetic matrix capacity control and software evidence, not500 native steps/cases. Other changing state and completed frames can still retain significant memory; no complete INIT resource/serializer/scientific acceptance inferred. Shared cache/codec/field producers and all held actual gates untouched. Existing detached pilot unqueried. Root source/evidence review pending.
+
+
+## 2026-11-05 completed-INIT to fresh-SIM constructor package
+
+Receipt /mnt/workspaces/Cells/native-init-sim-assembly-development-20261105-01/source-result.json SHA256 370aa4c0e65fe917babf23452e4d9d09aed79cd3ae235c08df3913da0d0c5ad0. Interface21f38887052d0cde1ea4dc3aca3cc4c303f5e4a2f3015ef16fec7326075e1992. Four new source/driver/test/runner paths, minimal terminal retirement hook, and existing SIM driver/test R2/R3 repairs; other lanes untouched.
+
+Actual completed terminal owner is retired irreversibly, never rearmed or reconstructed. Consumer uses the genuine successful runner preparation plus distinct actual current WorldReady and public SIM phase parameter claim. Source compiles full pinned original modules/classes; independent fresh phase import/factory observer uses unchanged existing monitored bodies. Native original constructor and exact handler STORE_ATTR witness are staged; full remaining old state/graph/calendar/RNG and new object fields retained. Endpoint before sim_info_report/run_sim_core; actual bound targets checked but no numerical execution permitted. No successful-SIM owner/iteration/cache grammar supplied to Specialist.
+
+Root R2/R3 folded: direct raw trace witness before inherited exception/return hook, ordinary/falsey primary/cause unchanged, failed observation sticky for another delegate; selected operation and cleanup share an entered frame, pending stdlib generators completed explicitly under trusted cleanup.104 final software passes=30new route+74dispatch, including7new residual controls. All8 guarded outcomes checked:7completed/1failed. Initial dispatch01 had74 pytest passes but FAILED final prior-hook prerequisite, preserved. Finaldispatch02 passes both hook checks; assembly02 also complete. Static final binds exact final7 files. No actual native/INIT/SIM/RNG/reference/checkpoint release or new detached job. Existing pilot and Root/Specialist jobs untouched/unqueried. All provider/review gates remainNone; Root review/adoption pending.
+
+## 2026-11-05 original SIM report/full-loop source preparation
+
+Receipt /mnt/workspaces/Cells/native-sim-run-development-20261105-01/source-result.json
+SHA256 bff18b9944865fbcad96893066375a52145aae0e20f014a796b75c974fdf399c.
+Conditional interface d104b38082e632dedde63efec0302db0afac1ee1376292ea418ecf3ee4588a95
+is sibling interface.json. This append is a work log, not another producer pin.
+
+Four new Git source/test/runner paths prepare the actual original report and
+run_sim_core complete-calendar route, without duplicating equations or running
+native source during controls. The driver retains setup/material/state/text,
+calendar, sampled storage, ordered event calls, aliases/layouts and complete
+NumPy/stdlib state; original normal loop/context return is required before the
+pre-pickle instruction boundary. No INIT claimant or completed p is rearmed.
+Original and omitted-flux-inverse modes remain distinct; no flux repair.
+
+Root's three assembly findings are folded into assembly/terminal: authenticate
+actual nested import-issued constructor/helper entry, including ABC/super and
+hidden defaults; sticky terminal reservation before fallible authority with
+real profile-return reentry control; sticky observation refusal before another
+native delegate while retaining primary/cause and secondary errors. Source
+delta binds original716/88b images and all other prior definitions unchanged.
+Five other previous assembly producers remain byte-identical.
+
+Final65 blocked controls pass in controls03:7.17s pytest,12.069s guarded child,
+275939328B high-water. Snapshot502 files and1433 actual loaded runtime pins per
+image verified. Intermediate55/61 stay with their own bytes; no final recredit.
+All7 guarded outcomes reviewed/completed:three prepare/software pairs and the
+metadata reader. Native/operator/RNG attempts empty; both final hooks/cleanup
+verified. No native BETSE module loaded. Initial unfrozen lint failure retained
+separately, explicitly lacking an executed/frozen source binding.
+
+All actual native/INIT/SIM/reference/RNG/trajectory/science/checkpoint work stays
+held. No actual successful SimRunOwner/payload issued. Public interface requires
+reviewed exact producers, real completed INIT/current p and fresh observed native
+import before INIT; unknown helpers refuse. No supplied/cached parent or import
+replay. Failed native contexts expose raw frames/returns and completed prefixes
+through partial; complete raw live-owner serialization is not claimed. Existing
+pilot/other jobs untouched/unqueried; no detached launch, staging/commit or shared
+status edit. CPU4 free. Final direct Chief delivery failed at stale MCP URL;
+immutable local receipt/interface are ready for native-queue review and relay to
+Specialist. New Root current-p receipt26212f9e was received during sealing; no
+producer or scientific adoption is inferred and its owned files were untouched.
+
+### SIM observation roster and binary RNG successor
+
+Specialist requested the actual projector and filtered field-object rosters,
+then identified the real inherited NativeStream/Cache mismatch. Successor
+/mnt/workspaces/Cells/native-sim-run-development-20261105-01/observation-surface-source-result.json
+SHA336be0eb9df275be14e9cba6381b1a6c259316ddeb530978d51ad9d36327e84a;
+interface3e254dee0777ea864de0d4822df069a39830b58b64cf2052fa9fb65609d0185e.
+Only driver291a6dbd339b79cce314d42a3055de5eff4ca65a801efff93fc77adc3cbd3d73
+and test3701a2205022698e64734f1ec8c7b3b195a75597b8dcb12d21e361bc1eafc773
+changed; other four producers and old65 image remain exact.
+
+completed_sim authenticates the actual owner before exposing immutable tuples
+of ordered actual root/field references; historical indices/alias occurrences
+are preserved and snapshot/closed validation rejects field identity/order drift.
+The NumPy reader now captures actual MT19937 words/index/flag/binary64 Gaussian
+as Cache, alongside the stdlib Cache, retaining the original NativeStream
+separately. No JSON hydration, RNG draw or reset. If the original reader refuses,
+available binary state and the same primary remain retained; no relaxed domain.
+
+Current79 software passes=14new+65affected. Focused14 and final79 use identical
+owned bytes. All5 guarded outcomes completed/reviewed; initial ABC-fixture B024
+static failure remains failed before snapshot/worker entry. Signed zero and two
+distinct NaN payload/sign controls verify typed bits, including original-reader
+refusal. No actual native/RNG/source/INIT/SIM/reference work or owner issuance.
+Names/gates unchanged, Root review/adoption pending. Direct final sends to Chief
+and Specialist both failed at stale MCP transport; local receipt/interface are
+sealed. CPU4 free, no detached job or old-job query.
+
+### Four-provider import composition repair
+
+Root found runner import retained canonical _ACTIVE/_LOCK. Latest consolidated
+successor /mnt/workspaces/Cells/native-sim-run-development-20261105-01/import-composition-source-result.json
+SHA18d047eec0845fdefab7d14b17cafe4d270a05c89874fefbc638ce2e9aee1fbb.
+Preparation e471c84f5f8450305d06eaa18859a0da3ecb725491ca8a02b735560c58c6a364
+now owns private active/lock state and guards identity/canonical aliases. Only
+_wrapper_api changed among prior definitions; caller _entry_guard, original
+wrapped bodies/signatures/defaults stay exact. Runner now freezes this seventh
+producer explicitly; main SIM291a6 and observation interface3e254 remain fixed.
+
+84 current blocked controls=5new+79affected; focused5 and final84 on identical
+owned bytes. All5 guarded outcomes completed/reviewed. Actual provider namespace
+builders/public manager bodies compose in a metadata-only model: four active
+registries/tool slots, LIFO cleanup, predecessor shared-active refusal, original
+callback failure/cause and insufficient-slot refusal. Monitoring/backend I/O
+simulated; synthetic closure rows publish only to model maps, never real wrapper
+or owner authority. No actual native import/factory/source/RNG/INIT/SIM/science.
+65/79 images and all earlier failures remain unchanged. Latest Root send failed
+at stale MCP URL; complete local milestone ready, adoption held, CPU4 free.
+
+### Complete immutable SIM observation storage
+
+Root predicted repeated625x625 inverses exceeded1GiB; prior SIM snapshots did
+not share columns. Latest complete receipt
+/mnt/workspaces/Cells/native-sim-run-development-20261105-01/storage-source-result.json
+SHAd6dc895b068f5e9651ea070b1032772105ae84967d8ab1e0f51ac66890311e8c;
+producerffbb211ed08fbbdd486c655ff2a9304b3efed5235e242c5282b62ac5d6b38bec,
+current interface7082446b40e77486592fac9271a56da6bdb16308895cf6d66a7a265509a116ac
+at sibling storage-interface.json. Only driver/test changed from prior batch;
+_snapshot/_stable/_context changed, remaining prior definitions AST-exact.
+
+Fresh complete value/stable captures reuse unchanged terminal immutable storage
+helper: exact bytes/dtype/shape/strides, independent headers, full descriptors,
+live graph/aliases and every field preserved. No scientific-state cache. First
+pooled capacity attempt failed MemoryError at729374720B/18.10s, preserved. The
+unchanged recursive cache capture/validation functions can retain temporary
+column buffers through closure cycles; small controlled witness verifies this.
+Recorded metadata collection every32MiB fresh payload bounds that lifetime,
+without shared codec changes or cap relaxation. Exact first failed allocation
+ordinal/counters unavailable; no unsupported full cause claim.
+
+Final92 blocked controls=8new+84affected pass (56.505s/318922752B worker).
+One synthetic350-snapshot/two625x625 matrices plus duplicate occurrence retains
+1050 complete columns/independent headers with6,250,000B unique retained bytes,
+9,375,000B last raw-fresh columns and6,250,000B live inputs. Conditional unshared
+column payload3,281,250,000B. This is metadata capacity, not350 source timesteps
+or derived inverses. Changing state/frames/RNG/raw evidence can still consume
+memory; fullSIM total resources unqualified. All8 guarded outcomes reviewed:
+6completed/2failed, including first metadata reader's wrong success-file name;
+corrected reader uses retained child-failure.json, no science/software rerun for
+that packaging correction. All original images/failures intact, actual source,
+native/RNG/reference/INIT/SIM/science remain held. Public names/rosters/RNG API
+unchanged; Root review/adoption pending. Direct Chief/Specialist sends still
+fail at stale MCP URL; local package sealed, CPU4 free, no old-job queries.
+
+### Consolidated SIM capacity, admission and observer successor
+
+Root84 review20b4ddf7 identified pending-admission, handled-helper exception and
+recovery blockers; separate finding predicted quadratic metadata-row exhaustion
+at350/512 calendar entries. Latest consolidated receipt:
+/mnt/workspaces/Cells/native-sim-run-development-20261105-01/capacity-source-result.json
+SHA56227e403bbee05b2539eef3026a539fa84fa3162102f2ce68a05b466035311b;
+interface sibling capacity-interface.json
+SHAe96bcba8826d172b49d419f365e46752592211d70a6efbcdaf24a682564a6a04.
+Driver e322c4d845bd81e9db4c6b50b29d3445be035b40d74e6b88dfaf9907a067eb9d,
+test2c7aba1036be128b3cb2ff2abf23c0c5195c5f95b93404048092b3ca10e38e45.
+Other five producer pins unchanged; old storage/import/79/65 packets immutable.
+
+Actual issued requests are now irreversibly reserved before _ready/_context;
+profile call/return reentry is sticky and cannot create a second context/owner.
+Failed preparation retains request/context/original error/cause and secondary
+recording failures. Helper exception/unwind observations stay forensic; only an
+actual error escaping source execution becomes primary. Raw returns and recorder
+failures are separate. Protected recovery plus independent finite caller-side
+restoration/sampling preserve primary/cause despite helper-entry rejection,
+failed setters/getters/error writers. Final hooks require object identity.
+
+Every historical cache occurrence still reaches the original validator freshly
+on every public authority check. One complete sweep is one metadata operation;
+its exact nested attempted/returned totals, absolute attempt start and original
+failed cache/index/error remain retained. completed_sim adds a detached count/
+tuple document; no mutable ledger is exposed. Source/C100000 and metadata
+operation-record100000 limits unchanged, as are memory/wall/reserve guards.
+The newly explicit operation/nested-count distinction is not numerical credit.
+Models count741300 nested calls/700 rows at350,1582080/1024 at512. These use a
+metadata leaf counter, not original full-payload throughput. Actual quadratic
+cache-validation CPU/runtime remains unqualified; no history omitted or reused
+scientific state. No observation-interval or consumer API changes required.
+
+Final130 fresh software passes=38new+92affected,95.422s/325156864B high-water.
+Focused38 precedes the final exact-hook identity tightening; final130 binds the
+current seven producer pins,502 frozen source files and1433 runtime origins.
+All8 new terminal outcomes reviewed:6completed/2failed (7guarded plus one static
+bootstrap). First image27pass/1failed on the synthetic observer's missing guard
+adapter; remaining cases unrun. That failed image/complete failure payload stays.
+Second bootstrap Ruff aborted allocation before snapshot/child, with no final
+process environment/RSS inventory; subsequent controller explicitly applies
+single CPU/thread environment, without cap relaxation. Focused38 and final130
+workers completed. Metadata reader verifies all runtime/guard/source bindings;
+all native/operator/RNG attempt lists empty and both final hooks restored.
+
+No actual native/source/RNG/INIT/SIM/reference/scientific work, owner issuance,
+new detached launch, old-job query, shared status edit, staging or commit.
+Source/result review and actual resource release remain Root-owned. Root and
+Specialist final direct sends again failed at stale MCP URL; exact local packet
+is sealed for native-queue delivery. CPU4 free; current producer bytes stable.
+
+### Public completed-history observation interval
+
+Root/Specialist clarified the actual consumer needs2N+8 complete validations,
+749772 cache occurrences at350 before nested work. New three-file producer is
+separate from the byte-stable e322 capacity130 SIM source. Receipt:
+/mnt/workspaces/Cells/native-sim-history-observation-development-20261105-01/source-result.json
+SHAc17d2c709c7e1d6e8393d4df7feae04f98a5b8378942112987a5346499e6e3a8;
+interface sibling interface.json
+SHA952daaa1caed8b20580cb2a7aaf9eadc19fef33f74b1545748bd7e43c5b549c6.
+Production06aec8e44e02cb3a65ebc076bfc98190ce8d1f035d14ccebd89c3198b11c7d24,
+test5195967caed84ed2492589c90b0568d2cdcbe35b23ba62522092b17dee393e47,
+runnerdc78438c8df5dcc2db417ffcfe2754fc8a46e942cb63fc9fcadc2ee22d8fd090.
+Only NEW betse_native_sim_history_observation source/test/software paths changed
+in this milestone, plus this log. All seven capacity130 producers remain exact.
+
+Public observing_completed(owner,*,enabled=False) is the stdlib contextmanager
+wrapper; __wrapped__ retains the original generator/kwdefault enabled=False.
+Actual active token CompletedHistoryObservation exposes completed_sim(),
+validate_sim(*,row=None,caches=()), call(callback,*args,row=None,caches=(),**kwargs)
+and record after closure. Consumer wraps only the external capture function;
+recursive interval calls refuse. Every actual row must be freshly payload-
+validated before successful closure. row/caches require original retained refs.
+Record is diagnostic frozen data, never a new history/execution parent.
+
+Original full authority/cache validation brackets the interval, including
+attempted failure exits. Each boundary checks original owner/context/trial/rows,
+complete Cache/column/descriptor roots, exact whole immutable bytes/header/dtype/
+shape/stride/storage associations, plus fresh existing stable/live value/graph/
+RNG checks. Original validators again check each selected row's after+two RNG
+caches and explicit static captures. No numerical-state result is reused.
+Immutable byte identity is a bit association under Python's immutable-bytes
+contract; the entry/exit and selected payload paths still hash through the
+original codec. Shared parent pending marker and active/mutex interval prevent
+run admission; reentry/captured failure stays sticky. Full raw callback inputs,
+results/errors, original primary/cause, separate exit/cleanup evidence and
+explicit nested/source work counts remain retained; no hydration/decode path.
+
+First27 blocked controls passed on their own frozen image; final33 adds class
+dispatch/executable and callback failure controls,157.452s/278302720B. All5
+guarded outcomes complete/reviewed (two prepare/child pairs plus metadata);
+505 frozen source files/1433 loaded runtime files. Actual BETSE/native/operator/
+RNG attempts empty, final inherited hooks restored. Unfrozen initial Ruff4
+format/import findings were corrected before snapshot, with no run credit.
+350 metadata model uses2118 full-sweep+1050 selected-payload checks/352 operation
+rows;512 uses3090+1536/514. These are scalar metadata/counter cases, not native
+timesteps or large-history throughput. Separate large625x625-column check is
+3rows only. Actual trajectory/resource/physical/checkpoint qualification held.
+Parent56227e40 capacity130/eight outcomes and all earlier failures stay frozen.
+Direct Chief/Specialist final sends still fail stale MCP; local exact API packet
+sealed for queue delivery, Root review/adoption gates remain None, CPU4 free.
+
+### Installed cleanup delegation and retained full-exit authentication
+
+Root combined revieweb86b247 verified prior130+33 evidence but identified two
+remaining source blockers. Corrected ONE batched receipt:
+/mnt/workspaces/Cells/native-sim-observer-exit-repair-20261105-01/source-result.json
+SHAa33d686da8e6f10b4841d7da4cc29f19fd13633ac58cb01b704cb1b326625b7b;
+interface sibling interface.json
+SHA6d5281a12550a54386a0ae8fe811d0347e715dac767d1f192d431706d203d601.
+Run64122f8a333c246733789417e2b1d74b2338e3c5cffee4671085c6f5afd940d4;
+history036a94978d452277ad3722ad19919b005994644b08e175f2b78ba7474fd73d5b.
+Paired tests a92bada9ea50aca13a6e3d5af83902691412396c9127fecb8e3b690a1aab92d9
+and12f8876c9614c9defcd96e8e99bd20393ab4a578772651142a8ecb8af16c3078.
+Only these four producer/test paths changed, plus this log. Runners and all six
+other parent sources unchanged. History explicitly pins the corrected run;
+review/release gates still held. No old snapshots/evidence rebound or overwritten.
+
+Run's installed profile/global/local trace wrappers now keep inherited callback
+delegation when own source observation stops, including original _recover
+entry/early cleanup. Six controls witness still-installed wrappers, inherited
+entry/local-line denial, exact original primary/cause and independent recovery.
+No deliberate prior-hook swap is needed to reach the repaired branch.
+
+History retains the actual full-exit function/code/globals/cached-builtins/
+defaults/closure at entry. Explicit pre/post authentication calls that same
+retained delegate, rather than a mutable parent.validate_sim lookup. Late-body,
+cleanup-return, validator-return and pre-call authentication-return retargets
+refuse with zero foreign validator entries. Code/namespace mutation also
+refuses. Signatures, factory/delegate ABI and record schema unchanged; two
+additional authentication operation records are explicit. 350 history model:
+2118 full+1050 selected payloads,354 operations;512:3090+1536/516. No history or
+fresh-bit checks omitted, budget/resource increase or numerical-body change.
+
+Focused20 run+7 history pass. Final136 run+39 history=175 fresh current controls
+(12new+163affected); old130/33 stay historical. All9 guarded outcomes complete
+and reviewed (four prepare/software pairs plus metadata reader). Run99.721s/
+325267456B, history164.777s/278966272B;502/505 frozen source files and1433 loaded
+runtime files. Native/operator/RNG attempts empty and both final hooks restored.
+No native/reference/INIT/SIM/science or detached launch, staging/commit/shared
+status edits or old-job query. CPU4 free; exact producers stable for Root review.
+Direct Root/Specialist milestone sends still fail stale MCP; native queue/local
+packet required for relay. Specialist's stale06ae binding refusal is correct;
+current036a is not silently promoted, and no review pin is yet available.
+
+Separately completed the requested read-only core-profile compatibility pass:
+no tests/jobs/edits for that pass. One concrete static catalog gap remains:
+native run_sim_core->update_V always reaches get_current, but SIM source PINS
+omits physics/ion_current.py; _bind_runtime adds no electrical-code roster, so
+unknown-native guard refuses it before first SIM step. Original electrical
+source already pins it a9a82ef3. This repair was NOT part of the two source
+residuals above and remains unimplemented pending Root direction. Core flags,
+500/350 bounds, real old/current-p lineage and report/full-loop/prepickle source
+order otherwise match the inspected declared domain; no native admission.

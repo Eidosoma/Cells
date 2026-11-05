@@ -17,6 +17,7 @@ from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_init_dynamics_completion as previous
 from cells.processes import betse_native_init_storage_source as source
+from cells.processes import betse_native_world_phase_construction as interfaces
 
 LAW_ID = "betse_actual_INIT_DynamicsOwner_clear_storage@1"
 RELEASE = "CELLS_NATIVE_INIT_STORAGE_RELEASED"
@@ -36,6 +37,7 @@ ELECTRICAL_ANCESTOR_CLAIM = None
 ELECTRICAL_ANCESTOR_CHECK = None
 FIRST_STEP_ANCESTOR_CLAIM = FIRST_STEP_ANCESTOR_CHECK = None
 SHORT_INIT_ANCESTOR_CLAIM = SHORT_INIT_ANCESTOR_CHECK = None
+TERMINAL_INIT_ANCESTOR_CLAIM = TERMINAL_INIT_ANCESTOR_CHECK = None
 NATIVE = previous.NATIVE
 SIM_FILE = previous.SIM_FILE
 MAX_WORK = 100000
@@ -309,9 +311,12 @@ def _guard(context):
 
 
 def _values(context, *, stable=False):
-    projector = SimpleNamespace(
-        objects=[*context.parent.init_parent.objects, *previous._objects(context.parent)]
-    )
+    # Retain the already-issued parameter/subconfiguration roots as well as
+    # the continuing phase/runtime participants. Completion uses this same
+    # original INIT projector; rebuilding only its later object roster loses
+    # genuine pre-phase wrappers referenced by vars(p).
+    projector = previous.previous.previous._projector(context.parent.init_parent)
+    projector.objects = [*projector.objects, *previous._objects(context.parent)]
     project = previous.previous.previous.core._LITERAL._project
 
     def fields(actual):
@@ -549,6 +554,8 @@ def _binding(context):
         FIRST_STEP_ANCESTOR_CHECK,
         SHORT_INIT_ANCESTOR_CLAIM,
         SHORT_INIT_ANCESTOR_CHECK,
+        TERMINAL_INIT_ANCESTOR_CLAIM,
+        TERMINAL_INIT_ANCESTOR_CHECK,
         context.entries,
         context.metadata,
         *_observer_bindings(context),
@@ -1520,6 +1527,14 @@ def _retain_electrical_failure(context, transition, error):
 def _check_electrical_authority(transition):
     history = getattr(transition, "short_init_transition", None)
     forwarded = getattr(transition, "first_step_transition", None)
+    terminal = getattr(transition, "terminal_init_transition", None)
+    if terminal is not None:
+        if history is not None or forwarded is not None:
+            transition.invalid = terminal.invalid = True
+            raise ValueError("Electrical epoch cannot have multiple INIT descendants")
+        if getattr(terminal, "claimed", False):
+            _check_terminal_init_ancestor(transition, terminal)
+            return transition.storage_parent
     if history is not None and forwarded is not None:
         transition.invalid = history.invalid = forwarded.invalid = True
         raise ValueError("Electrical epoch cannot have two selected descendants")
@@ -1621,10 +1636,10 @@ def _claim_first_step_ancestor(electrical, transition):
         frame.f_code is not module._claim_for_first_step.__code__
         or frame.f_globals is not vars(module)
         or frame.f_locals.get("context") is not electrical
-        or frame.f_locals.get("transition") is not transition
-        or module._FORWARDED.get(electrical.owner) is not transition
-        or context.electrical_transition is not electrical
-    ):
+        or (frame.f_locals.get("transition") is not transition)
+        or (module._FORWARDED.get(electrical.owner) is not transition)
+        or (context.electrical_transition is not electrical)
+    ) or hasattr(context, "terminal_init_transition"):
         raise ValueError("Actual electrical first-step claim frame/ancestry required")
     context.first_step_transition = transition
     context.first_step_key_functions = functions
@@ -1646,7 +1661,7 @@ def _check_first_step_ancestor(electrical, transition):
     if (
         context.first_step_transition is not transition
         or context.electrical_transition is not electrical
-    ):
+    ) or getattr(context, "terminal_init_transition", None) is not None:
         raise ValueError("Original Storage/first-step parent association changed")
     _check_first_step_key_binding(functions)
     result = functions[1][1](context.parent, context, electrical, transition)
@@ -1695,12 +1710,12 @@ def _claim_short_init_ancestor(electrical, transition):
         frame.f_code is not module._claim_for_short_init.__code__
         or frame.f_globals is not vars(module)
         or frame.f_locals.get("context") is not electrical
-        or frame.f_locals.get("transition") is not transition
-        or module._FORWARDED.get(electrical.owner) is not transition
-        or context.electrical_transition is not electrical
+        or (frame.f_locals.get("transition") is not transition)
+        or (module._FORWARDED.get(electrical.owner) is not transition)
+        or (context.electrical_transition is not electrical)
         or hasattr(context, "short_init_transition")
         or hasattr(context, "first_step_transition")
-    ):
+    ) or hasattr(context, "terminal_init_transition"):
         raise ValueError("Actual once-only electrical short-history claim frame required")
     context.short_init_transition = transition
     context.short_init_key_functions = functions
@@ -1722,7 +1737,7 @@ def _check_short_init_ancestor(electrical, transition):
         context.short_init_transition is not transition
         or context.electrical_transition is not electrical
         or getattr(context, "first_step_transition", None) is not None
-    ):
+    ) or getattr(context, "terminal_init_transition", None) is not None:
         raise ValueError("Original Storage/short-history parent association changed")
     functions = context.short_init_key_functions
     _check_first_step_key_binding(functions)
@@ -1740,3 +1755,84 @@ def _reserve_validation(context):
     if context.active or context.invalid:
         raise StorageRejected("No successful closed storage epoch", stage="owner")
     context.validating = True
+
+
+# Separate held natural-terminal ancestry; no selected-history reuse.
+
+
+def _terminal_init_key_api():
+    """Exact distinct Completion seam, unavailable until explicitly adopted."""
+    names = (TERMINAL_INIT_ANCESTOR_CLAIM, TERMINAL_INIT_ANCESTOR_CHECK)
+    if names != ("_claim_terminal_init_ancestor", "_check_terminal_init_ancestor"):
+        raise StorageRejected(
+            "Reviewed Key natural-terminal ancestor contract unavailable",
+            stage="terminal_init_ancestor_held",
+        )
+    _ready()
+    path = Path(previous.__file__)
+    raw = path.read_bytes()
+    interfaces._source_interface(previous, raw, path, names)
+    compiled = compile(raw, str(path), "exec", dont_inherit=True)
+    codes = {code.co_name: code for code in compiled.co_consts if type(code) is CodeType}
+    functions = []
+    for name in names:
+        function = vars(previous).get(name)
+        if (
+            type(function) is not FunctionType
+            or function.__globals__ is not vars(previous)
+            or function.__code__ != codes.get(name)
+            or (function.__closure__ is not None)
+            or (function.__defaults__ is not None)
+            or (function.__kwdefaults__ is not None)
+        ):
+            raise ValueError("Actual original Key natural-terminal source/defaults required")
+        functions.append((name, function, _electrical_atoms(function)))
+    return tuple(functions)
+
+
+def _claim_terminal_init_ancestor(electrical, transition):
+    functions = _terminal_init_key_api()
+    context = electrical.storage_parent
+    binding = _electrical_api()
+    module = binding.module
+    frame = sys._getframe(1)
+    if (
+        frame.f_code is not module._claim_for_terminal_init.__code__
+        or frame.f_globals is not vars(module)
+        or frame.f_locals.get("context") is not electrical
+        or (frame.f_locals.get("transition") is not transition)
+        or (module._FORWARDED.get(electrical.owner) is not transition)
+        or (context.electrical_transition is not electrical)
+        or hasattr(context, "terminal_init_transition")
+        or hasattr(context, "first_step_transition")
+    ) or hasattr(context, "short_init_transition"):
+        raise ValueError("Actual once-only electrical natural-terminal claim frame required")
+    context.terminal_init_transition = transition
+    context.terminal_init_key_functions = functions
+    try:
+        _check_first_step_key_binding(functions)
+        result = functions[0][1](context.parent, context, electrical, transition)
+        _check_first_step_key_binding(functions)
+        if result is not context.parent:
+            raise ValueError("Different actual Completion natural-terminal ancestor")
+    except BaseException as error:
+        _retain_electrical_failure(context, transition, error)
+        raise
+    return context
+
+
+def _check_terminal_init_ancestor(electrical, transition):
+    context = electrical.storage_parent
+    if (
+        context.terminal_init_transition is not transition
+        or context.electrical_transition is not electrical
+        or getattr(context, "first_step_transition", None) is not None
+    ) or getattr(context, "short_init_transition", None) is not None:
+        raise ValueError("Original Storage/natural-terminal parent association changed")
+    functions = context.terminal_init_key_functions
+    _check_first_step_key_binding(functions)
+    result = functions[1][1](context.parent, context, electrical, transition)
+    _check_first_step_key_binding(functions)
+    if result is not context.parent:
+        raise ValueError("Different checked Completion natural-terminal ancestor")
+    return context

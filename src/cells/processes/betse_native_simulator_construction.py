@@ -31,13 +31,13 @@ SIM_FILE = "betse/science/sim.py"
 PHASE_FILE = "betse/science/phase/phasecls.py"
 UPSTREAM_PINS = {
     "betse_native_tissue_configuration": (
-        "ab519cde82ced4f81a9e6c7fe43c8a2dd7a23490db0bfb21d10d07b2a773dd2c"
+        "e9f8c93b7bfe856532f68f7406c07e5666b2ebb60d8e71c19a69bb765d4bb99e"
     ),
     "betse_native_tissue_configuration_source": (
         "dc31809ca02a4a9de222da33d58bce1684db0f13f75fa128a288e9cba8dd45ae"
     ),
     "betse_native_single_cell_grid_alias": (
-        "669ca026c3b7e2cb9d93b4bb3b28baae71b2d5fbe8308ec332f3d6379fda39c6"
+        "bc450958317ab611400f46d26b7c6a242b0ac96bf4c801af4ff99a2f2b7f9e50"
     ),
 }
 _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(4))

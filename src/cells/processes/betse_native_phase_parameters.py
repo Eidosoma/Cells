@@ -13,6 +13,7 @@ import os
 import sys
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
+from functools import lru_cache
 from pathlib import Path
 from threading import RLock, get_ident
 from types import CodeType, FunctionType, ModuleType, SimpleNamespace
@@ -21,7 +22,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_simulator_construction as inherited
 
 LAW_ID = "betse_native_fresh_unloaded_parameters_constructor@1"
-SIMULATOR_SHA256 = "ee535e5cd577da3a788154291a41738be456867f4f3891f61f1345c6d7c90f4d"
+SIMULATOR_SHA256 = "6f94d0cf79191c952a7055a63865080ffe1693c8798c6ee73aa24ad24c8d5884"
 PARAMETERS = "betse/science/parameters.py"
 YAML_FILE = "betse/lib/yaml/abc/yamlfileabc.py"
 YAML_BASE = "betse/lib/yaml/abc/yamlabc.py"
@@ -166,23 +167,322 @@ def declare(*, law_id, run_id):
     return request
 
 
+_COMPILATION_MAX_BYTES = 4 * 2**20
+_COMPILATION_MAX_NODES = 100000
+_COMPILATION_MAX_CODES = 100000
+
+
+def _compilation_function_record(function):
+    """Seal callable metadata at import, without executing a source body."""
+    namespace, cached = function.__globals__, function.__builtins__
+    names, pending = set(), [function.__code__]
+    while pending:
+        code = pending.pop()
+        names.update(
+            instruction.argval
+            for instruction in dis.get_instructions(code)
+            if instruction.opname == "LOAD_GLOBAL"
+        )
+        pending.extend(value for value in code.co_consts if type(value) is CodeType)
+    # Self-referential records are independently anchored after publication.
+    # Their anchors are checked explicitly, never reconstructed from live data.
+    names.difference_update(
+        (
+            "_COMPILATION_RECORDS",
+            "_CONTEXT_RECORDS",
+            "_compilation_record_anchor",
+            "_COMPILATION_ANCHOR",
+            "_COMPILATION_ANCHOR_CODE",
+            "_COMPILATION_ANCHOR_DEFAULTS",
+            "_context_record_anchor",
+            "_CONTEXT_ANCHOR",
+            "_CONTEXT_ANCHOR_CODE",
+            "_CONTEXT_ANCHOR_DEFAULTS",
+        )
+    )
+    keywords = function.__kwdefaults__
+    return (
+        function,
+        function.__code__,
+        namespace,
+        cached,
+        function.__defaults__,
+        keywords,
+        None if keywords is None else tuple(keywords.items()),
+        function.__closure__,
+        tuple(cell.cell_contents for cell in function.__closure__ or ()),
+        tuple(
+            (name, name in namespace, namespace.get(name), name in cached, cached.get(name))
+            for name in sorted(names)
+        ),
+    )
+
+
+def _compilation_validate(records):
+    """Compare identities, including equal-code replacements and resolved globals."""
+    for (
+        function,
+        code,
+        namespace,
+        cached,
+        defaults,
+        keywords,
+        items,
+        closure,
+        cells,
+        names,
+    ) in records:
+        declared = namespace.get("__builtins__")
+        declared = vars(declared) if type(declared) is ModuleType else declared
+        if (
+            type(function) is not FunctionType
+            or function.__code__ is not code
+            or function.__globals__ is not namespace
+            or function.__builtins__ is not cached
+            or declared is not cached
+            or function.__defaults__ is not defaults
+            or function.__kwdefaults__ is not keywords
+            or function.__closure__ is not closure
+            or len(function.__closure__ or ()) != len(cells)
+            or any(
+                cell.cell_contents is not old
+                for cell, old in zip(closure or (), cells, strict=True)
+            )
+        ):
+            raise ValueError("Original source compiler callable/code/defaults required")
+        if keywords is not None:
+            current = tuple(dict.items(keywords))
+            if len(current) != len(items) or any(
+                key is not old_key or value is not old_value
+                for (key, value), (old_key, old_value) in zip(current, items, strict=True)
+            ):
+                raise ValueError("Original source compiler keyword-default items required")
+        for name, present, value, builtin_present, builtin_value in names:
+            if (
+                (name in namespace) is not present
+                or namespace.get(name) is not value
+                or (name in cached) is not builtin_present
+                or cached.get(name) is not builtin_value
+            ):
+                raise ValueError("Original source compiler resolved globals/builtins required")
+
+
+def _compilation_key(payload, filename, optimize):
+    if (
+        type(payload) is not bytes
+        or len(payload) > _COMPILATION_MAX_BYTES
+        or type(filename) is not str
+        or type(optimize) is not int
+        or optimize not in (-1, 0, 1, 2)
+    ):
+        raise ValueError("Bounded exact source bytes/filename/optimization required")
+
+
+@lru_cache(maxsize=16, typed=True)
+def _compilation_metadata(payload, filename, optimize):
+    """Only immutable code and AST strings; no owner or successful validation."""
+    guard = _compilation_contract
+    if guard is not _COMPILATION_CONTRACT or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
+        raise ValueError("Original source compilation guard required")
+    guard()
+    _compilation_key(payload, filename, optimize)
+    compiler = compile
+    tree = ast.parse(payload, filename=filename)
+    pending, functions, visited = [(tree, "")], [], 0
+    while pending:
+        node, scope = pending.pop()
+        visited += 1
+        if visited > _COMPILATION_MAX_NODES:
+            raise ValueError("Bounded compiler AST exhausted")
+        nested = scope
+        if type(node) in (ast.FunctionDef, ast.AsyncFunctionDef):
+            qualified = scope + node.name
+            functions.append(
+                (
+                    node.name,
+                    node.lineno,
+                    node.col_offset,
+                    ast.dump(node, include_attributes=True),
+                    qualified,
+                    min([node.lineno, *(value.lineno for value in node.decorator_list)]),
+                )
+            )
+            nested = qualified + ".<locals>."
+        elif type(node) is ast.ClassDef:
+            nested = scope + node.name + "."
+        pending.extend((child, nested) for child in ast.iter_child_nodes(node))
+    classes = tuple(
+        (node.name, ast.dump(node, include_attributes=True))
+        for node in tree.body
+        if isinstance(node, ast.ClassDef)
+    )
+    if guard is not _compilation_contract or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
+        raise ValueError("Original source compilation guard required")
+    guard()
+    compiled = compiler(tree, filename, "exec", dont_inherit=True, optimize=optimize)
+    if guard is not _compilation_contract or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
+        raise ValueError("Original source compilation guard required")
+    guard()
+    pending, codes = [compiled], []
+    while pending:
+        code = pending.pop()
+        codes.append((code.co_qualname, code.co_firstlineno, code))
+        if len(codes) > _COMPILATION_MAX_CODES:
+            raise ValueError("Bounded compiled-code traversal exhausted")
+        pending.extend(value for value in code.co_consts if type(value) is CodeType)
+    if guard is not _compilation_contract or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
+        raise ValueError("Original source compilation guard required")
+    guard()
+    return compiled, classes, tuple(functions), tuple(codes), visited
+
+
+def _compilation_contract():
+    validator = _compilation_validate
+    if (
+        _compilation_contract is not _COMPILATION_CONTRACT
+        or _compilation_contract.__code__ is not _COMPILATION_CONTRACT_CODE
+        or validator is not _COMPILATION_VALIDATOR
+        or validator.__code__ is not _COMPILATION_VALIDATOR_CODE
+        or _compilation_metadata is not _COMPILATION_CACHE
+        or _compilation_metadata.__wrapped__ is not _COMPILATION_BODY
+        or Path.__mro__ is not _COMPILATION_PATH_MRO
+        or _compilation_record_anchor is not _COMPILATION_ANCHOR
+        or _compilation_record_anchor.__code__ is not _COMPILATION_ANCHOR_CODE
+        or _compilation_record_anchor.__defaults__ is not _COMPILATION_ANCHOR_DEFAULTS
+        or _compilation_record_anchor.__kwdefaults__ is not None
+        or _compilation_record_anchor.__closure__ is not None
+        or _COMPILATION_RECORDS is not _COMPILATION_ANCHOR_DEFAULTS[0]
+    ):
+        raise ValueError("Original source compilation cache/guard/delegate required")
+    current = tuple(vars(_compilation_metadata).items())
+    if len(current) != len(_COMPILATION_CACHE_ITEMS) or any(
+        key is not old_key or value is not old_value
+        for (key, value), (old_key, old_value) in zip(
+            current, _COMPILATION_CACHE_ITEMS, strict=True
+        )
+    ):
+        raise ValueError("Original source compilation cache wrapper required")
+    for namespace, name, value in _COMPILATION_ATTRIBUTES:
+        current = (
+            next((vars(base)[name] for base in namespace.__mro__ if name in vars(base)), None)
+            if type(namespace) is type
+            else vars(namespace).get(name)
+        )
+        if current is not value:
+            raise ValueError("Original source compilation helper attribute required")
+    validator(_COMPILATION_RECORDS)
+    return (), (
+        _COMPILATION_CACHE,
+        _COMPILATION_RECORDS,
+        _COMPILATION_CACHE_ITEMS,
+        _COMPILATION_ATTRIBUTES,
+    )
+
+
+def _compiled_source(payload, filename, *, optimize=-1):
+    guard = _compilation_contract
+    if guard is not _COMPILATION_CONTRACT or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
+        raise ValueError("Original source compilation guard required")
+    guard()
+    _compilation_key(payload, filename, optimize)
+    value = _compilation_metadata(payload, filename, optimize)
+    if guard is not _compilation_contract or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
+        raise ValueError("Original source compilation guard required")
+    guard()
+    return value
+
+
 def _method_code(cls_node, name, filename, *, native_context=False):
     """Keep authentic module code distinct from deliberate selected AST slices."""
     if type(native_context) is not bool:
         raise ValueError("Explicit native compilation context required")
-    tree = ast.Module(body=[cls_node], type_ignores=[])
     if native_context:
-        tree = ast.parse(Path(filename).read_bytes(), filename=str(filename))
-        original = inherited._class(tree, cls_node.name)
-        if ast.dump(original, include_attributes=True) != ast.dump(
-            cls_node, include_attributes=True
-        ):
+        guard = _compilation_contract
+        if guard is not _COMPILATION_CONTRACT or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
+            raise ValueError("Original source compilation guard required")
+        guard()
+        path = Path(filename)
+        if path.stat().st_size > _COMPILATION_MAX_BYTES:
+            raise ValueError("Bounded complete compiler source exhausted")
+        code, classes, _, _, _ = _compiled_source(path.read_bytes(), str(filename))
+        original = next(value for class_name, value in classes if class_name == cls_node.name)
+        if original != ast.dump(cls_node, include_attributes=True):
             raise ValueError("Exact original class AST required for native compilation context")
-    code = compile(tree, str(filename), "exec", dont_inherit=True)
+        if guard is not _compilation_contract or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
+            raise ValueError("Original source compilation guard required")
+        guard()
+    else:
+        code = compile(
+            ast.Module(body=[cls_node], type_ignores=[]), str(filename), "exec", dont_inherit=True
+        )
     class_code = next(
         c for c in code.co_consts if type(c) is CodeType and c.co_name == cls_node.name
     )
-    return next(c for c in class_code.co_consts if type(c) is CodeType and c.co_name == name)
+    result = next(c for c in class_code.co_consts if type(c) is CodeType and c.co_name == name)
+    if native_context:
+        if guard is not _compilation_contract or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
+            raise ValueError("Original source compilation guard required")
+        guard()
+    return result
+
+
+_COMPILATION_CACHE = _compilation_metadata
+_COMPILATION_BODY = _compilation_metadata.__wrapped__
+_COMPILATION_CACHE_ITEMS = tuple(vars(_compilation_metadata).items())
+_COMPILATION_CONTRACT = _compilation_contract
+_COMPILATION_CONTRACT_CODE = _compilation_contract.__code__
+_COMPILATION_VALIDATOR = _compilation_validate
+_COMPILATION_VALIDATOR_CODE = _compilation_validate.__code__
+_COMPILATION_PATH_MRO = Path.__mro__
+_COMPILATION_ATTRIBUTES = tuple(
+    (module, name, getattr(module, name))
+    for module, names in (
+        (
+            ast,
+            (
+                "parse",
+                "dump",
+                "iter_child_nodes",
+                "iter_fields",
+                "ClassDef",
+                "FunctionDef",
+                "AsyncFunctionDef",
+            ),
+        ),
+        (Path, ("read_bytes", "stat", "open")),
+    )
+    for name in names
+)
+_COMPILATION_RECORDS = tuple(
+    _compilation_function_record(function)
+    for function in (
+        _compilation_function_record,
+        _compilation_validate,
+        _compilation_key,
+        _COMPILATION_BODY,
+        _compilation_metadata.cache_parameters,
+        _compilation_contract,
+        _compiled_source,
+        _method_code,
+        ast.parse,
+        ast.dump,
+        ast.iter_child_nodes,
+        ast.iter_fields,
+        Path.read_bytes,
+        Path.stat,
+        Path.open,
+    )
+)
+
+
+def _compilation_record_anchor(records=_COMPILATION_RECORDS):
+    """Independent immutable tuple anchor; never used as validation output."""
+    return records
+
+
+_COMPILATION_ANCHOR = _compilation_record_anchor
+_COMPILATION_ANCHOR_CODE = _compilation_record_anchor.__code__
+_COMPILATION_ANCHOR_DEFAULTS = _compilation_record_anchor.__defaults__
 
 
 def _canonical(module, yaml):
@@ -638,6 +938,7 @@ def _bindings():
             _LOCK,
             _ACTIVE,
             RETURN_NONE_WRAPPER_PINS,
+            *_compilation_contract()[1],
             dis,
             dis.get_instructions,
             *(atom for fn in functions for atom in inherited.tissue.aliases._atoms(fn)),

@@ -19,7 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_paths as paths
 
 LAW_ID = paths.SUBCONFIGURATION_LAW
-PATHS_SHA256 = "08ebef6854cc58c8590236c58f3fff3ed664bfa55edde509910c1651d3f5fec4"
+PATHS_SHA256 = "d7cea4566dcd1206dad24745c3300c5c4781be00ded3c17ddbfa9eb9547f975a"
 RELEASE = "CELLS_NATIVE_PARAMETER_SUBCONFIGURATIONS_RELEASED"
 MAX_NEW_WRAPPERS = 4096
 ORDER = ("cut_profiles", "tissue_default", "tissue_profiles", "anim", "csv", "plot", "visual")

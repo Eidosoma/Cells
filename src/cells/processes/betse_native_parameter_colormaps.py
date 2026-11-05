@@ -21,7 +21,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_modulators as previous
 
 LAW_ID = "betse_native_parameter_colormap_input_source_boundary@1"
-PREVIOUS_SHA256 = "d7cdf3fc5e7eb3b2341e3dbf252e5869bb2300fdbf6f1494c2227b0b9729ff97"
+PREVIOUS_SHA256 = "6e34454e8b963e1ed8cbddd466dcc4835541847571e6fd105363b39303869e92"
 COLORMAP_SHA256 = "d19b467347ea69ea090241dbee61735bcd57f77777ea3a086c41cef5dcd3f820"
 START, STOP = 135, 139
 _CONTEXT_MAX_BYTES, _CONTEXT_MAX_NODES, _CONTEXT_MAX_CODES = 4 * 2**20, 100000, 100000
@@ -283,7 +283,10 @@ def _context_code(node, filename, *, replacement=None):
     bodies or helpers. Keep the standalone _code compiler separate for explicit
     synthetic fragments and unchanged out-of-CM legacy callers.
     """
-    compiler_binding = _compiler_contract()
+    guard = _compiler_contract
+    if guard is not _CONTEXT_CONTRACT or guard.__code__ is not _CONTEXT_CONTRACT_CODE:
+        raise ValueError("Original contextual compiler guard required")
+    compiler_binding = guard()
     compiler = compiler_binding[1][0]
     if type(node) not in (ast.FunctionDef, ast.AsyncFunctionDef):
         raise ValueError("Declared source function required for contextual compilation")
@@ -293,6 +296,36 @@ def _context_code(node, filename, *, replacement=None):
     raw = path.read_bytes()
     if len(raw) > _CONTEXT_MAX_BYTES:
         raise ValueError("Bounded complete compiler source exhausted")
+    if guard is not _compiler_contract or guard.__code__ is not _CONTEXT_CONTRACT_CODE:
+        raise ValueError("Original contextual compiler guard required")
+    prefix.parameters.inherited._same(guard(), compiler_binding)
+    if replacement is None:
+        compiled, _, functions, codes, visited = prefix.parameters._compiled_source(
+            raw, str(path), optimize=0
+        )
+        if guard is not _compiler_contract or guard.__code__ is not _CONTEXT_CONTRACT_CODE:
+            raise ValueError("Original contextual compiler guard required")
+        prefix.parameters.inherited._same(guard(), compiler_binding)
+        if visited > _CONTEXT_MAX_NODES:
+            raise ValueError("Bounded compiler AST exhausted")
+        fingerprint = ast.dump(node, include_attributes=True)
+        found = [
+            row
+            for row in functions
+            if row[:4] == (node.name, node.lineno, node.col_offset, fingerprint)
+        ]
+        if len(found) != 1:
+            raise ValueError("One exact declared function/source span required")
+        qualified, first_line = found[0][4:]
+        if len(codes) > _CONTEXT_MAX_CODES:
+            raise ValueError("Bounded compiled-code traversal exhausted")
+        found = [value for name, line, value in codes if name == qualified and line == first_line]
+        if len(found) != 1:
+            raise ValueError("One exact lexical code body required")
+        if guard is not _compiler_contract or guard.__code__ is not _CONTEXT_CONTRACT_CODE:
+            raise ValueError("Original contextual compiler guard required")
+        prefix.parameters.inherited._same(guard(), compiler_binding)
+        return found[0]
     tree = ast.parse(raw, filename=str(path))
     fingerprint = ast.dump(node, include_attributes=True)
     pending, found, visited = [(tree, "")], [], 0
@@ -329,9 +362,13 @@ def _context_code(node, filename, *, replacement=None):
             raise ValueError("Contextual rewrite changed the original header or scope")
         target.body = copy.deepcopy(replacement.body)
     first_line = min([node.lineno, *(value.lineno for value in node.decorator_list)])
-    prefix.parameters.inherited._same(_compiler_contract(), compiler_binding)
+    if guard is not _compiler_contract or guard.__code__ is not _CONTEXT_CONTRACT_CODE:
+        raise ValueError("Original contextual compiler guard required")
+    prefix.parameters.inherited._same(guard(), compiler_binding)
     compiled = compiler(tree, str(path), "exec", dont_inherit=True, optimize=0)
-    prefix.parameters.inherited._same(_compiler_contract(), compiler_binding)
+    if guard is not _compiler_contract or guard.__code__ is not _CONTEXT_CONTRACT_CODE:
+        raise ValueError("Original contextual compiler guard required")
+    prefix.parameters.inherited._same(guard(), compiler_binding)
     pending, found, visited = [compiled], [], 0
     while pending:
         current = pending.pop()
@@ -343,19 +380,40 @@ def _context_code(node, filename, *, replacement=None):
         pending.extend(value for value in current.co_consts if type(value) is CodeType)
     if len(found) != 1:
         raise ValueError("One exact lexical code body required")
+    if guard is not _compiler_contract or guard.__code__ is not _CONTEXT_CONTRACT_CODE:
+        raise ValueError("Original contextual compiler guard required")
+    prefix.parameters.inherited._same(guard(), compiler_binding)
     return found[0]
 
 
 _CONTEXT_FUNCTION = _context_code
+_CONTEXT_CODE = _context_code.__code__
 _CONTEXT_KEYWORD_DEFAULTS = _context_code.__kwdefaults__
 _CONTEXT_REPLACEMENT_KEY = next(iter(_CONTEXT_KEYWORD_DEFAULTS))
+_CONTEXT_PARAMETERS = prefix.parameters
+_CONTEXT_INHERITED = prefix.parameters.inherited
+_CONTEXT_SAME = prefix.parameters.inherited._same
 
 
 def _compiler_contract():
     """Authenticate the reached compiler and original implicit-rewrite default."""
+    if (
+        _context_record_anchor is not _CONTEXT_ANCHOR
+        or _context_record_anchor.__code__ is not _CONTEXT_ANCHOR_CODE
+        or _context_record_anchor.__defaults__ is not _CONTEXT_ANCHOR_DEFAULTS
+        or _context_record_anchor.__kwdefaults__ is not None
+        or _context_record_anchor.__closure__ is not None
+        or _CONTEXT_RECORDS is not _CONTEXT_ANCHOR_DEFAULTS[0]
+        or prefix.parameters is not _CONTEXT_PARAMETERS
+        or prefix.parameters.inherited is not _CONTEXT_INHERITED
+        or prefix.parameters.inherited._same is not _CONTEXT_SAME
+    ):
+        raise ValueError("Original contextual compiler record anchor required")
     function = _context_code
     if type(function) is not FunctionType or function is not _CONTEXT_FUNCTION:
         raise ValueError("Original contextual compiler function required")
+    if function.__code__ is not _CONTEXT_CODE:
+        raise ValueError("Original contextual compiler code required")
     namespace, cached = function.__globals__, function.__builtins__
     declared = namespace.get("__builtins__")
     declared = vars(declared) if type(declared) is ModuleType else declared
@@ -370,7 +428,43 @@ def _compiler_contract():
     items = tuple(dict.items(keywords))
     if len(items) != 1 or items[0][0] is not _CONTEXT_REPLACEMENT_KEY or items[0][1] is not None:
         raise ValueError("Original contextual compiler replacement keyword/key/value required")
-    return (), (compiler, function, namespace, cached, declared, keywords, *items[0])
+    parameters = prefix.parameters
+    shared_guard = parameters._compilation_contract
+    if (
+        shared_guard is not parameters._COMPILATION_CONTRACT
+        or shared_guard.__code__ is not parameters._COMPILATION_CONTRACT_CODE
+    ):
+        raise ValueError("Original shared source compilation guard required")
+    shared = shared_guard()
+    validator = parameters._COMPILATION_VALIDATOR
+    if validator.__code__ is not parameters._COMPILATION_VALIDATOR_CODE:
+        raise ValueError("Original shared source compilation validator required")
+    validator(_CONTEXT_RECORDS)
+    if (
+        shared_guard is not parameters._compilation_contract
+        or shared_guard.__code__ is not parameters._COMPILATION_CONTRACT_CODE
+    ):
+        raise ValueError("Original shared source compilation guard required")
+    prefix.parameters.inherited._same(shared_guard(), shared)
+    return (), (compiler, function, namespace, cached, declared, keywords, *items[0], *shared[1])
+
+
+_CONTEXT_CONTRACT = _compiler_contract
+_CONTEXT_CONTRACT_CODE = _compiler_contract.__code__
+_CONTEXT_RECORDS = tuple(
+    prefix.parameters._compilation_function_record(function)
+    for function in (_context_code, _compiler_contract, _CONTEXT_SAME)
+)
+
+
+def _context_record_anchor(records=_CONTEXT_RECORDS):
+    """Retain the original tuple independently of its public module binding."""
+    return records
+
+
+_CONTEXT_ANCHOR = _context_record_anchor
+_CONTEXT_ANCHOR_CODE = _context_record_anchor.__code__
+_CONTEXT_ANCHOR_DEFAULTS = _context_record_anchor.__defaults__
 
 
 def _undecorated(function, module, path, node, *, decorators=()):
@@ -782,8 +876,12 @@ def _bindings():
         _CONTEXT_MAX_CODES,
         _CONTEXT_COMPILER,
         _CONTEXT_FUNCTION,
+        _CONTEXT_CODE,
         _CONTEXT_KEYWORD_DEFAULTS,
         _CONTEXT_REPLACEMENT_KEY,
+        _CONTEXT_RECORDS,
+        _CONTEXT_ANCHOR,
+        _CONTEXT_ANCHOR_DEFAULTS,
         *_compiler_contract()[1],
         ROLES,
         _ISSUED,

@@ -1714,6 +1714,383 @@ def test_first_step_permission_roster_is_exact_source_and_owner_bound(monkeypatc
         stage._first_step_permissions(lease)
 
 
+def _runtime_permission_projection_model(monkeypatch, *, continuous=True, closed=False):
+    """Actual checker over synthetic metadata; no issuer/registry/owner exists."""
+    context, sim, *_ = _first_step_projection_model(monkeypatch)
+
+    class MetadataKey:
+        pass
+
+    context.owner = MetadataKey()  # Registry key only; never a DynamicsOwner.
+    lease, source = context.first_step_descendant, ModuleType("source_permission_metadata")
+    runtime = ModuleType("continuous_permission_metadata") if continuous else source
+    core, session, claim = NS(store=[]), object(), object()
+    record = object() if closed else None
+    base_rows = lease.permissions
+    extension = ((sim, frozenset(("molecule_flux",))), (core, frozenset(("store",))))
+    complete = (
+        (sim, base_rows[0][1] | extension[0][1]),
+        *base_rows[1:],
+        extension[1],
+    )
+    context.request = NS(native_molecules=True)
+    context.molecule, context.molecule_session = source, session
+    lease.objects += (("molecule_core", core),)
+    lease.molecule_claim = claim
+    child = lease.child
+    child.permissions = complete
+    child.molecule, child.molecule_claim = source, claim
+    child.molecule_permissions, child.molecule_record = extension, record
+    calls = []
+
+    def active(actual, *, child):
+        calls.append(("active", actual, child))
+        return actual
+
+    def final(actual, *, child):
+        calls.append(("closed", actual, child))
+        return record
+
+    def permissions(actual):
+        calls.append(("permissions", actual))
+        return extension
+
+    runtime.validate_runtime_active = active
+    runtime.validate_runtime = final
+    runtime.runtime_permissions = permissions
+    if continuous:
+        lease.runtime_api = child.short_runtime = runtime
+        runtime.session_of = lambda actual, *, child: session
+        runtime.session_provider = lambda actual, *, child: source
+    monkeypatch.setattr(stage, "_molecule_api", lambda: source)
+    monkeypatch.setattr(stage, "_molecule_short_api", lambda: runtime)
+    lease.module._mutation_contract = lambda value: complete
+    return lease, runtime, calls, extension, complete
+
+
+@pytest.mark.parametrize(
+    "continuous,closed", ((False, False), (False, True), (True, False), (True, True))
+)
+def test_first_step_runtime_permissions_use_exact_active_or_closed_claim_and_complete_contract(
+    monkeypatch, continuous, closed
+):
+    lease, _, calls, extension, complete = _runtime_permission_projection_model(
+        monkeypatch, continuous=continuous, closed=closed
+    )
+    assert stage._first_step_runtime_permissions(lease) is extension
+    assert stage._first_step_permissions(lease) is complete
+    assert [row[0] for row in calls] == [
+        "closed" if closed else "active",
+        "permissions",
+        "closed" if closed else "active",
+        "permissions",
+    ]
+    assert all(row[1] is lease.molecule_claim for row in calls)
+
+
+@pytest.mark.parametrize(
+    "drift",
+    (
+        "foreign_claim",
+        "missing_session",
+        "foreign_provider",
+        "foreign_session",
+        "foreign_source",
+        "copied_extension",
+        "foreign_holder",
+        "duplicate_holder",
+        "extra_field",
+        "missing_extension",
+        "missing_extension_both",
+        "unowned_holder",
+        "disabled_parent",
+        "set_fields",
+    ),
+)
+def test_first_step_runtime_permissions_refuse_forged_or_incomplete_merged_rows(monkeypatch, drift):
+    lease, runtime, calls, extension, complete = _runtime_permission_projection_model(monkeypatch)
+    child, parent = lease.child, lease.parent
+    if drift == "foreign_claim":
+        child.molecule_claim = object()
+    elif drift == "missing_session":
+        parent.molecule_session = None
+    elif drift == "foreign_provider":
+        foreign = ModuleType(runtime.__name__)
+        foreign.__dict__.update(vars(runtime))
+        lease.runtime_api = child.short_runtime = foreign
+    elif drift == "foreign_session":
+        runtime.session_of = lambda actual, *, child: object()
+    elif drift == "foreign_source":
+        child.molecule = ModuleType(parent.molecule.__name__)
+    elif drift == "copied_extension":
+        # Contents alone agree; only the actual runtime's retained tuple owns it.
+        child.molecule_permissions = tuple(list(extension))
+    elif drift in (
+        "foreign_holder",
+        "duplicate_holder",
+        "extra_field",
+        "missing_extension",
+        "set_fields",
+    ):
+        rows = list(complete)
+        if drift == "foreign_holder":
+            rows[-1] = (NS(**vars(rows[-1][0])), rows[-1][1])
+        elif drift == "duplicate_holder":
+            rows.append(rows[-1])
+        elif drift == "extra_field":
+            rows[-1] = (rows[-1][0], rows[-1][1] | {"unowned"})
+        elif drift == "set_fields":
+            rows[-1] = (rows[-1][0], set(rows[-1][1]))
+        else:
+            rows.pop()
+        child.permissions = tuple(rows)
+    elif drift == "missing_extension_both":
+        # Matching actual/public rows alone must not hide omitted canonical work.
+        child.permissions = complete[:-1]
+        lease.module._mutation_contract = lambda value: complete[:-1]
+    elif drift == "unowned_holder":
+        lease.objects = lease.objects[:-1]
+    else:
+        parent.request.native_molecules = False
+    with pytest.raises(ValueError):
+        stage._first_step_permissions(lease)
+    if drift in (
+        "foreign_claim",
+        "missing_session",
+        "foreign_provider",
+        "foreign_session",
+        "foreign_source",
+        "disabled_parent",
+    ):
+        assert not calls
+
+
+def test_first_step_runtime_permissions_keep_primary_refusal_before_contract_observation(
+    monkeypatch,
+):
+    lease, runtime, _, _, _ = _runtime_permission_projection_model(monkeypatch)
+    primary, cause = ValueError("actual runtime refusal"), KeyError("actual cause")
+    primary.__cause__ = cause
+
+    def refused(*args, **kwargs):
+        raise primary
+
+    def forbidden(*args):
+        pytest.fail("No source contract observation after a runtime refusal")
+
+    runtime.validate_runtime_active = refused
+    lease.module._mutation_contract = forbidden
+    with pytest.raises(ValueError) as caught:
+        stage._first_step_permissions(lease)
+    assert caught.value is primary and primary.__cause__ is cause
+
+
+@pytest.mark.parametrize(
+    "drift", ("active_result", "closed_result", "permission_type", "session_provider")
+)
+def test_first_step_runtime_permissions_reject_foreign_validator_results_and_transport(
+    monkeypatch, drift
+):
+    lease, runtime, _, extension, _ = _runtime_permission_projection_model(
+        monkeypatch, closed=drift == "closed_result"
+    )
+    if drift == "active_result":
+        runtime.validate_runtime_active = lambda actual, *, child: object()
+    elif drift == "closed_result":
+        runtime.validate_runtime = lambda actual, *, child: object()
+    elif drift == "permission_type":
+        rows = list(extension)
+        lease.child.molecule_permissions = rows
+        runtime.runtime_permissions = lambda actual: rows
+    else:
+        runtime.session_provider = lambda actual, *, child: ModuleType(
+            lease.parent.molecule.__name__
+        )
+    with pytest.raises(ValueError):
+        stage._first_step_permissions(lease)
+
+
+def test_first_step_runtime_permissions_ordinary_route_never_reads_molecular_authority(monkeypatch):
+    context, *_ = _first_step_projection_model(monkeypatch)
+
+    def forbidden():
+        pytest.fail("Unchanged ordinary route cannot require a molecular provider")
+
+    monkeypatch.setattr(stage, "_molecule_api", forbidden)
+    monkeypatch.setattr(stage, "_molecule_short_api", forbidden)
+    lease = context.first_step_descendant
+    assert stage._first_step_runtime_permissions(lease) == ()
+    assert stage._first_step_permissions(lease) is lease.permissions
+
+
+@pytest.mark.parametrize("mode", ("early", "setup", "loop", "admission", "executed", "mutated"))
+def test_terminal_ancestor_permission_seal_requires_full_proof_before_any_source_attempt(
+    monkeypatch, mode
+):
+    """Real sealing/checking code; only unissued projection data, no INIT parent."""
+    context, sim, *_ = _first_step_projection_model(monkeypatch)
+    lease, electrical = context.first_step_descendant, object()
+    transition = lease.child
+    transition.setup_frame = transition.loop_frame = None
+    transition.work = []
+    lease.status = "reserved"
+    lease.before = stage._first_step_values(context, stable=False)
+    lease.before_graph = stage._first_step_graph(context, stable=False)
+    lease.module._check_ancestor_metadata = lambda child: electrical
+    lease.ancestor_check = lambda *args: context.init_parent
+    monkeypatch.setattr(stage, "_storage_metadata", lambda parent: None)
+    if mode == "setup":
+        transition.setup_frame = object()
+    elif mode == "loop":
+        transition.loop_frame = object()
+    elif mode in ("admission", "executed"):
+        transition.work.append(dict(body_started=mode == "executed"))
+    elif mode == "mutated":
+        sim.cc_cells[0] = 99.0
+    if mode != "early":
+        with pytest.raises(ValueError):
+            stage._check_advance_ancestor(context, object(), electrical, transition, lease)
+        assert lease.status == "reserved"
+    else:
+        assert (
+            stage._check_advance_ancestor(context, object(), electrical, transition, lease)
+            is context
+        )
+        assert lease.status == "sealed"
+        transition.setup_frame = object()
+        transition.work.append(dict(body_started=True))
+        sim.cc_cells[0] = 99.0
+        assert (
+            stage._check_advance_ancestor(context, object(), electrical, transition, lease)
+            is context
+        )
+
+
+@pytest.mark.parametrize(
+    "operation",
+    ("runtime", "completion", "storage", "storage_claim", "electrical", "electrical_claim"),
+)
+def test_terminal_ancestor_unadopted_source_gates_precede_foreign_owner_access(operation):
+    from cells.processes import betse_native_init_electrical as electrical
+    from cells.processes import betse_native_init_storage as storage
+
+    class Foreign:
+        def __getattribute__(self, name):
+            pytest.fail("No foreign owner read before terminal source adoption")
+
+    value = Foreign()
+    calls = {
+        "runtime": lambda: stage._molecule_terminal_api(),
+        "completion": lambda: stage._claim_terminal_init_ancestor(value, value, value, value),
+        "storage": lambda: storage._terminal_init_key_api(),
+        "storage_claim": lambda: storage._claim_terminal_init_ancestor(value, value),
+        "electrical": lambda: electrical._terminal_init_api(),
+        "electrical_claim": lambda: electrical._claim_for_terminal_init(
+            value, expected=value, transition=value, entries=value
+        ),
+    }
+    with pytest.raises(
+        (stage.CompletionRejected, storage.StorageRejected, electrical.ElectricalRejected)
+    ) as caught:
+        calls[operation]()
+    assert "held" in caught.value.stage
+
+
+@pytest.mark.parametrize(
+    "mode", ("none", "first", "short", "terminal", "terminal_first", "terminal_short")
+)
+def test_terminal_ancestor_retained_dispatch_keeps_distinct_exclusive_routes(mode):
+    parent = NS(invalid=False, entry_error=None, stage="metadata", request=None, trial=None)
+    child, holder = object(), NS()
+    if "terminal" in mode:
+        holder.terminal_init_transition = child
+    if mode in ("first", "terminal_first"):
+        holder.first_step_transition = object()
+    if mode in ("short", "terminal_short"):
+        holder.short_init_transition = object()
+    if mode.startswith("terminal_"):
+        with pytest.raises(retained.stage.InitRejected):
+            retained.stage._advance_child(parent, holder)
+        assert parent.invalid
+    else:
+        value, route = retained.stage._advance_child(parent, holder)
+        if mode == "terminal":
+            assert value is child and route is retained.stage._terminal_init_runtime
+        elif mode == "short":
+            assert (
+                value is holder.short_init_transition
+                and route is retained.stage._short_init_runtime
+            )
+        else:
+            assert value is getattr(holder, "first_step_transition", None)
+            assert route is retained.stage._first_step_runtime
+
+
+@pytest.mark.parametrize("closed", (False, True))
+def test_terminal_ancestor_runtime_authentication_never_falls_back_to_short(monkeypatch, closed):
+    lease, runtime, _, extension, complete = _runtime_permission_projection_model(
+        monkeypatch, closed=closed
+    )
+
+    class MetadataKey:
+        pass
+
+    parent = lease.parent
+    parent.owner = MetadataKey()
+    del parent.first_step_descendant
+    parent.terminal_init_descendant = lease
+    lease.child.terminal_runtime = runtime
+    del lease.child.short_runtime
+    monkeypatch.setitem(stage._TERMINAL_INIT_DESCENDANTS, parent.owner, lease)
+    monkeypatch.setattr(stage, "_molecule_terminal_api", lambda: runtime)
+
+    def forbidden():
+        pytest.fail("A terminal claimant cannot use the short-runtime getter")
+
+    monkeypatch.setattr(stage, "_molecule_short_api", forbidden)
+    assert stage._advance_lease(parent) is lease
+    assert stage._first_step_runtime_permissions(lease) is extension
+    assert stage._first_step_permissions(lease) is complete
+
+
+@pytest.mark.parametrize("missing", (False, True))
+def test_terminal_ancestor_registry_and_alias_are_both_required(monkeypatch, missing):
+    class MetadataKey:
+        pass
+
+    owner, lease = MetadataKey(), object()
+    parent = NS(owner=owner, terminal_init_descendant=lease)
+    if not missing:
+        monkeypatch.setitem(stage._TERMINAL_INIT_DESCENDANTS, owner, lease)
+        parent.short_init_descendant = object()
+    with pytest.raises(ValueError):
+        stage._advance_lease(parent)
+
+
+@pytest.mark.parametrize("drift", (False, True))
+def test_terminal_ancestor_actual_storage_key_source_proof_is_metadata_only(monkeypatch, drift):
+    from cells.processes import betse_native_init_storage as storage
+
+    monkeypatch.setattr(storage, "TERMINAL_INIT_ANCESTOR_CLAIM", "_claim_terminal_init_ancestor")
+    monkeypatch.setattr(storage, "TERMINAL_INIT_ANCESTOR_CHECK", "_check_terminal_init_ancestor")
+    monkeypatch.setattr(storage, "_ready", lambda: None)
+    if drift:
+
+        def forbidden(*args):
+            pytest.fail("Foreign issuer body must be rejected before execution")
+
+        monkeypatch.setattr(stage._claim_terminal_init_ancestor, "__code__", forbidden.__code__)
+        with pytest.raises(ValueError):
+            storage._terminal_init_key_api()
+    else:
+        rows = storage._terminal_init_key_api()
+        assert tuple(row[0] for row in rows) == (
+            "_claim_terminal_init_ancestor",
+            "_check_terminal_init_ancestor",
+        )
+        assert rows[0][1] is stage._claim_terminal_init_ancestor
+
+
 def test_first_step_ancestor_source_gate_precedes_foreign_owner_inspection():
     class Foreign:
         def __getattribute__(self, name):

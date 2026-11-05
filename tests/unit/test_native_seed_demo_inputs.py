@@ -435,3 +435,132 @@ def test_inputs_headless_transform_failure_preserves_partial_copy_and_original_c
     assert (headless.output / "failure.json").is_file()
     assert list((headless.output / "original/config").rglob("*.png"))
     assert not (headless.output / "disabled").exists()
+
+
+@pytest.mark.parametrize(
+    ("profile", "changed_lines"),
+    [("original", []), ("headless", [795, 796]), ("headless_core", [387, 501, 795, 796])],
+)
+def test_inputs_core_profiles_preserve_every_other_original_byte(profile, changed_lines):
+    raw = (stage.NATIVE / "sim_config.yaml").read_bytes()
+    value = stage.profiles.transform(raw, profile)
+    difference = [
+        (index, before, after)
+        for index, (before, after) in enumerate(
+            zip(raw.splitlines(True), value.splitlines(True), strict=True), 1
+        )
+        if before != after
+    ]
+    assert [index for index, _, _ in difference] == changed_lines
+    assert all(before.replace(b": True ", b": False ") == after for _, before, after in difference)
+    assert dict(
+        sha256=hashlib.sha256(value).hexdigest(), size_bytes=len(value)
+    ) == stage.profiles.main_file(profile)
+    # Exact byte comparison covers both original calendars, all numerical settings,
+    # custom channel definitions and all inactive event definitions as well.
+    assert len(difference) == len(stage.profiles.changes(profile))
+    if profile == "headless_core":
+        assert stage.profiles.changes(profile)[2:] == [
+            dict(path=["cutting event", "event happens"], before=True, after=False),
+            dict(path=["general network", "implement network"], before=True, after=False),
+        ]
+
+
+def test_inputs_core_pair_uses_actual_metadata_and_same_bytes_for_both_flux_modes(headless):
+    from validation.betse import native_seed_initial_rng as initial_rng
+
+    source = stage.inventory(stage.NATIVE)
+    value = stage.prepare(headless.output, profile="headless_core")
+    assert value["kind"] == stage.HEADLESS_CORE_KIND
+    assert value["configuration_profile"] == "headless_core"
+    assert value["configuration_changes"] == stage.profiles.changes("headless_core")
+    assert value["held"] and value["physical_or_scientific_claim"] is False
+    assert value["source_inventory"] == source
+    expected = stage.profiles.inventory(source, "headless_core")
+    assert expected["directories"] == source["directories"]
+    assert [
+        name for name in source["files"] if source["files"][name] != expected["files"][name]
+    ] == [stage.profiles.MAIN]
+    inodes = set()
+    for mode, row in value["modes"].items():
+        assert stage.inventory(Path(row["config"])) == expected
+        program = headless.parameter.input_program(row["program"]["path"], row["program"]["sha256"])
+        assert program["input_profile"] == "headless_core"
+        assert program["configuration_changes"] == value["configuration_changes"]
+        assert (
+            program["files"][stage.profiles.MAIN]["sha256"] == stage.profiles.HEADLESS_CORE_SHA256
+        )
+        assert "numerical inputs unchanged" in program["origin"]
+        # This is the real immutable input witness, not a parameter/phase stand-in.
+        assert mode in stage.MODES
+        witness = initial_rng.declaration(program)
+        assert initial_rng.validate_declaration(witness) is witness
+        assert witness["profile"] == "headless_core" and witness["inventory"] == expected
+        for name in expected["files"]:
+            info = (Path(row["config"]) / name).stat()
+            assert not info.st_mode & 0o222 and info.st_nlink == 1
+            assert (info.st_dev, info.st_ino) not in inodes
+            inodes.add((info.st_dev, info.st_ino))
+    assert (
+        stage.verify(headless.output, stage.snapshot.digest(headless.output / "inputs.json"))
+        == value
+    )
+    assert stage.inventory(stage.NATIVE) == source
+
+
+@pytest.mark.parametrize("profile", [None, "original", "headless"])
+def test_inputs_core_cannot_be_relabelled_by_actual_parameter_reader(headless, profile):
+    value = stage.prepare(headless.output, profile="headless_core")
+    program = value["modes"]["original"]["program"]
+    raw = json.loads(Path(program["path"]).read_bytes())
+    if profile is None:
+        raw.pop("input_profile")
+    else:
+        raw["input_profile"] = profile
+    wrong = headless.output / "wrong-profile.json"
+    stage.snapshot.write_json(wrong, raw)
+    with pytest.raises(ValueError):
+        headless.parameter.input_program(wrong, stage.snapshot.digest(wrong))
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["label", "kind", "omit_change", "extra_change", "integer_false", "inventory", "numeric_bytes"],
+)
+def test_inputs_core_provenance_or_numeric_byte_drift_refuses(headless, mutation):
+    value = stage.prepare(headless.output, profile="headless_core")
+    if mutation == "label":
+        value["configuration_profile"] = "headless"
+    elif mutation == "kind":
+        value["kind"] = stage.HEADLESS_KIND
+    elif mutation == "omit_change":
+        value["configuration_changes"].pop()
+    elif mutation == "extra_change":
+        value["configuration_changes"].append(
+            dict(path=["world options", "world size"], before=True, after=False)
+        )
+    elif mutation == "integer_false":
+        value["configuration_changes"][-1]["after"] = 0
+    elif mutation == "inventory":
+        value["input_inventory"]["files"][stage.profiles.MAIN] = stage.profiles.main_file(
+            "headless"
+        )
+    else:
+        path = Path(value["modes"]["original"]["config"]) / stage.profiles.MAIN
+        path.chmod(0o644)
+        path.write_bytes(path.read_bytes() + b"\n# undeclared input byte\n")
+        path.chmod(0o444)
+    altered = headless.output / "inputs.json"
+    altered.chmod(0o644)
+    altered.write_text(json.dumps(value))
+    altered.chmod(0o444)
+    with pytest.raises(ValueError):
+        stage.verify(headless.output, stage.snapshot.digest(altered))
+
+
+@pytest.mark.parametrize("source", ["headless", "headless_core", "changed"])
+def test_inputs_core_transformation_requires_original_bytes_not_a_retuned_case(source):
+    raw = (stage.NATIVE / stage.profiles.MAIN).read_bytes()
+    raw = raw + b"\n" if source == "changed" else stage.profiles.transform(raw, source)
+    with pytest.raises(ValueError):
+        stage.profiles.transform(raw, "headless_core")

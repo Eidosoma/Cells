@@ -71,6 +71,7 @@ _STORAGE_INITIAL_LEASES = WeakKeyDictionary()
 _ELECTRICAL_INITIAL_LEASES = WeakKeyDictionary()
 _FIRST_STEP_INITIAL_LEASES = WeakKeyDictionary()
 _SHORT_INIT_INITIAL_LEASES = WeakKeyDictionary()
+_TERMINAL_INIT_INITIAL_LEASES = WeakKeyDictionary()
 _MOLECULE_INITIAL_LEASES = WeakKeyDictionary()
 _ACTIVE, _FAILED, _LOCK = [], [], RLock()
 _LAST_FAILED = None
@@ -552,6 +553,7 @@ def _binding(context):
         _ELECTRICAL_INITIAL_LEASES,
         _FIRST_STEP_INITIAL_LEASES,
         _SHORT_INIT_INITIAL_LEASES,
+        _TERMINAL_INIT_INITIAL_LEASES,
         _MOLECULE_INITIAL_LEASES,
         _ACTIVE,
         _LOCK,
@@ -3175,6 +3177,11 @@ def _check_init_dynamics_prelude_authority(transition):
     storage = getattr(completion, "storage_transition", None)
     electrical = getattr(storage, "electrical_transition", None)
     step = getattr(electrical, "first_step_transition", None)
+    terminal = getattr(electrical, "terminal_init_transition", None)
+    if terminal is not None and getattr(terminal, "claimed", False):
+        if step is not None or getattr(electrical, "short_init_transition", None) is not None:
+            raise ValueError("Exclusive natural terminal ancestry required")
+        return _check_terminal_init_ancestor(parent, completion, storage, electrical, terminal)
     if step is not None and getattr(step, "claimed", False):
         return _check_first_step_ancestor(parent, completion, storage, electrical, step)
     if _dynamics_route(parent)[0] is not transition:
@@ -3261,6 +3268,11 @@ def _first_step_runtime(parent):
 def _advance_child(parent, electrical):
     first = getattr(electrical, "first_step_transition", None)
     short = getattr(electrical, "short_init_transition", None)
+    terminal = getattr(electrical, "terminal_init_transition", None)
+    if terminal is not None:
+        if first is not None or short is not None:
+            _reject(parent, "Mutually exclusive actual INIT advance routes required")
+        return terminal, _terminal_init_runtime
     if first is not None and short is not None:
         _reject(parent, "Mutually exclusive actual INIT advance routes required")
     return (short, _short_init_runtime) if short is not None else (first, _first_step_runtime)
@@ -3299,15 +3311,17 @@ def _short_init_runtime(parent):
 
 def _claim_first_step_ancestor(parent, completion, storage, electrical, transition):
     """Reserved for Key's actual reviewed first-step ancestor transfer."""
-    # Obtain Key only from the genuine issued completion/runtime ancestry.
     actual = _first_step_runtime(parent)
     if (
         actual is None
         or actual[0] is not transition
         or any(
-            a is not b for a, b in zip(actual[2:5], (electrical, storage, completion), strict=True)
+            (
+                a is not b
+                for a, b in zip(actual[2:5], (electrical, storage, completion), strict=True)
+            )
         )
-    ):
+    ) or parent.owner in _TERMINAL_INIT_INITIAL_LEASES:
         raise ValueError("Actual original first-step runtime ancestry required")
     module = actual[5]
     storage_api = sys.modules.get("cells.processes.betse_native_init_storage")
@@ -3322,11 +3336,11 @@ def _claim_first_step_ancestor(parent, completion, storage, electrical, transiti
         type(function) is not FunctionType
         or frame.f_code is not function.__code__
         or frame.f_globals is not vars(module)
-        or not transition.active
-        or transition.setup_frame is not None
+        or (not transition.active)
+        or (transition.setup_frame is not None)
         or transition.claimed
-        or parent.owner in _FIRST_STEP_INITIAL_LEASES
-        or parent.owner in _SHORT_INIT_INITIAL_LEASES
+        or (parent.owner in _FIRST_STEP_INITIAL_LEASES)
+        or (parent.owner in _SHORT_INIT_INITIAL_LEASES)
     ):
         parent.invalid = transition.invalid = True
         raise ValueError("Actual once-only Key first-step reservation required")
@@ -3340,8 +3354,6 @@ def _claim_first_step_ancestor(parent, completion, storage, electrical, transiti
         status="claiming",
     )
     _FIRST_STEP_INITIAL_LEASES[parent.owner] = parent.first_step_initial_lease = lease
-    # Old numerical validation belongs exclusively to the upstream electrical
-    # retirement, before this claim. This record preserves all original links.
     lease.status = "reserved"
     return parent
 
@@ -3353,16 +3365,16 @@ def _check_first_step_ancestor(parent, completion, storage, electrical, transiti
         lease is None
         or lease is not getattr(parent, "first_step_initial_lease", None)
         or lease.status != "reserved"
-        or actual is None
-        or actual[0] is not transition
-        or lease.parent is not parent
-        or lease.completion is not completion
-        or lease.storage is not storage
-        or lease.electrical is not electrical
-        or lease.child is not transition
-        or lease.original is not parent.electrical_initial_lease
-        or _ELECTRICAL_INITIAL_LEASES.get(parent.owner) is not lease.original
-    ):
+        or (actual is None)
+        or (actual[0] is not transition)
+        or (lease.parent is not parent)
+        or (lease.completion is not completion)
+        or (lease.storage is not storage)
+        or (lease.electrical is not electrical)
+        or (lease.child is not transition)
+        or (lease.original is not parent.electrical_initial_lease)
+        or (_ELECTRICAL_INITIAL_LEASES.get(parent.owner) is not lease.original)
+    ) or parent.owner in _TERMINAL_INIT_INITIAL_LEASES:
         raise ValueError("Retained original first-step ancestor lease changed")
     if actual[1]._check_ancestor_metadata(transition) is not electrical:
         raise ValueError("Different factored first-step electrical ancestry")
@@ -3375,7 +3387,10 @@ def _claim_short_init_ancestor(parent, completion, storage, electrical, transiti
         actual is None
         or actual[0] is not transition
         or any(
-            a is not b for a, b in zip(actual[2:5], (electrical, storage, completion), strict=True)
+            (
+                a is not b
+                for a, b in zip(actual[2:5], (electrical, storage, completion), strict=True)
+            )
         )
     ):
         raise ValueError("Actual original short-history runtime ancestry required")
@@ -3387,18 +3402,18 @@ def _claim_short_init_ancestor(parent, completion, storage, electrical, transiti
             type(function) is not FunctionType
             or function.__globals__ is not vars(module)
             or frame.f_code is not function.__code__
-            or frame.f_globals is not vars(module)
-            or frame.f_locals.get("context") is not completion
-            or frame.f_locals.get("storage") is not storage
-            or frame.f_locals.get("electrical") is not electrical
-            or frame.f_locals.get("transition") is not transition
-            or not transition.active
-            or transition.setup_frame is not None
-            or transition.loop_frame is not None
+            or (frame.f_globals is not vars(module))
+            or (frame.f_locals.get("context") is not completion)
+            or (frame.f_locals.get("storage") is not storage)
+            or (frame.f_locals.get("electrical") is not electrical)
+            or (frame.f_locals.get("transition") is not transition)
+            or (not transition.active)
+            or (transition.setup_frame is not None)
+            or (transition.loop_frame is not None)
             or transition.claimed
-            or parent.owner in _FIRST_STEP_INITIAL_LEASES
-            or parent.owner in _SHORT_INIT_INITIAL_LEASES
-        ):
+            or (parent.owner in _FIRST_STEP_INITIAL_LEASES)
+            or (parent.owner in _SHORT_INIT_INITIAL_LEASES)
+        ) or parent.owner in _TERMINAL_INIT_INITIAL_LEASES:
             parent.invalid = transition.invalid = True
             raise ValueError("Actual once-only Key short-history reservation required")
         lease = SimpleNamespace(
@@ -3422,18 +3437,18 @@ def _check_short_init_ancestor(parent, completion, storage, electrical, transiti
         lease is None
         or lease is not getattr(parent, "short_init_initial_lease", None)
         or lease.status != "reserved"
-        or actual is None
-        or actual[0] is not transition
-        or lease.parent is not parent
-        or lease.completion is not completion
-        or lease.storage is not storage
-        or lease.electrical is not electrical
-        or lease.child is not transition
-        or lease.original is not parent.electrical_initial_lease
-        or _ELECTRICAL_INITIAL_LEASES.get(parent.owner) is not lease.original
-        or transition.request.iterations != lease.iterations
-        or parent.owner in _FIRST_STEP_INITIAL_LEASES
-    ):
+        or (actual is None)
+        or (actual[0] is not transition)
+        or (lease.parent is not parent)
+        or (lease.completion is not completion)
+        or (lease.storage is not storage)
+        or (lease.electrical is not electrical)
+        or (lease.child is not transition)
+        or (lease.original is not parent.electrical_initial_lease)
+        or (_ELECTRICAL_INITIAL_LEASES.get(parent.owner) is not lease.original)
+        or (transition.request.iterations != lease.iterations)
+        or (parent.owner in _FIRST_STEP_INITIAL_LEASES)
+    ) or parent.owner in _TERMINAL_INIT_INITIAL_LEASES:
         raise ValueError("Retained original bounded INIT ancestor lease changed")
     if actual[1]._check_ancestor_metadata(transition) is not electrical:
         raise ValueError("Different factored short-history electrical ancestry")
@@ -3804,3 +3819,126 @@ def _electrical_dispatch_guard(parent, label, delegate, args, kwargs, frame):
     ):
         _reject(parent, "Actual once-claimed original electrical dispatch required")
     claim.dispatched, claim.invocation = True, frame
+
+
+# Separate held natural-terminal ancestry; no selected-history reuse.
+
+
+def _terminal_init_runtime(parent):
+    actual = _electrical_runtime(parent)
+    if actual is None or getattr(actual[0], "terminal_init_transition", None) is None:
+        return None
+    electrical, provider, storage, completion, completion_api = actual
+    if (
+        getattr(electrical, "first_step_transition", None) is not None
+        or getattr(electrical, "short_init_transition", None) is not None
+    ):
+        raise ValueError("Completed/active first-step cannot become continuous INIT")
+    function = vars(provider).get("_terminal_init_route")
+    if type(function) is not FunctionType or function.__globals__ is not vars(provider):
+        raise ValueError("Actual original natural-terminal electrical route unavailable")
+    retained = _atoms(function)
+    path = Path(provider.__file__)
+    previous._ready()._source_interface(
+        provider, path.read_bytes(), path, ("_terminal_init_route",)
+    )
+    if vars(provider).get("_terminal_init_route") is not function:
+        raise ValueError("Actual natural-terminal routing slot changed")
+    core.previous._same(_atoms(function), retained)
+    child, module = function(electrical)
+    if (
+        child.electrical_parent is not electrical
+        or child.parent is not completion
+        or child.storage_parent is not storage
+        or (child.initial is not parent)
+        or (child.phase is not parent.phase)
+        or (child.sim is not parent.phase.sim)
+        or (child.cells is not parent.cells)
+        or (child.p is not parent.p)
+    ):
+        raise ValueError("Original same-INIT natural-terminal ancestry changed")
+    return (child, module, electrical, storage, completion, completion_api)
+
+
+def _claim_terminal_init_ancestor(parent, completion, storage, electrical, transition):
+    actual = _terminal_init_runtime(parent)
+    if (
+        actual is None
+        or actual[0] is not transition
+        or any(
+            (
+                a is not b
+                for a, b in zip(actual[2:5], (electrical, storage, completion), strict=True)
+            )
+        )
+    ):
+        raise ValueError("Actual original natural-terminal runtime ancestry required")
+    module = actual[5]
+    function = vars(module).get("_claim_terminal_init_ancestor")
+    frame = sys._getframe(1)
+    with _LOCK:
+        if (
+            type(function) is not FunctionType
+            or function.__globals__ is not vars(module)
+            or frame.f_code is not function.__code__
+            or (frame.f_globals is not vars(module))
+            or (frame.f_locals.get("context") is not completion)
+            or (frame.f_locals.get("storage") is not storage)
+            or (frame.f_locals.get("electrical") is not electrical)
+            or (frame.f_locals.get("transition") is not transition)
+            or (not transition.active)
+            or (transition.setup_frame is not None)
+            or (transition.loop_frame is not None)
+            or transition.claimed
+            or (parent.owner in _FIRST_STEP_INITIAL_LEASES)
+            or (parent.owner in _TERMINAL_INIT_INITIAL_LEASES)
+        ) or (
+            parent.owner in _SHORT_INIT_INITIAL_LEASES
+            or transition.request.iterations
+            != actual[1]._configured_count(parent.p.init_tsteps, transition.request.maximum)
+        ):
+            parent.invalid = transition.invalid = True
+            raise ValueError("Actual once-only Key natural-terminal reservation required")
+        lease = SimpleNamespace(
+            parent=parent,
+            completion=completion,
+            storage=storage,
+            electrical=electrical,
+            child=transition,
+            original=parent.electrical_initial_lease,
+            iterations=transition.request.iterations,
+            status="reserved",
+            maximum=transition.request.maximum,
+        )
+        _TERMINAL_INIT_INITIAL_LEASES[parent.owner] = parent.terminal_init_initial_lease = lease
+        return parent
+
+
+def _check_terminal_init_ancestor(parent, completion, storage, electrical, transition):
+    lease = _TERMINAL_INIT_INITIAL_LEASES.get(parent.owner)
+    actual = _terminal_init_runtime(parent)
+    if (
+        lease is None
+        or lease is not getattr(parent, "terminal_init_initial_lease", None)
+        or lease.status != "reserved"
+        or (actual is None)
+        or (actual[0] is not transition)
+        or (lease.parent is not parent)
+        or (lease.completion is not completion)
+        or (lease.storage is not storage)
+        or (lease.electrical is not electrical)
+        or (lease.child is not transition)
+        or (lease.original is not parent.electrical_initial_lease)
+        or (_ELECTRICAL_INITIAL_LEASES.get(parent.owner) is not lease.original)
+        or (transition.request.iterations != lease.iterations)
+        or (parent.owner in _FIRST_STEP_INITIAL_LEASES)
+    ) or (
+        parent.owner in _SHORT_INIT_INITIAL_LEASES
+        or transition.request.maximum != lease.maximum
+        or transition.request.iterations
+        != actual[1]._configured_count(parent.p.init_tsteps, lease.maximum)
+    ):
+        raise ValueError("Retained original bounded INIT ancestor lease changed")
+    if actual[1]._check_ancestor_metadata(transition) is not electrical:
+        raise ValueError("Different factored natural-terminal electrical ancestry")
+    return parent

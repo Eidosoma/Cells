@@ -32,6 +32,7 @@ MAX_WORK = 100000
 _REQUESTS, _CONSUMED, _RETIRED, _ISSUED = (WeakKeyDictionary() for _ in range(4))
 _FORWARDED, _FIRST_STEP_LEASES = WeakKeyDictionary(), WeakKeyDictionary()
 _SHORT_INIT_LEASES = WeakKeyDictionary()
+_TERMINAL_INIT_LEASES = WeakKeyDictionary()
 FIRST_STEP_MODULE = "cells.processes.betse_native_init_first_step"
 FIRST_STEP_INTERFACE_SHA256 = FIRST_STEP_REVIEW_SHA256 = None
 FIRST_STEP_PARENT_REVIEW_SHA256 = None
@@ -40,6 +41,10 @@ SHORT_INIT_MODULE = "cells.processes.betse_native_init_short_history"
 SHORT_INIT_INTERFACE_SHA256 = SHORT_INIT_REVIEW_SHA256 = None
 SHORT_INIT_PARENT_REVIEW_SHA256 = None
 SHORT_INIT_BINDING_KIND = "exact_INIT_short_history_except_two_electrical_backrefs@1"
+TERMINAL_INIT_MODULE = "cells.processes.betse_native_init_terminal"
+TERMINAL_INIT_INTERFACE_SHA256 = TERMINAL_INIT_REVIEW_SHA256 = None
+TERMINAL_INIT_PARENT_REVIEW_SHA256 = None
+TERMINAL_INIT_BINDING_KIND = "exact_INIT_natural_terminal_except_two_electrical_backrefs@1"
 _ACTIVE, _FAILED, _LOCK = [], [], RLock()
 
 
@@ -414,12 +419,16 @@ def _binding(context):
         _FORWARDED,
         _FIRST_STEP_LEASES,
         _SHORT_INIT_LEASES,
+        _TERMINAL_INIT_LEASES,
         FIRST_STEP_INTERFACE_SHA256,
         FIRST_STEP_REVIEW_SHA256,
         FIRST_STEP_PARENT_REVIEW_SHA256,
         SHORT_INIT_INTERFACE_SHA256,
         SHORT_INIT_REVIEW_SHA256,
         SHORT_INIT_PARENT_REVIEW_SHA256,
+        TERMINAL_INIT_INTERFACE_SHA256,
+        TERMINAL_INIT_REVIEW_SHA256,
+        TERMINAL_INIT_PARENT_REVIEW_SHA256,
         *storage._observer_bindings(context),
     ]
     for function in (
@@ -1281,38 +1290,44 @@ def _check_step_binding(binding):
 def _first_step_route(context):
     binding = _first_step_api()
     module = binding.module
-    owner, child = getattr(context, "owner", None), getattr(context, "first_step_transition", None)
+    owner, child = (
+        getattr(context, "owner", None),
+        getattr(context, "first_step_transition", None),
+    )
     lease = _FIRST_STEP_LEASES.get(owner)
     issued = _ISSUED.get(owner)
     if (
         type(owner) is not ElectricalOwner
         or issued is None
         or issued[0] is not context
-        or issued[1] is not context.trial
-        or child is None
-        or lease is None
-        or lease.parent is not context
-        or lease.child is not child
-        or _FORWARDED.get(owner) is not child
+        or (issued[1] is not context.trial)
+        or (child is None)
+        or (lease is None)
+        or (lease.parent is not context)
+        or (lease.child is not child)
+        or (_FORWARDED.get(owner) is not child)
         or context.active
         or context.invalid
         or child.invalid
-        or child.thread != get_ident()
-        or child.electrical_parent is not context
-        or type(child.request) is not module.Request
-        or child.request.electrical_owner is not owner
-        or module._REQUESTS.get(child.request) is not child.refs
-        or module._CONSUMED.get(child.request) is not child
-        or module._RETIRED.get(owner) is not child
-        or child.refs[0] is not context
-        or child.refs[1] is not context.trial
-        or child.entries is not lease.entries
-        or child.phase is not context.phase
-        or child.sim is not context.sim
-        or child.p is not context.p
-        or child.cells is not context.cells
+        or (child.thread != get_ident())
+        or (child.electrical_parent is not context)
+        or (type(child.request) is not module.Request)
+        or (child.request.electrical_owner is not owner)
+        or (module._REQUESTS.get(child.request) is not child.refs)
+        or (module._CONSUMED.get(child.request) is not child)
+        or (module._RETIRED.get(owner) is not child)
+        or (child.refs[0] is not context)
+        or (child.refs[1] is not context.trial)
+        or (child.entries is not lease.entries)
+        or (child.phase is not context.phase)
+        or (child.sim is not context.sim)
+        or (child.p is not context.p)
+        or (child.cells is not context.cells)
+    ) or (
+        owner in _TERMINAL_INIT_LEASES
+        or getattr(context, "terminal_init_transition", None) is not None
     ):
-        if type(child) is SimpleNamespace and lease is not None and lease.child is child:
+        if type(child) is SimpleNamespace and lease is not None and (lease.child is child):
             _first_step_reject(
                 child, "Original electrical/first-step issuance and retirement links changed"
             )
@@ -1330,10 +1345,10 @@ def _first_step_route(context):
             issued is None
             or issued[0] is not child
             or issued[1] is not child.trial
-            or not child.trial.iteration_complete
+            or (not child.trial.iteration_complete)
         ):
             _first_step_reject(child, "Actually sealed selected first-step record required")
-    return child, module
+    return (child, module)
 
 
 def _first_step_reject(child, reason):
@@ -1355,28 +1370,30 @@ def _claim_for_first_step(owner, *, expected, transition, entries):
             type(owner) is not ElectricalOwner
             or owner not in _ISSUED
             or frame.f_code is not module.prepare.__code__
-            or frame.f_globals is not vars(module)
-            or frame.f_locals.get("context") is not transition
-            or frame.f_locals.get("request") is not transition.request
-            or module._CONSUMED.get(transition.request) is not transition
-            or module._RETIRED.get(owner) is not transition
-            or not transition.active
-            or transition.thread != get_ident()
-            or transition.entries is not entries
+            or (frame.f_globals is not vars(module))
+            or (frame.f_locals.get("context") is not transition)
+            or (frame.f_locals.get("request") is not transition.request)
+            or (module._CONSUMED.get(transition.request) is not transition)
+            or (module._RETIRED.get(owner) is not transition)
+            or (not transition.active)
+            or (transition.thread != get_ident())
+            or (transition.entries is not entries)
         ):
             raise ElectricalRejected(
                 "Actual once-only first-step issuer frame required", stage="first_step_entry"
             )
         context, trial = _ISSUED[owner]
-        if owner in _FORWARDED or owner in _FIRST_STEP_LEASES:
+        if (owner in _FORWARDED or owner in _FIRST_STEP_LEASES) or owner in _TERMINAL_INIT_LEASES:
             _first_step_reject(transition, "Electrical first-step epoch already attempted")
         _check_step_binding(binding)
         functions = binding.functions
         if tuple(entries) != ("wrapper_guard", "dispatch") or any(
-            entries[key] is not next(fn for name, fn, _ in functions if name == expected_name)
-            for key, expected_name in (
-                ("wrapper_guard", "_claim_wrapper"),
-                ("dispatch", "_dispatch"),
+            (
+                entries[key] is not next((fn for name, fn, _ in functions if name == expected_name))
+                for key, expected_name in (
+                    ("wrapper_guard", "_claim_wrapper"),
+                    ("dispatch", "_dispatch"),
+                )
             )
         ):
             raise ValueError("Original immutable first-step entry callbacks required")
@@ -1410,16 +1427,15 @@ def _claim_for_first_step(owner, *, expected, transition, entries):
             if (
                 graph[1] != context.after_graph[1]
                 or _snapshot(context).identity != context.after.identity
-                or not trial.completed
+                or (not trial.completed)
             ):
                 raise ValueError("Original full electrical state changed before first-step proof")
-            # The actual Key ancestry contract remains a distinct source gate.
             storage._claim_first_step_ancestor(context, transition)
             lease.status = "ready"
             return context
         except BaseException as error:
             primary = transition.entry_error if transition.entry_error is not None else error
-            lease.status, lease.primary = "failed", primary
+            lease.status, lease.primary = ("failed", primary)
             if error is not primary:
                 lease.secondary = (error, primary)
             context.invalid = transition.invalid = True
@@ -1518,45 +1534,51 @@ def _short_init_route(context):
     """Actual same-owner live route; never validate a retired numeric cache."""
     binding = _short_init_api()
     module = binding.module
-    owner, child = getattr(context, "owner", None), getattr(context, "short_init_transition", None)
-    lease, issued = _SHORT_INIT_LEASES.get(owner), _ISSUED.get(owner)
+    owner, child = (
+        getattr(context, "owner", None),
+        getattr(context, "short_init_transition", None),
+    )
+    lease, issued = (_SHORT_INIT_LEASES.get(owner), _ISSUED.get(owner))
     if (
         type(owner) is not ElectricalOwner
         or issued is None
         or issued[0] is not context
-        or issued[1] is not context.trial
-        or lease is None
-        or lease.parent is not context
-        or lease.child is not child
-        or lease.trial is not context.trial
-        or getattr(context, "short_init_lease", None) is not lease
-        or _FORWARDED.get(owner) is not child
-        or owner in _FIRST_STEP_LEASES
-        or getattr(context, "first_step_transition", None) is not None
+        or (issued[1] is not context.trial)
+        or (lease is None)
+        or (lease.parent is not context)
+        or (lease.child is not child)
+        or (lease.trial is not context.trial)
+        or (getattr(context, "short_init_lease", None) is not lease)
+        or (_FORWARDED.get(owner) is not child)
+        or (owner in _FIRST_STEP_LEASES)
+        or (getattr(context, "first_step_transition", None) is not None)
         or context.active
         or context.invalid
-        or child is None
+        or (child is None)
         or child.invalid
-        or child.thread != get_ident()
-        or child.electrical_parent is not context
-        or type(child.request) is not module.Request
-        or child.request.electrical_owner is not owner
-        or type(child.request.iterations) is not int
-        or child.request.iterations != lease.iterations
-        or module._REQUESTS.get(child.request) is not child.refs
-        or module._CONSUMED.get(child.request) is not child
-        or module._RETIRED.get(owner) is not child
-        or child.refs[0] is not context
-        or child.refs[1] is not context.trial
-        or child.entries is not lease.entries
-        or child.phase is not context.phase
-        or child.sim is not context.sim
-        or child.p is not context.p
-        or child.cells is not context.cells
-        or child.handler is not context.handler
-        or child.cache is not context.cache
+        or (child.thread != get_ident())
+        or (child.electrical_parent is not context)
+        or (type(child.request) is not module.Request)
+        or (child.request.electrical_owner is not owner)
+        or (type(child.request.iterations) is not int)
+        or (child.request.iterations != lease.iterations)
+        or (module._REQUESTS.get(child.request) is not child.refs)
+        or (module._CONSUMED.get(child.request) is not child)
+        or (module._RETIRED.get(owner) is not child)
+        or (child.refs[0] is not context)
+        or (child.refs[1] is not context.trial)
+        or (child.entries is not lease.entries)
+        or (child.phase is not context.phase)
+        or (child.sim is not context.sim)
+        or (child.p is not context.p)
+        or (child.cells is not context.cells)
+        or (child.handler is not context.handler)
+        or (child.cache is not context.cache)
+    ) or (
+        owner in _TERMINAL_INIT_LEASES
+        or getattr(context, "terminal_init_transition", None) is not None
     ):
-        if type(child) is SimpleNamespace and lease is not None and lease.child is child:
+        if type(child) is SimpleNamespace and lease is not None and (lease.child is child):
             _short_init_reject(child, "Original electrical/short-history ancestry changed")
         raise ValueError("Original electrical/short-history ancestry changed")
     _check_step_binding(_StepBinding(module, lease.functions))
@@ -1569,16 +1591,16 @@ def _short_init_route(context):
             type(getattr(child, "owner", None)) is not module.ShortHistoryOwner
             or published is None
             or published[0] is not child
-            or published[1] is not child.trial
-            or not child.trial.source_completed
-            or not child.trial.selected_stop
+            or (published[1] is not child.trial)
+            or (not child.trial.source_completed)
+            or (not child.trial.selected_stop)
             or child.trial.loop_returned
             or child.timeline.invalid
-            or child.timeline.current is not None
-            or child.timeline.completed != lease.iterations
+            or (child.timeline.current is not None)
+            or (child.timeline.completed != lease.iterations)
         ):
             _short_init_reject(child, "Actually sealed short-history record required")
-    return child, module
+    return (child, module)
 
 
 def _claim_for_short_init(owner, *, expected, transition, entries):
@@ -1590,28 +1612,32 @@ def _claim_for_short_init(owner, *, expected, transition, entries):
             type(owner) is not ElectricalOwner
             or owner not in _ISSUED
             or frame.f_code is not module.prepare.__code__
-            or frame.f_globals is not vars(module)
-            or frame.f_locals.get("context") is not transition
-            or frame.f_locals.get("request") is not transition.request
-            or module._CONSUMED.get(transition.request) is not transition
-            or module._RETIRED.get(owner) is not transition
-            or not transition.active
-            or transition.thread != get_ident()
-            or transition.entries is not entries
+            or (frame.f_globals is not vars(module))
+            or (frame.f_locals.get("context") is not transition)
+            or (frame.f_locals.get("request") is not transition.request)
+            or (module._CONSUMED.get(transition.request) is not transition)
+            or (module._RETIRED.get(owner) is not transition)
+            or (not transition.active)
+            or (transition.thread != get_ident())
+            or (transition.entries is not entries)
         ):
             raise ElectricalRejected(
                 "Actual once-only short-history issuer frame required", stage="short_init_entry"
             )
         context, trial = _ISSUED[owner]
-        if owner in _FORWARDED or owner in _SHORT_INIT_LEASES or owner in _FIRST_STEP_LEASES:
+        if (
+            owner in _FORWARDED or owner in _SHORT_INIT_LEASES or owner in _FIRST_STEP_LEASES
+        ) or owner in _TERMINAL_INIT_LEASES:
             _short_init_reject(transition, "Electrical source epoch already attempted")
         _check_step_binding(binding)
         functions = binding.functions
         if tuple(entries) != ("wrapper_guard", "dispatch") or any(
-            entries[key] is not next(fn for name, fn, _ in functions if name == expected_name)
-            for key, expected_name in (
-                ("wrapper_guard", "_claim_wrapper"),
-                ("dispatch", "_dispatch"),
+            (
+                entries[key] is not next((fn for name, fn, _ in functions if name == expected_name))
+                for key, expected_name in (
+                    ("wrapper_guard", "_claim_wrapper"),
+                    ("dispatch", "_dispatch"),
+                )
             )
         ):
             raise ValueError("Original immutable short-history entry callbacks required")
@@ -1635,8 +1661,8 @@ def _claim_for_short_init(owner, *, expected, transition, entries):
                 or context.active
                 or context.invalid
                 or context.validating
-                or type(lease.iterations) is not int
-                or not 1 <= lease.iterations <= 64
+                or (type(lease.iterations) is not int)
+                or (not 1 <= lease.iterations <= 64)
             ):
                 raise ValueError("Actual closed electrical epoch required before retirement")
             _ready()
@@ -1646,7 +1672,7 @@ def _claim_for_short_init(owner, *, expected, transition, entries):
             if (
                 graph[1] != context.after_graph[1]
                 or _snapshot(context).identity != context.after.identity
-                or not trial.completed
+                or (not trial.completed)
             ):
                 raise ValueError("Original full electrical state changed before history proof")
             storage._claim_short_init_ancestor(context, transition)
@@ -1657,7 +1683,7 @@ def _claim_for_short_init(owner, *, expected, transition, entries):
             primary = first[1] if first is not None else transition.entry_error
             if primary is None:
                 primary = error
-            lease.status, lease.primary = "failed", primary
+            lease.status, lease.primary = ("failed", primary)
             if error is not primary:
                 lease.secondary = (error, primary)
             context.invalid = transition.invalid = True
@@ -1674,4 +1700,269 @@ def _check_short_init_authority(transition):
     function = next(fn for name, fn, _ in lease.functions if name == "_check_ancestor_metadata")
     if function(transition) is not context:
         raise ValueError("Different original electrical/short-history metadata ancestry")
+    return context
+
+
+# Separate held natural-terminal ancestry; no selected-history reuse.
+
+
+def _terminal_init_api():
+    """Distinct source-gated N-history consumer; no FirstStepOwner conversion."""
+    if not all(
+        (
+            storage.previous._pin(value)
+            for value in (
+                TERMINAL_INIT_INTERFACE_SHA256,
+                TERMINAL_INIT_REVIEW_SHA256,
+                TERMINAL_INIT_PARENT_REVIEW_SHA256,
+            )
+        )
+    ):
+        raise ElectricalRejected(
+            "Reviewed natural-terminal continuation remains held", stage="terminal_init_held"
+        )
+    path = Path(__file__).parents[3] / ("src/" + TERMINAL_INIT_MODULE.replace(".", "/") + ".py")
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Actual original natural-terminal producer required")
+    payload = path.read_bytes()
+    identity, backrefs = FunctionType(
+        storage.previous._storage_binding.__code__,
+        dict(
+            vars(storage.previous),
+            STORAGE_BACK_REFERENCE_SLOTS=("PARENT_SOURCE_SHA256", "PARENT_REVIEW_SHA256"),
+            STORAGE_BINDING_KIND=TERMINAL_INIT_BINDING_KIND,
+        ),
+    )(payload)
+    if identity != TERMINAL_INIT_INTERFACE_SHA256 or backrefs != (
+        ("PARENT_SOURCE_SHA256", hashlib.sha256(Path(__file__).read_bytes()).hexdigest()),
+        ("PARENT_REVIEW_SHA256", TERMINAL_INIT_PARENT_REVIEW_SHA256),
+    ):
+        raise ValueError("Actual natural-terminal source/electrical back-reference changed")
+    module = sys.modules.get(TERMINAL_INIT_MODULE)
+    if (
+        type(module) is not ModuleType
+        or vars(module).get("base") is not sys.modules.get(FIRST_STEP_MODULE)
+        or module.base.previous is not sys.modules[__name__]
+        or (Path(module.__file__).resolve() != path)
+    ):
+        raise ValueError("Actual original natural-terminal namespace required")
+    names = (
+        "prepare",
+        "_ready",
+        "_claim_wrapper",
+        "_dispatch",
+        "_check_ancestor_metadata",
+        "_mutation_contract",
+        "_configured_count",
+        "_terminal_runtime_status",
+    )
+    functions = tuple(
+        (
+            (name, vars(module).get(name), storage._electrical_atoms(vars(module).get(name)))
+            for name in names
+        )
+    )
+    if any((type(function) is not FunctionType for _, function, _ in functions)):
+        raise ValueError("Actual typed natural-terminal source functions required")
+    interfaces._source_interface(module, payload, path, names)
+    binding = _StepBinding(module, functions)
+    _check_step_binding(binding)
+    next((fn for name, fn, _ in functions if name == "_ready"))()
+    _check_step_binding(binding)
+    return binding
+
+
+def _terminal_init_reject(child, reason):
+    child.invalid = True
+    if child.entry_error is None:
+        child.entry_error = ElectricalRejected(reason, stage="terminal_init_entry", partial=child)
+    first = getattr(child, "first_failure", None)
+    if first is None:
+        child.first_failure = ("admission", child.entry_error)
+    if first is not None and first[0] == "source":
+        raise first[1]
+    raise child.entry_error
+
+
+def _terminal_init_route(context):
+    """Actual same-owner live route; never validate a retired numeric cache."""
+    binding = _terminal_init_api()
+    module = binding.module
+    owner, child = (
+        getattr(context, "owner", None),
+        getattr(context, "terminal_init_transition", None),
+    )
+    lease, issued = (_TERMINAL_INIT_LEASES.get(owner), _ISSUED.get(owner))
+    if (
+        type(owner) is not ElectricalOwner
+        or issued is None
+        or issued[0] is not context
+        or (issued[1] is not context.trial)
+        or (lease is None)
+        or (lease.parent is not context)
+        or (lease.child is not child)
+        or (lease.trial is not context.trial)
+        or (getattr(context, "terminal_init_lease", None) is not lease)
+        or (_FORWARDED.get(owner) is not child)
+        or (owner in _FIRST_STEP_LEASES)
+        or (getattr(context, "first_step_transition", None) is not None)
+        or context.active
+        or context.invalid
+        or (child is None)
+        or child.invalid
+        or (child.thread != get_ident())
+        or (child.electrical_parent is not context)
+        or (type(child.request) is not module.Request)
+        or (child.request.electrical_owner is not owner)
+        or (type(child.request.iterations) is not int)
+        or (child.request.iterations != lease.iterations)
+        or (module._REQUESTS.get(child.request) is not child.refs)
+        or (module._CONSUMED.get(child.request) is not child)
+        or (module._RETIRED.get(owner) is not child)
+        or (child.refs[0] is not context)
+        or (child.refs[1] is not context.trial)
+        or (child.entries is not lease.entries)
+        or (child.phase is not context.phase)
+        or (child.sim is not context.sim)
+        or (child.p is not context.p)
+        or (child.cells is not context.cells)
+        or (child.handler is not context.handler)
+        or (child.cache is not context.cache)
+    ) or (
+        owner in _SHORT_INIT_LEASES
+        or getattr(context, "short_init_transition", None) is not None
+        or type(child.request.maximum) is not int
+        or (child.request.maximum != lease.maximum)
+        or (
+            child.request.iterations
+            != module._configured_count(context.p.init_tsteps, lease.maximum)
+        )
+    ):
+        if type(child) is SimpleNamespace and lease is not None and (lease.child is child):
+            _terminal_init_reject(child, "Original electrical/natural-terminal ancestry changed")
+        raise ValueError("Original electrical/natural-terminal ancestry changed")
+    _check_step_binding(_StepBinding(module, lease.functions))
+    if child.active:
+        if not module._ACTIVE or module._ACTIVE[-1] is not child:
+            _terminal_init_reject(child, "Exclusive natural-terminal transition required")
+    else:
+        published = module._ISSUED.get(getattr(child, "owner", None))
+        if (
+            type(getattr(child, "owner", None)) is not module.InitTerminalOwner
+            or published is None
+            or published[0] is not child
+            or (published[1] is not child.trial)
+            or (child.trial.source_completed is not True)
+            or (child.trial.selected_stop is not False)
+            or (child.trial.loop_returned is not True)
+            or (child.trial.context_returned is not True)
+            or (child.trial.identity != module._digest(module.trial_record(child.trial)))
+            or child.timeline.invalid
+            or (child.timeline.current is not None)
+            or (child.timeline.completed != lease.iterations)
+            or (len(child.timeline.records) != lease.iterations)
+        ):
+            _terminal_init_reject(child, "Actually sealed natural-terminal record required")
+    return (child, module)
+
+
+def _claim_for_terminal_init(owner, *, expected, transition, entries):
+    binding = _terminal_init_api()
+    module = binding.module
+    frame = sys._getframe(1)
+    with _LOCK:
+        if (
+            type(owner) is not ElectricalOwner
+            or owner not in _ISSUED
+            or frame.f_code is not module.prepare.__code__
+            or (frame.f_globals is not vars(module))
+            or (frame.f_locals.get("context") is not transition)
+            or (frame.f_locals.get("request") is not transition.request)
+            or (module._CONSUMED.get(transition.request) is not transition)
+            or (module._RETIRED.get(owner) is not transition)
+            or (not transition.active)
+            or (transition.thread != get_ident())
+            or (transition.entries is not entries)
+        ):
+            raise ElectricalRejected(
+                "Actual once-only natural-terminal issuer frame required",
+                stage="terminal_init_entry",
+            )
+        context, trial = _ISSUED[owner]
+        if (
+            owner in _FORWARDED or owner in _TERMINAL_INIT_LEASES or owner in _FIRST_STEP_LEASES
+        ) or owner in _SHORT_INIT_LEASES:
+            _terminal_init_reject(transition, "Electrical source epoch already attempted")
+        _check_step_binding(binding)
+        functions = binding.functions
+        if tuple(entries) != ("wrapper_guard", "dispatch") or any(
+            (
+                entries[key] is not next((fn for name, fn, _ in functions if name == expected_name))
+                for key, expected_name in (
+                    ("wrapper_guard", "_claim_wrapper"),
+                    ("dispatch", "_dispatch"),
+                )
+            )
+        ):
+            raise ValueError("Original immutable natural-terminal entry callbacks required")
+        lease = SimpleNamespace(
+            parent=context,
+            child=transition,
+            entries=entries,
+            trial=trial,
+            functions=functions,
+            iterations=transition.request.iterations,
+            status="claiming",
+            primary=None,
+            maximum=transition.request.maximum,
+        )
+        _FORWARDED[owner] = context.terminal_init_transition = transition
+        _TERMINAL_INIT_LEASES[owner] = context.terminal_init_lease = lease
+        try:
+            if (
+                expected is not trial
+                or transition.refs[0] is not context
+                or transition.refs[1] is not trial
+                or context.active
+                or context.invalid
+                or context.validating
+                or (type(lease.iterations) is not int)
+                or (not 1 <= lease.iterations <= module.MAX_ITERATIONS)
+            ) or lease.iterations != module._configured_count(context.p.init_tsteps, lease.maximum):
+                raise ValueError("Actual closed electrical epoch required before retirement")
+            _ready()
+            _check(context, closed=True)
+            graph = _graph(context)
+            storage.previous._same_refs(graph[0], context.after_graph[0])
+            if (
+                graph[1] != context.after_graph[1]
+                or _snapshot(context).identity != context.after.identity
+                or (not trial.completed)
+            ):
+                raise ValueError("Original full electrical state changed before history proof")
+            storage._claim_terminal_init_ancestor(context, transition)
+            lease.status = "ready"
+            return context
+        except BaseException as error:
+            first = getattr(transition, "first_failure", None)
+            primary = first[1] if first is not None else transition.entry_error
+            if primary is None:
+                primary = error
+            lease.status, lease.primary = ("failed", primary)
+            if error is not primary:
+                lease.secondary = (error, primary)
+            context.invalid = transition.invalid = True
+            raise primary from primary.__cause__
+
+
+def _check_terminal_init_authority(transition):
+    context = transition.electrical_parent
+    child, module = _terminal_init_route(context)
+    lease = _TERMINAL_INIT_LEASES.get(context.owner)
+    if child is not transition or lease.status != "ready":
+        raise ValueError("Original completed natural-terminal retirement required")
+    storage._check_terminal_init_ancestor(context, transition)
+    function = next((fn for name, fn, _ in lease.functions if name == "_check_ancestor_metadata"))
+    if function(transition) is not context:
+        raise ValueError("Different original electrical/natural-terminal metadata ancestry")
     return context

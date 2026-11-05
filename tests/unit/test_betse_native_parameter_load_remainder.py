@@ -46,6 +46,131 @@ def _scalar_capture_context(**fields):
 
 
 @pytest.mark.parametrize(
+    "case",
+    [
+        "repeat",
+        "history",
+        "falsey_history",
+        "graph",
+        "colormap",
+        "output",
+        "audit",
+        "consumed",
+        "run_sim",
+    ],
+)
+def test_completed_parameter_read_reserves_real_ancestry_and_releases_on_failure(monkeypatch, case):
+    """Registry adapter only; history/outputs are synthetic, never native authority.
+
+    Exercise the public getter and actual inherited registry/audit/graph machinery
+    with the closed source context shape that the real load leaves behind.
+    """
+
+    class FalseyError(ValueError):
+        def __bool__(self):
+            return False
+
+    context = _scalar_capture_context(value=1.25, fields={"label": "unchanged"})
+    owner = object.__new__(stage.WorldReadyParametersOwner)
+    context.owner = owner
+    context.loaded = SimpleNamespace(owner=object())
+    context.active = context.validating = context.invalid = False
+    context.capture_errors = ()
+    context.after_graph = stage._capture(context)
+    context.after_cm = object()
+    monkeypatch.setitem(stage._ISSUED, owner, context)
+    paths = stage.previous.previous.mod.subconfigs.paths
+    actual_install = paths._install_audit
+    reservations, checkpoints = [], []
+    cause = OSError("synthetic validation cause")
+    primary = (FalseyError if case == "falsey_history" else ValueError)("synthetic read refusal")
+
+    def check_rows(name):
+        validation = stage._ACTIVE[-1]
+        rows = stage._stacks(validation)
+        assert len(rows) > 5 and len({id(stack) for stack, _ in rows}) == len(rows)
+        assert not hasattr(context, "guard") and validation is not context
+        assert all(len(stack) == 1 and stack[-1] is value for stack, value in rows)
+        assert all(value is validation for stack, value in rows if stack is not paths._ACTIVE)
+        assert paths._ACTIVE[-1] is validation.guard
+        assert validation.guard.active and validation.guard.audit_ready
+        checkpoints.append(name)
+        return validation
+
+    def refuse():
+        raise primary from cause
+
+    def install(guard):
+        actual_install(guard)
+        validation = check_rows("audit")
+        assert validation.guard is guard
+        reservations.append(validation)
+        if case == "audit":
+            refuse()
+
+    def history(actual_owner):
+        assert actual_owner is owner
+        check_rows("history")
+        if case in ("history", "falsey_history"):
+            refuse()
+        return object()
+
+    def colormaps(actual_context):
+        assert actual_context is context
+        check_rows("colormaps")
+        if case == "colormap":
+            refuse()
+        return context.after_cm
+
+    def same_colormaps(current, baseline):
+        assert current is baseline is context.after_cm
+
+    def outputs(actual_context):
+        assert actual_context is context
+        check_rows("outputs")
+        if case == "output":
+            refuse()
+
+    monkeypatch.setattr(paths, "_install_audit", install)
+    monkeypatch.setattr(stage, "validate_completed_history", history)
+    monkeypatch.setattr(stage, "_colormaps", colormaps)
+    monkeypatch.setattr(stage.previous, "_same_cm", same_colormaps)
+    monkeypatch.setattr(stage, "_outputs", outputs)
+    if case == "graph":
+        context.p.value = 2.5
+    elif case == "consumed":
+        monkeypatch.setitem(stage._CONSTRUCTED, owner, object())
+    elif case == "run_sim":
+        context.p._run_sim = False
+    original_fields = dict(vars(context.p))
+
+    if case == "repeat":
+        assert owner.parameters is context.p
+        assert owner.parameters is context.p
+        assert len(reservations) == 2 and reservations[0] is not reservations[1]
+        assert checkpoints == ["audit", "history", "colormaps", "outputs"] * 2
+        assert context.invalid is False
+    else:
+        with pytest.raises(ValueError) as caught:
+            _ = owner.parameters
+        if case in ("audit", "history", "falsey_history", "colormap", "output"):
+            assert caught.value is primary and caught.value.__cause__ is cause
+        elif case in ("consumed", "run_sim"):
+            assert type(caught.value) is stage.LoadRejected
+            assert caught.value.stage == "constructed" and caught.value.partial is context
+            assert checkpoints == ["audit", "history"]
+        elif case == "graph":
+            assert checkpoints == ["audit", "history"]
+        assert context.invalid is True and len(reservations) == 1
+    for validation in reservations:
+        assert validation.guard.active is False
+        assert all(not stack for stack, _ in stage._stacks(validation))
+    assert context.validating is False and not hasattr(context, "guard")
+    assert context.capture_errors == () and vars(context.p) == original_fields
+    assert stage._ISSUED[owner] is context and context.owner is owner
+
+
+@pytest.mark.parametrize(
     "bits",
     [
         "bff0000000000000",

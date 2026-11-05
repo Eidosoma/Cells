@@ -19,8 +19,8 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_numeric_prefix as previous
 
 LAW_ID = "betse_native_parameter_event_declarations@1"
-PREVIOUS_SHA256 = "a22fed62ebf5c5efa615b2d4fe0e8661da61097d7c97295ea5fdfd762e16ab3c"
-CLAIMS_SHA256 = "d602eb44606e7f11c5685a648d7aaa50704e9da58f071a5a6bfdf71c1b398aae"
+PREVIOUS_SHA256 = "9147f42a10ce9b4d60c34cb9dc018bff79af1abd27c6c4744b09fa11b633c1bc"
+CLAIMS_SHA256 = "af3f3459745edb32719966833ff75959e60dfd733cb0a9c3882c08e9aed6be00"
 RELEASE = "CELLS_NATIVE_PARAMETER_EVENT_DECLARATIONS_RELEASED"
 START, STOP = 29, 61
 SCHEDULED = ("Na_mem", "K_mem", "Cl_mem", "Ca_mem", "pressure", "ecmJ")

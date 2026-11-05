@@ -19,6 +19,16 @@ FILE = "validation/betse/betse_native_init_dynamics_completion_software.py"
 MODULE = "validation.betse.betse_native_init_dynamics_completion_software"
 SOFTWARE_RELEASE = "CELLS_NATIVE_INIT_DYNAMICS_COMPLETION_SOFTWARE_RELEASED"
 OWNED = (SOURCE, LITERAL, TEST, FILE)
+PERMISSION_SELECTOR = "first_step_permission_roster or first_step_runtime_permissions"
+TERMINAL_SELECTOR = (
+    "terminal_ancestor or first_step_permission_roster or first_step_runtime_permissions"
+)
+TERMINAL_OWNED = (
+    *OWNED,
+    "src/cells/processes/betse_native_init_retained_world.py",
+    "src/cells/processes/betse_native_init_storage.py",
+    "src/cells/processes/betse_native_init_electrical.py",
+)
 snapshot, runtime, ref = previous.snapshot, previous.runtime, previous.ref
 
 
@@ -51,17 +61,41 @@ def prepare(directory, select=""):
     return FunctionType(fn.__code__, _scope(), argdefs=fn.__defaults__)(directory, select)
 
 
+def prepare_permissions(directory):
+    """Separate CPU2 metadata packet; the default CPU5 route is unchanged."""
+    fn = previous.previous.reused.prepare
+    scope = dict(_scope(), SOFTWARE_CPU=2)
+    return FunctionType(fn.__code__, scope, argdefs=fn.__defaults__)(directory, PERMISSION_SELECTOR)
+
+
+def prepare_terminal_ancestors(directory):
+    fn = previous.previous.reused.prepare
+    scope = dict(_scope(), SOFTWARE_CPU=2, OWNED=TERMINAL_OWNED)
+    return FunctionType(fn.__code__, scope, argdefs=fn.__defaults__)(directory, TERMINAL_SELECTOR)
+
+
 def software(directory, select=""):
     fn = previous.previous.reused.software
     return FunctionType(fn.__code__, _scope(), argdefs=fn.__defaults__)(directory, select)
 
 
-def child(directory):
-    if os.environ.get(SOFTWARE_RELEASE) != "1" or os.sched_getaffinity(0) != {5} or not __debug__:
-        raise ValueError("Explicit frozen assertion-enabled CPU5 software child required")
+def child(directory, *, permission_controls=False, terminal_controls=False):
+    if (
+        type(permission_controls) is not bool
+        or type(terminal_controls) is not bool
+        or (permission_controls and terminal_controls)
+    ):
+        raise ValueError("Exact blocked-software mode required")
+    cpu = 2 if permission_controls or terminal_controls else 5
+    if os.environ.get(SOFTWARE_RELEASE) != "1" or os.sched_getaffinity(0) != {cpu} or not __debug__:
+        raise ValueError(f"Explicit frozen assertion-enabled CPU{cpu} software child required")
     inputs = json.loads((directory / "inputs.json").read_text())
     if ROOT != directory / "source" or not inputs["software_release_requested"]:
         raise ValueError("Actual immutable execution snapshot required")
+    if inputs["cpu"] != cpu or (permission_controls and inputs["select"] != PERMISSION_SELECTOR):
+        raise ValueError("Exact declared CPU/permission-control selection required")
+    if terminal_controls and inputs["select"] != TERMINAL_SELECTOR:
+        raise ValueError("Exact declared terminal ancestor metadata selection required")
     manifest = snapshot.verify(ROOT, manifest_sha256=inputs["snapshot_sha256"])
     assert all(
         manifest["files"][name]["sha256"] == pin for name, pin in inputs["owned_files"].items()
@@ -133,15 +167,31 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--prepare", type=Path)
+    mode.add_argument("--prepare-permissions", type=Path)
+    mode.add_argument("--prepare-terminal-ancestors", type=Path)
     mode.add_argument("--software", type=Path)
     mode.add_argument("--child", type=Path, help=argparse.SUPPRESS)
+    mode.add_argument("--permission-child", type=Path, help=argparse.SUPPRESS)
+    mode.add_argument("--terminal-ancestor-child", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--select", default="")
     args = parser.parse_args()
     if args.prepare:
         return prepare(args.prepare, args.select)
+    if args.prepare_permissions:
+        if args.select:
+            raise ValueError("Permission packet has an exact fixed metadata selection")
+        return prepare_permissions(args.prepare_permissions)
+    if args.prepare_terminal_ancestors:
+        if args.select:
+            raise ValueError("Terminal packet has an exact fixed metadata selection")
+        return prepare_terminal_ancestors(args.prepare_terminal_ancestors)
     if args.software:
         return software(args.software, args.select)
-    return child(args.child)
+    return child(
+        args.terminal_ancestor_child or args.permission_child or args.child,
+        permission_controls=args.permission_child is not None,
+        terminal_controls=args.terminal_ancestor_child is not None,
+    )
 
 
 if __name__ == "__main__":

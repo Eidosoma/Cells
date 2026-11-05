@@ -6,6 +6,8 @@ input, never a discovered or automatically enabled collection of source gates.
 """
 
 import argparse
+import ast
+import faulthandler
 import hashlib
 import importlib
 import json
@@ -23,6 +25,8 @@ from types import FunctionType, ModuleType
 
 from validation import source_snapshot as snapshot
 from validation.betse import betse_normal_ecm_molecule_qualification_resources as resources
+from validation.betse import native_seed_initial_rng as initial_rng
+from validation.betse import native_sim_demo_observation as sim_observation
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = Path("/mnt/workspaces/Cells")
@@ -37,11 +41,32 @@ NUMPY_ORIGIN = "src/cells/processes/betse_native_numpy_copy_origin.py"
 NUMPY_ORIGIN_KIND = "cells.original_numpy_copy_import_origin@1"
 INPUT_PROFILES = "validation/betse/native_seed_demo_input_profiles.py"
 PRODUCERS = (*OWNED, DEMO, PARAMETER, INPUTS, NUMPY_ORIGIN, INPUT_PROFILES)
-KIND = "cells.genuine_seed_demo_detached_launch@10"
+KIND = "cells.genuine_seed_demo_detached_launch@12"
+RNG_DEMO_KIND = "cells.genuine_seed_core_profiles_junctions_demo@8"
+SIM_KIND = "cells.genuine_seed_demo_detached_launch@13"
+SIM_DEMO_KIND = "cells.genuine_seed_core_profiles_junctions_demo@9"
+SIM_ENDPOINT = "sim_terminal"
+SIM_FILE = "validation/betse/native_sim_demo.py"
+SIM_MODULES = {
+    "preparation": "cells.processes.betse_native_init_sim_preparation",
+    "assembly": "cells.processes.betse_native_init_sim_assembly",
+    "run": "cells.processes.betse_native_sim_run",
+}
+SIM_FILES = tuple("src/" + name.replace(".", "/") + ".py" for name in SIM_MODULES.values())
+SIM_GATES = (
+    "CELLS_NATIVE_INIT_SIM_PREPARATION_RELEASED",
+    "CELLS_NATIVE_INIT_SIM_RETIREMENT_RELEASED",
+    "CELLS_NATIVE_INIT_SIM_ASSEMBLY_RELEASED",
+    "CELLS_NATIVE_SIM_RUN_RETIREMENT_RELEASED",
+    "CELLS_NATIVE_SIM_RUN_RELEASED",
+)
+ACQUISITION_SEQUENCE = ("initial_world_ready", "fresh_current_world_ready")
 RELEASE_KIND = "cells.genuine_seed_demo_detached_release@2"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_LAUNCH_RELEASED"
 DEMO_RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
 POLICY = dict(cpu=0, threads=1, max_rss_bytes=2**30, wall_seconds=7200, reserve_bytes=8 * 2**30)
+STACK_INTERVAL_SECONDS = 30
+DIAGNOSTIC_WALL_SECONDS = 1800
 PILLOW = BASE / "pillow-overlay-12.3.0-20261030-01"
 TASKSET = Path("/usr/bin/taskset")
 THREADS = (
@@ -54,11 +79,71 @@ THREADS = (
 )
 _RAW_FAILURES = []
 _WRITE_POLICIES = []
+_STACK_SAMPLERS = []
 
 
 def require(value, message):
     if not value:
         raise ValueError(message)
+
+
+def _wall_seconds(plan):
+    require(type(plan.get("stack_diagnostic")) is bool, "Explicit stack diagnostic mode required")
+    return DIAGNOSTIC_WALL_SECONDS if plan["stack_diagnostic"] else POLICY["wall_seconds"]
+
+
+class StackSampler:
+    """Sparse C-level stacks without replacing any Python trace/profile hook.
+
+    A failed cancellation keeps its file alive until process exit. Samples are
+    locations, not method counters, successful-stage evidence or timings.
+    """
+
+    def __init__(self, output):
+        self.output = output
+        self.stream = None
+        self.attempted = self.started = self.cancelled = self.stopped = False
+
+    def start(self):
+        require(not self.attempted and self.stream is None, "Stack sampler already used")
+        self.stream = (self.output / "stacks.log").open("xb", buffering=0)
+        snapshot.write_json(
+            self.output / "stack-sampling-start.json",
+            dict(
+                interval_seconds=STACK_INTERVAL_SECONDS,
+                method="faulthandler.dump_traceback_later",
+                replaces_python_trace_or_profile=False,
+                samples_are_not_stage_completion_or_call_counts=True,
+                utc=utc(),
+            ),
+        )
+        self.attempted = True
+        faulthandler.dump_traceback_later(
+            STACK_INTERVAL_SECONDS, repeat=True, file=self.stream, exit=False
+        )
+        self.started = True
+        snapshot.write_json(self.output / "stack-sampling-armed.json", dict(armed=True, utc=utc()))
+
+    def stop(self):
+        require(not self.stopped, "Stack sampler cleanup already attempted")
+        self.stopped = True
+        if self.attempted:
+            # If this raises, no close is safe: the C timer may still own the fd.
+            faulthandler.cancel_dump_traceback_later()
+            self.cancelled = True
+        if self.stream is not None:
+            self.stream.close()
+
+    def record(self):
+        return dict(
+            timer_attempted=self.attempted,
+            timer_started=self.started,
+            cleanup_attempted=self.stopped,
+            cancellation_confirmed=self.cancelled,
+            stream_retained_open=self.stream is not None and not self.stream.closed,
+            interval_seconds=STACK_INTERVAL_SECONDS,
+            stage_completion_or_scientific_credit=False,
+        )
 
 
 def _link_record(value):
@@ -297,8 +382,8 @@ def _filesystem(plan, output):
     return policy
 
 
-def source_plan():
-    return dict(
+def source_plan(*, endpoint="seed"):
+    value = dict(
         kind=KIND,
         held=True,
         policy=POLICY,
@@ -307,11 +392,20 @@ def source_plan():
         detached=True,
         automatic_retry=False,
         automatic_polling=False,
+        stack_diagnostic=dict(
+            default=False,
+            wall_seconds=DIAGNOSTIC_WALL_SECONDS,
+            interval_seconds=STACK_INTERVAL_SECONDS,
+            original_source_and_guards=True,
+            python_trace_profile_replacement=False,
+            samples_are_not_call_counts_or_completed_stages=True,
+            cancellation_failure_retains_stream_until_process_exit=True,
+        ),
         fresh_process_per_flux_mode=True,
         endpoint=(
             "Exact plan choice: seed, init_setup, init_prelude, init_dynamics, init_electrical"
-            " or init_first_step or init_short_history; explicit original INIT count,"
-            " no full-loop claim"
+            " or init_first_step or init_short_history or init_terminal;"
+            " original calendar and separate endpoint completion evidence"
         ),
         init_iterations="Exact int 1..64 only for init_short_history; None for other endpoints",
         complete_original_inputs="Exact pair manifest; selected mode only before consumption",
@@ -328,6 +422,26 @@ def source_plan():
         source_or_independent_physical_acceptance=False,
         runtime_scope="Actual loaded file/map inventories; not a complete prelaunch library proof",
     )
+    if endpoint == SIM_ENDPOINT:
+        value.update(
+            kind=SIM_KIND,
+            sim_terminal=dict(
+                demo_kind=SIM_DEMO_KIND,
+                acquisition_sequence=list(ACQUISITION_SEQUENCE),
+                source=SIM_FILE,
+                maximum_iterations=512,
+                complete_INIT_then_complete_SIM=True,
+                explicit_release_flags=list(SIM_GATES),
+                selected_iterations=False,
+                before_native_pickle=True,
+                scientific_credit=0,
+                observation_release=sim_observation.RELEASE,
+                observation_required_before_success=True,
+                saved_binding_requires_explicit_postprocess=True,
+                comparison_acceptance=False,
+            ),
+        )
+    return value
 
 
 def utc():
@@ -487,6 +601,211 @@ def _input_files(bundle, mode):
     return result
 
 
+def _initial_rng_inputs(plan, declaration, bundle, inputs, manifest):
+    """Bind the whole declared input tree; this does not establish RNG authority."""
+    if declaration.get("kind") not in (RNG_DEMO_KIND, SIM_DEMO_KIND):
+        require(
+            "initial_rng_inputs" not in declaration and "initial_rng_inputs" not in plan,
+            "Initial RNG observation requires the explicit demo schema",
+        )
+        return
+    from validation.betse import native_seed_demo_input_profiles as profiles
+
+    selected = initial_rng.validate_declaration(declaration["initial_rng_inputs"])
+    initial_rng.validate_declaration(plan.get("initial_rng_inputs"))
+    require(
+        plan.get("initial_rng_inputs") == selected
+        and selected["profile"]
+        == bundle.get("configuration_profile", "original")
+        == inputs["program"].get("input_profile", "original")
+        and selected["inventory"] == profiles.selected_inventory(bundle),
+        "Complete initial RNG input/profile binding changed",
+    )
+    inventory = selected["inventory"]
+    directories, files = inventory["directories"], inventory["files"]
+    require(
+        type(directories) is list
+        and all(type(name) is str for name in directories)
+        and directories == sorted(set(directories))
+        and type(files) is dict
+        and 0 < len(files) <= 512
+        and len(files) + len(directories) <= 1024,
+        "Bounded complete input directory/file roster required",
+    )
+    for name in (*directories, *files):
+        snapshot.relative_path(name)
+        require(
+            all(str(parent) in directories for parent in Path(name).parents if str(parent) != "."),
+            "Complete input ancestor directory roster required",
+        )
+    require(not set(directories).intersection(files), "Input file/directory roles overlap")
+    total = 0
+    for name, row in files.items():
+        require(
+            type(row) is dict
+            and set(row) == {"size_bytes", "sha256"}
+            and type(row["size_bytes"]) is int
+            and 0 <= row["size_bytes"] <= 8 * 2**20
+            and _hash(row["sha256"]),
+            "Exact original input extent/digest required",
+        )
+        actual = bound(dict(path=str(Path(inputs["program"]["root"]) / name), sha256=row["sha256"]))
+        require(actual.stat().st_size == row["size_bytes"], "Original input extent changed")
+        total += row["size_bytes"]
+    require(total <= 16 * 2**20, "Complete input byte bound exceeded")
+    expected = manifest["files"][initial_rng.FILE]["sha256"]
+    policy = declaration.get("source_plan", {}).get("initial_rng_observation")
+    require(type(policy) is dict, "Exact initial RNG policy required")
+    version = policy.get("kind")
+    require(version in (initial_rng.LEGACY_KIND, initial_rng.KIND), "Unknown initial RNG version")
+    runtime_policy = {}
+    if version == initial_rng.KIND:
+        runtime_file = initial_rng.rng_runtime.FILE
+        runtime_sha = manifest["files"].get(runtime_file, {}).get("sha256")
+        require(
+            _hash(runtime_sha) and plan["producers"].get(runtime_file) == runtime_sha,
+            "Built-in RNG provenance helper missing from immutable closure",
+        )
+        runtime_policy = dict(
+            runtime_producer="validation.betse.native_rng_runtime",
+            runtime_producer_sha256=runtime_sha,
+        )
+    require(
+        policy
+        == dict(
+            kind=version,
+            epoch=initial_rng.EPOCH,
+            boundary="after_issued_WorldReady_before_geometry_phase_construction",
+            full_numpy_MT_and_python_state=True,
+            complete_input_inventory_bound=True,
+            reset_draw_or_replacement=False,
+            common_starting_authority_established=False,
+            producer="validation.betse.native_seed_initial_rng",
+            producer_sha256=expected,
+            **runtime_policy,
+        )
+        and all(
+            type(policy[key]) is bool
+            for key in (
+                "full_numpy_MT_and_python_state",
+                "complete_input_inventory_bound",
+                "reset_draw_or_replacement",
+                "common_starting_authority_established",
+            )
+        ),
+        "Exact observation-only initial RNG source declaration required",
+    )
+
+
+def _producers(declaration):
+    runtime = (
+        (initial_rng.rng_runtime.FILE,)
+        if declaration.get("source_plan", {}).get("initial_rng_observation", {}).get("kind")
+        == initial_rng.KIND
+        else ()
+    )
+    if declaration.get("kind") == SIM_DEMO_KIND:
+        return (
+            *PRODUCERS,
+            initial_rng.FILE,
+            *runtime,
+            SIM_FILE,
+            *SIM_FILES,
+            sim_observation.FILE,
+            sim_observation.OBSERVER,
+            sim_observation.WRITER,
+        )
+    return (
+        (*PRODUCERS, initial_rng.FILE, *runtime)
+        if declaration.get("kind") == RNG_DEMO_KIND
+        else PRODUCERS
+    )
+
+
+def _sim_contract(plan, declaration, inputs, manifest):
+    """Read only exact declared source constants; never import an issuer."""
+    sim = plan.get("endpoint") == SIM_ENDPOINT
+    require((plan["kind"] == SIM_KIND) is sim, "SIM launch schema/endpoint mismatch")
+    require((declaration.get("kind") == SIM_DEMO_KIND) is sim, "SIM demo schema/endpoint mismatch")
+    if not sim:
+        require("acquisition_sequence" not in plan, "Legacy launch has no current acquisition")
+        return
+    require(
+        plan.get("acquisition_sequence") == list(ACQUISITION_SEQUENCE)
+        and inputs.get("acquisition_sequence") == list(ACQUISITION_SEQUENCE),
+        "Exact predeclared initial/current acquisition sequence required",
+    )
+    require(
+        all(plan["release_environment"].get(name) == "1" for name in SIM_GATES),
+        "Explicit actual SIM release flags required",
+    )
+    policy = declaration.get("source_plan", {}).get("optional_sim_terminal", {})
+    require(
+        policy.get("module") == "validation.betse.native_sim_demo"
+        and policy.get("source_sha256") == manifest["files"][SIM_FILE]["sha256"]
+        and _hash(policy.get("review_sha256"))
+        and policy.get("acquisition_sequence") == list(ACQUISITION_SEQUENCE)
+        and type(policy.get("maximum_iterations")) is int
+        and policy["maximum_iterations"] == 512
+        and all(
+            policy.get(name) is True
+            for name in (
+                "complete_configured_calendar",
+                "same_retained_simulator_and_cells",
+                "distinct_fresh_loaded_parameters_and_SIM_phase",
+                "before_native_pickle",
+                "imports_before_callback",
+            )
+        )
+        and policy.get("selected_stop") is False
+        and policy.get("physical_checkpoint_or_scientific_admission") is False,
+        "Exact held complete SIM source policy required",
+    )
+    constants = {}
+    for node in ast.parse((Path(plan["source"]) / SIM_FILE).read_bytes()).body:
+        if (
+            isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+        ):
+            name = node.targets[0].id
+            if name in ("MODULES", "SOURCE_PINS", "REVIEW_PINS"):
+                require(name not in constants, "Duplicate SIM source declaration")
+                try:
+                    constants[name] = ast.literal_eval(node.value)
+                except (ValueError, TypeError) as error:
+                    raise ValueError("SIM source/review declarations remain unadopted") from error
+    require(constants.get("MODULES") == SIM_MODULES, "Exact actual SIM module roster required")
+    for field in ("SOURCE_PINS", "REVIEW_PINS"):
+        rows = constants.get(field)
+        require(
+            type(rows) is dict
+            and set(rows) == set(SIM_MODULES)
+            and all(_hash(value) for value in rows.values()),
+            "Closed SIM producer/review pins required",
+        )
+    require(
+        plan["release_environment"].get(sim_observation.RELEASE) == "1",
+        "Explicit completed-SIM observation release required",
+    )
+    sim_observation.contract(
+        plan["source"],
+        policy.get("completed_observation"),
+        {name: row["sha256"] for name, row in manifest["files"].items()},
+        constants["SOURCE_PINS"]["run"],
+    )
+    sim_observation.check_original_sources(plan.get("sim_original_sources"))
+    require(
+        plan["sim_original_sources"]["root"] in plan["runtime_roots"],
+        "Original source inventory must bind a declared runtime root",
+    )
+    for (name, module), relative in zip(SIM_MODULES.items(), SIM_FILES, strict=True):
+        require(
+            constants["SOURCE_PINS"][name] == manifest["files"][relative]["sha256"],
+            "SIM stage producer differs from frozen closure: " + module,
+        )
+
+
 def _inputs(plan, parameter_inputs, *, initial):
     bundle = plan["input_bundle"]
     value = read(bundle)
@@ -548,6 +867,8 @@ def _immutable(plan):
             "init_electrical",
             "init_first_step",
             "init_short_history",
+            "init_terminal",
+            SIM_ENDPOINT,
         )
         and plan["endpoint"] == declaration.get("endpoint", "seed"),
         "Exact demonstration endpoint binding",
@@ -558,6 +879,8 @@ def _immutable(plan):
             in (
                 "cells.genuine_seed_core_profiles_junctions_demo@5",
                 "cells.genuine_seed_core_profiles_junctions_demo@6",
+                "cells.genuine_seed_core_profiles_junctions_demo@7",
+                RNG_DEMO_KIND,
             ),
             "First-step endpoint requires its explicit demo schema",
         )
@@ -574,8 +897,30 @@ def _immutable(plan):
     )
     if plan["endpoint"] == "init_short_history":
         require(
-            declaration.get("kind") == "cells.genuine_seed_core_profiles_junctions_demo@6",
+            declaration.get("kind")
+            in (
+                "cells.genuine_seed_core_profiles_junctions_demo@6",
+                "cells.genuine_seed_core_profiles_junctions_demo@7",
+                RNG_DEMO_KIND,
+            ),
             "Short-history endpoint requires its explicit demo schema",
+        )
+    if plan["endpoint"] in ("init_terminal", SIM_ENDPOINT):
+        require(
+            declaration.get("kind")
+            in ("cells.genuine_seed_core_profiles_junctions_demo@7", RNG_DEMO_KIND, SIM_DEMO_KIND),
+            "Natural terminal endpoint requires its explicit demo schema",
+        )
+        terminal = declaration.get("source_plan", {}).get("optional_init_terminal", {})
+        require(
+            type(terminal.get("maximum_iterations")) is int
+            and terminal["maximum_iterations"] == 512
+            and terminal.get("init_iterations") is None
+            and terminal.get("full_original_calendar") is True
+            and terminal.get("normal_loop_context_and_caller_return") is True
+            and terminal.get("selected_stop") is False
+            and terminal.get("before_native_pickle") is True,
+            "Natural terminal cannot select or shorten its source calendar",
         )
     require(
         inputs["source_snapshot"] == plan["source_snapshot"]
@@ -583,12 +928,15 @@ def _immutable(plan):
         "Parameter runtime/snapshot binding",
     )
     require(
-        plan["producers"] == {name: manifest["files"][name]["sha256"] for name in PRODUCERS},
+        plan["producers"]
+        == {name: manifest["files"][name]["sha256"] for name in _producers(declaration)},
         "Producer roster",
     )
+    _sim_contract(plan, declaration, inputs, manifest)
     for row in plan["external_files"]:
         bound(row)
     _inputs(plan, inputs, initial=False)
+    _initial_rng_inputs(plan, declaration, read(plan["input_bundle"]), inputs, manifest)
     _interpreter(plan["runtime"])
     require(
         _parameter().runtime_plan(plan["runtime"]["entry"]) == plan["runtime"],
@@ -629,8 +977,17 @@ def _safe_output(value, plan):
     return _output_domain(value, plan, fresh=True)
 
 
-def prepare(prepared, destination, *, demo_plan_sha256, release_environment, input_bundle):
+def prepare(
+    prepared,
+    destination,
+    *,
+    demo_plan_sha256,
+    release_environment,
+    input_bundle,
+    stack_diagnostic=False,
+):
     """Bind an already frozen demo packet; never adopt or enable its source gates."""
+    require(type(stack_diagnostic) is bool, "Explicit stack diagnostic mode required")
     prepared = path(prepared)
     demo_pin = dict(path=str(prepared / "demo-plan.json"), sha256=demo_plan_sha256)
     declaration = read(demo_pin)
@@ -639,7 +996,7 @@ def prepare(prepared, destination, *, demo_plan_sha256, release_environment, inp
     source = prepared / "source"
     manifest = snapshot.verify(source, manifest_sha256=declaration["snapshot_sha256"])
     require(
-        all(name in manifest["files"] for name in PRODUCERS),
+        all(name in manifest["files"] for name in _producers(declaration)),
         "demo.prepare must include launch sources and the complete-input producer",
     )
     environment = _environment_map(release_environment)
@@ -674,15 +1031,16 @@ def prepare(prepared, destination, *, demo_plan_sha256, release_environment, inp
         external.append(pin(bound(row)))
     external.append(pin(bound(inputs["program"]["manifest"])))
     value = dict(
-        kind=KIND,
+        kind=SIM_KIND if declaration.get("endpoint") == SIM_ENDPOINT else KIND,
         held=True,
         automatic_retry=False,
         policy=POLICY,
+        stack_diagnostic=stack_diagnostic,
         demo_plan=demo_pin,
         parameter_inputs=inputs_pin,
         source=str(source),
         source_snapshot=pin(source / "SNAPSHOT.json"),
-        producers={name: manifest["files"][name]["sha256"] for name in PRODUCERS},
+        producers={name: manifest["files"][name]["sha256"] for name in _producers(declaration)},
         input_bundle=dict(input_bundle),
         input_files=_input_files(input_bundle, declaration["flux_operator"]),
         runtime=runtime,
@@ -692,8 +1050,16 @@ def prepare(prepared, destination, *, demo_plan_sha256, release_environment, inp
         flux_operator=declaration["flux_operator"],
         endpoint=declaration.get("endpoint", "seed"),
         init_iterations=declaration.get("init_iterations"),
-        limitations=source_plan(),
+        limitations=source_plan(endpoint=declaration.get("endpoint", "seed")),
+        **(
+            {"initial_rng_inputs": declaration["initial_rng_inputs"]}
+            if declaration.get("kind") in (RNG_DEMO_KIND, SIM_DEMO_KIND)
+            else {}
+        ),
     )
+    if declaration.get("endpoint") == SIM_ENDPOINT:
+        value["acquisition_sequence"] = list(ACQUISITION_SEQUENCE)
+        value["sim_original_sources"] = sim_observation.original_sources(BASE / "betse-v1.5.0")
     _immutable(value)
     _inputs(value, inputs, initial=True)
     destination = _safe_output(destination, value)
@@ -701,7 +1067,7 @@ def prepare(prepared, destination, *, demo_plan_sha256, release_environment, inp
     try:
         snapshot.write_json(destination / "launch-plan.json", value)
     except BaseException as error:
-        _failure(destination, error, [], "preparation")
+        _failure(destination, error, [], "preparation", kind=value["kind"])
         raise
     return dict(plan=pin(destination / "launch-plan.json"), held=True, actual_launch=False)
 
@@ -715,6 +1081,7 @@ def verify(plan_path, plan_sha256, *, initial=True):
             "held",
             "automatic_retry",
             "policy",
+            "stack_diagnostic",
             "demo_plan",
             "parameter_inputs",
             "source",
@@ -730,18 +1097,25 @@ def verify(plan_path, plan_sha256, *, initial=True):
             "endpoint",
             "init_iterations",
             "limitations",
-        },
+        }
+        | ({"initial_rng_inputs"} if "initial_rng_inputs" in value else set())
+        | (
+            {"acquisition_sequence", "sim_original_sources"}
+            if value.get("endpoint") == SIM_ENDPOINT
+            else set()
+        ),
         "Exact launch-plan schema required",
     )
     require(
-        value["kind"] == KIND
+        value["kind"] == (SIM_KIND if value.get("endpoint") == SIM_ENDPOINT else KIND)
         and value["held"] is True
         and value["automatic_retry"] is False
         and value["policy"] == POLICY
-        and value["limitations"] == source_plan(),
+        and value["limitations"] == source_plan(endpoint=value.get("endpoint", "seed")),
         "Launch domain changed",
     )
     _environment_map(value["release_environment"])
+    _wall_seconds(value)
     declaration, inputs, _ = _immutable(value)
     if initial:
         _inputs(value, inputs, initial=True)
@@ -882,13 +1256,13 @@ def _keep(value):
         pass
 
 
-def _failure(output, primary, secondary, role, *, state=None):
+def _failure(output, primary, secondary, role, *, state=None, kind=KIND):
     _keep((primary, secondary, state))
     try:
         snapshot.write_json(
             output / "failure.json",
             dict(
-                kind=KIND,
+                kind=kind,
                 status="failed",
                 role=role,
                 primary=error_record(primary),
@@ -961,6 +1335,7 @@ def launch(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
                 command=command,
                 release_environment=plan["release_environment"],
                 policy=POLICY,
+                worker_wall_seconds=_wall_seconds(plan),
                 utc=utc(),
             ),
         )
@@ -979,12 +1354,13 @@ def launch(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
                 close_fds=True,
             )
         receipt = dict(
-            kind=KIND,
+            kind=plan["kind"],
             status="launched_unobserved",
             pid=child.pid,
             plan=pin(plan_path),
             release=pin(release_path),
             policy=POLICY,
+            worker_wall_seconds=_wall_seconds(plan),
             automatic_polling=False,
             automatic_retry=False,
             terminal_outcome=None,
@@ -998,6 +1374,7 @@ def launch(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
             error,
             [],
             "launcher",
+            kind=plan["kind"],
             state=dict(
                 child_pid=None if child is None else child.pid,
                 child_may_be_running=child is not None,
@@ -1016,6 +1393,7 @@ def _owned_output(output, plan, plan_path, release_path):
         request["plan"] == pin(plan_path)
         and request["release"] == pin(release_path)
         and request["policy"] == POLICY
+        and request["worker_wall_seconds"] == _wall_seconds(plan)
         and request["release_environment"] == plan["release_environment"],
         "Launch ownership binding changed",
     )
@@ -1032,7 +1410,16 @@ def controller(plan_path, output, *, plan_sha256, release_path, release_sha256, 
     claim = (output / "controller-started.json").open("x")
     try:
         with claim:
-            json.dump(dict(pid=os.getpid(), utc=utc(), policy=POLICY), claim, allow_nan=False)
+            json.dump(
+                dict(
+                    pid=os.getpid(),
+                    utc=utc(),
+                    policy=POLICY,
+                    worker_wall_seconds=_wall_seconds(plan),
+                ),
+                claim,
+                allow_nan=False,
+            )
             claim.flush()
             os.fsync(claim.fileno())
         plan = _entry(plan_path, plan_sha256, release_path, release_sha256, enabled)
@@ -1050,7 +1437,7 @@ def controller(plan_path, output, *, plan_sha256, release_path, release_sha256, 
             directory=output / "process",
             cwd=plan["source"],
             env=environment(plan, output),
-            timeout=POLICY["wall_seconds"],
+            timeout=_wall_seconds(plan),
             max_rss_bytes=POLICY["max_rss_bytes"],
             min_available_bytes=POLICY["reserve_bytes"],
             process_tree_memory_metric="rss",
@@ -1066,7 +1453,7 @@ def controller(plan_path, output, *, plan_sha256, release_path, release_sha256, 
         )
         verify(plan_path, plan_sha256, initial=False)
         terminal = dict(
-            kind=KIND,
+            kind=plan["kind"],
             status="source_completed_unqualified",
             process=result,
             worker=pin(output / "worker/result.json"),
@@ -1078,7 +1465,7 @@ def controller(plan_path, output, *, plan_sha256, release_path, release_sha256, 
         snapshot.write_json(output / "result.json", terminal)
         return terminal
     except BaseException as error:
-        _failure(output, error, [], "controller")
+        _failure(output, error, [], "controller", kind=plan["kind"])
         raise
 
 
@@ -1111,6 +1498,8 @@ def check_runtime(value, plan, *, before=None):
     roots = [source, *map(Path, plan["runtime_roots"])]
     exact = {row["path"]: row["sha256"] for row in plan["external_files"]}
     loaded = value["loaded_files"]
+    if plan.get("endpoint") == SIM_ENDPOINT:
+        sim_observation.runtime_sources(value, plan["sim_original_sources"])
     producers = {}
     for name, row in loaded.items():
         require(set(row) == {"path", "sha256"}, "Unavailable runtime producer: " + name)
@@ -1180,6 +1569,67 @@ def _worker_environment(plan, output):
     _parameter()._runtime_entry(plan["runtime"])
 
 
+def _sim_return(returned):
+    """A successful outer call still needs the complete public SIM return."""
+    observation = returned.sim_observation
+    require(
+        observation is not None
+        and observation.completed is True
+        and observation.cleanup_complete is True
+        and observation.primary is None
+        and not observation.secondary
+        and observation.record_pin is not None,
+        "Completed SIM observation and typed captures required",
+    )
+    sim_observation.finish(
+        returned, returned.sim_trial, returned.flux_operator, inherited_hooks=False
+    )
+    count, trial = returned.sim_time_steps_completed, returned.sim_trial
+    linkage = returned.sim_linkage
+    require(
+        returned.sim_completed is True
+        and returned.sim_imports_complete is True
+        and returned.sim_cleanup_complete is True
+        and returned.sim_metadata_stopped is False
+        and not returned.sim_secondary
+        and type(count) is int
+        and 1 <= count <= 512
+        and trial is not None
+        and type(trial.iterations) is tuple
+        and len(trial.iterations) == count
+        and all(
+            getattr(trial, name) is True
+            for name in (
+                "report_returned",
+                "loop_returned",
+                "context_returned",
+                "before_native_pickle",
+            )
+        )
+        and type(linkage) is dict
+        and _hash(trial.identity)
+        and linkage.get("trial_identity") == trial.identity
+        and type(linkage.get("configured_iterations")) is int
+        and linkage["configured_iterations"] == count
+        and type(linkage.get("maximum_iterations")) is int
+        and linkage["maximum_iterations"] == 512
+        and linkage.get("selected_stop") is False
+        and all(
+            linkage.get(name) is True
+            for name in (
+                "complete_configured_calendar",
+                "report_returned",
+                "loop_returned",
+                "context_returned",
+                "before_native_pickle",
+                "same_retained_simulator_and_cells",
+                "distinct_current_parameters",
+            )
+        ),
+        "Exact full SIM return/context/capture completion required",
+    )
+
+
 def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enabled=False):
     require(enabled is True and os.environ.get(RELEASE) == "1", "Native demo worker remains held")
     plan = read(dict(path=str(plan_path), sha256=plan_sha256))
@@ -1189,12 +1639,18 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
     primary, secondary, returned, before, after = None, [], None, None, None
     filesystem = None
     numpy_origin, origin_record = None, None
+    sampler = None
     entered = False
     try:
         plan = _entry(plan_path, plan_sha256, release_path, release_sha256, enabled)
         _worker_environment(plan, output)
         filesystem = _filesystem(plan, output)
         _temporary_directory(output, filesystem)
+        if plan["stack_diagnostic"]:
+            sampler = StackSampler(output)
+            # Retain before arming; even a failed setup/cancel cannot orphan its fd.
+            _STACK_SAMPLERS.append(sampler)
+            sampler.start()
         numpy_origin = _numpy_origin(plan)
         before = observe_runtime()
         snapshot.write_json(output / "runtime-before.json", before)
@@ -1235,6 +1691,20 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
                         and returned.init_time_steps_completed == plan["init_iterations"],
                         "Exact complete short-history worker return required",
                     )
+                if plan["endpoint"] in ("init_terminal", SIM_ENDPOINT):
+                    require(
+                        returned.endpoint == plan["endpoint"]
+                        and returned.init_iterations is None
+                        and returned.init_terminal_completed is True
+                        and returned.init_first_step_completed is False
+                        and returned.init_short_history_completed is False
+                        and type(returned.init_time_steps_completed) is int
+                        and 1 <= returned.init_time_steps_completed <= 512,
+                        "Exact natural complete-INIT worker return required",
+                    )
+                if plan["endpoint"] == SIM_ENDPOINT:
+                    _sim_return(returned)
+
             except BaseException as error:
                 primary = error
                 raise
@@ -1288,6 +1758,26 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
                 filesystem.check()
             except BaseException as error:
                 secondary.append(("filesystem-final-check", error))
+        if sampler is not None:
+            try:
+                sampler.stop()
+            except BaseException as error:
+                secondary.append(("stack-sampling-stop", error))
+            try:
+                snapshot.write_json(output / "stack-sampling-final.json", sampler.record())
+            except BaseException as error:
+                secondary.append(("stack-sampling-record", error))
+    observation_summary = None
+    if plan["endpoint"] == SIM_ENDPOINT and returned is not None:
+        try:
+            if primary is None and not secondary:
+                _sim_return(returned)
+            if returned.sim_observation is not None and returned.sim_observation.cleanup_complete:
+                observation_summary = sim_observation.summary(returned)
+        except BaseException as error:
+            secondary.append(("completed-SIM-observation-final", error))
+            if primary is None:
+                primary = error
     state = dict(
         plan_sha256=plan_sha256,
         public_entry_attempted=entered,
@@ -1301,14 +1791,16 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
         numpy_copy_origin_completed=(
             type(origin_record) is dict and origin_record.get("completed") is True
         ),
+        stack_diagnostic=plan.get("stack_diagnostic"),
+        **(dict(sim_observation=observation_summary) if plan["endpoint"] == SIM_ENDPOINT else {}),
     )
     if primary is None and secondary:
         primary = secondary[0][1]
     if primary is not None:
-        _failure(output, primary, secondary, "worker", state=state)
+        _failure(output, primary, secondary, "worker", state=state, kind=plan["kind"])
         raise primary
     terminal = dict(
-        kind=KIND,
+        kind=plan["kind"],
         status="source_completed_unqualified",
         scientific_credit=0,
         flux_operator=plan["flux_operator"],
@@ -1321,7 +1813,7 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
         snapshot.write_json(output / "result.json", terminal)
         filesystem.check()
     except BaseException as error:
-        _failure(output, error, [], "worker-terminal", state=state)
+        _failure(output, error, [], "worker-terminal", state=state, kind=plan["kind"])
         raise
     return terminal
 
@@ -1341,6 +1833,7 @@ def main():
     parser.add_argument("--release", type=Path)
     parser.add_argument("--release-sha256")
     parser.add_argument("--enabled", action="store_true")
+    parser.add_argument("--stack-diagnostic", action="store_true")
     args = parser.parse_args()
     if args.prepare:
         resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
@@ -1352,8 +1845,10 @@ def main():
                 dict(path=str(args.release_environment), sha256=args.release_environment_sha256)
             ),
             input_bundle=dict(path=str(args.input_bundle), sha256=args.input_bundle_sha256),
+            stack_diagnostic=args.stack_diagnostic,
         )
     else:
+        require(not args.stack_diagnostic, "Diagnostic mode must be bound during preparation")
         resource.setrlimit(
             resource.RLIMIT_AS, (2**30, 2**30) if args.worker else (512 * 2**20, 2**30)
         )

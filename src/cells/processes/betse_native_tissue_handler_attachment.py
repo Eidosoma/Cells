@@ -25,10 +25,10 @@ from cells.processes import betse_native_tissue_configuration as literal
 
 LAW_ID = "betse_actual_same_parameter_selected_tissue_handler@1"
 RELEASE = "CELLS_NATIVE_TISSUE_HANDLER_ATTACHMENT_RELEASED"
-PARENT_SHA256 = "3c0c6ba9b3e677acebe2d35f7d008eeca447165537d4870ec28884ff96f0e192"
+PARENT_SHA256 = "3e49f8ebfd3cad35df7d642643fee8ebfd72115c34354c761194f7176102e7fb"
 SEALED_PARENT_SHA256 = "397c453df7fb4fc397cbd23c7e785c1c4fe7e5a5c46b02f156819958610be0ee"
-CLAIMS_SHA256 = "d602eb44606e7f11c5685a648d7aaa50704e9da58f071a5a6bfdf71c1b398aae"
-LITERAL_SHA256 = "ab519cde82ced4f81a9e6c7fe43c8a2dd7a23490db0bfb21d10d07b2a773dd2c"
+CLAIMS_SHA256 = "af3f3459745edb32719966833ff75959e60dfd733cb0a9c3882c08e9aed6be00"
+LITERAL_SHA256 = "e9f8c93b7bfe856532f68f7406c07e5666b2ebb60d8e71c19a69bb765d4bb99e"
 METHODS = literal.METHODS
 _NATIVE = dict(literal._NATIVE)
 core, captures, aliases = literal.core, literal.captures, literal.aliases
@@ -566,7 +566,10 @@ def _account(context):
     root = str(aliases.NATIVE) + "/"
 
     def profile(frame, event, arg):
-        reached = frame.f_code in selected or frame.f_code.co_filename.startswith(root)
+        reached = False
+        if event in ("call", "return"):
+            code = frame.f_code
+            reached = code in selected or code.co_filename.startswith(root)
         if reached and event == "call":
             if len(context.work) >= 100000:
                 raise ValueError("Bounded handler work log exhausted")
@@ -575,7 +578,7 @@ def _account(context):
                     sequence=len(context.work),
                     layer="observed_native_or_literal_entry",
                     phase=context.stage,
-                    method=frame.f_code.co_qualname,
+                    method=code.co_qualname,
                     entry_is_case=False,
                 )
             )
@@ -583,9 +586,7 @@ def _account(context):
             previous_profile(frame, event, arg)
         if reached and event == "return":
             try:
-                context.locals[(frame.f_code.co_filename, frame.f_code.co_qualname)] = dict(
-                    frame.f_locals
-                )
+                context.locals[(code.co_filename, code.co_qualname)] = dict(frame.f_locals)
             except Exception as error:
                 captures._remember_observation_error(context, error, origin="raw_locals", raw=frame)
         if event not in ("call", "c_call") and previous_profile is not None:

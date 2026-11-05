@@ -17,12 +17,13 @@ from threading import RLock, get_ident
 from types import FunctionType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
+from cells.processes import betse_native_parameter_record_digest as record_digest
 from cells.processes import betse_native_parameter_yaml_graph as graphs
 from cells.processes import betse_native_phase_parameters as parameters
 
 LAW_ID = parameters.YAML_PREFIX_LAW
 PATHS_LAW = "betse_native_parameter_compatibility_paths@1"
-PARAMETERS_SHA256 = "36d4b0f667c9ba177e6c06e004673efcee40e0de7c579dad03a70a919365cb20"
+PARAMETERS_SHA256 = "41d92c2fe4c10c9c307c3fe8989c5a65ffd47f13a065fef41055079229f00556"
 MAX_FILE_BYTES = 8 * 2**20
 BASE = Path("/mnt/workspaces/Cells")
 _FILES, _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(5))
@@ -78,7 +79,7 @@ class Trial:
 
 
 def _digest(value):
-    return parameters.inherited.tissue.core.records._digest(value)
+    return record_digest.digest(value, selected=parameters.inherited.tissue.core.records)
 
 
 def _file(path):
@@ -377,6 +378,8 @@ def _bindings():
             graphs.MAX_DEPTH,
             graphs.struct,
             graphs.struct.pack,
+            record_digest,
+            *record_digest.bindings(),
             *(atom for fn in functions for atom in parameters.inherited.tissue.aliases._atoms(fn)),
         ),
     )

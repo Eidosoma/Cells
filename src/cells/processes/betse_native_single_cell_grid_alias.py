@@ -136,13 +136,19 @@ def _descriptor_from_source():
 
 def _module_records():
     records = {}
+    native = str(NATIVE)
+    prefix = native if native == "/" else native + "/"
     for name, module in tuple(sys.modules.items()):
         if name == "betse" or name.startswith("betse."):
             file = getattr(module, "__file__", None)
             if not file:
                 raise ValueError("Native descriptor source module origin unavailable")
             path = Path(file).resolve()
-            if not path.is_relative_to(NATIVE):
+            # Both are canonical POSIX Path strings. Keep a component boundary
+            # without constructing every ancestor for each observed module.
+            # Resolve and hash the actual file afresh on every scan.
+            origin = str(path)
+            if origin != native and not origin.startswith(prefix):
                 raise ValueError("Native descriptor imported an unavailable source origin")
             records[name] = (module, path, hashlib.sha256(path.read_bytes()).hexdigest())
     return records

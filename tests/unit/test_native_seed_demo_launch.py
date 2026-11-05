@@ -1,20 +1,181 @@
 """Native-blocked launch metadata controls; private fixtures issue no owners."""
 
+import ast
 import copy
 import json
 import os
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from types import FunctionType
 from types import SimpleNamespace as NS
+from typing import TYPE_CHECKING
 
 import pytest
 
 from tests.unit import test_betse_native_world_phase_construction as guards
+from tests.unit import test_native_sim_demo_observation as observed
 from validation.betse import native_seed_demo_launch as launch
 from validation.betse import native_seed_demo_launch_software as software
 
+if TYPE_CHECKING:
+    # Read-only AST inputs in the immutable software image; never runtime imports.
+    from cells.processes import (  # noqa: F401
+        betse_native_init_sim_assembly,
+        betse_native_init_sim_preparation,
+        betse_native_init_terminal,
+        betse_native_sim_run,
+    )
+
 _RAW_GUARDS = []
+
+
+def consumer_forbidden_frame(frame):
+    return frame.f_globals.get("__name__") in (
+        "cells.processes.betse_native_init_terminal",
+        "cells.processes.betse_native_init_terminal_molecules",
+        "cells.processes.betse_native_init_sim_preparation",
+        "cells.processes.betse_native_init_sim_assembly",
+        "cells.processes.betse_native_sim_run",
+        "validation.betse.native_sim_demo",
+    ) or software.is_forbidden_frame(frame)
+
+
+@pytest.mark.parametrize(
+    "module",
+    (
+        "cells.processes.betse_native_init_terminal",
+        "cells.processes.betse_native_init_terminal_molecules",
+    ),
+)
+def test_launch_init_terminal_native_surface_is_blocked(module):
+    for name in ("from_electrical", "prepare", "begin_iteration", "finish_runtime"):
+        code = consumer_forbidden_frame.__code__.replace(co_name=name)
+        assert consumer_forbidden_frame(NS(f_globals={"__name__": module}, f_code=code))
+
+
+def terminal_bundle(b):
+    declaration = launch.read(b.plan["demo_plan"])
+    declaration.update(
+        kind="cells.genuine_seed_core_profiles_junctions_demo@7",
+        endpoint="init_terminal",
+        init_iterations=None,
+    )
+    declaration["source_plan"] = dict(
+        optional_init_terminal=dict(
+            maximum_iterations=512,
+            init_iterations=None,
+            full_original_calendar=True,
+            normal_loop_context_and_caller_return=True,
+            selected_stop=False,
+            before_native_pickle=True,
+        )
+    )
+    declaration_pin = write(b.packet / "demo-plan.json", declaration)
+    made = launch.prepare(
+        b.packet,
+        b.root / "terminal-plan",
+        demo_plan_sha256=declaration_pin["sha256"],
+        release_environment=b.env,
+        input_bundle=b.plan["input_bundle"],
+    )
+    b.path, b.sha = Path(made["plan"]["path"]), made["plan"]["sha256"]
+    b.plan = launch.read(made["plan"])
+    release = write(
+        b.root / "terminal-release.json",
+        dict(
+            kind=launch.RELEASE_KIND,
+            authorized=True,
+            launch_plan_sha256=b.sha,
+            demo_plan_sha256=b.plan["demo_plan"]["sha256"],
+            snapshot_sha256=b.plan["source_snapshot"]["sha256"],
+            release_environment=b.env,
+            endpoint="init_terminal",
+            init_iterations=None,
+        ),
+    )
+    b.release, b.release_sha = Path(release["path"]), release["sha256"]
+    return b
+
+
+@pytest.mark.parametrize("count", (1, 500, 512))
+def test_launch_init_terminal_keeps_none_selection_and_whole_count(bundle, monkeypatch, count):
+    b = terminal_bundle(bundle)
+    assert launch.verify(b.path, b.sha)["init_iterations"] is None
+    assert launch.verify_release(b.plan, b.sha, b.release, b.release_sha)["init_iterations"] is None
+    calls = []
+
+    def public(path, output, **kwargs):
+        assert launch.read(b.plan["demo_plan"])["init_iterations"] is None
+        calls.append(kwargs)
+        output.mkdir()
+        return NS(
+            methods_completed=True,
+            evidence_completed=True,
+            primary=None,
+            secondary=[],
+            endpoint="init_terminal",
+            init_iterations=None,
+            init_terminal_completed=True,
+            init_first_step_completed=False,
+            init_short_history_completed=False,
+            init_time_steps_completed=count,
+        )
+
+    worker_setup(b, monkeypatch, public)
+    result = launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert (
+        result["status"] == "source_completed_unqualified" and result["endpoint"] == "init_terminal"
+    )
+    assert result["init_iterations"] is None and result["scientific_credit"] == 0
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("bad", (0, 64, 500, True, "all"))
+def test_launch_init_terminal_rejects_any_selected_count(bundle, bad):
+    b = terminal_bundle(bundle)
+    b.plan["init_iterations"] = bad
+    with pytest.raises(ValueError, match="iteration count"):
+        launch._immutable(b.plan)
+
+
+@pytest.mark.parametrize(
+    "field,bad",
+    (
+        ("init_time_steps_completed", 0),
+        ("init_time_steps_completed", 513),
+        ("init_time_steps_completed", True),
+        ("init_iterations", 500),
+        ("init_terminal_completed", False),
+        ("init_short_history_completed", True),
+    ),
+)
+def test_launch_init_terminal_partial_or_selected_worker_return_stays_failed(
+    bundle, monkeypatch, field, bad
+):
+    b = terminal_bundle(bundle)
+
+    def public(path, output, **kwargs):
+        output.mkdir()
+        fields = dict(
+            methods_completed=True,
+            evidence_completed=True,
+            primary=None,
+            secondary=[],
+            endpoint="init_terminal",
+            init_iterations=None,
+            init_terminal_completed=True,
+            init_first_step_completed=False,
+            init_short_history_completed=False,
+            init_time_steps_completed=500,
+        )
+        fields[field] = bad
+        return NS(**fields)
+
+    worker_setup(b, monkeypatch, public)
+    with pytest.raises(ValueError):
+        launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert (b.root / "worker/failure.json").is_file()
 
 
 def short_history_bundle(b, count=3):
@@ -552,7 +713,13 @@ def blocked(request, tmp_path):
     if os.environ.get(software.SOFTWARE_RELEASE) != "1":
         pytest.skip("Explicit native-blocked launch software release required")
     request.config.option.maxfail = 1
-    adapter = NS(**dict(vars(software), reuse=software.base.reuse.reuse))
+    adapter = NS(
+        **dict(
+            vars(software),
+            reuse=software.base.reuse.reuse,
+            is_forbidden_frame=consumer_forbidden_frame,
+        )
+    )
     namespace = dict(vars(guards), software=adapter, _BLOCKADE_FAILURES=())
     fn = FunctionType(guards._blockade.__wrapped__.__code__, namespace)
     try:
@@ -579,7 +746,7 @@ def bundle(tmp_path, monkeypatch):
     packet, source = tmp_path / "packet", tmp_path / "packet/source"
     source.mkdir(parents=True)
     files = {}
-    for name in launch.PRODUCERS:
+    for name in (*launch.PRODUCERS, launch.initial_rng.FILE, launch.initial_rng.rng_runtime.FILE):
         p = source / name
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text("# Synthetic metadata producer, no executable native code\n")
@@ -1038,6 +1205,7 @@ def controller_output(b):
             plan=launch.pin(b.path),
             release=launch.pin(b.release),
             policy=launch.POLICY,
+            worker_wall_seconds=launch._wall_seconds(b.plan),
             release_environment=b.env,
         ),
     )
@@ -1160,6 +1328,15 @@ def test_launch_runtime_refuses_real_metadata_mismatch(bundle, mutation):
 
 
 def worker_setup(b, monkeypatch, action):
+    if b.plan.get("endpoint") == launch.SIM_ENDPOINT:
+        # Worker protocol fixture has no live provider context; actual typed
+        # consumer finalization is exercised independently under the same guard.
+        def metadata_finish(returned, trial, mode, *, inherited_hooks):
+            assert returned.sim_trial is trial and mode == returned.flux_operator
+            assert inherited_hooks is False
+            launch.sim_observation.bound(returned.sim_observation.record_pin)
+
+        monkeypatch.setattr(launch.sim_observation, "finish", metadata_finish)
     authorize_metadata(monkeypatch, b)
     monkeypatch.setattr(launch, "_worker_environment", lambda *_a: None)
     monkeypatch.setattr(launch, "_temporary_directory", lambda *_a: None)
@@ -1226,6 +1403,272 @@ def test_launch_worker_calls_only_public_demo_in_fresh_directory(bundle, monkeyp
     assert value["numpy_copy_origin_available"] is value["numpy_copy_origin_completed"] is True
     assert json.loads((output / "numpy-copy-origin.json").read_text()) == b.origin_record
     assert b.calls == ["initial-directory-epoch"]
+
+
+def diagnostic_bundle(b):
+    made = launch.prepare(
+        b.packet,
+        b.root / "diagnostic-plan",
+        demo_plan_sha256=b.plan["demo_plan"]["sha256"],
+        release_environment=b.env,
+        input_bundle=b.plan["input_bundle"],
+        stack_diagnostic=True,
+    )
+    b.path, b.sha = Path(made["plan"]["path"]), made["plan"]["sha256"]
+    b.plan = launch.read(made["plan"])
+    b.release = b.path.parent / "release.json"
+    b.release_sha = launch.prepare_release(b.path, b.release, plan_sha256=b.sha)["sha256"]
+    return b
+
+
+def test_launch_stack_diagnostic_has_explicit_shorter_budget_and_release(bundle):
+    assert launch._wall_seconds(bundle.plan) == 7200
+    b = diagnostic_bundle(bundle)
+    assert launch.verify(b.path, b.sha)["stack_diagnostic"] is True
+    assert b.plan["policy"] == launch.POLICY
+    assert launch._wall_seconds(b.plan) == 1800
+    assert b.plan["policy"]["max_rss_bytes"] == 2**30
+    assert b.plan["policy"]["reserve_bytes"] == 8 * 2**30
+    tampered = dict(b.plan, stack_diagnostic=False)
+    changed = write(b.path.parent / "changed.json", tampered)
+    with pytest.raises(ValueError, match="Exact explicit release"):
+        launch.verify_release(tampered, changed["sha256"], b.release, b.release_sha)
+
+
+def test_launch_stack_diagnostic_missing_mode_preserves_original_schema_refusal(
+    bundle, monkeypatch
+):
+    b = bundle
+    worker_setup(b, monkeypatch, lambda *_a, **_k: pytest.fail("Malformed plan entered source"))
+    legacy = dict(b.plan)
+    legacy.pop("stack_diagnostic")
+    changed = write(b.root / "legacy-plan.json", legacy)
+    release = launch.read(launch.pin(b.release))
+    release["launch_plan_sha256"] = changed["sha256"]
+    changed_release = write(b.root / "legacy-release.json", release)
+    with pytest.raises(ValueError, match="Exact launch-plan schema") as caught:
+        launch.worker(
+            changed["path"],
+            b.root / "worker",
+            plan_sha256=changed["sha256"],
+            release_path=changed_release["path"],
+            release_sha256=changed_release["sha256"],
+            enabled=True,
+        )
+    failed = launch.read(launch.pin(b.root / "worker/failure.json"))
+    assert failed["primary"]["message"] == str(caught.value)
+    assert failed["state"]["stack_diagnostic"] is None
+    assert failed["state"]["public_entry_attempted"] is False
+    assert not b.origin_events and not (b.root / "worker/stack-sampling-start.json").exists()
+
+
+@pytest.mark.parametrize("bad", (None, 1, "true", []))
+def test_launch_stack_diagnostic_rejects_untyped_mode_before_output(bundle, bad):
+    with pytest.raises(ValueError, match="Explicit stack diagnostic"):
+        launch.prepare(
+            bundle.packet,
+            bundle.root / "invalid-plan",
+            demo_plan_sha256=bundle.plan["demo_plan"]["sha256"],
+            release_environment=bundle.env,
+            input_bundle=bundle.plan["input_bundle"],
+            stack_diagnostic=bad,
+        )
+    assert not (bundle.root / "invalid-plan").exists()
+
+
+def test_launch_stack_diagnostic_controller_keeps_other_resource_limits(bundle, monkeypatch):
+    b = diagnostic_bundle(bundle)
+    authorize_metadata(monkeypatch, b)
+    output = controller_output(b)
+    calls = []
+
+    def bounded(command, **options):
+        calls.append((command, options))
+        write(
+            output / "worker/result.json",
+            dict(status="source_completed_unqualified", plan_sha256=b.sha),
+        )
+        return dict(status="completed", returncode=0)
+
+    monkeypatch.setattr(launch.resources, "run_bounded", bounded)
+    launch.controller(b.path, output, **kwargs(b))
+    assert len(calls) == 1
+    assert calls[0][1]["timeout"] == 1800
+    assert calls[0][1]["max_rss_bytes"] == 2**30
+    assert calls[0][1]["min_available_bytes"] == 8 * 2**30
+    assert calls[0][1]["process_tree_memory_metric"] == "rss"
+    assert (
+        launch.read(launch.pin(output / "controller-started.json"))["worker_wall_seconds"] == 1800
+    )
+
+
+def test_launch_stack_diagnostic_timer_keeps_hooks_and_cancels_before_close(tmp_path, monkeypatch):
+    hooks = launch.sys.getprofile(), launch.sys.gettrace()
+    sampler = launch.StackSampler(tmp_path)
+    events = []
+
+    def arm(seconds, **options):
+        assert seconds == 30 and options == dict(repeat=True, file=sampler.stream, exit=False)
+        assert not sampler.stream.closed
+        assert (tmp_path / "stack-sampling-start.json").is_file()
+        events.append("arm")
+
+    def cancel():
+        assert not sampler.stream.closed
+        events.append("cancel")
+
+    monkeypatch.setattr(launch.faulthandler, "dump_traceback_later", arm)
+    monkeypatch.setattr(launch.faulthandler, "cancel_dump_traceback_later", cancel)
+    sampler.start()
+    assert (tmp_path / "stack-sampling-armed.json").is_file()
+    sampler.stop()
+    assert events == ["arm", "cancel"] and sampler.stream.closed
+    assert sampler.record()["cancellation_confirmed"] is True
+    assert (launch.sys.getprofile(), launch.sys.gettrace()) == hooks
+    with pytest.raises(ValueError, match="already"):
+        sampler.stop()
+
+
+def test_launch_stack_diagnostic_real_c_timer_writes_without_python_hook_changes(
+    tmp_path, monkeypatch
+):
+    # A short stdlib-only timer establishes that real C sampling observes this
+    # metadata frame; no model, owner or scientific delegate is called.
+    monkeypatch.setattr(launch, "STACK_INTERVAL_SECONDS", 0.02)
+    hooks = launch.sys.getprofile(), launch.sys.gettrace()
+    sampler = launch.StackSampler(tmp_path)
+    try:
+        sampler.start()
+        time.sleep(0.12)
+    finally:
+        sampler.stop()
+    observed = (tmp_path / "stacks.log").read_text()
+    assert "test_launch_stack_diagnostic_real_c_timer" in observed
+    assert sampler.cancelled and sampler.stream.closed
+    assert (launch.sys.getprofile(), launch.sys.gettrace()) == hooks
+
+
+@pytest.mark.parametrize("stage", ("open", "start-record", "arm", "armed-record"))
+def test_launch_stack_diagnostic_setup_failure_refuses_source_and_closes_file(
+    bundle, monkeypatch, stage
+):
+    b = diagnostic_bundle(bundle)
+    worker_setup(b, monkeypatch, lambda *_a, **_k: pytest.fail("Source after failed sampler"))
+    primary = primary_error()
+    events = []
+    original_open, original_write = Path.open, launch.snapshot.write_json
+
+    def opening(path, *args, **options):
+        if stage == "open" and path.name == "stacks.log":
+            raise primary
+        return original_open(path, *args, **options)
+
+    def writer(path, value):
+        target = {
+            "start-record": "stack-sampling-start.json",
+            "armed-record": "stack-sampling-armed.json",
+        }.get(stage)
+        if path.name == target:
+            raise primary
+        return original_write(path, value)
+
+    def arm(*args, **options):
+        events.append("arm")
+        if stage == "arm":
+            raise primary
+
+    monkeypatch.setattr(Path, "open", opening)
+    monkeypatch.setattr(launch.snapshot, "write_json", writer)
+    monkeypatch.setattr(launch.faulthandler, "dump_traceback_later", arm)
+    monkeypatch.setattr(
+        launch.faulthandler, "cancel_dump_traceback_later", lambda: events.append("cancel")
+    )
+    with pytest.raises(FalseyError) as caught:
+        launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert caught.value is primary and caught.value.__cause__ is primary.__cause__
+    sampler = launch._STACK_SAMPLERS[-1]
+    assert sampler.stream is None or sampler.stream.closed
+    assert events == (["arm", "cancel"] if stage in ("arm", "armed-record") else [])
+    assert not b.origin_events
+    failed = launch.read(launch.pin(b.root / "worker/failure.json"))
+    assert failed["state"]["public_entry_attempted"] is False
+
+
+@pytest.mark.parametrize("has_source", (False, True))
+@pytest.mark.parametrize("failure", ("cancel", "final-record"))
+def test_launch_stack_diagnostic_cleanup_preserves_primary_and_live_timer_fd(
+    bundle, monkeypatch, has_source, failure
+):
+    b = diagnostic_bundle(bundle)
+    primary, cleanup = primary_error(), OSError("sampler cleanup")
+
+    def public(_plan, output, **options):
+        assert (b.root / "worker/stack-sampling-armed.json").is_file()
+        if has_source:
+            raise primary
+        output.mkdir()
+        return NS(methods_completed=True, evidence_completed=True, primary=None, secondary=[])
+
+    worker_setup(b, monkeypatch, public)
+    monkeypatch.setattr(launch.faulthandler, "dump_traceback_later", lambda *args, **options: None)
+    original_write = launch.snapshot.write_json
+
+    def cancel():
+        if failure == "cancel":
+            raise cleanup
+
+    def writer(path, value):
+        if failure == "final-record" and path.name == "stack-sampling-final.json":
+            raise cleanup
+        return original_write(path, value)
+
+    monkeypatch.setattr(launch.faulthandler, "cancel_dump_traceback_later", cancel)
+    monkeypatch.setattr(launch.snapshot, "write_json", writer)
+    try:
+        with pytest.raises(BaseException) as caught:
+            launch.worker(b.path, b.root / "worker", **kwargs(b))
+        assert caught.value is (primary if has_source else cleanup)
+        assert primary.__cause__.args == ("cause",)
+        sampler = launch._STACK_SAMPLERS[-1]
+        assert sampler.stream.closed is (failure != "cancel")
+        assert sampler.cancelled is (failure != "cancel")
+        failed = launch.read(launch.pin(b.root / "worker/failure.json"))
+        assert failed["secondary"][-1]["error"]["message"] == "sampler cleanup"
+        assert not (b.root / "worker/result.json").exists()
+        assert (b.root / "worker/runtime-after.json").is_file()
+    finally:
+        # No real C timer was armed by this failure injection.
+        launch._STACK_SAMPLERS[-1].stream.close()
+
+
+def test_launch_stack_diagnostic_worker_samples_public_call_and_runtime_inventory(
+    bundle, monkeypatch
+):
+    b = diagnostic_bundle(bundle)
+    events = []
+
+    def public(_plan, output, **options):
+        assert events == ["arm"]
+        output.mkdir()
+        return NS(methods_completed=True, evidence_completed=True, primary=None, secondary=[])
+
+    worker_setup(b, monkeypatch, public)
+    monkeypatch.setattr(
+        launch.faulthandler, "dump_traceback_later", lambda *a, **k: events.append("arm")
+    )
+
+    def cancel():
+        assert (b.root / "worker/runtime-after.json").is_file()
+        assert (b.root / "worker/source-after.json").is_file()
+        events.append("cancel")
+
+    monkeypatch.setattr(launch.faulthandler, "cancel_dump_traceback_later", cancel)
+    result = launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert events == ["arm", "cancel"]
+    assert result["stack_diagnostic"] is True and result["scientific_credit"] == 0
+    assert launch.read(launch.pin(b.root / "worker/stack-sampling-final.json"))[
+        "cancellation_confirmed"
+    ]
 
 
 @pytest.mark.parametrize(
@@ -1668,3 +2111,562 @@ def test_launch_inputs_metadata_producer_is_bound_to_frozen_bytes_and_origin(
     else:
         with pytest.raises(ValueError):
             check(b.plan)
+
+
+def initial_rng_bundle(b, *, witness_version=1):
+    """Upgrade only inert metadata to @8; no RNG getter, owner or native call."""
+    inventory = launch.initial_rng.inputs.inventory(Path(b.inputs["program"]["root"]))
+    bundle_value = launch.read(b.pair_pin)
+    bundle_value["source_inventory"] = inventory
+    b.pair_pin.update(write(Path(b.pair_pin["path"]), bundle_value))
+    declaration = launch.read(b.plan["demo_plan"])
+    declaration.update(
+        kind=launch.RNG_DEMO_KIND,
+        initial_rng_inputs=dict(
+            profile="original",
+            inventory=inventory,
+            inventory_sha256=launch.initial_rng.seal(inventory),
+        ),
+    )
+    manifest = launch.read(b.plan["source_snapshot"])
+    declaration.setdefault("source_plan", {})["initial_rng_observation"] = dict(
+        kind=launch.initial_rng.LEGACY_KIND if witness_version == 1 else launch.initial_rng.KIND,
+        epoch=launch.initial_rng.EPOCH,
+        boundary="after_issued_WorldReady_before_geometry_phase_construction",
+        full_numpy_MT_and_python_state=True,
+        complete_input_inventory_bound=True,
+        reset_draw_or_replacement=False,
+        common_starting_authority_established=False,
+        producer="validation.betse.native_seed_initial_rng",
+        producer_sha256=manifest["files"][launch.initial_rng.FILE]["sha256"],
+        **(
+            dict(
+                runtime_producer="validation.betse.native_rng_runtime",
+                runtime_producer_sha256=manifest["files"][launch.initial_rng.rng_runtime.FILE][
+                    "sha256"
+                ],
+            )
+            if witness_version == 2
+            else {}
+        ),
+    )
+    declaration_pin = write(b.packet / "demo-plan.json", declaration)
+    made = launch.prepare(
+        b.packet,
+        b.root / "rng-plan",
+        demo_plan_sha256=declaration_pin["sha256"],
+        release_environment=b.env,
+        input_bundle=b.pair_pin,
+    )
+    b.path, b.sha = Path(made["plan"]["path"]), made["plan"]["sha256"]
+    b.plan = launch.read(made["plan"])
+    return b
+
+
+@pytest.mark.parametrize("mutation", (None, "helper", "source", "version", "producer"))
+def test_launch_rng_origin_version2_binds_helper_before_source(bundle, mutation):
+    b = initial_rng_bundle(bundle, witness_version=2)
+    declared = launch.read(b.plan["demo_plan"])
+    assert declared["source_plan"]["initial_rng_observation"]["kind"] == launch.initial_rng.KIND
+    assert launch.initial_rng.rng_runtime.FILE in b.plan["producers"]
+    assert launch.verify(b.path, b.sha) == b.plan
+    if mutation is None:
+        return
+    plan = dict(b.plan)
+    if mutation == "helper":
+        del plan["producers"][launch.initial_rng.rng_runtime.FILE]
+    else:
+        policy = declared["source_plan"]["initial_rng_observation"]
+        if mutation == "source":
+            policy["runtime_producer_sha256"] = "0" * 64
+        elif mutation == "version":
+            policy["kind"] = "unknown"
+        else:
+            policy["runtime_producer"] = "foreign.runtime"
+        plan["demo_plan"] = write(Path(plan["demo_plan"]["path"]), declared)
+    selected = write(b.path, plan)
+    with pytest.raises(ValueError):
+        launch.verify(b.path, selected["sha256"])
+
+
+def test_launch_initial_rng_full_bundle_and_source_bound_without_getters(bundle, monkeypatch):
+    def forbidden(*args, **kwargs):
+        pytest.fail("Metadata launch must not observe or manipulate RNG state")
+
+    monkeypatch.setattr(launch.initial_rng, "observe", forbidden)
+    monkeypatch.setattr(launch.initial_rng, "read_states", forbidden)
+    b = initial_rng_bundle(bundle)
+    result = launch.verify(b.path, b.sha)
+    assert result["initial_rng_inputs"]["inventory"]["directories"] == ["geo"]
+    assert set(result["initial_rng_inputs"]["inventory"]["files"]) == {
+        "config.json",
+        "geo/image.png",
+    }
+    assert launch.initial_rng.FILE in result["producers"]
+    assert result["kind"] == "cells.genuine_seed_demo_detached_launch@12"
+    assert (
+        launch.read(result["demo_plan"])["source_plan"]["initial_rng_observation"][
+            "common_starting_authority_established"
+        ]
+        is False
+    )
+    release = launch.prepare_release(b.path, b.path.parent / "release.json", plan_sha256=b.sha)
+    assert (
+        launch.verify_release(result, b.sha, Path(release["path"]), release["sha256"])[
+            "demo_plan_sha256"
+        ]
+        == result["demo_plan"]["sha256"]
+    )
+    write(
+        b.root / "rng-metadata-proof.json",
+        dict(plan=result, release=release, native_or_rng_getter_calls=0),
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "missing_launch_inputs",
+        "different_profile",
+        "missing_directory",
+        "missing_file",
+        "wrong_size",
+        "boolean_size",
+        "wrong_digest",
+        "missing_producer",
+        "wrong_producer",
+        "authority_claim",
+        "reset_claim",
+        "wrong_epoch",
+        "wrong_source",
+        "legacy_relabel",
+    ),
+)
+def test_launch_initial_rng_rejects_resealed_input_source_or_authority_drift(bundle, mutation):
+    b = initial_rng_bundle(bundle)
+    assert launch.verify(b.path, b.sha)["initial_rng_inputs"]
+    plan = copy.deepcopy(b.plan)
+    declaration = launch.read(plan["demo_plan"])
+    selected = declaration["initial_rng_inputs"]
+    policy = declaration["source_plan"]["initial_rng_observation"]
+    if mutation == "missing_launch_inputs":
+        del plan["initial_rng_inputs"]
+    elif mutation == "different_profile":
+        selected["profile"] = "headless"
+    elif mutation == "missing_directory":
+        selected["inventory"]["directories"] = []
+    elif mutation == "missing_file":
+        del selected["inventory"]["files"]["geo/image.png"]
+    elif mutation in ("wrong_size", "boolean_size"):
+        selected["inventory"]["files"]["geo/image.png"]["size_bytes"] = (
+            True if mutation == "boolean_size" else 1
+        )
+    elif mutation == "wrong_digest":
+        selected["inventory_sha256"] = "0" * 64
+    elif mutation == "missing_producer":
+        del plan["producers"][launch.initial_rng.FILE]
+    elif mutation == "wrong_producer":
+        plan["producers"][launch.initial_rng.FILE] = "0" * 64
+    elif mutation == "authority_claim":
+        policy["common_starting_authority_established"] = True
+    elif mutation == "reset_claim":
+        policy["reset_draw_or_replacement"] = True
+    elif mutation == "wrong_epoch":
+        policy["epoch"] = "after_geometry"
+    elif mutation == "wrong_source":
+        policy["producer_sha256"] = "0" * 64
+    else:
+        declaration["kind"] = "cells.genuine_seed_core_profiles_junctions_demo@7"
+    plan["demo_plan"] = write(b.packet / "demo-plan.json", declaration)
+    with pytest.raises((ValueError, KeyError)):
+        launch._immutable(plan)
+    write(
+        b.root / "rng-declared-refusal.json",
+        dict(mutation=mutation, plan=plan, declaration=declaration),
+    )
+
+
+def test_launch_initial_rng_old_demo_has_no_implicit_observation(bundle):
+    value = launch.verify(bundle.path, bundle.sha)
+    assert "initial_rng_inputs" not in value and launch.initial_rng.FILE not in value["producers"]
+    assert launch.read(value["demo_plan"]).get("kind") != launch.RNG_DEMO_KIND
+
+
+def sim_bundle(b):
+    """A complete byte-bound synthetic SIM plan; none of these files is imported."""
+    b = initial_rng_bundle(b)
+    native = launch.BASE / "betse-v1.5.0/betse"
+    native.mkdir(parents=True, exist_ok=True)
+    (native / "metadata_fixture.py").write_text("# inert original-source inventory fixture\n")
+    source, manifest = b.source, launch.read(b.plan["source_snapshot"])
+    for directory in [source, *[p for p in source.rglob("*") if p.is_dir()]]:
+        directory.chmod(0o755)
+    pins = {}
+    for name, relative in zip(launch.SIM_MODULES, launch.SIM_FILES, strict=True):
+        p = source / relative
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("# inert stage for byte-binding controls\n")
+        p.chmod(0o444)
+        pins[name] = launch.pin(p)["sha256"]
+    helper = source / launch.SIM_FILE
+    helper.write_text(
+        "MODULES = "
+        + repr(launch.SIM_MODULES)
+        + "\nSOURCE_PINS = "
+        + repr(pins)
+        + "\nREVIEW_PINS = "
+        + repr(dict.fromkeys(pins, "b" * 64))
+        + "\n"
+    )
+    helper.chmod(0o444)
+    observation_policy = observed.saved_policy(source, b.root / "observation-reviews", pins["run"])
+    for relative in (
+        launch.SIM_FILE,
+        *launch.SIM_FILES,
+        launch.sim_observation.FILE,
+        launch.sim_observation.OBSERVER,
+        launch.sim_observation.WRITER,
+    ):
+        p = source / relative
+        manifest["files"][relative] = dict(
+            checkout_path=relative,
+            sha256=launch.pin(p)["sha256"],
+            observation=dict(size=p.stat().st_size),
+            snapshot_mode=0o444,
+        )
+    (source / "SNAPSHOT.json").chmod(0o644)
+    snapshot_pin = write(source / "SNAPSHOT.json", manifest)
+    (source / "SNAPSHOT.json").chmod(0o444)
+    for directory in reversed([source, *[p for p in source.rglob("*") if p.is_dir()]]):
+        directory.chmod(0o555)
+    b.inputs.update(
+        source_snapshot=snapshot_pin, acquisition_sequence=list(launch.ACQUISITION_SEQUENCE)
+    )
+    inputs_pin = write(b.packet / "inputs.json", b.inputs)
+    declaration = launch.read(b.plan["demo_plan"])
+    declaration.update(
+        kind=launch.SIM_DEMO_KIND,
+        endpoint=launch.SIM_ENDPOINT,
+        init_iterations=None,
+        parameter_sha256=inputs_pin["sha256"],
+        snapshot_sha256=snapshot_pin["sha256"],
+    )
+    declaration["source_plan"]["optional_init_terminal"] = dict(
+        maximum_iterations=512,
+        init_iterations=None,
+        full_original_calendar=True,
+        normal_loop_context_and_caller_return=True,
+        selected_stop=False,
+        before_native_pickle=True,
+    )
+    declaration["source_plan"]["optional_sim_terminal"] = dict(
+        module="validation.betse.native_sim_demo",
+        source_sha256=launch.pin(helper)["sha256"],
+        review_sha256="b" * 64,
+        acquisition_sequence=list(launch.ACQUISITION_SEQUENCE),
+        maximum_iterations=512,
+        complete_configured_calendar=True,
+        selected_stop=False,
+        same_retained_simulator_and_cells=True,
+        distinct_fresh_loaded_parameters_and_SIM_phase=True,
+        before_native_pickle=True,
+        imports_before_callback=True,
+        completed_observation=observation_policy,
+        physical_checkpoint_or_scientific_admission=False,
+    )
+    declaration_pin = write(b.packet / "demo-plan.json", declaration)
+    b.env.update(dict.fromkeys((*launch.SIM_GATES, launch.sim_observation.RELEASE), "1"))
+    b.parameter.packet_inputs = lambda packet, digest: (
+        b.inputs
+        if Path(packet) == b.packet and digest == inputs_pin["sha256"]
+        else pytest.fail("Wrong parameter packet")
+    )
+    made = launch.prepare(
+        b.packet,
+        b.root / "sim-plan",
+        demo_plan_sha256=declaration_pin["sha256"],
+        release_environment=b.env,
+        input_bundle=b.pair_pin,
+    )
+    b.path, b.sha = Path(made["plan"]["path"]), made["plan"]["sha256"]
+    b.plan = launch.read(made["plan"])
+    release = launch.prepare_release(b.path, b.path.parent / "sim-release.json", plan_sha256=b.sha)
+    b.release, b.release_sha = Path(release["path"]), release["sha256"]
+    return b
+
+
+def sim_return(count=3, *, record=None):
+    trial = NS(
+        identity="a" * 64,
+        iterations=tuple(range(count)),
+        report_returned=True,
+        loop_returned=True,
+        context_returned=True,
+        before_native_pickle=True,
+    )
+    return NS(
+        methods_completed=True,
+        evidence_completed=True,
+        primary=None,
+        secondary=[],
+        endpoint="sim_terminal",
+        flux_operator="original",
+        init_iterations=None,
+        init_terminal_completed=True,
+        init_first_step_completed=False,
+        init_short_history_completed=False,
+        init_time_steps_completed=500,
+        sim_time_steps_completed=count,
+        sim_trial=trial,
+        sim_completed=True,
+        sim_observation=NS(
+            completed=True,
+            cleanup_complete=True,
+            primary=None,
+            secondary=[],
+            record_pin=record,
+            started=True,
+            rows=[],
+            raw_return={},
+            partial=None,
+        ),
+        sim_imports_complete=True,
+        sim_cleanup_complete=True,
+        sim_metadata_stopped=False,
+        sim_secondary=[],
+        sim_linkage=dict(
+            trial_identity=trial.identity,
+            configured_iterations=count,
+            maximum_iterations=512,
+            selected_stop=False,
+            complete_configured_calendar=True,
+            report_returned=True,
+            loop_returned=True,
+            context_returned=True,
+            before_native_pickle=True,
+            same_retained_simulator_and_cells=True,
+            distinct_current_parameters=True,
+        ),
+    )
+
+
+@pytest.mark.parametrize("count", (1, 500, 512))
+def test_launch_sim_complete_worker_retains_direct_schema_and_whole_counts(
+    bundle, monkeypatch, count
+):
+    b = sim_bundle(bundle)
+    assert launch.verify(b.path, b.sha)["kind"] == launch.SIM_KIND
+    assert b.plan["acquisition_sequence"] == list(launch.ACQUISITION_SEQUENCE)
+    calls = []
+
+    def public(path, output, **kwargs):
+        calls.append(path)
+        output.mkdir()
+        return sim_return(count, record=write(output / "record.json", {"synthetic": True}))
+
+    worker_setup(b, monkeypatch, public)
+    result = launch.worker(b.path, b.root / "worker", **kwargs(b))
+    assert result["kind"] == launch.SIM_KIND and result["endpoint"] == "sim_terminal"
+    assert len(calls) == 1 and result["scientific_credit"] == 0
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "old_launch",
+        "old_demo",
+        "missing_sequence",
+        "one_load",
+        "gate",
+        "helper_pin",
+        "review_pin",
+        "selected_stop",
+    ),
+)
+def test_launch_sim_preflight_rejects_resealed_contract_changes(bundle, mutation):
+    b = sim_bundle(bundle)
+    if mutation == "old_launch":
+        b.plan["kind"] = launch.KIND
+    elif mutation == "missing_sequence":
+        del b.plan["acquisition_sequence"]
+    elif mutation == "gate":
+        del b.plan["release_environment"][launch.SIM_GATES[0]]
+    else:
+        declaration = launch.read(b.plan["demo_plan"])
+        if mutation == "old_demo":
+            declaration["kind"] = launch.RNG_DEMO_KIND
+        elif mutation == "one_load":
+            b.inputs["acquisition_sequence"] = ["initial_world_ready"]
+            pin = write(b.packet / "inputs.json", b.inputs)
+            b.plan["parameter_inputs"] = pin
+            declaration["parameter_sha256"] = pin["sha256"]
+        else:
+            key = {
+                "helper_pin": "source_sha256",
+                "review_pin": "review_sha256",
+                "selected_stop": "selected_stop",
+            }[mutation]
+            declaration["source_plan"]["optional_sim_terminal"][key] = (
+                True if mutation == "selected_stop" else None
+            )
+        b.plan["demo_plan"] = write(b.packet / "demo-plan.json", declaration)
+    with pytest.raises((ValueError, KeyError)):
+        launch._immutable(b.plan)
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    (
+        ("sim_completed", False),
+        ("sim_time_steps_completed", True),
+        ("sim_time_steps_completed", 513),
+        ("sim_imports_complete", False),
+        ("sim_cleanup_complete", False),
+        ("sim_metadata_stopped", True),
+        ("sim_secondary", [("capture", "failed")]),
+        ("context_returned", False),
+        ("loop_returned", False),
+        ("before_native_pickle", False),
+    ),
+)
+def test_launch_sim_incomplete_return_retains_failure_without_terminal(
+    bundle, monkeypatch, field, value
+):
+    b = sim_bundle(bundle)
+    returned = sim_return(record=write(b.root / "record.json", {"synthetic": True}))
+    setattr(
+        returned.sim_trial
+        if field in ("context_returned", "loop_returned", "before_native_pickle")
+        else returned,
+        field,
+        value,
+    )
+
+    def public(path, output, **kwargs):
+        output.mkdir()
+        return returned
+
+    worker_setup(b, monkeypatch, public)
+    with pytest.raises(ValueError):
+        launch.worker(b.path, b.root / "worker", **kwargs(b))
+    failure = launch.read(launch.pin(b.root / "worker/failure.json"))
+    assert failure["state"]["public_entry_returned"] is True
+    assert failure["kind"] == launch.SIM_KIND
+    assert not (b.root / "worker/result.json").exists()
+
+
+def test_launch_sim_explicit_gate_roster_matches_actual_selected_entries(bundle, tmp_path):
+    """Read selected public-entry declarations without importing any owner."""
+    source_root = Path(__file__).resolve().parents[2]
+    selected = (
+        ("betse_native_init_sim_preparation", "prepare", "RELEASE"),
+        ("betse_native_init_terminal", "reserve_for_sim", "SIM_RESERVATION_RELEASE"),
+        ("betse_native_init_sim_assembly", "prepare", "RELEASE"),
+        ("betse_native_init_sim_assembly", "reserve_for_run", "RUN_RESERVATION_RELEASE"),
+        ("betse_native_sim_run", "prepare", "RELEASE"),
+    )
+    required, declarations = [], []
+    for module, name, constant in selected:
+        path = source_root / "src/cells/processes" / (module + ".py")
+        tree = ast.parse(path.read_bytes())
+        assignments = [
+            node
+            for node in tree.body
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == constant
+        ]
+        assert len(assignments) == 1
+        gate = ast.literal_eval(assignments[0].value)
+        function = next(
+            node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == name
+        )
+        lookups = [
+            node
+            for node in ast.walk(function)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and ast.unparse(node.func) == "os.environ.get"
+            and len(node.args) == 1
+            and isinstance(node.args[0], ast.Name)
+            and node.args[0].id == constant
+        ]
+        assert len(lookups) == 1
+        required.append(gate)
+        declarations.append(
+            dict(
+                source=launch.pin(path),
+                function=name,
+                line=function.lineno,
+                constant=constant,
+                gate=gate,
+            )
+        )
+    assert tuple(required) == launch.SIM_GATES and len(set(required)) == 5
+    before = {name: os.environ.get(name) for name in required}
+    b = sim_bundle(bundle)
+    assert all(b.plan["release_environment"][name] == "1" for name in required)
+    assert launch.verify(b.path, b.sha)["kind"] == launch.SIM_KIND
+    assert b.plan["limitations"]["sim_terminal"]["explicit_release_flags"] == required
+    assert {name: os.environ.get(name) for name in required} == before
+    write(
+        tmp_path / "actual-selected-gates.json",
+        dict(declarations=declarations, declared_only=True, native_source_or_owner_executed=False),
+    )
+
+
+@pytest.mark.parametrize("gate", launch.SIM_GATES)
+@pytest.mark.parametrize("value", (None, "0", 1), ids=("absent", "disabled", "wrong_type"))
+def test_launch_sim_explicit_gate_refusal_before_entry(bundle, gate, value):
+    b = sim_bundle(bundle)
+    if value is None:
+        del b.plan["release_environment"][gate]
+    else:
+        b.plan["release_environment"][gate] = value
+    with pytest.raises(ValueError, match="Explicit actual SIM release flags required"):
+        launch._immutable(b.plan)
+    assert not (b.root / "worker").exists()
+
+
+@pytest.mark.parametrize(
+    "mutation", ("gate_missing", "gate_wrong", "pin", "review", "writer", "policy", "originals")
+)
+def test_launch_sim_observation_contract_is_explicit_before_entry(bundle, mutation):
+    b = sim_bundle(bundle)
+    declaration = launch.read(b.plan["demo_plan"])
+    policy = declaration["source_plan"]["optional_sim_terminal"]["completed_observation"]
+    if mutation.startswith("gate"):
+        b.plan["release_environment"][launch.sim_observation.RELEASE] = (
+            None if mutation == "gate_missing" else "0"
+        )
+    elif mutation == "pin":
+        policy["observer_sha256"] = "0" * 64
+    elif mutation == "review":
+        policy["observer_review"]["sha256"] = "0" * 64
+    elif mutation == "writer":
+        policy["writer_sha256"] = "0" * 64
+    elif mutation == "policy":
+        policy["already_typed_transport"] = False
+    else:
+        b.plan["sim_original_sources"]["sha256"] = "0" * 64
+    b.plan["demo_plan"] = write(b.packet / "demo-plan.json", declaration)
+    with pytest.raises(ValueError):
+        launch._immutable(b.plan)
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    (
+        ("completed", False),
+        ("cleanup_complete", False),
+        ("primary", OSError("capture")),
+        ("secondary", [("writer", OSError("secondary"))]),
+        ("record_pin", None),
+    ),
+)
+def test_launch_sim_missing_observation_cannot_be_success(tmp_path, field, value):
+    returned = sim_return(record=write(tmp_path / "record.json", {"scope": "synthetic"}))
+    setattr(returned.sim_observation, field, value)
+    with pytest.raises(ValueError, match="observation"):
+        launch._sim_return(returned)
