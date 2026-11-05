@@ -29,6 +29,7 @@ def source_plan():
         legacy_report_sha256=LEGACY_SHA256,
         witness_versions=[LEGACY_KIND, WITNESS_KIND],
         shared_runtime=runtime.FILE,
+        starting_prefix_api=["read_plan", "initial_rng_captures", "runtime_evidence"],
         built_in_origin_is_file=False,
         state_reset_draw_or_replacement=False,
         common_starting_authority_established=False,
@@ -352,3 +353,18 @@ def inspect_attempt(plan_path, *, plan_sha256, output=None):
         return legacy.inspect_attempt(plan_path, plan_sha256=plan_sha256, output=output)
     require(version == WITNESS_KIND, "Unsupported initial RNG witness version")
     return namespace["inspect_attempt"](plan_path, plan_sha256=plan_sha256, output=output)
+
+
+def read_plan(reader, path, sha256):
+    """Return the authenticated (plan, files, originals) for a saved SEED prefix.
+
+    This validates either explicit witness version through its original launch
+    and input schema. It does not authenticate a completed source execution.
+    """
+    return _namespace()["_plan"](reader, Path(path), sha256)
+
+
+def runtime_evidence(reader, worker_root, plan, files):
+    """Authenticate the actual saved runtime for an already authenticated plan."""
+    _namespace()
+    return _runtime(reader, Path(worker_root), plan, files)

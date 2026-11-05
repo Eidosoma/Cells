@@ -10453,3 +10453,88 @@ source already pins it a9a82ef3. This repair was NOT part of the two source
 residuals above and remains unimplemented pending Root direction. Core flags,
 500/350 bounds, real old/current-p lineage and report/full-loop/prepickle source
 order otherwise match the inspected declared domain; no native admission.
+
+### FULL/ECM helper closure and actual history-exit frame admission
+
+Completed the next Root-assigned coherent source/software block. Receipt:
+/mnt/workspaces/Cells/native-sim-core-helper-closure-development-20261105-01/source-result.json
+SHA5f48112fb507e338e81a9e0d047ffa9f0c35f3fec00075f6ed990e47d55caa0f;
+interface.json SHA489d1ad5508355453a7d3bf4f270e54dac08199ba313343fe744578ed396c113.
+Only run source/catalog/test and history source/test changed, plus this log.
+Run c3238c6c6704f8bc133d23450235eb2b742e6505530bd47de0d590a958e3e4d4,
+catalog d803cc0efc0e8813a18de553a2b23713ff1f8cb4d6294c25df8f9089814610bc,
+history a21ee346c1b384e734bdebf40aecdaaff9b4fd69163879579141d234894c0e7a;
+paired tests3314b9e30193a3cddda60df273c4837a5f16d357444f9e629d6f632d9f7c6976
+andd13355b45ce9a895984553b484fd6d94a596482bc3bc8cfe810b53d45f167877.
+All five other bound producer/runner files remain exact; history explicitly
+pins the new run, review gates remain None. No staging/commit/shared edits.
+
+Reused exact electrical pins/original whole-module compilation for mandatory
+get_current->HH_Decomp/gradient/divergence/diff. Traced default FULL/ECM setup
+through tissue image selection too: added only reached image/path/interpolation
+helpers, leaving unrelated file writers and colliding path join unavailable.
+Actual import exports, original wrapper/caller edges, retained sim/cells/p,
+boundary/spacing, picker/mask/filename/grid associations are checked. The real
+interp2d_linear return retains its original code/globals/cell/spline and later
+mask/point callsite; equal copied callbacks refuse. Both actual spline owners
+and all their fields/arrays are registered before original value projection;
+append-only roots and explicit callback/cell graph references retain ancestry.
+No source equation, calendar, fixture, flux behavior, tolerance or cap changed.
+
+Root review93a54252 closed the prior run residual but found the mutable same-
+function exit-call gap. Folded exact executing-frame/code/globals/cached-builtins/
+arguments/closure admission after inherited profile/trace hooks into this block.
+Same-object authentication-return/dispatch-line substitutions, including restored
+original code on foreign-frame entry, refuse before foreign body execution.
+Independent finite recovery preserves both inherited hooks and primary errors.
+Public history signatures/record schema unchanged; full_returns counts delivered
+accepted results, while raw return events/source work remain separately retained.
+
+Final188 SIM+47 history=235 distinct fresh controls (60new+175affected). Earlier
+63 focused SIM and15 focused history are repeated work on their own images.
+All15 guarded processes terminal and locally reviewed:12complete/3failed.
+Failures retained: first metadata clone kept production label and was blocked
+before its body (27pass/1fail/1error, missing child-cleanup artifact); second
+metadata fixture lacked import_api (27pass/1fail); first history focus expected
+delivery after a now-rejected return observer (3pass/1fail). No intended proof
+from those failed controls. Final SIM98.16s/history164.63s, unchanged CPU4/
+one-thread/1GiB480s8GiB reserve; metadata reader512MiB. Final native/operator/
+RNG attempts empty, all source/runtime pins and hook restorations verified.
+Prior175 image/failures immutable. Native/helper/image/INIT/SIM/reference/science
+remain held for Root adoption and real parent/trajectory/resource qualification.
+No detached launch or old-job query; CPU4 free. Both requested90s shared source
+snapshot windows honored. Outgoing direct coordination still has stale MCP;
+local sealed receipt is the substantive Root/Specialist handoff.
+
+### Common-start RNG feature in progress; CPU4 handed over
+
+Root's next scope is three NEW validation/test/software paths only:
+native_common_start_rng.py, test_native_common_start_rng.py and
+native_common_start_rng_software.py. Public draft declares explicit bounded
+Python-v2/legacy-NumPy seeds, same input/source identities, then initializes
+the actual retained global instances after parameters/before world. Eight
+declared API operations preserve before/after/readback bit states. Existing
+ambient consumers, five235 producers/tests and all numerical/native bodies
+remain fixed. Actual RNG calls/native/INIT/SIM/reference remain held.
+
+Outputs /mnt/workspaces/Cells/native-common-start-rng-development-20261105-01
+retain every attempt. controls01 child missing dynamic definition dependency;
+controls02 metadata import mapped libraries beyond512MiB (cap unchanged, imports
+deferred); controls03 used unstable marshal comparison (reused typed CodeType
+comparator instead); controls04/dispatch-inspection01/controls05 preserved actual
+NumPy2.5.3 Cython export/refusal evidence with zero calls. controls06 passed32
+on its frozen image; no present-byte credit. controls07 executed42,27pass/15fail:
+new metadata fixtures lacked FILE/_attempt fields; return-refusal expectation;
+real opcode guard could mask an already pending source error. All three groups
+are now corrected in Git, static checks pass; final current-source software is
+pending resource handoff. No sealed completion/qualification claim yet.
+
+Current source fae0a40e898e236cdacbfff123a1618f15934a80db5a5b0b9ddf39bb03e30545;
+test4c672d3e6e38ff886b7d86aecb5e04e4bd5795199e82b2ce988c20f3eb96ae6b;
+runner48fdce8368fa2a3ee9b56f6cd3965e9d092d1003de976e83615d5e891ee7790c.
+All15 launched preparation/software processes are terminal (8complete/7failed),
+failures inspected and preserved, no detached launch or old-job query. CPU4 is
+FREE from Key and is handed to Specialist's focused assembly repair. NEW Key
+CPU4 launches held pending Specialist terminal/release. Outgoing direct thread
+messaging still fails stale43257; Chief/native queue must relay availability.
+Queued history-descendant repair remains separate until this RNG milestone.

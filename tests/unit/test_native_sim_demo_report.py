@@ -133,6 +133,7 @@ def fixture(tmp_path, *, count=3, mode="original"):
                 report.launch.DEMO_RELEASE,
                 *report.launch.SIM_GATES,
                 report.observation.RELEASE,
+                report.observation.HISTORY_RELEASE,
             ),
             "1",
         ),
@@ -145,9 +146,9 @@ def fixture(tmp_path, *, count=3, mode="original"):
     for name in ("runtime-before.json", "runtime-after.json"):
         runtime = read(value.worker / name)
         for relative in plan["producers"]:
-            runtime["loaded_files"][relative.removesuffix(".py").replace("/", ".")] = pin(
-                value.source / relative
-            )
+            runtime["loaded_files"][
+                relative.removeprefix("src/").removesuffix(".py").replace("/", ".")
+            ] = pin(value.source / relative)
         write(value.worker / name, runtime)
     write(
         value.worker / "source-after.json",
@@ -327,6 +328,7 @@ def fixture(tmp_path, *, count=3, mode="original"):
         observation_policy,
         stages["run"],
         trial,
+        source=value.source,
         count=count,
         mode=mode,
     )
@@ -519,7 +521,9 @@ def test_sim_report_missing_partial_or_unbound_evidence_never_promotes(tmp_path,
     else:
         p = value.worker / "runtime-after.json"
         r = read(p)
-        r["loaded_files"].pop(report.launch.SIM_FILES[-1].removesuffix(".py").replace("/", "."))
+        r["loaded_files"].pop(
+            report.launch.SIM_FILES[-1].removeprefix("src/").removesuffix(".py").replace("/", ".")
+        )
         write(p, r)
     write(value.worker / "demo/outcome.json", outcome)
     result = inspect(value)
@@ -682,10 +686,69 @@ def test_sim_report_observation_postprocess_binds_actual_artifacts_and_independe
     }
     assert binding["process"] == pin(value.output / "process/result.json")
     assert binding["runtime"] == pin(value.worker / "runtime-after.json")
+    provider = report.observation.constants(
+        value.source / report.observation.OBSERVER, report.observation.DECLARATIONS
+    )
+    assert provider["HISTORY_REVIEW"] in binding["reviews"]
+    assert (
+        binding["execution_source"]["owned_files"][report.observation.HISTORY]
+        == (provider["HISTORY_SHA256"])
+    )
     assert (
         not selected["comparison_accepted"]
         and not selected["common_starting_authority_established"]
     )
+
+
+@pytest.mark.parametrize(
+    "fault", ("runtime", "runtime_alias", "source", "review", "rows", "exit", "missing")
+)
+def test_sim_report_history_missing_or_incomplete_cannot_be_complete(tmp_path, fault):
+    value = fixture(tmp_path, count=2)
+    baseline = inspect(value)
+    assert baseline["status"] == "completed_unqualified", baseline["verification_issues"]
+    if fault in ("runtime", "runtime_alias"):
+        names = (
+            ("runtime-after.json",)
+            if fault == "runtime"
+            else ("runtime-before.json", "runtime-after.json")
+        )
+        for name in names:
+            path = value.worker / name
+            inventory = read(path)
+            selected = inventory["loaded_files"].pop(report.observation.HISTORY_MODULE)
+            if fault == "runtime_alias":
+                inventory["loaded_files"]["foreign_history_alias"] = selected
+            write(path, inventory)
+    else:
+        outcome_path = value.worker / "demo/outcome.json"
+        outcome = read(outcome_path)
+        selected = outcome["sim_observation"]["record"]
+        path = Path(selected["path"])
+        record = read(path)
+        if fault == "source":
+            record["producer"]["history"]["sha256"] = "0" * 64
+        elif fault == "review":
+            record["producer"]["history"]["review"] = dict(path="/foreign", sha256="0" * 64)
+        elif fault == "rows":
+            record["work"]["history_interval"]["checked_rows"] = [0]
+        elif fault == "exit":
+            record["work"]["history_interval"]["full_authority_returns"] = 1
+        else:
+            del record["work"]["history_interval"]
+        outcome["sim_observation"]["record"] = write(path, record)
+        write(outcome_path, outcome)
+        worker_path = value.worker / "result.json"
+        worker = read(worker_path)
+        worker["sim_observation"] = outcome["sim_observation"]
+        worker_pin = write(worker_path, worker)
+        terminal_path = value.output / "result.json"
+        terminal = read(terminal_path)
+        terminal["worker"] = worker_pin
+        write(terminal_path, terminal)
+    result = inspect(value)
+    assert result["status"] != "completed_unqualified" and result["verification_issues"]
+    assert result["scientific_credit"] == 0 and result["saved_comparison_request"] is None
 
 
 @pytest.mark.parametrize("fault", ("request", "terminal", "process", "result", "runtime"))

@@ -17,6 +17,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   before geometry, at initial RNG provenance: `_random` is built in to this
   interpreter and absent from the inventory's file-backed module map. This was
   not a timeout or evidence of a numerical/flux failure. No retry was launched.
+  The [built-in provenance repair](/mnt/workspaces/Cells/native-rng-builtin-origin-repair-20261105-01/source-result.json)
+  now has a clear [Root source/results review](/mnt/workspaces/Cells/native-rng-builtin-origin-repair-20261105-01/root-source-results-review.json):
+  107 distinct blocked controls across separately retained 103- and 19-case
+  images. Built-in origins bind the actual interpreter; file-backed origins
+  and the old saved reader remain separate. Three failed software images are
+  preserved. No RNG seed, draw or model retry was performed.
   End-to-end SEED→INIT→SIM remains
   unqualified. Key owns the complete genuine SIM loop, bounded full-history
   retention and source/cleanup fixes. Specialist owns the independent original
@@ -53,7 +59,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The [declarative adoption plan](/mnt/workspaces/Cells/native-sim-demo-adoption-20261105-01/plan-01/result.json)
   statically resolves 37 modules and 148 assignments using existing acyclic
   templates; its review values are unaccepted sentinels, and no projected source
-  was applied. Actual adoption remains closed.
+  was applied. The [consolidated successor](/mnt/workspaces/Cells/native-sim-demo-adoption-20261105-01/consolidated-02/source-result.json)
+  includes history observation, typed capture and RNG provenance: 46 modules,
+  163 assignments and the same 13 templates. Its 57 controls (18 new, 39 affected)
+  pass; [source/results review](/mnt/workspaces/Cells/native-sim-demo-adoption-20261105-01/consolidated-02/root-source-results-review.json)
+  is clear. Review documents are explicitly supplied, never inferred or
+  authenticated by the projector. All dry-run review values remain unaccepted,
+  no candidate was applied, and real adoption awaits final component bytes.
 
 - **First end-to-end input case prepared:** The stock example enables cutting at SIM
   time zero and custom network channels beyond the current selected SIM domain.
@@ -86,7 +98,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   it does not grant adoption or native acceptance.
   Key has since delivered a [130-control repair successor](/mnt/workspaces/Cells/native-sim-run-development-20261105-01/capacity-source-result.json)
   and a separate [33-control bounded history-observation API](/mnt/workspaces/Cells/native-sim-history-observation-development-20261105-01/source-result.json).
-  Both await Root source/results review. The interval brackets the complete
+  Their [combined source/results review](/mnt/workspaces/Cells/native-sim-run-development-20261105-01/root-capacity-history-source-results-review.json)
+  verified the evidence and identified two remaining cleanup/exit-validation
+  defects. Key's [175-control successor](/mnt/workspaces/Cells/native-sim-observer-exit-repair-20261105-01/source-result.json)
+  closes the cleanup finding; its [review](/mnt/workspaces/Cells/native-sim-observer-exit-repair-20261105-01/root-source-results-review.json)
+  identified one remaining history-exit call-boundary defect. Key's next
+  [complete helper/history milestone](/mnt/workspaces/Cells/native-sim-core-helper-closure-development-20261105-01/source-result.json)
+  implements mandatory `get_current`, its electrical/image dependencies and
+  that call-boundary repair. It has 235 distinct blocked controls (60 new,
+  175 affected), with all 15 process outcomes preserved, including three
+  failures. Consolidated review is underway; no actual SIM run is credited.
+  The interval brackets the complete
   history with full checks and freshly checks selected rows/captures. The long
   calendars were tested with small metadata payloads; real full-history
   throughput is not established. Failed agent handoff messages delayed consumer
@@ -142,11 +164,28 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   with earlier images and six failures separately retained. It directly saves
   typed historical arrays, binds completed process/runtime evidence, and keeps
   the observer's accepted source anchor independent of the saved bundle.
-  Final source/results review remains pending. Specialist's
+  [Source/results review](/mnt/workspaces/Cells/native-sim-demo-observation-integration-20261105-01/root-source-results-review.json)
+  is clear at those exact bytes: 280 distinct controls across the separately
+  scoped images. The [six-file history-consumer integration](/mnt/workspaces/Cells/native-sim-history-consumer-integration-20261105-01/source-result.json)
+  now has a clear [combined review](/mnt/workspaces/Cells/native-sim-history-consumer-integration-20261105-01/root-source-results-review.json):
+  335 distinct controls (48 new, 287 affected), with two fixture failures
+  preserved. It binds the explicit history release, producer/review and same
+  SIM issuer in preflight, live capture and saved reports. Provider adoption
+  and the actual end-to-end execution are separate and remain pending.
+  Specialist's
   [full-SIM reference milestone](/mnt/workspaces/Cells/native-sim-terminal-authentication-development-20261105-01/source-result.json)
   has 75 distinct controls; its [review](/mnt/workspaces/Cells/native-sim-terminal-authentication-development-20261105-01/root-source-results-review.json)
-  verified those outcomes but requires two repairs: canonical runtime producer
-  origins and retention of the original instability before a fallible recorder.
+  identified canonical runtime-origin and original-error retention repairs.
+  The [69-control history/reference integration](/mnt/workspaces/Cells/native-sim-history-consumer-development-20261105-01/source-result.json)
+  closes those in its [combined review](/mnt/workspaces/Cells/native-sim-history-consumer-development-20261105-01/root-consolidated-review.json).
+  Two synthetic 350-row images remain failed at their 480-second limits.
+  The indexed observation/cost successor preserves duplicates, raw references
+  and fresh live checks; its new encoder-dispatch finding has a separate
+  [25-control repair](/mnt/workspaces/Cells/native-sim-history-consumer-development-20261105-01/encoder-dispatch-01/source-result.json)
+  under review. One changed 350-row benchmark is detached under an explicit
+  3,600-second budget; it has not been queried or rerun. Key is separately
+  implementing an explicit common-start RNG input for paired fresh runs;
+  equal ambient state witnesses alone still do not establish that authority.
   These implementations have not executed a genuine full SIM or independent
   reference trajectory.
 

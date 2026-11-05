@@ -680,6 +680,7 @@ def inspect_attempt(plan_path, *, plan_sha256, output=None, observation_request=
                                 observation.FILE,
                                 observation.OBSERVER,
                                 observation.WRITER,
+                                observation.HISTORY,
                             )
                         ),
                         "Actual loaded SIM orchestration/stage producers required",
@@ -1240,13 +1241,15 @@ def _observation(reader, root, plan, outcome):
         operator_mode=linkage["operator_mode"],
     )
     provider = observation.constants(
-        Path(plan["source"]) / observation.OBSERVER, ("KEY_SHA256", "KEY_REVIEW", "WRITER_SHA256")
+        Path(plan["source"]) / observation.OBSERVER, observation.DECLARATIONS
     )
     context = SimpleNamespace(
         key_review=provider["KEY_REVIEW"],
         rows=rows,
         run_sha=plan["producers"][observation.KEY],
         observer_sha=policy["observer_sha256"],
+        history_sha=provider["HISTORY_SHA256"],
+        history_review=provider["HISTORY_REVIEW"],
     )
     observation._record(context, record, trial, plan["flux_operator"])
     require(
@@ -1255,7 +1258,22 @@ def _observation(reader, root, plan, outcome):
     )
     reader.bound(policy["observer_review"])
     reader.bound(provider["KEY_REVIEW"])
+    reader.bound(provider["HISTORY_REVIEW"])
     if completed or value["completed"]:
+        final_runtime = reader.read(root.parent / "runtime-after.json")
+        require(
+            all(
+                final_runtime["loaded_files"].get(module)
+                == dict(
+                    path=str(Path(plan["source"]) / relative), sha256=plan["producers"][relative]
+                )
+                for module, relative in (
+                    (observation.KEY_MODULE, observation.KEY),
+                    (observation.HISTORY_MODULE, observation.HISTORY),
+                )
+            ),
+            "Actual canonical SIM/history runtime producers required",
+        )
         require(
             value["started"]
             and value["completed"]
@@ -1284,7 +1302,7 @@ def _binding(reader, plan, output, report, terminal_pin):
     completed = report["demonstration"]["completed_observation"]
     require(completed["completed"] is True, "Actual completed observation required")
     provider = observation.constants(
-        Path(plan["source"]) / observation.OBSERVER, ("KEY_SHA256", "KEY_REVIEW", "WRITER_SHA256")
+        Path(plan["source"]) / observation.OBSERVER, observation.DECLARATIONS
     )
     parameters = reader.bound(plan["parameter_inputs"])
     program = reader.bound(parameters["program"]["manifest"])
@@ -1321,7 +1339,7 @@ def _binding(reader, plan, output, report, terminal_pin):
             snapshot_sha256=plan["source_snapshot"]["sha256"],
             owned_files=plan["producers"],
         ),
-        reviews=[policy["observer_review"], provider["KEY_REVIEW"]],
+        reviews=[policy["observer_review"], provider["KEY_REVIEW"], provider["HISTORY_REVIEW"]],
         runtime=launch.pin(output / "worker/runtime-after.json"),
         process=launch.pin(output / "process/result.json"),
         terminal=terminal_pin,

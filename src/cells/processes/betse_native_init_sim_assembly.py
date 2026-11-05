@@ -342,6 +342,7 @@ def _check(context):
         or context.request.source_identity != _digest(source_plan())
     ):
         raise ValueError("Original assembly epoch/source changed")
+    _check_nested_bindings(context)
     _check_retained(context)
     if context.parent.sim.dyna is not context.original_handler:
         phase = context.phase
@@ -367,6 +368,9 @@ def _metadata_guard(context):
     return and later public use. Source instruction checks permit only the
     actual retained-store assignment; they never replace those fresh checks.
     """
+    nested_error = getattr(context, "nested_error", None)
+    if nested_error is not None:
+        raise nested_error from nested_error.__cause__
     if (
         context.invalid
         or context.thread != get_ident()
@@ -395,6 +399,7 @@ def _metadata_guard(context):
             raise ValueError("Original phase/retained Simulator attribute dispatch required")
     if any(name in vars(context.native.cls) for name in timing.PHASE_FIELDS):
         raise ValueError("Original native phase field descriptor surface required")
+    _check_nested_bindings(context)
     api = _phase_import_api()
     for name, original in context.native.methods.items():
         api["validate"](
@@ -403,7 +408,206 @@ def _metadata_guard(context):
     terminal._sim_reservation(context.reservation)
 
 
+def _nested_header(function):
+    if type(function) is not FunctionType:
+        raise ValueError("Original import-issued Python function required")
+    values = [
+        function,
+        function.__code__,
+        function.__globals__,
+        function.__builtins__,
+        function.__defaults__,
+        function.__kwdefaults__,
+        function.__annotations__,
+    ]
+    values.extend(function.__defaults__ or ())
+    for mapping in (function.__kwdefaults__ or {}, function.__annotations__, vars(function)):
+        for name, value in mapping.items():
+            values.extend((name, value))
+    for cell in function.__closure__ or ():
+        values.extend((cell, cell.cell_contents))
+    return tuple(values)
+
+
+def _bind_nested(context):
+    """Retain issued publications before hooks, including inherited caches."""
+    api = _phase_import_api()
+    rows, functions, factories = [], {}, {}
+    for function, issued in tuple(_IMPORTS.items()):
+        _issuance, row = issued
+        role, name = row.target[0]
+        owner = row.module if role is None else row.stack[0]
+        api["validate"](function, row.original, owner=owner, attribute=name)
+        rows.append((function, issued, owner, name))
+        for actual in (function, row.original):
+            functions[actual] = _nested_header(actual)
+        if role is not None:
+            factories[(row.module.__name__, role)] = (row.module, role, owner)
+    # Some native cache subclasses inherit their entire constructor. They have
+    # no decorated __init__ of their own; retain their actual INIT object type,
+    # not a reconstructed class or an equal publication.
+    old_phase = context.parent.phase
+    old_cache = vars(old_phase).get("cache")
+    retained = [vars(old_phase).get("dyna"), old_cache]
+    if old_cache is not None:
+        retained.extend(
+            vars(old_cache).get(name) for name in ("upscaled", "vector", "vector_field")
+        )
+    for actual in retained:
+        if actual is None:
+            continue
+        cls = type(actual)
+        module = sys.modules.get(cls.__module__)
+        if module is None or vars(module).get(cls.__name__) is not cls:
+            raise ValueError("Actual retained INIT constructor publication required")
+        factories[(module.__name__, cls.__name__)] = (module, cls.__name__, cls)
+    if not {"TissueHandler", "SimPhaseCaches"} <= {name for _, name in factories}:
+        raise ValueError("Actual issued handler/cache factory prerequisites required")
+    classes = []
+    for module, name, cls in factories.values():
+        if not isinstance(cls, type):
+            raise ValueError("Actual original nested class factory required")
+        meta = type(cls)
+        call_owner = next(c for c in meta.__mro__ if "__call__" in vars(c))
+        call = vars(call_owner)["__call__"]
+        if type(call) is FunctionType:
+            functions[call] = _nested_header(call)
+        classes.append(
+            (module, name, cls, cls.__mro__, tuple(vars(cls).items()), meta, call_owner, call)
+        )
+    imports, sites = {}, {}
+    for function in functions:
+        module_name, pending, callee = None, None, None
+        selected = []
+        calls = {}
+        delegates = dict(function.__kwdefaults__ or {})
+        for instruction in dis.get_instructions(function):
+            if instruction.opname == "IMPORT_NAME":
+                module_name = instruction.argval
+            elif instruction.opname == "IMPORT_FROM":
+                pending = (module_name, instruction.argval)
+            elif (
+                instruction.opname
+                in ("STORE_FAST", "STORE_FAST_LOAD_FAST", "STORE_FAST_STORE_FAST")
+                and pending is not None
+            ):
+                if pending in factories:
+                    name = instruction.argval
+                    if type(name) is tuple:
+                        name = name[0]
+                    selected.append((name, factories[pending][2]))
+                pending = None
+            if instruction.opname in (
+                "LOAD_FAST",
+                "LOAD_FAST_CHECK",
+                "LOAD_FAST_LOAD_FAST",
+                "STORE_FAST_LOAD_FAST",
+            ):
+                names = instruction.argval
+                if type(names) is not tuple:
+                    names = (names,)
+                elif instruction.opname == "STORE_FAST_LOAD_FAST":
+                    names = names[1:]
+                for name in names:
+                    imported = dict(selected).get(name)
+                    delegate = delegates.get(name)
+                    if imported is not None:
+                        meta = type(imported)
+                        call_owner = next(c for c in meta.__mro__ if "__call__" in vars(c))
+                        call = vars(call_owner)["__call__"]
+                        if type(call) is FunctionType:
+                            callee = call
+                        else:
+                            owner = next(c for c in imported.__mro__ if "__init__" in vars(c))
+                            callee = vars(owner)["__init__"]
+                    elif name.startswith("__beartype_") and (
+                        type(delegate) is FunctionType and delegate in functions
+                    ):
+                        callee = delegate
+            elif instruction.opname in ("CALL", "CALL_KW", "CALL_FUNCTION_EX"):
+                if callee is not None:
+                    if type(callee) is not FunctionType:
+                        raise ValueError("Original Python nested constructor delegate required")
+                    calls[instruction.offset] = (callee.__code__, callee.__globals__)
+                callee = None
+        if selected:
+            imports[id(function.__code__)] = tuple(selected)
+        if calls:
+            sites[id(function.__code__)] = calls
+    context.nested_rows = tuple(rows)
+    context.nested_functions = tuple(functions.items())
+    context.nested_classes, context.nested_local_imports = tuple(classes), imports
+    context.nested_codes = frozenset(id(function.__code__) for function in functions)
+    context.nested_call_sites, context.nested_attempts = sites, []
+
+
+def _check_nested_bindings(context):
+    try:
+        for function, issued, owner, name in context.nested_rows:
+            if _IMPORTS.get(function) is not issued or vars(owner).get(name) is not function:
+                raise ValueError("Actual nested import issuance/export changed")
+        for function, expected in context.nested_functions:
+            actual = _nested_header(function)
+            if len(actual) != len(expected) or any(
+                a is not b for a, b in zip(actual, expected, strict=True)
+            ):
+                raise ValueError("Actual nested constructor/delegate code or bindings changed")
+        for module, name, cls, mro, members, meta, call_owner, call in context.nested_classes:
+            if (
+                sys.modules.get(module.__name__) is not module
+                or vars(module).get(name) is not cls
+                or cls.__mro__ is not mro
+                or type(cls) is not meta
+                or len(vars(cls)) != len(members)
+                or any(vars(cls).get(key) is not value for key, value in members)
+                or next(c for c in meta.__mro__ if "__call__" in vars(c)) is not call_owner
+                or vars(call_owner)["__call__"] is not call
+            ):
+                raise ValueError("Actual nested class/publication/dispatch changed")
+    except BaseException as error:
+        context.invalid = True
+        if getattr(context, "nested_error", None) is None:
+            context.nested_error = error
+        raise
+
+
+def _nested_caller(context, frame, event):
+    # Foreign-file entries still have a real source caller. Validate its local
+    # import aliases and wrapper delegates after inherited hooks and before the
+    # callee's first instruction, irrespective of the callee filename.
+    frames = (frame, frame.f_back) if event == "call" else (frame,)
+    for caller in frames:
+        if caller is None:
+            continue
+        for name, expected in context.nested_local_imports.get(id(caller.f_code), ()):
+            if name in caller.f_locals and caller.f_locals[name] is not expected:
+                context.invalid = True
+                error = ValueError("Actual source-local nested factory was retargeted")
+                if getattr(context, "nested_error", None) is None:
+                    context.nested_error = error
+                raise context.nested_error from context.nested_error.__cause__
+    if (
+        event == "call"
+        and frame.f_back is not None
+        and id(frame.f_back.f_code) in context.nested_codes
+    ):
+        _nested_entry(context, frame.f_back)
+        expected = context.nested_call_sites.get(id(frame.f_back.f_code), {}).get(
+            frame.f_back.f_lasti
+        )
+        if expected is not None:
+            if len(context.nested_attempts) >= MAX_WORK:
+                raise ValueError("Bounded actual nested entry attempts exhausted")
+            context.nested_attempts.append((frame, frame.f_back, expected))
+            if frame.f_code is not expected[0] or frame.f_globals is not expected[1]:
+                context.invalid = True
+                if getattr(context, "nested_error", None) is None:
+                    context.nested_error = ValueError("Actual nested call-site delegate changed")
+                raise context.nested_error from context.nested_error.__cause__
+
+
 def _observe(context, frame, event, arg):
+    _nested_caller(context, frame, event)
     native_frame = frame.f_code.co_filename.startswith(str(source.NATIVE) + os.sep)
     role = context.roles.get(frame.f_code)
     if not native_frame and role is None and frame.f_code not in context.wrapper_codes:
@@ -495,8 +699,11 @@ def _nested_entry(context, frame):
     matches = []
     for function, (_issuance, row) in _IMPORTS.items():
         original = row.original
-        if frame.f_code not in (function.__code__, original.__code__) or frame.f_globals is not (
-            function.__globals__ if frame.f_code is function.__code__ else original.__globals__
+        if (frame.f_code is not function.__code__ and frame.f_code is not original.__code__) or (
+            frame.f_globals
+            is not (
+                function.__globals__ if frame.f_code is function.__code__ else original.__globals__
+            )
         ):
             continue
         owner = row.module if row.target[0][0] is None else row.stack[0]
@@ -818,6 +1025,7 @@ def prepare(request, *, enabled=False):
             context.native = _native()
             context.roles = {fn.__code__: name for name, fn in context.native.methods.items()}
             context.wrapper_codes = frozenset(fn.__code__ for fn in _IMPORTS)
+            _bind_nested(context)
             stores = [
                 i.offset
                 for i in dis.get_instructions(context.native.methods["_init_kludge"])

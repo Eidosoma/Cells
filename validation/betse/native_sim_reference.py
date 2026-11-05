@@ -14,6 +14,7 @@ import resource
 import runpy
 import struct
 import sys
+import sysconfig
 from contextlib import _GeneratorContextManager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -30,8 +31,10 @@ TEST = "tests/unit/test_native_sim_reference.py"
 RUNNER = "validation/betse/native_sim_reference_software.py"
 OWNED = (FILE, LITERAL, TEST, RUNNER)
 KIND = "cells.original_SIM_retained_INIT_reference@2"
+PAIR_KIND = "cells.original_SEED_INIT_SIM_pair_preparation@1"
+COMPARISON_FILE = "validation/betse/native_sim_reference_compare.py"
 RELEASE = "CELLS_ORIGINAL_SIM_REFERENCE_RELEASED"
-REFERENCE_SHA256 = "b5f4cb50be3e107e395a9de82ed6d1edd10c52c156a3f6b73c5e86e0a4b5cdbf"
+REFERENCE_SHA256 = "9903b81de2c79e9e5f3ec1951494f8e66e0a18ea69accdd3be5a5523a16460d8"
 SOURCE_REVIEW_SHA256 = REFERENCE_REVIEW_SHA256 = EXECUTION_REVIEW_SHA256 = None
 MAX_SIM_ITERATIONS = initial.MAX_ITERATIONS
 MAX_STEP_EVENT_BOUNDARIES = 512
@@ -45,6 +48,8 @@ def preparation_starts():
         initial.FILE,
         initial.TEST,
         initial.RUNNER,
+        COMPARISON_FILE,
+        "tests/unit/test_native_sim_reference_compare.py",
         "validation/betse/native_seed_demo.py",
         "validation/betse/native_seed_world_callback_prelude.py",
         "validation/betse/native_seed_demo_launch.py",
@@ -61,6 +66,7 @@ def prepare(output, *, input_pair, input_sha256, mode):
     initial._require(
         initial._sha(raw) == input_sha256, "Exact paired-input manifest required", "inputs"
     )
+    initial._require(mode in (*initial.MODES, "both"), "Explicit reference preparation mode")
     output = initial._path(output)
     initial._require(
         not output.exists() and output.is_relative_to(Path("/mnt/workspaces/Cells")),
@@ -107,10 +113,18 @@ def prepare(output, *, input_pair, input_sha256, mode):
         min_available_bytes=8 * 2**30,
     )
     snapshot.assert_checkout_unchanged(frozen)
-    return output / "prepared.json"
+    return output / ("pair-prepared.json" if mode == "both" else "prepared.json")
 
 
 def prepare_frozen(output, *, input_pair, input_sha256, mode):
+    if mode == "both":
+        return prepare_pair_frozen(output, input_pair=input_pair, input_sha256=input_sha256)
+    plan = _single_frozen_plan(output, input_pair=input_pair, input_sha256=input_sha256, mode=mode)
+    snapshot.write_json(output / "prepared.json", plan)
+    return plan
+
+
+def _single_frozen_plan(output, *, input_pair, input_sha256, mode):
     manifest = snapshot.verify(ROOT)
     initial._require(
         all(
@@ -138,8 +152,308 @@ def prepare_frozen(output, *, input_pair, input_sha256, mode):
         INIT_prepared=dict(path=str(parent), sha256=snapshot.digest(parent)),
         source_native_reference_execution_released=False,
     )
-    snapshot.write_json(output / "prepared.json", plan)
     return plan
+
+
+def _full_calendars(selected):
+    """Pinned raw scalars and native int(total/step), not an observed calendar."""
+    initial._require(
+        selected["profile"] == initial.profiles.HEADLESS_CORE,
+        "The full paired reference requires the explicit headless_core input profile",
+        "inputs",
+    )
+    raw, _ = initial._read(Path(selected["root"]) / initial.profiles.MAIN, initial.MAX_FILE_BYTES)
+    initial._require(
+        initial._sha(raw) == initial.profiles.HEADLESS_CORE_SHA256,
+        "Exact full-calendar headless_core main file required",
+        "inputs",
+    )
+    result = {}
+    for phase, expected in (("init", 500), ("sim", 350)):
+        marker = (phase + " time settings:").encode()
+        lines = raw.splitlines()
+        positions = [i for i, line in enumerate(lines) if line == marker]
+        initial._require(len(positions) == 1, "One native time-settings section required")
+        scalars = {}
+        for line in lines[positions[0] + 1 :]:
+            if line and not line.startswith((b" ", b"#")):
+                break
+            if line.startswith(b"  ") and b":" in line:
+                key, value = line.split(b":", 1)
+                key = key.strip().decode("ascii")
+                if key in ("time step", "total time", "sampling rate"):
+                    initial._require(key not in scalars, "Unique raw calendar scalar")
+                    scalars[key] = float(value.split(b"#", 1)[0].strip().decode("ascii"))
+        initial._require(
+            set(scalars) == {"time step", "total time", "sampling rate"}
+            and int(scalars["total time"] / scalars["time step"]) == expected
+            and expected <= MAX_SIM_ITERATIONS,
+            "Original complete calendar differs from the declared 500/350 target",
+            "calendar",
+        )
+        result[phase] = dict(
+            scalars=scalars,
+            expected_iterations=expected,
+            native_count_still_requires_actual_source_completion=True,
+        )
+    return result
+
+
+def _reference_runtime():
+    # This reviewed metadata API reads distribution records, never imports a
+    # numerical library, evaluates Parameters or manufactures an owner.
+    runtime = initial.inputs._parameter_metadata().runtime_plan()
+    overlay = Path("/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01")
+    pillow = {
+        "PIL/__init__.py": "7361b6ad3878589affe5956e4a4da24d71398b0891fd3a8c15e9362217b4ca01",
+        "PIL/Image.py": "04af3f2db7ffdd61e829fa7aa8f5481d394a0a4129a8fd8aa5b13908928fcd6d",
+    }
+    rows = []
+    for name, expected in pillow.items():
+        path = overlay / name
+        raw, _ = initial._read(path, initial.MAX_FILE_BYTES)
+        initial._require(initial._sha(raw) == expected, "Reviewed Pillow overlay changed")
+        rows.append(dict(path=str(path), sha256=expected))
+    roots = [
+        str(Path(sysconfig.get_path("stdlib")).resolve()),
+        runtime["primary_site"],
+        runtime["appended_site"],
+        str(overlay),
+    ]
+    for name in roots:
+        initial._require(initial._path(name).is_dir(), "Declared reference runtime root missing")
+    startup = Path("/etc/python3.13/sitecustomize.py")
+    startup_files = []
+    if startup.is_file():
+        raw, _ = initial._read(startup, initial.MAX_FILE_BYTES)
+        startup_files.append(dict(path=str(startup), sha256=initial._sha(raw)))
+    return dict(
+        composition=runtime,
+        pillow=dict(root=str(overlay), files=rows),
+        roots=list(dict.fromkeys(roots)),
+        loaded_origins_must_be_hashed_at_execution=True,
+        runtime_roots_derived_from_observed_files=False,
+        actual_library_import=False,
+        startup_files=startup_files,
+    )
+
+
+def _check_execution_closure(plan, authority, output, *, complete=False):
+    closure = plan.get("execution_closure")
+    if closure is None:
+        return  # Historical single-mode preparations keep their declared scope.
+    initial._require(
+        type(closure) is dict
+        and set(closure)
+        == {"kind", "runtime", "worker_output", "read_access", "environment", "expected_calendars"}
+        and closure["kind"] == "cells.original_reference_execution_closure@1"
+        and closure["worker_output"] == str(output),
+        "Exact prepared reference execution closure required",
+        "execution_closure",
+    )
+    runtime = closure["runtime"]
+    initial._require(runtime == _reference_runtime(), "Reference runtime declaration changed")
+    composition = runtime["composition"]
+    initial._require(
+        str(Path(sys.prefix)) == composition["prefix"]
+        and snapshot.digest(Path(sys.executable).resolve()) == composition["executable"]["sha256"]
+        and all(os.environ.get(name) == value for name, value in closure["environment"].items()),
+        "Actual reference interpreter/import/thread environment differs",
+        "runtime",
+    )
+    parent_release = initial._json_record(
+        authority["init_release"]["path"], authority["init_release"]["sha256"]
+    )
+    initial._require(
+        parent_release["read_access"] == closure["read_access"]
+        and parent_release["pythonpath"] == closure["environment"]["PYTHONPATH"],
+        "Released reference read domains differ from the prepared closure",
+        "filesystem",
+    )
+    roots = [initial._path(name) for name in closure["read_access"]["roots"]]
+    files = {str(initial._path(name)) for name in closure["read_access"]["files"]}
+    initial._require(all(path != Path("/") for path in roots), "Unbounded reference read domain")
+    for name, module in tuple(sys.modules.items()):
+        path = vars(module).get("__file__") if type(module) is ModuleType else None
+        if path is not None:
+            path = Path(path).resolve()
+            initial._require(
+                str(path) in files
+                or any(path == root or path.is_relative_to(root) for root in roots),
+                "Loaded reference source escaped declared read domains: " + name,
+                "runtime",
+            )
+    for name, provider in composition["providers"].items():
+        module = sys.modules.get(name)
+        if module is not None:
+            initial._require(
+                type(module) is ModuleType
+                and vars(module).get("__file__") == provider["files"][0]["path"],
+                "Reference runtime module has a foreign origin: " + name,
+                "runtime",
+            )
+        elif complete and name in ("numpy", "scipy", "matplotlib"):
+            raise initial.ReferenceRejected(
+                "Missing reached reference runtime: " + name, stage="runtime"
+            )
+
+
+def prepare_pair_frozen(output, *, input_pair, input_sha256):
+    """One immutable producer image; two fresh future workers, never two owners."""
+    output = initial._path(output)
+    context = dict(stage="snapshot", modes={}, primary=None, secondary=[])
+    try:
+        manifest = snapshot.verify(ROOT)
+        context["stage"] = "input_declarations"
+        selected = {
+            mode: initial._input_manifest(input_pair, input_sha256, mode) for mode in initial.MODES
+        }
+        calendars = {mode: _full_calendars(value) for mode, value in selected.items()}
+        initial._require(calendars["original"] == calendars["disabled"], "Exact paired calendars")
+        context["stage"] = "runtime_declaration"
+        runtime = _reference_runtime()
+        context["stage"] = "producer_declarations"
+        writers = initial.writer_declarations()
+        for mode in initial.MODES:
+            context["stage"] = "prepare_" + mode
+            folder = output / "modes" / mode
+            plan = _single_frozen_plan(
+                folder, input_pair=input_pair, input_sha256=input_sha256, mode=mode
+            )
+            worker = output / "execution" / mode / "worker"
+            read_roots = list(
+                dict.fromkeys(
+                    [
+                        str(ROOT),
+                        str(initial.NATIVE_ROOT),
+                        selected[mode]["root"],
+                        str(worker),
+                        str((Path.home() / ".betse").resolve()),
+                        *runtime["roots"],
+                    ]
+                )
+            )
+            pythonpath = os.pathsep.join(
+                (
+                    str(ROOT),
+                    str(ROOT / "src"),
+                    runtime["pillow"]["root"],
+                    runtime["composition"]["primary_site"],
+                    runtime["composition"]["appended_site"],
+                )
+            )
+            read_access = dict(
+                roots=read_roots,
+                files=[
+                    runtime["composition"]["executable"]["path"],
+                    runtime["composition"]["venv_configuration"]["path"],
+                    *[row["path"] for row in runtime["startup_files"]],
+                ],
+            )
+            environment = dict(
+                PYTHONPATH=pythonpath,
+                PYTHONDONTWRITEBYTECODE="1",
+                MPLCONFIGDIR=str(worker / "mplconfig"),
+                OPENBLAS_NUM_THREADS="1",
+                OMP_NUM_THREADS="1",
+                MKL_NUM_THREADS="1",
+                NUMEXPR_NUM_THREADS="1",
+                CUDA_VISIBLE_DEVICES="",
+            )
+            plan["execution_closure"] = dict(
+                kind="cells.original_reference_execution_closure@1",
+                runtime=runtime,
+                worker_output=str(worker),
+                read_access=read_access,
+                environment=environment,
+                expected_calendars=calendars[mode],
+            )
+            snapshot.write_json(folder / "prepared.json", plan)
+            context["modes"][mode] = dict(
+                prepared=dict(
+                    path=str(folder / "prepared.json"),
+                    sha256=snapshot.digest(folder / "prepared.json"),
+                ),
+                parent=plan["INIT_prepared"],
+                worker_output=str(worker),
+                read_access=read_access,
+                environment=environment,
+                execution_release=None,
+                INIT_release=None,
+                controller_recipe=dict(
+                    module="validation.betse.native_sim_reference",
+                    python=runtime["composition"]["entry"],
+                    cpu=initial.NATIVE_POLICY["cpu"],
+                    controller_output=str(worker.parent),
+                    prepared=str(folder / "prepared.json"),
+                    SIM_release=None,
+                    SIM_release_sha256=None,
+                    explicit_enabled_environment_required=[RELEASE, initial.RELEASE],
+                    detached_required=True,
+                    may_launch=False,
+                ),
+            )
+        context["stage"] = "final_source_and_input_rebinding"
+        snapshot.verify(ROOT, manifest_sha256=snapshot.digest(ROOT / "SNAPSHOT.json"))
+        initial._require(
+            all(
+                initial._input_manifest(input_pair, input_sha256, mode) == selected[mode]
+                for mode in initial.MODES
+            )
+            and initial.writer_declarations() == writers,
+            "Preparation producer/input declarations changed",
+        )
+        value = dict(
+            kind=PAIR_KIND,
+            held=True,
+            source=dict(root=str(ROOT), snapshot_sha256=snapshot.digest(ROOT / "SNAPSHOT.json")),
+            git_revision=manifest["git_revision"],
+            source_changes_recorded_by_snapshot=True,
+            input_pair=dict(path=str(Path(input_pair) / "inputs.json"), sha256=input_sha256),
+            configuration_profile=initial.profiles.HEADLESS_CORE,
+            calendars=calendars["original"],
+            modes=context["modes"],
+            runtime=runtime,
+            writer_declarations=writers,
+            reference_producers={name: manifest["files"][name]["sha256"] for name in OWNED},
+            comparator=dict(
+                path=str(ROOT / COMPARISON_FILE), sha256=snapshot.digest(ROOT / COMPARISON_FILE)
+            ),
+            original_package=dict(root=str(initial.NATIVE_ROOT), critical=dict(initial.CRITICAL)),
+            policy=dict(initial.NATIVE_POLICY),
+            constructor_order=(
+                "original Parameters/runner -> SEED -> INIT -> "
+                "fresh original current Parameters/runner -> SIM"
+            ),
+            shared_start=dict(authority=False, provider=None, RNG_reset_or_state_injection=False),
+            review_contracts=review_contracts(),
+            remaining_prerequisites=[
+                "Root final shared-writer source adoption; "
+                "fresh preparation if its source changes.",
+                "Root source/bootstrap/writer/execution and per-mode release adoption.",
+                "Common-start RNG authority is a separate Key producer/review; unavailable here.",
+            ],
+            actual_source_native_reference_execution_released=False,
+            ordinary_checkpoint_physical_or_numerical_credit=0,
+        )
+        snapshot.write_json(output / "pair-prepared.json", value)
+        return value
+    except BaseException as error:
+        context["primary"] = error
+        try:
+            snapshot.write_json(
+                output / "preparation-failure.json",
+                dict(
+                    stage=context["stage"],
+                    primary=initial._error(error),
+                    completed_mode_preparations=context["modes"],
+                    actual_source_native_reference_execution_released=False,
+                ),
+            )
+        except BaseException as secondary:
+            context["secondary"].append(secondary)
+        _RAW_FAILURES.append(context)
+        raise
 
 
 @dataclass
@@ -1126,6 +1440,15 @@ def _finish_sim(attempt, plan, output):
         ("process_log_lease", parent.raw["shared_writer_session"].check),
         ("filesystem_final_check", parent.raw["filesystem_audit"].check),
     )
+    if plan.get("execution_closure") is not None:
+        checks += (
+            (
+                "prepared_execution_closure",
+                lambda: _check_execution_closure(
+                    plan, attempt.raw["execution_authority"], output, complete=state.source_returned
+                ),
+            ),
+        )
     for label, check in checks:
         try:
             _metadata(attempt, label, check)
@@ -1327,6 +1650,7 @@ def _release(plan, prepared_pin, release, release_pin, output, enabled):
             "Reviewed SIM contract differs: " + name,
             "release",
         )
+    _check_execution_closure(plan, value, output)
     return value
 
 
@@ -1369,30 +1693,54 @@ def supervise(prepared, prepared_sha256, release, release_sha256, output, *, ena
     output.mkdir(parents=True)
     directory = output / "process"
     directory.mkdir()
-    result = guard.run_bounded(
-        [
-            sys.executable,
-            "-B",
-            "-m",
-            "validation.betse.native_sim_reference",
-            "--prepared",
-            str(prepared),
-            "--prepared-sha256",
-            prepared_sha256,
-            "--release",
-            str(release),
-            "--release-sha256",
-            release_sha256,
-            "--output",
-            str(output / "worker"),
-        ],
-        directory=directory,
-        cwd=ROOT,
-        env=dict(os.environ),
-        timeout=initial.NATIVE_POLICY["wall_seconds"],
-        max_rss_bytes=initial.NATIVE_POLICY["max_rss_bytes"],
-        min_available_bytes=initial.NATIVE_POLICY["reserve_bytes"],
-    )
+    try:
+        result = guard.run_bounded(
+            [
+                sys.executable,
+                "-B",
+                "-m",
+                "validation.betse.native_sim_reference",
+                "--prepared",
+                str(prepared),
+                "--prepared-sha256",
+                prepared_sha256,
+                "--release",
+                str(release),
+                "--release-sha256",
+                release_sha256,
+                "--output",
+                str(output / "worker"),
+            ],
+            directory=directory,
+            cwd=ROOT,
+            env=dict(os.environ),
+            timeout=initial.NATIVE_POLICY["wall_seconds"],
+            max_rss_bytes=initial.NATIVE_POLICY["max_rss_bytes"],
+            min_available_bytes=initial.NATIVE_POLICY["reserve_bytes"],
+        )
+    except BaseException as primary:
+        try:
+            failure = directory / "failure.json"
+            snapshot.write_json(
+                output / "controller-failure.json",
+                dict(
+                    kind=KIND,
+                    status="failed",
+                    stage="guarded_reference_worker",
+                    primary=initial._error(primary),
+                    process_failure=(
+                        dict(path=str(failure), sha256=snapshot.digest(failure))
+                        if failure.is_file()
+                        else None
+                    ),
+                    prepared_sha256=prepared_sha256,
+                    automatic_retry=False,
+                    scientific_physical_checkpoint_credit=0,
+                ),
+            )
+        except BaseException as secondary:
+            _RAW_FAILURES.append(("controller_failure_capture", primary, secondary, output))
+        raise
     snapshot.write_json(
         output / "result.json",
         dict(
@@ -1434,6 +1782,7 @@ def evaluate(
         )
         _ATTEMPT = attempt
         authority = _release(plan, expected_sha256, release, release_sha256, output, enabled)
+        attempt.raw["execution_authority"] = authority
         manifest = snapshot.verify(
             ROOT, manifest_sha256=plan["execution_source"]["snapshot_sha256"]
         )
@@ -1608,11 +1957,12 @@ def main():
     parser.add_argument("--prepared-sha256")
     parser.add_argument("--prepare", type=Path)
     parser.add_argument("--prepare-frozen", type=Path)
+    parser.add_argument("--controller", type=Path)
     parser.add_argument(
         "--input-pair", type=Path, help="Pinned input-pair directory containing inputs.json"
     )
     parser.add_argument("--input-sha256")
-    parser.add_argument("--mode", choices=initial.MODES, default="original")
+    parser.add_argument("--mode", choices=(*initial.MODES, "both"), default="original")
     parser.add_argument("--release", type=Path)
     parser.add_argument("--release-sha256")
     parser.add_argument("--output", type=Path)
@@ -1627,6 +1977,19 @@ def main():
             input_pair=args.input_pair,
             input_sha256=args.input_sha256,
             mode=args.mode,
+        )
+        return 0
+    if args.controller:
+        if args.prepared is None or args.prepared_sha256 is None:
+            parser.error("Exact held preparation and released controller inputs required")
+        resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
+        supervise(
+            args.prepared,
+            args.prepared_sha256,
+            args.release,
+            args.release_sha256,
+            args.controller,
+            enabled=os.environ.get(RELEASE) == "1",
         )
         return 0
     if args.prepared is None or args.prepared_sha256 is None or args.output is None:

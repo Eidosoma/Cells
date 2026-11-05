@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from tests.unit import (
         test_native_init_terminal_reference_compare,  # noqa:F401
         test_native_seed_demo_report,  # noqa:F401
+        test_native_seed_rng_report,  # noqa:F401
     )
 
 
@@ -727,6 +728,7 @@ def _demo_rng_files(tmp_path, *, mode="original"):
     )
     functions = _fixture_functions(path, names, ns)
     value = functions["fixture"](tmp_path, mode=mode, version=12)
+    value._fixture_functions = functions
     return dict(
         plan=functions["pin"](value.plan),
         outcome=functions["pin"](value.worker / "demo/outcome.json"),
@@ -1925,6 +1927,111 @@ def test_sim_compare_terminal_repair_canonical_runtime_origins(tmp_path, monkeyp
     assert len(side["rows"]) == 2 and side["failure"]["primary"] is None
 
 
+@pytest.mark.parametrize(
+    "drift",
+    [
+        None,
+        "undeclared",
+        "library_equal_copy",
+        "final_domains",
+        "released_domains",
+        "unbounded",
+        "bytes",
+    ],
+)
+def test_sim_compare_reference_pair_read_domains_are_explicit_and_rebound(tmp_path, drift):
+    site = tmp_path / "site"
+    (site / "numpy").mkdir(parents=True)
+    module = _save(site / "numpy/__init__.py", dict(inert_library_metadata=True))
+    helper = _save(site / "helper.py", dict(inert_helper=True))
+    executable = _save(tmp_path / "executable", dict(inert_executable=True))
+    cfg = _save(tmp_path / "pyvenv.cfg", dict(inert_venv=True))
+    worker = tmp_path / "worker"
+    access = dict(roots=[str(site), str(worker)], files=[executable["path"], cfg["path"]])
+    composition = dict(
+        executable=executable, venv_configuration=cfg, providers=dict(numpy=dict(files=[module]))
+    )
+    closure = dict(
+        kind="cells.original_reference_execution_closure@1",
+        worker_output=str(worker),
+        read_access=access,
+        environment=dict(PYTHONPATH="explicit-inert-source-only"),
+        runtime=dict(composition=composition, pillow=dict(files=[]), startup_files=[]),
+        expected_calendars=dict(
+            init=dict(expected_iterations=500), sim=dict(expected_iterations=350)
+        ),
+    )
+    release = dict(read_access=access, pythonpath=closure["environment"]["PYTHONPATH"])
+    filesystem = dict(read_roots=access["roots"], read_files=access["files"])
+    runtime = dict(executable=executable, loaded_files=dict(numpy=module, helper=helper))
+    if drift in ("undeclared", "library_equal_copy"):
+        copied = tmp_path / "foreign.py"
+        copied.write_bytes(Path(module["path"]).read_bytes())
+        foreign = dict(path=str(copied), sha256=compare.snapshot.digest(copied))
+        assert foreign["sha256"] == module["sha256"]
+        runtime["loaded_files"]["numpy" if drift == "library_equal_copy" else "foreign"] = foreign
+    elif drift == "final_domains":
+        filesystem["read_roots"] = []
+    elif drift == "released_domains":
+        release["read_access"] = dict(roots=[], files=[])
+    elif drift == "unbounded":
+        access["roots"].append("/")
+    elif drift == "bytes":
+        Path(helper["path"]).write_bytes(b"changed saved library bytes")
+    reader = compare.report.Reader()
+    if drift is None:
+        assert (
+            compare._reference_read_domains(
+                reader, dict(execution_closure=closure), release, filesystem, runtime, worker
+            )
+            is True
+        )
+        assert len(reader.pins) == 4
+    else:
+        with pytest.raises(ValueError):
+            compare._reference_read_domains(
+                reader, dict(execution_closure=closure), release, filesystem, runtime, worker
+            )
+    _save(
+        tmp_path / "read-domain-result.json",
+        dict(
+            accepted=drift is None,
+            drift=drift,
+            bound_files=reader.pins,
+            source_or_model_execution=False,
+            credit=0,
+        ),
+    )
+
+
+def test_sim_compare_reference_pair_historical_record_gains_no_domain_proof():
+    assert compare._reference_read_domains(None, {}, None, None, None, None) is False
+
+
+@pytest.mark.parametrize("drift", [None, "short_init", "short_sim", "profile", "declared_count"])
+def test_sim_compare_reference_pair_counts_keep_both_full_histories(drift):
+    counts = dict(init=dict(expected_iterations=500), sim=dict(expected_iterations=350))
+    plan = dict(execution_closure=dict(expected_calendars=counts))
+    parent = dict(source_plan=dict(input_profile="headless_core"))
+    # Inert positions only; never phase objects, decoded caches or native calls.
+    worker = dict(INIT_result=dict(iterations=[None] * 500))
+    rows = [None] * 350
+    if drift == "short_init":
+        worker["INIT_result"]["iterations"].pop()
+    elif drift == "short_sim":
+        rows.pop()
+    elif drift == "profile":
+        parent["source_plan"]["input_profile"] = "headless"
+    elif drift == "declared_count":
+        counts["init"]["expected_iterations"] = 499
+    if drift is None:
+        assert compare._paired_calendar_counts(plan, parent, worker, rows) is True
+    else:
+        with pytest.raises(ValueError):
+            compare._paired_calendar_counts(plan, parent, worker, rows)
+    assert compare._paired_calendar_counts({}, {}, {}, []) is False
+
+
 @pytest.mark.parametrize("changed", [False, True])
 def test_sim_compare_terminal_authentication_current_input_defaults_are_exact(monkeypatch, changed):
     if changed:
@@ -1936,6 +2043,132 @@ def test_sim_compare_terminal_authentication_current_input_defaults_are_exact(mo
             compare._source_reader(compare.input_files, compare.INPUT_READER_SHA256)
             is compare.input_files
         )
+
+
+@pytest.mark.parametrize(
+    "drift", [None, "file_and_builtin", "absent_builtin", "executable", "version"]
+)
+def test_sim_compare_builtin_runtime_matches_saved_inventory_without_invented_file(
+    tmp_path, monkeypatch, drift
+):
+    candidate = "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315"
+    monkeypatch.setattr(compare, "RNG_RUNTIME_SHA256", candidate)
+    executable = _save(tmp_path / "python.fixture", dict(inert=True))
+    files = {
+        name: _save(tmp_path / (name + ".fixture"), dict(module=name))
+        for name in compare.RNG_MODULES
+        if name != "_random"
+    }
+    value = dict(
+        kind="cells.rng_runtime_provenance@2",
+        python="3.13.0",
+        numpy_version="metadata_only",
+        executable=executable,
+        files=files,
+        interpreter=dict(
+            implementation="cpython",
+            cache_tag="cpython-313",
+            hexversion=0x030D00F0,
+            builtin_module_names=["_random"],
+        ),
+        builtins={
+            "_random": dict(
+                kind="cpython_builtin_module",
+                name="_random",
+                origin="built-in",
+                loader="_frozen_importlib.BuiltinImporter",
+                has_location=False,
+                cached=None,
+                submodule_search_locations=None,
+                export="_random.Random",
+                methods=["seed", "getstate", "setstate", "random", "getrandbits"],
+                executable_sha256=executable["sha256"],
+            )
+        },
+    )
+    actual = dict(
+        python=value["python"],
+        executable=executable,
+        loaded_files=dict(files),
+        modules_without_files=["_random"],
+    )
+    if drift == "file_and_builtin":
+        value["files"]["_random"] = executable
+    elif drift == "absent_builtin":
+        actual["modules_without_files"] = []
+    elif drift == "executable":
+        value["builtins"]["_random"]["executable_sha256"] = "0" * 64
+    elif drift == "version":
+        actual["python"] = "3.12.0"
+    reader = compare.report.Reader()
+    if drift is None:
+        compare._runtime_witness(reader, value, actual)
+        assert len(reader.pins) == 8 and "_random" not in value["files"]
+    else:
+        with pytest.raises(ValueError):
+            compare._runtime_witness(reader, value, actual)
+
+
+@pytest.mark.parametrize("drift", [None, "code", "default", "legacy_namespace"])
+def test_sim_compare_versioned_reader_public_contract_is_exact_metadata(monkeypatch, drift):
+    candidate = "17c29168e17e25e1faf437338af22e7a1a10b6d2be73690dcd5094026389d371"
+    api = compare.rng_report
+    if drift == "code":
+        monkeypatch.setattr(api.runtime_evidence, "__code__", (lambda *args: None).__code__)
+    elif drift == "default":
+        monkeypatch.setattr(
+            api.initial_rng_declaration,
+            "__kwdefaults__",
+            dict(api.initial_rng_declaration.__kwdefaults__, demo_kind="foreign"),
+        )
+    elif drift == "legacy_namespace":
+        monkeypatch.setattr(api, "legacy", object())
+    if drift is None:
+        assert compare._source_reader(api, candidate) is api
+    else:
+        with pytest.raises(ValueError):
+            compare._source_reader(api, candidate)
+
+
+@pytest.mark.parametrize("version", [1, 2])
+@pytest.mark.parametrize("mode", ["original", "disabled"])
+def test_sim_compare_versioned_reader_saved_starting_prefix_uses_public_API(
+    tmp_path, monkeypatch, version, mode
+):
+    monkeypatch.setattr(
+        compare,
+        "RNG_REPORT_SHA256",
+        "17c29168e17e25e1faf437338af22e7a1a10b6d2be73690dcd5094026389d371",
+    )
+    monkeypatch.setattr(
+        compare,
+        "RNG_RUNTIME_SHA256",
+        "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315",
+    )
+    request, value = _demo_rng_files(tmp_path, mode=mode)
+    if version == 2:
+        ns = dict(
+            Path=Path,
+            sys=sys,
+            runtime=compare.rng_runtime,
+            report=compare.rng_report,
+            **{name: value._fixture_functions[name] for name in ("write", "read", "pin")},
+        )
+        _fixture_functions(
+            software.ROOT / "tests/unit/test_native_seed_rng_report.py", ("builtin_fixture",), ns
+        )
+        value = ns["builtin_fixture"](value)
+        request = dict(
+            plan=value._fixture_functions["pin"](value.plan),
+            outcome=value._fixture_functions["pin"](value.worker / "demo/outcome.json"),
+        )
+    side = compare.demo_starting_rng(request)
+    assert side["authenticated"] and side["available"], side["error"]
+    assert side["witness"]["kind"] == f"cells.common_initial_rng_observation@{version}"
+    assert (
+        side["common_starting_authority_established"] is False
+        and side["numerical_parity_available"] is False
+    )
 
 
 @pytest.mark.parametrize("field", ["authenticated", "endpoint_complete", "error"])

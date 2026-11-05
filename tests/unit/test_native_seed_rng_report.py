@@ -50,6 +50,12 @@ def builtin_fixture(value, *, file_backed=False):
     parameters = read(Path(plan["parameter_inputs"]["path"]))
     parameters["source_snapshot"] = selected
     plan["parameter_inputs"] = write(Path(plan["parameter_inputs"]["path"]), parameters)
+    for name in ("parameters", "current_parameters"):
+        acquisition_path = value.worker / "demo" / name / "acquisition.json"
+        if acquisition_path.exists():
+            acquisition = read(acquisition_path)
+            acquisition["packet"] = plan["parameter_inputs"]
+            write(acquisition_path, acquisition)
     declaration = read(Path(plan["demo_plan"]["path"]))
     declaration.update(
         snapshot_sha256=selected["sha256"], parameter_sha256=plan["parameter_inputs"]["sha256"]
@@ -145,6 +151,31 @@ def test_rng_report_legacy_reader_output_is_preserved(tmp_path):
     actual = report.inspect_attempt(value.plan, plan_sha256=value.digest, output=value.output)
     expected = old.inspect(value)
     assert actual == expected
+
+
+@pytest.mark.parametrize("version", (1, 2))
+@pytest.mark.parametrize("mode", ("original", "disabled"))
+def test_rng_report_public_starting_prefix_api_uses_actual_saved_protocol(tmp_path, version, mode):
+    value = old.fixture(tmp_path, version=12, mode=mode)
+    if version == 2:
+        value = builtin_fixture(value)
+    reader = old.report.Reader()
+    plan, files, originals = report.read_plan(reader, value.plan, value.digest)
+    outcome = read(value.worker / "demo/outcome.json")
+    rows = [
+        row
+        for row in outcome["captures"]
+        if row["label"] in ("before_seed_random_states", "pre_seed_rng_witness")
+    ]
+    captures = old.report._captures(reader, value.worker / "demo", rows)
+    observed = report.initial_rng_captures(reader, value.worker / "demo", plan, outcome, captures)
+    recorded = report.runtime_evidence(reader, value.worker, plan, files)
+    assert originals and reader.issues == []
+    assert observed["observed"] is True
+    assert observed["common_starting_authority_established"] is False
+    assert plan["_initial_rng_kind"] == (report.LEGACY_KIND, report.WITNESS_KIND)[version - 1]
+    if version == 2:
+        assert recorded["snapshot_producers"][runtime.FILE] == plan["producers"][runtime.FILE]
 
 
 @pytest.mark.parametrize(

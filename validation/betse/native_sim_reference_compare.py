@@ -16,18 +16,22 @@ from types import CodeType, FunctionType
 
 from validation import source_snapshot as snapshot
 from validation.betse import native_init_terminal_reference_compare as codec
+from validation.betse import native_rng_runtime as rng_runtime
 from validation.betse import native_seed_demo_inputs as input_files
 from validation.betse import native_seed_demo_report as report
 from validation.betse import native_seed_rng_compare as rng_adapter
+from validation.betse import native_seed_rng_report as rng_report
 
 KIND = "cells.original_SIM_saved_history_comparison@1"
 REF_KIND = "cells.original_SIM_retained_INIT_reference@2"
 OBSERVATION_KIND = "cells.original_SIM_iteration_observation@2"
 RNG_ADAPTER_SHA256 = "9e8e9539198141e7f76aefc5dba24a52eb9faa3e03f5ae202320bdfafa811a37"
 DEMO_REPORT_SHA256 = "c9f3d6002e1faf680209c66123624ec6793c99781eb91179ee98974f1f627ad7"
-REFERENCE_RNG_AST_SHA256 = "8477974a4bc1f2a50ab2e369599d4fd3b6d7b3f2f8b9e731ee8f47ecf455bf5e"
+REFERENCE_RNG_AST_SHA256 = "8b1c2de534b66f8c8dc718ecf6abf31e468c38423c28c271e97cf77c8917caa8"
 CODEC_SHA256 = "3968463c4664f3362e8d1cc3c132d430383aa6716dfe48506b62dbb1f48cbbca"
 INPUT_READER_SHA256 = "e078bbe211e25bbeeea5b353323bb82bc604a2372e1051012d9a5aa0fbc29396"
+RNG_RUNTIME_SHA256 = "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315"
+RNG_REPORT_SHA256 = "17c29168e17e25e1faf437338af22e7a1a10b6d2be73690dcd5094026389d371"
 STARTING_REPORT_KIND = "cells.authenticated_starting_rng_saved_report@1"
 RNG_MODULES = (
     "numpy",
@@ -51,7 +55,7 @@ LINEAGE = (
 )
 REF_PRODUCERS = {
     "validation/betse/native_sim_reference.py": (
-        "2ae0e2dcfc5701a3dc2cbc57baa54ba31405ff4facc33825ab018142d2d13f94"
+        "6066ee7f1425e453c1c4aef67836a8404a45dfb01a019a2a0644f29f220e0d37"
     ),
     "validation/betse/native_sim_reference_source.py": (
         "fd8921650d53a292ca165415c33582f813013ca46e3c31271a4270462d00bad0"
@@ -60,7 +64,7 @@ REF_PRODUCERS = {
         "f0e99aaf67e2cb369bf3b590e348829b6c205d24ef8ace8145c91166cbb54f20"
     ),
     "tests/unit/test_native_sim_reference.py": (
-        "ed2617eb075410804408fd7fdfcaee0118e191270d5787490b8bff58e2cfaf90"
+        "a1c175dacf1ab9de98b2e48f10fc425dc8a7635707d328a28e98de931fc6a91a"
     ),
 }
 ISSUED_SIM_PRODUCER_KIND = None
@@ -99,6 +103,7 @@ def source_plan():
             original_reader_sha256=CODEC_SHA256,
             original_producer_normalized_ast_sha256=REFERENCE_RNG_AST_SHA256,
             input_reader_sha256=INPUT_READER_SHA256,
+            runtime_provenance_helper=dict(file=rng_runtime.FILE, sha256=RNG_RUNTIME_SHA256),
             complete_input_inventory=True,
             executable_and_rng_runtime_origins=list(RNG_MODULES),
             actual_distinct_constructor_orders_retained=True,
@@ -380,6 +385,18 @@ def _data(node):
 def _reader_function(actual, code, node, namespace):
     def value(expression):
         if (
+            isinstance(expression, ast.Subscript)
+            and isinstance(expression.value, ast.Attribute)
+            and isinstance(expression.value.value, ast.Name)
+            and expression.value.value.id == "legacy"
+            and expression.value.attr in ("DEMO_KINDS", "LAUNCH_KINDS")
+            and isinstance(expression.slice, ast.Constant)
+            and type(expression.slice.value) is int
+            and expression.slice.value == 6
+        ):
+            require(namespace.get("legacy") is report, "Immutable legacy default namespace changed")
+            return getattr(_report_api(), expression.value.attr)[6]
+        if (
             isinstance(expression, ast.Attribute)
             and isinstance(expression.value, ast.Name)
             and expression.value.id == "profiles"
@@ -460,17 +477,26 @@ def _source_reader(module, expected):
         hashlib.sha256(raw).hexdigest() == expected,
         "Explicit saved-source reader revision required",
     )
-    declared = {n.name: n for n in ast.parse(raw).body if isinstance(n, ast.FunctionDef)}
+    tree = ast.parse(raw)
+    declared = {n.name: n for n in tree.body if isinstance(n, ast.FunctionDef)}
     code = compile(raw, str(path), "exec", dont_inherit=True)
     for item in code.co_consts:
         if type(item) is CodeType and item.co_name in declared:
             _reader_function(
                 vars(module).get(item.co_name), item, declared[item.co_name], vars(module)
             )
-    require(
-        module.hashlib is hashlib and module.snapshot is snapshot and module.Path is Path,
-        "Saved-reader hashing/path/snapshot globals changed",
-    )
+    imports = {
+        alias.asname or alias.name.split(".")[0]
+        for node in tree.body
+        if isinstance(node, (ast.Import, ast.ImportFrom))
+        for alias in node.names
+    }
+    for name, actual in (("hashlib", hashlib), ("snapshot", snapshot), ("Path", Path)):
+        if name in imports:
+            require(
+                vars(module).get(name) is actual,
+                "Saved-reader hashing/path/snapshot globals changed",
+            )
     return module
 
 
@@ -510,7 +536,18 @@ def demo_starting_rng(request):
             outcome.get("kind") == "cells.genuine_seed_core_profiles_junctions_demo@8",
             "Starting RNG requires actual demo@8 outcome",
         )
-        plan, files, _ = api._plan(reader, Path(request["plan"]["path"]), request["plan"]["sha256"])
+        versioned = (
+            _source_reader(rng_report, RNG_REPORT_SHA256)
+            if report._hash_identity(RNG_REPORT_SHA256)
+            else None
+        )
+        plan, files, _ = (
+            api._plan(reader, Path(request["plan"]["path"]), request["plan"]["sha256"])
+            if versioned is None
+            else versioned.read_plan(
+                reader, Path(request["plan"]["path"]), request["plan"]["sha256"]
+            )
+        )
         require(
             plan["kind"] == "cells.genuine_seed_demo_detached_launch@12"
             and plan.get("_demo_kind") == outcome["kind"],
@@ -532,7 +569,11 @@ def demo_starting_rng(request):
             if row["label"] in ("before_seed_random_states", "pre_seed_rng_witness")
         ]
         captures = api._captures(reader, demo_root, selected)
-        observed = api._initial_rng_captures(reader, demo_root, plan, outcome, captures)
+        observed = (
+            api._initial_rng_captures(reader, demo_root, plan, outcome, captures)
+            if versioned is None
+            else versioned.initial_rng_captures(reader, demo_root, plan, outcome, captures)
+        )
         require(
             observed is not None and observed.get("observed") is True,
             "Starting observation unavailable; never infer a state from later history",
@@ -565,7 +606,11 @@ def demo_starting_rng(request):
             None,
         )
         require(resources["sampled_limits_met"] is True, "Starting-RNG guarded resource failure")
-        runtime = api._runtime(reader, demo_root.parent, plan, files)
+        runtime = (
+            api._runtime(reader, demo_root.parent, plan, files)
+            if versioned is None
+            else versioned.runtime_evidence(reader, demo_root.parent, plan, files)
+        )
         values = {row["label"]: row["initial_rng_wire"] for row in captures}
         wire = values["before_seed_random_states"]
         witness = values["pre_seed_rng_witness"]
@@ -596,6 +641,14 @@ def _reference_reader():
 
 
 def _runtime_witness(reader, value, actual):
+    if type(value) is dict and value.get("kind") == "cells.rng_runtime_provenance@2":
+        api = _source_reader(rng_runtime, RNG_RUNTIME_SHA256)
+        reader.bind(dict(path=str(Path(api.__file__)), sha256=RNG_RUNTIME_SHA256))
+        api.match_inventory(value, actual)
+        reader.bind(value["executable"])
+        for pin in value["files"].values():
+            reader.bind(pin)
+        return
     require(
         type(value) is dict
         and set(value) == {"python", "executable", "numpy_version", "files"}
@@ -679,7 +732,8 @@ def reference_starting_rng(request):
         )
         witness["state"] = witness_state
         require(
-            witness["kind"] == "cells.common_initial_rng_observation@1"
+            witness["kind"]
+            in ("cells.common_initial_rng_observation@1", "cells.common_initial_rng_observation@2")
             and witness["epoch"] == INITIAL_EPOCH
             and witness["observed_states_equalized"] is False
             and witness["common_starting_authority_established"] is False
@@ -695,14 +749,29 @@ def reference_starting_rng(request):
             and common["profile"] == plan["source_plan"]["input_profile"],
             "Original full input/profile/mode binding changed",
         )
+        expected_source = dict(
+            reference_sha256=plan["execution_source"]["owned_files"][codec.REF_SOURCE],
+            snapshot_sha256=plan["execution_source"]["snapshot_sha256"],
+            native_inventory_sha256=plan["native_inventory_sha256"],
+            original_critical_pins=plan["source_plan"]["critical_source_pins"],
+        )
+        if witness["kind"] == "cells.common_initial_rng_observation@2":
+            require(
+                report._hash_identity(RNG_RUNTIME_SHA256), "Reviewed RNG provenance helper held"
+            )
+            expected_source["files"] = {rng_runtime.FILE: RNG_RUNTIME_SHA256}
+            require(
+                common["runtime"].get("kind") == "cells.rng_runtime_provenance@2",
+                "Original builtin witness/runtime versions differ",
+            )
+            reader.bind(
+                dict(
+                    path=str(Path(plan["execution_source"]["root"]) / rng_runtime.FILE),
+                    sha256=RNG_RUNTIME_SHA256,
+                )
+            )
         require(
-            witness["source"]
-            == dict(
-                reference_sha256=plan["execution_source"]["owned_files"][codec.REF_SOURCE],
-                snapshot_sha256=plan["execution_source"]["snapshot_sha256"],
-                native_inventory_sha256=plan["native_inventory_sha256"],
-                original_critical_pins=plan["source_plan"]["critical_source_pins"],
-            ),
+            witness["source"] == expected_source,
             "Original witness producer/snapshot/source association changed",
         )
         order = witness["order"]
@@ -1006,7 +1075,8 @@ def compare_initial_rng_records(demo_state, reference_state, *, demo_witness, re
     for witness in (demo_witness, reference_witness):
         require(
             type(witness) is dict
-            and witness.get("kind") == "cells.common_initial_rng_observation@1"
+            and witness.get("kind")
+            in ("cells.common_initial_rng_observation@1", "cells.common_initial_rng_observation@2")
             and witness.get("epoch") == INITIAL_EPOCH
             and witness.get("observed_states_equalized") is False
             and witness.get("common_starting_authority_established") is False,
@@ -1255,6 +1325,81 @@ def _canonical_module(root, name, files, *, prefix=""):
     relative = stem + "/__init__.py" if stem + "/__init__.py" in files else stem + ".py"
     require(relative in files, "Recorded module absent from its canonical source roster")
     return root / relative, files[relative]["sha256"]
+
+
+def _reference_read_domains(reader, plan, parent_release, filesystem, runtime, output):
+    """Check an explicit new closure; never infer domains from observed imports."""
+    closure = plan.get("execution_closure")
+    if closure is None:
+        return False  # Historical records do not gain this additional proof.
+    require(
+        type(closure) is dict
+        and set(closure)
+        == {"kind", "runtime", "worker_output", "read_access", "environment", "expected_calendars"}
+        and closure["kind"] == "cells.original_reference_execution_closure@1"
+        and closure["worker_output"] == str(output),
+        "Exact new reference execution closure required",
+    )
+    access = closure["read_access"]
+    require(
+        type(access) is dict
+        and set(access) == {"roots", "files"}
+        and all(type(access[k]) is list and len(access[k]) <= 1024 for k in access)
+        and parent_release["read_access"] == access
+        and parent_release["pythonpath"] == closure["environment"]["PYTHONPATH"]
+        and filesystem["read_roots"] == access["roots"]
+        and filesystem["read_files"] == access["files"],
+        "Actual released/final reference read domains changed",
+    )
+    roots, exact = [Path(p) for p in access["roots"]], set(access["files"])
+    require(
+        all(p.is_absolute() and str(p) == str(p.resolve()) and p != Path("/") for p in roots)
+        and all(Path(p).is_absolute() and str(Path(p).resolve()) == p for p in exact),
+        "Canonical bounded explicit reference read domains required",
+    )
+    declared = closure["runtime"]
+    composition = declared["composition"]
+    require(
+        runtime["executable"] == composition["executable"], "Actual retained reference executable"
+    )
+    pins = [composition["executable"], composition["venv_configuration"]]
+    for name, provider in composition["providers"].items():
+        pins.extend(provider["files"])
+        if name in runtime["loaded_files"]:
+            require(
+                runtime["loaded_files"][name] == provider["files"][0],
+                "Reference numerical library has a foreign origin: " + name,
+            )
+    pins.extend(declared["pillow"]["files"])
+    pins.extend(declared["startup_files"])
+    for pin in pins:
+        reader.bind(pin)
+    for pin in runtime["loaded_files"].values():
+        path = reader.bind(pin)
+        require(
+            str(path) in exact or any(path == root or path.is_relative_to(root) for root in roots),
+            "Actual reference import escaped its released read domains",
+        )
+    return True
+
+
+def _paired_calendar_counts(plan, parent_plan, worker, rows):
+    closure = plan.get("execution_closure")
+    if closure is None:
+        return False
+    counts = closure["expected_calendars"]
+    require(
+        parent_plan["source_plan"]["input_profile"] == "headless_core"
+        and set(counts) == {"init", "sim"}
+        and type(counts["init"]["expected_iterations"]) is int
+        and type(counts["sim"]["expected_iterations"]) is int
+        and counts["init"]["expected_iterations"] == 500
+        and counts["sim"]["expected_iterations"] == 350
+        and len(worker["INIT_result"]["iterations"]) == 500
+        and len(rows) == 350,
+        "Complete paired headless_core 500/350 histories required",
+    )
+    return True
 
 
 def _authenticate_reference_terminal(
@@ -1619,6 +1764,12 @@ def _authenticate_reference_terminal(
         filesystem["write_policy"]["failures"] == []
         and filesystem["write_policy"]["first_error"] is None,
         "Sticky original writer refusal cannot become success",
+    )
+    side["runtime_read_domains_verified"] = _reference_read_domains(
+        reader, plan, parent_release, filesystem, runtime, output
+    )
+    side["full_paired_calendars_verified"] = _paired_calendar_counts(
+        plan, parent_plan, worker, side["rows"]
     )
     require(
         same(reader.read(output / "execution-inputs.json"), copied),

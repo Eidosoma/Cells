@@ -43,7 +43,7 @@ ENDPOINT = "original_run_sim_core_before_init_pickle"
 RNG_WITNESS_KIND = "cells.common_initial_rng_observation@1"
 RNG_BUILTIN_WITNESS_KIND = "cells.common_initial_rng_observation@2"
 RNG_RUNTIME_HELPER = "validation/betse/native_rng_runtime.py"
-RNG_RUNTIME_HELPER_SHA256 = None
+RNG_RUNTIME_HELPER_SHA256 = "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315"
 RNG_EPOCH = "pre_SEED_before_world_construction"
 RNG_RUNTIME_MODULES = (
     "numpy",
@@ -335,7 +335,9 @@ def source_plan(*, input_profile=profiles.HEADLESS):
         common_initial_rng_observation=dict(
             kind=RNG_WITNESS_KIND,
             builtin_kind=RNG_BUILTIN_WITNESS_KIND,
-            runtime_provenance_helper=dict(file=RNG_RUNTIME_HELPER, sha256=RNG_RUNTIME_HELPER_SHA256),
+            runtime_provenance_helper=dict(
+                file=RNG_RUNTIME_HELPER, sha256=RNG_RUNTIME_HELPER_SHA256
+            ),
             epoch=RNG_EPOCH,
             boundary="after_original_Parameters.make_and_SimRunner_before_runner.seed",
             full_numpy_MT_and_python_state=True,
@@ -491,6 +493,14 @@ def _json_record(path, expected, limit=2**20):
 
 
 def _writer_providers():
+    # Preflight the complete pair before importing either shared provider.
+    # Root's final declaration adoption may change their whole-file hashes.
+    binding = writer_declarations()
+    _require(
+        binding["all_declared_sources_match"] is True,
+        "Final shared-writer producer adoption unavailable",
+        "producer",
+    )
     modules = []
     for name, expected in WRITER_PRODUCERS.items():
         path = ROOT / (name.replace(".", "/") + ".py")
@@ -508,6 +518,43 @@ def _writer_providers():
         "shared_log",
     )
     return demo, callback
+
+
+def writer_declarations():
+    """Observe exact files; a current file hash is not an adopted source pin."""
+    rows = {}
+    for name, expected in WRITER_PRODUCERS.items():
+        path = ROOT / (name.replace(".", "/") + ".py")
+        raw, _ = _read(path, MAX_FILE_BYTES)
+        rows[name] = dict(
+            path=str(path),
+            declared_sha256=expected,
+            observed_sha256=_sha(raw),
+            declared_source_matches=_pin(expected) and expected == _sha(raw),
+        )
+    audit = ROOT / (AUDIT_MODULE.replace(".", "/") + ".py")
+    raw, _ = _read(audit, MAX_FILE_BYTES)
+    selected = [
+        node
+        for node in ast.parse(raw).body
+        if isinstance(node, (ast.FunctionDef, ast.ClassDef)) and node.name in AUDIT_COMPONENTS
+    ]
+    components = _sha(
+        ast.dump(ast.Module(body=selected, type_ignores=[]), include_attributes=False).encode()
+    )
+    _require(
+        tuple(node.name for node in selected) == AUDIT_COMPONENTS
+        and components == AUDIT_COMPONENT_SHA256,
+        "Reviewed shared-writer audit components changed",
+        "bootstrap",
+    )
+    return dict(
+        sources=rows,
+        all_declared_sources_match=all(row["declared_source_matches"] for row in rows.values()),
+        observed_hash_is_not_automatic_adoption=True,
+        audit=dict(path=str(audit), sha256=_sha(raw), component_sha256=components),
+        shared_writer_review=WRITER_REVIEW_SHA256,
+    )
 
 
 def _bootstrap_contract(callback):
@@ -758,14 +805,21 @@ def _rng_runtime_api():
     _require(Path(api.__file__).resolve() == path, "Actual RNG provenance helper required", "rng")
     code = compile(raw, str(path), "exec", dont_inherit=True)
     from types import CodeType, FunctionType
+
     codes = {v.co_name: v for v in code.co_consts if type(v) is CodeType}
     for node in ast.parse(raw).body:
         if isinstance(node, ast.FunctionDef):
             fn = vars(api).get(node.name)
-            _require(type(fn) is FunctionType and fn.__code__ == codes[node.name]
-                     and fn.__globals__ is vars(api) and fn.__closure__ is None
-                     and fn.__defaults__ is None and fn.__kwdefaults__ is None,
-                     "RNG provenance helper callable changed", "rng")
+            _require(
+                type(fn) is FunctionType
+                and fn.__code__ == codes[node.name]
+                and fn.__globals__ is vars(api)
+                and fn.__closure__ is None
+                and fn.__defaults__ is None
+                and fn.__kwdefaults__ is None,
+                "RNG provenance helper callable changed",
+                "rng",
+            )
     return api
 
 
@@ -852,22 +906,28 @@ def _initial_rng_witness(plan, state, observed, runtime):
         "Exact fresh original pre-SEED order and same-p runner required",
         "rng",
     )
+    _require(type(runtime) is dict, "Typed RNG runtime provenance required", "rng")
     builtin_runtime = runtime.get("kind") == "cells.rng_runtime_provenance@2"
     if builtin_runtime:
         _rng_runtime_api().validate(runtime)
-    _require(builtin_runtime or (
-        type(runtime) is dict
-        and set(runtime) == {"python", "executable", "numpy_version", "files"}
-        and all(type(runtime[key]) is str and runtime[key] for key in ("python", "numpy_version"))
-        and type(runtime["files"]) is dict
-        and set(runtime["files"]) == set(RNG_RUNTIME_MODULES)
-        and all(
-            type(row) is dict
-            and set(row) == {"path", "sha256"}
-            and type(row["path"]) is str
-            and _pin(row["sha256"])
-            for row in [runtime["executable"], *runtime["files"].values()]
-        )),
+    _require(
+        builtin_runtime
+        or (
+            type(runtime) is dict
+            and set(runtime) == {"python", "executable", "numpy_version", "files"}
+            and all(
+                type(runtime[key]) is str and runtime[key] for key in ("python", "numpy_version")
+            )
+            and type(runtime["files"]) is dict
+            and set(runtime["files"]) == set(RNG_RUNTIME_MODULES)
+            and all(
+                type(row) is dict
+                and set(row) == {"path", "sha256"}
+                and type(row["path"]) is str
+                and _pin(row["sha256"])
+                for row in [runtime["executable"], *runtime["files"].values()]
+            )
+        ),
         "Complete initial RNG runtime binding required",
         "rng",
     )
@@ -897,11 +957,15 @@ def _initial_rng_witness(plan, state, observed, runtime):
         reference_sha256=source["owned_files"][FILE],
         snapshot_sha256=source["snapshot_sha256"],
         native_inventory_sha256=plan["native_inventory_sha256"],
-        original_critical_pins=dict(CRITICAL))
+        original_critical_pins=dict(CRITICAL),
+    )
     if builtin_runtime:
         manifest = snapshot.verify(ROOT, manifest_sha256=source["snapshot_sha256"])
-        _require(manifest["files"][RNG_RUNTIME_HELPER]["sha256"] == RNG_RUNTIME_HELPER_SHA256,
-                 "Actual frozen RNG provenance helper required", "rng")
+        _require(
+            manifest["files"][RNG_RUNTIME_HELPER]["sha256"] == RNG_RUNTIME_HELPER_SHA256,
+            "Actual frozen RNG provenance helper required",
+            "rng",
+        )
         provenance["files"] = {RNG_RUNTIME_HELPER: RNG_RUNTIME_HELPER_SHA256}
     return dict(
         kind=RNG_BUILTIN_WITNESS_KIND if builtin_runtime else RNG_WITNESS_KIND,

@@ -6,7 +6,9 @@ original projection order; live final values never stand in for earlier steps.
 """
 
 import ast
+import builtins
 import contextlib
+import dis
 import hashlib
 import importlib
 import json
@@ -16,7 +18,7 @@ import struct
 import sys
 from pathlib import Path
 from threading import RLock
-from types import CodeType, FunctionType, SimpleNamespace
+from types import CodeType, FunctionType, MappingProxyType, SimpleNamespace
 
 from validation import source_snapshot as snapshot
 from validation.betse import native_seed_demo_evidence as evidence
@@ -29,8 +31,13 @@ KEY_FILE = "src/cells/processes/betse_native_sim_run.py"
 KEY_SHA256 = KEY_REVIEW = None
 HISTORY_MODULE = "cells.processes.betse_native_sim_history_observation"
 HISTORY_FILE = "src/cells/processes/betse_native_sim_history_observation.py"
-HISTORY_SHA256 = "06aec8e44e02cb3a65ebc076bfc98190ce8d1f035d14ccebd89c3198b11c7d24"
+HISTORY_SHA256 = "036a94978d452277ad3722ad19919b005994644b08e175f2b78ba7474fd73d5b"
 HISTORY_REVIEW = None
+SEAL_BUFFER_BYTES = 256 * 2**10
+_JSON_ENCODER_MODULE, _JSON_ENCODER_CLASS = json.encoder, json.JSONEncoder
+_JSON_C_FACTORY = json.encoder.c_make_encoder
+_JSON_ENCODER_FILE = Path(json.encoder.__file__).resolve()
+_JSON_ENCODER_SHA256 = snapshot.digest(_JSON_ENCODER_FILE)
 _CONTEXT_HELPER = next(
     code
     for code in contextlib.contextmanager.__code__.co_consts
@@ -411,19 +418,49 @@ def _method_chain(actual, name):
     return tuple(chain)
 
 
-def _work_frame(trial, frame):
-    matches = [(code, namespace) for actual, code, namespace in trial.work if actual is frame]
+def _frame_evidence(trial):
+    tables = []
+    for rows in (trial.work, trial.raw_returns, trial.exceptions):
+        require(
+            type(rows) is tuple and all(type(row) is tuple for row in rows),
+            "Immutable actual frame-evidence tuples required",
+        )
+        table = {}
+        for i, row in enumerate(rows):
+            require(bool(row), "Complete original frame evidence row required")
+            table.setdefault(id(row[0]), []).append((i, row))
+        tables.append(MappingProxyType({key: tuple(value) for key, value in table.items()}))
+    return trial, trial.work, trial.raw_returns, trial.exceptions, *tables
+
+
+def _evidence_current(trial, index):
+    require(
+        index[0] is trial
+        and index[1] is trial.work
+        and index[2] is trial.raw_returns
+        and index[3] is trial.exceptions,
+        "Original immutable frame-evidence roots changed",
+    )
+
+
+def _work_frame(trial, frame, index=None):
+    if index is None:
+        work, raw, exceptions = (
+            tuple(enumerate(trial.work)),
+            tuple(enumerate(trial.raw_returns)),
+            tuple(enumerate(trial.exceptions)),
+        )
+    else:
+        _evidence_current(trial, index)
+        work, raw, exceptions = (table.get(id(frame), ()) for table in index[4:])
+    matches = [(code, namespace) for _, (actual, code, namespace) in work if actual is frame]
     require(
         len(matches) == 1 and matches[0][0] is frame.f_code and matches[0][1] is frame.f_globals,
         "Actual admitted frame/code/global work evidence required",
     )
-    returns = [
-        i
-        for i, (actual, event, _) in enumerate(trial.raw_returns)
-        if actual is frame and event == "return"
-    ]
+    returns = [i for i, (actual, event, _) in raw if actual is frame and event == "return"]
     require(
-        len(returns) == 1 and not any(actual is frame for actual, _ in trial.exceptions),
+        len(returns) == 1 and not any(actual is frame for _, (actual, _) in exceptions),
         "Actual admitted frame needs its normal retained return",
     )
     return returns[0]
@@ -435,7 +472,7 @@ def _outer_event_caller(view, body, name):
         body.f_code is chain[-1].__code__ and body.f_globals is chain[-1].__globals__,
         "Actual native event body differs from retained export",
     )
-    _work_frame(view["trial"], body)
+    _work_frame(view["trial"], body, view.get("_event_index"))
     caller = body.f_back
     delegate = chain[-1]
     for wrapper in reversed(chain[:-1]):
@@ -445,7 +482,7 @@ def _outer_event_caller(view, body, name):
             and caller.f_globals is wrapper.__globals__,
             "Unretained/substituted event wrapper",
         )
-        _work_frame(view["trial"], caller)
+        _work_frame(view["trial"], caller, view.get("_event_index"))
         require(
             vars(wrapper).get("__wrapped__") is delegate, "Actual wrapper/body delegate changed"
         )
@@ -460,6 +497,9 @@ def _outer_event_caller(view, body, name):
 
 def _event_rows(view, row, fields):
     trial = view["trial"]
+    index = view.get("_event_index")
+    if index is not None:
+        _evidence_current(trial, index)
     require(
         "_is_fired" not in fields(view["handler"]),
         "An event fired-state needs its actual boundary snapshots, not final-state inference",
@@ -482,13 +522,15 @@ def _event_rows(view, row, fields):
             and frame.f_locals.get("phase") is view["phase"],
             "Actual event handler/phase association required",
         )
+        raw = enumerate(trial.raw_returns) if index is None else index[5].get(id(frame), ())
+        exceptions = (
+            trial.exceptions if index is None else (r for _, r in index[6].get(id(frame), ()))
+        )
         found = [
-            (i, arg)
-            for i, (actual, event, arg) in enumerate(trial.raw_returns)
-            if actual is frame and event == "return"
+            (i, arg) for i, (actual, event, arg) in raw if actual is frame and event == "return"
         ]
         require(
-            len(found) == 1 and not any(actual is frame for actual, _ in trial.exceptions),
+            len(found) == 1 and not any(actual is frame for actual, _ in exceptions),
             "Completed event body requires its actual unique normal return",
         )
         returns.append(found[0][0])
@@ -503,7 +545,7 @@ def _event_rows(view, row, fields):
         and loop.f_locals.get("phase") is view["phase"],
         "Actual outer SIM loop caller required",
     )
-    _work_frame(trial, loop)
+    _work_frame(trial, loop, index)
     require(
         _outer_event_caller(view, global_[1], EVENT_METHODS[1]) is outer[1]
         and _outer_event_caller(view, tissue[1], EVENT_METHODS[2]) is outer[1]
@@ -1019,10 +1061,179 @@ def _verification_state():
         comparison.report.Reader.__getattribute__,
         *[vars(comparison.report.Reader)[name] for name in ("bind", "read", "bound")],
     ]
-    return tuple(modules), tuple(_verification_atom(v) for v in helpers)
+    return tuple(modules), tuple(_verification_atom(v) for v in helpers), _json_encoder_state()
+
+
+def _json_encoder_state():
+    require(
+        json.encoder is _JSON_ENCODER_MODULE
+        and json.JSONEncoder is _JSON_ENCODER_CLASS
+        and json.dumps is _JSON_LOOKUPS[0][0],
+        "Original JSON encoder module/class required",
+    )
+    namespace = vars(_JSON_ENCODER_MODULE)
+    return (
+        id(namespace),
+        _verification_atom(_JSON_ENCODER_CLASS.__mro__),
+        tuple(
+            (name, _verification_atom(value))
+            for name, value in vars(_JSON_ENCODER_CLASS).items()
+        ),
+        tuple(
+            (name, _verification_atom(namespace.get(name)))
+            for name in (
+                "JSONEncoder",
+                "encode_basestring_ascii",
+                "encode_basestring",
+                "c_make_encoder",
+                "_make_iterencode",
+                "INFINITY",
+            )
+        ),
+        _verification_atom(vars(json).get("JSONEncoder")),
+        _verification_atom(vars(json).get("encoder")),
+        _verification_atom(vars(_JSON_ENCODER_MODULE).get("__file__")),
+        _json_lookup_state(),
+    )
+
+
+def _json_global_names(code):
+    """Immutable code metadata only; never disassemble at an observation boundary."""
+    pending, names = [code], set()
+    while pending:
+        current = pending.pop()
+        names.update(
+            instruction.argval
+            for instruction in dis.get_instructions(current)
+            if instruction.opname == "LOAD_GLOBAL"
+        )
+        pending.extend(c for c in current.co_consts if type(c) is CodeType)
+    return tuple(sorted(names))
+
+
+_JSON_LOOKUPS = tuple(
+    (function, function.__globals__, _json_global_names(function.__code__))
+    for function in (
+        json.dumps,
+        *[value for value in vars(_JSON_ENCODER_CLASS).values() if type(value) is FunctionType],
+        _JSON_ENCODER_MODULE._make_iterencode,
+    )
+)
+
+
+def _json_lookup_state():
+    return tuple(
+        (
+            _verification_atom(function),
+            id(namespace),
+            id(function.__builtins__),
+            id(namespace.get("__builtins__")),
+            tuple(
+                (
+                    name,
+                    "global" if name in namespace else "builtin",
+                    name in namespace or name in function.__builtins__,
+                    _verification_atom(
+                        namespace[name] if name in namespace else function.__builtins__.get(name)
+                    ),
+                )
+                for name in names
+            ),
+        )
+        for function, namespace, names in _JSON_LOOKUPS
+    )
+
+
+_JSON_LOOKUP_INITIAL = _json_lookup_state()
+
+
+def _json_encoder_bindings():
+    """Authenticate the original method bodies before retaining live dispatch."""
+    _json_encoder_state()
+    require(
+        _json_lookup_state() == _JSON_LOOKUP_INITIAL,
+        "Original JSON resolved globals/defaults required",
+    )
+    path = Path(_JSON_ENCODER_MODULE.__file__)
+    raw = path.read_bytes()
+    require(
+        path.resolve() == _JSON_ENCODER_FILE
+        and hashlib.sha256(raw).hexdigest() == _JSON_ENCODER_SHA256
+        and _JSON_ENCODER_MODULE.c_make_encoder is _JSON_C_FACTORY,
+        "Original JSON encoder source/C delegate required",
+    )
+    tree, unit = ast.parse(raw), compile(raw, str(path), "exec", dont_inherit=True)
+    cls = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "JSONEncoder")
+    class_code = next(c for c in unit.co_consts if type(c) is CodeType and c.co_name == cls.name)
+    codes = {c.co_name: c for c in class_code.co_consts if type(c) is CodeType}
+    require(
+        _JSON_ENCODER_CLASS.__mro__ == (_JSON_ENCODER_CLASS, object)
+        and _JSON_ENCODER_CLASS.__new__ is object.__new__
+        and _JSON_ENCODER_CLASS.__getattribute__ is object.__getattribute__
+        and "__getattr__" not in vars(_JSON_ENCODER_CLASS),
+        "Original JSON encoder attribute dispatch required",
+    )
+    for node in cls.body:
+        if isinstance(node, ast.FunctionDef):
+            function = vars(_JSON_ENCODER_CLASS).get(node.name)
+            defaults = tuple(ast.literal_eval(v) for v in node.args.defaults) or None
+            keywords = {
+                arg.arg: ast.literal_eval(value)
+                for arg, value in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True)
+                if value is not None
+            } or None
+            require(
+                type(function) is FunctionType
+                and function.__code__ == codes[node.name]
+                and function.__globals__ is vars(_JSON_ENCODER_MODULE)
+                and function.__closure__ is None
+                and (
+                    function.__defaults__ is None
+                    if defaults is None
+                    else type(function.__defaults__) is tuple
+                    and len(function.__defaults__) == len(defaults)
+                    and all(a is b for a, b in zip(function.__defaults__, defaults, strict=True))
+                )
+                and (
+                    function.__kwdefaults__ is None
+                    if keywords is None
+                    else type(function.__kwdefaults__) is dict
+                    and set(function.__kwdefaults__) == set(keywords)
+                    and all(function.__kwdefaults__[k] is v for k, v in keywords.items())
+                ),
+                "Original JSON encoder callable/defaults required: " + node.name,
+            )
+    node = next(
+        n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "_make_iterencode"
+    )
+    code = next(c for c in unit.co_consts if type(c) is CodeType and c.co_name == node.name)
+    function = vars(_JSON_ENCODER_MODULE).get(node.name)
+    defaults = []
+    for value in node.args.defaults:
+        if isinstance(value, ast.Name):
+            defaults.append(vars(builtins)[value.id])
+        else:
+            require(
+                isinstance(value, ast.Attribute)
+                and isinstance(value.value, ast.Name)
+                and (value.value.id, value.attr) == ("int", "__repr__"),
+                "Declared JSON factory default required",
+            )
+            defaults.append(int.__repr__)
+    require(
+        type(function) is FunctionType
+        and function.__code__ == code
+        and function.__globals__ is vars(_JSON_ENCODER_MODULE)
+        and function.__closure__ is None
+        and function.__kwdefaults__ is None
+        and len(function.__defaults__ or ()) == len(defaults)
+        and all(a is b for a, b in zip(function.__defaults__, defaults, strict=True)),
+        "Original JSON Python factory/defaults required",
+    )
 
 
 def _verification_bindings():
+    _json_encoder_bindings()
     for module, expected in (
         (evidence, WRITER_SHA256),
         (evidence.payload, PAYLOAD_SHA256),
@@ -1045,6 +1256,47 @@ def _verification_bindings():
                     "Verification helper executable changed",
                 )
     return _verification_state()
+
+
+def _observation_seal(value):
+    """The same canonical JSON hash; bounded small wires use the C encoder.
+
+    The conservative bound includes worst-case ASCII escapes. Large or unusual
+    values retain the reviewed streaming implementation and its error behavior.
+    This changes neither a wire value nor an evidence/array admission limit.
+    """
+    pending, size = [(value, 0)], 0
+    while pending:
+        actual, depth = pending.pop()
+        kind = type(actual)
+        if depth > evidence.payload.MAX_DEPTH:
+            return evidence._seal(value)
+        if kind is str:
+            # A non-BMP code point can become two six-byte surrogate escapes.
+            size += (6 if actual.isascii() else 12) * len(actual) + 2
+        elif actual is None or kind is bool:
+            size += 5
+        elif kind is int:
+            size += len(str(actual))
+        elif kind is float:
+            size += 32
+        elif kind in (list, tuple):
+            size += 2 + len(actual)
+            if size > SEAL_BUFFER_BYTES:
+                return evidence._seal(value)
+            pending.extend((item, depth + 1) for item in actual)
+        elif kind is dict and all(type(key) is str for key in actual):
+            size += 2 + 2 * len(actual)
+            if size > SEAL_BUFFER_BYTES:
+                return evidence._seal(value)
+            pending.extend((item, depth + 1) for pair in actual.items() for item in pair)
+        else:
+            return evidence._seal(value)
+        if size > SEAL_BUFFER_BYTES:
+            return evidence._seal(value)
+    raw = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    require(len(raw) <= size <= SEAL_BUFFER_BYTES, "Bounded canonical observation buffer")
+    return hashlib.sha256(raw).hexdigest()
 
 
 def _lineage(view):
@@ -1087,6 +1339,7 @@ def _observe(owner, api, capture, check, *, history_api=None, history_check=None
         result=None,
         interval=None,
         raw_history_record=None,
+        event_index=None,
     )
     if _ACTIVE:
         _ACTIVE[-1].invalid = True
@@ -1099,6 +1352,12 @@ def _observe(owner, api, capture, check, *, history_api=None, history_check=None
         if context.entry_error is not None:
             raise context.entry_error
         require(not context.invalid, "Rejected observation cannot resume")
+        if context.event_index is not None:
+            require(
+                context.view.get("_event_index") is context.event_index,
+                "Original event-evidence index changed",
+            )
+            _evidence_current(context.view["trial"], context.event_index)
         require(
             (sys.getprofile(), sys.gettrace()) == context.prior,
             "Both inherited observer hooks required before metadata callbacks",
@@ -1133,7 +1392,7 @@ def _observe(owner, api, capture, check, *, history_api=None, history_check=None
     def emit(label, raw, *, row=None, caches=()):
         context.raw_observation = raw
         checked()
-        expected = evidence._seal(raw)
+        expected = _observation_seal(raw)
         try:
             pin = (
                 capture(label, raw)
@@ -1147,14 +1406,20 @@ def _observe(owner, api, capture, check, *, history_api=None, history_check=None
             )
             checked()
             require(
-                evidence._seal(raw) == expected, "Capture callback changed original observation"
+                _observation_seal(raw) == expected,
+                "Capture callback changed original observation",
             )
             context.files.bind(pin)
-            for part in evidence.files(pin["path"], expected_sha256=pin["sha256"]):
+            # The already-bound helper returns both the authenticated expanded
+            # wire and complete file roster. Two public reads repeat this exact
+            # traversal; no file, sidecar or fresh final rebind is omitted here.
+            saved, parts = evidence._read(pin["path"], pin["sha256"], expand=True)
+            context.raw_saved_observation, context.raw_saved_files = saved, parts
+            for part in parts:
                 context.files.bind(part)
-            saved = evidence.read(pin["path"], expand=True, expected_sha256=pin["sha256"])
             require(
-                evidence._seal(saved) == expected, "Saved capture is not the actual observed wire"
+                _observation_seal(saved) == expected,
+                "Saved capture is not the actual observed wire",
             )
         except BaseException as error:
             context.capture_errors.append((label, error, raw))
@@ -1167,6 +1432,8 @@ def _observe(owner, api, capture, check, *, history_api=None, history_check=None
 
     def drive():
         view = context.view = _surface(owner, api, call)
+        if history_api is not None:
+            context.event_index = view["_event_index"] = _frame_evidence(view["trial"])
         checked()
         times, calendar = _calendar(view["calendar"])
         require(

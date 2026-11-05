@@ -7,7 +7,9 @@ import os
 import struct
 import sys
 from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
+from time import perf_counter, process_time
 from types import CodeType, FunctionType, ModuleType
 from types import SimpleNamespace as NS
 
@@ -459,12 +461,83 @@ def _history_observe(
     return result, rows, state
 
 
+@contextmanager
+def _profile_history_metadata(tmp_path):
+    """Chain the ordinary guard; count exact metadata entries without replacing them."""
+    targets = {
+        id(function.__code__): (function.__code__, name)
+        for name, function in (
+            ("evidence.write", stage.evidence.write),
+            ("evidence.read", stage.evidence.read),
+            ("evidence.files", stage.evidence.files),
+            ("evidence._read", stage.evidence._read),
+            ("evidence._seal", stage.evidence._seal),
+            ("observer._observation_seal", stage._observation_seal),
+            ("payload.read", stage.evidence.payload.read),
+            ("payload.files", stage.evidence.payload.files),
+        )
+    }
+    costs = {name: dict(calls=0, returns=0, wall=0.0, cpu=0.0) for _, name in targets.values()}
+    active, chained = {}, [0]
+    previous, trace = sys.getprofile(), sys.gettrace()
+    primary, errors = None, []
+
+    def profile(frame, event, arg):
+        if previous is not None:
+            chained[0] += 1
+            previous(frame, event, arg)
+        if event == "call" and id(frame.f_code) in targets:
+            code, name = targets[id(frame.f_code)]
+            assert frame.f_code is code
+            costs[name]["calls"] += 1
+            active[id(frame)] = name, perf_counter(), process_time()
+        elif event == "return" and id(frame) in active:
+            name, wall, cpu = active.pop(id(frame))
+            costs[name]["returns"] += 1
+            costs[name]["wall"] += perf_counter() - wall
+            costs[name]["cpu"] += process_time() - cpu
+
+    try:
+        sys.setprofile(profile)
+        yield costs
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        for setter, value in ((sys.setprofile, previous), (sys.settrace, trace)):
+            try:
+                setter(value)
+            except BaseException as error:
+                errors.append(error)
+        restored = sys.getprofile() is previous and sys.gettrace() is trace
+        try:
+            old._save(
+                tmp_path / "transport-cost.json",
+                dict(
+                    kind="cells.inert_history_transport_cost@1",
+                    helper_costs=costs,
+                    timings_non_additive=True,
+                    chained_prior_profile_calls=chained[0],
+                    inherited_hooks_restored=restored,
+                    unfinished_selected_frames=len(active),
+                    primary=None if primary is None else type(primary).__qualname__,
+                    cleanup_errors=[type(e).__qualname__ for e in errors],
+                    model_source_or_reference_execution=False,
+                ),
+            )
+        except BaseException as error:
+            errors.append(error)
+        if primary is None:
+            assert restored and not errors and not active and chained[0] > 0
+
+
 @pytest.mark.parametrize("count", [1, 4, 350])
 def test_sim_observation_history_protocol_preserves_each_actual_row_and_two_full_sweeps(
     tmp_path, count
 ):
     model = _model(count=count)
-    record, captures, state = _history_observe(tmp_path, model)
+    with _profile_history_metadata(tmp_path):
+        record, captures, state = _history_observe(tmp_path, model)
     assert model.calls == ["completed", "validate"] and state.entries == state.exits == 1
     assert state.checked == set(range(count)) and len(captures) == count + 5
     assert record["work"]["history_interval"]["full_authority_returns"] == 2
@@ -590,7 +663,9 @@ def _history_code_only_api():
     "drift",
     [None, "wrapper", "closure", "keyword", "method_code", "parent_global", "record_getter"],
 )
-def test_sim_observation_history_authenticates_real_wrapper_method_and_namespace_metadata(monkeypatch, drift):
+def test_sim_observation_history_authenticates_real_wrapper_method_and_namespace_metadata(
+    monkeypatch, drift
+):
     api, raw, filename = _history_code_only_api()
     # Authenticate the exact raw code fixture in this immutable image. This
     # does not fill the held public review gate or adopt a live provider.
@@ -624,6 +699,403 @@ def test_sim_observation_history_gate_refuses_before_source_import_or_parent_rea
     with pytest.raises(ValueError, match="history producer held"):
         stage._history_api(object())
     assert imported == []
+
+
+@pytest.mark.parametrize(
+    "drift",
+    [
+        None,
+        "duplicate_work",
+        "duplicate_return",
+        "root_retarget",
+        "code",
+        "namespace",
+        "mutable_row",
+    ],
+)
+def test_sim_observation_history_event_index_preserves_exact_occurrences_and_live_atoms(drift):
+    model = _model()
+    trial = model.trial
+    frame = trial.work[1][0]
+    if drift == "duplicate_work":
+        trial.work += (trial.work[1],)
+    elif drift == "duplicate_return":
+        trial.raw_returns += (next(r for r in trial.raw_returns if r[0] is frame),)
+    elif drift == "mutable_row":
+        trial.work = (list(trial.work[0]), *trial.work[1:])
+    if drift == "mutable_row":
+        with pytest.raises(ValueError):
+            stage._frame_evidence(trial)
+        return
+    index = stage._frame_evidence(trial)
+    assert sum(len(v) for v in index[4].values()) == len(trial.work)
+    assert sum(len(v) for v in index[5].values()) == len(trial.raw_returns)
+    if drift == "root_retarget":
+        trial.work = tuple(list(trial.work))
+    elif drift == "code":
+        frame.f_code = frame.f_code.replace()
+    elif drift == "namespace":
+        frame.f_globals = dict(frame.f_globals)
+    if drift is None:
+        assert stage._work_frame(trial, frame, index) == stage._work_frame(trial, frame)
+    else:
+        with pytest.raises(ValueError):
+            stage._work_frame(trial, frame, index)
+
+
+def test_sim_observation_history_metadata_cost_layers_keep_all_checks(tmp_path, monkeypatch):
+    """Inclusive helper timings in an inert four-row protocol, never model speed."""
+    costs = {}
+
+    def measured(name, function):
+        row = costs[name] = dict(calls=0, returned=0, failed=0, wall=0.0, cpu=0.0)
+
+        @wraps(function)
+        def invoke(*args, **kwargs):
+            row["calls"] += 1
+            wall, cpu = perf_counter(), process_time()
+            try:
+                value = function(*args, **kwargs)
+            except BaseException:
+                row["failed"] += 1
+                raise
+            else:
+                row["returned"] += 1
+                return value
+            finally:
+                row["wall"] += perf_counter() - wall
+                row["cpu"] += process_time() - cpu
+
+        return invoke
+
+    for name in (
+        "_cache",
+        "_iteration",
+        "_layout",
+        "_verification_state",
+        "_evidence_current",
+        "_event_rows",
+        "_work_frame",
+    ):
+        monkeypatch.setattr(stage, name, measured(name, getattr(stage, name)))
+    model = _model(count=4)
+    wall, cpu = perf_counter(), process_time()
+    record, captures, state = _history_observe(tmp_path, model)
+    old._save(
+        tmp_path / "metadata-cost.json",
+        dict(
+            kind="cells.inert_history_inclusive_metadata_cost@1",
+            wall=perf_counter() - wall,
+            cpu=process_time() - cpu,
+            helper_costs=costs,
+            timings_non_additive=True,
+            model_or_source_speedup_claim=False,
+        ),
+    )
+    assert model.calls == ["completed", "validate"] and state.entries == state.exits == 1
+    assert record["configured_iterations"] == 4 and len(captures) == 9
+    assert costs["_iteration"]["calls"] == costs["_event_rows"]["calls"] == 4
+    assert all(v["calls"] == v["returned"] > 0 and v["failed"] == 0 for v in costs.values())
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        None,
+        [True, False, 0, -0.0, 1.25e-300],
+        {"z": ["\U0001f9ec", "\ud800", "\n\\\""], "a": (1, 2)},
+        "\U0001f9ec",
+        "\ud800",
+        "\U0001f9ec" * 2000,
+        {"tree": {"type": "float", "bits": "8000000000000000"}, "columns": {}},
+        "x" * 50000,
+        {0: "legacy non-string key"},
+    ],
+)
+def test_sim_observation_cost_canonical_seal_is_identical_and_bounded(value, monkeypatch):
+    expected = stage.evidence._seal(value)
+    calls = []
+    original = stage.evidence._seal
+
+    def streamed(actual):
+        calls.append(actual)
+        return original(actual)
+
+    monkeypatch.setattr(stage.evidence, "_seal", streamed)
+    assert stage._observation_seal(value) == expected
+    assert len(calls) == (1 if value == "x" * 50000 or type(value) is dict and 0 in value else 0)
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+def test_sim_observation_cost_seal_keeps_nonfinite_refusal(value):
+    with pytest.raises(ValueError):
+        stage.evidence._seal(value)
+    with pytest.raises(ValueError):
+        stage._observation_seal(value)
+
+
+@pytest.mark.parametrize("count", [4, 5000])
+def test_sim_observation_cost_combined_capture_read_keeps_all_files(tmp_path, count):
+    wire = stage._cache(_cache(dict(array=_array(range(count)))))
+    path = tmp_path / "typed-capture.json"
+    pins = stage.evidence.write(path, wire)
+    saved, actual = stage.evidence._read(path, pins[0]["sha256"], expand=True)
+    assert stage._observation_seal(saved) == stage.evidence._seal(wire)
+    assert actual == stage.evidence.files(path, expected_sha256=pins[0]["sha256"]) == pins
+    assert len(pins) == (2 if count == 5000 else 1)
+    reader = stage.comparison.report.Reader()
+    for pin in pins:
+        reader.bind(pin)
+    assert len(reader.pins) == len(pins)
+
+
+def test_sim_observation_cost_changed_combined_reader_refuses_before_entry(tmp_path):
+    model = _model()
+    delegate, rows = _capture(tmp_path)
+    function = stage.evidence._read
+    code = function.__code__
+
+    def forbidden(path, expected_sha256, *, expand):
+        raise AssertionError("Changed combined reader must never enter")
+
+    def capture(label, wire):
+        pin = delegate(label, wire)
+        function.__code__ = forbidden.__code__
+        return pin
+
+    try:
+        with pytest.raises(stage.ObservationRejected) as caught:
+            stage._observe(model.owner, model.api, capture, lambda: None)
+        context = caught.value.partial
+        assert type(context.primary) is ValueError
+        assert "verification callable/helper bindings changed" in str(context.primary)
+        assert context.result is None and context.raw_observation is rows[0][2]
+    finally:
+        function.__code__ = code
+
+
+@pytest.mark.parametrize("mode", ["ordinary", "capacity", "wrong_selection", "missing_release"])
+def test_sim_observation_cost_capacity_policy_is_separate_and_exact(monkeypatch, mode):
+    monkeypatch.delenv(software.CAPACITY_RELEASE, raising=False)
+    expected = dict(software.POLICY)
+    assert expected["wall_seconds"] == 480 and expected["max_rss_bytes"] == 2**30
+    assert expected["reserve_bytes"] == 8 * 2**30
+    if mode in ("capacity", "wrong_selection"):
+        monkeypatch.setenv(software.CAPACITY_RELEASE, "1")
+    if mode == "wrong_selection":
+        with pytest.raises(ValueError, match="exactly the instrumented 350"):
+            software._run_policy("other_control")
+    elif mode == "missing_release":
+        with pytest.raises(ValueError, match="separate explicit"):
+            software.software(Path("/must-not-be-created"), software.CAPACITY_SELECT, capacity=True)
+    else:
+        actual = software._run_policy(software.CAPACITY_SELECT)
+        assert actual == dict(expected, wall_seconds=3600 if mode == "capacity" else 480)
+    assert software.POLICY == expected
+
+
+def _old_transport_atoms():
+    """The prior guard's relevant atoms, deliberately omitting encoder dispatch."""
+    return tuple(
+        stage._verification_atom(value)
+        for value in (
+            stage.json.dumps,
+            stage.json.loads,
+            stage.json.JSONEncoder,
+            stage.evidence._seal,
+            stage.evidence._read,
+            stage.snapshot.write_json,
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "where",
+    [
+        "encode",
+        "encode_code",
+        "iterencode",
+        "iterencode_code",
+        "c_factory",
+        "python_factory",
+        "ascii_encoder",
+        "class_dispatch",
+    ],
+)
+def test_sim_observation_cost_encoder_retarget_with_changed_wire_refuses(
+    tmp_path, monkeypatch, where
+):
+    model = _model(count=1)
+    delegate, rows = _capture(tmp_path)
+    entered, witnessed = [], {}
+    cls, namespace = stage.json.JSONEncoder, vars(stage.json.encoder)
+    prior_atoms = _old_transport_atoms()
+
+    def capture(label, wire):
+        pin = delegate(label, wire)
+        canonical = stage.json.dumps(
+            wire, sort_keys=True, separators=(",", ":"), allow_nan=False
+        )
+        witnessed["before"] = hashlib.sha256(canonical.encode()).hexdigest()
+        column = next(iter(wire["columns"].values()))
+        raw = column["raw_bytes_hex"]
+        column["raw_bytes_hex"] = ("1" if raw[0] == "0" else "0") + raw[1:]
+        witnessed["changed"] = stage.evidence._seal(wire)
+        assert witnessed["changed"] != witnessed["before"]
+
+        def encode(self, value):
+            entered.append("encode")
+            return canonical
+
+        def iterencode(self, value, _one_shot=False):
+            entered.append("iterencode")
+            return [canonical]
+
+        def factory(*args, **kwargs):
+            entered.append("factory")
+            return lambda *args: [canonical]
+
+        def string_encoder(value):
+            entered.append("string_encoder")
+            return canonical
+
+        def dispatch(self, name):
+            entered.append("dispatch")
+            return object.__getattribute__(self, name)
+
+        if where in ("encode", "iterencode"):
+            patch.setattr(cls, where, encode if where == "encode" else iterencode)
+        elif where.endswith("_code"):
+            name = where.removesuffix("_code")
+            arguments = "self, value" + (", _one_shot=False" if name == "iterencode" else "")
+            output = repr(canonical) if name == "encode" else "[" + repr(canonical) + "]"
+            raw = (
+                f"def {name}({arguments}):\n"
+                "    _test_json_codec_entries.append('changed-code')\n"
+                f"    return {output}\n"
+            )
+            code = next(c for c in compile(raw, __file__, "exec").co_consts if type(c) is CodeType)
+            patch.setitem(namespace, "_test_json_codec_entries", entered)
+            patch.setattr(vars(cls)[name], "__code__", code)
+        elif where == "class_dispatch":
+            patch.setattr(cls, "__getattribute__", dispatch)
+        else:
+            name = {
+                "c_factory": "c_make_encoder",
+                "python_factory": "_make_iterencode",
+                "ascii_encoder": "encode_basestring_ascii",
+            }[where]
+            patch.setitem(namespace, name, string_encoder if where == "ascii_encoder" else factory)
+        assert _old_transport_atoms() == prior_atoms
+        return pin
+
+    with monkeypatch.context() as patch:
+        with pytest.raises(stage.ObservationRejected) as caught:
+            stage._observe(model.owner, model.api, capture, lambda: None)
+        context = caught.value.partial
+        assert context.result is None and len(rows) == 1 and context.raw_observation is rows[0][2]
+        assert type(context.primary) is ValueError and not entered
+        assert "verification callable/helper bindings changed" in str(context.primary)
+    old._save(
+        tmp_path / "encoder-drift-refusal.json",
+        dict(
+            where=where,
+            original_and_changed_hashes=witnessed,
+            prior_atoms_unchanged=True,
+            foreign_encoder_entries=entered,
+            raw_changed_observation_retained=True,
+            usable_result=False,
+        ),
+    )
+
+
+@pytest.mark.parametrize("where", ["encode_code", "iterencode_code", "c_factory", "defaults"])
+def test_sim_observation_cost_encoder_entry_requires_original_source(monkeypatch, where):
+    namespace, cls = vars(stage.json.encoder), stage.json.JSONEncoder
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Retargeted encoder must not execute")
+
+    with monkeypatch.context() as patch:
+        if where.endswith("_code"):
+            patch.setattr(vars(cls)[where.removesuffix("_code")], "__code__", forbidden.__code__)
+        elif where == "c_factory":
+            patch.setitem(namespace, "c_make_encoder", forbidden)
+        else:
+            fn = namespace["_make_iterencode"]
+            patch.setattr(fn, "__defaults__", (*fn.__defaults__[:-1], forbidden))
+        with pytest.raises(ValueError):
+            stage._verification_bindings()
+
+
+@pytest.mark.parametrize("before_entry", [False, True])
+@pytest.mark.parametrize(
+    "where", ["isinstance_foreign", "isinstance_same", "str", "list", "INFINITY", "__builtins__"]
+)
+def test_sim_observation_cost_encoder_resolved_globals_refuse_shadowing(
+    tmp_path, monkeypatch, where, before_entry
+):
+    namespace = vars(stage.json.encoder)
+    entered, evidence = [], {}
+    prior_atoms = _old_transport_atoms()
+
+    def foreign(*args, **kwargs):
+        entered.append("foreign builtin replacement")
+        return True
+
+    def retarget():
+        if where == "__builtins__":
+            patch.setitem(namespace, where, dict(namespace[where]))
+        elif where == "INFINITY":
+            patch.setitem(namespace, where, float("nan"))
+        else:
+            name = where.split("_")[0]
+            assert name not in namespace
+            assert any(
+                scope is namespace and name in names for _, scope, names in stage._JSON_LOOKUPS
+            )
+            value = foreign if where == "isinstance_foreign" else getattr(stage.builtins, name)
+            patch.setitem(namespace, name, value)
+        assert _old_transport_atoms() == prior_atoms
+
+    model = _model(count=1)
+    delegate, rows = _capture(tmp_path)
+
+    def capture(label, wire):
+        pin = delegate(label, wire)
+        evidence["original"] = stage.evidence._seal(wire)
+        column = next(iter(wire["columns"].values()))
+        raw = column["raw_bytes_hex"]
+        column["raw_bytes_hex"] = ("1" if raw[0] == "0" else "0") + raw[1:]
+        evidence["changed"] = stage.evidence._seal(wire)
+        assert evidence["changed"] != evidence["original"]
+        retarget()
+        return pin
+
+    with monkeypatch.context() as patch:
+        if before_entry:
+            retarget()
+            with pytest.raises(ValueError):
+                stage._verification_bindings()
+            assert not rows
+        else:
+            with pytest.raises(stage.ObservationRejected) as caught:
+                stage._observe(model.owner, model.api, capture, lambda: None)
+            assert type(caught.value.partial.primary) is ValueError
+            assert caught.value.partial.result is None and len(rows) == 1
+        assert entered == []
+    old._save(
+        tmp_path / "resolved-encoder-global-refusal.json",
+        dict(where=where, before_entry=before_entry, actual_wire_hashes=evidence,
+             foreign_entries=entered, old_atoms_unchanged=True, usable_result=False),
+    )
+
+
+def test_sim_observation_cost_encoder_unchanged_transport_passes(tmp_path):
+    model = _model(count=1)
+    result, captures, state = _history_observe(tmp_path, model)
+    assert result["configured_iterations"] == 1 and len(captures) == 6
+    assert state.entries == state.exits == 1 and model.calls == ["completed", "validate"]
 
 
 def _accepted_observer():

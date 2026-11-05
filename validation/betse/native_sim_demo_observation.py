@@ -24,6 +24,11 @@ MODULE = "validation.betse.native_sim_result_observation"
 OBSERVER = "validation/betse/native_sim_result_observation.py"
 WRITER = "validation/betse/native_seed_demo_evidence.py"
 KEY = "src/cells/processes/betse_native_sim_run.py"
+KEY_MODULE = "cells.processes.betse_native_sim_run"
+SIM = "validation/betse/native_sim_demo.py"
+HISTORY = "src/cells/processes/betse_native_sim_history_observation.py"
+HISTORY_MODULE = "cells.processes.betse_native_sim_history_observation"
+HISTORY_RELEASE = "CELLS_NATIVE_SIM_HISTORY_OBSERVATION_RELEASED"
 RELEASE = "CELLS_COMPLETED_SIM_OBSERVATION_RELEASED"
 OBSERVER_SHA256 = OBSERVER_REVIEW = None
 WRITER_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
@@ -35,6 +40,15 @@ OPERATOR_MODES = {
     "disabled": "original_value_only_flux_omitted",
 }
 _FAILED = []
+DECLARATIONS = (
+    "KEY_SHA256",
+    "KEY_REVIEW",
+    "WRITER_SHA256",
+    "HISTORY_FILE",
+    "HISTORY_MODULE",
+    "HISTORY_SHA256",
+    "HISTORY_REVIEW",
+)
 
 
 def require(value, message):
@@ -82,6 +96,9 @@ def declaration():
         writer=WRITER,
         writer_sha256=WRITER_SHA256,
         release=RELEASE,
+        history=HISTORY,
+        history_module=HISTORY_MODULE,
+        history_release=HISTORY_RELEASE,
         enabled=True,
         already_typed_transport=True,
         record_separate=True,
@@ -101,6 +118,9 @@ def contract(root, policy, files, run_sha):
         and policy["observer"] == OBSERVER
         and policy["writer"] == WRITER
         and policy["release"] == RELEASE
+        and policy["history"] == HISTORY
+        and policy["history_module"] == HISTORY_MODULE
+        and policy["history_release"] == HISTORY_RELEASE
         and policy["writer_sha256"] == WRITER_SHA256
         and all(
             policy[name] is True
@@ -137,21 +157,90 @@ def contract(root, policy, files, run_sha):
         },
         "Frozen observer adoption and plan differ",
     )
-    provider = constants(root / OBSERVER, ("KEY_SHA256", "KEY_REVIEW", "WRITER_SHA256"))
+    provider = constants(root / OBSERVER, DECLARATIONS)
     require(
         _hash(run_sha) and provider["KEY_SHA256"] == files.get(KEY) == run_sha,
         "Observer and SIM issuer source differ",
     )
     require(provider["WRITER_SHA256"] == WRITER_SHA256, "Observer transport differs")
     bound(provider["KEY_REVIEW"])
+    require(
+        _hash(files.get(SIM)) and snapshot.digest(root / SIM) == files[SIM],
+        "Frozen SIM issuer declaration missing",
+    )
+    issuer = constants(root / SIM, ("SOURCE_PINS", "REVIEW_PINS"))
+    require(
+        type(issuer["SOURCE_PINS"]) is dict
+        and type(issuer["REVIEW_PINS"]) is dict
+        and issuer["SOURCE_PINS"].get("run") == run_sha
+        and issuer["REVIEW_PINS"].get("run") == provider["KEY_REVIEW"]["sha256"],
+        "Observation and selected SIM issuer review differ",
+    )
+    require(
+        provider["HISTORY_FILE"] == HISTORY
+        and provider["HISTORY_MODULE"] == HISTORY_MODULE
+        and _hash(provider["HISTORY_SHA256"])
+        and files.get(HISTORY) == provider["HISTORY_SHA256"],
+        "Exact completed-history source/module declaration required",
+    )
+    history_path = bound(dict(path=str(root / HISTORY), sha256=provider["HISTORY_SHA256"]))
+    bound(provider["HISTORY_REVIEW"])
+    history = constants(history_path, ("PARENT_SHA256", "PARENT_REVIEW_SHA256", "RELEASE"))
+    require(
+        history
+        == dict(
+            PARENT_SHA256=run_sha,
+            PARENT_REVIEW_SHA256=provider["KEY_REVIEW"]["sha256"],
+            RELEASE=HISTORY_RELEASE,
+        ),
+        "History interval and SIM issuer/review/release differ",
+    )
     return provider
 
 
 def preflight(run_sha):
     require(_hash(OBSERVER_SHA256), "Completed SIM observer remains unadopted")
-    files = {name: snapshot.digest(ROOT / name) for name in (FILE, OBSERVER, WRITER, KEY)}
+    files = {
+        name: snapshot.digest(ROOT / name) for name in (FILE, OBSERVER, WRITER, KEY, HISTORY, SIM)
+    }
     contract(ROOT, declaration(), files, run_sha)
-    return {name: files[name] for name in (FILE, OBSERVER, WRITER)}
+    return {name: files[name] for name in (FILE, OBSERVER, WRITER, HISTORY)}
+
+
+def _history_state(module, history, parent):
+    """Read retained declarations and actual module ancestry, never a history owner."""
+    require(
+        type(history) is ModuleType
+        and sys.modules.get(HISTORY_MODULE) is history
+        and Path(history.__file__).resolve() == ROOT / HISTORY
+        and type(parent) is ModuleType
+        and sys.modules.get(KEY_MODULE) is parent
+        and Path(parent.__file__).resolve() == ROOT / KEY
+        and vars(history).get("parent") is parent,
+        "Actual frozen history/SIM module association changed",
+    )
+    declared = {
+        key: vars(history).get(key) for key in ("PARENT_SHA256", "PARENT_REVIEW_SHA256", "RELEASE")
+    }
+    require(
+        vars(module).get("HISTORY_FILE") == HISTORY
+        and vars(module).get("HISTORY_MODULE") == HISTORY_MODULE
+        and declared
+        == dict(
+            PARENT_SHA256=module.KEY_SHA256,
+            PARENT_REVIEW_SHA256=module.KEY_REVIEW["sha256"],
+            RELEASE=HISTORY_RELEASE,
+        ),
+        "History live parent/review/release declaration changed",
+    )
+    return evidence._seal(declared)
+
+
+def _history_module(module):
+    history = importlib.import_module(HISTORY_MODULE)
+    parent = importlib.import_module(KEY_MODULE)
+    _history_state(module, history, parent)
+    return history, parent
 
 
 def _atoms(module, names):
@@ -347,7 +436,7 @@ def _original(module):
         and module.saved_view.__kwdefaults__ == {"accepted_observer_sha256": None},
         "Original observer keyword defaults required",
     )
-    declared = constants(path, ("KEY_SHA256", "KEY_REVIEW", "WRITER_SHA256"))
+    declared = constants(path, DECLARATIONS)
     require(
         all(getattr(module, key, None) == value for key, value in declared.items()),
         "Observer live producer/review declarations changed",
@@ -359,8 +448,14 @@ def bind(state, run_sha):
     require(getattr(state, "sim_observation", None) is None, "Observation binding is one-shot")
     preflight(run_sha)
     require(os.environ.get(RELEASE) == "1", "Explicit completed-SIM observation release required")
+    require(os.environ.get(HISTORY_RELEASE) == "1", "Explicit completed-history release required")
     module = importlib.import_module(MODULE)
     atoms, expected_codes = _original(module)
+    history, parent = _history_module(module)
+    # Import observers may mutate already loaded declarations while the new
+    # module is acquired. Recheck the full frozen contracts before binding.
+    preflight(run_sha)
+    require(_original(module)[0] == atoms, "Observer changed during history import")
     require(
         Path(evidence.__file__).resolve() == ROOT / WRITER, "Frozen typed writer origin required"
     )
@@ -375,12 +470,12 @@ def bind(state, run_sha):
         run_sha=run_sha,
         observer_sha=OBSERVER_SHA256,
         key_review=getattr(module, "KEY_REVIEW", None),
-        declarations=evidence._seal(
-            {
-                key: getattr(module, key, None)
-                for key in ("KEY_SHA256", "KEY_REVIEW", "WRITER_SHA256")
-            }
-        ),
+        history=history,
+        parent=parent,
+        history_sha=module.HISTORY_SHA256,
+        history_review=module.HISTORY_REVIEW,
+        history_declarations=_history_state(module, history, parent),
+        declarations=evidence._seal({key: getattr(module, key, None) for key in DECLARATIONS}),
         started=False,
         completed=False,
         raw_return=None,
@@ -403,10 +498,15 @@ def bind(state, run_sha):
         directory=None,
         record_seal=None,
     )
+    _check(state.sim_observation)
 
 
 def _check(context, *, hooks=True, source=True):
     require(context.primary is None and not context.secondary, "Observation has a retained failure")
+    require(
+        os.environ.get(RELEASE) == os.environ.get(HISTORY_RELEASE) == "1",
+        "Explicit observation and history releases must remain enabled",
+    )
     if source:
         preflight(context.run_sha)
     require(
@@ -414,14 +514,14 @@ def _check(context, *, hooks=True, source=True):
         "Observer module registry/dispatch changed",
     )
     require(
-        evidence._seal(
-            {
-                key: getattr(context.module, key, None)
-                for key in ("KEY_SHA256", "KEY_REVIEW", "WRITER_SHA256")
-            }
-        )
+        evidence._seal({key: getattr(context.module, key, None) for key in DECLARATIONS})
         == context.declarations,
         "Observer live source/review declaration changed",
+    )
+    require(
+        _history_state(context.module, context.history, context.parent)
+        == context.history_declarations,
+        "Retained history declarations changed",
     )
     require(
         all(
@@ -607,11 +707,38 @@ def _record(context, record, trial, mode):
         and producer.get("review") == context.key_review,
         "Observation record producer differs from accepted sources",
     )
+    require(
+        producer.get("history")
+        == dict(path=HISTORY, sha256=context.history_sha, review=context.history_review),
+        "Observation history producer differs from accepted sources",
+    )
     rows = record.get("iterations")
     count = len(trial.iterations)
     require(
         type(rows) is list and len(rows) == count and 1 <= count <= 512,
         "Complete observation iteration roster required",
+    )
+    closed = record.get("work", {}).get("history_interval")
+    require(
+        type(closed) is dict
+        and closed.get("law") == "actual_completed_SIM_read_only_complete_history_interval@1"
+        and closed.get("status") == "completed_observation"
+        and closed.get("trial_identity") == trial.identity
+        and type(closed.get("configured_rows")) is int
+        and closed["configured_rows"] == count
+        and type(closed.get("checked_rows")) in (list, tuple)
+        and all(type(i) is int for i in closed["checked_rows"])
+        and tuple(closed["checked_rows"]) == tuple(range(count))
+        and all(
+            type(closed.get(name)) is int and closed[name] == 2
+            for name in ("full_authority_attempts", "full_authority_returns")
+        )
+        and type(closed.get("retained_payload_attempts")) is int
+        and type(closed.get("retained_payload_returns")) is int
+        and closed["retained_payload_attempts"] == closed["retained_payload_returns"] >= 0
+        and type(closed.get("native_or_scientific_credit")) is int
+        and closed["native_or_scientific_credit"] == 0,
+        "Completed history interval/exit evidence required",
     )
     expected = []
     for i, row in enumerate(rows, 1):

@@ -574,7 +574,12 @@ def test_history_full_exit_retarget_refuses_without_entering_foreign_validator(p
     assert changed == [point] and foreign_calls == []
     assert any("full-exit" in str(row[1]) for row in context.secondary)
     expected = 1 if point in ("body", "restore_return") else 2
-    assert context.full_attempts == context.full_returns == expected
+    assert context.full_attempts == expected
+    # A return observer refusal now stops delivery at that actual return,
+    # before the caller counts an accepted full-exit result.
+    assert context.full_returns == (
+        1 if point in ("authentication_return", "validator_return") else expected
+    )
     assert context.record.status == "failed_observation"
     assert model.provider._ACTIVE == [] and model.provider._PREPARING is None
 
@@ -596,3 +601,134 @@ def test_history_full_exit_authenticates_retained_executable_and_namespace(drift
                 )
     assert caught.value.partial.full_attempts == 1
     assert caught.value.partial.record.status == "failed_observation"
+
+
+@pytest.mark.parametrize(
+    "point", ("authentication_return", "dispatch_line", "profile_entry", "trace_entry")
+)
+@pytest.mark.parametrize("self_restore", (False, True))
+def test_history_full_exit_same_object_foreign_code_never_enters_even_if_restored(
+    point, self_restore, monkeypatch, tmp_path
+):
+    model, foreign_calls, changed = _model(monkeypatch), [], []
+    original = model.provider.validate_sim
+    code, auth_code = original.__code__, model.api._exit_api.__code__
+    generator_code = model.api.observing_completed.__wrapped__.__code__
+    dispatch_lines = {
+        index
+        for index, line in enumerate(Path(stage.__file__).read_text().splitlines(), 1)
+        if "result = exit_delegate(owner)" in line
+    }
+    before = sys.getprofile(), sys.gettrace()
+    local_traces = {}
+    # Match the real retained function's free-variable ABI without borrowing
+    # any numerical body. A foreign frame must be refused before this append.
+    free = code.co_freevars
+    unit = compile(
+        "def outer():\n"
+        + "".join(" " + name + " = None\n" for name in free)
+        + " def foreign(actual):\n"
+        + "  witness.append(actual)\n"
+        + "  return ("
+        + ",".join(free)
+        + ")\n"
+        + " return foreign\n",
+        "metadata_foreign_exit",
+        "exec",
+    )
+    outer_code = next(v for v in unit.co_consts if type(v) is type(code))
+    foreign_code = next(v for v in outer_code.co_consts if type(v) is type(code))
+    assert foreign_code.co_freevars == free
+    original.__globals__["witness"] = foreign_calls
+
+    def substitute():
+        if not changed:
+            changed.append(point)
+            original.__code__ = foreign_code
+
+    def profile(frame, event, arg):
+        if before[0] is not None:
+            before[0](frame, event, arg)
+        if point == "authentication_return" and frame.f_code is auth_code and event == "return":
+            substitute()
+        elif (
+            point == "profile_entry"
+            and event == "call"
+            and frame.f_code is code
+            and frame.f_back is not None
+            and frame.f_back.f_code is generator_code
+        ):
+            # The entry frame is already original, but mutation of the same
+            # function must still refuse before its body begins.
+            substitute()
+        if self_restore and event == "call" and frame.f_code is foreign_code:
+            original.__code__ = code
+
+    def trace(frame, event, arg):
+        fn = before[1] if event == "call" else local_traces.get(id(frame))
+        if fn is not None:
+            result = fn(frame, event, arg)
+            if result is not None:
+                local_traces[id(frame)] = result
+        if event == "return":
+            local_traces.pop(id(frame), None)
+        if point == "dispatch_line" and frame.f_code is generator_code and event == "line":
+            # Target the actual call instruction's source line, after all
+            # authentication and hook installation have already completed.
+            if frame.f_lineno in dispatch_lines:
+                substitute()
+        elif (
+            point == "trace_entry"
+            and frame.f_code is code
+            and event == "call"
+            and frame.f_back is not None
+            and frame.f_back.f_code is generator_code
+        ):
+            substitute()
+        if self_restore and frame.f_code is foreign_code and event == "call":
+            original.__code__ = code
+        return trace
+
+    try:
+        sys.setprofile(profile)
+        sys.settrace(trace)
+        with pytest.raises(model.api.HistoryObservationRejected) as caught:
+            with model.api.observing_completed(model.owner, enabled=True) as interval:
+                _finish(model, interval)
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
+        original.__code__ = code
+        original.__globals__.pop("witness", None)
+    context = caught.value.partial
+    assert changed == [point] and foreign_calls == []
+    assert any("full-exit" in str(row[1]) for row in context.secondary)
+    assert context.full_attempts == 2 and context.full_returns == 1
+    assert context.record.status == "failed_observation"
+    assert model.provider._ACTIVE == [] and model.provider._PREPARING is None
+    assert not stage._ISSUED
+    software.snapshot.write_json(
+        tmp_path / "exit-call-gate.json",
+        dict(
+            scope="blocked metadata provider; no actual completed INIT/SIM authority",
+            mutation=point,
+            same_function_object=True,
+            restore_requested=self_restore,
+            foreign_body_entries=len(foreign_calls),
+            full_attempts=context.full_attempts,
+            accepted_full_returns=context.full_returns,
+            status=context.record.status,
+            closure_or_executable_refusal=True,
+            observed_entries=[
+                dict(
+                    event=event,
+                    actual_code=frame.f_code.co_qualname,
+                    filename=frame.f_code.co_filename,
+                    original_code=frame.f_code is code,
+                )
+                for frame, event in context.exit_entry_events
+            ],
+            source_native_RNG_entries=0,
+            independent_biological_cases=0,
+        ),
+    )

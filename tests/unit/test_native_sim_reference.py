@@ -9,12 +9,21 @@ import sys
 from contextlib import contextmanager
 from pathlib import Path
 from types import FunctionType, ModuleType, SimpleNamespace
+from typing import TYPE_CHECKING
 
 import pytest
 
 from validation.betse import native_sim_reference as reference
 from validation.betse import native_sim_reference_software as software
 from validation.betse import native_sim_reference_source as source
+
+if TYPE_CHECKING:
+    # The metadata preparation consumes these producer bytes without executing
+    # their tests. Make that read dependency explicit to the immutable collector.
+    from tests.unit import (
+        test_native_init_terminal_reference,  # noqa: F401
+        test_native_sim_reference_compare,  # noqa: F401
+    )
 
 initial = reference.initial
 
@@ -572,6 +581,161 @@ def test_sim_reference_preparation_roster_includes_complete_parent_triple():
     assert set(reference.OWNED) <= set(starts)
     assert {initial.FILE, initial.TEST, initial.RUNNER} <= set(starts)
     assert len(starts) == len(set(starts))
+
+
+def _full_input_pair():
+    return (
+        Path("/mnt/workspaces/Cells/native-basic-core-inputs-20261105-01/paired-inputs-01"),
+        "f61085dba949e3984e928900f9bb93abc073c077fb3e9da36dd0563a8c2718cc",
+    )
+
+
+def test_sim_reference_pair_metadata_prepares_two_full_modes_in_one_snapshot(tmp_path):
+    pair, digest = _full_input_pair()
+    output = tmp_path / "paired"
+    output.mkdir()
+    plan = reference.prepare_frozen(output, input_pair=pair, input_sha256=digest, mode="both")
+    assert plan["kind"] == reference.PAIR_KIND and plan["held"] is True
+    assert plan["source"]["root"] == str(reference.ROOT)
+    assert plan["calendars"]["init"]["expected_iterations"] == 500
+    assert plan["calendars"]["sim"]["expected_iterations"] == 350
+    assert set(plan["modes"]) == {"original", "disabled"}
+    roots = []
+    for mode, row in plan["modes"].items():
+        prepared = initial._json_record(row["prepared"]["path"], row["prepared"]["sha256"])
+        parent = initial._json_record(row["parent"]["path"], row["parent"]["sha256"])
+        roots.append(prepared["execution_source"]["root"])
+        assert parent["inputs"]["profile"] == "headless_core" and parent["inputs"]["mode"] == mode
+        assert parent["native_or_reference_calls"] == 0
+        assert row["execution_release"] is row["INIT_release"] is None
+        assert row["controller_recipe"]["may_launch"] is False
+        assert prepared["execution_closure"]["read_access"] == row["read_access"]
+        assert row["environment"]["MPLCONFIGDIR"] == str(Path(row["worker_output"]) / "mplconfig")
+    assert roots == [str(reference.ROOT)] * 2
+    assert plan["shared_start"] == dict(
+        authority=False, provider=None, RNG_reset_or_state_injection=False
+    )
+    assert plan["actual_source_native_reference_execution_released"] is False
+    assert not list(output.rglob("SNAPSHOT.json"))
+
+
+@pytest.mark.parametrize("secondary_capture", [False, True])
+def test_sim_reference_pair_preparation_failure_keeps_exact_primary(
+    tmp_path, monkeypatch, secondary_capture
+):
+    pair, digest = _full_input_pair()
+    output = tmp_path / "failed-pair"
+    output.mkdir()
+    primary = FalseySourceError("metadata runtime refusal")
+    cause = LookupError("original metadata cause")
+    primary.__cause__ = cause
+    secondary = OSError("failure envelope writer")
+    original = snapshot_write = reference.snapshot.write_json
+
+    def fail_runtime():
+        raise primary
+
+    def write(path, value):
+        if secondary_capture and Path(path).name == "preparation-failure.json":
+            raise secondary
+        return original(path, value)
+
+    monkeypatch.setattr(reference, "_reference_runtime", fail_runtime)
+    monkeypatch.setattr(reference.snapshot, "write_json", write)
+    with pytest.raises(FalseySourceError) as caught:
+        reference.prepare_pair_frozen(output, input_pair=pair, input_sha256=digest)
+    context = reference._RAW_FAILURES[-1]
+    assert caught.value is primary and primary.__cause__ is cause
+    assert context["primary"] is primary and context["stage"] == "runtime_declaration"
+    assert context["modes"] == {}
+    assert context["secondary"] == ([secondary] if secondary_capture else [])
+    snapshot_write(
+        tmp_path / "preparation-refusal.json",
+        dict(
+            primary_identity=id(primary),
+            cause_identity=id(cause),
+            secondary_identity=id(secondary) if secondary_capture else None,
+            issued=False,
+        ),
+    )
+
+
+@pytest.mark.parametrize("mode", ["original", "disabled"])
+def test_sim_reference_pair_calendar_projection_preserves_exact_raw_program(mode):
+    pair, digest = _full_input_pair()
+    selected = initial._input_manifest(pair, digest, mode)
+    before = initial.inputs.inventory(Path(selected["root"]))
+    result = reference._full_calendars(selected)
+    assert result["init"]["scalars"] == {
+        "time step": 1.0e-2,
+        "total time": 5.0,
+        "sampling rate": 1.0,
+    }
+    assert result["sim"]["scalars"] == {
+        "time step": 1.0e-4,
+        "total time": 0.035,
+        "sampling rate": 1.0e-3,
+    }
+    assert initial.inputs.inventory(Path(selected["root"])) == before
+
+
+def test_sim_reference_pair_calendar_refuses_legacy_profile_before_read():
+    with pytest.raises(initial.ReferenceRejected, match="headless_core"):
+        reference._full_calendars(dict(profile="headless", root="/never-read"))
+
+
+@pytest.mark.parametrize("capture_fails", [False, True])
+def test_sim_reference_pair_controller_failure_preserves_original(
+    tmp_path, monkeypatch, capture_fails
+):
+    from validation.betse import betse_mesh_lifecycle_preparation_guard as guard
+
+    prepared, digest = _prepared(tmp_path)
+    output = tmp_path / "controller"
+    primary, cause, secondary = (
+        FalseySourceError("guarded failure"),
+        KeyError("cause"),
+        OSError("capture"),
+    )
+    primary.__cause__ = cause
+    original = reference.snapshot.write_json
+
+    def fail(*args, **kwargs):
+        original(
+            kwargs["directory"] / "failure.json",
+            dict(status="failed", original_identity=id(primary)),
+        )
+        raise primary
+
+    def write(path, value):
+        if capture_fails and Path(path).name == "controller-failure.json":
+            raise secondary
+        return original(path, value)
+
+    monkeypatch.setattr(reference, "_release", lambda *args, **kwargs: {})
+    monkeypatch.setattr(guard, "run_bounded", fail)
+    monkeypatch.setattr(reference.snapshot, "write_json", write)
+    with pytest.raises(FalseySourceError) as caught:
+        reference.supervise(prepared, digest, "unreleased", "0" * 64, output, enabled=False)
+    assert caught.value is primary and primary.__cause__ is cause
+    if capture_fails:
+        entry = reference._RAW_FAILURES[-1]
+        assert entry[:3] == ("controller_failure_capture", primary, secondary)
+    else:
+        value = initial._json_record(
+            output / "controller-failure.json",
+            initial.snapshot.digest(output / "controller-failure.json"),
+        )
+        assert value["status"] == "failed" and value["automatic_retry"] is False
+    original(
+        tmp_path / "controller-refusal.json",
+        dict(
+            primary_identity=id(primary),
+            cause_identity=id(cause),
+            capture_failure=capture_fails,
+            scientific_credit=0,
+        ),
+    )
 
 
 class FalseySourceError(ValueError):

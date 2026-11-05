@@ -655,7 +655,439 @@ def test_sim_run_real_profile_unwind_observation_retains_primary_cause_and_raw(s
         )
     else:
         assert isinstance(caught.value, stage.SimRunRejected) and caught.value.stage == "capture"
+
     assert any(row[1] is capture for row in context.capture_errors)
+
+
+def test_sim_run_core_complete_current_and_profile_helper_roster_is_original_and_closed():
+    from cells.processes import betse_native_init_electrical_source as electrical
+
+    sites = stage.source.sites()
+    for path, pin in electrical.SOURCE_PINS.items():
+        assert stage.source.PINS[path] == pin
+    expected = {
+        (None, "get_current"),
+        (None, "HH_Decomp"),
+        (None, "gradient"),
+        (None, "divergence"),
+        (None, "diff"),
+        (None, "load_image"),
+        (None, "interp2d_linear"),
+        (None, "die_unless_file"),
+        (None, "is_file"),
+        (None, "is_dir"),
+        (None, "is_path"),
+        (None, "get_basename"),
+        ("TissuePickerImage", "pick_cells"),
+        ("TissuePickerImage", "get_image_mask"),
+        ("TissuePickerImageMask", "__init__"),
+        ("TissuePickerImageMask", "get_clipped_points_index"),
+    }
+    assert expected <= set(sites)
+    for path, names in stage.source.IMAGE_HELPERS.items():
+        assert {(owner, name) for (owner, name), file in sites.items() if file == path} == {
+            (None, name) for name in names
+        }
+    assert sites[(None, "join")] == "betse/util/type/text/string/strjoin.py"
+    assert (None, "copy_overwritable") not in sites
+    # Direct and downstream edges are checked against independently read ASTs,
+    # without invoking original methods, decorators, helpers or image readers.
+    for role, reached in (
+        ("voltage", {"get_current"}),
+        ("current", {"HH_Decomp", "gradient"}),
+        ("decompose", {"gradient", "divergence"}),
+        ("divergence", {"diff"}),
+        ("image_pick", {"get_image_mask", "get_clipped_points_index"}),
+        ("mask_constructor", {"load_image", "interp2d_linear"}),
+        ("image_load", {"get_basename", "die_unless_file", "to_signed"}),
+    ):
+        path, qualified = stage.source.METHODS[role]
+        unit = ast.parse((stage.source.NATIVE / path).read_bytes())
+        pieces = qualified.split(".")
+        body = unit.body
+        for name in pieces:
+            node = next(
+                n for n in body if isinstance(n, (ast.FunctionDef, ast.ClassDef)) and n.name == name
+            )
+            body = node.body
+        calls = {
+            n.func.id if isinstance(n.func, ast.Name) else n.func.attr
+            for n in ast.walk(node)
+            if isinstance(n, ast.Call) and isinstance(n.func, (ast.Name, ast.Attribute))
+        }
+        assert reached <= calls
+    assert stage.source.source_plan()["image_helpers"] == stage.source.IMAGE_HELPERS
+    assert stage.MAX_ITERATIONS == 512 and stage.MAX_WORK == 100000
+    assert not stage._ISSUED
+
+
+def _core_binding_model():
+    """Private loader-shaped metadata only; original code is never called."""
+    code = stage.source.code("current")
+    namespace = dict(__builtins__=vars(builtins), __name__="metadata_current")
+    actual = FunctionType(code, namespace)
+    path = stage.source.METHODS["current"][0]
+    module = ModuleType(path[:-3].replace("/", "."))
+    module.__file__ = str(stage.source.NATIVE / path)
+    module.get_current = actual
+
+    class MetadataRng:
+        def shuffle(self):
+            raise AssertionError("No RNG work in a binding control")
+
+        def _randbelow(self):
+            raise AssertionError("No RNG work in a binding control")
+
+    rng = MetadataRng()
+
+    def noop():
+        raise AssertionError("No source work in a binding control")
+
+    old = NS(
+        log_support=[],
+        logger_chains={},
+        noop_generator=noop,
+        noop_methods=(),
+        parent=NS(shuffle=rng.shuffle, std_rng=rng, molecule_session=None),
+    )
+    context = NS(
+        assembly=NS(parent=old),
+        nested_codes={},
+        callback_chains={},
+        callback_owner=object(),
+        callback_binding=(),
+        expressions=None,
+    )
+    proof = NS(published=True, primary=None, active=False, loaded_codes={module.__name__: object()})
+    checks = []
+    catalog = NS(
+        NATIVE=stage.source.NATIVE,
+        sites=lambda: {(None, "get_current"): path},
+        import_code=lambda owner, name: code,
+        METHODS={"current": (path, "get_current")},
+        code=lambda role: code,
+    )
+    context.import_api = {"validate": lambda *a, **k: checks.append((a, k))}
+    bind = clone(
+        stage._bind_runtime,
+        __name__="metadata_SIM_core_binding",
+        source=catalog,
+        sys=NS(modules={module.__name__: module}),
+        _IMPORT_EXPORTS=[(proof, ((module, module, "get_current", actual),))],
+        _IMPORTS={actual: (proof,)},
+        _runtime_import_api=lambda: context.import_api,
+        base=NS(_callback_methods=lambda c: None, _callback_bindings=lambda c: ()),
+    )
+    return NS(context=context, actual=actual, module=module, code=code, bind=bind, checks=checks)
+
+
+@pytest.mark.parametrize("drift", (None, "unobserved", "equal_copy", "code", "namespace"))
+def test_sim_run_core_import_binding_requires_actual_fresh_electrical_export_without_call(drift):
+    model = _core_binding_model()
+    if drift == "unobserved":
+        model.bind.__globals__["_IMPORT_EXPORTS"] = []
+    elif drift == "equal_copy":
+        model.module.get_current = FunctionType(model.code, model.actual.__globals__)
+    elif drift == "code":
+        model.actual.__code__ = (lambda: None).__code__
+    elif drift == "namespace":
+        model.module.__file__ = "/tmp/foreign_current.py"
+    if drift is None:
+        model.bind(model.context)
+        assert model.context.codes[model.code][0] is model.actual
+        assert model.context.members == [(model.module, "get_current", model.actual)]
+        assert len(model.checks) == 1
+        # An equal-code replacement after binding also refuses before a call.
+        model.module.get_current = FunctionType(model.code, model.actual.__globals__)
+        check = clone(stage._entry_bindings, base=NS(_callback_bindings=lambda c: ()))
+        with pytest.raises(ValueError, match="dispatch changed"):
+            check(model.context)
+    else:
+        with pytest.raises(ValueError, match="prerequisite|executable|module"):
+            model.bind(model.context)
+    assert not stage._ISSUED
+
+
+@pytest.mark.parametrize("drift", (None, "sim", "cells", "p", "caller"))
+def test_sim_run_core_actual_profile_dispatch_refuses_before_foreign_current_body(drift):
+    entered, checked = [], []
+
+    def current(sim, cells, p):
+        entered.append((sim, cells, p))
+
+    def voltage(self, cells, p):
+        current(self, cells, p)
+
+    simulator = type("Simulator", (), {})
+    sim, cells, p = object.__new__(simulator), object(), object()
+    context = NS(
+        sim=sim,
+        cells=cells,
+        p=p,
+        invalid=False,
+        entry_error=None,
+        core_roles={current.__code__: "current"},
+        callback_methods={},
+        image_codes=set(),
+        codes={
+            current.__code__: (current, None, "get_current", True),
+            voltage.__code__: (voltage, simulator, "update_V", True),
+        },
+    )
+    if drift == "caller":
+        context.codes[voltage.__code__] = (voltage, simulator, "unrelated", True)
+    args = [sim, cells, p]
+    if drift in ("sim", "cells", "p"):
+        args[("sim", "cells", "p").index(drift)] = object()
+    prior = sys.getprofile()
+
+    def profile(frame, event, arg):
+        if prior is not None:
+            prior(frame, event, arg)
+        if event == "call" and frame.f_code is current.__code__:
+            checked.append(frame)
+            stage._source_entry(context, frame, context.codes[current.__code__])
+
+    try:
+        sys.setprofile(profile)
+        if drift is None:
+            voltage(*args)
+        else:
+            with pytest.raises(stage.SimRunRejected) as caught:
+                voltage(*args)
+            assert caught.value.stage == "dispatch" and caught.value.partial is context
+    finally:
+        sys.setprofile(prior)
+    assert len(checked) == 1 and len(entered) == (1 if drift is None else 0)
+    assert not stage._ISSUED
+
+
+@pytest.mark.parametrize("role", ("decompose", "gradient", "divergence", "diff", "image_load"))
+def test_sim_run_core_downstream_original_edges_cannot_skip_to_unrelated_callers(role):
+    function = FunctionType(stage.source.code(role), dict(__builtins__=vars(builtins)))
+
+    def unrelated():
+        raise AssertionError("No downstream body may execute")
+
+    code = function.__code__
+    caller = NS(f_code=unrelated.__code__, f_globals=unrelated.__globals__, f_back=None)
+    frame = NS(f_code=code, f_globals=function.__globals__, f_back=caller, f_locals={})
+    context = NS(
+        codes={
+            code: (function, None, function.__name__, True),
+            unrelated.__code__: (unrelated, None, "unrelated", True),
+        },
+        invalid=False,
+        entry_error=None,
+    )
+    with pytest.raises(stage.SimRunRejected, match="caller/dispatch edge") as caught:
+        stage._helper_entry(context, frame, role)
+    assert caught.value.stage == "dispatch" and context.invalid
+
+
+@pytest.mark.parametrize("role", ("decompose", "gradient", "divergence", "diff"))
+@pytest.mark.parametrize("foreign", (False, True))
+def test_sim_run_core_downstream_accepts_actual_owner_and_refuses_equal_foreign_spacing(
+    role, foreign
+):
+    function = FunctionType(stage.source.code(role), dict(__builtins__=vars(builtins)))
+    parents = {
+        "decompose": "current",
+        "gradient": "decompose",
+        "divergence": "decompose",
+        "diff": "divergence",
+    }
+    parent = FunctionType(stage.source.code(parents[role]), dict(__builtins__=vars(builtins)))
+    delta, bounds = float("0.000008"), dict(L=0.0, R=0.0, T=0.0, B=0.0)
+    sim, cells = NS(bound_V=bounds), NS(delta=delta)
+    caller = NS(
+        f_code=parent.__code__,
+        f_globals=parent.__globals__,
+        f_back=None,
+        f_locals=dict(sim=sim),
+    )
+    values = dict(cells=cells, bounds=bounds, delx=delta, dely=None)
+    if role == "divergence":
+        values["dely"] = delta
+    if foreign:
+        if role == "decompose":
+            values["bounds"] = dict(bounds)
+        else:
+            values["delx"] = float("0.000008")
+            assert values["delx"] == delta and values["delx"] is not delta
+    frame = NS(
+        f_code=function.__code__, f_globals=function.__globals__, f_back=caller, f_locals=values
+    )
+    context = NS(
+        sim=sim,
+        cells=cells,
+        invalid=False,
+        entry_error=None,
+        codes={
+            function.__code__: (function, None, function.__name__, True),
+            parent.__code__: (parent, None, parent.__name__, True),
+        },
+    )
+    if foreign:
+        with pytest.raises(stage.SimRunRejected, match="association|spacing") as caught:
+            stage._helper_entry(context, frame, role)
+        assert caught.value.stage == "dispatch" and context.invalid
+    else:
+        stage._helper_entry(context, frame, role)
+        assert not context.invalid
+
+
+def _image_callback_model():
+    factory_code = stage.source.code("interpolator")
+    code = next(v for v in factory_code.co_consts if type(v) is CodeType)
+
+    class Spline:
+        def __call__(self, *args):
+            raise AssertionError("Original/SciPy interpolation stays blocked")
+
+    spline = object.__new__(Spline)
+    namespace = dict(__builtins__=vars(builtins), RectBivariateSpline=Spline)
+    cell = (lambda: spline).__closure__[0]
+    function = FunctionType(code, namespace, closure=(cell,))
+    mask = NS(clipping_function=function)
+    constructor = FunctionType(stage.source.code("mask_constructor"), namespace)
+    constructor_owner = type("TissuePickerImageMask", (), {})
+    constructor_frame = NS(
+        f_code=constructor.__code__,
+        f_globals=namespace,
+        f_locals=dict(self=mask),
+        f_back=None,
+    )
+    factory = FunctionType(factory_code, namespace)
+    frame = NS(
+        f_code=factory_code,
+        f_globals=namespace,
+        f_back=constructor_frame,
+        f_locals=dict(bivariate_spline=spline, bivariate_spline_interpolator=function),
+    )
+    context = NS(
+        invalid=False,
+        entry_error=None,
+        image_callbacks=[],
+        functions=[],
+        image_codes=set(),
+        core_roles={constructor.__code__: "mask_constructor"},
+        codes={
+            factory_code: (factory, None, "interp2d_linear", True),
+            constructor.__code__: (constructor, constructor_owner, "__init__", True),
+        },
+    )
+    return NS(context=context, frame=frame, function=function, mask=mask, spline=spline)
+
+
+@pytest.mark.parametrize(
+    "drift", (None, "None", "equal_copy", "code", "closure", "namespace", "spline")
+)
+def test_sim_run_core_interpolator_requires_actual_original_return_and_closure_without_call(drift):
+    model = _image_callback_model()
+    result = model.function
+    if drift == "None":
+        result = None
+    elif drift == "equal_copy":
+        result = FunctionType(result.__code__, result.__globals__, closure=result.__closure__)
+    elif drift == "code":
+        result.__code__ = result.__code__.replace(co_firstlineno=result.__code__.co_firstlineno + 1)
+    elif drift == "closure":
+        result.__closure__[0].cell_contents = object()
+    elif drift == "namespace":
+        model.frame.f_globals = dict(model.frame.f_globals)
+    elif drift == "spline":
+        model.frame.f_globals["RectBivariateSpline"] = type("Spline", (), {})
+    if drift is None:
+        stage._interpolator_return(model.context, model.frame, result)
+        assert model.context.image_callbacks[0][0] is result
+        assert model.context.image_callbacks[0][2] is model.mask
+        assert model.context.image_callbacks[0][3] is model.frame
+        assert model.context.image_callbacks[0][4] is model.spline
+        assert model.context.codes[result.__code__][0] is result
+        assert len(model.context.functions) == 1
+    else:
+        with pytest.raises(stage.SimRunRejected) as caught:
+            stage._interpolator_return(model.context, model.frame, result)
+        assert caught.value.stage == "image_callback" and not model.context.image_callbacks
+    assert model.context.last_image_return == (model.frame, result)
+    assert not stage._ISSUED
+
+
+@pytest.mark.parametrize("drift", (None, "equal_copy", "mask", "closure", "point", "caller"))
+def test_sim_run_core_later_interpolator_dispatch_preserves_actual_factory_mask_and_point(drift):
+    model = _image_callback_model()
+    stage._interpolator_return(model.context, model.frame, model.function)
+    clip_code = stage.source.code("mask_clip")
+    x, y = object(), object()
+    caller = NS(f_code=clip_code, f_locals=dict(self=model.mask, x=x, y=y))
+    model.context.core_roles[clip_code] = "mask_clip"
+    frame = NS(
+        f_code=model.function.__code__,
+        f_globals=model.function.__globals__,
+        f_back=caller,
+        f_locals=dict(bivariate_spline=model.spline, x_new=x, y_new=y),
+    )
+    if drift == "equal_copy":
+        model.mask.clipping_function = FunctionType(
+            model.function.__code__, model.function.__globals__, closure=model.function.__closure__
+        )
+    elif drift == "mask":
+        caller.f_locals["self"] = NS(clipping_function=model.function)
+    elif drift == "closure":
+        model.function.__closure__[0].cell_contents = object()
+    elif drift == "point":
+        frame.f_locals["x_new"] = object()
+    elif drift == "caller":
+        caller.f_code = (lambda: None).__code__
+    if drift is None:
+        stage._image_callback_entry(model.context, frame)
+        assert not model.context.invalid
+    else:
+        with pytest.raises((ValueError, stage.SimRunRejected)):
+            stage._image_callback_entry(model.context, frame)
+    assert not stage._ISSUED
+
+
+@pytest.mark.parametrize("drift", (None, "callback", "fast_type"))
+def test_sim_run_core_image_roots_keep_both_actual_splines_and_complete_fields(drift):
+    model = _image_callback_model()
+    stage._interpolator_return(model.context, model.frame, model.function)
+    model.context.added_objects = [("TissuePickerImageMask.__init__", model.mask)]
+    coefficients = np.asarray([[-0.0, 1.5], [2.5, 3.5]], dtype=np.float64)
+    model.spline.tck = (coefficients, coefficients, coefficients)
+    model.spline.degrees = (1, 1)
+    fast = object.__new__(type(model.spline))
+    fast.tck, fast.degrees = model.spline.tck, (3, 3)
+    model.mask.clipping_function_fast = fast
+    model.mask.clipping_matrix = coefficients
+    if drift == "callback":
+        model.mask.clipping_function = FunctionType(
+            model.function.__code__, model.function.__globals__, closure=model.function.__closure__
+        )
+    elif drift == "fast_type":
+        model.mask.clipping_function_fast = NS(tck=fast.tck, degrees=fast.degrees)
+    if drift is not None:
+        with pytest.raises(stage.SimRunRejected) as caught:
+            stage._image_roots(model.context)
+        assert caught.value.stage == "image_callback"
+        return
+    roots = (("mask", model.mask), *stage._image_roots(model.context))
+    assert roots[1][1] is model.function and roots[2][1] is model.spline and roots[3][1] is fast
+    literal = stage.base.previous.storage.previous.previous.previous.core._LITERAL
+    projector = NS(objects=list(roots))
+    fields = tuple(
+        (role, literal._project(projector, vars(actual)))
+        for role, actual in stage._field_objects(roots)
+    )
+    assert len(fields) == 3  # mask and both splines, no dropped numeric stores.
+    assert fields[0][1]["clipping_function"] == dict(owned_reference=1)
+    assert fields[0][1]["clipping_function_fast"] == dict(owned_reference=3)
+    assert all(fields[i][1]["tck"][0] is coefficients for i in (1, 2))
+    cache = stage.previous.terminal.retained_cache.snapshot(fields)
+    assert stage.previous.terminal.retained_cache.validate(cache) is cache
+    assert cache.columns and all(column.values.shape == (2, 2) for column in cache.columns)
+    assert not stage._ISSUED
 
 
 def test_sim_run_nested_original_super_ABC_constructor_remains_admitted():

@@ -22,7 +22,7 @@ from cells.processes import betse_native_sim_run as parent
 
 RELEASE = "CELLS_NATIVE_SIM_HISTORY_OBSERVATION_RELEASED"
 LAW_ID = "actual_completed_SIM_read_only_complete_history_interval@1"
-PARENT_SHA256 = "64122f8a333c246733789417e2b1d74b2338e3c5cffee4671085c6f5afd940d4"
+PARENT_SHA256 = "c3238c6c6704f8bc133d23450235eb2b742e6505530bd47de0d590a958e3e4d4"
 PARENT_REVIEW_SHA256 = None
 MAX_OPERATIONS = 100000
 _PENDING, _FAILED = None, []
@@ -628,7 +628,8 @@ def _exit_api(context):
     """Authenticate the retained exit delegate after arbitrary body/cleanup.
 
     Return that exact retained function; never perform a mutable module lookup
-    at the callsite. A return observer's retarget is checked again after use.
+    at the callsite. Entry admission also checks the actual executing frame;
+    a post-call check alone cannot prevent a self-restoring code substitution.
     """
     if context.api_guard.__code__ is not context.api_guard_code:
         raise ValueError("Original observation guard executable changed at exit")
@@ -748,6 +749,8 @@ def observing_completed(owner, *, enabled=False):
                 api_guard=_check_self,
                 api_guard_code=_check_self.__code__,
                 exit_parent=parent,
+                exit_entry=None,
+                exit_entry_events=[],
                 exit_binding=(
                     exit_function,
                     exit_function.__code__,
@@ -819,7 +822,135 @@ def observing_completed(owner, *, enabled=False):
                     try:
                         exit_delegate = _work(context, "full_exit_API_before", _exit_api, context)
                         context.full_attempts += 1
-                        result = exit_delegate(owner)
+                        dispatch = sys._getframe()
+                        expected = context.exit_binding
+                        old_hooks = sys.getprofile(), sys.gettrace()
+                        locals_ = {}
+                        armed = False
+
+                        def admit(frame, event):
+                            # A function's current __code__ is insufficient:
+                            # an inherited hook may restore it after a foreign
+                            # frame was already created for this exact call.
+                            if not armed:
+                                return
+                            target = event == "call" and frame.f_back is dispatch
+                            if not target and frame is not context.exit_entry:
+                                return
+                            context.exit_entry_events.append((frame, event))
+                            function, code, namespace, cached, defaults, keywords, closure = (
+                                expected
+                            )
+                            if (
+                                sys.getprofile() is not profile
+                                or sys.gettrace() is not trace
+                                or exit_delegate is not function
+                                or vars(context.exit_parent).get("validate_sim") is not function
+                                or function.__code__ is not code
+                                or frame.f_code is not code
+                                or frame.f_globals is not namespace
+                                or frame.f_builtins is not cached
+                                or function.__globals__ is not namespace
+                                or function.__builtins__ is not cached
+                                or function.__defaults__ is not defaults
+                                or frame.f_locals.get(code.co_varnames[0]) is not owner
+                            ):
+                                raise ValueError(
+                                    "Original full-exit call-boundary executable required"
+                                )
+                            current = function.__kwdefaults__ or {}
+                            cells = function.__closure__ or ()
+                            if (
+                                len(current) != len(keywords)
+                                or any(current.get(key) is not value for key, value in keywords)
+                                or len(cells) != len(closure)
+                                or any(
+                                    cell is not old
+                                    or cell.cell_contents is not value
+                                    or frame.f_locals.get(name) is not value
+                                    for name, cell, (old, value) in zip(
+                                        code.co_freevars, cells, closure, strict=True
+                                    )
+                                )
+                            ):
+                                raise ValueError(
+                                    "Original full-exit call-boundary closure required"
+                                )
+                            if target:
+                                if (
+                                    context.exit_entry is not None
+                                    and context.exit_entry is not frame
+                                ):
+                                    raise ValueError("One actual original full-exit entry required")
+                                context.exit_entry = frame
+
+                        admit_code = admit.__code__
+
+                        def profile(frame, event, arg):
+                            if old_hooks[0] is not None:
+                                old_hooks[0](frame, event, arg)
+                            if admit.__code__ is not admit_code:
+                                raise ValueError("Original full-exit admission code changed")
+                            admit(frame, event)
+
+                        def trace(frame, event, arg):
+                            fn = old_hooks[1] if event == "call" else locals_.get(id(frame))
+                            result = None if fn is None else fn(frame, event, arg)
+                            if event == "return":
+                                locals_.pop(id(frame), None)
+                            elif result is not None:
+                                locals_[id(frame)] = result
+                            if admit.__code__ is not admit_code:
+                                raise ValueError("Original full-exit admission code changed")
+                            admit(frame, event)
+                            return trace
+
+                        gate_primary = None
+                        try:
+                            sys.setprofile(profile)
+                            sys.settrace(trace)
+                            armed = True
+                            result = exit_delegate(owner)
+                        except BaseException as error:
+                            gate_primary = error
+                            raise
+                        finally:
+                            armed = False
+                            # A rejected entry can disable the hook that
+                            # rejected it. Recover both independently, even
+                            # when the other inherited hook also refuses.
+                            for label, getter, setter, original in (
+                                ("trace", sys.gettrace, sys.settrace, old_hooks[1]),
+                                ("profile", sys.getprofile, sys.setprofile, old_hooks[0]),
+                            ):
+                                for index in range(3):
+                                    try:
+                                        setter(original)
+                                        if getter() is original:
+                                            break
+                                    except BaseException as error:
+                                        context.last_error = (label + "_exit_gate", error, index)
+                                        context.invalid = True
+                            final_gate = []
+                            for label, getter in (
+                                ("profile", sys.getprofile),
+                                ("trace", sys.gettrace),
+                            ):
+                                try:
+                                    final_gate.append(getter())
+                                except BaseException as error:
+                                    context.last_error = (label + "_exit_gate_final", error, None)
+                                    context.invalid = True
+                                    final_gate.append(None)
+                            if (
+                                final_gate[0] is not old_hooks[0]
+                                or final_gate[1] is not old_hooks[1]
+                            ):
+                                error = ValueError("Original full-exit observer hooks not restored")
+                                _remember(context, "exit_gate_recovery", error)
+                                context.invalid = True
+                                if gate_primary is None:
+                                    raise error
                         context.full_returns += 1
                         _work(context, "full_exit_API_after", _exit_api, context)
                         if result is not trial:

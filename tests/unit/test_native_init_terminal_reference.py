@@ -1181,6 +1181,32 @@ def test_reference_completion_writer_reuse_is_original_readonly_contract():
     )
 
 
+def test_reference_pair_writer_declarations_do_not_adopt_observed_hashes():
+    binding = reference.writer_declarations()
+    assert binding["observed_hash_is_not_automatic_adoption"] is True
+    assert binding["audit"]["component_sha256"] == reference.AUDIT_COMPONENT_SHA256
+    for name, row in binding["sources"].items():
+        assert row["declared_sha256"] == reference.WRITER_PRODUCERS[name]
+        assert row["observed_sha256"] == software.snapshot.digest(Path(row["path"]))
+        assert row["declared_source_matches"] is (row["declared_sha256"] == row["observed_sha256"])
+    assert binding["all_declared_sources_match"] is all(
+        row["declared_source_matches"] for row in binding["sources"].values()
+    )
+
+
+def test_reference_pair_writer_mismatch_refuses_before_either_import(monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        reference, "WRITER_PRODUCERS", dict.fromkeys(reference.WRITER_PRODUCERS, "0" * 64)
+    )
+    monkeypatch.setattr(
+        reference.importlib, "import_module", lambda *args, **kwargs: calls.append(args)
+    )
+    with pytest.raises(reference.ReferenceRejected, match="producer adoption unavailable"):
+        reference._writer_providers()
+    assert calls == []
+
+
 @pytest.mark.parametrize("hook", ["profile", "trace"])
 @pytest.mark.parametrize("falsey", [False, True])
 def test_reference_residual_pending_unwind_never_allows_rejected_entry(tmp_path, hook, falsey):
@@ -1748,6 +1774,75 @@ def test_reference_core_profile_initial_witness_keeps_exact_selected_profile(dri
         witness = reference._initial_rng_witness(plan, state, observed, runtime)
         assert witness["common_binding"]["profile"] == "headless_core"
         assert witness["state"] is observed
+
+
+def _builtin_runtime_fixture(runtime):
+    value = copy.deepcopy(runtime)
+    value["kind"] = "cells.rng_runtime_provenance@2"
+    value["files"].pop("_random")
+    value["python"] = ".".join(map(str, sys.version_info[:3]))
+    value["interpreter"] = dict(
+        implementation="cpython",
+        cache_tag=sys.implementation.cache_tag,
+        hexversion=sys.hexversion,
+        builtin_module_names=["_random"],
+    )
+    value["builtins"] = {
+        "_random": dict(
+            kind="cpython_builtin_module",
+            name="_random",
+            origin="built-in",
+            loader="_frozen_importlib.BuiltinImporter",
+            has_location=False,
+            cached=None,
+            submodule_search_locations=None,
+            export="_random.Random",
+            methods=["seed", "getstate", "setstate", "random", "getrandbits"],
+            executable_sha256=value["executable"]["sha256"],
+        )
+    }
+    return value
+
+
+@pytest.mark.parametrize("drift", [None, "file_and_builtin", "executable", "interpreter"])
+def test_reference_builtin_runtime_witness_uses_explicit_versioned_provenance(monkeypatch, drift):
+    # Exact shared metadata candidate in this frozen control only; actual
+    # producer adoption remains closed in the delivered source.
+    candidate = "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315"
+    monkeypatch.setattr(reference, "RNG_RUNTIME_HELPER_SHA256", candidate)
+    assert reference.snapshot.digest(reference.ROOT / reference.RNG_RUNTIME_HELPER) == candidate
+    plan, state, observed, runtime = _initial_rng_fixture()
+    runtime = _builtin_runtime_fixture(runtime)
+    if drift == "file_and_builtin":
+        runtime["files"]["_random"] = dict(path="/fake.so", sha256="d" * 64)
+    elif drift == "executable":
+        runtime["builtins"]["_random"]["executable_sha256"] = "0" * 64
+    elif drift == "interpreter":
+        runtime["interpreter"]["cache_tag"] = "cpython-999"
+    if drift is not None:
+        with pytest.raises(ValueError):
+            reference._initial_rng_witness(plan, state, observed, runtime)
+    else:
+        witness = reference._initial_rng_witness(plan, state, observed, runtime)
+        assert witness["kind"] == reference.RNG_BUILTIN_WITNESS_KIND
+        assert (
+            witness["state"] is observed
+            and "_random" not in witness["common_binding"]["runtime"]["files"]
+        )
+        assert witness["source"]["files"] == {
+            reference.RNG_RUNTIME_HELPER: reference.RNG_RUNTIME_HELPER_SHA256
+        }
+
+
+def test_reference_builtin_missing_helper_refuses_without_invented_file_origin(monkeypatch):
+    from validation.betse import betse_normal_channel_join_runtime as runtime
+
+    monkeypatch.setattr(reference, "RNG_RUNTIME_HELPER_SHA256", None)
+    monkeypatch.setattr(
+        runtime, "inventory", lambda: dict(loaded_files={}, modules_without_files=["_random"])
+    )
+    with pytest.raises(reference.ReferenceRejected, match="provenance helper unavailable"):
+        reference._initial_rng_runtime()
 
 
 @pytest.mark.parametrize("gaussian", ["none", "negative_zero", "nan_payload"])

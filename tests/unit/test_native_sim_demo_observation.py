@@ -1,5 +1,6 @@
 """Real typed transport and installed-hook controls around inert public APIs."""
 
+import ast
 import hashlib
 import json
 import os
@@ -44,6 +45,27 @@ def wire(raw_hex):
     )
 
 
+def history_record(identity, count):
+    """Producer-shaped inert closure metadata; no history or owner is issued."""
+    return dict(
+        law="actual_completed_SIM_read_only_complete_history_interval@1",
+        status="completed_observation",
+        trial_identity=identity,
+        configured_rows=count,
+        checked_rows=list(range(count)),
+        work=[],
+        full_authority_attempts=2,
+        full_authority_returns=2,
+        retained_payload_attempts=3 * count,
+        retained_payload_returns=3 * count,
+        source_metadata_operations=0,
+        source_retained_cache_attempts=0,
+        source_retained_cache_returns=0,
+        callback_calls=[],
+        native_or_scientific_credit=0,
+    )
+
+
 def protocol(monkeypatch, *, count=2, mode="original", fault=None):
     state = NS(sim_observation=None)
     model = NS(
@@ -73,6 +95,24 @@ def protocol(monkeypatch, *, count=2, mode="original", fault=None):
         vars(module),
     )
     module.model = model
+    module.KEY_SHA256 = "c" * 64
+    module.KEY_REVIEW = dict(path="/synthetic/issuer-review.json", sha256="d" * 64)
+    module.WRITER_SHA256 = observation.WRITER_SHA256
+    module.HISTORY_FILE, module.HISTORY_MODULE = observation.HISTORY, observation.HISTORY_MODULE
+    module.HISTORY_SHA256 = "e" * 64
+    module.HISTORY_REVIEW = dict(path="/synthetic/history-review.json", sha256="f" * 64)
+    history, parent = ModuleType(observation.HISTORY_MODULE), ModuleType(observation.KEY_MODULE)
+    history.__file__, parent.__file__ = (
+        str(observation.ROOT / observation.HISTORY),
+        str(observation.ROOT / observation.KEY),
+    )
+    history.parent = parent
+    history.PARENT_SHA256, history.PARENT_REVIEW_SHA256 = "c" * 64, "d" * 64
+    history.RELEASE = observation.HISTORY_RELEASE
+    model.history, model.parent = history, parent
+    monkeypatch.setitem(sys.modules, observation.HISTORY_MODULE, history)
+    monkeypatch.setitem(sys.modules, observation.KEY_MODULE, parent)
+    monkeypatch.setattr(observation, "_history_module", lambda api: (history, parent))
     model.module = module
     # Only producer issuance is synthetic; the actual consumer and writer run.
     monkeypatch.setitem(sys.modules, observation.MODULE, module)
@@ -92,6 +132,7 @@ def protocol(monkeypatch, *, count=2, mode="original", fault=None):
     )
     monkeypatch.setattr(observation, "OBSERVER_SHA256", "b" * 64)
     monkeypatch.setenv(observation.RELEASE, "1")
+    monkeypatch.setenv(observation.HISTORY_RELEASE, "1")
     raw = wire("0000000000000080000000000000f87f")
     model.wire = raw
 
@@ -126,10 +167,16 @@ def protocol(monkeypatch, *, count=2, mode="original", fault=None):
             captures=captures,
             producer=dict(
                 module="cells.processes.betse_native_sim_run",
-                review=None,
+                review=module.KEY_REVIEW,
                 sha256="c" * 64,
                 observer=dict(path=observation.OBSERVER, sha256="b" * 64),
+                history=dict(
+                    path=observation.HISTORY,
+                    sha256=module.HISTORY_SHA256,
+                    review=module.HISTORY_REVIEW,
+                ),
             ),
+            work=dict(history_interval=history_record(model.trial.identity, count)),
             numerical_parity_available=False,
             common_starting_authority_established=False,
             physical_checkpoint_credit=0,
@@ -291,6 +338,38 @@ def saved_policy(source, folder, run_sha):
     review = folder / "observer-review.json"
     review.write_text('{"scope":"synthetic byte binding only"}\n')
     review_pin = observation.pin(review)
+    issuer = source / observation.SIM
+    if issuer.exists():
+        selected = observation.constants(issuer, ("SOURCE_PINS", "REVIEW_PINS"))
+        assert selected["SOURCE_PINS"]["run"] == run_sha
+        set_constant(issuer, "REVIEW_PINS", dict(selected["REVIEW_PINS"], run=review_pin["sha256"]))
+    else:
+        issuer.parent.mkdir(parents=True, exist_ok=True)
+        issuer.write_text(
+            "SOURCE_PINS = "
+            + repr(dict(run=run_sha))
+            + "\nREVIEW_PINS = "
+            + repr(dict(run=review_pin["sha256"]))
+            + "\n"
+        )
+        issuer.chmod(0o444)
+    history_review = folder / "history-review.json"
+    history_review.write_text('{"scope":"synthetic history byte binding only"}\n')
+    history_review_pin = observation.pin(history_review)
+    history = source / observation.HISTORY
+    history.parent.mkdir(parents=True, exist_ok=True)
+    if history.exists():
+        history.chmod(0o644)
+    history.write_text(
+        "PARENT_SHA256 = "
+        + repr(run_sha)
+        + "\nPARENT_REVIEW_SHA256 = "
+        + repr(review_pin["sha256"])
+        + "\nRELEASE = "
+        + repr(observation.HISTORY_RELEASE)
+        + "\n"
+    )
+    history.chmod(0o444)
     provider = source / observation.OBSERVER
     provider.parent.mkdir(parents=True, exist_ok=True)
     if provider.exists():
@@ -302,6 +381,14 @@ def saved_policy(source, folder, run_sha):
         + repr(review_pin)
         + "\nWRITER_SHA256 = "
         + repr(observation.WRITER_SHA256)
+        + "\nHISTORY_FILE = "
+        + repr(observation.HISTORY)
+        + "\nHISTORY_MODULE = "
+        + repr(observation.HISTORY_MODULE)
+        + "\nHISTORY_SHA256 = "
+        + repr(observation.pin(history)["sha256"])
+        + "\nHISTORY_REVIEW = "
+        + repr(history_review_pin)
         + "\n"
     )
     provider.chmod(0o444)
@@ -329,8 +416,286 @@ def saved_policy(source, folder, run_sha):
     return policy
 
 
-def saved_observation(folder, policy, run_sha, identity, *, count=3, mode="original"):
+def set_constant(path, name, value):
+    """Rewrite only an inert fixture declaration, then explicitly reseal it."""
+    lines = path.read_text().splitlines(keepends=True)
+    node = next(
+        n
+        for n in ast.parse("".join(lines)).body
+        if isinstance(n, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == name for t in n.targets)
+    )
+    lines[node.lineno - 1 : node.end_lineno] = [f"{name} = {value!r}\n"]
+    path.chmod(0o644)
+    path.write_text("".join(lines))
+    path.chmod(0o444)
+
+
+def history_binding_fixture(monkeypatch, tmp_path):
+    source = tmp_path / "source"
+    key = source / observation.KEY
+    key.parent.mkdir(parents=True)
+    key.write_text("# inert issuer source, never imported or invoked\n")
+    key.chmod(0o444)
+    run_sha = observation.pin(key)["sha256"]
+    policy = saved_policy(source, tmp_path / "reviews", run_sha)
+    provider = source / observation.OBSERVER
+    provider.chmod(0o644)
+    with provider.open("a") as stream:
+        stream.write(
+            "def observe_completed(owner, *, enabled=False, capture):\n"
+            "    raise AssertionError('No native or issued owner in metadata binding')\n"
+            "def saved_view(request, *, accepted_observer_sha256=None):\n"
+            "    raise AssertionError('No model or comparison in metadata binding')\n"
+        )
+    provider.chmod(0o444)
+    policy["observer_sha256"] = observation.pin(provider)["sha256"]
+    set_constant(source / observation.FILE, "OBSERVER_SHA256", policy["observer_sha256"])
+    module, history, parent = (
+        ModuleType(name)
+        for name in (observation.MODULE, observation.HISTORY_MODULE, observation.KEY_MODULE)
+    )
+    module.__file__, history.__file__, parent.__file__ = map(
+        str, (provider, source / observation.HISTORY, key)
+    )
+    # Only this inert consumer protocol is compiled and executed. The history
+    # and issuer contain literal metadata and are never imported or called.
+    exec(compile(provider.read_bytes(), str(provider), "exec", dont_inherit=True), vars(module))
+    vars(history).update(
+        observation.constants(
+            source / observation.HISTORY, ("PARENT_SHA256", "PARENT_REVIEW_SHA256", "RELEASE")
+        )
+    )
+    history.parent = parent
+    for api in (module, history, parent):
+        monkeypatch.setitem(sys.modules, api.__name__, api)
+    monkeypatch.setattr(observation, "ROOT", source)
+    monkeypatch.setattr(observation, "OBSERVER_SHA256", policy["observer_sha256"])
+    monkeypatch.setattr(observation, "OBSERVER_REVIEW", policy["observer_review"])
+    monkeypatch.setattr(observation.evidence, "__file__", str(source / observation.WRITER))
+    for gate in (observation.RELEASE, observation.HISTORY_RELEASE):
+        monkeypatch.setenv(gate, "1")
+    return NS(
+        source=source,
+        policy=policy,
+        run_sha=run_sha,
+        module=module,
+        history=history,
+        parent=parent,
+        state=NS(sim_observation=None),
+    )
+
+
+def history_files(model):
+    return {
+        name: observation.pin(model.source / name)["sha256"]
+        for name in (
+            observation.FILE,
+            observation.OBSERVER,
+            observation.KEY,
+            observation.WRITER,
+            observation.HISTORY,
+            observation.SIM,
+        )
+    }
+
+
+def reseal_history_fixture(model, *, history_changed=False):
+    if history_changed:
+        set_constant(
+            model.source / observation.OBSERVER,
+            "HISTORY_SHA256",
+            observation.pin(model.source / observation.HISTORY)["sha256"],
+        )
+    model.policy["observer_sha256"] = observation.pin(model.source / observation.OBSERVER)["sha256"]
+    set_constant(
+        model.source / observation.FILE, "OBSERVER_SHA256", model.policy["observer_sha256"]
+    )
+
+
+def test_sim_observation_history_real_metadata_binding_is_held_and_same_issuer(
+    monkeypatch, tmp_path
+):
+    model = history_binding_fixture(monkeypatch, tmp_path)
+    observed = observation.contract(model.source, model.policy, history_files(model), model.run_sha)
+    assert (
+        observed["HISTORY_SHA256"] == observation.pin(model.source / observation.HISTORY)["sha256"]
+    )
+    observation.bind(model.state, model.run_sha)
+    context = model.state.sim_observation
+    assert context.history is model.history and context.parent is model.parent
+    assert context.history.parent is context.parent
+    assert context.started is False and context.completed is False and context.owner is None
+    assert not context.rows and context.raw_return is None
+    assert observation.HISTORY in observation.preflight(model.run_sha)
+
+
+@pytest.mark.parametrize("value", (None, "0", "true"))
+def test_sim_observation_history_gate_refuses_before_any_provider_import(
+    monkeypatch, tmp_path, value
+):
+    model = history_binding_fixture(monkeypatch, tmp_path)
+    calls = []
+    monkeypatch.setattr(observation.importlib, "import_module", lambda name: calls.append(name))
+    if value is None:
+        monkeypatch.delenv(observation.HISTORY_RELEASE)
+    else:
+        monkeypatch.setenv(observation.HISTORY_RELEASE, value)
+    with pytest.raises(ValueError, match="completed-history release"):
+        observation.bind(model.state, model.run_sha)
+    assert not calls and model.state.sim_observation is None
+
+
+@pytest.mark.parametrize(
+    "fault",
+    (
+        "missing_source",
+        "changed_source",
+        "source_pin",
+        "file",
+        "module",
+        "review",
+        "parent",
+        "parent_review",
+        "release",
+    ),
+)
+def test_sim_observation_history_contract_rejects_resealed_foreign_lineage(
+    monkeypatch, tmp_path, fault
+):
+    model = history_binding_fixture(monkeypatch, tmp_path)
+    files = history_files(model)
+    observation.contract(model.source, model.policy, files, model.run_sha)
+    provider, history = model.source / observation.OBSERVER, model.source / observation.HISTORY
+    if fault == "missing_source":
+        del files[observation.HISTORY]
+    elif fault == "changed_source":
+        history.chmod(0o644)
+        history.write_text(history.read_text() + "# changed bytes\n")
+    else:
+        field, value = {
+            "source_pin": ("HISTORY_SHA256", "0" * 64),
+            "file": ("HISTORY_FILE", "src/cells/processes/foreign.py"),
+            "module": ("HISTORY_MODULE", "cells.processes.foreign"),
+            "review": ("HISTORY_REVIEW", dict(model.module.HISTORY_REVIEW, sha256="0" * 64)),
+            "parent": ("PARENT_SHA256", "0" * 64),
+            "parent_review": ("PARENT_REVIEW_SHA256", "0" * 64),
+            "release": ("RELEASE", "CELLS_FOREIGN_RELEASED"),
+        }[fault]
+        history_changed = fault in ("parent", "parent_review", "release")
+        set_constant(history if history_changed else provider, field, value)
+        reseal_history_fixture(model, history_changed=history_changed)
+        files = history_files(model)
+    with pytest.raises(ValueError):
+        observation.contract(model.source, model.policy, files, model.run_sha)
+
+
+@pytest.mark.parametrize("fault", ("parent", "parent_review", "registry", "origin", "release"))
+def test_sim_observation_history_live_declarations_cannot_replace_static_issuer(
+    monkeypatch, tmp_path, fault
+):
+    model = history_binding_fixture(monkeypatch, tmp_path)
+    observation.contract(model.source, model.policy, history_files(model), model.run_sha)
+    if fault == "parent":
+        model.history.parent = ModuleType(observation.KEY_MODULE)
+    elif fault == "parent_review":
+        model.history.PARENT_REVIEW_SHA256 = "0" * 64
+    elif fault == "registry":
+        monkeypatch.setitem(sys.modules, observation.KEY_MODULE, ModuleType(observation.KEY_MODULE))
+    elif fault == "origin":
+        model.history.__file__ = str(tmp_path / "foreign.py")
+    else:
+        model.history.RELEASE = "CELLS_FOREIGN_RELEASED"
+    with pytest.raises((ValueError, AttributeError)):
+        observation.bind(model.state, model.run_sha)
+    assert model.state.sim_observation is None
+
+
+@pytest.mark.parametrize("hook", ("profile", "trace"))
+@pytest.mark.parametrize("fault", ("parent", "review", "provider", "registry", "gate"))
+def test_sim_observation_history_inherited_mutation_stops_before_delegate(
+    monkeypatch, tmp_path, hook, fault
+):
+    model = protocol(monkeypatch)
+    old = (sys.getprofile(), sys.gettrace())
+    fired = []
+
+    def inherited(frame, event, arg):
+        previous = old[0 if hook == "profile" else 1]
+        if previous is not None:
+            previous(frame, event, arg)
+        if (
+            frame.f_code is model.module.observe_completed.__code__
+            and event == "call"
+            and not fired
+        ):
+            fired.append(event)
+            if fault == "parent":
+                model.history.parent = object()
+            elif fault == "review":
+                model.history.PARENT_REVIEW_SHA256 = "0" * 64
+            elif fault == "provider":
+                model.module.HISTORY_REVIEW["sha256"] = "0" * 64
+            elif fault == "registry":
+                monkeypatch.setitem(
+                    sys.modules, observation.HISTORY_MODULE, ModuleType(observation.HISTORY_MODULE)
+                )
+            else:
+                monkeypatch.setenv(observation.HISTORY_RELEASE, "0")
+        return inherited
+
+    (sys.setprofile if hook == "profile" else sys.settrace)(inherited)
+    selected = (sys.getprofile(), sys.gettrace())
+    try:
+        with pytest.raises(ValueError):
+            observation.observe(
+                model.state, model.owner, tmp_path / "observation", model.trial, "original"
+            )
+        assert sys.getprofile() is selected[0] and sys.gettrace() is selected[1]
+    finally:
+        sys.setprofile(old[0])
+        sys.settrace(old[1])
+    context = model.state.sim_observation
+    assert fired and not model.calls and not context.rows and not context.completed
+    assert context.primary is not None and context.cleanup_complete
+
+
+@pytest.mark.parametrize("fault", ("missing", "source", "review", "rows", "exit", "payloads"))
+def test_sim_observation_history_incomplete_record_keeps_raw_return_and_all_captures(
+    monkeypatch, tmp_path, fault
+):
+    def mutate(model, when):
+        if when != "return":
+            return
+        record = model.record
+        if fault == "missing":
+            del record["producer"]["history"]
+        elif fault == "source":
+            record["producer"]["history"]["sha256"] = "0" * 64
+        elif fault == "review":
+            record["producer"]["history"]["review"] = dict(path="/foreign", sha256="0" * 64)
+        elif fault == "rows":
+            record["work"]["history_interval"]["checked_rows"] = [0]
+        elif fault == "exit":
+            record["work"]["history_interval"]["full_authority_returns"] = 1
+        else:
+            record["work"]["history_interval"]["retained_payload_returns"] = 0
+
+    model = protocol(monkeypatch, fault=mutate)
+    with pytest.raises(ValueError):
+        observation.observe(
+            model.state, model.owner, tmp_path / "observation", model.trial, "original"
+        )
+    context = model.state.sim_observation
+    assert context.raw_return is model.record and context.record is model.record
+    assert len(context.rows) == 7 and all(row["status"] == "saved" for row in context.rows)
+    assert context.primary is not None and not context.completed and context.record_pin is None
+    assert not (tmp_path / "observation/record.json").exists()
+
+
+def saved_observation(folder, policy, run_sha, identity, *, source, count=3, mode="original"):
     folder.mkdir(parents=True)
+    provider = observation.constants(source / observation.OBSERVER, observation.DECLARATIONS)
     rows, iterations, captures = [], [], {}
     raw = wire("0000000000000080" * 4096)
 
@@ -368,7 +733,13 @@ def saved_observation(folder, policy, run_sha, identity, *, count=3, mode="origi
             sha256=run_sha,
             review=policy["observer_review"],
             observer=dict(path=observation.OBSERVER, sha256=policy["observer_sha256"]),
+            history=dict(
+                path=observation.HISTORY,
+                sha256=provider["HISTORY_SHA256"],
+                review=provider["HISTORY_REVIEW"],
+            ),
         ),
+        work=dict(history_interval=history_record(identity, count)),
         numerical_parity_available=False,
         common_starting_authority_established=False,
         physical_checkpoint_credit=0,
@@ -643,6 +1014,7 @@ def test_sim_observation_bootstrap_authenticates_complete_synthetic_module_witho
     path.parent.mkdir(parents=True)
     raw = (
         "KEY_SHA256 = None\nKEY_REVIEW = None\nWRITER_SHA256 = None\n"
+        "HISTORY_FILE = None\nHISTORY_MODULE = None\nHISTORY_SHA256 = None\nHISTORY_REVIEW = None\n"
         "class ObservationRejected(ValueError):\n"
         "    def __init__(self, message, *, partial=None):\n"
         "        super().__init__(message)\n"

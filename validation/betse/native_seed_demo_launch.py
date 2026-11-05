@@ -436,6 +436,7 @@ def source_plan(*, endpoint="seed"):
                 before_native_pickle=True,
                 scientific_credit=0,
                 observation_release=sim_observation.RELEASE,
+                history_release=sim_observation.HISTORY_RELEASE,
                 observation_required_before_success=True,
                 saved_binding_requires_explicit_postprocess=True,
                 comparison_acceptance=False,
@@ -714,6 +715,7 @@ def _producers(declaration):
             sim_observation.FILE,
             sim_observation.OBSERVER,
             sim_observation.WRITER,
+            sim_observation.HISTORY,
         )
     return (
         (*PRODUCERS, initial_rng.FILE, *runtime)
@@ -787,6 +789,10 @@ def _sim_contract(plan, declaration, inputs, manifest):
     require(
         plan["release_environment"].get(sim_observation.RELEASE) == "1",
         "Explicit completed-SIM observation release required",
+    )
+    require(
+        plan["release_environment"].get(sim_observation.HISTORY_RELEASE) == "1",
+        "Explicit completed-history observation release required",
     )
     sim_observation.contract(
         plan["source"],

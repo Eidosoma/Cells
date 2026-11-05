@@ -11,6 +11,7 @@ import hashlib
 from functools import lru_cache
 from types import CodeType
 
+from cells.processes import betse_native_init_electrical_source as electrical
 from cells.processes import betse_native_init_first_step_source as transport
 from cells.processes import betse_native_init_molecule_channels_source as channels
 from cells.processes import betse_native_init_molecule_network_source as network
@@ -18,14 +19,27 @@ from cells.processes import betse_native_init_sim_assembly_source as assembly
 from cells.processes import betse_native_init_tissue_dynamics as tissue
 
 NATIVE = assembly.NATIVE
+# Only the image/file helpers reached while rebuilding the actual tissue maps
+# are added. In particular this does not admit a new picker constructor, path
+# writer, supplied interpolator, or the unrelated functions in these modules.
+IMAGE_HELPERS = {
+    "betse/lib/pil/pilnumpy.py": ("load_image",),
+    "betse/util/math/mathinterp.py": ("interp2d_linear",),
+    "betse/util/path/files.py": ("die_unless_file", "is_file"),
+    "betse/util/path/paths.py": ("is_path",),
+    "betse/util/path/dirs.py": ("is_dir",),
+    "betse/util/path/pathnames.py": ("get_basename",),
+}
 # Exact original filenames plus SHA256 necessarily exceed the style width.
 # ruff: noqa: E501
 PINS = {
     **assembly.PINS,
     **transport.SOURCE_PINS,
+    **electrical.SOURCE_PINS,
     **network.PINS,
     **channels.PINS,
     **tissue.PINS,
+    **{path: tissue.profiles.image_source.NATIVE_PINS[path] for path in IMAGE_HELPERS},
     "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
     "betse/util/type/text/string/strjoin.py": "ba85964d929a9080d7ca06e713042c07858c2dd8747e3e1206fbfa8ff2a852e7",
     "betse/util/type/text/string/strs.py": "351a1a8cd61d7942c83cf8c7bffcbf918de9dffab9d58764ffd38e88d88c841c",
@@ -46,6 +60,43 @@ METHODS = {
     "make_changes": ("betse/science/tissue/tishandler.py", "TissueHandler.makeAllChanges"),
     "reload": ("betse/science/chemistry/molecules.py", "MasterOfMolecules.reinitialize"),
     "noop": ("betse/util/type/contexts.py", "noop_context"),
+    "current": ("betse/science/physics/ion_current.py", "get_current"),
+    "decompose": ("betse/science/sim_toolbox.py", "HH_Decomp"),
+    "gradient": ("betse/science/math/finitediff.py", "gradient"),
+    "divergence": ("betse/science/math/finitediff.py", "divergence"),
+    "diff": ("betse/science/math/finitediff.py", "diff"),
+    "profiles": ("betse/science/tissue/tishandler.py", "TissueHandler.init_profiles"),
+    "image_pick": ("betse/science/tissue/picker/tispickimage.py", "TissuePickerImage.pick_cells"),
+    "image_mask": (
+        "betse/science/tissue/picker/tispickimage.py",
+        "TissuePickerImage.get_image_mask",
+    ),
+    "mask_constructor": (
+        "betse/science/tissue/picker/tispickimage.py",
+        "TissuePickerImageMask.__init__",
+    ),
+    "mask_clip": (
+        "betse/science/tissue/picker/tispickimage.py",
+        "TissuePickerImageMask.get_clipped_points_index",
+    ),
+    "image_load": ("betse/lib/pil/pilnumpy.py", "load_image"),
+    "interpolator": ("betse/util/math/mathinterp.py", "interp2d_linear"),
+}
+# Each edge is between actual import-issued original bodies. A type-check
+# wrapper may intervene only for that same callee; no arbitrary frame skipping.
+HELPER_CALLERS = {
+    "current": (("Simulator", "update_V"),),
+    "decompose": ((None, "get_current"),),
+    "gradient": ((None, "get_current"), (None, "HH_Decomp"), ("Simulator", "update_ecm")),
+    "divergence": ((None, "HH_Decomp"), ("Simulator", "update_ecm"), (None, "div_env")),
+    "diff": ((None, "divergence"),),
+    "profiles": (("Simulator", "init_dynamics"),),
+    "image_pick": (("TissuePickerABC", "pick_cells_and_mems"),),
+    "image_mask": (("TissuePickerImage", "pick_cells"),),
+    "mask_constructor": (("TissuePickerImage", "get_image_mask"),),
+    "mask_clip": (("TissuePickerImage", "pick_cells"),),
+    "image_load": (("TissuePickerImageMask", "__init__"),),
+    "interpolator": (("TissuePickerImageMask", "__init__"),),
 }
 
 
@@ -84,8 +135,12 @@ def sites():
         tree = ast.parse(payload(path))
         for node in tree.body:
             if isinstance(node, ast.FunctionDef):
+                if path in IMAGE_HELPERS and node.name not in IMAGE_HELPERS[path]:
+                    continue
+                if (None, node.name) in result:
+                    raise ValueError("Ambiguous original runtime function")
                 result[(None, node.name)] = path
-            elif isinstance(node, ast.ClassDef):
+            elif isinstance(node, ast.ClassDef) and path not in IMAGE_HELPERS:
                 for method in node.body:
                     if isinstance(method, ast.FunctionDef):
                         key = (node.name, method.name)
@@ -151,6 +206,9 @@ def source_plan():
         kind="actual_native_FULL_SIM_report_complete_calendar_before_pickle@1",
         files=PINS,
         methods=METHODS,
+        original_helper_callers=HELPER_CALLERS,
+        image_helpers=IMAGE_HELPERS,
+        image_callback="actual interp2d_linear return/closure/spline and mask callsite only",
         boundaries=boundaries(),
         order=(
             "sim_info_report",

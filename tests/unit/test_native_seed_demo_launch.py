@@ -2326,6 +2326,7 @@ def sim_bundle(b):
         launch.sim_observation.FILE,
         launch.sim_observation.OBSERVER,
         launch.sim_observation.WRITER,
+        launch.sim_observation.HISTORY,
     ):
         p = source / relative
         manifest["files"][relative] = dict(
@@ -2375,7 +2376,16 @@ def sim_bundle(b):
         physical_checkpoint_or_scientific_admission=False,
     )
     declaration_pin = write(b.packet / "demo-plan.json", declaration)
-    b.env.update(dict.fromkeys((*launch.SIM_GATES, launch.sim_observation.RELEASE), "1"))
+    b.env.update(
+        dict.fromkeys(
+            (
+                *launch.SIM_GATES,
+                launch.sim_observation.RELEASE,
+                launch.sim_observation.HISTORY_RELEASE,
+            ),
+            "1",
+        )
+    )
     b.parameter.packet_inputs = lambda packet, digest: (
         b.inputs
         if Path(packet) == b.packet and digest == inputs_pin["sha256"]
@@ -2653,6 +2663,55 @@ def test_launch_sim_observation_contract_is_explicit_before_entry(bundle, mutati
     b.plan["demo_plan"] = write(b.packet / "demo-plan.json", declaration)
     with pytest.raises(ValueError):
         launch._immutable(b.plan)
+
+
+@pytest.mark.parametrize("value", (None, "0", True))
+def test_launch_sim_history_release_is_separate_and_required_before_source(bundle, value):
+    b = sim_bundle(bundle)
+    assert len(launch.SIM_GATES) == 5
+    assert launch.sim_observation.HISTORY_RELEASE not in launch.SIM_GATES
+    if value is None:
+        del b.plan["release_environment"][launch.sim_observation.HISTORY_RELEASE]
+    else:
+        b.plan["release_environment"][launch.sim_observation.HISTORY_RELEASE] = value
+    with pytest.raises(ValueError, match="completed-history observation release"):
+        launch._immutable(b.plan)
+    assert not (b.root / "worker").exists()
+
+
+def test_launch_sim_history_source_and_release_are_explicit_in_prepared_plan(bundle):
+    b = sim_bundle(bundle)
+    launch._immutable(b.plan)
+    declaration = launch.read(b.plan["demo_plan"])
+    assert launch.sim_observation.HISTORY in launch._producers(declaration)
+    assert (
+        b.plan["producers"][launch.sim_observation.HISTORY]
+        == launch.pin(Path(b.plan["source"]) / launch.sim_observation.HISTORY)["sha256"]
+    )
+    assert b.plan["release_environment"][launch.sim_observation.HISTORY_RELEASE] == "1"
+    assert b.plan["limitations"]["sim_terminal"]["history_release"] == (
+        launch.sim_observation.HISTORY_RELEASE
+    )
+
+
+@pytest.mark.parametrize("fault", ("source_missing", "source_changed", "policy_module"))
+def test_launch_sim_history_binding_refuses_before_worker_creation(bundle, fault):
+    b = sim_bundle(bundle)
+    if fault == "source_missing":
+        del b.plan["producers"][launch.sim_observation.HISTORY]
+    elif fault == "source_changed":
+        target = Path(b.plan["source"]) / launch.sim_observation.HISTORY
+        target.chmod(0o644)
+        target.write_text(target.read_text() + "# changed declaration\n")
+    else:
+        declaration = launch.read(b.plan["demo_plan"])
+        declaration["source_plan"]["optional_sim_terminal"]["completed_observation"][
+            "history_module"
+        ] = "cells.processes.foreign"
+        b.plan["demo_plan"] = write(b.packet / "demo-plan.json", declaration)
+    with pytest.raises(ValueError):
+        launch._immutable(b.plan)
+    assert not (b.root / "worker").exists()
 
 
 @pytest.mark.parametrize(

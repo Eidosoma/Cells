@@ -659,7 +659,9 @@ def _snapshot(context):
     for role, obj in (
         *context.assembly.parent.objects,
         *context.assembly.constructor_state[3],
+        *context.root_objects,
         *context.added_objects,
+        *_image_roots(context),
     ):
         if not any(obj is current for _, current in roots):
             roots.append((role, obj))
@@ -696,6 +698,10 @@ def _snapshot(context):
     context.graph_view.fields = context.root_fields
     context.graph_calendar[:] = [context.calendar, context.sampled, context.solver_context]
     context.graph_view.calendar = context.graph_calendar
+    context.graph_view.image_callbacks = tuple(
+        (function, mask, spline, *(function.__closure__ or ()))
+        for function, _, mask, _, spline in getattr(context, "image_callbacks", ())
+    )
     if completion.molecule_session is not None:
         context.graph_view.molecular = completion.molecule.graph_roots(completion.molecule_session)
     graph = context.scope.graph(context.graph_view, context.graph_view, context.graph_tape)
@@ -883,6 +889,9 @@ def _context(request, refs):
         observation_field_objects=[],
         graph_calendar=[None, None, None],
         expressions=None,
+        image_callbacks=[],
+        image_codes=set(),
+        last_image_return=None,
         noop_object=None,
         library_bindings=(),
         sealed_identity=None,
@@ -1037,6 +1046,192 @@ def _begin_iteration(context, frame):
     )
 
 
+def _native_caller(context, frame):
+    """Unwrap only actual imported wrappers belonging to this exact callee."""
+    row, caller = context.codes[frame.f_code], frame.f_back
+    while caller is not None:
+        candidate = context.codes.get(caller.f_code)
+        if (
+            candidate is None
+            or candidate[3]
+            or candidate[1] is not row[1]
+            or candidate[2] != row[2]
+        ):
+            break
+        if caller.f_globals is not candidate[0].__globals__:
+            _fail(context, "Original helper wrapper namespace changed", "dispatch")
+        caller = caller.f_back
+    return caller
+
+
+def _helper_entry(context, frame, role):
+    """Authenticate the mandatory electrical and image source dispatch edges."""
+    caller = _native_caller(context, frame)
+    row = None if caller is None else context.codes.get(caller.f_code)
+    parent = None if row is None else (getattr(row[1], "__name__", None), row[2])
+    if (
+        parent not in source.HELPER_CALLERS[role]
+        or not row[3]
+        or caller.f_globals is not row[0].__globals__
+    ):
+        _fail(context, "Original helper caller/dispatch edge required: " + role, "dispatch")
+    values, outer = frame.f_locals, caller.f_locals
+    if role == "current" and (
+        values.get("sim") is not context.sim
+        or values.get("cells") is not context.cells
+        or values.get("p") is not context.p
+        or outer.get("self") is not context.sim
+    ):
+        _fail(context, "Current helper requires the actual retained sim/cells/p", "dispatch")
+    if role == "decompose" and (
+        values.get("cells") is not context.cells
+        or values.get("bounds") is not context.sim.bound_V
+        or outer.get("sim") is not context.sim
+    ):
+        _fail(context, "Original ECM decomposition owner/boundary association required", "dispatch")
+    if role in ("gradient", "divergence", "diff") and (
+        values.get("delx") is not context.cells.delta
+        or role == "divergence"
+        and values.get("dely") is not context.cells.delta
+        or role == "gradient"
+        and values.get("dely") is not None
+        and values.get("dely") is not context.cells.delta
+    ):
+        _fail(context, "Original retained ECM derivative spacing required", "dispatch")
+    if role == "profiles" and (
+        values.get("self") is not context.handler or values.get("phase") is not context.phase
+    ):
+        _fail(context, "Actual SIM handler/phase required for profile rebuild", "dispatch")
+    if role in ("image_pick", "image_mask") and (
+        values.get("cells") is not context.cells
+        or (role == "image_pick" and values.get("p") is not context.p)
+        or not any(
+            values.get("self") is profile.picker
+            for profile in context.handler.tissue_name_to_profile.values()
+        )
+        or outer.get("self") is not values.get("self")
+    ):
+        _fail(context, "Original retained profile/picker/cells/p association required", "dispatch")
+    if role == "mask_constructor" and (
+        values.get("filename") is not outer["self"].filename
+        or any(
+            values.get(key) is not getattr(context.cells, attribute)
+            for key, attribute in (
+                ("x_min", "xmin"),
+                ("x_max", "xmax"),
+                ("y_min", "ymin"),
+                ("y_max", "ymax"),
+            )
+        )
+    ):
+        _fail(context, "Original image filename/geometry bounds required", "dispatch")
+    if role == "mask_clip" and (
+        values.get("self") is not outer.get("image_mask")
+        or not any(values.get("self") is mask for _, mask in context.added_objects)
+    ):
+        _fail(context, "Actual just-returned mask required for clipping", "dispatch")
+    if role == "image_load" and (
+        values.get("filename") is not outer.get("filename")
+        or values.get("mode") is not frame.f_globals["ImageModeType"].GRAYSCALE_FLOAT
+        or values.get("is_signed") is not True
+    ):
+        _fail(context, "Original actual grayscale image load arguments required", "dispatch")
+    if role == "interpolator" and (
+        values.get("x") is not outer.get("xpts")
+        or values.get("y") is not outer.get("ypts")
+        or values.get("z") is not outer["self"].clipping_matrix
+    ):
+        _fail(context, "Original image grid/matrix interpolation association required", "dispatch")
+
+
+def _interpolator_return(context, frame, result):
+    # The raw return is retained even if closure/schema authentication refuses.
+    context.last_image_return = frame, result
+    caller = _native_caller(context, frame)
+    values = frame.f_locals
+    if (
+        type(result) is not FunctionType
+        or result is not values.get("bivariate_spline_interpolator")
+        or not any(result.__code__ is child for child in frame.f_code.co_consts)
+        or result.__code__.co_freevars != ("bivariate_spline",)
+        or result.__globals__ is not frame.f_globals
+        or result.__defaults__ is not None
+        or result.__kwdefaults__ is not None
+        or result.__closure__ is None
+        or len(result.__closure__) != 1
+        or result.__closure__[0].cell_contents is not values.get("bivariate_spline")
+        or type(values.get("bivariate_spline")) is not frame.f_globals["RectBivariateSpline"]
+        or caller is None
+        or _role(context, caller.f_code) != "mask_constructor"
+    ):
+        _fail(
+            context,
+            "Actual original returned image interpolator/closure required",
+            "image_callback",
+        )
+    state = previous.wrappers._function_state(result)
+    context.image_callbacks.append(
+        (result, state, caller.f_locals["self"], frame, values["bivariate_spline"])
+    )
+    context.functions.append((result, state, _attributes(result)))
+    context.codes[result.__code__] = (result, None, "<lambda>", True)
+    context.image_codes.add(result.__code__)
+
+
+def _image_roots(context):
+    """Retain actual callback and both spline owners, including every field.
+
+    The original projector records references only to registered roots. Add
+    these real source results before projecting mask fields; neither a copied
+    function nor a supplied spline is a replacement for this factory ancestry.
+    """
+    callbacks, roots = getattr(context, "image_callbacks", ()), []
+    for function, state, mask, _, spline in callbacks:
+        _same(previous.wrappers._function_state(function), state)
+        if getattr(mask, "clipping_function", function) is not function:
+            _fail(context, "Original image callback assignment changed", "image_callback")
+        roots.extend((("actual_image_interpolator", function), ("actual_image_spline", spline)))
+    for name, mask in context.added_objects:
+        if name != "TissuePickerImageMask.__init__" or "clipping_function_fast" not in vars(mask):
+            continue
+        matches = [row for row in callbacks if row[2] is mask]
+        if len(matches) != 1:
+            _fail(
+                context, "Original image factory must precede fast spline store", "image_callback"
+            )
+        fast = vars(mask)["clipping_function_fast"]
+        if type(fast) is not type(matches[0][4]):
+            _fail(context, "Actual original fast image spline type required", "image_callback")
+        roots.append(("actual_image_fast_spline", fast))
+    return tuple(roots)
+
+
+def _image_callback_entry(context, frame):
+    caller = frame.f_back
+    if caller is None or _role(context, caller.f_code) != "mask_clip":
+        _fail(
+            context, "Image interpolator requires its original clipping callsite", "image_callback"
+        )
+    mask = caller.f_locals.get("self")
+    matches = [
+        row
+        for row in context.image_callbacks
+        if row[2] is mask and row[0] is getattr(mask, "clipping_function", None)
+    ]
+    if len(matches) != 1:
+        _fail(context, "Actual factory-issued image callback required", "image_callback")
+    function, state, _, factory, spline = matches[0]
+    _same(previous.wrappers._function_state(function), state)
+    if (
+        frame.f_code is not function.__code__
+        or frame.f_globals is not factory.f_globals
+        or frame.f_locals.get("bivariate_spline") is not spline
+        or frame.f_locals.get("x_new") is not caller.f_locals.get("x")
+        or frame.f_locals.get("y_new") is not caller.f_locals.get("y")
+    ):
+        _fail(context, "Original image closure/spline/point association changed", "image_callback")
+
+
 def _source_entry(context, frame, row):
     function, owner, name, is_body = row
     if frame.f_globals is not function.__globals__ or frame.f_code is not function.__code__:
@@ -1055,6 +1250,10 @@ def _source_entry(context, frame, row):
         if receiver is not None and name in vars(receiver):
             _fail(context, "Native instance method shadowing refused", "dispatch")
     role = _role(context, frame.f_code)
+    if is_body and role in source.HELPER_CALLERS:
+        _helper_entry(context, frame, role)
+    if frame.f_code in getattr(context, "image_codes", ()):
+        _image_callback_entry(context, frame)
     if role == "report":
         if context.phase_stage != "report" or context.report_returned:
             _fail(context, "One original report before run_core required", "order")
@@ -1217,6 +1416,8 @@ def _observe(context, frame, event, arg):
             _metadata(
                 context, "actual_SIM_native_reload_expression_binding", _bind_expressions, context
             )
+        elif role == "interpolator":
+            _interpolator_return(context, frame, arg)
         elif role == "loop":
             _finish_iteration(context)
             if len(context.iterations) != context.request.iterations:

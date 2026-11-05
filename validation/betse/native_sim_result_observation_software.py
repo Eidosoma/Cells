@@ -23,9 +23,23 @@ OWNED = (
     "tests/unit/test_native_sim_reference_compare.py",
 )
 RELEASE = "CELLS_SIM_RESULT_OBSERVATION_BLOCKED_SOFTWARE"
+CAPACITY_RELEASE = "CELLS_SIM_RESULT_OBSERVATION_CAPACITY_SOFTWARE"
+CAPACITY_SELECT = (
+    "test_sim_observation_history_protocol_preserves_each_actual_row_and_two_full_sweeps[350]"
+)
 POLICY = dict(reused.POLICY)
 snapshot, guard, runtime = reused.snapshot, reused.guard, reused.runtime
 BASE, CLOSURE, Reports, blocked = reused.BASE, reused.CLOSURE, reused.Reports, reused.blocked
+
+
+def _run_policy(select):
+    if os.environ.get(CAPACITY_RELEASE) != "1":
+        return dict(POLICY)
+    if select != CAPACITY_SELECT:
+        raise ValueError(
+            "Separate capacity policy permits exactly the instrumented 350-row control"
+        )
+    return dict(POLICY, wall_seconds=3600)
 
 
 def prepare(output, select):
@@ -48,15 +62,23 @@ def prepare(output, select):
         files[name] = snapshot.digest(ROOT / name)
     manifest = snapshot.freeze(ROOT, output / "source", {name: name for name in files})
     snapshot.assert_checkout_unchanged(output / "source")
+    policy = _run_policy(select)
+    capacity = os.environ.get(CAPACITY_RELEASE) == "1"
     snapshot.write_json(
         output / "inputs.json",
         dict(
-            kind="cells.completed_SIM_observation_blocked_software@1",
+            kind=(
+                "cells.completed_SIM_observation_capacity_software@1"
+                if capacity
+                else "cells.completed_SIM_observation_blocked_software@1"
+            ),
             owned_files={name: manifest["files"][name]["sha256"] for name in OWNED},
             git_revision=manifest["git_revision"],
             snapshot_sha256=snapshot.digest(output / "source/SNAPSHOT.json"),
             selection=select,
-            policy=POLICY,
+            policy=policy,
+            separate_capacity_benchmark=capacity,
+            ordinary_wall_seconds=POLICY["wall_seconds"],
             software_release_requested=os.environ.get(RELEASE) == "1",
             native_source_reference_owner_or_scientific_release=False,
         ),
@@ -69,7 +91,20 @@ def child(output, select):
 
     module = importlib.import_module("validation.betse.native_sim_result_observation")
     inputs = json.loads((output / "inputs.json").read_text())
-    if inputs["software_release_requested"] is not True or inputs["policy"] != POLICY:
+    policy = _run_policy(select)
+    capacity = os.environ.get(CAPACITY_RELEASE) == "1"
+    if (
+        inputs["software_release_requested"] is not True
+        or inputs["policy"] != policy
+        or inputs["separate_capacity_benchmark"] is not capacity
+        or inputs["ordinary_wall_seconds"] != POLICY["wall_seconds"]
+        or inputs["kind"]
+        != (
+            "cells.completed_SIM_observation_capacity_software@1"
+            if capacity
+            else "cells.completed_SIM_observation_blocked_software@1"
+        )
+    ):
         raise ValueError("Explicit blocked observation software required")
     manifest = snapshot.verify(ROOT, manifest_sha256=inputs["snapshot_sha256"])
     for name in OWNED:
@@ -112,7 +147,10 @@ def child(output, select):
     return int(code)
 
 
-def software(output, select):
+def software(output, select, *, capacity=False):
+    if capacity is not (os.environ.get(CAPACITY_RELEASE) == "1"):
+        raise ValueError("Capacity software requires its separate explicit command and release")
+    policy = _run_policy(select)
     namespace = dict(
         vars(reused.base),
         ROOT=ROOT,
@@ -122,15 +160,52 @@ def software(output, select):
         MODULE=MODULE,
         OWNED=OWNED,
         RELEASE=RELEASE,
-        POLICY=POLICY,
+        POLICY=policy,
         __file__=__file__,
     )
     return FunctionType(reused.base.software.__code__, namespace)(output, select)
 
 
+def capacity_software(output, select):
+    """Durable controller outcome, including pre-worker preparation failures."""
+    try:
+        code = software(output, select, capacity=True)
+    except BaseException as error:
+        if output.is_dir() and not output.is_symlink():
+            snapshot.write_json(
+                output / "capacity-controller-failure.json",
+                dict(
+                    status="failed",
+                    type=type(error).__qualname__,
+                    message=str(error),
+                    policy=dict(POLICY, wall_seconds=3600),
+                    automatic_retry=False,
+                    native_source_reference_or_scientific_release=False,
+                ),
+            )
+        raise
+    snapshot.write_json(
+        output / "capacity-terminal.json",
+        dict(
+            status="passed" if code == 0 else "failed",
+            result=dict(
+                path=str(output / "result.json"),
+                sha256=snapshot.digest(output / "result.json"),
+            ),
+            policy=_run_policy(select),
+            ordinary_wall_seconds=POLICY["wall_seconds"],
+            instrumented_inert_rows=350,
+            independent_inputs=1,
+            ordinary_480s_control_credit=False,
+            native_source_reference_or_scientific_release=False,
+        ),
+    )
+    return code
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("prepare", "software", "child"):
+    for name in ("prepare", "software", "capacity-software", "child"):
         parser.add_argument("--" + name, type=Path)
     parser.add_argument("--select", default="sim_observation")
     args = parser.parse_args()
@@ -142,6 +217,8 @@ def main():
         return 0
     if args.software:
         return software(args.software, args.select)
+    if args.capacity_software:
+        return capacity_software(args.capacity_software, args.select)
     parser.error("Select immutable metadata preparation or blocked software")
 
 

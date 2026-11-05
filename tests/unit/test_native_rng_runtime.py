@@ -161,6 +161,26 @@ def test_rng_runtime_file_backed_schema_is_retained(actual_metadata, monkeypatch
     runtime.validate(result)
 
 
+def test_rng_runtime_initial_observer_uses_shared_actual_origin_binding(
+    actual_metadata, monkeypatch
+):
+    from validation.betse import betse_normal_channel_join_runtime as inventory
+    from validation.betse import native_seed_initial_rng as initial
+
+    calls = []
+
+    def retained_inventory():
+        calls.append(actual_metadata)
+        return actual_metadata
+
+    monkeypatch.setattr(inventory, "inventory", retained_inventory)
+    result = initial.runtime_binding()
+    assert calls == [actual_metadata]
+    assert result == runtime._binding(actual_metadata)
+    assert initial.KIND == "cells.common_initial_rng_observation@2"
+    assert result["builtins"]["_random"]["origin"] == "built-in"
+
+
 @pytest.mark.parametrize("falsey", (False, True))
 def test_rng_runtime_metadata_failure_keeps_exact_primary_and_cause(
     actual_metadata, monkeypatch, falsey
