@@ -1,7 +1,8 @@
-"""Explicit RNG-witness@2 reader, reusing the immutable legacy report checks.
+"""Versioned RNG-witness reader with an explicitly selected common-start program.
 
-The legacy c9f3 reader remains byte-exact. No witness or plan is relabelled, and
-file-backed witness@1 continues through that original reader unchanged.
+Historical readers remain in their frozen images. Witness@1 and ambient
+witness@2 retain their original data/order rules; opt-in program evidence is
+checked separately and never relabels either observation as paired authority.
 """
 
 import hashlib
@@ -15,7 +16,7 @@ from validation.betse import native_seed_demo_report as legacy
 
 FILE = "validation/betse/native_seed_rng_report.py"
 KIND = "cells.saved_seed_rng_demo_report@2"
-LEGACY_SHA256 = "c9f3d6002e1faf680209c66123624ec6793c99781eb91179ee98974f1f627ad7"
+LEGACY_SHA256 = "9c9f82605a514e69cc3a1622d2cb0f529e09fcb6e13cdea3850dca5677cadf90"
 LEGACY_KIND = legacy.INITIAL_RNG_KIND
 WITNESS_KIND = "cells.common_initial_rng_observation@2"
 DEMO, INITIAL_RNG = legacy.DEMO, legacy.INITIAL_RNG
@@ -252,6 +253,8 @@ def initial_rng_captures(reader, root, plan, value, captures, *, prefix=()):
     )
     order = witness["order"]
     prefix = [*prefix, "callback", "constructor_preflight", "parameters", "initial_rng"]
+    if plan.get("_common_start") is not None:
+        prefix.insert(prefix.index("initial_rng"), "common_start_rng")
     require(
         type(order) is dict
         and set(order)

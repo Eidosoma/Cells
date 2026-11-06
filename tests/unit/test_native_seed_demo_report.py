@@ -22,6 +22,241 @@ if TYPE_CHECKING:
     from validation.betse import betse_native_parameter_world_ready_qualification  # noqa: F401
 
 _RAW_GUARDS = []
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "original",
+        "disabled",
+        "late_failure",
+        "sim_ambient",
+        "mode",
+        "source",
+        "runtime",
+        "program",
+        "witness",
+        "sim_reader_code",
+        "sim_launch_code",
+        "sim_observation_code",
+        "reader_link",
+        "legacy_original",
+        "legacy_disabled",
+    ],
+)
+def test_report_full_SIM_common_start_comparison_CPU4(tmp_path, monkeypatch, defect):
+    from tests.unit import test_native_sim_reference_compare as direct
+
+    direct.full_sim_common_control(tmp_path, monkeypatch, defect)
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "original",
+        "disabled",
+        "ambient",
+        "declaration",
+        "mode",
+        "release",
+        "publication",
+        "source",
+        "order",
+        "witness",
+        "late_failure",
+    ],
+)
+def test_report_common_start_full_SIM_saved_contract_CPU4(tmp_path, defect):
+    from tests.unit import test_native_sim_demo_report as direct
+
+    direct.common_start_control(tmp_path, defect)
+
+
+def common_saved_fixture(tmp_path, monkeypatch, *, builtin=False):
+    from tests.unit.test_native_seed_demo import common_fixture
+
+    value = fixture(tmp_path, version=12)
+    if builtin:
+        from tests.unit.test_native_seed_rng_report import builtin_fixture
+
+        builtin_fixture(value)
+    monkeypatch.setattr(report, "COMMON_SHA256", "d" * 64)
+    monkeypatch.setattr(report, "COMMON_REVIEW_SHA256", "e" * 64)
+    plan = read(value.plan)
+    selected = common_fixture()
+    selected["program"]["input_identity"] = plan["initial_rng_inputs"]["inventory_sha256"]
+    selected["program_identity"] = report._common_seal(selected["program"])
+    selected["provider"].update(
+        sha256=report.COMMON_SHA256, review_sha256=report.COMMON_REVIEW_SHA256
+    )
+    plan["_common_start"] = selected
+    plan["_initial_rng_inputs"] = plan["initial_rng_inputs"]
+    if builtin:
+        plan["_initial_rng_kind"] = "cells.common_initial_rng_observation@2"
+    root = value.worker / "demo"
+    outcome = read(root / "outcome.json")
+    witness_row = next(r for r in outcome["captures"] if r["label"] == "pre_seed_rng_witness")
+    witness = read(root / witness_row["path"])
+    state = witness["state"]
+    record = dict(
+        kind=report.COMMON_KIND,
+        status="completed",
+        program=selected["program"],
+        program_identity=selected["program_identity"],
+        role="cells",
+        pid=123,
+        epoch=report.COMMON_EPOCH,
+        source=dict(
+            helper=report.COMMON_FILE,
+            helper_sha256=report.COMMON_SHA256,
+            provenance="validation/betse/native_rng_runtime.py",
+            provenance_sha256=plan["producers"].get(
+                "validation/betse/native_rng_runtime.py", "f" * 64
+            ),
+        ),
+        runtime=witness["common_binding"]["runtime"],
+        generator_identities=dict(python=10, numpy=20),
+        state={
+            kind + "_" + stage: state["python_random" if kind == "python" else "numpy_random"]
+            for kind in ("python", "numpy")
+            for stage in ("before", "after", "readback")
+        },
+        operations=[[row[0], "returned"] for row in report.COMMON_STEPS],
+        work=dict(
+            program_API_calls=8,
+            visible_RNG_observer_events=12,
+            opaque_C_internals_not_independent_cases=True,
+            inherited_observer_RNG_effects_require_reviewed_caller_contract=True,
+        ),
+        states_loaded=False,
+        generators_replaced=False,
+        biological_or_phase_admission=False,
+    )
+    plan["producers"].setdefault("validation/betse/native_rng_runtime.py", "f" * 64)
+    completion = root / "common-start-rng/COMPLETED.json"
+    completion.parent.mkdir()
+    write(completion, record)
+    row = dict(write(root / "common-start.json", record), label="common_start_rng", status="saved")
+    row["path"] = "common-start.json"
+    outcome["captures"].insert(0, row)
+    outcome["common_start_program"] = row
+    outcome["operations"].insert(3, dict(name="common_start_rng", status="returned"))
+    witness["order"]["selected_boundaries"].insert(3, ["common_start_rng", "returned"])
+    witness_row["sha256"] = write(root / witness_row["path"], witness)["sha256"]
+    outcome["initial_rng_observation"] = dict(witness_row)
+    return NS(value=value, plan=plan, outcome=outcome, root=root, record=record, selected=selected)
+
+
+@pytest.mark.parametrize("builtin", [False, True])
+def test_report_common_start_full_return_readback_then_observation_has_no_paired_credit(
+    tmp_path, monkeypatch, builtin
+):
+    model = common_saved_fixture(tmp_path, monkeypatch, builtin=builtin)
+    reader = report.Reader()
+    captures = report._captures(reader, model.root, model.outcome["captures"])
+    result = report._common_captures(reader, model.root, model.plan, model.outcome, captures)
+    assert result["completed"] is True
+    assert result["common_starting_authority_established"] is False
+    assert result["scientific_credit"] == 0
+    observation = report._initial_rng_captures(
+        reader, model.root, model.plan, model.outcome, captures
+    )
+    assert observation["observed_states_equalized"] is False
+    if builtin:
+        from validation.betse import native_seed_rng_report as versioned
+
+        second = versioned.initial_rng_captures(
+            reader, model.root, model.plan, model.outcome, captures
+        )
+        assert second == observation
+
+
+@pytest.mark.parametrize(
+    "drift",
+    [
+        "publication",
+        "readback",
+        "draw",
+        "role",
+        "source",
+        "order",
+        "ambient",
+        "mode",
+    ],
+)
+def test_report_common_start_rejects_resealed_record_or_order_drift(tmp_path, monkeypatch, drift):
+    model = common_saved_fixture(tmp_path, monkeypatch)
+    if drift == "publication":
+        write(model.root / "common-start-rng/COMPLETED.json", {})
+    elif drift == "order":
+        model.outcome["captures"].reverse()
+    elif drift == "ambient":
+        del model.plan["_common_start"]
+    else:
+        if drift == "readback":
+            model.record["state"]["python_readback"] = copy.deepcopy(
+                model.record["state"]["python_readback"]
+            )
+            model.record["state"]["python_readback"][1][0] += 1
+        elif drift == "draw":
+            model.record["program"] = dict(model.record["program"], draws=1)
+        elif drift == "mode":
+            model.record["program_identity"] = "7" * 64
+        elif drift == "role":
+            model.record["role"] = "original"
+        else:
+            model.record["source"]["helper_sha256"] = "7" * 64
+        row = model.outcome["captures"][0]
+        row["sha256"] = write(model.root / row["path"], model.record)["sha256"]
+        write(model.root / "common-start-rng/COMPLETED.json", model.record)
+    captures = report._captures(report.Reader(), model.root, model.outcome["captures"])
+    with pytest.raises(ValueError):
+        report._common_captures(report.Reader(), model.root, model.plan, model.outcome, captures)
+
+
+def test_report_common_start_failed_program_cannot_gain_geometry_or_observation():
+    plan = dict(_common_start={})
+    outcome = dict(status="failed", common_start_program=None, captures=[], operations=[])
+    result = report._common_captures(None, None, plan, outcome, [])
+    assert result == dict(completed=False, common_starting_authority_established=False)
+    outcome["operations"].append(dict(name="initial_rng", status="attempted"))
+    with pytest.raises(ValueError):
+        report._common_captures(None, None, plan, outcome, [])
+
+
+@pytest.mark.parametrize("drift", ["none", "mode", "caller", "provider", "release", "held"])
+def test_report_common_start_plan_requires_explicit_accepted_full_binding(monkeypatch, drift):
+    from tests.unit.test_native_seed_demo_launch import common_launch_fixture
+
+    plan, demo, manifest = common_launch_fixture()
+    files = {name: row["sha256"] for name, row in manifest["files"].items()}
+    monkeypatch.setattr(report, "COMMON_SHA256", "d" * 64)
+    monkeypatch.setattr(report, "COMMON_REVIEW_SHA256", "e" * 64)
+    files[report.COMMON_FILE] = plan["producers"][report.COMMON_FILE] = "d" * 64
+    demo["common_start"]["provider"].update(sha256="d" * 64, review_sha256="e" * 64)
+    plan.update(
+        flux_operator="original",
+        source="/inert/source",
+        _initial_rng_inputs=demo["initial_rng_inputs"],
+    )
+    if drift == "mode":
+        plan["flux_operator"] = "disabled"
+    elif drift == "caller":
+        files[report.COMMON_ORIGINAL] = "f" * 64
+    elif drift == "provider":
+        files[report.COMMON_FILE] = "f" * 64
+    elif drift == "release":
+        plan["release_environment"] = {}
+    elif drift == "held":
+        monkeypatch.setattr(report, "COMMON_REVIEW_SHA256", None)
+    reader = NS(bind=lambda row: row)
+    if drift == "none":
+        assert report._common_declaration(reader, plan, demo, files) is demo["common_start"]
+    else:
+        with pytest.raises(ValueError):
+            report._common_declaration(reader, plan, demo, files)
+
+
 LEGACY_REPORTER = dict(
     path=(
         "/mnt/workspaces/Cells/native-seed-demo-paired-comparison-20261104-01/"

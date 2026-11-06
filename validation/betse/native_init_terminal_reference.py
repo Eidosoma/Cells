@@ -25,11 +25,15 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from validation import source_snapshot as snapshot
 from validation.betse import native_seed_demo_evidence as evidence
 from validation.betse import native_seed_demo_input_profiles as profiles
 from validation.betse import native_seed_demo_inputs as inputs
+
+if TYPE_CHECKING:
+    from validation.betse import native_common_start_rng  # noqa: F401 - immutable read closure
 
 ROOT = Path(__file__).resolve().parents[2]
 NATIVE_ROOT = Path("/mnt/workspaces/Cells/betse-v1.5.0")
@@ -45,6 +49,23 @@ RNG_BUILTIN_WITNESS_KIND = "cells.common_initial_rng_observation@2"
 RNG_RUNTIME_HELPER = "validation/betse/native_rng_runtime.py"
 RNG_RUNTIME_HELPER_SHA256 = "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315"
 RNG_EPOCH = "pre_SEED_before_world_construction"
+COMMON_START_MODULE = "validation.betse.native_common_start_rng"
+COMMON_START_FILE = "validation/betse/native_common_start_rng.py"
+COMMON_START_KIND = "cells.explicit_fresh_common_start_rng_program@1"
+COMMON_START_DECLARATION = "cells.paired_common_start_preparation@1"
+COMMON_START_EPOCH = "after_parameters_before_world_construction"
+COMMON_START_SHA256 = "b52c20c4ede1fc9afbcefd9f22e65626156852cae552a12c14837e65dd1b9eb4"
+COMMON_START_REVIEW_SHA256 = "58e4090dfaf544435bd132b703e470d59d49381ade83ea25a7ab0fe3a919d72e"
+COMMON_START_STEPS = (
+    ("python_before", "python_get", None),
+    ("numpy_before", "numpy_get", None),
+    ("python_seed", "python_seed", "python_seed"),
+    ("python_after", "python_get", None),
+    ("numpy_seed", "numpy_seed", "numpy_seed"),
+    ("numpy_after", "numpy_get", None),
+    ("python_readback", "python_get", None),
+    ("numpy_readback", "numpy_get", None),
+)
 RNG_RUNTIME_MODULES = (
     "numpy",
     "numpy.random",
@@ -307,9 +328,9 @@ def _reference_profile(value):
     return value
 
 
-def source_plan(*, input_profile=profiles.HEADLESS):
+def source_plan(*, input_profile=profiles.HEADLESS, common_start=None):
     input_profile = _reference_profile(input_profile)
-    return dict(
+    value = dict(
         kind=KIND,
         endpoint=ENDPOINT,
         modes=list(MODES),
@@ -391,6 +412,16 @@ def source_plan(*, input_profile=profiles.HEADLESS):
         ),
         physical_checkpoint_SIM_or_solver_repair_claim=False,
     )
+    if common_start is not None:
+        _common_start_shape(common_start)
+        value.update(
+            initial_random_state="explicit_fresh_common_start_program_then_separate_observation",
+            common_start=common_start,
+            HOME_rewrite=False,
+            RNG_initialization="declared_original_global_seed_APIs_only",
+        )
+        del value["HOME_rewrite_or_RNG_initialization"]
+    return value
 
 
 def _input_manifest(folder, pin, mode):
@@ -575,7 +606,7 @@ def _bootstrap_contract(callback):
 
 
 def _source_contract(plan):
-    return dict(
+    value = dict(
         kind="cells.original_INIT_source_review@1",
         native_inventory_sha256=plan["native_inventory_sha256"],
         original_critical_pins=dict(CRITICAL),
@@ -583,6 +614,16 @@ def _source_contract(plan):
         modes=list(MODES),
         no_numerical_kernel_calendar_or_network_repair=True,
     )
+    if "common_start" in plan:
+        declaration = _common_start_shape(plan["common_start"])
+        value["common_start"] = dict(
+            kind=COMMON_START_KIND,
+            epoch=COMMON_START_EPOCH,
+            provider=declaration["provider"],
+            operations=[list(row) for row in COMMON_START_STEPS],
+            saved_state_loading_or_generator_replacement=False,
+        )
+    return value
 
 
 def _execution_contract():
@@ -620,18 +661,21 @@ def _release(plan, prepared_pin, release_path, release_pin, output, enabled):
     _require(
         type(release) is dict
         and set(release)
-        == {
-            "kind",
-            "prepared_sha256",
-            "snapshot_sha256",
-            "worker_output",
-            "policy",
-            "reviews",
-            "rng_policy",
-            "pythonpath",
-            "read_access",
-            "enabled",
-        }
+        == (
+            {
+                "kind",
+                "prepared_sha256",
+                "snapshot_sha256",
+                "worker_output",
+                "policy",
+                "reviews",
+                "rng_policy",
+                "pythonpath",
+                "read_access",
+                "enabled",
+            }
+            | ({"common_start"} if "common_start" in plan else set())
+        )
         and release["kind"] == "cells.original_INIT_reference_execution_release@1"
         and release["enabled"] is True
         and release["prepared_sha256"] == prepared_pin
@@ -641,6 +685,14 @@ def _release(plan, prepared_pin, release_path, release_pin, output, enabled):
         "Exact per-execution reference release required",
         "release",
     )
+    if "common_start" in plan:
+        _require(
+            release["common_start"] == plan["common_start"]
+            and os.environ.get("CELLS_COMMON_START_RNG_RELEASED") == "1",
+            "Explicit released common-start program required",
+            "common_start",
+        )
+        _common_start_request(plan)
     _require(
         release["pythonpath"] == os.environ.get("PYTHONPATH"),
         "Exact explicitly declared runtime import paths required",
@@ -1140,7 +1192,7 @@ def _filesystem(plan, authority, callback, output):
     return policy
 
 
-def prepare(output, *, input_pair, input_sha256, mode, native_root=NATIVE_ROOT):
+def prepare(output, *, input_pair, input_sha256, mode, native_root=NATIVE_ROOT, common_start=None):
     """Metadata only. Missing bootstrap/release authority remains explicit."""
     output = _path(output)
     _require(not output.exists(), "Fresh reference preparation required")
@@ -1167,9 +1219,12 @@ def prepare(output, *, input_pair, input_sha256, mode, native_root=NATIVE_ROOT):
         frozen = output / "source"
         manifest = snapshot.freeze(ROOT, frozen, {name: name for name in files})
         snapshot.assert_checkout_unchanged(frozen)
+    declaration = (
+        None if common_start is None else common_start_declaration(common_start, selected, manifest)
+    )
     value = dict(
         kind=KIND,
-        source_plan=source_plan(input_profile=selected["profile"]),
+        source_plan=source_plan(input_profile=selected["profile"], common_start=declaration),
         native_root=str(_path(native_root)),
         native_inventory=original,
         native_inventory_sha256=_seal(original),
@@ -1185,6 +1240,8 @@ def prepare(output, *, input_pair, input_sha256, mode, native_root=NATIVE_ROOT):
         native_or_reference_calls=0,
         held=True,
     )
+    if declaration is not None:
+        value["common_start"] = declaration
     snapshot.write_json(output / "prepared.json", value)
     return value
 
@@ -2121,6 +2178,39 @@ def _workflow(plan, state, archive, seed):
     state.stage = "original_runner"
     runner = importlib.import_module("betse.science.simrunner").SimRunner(p)
     state.raw["runner"] = runner
+    if "common_start" in plan:
+        _stop(state)
+        api, program = _common_start_request(plan)
+        state.raw["common_start_rng_program"] = program
+        try:
+            record = api.initialize(
+                program,
+                state,
+                role="original",
+                output=archive.folder.parent / "common-start-rng",
+                enabled=True,
+            )
+            state.raw["common_start_rng"] = record
+        except BaseException as primary:
+            state.raw["common_start_rng_error"] = primary
+            try:
+                state.raw["common_start_rng_attempt"] = vars(primary).get("common_start_attempt")
+            except BaseException as secondary:
+                state.secondary.append(("common_start_attempt_retention", secondary))
+            raise
+        _require(
+            type(record) is dict
+            and record.get("kind") == COMMON_START_KIND
+            and record.get("status") == "completed"
+            and record.get("role") == "original"
+            and record.get("program_identity") == plan["common_start"]["program_identity"]
+            and record.get("program") == plan["common_start"]["program"],
+            "Complete actual common-start return required before observation",
+            "common_start",
+        )
+        _stop(state)
+        _attempt(state, "common_start_rng_capture", archive.save, "common_start_rng", record)
+        _stop(state)
     _capture_initial_rng(plan, state, archive)
     state.stage = "SEED"
     seed_phase = runner.seed()
@@ -2170,6 +2260,206 @@ def _workflow(plan, state, archive, seed):
     return phase
 
 
+def _common_start_options(value):
+    _require(
+        type(value) is dict
+        and set(value) == {"python_seed", "numpy_seed"}
+        and type(value["python_seed"]) is int
+        and 0 <= value["python_seed"] < 2**256
+        and type(value["numpy_seed"]) is int
+        and 0 <= value["numpy_seed"] < 2**32,
+        "Explicit bounded integer common-start inputs only; no supplied state",
+        "common_start",
+    )
+    return dict(value)
+
+
+def _common_start_document(options, inventory_identity, consumers):
+    options = _common_start_options(options)
+    _require(
+        _pin(inventory_identity)
+        and type(consumers) is dict
+        and set(consumers) == {"cells", "original"}
+        and all(_pin(value) for value in consumers.values()),
+        "Both final caller hashes and exact input inventory required",
+        "common_start",
+    )
+    return dict(
+        kind=COMMON_START_KIND,
+        epoch=COMMON_START_EPOCH,
+        **options,
+        python_seed_version=2,
+        numpy_api="legacy global RandomState.seed",
+        input_identity=inventory_identity,
+        consumer_sources=dict(consumers),
+        operations=[list(row) for row in COMMON_START_STEPS],
+        draws=0,
+        setstate_or_generator_replacement=False,
+    )
+
+
+def _common_start_shape(value):
+    _require(
+        type(value) is dict
+        and set(value) == {"kind", "mode", "program", "program_identity", "provider"}
+        and value["kind"] == COMMON_START_DECLARATION
+        and value["mode"] in MODES,
+        "Exact opt-in common-start declaration required",
+        "common_start",
+    )
+    doc = value["program"]
+    _require(type(doc) is dict, "Actual program document required", "common_start")
+    expected = _common_start_document(
+        {name: doc.get(name) for name in ("python_seed", "numpy_seed")},
+        doc.get("input_identity"),
+        doc.get("consumer_sources"),
+    )
+    _require(
+        _seal(doc) == _seal(expected) and value["program_identity"] == _seal(expected),
+        "Canonical common-start program changed",
+        "common_start",
+    )
+    _require(
+        value["provider"]
+        == dict(
+            file=COMMON_START_FILE,
+            sha256=COMMON_START_SHA256,
+            review_sha256=COMMON_START_REVIEW_SHA256,
+        ),
+        "Exact declared provider/review adoption required",
+        "common_start",
+    )
+    return value
+
+
+def common_start_declaration(options, selected, manifest):
+    """Metadata only; derive bindings from the selected immutable image."""
+    options = _common_start_options(options)
+    consumers = {
+        role: manifest["files"][name]["sha256"]
+        for role, name in (("cells", "validation/betse/native_seed_demo.py"), ("original", FILE))
+    }
+    _require(COMMON_START_FILE in manifest["files"], "Common-start source missing from image")
+    doc = _common_start_document(options, _seal(selected["inventory"]), consumers)
+    return _common_start_shape(
+        dict(
+            kind=COMMON_START_DECLARATION,
+            mode=selected["mode"],
+            program=doc,
+            program_identity=_seal(doc),
+            provider=dict(
+                file=COMMON_START_FILE,
+                sha256=COMMON_START_SHA256,
+                review_sha256=COMMON_START_REVIEW_SHA256,
+            ),
+        )
+    )
+
+
+def _common_start_api():
+    """Authenticate the actual public producer before any declaration/call."""
+    _require(
+        _pin(COMMON_START_SHA256) and _pin(COMMON_START_REVIEW_SHA256),
+        "Reviewed common-start producer remains held",
+        "common_start",
+    )
+    path = ROOT / COMMON_START_FILE
+    raw, _ = _read(path, MAX_FILE_BYTES)
+    _require(_sha(raw) == COMMON_START_SHA256, "Common-start producer changed", "common_start")
+    api = importlib.import_module(COMMON_START_MODULE)
+    _require(Path(api.__file__).resolve() == path, "Actual common-start producer required")
+    from types import CodeType, FunctionType, ModuleType
+
+    _require(
+        type(api) is ModuleType and sys.modules.get(COMMON_START_MODULE) is api,
+        "Actual common-start module association required",
+        "common_start",
+    )
+
+    unit = compile(raw, str(path), "exec", dont_inherit=True)
+    codes = {item.co_name: item for item in unit.co_consts if type(item) is CodeType}
+    for node in ast.parse(raw).body:
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        fn = vars(api).get(node.name)
+        if node.decorator_list:
+            _require(
+                [ast.unparse(item) for item in node.decorator_list] == ["contextmanager"],
+                "Exact common-start contextmanager decorator required",
+            )
+            body = getattr(fn, "__wrapped__", None)
+            _require(type(body) is FunctionType, "Actual common-start context body required")
+            expected = contextmanager(body)
+            _require(
+                fn.__code__ is expected.__code__
+                and fn.__globals__ is expected.__globals__
+                and len(fn.__closure__) == 1
+                and fn.__closure__[0].cell_contents is body,
+                "Original common-start context wrapper changed",
+            )
+            fn = body
+        defaults = tuple(ast.literal_eval(item) for item in node.args.defaults) or None
+        keywords = {
+            arg.arg: ast.literal_eval(item)
+            for arg, item in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True)
+            if item is not None
+        } or None
+        _require(
+            type(fn) is FunctionType
+            and fn.__code__ == codes[node.name]
+            and fn.__globals__ is vars(api)
+            and fn.__closure__ is None
+            and fn.__defaults__ == defaults
+            and fn.__kwdefaults__ == keywords,
+            "Actual common-start callable/code/default changed",
+            "common_start",
+        )
+    _require(
+        api.FILE == COMMON_START_FILE
+        and api.KIND == COMMON_START_KIND
+        and api.EPOCH == COMMON_START_EPOCH
+        and api.STEPS == COMMON_START_STEPS,
+        "Actual common-start public program contract changed",
+        "common_start",
+    )
+    return api
+
+
+def _common_start_request(plan):
+    declaration = _common_start_shape(plan["common_start"])
+    doc = declaration["program"]
+    _require(
+        declaration["mode"] == plan["inputs"]["mode"]
+        and doc["input_identity"] == _seal(plan["inputs"]["inventory"]),
+        "Common-start mode/input binding changed",
+        "common_start",
+    )
+    api = _common_start_api()
+    manifest = snapshot.verify(ROOT, manifest_sha256=plan["execution_source"]["snapshot_sha256"])
+    _require(
+        common_start_declaration(
+            {name: doc[name] for name in ("python_seed", "numpy_seed")}, plan["inputs"], manifest
+        )
+        == declaration
+        and manifest["files"][COMMON_START_FILE]["sha256"] == COMMON_START_SHA256,
+        "Original exact frozen common-start callers/provider changed",
+        "common_start",
+    )
+    program = api.declare(
+        python_seed=doc["python_seed"],
+        numpy_seed=doc["numpy_seed"],
+        input_identity=doc["input_identity"],
+        consumer_sources=doc["consumer_sources"],
+    )
+    _require(
+        api.program_document(program) == doc
+        and program.identity == declaration["program_identity"],
+        "Actual public common-start declaration differs",
+        "common_start",
+    )
+    return api, program
+
+
 def evaluate(
     prepared, expected_sha256, output, *, release=None, release_sha256=None, enabled=False
 ):
@@ -2190,7 +2480,10 @@ def evaluate(
         )
         _require(
             plan["source_plan"]
-            == source_plan(input_profile=plan["inputs"].get("profile", profiles.HEADLESS)),
+            == source_plan(
+                input_profile=plan["inputs"].get("profile", profiles.HEADLESS),
+                common_start=plan.get("common_start"),
+            ),
             "Source/adoption plan changed",
         )
         authority, demo, callback = _release(
@@ -2439,10 +2732,25 @@ def main():
     parser.add_argument("--release", type=Path)
     parser.add_argument("--release-sha256")
     parser.add_argument("--enabled", action="store_true")
+    parser.add_argument("--common-start", type=Path)
+    parser.add_argument("--common-start-sha256")
     args = parser.parse_args()
+    if (args.common_start is None) != (args.common_start_sha256 is None):
+        parser.error("Both explicit common-start input path and hash are required")
+    common_start = None
+    if args.common_start is not None:
+        if args.prepare is None:
+            parser.error("Common-start inputs belong to fresh preparation, never a worker override")
+        common_start = _common_start_options(
+            _json_record(args.common_start, args.common_start_sha256)
+        )
     if args.prepare and args.input_pair and args.input_sha256:
         prepare(
-            args.prepare, input_pair=args.input_pair, input_sha256=args.input_sha256, mode=args.mode
+            args.prepare,
+            input_pair=args.input_pair,
+            input_sha256=args.input_sha256,
+            mode=args.mode,
+            common_start=common_start,
         )
         return 0
     if args.worker and args.prepared_sha256 and args.output:

@@ -4,11 +4,16 @@ No seed, draw, state replacement, model ownership or parity is issued here.
 The independent reference keeps its own original constructor and wire codec.
 """
 
+import ast
 import hashlib
+import importlib
 import json
+import os
 import random
 import sys
+from contextlib import contextmanager
 from pathlib import Path
+from types import CodeType, FunctionType, ModuleType
 
 from validation import source_snapshot as snapshot
 from validation.betse import native_rng_runtime as rng_runtime
@@ -21,6 +26,25 @@ ROOT = Path(__file__).resolve().parents[2]
 LEGACY_KIND = "cells.common_initial_rng_observation@1"
 KIND = "cells.common_initial_rng_observation@2"
 EPOCH = "pre_SEED_before_world_construction"
+COMMON_MODULE = "validation.betse.native_common_start_rng"
+COMMON_FILE = "validation/betse/native_common_start_rng.py"
+ORIGINAL = "validation/betse/native_init_terminal_reference.py"
+COMMON_KIND = "cells.explicit_fresh_common_start_rng_program@1"
+COMMON_DECLARATION = "cells.paired_common_start_preparation@1"
+COMMON_EPOCH = "after_parameters_before_world_construction"
+COMMON_RELEASE = "CELLS_COMMON_START_RNG_RELEASED"
+COMMON_SHA256 = "b52c20c4ede1fc9afbcefd9f22e65626156852cae552a12c14837e65dd1b9eb4"
+COMMON_REVIEW_SHA256 = "58e4090dfaf544435bd132b703e470d59d49381ade83ea25a7ab0fe3a919d72e"
+COMMON_STEPS = (
+    ("python_before", "python_get", None),
+    ("numpy_before", "numpy_get", None),
+    ("python_seed", "python_seed", "python_seed"),
+    ("python_after", "python_get", None),
+    ("numpy_seed", "numpy_seed", "numpy_seed"),
+    ("numpy_after", "numpy_get", None),
+    ("python_readback", "python_get", None),
+    ("numpy_readback", "numpy_get", None),
+)
 RNG_RUNTIME_MODULES = (
     "numpy",
     "numpy.random",
@@ -45,6 +69,194 @@ def seal(value):
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
+
+
+def common_declaration(value):
+    """Authenticate the opt-in metadata shape without loading an RNG producer."""
+    require(
+        type(value) is dict
+        and set(value) == {"kind", "mode", "program", "program_identity", "provider"}
+        and value["kind"] == COMMON_DECLARATION
+        and type(value["mode"]) is str
+        and value["mode"] in ("original", "disabled"),
+        "Exact per-mode common-start declaration required",
+    )
+    doc = value["program"]
+    require(type(doc) is dict, "Explicit common-start program required")
+    require(
+        type(doc.get("python_seed")) is int
+        and 0 <= doc["python_seed"] < 2**256
+        and type(doc.get("numpy_seed")) is int
+        and 0 <= doc["numpy_seed"] < 2**32
+        and pin(doc.get("input_identity"))
+        and type(doc.get("consumer_sources")) is dict
+        and set(doc["consumer_sources"]) == {"cells", "original"}
+        and all(pin(item) for item in doc["consumer_sources"].values()),
+        "Bounded seeds, complete input identity and both caller hashes required",
+    )
+    expected = dict(
+        kind=COMMON_KIND,
+        epoch=COMMON_EPOCH,
+        python_seed=doc["python_seed"],
+        python_seed_version=2,
+        numpy_seed=doc["numpy_seed"],
+        numpy_api="legacy global RandomState.seed",
+        input_identity=doc["input_identity"],
+        consumer_sources=doc["consumer_sources"],
+        operations=[list(row) for row in COMMON_STEPS],
+        draws=0,
+        setstate_or_generator_replacement=False,
+    )
+    # Canonical JSON preserves exact scalar types at the saved-document boundary.
+    require(
+        seal(doc) == seal(expected) and value["program_identity"] == seal(expected),
+        "Canonical common-start program changed",
+    )
+    require(
+        value["provider"]
+        == dict(file=COMMON_FILE, sha256=COMMON_SHA256, review_sha256=COMMON_REVIEW_SHA256),
+        "Explicit accepted common-start producer/review required",
+    )
+    return value
+
+
+def common_binding(plan, manifest):
+    """Bind one declaration to its actual mode, inventory and immutable callers."""
+    selected = common_declaration(plan["common_start"])
+    initial = validate_declaration(plan["initial_rng_inputs"])
+    doc = selected["program"]
+    require(
+        selected["mode"] == plan["flux_operator"]
+        and doc["input_identity"] == initial["inventory_sha256"]
+        and doc["consumer_sources"]
+        == {
+            role: manifest["files"][name]["sha256"]
+            for role, name in (("cells", DEMO), ("original", ORIGINAL))
+        }
+        and COMMON_FILE in manifest["files"],
+        "Common-start mode, whole input inventory or actual caller source changed",
+    )
+    if COMMON_SHA256 is not None:
+        require(
+            manifest["files"][COMMON_FILE]["sha256"] == COMMON_SHA256,
+            "Common-start producer differs from accepted source",
+        )
+    return selected
+
+
+def common_preflight(plan):
+    require(
+        pin(COMMON_SHA256) and pin(COMMON_REVIEW_SHA256),
+        "Reviewed common-start producer remains held",
+    )
+    require(os.environ.get(COMMON_RELEASE) == "1", "Common-start input program remains held")
+    manifest = snapshot.verify(ROOT, manifest_sha256=plan["snapshot_sha256"])
+    common_binding(plan, manifest)
+
+
+def common_api():
+    """Check loaded callable bodies as well as the frozen file before declaring inputs."""
+    require(
+        pin(COMMON_SHA256) and pin(COMMON_REVIEW_SHA256),
+        "Reviewed common-start producer remains held",
+    )
+    path = snapshot.regular_file(ROOT, COMMON_FILE)
+    raw = path.read_bytes()
+    require(hashlib.sha256(raw).hexdigest() == COMMON_SHA256, "Common-start source changed")
+    api = importlib.import_module(COMMON_MODULE)
+    require(
+        type(api) is ModuleType
+        and sys.modules.get(COMMON_MODULE) is api
+        and Path(api.__file__).resolve() == path,
+        "Actual frozen common-start module required",
+    )
+    codes = {
+        c.co_name: c
+        for c in compile(raw, str(path), "exec", dont_inherit=True).co_consts
+        if type(c) is CodeType
+    }
+    for node in ast.parse(raw).body:
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        function = vars(api).get(node.name)
+        if node.decorator_list:
+            require(
+                [ast.unparse(item) for item in node.decorator_list] == ["contextmanager"],
+                "Exact common-start wrapper required",
+            )
+            body = getattr(function, "__wrapped__", None)
+            require(type(body) is FunctionType, "Actual common-start body required")
+            wrapped = contextmanager(body)
+            require(
+                function.__code__ is wrapped.__code__
+                and function.__globals__ is wrapped.__globals__
+                and len(function.__closure__) == 1
+                and function.__closure__[0].cell_contents is body,
+                "Common-start wrapper/delegate changed",
+            )
+            function = body
+        defaults = tuple(ast.literal_eval(item) for item in node.args.defaults) or None
+        keywords = {
+            arg.arg: ast.literal_eval(item)
+            for arg, item in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True)
+            if item is not None
+        } or None
+        require(
+            type(function) is FunctionType
+            and function.__code__ == codes[node.name]
+            and function.__globals__ is vars(api)
+            and function.__closure__ is None
+            and function.__defaults__ == defaults
+            and function.__kwdefaults__ == keywords,
+            "Common-start callable/code/default changed",
+        )
+    require(
+        api.FILE == COMMON_FILE
+        and api.KIND == COMMON_KIND
+        and api.EPOCH == COMMON_EPOCH
+        and api.STEPS == COMMON_STEPS,
+        "Common-start public contract changed",
+    )
+    return api
+
+
+def common_request(plan):
+    common_preflight(plan)
+    api = common_api()
+    doc = plan["common_start"]["program"]
+    program = api.declare(
+        python_seed=doc["python_seed"],
+        numpy_seed=doc["numpy_seed"],
+        input_identity=doc["input_identity"],
+        consumer_sources=doc["consumer_sources"],
+    )
+    require(
+        api.program_document(program) == doc
+        and program.identity == plan["common_start"]["program_identity"],
+        "Actual common-start Program differs from the explicit declaration",
+    )
+    return api, program
+
+
+def common_return(value, declaration):
+    common_declaration(declaration)
+    require(
+        type(value) is dict
+        and value.get("kind") == COMMON_KIND
+        and value.get("status") == "completed"
+        and value.get("role") == "cells"
+        and value.get("epoch") == COMMON_EPOCH
+        and seal(value.get("program")) == seal(declaration["program"])
+        and value.get("program_identity") == declaration["program_identity"]
+        and value.get("source", {}).get("helper") == COMMON_FILE
+        and value.get("source", {}).get("helper_sha256") == COMMON_SHA256
+        and value.get("operations") == [[row[0], "returned"] for row in COMMON_STEPS]
+        and value.get("states_loaded") is False
+        and value.get("generators_replaced") is False
+        and value.get("biological_or_phase_admission") is False,
+        "Complete actual common-start return required before ambient observation",
+    )
+    return value
 
 
 def declaration(program):
@@ -216,9 +428,30 @@ def order_binding(state):
         "Original WorldReady parameter association changed",
     )
     names = [(row["name"], row["status"]) for row in state.operations]
+    common = getattr(state, "common_start_declaration", None)
+    if common is None:
+        expected = [("parameters", "returned"), ("initial_rng", "attempted")]
+        require(
+            not any(name == "common_start_rng" for name, _ in names),
+            "Undeclared common-start operation cannot gain observation authority",
+        )
+    else:
+        common_return(state.common_start_raw_return, common)
+        require(
+            state.common_start_record is state.common_start_raw_return
+            and state.common_start_capture is not None
+            and state.common_start_capture["label"] == "common_start_rng"
+            and state.common_start_capture["status"] == "saved"
+            and common["mode"] == state.flux_operator,
+            "Original common-start return and successful capture required",
+        )
+        expected = [
+            ("parameters", "returned"),
+            ("common_start_rng", "returned"),
+            ("initial_rng", "attempted"),
+        ]
     require(
-        names[-2:] == [("parameters", "returned"), ("initial_rng", "attempted")]
-        and not any(name == "geometry" for name, _ in names),
+        names[-len(expected) :] == expected and not any(name == "geometry" for name, _ in names),
         "Initial RNG observation must immediately precede geometry",
     )
     return dict(

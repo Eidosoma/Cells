@@ -8,6 +8,7 @@ import functools
 import hashlib
 import json
 import os
+import operator
 import sys
 from contextlib import contextmanager
 from pathlib import Path
@@ -22,6 +23,8 @@ PARAMETER_FUNCTIONS = (
     "_compilation_function_record",
     "_compilation_validate",
     "_compilation_key",
+    "_compilation_class_plan",
+    "_compilation_class_matches",
     "_compilation_metadata",
     "_compilation_contract",
     "_compiled_source",
@@ -74,6 +77,7 @@ def _load(path, functions, prefix, *, parameters=None):
         builtins=builtins,
         copy=copy,
         dis=dis,
+        operator=operator,
         lru_cache=functools.lru_cache,
         Path=Path,
         CodeType=CodeType,

@@ -241,7 +241,18 @@ def software(output, select):
     metadata = output / "metadata"
     metadata.mkdir()
     guard.run_bounded(
-        [sys.executable, "-B", "-m", MODULE, "--prepare", str(output), "--select", select],
+        [
+            sys.executable,
+            "-B",
+            "-m",
+            MODULE,
+            "--prepare",
+            str(output),
+            "--select",
+            select,
+            "--software-cpu",
+            str(POLICY["cpu"]),
+        ],
         directory=metadata,
         cwd=ROOT,
         env=env,
@@ -259,7 +270,18 @@ def software(output, select):
     result, failures = None, []
     try:
         result = guard.run_bounded(
-            [sys.executable, "-B", "-m", MODULE, "--child", str(output), "--select", select],
+            [
+                sys.executable,
+                "-B",
+                "-m",
+                MODULE,
+                "--child",
+                str(output),
+                "--select",
+                select,
+                "--software-cpu",
+                str(POLICY["cpu"]),
+            ],
             directory=process,
             cwd=frozen,
             env=env,
@@ -327,11 +349,14 @@ def software(output, select):
 
 
 def main():
+    global POLICY
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("prepare", "child", "software"):
         parser.add_argument("--" + name, type=Path)
     parser.add_argument("--select", default="reference")
+    parser.add_argument("--software-cpu", type=int, choices=(5, 6), default=5)
     args = parser.parse_args()
+    POLICY = dict(POLICY, cpu=args.software_cpu)
     if args.child is not None:
         resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
         return child(args.child, args.select)

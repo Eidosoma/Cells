@@ -7,6 +7,7 @@ reach the original validator again; successful closure requires every row.
 The interval is an observation token, never another history or execution owner.
 """
 
+import dis
 import hashlib
 import os
 import struct
@@ -15,7 +16,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from threading import get_ident
-from types import FunctionType, MethodType, SimpleNamespace
+from types import CodeType, FunctionType, MappingProxyType, MethodType, ModuleType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_sim_run as parent
@@ -636,6 +637,13 @@ def _exit_api(context):
     context.api_guard(context)
     if _producer() is not context.exit_parent:
         raise ValueError("Original full-exit producer changed")
+    if context.exit_chain is not _EXIT_CHAIN:
+        raise ValueError("Original full-exit helper closure changed")
+    for binding in context.exit_chain[0]:
+        _exit_function(binding)
+    for namespace, name, value in context.exit_chain[1]:
+        if namespace.get(name) is not value:
+            raise ValueError("Original full-exit helper lookup changed: " + name)
     function, code, namespace, builtins, defaults, keywords, closure = context.exit_binding
     if (
         vars(context.exit_parent).get("validate_sim") is not function
@@ -658,6 +666,139 @@ def _exit_api(context):
     ):
         raise ValueError("Original full-exit closure changed")
     return function
+
+
+def _exit_function(binding, frame=None):
+    function, code, namespace, cached, defaults, keywords, closure = binding
+    if (
+        function.__code__ is not code
+        or function.__globals__ is not namespace
+        or function.__builtins__ is not cached
+        or function.__defaults__ is not defaults
+        or (
+            frame is not None
+            and (
+                frame.f_code is not code
+                or frame.f_globals is not namespace
+                or frame.f_builtins is not cached
+            )
+        )
+    ):
+        raise ValueError("Original full-exit helper executing code/namespace required")
+    current, cells = function.__kwdefaults__ or {}, function.__closure__ or ()
+    if (
+        len(current) != len(keywords)
+        or any(current.get(key) is not value for key, value in keywords)
+        or len(cells) != len(closure)
+        or any(
+            cell is not old
+            or cell.cell_contents is not value
+            or (frame is not None and frame.f_locals.get(name) is not value)
+            for name, cell, (old, value) in zip(code.co_freevars, cells, closure, strict=True)
+        )
+    ):
+        raise ValueError("Original full-exit helper defaults/closure required")
+
+
+def _exit_chain(root):
+    """Freeze reached Python helper lookups/calls without invoking any helper.
+
+    CALL positions associate a global/cell lookup with its actual callsite,
+    including nested argument calls. Metadata delegates are checked against
+    the same retained function roster. Existing native/runtime owner guards
+    still authenticate dynamic projector/library objects; this is their
+    source helper dispatch guard, not a replacement runtime or replay.
+    """
+    pending, bindings, lookups, calls, codes = [root], {}, [], {}, set()
+    while pending:
+        function = pending.pop()
+        if function in bindings:
+            continue
+        cells = function.__closure__ or ()
+        binding = (
+            function,
+            function.__code__,
+            function.__globals__,
+            function.__builtins__,
+            function.__defaults__,
+            tuple((function.__kwdefaults__ or {}).items()),
+            tuple((cell, cell.cell_contents) for cell in cells),
+        )
+        bindings[function] = binding
+        namespace = function.__globals__
+        if namespace is not root.__globals__ and not namespace.get("__name__", "").startswith(
+            ("cells.", "validation.")
+        ):
+            continue
+        free = dict(zip(function.__code__.co_freevars, cells, strict=True))
+        nested = [function.__code__]
+        while nested:
+            code = nested.pop()
+            if code in codes:
+                continue
+            codes.add(code)
+            nested.extend(value for value in code.co_consts if type(value) is CodeType)
+            instructions = tuple(dis.get_instructions(code))
+            candidates, sites = {}, {}
+            for index, instruction in enumerate(instructions):
+                if instruction.opname == "LOAD_GLOBAL":
+                    name = instruction.argval
+                    holder = namespace if name in namespace else function.__builtins__
+                    value = holder.get(name)
+                    path = [(holder, name, value)]
+                elif instruction.opname == "LOAD_DEREF" and instruction.argval in free:
+                    cell = free[instruction.argval]
+                    value, path = cell.cell_contents, []
+                elif instruction.opname == "LOAD_FAST" and code.co_name == "_metadata":
+                    # The original _metadata calls its supplied function.
+                    # Its target must already belong to the frozen closure.
+                    if instruction.argval == "function":
+                        candidates[
+                            (instruction.positions.lineno, instruction.positions.col_offset)
+                        ] = ("delegate", "function")
+                    continue
+                else:
+                    continue
+                for member in instructions[index + 1 :]:
+                    if member.opname not in ("LOAD_ATTR", "LOAD_METHOD"):
+                        break
+                    if type(value) is not ModuleType or member.argval not in vars(value):
+                        break
+                    holder, name = vars(value), member.argval
+                    value = holder[name]
+                    path.append((holder, name, value))
+                if type(value) is FunctionType:
+                    pending.append(value)
+                    lookups.extend(path)
+                    candidates[(instruction.positions.lineno, instruction.positions.col_offset)] = (
+                        "static",
+                        value,
+                        tuple(path),
+                    )
+            for index, instruction in enumerate(instructions):
+                if instruction.opname not in ("CALL", "CALL_KW", "CALL_FUNCTION_EX"):
+                    continue
+                target = candidates.get(
+                    (instruction.positions.lineno, instruction.positions.col_offset)
+                )
+                if target is not None:
+                    # f_lasti may point into an inline CALL cache.
+                    stop = (
+                        instructions[index + 1].offset
+                        if index + 1 < len(instructions)
+                        else (len(code.co_code))
+                    )
+                    sites.update((offset, target) for offset in range(instruction.offset, stop))
+            calls[code] = MappingProxyType(sites)
+    return (
+        tuple(bindings.values()),
+        tuple(lookups),
+        MappingProxyType(dict(bindings)),
+        MappingProxyType(calls),
+    )
+
+
+_EXIT_CHAIN = _exit_chain(parent.validate_sim)
 
 
 @contextmanager
@@ -749,8 +890,17 @@ def observing_completed(owner, *, enabled=False):
                 api_guard=_check_self,
                 api_guard_code=_check_self.__code__,
                 exit_parent=parent,
+                exit_chain=_EXIT_CHAIN,
                 exit_entry=None,
                 exit_entry_events=[],
+                exit_helper_work={},
+                last_exit_helper=None,
+                last_exit_helper_counted=None,
+                last_exit_source_exception=None,
+                exit_admission_error=None,
+                last_exit_admission=None,
+                exit_checker=_exit_function,
+                exit_checker_code=_exit_function.__code__,
                 exit_binding=(
                     exit_function,
                     exit_function.__code__,
@@ -826,7 +976,9 @@ def observing_completed(owner, *, enabled=False):
                         expected = context.exit_binding
                         old_hooks = sys.getprofile(), sys.gettrace()
                         locals_ = {}
+                        source_exceptions = {}
                         armed = False
+                        gate_refusal = None
 
                         def admit(frame, event):
                             # A function's current __code__ is insufficient:
@@ -836,6 +988,52 @@ def observing_completed(owner, *, enabled=False):
                                 return
                             target = event == "call" and frame.f_back is dispatch
                             if not target and frame is not context.exit_entry:
+                                ancestor = frame.f_back
+                                while ancestor is not None and ancestor is not context.exit_entry:
+                                    ancestor = ancestor.f_back
+                                if ancestor is None or event != "call":
+                                    return
+                                caller = frame.f_back
+                                site = (
+                                    context.exit_chain[3].get(caller.f_code, {}).get(caller.f_lasti)
+                                )
+                                if site is None:
+                                    return
+                                context.last_exit_helper = (frame, caller, site)
+                                if sys.getprofile() is not profile or sys.gettrace() is not trace:
+                                    raise ValueError("Original full-exit helper observers required")
+                                if site[0] == "delegate":
+                                    delegate = caller.f_locals.get(site[1])
+                                    binding = context.exit_chain[2].get(delegate)
+                                    if binding is None:
+                                        raise ValueError(
+                                            "Original full-exit metadata delegate required"
+                                        )
+                                else:
+                                    binding = context.exit_chain[2][site[1]]
+                                    if any(
+                                        namespace.get(name) is not value
+                                        for namespace, name, value in site[2]
+                                    ):
+                                        raise ValueError(
+                                            "Original full-exit helper dispatch required"
+                                        )
+                                checker = context.exit_checker
+                                if (
+                                    _exit_function is not checker
+                                    or checker.__code__ is not context.exit_checker_code
+                                ):
+                                    raise ValueError("Original full-exit helper checker required")
+                                checker(binding, frame)
+                                if (
+                                    event == "call"
+                                    and frame is not context.last_exit_helper_counted
+                                ):
+                                    context.last_exit_helper_counted = frame
+                                    function = binding[0]
+                                    context.exit_helper_work[function] = (
+                                        context.exit_helper_work.get(function, 0) + 1
+                                    )
                                 return
                             context.exit_entry_events.append((frame, event))
                             function, code, namespace, cached, defaults, keywords, closure = (
@@ -886,23 +1084,75 @@ def observing_completed(owner, *, enabled=False):
 
                         admit_code = admit.__code__
 
+                        def inherited_failed(frame, event, error):
+                            nonlocal gate_refusal
+                            raw = source_exceptions.get(frame)
+                            if raw is not None and (
+                                event == "exception"
+                                or (
+                                    event == "return"
+                                    and not dis.opname[
+                                        frame.f_code.co_code[frame.f_lasti]
+                                    ].startswith("RETURN")
+                                )
+                            ):
+                                # A return(None) may be exception unwind. Keep
+                                # the raw source error/cause, independently of
+                                # the observer that refused that same event.
+                                context.last_exit_source_exception = (frame, raw)
+                                _remember(
+                                    context, "full_exit_inherited_observer", error, (frame, event)
+                                )
+                                gate_refusal = raw[1]
+                                raise raw[1]
+                            gate_refusal = error
+                            raise error
+
                         def profile(frame, event, arg):
+                            nonlocal gate_refusal
+                            if armed and gate_refusal is not None:
+                                raise gate_refusal
                             if old_hooks[0] is not None:
-                                old_hooks[0](frame, event, arg)
+                                try:
+                                    old_hooks[0](frame, event, arg)
+                                except BaseException as error:
+                                    inherited_failed(frame, event, error)
                             if admit.__code__ is not admit_code:
                                 raise ValueError("Original full-exit admission code changed")
-                            admit(frame, event)
+                            try:
+                                admit(frame, event)
+                            except BaseException as error:
+                                gate_refusal = context.exit_admission_error = error
+                                context.last_exit_admission = (frame, event, error)
+                                raise
 
                         def trace(frame, event, arg):
+                            nonlocal gate_refusal
+                            if armed and gate_refusal is not None:
+                                raise gate_refusal
+                            if armed and event == "exception":
+                                ancestor = frame
+                                while ancestor is not None and ancestor is not context.exit_entry:
+                                    ancestor = ancestor.f_back
+                                if ancestor is not None:
+                                    source_exceptions[frame] = arg
                             fn = old_hooks[1] if event == "call" else locals_.get(id(frame))
-                            result = None if fn is None else fn(frame, event, arg)
+                            try:
+                                result = None if fn is None else fn(frame, event, arg)
+                            except BaseException as error:
+                                inherited_failed(frame, event, error)
                             if event == "return":
                                 locals_.pop(id(frame), None)
                             elif result is not None:
                                 locals_[id(frame)] = result
                             if admit.__code__ is not admit_code:
                                 raise ValueError("Original full-exit admission code changed")
-                            admit(frame, event)
+                            try:
+                                admit(frame, event)
+                            except BaseException as error:
+                                gate_refusal = context.exit_admission_error = error
+                                context.last_exit_admission = (frame, event, error)
+                                raise
                             return trace
 
                         gate_primary = None

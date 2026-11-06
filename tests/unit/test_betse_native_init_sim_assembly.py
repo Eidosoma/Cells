@@ -621,7 +621,7 @@ def test_assembly_installed_hooks_refuse_foreign_nested_dispatch_before_body(
         else ["phase", "cache", "cache_abc", "cache_vector", "cache_abc", "cache_abc"]
     )
     assert changed == [True] and model.foreign == [] and model.events == expected
-    assert model.context.invalid and model.context.source_error is caught.value
+    assert model.context.invalid and model.context.nested_error is caught.value
     assert Path(foreign.__code__.co_filename) == Path(__file__)
     assert original in dict(model.context.nested_functions)
     software.snapshot.write_json(
@@ -801,7 +801,7 @@ def test_assembly_foreign_frame_is_rejected_even_after_inherited_binding_restora
             cls.__init__ = wrapper
             model.namespace["_check_nested_bindings"](model.context)
             restored.append(True)
-        model.namespace["_nested_caller"](model.context, frame, event)
+            model.namespace["_nested_caller"](model.context, frame, event)
 
     try:
         sys.setprofile(profile)

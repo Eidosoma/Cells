@@ -147,6 +147,7 @@ def _model(monkeypatch, count=3, *, cache=None):
     exec(compile(Path(stage.__file__).read_bytes(), stage.__file__, "exec"), vars(module))
     module.parent = provider
     module._producer = lambda: provider
+    module._EXIT_CHAIN = module._exit_chain(provider.validate_sim)
     module._SELF_API = module._self_bindings()
     monkeypatch.setenv(module.RELEASE, "1")
     return NS(
@@ -732,3 +733,357 @@ def test_history_full_exit_same_object_foreign_code_never_enters_even_if_restore
             independent_biological_cases=0,
         ),
     )
+
+
+def _exit_chain_model(monkeypatch):
+    model = _model(monkeypatch)
+    provider = model.provider
+    provider._full, provider.source, provider.helper_entries = (
+        provider.validate_sim,
+        model.source,
+        [],
+    )
+    # Original-shaped dispatch: validate_sim -> _authority -> _metadata ->
+    # supplied helper. These are real profiled Python calls in a private
+    # metadata provider, not native owner issuance or a substituted checker.
+    exec(
+        compile(
+            "def validate_sim(actual):\n"
+            " return _authority(actual).trial\n"
+            "def _authority(actual):\n"
+            " _leaf(actual)\n"
+            " _metadata(source, 'modeled full validation', _delegated, actual)\n"
+            " return source\n"
+            "def _leaf(actual):\n"
+            " helper_entries.append(('leaf', actual))\n"
+            " return source\n"
+            "def _delegated(actual):\n"
+            " helper_entries.append(('delegated', actual))\n"
+            " return _full(actual)\n",
+            "metadata_original_exit_helper_chain",
+            "exec",
+        ),
+        vars(provider),
+    )
+    model.api._EXIT_CHAIN = model.api._exit_chain(provider.validate_sim)
+    return model
+
+
+@pytest.mark.parametrize("observer", ("profile", "trace"))
+@pytest.mark.parametrize("role", ("_authority", "_leaf", "_delegated"))
+@pytest.mark.parametrize("mutation", ("slot", "code", "namespace", "cached_builtins"))
+def test_history_exit_descendant_self_restoring_helper_refuses_before_foreign_body(
+    observer, role, mutation, monkeypatch, tmp_path
+):
+    model = _exit_chain_model(monkeypatch)
+    provider, foreign_calls, changed = model.provider, [], []
+    original = vars(provider)[role]
+    original_code, before = original.__code__, (sys.getprofile(), sys.gettrace())
+    namespace = dict(vars(provider), foreign_entries=foreign_calls)
+    exec(
+        "def foreign(actual):\n foreign_entries.append(actual)\n return source\n",
+        namespace,
+    )
+    foreign = namespace["foreign"]
+    if mutation == "namespace":
+        namespace["helper_entries"] = foreign_calls
+        foreign = FunctionType(original_code, namespace)
+    elif mutation == "cached_builtins":
+        holder = vars(provider)
+        builtins = holder["__builtins__"]
+        try:
+            holder["__builtins__"] = dict(original.__builtins__)
+            foreign = FunctionType(original_code, holder)
+        finally:
+            holder["__builtins__"] = builtins
+        assert foreign.__builtins__ is not original.__builtins__
+    replacement_code = foreign.__code__
+    trigger = (
+        provider.validate_sim.__code__ if role == "_authority" else provider._authority.__code__
+    )
+    traces = {}
+    foreign_entered = []
+
+    def mutate(frame, event, kind):
+        if event != "call":
+            return
+        if (
+            not changed
+            and kind == observer
+            and frame.f_code is trigger
+            and model.api._PENDING is not None
+        ):
+            changed.append(role)
+            if mutation == "code":
+                original.__code__ = replacement_code
+            else:
+                setattr(provider, role, foreign)
+        elif changed and (
+            frame.f_code is replacement_code
+            and (mutation != "namespace" or frame.f_globals is namespace)
+        ):
+            # Actual foreign frame already exists, while every original live
+            # slot/function is restored before the guard runs after this hook.
+            original.__code__ = original_code
+            setattr(provider, role, original)
+            foreign_entered.append(frame)
+
+    def profile(frame, event, arg):
+        if before[0] is not None:
+            before[0](frame, event, arg)
+        mutate(frame, event, "profile")
+
+    def trace(frame, event, arg):
+        inherited = before[1] if event == "call" else traces.get(id(frame))
+        result = None if inherited is None else inherited(frame, event, arg)
+        if event == "return":
+            traces.pop(id(frame), None)
+        elif result is not None:
+            traces[id(frame)] = result
+        mutate(frame, event, "trace")
+        return trace
+
+    try:
+        # The interpreter can deliver trace entry before profile entry.
+        # Both hooks restore; only the selected hook makes the substitution.
+        # This proves rejection of the actual foreign frame after restoration,
+        # rather than an earlier still-mutated global slot.
+        sys.setprofile(profile)
+        sys.settrace(trace)
+        inherited = sys.getprofile(), sys.gettrace()
+        with pytest.raises(model.api.HistoryObservationRejected) as caught:
+            with model.api.observing_completed(model.owner, enabled=True) as interval:
+                _finish(model, interval)
+        assert sys.getprofile() is inherited[0] and sys.gettrace() is inherited[1]
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
+        original.__code__ = original_code
+        setattr(provider, role, original)
+    context = caught.value.partial
+    software.snapshot.write_json(
+        tmp_path / "exit-descendant-attempt.json",
+        dict(
+            observer=observer,
+            role=role,
+            mutation=mutation,
+            changed=changed,
+            foreign_frames=len(foreign_entered),
+            foreign_body_entries=len(foreign_calls),
+            primary=None if context.primary is None else str(context.primary),
+            secondary=[(row[0], type(row[1]).__name__, str(row[1])) for row in context.secondary],
+            last_helper=None
+            if context.last_exit_helper is None
+            else (
+                context.last_exit_helper[0].f_code.co_qualname,
+                context.last_exit_helper[1].f_code.co_qualname,
+                context.last_exit_helper[1].f_lasti,
+            ),
+            full_attempts=context.full_attempts,
+            accepted_full_returns=context.full_returns,
+        ),
+    )
+    assert changed == [role] and foreign_calls == []
+    assert foreign_entered
+    assert model.provider.helper_entries == (
+        [("leaf", model.owner)] if role == "_delegated" else []
+    )
+    assert context.record.status == "failed_observation"
+    assert context.full_attempts == 2 and context.full_returns == 1
+    assert any("full-exit" in str(row[1]) for row in context.secondary)
+    assert context.last_exit_helper is not None
+    assert model.events.count("full authority") == 1
+    assert provider._ACTIVE == [] and provider._PREPARING is None
+    assert not stage._ISSUED and not stage.parent._ISSUED
+    software.snapshot.write_json(
+        tmp_path / "exit-descendant-gate.json",
+        dict(
+            scope="synthetic issued-shape provider; actual native/RNG/INIT/SIM held",
+            observer=observer,
+            role=role,
+            mutation=mutation,
+            original_lookups_restored=vars(provider)[role] is original,
+            original_code_restored=original.__code__ is original_code,
+            foreign_body_entries=len(foreign_calls),
+            last_actual_code=context.last_exit_helper[0].f_code.co_qualname,
+            full_attempts=context.full_attempts,
+            accepted_full_returns=context.full_returns,
+            independent_biological_cases=0,
+        ),
+    )
+
+
+def test_history_exit_descendant_original_chain_completes_and_counts_actual_helpers(monkeypatch):
+    model = _exit_chain_model(monkeypatch)
+    with model.api.observing_completed(model.owner, enabled=True) as interval:
+        _finish(model, interval)
+        context = model.api._ISSUED[interval]
+    assert interval.record.status == "completed_observation"
+    assert interval.record.full_authority_attempts == interval.record.full_authority_returns == 2
+    assert model.events.count("full authority") == 2
+    assert model.provider.helper_entries == [("leaf", model.owner), ("delegated", model.owner)]
+    assert context.exit_helper_work[model.provider._authority] == 1
+    assert context.exit_helper_work[model.provider._leaf] == 1
+    assert context.exit_helper_work[model.provider._delegated] == 1
+
+
+@pytest.mark.parametrize("observer", ("profile", "trace"))
+def test_history_exit_descendant_refusal_keeps_body_primary_cause_and_hooks(observer, monkeypatch):
+    model = _exit_chain_model(monkeypatch)
+    original = model.provider._authority
+    before, foreign_calls = (sys.getprofile(), sys.gettrace()), []
+    primary, cause = ValueError("original history body"), OSError("original body cause")
+
+    def foreign(actual):
+        foreign_calls.append(actual)
+        return model.source
+
+    def observe(frame, event, arg):
+        if event == "call" and frame.f_code is model.provider.validate_sim.__code__:
+            model.provider._authority = foreign
+        elif event == "call" and frame.f_code is foreign.__code__:
+            model.provider._authority = original
+
+    def profile(frame, event, arg):
+        if before[0] is not None:
+            before[0](frame, event, arg)
+        observe(frame, event, arg)
+
+    def trace(frame, event, arg):
+        if before[1] is not None:
+            before[1](frame, event, arg)
+        observe(frame, event, arg)
+        return trace
+
+    try:
+        if observer == "profile":
+            sys.setprofile(profile)
+        else:
+            sys.settrace(trace)
+        inherited = sys.getprofile(), sys.gettrace()
+        with pytest.raises(model.api.HistoryObservationRejected) as caught:
+            with model.api.observing_completed(model.owner, enabled=True):
+                raise primary from cause
+        assert sys.getprofile() is inherited[0] and sys.gettrace() is inherited[1]
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
+        model.provider._authority = original
+    assert caught.value.partial.primary is primary
+    assert caught.value.__cause__ is primary and primary.__cause__ is cause
+    assert foreign_calls == []
+    assert any("full-exit" in str(row[1]) for row in caught.value.partial.secondary)
+
+
+def test_history_exit_descendant_actual_source_closure_is_data_only_and_has_required_edges(
+    tmp_path,
+):
+    bindings, _, functions, calls = stage._EXIT_CHAIN
+    for function in (
+        stage.parent.validate_sim,
+        stage.parent._authority,
+        stage.parent._validate_retained,
+        stage.parent._retained_validation_sweep,
+    ):
+        assert functions[function][0] is function
+        assert functions[function][1] is function.__code__
+        assert function.__code__ in calls
+    edges = (
+        (stage.parent.validate_sim, stage.parent._authority),
+        (stage.parent._authority, stage.parent._links),
+        (stage.parent._authority, stage.parent._bindings),
+        (stage.parent._validate_retained, stage.parent._retained_validation_sweep),
+    )
+    for caller, callee in edges:
+        assert any(
+            site[0] == "static" and site[1] is callee for site in calls[caller.__code__].values()
+        )
+    assert any(site[0] == "delegate" for sites in calls.values() for site in sites.values())
+    assert not stage.parent._ISSUED and not stage._ISSUED
+    software.snapshot.write_json(
+        tmp_path / "actual-exit-closure-source-plan.json",
+        dict(
+            retained_function_bindings=len(bindings),
+            caller_codes=len(calls),
+            edges=[(a.__qualname__, b.__qualname__) for a, b in edges],
+            actual_function_invocations=0,
+            native_RNG_INIT_SIM_reference_entries=0,
+            source_metadata_only=True,
+        ),
+    )
+
+
+@pytest.mark.parametrize("observer", ("profile", "trace"))
+def test_history_exit_descendant_unwind_observer_keeps_source_error_cause_and_both_hooks(
+    observer, monkeypatch, tmp_path
+):
+    model = _exit_chain_model(monkeypatch)
+    primary, cause, secondary = (
+        ValueError("actual synthetic helper failure"),
+        OSError("helper failure cause"),
+        RuntimeError("inherited unwind observer failure"),
+    )
+    primary.__cause__ = cause
+    model.source.fail_exit = primary
+    before, traces, refused = (sys.getprofile(), sys.gettrace()), {}, []
+    code = model.provider._full.__code__
+
+    def observe(frame, event, arg):
+        if event == "return" and frame.f_code is code and model.events.count("full authority") == 2:
+            refused.append((frame, event, arg))
+            raise secondary
+
+    def profile(frame, event, arg):
+        if before[0] is not None:
+            before[0](frame, event, arg)
+        observe(frame, event, arg)
+
+    def trace(frame, event, arg):
+        inherited = before[1] if event == "call" else traces.get(id(frame))
+        result = None if inherited is None else inherited(frame, event, arg)
+        if event == "return":
+            traces.pop(id(frame), None)
+        elif result is not None:
+            traces[id(frame)] = result
+        observe(frame, event, arg)
+        return trace
+
+    try:
+        if observer == "profile":
+            sys.setprofile(profile)
+        else:
+            sys.settrace(trace)
+        inherited = sys.getprofile(), sys.gettrace()
+        with pytest.raises(model.api.HistoryObservationRejected) as caught:
+            # Set the failure only after the original entry authority returns.
+            model.source.fail_exit = None
+            with model.api.observing_completed(model.owner, enabled=True) as interval:
+                _finish(model, interval)
+                model.source.fail_exit = primary
+        assert sys.getprofile() is inherited[0] and sys.gettrace() is inherited[1]
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
+    context = caught.value.partial
+    software.snapshot.write_json(
+        tmp_path / "exit-unwind-primary.json",
+        dict(
+            observer=observer,
+            refused_events=len(refused),
+            actual_source_error_retained=any(
+                row[0] == "full_exit" and row[1] is primary for row in context.secondary
+            ),
+            original_cause_retained=primary.__cause__ is cause,
+            observer_error_retained=any(row[1] is secondary for row in context.secondary),
+            secondary=[(row[0], type(row[1]).__name__, str(row[1])) for row in context.secondary],
+            full_attempts=context.full_attempts,
+            accepted_full_returns=context.full_returns,
+            actual_native_RNG_entries=0,
+        ),
+    )
+    assert len(refused) == 1 and refused[0][2] is None
+    assert primary.__cause__ is cause
+    assert any(row[0] == "full_exit" and row[1] is primary for row in context.secondary)
+    assert any(row[1] is secondary for row in context.secondary)
+    assert context.last_exit_source_exception[1][1] is primary
+    assert context.full_attempts == 2 and context.full_returns == 1

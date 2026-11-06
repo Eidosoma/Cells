@@ -2,6 +2,9 @@
 
 import ast
 import copy
+import json
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -311,3 +314,294 @@ def test_review_document_requires_an_unambiguous_absolute_path(path):
             reviews,
             review_documents={"R_B": {"path": path, "sha256": reviews["R_B"]}},
         )
+
+
+@pytest.fixture
+def sim_projection(tmp_path):
+    """Frozen checkout bytes and clearly synthetic review data; no adoption."""
+    root = Path(__file__).resolve().parents[2]
+    plan = json.loads((root / "validation/betse/native_sim_demo_adoption_plan.json").read_text())
+    sources = {path: (root / path).read_bytes() for path in plan["module_aliases"].values()}
+    reviews = {
+        token: adoption.digest(("metadata-only-unaccepted-review:" + token).encode())
+        for token in plan["required_review_tokens"]
+    }
+    documents = {
+        token: {"path": "/metadata-only-unopened/" + token + ".json", "sha256": reviews[token]}
+        for token in plan["required_review_documents"]
+    }
+    producer_names = {path.removeprefix("src/")[:-3].replace("/", ".") for path in sources}
+    attempts, prior = [], (sys.getprofile(), sys.gettrace())
+
+    def profile(frame, event, arg):
+        if prior[0] is not None:
+            prior[0](frame, event, arg)
+        if event == "call":
+            name = frame.f_globals.get("__name__", "")
+            forbidden = (
+                name in producer_names
+                or name.startswith("betse.")
+                or (name == "random" and frame.f_code.co_name in ("seed", "getstate", "random"))
+            )
+        elif event == "c_call":
+            module = getattr(arg, "__module__", "") or ""
+            forbidden = module in ("random", "_random") or module.startswith("numpy.random")
+            name = frame.f_globals.get("__name__", "") if forbidden else ""
+        else:
+            return
+        if forbidden:
+            attempts.append((name, event, frame.f_code.co_name))
+            raise AssertionError("Metadata projection must not enter a producer/native/RNG")
+
+    try:
+        sys.setprofile(profile)
+        yield plan, sources, reviews, documents
+    finally:
+        sys.setprofile(prior[0])
+        restored = sys.getprofile() is prior[0] and sys.gettrace() is prior[1]
+        (tmp_path / "metadata-blocked.json").write_text(
+            json.dumps(
+                dict(
+                    attempted=attempts, both_hooks_restored=restored, actual_review_acceptance=False
+                )
+            )
+        )
+        assert restored and not attempts
+
+
+def _project_sim(values):
+    plan, sources, reviews, documents = values
+    return adoption.project(
+        plan,
+        sources,
+        reviews,
+        preserve=tuple((row["path"], tuple(row["slot"])) for row in plan["preserve"]),
+        review_documents=documents,
+    )
+
+
+def _sim_runtime_closure(plan, candidate, reviews):
+    paths = plan["module_aliases"]
+    parameter = adoption.digest(candidate[paths["parameter_qualifier"]])
+    callback, geometry, demo = (
+        candidate[paths[name]] for name in ("callback_prelude", "geometry_qualifier", "demo")
+    )
+    assert value(callback, "RUNTIME_SOURCE_SHA256") == parameter
+    assert value(geometry, "PARAMETER_ENTRY_SOURCE_SHA256") == parameter
+    assert value(callback, "RUNTIME_REVIEW_SHA256") == reviews["R_parameter_qualifier"]
+    assert value(geometry, "PARAMETER_ENTRY_REVIEW_SHA256") == reviews["R_parameter_qualifier"]
+    assert value(geometry, "EVIDENCE_SOURCE_SHA256") == adoption.digest(
+        candidate[paths["evidence"]]
+    )
+    assert value(candidate[paths["inputs"]], "PARAMETER_METADATA_SHA256") == parameter
+    assert value(demo, "SOURCE_PINS")["parameters"] == parameter
+    assert value(demo, "SOURCE_PINS")["callback"] == adoption.digest(callback)
+    assert value(demo, "SOURCE_PINS")["geometry"] == adoption.digest(geometry)
+    assert value(demo, "REVIEW_PINS")["callback"] == reviews["R_callback_prelude"]
+    assert value(demo, "REVIEW_PINS")["geometry"] == reviews["R_geometry_qualifier"]
+    assert value(demo, "EVIDENCE_SOURCE_SHA256") == adoption.digest(candidate[paths["evidence"]])
+    assert value(demo, "CAPTURE_BUDGET_SHA256") == adoption.digest(
+        candidate[paths["capture_budget"]]
+    )
+
+
+def test_sim_adoption_current_checkout_projection_has_complete_runtime_closure(
+    sim_projection, tmp_path
+):
+    plan, sources, reviews, documents = sim_projection
+    before = copy.deepcopy(sim_projection)
+    candidate, report = _project_sim(sim_projection)
+    _sim_runtime_closure(plan, candidate, reviews)
+    assert sim_projection == before
+    assert report["all_operations_reversible"]
+    assert report["all_other_bytes_and_function_class_import_ASTs_exact"]
+    assert not report["source_files_written"] and not report["actual_execution_released"]
+    assert not report["reviews_authenticated_by_projection"]
+    assert report["review_documents"] == documents
+    assert len(plan["recipes"]) == 13
+    assert set(report["normalized_interfaces"]) == set(plan["recipes"])
+    # Native callback factory pins are unchanged literal input, not a new
+    # dict(keyword) materialization or a silently expanded source recipe.
+    callback = plan["module_aliases"]["callback_prelude"]
+    assert ast.dump(adoption.node_at(sources[callback], ("SOURCE_PINS",))) == ast.dump(
+        adoption.node_at(candidate[callback], ("SOURCE_PINS",))
+    )
+    (tmp_path / "current-runtime-closure.json").write_text(
+        json.dumps(
+            dict(
+                full_hashes=report["full_hashes"],
+                review_tokens=sorted(reviews),
+                actual_execution=False,
+                review_acceptance=False,
+                direct_parameter_runtime_consumers=[
+                    "callback_prelude",
+                    "geometry_qualifier",
+                    "inputs",
+                ],
+                operations=report["literal_operations"],
+            )
+        )
+    )
+
+
+def test_sim_adoption_selected_declared_validation_runtime_edges_cannot_be_omitted(
+    sim_projection, tmp_path
+):
+    plan, sources, _, _ = sim_projection
+    aliases = plan["module_aliases"]
+    names = {
+        path.removeprefix("src/")[:-3].replace("/", "."): alias for alias, path in aliases.items()
+    }
+    found, edges = set(), []
+    for alias, path in aliases.items():
+        declarations = {
+            target.id: node.value
+            for node in ast.parse(sources[path]).body
+            if isinstance(node, ast.Assign)
+            for target in node.targets
+            if isinstance(target, ast.Name)
+        }
+        for name, node in declarations.items():
+            if (
+                (not name.endswith("_MODULE") and name != "MODULE")
+                or not isinstance(node, ast.Constant)
+                or type(node.value) is not str
+                or node.value not in names
+                or not node.value.startswith("validation.")
+                or names[node.value] == alias
+            ):
+                continue
+            prefix, target = name.removesuffix("_MODULE"), names[node.value]
+            if name == "MODULE" and "OBSERVER_SHA256" in declarations:
+                prefix = "OBSERVER"
+            slot = next(
+                (
+                    prefix + suffix
+                    for suffix in ("_SOURCE_SHA256", "_SHA256")
+                    if prefix + suffix in declarations
+                ),
+                None,
+            )
+            if slot is None:
+                continue
+            review = next(
+                (
+                    prefix + suffix
+                    for suffix in ("_REVIEW_SHA256", "_REVIEW")
+                    if prefix + suffix in declarations
+                ),
+                None,
+            )
+            edges.append((alias, name, target, slot, review))
+            found.add((alias, name, target))
+    (tmp_path / "declared-validation-runtime-edges.json").write_text(json.dumps(edges))
+    for alias, _, target, slot, review in edges:
+        slots = plan["required_assignments"][alias]["slots"]
+        assert slots.get(slot) == "H(" + target + ")"
+        if review is not None:
+            expression = slots[review]
+            if expression.startswith("D("):
+                assert expression[2:-1] in plan["required_review_documents"]
+            else:
+                assert expression in plan["required_review_tokens"]
+    assert found == {
+        ("callback_prelude", "RUNTIME_MODULE", "parameter_qualifier"),
+        ("geometry_qualifier", "PARAMETER_ENTRY_MODULE", "parameter_qualifier"),
+        ("geometry_qualifier", "EVIDENCE_MODULE", "evidence"),
+        ("demo", "EVIDENCE_MODULE", "evidence"),
+        ("demo", "CAPTURE_BUDGET_MODULE", "capture_budget"),
+        ("demo", "SIM_MODULE", "sim_orchestration"),
+        ("sim_observation_transport", "MODULE", "sim_observer"),
+    }
+
+
+@pytest.mark.parametrize(
+    "alias,slot",
+    (
+        ("callback_prelude", "RUNTIME_SOURCE_SHA256"),
+        ("callback_prelude", "RUNTIME_REVIEW_SHA256"),
+        ("geometry_qualifier", "PARAMETER_ENTRY_SOURCE_SHA256"),
+        ("geometry_qualifier", "PARAMETER_ENTRY_REVIEW_SHA256"),
+    ),
+)
+def test_sim_adoption_stale_runtime_literal_rebound_before_final_consumer_hash(
+    alias, slot, sim_projection, tmp_path
+):
+    plan, sources, reviews, _ = sim_projection
+    path = plan["module_aliases"][alias]
+    raw = sources[path]
+    node = adoption.node_at(raw, (slot,))
+    start, stop = adoption._span(raw, node)
+    stale = "9a2623cbc466cd082e2d5472e946fb64b73366b2928eaaca8b10e95356e4e90e"
+    sources[path] = raw[:start] + repr(stale).encode() + raw[stop:]
+    assert value(sources[path], slot) == stale
+    candidate, report = _project_sim(sim_projection)
+    _sim_runtime_closure(plan, candidate, reviews)
+    operation = next(
+        row for row in report["literal_operations"] if row["path"] == path and row["label"] == slot
+    )
+    assert ast.literal_eval(operation["before"]) == stale
+    assert ast.literal_eval(operation["after"]) != stale
+    # Deliberately corrupt the projected data, without importing a consumer:
+    # the complete declared correspondence cannot then be asserted.
+    corrupt = dict(candidate)
+    node = adoption.node_at(corrupt[path], (slot,))
+    start, stop = adoption._span(corrupt[path], node)
+    corrupt[path] = corrupt[path][:start] + repr(stale).encode() + corrupt[path][stop:]
+    with pytest.raises(AssertionError):
+        _sim_runtime_closure(plan, corrupt, reviews)
+    (tmp_path / "stale-runtime-repair.json").write_text(
+        json.dumps(
+            dict(
+                alias=alias,
+                slot=slot,
+                old=stale,
+                final=ast.literal_eval(operation["after"]),
+                final_consumer=report["full_hashes"]["demo"],
+                actual_producer_entries=0,
+            )
+        )
+    )
+
+
+def test_sim_adoption_changed_parameter_leaf_propagates_through_both_runtime_consumers(
+    sim_projection,
+):
+    plan, sources, reviews, _ = sim_projection
+    before, _ = _project_sim(sim_projection)
+    path = plan["module_aliases"]["parameter_qualifier"]
+    sources[path] += b"\n# metadata-only source-byte dependency probe; never executed\n"
+    after, report = _project_sim(sim_projection)
+    _sim_runtime_closure(plan, after, reviews)
+    for alias in (
+        "parameter_qualifier",
+        "callback_prelude",
+        "geometry_qualifier",
+        "inputs",
+        "demo",
+    ):
+        path = plan["module_aliases"][alias]
+        assert adoption.digest(before[path]) != adoption.digest(after[path])
+    assert report["all_operations_reversible"]
+
+
+@pytest.mark.parametrize(
+    "token", ("R_parameter_qualifier", "R_callback_prelude", "R_geometry_qualifier")
+)
+def test_sim_adoption_missing_runtime_or_consumer_review_refuses(token, sim_projection):
+    _, _, reviews, _ = sim_projection
+    reviews.pop(token)
+    with pytest.raises(ValueError, match="Unknown dependency or review"):
+        _project_sim(sim_projection)
+
+
+@pytest.mark.parametrize("consumer", ("callback_prelude", "geometry_qualifier"))
+def test_sim_adoption_runtime_leaf_must_be_sealed_before_consumer(consumer, sim_projection):
+    plan, _, _, _ = sim_projection
+    order = plan["topological_order"]
+    order.remove(consumer)
+    order.insert(order.index("parameter_qualifier"), consumer)
+    with pytest.raises(
+        ValueError, match=r"Unresolved or cyclic dependency: H\(parameter_qualifier\)"
+    ):
+        _project_sim(sim_projection)

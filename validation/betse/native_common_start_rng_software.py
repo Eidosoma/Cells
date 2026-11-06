@@ -27,8 +27,9 @@ def _definition_dependencies():
     from cells.processes import betse_native_init_dynamics_prelude as prelude
     from cells.processes import betse_native_init_retained_world as retained
     from cells.processes import betse_native_parameter_seed_init_transition as transition
+    from validation.betse import native_seed_demo
 
-    return prelude, retained, transition
+    return prelude, retained, transition, native_seed_demo
 
 
 def is_forbidden_frame(frame):

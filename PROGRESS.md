@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-05 UTC.
+Last updated: 2026-11-06 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -16,20 +16,95 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   found a failed exit after 328.481 seconds / 501,604,352 bytes sampled RSS,
   before geometry, at initial RNG provenance: `_random` is built in to this
   interpreter and absent from the inventory's file-backed module map. This was
-  not a timeout or evidence of a numerical/flux failure. No retry was launched.
+  not a timeout or evidence of a numerical/flux failure. A fresh
+  [SEED run was launched detached](/mnt/workspaces/Cells/native-seed-execution-20261105-02/launch-summary.json)
+  at 18:56:15 UTC on CPU0, with the original flux inverse, reviewed built-in RNG
+  repair and `headless_core` inputs. The [requested terminal check](/mnt/workspaces/Cells/native-seed-execution-20261105-02/status-check-01.json)
+  found a failure after 10.313 seconds / 42,164,224 bytes sampled RSS: callback
+  preflight retained an older parameter-runtime source pin. No geometry ran;
+  this is an integration failure, with incomplete failed-owner serialization
+  disclosed. Its
+  [seven dependency-literal changes](/mnt/workspaces/Cells/native-seed-execution-20261105-02/adoption-01/result.json)
+  leave all INIT/SIM gates and executable bodies unchanged. The first metadata
+  preparation refused an overstrict comparison to old constructor pins; the
+  second hit the 480-second metadata cap. The third precomputes the same blocked
+  path prefixes outside the profiler and completed in 76.118 seconds /
+  67,555,328 bytes sampled RSS. The [launch preparation review](/mnt/workspaces/Cells/native-seed-execution-20261105-02/preparation-review.json)
+  binds the existing parameter-digest adoption, 626 frozen files and complete
+  empty/restored metadata guards. A missing launcher flag refused one invocation
+  before child creation; the corrected invocation uses the frozen producer and
+  actual declared interpreter. All failures remain preserved. The user-directed
+  [third SEED attempt](/mnt/workspaces/Cells/native-seed-execution-20261105-03/launch-summary.json)
+  launched at 22:31:27 UTC on CPU0 after [six literal dependency corrections](/mnt/workspaces/Cells/native-seed-execution-20261105-03/adoption-01/result.json)
+  across callback, geometry qualifier and demo. Its [preparation review](/mnt/workspaces/Cells/native-seed-execution-20261105-03/preparation-review.json)
+  verifies both actual nested metadata preflights, 627 frozen files and empty
+  restored guards; preparation completed in 80.374 seconds / 66,740,224 bytes
+  sampled RSS. The unchanged execution limit is 7,200 seconds / 1 GiB /
+  8 GiB reserve. The [explicitly requested startup watch](/mnt/workspaces/Cells/native-seed-execution-20261105-03/startup-watch/result.json)
+  observed it running after 329.084 seconds: callbacks completed, parameters
+  returned through `22-colormap-input`, and `23-registry-capture` was attempted.
+  The worker had consumed 326.34 CPU seconds, with 445,206,528 bytes sampled RSS
+  and no terminal result/failure artifact at that time. The [November 6 terminal check](/mnt/workspaces/Cells/native-seed-execution-20261105-03/status-check-01.json)
+  found a wall-time failure after 7,200.082 seconds, with peak sampled RSS
+  502,104,064 bytes and minimum available host memory 19,388,620,800 bytes.
+  All 29 parameter stages returned and both initial RNG captures were saved.
+  The geometry entry created its evidence directory at 22:39:37 UTC, but the
+  directory remained empty: no completed phase/geometry result or final worker
+  outcome was saved before the controller stopped the run. The precise slow
+  frame is not established; this does not establish a numerical or flux failure.
+  The five-minute watch certified startup progress only. The subsequent bounded
+  stack diagnostic is recorded below; the failed image remains unchanged.
+  This is SEED execution, not completed INIT/SIM qualification.
   The [built-in provenance repair](/mnt/workspaces/Cells/native-rng-builtin-origin-repair-20261105-01/source-result.json)
   now has a clear [Root source/results review](/mnt/workspaces/Cells/native-rng-builtin-origin-repair-20261105-01/root-source-results-review.json):
   107 distinct blocked controls across separately retained 103- and 19-case
   images. Built-in origins bind the actual interpreter; file-backed origins
   and the old saved reader remain separate. Three failed software images are
-  preserved. No RNG seed, draw or model retry was performed.
+  preserved. The provenance repair itself performed no RNG seed or draw.
   End-to-end SEED→INIT→SIM remains
-  unqualified. Key owns the complete genuine SIM loop, bounded full-history
-  retention and source/cleanup fixes. Specialist owns the independent original
-  SIM terminal and authenticated saved-result comparisons. Root owns the
-  complete demo, typed observation integration, explicit input case and release.
+  unqualified. Key's next substantial task is locating and repairing the
+  pregeometry validation/observation bottleneck, with measured attribution before
+  another actual launch. Specialist now owns coherent Cells-side common-start
+  consumer integration as well as its completed reference-side counterpart.
+  Root owns the complete dependency projection, final input cases, actual
+  execution and independent result disposition. Completed-package reviews are
+  delegated so implementation does not wait on a serial Root review queue.
   The flux inverse is being reproduced or omitted in
   explicitly separate modes; it is not being repaired.
+
+- **Immediate execution blocker and active diagnostic:** The cause of the two-hour
+  geometry-entry timeout is still being measured. A fresh [627-file preparation](/mnt/workspaces/Cells/native-pregeometry-execution-20261106-01/preparation-review.json)
+  completed metadata checks in 75.594 seconds / 69,267,456 bytes sampled RSS.
+  The [actual stack diagnostic](/mnt/workspaces/Cells/native-pregeometry-execution-20261106-01/launch-summary.json)
+  launched at 2026-11-06 13:19:05 UTC on CPU0 using the existing launcher:
+  original flux, ambient RNG, SEED endpoint, one thread, 1 GiB RSS, 8 GiB reserve,
+  and its existing 1,800-second diagnostic cap. C-level stack samples every
+  30 seconds do not replace Python trace/profile hooks. The [requested startup watch](/mnt/workspaces/Cells/native-pregeometry-execution-20261106-01/startup-watch/result.json)
+  confirmed the same worker running after 380.913 seconds, all 29 parameter
+  stages returned, 12 stack samples, 503,054,336 bytes peak sampled RSS and no
+  terminal outcome. The last frozen sample reaches geometry entry through
+  `from_world_ready` and parameter-history validation, in `_method_code` /
+  `ast.dump`; one sample does not establish the dominant cost. Key is analyzing
+  that metadata path while the immutable diagnostic continues. No further
+  automatic polling or retry follows the startup watch. No geometry completion,
+  INIT/SIM execution or numerical failure is established. Key's separate
+  [targeted timing context](/mnt/workspaces/Cells/native-pregeometry-caught-stop-repair-20261106-01/root-source-results-review.json)
+  is source/software accepted but was not used in this run.
+
+- **Common-start comparison integration:** Key's RNG cleanup and audit-registration
+  fixes are now [source/software accepted](/mnt/workspaces/Cells/native-common-start-rng-audit-ack-repair-20261106-01/root-source-results-review.json).
+  The [69-control dependency-plan successor](/mnt/workspaces/Cells/native-sim-adoption-runtime-edges-development-20261105-01/root-source-results-review.json)
+  is also accepted; the previous runtime-edge omissions are closed.
+  Specialist's [64-control reference/comparison integration](/mnt/workspaces/Cells/native-sim-reference-common-start-integration-20261105-01/source-result.json)
+  has a clear [source/results review](/mnt/workspaces/Cells/native-sim-reference-common-start-integration-20261105-01/root-source-results-review.json).
+  The [Cells/SIM reader and helper-adoption successor](/mnt/workspaces/Cells/native-cells-common-start-integration-20261106-01/sim-adoption-01/root-source-results-review.json)
+  is now accepted at its exact sources, with 29 distinct affected controls.
+  One specific comparison seam remains: the starting-state comparator accepts
+  demo@8/launch@12 and needs an explicit full SIM@9 route. Specialist owns that
+  final adapter and paired controls. Root still needs to apply the complete
+  dependency projection and prepare fresh paired execution inputs. These
+  packages do not establish an actual common-start run, full INIT/SIM execution
+  or scientific agreement.
 
 - **Complete INIT→SIM orchestration implemented:** Root's
   [source/software milestone](/mnt/workspaces/Cells/native-sim-demo-development-20261105-01/source-result.json)
@@ -107,7 +182,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   implements mandatory `get_current`, its electrical/image dependencies and
   that call-boundary repair. It has 235 distinct blocked controls (60 new,
   175 affected), with all 15 process outcomes preserved, including three
-  failures. Consolidated review is underway; no actual SIM run is credited.
+  failures. The [saved-result verification](/mnt/workspaces/Cells/native-sim-core-helper-closure-development-20261105-01/root-saved-results-verification.json)
+  is complete. [Source review](/mnt/workspaces/Cells/native-sim-core-helper-closure-development-20261105-01/root-source-results-review.json)
+  clears the new run-helper scope. Key's [descendant repair](/mnt/workspaces/Cells/native-sim-history-descendant-repair-20261105-01/source-result.json)
+  now has a clear [source/results review](/mnt/workspaces/Cells/native-sim-history-descendant-repair-20261105-01/root-source-results-review.json):
+  48 blocked controls, including 24 descendant refusal cases; all 11 outcomes
+  retain their original producers and three failures. Specialist's separate
+  [assembly entry repair](/mnt/workspaces/Cells/native-sim-assembly-nested-entry-repair-20261105-01/source-result.json)
+  has 36 final blocked controls and a clear [source/results review](/mnt/workspaces/Cells/native-sim-assembly-nested-entry-repair-20261105-01/root-source-results-review.json),
+  including the existing terminal retirement repair. The [updated component review map](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-01/accepted-review-map-02.json)
+  resolves all 25 existing component review tokens; applying the complete
+  dependency plan and integrating the explicit common RNG start remain separate
+  work. No actual SIM run is credited.
   The interval brackets the complete
   history with full checks and freshly checks selected rows/captures. The long
   calendars were tested with small metadata payloads; real full-history
@@ -131,6 +217,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   one-load route stays available.
 
 - **Observer and comparison milestone:** Specialist's
+  latest [paired reference preparation](/mnt/workspaces/Cells/native-sim-reference-pair-preparation-20261105-01/source-result.json)
+  has a clear [source/results review](/mnt/workspaces/Cells/native-sim-reference-pair-preparation-20261105-01/root-source-results-review.json):
+  23 distinct blocked controls, both preserved failed images, and one immutable
+  held pair declaring 500 INIT / 350 SIM steps in both flux modes. Final writer
+  adoption, execution release and common-start RNG authority remain separate
+  prerequisites. Key is implementing the common-start facility in disjoint
+  files; no seeding or reference execution is credited.
+  Specialist's
   [INIT/SIM boundary batch](/mnt/workspaces/Cells/native-init-sim-observer-boundary-development-20261105-01/root-source-results-review.json)
   is source/results reviewed: 45 controls across separate boundary and affected
   consumer images, 135 reports, 45 empty restored guards and 2,606 payload pins.

@@ -1,9 +1,11 @@
 """Complete direct SIM saved packets made from inert stdlib metadata only."""
 
+import copy
 import hashlib
 import os
 import struct
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -11,6 +13,13 @@ from tests.unit import test_native_seed_demo_report as old
 from tests.unit import test_native_sim_demo_observation as observed
 from validation.betse import native_sim_demo_report as report
 from validation.betse import native_sim_demo_report_software as software
+
+if TYPE_CHECKING:
+    # Freeze exact read-only metadata producers; no actual program/reference entry.
+    from validation.betse import (  # noqa: F401
+        native_common_start_rng,
+        native_init_terminal_reference,
+    )
 
 write, read, pin = old.write, old.read, old.pin
 
@@ -404,6 +413,261 @@ def test_sim_report_rng_origin_version2_preserves_direct_SIM_schema(tmp_path, mo
 
 def inspect(value):
     return report.inspect_attempt(value.plan, plan_sha256=value.digest, output=value.output)
+
+
+def common_fixture(tmp_path, *, mode="original"):
+    """Fresh inert SIM saved packet, including its explicit pre-world program."""
+    from tests.unit.test_native_seed_demo import common_fixture as declaration_fixture
+    from tests.unit.test_native_seed_rng_report import builtin_fixture
+    from validation.betse import native_seed_initial_rng as initial
+
+    value = builtin_fixture(fixture(tmp_path, count=2, mode=mode))
+    plan = read(value.plan)
+    declaration = read(Path(plan["demo_plan"]["path"]))
+    manifest = read(value.source / "SNAPSHOT.json")
+    directories = [value.source, *[p for p in value.source.rglob("*") if p.is_dir()]]
+    for directory in directories:
+        directory.chmod(0o755)
+    for name in (initial.COMMON_FILE, initial.ORIGINAL):
+        target = value.source / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.exists():
+            target.chmod(0o644)
+        target.write_bytes((initial.ROOT / name).read_bytes())
+        target.chmod(0o444)
+        manifest["files"][name] = dict(
+            checkout_path=name,
+            sha256=pin(target)["sha256"],
+            observation=dict(size=target.stat().st_size),
+            snapshot_mode=0o444,
+        )
+    selected = declaration_fixture(mode)
+    selected["program"].update(
+        input_identity=plan["initial_rng_inputs"]["inventory_sha256"],
+        consumer_sources={
+            "cells": manifest["files"][report.DEMO]["sha256"],
+            "original": manifest["files"][initial.ORIGINAL]["sha256"],
+        },
+    )
+    selected["program_identity"] = report.legacy._common_seal(selected["program"])
+    snapshot_path = value.source / "SNAPSHOT.json"
+    snapshot_path.chmod(0o644)
+    source_pin = write(snapshot_path, manifest)
+    snapshot_path.chmod(0o444)
+    for directory in reversed(directories):
+        directory.chmod(0o555)
+    parameters = read(Path(plan["parameter_inputs"]["path"]))
+    parameters["source_snapshot"] = source_pin
+    plan["parameter_inputs"] = write(Path(plan["parameter_inputs"]["path"]), parameters)
+    declaration.update(
+        common_start=selected,
+        snapshot_sha256=source_pin["sha256"],
+        parameter_sha256=plan["parameter_inputs"]["sha256"],
+    )
+    declaration["source_plan"]["common_start"] = selected
+    plan.update(
+        common_start=selected,
+        source_snapshot=source_pin,
+        demo_plan=write(Path(plan["demo_plan"]["path"]), declaration),
+        producers={
+            name: manifest["files"][name]["sha256"]
+            for name in report.launch._producers(declaration)
+        },
+    )
+    plan["release_environment"][initial.COMMON_RELEASE] = "1"
+    for name in ("parameters", "current_parameters"):
+        path = value.worker / "demo" / name / "acquisition.json"
+        acquisition = read(path)
+        acquisition["packet"] = plan["parameter_inputs"]
+        write(path, acquisition)
+    for name in ("runtime-before.json", "runtime-after.json"):
+        path = value.worker / name
+        runtime = read(path)
+        for source in (initial.COMMON_FILE, initial.ORIGINAL):
+            runtime["loaded_files"][source.removesuffix(".py").replace("/", ".")] = pin(
+                value.source / source
+            )
+        write(path, runtime)
+    write(
+        value.worker / "source-after.json",
+        dict(source_snapshot=source_pin, producers=plan["producers"]),
+    )
+    root = value.worker / "demo"
+    outcome = read(root / "outcome.json")
+    witness_row = next(row for row in outcome["captures"] if row["label"] == "pre_seed_rng_witness")
+    witness = read(root / witness_row["path"])
+    witness["source"].update(
+        snapshot_sha256=source_pin["sha256"],
+        parameter_packet_sha256=plan["parameter_inputs"]["sha256"],
+    )
+    boundaries = witness["order"]["selected_boundaries"]
+    index = next(i for i, row in enumerate(boundaries) if row[0] == "parameters") + 1
+    boundaries.insert(index, ["common_start_rng", "returned"])
+    witness_row["sha256"] = write(root / witness_row["path"], witness)["sha256"]
+    outcome["initial_rng_observation"] = dict(witness_row)
+    state = witness["state"]
+    record = dict(
+        kind=initial.COMMON_KIND,
+        status="completed",
+        program=selected["program"],
+        program_identity=selected["program_identity"],
+        role="cells",
+        pid=321,
+        epoch=initial.COMMON_EPOCH,
+        source=dict(
+            helper=initial.COMMON_FILE,
+            helper_sha256=initial.COMMON_SHA256,
+            provenance=initial.rng_runtime.FILE,
+            provenance_sha256=plan["producers"][initial.rng_runtime.FILE],
+        ),
+        runtime=witness["common_binding"]["runtime"],
+        generator_identities=dict(python=10, numpy=20),
+        state={
+            kind + "_" + stage: copy.deepcopy(state[kind + "_random"])
+            for kind in ("python", "numpy")
+            for stage in ("before", "after", "readback")
+        },
+        operations=[[row[0], "returned"] for row in initial.COMMON_STEPS],
+        work=dict(
+            program_API_calls=8,
+            visible_RNG_observer_events=12,
+            opaque_C_internals_not_independent_cases=True,
+            inherited_observer_RNG_effects_require_reviewed_caller_contract=True,
+        ),
+        states_loaded=False,
+        generators_replaced=False,
+        biological_or_phase_admission=False,
+    )
+    completion = root / "common-start-rng/COMPLETED.json"
+    completion.parent.mkdir()
+    write(completion, record)
+    row = dict(write(root / "common-start.json", record), label="common_start_rng", status="saved")
+    row["path"] = "common-start.json"
+    outcome["captures"].insert(0, row)
+    outcome["common_start_program"] = dict(row)
+    index = (
+        next(i for i, row in enumerate(outcome["operations"]) if row["name"] == "parameters") + 1
+    )
+    outcome["operations"].insert(index, dict(name="common_start_rng", status="returned"))
+    write(root / "outcome.json", outcome)
+    value.digest = write(value.plan, plan)["sha256"]
+    process_path = value.output / "process/process-inputs.json"
+    process = read(process_path)
+    process["command"][process["command"].index("--plan-sha256") + 1] = value.digest
+    write(process_path, process)
+    worker = read(value.worker / "result.json")
+    worker["plan_sha256"] = value.digest
+    terminal = read(value.output / "result.json")
+    terminal.update(plan_sha256=value.digest, worker=write(value.worker / "result.json", worker))
+    write(value.output / "result.json", terminal)
+    return value
+
+
+def common_start_control(tmp_path, defect):
+    """Also called by the existing CPU4 reader runner under its outer blockade."""
+    if defect == "ambient":
+        value = fixture(tmp_path, count=2)
+        result = inspect(value)
+        write(tmp_path / "common-start-saved-report.json", result)
+        assert result["status"] == "completed_unqualified", result["verification_issues"]
+        assert "common_start" not in result["demonstration"]
+        return
+    mode = "disabled" if defect == "disabled" else "original"
+    value = common_fixture(tmp_path, mode=mode)
+    if defect in ("declaration", "mode", "release"):
+        plan = read(value.plan)
+        if defect == "declaration":
+            plan["common_start"] = dict(plan["common_start"], program_identity="a" * 64)
+        elif defect == "mode":
+            plan["common_start"]["mode"] = "disabled"
+        else:
+            del plan["release_environment"]["CELLS_COMMON_START_RNG_RELEASED"]
+        value.digest = write(value.plan, plan)["sha256"]
+    elif defect == "publication":
+        write(value.worker / "demo/common-start-rng/COMPLETED.json", {})
+    elif defect == "source":
+        helper = value.source / report.legacy.COMMON_FILE
+        helper.chmod(0o644)
+        helper.write_text("# altered inert saved producer\n")
+        helper.chmod(0o444)
+    elif defect == "order":
+
+        def reorder(outcome):
+            rows = outcome["operations"]
+            row = next(row for row in rows if row["name"] == "common_start_rng")
+            rows.remove(row)
+            rows.append(row)
+
+        old.change(value, "worker/demo/outcome.json", reorder)
+    elif defect == "witness":
+        old.initial_rng_capture_change(
+            value,
+            "pre_seed_rng_witness",
+            lambda wire: wire["state"]["python_random"][1].__setitem__(0, 678),
+        )
+    elif defect == "late_failure":
+        (value.output / "result.json").unlink()
+        write(value.output / "failure.json", dict(primary=dict(type="FinalWriterError")))
+        old.change(
+            value,
+            "worker/demo/outcome.json",
+            lambda row: row.update(status="failed", primary=dict(type="FinalWriterError")),
+        )
+    if defect in ("declaration", "mode", "release", "source"):
+        with pytest.raises(ValueError) as caught:
+            inspect(value)
+        error = caught.value
+        write(
+            tmp_path / "common-start-expected-refusal.json",
+            dict(
+                type=type(error).__qualname__,
+                message=str(error),
+                cause=None if error.__cause__ is None else type(error.__cause__).__qualname__,
+                source_or_RNG_work=0,
+            ),
+        )
+        return
+    result = inspect(value)
+    write(tmp_path / "common-start-saved-report.json", result)
+    if defect in ("original", "disabled"):
+        assert result["status"] == "completed_unqualified", result["verification_issues"]
+        proof = result["demonstration"]["common_start"]
+        assert (
+            proof["completed"] is True and proof["common_starting_authority_established"] is False
+        )
+        assert result["demonstration"]["initial_rng"]["observed_states_equalized"] is False
+    elif defect == "late_failure":
+        assert result["status"] == "failed" and result["verification_issues"] == []
+        assert result["demonstration"]["common_start"]["completed"] is True
+        assert (
+            result["demonstration"]["common_start"]["common_starting_authority_established"]
+            is False
+        )
+    else:
+        assert result["verification_issues"]
+        assert result["status"] != "completed_unqualified"
+    assert result["scientific_credit"] == 0
+    assert result["sim_iterations_completed"] == (2 if defect in ("original", "disabled") else 0)
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "original",
+        "disabled",
+        "ambient",
+        "declaration",
+        "mode",
+        "release",
+        "publication",
+        "source",
+        "order",
+        "witness",
+        "late_failure",
+    ],
+)
+def test_sim_report_common_start_full_SIM_saved_contract(tmp_path, defect):
+    common_start_control(tmp_path, defect)
 
 
 @pytest.mark.parametrize("mode", ("original", "disabled"))

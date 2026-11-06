@@ -12,11 +12,18 @@ import sys
 import weakref
 from pathlib import Path
 from types import FunctionType, SimpleNamespace
+from typing import TYPE_CHECKING
 
 import pytest
 
 from validation.betse import native_init_terminal_reference as reference
 from validation.betse import native_init_terminal_reference_software as software
+
+if TYPE_CHECKING:
+    from validation.betse import (  # noqa: F401 - explicit frozen dynamic-runner controls
+        native_sim_reference_compare_software,
+        native_sim_reference_software,
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -2095,3 +2102,293 @@ def test_reference_initial_rng_runtime_selects_actual_required_origins(monkeypat
         actual = reference._initial_rng_runtime()
         assert actual["files"] == runtime["files"]
         assert "irrelevant" not in actual["files"]
+
+
+@pytest.fixture(autouse=True)
+def common_start_rng_blockade(request, tmp_path, native_blockade):
+    if "common_start" not in request.node.name:
+        yield
+        return
+    py = reference.random._inst
+    module = sys.modules.get("numpy.random.mtrand")
+    ng = None if module is None else vars(module).get("_rand")
+    prior, attempts = sys.getprofile(), []
+
+    def profile(frame, event, arg):
+        if prior is not None:
+            prior(frame, event, arg)
+        receiver = (
+            getattr(arg, "__self__", None) if event == "c_call" else frame.f_locals.get("self")
+        )
+        if (
+            event == "call"
+            and frame.f_globals.get("__name__") == "random"
+            and frame.f_code.co_name in ("seed", "getstate", "setstate", "__init__")
+        ) or (event == "c_call" and (receiver is py or ng is not None and receiver is ng)):
+            attempts.append((event, frame.f_code.co_qualname))
+            raise AssertionError("Actual common-start RNG entry held")
+
+    try:
+        sys.setprofile(profile)
+        yield
+        assert attempts == []
+    finally:
+        sys.setprofile(prior)
+        reference.snapshot.write_json(
+            tmp_path / "common-start-RNG-blocked.json", dict(attempted=attempts)
+        )
+
+
+def _common_start_metadata(mode="original"):
+    selected = dict(
+        mode=mode,
+        inventory=dict(
+            directories=[],
+            files={
+                "model.yaml": dict(sha256=("d" if mode == "original" else "e") * 64, size_bytes=1)
+            },
+        ),
+    )
+    manifest = dict(
+        files={
+            name: dict(sha256=pin)
+            for name, pin in (
+                (reference.FILE, "a" * 64),
+                (reference.COMMON_START_FILE, "c" * 64),
+                ("validation/betse/native_seed_demo.py", "b" * 64),
+            )
+        }
+    )
+    options = dict(python_seed=2437, numpy_seed=5211)
+    return options, selected, manifest
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("python_seed", True),
+        ("python_seed", -1),
+        ("python_seed", 2**256),
+        ("numpy_seed", True),
+        ("numpy_seed", -1),
+        ("numpy_seed", 2**32),
+        ("numpy_seed", 2.0),
+        ("state", [1, 2, 3]),
+    ],
+)
+def test_reference_common_start_rejects_implicit_or_state_inputs(field, value):
+    options, _, _ = _common_start_metadata()
+    options[field] = value
+    with pytest.raises(reference.ReferenceRejected):
+        reference._common_start_options(options)
+
+
+@pytest.mark.parametrize("mode", ["original", "disabled"])
+def test_reference_common_start_declaration_binds_inputs_callers_and_held_provider(mode):
+    options, selected, manifest = _common_start_metadata(mode)
+    declared = reference.common_start_declaration(options, selected, manifest)
+    assert declared["mode"] == mode
+    assert declared["program"]["input_identity"] == reference._seal(selected["inventory"])
+    assert declared["program"]["consumer_sources"] == dict(cells="b" * 64, original="a" * 64)
+    assert declared["provider"]["sha256"] is reference.COMMON_START_SHA256
+    assert declared["provider"]["review_sha256"] is reference.COMMON_START_REVIEW_SHA256
+    assert declared["program_identity"] == reference._seal(declared["program"])
+    ambient = reference.source_plan()
+    selected_plan = reference.source_plan(common_start=declared)
+    assert "common_start" not in ambient and ambient["HOME_rewrite_or_RNG_initialization"] is False
+    assert selected_plan["common_start"] is declared and selected_plan["HOME_rewrite"] is False
+    assert selected_plan["actual_source_native_reference_execution_released"] is False
+    assert selected_plan["common_start"]["program"]["setstate_or_generator_replacement"] is False
+    other = _common_start_metadata("disabled" if mode == "original" else "original")
+    assert (
+        reference.common_start_declaration(*other)["program_identity"]
+        != declared["program_identity"]
+    )
+
+
+@pytest.mark.parametrize("mutation", ["draw_type", "seed_type", "extra", "identity"])
+def test_reference_common_start_canonical_declaration_refuses_type_equal_or_resealed_drift(
+    mutation,
+):
+    declared = reference.common_start_declaration(*_common_start_metadata())
+    if mutation == "draw_type":
+        declared["program"]["draws"] = False
+    elif mutation == "seed_type":
+        declared["program"]["numpy_seed"] = True
+    elif mutation == "extra":
+        declared["program"]["state"] = []
+    else:
+        declared["program_identity"] = "f" * 64
+    with pytest.raises(reference.ReferenceRejected):
+        reference._common_start_shape(declared)
+
+
+def test_reference_common_start_unreviewed_producer_refuses_before_import(monkeypatch):
+    calls = []
+    monkeypatch.setattr(reference, "COMMON_START_SHA256", None)
+    monkeypatch.setattr(reference, "COMMON_START_REVIEW_SHA256", None)
+    monkeypatch.setattr(reference.importlib, "import_module", lambda name: calls.append(name))
+    with pytest.raises(reference.ReferenceRejected, match="remains held"):
+        reference._common_start_api()
+    assert calls == []
+
+
+def _common_workflow_metadata(tmp_path, *, selected=True, failure=None, writer_failure=None):
+    events, state = [], reference.State()
+    options, inputs, manifest = _common_start_metadata()
+    declaration = reference.common_start_declaration(options, inputs, manifest)
+    p = SimpleNamespace(seed_pickle_filename=str(tmp_path / "world.betse.gz"))
+    runner = SimpleNamespace(_p=p)
+    seed = SimpleNamespace(path=tmp_path / "world.betse.gz")
+    stop = RuntimeError("synthetic stop before actual RNG witness/SEED")
+    program = object()
+
+    def initialize(actual_program, actual_state, *, role, output, enabled):
+        caller = sys._getframe(1)
+        assert caller.f_code is workflow.__code__ and caller.f_locals["state"] is state
+        assert caller.f_locals["p"] is p and caller.f_locals["runner"] is runner
+        assert actual_program is program and actual_state is state and role == "original"
+        assert enabled is True and output == tmp_path / "common-start-rng"
+        assert state.stage == "original_runner" and not any(k.endswith("_phase") for k in state.raw)
+        events.append("common_start_rng")
+        if failure is not None:
+            raise failure
+        return dict(
+            kind=reference.COMMON_START_KIND,
+            status="completed",
+            role="original",
+            program=declaration["program"],
+            program_identity=declaration["program_identity"],
+        )
+
+    def save(label, value):
+        events.append(label + ".save")
+        assert state.raw["common_start_rng"] is value
+        if writer_failure is not None:
+            raise writer_failure
+        return None
+
+    def capture(*args):
+        events.append("initial_rng")
+        raise stop
+
+    def make(_filename):
+        events.append("parameters")
+        return p
+
+    modules = {
+        "betse.appmeta": SimpleNamespace(
+            BetseAppMeta=lambda: SimpleNamespace(init_libs=lambda **k: None)
+        ),
+        "betse.science.parameters": SimpleNamespace(Parameters=SimpleNamespace(make=make)),
+        "betse.science.simrunner": SimpleNamespace(SimRunner=lambda actual: runner),
+    }
+    namespace = dict(
+        vars(reference),
+        __name__="metadata_common_start_consumer",
+        importlib=SimpleNamespace(import_module=lambda name: modules[name]),
+        inputs=SimpleNamespace(_program=lambda *args: dict(ordered_path_permission=[])),
+        _common_start_request=lambda plan: (SimpleNamespace(initialize=initialize), program),
+        _capture_initial_rng=capture,
+    )
+    workflow = FunctionType(reference._workflow.__code__, namespace)
+    plan = dict(
+        inputs=dict(inputs, root=str(tmp_path)), source_plan=dict(input_profile="headless_core")
+    )
+    if selected:
+        plan["common_start"] = declaration
+    return SimpleNamespace(
+        run=lambda: workflow(
+            plan, state, SimpleNamespace(folder=tmp_path / "captures", save=save), seed
+        ),
+        state=state,
+        events=events,
+        stop=stop,
+        p=p,
+        runner=runner,
+        program=program,
+    )
+
+
+@pytest.mark.parametrize("selected", [False, True])
+def test_reference_common_start_actual_direct_call_seam_preserves_ambient_order(tmp_path, selected):
+    model = _common_workflow_metadata(tmp_path, selected=selected)
+    with pytest.raises(RuntimeError) as caught:
+        model.run()
+    assert caught.value is model.stop
+    assert model.events == (
+        ["parameters", "common_start_rng", "common_start_rng.save", "initial_rng"]
+        if selected
+        else ["parameters", "initial_rng"]
+    )
+    assert model.state.raw["parameters"] is model.p and model.state.raw["runner"] is model.runner
+    assert ("common_start_rng" in model.state.raw) is selected
+    assert "seed_phase" not in model.state.raw
+
+
+@pytest.mark.parametrize("where", ["initialize", "capture"])
+def test_reference_common_start_failed_attempt_keeps_primary_partial_and_stops_world(
+    tmp_path, where
+):
+    class FalseError(ValueError):
+        def __bool__(self):
+            return False
+
+    primary, cause = FalseError("actual synthetic common-start failure"), OSError("original cause")
+    primary.__cause__ = cause
+    partial = dict(operations=[dict(status="failed")], states=dict(partial=True))
+    primary.common_start_attempt = partial
+    model = _common_workflow_metadata(
+        tmp_path,
+        failure=primary if where == "initialize" else None,
+        writer_failure=primary if where == "capture" else None,
+    )
+    with pytest.raises(BaseException) as caught:
+        model.run()
+    if where == "initialize":
+        assert caught.value is primary and model.state.raw["common_start_rng_error"] is primary
+        assert model.state.raw["common_start_rng_attempt"] is partial
+    else:
+        assert caught.value.__cause__ is primary and "common_start_rng" in model.state.raw
+        assert model.state.capture_error is primary
+    assert primary.__cause__ is cause and "initial_rng" not in model.events
+    assert "seed_phase" not in model.state.raw
+    assert model.state.raw["common_start_rng_program"] is model.program
+    reference.snapshot.write_json(
+        tmp_path / "common-start-failure.json",
+        dict(
+            stage=where,
+            primary_identity=id(primary),
+            cause_identity=id(cause),
+            program_retained=True,
+            actual_RNG_or_native_entries=0,
+            world_entries=0,
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "module_name",
+    [
+        "native_init_terminal_reference_software",
+        "native_sim_reference_software",
+        "native_sim_reference_compare_software",
+    ],
+)
+@pytest.mark.parametrize("cpu", [None, 5, 6])
+def test_reference_common_start_runner_CPU_is_explicit_and_preserves_other_caps(
+    tmp_path, monkeypatch, module_name, cpu
+):
+    module = __import__("validation.betse." + module_name, fromlist=[module_name])
+    original, calls = dict(module.POLICY), []
+    monkeypatch.setattr(module, "POLICY", dict(original))
+    monkeypatch.setattr(module, "prepare", lambda *args: calls.append(dict(module.POLICY)))
+    monkeypatch.setattr(module.resource, "setrlimit", lambda *args: None)
+    arguments = [module_name, "--prepare", str(tmp_path / "not-launched")]
+    if cpu is not None:
+        arguments += ["--software-cpu", str(cpu)]
+    monkeypatch.setattr(sys, "argv", arguments)
+    assert module.main() == 0 and calls == [dict(original, cpu=5 if cpu is None else cpu)]
+    assert {k: v for k, v in calls[0].items() if k != "cpu"} == {
+        k: v for k, v in original.items() if k != "cpu"
+    }

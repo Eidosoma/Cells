@@ -1259,6 +1259,146 @@ def test_sim_reference_metadata_recovery_covers_later_callbacks(
         sys.settrace(old_trace)
 
 
+@pytest.mark.parametrize("mode", ["original", "disabled"])
+@pytest.mark.parametrize("selected", [False, True])
+def test_sim_reference_common_start_forwards_one_program_to_actual_INIT_preparation(
+    tmp_path, monkeypatch, mode, selected
+):
+    """Metadata adapters only; neither INIT nor a generator is constructed."""
+    initial = reference.initial
+    manifest = dict(
+        files={
+            name: dict(sha256="a" * 64)
+            for name in (
+                *reference.OWNED,
+                initial.FILE,
+                initial.TEST,
+                initial.RUNNER,
+                initial.COMMON_START_FILE,
+                "validation/betse/native_seed_demo.py",
+            )
+        }
+    )
+    inputs = dict(mode=mode, inventory=dict(directories=[], files={mode: dict(sha256="b" * 64)}))
+    options = dict(python_seed=2437, numpy_seed=5211) if selected else None
+    calls = []
+
+    def prepare(output, **kwargs):
+        calls.append(kwargs)
+        output.mkdir(parents=True)
+        value = dict(held=True)
+        if kwargs["common_start"] is not None:
+            value["common_start"] = initial.common_start_declaration(
+                kwargs["common_start"], inputs, manifest
+            )
+        reference.snapshot.write_json(output / "prepared.json", value)
+        return value
+
+    monkeypatch.setattr(reference.snapshot, "verify", lambda *args, **kwargs: manifest)
+    monkeypatch.setattr(initial, "prepare", prepare)
+    output = tmp_path / mode
+    value = reference._single_frozen_plan(
+        output,
+        input_pair=tmp_path / "metadata-inputs",
+        input_sha256="c" * 64,
+        mode=mode,
+        common_start=options,
+    )
+    assert len(calls) == 1 and calls[0]["common_start"] == options and calls[0]["mode"] == mode
+    assert ("common_start" in value) is selected
+    assert ("common_start" in value["source_plan"]) is selected
+    if selected:
+        parent = initial._json_record(
+            value["INIT_prepared"]["path"], value["INIT_prepared"]["sha256"]
+        )
+        assert parent["common_start"] == value["common_start"]
+        assert parent["common_start"]["mode"] == mode
+        assert parent["common_start"]["provider"]["sha256"] is initial.COMMON_START_SHA256
+    assert value["source_native_reference_execution_released"] is False
+
+
+def test_sim_reference_common_start_is_one_parent_program_never_replayed_at_SIM():
+    tree = ast.parse(Path(reference.__file__).read_bytes())
+    calls = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in ("seed", "setstate", "set_state", "initialize")
+    ]
+    assert calls == []
+    plan = reference.source_plan()
+    assert (
+        "common_start" not in plan
+        and plan["actual_source_native_reference_execution_released"] is False
+    )
+    assert (
+        reference.initial.COMMON_START_SHA256
+        is reference.initial.COMMON_START_REVIEW_SHA256
+        is None
+    )
+
+
+def test_sim_reference_common_start_pair_loop_retains_modes_even_for_identical_programs(
+    tmp_path, monkeypatch
+):
+    """Run the real metadata pair coordinator with explicit non-owner adapters."""
+    initial = reference.initial
+    manifest = reference.snapshot.verify(reference.ROOT)
+    inventory = dict(directories=[], files={})
+    selected = {
+        mode: dict(mode=mode, inventory=inventory, root=str(tmp_path / "input"))
+        for mode in initial.MODES
+    }
+    options = dict(python_seed=2437, numpy_seed=5211)
+    calls = []
+
+    def single(output, *, input_pair, input_sha256, mode, common_start):
+        calls.append(mode)
+        output.mkdir(parents=True)
+        declaration = initial.common_start_declaration(common_start, selected[mode], manifest)
+        parent = output / "parent.json"
+        reference.snapshot.write_json(parent, dict(common_start=declaration, held=True))
+        return dict(
+            INIT_prepared=dict(path=str(parent), sha256=reference.snapshot.digest(parent)),
+            common_start=declaration,
+        )
+
+    runtime = dict(
+        roots=["/usr/lib/python3.13"],
+        startup_files=[],
+        pillow=dict(root="/metadata-pillow"),
+        composition=dict(
+            primary_site="/metadata-primary",
+            appended_site="/metadata-appended",
+            entry=sys.executable,
+            executable=dict(path=sys.executable),
+            venv_configuration=dict(path="/metadata-venv"),
+        ),
+    )
+    monkeypatch.setattr(initial, "_input_manifest", lambda folder, pin, mode: selected[mode])
+    monkeypatch.setattr(initial, "writer_declarations", lambda: dict(held=True))
+    monkeypatch.setattr(reference, "_full_calendars", lambda value: dict(init=500, sim=350))
+    monkeypatch.setattr(reference, "_reference_runtime", lambda: runtime)
+    monkeypatch.setattr(reference, "_single_frozen_plan", single)
+    result = reference.prepare_pair_frozen(
+        tmp_path / "pair", input_pair=tmp_path, input_sha256="d" * 64, common_start=options
+    )
+    programs = result["shared_start"]["programs"]
+    assert calls == ["original", "disabled"]
+    assert programs["original"]["program_identity"] == programs["disabled"]["program_identity"]
+    assert programs["original"]["mode"] == "original" and programs["disabled"]["mode"] == "disabled"
+    for row in result["modes"].values():
+        assert (
+            "CELLS_COMMON_START_RNG_RELEASED"
+            in row["controller_recipe"]["explicit_enabled_environment_required"]
+        )
+        assert row["controller_recipe"]["may_launch"] is False
+        assert row["execution_release"] is row["INIT_release"] is None
+    assert result["shared_start"]["actual_calls"] == 0
+    assert result["actual_source_native_reference_execution_released"] is False
+
+
 @pytest.mark.parametrize("failed", ["profile", "trace", "both"])
 def test_sim_reference_metadata_failed_recovery_stops_later_delegate(tmp_path, monkeypatch, failed):
     primary = FalseySourceError("original source")

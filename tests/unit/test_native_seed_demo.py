@@ -28,6 +28,286 @@ _import_model = None
 LAW = "fresh_original_molecule_channel_imported_beartype_factory@1"
 
 
+def common_fixture(mode="original"):
+    """Inert program metadata only; no real declare/initialize/RNG entry is called."""
+    doc = dict(
+        kind=initial_rng.COMMON_KIND,
+        epoch=initial_rng.COMMON_EPOCH,
+        python_seed=123,
+        python_seed_version=2,
+        numpy_seed=456,
+        numpy_api="legacy global RandomState.seed",
+        input_identity="a" * 64,
+        consumer_sources={"cells": "b" * 64, "original": "c" * 64},
+        operations=[list(row) for row in initial_rng.COMMON_STEPS],
+        draws=0,
+        setstate_or_generator_replacement=False,
+    )
+    return dict(
+        kind=initial_rng.COMMON_DECLARATION,
+        mode=mode,
+        program=doc,
+        program_identity=initial_rng.seal(doc),
+        provider=dict(
+            file=initial_rng.COMMON_FILE,
+            sha256=initial_rng.COMMON_SHA256,
+            review_sha256=initial_rng.COMMON_REVIEW_SHA256,
+        ),
+    )
+
+
+def common_record(selected):
+    return dict(
+        kind=initial_rng.COMMON_KIND,
+        status="completed",
+        role="cells",
+        program=selected["program"],
+        program_identity=selected["program_identity"],
+        epoch=initial_rng.COMMON_EPOCH,
+        source=dict(helper=initial_rng.COMMON_FILE, helper_sha256=initial_rng.COMMON_SHA256),
+        operations=[[row[0], "returned"] for row in initial_rng.COMMON_STEPS],
+        states_loaded=False,
+        generators_replaced=False,
+        biological_or_phase_admission=False,
+    )
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("python_seed", True),
+        ("numpy_seed", -1),
+        ("numpy_seed", 2**32),
+        ("draws", False),
+        ("setstate_or_generator_replacement", 0),
+        ("python_seed_version", True),
+        ("input_identity", "x"),
+    ],
+)
+def test_demo_common_start_exact_declaration_rejects_scalar_drift(field, value):
+    selected = common_fixture()
+    selected["program"][field] = value
+    selected["program_identity"] = initial_rng.seal(selected["program"])
+    with pytest.raises(ValueError):
+        initial_rng.common_declaration(selected)
+
+
+def test_demo_common_start_program_identity_is_separate_from_mode():
+    original, disabled = common_fixture(), common_fixture("disabled")
+    assert initial_rng.common_declaration(original) is original
+    assert initial_rng.common_declaration(disabled) is disabled
+    assert original["program_identity"] == disabled["program_identity"]
+    inventory = dict(directories=[], files={})
+    identity = initial_rng.seal(inventory)
+    original["program"]["input_identity"] = identity
+    original["program_identity"] = initial_rng.seal(original["program"])
+    manifest = dict(
+        files={
+            stage.FILE: {"sha256": "b" * 64},
+            initial_rng.ORIGINAL: {"sha256": "c" * 64},
+            initial_rng.COMMON_FILE: {"sha256": "d" * 64},
+        }
+    )
+    plan = dict(
+        common_start=original,
+        flux_operator="disabled",
+        initial_rng_inputs=dict(profile="original", inventory=inventory, inventory_sha256=identity),
+    )
+    with pytest.raises(ValueError, match="mode"):
+        initial_rng.common_binding(plan, manifest)
+
+
+def test_demo_common_start_unreviewed_provider_refuses_before_files_or_rng(monkeypatch):
+    monkeypatch.setattr(initial_rng, "COMMON_SHA256", None)
+    monkeypatch.setattr(initial_rng, "COMMON_REVIEW_SHA256", None)
+    with pytest.raises(ValueError, match="remains held"):
+        initial_rng.common_request({"common_start": common_fixture()})
+
+
+def test_demo_common_start_accepted_adoption_does_not_release_program(monkeypatch):
+    monkeypatch.delenv(initial_rng.COMMON_RELEASE, raising=False)
+    assert initial_rng.pin(initial_rng.COMMON_SHA256)
+    assert initial_rng.pin(initial_rng.COMMON_REVIEW_SHA256)
+    with pytest.raises(ValueError, match="input program remains held"):
+        initial_rng.common_request({})
+
+
+def test_demo_common_start_source_plan_is_explicit_and_default_remains_ambient():
+    ambient = stage.source_plan()
+    selected = common_fixture()
+    opt_in = stage.source_plan(common_start=selected)
+    assert "common_start" not in ambient
+    assert {key: value for key, value in opt_in.items() if key != "common_start"} == ambient
+    assert opt_in["common_start"] is selected
+    assert selected["provider"] == dict(
+        file=initial_rng.COMMON_FILE,
+        sha256="b52c20c4ede1fc9afbcefd9f22e65626156852cae552a12c14837e65dd1b9eb4",
+        review_sha256="58e4090dfaf544435bd132b703e470d59d49381ade83ea25a7ab0fe3a919d72e",
+    )
+
+
+@pytest.mark.parametrize("drift", ["unchanged", "code", "keyword"])
+def test_demo_common_start_loaded_public_code_checked_before_declaration(
+    tmp_path, monkeypatch, drift
+):
+    raw = (
+        "def initialize(program, state, *, role, output, enabled=False):\n"
+        "    raise AssertionError('metadata control must never execute this delegate')\n"
+    ).encode()
+    path = tmp_path / initial_rng.COMMON_FILE
+    path.parent.mkdir(parents=True)
+    path.write_bytes(raw)
+    api = ModuleType(initial_rng.COMMON_MODULE)
+    api.__file__ = str(path)
+    api.FILE, api.KIND, api.EPOCH = (
+        initial_rng.COMMON_FILE,
+        initial_rng.COMMON_KIND,
+        initial_rng.COMMON_EPOCH,
+    )
+    api.STEPS = initial_rng.COMMON_STEPS
+    code = next(c for c in compile(raw, str(path), "exec").co_consts if hasattr(c, "co_code"))
+    api.initialize = FunctionType(code, vars(api))
+    api.initialize.__kwdefaults__ = {"enabled": False}
+    monkeypatch.setattr(initial_rng, "ROOT", tmp_path)
+    monkeypatch.setattr(initial_rng, "COMMON_SHA256", hashlib.sha256(raw).hexdigest())
+    monkeypatch.setattr(initial_rng, "COMMON_REVIEW_SHA256", "d" * 64)
+    monkeypatch.setitem(sys.modules, initial_rng.COMMON_MODULE, api)
+    if drift == "code":
+        api.initialize.__code__ = api.initialize.__code__.replace(co_name="retargeted")
+    elif drift == "keyword":
+        api.initialize.__kwdefaults__["enabled"] = True
+    if drift == "unchanged":
+        assert initial_rng.common_api() is api
+    else:
+        with pytest.raises(ValueError, match="callable/code/default"):
+            initial_rng.common_api()
+
+
+@pytest.mark.parametrize("mode", stage.FLUX_MODES)
+def test_demo_common_start_direct_call_then_observation_without_row_hiding(
+    tmp_path, monkeypatch, mode
+):
+    model = chain(mode=mode)
+    selected = common_fixture(mode)
+    result = common_record(selected)
+    model.plan["common_start"] = selected
+    record_calls = []
+
+    def initialize(program, actual, *, role, output, enabled):
+        assert actual is model.state and role == "cells" and enabled is True
+        assert program is selected
+        assert [(r["name"], r["status"]) for r in actual.operations][-2:] == [
+            ("parameters", "returned"),
+            ("common_start_rng", "attempted"),
+        ]
+        assert sys._getframe().f_back.f_code is stage._call.__code__
+        output.mkdir()
+        (output / "COMPLETED.json").write_text(json.dumps(result))
+        record_calls.append("explicit_program_standin")
+        return result
+
+    def observe(actual, plan, evidence):
+        initial_rng.order_binding(actual)
+        assert actual.common_start_raw_return is result
+        assert actual.common_start_record is result
+        record_calls.append("observation_standin")
+
+    model.modules["initial_rng"] = NS(
+        common_request=lambda plan: (NS(initialize=initialize), selected),
+        common_return=initial_rng.common_return,
+        seal=initial_rng.seal,
+        observe=observe,
+    )
+    recorder = Evidence()
+    value = execute(model, tmp_path, recorder)
+    assert value.methods_completed and value.primary is None
+    assert record_calls == ["explicit_program_standin", "observation_standin"]
+    assert [r["name"] for r in value.operations][:6] == [
+        "callback",
+        "constructor_preflight",
+        "parameters",
+        "common_start_rng",
+        "initial_rng",
+        "geometry",
+    ]
+    assert recorder.values[0] == ("common_start_rng", result)
+
+
+@pytest.mark.parametrize("failure", ["source", "capture", "post_return"])
+def test_demo_common_start_failure_keeps_actual_return_or_attempt_before_geometry(
+    tmp_path, monkeypatch, failure
+):
+    model = chain()
+    selected = common_fixture()
+    model.plan["common_start"] = selected
+    returned = common_record(selected)
+    primary, cause = ValueError("original program rejection"), KeyError("original cause")
+    primary.__cause__ = cause
+    raw = {"raw_operations": [object()]}
+
+    def initialize(program, actual, *, role, output, enabled):
+        if failure == "source":
+            primary.common_start_attempt = raw
+            raise primary
+        output.mkdir()
+        (output / "COMPLETED.json").write_text(json.dumps(returned))
+        if failure == "post_return":
+            actual.primary = primary
+        return returned
+
+    def observation(*args):
+        raise AssertionError("No ambient getters or geometry after a failed program")
+
+    model.modules["initial_rng"] = NS(
+        common_request=lambda plan: (NS(initialize=initialize), selected),
+        common_return=initial_rng.common_return,
+        seal=initial_rng.seal,
+        observe=observation,
+    )
+    with pytest.raises(ValueError) as caught:
+        execute(
+            model, tmp_path, Evidence(fail="common_start_rng" if failure == "capture" else None)
+        )
+    value = model.state
+    assert caught.value is value.primary
+    assert not value.methods_completed and "geometry" not in model.calls
+    if failure == "source":
+        assert value.primary is primary and primary.__cause__ is cause
+        assert value.common_start_attempt is raw and value.common_start_error is primary
+    else:
+        assert value.common_start_raw_return is returned
+        assert value.common_start_capture is None
+    assert not any(r["name"] == "initial_rng" for r in value.operations)
+
+
+@pytest.mark.parametrize("selected", [False, True])
+def test_demo_common_start_order_requires_explicit_completed_epoch(selected):
+    model = chain()
+    state = model.state
+    state.parameters, state.world_ready, state.callback = model.p, model.ready, model.callback
+    state.operations = [
+        dict(name=n, status=s)
+        for n, s in (
+            ("parameters", "returned"),
+            ("common_start_rng", "returned"),
+            ("initial_rng", "attempted"),
+        )
+    ]
+    if selected:
+        state.common_start_declaration = common_fixture()
+        state.common_start_raw_return = common_record(state.common_start_declaration)
+        state.common_start_record = state.common_start_raw_return
+        state.common_start_capture = dict(label="common_start_rng", status="saved")
+        assert initial_rng.order_binding(state)["selected_boundaries"][-3:] == [
+            ("parameters", "returned"),
+            ("common_start_rng", "returned"),
+            ("initial_rng", "attempted"),
+        ]
+        state.operations[-2]["status"] = "failed"
+    with pytest.raises(ValueError):
+        initial_rng.order_binding(state)
+
+
 def rng_fixture(monkeypatch):
     import numpy as np
 

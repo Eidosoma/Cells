@@ -23,6 +23,7 @@ if TYPE_CHECKING:
         test_native_init_terminal_reference_compare,  # noqa:F401
         test_native_seed_demo_report,  # noqa:F401
         test_native_seed_rng_report,  # noqa:F401
+        test_native_sim_demo_report,  # noqa:F401
     )
 
 
@@ -733,6 +734,235 @@ def _demo_rng_files(tmp_path, *, mode="original"):
         plan=functions["pin"](value.plan),
         outcome=functions["pin"](value.worker / "demo/outcome.json"),
     ), value
+
+
+def _full_sim_accepted_provenance(value, full):
+    """Bind fresh inert packet metadata to the actual accepted provenance bytes."""
+    source_file = compare.rng_runtime.FILE
+    path = value.source / source_file
+    for parent in (value.source, *[p for p in value.source.rglob("*") if p.is_dir()]):
+        parent.chmod(0o755)
+    path.chmod(0o644)
+    path.write_bytes((software.ROOT / source_file).read_bytes())
+    path.chmod(0o444)
+    assert compare.snapshot.digest(path) == compare.RNG_RUNTIME_SHA256
+    snapshot_path = value.source / "SNAPSHOT.json"
+    manifest = full.read(snapshot_path)
+    manifest["files"][source_file].update(
+        sha256=compare.RNG_RUNTIME_SHA256, observation=dict(size=path.stat().st_size)
+    )
+    snapshot_path.chmod(0o644)
+    source_pin = full.write(snapshot_path, manifest)
+    snapshot_path.chmod(0o444)
+    for directory in [value.source, *[p for p in value.source.rglob("*") if p.is_dir()]]:
+        directory.chmod(0o555)
+    plan = full.read(value.plan)
+    inputs = full.read(Path(plan["parameter_inputs"]["path"]))
+    inputs["source_snapshot"] = source_pin
+    plan["parameter_inputs"] = full.write(Path(plan["parameter_inputs"]["path"]), inputs)
+    declared = full.read(Path(plan["demo_plan"]["path"]))
+    declared.update(
+        snapshot_sha256=source_pin["sha256"], parameter_sha256=plan["parameter_inputs"]["sha256"]
+    )
+    declared["source_plan"]["initial_rng_observation"]["runtime_producer_sha256"] = (
+        compare.RNG_RUNTIME_SHA256
+    )
+    plan["demo_plan"] = full.write(Path(plan["demo_plan"]["path"]), declared)
+    plan["source_snapshot"] = source_pin
+    plan["producers"][source_file] = compare.RNG_RUNTIME_SHA256
+    for name in ("parameters", "current_parameters"):
+        target = value.worker / "demo" / name / "acquisition.json"
+        acquisition = full.read(target)
+        acquisition["packet"] = plan["parameter_inputs"]
+        full.write(target, acquisition)
+    for name in ("runtime-before.json", "runtime-after.json"):
+        target = value.worker / name
+        runtime = full.read(target)
+        runtime["loaded_files"]["validation.betse.native_rng_runtime"] = full.pin(path)
+        full.write(target, runtime)
+    full.write(
+        value.worker / "source-after.json",
+        dict(source_snapshot=source_pin, producers=plan["producers"]),
+    )
+    root = value.worker / "demo"
+    outcome = full.read(root / "outcome.json")
+    witness_row = next(row for row in outcome["captures"] if row["label"] == "pre_seed_rng_witness")
+    witness = full.read(root / witness_row["path"])
+    witness["source"]["files"][source_file] = compare.RNG_RUNTIME_SHA256
+    witness["source"].update(
+        snapshot_sha256=source_pin["sha256"],
+        parameter_packet_sha256=plan["parameter_inputs"]["sha256"],
+    )
+    witness_row["sha256"] = full.write(root / witness_row["path"], witness)["sha256"]
+    outcome["initial_rng_observation"] = dict(witness_row)
+    common = next(row for row in outcome["captures"] if row["label"] == "common_start_rng")
+    record = full.read(root / common["path"])
+    record["source"]["provenance_sha256"] = compare.RNG_RUNTIME_SHA256
+    common["sha256"] = full.write(root / common["path"], record)["sha256"]
+    outcome["common_start_program"] = dict(common)
+    full.write(root / "common-start-rng/COMPLETED.json", record)
+    full.write(root / "outcome.json", outcome)
+    value.digest = full.write(value.plan, plan)["sha256"]
+    target = value.output / "process/process-inputs.json"
+    process = full.read(target)
+    process["command"][process["command"].index("--plan-sha256") + 1] = value.digest
+    full.write(target, process)
+    worker = full.read(value.worker / "result.json")
+    worker["plan_sha256"] = value.digest
+    controller = full.read(value.output / "result.json")
+    controller.update(
+        plan_sha256=value.digest, worker=full.write(value.worker / "result.json", worker)
+    )
+    full.write(value.output / "result.json", controller)
+
+
+def full_sim_common_control(tmp_path, monkeypatch, defect):
+    """Exercise the actual SIM reader; the unchanged original pairing has prior controls."""
+    from tests.unit import test_native_sim_demo_report as full
+
+    legacy = defect in ("legacy_original", "legacy_disabled")
+    mode = "disabled" if defect in ("disabled", "legacy_disabled") else "original"
+    if legacy:
+        request, value = _demo_rng_files(tmp_path, mode=mode)
+    else:
+        value = (
+            full.fixture(tmp_path, count=2)
+            if defect == "sim_ambient"
+            else full.common_fixture(tmp_path, mode=mode)
+        )
+        if defect != "sim_ambient":
+            _full_sim_accepted_provenance(value, full)
+        root = value.worker / "demo"
+        if defect == "late_failure":
+            full.old.change(
+                value,
+                "worker/demo/outcome.json",
+                lambda row: row.update(
+                    status="failed", primary=dict(type="LaterSourceError", cause="retained")
+                ),
+            )
+        elif defect == "mode":
+            plan = full.read(value.plan)
+            plan["common_start"]["mode"] = "disabled"
+            value.digest = full.write(value.plan, plan)["sha256"]
+        elif defect == "source":
+            path = value.source / compare.COMMON_START_FILE
+            path.chmod(0o644)
+            path.write_text("# deliberately changed saved producer\n")
+            path.chmod(0o444)
+        elif defect in ("runtime", "witness"):
+
+            def change(wire):
+                if defect == "runtime":
+                    wire["common_binding"]["runtime"]["numpy_version"] = "changed"
+                else:
+                    wire["state"]["python_random"][1][0] += 1
+
+            full.old.initial_rng_capture_change(value, "pre_seed_rng_witness", change)
+        elif defect == "program":
+
+            def change(record):
+                record["program"]["python_seed"] += 1
+                record["program_identity"] = compare.report._common_seal(record["program"])
+                full.write(root / "common-start-rng/COMPLETED.json", record)
+
+            full.old.change_capture(value, "common_start_rng", change)
+            outcome = full.read(root / "outcome.json")
+            outcome["common_start_program"] = dict(
+                next(row for row in outcome["captures"] if row["label"] == "common_start_rng")
+            )
+            full.write(root / "outcome.json", outcome)
+        request = dict(plan=full.pin(value.plan), outcome=full.pin(root / "outcome.json"))
+    calls = []
+    if defect in ("sim_reader_code", "sim_launch_code", "sim_observation_code"):
+        module, name = {
+            "sim_reader_code": (full.report, "_plan"),
+            "sim_launch_code": (full.report.launch, "_sim_contract"),
+            "sim_observation_code": (full.report.observation, "runtime_sources"),
+        }[defect]
+        raw = (
+            "def " + name + "(*args, **kwargs):\n"
+            "    _comparison_probe.append('untrusted delegate')\n"
+            "    raise AssertionError('delegate must not execute')\n"
+        )
+        unit = compile(raw, "<metadata-SIM-reader-drift>", "exec")
+        code = next(c for c in unit.co_consts if type(c) is CodeType)
+        monkeypatch.setattr(module, "_comparison_probe", calls, raising=False)
+        monkeypatch.setattr(module, name, FunctionType(code, vars(module)))
+    elif defect == "reader_link":
+
+        class Foreign:
+            def __init__(self):
+                calls.append("foreign reader")
+                raise AssertionError("Foreign reader must not be constructed")
+
+        monkeypatch.setattr(full.report, "Reader", Foreign)
+    side = compare.demo_starting_rng(request)
+    full.write(
+        tmp_path / "full-SIM-starting-comparison.json",
+        dict(
+            authenticated=side["authenticated"],
+            available=side["available"],
+            failure=side["failure"],
+            error=side["error"],
+            complete_SIM=side.get("complete_SIM", False),
+            common_starting_authority_established=side["common_starting_authority_established"],
+            numerical_parity_available=side["numerical_parity_available"],
+            observed_file_pins=side["reader"].pins if side["reader"] is not None else {},
+            untrusted_delegate_calls=calls,
+        ),
+    )
+    assert calls == []
+    if defect in ("original", "disabled", "late_failure", "sim_ambient") or legacy:
+        assert side["authenticated"] and side["available"], side["error"]
+        assert side["witness"]["common_binding"]["mode"] == mode
+        assert side["common_context"]["plan"]["kind"] == (
+            "cells.genuine_seed_core_profiles_junctions_demo@8"
+            if legacy
+            else "cells.genuine_seed_core_profiles_junctions_demo@9"
+        )
+        if defect in ("original", "disabled", "late_failure"):
+            record = compare._common_saved_side(side, "cells")
+            assert (
+                record["program_identity"]
+                == side["common_context"]["plan"]["common_start"]["program_identity"]
+            )
+            full.write(tmp_path / "full-SIM-common-start-record.json", record)
+        elif defect == "sim_ambient":
+            with pytest.raises((ValueError, KeyError)):
+                compare._common_saved_side(side, "cells")
+        if defect == "late_failure":
+            assert side["failure"]["status"] == "failed"
+            assert side["failure"]["primary"] == dict(type="LaterSourceError", cause="retained")
+    else:
+        assert side["authenticated"] is side["available"] is False
+        assert side["error"] is not None
+    assert side.get("complete_SIM", False) is side["numerical_parity_available"] is False
+    assert side["common_starting_authority_established"] is False
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "original",
+        "disabled",
+        "late_failure",
+        "sim_ambient",
+        "mode",
+        "source",
+        "runtime",
+        "program",
+        "witness",
+        "sim_reader_code",
+        "sim_launch_code",
+        "sim_observation_code",
+        "reader_link",
+        "legacy_original",
+        "legacy_disabled",
+    ],
+)
+def test_sim_compare_full_SIM_common_start_route(tmp_path, monkeypatch, defect):
+    full_sim_common_control(tmp_path, monkeypatch, defect)
 
 
 def _typed(value, columns):
@@ -1925,6 +2155,312 @@ def test_sim_compare_terminal_repair_canonical_runtime_origins(tmp_path, monkeyp
         assert not side["authenticated"] and not side["endpoint_complete"]
         assert side["error"] is not None
     assert len(side["rows"]) == 2 and side["failure"]["primary"] is None
+
+
+def _common_start_record(role="cells"):
+    words = struct.pack("<624I", *range(1, 625)).hex()
+    numpy = [
+        "MT19937",
+        dict(__ndarray__=True, dtype="<u4", shape=[624], strides=[4], raw_bytes_hex=words),
+        624,
+        0,
+        dict(float64_bits="0000000000000000"),
+    ]
+    python = [3, [*range(1, 625), 624], None]
+    doc = compare._common_program_document(
+        dict(
+            kind=compare.COMMON_START_KIND,
+            epoch="after_parameters_before_world_construction",
+            python_seed=2437,
+            numpy_seed=5211,
+            python_seed_version=2,
+            numpy_api="legacy global RandomState.seed",
+            input_identity="e" * 64,
+            consumer_sources=dict(cells="b" * 64, original="a" * 64),
+            operations=[
+                ["python_before", "python_get", None],
+                ["numpy_before", "numpy_get", None],
+                ["python_seed", "python_seed", "python_seed"],
+                ["python_after", "python_get", None],
+                ["numpy_seed", "numpy_seed", "numpy_seed"],
+                ["numpy_after", "numpy_get", None],
+                ["python_readback", "python_get", None],
+                ["numpy_readback", "numpy_get", None],
+            ],
+            draws=0,
+            setstate_or_generator_replacement=False,
+        )
+    )
+    state = {
+        kind + "_" + suffix: json.loads(json.dumps(value))
+        for kind, value in (("numpy", numpy), ("python", python))
+        for suffix in ("before", "after", "readback")
+    }
+    # These are deliberately synthetic saved bits, never generator output.
+    return dict(
+        kind=compare.COMMON_START_KIND,
+        status="completed",
+        program=doc,
+        program_identity=hashlib.sha256(
+            json.dumps(doc, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+        role=role,
+        pid=100 if role == "cells" else 101,
+        epoch=doc["epoch"],
+        source=dict(
+            helper=compare.COMMON_START_FILE,
+            helper_sha256=compare.COMMON_START_SHA256,
+            provenance=compare.rng_runtime.FILE,
+            provenance_sha256=compare.RNG_RUNTIME_SHA256,
+        ),
+        runtime=dict(kind="synthetic-runtime-metadata"),
+        generator_identities=dict(python=1, numpy=2),
+        state=state,
+        operations=[[row[0], "returned"] for row in doc["operations"]],
+        work=dict(
+            program_API_calls=8,
+            visible_RNG_observer_events=24,
+            opaque_C_internals_not_independent_cases=True,
+            inherited_observer_RNG_effects_require_reviewed_caller_contract=True,
+        ),
+        states_loaded=False,
+        generators_replaced=False,
+        biological_or_phase_admission=False,
+    )
+
+
+def _common_start_witness(record):
+    return dict(
+        common_binding=dict(
+            input_inventory_sha256=record["program"]["input_identity"],
+            mode="original",
+            profile="headless_core",
+            runtime=record["runtime"],
+        ),
+        source=(
+            dict(files={"validation/betse/native_seed_demo.py": "b" * 64})
+            if record["role"] == "cells"
+            else dict(reference_sha256="a" * 64)
+        ),
+    )
+
+
+@pytest.mark.parametrize("role", ["cells", "original"])
+def test_sim_compare_common_start_validates_complete_saved_bits_without_RNG(role, tmp_path):
+    record = _common_start_record(role)
+    state = compare._common_record(record, role, _common_start_witness(record))
+    assert state["numpy"][1]["raw_bytes_hex"] == record["state"]["numpy_after"][1]["raw_bytes_hex"]
+    assert len(state["python"][1]) == 625
+    _save(
+        tmp_path / "common-start-contract.json",
+        dict(
+            synthetic_bits_only=True,
+            actual_RNG_or_native_entries=0,
+            role=role,
+            complete_state_validated=True,
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "draw_type",
+        "seed_type",
+        "caller",
+        "input",
+        "runtime",
+        "readback",
+        "words",
+        "failed",
+        "operations",
+        "loaded",
+        "program_identity",
+        "helper",
+    ],
+)
+def test_sim_compare_common_start_rejects_drift_without_normalizing_saved_input(defect):
+    record = _common_start_record()
+    witness = _common_start_witness(json.loads(json.dumps(record)))
+    if defect == "draw_type":
+        record["program"]["draws"] = False
+    elif defect == "seed_type":
+        record["program"]["python_seed"] = True
+    elif defect == "caller":
+        witness["source"]["files"]["validation/betse/native_seed_demo.py"] = "c" * 64
+    elif defect == "input":
+        witness["common_binding"]["input_inventory_sha256"] = "c" * 64
+    elif defect == "runtime":
+        witness["common_binding"]["runtime"] = dict(kind="different-runtime")
+    elif defect == "readback":
+        record["state"]["numpy_readback"][2] = 2
+    elif defect == "words":
+        record["state"]["numpy_after"][1]["raw_bytes_hex"] = "00"
+    elif defect == "failed":
+        record["status"] = "failed"
+    elif defect == "operations":
+        record["operations"].pop()
+    elif defect == "loaded":
+        record["states_loaded"] = True
+    elif defect == "program_identity":
+        record["program_identity"] = "f" * 64
+    else:
+        record["source"]["helper_sha256"] = "f" * 64
+    before = json.dumps(record, sort_keys=True)
+    with pytest.raises(ValueError):
+        compare._common_record(record, "cells", witness)
+    assert json.dumps(record, sort_keys=True) == before
+
+
+def _common_start_saved_sides(tmp_path, monkeypatch):
+    helper_raw = b"# Synthetic saved-source metadata; never executable authority.\n"
+    helper_pin = hashlib.sha256(helper_raw).hexdigest()
+    monkeypatch.setattr(compare, "COMMON_START_SHA256", helper_pin)
+    monkeypatch.setattr(compare, "COMMON_START_REVIEW_SHA256", "d" * 64)
+    sides = {}
+    for role in ("cells", "original"):
+        root = tmp_path / role
+        root.mkdir()
+        frozen = root / "source"
+        helper = frozen / compare.COMMON_START_FILE
+        helper.parent.mkdir(parents=True)
+        helper.write_bytes(helper_raw)
+        manifest_pin = _save(
+            frozen / "SNAPSHOT.json",
+            dict(files={compare.COMMON_START_FILE: dict(sha256=helper_pin)}),
+        )
+        cfg = root / "config"
+        cfg.mkdir()
+        record = _common_start_record(role)
+        witness = _common_start_witness(record)
+        declaration = dict(
+            kind="cells.paired_common_start_preparation@1",
+            mode="original",
+            program=record["program"],
+            program_identity=record["program_identity"],
+            provider=dict(
+                file=compare.COMMON_START_FILE, sha256=helper_pin, review_sha256="d" * 64
+            ),
+        )
+        path = root / "capture-common.json"
+        value = record if role == "cells" else dict(tree=_metadata_wire(record), columns={})
+        files = compare.report.evidence.write(path, value, label="common_start_rng")
+        row = (
+            dict(
+                label="common_start_rng",
+                status="saved",
+                path=path.name,
+                sha256=compare.snapshot.digest(path),
+            )
+            if role == "cells"
+            else dict(label="common_start_rng", status="saved", files=files)
+        )
+        completion = root / "common-start-rng/COMPLETED.json"
+        completion.parent.mkdir()
+        _save(completion, record)
+        observed = dict(
+            numpy_random=record["state"]["numpy_after"],
+            python_random=record["state"]["python_after"],
+            initial_random_reset_or_replacement=False,
+        )
+        columns = {}
+        native_observed = dict(
+            observed,
+            numpy_random=tuple(observed["numpy_random"]),
+            python_random=(3, tuple(observed["python_random"][1]), observed["python_random"][2]),
+        )
+        wire = (
+            observed
+            if role == "cells"
+            else dict(tree=_typed(native_observed, columns), columns=columns)
+        )
+        plan = dict(
+            common_start=declaration,
+            snapshot_sha256=manifest_pin["sha256"],
+            execution_source=dict(root=str(frozen), snapshot_sha256=manifest_pin["sha256"]),
+        )
+        outcome = dict(captures=[row, dict(label="before_seed_random_states")])
+        sides[role] = dict(
+            authenticated=True,
+            available=True,
+            reader=compare.report.Reader(),
+            error=None,
+            failure=dict(status="later_source_failed", retained=True),
+            wire=wire,
+            witness=witness,
+            input_tree=dict(root=str(cfg), inventory=compare.input_files.inventory(cfg)),
+            common_context=dict(plan=plan, outcome=outcome, output=str(root), source=str(frozen)),
+        )
+    return sides
+
+
+@pytest.mark.parametrize(
+    "defect", [None, "missing_return", "late_capture", "completion", "declaration"]
+)
+def test_sim_compare_common_start_reads_actual_capture_and_publication_graph(
+    tmp_path, monkeypatch, defect
+):
+    sides = _common_start_saved_sides(tmp_path, monkeypatch)
+    side = sides["original"]
+    context = side["common_context"]
+    if defect == "missing_return":
+        context["outcome"]["captures"].pop(0)
+    elif defect == "late_capture":
+        context["outcome"]["captures"].reverse()
+    elif defect == "completion":
+        path = Path(context["output"]) / "common-start-rng/COMPLETED.json"
+        value = json.loads(path.read_text())
+        value["status"] = "failed"
+        path.write_text(json.dumps(value))
+    elif defect == "declaration":
+        context["plan"]["common_start"]["mode"] = "disabled"
+    if defect is None:
+        result = compare._common_saved_side(side, "original")
+        assert result["role"] == "original" and side["failure"]["retained"]
+        assert len(side["reader"].pins) >= 4
+    else:
+        with pytest.raises(ValueError):
+            compare._common_saved_side(side, "original")
+
+
+@pytest.mark.parametrize(
+    "defect", [None, "pid", "bits", "file_drift", "input_drift", "held", "mode"]
+)
+def test_sim_compare_common_start_paired_proof_is_separate_from_later_source_failure(
+    tmp_path, monkeypatch, defect
+):
+    sides = _common_start_saved_sides(tmp_path, monkeypatch)
+    monkeypatch.setattr(compare, "demo_starting_rng", lambda request: sides["cells"])
+    monkeypatch.setattr(compare, "reference_starting_rng", lambda request: sides["original"])
+    delegate = compare._common_saved_side
+
+    def read_then_change(side, role):
+        value = delegate(side, role)
+        if role == "original":
+            if defect == "pid":
+                value["pid"] = 100
+            elif defect == "bits":
+                value["state"]["numpy_after"][2] = 3
+            elif defect == "file_drift":
+                (
+                    Path(side["common_context"]["output"]) / "common-start-rng/COMPLETED.json"
+                ).write_text("{}")
+            elif defect == "input_drift":
+                (Path(side["input_tree"]["root"]) / "extra").write_text("late input")
+        return value
+
+    monkeypatch.setattr(compare, "_common_saved_side", read_then_change)
+    if defect == "held":
+        monkeypatch.setattr(compare, "COMMON_START_SHA256", None)
+    elif defect == "mode":
+        sides["original"]["witness"]["common_binding"]["mode"] = "disabled"
+        sides["original"]["common_context"]["plan"]["common_start"]["mode"] = "disabled"
+    result = compare.compare_common_start_saved({}, {})
+    assert result["common_starting_authority_established"] is (defect is None)
+    assert result["numerical_parity_available"] is False and result["complete_SIM"] is False
+    assert result["physical_checkpoint_credit"] == 0
+    assert result["failed_source_forensics"]["original"]["failure"]["retained"] is True
+    _save(tmp_path / "common-start-comparison.json", result)
 
 
 @pytest.mark.parametrize(

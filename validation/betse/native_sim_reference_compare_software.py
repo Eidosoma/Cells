@@ -143,11 +143,14 @@ def child(output, select):
 
 
 def main():
+    global POLICY
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("prepare", "software", "child"):
         parser.add_argument("--" + name, type=Path)
     parser.add_argument("--select", default="sim_compare")
+    parser.add_argument("--software-cpu", type=int, choices=(5, 6), default=5)
     args = parser.parse_args()
+    POLICY = dict(POLICY, cpu=args.software_cpu)
     if args.child:
         resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
         return child(args.child, args.select)

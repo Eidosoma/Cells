@@ -15,7 +15,15 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from threading import RLock, active_count, get_ident, main_thread
-from types import BuiltinFunctionType, CodeType, FrameType, FunctionType, MethodType, ModuleType
+from types import (
+    BuiltinFunctionType,
+    CodeType,
+    FrameType,
+    FunctionType,
+    GeneratorType,
+    MethodType,
+    ModuleType,
+)
 
 from cells.processes import betse_native_numpy_copy_origin as executable
 from validation import source_snapshot as snapshot
@@ -41,6 +49,36 @@ STEPS = (
     ("numpy_readback", "numpy_get", None),
 )
 _LOCK, _ATTEMPT = RLock(), None
+_SAMPLING, _AUDIT_READY, _AUDIT_PROBE = [], False, None
+_AUDIT_EVENT = "cells.common_start_rng.sampling_audit_ack"
+
+
+def _sampling_audit(event, args):
+    if event == _AUDIT_EVENT and _AUDIT_PROBE is not None:
+        if len(args) == 1 and args[0] is _AUDIT_PROBE:
+            _AUDIT_PROBE["acknowledged"] = True
+    if event in ("sys.setprofile", "sys.settrace"):
+        for sample in _SAMPLING:
+            sample["changed"] = True
+            sample["last_mutation"] = (event, args)
+
+
+def _install_sampling_audit():
+    global _AUDIT_READY, _AUDIT_PROBE
+    installed = _AUDIT_READY
+    _AUDIT_READY = False
+    probe = {"acknowledged": False}
+    _AUDIT_PROBE = probe
+    try:
+        if not installed:
+            # CPython may silently suppress a RuntimeError raised by an
+            # earlier hook, returning without installing this callback.
+            sys.addaudithook(_sampling_audit)
+        sys.audit(_AUDIT_EVENT, probe)
+        _require(probe["acknowledged"], "Sampling audit hook acknowledgement missing")
+        _AUDIT_READY = True
+    finally:
+        _AUDIT_PROBE = None
 
 
 class CommonStartRejected(ValueError):
@@ -238,7 +276,11 @@ def _boundary(program, state, role, frame):
         and manifest["files"][FILE]["sha256"] == snapshot.digest(Path(__file__)),
         "Actual frozen caller/helper source binding required",
     )
-    _require(type(state) is vars(module).get("State"), "Actual consumer State type required")
+    state_name = "Execution" if role == "cells" else "State"
+    _require(
+        type(state) is vars(module).get(state_name),
+        "Actual consumer " + state_name + " type required",
+    )
     # The real caller may use its existing operation recorder. Skip only that
     # exact function, never arbitrary supplied frames or another wrapper.
     if type(frame) is FrameType and frame.f_code is vars(module)[wrapper].__code__:
@@ -638,6 +680,10 @@ def _observing(attempt):
             return fn(frame, event, arg)
         except BaseException as error:
             attempt["invalid"] = True
+            if attempt.get("pending_primary") is None:
+                attempt["pending_primary"] = error
+                attempt["pending_traceback"] = error.__traceback__
+                attempt["pending_origin"] = ("inherited", frame, event)
             _secondary(attempt, "inherited_" + event, error)
             if event not in ("return", "exception", "c_return", "c_exception"):
                 raise
@@ -666,6 +712,7 @@ def _observing(attempt):
             # caller opcode guard substituting a secondary coverage error.
             attempt["pending_primary"] = arg[1]
             attempt["pending_traceback"] = arg[2]
+            attempt["pending_origin"] = ("source", frame, event)
         fn = prior[1] if event == "call" else local.get(id(frame))
         result = inherited(fn, frame, event, arg)
         if event == "return":
@@ -682,8 +729,14 @@ def _observing(attempt):
         return trace
 
     try:
+        expected_prior = attempt.get("observer_prior", prior)
+        _require(
+            prior[0] is expected_prior[0] and prior[1] is expected_prior[1],
+            "Original caller observer hooks required before RNG entry",
+        )
         sys.setprofile(profile)
         sys.settrace(trace)
+        attempt["observer_yielded"] = True
         yield
     except BaseException as error:
         primary = error
@@ -793,81 +846,240 @@ def initialize(program, state, *, role, output, enabled=False):
             current=None,
             last_observer_raw=None,
             hooks_restored=None,
+            pending_primary=None,
+            pending_traceback=None,
+            pending_origin=None,
+            body_primary=None,
+            observer_prior=None,
+            observer_hook_api=None,
+            observer_manager=None,
+            observer_generator=None,
+            observer_yielded=False,
+            observer_entered=False,
+            observer_cleanup_errors=[],
+            observer_cleanup_complete=False,
+            reporting_held=False,
+            sampling_audit_acknowledged=False,
         )
         _ATTEMPT = attempt
+    manager, generator, prior, hook_api = None, None, None, None
     try:
-        document = program_document(program)
-        _require(
-            program.identity == _digest(document) and role in CONSUMERS,
-            "Sealed program and exact consumer role required",
+        # Retain actual APIs/hooks before any fallible observer entry. Recovery
+        # below is in this caller, independent of contextlib.__exit__ admission.
+        hook_api = (
+            ("trace", sys.gettrace, sys.settrace, 1),
+            ("profile", sys.getprofile, sys.setprofile, 0),
         )
-        _require(
-            active_count() == 1 and get_ident() == main_thread().ident,
-            "Single Python thread required for global RNG initialization",
-        )
-        attempt["stage"] = "boundary"
-        attempt["boundary"] = _boundary(program, state, role, sys._getframe(1))
-        path = Path(output).resolve()
-        _require(
-            not path.exists()
-            and path.is_relative_to(Path("/mnt/workspaces/Cells"))
-            and not path.is_relative_to(Path(__file__).resolve().parents[2]),
-            "Fresh contained non-source RNG evidence directory required",
-        )
-        path.mkdir(parents=True)
-        attempt["output"] = path
-        attempt["stage"] = "runtime"
-        attempt["binding"] = _runtime()
-        attempt["runtime_before"] = provenance.binding()
-        _save(attempt, "program.json", dict(document, identity=program.identity))
-        attempt["stage"] = "program"
-        with _observing(attempt):
-            _execute_program(program, attempt)
-            _require(not attempt["invalid"], "Reentrant common-start attempt poisoned")
-            attempt["runtime_after"] = provenance.binding()
+        prior = (hook_api[1][1](), hook_api[0][1]())
+        attempt["observer_prior"], attempt["observer_hook_api"] = prior, hook_api
+        try:
+            _install_sampling_audit()
+            attempt["sampling_audit_acknowledged"] = True
+            document = program_document(program)
             _require(
-                attempt["runtime_before"] == attempt["runtime_after"], "Actual RNG runtime changed"
+                program.identity == _digest(document) and role in CONSUMERS,
+                "Sealed program and exact consumer role required",
             )
-            _check_runtime(attempt["binding"])
-            _same_function(attempt["boundary"][-1])
-            attempt["stage"] = "publication"
-            binding = attempt["binding"]
-            record = dict(
-                kind=KIND,
-                status="completed",
-                program=document,
-                program_identity=program.identity,
-                role=role,
-                pid=os.getpid(),
-                epoch=EPOCH,
-                source=dict(
-                    helper=FILE,
-                    helper_sha256=snapshot.digest(Path(__file__)),
-                    provenance=provenance.FILE,
-                    provenance_sha256=PROVENANCE_SHA256,
-                ),
-                runtime=attempt["runtime_after"],
-                generator_identities=dict(python=id(binding["python"]), numpy=id(binding["numpy"])),
-                state=attempt["states"],
-                operations=[[r["label"], r["status"]] for r in attempt["operations"]],
-                work=dict(
-                    program_API_calls=len(attempt["operations"]),
-                    visible_RNG_observer_events=len(attempt["observed_calls"]),
-                    opaque_C_internals_not_independent_cases=True,
-                    inherited_observer_RNG_effects_require_reviewed_caller_contract=True,
-                ),
-                states_loaded=False,
-                generators_replaced=False,
-                biological_or_phase_admission=False,
+            _require(
+                active_count() == 1 and get_ident() == main_thread().ident,
+                "Single Python thread required for global RNG initialization",
             )
-            _save(attempt, "COMPLETED.json", record)
+            attempt["stage"] = "boundary"
+            attempt["boundary"] = _boundary(program, state, role, sys._getframe(1))
+            path = Path(output).resolve()
+            _require(
+                not path.exists()
+                and path.is_relative_to(Path("/mnt/workspaces/Cells"))
+                and not path.is_relative_to(Path(__file__).resolve().parents[2]),
+                "Fresh contained non-source RNG evidence directory required",
+            )
+            path.mkdir(parents=True)
+            attempt["output"] = path
+            attempt["stage"] = "runtime"
+            attempt["binding"] = _runtime()
+            attempt["runtime_before"] = provenance.binding()
+            _save(attempt, "program.json", dict(document, identity=program.identity))
+            attempt["stage"] = "program"
+            manager = _observing(attempt)
+            generator = vars(manager).get("gen")
+            attempt["observer_manager"], attempt["observer_generator"] = manager, generator
+            _require(
+                type(generator) is GeneratorType
+                and generator.gi_code is _observing.__wrapped__.__code__,
+                "Actual original RNG observation generator required",
+            )
+            with manager:
+                attempt["observer_entered"] = True
+                try:
+                    _execute_program(program, attempt)
+                    _require(not attempt["invalid"], "Reentrant common-start attempt poisoned")
+                    attempt["runtime_after"] = provenance.binding()
+                    _require(
+                        attempt["runtime_before"] == attempt["runtime_after"],
+                        "Actual RNG runtime changed",
+                    )
+                    _check_runtime(attempt["binding"])
+                    _same_function(attempt["boundary"][-1])
+                except BaseException as error:
+                    # Retain this before contextlib can be refused at CALL.
+                    attempt["body_primary"] = (
+                        error,
+                        error.__cause__,
+                        error.__context__,
+                        error.__traceback__,
+                    )
+                    if attempt["pending_primary"] is None:
+                        attempt["pending_primary"] = error
+                        attempt["pending_traceback"] = error.__traceback__
+                        attempt["pending_origin"] = ("body", None, "exception")
+                    raise
+        except BaseException as error:
+            # This also covers declaration/runtime/program.json failures,
+            # before the observation body exists. Cleanup is secondary.
+            attempt["outer_body_primary"] = (
+                error,
+                error.__cause__,
+                error.__context__,
+                error.__traceback__,
+            )
+            if attempt["pending_primary"] is None:
+                attempt["pending_primary"] = error
+                attempt["pending_traceback"] = error.__traceback__
+                attempt["pending_origin"] = ("outer_body", None, "exception")
+            raise
+        finally:
+            attempt["outer_cleanup_started"] = True
+            attempt["current"] = None
+            if type(generator) is GeneratorType and generator.gi_frame is not None:
+                try:
+                    generator.close()
+                except BaseException as error:
+                    attempt["invalid"] = True
+                    if attempt["pending_primary"] is None:
+                        attempt["pending_primary"] = error
+                        attempt["pending_traceback"] = error.__traceback__
+                        attempt["pending_origin"] = ("cleanup", None, "generator_close")
+                    attempt["last_cleanup_error"] = ("generator_close", error, generator)
+                    try:
+                        attempt["observer_cleanup_errors"].append(("generator_close", error))
+                    except BaseException as recording:
+                        attempt["last_cleanup_recording_error"] = recording
+            # Inline and independent: a rejected helper entry or one failing
+            # setter must not skip the other hook. No evidence callback yet.
+            for name, getter, setter, index in hook_api:
+                for ordinal in range(3):
+                    try:
+                        setter(prior[index])
+                        if getter() is prior[index]:
+                            break
+                    except BaseException as error:
+                        attempt["invalid"] = True
+                        if attempt["pending_primary"] is None:
+                            attempt["pending_primary"] = error
+                            attempt["pending_traceback"] = error.__traceback__
+                            attempt["pending_origin"] = ("cleanup", None, name)
+                        attempt["last_cleanup_error"] = (name, error, ordinal)
+                        try:
+                            attempt["observer_cleanup_errors"].append((name, error))
+                        except BaseException as recording:
+                            attempt["last_cleanup_recording_error"] = recording
+            final = [None, None]
+            sample = dict(changed=False, last_mutation=None)
+            _SAMPLING.append(sample)
+            try:
+                for name, getter, _setter, index in hook_api:
+                    try:
+                        final[index] = getter()
+                    except BaseException as error:
+                        attempt["invalid"] = True
+                        if attempt["pending_primary"] is None:
+                            attempt["pending_primary"] = error
+                            attempt["pending_traceback"] = error.__traceback__
+                            attempt["pending_origin"] = ("cleanup", None, name + "_final")
+                        attempt["last_cleanup_error"] = (name + "_final", error, None)
+            finally:
+                # No helper entry/callback is needed to retire the window.
+                for index in range(len(_SAMPLING) - 1, -1, -1):
+                    if _SAMPLING[index] is sample:
+                        del _SAMPLING[index]
+            attempt["outer_hook_sample"] = sample
+            attempt["outer_final_hooks"] = tuple(final)
+            attempt["hooks_restored"] = (
+                attempt["sampling_audit_acknowledged"]
+                and not sample["changed"]
+                and final[0] is prior[0]
+                and final[1] is prior[1]
+            )
+            attempt["observer_closed"] = generator is None or (
+                type(generator) is GeneratorType and generator.gi_frame is None
+            )
+            attempt["observer_cleanup_complete"] = (
+                attempt["hooks_restored"] and attempt["observer_closed"]
+            )
+        _require(attempt["observer_cleanup_complete"], "RNG observer cleanup unresolved")
         _require(not attempt["invalid"], "Incomplete common-start publication")
+        # Publication follows verified closure; a refused __exit__ cannot
+        # publish a completed program marker before its cleanup runs.
+        attempt["stage"] = "publication"
+        binding = attempt["binding"]
+        record = dict(
+            kind=KIND,
+            status="completed",
+            program=document,
+            program_identity=program.identity,
+            role=role,
+            pid=os.getpid(),
+            epoch=EPOCH,
+            source=dict(
+                helper=FILE,
+                helper_sha256=snapshot.digest(Path(__file__)),
+                provenance=provenance.FILE,
+                provenance_sha256=PROVENANCE_SHA256,
+            ),
+            runtime=attempt["runtime_after"],
+            generator_identities=dict(python=id(binding["python"]), numpy=id(binding["numpy"])),
+            state=attempt["states"],
+            operations=[[r["label"], r["status"]] for r in attempt["operations"]],
+            work=dict(
+                program_API_calls=len(attempt["operations"]),
+                visible_RNG_observer_events=len(attempt["observed_calls"]),
+                opaque_C_internals_not_independent_cases=True,
+                inherited_observer_RNG_effects_require_reviewed_caller_contract=True,
+            ),
+            states_loaded=False,
+            generators_replaced=False,
+            biological_or_phase_admission=False,
+        )
+        _save(attempt, "COMPLETED.json", record)
         attempt["record"] = record
         return record
-    except BaseException as primary:
+    except BaseException as escaped:
+        pending = attempt["pending_primary"]
+        primary = escaped if pending is None else pending
         attempt["primary"] = primary
+        attempt["invalid"] = True
+        if escaped is not primary:
+            attempt["escaped_error"] = (escaped, escaped.__cause__, escaped.__traceback__)
         if attempt["record"] is not None:
             attempt["unaccepted_record"], attempt["record"] = attempt["record"], None
+        if not attempt["observer_cleanup_complete"]:
+            # Raw _ATTEMPT remains available, including primary/partial bits;
+            # unsafe exception attachment/reporters cannot run under lost hooks.
+            attempt["reporting_held"] = True
+            if primary is escaped:
+                raise
+            # Keep the actual cause; the escaped observer is retained separately.
+            raise primary  # noqa: B904
+        if escaped is not primary:
+            try:
+                _secondary(attempt, "scope_exit", escaped)
+            except BaseException as recording:
+                attempt["last_secondary_recording_error"] = recording
+        for label, error in attempt["observer_cleanup_errors"]:
+            try:
+                _secondary(attempt, label, error)
+            except BaseException as recording:
+                attempt["last_secondary_recording_error"] = recording
         try:
             primary.common_start_attempt = attempt
         except BaseException as secondary:
@@ -897,7 +1109,9 @@ def initialize(program, state, *, role, output, enabled=False):
                     _secondary(attempt, "failure_evidence", secondary)
                 except BaseException as recording:
                     attempt["last_secondary_recording_error"] = recording
-        raise
+        if primary is escaped:
+            raise
+        raise primary  # noqa: B904 -- preserve its original cause rather than replace it.
 
 
 def _saved_state(value, kind):

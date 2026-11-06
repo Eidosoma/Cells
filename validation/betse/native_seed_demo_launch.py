@@ -699,6 +699,9 @@ def _initial_rng_inputs(plan, declaration, bundle, inputs, manifest):
 
 
 def _producers(declaration):
+    common = (
+        (initial_rng.COMMON_FILE, initial_rng.ORIGINAL) if "common_start" in declaration else ()
+    )
     runtime = (
         (initial_rng.rng_runtime.FILE,)
         if declaration.get("source_plan", {}).get("initial_rng_observation", {}).get("kind")
@@ -708,6 +711,7 @@ def _producers(declaration):
     if declaration.get("kind") == SIM_DEMO_KIND:
         return (
             *PRODUCERS,
+            *common,
             initial_rng.FILE,
             *runtime,
             SIM_FILE,
@@ -718,7 +722,7 @@ def _producers(declaration):
             sim_observation.HISTORY,
         )
     return (
-        (*PRODUCERS, initial_rng.FILE, *runtime)
+        (*PRODUCERS, initial_rng.FILE, *runtime, *common)
         if declaration.get("kind") == RNG_DEMO_KIND
         else PRODUCERS
     )
@@ -841,12 +845,37 @@ def _inputs(plan, parameter_inputs, *, initial):
         require(checked == value, "Complete input verification changed its declaration")
 
 
+def _common_start(plan, declaration, manifest):
+    """Keep an explicit program separate from the observation-only initial witness."""
+    selected = "common_start" in declaration
+    require(("common_start" in plan) is selected, "Explicit common-start launch association")
+    if not selected:
+        require(
+            initial_rng.COMMON_RELEASE not in plan["release_environment"],
+            "Ambient launch cannot silently request a common-start program",
+        )
+        return
+    require(
+        plan["common_start"] == declaration["common_start"]
+        and declaration["source_plan"].get("common_start") == declaration["common_start"]
+        and plan["release_environment"].get(initial_rng.COMMON_RELEASE) == "1",
+        "Exact opt-in declaration and independent release flag required",
+    )
+    initial_rng.common_binding(declaration, manifest)
+    for name in (initial_rng.COMMON_FILE, initial_rng.ORIGINAL):
+        require(
+            plan["producers"].get(name) == manifest["files"][name]["sha256"],
+            "Actual common-start helper/caller missing from launch producer roster",
+        )
+
+
 def _immutable(plan):
     """Recheck byte provenance without reopening consumed native directory epochs."""
     declaration = read(plan["demo_plan"])
     inputs = read(plan["parameter_inputs"])
     source = Path(plan["source"])
     manifest = snapshot.verify(source, manifest_sha256=plan["source_snapshot"]["sha256"])
+    _common_start(plan, declaration, manifest)
     require(bound(plan["source_snapshot"]) == source / "SNAPSHOT.json", "Snapshot association")
     require(declaration["snapshot_sha256"] == plan["source_snapshot"]["sha256"], "Demo snapshot")
     require(Path(declaration["parameter_packet"]) / "source" == source, "Demo packet association")
@@ -1062,6 +1091,7 @@ def prepare(
             if declaration.get("kind") in (RNG_DEMO_KIND, SIM_DEMO_KIND)
             else {}
         ),
+        **({"common_start": declaration["common_start"]} if "common_start" in declaration else {}),
     )
     if declaration.get("endpoint") == SIM_ENDPOINT:
         value["acquisition_sequence"] = list(ACQUISITION_SEQUENCE)
@@ -1105,6 +1135,7 @@ def verify(plan_path, plan_sha256, *, initial=True):
             "limitations",
         }
         | ({"initial_rng_inputs"} if "initial_rng_inputs" in value else set())
+        | ({"common_start"} if "common_start" in value else set())
         | (
             {"acquisition_sequence", "sim_original_sources"}
             if value.get("endpoint") == SIM_ENDPOINT
@@ -1678,6 +1709,16 @@ def worker(plan_path, output, *, plan_sha256, release_path, release_sha256, enab
                     plan_sha256=plan["demo_plan"]["sha256"],
                     enabled=True,
                 )
+                if "common_start" in plan:
+                    initial_rng.common_return(
+                        returned.common_start_raw_return, plan["common_start"]
+                    )
+                    require(
+                        returned.common_start_record is returned.common_start_raw_return
+                        and returned.common_start_capture is not None
+                        and returned.common_start_capture["status"] == "saved",
+                        "Missing completed common-start return/capture",
+                    )
                 filesystem.check()
                 require(
                     returned.methods_completed is True

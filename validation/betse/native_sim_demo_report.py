@@ -1,7 +1,7 @@
 """Direct saved demo@9/SIM report. Metadata consistency never issues live authority.
 
-The older SEED/INIT report is unchanged. Its bounded file/wire readers and INIT
-ancestor checks are reused explicitly; no saved kind or endpoint is relabelled.
+The explicitly pinned SEED/INIT reader supplies bounded file/wire checks and
+INIT ancestry. No saved kind or endpoint is relabelled.
 """
 
 import argparse
@@ -32,7 +32,7 @@ _hash_identity, _iterations = legacy._hash_identity, legacy._iterations
 _parameter_roster, _parameter_archive = legacy._parameter_roster, legacy._parameter_archive
 _parameter_load_prefix = legacy._parameter_load_prefix
 _numpy_origin, _geometry_captures = legacy._numpy_origin, legacy._geometry_captures
-LEGACY_SHA256 = "c9f3d6002e1faf680209c66123624ec6793c99781eb91179ee98974f1f627ad7"
+LEGACY_SHA256 = "9c9f82605a514e69cc3a1622d2cb0f529e09fcb6e13cdea3850dca5677cadf90"
 INIT_STAGES = (
     "geometry",
     "poisson",
@@ -209,6 +209,9 @@ def _plan(reader, path, digest):
     plan["_initial_rng_inputs"] = _initial_rng_declaration(
         reader, plan, demo, bundle, parameters, files
     )
+    common = legacy._common_declaration(reader, plan, demo, files)
+    if common is not None:
+        plan["_common_start"] = common
     return plan, files, originals
 
 
@@ -983,6 +986,7 @@ def _outcome(reader, root, plan, value):
         "Saved SIM scope exceeds execution evidence",
     )
     captures = _captures(reader, root, value["captures"])
+    common_start = legacy._common_captures(reader, root, plan, value, captures)
     rng = _initial_rng_captures(reader, root, plan, value, captures)
     # These helpers check the completed INIT ancestor, preserving the actual @9 outcome.
     molecules = legacy._molecule_captures(value, captures, "init_terminal")
@@ -1026,6 +1030,8 @@ def _outcome(reader, root, plan, value):
             for event in ("factory", "enter")
         ]
         required += ["callback", "constructor_preflight", "parameters", "initial_rng", "geometry"]
+        if plan.get("_common_start") is not None:
+            required.insert(required.index("initial_rng"), "common_start_rng")
         for name in INIT_STAGES[1:]:
             required += [name + "_request", name]
         required += ["current_parameters"]
@@ -1133,6 +1139,7 @@ def _outcome(reader, root, plan, value):
         outcome=value,
         captures=captures,
         initial_rng=rng,
+        **({"common_start": common_start} if plan.get("_common_start") is not None else {}),
         molecule_network=molecules,
         molecule_imports=imports,
         natural_terminal=history,

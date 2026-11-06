@@ -9,6 +9,7 @@ import builtins
 import dis
 import hashlib
 import importlib
+import operator
 import os
 import sys
 from contextlib import contextmanager
@@ -170,6 +171,8 @@ def declare(*, law_id, run_id):
 _COMPILATION_MAX_BYTES = 4 * 2**20
 _COMPILATION_MAX_NODES = 100000
 _COMPILATION_MAX_CODES = 100000
+_COMPILATION_ATTRGETTER = operator.attrgetter
+_COMPILATION_ITEMGETTER = operator.itemgetter
 
 
 def _compilation_function_record(function):
@@ -278,9 +281,144 @@ def _compilation_key(payload, filename, optimize):
         raise ValueError("Bounded exact source bytes/filename/optimization required")
 
 
+def _compilation_class_plan(node):
+    """Immutable metadata selectors/values only; retain no mutable AST node."""
+    rows, pending, classes, guards = [None], [(node, 0)], set(), []
+    primitive = (str, bytes, int, bool, type(None), float, complex, type(Ellipsis))
+    while pending:
+        value, index = pending.pop()
+        cls = type(value)
+        if isinstance(value, ast.AST):
+            if cls not in classes:
+                classes.add(cls)
+                for base in cls.__mro__:
+                    if base in classes and base is not cls:
+                        continue
+                    classes.add(base)
+                    items = tuple(vars(base).items())
+                    field_types = vars(base).get("_field_types")
+                    guards.append(
+                        (
+                            base,
+                            base.__mro__,
+                            items,
+                            None
+                            if type(field_types) is not dict
+                            else (field_types, tuple(field_types.items())),
+                        )
+                    )
+            fields, attributes = value._fields, value._attributes
+            names = (*fields, *attributes)
+            getter = _COMPILATION_ATTRGETTER(*names) if names else None
+            try:
+                values = () if getter is None else getter(value)
+            except AttributeError:
+                return None
+            if len(names) == 1:
+                values = (values,)
+            header = ("node", cls, cls.__name__, fields, attributes, getter, len(names))
+        elif cls is list:
+            values = value
+            header = ("list", len(value))
+        else:
+            return None
+        scalar_positions, scalar_values, floating, float_values, children = [], [], [], [], []
+        for position, current in enumerate(values):
+            current_type = type(current)
+            if isinstance(current, ast.AST) or current_type is list:
+                child = len(rows)
+                rows.append(None)
+                children.append((position, child))
+                pending.append((current, child))
+            elif current_type in primitive:
+                if current_type in (float, complex):
+                    floating.append(position)
+                    float_values.append(repr(current))
+                else:
+                    scalar_positions.append(position)
+                    scalar_values.append(current)
+            else:
+                return None
+        rows[index] = (
+            header,
+            tuple(map(id, map(type, values))),
+            None if not scalar_positions else _COMPILATION_ITEMGETTER(*scalar_positions),
+            tuple(scalar_values),
+            None if not floating else _COMPILATION_ITEMGETTER(*floating),
+            tuple(float_values),
+            tuple(children),
+        )
+        if len(rows) > _COMPILATION_MAX_NODES:
+            raise ValueError("Bounded class metadata plan exhausted")
+    return tuple(rows), tuple(guards)
+
+def _compilation_class_matches(node, plan):
+    """Fast positive proof; every mismatch/unsupported case uses original dump."""
+    if plan is None:
+        return False
+    rows, guards = plan
+    for cls, mro, items, field_types in guards:
+        if cls.__mro__ is not mro:
+            return False
+        current = tuple(vars(cls).items())
+        if len(current) != len(items) or any(
+            name is not old_name or value is not old_value
+            for (name, value), (old_name, old_value) in zip(current, items, strict=True)
+        ):
+            return False
+        if field_types is not None:
+            mapping, entries = field_types
+            current = tuple(dict.items(mapping))
+            if len(current) != len(entries) or any(
+                name is not old_name or value is not old_value
+                for (name, value), (old_name, old_value) in zip(current, entries, strict=True)
+            ):
+                return False
+    pending = [(node, 0)]
+    while pending:
+        value, index = pending.pop()
+        header, types, selector, expected, float_selector, floats, children = rows[index]
+        if header[0] == "node":
+            _, cls, name, fields, attributes, getter, count = header
+            if (
+                type(value) is not cls
+                or value.__class__ is not cls
+                or cls.__name__ != name
+                or value._fields is not fields
+                or value._attributes is not attributes
+            ):
+                return False
+            try:
+                values = () if getter is None else getter(value)
+            except AttributeError:
+                return False
+            if count == 1:
+                values = (values,)
+        else:
+            if type(value) is not list or len(value) != header[1]:
+                return False
+            values = value
+        if tuple(map(id, map(type, values))) != types:
+            return False
+        if selector is not None:
+            actual = selector(values)
+            if len(expected) == 1:
+                actual = (actual,)
+            if actual != expected:
+                return False
+        if float_selector is not None:
+            actual = float_selector(values)
+            if len(floats) == 1:
+                actual = (actual,)
+            if tuple(map(repr, actual)) != floats:
+                return False
+        pending.extend((values[position], child) for position, child in children)
+    return True
+
+
 @lru_cache(maxsize=16, typed=True)
 def _compilation_metadata(payload, filename, optimize):
-    """Only immutable code and AST strings; no owner or successful validation."""
+    """Only code/closed AST metadata; no owner or successful validation cache."""
     guard = _compilation_contract
     if guard is not _COMPILATION_CONTRACT or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
         raise ValueError("Original source compilation guard required")
@@ -312,7 +450,7 @@ def _compilation_metadata(payload, filename, optimize):
             nested = scope + node.name + "."
         pending.extend((child, nested) for child in ast.iter_child_nodes(node))
     classes = tuple(
-        (node.name, ast.dump(node, include_attributes=True))
+        (node.name, ast.dump(node, include_attributes=True), _compilation_class_plan(node))
         for node in tree.body
         if isinstance(node, ast.ClassDef)
     )
@@ -405,8 +543,12 @@ def _method_code(cls_node, name, filename, *, native_context=False):
         if path.stat().st_size > _COMPILATION_MAX_BYTES:
             raise ValueError("Bounded complete compiler source exhausted")
         code, classes, _, _, _ = _compiled_source(path.read_bytes(), str(filename))
-        original = next(value for class_name, value in classes if class_name == cls_node.name)
-        if original != ast.dump(cls_node, include_attributes=True):
+        original, plan = next(
+            (value, plan) for class_name, value, plan in classes if class_name == cls_node.name
+        )
+        if not _compilation_class_matches(cls_node, plan) and (
+            original != ast.dump(cls_node, include_attributes=True)
+        ):
             raise ValueError("Exact original class AST required for native compilation context")
         if guard is not _compilation_contract or guard.__code__ is not _COMPILATION_CONTRACT_CODE:
             raise ValueError("Original source compilation guard required")
@@ -450,6 +592,7 @@ _COMPILATION_ATTRIBUTES = tuple(
             ),
         ),
         (Path, ("read_bytes", "stat", "open")),
+        (operator, ("attrgetter", "itemgetter")),
     )
     for name in names
 )
@@ -459,6 +602,8 @@ _COMPILATION_RECORDS = tuple(
         _compilation_function_record,
         _compilation_validate,
         _compilation_key,
+        _compilation_class_plan,
+        _compilation_class_matches,
         _COMPILATION_BODY,
         _compilation_metadata.cache_parameters,
         _compilation_contract,

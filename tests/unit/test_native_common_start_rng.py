@@ -4,11 +4,14 @@ Positive providers exist only in private copied module namespaces. No actual
 seed, draw, generator construction, getstate or native body is called here.
 """
 
+import ast
 import contextlib
 import copy
 import json
+import os
 import random
 import struct
+import subprocess
 import sys
 from pathlib import Path
 from types import FunctionType, ModuleType
@@ -575,3 +578,566 @@ def test_common_rng_post_link_fsync_failure_retains_visible_uncertain_marker(mon
     assert row["visible"] and row["durability"] == "unconfirmed"
     assert (model.output / "COMPLETED.json").is_file()
     assert model.api._ATTEMPT["primary"] is primary
+
+
+@pytest.mark.parametrize(
+    "drift", (None, "state_type", "owner", "parameters", "phase", "order", "inputs")
+)
+def test_common_rng_cells_execution_declaration_reaches_real_boundary_shape(
+    monkeypatch, tmp_path, drift
+):
+    # Copy the actual current Cells dataclass declaration only. The wrapper,
+    # WorldReady authority and caller file are explicitly private metadata
+    # models; no real driver, world owner, or parameter constructor executes.
+    actual_path = Path(stage.__file__).with_name("native_seed_demo.py")
+    original = actual_path.read_text()
+    declaration = next(
+        node
+        for node in ast.parse(original).body
+        if isinstance(node, ast.ClassDef) and node.name == "Execution"
+    )
+    lines = original.splitlines(keepends=True)
+    first = min([declaration.lineno] + [node.lineno for node in declaration.decorator_list])
+    class_source = "".join(lines[first - 1 : declaration.end_lineno])
+    root = tmp_path / "cells-metadata-image"
+    folder = root / "validation/betse"
+    folder.mkdir(parents=True)
+    path = folder / "metadata_cells_consumer.py"
+    raw = (
+        "from dataclasses import dataclass, field\n" + class_source + "\n"
+        "def _call(state, program, check):\n return check(program, state, sys._getframe())\n"
+        "def _execute(state, plan, program, check):\n return _call(state, program, check)\n"
+    )
+    path.write_text(raw)
+    module = ModuleType("validation.betse.metadata_cells_consumer")
+    module.__file__, module.sys = str(path), sys
+    monkeypatch.setitem(sys.modules, module.__name__, module)
+    exec(compile(raw, str(path), "exec", dont_inherit=True), vars(module))
+    assert "State" not in vars(module)
+    copied = next(n for n in ast.parse(raw).body if isinstance(n, ast.ClassDef))
+    assert ast.dump(copied) == ast.dump(declaration)
+    state = module.Execution(flux_operator="original")
+    p = object()
+
+    class SyntheticWorldReady:
+        def __init__(self, actual):
+            self.parameters = actual
+
+    owner = SyntheticWorldReady(p)
+    # No canonical owner class/registry or module is changed. Only this copied
+    # boundary's sys lookup sees a declared synthetic provider.
+    world = ModuleType("metadata_world_ready_provider")
+    world.WorldReadyParametersOwner = SyntheticWorldReady
+    state.world_ready, state.parameters, state.callback = owner, p, object()
+    state.operations = [
+        dict(name="parameters", status="returned"),
+        dict(name="common_start_rng", status="attempted"),
+    ]
+    inputs, packet = tmp_path / "input-files", tmp_path / "parameter-packet"
+    inputs.mkdir()
+    packet.mkdir()
+    state.input_root = inputs
+    inventory = dict(directories=[], files={})
+    software.snapshot.write_json(
+        packet / "inputs.json",
+        dict(program=dict(root=str(inputs), input_profile="original", directories=[])),
+    )
+    plan = dict(
+        parameter_packet=str(packet),
+        parameter_sha256=software.snapshot.digest(packet / "inputs.json"),
+        flux_operator="original",
+        initial_rng_inputs=dict(
+            profile="original", inventory=inventory, inventory_sha256=stage._digest(inventory)
+        ),
+    )
+    helper = folder / "native_common_start_rng.py"
+    helper.write_text("# metadata source witness, never executable model authority\n")
+    software.snapshot.write_json(
+        root / "SNAPSHOT.json",
+        dict(
+            files={
+                "validation/betse/metadata_cells_consumer.py": {
+                    "sha256": software.snapshot.digest(path)
+                },
+                stage.FILE: {"sha256": software.snapshot.digest(helper)},
+            }
+        ),
+    )
+    program = _program(
+        input_identity=stage._digest(inventory),
+        consumer_sources=dict(cells=software.snapshot.digest(path), original="c" * 64),
+    )
+    proxy = NS(
+        **dict(
+            vars(sys),
+            modules=dict(
+                sys.modules, **{"cells.processes.betse_native_parameter_load_remainder": world}
+            ),
+        )
+    )
+    boundary = FunctionType(
+        stage._boundary.__code__,
+        dict(
+            stage._boundary.__globals__,
+            __file__=str(helper),
+            sys=proxy,
+            CONSUMERS={"cells": (module.__name__, "_execute", "_call")},
+        ),
+    )
+    if drift == "state_type":
+        state = type("State", (), {})()
+    elif drift == "owner":
+        state.world_ready = NS(parameters=p)
+    elif drift == "parameters":
+        state.parameters = object()
+    elif drift == "phase":
+        state.phase = object()
+    elif drift == "order":
+        state.operations.reverse()
+    elif drift == "inputs":
+        program = _program(
+            consumer_sources=dict(cells=software.snapshot.digest(path), original="c" * 64)
+        )
+
+    def check(program, actual, frame):
+        return boundary(program, actual, "cells", frame)
+
+    if drift is None:
+        result = module._execute(state, plan, program, check)
+        assert result[0] is state and result[1] is owner and result[2] is p
+        assert result[4] is module._execute
+    else:
+        with pytest.raises(ValueError):
+            module._execute(state, plan, program, check)
+    software.snapshot.write_json(
+        tmp_path / "Cells-Execution-boundary.json",
+        dict(
+            actual_declaration_source=software.snapshot.digest(actual_path),
+            private_consumer_type="Execution",
+            fabricated_State_alias=False,
+            actual_class_AST_preserved=True,
+            drift=drift,
+            actual_world_parameter_or_driver_calls=0,
+            native_RNG_work=0,
+        ),
+    )
+    assert stage._ATTEMPT is None
+
+
+@pytest.mark.parametrize("observer", ("profile", "trace"))
+@pytest.mark.parametrize("point", ("enter_call", "enter_return", "exit_call"))
+@pytest.mark.parametrize("source_failure", (False, True))
+def test_common_rng_scope_caller_cleanup_preserves_falsey_primary_before_reporters(
+    observer, point, source_failure, monkeypatch, tmp_path
+):
+    model = _model(monkeypatch, tmp_path)
+    before, traces, refused, reports = (sys.getprofile(), sys.gettrace()), {}, [], []
+    truthiness_calls = []
+
+    class FalseySource(ValueError):
+        def __bool__(self):
+            truthiness_calls.append(self)
+            return False
+
+    primary, cause, capture = (
+        FalseySource("original source"),
+        OSError("source cause"),
+        RuntimeError("scope hook"),
+    )
+    primary.__cause__ = cause
+    if source_failure:
+        model.py.failure = primary
+    enter = contextlib._GeneratorContextManager.__enter__.__code__
+    exit_ = contextlib._GeneratorContextManager.__exit__.__code__
+    original_save = model.api._save
+    inherited = None
+
+    def save(attempt, name, value):
+        if name in ("failure.json", "COMPLETED.json"):
+            reports.append(name)
+            assert attempt["observer_cleanup_complete"]
+            assert attempt["observer_generator"].gi_frame is None
+            assert sys.getprofile() is inherited[0] and sys.gettrace() is inherited[1]
+        return original_save(attempt, name, value)
+
+    model.api._save = save
+
+    def observe(frame, event, arg):
+        attempt = model.api._ATTEMPT
+        if attempt is None or refused:
+            return
+        manager = attempt.get("observer_manager")
+        match = frame.f_locals.get("self") is manager and manager is not None
+        expected = enter if point.startswith("enter_") else exit_
+        event_ = "return" if point == "enter_return" else "call"
+        if match and frame.f_code is expected and event == event_:
+            refused.append((frame, event, arg))
+            raise capture
+
+    def profile(frame, event, arg):
+        if before[0] is not None:
+            before[0](frame, event, arg)
+        observe(frame, event, arg)
+
+    def trace(frame, event, arg):
+        fn = before[1] if event == "call" else traces.get(id(frame))
+        result = None if fn is None else fn(frame, event, arg)
+        if event == "return":
+            traces.pop(id(frame), None)
+        elif result is not None:
+            traces[id(frame)] = result
+        observe(frame, event, arg)
+        return trace
+
+    try:
+        if observer == "profile":
+            sys.setprofile(profile)
+        else:
+            sys.settrace(trace)
+        inherited = sys.getprofile(), sys.gettrace()
+        with pytest.raises(BaseException) as caught:
+            model.api.initialize(
+                model.program, model.state, role="cells", output=model.output, enabled=True
+            )
+        assert sys.getprofile() is inherited[0] and sys.gettrace() is inherited[1]
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
+    attempt = model.api._ATTEMPT
+    expected = primary if source_failure and point == "exit_call" else capture
+    software.snapshot.write_json(
+        tmp_path / "caller-cleanup.json",
+        dict(
+            observer=observer,
+            point=point,
+            source_failure=source_failure,
+            refused_events=len(refused),
+            exact_primary=caught.value is expected,
+            exact_cause=primary.__cause__ is cause,
+            closed=attempt["observer_closed"],
+            hooks_restored=attempt["hooks_restored"],
+            cleanup_complete=attempt["observer_cleanup_complete"],
+            operations=[r["label"] for r in attempt["operations"]],
+            reports=reports,
+            actual_native_RNG_calls=0,
+        ),
+    )
+    assert len(refused) == 1 and caught.value is expected
+    assert not truthiness_calls
+    assert attempt["primary"] is expected and primary.__cause__ is cause
+    assert attempt["observer_generator"].gi_frame is None
+    assert attempt["observer_cleanup_complete"] and attempt["hooks_restored"]
+    assert attempt["record"] is None and not (model.output / "COMPLETED.json").exists()
+    assert reports == ["failure.json"]
+    if point.startswith("enter_"):
+        assert not model.events and not attempt["operations"]
+    elif source_failure:
+        assert model.events == [("python_get",), ("numpy_get",), ("python_seed", 2437, 2)]
+        assert any(error is capture for _, error in attempt["secondary"])
+
+
+def test_common_rng_unresolved_outer_recovery_holds_all_reporters_and_keeps_raw_primary(
+    monkeypatch, tmp_path
+):
+    model = _model(monkeypatch, tmp_path)
+    before = sys.getprofile(), sys.gettrace()
+    primary, cause = ValueError("source before failed recovery"), OSError("cause")
+    primary.__cause__ = cause
+    model.py.failure = primary
+    reports, original_save = [], model.api._save
+
+    def save(attempt, name, value):
+        if name in ("failure.json", "COMPLETED.json"):
+            reports.append(name)
+            raise AssertionError("Unsafe reporters must remain held")
+        return original_save(attempt, name, value)
+
+    def set_profile(value):
+        if value is before[0]:
+            raise OSError("profile restore refused")
+        return sys.setprofile(value)
+
+    def set_trace(value):
+        if value is before[1]:
+            raise OSError("trace restore refused")
+        return sys.settrace(value)
+
+    model.api.sys = NS(**dict(vars(sys), setprofile=set_profile, settrace=set_trace))
+    model.api._save = save
+    try:
+        with pytest.raises(ValueError) as caught:
+            model.api.initialize(
+                model.program, model.state, role="cells", output=model.output, enabled=True
+            )
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
+    attempt = model.api._ATTEMPT
+    assert caught.value is primary and primary.__cause__ is cause
+    assert not attempt["observer_cleanup_complete"] and not attempt["hooks_restored"]
+    assert attempt["reporting_held"] and not reports
+    assert attempt["primary"] is primary and attempt["record"] is None
+    assert not hasattr(primary, "common_start_attempt")
+
+
+@pytest.mark.parametrize("kind", ("profile", "trace"))
+def test_common_rng_recovered_outer_setter_failure_still_refuses_publication(
+    kind, monkeypatch, tmp_path
+):
+    model = _model(monkeypatch, tmp_path)
+    before, refused = (sys.getprofile(), sys.gettrace()), []
+    primary = OSError("outer " + kind + " transient recovery refusal")
+    original_setter = sys.setprofile if kind == "profile" else sys.settrace
+
+    def setter(value):
+        attempt = model.api._ATTEMPT
+        if attempt is not None and attempt.get("outer_cleanup_started") and not refused:
+            refused.append(value)
+            raise primary
+        return original_setter(value)
+
+    model.api.sys = NS(**dict(vars(sys), **{"set" + kind: setter}))
+    try:
+        with pytest.raises(OSError) as caught:
+            model.api.initialize(
+                model.program, model.state, role="cells", output=model.output, enabled=True
+            )
+        assert sys.getprofile() is before[0] and sys.gettrace() is before[1]
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
+    attempt = model.api._ATTEMPT
+    assert caught.value is primary and refused
+    assert attempt["observer_cleanup_complete"] and attempt["hooks_restored"]
+    assert attempt["record"] is None and not (model.output / "COMPLETED.json").exists()
+    assert any(error is primary for _, error in attempt["observer_cleanup_errors"])
+
+
+@pytest.mark.parametrize("hook", ("profile", "trace"))
+def test_common_rng_program_write_primary_precedes_transient_outer_cleanup_error(
+    hook, monkeypatch, tmp_path
+):
+    model = _model(monkeypatch, tmp_path)
+    before, calls = (sys.getprofile(), sys.gettrace()), []
+
+    class FalseyError(OSError):
+        def __bool__(self):
+            return False
+
+    primary, cause, recovery = (
+        FalseyError("program evidence failure"),
+        ValueError("I/O cause"),
+        RuntimeError("cleanup"),
+    )
+    primary.__cause__ = cause
+    original_save = model.api._save
+    original_setter = sys.setprofile if hook == "profile" else sys.settrace
+
+    def save(attempt, name, value):
+        if name == "program.json":
+            raise primary
+        return original_save(attempt, name, value)
+
+    def setter(value):
+        if model.api._ATTEMPT.get("outer_cleanup_started") and not calls:
+            calls.append(value)
+            raise recovery
+        return original_setter(value)
+
+    model.api._save = save
+    model.api.sys = NS(**dict(vars(sys), **{"set" + hook: setter}))
+    try:
+        with pytest.raises(FalseyError) as caught:
+            model.api.initialize(
+                model.program, model.state, role="cells", output=model.output, enabled=True
+            )
+        assert sys.getprofile() is before[0] and sys.gettrace() is before[1]
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
+    attempt = model.api._ATTEMPT
+    assert caught.value is primary and primary.__cause__ is cause
+    assert attempt["outer_body_primary"][0] is primary
+    assert any(error is recovery for _, error in attempt["observer_cleanup_errors"])
+    assert attempt["observer_cleanup_complete"] and not attempt["record"]
+    assert not model.events and attempt["observer_generator"] is None
+
+
+@pytest.mark.parametrize("change", ("clear_trace", "replace_trace"))
+def test_common_rng_final_getprofile_mutation_cannot_certify_stale_trace_sample(
+    change, monkeypatch, tmp_path
+):
+    model = _model(monkeypatch, tmp_path)
+    before, changed, reports, local_traces = (sys.getprofile(), sys.gettrace()), [], [], {}
+    original_save = model.api._save
+
+    def other(frame, event, arg):
+        return other
+
+    def baseline(frame, event, arg):
+        fn = before[1] if event == "call" else local_traces.get(id(frame))
+        result = None if fn is None else fn(frame, event, arg)
+        if event == "return":
+            local_traces.pop(id(frame), None)
+        elif result is not None:
+            local_traces[id(frame)] = result
+        return baseline
+
+    def save(attempt, name, value):
+        if name in ("failure.json", "COMPLETED.json"):
+            reports.append(name)
+        return original_save(attempt, name, value)
+
+    def profile(frame, event, arg):
+        if before[0] is not None:
+            before[0](frame, event, arg)
+        if event == "c_return" and arg is sys.getprofile and model.api._SAMPLING and not changed:
+            changed.append(True)
+            sys.settrace(None if change == "clear_trace" else other)
+
+    model.api._save = save
+    try:
+        sys.settrace(baseline)
+        sys.setprofile(profile)
+        with pytest.raises(ValueError, match="cleanup unresolved"):
+            model.api.initialize(
+                model.program, model.state, role="cells", output=model.output, enabled=True
+            )
+    finally:
+        sys.settrace(before[1])
+        sys.setprofile(before[0])
+    attempt = model.api._ATTEMPT
+    assert changed and attempt["outer_hook_sample"]["changed"]
+    assert not attempt["hooks_restored"] and not attempt["observer_cleanup_complete"]
+    assert attempt["reporting_held"] and not reports and attempt["record"] is None
+    assert not (model.output / "COMPLETED.json").exists()
+
+
+_AUDIT_SUBPROCESS = r"""
+import json
+import os
+import sys
+from validation.betse import native_common_start_rng as stage
+
+mode = sys.argv[1]
+prior = sys.getprofile(), sys.gettrace()
+attempted, vetoed, downstream = [], [], []
+
+def guard(frame, event, arg):
+    module = frame.f_globals.get("__name__", "")
+    owner = getattr(arg, "__self__", None) if event == "c_call" else None
+    c_module = getattr(arg, "__module__", "") or ""
+    owner_module = type(owner).__module__
+    if (event == "call" and (
+        module.startswith("betse.") or module == "random"
+        and frame.f_code.co_name in ("seed", "getstate", "setstate", "__init__")
+    )) or (event == "c_call" and (
+        c_module.startswith(("numpy.random", "_random"))
+        or owner_module.startswith(("numpy.random", "_random"))
+    )):
+        attempted.append((module, event, frame.f_code.co_name))
+        raise AssertionError("Actual native/RNG entry forbidden")
+
+def veto(event, args):
+    if event == "sys.addaudithook":
+        vetoed.append(True)
+        raise RuntimeError("Deliberate CPython silent installation veto")
+
+def forbidden(*args, **kwargs):
+    downstream.append(True)
+    raise AssertionError("No downstream source or reporter after failed acknowledgement")
+
+sys.setprofile(guard)
+try:
+    if mode == "normal":
+        stage._install_sampling_audit()
+        assert stage._AUDIT_READY and stage._AUDIT_PROBE is None
+        stage._install_sampling_audit()
+        assert stage._AUDIT_READY and stage._AUDIT_PROBE is None
+        sample = dict(changed=False, last_mutation=None)
+        stage._SAMPLING.append(sample)
+        try:
+            sys.settrace(prior[1])
+        finally:
+            stage._SAMPLING.remove(sample)
+        assert sample["changed"] and stage._ATTEMPT is None
+        result = dict(mode=mode, acknowledged=True, repeat_acknowledged=True,
+                      sampling_mutation_observed=True)
+    else:
+        if mode == "veto":
+            sys.addaudithook(veto)
+        elif mode == "stale_ready":
+            stage._AUDIT_READY = True
+        else:
+            raise AssertionError("Unknown metadata control")
+        stage.program_document = stage._boundary = stage._runtime = stage._save = forbidden
+        stage._execute_program = forbidden
+        os.environ[stage.RELEASE] = "1"
+        try:
+            stage.initialize(object(), object(), role="cells", output=object(), enabled=True)
+        except ValueError as primary:
+            assert str(primary) == "Sampling audit hook acknowledgement missing"
+            state = stage._ATTEMPT
+            assert state["primary"] is state["pending_primary"] is primary
+            assert state["outer_body_primary"][0] is primary
+            assert state["stage"] == "declaration"
+            assert not state["sampling_audit_acknowledged"]
+            assert not stage._AUDIT_READY and stage._AUDIT_PROBE is None
+            assert not state["hooks_restored"] and not state["observer_cleanup_complete"]
+            assert state["reporting_held"] and state["record"] is None
+            assert not state["operations"] and state["output"] is None
+            assert not downstream
+            assert bool(vetoed) is (mode == "veto")
+            result = dict(mode=mode, acknowledged=False, exact_primary_retained=True,
+                          actual_delegates=0, reporters_held=True, operations=0,
+                          intended_stage=state["stage"], intended_reason=str(primary),
+                          veto_events=len(vetoed))
+        else:
+            raise AssertionError("An unacknowledged audit hook was accepted")
+    assert sys.getprofile() is guard and sys.gettrace() is prior[1]
+finally:
+    sys.settrace(prior[1])
+    sys.setprofile(prior[0])
+assert not attempted
+result.update(attempted=attempted, hooks_restored=True, actual_RNG_native_calls=0)
+from validation.betse import betse_normal_channel_join_runtime as runtime
+result.update(pid=os.getpid(), parent_pid=os.getppid(), runtime=runtime.inventory())
+print(json.dumps(result))
+"""
+
+
+@pytest.mark.parametrize("mode", ("normal", "veto", "stale_ready"))
+def test_common_rng_sampling_audit_requires_real_callback_acknowledgement(tmp_path, mode):
+    # Audit hooks are irreversible: both the deliberately vetoing hook and
+    # the successful callback live only in this short isolated interpreter.
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("CELLS_") and key != "PYTEST_CURRENT_TEST"
+    }
+    result = subprocess.run(
+        [sys.executable, "-B", "-c", _AUDIT_SUBPROCESS, mode],
+        cwd=Path(stage.__file__).resolve().parents[2],
+        env=environment,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    software.snapshot.write_json(
+        tmp_path / "isolated-audit-ack.json",
+        dict(
+            mode=mode,
+            returncode=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+            timeout_seconds=30,
+            irreversible_hooks_isolated=True,
+            actual_RNG_or_native_work_requested=False,
+        ),
+    )
+    assert result.returncode == 0, result.stderr
+    receipt = json.loads(result.stdout)
+    assert receipt["mode"] == mode and not receipt["attempted"]
+    assert receipt["hooks_restored"] and receipt["actual_RNG_native_calls"] == 0
+    assert receipt["acknowledged"] is (mode == "normal")

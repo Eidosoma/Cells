@@ -10538,3 +10538,319 @@ FREE from Key and is handed to Specialist's focused assembly repair. NEW Key
 CPU4 launches held pending Specialist terminal/release. Outgoing direct thread
 messaging still fails stale43257; Chief/native queue must relay availability.
 Queued history-descendant repair remains separate until this RNG milestone.
+
+### Common-start RNG source/software milestone sealed
+
+Specialist acknowledged CPU4 handoff, ran its own assembly group, and explicitly
+released the lane. Corrected common-start final controls08:42pass,13.08s pytest,
+zero actual generator/seed/getstate/draw/native calls. The actual NumPy2.5.3
+export/receiver/code metadata was inspected without calling either method;
+all positive program/frame providers remain explicitly private synthetic models.
+Current three source/test/runner pins above are final. Public declare returns
+plain Program inputs; initialize uses actual source frame/WorldReady or same-p
+native runner, scalar seeds and retained globals; compare reads complete closed
+data only. Eight ordered API operations, no draw/replay/setstate/replacement;
+actual paired execution remains held. New source requires explicit frozen
+consumer hashes and matching selected input inventory; no existing consumer or
+ambient-witness path was edited or silently adopted. Inherited observer effects
+inside callbacks remain a reviewed-caller prerequisite, not claimed complete C
+implementation/internal profiling. Post-link failures preserve visible-marker
+and durability uncertainty without returning a successful receipt.
+
+Sealed /mnt/workspaces/Cells/native-common-start-rng-development-20261105-01/source-result.json
+SHA29cc5a01aa60704f3c2542292faf8b5007d3549c2f44f777ffc49251053a6b3f;
+interface.json SHAfc3e6856f83698f65b0bf3818455320aa504fc55a97d043462cbb31d5c367bab.
+All19 launched processes are terminal and inspected:11complete/8failed
+(17preparation/software plus two metadata readers). Initial reader01 wrongly
+required ALL prior dependencies fixed; it correctly refused the independently
+authorized assembly successor. Reader02 checks held235 five sources/tests and
+unchanged runners, records that other-lane delta explicitly, and verifies all
+frozen/runtime/guard pins. Failed reader/image bytes remain immutable; no tests
+were rerun for packaging. Earlier32 remains separate. Five235 bytes unchanged;
+Root's concurrent8a0c969 commit included these new three candidate bytes, which
+does not grant review/qualification. No staging/commit by Key. Actual native/
+RNG/INIT/SIM/reference/science holds unchanged. CPU4 free. Next assigned work is
+ONLY history observer/test exit descendant admission, not another235 rerun.
+
+### History exit descendant repair sealed
+
+Completed Root's two-path helper-closure repair directly in
+src/cells/processes/betse_native_sim_history_observation.py and its unit test.
+Named global/module/cell helper calls and metadata delegates are frozen from
+source metadata without calling those helpers. Exit admission checks actual
+descendant frames after inherited hooks against retained code, globals, cached
+builtins, defaults, closure and callsite associations. The actual source plan
+contains80 function bindings/134 caller codes. Existing dynamic native/projector/
+library owner checks remain required; no new owner, serialization or equation
+implementation. Public interval signatures and ObservationRecord are unchanged.
+First admission refusal is sticky. Unwind keeps the actual source exception/
+cause separately from secondary inherited observer failures and restores both
+hooks independently. Raw rejected frames/attempts precede fallible assertions.
+
+Final controls05:48pass,29deselected,75.24s pytest;30new+18affected. All24 real
+profiled synthetic substitutions restore through both hooks before admission:
+authority/leaf/delegate slot, code, namespace and cached-builtins drift refuse
+with zero foreign body entries. Actual source closure inspection is metadata
+only. Both source-unwind observers preserve original exception/cause. Actual
+native/operator/RNG/INIT/SIM/reference work0; final48 native+48 operator guards
+empty, global hooks/cleanup verified. Existing CPU4/one-thread/1GiB480s8GiB
+reserve and512MiB metadata guard unchanged. No235 or RNG42 rerun.
+
+Preserved attempts: controls01 old21pass, scoped to earlier bytes; controls02
+and diagnosis01 fail an overly late profile-frame witness because trace refuses
+first. Their forensic capture exposed a real secondary hook-loss masking path;
+latched first refusal and made both inherited hooks restore the counterexample.
+controls03 is a B904 lint-only failure with no guarded worker. controls04 has
+46pass/1fail: source-unwind observer error was later masked by hook-loss admission;
+fixed by retaining that source error as the gate's first refusal. None upgraded
+to final-byte or scientific credit. All11 guarded processes terminal/reviewed:
+8complete/3failed, including one metadata reader; static-only failure separate.
+
+Sealed /mnt/workspaces/Cells/native-sim-history-descendant-repair-20261105-01/source-result.json
+SHAff765e18a18ec0f091adcca6b0b6ebb27efc2fbcf22aadbdecd58e97faa575df;
+interface.json SHA93d7b147108418d2631540a6a6b0c5c8a6f0b528ec6a18e3114e31d38987e508.
+Source427e5a719e88767460dd25d940c88acc9148a0465214279b4d7bd78f992bc3ca;
+test6b6e4fadcbbda267e6e530065d3503a656daa07a74eddc06734eda86739cab25.
+Parent235/failures, completed RNG42 and run/catalog/runners remain immutable;
+other-lane assembly delta is explicitly recorded rather than silently rebound.
+No staging/commit/shared status edits or detached/old-job query. CPU4 free.
+Root source/results review and explicit consumer adoption remain required;
+no actual source/native/scientific qualification granted by this software packet.
+
+### Full adoption plan runtime edges sealed; common-start repairs active
+
+Root accepted history48 at root-source-results-review.json SHA
+1e7cde69ec37ab1a8c6046d331e9843d21556b205d8b8491acb5929710e3b719.
+Its two exact bytes remain fixed. Root's90/60/180-second checkout windows were
+honored; active immutable computations were never interrupted or queried.
+
+New two-path plan scope: validation/betse/native_sim_demo_adoption_plan.json
+and tests/unit/test_native_init_demo_adoption.py. Explicit callback-prelude
+runtime and geometry runtime source/review edges now reach parameter qualifier;
+callback/geometry final source+review tokens reach demo. Existing input metadata
+edge retained. Completeness check also found missing demo evidence/capture-budget
+edges; those are explicit now, together with geometry evidence/native-callback
+source. Original projector,13 recipes/exclusions, declaration splits, held
+first-step fields and previous topological relative order are unchanged.
+Callback's unchanged native dict(keyword) pins remain literal read-only inputs.
+Review hashes in controls are explicitly synthetic/unaccepted metadata.
+
+Final controls03:69pass (12new+57affected),433.05s pytest under unchanged CPU4/
+one-thread/1GiB480s8GiBreserve,512MiB metadata. All seven guarded processes
+terminal/reviewed:5completed/2failed including one saved-evidence reader.
+Twelve final producer/RNG guards empty, both hooks restored, no actual producer
+imports. First68pass/1failure exposed omitted demo evidence edge; second68/1
+was the test scanner ignoring chained SHA=REVIEW=None declarations. Both frozen
+images/payloads remain unchanged, not upgraded to final credit. Final scanner
+covers all seven direct declared validation-module edges including SIM transport.
+
+Sealed /mnt/workspaces/Cells/native-sim-adoption-runtime-edges-development-20261105-01/source-result.json
+SHAe9ed04fbc3a3a579ef9701ab8feee814f5c0ca30fe3c4f17fb5877ce175674e2.
+Plan707355967f7d803cc179103d8c5aa9d6393de3dc56d5a067c283dba0057f2964;
+test7af3ad881ccca1b56ab7f507b6b4a21d937a0924c0049351c4585d843a4c4f7a.
+No Root callback/geometry/demo edits, source application, review authentication,
+native/RNG/INIT/SIM/reference/science release, staging or commit by Key.
+
+Root common-start review669d0e42 confirms42/19 evidence but holds source for
+actual Cells Execution type and independent outer context-manager cleanup.
+These are the next already-assigned three-helper-path repair. Current source
+now retains the exact manager/generator/hooks/setters before entry, closes and
+recovers in initialize's caller before metadata callbacks, retains pending
+primary/cause without truthiness, and holds reporters if cleanup is unresolved.
+Completion marker follows verified scope closure. Native/default consumer edits
+remain Root/Specialist-owned; actual RNG stays held. Focused controls pending.
+
+### Common-start consumer/cleanup successor sealed
+
+Completed only the three assigned common-start helper/test/software paths.
+Cells boundary requires the actual consumer Execution class; original retains
+its State requirement. New control copies the actual current Execution class
+declaration AST into a private metadata module, without fabricating a State
+alias or issuing genuine WorldReady/parameter/phase authority. The actual input
+metadata reader executes against an empty synthetic input inventory only.
+Read-only demo declaration dependency is explicitly included by the existing
+snapshot collector's uncalled definition seed; no consumer source was edited.
+
+initialize retains original hook APIs, both prior hooks, manager and actual
+generator before entry. Its inline caller cleanup closes an entered/suspended
+generator even when contextlib.__exit__ CALL is refused, independently restores
+and samples both hooks, and keeps first pending source/observer primary and
+cause using identity/None checks. Failed enter-return and exit-call controls use
+installed inherited profile/trace hooks. Falsey source exception never undergoes
+truthiness. Metadata attachment/reporters follow verified cleanup; unresolved
+cleanup retains raw global _ATTEMPT and explicitly holds unsafe callbacks.
+Transient cleanup refusal still prevents a completed receipt even if recovery
+later succeeds. COMPLETED.json is published after verified scope closure.
+Original seed/state codecs, comparison, eight operation order and defaults
+unchanged; no setstate/draw/replay/new global generator or numerical equation.
+
+Focused controls01:20pass on its frozen earlier bytes. Final controls02:64pass,
+28.85s pytest,22new+42affected. All five guarded processes terminal/reviewed,
+allcompleted including saved-evidence reader;64 native+64 RNG guard records
+empty. Seven actual-Execution-declaration metadata controls and12 installed-hook
+cleanup diagnostics verified. Unresolved cleanup and both transient setter
+failures are separate passing refusal controls. CPU4/one-thread,1GiB480s8GiB
+reserve and512MiB metadata unchanged. No Root launch/detached job was queried.
+
+Sealed /mnt/workspaces/Cells/native-common-start-rng-consumer-cleanup-repair-20261105-01/source-result.json
+SHA7940ed2ccc62c99468fc009eb7a5d996897ae96a5578cc62e46726576aa4a915;
+interface.json SHA6a58c8b54096119b7f0e46881db8f5ac9162d2f749507550aa2ccd1cd12a2f6e.
+Helperf0513c6737bca806391fb9b7f4637d36093773644746650106ef049ed373ed0a;
+test171e7d0928b2c7fe17594eb595a8c64b2eb4ea83d4f953212334be55b9a19f76;
+runnerc48755cee2d7cc31c9db71e4bf8693524bf805fe66083eafe877c64b532549a9.
+Old42/19 and review669d0e42 remain historical, not rebound. Plan69/e9ed and
+this64/7940 are distinct source/result packets awaiting Root review/adoption.
+Combined newly launched guarded outcomes12=10complete/2failed, all reviewed;
+plan's two preserved failures remain failures. Actual RNG/native/INIT/SIM/
+reference/scientific work0. No staging/commit/shared status edits. CPU4 free.
+Final public signatures and epoch unchanged; failed exception attachment is
+conditional on verified cleanup, with unresolved raw _ATTEMPT retained only as
+forensic state. Root/Specialist own final consumer pins and actual release.
+
+### Common-start outer-boundary successor sealed; pregeometry cost probe held
+
+Root accepted the earlier64 controls at review32534c3a; its two remaining
+CS-R2 findings are separately repaired in the existing helper/test/runner.
+Outer program/declaration failures are retained before cleanup, and final
+dual-hook sampling detects setter mutation during getters. Final68 controls
+(4new+64affected),26.67s pytest,136 empty native/RNG guard records. Three
+guarded outcomes allcompleted/reviewed; no actual generator/model work or
+scientific credit. Earlier64, original42 and all snapshots remain separate.
+
+Sealed /mnt/workspaces/Cells/native-common-start-rng-outer-boundary-repair-20261106-01/source-result.json
+SHA9c5bf36b169d5362334a72eecf45286893d892f77e82ee7ed29faff490a4d2cf.
+Helper6d8c15e912e963666185ec1d0fceafd8b31252066df3091aeb43e7ec24d3d6cc;
+test3bb2bbc5b958c5edfb0598e1941addd133ac9a3ab0aa797692fe8f1355db0c8c;
+unchanged runnerc48755cee2d7cc31c9db71e4bf8693524bf805fe66083eafe877c64b532549a9.
+Root/Specialist received exact interface/source bindings. CPU4 was released to
+Specialist; no new CPU4 worker launched by Key afterward.
+
+Root assigned the SEED03 pregeometry timeout investigation. Authorized saved
+terminal evidence shows7200.082s wall allowance and empty geometry output after
+parameter/RNG prelude. No stack trace was saved. Both callback validation and
+WorldReady.parameters remain plausible reached costs; the latter already
+returned before RNG, so the timeout is not attributed solely to that property.
+No production optimization, authority relaxation or blind native retry made.
+
+New owned pair only: validation/betse/native_pregeometry_validation_cost.py and
+tests/unit/test_native_pregeometry_validation_cost.py. Reuses unchanged exact
+AuthorityTimings producerb54b9b59 in the existing environment qualifier. A
+fresh explicit subclass changes only journal emission: exclusive preopened fd,
+bounded JSONL/os.write/fsync, no write-open/mkdir during read-only parameter
+checks.28 loaded function sites include callback/simulator/tissue/parameter
+validators, alias scans and AST/disassembly helpers. Inclusive wall/CPU and
+active-stack records include guard/observer cost; return events are not success
+and inclusive times are not additive. Periodic sampling needs profile events.
+Actual source CALL offset stops before _execute_chain and phase allocation.
+Both existing geometry gates and new explicit diagnostic gate stay held.
+
+Controls01 passed6 on its frozen bytes; controls02 passed7 including the public
+stop boundary. Final controls03 passed9 in0.18s pytest, with two additional
+outer-close failure controls preserving primary/cause or refusing completion.
+All seven guarded outcomes completed/reviewed (three prepare/child pairs CPU6,
+saved-result reader CPU3). Nine final native-body guards empty; no genuine
+parent acquisition or actual geometry/INIT/SIM execution. Validation scaffolding
+imports are recorded; the per-case betse Python-body guard is not claimed as a
+global import/RNG instrument. Old6/7 are not added to the final9 count.
+
+Sealed /mnt/workspaces/Cells/native-pregeometry-validation-cost-development-20261106-01/source-result.json
+SHAf7400aa12a9901066ae97db9bb32ff58a2a9d98ceb0ef0264347c732e5d0e64f;
+interface23b9e7b37f359013039b403b74aa0e3ce050f82cb8ef138c88a33ae8c0cbb388.
+Module2efd5e5925ab0a535e0e57c30a252a93245273c08012156552cbe2875463750f;
+test5b2049551795fd26b05146e966aa8069cc62dfd477216e99c8bf1912f7eadcf6.
+Public observe(directory,*,enabled=False) requires its explicit env gate and
+fresh unlinked /mnt output. PrephaseBoundaryReached denotes a failed diagnostic
+prefix, never successful geometry. Root must coordinate genuine in-process
+WorldReady/callback plus counted prelude and bounded observation; actual
+attribution and timeout resolution remain unavailable. Suggested observation
+window120s, no cap increase or scientific release. Specialist's source-only
+Voronoi write window was released after immutable snapshot completion. No
+Root/Specialist source, shared status, staging or commit edits by Key.
+
+### Audit installation acknowledgement closes the remaining sampling dependency
+
+Root reviewfbe20140914406f493edbce59aace5aa35c50ffba8f0ce5d39713f9c421f9013
+verifies prior68 saved controls and closes primary precedence, but identifies
+CPython's silent RuntimeError veto of sys.addaudithook. Original68 and its
+source/image stay unchanged. Current successor changes only existing helper
+and test; software runner remains exactc48755ce. Public API, eight operations,
+source equations/state codecs/comparison and consumer gates are unchanged.
+
+Installation/readiness now requires a fresh private sys.audit probe received by
+the actual installed callback. Readiness is false until acknowledgement, and a
+previous true flag is rechecked. initialize records acknowledgement before any
+declaration/boundary/runtime/program work; final sampling cannot certify hook
+recovery without it. Missing acknowledgement retains exact primary/raw attempt,
+consumes the irreversible attempt, holds reporters and leaves no operations or
+success record. No global RNG operation is needed to test the mechanism.
+
+Three new controls run in separate short CPython interpreters: successful and
+repeated acknowledgement with actual setter-mutation detection; prior hook
+RuntimeError veto that CPython suppresses; forged stale readiness without an
+installed callback. Both refusal controls reach the exact intended declaration
+stage/reason before forbidden delegates and preserve raw primary. Their audit
+hooks end with the child processes; parent process receives no veto hook.
+Each child retains actual PID/parent, interpreter and loaded-file runtime pins.
+
+Focused final controls02:11pass (3new+8affected),60deselected,8.79s pytest.
+Affected cases cover ordinary synthetic order/readbacks, both transient setters,
+both program-write primary/cause controls, both final-getter mutations and
+unresolved reporter hold.22 final native/RNG guards empty. First controls01
+failed at collection: a one-use selector used 'or' where the established runner
+requires comma fragments; no cases ran. Failure remains frozen. Corrected
+selector and test-only child runtime witness used a fresh current-source image;
+production helper bytes did not change between attempts.
+
+All5 guarded outcomes reviewed:4complete/1failed, including saved-result reader;
+all3 nested audit child processes completed/reviewed separately. CPU4/one thread,
+1GiB480s8GiBreserve and512MiB metadata unchanged; CPU4 is free again. No full68
+rerun or actual RNG/native/INIT/SIM/reference/scientific release. Root/Specialist
+received the final candidate bindings for Root review before consumer adoption.
+
+Sealed /mnt/workspaces/Cells/native-common-start-rng-audit-ack-repair-20261106-01/source-result.json
+SHA256cf14fcca062932b8e644c946796c33faa5294c0c898399bfdcb709a2c3d1c;
+interfacec349caf82fbf14332e80f35bacc5895cd8fae018a9f2d0ea111b1ecdf05442ff.
+Helperb52c20c4ede1fc9afbcefd9f22e65626156852cae552a12c14837e65dd1b9eb4;
+test21b85871868f8931487fc005ee9c55fbba46478cf43359a35ffb7617b6dbd642;
+unchanged runnerc48755cee2d7cc31c9db71e4bf8693524bf805fe66083eafe877c64b532549a9.
+Pregeometry diagnostic9 source/results remain fixed under independent review;
+no timing launch, timeout resolution or scientific claim is added by this repair.
+
+### Pregeometry caught-stop coverage successor sealed
+
+Root's cost9 review found that raising at _execute_chain's profile CALL clears
+the CPython profiler, while evaluate_live catches the stop and seals evidence
+before the outer context can recover it. Fixed only the existing diagnostic
+module/test; original9/image and shared timing/geometry source remain fixed.
+An evaluator-specific trace bridge chains the original global/reached local
+trace dispatch and restores the original inherited hooks at the exception
+event, before evaluator catch/finally and its evidence callbacks. It then
+retires its local interception. Original source CALL stop and zero phase
+allocation remain; an inherited call-entry refusal propagates with exact cause.
+Final outer restoration/cleanup stays independent. Journal records the recovery.
+
+Four new realistic caught-stop controls cover normal stop/inherited refusal,
+each with and without an original trace. Failure and final writer assert both
+actual inherited hook identities; trace exception ordering/counts are checked.
+One additional new control compiles the unchanged original evaluate_live,
+_seal_execution, Execution and QualificationRejected AST bodies into a private
+metadata module. Only dependencies are synthetic; no canonical owner/function
+or production namespace changes. It verifies the authentic retained failed
+outcome/cause and zero operations/phase entries under inherited coverage.
+
+First focused image:7pass/6deselected; final:8pass/6deselected,0.30s pytest,
+5new+3affected on final bytes. All5 guarded outcomes completed/reviewed (two
+CPU6 preparation/child pairs plus CPU3 saved-result reader). Eight final native
+body guards empty. Original9 and first7 remain separately source-bound, not
+additional final credit. Root timing observer and geometry source are unchanged.
+No genuine parent, native geometry, RNG/INIT/SIM, actual timing run or timeout
+resolution is claimed; Root retains the real-input diagnostic release.
+
+Sealed /mnt/workspaces/Cells/native-pregeometry-caught-stop-repair-20261106-01/source-result.json
+SHA0a6dd5fa6ef43d9730ca2b0846e1a5e74d334c1b6fd42a010dfa4991e5bd6a27;
+interface05a7e962a0f22d7fd9ea4bbad6c648327358e89c541134cb0a5d6a846d7997b2.
+Moduled10de01a05f6152e5215fcfa3bf1aad947ab96819e7d3a6f97ad7c4aa673e654;
+test56999d5bd4335dbb4dca771f0b4f2f3c87d1327a929197242b2bb16be99acb2b.
+RNG acknowledgement11/256cf14f remains a separate pending review; its three
+delivered bytes were not changed during this diagnostic repair. No Root/
+Specialist/shared source edits, staging, commits or detached job queries.

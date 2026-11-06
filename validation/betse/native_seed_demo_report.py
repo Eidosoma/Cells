@@ -78,6 +78,25 @@ GEOMETRY_STAGES = (
 )
 
 
+COMMON_FILE = "validation/betse/native_common_start_rng.py"
+COMMON_ORIGINAL = "validation/betse/native_init_terminal_reference.py"
+COMMON_KIND = "cells.explicit_fresh_common_start_rng_program@1"
+COMMON_DECLARATION = "cells.paired_common_start_preparation@1"
+COMMON_EPOCH = "after_parameters_before_world_construction"
+COMMON_SHA256 = "b52c20c4ede1fc9afbcefd9f22e65626156852cae552a12c14837e65dd1b9eb4"
+COMMON_REVIEW_SHA256 = "58e4090dfaf544435bd132b703e470d59d49381ade83ea25a7ab0fe3a919d72e"
+COMMON_STEPS = (
+    ("python_before", "python_get", None),
+    ("numpy_before", "numpy_get", None),
+    ("python_seed", "python_seed", "python_seed"),
+    ("python_after", "python_get", None),
+    ("numpy_seed", "numpy_seed", "numpy_seed"),
+    ("numpy_after", "numpy_get", None),
+    ("python_readback", "python_get", None),
+    ("numpy_readback", "numpy_get", None),
+)
+
+
 def source_plan():
     return dict(
         kind=KIND,
@@ -99,6 +118,226 @@ def require(value, message):
         raise ValueError(message)
 
 
+def _common_document(value):
+    """Independent saved-data parser; no executable RNG producer is imported."""
+    require(type(value) is dict, "Exact common-start program document required")
+    require(
+        type(value.get("python_seed")) is int
+        and 0 <= value["python_seed"] < 2**256
+        and type(value.get("numpy_seed")) is int
+        and 0 <= value["numpy_seed"] < 2**32
+        and _hash_identity(value.get("input_identity"))
+        and type(value.get("consumer_sources")) is dict
+        and set(value["consumer_sources"]) == {"cells", "original"}
+        and all(_hash_identity(pin) for pin in value["consumer_sources"].values()),
+        "Declared bounded seeds, both callers and input inventory required",
+    )
+    expected = dict(
+        kind=COMMON_KIND,
+        epoch=COMMON_EPOCH,
+        python_seed=value["python_seed"],
+        python_seed_version=2,
+        numpy_seed=value["numpy_seed"],
+        numpy_api="legacy global RandomState.seed",
+        input_identity=value["input_identity"],
+        consumer_sources=value["consumer_sources"],
+        operations=[list(row) for row in COMMON_STEPS],
+        draws=0,
+        setstate_or_generator_replacement=False,
+    )
+    require(_common_seal(value) == _common_seal(expected), "Canonical program changed")
+    return expected
+
+
+def _common_seal(value):
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    ).hexdigest()
+
+
+def _common_declaration(reader, plan, demo, files):
+    selected = "common_start" in demo
+    require(("common_start" in plan) is selected, "Common-start declaration association changed")
+    if not selected:
+        require(
+            "common_start" not in demo.get("source_plan", {})
+            and "CELLS_COMMON_START_RNG_RELEASED" not in plan.get("release_environment", {}),
+            "Ambient source policy cannot silently select common start",
+        )
+        return None
+    value = demo["common_start"]
+    require(
+        type(value) is dict
+        and set(value) == {"kind", "mode", "program", "program_identity", "provider"}
+        and value["kind"] == COMMON_DECLARATION
+        and value["mode"] == plan["flux_operator"]
+        and _common_seal(plan["common_start"]) == _common_seal(value)
+        and _common_seal(demo["source_plan"].get("common_start")) == _common_seal(value),
+        "Exact per-mode prepared common-start program required",
+    )
+    doc = _common_document(value["program"])
+    require(
+        _hash_identity(COMMON_SHA256)
+        and _hash_identity(COMMON_REVIEW_SHA256)
+        and value["provider"]
+        == dict(file=COMMON_FILE, sha256=COMMON_SHA256, review_sha256=COMMON_REVIEW_SHA256)
+        and value["program_identity"] == _common_seal(doc)
+        and doc["input_identity"] == plan["_initial_rng_inputs"]["inventory_sha256"]
+        and doc["consumer_sources"] == {"cells": files[DEMO], "original": files[COMMON_ORIGINAL]}
+        and files.get(COMMON_FILE) == plan["producers"].get(COMMON_FILE) == COMMON_SHA256
+        and plan["producers"].get(COMMON_ORIGINAL) == files[COMMON_ORIGINAL]
+        and plan["release_environment"].get("CELLS_COMMON_START_RNG_RELEASED") == "1",
+        "Accepted source/review, immutable callers, input and opt-in release required",
+    )
+    for name in (COMMON_FILE, COMMON_ORIGINAL):
+        reader.bind(dict(path=str(Path(plan["source"]) / name), sha256=files[name]))
+    return value
+
+
+def _common_captures(reader, root, plan, value, captures):
+    """Authenticate only this process's record; paired starting authority stays separate."""
+    rows = [row for row in value["captures"] if row["label"] == "common_start_rng"]
+    selected = plan.get("_common_start")
+    if selected is None:
+        require(
+            not rows and "common_start_program" not in value,
+            "Ambient outcome cannot promote a common-start return",
+        )
+        return None
+    capture = value.get("common_start_program")
+    if capture is None:
+        require(
+            value["status"] == "failed"
+            and not any(row["name"] in ("initial_rng", "geometry") for row in value["operations"]),
+            "Common-start failure must precede ambient observation and geometry",
+        )
+        return dict(completed=False, common_starting_authority_established=False)
+    require(
+        len(rows) == 1 and capture == rows[0] and capture["status"] == "saved",
+        "One original saved common-start return required",
+    )
+    record = next(
+        row["common_start_wire"] for row in captures if row["label"] == "common_start_rng"
+    )
+    completed = reader.read(root / "common-start-rng/COMPLETED.json")
+    require(_common_seal(record) == _common_seal(completed), "Durable publication differs")
+    require(
+        type(record) is dict
+        and set(record)
+        == {
+            "kind",
+            "status",
+            "program",
+            "program_identity",
+            "role",
+            "pid",
+            "epoch",
+            "source",
+            "runtime",
+            "generator_identities",
+            "state",
+            "operations",
+            "work",
+            "states_loaded",
+            "generators_replaced",
+            "biological_or_phase_admission",
+        }
+        and record["kind"] == COMMON_KIND
+        and record["status"] == "completed"
+        and _common_seal(_common_document(record["program"])) == _common_seal(selected["program"])
+        and record["program_identity"] == selected["program_identity"]
+        and record["role"] == "cells"
+        and type(record["pid"]) is int
+        and record["pid"] > 0
+        and record["epoch"] == COMMON_EPOCH
+        and record["operations"] == [[row[0], "returned"] for row in COMMON_STEPS]
+        and record["states_loaded"] is record["generators_replaced"] is False
+        and record["biological_or_phase_admission"] is False,
+        "Actual complete common-start input program required",
+    )
+    require(
+        record["source"]
+        == dict(
+            helper=COMMON_FILE,
+            helper_sha256=COMMON_SHA256,
+            provenance="validation/betse/native_rng_runtime.py",
+            provenance_sha256=plan["producers"]["validation/betse/native_rng_runtime.py"],
+        )
+        and type(record["generator_identities"]) is dict
+        and set(record["generator_identities"]) == {"python", "numpy"}
+        and all(type(n) is int and n > 0 for n in record["generator_identities"].values()),
+        "Original helper/provenance and both actual generator identities required",
+    )
+    states = record["state"]
+    require(
+        type(states) is dict
+        and set(states)
+        == {
+            kind + "_" + stage
+            for kind in ("python", "numpy")
+            for stage in ("before", "after", "readback")
+        },
+        "Complete before/after/readback state evidence required",
+    )
+    for stage in ("before", "after", "readback"):
+        _initial_rng_state(
+            dict(
+                numpy_random=states["numpy_" + stage],
+                python_random=states["python_" + stage],
+                initial_random_reset_or_replacement=False,
+            )
+        )
+    require(
+        all(
+            _common_seal(states[k + "_after"]) == _common_seal(states[k + "_readback"])
+            for k in ("python", "numpy")
+        ),
+        "Program readback changed",
+    )
+    witness_rows = [row for row in captures if row["label"] == "pre_seed_rng_witness"]
+    if witness_rows:
+        witness = witness_rows[0]["initial_rng_wire"]
+        require(
+            value["captures"].index(rows[0])
+            < next(
+                i
+                for i, row in enumerate(value["captures"])
+                if row["label"] == "before_seed_random_states"
+            )
+            and _common_seal(record["runtime"])
+            == _common_seal(witness["common_binding"]["runtime"])
+            and _common_seal(witness["state"])
+            == _common_seal(
+                dict(
+                    numpy_random=states["numpy_readback"],
+                    python_random=states["python_readback"],
+                    initial_random_reset_or_replacement=False,
+                )
+            ),
+            "Actual ambient witness differs from common-start readback/runtime/order",
+        )
+    else:
+        require(value["status"] == "failed", "Completed program requires its subsequent witness")
+    work = record["work"]
+    require(
+        type(work) is dict
+        and type(work.get("program_API_calls")) is int
+        and work["program_API_calls"] == 8
+        and type(work.get("visible_RNG_observer_events")) is int
+        and 0 < work["visible_RNG_observer_events"] <= 256
+        and work.get("opaque_C_internals_not_independent_cases") is True
+        and work.get("inherited_observer_RNG_effects_require_reviewed_caller_contract") is True,
+        "Bounded actual RNG work required; not independent cases",
+    )
+    return dict(
+        completed=True,
+        capture_row=capture,
+        program_identity=record["program_identity"],
+        common_starting_authority_established=False,
+        scientific_credit=0,
+    )
+
+
 def _iterations(plan):
     value = plan.get("init_iterations")
     if plan.get("endpoint", "seed") == "init_short_history":
@@ -118,6 +357,12 @@ def _hash_identity(value):
 
 def _initial_rng_declaration(reader, plan, demo, bundle, parameters, files):
     """Authenticate saved input/source declarations, without importing an observer."""
+    if demo.get("source_plan", {}).get("initial_rng_observation", {}).get("kind") == (
+        "cells.common_initial_rng_observation@2"
+    ):
+        from validation.betse import native_seed_rng_report as versioned
+
+        return versioned.initial_rng_declaration(reader, plan, demo, bundle, parameters, files)
     if demo.get("kind") != DEMO_KINDS[6]:
         require(
             "initial_rng_inputs" not in demo and "initial_rng_inputs" not in plan,
@@ -335,7 +580,7 @@ def _initial_rng_captures(reader, root, plan, value, captures):
             "common_starting_authority_established",
             "scientific_physical_checkpoint_credit",
         }
-        and witness["kind"] == INITIAL_RNG_KIND
+        and witness["kind"] == plan.get("_initial_rng_kind", INITIAL_RNG_KIND)
         and witness["epoch"] == INITIAL_RNG_EPOCH
         and witness["state"] == raw
         and witness["observed_states_equalized"] is False
@@ -356,7 +601,14 @@ def _initial_rng_captures(reader, root, plan, value, captures):
     require(
         witness["source"]
         == dict(
-            files={name: plan["producers"][name] for name in (INITIAL_RNG, DEMO)},
+            files={
+                name: plan["producers"][name]
+                for name in (
+                    (INITIAL_RNG, DEMO, "validation/betse/native_rng_runtime.py")
+                    if witness["kind"] == "cells.common_initial_rng_observation@2"
+                    else (INITIAL_RNG, DEMO)
+                )
+            },
             snapshot_sha256=plan["source_snapshot"]["sha256"],
             parameter_packet_sha256=plan["parameter_inputs"]["sha256"],
         ),
@@ -364,6 +616,8 @@ def _initial_rng_captures(reader, root, plan, value, captures):
     )
     order = witness["order"]
     prefix = ["callback", "constructor_preflight", "parameters", "initial_rng"]
+    if plan.get("_common_start") is not None:
+        prefix.insert(prefix.index("initial_rng"), "common_start_rng")
     require(
         type(order) is dict
         and set(order)
@@ -384,12 +638,38 @@ def _initial_rng_captures(reader, root, plan, value, captures):
             for k in ("parameter_identity", "world_ready_identity", "callback_identity")
         )
         and order["selected_boundaries"]
-        == [[name, "returned" if i < 3 else "attempted"] for i, name in enumerate(prefix)]
-        and [row["name"] for row in value["operations"][:4]] == prefix
-        and all(row["status"] == "returned" for row in value["operations"][:3]),
+        == [
+            [name, "returned" if i < len(prefix) - 1 else "attempted"]
+            for i, name in enumerate(prefix)
+        ]
+        and [row["name"] for row in value["operations"][: len(prefix)]] == prefix
+        and all(row["status"] == "returned" for row in value["operations"][: len(prefix) - 1]),
         "Initial RNG observation must precede phase/geometry construction",
     )
     runtime = common["runtime"]
+    if witness["kind"] == "cells.common_initial_rng_observation@2":
+        from validation.betse import native_rng_runtime as provenance
+
+        final_path = root.parent / "runtime-after.json"
+        final = reader.read(final_path) if final_path.exists() else None
+        provenance.validate_saved(
+            reader,
+            runtime,
+            executable=plan["runtime"]["executable"],
+            runtime_roots=plan["runtime_roots"],
+            final=final,
+            completed=value["status"] == "completed",
+        )
+        return dict(
+            observed=True,
+            capture_row=observation,
+            inventory_sha256=selected["inventory_sha256"],
+            epoch=witness["epoch"],
+            state_bytes_preserved=True,
+            common_starting_authority_established=False,
+            observed_states_equalized=False,
+            scientific_physical_checkpoint_credit=0,
+        )
     require(
         type(runtime) is dict
         and set(runtime) == {"python", "executable", "numpy_version", "files"}
@@ -1082,6 +1362,9 @@ def _plan(reader, path, digest):
     plan["_initial_rng_inputs"] = _initial_rng_declaration(
         reader, plan, demo, bundle, parameters, files
     )
+    common = _common_declaration(reader, plan, demo, files)
+    if common is not None:
+        plan["_common_start"] = common
     return plan, files, originals
 
 
@@ -1191,6 +1474,8 @@ def _captures(reader, directory, rows):
                 # These fixed-size MT states are below the ordinary inline threshold.
                 # The canonical wire is archive.snapshot, not a Cache descriptor.
                 record["initial_rng_wire"] = value
+            if row["label"] == "common_start_rng":
+                record["common_start_wire"] = value
             if type(value) is dict:
                 record["identity"] = value.get("identity")
                 if row["label"].endswith(".record"):
@@ -1875,6 +2160,7 @@ def _outcome(reader, root, plan, value):
         "Outcome exceeds the supported demonstration claim",
     )
     captures = _captures(reader, root, value["captures"])
+    common_start = _common_captures(reader, root, plan, value, captures)
     initial_rng = _initial_rng_captures(reader, root, plan, value, captures)
     molecules = _molecule_captures(value, captures, endpoint)
     imports = _molecule_import_captures(
@@ -1980,6 +2266,8 @@ def _outcome(reader, root, plan, value):
                 "initial_rng",
                 "geometry",
             ]
+            if plan.get("_common_start") is not None:
+                required.insert(required.index("initial_rng"), "common_start_rng")
         elif any(row["name"] == "constructor_preflight" for row in value["operations"]):
             # Older @7 producers already emitted this exact metadata operation.
             # Optional once in its original position; no other operation is ignored.
@@ -2112,6 +2400,7 @@ def _outcome(reader, root, plan, value):
         molecule_imports=imports,
         short_history=history,
         **({"initial_rng": initial_rng} if plan.get("_initial_rng_inputs") is not None else {}),
+        **({"common_start": common_start} if plan.get("_common_start") is not None else {}),
         **({"natural_terminal": natural_terminal} if terminal else {}),
     )
 

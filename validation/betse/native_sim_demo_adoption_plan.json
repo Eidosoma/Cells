@@ -26,6 +26,8 @@
     "W": "src/cells/processes/betse_native_world_phase_construction.py",
     "Z": "src/cells/processes/betse_native_init_terminal.py",
     "core": "src/cells/processes/betse_native_seed_init_core.py",
+    "callback_prelude": "validation/betse/native_seed_world_callback_prelude.py",
+    "capture_budget": "validation/betse/native_init_capture_budget.py",
     "current_parameters": "src/cells/processes/betse_native_parameter_load_remainder.py",
     "demo": "validation/betse/native_seed_demo.py",
     "evidence": "validation/betse/native_seed_demo_evidence.py",
@@ -186,6 +188,13 @@
     }
   },
   "required_assignments": {
+    "callback_prelude": {
+      "path": "validation/betse/native_seed_world_callback_prelude.py",
+      "slots": {
+        "RUNTIME_SOURCE_SHA256": "H(parameter_qualifier)",
+        "RUNTIME_REVIEW_SHA256": "R_parameter_qualifier"
+      }
+    },
     "C": {
       "path": "src/cells/processes/betse_native_init_dynamics_completion.py",
       "slots": {
@@ -371,6 +380,8 @@
         "INIT_SOURCE_PINS[init_parameters]": "H(K)",
         "INIT_SOURCE_PINS[init_setup]": "H(I)",
         "INPUT_METADATA_SHA256": "H(inputs)",
+        "EVIDENCE_SOURCE_SHA256": "H(evidence)",
+        "CAPTURE_BUDGET_SHA256": "H(capture_budget)",
         "PRELUDE_REVIEW_PINS": "init_prelude=R_P",
         "PRELUDE_SOURCE_PINS[init_prelude]": "H(P)",
         "REVIEW_PINS[parameters]": "R_parameter_qualifier",
@@ -378,6 +389,9 @@
         "SIM_SOURCE_SHA256": "H(sim_orchestration)",
         "SOURCE_PINS[core]": "H(core)",
         "SOURCE_PINS[geometry]": "H(geometry_qualifier)",
+        "REVIEW_PINS[geometry]": "R_geometry_qualifier",
+        "SOURCE_PINS[callback]": "H(callback_prelude)",
+        "REVIEW_PINS[callback]": "R_callback_prelude",
         "SOURCE_PINS[junctions]": "H(J)",
         "SOURCE_PINS[parameters]": "H(parameter_qualifier)",
         "SOURCE_PINS[profiles]": "H(profiles)",
@@ -394,6 +408,10 @@
     "geometry_qualifier": {
       "path": "validation/betse/native_seed_world_geometry_qualification.py",
       "slots": {
+        "PARAMETER_ENTRY_SOURCE_SHA256": "H(parameter_qualifier)",
+        "PARAMETER_ENTRY_REVIEW_SHA256": "R_parameter_qualifier",
+        "EVIDENCE_SOURCE_SHA256": "H(evidence)",
+        "MODULE_SOURCE_SHA256[callbacks]": "H(native_callbacks)",
         "MODULE_SOURCE_SHA256[prefix]": "H(prefix)",
         "MODULE_SOURCE_SHA256[world]": "H(W)"
       }
@@ -665,6 +683,8 @@
     "R_V",
     "R_Z",
     "R_current_parameters",
+    "R_callback_prelude",
+    "R_geometry_qualifier",
     "R_initial_rng",
     "R_initial_rng_runtime",
     "R_parameter_qualifier",
@@ -687,6 +707,7 @@
     "initial_rng_runtime",
     "initial_rng",
     "evidence",
+    "capture_budget",
     "parameter_qualifier",
     "inputs",
     "launch",
@@ -697,6 +718,7 @@
     "phase_parameters",
     "simulator_observer",
     "native_callbacks",
+    "callback_prelude",
     "sim_preparation_source",
     "sim_assembly_source",
     "sim_run_source",

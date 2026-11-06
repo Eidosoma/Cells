@@ -40,7 +40,7 @@ FILE = "validation/betse/native_seed_demo.py"
 TEST = "tests/unit/test_native_seed_demo.py"
 RUNNER = "validation/betse/native_seed_demo_software.py"
 INPUT_METADATA = "validation/betse/native_seed_demo_inputs.py"
-INPUT_METADATA_SHA256 = "b90731178aebe8b974cfa7b690365c9a4abf9d00996d4888745dc14a6fb90646"
+INPUT_METADATA_SHA256 = "e078bbe211e25bbeeea5b353323bb82bc604a2372e1051012d9a5aa0fbc29396"
 EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
 EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 CAPTURE_BUDGET_MODULE = "validation.betse.native_init_capture_budget"
@@ -133,21 +133,21 @@ MODULES = {
     "junctions": "cells.processes.betse_native_seed_junctions",
 }
 SOURCE_PINS = {
-    "initial_rng": "0702280573ea60c46a7d29e4b95b47a3edb3cae85b850f648548292a6fc9d04d",
-    "initial_rng_runtime": None,
-    "callback": "61b68cbe19216299aa9a28971902ce9948bfaab4c1cb2bd8a7aff75105eab6b6",
-    "parameters": "4e09252a35af064631839313c979b0e3e7ec74ed6153158c12f33a11f8741fe5",
-    "geometry": "d58fd20821bdc63e0d5461b4fc5b6bafaee36119c870639a7a2b036a29d74b37",
+    "initial_rng": "aa4983674ae3dbfa10286a11e36877514efe2b3f66e4e833bcf2292d57796baa",
+    "initial_rng_runtime": "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315",
+    "callback": "dac3dd66e7b9fb53f46e1a3c5f9f50e0c37cb3c135e87d44fbcfcc1beb05b618",
+    "parameters": "e23dbe4c9e124f1e022939895ad7c07fa199a1af36623a47397ffb6a7e46c1ad",
+    "geometry": "53decc9177dc3fdfa03cef68eaf2a8e4f5355c2ecd1425534219d169cb787368",
     "poisson": "39539d52b750fd75787a2897efc564ad4ca886381ab09acf1560159aa815ba33",
     "core": "0b644d9b4b53dc167c8e2571d5a249bc7a42905fa845099dd21c7f730c5d3b46",
     "profiles": "b7b26b2bc6f8c78ba84bef3f19c44ba4ece4ab5cbfabfe17f4e0e8b85d0beadc",
     "junctions": "844bbae294e66230ddbc66a311c1bb4f0e30be0c0944866e2bb03afcc88d3665",
 }
 REVIEW_PINS = {
-    "initial_rng": "ea47020d0ef8a9517b4b6354660e10974cdcb6a3df79ab908f5ffb86f3e2266e",
-    "initial_rng_runtime": None,
+    "initial_rng": "0a6475f7d1cc423a8de6ac04d4e1c7f0cbf20ee0b3151fdef48ffe25cc5af7e7",
+    "initial_rng_runtime": "07df50e16811f31cb3fae5e0c0c886142b7b92e30c0a67e0ae85cb9659f0ad49",
     "callback": "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e",
-    "parameters": "980f32e508dd64daaff4baf32c60634819d6bf027f4eff0fcb56840a631ce553",
+    "parameters": "aa5a0da342c433c1332f2970436b50416b8980d9e23e586c4f0589f91b15816b",
     "geometry": "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e",
     "poisson": "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb",
     "core": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
@@ -184,6 +184,15 @@ class Execution:
     initial_rng_capture_error: object = None
     initial_rng_capture_secondary: list = field(default_factory=list)
     initial_rng_capture_rows: list = field(default_factory=list)
+    common_start_declaration: object = None
+    common_start_program: object = None
+    common_start_api: object = None
+    common_start_raw_return: object = None
+    common_start_record: object = None
+    common_start_capture: object = None
+    common_start_attempt: object = None
+    common_start_error: object = None
+    common_start_capture_errors: list = field(default_factory=list)
     input_root: object = None
     phase_links: tuple = ()
     seed_phase: object = None
@@ -412,7 +421,7 @@ def _sim_producer():
     return module
 
 
-def source_plan(*, endpoint="seed", init_iterations=None):
+def source_plan(*, endpoint="seed", init_iterations=None, common_start=None):
     if type(endpoint) is not str or endpoint not in ENDPOINTS:
         raise DemoRejected(
             "Choose exactly seed or init_setup or init_prelude or init_dynamics"
@@ -421,7 +430,7 @@ def source_plan(*, endpoint="seed", init_iterations=None):
             stage="endpoint",
         )
     _iteration_selection(endpoint, init_iterations)
-    return dict(
+    value = dict(
         kind=_kind(endpoint),
         stages=(
             STAGES
@@ -675,6 +684,10 @@ def source_plan(*, endpoint="seed", init_iterations=None):
         held_postcut_owners=11,
         held_postcut_cases=12,
     )
+    if common_start is not None:
+        Modules(endpoint)["initial_rng"].common_declaration(common_start)
+        value["common_start"] = common_start
+    return value
 
 
 def _dependencies(endpoint="seed"):
@@ -1555,13 +1568,18 @@ def _read_plan(path, expected):
             "policy",
             "held",
         }
+        | ({"common_start"} if "common_start" in value else set())
         or value["kind"] != _kind(value.get("endpoint"))
         or type(value["endpoint"]) is not str
         or value["endpoint"] not in ENDPOINTS
         or value["source_plan"]
         != json.loads(
             json.dumps(
-                source_plan(endpoint=value["endpoint"], init_iterations=value["init_iterations"])
+                source_plan(
+                    endpoint=value["endpoint"],
+                    init_iterations=value["init_iterations"],
+                    common_start=value.get("common_start"),
+                )
             )
         )
         or value["flux_operator"] not in FLUX_MODES
@@ -1577,6 +1595,9 @@ def _read_plan(path, expected):
         raise DemoRejected("Declared complete single-mode plan changed", stage="plan")
     snapshot.verify(ROOT, manifest_sha256=value["snapshot_sha256"])
     Modules(value["endpoint"])["initial_rng"].validate_declaration(value["initial_rng_inputs"])
+    if "common_start" in value:
+        manifest = snapshot.verify(ROOT, manifest_sha256=value["snapshot_sha256"])
+        Modules(value["endpoint"])["initial_rng"].common_binding(value, manifest)
     return value
 
 
@@ -1712,10 +1733,20 @@ def _call(state, label, function, *args, **kwargs):
         # This is a delegated API failure. Its own source/capture classification
         # and raw partials remain on the exact original exception.
         state.delegate_error = error
+        if label == "common_start_rng":
+            state.common_start_error = error
+            try:
+                state.common_start_attempt = vars(error).get("common_start_attempt")
+                if state.common_start_attempt is None and state.common_start_api is not None:
+                    state.common_start_attempt = vars(state.common_start_api).get("_ATTEMPT")
+            except BaseException as recording:
+                state.secondary.append(("common_start_attempt_retention", recording))
         _fail(state, label, error)
         row["status"] = "failed"
         raise
     state.last_return = value  # Preserve a raw return before fallible registration.
+    if label == "common_start_rng":
+        state.common_start_raw_return = value
     row["status"] = "returned"
     _stop(state)
     return value
@@ -1819,6 +1850,36 @@ def _execute(state, modules, plan, directory, evidence):
     state.world_ready, state.parameters = pair
     if state.world_ready.parameters is not state.parameters:
         raise ValueError("Actual WorldReady owner and parameter instance disagree")
+    if "common_start" in plan:
+        ambient = modules["initial_rng"]
+        state.common_start_declaration = plan["common_start"]
+        api, program = ambient.common_request(plan)
+        state.common_start_api = api
+        state.common_start_program = program
+        record = _call(
+            state,
+            "common_start_rng",
+            api.initialize,
+            program,
+            state,
+            role="cells",
+            output=directory / "common-start-rng",
+            enabled=True,
+        )
+        ambient.common_return(record, state.common_start_declaration)
+        completed = directory / "common-start-rng/COMPLETED.json"
+        if (
+            completed.is_symlink()
+            or not completed.is_file()
+            or completed.stat().st_size > 2**20
+            or ambient.seal(json.loads(completed.read_text())) != ambient.seal(record)
+        ):
+            raise ValueError("Actual common-start return differs from durable completion")
+        state.common_start_record = record
+        _capture(state, evidence, "common_start_rng", record)
+        state.common_start_capture = next(
+            row for row in evidence.rows if row["label"] == "common_start_rng"
+        )
     _call(state, "initial_rng", modules["initial_rng"].observe, state, plan, evidence)
     owner = _call(
         state,
@@ -3290,6 +3351,17 @@ def _finish(state, evidence, directory):
         state.init_short_history_completed = False
         state.init_terminal_completed = False
         state.sim_completed, state.sim_time_steps_completed = False, 0
+        for label, raw in (
+            ("common_start.failure.return", state.common_start_raw_return),
+            ("common_start.failure.attempt", state.common_start_attempt),
+        ):
+            if raw is not None:
+                try:
+                    if not evidence.save(label, raw):
+                        raise ValueError("Partial common-start evidence capture refused")
+                except BaseException as error:
+                    state.common_start_capture_errors.append((label, error))
+                    _fail(state, label, error)
         if state.endpoint == SIM_ENDPOINT and state.sim_continuation is not None:
             try:
                 state.sim_continuation.failure_evidence(state, evidence)
@@ -3393,6 +3465,11 @@ def _finish(state, evidence, directory):
                 dynamics_failure_captures=state.dynamics_failure_captures,
                 init_time_steps_completed=state.init_time_steps_completed,
                 initial_rng_observation=state.initial_rng_observation,
+                **(
+                    {"common_start_program": state.common_start_capture}
+                    if state.common_start_declaration is not None
+                    else {}
+                ),
                 common_starting_authority_established=False,
                 original_flux_defect_repaired=False,
                 methods_completed=state.methods_completed,
@@ -3454,6 +3531,8 @@ def run_demo(plan, directory, *, plan_sha256, enabled=False):
     declaration = _read_plan(plan, plan_sha256)
     if declaration["endpoint"] != "seed":
         modules = _dependencies(declaration["endpoint"])
+    if "common_start" in declaration:
+        modules["initial_rng"].common_preflight(declaration)
     output, input_root = _validate_output(directory, declaration, modules["parameters"])
     _resources()
     state = Execution(
@@ -3504,6 +3583,7 @@ def prepare(
     init_iterations=None,
     shared_writer_review=None,
     extra_sources=(),
+    common_start=None,
 ):
     """Freeze the full closure once via Key's existing current-checkout prepare."""
     if type(flux_operator) is not str or flux_operator not in FLUX_MODES:
@@ -3518,6 +3598,8 @@ def prepare(
                 "Only checkout execution sources may extend the image", stage="source_roster"
             )
     modules = _dependencies(endpoint)
+    if common_start is not None:
+        modules["initial_rng"].common_declaration(common_start)
     if Path(repository).resolve() != ROOT:
         raise DemoRejected("One-way canonical checkout preparation required", stage="checkout")
     parameter = modules["parameters"]
@@ -3568,6 +3650,11 @@ def prepare(
         *(_relative(name) for name in WRAPPER_MODULES.values() if endpoint in WRAPPER_ENDPOINTS),
         *((_relative(SIM_MODULE), *sim.preflight()) if sim is not None else ()),
         *_constructor_sources(),
+        *(
+            (modules["initial_rng"].COMMON_FILE, modules["initial_rng"].ORIGINAL)
+            if common_start is not None
+            else ()
+        ),
         *extra_sources,
     )
     value = _function(parameter, "prepare")(
@@ -3582,11 +3669,22 @@ def prepare(
     directory = Path(directory)
     parameter_inputs = _function(parameter, "packet_inputs")(directory, value["packet"]["sha256"])
     initial_rng_inputs = modules["initial_rng"].declaration(parameter_inputs["program"])
+    if common_start is not None:
+        modules["initial_rng"].common_binding(
+            dict(
+                common_start=common_start,
+                initial_rng_inputs=initial_rng_inputs,
+                flux_operator=flux_operator,
+            ),
+            snapshot.verify(directory / "source"),
+        )
     snapshot.write_json(
         directory / "demo-plan.json",
         dict(
             kind=_kind(endpoint),
-            source_plan=source_plan(endpoint=endpoint, init_iterations=init_iterations),
+            source_plan=source_plan(
+                endpoint=endpoint, init_iterations=init_iterations, common_start=common_start
+            ),
             snapshot_sha256=snapshot.digest(directory / "source/SNAPSHOT.json"),
             parameter_packet=str(directory),
             parameter_sha256=snapshot.digest(directory / "inputs.json"),
@@ -3600,6 +3698,7 @@ def prepare(
             init_iterations=init_iterations,
             policy=dict(POLICY),
             held=True,
+            **({"common_start": common_start} if common_start is not None else {}),
         ),
     )
     return value

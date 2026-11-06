@@ -9,10 +9,12 @@ code or constructs live owners; source comparison grants no numerical parity.
 import argparse
 import ast
 import hashlib
+import importlib
 import json
 import re
+import sys
 from pathlib import Path
-from types import CodeType, FunctionType
+from types import CodeType, FunctionType, ModuleType
 
 from validation import source_snapshot as snapshot
 from validation.betse import native_init_terminal_reference_compare as codec
@@ -26,12 +28,12 @@ KIND = "cells.original_SIM_saved_history_comparison@1"
 REF_KIND = "cells.original_SIM_retained_INIT_reference@2"
 OBSERVATION_KIND = "cells.original_SIM_iteration_observation@2"
 RNG_ADAPTER_SHA256 = "9e8e9539198141e7f76aefc5dba24a52eb9faa3e03f5ae202320bdfafa811a37"
-DEMO_REPORT_SHA256 = "c9f3d6002e1faf680209c66123624ec6793c99781eb91179ee98974f1f627ad7"
-REFERENCE_RNG_AST_SHA256 = "8b1c2de534b66f8c8dc718ecf6abf31e468c38423c28c271e97cf77c8917caa8"
+DEMO_REPORT_SHA256 = "9c9f82605a514e69cc3a1622d2cb0f529e09fcb6e13cdea3850dca5677cadf90"
+REFERENCE_RNG_AST_SHA256 = "29df5fb1f382655b907c12d4b2ddecd890c30da62988903dee8533fc50adda52"
 CODEC_SHA256 = "3968463c4664f3362e8d1cc3c132d430383aa6716dfe48506b62dbb1f48cbbca"
 INPUT_READER_SHA256 = "e078bbe211e25bbeeea5b353323bb82bc604a2372e1051012d9a5aa0fbc29396"
 RNG_RUNTIME_SHA256 = "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315"
-RNG_REPORT_SHA256 = "17c29168e17e25e1faf437338af22e7a1a10b6d2be73690dcd5094026389d371"
+RNG_REPORT_SHA256 = "d2966c2d1d60486a341e1a04eecc82b40c18a9012bc6b7ea4a491b5577b589b3"
 STARTING_REPORT_KIND = "cells.authenticated_starting_rng_saved_report@1"
 RNG_MODULES = (
     "numpy",
@@ -55,19 +57,28 @@ LINEAGE = (
 )
 REF_PRODUCERS = {
     "validation/betse/native_sim_reference.py": (
-        "6066ee7f1425e453c1c4aef67836a8404a45dfb01a019a2a0644f29f220e0d37"
+        "c251bcc4634470f5c3ae3700449d5d2569a11c98411f2448d9ca63a722dd9216"
     ),
     "validation/betse/native_sim_reference_source.py": (
         "fd8921650d53a292ca165415c33582f813013ca46e3c31271a4270462d00bad0"
     ),
     "validation/betse/native_sim_reference_software.py": (
-        "f0e99aaf67e2cb369bf3b590e348829b6c205d24ef8ace8145c91166cbb54f20"
+        "35256de3403b121fb96164452e3148384e3f58401b9f8200aa0f43283ca8bba8"
     ),
     "tests/unit/test_native_sim_reference.py": (
-        "a1c175dacf1ab9de98b2e48f10fc425dc8a7635707d328a28e98de931fc6a91a"
+        "c8eddc4f16b30fce9bd52cf59323d116cd5e24ad7346d38894a74cbdded665f0"
     ),
 }
 ISSUED_SIM_PRODUCER_KIND = None
+COMMON_START_FILE = "validation/betse/native_common_start_rng.py"
+COMMON_START_KIND = "cells.explicit_fresh_common_start_rng_program@1"
+COMMON_START_REPORT_KIND = "cells.authenticated_common_start_saved_report@1"
+COMMON_START_SHA256 = "b52c20c4ede1fc9afbcefd9f22e65626156852cae552a12c14837e65dd1b9eb4"
+COMMON_START_REVIEW_SHA256 = "58e4090dfaf544435bd132b703e470d59d49381ade83ea25a7ab0fe3a919d72e"
+SIM_REPORT_SHA256 = "9c86d1e85cefb60d8b4031af9693c362e5ba9493fbfa2579d5b5bea28df29964"
+SIM_REPORT_REVIEW_SHA256 = "a413fdf49c7eb85fa3d62c848706a9201d246381598eac60a0e08c6ec2f8e76c"
+SIM_LAUNCH_SHA256 = "7525cfe9381e7787ed3bcb91d9798155d4ba7c91531fde7b1b342afc543f05af"
+SIM_OBSERVATION_SHA256 = "2145f8badc7351fa5d5502d6aed2d46de48d3f32b091514b561c50c317031e92"
 require, same = codec.require, codec._same
 
 
@@ -109,6 +120,17 @@ def source_plan():
             actual_distinct_constructor_orders_retained=True,
             final_file_and_request_rebinding=True,
             complete_SIM_or_common_start_authority=False,
+        ),
+        common_start_saved_reader=dict(
+            kind=COMMON_START_REPORT_KIND,
+            helper=COMMON_START_FILE,
+            helper_sha256=COMMON_START_SHA256,
+            review_sha256=COMMON_START_REVIEW_SHA256,
+            ambient_default_unchanged=True,
+            actual_program_return_and_durable_publication=True,
+            linked_pre_world_witness_bits=True,
+            RNG_or_model_import_or_execution=False,
+            numerical_or_physical_credit=0,
         ),
     )
 
@@ -500,6 +522,70 @@ def _source_reader(module, expected):
     return module
 
 
+def _sim_report_api():
+    """Authenticate the accepted SIM reader and its reached read-only helpers."""
+    require(report._hash_identity(SIM_REPORT_REVIEW_SHA256), "Reviewed SIM reader remains held")
+    sim_report = importlib.import_module("validation.betse.native_sim_demo_report")
+    sim_launch = importlib.import_module("validation.betse.native_seed_demo_launch")
+    sim_observation = importlib.import_module("validation.betse.native_sim_demo_observation")
+    for module, name in (
+        (sim_report, "native_sim_demo_report"),
+        (sim_launch, "native_seed_demo_launch"),
+        (sim_observation, "native_sim_demo_observation"),
+    ):
+        require(
+            type(module) is ModuleType
+            and sys.modules.get("validation.betse." + name) is module
+            and Path(module.__file__).resolve() == Path(__file__).parent / (name + ".py"),
+            "Actual loaded SIM metadata producer required",
+        )
+    api = _source_reader(sim_report, SIM_REPORT_SHA256)
+    _source_reader(sim_observation, SIM_OBSERVATION_SHA256)
+    require(
+        api.legacy is report
+        and api.rng_report is rng_report
+        and api.launch is sim_launch
+        and api.observation is sim_observation
+        and sim_launch.sim_observation is sim_observation
+        and api.evidence is report.evidence
+        and api.Reader is report.Reader
+        and api.require is report.require
+        and api._hash_identity is report._hash_identity
+        and api._iterations is report._iterations
+        and api.LEGACY_SHA256 == DEMO_REPORT_SHA256,
+        "SIM reader shared namespace/dispatch changed",
+    )
+    path = Path(sim_launch.__file__)
+    raw = path.read_bytes()
+    require(hashlib.sha256(raw).hexdigest() == SIM_LAUNCH_SHA256, "SIM launch reader changed")
+    names = {
+        "require",
+        "source_plan",
+        "_wall_seconds",
+        "_hash",
+        "_environment_map",
+        "_producers",
+        "_sim_contract",
+    }
+    nodes = {n.name: n for n in ast.parse(raw).body if isinstance(n, ast.FunctionDef)}
+    codes = {
+        c.co_name: c
+        for c in compile(raw, str(path), "exec", dont_inherit=True).co_consts
+        if type(c) is CodeType
+    }
+    for name in names:
+        _reader_function(vars(sim_launch).get(name), codes[name], nodes[name], vars(sim_launch))
+    require(
+        api.LAUNCH_KIND == sim_launch.SIM_KIND == "cells.genuine_seed_demo_detached_launch@13"
+        and api.DEMO_KIND
+        == sim_launch.SIM_DEMO_KIND
+        == "cells.genuine_seed_core_profiles_junctions_demo@9"
+        and api.ENDPOINT == sim_launch.SIM_ENDPOINT == "sim_terminal",
+        "Exact SIM metadata schemas required",
+    )
+    return api
+
+
 def _rng_side():
     return dict(
         authenticated=False,
@@ -515,7 +601,7 @@ def _rng_side():
 
 
 def demo_starting_rng(request):
-    """Authenticate the real launch@12/demo@8 starting observation prefix."""
+    """Authenticate a genuine legacy or full-SIM saved starting prefix."""
     side = _rng_side()
     try:
         api = _report_api()
@@ -532,26 +618,37 @@ def demo_starting_rng(request):
             secondary=outcome.get("secondary"),
             stage=outcome.get("stage"),
         )
+        full_sim = outcome.get("kind") == "cells.genuine_seed_core_profiles_junctions_demo@9"
         require(
-            outcome.get("kind") == "cells.genuine_seed_core_profiles_junctions_demo@8",
-            "Starting RNG requires actual demo@8 outcome",
+            full_sim or outcome.get("kind") == "cells.genuine_seed_core_profiles_junctions_demo@8",
+            "Starting RNG requires actual demo@8 or SIM demo@9 outcome",
         )
         versioned = (
             _source_reader(rng_report, RNG_REPORT_SHA256)
             if report._hash_identity(RNG_REPORT_SHA256)
             else None
         )
+        sim = _sim_report_api() if full_sim else None
         plan, files, _ = (
-            api._plan(reader, Path(request["plan"]["path"]), request["plan"]["sha256"])
-            if versioned is None
-            else versioned.read_plan(
-                reader, Path(request["plan"]["path"]), request["plan"]["sha256"]
+            sim._plan(reader, Path(request["plan"]["path"]), request["plan"]["sha256"])
+            if full_sim
+            else (
+                api._plan(reader, Path(request["plan"]["path"]), request["plan"]["sha256"])
+                if versioned is None
+                else versioned.read_plan(
+                    reader, Path(request["plan"]["path"]), request["plan"]["sha256"]
+                )
             )
         )
         require(
-            plan["kind"] == "cells.genuine_seed_demo_detached_launch@12"
+            plan["kind"]
+            == (
+                "cells.genuine_seed_demo_detached_launch@13"
+                if full_sim
+                else "cells.genuine_seed_demo_detached_launch@12"
+            )
             and plan.get("_demo_kind") == outcome["kind"],
-            "Actual launch@12/demo@8 association",
+            "Actual launch/outcome schema association",
         )
         demo_root = Path(request["outcome"]["path"]).parent
         failure_path = demo_root / "failure.json"
@@ -568,11 +665,16 @@ def demo_starting_rng(request):
             for row in outcome["captures"]
             if row["label"] in ("before_seed_random_states", "pre_seed_rng_witness")
         ]
-        captures = api._captures(reader, demo_root, selected)
+        checked = sim._outcome(reader, demo_root, plan, outcome) if full_sim else None
+        captures = checked["captures"] if full_sim else api._captures(reader, demo_root, selected)
         observed = (
-            api._initial_rng_captures(reader, demo_root, plan, outcome, captures)
-            if versioned is None
-            else versioned.initial_rng_captures(reader, demo_root, plan, outcome, captures)
+            checked["initial_rng"]
+            if full_sim
+            else (
+                api._initial_rng_captures(reader, demo_root, plan, outcome, captures)
+                if versioned is None
+                else versioned.initial_rng_captures(reader, demo_root, plan, outcome, captures)
+            )
         )
         require(
             observed is not None and observed.get("observed") is True,
@@ -597,7 +699,7 @@ def demo_starting_rng(request):
             and set(expected["directories"]) <= set(actual["directories"]) <= allowed,
             "Complete actual demo input inventory changed",
         )
-        resources = api._resources(
+        resources = (sim if full_sim else api)._resources(
             reader,
             demo_root.parent.parent,
             request["plan"]["path"],
@@ -607,11 +709,19 @@ def demo_starting_rng(request):
         )
         require(resources["sampled_limits_met"] is True, "Starting-RNG guarded resource failure")
         runtime = (
-            api._runtime(reader, demo_root.parent, plan, files)
-            if versioned is None
-            else versioned.runtime_evidence(reader, demo_root.parent, plan, files)
+            sim._runtime(reader, demo_root.parent, plan, files)
+            if full_sim
+            else (
+                api._runtime(reader, demo_root.parent, plan, files)
+                if versioned is None
+                else versioned.runtime_evidence(reader, demo_root.parent, plan, files)
+            )
         )
-        values = {row["label"]: row["initial_rng_wire"] for row in captures}
+        values = {
+            row["label"]: row["initial_rng_wire"]
+            for row in captures
+            if row["label"] in ("before_seed_random_states", "pre_seed_rng_witness")
+        }
         wire = values["before_seed_random_states"]
         witness = values["pre_seed_rng_witness"]
         _rng_api().demo_state(wire)
@@ -625,6 +735,12 @@ def demo_starting_rng(request):
             authentication_scope="starting observation only",
             complete_SIM=False,
             input_tree=dict(root=str(input_root), inventory=actual),
+            common_context=dict(
+                plan=reader.bound(plan["demo_plan"]),
+                outcome=outcome,
+                output=str(demo_root),
+                source=plan["source"],
+            ),
         )
     except Exception as error:
         side["error"] = codec._issue(error)
@@ -901,6 +1017,12 @@ def reference_starting_rng(request):
             authentication_scope="starting observation only",
             complete_SIM=False,
             input_tree=dict(root=plan["inputs"]["root"], inventory=actual_inputs),
+            common_context=dict(
+                plan=plan,
+                outcome=worker,
+                output=str(Path(request["worker"]["path"]).parent),
+                source=plan["execution_source"]["root"],
+            ),
         )
     except Exception as error:
         side["error"] = codec._issue(error)
@@ -979,6 +1101,296 @@ def compare_starting_rng_saved(demo, reference):
             file_pins=previous["file_pins"],
             sides={name: dict(authenticated=False, available=False) for name in sides},
         )
+    return result
+
+
+def _common_program_document(value):
+    """Independent saved-data parser; import no RNG or live producer."""
+    require(type(value) is dict, "Exact saved common-start program required")
+    py, np = value.get("python_seed"), value.get("numpy_seed")
+    callers, identity = value.get("consumer_sources"), value.get("input_identity")
+    require(
+        type(py) is int and 0 <= py < 2**256 and type(np) is int and 0 <= np < 2**32,
+        "Bounded explicit seed integers required",
+    )
+    require(
+        type(callers) is dict
+        and set(callers) == {"cells", "original"}
+        and all(report._hash_identity(pin) for pin in callers.values())
+        and report._hash_identity(identity),
+        "Both callers and actual input identity required",
+    )
+    expected = dict(
+        kind=COMMON_START_KIND,
+        epoch="after_parameters_before_world_construction",
+        python_seed=py,
+        numpy_seed=np,
+        python_seed_version=2,
+        numpy_api="legacy global RandomState.seed",
+        input_identity=identity,
+        consumer_sources=callers,
+        operations=[
+            ["python_before", "python_get", None],
+            ["numpy_before", "numpy_get", None],
+            ["python_seed", "python_seed", "python_seed"],
+            ["python_after", "python_get", None],
+            ["numpy_seed", "numpy_seed", "numpy_seed"],
+            ["numpy_after", "numpy_get", None],
+            ["python_readback", "python_get", None],
+            ["numpy_readback", "numpy_get", None],
+        ],
+        draws=0,
+        setstate_or_generator_replacement=False,
+    )
+    require(same(value, expected), "Exact public common-start program document required")
+    return expected
+
+
+def _common_record(value, role, witness):
+    require(
+        type(value) is dict
+        and set(value)
+        == {
+            "kind",
+            "status",
+            "program",
+            "program_identity",
+            "role",
+            "pid",
+            "epoch",
+            "source",
+            "runtime",
+            "generator_identities",
+            "state",
+            "operations",
+            "work",
+            "states_loaded",
+            "generators_replaced",
+            "biological_or_phase_admission",
+        },
+        "Exact completed public common-start receipt required",
+    )
+    doc = _common_program_document(value["program"])
+    identity = hashlib.sha256(
+        json.dumps(doc, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    ).hexdigest()
+    require(
+        value["kind"] == COMMON_START_KIND
+        and value["status"] == "completed"
+        and value["role"] == role
+        and value["epoch"] == doc["epoch"]
+        and value["program_identity"] == identity
+        and type(value["pid"]) is int
+        and value["pid"] > 0
+        and value["states_loaded"] is value["generators_replaced"] is False
+        and value["biological_or_phase_admission"] is False
+        and value["operations"] == [[row[0], "returned"] for row in doc["operations"]],
+        "Actual complete one-shot input program required; ambient observations do not qualify",
+    )
+    require(
+        value["source"]
+        == dict(
+            helper=COMMON_START_FILE,
+            helper_sha256=COMMON_START_SHA256,
+            provenance=rng_runtime.FILE,
+            provenance_sha256=RNG_RUNTIME_SHA256,
+        ),
+        "Exact accepted common-start source/provenance required",
+    )
+    require(
+        type(value["generator_identities"]) is dict
+        and set(value["generator_identities"]) == {"python", "numpy"}
+        and all(type(i) is int and i > 0 for i in value["generator_identities"].values()),
+        "Both original generator identities required",
+    )
+    require(
+        type(value["state"]) is dict
+        and set(value["state"])
+        == {
+            kind + "_" + suffix
+            for kind in ("python", "numpy")
+            for suffix in ("before", "after", "readback")
+        },
+        "Complete original before/after/readback state data required",
+    )
+    states = {}
+    for suffix in ("before", "after", "readback"):
+        states[suffix] = _rng_api().demo_state(
+            dict(
+                numpy_random=value["state"]["numpy_" + suffix],
+                python_random=value["state"]["python_" + suffix],
+                initial_random_reset_or_replacement=False,
+            )
+        )
+    require(same(states["after"], states["readback"]), "Program readbacks changed")
+    common = witness["common_binding"]
+    require(
+        doc["input_identity"] == common["input_inventory_sha256"]
+        and same(value["runtime"], common["runtime"]),
+        "Program and actual pre-world witness input/runtime differ",
+    )
+    source = witness["source"]
+    caller = (
+        source["files"]["validation/betse/native_seed_demo.py"]
+        if role == "cells"
+        else source["reference_sha256"]
+    )
+    require(doc["consumer_sources"][role] == caller, "Program has a different actual caller")
+    work = value["work"]
+    require(
+        type(work) is dict
+        and work.get("program_API_calls") == 8
+        and type(work.get("visible_RNG_observer_events")) is int
+        and 0 < work["visible_RNG_observer_events"] <= 256
+        and work.get("opaque_C_internals_not_independent_cases") is True
+        and work.get("inherited_observer_RNG_effects_require_reviewed_caller_contract") is True,
+        "Complete bounded RNG API work required; not input/case credit",
+    )
+    return states["after"]
+
+
+def _common_saved_side(side, role):
+    require(side["authenticated"] and side["available"], "Authenticated starting prefix required")
+    require(
+        report._hash_identity(COMMON_START_SHA256)
+        and report._hash_identity(COMMON_START_REVIEW_SHA256),
+        "Accepted common-start producer/review remains held",
+    )
+    context, reader = side["common_context"], side["reader"]
+    source = Path(context["source"])
+    source_pin = (
+        context["plan"]["snapshot_sha256"]
+        if role == "cells"
+        else context["plan"]["execution_source"]["snapshot_sha256"]
+    )
+    manifest = reader.bound(dict(path=str(source / "SNAPSHOT.json"), sha256=source_pin))
+    require(
+        manifest["files"][COMMON_START_FILE]["sha256"] == COMMON_START_SHA256,
+        "Common-start helper is not in the actual producer image",
+    )
+    reader.bind(dict(path=str(source / COMMON_START_FILE), sha256=COMMON_START_SHA256))
+    rows = context["outcome"]["captures"]
+    selected = [row for row in rows if row["label"] == "common_start_rng"]
+    require(
+        len(selected) == 1 and selected[0]["status"] == "saved",
+        "Actual saved common-start source return required",
+    )
+    before = next(
+        (i for i, row in enumerate(rows) if row["label"] == "before_seed_random_states"), -1
+    )
+    require(0 <= rows.index(selected[0]) < before, "Program must precede starting observation")
+    root = Path(context["output"])
+    if role == "cells":
+        row = selected[0]
+        snapshot.relative_path(row["path"])
+        api = _report_api().evidence
+        for pin in api.files(root / row["path"], expected_sha256=row["sha256"]):
+            reader.bind(pin)
+        value = api.read(root / row["path"], expected_sha256=row["sha256"], expand=False)
+    else:
+        require(len(selected[0]["files"]) == 1, "Complete inline common-start receipt required")
+        raw, pins = codec._capture(reader, selected[0]["files"][0])
+        value = _data(codec.wire(raw, pins))
+    completion = root / "common-start-rng/COMPLETED.json"
+    completed = reader.read(completion)
+    require(same(value, completed), "Actual returned record differs from its durable publication")
+    declaration = context["plan"].get("common_start")
+    require(
+        type(declaration) is dict
+        and set(declaration) == {"kind", "mode", "program", "program_identity", "provider"}
+        and declaration["kind"] == "cells.paired_common_start_preparation@1"
+        and declaration["mode"] == side["witness"]["common_binding"]["mode"]
+        and same(declaration.get("program"), value["program"])
+        and declaration.get("program_identity") == value["program_identity"]
+        and declaration.get("provider")
+        == dict(
+            file=COMMON_START_FILE,
+            sha256=COMMON_START_SHA256,
+            review_sha256=COMMON_START_REVIEW_SHA256,
+        ),
+        "Fresh prepared program/provider/input declaration required",
+    )
+    observed = _common_record(value, role, side["witness"])
+    witness_state = (
+        _rng_api().demo_state(side["wire"])
+        if role == "cells"
+        else _rng_api().reference_state(side["wire"])
+    )
+    require(same(observed, witness_state), "Actual starting witness differs from program readback")
+    return value
+
+
+def compare_common_start_saved(demo, reference):
+    """Authenticate explicit input programs; no owner, RNG or numerical admission."""
+    sides = dict(cells=demo_starting_rng(demo), original=reference_starting_rng(reference))
+    result = dict(
+        kind=COMMON_START_REPORT_KIND,
+        status="common_start_unavailable",
+        common_starting_authority_established=False,
+        numerical_parity_available=False,
+        complete_SIM=False,
+        physical_checkpoint_credit=0,
+        errors={},
+        file_pins={},
+    )
+    records = {}
+    try:
+        for role, side in sides.items():
+            records[role] = _common_saved_side(side, role)
+        left, right = records["cells"], records["original"]
+        left_input = sides["cells"]["witness"]["common_binding"]
+        right_input = sides["original"]["witness"]["common_binding"]
+        require(
+            left_input["mode"] == right_input["mode"]
+            and left_input["profile"] == right_input["profile"],
+            "Common-start pairing must preserve actual input mode/profile",
+        )
+        require(
+            left["pid"] != right["pid"]
+            and same(left["program"], right["program"])
+            and same(left["runtime"], right["runtime"]),
+            "Distinct processes with the same explicit program/runtime required",
+        )
+        for kind in ("python", "numpy"):
+            require(
+                same(left["state"][kind + "_after"], right["state"][kind + "_after"]),
+                "Actual common-start bits differ",
+            )
+        result.update(
+            status="common_start_files_authenticated",
+            common_starting_authority_established=True,
+            program_identity=left["program_identity"],
+            scope="exact explicit input program and actual pre-world saved observations only",
+        )
+    except Exception as error:
+        result["errors"]["program"] = codec._issue(error)
+    for role, side in sides.items():
+        reader = side["reader"]
+        if reader is None:
+            result["file_pins"][role] = []
+            continue
+        try:
+            retained = side["input_tree"]
+            current = _source_reader(input_files, INPUT_READER_SHA256).inventory(
+                Path(retained["root"])
+            )
+            require(
+                same(current, retained["inventory"]),
+                "Complete input inventory changed during common-start authentication",
+            )
+            for path, pin in tuple(reader.pins.items()):
+                reader.bind(dict(path=path, sha256=pin))
+        except Exception as error:
+            result.update(
+                status="common_start_evidence_changed", common_starting_authority_established=False
+            )
+            result["errors"][role] = codec._issue(error)
+        result["file_pins"][role] = [
+            dict(path=path, sha256=pin) for path, pin in sorted(reader.pins.items())
+        ]
+    result["failed_source_forensics"] = {
+        role: dict(error=side["error"], failure=side["failure"]) for role, side in sides.items()
+    }
     return result
 
 
@@ -2180,13 +2592,18 @@ def main():
     parser.add_argument("--request-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--starting-rng", action="store_true")
+    parser.add_argument("--common-start", action="store_true")
     args = parser.parse_args()
-    reader = (_report_api() if args.starting_rng else report).Reader()
+    if args.starting_rng and args.common_start:
+        parser.error("Choose observation-only or explicit common-start comparison")
+    starting = args.starting_rng or args.common_start
+    reader = (_report_api() if starting else report).Reader()
     pin = dict(path=str(args.request), sha256=args.request_sha256)
     request = reader.bound(pin)
-    if args.starting_rng:
+    if starting:
         require(set(request) == {"demo", "reference"}, "Exact starting-RNG saved request")
-        result = compare_starting_rng_saved(request["demo"], request["reference"])
+        function = compare_common_start_saved if args.common_start else compare_starting_rng_saved
+        result = function(request["demo"], request["reference"])
     else:
         require(set(request) == {"reference", "issued"}, "Exact saved SIM comparison request")
         result = compare_saved(request["reference"], request["issued"])
@@ -2196,7 +2613,7 @@ def main():
         previous = result
         result = (
             dict(
-                kind=STARTING_REPORT_KIND,
+                kind=COMMON_START_REPORT_KIND if args.common_start else STARTING_REPORT_KIND,
                 observations_match=None,
                 common_starting_authority_established=False,
                 numerical_parity_available=False,
@@ -2206,7 +2623,7 @@ def main():
                     for name in ("demo", "reference")
                 },
             )
-            if args.starting_rng
+            if starting
             else compare_views(_empty(), _empty())
         )
         result.update(
@@ -2215,6 +2632,8 @@ def main():
             errors=dict(request=codec._issue(error)),
         )
     snapshot.write_json(args.output, result)
+    if args.common_start:
+        return int(result["status"] != "common_start_files_authenticated")
     return (
         int(result["status"] != "starting_observation_files_authenticated")
         if args.starting_rng

@@ -30,6 +30,83 @@ if TYPE_CHECKING:
 _RAW_GUARDS = []
 
 
+def common_launch_fixture():
+    from tests.unit.test_native_seed_demo import common_fixture
+
+    selected = common_fixture()
+    inventory = dict(directories=[], files={})
+    identity = launch.initial_rng.seal(inventory)
+    selected["program"]["input_identity"] = identity
+    selected["program_identity"] = launch.initial_rng.seal(selected["program"])
+    declaration = dict(
+        kind=launch.RNG_DEMO_KIND,
+        common_start=selected,
+        source_plan=dict(common_start=selected),
+        flux_operator="original",
+        initial_rng_inputs=dict(profile="original", inventory=inventory, inventory_sha256=identity),
+    )
+    files = {
+        launch.DEMO: {"sha256": "b" * 64},
+        launch.initial_rng.ORIGINAL: {"sha256": "c" * 64},
+        launch.initial_rng.COMMON_FILE: {"sha256": launch.initial_rng.COMMON_SHA256 or "d" * 64},
+    }
+    plan = dict(
+        common_start=selected,
+        producers={name: row["sha256"] for name, row in files.items()},
+        release_environment={launch.initial_rng.COMMON_RELEASE: "1"},
+    )
+    return plan, declaration, dict(files=files)
+
+
+def test_launch_common_start_only_selected_path_extends_immutable_producer_roster():
+    plan, declaration, manifest = common_launch_fixture()
+    launch._common_start(plan, declaration, manifest)
+    assert launch.initial_rng.COMMON_FILE in launch._producers(declaration)
+    assert launch.initial_rng.ORIGINAL in launch._producers(declaration)
+    del declaration["common_start"]
+    assert launch.initial_rng.COMMON_FILE not in launch._producers(declaration)
+
+
+@pytest.mark.parametrize(
+    "drift",
+    [
+        "missing_flag",
+        "missing_plan",
+        "missing_demo",
+        "mode",
+        "inventory",
+        "caller",
+        "producer",
+    ],
+)
+def test_launch_common_start_rejects_declared_mode_input_source_or_release_drift(drift):
+    plan, declaration, manifest = common_launch_fixture()
+    if drift == "missing_flag":
+        plan["release_environment"] = {}
+    elif drift == "missing_plan":
+        del plan["common_start"]
+    elif drift == "missing_demo":
+        del declaration["common_start"]
+    elif drift == "mode":
+        declaration["flux_operator"] = "disabled"
+    elif drift == "inventory":
+        declaration["initial_rng_inputs"]["inventory"]["files"]["changed"] = {}
+    elif drift == "caller":
+        manifest["files"][launch.initial_rng.ORIGINAL]["sha256"] = "e" * 64
+    else:
+        plan["producers"].pop(launch.initial_rng.COMMON_FILE)
+    with pytest.raises(ValueError):
+        launch._common_start(plan, declaration, manifest)
+
+
+def test_launch_common_start_ambient_path_has_no_implicit_release_or_declaration():
+    plan = dict(release_environment={})
+    launch._common_start(plan, {}, {})
+    plan["release_environment"][launch.initial_rng.COMMON_RELEASE] = "1"
+    with pytest.raises(ValueError, match="silently"):
+        launch._common_start(plan, {}, {})
+
+
 def consumer_forbidden_frame(frame):
     return frame.f_globals.get("__name__") in (
         "cells.processes.betse_native_init_terminal",

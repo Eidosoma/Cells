@@ -34,7 +34,7 @@ KIND = "cells.original_SIM_retained_INIT_reference@2"
 PAIR_KIND = "cells.original_SEED_INIT_SIM_pair_preparation@1"
 COMPARISON_FILE = "validation/betse/native_sim_reference_compare.py"
 RELEASE = "CELLS_ORIGINAL_SIM_REFERENCE_RELEASED"
-REFERENCE_SHA256 = "9903b81de2c79e9e5f3ec1951494f8e66e0a18ea69accdd3be5a5523a16460d8"
+REFERENCE_SHA256 = "cf0def5f949b422ba83f90937c6270e19f462af9b098fb4d02be3ca491957131"
 SOURCE_REVIEW_SHA256 = REFERENCE_REVIEW_SHA256 = EXECUTION_REVIEW_SHA256 = None
 MAX_SIM_ITERATIONS = initial.MAX_ITERATIONS
 MAX_STEP_EVENT_BOUNDARIES = 512
@@ -56,7 +56,7 @@ def preparation_starts():
     )
 
 
-def prepare(output, *, input_pair, input_sha256, mode):
+def prepare(output, *, input_pair, input_sha256, mode, common_start=None):
     """One-way checkout snapshot then metadata-only original INIT preparation."""
     from validation.betse import betse_mesh_lifecycle_preparation_guard as guard
 
@@ -90,6 +90,12 @@ def prepare(output, *, input_pair, input_sha256, mode):
     )
     metadata = output / "metadata"
     metadata.mkdir()
+    common_args = []
+    if common_start is not None:
+        options = initial._common_start_options(common_start)
+        path = output / "common-start-inputs.json"
+        snapshot.write_json(path, options)
+        common_args = ["--common-start", str(path), "--common-start-sha256", snapshot.digest(path)]
     guard.run_bounded(
         [
             sys.executable,
@@ -104,6 +110,7 @@ def prepare(output, *, input_pair, input_sha256, mode):
             input_sha256,
             "--mode",
             mode,
+            *common_args,
         ],
         directory=metadata,
         cwd=frozen,
@@ -116,15 +123,23 @@ def prepare(output, *, input_pair, input_sha256, mode):
     return output / ("pair-prepared.json" if mode == "both" else "prepared.json")
 
 
-def prepare_frozen(output, *, input_pair, input_sha256, mode):
+def prepare_frozen(output, *, input_pair, input_sha256, mode, common_start=None):
     if mode == "both":
-        return prepare_pair_frozen(output, input_pair=input_pair, input_sha256=input_sha256)
-    plan = _single_frozen_plan(output, input_pair=input_pair, input_sha256=input_sha256, mode=mode)
+        return prepare_pair_frozen(
+            output, input_pair=input_pair, input_sha256=input_sha256, common_start=common_start
+        )
+    plan = _single_frozen_plan(
+        output,
+        input_pair=input_pair,
+        input_sha256=input_sha256,
+        mode=mode,
+        common_start=common_start,
+    )
     snapshot.write_json(output / "prepared.json", plan)
     return plan
 
 
-def _single_frozen_plan(output, *, input_pair, input_sha256, mode):
+def _single_frozen_plan(output, *, input_pair, input_sha256, mode, common_start=None):
     manifest = snapshot.verify(ROOT)
     initial._require(
         all(
@@ -138,12 +153,18 @@ def _single_frozen_plan(output, *, input_pair, input_sha256, mode):
         "Exact predecessor reference producer required",
     )
     prefix = output / "INIT-preparation"
-    initial.prepare(prefix, input_pair=input_pair, input_sha256=input_sha256, mode=mode)
+    parent_value = initial.prepare(
+        prefix,
+        input_pair=input_pair,
+        input_sha256=input_sha256,
+        mode=mode,
+        common_start=common_start,
+    )
     parent = prefix / "prepared.json"
     plan = dict(
         kind=KIND,
         held=True,
-        source_plan=source_plan(),
+        source_plan=source_plan(common_start=parent_value.get("common_start")),
         execution_source=dict(
             root=str(ROOT),
             snapshot_sha256=snapshot.digest(ROOT / "SNAPSHOT.json"),
@@ -152,6 +173,8 @@ def _single_frozen_plan(output, *, input_pair, input_sha256, mode):
         INIT_prepared=dict(path=str(parent), sha256=snapshot.digest(parent)),
         source_native_reference_execution_released=False,
     )
+    if "common_start" in parent_value:
+        plan["common_start"] = parent_value["common_start"]
     return plan
 
 
@@ -298,7 +321,7 @@ def _check_execution_closure(plan, authority, output, *, complete=False):
             )
 
 
-def prepare_pair_frozen(output, *, input_pair, input_sha256):
+def prepare_pair_frozen(output, *, input_pair, input_sha256, common_start=None):
     """One immutable producer image; two fresh future workers, never two owners."""
     output = initial._path(output)
     context = dict(stage="snapshot", modes={}, primary=None, secondary=[])
@@ -318,7 +341,11 @@ def prepare_pair_frozen(output, *, input_pair, input_sha256):
             context["stage"] = "prepare_" + mode
             folder = output / "modes" / mode
             plan = _single_frozen_plan(
-                folder, input_pair=input_pair, input_sha256=input_sha256, mode=mode
+                folder,
+                input_pair=input_pair,
+                input_sha256=input_sha256,
+                mode=mode,
+                common_start=common_start,
             )
             worker = output / "execution" / mode / "worker"
             read_roots = list(
@@ -393,6 +420,11 @@ def prepare_pair_frozen(output, *, input_pair, input_sha256):
                     may_launch=False,
                 ),
             )
+            if "common_start" in plan:
+                context["modes"][mode]["common_start"] = plan["common_start"]
+                context["modes"][mode]["controller_recipe"][
+                    "explicit_enabled_environment_required"
+                ].append("CELLS_COMMON_START_RNG_RELEASED")
         context["stage"] = "final_source_and_input_rebinding"
         snapshot.verify(ROOT, manifest_sha256=snapshot.digest(ROOT / "SNAPSHOT.json"))
         initial._require(
@@ -436,6 +468,18 @@ def prepare_pair_frozen(output, *, input_pair, input_sha256):
             actual_source_native_reference_execution_released=False,
             ordinary_checkpoint_physical_or_numerical_credit=0,
         )
+        if common_start is not None:
+            value["shared_start"] = dict(
+                authority=False,
+                provider=initial.COMMON_START_FILE,
+                producer_sha256=initial.COMMON_START_SHA256,
+                review_sha256=initial.COMMON_START_REVIEW_SHA256,
+                programs={mode: row["common_start"] for mode, row in context["modes"].items()},
+                explicit_input_program=True,
+                RNG_state_injection=False,
+                actual_calls=0,
+                execution_held=True,
+            )
         snapshot.write_json(output / "pair-prepared.json", value)
         return value
     except BaseException as error:
@@ -481,8 +525,8 @@ class Attempt:
     )
 
 
-def source_plan():
-    return dict(
+def source_plan(*, common_start=None):
+    value = dict(
         kind=KIND,
         original=source.source_plan(),
         reference_source=REFERENCE_SHA256,
@@ -509,6 +553,10 @@ def source_plan():
         actual_source_native_reference_execution_released=False,
         physical_numerical_or_checkpoint_credit=0,
     )
+    if common_start is not None:
+        value["common_start"] = initial._common_start_shape(common_start)
+        value["shared_start_is_not_SIM_or_physical_admission"] = True
+    return value
 
 
 class ExistingOriginalImports(importlib.abc.MetaPathFinder):
@@ -1650,6 +1698,15 @@ def _release(plan, prepared_pin, release, release_pin, output, enabled):
             "Reviewed SIM contract differs: " + name,
             "release",
         )
+    if "common_start" in plan:
+        parent = initial._json_record(
+            plan["INIT_prepared"]["path"], plan["INIT_prepared"]["sha256"]
+        )
+        initial._require(
+            parent.get("common_start") == plan["common_start"],
+            "Actual INIT predecessor common-start declaration differs",
+            "common_start",
+        )
     _check_execution_closure(plan, value, output)
     return value
 
@@ -1769,7 +1826,9 @@ def evaluate(
     try:
         plan = initial._json_record(prepared, expected_sha256, 16 * 2**20)
         initial._require(
-            plan["kind"] == KIND and plan["held"] is True and plan["source_plan"] == source_plan(),
+            plan["kind"] == KIND
+            and plan["held"] is True
+            and plan["source_plan"] == source_plan(common_start=plan.get("common_start")),
             "Exact held SIM preparation required",
         )
         initial._require(
@@ -1966,7 +2025,18 @@ def main():
     parser.add_argument("--release", type=Path)
     parser.add_argument("--release-sha256")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--common-start", type=Path)
+    parser.add_argument("--common-start-sha256")
     args = parser.parse_args()
+    if (args.common_start is None) != (args.common_start_sha256 is None):
+        parser.error("Both explicit common-start input path and hash are required")
+    common_start = None
+    if args.common_start is not None:
+        if not (args.prepare or args.prepare_frozen):
+            parser.error("Common-start inputs require fresh preparation; worker overrides refuse")
+        common_start = initial._common_start_options(
+            initial._json_record(args.common_start, args.common_start_sha256)
+        )
     if args.prepare or args.prepare_frozen:
         resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 512 * 2**20))
         if args.input_pair is None or args.input_sha256 is None:
@@ -1977,6 +2047,7 @@ def main():
             input_pair=args.input_pair,
             input_sha256=args.input_sha256,
             mode=args.mode,
+            common_start=common_start,
         )
         return 0
     if args.controller:
