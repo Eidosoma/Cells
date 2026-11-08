@@ -16,14 +16,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   `src/cells` (`betse_native_*`, about 110K lines; `betse_normal_*`, about 50K
   lines). The resulting end-to-end demonstration compared BETSE with BETSE; no
   Cells engine model ran in it. That track is frozen at checkpoint `7e9873a` and
-  superseded. Its code and evidence are preserved. The rule is now in `AGENTS.md`.
+  superseded, and tagged `native-betse-frozen-2026-11-08`. Its code and evidence
+  are preserved. The rule is now in `AGENTS.md`.
 - **Native demonstration outcome:** 15 actual launches (6–8 November) never
   reached tissue geometry. Every failure was in the provenance, observer, memory
   or wall-time layer. [Actual16](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-16/failure.json)
   stopped at its 1,800-second limit at 16:06:11 UTC, 20.5 minutes into phase
   construction. This track produced no numerical BETSE or Cells result.
 - **Single lead agent from 8 November**, with at most four subagents on disjoint
-  files. Work continues on branch `takeover-jupiter`.
+  files. Work continues on `main`; milestones are tagged.
 
 ## Plan: BETSE parity on CPU and L4, then JUPITER (from 8 November)
 

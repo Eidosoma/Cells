@@ -29,8 +29,8 @@ part of the engine.
 - Compare Cells against saved, extracted BETSE outputs, never against live BETSE
   objects inside a Cells process.
 - `src/cells/processes/betse_native_*` and `betse_normal_*` are frozen tooling
-  from before 8 November 2026 (checkpoint `7e9873a`). Do not extend or launch
-  them, and do not delete them without the user's approval.
+  from before 8 November 2026 (tag `native-betse-frozen-2026-11-08`). Do not
+  extend or launch them, and do not delete them without the user's approval.
 
 # Milestones and provenance
 
