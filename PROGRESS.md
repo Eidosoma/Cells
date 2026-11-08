@@ -38,8 +38,8 @@ starts, and production design is deferred until parity is established.
 | --- | --- | --- |
 | 1 | Plain BETSE reference outputs (default world; seven-cell fixture) | Done |
 | 2 | Coverage map of default-world mechanisms, and the parity ladder | Done ([map](/mnt/workspaces/Cells/cells-betse-default-coverage-20261108-01/coverage.json)) |
-| 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | In progress |
-| 4 | The same comparison on the L4 GPU | L4 path checks in progress |
+| 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | Passed (pre-registered protocols D and F) |
+| 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
 | 5 | Further mechanism families from the parity ladder, on CPU and L4 | Planned |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 
@@ -47,6 +47,34 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **First BETSE parity of Cells' own physics: default world passes (8 November).**
+  Model `resolved_pump_tissue@1` (IMEX ARS(2,2,2)) on BETSE's default world (222
+  cells, 25×25 extracellular grid), judged against plain BETSE under protocols
+  committed before the runs (`3c09891`). The runs were from `ba8694f` with a clean
+  tree, and each named its protocol and geometry hashes.
+  [Summary](/mnt/workspaces/Cells/default-world-parity-20261108-01/judged-01/summary.json).
+
+  | Protocol | INIT Vm (tol.) | INIT cells | Interior ECM | SIM Vm | Verdict |
+  | --- | --- | --- | --- | --- | --- |
+  | D vs BETSE 10 ms, CPU = L4 | 131 µV (400) | 2.8e-6 (9e-6) | 3.9e-4 (2e-3) | 2.27 µV (7) | pass |
+  | F vs BETSE 0.1 ms, L4 | 2.27 µV (20) | 1.0e-7 (4e-7) | 3.9e-4 (2e-3) | 2.27 µV (7) | pass |
+
+  - Each difference matches its predicted budget term. D's INIT maximum is
+    BETSE's own 10 ms step error (127–130 µV, at 0.33 s). With that removed (F),
+    Cells and BETSE agree to 2.27 µV over a 22.8 mV INIT change, against a
+    3.4 µV predicted budget (constants, field law, exterior potentials, BETSE's
+    residual step). The 3.9e-4 ECM difference is the conservative-stencil term,
+    a deliberate Cells model difference.
+  - Health: 1 Newton iteration per field solve; global charge ≤3% of its bound.
+    D took 4 min on the L4 and 7 min 22 s on CPU; F took 19 min 44 s on the L4.
+  - **Limits of this claim.**
+    - One seeded geometry and BETSE's default mechanisms only: four ions, leak,
+      Na/K pump, gap-junction gating, extracellular electrodiffusion. No
+      channels, networks or interventions.
+    - SIM is nearly flat in BETSE (Vm moves 3 µV), so INIT carries the test.
+    - venv is not compared, because the field models differ by design.
+    - The next mechanism families follow the parity ladder in the coverage map.
 
 - **Difference budget and first blind resolved run (8 November).**
   [Index](/mnt/workspaces/Cells/default-world-parity-20261108-01/index.json).
