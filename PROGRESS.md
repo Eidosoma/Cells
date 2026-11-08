@@ -35,7 +35,7 @@ starts, and production design is deferred until parity is established.
 
 | Step | Work | Status |
 | --- | --- | --- |
-| 1 | Plain BETSE reference outputs (default world; seven-cell fixture) | In progress |
+| 1 | Plain BETSE reference outputs (default world; seven-cell fixture) | Done |
 | 2 | Coverage map of default-world mechanisms, and the parity ladder | In progress |
 | 3 | Cells run of BETSE's default world, compared with step 1 | Next |
 | 4 | The same comparison on the L4 GPU | L4 path checks in progress |
@@ -46,3 +46,21 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Plain BETSE reference outputs (8 November).** Unmodified BETSE v1.5.0 CLI,
+  isolated HOME, CPUs 1–2; tools `validation/betse/betse_reference_run.py` and
+  `betse_reference_extract.py`. [Index](/mnt/workspaces/Cells/betse-reference-20261108-01/index.json)
+  of four cases, each with its run result, extract manifest and checks:
+  - default world (headless_core): 226 cells, 1,298 membranes, 24×25 ECM grid;
+    seed 11.1 s, INIT 11.8 s, SIM 9.6 s, peak 239 MiB;
+  - dense default world (sampling = dt; 499 INIT / 349 SIM samples): its own
+    unseeded geometry (222 cells, 25×25 grid);
+  - dense run on the standard seed: histories bit-identical at all common
+    samples, so dense sampling does not change dynamics;
+  - seven-cell REF-003c configuration (YAML hash reproduced; new geometry).
+
+  Comparison notes: sample k is the state after k+1 updates, and the end state
+  is only in `*_final.npz`; BETSE uses F = 96485 and R = 8.314; geometry differs
+  per run (unseeded RNG), so each comparison uses its case's own
+  `geometry.npz`; INIT `P_cells_time` is an aliased series. Default-world SIM
+  Vmem moves only about 3 µV, so the dense INIT is the informative comparison.
