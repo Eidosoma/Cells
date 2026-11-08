@@ -25,20 +25,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 - **Single lead agent from 8 November**, with at most four subagents on disjoint
   files. Work continues on branch `takeover-jupiter`.
 
-## JUPITER week plan (from 8 November)
+## Plan: BETSE parity on CPU and L4, then JUPITER (from 8 November)
 
-Target: a Cells-engine run of BETSE's default world compared against plain BETSE
-output; the same model qualified on the L4; then a JUPITER pilot and production
-within the 10,000 GH200 GPU-hour budget.
+Target: BETSE parity of the Cells engine, compared against output from plain
+BETSE and run on CPU and the local L4. The JUPITER allocation (10,000 GH200
+GPU-hours over about three months) follows; this session moves there when it
+starts, and production design is deferred until parity is established.
 
 | Step | Work | Status |
 | --- | --- | --- |
 | 1 | Plain BETSE reference outputs (default world; seven-cell fixture) | In progress |
-| 2 | Coverage map: default-world mechanisms → Cells models and gaps | In progress |
-| 3 | Cells run on BETSE's default world, compared with step 1 | Next |
-| 4 | L4 GPU qualification of that model; production ensemble definition | Next |
-| 5 | JUPITER environment and one-node pilot | Preparation in progress |
-| 6 | JUPITER production as independent one-node jobs | Not started |
+| 2 | Coverage map of default-world mechanisms, and the parity ladder | In progress |
+| 3 | Cells run of BETSE's default world, compared with step 1 | Next |
+| 4 | The same comparison on the L4 GPU | L4 path checks in progress |
+| 5 | Further mechanism families from the parity ladder, on CPU and L4 | Planned |
+| 6 | JUPITER environment and one-node pilot | Recipe in preparation |
 
 ## Runs
 

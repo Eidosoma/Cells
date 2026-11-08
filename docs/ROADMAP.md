@@ -23,15 +23,16 @@ Cells model needs its own CPU/GPU evidence before GPU parity is claimed.
 
 ## Current development priorities
 
-**JUPITER week (from 8 November 2026).** The immediate goal is a JUPITER run
-within the 10,000 GH200 GPU-hour budget. Its scientific gate is bounded: a
-Cells-engine run of BETSE's default world, compared against output from plain,
-unmodified BETSE, with deliberate physics differences and excluded mechanisms
-stated. The same Cells model is then qualified on the L4 and on one JUPITER node.
-The full compatibility milestone below remains the longer-term target; this gate
-does not complete it. BETSE is a reference only (see `AGENTS.md`). The re-hosted
-native BETSE demonstration (30 October to 8 November) is superseded. Status is
-in [Progress](../PROGRESS.md#current-position).
+**BETSE parity first, then JUPITER (from 8 November 2026).** The immediate goal
+is BETSE parity of the Cells engine, tested on CPU and the local L4: Cells-engine
+runs compared against output from plain, unmodified BETSE. Parity starts with
+BETSE's default world and extends one mechanism family at a time, with
+deliberate physics differences and excluded mechanisms stated. Each family that
+passes is also run on the L4. The JUPITER allocation is 10,000 GH200 GPU-hours
+over about three months; its production design is deferred until parity is
+established. BETSE is a reference only (see `AGENTS.md`). The re-hosted native
+BETSE demonstration (30 October to 8 November) is superseded. Status is in
+[Progress](../PROGRESS.md#current-position).
 
 The longer-term user priority is **BETSE scientific compatibility before moving
 Cells production runs to Jupiter**, with CPU development and validation first.
