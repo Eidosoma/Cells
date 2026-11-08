@@ -17,7 +17,7 @@ from cells.processes import conservative_polygon_geometry as exact
 LAW_ID = "cells_finite_ecm_conforming_polygon_partition@1"
 REQUEST_KIND = "cells.finite_ecm_polygon_request@1"
 RESULT_KIND = "cells.finite_ecm_polygon_binding@1"
-EXACT_HELPERS_SHA256 = "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d"
+EXACT_HELPERS_SHA256 = "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d"
 MAX_REGIONS = 32
 MAX_CELLS = 16
 MAX_VERTICES = 256

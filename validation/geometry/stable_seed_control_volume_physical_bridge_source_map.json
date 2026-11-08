@@ -131,7 +131,7 @@
   "coordinate_authority": "validated constructor shared binary64 coordinates and directed rings; no cached metric input",
   "effective_repaired_source_sha256": {
     "tests/unit/test_stable_seed_control_volume_physical_bridge.py": "306657230727f680dc85db5b426d0e642b0f7ccd19be3c13ac12bb6d00077be2",
-    "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c"
+    "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py": "be1b7781c6b343ace7938042d36ce62212534f0feb10d5fe600f70593bb3a2d1"
   },
   "independent_sites": {
     "conservation": {
@@ -278,7 +278,7 @@
           "validation/geometry/conservative_polygon_geometry_reference.py",
           "validation/geometry/stable_seed_control_volumes_reference.py"
         ],
-        "sha256": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c",
+        "sha256": "be1b7781c6b343ace7938042d36ce62212534f0feb10d5fe600f70593bb3a2d1",
         "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
       },
       {
@@ -338,8 +338,8 @@
   },
   "reused_physical_source_pins": {
     "core/conservative_polygon_tissue_preparation.py": "91c4bab5a1dd194c411d787e749d57f864ccffc17336f0d957cd1d856c10a039",
-    "processes/conservative_polygon_geometry.py": "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d",
-    "processes/stable_seed_control_volumes.py": "a1f743f2b1c8adb2b169693870d1de2916b2fa0dc616b39200b5f8f905327916"
+    "processes/conservative_polygon_geometry.py": "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d",
+    "processes/stable_seed_control_volumes.py": "25fb1c11d90a577be4a2e725b42850ca2c786fb4c89f9abf5b00f0b0842eccec"
   },
   "schema_guards": {
     "complete_permeability_species": {

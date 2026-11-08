@@ -9,7 +9,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import betse_native_grid_metric_audit as metric
 from cells.processes import rectangular_environment as field
 
 
@@ -100,37 +99,6 @@ def test_anisotropic_solutions_match_independent_exact_constrained_system(dx, dy
     np.testing.assert_allclose(result.potential, expected, rtol=0, atol=2e-14)
     np.testing.assert_allclose(result.residual, 0.0, rtol=0, atol=4e-14)
     assert abs(result.potential.sum()) < 2e-14
-
-
-def test_retained_anisotropic_observation_uses_physical_spacing_without_repair():
-    declared = spec()
-    raw = metric.GridObservation(
-        declared.shape,
-        declared.bounds_m,
-        1.0,
-        tuple(map(tuple, declared.coordinates_m.tolist())),
-        tuple(np.ndindex(declared.shape)),
-        tuple(declared.vertices_x_m.tolist()),
-        tuple(declared.vertices_y_m.tolist()),
-        "synthetic source-shaped observation only",
-    )
-    audit = metric.audit(raw, boundaries=tuple((side, "flux") for side in metric.SIDES))
-    before = audit.record_json
-    assert not audit.record["uniform_metric_passed"]
-    with pytest.raises(metric.UniformMetricRejected):
-        metric.require_uniform_metric(audit)
-    converted = field.spec_from_observation(audit, environment_ids=declared.environment_ids)
-    grid = field.bind(converted)
-    save(
-        "retained-metric", grid=grid, audit_identity=audit.identity, native_scalar_delta=raw.delta_m
-    )
-    assert grid.spacing_xy_m == (1.0, 1.25)
-    assert grid.laplacian[0, 2] == 1 / 1.25**2
-    assert grid.laplacian[0, 2] != 1 / raw.delta_m**2
-    assert grid.coordinates_m.tobytes() == declared.coordinates_m.tobytes()
-    assert grid.vertices_y_m.tobytes() == declared.vertices_y_m.tobytes()
-    assert audit.record_json == before and audit.observation is raw
-    assert converted.provenance["native_source_equivalence"] is False
 
 
 def test_flux_conservation_energy_and_both_nullspace_products():
@@ -287,31 +255,6 @@ def test_invalid_metric_refuses_before_inverse(change, monkeypatch):
     save("invalid-" + change, error=str(caught.value))
 
 
-def test_observation_adapter_refuses_mixed_boundary_or_inconsistent_map():
-    incoming = spec()
-    raw = metric.GridObservation(
-        incoming.shape,
-        incoming.bounds_m,
-        1.0,
-        tuple(map(tuple, incoming.coordinates_m.tolist())),
-        tuple(np.ndindex(incoming.shape)),
-        tuple(incoming.vertices_x_m.tolist()),
-        tuple(incoming.vertices_y_m.tolist()),
-    )
-    for label, sample, boundaries in (
-        ("boundary", raw, (("N", "value"), ("S", "flux"), ("E", "flux"), ("W", "flux"))),
-        (
-            "mapping",
-            replace(raw, map_ij2k=((0, 1), (0, 0), (1, 0), (1, 1))),
-            tuple((s, "flux") for s in metric.SIDES),
-        ),
-    ):
-        audit = metric.audit(sample, boundaries=boundaries)
-        with pytest.raises(ValueError) as caught:
-            field.spec_from_observation(audit, environment_ids=incoming.environment_ids)
-        save("adapter-" + label, error=str(caught.value), audit_identity=audit.identity)
-
-
 def test_nonfinite_inverse_failure_does_not_issue_binding(monkeypatch):
     def broken(*args):
         return np.full((4, 4), np.nan)
@@ -326,47 +269,3 @@ def test_field_axis_and_precision_refusals():
     for data in (np.zeros(3), np.zeros(4, dtype=np.float32), np.array(1.0)):
         with pytest.raises(ValueError):
             field.solve(data, grid)
-
-
-@pytest.mark.parametrize(
-    "change", ["valid", "foreign_project", "missing_required", "external_hash", "affinity"]
-)
-def test_runner_producer_origins_and_runtime_hashes_are_required(tmp_path, change):
-    import sys
-
-    from validation.betse import rectangular_environment_validation as runner
-
-    frozen = tmp_path / "source"
-    source, loaded = {"files": {}}, {}
-    for i, name in enumerate(runner.FILES):
-        path = frozen / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("synthetic runtime binding:" + name)
-        digest = runner.snapshot.digest(path)
-        source["files"][name] = {"sha256": digest}
-        loaded["cells.synthetic_" + str(i)] = {"path": str(path), "sha256": digest}
-    external = tmp_path / "external.py"
-    external.write_text("synthetic external dependency")
-    loaded["external"] = {"path": str(external), "sha256": runner.snapshot.digest(external)}
-    executable = Path(sys.executable).resolve()
-    data = dict(
-        loaded_files=loaded,
-        measured_cpu_affinity=[2],
-        executable=dict(path=str(executable), sha256=runner.snapshot.digest(executable)),
-    )
-    if change == "foreign_project":
-        other = tmp_path / "old-snapshot.py"
-        other.write_bytes(Path(loaded["cells.synthetic_0"]["path"]).read_bytes())
-        loaded["cells.synthetic_0"]["path"] = str(other)
-    elif change == "missing_required":
-        del loaded["cells.synthetic_0"]
-    elif change == "external_hash":
-        external.write_text("changed after recorded runtime inventory")
-    elif change == "affinity":
-        data["measured_cpu_affinity"] = [3]
-    if change == "valid":
-        assert len(runner.verify_runtime(frozen, source, data, [2])) == len(runner.FILES)
-    else:
-        with pytest.raises(ValueError) as caught:
-            runner.verify_runtime(frozen, source, data, [2])
-        save("runtime-" + change, error=str(caught.value))

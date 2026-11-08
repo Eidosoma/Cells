@@ -22,10 +22,10 @@ UPSTREAM_PREPARED_MANIFEST_SHA256 = (
     "5b6257f7a8f0f8a51b6903fb55aba11fe34c0934f2e10351e377a42eee81b406"
 )
 UPSTREAM_GEOMETRY_REFERENCE_SHA256 = (
-    "5b2240bf02166ae4bc73e03a669611d3328448fe1dd5824919ccbf59dc8f702c"
+    "a069949dce6f4b2511f011af134129b1c87e9aa4dc8c71e488c3ccb3c1686ab9"
 )
 DRAFT_ONLY = False
-BRIDGE_CORE_SHA256 = "31959e49ec266092556dc67c755d28105e24bdf6789079fd766c7c5e4f3566ca"
+BRIDGE_CORE_SHA256 = "b7d2b47fb7bbc164a40c299ac40cce0a3f264ee39508ead7298db259273b7f1b"
 CALLERS_SHA256 = "4be058c5f6211a9a489c709ee95f371d3dd7bf0ba03c8834e789c0be3554c09f"
 CONTROLS_SHA256 = "762fbb40bd9121b21167cd1ab325d65beafe79542fb2e03af6dcd8b2960e5f83"
 HELPER_PINS = {
@@ -533,7 +533,7 @@ def physical_provenance(preparation, request, truth, engine, exact, partial):
     root = Path(__file__).resolve().parents[2]
     sources_path = root / "src/cells/core/finite_ecm_polygon_sources.json"
     require(
-        sha(sources_path) == "4d6196c9332ab0353d0eb513fbae2c00c5232ac4ce6a19f2bd5ad6a7da5c86f2",
+        sha(sources_path) == "dc4e5e03109e034e56c1fb380a0df79412757cef2ac35b51ed0a32fc09f2aa47",
         "immutable_physical_admission_manifest",
     )
     exact(

@@ -23,10 +23,10 @@ SOURCE_PINS = {
         "91c4bab5a1dd194c411d787e749d57f864ccffc17336f0d957cd1d856c10a039"
     ),
     "processes/conservative_polygon_geometry.py": (
-        "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d"
+        "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d"
     ),
     "processes/stable_seed_control_volumes.py": (
-        "a1f743f2b1c8adb2b169693870d1de2916b2fa0dc616b39200b5f8f905327916"
+        "25fb1c11d90a577be4a2e725b42850ca2c786fb4c89f9abf5b00f0b0842eccec"
     ),
 }
 CONSTRUCTOR_REFERENCE_SHA256 = "643ea598f74c4a5d56753b5712d528937683cc35b57e6c904bc113bed1ac7813"

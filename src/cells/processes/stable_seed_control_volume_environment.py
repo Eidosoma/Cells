@@ -14,19 +14,19 @@ from cells.processes import stable_seed_control_volume_physical_bridge as bridge
 
 LAW_ID = "cells_fixed_seed_environment_prerequisite_correspondence@1"
 INPUT_KIND = "cells.fixed_seed_environment_correspondence_declaration@1"
-BRIDGE_REFERENCE_SHA256 = "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c"
+BRIDGE_REFERENCE_SHA256 = "be1b7781c6b343ace7938042d36ce62212534f0feb10d5fe600f70593bb3a2d1"
 SOURCE_PINS = {
     "processes/stable_seed_control_volume_physical_bridge.py": (
-        "be08b8953ff81107d12f39e19e3a870b2f1dd1604199d318fb823bd061842156"
+        "177935df202c941b7f89379de48cdcea915296029e7fecaa4ca8e538e9c28a09"
     ),
     "processes/finite_ecm_polygon_geometry.py": (
-        "9769a8ec6e2816fa3b4d939c6b0f4d0518b01a7ec6679e9090442d984534c925"
+        "79a5341ab81e68405de0be936ecba6649fd6af577809ce36291d22c59f28dc66"
     ),
     "core/finite_ecm_polygon_preparation.py": (
-        "a4b94d721023b98e8acc4df935f6e7ce651ad4ad0a63a692b09d346c56fc1180"
+        "b9f10b6947b92a9b8667610da00376b757c1b1ec78c1b62f590c6d98a77c9e82"
     ),
     "core/active_ecm_polygon_preparation.py": (
-        "58786f33f5e6910adf1b37e4ab6b7f098c04733bfcd81c3c31be749d82af2884"
+        "ae021dae4aacf82e32e6255c1c567d37667c976b6b151c29647287721281bddc"
     ),
 }
 INVALIDATED = (

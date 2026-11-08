@@ -12,7 +12,7 @@ FINITE_SHA256 = "232f5762460fd03d8990a65648e7f264dccb4b8f6ee5e2514f431d127041bc9
 ECM = Path("/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-prepared-20261031-02")
 ECM_SHA256 = "5b6257f7a8f0f8a51b6903fb55aba11fe34c0934f2e10351e377a42eee81b406"
 SOURCES = "src/cells/core/finite_ecm_polygon_sources.json"
-SOURCES_SHA256 = "4d6196c9332ab0353d0eb513fbae2c00c5232ac4ce6a19f2bd5ad6a7da5c86f2"
+SOURCES_SHA256 = "dc4e5e03109e034e56c1fb380a0df79412757cef2ac35b51ed0a32fc09f2aa47"
 DENIED = {"cells", "betse", "numpy", "scipy", "jax", "jaxlib", "PIL", "torch"}
 PREFIX = "validation/geometry/stable_seed_partition_physiology_bridge_"
 REFERENCE = PREFIX + "reference.py"
@@ -27,7 +27,7 @@ UPSTREAM_REVIEW = Path(
 )
 UPSTREAM_REVIEW_SHA256 = "a8c09e4245079f55784e62d79e62d05e616dc5a665de5fb62b5235365b6078c7"
 UPSTREAM_VERDICT = "clear_for_prospective_guarded_qualification_preparation"
-UPSTREAM_REFERENCE_SHA256 = "5b2240bf02166ae4bc73e03a669611d3328448fe1dd5824919ccbf59dc8f702c"
+UPSTREAM_REFERENCE_SHA256 = "a069949dce6f4b2511f011af134129b1c87e9aa4dc8c71e488c3ccb3c1686ab9"
 
 
 def sha(path):

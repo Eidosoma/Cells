@@ -907,11 +907,11 @@
   "production": {
     "complete_history_uses_existing_integrated_checks": true,
     "complete_prefix_and_unmasked_failure_evidence_retained": true,
-    "core_sha256": "dc492f60c1f3d3b8c1d340b2db621ba728ff26e807515029e378ec308fc8041f",
+    "core_sha256": "3de16b207581f2f4bb610db6f1cc110ca4ba91af3b09b750b278706203afc846",
     "new_physical_law": false,
     "no_field_cache_or_initial_accounting_after_advancement": true,
     "numerical_tolerances_changed": false,
-    "original_first_core_sha256": "2a92b3f55ee0a3c7b4374dcd5da4f48aa8234e3ad947712fdc7fc4d53c3d580c",
+    "original_first_core_sha256": "b0da40893ff3bd0faab6c1f19180f8993c35c039d08bc1df518bf032e46b0b89",
     "original_layout_and_all_twelve_state_ledgers_carried": true,
     "source_sites": {
       "_execute_arm": {

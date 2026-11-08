@@ -1,0 +1,630 @@
+{
+ "kind": "cells.test_fixture.exported_generated_polygon_complexes@1",
+ "law": "cells_conforming_polygon_physical_owners@1",
+ "exported_from_revision": "b10a99e492728516aa6087981c27782b10047fd0",
+ "note": "Physical geometry identical to the generated-source binding at the exporting revision; only the source declaration and request identity differ",
+ "cases": {
+  "generated-singletons": {
+   "raw": {
+    "axial_caps": "sealed_no_transport@1",
+    "bath_assignment": {
+     "bath_id": "bath",
+     "kind": "one_explicit_bath@1"
+    },
+    "baths": [
+     {
+      "id": "bath",
+      "volume_m3": 1e-15
+     }
+    ],
+    "cell_groups": [
+     {
+      "id": "physical-0",
+      "source_cell_ids": [
+       "seed-r0-c0"
+      ]
+     },
+     {
+      "id": "physical-1",
+      "source_cell_ids": [
+       "seed-r0-c1"
+      ]
+     },
+     {
+      "id": "physical-2",
+      "source_cell_ids": [
+       "seed-r0-c2"
+      ]
+     },
+     {
+      "id": "physical-3",
+      "source_cell_ids": [
+       "seed-r1-c0"
+      ]
+     },
+     {
+      "id": "physical-4",
+      "source_cell_ids": [
+       "seed-r1-c1"
+      ]
+     },
+     {
+      "id": "physical-5",
+      "source_cell_ids": [
+       "seed-r1-c2"
+      ]
+     },
+     {
+      "id": "physical-6",
+      "source_cell_ids": [
+       "seed-r2-c0"
+      ]
+     },
+     {
+      "id": "physical-7",
+      "source_cell_ids": [
+       "seed-r2-c1"
+      ]
+     },
+     {
+      "id": "physical-8",
+      "source_cell_ids": [
+       "seed-r2-c2"
+      ]
+     }
+    ],
+    "height_m": 1e-06,
+    "source": {
+     "kind": "declared_polygon_complex@1",
+     "generator": "exported-generated-singletons",
+     "recipe": {
+      "construction": "Binary64 vertices and ordered rings exported once from the retired generated-mesh fixture chain; replayed as explicit declared polygons",
+      "exported_from_revision": "b10a99e492728516aa6087981c27782b10047fd0",
+      "exported_from_fixture": "validation.geometry.conservative_polygon_geometry_fixtures.generated(\"generated-singletons\")",
+      "coordinate_policy": "owned_vor_verts_and_vor_cells@1",
+      "explicit_group_rule": "All singletons, or merge the first exact shared source interface in declared occurrence order",
+      "selected_source_slots": null
+     },
+     "generation_coverage": false
+    },
+    "source_cells": [
+     {
+      "id": "seed-r0-c0",
+      "vertex_ids": [
+       "vertex-2",
+       "vertex-3",
+       "vertex-1",
+       "vertex-0"
+      ]
+     },
+     {
+      "id": "seed-r0-c1",
+      "vertex_ids": [
+       "vertex-2",
+       "vertex-8",
+       "vertex-10",
+       "vertex-7",
+       "vertex-3"
+      ]
+     },
+     {
+      "id": "seed-r0-c2",
+      "vertex_ids": [
+       "vertex-8",
+       "vertex-15",
+       "vertex-12",
+       "vertex-10"
+      ]
+     },
+     {
+      "id": "seed-r1-c0",
+      "vertex_ids": [
+       "vertex-3",
+       "vertex-7",
+       "vertex-6",
+       "vertex-4",
+       "vertex-1"
+      ]
+     },
+     {
+      "id": "seed-r1-c1",
+      "vertex_ids": [
+       "vertex-7",
+       "vertex-10",
+       "vertex-12",
+       "vertex-13",
+       "vertex-11",
+       "vertex-6"
+      ]
+     },
+     {
+      "id": "seed-r1-c2",
+      "vertex_ids": [
+       "vertex-12",
+       "vertex-15",
+       "vertex-14",
+       "vertex-13"
+      ]
+     },
+     {
+      "id": "seed-r2-c0",
+      "vertex_ids": [
+       "vertex-0",
+       "vertex-1",
+       "vertex-4",
+       "vertex-5"
+      ]
+     },
+     {
+      "id": "seed-r2-c1",
+      "vertex_ids": [
+       "vertex-4",
+       "vertex-6",
+       "vertex-11",
+       "vertex-9",
+       "vertex-5"
+      ]
+     },
+     {
+      "id": "seed-r2-c2",
+      "vertex_ids": [
+       "vertex-11",
+       "vertex-13",
+       "vertex-14",
+       "vertex-9"
+      ]
+     }
+    ],
+    "thickness_m": 5e-09,
+    "units": {
+     "area": "m2",
+     "coordinates": "m",
+     "height": "m",
+     "thickness": "m",
+     "volume": "m3"
+    },
+    "vertices": [
+     {
+      "id": "vertex-0",
+      "xy_m": [
+       -1.2715657552083335e-06,
+       6.607249479556569e-06
+      ]
+     },
+     {
+      "id": "vertex-1",
+      "xy_m": [
+       1.2715657552083335e-06,
+       6.607249479556569e-06
+      ]
+     },
+     {
+      "id": "vertex-2",
+      "xy_m": [
+       3.814697265625e-06,
+       -2.2024164931855225e-06
+      ]
+     },
+     {
+      "id": "vertex-3",
+      "xy_m": [
+       3.814697265625e-06,
+       2.2024164931855225e-06
+      ]
+     },
+     {
+      "id": "vertex-4",
+      "xy_m": [
+       3.814697265625e-06,
+       1.1012082465927613e-05
+      ]
+     },
+     {
+      "id": "vertex-5",
+      "xy_m": [
+       3.814697265625e-06,
+       1.5416915452298662e-05
+      ]
+     },
+     {
+      "id": "vertex-6",
+      "xy_m": [
+       7.960001627604166e-06,
+       8.631646767012924e-06
+      ]
+     },
+     {
+      "id": "vertex-7",
+      "xy_m": [
+       7.960001627604168e-06,
+       4.226813780641879e-06
+      ]
+     },
+     {
+      "id": "vertex-8",
+      "xy_m": [
+       1.1113484700520832e-05,
+       -2.0243972874563564e-06
+      ]
+     },
+     {
+      "id": "vertex-9",
+      "xy_m": [
+       1.1113484700520832e-05,
+       1.5594934658027826e-05
+      ]
+     },
+     {
+      "id": "vertex-10",
+      "xy_m": [
+       1.1774698893229168e-05,
+       2.0243972874563564e-06
+      ]
+     },
+     {
+      "id": "vertex-11",
+      "xy_m": [
+       1.1774698893229168e-05,
+       1.0834063260198447e-05
+      ]
+     },
+     {
+      "id": "vertex-12",
+      "xy_m": [
+       1.5589396158854164e-05,
+       4.226813780641879e-06
+      ]
+     },
+     {
+      "id": "vertex-13",
+      "xy_m": [
+       1.5589396158854168e-05,
+       8.631646767012924e-06
+      ]
+     },
+     {
+      "id": "vertex-14",
+      "xy_m": [
+       1.8742879231770832e-05,
+       1.1190101671656784e-05
+      ]
+     },
+     {
+      "id": "vertex-15",
+      "xy_m": [
+       1.8742879231770836e-05,
+       2.3804356989146895e-06
+      ]
+     }
+    ]
+   },
+   "expected": {
+    "cells": 9,
+    "membranes": 41,
+    "contacts": 17,
+    "source_edges": 24,
+    "physical_edges": 24,
+    "merge_internal_edges_removed": 0,
+    "source_area_exact": {
+     "denominator": "11150372599265311570767859136324180752990208",
+     "numerator": "3057729468767281600346345877635657"
+    },
+    "merged_area_exact": {
+     "denominator": "11150372599265311570767859136324180752990208",
+     "numerator": "3057729468767281600346345877635657"
+    },
+    "source_only_vertex_ids": []
+   }
+  },
+  "generated-merged-interface": {
+   "raw": {
+    "axial_caps": "sealed_no_transport@1",
+    "bath_assignment": {
+     "bath_id": "bath",
+     "kind": "one_explicit_bath@1"
+    },
+    "baths": [
+     {
+      "id": "bath",
+      "volume_m3": 1e-15
+     }
+    ],
+    "cell_groups": [
+     {
+      "id": "merged-generated",
+      "source_cell_ids": [
+       "seed-r0-c0",
+       "seed-r0-c1"
+      ]
+     },
+     {
+      "id": "physical-2",
+      "source_cell_ids": [
+       "seed-r0-c2"
+      ]
+     },
+     {
+      "id": "physical-3",
+      "source_cell_ids": [
+       "seed-r1-c0"
+      ]
+     },
+     {
+      "id": "physical-4",
+      "source_cell_ids": [
+       "seed-r1-c1"
+      ]
+     },
+     {
+      "id": "physical-5",
+      "source_cell_ids": [
+       "seed-r1-c2"
+      ]
+     },
+     {
+      "id": "physical-6",
+      "source_cell_ids": [
+       "seed-r2-c0"
+      ]
+     },
+     {
+      "id": "physical-7",
+      "source_cell_ids": [
+       "seed-r2-c1"
+      ]
+     },
+     {
+      "id": "physical-8",
+      "source_cell_ids": [
+       "seed-r2-c2"
+      ]
+     }
+    ],
+    "height_m": 1e-06,
+    "source": {
+     "kind": "declared_polygon_complex@1",
+     "generator": "exported-generated-merged-interface",
+     "recipe": {
+      "construction": "Binary64 vertices and ordered rings exported once from the retired generated-mesh fixture chain; replayed as explicit declared polygons",
+      "exported_from_revision": "b10a99e492728516aa6087981c27782b10047fd0",
+      "exported_from_fixture": "validation.geometry.conservative_polygon_geometry_fixtures.generated(\"generated-merged-interface\")",
+      "coordinate_policy": "owned_vor_verts_and_vor_cells@1",
+      "explicit_group_rule": "All singletons, or merge the first exact shared source interface in declared occurrence order",
+      "selected_source_slots": [
+       0,
+       1
+      ]
+     },
+     "generation_coverage": false
+    },
+    "source_cells": [
+     {
+      "id": "seed-r0-c0",
+      "vertex_ids": [
+       "vertex-2",
+       "vertex-3",
+       "vertex-1",
+       "vertex-0"
+      ]
+     },
+     {
+      "id": "seed-r0-c1",
+      "vertex_ids": [
+       "vertex-2",
+       "vertex-8",
+       "vertex-10",
+       "vertex-7",
+       "vertex-3"
+      ]
+     },
+     {
+      "id": "seed-r0-c2",
+      "vertex_ids": [
+       "vertex-8",
+       "vertex-15",
+       "vertex-12",
+       "vertex-10"
+      ]
+     },
+     {
+      "id": "seed-r1-c0",
+      "vertex_ids": [
+       "vertex-3",
+       "vertex-7",
+       "vertex-6",
+       "vertex-4",
+       "vertex-1"
+      ]
+     },
+     {
+      "id": "seed-r1-c1",
+      "vertex_ids": [
+       "vertex-7",
+       "vertex-10",
+       "vertex-12",
+       "vertex-13",
+       "vertex-11",
+       "vertex-6"
+      ]
+     },
+     {
+      "id": "seed-r1-c2",
+      "vertex_ids": [
+       "vertex-12",
+       "vertex-15",
+       "vertex-14",
+       "vertex-13"
+      ]
+     },
+     {
+      "id": "seed-r2-c0",
+      "vertex_ids": [
+       "vertex-0",
+       "vertex-1",
+       "vertex-4",
+       "vertex-5"
+      ]
+     },
+     {
+      "id": "seed-r2-c1",
+      "vertex_ids": [
+       "vertex-4",
+       "vertex-6",
+       "vertex-11",
+       "vertex-9",
+       "vertex-5"
+      ]
+     },
+     {
+      "id": "seed-r2-c2",
+      "vertex_ids": [
+       "vertex-11",
+       "vertex-13",
+       "vertex-14",
+       "vertex-9"
+      ]
+     }
+    ],
+    "thickness_m": 5e-09,
+    "units": {
+     "area": "m2",
+     "coordinates": "m",
+     "height": "m",
+     "thickness": "m",
+     "volume": "m3"
+    },
+    "vertices": [
+     {
+      "id": "vertex-0",
+      "xy_m": [
+       -1.2715657552083335e-06,
+       6.607249479556569e-06
+      ]
+     },
+     {
+      "id": "vertex-1",
+      "xy_m": [
+       1.2715657552083335e-06,
+       6.607249479556569e-06
+      ]
+     },
+     {
+      "id": "vertex-2",
+      "xy_m": [
+       3.814697265625e-06,
+       -2.2024164931855225e-06
+      ]
+     },
+     {
+      "id": "vertex-3",
+      "xy_m": [
+       3.814697265625e-06,
+       2.2024164931855225e-06
+      ]
+     },
+     {
+      "id": "vertex-4",
+      "xy_m": [
+       3.814697265625e-06,
+       1.1012082465927613e-05
+      ]
+     },
+     {
+      "id": "vertex-5",
+      "xy_m": [
+       3.814697265625e-06,
+       1.5416915452298662e-05
+      ]
+     },
+     {
+      "id": "vertex-6",
+      "xy_m": [
+       7.960001627604166e-06,
+       8.631646767012924e-06
+      ]
+     },
+     {
+      "id": "vertex-7",
+      "xy_m": [
+       7.960001627604168e-06,
+       4.226813780641879e-06
+      ]
+     },
+     {
+      "id": "vertex-8",
+      "xy_m": [
+       1.1113484700520832e-05,
+       -2.0243972874563564e-06
+      ]
+     },
+     {
+      "id": "vertex-9",
+      "xy_m": [
+       1.1113484700520832e-05,
+       1.5594934658027826e-05
+      ]
+     },
+     {
+      "id": "vertex-10",
+      "xy_m": [
+       1.1774698893229168e-05,
+       2.0243972874563564e-06
+      ]
+     },
+     {
+      "id": "vertex-11",
+      "xy_m": [
+       1.1774698893229168e-05,
+       1.0834063260198447e-05
+      ]
+     },
+     {
+      "id": "vertex-12",
+      "xy_m": [
+       1.5589396158854164e-05,
+       4.226813780641879e-06
+      ]
+     },
+     {
+      "id": "vertex-13",
+      "xy_m": [
+       1.5589396158854168e-05,
+       8.631646767012924e-06
+      ]
+     },
+     {
+      "id": "vertex-14",
+      "xy_m": [
+       1.8742879231770832e-05,
+       1.1190101671656784e-05
+      ]
+     },
+     {
+      "id": "vertex-15",
+      "xy_m": [
+       1.8742879231770836e-05,
+       2.3804356989146895e-06
+      ]
+     }
+    ]
+   },
+   "expected": {
+    "cells": 8,
+    "membranes": 39,
+    "contacts": 16,
+    "source_edges": 24,
+    "physical_edges": 23,
+    "merge_internal_edges_removed": 1,
+    "source_area_exact": {
+     "denominator": "11150372599265311570767859136324180752990208",
+     "numerator": "3057729468767281600346345877635657"
+    },
+    "merged_area_exact": {
+     "denominator": "11150372599265311570767859136324180752990208",
+     "numerator": "3057729468767281600346345877635657"
+    },
+    "source_only_vertex_ids": []
+   }
+  }
+ }
+}

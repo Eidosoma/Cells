@@ -26,7 +26,7 @@ SOURCE_PINS = (
     ),
     (
         "stable_mesh_metric_reconstruction",
-        "81a93cc8cf93e0885712e4df8d09e82c0db37a564c14f0ca4af44fa51e08fe0f",
+        "55dff061ec35e3fdf843b16d2def71c1c9185dd4cb56dfbb7262cbe82d3a2916",
     ),
     (
         "stable_mesh_operator_reconstruction_algebra",

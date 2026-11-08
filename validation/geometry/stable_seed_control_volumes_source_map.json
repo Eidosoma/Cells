@@ -121,7 +121,7 @@
     "source": "src/cells/processes/stable_seed_control_volumes.py"
   },
   "runtime_dependency_sha256": {
-    "conservative_polygon_geometry": "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d",
+    "conservative_polygon_geometry": "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d",
     "stable_geometry_primitives": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",
     "stable_mesh_physical_reconstruction": "b0633f93978dba2db684e23ee1e3e348c0f3edde624b3069c57b115e3d7ab582"
   }

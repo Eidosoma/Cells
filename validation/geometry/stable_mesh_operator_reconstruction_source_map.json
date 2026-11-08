@@ -227,7 +227,7 @@
   "prospective_metric03_companion_sha256": "9b6bc90a7ff788e8ee8615a755128c2f71014c0fc916233037caebb1a7e944df",
   "runtime_source_sha256": {
     "stable_geometry_primitives": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",
-    "stable_mesh_metric_reconstruction": "81a93cc8cf93e0885712e4df8d09e82c0db37a564c14f0ca4af44fa51e08fe0f",
+    "stable_mesh_metric_reconstruction": "55dff061ec35e3fdf843b16d2def71c1c9185dd4cb56dfbb7262cbe82d3a2916",
     "stable_mesh_operator_reconstruction_algebra": "d2912bc06cf0459ceaa0149ef5f71c9b35c7339892d3293f49182ce4e2a2c49d",
     "stable_mesh_physical_reconstruction": "b0633f93978dba2db684e23ee1e3e348c0f3edde624b3069c57b115e3d7ab582"
   },

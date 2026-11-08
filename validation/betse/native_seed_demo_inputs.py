@@ -7,6 +7,11 @@ in fresh files. Neither changes numerical inputs. This never parses YAML, decode
 imports BETSE or issues live parameters. Original output-directory placeholders
 are retained; no simulation
 output is produced until a separately released worker.
+
+input_program() is a standalone copy of the reviewed program checker formerly
+imported from betse_native_parameter_world_ready_qualification (removed with the
+frozen tooling; tag native-betse-frozen-2026-11-08). Manifests keep that checker's
+parameter_metadata_sha256 so existing inputs.json files stay byte-compatible.
 """
 
 import argparse
@@ -29,7 +34,7 @@ HEADLESS_CORE_KIND = "cells.headless_core_betse_seed_demo_input_pair@1"
 MODES = ("original", "disabled")
 MAX_FILES, MAX_BYTES, MAX_FILE_BYTES = 512, 16 * 2**20, 8 * 2**20
 BUNDLE_SHA256 = "a46d83ac79195a2e15078feccd5e0fc62804ca1976042cc9516c30a9f859db27"
-PARAMETER_METADATA_SHA256 = '973b5e231d2a94a5e15e22fae4963a3ae577534b0753a4aaa91031f5cd3a1844'
+PARAMETER_METADATA_SHA256 = "973b5e231d2a94a5e15e22fae4963a3ae577534b0753a4aaa91031f5cd3a1844"
 CORE = {
     "sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
     "extra_configs/expression_data.yaml": (
@@ -158,15 +163,95 @@ def _program(root, profile=profiles.ORIGINAL):
     return value
 
 
-def _parameter_metadata():
-    path = ROOT / "validation/betse/betse_native_parameter_world_ready_qualification.py"
-    if path.is_symlink() or snapshot.digest(path) != PARAMETER_METADATA_SHA256:
-        raise ValueError("Reviewed Key metadata interface changed")
-    from validation.betse import betse_native_parameter_world_ready_qualification as parameter
+def _require(value, message):
+    if not value:
+        raise ValueError(message)
 
-    if Path(parameter.__file__).resolve() != path or parameter.RAW_FILES != CORE:
-        raise ValueError("Actual selected parameter metadata producer required")
-    return parameter
+
+def _canonical(path, *, exists=False):
+    path = Path(path).absolute()
+    _require(not any(p.is_symlink() for p in (path, *path.parents)), "Linked path refused")
+    _require(path == path.resolve(strict=exists), "Canonical absolute path required")
+    return path
+
+
+def _bound(row):
+    _require(type(row) is dict and set(row) == {"path", "sha256"}, "Exact file reference required")
+    path = _canonical(row["path"], exists=True)
+    _require(path.is_file() and snapshot.digest(path) == row["sha256"], "Changed bound file")
+    return path
+
+
+def input_program(path, sha256):
+    """Permissions and raw bytes only; this never parses YAML or issues owners."""
+    path = _bound(dict(path=str(path), sha256=sha256))
+    _require(path.stat().st_size <= 16 * 2**20, "Bounded metadata required")
+    value = json.loads(path.read_text())
+    profile = profiles.require_profile(value.get("input_profile", profiles.ORIGINAL))
+    raw_files = dict(CORE)
+    if profile != profiles.ORIGINAL:
+        raw_files[profiles.MAIN] = profiles.main_file(profile)["sha256"]
+    _require(set(value["files"]) == set(CORE), "Exact original default file set required")
+    files = {}
+    for name, pin in raw_files.items():
+        row = value["files"][name]
+        actual = _bound(row["input"])
+        info = actual.stat()
+        _require(
+            actual.is_relative_to(BASE)
+            and info.st_nlink == 1
+            and stat.S_ISREG(info.st_mode)
+            and not info.st_mode & 0o222,
+            "Immutable single-link original input required",
+        )
+        _require(
+            row["input"]["sha256"] == pin and info.st_size <= 8 * 2**20,
+            "Exact bounded original input bytes required",
+        )
+        files[name] = row["input"]
+    main = Path(files["sim_config.yaml"]["path"])
+    root = main.parent
+    _require(
+        all(Path(files[n]["path"]) == root / n for n in files), "Original relative file layout"
+    )
+    expected = (
+        ("init_pickle_dirname", str(root / "INITS")),
+        ("sim_pickle_dirname", str(root / "SIMS")),
+        ("init_pickle_filename", str(root / "INITS/init_1.betse.gz")),
+        ("seed_pickle_filename", str(root / "INITS/world_1.betse.gz")),
+        ("sim_pickle_filename", str(root / "SIMS/sim_1.betse.gz")),
+        ("init_export_dirname", str(root / "RESULTS/init_1")),
+        ("sim_export_dirname", str(root / "RESULTS/sim_1")),
+        ("grn_config_filename", str(root / "extra_configs/grn_basic.yaml")),
+        ("grn_pickle_dirname", str(root / "RESULTS/GRN")),
+        ("grn_pickle_filename", str(root / "RESULTS/GRN/GRN_1.betse.gz")),
+        ("grn_unpickle_filename", None),
+    )
+    supplied = tuple(tuple(row) for row in value["ordered_path_permission"])
+    _require(supplied == expected, "Exact ordered original path permissions required")
+    result = dict(
+        manifest=dict(path=str(path), sha256=snapshot.digest(path)),
+        files=files,
+        path_permission=[list(row) for row in expected],
+        origin="Unmodified retained BETSE1.5.0 bundled default; not parsed state",
+        root=str(root),
+        directories=[
+            str(root / p)
+            for p in ("INITS", "SIMS", "RESULTS/init_1", "RESULTS/sim_1", "RESULTS/GRN")
+        ],
+    )
+    if profile != profiles.ORIGINAL:
+        result.update(
+            input_profile=profile,
+            configuration_changes=profiles.changes(profile),
+            origin=(
+                "Retained BETSE1.5.0 bundled default with only while-solving show/save False"
+                if profile == profiles.HEADLESS
+                else "Retained BETSE1.5.0 bundled default with while-solving show/save, "
+                "cutting and custom general network False; numerical inputs unchanged"
+            ),
+        )
+    return result
 
 
 def _directory_state(directories):
@@ -231,7 +316,7 @@ def _copy_headless(source, target, expected, profile=profiles.HEADLESS):
     target.chmod(0o444)
 
 
-def _prepare(output, source, parameter, profile=profiles.ORIGINAL):
+def _prepare(output, source, profile=profiles.ORIGINAL):
     selected = profiles.inventory(source, profile)
     output.mkdir(parents=True)
     cases = {}
@@ -252,7 +337,7 @@ def _prepare(output, source, parameter, profile=profiles.ORIGINAL):
             snapshot.write_json(program, _program(config, profile))
             program.chmod(0o444)
             pin = snapshot.digest(program)
-            checked = parameter.input_program(program, pin)
+            checked = input_program(program, pin)
             if checked["root"] != str(config):
                 raise ValueError("Actual copied input program root required")
             if checked.get("input_profile", profiles.ORIGINAL) != profile:
@@ -315,8 +400,7 @@ def _prepare(output, source, parameter, profile=profiles.ORIGINAL):
 def prepare(output, *, profile=profiles.ORIGINAL):
     profiles.require_profile(profile)
     output = _output(output)
-    source, parameter = _source(), _parameter_metadata()
-    return _prepare(output, source, parameter, profile)
+    return _prepare(output, _source(), profile)
 
 
 def verify(output, expected_sha256, *, mode=None):
@@ -340,7 +424,7 @@ def verify(output, expected_sha256, *, mode=None):
         and mode not in MODES
     ):
         raise ValueError("Original paired inputs changed")
-    parameter, inodes = _parameter_metadata(), set()
+    inodes = set()
     for selected in MODES if mode is None else (mode,):
         row, config = value["modes"][selected], output / selected / "config"
         if row["config"] != str(config) or inventory(config) != selected_inventory:
@@ -354,7 +438,7 @@ def verify(output, expected_sha256, *, mode=None):
         program = output / selected / "input-program.json"
         if row["program"]["path"] != str(program):
             raise ValueError("Input program path retargeted")
-        checked = parameter.input_program(program, row["program"]["sha256"])
+        checked = input_program(program, row["program"]["sha256"])
         if (
             checked["root"] != str(config)
             or checked["directories"] != row["initial_native_directories"]

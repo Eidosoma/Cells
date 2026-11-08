@@ -1010,7 +1010,7 @@
         "src/cells/core/finite_ecm_polygon_preparation.py": {
           "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
           "clock_attribute_mentions": [],
-          "sha256": "a4b94d721023b98e8acc4df935f6e7ce651ad4ad0a63a692b09d346c56fc1180"
+          "sha256": "b9f10b6947b92a9b8667610da00376b757c1b1ec78c1b62f590c6d98a77c9e82"
         },
         "src/cells/core/grid.py": {
           "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
@@ -1091,7 +1091,7 @@
         "src/cells/processes/stable_seed_partition_physiology_bridge.py": {
           "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
           "clock_attribute_mentions": [],
-          "sha256": "31959e49ec266092556dc67c755d28105e24bdf6789079fd766c7c5e4f3566ca"
+          "sha256": "b7d2b47fb7bbc164a40c299ac40cce0a3f264ee39508ead7298db259273b7f1b"
         }
       },
       "storage_formula": "8*(working_columns*(steps+1+observation_count)+4*(steps+1)); observation_count=1"
@@ -1176,7 +1176,7 @@
           "validation/geometry/stable_seed_partition_advance_refinement_declarations.py",
           "validation/geometry/stable_seed_partition_physiology_bridge_initial_reference.py"
         ],
-        "sha256": "27d2fc375bdb29aa78531ed70a312c71a5c6dfb4c5f0d485c000fe9a50720203"
+        "sha256": "3c3e9a1eb890bca127f7381f1aea9ad5a8712a9d78270128c159acc8fea62b1a"
       },
       "validation/geometry/stable_seed_partition_physiology_bridge_declarations.py": {
         "imports": [
@@ -1263,8 +1263,8 @@
         "validation/geometry/stable_seed_partition_physiology_bridge_initial_reference.py": "8260ceae5bea6d9a1052679845e6baffa6084f81dc2e1c1d1c497cac69da85cf",
         "validation/geometry/stable_seed_partition_physiology_bridge_scalar_reference.py": "72ee58f17248dfa7592a4ff61bc564de1e769b08542648da577376400b837e75"
       },
-      "parent_reference_sha256": "554dd4db948070a9c3328e5a2af7ad8b457085b229e9ada260e4e2e26f289ed0",
-      "successor_sha256": "27d2fc375bdb29aa78531ed70a312c71a5c6dfb4c5f0d485c000fe9a50720203",
+      "parent_reference_sha256": "1f65d9e4c07c1b831645382737fd6ed255e300234dcdfe6b154cce47bc7c6721",
+      "successor_sha256": "3c3e9a1eb890bca127f7381f1aea9ad5a8712a9d78270128c159acc8fea62b1a",
       "unchanged_functions": {
         "canonical": {
           "ast_sha256": "89b5b63a03dd7780a7ccba9fc4b17cf686353a21d211af10da6a3cc08723d350",
@@ -1380,7 +1380,7 @@
     "new_physical_law": false,
     "no_field_cache_or_initial_accounting_after_advancement": true,
     "numerical_tolerances_changed": false,
-    "original_first_core_sha256": "2a92b3f55ee0a3c7b4374dcd5da4f48aa8234e3ad947712fdc7fc4d53c3d580c",
+    "original_first_core_sha256": "b0da40893ff3bd0faab6c1f19180f8993c35c039d08bc1df518bf032e46b0b89",
     "original_layout_and_all_twelve_state_ledgers_carried": true,
     "source_sites": {
       "_execute_arm": {
@@ -1430,9 +1430,9 @@
       "INITIAL_SUCCESSOR_SOURCE_REVIEW_SHA256": "84440f74eff19c7a96a275afb81f99ccc0eecc241d484c4cb3c9a13735f1f614"
     },
     "owned_files_sha256": {
-      "src/cells/processes/stable_seed_partition_advance_refinement.py": "dc492f60c1f3d3b8c1d340b2db621ba728ff26e807515029e378ec308fc8041f",
+      "src/cells/processes/stable_seed_partition_advance_refinement.py": "3de16b207581f2f4bb610db6f1cc110ca4ba91af3b09b750b278706203afc846",
       "tests/unit/test_stable_seed_partition_advance_refinement.py": "20f881016e9de97dcd7c694f90d1b39ce8c45dc0b45c2ee337396fc9e5606b6b",
-      "validation/geometry/stable_seed_partition_advance_refinement_audit.py": "5460464be33335d5d01b3f5241a515594e55c5fd0d3e5f48ac970473047f653a",
+      "validation/geometry/stable_seed_partition_advance_refinement_audit.py": "cf4f107b355a99e14b90edfbe693cdcf57d12831c06e138bc4b99d7fbf1da2a0",
       "validation/geometry/stable_seed_partition_advance_refinement_dynamics.py": "14e8839ceca62cbdea67a8eb35f713b9500faa9c92bec0f0e0c22fcc11b1924c",
       "validation/geometry/stable_seed_partition_advance_refinement_reference.py": "ddf050f318728fb773ec17e93effb24d21874f8229b164ba1ed1c79f740761af"
     },

@@ -52,7 +52,6 @@ CORRUPTION_CASES = (
     "off-edge-midpoint",
     "balanced-wrong-owner",
 )
-GENERATED_CASES = ("generated-singletons", "generated-merged-interface")
 PHYSICAL_CASES = ("two-triangles", "quad-grid-merged", "two-baths")
 PHYSICAL_DOMAIN_CASES = (
     "missing-cell",
@@ -321,99 +320,6 @@ def corrupt(name, geometry):
     else:
         raise ValueError(name)
     return data
-
-
-def generated(name, directory, *, retain):
-    if name not in GENERATED_CASES:
-        raise ValueError(name)
-    if not callable(retain):
-        raise ValueError("Generated prelude requires a durable trial retainer")
-    from cells.processes import betse_initial_mesh_preparation_cache as cache
-    from cells.processes import conservative_polygon_geometry as geometry
-    from cells.processes import stable_initial_mesh_preparation as upstream
-    from validation.betse import betse_initial_mesh_preparation_fixtures as original
-
-    native_request, inputs = original.reused_B09("irregular-centroid-aux")
-    retain("native-request", native_request=native_request, inputs=inputs)
-    request = upstream.opt_in(native_request, law_id=upstream.LAW_ID)
-    retain("owned-request", native_request=native_request, request=request, inputs=inputs)
-    try:
-        state = upstream.prepare(request)
-    except BaseException as error:
-        retain(
-            "prepare-failure",
-            native_request=native_request,
-            request=request,
-            state=getattr(error, "trial", None),
-            error=error,
-            inputs=inputs,
-        )
-        raise
-    retain(
-        "prepare-return", native_request=native_request, request=request, state=state, inputs=inputs
-    )
-    source = cache.plain(state.cache)
-    ids = list(state.retained_point_ids)
-    selected = None
-    if name == "generated-merged-interface":
-        for i, ring in enumerate(source["vor_cells"]):
-            edges = {tuple(sorted(edge)) for edge in zip(ring, ring[1:] + ring[:1], strict=True)}
-            for j in range(i + 1, len(ids)):
-                other = source["vor_cells"][j]
-                if edges & {
-                    tuple(sorted(edge)) for edge in zip(other, other[1:] + other[:1], strict=True)
-                }:
-                    selected = (i, j)
-                    break
-            if selected is not None:
-                break
-        if selected is None:
-            raise ValueError("The generated fixture has no exact shared interface")
-    groups = []
-    if selected:
-        groups.append(dict(id="merged-generated", source_cell_ids=[ids[i] for i in selected]))
-    groups.extend(
-        dict(id="physical-" + str(i), source_cell_ids=[name])
-        for i, name in enumerate(ids)
-        if selected is None or i not in selected
-    )
-    try:
-        value = geometry.from_generated(
-            request,
-            state,
-            cell_groups=groups,
-            baths=[dict(id="bath", volume_m3=1e-15)],
-            bath_assignment=dict(kind="one_explicit_bath@1", bath_id="bath"),
-            height_m=1e-6,
-            thickness_m=5e-9,
-            law_id=geometry.LAW_ID,
-        )
-    except BaseException as error:
-        retain(
-            "from-generated-replay-failure",
-            native_request=native_request,
-            request=request,
-            state=getattr(error, "trial", None),
-            error=error,
-            inputs=inputs,
-        )
-        raise
-    retain(
-        "from-generated-return",
-        native_request=native_request,
-        request=request,
-        state=state,
-        inputs=inputs,
-    )
-    return value, dict(
-        upstream_inputs=inputs,
-        source_cell_ids=ids,
-        explicit_group_rule=(
-            "All singletons, or merge the first exact shared source interface "
-            "in declared occurrence order"
-        ),
-        selected_source_slots=selected,
-    )
 
 
 def physical(bound):

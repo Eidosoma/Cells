@@ -3,7 +3,7 @@
   "all_checks_unrun": true,
   "conservation": "exact cell/domain area exhaustion, positive requested bath area shortfall and rebuilt owner incidence; no simulated conservation claim",
   "domain_or_bath_automatically_chosen": false,
-  "effective_upstream_reference_sha256": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c",
+  "effective_upstream_reference_sha256": "be1b7781c6b343ace7938042d36ce62212534f0feb10d5fe600f70593bb3a2d1",
   "environment_grid_bound": false,
   "explicit_reference_pin_AST_proof": "preparation/explicit-reference-pin-ast-proof.json",
   "fallback_authority": "Chief explicitly permits narrow source correspondence when a concrete finite-ECM prerequisite blocks implementation",
@@ -154,7 +154,7 @@
   "schema_review_binding": {
     "baseline_gate_AST_unchanged": true,
     "complete_inverse_reference_and_test_AST_reviewed": true,
-    "effective_reference_sha256": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c",
+    "effective_reference_sha256": "be1b7781c6b343ace7938042d36ce62212534f0feb10d5fe600f70593bb3a2d1",
     "effective_test_sha256": "306657230727f680dc85db5b426d0e642b0f7ccd19be3c13ac12bb6d00077be2",
     "numerical_admission_or_launch_authority": false,
     "promotion_sha256": "5039bcc2026d2b915df0d17d137be6d04ea11ebb39bddefa9336da7d722b061e",

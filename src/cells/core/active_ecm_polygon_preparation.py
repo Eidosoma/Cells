@@ -18,10 +18,10 @@ from cells.processes import finite_ecm_polygon_geometry as partition
 LAW_ID = "cells_active_ecm_polygon_initialization@1"
 REQUEST_KIND = "cells.active_ecm_polygon_request@1"
 RESULT_KIND = "cells.active_ecm_polygon_initialization@1"
-BASE_GEOMETRY_SHA256 = "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d"
+BASE_GEOMETRY_SHA256 = "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d"
 BASE_BUNDLE_SHA256 = "4d90a19419c843c1c44c627a2b9f7683b51d150df76bd509501d48e845fded8f"
 BASE_ECM_BUNDLE_SHA256 = "232f5762460fd03d8990a65648e7f264dccb4b8f6ee5e2514f431d127041bc9f"
-SOURCES_SHA256 = "1cf06891146499ffb1c001fe6772afb93bb64b9af322428d49d9ee700518a463"
+SOURCES_SHA256 = "b65ea95fa886129158ed817569a0cb37be51a83decf4bb72079d48b6e53c98a0"
 MAX_CELLS = 16
 MAX_CHANNELS = 256
 

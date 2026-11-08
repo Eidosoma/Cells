@@ -10,10 +10,12 @@ from typing import NamedTuple
 
 import jax.numpy as jnp
 
-from cells.processes.betse_mitochondria import LAW_ID as SOURCE_LAW
 from cells.processes.electrochemistry import electrochemical_potential, ghk_leak
 
 LAW_ID = "betse_mitochondrial_passive_continuous_si@1"
+# Cited source law: the native discrete BETSE 1.5.0 mitochondrial ion/voltage
+# component (removed from the tree; tag native-betse-frozen-2026-11-08).
+SOURCE_LAW = "betse_mitochondrial_ion_voltage_source_v1_5_0@1"
 MAX_VOLTAGE_V = 0.2
 
 

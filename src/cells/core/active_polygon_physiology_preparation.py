@@ -17,9 +17,9 @@ from cells.processes import conservative_polygon_geometry as geometry
 LAW_ID = "cells_polygon_active_physiology_preparation@1"
 REQUEST_KIND = "cells.polygon_active_physiology_request@1"
 RESULT_KIND = "cells.polygon_active_physiology_preparation@1"
-BASE_GEOMETRY_SHA256 = "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d"
+BASE_GEOMETRY_SHA256 = "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d"
 BASE_BUNDLE_SHA256 = "2a1182f4091761f20c8048e0bd8cf8281ff67b808410be2820dddb4531f1d95b"
-SOURCES_SHA256 = "994ab1170ccdc1db32120ba1794b316e4ef0a297b7ebd23c3dda0c158edd1939"
+SOURCES_SHA256 = "ba0931b834855354a17eff5e6a443281581c88fc76c29426f6a14f987faf9110"
 MAX_CELLS = 16
 MAX_CHANNELS = 256
 

@@ -18,7 +18,7 @@ ORIGINAL = "validation/tissue/surface_dynamics_reference.py"
 ORIGINAL_SHA256 = "b55ff84dcf83f282f9dd6d695cf73510b1cdb99d863d42e7c16ef9d8ca5d0fcd"
 PROTOCOL = "validation/tissue/surface_dynamics_protocol.json"
 PROTOCOL_SHA256 = "2f708a1a8e05716357d62ce1e354a1ac5dcbdac4e2f7aae256486e28a8f565c0"
-FIRST_SHA256 = "2a92b3f55ee0a3c7b4374dcd5da4f48aa8234e3ad947712fdc7fc4d53c3d580c"
+FIRST_SHA256 = "b0da40893ff3bd0faab6c1f19180f8993c35c039d08bc1df518bf032e46b0b89"
 INITIAL_SUCCESSOR = Path(
     "/mnt/workspaces/Cells/stable-seed-partition-advance-initial-successor-prepared-20261031-01"
 )

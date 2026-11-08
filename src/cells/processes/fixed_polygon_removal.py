@@ -16,7 +16,7 @@ from cells.processes import conservative_polygon_geometry as geometry
 LAW_ID = "cells_fixed_polygon_removal_rebuild@1"
 REQUEST_KIND = "cells.fixed_polygon_removal_request@1"
 RESULT_KIND = "cells.fixed_polygon_removal_binding@1"
-GEOMETRY_SHA256 = "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d"
+GEOMETRY_SHA256 = "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d"
 ARITHMETIC_SHA256 = "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958"
 NATIVE_INVALIDATED_OWNERS = (
     "DEC_mesh_and_operators",

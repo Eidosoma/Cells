@@ -21,7 +21,7 @@ INPUT_KIND = "cells.stable_seed_control_volume_declaration@1"
 SOURCE_PINS = (
     (
         "conservative_polygon_geometry",
-        "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d",
+        "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d",
     ),
     (
         "stable_geometry_primitives",

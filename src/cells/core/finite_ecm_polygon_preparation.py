@@ -11,7 +11,7 @@ from cells.processes import finite_ecm_polygon_geometry as geometry
 LAW_ID = "cells_finite_ecm_polygon_passive_preparation@1"
 REQUEST_KIND = "cells.finite_ecm_polygon_passive_request@1"
 RESULT_KIND = "cells.finite_ecm_polygon_passive_preparation@1"
-SOURCES_SHA256 = "4d6196c9332ab0353d0eb513fbae2c00c5232ac4ce6a19f2bd5ad6a7da5c86f2"
+SOURCES_SHA256 = "dc4e5e03109e034e56c1fb380a0df79412757cef2ac35b51ed0a32fc09f2aa47"
 
 
 class PhysicalRejected(ValueError):

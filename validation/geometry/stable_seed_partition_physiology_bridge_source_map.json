@@ -132,11 +132,11 @@
       "electrode_work_pJ"
     ]
   },
-  "core_sha256": "31959e49ec266092556dc67c755d28105e24bdf6789079fd766c7c5e4f3566ca",
+  "core_sha256": "b7d2b47fb7bbc164a40c299ac40cce0a3f264ee39508ead7298db259273b7f1b",
   "explicit_ECM02_manifest_sha256": "5b6257f7a8f0f8a51b6903fb55aba11fe34c0934f2e10351e377a42eee81b406",
   "finite_admission_source_manifest": {
     "immutable_frozen_closure_count": 362,
-    "sha256": "4d6196c9332ab0353d0eb513fbae2c00c5232ac4ce6a19f2bd5ad6a7da5c86f2",
+    "sha256": "dc4e5e03109e034e56c1fb380a0df79412757cef2ac35b51ed0a32fc09f2aa47",
     "source": "src/cells/core/finite_ecm_polygon_sources.json",
     "sources": [
       {
@@ -1368,44 +1368,12 @@
         "source": "src/cells/processes/__init__.py"
       },
       {
-        "sha256": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
-        "source": "src/cells/processes/betse_environment_field.py"
-      },
-      {
         "sha256": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
         "source": "src/cells/processes/betse_environment_transport.py"
       },
       {
         "sha256": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
         "source": "src/cells/processes/betse_geometry.py"
-      },
-      {
-        "sha256": "9035c4dba445292010821eb871970cbb3348fdfedd0d597459ccfe6adb1234de",
-        "source": "src/cells/processes/betse_geometry_initialization.py"
-      },
-      {
-        "sha256": "e8e14819df8a80692c2c3990189aaccb2e375a6c984c2cd8dc727ce80e2ce03b",
-        "source": "src/cells/processes/betse_image_mask_prelude.py"
-      },
-      {
-        "sha256": "ef33e60ea5cd741d3618bccaaba494ac472664b02f4c82d08942b3e2c52c89b0",
-        "source": "src/cells/processes/betse_initial_mesh_preparation.py"
-      },
-      {
-        "sha256": "f77c0a5a09d92dbf0746ac7c89ca564ea6bebc726e27ae5b40d3e90f4bffb69a",
-        "source": "src/cells/processes/betse_initial_mesh_preparation_cache.py"
-      },
-      {
-        "sha256": "7102de6bae1f5da0ecb5c99064ffa03b26e20b2b7b8855b72f5066fd20a0089c",
-        "source": "src/cells/processes/betse_initial_mesh_preparation_kernel.py"
-      },
-      {
-        "sha256": "d1e20f37d37007460229edde9484513dad7f36642c1ec83a9c80e4640eb52df6",
-        "source": "src/cells/processes/betse_lattice_seed_generation.py"
-      },
-      {
-        "sha256": "a062869889c218284cf953d668477e40d2fa7a99ab15c2e4b08a0c2383d0b83d",
-        "source": "src/cells/processes/betse_mitochondria.py"
       },
       {
         "sha256": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100",
@@ -1418,10 +1386,6 @@
       {
         "sha256": "6004e87b44d99d9ede041358add93493347f863b4002bcd58fde4d885fa83726",
         "source": "src/cells/processes/betse_network_transport.py"
-      },
-      {
-        "sha256": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
-        "source": "src/cells/processes/betse_normal_current.py"
       },
       {
         "sha256": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
@@ -1456,7 +1420,7 @@
         "source": "src/cells/processes/cav_channels.py"
       },
       {
-        "sha256": "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d",
+        "sha256": "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d",
         "source": "src/cells/processes/conservative_polygon_geometry.py"
       },
       {
@@ -1476,7 +1440,7 @@
         "source": "src/cells/processes/finite_calcium_pumps.py"
       },
       {
-        "sha256": "9769a8ec6e2816fa3b4d939c6b0f4d0518b01a7ec6679e9090442d984534c925",
+        "sha256": "79a5341ab81e68405de0be936ecba6649fd6af577809ce36291d22c59f28dc66",
         "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
       },
       {
@@ -1524,7 +1488,7 @@
         "source": "src/cells/processes/membrane_injury.py"
       },
       {
-        "sha256": "9279de6598fe8dc0fe1227d9f1a439fd036aa35c9dce80cf00f8f3268a00f0d4",
+        "sha256": "8732845bbbe8eb29493e946166b521a9daca4432c7cbafb8d1f4db36063dbc49",
         "source": "src/cells/processes/mitochondrial_passive.py"
       },
       {
@@ -1578,10 +1542,6 @@
       {
         "sha256": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",
         "source": "src/cells/processes/stable_geometry_primitives.py"
-      },
-      {
-        "sha256": "056cb2e47772a63416a9eebd89dd60a7019fcf217d3433403b9b053a209bedc4",
-        "source": "src/cells/processes/stable_initial_mesh_preparation.py"
       },
       {
         "sha256": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
@@ -1771,7 +1731,7 @@
             "validation/geometry/stable_seed_partition_physiology_bridge_declarations.py",
             "validation/geometry/stable_seed_partition_physiology_bridge_initial_reference.py"
           ],
-          "sha256": "554dd4db948070a9c3328e5a2af7ad8b457085b229e9ada260e4e2e26f289ed0"
+          "sha256": "1f65d9e4c07c1b831645382737fd6ed255e300234dcdfe6b154cce47bc7c6721"
         },
         "validation/geometry/stable_seed_partition_physiology_bridge_scalar_reference.py": {
           "imported_or_executed": false,
@@ -1921,7 +1881,7 @@
   "source_pins": {
     "src/cells/core/finite_ecm_polygon_preparation.py": {
       "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
-      "sha256": "a4b94d721023b98e8acc4df935f6e7ce651ad4ad0a63a692b09d346c56fc1180"
+      "sha256": "b9f10b6947b92a9b8667610da00376b757c1b1ec78c1b62f590c6d98a77c9e82"
     },
     "src/cells/core/schedule.py": {
       "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
@@ -1953,7 +1913,7 @@
     },
     "src/cells/processes/stable_seed_explicit_ecm_partition.py": {
       "bundle": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-prepared-20261031-02",
-      "sha256": "79c1bd6cd2f405425ad1b789515080c102a76c4e4110fc9007d0e7216e6179e9"
+      "sha256": "3412472fafcf5bfa8fee36534669addbe85e49e0665271b02ba32093a267b508"
     },
     "validation/tissue/surface_field_protocol.json": {
       "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",

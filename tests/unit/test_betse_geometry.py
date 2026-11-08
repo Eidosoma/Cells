@@ -716,13 +716,12 @@ def test_native_and_environment_spatial_refinement_limits():
     )
 
 
-def test_existing_profile_cut_and_deformation_interfaces_use_declared_geometry_only():
-    from cells.processes import betse_deformation, betse_tissue_cut, betse_tissue_profiles
+def test_existing_profile_and_cut_interfaces_use_declared_geometry_only():
+    from cells.processes import betse_tissue_cut, betse_tissue_profiles
 
     _, binding = prepared()
     mesh = binding.mesh
     k = binding.kernel
-    mk = mesh.kernel
     profile = betse_tissue_profiles.validate_layout(
         betse_tissue_profiles.Layout(
             mesh.cell_ids,
@@ -753,28 +752,6 @@ def test_existing_profile_cut_and_deformation_interfaces_use_declared_geometry_o
         )
     )
     assert all(top.edge_is_contact)
-    # Source uses -1 m for self-paired boundary lengths. Difference rows there
-    # are identically zero; explicitly replace only that sentinel with 1 m to
-    # satisfy the frozen binder, retaining identical numerical operators.
-    neighbor = np.column_stack((k.owner, k.owner[k.partner]))
-    delta = mesh.centres_m[neighbor[:, 1]] - mesh.centres_m[neighbor[:, 0]]
-    length = np.linalg.norm(delta, axis=-1)
-    safe = np.where(length > 0, length, 1.0)
-    curl = np.divide(delta, safe[:, None])
-    op = betse_deformation.bind_operators(
-        neighbor,
-        safe,
-        k.membrane_normal,
-        curl,
-        k.cell_sum,
-        mk.primal_d0,
-        np.linalg.pinv(mk.primal_d0),
-        mk.dual_length_m,
-        mk.primal_length_m,
-        mk.cell_area_m2,
-    )
-    close(op.laplacian, mk.lap_closed, atol=3e-3)
-    close(op.laplacian_inverse, mk.source_inverse_closed, atol=3e-24)
     evidence(
         "existing-interface-binding",
         dict(
@@ -782,12 +759,8 @@ def test_existing_profile_cut_and_deformation_interfaces_use_declared_geometry_o
             profile_layout_identity=betse_tissue_profiles.layout_identity(profile),
             cut_topology_identity=betse_tissue_cut.layout_identity(top),
             geometry_identity=binding.identity,
-            self_boundary_denominator_policy=(
-                "Explicit 1 m neutral sentinel for zero difference rows"
-            ),
             cut_executed=False,
             physical_state_remapped=False,
-            deformation_evolved=False,
         ),
     )
 

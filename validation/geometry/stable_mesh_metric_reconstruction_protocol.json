@@ -180,7 +180,7 @@
     "equal-coalesced"
   ],
   "scope": "new conditional centroid-layout metric readouts on unchanged retained geometry",
-  "source_audit_sha256": "4d12dbee87bd0a7a200545b1859d127bb40f45dca4d437cfa6577f2e42f0964c",
+  "source_audit_sha256": "961d37af673a46427c516371993eb67fed4559635dd4beda5cf0815cfbb0e991",
   "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
   "source_scientific_claims_inherited": false,
   "successor_numerically_qualified": false,

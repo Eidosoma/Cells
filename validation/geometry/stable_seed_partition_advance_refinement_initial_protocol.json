@@ -206,7 +206,7 @@
       "src/cells/core/finite_ecm_polygon_preparation.py": {
         "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
         "clock_attribute_mentions": [],
-        "sha256": "a4b94d721023b98e8acc4df935f6e7ce651ad4ad0a63a692b09d346c56fc1180"
+        "sha256": "b9f10b6947b92a9b8667610da00376b757c1b1ec78c1b62f590c6d98a77c9e82"
       },
       "src/cells/core/grid.py": {
         "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
@@ -287,7 +287,7 @@
       "src/cells/processes/stable_seed_partition_physiology_bridge.py": {
         "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
         "clock_attribute_mentions": [],
-        "sha256": "31959e49ec266092556dc67c755d28105e24bdf6789079fd766c7c5e4f3566ca"
+        "sha256": "b7d2b47fb7bbc164a40c299ac40cce0a3f264ee39508ead7298db259273b7f1b"
       }
     },
     "storage_formula": "8*(working_columns*(steps+1+observation_count)+4*(steps+1)); observation_count=1"
@@ -993,5 +993,5 @@
   "status": "source_only_prepared_independent_review_and_numeric_qualification_pending",
   "upstream_geometry_positive_numerical_evidence_required_before_materialization": true,
   "worker": "validation/geometry/stable_seed_partition_advance_refinement_initial_worker.py",
-  "worker_sha256": "27d2fc375bdb29aa78531ed70a312c71a5c6dfb4c5f0d485c000fe9a50720203"
+  "worker_sha256": "3c3e9a1eb890bca127f7381f1aea9ad5a8712a9d78270128c159acc8fea62b1a"
 }

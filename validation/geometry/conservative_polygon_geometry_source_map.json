@@ -3,13 +3,13 @@
   "geometry_law_id": "cells_conforming_polygon_physical_owners@1",
   "physical_bridge_id": "cells_polygon_physical_owners_passive_tissue@1",
   "new_source_sha256": {
-    "src/cells/processes/conservative_polygon_geometry.py": "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d",
+    "src/cells/processes/conservative_polygon_geometry.py": "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d",
     "src/cells/core/conservative_polygon_tissue_preparation.py": "91c4bab5a1dd194c411d787e749d57f864ccffc17336f0d957cd1d856c10a039",
-    "validation/geometry/conservative_polygon_geometry_fixtures.py": "670062def65dbf5af0f452b2da63c7ec6ddfbf197c0203a3682158dc24096193",
+    "validation/geometry/conservative_polygon_geometry_fixtures.py": "042a3cb958f57b8fd9fd04093276bfc2d9a7ed20469477201682e7ec8086882b",
     "validation/geometry/conservative_polygon_geometry_reference.py": "5b3e621e75ebf1c539315e12ab213c7e0f6a019856db55121bf0f2f95acf06f8",
     "validation/geometry/conservative_polygon_geometry_replay.py": "57d49aaf0ce0dceacf5e34e46fe3a2e700ae18c72aaa8e49b177bca3a4eff6e1",
     "validation/geometry/conservative_polygon_geometry_protocol.json": "39c202112f0f79775eba46a3c8426c27da1d4b6ab1ad203782544f5ef3971e44",
-    "tests/unit/test_conservative_polygon_geometry.py": "e58ffe089f312d47e9e55efdf476b481412b709162c7950c0d8167a3ed933300",
+    "tests/unit/test_conservative_polygon_geometry.py": "9e8d2c96d8405b780340d26fed952b19b36b6feb2f81161ded567d00f29ddb77",
     "tests/unit/test_conservative_polygon_tissue_preparation.py": "56629880756805996b3b54efa1b49c60d697011d7036e8b6a1fb047e7abce6f8"
   },
   "unchanged_rounding_helper_source_sha256": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",

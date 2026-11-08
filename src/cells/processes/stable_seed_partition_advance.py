@@ -15,13 +15,13 @@ from types import MappingProxyType
 LAW_ID = "cells_explicit_seed_partition_first_original_rk4_interval@1"
 INPUT_KIND = "cells.explicit_seed_partition_first_interval_request@1"
 INITIAL_MANIFEST_SHA256 = "92caecd20cba1973336f14a005492a144393740fae3d6cd3be32a2636a8fcf26"
-INITIAL_REFERENCE_SHA256 = "554dd4db948070a9c3328e5a2af7ad8b457085b229e9ada260e4e2e26f289ed0"
+INITIAL_REFERENCE_SHA256 = "1f65d9e4c07c1b831645382737fd6ed255e300234dcdfe6b154cce47bc7c6721"
 INITIAL_SOURCE_REVIEW_SHA256 = None
 INITIAL_NUMERICAL_QUALIFICATION_SHA256 = None
 DRAFT_ONLY = True
 SOURCE_PINS = {
     "src/cells/processes/stable_seed_partition_physiology_bridge.py": (
-        "31959e49ec266092556dc67c755d28105e24bdf6789079fd766c7c5e4f3566ca"
+        "b7d2b47fb7bbc164a40c299ac40cce0a3f264ee39508ead7298db259273b7f1b"
     ),
     "src/cells/numerics/fixed_step.py": (
         "a9821afc713c07b18c4d586ba7e991379eb011be54494a177aab13b8a39dd3b6"

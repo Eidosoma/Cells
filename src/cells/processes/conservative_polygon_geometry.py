@@ -12,7 +12,6 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from fractions import Fraction
 from pathlib import Path
-from types import MappingProxyType
 
 from cells.processes import stable_geometry_primitives as arithmetic
 
@@ -26,8 +25,6 @@ MAX_MERGED_RING = 256
 MAX_HALF_EDGES = 512
 MAX_BATHS = 16
 ARITHMETIC_SHA256 = "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958"
-MESH_BRIDGE_SHA256 = "056cb2e47772a63416a9eebd89dd60a7019fcf217d3433403b9b053a209bedc4"
-MESH_BRIDGE_BUNDLE_SHA256 = "996dbe391b0b35fcae43682fd6f09c353d9b2b2f86a54b953073b234a42b430e"
 UNITS = dict(coordinates="m", height="m", thickness="m", area="m2", volume="m3")
 
 
@@ -121,40 +118,16 @@ def _normalise(raw):
     if raw["units"] != UNITS or raw["axial_caps"] != "sealed_no_transport@1":
         raise GeometryRejected("units_or_axial_caps", stage="input")
     source = raw["source"]
-    if type(source) is not dict or source.get("kind") not in (
-        "declared_polygon_complex@1",
-        "owned_stable_initial_dual_mesh@1",
-    ):
+    if type(source) is not dict or source.get("kind") != "declared_polygon_complex@1":
         raise GeometryRejected("source_kind", stage="provenance")
-    if source["kind"] == "declared_polygon_complex@1":
-        _keys(source, {"kind", "generator", "recipe", "generation_coverage"}, "declared_source")
-        _id(source["generator"])
-        if (
-            type(source["recipe"]) is not dict
-            or not source["recipe"]
-            or source["generation_coverage"] is not False
-        ):
-            raise GeometryRejected("declared_source_provenance", stage="provenance")
-    else:
-        _keys(
-            source,
-            {
-                "kind",
-                "request_identity",
-                "state_identity",
-                "cache_identity",
-                "bridge_bundle_sha256",
-                "bridge_request",
-                "bridge_state",
-                "coordinate_policy",
-            },
-            "generated_source",
-        )
-        if (
-            source["coordinate_policy"] != "owned_vor_verts_and_vor_cells@1"
-            or source["bridge_bundle_sha256"] != MESH_BRIDGE_BUNDLE_SHA256
-        ):
-            raise GeometryRejected("generated_source_policy", stage="provenance")
+    _keys(source, {"kind", "generator", "recipe", "generation_coverage"}, "declared_source")
+    _id(source["generator"])
+    if (
+        type(source["recipe"]) is not dict
+        or not source["recipe"]
+        or source["generation_coverage"] is not False
+    ):
+        raise GeometryRejected("declared_source_provenance", stage="provenance")
     vertices = raw["vertices"]
     cells, groups, baths = raw["source_cells"], raw["cell_groups"], raw["baths"]
     if type(vertices) is not list or not 3 <= len(vertices) <= MAX_VERTICES:
@@ -232,71 +205,7 @@ def _make(raw, upstream):
 def from_polygons(raw, *, law_id):
     if type(law_id) is not str or law_id != LAW_ID:
         raise GeometryRejected("explicit_opt_in", stage="input")
-    clean = _normalise(raw)
-    if clean["source"]["kind"] != "declared_polygon_complex@1":
-        raise GeometryRejected("owned_upstream_required", stage="provenance")
-    return _make(clean, ())
-
-
-def from_generated(
-    request, state, *, cell_groups, baths, bath_assignment, height_m, thickness_m, law_id
-):
-    """Authenticate complete upstream ownership, then admit geometry separately."""
-    if type(law_id) is not str or law_id != LAW_ID:
-        raise GeometryRejected("explicit_opt_in", stage="input")
-    from cells.processes import betse_initial_mesh_preparation_cache as cache_transport
-    from cells.processes import stable_initial_mesh_preparation as upstream
-
-    if hashlib.sha256(Path(upstream.__file__).read_bytes()).hexdigest() != MESH_BRIDGE_SHA256:
-        raise GeometryRejected("changed_mesh_bridge", stage="provenance")
-    upstream.validate_state(request, state)
-    if not state.pre_mesh_completed or state.status != "stable_mesh_completed_unqualified":
-        raise GeometryRejected("incomplete_generated_mesh", stage="provenance")
-    cache = cache_transport.plain(state.cache)
-    points, rings = cache["vor_verts"], cache["vor_cells"]
-    if len(rings) != len(state.retained_point_ids) or cache["vcell_verts"] != [
-        [points[i] for i in ring] for ring in rings
-    ]:
-        raise GeometryRejected("generated_polygon_cache_ownership", stage="provenance")
-    vertex_ids = ["vertex-" + str(i) for i in range(len(points))]
-
-    def plain(value):
-        if isinstance(value, MappingProxyType):
-            return dict(value)
-        if hasattr(value, "tolist"):
-            return value.tolist()
-        raise TypeError(type(value).__name__)
-
-    source = dict(
-        kind="owned_stable_initial_dual_mesh@1",
-        request_identity=request.identity,
-        state_identity=state.identity,
-        cache_identity=state.cache.identity,
-        bridge_bundle_sha256=MESH_BRIDGE_BUNDLE_SHA256,
-        bridge_request=json.loads(
-            json.dumps(upstream.request_record(request), default=plain, allow_nan=False)
-        ),
-        bridge_state=upstream.state_record(state),
-        coordinate_policy="owned_vor_verts_and_vor_cells@1",
-    )
-    raw = dict(
-        source=source,
-        vertices=[
-            dict(id=name, xy_m=point) for name, point in zip(vertex_ids, points, strict=True)
-        ],
-        source_cells=[
-            dict(id=name, vertex_ids=[vertex_ids[i] for i in ring])
-            for name, ring in zip(state.retained_point_ids, rings, strict=True)
-        ],
-        cell_groups=cell_groups,
-        baths=baths,
-        bath_assignment=bath_assignment,
-        height_m=height_m,
-        thickness_m=thickness_m,
-        axial_caps="sealed_no_transport@1",
-        units=UNITS,
-    )
-    return _make(raw, (request, state))
+    return _make(_normalise(raw), ())
 
 
 def validate_request(request):
@@ -307,21 +216,9 @@ def validate_request(request):
     ):
         raise GeometryRejected("request_ownership", stage="identity")
     raw = request.declaration
-    if raw["source"]["kind"] == "declared_polygon_complex@1":
-        if request.upstream:
-            raise GeometryRejected("unexpected_upstream", stage="identity")
-        expected = from_polygons(raw, law_id=LAW_ID)
-    else:
-        if len(request.upstream) != 2:
-            raise GeometryRejected("owned_upstream_required", stage="identity")
-        expected = from_generated(
-            *request.upstream,
-            **{
-                key: raw[key]
-                for key in ("cell_groups", "baths", "bath_assignment", "height_m", "thickness_m")
-            },
-            law_id=LAW_ID,
-        )
+    if request.upstream:
+        raise GeometryRejected("unexpected_upstream", stage="identity")
+    expected = from_polygons(raw, law_id=LAW_ID)
     if (
         request.declaration_json != expected.declaration_json
         or request.identity != expected.identity

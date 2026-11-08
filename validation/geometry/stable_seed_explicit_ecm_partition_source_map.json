@@ -18,11 +18,11 @@
   "dependencies": {
     "src/cells/processes/conservative_polygon_geometry.py": {
       "bundle": "/mnt/workspaces/Cells/conservative-polygon-geometry-prepared-20261030-02",
-      "sha256": "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d"
+      "sha256": "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d"
     },
     "src/cells/processes/finite_ecm_polygon_geometry.py": {
       "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
-      "sha256": "9769a8ec6e2816fa3b4d939c6b0f4d0518b01a7ec6679e9090442d984534c925"
+      "sha256": "79a5341ab81e68405de0be936ecba6649fd6af577809ce36291d22c59f28dc66"
     },
     "src/cells/processes/stable_geometry_primitives.py": {
       "bundle": "/mnt/workspaces/Cells/conservative-polygon-geometry-prepared-20261030-02",
@@ -320,7 +320,7 @@
     },
     "tests_unchanged_outside_named_contracts_and_metadata_helpers": true,
     "unchanged_source_sha256": {
-      "src/cells/processes/stable_seed_explicit_ecm_partition.py": "79c1bd6cd2f405425ad1b789515080c102a76c4e4110fc9007d0e7216e6179e9",
+      "src/cells/processes/stable_seed_explicit_ecm_partition.py": "3412472fafcf5bfa8fee36534669addbe85e49e0665271b02ba32093a267b508",
       "validation/geometry/stable_seed_explicit_ecm_partition_callers.json": "db8a03812c9005770b16f5259295b59ee164e1282d54c176e92f98ab7e6c04f6",
       "validation/geometry/stable_seed_explicit_ecm_partition_fixtures.py": "6ecd182a7bd52cd402b3937ca917d5b9673e9e99d033a6abeb3e19a34271d359",
       "validation/geometry/stable_seed_explicit_ecm_partition_geometry_reference.py": "91e6d01931bb5856b2604c4b7348b3cf6d70e2737a75784b008495e6b025d251"
@@ -508,7 +508,7 @@
         "local_dependencies": [
           "validation/geometry/stable_seed_explicit_ecm_partition_geometry_reference.py"
         ],
-        "sha256": "5b2240bf02166ae4bc73e03a669611d3328448fe1dd5824919ccbf59dc8f702c",
+        "sha256": "a069949dce6f4b2511f011af134129b1c87e9aa4dc8c71e488c3ccb3c1686ab9",
         "source": "validation/geometry/stable_seed_explicit_ecm_partition_reference.py"
       },
       {

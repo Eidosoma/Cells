@@ -36,10 +36,10 @@ LAW = "cells_explicit_cleft_width_tensor_grid_cell_bath_partition@1"
 INPUT_KIND = "cells.explicit_cleft_width_cell_bath_partition_declaration@1"
 SOURCE_PINS = {
     "finite_ecm_polygon_geometry.py": (
-        "9769a8ec6e2816fa3b4d939c6b0f4d0518b01a7ec6679e9090442d984534c925"
+        "79a5341ab81e68405de0be936ecba6649fd6af577809ce36291d22c59f28dc66"
     ),
     "conservative_polygon_geometry.py": (
-        "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d"
+        "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d"
     ),
     "stable_geometry_primitives.py": (
         "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958"

@@ -21,15 +21,15 @@ UPSTREAM_SOURCE_REVIEW_SHA256 = "a8c09e4245079f55784e62d79e62d05e616dc5a665de5fb
 UPSTREAM_PREPARED_MANIFEST_SHA256 = (
     "5b6257f7a8f0f8a51b6903fb55aba11fe34c0934f2e10351e377a42eee81b406"
 )
-UPSTREAM_REFERENCE_SHA256 = "5b2240bf02166ae4bc73e03a669611d3328448fe1dd5824919ccbf59dc8f702c"
+UPSTREAM_REFERENCE_SHA256 = "a069949dce6f4b2511f011af134129b1c87e9aa4dc8c71e488c3ccb3c1686ab9"
 UPSTREAM_SOURCE_REVIEW_STATUS = "clear_for_prospective_guarded_qualification_preparation"
 DRAFT_ONLY = False
 SOURCE_PINS = {
     "src/cells/processes/stable_seed_explicit_ecm_partition.py": (
-        "79c1bd6cd2f405425ad1b789515080c102a76c4e4110fc9007d0e7216e6179e9"
+        "3412472fafcf5bfa8fee36534669addbe85e49e0665271b02ba32093a267b508"
     ),
     "src/cells/core/finite_ecm_polygon_preparation.py": (
-        "a4b94d721023b98e8acc4df935f6e7ce651ad4ad0a63a692b09d346c56fc1180"
+        "b9f10b6947b92a9b8667610da00376b757c1b1ec78c1b62f590c6d98a77c9e82"
     ),
     "src/cells/core/surface_tissue_spec.py": (
         "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa"

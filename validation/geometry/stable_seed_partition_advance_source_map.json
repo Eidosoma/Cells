@@ -22,7 +22,7 @@
     "scientific_imports": 0,
     "tests": 0
   },
-  "core_sha256": "2a92b3f55ee0a3c7b4374dcd5da4f48aa8234e3ad947712fdc7fc4d53c3d580c",
+  "core_sha256": "b0da40893ff3bd0faab6c1f19180f8993c35c039d08bc1df518bf032e46b0b89",
   "field_order": {
     "RHS_recomputes_own_field": true,
     "existing_Cells_control_aware_guard_then_RHS": true,
@@ -187,7 +187,7 @@
     },
     "src/cells/processes/stable_seed_partition_physiology_bridge.py": {
       "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
-      "sha256": "31959e49ec266092556dc67c755d28105e24bdf6789079fd766c7c5e4f3566ca"
+      "sha256": "b7d2b47fb7bbc164a40c299ac40cce0a3f264ee39508ead7298db259273b7f1b"
     }
   },
   "source_sites": {

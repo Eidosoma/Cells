@@ -22,14 +22,13 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.processes import betse_native_grid_metric_audit as metric
-
 LAW_ID = "cells.rectangular_zero_flux_poisson@1"
 METRIC_LAW_ID = "cells.rectangular_zero_flux_metric@1"
 MAX_POINTS = 625
 MAX_METRIC_POINTS = 2**20
 RHS_RTOL = 2e-12
 COORDINATE_EPS_MULTIPLIER = 64
+UNIFORM_RTOL = 2e-14  # Relative per-axis spacing uniformity gate (unchanged value).
 
 
 @dataclass(frozen=True)
@@ -100,39 +99,6 @@ def _frozen(value, shape, label):
     return np.frombuffer(value.tobytes(order="C"), dtype=np.float64).reshape(shape)
 
 
-def spec_from_observation(audit, *, environment_ids):
-    """Declare a new physical metric from retained native observations.
-
-    Native audit consistency is necessary input evidence, not live ownership.
-    A failed *scalar* metric is allowed here: each physical axis is validated
-    separately by bind(). The original audit and native operators stay intact.
-    """
-    metric.validate(audit)
-    if dict(audit.boundaries) != dict.fromkeys(metric.SIDES, "flux"):
-        raise ValueError("Only the complete homogeneous all-flux rectangle is declared")
-    record = audit.record
-    if not record["selected_native_observation_checks_passed"]:
-        raise ValueError("Retained native coordinate/mapping observations are inconsistent")
-    raw = audit.observation
-    return GridSpec(
-        environment_ids,
-        raw.shape,
-        raw.bounds_m,
-        np.array(raw.coordinates_m, dtype=np.float64),
-        np.array(raw.vertices_x_m, dtype=np.float64),
-        np.array(raw.vertices_y_m, dtype=np.float64),
-        dict(
-            source_observation_identity=audit.identity,
-            source_receipt=raw.source_receipt,
-            retained_native_scalar_delta_m=raw.delta_m,
-            retained_native_uniform_metric_passed=record["uniform_metric_passed"],
-            metric_convention=LAW_ID,
-            native_source_equivalence=False,
-            native_owner_or_physical_tissue_admission=False,
-        ),
-    )
-
-
 def _validated_metric(spec, point_limit):
     """Shared coordinate validation; neither route repairs or resamples inputs."""
     if type(spec) is not GridSpec:
@@ -189,7 +155,7 @@ def _validated_metric(spec, point_limit):
             raise ValueError("Retain increasing physical vertices with exact bound endpoints")
         expected = lo + np.arange(count + 1) * spacing
         if not np.allclose(axis, expected, rtol=0, atol=tolerance) or not np.allclose(
-            np.diff(axis), spacing, rtol=metric.UNIFORM_RTOL, atol=0
+            np.diff(axis), spacing, rtol=UNIFORM_RTOL, atol=0
         ):
             raise ValueError("Nonuniform per-axis spacing is outside the declared metric")
     # Use retained adjacent vertices to check actual centres, with no sorting or

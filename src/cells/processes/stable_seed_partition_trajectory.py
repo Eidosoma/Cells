@@ -18,7 +18,7 @@ from validation.geometry import stable_seed_partition_trajectory_records as reco
 
 LAW_ID = "cells_partition_full_horizon_checked_trajectory_exact_restart@1"
 DRAFT_ONLY = True
-FIRST_ADVANCE_SOURCE_SHA256 = "2a92b3f55ee0a3c7b4374dcd5da4f48aa8234e3ad947712fdc7fc4d53c3d580c"
+FIRST_ADVANCE_SOURCE_SHA256 = "b0da40893ff3bd0faab6c1f19180f8993c35c039d08bc1df518bf032e46b0b89"
 BOUNDARY_SOURCE_PINS = {
     "src/cells/io.py": "e44d65d5677da3752700f83adda27893c774e26d738dda1b6b31e8a2112a43f9",
     "src/cells/core/windows.py": "628068a7c1ab073cb54fe979f96e8db3e15be13eb7eeaba362b4cb16c2c09094",

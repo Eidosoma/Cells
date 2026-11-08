@@ -1,36 +1,22 @@
-"""Metadata-only complete bundle/independence/failure controls."""
+"""Metadata-only complete bundle/independence/failure controls.
+
+The synthetic-bundle tests exercise the module's own input-program checker. The
+headless/core tests read the retained original BETSE data bundle and skip without it.
+"""
 
 import hashlib
 import json
 import os
-from contextlib import contextmanager
 from pathlib import Path
-from types import FunctionType
 from types import SimpleNamespace as NS
 
 import pytest
 
-from tests.unit import test_betse_native_world_phase_construction as guards
 from validation.betse import native_seed_demo_inputs as stage
-from validation.betse import native_seed_demo_inputs_software as software
 
-_RAW_GUARDS = []
-
-
-@pytest.fixture(autouse=True)
-def blocked(request, tmp_path):
-    if os.environ.get(software.SOFTWARE_RELEASE) != "1":
-        pytest.skip("Explicit blocked input-preparation software release required")
-    request.config.option.maxfail = 1
-    adapter = NS(**dict(vars(software), reuse=software.base.base.reuse.reuse))
-    namespace = dict(vars(guards), software=adapter, _BLOCKADE_FAILURES=())
-    fn = FunctionType(guards._blockade.__wrapped__.__code__, namespace)
-    try:
-        with contextmanager(fn)(request, tmp_path):
-            yield
-    finally:
-        if namespace["_BLOCKADE_FAILURES"]:
-            _RAW_GUARDS.append(namespace["_BLOCKADE_FAILURES"])
+requires_native = pytest.mark.skipif(
+    not stage.NATIVE.is_dir(), reason="Retained original BETSE data bundle required"
+)
 
 
 @pytest.fixture
@@ -54,24 +40,6 @@ def bundle(tmp_path, monkeypatch):
     monkeypatch.setattr(stage, "BASE", tmp_path)
     monkeypatch.setattr(stage, "CORE", core)
     monkeypatch.setattr(stage, "BUNDLE_SHA256", stage._digest(stage.inventory(root)))
-
-    def input_program(path, pin):
-        assert stage.snapshot.digest(path) == pin
-        value = json.loads(path.read_text())
-        config = Path(value["files"]["sim_config.yaml"]["input"]["path"]).parent
-        assert value == stage._program(config)
-        for name, expected in core.items():
-            assert stage.snapshot.digest(config / name) == expected
-            assert not (config / name).stat().st_mode & 0o222
-        return dict(
-            root=str(config),
-            directories=[
-                str(config / p)
-                for p in ("INITS", "SIMS", "RESULTS/init_1", "RESULTS/sim_1", "RESULTS/GRN")
-            ],
-        )
-
-    monkeypatch.setattr(stage, "_parameter_metadata", lambda: NS(input_program=input_program))
     return NS(root=root, rows=rows, output=tmp_path / "paired", tmp=tmp_path)
 
 
@@ -251,38 +219,15 @@ def test_inputs_source_plan_does_not_claim_image_or_parameter_execution():
     )
 
 
-@pytest.mark.parametrize(
-    "roster", [["validation/launcher.py"], ("outputs/launcher.py",), ("../outside.py",)]
-)
-def test_inputs_execution_snapshot_extension_refuses_mutable_or_outside_roster(roster):
-    from validation.betse import native_seed_demo as demo
-
-    with pytest.raises(ValueError):
-        demo.prepare(
-            None,
-            None,
-            inputs=None,
-            inputs_sha256=None,
-            python=None,
-            bootstrap=None,
-            bootstrap_sha256=None,
-            auxiliary_configuration=None,
-            flux_operator="original",
-            extra_sources=roster,
-        )
-
-
 @pytest.fixture
 def headless(tmp_path, monkeypatch):
-    from validation.betse import betse_native_parameter_world_ready_qualification as parameter
-
+    if not stage.NATIVE.is_dir():
+        pytest.skip("Retained original BETSE data bundle required")
     monkeypatch.setattr(stage, "BASE", tmp_path)
-    monkeypatch.setattr(parameter, "BASE", tmp_path)
-    # Actual metadata function and immutable producer, never a successful owner stand-in.
-    assert stage.PARAMETER_METADATA_SHA256 == stage.snapshot.digest(Path(parameter.__file__))
-    return NS(output=tmp_path / "headless-pair", parameter=parameter)
+    return NS(output=tmp_path / "headless-pair")
 
 
+@requires_native
 def test_inputs_headless_exact_two_switches_preserve_all_other_source_bytes():
     raw = (stage.NATIVE / "sim_config.yaml").read_bytes()
     changed = stage.profiles.transform(raw)
@@ -299,6 +244,7 @@ def test_inputs_headless_exact_two_switches_preserve_all_other_source_bytes():
     assert hashlib.sha256(raw).hexdigest() == stage.CORE["sim_config.yaml"]
 
 
+@requires_native
 @pytest.mark.parametrize("mutation", ["extra", "transport", "missing", "duplicate", "already"])
 def test_inputs_headless_transform_refuses_any_unpinned_origin(mutation):
     raw = (stage.NATIVE / "sim_config.yaml").read_bytes()
@@ -332,7 +278,7 @@ def test_inputs_headless_pair_uses_actual_parameter_metadata_and_independent_com
     seen = set()
     for mode in stage.MODES:
         row = value["modes"][mode]
-        checked = headless.parameter.input_program(row["program"]["path"], row["program"]["sha256"])
+        checked = stage.input_program(row["program"]["path"], row["program"]["sha256"])
         assert checked["input_profile"] == "headless"
         assert checked["configuration_changes"] == stage.profiles.changes()
         for name in selected["files"]:
@@ -358,7 +304,7 @@ def test_inputs_headless_profile_does_not_change_original_default_program(headle
     assert value["kind"] == stage.KIND and value["raw_configuration_and_images_unchanged"]
     assert "configuration_profile" not in value and "input_inventory" not in value
     for row in value["modes"].values():
-        checked = headless.parameter.input_program(row["program"]["path"], row["program"]["sha256"])
+        checked = stage.input_program(row["program"]["path"], row["program"]["sha256"])
         assert "input_profile" not in checked and "configuration_changes" not in checked
         assert checked["files"]["sim_config.yaml"]["sha256"] == stage.CORE["sim_config.yaml"]
 
@@ -382,7 +328,7 @@ def test_inputs_headless_bytes_require_exact_explicit_program_profile(headless, 
     path = headless.output / "incorrect-profile.json"
     stage.snapshot.write_json(path, raw)
     with pytest.raises(ValueError):
-        headless.parameter.input_program(path, stage.snapshot.digest(path))
+        stage.input_program(path, stage.snapshot.digest(path))
 
 
 @pytest.mark.parametrize("mutation", ["extra_file", "wrong_hash", "lost_label", "wrong_changes"])
@@ -437,6 +383,7 @@ def test_inputs_headless_transform_failure_preserves_partial_copy_and_original_c
     assert not (headless.output / "disabled").exists()
 
 
+@requires_native
 @pytest.mark.parametrize(
     ("profile", "changed_lines"),
     [("original", []), ("headless", [795, 796]), ("headless_core", [387, 501, 795, 796])],
@@ -467,8 +414,6 @@ def test_inputs_core_profiles_preserve_every_other_original_byte(profile, change
 
 
 def test_inputs_core_pair_uses_actual_metadata_and_same_bytes_for_both_flux_modes(headless):
-    from validation.betse import native_seed_initial_rng as initial_rng
-
     source = stage.inventory(stage.NATIVE)
     value = stage.prepare(headless.output, profile="headless_core")
     assert value["kind"] == stage.HEADLESS_CORE_KIND
@@ -484,18 +429,14 @@ def test_inputs_core_pair_uses_actual_metadata_and_same_bytes_for_both_flux_mode
     inodes = set()
     for mode, row in value["modes"].items():
         assert stage.inventory(Path(row["config"])) == expected
-        program = headless.parameter.input_program(row["program"]["path"], row["program"]["sha256"])
+        program = stage.input_program(row["program"]["path"], row["program"]["sha256"])
         assert program["input_profile"] == "headless_core"
         assert program["configuration_changes"] == value["configuration_changes"]
         assert (
             program["files"][stage.profiles.MAIN]["sha256"] == stage.profiles.HEADLESS_CORE_SHA256
         )
         assert "numerical inputs unchanged" in program["origin"]
-        # This is the real immutable input witness, not a parameter/phase stand-in.
         assert mode in stage.MODES
-        witness = initial_rng.declaration(program)
-        assert initial_rng.validate_declaration(witness) is witness
-        assert witness["profile"] == "headless_core" and witness["inventory"] == expected
         for name in expected["files"]:
             info = (Path(row["config"]) / name).stat()
             assert not info.st_mode & 0o222 and info.st_nlink == 1
@@ -520,7 +461,7 @@ def test_inputs_core_cannot_be_relabelled_by_actual_parameter_reader(headless, p
     wrong = headless.output / "wrong-profile.json"
     stage.snapshot.write_json(wrong, raw)
     with pytest.raises(ValueError):
-        headless.parameter.input_program(wrong, stage.snapshot.digest(wrong))
+        stage.input_program(wrong, stage.snapshot.digest(wrong))
 
 
 @pytest.mark.parametrize(
@@ -558,6 +499,7 @@ def test_inputs_core_provenance_or_numeric_byte_drift_refuses(headless, mutation
         stage.verify(headless.output, stage.snapshot.digest(altered))
 
 
+@requires_native
 @pytest.mark.parametrize("source", ["headless", "headless_core", "changed"])
 def test_inputs_core_transformation_requires_original_bytes_not_a_retuned_case(source):
     raw = (stage.NATIVE / stage.profiles.MAIN).read_bytes()
