@@ -22,13 +22,13 @@ LAW_ID = "actual_original_INIT_network_single_continuous_bounded_runtime@1"
 MAX_ITERATIONS = 64
 MAX_WORK = base.MAX_WORK
 BASE_MODULE = "cells.processes.betse_native_init_molecule_network"
-BASE_INTERFACE_SHA256 = None
-BASE_REVIEW_SHA256 = None
+BASE_INTERFACE_SHA256 = 'dd77276a16c4e3aeb118bf5bb84eecc6bf9ce748a3ed76d98ee5739c44d039c9'
+BASE_REVIEW_SHA256 = '060c601d58a511985dc87b9d68b1d88c5a8c8f2173c28140a9e0167e0a8bd5df'
 BASE_BINDING_KIND = "exact_INIT_molecule_bytes_except_two_validated_completion_backrefs@1"
 BASE_BACK_REFERENCE_SLOTS = ("COMPLETION_SOURCE_SHA256", "COMPLETION_REVIEW_SHA256")
 CONSUMER_MODULE = "cells.processes.betse_native_init_short_history"
-CONSUMER_INTERFACE_SHA256 = None
-CONSUMER_REVIEW_SHA256 = None
+CONSUMER_INTERFACE_SHA256 = '95bd87a06ff4b9bee91d95c166c6543103cca4e7e2df908f0e2d7b146076a8f5'
+CONSUMER_REVIEW_SHA256 = '4325b04c3c425d0a0d9b0ef60c22859cdf524d13920c4b9c7eadb29e5caaafee'
 CONSUMER_BINDING_KIND = "exact_INIT_short_history_except_four_electrical_runtime_backrefs@1"
 CONSUMER_BACK_REFERENCE_SLOTS = (
     "PARENT_SOURCE_SHA256",

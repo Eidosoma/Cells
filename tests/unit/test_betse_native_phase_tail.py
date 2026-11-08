@@ -971,6 +971,117 @@ def _controller_context():
     )
 
 
+@pytest.mark.parametrize("hook", ("profile", "trace"))
+@pytest.mark.parametrize("event", ("call", "line", "return", "exception", "c_call", "c_return"))
+def test_code_name_filter_avoids_unrelated_hashing_without_dropping_observers(hook, event):
+    """Isolated hook dispatch, not a source frame or issued owner substitute."""
+    context, received = _controller_context(), []
+
+    def complete(self, kind, p):
+        raise AssertionError("No selected body may execute in this metadata control")
+
+    context.bodies = {"complete": complete}
+
+    def inherited_profile(frame, kind, value):
+        received.append(("profile", frame, kind, value))
+
+    def inherited_trace(frame, kind, value):
+        received.append(("trace", frame, kind, value))
+        return inherited_trace
+
+    state = NS(profile=inherited_profile, trace=inherited_trace)
+    hooks = NS(
+        getprofile=lambda: state.profile,
+        gettrace=lambda: state.trace,
+        setprofile=lambda value: setattr(state, "profile", value),
+        settrace=lambda value: setattr(state, "trace", value),
+    )
+
+    def unavailable(*args):
+        raise AssertionError("Unrelated metadata must not enter body admission/state checks")
+
+    account = contextmanager(
+        FunctionType(
+            stage._account.__wrapped__.__code__,
+            dict(
+                vars(stage),
+                sys=hooks,
+                _guard=lambda actual: None,
+                _check=unavailable,
+                _admit_body=unavailable,
+                _capture_state=unavailable,
+            ),
+        )
+    )
+
+    class UnrelatedCode:
+        co_name = "_metadata_tree"
+
+        def __hash__(self):
+            raise AssertionError("Unrelated metadata CodeType must not be hashed")
+
+    frame, value = NS(f_code=UnrelatedCode()), object()
+    with account(context):
+        callback = getattr(state, hook)
+        cells = dict(zip(callback.__code__.co_freevars, callback.__closure__, strict=True))
+        assert type(cells["codes"].cell_contents) is frozenset
+        assert type(cells["code_names"].cell_contents) is frozenset
+        assert cells["code_names"].cell_contents == frozenset(("complete",))
+        if hook == "trace" and event != "call":
+            state.trace(frame, "call", None)
+            received.clear()
+        callback(frame, event, value)
+    assert received == [(hook, frame, event, value)]
+    assert state.profile is inherited_profile and state.trace is inherited_trace
+
+
+@pytest.mark.parametrize("hook", ("profile", "trace"))
+def test_code_name_filter_still_uses_full_code_membership_for_matching_name(hook):
+    context = _controller_context()
+    error = ValueError("full CodeType membership refused")
+
+    def complete(self, kind, p):
+        raise AssertionError("No source body permission")
+
+    class MatchingCode:
+        co_name = complete.__code__.co_name
+
+        def __hash__(self):
+            raise error
+
+    context.bodies = {"complete": complete}
+    prior, trace = sys.getprofile(), sys.gettrace()
+    with _active_controller(context), pytest.raises(ValueError) as caught:
+        with stage._account(context):
+            callback = sys.getprofile() if hook == "profile" else sys.gettrace()
+            callback(NS(f_code=MatchingCode()), "call", None)
+    assert caught.value is error and context.hook_primary is error
+    assert sys.getprofile() is prior and sys.gettrace() is trace
+    assert not context.attempts and not context.work
+
+
+def test_code_name_filter_preserves_equal_code_different_filename_entry_refusal():
+    context, calls = _controller_context(), []
+
+    def complete(self, kind, p):
+        calls.append(self)
+
+    clone = FunctionType(
+        complete.__code__.replace(co_filename="<equal-code-other-filename>"),
+        complete.__globals__,
+        closure=complete.__closure__,
+    )
+    assert clone.__code__ == complete.__code__ and clone.__code__ is not complete.__code__
+    context.bodies = {"complete": complete}
+    prior, trace = sys.getprofile(), sys.gettrace()
+    with _active_controller(context), pytest.raises(stage.TailRejected) as caught:
+        with stage._account(context):
+            clone(context.phase, context.enum.SEED, context.p)
+    assert context.entry_error is caught.value and calls == []
+    assert len(context.attempts) == 1 and not context.attempts[0]["body_started"]
+    assert sys.getprofile() is prior and sys.gettrace() is trace
+
+
 def test_isolated_runner_selection_uses_item_names_and_refuses_empty_or_unknown(monkeypatch):
     from validation.betse import betse_native_phase_tail_software as runner
 

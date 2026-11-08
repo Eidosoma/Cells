@@ -14,6 +14,7 @@ import re
 from pathlib import Path
 
 from validation import source_snapshot as snapshot
+from validation.betse import native_reference_imports as native_imports
 from validation.betse import native_seed_demo_compare as saved
 from validation.betse import native_seed_demo_evidence as evidence
 from validation.betse import native_seed_demo_report as report
@@ -47,7 +48,7 @@ EPOCH_MAP = dict(
     searched_shift=False,
 )
 REF_SOURCE = "validation/betse/native_init_terminal_reference.py"
-REFERENCE_AST_SHA256 = "2f52dd2f2bbf8f495044f5014a245ef8701d3bd59f64605094a6a1133aa740f8"
+REFERENCE_AST_SHA256 = "bebf472b9446953873e55d1db1599473c26b099fcb81a310b24630201cc34eb5"
 REVIEW_NAMES = {
     "SOURCE_REVIEW_SHA256",
     "BOOTSTRAP_REVIEW_SHA256",
@@ -343,7 +344,7 @@ def _reference_source(raw):
                 require(value is None or report._hash_identity(value), "Typed review pin adoption")
                 pins.update({name: value for name in names})
                 continue
-            if len(names) == 1 and names[0] in ("CRITICAL", "KIND"):
+            if len(names) == 1 and names[0] in ("CRITICAL", "KIND", "IMPORTS_SHA256"):
                 constants[names[0]] = ast.literal_eval(node.value)
         kept.append(node)
     tree.body = kept
@@ -444,6 +445,25 @@ def _reference(reference):
             "Actual reference epoch producer required",
         )
         constants, adoption = _reference_source(raw_source)
+        importer = source / native_imports.FILE
+        require(
+            hashlib.sha256(importer.read_bytes()).hexdigest()
+            == constants["IMPORTS_SHA256"]
+            == manifest["files"][native_imports.FILE]["sha256"],
+            "Exact selected import/transform producer required",
+        )
+        compiler_modules = native_imports.validate_record(
+            worker["native_import_lifecycle"],
+            worker["native_producers"],
+            native,
+            plan["native_root"],
+            mode=plan["inputs"]["mode"],
+            selections=plan["selections"],
+        )
+        require(
+            worker["native_import_lifecycle"]["programs"] == {},
+            "INIT cannot claim a pre-entered selected SIM caller",
+        )
         require(
             constants["KIND"] == REFERENCE_KIND
             and constants["CRITICAL"] == plan["source_plan"]["critical_source_pins"]
@@ -464,6 +484,13 @@ def _reference(reference):
             reader.bound(release["reviews"][name])
         output = Path(release["worker_output"])
         runtime = reader.read(output / "runtime.json")
+        native_imports.validate_runtime(worker["native_import_lifecycle"], runtime)
+        for name, pin in compiler_modules.items():
+            require(
+                runtime["loaded_files"].get(name) == pin,
+                "Actual compiler runtime origin differs from import witness",
+            )
+            reader.bind(pin)
         for name, row in runtime["loaded_files"].items():
             if row.get("unavailable") is True:
                 raise ValueError("Unverifiable loaded reference producer")

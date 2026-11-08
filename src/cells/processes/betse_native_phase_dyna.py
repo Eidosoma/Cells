@@ -29,7 +29,7 @@ literal, aliases, core = handler.literal, handler.aliases, handler.core
 LAW_ID = "betse_same_issued_phase_selected_dyna_attachment@1"
 RELEASE = "CELLS_NATIVE_PHASE_DYNA_RELEASED"
 CACHE_SHA256 = "c8c6298b55d7eb0c41f3aedce411d275462135ef75d5f8a7a193285368d77a16"
-HANDLER_SHA256 = "a5d08ad5baff1eb3ff64a8237a5911e74d47ac3f284ff1445055c2ce495100d0"
+HANDLER_SHA256 = '3bbd28835375894c9c9a71483f3a2c58fc3e48f2017d41a1824ca574286c18a1'
 KEY_MODULE = "cells.processes.betse_native_parameter_dyna_construction"
 KEY_FILE = "src/cells/processes/betse_native_parameter_dyna_construction.py"
 # Public names and producer match Key's reviewed source/software handoff.
@@ -1009,9 +1009,10 @@ def _account(context):
             if hasattr(context, "methods")
             else set()
         )
+        code_names = frozenset(code.co_name for code in codes)
 
         def profile(frame, event, arg):
-            selected = frame.f_code in codes or (
+            selected = (frame.f_code.co_name in code_names and frame.f_code in codes) or (
                 hasattr(context, "methods")
                 and any(frame.f_code is fn.__code__ for fn in context.methods.values())
             )

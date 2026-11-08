@@ -19,7 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_network_boundary as previous
 
 LAW_ID = "betse_native_parameter_network_file_load@1"
-PREVIOUS_SHA256 = "32566493d24380b7e1b906360feda2bcb6e443b778fe87fe3c94cf247839e6cd"
+PREVIOUS_SHA256 = 'e5a56f7c2de39edd5b7c0e8b7db414b7f00fb05eee64a8094a6a86b779740e7d'
 RELEASE = "CELLS_NATIVE_PARAMETER_NETWORK_LOAD_RELEASED"
 MAX_PARSER_CALLS = 200000
 _OPEN = open

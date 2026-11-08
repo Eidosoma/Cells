@@ -85,6 +85,34 @@ def sim_chain(monkeypatch, *, mode="original", count=3, fail=None, mutate=None):
 
     model.point = point
 
+    @contextmanager
+    def import_issuance(callback):
+        assert callback is model.modules["callback"]
+        point("runner.issuance.enter")
+        model.issuance_active = True
+        try:
+            yield
+        finally:
+            model.issuance_active = False
+            point("runner.issuance.exit")
+
+    model.issuance_active = False
+    monkeypatch.setattr(stage, "_runner_import_issuance", import_issuance)
+
+    def import_module(name):
+        assert name == "betse.science.simrunner"
+        assert model.issuance_active
+        assert model.state.callback is not None and model.state.molecule_import_completed
+        assert all(proof.active and not proof.published for proof in model.proofs.values())
+        point("runner.import")
+        module = model.runner_module = ModuleType(name)
+        monkeypatch.setitem(sys.modules, name, module)
+        return module
+
+    # Definition-only stand-in for the explicit import; the case blockade still
+    # forbids original module bodies, constructors and methods.
+    monkeypatch.setattr(stage, "importlib", NS(import_module=import_module))
+
     class Owner:
         def __init__(self, label, trial):
             self.label, self._trial, self.consumed = label, trial, False

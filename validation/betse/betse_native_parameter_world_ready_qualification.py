@@ -78,10 +78,10 @@ MODULES = {
     "remainder": "betse_native_parameter_load_remainder",
 }
 KNOWN_PINS = {
-    "colormap_state": "8664dea542a6653ab17183ff9bec2caa8aec6e17e0485b146e6fa0193594e399",
-    "colormap_load": "80420c878d4955030607f56cd353fbcdd5fd4eebfae74bdfa82bfa1ee230114d",
-    "initializer_constants": "a6473b99cf2a74d27f4e0f83f507074fea39b8b658fbc21860a751e152bcd508",
-    "load_remainder": "7874abf3991aeef188ab7d5a6f2538a88248bc686eb2f94845e18a735255a035",
+    "colormap_state": "e2aba4331378669189d83ce20bdc1bdea2f610cd3056ce79247eda4b417b99ae",
+    "colormap_load": "7c7d8dd7d002325289fd051a2266301cbff51e4679a373b5844bf0f7cf59d095",
+    "initializer_constants": "d7826a570e65795c22d8d1e4584b8ac921fa1490a6781ba5e2b15c4260b75e15",
+    "load_remainder": "31a44e9863c44801f887afad41981868a46e6f01d4d505a44302a7532e78404e",
 }
 GATES = (
     "CELLS_ECM_MOLECULE_RUN_LIFECYCLE_RELEASED",
@@ -1035,6 +1035,8 @@ def _function(module, name):
 
 
 def _observer(modules, alias, schema, state):
+    from cells.processes import betse_native_immutable_graph_metadata as history_metadata
+
     module = modules[alias]
 
     def observe(value, primary):
@@ -1123,7 +1125,12 @@ def _observer(modules, alias, schema, state):
                 value = fields.get(name)
                 if type(value) is tuple and len(value) == 2:
                     graphs[name] = dict(
-                        data=value[1], object_identities=tuple(id(v) for v in value[0])
+                        data=(
+                            history_metadata.history_wire_descriptor(value[1])
+                            if type(value[1]) is history_metadata.HistoricalDescriptor
+                            else value[1]
+                        ),
+                        object_identities=tuple(id(v) for v in value[0]),
                     )
             if alias == "grn" and "authority" in fields:
                 value = module._grn_graph(context)
@@ -1323,6 +1330,7 @@ def _execute(modules, program, evidence, journal):
         owner,
         law_id=m["constants"].LAW_ID,
         enabled=True,
+        immutable_history=True,
     )
     owner = op(
         "remainder",

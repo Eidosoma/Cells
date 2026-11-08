@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-06 UTC.
+Last updated: 2026-11-08 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -9,71 +9,687 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Current work:** The [ordinary SEED execution](/mnt/workspaces/Cells/native-seed-execution-20261105-01/launch-summary.json)
-  was detached on CPU0 at 2026-11-05 01:00:29 UTC, with the original flux inverse,
-  initial-RNG observation and the existing 7,200-second / 1 GiB / 8 GiB reserve
-  policy. The [user-requested terminal check](/mnt/workspaces/Cells/native-seed-execution-20261105-01/status-check-01.json)
-  found a failed exit after 328.481 seconds / 501,604,352 bytes sampled RSS,
-  before geometry, at initial RNG provenance: `_random` is built in to this
-  interpreter and absent from the inventory's file-backed module map. This was
-  not a timeout or evidence of a numerical/flux failure. A fresh
-  [SEED run was launched detached](/mnt/workspaces/Cells/native-seed-execution-20261105-02/launch-summary.json)
-  at 18:56:15 UTC on CPU0, with the original flux inverse, reviewed built-in RNG
-  repair and `headless_core` inputs. The [requested terminal check](/mnt/workspaces/Cells/native-seed-execution-20261105-02/status-check-01.json)
-  found a failure after 10.313 seconds / 42,164,224 bytes sampled RSS: callback
-  preflight retained an older parameter-runtime source pin. No geometry ran;
-  this is an integration failure, with incomplete failed-owner serialization
-  disclosed. Its
-  [seven dependency-literal changes](/mnt/workspaces/Cells/native-seed-execution-20261105-02/adoption-01/result.json)
-  leave all INIT/SIM gates and executable bodies unchanged. The first metadata
-  preparation refused an overstrict comparison to old constructor pins; the
-  second hit the 480-second metadata cap. The third precomputes the same blocked
-  path prefixes outside the profiler and completed in 76.118 seconds /
-  67,555,328 bytes sampled RSS. The [launch preparation review](/mnt/workspaces/Cells/native-seed-execution-20261105-02/preparation-review.json)
-  binds the existing parameter-digest adoption, 626 frozen files and complete
-  empty/restored metadata guards. A missing launcher flag refused one invocation
-  before child creation; the corrected invocation uses the frozen producer and
-  actual declared interpreter. All failures remain preserved. The user-directed
-  [third SEED attempt](/mnt/workspaces/Cells/native-seed-execution-20261105-03/launch-summary.json)
-  launched at 22:31:27 UTC on CPU0 after [six literal dependency corrections](/mnt/workspaces/Cells/native-seed-execution-20261105-03/adoption-01/result.json)
-  across callback, geometry qualifier and demo. Its [preparation review](/mnt/workspaces/Cells/native-seed-execution-20261105-03/preparation-review.json)
-  verifies both actual nested metadata preflights, 627 frozen files and empty
-  restored guards; preparation completed in 80.374 seconds / 66,740,224 bytes
-  sampled RSS. The unchanged execution limit is 7,200 seconds / 1 GiB /
-  8 GiB reserve. The [explicitly requested startup watch](/mnt/workspaces/Cells/native-seed-execution-20261105-03/startup-watch/result.json)
-  observed it running after 329.084 seconds: callbacks completed, parameters
-  returned through `22-colormap-input`, and `23-registry-capture` was attempted.
-  The worker had consumed 326.34 CPU seconds, with 445,206,528 bytes sampled RSS
-  and no terminal result/failure artifact at that time. The [November 6 terminal check](/mnt/workspaces/Cells/native-seed-execution-20261105-03/status-check-01.json)
-  found a wall-time failure after 7,200.082 seconds, with peak sampled RSS
-  502,104,064 bytes and minimum available host memory 19,388,620,800 bytes.
-  All 29 parameter stages returned and both initial RNG captures were saved.
-  The geometry entry created its evidence directory at 22:39:37 UTC, but the
-  directory remained empty: no completed phase/geometry result or final worker
-  outcome was saved before the controller stopped the run. The precise slow
-  frame is not established; this does not establish a numerical or flux failure.
-  The five-minute watch certified startup progress only. The subsequent bounded
-  stack diagnostic is recorded below; the failed image remains unchanged.
-  This is SEED execution, not completed INIT/SIM qualification.
-  The [built-in provenance repair](/mnt/workspaces/Cells/native-rng-builtin-origin-repair-20261105-01/source-result.json)
-  now has a clear [Root source/results review](/mnt/workspaces/Cells/native-rng-builtin-origin-repair-20261105-01/root-source-results-review.json):
-  107 distinct blocked controls across separately retained 103- and 19-case
-  images. Built-in origins bind the actual interpreter; file-backed origins
-  and the old saved reader remain separate. Three failed software images are
-  preserved. The provenance repair itself performed no RNG seed or draw.
-  End-to-end SEED→INIT→SIM remains
-  unqualified. Key's next substantial task is locating and repairing the
-  pregeometry validation/observation bottleneck, with measured attribution before
-  another actual launch. Specialist now owns coherent Cells-side common-start
-  consumer integration as well as its completed reference-side counterpart.
-  Root owns the complete dependency projection, final input cases, actual
-  execution and independent result disposition. Completed-package reviews are
-  delegated so implementation does not wait on a serial Root review queue.
-  The flux inverse is being reproduced or omitted in
-  explicitly separate modes; it is not being repaired.
+- **Basic parity is not yet demonstrated.** Complete SEED → 500-step INIT →
+  350-step SIM orchestration and independent comparison tools are implemented,
+  but neither flux mode has a completed, independently checked end-to-end result.
+  Original and omitted flux remain separate; the flux inverse is not being repaired.
 
-- **Immediate execution blocker and active diagnostic:** The cause of the two-hour
-  geometry-entry timeout is still being measured. A fresh [627-file preparation](/mnt/workspaces/Cells/native-pregeometry-execution-20261106-01/preparation-review.json)
+- **Actual16 launched after batched phase-validation optimization (8 November, 15:36 UTC):**
+  [The source/software result](/mnt/workspaces/Cells/native-phase-validation-cost-20261108-01/source-result.json)
+  records 163 passing controls. Shared parameter history is checked freshly
+  before and after each complete ancestry/state pass, reducing the deepest
+  pass from ten history validations to two. Live parent rechecks after child
+  callbacks and every state/registry comparison remain. Observer events omit
+  a duplicate check only when no inherited callback ran. No scientific state
+  or successful validation result is cached; equations, inputs, tolerances and
+  the separate flux modes are unchanged. Earlier software failures remain saved.
+  [Actual16](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-16/LAUNCH.json)
+  uses the freshly bound immutable image on CPU0/one thread, with 4 GiB RSS,
+  8 GiB address space and an 8 GiB host reserve. Its diagnostic cutoff is
+  **16:06:10 UTC**. The [requested startup watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-16/result.json)
+  completed after 300.004 seconds: the original worker remained CPU-active,
+  nine parameter operations had complete evidence with no errors, and no
+  terminal failure was recorded. Callback bootstrap returned in 216.264 seconds;
+  parameters were still running. Sampled RSS at the watch end was 375,123,968
+  bytes (357.8 MiB), with 21.6 GiB host memory available; both address-space
+  limits were verified at 8 GiB. Monitoring has ended and the job remains
+  detached. Phase construction, its actual speedup and end-to-end completion
+  remain unproven; no automatic retry or further polling.
+
+- **Actual15 passed the former memory-failure point, then hit its diagnostic wall limit (8 November, 14:59 UTC):**
+  [The requested terminal check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-15-20261108T151006Z/terminal-disposition.json)
+  confirms both processes have exited. All 29 parameter operations, including
+  WorldReady, final history and live-parameter archives, completed without errors;
+  common-start and initial RNG stages also returned. The worker then spent about
+  21 minutes in phase construction before the 1,800.061-second guard stop.
+  Peak sampled RSS was 667,402,240 bytes (636.5 MiB), with at least 20.0 GiB host
+  memory available: this terminal failure was the wall limit, not a memory limit.
+  [The 59 saved stack samples](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-15-20261108T151006Z/stacks/report.json)
+  show phase/cache construction with repeated observer, callback/ancestor
+  validation and module/source inspection. One sample is incomplete; no source
+  path is unbound. These locations identify the next performance target without
+  establishing exclusive CPU percentages. Phase construction did not finish;
+  tissue geometry, INIT, SIM and the flux solve were not reached. No numerical
+  failure or parity result is established. No job is running, and this status
+  check made no source repair or new launch.
+
+- **Memory budget corrected; actual15 launched (8 November):**
+  [The resource-policy repair](/mnt/workspaces/Cells/native-actual-memory-budget-20261108-01/source-result.json)
+  separates **4 GiB process-tree RSS** from **8 GiB virtual address space**,
+  retaining the **8 GiB host reserve**. Launcher/controller hard limits now
+  allow the worker budget; callback, geometry and independent reference resource
+  checks use the same explicit virtual-memory allowance. Software-test limits,
+  original inputs, seeds, calendars, equations and flux handling are unchanged.
+  Thirty-two focused policy checks and five existing launcher checks passed.
+  [Actual15 launched](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-15/LAUNCH.json)
+  at 14:29:51 UTC on CPU0; its diagnostic cutoff is 14:59:51 UTC.
+  The [requested startup watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-15/result.json)
+  completed after 300.003 seconds with the original
+  worker CPU-active, no terminal failure and 11 completed parameter-operation
+  archives. Live `/proc` records confirm both address-space limits are exactly
+  8 GiB. This is startup verification, before actual14's archive-failure point;
+  WorldReady, phase construction, geometry, INIT/SIM and parity remain unproven.
+  Monitoring has ended and the worker is detached; no automatic retry or further
+  polling. All earlier failures remain preserved. Two software-launch setup
+  failures (missing pytest in the selected interpreter, then wrong selector
+  syntax) are retained separately from the corrected five-control pass. Fresh
+  execution preparation and its runtime inventory completed successfully.
+
+- **Actual14 failed while archiving the returned WorldReady operation (8 November, 13:55 UTC):**
+  [The requested terminal disposition](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-14-20261108T135814Z/terminal-disposition.json)
+  confirms the original worker has exited: 547.309 seconds, exit 1, before the
+  diagnostic deadline. Unlike actual13, `actual-world-ready` returned; the
+  repaired history encoder did not raise the earlier error. Evidence capture
+  then raised `MemoryError` inside the checkpoint codec's recursive `encode`.
+  The acquisition correctly refused its incomplete archive with
+  `ObservationRejected`. Twenty-six preceding operations have complete saved
+  evidence; the returned WorldReady operation is not a completed acquisition.
+  Peak sampled RSS was 640,385,024 bytes, below the RSS guard; the separate
+  1 GiB address-space cap still applies. No wall-time or RSS guard breach occurred.
+  Phase construction, geometry, INIT, SIM and the flux solver were not reached.
+  The failed archive and all earlier images remain preserved. No worker remains
+  active and this status check launched no retry. The next investigation must
+  cover the remaining archive allocations and virtual-memory headroom together;
+  actual11's slow phase-construction path remains unmeasured by these two runs.
+
+- **History-encoding memory repair passed focused checks (8 November):**
+  [The source and saved-control review](/mnt/workspaces/Cells/native-history-encoding-memory-20261108-01/checks.json)
+  verifies 98 passing controls, unchanged original tests, exact JSON/hash
+  compatibility and retained source/capture failures. The encoder now writes
+  into a single buffer instead of retaining all fragments for `bytes.join`.
+  A [same-input comparison](/mnt/workspaces/Cells/native-history-encoding-memory-20261108-01/encoder-comparison/result.json)
+  measured peak encoder allocations of 26,553,838 → 2,382,242 bytes for 120,000
+  integers, and 18,536,630 → 8,935,919 bytes for an 8,413,196-byte payload.
+  These are synthetic encoder measurements, not whole-run performance or
+  memory claims. Scientific code, capture limits and resource caps are unchanged.
+  [The integrated checkpoint](/mnt/workspaces/Cells/native-history-encoding-memory-20261108-01/source-result.json)
+  binds the unchanged native/reference producers and fresh source image.
+  [Actual14](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-14/LAUNCH.json)
+  launched at 13:46:25 UTC, original flux, CPU0/one thread, unchanged 1 GiB
+  RSS/address-space caps and 8 GiB host reserve. Its 30-minute diagnostic deadline
+  is approximately 14:16:25 UTC. The [requested startup watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-14/result.json)
+  completed after 300.002 seconds: the original worker was CPU-active, nine
+  parameter operations had returned with complete evidence/no errors, no
+  terminal failure was present, and sampled RSS was 376,393,728 bytes. Callback
+  bootstrap returned in 212.341 seconds. WorldReady, phase, geometry, INIT and
+  SIM completion remain unproven; this check is before actual13's failure point.
+  [The copied startup stacks](/mnt/workspaces/Cells/native-history-encoding-memory-20261108-01/release-01/startup-stacks-summary.json)
+  retain ten samples, one incomplete, with no unbound source paths. The watcher
+  ended and left the worker detached until the requested terminal check above;
+  there was no continued polling or automatic retry.
+  Preparation completed the source image but its final inventory writer failed
+  due to a local module/plan variable collision. The failed preparation process
+  and [missing-inventory limitation](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/preparation-14/preparation-evidence-limit.json)
+  remain explicit. The separate successful release check verifies the immutable
+  image, current producer bindings, restored hooks and its own loaded origins;
+  it does not reconstruct the missing preparation inventory. Actual13 remains
+  failed and preserved; no reference or omitted-flux worker was launched.
+
+- **Actual13 diagnostic failed during parameter-history encoding (8 November, 12:37 UTC):**
+  [The requested terminal check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-13-20261108T132810Z/status.json)
+  confirms that both original processes are absent. The worker exited 1 after
+  567.682 seconds, before its 1,800-second limit. The saved primary is a
+  `MemoryError` at `betse_native_immutable_graph_metadata._encode`, line 148,
+  joining encoded fragments into the complete JSON payload. This occurred
+  while freezing the initial history for the final parameter-load continuation.
+  Twenty-six parameter operations returned; `actual-world-ready` failed.
+  Failure archiving also encountered `MemoryError`, so its evidence is incomplete.
+  Peak sampled RSS was 641,814,528 bytes (612 MiB), below the 1 GiB RSS guard;
+  the worker also has a separate 1 GiB address-space cap. No exact virtual-memory
+  sample at the allocation failure is available, so the detailed allocation
+  budget remains unresolved. Host memory reserve and wall-time limits passed.
+  Phase construction, geometry, INIT, SIM and the flux solver were not reached.
+  [All 18 saved stack samples](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-13-20261108T132810Z/stacks/report.json)
+  are complete and source-bound, but none reaches phase construction. This run
+  therefore does not locate actual11's phase-construction cost. The next repair
+  target was peak memory during history encoding. The repair and new run above
+  are separate; no retry or code change was made by that status check.
+
+  [The original-flux diagnostic](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-13/LAUNCH.json)
+  launched at 12:28:07 UTC from the matched preparation13 image, after
+  [release verification](/mnt/workspaces/Cells/native-phase-next-diagnostic-20261108-01/release-01/result.json).
+  CPU0/one thread, 1 GiB RSS and the 8 GiB reserve were unchanged. The existing
+  C-level sampler recorded every 30 seconds without replacing Python hooks.
+  [The requested startup watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-13/result.json)
+  completed after 300.002 seconds: the original worker was CPU-active, nine
+  parameter operations had returned with complete evidence and no errors,
+  no terminal failure was present, and the final RSS sample was 376,180,736
+  bytes. The [saved log](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-13/stage-log-at-watch-end.txt)
+  records callback bootstrap returning in 213.631 seconds, followed by
+  parameter loading. [The copied startup stacks](/mnt/workspaces/Cells/native-phase-next-diagnostic-20261108-01/release-01/startup-stacks-summary.json)
+  contain ten complete samples with no unbound source paths; none yet reaches
+  the phase-construction code. These are sampled locations, not a performance
+  or scientific result. There was no further polling between the five-minute
+  watch and this requested terminal check. Reference and omitted-flux workers remain
+  unlaunched. The diagnostic occupies the original13 output; a later full
+  attempt needs fresh preparation/output rather than reusing that directory.
+
+- **Actual11 timed out during phase construction (8 November, 12:02 UTC):**
+  The [requested terminal check at 12:23 UTC](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-11-20261108T122332Z/terminal-disposition.json)
+  confirms the original worker is absent and both controller/resource failure
+  receipts report `wall_time_allowance`. The guard terminated the worker after
+  7,200.081 seconds (exit -9). Peak sampled RSS was 699,158,528 bytes and minimum
+  available host memory 21,068,111,872 bytes, within their limits. All 29 parameter
+  operations and RNG setup completed; `geometry.phase` had no recorded return
+  after about 110 minutes. No geometry, INIT or SIM completion was reached.
+  There is no final worker result/failure payload, so the internal phase location
+  at termination is unavailable; no numerical or flux failure is established.
+  Frozen evidence is preserved. No retry, source change or new job was launched
+  by this status check. The subsequent diagnostic above is intended to locate
+  the remaining cost before repeating a full attempt.
+
+  A focused reproduction traced actual10's rejection to four unchanged cache
+  weak-reference tokens being renumbered when the handler was allocated. The
+  raw objects and reference graph were unchanged. Stage-local token ordering
+  fixes that false mismatch while retaining field and alias drift checks.
+  [The combined checks](/mnt/workspaces/Cells/native-phase-state-repair-20261108-01/checks.json)
+  bind 13 passing phase-state controls and 94 passing immutable-history controls
+  at their separate frozen images. The history optimization preserves fresh
+  live validation and exact exported contents; [five actual10 descriptors](/mnt/workspaces/Cells/immutable-parameter-history-20261107-01/actual-record-compatibility-01/source-result.json)
+  also passed metadata compatibility checks. These are software and metadata
+  results, not an end-to-end speed or scientific claim.
+  [Source integration](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-11/root-application-review.json)
+  binds 79 sources and verifies 61 declared dependency-literal edits across
+  28 files. [Launch preparation](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/execution-preparation-11.json)
+  preserves the same original-flux inputs, seeds, 500-step INIT and 350-step SIM.
+  The separate preparation runtime inventory was omitted; its
+  [explicit limitation](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/preparation-11/preparation-evidence-limit.json)
+  is retained, and the independent release review verifies the frozen sources,
+  loaded review producers and restored hooks without reconstructing that missing
+  inventory. [Actual11](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-11/LAUNCH.json)
+  launched at 10:02:50 UTC, CPU0/one thread, 1 GiB RSS, 8 GiB reserve and the
+  unchanged two-hour limit. The [requested startup watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-11/result.json)
+  completed after 300.003 seconds: the original worker was CPU-active, nine
+  parameter operations had returned with complete evidence and no errors,
+  no terminal failure was present, and sampled RSS was 375,754,752 bytes.
+  The [saved stage log](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-11/stage-log-at-watch-end.txt)
+  records callback bootstrap returning in 219.035 seconds. The subsequent
+  [requested 10:14 UTC status](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-11-20261108T101430Z/status.json)
+  found all 29 parameter operations returned with complete evidence and no
+  errors. Parameter loading took 309.635 seconds; both RNG setup stages
+  returned, and `geometry.phase` started at 10:12:36 UTC. The original worker
+  was CPU-active at about 666 MiB RSS, with no terminal result. Phase,
+  geometry, INIT and SIM were still unproven at that check. No further job
+  query, interruption or retry was made during the comparison work below.
+  The [11:19 UTC check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-11-20261108T111936Z/status.json)
+  and [11:35 UTC check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-11-20261108T113536Z/status.json)
+  found the same original worker CPU-active, about 667 MiB RSS, and no terminal
+  result. At 11:35, phase construction had no recorded return after 83 minutes;
+  total elapsed time was 92.8 minutes, leaving 27.2 minutes before the 12:02:50
+  UTC deadline. CPU activity alone does not establish stage progress or a
+  reliable completion ETA. Those checks left the job untouched until its
+  eventual resource-guard termination above.
+
+- **Matched comparison preparations complete, unlaunched (8 November, 10:42 UTC):**
+  [The saved checkpoint](/mnt/workspaces/Cells/native-demo-reference-pairing-20261108-01/source-result.json)
+  closes two setup defects: the reference named older Cells writer producers,
+  and parameter metadata imported a production history helper too early.
+  A launch preflight now rejects stale writer bindings; the helper loads when
+  its observer is constructed. All other parameter ASTs and the history wire
+  format are unchanged. Sixteen focused controls passed with complete guards,
+  followed by exact dependency-literal integration. The initially rejected
+  reference preparation remains failed and preserved.
+  Fresh Cells preparation13 and independent-reference pair02 now agree on
+  producer bindings, raw inputs, seeds and the full 500 INIT / 350 SIM calendars
+  in both original-flux and omitted-flux modes. Both preparations completed
+  with empty metadata guards and verified snapshots/runtime origins. They were
+  unlaunched at preparation; original13 now supplies the diagnostic above.
+  Reference/comparison algorithms and flux
+  equations are unchanged. Actual11 retains its original frozen producers and
+  common-program identity: it can provide execution evidence, but this newer
+  matched comparison preparation is not retroactive parity credit for it.
+
+- **Diagnostic tooling prepared without touching actual11 (8 November):**
+  [The preparation checkpoint](/mnt/workspaces/Cells/native-phase-next-diagnostic-20261108-01/result.json)
+  binds an optional plan using the existing C-level stack sampler every 30
+  seconds. It preserves the matched original13 image and Python observer hooks;
+  only the diagnostic flag differs. This existing diagnostic option has a
+  1,800-second budget; the normal 7,200-second plan is unchanged. Preparation
+  itself launched neither plan; the later diagnostic launch is recorded above.
+  A reusable offline stack report passed 14 native-blocked controls.
+  Applied to historical diagnostic08, it retained all 59 samples, explicitly
+  marked one incomplete sample, and bound frame locations to that frozen
+  source. Parameter-record traversal and observers were frequent sampled
+  locations, but those older bytes do not establish actual11's current cost.
+  Metadata preparation, controls and offline analysis can use separate CPUs;
+  actual Cells/reference workers still share one protected native writer and
+  must run sequentially. No current-job query or scientific run occurred.
+
+- **Actual10 failed during phase construction (terminal 7 November, 19:35 UTC):**
+  The [requested 20:08 UTC check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-10-20261107T200806Z/status.json)
+  confirms the worker has exited and all three terminal failure artifacts are
+  present. The worker returned exit 1 after 7,178.643 seconds, before the
+  7,200-second wall limit; this was not a resource timeout. Peak sampled RSS
+  was 556,191,744 bytes and minimum host available memory 21,097,566,208 bytes,
+  both within their limits. All 29 parameter operations completed.
+  `geometry.phase` failed after 6,609.169 seconds during tissue-handler
+  attachment. The [saved primary cause](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-10/worker/failure.json)
+  is `WorldPhaseRejected: Inherited fields/reference edges outside the stage changed`,
+  raised by `_world_stage_runtime` during dyna's pre-method `_check`.
+  The later reproduction and repair are recorded above. The phase,
+  lattice/mesh, INIT and SIM did not complete; no flux-solver result was reached.
+  Frozen evidence is preserved. The status check itself launched no retry,
+  source edit or new validation; the subsequent repair and actual11 are separate.
+
+- **Validated CPU batch integrated; actual09 stopped and actual10 launched (7 November, 17:35 UTC):**
+  The replacement combines the 57-control observer batch below with a selective
+  bytecode-name decoder. [39 decoder and integration controls](/mnt/workspaces/Cells/native-bytecode-binding-cpu-20261107-01/checks.json)
+  passed with all 117 reports and 39 native-blocked guards complete. Large
+  functions use the compact decoder; small functions retain the original path.
+  Globals, defaults, closures and authority checks remain fresh on every use.
+  Paired synthetic measurements with inherited line tracing show 4.13–5.31
+  times faster name extraction for the larger shapes, not a full-phase speedup.
+  Earlier reporter failures and intermediate images remain preserved.
+  [Source integration](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-10/root-application-review.json)
+  verifies 78 source bindings and 82 declared dependency-literal edits across
+  44 files; the read-only decoder is a new explicit dependency. A separate
+  whole-image adoption control passed. Equations, inputs, calendars and
+  numerical tolerances are unchanged.
+  With the [replacement ready](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/execution-preparation-10.json),
+  the authorized [SIGINT stop](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/stop-original-09/result.json)
+  ended actual09 at 17:33 UTC while `geometry.phase` was still unfinished.
+  Its failed terminal artifacts, logs and immutable sources are retained;
+  this is a user-requested replacement, not a numerical or flux failure.
+  [Actual10](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-10/LAUNCH.json)
+  launched at 17:35:24 UTC with the same original-flux inputs, seeds, full
+  500-step INIT and 350-step SIM, CPU0/one thread, 1 GiB RSS, 8 GiB reserve and
+  two-hour limit. Two earlier launch-command preflight refusals created no
+  native worker and are preserved in preparation-10.
+  The [requested five-minute watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-10/result.json)
+  completed after 300.003 seconds: worker active, nine parameter operations
+  returned, no terminal failure, 375,885,824 bytes sampled RSS. The
+  [saved stage log](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-10/stage-log-at-watch-end.txt)
+  records callback bootstrap returning in 216.271 seconds and parameter
+  loading underway. Phase construction and INIT/SIM have not yet passed.
+  The watcher then ended and actual10 continued detached without automatic
+  polling or retry. The [requested 18:57 UTC check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-10-20261107T185717Z/status.json)
+  finds all 29 parameter operations complete, with parameter loading returning
+  in 287.139 seconds. `geometry.phase` entered at 17:44:47 and is still
+  unfinished after 72 minutes 30 seconds. The original worker remains
+  CPU-active after 81 minutes 53 seconds overall, with 547,041,280 bytes RSS
+  and no terminal result or failure. About 38 minutes remain before the
+  19:35:24 UTC cutoff. The phase bottleneck has not cleared; no completed
+  lattice/mesh, INIT or SIM is established by this run. It was left unchanged.
+  Separately, the [immutable-history implementation](/mnt/workspaces/Cells/immutable-parameter-history-20261107-01/source-result.json)
+  has been delivered with 92 blocked software controls passing (60 prototype
+  plus 32 integration controls). A synthetic seven-history-hash plus fresh
+  comparison measurement improved from 295.18 to 21.47 milliseconds; the
+  one-time immutable conversion cost was 154.24 milliseconds. This is not a
+  whole-phase timing. Fresh live captures remain unchanged. The implementation
+  is opt-in and absent from actual10. Its later review, two additional controls
+  and explicit integration into actual11 are recorded above.
+
+- **Next CPU observer batch checked; GPU implementation path recorded (7 November):**
+  Only `_account` changed in the handler attachment, phase-dyna and SEED lattice
+  prefix drivers. Cheap code-name screening now avoids hashing unrelated code;
+  full equality, native-descendant capture, live method/callback changes,
+  inherited observers and all ancestry/state checks remain. [57 isolated
+  controls](/mnt/workspaces/Cells/native-observer-cpu-batch-20261107-01/checks.json)
+  passed in 4.022 seconds / 47,284,224 bytes sampled RSS, with all 171 reports
+  and 57 guard receipts complete and no native entries. The first 54-pass /
+  3-failure image is retained: its synthetic clone omitted argument defaults;
+  only that test fixture changed before the passing image.
+  [Paired metadata measurements](/mnt/workspaces/Cells/native-observer-cpu-batch-20261107-01/measurement-01/measurement.json)
+  cover seven interleaved repeats of two shapes, with tracing on/off: the dyna
+  observer was 2.09–2.88 times faster and the lattice-prefix observer 4.00–6.22
+  times faster. The underlying handler observer showed no measurable gain.
+  Projections and inherited event counts match; these are not full-phase or
+  trajectory timings. Actual09 and its immutable inputs were untouched and
+  not queried by that batch. These producers are now bound into actual10 above.
+  The [GPU implementation path](docs/GPU_ENSEMBLES.md#full-native-betse-cpu-to-gpu-path)
+  keeps genuine geometry on CPU, then matches an explicit native INIT/SIM array
+  path on JAX CPU and one float64 GPU before scaling independent worlds.
+  Existing selected-family GPU coverage is not full native BETSE parity;
+  no GPU runtime installation or GPU launch was performed.
+
+- **Phase-observer overhead fixed; fresh full run launched (7 November, 15:37 UTC):**
+  The observer now rejects unrelated code names before hashing whole Python
+  code objects. Full code membership, inherited callbacks, source admission,
+  fresh history checks and cleanup remain intact. [33 focused controls](/mnt/workspaces/Cells/native-phase-metadata-cost-20261107-01/checks.json)
+  passed (15 new, 18 existing), with complete native blockades. In a controlled
+  metadata measurement with inherited line tracing, the unchanged metadata
+  walker was about 3.27 times faster, with identical projected data and
+  inherited event counts. Without line tracing its timing was unchanged;
+  this is not an end-to-end speed claim. Two slower serializer candidates
+  were discarded and the exact original serializer restored.
+  [Source integration](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-09/root-application-review.json)
+  verified all 77 bindings; dependent edits were only 46 declared hash literals.
+  [Original-flux actual09](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-09/LAUNCH.json)
+  uses the same inputs, seeds, 500-step INIT and 350-step SIM, sparse stage
+  logging, CPU0/one thread, 1 GiB RSS, 8 GiB reserve and the existing two-hour
+  limit. The [requested five-minute watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-09/result.json)
+  completed at 300.003 seconds with the worker active, nine parameter
+  operations returned and no terminal failure. Last sampled RSS was
+  374,800,384 bytes. The [saved stage log](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-09/stage-log-at-watch-end.txt)
+  confirms callback/import bootstrap and constructor preflight returned;
+  parameter loading was underway. Phase construction had not yet been checked
+  by this startup observation. The watcher then stopped and the job continued
+  detached, without automatic retry. No full run or independent comparison
+  has passed yet, and no flux equation was changed.
+  The [requested 15:51 UTC status check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-09-20261107T155152Z/status.json)
+  shows all 29 parameter operations and both RNG setup calls returned.
+  `geometry.phase_request` returned in 5.998 seconds; `geometry.phase` entered
+  at 15:47:15 and remained unfinished about 4 minutes 37 seconds later.
+  The worker was CPU-active after 835 seconds, with stable 549,814,272-byte
+  RSS and no terminal failure. About 1 hour 46 minutes remained before the
+  17:37:57 UTC cutoff. No reliable completion ETA is established; clearance
+  of the phase-construction bottleneck and INIT/SIM completion remain unproven.
+  The [requested 16:42 UTC check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-09-20261107T164244Z/status.json)
+  finds the same original worker CPU-active after 3,887.813 seconds, with
+  3,874.12 CPU seconds and 549,646,336 bytes current RSS. No terminal error or
+  completion exists. The last stage is still `geometry.phase start` at
+  15:47:15: about 55 minutes 30 seconds inside phase construction, before a
+  completed lattice/mesh or any INIT/SIM result. About 55 minutes 12 seconds
+  remain before the fixed cutoff. Stable memory and active CPU do not prove
+  useful stage progress; the bottleneck is not yet cleared. The job was left
+  running unchanged, with no retry or further polling.
+  The [requested 17:10 UTC check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/status-09-20261107T171039Z/status.json)
+  still finds `geometry.phase` unfinished, about 83 minutes after entry.
+  The original worker is CPU-active with 549,646,336 bytes RSS and no terminal
+  outcome; 27 minutes 18 seconds remain before the unchanged cutoff. Lattice,
+  mesh, INIT and SIM have not completed. The user has authorized stopping this
+  attempt once a validated replacement is ready. That stop and the subsequent
+  actual10 launch are recorded above; actual09 did not clear this stage.
+
+- **Bottleneck diagnostic (7 November, 14:06 UTC):**
+  [diagnostic08](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-diagnostic-08/LAUNCH.json)
+  reuses the existing 30-minute diagnostic mode and records C-level stack
+  samples every 30 seconds without replacing Python trace/profile hooks. It
+  includes the new sparse stage log, the same original-flux inputs and full
+  calendars, CPU0, one computational thread, 1 GiB RSS and 8 GiB reserve.
+  [Fresh preparation](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/diagnostic-preparation-08.json)
+  verifies 641 source payloads and unchanged input identity; the existing
+  77-source binder changed only two dependency literals in the demo caller.
+  The [requested five-minute watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-diagnostic-08/result.json)
+  completed with the worker live, nine parameter operations complete and no
+  terminal failure; last sampled RSS was 376,569,856 bytes. The saved
+  [stage log](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-diagnostic-08/stage-log-at-watch-end.txt)
+  measures callback/import bootstrap at 213.014 seconds; nine saved C-level
+  [stack samples](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-diagnostic-08/stacks-at-watch-end.log)
+  show startup wrapper-observation, imports and parameter-method validation.
+  These early samples do not yet identify actual07's later unfinished call.
+  A separate [requested 14:29 UTC check](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/diagnostic-status-08-1429/status.json)
+  now localizes the delay to `geometry.phase`, entered at 14:15:34 before any
+  lattice/mesh stage. All 20 latest stacks include world-phase construction;
+  18 include completed parameter-history validation, and 11 include metadata
+  tree hashing. Six show native cache attachment beneath those checks. This is
+  evidence of a phase-construction validation bottleneck, not an exact timing
+  percentage or proof of the sole cause. Current RSS was 551,186,432 bytes and
+  no terminal failure was present. The next repair target is redundant history,
+  source-plan and digest reconstruction while retaining integrity checks.
+  That is its last requested status observation. Its source image and outputs
+  were left untouched during the repair; no later terminal check was made.
+
+- **Sparse progress log ready for the next image:** major demo API calls and
+  geometry phase/lattice/image/mesh/lifecycle/geometry boundaries now write
+  immediately flushed UTC start/return/failure lines to the existing
+  `process/stdout.log`, with elapsed seconds on return/failure. Geometry evidence
+  capture has separate boundaries. There is no timer, polling or timestep output.
+  [13 focused controls](/mnt/workspaces/Cells/native-stage-progress-20261107-01/checks.json)
+  passed in 23.640 seconds with complete native-blocked guards; lint and existing
+  test-definition checks passed. Raw returns and original source failures remain
+  retained; a broken log disables further output, while observer loss refuses
+  continuation. Actual07 and its frozen image are untouched. The fresh
+  diagnostic08 image includes the logging with updated source bindings.
+
+- **Startup blocker cleared (7 November):** the genuine six-API setup and
+  original SimRunner import now pass from a fresh frozen image. All four import
+  contexts publish and close, hooks and monitoring restore, and filesystem and
+  model-execution guards remain clear. Actual05's earlier failure is preserved;
+  no geometry or numerical result is inferred from this startup check. Root has
+  integrated the repaired sources and launched original-flux actual06 at
+  11:22 UTC. It failed after 256.633 seconds at the first parameter birth:
+  the explicit SimRunner import had not used the native module-issuance context.
+  Import observers and cleanup completed; geometry and numerical steps had not
+  begun. The [narrow issuance repair](/mnt/workspaces/Cells/native-sim-module-issuance-20261107-01/root-source-results-review.json)
+  now passes 36 focused controls (8 new, 28 affected) and a fresh genuine
+  six-API/SimRunner check including the exact subsequent parameter import
+  registry check: 255.519 seconds, 594,157,568 bytes sampled process-tree RSS.
+  All four contexts close, both hooks restore and no model/solver work runs.
+  Root launched original-flux actual07 at 11:50 UTC from these sources. Its
+  [five-minute startup watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-07/result.json)
+  finished with the worker live and no terminal failure. Nine parameter
+  operations returned successfully, including actual parameter birth, YAML
+  loading and paths, passing actual06's failure point. The accidental
+  broad software selection (193 passes, one historical unadopted-gate test
+  failure) is retained separately; its launch arguments were corrected.
+  [Saved actual06 failure](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-failure-06.json)
+  preserves 17 captures, the unavailable opaque failed-parent capture and all
+  resource evidence; no flux or numerical failure is inferred.
+
+- **Next milestone and ownership:** Root is working solo today; Key and
+  Specialist are off duty. Root combines the final sources, updates the matched
+  original-BETSE reference bindings and runs the full demonstration. Both Cells
+  modes remain separate. The current original-flux attempt has fresh bindings;
+  omitted-flux and independent-reference execution need matching fresh
+  preparations before comparison. The earlier images are preserved. Physical
+  qualification, broader features and restart equivalence follow the first demo.
+  Earlier failed evidence remains preserved: [built-in RNG provenance](/mnt/workspaces/Cells/native-seed-execution-20261105-01/status-check-01.json),
+  [stale parameter-runtime pin](/mnt/workspaces/Cells/native-seed-execution-20261105-02/status-check-01.json),
+  and [pregeometry timeout](/mnt/workspaces/Cells/native-seed-execution-20261105-03/status-check-01.json).
+
+- **Today's startup check:** [saved result](/mnt/workspaces/Cells/native-wrapper-bootstrap-complete-20261107-01/source-result.json)
+  verifies one genuine import-sequence control, 255.766 seconds and 593,506,304
+  bytes sampled process-tree RSS. The nested process executed the real auxiliary
+  constructors and pinned import declarations; the outer blocked-test receipt
+  is not a blanket zero-native claim. No model phase, solver or trajectory ran.
+  Exact source/runtime files, all six captures and all four closed import
+  contexts verify. The user's renewed end-to-end instruction is retained in
+  the run inputs; earlier rejected and failed attempts are unchanged.
+
+- **Latest full run (7 November, 11:50–13:50 UTC; timed out):** [actual07 launch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-07/LAUNCH.json)
+  runs original flux, full 500/350 calendars, CPU0, one thread, 1 GiB RSS,
+  8 GiB reserve and a 7,200-second cap. [Integration review](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-07/root-application-review.json)
+  verifies all 77 sources and two dependency-literal changes in one caller;
+  [both fresh images](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/preparation-review-07.json)
+  preserve all inputs and use common starting-state declaration `412aa678`.
+  The user-requested 13:51 UTC check found a terminal
+  [wall-time failure](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-07/process/failure.json):
+  7,200.034 seconds, exit -9 after the resource controller stopped the worker.
+  The [stop record](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-07/process/resource-stop.json)
+  names only `wall_time_allowance`; sampled peak RSS was 556,130,304 bytes,
+  below 1 GiB, and minimum host available memory was 21,099,552,768 bytes.
+  All 29 parameter outcomes and common RNG setup were saved. The last demo
+  capture is from 11:59:44; no completed geometry stage, final worker outcome,
+  INIT or SIM completion was saved. The worker consumed 7,177.81 CPU seconds,
+  but these records do not identify the slow internal call or establish a
+  numerical/flux failure. Both processes are gone; no retry was launched.
+  Next work is to localize the unfinished call using the prepared sparse log
+  before another full attempt. Omitted-flux and original-BETSE workers remain
+  unlaunched; no end-to-end pass or numerical agreement is claimed.
+
+- **Previous full run (7 November, 11:22 UTC; failed before geometry):** [actual06 launch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/launch-summary-06.json)
+  targets SEED → 500-step INIT → 350-step SIM with original flux on CPU0,
+  one thread, 1 GiB RSS, 8 GiB reserve and a 7,200-second wall cap. The
+  [source integration](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-06/root-application-review.json)
+  verifies 77 sources and 15 literal dependency edits across eight files;
+  bodies/imports are unchanged from the reviewed fixes. [Both Cells images](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/preparation-review-06.json)
+  contain 639 frozen source files and independent 141-file inputs. The
+  [matching original-BETSE preparations](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/prepared-reference-pair-09/root-preparation-review.json)
+  use the same common starting-state declaration `2dd42675` and full calendars.
+  Reference algorithms remain unchanged; nine dependency literals in four
+  reference tools were updated. Omitted flux and both reference workers remain
+  unlaunched. No completed trajectory or numerical agreement is claimed yet.
+
+- **Latest actual attempt (6 November, 22:29 UTC):** [Original-flux actual05](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-05/LAUNCH.json)
+  uses the accepted cleanup/monitoring repair and bounded failure diagnostic.
+  The [combined source update](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-05/root-application-review.json)
+  verifies all 77 hashes and 15 reversible literal edits across eight callers,
+  with unchanged bodies/imports. [Both Cells preparations](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/preparation-review-05.json)
+  passed: 639 source files and independent 141-file inputs per mode, full 500/350
+  calendars, common Program `bab2c6a1`, preparation 236.693 seconds / 57,970,688
+  bytes sampled RSS. [Matching reference bindings](/mnt/workspaces/Cells/native-reference-import-lifecycle-20261106-01/final-binding-03/root-binding-review.json)
+  are accepted. Reference pair07's metadata-only 120-second timeout is preserved;
+  [held pair08](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/prepared-reference-pair-08/root-preparation-review.json)
+  now passes saved-preparation review with matching Program and full calendars.
+  The [existing launch release](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/release-preparation-05.json)
+  retains CPU0, one thread, 1 GiB RSS, 8 GiB reserve and the 7,200-second cap.
+  The [startup watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-05/result.json)
+  ended at 230 seconds on the terminal failure. [Saved disposition](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-failure-05.json)
+  records 224.811 seconds / 330,403,840 bytes sampled RSS, no resource/filesystem
+  breach, six returned auxiliary callback operations and completed shared import
+  publication. A later private SIM-run import observer rejected an owner/export
+  binding in `_binding`. All four saved observer cleanup records show restored
+  hooks/monitoring, empty cleanup/hook-loss lists and inactive contexts. The exact
+  owner/export is unavailable because the current binding diagnostic handles
+  `_same` comparisons rather than this direct identity check. Twenty-one saved
+  captures and twenty post-run producer hashes verify; no geometry, INIT or SIM
+  step completed. This is not a numerical or flux failure. The initial metadata
+  reader's integer-versus-sequence mistake was corrected without changing frozen
+  artifacts or repeating execution. No automatic retry; omitted flux is unlaunched.
+  Root's [direct binding diagnostic](/mnt/workspaces/Cells/native-import-direct-binding-observation-20261106-01/source-result.json)
+  now retains authenticated traceback target, source line and raw owner/output
+  identity atoms for direct checks, without a fresh export lookup or change to
+  binding authority. Only `_import_binding_difference` and its tests changed;
+  all prior test definitions and SIM capture wiring remain unchanged. The single
+  focused image passes 49 controls (19 new, 30 affected), with 147 reports, empty
+  attempt guards, restored final hooks, 28.889 seconds / 305,336,320 bytes sampled
+  RSS and no checkout drift. Source/runtime and 254 saved artifact pins verify;
+  this is Root implementation/saved-result review, not independent scientific
+  qualification. It cannot reconstruct actual05's missing target. Key is
+  investigating a genuine context-manager decorator/export transformation and
+  the six auxiliary callback API order; that lead remains unconfirmed for actual05.
+  The six auxiliary APIs also do not import `betse.science.simrunner`, so Root
+  now imports that module explicitly while all three private import observers
+  remain active. The [scoped source and saved-result review](/mnt/workspaces/Cells/native-sim-bootstrap-runner-import-20261106-01/root-source-results-review.json)
+  accepts 28 focused blocked controls (10 new, 18 affected), 84 reports,
+  34.149 seconds / 306,778,112 bytes sampled RSS, restored hooks and no native
+  model entries. Raw module returns and original failures are retained before
+  later parameter acquisition; no SimRunner instance or method is invoked.
+  The earlier 27-control image stays separate. Key's genuine import probe
+  reached original requirement-declaration builders. Automatic approval rejected
+  its proposed expansion before launch; [read-only scope clarification](/mnt/workspaces/Cells/native-sim-bootstrap-runner-import-20261106-01/native-import-declaration-scope.json)
+  distinguishes constructing requirement metadata and defining functions from
+  creating simulation phases or evaluating those functions. The clarified
+  guarded probe was also rejected before launch: automatic approval
+  requires direct user authorization for those declaration constructors.
+  That authorization request preceded today's renewed instruction and successful
+  startup check. Key's
+  [held export-lifecycle packet](/mnt/workspaces/Cells/native-wrapper-context-export-development-20261106-01/source-result.json)
+  is sealed. The [consolidated source review](/mnt/workspaces/Cells/native-wrapper-context-export-development-20261106-01/root-source-review.json)
+  identified a missing `contextlib.wraps` → `functools.wraps` identity check and
+  a missing witness for the actual callable selected at the context-manager
+  factory call. Key's [combined successor](/mnt/workspaces/Cells/native-wrapper-context-callee-identity-repair-20261107-01/source-result.json)
+  now has [70 verified blocked controls](/mnt/workspaces/Cells/native-wrapper-context-callee-identity-repair-20261107-01/root-software-review.json)
+  (8 new, 62 affected), 627 frozen sources, 305 loaded source producers and
+  1,441 runtime origins. The final worker completed in 10.056 seconds with
+  273,756,160 bytes sampled RSS; the earlier 70-pass image remains separate.
+  Root corrected a metadata reader's four-worker-plus-review counting assertion
+  without rerunning tests or changing frozen results. The [combined source and
+  saved-result review](/mnt/workspaces/Cells/native-wrapper-context-callee-identity-repair-20261107-01/root-source-results-review.json)
+  closes both findings. At that checkpoint the genuine import probe remained
+  held for direct user authorization; today's separately recorded probe has
+  now completed successfully.
+  These were source-derived guard findings, not observed numerical failures.
+  The earlier packet itself launched neither a new probe nor a full run.
+  Specialist's read-only check found no reference algorithm change needed: its
+  existing original workflow already imports SimRunner before the common RNG
+  boundary. The held reference pair will receive one dependency update after
+  the combined Cells sources are final; no second import or auxiliary-owner
+  substitution is planned.
+  Its [consolidated declaration inspection](/mnt/workspaces/Cells/native-simrunner-import-declaration-inspection-20261107-01/SOURCE_ROSTER.json)
+  identifies nine additional metaclass/label helpers across six original files
+  for the guarded import. The [exact roster extension is source-reviewed](/mnt/workspaces/Cells/native-wrapper-simrunner-declaration-roster-preparation-20261107-01/root-source-review.json):
+  only the declaration literal changes, all ten native file pins match, and
+  wrapper/test bytes stay fixed. [Scope-pointer adoption](/mnt/workspaces/Cells/native-wrapper-simrunner-declaration-roster-preparation-20261107-01/scope-adoption.json)
+  is complete at runner `9d588210`; it changes only the reviewed tuple.
+  This is source-only: no tests, import probe or additional native authority
+  are granted by that source-only receipt. Today's startup and launch receipts
+  above record the subsequent execution separately.
+
+- **Previous full run (6 November, 20:47 UTC):** [Original-flux actual04](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-04/LAUNCH.json)
+  launched with the reviewed counter repair on CPU0, one thread, 1 GiB RSS,
+  8 GiB reserve and the unchanged 7,200-second cap. The [77-source update](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-04/root-application-review.json)
+  verifies 14 literal changes across eight callers and unchanged bodies/imports.
+  [Both Cells preparations](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/preparation-review-04.json)
+  have 639 frozen source files, independent 141-file inputs, full 500/350 calendars
+  and common Program `4596f4e4`; preparation completed in 238.195 seconds.
+  The matching [reference binding](/mnt/workspaces/Cells/native-reference-import-lifecycle-20261106-01/final-binding-02/root-binding-review.json)
+  is clear, and [held reference pair06](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/prepared-reference-pair-06/source-result.json)
+  has a clear [saved-result review](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/prepared-reference-pair-06/root-preparation-review.json)
+  with the same Program, 651 frozen files and 141 inputs per mode. Its pair05
+  metadata timeout is preserved; no reference model worker ran. Actual04's
+  [terminal disposition](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-failure-04.json)
+  records 201.435 seconds / 330,465,280 bytes sampled RSS, with no resource or
+  filesystem breach. All six callback operations returned, then shared import
+  cleanup raised `Import observer cleanup incomplete`; no world-parameter
+  stage, geometry, INIT or SIM completed. The observer's own cleanup errors,
+  hook losses and monitoring-state comparison were not separately saved; the
+  full live-context capture refused its unsupported namespace type. Fourteen
+  available capture hashes and twenty post-run producer hashes verify. The
+  [startup watch](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-watch-04/result.json)
+  ended on that terminal outcome before its requested 300-second window.
+  No unchanged retry is queued. Omitted flux remains prepared and unlaunched;
+  no numerical or flux failure, trajectory success or agreement is inferred.
+  Root's [cleanup diagnostic successor](/mnt/workspaces/Cells/native-import-cleanup-observation-20261106-01/root-source-results-review.json)
+  is source/software accepted: 63 focused controls (24 new and 39 affected),
+  189 passed reports, empty native-attempt guards and restored final hooks.
+  It retains bounded observer cleanup state and matching traceback locals
+  independently of the opaque live partial, with original primary/cause intact.
+  The earlier 62-pass image stays separate. This does not recover actual04's
+  missing predicate. Key's separate genuine nested reproduction identified an
+  outer event mask changing from 4101 to 4117. The [105-control successor review](/mnt/workspaces/Cells/native-wrapper-nested-cleanup-development-20261106-01/root-source-results-review.json)
+  verifies saved outcomes but holds source acceptance: cleanup bookkeeping can
+  bypass teardown after an inherited-hook rejection, and post-teardown binding
+  calls need a final observer-state check before publication. The [88-control
+  successor review](/mnt/workspaces/Cells/native-wrapper-cleanup-boundaries-development-20261106-01/root-source-results-review.json)
+  verifies the saved outcomes and closes bookkeeping and final hook/registry
+  checks. Source remains held on one residual: monitoring event masks must be
+  sampled again after the final binding/registry callbacks. The current check
+  samples hooks alone and can miss late event-mask drift. This is a static source
+  finding within the original repair scope, not an observed cause of actual04.
+  The [final monitoring-state review](/mnt/workspaces/Cells/native-wrapper-publication-monitor-development-20261106-01/root-source-results-review.json)
+  closes that residual with 12 focused passes and a preserved predecessor
+  counterexample. Actual04's absent predicate remains unknown. The [combined
+  adoption05](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-05/result.json)
+  applied successfully in 162.736 seconds with empty metadata attempt guards;
+  application review and fresh matching Cells/reference preparations are next.
+  These corrections are included in actual05 above; actual04 remains failed.
+
+- **Previous full run (6 November, 19:40 UTC):** The [combined source application](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-03/root-application-review.json)
+  verifies 77 source hashes and 15 reversible literal changes across eight
+  callers, with unchanged bodies/imports. [Both fresh Cells preparations](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/preparation-review-03.json)
+  contain 639 identical source payloads per mode, independent 141-file inputs,
+  full 500-step INIT / 350-step SIM calendars and common starting Program
+  `bc6000be`. Metadata preparation completed in 237.671 seconds / 59,006,976
+  bytes sampled RSS. The [original-flux worker](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/launch-summary-03.json)
+  launched on CPU0, one thread, 1 GiB RSS, 8 GiB reserve and the existing
+  7,200-second cap. Its [startup failure](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-failure-03.json)
+  is now retained: 180.092 seconds / 329,986,048 bytes sampled RSS, with no
+  resource breach. The shared molecule import completed and published its
+  record, and all six callback operations returned. A later private SIM-run
+  import check rejected `_get_default_dict_class_name` because its retained
+  `_DEFAULT_DICT_ID` changed from 0 to 1. The new diagnostic captures that exact
+  function, atom and value transition; the canonical native helper increments
+  this class-name counter. Key's [counter-lifecycle repair](/mnt/workspaces/Cells/native-wrapper-counter-helper-development-20261106-01/root-source-results-review.json)
+  is source/software accepted: 29 focused controls verify the witnessed native
+  increment while retaining strict checks on other bindings. One unobserved
+  inherited-profiler helper call is explicitly retained as real metadata work
+  followed by refusal; it is not credited as zero work. The previous 116-pass /
+  one-failure image and 94 deselected controls remain separate. Root is binding
+  this successor for the next actual attempt. The reference
+  loader's [counterpart check](/mnt/workspaces/Cells/native-reference-import-lifecycle-20261106-01/counter-lifecycle-check-01/root-counter-check-review.json)
+  passes ten scoped metadata controls without source changes: ordinary counter
+  advances remain compatible, seven callable/default/source retargets refuse,
+  and two failure cases retain partial state. No reference-side repair is
+  required for this reported counter mutation.
+  No world-parameter stage, geometry, INIT or SIM step completed. This is not
+  an observed numerical or flux failure, and actual02's missing atom remains
+  unknown. That worker exited before the requested five-minute watch ended;
+  its failure remains preserved separately from the repaired actual04 above.
+  Two Root launcher setup refusals occurred before any child was created
+  (checkout module instead of frozen producer, then CPU2 instead of CPU0);
+  both are preserved in the launch summary. The corrected launch uses the
+  exact same reviewed plan and source snapshot. Omitted flux is prepared and
+  unlaunched. The [matching reference pair04](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/prepared-reference-pair-04/source-result.json)
+  has a clear [saved-preparation review](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/prepared-reference-pair-04/root-preparation-review.json):
+  651 frozen source files, 116 runtime origins, 12 loaded producers and matching
+  full calendars/common Program. It remains held, with no actual reference worker. Its preceding
+  metadata-only 120-second preparation timeout remains failed. No completed
+  SEED/INIT/SIM or numerical agreement is claimed by these preparations.
+
+- **Earlier startup-cost diagnostic and accepted repairs:** The two-hour
+  geometry-entry timeout led to a fresh [627-file preparation](/mnt/workspaces/Cells/native-pregeometry-execution-20261106-01/preparation-review.json), which
   completed metadata checks in 75.594 seconds / 69,267,456 bytes sampled RSS.
   The [actual stack diagnostic](/mnt/workspaces/Cells/native-pregeometry-execution-20261106-01/launch-summary.json)
   launched at 2026-11-06 13:19:05 UTC on CPU0 using the existing launcher:
@@ -84,10 +700,29 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   stages returned, 12 stack samples, 503,054,336 bytes peak sampled RSS and no
   terminal outcome. The last frozen sample reaches geometry entry through
   `from_world_ready` and parameter-history validation, in `_method_code` /
-  `ast.dump`; one sample does not establish the dominant cost. Key is analyzing
-  that metadata path while the immutable diagnostic continues. No further
-  automatic polling or retry follows the startup watch. No geometry completion,
-  INIT/SIM execution or numerical failure is established. Key's separate
+  `ast.dump`; one sample does not establish the dominant cost. The [requested
+  terminal check](/mnt/workspaces/Cells/native-pregeometry-execution-20261106-01/status-check-01.json)
+  found a wall-time failure after 1,800.083 seconds, peak sampled RSS
+  503,054,336 bytes and minimum host reserve 20,178,006,016 bytes. All 59 stack
+  samples are retained: 29 include parameter-history validation, 18 include
+  parameter-record digest work, and 19 include phase-cache construction. These
+  counts overlap and are not exact time fractions. No geometry result or final
+  worker outcome was saved. Key's first AST optimization showed a local 1.617×
+  timing improvement. Its mutable-label cache bypass is now closed by the
+  [accepted 11-control successor](/mnt/workspaces/Cells/native-parameter-ast-cold-roster-repair-20261106-01/root-source-results-review.json).
+  Original 100-control and timing evidence remain at their own source; the
+  corrected source has no new timing or overall SEED-speedup claim.
+  Key's [75-control digest traversal repair](/mnt/workspaces/Cells/native-parameter-record-cost-development-20261106-01/root-source-results-review.json)
+  is also accepted: fresh traversal, unchanged serialization and no cached
+  input/digest/owner success. Paired synthetic measurements show 1.233× / 1.254×
+  local tree throughput; no full-SEED improvement has yet been measured.
+  Specialist's [six-control
+  ancestry measurement](/mnt/workspaces/Cells/world-phase-ancestry-measurement-20261106-01/source-result.json)
+  confirms ten authority checks at depth four, but also proves that simply
+  removing repeated parent checks misses mutations after child callbacks.
+  Production is unchanged there; a safe reduction is not yet established.
+  No automatic retry, geometry completion, INIT/SIM execution or numerical/flux
+  failure is established. Key's separate
   [targeted timing context](/mnt/workspaces/Cells/native-pregeometry-caught-stop-repair-20261106-01/root-source-results-review.json)
   is source/software accepted but was not used in this run.
 
@@ -99,12 +734,148 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   has a clear [source/results review](/mnt/workspaces/Cells/native-sim-reference-common-start-integration-20261105-01/root-source-results-review.json).
   The [Cells/SIM reader and helper-adoption successor](/mnt/workspaces/Cells/native-cells-common-start-integration-20261106-01/sim-adoption-01/root-source-results-review.json)
   is now accepted at its exact sources, with 29 distinct affected controls.
-  One specific comparison seam remains: the starting-state comparator accepts
-  demo@8/launch@12 and needs an explicit full SIM@9 route. Specialist owns that
-  final adapter and paired controls. Root still needs to apply the complete
-  dependency projection and prepare fresh paired execution inputs. These
-  packages do not establish an actual common-start run, full INIT/SIM execution
-  or scientific agreement.
+  Specialist's [explicit full SIM@9 comparison successor](/mnt/workspaces/Cells/native-cells-common-start-integration-20261106-01/full-SIM-comparison-01/source-result.json)
+  has 15 focused controls at its original source. Its static policy-binding gap
+  is closed by the [accepted eight-control successor](/mnt/workspaces/Cells/native-cells-common-start-integration-20261106-01/full-SIM-comparison-01/policy-binding-01/root-source-results-review.json):
+  reached `SIM_GATES` and `POLICY` values are authenticated before parsing,
+  including a resealed empty-gate counterexample. Historical outcomes stay at
+  their own immutable sources; no actual common-start comparison has run.
+  Root's [29-component review map](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-01/accepted-review-map-05.json)
+  resolves the exact accepted source/review associations, including the corrected
+  parameter AST producer and the
+  [callback/geometry body ancestry](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-01/callback-geometry-review.json).
+  Root's [complete dependency projection](/mnt/workspaces/Cells/native-complete-demo-adoption-20261106-01/source-result.json)
+  now covers 76 parameter/SEED/INIT/SIM sources, 16 existing template contracts
+  and 28 explicit review tokens. Its 82 metadata controls pass in four bounded
+  groups on one immutable image (246 reports, empty restored guards), with a clear
+  [independent source/results review](/mnt/workspaces/Cells/native-complete-demo-adoption-20261106-01/root-source-results-review.json); the first
+  unsplit worker reached the 480-second limit and remains failed without final
+  suite/guard certification. This is dependency-tool coverage, not source
+  application or execution. A [focused leaf successor](/mnt/workspaces/Cells/native-complete-demo-adoption-20261106-01/leaf-adoption-01/root-source-results-review.json)
+  adds the digest as the 77th source and 29th required review, with one affected
+  closure pass (61.808 seconds / 62,926,848 bytes sampled RSS). The projector and
+  all existing assignment/template recipes remain unchanged. Both metadata-cost
+  successors are accepted. The [combined literal adoption](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-01/result.json)
+  completed in 123.041 seconds / 56,782,848 bytes sampled RSS: 77 bound sources,
+  47 files with declared literal-only changes, unchanged callable/import ASTs,
+  reversible edits, empty restored guards and preserved before/after snapshots.
+  The [combined application review](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-01/root-application-review.json)
+  verified all 227 literal operations and found no blocker.
+  The [final reference/codec/comparator binding](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/final-literal-adoption-01/root-source-results-review.json)
+  is accepted: 22 literal sites, unchanged bodies and exact late-bound contracts.
+  [Both full-demo snapshots](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/preparation-review.json)
+  are verified: 637 identical source payloads per mode, independent input files,
+  original full 500/350 calendar scalars and one common-start Program. Metadata
+  preparation completed in 173.762 seconds / 54,370,304 bytes sampled RSS.
+  The [full original-flux run](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/launch-summary.json)
+  launched at 2026-11-06 16:14:55 UTC on CPU0, one thread, 1 GiB RSS, 8 GiB
+  reserve and the existing 7,200-second cap. The [startup watch caught a failure](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-failure-01.json)
+  after 30.903 seconds / 272,011,264 bytes sampled RSS: the import observer
+  rejected the nested tissue-configuration profile hook during callback
+  acquisition. No parameter stage, geometry or solver completed; this provides
+  no evidence of a numerical or flux failure. The process exited before the
+  requested five-minute watch could complete. Key's [combined guard-composition repair](/mnt/workspaces/Cells/native-import-guard-composition-repair-20261106-01/root-source-results-review.json)
+  is now source/software accepted for the actual tissue/simulator/callback
+  sequence: 57 passes (23 new, 34 affected), including all four private import
+  observer bodies. It authenticates the real suspended guard frames and parent
+  hook chain; arbitrary replacement hooks still refuse. Earlier failed software
+  images and the actual failure remain separate. Root's [successor dependency application](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/adoption-02/root-application-review.json)
+  is complete: 14 declared literal changes across eight callers, all callable
+  and import bodies unchanged, exact byte replay/reversal and 77 final source
+  hashes verified. The metadata worker completed in 154.698 seconds /
+  47,357,952 bytes sampled RSS with empty restored guards. An initial optional
+  review-list lookup failed before source application and remains recorded.
+  Matching reference bindings and [fresh full-run images](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/preparation-review-02.json)
+  then passed metadata checks (207.492 seconds / 56,799,232 bytes sampled RSS).
+  The [fresh original-flux full run](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/launch-summary-02.json)
+  launched at 17:21:18 UTC. Its [startup watch caught a second failure](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/startup-failure-02.json)
+  after 154.440 seconds / 325,009,408 bytes sampled RSS: all six auxiliary
+  callback-prelude API operations returned, but final imported-function binding
+  validation rejected a change before publishing the import record. No world
+  parameter stage, geometry, INIT or SIM step completed. The saved captures do
+  not identify the exact first differing binding atom; Key is diagnosing the
+  complete decorator/publication lifecycle without accepting unknown drift.
+  Root's [initial bounded failure-diagnostic successor](/mnt/workspaces/Cells/native-import-binding-diagnostics-20261106-01/source-result.json)
+  passed 33 focused controls (24 new, nine affected): it records the exact
+  failing function and first differing retained binding atoms for the shared
+  observer and all three SIM observers, without retrying or accepting them.
+  Original errors/causes and raw tracebacks remain intact if diagnostic capture
+  fails. The worker completed in 26.878 seconds / 299,122,688 bytes sampled RSS;
+  final guards are empty and restored. Two earlier launcher/precollection
+  failures (missing metadata dependency, wrong selector syntax) are preserved.
+  This improves the next failure record; it does not identify the missing atom
+  from the old run or release another actual worker.
+  The [consolidated source/results review](/mnt/workspaces/Cells/native-wrapper-publication-lifecycle-repair-20261106-01/root-source-results-review.json)
+  verified Key's 77 publication controls and Root's 33 at their own sources,
+  but held adoption for two source gaps: later-class method headers in Key's
+  publication proof, and metaclass dispatch during Root diagnostic formatting.
+  Key is repairing the class path. Root's [39-control successor](/mnt/workspaces/Cells/native-import-binding-diagnostics-20261106-01/dispatch-repair-01/source-result.json)
+  uses identity-only classification, constant builtin labels, opaque type IDs
+  and native exception slots; six additional controls cover metaclass and
+  exception-property traps. Its [incremental source/results review](/mnt/workspaces/Cells/native-import-binding-diagnostics-20261106-01/dispatch-repair-01/root-source-results-review.json)
+  is clear. Key's [90-control class-header successor](/mnt/workspaces/Cells/native-wrapper-later-class-binding-repair-20261106-01/source-result.json)
+  closes the ordinary header/lifetime gap, but its [review](/mnt/workspaces/Cells/native-wrapper-later-class-binding-repair-20261106-01/root-source-results-review.json)
+  found one residual: equality-based type admission could accept a nonliteral
+  default. The [accepted exact-type successor](/mnt/workspaces/Cells/native-wrapper-default-type-identity-repair-20261106-01/root-source-results-review.json)
+  closes that residual with recursive identity checks before the shared encoder:
+  25 focused passes (four new, 21 affected), including genuine predecessor
+  equality-dispatch reproduction and final zero-equality refusals. The full
+  94-control suite was not rerun. No successful diagnostic control grants
+  binding acceptance.
+  This is not evidence of a flux or numerical failure. The worker exited before
+  five minutes; that failed worker is terminal and its outputs are preserved.
+  The later current-byte launch is described above; omitted flux remains unlaunched.
+  Root's [current-checkout rebinding successor](/mnt/workspaces/Cells/native-complete-demo-adoption-20261106-01/rebinding-01/source-result.json)
+  passes 19 focused controls (17 new, two affected originals), 57 reports,
+  with empty restored guards in 109.494 seconds / 65,388,544 bytes sampled RSS.
+  It handles already-split pin declarations so the next dependency update uses
+  current source, without restoring historical files. The 77-source plan,
+  all prior test bodies and earlier evidence remain unchanged. The [independent
+  source/results review](/mnt/workspaces/Cells/native-complete-demo-adoption-20261106-01/rebinding-01/root-source-results-review.json)
+  is clear.
+  No complete SEED/INIT/SIM or scientific agreement is yet established.
+  [Fresh paired input preparation](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/input-preparation-02/result.json)
+  verifies independent read-only files for original and omitted flux, identical
+  complete input inventories, and unchanged 500-step INIT / 350-step SIM calendar
+  bytes. The first metadata reader used the raw permission document instead of
+  the existing normalized `input_program` result and failed with `KeyError('root')`;
+  its failure is preserved, and the corrected reader completed in 0.513 seconds /
+  24,322,048 bytes sampled RSS with empty/restored guards. Explicit common-start
+  seed options are recorded before execution; no RNG has been initialized.
+  Specialist has prepared the [independent original-BETSE input pair and full
+  reference launch/comparison recipes](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/PREPARATION-INPUTS.json).
+  Its 141 files per mode match the Cells inventory with separate inodes.
+  Root has also prepared the [stable original-INIT source/bootstrap/execution
+  contracts](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/reference-contracts-01/local-review.json)
+  with the existing metadata helpers: nine frozen source files, 473 original
+  package text files, empty restored guards, 0.511 seconds / 27,484,160 bytes
+  sampled RSS. Those initial documents applied no source constants and released
+  no worker. Specialist has since completed [both independent full-reference preparations](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/prepared-reference-pair-01/source-result.json):
+  648 frozen source payloads, the same input inventory and common-start Program,
+  500/350 calendar scalars and held launch inputs. Preparation took 84.442 seconds
+  / 97,124,352 bytes sampled process-tree RSS; no reference worker or RNG ran.
+  The [saved preparation review](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/prepared-reference-pair-01/root-preparation-review.json)
+  verifies both metadata outcomes and exact source/runtime bindings.
+  The [successor reference pair](/mnt/workspaces/Cells/native-original-reference-pair-preparation-20261106-01/prepared-reference-pair-02/source-result.json)
+  has also completed metadata preparation against the matching current Cells
+  sources; no actual reference worker ran. Subsequent source inspection found
+  that its private loader bypasses the installed beartype AST import
+  transformation. Specialist is correcting that original-package execution
+  correspondence before reference release. Its [consolidated loader milestone](/mnt/workspaces/Cells/native-reference-import-lifecycle-20261106-01/DELIVERY.json)
+  is now delivered. Its [source/results review](/mnt/workspaces/Cells/native-reference-import-lifecycle-20261106-01/root-source-results-review.json)
+  verified 106 distinct controls across their saved images, but requires two
+  corrections: preserve the first capture error if final bookkeeping also
+  fails, and bind saved source selections/compiler roles to the requested flux
+  mode. The [accepted consolidated successor](/mnt/workspaces/Cells/native-reference-import-lifecycle-20261106-01/source-repairs-01/root-source-results-review.json)
+  closes both findings and the exact beartype bootstrap read-root declaration,
+  with 51 focused controls (27 new, 24 affected). The duplicate-keyword fixture
+  failure and original 106 results remain preserved at their own sources.
+  The [final literal bindings](/mnt/workspaces/Cells/native-reference-import-lifecycle-20261106-01/final-binding-01/root-source-results-review.json)
+  are also accepted, and the fresh matching pair is described above. No actual
+  reference run has occurred. These source findings are not observed numerical
+  failures. Historical images remain held at their own
+  sources. Actual reference workers must run sequentially because of the
+  shared native writer lease. These packages establish no scientific agreement.
 
 - **Complete INIT→SIM orchestration implemented:** Root's
   [source/software milestone](/mnt/workspaces/Cells/native-sim-demo-development-20261105-01/source-result.json)

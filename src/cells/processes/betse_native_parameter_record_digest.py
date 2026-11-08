@@ -161,7 +161,10 @@ def _metadata_tree(value, limits):
             scalar_bytes += 64
         elif kind is dict or kind is list or kind is tuple:
             size = len(item)
-            if size > maximum - scheduled or id(item) in active:
+            if size > maximum - scheduled:
+                return _FALLBACK
+            container_identity = id(item)
+            if container_identity in active:
                 return _FALLBACK
             scheduled += size
             if kind is dict:
@@ -177,10 +180,14 @@ def _metadata_tree(value, limits):
                 output = [None] * size
                 children = list(enumerate(item))
             target[key] = output
-            active.add(id(item))
-            pending.append((_EXIT, None, id(item), None, None))
-            for child_key, child in reversed(children):
-                pending.append((None, child, output, child_key, depth + 1))
+            active.add(container_identity)
+            pending.append((_EXIT, None, container_identity, None, None))
+            pending.extend(
+                [
+                    (None, child, output, child_key, depth + 1)
+                    for child_key, child in reversed(children)
+                ]
+            )
         else:
             return _FALLBACK
         if scalar_bytes > byte_limit:

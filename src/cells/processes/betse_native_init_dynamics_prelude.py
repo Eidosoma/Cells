@@ -24,8 +24,8 @@ from cells.processes import betse_native_init_retained_world as previous
 
 LAW_ID = "betse_actual_INIT_dynamics_smoothing_gap_environment_boundary_prelude@1"
 RELEASE = "CELLS_NATIVE_INIT_DYNAMICS_PRELUDE_RELEASED"
-PARENT_SOURCE_SHA256 = None
-PARENT_REVIEW_SHA256 = None
+PARENT_SOURCE_SHA256 = '5e4f5355b27f6f80c9541d4e6eaf9f1b424ac396a2d5289b09f695a33a9feb4f'
+PARENT_REVIEW_SHA256 = '9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52'
 PARENT_CLAIM = "_claim_for_init_dynamics_prelude"
 PARENT_CHECK = "_check_init_dynamics_prelude_authority"
 PARENT_COMPLETION_CLAIM = "_claim_completion_ancestor"
@@ -51,8 +51,9 @@ SIM_STORES = (
 GAP_STORES = ("lamb", "A1", "A2", "Ao", "alpha", "beta", "gjopen")
 METHODS = ("init_dynamics", "initDenv", "get_ion")
 COMPLETION_MODULE = "cells.processes.betse_native_init_dynamics_completion"
-COMPLETION_INTERFACE_SHA256 = COMPLETION_REVIEW_SHA256 = None
-COMPLETION_PARENT_REVIEW_SHA256 = None
+COMPLETION_INTERFACE_SHA256 = '168358ed05bb229cbde3645e10f9b61d5ef72313e504a55309ccc2c64201a2dd'
+COMPLETION_REVIEW_SHA256 = '9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52'
+COMPLETION_PARENT_REVIEW_SHA256 = '1550f3033aa2e56573135bff934a93795a3169e129b6c4a17e8a787447bfa710'
 COMPLETION_BINDING_KIND = "exact_INIT_completion_bytes_except_two_validated_parent_backrefs@1"
 COMPLETION_BACK_REFERENCE_SLOTS = ("PARENT_SOURCE_SHA256", "PARENT_REVIEW_SHA256")
 COMPLETION_ENTRIES = ("wrapper_guard", "dispatch", "validate_active", "rng_call")

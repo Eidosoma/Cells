@@ -25,9 +25,9 @@ from cells.processes import betse_native_init_molecule_wrapper_authority as wrap
 
 LAW_ID = "betse_actual_INIT_fresh_original_general_network@1"
 COMPLETION_MODULE = "cells.processes.betse_native_init_dynamics_completion"
-COMPLETION_SOURCE_SHA256 = None
-COMPLETION_REVIEW_SHA256 = None
-CONTRACT = None
+COMPLETION_SOURCE_SHA256 = '3daedf90ed77a6d078239dcb3302c6de6a6f35f5709581e0a01223e7cab338ed'
+COMPLETION_REVIEW_SHA256 = '9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52'
+CONTRACT = 'actual_active_CompletionClaim_native_molecules_source_frame@1'
 PROPOSED_CONTRACT = "actual_active_CompletionClaim_native_molecules_source_frame@1"
 ANCESTOR_CLAIM = "_claim_completion_molecule_ancestor"
 ANCESTOR_CHECK = "_check_completion_molecule_ancestor"

@@ -24,10 +24,11 @@ import struct
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from types import CodeType, FrameType, FunctionType, ModuleType
+from types import CodeType, FrameType, FunctionType, ModuleType, SimpleNamespace
 from typing import TYPE_CHECKING
 
 from validation import source_snapshot as snapshot
+from validation.betse import native_stage_progress as progress
 
 # The immutable source collector follows static imports. This dependency is
 # otherwise reached only by the coordinator's authenticated dynamic import.
@@ -40,7 +41,7 @@ FILE = "validation/betse/native_seed_demo.py"
 TEST = "tests/unit/test_native_seed_demo.py"
 RUNNER = "validation/betse/native_seed_demo_software.py"
 INPUT_METADATA = "validation/betse/native_seed_demo_inputs.py"
-INPUT_METADATA_SHA256 = "e078bbe211e25bbeeea5b353323bb82bc604a2372e1051012d9a5aa0fbc29396"
+INPUT_METADATA_SHA256 = 'a5ca1df6c7c56b6bc46eaf39981bdf5a33780e7b79c936dbbd526c4cd5dc0c6d'
 EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
 EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 CAPTURE_BUDGET_MODULE = "validation.betse.native_init_capture_budget"
@@ -51,7 +52,8 @@ SIM_KIND = "cells.genuine_seed_core_profiles_junctions_demo@9"
 SIM_ENDPOINT = "sim_terminal"
 TERMINAL_ENDPOINTS = ("init_terminal", SIM_ENDPOINT)
 SIM_MODULE = "validation.betse.native_sim_demo"
-SIM_SOURCE_SHA256 = SIM_REVIEW_SHA256 = None
+SIM_SOURCE_SHA256 = '412d43245a7822251c7ad855014d94037326ab4c5ca2ebe00f121a8c97afac5f'
+SIM_REVIEW_SHA256 = '18a6826cb633d6b532c6fc39c0ec52d84150a02a989014e06ea86c1def326fdb'
 FLUX_MODES = ("original", "disabled")
 ENDPOINTS = (
     "seed",
@@ -68,24 +70,48 @@ INIT_MODULES = {
     "init_setup": "cells.processes.betse_native_init_retained_world",
     "init_parameters": "cells.processes.betse_native_parameter_seed_init_transition",
 }
-INIT_SOURCE_PINS = dict.fromkeys(INIT_MODULES)
-INIT_REVIEW_PINS = dict.fromkeys(INIT_MODULES)
+INIT_SOURCE_PINS = {
+    "init_setup": '5e4f5355b27f6f80c9541d4e6eaf9f1b424ac396a2d5289b09f695a33a9feb4f',
+    "init_parameters": '0808a04ce9ddba81d86816d1167a7b516c55f3699f8593250c7dddef649e79c2',
+}
+INIT_REVIEW_PINS = {
+    "init_parameters": "6618312fe2cbf5aac3b5f05bf80f8a7676dab56a3a5585bd4f1cfa948643fc01",
+    "init_setup": "9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52",
+}
 PRELUDE_MODULES = {"init_prelude": "cells.processes.betse_native_init_dynamics_prelude"}
-PRELUDE_SOURCE_PINS = dict.fromkeys(PRELUDE_MODULES)
-PRELUDE_REVIEW_PINS = dict.fromkeys(PRELUDE_MODULES)
+PRELUDE_SOURCE_PINS = {
+    "init_prelude": 'ca543ad58b9a850e508fd67ffdc64938682fe68220c1cd4f7fe5ce48e353927f'
+}
+PRELUDE_REVIEW_PINS = {
+    "init_prelude": "1550f3033aa2e56573135bff934a93795a3169e129b6c4a17e8a787447bfa710"
+}
 COMPLETION_MODULES = {
     "init_dynamics": "cells.processes.betse_native_init_dynamics_completion",
     "init_tissue": "cells.processes.betse_native_init_tissue_dynamics",
     "init_molecules": "cells.processes.betse_native_init_molecule_network",
 }
-COMPLETION_SOURCE_PINS = dict.fromkeys(COMPLETION_MODULES)
-COMPLETION_REVIEW_PINS = dict.fromkeys(COMPLETION_MODULES)
+COMPLETION_SOURCE_PINS = {
+    "init_dynamics": '3daedf90ed77a6d078239dcb3302c6de6a6f35f5709581e0a01223e7cab338ed',
+    "init_tissue": '43eda22dcf45abc6aa5be4ea8b97c9176941d89731a8c16a9f2081f4451685af',
+    "init_molecules": 'ff8a54f1272fcb7342131b3970aab37371f93ff9bfa205ee1954e78574b2a411',
+}
+COMPLETION_REVIEW_PINS = {
+    "init_dynamics": "9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52",
+    "init_tissue": "0f2fc6b9ae3b27bf53d637e5fd02a245a55c3cce5b885df9c5b7f30abe2b14ca",
+    "init_molecules": "060c601d58a511985dc87b9d68b1d88c5a8c8f2173c28140a9e0167e0a8bd5df",
+}
 ELECTRICAL_MODULES = {
     "init_storage": "cells.processes.betse_native_init_storage",
     "init_electrical": "cells.processes.betse_native_init_electrical",
 }
-ELECTRICAL_SOURCE_PINS = dict.fromkeys(ELECTRICAL_MODULES)
-ELECTRICAL_REVIEW_PINS = dict.fromkeys(ELECTRICAL_MODULES)
+ELECTRICAL_SOURCE_PINS = {
+    "init_storage": '6f979cbea6d7ec2e88e7abf83ba3708802af44ba4c73583573efa44b89bc312b',
+    "init_electrical": 'd48a096de688764b950a56acdf80a94b2a63fb954fe8304b57d36677c1ec49b6',
+}
+ELECTRICAL_REVIEW_PINS = {
+    "init_storage": "9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52",
+    "init_electrical": "9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52",
+}
 STEP_MODULES = {"init_first_step": "cells.processes.betse_native_init_first_step"}
 STEP_SOURCE_PINS = dict.fromkeys(STEP_MODULES)
 STEP_REVIEW_PINS = dict.fromkeys(STEP_MODULES)
@@ -93,20 +119,36 @@ HISTORY_MODULES = {
     "init_short_history": "cells.processes.betse_native_init_short_history",
     "molecule_short_runtime": "cells.processes.betse_native_init_molecule_short_runtime",
 }
-HISTORY_SOURCE_PINS = dict.fromkeys(HISTORY_MODULES)
-HISTORY_REVIEW_PINS = dict.fromkeys(HISTORY_MODULES)
+HISTORY_SOURCE_PINS = {
+    "init_short_history": 'e400d8a965539141b9e91194c6a4a03da2e2ed93818f220437c7beaf16872e09',
+    "molecule_short_runtime": "597671ce890a609e3a1584362646c73370429be850c65c2cc091dcc3d4ca7476",
+}
+HISTORY_REVIEW_PINS = {
+    "init_short_history": "4325b04c3c425d0a0d9b0ef60c22859cdf524d13920c4b9c7eadb29e5caaafee",
+    "molecule_short_runtime": "060c601d58a511985dc87b9d68b1d88c5a8c8f2173c28140a9e0167e0a8bd5df",
+}
 TERMINAL_MODULES = {
     "init_terminal": "cells.processes.betse_native_init_terminal",
     "molecule_terminal_runtime": "cells.processes.betse_native_init_terminal_molecules",
 }
-TERMINAL_SOURCE_PINS = dict.fromkeys(TERMINAL_MODULES)
-TERMINAL_REVIEW_PINS = dict.fromkeys(TERMINAL_MODULES)
+TERMINAL_SOURCE_PINS = {
+    "init_terminal": "f95a89b39b355e9617f8ab144bbfa10d4e12f123ab85d4add1ccbc5942c2f58c",
+    "molecule_terminal_runtime": "6f0e0432a07076a02f88b997d89ab6fae2e9bc9588da36d3dbca8cf582532412"
+}
+TERMINAL_REVIEW_PINS = {
+    "init_terminal": "b7efb6935e042ad8e325c1dc5da35294345af509f2dd2ef24be7dceb057a0056",
+    "molecule_terminal_runtime": "9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52",
+}
 TERMINAL_MAX_ITERATIONS = 512
 WRAPPER_MODULES = {
     "molecule_wrappers": "cells.processes.betse_native_init_molecule_wrapper_authority"
 }
-WRAPPER_SOURCE_PINS = dict.fromkeys(WRAPPER_MODULES)
-WRAPPER_REVIEW_PINS = dict.fromkeys(WRAPPER_MODULES)
+WRAPPER_SOURCE_PINS = {
+    "molecule_wrappers": '976ffccd878721ba88b7d6d92bb3eb7518bf42c07c0868cb404fa6b28d9074bf'
+}
+WRAPPER_REVIEW_PINS = {
+    "molecule_wrappers": 'c72aa91099a63d6a94637b8e37fd792c9947ac0dab991de13d24daa0405ddbf4'
+}
 WRAPPER_ENDPOINTS = (
     "init_dynamics",
     "init_electrical",
@@ -120,7 +162,14 @@ HISTORY_OPERATOR_MODES = {
     "original": "original_value_and_flux",
     "disabled": "original_value_only_flux_omitted",
 }
-POLICY = dict(cpu=0, threads=1, max_rss_bytes=2**30, wall_seconds=7200, reserve_bytes=8 * 2**30)
+POLICY = dict(
+    cpu=0,
+    threads=1,
+    max_rss_bytes=4 * 2**30,
+    max_address_space_bytes=8 * 2**30,
+    wall_seconds=7200,
+    reserve_bytes=8 * 2**30,
+)
 MODULES = {
     "initial_rng": "validation.betse.native_seed_initial_rng",
     "initial_rng_runtime": "validation.betse.native_rng_runtime",
@@ -135,20 +184,20 @@ MODULES = {
 SOURCE_PINS = {
     "initial_rng": "aa4983674ae3dbfa10286a11e36877514efe2b3f66e4e833bcf2292d57796baa",
     "initial_rng_runtime": "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315",
-    "callback": "dac3dd66e7b9fb53f46e1a3c5f9f50e0c37cb3c135e87d44fbcfcc1beb05b618",
-    "parameters": "e23dbe4c9e124f1e022939895ad7c07fa199a1af36623a47397ffb6a7e46c1ad",
-    "geometry": "53decc9177dc3fdfa03cef68eaf2a8e4f5355c2ecd1425534219d169cb787368",
+    "callback": '229b445c9530822ae6e704a0513c229be6411edb68e1443ceffef8f98b251ef6',
+    "parameters": '973b5e231d2a94a5e15e22fae4963a3ae577534b0753a4aaa91031f5cd3a1844',
+    "geometry": '592fed4f32cdf20aa6652a0c55efdbcd21cdeb42339ee2fa26d388428a2c1344',
     "poisson": "39539d52b750fd75787a2897efc564ad4ca886381ab09acf1560159aa815ba33",
-    "core": "0b644d9b4b53dc167c8e2571d5a249bc7a42905fa845099dd21c7f730c5d3b46",
-    "profiles": "b7b26b2bc6f8c78ba84bef3f19c44ba4ece4ab5cbfabfe17f4e0e8b85d0beadc",
-    "junctions": "844bbae294e66230ddbc66a311c1bb4f0e30be0c0944866e2bb03afcc88d3665",
+    "core": '636d9f249d9fab0722fd06ae6dc76fff9d5ff3fff2dc85a2238f4e1dc4670875',
+    "profiles": 'a62908fd360d17e94cfee0acf2f4f85088f86dad77854e3b2612527205228da1',
+    "junctions": 'ce9fa8187c944bee728a0a5c240519e439abde15a4f131aabb71c2287aecc482',
 }
 REVIEW_PINS = {
-    "initial_rng": "0a6475f7d1cc423a8de6ac04d4e1c7f0cbf20ee0b3151fdef48ffe25cc5af7e7",
+    "initial_rng": "a413fdf49c7eb85fa3d62c848706a9201d246381598eac60a0e08c6ec2f8e76c",
     "initial_rng_runtime": "07df50e16811f31cb3fae5e0c0c886142b7b92e30c0a67e0ae85cb9659f0ad49",
-    "callback": "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e",
-    "parameters": "aa5a0da342c433c1332f2970436b50416b8980d9e23e586c4f0589f91b15816b",
-    "geometry": "c42f5e5023436e97fa23877bae552a79c8c0a22faf7b6a95a7d24557ef68297e",
+    "callback": 'cf688c5e190ea37db20d72a76d1bc78df8d0d1ab7d000fb623d1aa7f822a85c4',
+    "parameters": '14eb3b13f59dd16a984a0f3cf574524aac145bb7abfde456a4cbc9f8e59676d5',
+    "geometry": 'cf688c5e190ea37db20d72a76d1bc78df8d0d1ab7d000fb623d1aa7f822a85c4',
     "poisson": "a4fd24cebcb04930a7d4d884a18b0e2368020510d7d57e6be72f4b213cad1bbb",
     "core": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
     "profiles": "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
@@ -1605,7 +1654,7 @@ def _resources():
     soft, hard = resource.getrlimit(resource.RLIMIT_AS)
     if (
         os.sched_getaffinity(0) != {POLICY["cpu"]}
-        or not 0 < soft <= hard <= POLICY["max_rss_bytes"]
+        or not 0 < soft <= hard <= POLICY["max_address_space_bytes"]
         or any(
             os.environ.get(k) != "1"
             for k in (
@@ -1727,6 +1776,7 @@ def _call(state, label, function, *args, **kwargs):
     state.stage = label
     row = dict(name=label, status="attempted")
     state.operations.append(row)
+    started = progress.start("demo." + label)
     try:
         value = function(*args, **kwargs)
     except BaseException as error:
@@ -1743,11 +1793,16 @@ def _call(state, label, function, *args, **kwargs):
                 state.secondary.append(("common_start_attempt_retention", recording))
         _fail(state, label, error)
         row["status"] = "failed"
+        try:
+            progress.end("demo." + label, started, failed=True)
+        except BaseException as recording:
+            state.secondary.append(("stage_progress", recording))
         raise
     state.last_return = value  # Preserve a raw return before fallible registration.
     if label == "common_start_rng":
         state.common_start_raw_return = value
     row["status"] = "returned"
+    progress.end("demo." + label, started)
     _stop(state)
     return value
 
@@ -3234,6 +3289,314 @@ def _profile_image_inputs(state, module, *, include_bitmap=False):
     return tuple(result)
 
 
+def _import_binding_difference(error, module, context):
+    """Bounded traceback metadata, never a binding repair or source re-execution."""
+    if type(module) is not ModuleType or type(context) is not SimpleNamespace:
+        return None
+    api, fields = vars(module), vars(context)
+    same, binding, rows = api.get("_same"), api.get("_binding"), fields.get("rows")
+    if (
+        type(same) is not FunctionType
+        or type(binding) is not FunctionType
+        or (type(rows) is not tuple and type(rows) is not list)
+        or len(rows) > 512
+    ):
+        return None
+
+    def code_labels(code):
+        return (code.co_filename[:256], code.co_firstlineno, code.co_qualname[:256])
+
+    def atom(value):
+        cls = type(value)
+        # Unknown types stay opaque: even type.__getattribute__ can invoke a
+        # metaclass descriptor, and container membership can invoke its equality.
+        type_module = type_name = None
+        for known, owner, name in (
+            (type(None), "builtins", "NoneType"),
+            (bool, "builtins", "bool"),
+            (int, "builtins", "int"),
+            (float, "builtins", "float"),
+            (str, "builtins", "str"),
+            (bytes, "builtins", "bytes"),
+            (tuple, "builtins", "tuple"),
+            (list, "builtins", "list"),
+            (dict, "builtins", "dict"),
+            (set, "builtins", "set"),
+            (frozenset, "builtins", "frozenset"),
+            (type, "builtins", "type"),
+            (FunctionType, "types", "FunctionType"),
+            (CodeType, "types", "CodeType"),
+            (ModuleType, "types", "ModuleType"),
+        ):
+            if cls is known:
+                type_module, type_name = owner, name
+                break
+        result = dict(
+            identity=id(value),
+            type_identity=id(cls),
+            type_module=type_module,
+            type_name=type_name,
+        )
+        if cls is type(None) or cls is bool or cls is int and value.bit_length() <= 256:
+            result["scalar"] = value
+        elif cls is str:
+            result.update(text=value[:256], truncated=len(value) > 256)
+        elif cls is bytes:
+            result.update(hex=value[:128].hex(), truncated=len(value) > 128)
+        elif cls is float:
+            result["binary64"] = struct.pack(">d", value).hex()
+        elif cls is CodeType:
+            result["code"] = code_labels(value)
+        elif cls is FunctionType:
+            result["code"] = code_labels(value.__code__)
+            result["globals_identity"] = id(value.__globals__)
+        return result
+
+    pending, seen, direct = [error], set(), None
+    for _ in range(8):
+        if not pending:
+            break
+        current_error = pending.pop()
+        if not issubclass(type(current_error), BaseException) or id(current_error) in seen:
+            continue
+        seen.add(id(current_error))
+        for name in ("__context__", "__cause__"):
+            related = BaseException.__dict__[name].__get__(current_error)
+            if related is not None:
+                pending.append(related)
+        trace = BaseException.__dict__["__traceback__"].__get__(current_error)
+        caller = None
+        for _ in range(256):
+            if trace is None:
+                break
+            frame, line, trace = trace.tb_frame, trace.tb_lineno, trace.tb_next
+            namespace = frame.f_globals
+            live_same, live_binding = namespace.get("_same"), namespace.get("_binding")
+            if not all(
+                type(live) is FunctionType
+                and live.__code__ is original.__code__
+                and live.__globals__ is namespace
+                for live, original in ((live_same, same), (live_binding, binding))
+            ):
+                continue
+            if frame.f_code is binding.__code__:
+                row = frame.f_locals.get("row")
+                caller = (
+                    (frame, row)
+                    if type(row) is SimpleNamespace and any(row is retained for retained in rows)
+                    else None
+                )
+                if caller is not None and direct is None:
+                    retained = vars(row)
+                    target = retained.get("target")
+                    target = target[0] if type(target) is tuple and target else None
+                    if (
+                        type(target) is tuple
+                        and len(target) == 2
+                        and (target[0] is None or type(target[0]) is str)
+                        and type(target[1]) is str
+                    ):
+                        direct = dict(
+                            target=tuple(
+                                None if value is None else value[:256] for value in target
+                            ),
+                            comparison="binding_frame_without_atom_comparison",
+                            exception_identity=id(current_error),
+                            binding_frame=code_labels(frame.f_code),
+                            binding_line=line,
+                            namespace_identity=id(namespace),
+                            row_identity=id(row),
+                            retained_row={
+                                name: atom(retained[name])
+                                for name in ("module", "original", "output")
+                                if name in retained
+                            },
+                            retained_locals={
+                                name: atom(frame.f_locals[name])
+                                for name in ("owner", "role", "name")
+                                if name in frame.f_locals
+                            },
+                            diagnostic_only=True,
+                            raw_bindings_retained_in_traceback=True,
+                            live_object_serialization=False,
+                            fresh_export_lookup=False,
+                            observed_export_at_failure_available=False,
+                        )
+            if (
+                frame.f_code is not same.__code__
+                or caller is None
+                or caller[0].f_globals is not namespace
+            ):
+                continue
+            before, current = frame.f_locals.get("original"), frame.f_locals.get("current")
+            if type(before) is not tuple or type(current) is not tuple:
+                continue
+            row = vars(caller[1])
+            target = row.get("target")
+            target = target[0] if type(target) is tuple and target else None
+            if not (
+                type(target) is tuple
+                and len(target) == 2
+                and (target[0] is None or type(target[0]) is str)
+                and type(target[1]) is str
+            ):
+                continue
+            differences, extent = [], max(len(before), len(current))
+            for index in range(min(extent, 8192)):
+                if index < min(len(before), len(current)) and before[index] is current[index]:
+                    continue
+                if len(differences) == 16:
+                    break
+                differences.append(
+                    dict(
+                        index=index,
+                        before=atom(before[index]) if index < len(before) else None,
+                        current=atom(current[index]) if index < len(current) else None,
+                        before_label=(
+                            before[index - 1][:256]
+                            if index and index <= len(before) and type(before[index - 1]) is str
+                            else None
+                        ),
+                        current_label=(
+                            current[index - 1][:256]
+                            if index and index <= len(current) and type(current[index - 1]) is str
+                            else None
+                        ),
+                    )
+                )
+            else:
+                index = min(extent, 8192)
+            return dict(
+                target=tuple(None if value is None else value[:256] for value in target),
+                comparison=next(
+                    (
+                        name
+                        for name in ("bindings", "original_bindings", "original_header")
+                        if row.get(name) is before
+                    ),
+                    "unclassified",
+                ),
+                exception_identity=id(current_error),
+                binding_frame=code_labels(caller[0].f_code),
+                comparison_frame=code_labels(frame.f_code),
+                namespace_identity=id(namespace),
+                before_count=len(before),
+                current_count=len(current),
+                first_index=differences[0]["index"] if differences else None,
+                differences=tuple(differences),
+                truncated=index < extent,
+                diagnostic_only=True,
+                raw_bindings_retained_in_traceback=True,
+                live_object_serialization=False,
+            )
+    return direct
+
+
+def _import_cleanup_diagnostic(error, module, context):
+    """Bounded retained cleanup metadata; never invoke hooks or serialize live owners."""
+    if type(context) is not SimpleNamespace:
+        return None
+    fields = vars(context)
+    if len(fields) > 512 or any(type(key) is not str for key in fields):
+        return None
+    remaining = 1024
+
+    def atom(value, depth=0):
+        nonlocal remaining
+        if remaining == 0:
+            return dict(omitted="atom_budget")
+        remaining -= 1
+        kind = type(value)
+        result = dict(identity=id(value), type_identity=id(kind))
+        if kind is type(None) or kind is bool or kind is int and value.bit_length() <= 256:
+            result["scalar"] = value
+        elif kind is str:
+            result.update(text=value[:256], truncated=len(value) > 256)
+        elif (kind is tuple or kind is list) and depth < 4:
+            items = []
+            for item in value[:64]:
+                if remaining == 0:
+                    break
+                items.append(atom(item, depth + 1))
+            result.update(
+                sequence="tuple" if kind is tuple else "list",
+                count=len(value),
+                items=tuple(items),
+                truncated=len(value) > len(items),
+            )
+        elif issubclass(kind, BaseException) and depth < 4:
+            result.update(
+                exception=True,
+                args=atom(BaseException.__dict__["args"].__get__(value), depth + 1),
+                cause_identity=id(BaseException.__dict__["__cause__"].__get__(value)),
+                context_identity=id(BaseException.__dict__["__context__"].__get__(value)),
+            )
+        else:
+            result["opaque"] = True
+        return result
+
+    result = dict(
+        context_identity=id(context),
+        fields={
+            name: dict(
+                available=name in fields, value=atom(fields[name]) if name in fields else None
+            )
+            for name in ("cleanup", "hook_losses", "hooks_restored", "monitor_restored", "active")
+        },
+        record_available=fields.get("record") is not None,
+        atom_limit=1024,
+        retained_frame_available=False,
+        diagnostic_only=True,
+        fresh_hook_or_monitor_reads=False,
+        live_context_or_frame_serialization=False,
+    )
+    api = vars(module) if type(module) is ModuleType else {}
+    if len(api) > 4096 or any(type(key) is not str for key in api):
+        return result
+    factory = api.get("observing_native_imports")
+    attributes = vars(factory) if type(factory) is FunctionType else {}
+    if len(attributes) > 512 or any(type(key) is not str for key in attributes):
+        return result
+    inner = attributes.get("__wrapped__")
+    if type(inner) is not FunctionType:
+        return result
+    pending, seen = [error], set()
+    for _ in range(8):
+        if not pending:
+            break
+        current_error = pending.pop()
+        if not issubclass(type(current_error), BaseException) or id(current_error) in seen:
+            continue
+        seen.add(id(current_error))
+        for name in ("__context__", "__cause__"):
+            related = BaseException.__dict__[name].__get__(current_error)
+            if related is not None:
+                pending.append(related)
+        trace = BaseException.__dict__["__traceback__"].__get__(current_error)
+        for _ in range(256):
+            if trace is None:
+                break
+            frame, trace = trace.tb_frame, trace.tb_next
+            if frame.f_code is not inner.__code__ or frame.f_locals.get("context") is not context:
+                continue
+            retained = frame.f_locals
+            result.update(
+                retained_frame_available=True,
+                exception_identity=id(current_error),
+                namespace_identity=id(frame.f_globals),
+                frame=(frame.f_code.co_filename[:256], frame.f_code.co_firstlineno),
+                retained={
+                    name: dict(
+                        available=name in retained,
+                        value=atom(retained[name]) if name in retained else None,
+                    )
+                    for name in ("original", "final", "before", "cleanup", "primary")
+                },
+            )
+            return result
+    return result
+
+
 def _import_failure_evidence(state, evidence):
     """Independent forensic observations; raw contexts remain on Execution."""
     if state.molecule_import_api is None:
@@ -3265,6 +3628,24 @@ def _import_failure_evidence(state, evidence):
                 context_available=state.molecule_import_context is not None,
                 partial_available=state.molecule_import_partial is not None,
                 live_context_or_frame_serialization=False,
+            ),
+        ),
+        (
+            "binding_difference",
+            lambda: (
+                _import_binding_difference(
+                    state.primary, state.molecule_import_api, state.molecule_import_context
+                )
+                or missing
+            ),
+        ),
+        (
+            "observer_cleanup",
+            lambda: (
+                _import_cleanup_diagnostic(
+                    state.primary, state.molecule_import_api, state.molecule_import_context
+                )
+                or missing
             ),
         ),
         (

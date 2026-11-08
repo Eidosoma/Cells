@@ -171,6 +171,7 @@ def declare(*, law_id, run_id):
 _COMPILATION_MAX_BYTES = 4 * 2**20
 _COMPILATION_MAX_NODES = 100000
 _COMPILATION_MAX_CODES = 100000
+_COMPILATION_MAX_CLASS_PLAN = 16384
 _COMPILATION_ATTRGETTER = operator.attrgetter
 _COMPILATION_ITEMGETTER = operator.itemgetter
 
@@ -282,46 +283,52 @@ def _compilation_key(payload, filename, optimize):
 
 
 def _compilation_class_plan(node):
-    """Immutable metadata selectors/values only; retain no mutable AST node."""
-    rows, pending, classes, guards = [None], [(node, 0)], set(), []
+    """Data-only selectors/values; retain no AST node or callable in the LRU."""
+    rows, pending, accesses = [None], [(node, 0)], {}
     primitive = (str, bytes, int, bool, type(None), float, complex, type(Ellipsis))
     while pending:
         value, index = pending.pop()
         cls = type(value)
         if isinstance(value, ast.AST):
-            if cls not in classes:
-                classes.add(cls)
-                for base in cls.__mro__:
-                    if base in classes and base is not cls:
-                        continue
-                    classes.add(base)
-                    items = tuple(vars(base).items())
-                    field_types = vars(base).get("_field_types")
-                    guards.append(
-                        (
-                            base,
-                            base.__mro__,
-                            items,
-                            None
-                            if type(field_types) is not dict
-                            else (field_types, tuple(field_types.items())),
-                        )
-                    )
+            if type(cls) is not type or cls.__module__ != "ast":
+                return ()
             fields, attributes = value._fields, value._attributes
+            if (
+                type(cls.__name__) is not str
+                or type(fields) is not tuple
+                or type(attributes) is not tuple
+                or any(type(name) is not str for name in (*fields, *attributes))
+            ):
+                return ()
             names = (*fields, *attributes)
+            if names:
+                accesses[id(cls)] = names
             getter = _COMPILATION_ATTRGETTER(*names) if names else None
             try:
                 values = () if getter is None else getter(value)
             except AttributeError:
-                return None
+                return ()
             if len(names) == 1:
                 values = (values,)
-            header = ("node", cls, cls.__name__, fields, attributes, getter, len(names))
+            header = ("node", id(cls), cls.__name__, fields, attributes, names)
+            none_defaults = tuple(
+                (position, int(getattr(cls, names[position], ...) is None))
+                for position, current in enumerate(values)
+                if current is None
+            )
+            empty_fields = tuple(
+                (
+                    position,
+                    int(getattr(cls._field_types.get(name, object), "__origin__", ...) is list),
+                )
+                for position, name in enumerate(fields)
+                if type(values[position]) is list and not values[position]
+            )
         elif cls is list:
-            values = value
-            header = ("list", len(value))
+            values, header = value, ("list", len(value))
+            none_defaults = empty_fields = ()
         else:
-            return None
+            return ()
         scalar_positions, scalar_values, floating, float_values, children = [], [], [], [], []
         for position, current in enumerate(values):
             current_type = type(current)
@@ -331,89 +338,153 @@ def _compilation_class_plan(node):
                 children.append((position, child))
                 pending.append((current, child))
             elif current_type in primitive:
-                if current_type in (float, complex):
+                if current_type in (float, complex, bytes):
                     floating.append(position)
                     float_values.append(repr(current))
-                else:
+                elif current is not None and current is not Ellipsis:
                     scalar_positions.append(position)
-                    scalar_values.append(current)
+                    scalar_values.append(int(current) if current_type is bool else current)
             else:
-                return None
+                return ()
         rows[index] = (
             header,
             tuple(map(id, map(type, values))),
-            None if not scalar_positions else _COMPILATION_ITEMGETTER(*scalar_positions),
+            tuple(scalar_positions),
             tuple(scalar_values),
-            None if not floating else _COMPILATION_ITEMGETTER(*floating),
+            tuple(floating),
             tuple(float_values),
             tuple(children),
+            none_defaults,
+            empty_fields,
         )
-        if len(rows) > _COMPILATION_MAX_NODES:
-            raise ValueError("Bounded class metadata plan exhausted")
-    return tuple(rows), tuple(guards)
+        # Unsupported/large fast plans fall back to the unchanged full dump.
+        if len(rows) > _COMPILATION_MAX_CLASS_PLAN:
+            return ()
+    return tuple(rows), tuple(accesses.items())
+
 
 def _compilation_class_matches(node, plan):
-    """Fast positive proof; every mismatch/unsupported case uses original dump."""
-    if plan is None:
+    """Fast positive proof; all mismatches keep the original dump comparison."""
+    if not plan:
         return False
-    rows, guards = plan
-    for cls, mro, items, field_types in guards:
-        if cls.__mro__ is not mro:
-            return False
-        current = tuple(vars(cls).items())
-        if len(current) != len(items) or any(
-            name is not old_name or value is not old_value
-            for (name, value), (old_name, old_value) in zip(current, items, strict=True)
-        ):
-            return False
-        if field_types is not None:
-            mapping, entries = field_types
-            current = tuple(dict.items(mapping))
-            if len(current) != len(entries) or any(
-                name is not old_name or value is not old_value
-                for (name, value), (old_name, old_value) in zip(current, entries, strict=True)
-            ):
+    rows = plan[0]
+    classes = {
+        id(value): value for namespace, _name, value in _COMPILATION_ATTRIBUTES if namespace is ast
+    }
+
+    def plain_fields():
+        # A batched getter must never invoke a later field descriptor before
+        # the legacy dump would format an earlier field. Such metadata uses
+        # the original traversal, including its primary-exception ordering.
+        for type_id, names in plan[1]:
+            cls = classes.get(type_id)
+            if cls is None:
                 return False
-    pending = [(node, 0)]
+            for base in cls.__mro__:
+                namespace = vars(base)
+                if any(namespace.get(name) is not None for name in names):
+                    return False
+        return True
+
+    if not plain_fields():
+        return False
+    pending, attributes_cache, positions_cache = [(node, 0)], {}, {}
     while pending:
         value, index = pending.pop()
-        header, types, selector, expected, float_selector, floats, children = rows[index]
+        (
+            header,
+            types,
+            selector,
+            expected,
+            float_selector,
+            floats,
+            children,
+            none_defaults,
+            empty_fields,
+        ) = rows[index]
         if header[0] == "node":
-            _, cls, name, fields, attributes, getter, count = header
+            _, type_id, name, fields, attributes, names = header
+            cls = type(value)
             if (
-                type(value) is not cls
+                id(cls) != type_id
                 or value.__class__ is not cls
+                or type(cls.__name__) is not str
                 or cls.__name__ != name
-                or value._fields is not fields
-                or value._attributes is not attributes
+                or (
+                    value._fields is not fields
+                    and (
+                        type(value._fields) is not tuple
+                        or any(type(label) is not str for label in value._fields)
+                        or value._fields != fields
+                    )
+                )
+                or (
+                    value._attributes is not attributes
+                    and (
+                        type(value._attributes) is not tuple
+                        or any(type(label) is not str for label in value._attributes)
+                        or value._attributes != attributes
+                    )
+                )
             ):
                 return False
+            if not names:
+                continue
+            getter = attributes_cache.get(names)
+            if getter is None and names:
+                getter = _COMPILATION_ATTRGETTER(*names)
+                attributes_cache[names] = getter
             try:
                 values = () if getter is None else getter(value)
             except AttributeError:
                 return False
-            if count == 1:
+            if len(names) == 1:
                 values = (values,)
+            if none_defaults and any(
+                int(getattr(cls, names[position], ...) is None) != old
+                for position, old in none_defaults
+            ):
+                return False
+            if empty_fields and any(
+                int(
+                    getattr(cls._field_types.get(names[position], object), "__origin__", ...)
+                    is list
+                )
+                != old
+                for position, old in empty_fields
+            ):
+                return False
         else:
             if type(value) is not list or len(value) != header[1]:
                 return False
+            if not value:
+                continue
             values = value
         if tuple(map(id, map(type, values))) != types:
             return False
-        if selector is not None:
-            actual = selector(values)
+        if selector:
+            getter = positions_cache.get(selector)
+            if getter is None:
+                getter = _COMPILATION_ITEMGETTER(*selector)
+                positions_cache[selector] = getter
+            actual = getter(values)
             if len(expected) == 1:
                 actual = (actual,)
             if actual != expected:
                 return False
-        if float_selector is not None:
-            actual = float_selector(values)
+        if float_selector:
+            getter = positions_cache.get(float_selector)
+            if getter is None:
+                getter = _COMPILATION_ITEMGETTER(*float_selector)
+                positions_cache[float_selector] = getter
+            actual = getter(values)
             if len(floats) == 1:
                 actual = (actual,)
             if tuple(map(repr, actual)) != floats:
                 return False
-        pending.extend((values[position], child) for position, child in children)
-    return True
+        if children:
+            pending.extend((values[position], child) for position, child in children)
+    return plain_fields()
 
 
 @lru_cache(maxsize=16, typed=True)
@@ -576,25 +647,38 @@ _COMPILATION_CONTRACT_CODE = _compilation_contract.__code__
 _COMPILATION_VALIDATOR = _compilation_validate
 _COMPILATION_VALIDATOR_CODE = _compilation_validate.__code__
 _COMPILATION_PATH_MRO = Path.__mro__
-_COMPILATION_ATTRIBUTES = tuple(
-    (module, name, getattr(module, name))
-    for module, names in (
-        (
-            ast,
+_COMPILATION_ATTRIBUTES = (
+    tuple(
+        (module, name, getattr(module, name))
+        for module, names in (
             (
-                "parse",
-                "dump",
-                "iter_child_nodes",
-                "iter_fields",
-                "ClassDef",
-                "FunctionDef",
-                "AsyncFunctionDef",
+                ast,
+                (
+                    "parse",
+                    "dump",
+                    "iter_child_nodes",
+                    "iter_fields",
+                    "ClassDef",
+                    "FunctionDef",
+                    "AsyncFunctionDef",
+                ),
             ),
-        ),
-        (Path, ("read_bytes", "stat", "open")),
-        (operator, ("attrgetter", "itemgetter")),
+            (Path, ("read_bytes", "stat", "open")),
+            (operator, ("attrgetter", "itemgetter")),
+        )
+        for name in names
     )
-    for name in names
+    + tuple(
+        (ast, name, value)
+        for name, value in vars(ast).items()
+        if type(value) is type and issubclass(value, ast.AST)
+    )
+    + tuple(
+        (value, name, getattr(value, name, None))
+        for value in vars(ast).values()
+        if type(value) is type and issubclass(value, ast.AST)
+        for name in ("__eq__", "__getattribute__", "__getattr__")
+    )
 )
 _COMPILATION_RECORDS = tuple(
     _compilation_function_record(function)

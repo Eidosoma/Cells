@@ -16,10 +16,11 @@ from threading import Lock, get_ident
 from types import FunctionType, ModuleType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
+from cells.processes import betse_native_immutable_graph_metadata as history_metadata
 from cells.processes import betse_native_parameter_colormap_load as previous
 
 LAW_ID = "betse_native_parameter_plotting_initializer_constants@1"
-PREVIOUS_SHA256 = "80420c878d4955030607f56cd353fbcdd5fd4eebfae74bdfa82bfa1ee230114d"
+PREVIOUS_SHA256 = '7c7d8dd7d002325289fd051a2266301cbff51e4679a373b5844bf0f7cf59d095'
 RELEASE = "CELLS_NATIVE_PARAMETER_INITIALIZER_CONSTANTS_RELEASED"
 START, STOP, MAX_WORK = 139, 203, 20000
 _FLOAT = float
@@ -140,7 +141,35 @@ class RemainderGrant:
 
 
 def _digest(value):
+    if type(value) is history_metadata.HistoricalDescriptor:
+        return history_metadata.history_digest(value)
     return previous._digest(value)
+
+
+def _history_mode(context):
+    value = vars(context).get("immutable_history", False)
+    if type(value) is not bool:
+        raise ValueError("Exact fresh historical metadata mode required")
+    return value
+
+
+def _history_plan(context, plan):
+    if not _history_mode(context):
+        return plan
+    return dict(
+        plan,
+        historical_metadata=dict(
+            format=history_metadata.HISTORY_FORMAT,
+            source_sha256=hashlib.sha256(Path(history_metadata.__file__).read_bytes()).hexdigest(),
+            limits=history_metadata.DEFAULT_LIMITS,
+            fresh_live_capture_unchanged=True,
+            prior_owners_retrofitted=False,
+        ),
+    )
+
+
+def _historical_capture(context, graph):
+    return history_metadata.freeze_history_graph(graph) if _history_mode(context) else graph
 
 
 def _ast():
@@ -409,7 +438,7 @@ def _check(context):
         not stack or stack[-1] is not value for stack, value in _stacks(context)
     ):
         raise ValueError("Shared constants exclusion changed")
-    if _digest(source_plan()) != context.source_identity:
+    if _digest(_history_plan(context, source_plan())) != context.source_identity:
         raise ValueError("Issued constants source plan changed")
     prefix.parameters.inherited._same(_bindings(), context.bindings)
     prefix.parameters.inherited._same(
@@ -422,7 +451,7 @@ def _check(context):
     _parent(context)
 
 
-def _reserve(owner):
+def _reserve(owner, *, immutable_history=False):
     if type(owner) is not previous.ColormapsOwner or owner not in previous._ISSUED:
         raise ConstantsRejected("Actual issued colormap successor required", stage="owner")
     if not _LOCK.acquire(blocking=False):
@@ -435,6 +464,7 @@ def _reserve(owner):
         if owner in _CONSUMED or parent.source_owner in _CLAIMED:
             raise ConstantsRejected("Original constants attempt consumed", stage="consumed")
         context = SimpleNamespace(
+            immutable_history=immutable_history,
             parent_owner=owner,
             parent=parent,
             p=parent.p,
@@ -486,13 +516,13 @@ def _claim(context):
     try:
         if previous._validate(context.parent_owner) is not context.parent:
             raise ValueError("Foreign initial colormap verification result")
-        context.plan = source_plan()
+        context.plan = _history_plan(context, source_plan())
         context.source_identity = _digest(context.plan)
         context.parent_trial = context.parent.trial
         context.before_names = tuple(vars(context.p))
         if any(name in vars(context.p) for name in context.plan["stores"]):
             raise ValueError("Existing plotting/constants stores cannot be retrofitted")
-        context.before_graph = _fields(context)
+        context.before_graph = _historical_capture(context, _fields(context))
         context.parent_refs = _parent_refs(context.parent)
         context.historical, _ = _historical()
         context.historical_bindings = {
@@ -561,7 +591,7 @@ def _returned(context, role, frame, value):
     if role == "source":
         context.returns += 1
         context.locals = _copy_locals(frame)
-        context.source_return_graph = _fields(context, complete=True)
+        context.source_return_graph = _historical_capture(context, _fields(context, complete=True))
     else:
         context.plot_returns.append(value)
     context.events.append((role, "return_or_unwind", _copy_locals(frame)))
@@ -686,17 +716,21 @@ def trial_record(value):
     )
 
 
-def prepare(owner, *, law_id, enabled=False):
+def prepare(owner, *, law_id, enabled=False, immutable_history=False):
     if enabled is not True or any(
         os.environ.get(gate) != "1" for gate in (RELEASE, previous.RELEASE, previous.mod.RELEASE)
     ):
         raise ConstantsRejected("Original initializer constants remain held", stage="release")
     if type(law_id) is not str or law_id != LAW_ID:
         raise ConstantsRejected("Explicit original plotting/constants law required", stage="law")
-    context = _reserve(owner)
+    if type(immutable_history) is not bool:
+        raise ConstantsRejected("Explicit fresh historical metadata mode required", stage="history")
+    context = _reserve(owner, immutable_history=immutable_history)
     with _claim(context):
         primary = None
         try:
+            if _history_mode(context) is not immutable_history:
+                raise ValueError("Requested fresh historical metadata mode changed before source")
             with _observe(context):
                 try:
                     _invoke(context)
@@ -708,7 +742,7 @@ def prepare(owner, *, law_id, enabled=False):
                 raise ValueError("Original constants reached-output capture incomplete")
             _check(context)
             _outputs(context)
-            context.after_graph = _fields(context, complete=True)
+            context.after_graph = _historical_capture(context, _fields(context, complete=True))
             value = Trial(
                 context.parent_trial.identity,
                 _digest(context.before_graph[1]),
@@ -722,6 +756,8 @@ def prepare(owner, *, law_id, enabled=False):
             )
             context.trial = replace(value, identity=_digest(trial_record(value)))
             context.original_trial = context.trial
+            if _history_mode(context) is not immutable_history:
+                raise ValueError("Requested historical metadata mode changed before publication")
             owner = object.__new__(ConstantsOwner)
             context.owner = owner
             _ISSUED[owner] = context
@@ -1155,7 +1191,7 @@ def _remainder_history(context):
     if (
         _digest(_remainder_scope()) != context.scope_identity
         or base.source_identity != context.source_identity
-        or _digest(source_plan()) != context.source_identity
+        or _digest(_history_plan(base, source_plan())) != context.source_identity
     ):
         raise ValueError("Original constants/remainder source identities changed")
 
@@ -1316,8 +1352,8 @@ def _remainder_enter(grant):
         context.before_values = {
             n: vars(context.p)[n] for n in context.before_names if n not in CM_STORES
         }
-        context.before_graph = _remainder_capture(
-            context, context.before_values, "initial_old_values"
+        context.before_graph = _historical_capture(
+            base, _remainder_capture(context, context.before_values, "initial_old_values")
         )
         prefix.parameters.inherited._same_graph(context.before_graph, base.after_graph)
         context.colormaps = _cm_graph(base.parent)
@@ -1414,8 +1450,9 @@ def _remainder_close(grant, primary):
             context.after_values = {
                 n: vars(context.p)[n] for n in context.after_names if n not in CM_STORES
             }
-            context.after_graph = _remainder_capture(
-                context, context.after_values, "closed_new_values"
+            context.after_graph = _historical_capture(
+                context.base,
+                _remainder_capture(context, context.after_values, "closed_new_values"),
             )
             grant.check()
     except BaseException as error:
@@ -1556,6 +1593,9 @@ def validate_remainder_history(grant, *, original_owner):
 def _bindings():
     functions = (
         _digest,
+        _history_mode,
+        _history_plan,
+        _historical_capture,
         _ast,
         _historical,
         source_plan,
@@ -1639,6 +1679,10 @@ def _bindings():
         RemainderGrant,
         RemainderRecord,
         get_ident,
+        history_metadata,
+        history_metadata.history_bindings,
+        history_metadata.history_bindings.__code__,
+        *history_metadata.history_bindings(),
         *previous._bindings()[1],
         *(
             atom

@@ -25,8 +25,16 @@ MODULES = {
     "assembly": "cells.processes.betse_native_init_sim_assembly",
     "run": "cells.processes.betse_native_sim_run",
 }
-SOURCE_PINS = dict.fromkeys(MODULES)
-REVIEW_PINS = dict.fromkeys(MODULES)
+SOURCE_PINS = {
+    "preparation": 'c6bcd2411794bb0a810bdd25e6068252b0eeab7866fbd6c864aa9a55464ba2b3',
+    "assembly": '8d361be6b684d28623c59dbcd78f2d8cfdb0df280215ea0a7ca68617156e2075',
+    "run": '58306cc94ddd18e3a3a000b072973ea5ed44b0b29ddf6eb8208eadc56a615cbb',
+}
+REVIEW_PINS = {
+    "preparation": "20b4ddf73cfdc9057d128c643568884f589df98f1db08c94c28ed5027c2b8291",
+    "assembly": "b7efb6935e042ad8e325c1dc5da35294345af509f2dd2ef24be7dceb057a0056",
+    "run": "b61ad41dcf0d78088a9b1f46d7a8edac7dffd30d4bd8a5dfe5900298375ba3ba",
+}
 IMPORTS = (
     ("preparation", "observing_runner_import"),
     ("assembly", "observing_phase_import"),
@@ -61,6 +69,13 @@ def source_plan():
         starts_after="actual complete INIT with normal loop/context return",
         stops_before="native pickle/checkpoint",
         import_observation="actual fresh callback/bootstrap import; never replayed",
+        explicit_bootstrap_import=dict(
+            module="betse.science.simrunner",
+            after_auxiliary_callback=True,
+            before_private_observer_exit=True,
+            constructor_or_method_call=False,
+        ),
+        bootstrap_native_module_issuance="existing tissue SOURCE_PINS and issuing_native_imports",
         saved_objects_or_partial_loops_are_not_parent_authority=True,
         source_library_metadata_work_is_non_additive=True,
         scientific_common_start_or_physical_parity_admission=False,
@@ -378,6 +393,12 @@ def _closed_import(row):
         raise ValueError("Successful actual SIM import observation and cleanup required")
 
 
+def _runner_import_issuance(callback):
+    """Use the same pinned native-module epoch as later parameter birth."""
+    tissue = callback._import_bound(callback.MODULES["tissue"], callback.SOURCE_PINS["tissue"])
+    return tissue.aliases.issuing_native_imports(tissue.source.SOURCE_PINS)
+
+
 def bootstrap(state, molecule, callback, plan, directory, evidence):
     """Observe three distinct original import rosters around the actual callback."""
     if state.endpoint != ENDPOINT or state.sim_imports:
@@ -422,8 +443,38 @@ def bootstrap(state, molecule, callback, plan, directory, evidence):
             if sys.getprofile() is not hooks[0] or sys.gettrace() is not hooks[1]:
                 raise ValueError("SIM import entry changed inherited hooks")
         demo._callback_with_imports(state, molecule, callback, plan, directory, evidence)
+        # The auxiliary constructors load phase/runtime definitions, but do not
+        # load SimRunner. Its two selected wrappers require their own genuine
+        # import while all three private observers are still active.
+        # Parameter birth rejects any original module imported outside this
+        # process-local issuance context. Enter before import; never adopt an
+        # already unissued module or weaken its existing source/identity checks.
+        issuance = state.sim_imports[0]["module_issuance"] = _runner_import_issuance(callback)
+        with issuance:
+            try:
+                runner = demo._call(
+                    state,
+                    "sim_imports.preparation.import_module",
+                    importlib.import_module,
+                    "betse.science.simrunner",
+                )
+                state.sim_imports[0]["imported_module"] = runner
+                if (
+                    type(runner) is not ModuleType
+                    or sys.modules.get("betse.science.simrunner") is not runner
+                    or type(vars(runner).get("__name__")) is not str
+                    or vars(runner).get("__name__") != "betse.science.simrunner"
+                ):
+                    raise ValueError("Actual observed SimRunner import required")
+            except BaseException as error:
+                primary, traceback = error, error.__traceback__
+                if state.primary is None:
+                    state.primary = error
+                raise
+        state.sim_imports[0]["module_issuance_complete"] = True
     except BaseException as error:
-        primary, traceback = error, error.__traceback__
+        if primary is None:
+            primary, traceback = error, error.__traceback__
         if state.primary is None:
             state.primary = error
         try:
@@ -544,6 +595,12 @@ def bootstrap(state, molecule, callback, plan, directory, evidence):
                 exited=True,
                 published=True,
                 actual_import_not_replayed=True,
+                explicit_module_import=(
+                    "betse.science.simrunner" if "imported_module" in row else None
+                ),
+                explicit_module_identity=(
+                    id(row["imported_module"]) if "imported_module" in row else None
+                ),
             )
             for row in state.sim_imports
         ),
@@ -804,6 +861,27 @@ def failure_evidence(state, evidence):
     # no wire encoding. Live owner graphs/frames are retained in Execution and
     # the original exception; this does not claim complete serialization.
     rows = [("linkage", state.sim_linkage)]
+    for imported in state.sim_imports:
+        role = imported["role"]
+        try:
+            proof = imported.get("proof", imported.get("partial_proof"))
+            error = imported.get("exit_error", state.primary)
+            module = state.molecule_import_api
+            if module is None:
+                module = sys.modules.get(demo.WRAPPER_MODULES["molecule_wrappers"])
+            difference = demo._import_binding_difference(error, module, proof)
+            rows.append(("imports." + role + ".binding_difference", difference))
+        except BaseException as error:
+            state.sim_secondary += (("failure_import_binding:" + role, error),)
+        try:
+            cleanup = demo._import_cleanup_diagnostic(
+                imported.get("exit_error", state.primary),
+                state.molecule_import_api,
+                imported.get("proof", imported.get("partial_proof")),
+            )
+            rows.append(("imports." + role + ".observer_cleanup", cleanup))
+        except BaseException as error:
+            state.sim_secondary += (("failure_import_cleanup:" + role, error),)
     for prefix, trial in (
         ("INIT", state.sim_init_trial),
         ("preparation", state.sim_preparation_trial),

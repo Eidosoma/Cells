@@ -19,7 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_subconfigurations as previous
 
 LAW_ID = "betse_same_parameter_construction_lease@1"
-PARENT_SHA256 = "3e49f8ebfd3cad35df7d642643fee8ebfd72115c34354c761194f7176102e7fb"
+PARENT_SHA256 = 'e5256b5855bf7a3d7a616ba959999e371168f9943abc2ad6d818296241665c00'
 RELEASE = "CELLS_NATIVE_PARAMETER_CONSTRUCTION_LEASE_RELEASED"
 _MUTEX, _ACTIVE = Lock(), []
 _ISSUED, _CONSTRUCTED = WeakKeyDictionary(), WeakKeyDictionary()

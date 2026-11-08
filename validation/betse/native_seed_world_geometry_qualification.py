@@ -18,6 +18,7 @@ from types import FunctionType
 
 from validation import source_snapshot as snapshot
 from validation.betse import betse_native_seed_world_geometry_software as controls_runner
+from validation.betse import native_stage_progress as progress
 
 ROOT = Path(__file__).resolve().parents[2]
 FILE = "validation/betse/native_seed_world_geometry_qualification.py"
@@ -27,12 +28,20 @@ MODULE = "validation.betse.native_seed_world_geometry_qualification"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_GEOMETRY_QUALIFICATION_RELEASED"
 SOFTWARE_RELEASE = "BETSE_NATIVE_SEED_WORLD_GEOMETRY_QUALIFICATION_SOFTWARE_RELEASED"
 PARAMETER_ENTRY_MODULE = "validation.betse.betse_native_parameter_world_ready_qualification"
-PARAMETER_ENTRY_SOURCE_SHA256 = 'e23dbe4c9e124f1e022939895ad7c07fa199a1af36623a47397ffb6a7e46c1ad'
-PARAMETER_ENTRY_REVIEW_SHA256 = 'aa5a0da342c433c1332f2970436b50416b8980d9e23e586c4f0589f91b15816b'
+PARAMETER_ENTRY_SOURCE_SHA256 = '973b5e231d2a94a5e15e22fae4963a3ae577534b0753a4aaa91031f5cd3a1844'
+PARAMETER_ENTRY_REVIEW_SHA256 = '14eb3b13f59dd16a984a0f3cf574524aac145bb7abfde456a4cbc9f8e59676d5'
 EVIDENCE_MODULE = "validation.betse.native_seed_demo_evidence"
 EVIDENCE_SOURCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 POLICY = dict(cpu=6, threads=1, software_bytes=2**30, wall_seconds=480, reserve_bytes=8 * 2**30)
 NATIVE_CPU = 0  # Key's exact public acquisition contract; never switch affinity here.
+NATIVE_POLICY = dict(
+    cpu=NATIVE_CPU,
+    threads=1,
+    max_rss_bytes=4 * 2**30,
+    max_address_space_bytes=8 * 2**30,
+    wall_seconds=480,
+    reserve_bytes=8 * 2**30,
+)
 FORBIDDEN_MODULES = controls_runner.FORBIDDEN_MODULES
 NATIVE_ROOT = controls_runner.NATIVE_ROOT
 is_forbidden_frame = controls_runner.is_forbidden_frame
@@ -47,8 +56,8 @@ MODULES = {
     "callbacks": "cells.processes.betse_native_phase_callbacks",
 }
 MODULE_SOURCE_SHA256 = {
-    "world": "06c3bb8cba6b5038671f08a418d190842d146e91a6f9c3e655b11409587026d9",
-    "prefix": "74fe5be9165ae62e575af8b20cb752d5421b642b35fbade9f0eddceb1fb3428b",
+    "world": '91beb611cbd99f72e042aead2623a7ac25c39dbc5b3a2eb5bcfa7e76b657b57b',
+    "prefix": 'eed4dfae3410ea2197f575b985b8c9a9ac80635b1aa481f97de63e5272eadc30',
     "image": "98bcd55b9e00e28bf7f9dd5d5a20261217e640e901affaa1b1686d0f458b45e0",
     "mesh": "c73fd24847158223373c6d77783b8e27857bede8ff59b3b6094ceba20fa2f23f",
     "lifecycle": "2ad275b33cd123f0cf266d262dcee5609924b72a91c6c8b86328bed1116eac1e",
@@ -158,7 +167,7 @@ def source_plan():
         ),
         original_layouts_failures_zero_masks_retained=True,
         software_policy=dict(POLICY),
-        native_policy=dict(POLICY, cpu=NATIVE_CPU),
+        native_policy=dict(NATIVE_POLICY),
         actual_release=False,
         physical_checkpoint_full_phase_admission=False,
         invalidated_postcut_owners=11,
@@ -235,9 +244,9 @@ def _resources():
     if (
         os.sched_getaffinity(0) != {NATIVE_CPU}
         or limits[0] <= 0
-        or limits[0] > POLICY["software_bytes"]
+        or limits[0] > NATIVE_POLICY["max_address_space_bytes"]
         or limits[1] <= 0
-        or limits[1] > POLICY["software_bytes"]
+        or limits[1] > NATIVE_POLICY["max_address_space_bytes"]
         or any(
             os.environ.get(name) != "1"
             for name in (
@@ -274,14 +283,20 @@ def _operation(state, evidence, label, function, *args, **kwargs):
     state.stage = label
     row = dict(sequence=len(state.operations), name=label, state="attempted")
     state.operations.append(row)
+    started = progress.start("geometry." + label)
     try:
         value = function(*args, **kwargs)
     except BaseException as error:
         row["state"], row["error"] = "source_failed", error
         state.source_error = error
+        try:
+            progress.end("geometry." + label, started, failed=True)
+        except BaseException as recording:
+            state.capture_errors.append(("stage_progress", recording, error))
         raise
     state.last_return = value  # Before observers, serialization or properties.
     row["state"], row["returned"] = "returned", value
+    progress.end("geometry." + label, started)
     return value
 
 
@@ -303,15 +318,26 @@ def _execute_chain(state, modules, evidence):
     for index, name in enumerate(STAGES):
         module = modules[{"phase": "world", "lattice": "prefix"}.get(name, name)]
         state.owners.append((name, owner))
-        trial = owner.trial  # Save before irreversible downstream consumption.
-        state.trials.append((name, trial))
-        if name == "phase":
-            state.phase = owner.phase
-            if state.parameters is not None and state.phase.p is not state.parameters:
-                raise ValueError("Fresh phase must retain the actual acquired parameter instance")
-        record = module._trial_record(trial) if name == "phase" else module.trial_record(trial)
-        _capture(state, evidence, name + ".record", record)
-        _capture_caches(state, evidence, name, trial)
+        started = progress.start("geometry." + name + ".evidence")
+        try:
+            trial = owner.trial  # Save before irreversible downstream consumption.
+            state.trials.append((name, trial))
+            if name == "phase":
+                state.phase = owner.phase
+                if state.parameters is not None and state.phase.p is not state.parameters:
+                    raise ValueError(
+                        "Fresh phase must retain the actual acquired parameter instance"
+                    )
+            record = module._trial_record(trial) if name == "phase" else module.trial_record(trial)
+            _capture(state, evidence, name + ".record", record)
+            _capture_caches(state, evidence, name, trial)
+        except BaseException as error:
+            try:
+                progress.end("geometry." + name + ".evidence", started, failed=True)
+            except BaseException as recording:
+                state.capture_errors.append(("stage_progress", recording, error))
+            raise
+        progress.end("geometry." + name + ".evidence", started)
         if index == len(STAGES) - 1:
             state.result, state.source_completed = owner, True
             return owner

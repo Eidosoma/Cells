@@ -5,7 +5,7 @@ import copy
 import hashlib
 import sys
 from functools import lru_cache
-from types import CodeType, FunctionType, ModuleType
+from types import CodeType, ModuleType
 
 from validation.betse import native_init_terminal_reference as initial
 
@@ -74,7 +74,8 @@ def _terminal_compiled(raw, relative, mode):
     return tuple(codes.items())
 
 
-def terminal_code(role, mode):
+def literal_code(role, mode):
+    """Raw AST metadata only; never a witness for a loaded/decorated body."""
     relative, qualified = TERMINAL_METHODS[role]
     raw, _ = initial._read(initial.NATIVE_ROOT / relative, initial.MAX_FILE_BYTES)
     expected = CONTEXT_SHA256 if relative == CONTEXTS else initial.CRITICAL[relative]
@@ -82,6 +83,20 @@ def terminal_code(role, mode):
         initial._sha(raw) == expected, "Original terminal witness source changed", "source"
     )
     return dict(_terminal_compiled(raw, relative, mode))[qualified]
+
+
+def terminal_code(role, mode, package):
+    """The actual pinned native loader's transformed code, never a raw fallback."""
+    initial._require(
+        type(package) is initial.OriginalPackage and package.mode == mode,
+        "Actual same-mode original import authority required",
+        "source",
+    )
+    relative, qualified = TERMINAL_METHODS[role]
+    literal_code(role, mode)  # Authenticate retained original source; do not use this code.
+    name = relative[:-3].replace("/", ".")
+    package.export(name, qualified)
+    return package.code_for(name, qualified)
 
 
 def terminal_plan():
@@ -167,7 +182,7 @@ def observation_plan():
     )
 
 
-def selected():
+def selected_ast():
     path = initial.NATIVE_ROOT / RUNNER
     raw, _ = initial._read(path, initial.MAX_FILE_BYTES)
     initial._require(
@@ -207,6 +222,13 @@ def selected():
     node.name, node.decorator_list, node.body = ENTRY, [], retained
     node.args.args.extend(ast.arg(arg=name) for name in ("sim", "cells", "p_old"))
     unit = ast.fix_missing_locations(ast.Module(body=[node], type_ignores=[]))
+    return unit, declaration
+
+
+def selected():
+    """Source-only AST metadata; runtime bind uses the native registered compiler."""
+    unit, declaration = selected_ast()
+    path = initial.NATIVE_ROOT / RUNNER
     code = compile(unit, str(path), "exec", dont_inherit=True)
     body = next(
         value for value in code.co_consts if type(value) is CodeType and value.co_name == ENTRY
@@ -219,19 +241,32 @@ def bind(module):
     initial._require(
         type(module) is ModuleType
         and sys.modules.get("betse.science.simrunner") is module
-        and type(module.__loader__) is initial.OriginalPackage,
+        and type(initial.native_imports.owner_of(module)) is initial.OriginalPackage,
         "Actual original SimRunner module namespace required",
         "source",
     )
-    module.__loader__.verify()
-    code, _ = selected()
-    return FunctionType(code, vars(module))
+    package = initial.native_imports.owner_of(module)
+    package.verify()
+    package.export(module.__name__, "SimRunner.sim")
+    unit, _ = selected_ast()
+    return package._bind_SIM_caller(module, unit)
 
 
 def source_plan():
     _, declaration = selected()
     return dict(
         caller=declaration,
+        native_import_lifecycle=initial.native_imports.specification(),
+        terminal_body_witness="actual_transformed_code_and_completed_export_chain",
+        selected_caller_compiler=dict(
+            module="betse.science.simrunner",
+            entry=ENTRY,
+            AST_sha256=hashlib.sha256(ast.dump(selected_ast()[0]).encode()).hexdigest(),
+            source_sha256=hashlib.sha256(
+                ast.unparse(selected_ast()[0]).encode() + b"\n"
+            ).hexdigest(),
+            one_additional_compiler_attempt_not_input_credit=True,
+        ),
         epoch=EPOCH,
         phase_kind="genuine original SimPhaseKind.SIM",
         phase_constructor=(

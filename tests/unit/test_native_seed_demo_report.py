@@ -27,6 +27,25 @@ _RAW_GUARDS = []
 @pytest.mark.parametrize(
     "defect",
     [
+        "unchanged",
+        "gates_empty",
+        "gates_list",
+        "policy_wall",
+        "policy_bool_cpu",
+        "policy_extra",
+        "diagnostic_wall",
+        "observer_gate",
+    ],
+)
+def test_report_full_SIM_live_policy_binding_CPU4(tmp_path, monkeypatch, defect):
+    from tests.unit import test_native_sim_reference_compare as direct
+
+    direct.full_sim_policy_control(tmp_path, monkeypatch, defect)
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
         "original",
         "disabled",
         "late_failure",

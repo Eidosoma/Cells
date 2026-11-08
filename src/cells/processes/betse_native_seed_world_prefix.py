@@ -31,7 +31,7 @@ WORLD_MODE = "fresh_world_ready_prephase_single_claim_seed_constructor"
 # Only these two literal values are omitted from the coordinator's exact byte
 # template. Each actual value is checked against the full constructor/review;
 # all complete source files remain bound by the immutable external snapshot.
-CONSTRUCTION_SOURCE_SHA256 = "06c3bb8cba6b5038671f08a418d190842d146e91a6f9c3e655b11409587026d9"
+CONSTRUCTION_SOURCE_SHA256 = '91beb611cbd99f72e042aead2623a7ac25c39dbc5b3a2eb5bcfa7e76b657b57b'
 CONSTRUCTION_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 CELLS, PHASE = "betse/science/cells.py", "betse/science/phase/phasecls.py"
 NATIVE_PINS = {
@@ -1133,6 +1133,9 @@ def _account(context):
     context.hook_attempts, context.cleanup_errors = [], ()
     context.cleanup_phase = "source_body"
     selected = {*context.body_codes, *context.callback_codes}
+    # Only immutable local code metadata is indexed. Live callbacks, RNG,
+    # admission and state checks still run at their original boundaries.
+    selected_names = frozenset(code.co_name for code in selected)
 
     def capture(frame, event):
         try:
@@ -1142,13 +1145,13 @@ def _account(context):
             _capture_failure(context, error, "raw_locals_" + event, frame)
 
     def before(frame, event):
-        if event == "call" and frame.f_code in selected:
+        if event == "call" and frame.f_code.co_name in selected_names and frame.f_code in selected:
             literal._same(_observer_bindings(), context.observer_bindings)
             _admit(context, frame)  # Claim before trace/profile callbacks.
             _check(context)
 
     def after(frame, event):
-        if frame.f_code in selected:
+        if frame.f_code.co_name in selected_names and frame.f_code in selected:
             _guard(context)
             _check(context)
 
@@ -1176,6 +1179,9 @@ def _account(context):
         before(frame, event)
         if (
             event == "call"
+            and any(
+                code.co_name == frame.f_code.co_name for code in context.forbidden_callback_codes
+            )
             and frame.f_code in context.forbidden_callback_codes
             and _callback_receiver(frame) is context.callback
         ):
@@ -1186,7 +1192,11 @@ def _account(context):
             and (not context.draw_active or frame.f_code is not _Random.rand.__code__)
         ):
             _reject(context, None, "Unowned direct native RNG entry")
-        if frame.f_code in selected and event in ("call", "return"):
+        if (
+            frame.f_code.co_name in selected_names
+            and frame.f_code in selected
+            and event in ("call", "return")
+        ):
             capture(frame, event)
         if prior_profile is not None:
             inherited(
@@ -1195,7 +1205,8 @@ def _account(context):
                 event,
                 arg,
                 entry=event not in ("return", "c_return", "c_exception"),
-                protect=frame.f_code in selected or arg is context.rand,
+                protect=(frame.f_code.co_name in selected_names and frame.f_code in selected)
+                or arg is context.rand,
             )
         if event == "call":
             after(frame, event)
@@ -1204,7 +1215,7 @@ def _account(context):
                 row["body_started"] = True
 
     def trace(frame, event, arg):
-        reached = frame.f_code in selected
+        reached = frame.f_code.co_name in selected_names and frame.f_code in selected
         before(frame, event)
         if reached:
             if event == "exception":

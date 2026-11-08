@@ -34,8 +34,10 @@ KIND = "cells.original_SIM_retained_INIT_reference@2"
 PAIR_KIND = "cells.original_SEED_INIT_SIM_pair_preparation@1"
 COMPARISON_FILE = "validation/betse/native_sim_reference_compare.py"
 RELEASE = "CELLS_ORIGINAL_SIM_REFERENCE_RELEASED"
-REFERENCE_SHA256 = "cf0def5f949b422ba83f90937c6270e19f462af9b098fb4d02be3ca491957131"
-SOURCE_REVIEW_SHA256 = REFERENCE_REVIEW_SHA256 = EXECUTION_REVIEW_SHA256 = None
+REFERENCE_SHA256 = "eb21e8372d824d64759050a7b94ea94ead35fbd0797a1a77e7a7f6ad9bd2bf49"
+SOURCE_REVIEW_SHA256 = "c69e961e343283b0f7054c1d0cf4503066e8adb04662871dbe62cd1a71c32ca6"
+REFERENCE_REVIEW_SHA256 = "a46e7263a446fb7ed4478ec9d9f34887d9f5bb355ff3572c70ccd53ef733562f"
+EXECUTION_REVIEW_SHA256 = "2f4552059452ebdf2de8babff3b3ef2f0e597d71fade8ce4a757b0d43c54bc6d"
 MAX_SIM_ITERATIONS = initial.MAX_ITERATIONS
 MAX_STEP_EVENT_BOUNDARIES = 512
 _ATTEMPT = None
@@ -353,6 +355,7 @@ def prepare_pair_frozen(output, *, input_pair, input_sha256, common_start=None):
                     [
                         str(ROOT),
                         str(initial.NATIVE_ROOT),
+                        str(initial.native_imports.BEARTYPE_ROOT),
                         selected[mode]["root"],
                         str(worker),
                         str((Path.home() / ".betse").resolve()),
@@ -686,19 +689,23 @@ class SimObserve(initial.Observe):
         initial._require(
             type(module) is ModuleType
             and vars(module) is frame.f_globals
-            and module.__loader__ is t.attempt.raw["original_package"],
+            and t.attempt.raw["original_package"].owns(module) is module.__loader__,
             "Actual original terminal namespace/loader required",
             "terminal",
         )
         if role == "caller":
-            fn = self.state.raw["selected_SIM_caller"]
-            expected = source.selected()[0]
+            package = t.attempt.raw["original_package"]
+            fn = package.program_export(module.__name__, source.ENTRY)
+            initial._require(
+                fn is self.state.raw["selected_SIM_caller"],
+                "Same issued selected caller required",
+                "terminal",
+            )
+            expected = package.program_code(module.__name__, source.ENTRY)
         else:
             _, qualified = source.TERMINAL_METHODS[role]
-            parts = qualified.split(".")
-            holder = module if len(parts) == 1 else vars(module)[parts[0]]
-            fn = vars(holder)[parts[-1]]
-            expected = source.terminal_code(role, t.mode)
+            fn = t.attempt.raw["original_package"].export(module.__name__, qualified)
+            expected = source.terminal_code(role, t.mode, t.attempt.raw["original_package"])
         exported = fn
         binding = _terminal_atom(exported)
         if role in t.bindings:
@@ -720,7 +727,7 @@ class SimObserve(initial.Observe):
             fn = vars(fn).get("__wrapped__")
         body = chain[-1]
         initial._require(
-            body.__code__ == expected
+            body.__code__ is expected
             and frame.f_code is body.__code__
             and frame.f_globals is body.__globals__,
             "Literal original terminal body/code required",
@@ -890,7 +897,8 @@ class SimObserve(initial.Observe):
                 and all(v in calendar for v in sampled)
                 and type(manager) is _GeneratorContextManager
                 and type(manager.gen) is GeneratorType
-                and manager.gen.gi_code == source.terminal_code("context", t.mode),
+                and manager.gen.gi_code
+                is source.terminal_code("context", t.mode, t.attempt.raw["original_package"]),
                 "Actual full calendar/sample/noop context return required",
                 "terminal",
             )
@@ -1089,7 +1097,8 @@ def _parent_state(result, before):
     ):
         module = sys.modules.get(name)
         initial._require(
-            type(module) is ModuleType and type(module.__loader__) is initial.OriginalPackage,
+            type(module) is ModuleType
+            and type(initial.native_imports.owner_of(module)) is initial.OriginalPackage,
             "Original loaded class authority unavailable: " + name,
             "INIT_parent",
         )
@@ -1105,9 +1114,9 @@ def _parent_state(result, before):
         "Retained actual INIT phase/parameter/simulator chain required",
         "INIT_parent",
     )
-    package = modules["betse.science.simrunner"].__loader__
+    package = initial.native_imports.owner_of(modules["betse.science.simrunner"])
     initial._require(
-        all(module.__loader__ is package for module in modules.values())
+        all(initial.native_imports.owner_of(module) is package for module in modules.values())
         and package.used is True
         and package not in sys.meta_path,
         "Closed original package ancestry required; no re-arm",
@@ -1581,6 +1590,7 @@ def _finish_sim(attempt, plan, output):
                 prepared_inputs=selected,
                 execution_inputs=copied,
                 native_producers=attempt.raw["original_package"].loaded,
+                native_import_lifecycle=attempt.raw["original_package"].record(),
             ),
         )
     except BaseException as error:
@@ -2053,7 +2063,9 @@ def main():
     if args.controller:
         if args.prepared is None or args.prepared_sha256 is None:
             parser.error("Exact held preparation and released controller inputs required")
-        resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
+        resource.setrlimit(
+            resource.RLIMIT_AS, (512 * 2**20, initial.NATIVE_POLICY["max_address_space_bytes"])
+        )
         supervise(
             args.prepared,
             args.prepared_sha256,
@@ -2065,7 +2077,13 @@ def main():
         return 0
     if args.prepared is None or args.prepared_sha256 is None or args.output is None:
         parser.error("Choose held preparation or exact released worker inputs")
-    resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
+    resource.setrlimit(
+        resource.RLIMIT_AS,
+        (
+            initial.NATIVE_POLICY["max_address_space_bytes"],
+            initial.NATIVE_POLICY["max_address_space_bytes"],
+        ),
+    )
     result = evaluate(
         args.prepared,
         args.prepared_sha256,

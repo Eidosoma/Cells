@@ -30,7 +30,11 @@ HISTORY = "src/cells/processes/betse_native_sim_history_observation.py"
 HISTORY_MODULE = "cells.processes.betse_native_sim_history_observation"
 HISTORY_RELEASE = "CELLS_NATIVE_SIM_HISTORY_OBSERVATION_RELEASED"
 RELEASE = "CELLS_COMPLETED_SIM_OBSERVATION_RELEASED"
-OBSERVER_SHA256 = OBSERVER_REVIEW = None
+OBSERVER_SHA256 = '21def5f1e066620f6b496230876a8f84383ca312144788d1fe2e8e74152b1eef'
+OBSERVER_REVIEW = {
+    "path": "/mnt/workspaces/Cells/native-sim-history-consumer-development-20261105-01/encoder-dispatch-01/root-source-results-review.json",
+    "sha256": "b7906204f7f7fd396102bc2a9750dd143b71652f07a7664b20ed1dcb1a7f8699"
+}
 WRITER_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 KIND = "cells.completed_SIM_observation@1"
 BINDING_KIND = "cells.completed_SIM_observation_saved_binding@1"

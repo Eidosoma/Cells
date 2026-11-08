@@ -29,9 +29,9 @@ REF_KIND = "cells.original_SIM_retained_INIT_reference@2"
 OBSERVATION_KIND = "cells.original_SIM_iteration_observation@2"
 RNG_ADAPTER_SHA256 = "9e8e9539198141e7f76aefc5dba24a52eb9faa3e03f5ae202320bdfafa811a37"
 DEMO_REPORT_SHA256 = "9c9f82605a514e69cc3a1622d2cb0f529e09fcb6e13cdea3850dca5677cadf90"
-REFERENCE_RNG_AST_SHA256 = "29df5fb1f382655b907c12d4b2ddecd890c30da62988903dee8533fc50adda52"
-CODEC_SHA256 = "3968463c4664f3362e8d1cc3c132d430383aa6716dfe48506b62dbb1f48cbbca"
-INPUT_READER_SHA256 = "e078bbe211e25bbeeea5b353323bb82bc604a2372e1051012d9a5aa0fbc29396"
+REFERENCE_RNG_AST_SHA256 = "bebf472b9446953873e55d1db1599473c26b099fcb81a310b24630201cc34eb5"
+CODEC_SHA256 = "aa65bef81121791d3d738988e1c575c1f976d59c189c8c36e6a1c85946478037"
+INPUT_READER_SHA256 = "a5ca1df6c7c56b6bc46eaf39981bdf5a33780e7b79c936dbbd526c4cd5dc0c6d"
 RNG_RUNTIME_SHA256 = "6ddb846ef3a20e9ff95fb2e546a39329e8d305b821bfedadf344fce9fe548315"
 RNG_REPORT_SHA256 = "d2966c2d1d60486a341e1a04eecc82b40c18a9012bc6b7ea4a491b5577b589b3"
 STARTING_REPORT_KIND = "cells.authenticated_starting_rng_saved_report@1"
@@ -57,16 +57,16 @@ LINEAGE = (
 )
 REF_PRODUCERS = {
     "validation/betse/native_sim_reference.py": (
-        "c251bcc4634470f5c3ae3700449d5d2569a11c98411f2448d9ca63a722dd9216"
+        "14f6b31277bd7c933526abdd20f76fe41c4ae038304b1ae01c9baa26ec878840"
     ),
     "validation/betse/native_sim_reference_source.py": (
-        "fd8921650d53a292ca165415c33582f813013ca46e3c31271a4270462d00bad0"
+        "0088ba3200ee96f2f344a1027adb4cbf72b8bef5d4f521cab6c4f588098898d1"
     ),
     "validation/betse/native_sim_reference_software.py": (
         "35256de3403b121fb96164452e3148384e3f58401b9f8200aa0f43283ca8bba8"
     ),
     "tests/unit/test_native_sim_reference.py": (
-        "c8eddc4f16b30fce9bd52cf59323d116cd5e24ad7346d38894a74cbdded665f0"
+        "306150772b069a55342694265a2282a9d66a2220e5666b048f5547ea265dde6f"
     ),
 }
 ISSUED_SIM_PRODUCER_KIND = None
@@ -77,8 +77,8 @@ COMMON_START_SHA256 = "b52c20c4ede1fc9afbcefd9f22e65626156852cae552a12c14837e65d
 COMMON_START_REVIEW_SHA256 = "58e4090dfaf544435bd132b703e470d59d49381ade83ea25a7ab0fe3a919d72e"
 SIM_REPORT_SHA256 = "9c86d1e85cefb60d8b4031af9693c362e5ba9493fbfa2579d5b5bea28df29964"
 SIM_REPORT_REVIEW_SHA256 = "a413fdf49c7eb85fa3d62c848706a9201d246381598eac60a0e08c6ec2f8e76c"
-SIM_LAUNCH_SHA256 = "7525cfe9381e7787ed3bcb91d9798155d4ba7c91531fde7b1b342afc543f05af"
-SIM_OBSERVATION_SHA256 = "2145f8badc7351fa5d5502d6aed2d46de48d3f32b091514b561c50c317031e92"
+SIM_LAUNCH_SHA256 = "86acc72b17ecc7a85ac4e17eeeb1576dfefe6414936bddd9f864a0e0f5e47fc4"
+SIM_OBSERVATION_SHA256 = "98221ffbd440d80eccfa761c60e3ad1b193609634ad26e947e48ba2e6f8d3a28"
 require, same = codec.require, codec._same
 
 
@@ -558,6 +558,83 @@ def _sim_report_api():
     path = Path(sim_launch.__file__)
     raw = path.read_bytes()
     require(hashlib.sha256(raw).hexdigest() == SIM_LAUNCH_SHA256, "SIM launch reader changed")
+    tree = ast.parse(raw)
+    declarations = {
+        node.targets[0].id: node.value
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+    }
+
+    def integer(node):
+        if isinstance(node, ast.Constant) and type(node.value) is int:
+            return node.value
+        require(isinstance(node, ast.BinOp), "Closed source policy integer required")
+        left, right = integer(node.left), integer(node.right)
+        require(0 <= left <= 2**64 and 0 <= right <= 2**64, "Bounded source policy integer")
+        if isinstance(node.op, ast.Pow):
+            require(right <= 64, "Bounded source policy exponent")
+            value = left**right
+        else:
+            require(isinstance(node.op, ast.Mult), "Exact policy arithmetic required")
+            value = left * right
+        require(value <= 2**64, "Bounded source policy value")
+        return value
+
+    policy = declarations["POLICY"]
+    require(
+        isinstance(policy, ast.Call)
+        and isinstance(policy.func, ast.Name)
+        and policy.func.id == "dict"
+        and not policy.args
+        and all(type(key.arg) is str for key in policy.keywords),
+        "Exact pinned source policy declaration required",
+    )
+    expected_policy = {key.arg: integer(key.value) for key in policy.keywords}
+    require(
+        type(sim_launch.POLICY) is dict
+        and set(sim_launch.POLICY) == set(expected_policy)
+        and all(
+            type(sim_launch.POLICY[name]) is int and sim_launch.POLICY[name] == value
+            for name, value in expected_policy.items()
+        ),
+        "Pinned SIM resource policy values changed",
+    )
+    for name in (
+        "SIM_GATES",
+        "ACQUISITION_SEQUENCE",
+        "DIAGNOSTIC_WALL_SECONDS",
+        "STACK_INTERVAL_SECONDS",
+        "RELEASE",
+        "DEMO_RELEASE",
+    ):
+        expected = ast.literal_eval(declarations[name])
+        actual = vars(sim_launch).get(name)
+        require(
+            type(actual) is type(expected) and same(actual, expected),
+            "Pinned SIM release/policy value changed: " + name,
+        )
+        if type(expected) is tuple:
+            require(all(type(value) is str for value in actual), "Exact source policy strings")
+    observer_tree = ast.parse(Path(sim_observation.__file__).read_bytes())
+    for node in observer_tree.body:
+        if (
+            isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id in ("RELEASE", "HISTORY_RELEASE")
+        ):
+            name, expected = node.targets[0].id, ast.literal_eval(node.value)
+            require(
+                type(vars(sim_observation).get(name)) is str
+                and vars(sim_observation)[name] == expected,
+                "Pinned SIM observation release value changed: " + name,
+            )
+    require(
+        sim_launch.ast is ast and sim_launch.snapshot is snapshot and sim_launch.Path is Path,
+        "SIM policy reader namespace changed",
+    )
     names = {
         "require",
         "source_plan",
@@ -567,7 +644,7 @@ def _sim_report_api():
         "_producers",
         "_sim_contract",
     }
-    nodes = {n.name: n for n in ast.parse(raw).body if isinstance(n, ast.FunctionDef)}
+    nodes = {n.name: n for n in tree.body if isinstance(n, ast.FunctionDef)}
     codes = {
         c.co_name: c
         for c in compile(raw, str(path), "exec", dont_inherit=True).co_consts
@@ -2106,6 +2183,47 @@ def _authenticate_reference_terminal(
             native.get(relative, {}).get("sha256") == expected,
             "Original selected critical package source drift",
         )
+    import_policy = parent_plan["source_plan"]["native_import_lifecycle"]
+    require(
+        import_policy == codec.native_imports.specification(),
+        "Exact selected original import policy required",
+    )
+    import_producer = parent_plan["source_plan"]["native_import_producer"]
+    require(
+        import_producer
+        == dict(
+            file=codec.native_imports.FILE,
+            sha256=manifest["files"][codec.native_imports.FILE]["sha256"],
+        ),
+        "Original compiler adapter producer drift",
+    )
+    compiler_modules = codec.native_imports.validate_record(
+        binding["native_import_lifecycle"],
+        binding["native_producers"],
+        native,
+        native_root,
+        mode=parent_plan["inputs"]["mode"],
+        selections=parent_plan["selections"],
+    )
+    codec.native_imports.validate_runtime(binding["native_import_lifecycle"], runtime)
+    compiler = plan["source_plan"]["original"]["selected_caller_compiler"]
+    programs = binding["native_import_lifecycle"]["programs"]
+    require(
+        set(programs) == {compiler["module"]}, "Exactly one actual selected SIM compiler attempt"
+    )
+    program = programs[compiler["module"]]
+    require(
+        program["entry"] == compiler["entry"]
+        and program["AST_sha256"] == compiler["AST_sha256"]
+        and program["source_sha256"] == compiler["source_sha256"],
+        "Selected caller differs from pinned source selection",
+    )
+    for name, pin in compiler_modules.items():
+        require(
+            runtime["loaded_files"].get(name) == pin,
+            "Actual SIM compiler origin differs from import witness",
+        )
+        reader.bind(pin)
     required = (
         "validation.betse.native_sim_reference_source",
         "validation.betse.native_init_terminal_reference",

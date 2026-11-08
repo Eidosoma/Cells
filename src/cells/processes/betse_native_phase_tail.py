@@ -1063,7 +1063,11 @@ def _account(context):
     get_profile, get_trace = sys.getprofile, sys.gettrace
     set_profile, set_trace = sys.setprofile, sys.settrace
     prior_profile, prior_trace = get_profile(), get_trace()
-    codes = {fn.__code__ for fn in context.bodies.values()}
+    codes = frozenset(fn.__code__ for fn in context.bodies.values())
+    # Code equality requires an equal co_name. Reject unrelated names before
+    # hashing whole CodeTypes on every inherited event. Both sets describe
+    # immutable code metadata, never a cached validation or observer result.
+    code_names = frozenset(code.co_name for code in codes)
     traces = {}
     frame_errors = {}
     primary, setup_stage = None, None
@@ -1077,7 +1081,7 @@ def _account(context):
         )
 
     def profile(frame, event, arg):
-        selected = event == "call" and frame.f_code in codes
+        selected = event == "call" and frame.f_code.co_name in code_names and frame.f_code in codes
         if selected and event == "call":
             attempt = _admit_body(context, frame)
             attempt["hooks"] = (*attempt.get("hooks", ()), "profile")
@@ -1091,12 +1095,12 @@ def _account(context):
                     prior_profile(frame, event, arg)
                 except BaseException as error:
                     remember(error, "prior_profile_" + event, (frame, event, arg))
-        if selected and event == "call":
+        if selected and event == "call" and prior_profile is not None:
             _guard(context)
             _check(context)
 
     def trace(frame, event, arg):
-        selected = frame.f_code in codes
+        selected = frame.f_code.co_name in code_names and frame.f_code in codes
         if selected and event == "call":
             # Trace may be delivered before profile. Both share this exact
             # frame's reservation, before either inherited observer runs.
@@ -1140,8 +1144,9 @@ def _account(context):
                 status = "failed" if id(frame) in frame_errors else "returned"
                 attempt["status"] = attempt["work"]["admission"] = status
         if selected and event in ("call", "line"):
-            _guard(context)
-            _check(context)
+            if delegate is not None:
+                _guard(context)
+                _check(context)
             if event == "line":
                 attempt = context.admitted_frames[id(frame)]
                 attempt["body_started"] = attempt["work"]["body_started"] = True

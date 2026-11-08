@@ -7,8 +7,8 @@ import dis
 import functools
 import hashlib
 import json
-import os
 import operator
+import os
 import sys
 from contextlib import contextmanager
 from pathlib import Path

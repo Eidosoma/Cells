@@ -1006,7 +1006,12 @@ def test_launch_prepare_preserves_held_gates_and_explicit_environment(bundle):
     assert launch.verify_release(b.plan, b.sha, b.release, b.release_sha)["authorized"] is True
     assert b.plan["held"] is True and b.plan["limitations"]["owner_hydration"] is False
     assert b.plan["policy"] == dict(
-        cpu=0, threads=1, max_rss_bytes=2**30, wall_seconds=7200, reserve_bytes=8 * 2**30
+        cpu=0,
+        threads=1,
+        max_rss_bytes=4 * 2**30,
+        max_address_space_bytes=8 * 2**30,
+        wall_seconds=7200,
+        reserve_bytes=8 * 2**30,
     )
     assert not (b.root / "worker").exists()
 
@@ -1309,7 +1314,7 @@ def test_launch_controller_uses_exact_existing_guard_and_worker_completion(bundl
     assert len(observed) == 1
     command, options = observed[0]
     assert "--worker" in command and options["timeout"] == 7200
-    assert options["max_rss_bytes"] == 2**30 and options["min_available_bytes"] == 8 * 2**30
+    assert options["max_rss_bytes"] == 4 * 2**30 and options["min_available_bytes"] == 8 * 2**30
     assert options["process_tree_memory_metric"] == "rss"
 
 
@@ -1504,7 +1509,7 @@ def test_launch_stack_diagnostic_has_explicit_shorter_budget_and_release(bundle)
     assert launch.verify(b.path, b.sha)["stack_diagnostic"] is True
     assert b.plan["policy"] == launch.POLICY
     assert launch._wall_seconds(b.plan) == 1800
-    assert b.plan["policy"]["max_rss_bytes"] == 2**30
+    assert b.plan["policy"]["max_rss_bytes"] == 4 * 2**30
     assert b.plan["policy"]["reserve_bytes"] == 8 * 2**30
     tampered = dict(b.plan, stack_diagnostic=False)
     changed = write(b.path.parent / "changed.json", tampered)
@@ -1571,7 +1576,7 @@ def test_launch_stack_diagnostic_controller_keeps_other_resource_limits(bundle, 
     launch.controller(b.path, output, **kwargs(b))
     assert len(calls) == 1
     assert calls[0][1]["timeout"] == 1800
-    assert calls[0][1]["max_rss_bytes"] == 2**30
+    assert calls[0][1]["max_rss_bytes"] == 4 * 2**30
     assert calls[0][1]["min_available_bytes"] == 8 * 2**30
     assert calls[0][1]["process_tree_memory_metric"] == "rss"
     assert (
@@ -1998,7 +2003,7 @@ def test_launch_worker_environment_requires_exact_release_limits_threads(bundle,
             "TMP",
         ):
             monkeypatch.setenv(name, value)
-    monkeypatch.setattr(launch.resource, "getrlimit", lambda _kind: (2**30, 2**30))
+    monkeypatch.setattr(launch.resource, "getrlimit", lambda _kind: (8 * 2**30, 8 * 2**30))
     monkeypatch.setattr(launch.resources, "memory_available", lambda: 9 * 2**30)
     launch._worker_environment(b.plan, b.root / "run/worker")
     monkeypatch.setenv("CELLS_UNDECLARED_RELEASED", "1")

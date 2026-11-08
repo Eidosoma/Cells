@@ -20,6 +20,237 @@ SOFTWARE_RELEASE = "BETSE_NATIVE_WORLD_PHASE_CONSTRUCTION_SOFTWARE_RELEASED"
 _BLOCKADE_FAILURES = ()
 
 
+def _ancestry_metadata(monkeypatch, depth, mutation=None):
+    """Actual recursive code with explicit metadata seams, never an issued owner."""
+
+    class Token:
+        pass
+
+    request, world = Token(), Token()
+    request.world_parameters, request.callbacks = world, object()
+    transition = NS(
+        invalid=False,
+        entry_error=None,
+        request=request,
+        claim=object(),
+        p=object(),
+        thread=stage.get_ident(),
+    )
+    events, contexts, modules = [], [], []
+
+    def same(left, right):
+        assert left == right
+
+    for index in range(depth):
+        parent = None if index == 0 else contexts[-1]
+        predecessor = None if parent is None else NS(authority=parent)
+        binding = ("binding", index)
+        module = NS(_WORLD={})
+
+        def bindings(index=index, binding=binding):
+            events.append(("binding", index))
+            return binding
+
+        module._bindings = bindings
+        context = NS(
+            world_transition=transition,
+            world_module=module,
+            world_index=index,
+            world_mode=stage.MODE,
+            invalid=False,
+            thread=transition.thread,
+            parent=parent,
+            world_predecessor=predecessor,
+            world_ticket=(
+                transition,
+                world,
+                transition.claim,
+                request.callbacks,
+                transition.p,
+                predecessor,
+            ),
+            world_source_files={},
+            bindings=binding,
+            runtime_types={},
+            runtime_bindings={},
+            objects=[],
+            world_before=NS(identity="state" + str(index)),
+            world_before_graph=(("objects", index), ("edges", index)),
+            evidence=None,
+            active=False,
+        )
+        module._WORLD[request] = context
+        modules.append(module)
+        contexts.append(context)
+    transition.api = NS(stages=modules, helpers=NS(literal=NS(_same=same)))
+    monkeypatch.setattr(stage, "_CONSUMED", {request: transition})
+    monkeypatch.setattr(stage, "_CLAIMED", {world: transition})
+
+    def parameter(actual):
+        assert actual is transition
+        events.append(("parameter", depth - 1))
+
+    def aliases(actual):
+        assert actual is transition
+        events.append(("aliases", sys._getframe(1).f_locals["context"].world_index))
+
+    def state(context, *, baseline=False):
+        assert baseline is True
+        events.append(("state", context.world_index))
+        return context.world_before, context.world_before_graph
+
+    monkeypatch.setattr(stage, "_world_parameter_authority", parameter)
+    monkeypatch.setattr(stage, "_world_live_aliases", aliases)
+    monkeypatch.setattr(stage, "_world_state", state)
+    if mutation is not None:
+        assert depth >= 2
+        child = contexts[-1]
+        child.scope_bindings = ("unchanged scope",)
+
+        def after_parent(context):
+            assert context is child
+            events.append(("after_parent_callback", child.world_index))
+            if mutation == "invalid":
+                contexts[0].invalid = True
+            else:
+                modules[0]._WORLD[request] = object()
+            return child.scope_bindings
+
+        modules[-1]._scope_bindings = after_parent
+    return NS(context=contexts[-1], contexts=contexts, transition=transition, events=events)
+
+
+@pytest.mark.parametrize("depth", [1, 2, 3, 4])
+def test_ancestry_measurement_counts_actual_recursive_metadata_checks(tmp_path, monkeypatch, depth):
+    model = _ancestry_metadata(monkeypatch, depth)
+    stage._world_stage_runtime(model.context)
+    expected = [index for top in range(depth - 1, -1, -1) for index in range(top, -1, -1)]
+    assert [index for kind, index in model.events if kind == "parameter"] == [depth - 1] * 2
+    assert [index for kind, index in model.events if kind == "binding"] == expected
+    assert [index for kind, index in model.events if kind == "state"] == list(range(depth))
+    software.snapshot.write_json(
+        tmp_path / "ancestry-measurement.json",
+        dict(
+            depth=depth,
+            authority_checks=len(expected),
+            parameter_checks=2,
+            expected_triangular_count=depth * (depth + 1) // 2,
+            runtime_state_checks=depth,
+            ordered_events=model.events,
+            actual_parameter_native_or_owner_calls=0,
+            scope=(
+                "actual private recursive driver code with explicitly replaced "
+                "metadata dependencies"
+            ),
+            successful_issued_owner_or_scientific_credit=0,
+        ),
+    )
+
+
+@pytest.mark.parametrize("mutation", ["invalid", "registry"])
+def test_ancestry_measurement_recheck_after_child_callback_preserves_refusal(
+    tmp_path, monkeypatch, mutation
+):
+    model = _ancestry_metadata(monkeypatch, 2, mutation)
+    with pytest.raises(stage.WorldPhaseRejected) as caught:
+        stage._world_stage_runtime(model.context)
+    assert model.transition.invalid
+    assert caught.value is model.transition.entry_error
+    assert not any(kind == "state" for kind, _ in model.events)
+    assert model.events.index(("after_parent_callback", 1)) > model.events.index(("binding", 0))
+    software.snapshot.write_json(
+        tmp_path / "ancestry-mutation-refusal.json",
+        dict(
+            mutation=mutation,
+            ordered_events=model.events,
+            primary=type(caught.value).__qualname__,
+            message=str(caught.value),
+            original_entry_error_retained=True,
+            runtime_state_calls=0,
+            mutation_occurs_after_earlier_parent_authentication=True,
+            removing_later_parent_recheck_would_drop_this_authority_check=True,
+            actual_parameter_native_or_owner_calls=0,
+            scientific_or_owner_credit=0,
+        ),
+    )
+
+
+@pytest.mark.parametrize("boundary", ("_world_stage_runtime", "_world_stage_authority"))
+@pytest.mark.parametrize("location", ("binding", "state"))
+def test_ancestry_parameter_change_during_pass_refuses_before_resume(
+    monkeypatch, boundary, location
+):
+    model = _ancestry_metadata(monkeypatch, 3)
+    original_parameter = stage._world_parameter_authority
+    checks, resumed = [], []
+    changed = False
+    primary = ValueError("actual parameter/claim changed during metadata callback")
+
+    def parameter(transition):
+        checks.append(changed)
+        if changed:
+            raise primary
+        original_parameter(transition)
+
+    def mutate(*args, **kwargs):
+        nonlocal changed
+        changed = True
+        if location == "binding":
+            return model.context.bindings
+        return model.context.world_before, model.context.world_before_graph
+
+    monkeypatch.setattr(stage, "_world_parameter_authority", parameter)
+    if location == "binding":
+        monkeypatch.setattr(model.context.world_module, "_bindings", mutate)
+    else:
+        original_state = stage._world_state
+
+        def state(context, **kwargs):
+            if context is model.context:
+                return mutate()
+            return original_state(context, **kwargs)
+
+        monkeypatch.setattr(stage, "_world_state", state)
+        # Authority-only calls do not observe state, so mutate their last live
+        # binding instead; both public boundaries must bracket callbacks.
+        if boundary == "_world_stage_authority":
+            monkeypatch.setattr(model.context.world_module, "_bindings",
+                                lambda: (mutate(), model.context.bindings)[1])
+    with pytest.raises(ValueError) as caught:
+        getattr(stage, boundary)(model.context)
+        resumed.append(True)
+    assert caught.value is primary and checks == [False, True] and not resumed
+
+
+@pytest.mark.parametrize("boundary", ("_world_stage_runtime", "_world_stage_authority"))
+def test_ancestry_pass_rejects_foreign_transition_without_admitting_it(monkeypatch, boundary):
+    model = _ancestry_metadata(monkeypatch, 2)
+    model.contexts[0].world_transition = NS(**vars(model.transition))
+    with pytest.raises(stage.WorldPhaseRejected, match="Foreign transition"):
+        getattr(stage, boundary)(model.context)
+    assert model.transition.invalid
+    assert not any(kind == "state" for kind, _ in model.events)
+
+
+def test_ancestry_each_pass_revalidates_shared_history_without_a_result_cache(monkeypatch):
+    model = _ancestry_metadata(monkeypatch, 4)
+    stage._world_stage_runtime(model.context)
+    stage._world_stage_runtime(model.context)
+    assert sum(kind == "parameter" for kind, _ in model.events) == 4
+    original = stage._world_parameter_authority
+    primary = ValueError("changed history on the next validation")
+
+    def fail(transition):
+        original(transition)
+        raise primary
+
+    monkeypatch.setattr(stage, "_world_parameter_authority", fail)
+    before = tuple(model.events)
+    with pytest.raises(ValueError) as caught:
+        stage._world_stage_runtime(model.context)
+    assert caught.value is primary and len(model.events) == len(before) + 1
+
+
 def construction_interface_metadata():
     """Actual pinned generator code; no module, factory or generator execution."""
     path = stage._module_file(stage.KEY_MODULE)

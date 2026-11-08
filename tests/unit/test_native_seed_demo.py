@@ -2,6 +2,7 @@
 
 import ast
 import hashlib
+import io
 import json
 import os
 import struct
@@ -22,10 +23,204 @@ from validation.betse import native_seed_demo_evidence as transport
 from validation.betse import native_seed_demo_software as software
 from validation.betse import native_seed_initial_rng as initial_rng
 from validation.betse import native_seed_world_geometry_qualification as geometry
+from validation.betse import native_stage_progress as progress
 
 _RAW_GUARDS = []
 _import_model = None
 LAW = "fresh_original_molecule_channel_imported_beartype_factory@1"
+
+
+@pytest.fixture
+def stage_progress_sink(monkeypatch):
+    class Sink(io.StringIO):
+        flushes = 0
+
+        def flush(self):
+            self.flushes += 1
+            return super().flush()
+
+    sink = Sink()
+    monkeypatch.setattr(progress, "_disabled", False)
+    # Keep the real inherited hooks; isolate only the output stream.
+    monkeypatch.setattr(
+        progress, "sys", NS(stdout=sink, getprofile=sys.getprofile, gettrace=sys.gettrace)
+    )
+    return sink
+
+
+def test_stage_progress_timestamp_elapsed_and_immediate_flush(stage_progress_sink, monkeypatch):
+    clock = iter((10.0, 12.5))
+    monkeypatch.setattr(
+        progress,
+        "time",
+        NS(
+            monotonic=lambda: next(clock),
+            gmtime=lambda: (),
+            strftime=lambda *_: "2026-11-07T12:00:00Z",
+        ),
+    )
+    started = progress.start("geometry.mesh")
+    assert stage_progress_sink.flushes == 1
+    progress.end("geometry.mesh", started)
+    assert stage_progress_sink.getvalue().splitlines() == [
+        "[stage] 2026-11-07T12:00:00Z geometry.mesh start",
+        "[stage] 2026-11-07T12:00:00Z geometry.mesh returned elapsed=2.500s",
+    ]
+    assert stage_progress_sink.flushes == 2
+
+
+@pytest.mark.parametrize("adapter", ["demo", "geometry"])
+def test_stage_progress_direct_delegate_bounded_volume_and_raw_return(adapter, stage_progress_sink):
+    raw, steps = object(), []
+    state = stage.Execution("original") if adapter == "demo" else geometry.Execution()
+    wrapper = stage._call if adapter == "demo" else geometry._operation
+
+    def delegate():
+        assert sys._getframe().f_back.f_code is wrapper.__code__
+        for step in range(500):
+            steps.append(step)
+        return raw
+
+    args = (state, "init_terminal", delegate)
+    if adapter == "geometry":
+        args = (state, None, "mesh", delegate)
+    assert wrapper(*args) is state.last_return is raw
+    assert len(steps) == 500
+    lines = stage_progress_sink.getvalue().splitlines()
+    assert len(lines) == stage_progress_sink.flushes == 2
+    assert lines[0].endswith(" start") and " returned elapsed=" in lines[1]
+
+
+@pytest.mark.parametrize("adapter", ["demo", "geometry"])
+def test_stage_progress_source_failure_keeps_falsey_primary_and_cause(adapter, stage_progress_sink):
+    state = stage.Execution("original") if adapter == "demo" else geometry.Execution()
+    primary, cause = Falsey("source failed"), KeyError("source cause")
+
+    def delegate():
+        raise primary from cause
+
+    with pytest.raises(Falsey) as caught:
+        if adapter == "demo":
+            stage._call(state, "sim_run", delegate)
+        else:
+            geometry._operation(state, None, "mesh", delegate)
+    assert caught.value is primary and primary.__cause__ is cause
+    assert (state.primary if adapter == "demo" else state.source_error) is primary
+    assert state.last_return is None
+    lines = stage_progress_sink.getvalue().splitlines()
+    assert len(lines) == 2 and " failed elapsed=" in lines[-1]
+    assert "returned" not in lines[-1]
+
+
+@pytest.mark.parametrize("adapter", ["demo", "geometry"])
+def test_stage_progress_broken_log_disables_output_but_preserves_delegate(adapter, monkeypatch):
+    calls, raw = [], object()
+
+    def broken_write(line):
+        calls.append(line)
+        raise OSError("log unavailable")
+
+    monkeypatch.setattr(progress, "_disabled", False)
+    monkeypatch.setattr(
+        progress,
+        "sys",
+        NS(
+            stdout=NS(write=broken_write),
+            getprofile=sys.getprofile,
+            gettrace=sys.gettrace,
+        ),
+    )
+    state = stage.Execution("original") if adapter == "demo" else geometry.Execution()
+    for _ in range(2):
+        if adapter == "demo":
+            assert stage._call(state, "sim_run", lambda: raw) is raw
+        else:
+            assert geometry._operation(state, None, "mesh", lambda: raw) is raw
+    assert state.last_return is raw and len(calls) == 1 and progress._disabled
+
+
+@pytest.mark.parametrize("writer_error", [False, True])
+def test_stage_progress_observer_loss_refuses_before_delegate(writer_error, monkeypatch):
+    original, replacement, observer = object(), object(), []
+    observer.append(original)
+    primary, calls = OSError("observer rejected logging"), []
+
+    def write(_):
+        observer[0] = replacement
+        if writer_error:
+            raise primary
+
+    monkeypatch.setattr(progress, "_disabled", False)
+    monkeypatch.setattr(
+        progress,
+        "sys",
+        NS(
+            stdout=NS(write=write, flush=lambda: None),
+            getprofile=sys.getprofile,
+            gettrace=lambda: observer[0],
+        ),
+    )
+    with pytest.raises(OSError if writer_error else RuntimeError) as caught:
+        stage._call(stage.Execution("original"), "geometry", lambda: calls.append("delegate"))
+    if writer_error:
+        assert caught.value is primary
+    assert not calls
+
+
+@pytest.mark.parametrize("adapter", ["demo", "geometry"])
+def test_stage_progress_failed_end_cannot_replace_source_error(
+    adapter, monkeypatch, stage_progress_sink
+):
+    state = stage.Execution("original") if adapter == "demo" else geometry.Execution()
+    primary, secondary, cause = Falsey("source"), RuntimeError("logging observer"), KeyError()
+
+    def delegate():
+        raise primary from cause
+
+    def failed_log(*args, **kwargs):
+        raise secondary
+
+    monkeypatch.setattr(progress, "end", failed_log)
+    with pytest.raises(Falsey) as caught:
+        if adapter == "demo":
+            stage._call(state, "sim_run", delegate)
+        else:
+            geometry._operation(state, None, "mesh", delegate)
+    assert caught.value is primary and primary.__cause__ is cause
+    errors = state.secondary if adapter == "demo" else state.capture_errors
+    assert errors[-1][0] == "stage_progress" and errors[-1][1] is secondary
+
+
+@pytest.mark.parametrize("evidence_failure", [False, True])
+def test_stage_progress_geometry_names_and_evidence_boundaries(
+    evidence_failure, monkeypatch, stage_progress_sink
+):
+    from tests.unit.test_native_seed_world_geometry_qualification import _metadata_chain
+
+    modules, _, owners, _ = _metadata_chain()
+    state = geometry.Execution(world_ready=object(), callback_owner=object())
+    evidence = Evidence()
+    if evidence_failure:
+        monkeypatch.setattr(evidence, "save", lambda *_: False)
+        with pytest.raises(RuntimeError, match="Typed capture refused"):
+            geometry._execute_chain(state, modules, evidence)
+        assert not state.source_completed and state.source_error is None
+        assert state.capture_errors and state.owners[-1][1] is owners[-1]
+    else:
+        assert geometry._execute_chain(state, modules, evidence) is state.result
+        assert state.source_completed
+    lines = stage_progress_sink.getvalue().splitlines()
+    if evidence_failure:
+        assert len(lines) == 6 and "geometry.phase.evidence failed elapsed=" in lines[-1]
+        assert not any("geometry.lattice" in line for line in lines)
+    else:
+        assert len(lines) == 36
+        for name in geometry.STAGES:
+            assert sum(f" geometry.{name} start" in line for line in lines) == 1
+            assert sum(f" geometry.{name} returned elapsed=" in line for line in lines) == 1
+            assert sum(f" geometry.{name}.evidence start" in line for line in lines) == 1
+            returned = f" geometry.{name}.evidence returned elapsed="
+            assert sum(returned in line for line in lines) == 1
 
 
 def common_fixture(mode="original"):
@@ -5571,6 +5766,333 @@ def test_demo_import_unresolved_cleanup_keeps_raw_context_and_never_calls_writer
             generator.close()
 
 
+_diagnostic_failure = None
+
+
+def _diagnostic_same(current, original):
+    if len(current) != len(original) or any(
+        a is not b for a, b in zip(current, original, strict=False)
+    ):
+        raise _diagnostic_failure
+
+
+def _diagnostic_binding(row, backend):
+    _diagnostic_same(row.current, row.bindings)
+
+
+def binding_diagnostic_case(before, current, *, cloned=False, primary=None):
+    """Real exception frames from inert functions; never native observer authority."""
+    module = ModuleType("metadata_binding_observer")
+    error = ValueError("binding difference") if primary is None else primary
+    namespace = vars(module)
+    namespace["_diagnostic_failure"] = error
+    same = FunctionType(_diagnostic_same.__code__, namespace)
+    binding = FunctionType(_diagnostic_binding.__code__, namespace)
+    namespace.update(_same=same, _diagnostic_same=same, _binding=binding)
+    if cloned:
+        namespace = dict(namespace)
+        same = FunctionType(same.__code__, namespace)
+        binding = FunctionType(binding.__code__, namespace)
+        namespace.update(_same=same, _diagnostic_same=same, _binding=binding)
+    row = NS(
+        target=(("Molecule", "read"), module, sys._getframe()),
+        bindings=before,
+        current=current,
+    )
+    context = NS(rows=[row])
+    try:
+        binding(row, None)
+    except BaseException as caught:
+        assert caught is error
+    else:
+        raise AssertionError("Metadata fixture must retain an actual differing-binding traceback")
+    return NS(module=module, context=context, row=row, error=error, namespace=namespace)
+
+
+@pytest.mark.parametrize("cloned", [False, True])
+@pytest.mark.parametrize("difference", ["identity", "added", "removed"])
+def test_demo_binding_diagnostic_retains_exact_first_change(cloned, difference, tmp_path):
+    shared, old, new = object(), object(), object()
+    before, current = (shared, "late_global", old), (shared, "late_global", new)
+    if difference == "added":
+        current = before + ("later_class", new)
+    elif difference == "removed":
+        current = before[:1]
+    case = binding_diagnostic_case(before, current, cloned=cloned)
+    result = stage._import_binding_difference(case.error, case.module, case.context)
+    assert result["target"] == ("Molecule", "read") and result["comparison"] == "bindings"
+    assert result["before_count"] == len(before) and result["current_count"] == len(current)
+    index = {"identity": 2, "added": 3, "removed": 1}[difference]
+    assert result["first_index"] == index and not result["truncated"]
+    change = result["differences"][0]
+    if index < len(before):
+        assert change["before"]["identity"] == id(before[index])
+    else:
+        assert change["before"] is None
+    if index < len(current):
+        assert change["current"]["identity"] == id(current[index])
+    else:
+        assert change["current"] is None
+    assert result["namespace_identity"] == id(case.namespace)
+    assert result["raw_bindings_retained_in_traceback"] and not result["live_object_serialization"]
+    assert case.row.bindings is before and case.row.current is current
+    (tmp_path / "binding-diagnostic.json").write_text(json.dumps(result))
+
+
+@pytest.mark.parametrize(
+    "drift", ["foreign_row", "equal_code", "foreign_globals", "missing_context", "no_traceback"]
+)
+def test_demo_binding_diagnostic_does_not_misattribute_other_frames(drift):
+    case = binding_diagnostic_case((object(),), (object(),), cloned=True)
+    context = case.context
+    if drift == "foreign_row":
+        context.rows = [NS(**vars(case.row))]
+    elif drift == "equal_code":
+        case.module._same.__code__ = case.module._same.__code__.replace()
+    elif drift == "foreign_globals":
+        case.namespace["_same"] = FunctionType(case.module._same.__code__, {})
+    elif drift == "missing_context":
+        context = None
+    else:
+        case.error.__traceback__ = None
+    assert stage._import_binding_difference(case.error, case.module, context) is None
+
+
+def test_demo_binding_diagnostic_is_bounded_without_object_dispatch(tmp_path):
+    calls = []
+
+    class Opaque:
+        def __repr__(self):
+            calls.append("repr")
+            raise AssertionError("Live object representation must not run")
+
+        def __eq__(self, other):
+            calls.append("equality")
+            raise AssertionError("Live object equality must not run")
+
+        def __getattribute__(self, name):
+            calls.append("attribute")
+            raise AssertionError("Live object getters must not run")
+
+    before = tuple(Opaque() for _ in range(40))
+    current = ("x" * 1000, -0.0, b"a" * 1000) + tuple(Opaque() for _ in range(37))
+    case = binding_diagnostic_case(before, current)
+    result = stage._import_binding_difference(case.error, case.module, case.context)
+    assert len(result["differences"]) == 16 and result["truncated"] and calls == []
+    assert len(result["differences"][0]["current"]["text"]) == 256
+    assert result["differences"][1]["current"]["binary64"] == "8000000000000000"
+    assert len(result["differences"][2]["current"]["hex"]) == 256
+    assert all(
+        set(row["before"]) == {"identity", "type_identity", "type_module", "type_name"}
+        for row in result["differences"]
+    )
+    (tmp_path / "binding-diagnostic.json").write_text(json.dumps(result))
+    assert calls == []
+
+
+def test_demo_binding_diagnostic_walks_original_cause_without_replacing_it():
+    cause = Falsey("original binding refusal")
+    case = binding_diagnostic_case((object(),), (object(),), primary=cause)
+    wrapper = RuntimeError("caller refused")
+    wrapper.__cause__ = cause
+    # A repeated/cyclic context is bounded and never tested for truthiness.
+    cause.__context__ = wrapper
+    result = stage._import_binding_difference(wrapper, case.module, case.context)
+    assert result["exception_identity"] == id(cause)
+    assert wrapper.__cause__ is cause and cause.__context__ is wrapper
+
+
+def test_demo_binding_diagnostic_reads_exception_slots_without_subclass_properties():
+    calls = []
+
+    class SourceError(ValueError):
+        @property
+        def __traceback__(self):
+            calls.append("traceback")
+            raise AssertionError("Exception traceback property must not run")
+
+        @property
+        def __cause__(self):
+            calls.append("cause")
+            raise AssertionError("Exception cause property must not run")
+
+        @property
+        def __context__(self):
+            calls.append("context")
+            raise AssertionError("Exception context property must not run")
+
+    primary = SourceError("original binding refusal")
+    case = binding_diagnostic_case((object(),), (object(),), primary=primary)
+    result = stage._import_binding_difference(primary, case.module, case.context)
+    assert result["exception_identity"] == id(primary) and calls == []
+
+
+def test_demo_binding_diagnostic_projection_failure_preserves_independent_evidence(
+    tmp_path, monkeypatch
+):
+    model, primary = dynamics_chain(), Falsey("binding source")
+    cause = primary.__cause__ = LookupError("original cause")
+    opaque_type = type("Opaque", (), {"__module__": 17})
+    case = binding_diagnostic_case((opaque_type(),), (object(),), primary=primary)
+    api = model.modules["molecule_wrappers"]
+    api._same, api._binding = case.module._same, case.module._binding
+    model.import_context.rows = case.context.rows
+    model.import_exit_error = primary
+    evidence = Evidence()
+    projection_error = OSError("diagnostic capture interrupted")
+
+    def failed_projection(*args):
+        raise projection_error
+
+    monkeypatch.setattr(stage, "_import_binding_difference", failed_projection)
+    with pytest.raises(Falsey) as caught:
+        execute(model, tmp_path, evidence)
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    statuses = {row["label"]: row["status"] for row in model.state.molecule_import_failure_captures}
+    assert statuses["molecule_imports.failure.binding_difference"] == "capture_failed"
+    assert statuses["molecule_imports.failure.context"] == "saved"
+    assert statuses["molecule_imports.failure.raw_returns"] == "saved"
+    assert statuses["molecule_imports.failure.cleanup"] == "saved"
+    assert model.import_context.rows[0] is case.row and "parameters" not in model.calls
+    assert any(error is projection_error for _, error in model.state.secondary)
+
+
+@pytest.mark.parametrize(
+    "surface,trap",
+    [
+        ("atom", "equality"),
+        ("atom", "descriptor"),
+        ("atom", "attribute"),
+        ("rows", "equality"),
+        ("exception", "attribute"),
+    ],
+)
+def test_demo_binding_diagnostic_never_dispatches_metaclass_metadata(surface, trap, tmp_path):
+    calls = []
+
+    class Meta(type):
+        def __eq__(cls, other):
+            if trap == "equality":
+                calls.append("equality")
+                raise AssertionError("Metaclass equality must not run")
+            return type.__eq__(cls, other)
+
+        def __getattribute__(cls, name):
+            if trap == "attribute":
+                calls.append("attribute")
+                raise AssertionError("Metaclass attribute dispatch must not run")
+            return super().__getattribute__(name)
+
+        @property
+        def __module__(cls):
+            if trap == "descriptor":
+                calls.append("descriptor")
+                raise AssertionError("Metaclass label descriptor must not run")
+            return "metadata"
+
+    class Opaque(metaclass=Meta):
+        @property
+        def __class__(self):
+            calls.append("instance class")
+            raise AssertionError("Instance class property must not run")
+
+    value = Opaque()
+    case = binding_diagnostic_case((value,), (object(),))
+    context, error = case.context, case.error
+    if surface == "rows":
+        context.rows = value
+    elif surface == "exception":
+        error = value
+    result = stage._import_binding_difference(error, case.module, context)
+    if surface == "atom":
+        before = result["differences"][0]["before"]
+        assert before == dict(
+            identity=id(value), type_identity=id(Opaque), type_module=None, type_name=None
+        )
+    else:
+        assert result is None
+    assert calls == []
+    (tmp_path / "metaclass-diagnostic.json").write_text(json.dumps(result))
+
+
+@pytest.mark.parametrize("falsey", [False, True])
+@pytest.mark.parametrize("writer_failure", [False, True])
+def test_demo_binding_diagnostic_survives_failed_callback_publication(
+    falsey, writer_failure, tmp_path
+):
+    model, evidence = dynamics_chain(), Evidence()
+    primary = Falsey("publication") if falsey else ValueError("publication")
+    cause = primary.__cause__ = LookupError("original cause")
+    case = binding_diagnostic_case((object(),), (object(),), primary=primary)
+    api = model.modules["molecule_wrappers"]
+    api._same, api._binding = case.module._same, case.module._binding
+    model.import_context.rows = case.context.rows
+    model.import_exit_error = primary
+    if writer_failure:
+        evidence.fail = "molecule_imports.failure.binding_difference"
+    hooks = sys.getprofile(), sys.gettrace()
+    with pytest.raises(type(primary)) as caught:
+        execute(model, tmp_path, evidence)
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    diagnostic = dict(evidence.values)["molecule_imports.failure.binding_difference"]
+    assert diagnostic["first_index"] == 0 and diagnostic["exception_identity"] == id(primary)
+    assert model.state.molecule_import_context.rows[0] is case.row
+    assert "parameters" not in model.calls and not model.state.molecule_import_completed
+    statuses = {row["label"]: row["status"] for row in model.state.molecule_import_failure_captures}
+    assert statuses["molecule_imports.failure.binding_difference"] == (
+        "capture_failed" if writer_failure else "saved"
+    )
+    assert (
+        any(
+            label == "molecule_imports.failure.binding_difference"
+            for label, _ in model.state.secondary
+        )
+        is writer_failure
+    )
+    assert (sys.getprofile(), sys.gettrace()) == hooks
+
+
+@pytest.mark.parametrize("role", ["preparation", "assembly", "run"])
+@pytest.mark.parametrize("writer_failure", [False, True])
+def test_demo_binding_diagnostic_covers_each_sim_import_context(
+    monkeypatch, tmp_path, role, writer_failure
+):
+    from tests.unit import test_native_sim_demo as sim_prior
+
+    primary = Falsey("SIM import publication")
+    cause = primary.__cause__ = LookupError("retained original cause")
+    case = binding_diagnostic_case((object(),), (object(),), cloned=True, primary=primary)
+
+    def mutate(model, name):
+        if name == role + ".exit":
+            raise primary
+
+    model = sim_prior.sim_chain(monkeypatch, mutate=mutate)
+    api = model.modules["molecule_wrappers"]
+    api._same, api._binding = case.module._same, case.module._binding
+    model.proofs[role].rows = case.context.rows
+    label = "sim_failure.imports." + role + ".binding_difference"
+    evidence = Evidence(fail=label if writer_failure else None)
+    hooks = sys.getprofile(), sys.gettrace()
+    with pytest.raises(Falsey) as caught:
+        execute(model, tmp_path, evidence)
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    captured = dict(evidence.values)
+    assert captured[label]["first_index"] == 0
+    assert captured[label]["exception_identity"] == id(primary)
+    assert not model.state.sim_imports_complete and model.state.sim_cleanup_complete
+    assert "current_parameters" not in model.sim_calls
+    assert all(row["generator"].gi_frame is None for row in model.state.sim_imports)
+    assert (
+        any(
+            name == "failure_capture:imports." + role + ".binding_difference"
+            for name, _ in model.state.sim_secondary
+        )
+        is writer_failure
+    )
+    assert (sys.getprofile(), sys.gettrace()) == hooks
+
+
 @pytest.mark.parametrize("hook", ["profile", "trace"])
 @pytest.mark.parametrize("falsey", [False, True])
 def test_demo_import_simultaneous_hooks_preserve_primary_before_reporting(hook, falsey, tmp_path):
@@ -5670,3 +6192,578 @@ def test_demo_import_reporting_rejection_does_not_abort_hook_or_close_recovery(
         generator = model.state.molecule_import_generator
         if generator is not None and generator.gi_frame is not None:
             generator.close()
+
+
+def _cleanup_diagnostic_source(context, error):
+    """Inert generator with real exception locals, not an import/owner authority."""
+    original = ((None, 0), ("prior", 3))
+    final = ((None, 8), ("prior", 3))
+    before = ("profile_token", "trace_token")
+    cleanup = context.cleanup
+    primary = None
+    yield context
+    # All five names remain live in this real traceback frame.
+    assert original and final and before and cleanup and primary is None
+    raise error
+
+
+def cleanup_diagnostic_case(*, cloned=False, primary=None):
+    error = ValueError("observer cleanup") if primary is None else primary
+    context = NS(
+        cleanup=(("free_tool_id", OSError("retained cleanup detail")),),
+        hook_losses=[("cleanup", "getprofile")],
+        hooks_restored=True,
+        monitor_restored=False,
+        active=False,
+        record=None,
+    )
+    module = ModuleType("metadata_cleanup_observer")
+    namespace = vars(module)
+    inner = FunctionType(_cleanup_diagnostic_source.__code__, namespace)
+    module.observing_native_imports = contextmanager(inner)
+    if cloned:
+        namespace = dict(namespace)
+        inner = FunctionType(inner.__code__, namespace)
+    factory = contextmanager(inner)
+    try:
+        with factory(context, error):
+            pass
+    except BaseException as caught:
+        assert caught is error
+    else:
+        raise AssertionError("Metadata fixture must retain an actual cleanup traceback")
+    return NS(module=module, context=context, error=error, namespace=namespace)
+
+
+@pytest.mark.parametrize("cloned", [False, True])
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_cleanup_diagnostic_retains_monitor_states_and_original_error(
+    cloned, falsey, tmp_path
+):
+    primary = Falsey("cleanup") if falsey else ValueError("cleanup")
+    cause = primary.__cause__ = LookupError("original source")
+    case = cleanup_diagnostic_case(cloned=cloned, primary=primary)
+    result = stage._import_cleanup_diagnostic(primary, case.module, case.context)
+    assert result["retained_frame_available"]
+    assert result["exception_identity"] == id(primary)
+    assert result["namespace_identity"] == id(case.namespace)
+    assert result["fields"]["hooks_restored"]["value"]["scalar"] is True
+    assert result["fields"]["monitor_restored"]["value"]["scalar"] is False
+    assert result["retained"]["original"]["value"]["items"][0]["items"][1]["scalar"] == 0
+    assert result["retained"]["final"]["value"]["items"][0]["items"][1]["scalar"] == 8
+    entry = result["fields"]["cleanup"]["value"]["items"][0]["items"]
+    assert entry[0]["text"] == "free_tool_id"
+    assert entry[1]["args"]["items"][0]["text"] == "retained cleanup detail"
+    assert entry[1]["identity"] == id(case.context.cleanup[0][1])
+    assert primary.__cause__ is cause and case.error is primary
+    assert result["diagnostic_only"] and not result["fresh_hook_or_monitor_reads"]
+    assert not result["live_context_or_frame_serialization"]
+    (tmp_path / "observer-cleanup.json").write_text(json.dumps(result))
+
+
+@pytest.mark.parametrize("drift", ["context", "code", "traceback"])
+def test_demo_cleanup_diagnostic_does_not_invent_missing_frame_state(drift):
+    case = cleanup_diagnostic_case()
+    if drift == "context":
+        case.context = NS(**vars(case.context))
+    elif drift == "code":
+        inner = case.module.observing_native_imports.__wrapped__
+        inner.__code__ = inner.__code__.replace()
+    else:
+        case.error = ValueError("without traceback")
+    result = stage._import_cleanup_diagnostic(case.error, case.module, case.context)
+    assert not result["retained_frame_available"] and "retained" not in result
+    assert result["fields"]["monitor_restored"]["value"]["scalar"] is False
+
+
+def test_demo_cleanup_diagnostic_bounds_metadata_and_avoids_object_dispatch(tmp_path):
+    calls = []
+
+    class TrapMeta(type):
+        def __eq__(self, other):
+            calls.append("type equality")
+            raise AssertionError("No metaclass equality")
+
+        def __getattribute__(self, name):
+            calls.append(name)
+            raise AssertionError("No metaclass labels")
+
+    class Opaque(metaclass=TrapMeta):
+        def __repr__(self):
+            raise AssertionError("No raw object repr")
+
+    class Error(ValueError):
+        @property
+        def args(self):
+            raise AssertionError("No overridden exception fields")
+
+        @property
+        def __traceback__(self):
+            raise AssertionError("No overridden exception fields")
+
+        @property
+        def __cause__(self):
+            raise AssertionError("No overridden exception fields")
+
+    primary = Error("original cleanup")
+    case = cleanup_diagnostic_case(primary=primary)
+    opaque = Opaque()
+    case.context.cleanup = (("x" * 300, primary, opaque),) * 80
+    calls.clear()
+    result = stage._import_cleanup_diagnostic(primary, case.module, case.context)
+    rows = result["fields"]["cleanup"]["value"]
+    assert rows["count"] == 80 and rows["truncated"] and len(rows["items"]) == 64
+    entry = rows["items"][0]["items"]
+    assert len(entry[0]["text"]) == 256 and entry[0]["truncated"]
+    assert entry[1]["args"]["items"][0]["text"] == "original cleanup"
+    assert entry[2]["opaque"] and entry[2]["identity"] == id(opaque)
+    assert calls == [] and result["retained_frame_available"]
+    (tmp_path / "bounded-cleanup.json").write_text(json.dumps(result))
+
+
+@pytest.mark.parametrize("missing", ["module", "factory", "context", "field"])
+def test_demo_cleanup_diagnostic_missing_authority_or_fields_are_explicit(missing):
+    case = cleanup_diagnostic_case()
+    if missing == "module":
+        case.module = None
+    elif missing == "factory":
+        del case.module.observing_native_imports
+    elif missing == "context":
+        case.context = None
+    else:
+        del case.context.monitor_restored
+    result = stage._import_cleanup_diagnostic(case.error, case.module, case.context)
+    if missing == "context":
+        assert result is None
+    elif missing == "field":
+        assert result["fields"]["monitor_restored"] == dict(available=False, value=None)
+    else:
+        assert not result["retained_frame_available"]
+
+
+@pytest.mark.parametrize("writer_failure", [False, True])
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_cleanup_diagnostic_shared_import_capture_keeps_primary(
+    writer_failure, falsey, tmp_path
+):
+    model = dynamics_chain()
+    primary = Falsey("cleanup") if falsey else ValueError("cleanup")
+    cause = primary.__cause__ = LookupError("original cause")
+    retained = cleanup_diagnostic_case(primary=primary).context
+    for name in ("cleanup", "hook_losses", "hooks_restored", "monitor_restored"):
+        setattr(model.import_context, name, getattr(retained, name))
+    model.import_exit_error = primary
+    label = "molecule_imports.failure.observer_cleanup"
+    evidence = Evidence(fail=label if writer_failure else None)
+    hooks = sys.getprofile(), sys.gettrace()
+    with pytest.raises(type(primary)) as caught:
+        execute(model, tmp_path, evidence)
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    captured = dict(evidence.values)
+    assert captured[label]["fields"]["monitor_restored"]["value"]["scalar"] is False
+    assert "molecule_imports.failure.raw_returns" in captured
+    assert "molecule_imports.failure.cleanup" in captured
+    statuses = {row["label"]: row["status"] for row in model.state.molecule_import_failure_captures}
+    assert statuses[label] == ("capture_failed" if writer_failure else "saved")
+    assert "parameters" not in model.calls and not model.state.molecule_import_completed
+    assert (sys.getprofile(), sys.gettrace()) == hooks
+
+
+@pytest.mark.parametrize("role", ["preparation", "assembly", "run"])
+@pytest.mark.parametrize("writer_failure", [False, True])
+def test_demo_cleanup_diagnostic_covers_private_sim_contexts(
+    monkeypatch, tmp_path, role, writer_failure
+):
+    from tests.unit import test_native_sim_demo as sim_prior
+
+    primary = Falsey("SIM import cleanup")
+    cause = primary.__cause__ = LookupError("retained cause")
+
+    def mutate(model, name):
+        if name == role + ".exit":
+            raise primary
+
+    model = sim_prior.sim_chain(monkeypatch, mutate=mutate)
+    model.proofs[role].cleanup = (("free_tool_id", OSError("metadata detail")),)
+    model.proofs[role].hook_losses = []
+    model.proofs[role].hooks_restored = True
+    model.proofs[role].monitor_restored = False
+    label = "sim_failure.imports." + role + ".observer_cleanup"
+    evidence = Evidence(fail=label if writer_failure else None)
+    hooks = sys.getprofile(), sys.gettrace()
+    with pytest.raises(Falsey) as caught:
+        execute(model, tmp_path, evidence)
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    report = dict(evidence.values)[label]
+    assert report["context_identity"] == id(model.proofs[role])
+    assert report["fields"]["monitor_restored"]["value"]["scalar"] is False
+    assert not model.state.sim_imports_complete and "current_parameters" not in model.sim_calls
+    assert all(row["generator"].gi_frame is None for row in model.state.sim_imports)
+    assert (
+        any(
+            name == "failure_capture:imports." + role + ".observer_cleanup"
+            for name, _ in model.state.sim_secondary
+        )
+        is writer_failure
+    )
+    assert (sys.getprofile(), sys.gettrace()) == hooks
+
+
+def test_demo_cleanup_diagnostic_projection_failure_preserves_other_evidence(monkeypatch, tmp_path):
+    model, primary = dynamics_chain(), Falsey("original cleanup")
+    cause = primary.__cause__ = LookupError("original cause")
+    model.import_exit_error = primary
+    secondary = OSError("projection refused")
+
+    def refuse(*args):
+        raise secondary
+
+    monkeypatch.setattr(stage, "_import_cleanup_diagnostic", refuse)
+    evidence = Evidence()
+    with pytest.raises(Falsey) as caught:
+        execute(model, tmp_path, evidence)
+    assert caught.value is primary and primary.__cause__ is cause
+    captured = dict(evidence.values)
+    assert "molecule_imports.failure.raw_returns" in captured
+    assert "molecule_imports.failure.cleanup" in captured
+    assert any(error is secondary for _, error in model.state.secondary)
+
+
+def test_demo_cleanup_diagnostic_nested_aliases_have_a_total_capture_bound():
+    case = cleanup_diagnostic_case()
+    nested = "retained"
+    for _ in range(6):
+        nested = [nested] * 64
+    case.context.cleanup = nested
+    result = stage._import_cleanup_diagnostic(case.error, case.module, case.context)
+    encoded = json.dumps(result)
+    assert result["atom_limit"] == 1024 and len(encoded) < 256 * 1024
+    assert result["fields"]["cleanup"]["value"]["truncated"]
+    assert result["fields"]["monitor_restored"]["value"] == dict(omitted="atom_budget")
+    assert case.context.cleanup is nested and result["retained_frame_available"]
+
+
+def _diagnostic_direct_binding(row, backend):
+    role, name = row.target[0]
+    owner = row.module if role is None else row.owner
+    if owner is not row.output:
+        raise _diagnostic_failure
+
+
+def direct_binding_diagnostic_case(*, cloned=False, role=None, primary=None, opaque=None):
+    """Inert real traceback frames, without native import or binding authority."""
+    module = ModuleType("metadata_direct_binding_observer")
+    namespace = vars(module)
+    error = ValueError("export identity refusal") if primary is None else primary
+    namespace["_diagnostic_failure"] = error
+    same = FunctionType(_diagnostic_same.__code__, namespace)
+    binding = FunctionType(_diagnostic_direct_binding.__code__, namespace)
+    namespace.update(_same=same, _binding=binding)
+    if cloned:
+        namespace = dict(namespace)
+        same = FunctionType(same.__code__, namespace)
+        binding = FunctionType(binding.__code__, namespace)
+        namespace.update(_same=same, _binding=binding)
+    exports = ModuleType("metadata_exports") if opaque is None else opaque
+    row = NS(
+        target=((role, "exported"), module, sys._getframe()),
+        module=exports,
+        owner=exports,
+        original=_diagnostic_direct_binding if opaque is None else opaque,
+        output=FunctionType(_diagnostic_direct_binding.__code__, {}),
+    )
+    context = NS(rows=[row])
+    with pytest.raises(type(error)) as caught:
+        binding(row, None)
+    assert caught.value is error
+    return NS(module=module, context=context, row=row, error=error, namespace=namespace)
+
+
+@pytest.mark.parametrize("cloned", [False, True])
+@pytest.mark.parametrize("role", [None, "Molecule"])
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_binding_diagnostic_direct_refusal_keeps_target_and_identities(
+    cloned, role, falsey, tmp_path
+):
+    primary = Falsey("original export") if falsey else ValueError("original export")
+    cause = primary.__cause__ = LookupError("original cause")
+    case = direct_binding_diagnostic_case(cloned=cloned, role=role, primary=primary)
+    result = stage._import_binding_difference(primary, case.module, case.context)
+    assert result["target"] == (role, "exported")
+    assert result["comparison"] == "binding_frame_without_atom_comparison"
+    assert result["exception_identity"] == id(primary) and primary.__cause__ is cause
+    assert result["row_identity"] == id(case.row)
+    assert result["namespace_identity"] == id(case.namespace)
+    assert result["retained_locals"]["owner"]["identity"] == id(case.row.module)
+    assert result["retained_locals"]["name"]["text"] == "exported"
+    assert result["retained_row"]["output"]["identity"] == id(case.row.output)
+    assert result["retained_row"]["original"]["identity"] == id(case.row.original)
+    assert result["binding_line"] > result["binding_frame"][1]
+    assert not result["fresh_export_lookup"] and not result["observed_export_at_failure_available"]
+    assert result["raw_bindings_retained_in_traceback"] and not result["live_object_serialization"]
+    (tmp_path / "binding-diagnostic.json").write_text(json.dumps(result))
+
+
+@pytest.mark.parametrize("drift", ["row", "code", "globals", "target"])
+def test_demo_binding_diagnostic_direct_refuses_unmatched_frames(drift):
+    case = direct_binding_diagnostic_case(cloned=True)
+    if drift == "row":
+        case.context.rows = [NS(**vars(case.row))]
+    elif drift == "code":
+        case.module._binding.__code__ = case.module._binding.__code__.replace()
+    elif drift == "globals":
+        case.namespace["_binding"] = FunctionType(case.module._binding.__code__, {})
+    else:
+        case.row.target = ((object(), "exported"),)
+    assert stage._import_binding_difference(case.error, case.module, case.context) is None
+
+
+def test_demo_binding_diagnostic_direct_never_looks_up_live_exports():
+    calls = []
+
+    class Opaque:
+        def __getattribute__(self, name):
+            calls.append("attribute")
+            raise AssertionError("No owner or export getter")
+
+        def __eq__(self, other):
+            calls.append("equality")
+            raise AssertionError("No live owner equality")
+
+        def __repr__(self):
+            calls.append("repr")
+            raise AssertionError("No live owner formatting")
+
+    value = Opaque()
+    case = direct_binding_diagnostic_case(role="Molecule", opaque=value)
+    result = stage._import_binding_difference(case.error, case.module, case.context)
+    assert result["retained_locals"]["owner"]["identity"] == id(value)
+    assert result["retained_row"]["module"]["identity"] == id(value)
+    assert result["retained_row"]["original"]["identity"] == id(value)
+    assert calls == [] and not result["fresh_export_lookup"]
+    json.dumps(result)
+    assert calls == []
+
+
+@pytest.mark.parametrize("role", ["preparation", "assembly", "run"])
+@pytest.mark.parametrize("writer_failure", [False, True])
+def test_demo_binding_diagnostic_direct_sim_failures_keep_source_and_capture(
+    monkeypatch, tmp_path, role, writer_failure
+):
+    from tests.unit import test_native_sim_demo as sim_prior
+
+    primary = Falsey("private export refusal")
+    cause = primary.__cause__ = LookupError("original cause")
+    case = direct_binding_diagnostic_case(cloned=True, primary=primary)
+
+    def mutate(model, name):
+        if name == role + ".exit":
+            raise primary
+
+    model = sim_prior.sim_chain(monkeypatch, mutate=mutate)
+    api = model.modules["molecule_wrappers"]
+    api._same, api._binding = case.module._same, case.module._binding
+    model.proofs[role].rows = case.context.rows
+    label = "sim_failure.imports." + role + ".binding_difference"
+    evidence = Evidence(fail=label if writer_failure else None)
+    hooks = sys.getprofile(), sys.gettrace()
+    with pytest.raises(Falsey) as caught:
+        execute(model, tmp_path, evidence)
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    result = dict(evidence.values)[label]
+    assert result["target"] == (None, "exported")
+    assert result["retained_row"]["output"]["identity"] == id(case.row.output)
+    assert model.state.sim_cleanup_complete and not model.state.sim_imports_complete
+    assert "current_parameters" not in model.sim_calls
+    assert (
+        any(
+            name == "failure_capture:imports." + role + ".binding_difference"
+            for name, _ in model.state.sim_secondary
+        )
+        is writer_failure
+    )
+    assert (sys.getprofile(), sys.gettrace()) == hooks
+
+
+@pytest.mark.parametrize("mode", ["original", "disabled"])
+def test_demo_sim_runner_import_occurs_inside_all_private_observers(monkeypatch, tmp_path, mode):
+    from tests.unit import test_native_sim_demo as sim_prior
+    from validation.betse import native_sim_demo as sim
+
+    model = sim_prior.sim_chain(monkeypatch, mode=mode, count=1)
+    evidence = Evidence()
+    execute(model, tmp_path, evidence)
+    assert model.sim_calls.count("runner.import") == 1
+    ordinal = model.sim_calls.index("runner.import")
+    for role in ("preparation", "assembly", "run"):
+        assert model.sim_calls.index(role + ".enter") < ordinal
+        assert ordinal < model.sim_calls.index(role + ".exit")
+    assert model.state.sim_imports[0]["imported_module"] is model.runner_module
+    operation = [
+        row
+        for row in model.state.operations
+        if row["name"] == "sim_imports.preparation.import_module"
+    ]
+    assert len(operation) == 1 and operation[0]["status"] == "returned"
+    captured = dict(evidence.values)["sim_imports"]
+    assert captured[0]["explicit_module_import"] == "betse.science.simrunner"
+    assert captured[0]["explicit_module_identity"] == id(model.runner_module)
+    assert all(row["explicit_module_import"] is None for row in captured[1:])
+    assert model.state.sim_completed
+    assert sim.source_plan()["explicit_bootstrap_import"] == dict(
+        module="betse.science.simrunner",
+        after_auxiliary_callback=True,
+        before_private_observer_exit=True,
+        constructor_or_method_call=False,
+    )
+
+
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_sim_runner_import_error_unwinds_without_later_parameters(
+    monkeypatch, tmp_path, falsey
+):
+    from tests.unit import test_native_sim_demo as sim_prior
+
+    model = sim_prior.sim_chain(monkeypatch, fail="runner.import")
+    primary = model.primary = Falsey("import failed") if falsey else ValueError("import failed")
+    cause = primary.__cause__ = LookupError("original import cause")
+    with pytest.raises(type(primary)) as caught:
+        execute(model, tmp_path, Evidence())
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    assert model.state.molecule_import_completed and model.state.sim_cleanup_complete
+    assert not model.state.sim_imports_complete and "current_parameters" not in model.sim_calls
+    assert all(not proof.active and not proof.published for proof in model.proofs.values())
+    assert all(row["generator"].gi_frame is None for row in model.state.sim_imports)
+    operation = next(
+        row
+        for row in model.state.operations
+        if row["name"] == "sim_imports.preparation.import_module"
+    )
+    assert operation["status"] == "failed"
+
+
+@pytest.mark.parametrize("drift", ["opaque", "module_slot", "module_name", "module_name_type"])
+def test_demo_sim_runner_import_return_identity_refuses_before_parameters(
+    monkeypatch, tmp_path, drift
+):
+    from tests.unit import test_native_sim_demo as sim_prior
+    from validation.betse import native_sim_demo as sim
+
+    model = sim_prior.sim_chain(monkeypatch)
+    original = sim.importlib.import_module
+    returned, comparisons = [], []
+
+    class EqualName:
+        def __eq__(self, other):
+            comparisons.append(other)
+            return True
+
+    def changed(name):
+        value = original(name)
+        if drift == "opaque":
+            value = object()
+        elif drift == "module_slot":
+            monkeypatch.setitem(sys.modules, name, ModuleType(name))
+        elif drift == "module_name_type":
+            value.__name__ = EqualName()
+        else:
+            value.__name__ = "foreign_metadata_module"
+        returned.append(value)
+        return value
+
+    monkeypatch.setattr(sim, "importlib", NS(import_module=changed))
+    with pytest.raises(ValueError, match="Actual observed SimRunner import required"):
+        execute(model, tmp_path, Evidence())
+    assert model.state.sim_imports[0]["imported_module"] is returned[0]
+    assert model.state.last_return is returned[0]
+    assert model.state.sim_cleanup_complete and not model.state.sim_imports_complete
+    assert all(not proof.published for proof in model.proofs.values())
+    assert "current_parameters" not in model.sim_calls
+    assert comparisons == []
+
+
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_sim_runner_import_postreturn_error_keeps_raw_module(monkeypatch, tmp_path, falsey):
+    from tests.unit import test_native_sim_demo as sim_prior
+
+    model = sim_prior.sim_chain(monkeypatch)
+    primary = (
+        Falsey("import return observation") if falsey else ValueError("import return observation")
+    )
+    cause = primary.__cause__ = LookupError("original observation cause")
+    original = stage._call
+
+    def failed_return(state, label, function, *args, **kwargs):
+        value = original(state, label, function, *args, **kwargs)
+        if label == "sim_imports.preparation.import_module":
+            raise primary
+        return value
+
+    monkeypatch.setattr(stage, "_call", failed_return)
+    with pytest.raises(type(primary)) as caught:
+        execute(model, tmp_path, Evidence())
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    assert model.state.last_return is model.runner_module
+    assert model.state.sim_cleanup_complete and not model.state.sim_imports_complete
+    assert "current_parameters" not in model.sim_calls
+
+
+@pytest.mark.parametrize("mode", ["original", "disabled"])
+def test_demo_sim_runner_import_issuance_precedes_parameter_birth(monkeypatch, tmp_path, mode):
+    from tests.unit import test_native_sim_demo as sim_prior
+
+    model = sim_prior.sim_chain(monkeypatch, mode=mode, count=1)
+    execute(model, tmp_path, Evidence())
+    order = model.sim_calls
+    assert order.index("runner.issuance.enter") < order.index("runner.import")
+    assert order.index("runner.import") < order.index("runner.issuance.exit")
+    assert order.index("runner.issuance.exit") < order.index("preparation.exit")
+    assert model.state.sim_imports[0]["module_issuance_complete"] is True
+    assert not model.issuance_active and model.state.sim_completed
+
+
+@pytest.mark.parametrize("boundary", ["enter", "exit"])
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_sim_runner_import_issuance_refusal_stops_parameters(
+    monkeypatch, tmp_path, boundary, falsey
+):
+    from tests.unit import test_native_sim_demo as sim_prior
+
+    model = sim_prior.sim_chain(monkeypatch, fail="runner.issuance." + boundary)
+    primary = model.primary = (
+        Falsey("issuance refused") if falsey else ValueError("issuance refused")
+    )
+    primary.__cause__ = cause = LookupError("original issuance cause")
+    with pytest.raises(type(primary)) as caught:
+        execute(model, tmp_path, Evidence())
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    assert model.state.sim_cleanup_complete and not model.state.sim_imports_complete
+    assert not model.issuance_active and "current_parameters" not in model.sim_calls
+    assert ("runner.import" in model.sim_calls) is (boundary == "exit")
+    assert not model.state.sim_imports[0].get("module_issuance_complete", False)
+    if boundary == "exit":
+        assert model.state.sim_imports[0]["imported_module"] is model.runner_module
+
+
+@pytest.mark.parametrize("falsey", [False, True])
+def test_demo_sim_runner_import_issuance_cleanup_keeps_original_failure(
+    monkeypatch, tmp_path, falsey
+):
+    from tests.unit import test_native_sim_demo as sim_prior
+
+    model = sim_prior.sim_chain(monkeypatch, fail="runner.import")
+    primary = model.primary = Falsey("source import") if falsey else ValueError("source import")
+    primary.__cause__ = cause = LookupError("source cause")
+    secondary = OSError("issuance exit")
+
+    def mutate(model, name):
+        if name == "runner.issuance.exit":
+            raise secondary
+
+    model.mutate = mutate
+    with pytest.raises(type(primary)) as caught:
+        execute(model, tmp_path, Evidence())
+    assert caught.value is model.state.primary is primary and primary.__cause__ is cause
+    assert ("sim_imports", secondary) in model.state.sim_secondary
+    assert model.state.sim_cleanup_complete and not model.state.sim_imports_complete
+    assert not model.issuance_active and "current_parameters" not in model.sim_calls

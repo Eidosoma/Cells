@@ -10854,3 +10854,715 @@ test56999d5bd4335dbb4dca771f0b4f2f3c87d1327a929197242b2bb16be99acb2b.
 RNG acknowledgement11/256cf14f remains a separate pending review; its three
 delivered bytes were not changed during this diagnostic repair. No Root/
 Specialist/shared source edits, staging, commits or detached job queries.
+
+### Measured parameter AST metadata optimization sealed
+
+Root authorized the immutable startup prefix then terminal59stack samples.
+Terminal status-check-01.json efa46c5b records1800.083s wall failure, no geometry
+result; counts overlap (history29,digest18,phase-cache19,AST4,method2). No live
+worker query/retry was made. The exact sampled _native_helpers->_method_code
+path still dumped the full mutable Parameters class on every warm validation.
+Root coordinated phase_parameters, new AST test/software paths, then the
+minimal existing compiler-test whitelist/operator namespace hook. No digest,
+load_remainder, phase/cache consumer, Root projector or shared status edits.
+
+Preserved pre-change CPU6 metadata evidence on original f36ec747 Parameters
+source. Actual metadata definitions extracted without production imports;
+native/owner/compiled source bodies forbidden. A flat prototype was slower and
+not adopted. C-selector prototype was faster, but its selector objects violated
+the existing cache eviction/equality/immutability contract (93pass/1failure).
+Final cache plans contain only immutable str/int/code/tuple data; selectors are
+ephemeral during each current AST traversal. No AST nodes, match result, owner
+state or numerical result is cached. Existing16-entry bytes/filename/optimization
+keys, full module compiler flags/closures/source and guards remain. Class rows
+add a data-only plan; outer metadata tuple and method-code API stay unchanged.
+
+Fast positives traverse every current field/child/type/value/order/location and
+preserve float/complex display/signed zero, None/empty-list omission rules and
+exact field labels. Every mismatch, unsupported/descriptor-backed AST or plan
+above16384rows takes the original full ast.dump comparison. This optional fast
+boundary narrows no compilation domain or existing limits. Descriptor fallback
+retains the original earlier primary/cause without invoking a later getter.
+Helper/code/equal-copy/operator/builtin/source drift controls remain strict;
+new AST type/attribute helper bindings are explicitly retained. Laws/defaults,
+owner/phase checks, equations, source extents and scientific tolerances unchanged.
+
+Final focused100passes (27new+73existing compiler controls),21.39s pytest,
+on exact final four source bytes. Original eviction/immutability, source-byte,
+same-size/mtime, cache-hit AST drift, flags/closure/reentry/anchor/dispatch and
+budget refusals pass. Independent complete original module compile returns
+equal method code; no native body execution. Interleaved same-process7repeat
+old/current metadata comparison: medianCPU92.737ms ->57.348ms (1.617x), warm
+class dumps7 ->0. Repeats are work, not biological cases. This local measurement
+does not close history/digest costs or establish total SEED speedup; cold/memory
+cost and every intermediate measurement remain recorded.
+
+All27 guarded outcomes locally reviewed:25complete/2failed (13 preparation/
+child pairs plus CPU3 metadata reader). First fixture image lacked read-only
+colormap source:94setup errors and no intended proofs; its runtime publisher
+was not reached and that gap stays explicit. Second failure is the real cache
+immutability finding above. Later94/99 images remain source-bound and separate.
+One prototype I001 import-order tool failure is recorded separately; final
+static checks pass. CPU6/one-thread1GiB480s8GiBreserve,512MiB metadata unchanged.
+
+Sealed /mnt/workspaces/Cells/native-parameter-ast-metadata-development-20261106-01/source-result.json
+SHAed345cdc7b901b17abf8eb122a79207cc9d0e5a23c15c7925b5f8239d57e9c6b;
+interfacefc15dc4086a39d2bc5b568b7b7fda19a084c0e224611ffae65b3359ccdb5c00f.
+Phase75ece3081ee419bd0a28abbede054e5e012415a1030ab11adde27735c694c65e;
+newtestfb589df369262b04e3dd518ac73e77bf67b4c67323992bfd17494047098d2d1a;
+existingtestde706f42e64d9ab3f149fa2297589be9c01b170285319242012c51e74c36eed1;
+software0c526ce2e13452b9d9472e5ef78c4e5dfe095d41d0492c0b6e324306f43f5f30.
+Root owns source/results review and downstream producer projection. Existing
+owners/pins are not silently refreshed; no actual native/RNG/INIT/SIM/reference
+or scientific release, cap increase, staging or commit by Key. CPU6 free.
+
+### Cold AST-roster fallback successor sealed
+
+Root reviewf04632a216ab134f3e0f96a1ee0d757758f7fbd52e9c63f3e3f054e6cd158c46
+verifies original100/all27 outcomes and finds mutable cold _fields/_attributes
+aliases in plans. Changed only the AST plan builder's supported domain: exact
+tuple rosters with exact str labels and class name are required before any
+retention. Other rosters take the unchanged full dump fallback. No getter/name
+projection can retain a mutable list or subtype alias as a successful fast plan.
+
+Final11focused passes (6new+5affected),95deselected,2.82s pytest. Both cold
+class-level list rosters are accepted by legacy fallback while unchanged, then
+mutated in place after warm cache fill; the original serialized correspondence
+refuses and cached output stays recursively immutable. Four cold tuple/label
+subtype controls retain original valid fallback. Existing warm-mutation,
+fallback and eviction/immutability controls pass. Three guarded outcomes all
+completed/reviewed, CPU6/one thread1GiB480s8GiBreserve,CPU3/512MiB reader.
+Original100 and its failures remain separate; no new speed or science credit.
+Minimal optional focused selector added to own AST software tool; existing
+compiler-test producer remains unchanged. AST four source bytes fixed again.
+
+Sealed /mnt/workspaces/Cells/native-parameter-ast-cold-roster-repair-20261106-01/source-result.json
+SHA7b52664d6e1759a5e8ba526d84c1b20da718fc5f22312d32e7574b6ab58049c1.
+Phase276c6fa0d841dd46438090f1d3ebfb429aba6c2ec98e1c7fc17fae5ebc6fcaeb;
+newtest697c08b93d7aba499648c5b1ddfb4659e93e74c3767e19df0a5ce0782a09d63d;
+unchanged existingtestde706f42e64d9ab3f149fa2297589be9c01b170285319242012c51e74c36eed1;
+softwarec729655fb9d29efbaca8a47363dee58363622e297f73e0c8094d5e5badf8879d.
+
+Source freeze/CPU6 was first granted to Specialist's six WPC controls; all own
+bytes stayed fixed through their snapshot. Their pass/terminal/release arrived
+before Key launched this batch. No Specialist/provider edits or job queries.
+Next declared existing3-path digest scope is separate. Its production source
+is unchanged; only a software measurement prototype is prepared. Root's final
+stack refinement (17of18digest samples in fresh projection,1in JSON) supersedes
+the initial encoding hypothesis. Next measurement splits tree/scheduling/audit
+cost from encoding onCPU3; no owner/history/record-result cache or actual run.
+
+### Measured fresh record-tree scheduling repair sealed
+
+Root's refined59stack diagnosis placed17of18 digest samples in fresh projection,
+one in encoding. Changed only existing3digest source/test/software paths; no
+history, WPC, provider, original serializer or shared status edits. The production
+delta is confined to _metadata_tree: retain one audited container identity per
+visit and bulk-schedule freshly enumerated child tasks. Original limits, cycle/
+alias handling, fallback, hashing, source/helper checks and raw errors remain.
+No input, projection, digest, owner or successful-check cache was introduced.
+
+Paired7repeat CPU3/512MiB immutable metadata comparison uses exact original/current
+function ASTs and original read-only audit AST with a synthetic context. Canonical
+projected values/JSON agree. Under the active audit, median traversal CPU falls
+70.984ms->57.561ms (nested) and135.744ms->108.219ms (wide), throughput1.233/1.254x.
+Identity calls3->1per container; direct C profile events18282->14121 and35849->27656.
+These synthetic corpora do not qualify total history/WPC/SEED runtime or science.
+
+Final75passes=6new+69affected,1.64s pytest on exact final bytes; original73 and
+intermediate75 frozen separately. New controls prove fresh shared-alias visits,
+oversize refusal before identity audit, exact falsey primary/cause under identity
+and bulk-scheduling profile refusals, and two isolated actual audit-hook identity
+vetoes with acknowledged hook registration. Four nested children across the two
+75images all complete/runtime-bound, final two separately identified. All empty
+software guards and hook restoration checked. Native/model/owner/RNG/INIT/SIM/
+reference entries zero. One intermediate I001/E501 lint refusal is retained with
+its frozen75 source; final changes only reorder imports/wrap the embedded guard.
+Final Ruff check/format pass. Eleven guarded outcomes all complete and locally
+reviewed (five prepare/child pairs plus CPU3 metadata reader); none detached.
+
+Sealed /mnt/workspaces/Cells/native-parameter-record-cost-development-20261106-01/source-result.json
+SHAdab3075754296580a8e5f806450ba46ca031e26087fce8ff65998132861186b7.
+Production7adf426f09dd86e2aac5708b0bfd4db89ac6c7f2b35601d595613c295d6340aa;
+test4ececb2f3589efcdc6ce6f6a0979fe163abd433a5d89be900f145e542b1ce648;
+software25a53b1b1ee5e5d87ccd55e3840256a5389d20959d6c0579f3ce21bd7fe2b6f2.
+Original normal_current294a4d3e remains exact. Root review and explicit dependency
+adoption pending; all source/science holds and historical pins remain. CPU6 free;
+Specialist notified before their next short metadata-only inspection. No staging,
+commit, package/runtime mutation, source overlay or actual retry by Key.
+
+### Next-run parameter/metadata triage prepared
+
+Chief requested one read-only guide while final literal/snapshot adoption proceeds.
+Kept phase276c6fa0 and digest7adf426f fixed. No new performance/source edits, tests,
+metadata measurement workers, owner/native/RNG calls or process queries. Read
+existing terminal/stack summaries, current contract locations and already sealed
+controls. One guide links source/refusal, record-tree, compiler/AST, historical
+lineage, WPC/cache callback windows, observation/evidence cleanup and resource-stop
+dispositions; preserves first primary/cause/partials, exact source and actual work.
+
+/mnt/workspaces/Cells/native-parameter-record-cost-development-20261106-01/parameter-metadata-failure-triage.md
+keeps the measured59 stacks, digest75, cold-roster11 and Specialist ancestry6
+separate. It requests no reproduction/retry and grants no authority. Key owns
+future parameter/metadata diagnosis and scoped repairs; Root owns release and
+producer application, Specialist owns WPC/phase/cache. Final source freeze remains.
+
+### Genuine nested import-guard composition repair sealed
+
+Chief's actual full original-flux attempt stopped30.903s before geometry or
+parameter stages: wrapper authority's PEP669 factory callback compared the live
+profile directly to its outer entry tuple. Genuine tissue._account installs a
+profile delegating to that exact parent; later Simulator/callback observers do
+likewise. Saved original worker/failure.json and process/stderr.log under
+/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-01
+remain unchanged. This was an import-observer composition refusal, not numerical
+or wall-limit failure. No actual retry or other-process query by Key.
+
+After Specialist explicitly closed its immutable reference freeze, changed only
+wrapper authority, paired test and existing software runner. Existing public
+observing_native_imports(*,enabled=False) stays. New metadata-only public
+validate_import_guards(actual_active_context) authenticates the exact current
+profile/trace pair. It grants no owner/permission. Five helpers are automatically
+copied by the existing SIM preparation/assembly/runtime private namespace loops;
+actual four-observer body controls verify this without changing their pins/files.
+
+Observe actual starts/closures of three pinned original guard generators; no
+guard body, parser, native factory/decorator or wrapper is called by the import
+observer. Require actual issued _CONSUMED/_ACTIVE context, current thread, original
+generator frame/global/code and exact suspended YIELD_VALUE/RESUME boundary;
+retain callback/code/builtin/closure/parent relationships and selected code-set
+membership. Foreign/equal-copied, stale, reentrant, dropped-parent, code/closure/
+registry/thread/trace drifts refuse before the toy factory body; late mutations
+refuse publication. Raw return/unwind witnesses precede fallible observations;
+source primary/cause remain exact, capture errors separate, both hooks/tools
+restore. Guard-scope budget4 covers tissue once, Simulator import/constructor
+twice, callbacks once; unchanged native factory caps512/default and2/SIM clone
+are separate. No new source/numerical law or owner-state cache.
+
+Final57passes=23new+34affected,5.87s, on exact final source. Complete literal
+four-scope callback prefix and all four real import-observer bodies exercised
+with explicit toy backend/registries; actual source/native/RNG/owner work blocked.
+Conditional metadata success gives no true callback/INIT/SIM authority. All14
+guarded outcomes locally reviewed:9complete/5failed, six preparation/child pairs
+and two saved readers.98empty guards/59diagnostics/runtime files/source manifests
+bound. Original first import failure preceded tests/runtime publisher: known
+incomplete evidence, zero intended guard proofs. Its inherited512MiB AS was
+corrected in own child to the already-declared1GiB software policy; CPU5,one
+thread,480s/8GiBreserve unchanged. Two failed baseline images retained; their
+detail identified real CPython3.13 f_lasti at following RESUME386 versus YIELD384.
+17pass/1fail then exposed accidental reuse of clone factory2 cap for guard scopes;
+corrected separate metadata bound above. Intermediate21passes stay historical.
+First saved reader assumed runtime snapshot contained a software runner; retained
+failure, corrected preimage to existing controls01 without source/test rerun.
+Initial I001/B018/B905 local lint refusals recorded; final Ruff/format pass.
+
+Sealed /mnt/workspaces/Cells/native-import-guard-composition-repair-20261106-01/source-result.json
+SHAd14b08f2b8b1cd1051967302faefd2dcb51307224a09d43fa042a80e355b112b.
+Sourcea3e650584e3f69c835dbc2ced2cafbe96e28adb439c543be97fff3327213d4e3;
+test9b418e31b0d5933bab3f19594ff9cab8465fef2dcfb8aaa38e48a68f0f3f0e25;
+runner3d212b54d11243e915e3ceb5f5c9f05e2be99d6c24fca7e9967eaad676ebf9af.
+Original three child producers e9f8/6f94/63ec, phase276c and digest7adf stay exact.
+Current3bytes fixed for Root source/results review, explicit downstream pin
+application and later release. No bootstrap, Root/Specialist/shared status,
+native body, literal, fixture, tolerance, stage/cap or old evidence edit; no
+staging/commit. CPU5 free; no active or detached Key worker.
+
+### Original wrapper publication lifecycle successor sealed
+
+Root's actual-original-02 failed154.440s at wrapper closure _binding/_same after
+the callback returned. Original failed image/runtime/raw128 factory witnesses,
+source-errors-empty payload and stderr remain immutable. They do not retain the
+actual failing row/atom, so no precise actual02 delta is claimed. Root separately
+owns bounded retained-traceback diagnostics in SEED/SIM consumers; no new diagnostic
+API was added here. Root explicitly released genuine pinned Beartype factories on
+synthetic declarations with BETSE/method/RNG/operator work blocked and accounted.
+
+Same-source real-library before/after probe reproduces a concrete inconsistency:
+original no-code method's factory state9 grows to13 as a later class/helper enter
+the actual module namespace; generated wrapper193 atoms remain unchanged. Original
+code deliberately permits later source globals in _original_header, but freezes
+the complete unfinished lookup set in row.bindings. Demonstration is source/library
+metadata evidence; actual02's missing atom remains unknown. No Config._repr or
+argument/annotation cache whitelist or unknown-state refresh was introduced.
+
+Changed only wrapper source, paired test and existing reusable software runner.
+Observe actual loader-issued module-code start/return/unwind and freeze each
+method's published binding at that genuine source endpoint. Preserve factory
+snapshots, headers, original delegate/wrapper atoms and every existing lookup.
+Only initially absent lookups may resolve to unique single-writer pinned source
+class/function declarations, including own-class publication. Existing observed
+factory identities must match; unselected declarations require strict unwrapped
+source/header/default correspondence. Unknown wrappers/annotations, extra writers,
+wrong code/default/type and arbitrary values refuse. Post-publication equal copies,
+hook/code/closure mutations and lazy Conf._repr changes continue refusing.
+Public APIs, native factory caps, inherited guard contract, numerical bodies,
+fixtures and tolerances stay. All four existing consumers copy the new helpers.
+
+Final77=20 new genuine-library cases+57affected software checks,62.66s. Twelve,
+eighteen, then twenty library configurations exercise full class/decorator/maker/
+loader publication and genuine drift controls; all work is non-additive metadata,
+not biological cases. Source module unwind retains identical primary and cause;
+hostile metadata-label equality never executes. Original loader fixture's function
+code is now correctly refused as non-module; real library controls supply the
+positive loader/program endpoint. Intermediate69/75 stay bound to prior bytes.
+
+All15 guarded outcomes reviewed:13complete/2failed, plus63 completed nested
+library processes;291empty parent guards and91,280 actual Beartype call entries
+bound in the reader. First probe conservatively blocked maker-owned definition
+exec, then its partial observer hit secondary len(None); both primary/probe and
+terminal retained. Corrected only to allow actual maker/code-associated definition
+frames; wrapper/method invocation remains blocked. Later69pass/1failure preserves
+the class-qualname type-slot issue (slot absent from vars), corrected with direct
+type.__getattribute__ and exact string checks, no user getter. No actual whole-run
+retry, old-job query, original BETSE body, RNG/operator or live-owner admission.
+CPU5 one-thread1GiB480s/8GiBreserve, CPU3 metadata512MiB unchanged; final Ruff passes.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-publication-lifecycle-repair-20261106-01/source-result.json
+SHA60a6fe07eaca556daa8758c926eb1ac1340636b1ea7287472a0da69781ae048f.
+Sourceed1919d030912b0e518c9f0d015b5c11a83bc21741e90d2e0ee10f4b95407190;
+test363de088227f8f4997e850e58c0d87433c03d8810dbcbcd116960697b30fce94;
+runnerbb4e182cfbecc859a9f9d422084d0de07d304a79e9bf52dd87d1da634950286a.
+Phase276c/digest7adf and child guard producers unchanged. Root source/results
+review, explicit producer projection/new snapshots and later actual release remain.
+Current three bytes fixed; no shared/consumer/source-body edits, staging or commit.
+CPU5 free, no active or detached Key worker.
+
+### Later-class method header and lifetime repair sealed
+
+Root's publication77 review c2d7c64c identified unobserved later-class methods
+whose code/globals matched while defaults/keyword defaults/annotations/closures
+were unchecked. Preserved that image and all actual02 failures. A real inherited
+line observer on genuine pinned Beartype synthetic declarations reproduces the
+gap: changes default before actual module return, yet predecessor publishes.
+Failed before-02 is intended counterexample evidence. Earlier before-01 passed
+at a different AST writer refusal and grants no method-header proof.
+
+Changed only wrapper source, paired test and existing software runner. Require
+exact typed literal immutable defaults/ordered keyword entries, source labels,
+unannotated raw header and actual source class-cell association. Unsupported
+mutable/nonliteral defaults, annotations and unknown closures refuse; observed
+factory routes remain separate. Retain full method metadata/closure/builtin
+state and class/member identities through later validation. No method/wrapper
+invocation, authority manufacture, cache whitelist or public API change.
+Module binding count now distinguishes actual Name Store/Del from attribute
+receiver loads. Native bodies, all guard/cap/source laws and phase276c/digest7adf
+remain exact. Root owns downstream explicit producer projection and release.
+
+Final90 passes=77affected+13new,105.27s, final source; genuine-library positive,
+inherited prepublication mutation and closed-validation drift controls separate.
+Intermediate77pass/1failure/12unrun retained: positive keyword-default dictionary
+was unsupported by executable-constant encoder; fixed by encoding ordered typed
+entries, without changing that comparator. All9 guarded outcomes locally reviewed,
+7complete/2failed, including CPU3 metadata reader;56 nested library children,
+170empty parent guards,78622 actual Beartype call entries. Library work is counted
+metadata work, zero biological cases or actual BETSE/owner/RNG/operator entries.
+CPU5 one-thread1GiB480s/8GiBreserve; metadata512MiB unchanged; Ruff/format pass.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-later-class-binding-repair-20261106-01/source-result.json
+SHAe854353a96e3bbf6c96167544cf28d890c35ac313d6347493aa22ff4283708a9.
+Sourceeee8cff072cc18aae81883890c3ebdccff52c06192e2772c9ee48968cafeee89;
+test1fe054f9d7391d4dde133af0653dfb6242330018c43223e57db2013bcc1990d4;
+runneree80f93a288a1a6e150b20b54555292d63e11180a74846eac0815725f305ee1f.
+Current3bytes fixed pending Root review; earlier77/evidence unchanged, actual02
+missing atom remains unattributed. No shared consumer/status edit, staging/commit,
+whole-run/reference retry or old-job query. CPU5/CPU3 free; no active/detached Key
+worker. Shared consumer snapshot write-window hold released to Specialist.
+
+### Identity-only default admission residual sealed
+
+Root90 review af919ae4 found equality-based type membership in the new default
+gate before shared typed._constant. Preserved e854/90 and its complete images.
+New inherited-observer sentinel on that exact production genuinely substitutes
+an object in the same source method/code/globals: three metaclass equalities and
+one value equality run, then publication succeeds. before-01 test fails on the
+dispatch witness; actual source error is absent. This is separate synthetic
+metadata evidence, not attribution of actual02's missing atom.
+
+Only production change from90 is _immutable_default: exact `is` admission of
+allowed scalar types, recursively before the unchanged shared encoder. Existing
+exact dictionary/key type checks already refuse foreign keyword keys before
+encoding. Added four genuine-library controls for scalar/nested positional
+defaults, keyword values and foreign keys. All require actual inherited edit,
+intended source-header refusal and zero metaclass/value equality dispatch.
+Remaining new header/default/annotation/type decisions inspected; foreign labels,
+containers/keys and closure association remain identity/type guarded.
+
+Final25passes=4new+21affected,69deselected,78.17s; no claim of full94 execution.
+Frozen90 is historical. All5 guarded outcomes reviewed,4complete/1failed,
+including metadata reader1.27s/29249536B;26nested library children,26empty parent
+guards and37274 actual Beartype entries. No native/BETSE body, RNG/operator,
+wrapper invocation, owner issuance, biological case or whole-run retry. Shared
+encoder, all source laws/guard budgets, phase276c/digest7adf untouched; Ruff and
+format pass. CPU5 one-thread1GiB480s/8GiBreserve and CPU3 metadata512MiB unchanged.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-default-type-identity-repair-20261106-01/source-result.json
+SHA00a30b691ebb75b65022b29df60548b943e9d95826f9a6798f16b3d5843538b2.
+Sourcee69b72029d0b3b73017359aabe8593bca2c53b5e0f89fe1bd14554afd36ea3ad;
+testc95a8faf361c045a5f9a82309380fef08ebf745ba575ee0d87a33b3e58030075;
+runner95e4fbb1e4b0f3f3faf9fa304f4ff3de47e9a14bf16227021167fccbf501d666.
+Current3files fixed for Root review/projection, no shared status/consumer edit,
+staging or commit. CPU5/3 free; no active/detached Key work. Actual/reference
+release and explicit downstream adoption remain Root-owned.
+
+### Actual03 metadata counter effect successor sealed
+
+Root's actual-original-03 diagnostic capture-0002 retains the exact failed
+original_bindings comparison for _get_default_dict_class_name:13->13 atoms,
+index7 _DEFAULT_DICT_ID0->1. Original180.092s failure/image stay immutable.
+Inspected pinned mapcls15a88829: original helper increments the global once and
+returns '__DefaultDict'+str(counter); no geometry/material/owner action. Genuine
+full pinned metadata import/helper controls reproduce that exact strict-same
+failure shape without historical overlays or an actual whole-run retry.
+
+Changed only wrapper authority/test/existing reusable software runner. Register
+this one original helper at actual module publication; independently observe
+CALL identities and actual body/wrapper start/return/unwind frames. Preserve
+all factory/publication atoms. Only its own scalar counter lane may match an
+ordered successful original-call witness with exact increment/result and
+unchanged callable/header/global/builtin state. No general mutable-global
+refresh/cache whitelist. Source name/code/export drift, copied callables,
+unobserved/closed effects and missing issued-attempt edges refuse. Separate
+metadata-work bound64, existing factory/guard caps unchanged. Raw source
+returns/unwinds precede fallible capture; source primary/cause survive separate
+capture failures. CALL monitoring enables only for this registered helper;
+public API and all four automatic private-helper copies remain compatible.
+
+Final29 focused current-byte passes,94deselected,211.80s. Full earlier image
+retains116passes/1failure/5unrun: its reentry assertion incorrectly expected no
+counter effect. CPython suppresses recursive monitoring inside inherited
+profilers; its genuine nested call completed before outer monitoring resumed.
+Guard refused the unwitnessed change and never published. Final test separately
+records that callback call/result and keeps the failed partial outside admitted
+history. Earlier profile-only counts are not retroactively complete; final
+CALL/start/profile/callback/completed counters stay distinct. Record-drop
+forensics retain completed history even though its missing registry edge refuses.
+
+All7 guarded outcomes reviewed,6complete/1failed, plus88nested subprocesses
+(37synthetic-library and51pinned native-metadata).147empty PARENT guards; actual
+original metadata execution is explicitly separate:1264709profiled library
+entries,5298native metadata entry events,1explicit callback call. Genuine nine
+original import-source pins and runtime bindings verified;2573unique origin
+files. Model/geometry/RNG/operators, DefaultDict factory and genuine owner work
+remain blocked; no biological/reference/INIT/SIM qualification. One positive
+pilot remains separate. CPU5one-thread1GiB480s8GiBreserve; CPU3metadata512MiB,
+reader2.77s/42737664B; Ruff/format pass. Native bodies/shared encoder/phase276c/
+digest7adf and Root/Specialist/status files unchanged; no staging/commit.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-counter-helper-development-20261106-01/source-result.json
+SHA9c39a6da911815cc80a48a0b6cbd3bf9900c4f1d9dd9c4cf03e0fb7edf788799.
+Source0301adfeff5d0ff29b52e6614cf754f6f0c844ff2195ae3cf83b56e159a5d8a4;
+testfe5d7058331e05a6839a91c596bab649cf70f20da1590039ed367e1486ad00a5;
+runnere0ef34ca11de3137c62511423d3bb256e9d9b104932abe866aea4ecdca9f76b2.
+Current3bytes fixed pending Root source/results review, explicit projection and
+later coordinated actual release. CPU5/3free, no active/detached Key worker.
+
+### Genuine nested import and teardown successor sealed
+
+Root actual-original-04 failed201.435s/330465280B at shared import cleanup,
+before parameters/world/geometry. Six callback operations returned. Saved
+captures retain hooks-restored summaries but omit the observer's own cleanup
+predicates/original/final monitor tuples. Exact actual04 predicate stays unknown;
+no whole-run retry or retrospective attribution. Root separately owns the
+bounded cleanup diagnostic extension; no Root/consumer path edited here.
+
+Genuine pinned import/helper on accepted0301, with actual four private observer
+bodies nested in runner->phase->runtime->molecule order, reproduces cleanup
+refusal. Inner molecule monitor_restored=False, hooks intact, cleanup/errors
+empty: original outer-runtime mask4101 becomes4117 after legitimate CALL
+activation. Other observers restore. Failed before-01 is retained separately;
+its measured predicate is not asserted to be actual04's missing predicate.
+
+Only production definitions changed from0301: _counter_register removes late
+mask expansion; observing_native_imports uses one complete stable mask from
+entry through teardown. Exact unique owned tool identity, active/global/local
+event state and callback identity/prior restoration are checked; foreign tools
+are left intact and refuse. Cleanup/getter/setter/final samples are independently
+protected, original primary/cause retained, and post-teardown binding verification
+precedes publication. Monitoring originals/finals/losses are retained explicitly.
+All other helper/header/counter/source laws, caps and public API unchanged.
+
+Final105 current-byte passes=19new lifecycle+86affected, across two disjoint
+saved selections. Genuine nested/all-counter/no-effect, exact three original
+guard bodies with conditional registries, source failure, own/foreign masks,
+callbacks/local events, inherited hooks, getter/setter/restore/free faults and
+late teardown binding mutation covered. Conditional guard records are not
+genuine native owner authority; actual original metadata execution is counted.
+The earlier52passes/1failure/3unrun image retains an ineffective fault injection:
+its namespace proxy did not replace the locally retained monitor. Corrected
+isolated one-shot actual monitor API injection, with explicit call witness;
+production unchanged. Its37 library checks stay at their own frozen producer,
+no final142/full-suite recredit. Initial local I001/stale patch refusal retained
+in session; final Ruff/format/diff checks pass.
+
+All9 guarded outcomes reviewed,7complete/2failed, plus101nested children
+(37synthetic-library,64genuine original metadata).159empty PARENT guards;
+1573809profiled library entries,6645native metadata entry events,1explicit
+profiler callback helper call; these are work observations, not biological
+cases. Runtime/source/Git manifests verified;2878unique origin files. CPU5one
+thread1GiB480s/8GiBreserve unchanged; new19checks273.61s, affected86225.93s.
+CPU3metadata512MiB reader4.53s/42819584B. No physical/model/RNG/geometry solve,
+native owner issuance, staging/commit, shared status edit or old-job query.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-nested-cleanup-development-20261106-01/source-result.json
+SHA8d9bbd0235ee75ed6f01c44925393cdbcd7c950bf4c93a92d0091dda348ff6f0.
+Sourcea5e9e425eacaf189f820d6f05b5ffd463b6c5d6c3a6fbbfe5000b513e74fc9e7;
+test52e058f27ae14aa5ce6764167bb75cac1a2c5d99b711fef2c97d2f0543594c07;
+runner954cf699e193eccebb620e003f419a12cc13401ced313a57ab97fc7893c421b9.
+Current3bytes fixed for Root consolidated review and one later source
+projection/release. All actual04/older packets untouched. CPU5/3free, no active
+or detached Key worker; no adjacent feature opened.
+
+### Cleanup bookkeeping and final-hook boundary repairs sealed
+
+Root105 review a49ffce4 held two concrete source findings: cleanup metadata
+id(code)/codes.values hook rejection could mask a retained ordinary/falsey
+primary and skip teardown; post-cleanup binding callbacks could drop hooks
+before issuance with stale restoration flags. Preserved the105 image and all
+actual04 evidence; its unsaved precise predicate stays unattributed.
+
+Installed genuine inherited profiler at the actual id(code) C-call reproduces
+lost ordinary primary/cause on a5e9. before-01 failed its identity assertion;
+partial active/leaked-tool state and explicit fixture recovery retained. This
+is not an API stub or fake cleanup success. New installed boundaries cover id,
+values, ordinary/falsey source primaries, last binding return profile/trace
+mutation and last WeakKeyDictionary insertion return mutation.
+
+Production delta is only observing_native_imports. Protect cleanup code
+collection/scanning/capture, callback iteration, active-stack recovery and final
+summary; later callback/tool/hook cleanup stays independent. Recheck hooks after
+all binding and registry work, refuse sticky late losses, recover independently
+and remove this context's staged issuances. No guard weakening or new owner,
+counter/source law, cap, scientific tolerance or public API change. Counter,
+module-publication and helper bodies outside this function stay exact.
+
+Final88 current-byte passes=7new+81affected in two disjoint selections:46 and42,
+210.45s/284.72s. Selector publication_ also included two existing hook-recovery
+cases and37library controls; counts reflect executed IDs, not intended selector
+labels. Ordinary/falsey primary/cause identity retained after secondary faults;
+all seven boundary witnesses reached once. All four registries inactive/empty
+after refusal, late-hook cases retain zero issued entries. Prior105 not rerun
+or recredited as a full149. All7 guarded outcomes reviewed,6complete/1failed;
+64nested children (37synthetic library,27original metadata),89empty parent
+guards,694335profiled library events/2780native metadata entries; no model,
+geometry/RNG solve, owner issuance or whole-run retry. Conditional guard
+registries remain software data. CPU5one-thread1GiB480s/8GiBreserve unchanged;
+CPU3metadata512MiB reader2.77s/42938368B;2573unique runtime origins verified.
+Local failed stale patch/B007 formatting checks corrected before final launch;
+Ruff/format/diff checks pass. No Root/shared/consumer edits or staging/commit.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-cleanup-boundaries-development-20261106-01/source-result.json
+SHAe18862b005a4c881176c53780a6702e8306f3f796e8e23ec00e528813670ac4e.
+Sourcefa6534360c2ef74c2ff2c8147fbece4692e80bd636ecb098ca2e2b1cc53cc766;
+test3ededb23484c1cae46b72a79c838825b18fab358b9040e0baee82d8459a2e320;
+runner48b5c6f3cb8b0464c90d531070ff374c0ae65839899012983373fb605856c10f.
+Current3bytes fixed for Root consolidated review/one combined projection with
+its63 diagnostic controls. CPU5/3free; no active/detached Key worker and no
+actual/reference release or adjacent task started.
+
+### Final publication monitoring epoch residual sealed
+
+Root88 review ff132ee2 closes bookkeeping/final-hook fixes but retains one
+monitoring epoch gap: last binding return may change an enclosing mask while
+hooks remain intact, after the old monitoring sample. Preserved88/source/evidence.
+Actual installed profiler on fa65 reproduces outer4117->4101 at this exact
+boundary, hooks unchanged; inner publishes before outer cleanup refuses. New
+before-01 fails its no-publication assertion, with actual snapshots/work retained.
+
+Only observing_native_imports changes in production. Capture all six tool names/
+masks after binding and registry work, compare exact original ownership/masks,
+then sample hooks. Preserve cleanup_monitor_final as the earlier observation;
+publication_monitor_final and monitor_final retain the distinct later epoch.
+Any monitoring mismatch/read failure is sticky, invalidates the record and
+removes staged issuances through existing protected recovery. Never silently
+restore or accept another active observer's changed state. Existing primary/
+cause recovery and source/counter laws/caps/public APIs unchanged.
+
+Final12passes=1new+11directly affected genuine nested/helper/publication/ordinary/
+falsey controls,138deselected,186.26s. No old full149/150 audit or recredit.
+All5 guarded outcomes reviewed,4complete/1failed;13nested original metadata
+processes and13empty PARENT guards.309042profiled library entry observations,
+1338native metadata events, zero independent biological/owner/model/geometry/
+RNG/solver/full-run credit.2232runtime origin files verified. CPU5one thread,
+1GiB480s/8GiBreserve unchanged; CPU3metadata512MiB reader1.52s/39903232B.
+Final Ruff/format/diff checks pass; stale patch refusal corrected before launch.
+No Root/shared/consumer edits, staging/commit or actual retry.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-publication-monitor-development-20261106-01/source-result.json
+SHA35048b668856c223c4e547a21ab1d54c2922b01ca0e5c95bce6f7c5e5be409f1.
+Sourcedc08e35ba0388cc58e05755433e5d4c5d8caf874ef6197e7e6781c4bc43b1b58;
+testa02480d8b013d29b3d7889ff26d3cf0e77a880fea2cf451797b73eec93ad3362;
+runner262b095fca032e888710d7781b37653a8ad1e52374e55aba24dd668fdc27b28b.
+Current3bytes fixed for Root consolidated review/projected release. Actual04
+unknown predicate remains separate; all failed/historical packets frozen.
+CPU5/3free, no active/detached Key worker; no adjacent feature opened.
+
+### Native contextmanager export repair: held delivery, 2026-11-07
+
+Actual05's direct export target was not saved and is not reconstructed from its
+old evidence. A fresh bounded metadata control on the accepted dc08 producer
+reproduced the same direct export refusal for original noop_context: Beartype
+checks the native generator and reconstructs the exported contextlib helper.
+The source now observes both actual contextmanager factory returns, the pinned
+Beartype reconstruction, exact closure/delegate/source/cached-builtins and final
+export. Original pre-factory metadata stays retained. The genuine auxiliary
+sequence additionally exposed Beartype's factory-owned GenericAlias replacement
+in the shared return annotation; only that actual existing generator-factory
+return snapshot transports the alias. No unobserved metadata refresh, copied
+export/helper, late copied annotation, generator invocation or law/tolerance
+change is admitted. Existing publication monitoring/cleanup AST is unchanged
+apart from two context record lists; counter/declaration bodies remain exact.
+
+Final production 3fbf3cfdf02ebeaac6cdc66693743d2a945f04b3a18a6a6d0bd069a986f6124b;
+test 72a98fbc1dc52f5b461683420ae77fc18fe5596145e60a3da9e9758d35b481e2;
+runner 0ab6cf71d3bdbf3ce9f9a288ff8ee6e366a9db6926a8196819bd3ce0dcc478a9.
+23 focused passes (14 new, 9 directly affected) are distinct from intermediate
+passes/failures. Production and test bytes are exact in controls07. The later
+runner-only edits affect its unselected genuine-bootstrap helper/review
+constant; the reader verifies the unchanged other function ASTs. No final
+complete-bootstrap positive is claimed. The receipt's inherited phrase
+"both current selections" is not two passing bootstrap selections: only
+controls07 is marked final in its complete batch table; controls06 also tested
+the same production bytes, while bootstrap06/07 remain failed diagnostics.
+
+Real six APIs ran in original order with exact original05 auxiliary inputs.
+Bootstrap06 returned all six and three auxiliary owners; molecule/phase/runtime
+scopes published, but prep/runner refused its genuinely empty roster. The
+not-rows guard is unchanged. Root owns the necessary explicit simrunner caller
+import. Bootstrap07 tried that declared import, then the software guard refused
+its import-time immutable requirement constructor. All prior probes remain:
+/dev/null and tempfile guard refusals, a profiler-envelope refusal, a callback
+factory whitelist refusal, the captured GenericAlias mismatch, and exact
+negative-test expectation failures. None receives positive continuity/science
+credit. Generic Python profiling observations have their explicit software-only
+envelope; native factory/owner caps and resource limits are unchanged.
+
+The first automatic rejection concerned native logging through the unchanged
+/home/robert/.betse link. Root confirmed exact existing link provenance and
+original reviewed process-lifetime writer lease; the corrected metadata runner
+reuses canonical WritePolicy/ProcessLogLease and fresh TMP/MPL output roots.
+The original current-route and rejected commands stay retained. Two subsequent
+review rejections concern import-time requirement/pipeline declaration builders,
+even after Root's exact four-file source clarification ebe13276. The ONE
+clarified resubmission was rejected before launch because Chief evidence was
+not accepted as direct trusted user authorization. No bootstrap08 process or
+output exists and no alternative route was used. Direct user permission was
+requested; further execution stays held. Root asked to avoid duplicate questions.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-context-export-development-20261106-01/source-result.json
+SHA67c359a6dd354a94886b3e3ca9f02922b890f0e9939f86b1b73a09b6be665d48.
+Saved reader checks every 31 guarded outcome (21 completed,10 failed),94 nested
+metadata/library processes,113 empty PARENT guards,7446 runtime origin files;
+3912579 library-entry and17210 native-metadata observations are non-additive
+work, not biological cases. CPU5 one-thread1GiB480s/8GiBreserve and CPU3 metadata
+512MiB remain unchanged; reader6.032s/52195328B. Ruff/format/diff checks pass.
+All historical snapshots/failed evidence remain immutable. No shared source,
+Root/Specialist paths, staging/commit, old-job query, actual run retry or
+scientific admission. CPU5/CPU3 free; three delivered producer files fixed.
+
+### Reviewed dispatch-edge finding repaired, 2026-11-07
+
+Root independently found WRAPPER-CONTEXT-DISPATCH-ALIAS on 3fbf: authenticating
+functools.wraps did not authenticate the separate contextlib.wraps global edge.
+Changed only _context_backend and _context_bindings in production: require the
+actual alias before any backend snapshot and recheck it against the retained
+authenticated function on use. No factory invocation, broad refresh, default/
+law/tolerance/roster/resource or publication/cleanup change. New no-call tests
+cover delegating and equal-code copied prebindings before snapshots, a valid
+stdlib baseline then live-use drift, and an installed genuine metadata-lifecycle
+refusal with zero foreign wraps calls. Existing23 directly affected controls
+remain separate from the parent's23 source/evidence scope.
+
+Final27passes=4new+23affected,142deselected,264.73s. An initial test assertion was
+mistakenly attached to the library-probe payload rather than the counter payload;
+its KeyError batch (6pass/1fail) is frozen, corrected in checkout, never upgraded.
+All5 guarded outcomes (4completed,1failed),21nested library/metadata children and
+34empty parent guards reviewed;435152library/1864native-metadata observations,
+2236runtime origin files. Reader1.766s/43003904B, CPU3metadata512MiB. CPU5one
+thread1GiB480s/8GiBreserve unchanged. No genuine bootstrap/declaration, owner,
+model, numerical or scientific run occurred in this repair. Both automatic
+rejections and direct-user permission hold from the parent stay unchanged.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-context-dispatch-alias-repair-20261107-01/source-result.json
+SHA4784416ac5e9d48de9512cd2a889f1f9a7a25f4f37f5a0e362aa8b4d7fb9db83.
+Source471b25a0d85acbae0927bbbfaf5876061e6081f1abcb25e26c094ba6a4c220ab;
+test0105812e07861f0d1ce018b2235b0a8bb6be47628cc71e738654aec155bc12f9;
+runner637b4093c9c1ddeafcd2770f1c41638bf5119c36b70d9b4c9f691a873cd1be80.
+Three delivered files fixed for Root source/results review. Parent67c359 stays
+immutable. Ruff/format/diff checks pass; no other lane/source/status edits,
+staging/commit or old-job query. CPU5/CPU3free; direct authorization for the
+separate native metadata declaration probe is still pending. No further approval
+question or automatic retry issued after Root's coordination request.
+
+### CALL-selected factory identity successor, 2026-11-07
+
+Root consolidated source review7f5791e3 identified WRAPPER-CONTEXT-CALLEE-IDENTITY:
+frame code/globals/final caller locals cannot establish the callable selected
+before an inherited CALL observer restores a replaced factory local. Preserved
+478/67c and all earlier outcomes. New source retains actual CALL callee,arg0,
+caller,offset before fallible target checks; requires canonical selected factory,
+unique CALL-to-entry association and exact original/reconstructed entry/return
+and retained registry edges. Unknown/missing/copied/pending witnesses refuse;
+closed validation rechecks the witnessed callee,delegate,caller and return.
+Existing alias checks/counter/declaration/wrapper binding bodies stay unchanged.
+No factory/delegate is invoked by the production observer.
+
+Actual stdlib CALL/PY_START software controls cover legal original and rebuilt
+factory edges, selected same-code copies plus inherited CALL self-restoration
+of the real caller lookup/local, and closed arg0/caller/callee/record-edge drift.
+A selected copy is retained as a raw operand, refuses before the stdlib factory
+body, and never becomes an admitted entry. These are explicitly conditional
+software targets and issue no native authority. No Beartype/BETSE/source probe,
+real owner/model/constructor/phase/RNG/solver or declaration-route run occurred.
+Direct-user authorization for the separate native metadata probe stays pending.
+
+Final70 native-blocked passes=8new+62affected,107deselected. The first70-pass
+snapshot remains separate; final source additionally retains raw operands before
+fallible inspection. All5 guarded outcomes completed/reviewed,140empty parent
+guards,zero nested source/library children,1734runtime origin files verified.
+Reader1.013s/24571904B on CPU3metadata512MiB; CPU5one-thread1GiB480s/8GiBreserve
+unchanged. Ruff/format/diff checks pass. No other-lane edits or staging/commit.
+
+Sealed /mnt/workspaces/Cells/native-wrapper-context-callee-identity-repair-20261107-01/source-result.json
+SHA506f49162598638eff2f01fdefafbc4eb55fe03f5095fc1ffc2c6176ecbf000f.
+Source976ffccd878721ba88b7d6d92bb3eb7518bf42c07c0868cb404fa6b28d9074bf;
+test09d33a1c6cd201db2d167f42b110c508cfacd95dcedcd2e78b4f7791889528f5;
+runner637b4093c9c1ddeafcd2770f1c41638bf5119c36b70d9b4c9f691a873cd1be80.
+Exact three files fixed for Root combined source/results review. Science and
+pending native declaration probe remain held; CPUs5/3free. No further approval
+question, source probe or automatic retry issued.
+
+### Consolidated declaration roster, source only, 2026-11-07
+
+Root requested one runner-only literal extension using Specialist's static
+SOURCE_ROSTER.json SHA5065852521feba74242df7ea3c3e2d6aeef634ace5713489a1c57afe9496450c.
+Added exactly nine declaration names across six pinned source files: pipeline
+metaclass, method enumeration and the specified constant label getters. The
+original nineteen entries remain exact. No wildcard or general getter rule was
+added. Static checks verify every ten-file source pin, the exact roster union,
+and identical bytes/executable AST outside BOOTSTRAP_DECLARATIONS. Ruff,
+format and scoped diff checks pass. Wrapper976ffccd and test09d33a1c remain
+unchanged; their accepted seventy controls were not rerun or rebound.
+
+Runner now73c00c1429f9d224d4683a955e3d5916c669ae32959b2ffaf591c4c064270f7b.
+Sealed /mnt/workspaces/Cells/native-wrapper-simrunner-declaration-roster-preparation-20261107-01/source-result.json
+SHA60f2ded46c4bb75285ef14c7830f847b9942869ba6c528a3f3b687e4e3f3a83e.
+Exact before/after bytes and literal patch retained. CPU3 metadata512MiB,
+480s/8GiBreserve; no software test, genuine import, source/model or numerical
+execution. Current scope receipt ebe13276 still describes the original four
+files; its exact-equality gate is unchanged and refuses the expanded roster.
+Root must adopt the consolidated scope, and direct user authorization remains
+pending before any genuine probe. No automatic retry or duplicate permission
+question. Root/Specialist source and all historical evidence untouched; no
+staging/commit. Specialist confirmed the prior Voronoi write-window notice was
+historical; no competing source edit or active Key snapshot remains.
+
+Root accepted the literal roster at source-only scope and supplied reviewed
+root-declaration-scope-review.json SHAacc5a57ef9c78f431a188c9268720fee8aff3b74ae831dec71106f24510eade3.
+Adopted ONLY BOOTSTRAP_DECLARATION_REVIEW's path/hash tuple. Byte/AST comparison
+against frozen73c verifies no other change; production976/test09d stay exact.
+Final runner9d5882102f5c1df35cf3a9e7c88d385475eb1fa6cf193f86895e59106f56db2c;
+scope-adoption.json and runner-scope-adopted.py preserved beside the prior
+source-result. Ruff/format/diff checks pass. No test/probe or seventy-control
+rerun/recredit. The reviewed receipt now matches the ten-file roster, but
+explicitly retains the pending direct-user authorization and false actual
+execution fields. Holding stable; no launch, resubmission or permission ping.

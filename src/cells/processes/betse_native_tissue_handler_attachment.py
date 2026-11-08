@@ -25,9 +25,9 @@ from cells.processes import betse_native_tissue_configuration as literal
 
 LAW_ID = "betse_actual_same_parameter_selected_tissue_handler@1"
 RELEASE = "CELLS_NATIVE_TISSUE_HANDLER_ATTACHMENT_RELEASED"
-PARENT_SHA256 = "3e49f8ebfd3cad35df7d642643fee8ebfd72115c34354c761194f7176102e7fb"
+PARENT_SHA256 = 'e5256b5855bf7a3d7a616ba959999e371168f9943abc2ad6d818296241665c00'
 SEALED_PARENT_SHA256 = "397c453df7fb4fc397cbd23c7e785c1c4fe7e5a5c46b02f156819958610be0ee"
-CLAIMS_SHA256 = "af3f3459745edb32719966833ff75959e60dfd733cb0a9c3882c08e9aed6be00"
+CLAIMS_SHA256 = '9d2c1957976ed71834a0181bf4c08912baa0d69ca91c3578025ac11d68add15a'
 LITERAL_SHA256 = "e9f8c93b7bfe856532f68f7406c07e5666b2ebb60d8e71c19a69bb765d4bb99e"
 METHODS = literal.METHODS
 _NATIVE = dict(literal._NATIVE)
@@ -563,13 +563,18 @@ def _invoke(context, name, actual, p):
 def _account(context):
     previous_profile, previous_trace = sys.getprofile(), sys.gettrace()
     selected = {fn.__code__ for fn in (*_NATIVE.values(), _acquire, _namespace)}
+    selected_names = frozenset(code.co_name for code in selected)
     root = str(aliases.NATIVE) + "/"
 
     def profile(frame, event, arg):
         reached = False
         if event in ("call", "return"):
             code = frame.f_code
-            reached = code in selected or code.co_filename.startswith(root)
+            # Equal CodeTypes have equal names. Keep full equality for those
+            # names and retain the independent native-descendant path check.
+            reached = (
+                code.co_name in selected_names and code in selected
+            ) or code.co_filename.startswith(root)
         if reached and event == "call":
             if len(context.work) >= 100000:
                 raise ValueError("Bounded handler work log exhausted")

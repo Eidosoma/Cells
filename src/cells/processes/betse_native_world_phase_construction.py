@@ -29,7 +29,7 @@ KEY_MODULE = "cells.processes.betse_native_parameter_world_construction"
 PARAMETER_MODULE = "cells.processes.betse_native_parameter_load_remainder"
 KEY_SOURCE_SHA256 = "bda0ab87e293af18eb30ff38a0cb356162bc74269fbeb0cd1d41aa8d52176b73"
 KEY_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
-PARAMETER_SOURCE_SHA256 = "7874abf3991aeef188ab7d5a6f2538a88248bc686eb2f94845e18a735255a035"
+PARAMETER_SOURCE_SHA256 = '31a44e9863c44801f887afad41981868a46e6f01d4d505a44302a7532e78404e'
 PARAMETER_REVIEW_SHA256 = "5704b98fe0aeba378cc744eab869b38e9ad96dec53978871b869ec66bf0c5c11"
 # Stable public preparation interface; no producer/review adoption is implied.
 KEY_LAW = "betse_fresh_world_ready_pre_phase_seed_construction@1"
@@ -42,10 +42,10 @@ STAGE_MODULES = (
     "cells.processes.betse_native_phase_tail",
 )
 STAGE_SOURCE_SHA256 = (
-    "745a05ed73e075e523256489b0102dfe2c9bc173fa1d6dc5065e226a40c6473a",
+    'f4204980bc687cd2a2a92b6110006ac0c7cf80d665467cf735b2635bff8c7f9e',
     "c7fb2664ad744dbae609551296f2f6b96908ec311c9b4c33d92e04bc552f82e5",
-    "b4920dd0ce122f1ea5d009600388a5cef9321278d6cb9798382836a5d69b8d3a",
-    "0114dfbc190490b6c1400d61981fba4e4a6d9f760dda2df303b87276038df5c6",
+    'e3314bfac65780b48a5b4ebf7e5825448d32b2f36c6fafb93fc9550f6e0e1e61',
+    '8e2ad5cbd5546d6af4b40d4efbae057670c4cdb13e5d04029be3f7ab76580756',
 )
 STAGE_REVIEW_SHA256 = (
     "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d",
@@ -59,7 +59,7 @@ SEAL_HOOK = "_world_phase_seal"
 CHECK_SEAL_HOOK = "_world_phase_check_seal"
 HELPER_MODULE = "cells.processes.betse_native_seed_world_prefix"
 # Reviewed source binding; execution still requires its explicit release.
-HELPER_INTERFACE_SHA256 = "95907a594bf65f87a3bdf9aa8417aa1c8b272c1d513382653ab23f41ad376452"
+HELPER_INTERFACE_SHA256 = 'b3e068bb63b879d5c9e1e8f0f97480ae2e91e0add2adfb870999dab0f9a2ba73'
 HELPER_CONSTRUCTION_REVIEW_SHA256 = (
     "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 )
@@ -96,13 +96,13 @@ SEED_INIT_CORE_BACK_REFERENCE_SLOTS = (
     "COORDINATOR_REVIEW_SHA256",
 )
 SEED_PROFILES_MODULE = "cells.processes.betse_native_seed_init_profiles"
-SEED_PROFILES_INTERFACE_SHA256 = "9e74dc98105b056d325da3c6ba87331977a4894aaafe03187cffc4b6a16c48c6"
+SEED_PROFILES_INTERFACE_SHA256 = '497f9ac2eadae721ba836f86aef4de7eac1db964ea19986ffb51cc7d1c34b1fe'
 SEED_PROFILES_REVIEW_SHA256 = "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 SEED_PROFILES_COORDINATOR_REVIEW_SHA256 = (
     "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
 )
 SEED_JUNCTIONS_MODULE = "cells.processes.betse_native_seed_junctions"
-SEED_JUNCTIONS_INTERFACE_SHA256 = "bae9cddf7d0967ac2ee105c3c00c325b1e2d9034f8bf3cb61176affd29897093"
+SEED_JUNCTIONS_INTERFACE_SHA256 = '3f4ed19a65b0429ef78980cef47dbb694c9575d5917576010974752b159aba35'
 SEED_JUNCTIONS_REVIEW_SHA256 = "a9f6d6fa62d2eb5e46cf903546f754b2c8eb204b216343f8cb7bf4752ac85bba"
 SEED_JUNCTIONS_COORDINATOR_REVIEW_SHA256 = (
     "b3d3aa390a6238d8eb0236dac6ee29af6f3877fd4d4e80df19d48ba62acc882d"
@@ -1518,7 +1518,9 @@ def _bindings(context):
         _world_cells_omissions,
         _world_live_aliases,
         _world_stage_runtime,
+        _world_stage_runtime_pass,
         _world_stage_authority,
+        _world_stage_links,
         _world_stage_guard,
         _world_stage_finish,
         _world_stage_check,
@@ -2334,12 +2336,25 @@ def _world_objects(transition, index):
 
 def _world_projector(context):
     transition = context.world_transition
-    objects = _world_objects(transition, context.world_index)
+    # Authenticate the original root roster, then retain each stage's weak
+    # references beside its objects. Appending a later handler/picker must not
+    # renumber existing cache-proxy tokens and fabricate inherited-state drift.
+    _world_objects(transition, context.world_index)
+    candidates = list(transition.world_roots)
     for module in transition.api.stages[: context.world_index + 1]:
         owner = module._WORLD.get(transition.request)
+        if owner is not None:
+            candidates.extend(owner.objects)
         for _, proxy in getattr(owner, "proxy_returns", ()):
-            context.world_proxy_roots.setdefault(id(proxy), ("weak_phase_proxy", proxy))
-    return SimpleNamespace(objects=[*objects, *context.world_proxy_roots.values()])
+            candidates.append(
+                context.world_proxy_roots.setdefault(id(proxy), ("weak_phase_proxy", proxy))
+            )
+    objects, seen = [], set()
+    for pair in candidates:
+        if id(pair[1]) not in seen:
+            seen.add(id(pair[1]))
+            objects.append(pair)
+    return SimpleNamespace(objects=objects)
 
 
 def _world_state(context, *, baseline=False):
@@ -2474,6 +2489,16 @@ def _world_live_aliases(transition):
 
 def _world_stage_authority(context):
     """Original issuance/code/weak links without a retired numerical-state check."""
+    transition = context.world_transition
+    _world_parameter_authority(transition)
+    _world_stage_links(context, transition)
+    _world_parameter_authority(transition)
+
+
+def _world_stage_links(context, transition):
+    """Check each live stage; shared parameter history brackets the whole pass."""
+    if context.world_transition is not transition:
+        _world_reject(transition, "Foreign transition in fresh-world ancestry", context)
     transition, module, index = context.world_transition, context.world_module, context.world_index
     if (
         context.world_mode != MODE
@@ -2503,7 +2528,6 @@ def _world_stage_authority(context):
         )
     ):
         _world_reject(transition, "Fresh-world stage/claim ancestry changed", context)
-    _world_parameter_authority(transition)
     _world_live_aliases(transition)
     for filename, expected in context.world_source_files.items():
         path = Path(filename)
@@ -2512,7 +2536,7 @@ def _world_stage_authority(context):
     literal = transition.api.helpers.literal
     literal._same(module._bindings(), context.bindings)
     if context.parent is not None:
-        _world_stage_authority(context.parent)
+        _world_stage_links(context.parent, transition)
     if hasattr(context, "native_bindings"):
         literal._same(module._native_bindings(context), context.native_bindings)
     for attribute, function in (
@@ -2559,10 +2583,22 @@ def _world_stage_authority(context):
 
 
 def _world_stage_runtime(context):
-    """Default constructor epoch still checks its complete original state."""
-    _world_stage_authority(context)
+    """Fresh shared history on both sides of all live ancestry/state checks.
+
+    No result survives this synchronous call. Parent links are still rechecked
+    after child binding callbacks; a callback's parameter mutation is rejected
+    by the closing public validation before source execution can resume.
+    """
+    transition = context.world_transition
+    _world_parameter_authority(transition)
+    _world_stage_runtime_pass(context, transition)
+    _world_parameter_authority(transition)
+
+
+def _world_stage_runtime_pass(context, transition):
+    _world_stage_links(context, transition)
     if context.parent is not None:
-        _world_stage_runtime(context.parent)
+        _world_stage_runtime_pass(context.parent, transition)
     current, graph = _world_state(context, baseline=True)
     literal = context.world_transition.api.helpers.literal
     literal._same(graph[0], context.world_before_graph[0])

@@ -94,6 +94,62 @@ def test_operations_reverse_all_declared_bytes_including_utf8_offsets():
     assert reverse == sources
 
 
+def test_rebinding_uses_current_split_source_and_is_idempotent():
+    plan, original, reviews = example()
+    first, _ = adoption.project(plan, original, reviews)
+    current = dict(first, **{"leaf.py": original["leaf.py"].replace(b"5", b"6")})
+    next_reviews = {"R_B": "b" * 64}
+    rebound, proof = adoption.project(plan, current, next_reviews)
+    from_original, _ = adoption.project(
+        plan, dict(original, **{"leaf.py": current["leaf.py"]}), next_reviews
+    )
+    assert rebound == from_original
+    assert proof["all_operations_reversible"]
+    assert not any(row["label"].startswith("split:") for row in proof["literal_operations"])
+    unchanged, same = adoption.project(plan, rebound, next_reviews)
+    assert unchanged == rebound and same["literal_operations"] == []
+    assert same["full_hashes"] == proof["full_hashes"]
+    assert same["normalized_interfaces"] == proof["normalized_interfaces"]
+
+
+def test_rebinding_preserves_split_review_document_literals():
+    plan, sources, reviews = example()
+    plan["required_assignments"]["A"]["slots"]["REVIEW"] = "D(R_B)"
+    documents = {"R_B": {"path": "/unopened/review.json", "sha256": reviews["R_B"]}}
+    first, _ = adoption.project(plan, sources, reviews, review_documents=documents)
+    second, proof = adoption.project(plan, first, reviews, review_documents=documents)
+    assert first == second and proof["literal_operations"] == []
+    assert value(second["caller.py"], "REVIEW") == documents["R_B"]
+
+
+@pytest.mark.parametrize(
+    "declarations",
+    [
+        b"HELPER = None\n",
+        b"HELPER = None\nREVIEW = None\nHELPER = None\n",
+        b"REVIEW = None\nHELPER = None\n",
+        b"HELPER = None\nforeign = 1\nREVIEW = None\n",
+        b"HELPER: str = None\nREVIEW = None\n",
+        b"HELPER += 1\nREVIEW = None\n",
+        b"HELPER = alias = None\nREVIEW = None\n",
+        b"HELPER = forbidden()\nREVIEW = None\n",
+        b"HELPER = None\nREVIEW = {'path': forbidden()}\n",
+        b"HELPER = None\nREVIEW = None\ndef hidden():\n    HELPER = None\n",
+    ],
+)
+def test_rebinding_refuses_ambiguous_or_computed_existing_splits(declarations):
+    plan, sources, reviews = example()
+    sources["caller.py"] = sources["caller.py"].replace(b"HELPER = REVIEW = None\n", declarations)
+    with pytest.raises(ValueError):
+        adoption.project(plan, sources, reviews)
+
+
+@pytest.mark.parametrize("slots", [[], ["HELPER"], ["HELPER", "HELPER"], ["HELPER", 3]])
+def test_rebinding_refuses_invalid_declaration_rosters(slots):
+    with pytest.raises(ValueError, match="roster"):
+        adoption.declaration_split(b"HELPER = REVIEW = None\n", slots)
+
+
 @pytest.mark.parametrize("literal", ["None", repr("1" * 64), '"' + "f" * 64 + '"'])
 def test_template_excludes_only_pin_literal(literal):
     raw = ("PIN = " + literal + "  # retained\ndef body():\n    return 1\n").encode()
@@ -418,7 +474,7 @@ def test_sim_adoption_current_checkout_projection_has_complete_runtime_closure(
     assert not report["source_files_written"] and not report["actual_execution_released"]
     assert not report["reviews_authenticated_by_projection"]
     assert report["review_documents"] == documents
-    assert len(plan["recipes"]) == 13
+    assert len(plan["recipes"]) == 16
     assert set(report["normalized_interfaces"]) == set(plan["recipes"])
     # Native callback factory pins are unchanged literal input, not a new
     # dict(keyword) materialization or a silently expanded source recipe.
@@ -583,6 +639,194 @@ def test_sim_adoption_changed_parameter_leaf_propagates_through_both_runtime_con
         path = plan["module_aliases"][alias]
         assert adoption.digest(before[path]) != adoption.digest(after[path])
     assert report["all_operations_reversible"]
+
+
+@pytest.mark.parametrize("literal", ["(None, None)", "[None, None]"])
+def test_project_typed_sequence_members_preserve_other_slots_and_source_bodies(literal):
+    plan = {
+        "module_aliases": {"leaf": "leaf.py", "caller": "caller.py"},
+        "recipes": {},
+        "required_assignments": {"caller": {"slots": {"STAGES[1]": "H(leaf)"}}},
+        "topological_order": ["leaf", "caller"],
+    }
+    sources = {
+        "leaf.py": b"raise AssertionError('source execution forbidden')\n",
+        "caller.py": ("STAGES = " + literal + "\n").encode(),
+    }
+    candidate, proof = adoption.project(plan, sources, {})
+    result = value(candidate["caller.py"], "STAGES")
+    assert result[0] is None and result[1] == adoption.digest(sources["leaf.py"])
+    assert type(result) is type(ast.literal_eval(literal))
+    assert proof["all_operations_reversible"]
+    assert not proof["source_files_written"] and not proof["actual_execution_released"]
+
+
+def test_project_existing_keyword_pin_map_changes_only_selected_literal():
+    plan, sources, reviews = example()
+    sources["caller.py"] = sources["caller.py"].replace(
+        b"dict.fromkeys(MODULES)", b"dict(leaf=None, helper=None)"
+    )
+    candidate, proof = adoption.project(plan, sources, reviews)
+    assert ast.literal_eval(adoption.node_at(candidate["caller.py"], ("PINS", "leaf"))) == (
+        adoption.digest(sources["leaf.py"])
+    )
+    assert b"dict(leaf=" in candidate["caller.py"]
+    assert not proof["map_materializations"]
+    assert proof["all_operations_reversible"]
+
+
+@pytest.mark.parametrize("declaration", [b"dict(leaf=make_pin(), helper=None)", b"dict(**foreign)"])
+def test_project_keyword_pin_map_never_evaluates_expressions_or_expansions(declaration):
+    plan, sources, reviews = example()
+    sources["caller.py"] = sources["caller.py"].replace(b"dict.fromkeys(MODULES)", declaration)
+    with pytest.raises(ValueError, match="dict.fromkeys"):
+        adoption.project(plan, sources, reviews)
+
+
+@pytest.mark.parametrize("selector", ["STAGES[-1]", "STAGES[01]", "STAGES[2]"])
+def test_project_sequence_selector_refuses_noncanonical_or_missing_member(selector):
+    plan = {
+        "module_aliases": {"caller": "caller.py"},
+        "recipes": {},
+        "required_assignments": {"caller": {"slots": {selector: "R_B"}}},
+        "topological_order": ["caller"],
+    }
+    with pytest.raises(ValueError):
+        adoption.project(plan, {"caller.py": b"STAGES = (None, None)\n"}, {"R_B": "a" * 64})
+
+
+@pytest.mark.parametrize("drift", ["missing_leaf", "extra", "duplicate_declaration"])
+def test_project_declared_leaf_reviews_remain_required_without_a_source_slot(drift):
+    plan, sources, reviews = example()
+    plan["required_review_tokens"] = ["R_B", "R_leaf"]
+    reviews["R_leaf"] = "b" * 64
+    if drift == "missing_leaf":
+        del reviews["R_leaf"]
+    elif drift == "extra":
+        reviews["R_extra"] = "c" * 64
+    else:
+        plan["required_review_tokens"].append("R_leaf")
+    with pytest.raises(ValueError, match="exact declared review roster"):
+        adoption.project(plan, sources, reviews)
+
+
+def _parameter_seed_closure(plan, candidate):
+    paths = plan["module_aliases"]
+    expected = (
+        ("parameter_yaml_prefix", ("PARAMETERS_SHA256",), "parameter_context"),
+        ("parameter_paths", ("YAML_SHA256",), "parameter_yaml_prefix"),
+        ("parameter_seven", ("PATHS_SHA256",), "parameter_paths"),
+        ("parameter_numeric_prefix", ("PREVIOUS_SHA256",), "parameter_seven"),
+        ("parameter_event_declarations", ("PREVIOUS_SHA256",), "parameter_numeric_prefix"),
+        ("parameter_network_boundary", ("PREVIOUS_SHA256",), "parameter_event_declarations"),
+        ("parameter_network_load", ("PREVIOUS_SHA256",), "parameter_network_boundary"),
+        ("parameter_grn_variables", ("PREVIOUS_SHA256",), "parameter_network_load"),
+        ("parameter_modulators", ("PREVIOUS_SHA256",), "parameter_grn_variables"),
+        ("parameter_colormaps", ("PREVIOUS_SHA256",), "parameter_modulators"),
+        ("parameter_colormap_state", ("PREVIOUS_SHA256",), "parameter_colormaps"),
+        ("parameter_colormap_load", ("STATE_SHA256",), "parameter_colormap_state"),
+        ("parameter_initializer_constants", ("PREVIOUS_SHA256",), "parameter_colormap_load"),
+        ("current_parameters", ("HANDOFF_PRODUCER_SHA256",), "parameter_initializer_constants"),
+        ("W", ("PARAMETER_SOURCE_SHA256",), "current_parameters"),
+        ("W", ("STAGE_SOURCE_SHA256", 0), "phase_assembly"),
+        ("W", ("STAGE_SOURCE_SHA256", 1), "phase_caches"),
+        ("W", ("STAGE_SOURCE_SHA256", 2), "phase_dyna"),
+        ("W", ("STAGE_SOURCE_SHA256", 3), "phase_tail"),
+    )
+    for parent, selector, child in expected:
+        actual = ast.literal_eval(adoption.node_at(candidate[paths[parent]], selector))
+        assert actual == adoption.digest(candidate[paths[child]])
+
+
+def test_parameter_to_seed_and_full_sim_projection_share_one_final_image(sim_projection):
+    plan, sources, reviews, _ = sim_projection
+    candidate, report = _project_sim(sim_projection)
+    _parameter_seed_closure(plan, candidate)
+    _sim_runtime_closure(plan, candidate, reviews)
+    assert plan["required_leaf_reviews"] == {
+        "parameter_context": "R_parameter_context",
+        "parameter_record_digest": "R_record_digest",
+        "bytecode_bindings": "R_bytecode_bindings",
+        "immutable_graph_metadata": "R_immutable_graph_metadata",
+    }
+    for alias in ("parameter_record_digest", "bytecode_bindings", "immutable_graph_metadata"):
+        record_path = plan["module_aliases"][alias]
+        assert candidate[record_path] == sources[record_path]
+        assert report["full_hashes"][alias] == adoption.digest(sources[record_path])
+    assert set(plan["recipes"]) >= {"W_prefix2", "W_core2", "W_profiles4"}
+    assert plan["recipes"]["W_prefix2"]["excluded_slots"] == [
+        "CONSTRUCTION_SOURCE_SHA256",
+        "CONSTRUCTION_REVIEW_SHA256",
+    ]
+    assert plan["recipes"]["W_core2"]["excluded_slots"] == [
+        "COORDINATOR_SOURCE_SHA256",
+        "COORDINATOR_REVIEW_SHA256",
+    ]
+    assert plan["recipes"]["W_profiles4"]["excluded_slots"] == [
+        "PARENT_SOURCE_SHA256",
+        "PARENT_REVIEW_SHA256",
+        "COORDINATOR_SOURCE_SHA256",
+        "COORDINATOR_REVIEW_SHA256",
+    ]
+    # An omitted upstream edge must be visible even though lower INIT/SIM
+    # relationships would still be internally consistent.
+    bad = dict(candidate)
+    path = plan["module_aliases"]["parameter_yaml_prefix"]
+    node = adoption.node_at(bad[path], ("PARAMETERS_SHA256",))
+    start, end = adoption._span(bad[path], node)
+    bad[path] = bad[path][:start] + repr("0" * 64).encode() + bad[path][end:]
+    with pytest.raises(AssertionError):
+        _parameter_seed_closure(plan, bad)
+    assert report["all_other_bytes_and_function_class_import_ASTs_exact"]
+    assert not report["source_files_written"]
+    assert all(type(raw) is bytes for raw in sources.values())
+
+
+def test_rebinding_current_complete_image_keeps_all_final_edges(sim_projection):
+    plan, sources, reviews, documents = sim_projection
+    first, report = _project_sim(sim_projection)
+    second, repeated = adoption.project(
+        plan,
+        first,
+        reviews,
+        preserve=tuple((row["path"], tuple(row["slot"])) for row in plan["preserve"]),
+        review_documents=documents,
+    )
+    assert first == second and repeated["literal_operations"] == []
+    assert report["full_hashes"] == repeated["full_hashes"]
+    assert report["normalized_interfaces"] == repeated["normalized_interfaces"]
+    _parameter_seed_closure(plan, second)
+    _sim_runtime_closure(plan, second, reviews)
+    assert repeated["all_operations_reversible"]
+    assert all(type(raw) is bytes for raw in sources.values())
+
+
+def test_changed_original_parameter_context_propagates_to_full_sim_without_execution(
+    sim_projection,
+):
+    plan, sources, reviews, _ = sim_projection
+    before, _ = _project_sim(sim_projection)
+    paths = plan["module_aliases"]
+    sources[paths["parameter_context"]] += b"\n# never executed source-byte dependency probe\n"
+    after, proof = _project_sim(sim_projection)
+    _parameter_seed_closure(plan, after)
+    _sim_runtime_closure(plan, after, reviews)
+    for alias in (
+        "parameter_context",
+        "parameter_yaml_prefix",
+        "parameter_seven",
+        "current_parameters",
+        "phase_assembly",
+        "phase_dyna",
+        "W",
+        "parameter_qualifier",
+        "callback_prelude",
+        "geometry_qualifier",
+        "demo",
+        "sim_orchestration",
+    ):
+        assert adoption.digest(before[paths[alias]]) != adoption.digest(after[paths[alias]])
+    assert proof["all_operations_reversible"] and not proof["actual_execution_released"]
 
 
 @pytest.mark.parametrize(

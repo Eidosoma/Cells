@@ -27,7 +27,8 @@ from cells.processes import betse_perturbations as native_streams
 
 LAW_ID = "actual_retained_SIM_report_complete_original_FULL_loop_before_pickle@1"
 RELEASE = "CELLS_NATIVE_SIM_RUN_RELEASED"
-PARENT_SHA256 = PARENT_REVIEW_SHA256 = None
+PARENT_SHA256 = '8d361be6b684d28623c59dbcd78f2d8cfdb0df280215ea0a7ca68617156e2075'
+PARENT_REVIEW_SHA256 = 'b7efb6935e042ad8e325c1dc5da35294345af509f2dd2ef24be7dceb057a0056'
 MAX_ITERATIONS, MAX_WORK, MAX_OBJECTS = 512, 100000, 8192
 METADATA_COLLECTION_BYTES = 32 * 2**20
 _LOCK, _ACTIVE, _FAILED = RLock(), [], []

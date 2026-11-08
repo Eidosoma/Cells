@@ -20,7 +20,7 @@ from cells.processes import betse_native_parameter_construction_lease as claims
 from cells.processes import betse_native_parameter_subconfigurations as previous
 
 LAW_ID = "betse_native_parameter_general_time_world_prefix@1"
-PREVIOUS_SHA256 = "3e49f8ebfd3cad35df7d642643fee8ebfd72115c34354c761194f7176102e7fb"
+PREVIOUS_SHA256 = 'e5256b5855bf7a3d7a616ba959999e371168f9943abc2ad6d818296241665c00'
 RELEASE = "CELLS_NATIVE_PARAMETER_NUMERIC_PREFIX_RELEASED"
 START, STOP = 12, 29
 _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(4))

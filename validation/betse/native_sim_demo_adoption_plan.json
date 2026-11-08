@@ -1,13 +1,15 @@
 {
-  "kind": "cells.complete_INIT_SIM_declared_dependency_projection@2",
+  "kind": "cells.complete_parameter_SEED_INIT_SIM_declared_dependency_projection@3",
   "limits": [
     "Explicit metadata projection only; never imports producers, applies source changes, authenticates reviews or releases execution.",
     "Every review token must be supplied from separately accepted current-source evidence. None is inferred from historical receipts.",
     "The three literal SIM modules are immutable snapshot inputs; the plan does not rewrite their native source or equations.",
-    "Template recipes are the existing thirteen INIT contracts, with no new exclusions or hash-cycle workaround.",
+    "Template recipes are the thirteen existing INIT contracts plus the three existing SEED prefix/core/profile contracts; every excluded literal is already a separately validated native consumer contract. No new exclusion or hash-cycle workaround.",
     "History observation, typed capture transport and RNG provenance are explicit projection inputs; reviewed producer adoption and actual execution remain separate.",
     "Read-only leaves and unspecified source slots retain exact input bytes. Existing default first-step declarations remain unchanged.",
-    "D(R_token) embeds only an explicitly supplied path/hash document matching that review token; the projector never reads or authenticates the document."
+    "D(R_token) embeds only an explicitly supplied path/hash document matching that review token; the projector never reads or authenticates the document.",
+    "The original parameter birth/YAML/path/configuration/load and same-phase SEED source graph is projected before INIT/SIM; exact active stage tuple indices are typed integer selectors, not string dictionary keys.",
+    "Read-only producer leaf reviews remain caller-authenticated metadata and do not authorize projection, native execution or scientific acceptance by themselves."
   ],
   "module_aliases": {
     "C": "src/cells/processes/betse_native_init_dynamics_completion.py",
@@ -57,7 +59,38 @@
     "sim_run": "src/cells/processes/betse_native_sim_run.py",
     "sim_run_source": "src/cells/processes/betse_native_sim_run_source.py",
     "simulator_observer": "src/cells/processes/betse_native_simulator_construction.py",
-    "wrapper": "src/cells/processes/betse_native_init_molecule_wrapper_authority.py"
+    "wrapper": "src/cells/processes/betse_native_init_molecule_wrapper_authority.py",
+    "parameter_yaml_prefix": "src/cells/processes/betse_native_parameter_yaml_prefix.py",
+    "parameter_context": "src/cells/processes/betse_native_phase_parameters.py",
+    "parameter_paths": "src/cells/processes/betse_native_parameter_paths.py",
+    "parameter_seven": "src/cells/processes/betse_native_parameter_subconfigurations.py",
+    "parameter_construction_lease": "src/cells/processes/betse_native_parameter_construction_lease.py",
+    "parameter_numeric_prefix": "src/cells/processes/betse_native_parameter_numeric_prefix.py",
+    "parameter_event_declarations": "src/cells/processes/betse_native_parameter_event_declarations.py",
+    "tissue_handler": "src/cells/processes/betse_native_tissue_handler_attachment.py",
+    "parameter_network_boundary": "src/cells/processes/betse_native_parameter_network_boundary.py",
+    "phase_assembly": "src/cells/processes/betse_native_phase_assembly.py",
+    "phase_dyna": "src/cells/processes/betse_native_phase_dyna.py",
+    "parameter_network_load": "src/cells/processes/betse_native_parameter_network_load.py",
+    "parameter_grn_variables": "src/cells/processes/betse_native_parameter_grn_variables.py",
+    "parameter_modulators": "src/cells/processes/betse_native_parameter_modulators.py",
+    "parameter_colormaps": "src/cells/processes/betse_native_parameter_colormaps.py",
+    "parameter_colormap_state": "src/cells/processes/betse_native_parameter_colormap_state.py",
+    "parameter_colormap_load": "src/cells/processes/betse_native_parameter_colormap_load.py",
+    "parameter_initializer_constants": "src/cells/processes/betse_native_parameter_initializer_constants.py",
+    "tissue_configuration": "src/cells/processes/betse_native_tissue_configuration.py",
+    "grid_alias": "src/cells/processes/betse_native_single_cell_grid_alias.py",
+    "phase_tail": "src/cells/processes/betse_native_phase_tail.py",
+    "parameter_world_construction": "src/cells/processes/betse_native_parameter_world_construction.py",
+    "seed_voronoi_image": "src/cells/processes/betse_native_seed_voronoi_image.py",
+    "seed_voronoi_mesh": "src/cells/processes/betse_native_seed_voronoi_mesh.py",
+    "seed_voronoi_lifecycle": "src/cells/processes/betse_native_seed_voronoi_lifecycle.py",
+    "seed_world_geometry": "src/cells/processes/betse_native_seed_world_geometry.py",
+    "seed_world_poisson": "src/cells/processes/betse_native_seed_world_poisson.py",
+    "phase_caches": "src/cells/processes/betse_native_phase_caches.py",
+    "parameter_record_digest": "src/cells/processes/betse_native_parameter_record_digest.py",
+    "bytecode_bindings": "src/cells/processes/betse_native_bytecode_bindings.py",
+    "immutable_graph_metadata": "src/cells/processes/betse_native_immutable_graph_metadata.py"
   },
   "preserve": [
     {
@@ -185,6 +218,32 @@
         "RUNTIME_REVIEW_SHA256"
       ],
       "target": "src/cells/processes/betse_native_init_terminal.py"
+    },
+    "W_prefix2": {
+      "target": "src/cells/processes/betse_native_seed_world_prefix.py",
+      "excluded_slots": [
+        "CONSTRUCTION_SOURCE_SHA256",
+        "CONSTRUCTION_REVIEW_SHA256"
+      ],
+      "binding_kind": "exact_helper_bytes_except_two_validated_backref_literals@1"
+    },
+    "W_core2": {
+      "target": "src/cells/processes/betse_native_seed_init_core.py",
+      "excluded_slots": [
+        "COORDINATOR_SOURCE_SHA256",
+        "COORDINATOR_REVIEW_SHA256"
+      ],
+      "binding_kind": "exact_core_bytes_except_two_validated_coordinator_literals@1"
+    },
+    "W_profiles4": {
+      "target": "src/cells/processes/betse_native_seed_init_profiles.py",
+      "excluded_slots": [
+        "PARENT_SOURCE_SHA256",
+        "PARENT_REVIEW_SHA256",
+        "COORDINATOR_SOURCE_SHA256",
+        "COORDINATOR_REVIEW_SHA256"
+      ],
+      "binding_kind": "exact_profiles_bytes_except_four_validated_backrefs@1"
     }
   },
   "required_assignments": {
@@ -192,7 +251,10 @@
       "path": "validation/betse/native_seed_world_callback_prelude.py",
       "slots": {
         "RUNTIME_SOURCE_SHA256": "H(parameter_qualifier)",
-        "RUNTIME_REVIEW_SHA256": "R_parameter_qualifier"
+        "RUNTIME_REVIEW_SHA256": "R_parameter_qualifier",
+        "SOURCE_PINS[tissue]": "H(tissue_configuration)",
+        "SOURCE_PINS[simulator]": "H(simulator_observer)",
+        "SOURCE_PINS[callbacks]": "H(native_callbacks)"
       }
     },
     "C": {
@@ -339,7 +401,22 @@
     "W": {
       "path": "src/cells/processes/betse_native_world_phase_construction.py",
       "slots": {
-        "SEED_JUNCTIONS_INTERFACE_SHA256": "T(J4)"
+        "SEED_JUNCTIONS_INTERFACE_SHA256": "T(J4)",
+        "PARAMETER_SOURCE_SHA256": "H(current_parameters)",
+        "STAGE_SOURCE_SHA256[0]": "H(phase_assembly)",
+        "STAGE_SOURCE_SHA256[2]": "H(phase_dyna)",
+        "SEED_PROFILES_INTERFACE_SHA256": "T(W_profiles4)",
+        "CALLBACK_SHA256": "H(native_callbacks)",
+        "STAGE_SOURCE_SHA256[3]": "H(phase_tail)",
+        "KEY_SOURCE_SHA256": "H(parameter_world_construction)",
+        "VORONOI_IMAGE_SOURCE_SHA256": "H(seed_voronoi_image)",
+        "VORONOI_MESH_SOURCE_SHA256": "H(seed_voronoi_mesh)",
+        "VORONOI_LIFECYCLE_SOURCE_SHA256": "H(seed_voronoi_lifecycle)",
+        "SEED_GEOMETRY_SOURCE_SHA256": "H(seed_world_geometry)",
+        "SEED_POISSON_SOURCE_SHA256": "H(seed_world_poisson)",
+        "STAGE_SOURCE_SHA256[1]": "H(phase_caches)",
+        "HELPER_INTERFACE_SHA256": "T(W_prefix2)",
+        "SEED_INIT_CORE_INTERFACE_SHA256": "T(W_core2)"
       }
     },
     "Z": {
@@ -432,7 +509,8 @@
       "path": "src/cells/processes/betse_native_seed_init_profiles.py",
       "slots": {
         "COORDINATOR_SOURCE_SHA256": "H(W)",
-        "PARENT_SOURCE_SHA256": "H(core)"
+        "PARENT_SOURCE_SHA256": "H(core)",
+        "DYNA_SOURCE_SHA256": "H(phase_dyna)"
       }
     },
     "sim_assembly": {
@@ -500,6 +578,147 @@
       "slots": {
         "PARENT_REVIEW_SHA256": "R_sim_assembly",
         "PARENT_SHA256": "H(sim_assembly)"
+      }
+    },
+    "parameter_yaml_prefix": {
+      "path": "src/cells/processes/betse_native_parameter_yaml_prefix.py",
+      "slots": {
+        "PARAMETERS_SHA256": "H(parameter_context)"
+      }
+    },
+    "parameter_paths": {
+      "path": "src/cells/processes/betse_native_parameter_paths.py",
+      "slots": {
+        "YAML_SHA256": "H(parameter_yaml_prefix)"
+      }
+    },
+    "parameter_seven": {
+      "path": "src/cells/processes/betse_native_parameter_subconfigurations.py",
+      "slots": {
+        "PATHS_SHA256": "H(parameter_paths)"
+      }
+    },
+    "parameter_construction_lease": {
+      "path": "src/cells/processes/betse_native_parameter_construction_lease.py",
+      "slots": {
+        "PARENT_SHA256": "H(parameter_seven)"
+      }
+    },
+    "parameter_numeric_prefix": {
+      "path": "src/cells/processes/betse_native_parameter_numeric_prefix.py",
+      "slots": {
+        "PREVIOUS_SHA256": "H(parameter_seven)"
+      }
+    },
+    "parameter_event_declarations": {
+      "path": "src/cells/processes/betse_native_parameter_event_declarations.py",
+      "slots": {
+        "PREVIOUS_SHA256": "H(parameter_numeric_prefix)",
+        "CLAIMS_SHA256": "H(parameter_construction_lease)"
+      }
+    },
+    "tissue_handler": {
+      "path": "src/cells/processes/betse_native_tissue_handler_attachment.py",
+      "slots": {
+        "PARENT_SHA256": "H(parameter_seven)",
+        "CLAIMS_SHA256": "H(parameter_construction_lease)",
+        "LITERAL_SHA256": "H(tissue_configuration)"
+      }
+    },
+    "parameter_network_boundary": {
+      "path": "src/cells/processes/betse_native_parameter_network_boundary.py",
+      "slots": {
+        "PREVIOUS_SHA256": "H(parameter_event_declarations)"
+      }
+    },
+    "phase_assembly": {
+      "path": "src/cells/processes/betse_native_phase_assembly.py",
+      "slots": {
+        "PRODUCERS[betse_native_tissue_handler_attachment]": "H(tissue_handler)",
+        "PRODUCERS[betse_native_phase_callbacks]": "H(native_callbacks)"
+      }
+    },
+    "phase_dyna": {
+      "path": "src/cells/processes/betse_native_phase_dyna.py",
+      "slots": {
+        "HANDLER_SHA256": "H(tissue_handler)"
+      }
+    },
+    "parameter_network_load": {
+      "path": "src/cells/processes/betse_native_parameter_network_load.py",
+      "slots": {
+        "PREVIOUS_SHA256": "H(parameter_network_boundary)"
+      }
+    },
+    "parameter_grn_variables": {
+      "path": "src/cells/processes/betse_native_parameter_grn_variables.py",
+      "slots": {
+        "PREVIOUS_SHA256": "H(parameter_network_load)"
+      }
+    },
+    "parameter_modulators": {
+      "path": "src/cells/processes/betse_native_parameter_modulators.py",
+      "slots": {
+        "PREVIOUS_SHA256": "H(parameter_grn_variables)"
+      }
+    },
+    "parameter_colormaps": {
+      "path": "src/cells/processes/betse_native_parameter_colormaps.py",
+      "slots": {
+        "PREVIOUS_SHA256": "H(parameter_modulators)"
+      }
+    },
+    "parameter_colormap_state": {
+      "path": "src/cells/processes/betse_native_parameter_colormap_state.py",
+      "slots": {
+        "PREVIOUS_SHA256": "H(parameter_colormaps)"
+      }
+    },
+    "parameter_colormap_load": {
+      "path": "src/cells/processes/betse_native_parameter_colormap_load.py",
+      "slots": {
+        "STATE_SHA256": "H(parameter_colormap_state)"
+      }
+    },
+    "parameter_initializer_constants": {
+      "path": "src/cells/processes/betse_native_parameter_initializer_constants.py",
+      "slots": {
+        "PREVIOUS_SHA256": "H(parameter_colormap_load)"
+      }
+    },
+    "current_parameters": {
+      "path": "src/cells/processes/betse_native_parameter_load_remainder.py",
+      "slots": {
+        "SOURCE_CANDIDATE_PREDECESSOR_SHA256": "H(parameter_initializer_constants)",
+        "HANDOFF_PRODUCER_SHA256": "H(parameter_initializer_constants)"
+      }
+    },
+    "parameter_qualifier": {
+      "path": "validation/betse/betse_native_parameter_world_ready_qualification.py",
+      "slots": {
+        "KNOWN_PINS[colormap_state]": "H(parameter_colormap_state)",
+        "KNOWN_PINS[colormap_load]": "H(parameter_colormap_load)",
+        "KNOWN_PINS[initializer_constants]": "H(parameter_initializer_constants)",
+        "KNOWN_PINS[load_remainder]": "H(current_parameters)"
+      }
+    },
+    "simulator_observer": {
+      "path": "src/cells/processes/betse_native_simulator_construction.py",
+      "slots": {
+        "UPSTREAM_PINS[betse_native_tissue_configuration]": "H(tissue_configuration)",
+        "UPSTREAM_PINS[betse_native_single_cell_grid_alias]": "H(grid_alias)"
+      }
+    },
+    "native_callbacks": {
+      "path": "src/cells/processes/betse_native_phase_callbacks.py",
+      "slots": {
+        "SIMULATOR_SHA256": "H(simulator_observer)"
+      }
+    },
+    "parameter_context": {
+      "path": "src/cells/processes/betse_native_phase_parameters.py",
+      "slots": {
+        "SIMULATOR_SHA256": "H(simulator_observer)"
       }
     }
   },
@@ -695,9 +914,16 @@
     "R_sim_orchestration",
     "R_sim_preparation",
     "R_sim_run",
-    "R_wrapper"
+    "R_wrapper",
+    "R_parameter_context",
+    "R_record_digest",
+    "R_bytecode_bindings",
+    "R_immutable_graph_metadata"
   ],
   "topological_order": [
+    "immutable_graph_metadata",
+    "bytecode_bindings",
+    "parameter_record_digest",
     "N2",
     "T2",
     "F",
@@ -708,33 +934,64 @@
     "initial_rng",
     "evidence",
     "capture_budget",
-    "parameter_qualifier",
-    "inputs",
     "launch",
     "report",
     "seed_rng_report",
     "sim_report",
-    "current_parameters",
     "phase_parameters",
-    "simulator_observer",
-    "native_callbacks",
-    "callback_prelude",
     "sim_preparation_source",
     "sim_assembly_source",
     "sim_run_source",
+    "tissue_configuration",
+    "grid_alias",
+    "phase_tail",
+    "parameter_world_construction",
+    "seed_voronoi_image",
+    "seed_voronoi_mesh",
+    "seed_voronoi_lifecycle",
+    "seed_world_geometry",
+    "seed_world_poisson",
+    "phase_caches",
+    "W_prefix2",
+    "W_core2",
+    "simulator_observer",
     "H4",
     "Z4",
+    "native_callbacks",
     "R",
+    "parameter_context",
     "V",
     "H2",
+    "parameter_yaml_prefix",
     "Z2",
+    "parameter_paths",
     "E2",
+    "parameter_seven",
     "S2",
+    "parameter_construction_lease",
+    "parameter_numeric_prefix",
     "C2",
+    "parameter_event_declarations",
+    "tissue_handler",
     "P2",
+    "parameter_network_boundary",
+    "phase_assembly",
+    "phase_dyna",
     "I4",
+    "parameter_network_load",
+    "W_profiles4",
     "J4",
+    "parameter_grn_variables",
+    "parameter_modulators",
+    "parameter_colormaps",
+    "parameter_colormap_state",
+    "parameter_colormap_load",
+    "parameter_initializer_constants",
+    "current_parameters",
+    "parameter_qualifier",
     "W",
+    "inputs",
+    "callback_prelude",
     "core",
     "prefix",
     "profiles",
@@ -755,14 +1012,29 @@
     "sim_assembly",
     "sim_run",
     "sim_history",
-    "sim_observer",
-    "sim_observation_transport",
     "sim_orchestration",
-    "demo"
+    "sim_observer",
+    "demo",
+    "sim_observation_transport"
   ],
   "required_review_documents": [
     "R_sim_run",
     "R_sim_history",
     "R_sim_observer"
-  ]
+  ],
+  "required_leaf_reviews": {
+    "parameter_context": "R_parameter_context",
+    "parameter_record_digest": "R_record_digest",
+    "bytecode_bindings": "R_bytecode_bindings",
+    "immutable_graph_metadata": "R_immutable_graph_metadata"
+  },
+  "inherited_seed_graph": {
+    "path": "/mnt/workspaces/Cells/native-parameter-record-digest-20261105-01/adoption-preparation/pin-plan.json",
+    "sha256": "c2d622cf4ec644522b69af1d2cab8a6daf4948202c862a19b4ab17bb9a60edd6",
+    "source_adoption": "/mnt/workspaces/Cells/native-parameter-record-digest-20261105-01/adoption-01/bindings.json",
+    "source_adoption_sha256": "d1525354db692673cf3d11dc7eebdf0ae18ed48ddbeb2296468d30c0bbb3183f",
+    "edge_count": 60,
+    "fixed_active_checks": 11,
+    "new_template_exclusions": false
+  }
 }

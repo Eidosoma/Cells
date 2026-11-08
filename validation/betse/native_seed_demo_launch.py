@@ -64,7 +64,14 @@ ACQUISITION_SEQUENCE = ("initial_world_ready", "fresh_current_world_ready")
 RELEASE_KIND = "cells.genuine_seed_demo_detached_release@2"
 RELEASE = "CELLS_NATIVE_SEED_DEMO_LAUNCH_RELEASED"
 DEMO_RELEASE = "CELLS_NATIVE_SEED_DEMO_RELEASED"
-POLICY = dict(cpu=0, threads=1, max_rss_bytes=2**30, wall_seconds=7200, reserve_bytes=8 * 2**30)
+POLICY = dict(
+    cpu=0,
+    threads=1,
+    max_rss_bytes=4 * 2**30,
+    max_address_space_bytes=8 * 2**30,
+    wall_seconds=7200,
+    reserve_bytes=8 * 2**30,
+)
 STACK_INTERVAL_SECONDS = 30
 DIAGNOSTIC_WALL_SECONDS = 1800
 PILLOW = BASE / "pillow-overlay-12.3.0-20261030-01"
@@ -869,6 +876,51 @@ def _common_start(plan, declaration, manifest):
         )
 
 
+def _reference_writer_bindings(source, declaration, manifest):
+    """Reject an unpairable common start before any actual worker is launched.
+
+    The original reference uses the reviewed Cells bootstrap writers. Its
+    declared hashes must match this same image; changing them later changes
+    the original consumer hash in the common-start program. Parse only source
+    literals here, without importing or executing either reference producer.
+    """
+    if "common_start" not in declaration:
+        return
+    reference = initial_rng.ORIGINAL
+    raw = (source / reference).read_bytes()
+    require(
+        hashlib.sha256(raw).hexdigest() == manifest["files"][reference]["sha256"],
+        "Reference source changed before writer-pairing check",
+    )
+    declarations = [
+        node.value
+        for node in ast.parse(raw).body
+        if isinstance(node, ast.Assign)
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and node.targets[0].id == "WRITER_PRODUCERS"
+    ]
+    require(len(declarations) == 1, "One literal reference writer roster required")
+    writers = ast.literal_eval(declarations[0])
+    expected = {}
+    for name in (
+        "validation.betse.native_seed_demo",
+        "validation.betse.native_seed_world_callback_prelude",
+    ):
+        relative = name.replace(".", "/") + ".py"
+        digest = manifest["files"][relative]["sha256"]
+        require(
+            hashlib.sha256((source / relative).read_bytes()).hexdigest() == digest,
+            "Reference writer source changed before pairing check",
+        )
+        expected[name] = digest
+    require(
+        type(writers) is dict and writers == expected,
+        "Reference writer bindings do not match this Cells image; "
+        "bind the reference before preparing the common-start pair",
+    )
+
+
 def _immutable(plan):
     """Recheck byte provenance without reopening consumed native directory epochs."""
     declaration = read(plan["demo_plan"])
@@ -876,6 +928,7 @@ def _immutable(plan):
     source = Path(plan["source"])
     manifest = snapshot.verify(source, manifest_sha256=plan["source_snapshot"]["sha256"])
     _common_start(plan, declaration, manifest)
+    _reference_writer_bindings(source, declaration, manifest)
     require(bound(plan["source_snapshot"]) == source / "SNAPSHOT.json", "Snapshot association")
     require(declaration["snapshot_sha256"] == plan["source_snapshot"]["sha256"], "Demo snapshot")
     require(Path(declaration["parameter_packet"]) / "source" == source, "Demo packet association")
@@ -1601,7 +1654,7 @@ def _worker_environment(plan, output):
     )
     require(not (Path(plan["source"]) / ".unused-bytecode-cache").exists(), "Stale bytecode prefix")
     soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-    require(soft == hard == 2**30, "Exact worker address-space cap")
+    require(soft == hard == POLICY["max_address_space_bytes"], "Exact worker address-space cap")
     require(resources.memory_available() >= POLICY["reserve_bytes"], "Host reserve unavailable")
     _parameter()._runtime_entry(plan["runtime"])
 
@@ -1896,8 +1949,11 @@ def main():
         )
     else:
         require(not args.stack_diagnostic, "Diagnostic mode must be bound during preparation")
+        # Every spawning ancestor must retain the worker's hard limit.
+        address_space = POLICY["max_address_space_bytes"]
         resource.setrlimit(
-            resource.RLIMIT_AS, (2**30, 2**30) if args.worker else (512 * 2**20, 2**30)
+            resource.RLIMIT_AS,
+            (address_space if args.worker else 512 * 2**20, address_space),
         )
         operation = worker if args.worker else controller if args.controller else launch
         result = operation(

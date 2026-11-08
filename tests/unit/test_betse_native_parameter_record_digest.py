@@ -1,10 +1,12 @@
 """Metadata-only equivalence to the unchanged recursive record serializer."""
 
 import ast
+import builtins
 import hashlib
 import json
 import os
 import struct
+import subprocess
 import sys
 import time
 from collections import namedtuple
@@ -74,6 +76,83 @@ def test_record_digest_fresh_mutation_and_shared_aliases():
     child.append(8)
     assert fast.digest(value) != second
     assert value["left"] is value["right"] is child
+
+
+def test_record_digest_single_audited_identity_per_container_and_fresh_alias_visit():
+    shared = [{"x": 1}, 2]
+    value = {"a": shared, "b": shared, "empty": (), "nested": [[]]}
+    calls, prior = [], sys.getprofile()
+
+    def profile(frame, event, arg):
+        if prior is not None:
+            prior(frame, event, arg)
+        if (
+            event == "c_call"
+            and arg is builtins.id
+            and frame.f_code is fast._metadata_tree.__code__
+        ):
+            calls.append(frame.f_locals["item"])
+
+    sys.setprofile(profile)
+    try:
+        projected = fast._metadata_tree(value, fast._LIMITS)
+    finally:
+        sys.setprofile(prior)
+    assert len(calls) == 8 and sum(item is shared for item in calls) == 2
+    assert projected == fast.records.record(value)
+    assert projected["a"] is not projected["b"] and value["a"] is value["b"] is shared
+    shared[0]["x"] = -0.0
+    assert fast.digest(value) == fast.records._digest(value)
+
+
+def test_record_digest_oversized_container_refuses_before_identity_audit():
+    calls, prior = [], sys.getprofile()
+
+    def profile(frame, event, arg):
+        if prior is not None:
+            prior(frame, event, arg)
+        if (
+            event == "c_call"
+            and arg is builtins.id
+            and frame.f_code is fast._metadata_tree.__code__
+        ):
+            calls.append(arg)
+
+    sys.setprofile(profile)
+    try:
+        result = fast._metadata_tree([1, 2], (1, 3, 64))
+    finally:
+        sys.setprofile(prior)
+    assert result is fast._FALLBACK and not calls
+
+
+@pytest.mark.parametrize("point", ("identity", "bulk_schedule"))
+def test_record_digest_actual_metadata_observer_refusal_keeps_primary_and_cause(point):
+    primary, cause, calls = FalseyError("metadata observer"), KeyError("cause"), []
+    value = {"current": [1, -0.0]}
+    before, prior = fast.records.record(value), sys.getprofile()
+
+    def profile(frame, event, arg):
+        if prior is not None:
+            prior(frame, event, arg)
+        if event == "c_call" and frame.f_code is fast._metadata_tree.__code__:
+            match = (
+                arg is builtins.id
+                if point == "identity"
+                else getattr(arg, "__name__", None) == "extend"
+            )
+            if match:
+                calls.append(arg)
+                raise primary from cause
+
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(FalseyError) as caught:
+            fast.digest(value)
+    finally:
+        sys.setprofile(prior)
+    assert caught.value is primary and primary.__cause__ is cause and len(calls) == 1
+    assert fast.records.record(value) == before
 
 
 def test_record_digest_sorted_mapping_order_is_unchanged():
@@ -202,6 +281,88 @@ def test_record_digest_original_error_type_and_message_are_retained(kind):
 class FalseyError(RuntimeError):
     def __bool__(self):
         return False
+
+
+@pytest.mark.parametrize("falsey", (False, True))
+def test_record_digest_real_audit_identity_denial_stays_primary_in_isolated_process(
+    falsey, tmp_path
+):
+    script = r"""
+import json, os, sys
+from validation.betse import betse_normal_channel_join_runtime as runtime
+from cells.processes import betse_native_parameter_record_digest as fast
+class Denied(RuntimeError):
+    def __bool__(self):
+        if sys.argv[1] == "True":
+            return False
+        return True
+primary, cause = Denied("actual audit denial"), KeyError("cause")
+value = {"current": [1, -0.0]}
+identity, token, acknowledged, calls, forbidden = id(value), object(), [], [], []
+prior = sys.getprofile(), sys.gettrace()
+def profile(frame, event, arg):
+    name = frame.f_globals.get("__name__", "")
+    if event == "call" and (
+        name.startswith(("betse.", "numpy.random", "numpy.linalg"))
+        or (name.startswith("cells.")
+            and name != "cells.processes.betse_native_parameter_record_digest")
+    ):
+        forbidden.append((name, frame.f_code.co_qualname))
+        raise AssertionError("Actual owner/native/operator/RNG body held")
+def audit(event, args):
+    if event == "cells.metadata.identity_audit_probe" and args == (token,):
+        acknowledged.append(True)
+    if event == "builtins.id" and args == (identity,):
+        calls.append(args)
+        raise primary from cause
+sys.addaudithook(audit)
+sys.audit("cells.metadata.identity_audit_probe", token)
+assert acknowledged == [True]
+try:
+    sys.setprofile(profile)
+    try:
+        fast.digest(value)
+    except Denied as actual:
+        assert actual is primary and actual.__cause__ is cause
+    else:
+        raise AssertionError("Audit veto was bypassed")
+finally:
+    sys.settrace(prior[1]);sys.setprofile(prior[0])
+assert len(calls) == 1 and not forbidden
+print(json.dumps(dict(pid=os.getpid(), calls=len(calls), exact_primary=True,
+    cause_retained=True, forbidden=forbidden, audit_acknowledged=True,
+    hooks_restored=sys.getprofile() is prior[0] and sys.gettrace() is prior[1],
+    runtime=runtime.inventory())))
+"""
+    env = {
+        name: value
+        for name, value in os.environ.items()
+        if not name.startswith("CELLS_") and name != "PYTEST_CURRENT_TEST"
+    }
+    result = subprocess.run(
+        [sys.executable, "-B", "-c", script, str(falsey)],
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=30,
+        check=False,
+    )
+    (tmp_path / "isolated-id-audit.json").write_text(
+        json.dumps(
+            dict(
+                returncode=result.returncode,
+                stdout=result.stdout,
+                stderr=result.stderr,
+                falsey=falsey,
+                timeout_seconds=30,
+            )
+        )
+    )
+    assert result.returncode == 0, result.stderr
+    receipt = json.loads(result.stdout)
+    assert receipt["exact_primary"] and receipt["cause_retained"]
+    assert receipt["audit_acknowledged"] and receipt["hooks_restored"]
+    assert receipt["calls"] == 1 and not receipt["forbidden"]
 
 
 @pytest.mark.parametrize("error_type", (RuntimeError, FalseyError))

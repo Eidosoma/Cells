@@ -330,6 +330,86 @@ def _write(path, value):
     return dict(path=str(path), sha256=compare.snapshot.digest(path))
 
 
+def _import_lifecycle_fixture(native, inventory, original_files, *, mode="original"):
+    """Synthetic saved metadata only: compile pinned library code, never execute it."""
+    from validation.betse import native_reference_imports as importer
+
+    files, loaded, components = importer._tree(), {}, {}
+    for name, relative, qualified in (
+        ("get_code", "claw/_importlib/_clawimpload.py", "BeartypeSourceFileLoader.get_code"),
+        (
+            "source_to_code",
+            "claw/_importlib/_clawimpload.py",
+            "BeartypeSourceFileLoader.source_to_code",
+        ),
+        ("configuration", "claw/_package/clawpkgtrie.py", "get_package_conf_or_none"),
+        ("path_hook_factory", "claw/_importlib/clawimpmain.py", "add_beartype_pathhook"),
+    ):
+        path = importer.BEARTYPE_ROOT / relative
+        code = compile(path.read_bytes(), str(path), "exec", dont_inherit=True)
+        components[name] = dict(
+            file=str(path),
+            qualified=qualified,
+            code_sha256=importer.code_sha256(importer._codes(code)[qualified][0]),
+        )
+        loaded["beartype." + relative[:-3].replace("/", ".")] = dict(
+            path=str(path), sha256=files[relative]["sha256"]
+        )
+    loaded["beartype"] = dict(
+        path=str(importer.BEARTYPE_ROOT / "__init__.py"), sha256=files["__init__.py"]["sha256"]
+    )
+    root = native / "betse/__init__.py"
+    root_pin = compare.snapshot.digest(root)
+    inventory.setdefault("betse/__init__.py", dict(sha256=root_pin))
+    original_files.setdefault("betse", dict(path=str(root), sha256=root_pin))
+    selected = importer.expected_selections(native, inventory, mode)
+    modules = {
+        name: dict(
+            **row,
+            selected_sha256=row["sha256"],
+            selections=[],
+            stage="completed",
+            loader_base=(
+                "_frozen_importlib_external.SourceFileLoader"
+                if name == "betse"
+                else "beartype.claw._importlib._clawimpload.BeartypeSourceFileLoader"
+            ),
+            native_beartype=name != "betse",
+            module_code_sha256="0" * 64,
+            bytecode_cache_used=False,
+            capture_errors=[],
+            source_returned=True,
+            source_error=None,
+            export_code_witnesses={},
+        )
+        for name, row in original_files.items()
+    }
+    for row in modules.values():
+        relative = str(Path(row["path"]).relative_to(native))
+        if relative in selected:
+            row.update(selected[relative])
+    return dict(
+        kind=importer.KIND,
+        mode=mode,
+        policy=importer.specification(),
+        modules=modules,
+        programs={},
+        runtime=dict(
+            policy=importer.specification(),
+            files=files,
+            loaded_modules=loaded,
+            compiler_components=components,
+            namespace_modules={
+                "beartype._data.claw": dict(
+                    paths=[str(importer.BEARTYPE_ROOT / "_data/claw")],
+                    loader="_frozen_importlib_external.NamespaceLoader",
+                    source_tree_sha256=importer.BEARTYPE_TREE_SHA256,
+                )
+            },
+        ),
+    )
+
+
 def _saved_reference(tmp_path, count=3, *, input_count=1):
     """Synthetic saved file graph only: no code, pickle, or source trial runs."""
     source, native = tmp_path / "source", Path("/mnt/workspaces/Cells/betse-v1.5.0")
@@ -352,6 +432,9 @@ def _saved_reference(tmp_path, count=3, *, input_count=1):
     (source / "checkout.patch").write_bytes(b"")
     (source / "checkout.patch").chmod(0o444)
     source_pin = compare.snapshot.digest(producer)
+    importer = source / compare.native_imports.FILE
+    importer.write_bytes((software.ROOT / compare.native_imports.FILE).read_bytes())
+    importer.chmod(0o444)
     manifest = dict(
         kind="cells.checkout_source_snapshot@1",
         status="complete",
@@ -362,7 +445,13 @@ def _saved_reference(tmp_path, count=3, *, input_count=1):
                 sha256=source_pin,
                 observation=dict(size=producer.stat().st_size),
                 snapshot_mode=0o444,
-            )
+            ),
+            compare.native_imports.FILE: dict(
+                checkout_path=compare.native_imports.FILE,
+                sha256=compare.snapshot.digest(importer),
+                observation=dict(size=importer.stat().st_size),
+                snapshot_mode=0o444,
+            ),
         },
         patch_sha256=compare.snapshot.digest(source / "checkout.patch"),
     )
@@ -372,6 +461,12 @@ def _saved_reference(tmp_path, count=3, *, input_count=1):
     source.chmod(0o555)
     policy = constants["NATIVE_POLICY"]
     inventory = {name: dict(sha256=pin) for name, pin in constants["CRITICAL"].items()}
+    originals = {
+        name[:-3].replace("/", "."): dict(path=str(native / name), sha256=pin)
+        for name, pin in constants["CRITICAL"].items()
+        if name.startswith("betse/science/")
+    }
+    lifecycle = _import_lifecycle_fixture(native, inventory, originals)
     config = tmp_path / "prepared-config"
     config.mkdir()
     (config / "sim_config.yaml").write_bytes(b"synthetic immutable input bytes")
@@ -395,6 +490,12 @@ def _saved_reference(tmp_path, count=3, *, input_count=1):
         ),
         inputs=dict(root=str(config), inventory=input_inventory, mode="original"),
         source_plan=dict(critical_source_pins=constants["CRITICAL"], input_profile="headless"),
+        selections={
+            path: row["selections"]
+            for path, row in compare.native_imports.expected_selections(
+                native, inventory, "original"
+            ).items()
+        },
     )
     prepared = _write(tmp_path / "prepared.json", plan)
     release = _write(
@@ -412,7 +513,12 @@ def _saved_reference(tmp_path, count=3, *, input_count=1):
         if relative.startswith("betse/science/"):
             module = relative.removesuffix(".py").replace("/", ".")
             runtime_files[module] = dict(path=str(native / relative), sha256=pin)
-    _write(output / "runtime.json", dict(loaded_files=runtime_files))
+    runtime_files.update(originals)
+    runtime_files.update(lifecycle["runtime"]["loaded_modules"])
+    _write(
+        output / "runtime.json",
+        dict(loaded_files=runtime_files, modules_without_files=["beartype._data.claw"]),
+    )
     captures, iterations = [], []
 
     def capture(label, value):
@@ -495,7 +601,8 @@ def _saved_reference(tmp_path, count=3, *, input_count=1):
             inherited_hooks_restored=True,
             filesystem_audit_installed=True,
             observer_coverage_failed=False,
-            native_producers=runtime_files,
+            native_producers=lifecycle["modules"],
+            native_import_lifecycle=lifecycle,
             captures=captures,
             iterations=iterations,
             seed=dict(

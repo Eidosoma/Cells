@@ -1,197 +1,22 @@
-"""Bounded original-parameter AST metadata measurements, never source execution.
-
-The candidate shape is only a measurement prototype until its producer is
-integrated and independently guarded. No parameter or owner is constructed.
-"""
+"""Measure exact extracted parameter metadata; never execute original bodies."""
 
 import argparse
 import ast
 import hashlib
 import json
-import operator
 import os
 import runpy
 import sys
 import time
 from pathlib import Path
+from types import CodeType
 
 ROOT = Path(__file__).resolve().parents[2]
 PARAMETERS = "src/cells/processes/betse_native_phase_parameters.py"
 REUSED_TEST = "tests/unit/test_betse_native_source_compilation_cache.py"
+TEST = "tests/unit/test_betse_native_parameter_ast_metadata.py"
 ORIGINAL = Path("/mnt/workspaces/Cells/betse-v1.5.0/betse/science/parameters.py")
 ORIGINAL_SHA256 = "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e"
-
-
-def _prototype_shape(value):
-    """Closed, iterative common-AST value; unsupported values require old dump."""
-    pending, result = [value], []
-    while pending:
-        value = pending.pop()
-        cls = type(value)
-        if isinstance(value, ast.AST) and cls.__module__ == "ast":
-            namespace = vars(value)
-            names, children = [], []
-            for name in (*value._fields, *value._attributes):
-                if name not in namespace:
-                    continue
-                current = namespace[name]
-                if current is None and getattr(cls, name, ...) is None:
-                    continue
-                if name in value._fields and type(current) is list and not current:
-                    if getattr(cls._field_types.get(name), "__origin__", ...) is list:
-                        continue
-                names.append(name)
-                children.append(current)
-            result.append(("node", cls.__name__, tuple(names)))
-            pending.extend(reversed(children))
-        elif cls is list:
-            result.append(("list", len(value)))
-            pending.extend(reversed(value))
-        elif cls in (str, bytes, int, bool, type(None)):
-            result.append((cls.__name__, value))
-        elif cls in (float, complex):
-            result.append((cls.__name__, repr(value)))
-        else:
-            return None
-        if len(result) > 100000:
-            raise ValueError("Bounded AST metadata shape exhausted")
-    return tuple(result)
-
-
-def _compilation_class_plan(node):
-    """Immutable metadata selectors/values only; retain no mutable AST node."""
-    rows, pending, classes, guards = [None], [(node, 0)], set(), []
-    primitive = (str, bytes, int, bool, type(None), float, complex, type(Ellipsis))
-    while pending:
-        value, index = pending.pop()
-        cls = type(value)
-        if isinstance(value, ast.AST):
-            if cls not in classes:
-                classes.add(cls)
-                for base in cls.__mro__:
-                    if base in classes and base is not cls:
-                        continue
-                    classes.add(base)
-                    items = tuple(vars(base).items())
-                    field_types = vars(base).get("_field_types")
-                    guards.append(
-                        (
-                            base,
-                            base.__mro__,
-                            items,
-                            None
-                            if type(field_types) is not dict
-                            else (field_types, tuple(field_types.items())),
-                        )
-                    )
-            fields, attributes = value._fields, value._attributes
-            names = (*fields, *attributes)
-            getter = operator.attrgetter(*names) if names else None
-            try:
-                values = () if getter is None else getter(value)
-            except AttributeError:
-                return None
-            if len(names) == 1:
-                values = (values,)
-            header = ("node", cls, cls.__name__, fields, attributes, getter, len(names))
-        elif cls is list:
-            values = value
-            header = ("list", len(value))
-        else:
-            return None
-        scalar_positions, scalar_values, floating, float_values, children = [], [], [], [], []
-        for position, current in enumerate(values):
-            current_type = type(current)
-            if isinstance(current, ast.AST) or current_type is list:
-                child = len(rows)
-                rows.append(None)
-                children.append((position, child))
-                pending.append((current, child))
-            elif current_type in primitive:
-                if current_type in (float, complex):
-                    floating.append(position)
-                    float_values.append(repr(current))
-                else:
-                    scalar_positions.append(position)
-                    scalar_values.append(current)
-            else:
-                return None
-        rows[index] = (
-            header,
-            tuple(map(id, map(type, values))),
-            None if not scalar_positions else operator.itemgetter(*scalar_positions),
-            tuple(scalar_values),
-            None if not floating else operator.itemgetter(*floating),
-            tuple(float_values),
-            tuple(children),
-        )
-        if len(rows) > 100000:
-            raise ValueError("Bounded class metadata plan exhausted")
-    return tuple(rows), tuple(guards)
-
-
-def _compilation_class_matches(node, plan):
-    """Fast positive proof; every mismatch/unsupported case uses original dump."""
-    if plan is None:
-        return False
-    rows, guards = plan
-    for cls, mro, items, field_types in guards:
-        if cls.__mro__ is not mro:
-            return False
-        current = tuple(vars(cls).items())
-        if len(current) != len(items) or any(
-            name is not old_name or value is not old_value
-            for (name, value), (old_name, old_value) in zip(current, items, strict=True)
-        ):
-            return False
-        if field_types is not None:
-            mapping, entries = field_types
-            current = tuple(dict.items(mapping))
-            if len(current) != len(entries) or any(
-                name is not old_name or value is not old_value
-                for (name, value), (old_name, old_value) in zip(current, entries, strict=True)
-            ):
-                return False
-    pending = [(node, 0)]
-    while pending:
-        value, index = pending.pop()
-        header, types, selector, expected, float_selector, floats, children = rows[index]
-        if header[0] == "node":
-            _, cls, name, fields, attributes, getter, count = header
-            if (
-                type(value) is not cls
-                or value.__class__ is not cls
-                or cls.__name__ != name
-                or value._fields is not fields
-                or value._attributes is not attributes
-            ):
-                return False
-            try:
-                values = () if getter is None else getter(value)
-            except AttributeError:
-                return False
-            if count == 1:
-                values = (values,)
-        else:
-            if type(value) is not list or len(value) != header[1]:
-                return False
-            values = value
-        if tuple(map(id, map(type, values))) != types:
-            return False
-        if selector is not None:
-            actual = selector(values)
-            if len(expected) == 1:
-                actual = (actual,)
-            if actual != expected:
-                return False
-        if float_selector is not None:
-            actual = float_selector(values)
-            if len(floats) == 1:
-                actual = (actual,)
-            if tuple(map(repr, actual)) != floats:
-                return False
-        pending.extend((values[position], child) for position, child in children)
-    return True
 
 
 def _write(path, value):
@@ -202,8 +27,8 @@ def _write(path, value):
         os.fsync(stream.fileno())
 
 
-def measure(directory):
-    """Exercise actual extracted metadata functions; compiled bodies forbidden."""
+def measure(directory, *, baseline_source=None, baseline_manifest_sha256=None):
+    """Measure current warm checks against full dump on pinned real source."""
     directory.mkdir()
     raw = ORIGINAL.read_bytes()
     if hashlib.sha256(raw).hexdigest() != ORIGINAL_SHA256:
@@ -215,6 +40,23 @@ def measure(directory):
     parameters, producer = reuse["_load"](
         ROOT / PARAMETERS, reuse["PARAMETER_FUNCTIONS"], "_COMPILATION_"
     )
+    baseline = baseline_pin = None
+    if (baseline_source is None) is not (baseline_manifest_sha256 is None):
+        raise ValueError("Complete immutable baseline binding required")
+    if baseline_source is not None:
+        from validation import source_snapshot
+
+        manifest = source_snapshot.verify(baseline_source, manifest_sha256=baseline_manifest_sha256)
+        baseline_path = baseline_source / PARAMETERS
+        names = {
+            n.name
+            for n in ast.parse(baseline_path.read_bytes()).body
+            if isinstance(n, ast.FunctionDef)
+        }
+        functions = tuple(n for n in reuse["PARAMETER_FUNCTIONS"] if n in names)
+        baseline, baseline_pin = reuse["_load"](baseline_path, functions, "_COMPILATION_")
+        if baseline_pin != manifest["files"][PARAMETERS]["sha256"]:
+            raise ValueError("Baseline metadata source changed")
     calls, attempted, samples = {}, [], []
     prior, trace = sys.getprofile(), sys.gettrace()
 
@@ -223,9 +65,9 @@ def measure(directory):
             prior(frame, event, arg)
         if event == "call":
             name = frame.f_globals.get("__name__", "")
-            if name.startswith(
-                ("cells.", "betse.", "numpy.", "scipy.")
-            ) or frame.f_code.co_filename == str(ORIGINAL):
+            if name.startswith(("cells.", "betse.", "numpy.", "scipy.")) or (
+                frame.f_code.co_filename == str(ORIGINAL)
+            ):
                 attempted.append((name, frame.f_code.co_qualname))
                 raise AssertionError("Native/owner/compiled source execution held")
             if frame.f_code is ast.dump.__code__:
@@ -238,11 +80,27 @@ def measure(directory):
             node, "_load_ion_profile", str(ORIGINAL), native_context=True
         )
         cold_ns = time.perf_counter_ns() - start
-        expected = _prototype_shape(node)
-        assert expected is not None
-        candidate = _compilation_class_plan(node)
-        assert candidate is not None
-        for name, function in (
+        _, classes, _, _, _ = parameters._compiled_source(raw, str(ORIGINAL))
+        expected_dump, plan = next(
+            (dump, plan) for name, dump, plan in classes if name == node.name
+        )
+        assert plan is not None
+        independent = compile(raw, str(ORIGINAL), "exec", dont_inherit=True)
+        pending, found = [independent], []
+        while pending:
+            current = pending.pop()
+            if current.co_qualname == "Parameters._load_ion_profile":
+                found.append(current)
+            pending.extend(c for c in current.co_consts if type(c) is CodeType)
+        assert len(found) == 1 and code == found[0]
+        legacy = None
+        if baseline is not None:
+            legacy = baseline._method_code(
+                node, "_load_ion_profile", str(ORIGINAL), native_context=True
+            )
+            assert legacy == code
+        start_dump_count = calls.get("ast.dump", 0)
+        operations = [
             (
                 "native_method_check",
                 lambda: parameters._method_code(
@@ -250,21 +108,37 @@ def measure(directory):
                 ),
             ),
             ("complete_class_dump", lambda: ast.dump(node, include_attributes=True)),
-            ("candidate_closed_shape", lambda: _prototype_shape(node)),
-            ("candidate_selector_match", lambda: _compilation_class_matches(node, candidate)),
-        ):
-            for index in range(7):
+            ("closed_selector_match", lambda: parameters._compilation_class_matches(node, plan)),
+        ]
+        if baseline is not None:
+            operations.append(
+                (
+                    "baseline_native_check",
+                    lambda: baseline._method_code(
+                        node, "_load_ion_profile", str(ORIGINAL), native_context=True
+                    ),
+                )
+            )
+        operation_calls = {name: 0 for name, _ in operations}
+        for index in range(7):
+            for name, function in operations if index % 2 == 0 else reversed(operations):
+                before_calls = calls.get("ast.dump", 0)
                 wall, cpu = time.perf_counter_ns(), time.process_time_ns()
                 value = function()
                 elapsed = time.perf_counter_ns() - wall
                 cpu = time.process_time_ns() - cpu
                 if name == "native_method_check":
                     assert value is code
-                elif name == "candidate_closed_shape":
-                    assert value == expected
-                elif name == "candidate_selector_match":
+                    assert calls.get("ast.dump", 0) == before_calls
+                elif name == "baseline_native_check":
+                    assert value is legacy
+                elif name == "complete_class_dump":
+                    assert value == expected_dump
+                else:
                     assert value is True
                 samples.append(dict(operation=name, repeat=index, wall_ns=elapsed, cpu_ns=cpu))
+                operation_calls[name] += calls.get("ast.dump", 0) - before_calls
+        assert calls.get("ast.dump", 0) - start_dump_count == (14 if baseline else 7)
         assert not attempted
     finally:
         sys.settrace(trace)
@@ -273,31 +147,82 @@ def measure(directory):
         directory / "measurement.json",
         dict(
             phase_parameters_sha256=producer,
+            baseline_source_sha256=baseline_pin,
+            baseline_manifest_sha256=baseline_manifest_sha256,
+            operation_dump_calls=operation_calls,
             original_source_sha256=ORIGINAL_SHA256,
             original_source_bytes=len(raw),
-            candidate_shape_items=len(expected),
+            class_plan_rows=len(plan[0]),
             cold_method_ns=cold_ns,
             samples=samples,
             ast_dump_calls=calls,
             forbidden_entries=attempted,
             hooks_restored=sys.getprofile() is prior and sys.gettrace() is trace,
+            independent_full_module_code_match=True,
             compiled_native_source_entries=0,
             numerical_or_owner_work=0,
+            warm_native_calls=7,
+            warm_native_dump_calls=0,
             scope=(
-                "Repeated source-metadata-only measurement under a minimal rejecting profiler; "
+                "Source metadata under a minimal rejecting profiler; "
                 "not total runtime attribution or actual parent validation."
             ),
-            candidate_not_yet_production=True,
             scientific_credit=0,
         ),
     )
 
 
+def controls(directory, *, select=None):
+    """Reuse original compiler drift/refusal controls alongside new AST cases."""
+    import pytest
+
+    directory.mkdir()
+    argv = [
+        "-q",
+        "-c",
+        "/dev/null",
+        "--noconftest",
+        "-p",
+        "no:cacheprovider",
+        str(ROOT / TEST),
+        str(ROOT / REUSED_TEST),
+        "--basetemp",
+        str(directory / "pytest"),
+        "--junitxml",
+        str(directory / "tests.xml"),
+    ]
+    if select is not None:
+        if type(select) is not str or not select:
+            raise ValueError("Explicit nonempty metadata control selector required")
+        argv.extend(("-k", select))
+    result = int(pytest.main(argv))
+    _write(
+        directory / "software-result.json",
+        dict(
+            returncode=result, actual_native_owner_or_RNG_work_requested=False, scientific_credit=0
+        ),
+    )
+    if result:
+        raise SystemExit(result)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--measure", type=Path, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--measure", type=Path)
+    mode.add_argument("--controls", type=Path)
+    parser.add_argument("--baseline-source", type=Path)
+    parser.add_argument("--baseline-manifest-sha256")
+    parser.add_argument("--select")
     args = parser.parse_args()
-    measure(args.measure)
+    if args.measure:
+        measure(
+            args.measure,
+            baseline_source=args.baseline_source,
+            baseline_manifest_sha256=args.baseline_manifest_sha256,
+        )
+    else:
+        controls(args.controls, select=args.select)
 
 
 if __name__ == "__main__":

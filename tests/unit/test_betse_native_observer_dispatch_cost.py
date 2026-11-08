@@ -610,6 +610,42 @@ def _run(role, body, *, old, source_error=None, observer_error=None, **hooks):
 @pytest.mark.parametrize("role", tuple(BASELINE))
 def test_old_oracle_is_pinned_and_outer_account_body_is_unchanged(role, evidence):
     old, current = _node(role, True), _node(role, False)
+    # Account for the previously accepted immutable co_name filter, keeping
+    # the historical oracle bytes intact and proving these exact deltas only.
+    if role == "handler":
+        position = next(i for i, item in enumerate(old.body)
+                        if isinstance(item, ast.Assign)
+                        and ast.unparse(item.targets[0]) == "selected")
+        old.body.insert(position + 1, ast.parse(
+            "selected_names = frozenset(code.co_name for code in selected)"
+        ).body[0])
+    if role == "tail":
+        position = next(i for i, item in enumerate(old.body)
+                        if isinstance(item, ast.Assign)
+                        and ast.unparse(item.targets[0]) == "codes")
+        assert ast.unparse(old.body[position]) == (
+            "codes = {fn.__code__ for fn in context.bodies.values()}"
+        )
+        old.body[position:position + 1] = ast.parse(
+            "codes = frozenset(fn.__code__ for fn in context.bodies.values())\n"
+            "code_names = frozenset(code.co_name for code in codes)"
+        ).body
+        # The only trace change avoids an identical second validation when no
+        # inherited callback ran. Admission/capture/cleanup remain original.
+        trace = next(item for item in old.body if getattr(item, "name", None) == "trace")
+        assert ast.unparse(trace.body[0]) == "selected = frame.f_code in codes"
+        trace.body[0] = ast.parse(
+            "selected = frame.f_code.co_name in code_names and frame.f_code in codes"
+        ).body[0]
+        branch = trace.body[-2]
+        assert ast.unparse(branch.test) == "selected and event in ('call', 'line')"
+        assert [ast.unparse(item) for item in branch.body[:2]] == [
+            "_guard(context)", "_check(context)"
+        ]
+        branch.body[:2] = [ast.If(
+            test=ast.Compare(left=ast.Name(id="delegate", ctx=ast.Load()),
+                             ops=[ast.IsNot()], comparators=[ast.Constant(value=None)]),
+            body=branch.body[:2], orelse=[])]
     for node in (old, current):
         node.body = [
             item
@@ -723,6 +759,44 @@ class CountingFrame:
         return self.code
 
 
+@pytest.mark.parametrize("event", ("profile_call", "trace_call", "trace_line"))
+@pytest.mark.parametrize("prior", (False, True))
+def test_tail_boundary_only_rechecks_after_an_inherited_callback(event, prior, evidence):
+    counts = []
+    for old in (True, False):
+        body = _body()
+        frame = CountingFrame(body.__code__)
+        calls = []
+
+        def inherited(*args, _calls=calls):
+            _calls.append(args)
+            return inherited
+
+        system = HookSlots(inherited if prior else None)
+        system.trace = inherited if prior else None
+        account, context = _account("tail", body, old=old, system=system)
+        with account(context):
+            if event == "profile_call":
+                system.profile(frame, "call", None)
+            else:
+                system.trace(frame, "call", None)
+                context.timeline.clear()
+                calls.clear()
+                if event == "trace_call":
+                    system.trace(frame, "call", None)
+                else:
+                    system.trace(frame, "line", None)
+            counts.append(sum(row[0] == "check" for row in context.timeline))
+        assert len(calls) == int(prior)
+        assert system.profile is (inherited if prior else None)
+        assert system.trace is (inherited if prior else None)
+        assert context.admitted_frames[id(frame)]["frame"] is frame
+        if event == "trace_line":
+            assert context.admitted_frames[id(frame)]["body_started"]
+    assert counts == [2, 2 if prior else 1]
+    evidence.update(event=event, inherited_callback=prior, old_and_current_checks=counts)
+
+
 def _manual(role, event, *, old, failure=None):
     body, calls = _body(), []
     frame, argument = CountingFrame(body.__code__), object()
@@ -762,8 +836,11 @@ def test_own_Python_work_reads_code_once_and_preserves_old_rows(role, event, evi
     old, old_error, before = _manual(role, event, old=True)
     current, error, after = _manual(role, event, old=False)
     expected = 0 if role == "tail" and event == "return" else 1
+    if role == "tail" and event == "call":
+        expected = 2  # Cheap co_name filter, then exact CodeType membership.
     evidence.update(role=role, event=event, old_code_reads=old, current_code_reads=current)
-    assert current == expected and old >= current
+    assert current == expected
+    assert old >= current or (role == "tail" and event == "call" and old == 1)
     assert error is old_error is None
     assert list(after.work) == list(before.work) and after.locals == before.locals
 

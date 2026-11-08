@@ -25,17 +25,19 @@ SELECTION = "contiguous_original_INIT_iterations_before_next_advance"
 RELEASE = "CELLS_NATIVE_INIT_SHORT_HISTORY_RELEASED"
 MAX_ITERATIONS = 64
 BASE_SOURCE_SHA256 = "adaf98d4ef08e9c04c36f18dc1d7b89e17d585ab6460443246fc808425614043"
-PARENT_SOURCE_SHA256 = None
-PARENT_REVIEW_SHA256 = None
-PARENT_CLAIM = PARENT_CHECK = None
+PARENT_SOURCE_SHA256 = 'd48a096de688764b950a56acdf80a94b2a63fb954fe8304b57d36677c1ec49b6'
+PARENT_REVIEW_SHA256 = '9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52'
+PARENT_CLAIM = '_claim_for_short_init'
+PARENT_CHECK = '_check_short_init_authority'
 PROPOSED_PARENT_CLAIM = "_claim_for_short_init"
 PROPOSED_PARENT_CHECK = "_check_short_init_authority"
 # Proposed names only. No accepted Key API is inferred from these strings.
-RUNTIME_SOURCE_SHA256 = None
-RUNTIME_REVIEW_SHA256 = None
-RUNTIME_CONTRACT = None
+RUNTIME_SOURCE_SHA256 = '597671ce890a609e3a1584362646c73370429be850c65c2cc091dcc3d4ca7476'
+RUNTIME_REVIEW_SHA256 = '060c601d58a511985dc87b9d68b1d88c5a8c8f2173c28140a9e0167e0a8bd5df'
+RUNTIME_CONTRACT = 'actual_original_INIT_network_single_continuous_bounded_runtime@1'
 RUNTIME_MODULE = "cells.processes.betse_native_init_molecule_short_runtime"
-RUNTIME_BEGIN = RUNTIME_END = None
+RUNTIME_BEGIN = 'begin_iteration'
+RUNTIME_END = 'finish_iteration'
 PROPOSED_RUNTIME_BEGIN = "begin_iteration"
 PROPOSED_RUNTIME_END = "finish_iteration"
 PROPOSED_RUNTIME_CONTRACT = "actual_original_INIT_network_single_continuous_bounded_runtime@1"

@@ -17,13 +17,14 @@ from threading import RLock, get_ident
 from types import FunctionType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
+from cells.processes import betse_native_bytecode_bindings as bytecode_bindings
 from cells.processes import betse_native_parameter_record_digest as record_digest
 from cells.processes import betse_native_parameter_yaml_graph as graphs
 from cells.processes import betse_native_phase_parameters as parameters
 
 LAW_ID = parameters.YAML_PREFIX_LAW
 PATHS_LAW = "betse_native_parameter_compatibility_paths@1"
-PARAMETERS_SHA256 = "41d92c2fe4c10c9c307c3fe8989c5a65ffd47f13a065fef41055079229f00556"
+PARAMETERS_SHA256 = '276c6fa0d841dd46438090f1d3ebfb429aba6c2ec98e1c7fc17fae5ebc6fcaeb'
 MAX_FILE_BYTES = 8 * 2**20
 BASE = Path("/mnt/workspaces/Cells")
 _FILES, _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED = (WeakKeyDictionary() for _ in range(5))
@@ -299,7 +300,7 @@ def _class_bindings(types):
     )
 
 
-def _function_bindings(function):
+def _function_bindings(function, _lookup_names=bytecode_bindings.lookup_names):
     if type(function) is not FunctionType:
         raise ValueError("Exact source-prefix function required")
     namespace = function.__globals__["__builtins__"]
@@ -317,19 +318,32 @@ def _function_bindings(function):
         function.__kwdefaults__,
     ]
     objects.extend(parameters.inherited.tissue.aliases._atoms(function))
-    for instruction in dis.get_instructions(function):
-        if instruction.opname == "LOAD_GLOBAL":
-            name = instruction.argval
+    # Small functions keep the original transport: authenticating the compact
+    # decoder costs more than it saves there. Large bodies avoid constructing
+    # Instruction objects; all values below are still resolved afresh.
+    code = function.__code__
+    lookups = (
+        _lookup_names(code)
+        if len(code.co_code) >= 512
+        else (
+            (instruction.opname, instruction.argval)
+            for instruction in dis.get_instructions(function)
+            if instruction.opname in ("LOAD_GLOBAL", "IMPORT_NAME")
+        )
+    )
+    for operation, name in lookups:
+        if operation == "LOAD_GLOBAL":
             local = name in function.__globals__
             labels.append((name, local))
             objects.append(function.__globals__[name] if local else function.__builtins__[name])
-        elif instruction.opname == "IMPORT_NAME":
-            labels.append(("import", instruction.argval))
+        elif operation == "IMPORT_NAME":
+            labels.append(("import", name))
             objects.append(function.__builtins__["__import__"])
     return tuple(labels), tuple(objects)
 
 
 def _bindings():
+    decoder_labels, decoder_atoms = bytecode_bindings.runtime_bindings()
     functions = (
         _digest,
         _file,
@@ -359,7 +373,7 @@ def _bindings():
         graphs.capture,
     )
     return (
-        (),
+        decoder_labels,
         (
             _FILES,
             _REQUESTS,
@@ -380,6 +394,8 @@ def _bindings():
             graphs.struct.pack,
             record_digest,
             *record_digest.bindings(),
+            bytecode_bindings,
+            *decoder_atoms,
             *(atom for fn in functions for atom in parameters.inherited.tissue.aliases._atoms(fn)),
         ),
     )

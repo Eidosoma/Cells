@@ -28,11 +28,18 @@ ROOT = Path(__file__).resolve().parents[2]
 FILE = "validation/betse/native_sim_result_observation.py"
 KEY_MODULE = "cells.processes.betse_native_sim_run"
 KEY_FILE = "src/cells/processes/betse_native_sim_run.py"
-KEY_SHA256 = KEY_REVIEW = None
+KEY_SHA256 = '58306cc94ddd18e3a3a000b072973ea5ed44b0b29ddf6eb8208eadc56a615cbb'
+KEY_REVIEW = {
+    "path": "/mnt/workspaces/Cells/native-sim-core-helper-closure-development-20261105-01/root-source-results-review.json",
+    "sha256": "b61ad41dcf0d78088a9b1f46d7a8edac7dffd30d4bd8a5dfe5900298375ba3ba"
+}
 HISTORY_MODULE = "cells.processes.betse_native_sim_history_observation"
 HISTORY_FILE = "src/cells/processes/betse_native_sim_history_observation.py"
-HISTORY_SHA256 = "036a94978d452277ad3722ad19919b005994644b08e175f2b78ba7474fd73d5b"
-HISTORY_REVIEW = None
+HISTORY_SHA256 = '971bd61ba25dd94d1773ffb028bacbdb823b75824a9101185e6b91aadec0f60b'
+HISTORY_REVIEW = {
+    "path": "/mnt/workspaces/Cells/native-sim-history-descendant-repair-20261105-01/root-source-results-review.json",
+    "sha256": "1e7cde69ec37ab1a8c6046d331e9843d21556b205d8b8491acb5929710e3b719"
+}
 SEAL_BUFFER_BYTES = 256 * 2**10
 _JSON_ENCODER_MODULE, _JSON_ENCODER_CLASS = json.encoder, json.JSONEncoder
 _JSON_C_FACTORY = json.encoder.c_make_encoder

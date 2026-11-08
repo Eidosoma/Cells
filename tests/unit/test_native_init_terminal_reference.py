@@ -848,7 +848,9 @@ def test_reference_completion_resource_contract(tmp_path, monkeypatch, defect):
         "resource",
         SimpleNamespace(
             RLIMIT_AS=0,
-            getrlimit=lambda key: (2**30 + 1, 2**30 + 1) if defect == "memory" else (2**30, 2**30),
+            getrlimit=lambda key: (
+                (8 * 2**30 + 1, 8 * 2**30 + 1) if defect == "memory" else (8 * 2**30, 8 * 2**30)
+            ),
         ),
     )
     monkeypatch.setattr(
@@ -1484,7 +1486,7 @@ def test_reference_capacity_plan_uses_existing_limits_and_pointer_history():
     assert plan["preallocation_limits"] == reference.CAPTURE_LIMITS
     assert reference.CAPTURE_LIMITS["column_bytes"] == reference.evidence.payload.MAX_BLOB
     assert reference.CAPTURE_LIMITS["total_column_bytes"] == reference.evidence.payload.MAX_UNIQUE
-    assert reference.NATIVE_POLICY["max_rss_bytes"] == 2**30
+    assert reference.NATIVE_POLICY["max_rss_bytes"] == 4 * 2**30
     assert 625 * 625 * 8 == 3_125_000
     assert 625 * 625 * 8 * 500 == 1_562_500_000  # Counterfactual retained-copy cost.
     assert not {"lapENVinv", "lapENV_P_inv"} & set(reference.ITERATION_FIELDS)

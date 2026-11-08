@@ -30,7 +30,7 @@ MODE = "prepared_callback_seven_load_seed_prefix"
 RELEASE = "CELLS_NATIVE_PHASE_ASSEMBLY_RELEASED"
 PRODUCERS = {
     "betse_native_tissue_handler_attachment": (
-        "a5d08ad5baff1eb3ff64a8237a5911e74d47ac3f284ff1445055c2ce495100d0"
+        '3bbd28835375894c9c9a71483f3a2c58fc3e48f2017d41a1824ca574286c18a1'
     ),
     "betse_native_phase_callbacks": (
         "63ecf075fd2b781c84156c732366def11729349124ae3652ae72506c4c467698"

@@ -23,8 +23,8 @@ from cells.processes import betse_native_sim_run as parent
 
 RELEASE = "CELLS_NATIVE_SIM_HISTORY_OBSERVATION_RELEASED"
 LAW_ID = "actual_completed_SIM_read_only_complete_history_interval@1"
-PARENT_SHA256 = "c3238c6c6704f8bc133d23450235eb2b742e6505530bd47de0d590a958e3e4d4"
-PARENT_REVIEW_SHA256 = None
+PARENT_SHA256 = '58306cc94ddd18e3a3a000b072973ea5ed44b0b29ddf6eb8208eadc56a615cbb'
+PARENT_REVIEW_SHA256 = 'b61ad41dcf0d78088a9b1f46d7a8edac7dffd30d4bd8a5dfe5900298375ba3ba'
 MAX_OPERATIONS = 100000
 _PENDING, _FAILED = None, []
 _ISSUED = WeakKeyDictionary()

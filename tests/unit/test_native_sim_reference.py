@@ -85,7 +85,21 @@ def _terminal_metadata(tmp_path, monkeypatch):
     """Real pinned code objects and inert frame data; no body is invoked."""
     observer = _observer(tmp_path)
     attempt = reference.Attempt(sim=observer.state, observer=observer)
-    package = object()
+    package = SimpleNamespace()
+    package.owns = lambda module: package
+
+    def export(name, qualified):
+        value = sys.modules[name]
+        for part in qualified.split("."):
+            value = vars(value)[part]
+        return value
+
+    package.export = export
+    package.program_export = lambda name, entry: observer.state.raw["selected_SIM_caller"]
+    package.program_code = lambda name, entry: observer.state.raw["selected_SIM_caller"].__code__
+    monkeypatch.setattr(
+        source, "terminal_code", lambda role, mode, owner: source.literal_code(role, mode)
+    )
     attempt.raw["original_package"] = package
     observer.enable_terminal(attempt, "original")
     t = observer.terminal
@@ -99,7 +113,7 @@ def _terminal_metadata(tmp_path, monkeypatch):
             module = ModuleType(name)
             module.__loader__ = package
             monkeypatch.setitem(sys.modules, name, module)
-        code = source.selected()[0] if role == "caller" else source.terminal_code(role, "original")
+        code = source.selected()[0] if role == "caller" else source.literal_code(role, "original")
         fn = FunctionType(code, vars(module))
         if "." in qualified:
             class_name, method = qualified.split(".")
@@ -140,7 +154,7 @@ def test_sim_reference_terminal_compiler_only_reads_pinned_original_bodies(mode)
     plan = source.terminal_plan()
     assert len(plan["required_events"]) == 16 and plan["native_pickle_entered"] is False
     for role, (relative, qualified) in source.TERMINAL_METHODS.items():
-        code = source.terminal_code(role, mode)
+        code = source.literal_code(role, mode)
         assert type(code) is CodeType and code.co_qualname == qualified
         assert code.co_filename == str(initial.NATIVE_ROOT / relative)
         assert (
@@ -151,7 +165,7 @@ def test_sim_reference_terminal_compiler_only_reads_pinned_original_bodies(mode)
             )
             is tuple
         )
-    assert "_pickle_phase" not in source.terminal_code("core", mode).co_names
+    assert "_pickle_phase" not in source.literal_code("core", mode).co_names
 
 
 @pytest.mark.parametrize(
@@ -781,13 +795,13 @@ def test_sim_reference_repair_actual_original_loader_verifier_interface(monkeypa
     loader = initial.OriginalPackage(initial.NATIVE_ROOT, {}, "original")
     loader.used = True
     assert not hasattr(loader, "check")
-    loader.verify()
+    with pytest.raises(initial.native_imports.ImportRejected, match="not entered"):
+        loader.verify()
     module = ModuleType("betse.science.simrunner")
     module.__loader__ = loader
     monkeypatch.setitem(sys.modules, module.__name__, module)
-    compiled = source.bind(module)
-    assert compiled.__globals__ is vars(module)
-    assert compiled.__code__.co_name == source.ENTRY
+    with pytest.raises(initial.native_imports.ImportRejected, match="issuance"):
+        source.bind(module)
     assert loader.used and loader not in sys.meta_path
     tree = ast.parse(Path(reference.__file__).read_bytes())
     assert not any(

@@ -36,6 +36,8 @@ def node_at(raw, slot):
     node = values[0]
     for key in slot[1:]:
         if type(key) is int and isinstance(node, (ast.Tuple, ast.List)):
+            if not 0 <= key < len(node.elts):
+                raise ValueError("Declared sequence index outside its literal roster")
             node = node.elts[key]
         elif isinstance(node, ast.Dict):
             matches = [
@@ -113,7 +115,67 @@ def _selector(text):
     match = re.fullmatch(r"(\w+)(?:\[(\w+)\])?", text)
     if match is None:
         raise ValueError("Declared simple source selector required")
-    return tuple(part for part in match.groups() if part is not None)
+    name, member = match.groups()
+    if member is None:
+        return (name,)
+    if member.isdecimal():
+        if re.fullmatch(r"0|[1-9][0-9]*", member) is None:
+            raise ValueError("Canonical nonnegative sequence index required")
+        return name, int(member)
+    return name, member
+
+
+def declaration_split(raw, slots):
+    """Return an original chained declaration, or validate its existing split.
+
+    This permits rebinding the current checkout after a prior projection. It
+    never recovers declarations or source bodies from a historical image.
+    """
+    if (
+        type(slots) not in (tuple, list)
+        or len(slots) < 2
+        or any(type(name) is not str or not name.isidentifier() for name in slots)
+        or len(set(slots)) != len(slots)
+    ):
+        raise ValueError("Exact unique declaration split roster required")
+    tree = _tree(raw)
+    for name in slots:
+        writes = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store) and node.id == name
+        ]
+        if len(writes) != 1:
+            raise ValueError("Each split declaration must have one exact source write")
+    chained = [
+        node
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        and len(node.targets) == len(slots)
+        and all(isinstance(target, ast.Name) for target in node.targets)
+        and [target.id for target in node.targets] == list(slots)
+    ]
+    if chained:
+        if len(chained) != 1 or not isinstance(chained[0].value, ast.Constant):
+            raise ValueError("Exact declared chained assignment required")
+        return chained[0]
+    positions = []
+    for name in slots:
+        matches = [
+            (index, node)
+            for index, node in enumerate(tree.body)
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == name
+        ]
+        if len(matches) != 1 or not isinstance(matches[0][1].value, (ast.Constant, ast.Dict)):
+            raise ValueError("Exact existing split literal declaration required")
+        ast.literal_eval(matches[0][1].value)
+        positions.append(matches[0][0])
+    if positions != list(range(positions[0], positions[0] + len(slots))):
+        raise ValueError("Existing split declarations must retain their adjacent source order")
+    return None
 
 
 def project(plan, sources, reviews, *, preserve=(), review_documents=None):
@@ -137,6 +199,14 @@ def project(plan, sources, reviews, *, preserve=(), review_documents=None):
         for value in reviews.values()
     ):
         raise ValueError("Exact review hashes required; review acceptance is external")
+    required_reviews = plan.get("required_review_tokens")
+    if required_reviews is not None and (
+        type(required_reviews) is not list
+        or any(type(name) is not str for name in required_reviews)
+        or len(set(required_reviews)) != len(required_reviews)
+        or set(reviews) != set(required_reviews)
+    ):
+        raise ValueError("Unknown dependency or review: exact declared review roster required")
     documents = {} if review_documents is None else review_documents
     if type(documents) is not dict:
         raise ValueError("Exact declared review document mapping required")
@@ -183,22 +253,13 @@ def project(plan, sources, reviews, *, preserve=(), review_documents=None):
 
     for row in plan.get("required_declaration_splits", ()):
         path, slots = row["path"], row["slots"]
-        matches = [
-            n
-            for n in _tree(working[path]).body
-            if isinstance(n, ast.Assign)
-            and [t.id for t in n.targets if isinstance(t, ast.Name)] == slots
-        ]
-        if (
-            len(matches) != 1
-            or len(matches[0].targets) != len(slots)
-            or not isinstance(matches[0].value, ast.Constant)
-        ):
-            raise ValueError("Exact declared chained assignment required")
-        value = ast.literal_eval(matches[0].value)
+        declaration = declaration_split(working[path], slots)
+        if declaration is None:
+            continue
+        value = ast.literal_eval(declaration.value)
         replace(
             path,
-            matches[0],
+            declaration,
             "\n".join(name + " = " + repr(value) for name in slots).encode(),
             "split:" + ",".join(slots),
         )
@@ -210,6 +271,19 @@ def project(plan, sources, reviews, *, preserve=(), review_documents=None):
         for name in sorted({_selector(slot)[0] for slot in row["slots"]}):
             node = node_at(working[path], (name,))
             if not isinstance(node, ast.Call):
+                continue
+            if (
+                isinstance(node.func, ast.Name)
+                and node.func.id == "dict"
+                and not node.args
+                and all(
+                    kw.arg is not None and isinstance(kw.value, ast.Constant)
+                    for kw in node.keywords
+                )
+                and len({kw.arg for kw in node.keywords}) == len(node.keywords)
+            ):
+                # Existing keyword-map declarations are addressed in place;
+                # no call is evaluated or whole mapping materialized.
                 continue
             if not (
                 isinstance(node.func, ast.Attribute)

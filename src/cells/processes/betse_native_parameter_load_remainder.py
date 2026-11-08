@@ -34,10 +34,10 @@ RELEASE = "CELLS_NATIVE_PARAMETER_LOAD_REMAINDER_RELEASED"
 BASE_PREDECESSOR_SHA256 = "3fc51886956ae7f4fc0880b0fb6b5ec25f7c939c14a3ba31e0b012f717774f69"
 # A separately pinned source candidate permits inspection only, never _hook admission.
 SOURCE_CANDIDATE_PREDECESSOR_SHA256 = (
-    "a6473b99cf2a74d27f4e0f83f507074fea39b8b658fbc21860a751e152bcd508"
+    'd7826a570e65795c22d8d1e4584b8ac921fa1490a6781ba5e2b15c4260b75e15'
 )
 # Exact fresh source connection; no release or actual parent authority is inferred.
-HANDOFF_PRODUCER_SHA256 = "a6473b99cf2a74d27f4e0f83f507074fea39b8b658fbc21860a751e152bcd508"
+HANDOFF_PRODUCER_SHA256 = 'd7826a570e65795c22d8d1e4584b8ac921fa1490a6781ba5e2b15c4260b75e15'
 HANDOFF_LAW = "betse_native_parameter_original_load_remainder_handoff@1"
 HANDOFF_FACTORY = "remainder_handoff"
 HANDOFF_CHECK = "validate_remainder_history"
@@ -610,6 +610,7 @@ def _history(context):
         or context.parent.trial is not context.parent_trial
         or _digest(previous.trial_record(context.parent_trial)) != context.parent_trial.identity
         or _ancestry(context.parent) is not context.loaded
+        or previous._history_mode(context) is not previous._history_mode(context.parent)
     ):
         raise ValueError("Original completed parameter lineage changed")
     api = _hook()
@@ -628,7 +629,7 @@ def _history(context):
         or record.succeeded is not True
     ):
         raise ValueError("Actual successful closed predecessor handoff required")
-    if _digest(source_plan()) != context.source_identity:
+    if _digest(previous._history_plan(context, source_plan())) != context.source_identity:
         raise ValueError("Load remainder source/hook producer changed")
     prefix.parameters.inherited._same(_bindings(), context.bindings)
     prefix.parameters.inherited._same(_native(context).bindings, context.api.bindings)
@@ -1482,6 +1483,7 @@ def complete_load(owner, *, law_id, enabled=False):
             raise LoadRejected("Remainder attempt consumed", stage="consumed")
         parent = previous._ISSUED[owner]
         context = SimpleNamespace(
+            immutable_history=previous._history_mode(parent),
             parent_owner=owner,
             parent=parent,
             p=parent.p,
@@ -1520,8 +1522,8 @@ def complete_load(owner, *, law_id, enabled=False):
                 "Actual retained iu/fresh pre-phase parameter required", stage="source_frame"
             )
         context.original_volume = vars(context.p)["vol_env"]
-        context.before_graph = _capture(context)
-        context.plan = source_plan()
+        context.before_graph = previous._historical_capture(context, _capture(context))
+        context.plan = previous._history_plan(context, source_plan())
         context.source_identity = _digest(context.plan)
         context.api = _native(context)
         context.function = _compile(context)
@@ -1541,7 +1543,7 @@ def complete_load(owner, *, law_id, enabled=False):
                 raise ValueError("Original reached-output capture/exclusion incomplete")
             grant.check()
             context.profile_name = _outputs(context)
-            context.after_graph = _capture(context)
+            context.after_graph = previous._historical_capture(context, _capture(context))
             context.after_cm = _colormaps(context)
         context.grant_record = grant.record
         _history(context)

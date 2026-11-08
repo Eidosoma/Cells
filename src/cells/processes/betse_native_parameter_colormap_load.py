@@ -23,7 +23,7 @@ from cells.processes import betse_native_parameter_colormap_runtime as runtime
 from cells.processes import betse_native_parameter_colormap_state as state
 
 LAW_ID = "betse_native_parameter_original_four_colormap_stores@1"
-STATE_SHA256 = "8664dea542a6653ab17183ff9bec2caa8aec6e17e0485b146e6fa0193594e399"
+STATE_SHA256 = 'e2aba4331378669189d83ce20bdc1bdea2f610cd3056ce79247eda4b417b99ae'
 RELEASE = "CELLS_NATIVE_PARAMETER_COLORMAP_LOAD_RELEASED"
 MAX_WORK, MAX_LOOKUPS = 20000, 4
 boundary, prefix = state.previous, state.prefix

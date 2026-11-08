@@ -29,7 +29,7 @@ HEADLESS_CORE_KIND = "cells.headless_core_betse_seed_demo_input_pair@1"
 MODES = ("original", "disabled")
 MAX_FILES, MAX_BYTES, MAX_FILE_BYTES = 512, 16 * 2**20, 8 * 2**20
 BUNDLE_SHA256 = "a46d83ac79195a2e15078feccd5e0fc62804ca1976042cc9516c30a9f859db27"
-PARAMETER_METADATA_SHA256 = "e23dbe4c9e124f1e022939895ad7c07fa199a1af36623a47397ffb6a7e46c1ad"
+PARAMETER_METADATA_SHA256 = '973b5e231d2a94a5e15e22fae4963a3ae577534b0753a4aaa91031f5cd3a1844'
 CORE = {
     "sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
     "extra_configs/expression_data.yaml": (

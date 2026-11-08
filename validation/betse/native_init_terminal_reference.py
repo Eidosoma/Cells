@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from validation import source_snapshot as snapshot
+from validation.betse import native_reference_imports as native_imports
 from validation.betse import native_seed_demo_evidence as evidence
 from validation.betse import native_seed_demo_input_profiles as profiles
 from validation.betse import native_seed_demo_inputs as inputs
@@ -75,19 +76,27 @@ RNG_RUNTIME_MODULES = (
     "random",
     "_random",
 )
-SOURCE_REVIEW_SHA256 = BOOTSTRAP_REVIEW_SHA256 = WRITER_REVIEW_SHA256 = None
-EXECUTION_RELEASE_SHA256 = None
+SOURCE_REVIEW_SHA256 = "a8734a1bab4bda8b0d95138a8dff5cc26b706a3fbc60122a3bc1c02dd4e60f55"
+BOOTSTRAP_REVIEW_SHA256 = "ef2c640809f067f8209ef2d2910b5012b980a3e05961e6569c745c1c9f429bf8"
+WRITER_REVIEW_SHA256 = "2f6b64bb8cfb7a7eb70f203e51f1444849d7c0ed19adc580b02d044b1c799af0"
+EXECUTION_RELEASE_SHA256 = "99782996a85587f75cd8ad45a44dbae4fffea655c8dcb617a0341cc05f571933"
+IMPORTS_SHA256 = "b512647d6aa9b2224da4b537b7d802f7935b0e9e9f53d9026908d92220607d1a"
 EVIDENCE_SHA256 = "e3b5228e3622b6baeaa27fd322008ec61c251f477f406dfe38f26f1f875ab4b6"
 RELEASE = "CELLS_ORIGINAL_INIT_REFERENCE_RELEASED"
 NATIVE_POLICY = dict(
-    cpu=5, threads=1, max_rss_bytes=2**30, wall_seconds=7200, reserve_bytes=8 * 2**30
+    cpu=5,
+    threads=1,
+    max_rss_bytes=4 * 2**30,
+    max_address_space_bytes=8 * 2**30,
+    wall_seconds=7200,
+    reserve_bytes=8 * 2**30,
 )
 WRITER_PRODUCERS = {
     "validation.betse.native_seed_demo": (
-        "cd34e5dfbd95630fe4f428b21093b5c2fd447ad3ff6ea8f9498ac40e53077a71"
+        "7fcc6a92d6fd27aa5c8c0c118017d8885b1b9ff9a8e75cd6ad5b765720c4526a"
     ),
     "validation.betse.native_seed_world_callback_prelude": (
-        "b6cfd794d8edd70274eb5b1768f8a07bc15a98d88f171472f0aae7dbd4d474b5"
+        "229b445c9530822ae6e704a0513c229be6411edb68e1443ceffef8f98b251ef6"
     ),
 }
 _ATTEMPT = None
@@ -328,6 +337,48 @@ def _reference_profile(value):
     return value
 
 
+def selected_source(relative, raw, mode):
+    """Select bytes, retaining original lines, before the native beartype compiler."""
+    tree, changes = selected_tree(relative, raw, mode)
+    edits = []
+    original = ast.parse(raw)
+    if relative == "betse/science/sim.py":
+        for statement in _method(original, "Simulator", "run_sim_core").body[-2:]:
+            edits.append((statement, b""))
+    if relative == "betse/science/cells.py" and mode == "disabled":
+        method = _method(original, "Cells", "make_world")
+        store = next(
+            n
+            for n in method.body
+            if isinstance(n, ast.Assign) and ast.unparse(n.targets[0]) == "(_, self.lapENV_P_inv)"
+        )
+        edits.append((store.value, b"(None, None)"))
+    offsets, total = [], 0
+    for line in raw.splitlines(keepends=True):
+        offsets.append(total)
+        total += len(line)
+    spans = []
+    for node, replacement in edits:
+        start = offsets[node.lineno - 1] + node.col_offset
+        end = offsets[node.end_lineno - 1] + node.end_col_offset
+        segment = raw[start:end]
+        _require(not replacement or b"\n" not in segment, "Exact source selection span", "source")
+        spaces = bytes(c if c in (10, 13) else 32 for c in segment)
+        _require(len(replacement) <= len(spaces), "Bounded source selection", "source")
+        spans.append((start, end, replacement + spaces[len(replacement) :]))
+    selected = raw
+    for start, end, replacement in sorted(spans, reverse=True):
+        selected = selected[:start] + replacement + selected[end:]
+    _require(
+        ast.dump(ast.parse(selected), include_attributes=False)
+        == ast.dump(tree, include_attributes=False)
+        and selected.count(b"\n") == raw.count(b"\n"),
+        "Selected bytes differ from declared AST/line correspondence",
+        "source",
+    )
+    return selected, changes
+
+
 def source_plan(*, input_profile=profiles.HEADLESS, common_start=None):
     input_profile = _reference_profile(input_profile)
     value = dict(
@@ -335,6 +386,8 @@ def source_plan(*, input_profile=profiles.HEADLESS, common_start=None):
         endpoint=ENDPOINT,
         modes=list(MODES),
         critical_source_pins=dict(CRITICAL),
+        native_import_lifecycle=native_imports.specification(),
+        native_import_producer=dict(file=native_imports.FILE, sha256=IMPORTS_SHA256),
         workflow=[
             "BetseAppMeta",
             "Parameters.make",
@@ -613,6 +666,8 @@ def _source_contract(plan):
         endpoint=ENDPOINT,
         modes=list(MODES),
         no_numerical_kernel_calendar_or_network_repair=True,
+        native_import_lifecycle=native_imports.specification(),
+        native_import_producer=dict(file=native_imports.FILE, sha256=IMPORTS_SHA256),
     )
     if "common_start" in plan:
         declaration = _common_start_shape(plan["common_start"])
@@ -772,7 +827,7 @@ def _resources():
     soft, hard = resource.getrlimit(resource.RLIMIT_AS)
     _require(
         os.sched_getaffinity(0) == {NATIVE_POLICY["cpu"]}
-        and 0 < soft <= hard <= NATIVE_POLICY["max_rss_bytes"]
+        and 0 < soft <= hard <= NATIVE_POLICY["max_address_space_bytes"]
         and all(
             os.environ.get(name) == "1"
             for name in (
@@ -1179,6 +1234,7 @@ def _filesystem(plan, authority, callback, output):
             Path(plan["native_root"]),
             Path(plan["inputs"]["root"]),
             output,
+            native_imports.BEARTYPE_ROOT,
         )
     }
     _require(
@@ -1246,70 +1302,19 @@ def prepare(output, *, input_pair, input_sha256, mode, native_root=NATIVE_ROOT, 
     return value
 
 
-class OriginalPackage(importlib.abc.MetaPathFinder, importlib.abc.Loader):
-    """Compile exact original package bytes; no normalized science namespaces."""
+class OriginalPackage(native_imports.Package):
+    """Actual native import lifecycle with only declared source-byte selections."""
 
     def __init__(self, root, inventory, mode):
-        self.root, self.inventory, self.mode = _path(root), inventory, mode
-        self.loaded, self.used = {}, False
-
-    def find_spec(self, fullname, path=None, target=None):
-        if fullname != "betse" and not fullname.startswith("betse."):
-            return None
-        stem = fullname.replace(".", "/")
-        relative = stem + "/__init__.py"
-        package = relative in self.inventory
-        if not package:
-            relative = stem + ".py"
-        _require(relative in self.inventory, "Undeclared original module: " + fullname, "import")
-        spec = importlib.util.spec_from_file_location(
-            fullname,
-            self.root / relative,
-            loader=self,
-            submodule_search_locations=[str(self.root / stem)] if package else None,
-        )
-        spec.loader_state = relative
-        return spec
-
-    def create_module(self, spec):
-        return None
-
-    def exec_module(self, module):
-        relative = module.__spec__.loader_state
-        path = self.root / relative
-        raw, _ = _read(path, MAX_FILE_BYTES)
-        _require(_sha(raw) == self.inventory[relative]["sha256"], "Original module drift", "import")
-        tree, changes = selected_tree(relative, raw, self.mode)
-        self.loaded[module.__name__] = dict(path=str(path), sha256=_sha(raw), selections=changes)
-        exec(compile(tree, str(path), "exec", dont_inherit=True), module.__dict__)
-
-    def verify(self):
-        for name, row in self.loaded.items():
-            module = sys.modules.get(name)
-            _require(
-                module is not None
-                and module.__loader__ is self
-                and module.__file__ == row["path"]
-                and snapshot.digest(Path(row["path"])) == row["sha256"],
-                "Original loaded producer changed: " + name,
-                "import",
-            )
+        super().__init__(_path(root), inventory, mode, selected_source)
 
     def __enter__(self):
-        _require(not self.used, "Original package workflow is one-shot", "import")
         _require(
-            not any(n == "betse" or n.startswith("betse.") for n in sys.modules),
-            "Fresh process with no preloaded original package required",
+            _pin(IMPORTS_SHA256) and snapshot.digest(ROOT / native_imports.FILE) == IMPORTS_SHA256,
+            "Reviewed original import adapter unavailable or changed",
             "import",
         )
-        self.used = True
-        sys.meta_path.insert(0, self)
-        return self
-
-    def __exit__(self, kind, error, tb):
-        if self in sys.meta_path:
-            sys.meta_path.remove(self)
-        return False
+        return super().__enter__()
 
 
 @dataclass
@@ -2544,6 +2549,7 @@ def evaluate(
         snapshot.write_json(output / "execution-inputs.json", copied)
         seed = FreshSeed(Path(copied["root"]) / "INITS/world_1.betse.gz", copied["root"])
         package = OriginalPackage(plan["native_root"], inventory, selected["mode"])
+        state.raw["original_package"] = package
         observer = Observe(
             state, plan["native_root"], archive, seed, _loop_line(Path(plan["native_root"]))
         )
@@ -2593,6 +2599,9 @@ def evaluate(
             "Observer coverage could not be restored", stage="observer", partial=state
         )
     try:
+        lifecycle = None
+        if package is not None:
+            _, lifecycle = _attempt(state, "native_import_lifecycle", package.record)
         result = dict(
             kind=KIND,
             status="completed"
@@ -2619,6 +2628,7 @@ def evaluate(
             observer_coverage_failed=state.coverage_failed,
             filesystem_audit_installed=filesystem is not None and filesystem.installed is True,
             native_producers={} if package is None else package.loaded,
+            native_import_lifecycle=lifecycle,
             raw_objects_serialized_completely=False,
             ordinary_checkpoint_physical_or_numerical_credit=0,
         )
@@ -2755,7 +2765,8 @@ def main():
         return 0
     if args.worker and args.prepared_sha256 and args.output:
         resource.setrlimit(
-            resource.RLIMIT_AS, (NATIVE_POLICY["max_rss_bytes"], NATIVE_POLICY["max_rss_bytes"])
+            resource.RLIMIT_AS,
+            (NATIVE_POLICY["max_address_space_bytes"], NATIVE_POLICY["max_address_space_bytes"]),
         )
         return int(
             evaluate(
@@ -2769,6 +2780,9 @@ def main():
             != "completed"
         )
     if args.controller and args.prepared_sha256 and args.output:
+        resource.setrlimit(
+            resource.RLIMIT_AS, (512 * 2**20, NATIVE_POLICY["max_address_space_bytes"])
+        )
         supervise(
             args.controller,
             args.prepared_sha256,

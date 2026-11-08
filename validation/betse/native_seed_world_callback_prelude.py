@@ -26,8 +26,8 @@ FILE = "validation/betse/native_seed_world_callback_prelude.py"
 RELEASE = "CELLS_NATIVE_SEED_WORLD_CALLBACK_PRELUDE_RELEASED"
 KIND = "cells.native_seed_world_callback_bootstrap@1"
 RUNTIME_MODULE = "validation.betse.betse_native_parameter_world_ready_qualification"
-RUNTIME_SOURCE_SHA256 = 'e23dbe4c9e124f1e022939895ad7c07fa199a1af36623a47397ffb6a7e46c1ad'
-RUNTIME_REVIEW_SHA256 = 'aa5a0da342c433c1332f2970436b50416b8980d9e23e586c4f0589f91b15816b'
+RUNTIME_SOURCE_SHA256 = '973b5e231d2a94a5e15e22fae4963a3ae577534b0753a4aaa91031f5cd3a1844'
+RUNTIME_REVIEW_SHA256 = '14eb3b13f59dd16a984a0f3cf574524aac145bb7abfde456a4cbc9f8e59676d5'
 MODULES = {
     "tissue": "cells.processes.betse_native_tissue_configuration",
     "simulator": "cells.processes.betse_native_simulator_construction",
@@ -38,7 +38,14 @@ SOURCE_PINS = dict(
     simulator="6f94d0cf79191c952a7055a63865080ffe1693c8798c6ee73aa24ad24c8d5884",
     callbacks="63ecf075fd2b781c84156c732366def11729349124ae3652ae72506c4c467698",
 )
-POLICY = dict(cpu=0, threads=1, bytes=2**30, wall_seconds=480, reserve_bytes=8 * 2**30)
+POLICY = dict(
+    cpu=0,
+    threads=1,
+    max_rss_bytes=4 * 2**30,
+    max_address_space_bytes=8 * 2**30,
+    wall_seconds=480,
+    reserve_bytes=8 * 2**30,
+)
 _RETAINED = WeakKeyDictionary()
 _ACTIVE = []
 
@@ -371,8 +378,12 @@ def _check_links(state):
 
 def _resources():
     limits = resource.getrlimit(resource.RLIMIT_AS)
-    if os.sched_getaffinity(0) != {0} or any(n <= 0 or n > POLICY["bytes"] for n in limits):
-        raise PreludeRejected("Native CPU0/1GiB resource envelope required", stage="resources")
+    if os.sched_getaffinity(0) != {0} or any(
+        n <= 0 or n > POLICY["max_address_space_bytes"] for n in limits
+    ):
+        raise PreludeRejected(
+            "Declared native CPU0/address-space envelope required", stage="resources"
+        )
     if (
         any(
             os.environ.get(n) != "1"

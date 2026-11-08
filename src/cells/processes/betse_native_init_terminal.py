@@ -32,17 +32,19 @@ RELEASE = "CELLS_NATIVE_INIT_TERMINAL_RELEASED"
 # limits remain independent. The selected short-history endpoint stays at 64.
 MAX_ITERATIONS = 512
 BASE_SOURCE_SHA256 = "adaf98d4ef08e9c04c36f18dc1d7b89e17d585ab6460443246fc808425614043"
-PARENT_SOURCE_SHA256 = None
-PARENT_REVIEW_SHA256 = None
-PARENT_CLAIM = PARENT_CHECK = None
+PARENT_SOURCE_SHA256 = 'd48a096de688764b950a56acdf80a94b2a63fb954fe8304b57d36677c1ec49b6'
+PARENT_REVIEW_SHA256 = '9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52'
+PARENT_CLAIM = '_claim_for_terminal_init'
+PARENT_CHECK = '_check_terminal_init_authority'
 PROPOSED_PARENT_CLAIM = "_claim_for_terminal_init"
 PROPOSED_PARENT_CHECK = "_check_terminal_init_authority"
 # Proposed names only. No accepted Key API is inferred from these strings.
-RUNTIME_SOURCE_SHA256 = None
-RUNTIME_REVIEW_SHA256 = None
-RUNTIME_CONTRACT = None
+RUNTIME_SOURCE_SHA256 = '6f0e0432a07076a02f88b997d89ab6fae2e9bc9588da36d3dbca8cf582532412'
+RUNTIME_REVIEW_SHA256 = '9fbcbe55bb36523f3025dec86c5c9f1e36360e20a33bfaf6a01eb728065b8e52'
+RUNTIME_CONTRACT = 'actual_original_INIT_natural_calendar_terminal_molecules@1'
 RUNTIME_MODULE = "cells.processes.betse_native_init_terminal_molecules"
-RUNTIME_BEGIN = RUNTIME_END = None
+RUNTIME_BEGIN = 'begin_iteration'
+RUNTIME_END = 'finish_iteration'
 PROPOSED_RUNTIME_BEGIN = "begin_iteration"
 PROPOSED_RUNTIME_END = "finish_iteration"
 PROPOSED_RUNTIME_CONTRACT = "actual_original_INIT_natural_calendar_terminal_molecules@1"

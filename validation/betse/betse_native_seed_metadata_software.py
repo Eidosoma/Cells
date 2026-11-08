@@ -53,6 +53,85 @@ ADOPTION_FILES = (
     "validation/betse/betse_normal_channel_join_runtime.py",
     "tests/__init__.py",
 )
+OBSERVER_TESTS = ("tests/unit/test_betse_native_observer_code_filter.py",)
+OBSERVER_FILES = (
+    FILE,
+    *OBSERVER_TESTS,
+    "tests/unit/test_betse_native_observer_dispatch_cost.py",
+    "src/cells/processes/betse_native_tissue_handler_attachment.py",
+    "src/cells/processes/betse_native_phase_dyna.py",
+    "src/cells/processes/betse_native_seed_world_prefix.py",
+    "validation/source_snapshot.py",
+    "validation/betse/betse_mesh_lifecycle_preparation_guard.py",
+    "validation/betse/betse_normal_channel_join_runtime.py",
+    "tests/__init__.py",
+)
+BYTECODE_TESTS = ("tests/unit/test_betse_native_bytecode_integration.py",)
+BYTECODE_FILES = (
+    FILE,
+    *BYTECODE_TESTS,
+    "tests/unit/test_betse_native_bytecode_bindings.py",
+    "src/cells/processes/betse_native_bytecode_bindings.py",
+    "src/cells/processes/betse_native_parameter_yaml_prefix.py",
+    "src/cells/processes/betse_native_phase_callbacks.py",
+    "src/cells/processes/betse_native_single_cell_grid_alias.py",
+    "validation/source_snapshot.py",
+    "validation/betse/betse_mesh_lifecycle_preparation_guard.py",
+    "validation/betse/betse_normal_channel_join_runtime.py",
+    "tests/__init__.py",
+)
+PHASE_STATE_TESTS = ("tests/unit/test_betse_native_phase_state_metadata.py",)
+PHASE_STATE_FILES = (
+    FILE,
+    *PHASE_STATE_TESTS,
+    "src/cells/processes/betse_native_world_phase_construction.py",
+    "src/cells/processes/betse_native_phase_dyna.py",
+    "src/cells/processes/betse_native_tissue_configuration.py",
+    "src/cells/processes/betse_native_single_cell_caller_lattice.py",
+    "src/cells/processes/betse_initial_mesh_preparation_cache.py",
+    "validation/source_snapshot.py",
+    "validation/betse/betse_mesh_lifecycle_preparation_guard.py",
+    "validation/betse/betse_normal_channel_join_runtime.py",
+    "tests/__init__.py",
+)
+PAIRING_TESTS = ("tests/unit/test_native_demo_reference_pairing.py",)
+PAIRING_FILES = (
+    FILE,
+    *PAIRING_TESTS,
+    "validation/betse/native_seed_demo_launch.py",
+    "validation/betse/betse_native_parameter_world_ready_qualification.py",
+    "validation/betse/native_seed_demo_input_profiles.py",
+    "validation/betse/betse_normal_ecm_molecule_qualification_resources.py",
+    "validation/source_snapshot.py",
+    "validation/betse/betse_mesh_lifecycle_preparation_guard.py",
+    "validation/betse/betse_normal_channel_join_runtime.py",
+    "tests/__init__.py",
+)
+STACK_TESTS = ("tests/unit/test_native_seed_stack_report.py",)
+STACK_FILES = (
+    FILE,
+    *STACK_TESTS,
+    "validation/betse/native_seed_stack_report.py",
+    "validation/source_snapshot.py",
+    "validation/betse/betse_mesh_lifecycle_preparation_guard.py",
+    "validation/betse/betse_normal_channel_join_runtime.py",
+    "tests/__init__.py",
+)
+MEMORY_TESTS = ("tests/unit/test_native_execution_memory_policy.py",)
+MEMORY_FILES = (
+    FILE,
+    *MEMORY_TESTS,
+    "validation/betse/native_seed_demo.py",
+    "validation/betse/native_seed_demo_launch.py",
+    "validation/betse/native_seed_world_callback_prelude.py",
+    "validation/betse/native_seed_world_geometry_qualification.py",
+    "validation/betse/native_init_terminal_reference.py",
+    "validation/betse/native_sim_reference.py",
+    "validation/source_snapshot.py",
+    "validation/betse/betse_mesh_lifecycle_preparation_guard.py",
+    "validation/betse/betse_normal_channel_join_runtime.py",
+    "tests/__init__.py",
+)
 NATIVE_ROOT = "/mnt/workspaces/Cells/betse-v1.5.0/"
 BLOCKED_IMPORTS = frozenset(("cells", "betse", "numpy", "scipy", "jax"))
 _RAW_FAILURES = []
@@ -81,7 +160,23 @@ def _roster(suite):
     if suite == "metadata":
         return TESTS, FILES
     if suite == "adoption":
-        return ADOPTION_TESTS, ADOPTION_FILES
+        plan_path = "validation/betse/native_sim_demo_adoption_plan.json"
+        plan = json.loads((ROOT / plan_path).read_text())
+        return ADOPTION_TESTS, tuple(
+            dict.fromkeys((*ADOPTION_FILES, plan_path, *plan["module_aliases"].values()))
+        )
+    if suite == "observer-filter":
+        return OBSERVER_TESTS, OBSERVER_FILES
+    if suite == "bytecode":
+        return BYTECODE_TESTS, BYTECODE_FILES
+    if suite == "phase-state":
+        return PHASE_STATE_TESTS, PHASE_STATE_FILES
+    if suite == "pairing":
+        return PAIRING_TESTS, PAIRING_FILES
+    if suite == "stacks":
+        return STACK_TESTS, STACK_FILES
+    if suite == "memory-policy":
+        return MEMORY_TESTS, MEMORY_FILES
     raise ValueError("Unknown metadata software suite")
 
 
@@ -92,6 +187,21 @@ def _child(output, suite="metadata"):
     inputs = json.loads((output / "inputs.json").read_text())
     if inputs["suite"] != suite or inputs["selected_test_files"] != list(tests):
         raise ValueError("Frozen metadata software selection changed")
+    selected = inputs.get("selected_functions", [])
+    if selected and (
+        len(tests) != 1
+        or any(
+            type(name) is not str or not name.isidentifier() or not name.startswith("test_")
+            for name in selected
+        )
+        or len(selected) != len(set(selected))
+    ):
+        raise ValueError("Exact unique test-function selectors required")
+    nodes = (
+        [str(ROOT / tests[0]) + "::" + name for name in selected]
+        if selected
+        else [str(ROOT / name) for name in tests]
+    )
     manifest = snapshot.verify(ROOT, manifest_sha256=inputs["snapshot_sha256"])
     if {name: manifest["files"][name]["sha256"] for name in files} != inputs["source_pins"]:
         raise ValueError("Frozen metadata source roster changed")
@@ -189,7 +299,7 @@ def _child(output, suite="metadata"):
                 "--basetemp",
                 str(output / "pytest"),
                 "--junitxml=" + str(output / "junit.xml"),
-                *(str(ROOT / name) for name in tests),
+                *nodes,
             ],
             plugins=[Reports()],
         )
@@ -322,7 +432,7 @@ def _child(output, suite="metadata"):
     return 0 if passed else 1
 
 
-def run(output, cpu, suite="metadata"):
+def run(output, cpu, suite="metadata", selected=()):
     tests, files = _roster(suite)
     output.mkdir(parents=True, exist_ok=False)
     for name in ("reports", "guards", "process"):
@@ -337,6 +447,7 @@ def run(output, cpu, suite="metadata"):
             source_pins={name: row["sha256"] for name, row in manifest["files"].items()},
             suite=suite,
             selected_test_files=tests,
+            selected_functions=selected,
             cpu=cpu,
             threads=1,
             worker_wall_seconds=480,
@@ -431,13 +542,27 @@ def main():
     modes.add_argument("--run", type=Path)
     modes.add_argument("--child", type=Path)
     parser.add_argument("--cpu", type=int, default=4)
-    parser.add_argument("--suite", choices=("metadata", "adoption"), default="metadata")
+    parser.add_argument("--select", nargs="*", default=())
+    parser.add_argument(
+        "--suite",
+        choices=(
+            "metadata",
+            "adoption",
+            "observer-filter",
+            "bytecode",
+            "phase-state",
+            "pairing",
+            "stacks",
+            "memory-policy",
+        ),
+        default="metadata",
+    )
     args = parser.parse_args()
     os.sched_setaffinity(0, {args.cpu})
     resource.setrlimit(resource.RLIMIT_AS, (2**30 if args.child else 512 * 2**20, 2**30))
     if args.child:
         return _child(args.child.resolve(), args.suite)
-    print(json.dumps(run(args.run.resolve(), args.cpu, args.suite)))
+    print(json.dumps(run(args.run.resolve(), args.cpu, args.suite, tuple(args.select))))
     return 0
 
 

@@ -965,6 +965,142 @@ def test_sim_compare_full_SIM_common_start_route(tmp_path, monkeypatch, defect):
     full_sim_common_control(tmp_path, monkeypatch, defect)
 
 
+def full_sim_policy_control(tmp_path, monkeypatch, defect):
+    """Keep code/files fixed while resealing data against changed live policy."""
+    from tests.unit import test_native_sim_demo_report as full
+
+    value = full.common_fixture(tmp_path)
+    _full_sim_accepted_provenance(value, full)
+    launch = full.report.launch
+    old_gates = launch.SIM_GATES
+    source_pin = compare.snapshot.digest(Path(launch.__file__))
+    functions = {
+        name: (vars(launch)[name].__code__, vars(launch)[name].__globals__)
+        for name in ("source_plan", "_sim_contract", "_wall_seconds", "_producers")
+    }
+    if defect in ("gates_empty", "gates_list"):
+        monkeypatch.setattr(launch, "SIM_GATES", () if defect == "gates_empty" else list(old_gates))
+    elif defect.startswith("policy_"):
+        changed = dict(launch.POLICY)
+        if defect == "policy_wall":
+            changed["wall_seconds"] += 1
+        elif defect == "policy_bool_cpu":
+            changed["cpu"] = False
+        else:
+            changed["unreviewed"] = 1
+        monkeypatch.setattr(launch, "POLICY", changed)
+    elif defect == "diagnostic_wall":
+        monkeypatch.setattr(launch, "DIAGNOSTIC_WALL_SECONDS", launch.DIAGNOSTIC_WALL_SECONDS + 1)
+    elif defect == "observer_gate":
+        monkeypatch.setattr(full.report.observation, "RELEASE", launch.DEMO_RELEASE)
+    plan = full.read(value.plan)
+    if defect == "gates_empty":
+        for name in old_gates:
+            del plan["release_environment"][name]
+    if defect == "observer_gate":
+        del plan["release_environment"]["CELLS_COMPLETED_SIM_OBSERVATION_RELEASED"]
+    declared = full.read(Path(plan["demo_plan"]["path"]))
+    plan["policy"] = dict(launch.POLICY)
+    declared["policy"] = dict(launch.POLICY)
+    if defect == "observer_gate":
+        declared["source_plan"]["optional_sim_terminal"]["completed_observation"]["release"] = (
+            full.report.observation.RELEASE
+        )
+    plan["limitations"] = launch.source_plan(endpoint="sim_terminal")
+    plan["demo_plan"] = full.write(Path(plan["demo_plan"]["path"]), declared)
+    value.digest = full.write(value.plan, plan)["sha256"]
+    target = value.output / "process/process-inputs.json"
+    process_inputs = full.read(target)
+    process_inputs["command"][process_inputs["command"].index("--plan-sha256") + 1] = value.digest
+    result_path = value.output / "process/result.json"
+    process_result = full.read(result_path)
+    for key, field in (
+        ("max_wall_seconds", "wall_seconds"),
+        ("max_process_tree_rss_bytes", "max_rss_bytes"),
+        ("min_available_host_memory_bytes", "reserve_bytes"),
+    ):
+        process_result["limits"][key] = plan["policy"][field]
+    process_inputs["limits"] = dict(process_result["limits"])
+    full.write(target, process_inputs)
+    full.write(result_path, process_result)
+    worker = full.read(value.worker / "result.json")
+    worker["plan_sha256"] = value.digest
+    controller = full.read(value.output / "result.json")
+    controller.update(
+        plan_sha256=value.digest,
+        process=process_result,
+        worker=full.write(value.worker / "result.json", worker),
+    )
+    full.write(value.output / "result.json", controller)
+    # The original parser accepts the changed live policy and matching data.
+    # This is metadata only, not an actual release or model execution.
+    full.report._plan(compare.report.Reader(), value.plan, value.digest)
+    assert compare.snapshot.digest(Path(launch.__file__)) == source_pin
+    assert all(
+        vars(launch)[name].__code__ is code and vars(launch)[name].__globals__ is namespace
+        for name, (code, namespace) in functions.items()
+    )
+    calls = []
+    prior = sys.getprofile()
+    entry = full.report._plan.__code__
+
+    def profile(frame, event, arg):
+        if event == "call" and frame.f_code is entry:
+            calls.append("policy-dependent plan parser")
+        if prior is not None:
+            prior(frame, event, arg)
+
+    try:
+        sys.setprofile(profile)
+        side = compare.demo_starting_rng(
+            dict(plan=full.pin(value.plan), outcome=full.pin(value.worker / "demo/outcome.json"))
+        )
+    finally:
+        sys.setprofile(prior)
+    assert sys.getprofile() is prior
+    if defect == "unchanged":
+        assert calls == ["policy-dependent plan parser"]
+        assert side["authenticated"] and side["available"], side["error"]
+        compare._common_saved_side(side, "cells")
+    else:
+        assert side["authenticated"] is side["available"] is False
+        assert calls == []
+        assert "policy" in side["error"]["message"] or "release value" in side["error"]["message"]
+    full.write(
+        tmp_path / "live-policy-counterexample.json",
+        dict(
+            defect=defect,
+            direct_metadata_parser_accepted=True,
+            source_sha256_unchanged=source_pin,
+            callable_atoms_unchanged=True,
+            gates_remaining=list(launch.SIM_GATES),
+            five_flags_removed=defect == "gates_empty",
+            comparison_parser_calls=calls,
+            failure=side["failure"],
+            error=side["error"],
+            prior_profile_restored=sys.getprofile() is prior,
+            actual_source_or_RNG_calls=0,
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "unchanged",
+        "gates_empty",
+        "gates_list",
+        "policy_wall",
+        "policy_bool_cpu",
+        "policy_extra",
+        "diagnostic_wall",
+        "observer_gate",
+    ],
+)
+def test_sim_compare_live_policy_values_bound_to_pinned_source(tmp_path, monkeypatch, defect):
+    full_sim_policy_control(tmp_path, monkeypatch, defect)
+
+
 def _typed(value, columns):
     if type(value) is dict:
         if value.get("__ndarray__") is True:
@@ -1746,7 +1882,11 @@ def _terminal_saved(tmp_path, monkeypatch):
         role: _save(tmp_path / f"review-{role}.json", value) for role, value in contracts.items()
     }
     source_plan["reviews"] = {role: pin["sha256"] for role, pin in reviews.items()}
-    file_names = (*compare.REF_PRODUCERS, producer.initial.FILE)
+    file_names = (
+        *compare.REF_PRODUCERS,
+        producer.initial.FILE,
+        producer.initial.native_imports.FILE,
+    )
     files, accepted = {}, {}
     for name in file_names:
         raw = (software.ROOT / name).read_bytes()
@@ -1759,14 +1899,18 @@ def _terminal_saved(tmp_path, monkeypatch):
             }
             body = []
             for node in tree.body:
-                if isinstance(node, ast.Assign) and {
-                    getattr(t, "id", None) for t in node.targets
-                } == set(adopted):
+                names = (
+                    {getattr(t, "id", None) for t in node.targets}
+                    if isinstance(node, ast.Assign)
+                    else set()
+                )
+                if isinstance(node, ast.Assign) and names and names <= set(adopted):
                     body.extend(
                         ast.Assign(
                             targets=[ast.Name(id=key, ctx=ast.Store())], value=ast.Constant(value)
                         )
                         for key, value in adopted.items()
+                        if key in names
                     )
                 else:
                     body.append(node)
@@ -1809,6 +1953,12 @@ def _terminal_saved(tmp_path, monkeypatch):
         native_root=str(producer.initial.NATIVE_ROOT),
         native_inventory=native,
         native_inventory_sha256=producer.initial._seal(native),
+        selections={
+            path: row["selections"]
+            for path, row in producer.initial.native_imports.expected_selections(
+                producer.initial.NATIVE_ROOT, native, "original"
+            ).items()
+        },
         inputs=dict(
             root=str(inputs), inventory=inventory, mode="original", profile="headless_core"
         ),
@@ -1991,6 +2141,23 @@ def _terminal_saved(tmp_path, monkeypatch):
         name: {key: row[key] for key in ("path", "sha256")}
         for name, row in native_producers.items()
     }
+    from tests.unit.test_native_init_terminal_reference_compare import _import_lifecycle_fixture
+
+    lifecycle = _import_lifecycle_fixture(producer.initial.NATIVE_ROOT, native, loaded)
+    selected = source_plan["original"]["selected_caller_compiler"]
+    lifecycle["programs"] = {
+        selected["module"]: dict(
+            stage="completed",
+            source_sha256=selected["source_sha256"],
+            original_source_sha256=native["betse/science/simrunner.py"]["sha256"],
+            AST_sha256=selected["AST_sha256"],
+            module_code_sha256="0" * 64,
+            loader_base="beartype.claw._importlib._clawimpload.BeartypeSourceFileLoader",
+            native_beartype=True,
+            entry=selected["entry"],
+        )
+    }
+    loaded.update(lifecycle["runtime"]["loaded_modules"])
     for name in (producer.FILE, producer.LITERAL, producer.initial.FILE):
         loaded[name[:-3].replace("/", ".")] = dict(
             path=str(source / name), sha256=files[name]["sha256"]
@@ -2001,6 +2168,7 @@ def _terminal_saved(tmp_path, monkeypatch):
             python="synthetic-runtime-only",
             executable=dict(path=str(executable), sha256=compare.snapshot.digest(executable)),
             loaded_files=loaded,
+            modules_without_files=["beartype._data.claw"],
         ),
     )
     _save(
@@ -2018,7 +2186,8 @@ def _terminal_saved(tmp_path, monkeypatch):
             execution_source=execution,
             prepared_inputs=parent_plan["inputs"],
             execution_inputs=copied,
-            native_producers=native_producers,
+            native_producers=lifecycle["modules"],
+            native_import_lifecycle=lifecycle,
         ),
     )
     policy = source_plan["resource_policy"]
