@@ -5,7 +5,6 @@ import json
 import math
 import shutil
 from pathlib import Path
-from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -189,24 +188,53 @@ def test_layout_phase_follows_betse_sampling_and_cell_means(case):
         adapter.layout_phase(world, [0.01], vm, cell, env, np.zeros((2, ROWS * COLS)))
 
 
-def test_resolved_observations_become_betse_ordered_concentrations(case):
+def test_resolved_observations_follow_the_physical_route_mapping(case):
     world = adapter.betse_world(case)
     raw = adapter.resolved_definition(world, "init", adapter.phase_start(world, "init"), dt=1e-3)
-    times = np.array([0.0, 2e-3, 4e-3])
     cells_pL = np.array([c["volume_pL"] for c in raw["model"]["cells"]])
-    padded = 3  # observation slots may exceed the declared routes
-    observations = SimpleNamespace(
-        times=times,
-        amount=np.full((3, 4, 2 + padded), 5.0) * np.append(cells_pL, np.ones(padded)),
-        extracellular_amount=np.full((3, 4, ROWS * COLS), 2.0),
-        membrane_voltage_V=np.full((3, AREA.size + padded), -0.02),
-        extracellular_potential_V=np.zeros((3, ROWS * COLS)),
-    )
+    padded, o, m = 3, ROWS * COLS, AREA.size  # observation slots may exceed the routes
+    increment = np.zeros((3, 4, 2 + padded))
+    increment[1:, 0, 0] = 1e-3  # +1 amol Na in cell 0 after the first sample
+    observations = {
+        "times": np.array([0.0, 2e-3, 4e-3]),
+        "amount_increment": increment,
+        "amount": np.full((3, 4, 2 + padded), 5.0) * np.append(cells_pL, np.ones(padded)),
+        "extracellular_amount": np.full((3, 4, o), 2.0),
+        "extracellular_amount_increment": np.zeros((3, 4, o)),
+        "membrane_voltage_V": np.full((3, m + padded), -0.02),
+        "cell_potential_V": np.zeros((3, 2 + padded)),
+        "extracellular_potential_V": np.zeros((3, o)),
+        "junction_gate": np.ones((3, 1 + padded)),
+        "charge_residual_C": np.zeros((3, 2)),
+        "component_current_residual_A": np.zeros((3, 2)),
+    }
     phase = adapter.resolved_layout_phase(world, raw, observations)
+    history = phase["history"]
     assert phase["elapsed_after_update_s"] == [2e-3, 4e-3] and phase["final_elapsed_s"] == 4e-3
-    np.testing.assert_allclose(phase["history"]["cc_time"], 5.0)
-    np.testing.assert_allclose(phase["history"]["cc_env_time"], 2.0)  # site volume 1 pL
-    assert phase["history"]["vm_time"].shape == (2, AREA.size)
+    np.testing.assert_allclose(history["cc_time"], 5.0)
+    np.testing.assert_allclose(history["cc_env_time"], 2.0)  # site volume 1 pL
+    capacitance = 0.05 * AREA[OWNER == 0].sum()  # C_patch = cm * mem_sa
+    expected = 96485.33212331001e-15 * 1e-3 / capacitance  # Q_cell / sum(C_patch)
+    np.testing.assert_allclose(history["vm_ave_time"][:, 0], expected, rtol=1e-12)
+    np.testing.assert_array_equal(history["vm_time"], history["vm_ave_time"][:, OWNER])
+    assert "venv_time" not in history and history["diag_patch_voltage_time"].shape == (2, m)
+    assert phase["final"]["diag_extracellular_potential"].shape == (o,)
+    assert adapter._isolated_sites(raw).tolist() == []  # every interior site faces a membrane
+
+
+def test_blind_world_reads_no_betse_history_or_end_state(case, tmp_path):
+    blind = tmp_path / "blind"
+    shutil.copytree(case, blind)
+    for name in ("init_history.npz", "sim_history.npz", "sim_final.npz"):
+        (blind / name).unlink()
+    world = adapter.betse_world(blind, blind=True)
+    assert world["init_final"] is None
+    np.testing.assert_array_equal(
+        world["membrane_permeability_m_s"]["sim"],
+        adapter.betse_world(case)["membrane_permeability_m_s"]["sim"],
+    )
+    with pytest.raises(adapter.AdapterError):
+        adapter.phase_start(world, "sim", "betse")
 
 
 def test_channel_free_variant_replaces_the_kv1p5_temperature_guard(case):
@@ -261,6 +289,30 @@ def test_layout_pair_comparison_detects_a_difference(emulated, tmp_path):
     changed = adapter.compare_layouts(root / "layout", other, protocol)
     assert changed["verdict"] == "fail"
     assert changed["phases"]["sim"]["history/vm_time"]["max_abs"] == pytest.approx(1e-8)
+
+
+def test_dt_factor_keeps_betse_sampling_and_feeds_the_budget(case, emulated, tmp_path):
+    root, protocol, _ = emulated
+    record = adapter.run_emulator(
+        case,
+        protocol,
+        tmp_path / "f2",
+        constants="betse",
+        device_kind="cpu",
+        sim_start="chained",
+        dt_factor=2,
+    )
+    assert record["valid"] and record["phases"]["init"]["updates"] == 2 * STEPS["init"]
+    assert record["phases"]["sim"]["dt_s"] == pytest.approx(DT["sim"] / 2)
+    world = adapter.betse_world(case)
+    budget = adapter.layout_difference(world, root / "layout", tmp_path / "f2")
+    for phase, row in budget["phases"].items():
+        assert row["samples"] == STEPS[phase] and set(row["observables"]) == set(adapter.BUDGET)
+        for obs in row["observables"].values():
+            assert np.isfinite(obs["max"]) and np.isfinite(obs["final"]["max"])
+            assert obs["elapsed_s"] in [(k + 1) * DT[phase] for k in range(STEPS[phase])]
+    same = adapter.layout_difference(world, root / "layout", root / "layout")
+    assert all(o["max"] == 0 for r in same["phases"].values() for o in r["observables"].values())
 
 
 def test_chained_sim_starts_from_the_emulator_init_end(case, tmp_path):

@@ -48,6 +48,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Difference budget and first blind resolved run (8 November).**
+  [Index](/mnt/workspaces/Cells/default-world-parity-20261108-01/index.json).
+  - **Emulator-only budget** (dense default world; `difference_budget.json`):
+    - BETSE's own 10 ms INIT step versus dt/100 differs by up to 130 µV in Vmem
+      (at 0.34 s; 4.9 nV by the end of INIT; first order), 2.8e-6 in cell
+      concentrations and 3.6e-5 in ECM concentrations.
+    - BETSE's rounded constants versus CODATA give a steady 1.22 µV.
+    - The ECM maximum sits on the boundary ring, which BETSE resets every step
+      and the resolved model holds as reservoirs. Ring sites are excluded from
+      judged ECM concentrations.
+  - **Blind resolved run** (`resolved_pump_tissue@1`, ARS(2,2,2) at 1 ms, real
+    geometry; BETSE histories not read):
+    - It stopped near 2 s on the global-charge check. That bound is a fixed 3e-25 C,
+      while reservoir supply accumulates about 1e-9 C, so float64 rounding
+      (about 3e-16 relative) crosses it. A scaled bound is in progress.
+    - Up to then everything held: 1 Newton iteration per window, material ledger
+      within 3.6e-15 fmol, CPU vs L4 within 3e-15 V. About 90 ms per step on CPU
+      and 60 ms on the L4.
+
 - **Stage A: copied BETSE code removed from the engine (8 November).** 716 files
   deleted, 63 adapted, 1 added. Deleted: 243 `src` modules (the 207
   `betse_native_*`/`betse_normal_*`, 34 BETSE glue modules, and 2 BETSE-only

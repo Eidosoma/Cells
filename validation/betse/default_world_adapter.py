@@ -25,6 +25,10 @@ geometry sha256 fixed before the run.
         --a LAYOUT_A --b LAYOUT_B --protocol P.json --out DIR
     python3 validation/betse/default_world_adapter.py resolved-definition \\
         --case CASE --phase init --dt 1e-3 --out FILE.json
+    ... run --dt-factor F --sim-start chained ...      (emulator at BETSE's dt / F)
+    ... difference-budget --case CASE --pair NAME BASE OTHER ... --out FILE.json
+    ... snapshot --engine --out RUN/source; ... run-resolved --case CASE --device gpu --out DIR
+    ... layout-differences --a LAYOUT_A --b LAYOUT_B --out FILE.json   (e.g. CPU vs L4)
 
 Relative ``--out`` paths resolve against $CELLS_OUTPUT_ROOT.
 """
@@ -157,9 +161,25 @@ def betse_parameters(manifest, phase):
     return simple | keyed
 
 
-def betse_world(path):
-    """Backend-neutral physical inputs of one BETSE default-world case (see WORLD_UNITS)."""
-    directory, manifest = load_case(path)
+def _blind_case(path):
+    """Manifest and the two input files a blind run reads, checked against the manifest."""
+    directory = compare.betse_extract_dir(path)
+    manifest = json.loads((directory / "manifest.json").read_text())
+    for name in ("geometry.npz", "init_final.npz"):
+        if reference_run.sha256_file(directory / name) != manifest["files"][name]["sha256"]:
+            raise AdapterError(f"{name}: file sha256 differs from the extract manifest")
+    return directory, manifest
+
+
+def betse_world(path, *, blind=False):
+    """Backend-neutral physical inputs of one BETSE default-world case (see WORLD_UNITS).
+
+    ``blind`` reads no BETSE history or end-state observable: only the manifest,
+    geometry.npz and the parameter arrays Dm_cells, D_env and D_gj of init_final.npz
+    (their constancy over both phases is checked by non-blind reads). SIM must then
+    continue from the backend's own INIT end.
+    """
+    directory, manifest = _blind_case(path) if blind else load_case(path)
     params = {phase: betse_parameters(manifest, phase) for phase in PHASES}
     scalars = {p: manifest["final_state"][p]["scalars"] for p in PHASES}
     for phase in PHASES:
@@ -173,7 +193,11 @@ def betse_world(path):
             raise AdapterError("nonzero global boundary voltages are not mapped")
     p = params["init"]
     geometry = _npz(directory / "geometry.npz")
-    finals = {phase: _npz(directory / f"{phase}_final.npz") for phase in PHASES}
+    if blind:
+        inputs = _npz(directory / "init_final.npz", ("Dm_cells", "D_env", "D_gj"))
+        finals = {phase: inputs for phase in PHASES}
+    else:
+        finals = {phase: _npz(directory / f"{phase}_final.npz") for phase in PHASES}
     ions = manifest["ions"]
     species = list(ions["order"])
     valence = np.asarray(ions["valence"], dtype=np.float64)
@@ -187,9 +211,10 @@ def betse_world(path):
     membrane_permeability = {}
     for phase in PHASES:
         dm = finals[phase]["Dm_cells"]
-        history = _npz(directory / f"{phase}_history.npz", ["dd_time"])["dd_time"]
-        if not np.all(history == dm[None]):
-            raise AdapterError(f"{phase}: Dm_cells is not constant (channels or events)")
+        if not blind:
+            history = _npz(directory / f"{phase}_history.npz", ["dd_time"])["dd_time"]
+            if not np.all(history == dm[None]):
+                raise AdapterError(f"{phase}: Dm_cells is not constant (channels or events)")
         membrane_permeability[phase] = dm / p["tm"]
     rows, cols = (int(v) for v in geometry["X"].shape)
     k = np.arange(rows * cols)
@@ -244,7 +269,9 @@ def betse_world(path):
         "steps": {phase: int(manifest["time"][phase]["n_steps"]) for phase in PHASES},
         "betse_ko_env": {phase: float(scalars[phase]["ko_env"]) for phase in PHASES},
         "time": {phase: manifest["time"][phase] for phase in PHASES},
-        "init_final": {
+        "init_final": None
+        if blind
+        else {
             "cell_mM": finals["init"]["cc_cells"],
             "membrane_mM": finals["init"]["cc_at_mem"],
             "env_mM": finals["init"]["cc_env"],
@@ -293,7 +320,7 @@ def phase_start(world, phase, sim_start="betse", chained=None):
             "env_mM": np.repeat(world["initial_env_mM"][:, None], o, axis=1),
             "gate_open": np.ones(m),
         }
-    if sim_start == "betse":
+    if sim_start == "betse" and world["init_final"] is not None:
         return {k: np.array(v, dtype=np.float64) for k, v in world["init_final"].items()}
     if sim_start == "chained" and chained is not None:
         return {k: np.array(v, dtype=np.float64) for k, v in chained.items()}
@@ -303,60 +330,103 @@ def phase_start(world, phase, sim_start="betse", chained=None):
 # ............................................................ comparison layout
 
 
-def layout_phase(world, elapsed, vm, cell_mM, env_mM, v_env):
+def layout_phase(world, elapsed, vm, cell_mM, env_mM, v_env=None, *, vm_ave=None, diagnostics=None):
     """Comparison-layout phase from samples at ``elapsed`` (s after the phase start).
 
     vm (S, membranes) V; cell_mM (S, ions, cells); env_mM (S, ions, sites); v_env
-    (S, sites) V. The last sample is the phase end state.
+    (S, sites) V or None (no venv_time). vm_ave defaults to BETSE's plain mean of a
+    cell's membrane voltages. ``diagnostics`` maps "diag_*_time" names to (S, ...)
+    arrays that no protocol judges. The last sample is the phase end state.
     """
-    vm, cell_mM, env_mM, v_env = (
-        np.asarray(a, dtype=np.float64) for a in (vm, cell_mM, env_mM, v_env)
-    )
-    if not len(elapsed) == len(vm) == len(cell_mM) == len(env_mM) == len(v_env):
-        raise AdapterError("observables and elapsed times have different sample counts")
+    history = {"vm_time": vm, "cc_time": cell_mM, "cc_env_time": env_mM}
+    if v_env is not None:
+        history["venv_time"] = v_env
+    history = {k: np.asarray(v, dtype=np.float64) for k, v in history.items()}
     owner, n = world["membrane_cell"], world["cell_volume_m3"].size
-    counts = np.bincount(owner, minlength=n)
-    vm_ave = np.stack([np.bincount(owner, row, minlength=n) / counts for row in vm])
-    history = {
-        "vm_time": vm,
-        "vm_ave_time": vm_ave,
-        "cc_time": cell_mM,
-        "cc_env_time": env_mM,
-        "venv_time": v_env,
-    }
+    if vm_ave is None:
+        counts = np.bincount(owner, minlength=n)
+        vm_ave = np.stack([np.bincount(owner, row, minlength=n) / counts for row in vm])
+    history["vm_ave_time"] = np.asarray(vm_ave, dtype=np.float64)
+    extra = {k: np.asarray(v) for k, v in (diagnostics or {}).items()}
+    if any(not k.startswith("diag_") or not k.endswith("_time") for k in extra):
+        raise AdapterError("diagnostic arrays are named diag_*_time")
+    if any(len(v) != len(elapsed) for v in (*history.values(), *extra.values())):
+        raise AdapterError("observables and elapsed times have different sample counts")
+    final = {compare.SUPPORTED[k]: v[-1] for k, v in history.items()}
+    final |= {k.removesuffix("_time"): v[-1] for k, v in extra.items()}
     return {
         "elapsed_after_update_s": [float(t) for t in elapsed],
         "final_elapsed_s": float(elapsed[-1]),
-        "history": history,
-        "final": {compare.SUPPORTED[k]: v[-1] for k, v in history.items()},
+        "history": history | extra,
+        "final": final,
     }
+
+
+RESOLVED_OBSERVED = (
+    "times",
+    "amount_increment",
+    "amount",
+    "extracellular_amount",
+    "extracellular_amount_increment",
+    "membrane_voltage_V",
+    "cell_potential_V",
+    "extracellular_potential_V",
+    "junction_gate",
+    "charge_residual_C",
+    "component_current_residual_A",
+)
 
 
 def resolved_layout_phase(world, definition, observations):
     """Comparison-layout phase from resolved_pump_tissue@1 observations of one phase.
 
-    Slots follow the definition's order (BETSE cells, row-major grid points, BETSE
-    membranes); ``amount``/``extracellular_amount`` are (S, species, slots) fmol,
-    divided by each compartment's volume (pL) to give mM. The t = 0 row is dropped.
+    Judged arrays follow physical_route_observables.txt: vm_ave_time is each cell's
+    charge voltage Q_cell / sum(C_patch), with Q_cell = initial_charge_C + F * sum
+    z * amount_increment and C_patch = cm * mem_sa; vm_time broadcasts it to the
+    cell's membranes; concentrations are amount / volume (mM, BETSE order). Per-patch
+    voltages and node potentials are diag_* arrays; there is no venv_time. Slots
+    follow the definition (BETSE cells, row-major grid points, BETSE membranes);
+    ``observations`` maps RESOLVED_OBSERVED names to stacked arrays, amounts being
+    (S, species, slots). The t = 0 row is dropped.
     """
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+
     model = definition["model"]
     n, o, m = (len(model[k]) for k in ("cells", "extracellular", "membranes"))
-    species = len(model["species"])
-    times = np.asarray(observations.times, dtype=np.float64)
-    keep = times > 0
-    amount = np.asarray(observations.amount)[keep]
-    outside = np.asarray(observations.extracellular_amount)[keep]
-    if amount.shape[1] != species or outside.shape[1] != species:
+    valence = np.array([row["valence"] for row in model["species"]], dtype=np.float64)
+    obs = {k: np.asarray(observations[k]) for k in RESOLVED_OBSERVED}
+    keep = obs["times"] > 0
+    obs = {k: v[keep] for k, v in obs.items()}
+    if (
+        obs["amount"].shape[1] != valence.size
+        or obs["extracellular_amount"].shape[1] != valence.size
+    ):
         raise AdapterError("resolved amounts are not (samples, species, slots)")
+    owner = world["membrane_cell"]
+    capacitance = np.bincount(
+        owner, [row["capacitance_F"] for row in model["membranes"]], minlength=n
+    )
+    charge0 = np.array([row["initial_charge_C"] for row in model["cells"]])
+    charge = charge0 + CHARGE_PER_FMOL * np.einsum(
+        "s,tsn->tn", valence, obs["amount_increment"][:, :, :n]
+    )
+    vm_ave = charge / capacitance
     cell_pL = np.array([c["volume_pL"] for c in model["cells"]])
     site_pL = np.array([c["volume_pL"] for c in model["extracellular"]])
+    diagnostics = {
+        "diag_patch_voltage_time": obs["membrane_voltage_V"][:, :m],
+        "diag_cell_potential_time": obs["cell_potential_V"][:, :n],
+        "diag_extracellular_potential_time": obs["extracellular_potential_V"][:, :o],
+        "diag_junction_gate_time": obs["junction_gate"][:, : len(model["junctions"])],
+    }
     return layout_phase(
         world,
-        times[keep],
-        np.asarray(observations.membrane_voltage_V)[keep][:, :m],
-        amount[:, :, :n] / cell_pL,
-        outside[:, :, :o] / site_pL,
-        np.asarray(observations.extracellular_potential_V)[keep][:, :o],
+        obs["times"],
+        vm_ave[:, owner],
+        obs["amount"][:, :, :n] / cell_pL,
+        obs["extracellular_amount"][:, :, :o] / site_pL,
+        vm_ave=vm_ave,
+        diagnostics=diagnostics,
     )
 
 
@@ -463,8 +533,12 @@ def emulator_inputs(world, phase, start, variant):
     return state, layout, ko
 
 
-def emulator_phase(state, layout, dt, steps, variant, device):
-    """Run one phase on ``device``; per-update observables and the end state."""
+def emulator_phase(state, layout, dt, steps, variant, device, substeps=1):
+    """Run one phase on ``device``; observables after every ``substeps`` updates of dt.
+
+    With substeps = f > 1 the phase takes f * steps updates of dt (the caller passes
+    BETSE's dt / f) and records the same sample times as BETSE.
+    """
     import jax
     import jax.numpy as jnp
 
@@ -474,11 +548,17 @@ def emulator_phase(state, layout, dt, steps, variant, device):
     control = junction.Control(*(np.ones(m) for _ in junction.Control._fields))
 
     def run(state, layout, dt, control):
-        def one(carry, _):
+        def update(carry):
             old, ok = carry
             new, _, valid = junction.step(old, layout, dt, control, variant=variant)
             ok = ok & valid
-            new = jax.tree.map(lambda a, b: jnp.where(ok, a, b), new, old)
+            return jax.tree.map(lambda a, b: jnp.where(ok, a, b), new, old), ok
+
+        def one(carry, _):
+            if substeps == 1:
+                new, ok = update(carry)
+            else:
+                new, ok = jax.lax.fori_loop(0, substeps, lambda _, c: update(c), carry)
             f = spatial.field(new.active.tissue, layout.active.tissue, variant=variant)
             tissue = new.active.tissue
             record = (
@@ -502,8 +582,8 @@ def emulator_phase(state, layout, dt, steps, variant, device):
     accepted = history[-1]
     return {
         "valid": bool(ok),
-        "accepted_updates": int(accepted.sum()),
-        "first_rejected_update": None if accepted.all() else int(np.argmin(accepted)) + 1,
+        "accepted_samples": int(accepted.sum()),
+        "first_rejected_sample": None if accepted.all() else int(np.argmin(accepted)) + 1,
         "wall_s_including_compile": wall,
         "vm": history[0],
         "cell_mM": history[1],
@@ -519,7 +599,7 @@ def emulator_phase(state, layout, dt, steps, variant, device):
     }
 
 
-def run_emulator(case, protocol_path, out, *, constants, device_kind, sim_start):
+def run_emulator(case, protocol_path, out, *, constants, device_kind, sim_start, dt_factor=1):
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -534,14 +614,15 @@ def run_emulator(case, protocol_path, out, *, constants, device_kind, sim_start)
         start = phase_start(world, phase, sim_start, chained)
         state, layout, ko = emulator_inputs(world, phase, start, variant)
         dt, steps = world["dt_s"][phase], world["steps"][phase]
-        result = emulator_phase(state, layout, dt, steps, variant, device)
+        result = emulator_phase(state, layout, dt / dt_factor, steps, variant, device, dt_factor)
         chained = result["end"]
         records[phase] = {
-            "dt_s": dt,
-            "updates": steps,
+            "dt_s": dt / dt_factor,
+            "dt_factor": dt_factor,
+            "updates": steps * dt_factor,
             "valid": result["valid"],
-            "accepted_updates": result["accepted_updates"],
-            "first_rejected_update": result["first_rejected_update"],
+            "accepted_samples": result["accepted_samples"],
+            "first_rejected_sample": result["first_rejected_sample"],
             "wall_s_including_compile": result["wall_s_including_compile"],
             "start": "configured cell/env concentrations, gates 1"
             if phase == "init"
@@ -551,7 +632,7 @@ def run_emulator(case, protocol_path, out, *, constants, device_kind, sim_start)
             "ko_env_relative_difference": ko / world["betse_ko_env"][phase] - 1,
             "gate_open_range": [float(result["gate_open"].min()), float(result["gate_open"].max())],
         }
-        elapsed = [(k + 1) * dt for k in range(steps)]  # sample k: after k + 1 updates
+        elapsed = [(k + 1) * dt for k in range(steps)]  # BETSE sample k: after k + 1 of its dt
         phases[phase] = layout_phase(
             world, elapsed, result["vm"], result["cell_mM"], result["env_mM"], result["v_env"]
         )
@@ -564,6 +645,7 @@ def run_emulator(case, protocol_path, out, *, constants, device_kind, sim_start)
         "model": "validation/betse/emulator (BETSE-order kernel, not an engine model)",
         "variant": variant._asdict(),
         "constants": constants,
+        "dt_factor": dt_factor,
         "device": str(device),
         "jax": jax.__version__,
         "sim_start": sim_start,
@@ -655,11 +737,19 @@ RESOLVED_MODEL_ID = "resolved_pump_tissue@1"
 RESOLVED_SOLVER = "imex_ars222_face_electromigration@1"
 RESOLVED_FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
 RESOLVED_CLOSURE = "resolved_capacitor_components_current_continuity@1"
-CONTRACT_CHARGE_PER_FMOL_C = 96485.33212e-15  # the identity's initial_charge_C convention
 NEUTRAL_ROUNDOFF = 1e-14  # |sum z*amount| / sum |z*amount| treated as a neutral composition
 
 
-def resolved_definition(world, phase, start, *, dt, observation_elapsed=None, backend="cpu"):
+def resolved_definition(
+    world,
+    phase,
+    start,
+    *,
+    dt,
+    observation_elapsed=None,
+    backend="cpu",
+    solver=RESOLVED_SOLVER,
+):
     """resolved_pump_tissue@1 definition of one BETSE phase (contract of 8 November).
 
     Cells keep BETSE's order; outside nodes are the row-major ECM grid points, the
@@ -669,40 +759,65 @@ def resolved_definition(world, phase, start, *, dt, observation_elapsed=None, ba
     between two reservoirs; area cell_height * delta and length delta, so the face
     factor D * area / length = D * cell_height (BETSE's own stencil is 2*delta wide).
     Immobile P stays a species with zero permeability and diffusivity.
+
+    ``start`` holds concentrations (cell_mM, env_mM, per-membrane gate_open), or a
+    handoff from ``resolved_handoff``: amounts (cell_fmol, env_fmol), each
+    compartment's fixed charge and tracked charge and the per-junction gates, used
+    unchanged (recomputing charge from absolute amounts would add roundoff that
+    floating capacitor components cannot hold).
     """
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+
     species = world["species"]
     valence = world["valence"]
     n, m = world["cell_volume_m3"].size, world["membrane_area_m2"].size
     rows, cols = world["grid_shape"]
     ring = set(world["ring_sites"].tolist())
 
-    def compartment(prefix, index, volume_m3, mM, amounts=None):
+    handoff = "cell_fmol" in start
+
+    def compartment(prefix, index, volume_m3, values, fixed=None, charge_C=None):
         volume_pL = float(volume_m3) * 1e15
-        values = mM if amounts is None else amounts
-        amount = {sp: float(values[i]) * volume_pL for i, sp in enumerate(species)}
+        scale = 1.0 if handoff else volume_pL  # amounts as handed off, or c * V
+        amount = {sp: float(values[i]) * scale for i, sp in enumerate(species)}
         terms = [float(valence[i]) * amount[sp] for i, sp in enumerate(species)]
-        charge = math.fsum(terms)
-        # A neutral composition gives a roundoff charge (<= 1e-14 fmol here) once
-        # amount = c * V is rounded; floating capacitor components need exactly zero,
-        # so that residual is the fixed background. Charged states are left as given.
-        neutral = abs(charge) <= NEUTRAL_ROUNDOFF * math.fsum(abs(t) for t in terms)
-        fixed = -charge if neutral else 0.0
+        if fixed is None:
+            # A neutral composition gives a roundoff charge (<= 1e-14 fmol here) once
+            # amount = c * V is rounded; floating capacitor components need exactly
+            # zero, so that residual is the fixed background. Charged states stay.
+            charge = math.fsum(terms)
+            neutral = abs(charge) <= NEUTRAL_ROUNDOFF * math.fsum(abs(t) for t in terms)
+            fixed = -charge if neutral else 0.0
         return {
             "id": f"{prefix}{index}",
             "volume_pL": volume_pL,
             "initial_amount_fmol": amount,
-            "fixed_charge_equivalent_fmol": fixed,
-            "initial_charge_C": CONTRACT_CHARGE_PER_FMOL_C * math.fsum([fixed, *terms]),
+            "fixed_charge_equivalent_fmol": float(fixed),
+            "initial_charge_C": CHARGE_PER_FMOL * math.fsum([fixed, *terms])
+            if charge_C is None
+            else float(charge_C),
         }
 
+    if handoff:
+        cell_values, env_values = start["cell_fmol"], start["env_fmol"]
+        fixed_cell, fixed_env = start["cell_fixed_fmol"], start["env_fixed_fmol"]
+        charge_cell, charge_env = start["cell_charge_C"], start["env_charge_C"]
+    else:
+        cell_values, env_values = start["cell_mM"], start["env_mM"]
+        fixed_cell, fixed_env = [None] * n, [None] * (rows * cols)
+        charge_cell, charge_env = [None] * n, [None] * (rows * cols)
     cells = [
-        compartment("cell-", i, world["cell_volume_m3"][i], start["cell_mM"][:, i])
+        compartment(
+            "cell-", i, world["cell_volume_m3"][i], cell_values[:, i], fixed_cell[i], charge_cell[i]
+        )
         for i in range(n)
     ]
     outside = []
     for k in range(rows * cols):
-        held = world["boundary_concentration_mM"] if k in ring else None
-        node = compartment("ecm-", k, world["site_volume_m3"], start["env_mM"][:, k], held)
+        values = env_values[:, k]
+        if k in ring and not handoff:
+            values = world["boundary_concentration_mM"]
+        node = compartment("ecm-", k, world["site_volume_m3"], values, fixed_env[k], charge_env[k])
         node.update(reservoir=k in ring, boundary_potential_V=0.0)
         outside.append(node)
     area = world["membrane_area_m2"]
@@ -760,7 +875,9 @@ def resolved_definition(world, phase, start, *, dt, observation_elapsed=None, ba
                     "law": "junction_voltage_relaxation@1",
                     "threshold_voltage_V": world["gate_threshold_V"],
                     "minimum_open_fraction": world["gate_minimum_open"],
-                    "initial_gate": float(start["gate_open"][j]),
+                    "initial_gate": float(
+                        start["junction_gate"][len(junctions)] if handoff else start["gate_open"][j]
+                    ),
                 },
             }
         )
@@ -829,12 +946,333 @@ def resolved_definition(world, phase, start, *, dt, observation_elapsed=None, ba
             "backend": backend,
             "jit": True,
             "precision": "float64",
-            "solver": RESOLVED_SOLVER,
+            "solver": solver,
             "field_solver": RESOLVED_FIELD_SOLVER,
             "max_steps": steps,
             "max_trace_bytes": 8 * 2**30,
             "material_balance_atol_fmol": {sp: 1e-10 for sp in species},
         },
+    }
+
+
+def resolved_handoff(definition, checkpoint):
+    """SIM start from a resolved INIT end state: amounts, fixed charges and gates as they are."""
+    from cells.models import surface_pump as model
+
+    model_def = definition["model"]
+    n, o = len(model_def["cells"]), len(model_def["extracellular"])
+    state = type(checkpoint.state)(*(np.asarray(v) for v in checkpoint.state))
+    layout = type(checkpoint.layout)(*(np.asarray(v) for v in checkpoint.layout))
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+
+    cell, outside = (np.asarray(v) for v in model.physical_amounts(state, layout))
+    valence = np.array([row["valence"] for row in model_def["species"]], dtype=np.float64)
+
+    def charge(rows, increment):
+        start = np.array([row["initial_charge_C"] for row in rows])
+        return start + CHARGE_PER_FMOL * (valence @ np.asarray(increment)[:, : len(rows)])
+
+    return {
+        "cell_fmol": cell[:, :n],
+        "env_fmol": outside[:, :o],
+        "cell_charge_C": charge(model_def["cells"], state.amount_increment),
+        "env_charge_C": charge(model_def["extracellular"], state.extracellular_amount_increment),
+        "cell_fixed_fmol": [row["fixed_charge_equivalent_fmol"] for row in model_def["cells"]],
+        "env_fixed_fmol": [
+            row["fixed_charge_equivalent_fmol"] for row in model_def["extracellular"]
+        ],
+        "junction_gate": np.asarray(state.junction_gate)[: len(model_def["junctions"])],
+    }
+
+
+def _isolated_sites(definition):
+    """Non-reservoir outside nodes without a membrane (their own capacitor components)."""
+    model = definition["model"]
+    faced = {row["outside"] for row in model["membranes"]}
+    return np.array(
+        [
+            k
+            for k, node in enumerate(model["extracellular"])
+            if not node["reservoir"] and node["id"] not in faced
+        ],
+        dtype=np.int64,
+    )
+
+
+def _resolved_checks(definition, obs, newton):
+    """Field, charge and isolated-square behaviour of one resolved phase (no BETSE data)."""
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+
+    model = definition["model"]
+    valence = np.array([row["valence"] for row in model["species"]], dtype=np.float64)
+    iso = _isolated_sites(definition)
+    o = len(model["extracellular"])
+    charge0 = np.array([row["initial_charge_C"] for row in model["extracellular"]])
+    increment = obs["extracellular_amount_increment"][:, :, :o]
+    charge = charge0 + CHARGE_PER_FMOL * np.einsum("s,tsk->tk", valence, increment)
+    potential = obs["extracellular_potential_V"][:, :o]
+    amount = obs["extracellular_amount"][:, :, :o]
+    initial = np.array(
+        [
+            [row["initial_amount_fmol"][s["id"]] for s in model["species"]]
+            for row in model["extracellular"]
+        ]
+    ).T
+    isolated = {"count": int(iso.size)}
+    if iso.size:
+        moving = initial[:, iso] > 0
+        change = np.abs(amount[:, :, iso] / np.where(moving, initial[:, iso], 1.0) - 1)
+        t, k = np.unravel_index(np.argmax(np.abs(potential[:, iso])), potential[:, iso].shape)
+        isolated |= {
+            "max_abs_charge_C": float(np.max(np.abs(charge[:, iso]))),
+            "max_abs_potential_V": float(np.abs(potential[:, iso]).max()),
+            "at": {"elapsed_s": float(obs["times"][t]), "site": int(iso[k])},
+            "potential_range_V": [float(potential[:, iso].min()), float(potential[:, iso].max())],
+            "max_relative_amount_change": float(np.max(np.where(moving, change, 0.0))),
+        }
+    iterations = [row["iterations"] for row in newton]
+    return {
+        "newton_at_window_ends": newton,
+        "newton_iterations": {
+            "min": min(iterations),
+            "max": max(iterations),
+            "mean": float(np.mean(iterations)),
+            "all_converged": all(row["converged"] for row in newton),
+        },
+        "max_abs_charge_residual_C": float(np.max(np.abs(obs["charge_residual_C"]))),
+        "max_abs_component_current_residual_A": float(
+            np.max(np.abs(obs["component_current_residual_A"]))
+        ),
+        "isolated_squares": isolated,
+        "outside_node_potential_range_V": [float(potential.min()), float(potential.max())],
+    }
+
+
+def _window_sink(observed, newton, control):
+    """Collect a window's needed observations, field solve and ledgers at its end state."""
+    from cells.models import surface_pump as model
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+
+    def sink(window):
+        for k in RESOLVED_OBSERVED:
+            observed[k].append(np.asarray(getattr(window.observations, k)))
+        state = type(window.final.state)(*(np.asarray(v) for v in window.final.state))
+        layout = type(window.final.layout)(*(np.asarray(v) for v in window.final.layout))
+        w = model.readouts(state, control, layout, xp=np)
+        with np.errstate(all="ignore"):
+            ledgers = model.balances(state, layout)
+        newton.append(
+            {
+                "time_s": float(window.final.time),
+                "iterations": int(w.field.iterations),
+                "converged": bool(w.field.converged),
+                "current_normalized": float(w.field.current_normalized),
+                # Ledger residuals at the window end (P1's check_values bounds them).
+                "ledgers_max_abs": {
+                    k: float(np.max(np.abs(v), initial=0.0)) for k, v in ledgers.items()
+                },
+                "supplied_charge_C": float(
+                    np.sum(np.abs(layout.valence * state.reservoir_supplied)) * CHARGE_PER_FMOL
+                ),
+            }
+        )
+
+    return sink
+
+
+def run_resolved(
+    case, out, *, device_kind, dt_init=1e-3, dt_sim=1e-4, solver=RESOLVED_SOLVER, window_steps=250
+):
+    """Blind resolved_pump_tissue@1 run: INIT then SIM from its own INIT end, windowed.
+
+    Reads BETSE inputs only (``betse_world(blind=True)``) and computes no difference
+    from BETSE. The layout names no protocol, so the comparator refuses it.
+    """
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from cells.core.schedule import control_values
+    from cells.core.specs import parse_spec
+    from cells.core.windows import WindowPolicy, run_windowed
+
+    world = betse_world(case, blind=True)
+    out = reference_run.resolve_out(out)
+    out.mkdir(parents=True, exist_ok=False)
+    device = jax.devices(device_kind)[0]
+    start, phases, records = phase_start(world, "init"), {}, {}
+    for phase, dt in (("init", dt_init), ("sim", dt_sim)):
+        definition = resolved_definition(
+            world, phase, start, dt=dt, backend=device_kind, solver=solver
+        )
+        reference_run.write_json(out / f"{phase}_definition.json", definition)
+        record = {
+            "dt_s": dt,
+            "solver": solver,
+            "start": "configured" if phase == "init" else "own INIT end",
+        }
+        records[phase] = record
+        observed, newton = {k: [] for k in RESOLVED_OBSERVED}, []
+        try:
+            spec = parse_spec(definition)
+            controls = control_values(spec, [0.0])
+            control = type(controls)(*(np.asarray(v[0]) for v in controls))
+
+            sink = _window_sink(observed, newton, control)
+            started = time.perf_counter()
+            result = run_windowed(spec, WindowPolicy(window_steps), sink=sink)
+            record["wall_s"] = time.perf_counter() - started
+        except Exception as error:  # keep the evidence of a failed integration
+            record["failure"] = {
+                "type": type(error).__name__,
+                "message": str(error)[:2000],
+                "windows_completed": len(newton),
+                "last_completed_time_s": newton[-1]["time_s"] if newton else 0.0,
+                "window_ends": newton,
+            }
+            if newton:
+                partial = {k: np.concatenate(v) for k, v in observed.items()}
+                np.savez_compressed(out / f"{phase}_partial_observations.npz", **partial)
+                record["failure"]["checks_before_failure"] = _resolved_checks(
+                    definition, partial, newton
+                )
+            break
+        obs = {k: np.concatenate(v) for k, v in observed.items()}
+        record |= {
+            "steps": int(result.final.step_index - result.start_step),
+            "execute_ms_per_step": 1e3
+            * result.timings.get("window_execute_seconds", float("nan"))
+            / max(1, result.final.step_index - result.start_step),
+            "timings": result.timings,
+            "resources": result.resources,
+            "diagnostics": result.diagnostics,
+            **_resolved_checks(definition, obs, newton),
+        }
+        phases[phase] = resolved_layout_phase(world, definition, obs)
+        start = resolved_handoff(definition, result.final)
+    run = {
+        "kind": "cells.default_world_adapter_run@1",
+        "created_utc": reference_run.utc_now(),
+        "backend": "resolved",
+        "model": RESOLVED_MODEL_ID,
+        "blind": (
+            "BETSE inputs only (manifest, geometry.npz, init_final parameter arrays); "
+            "no BETSE history or end state read; no Cells-vs-BETSE difference computed"
+        ),
+        "device": str(device),
+        "jax": jax.__version__,
+        "sim_start": "chained",
+        "case": world["case"],
+        "betse_extract": world["extract"],
+        "phases": records,
+        "valid": len(phases) == len(PHASES),
+        "max_rss_mib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024,
+    }
+    if device_kind == "gpu":
+        run["gpu_peak_bytes"] = device.memory_stats().get("peak_bytes_in_use")
+    run = provenance(run)
+    if run["valid"]:
+        compare.write_layout(
+            out / "layout",
+            phases,
+            protocol_sha256=None,  # blind integration run: not judgeable
+            betse_geometry_sha256=world["geometry_sha256"],
+            provenance=run,
+        )
+    reference_run.write_json(out / "run.json", compare.json_safe(run))
+    return run
+
+
+def layout_differences(a, b):
+    """Every array of two layouts of one case (e.g. CPU vs L4): max abs and rel difference."""
+    manifests = [json.loads((Path(d) / compare.LAYOUT_MANIFEST).read_text()) for d in (a, b)]
+    if manifests[0]["betse_geometry_sha256"] != manifests[1]["betse_geometry_sha256"]:
+        raise compare.Refusal("layouts were built on different BETSE geometries")
+    rows = {}
+    for phase in manifests[0]["phases"]:
+        if [m["phases"][phase]["elapsed_after_update_s"] for m in manifests].count(
+            manifests[0]["phases"][phase]["elapsed_after_update_s"]
+        ) != 2:
+            raise compare.Refusal(f"{phase}: the layouts sample different times")
+        for part in ("history", "final"):
+            arrays = [_npz(Path(d) / f"{phase}_{part}.npz") for d in (a, b)]
+            for name in sorted(arrays[0]):
+                absolute, relative = compare.errors(arrays[0][name], arrays[1][name])
+                rows[f"{phase}/{part}/{name}"] = {
+                    "max_abs": float(absolute.max()),
+                    "max_rel": float(relative.max()),
+                    "max_abs_value": float(np.abs(arrays[0][name]).max()),
+                }
+    return rows
+
+
+# Difference budget: observable -> error kind (relative to the base value for "rel").
+BUDGET = {
+    "vm_ave_time": "abs",
+    "vm_time": "abs",
+    "cc_time": "rel",
+    "cc_env_time": "rel",
+    "venv_time": "abs",
+}
+
+
+def _labels(world, name, element):
+    cols = world["grid_shape"][1]
+    if name == "vm_time":
+        return {"membrane": element[0], "cell": int(world["membrane_cell"][element[0]])}
+    if name == "vm_ave_time":
+        return {"cell": element[0]}
+    ion = {"ion": world["species"][element[0]]} if name in ("cc_time", "cc_env_time") else {}
+    k = element[-1]
+    if name == "cc_time":
+        return ion | {"cell": k}
+    return ion | {"site": k, "row": k // cols, "col": k % cols}
+
+
+def layout_difference(world, base, other):
+    """Per phase and BUDGET observable: max |difference| over every common sample (where and
+    when) and at the phase end, with the base's own change over the phase."""
+    manifests = [json.loads((Path(d) / compare.LAYOUT_MANIFEST).read_text()) for d in (base, other)]
+    phases = {}
+    for phase in PHASES:
+        times = [m["phases"][phase]["elapsed_after_update_s"] for m in manifests]
+        if len(times[0]) != len(times[1]) or not np.allclose(times[0], times[1], rtol=0, atol=1e-9):
+            raise compare.Refusal(f"{phase}: the layouts sample different times")
+        history = [_npz(Path(d) / f"{phase}_history.npz") for d in (base, other)]
+        final = [_npz(Path(d) / f"{phase}_final.npz") for d in (base, other)]
+        rows = {}
+        for name, kind in BUDGET.items():
+            end = compare.SUPPORTED[name]
+            pick = 0 if kind == "abs" else 1
+            err = compare.errors(history[0][name], history[1][name])[pick]
+            i = np.unravel_index(int(np.argmax(err)), err.shape)
+            ferr = compare.errors(final[0][end], final[1][end])[pick]
+            j = np.unravel_index(int(np.argmax(ferr)), ferr.shape)
+            series = np.concatenate([history[0][name], final[0][end][None]])
+            rows[name] = {
+                "kind": "absolute (V)" if kind == "abs" else "relative to the base value",
+                "max": float(err[i]),
+                "elapsed_s": float(times[0][i[0]]),
+                "element": [int(v) for v in i[1:]],
+                "labels": _labels(world, name, [int(v) for v in i[1:]]),
+                "base_value": float(history[0][name][i]),
+                "other_value": float(history[1][name][i]),
+                "final": {
+                    "max": float(ferr[j]),
+                    "element": [int(v) for v in j],
+                    "labels": _labels(world, name, [int(v) for v in j]),
+                    "base_value": float(final[0][end][j]),
+                    "other_value": float(final[1][end][j]),
+                },
+                "base_change_over_phase": compare.dynamic_range(series, kind),
+            }
+        phases[phase] = {"samples": len(times[0]), "observables": rows}
+    return {
+        "base": str(Path(base).resolve()),
+        "other": str(Path(other).resolve()),
+        "runs": [
+            json.loads((Path(d) / "run.json").read_text()).get("variant") for d in (base, other)
+        ],
+        "phases": phases,
     }
 
 
@@ -852,10 +1290,31 @@ def junction_gate_dt_bound(world):
 
 
 def cmd_snapshot(args):
+    import subprocess
+
     from validation import source_snapshot
 
+    names = set(EXECUTED)
+    if args.engine:  # the resolved backend imports most of the engine
+        listed = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(ROOT),
+                "ls-files",
+                "--cached",
+                "--others",
+                "--exclude-standard",
+                "-z",
+                "--",
+                "src/cells",
+            ],
+            check=True,
+            capture_output=True,
+        ).stdout
+        names |= {p for p in listed.decode().split("\0") if p and (ROOT / p).is_file()}
     out = reference_run.resolve_out(args.out)
-    value = source_snapshot.freeze(ROOT, out, {name: name for name in EXECUTED})
+    value = source_snapshot.freeze(ROOT, out, {name: name for name in sorted(names)})
     print(json.dumps({"snapshot": str(out), "git_revision": value["git_revision"]}, indent=2))
     return 0
 
@@ -868,8 +1327,12 @@ def cmd_run(args):
         constants=args.constants,
         device_kind=args.device,
         sim_start=args.sim_start,
+        dt_factor=args.dt_factor,
     )
-    summary = {k: record[k] for k in ("valid", "device", "constants", "sim_start", "max_rss_mib")}
+    summary = {
+        k: record[k]
+        for k in ("valid", "device", "constants", "dt_factor", "sim_start", "max_rss_mib")
+    }
     summary["phases"] = {
         p: {k: r[k] for k in ("valid", "wall_s_including_compile", "ko_env_relative_difference")}
         for p, r in record["phases"].items()
@@ -885,6 +1348,53 @@ def cmd_compare_layouts(args):
     reference_run.write_json(out / "result.json", compare.json_safe(result))
     print(json.dumps({"verdict": result["verdict"], "out": str(out)}, indent=2))
     return 0 if result["verdict"] == "pass" else 1
+
+
+def cmd_run_resolved(args):
+    record = run_resolved(
+        args.case,
+        args.out,
+        device_kind=args.device,
+        dt_init=args.dt_init,
+        dt_sim=args.dt_sim,
+        solver=args.solver,
+        window_steps=args.window_steps,
+    )
+    print(json.dumps({"valid": record["valid"], "device": record["device"]}, indent=2))
+    return 0 if record["valid"] else 1
+
+
+def cmd_layout_differences(args):
+    out = reference_run.resolve_out(args.out)
+    result = {
+        "kind": "cells.layout_differences@1",
+        "created_utc": reference_run.utc_now(),
+        "a": str(Path(args.a).resolve()),
+        "b": str(Path(args.b).resolve()),
+        "arrays": layout_differences(args.a, args.b),
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    reference_run.write_json(out, compare.json_safe(result))
+    worst = max(result["arrays"].items(), key=lambda kv: kv[1]["max_rel"])
+    print(json.dumps({"out": str(out), "largest_relative": worst}, indent=2))
+    return 0
+
+
+def cmd_difference_budget(args):
+    world = betse_world(args.case, blind=True)
+    out = reference_run.resolve_out(args.out)
+    result = {
+        "kind": "cells.emulator_difference_budget@1",
+        "created_utc": reference_run.utc_now(),
+        "case": world["case"],
+        "observables": {k: v for k, v in BUDGET.items()},
+        "pairs": {name: layout_difference(world, a, b) for name, a, b in args.pair},
+    }
+    result = provenance(result)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    reference_run.write_json(out, compare.json_safe(result))
+    print(json.dumps({"out": str(out), "pairs": list(result["pairs"])}, indent=2))
+    return 0
 
 
 def cmd_resolved_definition(args):
@@ -908,6 +1418,7 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
     snapshot = sub.add_parser("snapshot", help="freeze the sources a run executes")
     snapshot.add_argument("--out", required=True)
+    snapshot.add_argument("--engine", action="store_true", help="also freeze all of src/cells")
     snapshot.set_defaults(func=cmd_snapshot)
     run = sub.add_parser("run", help="emulator INIT then SIM, written in the comparison layout")
     run.add_argument("--case", required=True, help="BETSE case or extraction directory")
@@ -915,8 +1426,30 @@ def main(argv=None):
     run.add_argument("--constants", choices=("betse", "codata"), default="betse")
     run.add_argument("--device", choices=("cpu", "gpu"), default="cpu")
     run.add_argument("--sim-start", choices=("betse", "chained"), default="betse")
+    run.add_argument("--dt-factor", type=int, default=1, help="updates of dt/f per BETSE dt")
     run.add_argument("--out", required=True, help="fresh layout directory")
     run.set_defaults(func=cmd_run)
+    blind = sub.add_parser("run-resolved", help="blind resolved_pump_tissue@1 INIT then SIM")
+    blind.add_argument("--case", required=True)
+    blind.add_argument("--device", choices=("cpu", "gpu"), default="cpu")
+    blind.add_argument("--dt-init", type=float, default=1e-3)
+    blind.add_argument("--dt-sim", type=float, default=1e-4)
+    blind.add_argument("--solver", default=RESOLVED_SOLVER)
+    blind.add_argument("--window-steps", type=int, default=250)
+    blind.add_argument("--out", required=True, help="fresh run directory")
+    blind.set_defaults(func=cmd_run_resolved)
+    diff = sub.add_parser("layout-differences", help="every array of two layouts, unjudged")
+    diff.add_argument("--a", required=True)
+    diff.add_argument("--b", required=True)
+    diff.add_argument("--out", required=True, help="fresh JSON file")
+    diff.set_defaults(func=cmd_layout_differences)
+    budget = sub.add_parser("difference-budget", help="emulator variant differences")
+    budget.add_argument("--case", required=True, help="BETSE case (inputs only)")
+    budget.add_argument(
+        "--pair", nargs=3, action="append", required=True, metavar=("NAME", "BASE", "OTHER")
+    )
+    budget.add_argument("--out", required=True, help="fresh JSON file")
+    budget.set_defaults(func=cmd_difference_budget)
     pair = sub.add_parser("compare-layouts", help="two layouts of one case (e.g. CPU vs L4)")
     pair.add_argument("--a", required=True)
     pair.add_argument("--b", required=True)
