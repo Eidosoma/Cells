@@ -1,0 +1,40 @@
+{
+  "schema": "cells.betse_comparison_protocol@1",
+  "id": "default-world-dense-example",
+  "purpose": "Example: judge a Cells run of the BETSE default world (headless_core, every INIT and SIM step sampled) against the plain-BETSE case betse-reference-20261108-01/default-world-dense. Fix this file before the Cells run it judges; that run must record this file's sha256 in its comparison manifest.",
+  "betse_case": "default-world-dense",
+  "phases": ["init", "sim"],
+  "time_alignment_atol_s": 1e-9,
+  "min_common_samples": 1,
+  "compare_final": true,
+  "observables": {
+    "vm_time": {"final": "vm", "tolerance": "voltage"},
+    "vm_ave_time": {"final": "vm_ave", "tolerance": "voltage"},
+    "cc_time": {"final": "cc_cells", "tolerance": "cell_concentration"},
+    "cc_env_time": {"final": "cc_env", "tolerance": "ecm_concentration"},
+    "venv_time": {"final": "v_env", "tolerance": "voltage"}
+  },
+  "tolerance_quantities": {
+    "voltage": {"kind": "abs", "units": "V"},
+    "cell_concentration": {"kind": "rel", "units": "1"},
+    "ecm_concentration": {"kind": "rel", "units": "1"}
+  },
+  "tolerance_classes": {
+    "codata_constants": {
+      "voltage": 1e-5,
+      "cell_concentration": 1e-6,
+      "ecm_concentration": 1e-7
+    },
+    "matched_constants_or_cpu_gpu": {
+      "voltage": 1e-9,
+      "cell_concentration": 1e-11,
+      "ecm_concentration": 1e-11
+    }
+  },
+  "verdict_class": "codata_constants",
+  "notes": [
+    "codata_constants: Cells with CODATA F and R against BETSE's rounded F = 96485, R = 8.314. matched_constants_or_cpu_gpu: Cells with BETSE's constants, or Cells CPU against GPU.",
+    "Relative errors divide by |BETSE value|; a zero reference value admits only exact agreement.",
+    "Default-world SIM Vmem changes by about 3 uV over the phase, below the 10 uV codata voltage tolerance; the comparator reports such observables as flat."
+  ]
+}
