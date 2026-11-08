@@ -64,45 +64,15 @@ node before extending to sixteen GPUs. Runtime packing must preserve simulation
 duration, refinement, reference comparisons and scientific arm counts; numerical
 controls are not additional independent biological cases.
 
-## Full native BETSE CPU-to-GPU path
+## BETSE default-world model on GPU
 
-The selected model-family GPU results above do not qualify the complete native
-BETSE SEED → INIT → SIM route. That route executes pinned NumPy/SciPy bodies
-through Python object, callback and provenance machinery. Its current CPU
-demonstration and blockers are tracked only in [Progress](../PROGRESS.md).
-A GPU will not accelerate Python history validation or observer dispatch.
-
-The next implementation should deliver two coherent milestones:
-
-1. **CPU overhead and baseline.** Batch observer/immutable-metadata improvements,
-   retain fresh checks at mutation and callback boundaries, and obtain full
-   500-step INIT / 350-step SIM results for comparison with original BETSE.
-   Report setup, geometry/operators, INIT, SIM and evidence-output time
-   separately. Isolated metadata timing is not a full-simulation speedup.
-2. **One matched CPU/GPU demonstration.** Keep genuine geometry and construction
-   on CPU initially. Extract a documented array-state contract for the repeated
-   INIT/SIM updates, reproduce the admitted native order on JAX CPU, and compare
-   that same implementation on one GPU in float64. Extend to the full calendar
-   before claiming native-demo GPU coverage. A single kernel result is only an
-   intermediate implementation check.
-
-The first GPU slice must preserve ion/species and cell/membrane/grid indexing,
-units, state histories, operator application order, event times and RNG draw
-semantics. Host geometry and retained operators are explicit inputs to the GPU
-array path, not replacement native owner objects. The independently executed
-original BETSE result remains the comparison oracle. Original-flux and
-omitted-flux modes remain distinct throughout; do not repair the flux inverse,
-change its rank convention, shorten the calendar or relax tolerances to obtain
-a faster passing case.
-
-Existing components to reuse, with their coverage limits:
-
-| Component | Reuse for the native-demo GPU work | Work still required |
-| --- | --- | --- |
-| `src/cells/core/runner.py` | Device placement, compiled `lax.scan` rollouts and bounded recording windows | A matched native-demo array state/update contract; existing selected model equations are not a full BETSE implementation |
-| `tests/unit/test_gpu_execution.py` | Explicit GPU selection, float64/JIT checks, CPU/GPU and same-device restart patterns | Native-demo observables and its own accepted tolerances; existing model-specific thresholds cannot be transferred automatically |
-| `validation/betse/native_sim_reference_compare.py` | Independent full-history comparison semantics and diagnostics | An explicit GPU-result adapter preserving the complete observable roster and error classifications |
-| Existing ensemble runner | Stable case IDs/seeds, persistent workers and independent-world scheduling | Timing and memory evidence for the new matched implementation before scaling |
+The native BETSE CPU-to-GPU plan recorded in checkpoint `7e9873a` is superseded:
+BETSE is an external reference only (see `AGENTS.md`). GPU work targets the Cells
+engine model that runs BETSE's default world, compared against saved output
+from plain BETSE. Reuse `src/cells/core/runner.py` (device placement, compiled
+`lax.scan` rollouts, bounded recording), the CPU/GPU and restart patterns in
+`tests/unit/test_gpu_execution.py`, and the ensemble runner's stable case
+IDs/seeds. Model-specific tolerances do not transfer automatically.
 
 Keep evolving state and repeatedly used operators on the device across a
 compiled window; transfer only the required histories at declared recording
@@ -116,9 +86,8 @@ establish a measured benefit before using more devices. Batch independent
 matched worlds next. Partitioning one interacting tissue across GPUs remains
 a separate, later task.
 
-This plan does not install a GPU runtime, allocate hardware or release a native
-or GPU execution. GPU hardware availability and the exact CUDA/device/runtime
-combination must be recorded at preparation time, with no CPU fallback.
+Record GPU hardware and the exact CUDA/device/runtime combination at preparation
+time, with no CPU fallback.
 
 ## Independent model ensembles
 
