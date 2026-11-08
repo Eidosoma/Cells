@@ -1,6 +1,7 @@
 """Synthetic checks of the BETSE default-world adapter (no BETSE; tiny emulator runs)."""
 
 import copy
+import hashlib
 import json
 import math
 import shutil
@@ -377,3 +378,74 @@ def test_resolved_definition_refuses_a_dt_that_does_not_divide_the_phase(case):
     world["membrane_cell"] = np.array([0, 0, 0, 1, 1, 1])
     with pytest.raises(adapter.AdapterError):
         adapter.resolved_definition(world, "init", start, dt=1e-3)
+
+
+def judged_protocol_file(directory, **cells_run):
+    """Protocol D's judged layout for the synthetic case, with an editable cells_run block."""
+    protocol = json.loads(
+        (ROOT / "validation/betse/protocols/physical_default_world_dense.json").read_text()
+    )
+    protocol["betse_case"] = "synthetic"
+    protocol["cells_run"] = {
+        **protocol["cells_run"],
+        "dt_init_s": DT["init"],
+        "dt_sim_s": DT["sim"],
+        "backends": ["cpu"],
+        **cells_run,
+    }
+    path = directory / "protocol.json"
+    path.write_text(json.dumps(protocol))
+    return path
+
+
+def test_judged_protocol_must_match_the_case_and_the_run(case, tmp_path):
+    world = adapter.betse_world(case, blind=True)
+    run = dict(
+        device_kind="cpu", dt_init=DT["init"], dt_sim=DT["sim"], solver=adapter.RESOLVED_SOLVER
+    )
+    path = judged_protocol_file(tmp_path)
+    protocol, sha = adapter.judged_protocol(path, world, **run)
+    assert (
+        sha == hashlib.sha256(path.read_bytes()).hexdigest()
+        and protocol["betse_case"] == "synthetic"
+    )
+    for change, message in (
+        ({**run, "dt_init": 2 * DT["init"]}, "dt_init_s"),
+        ({**run, "device_kind": "gpu"}, "backends"),
+        ({**run, "solver": "rk4"}, "solver"),
+    ):
+        with pytest.raises(adapter.AdapterError, match=message):
+            adapter.judged_protocol(path, world, **change)
+    (tmp_path / "other").mkdir()
+    wrong_case = judged_protocol_file(tmp_path / "other")
+    data = json.loads(wrong_case.read_text())
+    wrong_case.write_text(json.dumps(data | {"betse_case": "default-world-dense"}))
+    with pytest.raises(adapter.AdapterError, match="betse_case"):
+        adapter.judged_protocol(wrong_case, world, **run)
+
+
+def test_judged_run_names_its_protocol_and_is_judgeable(case, tmp_path):
+    path = judged_protocol_file(tmp_path)
+    run = adapter.run_resolved(
+        case,
+        tmp_path / "run",
+        device_kind="cpu",
+        window_steps=2,
+        protocol_path=path,
+        dt_init=DT["init"],
+        dt_sim=DT["sim"],
+    )
+    sha = hashlib.sha256(path.read_bytes()).hexdigest()
+    manifest = json.loads((tmp_path / "run" / "layout" / cmp.LAYOUT_MANIFEST).read_text())
+    assert run["valid"] and run["protocol"]["sha256"] == sha == manifest["protocol_sha256"]
+    result = cmp.run_comparison(case, tmp_path / "run" / "layout", path)
+    assert not result["refusals"] and result["verdict"] in ("pass", "fail")
+    with pytest.raises(adapter.AdapterError):
+        adapter.run_resolved(
+            case,
+            tmp_path / "refused",
+            device_kind="cpu",
+            protocol_path=path,
+            dt_init=2 * DT["init"],
+        )
+    assert not (tmp_path / "refused").exists()

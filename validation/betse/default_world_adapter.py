@@ -1108,13 +1108,47 @@ def _window_sink(observed, newton, control):
     return sink
 
 
+# Run backends as protocols' cells_run "backends" name them.
+PROTOCOL_BACKENDS = {"cpu": "cpu", "gpu": "gpu (L4)"}
+
+
+def judged_protocol(protocol_path, world, *, device_kind, dt_init, dt_sim, solver):
+    """(protocol, sha256) of a pre-registered protocol whose case and cells_run match the run."""
+    protocol, sha = compare.load_protocol(protocol_path)
+    run = protocol.get("cells_run") or {}
+    expected = {
+        "betse_case": (protocol.get("betse_case"), world["case"]),
+        "model": (run.get("model"), RESOLVED_MODEL_ID),
+        "solver": (run.get("solver"), solver),
+        "dt_init_s": (run.get("dt_init_s"), dt_init),
+        "dt_sim_s": (run.get("dt_sim_s"), dt_sim),
+        "sim_start": (run.get("sim_start"), "Cells' own INIT end state"),
+    }
+    for name, (declared, actual) in expected.items():
+        if declared != actual:
+            raise AdapterError(f"protocol {name} is {declared!r}; this run has {actual!r}")
+    if PROTOCOL_BACKENDS[device_kind] not in run.get("backends", ()):
+        raise AdapterError(f"protocol backends {run.get('backends')} exclude {device_kind}")
+    return protocol, sha
+
+
 def run_resolved(
-    case, out, *, device_kind, dt_init=1e-3, dt_sim=1e-4, solver=RESOLVED_SOLVER, window_steps=250
+    case,
+    out,
+    *,
+    device_kind,
+    dt_init=1e-3,
+    dt_sim=1e-4,
+    solver=RESOLVED_SOLVER,
+    window_steps=250,
+    protocol_path=None,
 ):
-    """Blind resolved_pump_tissue@1 run: INIT then SIM from its own INIT end, windowed.
+    """resolved_pump_tissue@1 run: INIT then SIM from its own INIT end, windowed.
 
     Reads BETSE inputs only (``betse_world(blind=True)``) and computes no difference
-    from BETSE. The layout names no protocol, so the comparator refuses it.
+    from BETSE. Without ``protocol_path`` the layout names no protocol, so the
+    comparator refuses it; with one (judged run) the protocol must match the case and
+    the run (``judged_protocol``) and its sha256 goes into the layout manifest.
     """
     import jax
 
@@ -1124,6 +1158,16 @@ def run_resolved(
     from cells.core.windows import WindowPolicy, run_windowed
 
     world = betse_world(case, blind=True)
+    protocol = sha = None
+    if protocol_path is not None:
+        protocol, sha = judged_protocol(
+            protocol_path,
+            world,
+            device_kind=device_kind,
+            dt_init=dt_init,
+            dt_sim=dt_sim,
+            solver=solver,
+        )
     out = reference_run.resolve_out(out)
     out.mkdir(parents=True, exist_ok=False)
     device = jax.devices(device_kind)[0]
@@ -1195,6 +1239,9 @@ def run_resolved(
         "phases": records,
         "valid": len(phases) == len(PHASES),
         "max_rss_mib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024,
+        "protocol": None
+        if protocol is None
+        else {"path": str(Path(protocol_path).resolve()), "sha256": sha, "id": protocol.get("id")},
     }
     if device_kind == "gpu":
         run["gpu_peak_bytes"] = device.memory_stats().get("peak_bytes_in_use")
@@ -1203,7 +1250,7 @@ def run_resolved(
         compare.write_layout(
             out / "layout",
             phases,
-            protocol_sha256=None,  # blind integration run: not judgeable
+            protocol_sha256=sha,  # None: blind integration run, not judgeable
             betse_geometry_sha256=world["geometry_sha256"],
             provenance=run,
         )
@@ -1388,6 +1435,7 @@ def cmd_run_resolved(args):
         dt_sim=args.dt_sim,
         solver=args.solver,
         window_steps=args.window_steps,
+        protocol_path=args.protocol,
     )
     print(json.dumps({"valid": record["valid"], "device": record["device"]}, indent=2))
     return 0 if record["valid"] else 1
@@ -1465,6 +1513,9 @@ def main(argv=None):
     blind.add_argument("--dt-sim", type=float, default=1e-4)
     blind.add_argument("--solver", default=RESOLVED_SOLVER)
     blind.add_argument("--window-steps", type=int, default=250)
+    blind.add_argument(
+        "--protocol", help="pre-registered protocol of a judged run (default: blind)"
+    )
     blind.add_argument("--out", required=True, help="fresh run directory")
     blind.set_defaults(func=cmd_run_resolved)
     diff = sub.add_parser("layout-differences", help="every array of two layouts, unjudged")
