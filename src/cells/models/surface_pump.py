@@ -29,7 +29,7 @@ from cells.numerics.extracellular_field import scatter
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.processes import junction_gate
 from cells.processes import kinetic_pump as pump
-from cells.processes.electrochemistry import F, R
+from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 OBSERVER_ID = kinetic.OBSERVER_ID
 OBSERVATION_SAMPLING = kinetic.OBSERVATION_SAMPLING
@@ -49,6 +49,14 @@ LAYOUT_TYPE = NamedTuple(
 # 1 ms; with dt and dt^2 scaling these bounds cover admitted steps. Ledger totals
 # are compared with RK4 separately in tests/unit/test_surface_pump.py.
 ENERGY_RTOL = {"rk4": 0.0, imex.EULER_ID: 2e-2, imex.ARS222_ID: 2e-3}
+# Global charge (electrode charge plus charge-weighted reservoir supply) cancels
+# terms that grow with the charge moved through the boundary, so its rounding
+# accumulates with their magnitude: a fixed floor fails long runs. The bound adds
+# a rounding allowance of 256 float64 eps per unit of that magnitude; observed
+# residuals stay near 1-3 eps, while a conservation error of 1e-13 or more of the
+# moved charge still fails. The capacitor and electrode checks are unchanged.
+GLOBAL_CHARGE_ATOL_C = 3e-25
+GLOBAL_CHARGE_ROUNDING = 256 * np.finfo(float).eps
 GATE_STEP_BOUND = 0.125  # Same conservative junction-gate bound as resolved_tissue@2.
 # dt * (Gershgorin rate bound) <= 1: half the Euler/RK2 real-axis limit of 2.
 EXPLICIT_STEP_BOUND = 1.0
@@ -361,8 +369,18 @@ def explicit_rate_bound(spec):
     return max(face, 2 * np.max(cells / capacitance), np.max(membranes / capacitance))
 
 
+def global_charge_bound(row, p):
+    """Floor plus a rounding allowance on the absolute terms of the global-charge sum."""
+    moved = CHARGE_PER_FMOL * np.sum(np.abs(p.valence * row.reservoir_supplied))
+    moved += np.sum(np.abs(row.electrode_charge_transferred_C))
+    return GLOBAL_CHARGE_ATOL_C + GLOBAL_CHARGE_ROUNDING * moved
+
+
 def check_values(state, spec):
-    """Family ledgers and tolerances; energy also allows the declared IMEX bound."""
+    """Family ledgers and tolerances; energy also allows the declared IMEX bound.
+
+    The global-charge bound scales with the charge moved (global_charge_bound).
+    """
     _, p = kinetic.initial_values(spec)
     rows = (
         [state]
@@ -383,6 +401,7 @@ def check_values(state, spec):
     )
     diagnostics = {"max_" + k: 0.0 for k in names}
     diagnostics["max_energy_balance_relative"] = 0.0
+    diagnostics["max_global_charge_bound_ratio"] = 0.0
     rtol = ENERGY_RTOL[spec.execution.solver]
     tol = np.asarray(spec.execution.material_balance_atol_fmol)
     with np.errstate(all="ignore"):
@@ -404,7 +423,7 @@ def check_values(state, spec):
                 field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(q),
                 field.CHARGE_ATOL_C
                 + field.CHARGE_RTOL * np.abs(row.electrode_charge_transferred_C),
-                3e-25,
+                global_charge_bound(row, p),
                 tissue.ENERGY_ATOL_PJ + rtol * flows,
                 3e-12,
                 3e-12,
@@ -418,6 +437,10 @@ def check_values(state, spec):
             diagnostics["max_energy_balance_relative"] = max(
                 diagnostics["max_energy_balance_relative"],
                 float(abs(b["energy"]) / max(flows, tissue.ENERGY_ATOL_PJ)),
+            )
+            diagnostics["max_global_charge_bound_ratio"] = max(
+                diagnostics["max_global_charge_bound_ratio"],
+                float(abs(b["global_charge"]) / limits[5]),
             )
     for name in (k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ")):
         value = getattr(state, name)

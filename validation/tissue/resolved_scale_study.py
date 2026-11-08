@@ -13,6 +13,8 @@ Parts (each writes <part>.json in --output):
   cost        runner wall time per step, analysis time, Newton iterations and
               peak memory on the selected backend.
   stability   direct runs at 6-8 ms and the unstable explicit mode's localization.
+  energy      relative energy-identity residual orders under refinement (INIT-like).
+  charge      global-charge residual-to-bound ratio over a given definition (--definition).
 The world is validation/tissue/resolved_scale_world.py (synthetic geometry,
 BETSE default coefficients). Usage:
   python -m validation.tissue.resolved_scale_study PART --output DIR [--backend cpu|gpu]
@@ -237,9 +239,10 @@ def part_spectrum(args):
         write(args, "spectrum", report)
 
 
-def energy_relative(state, spec):
+def energy_relative(state, spec, p=None):
     """Energy-balance residual over the integrated work and dissipation flows."""
-    _, p = kinetic.initial_values(spec)
+    if p is None:
+        _, p = kinetic.initial_values(spec)
     row = model.STATE_TYPE(*(np.asarray(v) for v in state))
     flows = sum(
         float(np.sum(np.abs(getattr(row, k))))
@@ -493,6 +496,70 @@ def part_stability(args):
     write(args, "stability", report)
 
 
+def part_energy(args):
+    """Relative energy-identity residual under refinement, sampled every 16 ms."""
+    report = {}
+    horizon, segment = (0.016, 0.004) if args.quick else (0.256, 0.016)
+    for solver in (EULER, ARS):
+        spec, start, layout, control = setup(solver, args.backend)
+        _, host = kinetic.initial_values(spec)
+        rows = []
+        for dt in (4e-3, 2e-3, 1e-3, 5e-4):
+            state, samples = start, []
+            for _ in range(round(horizon / segment)):
+                state = advance(state, layout, control, dt, round(segment / dt))
+                samples.append(energy_relative(state, spec, host))
+            rows.append(dict(dt_s=dt, final=samples[-1], max=max(samples), samples=samples))
+        report[solver] = dict(
+            rows=rows,
+            final_orders=orders([r["final"] for r in rows]),
+            max_orders=orders([r["max"] for r in rows]),
+            declared_bound=model.ENERGY_RTOL[solver],
+        )
+        write(args, "energy", report)
+
+
+def part_charge(args):
+    """Global-charge residual-to-bound ratio over a whole given definition (windowed)."""
+    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+
+    if not args.definition:
+        raise ValueError("The charge part requires --definition")
+    spec = parse_spec(json.loads(Path(args.definition).read_text()))
+    windows = []
+
+    def sink(window):
+        state, layout = window.final.state, window.final.layout
+        supplied = np.abs(np.asarray(layout.valence) * np.asarray(state.reservoir_supplied))
+        windows.append(
+            dict(
+                time_s=float(window.final.time),
+                moved_charge_C=float(CHARGE_PER_FMOL * np.sum(supplied)),
+                **{k: float(v) for k, v in window.diagnostics.items()},
+            )
+        )
+        write(args, "charge", dict(definition=args.definition, windows=windows))
+
+    started = time.perf_counter()
+    result = run_windowed(spec, WindowPolicy(250), sink=sink)
+    write(
+        args,
+        "charge",
+        dict(
+            definition=args.definition,
+            backend=spec.execution.backend,
+            solver=spec.execution.solver,
+            dt_s=spec.execution.dt,
+            end_time_s=spec.experiment.end_time,
+            completed_time_s=float(result.final.time),
+            wall_s=time.perf_counter() - started,
+            diagnostics=result.diagnostics,
+            windows=windows,
+        ),
+    )
+
+
 def write(args, name, report):
     path = Path(args.output) / f"{name}-{args.backend}.json"
     path.write_text(json.dumps(report, indent=2, default=float) + "\n")
@@ -505,6 +572,8 @@ PARTS = dict(
     freezing=part_freezing,
     cost=part_cost,
     stability=part_stability,
+    energy=part_energy,
+    charge=part_charge,
 )
 
 
@@ -514,6 +583,7 @@ def main():
     parser.add_argument("--output", required=True)
     parser.add_argument("--backend", choices=("cpu", "gpu"), default="cpu")
     parser.add_argument("--quick", action="store_true", help="tiny windows to smoke-test parts")
+    parser.add_argument("--definition", help="definition JSON for the charge part")
     args = parser.parse_args()
     Path(args.output).mkdir(parents=True, exist_ok=True)
     status = {}

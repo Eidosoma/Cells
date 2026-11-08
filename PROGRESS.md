@@ -113,11 +113,20 @@ machine-readable inputs, results, checks and failures.
     face diffusion limits explicit stability to about 7 ms, and the identity
     enforces dt ≤ 3.4 ms. `tests/unit/test_surface_pump.py` passes 43, with 1
     L4-only skip on CPU.
-  - **Pending condition:** the IMEX energy-identity checks use relative bounds
-    (2e-3 ARS, 2e-2 Euler) instead of the family's absolute 2e-8 pJ. Neither
-    scheme integrates the energy identity exactly; measured residuals are 3e-8 to
-    4e-4. Approved on condition of a refinement check showing the residual falling
-    at each scheme's order. The RK4 path keeps the absolute bound.
+  - **Energy bounds (condition met):** the IMEX energy-identity checks use
+    relative bounds (2e-3 ARS, 2e-2 Euler) instead of the family's absolute 2e-8
+    pJ, since neither scheme integrates the energy identity exactly. The residual
+    converges at each scheme's order with no plateau (Euler 1.00, ARS 2.00; at
+    825 nodes the largest ARS residual is 9.5e-7). A fast test asserts the order,
+    and the RK4 path keeps the absolute bound
+    ([study-03](/mnt/workspaces/Cells/resolved-tissue-scale-20261108-01/index.json)).
+  - **Global-charge bound:** now 3e-25 C + 256·eps·(charge moved) rather than a
+    fixed 3e-25 C, which float64 rounding crossed once reservoirs had supplied
+    about 1e-9 C. The full 5 s INIT on real BETSE geometry completes (L4, 249 s)
+    with a worst residual-to-bound ratio of 0.0125; an injected error of 10× the
+    bound still fails (study-04).
+  - Added to the ionic ensemble list; two windowed ensemble worlds reproduce the
+    plain run's final state bitwise.
 
 - **BETSE-order emulator out of the engine; comparison pipeline proven (8 November).**
   The seven BETSE-order modules (spatial, active, junction, specs, models) and

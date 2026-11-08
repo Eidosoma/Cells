@@ -191,6 +191,7 @@ def parse_spec(data):
         "resolved_calcium_membrane_profile_epoch@1",
         "resolved_calcium_energy_membrane_profile_epoch@1",
         "resolved_tissue@12",
+        "resolved_pump_tissue@1",
         "resolved_calcium@1",
         "resolved_calcium@2",
         "resolved_calcium@3",

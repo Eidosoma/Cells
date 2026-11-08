@@ -287,20 +287,31 @@ def test_imex_ledgers_constraints_and_law_field(arm, solver, imex_runs):
 
 
 def test_imex_observed_order_against_rk4():
-    """Euler is first order and ARS(2,2,2) second order on the clamped fixture."""
+    """Euler is first order and ARS(2,2,2) second order on the clamped fixture.
+
+    The voltage error against RK4 and the relative energy-identity residual
+    (which the declared IMEX energy bound admits) both converge at that order.
+    RK4 itself keeps the family's absolute energy bound with no relative term.
+    """
     base = fixtures.definition("clamped")
     base["execution"]["dt"] = 6.25e-6
     base["execution"]["max_steps"] = 1024
-    reference = run(parse_spec(base)).observations.membrane_voltage_V[-1]
+    value = run(parse_spec(base))
+    assert surface_pump.ENERGY_RTOL["rk4"] == 0.0
+    assert value.diagnostics["max_energy_balance_error_pJ"] <= 2e-8
+    reference = value.observations.membrane_voltage_V[-1]
     for solver, order in ((imex.EULER_ID, 1), (imex.ARS222_ID, 2)):
-        errors = []
+        errors, energy = [], []
         for dt in (1e-4, 5e-5, 2.5e-5):
             raw = fixtures.definition("clamped", solver=solver)
             raw["execution"]["dt"] = dt
-            vm = run(parse_spec(raw)).observations.membrane_voltage_V[-1]
+            value = run(parse_spec(raw))
+            vm = value.observations.membrane_voltage_V[-1]
             errors.append(float(np.max(np.abs(vm - reference))))
-        rates = np.log2(np.asarray(errors[:-1]) / np.asarray(errors[1:]))
-        assert np.all(rates > order - 0.25), (solver, errors)
+            energy.append(value.diagnostics["max_energy_balance_relative"])
+        for values in (errors, energy):
+            rates = np.log2(np.asarray(values[:-1]) / np.asarray(values[1:]))
+            assert np.all(rates > order - 0.25), (solver, values)
 
 
 def test_imex_restart_is_bitwise_and_invalid_controls_refuse_the_step(tmp_path, imex_runs):
@@ -321,6 +332,54 @@ def test_imex_restart_is_bitwise_and_invalid_controls_refuse_the_step(tmp_path, 
         surface_pump.check_values(
             state._replace(face_transferred=state.face_transferred + 0.01), spec
         )
+
+
+def test_global_charge_bound_scales_with_moved_charge_and_catches_injected_error(imex_runs):
+    """Rounding of the moved charge passes; an injected charge error fails first here."""
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+
+    value = imex_runs["clamped", imex.ARS222_ID]
+    _, p = surface_kinetic.initial_values(value.spec)
+    row = surface_pump.STATE_TYPE(*(np.asarray(v) for v in value.final.state))
+    bound = surface_pump.global_charge_bound(row, p)
+    assert bound > surface_pump.GLOBAL_CHARGE_ATOL_C  # The clamped arm moves charge.
+    reservoir = int(np.flatnonzero(p.reservoir)[0])
+
+    def injected(charge_C):
+        # Below the material tolerance, so only the charge accounting can see it.
+        supplied = row.reservoir_supplied.copy()
+        supplied[0, reservoir] += charge_C / CHARGE_PER_FMOL
+        return row._replace(reservoir_supplied=supplied)
+
+    surface_pump.check_values(injected(0.1 * bound), value.spec)
+    with pytest.raises(NumericalError, match="global_charge"):
+        surface_pump.check_values(injected(10 * bound), value.spec)
+    # Large cancelling supply (charge moved, none created): a few-eps residual is
+    # admitted, while an error of 1e-10 of the moved charge is far outside.
+    moved = np.zeros_like(row.reservoir_supplied)
+    na, cl = (value.spec.model.species_ids.index(k) for k in ("Na", "Cl"))
+    moved[na, reservoir] = moved[cl, reservoir] = 1e4
+    large = surface_pump.global_charge_bound(row._replace(reservoir_supplied=moved), p)
+    total = 2e4 * CHARGE_PER_FMOL
+    assert 4 * np.finfo(float).eps * total < large < 1e-10 * total
+
+
+def test_ionic_ensemble_reproduces_the_imex_run(imex_runs):
+    """Batch windows (lax.map worlds, 7-step windows) give the plain run's state."""
+    from cells.ensemble import ionic
+
+    value = imex_runs["clamped", imex.ARS222_ID]
+    raw = value.spec.to_dict()
+    spec = ionic.parse_spec(dict(model="ionic_worlds@1", simulation=raw, worlds=2, window_steps=7))
+    checkpoints, report = ionic.run(spec, backend=BACKEND)
+    for checkpoint in checkpoints.values():
+        for a, b in zip(checkpoint.state, value.final.state, strict=True):
+            np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
+    assert report["physical_model"] == "resolved_pump_tissue@1"
+    assert report["final_voltage_axis"] == "membrane_patch"
+    np.testing.assert_array_equal(
+        report["final_voltage_V"][0], value.observations.membrane_voltage_V[-1, :4]
+    )
 
 
 def test_cpu_and_gpu_trajectories_agree():
