@@ -40,12 +40,34 @@ starts, and production design is deferred until parity is established.
 | 3 | Cells run of BETSE's default world, compared with step 1 | Next |
 | 4 | The same comparison on the L4 GPU | L4 path checks in progress |
 | 5 | Further mechanism families from the parity ladder, on CPU and L4 | Planned |
-| 6 | JUPITER environment and one-node pilot | Recipe in preparation |
+| 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 
 ## Runs
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **L4 platform checks and JUPITER preparation (8 November).**
+  [Index](/mnt/workspaces/Cells/jupiter-platform-20261108-01/index.json) of runs,
+  inputs, results and failures.
+  - GPU unit tests 33/33; integrated ensemble on GPU vs CPU 7/7; GPU
+    integration (real pause/resume) 7/8.
+  - **Known failure:** `test_signal_pause_and_exact_integrated_resume[ionic]` fails
+    at ≤2.4e-15 relative when processes share the persistent JAX compilation
+    cache, and passes with `JAX_ENABLE_COMPILATION_CACHE=false`; in-process
+    pause/resume is bit-exact. Cross-process bitwise replay therefore needs the
+    cache disabled.
+  - Ensemble smoke (`spatial_extracellular@2`, 32 worlds): pause within 2.8 s of
+    SIGUSR1, resume 32/32 bitwise equal to uninterrupted runs, 98 s, 0.02
+    GPU-hours. GPU busy 84–89% but SM-active 0.5–0.6%: single-world `lax.map`
+    kernels are latency-bound, so JUPITER needs vectorised worlds.
+  - JUPITER recipe: `validation/ensemble/jupiter_env_setup.sh` (wheels only, all
+    28 pins have aarch64 Python 3.13 wheels), `jupiter_check.py`, the reworked
+    `jupiter.sbatch` and the [runbook](docs/JUPITER_RUNBOOK.md). Site details are
+    unverified until access.
+  - Runner gaps for later: workers are killed 55 s after a pause request;
+    multi-node runs are separate campaigns that need distinct seeds; per-leg
+    `allocated_gpu_hours` must not be summed within one job.
 
 - **Plain BETSE reference outputs (8 November).** Unmodified BETSE v1.5.0 CLI,
   isolated HOME, CPUs 1–2; tools `validation/betse/betse_reference_run.py` and

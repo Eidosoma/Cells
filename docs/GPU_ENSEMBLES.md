@@ -532,7 +532,9 @@ are not automatically retried.
 caches follow it. The [one-node Slurm template](../validation/ensemble/jupiter.sbatch)
 requires qualified Arm CUDA/JAX Python and explicit source/scratch paths. Supply
 the account and scratch stdout/stderr paths to `sbatch`. Inside an allocation,
-the runner stays in the foreground for scheduler signals and exit status.
+the runner stays in the foreground for scheduler signals and exit status. The
+[JUPITER runbook](JUPITER_RUNBOOK.md) gives the step-by-step environment setup,
+platform check, one-node smoke, independent multi-node jobs and budget.
 
 Deployment, NUMA placement, CPU sidecar packing and measured four-GPU efficiency
 remain to be checked on the actual node. The local longer reference study runs

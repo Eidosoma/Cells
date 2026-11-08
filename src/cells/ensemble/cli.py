@@ -41,6 +41,36 @@ def sources():
     return {str(p.relative_to(root)): sha(p) for p in sorted(root.rglob("*.py"))}
 
 
+def source_revision():
+    """Git revision and dirty flag of the checkout or source snapshot holding this package."""
+    root = Path(__file__).resolve().parents[3]
+
+    def git(*arguments):
+        return subprocess.run(
+            ["git", "-C", str(root), *arguments],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        ).stdout
+
+    try:
+        top, revision = git("rev-parse", "--show-toplevel", "HEAD").splitlines()
+        if Path(top).resolve() == root:
+            dirty = bool(git("status", "--porcelain", "--untracked-files=all").strip())
+            return {"revision": revision, "dirty": dirty, "origin": "git checkout"}
+    except (OSError, ValueError, subprocess.SubprocessError):
+        pass
+    if (root / "SNAPSHOT.json").is_file():  # validation/source_snapshot.py layout
+        snapshot = read(root / "SNAPSHOT.json")
+        return {
+            "revision": snapshot.get("git_revision"),
+            "dirty": bool(snapshot.get("selected_status_porcelain_v1_z")),
+            "origin": "source snapshot",
+        }
+    return None
+
+
 def wilson(successes, n):
     z = 1.959963984540054
     p = successes / n
@@ -353,6 +383,7 @@ def controller(root):
             else None,
         },
         "allocation_clock_source": registration["allocation_clock_source"],
+        "source_revision": registration.get("source_revision"),
         "gpu_hours_scope": (
             "allocation start through result aggregation; reconcile final charge with Slurm receipt"
         ),
@@ -422,8 +453,11 @@ def register(args):
         definition = old_registration["definition"]
         inherited, parents = previous["result_records"], previous["parent_checkpoints"]
         parent = {"path": str(old), "result_sha256": sha(old / "result.json")}
+        # The frozen source is the parent's, so its revision is too.
+        revision = old_registration.get("source_revision")
     else:
         definition = read(args.input)
+        revision = source_revision()
     planned = plan(definition, len(selected))
     for task in planned["tasks"]:
         raw = task["definition"]
@@ -459,6 +493,7 @@ def register(args):
         "devices": selected,
         "created_time": time.time(),
         "sources_sha256": sources(),
+        "source_revision": revision,
         "parent": parent,
         "inherited_results": inherited,
         "parent_checkpoints": parents,
