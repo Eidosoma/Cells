@@ -2,7 +2,10 @@
 
 import copy
 import hashlib
+import importlib.util
 import json
+import shutil
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -16,28 +19,36 @@ EXAMPLE = ROOT / "validation/betse/protocols/default_world_dense_example.json"
 M, N, IONS, K, DT = 6, 2, 2, 5, 1e-4
 
 
-def make_betse(directory, samples=4, aliased=False, venv_scale=1e-4):
-    """Tiny extraction: every observable changes in time, concentrations stay positive."""
+def make_betse(directory, samples=4, aliased=False, venv_scale=1e-4, grid=None):
+    """Tiny extraction: every observable changes in time, concentrations stay positive.
+
+    ``grid`` (rows, cols) adds a row-major ECM grid (X, Y, xypts) with rows * cols sites.
+    """
     directory.mkdir()
+    sites = K if grid is None else grid[0] * grid[1]
     s = np.arange(1, samples + 1, dtype=float)[:, None]
     history = {
         "vm_time": (-0.02 + 1e-3 * s * np.linspace(0, 1, M), ("membranes",), "V"),
         "vm_ave_time": (-0.02 + 1e-3 * s * np.ones(N), ("cells",), "V"),
         "cc_time": (10 + s[:, :, None] * np.ones((IONS, N)), ("ions", "cells"), "mol/m^3"),
-        "cc_env_time": (100 + s[:, :, None] * np.ones((IONS, K)), ("ions", "env"), "mol/m^3"),
-        "venv_time": (venv_scale * s * np.ones(K), ("ECM grid points",), "V"),
+        "cc_env_time": (100 + s[:, :, None] * np.ones((IONS, sites)), ("ions", "env"), "mol/m^3"),
+        "venv_time": (venv_scale * s * np.ones(sites), ("ECM grid points",), "V"),
     }
+    geometry = {"mem_to_cells": (np.repeat([0, 1], 3), {"units": "index"})}
+    if grid is not None:
+        X, Y = np.meshgrid(np.arange(grid[1], dtype=float), np.arange(grid[0], dtype=float))
+        geometry |= {
+            "X": (X, {"units": "m"}),
+            "Y": (Y, {"units": "m"}),
+            "xypts": (np.column_stack([X.ravel(), Y.ravel()]), {"units": "m"}),
+        }
     meta = {
         name: {"units": units, "axes": ["samples", *axes]}
         for name, (_, axes, units) in history.items()
     }
     if aliased:
         meta["vm_time"]["aliased_samples"] = True
-    files = {
-        "geometry.npz": ex.write_npz(
-            directory / "geometry.npz", {"mem_to_cells": (np.repeat([0, 1], 3), {"units": "index"})}
-        )
-    }
+    files = {"geometry.npz": ex.write_npz(directory / "geometry.npz", geometry)}
     time = {}
     for phase in cmp.PHASES:
         files[f"{phase}_history.npz"] = ex.write_npz(
@@ -219,3 +230,198 @@ def test_invalid_protocol_is_refused(case):
     case["protocol_path"].write_text(json.dumps(broken))
     with pytest.raises(cmp.Refusal):
         cmp.load_protocol(case["protocol_path"])
+
+
+# ............................................................ protocol extensions
+
+
+def with_protocol(case, edit, name="variant.json"):
+    protocol = copy.deepcopy(case["protocol"])
+    edit(protocol)
+    path = case["tmp"] / name
+    path.write_text(json.dumps(protocol))
+    sha = hashlib.sha256(path.read_bytes()).hexdigest()
+    return {**case, "protocol": protocol, "protocol_path": path, "sha": sha}
+
+
+def grid_case(case, grid=(4, 5)):
+    make_betse(case["tmp"] / "grid", grid=grid)
+    manifest = json.loads((case["tmp"] / "grid/manifest.json").read_text())
+    geometry = manifest["files"]["geometry.npz"]["sha256"]
+    return {**case, "betse_dir": case["tmp"] / "grid", "betse": manifest, "geometry": geometry}
+
+
+def bump(case, phase, observable, index, delta=None, factor=None):
+    old = float(cmp._npz(case["betse_dir"] / f"{phase}_history.npz")[observable][tuple(index)])
+    new = old * factor if factor is not None else old + delta
+    return {"phase": phase, "observable": observable, "index": index, "new_value": new}
+
+
+def test_grid_boundary_ring_follows_the_case_grid():
+    X, Y = np.meshgrid(np.arange(25.0), np.arange(24.0))  # 24 rows x 25 columns
+    geometry = {"X": X, "Y": Y, "xypts": np.column_stack([X.ravel(), Y.ravel()])}
+    ring, grid = cmp.grid_boundary_ring(geometry)
+    assert grid == (24, 25) and ring.size == 94
+    assert set(ring) == {k for k in range(600) if k // 25 in (0, 23) or k % 25 in (0, 24)}
+    with pytest.raises(cmp.Refusal):  # points not in row-major X/Y order
+        cmp.grid_boundary_ring({**geometry, "xypts": geometry["xypts"][::-1]})
+
+
+def test_excluded_ring_errors_are_reported_but_not_judged(case):
+    case = grid_case(case)  # 4 x 5 grid, ring of 14 sites
+
+    def exclude(protocol):
+        for name in ("cc_env_time", "venv_time"):
+            protocol["observables"][name]["exclude"] = cmp.RING
+
+    ring = with_protocol(case, exclude)
+    corner = bump(case, "sim", "cc_env_time", [2, 1, 0], factor=1 + 1e-3)  # site 0: a corner
+    result = layout(ring, "ring", perturbation=corner)
+    obs = result["phases"]["sim"]["observables"]["cc_env_time"]
+    assert result["verdict"] == "pass" and obs["history"]["max_rel"]["value"] == 0
+    assert obs["excluded"]["sites"] == 14 and obs["excluded"]["elements"] == IONS * 14
+    worst = obs["excluded"]["history"]["max_rel"]
+    assert worst["element"] == [1, 0] and worst["value"] == pytest.approx(1e-3)
+    assert worst["elapsed_s"] == pytest.approx(3 * DT)
+    assert (
+        "excluded 14 ring sites"
+        in cmp.summarize(result)["phases"]["sim"]["observables"]["cc_env_time"]
+    )
+    assert layout(case, "plain", perturbation=corner)["verdict"] == "fail"
+    inner = bump(case, "sim", "cc_env_time", [2, 1, 6], factor=1 + 1e-3)  # grid (1, 1)
+    failed = layout(ring, "inner", perturbation=inner)
+    assert failed["verdict"] == "fail"
+    assert failed["phases"]["sim"]["observables"]["cc_env_time"]["history"]["max_rel"][
+        "element"
+    ] == [1, 6]
+
+
+def test_ring_exclusion_needs_an_ecm_grid_axis(case):
+    ring = with_protocol(case, lambda p: p["observables"]["cc_env_time"].update(exclude=cmp.RING))
+    result = layout(ring, "no-grid")  # synthetic case without X/Y
+    assert result["verdict"] == "refused" and cmp.RING in result["refusals"][0]
+
+
+def test_reported_only_observables_stay_out_of_the_verdict(case):
+    only = with_protocol(case, lambda p: p["observables"]["venv_time"].update(judged=False))
+    wrong = {"phase": "sim", "observable": "venv_time", "index": [1, 0], "new_value": 1.0}
+    result = layout(only, "venv-wrong", perturbation=wrong)
+    venv = result["phases"]["sim"]["observables"]["venv_time"]
+    assert result["verdict"] == "pass" and venv["judged"] is False
+    assert not venv["classes"]["codata_constants"]["pass"] and venv["dynamic_range"]
+    assert "flat" in venv["classes"]["codata_constants"]
+    phases = cmp.layout_from_betse(only["betse_dir"], only["betse"], only["protocol"])
+    for row in phases.values():
+        row["history"].pop("venv_time")
+        row["final"].pop("v_env")
+    absent = layout(only, "no-venv", phases=phases)
+    assert absent["verdict"] == "pass"
+    assert absent["phases"]["init"]["observables"]["venv_time"]["absent_in_cells"]
+    assert layout(case, "no-venv-judged", phases=phases)["verdict"] == "refused"
+    nothing = with_protocol(
+        case, lambda p: [row.update(judged=False) for row in p["observables"].values()]
+    )
+    with pytest.raises(cmp.Refusal):
+        cmp.load_protocol(nothing["protocol_path"])
+
+
+def test_cells_only_diagnostics_are_reported_and_never_judged(case):
+    diag = with_protocol(case, lambda p: p["observables"].update({"diag_*": {"judged": False}}))
+    phases = cmp.layout_from_betse(diag["betse_dir"], diag["betse"], diag["protocol"])
+    for row in phases.values():
+        row["history"]["diag_pump_time"] = np.linspace(0.0, 1.0, 12).reshape(4, 3)
+        row["final"]["diag_pump"] = np.full(3, 2.0)
+    result = layout(diag, "diag", phases=phases)
+    report = result["phases"]["sim"]["cells_only"]["diag_pump_time"]
+    assert result["verdict"] == "pass" and report["cells_only"] and not report["judged"]
+    assert report["shape"] == [4, 3] and report["final_array"] == "diag_pump"
+    assert report["dynamic_range"]["value_max"] == 2.0 and report["samples_match_elapsed"]
+    lines = cmp.summarize(result)["phases"]["sim"]["observables"]
+    assert lines["diag_pump_time"].startswith("cells-only")
+    for bad in ({"judged": True}, {"judged": False, "final": "diag_pump"}):
+        broken = with_protocol(case, lambda p, b=bad: p["observables"].update(diag_x_time=b))
+        with pytest.raises(cmp.Refusal):
+            cmp.load_protocol(broken["protocol_path"])
+
+
+def test_tolerances_may_differ_per_phase(case):
+    def split(protocol):
+        for values in protocol["tolerance_classes"].values():
+            values["voltage"] = {"init": 1e-3, "sim": 1e-6}
+
+    phased = with_protocol(case, split)
+    for phase, verdict in (("init", "pass"), ("sim", "fail")):
+        result = layout(
+            phased, f"tol-{phase}", perturbation=bump(case, phase, "vm_time", [1, 2], 1e-4)
+        )
+        vm = result["phases"][phase]["observables"]["vm_time"]["classes"]["codata_constants"]
+        assert result["verdict"] == verdict
+        assert vm["tolerance"] == {"init": 1e-3, "sim": 1e-6}[phase]
+    for value in ({"init": 1e-3}, {"init": 0.0, "sim": 1e-6}, {"init": 1, "sim": 1, "x": 1}):
+        broken = with_protocol(
+            case, lambda p, v=value: p["tolerance_classes"]["codata_constants"].update(voltage=v)
+        )
+        with pytest.raises(cmp.Refusal):
+            cmp.load_protocol(broken["protocol_path"])
+
+
+# ............................................................ regression
+
+BASELINE = "432e62b"  # comparator before exclusions, reported-only and per-phase tolerances
+
+
+@pytest.fixture(scope="module")
+def baseline(tmp_path_factory):
+    shown = subprocess.run(
+        ["git", "-C", str(ROOT), "show", f"{BASELINE}:validation/betse/cells_betse_compare.py"],
+        capture_output=True,
+        text=True,
+    )
+    if shown.returncode:
+        pytest.skip("baseline comparator is not in this checkout's history")
+    directory = tmp_path_factory.mktemp("baseline")
+    (directory / "cells_betse_compare.py").write_text(shown.stdout)
+    for sibling in ("betse_reference_extract.py", "betse_reference_run.py"):
+        shutil.copy(ROOT / "validation/betse" / sibling, directory / sibling)
+    spec = importlib.util.spec_from_file_location(
+        "_baseline_compare", directory / "cells_betse_compare.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def normalized(record):
+    record = json.loads(json.dumps(cmp.json_safe(record)))
+    record.pop("created_utc")
+    record.pop("comparator")
+    return record
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "default_world_dense_example.json",
+        "emulator_default_world.json",
+        "emulator_default_world_dense.json",
+    ],
+)
+def test_existing_protocols_give_unchanged_results(case, baseline, name):
+    path = ROOT / "validation/betse/protocols" / name
+    fixed = {
+        **case,
+        "protocol": json.loads(path.read_text()),
+        "protocol_path": path,
+        "sha": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+    changes = {
+        "identity": None,
+        "vm": bump(case, "sim", "vm_time", [1, 2], 3e-6),
+        "env": bump(case, "init", "cc_env_time", [2, 1, 4], factor=1 + 5e-8),
+        "nan": {"phase": "sim", "observable": "venv_time", "index": [3, 1], "new_value": np.nan},
+    }
+    for label, change in changes.items():
+        new = layout(fixed, f"{name}-{label}", perturbation=change)
+        old = baseline.run_comparison(fixed["betse_dir"], fixed["tmp"] / f"{name}-{label}", path)
+        assert normalized(new) == normalized(old), label
+        assert cmp.json_safe(cmp.summarize(new)) == baseline.json_safe(baseline.summarize(old))

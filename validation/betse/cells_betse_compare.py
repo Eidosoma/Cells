@@ -22,7 +22,17 @@ Inputs (no BETSE or Cells imports; any Cells model or route can produce the resu
   Names, shapes, units (V, mol/m^3) and element order are those of the BETSE
   extraction of the same case (its geometry.npz ordering).
 * A protocol JSON (validation/betse/protocols/): observables, tolerance classes
-  and the verdict class.
+  and the verdict class. Optional keys, absent from older protocols (which give
+  unchanged results):
+
+  - observable ``"exclude": "grid_boundary_ring"``: leave the outermost row and
+    column of the case's ECM grid (2 (R + C) - 4 sites of geometry X) out of the
+    judged errors; their max errors are reported under ``excluded``.
+  - observable ``"judged": false``: compute and report everything (including
+    ``flat``) but leave it out of the verdict; it may be absent from the Cells
+    result. ``diag_*`` entries (a name or the wildcard ``"diag_*"``, always
+    ``judged`` false) report the Cells layout's diag arrays with no BETSE pairing.
+  - a tolerance class value is a number for every phase or ``{phase: number}``.
 
 Samples are paired on common elapsed times only (BETSE sample k holds the state
 after k + 1 updates; see the extract manifest ``time``). The comparator refuses
@@ -63,6 +73,8 @@ LAYOUT_KIND = "cells.betse_comparison_layout@1"
 PROTOCOL_SCHEMA = "cells.betse_comparison_protocol@1"
 LAYOUT_MANIFEST = "comparison_manifest.json"
 PHASES = ("init", "sim")
+DIAG_PREFIX, DIAG_ALL = "diag_", "diag_*"  # Cells-only arrays: reported, never judged
+RING = "grid_boundary_ring"  # outermost row and column of the case's ECM grid
 # History observable -> end-of-phase array of the same quantity.
 SUPPORTED = {
     "vm_time": "vm",
@@ -109,6 +121,49 @@ def _json(path):
         raise Refusal(f"unreadable JSON {path}: {error!r}") from error
 
 
+def _valid_tolerance(value, phases):
+    def positive(v):
+        number = isinstance(v, (int, float)) and not isinstance(v, bool)
+        return number and math.isfinite(v) and v > 0
+
+    if isinstance(value, dict):
+        return set(phases) <= set(value) <= set(PHASES) and all(map(positive, value.values()))
+    return positive(value)
+
+
+def resolve_tolerance(value, phase):
+    """A tolerance class value: one number for every phase, or {phase: number}."""
+    return value[phase] if isinstance(value, dict) else value
+
+
+def grid_boundary_ring(geometry):
+    """Flat indices of the outermost rows and columns of the case's ECM grid, and its shape.
+
+    BETSE flattens its ECM grid row-major (xypts = X, Y raveled; checked when present),
+    so for an R x C grid the ring has 2 (R + C) - 4 sites.
+    """
+    if "X" not in geometry:
+        raise Refusal(f"{RING} needs the case's ECM grid (geometry X)")
+    rows, cols = geometry["X"].shape
+    if "xypts" in geometry and not (
+        np.array_equal(geometry["xypts"][:, 0], geometry["X"].ravel())
+        and np.array_equal(geometry["xypts"][:, 1], geometry["Y"].ravel())
+    ):
+        raise Refusal("ECM grid points are not the row-major flattening of X and Y")
+    i, j = np.divmod(np.arange(rows * cols), cols)
+    ring = np.flatnonzero((i == 0) | (i == rows - 1) | (j == 0) | (j == cols - 1))
+    return ring, (rows, cols)
+
+
+def _ring_mask(shape, ring, grid):
+    sites = grid[0] * grid[1]
+    if not shape or shape[-1] != sites:
+        raise Refusal(f"{RING} needs a last axis of {sites} ECM grid points, not {list(shape)}")
+    mask = np.zeros(shape, dtype=bool)
+    mask[..., ring] = True
+    return mask
+
+
 # ............................................................ inputs
 
 
@@ -127,19 +182,34 @@ def load_protocol(path):
     classes = protocol.get("tolerance_classes") or {}
     for name, values in classes.items():
         if set(values) != set(quantities) or not all(
-            isinstance(v, (int, float)) and math.isfinite(v) and v > 0 for v in values.values()
+            _valid_tolerance(v, phases) for v in values.values()
         ):
-            raise Refusal(f"tolerance class {name!r} must give a positive value per quantity")
+            raise Refusal(
+                f"tolerance class {name!r} must give a positive value, or one per phase "
+                "({phase: value}), per quantity"
+            )
     if protocol.get("verdict_class") not in classes:
         raise Refusal("verdict_class must name a tolerance class")
     observables = protocol.get("observables") or {}
     for name, row in observables.items():
+        if not isinstance(row.get("judged", True), bool):
+            raise Refusal(f"{name}: judged must be true or false")
+        if name.startswith(DIAG_PREFIX):
+            if row.get("judged", True) or {"final", "exclude"} & set(row):
+                raise Refusal(f"{name}: Cells-only diag_* entries need judged false, no pairing")
+            if row.get("tolerance") not in (None, *quantities):
+                raise Refusal(f"{name}: tolerance must name a tolerance quantity")
+            continue
         if SUPPORTED.get(name) is None or row.get("final") not in (SUPPORTED[name], None):
             raise Refusal(f"unsupported observable or final pairing: {name}")
         if row.get("tolerance") not in quantities:
             raise Refusal(f"{name}: tolerance must name a tolerance quantity")
+        if row.get("exclude") not in (None, RING):
+            raise Refusal(f"{name}: unknown exclusion {row.get('exclude')!r}")
     if not observables:
         raise Refusal("protocol lists no observables")
+    if not any(row.get("judged", True) for row in observables.values()):
+        raise Refusal("protocol judges no observable")
     atol = protocol.get("time_alignment_atol_s")
     if not isinstance(atol, (int, float)) or not atol > 0:
         raise Refusal("time_alignment_atol_s must be positive")
@@ -253,6 +323,11 @@ def dynamic_range(series, kind):
     }
 
 
+def _masked(error, mask, keep):
+    """Errors of kept (or, with keep False, excluded) elements; others become -1."""
+    return error if mask is None else np.where(mask != keep, error, -1.0)
+
+
 def compare_observable(context, name, row, betse_h, cells_h, betse_f, cells_f, pairs):
     kind = context["quantities"][row["tolerance"]]["kind"]
     axes = context["axes"][name]
@@ -261,6 +336,17 @@ def compare_observable(context, name, row, betse_h, cells_h, betse_f, cells_f, p
     rows = [p[0] for p in pairs], [p[1] for p in pairs]
     b, c = betse_h[rows[0]], cells_h[rows[1]]
     absolute, relative = errors(b, c)
+    mask = None  # True marks an element excluded from judging
+    if row.get("exclude") == RING:
+        mask = _ring_mask(betse_h.shape[1:], *context["ring"])
+        excluded = {
+            "rule": RING,
+            "grid_shape": list(context["ring"][1]),
+            "sites": int(context["ring"][0].size),
+            "elements": int(mask.sum()),
+        }
+        absolute_all, relative_all = absolute, relative
+        absolute, relative = _masked(absolute, mask, True), _masked(relative, mask, True)
 
     def when(k):
         return {
@@ -274,20 +360,37 @@ def compare_observable(context, name, row, betse_h, cells_h, betse_f, cells_f, p
         "max_rel": _worst(relative, b, c, axes, ions, owner, when),
     }
     result = {"units": context["units"][name], "tolerance": row["tolerance"], "kind": kind}
+    if not row.get("judged", True):
+        result["judged"] = False
     result["history"] = history
+    if mask is not None:
+        excluded["history"] = {
+            "max_abs": _worst(_masked(absolute_all, mask, False), b, c, axes, ions, owner, when),
+            "max_rel": _worst(_masked(relative_all, mask, False), b, c, axes, ions, owner, when),
+        }
     worst = {"abs": absolute.max(), "rel": relative.max()}[kind]
     if betse_f is not None:
-        fa, fr = errors(betse_f, cells_f)
+        fa_all, fr_all = errors(betse_f, cells_f)
+        fa, fr = _masked(fa_all, mask, True), _masked(fr_all, mask, True)
         final_at = {"elapsed_s": times["final"]}
         result["final"] = {
             "final_array": row.get("final"),
             "max_abs": {**_worst(fa, betse_f, cells_f, axes, ions, owner, None), **final_at},
             "max_rel": {**_worst(fr, betse_f, cells_f, axes, ions, owner, None), **final_at},
         }
+        if mask is not None:
+            excluded["final"] = {
+                key: {**_worst(_masked(e, mask, False), betse_f, cells_f, axes, ions, owner, None)}
+                | final_at
+                for key, e in (("max_abs", fa_all), ("max_rel", fr_all))
+            }
         worst = max(worst, {"abs": fa.max(), "rel": fr.max()}[kind])
         series = np.concatenate([betse_h, betse_f[None]], axis=0)
     else:
         series = betse_h
+    if mask is not None:
+        series = series[:, ~mask]  # the judged elements' own change
+        result["excluded"] = excluded
     result["dynamic_range"] = dynamic_range(series, kind)
     measure = result["dynamic_range"][
         "max_relative_temporal_change" if kind == "rel" else "max_temporal_change"
@@ -295,13 +398,77 @@ def compare_observable(context, name, row, betse_h, cells_h, betse_f, cells_f, p
     result["worst_error_in_tolerance_kind"] = float(worst)
     result["classes"] = {}
     for label, values in context["classes"].items():
-        tolerance = values[row["tolerance"]]
+        tolerance = resolve_tolerance(values[row["tolerance"]], context["phase"])
         result["classes"][label] = {
             "tolerance": tolerance,
             "pass": bool(worst <= tolerance),
             "flat": bool(measure <= tolerance),
         }
     return result
+
+
+def absent_observable(context, name, row, betse_h, betse_f):
+    """A reported-only observable that the Cells result does not provide."""
+    kind = context["quantities"][row["tolerance"]]["kind"]
+    series = betse_h if betse_f is None else np.concatenate([betse_h, betse_f[None]], axis=0)
+    span = dynamic_range(series, kind)
+    measure = span["max_relative_temporal_change" if kind == "rel" else "max_temporal_change"]
+    classes = {}
+    for label, values in context["classes"].items():
+        tolerance = resolve_tolerance(values[row["tolerance"]], context["phase"])
+        classes[label] = {"tolerance": tolerance, "flat": bool(measure <= tolerance)}
+    return {
+        "units": context["units"][name],
+        "tolerance": row["tolerance"],
+        "kind": kind,
+        "judged": False,
+        "absent_in_cells": True,
+        "dynamic_range": span,
+        "classes": classes,
+    }
+
+
+def cells_only(context, entries, data, declared):
+    """Report diag_* arrays of the Cells result: no BETSE pairing, never judged."""
+    present = sorted(k for k in data["cells_history"] if k.startswith(DIAG_PREFIX))
+    report = {}
+    for entry, row in entries.items():
+        for name in present if entry == DIAG_ALL else [entry]:
+            if name not in data["cells_history"]:
+                report[name] = {"judged": False, "absent_in_cells": True}
+                continue
+            series = np.asarray(data["cells_history"][name], dtype=np.float64)
+            final_name = name.removesuffix("_time")
+            final = data["cells_final"].get(final_name)
+            if final is not None and final.shape == series.shape[1:]:
+                series = np.concatenate([series, np.asarray(final, np.float64)[None]], axis=0)
+            else:
+                final_name = None
+            out = {
+                "judged": False,
+                "cells_only": True,
+                "shape": list(data["cells_history"][name].shape),
+                "final_array": final_name,
+                "samples_match_elapsed": len(data["cells_history"][name])
+                == len(declared["elapsed_after_update_s"]),
+                "finite": bool(np.all(np.isfinite(series))),
+            }
+            if out["finite"] and series.size:
+                kind = context["quantities"].get(row.get("tolerance"), {}).get("kind", "abs")
+                out["dynamic_range"] = dynamic_range(series, kind)
+                if row.get("tolerance"):
+                    measure = out["dynamic_range"][
+                        "max_relative_temporal_change" if kind == "rel" else "max_temporal_change"
+                    ]
+                    out["classes"] = {}
+                    for label, values in context["classes"].items():
+                        tolerance = resolve_tolerance(values[row["tolerance"]], context["phase"])
+                        out["classes"][label] = {
+                            "tolerance": tolerance,
+                            "flat": bool(measure <= tolerance),
+                        }
+            report[name] = out
+    return report
 
 
 # ............................................................ comparison
@@ -344,6 +511,8 @@ def _check_series(phase, name, row, data, betse_arrays, layout):
     history_b, history_c = data["betse_history"], data["cells_history"]
     for label, arrays in (("BETSE", history_b), ("Cells", history_c)):
         if name not in arrays:
+            if label == "Cells" and not row.get("judged", True):
+                return False  # reported-only and not provided by this Cells result
             raise Refusal(f"{phase}/{name}: missing on the {label} side")
     meta = betse_arrays[f"{phase}_history.npz"]["arrays"][name]
     if meta.get("aliased_samples") or f"{phase}/{name}" in layout.get("aliased", []):
@@ -365,6 +534,7 @@ def _check_series(phase, name, row, data, betse_arrays, layout):
             raise Refusal(f"{phase}/{final}: final shape differs from the history samples")
         if not np.all(np.isfinite(data["betse_final"][final])):
             raise Refusal(f"{phase}/{final}: non-finite BETSE reference values")
+    return True
 
 
 def run_comparison(betse_path, cells_path, protocol_path):
@@ -403,39 +573,50 @@ def run_comparison(betse_path, cells_path, protocol_path):
             "provenance": layout["provenance"],
         }
         geometry = _npz(betse_dir / "geometry.npz")
+        paired = {k: v for k, v in protocol["observables"].items() if k in SUPPORTED}
+        diagnostics = {k: v for k, v in protocol["observables"].items() if k not in SUPPORTED}
         context = {
             "quantities": protocol["tolerance_quantities"],
             "classes": protocol["tolerance_classes"],
             "ions": betse.get("ions", {}).get("order"),
             "owner": geometry.get("mem_to_cells"),
         }
+        if any(row.get("exclude") == RING for row in paired.values()):
+            context["ring"] = grid_boundary_ring(geometry)
         phases = {}
         for phase in protocol["phases"]:
             data, pairs, times, declared = _phase_inputs(
                 phase, betse_dir, betse, layout_dir, layout, protocol
             )
             arrays = betse["files"]
-            for name, row in protocol["observables"].items():
-                _check_series(phase, name, row, data, arrays, layout)
+            present = {
+                name: _check_series(phase, name, row, data, arrays, layout)
+                for name, row in paired.items()
+            }
+            context["phase"] = phase
             context["axes"] = {
-                name: arrays[f"{phase}_history.npz"]["arrays"][name]["axes"][1:]
-                for name in protocol["observables"]
+                name: arrays[f"{phase}_history.npz"]["arrays"][name]["axes"][1:] for name in paired
             }
             context["units"] = {
-                name: arrays[f"{phase}_history.npz"]["arrays"][name]["units"]
-                for name in protocol["observables"]
+                name: arrays[f"{phase}_history.npz"]["arrays"][name]["units"] for name in paired
             }
             context["times"] = {"final": times.get("final_state_elapsed_s")}
             observables = {}
-            for name, row in protocol["observables"].items():
+            for name, row in paired.items():
                 final = row.get("final") if protocol.get("compare_final", True) else None
+                betse_final = data["betse_final"][final] if final else None
+                if not present[name]:
+                    observables[name] = absent_observable(
+                        context, name, row, data["betse_history"][name], betse_final
+                    )
+                    continue
                 observables[name] = compare_observable(
                     context,
                     name,
                     row,
                     data["betse_history"][name],
                     data["cells_history"][name],
-                    data["betse_final"][final] if final else None,
+                    betse_final,
                     data["cells_final"][final] if final else None,
                     pairs,
                 )
@@ -447,17 +628,17 @@ def run_comparison(betse_path, cells_path, protocol_path):
                 "final_elapsed_s": times.get("final_state_elapsed_s"),
                 "observables": observables,
             }
+            if diagnostics:
+                phases[phase]["cells_only"] = cells_only(context, diagnostics, data, declared)
         record["phases"] = phases
+        judged = [
+            obs
+            for phase in phases.values()
+            for obs in phase["observables"].values()
+            if obs.get("judged", True)
+        ]
         record["classes"] = {
-            label: (
-                "pass"
-                if all(
-                    obs["classes"][label]["pass"]
-                    for phase in phases.values()
-                    for obs in phase["observables"].values()
-                )
-                else "fail"
-            )
+            label: "pass" if all(obs["classes"][label]["pass"] for obs in judged) else "fail"
             for label in protocol["tolerance_classes"]
         }
         record["verdict"] = record["classes"][protocol["verdict_class"]]
@@ -500,6 +681,14 @@ def summarize(record):
         lines = {}
         for name, obs in row["observables"].items():
             cls = obs["classes"][label]
+            change = f"{obs['dynamic_range']['max_temporal_change']:.3g} {obs['units']}"
+            flat = " (FLAT)" if cls["flat"] else ""
+            if cls["flat"]:
+                summary["flat_in_verdict_class"].append(f"{phase}/{name}")
+            if obs.get("absent_in_cells"):
+                lines[name] = "reported-only: absent from the Cells result; reference change "
+                lines[name] += change + flat
+                continue
             worst = obs["history"]["max_abs" if obs["kind"] == "abs" else "max_rel"]
             where = (
                 f"history max at t={worst['elapsed_s']:.6g} s {worst['labels']}"
@@ -509,13 +698,25 @@ def summarize(record):
             lines[name] = (
                 f"{'pass' if cls['pass'] else 'FAIL'}: worst {obs['kind']} error "
                 f"{obs['worst_error_in_tolerance_kind']:.3g} (tol {cls['tolerance']:.3g}); "
-                f"{where}; reference change "
-                f"{obs['dynamic_range']['max_temporal_change']:.3g} {obs['units']}"
-                f"{' (FLAT)' if cls['flat'] else ''}"
+                f"{where}; reference change {change}{flat}"
             )
-            if cls["flat"]:
-                summary["flat_in_verdict_class"].append(f"{phase}/{name}")
+            if not obs.get("judged", True):
+                lines[name] = "reported-only, " + lines[name]
+            if "excluded" in obs:
+                ring = obs["excluded"]["history"]["max_abs" if obs["kind"] == "abs" else "max_rel"]
+                lines[name] += (
+                    f"; excluded {obs['excluded']['sites']} ring sites "
+                    f"(their worst {obs['kind']} error {ring['value']:.3g})"
+                )
         summary["phases"][phase] = {"common_samples": row["common_samples"], "observables": lines}
+        for name, diag in row.get("cells_only", {}).items():
+            span = diag.get("dynamic_range")
+            lines[name] = (
+                "cells-only: absent"
+                if diag.get("absent_in_cells")
+                else f"cells-only: shape {diag['shape']}, finite {diag['finite']}"
+                + (f", range [{span['value_min']:.4g}, {span['value_max']:.4g}]" if span else "")
+            )
     return summary
 
 
@@ -573,11 +774,13 @@ def layout_from_betse(betse_dir, betse, protocol, perturbation=None):
         phases[phase] = {
             "elapsed_after_update_s": betse["time"][phase]["elapsed_after_update_s"],
             "final_elapsed_s": betse["time"][phase]["final_state_elapsed_s"],
-            "history": {name: history[name].copy() for name in protocol["observables"]},
+            "history": {
+                name: history[name].copy() for name in protocol["observables"] if name in SUPPORTED
+            },
             "final": {
                 row["final"]: final[row["final"]].copy()
-                for row in protocol["observables"].values()
-                if row.get("final")
+                for name, row in protocol["observables"].items()
+                if name in SUPPORTED and row.get("final")
             },
         }
     if perturbation:
@@ -602,7 +805,9 @@ def _perturbation(betse_dir, betse, protocol, args):
     )
     row = protocol["observables"][name]
     kind = protocol["tolerance_quantities"][row["tolerance"]]["kind"]
-    tolerance = protocol["tolerance_classes"][protocol["verdict_class"]][row["tolerance"]]
+    tolerance = resolve_tolerance(
+        protocol["tolerance_classes"][protocol["verdict_class"]][row["tolerance"]], phase
+    )
     old = float(history[(sample, *element)])
     delta = args.perturb_multiple * tolerance * (abs(old) if kind == "rel" and old else 1.0)
     return {
