@@ -4462,6 +4462,26 @@ original methods, uncertainty and input/held-out roles are resolved; no new
 literature review or fitted parameters are claimed here. No automatic polling,
 retry or follow-up campaign; GPU/multiscale organs remain separate gates.
 
+## D131: BETSE is an external reference; test parity with Cells' own physics
+
+2026-11-08. From 30 October the work re-hosted and transcribed BETSE inside
+`src/cells`, and its end-to-end demonstration compared BETSE with BETSE. That
+track is frozen (tag `native-betse-frozen-2026-11-08`) and is being removed from
+the engine. BETSE now runs unmodified and out of process, and Cells is compared
+against its saved outputs (`AGENTS.md`, "BETSE's role"). The user also directed
+that no BETSE-specific code remains in the engine.
+
+For BETSE's default world (225 cells, 600 extracellular nodes, 1,291 membrane
+patches), the user chose the physical route. Cells' resolved-tissue family is
+scaled beyond its 256-node bound with a prefactorized field, and a new identity
+adds the Na/K pump and a physical-time junction gate (estimated 4.5–5.5 days).
+The alternative, renaming the BETSE-order kernel (3.5–4 days), would have kept
+BETSE's numerics under a Cells name. That kernel moves to `validation/betse` as
+an emulator that attributes differences. Deliberate differences measured on a
+probe seed: CODATA constants 1.2 µV in Vmem; converged time stepping versus
+BETSE's 10 ms Euler about 52 µV transiently in INIT; the others below 1 µV
+([coverage map](/mnt/workspaces/Cells/cells-betse-default-coverage-20261108-01/coverage.json)).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

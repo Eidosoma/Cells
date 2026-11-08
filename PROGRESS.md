@@ -36,8 +36,8 @@ starts, and production design is deferred until parity is established.
 | Step | Work | Status |
 | --- | --- | --- |
 | 1 | Plain BETSE reference outputs (default world; seven-cell fixture) | Done |
-| 2 | Coverage map of default-world mechanisms, and the parity ladder | In progress |
-| 3 | Cells run of BETSE's default world, compared with step 1 | Next |
+| 2 | Coverage map of default-world mechanisms, and the parity ladder | Done ([map](/mnt/workspaces/Cells/cells-betse-default-coverage-20261108-01/coverage.json)) |
+| 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | In progress |
 | 4 | The same comparison on the L4 GPU | L4 path checks in progress |
 | 5 | Further mechanism families from the parity ladder, on CPU and L4 | Planned |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
