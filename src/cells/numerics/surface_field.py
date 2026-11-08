@@ -10,6 +10,7 @@ from typing import NamedTuple
 
 import jax
 import jax.numpy as jnp
+import jax.scipy.linalg
 import numpy as np
 
 from cells.numerics import surface_transport as surface
@@ -19,12 +20,18 @@ from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 LAW_ID = "resolved_capacitor_components_current_continuity@1"
 SOLVER_ID = "capacitive_reduction_gauged_damped_newton@1"
+# Same law and Newton; the constant capacitor reduction is Cholesky-factored
+# once at bind, so each stage needs two triangular solves instead of two dense
+# LU solves. This removes the dense O(N^3)-per-stage bound of version 1.
+FACTORED_SOLVER_ID = "capacitive_reduction_gauged_damped_newton@2"
 CURRENT_ATOL_A = 1e-23
 CURRENT_RTOL = 2e-12
 CHARGE_ATOL_C = 3e-25
 CHARGE_RTOL = 2e-12
 NEWTON_TARGET = 0.01
 MAX_NODES = 256
+FACTORED_MAX_NODES = 2048
+NODE_BOUNDS = {SOLVER_ID: MAX_NODES, FACTORED_SOLVER_ID: FACTORED_MAX_NODES}
 
 
 class Layout(NamedTuple):
@@ -39,6 +46,13 @@ class Layout(NamedTuple):
     offset_free: object
     face_incidence: object
     junction_incidence: object
+
+
+# Version 2 layout: every version 1 field plus the lower Cholesky factor of
+# capacitor_solve_matrix. A distinct pytree type keeps the dispatch static.
+FactoredLayout = NamedTuple(
+    "FactoredLayout", [(k, object) for k in (*Layout._fields, "capacitor_factor")]
+)
 
 
 class Values(NamedTuple):
@@ -65,17 +79,20 @@ class Values(NamedTuple):
     converged: object
 
 
-def bind(layout, gauge_mask):
+def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     """Host-only capacitance topology, fixed gauge and fail-closed connectivity.
 
     A reservoir is both a concentration bath and a voltage clamp in this law.
     Closed graphs require exactly one outside gauge. All floating components
     need a charged outside-face path to a clamp/gauge even if junctions close.
+    The factored solver returns a FactoredLayout with the same reduction.
     """
+    if solver not in NODE_BOUNDS:
+        raise ValueError("Unknown resolved field solver")
     p = surface.validate_layout(layout)
     n, o = p.cell_active.size, p.outside_active.size
     size = n + o
-    if size > MAX_NODES:
+    if size > NODE_BOUNDS[solver]:
         raise ValueError("Resolved field exceeds the declared bounded dense node limit")
     gauge = np.asarray(gauge_mask)
     if gauge.shape != (o,) or gauge.dtype != np.bool_:
@@ -138,8 +155,8 @@ def bind(layout, gauge_mask):
     solve_matrix = np.where((~fixed)[:, None] & (~fixed)[None, :], capacitor / scale, 0.0)
     solve_matrix += np.diag(fixed.astype(float))
     # A singular capacitance reduction is an invalid layout, never regularized.
-    np.linalg.cholesky(solve_matrix)
-    return Layout(
+    factor = np.linalg.cholesky(solve_matrix)
+    values = (
         p,
         gauge,
         active,
@@ -152,10 +169,34 @@ def bind(layout, gauge_mask):
         (basis[n + p.face_sender] - basis[n + p.face_receiver]).T,
         (basis[p.junction_sender] - basis[p.junction_receiver]).T,
     )
+    if solver == FACTORED_SOLVER_ID:
+        return FactoredLayout(*values, factor)
+    return Layout(*values)
+
+
+def cholesky_solve(factor, rhs, *, xp):
+    """Solve L L^T x = rhs with a lower factor; rhs may carry trailing columns."""
+    if xp is not np:
+        return jax.scipy.linalg.cho_solve((factor, True), rhs)
+    # NumPy has no triangular solver: blocked substitution, small dense blocks.
+    lower, upper = np.asarray(factor), np.ascontiguousarray(np.asarray(factor).T)
+    y = np.array(rhs, dtype=np.result_type(lower, rhs), copy=True)
+    starts = range(0, len(y), 64)
+    for start in starts:
+        stop = start + 64
+        part = y[start:stop] - lower[start:stop, :start] @ y[:start]
+        y[start:stop] = np.linalg.solve(lower[start:stop, start:stop], part)
+    for start in reversed(starts):
+        stop = start + 64
+        part = y[start:stop] - upper[start:stop, stop:] @ y[stop:]
+        y[start:stop] = np.linalg.solve(upper[start:stop, start:stop], part)
+    return y
 
 
 def _capacitor_solve(charge, boundary, p, *, xp):
     rhs = xp.where(~p.fixed, (charge - p.capacitor_matrix @ boundary) / p.capacitor_scale, 0.0)
+    if isinstance(p, FactoredLayout):
+        return cholesky_solve(p.capacitor_factor, rhs, xp=xp) + boundary
     return xp.linalg.solve(p.capacitor_solve_matrix, rhs) + boundary
 
 

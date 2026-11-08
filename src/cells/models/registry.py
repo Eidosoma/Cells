@@ -685,6 +685,12 @@ def get_model(spec):
         from cells.models import environment_barrier_interventions
 
         return environment_barrier_interventions
+    from cells.core.surface_pump_spec import SurfacePumpModel
+
+    if isinstance(spec, SurfacePumpModel):
+        from cells.models import surface_pump
+
+        return surface_pump
     if isinstance(spec, SurfaceTissueModel):
         return surface_tissue
     if isinstance(spec, TissueCalciumModel):

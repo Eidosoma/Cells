@@ -62,6 +62,11 @@ LAYOUT_TYPE = NamedTuple(
         )
     ],
 )
+# Only identities that declare field.FACTORED_SOLVER_ID bind this layout.
+FACTORED_LAYOUT_TYPE = NamedTuple(
+    "SurfaceTissueFactoredLayout",
+    [(k, object) for k in (*LAYOUT_TYPE._fields, "field_capacitor_factor")],
+)
 
 
 def batch_signature(model):
@@ -90,9 +95,10 @@ def working_size(spec):
 
 
 def field_layout(p):
-    return field.Layout(
+    kind = field.FactoredLayout if hasattr(p, "field_capacitor_factor") else field.Layout
+    return kind(
         surface.Layout(*(getattr(p, k) for k in surface.Layout._fields)),
-        *(getattr(p, "field_" + k) for k in field.Layout._fields if k != "surface"),
+        *(getattr(p, "field_" + k) for k in kind._fields if k != "surface"),
     )
 
 
@@ -157,7 +163,11 @@ def initial_values(spec):
     gauge = np.zeros(o, dtype=bool)
     if m.gauge_reference is not None:
         gauge[oids.index(m.gauge_reference)] = True
-    bound = field.bind(surface.Layout(**v), gauge)
+    # Only an exact factored declaration changes the binding; all others are v1.
+    factored = getattr(x, "field_solver", None) == field.FACTORED_SOLVER_ID
+    bound = field.bind(
+        surface.Layout(**v), gauge, solver=field.FACTORED_SOLVER_ID if factored else field.SOLVER_ID
+    )
     v.update({"field_" + k: value for k, value in bound._asdict().items() if k != "surface"})
     v.update(
         active=v["cell_active"],
@@ -209,7 +219,7 @@ def initial_values(spec):
         np.zeros(o),
         np.zeros(o),
     )
-    return state, LAYOUT_TYPE(**v)
+    return state, (FACTORED_LAYOUT_TYPE if factored else LAYOUT_TYPE)(**v)
 
 
 def physical_amounts(state, p):

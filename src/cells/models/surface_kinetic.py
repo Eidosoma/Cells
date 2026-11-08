@@ -88,6 +88,11 @@ LAYOUT_TYPE = NamedTuple(
         )
     ],
 )
+# Factored field (surface_field.FACTORED_SOLVER_ID); channel catalogs excluded.
+FACTORED_LAYOUT_TYPE = NamedTuple(
+    "SurfaceKineticFactoredLayout",
+    [(k, object) for k in (*LAYOUT_TYPE._fields, "field_capacitor_factor")],
+)
 CHANNEL_LAYOUT_TYPE = NamedTuple(
     "SurfaceChannelLayout", [(k, object) for k in (*LAYOUT_TYPE._fields, "channel_laws")]
 )
@@ -303,6 +308,10 @@ def initial_values(spec):
             v["channel_calcium_species"] = np.int32(
                 m.species_ids.index("Ca") if "Ca" in m.species_ids else 0
             )
+    if "field_capacitor_factor" in v:
+        if layout_type is not LAYOUT_TYPE:
+            raise ConfigError("The factored resolved field excludes channel catalogs")
+        layout_type = FACTORED_LAYOUT_TYPE
     transfer_shape = (len(m.species_ids), nc) if multi_ion else (nc,)
     return (
         STATE_TYPE(

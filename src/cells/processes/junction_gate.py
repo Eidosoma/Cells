@@ -13,6 +13,9 @@ from typing import Any, NamedTuple
 import jax.numpy as jnp
 
 LAW_ID = "betse_rate_junction_relaxation@1"
+# Neutral identifier for the same equations, used by identities from
+# resolved_pump_tissue@1 on; earlier identities keep LAW_ID.
+RELAXATION_LAW_ID = "junction_voltage_relaxation@1"
 MAX_ABS_VOLTAGE_V = 0.120
 
 

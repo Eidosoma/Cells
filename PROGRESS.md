@@ -47,6 +47,31 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **`resolved_pump_tissue@1` at BETSE default-world scale (8 November).** New
+  identity: resolved field + Na/K pump + physical-time junction gate
+  (`junction_voltage_relaxation@1`), 200–400 K, no channels. The new field-solver
+  version (Cholesky-factored, ≤2048 nodes) leaves the field law unchanged.
+  [Index](/mnt/workspaces/Cells/resolved-tissue-scale-20261108-01/index.json),
+  on a synthetic 825-node world with BETSE default coefficients.
+  - **Stiffness:** with BETSE's real face conductances, explicit RK4 is only stable
+    below about 69 ns (extracellular charge relaxation through faces against the
+    patch capacitors). New IMEX solvers treat face electromigration implicitly:
+    `imex_ars222_face_electromigration@1` (order 2.0 measured) and
+    `imex_euler_face_electromigration@1`.
+  - **Accuracy:** ARS(2,2,2) Vm error 13 nV at 1 ms over a 0.256 s INIT window and
+    47 pV in SIM at 0.1 ms; material ledger ≤2.3e-16 fmol; capacitor-charge
+    residual about 1e-28 C. Equivalence checks: factored vs dense field ≤1e-12;
+    channel-free `resolved_tissue@2` 1.4e-14; CPU vs L4 within family bounds.
+  - **Cost and limits:** INIT 5 s takes about 6.5 min on CPU and 2.5 min on the L4;
+    face diffusion limits explicit stability to about 7 ms, and the identity
+    enforces dt ≤ 3.4 ms. `tests/unit/test_surface_pump.py` passes 43, with 1
+    L4-only skip on CPU.
+  - **Pending condition:** the IMEX energy-identity checks use relative bounds
+    (2e-3 ARS, 2e-2 Euler) instead of the family's absolute 2e-8 pJ. Neither
+    scheme integrates the energy identity exactly; measured residuals are 3e-8 to
+    4e-4. Approved on condition of a refinement check showing the residual falling
+    at each scheme's order. The RK4 path keeps the absolute bound.
+
 - **BETSE-order emulator out of the engine; comparison pipeline proven (8 November).**
   The seven BETSE-order modules (spatial, active, junction, specs, models) and
   their four configs moved to `validation/betse/emulator/`. The engine registry,

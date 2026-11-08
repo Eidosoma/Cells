@@ -17,7 +17,7 @@ from cells.core.specs import (
     _number,
 )
 from cells.core.voltage_gated_spec import fraction
-from cells.numerics.surface_field import LAW_ID, MAX_NODES, SOLVER_ID
+from cells.numerics.surface_field import LAW_ID, NODE_BOUNDS, SOLVER_ID
 
 MODEL_ID = "resolved_tissue@1"
 
@@ -136,7 +136,9 @@ def to_dict(spec):
     }
 
 
-def parse(data):
+def parse(data, *, field_solver=SOLVER_ID):
+    """Strict passive contract; field_solver selects the declared node bound."""
+    bound = NODE_BOUNDS[field_solver]
     m = _fields(
         data["model"],
         {
@@ -187,7 +189,7 @@ def parse(data):
 
     cells = tuple(compartment(p, Compartment) for p in m["cells"])
     outside = tuple(compartment(p, Outside) for p in m["extracellular"])
-    if not cells or not outside or len(cells) + len(outside) > MAX_NODES:
+    if not cells or not outside or len(cells) + len(outside) > bound:
         raise ConfigError("Resolved tissue requires cells/outside within the dense node bound")
     cids, oids = {p.id for p in cells}, {p.id for p in outside}
     routes = {}
@@ -301,7 +303,7 @@ def parse(data):
         x["backend"] not in ("cpu", "gpu")
         or x["precision"] != "float64"
         or x["solver"] != "rk4"
-        or x["field_solver"] != SOLVER_ID
+        or x["field_solver"] != field_solver
         or type(x["jit"]) is not bool
     ):
         raise ConfigError(
@@ -315,7 +317,7 @@ def parse(data):
         "face_capacity": len(routes["faces"]),
     }
     capacities = {k: _integer(x[k], k, minimum=v) for k, v in sizes.items()}
-    if capacities["capacity"] + capacities["extracellular_capacity"] > MAX_NODES:
+    if capacities["capacity"] + capacities["extracellular_capacity"] > bound:
         raise ConfigError("Padded capacities exceed the bounded dense solver")
     tolerance = aligned(x["material_balance_atol_fmol"], ids, "material tolerance", positive)
     if any(v > 1e-10 for v in tolerance):
@@ -327,7 +329,7 @@ def parse(data):
         max_steps=_integer(x["max_steps"], "max_steps"),
         max_trace_bytes=_integer(x["max_trace_bytes"], "max_trace_bytes", maximum=2**53 - 1),
         material_balance_atol_fmol=tolerance,
-        field_solver=SOLVER_ID,
+        field_solver=field_solver,
         **capacities,
     )
     spec = SimulationSpec(model, SurfaceExperiment(end, times, **schedules), execution)

@@ -1198,6 +1198,10 @@ class SimulationSpec:
 
         if isinstance(m, EnvironmentBarrierModel):
             return barrier_to_dict(self)
+        from cells.core.surface_pump_spec import SurfacePumpModel, to_dict
+
+        if isinstance(m, SurfacePumpModel):
+            return to_dict(self)
         from cells.core.surface_tissue_spec import SurfaceTissueModel, to_dict
 
         if isinstance(m, SurfaceTissueModel):
@@ -1964,6 +1968,10 @@ def parse_spec(data: dict) -> SimulationSpec:
         and data["model"].get("id") == "resolved_extracellular_barriers@1"
     ):
         from cells.core.environment_barrier_interventions_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_tissue@1":
+        from cells.core.surface_pump_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@1":
