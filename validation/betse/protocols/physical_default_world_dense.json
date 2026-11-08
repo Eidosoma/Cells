@@ -1,0 +1,144 @@
+{
+  "schema": "cells.betse_comparison_protocol@1",
+  "id": "physical-default-world-dense",
+  "purpose": "Judge Cells' own physics (resolved_pump_tissue@1, physical route, D131) on BETSE's default world against the plain-BETSE case betse-reference-20261108-01/default-world-dense. Fixed and committed before the judged runs; each run's comparison manifest must name this file's sha256.",
+  "betse_case": "default-world-dense",
+  "phases": [
+    "init",
+    "sim"
+  ],
+  "time_alignment_atol_s": 1e-09,
+  "min_common_samples": 1,
+  "compare_final": true,
+  "cells_run": {
+    "model": "resolved_pump_tissue@1",
+    "solver": "imex_ars222_face_electromigration@1",
+    "dt_init_s": 0.001,
+    "dt_sim_s": 0.0001,
+    "constants": "CODATA (Cells default)",
+    "sim_start": "Cells' own INIT end state",
+    "backends": [
+      "cpu",
+      "gpu (L4)"
+    ]
+  },
+  "observables": {
+    "vm_time": {
+      "final": "vm",
+      "tolerance": "voltage"
+    },
+    "vm_ave_time": {
+      "final": "vm_ave",
+      "tolerance": "voltage"
+    },
+    "cc_time": {
+      "final": "cc_cells",
+      "tolerance": "cell_concentration"
+    },
+    "cc_env_time": {
+      "final": "cc_env",
+      "tolerance": "ecm_concentration",
+      "exclude": "grid_boundary_ring"
+    },
+    "venv_time": {
+      "final": "v_env",
+      "tolerance": "voltage",
+      "judged": false
+    },
+    "diag_*": {
+      "judged": false
+    }
+  },
+  "tolerance_quantities": {
+    "voltage": {
+      "kind": "abs",
+      "units": "V"
+    },
+    "cell_concentration": {
+      "kind": "rel",
+      "units": "1"
+    },
+    "ecm_concentration": {
+      "kind": "rel",
+      "units": "1"
+    }
+  },
+  "tolerance_classes": {
+    "physical_route_vs_betse_10ms_init": {
+      "voltage": {
+        "init": 0.0004,
+        "sim": 7e-06
+      },
+      "cell_concentration": {
+        "init": 9e-06,
+        "sim": 3e-06
+      },
+      "ecm_concentration": {
+        "init": 0.002,
+        "sim": 0.002
+      }
+    }
+  },
+  "verdict_class": "physical_route_vs_betse_10ms_init",
+  "tolerance_derivation": {
+    "method": "tolerance = 3 x (sum of measured difference terms + X_ext), rounded up to one significant figure; method pinned before any judged run in default-world-parity-20261108-01/physical_route_observables.txt. A failure is a finding to attribute with the emulator variants, never a reason to retune.",
+    "terms": {
+      "betse_10ms_init_step": {
+        "vm_V_init": 0.00013,
+        "vm_V_sim": 5.2e-09,
+        "cells_rel_init": 2.8e-06,
+        "cells_rel_sim": 7.5e-07,
+        "ecm_rel_interior": 5.1e-07,
+        "source": "emulator difference budget (dt vs dt/100) and plain BETSE dense vs fine (127 uV at 0.34 s)"
+      },
+      "constants_codata_vs_betse": {
+        "vm_V": 1.22e-06,
+        "cells_rel": 2.6e-08,
+        "ecm_rel": 5.7e-09,
+        "source": "emulator difference budget and scout probe"
+      },
+      "exterior_field_law_bound_ecm_drift_off": {
+        "vm_V": 3.8e-07,
+        "cells_rel": 2.7e-08,
+        "ecm_rel": 1e-05,
+        "source": "scout probe, coverage.json measured_difference_budget"
+      },
+      "conservative_compact_ecm_stencil": {
+        "vm_V": 7e-08,
+        "cells_rel": 1e-08,
+        "ecm_rel": 0.00042,
+        "source": "scout probe (4.2e-4 includes its dt part, kept as an upper value)"
+      },
+      "physical_time_gate_and_no_concentration_lag": {
+        "vm_V": 6.2e-09,
+        "cells_rel": 1.1e-08,
+        "source": "scout probe"
+      },
+      "X_ext_within_cell_patch_voltage_spread": {
+        "vm_V": 4.4e-07,
+        "cells_rel": 1e-08,
+        "source": "blind Cells-only runs, default-world-parity-20261108-01/blind-02/summary.json (INIT 0.438 uV, SIM 0.437 uV); cells_rel scaled from the constants term per uV"
+      }
+    },
+    "sums_before_margin": {
+      "vm_V": {
+        "init": 0.00013213,
+        "sim": 2.12e-06
+      },
+      "cells_rel": {
+        "init": 2.88e-06,
+        "sim": 8.3e-07
+      },
+      "ecm_rel": {
+        "init": 0.000431,
+        "sim": 0.000431
+      }
+    },
+    "cells_numerics": "ARS(2,2,2): 13 nV at 1 ms, negligible at 0.1 ms"
+  },
+  "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+  "notes": [
+    "Reported only: venv_time (BETSE's screened, smoothed estimate has no Cells counterpart) and Cells diag_* arrays.",
+    "Gate open fraction is not in the comparison layout and is not judged."
+  ]
+}
