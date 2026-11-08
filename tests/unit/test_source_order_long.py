@@ -22,9 +22,12 @@ from tests.unit import test_long_observation as inherited_checks
 from validation.assays import distributed_timing, two_task
 from validation.assays import source_order as predecessor
 from validation.assays import source_order_long as assay
+from validation.betse.emulator.rehost import REHOST_REASON, moved
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 RULE, OLD = assay.protocol(), two_task.protocol()
-BASE = json.loads((two_task.ROOT / RULE["template"]).read_text())
+BASE = json.loads((two_task.ROOT / moved(RULE["template"])).read_text())
 ROWS = assay.cases()
 BACKEND, EVIDENCE = reference.BACKEND, reference.EVIDENCE
 evidence = reference.common.evidence

@@ -47,6 +47,26 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **BETSE-order emulator out of the engine; comparison pipeline proven (8 November).**
+  The seven BETSE-order modules (spatial, active, junction, specs, models) and
+  their four configs moved to `validation/betse/emulator/`. The engine registry,
+  spec and schedule entries are removed. [Index](/mnt/workspaces/Cells/default-world-parity-20261108-01/index.json).
+  - The emulator matches plain BETSE to roundoff with BETSE's constants:
+    Vmem ≤ 3.2e-13 V against a 22.1 mV INIT change (dense case), with
+    concentrations ≤ 1.1e-14 relative, on both CPU and L4 (CPU vs L4 ≤ 2.5e-13
+    V). This validates the extract → adapter → run → layout → comparator chain.
+  - Standard (CODATA) constants alone change Vmem by 1.22 µV in INIT and 0.19 µV
+    in SIM.
+  - Assays and tests that ran this model through the engine runner are skipped
+    with one reason (D131; last runnable at `432e62b`), not deleted. The
+    re-hosting work list is `validation/betse/emulator/rehost_pending.json`.
+    Every module-skipped test already had errors at HEAD (stale source-hash
+    checks, native re-capture subprocesses).
+  - The resolved-tissue adapter backend is written but not yet run. SIM must
+    continue from the Cells INIT end state: BETSE's INIT end leaves up to
+    5.9e-13 C on isolated extracellular squares, which the resolved closure
+    does not admit.
+
 - **L4 platform checks and JUPITER preparation (8 November).**
   [Index](/mnt/workspaces/Cells/jupiter-platform-20261108-01/index.json) of runs,
   inputs, results and failures.

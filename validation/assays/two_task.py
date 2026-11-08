@@ -15,6 +15,7 @@ from cells.assays.readout import CentroidReader, VoltageReadout, score_predictio
 from cells.core.batch import BatchSpec, WorldSpec
 from cells.core.runner import control_values
 from cells.core.specs import parse_spec
+from validation.betse.emulator.rehost import moved
 from validation.betse.spatial_active.refinement import completed_prior, digest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,7 +32,7 @@ def baseline(rule):
     prior = json.loads((Path(rule["prior_binding"]["root"]) / "registration.json").read_text())
     for name, expected in prior["sources_sha256"].items():
         assert digest(ROOT / name) == expected, name
-    assert digest(ROOT / rule["template"]) == rule["template_sha256"]
+    assert digest(ROOT / moved(rule["template"])) == rule["template_sha256"]
     return report | dict(all_prior_sources_unchanged=len(prior["sources_sha256"]))
 
 

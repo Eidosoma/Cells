@@ -6,17 +6,18 @@ import json
 import numpy as np
 import pytest
 
-from cells.core.betse_junction_spec import definition_arrays
-from cells.core.specs import parse_spec
-from cells.numerics import betse_spatial as passive
 from validation.assays import template_readout as reader
 from validation.assays import unstimulated_diagnostic as diagnostic
 from validation.assays import unstimulated_readout as assay
+from validation.betse.emulator import junction_spec
+from validation.betse.emulator import spatial as passive
+from validation.betse.emulator.junction_spec import definition_arrays
+from validation.betse.emulator.rehost import moved
 
 
 def test_voltage_history_matches_field_and_area_weighting():
-    raw = json.loads((diagnostic.ROOT / assay.protocol()["template"]).read_text())
-    state, parameters = definition_arrays(parse_spec(raw).model)
+    raw = json.loads((diagnostic.ROOT / moved(assay.protocol()["template"])).read_text())
+    state, parameters = definition_arrays(junction_spec.parse(raw).model)
     tissue = raw["model"]["tissue"]
     boundary = np.arange(100, dtype=float).reshape(10, 10) * 1e-5
     tissue["boundary_values"] = boundary.tolist()

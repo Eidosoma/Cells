@@ -6,16 +6,17 @@ import json
 import numpy as np
 import pytest
 
-from cells.core.betse_junction_spec import definition_arrays
-from cells.core.specs import parse_spec
 from validation.assays import cue_separation_diagnostic as diagnostic
 from validation.assays import template_diagnostic as geometry
 from validation.assays import template_readout as reader
+from validation.betse.emulator import junction_spec
+from validation.betse.emulator.junction_spec import definition_arrays
+from validation.betse.emulator.rehost import moved
 
 
 def archive(tmp_path):
-    raw = json.loads((diagnostic.ROOT / diagnostic.assay.protocol()["template"]).read_text())
-    state, _ = definition_arrays(parse_spec(raw).model)
+    raw = json.loads((diagnostic.ROOT / moved(diagnostic.assay.protocol()["template"])).read_text())
+    state, _ = definition_arrays(junction_spec.parse(raw).model)
     dt = 1e-6
     raw["execution"]["dt"] = dt
     raw["experiment"]["end_time"] = 8 * dt

@@ -17,10 +17,13 @@ from tests.unit import test_source_order_pulse_spacing as spacing_checks
 from tests.unit import test_source_order_selected as support_checks
 from validation.assays import distributed_timing, two_task
 from validation.assays import local_channel as assay
+from validation.betse.emulator.rehost import REHOST_REASON, moved
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 ROOT_RULE = assay.protocol()
 RULE, ROWS, PREFIX = ROOT_RULE, [], "local-channel"
-BASE = json.loads((two_task.ROOT / RULE["template"]).read_text())
+BASE = json.loads((two_task.ROOT / moved(RULE["template"])).read_text())
 BACKEND, EVIDENCE, reference = shared.BACKEND, shared.EVIDENCE, shared.reference
 evidence = reference.common.evidence
 compare_historical_window = inherited.compare_historical_window

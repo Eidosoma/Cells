@@ -9,6 +9,9 @@ import pytest
 from tests.unit import test_source_order_long as checks
 from validation.assays import source_order as previous
 from validation.assays import source_order_precision as repair
+from validation.betse.emulator.rehost import REHOST_REASON
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 # The assay implementation, inputs, readers, storage and replay checks stay frozen.
 panel = checks.panel

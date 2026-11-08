@@ -11,10 +11,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from cells.core.betse_junction_spec import BetseJunctionModel
-    from cells.core.betse_junction_spec import Experiment as BetseJunctionExperiment
-    from cells.core.betse_spatial_spec import BetseSpatialModel
-    from cells.core.betse_spatial_spec import Experiment as BetseExperiment
     from cells.core.er_spec import ERExperiment, ERModel
     from cells.core.reaction_spec import ReactionExperiment, ReactionNetworkSpec
     from cells.core.surface_tissue_spec import SurfaceExperiment, SurfaceTissueModel
@@ -752,8 +748,6 @@ class SimulationSpec:
         | ReactionNetworkSpec
         | ERModel
         | SurfaceTissueModel
-        | BetseSpatialModel
-        | BetseJunctionModel
     )
     experiment: (
         ExperimentSpec
@@ -765,8 +759,6 @@ class SimulationSpec:
         | ReactionExperiment
         | ERExperiment
         | SurfaceExperiment
-        | BetseExperiment
-        | BetseJunctionExperiment
     )
     execution: ExecutionSpec
 
@@ -987,14 +979,6 @@ class SimulationSpec:
 
         if isinstance(m, SurfaceActiveProfileInterventionModel):
             return active_profiles_dict(self)
-        from cells.core.betse_junction_spec import BetseJunctionModel, to_dict
-
-        if isinstance(m, BetseJunctionModel):
-            return to_dict(self)
-        from cells.core.betse_spatial_spec import BetseSpatialModel, to_dict
-
-        if isinstance(m, BetseSpatialModel):
-            return to_dict(self)
         from cells.core.surface_mobile_channel_spec import SurfaceMobileChannelModel, to_dict
 
         if isinstance(m, SurfaceMobileChannelModel):
@@ -1571,17 +1555,6 @@ def parse_spec(data: dict) -> SimulationSpec:
         and data["model"].get("id") == "resolved_active_membrane_profiles@1"
     ):
         from cells.core.surface_active_profile_interventions_spec import parse
-
-        return parse(data)
-    if (
-        isinstance(data["model"], dict)
-        and data["model"].get("id") == "betse_spatial_nak_kv1p5_dynamic_gj@1"
-    ):
-        from cells.core.betse_junction_spec import parse
-
-        return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "betse_spatial_nak_kv1p5@1":
-        from cells.core.betse_spatial_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_redistribution@3":

@@ -1,6 +1,11 @@
-"""Portable fixed-geometry inputs for the native BETSE active compatibility law."""
+"""Emulator: portable fixed-geometry inputs for the native BETSE active compatibility law.
+
+Moved from the engine (cells.core.betse_spatial_spec) on 8 November 2026 (D131). The
+engine's parse_spec no longer dispatches here; parse() is called directly.
+"""
 
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import NamedTuple
 
 import numpy as np
@@ -14,10 +19,11 @@ from cells.core.specs import (
     _integer,
     _number,
 )
-from cells.numerics import betse_active as active
-from cells.numerics import betse_spatial as passive
 from cells.processes import kinetic_pump, voltage_gates
+from validation.betse.emulator import active
+from validation.betse.emulator import spatial as passive
 
+CONFIGS = Path(__file__).with_name("configs")  # example definitions moved from configs/
 MODEL_ID = active.MODEL_ID
 SOLVER_ID = "betse_ordered_euler@1"
 INITIAL_FIELDS = (

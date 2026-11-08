@@ -9,11 +9,11 @@ import jax
 import numpy as np
 import pytest
 
-from cells.numerics import betse_junction as model
 from cells.processes import junction_gate
 from tests.unit import test_betse_spatial_active_refinement as temporal
 from tests.unit import test_betse_spatial_junction as short
 from tests.unit.test_betse_tissue_contact import load_capture
+from validation.betse.emulator import junction as model
 from validation.betse.junction_gate.reference import rates as decimal_rates
 from validation.betse.spatial_active import junction_reference as independent
 from validation.betse.spatial_active import junction_refinement as long

@@ -1,4 +1,9 @@
-"""Ordinary Cells execution for the unchanged discrete BETSE active kernel."""
+"""Emulator: runner-interface module for the unchanged discrete BETSE active kernel.
+
+Moved from the engine (cells.models.betse_spatial) on 8 November 2026 (D131). The engine
+registry no longer returns it, so the Cells runner, batch and window machinery cannot
+execute this family; its functions remain for direct use (see rehost.py).
+"""
 
 from dataclasses import make_dataclass
 from typing import NamedTuple
@@ -6,12 +11,12 @@ from typing import NamedTuple
 import jax
 import numpy as np
 
-from cells.core.betse_spatial_spec import MODEL_ID, SOLVER_ID, Control, definition_arrays
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
-from cells.numerics import betse_active as active
-from cells.numerics import betse_spatial as passive
 from cells.processes import kinetic_pump
+from validation.betse.emulator import active
+from validation.betse.emulator import spatial as passive
+from validation.betse.emulator.spatial_spec import MODEL_ID, SOLVER_ID, Control, definition_arrays
 
 OBSERVER_ID = "betse_spatial_accepted_fields@1"
 OBSERVATION_SAMPLING = "accepted_fixed_step_boundaries_only"

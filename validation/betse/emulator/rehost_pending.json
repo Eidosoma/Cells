@@ -1,0 +1,336 @@
+{
+  "kind": "cells.betse_emulator_rehost_pending@1",
+  "decision": "D131 (8 November 2026): the BETSE-order family left src/cells for validation/betse/emulator; the engine registry, spec parser and control schedule no longer dispatch to it.",
+  "skip_reason": "validation/betse/emulator/rehost.py REHOST_REASON; lift by grepping REHOST_REASON",
+  "last_runnable_commit": "432e62b",
+  "head_baseline": {
+    "results": "/mnt/workspaces/Cells/default-world-parity-20261108-01/head-baseline/results",
+    "note": "Per-file pytest at 432e62b before the move. Counts are passed/failed/error/skipped there; most errors are stale source-hash bindings (pyproject.toml, src/cells/__main__.py changed since the frozen registrations) or native re-capture subprocesses, so they are not caused by the move."
+  },
+  "rehost_target": "a Cells physical tissue model (the resolved route) with per-patch pump, channel and junction availability schedules, the runner's checkpoints, windows and batch, and readouts of membrane voltage",
+  "skipped_test_modules": [
+    {
+      "module": "tests/unit/test_betse_spatial_runtime.py",
+      "needs": "runner for the registered active tissue (pump + Kv1p5): fixed-step clock, checkpoints, branch/resume, windows, batch, snapshot I/O, CLI run",
+      "head_432e62b": {
+        "passed": 30,
+        "failed": 0,
+        "error": 16,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_betse_spatial_interventions.py",
+      "needs": "runner with held per-patch pump/channel availability schedules (schedule.control_values), checkpoints, windows, batch",
+      "head_432e62b": {
+        "passed": 18,
+        "failed": 0,
+        "error": 20,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_betse_spatial_intervention_refinement.py",
+      "needs": "scheduled pump/channel interventions through the runner at refined native steps; batch windows",
+      "head_432e62b": {
+        "passed": 32,
+        "failed": 0,
+        "error": 32,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_betse_junction_runtime.py",
+      "needs": "runner for dynamic junction gates with per-patch junction availability schedules; checkpoints, branch, windows, batch windows, CLI",
+      "head_432e62b": {
+        "passed": 42,
+        "failed": 0,
+        "error": 30,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_betse_mixed_interventions.py",
+      "needs": "runner with mixed pump/channel/junction interventions, batch windows; long native capture comparison",
+      "head_432e62b": {
+        "passed": 3,
+        "failed": 1,
+        "error": 26,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_two_task_readout.py",
+      "needs": "batch of tissue worlds with cue interventions and a voltage readout (cells.assays.readout)",
+      "head_432e62b": {
+        "passed": 9,
+        "failed": 0,
+        "error": 6,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_two_task_templates.py",
+      "needs": "batch runs for template-readout calibration",
+      "head_432e62b": {
+        "passed": 11,
+        "failed": 0,
+        "error": 7,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_two_task_timing_refinement.py",
+      "needs": "batch runs at refined observation timing",
+      "head_432e62b": {
+        "passed": 8,
+        "failed": 0,
+        "error": 7,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_distributed_cue.py",
+      "needs": "batch with distributed cue interventions",
+      "head_432e62b": {
+        "passed": 1,
+        "failed": 0,
+        "error": 7,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_distributed_timing.py",
+      "needs": "batch with a cue-timing panel",
+      "head_432e62b": {
+        "passed": 4,
+        "failed": 0,
+        "error": 8,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_unstimulated_readout.py",
+      "needs": "batch without cues (null readouts)",
+      "head_432e62b": {
+        "passed": 3,
+        "failed": 0,
+        "error": 7,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_long_observation.py",
+      "needs": "windowed batch (run_batch_windowed) over long observations",
+      "head_432e62b": {
+        "passed": 4,
+        "failed": 0,
+        "error": 8,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_cue_separation.py",
+      "needs": "windowed batch with separated cues",
+      "head_432e62b": {
+        "passed": 5,
+        "failed": 0,
+        "error": 8,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_source_order.py",
+      "needs": "windowed batch with source-order interventions",
+      "head_432e62b": {
+        "passed": 6,
+        "failed": 0,
+        "error": 9,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_source_order_long.py",
+      "needs": "windowed batch, long horizon",
+      "head_432e62b": {
+        "passed": 6,
+        "failed": 0,
+        "error": 9,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_source_order_coupling_transfer.py",
+      "needs": "batch with junction-coupling transfer interventions",
+      "head_432e62b": {
+        "passed": 18,
+        "failed": 0,
+        "error": 20,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_source_order_pulse_spacing.py",
+      "needs": "batch with pulse-spacing panel",
+      "head_432e62b": {
+        "passed": 9,
+        "failed": 0,
+        "error": 8,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_source_order_selected.py",
+      "needs": "batch on selected source-order cases",
+      "head_432e62b": {
+        "passed": 8,
+        "failed": 0,
+        "error": 9,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_source_order_spanning.py",
+      "needs": "batch on spanning source-order cases",
+      "head_432e62b": {
+        "passed": 7,
+        "failed": 0,
+        "error": 9,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_source_order_precision.py",
+      "needs": "re-runs test_source_order_long's tests with the precision repair",
+      "head_432e62b": {
+        "passed": 6,
+        "failed": 0,
+        "error": 9,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_source_order_pulse_confirmation.py",
+      "needs": "re-runs the selected/spanning/long source-order tests",
+      "head_432e62b": {
+        "passed": 7,
+        "failed": 1,
+        "error": 9,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_local_channel.py",
+      "needs": "batch with local channel changes",
+      "head_432e62b": {
+        "passed": 50,
+        "failed": 0,
+        "error": 40,
+        "skipped": 0
+      }
+    },
+    {
+      "module": "tests/unit/test_channel_compensation.py",
+      "needs": "batch with remote channel compensation",
+      "head_432e62b": {
+        "passed": 30,
+        "failed": 0,
+        "error": 24,
+        "skipped": 0
+      }
+    }
+  ],
+  "skipped_tests": [
+    {
+      "test": "tests/unit/test_betse_charge_precision::test_charge_precision_native",
+      "needs": "runner on the junction definitions, compared with native captures (the host and compiled charge checks still run)",
+      "head_432e62b_module": {
+        "passed": 20,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "test": "tests/unit/test_numerical_refinement::test_native_discrete_clock_refuses_refinement",
+      "needs": "an engine model with a native discrete clock (integration_steps); none remains",
+      "head_432e62b_module": {
+        "passed": 19,
+        "failed": 2,
+        "error": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "test": "tests/unit/test_scalar_tail_reuse::test_complete_physical_state_and_native_step_tail[native_discrete]",
+      "needs": "runner windows on a native discrete-step model (the guarded_physical case still runs)",
+      "head_432e62b_module": {
+        "passed": 15,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "assay_modules_needing_the_runner": [
+    "validation/assays/two_task.py",
+    "validation/assays/template_readout.py",
+    "validation/assays/distributed_cue.py",
+    "validation/assays/distributed_timing.py",
+    "validation/assays/timing_refinement.py",
+    "validation/assays/unstimulated_readout.py",
+    "validation/assays/long_observation.py",
+    "validation/assays/cue_separation.py",
+    "validation/assays/source_order.py",
+    "validation/assays/source_order_long.py",
+    "validation/assays/source_order_coupling_transfer.py",
+    "validation/assays/source_order_pulse_spacing.py",
+    "validation/assays/source_order_pulse_confirmation.py",
+    "validation/assays/source_order_selected.py",
+    "validation/assays/source_order_spanning.py",
+    "validation/assays/source_order_precision.py",
+    "validation/assays/local_channel.py",
+    "validation/assays/channel_compensation.py"
+  ],
+  "assay_modules_still_runnable": {
+    "modules": [
+      "validation/assays/template_diagnostic.py",
+      "validation/assays/two_task_diagnostic.py",
+      "validation/assays/unstimulated_diagnostic.py",
+      "validation/assays/cue_separation_diagnostic.py",
+      "validation/assays/source_order_diagnostic.py",
+      "validation/assays/source_order_long_diagnostic.py",
+      "validation/assays/source_order_selected_diagnostic.py",
+      "validation/assays/source_order_spanning_diagnostic.py",
+      "validation/assays/source_order_observation_design.py",
+      "validation/assays/local_channel_design.py",
+      "validation/assays/channel_compensation_design.py",
+      "validation/assays/channel_compensation_diagnostic.py",
+      "validation/assays/baseline_transfer_diagnostic.py"
+    ],
+    "note": "host-side design/diagnostic code; their tests keep running, parsing BETSE definitions with validation.betse.emulator.junction_spec.parse"
+  },
+  "validation_definition_builders": [
+    {
+      "module": "validation/betse/spatial_active/runtime.py",
+      "builds": "engine definitions of betse_spatial_nak_kv1p5@1 from native captures"
+    },
+    {
+      "module": "validation/betse/spatial_active/interventions.py",
+      "builds": "scheduled pump/channel definitions"
+    },
+    {
+      "module": "validation/betse/spatial_active/intervention_refinement.py",
+      "builds": "refined scheduled definitions"
+    },
+    {
+      "module": "validation/betse/spatial_active/junction_runtime.py",
+      "builds": "engine definitions of betse_spatial_nak_kv1p5_dynamic_gj@1"
+    },
+    {
+      "module": "validation/betse/spatial_active/mixed_interventions.py",
+      "builds": "mixed pump/channel/junction definitions"
+    }
+  ],
+  "frozen_protocol_paths": "validation/assays/*_protocol.json and spatial_active/mixed_protocol.json name configs/betse_spatial_junction.json as their template; the move kept its bytes, and rehost.moved() resolves the new path without editing the protocols"
+}

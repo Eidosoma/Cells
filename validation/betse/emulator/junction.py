@@ -1,5 +1,6 @@
-"""Dynamic junctions in the pinned spatial pump/channel compatibility model.
+"""Emulator: dynamic junctions in the pinned spatial pump/channel compatibility model.
 
+Moved from the engine (cells.numerics.betse_junction) on 8 November 2026 (D131).
 BETSE 1.5.0 advances the stored junction opening once per moving ion, using
 the outer timestep each time, and applies blocking to that stored value.
 This explicit compatibility component preserves those semantics. The separate
@@ -12,9 +13,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.numerics import betse_active as active
-from cells.numerics import betse_spatial as passive
 from cells.processes import junction_gate
+from validation.betse.emulator import active, laws
+from validation.betse.emulator import spatial as passive
 
 MODEL_ID = "betse_spatial_nak_kv1p5_dynamic_gj@1"
 
@@ -42,9 +43,9 @@ class Rates(NamedTuple):
     junction_after_ion: object
 
 
-def validate_layout(layout):
+def validate_layout(layout, *, variant=laws.QUALIFIED):
     p = Layout(
-        active.validate_layout(layout.active),
+        active.validate_layout(layout.active, variant=variant),
         junction_gate.Parameters(*(np.asarray(v) for v in layout.junction)),
         np.asarray(layout.junction_block),
         np.asarray(layout.moving_order),
@@ -102,9 +103,9 @@ def gate_step(gate, voltage, block, dt, parameters, *, xp=jnp):
     return opening * block
 
 
-def step(state, p, dt, control, *, xp=jnp):
+def step(state, p, dt, control, *, xp=jnp, variant=laws.QUALIFIED):
     tissue = p.active.tissue
-    field = passive.field(state.active.tissue, tissue, xp=xp)
+    field = passive.field(state.active.tissue, tissue, xp=xp, variant=variant)
     vm = field.membrane_voltage_V
     voltage = vm[tissue.partner] - vm
     block = p.junction_block * control.junction
@@ -120,7 +121,7 @@ def step(state, p, dt, control, *, xp=jnp):
         pump_available=p.active.pump_available * control.pump,
         channel_permeability=p.active.channel_permeability * control.channel,
     )
-    trial, rates, valid = active.step(state.active, effective, dt, xp=xp)
+    trial, rates, valid = active.step(state.active, effective, dt, xp=xp, variant=variant)
     candidate = State(trial, opening)
     valid &= domain_valid(state, xp=xp) & domain_valid(candidate, xp=xp)
     valid &= xp.all(xp.isfinite(voltage) & (xp.abs(voltage) <= junction_gate.MAX_ABS_VOLTAGE_V))
@@ -134,10 +135,10 @@ def step(state, p, dt, control, *, xp=jnp):
     )
 
 
-def trajectory(state, p, dt, controls):
+def trajectory(state, p, dt, controls, *, variant=laws.QUALIFIED):
     def one(carry, control):
         old, accepted = carry
-        trial, rates, valid = step(old, p, dt, control)
+        trial, rates, valid = step(old, p, dt, control, variant=variant)
         accepted &= valid
         new = jax.tree.map(lambda a, b: jnp.where(accepted, a, b), trial, old)
         return (new, accepted), (new, rates, accepted)
@@ -146,7 +147,8 @@ def trajectory(state, p, dt, controls):
     return final, history, valid
 
 
-def trajectories(states, layouts, dt, controls):
+def trajectories(states, layouts, dt, controls, *, variant=laws.QUALIFIED):
     return jax.lax.map(
-        lambda args: trajectory(args[0], args[1], dt, args[2]), (states, layouts, controls)
+        lambda args: trajectory(args[0], args[1], dt, args[2], variant=variant),
+        (states, layouts, controls),
     )

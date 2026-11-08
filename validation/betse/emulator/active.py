@@ -1,5 +1,6 @@
-"""Pinned spatial BETSE order with Na/K ATPase and one Kv1p5 population.
+"""Emulator: pinned spatial BETSE order with Na/K ATPase and one Kv1p5 population.
 
+Moved from the engine (cells.numerics.betse_active) on 8 November 2026 (D131).
 Separate compatibility component, not the resolved thermodynamic model. Pump
 and ordinary membrane fluxes use lagged membrane concentrations. The dynamic
 channel uses bulk cell and post-diffusion exterior concentrations, transfers
@@ -13,9 +14,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.numerics import betse_spatial as passive
 from cells.processes import kinetic_pump, voltage_gates
-from cells.processes.electrochemistry import electrochemical_potential, ghk_leak
+from validation.betse.emulator import laws
+from validation.betse.emulator import spatial as passive
 
 MODEL_ID = "betse_spatial_nak_kv1p5@1"
 
@@ -43,8 +44,8 @@ class Rates(NamedTuple):
     channel_inward_fmol_s: object
 
 
-def validate_layout(layout):
-    tissue = passive.validate_layout(layout.tissue)
+def validate_layout(layout, *, variant=laws.QUALIFIED):
+    tissue = passive.validate_layout(layout.tissue, variant=variant)
     p = Layout(
         tissue,
         kinetic_pump.Parameters(*(np.asarray(x) for x in layout.pump)),
@@ -71,8 +72,17 @@ def validate_layout(layout):
         raise ValueError("Pump substrates and Km must be positive")
     if np.any((p.pump_available < 0) | (p.pump_available > 1)):
         raise ValueError("Pump availability must be in [0,1]")
-    if tissue.temperature != voltage_gates.TEMPERATURE_K:
-        raise ValueError("Compatibility Kv1p5 panel uses 298.15 K")
+    if variant.kv1p5_population:
+        if tissue.temperature != voltage_gates.TEMPERATURE_K:
+            raise ValueError("Compatibility Kv1p5 panel uses 298.15 K")
+    else:
+        # Channel-free variant: the m/h panel still evolves but moves no material, so
+        # its 298.15 K calibration is not used; the pump bounds the temperature.
+        low, high = kinetic_pump.TEMPERATURE_DOMAIN_K
+        if np.any(p.channel_permeability != 0):
+            raise ValueError("Channel-free variant requires zero Kv1p5 permeability")
+        if not low <= tissue.temperature <= high:
+            raise ValueError("Channel-free variant requires a pump-domain temperature")
     return p
 
 
@@ -95,17 +105,17 @@ def domain_valid(state, *, xp=jnp):
     )
 
 
-def step(state, p, dt, *, xp=jnp):
+def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     t, old = p.tissue, state.tissue
     cells, outside = passive.ownership(t, xp=xp)
-    ordinary, reset, delta, field = passive.transport(old, t, dt, xp=xp)
+    ordinary, reset, delta, field = passive.transport(old, t, dt, xp=xp, variant=variant)
     vm, na, k = field.membrane_voltage_V, p.sodium_index, p.potassium_index
     cin, cout = old.membrane_concentration, old.outside_concentration[:, t.outside_owner]
-    mu_na = electrochemical_potential(cin[na], cout[na], vm, 1, t.temperature, xp=xp)
-    mu_k = electrochemical_potential(cin[k], cout[k], vm, 1, t.temperature, xp=xp)
+    mu_na = laws.electrochemical_potential(cin[na], cout[na], vm, 1, t.temperature, variant, xp=xp)
+    mu_k = laws.electrochemical_potential(cin[k], cout[k], vm, 1, t.temperature, variant, xp=xp)
     cycles = (
-        kinetic_pump.kinetics(
-            cin[na], cout[k], mu_na, mu_k, t.temperature, p.pump, p.pump_available, xp=xp
+        laws.pump_kinetics(
+            cin[na], cout[k], mu_na, mu_k, t.temperature, p.pump, p.pump_available, variant, xp=xp
         ).cycles_fmol_s
         * t.membrane_open
     )
@@ -117,7 +127,7 @@ def step(state, p, dt, *, xp=jnp):
     targets, tau = voltage_gates.kinetics(vm, xp=xp)
     gates = (tau * xp.stack((state.m_gate, state.h_gate)) + dt * targets) / (tau + dt)
     after_ecm = (reset + delta).reshape(old.outside_concentration.shape)
-    channel = ghk_leak(
+    channel = laws.ghk_leak(
         old.cell_concentration[k, t.cell_owner],
         after_ecm[k, t.outside_owner],
         vm,
@@ -126,6 +136,7 @@ def step(state, p, dt, *, xp=jnp):
         t.membrane_area,
         p.channel_permeability,
         gates[0] * gates[1],
+        variant,
         xp=xp,
     )
     # Native network channels do not apply cluster_open's boundary membrane mask.
@@ -163,8 +174,8 @@ def step(state, p, dt, *, xp=jnp):
     valid &= xp.all((vm >= lo) & (vm <= hi))
     valid &= xp.all(after_channel > 0) & xp.all(outside_channel > 0) & xp.all(after_membrane > 0)
     valid &= xp.all(
-        kinetic_pump.domain_valid(
-            cin[na], cout[k], mu_na, mu_k, t.temperature, p.pump, p.pump_available, xp=xp
+        laws.pump_domain_valid(
+            cin[na], cout[k], mu_na, mu_k, t.temperature, p.pump, p.pump_available, variant, xp=xp
         )
     )
     valid &= xp.all(xp.stack([xp.all(xp.isfinite(v)) for v in jax.tree.leaves((rates, field))]))
@@ -175,10 +186,10 @@ def step(state, p, dt, *, xp=jnp):
     )
 
 
-def trajectory(state, p, dt, steps):
+def trajectory(state, p, dt, steps, *, variant=laws.QUALIFIED):
     def one(carry, _):
         old, ok = carry
-        trial, rates, valid = step(old, p, dt)
+        trial, rates, valid = step(old, p, dt, variant=variant)
         ok &= valid
         new = jax.tree.map(lambda x, y: jnp.where(ok, x, y), trial, old)
         return (new, ok), (new, rates, ok)
@@ -187,5 +198,7 @@ def trajectory(state, p, dt, steps):
     return final, history, valid
 
 
-def trajectories(states, layouts, dt, steps):
-    return jax.lax.map(lambda args: trajectory(args[0], args[1], dt, steps), (states, layouts))
+def trajectories(states, layouts, dt, steps, *, variant=laws.QUALIFIED):
+    return jax.lax.map(
+        lambda args: trajectory(args[0], args[1], dt, steps, variant=variant), (states, layouts)
+    )

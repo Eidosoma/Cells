@@ -5,9 +5,9 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.betse_junction_spec import MODEL_ID, SOLVER_ID
-from cells.core.betse_spatial_spec import INITIAL_FIELDS
-from cells.numerics import betse_active as active
+from validation.betse.emulator import active as active
+from validation.betse.emulator.junction_spec import MODEL_ID, SOLVER_ID
+from validation.betse.emulator.spatial_spec import INITIAL_FIELDS
 from validation.betse.spatial_active import gate_roundoff, junctions, refinement
 from validation.betse.spatial_active import junction_refinement as long
 from validation.betse.spatial_trajectory.reference import material_roundoff

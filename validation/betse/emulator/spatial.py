@@ -1,11 +1,14 @@
-"""Pinned BETSE 1.5 passive spatial compatibility, separate from Cells' field law.
+"""Emulator: pinned BETSE 1.5 passive spatial order, separate from Cells' field law.
 
-Native forward-Euler order, membrane concentration lag, screened charge field,
-and signed boundary derivatives are intentional here. No BETSE dependency,
-captured voltage operator, fitted forcing, concentration repair or state reset.
-Material from reservoir resets and the nonconservative native stencil has
-separate per-species/per-grid-site ledgers. This is not an energy-conserving
-replacement for the resolved capacitor/return-current models.
+Moved from the engine (cells.numerics.betse_spatial) on 8 November 2026 (D131);
+it is validation tooling that attributes Cells-vs-BETSE differences, not an
+engine model. Native forward-Euler order, membrane concentration lag, screened
+charge field, and signed boundary derivatives are intentional here. No BETSE
+dependency, captured voltage operator, fitted forcing, concentration repair or
+state reset. Material from reservoir resets and the nonconservative native
+stencil has separate per-species/per-grid-site ledgers. This is not an
+energy-conserving replacement for the resolved capacitor/return-current models.
+Constants and the grid-site bound come from a static ``laws.Variant``.
 """
 
 from typing import NamedTuple
@@ -14,8 +17,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.coupling.selective import selective_flux
-from cells.processes.electrochemistry import F, ghk_leak
+from validation.betse.emulator import laws
 
 MODEL_ID = "betse_spatial_passive@1"
 
@@ -82,11 +84,13 @@ def boundary_mask(shape, *, xp=jnp):
     return (y == 0) | (x == 0) | (y == rows - 1) | (x == cols - 1)
 
 
-def dirichlet_operator(shape):
+def dirichlet_operator(shape, max_sites=laws.QUALIFIED.max_grid_sites):
     """Dimensionless five-point operator, built from topology, not native inverse."""
     rows, cols = shape
-    if min(shape) < 3 or rows * cols > 256:
-        raise ValueError("Compatibility grid requires 3+ sites per axis and at most 256 sites")
+    if min(shape) < 3 or rows * cols > max_sites:
+        raise ValueError(
+            f"Compatibility grid requires 3+ sites per axis and at most {max_sites} sites"
+        )
     matrix = np.eye(rows * cols)
     for y in range(1, rows - 1):
         for x in range(1, cols - 1):
@@ -96,8 +100,8 @@ def dirichlet_operator(shape):
     return matrix
 
 
-def boundary_field(values, *, xp=jnp):
-    matrix = xp.asarray(dirichlet_operator(values.shape))
+def boundary_field(values, *, xp=jnp, variant=laws.QUALIFIED):
+    matrix = xp.asarray(dirichlet_operator(values.shape, variant.max_grid_sites))
     rhs = xp.where(boundary_mask(values.shape, xp=xp), values, 0).ravel()
     return xp.linalg.solve(matrix, rhs).reshape(values.shape)
 
@@ -149,7 +153,7 @@ def ownership(p, *, xp=jnp):
     return cells, outside
 
 
-def charge_density(concentration, valence, extra, *, xp=jnp):
+def charge_density(concentration, valence, extra, *, xp=jnp, faraday=laws.QUALIFIED.faraday_C_mol):
     """Sum ionic charge before scaling by F, retaining cancellation residuals.
 
     Nearly neutral mixtures subtract large positive and negative contributions.
@@ -173,18 +177,28 @@ def charge_density(concentration, valence, extra, *, xp=jnp):
         )
         correction = retain(correction + residual)
         total = updated
-    return retain((total + correction) * F) + extra
+    return retain((total + correction) * faraday) + extra
 
 
-def field(state, p, *, xp=jnp):
+def field(state, p, *, xp=jnp, variant=laws.QUALIFIED):
     cells, outside = ownership(p, xp=xp)
-    phi = boundary_field(p.boundary_values, xp=xp)
-    rho = charge_density(state.cell_concentration, p.valence, p.extra_cell_charge_density, xp=xp)
+    phi = boundary_field(p.boundary_values, xp=xp, variant=variant)
+    rho = charge_density(
+        state.cell_concentration,
+        p.valence,
+        p.extra_cell_charge_density,
+        xp=xp,
+        faraday=variant.faraday_C_mol,
+    )
     cell_area = cells @ p.membrane_area
     cell_v = rho * (p.cell_volume / cell_area) / p.capacitance_density
     vm = cell_v[p.cell_owner] - phi.ravel()[p.outside_owner]
     rho_out = charge_density(
-        state.outside_concentration, p.valence, p.extra_outside_charge_density, xp=xp
+        state.outside_concentration,
+        p.valence,
+        p.extra_outside_charge_density,
+        xp=xp,
+        faraday=variant.faraday_C_mol,
     )
     grid_area = outside @ p.membrane_area
     mean_area = xp.mean(grid_area[p.outside_owner])
@@ -197,11 +211,11 @@ def field(state, p, *, xp=jnp):
     return Field(vm, (cells @ vm) / xp.sum(cells, axis=1), rho, phi, potential, -gx, -gy)
 
 
-def validate_layout(layout):
+def validate_layout(layout, *, variant=laws.QUALIFIED):
     p = Layout(*(np.asarray(v) for v in layout))
     n, m, s = p.cell_volume.size, p.membrane_area.size, p.valence.size
     shape, o = p.boundary_values.shape, p.boundary_values.size
-    dirichlet_operator(shape)
+    dirichlet_operator(shape, variant.max_grid_sites)
     for key, expected in {
         "cell_volume": (n,),
         "membrane_area": (m,),
@@ -292,11 +306,11 @@ def domain_valid(state, *, xp=jnp):
     )
 
 
-def transport(state, p, dt, *, xp=jnp):
+def transport(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     """Old-state passive rates and exterior update, before membrane transfer."""
-    f = field(state, p, xp=xp)
+    f = field(state, p, xp=xp, variant=variant)
     z = p.valence[:, None]
-    membrane = ghk_leak(
+    membrane = laws.ghk_leak(
         state.membrane_concentration,
         state.outside_concentration[:, p.outside_owner],
         f.membrane_voltage_V,
@@ -305,9 +319,10 @@ def transport(state, p, dt, *, xp=jnp):
         p.membrane_area,
         p.membrane_permeability,
         p.membrane_open,
+        variant,
         xp=xp,
     )
-    junction = selective_flux(
+    junction = laws.selective_flux(
         state.membrane_concentration,
         state.membrane_concentration[:, p.partner],
         f.membrane_voltage_V - f.membrane_voltage_V[p.partner],
@@ -318,6 +333,7 @@ def transport(state, p, dt, *, xp=jnp):
         0.0,
         1.0,
         p.junction_open,
+        variant,
         xp=xp,
     )
     membrane = xp.where(p.moving[:, None], membrane, 0)
@@ -340,10 +356,10 @@ def transport(state, p, dt, *, xp=jnp):
     return Rates(membrane, junction, fx, fy), reset, delta, f
 
 
-def step(state, p, dt, *, xp=jnp):
+def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     """One native-order trial; return unchanged state on an invalid trial."""
     cells, outside = ownership(p, xp=xp)
-    rates, reset, delta, f = transport(state, p, dt, xp=xp)
+    rates, reset, delta, f = transport(state, p, dt, xp=xp, variant=variant)
     membrane, junction, _, _ = rates
     co = state.outside_concentration.reshape(p.diffusivity.shape)
     voxel_fmol = p.height * p.spacing**2 * 1e15
@@ -370,12 +386,12 @@ def step(state, p, dt, *, xp=jnp):
     return accepted, rates, valid
 
 
-def trajectory(state, p, dt, steps):
+def trajectory(state, p, dt, steps, *, variant=laws.QUALIFIED):
     """JAX scan with latched failure; all state remains fixed after rejection."""
 
     def one(carry, _):
         old, ok = carry
-        trial, rates, valid = step(old, p, dt)
+        trial, rates, valid = step(old, p, dt, variant=variant)
         ok &= valid
         new = jax.tree.map(lambda x, y: jnp.where(ok, x, y), trial, old)
         return (new, ok), (new, rates, ok)
@@ -384,9 +400,11 @@ def trajectory(state, p, dt, steps):
     return final, history, valid
 
 
-def trajectories(states, layouts, dt, steps):
+def trajectories(states, layouts, dt, steps, *, variant=laws.QUALIFIED):
     """Independent worlds with the same runtime timestep and full scan outputs."""
-    return jax.lax.map(lambda args: trajectory(args[0], args[1], dt, steps), (states, layouts))
+    return jax.lax.map(
+        lambda args: trajectory(args[0], args[1], dt, steps, variant=variant), (states, layouts)
+    )
 
 
 def accounting(initial, state, p):

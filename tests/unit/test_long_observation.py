@@ -22,9 +22,12 @@ from tests.unit import test_unstimulated_readout as previous_checks
 from validation.assays import distributed_timing, two_task
 from validation.assays import long_observation as assay
 from validation.assays import unstimulated_readout as previous
+from validation.betse.emulator.rehost import REHOST_REASON, moved
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 RULE, OLD = assay.protocol(), two_task.protocol()
-BASE = json.loads((two_task.ROOT / RULE["template"]).read_text())
+BASE = json.loads((two_task.ROOT / moved(RULE["template"])).read_text())
 ROWS = assay.cases()
 BACKEND, EVIDENCE = reference.BACKEND, reference.EVIDENCE
 evidence = reference.common.evidence

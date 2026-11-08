@@ -5,10 +5,6 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.betse_junction_spec import BetseJunctionModel
-from cells.core.betse_junction_spec import Control as BetseJunctionControl
-from cells.core.betse_spatial_spec import BetseSpatialModel
-from cells.core.betse_spatial_spec import Control as BetseSpatialControl
 from cells.core.er_spec import ERChange
 from cells.core.gated_calcium_spec import GatedCalciumChange
 from cells.core.gated_calcium_spec import base_spec as plasma_spec
@@ -529,26 +525,6 @@ def control_values(spec, times):
             array[:, : values.shape[-1]] = values
             routes.append(array)
         return SurfaceRepairControl(*original, *routes)
-    if isinstance(spec.model, BetseSpatialModel):
-        control_type = (
-            BetseJunctionControl
-            if isinstance(spec.model, BetseJunctionModel)
-            else BetseSpatialControl
-        )
-        if not changes:
-            return control_type(
-                *(
-                    np.ones((len(times), spec.execution.membrane_capacity))
-                    for _ in control_type._fields
-                )
-            )
-        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
-        return control_type(
-            *(
-                np.asarray([getattr(p, k) for p in changes], dtype=np.float64)[indices]
-                for k in control_type._fields
-            )
-        )
     if not changes:
         return np.zeros(len(times), dtype=np.float64)
     if isinstance(changes[0], SurfaceCalciumChange):

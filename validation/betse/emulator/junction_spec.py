@@ -1,14 +1,17 @@
-"""Portable inputs for the native per-moving-ion dynamic-junction law."""
+"""Emulator: portable inputs for the native per-moving-ion dynamic-junction law.
+
+Moved from the engine (cells.core.betse_junction_spec) on 8 November 2026 (D131).
+"""
 
 import copy
 from dataclasses import dataclass, replace
 
 import numpy as np
 
-from cells.core import betse_spatial_spec as base
 from cells.core.specs import ConfigError, _fields, _number
-from cells.numerics import betse_junction as kernel
 from cells.processes import junction_gate
+from validation.betse.emulator import junction as kernel
+from validation.betse.emulator import spatial_spec as base
 
 MODEL_ID = kernel.MODEL_ID
 SOLVER_ID = base.SOLVER_ID

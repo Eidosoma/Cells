@@ -10,10 +10,10 @@ import jax
 import numpy as np
 import pytest
 
-from cells.numerics import betse_active as model
 from cells.processes import kinetic_pump
 from tests.unit import test_betse_spatial_trajectory as short
 from tests.unit.test_betse_tissue_contact import load_capture
+from validation.betse.emulator import active as model
 from validation.betse.spatial_active import fixtures, reference
 
 ROOT = Path(__file__).resolve().parents[2]

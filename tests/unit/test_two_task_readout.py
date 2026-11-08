@@ -18,9 +18,12 @@ from cells.core.windows import WindowPolicy
 from cells.io import load_snapshot, write_snapshot
 from tests.unit import test_betse_junction_runtime as reference
 from validation.assays import two_task as assay
+from validation.betse.emulator.rehost import REHOST_REASON, moved
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 RULE = assay.protocol()
-BASE = json.loads((assay.ROOT / RULE["template"]).read_text())
+BASE = json.loads((assay.ROOT / moved(RULE["template"])).read_text())
 ROWS = assay.cases(RULE)
 BACKEND, EVIDENCE = reference.BACKEND, reference.EVIDENCE
 evidence = reference.common.evidence

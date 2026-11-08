@@ -7,15 +7,16 @@ from collections import Counter
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
 from validation.assays import channel_compensation_design as design
 from validation.assays import source_order_coupling_transfer as coupling
 from validation.assays import two_task
+from validation.betse.emulator import junction_spec
+from validation.betse.emulator.rehost import moved
 
 PLAN = design.plan()
 SOURCE = coupling.condition_rule(coupling.protocol(), "lower")
 SOURCE_ROWS = coupling.cases(SOURCE)
-BASE = json.loads((two_task.ROOT / SOURCE["template"]).read_text())
+BASE = json.loads((two_task.ROOT / moved(SOURCE["template"])).read_text())
 
 
 def source_row(row):
@@ -69,7 +70,7 @@ def test_only_remote_channels_change_at_fixed_impairment(name, scale, level, bac
             actual["model"]["tissue"]["junction_permeability"],
             np.array(BASE["model"]["tissue"]["junction_permeability"]) * 0.9,
         )
-        parse_spec(actual)
+        junction_spec.parse(actual)
         restored = copy.deepcopy(actual)
         restored["model"]["channel_permeability"] = before["model"]["channel_permeability"]
         # Includes initial state, cue controls, all observations and the timestep.

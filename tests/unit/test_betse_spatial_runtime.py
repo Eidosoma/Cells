@@ -13,7 +13,6 @@ import pytest
 from cells.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.core.batch import BatchSpec, WorldSpec, run_batch
 from cells.core.batch_windows import iter_batch_windows
-from cells.core.betse_spatial_spec import SOLVER_ID, definition_arrays
 from cells.core.errors import NumericalError
 from cells.core.runner import (
     _compiled_discrete_rollout,
@@ -26,14 +25,18 @@ from cells.core.specs import ConfigError, load_spec, parse_spec
 from cells.core.state import Checkpoint
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import betse_spatial as model
 from cells.models.registry import get_model
-from cells.numerics import betse_active as active
-from cells.numerics import betse_spatial as passive
 from cells.window_io import write_windowed_run
 from tests.unit import test_betse_spatial_active as short
 from tests.unit.test_windows import assert_windows
+from validation.betse.emulator import active as active
+from validation.betse.emulator import spatial as passive
+from validation.betse.emulator import spatial_model as model
+from validation.betse.emulator.rehost import REHOST_REASON
+from validation.betse.emulator.spatial_spec import SOLVER_ID, definition_arrays
 from validation.betse.spatial_active import fixtures, runtime
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 PROTOCOL = runtime.protocol()
 CASES = [(case, index) for case in PROTOCOL["cases"] for index in PROTOCOL["step_indices"]]

@@ -16,7 +16,6 @@ import pytest
 from cells.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.core.batch import BatchSpec, WorldSpec, plan_batch, run_batch
 from cells.core.batch_windows import iter_batch_windows, plan_batch_windows
-from cells.core.betse_junction_spec import Control, definition_arrays
 from cells.core.errors import NumericalError
 from cells.core.resources import trace_bytes
 from cells.core.runner import (
@@ -30,16 +29,20 @@ from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, digest, load_spec, parse_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import betse_junction as model
 from cells.models.registry import get_model
-from cells.numerics import betse_junction as kernel
 from cells.window_io import write_windowed_run
 from tests.unit import test_betse_spatial_runtime as previous
 from tests.unit.test_windows import assert_windows
+from validation.betse.emulator import junction as kernel
+from validation.betse.emulator import junction_model as model
+from validation.betse.emulator.junction_spec import Control, definition_arrays
+from validation.betse.emulator.rehost import REHOST_REASON
 from validation.betse.spatial_active import intervention_refinement as legacy
 from validation.betse.spatial_active import junction_reference as independent
 from validation.betse.spatial_active import junction_runtime as runtime
 from validation.betse.spatial_active import junctions, refinement
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 PROTOCOL = runtime.protocol()
 CASES = [(case, i) for case in PROTOCOL["cases"] for i in PROTOCOL["step_indices"]]

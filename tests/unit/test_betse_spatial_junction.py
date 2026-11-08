@@ -10,13 +10,12 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.betse_spatial_spec import definition_arrays
-from cells.core.specs import parse_spec
-from cells.numerics import betse_active as active
-from cells.numerics import betse_junction as model
 from cells.processes import junction_gate
 from tests.unit import test_betse_spatial_active as previous
 from tests.unit.test_betse_tissue_contact import load_capture
+from validation.betse.emulator import active as active
+from validation.betse.emulator import junction as model
+from validation.betse.emulator.spatial_spec import CONFIGS, definition_arrays, parse
 from validation.betse.junction_gate.reference import rates as decimal_rates
 from validation.betse.spatial_active import junction_reference as independent
 from validation.betse.spatial_active import junctions
@@ -45,8 +44,8 @@ def device():
 
 @pytest.fixture(scope="module")
 def example():
-    data = json.loads((junctions.ROOT / "configs/betse_spatial_active.json").read_text())
-    initial, p = definition_arrays(parse_spec(data).model)
+    data = json.loads((CONFIGS / "betse_spatial_active.json").read_text())
+    initial, p = definition_arrays(parse(data).model)
     ones = np.ones_like(p.pump_available)
     layout = model.validate_layout(
         model.Layout(

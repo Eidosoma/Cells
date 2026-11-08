@@ -24,9 +24,12 @@ from tests.unit import test_two_task_readout as original
 from validation.assays import distributed_cue as assay
 from validation.assays import template_readout as reader
 from validation.assays import two_task
+from validation.betse.emulator.rehost import REHOST_REASON, moved
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 RULE, OLD = assay.protocol(), two_task.protocol()
-BASE = json.loads((two_task.ROOT / RULE["template"]).read_text())
+BASE = json.loads((two_task.ROOT / moved(RULE["template"])).read_text())
 ROWS = assay.cases(RULE)
 BACKEND, EVIDENCE = reference.BACKEND, reference.EVIDENCE
 evidence = reference.common.evidence

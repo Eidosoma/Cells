@@ -7,11 +7,12 @@ from collections import Counter
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
 from validation.assays import local_channel_design as design
+from validation.betse.emulator import junction_spec
+from validation.betse.emulator.rehost import moved
 
 PLAN = design.plan()
-BASE = json.loads((design.source.two_task.ROOT / design.SOURCE["template"]).read_text())
+BASE = json.loads((design.source.two_task.ROOT / moved(design.SOURCE["template"])).read_text())
 
 
 def test_grid_budgets_and_flank_topology():
@@ -73,7 +74,7 @@ def test_only_selected_flank_changes(name, owners, scale, level, backend):
             actual["model"]["tissue"]["junction_permeability"],
             np.asarray(BASE["model"]["tissue"]["junction_permeability"]) * 0.9,
         )
-        parse_spec(actual)
+        junction_spec.parse(actual)
         actual["model"]["channel_permeability"] = before["model"]["channel_permeability"]
         assert actual == before
     assert BASE == before_base

@@ -18,9 +18,12 @@ from tests.unit import test_source_order_spanning as previous
 from validation.assays import source_order_observation_design as design
 from validation.assays import source_order_selected as assay
 from validation.assays import template_readout, two_task
+from validation.betse.emulator.rehost import REHOST_REASON, moved
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 RULE, SOURCE, ROWS = assay.protocol(), assay.SOURCE, assay.cases()
-BASE = json.loads((two_task.ROOT / RULE["template"]).read_text())
+BASE = json.loads((two_task.ROOT / moved(RULE["template"])).read_text())
 BACKEND, EVIDENCE, reference = shared.BACKEND, shared.EVIDENCE, shared.reference
 PREFIX = "source-order-selected"
 evidence = reference.common.evidence

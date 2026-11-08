@@ -14,6 +14,7 @@ from cells.core.specs import parse_spec
 from cells.core.windows import WindowPolicy, iter_windows, plan_windows
 from tests.batch_fixtures import MODELS, short_spec
 from tests.unit.test_windows import assert_windows
+from validation.betse.emulator.rehost import REHOST_REASON
 
 
 class Lowerings:
@@ -143,7 +144,13 @@ def test_single_step_restart_uses_only_its_remaining_width_and_terminal_never_co
     assert_windows(terminal, run(spec, full.final))
 
 
-@pytest.mark.parametrize("kind", ["guarded_physical", "native_discrete"])
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "guarded_physical",
+        pytest.param("native_discrete", marks=pytest.mark.skip(reason=REHOST_REASON)),
+    ],
+)
 def test_complete_physical_state_and_native_step_tail(kind, monkeypatch, tmp_path):
     """Execution equivalence at five real steps, not a new biological qualification."""
     if kind == "guarded_physical":

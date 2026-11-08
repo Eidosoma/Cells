@@ -12,22 +12,25 @@ import pytest
 from cells.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.core.batch import BatchSpec, WorldSpec, plan_batch, run_batch
 from cells.core.batch_windows import iter_batch_windows, plan_batch_windows
-from cells.core.betse_spatial_spec import definition_arrays
 from cells.core.errors import NumericalError
 from cells.core.runner import branch_checkpoint, run, timeline
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_snapshot
-from cells.models import betse_spatial as model
-from cells.numerics import betse_active as active
 from tests.unit import test_betse_spatial_active_refinement as temporal
 from tests.unit import test_betse_spatial_interventions as short
 from tests.unit.test_betse_tissue_contact import load_capture
 from tests.unit.test_windows import assert_windows
+from validation.betse.emulator import active as active
+from validation.betse.emulator import spatial_model as model
+from validation.betse.emulator.rehost import REHOST_REASON
+from validation.betse.emulator.spatial_spec import definition_arrays
 from validation.betse.spatial_active import fixtures, refinement
 from validation.betse.spatial_active import intervention_reference as independent
 from validation.betse.spatial_active import intervention_refinement as long
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 common, active_tests = short.common, short.short
 BACKEND, EVIDENCE = short.BACKEND, short.EVIDENCE

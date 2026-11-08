@@ -24,6 +24,7 @@ from cells.core.windows import WindowPolicy, iter_windows
 from cells.ensemble import ionic
 from cells.io import load_snapshot, write_snapshot
 from cells.models.registry import get_model
+from validation.betse.emulator.rehost import REHOST_REASON
 from validation.tissue import surface_cotransport_water_fixtures as fixtures
 
 
@@ -128,6 +129,7 @@ def test_unsupported_public_models_refuse_refinement(config_data):
             operation()
 
 
+@pytest.mark.skip(reason=REHOST_REASON)  # the engine has no native discrete-clock model now
 def test_native_discrete_clock_refuses_refinement():
     raw = json.loads(
         (Path(__file__).resolve().parents[2] / "configs/betse_spatial_junction.json").read_text()

@@ -10,8 +10,8 @@ import numpy as np
 import pytest
 from scipy.ndimage import gaussian_filter
 
-from cells.numerics import betse_spatial as model
 from tests.unit.test_spatial_calcium import same as bits
+from validation.betse.emulator import spatial as model
 from validation.betse.spatial_trajectory import fixtures, reference
 from validation.betse.tissue_contact import reference as native_reference
 

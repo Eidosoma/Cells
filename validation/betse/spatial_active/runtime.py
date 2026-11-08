@@ -5,8 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.betse_spatial_spec import INITIAL_FIELDS, SOLVER_ID
-from cells.numerics import betse_active as active
+from validation.betse.emulator import active as active
+from validation.betse.emulator.spatial_spec import INITIAL_FIELDS, SOLVER_ID
 from validation.betse.spatial_active import fixtures, refinement
 
 ROOT = Path(__file__).resolve().parents[3]

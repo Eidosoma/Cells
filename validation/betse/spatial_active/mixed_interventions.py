@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
+from validation.betse.emulator.rehost import moved
 from validation.betse.spatial_active import junction_runtime, refinement
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -96,8 +97,8 @@ def definition(case="coupled_block", index=0, *, backend="cpu"):
     choices = {c["id"]: c for c in rule["cases"]}
     if case not in choices or index not in range(len(rule["native_steps_s"])):
         raise ValueError("Unknown mixed intervention case")
-    assert refinement.digest(ROOT / rule["template"]) == rule["template_sha256"]
-    raw = json.loads((ROOT / rule["template"]).read_text())
+    assert refinement.digest(ROOT / moved(rule["template"])) == rule["template_sha256"]
+    raw = json.loads((ROOT / moved(rule["template"])).read_text())
     owner = np.asarray(raw["model"]["tissue"]["cell_owner"])
     dt = rule["native_steps_s"][index]
     count = round(rule["duration_s"] / dt)

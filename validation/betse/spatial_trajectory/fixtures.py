@@ -6,9 +6,9 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.numerics import betse_spatial as model
 from cells.processes.electrochemistry import F, R
 from tests.unit.test_betse_tissue_contact import load_capture
+from validation.betse.emulator import spatial as model
 
 PROTOCOL_PATH = Path(__file__).with_name("protocol.json")
 

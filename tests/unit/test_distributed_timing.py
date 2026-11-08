@@ -19,10 +19,13 @@ from tests.unit import test_betse_junction_runtime as reference
 from tests.unit import test_two_task_readout as original
 from validation.assays import distributed_cue, timing_refinement, two_task
 from validation.assays import distributed_timing as temporal
+from validation.betse.emulator.rehost import REHOST_REASON, moved
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 RULE, CUE, OLD = temporal.protocol(), distributed_cue.protocol(), two_task.protocol()
 ROWS = temporal.cases()
-BASE = json.loads((two_task.ROOT / RULE["template"]).read_text())
+BASE = json.loads((two_task.ROOT / moved(RULE["template"])).read_text())
 BACKEND, EVIDENCE = reference.BACKEND, reference.EVIDENCE
 evidence = reference.common.evidence
 PREFIX = "distributed-timing"

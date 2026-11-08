@@ -14,19 +14,20 @@ import pytest
 from cells.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.core.batch import BatchSpec, WorldSpec, run_batch
 from cells.core.batch_windows import iter_batch_windows
-from cells.core.betse_spatial_spec import Control, definition_arrays
 from cells.core.errors import NumericalError
 from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_snapshot
-from cells.models import betse_spatial as model
-from cells.numerics import betse_active as active
-from cells.numerics import betse_spatial as passive
 from tests.unit import test_betse_spatial_runtime as previous
 from tests.unit.test_betse_tissue_contact import load_capture
 from tests.unit.test_windows import assert_windows
+from validation.betse.emulator import active as active
+from validation.betse.emulator import spatial as passive
+from validation.betse.emulator import spatial_model as model
+from validation.betse.emulator.rehost import REHOST_REASON
+from validation.betse.emulator.spatial_spec import Control, definition_arrays
 from validation.betse.spatial_active import (
     fixtures,
     interventions,
@@ -35,6 +36,8 @@ from validation.betse.spatial_active import (
 from validation.betse.spatial_active import (
     intervention_reference as independent,
 )
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 common, short = previous.common, previous.short
 BACKEND, EVIDENCE = common.BACKEND, common.EVIDENCE

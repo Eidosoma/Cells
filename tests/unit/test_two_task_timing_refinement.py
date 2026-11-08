@@ -18,9 +18,12 @@ from tests.unit import test_betse_junction_runtime as reference
 from tests.unit import test_two_task_readout as original
 from validation.assays import timing_refinement as temporal
 from validation.assays import two_task as assay
+from validation.betse.emulator.rehost import REHOST_REASON, moved
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 RULE, OLD = temporal.protocol(), assay.protocol()
-BASE = json.loads((assay.ROOT / RULE["template"]).read_text())
+BASE = json.loads((assay.ROOT / moved(RULE["template"])).read_text())
 ROWS = assay.cases(OLD)
 BACKEND, EVIDENCE = reference.BACKEND, reference.EVIDENCE
 evidence = reference.common.evidence

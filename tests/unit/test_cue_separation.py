@@ -21,9 +21,12 @@ from tests.unit import test_long_observation as inherited_checks
 from validation.assays import cue_separation as assay
 from validation.assays import distributed_timing, long_observation, two_task
 from validation.assays import unstimulated_readout as previous
+from validation.betse.emulator.rehost import REHOST_REASON, moved
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 RULE, OLD = assay.protocol(), two_task.protocol()
-BASE = json.loads((two_task.ROOT / RULE["template"]).read_text())
+BASE = json.loads((two_task.ROOT / moved(RULE["template"])).read_text())
 ROWS = assay.cases()
 BACKEND, EVIDENCE = reference.BACKEND, reference.EVIDENCE
 evidence = reference.common.evidence

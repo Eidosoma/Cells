@@ -5,8 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.numerics import betse_junction as model
 from cells.processes import junction_gate
+from validation.betse.emulator import junction as model
 from validation.betse.spatial_active import fixtures, refinement
 
 ROOT = Path(__file__).resolve().parents[3]

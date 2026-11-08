@@ -15,17 +15,18 @@ import pytest
 from cells.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.core.batch import BatchSpec, WorldSpec, plan_batch, run_batch
 from cells.core.batch_windows import iter_batch_windows, plan_batch_windows
-from cells.core.betse_junction_spec import definition_arrays
 from cells.core.resources import trace_bytes
 from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_snapshot
-from cells.models import betse_junction as model
-from cells.numerics import betse_junction as kernel
 from tests.unit import test_betse_junction_runtime as previous
 from tests.unit.test_windows import assert_windows
+from validation.betse.emulator import junction as kernel
+from validation.betse.emulator import junction_model as model
+from validation.betse.emulator.junction_spec import definition_arrays
+from validation.betse.emulator.rehost import REHOST_REASON
 from validation.betse.spatial_active import (
     gate_roundoff,
     junction_reference,
@@ -35,6 +36,8 @@ from validation.betse.spatial_active import (
 )
 from validation.betse.spatial_active import mixed_interventions as mixed
 from validation.betse.spatial_active import mixed_reference as independent
+
+pytestmark = pytest.mark.skip(reason=REHOST_REASON)
 
 PROTOCOL = mixed.protocol()
 CASES = [(c["id"], i) for c in PROTOCOL["cases"] for i in range(3)]

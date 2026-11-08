@@ -15,12 +15,12 @@ import numpy as np
 
 from cells.assembly.cli import output_path, utc
 from cells.assembly.io import write_json
-from cells.numerics import betse_spatial as passive
 from cells.processes.electrochemistry import F
 from validation.assays import template_diagnostic as geometry
 from validation.assays import template_readout as reader
 from validation.assays import unstimulated_readout as assay
 from validation.assays.two_task_diagnostic import REPLAY_ATOL, REPLAY_RTOL, compare_replay
+from validation.betse.emulator import spatial as passive
 from validation.betse.spatial_active.refinement import completed_prior, digest
 
 ROOT = Path(__file__).resolve().parents[2]

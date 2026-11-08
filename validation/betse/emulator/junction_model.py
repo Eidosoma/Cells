@@ -1,4 +1,8 @@
-"""Ordinary execution and complete checkpoints for dynamic spatial junctions."""
+"""Emulator: runner-interface module for dynamic spatial junctions.
+
+Moved from the engine (cells.models.betse_junction) on 8 November 2026 (D131); no longer
+returned by the engine registry (see spatial_model.py and rehost.py).
+"""
 
 from dataclasses import make_dataclass
 from typing import NamedTuple
@@ -6,13 +10,13 @@ from typing import NamedTuple
 import jax
 import numpy as np
 
-from cells.core.betse_junction_spec import MODEL_ID, SOLVER_ID, Control, definition_arrays
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
-from cells.models import betse_spatial as base
-from cells.numerics import betse_junction as kernel
-from cells.numerics import betse_spatial as passive
 from cells.processes import junction_gate
+from validation.betse.emulator import junction as kernel
+from validation.betse.emulator import spatial as passive
+from validation.betse.emulator import spatial_model as base
+from validation.betse.emulator.junction_spec import MODEL_ID, SOLVER_ID, Control, definition_arrays
 
 OBSERVER_ID = "betse_spatial_dynamic_junction_accepted_fields@1"
 OBSERVATION_SAMPLING = base.OBSERVATION_SAMPLING

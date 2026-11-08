@@ -11,10 +11,12 @@ import pytest
 
 from cells.core.runner import run
 from cells.core.specs import parse_spec
-from cells.numerics import betse_spatial as field
 from cells.processes.electrochemistry import F
 from tests.unit import test_betse_junction_runtime as reference
 from validation.assays import source_order_precision as repair
+from validation.betse.emulator import junction_spec
+from validation.betse.emulator import spatial as field
+from validation.betse.emulator.rehost import REHOST_REASON
 from validation.betse.spatial_active import junction_runtime as runtime
 from validation.betse.spatial_active.refinement import digest
 
@@ -57,7 +59,7 @@ def test_host_charge_precision_known_answers():
     # Real archived initial states exercise all six species and the extracellular
     # shape, not only constructed cancellation examples.
     raw = json.loads((ROOT / "source/configs/betse_spatial_junction.json").read_text())
-    state, parameters = reference.definition_arrays(parse_spec(raw).model)
+    state, parameters = reference.definition_arrays(junction_spec.parse(raw).model)
     p, tissue = parameters.active.tissue, state.active.tissue
     counts = 0
     for values, offset in (
@@ -122,6 +124,7 @@ def native():
     return folder, rows
 
 
+@pytest.mark.skip(reason=REHOST_REASON)
 @pytest.mark.parametrize("case,level", CASES)
 def test_charge_precision_native(case, level, native):
     dt = runtime.protocol()["native_steps_s"][level]
