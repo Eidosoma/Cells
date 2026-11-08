@@ -42,11 +42,30 @@ starts, and production design is deferred until parity is established.
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
 | 5 | Further mechanism families from the parity ladder, on CPU and L4 | Planned |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
+| 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | Planned (map ready) |
+| 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
+| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Designed; build plan pending user decisions |
 
 ## Runs
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Heredity design and re-hosting probe G0 (8–9 November).**
+  - **E07-v1 design:** "write, release, replace", in [the design doc](docs/HEREDITY_FIRST_EXPERIMENT.md).
+    Single-cell pre-screens find NaV1.2 window current plus Kir2.1 bistability
+    (H −79.6 mV, D −21.5 mV). Tier-1 JUPITER cost is about 12,500 GPU-hours
+    with today's sequential kernels and about 840 with 64-world batches, so
+    batched worlds are on the critical path.
+  - **G0 probe** ([summary](/mnt/workspaces/Cells/rehost-g0-20261108-01/summary.json)):
+    two_task and unstimulated_readout on `resolved_tissue@2` (RK4).
+    - Stable only at dt ≤ 62.5 ns.
+    - The source-cell cue response is 6.62 µV, about 3,000× the 2 nV readout
+      margin, and dt refinement changes it by under 1e-8 nV.
+    - The old BETSE-order archive gives 6.632 µV (same direction, not parity).
+    - Neighbour cells move only 0.5–1.1 nV, below the margin, so the old
+      decodability results rest on few cells.
+    - IMEX with channels is still needed for µs steps.
 
 - **First BETSE parity of Cells' own physics: default world passes (8 November).**
   Model `resolved_pump_tissue@1` (IMEX ARS(2,2,2)) on BETSE's default world (222
