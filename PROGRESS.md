@@ -15,9 +15,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   From 30 October the work drifted into re-hosting and transcribing BETSE inside
   `src/cells` (`betse_native_*`, about 110K lines; `betse_normal_*`, about 50K
   lines). The resulting end-to-end demonstration compared BETSE with BETSE; no
-  Cells engine model ran in it. That track is frozen at checkpoint `7e9873a` and
-  superseded, and tagged `native-betse-frozen-2026-11-08`. Its code and evidence
-  are preserved. The rule is now in `AGENTS.md`.
+  Cells engine model ran in it. That track is superseded; its code was removed
+  from the tree (stage A, below) and remains at tag `native-betse-frozen-2026-11-08`.
+  Run evidence under `/mnt/workspaces/Cells` is untouched. The rule is in
+  `AGENTS.md`.
 - **Native demonstration outcome:** 15 actual launches (6–8 November) never
   reached tissue geometry. Every failure was in the provenance, observer, memory
   or wall-time layer. [Actual16](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-16/failure.json)
@@ -46,6 +47,33 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Stage A: copied BETSE code removed from the engine (8 November).** 716 files
+  deleted, 63 adapted, 1 added. Deleted: 243 `src` modules (the 207
+  `betse_native_*`/`betse_normal_*`, 34 BETSE glue modules, and 2 BETSE-only
+  processes); 233 validation files; 240 tests. Three engine seams were cut with
+  no behavioural change: the mitochondria source label is now a literal of the
+  same value, and the BETSE-mesh bridge in `conservative_polygon_geometry` and
+  the BETSE grid-audit entry in `rectangular_environment` are removed.
+  [Evidence](/mnt/workspaces/Cells/engine-cleanup-stage-a-20261108-01/verify/summary.json).
+  - Polygon tests now use `tests/fixtures/conservative_polygon_generated.json`,
+    exported once from the old generator; replayed geometry is identical.
+  - Guards pinning edited files were re-pinned to a fixpoint (18 src, 35
+    validation records); entries for deleted files were dropped, and all other
+    entries are unchanged.
+  - **Verification** against the unmodified tree:
+    - test collection is identical apart from the adaptations, with the same 13
+      pre-existing `runs/` errors;
+    - imports of 1,675 modules are identical;
+    - targeted tests (39 files) show 0 new failures, and 90 now pass that failed
+      on a stale pin;
+    - 115 fail on both sides with identical messages.
+  - **Full suite not run:** the whole suite is too slow here (about 3% after 2.7
+    hours; [stopped attempt](/mnt/workspaces/Cells/engine-cleanup-baseline-20261108-01/attempt-02-infeasible/NOTE.json)).
+    A fast tiered gate is needed.
+  - Remaining for stage B: BETSE-named engine modules and IDs, plus BETSE-side
+    `*_native.py` tools and records in `validation/betse` that refer to deleted
+    components.
 
 - **`resolved_pump_tissue@1` at BETSE default-world scale (8 November).** New
   identity: resolved field + Na/K pump + physical-time junction gate

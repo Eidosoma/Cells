@@ -24,13 +24,17 @@ part of the engine.
 
 - Run BETSE unmodified, out of process, in its own environment
   (`/mnt/workspaces/Cells/venv-betse`). Only `validation/betse/` may import it.
-- Nothing in `src/cells` imports, executes, re-hosts or copies BETSE code. Cells
-  implementations of BETSE-compatible laws are fine; cite the source law.
+- Nothing in `src/cells` imports, executes, re-hosts or copies BETSE code, or
+  carries BETSE-specific conventions or names (user direction, 8 November 2026).
+  Cells implementations of physical laws that BETSE also uses are fine under
+  neutral names; cite the source. BETSE-specific logic, including the BETSE-order
+  emulator in `validation/betse/emulator/`, lives only in `validation/betse/`.
 - Compare Cells against saved, extracted BETSE outputs, never against live BETSE
   objects inside a Cells process.
-- `src/cells/processes/betse_native_*` and `betse_normal_*` are frozen tooling
-  from before 8 November 2026 (tag `native-betse-frozen-2026-11-08`). Do not
-  extend or launch them, and do not delete them without the user's approval.
+- The re-hosted and transcribed BETSE code (`betse_native_*`, `betse_normal_*`
+  and their BETSE-only tools and tests) was removed on 8 November 2026 at the
+  user's direction. It remains recoverable from the tag
+  `native-betse-frozen-2026-11-08`; do not reintroduce it.
 
 # Milestones and provenance
 

@@ -476,7 +476,7 @@ establish spatial convergence or long-term biological behavior. Qualification
 status and receipts remain in `PROGRESS.md`.
 
 The active compatibility component also has an ordinary Cells configuration
-in [betse_spatial_active.json](../configs/betse_spatial_active.json). It uses
+in [betse_spatial_active.json](../validation/betse/emulator/configs/betse_spatial_active.json). It uses
 the explicit `betse_ordered_euler@1` solver, preserving the qualified native
 update and the declared timestep exactly. Accepted clock labels are multiples
 of that timestep; subtracting adjacent labels does not change the numerical
@@ -534,7 +534,7 @@ cursor, and branches may alter inputs at or after their checkpoint but cannot
 rewrite earlier inputs. An event at the horizon does not take another step.
 Static and scheduled worlds can share a batch while keeping independent clocks.
 
-[betse_spatial_interventions.json](../configs/betse_spatial_interventions.json)
+[betse_spatial_interventions.json](../validation/betse/emulator/configs/betse_spatial_interventions.json)
 provides a GPU example through 64 us: both routes start available, are blocked
 at 16 us and are restored at 40 us. The
 [intervention protocol](../validation/betse/spatial_active/intervention_protocol.json)
@@ -550,7 +550,7 @@ CPU/L4 agreement and exact event/window/world replay are required. Qualification
 status belongs in `PROGRESS.md`; this panel makes no longer-time, biological
 recovery, finite-ATP, spatial-convergence or multi-GPU performance claim.
 
-The [long intervention example](../configs/betse_spatial_interventions_long.json)
+The [long intervention example](../validation/betse/emulator/configs/betse_spatial_interventions_long.json)
 extends the same block/release schedule through 256 us at a 0.25 us step. The
 [scheduled refinement protocol](../validation/betse/spatial_active/intervention_refinement_protocol.json)
 addresses accumulated error and restart behavior beyond the original horizon:
@@ -565,7 +565,7 @@ source files before extending it. Resolved temporal refinement does not establis
 continuum accuracy, spatial convergence or biological recovery; completion and
 results remain recorded in `PROGRESS.md`.
 
-The experimental [dynamic junction component](../src/cells/numerics/betse_junction.py)
+The experimental [dynamic junction component](../validation/betse/emulator/junction.py)
 composes evolving junction openings with the same spatial pump/channel kernel.
 It keeps fourteen state arrays and an explicit moving-ion order. In pinned BETSE,
 each moving ion advances the stored opening by one full outer timestep before
@@ -2719,7 +2719,7 @@ The three added fields record mitochondrial amount increments, signed internal
 ion transfer and dissipated energy, each by species and cell.
 
 This is a continuous passive ion/voltage model. Its source correspondence is the
-[separate pinned BETSE component](../src/cells/processes/betse_mitochondria.py),
+[separate pinned BETSE component](https://github.com/Eidosoma/Cells/blob/native-betse-frozen-2026-11-08/src/cells/processes/betse_mitochondria.py),
 which retains native copied initialization, cached voltage and ordered Euler
 updates. The coupled Cells law instead declares explicit disjoint initial
 inventories, SI constants and charge-consistent voltage at each RK stage.
