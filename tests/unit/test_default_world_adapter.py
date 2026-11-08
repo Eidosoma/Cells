@@ -220,6 +220,9 @@ def test_resolved_observations_follow_the_physical_route_mapping(case):
     assert "venv_time" not in history and history["diag_patch_voltage_time"].shape == (2, m)
     assert phase["final"]["diag_extracellular_potential"].shape == (o,)
     assert adapter._isolated_sites(raw).tolist() == []  # every interior site faces a membrane
+    check = adapter.patch_exterior_check(world, phase)
+    assert check["x_ext_V"] == pytest.approx(0.02 + expected) and check["at"]["cell"] == 0
+    assert check["max_abs_exterior_potential_at_patches_V"] == 0.0 and check["samples"] == 2
 
 
 def test_blind_world_reads_no_betse_history_or_end_state(case, tmp_path):

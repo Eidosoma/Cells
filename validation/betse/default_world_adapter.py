@@ -955,6 +955,34 @@ def resolved_definition(
     }
 
 
+def patch_exterior_check(world, phase):
+    """X_ext of a resolved layout phase: |V_patch - Q_cell / sum(C_patch)| over all samples
+    and patches (where, when, 95th percentile) and the largest |exterior potential| at a
+    patch, i.e. at its outside node. BETSE's Vm has no exterior term (zero Phi_b)."""
+    owner, site = world["membrane_cell"], world["membrane_site"]
+    times = np.asarray(phase["elapsed_after_update_s"])
+    history = phase["history"]
+    patch = history["diag_patch_voltage_time"]
+    deviation = np.abs(patch - history["vm_ave_time"][:, owner])
+    t, j = np.unravel_index(int(np.argmax(deviation)), deviation.shape)
+    exterior = np.abs(history["diag_extracellular_potential_time"][:, site])
+    te, je = np.unravel_index(int(np.argmax(exterior)), exterior.shape)
+    return {
+        "x_ext_V": float(deviation[t, j]),
+        "at": {
+            "elapsed_s": float(times[t]),
+            "membrane": int(j),
+            "cell": int(owner[j]),
+            "patch_voltage_V": float(patch[t, j]),
+            "charge_voltage_V": float(history["vm_ave_time"][t, owner[j]]),
+        },
+        "p95_over_samples_and_patches_V": float(np.percentile(deviation, 95)),
+        "max_abs_exterior_potential_at_patches_V": float(exterior[te, je]),
+        "exterior_at": {"elapsed_s": float(times[te]), "membrane": int(je), "site": int(site[je])},
+        "samples": int(times.size),
+    }
+
+
 def resolved_handoff(definition, checkpoint):
     """SIM start from a resolved INIT end state: amounts, fixed charges and gates as they are."""
     from cells.models import surface_pump as model
@@ -1148,6 +1176,7 @@ def run_resolved(
             **_resolved_checks(definition, obs, newton),
         }
         phases[phase] = resolved_layout_phase(world, definition, obs)
+        record["patch_exterior"] = patch_exterior_check(world, phases[phase])
         start = resolved_handoff(definition, result.final)
     run = {
         "kind": "cells.default_world_adapter_run@1",
