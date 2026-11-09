@@ -29,8 +29,15 @@ def _trace_budget(spec: SimulationSpec, steps: int) -> None:
         raise ConfigError("Estimated trace working storage exceeds max_trace_bytes")
 
 
+def _refuse_projective(spec: SimulationSpec) -> None:
+    # Fine-only execution paths must not silently ignore a projective block.
+    if getattr(spec, "projective", None) is not None:
+        raise ConfigError("execution.projective runs only through cells.core.runner.run")
+
+
 def timeline(spec: SimulationSpec) -> np.ndarray:
     """The shared exact grid, with storage admission before allocating a trace."""
+    _refuse_projective(spec)
     require_refinement_model(spec)
     grid = EventGrid(spec)
     _trace_budget(spec, len(grid) - 1)
@@ -98,7 +105,11 @@ def branch_checkpoint(
     """Only supported future inputs, the horizon, and observations may change."""
     validate_checkpoint(original, checkpoint)
     changed = parse_spec(changed.to_dict())
-    if original.model != changed.model or original.execution != changed.execution:
+    if (
+        original.model != changed.model
+        or original.execution != changed.execution
+        or getattr(original, "projective", None) != getattr(changed, "projective", None)
+    ):
         raise ConfigError("A branch may not change model or execution settings")
     past_original = tuple(p for p in original.experiment.changes if p.time < checkpoint.time)
     past_changed = tuple(p for p in changed.experiment.changes if p.time < checkpoint.time)
@@ -288,6 +299,10 @@ class RunResult:
 def run(spec: SimulationSpec, checkpoint: Checkpoint | None = None) -> RunResult:
     started = perf_counter()
     spec = parse_spec(spec.to_dict())  # Also validates specs constructed through the Python API.
+    if spec.projective is not None:  # Opt-in coarse mode; absent, nothing below changes.
+        from cells.core.projective import run_projective
+
+        return run_projective(spec, checkpoint, started=started)
     grid = timeline(spec)
     checkpoint = initialise(spec) if checkpoint is None else checkpoint
     validate_checkpoint(spec, checkpoint, grid)
@@ -301,6 +316,7 @@ def _run_segment(spec, checkpoint, times, requested, *, started=None, window_exe
 
     A segment only partitions accepted storage. It must never insert solver steps.
     """
+    _refuse_projective(spec)
     started = perf_counter() if started is None else started
     model = get_model(spec.model)
     controls = control_values(spec, times[:-1])

@@ -761,8 +761,19 @@ class SimulationSpec:
         | SurfaceExperiment
     )
     execution: ExecutionSpec
+    # Opt-in coarse projective mode (core/projective_spec.py), serialized as
+    # execution.projective. None, the default, is the fine engine, unchanged.
+    projective: Any = None
 
     def to_dict(self) -> dict:
+        result = self._fine_dict()
+        if self.projective is not None:
+            from cells.core.projective_spec import to_dict as projective_to_dict
+
+            result["execution"]["projective"] = projective_to_dict(self.projective)
+        return result
+
+    def _fine_dict(self) -> dict:
         m, e, x = self.model, self.experiment, self.execution
         if getattr(x, "refinement_times", ()):
             from cells.core.grid import require_refinement_model
@@ -1433,6 +1444,10 @@ def parse_spec(data: dict) -> SimulationSpec:
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
+    if isinstance(data["execution"], dict) and "projective" in data["execution"]:
+        from cells.core.projective_spec import parse_definition
+
+        return parse_definition(data, parse_spec)
     if (
         isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_open_calcium_bath_epoch@1"
