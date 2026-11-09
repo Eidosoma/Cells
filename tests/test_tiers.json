@@ -3,7 +3,8 @@
  "measured": [
   "/mnt/workspaces/Cells/test-tiers-20261108-01/measure/measured.json",
   "/mnt/workspaces/Cells/test-tiers-20261109-02/measure/measured.json",
-  "/mnt/workspaces/Cells/test-tiers-20261109-03/measure/measured.json"
+  "/mnt/workspaces/Cells/test-tiers-20261109-03/measure/measured.json",
+  "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/gate-02/new-measured/measured.json"
  ],
  "measured_provenance": [
   {
@@ -27,6 +28,14 @@
    "root": "/mnt/workspaces/Cells/test-tiers-20261109-03/source",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-09T16:01:26+00:00"
+  },
+  {
+   "git_revision": "2b4dd5e49f5707902bea800886bbc0bba5fdd90b",
+   "dirty": true,
+   "patch_sha256": "5ed02f1cba70915d5524c404e777ac63ca812a7e9b25219a210a332e58912da9",
+   "root": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/gate-02/source",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-09T18:29:23+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -442,6 +451,14 @@
     }
    },
    {
+    "file": "tests/unit/test_betse_network_emulator.py",
+    "seconds": 7.31,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
     "file": "tests/unit/test_betse_normal_ecm_molecule_material_failure_evidence.py",
     "seconds": 0.92,
     "exit_code": 0,
@@ -455,6 +472,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 24
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_parity_tooling.py",
+    "seconds": 9.97,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {

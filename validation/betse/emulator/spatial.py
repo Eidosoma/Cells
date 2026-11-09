@@ -347,7 +347,9 @@ def transport(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     mobility = p.diffusivity * p.valence[:, None, None] * p.native_q_over_kb / p.temperature
     drift = 0.0 if variant.ecm_drift_off else 1.0
     if variant.compact_ecm_faces:
-        fx, fy, delta = compact_faces(reset, f, p, dt, mobility, drift, xp=xp)
+        fx, fy, delta = compact_faces(
+            reset, f, p, dt, mobility, drift, xp=xp, harmonic=variant.harmonic_ecm_faces
+        )
         return Rates(membrane, junction, fx, fy), reset, delta, f
     gx, gy = gradient(reset, p.spacing, xp=xp)
     fx = -p.diffusivity * gx + drift * mobility * f.outside_field_x_V_m * reset
@@ -360,16 +362,26 @@ def transport(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     return Rates(membrane, junction, fx, fy), reset, delta, f
 
 
-def compact_faces(c, f, p, dt, mobility, drift, *, xp=jnp):
+def harmonic_mean(a, b, *, xp=jnp):
+    """2 a b / (a + b) for nonnegative a, b; 0 where both are 0."""
+    total = a + b
+    return xp.where(total > 0, 2 * a * b / xp.where(total > 0, total, 1.0), 0.0)
+
+
+def compact_faces(c, f, p, dt, mobility, drift, *, xp=jnp, harmonic=False):
     """Model-difference variant: conservative fluxes on faces between grid neighbours.
 
-    Face coefficients and concentrations are arithmetic means of the two squares;
-    the face field is the difference of BETSE's scaled potential across the face.
-    The boundary ring keeps its reset values (held reservoirs), as in Cells.
+    Face concentrations are arithmetic means of the two squares; the face field is
+    the difference of BETSE's scaled potential across the face. Face coefficients
+    are the arithmetic means of the two squares' diffusivity and mobility, or with
+    ``harmonic`` (Cells' face rule) the harmonic mean of the diffusivity, the
+    mobility being that diffusivity times z q / (kB T). The boundary ring keeps its
+    reset values (held reservoirs), as in Cells.
     """
     h = p.spacing
     phi = 2 / (p.screening_wavenumber * h) * p.cell_size_ratio * f.outside_potential_V
     moving = p.moving[:, None, None]
+    per_diffusivity = p.valence[:, None, None] * p.native_q_over_kb / p.temperature
 
     def face(axis):
         def pair(v):
@@ -381,9 +393,16 @@ def compact_faces(c, f, p, dt, mobility, drift, *, xp=jnp):
 
         (c1, c0), (d1, d0), (m1, m0) = pair(c), pair(p.diffusivity), pair(mobility)
         p1, p0 = pair(phi[None])
-        flux = -0.5 * (d1 + d0) * (c1 - c0) / h - drift * 0.5 * (m1 + m0) * (p1 - p0) / h * 0.5 * (
-            c1 + c0
-        )
+        if harmonic:
+            diffusivity = harmonic_mean(d1, d0, xp=xp)
+            mobility_face = diffusivity * per_diffusivity
+            flux = -diffusivity * (c1 - c0) / h - drift * mobility_face * (p1 - p0) / h * 0.5 * (
+                c1 + c0
+            )
+        else:
+            flux = -0.5 * (d1 + d0) * (c1 - c0) / h - drift * 0.5 * (m1 + m0) * (
+                p1 - p0
+            ) / h * 0.5 * (c1 + c0)
         return xp.where(moving, flux, 0.0)
 
     fx, fy = face(2), face(1)

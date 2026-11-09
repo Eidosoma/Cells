@@ -43,6 +43,7 @@ class Variant(NamedTuple):
     gate_once: bool = False
     no_membrane_lag: bool = False
     cells_calcium_law: bool = False
+    harmonic_ecm_faces: bool = False
 
 
 # Model differences an emulator run may switch on (sizes, not a Cells model):
@@ -55,6 +56,12 @@ MODEL_DIFFERENCES = {
     # finite-volume exterior instead of BETSE's 2-delta-wide central divergence. Explicit
     # Euler with compact faces needs a smaller step than BETSE's 10 ms INIT step.
     "compact_ecm_faces": ("compact_ecm_faces",),
+    # As compact_ecm_faces, with Cells' face coefficient: the harmonic mean
+    # 2 D_a D_b / (D_a + D_b) of the two squares' diffusivity (series conductance of
+    # the half-squares; default_world_adapter.resolved_definition), the mobility being
+    # that face diffusivity times z q / (kB T). Equal to the arithmetic mean only for
+    # uniform diffusivity; it sizes the stencil term of ECM barrier maps (rung P2).
+    "compact_ecm_faces_harmonic": ("compact_ecm_faces", "harmonic_ecm_faces"),
     # Physical-time junction gate (once per step for every ion) and no membrane
     # concentration lag (membranes see the bulk cell concentration).
     "gate_once_no_lag": ("gate_once", "no_membrane_lag"),

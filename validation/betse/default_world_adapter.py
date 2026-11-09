@@ -45,6 +45,7 @@ import resource
 import sys
 import time
 from pathlib import Path
+from typing import NamedTuple
 
 import numpy as np
 
@@ -187,19 +188,24 @@ def _blind_case(path):
     return directory, manifest
 
 
-def betse_world(path, *, blind=False):
+def betse_world(path, *, blind=False, required=None):
     """Backend-neutral physical inputs of one BETSE default-world case (see WORLD_UNITS).
 
     ``blind`` reads no BETSE history or end-state observable: only the manifest,
     geometry.npz and the parameter arrays Dm_cells, D_env and D_gj of init_final.npz
     (their constancy over both phases is checked by non-blind reads). SIM must then
     continue from the backend's own INIT end.
+
+    ``required`` replaces REQUIRED_PARAMS, the BETSE settings a case must have. An
+    extension that maps one more BETSE feature (e.g. network_world_adapter.py, the
+    general network's ion channels) passes REQUIRED_PARAMS with that one entry changed.
     """
     directory, manifest = _blind_case(path) if blind else load_case(path)
     params = {phase: betse_parameters(manifest, phase) for phase in PHASES}
     scalars = {p: manifest["final_state"][p]["scalars"] for p in PHASES}
+    required = REQUIRED_PARAMS if required is None else required
     for phase in PHASES:
-        for name, value in REQUIRED_PARAMS.items():
+        for name, value in required.items():
             if params[phase].get(name) != value:
                 raise AdapterError(f"{phase}: BETSE {name}={params[phase].get(name)!r}")
         for name, value in REQUIRED_SCALARS.items():
@@ -469,8 +475,11 @@ def resolved_layout_phase(world, definition, observations):
     )
 
 
-def provenance(extra):
-    """Snapshot identity when executed from a frozen snapshot, else the checkout's Git state."""
+def provenance(extra, executed=EXECUTED):
+    """Snapshot identity when executed from a frozen snapshot, else the checkout's Git state.
+
+    ``executed`` lists the checkout files whose Git state is recorded (default EXECUTED).
+    """
     record = dict(extra)
     if (ROOT / "SNAPSHOT.json").is_file():
         from validation import source_snapshot
@@ -488,7 +497,7 @@ def provenance(extra):
         record["dirty"] = bool(value["selected_status_porcelain_v1_z"])
     else:
         git = reference_run.git_provenance(
-            [ROOT / name for name in EXECUTED if (ROOT / name).is_file()]
+            [ROOT / name for name in executed if (ROOT / name).is_file()]
         )
         record["git"] = git
         record["git_revision"] = git.get("revision")
@@ -1226,13 +1235,40 @@ def _window_sink(observed, newton, control, model):
 PROTOCOL_BACKENDS = {"cpu": "cpu", "gpu": "gpu (L4)"}
 
 
-def judged_protocol(protocol_path, world, *, device_kind, dt_init, dt_sim, solver):
-    """(protocol, sha256) of a pre-registered protocol whose case and cells_run match the run."""
+class ResolvedBackend(NamedTuple):
+    """How run_resolved reads a case and builds, hands off and names its definitions.
+
+    The default (DEFAULT_RESOLVED) is this module's resolved_pump_tissue@1/@2 route.
+    An extension supplies its own functions with the same signatures, e.g.
+    network_world_adapter.NETWORK_RESOLVED (resolved_pump_tissue@3 with the general
+    network's channel populations):
+
+      world(case, *, blind)                        -> world (betse_world's keys, and more)
+      definition(world, phase, start, **options)   -> raw definition (resolved_definition)
+      handoff(definition, checkpoint)              -> SIM start (resolved_handoff)
+      model_id(world)                              -> model identity (resolved_model_id)
+      executed                                     -> checkout files recorded in provenance
+    """
+
+    world: object
+    definition: object
+    handoff: object
+    model_id: object
+    executed: tuple
+
+
+def judged_protocol(
+    protocol_path, world, *, device_kind, dt_init, dt_sim, solver, model_id=resolved_model_id
+):
+    """(protocol, sha256) of a pre-registered protocol whose case and cells_run match the run.
+
+    ``model_id`` maps the world to the run's model identity (the backend's).
+    """
     protocol, sha = compare.load_protocol(protocol_path)
     run = protocol.get("cells_run") or {}
     expected = {
         "betse_case": (protocol.get("betse_case"), world["case"]),
-        "model": (run.get("model"), resolved_model_id(world)),
+        "model": (run.get("model"), model_id(world)),
         "solver": (run.get("solver"), solver),
         "dt_init_s": (run.get("dt_init_s"), dt_init),
         "dt_sim_s": (run.get("dt_sim_s"), dt_sim),
@@ -1256,6 +1292,7 @@ def run_resolved(
     solver=RESOLVED_SOLVER,
     window_steps=250,
     protocol_path=None,
+    backend=None,
 ):
     """resolved_pump_tissue@1/@2 run: INIT then SIM from its own INIT end, windowed.
 
@@ -1263,6 +1300,8 @@ def run_resolved(
     from BETSE. Without ``protocol_path`` the layout names no protocol, so the
     comparator refuses it; with one (judged run) the protocol must match the case and
     the run (``judged_protocol``) and its sha256 goes into the layout manifest.
+    ``backend`` (ResolvedBackend, default DEFAULT_RESOLVED) supplies the world,
+    definition, handoff and model identity.
     """
     import jax
 
@@ -1272,7 +1311,8 @@ def run_resolved(
     from cells.core.windows import WindowPolicy, run_windowed
     from cells.models.registry import get_model
 
-    world = betse_world(case, blind=True)
+    backend = DEFAULT_RESOLVED if backend is None else backend
+    world = backend.world(case, blind=True)
     protocol = sha = None
     if protocol_path is not None:
         protocol, sha = judged_protocol(
@@ -1282,13 +1322,14 @@ def run_resolved(
             dt_init=dt_init,
             dt_sim=dt_sim,
             solver=solver,
+            model_id=backend.model_id,
         )
     out = reference_run.resolve_out(out)
     out.mkdir(parents=True, exist_ok=False)
     device = jax.devices(device_kind)[0]
     start, phases, records = phase_start(world, "init"), {}, {}
     for phase, dt in (("init", dt_init), ("sim", dt_sim)):
-        definition = resolved_definition(
+        definition = backend.definition(
             world, phase, start, dt=dt, backend=device_kind, solver=solver
         )
         reference_run.write_json(out / f"{phase}_definition.json", definition)
@@ -1336,12 +1377,12 @@ def run_resolved(
         }
         phases[phase] = resolved_layout_phase(world, definition, obs)
         record["patch_exterior"] = patch_exterior_check(world, phases[phase])
-        start = resolved_handoff(definition, result.final)
+        start = backend.handoff(definition, result.final)
     run = {
         "kind": "cells.default_world_adapter_run@1",
         "created_utc": reference_run.utc_now(),
         "backend": "resolved",
-        "model": resolved_model_id(world),
+        "model": backend.model_id(world),
         "blind": (
             "BETSE inputs only (manifest, geometry.npz, init_final parameter arrays); "
             "no BETSE history or end state read; no Cells-vs-BETSE difference computed"
@@ -1360,7 +1401,7 @@ def run_resolved(
     }
     if device_kind == "gpu":
         run["gpu_peak_bytes"] = device.memory_stats().get("peak_bytes_in_use")
-    run = provenance(run)
+    run = provenance(run, backend.executed)
     if run["valid"]:
         compare.write_layout(
             out / "layout",
@@ -1371,6 +1412,11 @@ def run_resolved(
         )
     reference_run.write_json(out / "run.json", compare.json_safe(run))
     return run
+
+
+DEFAULT_RESOLVED = ResolvedBackend(
+    betse_world, resolved_definition, resolved_handoff, resolved_model_id, EXECUTED
+)
 
 
 def layout_differences(a, b):
@@ -1644,17 +1690,22 @@ def cmd_layout_differences(args):
     return 0
 
 
-def cmd_difference_budget(args):
-    world = betse_world(args.case, blind=True)
-    out = reference_run.resolve_out(args.out)
+def difference_budget(world, pairs, executed=EXECUTED):
+    """Emulator variant differences: {name: layout_difference} for (name, base, other) pairs."""
     result = {
         "kind": "cells.emulator_difference_budget@1",
         "created_utc": reference_run.utc_now(),
         "case": world["case"],
         "observables": {k: v for k, v in BUDGET.items()},
-        "pairs": {name: layout_difference(world, a, b) for name, a, b in args.pair},
+        "pairs": {name: layout_difference(world, a, b) for name, a, b in pairs},
     }
-    result = provenance(result)
+    return provenance(result, executed)
+
+
+def cmd_difference_budget(args):
+    world = betse_world(args.case, blind=True)
+    out = reference_run.resolve_out(args.out)
+    result = difference_budget(world, args.pair)
     out.parent.mkdir(parents=True, exist_ok=True)
     reference_run.write_json(out, compare.json_safe(result))
     print(json.dumps({"out": str(out), "pairs": list(result["pairs"])}, indent=2))
@@ -1708,6 +1759,7 @@ def main(argv=None):
         choices=(
             "ecm_drift_off",
             "compact_ecm_faces",
+            "compact_ecm_faces_harmonic",
             "gate_once_no_lag",
             "cells_calcium_pump_law",
         ),

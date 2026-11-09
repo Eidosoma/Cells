@@ -1,0 +1,46 @@
+{
+  "schema": "cells.betse_parity_exclusions@1",
+  "purpose": "BETSE options left out of Cells-vs-BETSE parity because they are BETSE numerics or not exercisable in pinned BETSE 1.5.0, not physics a Cells model should reproduce. Each entry says why, with the source lines and, where measured, the option's own effect on plain BETSE (same seed, option on vs off) and BETSE's step term with the option on. Decided by the lead on 9 November 2026 within the parity plan (PROGRESS.md).",
+  "betse_source": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse/science (BETSE 1.5.0, unmodified)",
+  "excluded": {
+    "P10": {
+      "options": "fluid flow, Ca_dyn, deformation and osmosis",
+      "reason": "Not exercisable or low value in pinned BETSE: fluid flow is forced off (parameters.py:832), Ca_dyn is forced False (parameters.py:771), deformation and osmosis are partly inactive in source. Cells has its own water, calcium and mechanics models in the resolved families.",
+      "record": "/mnt/workspaces/Cells/cells-betse-default-coverage-20261108-01/coverage.json (parity_ladder, rung P10)"
+    },
+    "P2-sharpness-env": {
+      "option": "variable settings / sharpness env < 1 (parameters.py:1144; default 0.999 when the key is absent)",
+      "reason": "A per-step neighbour-averaging filter on each ion's ECM concentration after its diffusion update (sim.py:2249-2252, math/finitediff.py:1479-1512 integrator): F = s P + (1 - s)/4 x (sum of the 4 neighbours), the boundary rows and columns copied back. It equals an explicit diffusion step with D_s = (1 - s) delta^2 / (4 dt), so its strength depends on the time step (s = 0.5: 6.8e-10 m^2/s at BETSE's 10 ms INIT step, 6.8e-8 m^2/s at 0.1 ms). It is a numerical smoother, not a physical transport law, and no Cells model should carry it.",
+      "measured": {
+        "case": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/betse-reference/p2-sharpness-dense (s = 0.5, rung-1 mammal world and seed)",
+        "option_effect": {
+          "file": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/terms/option_vs_rung1_p2-sharpness-dense.json",
+          "init": {"voltage_V": 1.8e-06, "cell_Ca_rel": 3.6e-05, "ecm_interior_rel": {"K": 0.0018, "Na": 9.1e-05, "Cl": 6.9e-06, "Ca": 1.5e-05}},
+          "sim": {"voltage_V": 2.0e-06, "cell_Ca_rel": 3.7e-05, "ecm_interior_rel": {"K": 0.0049, "Na": 0.00021, "Cl": 2.2e-05, "Ca": 1.5e-05}}
+        },
+        "betse_step_term_with_option": {
+          "file": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/emulator-01/step_term_p2-sharpness.json",
+          "ecm_interior_rel_K": {"init": 0.004, "sim": 0.0039},
+          "without_option_ecm_interior_rel_K": {"init": 1.4e-05, "sim": 4.3e-07},
+          "note": "With the filter on, BETSE's own ECM K moves 0.4 % when only its INIT step changes (10 ms to 0.1 ms): the result depends on dt, as the filter does."
+        }
+      }
+    },
+    "P2-fast-update-ecm": {
+      "option": "variable settings / fast update ecm = True (parameters.py:1142; default False)",
+      "reason": "A shortcut in the membrane-to-ECM exchange (sim_toolbox.py:1209-1233 div_env): flux_env[map_mem2ecm] = flux assigns instead of summing, so where several membranes face one ECM square only the last one's flux is kept, then scaled by memSa_per_envSquare / ecm_vol. It does not conserve the transferred amount. The default path (M_divmap_mem2ecm, the one Cells reproduces) sums every membrane's flux. Not physics; Cells' exchange is conservative by construction.",
+      "measured": {
+        "case": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/betse-reference/p2-fast-ecm-dense (rung-1 mammal world and seed)",
+        "option_effect": {
+          "file": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/terms/option_vs_rung1_p2-fast-ecm-dense.json",
+          "init": {"voltage_V": 1.3e-09, "cell_Ca_rel": 3.2e-06, "ecm_interior_rel": {"K": 2.3e-06, "Na": 1.6e-07, "Ca": 4.2e-06}},
+          "sim": {"voltage_V": 1.3e-09, "cell_Ca_rel": 1.5e-07, "ecm_interior_rel": {"K": 2.3e-06, "Na": 1.6e-07, "Ca": 2.5e-07}}
+        },
+        "betse_step_term_with_option": {
+          "file": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/emulator-01/step_term_p2-fast-ecm.json",
+          "note": "The same as without the option (rung 1): in this world the shortcut changes BETSE's result by at most a few parts per million."
+        }
+      }
+    }
+  }
+}
