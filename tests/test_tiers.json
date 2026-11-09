@@ -25,6 +25,150 @@
  "tiers": {
   "1": [
    {
+    "file": "tests/betse_physiology/integration/test_physiology_checkpoint.py",
+    "seconds": 19.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
+    }
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_protein_charge_view.py",
+    "seconds": 14.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_protein_work_view.py",
+    "seconds": 19.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_remap_checkpoint.py",
+    "seconds": 8.14,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_tissue_checkpoint.py",
+    "seconds": 14.55,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_active_temperature_fuel_stages.py",
+    "seconds": 6.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_block_control_arrays.py",
+    "seconds": 19.89,
+    "exit_code": 0,
+    "counts": {
+     "passed": 36
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_block_control_view.py",
+    "seconds": 10.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 37
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_native_calendar.py",
+    "seconds": 1.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 50
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_permeability_view.py",
+    "seconds": 17.89,
+    "exit_code": 0,
+    "counts": {
+     "passed": 43
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_perturbation_phases.py",
+    "seconds": 8.76,
+    "exit_code": 0,
+    "counts": {
+     "passed": 35
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_perturbation_remap.py",
+    "seconds": 4.28,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_perturbation_step.py",
+    "seconds": 3.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_projection.py",
+    "seconds": 4.54,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_thermodynamics.py",
+    "seconds": 16.13,
+    "exit_code": 0,
+    "counts": {
+     "passed": 54
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_random_streams.py",
+    "seconds": 5.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 50
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_target_selection.py",
+    "seconds": 7.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_tissue_binding.py",
+    "seconds": 4.03,
+    "exit_code": 0,
+    "counts": {
+     "passed": 75
+    }
+   },
+   {
     "file": "tests/integration/test_active_profile_barrier_preparation_cli.py",
     "seconds": 13.19,
     "exit_code": 0,
@@ -103,46 +247,6 @@
     "exit_code": 0,
     "counts": {
      "skipped": 4
-    }
-   },
-   {
-    "file": "tests/integration/test_physiology_checkpoint.py",
-    "seconds": 19.15,
-    "exit_code": 0,
-    "counts": {
-     "passed": 42
-    }
-   },
-   {
-    "file": "tests/integration/test_physiology_protein_charge_view.py",
-    "seconds": 14.15,
-    "exit_code": 0,
-    "counts": {
-     "passed": 24
-    }
-   },
-   {
-    "file": "tests/integration/test_physiology_protein_work_view.py",
-    "seconds": 19.32,
-    "exit_code": 0,
-    "counts": {
-     "passed": 22
-    }
-   },
-   {
-    "file": "tests/integration/test_physiology_remap_checkpoint.py",
-    "seconds": 8.14,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
-    "file": "tests/integration/test_physiology_tissue_checkpoint.py",
-    "seconds": 14.55,
-    "exit_code": 0,
-    "counts": {
-     "passed": 24
     }
    },
    {
@@ -1291,110 +1395,6 @@
     }
    },
    {
-    "file": "tests/unit/test_physiology_active_temperature_fuel_stages.py",
-    "seconds": 6.82,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_block_control_arrays.py",
-    "seconds": 19.89,
-    "exit_code": 0,
-    "counts": {
-     "passed": 36
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_block_control_view.py",
-    "seconds": 10.57,
-    "exit_code": 0,
-    "counts": {
-     "passed": 37
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_native_calendar.py",
-    "seconds": 1.17,
-    "exit_code": 0,
-    "counts": {
-     "passed": 50
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_permeability_view.py",
-    "seconds": 17.89,
-    "exit_code": 0,
-    "counts": {
-     "passed": 43
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_perturbation_phases.py",
-    "seconds": 8.76,
-    "exit_code": 0,
-    "counts": {
-     "passed": 35
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_perturbation_remap.py",
-    "seconds": 4.28,
-    "exit_code": 0,
-    "counts": {
-     "passed": 24
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_perturbation_step.py",
-    "seconds": 3.37,
-    "exit_code": 0,
-    "counts": {
-     "passed": 29
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_projection.py",
-    "seconds": 4.54,
-    "exit_code": 0,
-    "counts": {
-     "passed": 44
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_thermodynamics.py",
-    "seconds": 16.13,
-    "exit_code": 0,
-    "counts": {
-     "passed": 54
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_random_streams.py",
-    "seconds": 5.85,
-    "exit_code": 0,
-    "counts": {
-     "passed": 50
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_target_selection.py",
-    "seconds": 7.6,
-    "exit_code": 0,
-    "counts": {
-     "passed": 44
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_tissue_binding.py",
-    "seconds": 4.03,
-    "exit_code": 0,
-    "counts": {
-     "passed": 75
-    }
-   },
-   {
     "file": "tests/unit/test_plasma_calcium.py",
     "seconds": 7.34,
     "exit_code": 1,
@@ -2173,6 +2173,126 @@
   ],
   "2": [
    {
+    "file": "tests/betse_physiology/integration/test_physiology_protein_charge_rhs.py",
+    "seconds": 73.74,
+    "exit_code": 0,
+    "counts": {
+     "passed": 26
+    }
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_tissue_step_checkpoint.py",
+    "seconds": 46.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_active_temperature_compilation.py",
+    "seconds": 61.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_active_temperature_open_stages.py",
+    "seconds": 23.69,
+    "exit_code": 0,
+    "counts": {
+     "passed": 20
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_boundary_voltage.py",
+    "seconds": 52.56,
+    "exit_code": 0,
+    "counts": {
+     "passed": 71
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_chemical_arrays.py",
+    "seconds": 35.2,
+    "exit_code": 0,
+    "counts": {
+     "passed": 38
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_drive_arrays.py",
+    "seconds": 41.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 55
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_electrical_arrays.py",
+    "seconds": 38.8,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_interval_accounting.py",
+    "seconds": 20.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 40
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_packet_provider.py",
+    "seconds": 65.26,
+    "exit_code": 0,
+    "counts": {
+     "passed": 53
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_transition_arrays.py",
+    "seconds": 57.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 66
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_transition_commit.py",
+    "seconds": 75.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 97
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_work_arrays.py",
+    "seconds": 67.8,
+    "exit_code": 0,
+    "counts": {
+     "passed": 39
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_temperature.py",
+    "seconds": 40.96,
+    "exit_code": 0,
+    "counts": {
+     "passed": 38
+    }
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_random_tissue_profile_preparation.py",
+    "seconds": 43.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 35
+    }
+   },
+   {
     "file": "tests/integration/test_environment_barrier_execution.py",
     "seconds": 69.22,
     "exit_code": 0,
@@ -2194,22 +2314,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 10
-    }
-   },
-   {
-    "file": "tests/integration/test_physiology_protein_charge_rhs.py",
-    "seconds": 73.74,
-    "exit_code": 0,
-    "counts": {
-     "passed": 26
-    }
-   },
-   {
-    "file": "tests/integration/test_physiology_tissue_step_checkpoint.py",
-    "seconds": 46.73,
-    "exit_code": 0,
-    "counts": {
-     "passed": 22
     }
    },
    {
@@ -2431,115 +2535,11 @@
     }
    },
    {
-    "file": "tests/unit/test_physiology_active_temperature_compilation.py",
-    "seconds": 61.85,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_active_temperature_open_stages.py",
-    "seconds": 23.69,
-    "exit_code": 0,
-    "counts": {
-     "passed": 20
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_boundary_voltage.py",
-    "seconds": 52.56,
-    "exit_code": 0,
-    "counts": {
-     "passed": 71
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_chemical_arrays.py",
-    "seconds": 35.2,
-    "exit_code": 0,
-    "counts": {
-     "passed": 38
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_drive_arrays.py",
-    "seconds": 41.15,
-    "exit_code": 0,
-    "counts": {
-     "passed": 55
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_electrical_arrays.py",
-    "seconds": 38.8,
-    "exit_code": 0,
-    "counts": {
-     "passed": 29
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_interval_accounting.py",
-    "seconds": 20.68,
-    "exit_code": 0,
-    "counts": {
-     "passed": 40
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_packet_provider.py",
-    "seconds": 65.26,
-    "exit_code": 0,
-    "counts": {
-     "passed": 53
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_transition_arrays.py",
-    "seconds": 57.87,
-    "exit_code": 0,
-    "counts": {
-     "passed": 66
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_transition_commit.py",
-    "seconds": 75.6,
-    "exit_code": 0,
-    "counts": {
-     "passed": 97
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_work_arrays.py",
-    "seconds": 67.8,
-    "exit_code": 0,
-    "counts": {
-     "passed": 39
-    }
-   },
-   {
-    "file": "tests/unit/test_physiology_temperature.py",
-    "seconds": 40.96,
-    "exit_code": 0,
-    "counts": {
-     "passed": 38
-    }
-   },
-   {
     "file": "tests/unit/test_potassium_catalog.py",
     "seconds": 40.05,
     "exit_code": 0,
     "counts": {
      "passed": 146
-    }
-   },
-   {
-    "file": "tests/unit/test_random_tissue_profile_preparation.py",
-    "seconds": 43.38,
-    "exit_code": 0,
-    "counts": {
-     "passed": 35
     }
    },
    {
@@ -2685,6 +2685,156 @@
   ],
   "3": [
    {
+    "file": "tests/betse_physiology/integration/test_physiology_block_calendar.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_block_step.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_initial_loop.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_loop_checkpoint.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_modulated_schedule.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_native_schedule.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_permeability_schedule.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_protein_batch_loop.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_protein_block_calendar.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_protein_charge_step.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_protein_checkpoint.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_protein_loop.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_protein_transition.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/integration/test_physiology_spatial_schedule.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_active_temperature.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_active_temperature_arrays.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_active_temperature_closed_compilation.py",
+    "seconds": 90.06,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_active_temperature_compiled_stages.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_active_temperature_open_compilation.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_boundary_voltage_transition.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_global_control_view.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_initial_preparation.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_protein_interval_arrays.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_tissue_loop.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/betse_physiology/unit/test_physiology_tissue_step.py",
+    "seconds": 90.06,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/integration/test_active_profile_barrier_phase_cli.py",
     "seconds": 90.03,
     "exit_code": null,
@@ -2747,90 +2897,6 @@
    {
     "file": "tests/integration/test_owned_calcium_tissue_phase_cli.py",
     "seconds": 90.02,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_block_calendar.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_block_step.py",
-    "seconds": 90.02,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_initial_loop.py",
-    "seconds": 90.02,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_loop_checkpoint.py",
-    "seconds": 90.04,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_modulated_schedule.py",
-    "seconds": 90.02,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_native_schedule.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_permeability_schedule.py",
-    "seconds": 90.02,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_protein_batch_loop.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_protein_block_calendar.py",
-    "seconds": 90.02,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_protein_charge_step.py",
-    "seconds": 90.02,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_protein_checkpoint.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_protein_loop.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_protein_transition.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/integration/test_physiology_spatial_schedule.py",
-    "seconds": 90.03,
     "exit_code": null,
     "counts": {}
    },
@@ -3219,72 +3285,6 @@
    {
     "file": "tests/unit/test_owned_calcium_profile_phase_handoff.py",
     "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_active_temperature.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_active_temperature_arrays.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_active_temperature_closed_compilation.py",
-    "seconds": 90.06,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_active_temperature_compiled_stages.py",
-    "seconds": 90.1,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_active_temperature_open_compilation.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_boundary_voltage_transition.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_global_control_view.py",
-    "seconds": 90.02,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_initial_preparation.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_protein_interval_arrays.py",
-    "seconds": 90.04,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_tissue_loop.py",
-    "seconds": 90.02,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_physiology_tissue_step.py",
-    "seconds": 90.06,
     "exit_code": null,
     "counts": {}
    },
