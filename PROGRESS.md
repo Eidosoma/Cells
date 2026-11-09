@@ -39,7 +39,7 @@ starts, and production design is deferred until parity is established.
 | 1 | Plain BETSE reference outputs (default world; seven-cell fixture) | Done |
 | 2 | Coverage map of default-world mechanisms, and the parity ladder | Done ([map](/mnt/workspaces/Cells/cells-betse-default-coverage-20261108-01/coverage.json)) |
 | 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | Passed (pre-registered protocols D and F) |
-| 3b | Parity rung 1: Cl/Ca ions plus the plasma-membrane Ca pump (`resolved_pump_tissue@2`) | **Failed v1 protocols** on one item; attribution in progress |
+| 3b | Parity rung 1: Cl/Ca ions plus the plasma-membrane Ca pump (`resolved_pump_tissue@2`) | v1 failed (one item); **v2 passed** (registered after attribution; weaker evidence) |
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
 | 5 | Further mechanism families from the parity ladder, on CPU and L4 | Planned |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
@@ -52,6 +52,32 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Parity rung 1 v2 passes (9 November).** Attribution of the v1 failure
+  ([summary](/mnt/workspaces/Cells/parity-rung1-20261108-01/attribution-01/summary.json)):
+  - **Not the Ca pump.** With matched constants, Cells' Ca-pump law
+    reproduces BETSE's `pumpCaATP` exactly.
+  - **The cause.** The extracellular offset is equilibrium electromigration in
+    Cells' own resolved exterior field (0.8 µV interior spread). It follows the
+    Boltzmann response for every mobile ion, with r = 0.81–0.94 and signs set
+    by valence.
+  - **The v1 flaw.** The v1 field-law proxy was one-sided: it removed only
+    BETSE's drift.
+
+  The v2 protocols (`cecfb13`) add the field term |z|F·max|φ−⟨φ⟩|/RT, from
+  blind Cells-only potentials, and were committed before the fresh judged runs
+  ([results](/mnt/workspaces/Cells/parity-rung1-20261108-01/judged-02/)). All
+  three runs pass from a clean snapshot of `cecfb13`:
+  - D on CPU and on L4 (identical): Vm 132 µV against 400 µV in INIT, 1.82 µV
+    against 7 µV in SIM;
+  - F on L4: Vm 1.82 µV against 20 µV; cell Ca 1.2e-3 against 5e-3;
+    extracellular Ca 4.42e-5 against 2e-4.
+
+  F's first attempt was cut off by a session crash; it is preserved as
+  `F-l4-interrupted-01` and was rerun from the same snapshot and protocol.
+  Because the method was revised after a failure, this pass is weaker evidence
+  than a first-time pass. The same field term leaves every rounded rung-0
+  threshold unchanged.
 
 - **Parity rung 1 (mammal ion profile): pre-registered FAIL (9 November).**
   `resolved_pump_tissue@2` was judged against plain BETSE's mammal-profile
