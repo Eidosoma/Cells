@@ -758,9 +758,7 @@ def test_water_domain_archive_catalog_and_current_fuel_guards(failure):
     elif failure == "catalog56":
         raw["model"]["ionic"]["id"] = "resolved_tissue@12"
     elif failure == "new_hcn_law":
-        raw["model"]["ionic"]["channels"][0].update(
-            kinetic_law="betse_hcn_leak_open@1", initial_gate=[]
-        )
+        raw["model"]["ionic"]["channels"][0].update(kinetic_law="hcn_leak_open@1", initial_gate=[])
     elif failure == "current_fuel_floor":
         fields = ref.unpack(c, volume_changed(c, 0.1))
         amount = (c["vi"][0] + 0.05) * 1e-9

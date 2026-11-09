@@ -13,12 +13,12 @@ from cells.processes.voltage_gates import VOLTAGE_DOMAIN_V
 
 SODIUM_LAWS = {
     sodium_channels.LAW_ID: "Nav1p2",
-    "betse_nav1p3_m3h_regularized@1": "Nav1p3",
-    "betse_navrat2_m3h_regularized@1": "NavRat2",
-    "betse_navrat1_m3h_regularized@1": "NavRat1",
-    "betse_navrat3_m3h_regularized@1": "NavRat3",
-    "betse_naleak_always_open@1": "NaLeak",
-    "betse_nav1p6_persistent_m@1": "Nav1p6",
+    "nav1p3_m3h_regularized@1": "Nav1p3",
+    "navrat2_m3h_regularized@1": "NavRat2",
+    "navrat1_m3h_regularized@1": "NavRat1",
+    "navrat3_m3h_regularized@1": "NavRat3",
+    "naleak_always_open@1": "NaLeak",
+    "nav1p6_persistent_m@1": "Nav1p6",
 }
 LAW_CODES = {law: code for law, code in zip(SODIUM_LAWS, (2, 18, 19, 20, 21, 22, 23), strict=True)}
 LAW_PERMEABILITIES = {law: (("Na", 1.0),) for law in SODIUM_LAWS}

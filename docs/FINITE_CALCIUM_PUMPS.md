@@ -1,7 +1,7 @@
 # Finite-pool calcium-pump adapters
 
-The two new laws `finite_atp_pmca_betse_positive@1` and
-`finite_atp_er_1ca_betse_positive@1` feed current finite ATP/ADP/Pi concentrations
+The two new laws `finite_atp_pmca_positive@1` and
+`finite_atp_er_1ca_positive@1` feed current finite ATP/ADP/Pi concentrations
 to the existing positive-domain PMCA and ER kernels. Each signed formal cycle
 transfers **one Ca** and hydrolyses **one ATP**. Negative cycles reverse calcium
 transfer and synthesize ATP. The ER identity is the existing formal one-Ca

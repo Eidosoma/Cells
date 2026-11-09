@@ -266,7 +266,7 @@ def test_blocked_caleak_keeps_one_second_clock_and_strict_gate(family):
     leak = next(
         j
         for j, ch in enumerate(ion_model(raw)["channels"])
-        if ch["kinetic_law"] == "betse_caleak_always_open@1"
+        if ch["kinetic_law"] == "caleak_always_open@1"
     )
     np.testing.assert_array_equal(rates["channel_transferred"], 0)
     np.testing.assert_array_equal(rates["channel_gate"][:, leak], 1 - d["channel_gate"][:, leak])
@@ -355,7 +355,7 @@ def test_cav_g_regularized_limit_in_complete_physical_stage():
     y = ionic.initial(c)
     _, phi, _ = ionic.evaluate(c, y, 0)
     m, p = raw["model"], c["layout"]
-    ch = next(v for v in m["channels"] if v["kinetic_law"] == "betse_cav_g_m2h_regularized@1")
+    ch = next(v for v in m["channels"] if v["kinetic_law"] == "cav_g_m2h_regularized@1")
     j = [v["id"] for v in m["membranes"]].index(ch["membrane_id"])
     n = len(c["vi"])
     i, o = p["membrane_cell"][j], n + p["membrane_outside"][j]
@@ -448,9 +448,7 @@ def test_short_energy_trajectory_refines_with_independent_channel_and_supply_eve
                 key = "schedule" if "schedule" in group else "controls"
                 group[key] = [v for v in group[key] if v["time"] == 0]
     leak = next(
-        v["id"]
-        for v in ion_model(raw)["channels"]
-        if v["kinetic_law"] == "betse_caleak_always_open@1"
+        v["id"] for v in ion_model(raw)["channels"] if v["kinetic_law"] == "caleak_always_open@1"
     )
     next(g for g in e["channel_controls"] if g["channel_id"] == leak)["schedule"].append(
         dict(time=1.1e-6, availability=0.0)

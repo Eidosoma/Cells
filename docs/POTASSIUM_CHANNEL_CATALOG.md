@@ -10,15 +10,15 @@ Shared tissue integration and GPU qualification are separate work.
 
 | Source class | Law ID | Code | Opening | Native time unit |
 | --- | --- | ---: | --- | --- |
-| Kir2p1 | `betse_kir2p1_mh2@1` | 1 | m h^2 | ms |
-| Kv2p1 | `betse_kv2p1_mh@1` | 24 | m h | ms |
-| Kv2p2 | `betse_kv2p2_mh@1` | 25 | m h | ms |
-| Kv3p1 | `betse_kv3p1_m@1` | 26 | m | ms |
-| Kv3p2 | `betse_kv3p2_m2@1` | 27 | m^2 | ms |
-| Kv3p3 | `betse_kv3p3_m2h_source_tau@1` | 28 | m^2 h | ms |
-| Kv3p4 | `betse_kv3p4_mh@1` | 29 | m h | ms |
-| K_Fast | `betse_k_fast_mh@1` | 30 | m h | ms |
-| KLeak | `betse_kleak_always_open@1` | 31 | 1 | s |
+| Kir2p1 | `kir2p1_mh2@1` | 1 | m h^2 | ms |
+| Kv2p1 | `kv2p1_mh@1` | 24 | m h | ms |
+| Kv2p2 | `kv2p2_mh@1` | 25 | m h | ms |
+| Kv3p1 | `kv3p1_m@1` | 26 | m | ms |
+| Kv3p2 | `kv3p2_m2@1` | 27 | m^2 | ms |
+| Kv3p3 | `kv3p3_m2h_long_tau@1` | 28 | m^2 h | ms |
+| Kv3p4 | `kv3p4_mh@1` | 29 | m h | ms |
+| K_Fast | `k_fast_mh@1` | 30 | m h | ms |
+| KLeak | `kleak_always_open@1` | 31 | 1 | s |
 
 `PAD_CODE=-1` is a separate neutral sentinel in this standalone
 component. Code zero is invalid here and retains its existing shared-catalog

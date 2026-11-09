@@ -117,17 +117,17 @@ def physical_balance(c, y, slope, phi):
 
 
 def expected_gates(law, voltage, gates):
-    if law == "betse_kv1p5_mh@1":
+    if law == "kv1p5_mh@1":
         target, tau = ref.channel_kinetics(float(voltage))
         opened = np.prod(gates)
-    elif law == "betse_kir2p1_mh2@1":
+    elif law == "kir2p1_mh2@1":
         target, tau = ref.kir_reference.kinetics(float(voltage))
         opened = float(ref.kir_reference.opening(gates))
-    elif law == "betse_nav1p2_m3h_regularized@1":
+    elif law == "nav1p2_m3h_regularized@1":
         target, tau = ref.sodium_reference.kinetics(float(voltage))
         opened = float(ref.sodium_reference.opening(gates))
-    elif law.startswith("betse_hcn"):
-        target, tau = ref.hcn_reference.kinetics(float(voltage), int(law[9]))
+    elif law in {"hcn1_m@1", "hcn2_m@1", "hcn4_m@1"}:
+        target, tau = ref.hcn_reference.kinetics(float(voltage), int(law[3]))
         opened = float(ref.hcn_reference.opening(gates))
     elif law in ref.kv1_reference.LAWS:
         family = ref.kv1_reference.LAWS[law]
@@ -379,7 +379,7 @@ def test_species_and_population_reordering_preserves_owned_rates():
     ],
 )
 def test_catalog_declaration_guards(fault):
-    raw = case(("betse_catleak_na_k@1",))
+    raw = case(("catleak_na_k@1",))
     m, e = raw["model"], raw["experiment"]
     ch = m["channels"][0]
     if fault == "law":
@@ -410,7 +410,7 @@ def test_catalog_declaration_guards(fault):
     "fault", ["unused_gate", "negative_gate", "nonfinite", "exhausted_ion", "voltage", "levels"]
 )
 def test_blocking_never_bypasses_the_active_state_domain(fault):
-    raw = case(("betse_catleak_na_k@1",))
+    raw = case(("catleak_na_k@1",))
     if fault == "voltage":
         capacitance = raw["model"]["membranes"][0]["capacitance_F"]
         raw["model"]["cells"][0]["initial_charge_C"] = -0.121 * capacitance

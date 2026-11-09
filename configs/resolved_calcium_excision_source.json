@@ -398,7 +398,7 @@
         {
           "id": "active_channel_0",
           "membrane_id": "membrane_0_bath",
-          "kinetic_law": "betse_kv1p5_ml_dynamic_m@1",
+          "kinetic_law": "kv1p5_ml_dynamic_m@1",
           "max_permeability_m_per_s": 1.5e-09,
           "abundance": 0.1,
           "initial_gate": [
@@ -414,7 +414,7 @@
         {
           "id": "active_channel_1",
           "membrane_id": "membrane_0_bath",
-          "kinetic_law": "betse_cagpotassium_numeric_mM_scale@1",
+          "kinetic_law": "cagpotassium_numeric_mM_scale@1",
           "max_permeability_m_per_s": 2e-09,
           "abundance": 0.18,
           "initial_gate": [],
@@ -428,7 +428,7 @@
         {
           "id": "active_channel_2",
           "membrane_id": "membrane_0_bath",
-          "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+          "kinetic_law": "nav1p2_m3h_regularized@1",
           "max_permeability_m_per_s": 3e-10,
           "abundance": 0.30000000000000004,
           "initial_gate": [
@@ -445,7 +445,7 @@
         {
           "id": "active_channel_3",
           "membrane_id": "membrane_1_bath",
-          "kinetic_law": "betse_kv1p5_ml_dynamic_m@1",
+          "kinetic_law": "kv1p5_ml_dynamic_m@1",
           "max_permeability_m_per_s": 1.5e-09,
           "abundance": 0.1,
           "initial_gate": [
@@ -461,7 +461,7 @@
         {
           "id": "active_channel_4",
           "membrane_id": "membrane_1_bath",
-          "kinetic_law": "betse_cagpotassium_numeric_mM_scale@1",
+          "kinetic_law": "cagpotassium_numeric_mM_scale@1",
           "max_permeability_m_per_s": 2e-09,
           "abundance": 0.18,
           "initial_gate": [],
@@ -475,7 +475,7 @@
         {
           "id": "active_channel_5",
           "membrane_id": "membrane_1_bath",
-          "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+          "kinetic_law": "nav1p2_m3h_regularized@1",
           "max_permeability_m_per_s": 3e-10,
           "abundance": 0.30000000000000004,
           "initial_gate": [
@@ -492,7 +492,7 @@
         {
           "id": "active_channel_6",
           "membrane_id": "membrane_2_bath",
-          "kinetic_law": "betse_kv1p5_ml_dynamic_m@1",
+          "kinetic_law": "kv1p5_ml_dynamic_m@1",
           "max_permeability_m_per_s": 1.5e-09,
           "abundance": 0.1,
           "initial_gate": [
@@ -508,7 +508,7 @@
         {
           "id": "active_channel_7",
           "membrane_id": "membrane_2_bath",
-          "kinetic_law": "betse_cagpotassium_numeric_mM_scale@1",
+          "kinetic_law": "cagpotassium_numeric_mM_scale@1",
           "max_permeability_m_per_s": 2e-09,
           "abundance": 0.18,
           "initial_gate": [],
@@ -522,7 +522,7 @@
         {
           "id": "active_channel_8",
           "membrane_id": "membrane_2_bath",
-          "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+          "kinetic_law": "nav1p2_m3h_regularized@1",
           "max_permeability_m_per_s": 3e-10,
           "abundance": 0.30000000000000004,
           "initial_gate": [
@@ -814,18 +814,18 @@
               "Na": 0.0
             },
             "pump": {
-              "law": "betse_1_5_er_calcium_pump_positive@1",
+              "law": "er_calcium_pump_positive@1",
               "capacity_fmol_per_s": 0.012,
               "km_ca_mM": 0.001,
               "km_atp_mM": 0.5,
-              "metabolism": "betse_1_5_maintained_mM_quotient@1",
+              "metabolism": "maintained_mM_quotient@1",
               "atp_mM": 1.5,
               "adp_mM": 0.1,
               "pi_mM": 0.1,
               "delta_g0_J_per_mol": -37000.0
             },
             "release": {
-              "law": "betse_1_5_er_calcium_release@1",
+              "law": "er_calcium_release@1",
               "permeability_m_per_s": 1e-07,
               "activation_mM": 0.001,
               "activation_n": 2,
@@ -1110,18 +1110,18 @@
               "Na": 0.0
             },
             "pump": {
-              "law": "betse_1_5_er_calcium_pump_positive@1",
+              "law": "er_calcium_pump_positive@1",
               "capacity_fmol_per_s": 0.012,
               "km_ca_mM": 0.001,
               "km_atp_mM": 0.5,
-              "metabolism": "betse_1_5_maintained_mM_quotient@1",
+              "metabolism": "maintained_mM_quotient@1",
               "atp_mM": 1.5,
               "adp_mM": 0.1,
               "pi_mM": 0.1,
               "delta_g0_J_per_mol": -37000.0
             },
             "release": {
-              "law": "betse_1_5_er_calcium_release@1",
+              "law": "er_calcium_release@1",
               "permeability_m_per_s": 1e-07,
               "activation_mM": 0.001,
               "activation_n": 2,
@@ -1406,18 +1406,18 @@
               "Na": 0.0
             },
             "pump": {
-              "law": "betse_1_5_er_calcium_pump_positive@1",
+              "law": "er_calcium_pump_positive@1",
               "capacity_fmol_per_s": 0.012,
               "km_ca_mM": 0.001,
               "km_atp_mM": 0.5,
-              "metabolism": "betse_1_5_maintained_mM_quotient@1",
+              "metabolism": "maintained_mM_quotient@1",
               "atp_mM": 1.5,
               "adp_mM": 0.1,
               "pi_mM": 0.1,
               "delta_g0_J_per_mol": -37000.0
             },
             "release": {
-              "law": "betse_1_5_er_calcium_release@1",
+              "law": "er_calcium_release@1",
               "permeability_m_per_s": 1e-07,
               "activation_mM": 0.001,
               "activation_n": 2,
@@ -1435,11 +1435,11 @@
         {
           "membrane_id": "membrane_0_shared",
           "pump": {
-            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "law": "plasma_calcium_pump_positive@1",
             "capacity_fmol_per_s": 0.002,
             "km_ca_mM": 0.001,
             "km_atp_mM": 0.5,
-            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "metabolism": "maintained_mM_quotient@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -1455,11 +1455,11 @@
         {
           "membrane_id": "membrane_0_bath",
           "pump": {
-            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "law": "plasma_calcium_pump_positive@1",
             "capacity_fmol_per_s": 0.002,
             "km_ca_mM": 0.001,
             "km_atp_mM": 0.5,
-            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "metabolism": "maintained_mM_quotient@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -1475,11 +1475,11 @@
         {
           "membrane_id": "membrane_1_shared",
           "pump": {
-            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "law": "plasma_calcium_pump_positive@1",
             "capacity_fmol_per_s": 0.002,
             "km_ca_mM": 0.001,
             "km_atp_mM": 0.5,
-            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "metabolism": "maintained_mM_quotient@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -1495,11 +1495,11 @@
         {
           "membrane_id": "membrane_1_bath",
           "pump": {
-            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "law": "plasma_calcium_pump_positive@1",
             "capacity_fmol_per_s": 0.002,
             "km_ca_mM": 0.001,
             "km_atp_mM": 0.5,
-            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "metabolism": "maintained_mM_quotient@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -1515,11 +1515,11 @@
         {
           "membrane_id": "membrane_2_shared",
           "pump": {
-            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "law": "plasma_calcium_pump_positive@1",
             "capacity_fmol_per_s": 0.002,
             "km_ca_mM": 0.001,
             "km_atp_mM": 0.5,
-            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "metabolism": "maintained_mM_quotient@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -1535,11 +1535,11 @@
         {
           "membrane_id": "membrane_2_bath",
           "pump": {
-            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "law": "plasma_calcium_pump_positive@1",
             "capacity_fmol_per_s": 0.002,
             "km_ca_mM": 0.001,
             "km_atp_mM": 0.5,
-            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "metabolism": "maintained_mM_quotient@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -1559,7 +1559,7 @@
         "id": "dedicated_membrane_0_shared",
         "membrane_id": "membrane_0_shared",
         "species_id": "Ca",
-        "kinetic_law": "betse_cav1p2_m2h@1",
+        "kinetic_law": "cav1p2_m2h@1",
         "max_permeability_m_per_s": 2e-06,
         "abundance": 0.5,
         "initial_gate": {
@@ -1571,7 +1571,7 @@
         "id": "dedicated_membrane_0_bath",
         "membrane_id": "membrane_0_bath",
         "species_id": "Ca",
-        "kinetic_law": "betse_cav1p2_m2h@1",
+        "kinetic_law": "cav1p2_m2h@1",
         "max_permeability_m_per_s": 2e-06,
         "abundance": 0.5,
         "initial_gate": {
@@ -1583,7 +1583,7 @@
         "id": "dedicated_membrane_1_shared",
         "membrane_id": "membrane_1_shared",
         "species_id": "Ca",
-        "kinetic_law": "betse_cav1p2_m2h@1",
+        "kinetic_law": "cav1p2_m2h@1",
         "max_permeability_m_per_s": 2e-06,
         "abundance": 0.5,
         "initial_gate": {
@@ -1595,7 +1595,7 @@
         "id": "dedicated_membrane_1_bath",
         "membrane_id": "membrane_1_bath",
         "species_id": "Ca",
-        "kinetic_law": "betse_cav1p2_m2h@1",
+        "kinetic_law": "cav1p2_m2h@1",
         "max_permeability_m_per_s": 2e-06,
         "abundance": 0.5,
         "initial_gate": {
@@ -1607,7 +1607,7 @@
         "id": "dedicated_membrane_2_shared",
         "membrane_id": "membrane_2_shared",
         "species_id": "Ca",
-        "kinetic_law": "betse_cav1p2_m2h@1",
+        "kinetic_law": "cav1p2_m2h@1",
         "max_permeability_m_per_s": 2e-06,
         "abundance": 0.5,
         "initial_gate": {
@@ -1619,7 +1619,7 @@
         "id": "dedicated_membrane_2_bath",
         "membrane_id": "membrane_2_bath",
         "species_id": "Ca",
-        "kinetic_law": "betse_cav1p2_m2h@1",
+        "kinetic_law": "cav1p2_m2h@1",
         "max_permeability_m_per_s": 2e-06,
         "abundance": 0.5,
         "initial_gate": {
@@ -1632,21 +1632,21 @@
       {
         "cell_id": "cell_0",
         "species_id": "IP3",
-        "law": "betse_1_5_ip3_er_release@1",
+        "law": "ip3_er_release@1",
         "activation_mM": 0.00015,
         "activation_n": 2
       },
       {
         "cell_id": "cell_1",
         "species_id": "IP3",
-        "law": "betse_1_5_ip3_er_release@1",
+        "law": "ip3_er_release@1",
         "activation_mM": 0.00015,
         "activation_n": 2
       },
       {
         "cell_id": "cell_2",
         "species_id": "IP3",
-        "law": "betse_1_5_ip3_er_release@1",
+        "law": "ip3_er_release@1",
         "activation_mM": 0.00015,
         "activation_n": 2
       }

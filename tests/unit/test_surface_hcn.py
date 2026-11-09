@@ -165,7 +165,7 @@ def test_design_and_rejections():
         raw = fixtures.definition()
         channel = raw["model"]["channels"][7]
         if fault == "law":
-            channel["kinetic_law"] = "betse_hcn2_cAMP@1"
+            channel["kinetic_law"] = "hcn2_cAMP@1"
         elif fault == "old_model":
             raw["model"]["id"] = "resolved_tissue@4"
         elif fault == "missing_ion":
@@ -506,18 +506,18 @@ def test_heterogeneous_world_laws_and_species(trajectories):
     for change in ("hcn_law", "sodium_route"):
         different = baseline.spec.to_dict()
         if change == "hcn_law":
-            different["model"]["channels"][7]["kinetic_law"] = "betse_hcn4_m@1"
+            different["model"]["channels"][7]["kinetic_law"] = "hcn4_m@1"
         else:
             different["model"]["channels"][0].update(
-                kinetic_law="betse_nav1p2_m3h_regularized@1",
+                kinetic_law="nav1p2_m3h_regularized@1",
                 permeant_ions=[dict(species_id="Na", relative_permeability=1.0)],
             )
         with pytest.raises((ConfigError, ValueError)):
             branch_checkpoint(baseline.spec, baseline.checkpoint_at(0.001), parse_spec(different))
     raw = baseline.spec.to_dict()
-    raw["model"]["channels"][7]["kinetic_law"] = "betse_hcn4_m@1"
+    raw["model"]["channels"][7]["kinetic_law"] = "hcn4_m@1"
     raw["model"]["channels"][0].update(
-        kinetic_law="betse_nav1p2_m3h_regularized@1",
+        kinetic_law="nav1p2_m3h_regularized@1",
         permeant_ions=[dict(species_id="Na", relative_permeability=1.0)],
     )
     spec = parse_spec(raw)

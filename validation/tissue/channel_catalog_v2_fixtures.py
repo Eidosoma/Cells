@@ -9,10 +9,10 @@ from validation.tissue import surface_catalog_fixtures as ionic
 FAMILIES = ("ionic", "calcium", "energy")
 ARMS = ("open", "blocked", "reordered", "empty")
 ADDED_LAWS = (
-    "betse_ca_l2_m2h@1",
-    "betse_ca_l3_shift15_m2h@1",
-    "betse_cav_g_m2h_regularized@1",
-    "betse_caleak_always_open@1",
+    "ca_l2_m2h@1",
+    "ca_l3_shift15_m2h@1",
+    "cav_g_m2h_regularized@1",
+    "caleak_always_open@1",
 )
 MODEL_IDS = dict(
     ionic="resolved_tissue@9", calcium="resolved_calcium@8", energy="resolved_calcium_energy@2"

@@ -57,56 +57,56 @@ CATALOG_MODELS = (
     CATALOG_V5_MODEL,
 )
 HCN_EXTRA_LAWS = {
-    "betse_hcn_leak_open@1": "HCNLeak",
-    "betse_hcn2_camp_m@1": "HCN2_cAMP",
-    "betse_hcn4_camp_m@1": "HCN4_cAMP",
+    "hcn_leak_open@1": "HCNLeak",
+    "hcn2_camp_m@1": "HCN2_cAMP",
+    "hcn4_camp_m@1": "HCN4_cAMP",
 }
-HCN_LEAK_LAW = "betse_hcn_leak_open@1"
-CALCIUM_ACTIVATED_LAW = "betse_cagpotassium_numeric_mM_scale@1"
+HCN_LEAK_LAW = "hcn_leak_open@1"
+CALCIUM_ACTIVATED_LAW = "cagpotassium_numeric_mM_scale@1"
 # Literal law correspondence, independent of the production numeric dispatcher.
 ADDED_SODIUM_LAWS = {
-    "betse_nav1p3_m3h_regularized@1": "Nav1p3",
-    "betse_navrat2_m3h_regularized@1": "NavRat2",
-    "betse_navrat1_m3h_regularized@1": "NavRat1",
-    "betse_navrat3_m3h_regularized@1": "NavRat3",
-    "betse_naleak_always_open@1": "NaLeak",
-    "betse_nav1p6_persistent_m@1": "Nav1p6",
+    "nav1p3_m3h_regularized@1": "Nav1p3",
+    "navrat2_m3h_regularized@1": "NavRat2",
+    "navrat1_m3h_regularized@1": "NavRat1",
+    "navrat3_m3h_regularized@1": "NavRat3",
+    "naleak_always_open@1": "NaLeak",
+    "nav1p6_persistent_m@1": "Nav1p6",
 }
 ADDED_POTASSIUM_LAWS = {
-    "betse_kv2p1_mh@1": "Kv2p1",
-    "betse_kv2p2_mh@1": "Kv2p2",
-    "betse_kv3p1_m@1": "Kv3p1",
-    "betse_kv3p2_m2@1": "Kv3p2",
-    "betse_kv3p3_m2h_source_tau@1": "Kv3p3",
-    "betse_kv3p4_mh@1": "Kv3p4",
-    "betse_k_fast_mh@1": "K_Fast",
-    "betse_kleak_always_open@1": "KLeak",
+    "kv2p1_mh@1": "Kv2p1",
+    "kv2p2_mh@1": "Kv2p2",
+    "kv3p1_m@1": "Kv3p1",
+    "kv3p2_m2@1": "Kv3p2",
+    "kv3p3_m2h_long_tau@1": "Kv3p3",
+    "kv3p4_mh@1": "Kv3p4",
+    "k_fast_mh@1": "K_Fast",
+    "kleak_always_open@1": "KLeak",
 }
 ADDED_LEAK_LAWS = {
-    "betse_clleak_always_open@1": "ClLeak",
-    "betse_catleak_na_k@1": "CatLeak",
-    "betse_catleak2_na_k_ca@1": "CatLeak2",
+    "clleak_always_open@1": "ClLeak",
+    "catleak_na_k@1": "CatLeak",
+    "catleak2_na_k_ca@1": "CatLeak2",
 }
 ADDED_CALCIUM_LAWS = {
-    "betse_ca_l2_m2h@1": "Ca_L2",
-    "betse_ca_l3_shift15_m2h@1": "Ca_L3",
-    "betse_cav_g_m2h_regularized@1": "Cav_G",
-    "betse_caleak_always_open@1": "CaLeak",
+    "ca_l2_m2h@1": "Ca_L2",
+    "ca_l3_shift15_m2h@1": "Ca_L3",
+    "cav_g_m2h_regularized@1": "Cav_G",
+    "caleak_always_open@1": "CaLeak",
 }
 MORRIS_LECAR_LAWS = {
-    "betse_kv_ml1_dynamic_m@1": "Kv_ML1",
-    "betse_kv2p1_ml_dynamic_m@1": "Kv2p1_ML",
-    "betse_kv1p3_ml_dynamic_m@1": "Kv1p3_ML",
-    "betse_kv1p5_ml_dynamic_m@1": "Kv1p5_ML",
-    "betse_kv1p5s_ml_slow_dynamic_m@1": "Kv1p5S_ML",
-    "betse_nav_ml_instantaneous@1": "Nav_ML",
-    "betse_cav_l_ml_instantaneous@1": "Cav_L_ML",
-    "betse_cav_l_ml2_instantaneous@1": "Cav_L_ML2",
-    "betse_cav_n_ml_instantaneous@1": "Cav_N_ML",
-    "betse_cav_t_ml_instantaneous@1": "Cav_T_ML",
-    "betse_kir_ml_instantaneous@1": "Kir_ML",
-    "betse_hcn2_ml_source_sign_instantaneous@1": "HCN2_ML",
-    "betse_hcn4_ml_source_sign_instantaneous@1": "HCN4_ML",
+    "kv_ml1_dynamic_m@1": "Kv_ML1",
+    "kv2p1_ml_dynamic_m@1": "Kv2p1_ML",
+    "kv1p3_ml_dynamic_m@1": "Kv1p3_ML",
+    "kv1p5_ml_dynamic_m@1": "Kv1p5_ML",
+    "kv1p5s_ml_slow_dynamic_m@1": "Kv1p5S_ML",
+    "nav_ml_instantaneous@1": "Nav_ML",
+    "cav_l_ml_instantaneous@1": "Cav_L_ML",
+    "cav_l_ml2_instantaneous@1": "Cav_L_ML2",
+    "cav_n_ml_instantaneous@1": "Cav_N_ML",
+    "cav_t_ml_instantaneous@1": "Cav_T_ML",
+    "kir_ml_instantaneous@1": "Kir_ML",
+    "hcn2_ml_depolarization_activated_instantaneous@1": "HCN2_ML",
+    "hcn4_ml_depolarization_activated_instantaneous@1": "HCN4_ML",
 }
 ML_DYNAMIC_LAWS = frozenset(
     law
@@ -114,9 +114,9 @@ ML_DYNAMIC_LAWS = frozenset(
     if name in morris_lecar_channels_reference.KINETIC
 )
 CATALOG_PERMEABILITIES = (
-    {law: (("K", 1.0),) for law in (*kv1_reference.LAWS, "betse_kir2p1_mh2@1")}
-    | {"betse_nav1p2_m3h_regularized@1": (("Na", 1.0),)}
-    | {f"betse_hcn{i}_m@1": (("Na", 0.2), ("K", 1.0), ("Ca", 0.05)) for i in (1, 2, 4)}
+    {law: (("K", 1.0),) for law in (*kv1_reference.LAWS, "kir2p1_mh2@1")}
+    | {"nav1p2_m3h_regularized@1": (("Na", 1.0),)}
+    | {f"hcn{i}_m@1": (("Na", 0.2), ("K", 1.0), ("Ca", 0.05)) for i in (1, 2, 4)}
     | {law: (("Ca", 1.0),) for law in cav_reference.LAWS}
     | {law: (("Na", 1.0),) for law in ADDED_SODIUM_LAWS}
     | {law: (("K", 1.0),) for law in ADDED_POTASSIUM_LAWS}
@@ -134,9 +134,9 @@ CATALOG_V4_PERMEABILITIES = CATALOG_V3_PERMEABILITIES | {
     for law, name in MORRIS_LECAR_LAWS.items()
 }
 CATALOG_V5_PERMEABILITIES = CATALOG_V4_PERMEABILITIES | {
-    "betse_hcn_leak_open@1": (("Na", 0.33), ("K", 1.0), ("Ca", 0.05)),
-    "betse_hcn2_camp_m@1": (("Na", 0.2), ("K", 1.0), ("Ca", 0.05)),
-    "betse_hcn4_camp_m@1": (("Na", 0.2), ("K", 1.0), ("Ca", 0.05)),
+    "hcn_leak_open@1": (("Na", 0.33), ("K", 1.0), ("Ca", 0.05)),
+    "hcn2_camp_m@1": (("Na", 0.2), ("K", 1.0), ("Ca", 0.05)),
+    "hcn4_camp_m@1": (("Na", 0.2), ("K", 1.0), ("Ca", 0.05)),
 }
 
 
@@ -377,17 +377,17 @@ def evaluate(
                 opened = calcium_activated_potassium_reference.evaluate(
                     float(voltage), float(raw["ci"][ids.index("Ca"), i]), p["temperature"]
                 )["opening"]
-            elif ch["kinetic_law"] == "betse_kv1p5_mh@1":
+            elif ch["kinetic_law"] == "kv1p5_mh@1":
                 target, tau = channel_kinetics(float(voltage))
                 opened = np.prod(d["channel_gate"][:, k])
-            elif ch["kinetic_law"] == "betse_kir2p1_mh2@1":
+            elif ch["kinetic_law"] == "kir2p1_mh2@1":
                 target, tau = kir_reference.kinetics(float(voltage))
                 opened = float(kir_reference.opening(d["channel_gate"][:, k]))
-            elif ch["kinetic_law"] == "betse_nav1p2_m3h_regularized@1":
+            elif ch["kinetic_law"] == "nav1p2_m3h_regularized@1":
                 target, tau = sodium_reference.kinetics(float(voltage))
                 opened = float(sodium_reference.opening(d["channel_gate"][:, k]))
-            elif ch["kinetic_law"] in ("betse_hcn1_m@1", "betse_hcn2_m@1", "betse_hcn4_m@1"):
-                family = int(ch["kinetic_law"][9])
+            elif ch["kinetic_law"] in ("hcn1_m@1", "hcn2_m@1", "hcn4_m@1"):
+                family = int(ch["kinetic_law"][3])
                 target, tau = hcn_reference.kinetics(float(voltage), family)
                 opened = float(hcn_reference.opening(d["channel_gate"][:, k]))
             elif ch["kinetic_law"] in kv1_reference.LAWS:

@@ -10,7 +10,7 @@ import jax.numpy as jnp
 from cells.processes import hcn_channels
 
 FAMILIES = (1, 2, 3, 4, 6)
-KV1_LAWS = {f"betse_kv1p{i}_mh{'2' if i == 1 else ''}@1": i for i in FAMILIES}
+KV1_LAWS = {f"kv1p{i}_mh{'2' if i == 1 else ''}@1": i for i in FAMILIES}
 LAW_CODES = {**hcn_channels.LAW_CODES, **{law: i for i, law in enumerate(KV1_LAWS, 6)}}
 LAW_PERMEABILITIES = hcn_channels.LAW_PERMEABILITIES | {law: (("K", 1.0),) for law in KV1_LAWS}
 SPECIES_VALENCE = hcn_channels.SPECIES_VALENCE

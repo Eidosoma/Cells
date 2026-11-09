@@ -31,7 +31,7 @@ cytosol owner by the same amount. Named conserved moieties are checked globally;
 local conservation includes the recorded membrane transfer. Local reactions
 still conserve charge individually.
 
-The pump law `betse_1_5_er_calcium_pump_positive@1` reproduces the positive-domain
+The pump law `er_calcium_pump_positive@1` reproduces the positive-domain
 formula in the pinned
 [BETSE `pumpCaER`](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/sim_toolbox.py).
 Its capacity is total calcium fmol/s (native mol/m²/s times membrane area and
@@ -53,7 +53,7 @@ two-calcium SERCA cycle or proton countertransport model; compare the more
 detailed [Tran et al. thermodynamic SERCA model (2009)](https://pmc.ncbi.nlm.nih.gov/articles/PMC2717298/).
 The existing Na/K pump's 1-M convention remains unchanged.
 
-`betse_1_5_er_calcium_release@1` reproduces the calcium-only branch of the pinned
+`er_calcium_release@1` reproduces the calcium-only branch of the pinned
 [ER channel function](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/organelles/endo_retic.py):
 activation `a/(1+a)` times inhibition `1/(1+h)`, where
 `a=(Ca_cyt/K_activation)^n_activation` and

@@ -13,8 +13,8 @@ import numpy as np
 from cells.processes import er_calcium, finite_energy, plasma_calcium
 from cells.processes.electrochemistry import F, R
 
-PMCA_LAW = "finite_atp_pmca_betse_positive@1"
-ER_LAW = "finite_atp_er_1ca_betse_positive@1"
+PMCA_LAW = "finite_atp_pmca_positive@1"
+ER_LAW = "finite_atp_er_1ca_positive@1"
 POOL_LAW = finite_energy.LAW_ID
 Routes = finite_energy.Routes
 MAX_AFFINITY_RT = er_calcium.MAX_AFFINITY_RT

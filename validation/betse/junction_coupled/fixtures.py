@@ -98,7 +98,7 @@ def with_membrane_processes(raw):
         "id": "channel_0",
         "membrane_id": "membrane_0",
         "species_id": "K",
-        "kinetic_law": "betse_kv1p5_mh@1",
+        "kinetic_law": "kv1p5_mh@1",
         "max_permeability_m_per_s": 1e-11,
         "abundance": 0.5,
         "initial_gate": {"m": 0.2, "h": 0.7},

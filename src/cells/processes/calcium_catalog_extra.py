@@ -12,10 +12,10 @@ from cells.processes.voltage_gates import VOLTAGE_DOMAIN_V
 
 PAD_CODE = -1
 CALCIUM_EXTRA_LAWS = {
-    "betse_ca_l2_m2h@1": "Ca_L2",
-    "betse_ca_l3_shift15_m2h@1": "Ca_L3",
-    "betse_cav_g_m2h_regularized@1": "Cav_G",
-    "betse_caleak_always_open@1": "CaLeak",
+    "ca_l2_m2h@1": "Ca_L2",
+    "ca_l3_shift15_m2h@1": "Ca_L3",
+    "cav_g_m2h_regularized@1": "Cav_G",
+    "caleak_always_open@1": "CaLeak",
 }
 LAW_CODES = {law: code for law, code in zip(CALCIUM_EXTRA_LAWS, range(35, 39), strict=True)}
 LAW_PERMEABILITIES = {law: (("Ca", 1.0),) for law in CALCIUM_EXTRA_LAWS}

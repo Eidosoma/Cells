@@ -185,7 +185,7 @@ def definition(base, p, variant, g, row):
                 "id": f"channel_{i}",
                 "membrane_id": f"membrane_{i}",
                 "species_id": "K",
-                "kinetic_law": "betse_kv1p5_mh@1",
+                "kinetic_law": "kv1p5_mh@1",
                 "max_permeability_m_per_s": p["max_permeability_m_per_s"]
                 * variant["permeability_fraction"],
                 "abundance": p["abundance"],

@@ -164,7 +164,7 @@ def test_invalid_channel_definitions(case):
     elif case == "species":
         channels[0]["species_id"] = "K"
     elif case == "law":
-        channels[0]["kinetic_law"] = "betse_kv1p5_mh@1"
+        channels[0]["kinetic_law"] = "kv1p5_mh@1"
     elif case == "negative_permeability":
         channels[0]["max_permeability_m_per_s"] = -1
     elif case == "negative_abundance":

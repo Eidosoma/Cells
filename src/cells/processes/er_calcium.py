@@ -11,9 +11,9 @@ import jax.numpy as jnp
 
 from cells.processes.electrochemistry import F, R
 
-PUMP_LAW = "betse_1_5_er_calcium_pump_positive@1"
-RELEASE_LAW = "betse_1_5_er_calcium_release@1"
-METABOLISM = "betse_1_5_maintained_mM_quotient@1"
+PUMP_LAW = "er_calcium_pump_positive@1"
+RELEASE_LAW = "er_calcium_release@1"
+METABOLISM = "maintained_mM_quotient@1"
 MAX_AFFINITY_RT = 80.0
 
 

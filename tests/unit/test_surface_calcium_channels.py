@@ -325,7 +325,7 @@ def references(composition_context):
 def test_restart_rejects_changed_channel_law(trajectories):
     value = trajectories["baseline"]
     raw = copy.deepcopy(value.spec.to_dict())
-    raw["model"]["ionic"]["channels"][1]["kinetic_law"] = "betse_kv1p5_mh@1"
+    raw["model"]["ionic"]["channels"][1]["kinetic_law"] = "kv1p5_mh@1"
     with pytest.raises((ConfigError, ValueError)):
         branch_checkpoint(value.spec, value.checkpoint_at(0.001), parse_spec(raw))
     evidence("law-identity", dict(status="passed", changed_law_branch_rejected=True))
@@ -335,7 +335,7 @@ def test_channel_laws_remain_owned_by_each_batched_world(trajectories):
     baseline = trajectories["baseline"]
     raw = baseline.spec.to_dict()
     for channel in raw["model"]["ionic"]["channels"]:
-        channel["kinetic_law"] = "betse_kv1p5_mh@1"
+        channel["kinetic_law"] = "kv1p5_mh@1"
     alternate = run(parse_spec(raw))
     assert np.any(alternate.history.channel_gate != baseline.history.channel_gate)
     spec = BatchSpec((WorldSpec(23, baseline.spec), WorldSpec(41, alternate.spec)), 2, 1000, 2**29)

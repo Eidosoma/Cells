@@ -301,10 +301,8 @@ def test_catleak_zero_calcium_and_catleak2_divalent_owned_route():
     rate = ref.unpack(c, slope)
     ca = [s["id"] for s in c["raw"]["model"]["species"]].index("Ca")
     channels = c["raw"]["model"]["channels"]
-    first = next(j for j, ch in enumerate(channels) if ch["kinetic_law"] == "betse_catleak_na_k@1")
-    second = next(
-        j for j, ch in enumerate(channels) if ch["kinetic_law"] == "betse_catleak2_na_k_ca@1"
-    )
+    first = next(j for j, ch in enumerate(channels) if ch["kinetic_law"] == "catleak_na_k@1")
+    second = next(j for j, ch in enumerate(channels) if ch["kinetic_law"] == "catleak2_na_k_ca@1")
     assert channels[first]["permeant_ions"][-1] == dict(species_id="Ca", relative_permeability=0.0)
     assert (
         rate["channel_transferred"][ca, first]
@@ -341,7 +339,7 @@ def test_moving_one_dedicated_cav_to_shared_population_does_not_duplicate_curren
     population = dict(
         id="reference_shared_cav_replacement",
         membrane_id=dedicated["membrane_id"],
-        kinetic_law="betse_cav1p2_m2h@1",
+        kinetic_law="cav1p2_m2h@1",
         max_permeability_m_per_s=dedicated["max_permeability_m_per_s"],
         abundance=dedicated["abundance"],
         initial_gate=[dedicated["initial_gate"][k] for k in ("m", "h")],
@@ -457,7 +455,7 @@ def test_blocked_shared_routes_still_require_valid_owned_state(fault):
         j = next(
             j
             for j, ch in enumerate(c["raw"]["model"]["channels"])
-            if ch["kinetic_law"] == "betse_catleak_na_k@1"
+            if ch["kinetic_law"] == "catleak_na_k@1"
         )
         d["channel_gate"][1, j] = 1.1
     elif fault == "nonfinite":

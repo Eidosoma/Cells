@@ -10,13 +10,13 @@ biological fitting are separate work.
 
 | Source class | Law ID | Component code | Opening | Time unit |
 | --- | --- | ---: | --- | --- |
-| Nav1p2 | `betse_nav1p2_m3h_regularized@1` | 2 | m^3 h | ms |
-| Nav1p3 | `betse_nav1p3_m3h_regularized@1` | 18 | m^3 h | ms |
-| NavRat2 | `betse_navrat2_m3h_regularized@1` | 19 | m^3 h | ms |
-| NavRat1 | `betse_navrat1_m3h_regularized@1` | 20 | m^3 h | ms |
-| NavRat3 | `betse_navrat3_m3h_regularized@1` | 21 | m^3 h | ms |
-| NaLeak | `betse_naleak_always_open@1` | 22 | 1 | s |
-| Nav1p6 | `betse_nav1p6_persistent_m@1` | 23 | m | ms |
+| Nav1p2 | `nav1p2_m3h_regularized@1` | 2 | m^3 h | ms |
+| Nav1p3 | `nav1p3_m3h_regularized@1` | 18 | m^3 h | ms |
+| NavRat2 | `navrat2_m3h_regularized@1` | 19 | m^3 h | ms |
+| NavRat1 | `navrat1_m3h_regularized@1` | 20 | m^3 h | ms |
+| NavRat3 | `navrat3_m3h_regularized@1` | 21 | m^3 h | ms |
+| NaLeak | `naleak_always_open@1` | 22 | 1 | s |
+| Nav1p6 | `nav1p6_persistent_m@1` | 23 | m | ms |
 
 Code zero is neutral padding in this sodium-only component. The accepted
 shared catalog's existing code meanings remain unchanged; later composition

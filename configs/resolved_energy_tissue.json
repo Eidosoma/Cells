@@ -34,15 +34,15 @@
     "junctions": [], "faces": [],
     "closure": {"law": "resolved_capacitor_components_current_continuity@1", "gauge_reference": "outside_0"},
     "channels": [
-      {"id": "kv1p5", "membrane_id": "membrane_0", "kinetic_law": "betse_kv1p5_mh@1",
+      {"id": "kv1p5", "membrane_id": "membrane_0", "kinetic_law": "kv1p5_mh@1",
        "max_permeability_m_per_s": 3e-10, "abundance": 0.5, "initial_gate": [0.2, 0.7],
        "permeant_ions": [{"species_id": "K", "relative_permeability": 1.0}]},
-      {"id": "hcn4", "membrane_id": "membrane_0", "kinetic_law": "betse_hcn4_m@1",
+      {"id": "hcn4", "membrane_id": "membrane_0", "kinetic_law": "hcn4_m@1",
        "max_permeability_m_per_s": 2e-10, "abundance": 0.5, "initial_gate": [0.2, 0.7],
        "permeant_ions": [{"species_id": "Na", "relative_permeability": 0.2},
                         {"species_id": "K", "relative_permeability": 1.0},
                         {"species_id": "Ca", "relative_permeability": 0.05}]},
-      {"id": "cav1p2", "membrane_id": "membrane_0", "kinetic_law": "betse_cav1p2_m2h@1",
+      {"id": "cav1p2", "membrane_id": "membrane_0", "kinetic_law": "cav1p2_m2h@1",
        "max_permeability_m_per_s": 1e-9, "abundance": 0.5, "initial_gate": [0.2, 0.7],
        "permeant_ions": [{"species_id": "Ca", "relative_permeability": 1.0}]}
     ],

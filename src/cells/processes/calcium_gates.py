@@ -6,7 +6,7 @@ by Cells' ordinary solver; this is not BETSE's semi-implicit time updater.
 
 import jax.numpy as jnp
 
-LAW_ID = "betse_cav1p2_m2h@1"
+LAW_ID = "cav1p2_m2h@1"
 TEMPERATURE_K = 298.15
 VOLTAGE_DOMAIN_V = (-0.120, 0.060)
 MIN_TAU_S = 0.005

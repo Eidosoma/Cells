@@ -4,13 +4,13 @@
   "source_version": "1.5.0",
   "classes": ["Nav1p2", "Nav1p3", "NavRat2", "NavRat1", "NavRat3", "NaLeak", "Nav1p6"],
   "law_codes": {
-    "betse_nav1p2_m3h_regularized@1": 2,
-    "betse_nav1p3_m3h_regularized@1": 18,
-    "betse_navrat2_m3h_regularized@1": 19,
-    "betse_navrat1_m3h_regularized@1": 20,
-    "betse_navrat3_m3h_regularized@1": 21,
-    "betse_naleak_always_open@1": 22,
-    "betse_nav1p6_persistent_m@1": 23
+    "nav1p2_m3h_regularized@1": 2,
+    "nav1p3_m3h_regularized@1": 18,
+    "navrat2_m3h_regularized@1": 19,
+    "navrat1_m3h_regularized@1": 20,
+    "navrat3_m3h_regularized@1": 21,
+    "naleak_always_open@1": 22,
+    "nav1p6_persistent_m@1": 23
   },
   "padding": "Code0 is sodium-component-only neutral padding, not shared-catalog compatibility; voltage/gates/rates/opening zero, tau1s",
   "axes": "Voltage/codes [...,population], gates/targets/tau [...,2,population]; independent leading world broadcasts",

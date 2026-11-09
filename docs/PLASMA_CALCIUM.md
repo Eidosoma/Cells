@@ -15,7 +15,7 @@ free-calcium pool or counting NCX as ATP work would violate that contract.
 
 ## Transport laws and evidence scope
 
-`betse_1_5_plasma_calcium_pump_positive@1` preserves the positive-concentration
+`plasma_calcium_pump_positive@1` preserves the positive-concentration
 equation in pinned BETSE 1.5.0
 [`pumpCaATP`](https://github.com/betsee/betse/blob/v1.5.0/betse/science/sim_toolbox.py).
 With `Vm = inside minus outside`, positive cycles move one calcium outward:
@@ -126,7 +126,7 @@ existing potassium channel. Each calcium channel has separate `m`/`h` gates,
 a signed inward calcium transfer ledger, a dissipation ledger and a timed
 availability schedule. The old `@1` and `@2` definitions retain their meanings.
 
-`betse_cav1p2_m2h@1` follows the pinned BETSE 1.5.0
+`cav1p2_m2h@1` follows the pinned BETSE 1.5.0
 [`Cav1p2` equations](https://github.com/betsee/betse/blob/v1.5.0/betse/science/channels/vg_ca.py):
 use `u = Vm - 0.010 V`, with opening `m^2 h` and
 `dg/dt = (g_inf - g)/tau`. Targets and time constants are:
@@ -184,7 +184,7 @@ a = (IP3_cytosol_mM / activation_mM)^activation_n
 IP3_factor = a / (1 + a)
 ```
 
-`betse_1_5_ip3_er_release@1` follows the IP3 branch of pinned BETSE 1.5.0
+`ip3_er_release@1` follows the IP3 branch of pinned BETSE 1.5.0
 [`EndoRetic.channels`](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/organelles/endo_retic.py).
 The native source searches molecule, metabolic and GRN networks in that order.
 With a network present but no IP3 it disables the regulated route; with all

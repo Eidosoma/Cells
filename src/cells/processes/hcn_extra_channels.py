@@ -9,9 +9,9 @@ physical gate state; its native unused m/h bookkeeping does not affect opening.
 import jax.numpy as jnp
 
 LAW_CODES = {
-    "betse_hcn_leak_open@1": 53,
-    "betse_hcn2_camp_m@1": 54,
-    "betse_hcn4_camp_m@1": 55,
+    "hcn_leak_open@1": 53,
+    "hcn2_camp_m@1": 54,
+    "hcn4_camp_m@1": 55,
 }
 LAW_PERMEABILITIES = {
     law: (("Na", 0.33 if code == 53 else 0.2), ("K", 1.0), ("Ca", 0.05))

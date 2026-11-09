@@ -6,7 +6,7 @@ native BETSE execution or a temperature-calibrated channel catalog.
 
 import jax.numpy as jnp
 
-LAW_ID = "betse_kv1p5_mh@1"
+LAW_ID = "kv1p5_mh@1"
 TEMPERATURE_K = 298.15
 VOLTAGE_DOMAIN_V = (-0.120, 0.060)
 

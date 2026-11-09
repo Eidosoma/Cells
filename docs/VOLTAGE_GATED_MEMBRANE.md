@@ -12,7 +12,7 @@ restart/branch/window/cohort checks and all 2883 regression tests pass.
 
 One cell, one maintained bath, one membrane, and one state-bearing channel.
 Species, valences, charge anchors, pump roles, channel binding and controls are
-data. This first identity supports the named `betse_kv1p5_mh@1` continuous m/h
+data. This first identity supports the named `kv1p5_mh@1` continuous m/h
 law at 298.15 K, binding a declared +1 species as its potassium role. A species
 label does not choose a kernel. This is not a full channel catalog, voltage
 clamp, native BETSE timestep implementation, or calibrated physiological model.

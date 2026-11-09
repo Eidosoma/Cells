@@ -12,7 +12,7 @@ from tests import reference_multispecies as ionic
 
 SCHEMA = "cells.voltage_gated_membrane_reference@1"
 PROTOCOL_SCHEMA = "cells.kv1p5_gate_protocol@1"
-LAW = "betse_kv1p5_mh@1"
+LAW = "kv1p5_mh@1"
 VOLTAGE_DOMAIN_V = (-0.120, 0.060)
 TEMPERATURE_K = 298.15
 

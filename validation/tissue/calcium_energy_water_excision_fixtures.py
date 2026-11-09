@@ -14,7 +14,7 @@ from validation.tissue import calcium_energy_excision_fixtures as prior
 
 DT, CUT_TIME, END_TIME = prior.DT, prior.CUT_TIME, prior.END_TIME
 ARMS = (*prior.ARMS, "water_blocked", "sealed")
-EXCLUDED_LAWS = {"betse_hcn_leak_open@1", "betse_hcn2_camp_m@1", "betse_hcn4_camp_m@1"}
+EXCLUDED_LAWS = {"hcn_leak_open@1", "hcn2_camp_m@1", "hcn4_camp_m@1"}
 
 
 def definition(arm="open", *, catalog="compact", backend="cpu", padded=False):

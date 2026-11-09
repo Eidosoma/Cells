@@ -126,7 +126,7 @@
       {
         "id": "kv1p5",
         "membrane_id": "membrane_0",
-        "kinetic_law": "betse_kv1p5_mh@1",
+        "kinetic_law": "kv1p5_mh@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.5,
         "initial_gate": [
@@ -143,7 +143,7 @@
       {
         "id": "hcn4",
         "membrane_id": "membrane_0",
-        "kinetic_law": "betse_hcn4_m@1",
+        "kinetic_law": "hcn4_m@1",
         "max_permeability_m_per_s": 2e-10,
         "abundance": 0.5,
         "initial_gate": [
@@ -168,7 +168,7 @@
       {
         "id": "cav1p2",
         "membrane_id": "membrane_0",
-        "kinetic_law": "betse_cav1p2_m2h@1",
+        "kinetic_law": "cav1p2_m2h@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.5,
         "initial_gate": [

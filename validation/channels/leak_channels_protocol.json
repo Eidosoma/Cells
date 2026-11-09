@@ -3,7 +3,7 @@
   "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
   "source_version": "1.5.0",
   "classes": ["ClLeak", "CatLeak", "CatLeak2"],
-  "law_codes": {"betse_clleak_always_open@1": 32, "betse_catleak_na_k@1": 33, "betse_catleak2_na_k_ca@1": 34},
+  "law_codes": {"clleak_always_open@1": 32, "catleak_na_k@1": 33, "catleak2_na_k_ca@1": 34},
   "padding_code": -1,
   "species": ["Cl", "Na", "K", "Ca"],
   "ordered_permeabilities": {"ClLeak": [["Cl", 1.0]], "CatLeak": [["Na", 1.0], ["K", 1.0], ["Ca", 0.0]], "CatLeak2": [["Na", 1.0], ["K", 1.0], ["Ca", 1.0]]},

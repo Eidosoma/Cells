@@ -30,7 +30,7 @@ def validate_protocol(p):
     )
     c.require(p["schema"] == "cells.betse_kv1p5_contact_protocol@1", "Wrong schema")
     c.require(p["upstream_revision"] == c.REVISION, "Wrong source revision")
-    c.require(p["kinetic_law"] == "betse_kv1p5_mh@1", "Wrong channel law")
+    c.require(p["kinetic_law"] == "kv1p5_mh@1", "Wrong channel law")
     c.require(p["fixture_temperature_K"] == 298.15, "Unspecified temperature regime")
     c.require(p["step_us"] == [1000, 500, 250], "Unregistered refinement")
     c.require(p["voltage_domain_V"] == [-0.12, 0.06], "Wrong engineering domain")

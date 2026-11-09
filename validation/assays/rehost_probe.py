@@ -28,7 +28,7 @@ MOBILE = ("Na", "K", "Cl")
 VM0_SOURCE = Path(
     "/mnt/workspaces/Cells/two-task-readout-20261012-01/evidence/cpu/assay-world-10000.npz"
 )
-CHANNEL_ID = "betse_kv1p5_mh@1"
+CHANNEL_ID = "kv1p5_mh@1"
 
 
 def initial_patch_voltage(path=VM0_SOURCE):

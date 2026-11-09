@@ -8,10 +8,10 @@ inactivation. All four declare relative Ca permeability one.
 
 | Law ID | Future code | Source m/h powers | Important distinction |
 | --- | ---: | --- | --- |
-| `betse_ca_l2_m2h@1` | 35 | 2/1 | Unshifted targets, fixed 10/59-ms tau |
-| `betse_ca_l3_shift15_m2h@1` | 36 | 2/1 | Native V−15-mV shift, fixed 10/59-ms tau |
-| `betse_cav_g_m2h_regularized@1` | 37 | 2/1 | Analytic rate limit at −27 mV |
-| `betse_caleak_always_open@1` | 38 | 0/0 | Always open, one-second auxiliary clocks |
+| `ca_l2_m2h@1` | 35 | 2/1 | Unshifted targets, fixed 10/59-ms tau |
+| `ca_l3_shift15_m2h@1` | 36 | 2/1 | Native V−15-mV shift, fixed 10/59-ms tau |
+| `cav_g_m2h_regularized@1` | 37 | 2/1 | Analytic rate limit at −27 mV |
+| `caleak_always_open@1` | 38 | 0/0 | Always open, one-second auxiliary clocks |
 
 The numbers are reserved standalone identities for later integration. The
 shared catalog, existing models and shared code zero retain their meanings.

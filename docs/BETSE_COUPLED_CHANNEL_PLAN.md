@@ -77,7 +77,7 @@ all native faces; selective tissue targets are a later comparison.
 | --- | --- |
 | Temperature | 298.15 K in all native and Cells physical fields; no adopted Q10 law |
 | Constants | Explicit matched F/R profile; native-default constants are a separate question |
-| Channel | Native K/Kv1p5; Cells `betse_kv1p5_mh@1`, K-bound, separate m and h |
+| Channel | Native K/Kv1p5; Cells `kv1p5_mh@1`, K-bound, separate m and h |
 | Permeability | With `rho_channel=1`, rel_perm=1 and constant modulation, `maxDm = membrane_thickness * P_max * abundance`; verify actual arrays and units |
 | Geometry | Sum native face areas by owner; preserve every cell volume and one capacitor per cell |
 | Bath | Explicit Cells volume; test the native face-normalization mapping, uniformity and conservation |

@@ -20,7 +20,7 @@ def definition(arm="baseline", *, backend="cpu", padded=True):
         population = deepcopy(ion["channels"][index % 4])
         population.update(
             id=f"kv1_{family}",
-            kinetic_law=f"betse_kv1p{family}_mh{'2' if family == 1 else ''}@1",
+            kinetic_law=f"kv1p{family}_mh{'2' if family == 1 else ''}@1",
             initial_gate=[0.25 + 0.1 * index, 0.65 - 0.05 * index],
             abundance=0.10 + 0.04 * index,
         )

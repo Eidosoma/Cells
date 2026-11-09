@@ -1,7 +1,7 @@
 {
   "schema": "cells.betse_kv1p5_contact_protocol@1",
   "upstream_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
-  "kinetic_law": "betse_kv1p5_mh@1",
+  "kinetic_law": "kv1p5_mh@1",
   "scope": "Isolated untargeted Kv1p5 kinetics and prescribed-voltage gate histories; no ionic transport, native tissue preparation, voltage clamp, temperature calibration or biological validation",
   "fixture_temperature_K": 298.15,
   "temperature_correction": "none; neither gate kernel consumes temperature",

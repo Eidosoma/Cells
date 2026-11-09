@@ -2,7 +2,7 @@
 
 import jax.numpy as jnp
 
-LAW_ID = "betse_1_5_ip3_er_release@1"
+LAW_ID = "ip3_er_release@1"
 
 
 def open_fraction(ip3_mM, activation_mM, activation_n, *, xp=jnp):

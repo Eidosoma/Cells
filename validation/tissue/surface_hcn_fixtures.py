@@ -47,7 +47,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
         channel = deepcopy(model["channels"][index])
         channel.update(
             id=f"hcn_{family}",
-            kinetic_law=f"betse_hcn{family}_m@1",
+            kinetic_law=f"hcn{family}_m@1",
             permeant_ions=[dict(species_id=s, relative_permeability=p) for s, p in PERMEABILITIES],
             abundance=0.12 + 0.08 * index,
             initial_gate=[0.35 + 0.1 * index, 0.7],

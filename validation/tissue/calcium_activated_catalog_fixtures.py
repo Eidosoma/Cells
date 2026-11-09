@@ -6,7 +6,7 @@ from validation.tissue import channel_catalog_v2_fixtures as prior
 
 FAMILIES = prior.FAMILIES
 ARMS = ("open", "blocked", "reordered", "empty", "instant_only")
-LAW = "betse_cagpotassium_numeric_mM_scale@1"
+LAW = "cagpotassium_numeric_mM_scale@1"
 MODEL_IDS = dict(
     ionic="resolved_tissue@10", calcium="resolved_calcium@9", energy="resolved_calcium_energy@3"
 )

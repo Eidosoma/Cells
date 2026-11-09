@@ -11,9 +11,9 @@ biological fit is added here.
 
 | Law ID | Code | Ordered source ion weights |
 | --- | ---: | --- |
-| `betse_clleak_always_open@1` | 32 | Cl=1 |
-| `betse_catleak_na_k@1` | 33 | Na=1, K=1, **Ca=0** |
-| `betse_catleak2_na_k_ca@1` | 34 | Na=1, K=1, Ca=1 |
+| `clleak_always_open@1` | 32 | Cl=1 |
+| `catleak_na_k@1` | 33 | Na=1, K=1, **Ca=0** |
+| `catleak2_na_k_ca@1` | 34 | Na=1, K=1, Ca=1 |
 
 CatLeak preserves its zero-Ca metadata and has no calcium permeability. These
 are independent ion permeability weights, not a stoichiometric cotransport

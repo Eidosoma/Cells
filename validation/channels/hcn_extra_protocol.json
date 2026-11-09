@@ -10,9 +10,9 @@
   },
   "classes": ["HCNLeak", "HCN2_cAMP", "HCN4_cAMP"],
   "laws": {
-    "HCNLeak": "betse_hcn_leak_open@1",
-    "HCN2_cAMP": "betse_hcn2_camp_m@1",
-    "HCN4_cAMP": "betse_hcn4_camp_m@1"
+    "HCNLeak": "hcn_leak_open@1",
+    "HCN2_cAMP": "hcn2_camp_m@1",
+    "HCN4_cAMP": "hcn4_camp_m@1"
   },
   "voltage_domain_V": [-0.120, 0.060],
   "source_contracts": {

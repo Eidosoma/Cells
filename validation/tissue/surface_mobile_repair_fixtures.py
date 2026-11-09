@@ -19,9 +19,7 @@ def definition(arm="mobile", *, backend="cpu", padded=True):
     ion = m["ionic"]
     # Representative immobile shared HCN/CaV populations; the dedicated CaV,
     # PMCA/NCX, ER, buffer and IP3 processes remain present on both cell owners.
-    ion["channels"] = [
-        c for c in ion["channels"] if c["kinetic_law"] in ("betse_hcn2_m@1", "betse_cav2p1_m@1")
-    ]
+    ion["channels"] = [c for c in ion["channels"] if c["kinetic_law"] in ("hcn2_m@1", "cav2p1_m@1")]
     names = {c["id"] for c in ion["channels"]}
     e["channel_controls"] = [c for c in e["channel_controls"] if c["channel_id"] in names]
     x["channel_capacity"] = len(names) + int(padded)
@@ -52,7 +50,7 @@ def definition(arm="mobile", *, backend="cpu", padded=True):
         m["mobile_channels"].append(
             dict(
                 id=f"mobile_kv_{k}",
-                kinetic_law="betse_kv1p5_mh@1",
+                kinetic_law="kv1p5_mh@1",
                 species_id="K",
                 reference_density_fmol_per_um2=1e-4,
                 permeability_at_reference_density_m_per_s=2e-8,

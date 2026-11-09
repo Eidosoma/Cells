@@ -10,7 +10,7 @@ import jax.numpy as jnp
 from cells.processes import potassium_channels
 from cells.processes.electrochemistry import bernoulli
 
-LAW_ID = "betse_nav1p2_m3h_regularized@1"
+LAW_ID = "nav1p2_m3h_regularized@1"
 LAW_CODES = {**potassium_channels.LAW_CODES, LAW_ID: 2}
 LAW_SPECIES = {law: "Na" if law == LAW_ID else "K" for law in LAW_CODES}
 

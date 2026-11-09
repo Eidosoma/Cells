@@ -11,7 +11,7 @@ import numpy as np
 from cells.processes.electrochemistry import F, R
 from cells.processes.voltage_gates import VOLTAGE_DOMAIN_V
 
-LAW_ID = "betse_cagpotassium_numeric_mM_scale@1"
+LAW_ID = "cagpotassium_numeric_mM_scale@1"
 LAW_CODE = 39
 PAD_CODE = -1
 LAW_CODES = {LAW_ID: LAW_CODE}

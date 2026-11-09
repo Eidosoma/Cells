@@ -45,7 +45,7 @@ def definition(arm="mobile", *, backend="cpu", padded=True):
         m["mobile_channels"].append(
             dict(
                 id="mobile_kv_" + str(i),
-                kinetic_law="betse_kv1p5_mh@1",
+                kinetic_law="kv1p5_mh@1",
                 species_id="K",
                 reference_density_fmol_per_um2=1e-4,
                 permeability_at_reference_density_m_per_s=0.0

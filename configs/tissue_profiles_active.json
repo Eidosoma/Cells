@@ -399,7 +399,7 @@
         {
           "id": "active_channel_0",
           "membrane_id": "membrane_0_bath",
-          "kinetic_law": "betse_kv1p5_ml_dynamic_m@1",
+          "kinetic_law": "kv1p5_ml_dynamic_m@1",
           "max_permeability_m_per_s": 1.5e-09,
           "abundance": 0.1,
           "initial_gate": [
@@ -415,7 +415,7 @@
         {
           "id": "active_channel_1",
           "membrane_id": "membrane_0_bath",
-          "kinetic_law": "betse_cagpotassium_numeric_mM_scale@1",
+          "kinetic_law": "cagpotassium_numeric_mM_scale@1",
           "max_permeability_m_per_s": 2e-09,
           "abundance": 0.18,
           "initial_gate": [],
@@ -429,7 +429,7 @@
         {
           "id": "active_channel_2",
           "membrane_id": "membrane_0_bath",
-          "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+          "kinetic_law": "nav1p2_m3h_regularized@1",
           "max_permeability_m_per_s": 3e-10,
           "abundance": 0.30000000000000004,
           "initial_gate": [
@@ -446,7 +446,7 @@
         {
           "id": "active_channel_3",
           "membrane_id": "membrane_1_bath",
-          "kinetic_law": "betse_kv1p5_ml_dynamic_m@1",
+          "kinetic_law": "kv1p5_ml_dynamic_m@1",
           "max_permeability_m_per_s": 1.5e-09,
           "abundance": 0.1,
           "initial_gate": [
@@ -462,7 +462,7 @@
         {
           "id": "active_channel_4",
           "membrane_id": "membrane_1_bath",
-          "kinetic_law": "betse_cagpotassium_numeric_mM_scale@1",
+          "kinetic_law": "cagpotassium_numeric_mM_scale@1",
           "max_permeability_m_per_s": 2e-09,
           "abundance": 0.18,
           "initial_gate": [],
@@ -476,7 +476,7 @@
         {
           "id": "active_channel_5",
           "membrane_id": "membrane_1_bath",
-          "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+          "kinetic_law": "nav1p2_m3h_regularized@1",
           "max_permeability_m_per_s": 3e-10,
           "abundance": 0.30000000000000004,
           "initial_gate": [
@@ -493,7 +493,7 @@
         {
           "id": "active_channel_6",
           "membrane_id": "membrane_2_bath",
-          "kinetic_law": "betse_kv1p5_ml_dynamic_m@1",
+          "kinetic_law": "kv1p5_ml_dynamic_m@1",
           "max_permeability_m_per_s": 1.5e-09,
           "abundance": 0.1,
           "initial_gate": [
@@ -509,7 +509,7 @@
         {
           "id": "active_channel_7",
           "membrane_id": "membrane_2_bath",
-          "kinetic_law": "betse_cagpotassium_numeric_mM_scale@1",
+          "kinetic_law": "cagpotassium_numeric_mM_scale@1",
           "max_permeability_m_per_s": 2e-09,
           "abundance": 0.18,
           "initial_gate": [],
@@ -523,7 +523,7 @@
         {
           "id": "active_channel_8",
           "membrane_id": "membrane_2_bath",
-          "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+          "kinetic_law": "nav1p2_m3h_regularized@1",
           "max_permeability_m_per_s": 3e-10,
           "abundance": 0.30000000000000004,
           "initial_gate": [

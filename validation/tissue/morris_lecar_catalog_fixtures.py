@@ -10,19 +10,19 @@ MODEL_IDS = dict(
     ionic="resolved_tissue@11", calcium="resolved_calcium@10", energy="resolved_calcium_energy@4"
 )
 ADDED_LAWS = (
-    ("betse_kv_ml1_dynamic_m@1", (("K", 1.0),)),
-    ("betse_kv2p1_ml_dynamic_m@1", (("K", 1.0),)),
-    ("betse_kv1p3_ml_dynamic_m@1", (("K", 1.0),)),
-    ("betse_kv1p5_ml_dynamic_m@1", (("K", 1.0),)),
-    ("betse_kv1p5s_ml_slow_dynamic_m@1", (("K", 1.0),)),
-    ("betse_nav_ml_instantaneous@1", (("Na", 1.0),)),
-    ("betse_cav_l_ml_instantaneous@1", (("Ca", 1.0),)),
-    ("betse_cav_l_ml2_instantaneous@1", (("Ca", 1.0),)),
-    ("betse_cav_n_ml_instantaneous@1", (("Ca", 1.0),)),
-    ("betse_cav_t_ml_instantaneous@1", (("Ca", 1.0),)),
-    ("betse_kir_ml_instantaneous@1", (("K", 1.0),)),
-    ("betse_hcn2_ml_source_sign_instantaneous@1", (("K", 1.0), ("Na", 0.2))),
-    ("betse_hcn4_ml_source_sign_instantaneous@1", (("K", 1.0), ("Na", 0.2))),
+    ("kv_ml1_dynamic_m@1", (("K", 1.0),)),
+    ("kv2p1_ml_dynamic_m@1", (("K", 1.0),)),
+    ("kv1p3_ml_dynamic_m@1", (("K", 1.0),)),
+    ("kv1p5_ml_dynamic_m@1", (("K", 1.0),)),
+    ("kv1p5s_ml_slow_dynamic_m@1", (("K", 1.0),)),
+    ("nav_ml_instantaneous@1", (("Na", 1.0),)),
+    ("cav_l_ml_instantaneous@1", (("Ca", 1.0),)),
+    ("cav_l_ml2_instantaneous@1", (("Ca", 1.0),)),
+    ("cav_n_ml_instantaneous@1", (("Ca", 1.0),)),
+    ("cav_t_ml_instantaneous@1", (("Ca", 1.0),)),
+    ("kir_ml_instantaneous@1", (("K", 1.0),)),
+    ("hcn2_ml_depolarization_activated_instantaneous@1", (("K", 1.0), ("Na", 0.2))),
+    ("hcn4_ml_depolarization_activated_instantaneous@1", (("K", 1.0), ("Na", 0.2))),
 )
 
 

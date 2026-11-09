@@ -64,9 +64,9 @@ def heterogeneous_definition(*, backend="cpu"):
     # population. The other sodium population and chemical ownership stay live.
     raw["model"]["ionic"]["channels"][5].update(
         permeant_ions=[dict(species_id="K", relative_permeability=1.0)],
-        kinetic_law="betse_kv1p5_mh@1",
+        kinetic_law="kv1p5_mh@1",
     )
-    raw["model"]["ionic"]["channels"][7]["kinetic_law"] = "betse_hcn2_m@1"
+    raw["model"]["ionic"]["channels"][7]["kinetic_law"] = "hcn2_m@1"
     return raw
 
 
@@ -316,11 +316,11 @@ def test_restart_rejects_changed_population(trajectories, change):
     value = trajectories["baseline"]
     raw = value.spec.to_dict()
     if change == "law":
-        raw["model"]["ionic"]["channels"][7]["kinetic_law"] = "betse_hcn2_m@1"
+        raw["model"]["ionic"]["channels"][7]["kinetic_law"] = "hcn2_m@1"
     else:
         raw["model"]["ionic"]["channels"][5].update(
             permeant_ions=[dict(species_id="K", relative_permeability=1.0)],
-            kinetic_law="betse_kv1p5_mh@1",
+            kinetic_law="kv1p5_mh@1",
         )
     valid_alternative = parse_spec(raw)
     with pytest.raises(ConfigError, match="model or execution"):

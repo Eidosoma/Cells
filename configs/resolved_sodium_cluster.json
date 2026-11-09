@@ -350,7 +350,7 @@
         "id": "channel_0",
         "membrane_id": "membrane_0",
         "species_id": "K",
-        "kinetic_law": "betse_kv1p5_mh@1",
+        "kinetic_law": "kv1p5_mh@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.5,
         "initial_gate": [
@@ -362,7 +362,7 @@
         "id": "channel_1",
         "membrane_id": "membrane_1",
         "species_id": "K",
-        "kinetic_law": "betse_kir2p1_mh2@1",
+        "kinetic_law": "kir2p1_mh2@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.6,
         "initial_gate": [
@@ -374,7 +374,7 @@
         "id": "channel_2",
         "membrane_id": "membrane_2",
         "species_id": "K",
-        "kinetic_law": "betse_kv1p5_mh@1",
+        "kinetic_law": "kv1p5_mh@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.7,
         "initial_gate": [
@@ -386,7 +386,7 @@
         "id": "channel_3",
         "membrane_id": "membrane_3",
         "species_id": "K",
-        "kinetic_law": "betse_kir2p1_mh2@1",
+        "kinetic_law": "kir2p1_mh2@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.8,
         "initial_gate": [
@@ -398,7 +398,7 @@
         "id": "channel_4",
         "membrane_id": "membrane_0",
         "species_id": "K",
-        "kinetic_law": "betse_kir2p1_mh2@1",
+        "kinetic_law": "kir2p1_mh2@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.5,
         "initial_gate": [
@@ -410,7 +410,7 @@
         "id": "sodium_0",
         "membrane_id": "membrane_0",
         "species_id": "Na",
-        "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+        "kinetic_law": "nav1p2_m3h_regularized@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.2,
         "initial_gate": [
@@ -422,7 +422,7 @@
         "id": "sodium_1",
         "membrane_id": "membrane_2",
         "species_id": "Na",
-        "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+        "kinetic_law": "nav1p2_m3h_regularized@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.30000000000000004,
         "initial_gate": [

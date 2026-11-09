@@ -29,7 +29,7 @@ MODELS = {
     "calcium": (calcium, "resolved_calcium@9", 34),
     "energy": (energy, "resolved_calcium_energy@3", 38),
 }
-LAW = "betse_cagpotassium_numeric_mM_scale@1"
+LAW = "cagpotassium_numeric_mM_scale@1"
 pytestmark = pytest.mark.skipif(
     "CELLS_CALCIUM_ACTIVATED_INPUTS" not in os.environ,
     reason="Require isolated serialized fixture inputs",

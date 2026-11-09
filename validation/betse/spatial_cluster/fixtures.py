@@ -74,7 +74,7 @@ def definition(*, end=0.02, dt=0.0001, backend="cpu", arm="baseline", padded=Tru
                     "id": f"channel_{i}",
                     "membrane_id": f"membrane_{i}",
                     "species_id": "K",
-                    "kinetic_law": "betse_kv1p5_mh@1",
+                    "kinetic_law": "kv1p5_mh@1",
                     "max_permeability_m_per_s": 3e-10,
                     "abundance": 0.5 + i * 0.1,
                     "initial_gate": {"m": 0.2, "h": 0.7},

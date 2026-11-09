@@ -1,6 +1,6 @@
 {
   "kind": "cells.betse_mitochondria_contracts@1",
-  "law_id": "betse_mitochondrial_ion_voltage_source_v1_5_0@1",
+  "law_id": "mitochondrial_ion_voltage@1",
   "purpose": "Resolve native cached-voltage timing, nonce mutation and paired finite-volume charge ownership before integration",
   "native_source": {
     "version": "1.5.0",

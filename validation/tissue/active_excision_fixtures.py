@@ -26,9 +26,9 @@ ARMS = (
     "empty",
 )
 COMPACT_LAWS = (
-    "betse_kv1p5_ml_dynamic_m@1",
-    "betse_cagpotassium_numeric_mM_scale@1",
-    "betse_nav1p2_m3h_regularized@1",
+    "kv1p5_ml_dynamic_m@1",
+    "cagpotassium_numeric_mM_scale@1",
+    "nav1p2_m3h_regularized@1",
 )
 
 

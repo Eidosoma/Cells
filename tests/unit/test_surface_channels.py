@@ -528,7 +528,7 @@ def test_restart_branch_windows_and_identity(trajectories, tmp_path):
         changed.history.channel_transferred[-1], checkpoint.state.channel_transferred
     )
     assert np.any(changed.history.channel_gate[-1] != checkpoint.state.channel_gate)
-    raw["model"]["channels"][1]["kinetic_law"] = "betse_kv1p5_mh@1"
+    raw["model"]["channels"][1]["kinetic_law"] = "kv1p5_mh@1"
     with pytest.raises((ConfigError, ValueError)):
         branch_checkpoint(value.spec, checkpoint, parse_spec(raw))
     parts = list(iter_windows(value.spec, WindowPolicy(17, "full"), checkpoint))

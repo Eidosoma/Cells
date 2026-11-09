@@ -9,7 +9,7 @@ import jax.numpy as jnp
 
 from cells.processes import sodium_channels
 
-HCN_LAWS = {f"betse_hcn{i}_m@1": i for i in (1, 2, 4)}
+HCN_LAWS = {f"hcn{i}_m@1": i for i in (1, 2, 4)}
 LAW_CODES = {
     **sodium_channels.LAW_CODES,
     **{law: index for index, law in enumerate(HCN_LAWS, 3)},

@@ -99,8 +99,8 @@ def bind(raw):
     group = projected["model"].pop("mitochondria")
     schedules = projected["experiment"].pop("mitochondria_controls")
     required = dict(
-        law="betse_mitochondrial_passive_continuous_si@1",
-        source_law="betse_mitochondrial_ion_voltage_source_v1_5_0@1",
+        law="mitochondrial_passive_continuous_si@1",
+        source_law="mitochondrial_ion_voltage@1",
         initialization="explicit_disjoint_inventory@1",
         voltage="charge_consistent_mito_minus_cytosol@1",
         cytosol_volume_role="solvent_volume_excludes_er_and_mitochondria@1",

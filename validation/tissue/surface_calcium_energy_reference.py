@@ -32,8 +32,8 @@ ENERGY_FIELDS = (
     "regeneration_dissipated_energy_pJ",
     "regeneration_supplied_work_pJ",
 )
-PMCA_LAW = "finite_atp_pmca_betse_positive@1"
-ER_LAW = "finite_atp_er_1ca_betse_positive@1"
+PMCA_LAW = "finite_atp_pmca_positive@1"
+ER_LAW = "finite_atp_er_1ca_positive@1"
 
 
 def _number(value, *, positive=False):
@@ -59,11 +59,9 @@ def _owner(c, metabolism, cell):
 def _legacy_calcium_pump(pump, concentrations, delta_g0, temperature, er):
     """Explicit standard-state conversion, independently of production adapters."""
     return dict(
-        law="betse_1_5_er_calcium_pump_positive@1"
-        if er
-        else "betse_1_5_plasma_calcium_pump_positive@1",
+        law="er_calcium_pump_positive@1" if er else "plasma_calcium_pump_positive@1",
         **{key: pump[key] for key in ("capacity_fmol_per_s", "km_ca_mM", "km_atp_mM")},
-        metabolism="betse_1_5_maintained_mM_quotient@1",
+        metabolism="maintained_mM_quotient@1",
         **dict(zip(("atp_mM", "adp_mM", "pi_mM"), map(float, concentrations), strict=True)),
         delta_g0_J_per_mol=float(delta_g0 - R * temperature * np.log(1000.0)),
     )

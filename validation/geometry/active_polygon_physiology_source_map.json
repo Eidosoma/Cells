@@ -641,10 +641,10 @@
     "validation/geometry/active_polygon_physiology_reference.py": "982884fa277ba1cdd39e303f3ef98abb54e29e9534cfc800afea36c0a6706474"
   },
   "selected_channel_probe_laws": [
-    "betse_kv1p5_mh@1",
-    "betse_hcn_leak_open@1",
-    "betse_kv_ml1_dynamic_m@1",
-    "betse_cav1p2_m2h@1"
+    "kv1p5_mh@1",
+    "hcn_leak_open@1",
+    "kv_ml1_dynamic_m@1",
+    "cav1p2_m2h@1"
   ],
   "catalog_scope": "Existing versioned parser/catalog remains authoritative; selected zero/one/two-state initial probes do not requalify all56 laws or native channel equivalence",
   "unsupported": [

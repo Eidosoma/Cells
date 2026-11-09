@@ -9,19 +9,19 @@ import jax.numpy as jnp
 PAD_CODE = -1
 VOLTAGE_DOMAIN_V = (-0.120, 0.060)
 MORRIS_LECAR_LAWS = {
-    "betse_kv_ml1_dynamic_m@1": "Kv_ML1",
-    "betse_kv2p1_ml_dynamic_m@1": "Kv2p1_ML",
-    "betse_kv1p3_ml_dynamic_m@1": "Kv1p3_ML",
-    "betse_kv1p5_ml_dynamic_m@1": "Kv1p5_ML",
-    "betse_kv1p5s_ml_slow_dynamic_m@1": "Kv1p5S_ML",
-    "betse_nav_ml_instantaneous@1": "Nav_ML",
-    "betse_cav_l_ml_instantaneous@1": "Cav_L_ML",
-    "betse_cav_l_ml2_instantaneous@1": "Cav_L_ML2",
-    "betse_cav_n_ml_instantaneous@1": "Cav_N_ML",
-    "betse_cav_t_ml_instantaneous@1": "Cav_T_ML",
-    "betse_kir_ml_instantaneous@1": "Kir_ML",
-    "betse_hcn2_ml_source_sign_instantaneous@1": "HCN2_ML",
-    "betse_hcn4_ml_source_sign_instantaneous@1": "HCN4_ML",
+    "kv_ml1_dynamic_m@1": "Kv_ML1",
+    "kv2p1_ml_dynamic_m@1": "Kv2p1_ML",
+    "kv1p3_ml_dynamic_m@1": "Kv1p3_ML",
+    "kv1p5_ml_dynamic_m@1": "Kv1p5_ML",
+    "kv1p5s_ml_slow_dynamic_m@1": "Kv1p5S_ML",
+    "nav_ml_instantaneous@1": "Nav_ML",
+    "cav_l_ml_instantaneous@1": "Cav_L_ML",
+    "cav_l_ml2_instantaneous@1": "Cav_L_ML2",
+    "cav_n_ml_instantaneous@1": "Cav_N_ML",
+    "cav_t_ml_instantaneous@1": "Cav_T_ML",
+    "kir_ml_instantaneous@1": "Kir_ML",
+    "hcn2_ml_depolarization_activated_instantaneous@1": "HCN2_ML",
+    "hcn4_ml_depolarization_activated_instantaneous@1": "HCN4_ML",
 }
 LAW_CODES = {law: code for law, code in zip(MORRIS_LECAR_LAWS, range(40, 53), strict=True)}
 STATE_COUNTS = {law: 1 if code <= 44 else 0 for law, code in LAW_CODES.items()}

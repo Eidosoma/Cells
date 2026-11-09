@@ -237,7 +237,7 @@ def request(case, declaration, binding):
         channel = dict(
             id="channel_" + str(i),
             membrane_id=name,
-            kinetic_law="betse_kv1p5_mh@1",
+            kinetic_law="kv1p5_mh@1",
             max_permeability_m_per_s=ref(
                 "membrane_permeability_m_per_s",
                 membrane_id=name,
@@ -261,13 +261,13 @@ def request(case, declaration, binding):
         if model_id == "resolved_tissue@12":
             extra_laws.append(
                 (
-                    "betse_hcn_leak_open@1",
+                    "hcn_leak_open@1",
                     [],
                     [("Na", 0.33), ("K", 1.0), ("Ca", 0.05)],
                 )
             )
         if model_id == "resolved_tissue@12" or target == "resolved_energy@2":
-            extra_laws.append(("betse_kv_ml1_dynamic_m@1", [0.2], [("K", 1.0)]))
+            extra_laws.append(("kv_ml1_dynamic_m@1", [0.2], [("K", 1.0)]))
         for law, gates, ions in extra_laws:
             population = dict(
                 id="population_" + str(len(ionic["channels"])),
@@ -494,9 +494,9 @@ def request(case, declaration, binding):
                     membrane["pump"] = {
                         k: pump[k] for k in ("capacity_fmol_per_s", "km_ca_mM", "km_atp_mM")
                     } | dict(
-                        law="finite_atp_pmca_betse_positive@1"
+                        law="finite_atp_pmca_positive@1"
                         if kind == "pmca"
-                        else "finite_atp_er_1ca_betse_positive@1",
+                        else "finite_atp_er_1ca_positive@1",
                         metabolism=dict(kind="finite_energy_pool@1", pool_id="fuel_" + owner),
                     )
         execution["regeneration_capacity"] = len(cells) + 1

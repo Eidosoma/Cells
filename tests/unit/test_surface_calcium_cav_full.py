@@ -27,8 +27,8 @@ ASSEMBLY_TICKS = 1600
 def heterogeneous_definition(*, backend="cpu"):
     raw = _heterogeneous(backend=backend)
     # Also change a new population's inactivation power in the second world.
-    raw["model"]["ionic"]["channels"][10]["kinetic_law"] = "betse_kv1p6_mh@1"
-    raw["model"]["ionic"]["channels"][17]["kinetic_law"] = "betse_cav2p3_mh@1"
+    raw["model"]["ionic"]["channels"][10]["kinetic_law"] = "kv1p6_mh@1"
+    raw["model"]["ionic"]["channels"][17]["kinetic_law"] = "cav2p3_mh@1"
     return raw
 
 
@@ -72,9 +72,9 @@ def test_restart_rejects_changed_population(trajectories, change):
     value = trajectories["baseline"]
     raw = value.spec.to_dict()
     if change == "kv1_gate_power":
-        raw["model"]["ionic"]["channels"][10]["kinetic_law"] = "betse_kv1p2_mh@1"
+        raw["model"]["ionic"]["channels"][10]["kinetic_law"] = "kv1p2_mh@1"
     else:
-        raw["model"]["ionic"]["channels"][17]["kinetic_law"] = "betse_cav2p3_mh@1"
+        raw["model"]["ionic"]["channels"][17]["kinetic_law"] = "cav2p3_mh@1"
     alternative = parse_spec(raw)
     with pytest.raises(ConfigError, match="model or execution"):
         branch_checkpoint(value.spec, value.checkpoint_at(0.001), alternative)

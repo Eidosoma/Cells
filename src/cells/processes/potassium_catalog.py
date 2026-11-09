@@ -13,14 +13,14 @@ PAD_CODE = -1
 VOLTAGE_DOMAIN_V = accepted.VOLTAGE_DOMAIN_V
 POTASSIUM_LAWS = {
     accepted.KIR_LAW_ID: "Kir2p1",
-    "betse_kv2p1_mh@1": "Kv2p1",
-    "betse_kv2p2_mh@1": "Kv2p2",
-    "betse_kv3p1_m@1": "Kv3p1",
-    "betse_kv3p2_m2@1": "Kv3p2",
-    "betse_kv3p3_m2h_source_tau@1": "Kv3p3",
-    "betse_kv3p4_mh@1": "Kv3p4",
-    "betse_k_fast_mh@1": "K_Fast",
-    "betse_kleak_always_open@1": "KLeak",
+    "kv2p1_mh@1": "Kv2p1",
+    "kv2p2_mh@1": "Kv2p2",
+    "kv3p1_m@1": "Kv3p1",
+    "kv3p2_m2@1": "Kv3p2",
+    "kv3p3_m2h_long_tau@1": "Kv3p3",
+    "kv3p4_mh@1": "Kv3p4",
+    "k_fast_mh@1": "K_Fast",
+    "kleak_always_open@1": "KLeak",
 }
 LAW_CODES = {
     law: code for law, code in zip(POTASSIUM_LAWS, (1, 24, 25, 26, 27, 28, 29, 30, 31), strict=True)

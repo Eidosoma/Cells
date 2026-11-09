@@ -350,7 +350,7 @@ def test_world_specific_species_and_laws():
     raw = fixtures.definition("clamped", backend=BACKEND)
     raw["experiment"].update(end_time=50e-6, observation_times=[0.0, 25e-6, 50e-6])
     first = parse_spec(raw)
-    raw["model"]["channels"][5].update(species_id="K", kinetic_law="betse_kv1p5_mh@1")
+    raw["model"]["channels"][5].update(species_id="K", kinetic_law="kv1p5_mh@1")
     second = parse_spec(raw)
     expected = [run(s) for s in (first, second)]
     assert np.any(

@@ -11,9 +11,9 @@ MODEL_IDS = dict(
     ionic="resolved_tissue@12", calcium="resolved_calcium@11", energy="resolved_calcium_energy@5"
 )
 ADDED_LAWS = (
-    ("betse_hcn_leak_open@1", "HCNLeak", 0.33),
-    ("betse_hcn2_camp_m@1", "HCN2_cAMP", 0.2),
-    ("betse_hcn4_camp_m@1", "HCN4_cAMP", 0.2),
+    ("hcn_leak_open@1", "HCNLeak", 0.33),
+    ("hcn2_camp_m@1", "HCN2_cAMP", 0.2),
+    ("hcn4_camp_m@1", "HCN4_cAMP", 0.2),
 )
 
 

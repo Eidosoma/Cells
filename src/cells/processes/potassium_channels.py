@@ -9,7 +9,7 @@ import jax.numpy as jnp
 
 from cells.processes import voltage_gates
 
-KIR_LAW_ID = "betse_kir2p1_mh2@1"
+KIR_LAW_ID = "kir2p1_mh2@1"
 LAW_CODES = {voltage_gates.LAW_ID: 0, KIR_LAW_ID: 1}
 TEMPERATURE_K = voltage_gates.TEMPERATURE_K
 VOLTAGE_DOMAIN_V = voltage_gates.VOLTAGE_DOMAIN_V

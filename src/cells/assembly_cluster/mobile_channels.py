@@ -90,7 +90,7 @@ def accumulate(arm, row):
         or len(owners) != len(patches)
         or not set(owners) <= set(cells)
         or data["species_ids"] != ["K"] * len(populations)
-        or data["kinetic_laws"] != ["betse_kv1p5_mh@1"] * len(populations)
+        or data["kinetic_laws"] != ["kv1p5_mh@1"] * len(populations)
         or data["joint_state_ids"] != list(STATE_IDS)
         or data["transition_ids"] != list(TRANSITION_IDS)
         or data["axes"] != AXES

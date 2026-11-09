@@ -53,9 +53,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
         if kind == "nak":
             return pump | dict(metabolism=meta)
         return {k: pump[k] for k in ("capacity_fmol_per_s", "km_ca_mM", "km_atp_mM")} | dict(
-            law="finite_atp_pmca_betse_positive@1"
-            if kind == "pmca"
-            else "finite_atp_er_1ca_betse_positive@1",
+            law="finite_atp_pmca_positive@1" if kind == "pmca" else "finite_atp_er_1ca_positive@1",
             metabolism=meta,
         )
 

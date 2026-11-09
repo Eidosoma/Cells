@@ -404,9 +404,7 @@ def test_finite_pool_declaration_guards(fault):
     if fault == "duplicate_pool":
         raw["model"]["energy_pools"].append(deepcopy(raw["model"]["energy_pools"][0]))
     elif fault == "old_er_law":
-        raw["model"]["stores"][0]["model"]["membrane"]["pump"]["law"] = (
-            "betse_1_5_er_calcium_pump_positive@1"
-        )
+        raw["model"]["stores"][0]["model"]["membrane"]["pump"]["law"] = "er_calcium_pump_positive@1"
     elif fault == "maintained_fields":
         raw["model"]["plasma_transport"]["membranes"][0]["pump"]["atp_mM"] = 1.5
     elif fault == "negative_capacity":

@@ -36,7 +36,7 @@ comparison remains separate from these arithmetic checks.
 
 ## Continuous gate law and units
 
-Named law: `betse_kv1p5_mh@1`. Voltage `V` is inside minus bath, in **volts**;
+Named law: `kv1p5_mh@1`. Voltage `V` is inside minus bath, in **volts**;
 time is in **seconds**. There is no selectable unit string, voltage correction,
 temperature factor, executable expression or implicit equilibrium initialization.
 
@@ -80,7 +80,7 @@ explicit SPEC-005 reference definition; this is not a production-config loader.
 | `id` | Stable mechanism ID distinct from cell, membrane, bath and pump IDs |
 | `membrane_id` | Existing membrane on which the mechanism is installed |
 | `species_id` | Explicit potassium-role binding to one declared +1 species; spelling is not chemical identity |
-| `kinetic_law` | Exactly `betse_kv1p5_mh@1`; no arbitrary rate expressions |
+| `kinetic_law` | Exactly `kv1p5_mh@1`; no arbitrary rate expressions |
 | `max_permeability_m_per_s` | Nonnegative membrane permeability when both gates, abundance and availability are one |
 | `abundance` | Nonnegative dimensionless multiplier of that reference permeability; not a molecule count or conductance in siemens |
 | `initial_gate` | Explicit `m` and `h` in [0, 1], retained independently of initial voltage |

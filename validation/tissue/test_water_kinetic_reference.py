@@ -89,9 +89,9 @@ def case(*, multiple=False):
             initial_gate=gate,
         )
         for name, law, ions, gate in (
-            ("kv", "betse_kv1p5_mh@1", {"K": 1.0}, [0.2, 0.7]),
-            ("hcn", "betse_hcn4_m@1", {"Na": 0.2, "K": 1.0}, [0.3, 1.0]),
-            ("cav", "betse_cav1p2_m2h@1", {"Ca": 1.0}, [0.1, 0.8]),
+            ("kv", "kv1p5_mh@1", {"K": 1.0}, [0.2, 0.7]),
+            ("hcn", "hcn4_m@1", {"Na": 0.2, "K": 1.0}, [0.3, 1.0]),
+            ("cav", "cav1p2_m2h@1", {"Ca": 1.0}, [0.1, 0.8]),
         )
     ]
     owners = [*cells, *outside]

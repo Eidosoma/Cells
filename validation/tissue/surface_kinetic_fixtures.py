@@ -39,7 +39,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
             id=f"channel_{i}",
             membrane_id=f"membrane_{i}",
             species_id="K",
-            kinetic_law="betse_kv1p5_mh@1",
+            kinetic_law="kv1p5_mh@1",
             max_permeability_m_per_s=3e-10,
             abundance=0.5 + 0.1 * i,
             initial_gate=[0.2 + 0.05 * i, 0.7],

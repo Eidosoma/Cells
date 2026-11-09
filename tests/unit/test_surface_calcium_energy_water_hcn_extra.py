@@ -125,7 +125,7 @@ def test_invalid_complete_owner_state_refuses_without_repair(fault):
         y.volume_increment_pL[0] = -p.volume[0]
     elif fault == "instant-gate":
         index = next(
-            i for i, c in enumerate(spec.model.channels) if c.kinetic_law == "betse_hcn_leak_open@1"
+            i for i, c in enumerate(spec.model.channels) if c.kinetic_law == "hcn_leak_open@1"
         )
         y.channel_gate[0, index] = 0.1
     elif fault == "work":

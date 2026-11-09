@@ -70,9 +70,7 @@ def definition(arm="open", *, catalog="compact", backend="cpu", padded=False):
             pump = row["model"]["membrane"]["pump"] if is_er else row["pump"]
             if pump is not None:
                 converted = dict(
-                    law="finite_atp_er_1ca_betse_positive@1"
-                    if is_er
-                    else "finite_atp_pmca_betse_positive@1",
+                    law="finite_atp_er_1ca_positive@1" if is_er else "finite_atp_pmca_positive@1",
                     **{key: pump[key] for key in ("capacity_fmol_per_s", "km_ca_mM", "km_atp_mM")},
                     metabolism=dict(kind="finite_energy_pool@1", pool_id="fuel_" + owner),
                 )

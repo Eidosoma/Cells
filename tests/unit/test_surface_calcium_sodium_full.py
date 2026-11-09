@@ -54,7 +54,7 @@ def heterogeneous_definition(*, backend="cpu"):
     raw = fixtures.definition(backend=backend)
     # Same model/array layout, different law AND transported species in one
     # population. The other sodium population and chemical ownership stay live.
-    raw["model"]["ionic"]["channels"][5].update(species_id="K", kinetic_law="betse_kv1p5_mh@1")
+    raw["model"]["ionic"]["channels"][5].update(species_id="K", kinetic_law="kv1p5_mh@1")
     return raw
 
 
@@ -331,9 +331,9 @@ def test_restart_rejects_changed_population(trajectories, change):
     value = trajectories["baseline"]
     raw = value.spec.to_dict()
     if change == "law":
-        raw["model"]["ionic"]["channels"][1]["kinetic_law"] = "betse_kv1p5_mh@1"
+        raw["model"]["ionic"]["channels"][1]["kinetic_law"] = "kv1p5_mh@1"
     else:
-        raw["model"]["ionic"]["channels"][5].update(species_id="K", kinetic_law="betse_kv1p5_mh@1")
+        raw["model"]["ionic"]["channels"][5].update(species_id="K", kinetic_law="kv1p5_mh@1")
     valid_alternative = parse_spec(raw)
     with pytest.raises(ConfigError, match="model or execution"):
         branch_checkpoint(value.spec, value.checkpoint_at(0.001), valid_alternative)

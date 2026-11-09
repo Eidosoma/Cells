@@ -15,7 +15,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
         channel.update(
             id=f"sodium_{index}",
             species_id="Na",
-            kinetic_law="betse_nav1p2_m3h_regularized@1",
+            kinetic_law="nav1p2_m3h_regularized@1",
             abundance=0.2 + 0.1 * index,
             initial_gate=[0.15 + 0.2 * index, 0.8 - 0.2 * index],
         )

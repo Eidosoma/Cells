@@ -32,7 +32,7 @@
     "sha256": "a5b267af9f88f218673e585ba1e3e575a9a85cb567ae24d3542721e13cfe6f34"
   },
   "kinetic_law": {
-    "id": "betse_kv1p5_mh@1",
+    "id": "kv1p5_mh@1",
     "voltage_domain_V": [
       -0.12,
       0.06
@@ -209,7 +209,7 @@
           "id": "channel_kv1p5",
           "membrane_id": "membrane_0",
           "species_id": "K",
-          "kinetic_law": "betse_kv1p5_mh@1",
+          "kinetic_law": "kv1p5_mh@1",
           "max_permeability_m_per_s": 1e-8,
           "abundance": 1,
           "initial_gate": {
@@ -301,7 +301,7 @@
           "id": "channel_kv1p5",
           "membrane_id": "membrane_0",
           "species_id": "K",
-          "kinetic_law": "betse_kv1p5_mh@1",
+          "kinetic_law": "kv1p5_mh@1",
           "max_permeability_m_per_s": 1e-8,
           "abundance": 1,
           "initial_gate": {

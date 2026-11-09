@@ -151,7 +151,7 @@
               "id": "channel_0",
               "membrane_id": "membrane_0",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -245,7 +245,7 @@
               "id": "channel_0",
               "membrane_id": "membrane_0",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -332,7 +332,7 @@
               "id": "channel_0",
               "membrane_id": "membrane_0",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -386,7 +386,7 @@
               "id": "channel_1",
               "membrane_id": "membrane_1",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -516,7 +516,7 @@
               "id": "channel_0",
               "membrane_id": "membrane_0",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -570,7 +570,7 @@
               "id": "channel_1",
               "membrane_id": "membrane_1",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -681,7 +681,7 @@
               "id": "channel_0",
               "membrane_id": "membrane_0",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -735,7 +735,7 @@
               "id": "channel_1",
               "membrane_id": "membrane_1",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -919,7 +919,7 @@
               "id": "channel_0",
               "membrane_id": "membrane_0",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -975,7 +975,7 @@
               "id": "channel_1",
               "membrane_id": "membrane_1",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -1095,7 +1095,7 @@
               "id": "channel_0",
               "membrane_id": "membrane_0",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -1151,7 +1151,7 @@
               "id": "channel_1",
               "membrane_id": "membrane_1",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -1334,7 +1334,7 @@
               "id": "channel_0",
               "membrane_id": "membrane_0",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {
@@ -1388,7 +1388,7 @@
               "id": "channel_1",
               "membrane_id": "membrane_1",
               "species_id": "K",
-              "kinetic_law": "betse_kv1p5_mh@1",
+              "kinetic_law": "kv1p5_mh@1",
               "max_permeability_m_per_s": 1e-8,
               "abundance": 1,
               "initial_gate": {

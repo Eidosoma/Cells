@@ -12,10 +12,10 @@ import jax.numpy as jnp
 
 from cells.processes.electrochemistry import electrochemical_potential, ghk_leak
 
-LAW_ID = "betse_mitochondrial_passive_continuous_si@1"
+LAW_ID = "mitochondrial_passive_continuous_si@1"
 # Cited source law: the native discrete BETSE 1.5.0 mitochondrial ion/voltage
 # component (removed from the tree; tag native-betse-frozen-2026-11-08).
-SOURCE_LAW = "betse_mitochondrial_ion_voltage_source_v1_5_0@1"
+SOURCE_LAW = "mitochondrial_ion_voltage@1"
 MAX_VOLTAGE_V = 0.2
 
 

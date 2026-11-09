@@ -53,7 +53,7 @@ def test_source_identity_ordered_metadata_and_standalone_padding():
     for law, name in leaks.LEAK_LAWS.items():
         assert leaks.LAW_PERMEABILITIES[law] == reference.ORDERED_PERMEABILITIES[name]
         assert leaks.GATE_POWERS[law] == (0, 0)
-    assert leaks.LAW_PERMEABILITIES["betse_catleak_na_k@1"][-1] == ("Ca", 0.0)
+    assert leaks.LAW_PERMEABILITIES["catleak_na_k@1"][-1] == ("Ca", 0.0)
     assert leaks.valid_codes(np.array([-1, *CODES]), xp=np)
     assert not leaks.valid_codes(np.array([0, 1, 31, 35]), xp=np)
 

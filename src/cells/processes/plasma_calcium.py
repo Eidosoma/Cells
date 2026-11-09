@@ -12,7 +12,7 @@ import jax.numpy as jnp
 from cells.processes import er_calcium
 from cells.processes.electrochemistry import F, R
 
-PUMP_LAW = "betse_1_5_plasma_calcium_pump_positive@1"
+PUMP_LAW = "plasma_calcium_pump_positive@1"
 EXCHANGER_LAW = "ncx_3na_1ca_symmetric_barrier@1"
 MAX_AFFINITY_RT = 80.0
 MAX_VOLTAGE = 0.15

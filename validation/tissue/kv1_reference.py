@@ -7,7 +7,7 @@ separately by executing the unchanged pinned implementation.
 
 from decimal import Decimal, localcontext
 
-LAWS = {f"betse_kv1p{i}_mh{'2' if i == 1 else ''}@1": i for i in range(1, 7)}
+LAWS = {f"kv1p{i}_mh{'2' if i == 1 else ''}@1": i for i in range(1, 7)}
 
 
 def kinetics(voltage, family):

@@ -307,7 +307,7 @@ def test_invalid_definitions_rejected(fault):
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     p = m["mobile_channels"][0]
     if fault == "law":
-        p["kinetic_law"] = "betse_kir2p1_mh2@1"
+        p["kinetic_law"] = "kir2p1_mh2@1"
     elif fault == "charge":
         p["effective_charge_e"] = 1
     elif fault == "species":

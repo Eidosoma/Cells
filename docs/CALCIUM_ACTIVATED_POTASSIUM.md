@@ -1,6 +1,6 @@
 # Legacy calcium- and voltage-activated potassium equation
 
-`betse_cagpotassium_numeric_mM_scale@1` independently expresses the pinned
+`cagpotassium_numeric_mM_scale@1` independently expresses the pinned
 BETSE v1.5.0 function `betse.science.tissue.channels_o.cagPotassium`, commit
 `5269a714aa2593ed2a6708c4516289977d8ae1a2`. It is a **legacy function**;
 inspection found no call site in the pinned Python checkout. It is not a

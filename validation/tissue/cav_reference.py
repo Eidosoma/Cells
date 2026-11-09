@@ -7,13 +7,13 @@ CaV3.1 retains the literal source branch at -0.01 mV.
 from decimal import Decimal, localcontext
 
 LAWS = {
-    "betse_cav1p2_m2h@1": "Cav1p2",
-    "betse_cav1p3_m2h@1": "Cav1p3",
-    "betse_cav2p1_m@1": "Cav2p1",
-    "betse_cav2p2_m2h_regularized@1": "Cav2p2",
-    "betse_cav2p3_mh@1": "Cav2p3",
-    "betse_cav3p1_mh_source_branch@1": "Cav3p1",
-    "betse_cav3p3_mh@1": "Cav3p3",
+    "cav1p2_m2h@1": "Cav1p2",
+    "cav1p3_m2h@1": "Cav1p3",
+    "cav2p1_m@1": "Cav2p1",
+    "cav2p2_m2h_regularized@1": "Cav2p2",
+    "cav2p3_mh@1": "Cav2p3",
+    "cav3p1_mh_piecewise_tau_m@1": "Cav3p1",
+    "cav3p3_mh@1": "Cav3p3",
 }
 POWERS = {
     name: (2, 1)

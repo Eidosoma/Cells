@@ -12,15 +12,15 @@ VOLTAGE_DOMAIN_V = (-0.120, 0.060)
 SPECIES = ("Cl", "Na", "K", "Ca")
 SPECIES_VALENCE = {"Cl": -1, "Na": 1, "K": 1, "Ca": 2}
 LEAK_LAWS = {
-    "betse_clleak_always_open@1": "ClLeak",
-    "betse_catleak_na_k@1": "CatLeak",
-    "betse_catleak2_na_k_ca@1": "CatLeak2",
+    "clleak_always_open@1": "ClLeak",
+    "catleak_na_k@1": "CatLeak",
+    "catleak2_na_k_ca@1": "CatLeak2",
 }
 LAW_CODES = {law: code for law, code in zip(LEAK_LAWS, (32, 33, 34), strict=True)}
 LAW_PERMEABILITIES = {
-    "betse_clleak_always_open@1": (("Cl", 1.0),),
-    "betse_catleak_na_k@1": (("Na", 1.0), ("K", 1.0), ("Ca", 0.0)),
-    "betse_catleak2_na_k_ca@1": (("Na", 1.0), ("K", 1.0), ("Ca", 1.0)),
+    "clleak_always_open@1": (("Cl", 1.0),),
+    "catleak_na_k@1": (("Na", 1.0), ("K", 1.0), ("Ca", 0.0)),
+    "catleak2_na_k_ca@1": (("Na", 1.0), ("K", 1.0), ("Ca", 1.0)),
 }
 GATE_POWERS = {law: (0, 0) for law in LEAK_LAWS}
 

@@ -570,7 +570,7 @@ def definition_contract(definition, p, base, variant, g, row):
                 channel["id"] == f"channel_{i}"
                 and channel["membrane_id"] == membrane["id"]
                 and channel["species_id"] == "K"
-                and channel["kinetic_law"] == "betse_kv1p5_mh@1",
+                and channel["kinetic_law"] == "kv1p5_mh@1",
                 "Mapped channel identity changed",
             )
             require(

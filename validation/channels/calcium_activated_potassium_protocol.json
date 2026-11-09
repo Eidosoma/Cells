@@ -1,6 +1,6 @@
 {
   "kind": "cells.legacy_cagpotassium_contracts@1",
-  "law_id": "betse_cagpotassium_numeric_mM_scale@1", "future_code": 39, "padding_code": -1,
+  "law_id": "cagpotassium_numeric_mM_scale@1", "future_code": 39, "padding_code": -1,
   "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2", "source_version": "1.5.0",
   "source_symbol": "betse.science.tissue.channels_o.cagPotassium",
   "source_status": "Legacy standalone function; no call site found in pinned checkout. Not a current-runtime class, BK/SK fit or coupled BETSE parity claim",

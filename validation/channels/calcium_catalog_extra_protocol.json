@@ -3,7 +3,7 @@
   "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
   "source_version": "1.5.0",
   "classes": ["Ca_L2", "Ca_L3", "Cav_G", "CaLeak"],
-  "law_codes": {"betse_ca_l2_m2h@1": 35, "betse_ca_l3_shift15_m2h@1": 36, "betse_cav_g_m2h_regularized@1": 37, "betse_caleak_always_open@1": 38},
+  "law_codes": {"ca_l2_m2h@1": 35, "ca_l3_shift15_m2h@1": 36, "cav_g_m2h_regularized@1": 37, "caleak_always_open@1": 38},
   "padding_code": -1,
   "padding": "Standalone sentinel only; V/gates/rates/opening zero,tau1s. Shared code0 stays unchanged and is invalid here",
   "axes": "V/codes [...,population], gates/targets/tau [...,2,population]; leading independent worlds broadcast",

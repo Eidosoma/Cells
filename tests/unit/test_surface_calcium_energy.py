@@ -199,7 +199,7 @@ def test_reject_ambiguous_fuel_schema(fault):
     elif fault == "control":
         raw["experiment"]["regeneration_controls"][0]["schedule"][0]["availability"] = True
     elif fault == "law":
-        pumps[2]["law"] = "betse_1_5_er_calcium_pump_positive@1"
+        pumps[2]["law"] = "er_calcium_pump_positive@1"
     else:
         # Reserved energy owner cannot be added as another chemical species.
         for row in m["stores"]:

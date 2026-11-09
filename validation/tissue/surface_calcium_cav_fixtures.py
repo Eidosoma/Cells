@@ -10,13 +10,13 @@ from validation.tissue import surface_calcium_kv1_fixtures as base
 
 ARMS = base.ARMS
 LAWS = (
-    "betse_cav1p2_m2h@1",
-    "betse_cav1p3_m2h@1",
-    "betse_cav2p1_m@1",
-    "betse_cav2p2_m2h_regularized@1",
-    "betse_cav2p3_mh@1",
-    "betse_cav3p1_mh_source_branch@1",
-    "betse_cav3p3_mh@1",
+    "cav1p2_m2h@1",
+    "cav1p3_m2h@1",
+    "cav2p1_m@1",
+    "cav2p2_m2h_regularized@1",
+    "cav2p3_mh@1",
+    "cav3p1_mh_piecewise_tau_m@1",
+    "cav3p3_mh@1",
 )
 
 

@@ -1,6 +1,6 @@
 {
   "kind": "cells.finite_calcium_pump_contracts@1",
-  "laws": ["finite_atp_pmca_betse_positive@1", "finite_atp_er_1ca_betse_positive@1"],
+  "laws": ["finite_atp_pmca_positive@1", "finite_atp_er_1ca_positive@1"],
   "pool_law": "finite_atp_adp_pi_transformed@1",
   "source_kernels": ["cells.processes.plasma_calcium.pump_rates", "cells.processes.er_calcium.pump_rates"],
   "standard_energy_mapping": "deltaG0_1mM=deltaG0_1M-R*T*ln(1000); finite owner deltaG0 stays unchanged",

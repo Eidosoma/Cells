@@ -604,7 +604,7 @@ PYTHONPATH=src /mnt/workspaces/Cells/venv-gpu/bin/python -m cells run \
   --output /mnt/workspaces/Cells/resolved-channels-example-01
 ```
 
-The new law `betse_kir2p1_mh2@1` uses the coefficients and **m × h²** opening in
+The new law `kir2p1_mh2@1` uses the coefficients and **m × h²** opening in
 [pinned BETSE's Kir2p1](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/vg_k.py#L730-L779).
 Cells expresses those equations independently in volts and seconds and integrates
 `dg/dt = (g_inf(V) - g)/tau(V)` with its existing guarded RK4 solver. The
@@ -680,7 +680,7 @@ runner, complete nineteen-array checkpoints, windows and independent-world GPU
 batches use a distinct model/layout identity. The previous potassium and calcium
 model identities keep their existing catalogs.
 
-The law `betse_nav1p2_m3h_regularized@1` independently expresses the coefficients,
+The law `nav1p2_m3h_regularized@1` independently expresses the coefficients,
 voltage shifts and **m³ × h** opening in
 [pinned BETSE's Nav1p2](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/vg_na.py).
 Gate inputs use volts; time constants use seconds. The existing GHK law determines
@@ -812,9 +812,9 @@ With membrane voltage `V` in volts, activation is
 
 | Source feature | Cells correspondence | Check or scope boundary |
 | --- | --- | --- |
-| HCN1 | `betse_hcn1_m@1`: midpoint −94 mV, slope 8.1 mV, activation time constant 30 ms | Native and independent Decimal gate parameters; no voltage shift |
-| HCN2 | `betse_hcn2_m@1`: effective midpoint −89 mV, slope 6.2 mV, activation time constant 184 ms | Includes the source's −10-mV input shift |
-| HCN4 | `betse_hcn4_m@1`: effective midpoint −90 mV, slope 9.6 mV, activation time constant 461 ms | Includes the source's −10-mV input shift |
+| HCN1 | `hcn1_m@1`: midpoint −94 mV, slope 8.1 mV, activation time constant 30 ms | Native and independent Decimal gate parameters; no voltage shift |
+| HCN2 | `hcn2_m@1`: effective midpoint −89 mV, slope 6.2 mV, activation time constant 184 ms | Includes the source's −10-mV input shift |
+| HCN4 | `hcn4_m@1`: effective midpoint −90 mV, slope 9.6 mV, activation time constant 461 ms | Includes the source's −10-mV input shift |
 | Shared opening | `m¹ h⁰ = m`; unused `h` relaxes to 1 with a 1-ms time constant | Blocking transport leaves both intrinsic gate states evolving |
 | Relative permeability | Na:K:Ca = **0.2:1:0.05**, multiplied by the population's maximum permeability, abundance, opening and availability | Strict named species and valences; separate material/heat records; no extra chloride route |
 | Native gate clock | Semi-implicit update with millisecond time units | Captured unchanged in the separate BETSE environment; distinct from Cells' continuous RK4 tissue solver |
@@ -940,12 +940,12 @@ voltage in this calculation.
 
 | Pinned source class | Cells law | Opening and distinguishing kinetics |
 | --- | --- | --- |
-| `Kv1p1` | `betse_kv1p1_mh2@1` | `m h²`; voltage-dependent sigmoid activation and inactivation time constants |
-| `Kv1p2` | `betse_kv1p2_mh@1` | `m h`; its own sigmoid targets and time constants |
-| `Kv1p3` | `betse_kv1p3_mh@1` | `m h`; both time constants are affine functions of voltage |
-| `Kv1p4` | `betse_kv1p4_mh@1` | `m h`; constant activation/inactivation time constants of 3/119 ms |
-| `Kv1p5` | `betse_kv1p5_mh@1` | Existing law retained; independent source capture includes it as a continuity control |
-| `Kv1p6` | `betse_kv1p6_mh@1` | `m h`; its own sigmoid targets and time constants |
+| `Kv1p1` | `kv1p1_mh2@1` | `m h²`; voltage-dependent sigmoid activation and inactivation time constants |
+| `Kv1p2` | `kv1p2_mh@1` | `m h`; its own sigmoid targets and time constants |
+| `Kv1p3` | `kv1p3_mh@1` | `m h`; both time constants are affine functions of voltage |
+| `Kv1p4` | `kv1p4_mh@1` | `m h`; constant activation/inactivation time constants of 3/119 ms |
+| `Kv1p5` | `kv1p5_mh@1` | Existing law retained; independent source capture includes it as a continuity control |
+| `Kv1p6` | `kv1p6_mh@1` | `m h`; its own sigmoid targets and time constants |
 
 The [protocol](../validation/tissue/surface_calcium_kv1_protocol.json) executes
 the unchanged source classes in the separate BETSE environment. It compares
@@ -992,13 +992,13 @@ Source milliseconds are converted to seconds; no temperature refit is applied.
 
 | Source class | Cells law | Opening and correspondence boundary |
 | --- | --- | --- |
-| `Cav1p2` | `betse_cav1p2_m2h@1` | `m² h`; retains the source's −10-mV input shift and the existing dedicated-route kinetics |
-| `Cav1p3` | `betse_cav1p3_m2h@1` | `m² h`; unshifted L-type source equations |
-| `Cav2p1` | `betse_cav2p1_m@1` | `m`; unused `h` still relaxes to 1 with a 1-ms time constant |
-| `Cav2p2` | `betse_cav2p2_m2h_regularized@1` | `m² h`; analytic limit at +20 mV, where the unchanged source produces nonfinite activation values |
-| `Cav2p3` | `betse_cav2p3_mh@1` | `m h`; source activation/inactivation rate equations |
-| `Cav3p1` | `betse_cav3p1_mh_source_branch@1` | `m h`; retains the literal source branch at **−0.01 mV**, including its time-constant discontinuity |
-| `Cav3p3` | `betse_cav3p3_mh@1` | `m h`; source sigmoid activation and exponential inactivation time constants |
+| `Cav1p2` | `cav1p2_m2h@1` | `m² h`; retains the source's −10-mV input shift and the existing dedicated-route kinetics |
+| `Cav1p3` | `cav1p3_m2h@1` | `m² h`; unshifted L-type source equations |
+| `Cav2p1` | `cav2p1_m@1` | `m`; unused `h` still relaxes to 1 with a 1-ms time constant |
+| `Cav2p2` | `cav2p2_m2h_regularized@1` | `m² h`; analytic limit at +20 mV, where the unchanged source produces nonfinite activation values |
+| `Cav2p3` | `cav2p3_mh@1` | `m h`; source activation/inactivation rate equations |
+| `Cav3p1` | `cav3p1_mh_piecewise_tau_m@1` | `m h`; retains the literal source branch at **−0.01 mV**, including its time-constant discontinuity |
+| `Cav3p3` | `cav3p3_mh@1` | `m h`; source sigmoid activation and exponential inactivation time constants |
 
 Two source details have explicit tests. CaV2.2's activation rate has a removable
 zero at +20 mV; its limit is **1 ms⁻¹**. Stable Bernoulli evaluation supplies
@@ -1514,7 +1514,7 @@ from different patches mix: two populations can have identical average gates but
 different open fractions. The model therefore transports every conformation
 separately, without resetting gates or refactorizing the arriving distribution.
 
-The existing `betse_kv1p5_mh@1` law supplies `m_inf`, `h_inf` and their time
+The existing `kv1p5_mh@1` law supplies `m_inf`, `h_inf` and their time
 constants at the current stage's membrane voltage. Its domain remains **298.15 K**
 and **−0.120 to +0.060 V**. Each gate's forward/reverse rates are
 `alpha = target/tau` and `beta = (1-target)/tau`. Four transitions connect the
@@ -2253,9 +2253,9 @@ native backward Euler and continuous relaxation as separate contracts.
 
 | Native class / Cells law | Initialization / update midpoint | Slope / activation time constant | Relative Na/K/Ca permeability | Cells state |
 | --- | --- | --- | --- | --- |
-| `HCNLeak` / `betse_hcn_leak_open@1` | Opening always 1 | No physical gate clock | .33 / 1 / .05 | `initial_gate: []` |
-| `HCN2_cAMP` / `betse_hcn2_camp_m@1` | −79 / −79 mV | 6.2 mV / 184 ms | .2 / 1 / .05 | `initial_gate: [m, h]` |
-| `HCN4_cAMP` / `betse_hcn4_camp_m@1` | **−80 / −76 mV** | 9.6 mV / 461 ms | .2 / 1 / .05 | `initial_gate: [m, h]` |
+| `HCNLeak` / `hcn_leak_open@1` | Opening always 1 | No physical gate clock | .33 / 1 / .05 | `initial_gate: []` |
+| `HCN2_cAMP` / `hcn2_camp_m@1` | −79 / −79 mV | 6.2 mV / 184 ms | .2 / 1 / .05 | `initial_gate: [m, h]` |
+| `HCN4_cAMP` / `hcn4_camp_m@1` | **−80 / −76 mV** | 9.6 mV / 461 ms | .2 / 1 / .05 | `initial_gate: [m, h]` |
 
 The cAMP variants retain the source's unused h gate, with target 1 and a
 1-ms relaxation time; opening depends only on m. HCNLeak's native m/h
