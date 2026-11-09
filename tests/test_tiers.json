@@ -5,7 +5,8 @@
   "/mnt/workspaces/Cells/test-tiers-20261109-02/measure/measured.json",
   "/mnt/workspaces/Cells/test-tiers-20261109-03/measure/measured.json",
   "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/gate-02/new-measured/measured.json",
-  "/mnt/workspaces/Cells/ledger-fix-20261109-01/measure4/measured.json"
+  "/mnt/workspaces/Cells/ledger-fix-20261109-01/measure4/measured.json",
+  "/mnt/workspaces/Cells/projective-c-20261109-01/qual-gate-01/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -45,6 +46,14 @@
    "root": "/mnt/workspaces/Cells/ledger-fix-20261109-01/source-fix-08",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-09T20:51:07+00:00"
+  },
+  {
+   "git_revision": "ca70d4a68456559e37e4c86218203d4c2fe62839",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/projective-c-20261109-01/qual-gate-01/source",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-09T21:59:20+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1447,6 +1456,22 @@
     }
    },
    {
+    "file": "tests/unit/test_projective_judge.py",
+    "seconds": 0.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_projective_study.py",
+    "seconds": 3.5,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
     "file": "tests/unit/test_qualification_inventory.py",
     "seconds": 0.47,
     "exit_code": 0,
@@ -2573,6 +2598,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 146
+    }
+   },
+   {
+    "file": "tests/unit/test_projective_protocol_runs.py",
+    "seconds": 60.25,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {
