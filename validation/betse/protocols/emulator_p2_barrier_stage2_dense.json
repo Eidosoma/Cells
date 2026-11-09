@@ -1,0 +1,299 @@
+{
+  "schema": "cells.betse_comparison_protocol@1",
+  "id": "emulator-p2-barrier-stage2-dense",
+  "purpose": "Rung 2 (P2), stage (ii): judge the stage-(i) reference, the BETSE-order emulator with compact harmonic faces at BETSE's dt / 100 (BETSE's constants, SIM chained), against plain BETSE p2-barrier-dense. Its difference from BETSE is the named, documented model difference 'stencil' (BETSE's point-sampled 2-delta central divergence against compact faces with Cells' harmonic coefficient, measured emulator vs emulator) plus BETSE's own INIT step error; the emulator with BETSE's stencil reproduces BETSE to roundoff (parity-rung2-4-20261109-01/emulator-01/p2b-check-comparison). Tooling stage: no Cells engine model runs.",
+  "betse_case": "p2-barrier-dense",
+  "phases": [
+    "init",
+    "sim"
+  ],
+  "time_alignment_atol_s": 1e-09,
+  "min_common_samples": 1,
+  "compare_final": true,
+  "observables": {
+    "vm_time": {
+      "final": "vm",
+      "tolerance": "voltage"
+    },
+    "vm_ave_time": {
+      "final": "vm_ave",
+      "tolerance": "voltage"
+    },
+    "cc_time": {
+      "final": "cc_cells",
+      "tolerance": "cell_concentration"
+    },
+    "cc_env_time": {
+      "final": "cc_env",
+      "tolerance": "ecm_concentration",
+      "exclude": "grid_boundary_ring"
+    },
+    "venv_time": {
+      "final": "v_env",
+      "tolerance": "voltage",
+      "judged": false
+    },
+    "diag_*": {
+      "judged": false
+    }
+  },
+  "tolerance_quantities": {
+    "voltage": {
+      "kind": "abs",
+      "units": "V"
+    },
+    "cell_concentration": {
+      "kind": "rel",
+      "units": "1"
+    },
+    "ecm_concentration": {
+      "kind": "rel",
+      "units": "1"
+    }
+  },
+  "tolerance_classes": {
+    "emulator_harmonic_faces_vs_betse": {
+      "cell_concentration": {
+        "init": {
+          "by_ion": {
+            "Ca": 0.5,
+            "Cl": 8e-06,
+            "K": 8e-07,
+            "M": 1e-06,
+            "Na": 2e-05,
+            "P": 1e-12
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Ca": 4e-05,
+            "Cl": 2e-06,
+            "K": 7e-07,
+            "M": 2e-07,
+            "Na": 7e-06,
+            "P": 1e-12
+          }
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "by_ion": {
+            "Ca": 7e-05,
+            "Cl": 0.0002,
+            "K": 0.02,
+            "M": 2e-05,
+            "Na": 0.0007,
+            "P": 1e-12
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Ca": 7e-05,
+            "Cl": 0.0002,
+            "K": 0.02,
+            "M": 2e-05,
+            "Na": 0.0007,
+            "P": 1e-12
+          }
+        }
+      },
+      "voltage": {
+        "init": 0.0004,
+        "sim": 3e-06
+      }
+    }
+  },
+  "verdict_class": "emulator_harmonic_faces_vs_betse",
+  "tolerance_derivation": {
+    "method": "3 x (sum of measured difference terms), rounded up to one significant figure; per ion for concentrations (a zero sum gets the floor 1e-12)",
+    "tool": "validation/betse/protocol_tolerances.py",
+    "recipe": "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/protocols/recipe_p2_barrier_stage2_dense.json",
+    "inputs": "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/protocols/derived_p2_barrier_stage2_dense.json",
+    "terms": [
+      "betse_init_step",
+      "stencil_betse_vs_harmonic_compact_faces_at_dt_over_100"
+    ],
+    "provisional_terms": [],
+    "largest_term": {
+      "cell_concentration": {
+        "init": "betse_init_step",
+        "sim": "stencil_betse_vs_harmonic_compact_faces_at_dt_over_100"
+      },
+      "ecm_concentration": {
+        "init": "stencil_betse_vs_harmonic_compact_faces_at_dt_over_100",
+        "sim": "stencil_betse_vs_harmonic_compact_faces_at_dt_over_100"
+      },
+      "voltage": {
+        "init": "betse_init_step",
+        "sim": "stencil_betse_vs_harmonic_compact_faces_at_dt_over_100"
+      }
+    },
+    "sums_before_margin": {
+      "cell_concentration": {
+        "init": {
+          "Ca": 0.15025199124458882,
+          "Cl": 2.4697619734648606e-06,
+          "K": 2.641181164743774e-07,
+          "M": 3.2691381449130476e-07,
+          "Na": 4.214473304485839e-06,
+          "P": 0.0
+        },
+        "sim": {
+          "Ca": 1.1306168535280087e-05,
+          "Cl": 4.797819392252176e-07,
+          "K": 2.053126579050119e-07,
+          "M": 4.910479130221296e-08,
+          "Na": 2.318440417084228e-06,
+          "P": 0.0
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "Ca": 2.1688512088782663e-05,
+          "Cl": 5.6224663260227965e-05,
+          "K": 0.006584180520697755,
+          "M": 5.543434291742102e-06,
+          "Na": 0.0002264559159395597,
+          "P": 0.0
+        },
+        "sim": {
+          "Ca": 2.0684535717945872e-05,
+          "Cl": 5.6343612806472585e-05,
+          "K": 0.006610557409427589,
+          "M": 5.159409068740735e-06,
+          "Na": 0.00022712082856176638,
+          "P": 0.0
+        }
+      },
+      "voltage": {
+        "init": 0.0001314605302784235,
+        "sim": 8.595454569805538e-07
+      }
+    }
+  },
+  "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+  "notes": [
+    "Reported only: venv_time (BETSE's screened, smoothed estimate has no Cells counterpart) and Cells diag_* arrays.",
+    "Gate open fraction is not in the comparison layout and is not judged.",
+    "Named model difference: stencil_betse_vs_harmonic_compact_faces_at_dt_over_100 (emulator-01 pair betse_stencil_vs_harmonic_faces_at_dt_over_100).",
+    "The judged run reruns the reference with this protocol fixed (deterministic CPU)."
+  ],
+  "emulator_run": {
+    "runner": "validation/betse/default_world_adapter.py run",
+    "constants": "betse",
+    "dt_factor": 100,
+    "sim_start": "chained",
+    "model_differences": [
+      "compact_ecm_faces_harmonic"
+    ],
+    "backends": [
+      "cpu"
+    ],
+    "optional_repeat": "none (deterministic CPU tooling run)"
+  },
+  "discrimination": {
+    "barrier_vs_none (BETSE)": {
+      "option_term": {
+        "file": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/terms/option_vs_rung1_p2-barrier-dense.json"
+      },
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 0.023155975414201196,
+          "cell_concentration": {
+            "Ca": 0.0004917353993078381,
+            "Cl": 0.0550192538681002,
+            "K": 0.23827447575931993,
+            "M": 0.06632372044255744,
+            "Na": 0.12379486303318105
+          },
+          "ecm_concentration": {
+            "Ca": 0.28816115102830364,
+            "Cl": 0.6844032304041148,
+            "K": 0.9079710283124511,
+            "M": 0.6739469008996027,
+            "Na": 0.8221282821162675
+          }
+        },
+        "sim": {
+          "voltage": 3.1146397290124823,
+          "cell_concentration": {
+            "Ca": 6.201736881181698,
+            "Cl": 0.22354490089294732,
+            "K": 0.27613519530864256,
+            "M": 0.33670222484045376,
+            "Na": 0.3586177810104761
+          },
+          "ecm_concentration": {
+            "Ca": 0.2889467319913941,
+            "Cl": 0.6886677016222335,
+            "K": 0.9132806132554773,
+            "M": 0.6696465881146144,
+            "Na": 0.8275733216225212
+          }
+        }
+      }
+    }
+  },
+  "discrimination_ratio": {
+    "effect": "barrier_vs_none (BETSE)",
+    "definition": "the option's own effect (max over samples and phase end, interior ECM) divided by this protocol's tolerance, per phase and quantity (ion); ions at the 1e-12 floor (immobile P) are left out",
+    "init": {
+      "voltage": 0.023155975414201196,
+      "cell_concentration": {
+        "Ca": 0.0004917353993078381,
+        "Cl": 0.0550192538681002,
+        "K": 0.23827447575931993,
+        "M": 0.06632372044255744,
+        "Na": 0.12379486303318105
+      },
+      "ecm_concentration": {
+        "Ca": 0.28816115102830364,
+        "Cl": 0.6844032304041148,
+        "K": 0.9079710283124511,
+        "M": 0.6739469008996027,
+        "Na": 0.8221282821162675
+      }
+    },
+    "sim": {
+      "voltage": 3.1146397290124823,
+      "cell_concentration": {
+        "Ca": 6.201736881181698,
+        "Cl": 0.22354490089294732,
+        "K": 0.27613519530864256,
+        "M": 0.33670222484045376,
+        "Na": 0.3586177810104761
+      },
+      "ecm_concentration": {
+        "Ca": 0.2889467319913941,
+        "Cl": 0.6886677016222335,
+        "K": 0.9132806132554773,
+        "M": 0.6696465881146144,
+        "Na": 0.8275733216225212
+      }
+    }
+  },
+  "non_discriminating": [
+    "init/voltage",
+    "init/cell_concentration/Ca",
+    "init/cell_concentration/Cl",
+    "init/cell_concentration/K",
+    "init/cell_concentration/M",
+    "init/cell_concentration/Na",
+    "init/ecm_concentration/Ca",
+    "init/ecm_concentration/Cl",
+    "init/ecm_concentration/K",
+    "init/ecm_concentration/M",
+    "init/ecm_concentration/Na",
+    "sim/cell_concentration/Cl",
+    "sim/cell_concentration/K",
+    "sim/cell_concentration/M",
+    "sim/cell_concentration/Na",
+    "sim/ecm_concentration/Ca",
+    "sim/ecm_concentration/Cl",
+    "sim/ecm_concentration/K",
+    "sim/ecm_concentration/M",
+    "sim/ecm_concentration/Na"
+  ],
+  "non_discriminating_rule": "Quantities listed here (ratio <= 1) are still judged, but the option's effect does not exceed their tolerance, so no claim about the option may rest on them.",
+  "status": "PROPOSED, not registered: numbers from emulator-only budgets, plain BETSE vs plain BETSE and blind Cells-only runs (main 03a2853, field solver @3); no Cells-vs-BETSE or Cells-vs-reference difference has been computed for this case. To be fixed and committed by the lead before any judged run."
+}

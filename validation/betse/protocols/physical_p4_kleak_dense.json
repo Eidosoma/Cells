@@ -1,0 +1,295 @@
+{
+  "schema": "cells.betse_comparison_protocol@1",
+  "id": "physical-p4-kleak-dense",
+  "purpose": "Rung 4 (P4, network ion channels): judge Cells' own physics (resolved_pump_tissue@3 with one kleak_always_open@1 population per membrane (P = 6e-18 / 7.5e-9 = 8e-10 m/s), abundance 1) on the rung-1 mammal default world against the plain-BETSE case parity-rung2-4-20261109-01/betse-reference/p4-kleak-dense (general network with only these channels, no biomolecules). Tolerances by the rung-1 v2 method; Cells-only terms from blind @3 runs at 1 ms and 0.5 ms INIT (field solver @3).",
+  "betse_case": "p4-kleak-dense",
+  "phases": [
+    "init",
+    "sim"
+  ],
+  "time_alignment_atol_s": 1e-09,
+  "min_common_samples": 1,
+  "compare_final": true,
+  "observables": {
+    "vm_time": {
+      "final": "vm",
+      "tolerance": "voltage"
+    },
+    "vm_ave_time": {
+      "final": "vm_ave",
+      "tolerance": "voltage"
+    },
+    "cc_time": {
+      "final": "cc_cells",
+      "tolerance": "cell_concentration"
+    },
+    "cc_env_time": {
+      "final": "cc_env",
+      "tolerance": "ecm_concentration",
+      "exclude": "grid_boundary_ring"
+    },
+    "venv_time": {
+      "final": "v_env",
+      "tolerance": "voltage",
+      "judged": false
+    },
+    "diag_*": {
+      "judged": false
+    }
+  },
+  "tolerance_quantities": {
+    "voltage": {
+      "kind": "abs",
+      "units": "V"
+    },
+    "cell_concentration": {
+      "kind": "rel",
+      "units": "1"
+    },
+    "ecm_concentration": {
+      "kind": "rel",
+      "units": "1"
+    }
+  },
+  "tolerance_classes": {
+    "physical_route_vs_betse_10ms_init": {
+      "cell_concentration": {
+        "init": {
+          "by_ion": {
+            "Ca": 0.5,
+            "Cl": 2e-05,
+            "K": 4e-06,
+            "M": 2e-06,
+            "Na": 2e-05,
+            "P": 1e-12
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Ca": 0.0003,
+            "Cl": 3e-06,
+            "K": 6e-07,
+            "M": 2e-07,
+            "Na": 7e-06,
+            "P": 1e-12
+          }
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "by_ion": {
+            "Ca": 0.0003,
+            "Cl": 0.0002,
+            "K": 0.002,
+            "M": 0.0002,
+            "Na": 0.0002,
+            "P": 1e-12
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Ca": 0.0003,
+            "Cl": 0.0002,
+            "K": 0.001,
+            "M": 0.0002,
+            "Na": 0.0002,
+            "P": 1e-12
+          }
+        }
+      },
+      "voltage": {
+        "init": 0.002,
+        "sim": 2e-05
+      }
+    }
+  },
+  "verdict_class": "physical_route_vs_betse_10ms_init",
+  "tolerance_derivation": {
+    "method": "3 x (sum of measured difference terms), rounded up to one significant figure; per ion for concentrations (a zero sum gets the floor 1e-12)",
+    "tool": "validation/betse/protocol_tolerances.py",
+    "recipe": "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/protocols/recipe_p4_kleak_dense.json",
+    "inputs": "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/protocols/derived_p4_kleak_dense.json",
+    "terms": [
+      "X_ext_within_cell_patch_voltage_spread",
+      "betse_init_step",
+      "calcium_pump_law_cells_vs_betse",
+      "cells_exterior_field_boltzmann_response",
+      "cells_numerics_ars222",
+      "conservative_compact_ecm_faces_at_dt_over_100",
+      "constants_codata_vs_betse",
+      "exterior_field_law_bound_ecm_drift_off",
+      "physical_time_gate_and_no_concentration_lag"
+    ],
+    "provisional_terms": [],
+    "largest_term": {
+      "cell_concentration": {
+        "init": "betse_init_step",
+        "sim": "cells_exterior_field_boltzmann_response"
+      },
+      "ecm_concentration": {
+        "init": "conservative_compact_ecm_faces_at_dt_over_100",
+        "sim": "conservative_compact_ecm_faces_at_dt_over_100"
+      },
+      "voltage": {
+        "init": "betse_init_step",
+        "sim": "constants_codata_vs_betse"
+      }
+    },
+    "sums_before_margin": {
+      "cell_concentration": {
+        "init": {
+          "Ca": 0.13923853728965796,
+          "Cl": 4.130876432267567e-06,
+          "K": 1.028880652421693e-06,
+          "M": 5.153648410031423e-07,
+          "Na": 4.685370924932208e-06,
+          "P": 0.0
+        },
+        "sim": {
+          "Ca": 9.494313099395347e-05,
+          "Cl": 9.036790878947353e-07,
+          "K": 1.7120048768248443e-07,
+          "M": 4.747416021887543e-08,
+          "Na": 2.219702372328451e-06,
+          "P": 0.0
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "Ca": 8.498244378271174e-05,
+          "Cl": 4.318280035503611e-05,
+          "K": 0.0003418657427721288,
+          "M": 4.560280784251808e-05,
+          "Na": 5.4211552637799116e-05,
+          "P": 0.0
+        },
+        "sim": {
+          "Ca": 7.674116069695816e-05,
+          "Cl": 4.215365099360215e-05,
+          "K": 0.00032148368565609127,
+          "M": 4.54664500153433e-05,
+          "Na": 5.3570915443024307e-05,
+          "P": 0.0
+        }
+      },
+      "voltage": {
+        "init": 0.0005273287892553097,
+        "sim": 3.7297063676458575e-06
+      }
+    }
+  },
+  "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+  "notes": [
+    "Reported only: venv_time (BETSE's screened, smoothed estimate has no Cells counterpart) and Cells diag_* arrays.",
+    "Gate open fraction is not in the comparison layout and is not judged.",
+    "Emulator terms reused from parity-rung2-4-20261109-01/emulator-01 (BETSE-order kernel, unaffected by the field solver); the network runner reproduces those runs from this snapshot (emulator-01/p4kv-dt1_vs_20261109-01.json)."
+  ],
+  "cells_run": {
+    "model": "resolved_pump_tissue@3",
+    "solver": "imex_ars222_face_electromigration@1",
+    "field_solver": "capacitive_reduction_gauged_damped_newton@3",
+    "dt_init_s": 0.001,
+    "dt_sim_s": 0.0001,
+    "constants": "CODATA (Cells default)",
+    "sim_start": "Cells' own INIT end state",
+    "backends": [
+      "cpu"
+    ],
+    "optional_repeat": "gpu (L4): reported only, as layout-differences against the judged CPU run; not a verdict",
+    "note": "@3 IMEX ARS(2,2,2) with exponential stage gates (exponential_mean_rate_linear_target_gates@1); field solver @3 because @2 refuses the pinned 0.5 ms runs at its rounding floor. Judged runs on CPU; the Cells-only terms were measured on the L4 (blind-01), which differs from CPU only at rounding level",
+    "mapping": "network_world_adapter.py run-resolved (NETWORK_RESOLVED): one population per membrane patch and network channel, Kv1p5 -> kv1p5_mh@1, KLeak -> kleak_always_open@1, max_permeability = max Dm / tm, abundance 1, permeant K (1.0); availability 1 (0 in INIT for 'init active: false'); gates (m_inf, h_inf)(0 V) in INIT and (m_inf, h_inf)(Cells' INIT-end patch Vm) at the SIM handoff (BETSE re-reads the network at SIM start: an initial condition of the experiment)"
+  },
+  "discrimination": {
+    "kleak_vs_none (BETSE)": {
+      "option_term": {
+        "file": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/terms/option_vs_rung1_p4-kleak-dense.json"
+      },
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 12.087016991390264,
+          "cell_concentration": {
+            "Ca": 1.7104729611816285,
+            "Cl": 201.1900902832375,
+            "K": 216.7357655488493,
+            "M": 309.00966093537744,
+            "Na": 373.4947478408169
+          },
+          "ecm_concentration": {
+            "Ca": 0.0255083624139937,
+            "Cl": 0.07462182980346979,
+            "K": 1.3310444897146891,
+            "M": 0.2680755564086487,
+            "Na": 0.5104145688882027
+          }
+        },
+        "sim": {
+          "voltage": 1101.562468572526,
+          "cell_concentration": {
+            "Ca": 2288.203960753869,
+            "Cl": 1350.4756080128834,
+            "K": 1454.135081765785,
+            "M": 3111.7855616482607,
+            "Na": 1074.6272580798473
+          },
+          "ecm_concentration": {
+            "Ca": 0.016298203195978214,
+            "Cl": 0.06241847900988696,
+            "K": 2.6598228158871624,
+            "M": 0.2682570542348326,
+            "Na": 0.5104803553595934
+          }
+        }
+      }
+    }
+  },
+  "discrimination_ratio": {
+    "effect": "kleak_vs_none (BETSE)",
+    "definition": "the option's own effect (max over samples and phase end, interior ECM) divided by this protocol's tolerance, per phase and quantity (ion); ions at the 1e-12 floor (immobile P) are left out",
+    "init": {
+      "voltage": 12.087016991390264,
+      "cell_concentration": {
+        "Ca": 1.7104729611816285,
+        "Cl": 201.1900902832375,
+        "K": 216.7357655488493,
+        "M": 309.00966093537744,
+        "Na": 373.4947478408169
+      },
+      "ecm_concentration": {
+        "Ca": 0.0255083624139937,
+        "Cl": 0.07462182980346979,
+        "K": 1.3310444897146891,
+        "M": 0.2680755564086487,
+        "Na": 0.5104145688882027
+      }
+    },
+    "sim": {
+      "voltage": 1101.562468572526,
+      "cell_concentration": {
+        "Ca": 2288.203960753869,
+        "Cl": 1350.4756080128834,
+        "K": 1454.135081765785,
+        "M": 3111.7855616482607,
+        "Na": 1074.6272580798473
+      },
+      "ecm_concentration": {
+        "Ca": 0.016298203195978214,
+        "Cl": 0.06241847900988696,
+        "K": 2.6598228158871624,
+        "M": 0.2682570542348326,
+        "Na": 0.5104803553595934
+      }
+    }
+  },
+  "non_discriminating": [
+    "init/ecm_concentration/Ca",
+    "init/ecm_concentration/Cl",
+    "init/ecm_concentration/M",
+    "init/ecm_concentration/Na",
+    "sim/ecm_concentration/Ca",
+    "sim/ecm_concentration/Cl",
+    "sim/ecm_concentration/M",
+    "sim/ecm_concentration/Na"
+  ],
+  "non_discriminating_rule": "Quantities listed here (ratio <= 1) are still judged, but the option's effect does not exceed their tolerance, so no claim about the option may rest on them.",
+  "status": "PROPOSED, not registered: numbers from emulator-only budgets, plain BETSE vs plain BETSE and blind Cells-only runs (main 03a2853, field solver @3); no Cells-vs-BETSE or Cells-vs-reference difference has been computed for this case. To be fixed and committed by the lead before any judged run."
+}
