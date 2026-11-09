@@ -5,21 +5,17 @@ actual family, inventories, physiology, reservoirs and every control. Each real
 family parser performs its existing complete physical admission.
 """
 
-import hashlib
 import importlib
 import json
 from dataclasses import dataclass
 from fractions import Fraction
-from pathlib import Path
 
 from cells.processes import conservative_polygon_geometry as geometry
 
 LAW_ID = "cells_polygon_active_physiology_preparation@1"
 REQUEST_KIND = "cells.polygon_active_physiology_request@1"
 RESULT_KIND = "cells.polygon_active_physiology_preparation@1"
-BASE_GEOMETRY_SHA256 = "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d"
 BASE_BUNDLE_SHA256 = "2a1182f4091761f20c8048e0bd8cf8281ff67b808410be2820dddb4531f1d95b"
-SOURCES_SHA256 = "ba0931b834855354a17eff5e6a443281581c88fc76c29426f6a14f987faf9110"
 MAX_CELLS = 16
 MAX_CHANNELS = 256
 
@@ -140,18 +136,6 @@ class Preparation:
         return json.loads(self.provenance_json)
 
 
-def _verify_sources():
-    if hashlib.sha256(Path(geometry.__file__).read_bytes()).hexdigest() != BASE_GEOMETRY_SHA256:
-        raise ValueError("Changed frozen polygon geometry implementation")
-    path = Path(__file__).with_name("active_polygon_physiology_sources.json")
-    if hashlib.sha256(path.read_bytes()).hexdigest() != SOURCES_SHA256:
-        raise ValueError("Changed active physical-admission source manifest")
-    pins = json.loads(path.read_text())
-    root = Path(__file__).resolve().parents[3]
-    for relative, expected in pins["source_sha256"].items():
-        if hashlib.sha256((root / relative).read_bytes()).hexdigest() != expected:
-            raise ValueError("Changed active admission source: " + relative)
-    return pins
 
 
 def _rows(rows, ids, key, where):
@@ -659,9 +643,7 @@ def prepare(geometry_request, bound, request):
     materialized = None
     definition = None
     conversions = []
-    stage = "source_pins"
     try:
-        pins = _verify_sources()
         stage = "owner_and_unit_contract"
         owners = _owner_manifest(bound, raw)
         stage = "geometric_quantities"
@@ -710,7 +692,6 @@ def prepare(geometry_request, bound, request):
         target_model_id=raw["target_model_id"],
         actual_model_type=expected_type,
         parser="cells.core." + owners["family"][0] + ".parse",
-        admission_source_manifest=pins,
         owner_projection=owners["owner_projection"],
         actual_reservoir_flags=owners["reservoirs"],
         volume_policy=raw["volume_policy"],

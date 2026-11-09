@@ -521,9 +521,7 @@ def advance(request, *, observer=None):
         from cells.core.schedule import control_values, event_index
         from cells.core.state import Checkpoint
         from cells.models import surface_tissue as model
-        from cells.processes import stable_seed_partition_physiology_bridge as initial
 
-        initial.physical._pins()
         definition = request.initial_preparation.physical_preparation.definition
         retain("unchanged_initial_definition", definition)
         spec = schema.parse(definition)

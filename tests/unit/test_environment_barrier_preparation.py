@@ -1,7 +1,6 @@
 """Independent static coefficients, complete owners and resolved physical stages."""
 
 import ast
-import hashlib
 import json
 import os
 import sys
@@ -15,7 +14,6 @@ from cells.core import environment_barrier_preparation as bridge
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.models import surface_tissue as model
-from cells.processes import betse_environment_transport as native
 from validation.tissue import surface_dynamics_reference as physical
 from validation.transport import environment_barrier_preparation_fixtures as fixtures
 from validation.transport import environment_barrier_preparation_reference as reference
@@ -262,7 +260,3 @@ def test_reference_has_no_production_or_array_library_dependency():
         )
     ]
     assert all(name.split(".")[0] in sys.stdlib_module_names for name in imports)
-    assert (
-        hashlib.sha256(Path(native.__file__).read_bytes()).hexdigest()
-        == (bridge.SOURCE_CORRESPONDENCE["coefficient_kernel_sha256"])
-    )

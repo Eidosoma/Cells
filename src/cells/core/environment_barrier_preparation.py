@@ -45,7 +45,6 @@ REGION_FIELDS = {
 SOURCE_CORRESPONDENCE = {
     "native_version": "1.5.0",
     "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
-    "coefficient_kernel_sha256": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
     "source_law": native.SOURCE_LAW_ID,
     "native_scope": "Static initDenv overwrite order and prescribed ionic TJ multiplication",
     "cells_face_law": "logmean_electrodiffusion@1",

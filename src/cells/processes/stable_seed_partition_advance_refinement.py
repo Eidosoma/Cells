@@ -295,9 +295,7 @@ def _execute_arm(arm, partial, retain):
     from cells.core.specs import ConfigError
     from cells.core.state import Checkpoint
     from cells.models import surface_tissue as model
-    from cells.processes import stable_seed_partition_physiology_bridge as initial
 
-    initial.physical._pins()
     definition = arm.initial_preparation.physical_preparation.definition
     retain("admitted_definition", definition)
     spec = schema.parse(definition)

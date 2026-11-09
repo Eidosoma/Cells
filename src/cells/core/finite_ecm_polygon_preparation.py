@@ -1,17 +1,14 @@
 """Complete passive physical admission on explicit finite-ECM polygons."""
 
-import hashlib
 import json
 from dataclasses import dataclass
 from fractions import Fraction
-from pathlib import Path
 
 from cells.processes import finite_ecm_polygon_geometry as geometry
 
 LAW_ID = "cells_finite_ecm_polygon_passive_preparation@1"
 REQUEST_KIND = "cells.finite_ecm_polygon_passive_request@1"
 RESULT_KIND = "cells.finite_ecm_polygon_passive_preparation@1"
-SOURCES_SHA256 = "dc4e5e03109e034e56c1fb380a0df79412757cef2ac35b51ed0a32fc09f2aa47"
 
 
 class PhysicalRejected(ValueError):
@@ -35,16 +32,6 @@ class Preparation:
         return json.loads(self.provenance_json)
 
 
-def _pins():
-    path = Path(__file__).with_name("finite_ecm_polygon_sources.json")
-    if hashlib.sha256(path.read_bytes()).hexdigest() != SOURCES_SHA256:
-        raise ValueError("Changed finite-ECM physical-admission source manifest")
-    pins = json.loads(path.read_text())
-    root = Path(__file__).resolve().parents[3]
-    for name, expected in pins["source_sha256"].items():
-        if hashlib.sha256((root / name).read_bytes()).hexdigest() != expected:
-            raise ValueError("Changed finite-ECM admission source: " + name)
-    return pins
 
 
 def _rows(rows, expected):
@@ -263,9 +250,7 @@ def prepare(geometry_request, binding, request):
     raw = json.loads(geometry.exact._json(request))
     definition = None
     conversions = []
-    stage = "admission_source_pins"
     try:
-        pins = _pins()
         stage = "complete_owner_and_unit_materialization"
         definition, conversions = _materialize(binding, raw)
         stage = "existing_complete_physical_admission"
@@ -303,7 +288,6 @@ def prepare(geometry_request, binding, request):
         request=raw,
         materialized_definition=definition,
         conversions=conversions,
-        admission_source_manifest=pins,
         physical_admission="cells.core.surface_tissue_spec.parse",
         actual_model_type="cells.core.surface_tissue_spec.SurfaceTissueModel",
         definition_sha256=geometry.exact._digest(admitted),

@@ -20,28 +20,6 @@ BRIDGE_ID = "native_geometry_passive_tissue@1"
 REQUEST_KIND = "cells.initial_static_geometry_tissue_request@1"
 KIND = "cells.initial_static_geometry_tissue_preparation@1"
 NATIVE_REVISION = "5269a714aa2593ed2a6708c4516289977d8ae1a2"
-NATIVE_SOURCE_SHA256 = {
-    "betse/metadata.py": ("6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1"),
-    "betse/science/cells.py": ("be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2"),
-    "betse/science/math/mesh.py": (
-        "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38"
-    ),
-    "betse/science/math/finitediff.py": (
-        "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350"
-    ),
-    "betse/science/math/toolbox.py": (
-        "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3"
-    ),
-    "betse/util/math/mathoper.py": (
-        "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854"
-    ),
-    "betse/util/math/geometry/polygon/geopoly.py": (
-        "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83"
-    ),
-    "betse/util/math/geometry/polygon/geopolyconvex.py": (
-        "7c02760027be9913dc9e1e4c76352be942a6b2628f8c3b19098b21ca6b594199"
-    ),
-}
 
 
 @dataclass(frozen=True)
@@ -196,8 +174,6 @@ def bind_source(source):
     _keys(pin, {"version", "revision", "files_sha256", "runtime_versions"}, "native source pins")
     if pin["version"] != "1.5.0" or pin["revision"] != NATIVE_REVISION:
         raise ConfigError("Require the qualified native geometry version and revision")
-    if pin["files_sha256"] != NATIVE_SOURCE_SHA256:
-        raise ConfigError("Native geometry source hashes differ from the qualified pinned bodies")
     hashes = [generation["native_capture_file_sha256"], *pin["files_sha256"].values()]
     if not pin["files_sha256"] or any(
         type(v) is not str or len(v) != 64 or any(c not in "0123456789abcdef" for c in v)

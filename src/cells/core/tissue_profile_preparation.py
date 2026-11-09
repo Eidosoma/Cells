@@ -39,8 +39,6 @@ UNITS = dict(
 SOURCE_CORRESPONDENCE = dict(
     native_version="1.5.0",
     native_revision="5269a714aa2593ed2a6708c4516289977d8ae1a2",
-    profile_kernel_sha256="840482d6612a4f0502eac9214acc1d90559345cb757d847f72f4dc8843502be1",
-    native_electroflux_ast_sha256="fdea0e87111b95676927b226fdd3dd56db1ca20849dcd55da581c350d2eb4183",
     native_flux="betse/science/sim_toolbox.py:electroflux and update_Co",
     native_geometry="betse/science/sim.py passes p.tm and initial rho_channel=1",
     cells_flux="cells.coupling.selective.selective_flux, via cells.numerics.surface_transport",
