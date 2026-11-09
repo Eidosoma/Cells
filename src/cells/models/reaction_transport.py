@@ -3,6 +3,21 @@
 Two synthetic species are a property of this model, not of the graph or solver.
 All contributions read the same RK stage state. No source assay or phenotype
 selects behaviour. See docs/REACTION_TRANSPORT.md for the supported contract.
+
+Rounding allowance of the conservation guards (STEP_ROUNDING). The state holds the
+amounts themselves, so every accepted RK4 step rounds them: a stored value is
+updated as y + (dt/6)(k1 + 2k2 + 2k3 + k4), which rounds by at most
+u |y_new| + 4u |dy| to first order (u = eps/2). The admitted step, h alpha <= 0.5,
+keeps sum |dy| <= 2 h alpha total <= total in this closed positive system, so a step
+moves the total by at most 2.5 eps x total, and each cell's accounting residual by
+2.5 eps times the magnitudes rounded there (its amount and incident ledgers). The
+drift is systematic, not a random walk: on MG0a's a/4 strip (a 1e6 fmol reservoir,
+257 cells, dt 0.5 s) the closed-world total drifted 6.8, 796 and -2.0e4 eps x total
+after 1e4, 8e4 and 2.4e5 steps, identically for perturbed starts, with sign changes
+over 1e5-step stretches (ledger-fix-20261109-01/diag/reaction_drift.json). The
+allowance therefore grows linearly with the horizon's step count at the worst-case
+rate. It bounds what the guards can resolve: a leak is caught when it exceeds
+2.5 eps x the rounded magnitude per step (per cell, or x total for the total).
 """
 
 from dataclasses import dataclass
@@ -31,16 +46,8 @@ STATE_AXES = {
     "transferred": ["species", "edge_slot"],
     "converted": ["cell_slot"],
 }
-# Rounding allowance per accepted RK4 step, in eps times the magnitude it applies
-# to. Each stored value is updated as y + (dt/6)(k1 + 2k2 + 2k3 + k4), which rounds
-# by at most u |y_new| + 4u |dy| (u = eps/2, to first order), and the step bound
-# h alpha <= 0.5 keeps sum |dy| <= 2 h alpha total <= total in this closed
-# positive system: a step moves the total by at most 2.5 eps x total. The
-# rounding of a slowly draining dominant amount is systematic, not a random walk:
-# MG0a's a/4 strip (1e6 fmol reservoir, 257 cells, dt 0.5 s) drifted 6.8, 796 and
-# -2.0e4 eps x total at 1e4, 8e4 and 2.4e5 steps, identically for perturbed starts
-# (ledger-fix-20261109-01/diag/reaction_drift.json). So the allowance grows
-# linearly with the step count, at this worst-case rate.
+# Rounding allowance per accepted RK4 step, in eps times the magnitude rounded
+# (derivation and measurements in the module docstring).
 STEP_ROUNDING = 2.5
 
 
