@@ -37,15 +37,22 @@ def _git(*args):
 
 
 def _provenance():
+    extra = {}
     try:
         revision = _git("rev-parse", "HEAD")
         dirty = bool(_git("status", "--porcelain", "--untracked-files=no"))
     except (OSError, subprocess.CalledProcessError):  # immutable snapshot without .git
         snapshot = json.loads((ROOT / "SNAPSHOT.json").read_text())
-        revision, dirty = snapshot["git_revision"], snapshot["dirty"]
+        revision = snapshot["git_revision"]
+        if "dirty" in snapshot:
+            dirty = snapshot["dirty"]
+        else:  # validation/source_snapshot.py: the selected files' Git status and patch
+            dirty = bool(snapshot["selected_status_porcelain_v1_z"])
+            extra["patch_sha256"] = snapshot["patch_sha256"]
     return {
         "git_revision": revision,
         "dirty": dirty,
+        **extra,
         "root": str(ROOT),
         "python": sys.executable,
         "utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
