@@ -45,15 +45,27 @@ starts, and production design is deferred until parity is established.
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
-| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1) and batched worlds (G4) landed; ledger rounding fix in progress; GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling**; the coupling choice is with the user |
-| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a passed**; MG0b driver landed, blocked on the ledger rounding fix |
-| 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; C landed, qualification waits on the ledger fix |
+| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4) and the ledger rounding fix landed; GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling**; the coupling choice is with the user |
+| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a passed**; MG0b driver landed; its protocol and judged run are next (the ledger fix is in) |
+| 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; C landed; its 30-min qualification is next (the ledger fix is in) |
 
 ## Runs
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Ledger rounding fix landed (9 November; `5ba4426`..`9f59fb0`).**
+  - **What changed:**
+    - The electrode increment is booked from the start and end charge states.
+    - The running work and material ledgers' allowance is 2.5 eps × steps × magnitude (projective bursts and jumps included).
+    - Component net charge is checked in the capacitor ledgers instead of in field convergence. The gauge component's rows take the world's summed increments.
+    - Opt-in field solver `capacitive_reduction_gauged_damped_newton@3` accepts Newton at its rounding floor and is bitwise equal to @2 wherever @2 converges.
+  - **Same trajectories:** trajectories are bitwise unchanged on 7 definitions, and the electrode charge moves by at most 7.5e-26 C.
+  - **Now completes:** the 64k-step fine reference, the MG0b wall, the 30-minute relaxing @3 worlds, the 1-hour closed fixture (worst row 2e-4 of its bound) and the P2/P4 parity cases.
+  - **Detection floors:** 1e-13 fmol on a floating component. On the gauge component, 3.1e-15 fmol after 5 steps and 2.3e-11 fmol after 1e5 steps.
+  - **Gate:** tier 1+2 passed with 323 files unchanged, from a clean snapshot whose tree equals `9f59fb0`.
+  - **New tests:** `test_ledger_rounding.py` and `test_field_floor.py` are in tier 3 (each runs about 6 min; both pass).
+  - Evidence: `/mnt/workspaces/Cells/ledger-fix-20261109-01/`.
 - **Heredity pre-screen 7: written discs at E07-v1's couplings (9 November;
   development, not judged).** This ran `resolved_pump_tissue@3` through
   `stationary_continuation_analysis@1` on hexagonal heredity sheets with held baths
