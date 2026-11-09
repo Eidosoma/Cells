@@ -46,7 +46,7 @@ starts, and production design is deferred until parity is established.
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
 | 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4) and the ledger rounding fix landed; GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling**; the coupling choice is with the user |
-| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a passed**; MG0b driver landed; its protocol and judged run are next (the ledger fix is in) |
+| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); MG1 (2-D vertex mechanics) next |
 | 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; C landed; its 30-min qualification is next (the ledger fix is in) |
 
 ## Runs
@@ -54,6 +54,33 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **MG0b bistable domain wall passes (9 November).** `resolved_pump_tissue@3`,
+  unmodified (IMEX ARS(2,2,2), field solver @2, dt 1 ms, CPU, float64), ran on chains
+  of resolved cells with Kir2.1, NaV1.2, leaks and gap junctions. The protocol
+  `mg0b-domain-wall-v1` was registered beforehand (`f7e8b6b`), with its
+  predictions set from theory and an independent reduced model before any
+  engine run of the wall. The run used a clean snapshot of that commit
+  ([results](/mnt/workspaces/Cells/morphogenesis-mg0-20261109-01/judged-02-mg0b/results/results.json),
+  52 min). All 19 criteria pass, and re-judging the saved results gives the same verdict:
+  - wall width against √G: fitted slope 0.521 (window 0.45–0.55; reduced 0.520);
+    engine against reduced wall width 0.5–1.0% (allowed 5%); time step 1 and
+    0.5 ms against 0.25 ms, profile to 1.2e-7;
+  - pinning: below the predicted critical coupling the wall moves 0.06 cells
+    (allowed 0.5); at 2× it moves +5.8 cells into H (reduced +5.7);
+  - hysteresis: uncoupled loop 0.40 (reduced 0.425); a uniform chain matches
+    one cell exactly; anchored loops narrow 0.30 → 0.125 → about 0 with
+    coupling (reduced 0.35, 0.15, 0.0);
+  - cut and restore: the written domain returns (Jaccard 1.0), the controls
+    hold, no domain appears without a write;
+  - energy balance 2.2e-5 relative (bound 2e-3); worst global charge 0.09 of
+    its bound;
+  - 36 registered theory and reduced-model values reproduced, largest
+    relative difference 0.5%.
+  Known weaknesses were recorded before the run (`lead_review`). B4 judges
+  |shift|, but the observed shift has the predicted sign. B5 accepts equal widths,
+  but the observed widths narrow strictly. At this coupling B6's return is close
+  to guaranteed, so it tests the cut machinery, not memory. Limits: 1-D chain,
+  junction gating held open, fixed volume, runs of 6–58 s.
 - **Ledger rounding fix landed (9 November; `5ba4426`..`9f59fb0`).**
   - **What changed:**
     - The electrode increment is booked from the start and end charge states.
