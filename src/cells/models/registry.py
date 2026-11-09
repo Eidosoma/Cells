@@ -687,7 +687,12 @@ def get_model(spec):
         return environment_barrier_interventions
     from cells.core.surface_pump_spec import SurfacePumpModel
     from cells.core.surface_pump_v2_spec import SurfacePumpModel as SurfacePumpModelV2
+    from cells.core.surface_pump_v3_spec import SurfacePumpChannelModel
 
+    if isinstance(spec, SurfacePumpChannelModel):
+        from cells.models import surface_pump_v3
+
+        return surface_pump_v3
     if isinstance(spec, SurfacePumpModelV2):
         from cells.models import surface_pump_v2
 

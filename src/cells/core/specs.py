@@ -1198,6 +1198,11 @@ class SimulationSpec:
 
         if isinstance(m, EnvironmentBarrierModel):
             return barrier_to_dict(self)
+        from cells.core.surface_pump_v3_spec import SurfacePumpChannelModel
+        from cells.core.surface_pump_v3_spec import to_dict as pump_v3_to_dict
+
+        if isinstance(m, SurfacePumpChannelModel):
+            return pump_v3_to_dict(self)
         from cells.core.surface_pump_v2_spec import SurfacePumpModel as SurfacePumpModelV2
         from cells.core.surface_pump_v2_spec import to_dict as pump_v2_to_dict
 
@@ -1981,6 +1986,10 @@ def parse_spec(data: dict) -> SimulationSpec:
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_tissue@2":
         from cells.core.surface_pump_v2_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_tissue@3":
+        from cells.core.surface_pump_v3_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@1":
