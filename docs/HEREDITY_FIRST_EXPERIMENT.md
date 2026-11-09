@@ -1,6 +1,6 @@
 # First heredity experiment on Cells physics (E07-v1 design)
 
-Design of 8 November 2026, not yet run. The structured design, cost model and
+Design of 8 November 2026, not yet run; user choices are recorded in [D133](DECISIONS.md). The structured design, cost model and
 single-cell pre-screens are in
 `/mnt/workspaces/Cells/heredity-design-20261108-01/` (`design.json`,
 `prescreen-03…06.json`). Experiment definitions live in

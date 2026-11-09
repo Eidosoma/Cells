@@ -4482,6 +4482,55 @@ probe seed: CODATA constants 1.2 µV in Vmem; converged time stepping versus
 BETSE's 10 ms Euler about 52 µV transiently in INIT; the others below 1 µV
 ([coverage map](/mnt/workspaces/Cells/cells-betse-default-coverage-20261108-01/coverage.json)).
 
+## D132: Stage B — neutral engine names; BETSE-loop tooling leaves the engine
+
+2026-11-09. Follows D131 and the user's direction that no BETSE-specific code
+remains in `src/cells`. From the reviewed plan in
+`/mnt/workspaces/Cells/stage-b-plan-20261108-01/plan.json`:
+
+- **Physiology stack:** 64 modules (19K lines) that arrange Cells components in
+  BETSE's loop order, with BETSE phase labels and random-number replay. It
+  moves to `validation/betse/` with its tests, at the user's choice. Its two
+  tissue-profile importers are decoupled.
+- **Renames:** generic physics keeps its equations under neutral names and
+  cites its source (e.g. the channel catalog's BETSE v1.5.0 library
+  parameters). This covers 7 modules and 72 IDs. Variant suffixes such as
+  `source_sign` or `source_tau` are renamed to say what the variant does.
+- **Mixed modules:** the 4 mixed modules (environment transport, geometry,
+  perturbations, tissue profiles) are split, and their BETSE-convention parts
+  move to `validation/betse/`.
+- **RNG replay:** BETSE random-number stream replay is dropped. BETSE
+  comparisons with noise inject prescribed draws from the validation adapter.
+- **Hash-pinned manifests:** the hash-pinned source manifests and
+  `_verify_sources` guards are retired in favour of git provenance; stage A
+  left them stale.
+- **Junction law:** `betse_rate_junction_relaxation@1` merges into the identical
+  `junction_voltage_relaxation@1`.
+- **Schema fields:** `native_BETSE_*` schema fields are renamed.
+
+Old configs and checkpoints with old IDs are refused afterwards; frozen evidence
+keeps its own source snapshots. Each batch is gated by test tier 1, and by tier
+2 for engine changes.
+
+## D133: First heredity experiment choices (E07-v1)
+
+2026-11-09, user decisions on the [design](HEREDITY_FIRST_EXPERIMENT.md):
+
+- **Carrier:** electrical first, a NaV1.2 window current plus Kir2.1
+  bistability. The expression carrier follows as Stage D.
+- **Volume:** fixed volume for tier 1. D residence is capped near 70 min, runs
+  above 10% osmotic excess are flagged and those above 15% are censored. Water
+  and volume come later.
+- **Renewal:** pattern-level is primary (Jaccard ≥ 0.8 through full founder
+  turnover); carrier-level conversion is reported as secondary.
+- **Parameters:** BETSE defaults plus the bistable channel set, as a
+  sufficiency demonstration; calibration comes later.
+- **Lead defaults:**
+  - each newcomer draws its own parameters, so no state is inherited through
+    them;
+  - a BITSEY cross-check of the experiment driver is optional and runs in
+    parallel.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
