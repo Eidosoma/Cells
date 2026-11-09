@@ -1,4 +1,6 @@
-"""Literal BETSE 1.5.0 configurable cell-zone transporter law, versioned @1.
+"""Configurable cell-zone transporter law, versioned @1.
+
+Equations are those of the BETSE v1.5.0 transporter network (cited source; no BETSE code).
 
 Concentrations use [..., species, compartment]; V/controls use [..., route].
 Term axes are [term, route]. Positive extent follows configured reactants to
@@ -19,7 +21,7 @@ import numpy as np
 from cells.numerics.extracellular_field import ordered_scatter
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 
-LAW_ID = "betse_network_transporter_source_v1_5_0@1"
+LAW_ID = "cell_zone_transporter@1"
 ACTIVATE, INDEPENDENT_ACTIVATE, DIRECT_ACTIVATE, INHIBIT, DIRECT_INHIBIT = range(1, 6)
 
 

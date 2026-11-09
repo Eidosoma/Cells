@@ -21,7 +21,7 @@ from cells.core.surface_excision_spec import MODEL_ID, POLICIES, SurfaceExcision
 from cells.core.surface_tissue_spec import SurfaceTissueModel
 from cells.models import surface_tissue as passive
 from cells.models.registry import get_model
-from cells.processes import betse_tissue_cut as removal
+from cells.processes import tissue_removal as removal
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 
 

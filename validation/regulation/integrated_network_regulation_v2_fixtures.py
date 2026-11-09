@@ -181,7 +181,7 @@ def definition(arm="active", *, padded=False, compact=False):
     m.update(
         id=MODEL_ID,
         network_regulation=dict(
-            law="betse_network_modulation_source_v1_5_0@1",
+            law="network_control_factors@1",
             timing="common_stage_free_cytosol_exterior_fuel@1",
             control_composition="scheduled_times_ordered_nak_channel_junction_factor@2",
             channel_scope="native_voltage_independent_sim_factor_only@1",

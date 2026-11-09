@@ -27,7 +27,7 @@ from cells.core.tissue_excision import ExcisionResult, _chemical_terms, topology
 from cells.models import surface_hcn_extra as active
 from cells.models import surface_tissue as passive
 from cells.models.registry import get_model
-from cells.processes import betse_tissue_cut as removal
+from cells.processes import tissue_removal as removal
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
 GATES = ("channel_gate", "junction_gate")

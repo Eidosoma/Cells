@@ -20,7 +20,7 @@ from cells.models import surface_calcium_energy as fuel
 from cells.models import surface_calcium_energy_hcn_extra as prior
 from cells.models import surface_tissue as surface
 from cells.numerics.extracellular_field import ordered_scatter, scatter
-from cells.processes import betse_network_transport as process
+from cells.processes import cell_zone_transport as process
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 EXTRA_AXES = {

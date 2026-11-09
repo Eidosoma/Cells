@@ -1,6 +1,6 @@
 {
   "kind": "cells.betse_network_modulation_contract@1",
-  "law_id": "betse_network_modulation_source_v1_5_0@1",
+  "law_id": "network_control_factors@1",
   "purpose": "Resolve exact native target overwrites, membrane/environment regulator locations, channel voltage/floor expressions and dispatch before composition",
   "native_source": {
     "version": "1.5.0",

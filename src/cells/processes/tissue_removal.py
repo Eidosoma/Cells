@@ -1,6 +1,6 @@
 """Pure conservative tissue removal, explicit owners and stable layout identities.
 
-Native cut behaviour is captured separately. This component never infers owner
+Reference-code cut behaviour is captured separately. This component never infers owner
 axes from lengths, releases contents to ECM, resets surviving state or creates
 new geometry/biology. A cut drops cell-owned membranes and incident edges;
 field edges are distinct from membrane contacts. Derived solvers/layouts must

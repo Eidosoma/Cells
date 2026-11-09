@@ -1,4 +1,6 @@
-"""Literal BETSE 1.5.0 local reaction and cell growth/decay laws, version @1.
+"""Local reaction and cell growth/decay laws, version @1.
+
+Equations are those of the BETSE v1.5.0 reaction network (cited source; no BETSE code).
 
 State is [..., species, compartment]; routes have one explicit local owner.
 Concentration rates are mM/s, volumes m3 and extents fmol/s. Reversible cell,
@@ -14,10 +16,10 @@ import numpy as np
 
 from cells.numerics.extracellular_field import ordered_scatter
 
-LAW_ID = "betse_network_reactions_source_v1_5_0@1"
+LAW_ID = "network_reactions@1"
 CELL, MIT, ENV, GROWTH = range(1, 5)
 ACTIVATE, INDEPENDENT, DIRECT_ACTIVATE, INHIBIT, DIRECT_INHIBIT = range(1, 6)
-NATIVE_R = 8.314
+REACTION_R = 8.314
 
 
 class Terms(NamedTuple):
@@ -480,7 +482,7 @@ def bind(
     growth_modulation=None,
     time_dilation=1.0,
     temperature_K=298.15,
-    gas_constant_J_mol_K=NATIVE_R,
+    gas_constant_J_mol_K=REACTION_R,
     route_capacity=None,
 ):
     """Bind native dictionaries to explicit owners and return topology/parameters.

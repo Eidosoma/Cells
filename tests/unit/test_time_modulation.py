@@ -11,7 +11,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.processes import betse_time_modulation as modulation
+from cells.processes import time_modulation as modulation
 from validation.perturbations import time_modulation_native as native
 from validation.perturbations import time_modulation_reference as reference
 

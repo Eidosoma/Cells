@@ -16,7 +16,7 @@ from cells.core.specs import ConfigError
 from cells.models import surface_calcium_energy as pools
 from cells.models import surface_calcium_energy_atp_transport as model
 from cells.models import surface_calcium_energy_hcn_extra as parent
-from cells.processes import betse_network_transport as native
+from cells.processes import cell_zone_transport as native
 from validation.tissue import calcium_energy_atp_transport_fixtures as fixtures
 
 

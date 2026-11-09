@@ -12,7 +12,7 @@ from cells.core.bioelectric_spec import signed_number
 from cells.core.specs import ChannelChange, ConfigError, _fields, _integer, _number
 from cells.core.surface_energy_spec import _project, identifier
 from cells.core.voltage_gated_spec import fraction
-from cells.processes import betse_network_transport as process
+from cells.processes import cell_zone_transport as process
 from cells.processes.electrochemistry import F, R
 
 MODEL_ID = "resolved_calcium_energy_transport@1"

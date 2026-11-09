@@ -14,8 +14,8 @@ from numbers import Real
 import numpy as np
 
 from cells.core.grid import EventGrid
-from cells.processes import betse_spatial_modulation as spatial
-from cells.processes import betse_time_modulation as modulators
+from cells.processes import spatial_modulation as spatial
+from cells.processes import time_modulation as modulators
 from validation.betse.physiology.core import physiology_native_calendar as native_clocks
 from validation.betse.physiology.core import physiology_perturbation_step as component_step
 from validation.betse.physiology.core import physiology_tissue_binding as units

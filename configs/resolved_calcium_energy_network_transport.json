@@ -2239,7 +2239,7 @@
       }
     ],
     "network_transport": {
-      "law": "betse_network_transporter_source_v1_5_0@1",
+      "law": "cell_zone_transporter@1",
       "constants": {
         "faraday_C_mol": 96485.33212331001,
         "gas_constant_J_mol_K": 8.31446261815324

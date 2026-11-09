@@ -73,7 +73,7 @@ def definition(arm="active", *, backend="cpu", padded=True):
     if arm == "empty":
         routes = []
     m["network_transport"] = dict(
-        law="betse_network_transporter_source_v1_5_0@1",
+        law="cell_zone_transporter@1",
         constants=dict(faraday_C_mol=F, gas_constant_J_mol_K=R),
         accounting="reversible_pure_transport_maintained_drive@1",
         routes=routes,

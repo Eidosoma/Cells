@@ -9,8 +9,8 @@ from cells.core import surface_calcium_energy_spec as prior
 from cells.core.specs import ConfigError, _fields, _integer
 from cells.core.surface_energy_spec import _project, identifier
 from cells.core.voltage_gated_spec import fraction
-from cells.processes import betse_network_modulation as modulation
 from cells.processes import finite_energy as energy
+from cells.processes import network_control as modulation
 
 MODEL_ID = "resolved_calcium_energy_regulated@1"
 TIMING = "common_stage_free_cytosol_exterior_fuel@1"

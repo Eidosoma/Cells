@@ -1,4 +1,6 @@
-"""Pinned BETSE periodic/sweep factors with explicit, serializable parameters.
+"""Periodic and sweep time-modulation factors with explicit, serializable parameters.
+
+Formulae follow BETSE v1.5.0 (cited source; no BETSE code).
 
 Array kernels do not choose a clock, advance state, draw randomness or apply an
 intervention. They report finite arithmetic per sample; callers retain domain,
@@ -15,7 +17,7 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-LAW_ID = "betse_time_modulation_source_v1_5_0@1"
+LAW_ID = "periodic_sweep_time_modulation@1"
 
 
 class Values(NamedTuple):

@@ -12,7 +12,7 @@ from typing import NamedTuple
 import numpy as np
 
 from cells.core.specs import digest
-from cells.processes import betse_global_controls as source
+from cells.processes import global_controls as source
 from validation.betse.physiology.core import physiology_temperature as original
 
 KIND = "cells.physiology_active_temperature_binding@1"

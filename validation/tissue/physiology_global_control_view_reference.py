@@ -88,7 +88,7 @@ def prepare(raw, binding_record, memory, base_control, event_time_s, events_enab
     program = binding_record["program"]
     events = program["events"]
     if (
-        program["law"] != "betse_global_controls_source_v1_5_0@1"
+        program["law"] != "global_controls@1"
         or program["identity"]
         != thermal._digest({key: value for key, value in program.items() if key != "identity"})
         or program["membrane_ids"] != axes["membranes"]

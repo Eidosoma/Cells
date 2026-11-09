@@ -21,8 +21,8 @@ import numpy as np
 import pytest
 
 from cells.core.specs import ConfigError, digest
-from cells.processes import betse_global_controls as setters
 from cells.processes import betse_perturbations as perturb
+from cells.processes import global_controls as setters
 from tests.betse_physiology.integration.test_physiology_modulated_schedule import inputs as template
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import active_nodes
 from tests.betse_physiology.integration.test_physiology_protein_loop import budget

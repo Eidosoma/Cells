@@ -70,7 +70,7 @@ def reconstruct(raw, binding_record, current_temperature_K, held_control, time_s
             raise ValueError("Independent actual physical owner association differs: " + name)
     program = binding_record["program"]
     if (
-        program["law"] != "betse_global_controls_source_v1_5_0@1"
+        program["law"] != "global_controls@1"
         or program["identity"]
         != _digest({key: value for key, value in program.items() if key != "identity"})
         or program["membrane_ids"] != actual["membranes"]

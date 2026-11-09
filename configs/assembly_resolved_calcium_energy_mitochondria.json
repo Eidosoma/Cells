@@ -2329,7 +2329,7 @@
         }
       ],
       "network_transport": {
-        "law": "betse_network_transporter_source_v1_5_0@1",
+        "law": "cell_zone_transporter@1",
         "accounting": "reversible_pure_transport_maintained_drive@1",
         "constants": {
           "faraday_C_mol": 96485.33212331001,

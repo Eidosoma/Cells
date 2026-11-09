@@ -10,8 +10,8 @@ from cells.core import surface_calcium_energy_spec as parent
 from cells.core.specs import ConfigError, _fields, _integer
 from cells.core.surface_energy_spec import _project, identifier
 from cells.core.voltage_gated_spec import fraction
-from cells.processes import betse_network_modulation as source
 from cells.processes import finite_energy as energy
+from cells.processes import network_control as source
 
 MODEL_ID = "resolved_calcium_energy_regulated@2"
 TIMING = v1.TIMING

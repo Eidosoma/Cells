@@ -1,4 +1,6 @@
-"""Pinned BETSE x/y/r gradients with explicit geometry and source-axis binding.
+"""x/y/r gradient factors with explicit geometry and source-axis binding.
+
+Formulae follow BETSE v1.5.0 (cited source; no BETSE code).
 
 Pure float64 kernels preserve source arithmetic, including nonfinite failures.
 Factors are not clipped or interpreted as permeability, pressure or physical work.
@@ -15,7 +17,7 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-LAW_ID = "betse_spatial_modulation_source_v1_5_0@1"
+LAW_ID = "spatial_gradient_modulation@1"
 
 
 class Values(NamedTuple):

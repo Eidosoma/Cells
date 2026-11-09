@@ -30,9 +30,9 @@ from cells.core.surface_calcium_energy_regulated_v2_spec import (
 )
 from cells.models import surface_calcium_energy as base
 from cells.models import surface_calcium_energy_regulated as v1
-from cells.processes import betse_network_modulation as modulation
-from cells.processes import betse_network_reactions as regulator
 from cells.processes import finite_energy as energy
+from cells.processes import network_control as modulation
+from cells.processes import network_reactions as regulator
 
 STATE_AXES = base.STATE_AXES
 STATE_TYPE = base.STATE_TYPE

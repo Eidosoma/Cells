@@ -1,6 +1,6 @@
 {
   "kind": "cells.betse_network_transport_contracts@1",
-  "law_id": "betse_network_transporter_source_v1_5_0@1",
+  "law_id": "cell_zone_transporter@1",
   "purpose": "Resolve literal generated-source semantics before integrating configurable native network transport",
   "native_source": {
     "version": "1.5.0",

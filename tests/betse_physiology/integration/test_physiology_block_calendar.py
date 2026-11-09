@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 from cells.core.specs import ConfigError, digest
-from cells.processes import betse_global_controls as setters
+from cells.processes import global_controls as setters
 from tests.betse_physiology.integration.test_physiology_block_step import (
     fixture as ordinary_fixture,
 )

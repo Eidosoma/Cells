@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import betse_tissue_cut as cut
+from cells.processes import tissue_removal as cut
 from validation.topology import betse_tissue_cut_reference as reference
 from validation.topology.betse_tissue_cut_fixtures import cases
 

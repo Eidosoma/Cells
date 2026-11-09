@@ -100,7 +100,7 @@ def definition(arm="active", *, padded=False, compact=False):
     m.update(
         id=MODEL_ID,
         network_regulation=dict(
-            law="betse_network_modulation_source_v1_5_0@1",
+            law="network_control_factors@1",
             timing="common_stage_free_cytosol_exterior_fuel@1",
             control_composition="scheduled_times_ordered_native_nak_factor@1",
             rules=rules,

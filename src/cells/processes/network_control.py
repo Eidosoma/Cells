@@ -1,7 +1,9 @@
-"""Pinned BETSE local network control factors and ordered target writes, @1.
+"""Local reaction-network control factors and ordered target writes, @1.
+
+Control rules follow the BETSE v1.5.0 reaction network (cited source; no BETSE code).
 
 Sample state is [..., species, membrane+environment]; rule factors [...,rule,site].
-Controls retain signed source factors. Channel core dynamics/fluxes and physical
+Controls retain signed factors. Channel core dynamics/fluxes and physical
 energy/material ownership remain caller-owned. Frozen reaction activation/direct
 semantics are reused; channel voltage and inhibitor-expression precedence are
 handled explicitly here without changing that frozen component.
@@ -13,9 +15,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes import betse_network_reactions as regulation
+from cells.processes import network_reactions as regulation
 
-LAW_ID = "betse_network_modulation_source_v1_5_0@1"
+LAW_ID = "network_control_factors@1"
 GJ, NAK, TJ, CHANNEL = range(1, 5)
 
 

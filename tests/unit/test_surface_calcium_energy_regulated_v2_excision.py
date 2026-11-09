@@ -180,7 +180,7 @@ def definition(arm="open", *, padded=True):
     m.update(
         id=parent_schema.MODEL_ID,
         network_regulation=dict(
-            law="betse_network_modulation_source_v1_5_0@1",
+            law="network_control_factors@1",
             timing=parent_schema.TIMING,
             control_composition=parent_schema.COMPOSITION,
             channel_scope=parent_schema.CHANNEL_SCOPE,

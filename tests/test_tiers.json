@@ -408,14 +408,6 @@
     }
    },
    {
-    "file": "tests/unit/test_betse_global_controls.py",
-    "seconds": 3.59,
-    "exit_code": 0,
-    "counts": {
-     "passed": 54
-    }
-   },
-   {
     "file": "tests/unit/test_betse_junction_runtime.py",
     "seconds": 3.64,
     "exit_code": 0,
@@ -429,24 +421,6 @@
     "exit_code": 0,
     "counts": {
      "skipped": 30
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_network_modulation.py",
-    "seconds": 13.02,
-    "exit_code": 0,
-    "counts": {
-     "passed": 21,
-     "skipped": 54
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_network_transport.py",
-    "seconds": 8.5,
-    "exit_code": 0,
-    "counts": {
-     "passed": 83,
-     "skipped": 40
     }
    },
    {
@@ -526,36 +500,11 @@
     }
    },
    {
-    "file": "tests/unit/test_betse_spatial_modulation.py",
-    "seconds": 1.97,
-    "exit_code": 0,
-    "counts": {
-     "passed": 44
-    }
-   },
-   {
     "file": "tests/unit/test_betse_spatial_runtime.py",
     "seconds": 2.97,
     "exit_code": 0,
     "counts": {
      "skipped": 46
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_time_modulation.py",
-    "seconds": 2.02,
-    "exit_code": 0,
-    "counts": {
-     "passed": 36
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_tissue_cut.py",
-    "seconds": 1.62,
-    "exit_code": 0,
-    "counts": {
-     "passed": 15,
-     "skipped": 45
     }
    },
    {
@@ -629,6 +578,15 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_cell_zone_transport.py",
+    "seconds": 8.5,
+    "exit_code": 0,
+    "counts": {
+     "passed": 83,
+     "skipped": 40
     }
    },
    {
@@ -951,6 +909,14 @@
     "counts": {
      "failed": 1,
      "passed": 55
+    }
+   },
+   {
+    "file": "tests/unit/test_global_controls.py",
+    "seconds": 3.59,
+    "exit_code": 0,
+    "counts": {
+     "passed": 54
     }
    },
    {
@@ -1292,6 +1258,15 @@
     "exit_code": 0,
     "counts": {
      "passed": 48
+    }
+   },
+   {
+    "file": "tests/unit/test_network_control.py",
+    "seconds": 13.02,
+    "exit_code": 0,
+    "counts": {
+     "passed": 21,
+     "skipped": 54
     }
    },
    {
@@ -1819,6 +1794,14 @@
     }
    },
    {
+    "file": "tests/unit/test_spatial_modulation.py",
+    "seconds": 1.97,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
+    }
+   },
+   {
     "file": "tests/unit/test_specs.py",
     "seconds": 2.48,
     "exit_code": 0,
@@ -2070,6 +2053,14 @@
     }
    },
    {
+    "file": "tests/unit/test_time_modulation.py",
+    "seconds": 2.02,
+    "exit_code": 0,
+    "counts": {
+     "passed": 36
+    }
+   },
+   {
     "file": "tests/unit/test_tissue_calcium.py",
     "seconds": 6.81,
     "exit_code": 1,
@@ -2086,6 +2077,15 @@
     "counts": {
      "failed": 2,
      "passed": 47
+    }
+   },
+   {
+    "file": "tests/unit/test_tissue_removal.py",
+    "seconds": 1.62,
+    "exit_code": 0,
+    "counts": {
+     "passed": 15,
+     "skipped": 45
     }
    },
    {
@@ -2376,15 +2376,6 @@
     }
    },
    {
-    "file": "tests/unit/test_betse_network_reactions.py",
-    "seconds": 20.42,
-    "exit_code": 0,
-    "counts": {
-     "passed": 42,
-     "skipped": 50
-    }
-   },
-   {
     "file": "tests/unit/test_betse_spatial_trajectory.py",
     "seconds": 57.99,
     "exit_code": 0,
@@ -2500,6 +2491,15 @@
     "exit_code": 0,
     "counts": {
      "passed": 25
+    }
+   },
+   {
+    "file": "tests/unit/test_network_reactions.py",
+    "seconds": 20.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42,
+     "skipped": 50
     }
    },
    {

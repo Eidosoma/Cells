@@ -11,7 +11,7 @@ from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.specs import digest
 from cells.processes import betse_perturbations as perturb
-from cells.processes import betse_time_modulation as modulation
+from cells.processes import time_modulation as modulation
 from tests.betse_physiology.integration.test_physiology_permeability_schedule import (
     CASES,
     qualify_carried,

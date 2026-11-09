@@ -10,7 +10,7 @@ import pytest
 from cells.core.errors import NumericalError
 from cells.core.specs import digest
 from cells.processes import betse_perturbations as perturb
-from cells.processes import betse_spatial_modulation as spatial
+from cells.processes import spatial_modulation as spatial
 from tests.betse_physiology.integration.test_physiology_modulated_schedule import initialize
 from tests.betse_physiology.integration.test_physiology_modulated_schedule import (
     inputs as time_inputs,

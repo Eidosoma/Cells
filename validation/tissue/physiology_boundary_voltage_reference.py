@@ -51,7 +51,7 @@ def reconstruct(raw, binding_record, boundary_state, held_control, time_s, event
         raise ValueError("Independent boundary binding/source identity mismatch")
     program = binding_record["program"]
     if (
-        program["law"] != "betse_global_controls_source_v1_5_0@1"
+        program["law"] != "global_controls@1"
         or program["identity"] != _digest({k: v for k, v in program.items() if k != "identity"})
         or any(row["kind"] != "voltage" for row in program["events"])
         or len(program["events"]) > 1

@@ -4,7 +4,7 @@
   "parent": "resolved_calcium_energy@5",
   "state_fields": 38,
   "purpose": "Qualify chemical/fuel control of existing channel and junction availability, explicit owners, and unchanged physical accounting",
-  "law": "betse_network_modulation_source_v1_5_0@1",
+  "law": "network_control_factors@1",
   "timing": "common_stage_free_cytosol_exterior_fuel@1",
   "control_composition": "scheduled_times_ordered_nak_channel_junction_factor@2",
   "readonly_source_sha256": {

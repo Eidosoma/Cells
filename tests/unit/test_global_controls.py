@@ -11,7 +11,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.processes import betse_global_controls as controls
+from cells.processes import global_controls as controls
 from validation.perturbations import global_controls_native as native
 from validation.perturbations import global_controls_reference as reference
 

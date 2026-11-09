@@ -717,7 +717,7 @@ def test_native_and_environment_spatial_refinement_limits():
 
 
 def test_existing_profile_and_cut_interfaces_use_declared_geometry_only():
-    from cells.processes import betse_tissue_cut, betse_tissue_profiles
+    from cells.processes import betse_tissue_profiles, tissue_removal
 
     _, binding = prepared()
     mesh = binding.mesh
@@ -738,8 +738,8 @@ def test_existing_profile_and_cut_interfaces_use_declared_geometry_only():
     assert profile.cell_ids == mesh.cell_ids
     pairs = k.contact_pairs
     # Field edges and physical contact edges remain separate declared domains.
-    top = betse_tissue_cut.validate_topology(
-        betse_tissue_cut.Topology(
+    top = tissue_removal.validate_topology(
+        tissue_removal.Topology(
             mesh.cell_ids,
             binding.membrane_ids,
             tuple(f"contact:{i}" for i in range(len(pairs))),
@@ -757,7 +757,7 @@ def test_existing_profile_and_cut_interfaces_use_declared_geometry_only():
         dict(
             status="passed",
             profile_layout_identity=betse_tissue_profiles.layout_identity(profile),
-            cut_topology_identity=betse_tissue_cut.layout_identity(top),
+            cut_topology_identity=tissue_removal.layout_identity(top),
             geometry_identity=binding.identity,
             cut_executed=False,
             physical_state_remapped=False,

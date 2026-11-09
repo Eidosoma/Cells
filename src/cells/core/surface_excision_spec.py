@@ -6,7 +6,7 @@ from dataclasses import dataclass, replace
 from cells.core import surface_tissue_spec as base
 from cells.core.specs import ConfigError, _fields
 from cells.core.surface_energy_spec import _project
-from cells.processes.betse_tissue_cut import LAW_ID
+from cells.processes.tissue_removal import LAW_ID
 
 MODEL_ID = "resolved_tissue_excision@1"
 POLICIES = dict(

@@ -15,7 +15,7 @@ from cells.core import surface_calcium_energy_transport_spec as legacy
 from cells.core.bioelectric_spec import signed_number
 from cells.core.specs import ConfigError, _fields, _integer, _number
 from cells.core.surface_energy_spec import identifier
-from cells.processes import betse_network_transport as process
+from cells.processes import cell_zone_transport as process
 from cells.processes import finite_energy as fuel
 from cells.processes.electrochemistry import F, R
 

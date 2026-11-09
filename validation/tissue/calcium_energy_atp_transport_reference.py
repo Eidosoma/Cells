@@ -143,7 +143,7 @@ def bind(raw):
     capacity = projected["execution"].pop("network_transport_capacity")
     if (
         set(group) != {"law", "constants", "accounting", "routes"}
-        or group["law"] != "betse_network_transporter_source_v1_5_0@1"
+        or group["law"] != "cell_zone_transporter@1"
         or group["accounting"] != "finite_pool_atp_hydrolysis_species_transport@1"
         or group["constants"]
         != dict(

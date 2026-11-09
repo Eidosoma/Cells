@@ -23,8 +23,8 @@ from cells.models import surface_calcium_energy_water as active
 from cells.models import surface_tissue as passive
 from cells.models.registry import get_model
 from cells.numerics import surface_field
-from cells.processes import betse_tissue_cut as removal
 from cells.processes import finite_energy as fuel
+from cells.processes import tissue_removal as removal
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 
 GATES = ("channel_gate", "junction_gate", "calcium_gate")

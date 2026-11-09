@@ -3,7 +3,7 @@
 import numpy as np
 
 from cells.core.surface_calcium_energy_transport_spec import ACCOUNTING
-from cells.processes.betse_network_transport import LAW_ID
+from cells.processes.cell_zone_transport import LAW_ID
 from cells.processes.electrochemistry import F, R
 
 AXES = {

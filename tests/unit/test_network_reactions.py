@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import betse_network_reactions as chemistry
+from cells.processes import network_reactions as chemistry
 from validation.chemistry import betse_network_reactions_reference as reference
 from validation.chemistry.betse_network_reactions_fixtures import (
     SPECIES,

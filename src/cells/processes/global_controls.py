@@ -1,4 +1,6 @@
-"""Pinned global temperature/block/voltage setters, independent of tissue physics.
+"""Prescribed global temperature/block/voltage setters, independent of tissue physics.
+
+Setter conventions follow BETSE v1.5.0 (cited source; no BETSE code is used).
 
 These setters prescribe controls. They do not advance ions, select a phase clock,
 draw random targets or account for heat, electrode work or a biological protocol.
@@ -14,7 +16,7 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-LAW_ID = "betse_global_controls_source_v1_5_0@1"
+LAW_ID = "global_controls@1"
 KINDS = ("temperature", "junction_block", "pump_block", "voltage")
 SIDES = ("top", "bottom", "left", "right")
 
