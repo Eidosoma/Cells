@@ -1,0 +1,3732 @@
+{
+ "kind": "cells.test_tiers@1",
+ "measured": [
+  "/mnt/workspaces/Cells/test-tiers-20261108-01/measure/measured.json",
+  "/mnt/workspaces/Cells/test-tiers-20261109-02/measure/measured.json"
+ ],
+ "measured_provenance": [
+  {
+   "git_revision": "5aa8c73f9ae4f65b7c88fb0341ab642b0e775eb3",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/test-tiers-20261108-01/source",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-08T22:33:19+00:00"
+  },
+  {
+   "git_revision": "204907ed0ae720b934f84e119d41d706b9bb1a86",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/test-tiers-20261109-02/source",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-09T09:34:15+00:00"
+  }
+ ],
+ "fast_seconds": 20.0,
+ "cap_seconds": 90.0,
+ "tiers": {
+  "1": [
+   {
+    "file": "tests/integration/test_active_profile_barrier_preparation_cli.py",
+    "seconds": 13.19,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/integration/test_assembly_cli.py",
+    "seconds": 9.38,
+    "exit_code": 1,
+    "counts": {
+     "failed": 4,
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/integration/test_assembly_cluster_gpu.py",
+    "seconds": 2.03,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 1
+    }
+   },
+   {
+    "file": "tests/integration/test_batch_cli.py",
+    "seconds": 15.54,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/integration/test_batch_window_cli.py",
+    "seconds": 15.69,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/integration/test_coupled_excision_batch_restart.py",
+    "seconds": 2.17,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 3
+    }
+   },
+   {
+    "file": "tests/integration/test_ensemble_gpu.py",
+    "seconds": 0.42,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 4
+    }
+   },
+   {
+    "file": "tests/integration/test_environment_barrier_profiles_cli.py",
+    "seconds": 13.94,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/integration/test_geometry_profiles_cli.py",
+    "seconds": 18.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
+    }
+   },
+   {
+    "file": "tests/integration/test_integrated_ensemble_gpu.py",
+    "seconds": 0.47,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 4
+    }
+   },
+   {
+    "file": "tests/integration/test_physiology_checkpoint.py",
+    "seconds": 19.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
+    }
+   },
+   {
+    "file": "tests/integration/test_physiology_protein_charge_view.py",
+    "seconds": 14.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/integration/test_physiology_protein_work_view.py",
+    "seconds": 19.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/integration/test_physiology_remap_checkpoint.py",
+    "seconds": 8.14,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/integration/test_physiology_tissue_checkpoint.py",
+    "seconds": 14.55,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/integration/test_replay.py",
+    "seconds": 5.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/integration/test_tissue_geometry_cli.py",
+    "seconds": 14.25,
+    "exit_code": 1,
+    "counts": {
+     "failed": 2,
+     "passed": 31
+    }
+   },
+   {
+    "file": "tests/integration/test_window_cli.py",
+    "seconds": 11.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_active_polygon_capture_contract.py",
+    "seconds": 0.62,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_active_polygon_energy_contract.py",
+    "seconds": 0.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 21
+    }
+   },
+   {
+    "file": "tests/unit/test_active_polygon_semantic_contract.py",
+    "seconds": 0.62,
+    "exit_code": 0,
+    "counts": {
+     "passed": 28
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_controls.py",
+    "seconds": 9.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_baseline_transfer_diagnostic.py",
+    "seconds": 2.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_batch_identity.py",
+    "seconds": 2.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_charge_precision.py",
+    "seconds": 3.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2,
+     "skipped": 18
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_ecm_caleak_reference.py",
+    "seconds": 0.57,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 39
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_ecm_material_callback.py",
+    "seconds": 0.57,
+    "exit_code": 1,
+    "counts": {
+     "failed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_ecm_naleak_reference.py",
+    "seconds": 0.67,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 71
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_ecm_reference_failure.py",
+    "seconds": 0.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_ecm_voltage_domain_reference.py",
+    "seconds": 0.87,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 49
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_emulator_laws.py",
+    "seconds": 2.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_environment_transport.py",
+    "seconds": 9.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29,
+     "skipped": 46
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_gate_roundoff.py",
+    "seconds": 10.74,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_geometry.py",
+    "seconds": 1.84,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 66
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_global_controls.py",
+    "seconds": 3.59,
+    "exit_code": 0,
+    "counts": {
+     "passed": 54
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_junction_runtime.py",
+    "seconds": 3.64,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 72
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_mixed_interventions.py",
+    "seconds": 4.54,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 30
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_network_modulation.py",
+    "seconds": 13.02,
+    "exit_code": 0,
+    "counts": {
+     "passed": 21,
+     "skipped": 54
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_network_transport.py",
+    "seconds": 8.5,
+    "exit_code": 0,
+    "counts": {
+     "passed": 83,
+     "skipped": 40
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_normal_ecm_molecule_material_failure_evidence.py",
+    "seconds": 0.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 23
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_normal_ecm_molecule_material_four_call_reference.py",
+    "seconds": 1.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_perturbations.py",
+    "seconds": 13.21,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19,
+     "skipped": 42
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_reference_extract.py",
+    "seconds": 0.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_active_refinement.py",
+    "seconds": 5.45,
+    "exit_code": 1,
+    "counts": {
+     "passed": 22,
+     "error": 21
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_intervention_refinement.py",
+    "seconds": 3.7,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 64
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_interventions.py",
+    "seconds": 3.17,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 38
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_junction.py",
+    "seconds": 15.31,
+    "exit_code": 1,
+    "counts": {
+     "passed": 21,
+     "error": 18
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_junction_refinement.py",
+    "seconds": 14.11,
+    "exit_code": 1,
+    "counts": {
+     "passed": 12,
+     "error": 31
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_modulation.py",
+    "seconds": 1.97,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_runtime.py",
+    "seconds": 2.97,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 46
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_time_modulation.py",
+    "seconds": 2.02,
+    "exit_code": 0,
+    "counts": {
+     "passed": 36
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_tissue_cut.py",
+    "seconds": 1.62,
+    "exit_code": 0,
+    "counts": {
+     "passed": 15,
+     "skipped": 45
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_tissue_profiles.py",
+    "seconds": 6.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 17,
+     "skipped": 64
+    }
+   },
+   {
+    "file": "tests/unit/test_bioelectric_pair_audit.py",
+    "seconds": 1.02,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_bioelectric_pair_reference.py",
+    "seconds": 12.7,
+    "exit_code": 0,
+    "counts": {
+     "passed": 52
+    }
+   },
+   {
+    "file": "tests/unit/test_bioelectric_reference.py",
+    "seconds": 18.65,
+    "exit_code": 0,
+    "counts": {
+     "passed": 76
+    }
+   },
+   {
+    "file": "tests/unit/test_biological_benchmark.py",
+    "seconds": 0.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_calcium_activated_potassium.py",
+    "seconds": 4.24,
+    "exit_code": 0,
+    "counts": {
+     "passed": 103
+    }
+   },
+   {
+    "file": "tests/unit/test_calcium_catalog_extra.py",
+    "seconds": 19.58,
+    "exit_code": 0,
+    "counts": {
+     "passed": 82
+    }
+   },
+   {
+    "file": "tests/unit/test_capsid_assembly.py",
+    "seconds": 18.66,
+    "exit_code": 0,
+    "counts": {
+     "passed": 37
+    }
+   },
+   {
+    "file": "tests/unit/test_cav_channels.py",
+    "seconds": 14.93,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_cells_betse_compare.py",
+    "seconds": 1.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_channel_catalog_v2_planning.py",
+    "seconds": 19.23,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_channel_compensation.py",
+    "seconds": 5.49,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 54
+    }
+   },
+   {
+    "file": "tests/unit/test_channel_compensation_diagnostic.py",
+    "seconds": 3.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_charged_surface_backend.py",
+    "seconds": 0.82,
+    "exit_code": 5,
+    "counts": {
+     "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_charged_surface_repository.py",
+    "seconds": 0.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_charged_surface_work.py",
+    "seconds": 0.47,
+    "exit_code": 5,
+    "counts": {
+     "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_conditioned_voltage.py",
+    "seconds": 0.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 48
+    }
+   },
+   {
+    "file": "tests/unit/test_conservative_polygon_geometry.py",
+    "seconds": 13.91,
+    "exit_code": 1,
+    "counts": {
+     "failed": 12,
+     "passed": 32
+    }
+   },
+   {
+    "file": "tests/unit/test_conservative_polygon_tissue_preparation.py",
+    "seconds": 0.92,
+    "exit_code": 1,
+    "counts": {
+     "failed": 19
+    }
+   },
+   {
+    "file": "tests/unit/test_cotransport.py",
+    "seconds": 5.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 94
+    }
+   },
+   {
+    "file": "tests/unit/test_cue_separation.py",
+    "seconds": 3.32,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 13
+    }
+   },
+   {
+    "file": "tests/unit/test_cue_separation_diagnostic.py",
+    "seconds": 4.33,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_distributed_cue.py",
+    "seconds": 3.37,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_distributed_timing.py",
+    "seconds": 4.6,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_e02_protocol.py",
+    "seconds": 0.63,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
+    "file": "tests/unit/test_emt.py",
+    "seconds": 19.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 30
+    }
+   },
+   {
+    "file": "tests/unit/test_engine_betse_boundary.py",
+    "seconds": 4.51,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_ensemble.py",
+    "seconds": 0.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_environment_barrier_composition_transients.py",
+    "seconds": 1.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6,
+     "skipped": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_environment_barrier_preparation.py",
+    "seconds": 5.14,
+    "exit_code": 0,
+    "counts": {
+     "passed": 55
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_energy.py",
+    "seconds": 15.34,
+    "exit_code": 0,
+    "counts": {
+     "passed": 80
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_artifact_audit.py",
+    "seconds": 0.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1,
+     "skipped": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_artifact_audit_v2.py",
+    "seconds": 0.72,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 1,
+     "error": 13
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_attempt_audit.py",
+    "seconds": 0.62,
+    "exit_code": 1,
+    "counts": {
+     "passed": 1,
+     "error": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_build_audit.py",
+    "seconds": 1.67,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_dynamics.py",
+    "seconds": 6.98,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 25,
+     "error": 75
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_ownership.py",
+    "seconds": 1.92,
+    "exit_code": 1,
+    "counts": {
+     "failed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_production.py",
+    "seconds": 1.72,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_production_context.py",
+    "seconds": 0.72,
+    "exit_code": 1,
+    "counts": {
+     "failed": 4,
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_reference.py",
+    "seconds": 1.07,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 87
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_tangent.py",
+    "seconds": 2.52,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 1,
+     "error": 37
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_extracellular_test_context.py",
+    "seconds": 0.82,
+    "exit_code": 1,
+    "counts": {
+     "failed": 3,
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_fixed_polygon_removal.py",
+    "seconds": 0.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2,
+     "skipped": 29
+    }
+   },
+   {
+    "file": "tests/unit/test_frozen_resource_dependencies.py",
+    "seconds": 0.62,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_gated_calcium.py",
+    "seconds": 10.09,
+    "exit_code": 1,
+    "counts": {
+     "failed": 9,
+     "passed": 22,
+     "error": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_geometry_profile_preparation.py",
+    "seconds": 16.32,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 42
+    }
+   },
+   {
+    "file": "tests/unit/test_geometry_tissue_preparation.py",
+    "seconds": 10.19,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 55
+    }
+   },
+   {
+    "file": "tests/unit/test_gpu_execution.py",
+    "seconds": 2.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5,
+     "skipped": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_graph_candidate.py",
+    "seconds": 6.63,
+    "exit_code": 1,
+    "counts": {
+     "failed": 9,
+     "passed": 44
+    }
+   },
+   {
+    "file": "tests/unit/test_graph_diagnostics.py",
+    "seconds": 9.28,
+    "exit_code": 1,
+    "counts": {
+     "failed": 4,
+     "passed": 121
+    }
+   },
+   {
+    "file": "tests/unit/test_graph_evidence.py",
+    "seconds": 10.38,
+    "exit_code": 1,
+    "counts": {
+     "failed": 4,
+     "passed": 163
+    }
+   },
+   {
+    "file": "tests/unit/test_graph_reference_disagreement.py",
+    "seconds": 0.67,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_graph_reference_panel.py",
+    "seconds": 3.93,
+    "exit_code": 1,
+    "counts": {
+     "passed": 2,
+     "error": 23
+    }
+   },
+   {
+    "file": "tests/unit/test_graph_refinement.py",
+    "seconds": 2.73,
+    "exit_code": 1,
+    "counts": {
+     "passed": 2,
+     "error": 21
+    }
+   },
+   {
+    "file": "tests/unit/test_hcn_extra_catalog_planning.py",
+    "seconds": 19.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_hcn_extra_reference.py",
+    "seconds": 0.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 65,
+     "skipped": 55
+    }
+   },
+   {
+    "file": "tests/unit/test_ionic_plan_admission.py",
+    "seconds": 4.44,
+    "exit_code": 0,
+    "counts": {
+     "passed": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_ip3_calcium.py",
+    "seconds": 7.98,
+    "exit_code": 1,
+    "counts": {
+     "failed": 7,
+     "passed": 18,
+     "error": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_joint_water_epoch_reference_refinement.py",
+    "seconds": 1.8,
+    "exit_code": 1,
+    "counts": {
+     "failed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_joint_water_epoch_reference_refinement_contracts.py",
+    "seconds": 1.87,
+    "exit_code": 1,
+    "counts": {
+     "failed": 5,
+     "passed": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_joint_water_epoch_transients.py",
+    "seconds": 2.73,
+    "exit_code": 1,
+    "counts": {
+     "failed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_jupiter_plan.py",
+    "seconds": 3.03,
+    "exit_code": 0,
+    "counts": {
+     "passed": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_kinetic_finite_dynamics.py",
+    "seconds": 1.67,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_kinetic_finite_legacy.py",
+    "seconds": 0.57,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_kinetic_finite_runner.py",
+    "seconds": 1.67,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_kinetic_finite_schema.py",
+    "seconds": 1.62,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_kinetic_pump.py",
+    "seconds": 3.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 32
+    }
+   },
+   {
+    "file": "tests/unit/test_leak_channels.py",
+    "seconds": 3.22,
+    "exit_code": 0,
+    "counts": {
+     "passed": 65
+    }
+   },
+   {
+    "file": "tests/unit/test_local_channel.py",
+    "seconds": 3.77,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 90
+    }
+   },
+   {
+    "file": "tests/unit/test_long_observation.py",
+    "seconds": 3.33,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_membrane_redistribution.py",
+    "seconds": 9.7,
+    "exit_code": 0,
+    "counts": {
+     "passed": 34
+    }
+   },
+   {
+    "file": "tests/unit/test_morris_lecar_catalog_planning.py",
+    "seconds": 16.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_morris_lecar_channels.py",
+    "seconds": 10.56,
+    "exit_code": 0,
+    "counts": {
+     "passed": 140
+    }
+   },
+   {
+    "file": "tests/unit/test_multispecies_artifact_audit.py",
+    "seconds": 0.73,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_multispecies_build_audit.py",
+    "seconds": 9.25,
+    "exit_code": 1,
+    "counts": {
+     "failed": 8,
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_multispecies_dynamics.py",
+    "seconds": 2.63,
+    "exit_code": 0,
+    "counts": {
+     "passed": 90
+    }
+   },
+   {
+    "file": "tests/unit/test_multispecies_reference.py",
+    "seconds": 3.59,
+    "exit_code": 0,
+    "counts": {
+     "passed": 113
+    }
+   },
+   {
+    "file": "tests/unit/test_native_init_capture_budget.py",
+    "seconds": 2.44,
+    "exit_code": 0,
+    "counts": {
+     "passed": 35
+    }
+   },
+   {
+    "file": "tests/unit/test_native_mapping_setup_diagnostic.py",
+    "seconds": 0.92,
+    "exit_code": 1,
+    "counts": {
+     "failed": 3,
+     "passed": 14
+    }
+   },
+   {
+    "file": "tests/unit/test_native_multi_cell_caller_compare.py",
+    "seconds": 0.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
+    "file": "tests/unit/test_native_multi_cell_caller_comparison_runtime.py",
+    "seconds": 5.25,
+    "exit_code": 0,
+    "counts": {
+     "passed": 64
+    }
+   },
+   {
+    "file": "tests/unit/test_native_multi_cell_caller_native.py",
+    "seconds": 0.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 57
+    }
+   },
+   {
+    "file": "tests/unit/test_native_multi_cell_caller_runtime.py",
+    "seconds": 13.28,
+    "exit_code": 0,
+    "counts": {
+     "passed": 39
+    }
+   },
+   {
+    "file": "tests/unit/test_native_multi_cell_environment_native.py",
+    "seconds": 10.93,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 39
+    }
+   },
+   {
+    "file": "tests/unit/test_native_seed_demo_inputs.py",
+    "seconds": 4.69,
+    "exit_code": 0,
+    "counts": {
+     "passed": 63
+    }
+   },
+   {
+    "file": "tests/unit/test_native_single_cell_prefix_compare.py",
+    "seconds": 11.66,
+    "exit_code": 0,
+    "counts": {
+     "passed": 62
+    }
+   },
+   {
+    "file": "tests/unit/test_native_single_cell_prefix_payload.py",
+    "seconds": 1.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 26
+    }
+   },
+   {
+    "file": "tests/unit/test_native_tissue_to_grid_native.py",
+    "seconds": 7.14,
+    "exit_code": 0,
+    "counts": {
+     "passed": 48
+    }
+   },
+   {
+    "file": "tests/unit/test_numerics.py",
+    "seconds": 5.83,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_open_calcium_bath_energy_diagnostic.py",
+    "seconds": 0.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_open_calcium_bath_energy_upstream.py",
+    "seconds": 1.22,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_ordered_scatter.py",
+    "seconds": 2.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_osmotic_water.py",
+    "seconds": 2.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 28
+    }
+   },
+   {
+    "file": "tests/unit/test_owned_barrier_transients.py",
+    "seconds": 1.72,
+    "exit_code": 1,
+    "counts": {
+     "failed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_passive_pair.py",
+    "seconds": 16.64,
+    "exit_code": 0,
+    "counts": {
+     "passed": 69
+    }
+   },
+   {
+    "file": "tests/unit/test_physical_ionic_graph.py",
+    "seconds": 2.77,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_physical_ionic_graph_artifact_audit.py",
+    "seconds": 0.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1,
+     "skipped": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_physical_ionic_graph_build_audit.py",
+    "seconds": 2.58,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_physical_ionic_graph_dynamics.py",
+    "seconds": 8.14,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 1,
+     "error": 86
+    }
+   },
+   {
+    "file": "tests/unit/test_physical_ionic_graph_reference.py",
+    "seconds": 1.92,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 113
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_active_temperature_fuel_stages.py",
+    "seconds": 6.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_block_control_arrays.py",
+    "seconds": 19.89,
+    "exit_code": 0,
+    "counts": {
+     "passed": 36
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_block_control_view.py",
+    "seconds": 10.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 37
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_native_calendar.py",
+    "seconds": 1.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 50
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_permeability_view.py",
+    "seconds": 17.89,
+    "exit_code": 0,
+    "counts": {
+     "passed": 43
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_perturbation_phases.py",
+    "seconds": 8.76,
+    "exit_code": 0,
+    "counts": {
+     "passed": 35
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_perturbation_remap.py",
+    "seconds": 4.28,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_perturbation_step.py",
+    "seconds": 3.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_projection.py",
+    "seconds": 4.54,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_thermodynamics.py",
+    "seconds": 16.13,
+    "exit_code": 0,
+    "counts": {
+     "passed": 54
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_random_streams.py",
+    "seconds": 5.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 50
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_target_selection.py",
+    "seconds": 7.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_tissue_binding.py",
+    "seconds": 4.03,
+    "exit_code": 0,
+    "counts": {
+     "passed": 75
+    }
+   },
+   {
+    "file": "tests/unit/test_plasma_calcium.py",
+    "seconds": 7.34,
+    "exit_code": 1,
+    "counts": {
+     "failed": 11,
+     "passed": 22,
+     "error": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_pool_ensemble.py",
+    "seconds": 1.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_qualification_inventory.py",
+    "seconds": 0.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_qualification_typed_evidence.py",
+    "seconds": 0.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 63
+    }
+   },
+   {
+    "file": "tests/unit/test_recovery_diagnostic_grid.py",
+    "seconds": 0.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_recovery_readout.py",
+    "seconds": 0.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 18
+    }
+   },
+   {
+    "file": "tests/unit/test_recovery_response_grid.py",
+    "seconds": 7.62,
+    "exit_code": 0,
+    "counts": {
+     "passed": 23
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_current_coupling.py",
+    "seconds": 0.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_current_coupling_jax.py",
+    "seconds": 1.33,
+    "exit_code": 1,
+    "counts": {
+     "error": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_current_transfer.py",
+    "seconds": 0.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 33
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_current_transfer_jax.py",
+    "seconds": 1.42,
+    "exit_code": 1,
+    "counts": {
+     "error": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_environment.py",
+    "seconds": 0.77,
+    "exit_code": 0,
+    "counts": {
+     "passed": 23
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_environment_conduction.py",
+    "seconds": 0.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_environment_conduction_jax.py",
+    "seconds": 1.72,
+    "exit_code": 1,
+    "counts": {
+     "error": 14
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_environment_iterative.py",
+    "seconds": 0.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 57
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_environment_jax.py",
+    "seconds": 1.47,
+    "exit_code": 1,
+    "counts": {
+     "error": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_environment_metric.py",
+    "seconds": 0.77,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_environment_reference.py",
+    "seconds": 0.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 60
+    }
+   },
+   {
+    "file": "tests/unit/test_rectangular_environment_stencil.py",
+    "seconds": 0.77,
+    "exit_code": 0,
+    "counts": {
+     "passed": 27
+    }
+   },
+   {
+    "file": "tests/unit/test_selective_contact_contract.py",
+    "seconds": 0.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 36
+    }
+   },
+   {
+    "file": "tests/unit/test_source_graph_continuation.py",
+    "seconds": 3.23,
+    "exit_code": 1,
+    "counts": {
+     "failed": 6,
+     "passed": 5,
+     "error": 13
+    }
+   },
+   {
+    "file": "tests/unit/test_source_graph_paths.py",
+    "seconds": 4.34,
+    "exit_code": 1,
+    "counts": {
+     "failed": 34,
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_source_graph_reference.py",
+    "seconds": 3.33,
+    "exit_code": 0,
+    "counts": {
+     "passed": 118
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order.py",
+    "seconds": 4.07,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_coupling_transfer.py",
+    "seconds": 5.29,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 38
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_diagnostic.py",
+    "seconds": 3.89,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_long.py",
+    "seconds": 3.52,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_long_diagnostic.py",
+    "seconds": 2.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_observation_design.py",
+    "seconds": 9.54,
+    "exit_code": 0,
+    "counts": {
+     "passed": 32
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_precision.py",
+    "seconds": 3.37,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_pulse_confirmation.py",
+    "seconds": 3.52,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_pulse_spacing.py",
+    "seconds": 3.47,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_selected.py",
+    "seconds": 3.42,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_selected_diagnostic.py",
+    "seconds": 3.13,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_spanning.py",
+    "seconds": 3.48,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_spanning_diagnostic.py",
+    "seconds": 4.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_source_pair_artifact_audit.py",
+    "seconds": 0.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_source_pair_contract.py",
+    "seconds": 1.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 65
+    }
+   },
+   {
+    "file": "tests/unit/test_source_pair_native_audit.py",
+    "seconds": 0.97,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_source_pair_numerics.py",
+    "seconds": 2.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/unit/test_source_preparations.py",
+    "seconds": 6.98,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 38
+    }
+   },
+   {
+    "file": "tests/unit/test_source_snapshot.py",
+    "seconds": 1.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 23
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_acceptance_resources.py",
+    "seconds": 6.63,
+    "exit_code": 1,
+    "counts": {
+     "failed": 3,
+     "passed": 103
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_artifact_audit.py",
+    "seconds": 1.67,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_build_audit.py",
+    "seconds": 2.37,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_context.py",
+    "seconds": 1.87,
+    "exit_code": 1,
+    "counts": {
+     "failed": 2,
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_dynamics.py",
+    "seconds": 1.27,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_example.py",
+    "seconds": 10.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_execution.py",
+    "seconds": 1.72,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_production.py",
+    "seconds": 2.43,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_reference.py",
+    "seconds": 0.77,
+    "exit_code": 0,
+    "counts": {
+     "passed": 85
+    }
+   },
+   {
+    "file": "tests/unit/test_spatial_extracellular_stream_audit.py",
+    "seconds": 2.48,
+    "exit_code": 1,
+    "counts": {
+     "error": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_specs.py",
+    "seconds": 2.48,
+    "exit_code": 0,
+    "counts": {
+     "passed": 47
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_geometry_primitives.py",
+    "seconds": 9.56,
+    "exit_code": 0,
+    "counts": {
+     "passed": 84
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_initial_mesh_summary.py",
+    "seconds": 0.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_mesh_metric_saved_domains.py",
+    "seconds": 0.62,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_mesh_physical_reconstruction.py",
+    "seconds": 8.49,
+    "exit_code": 0,
+    "counts": {
+     "passed": 33
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_seed_control_volume_environment.py",
+    "seconds": 1.12,
+    "exit_code": 1,
+    "counts": {
+     "failed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_seed_control_volume_physical_bridge.py",
+    "seconds": 1.17,
+    "exit_code": 1,
+    "counts": {
+     "failed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_seed_partition_advance.py",
+    "seconds": 0.78,
+    "exit_code": 1,
+    "counts": {
+     "failed": 6,
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_seed_partition_advance_refinement.py",
+    "seconds": 0.92,
+    "exit_code": 1,
+    "counts": {
+     "failed": 13,
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_seed_partition_trajectory.py",
+    "seconds": 1.98,
+    "exit_code": 1,
+    "counts": {
+     "failed": 36,
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_bath_events.py",
+    "seconds": 13.75,
+    "exit_code": 0,
+    "counts": {
+     "passed": 65
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_bath_events_reference.py",
+    "seconds": 12.21,
+    "exit_code": 0,
+    "counts": {
+     "passed": 25
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_bath_reference_charge.py",
+    "seconds": 1.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_catalog_planning.py",
+    "seconds": 8.86,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_irreversible_transport.py",
+    "seconds": 10.46,
+    "exit_code": 0,
+    "counts": {
+     "passed": 36
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_planning.py",
+    "seconds": 11.46,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_regulated_dispatch.py",
+    "seconds": 12.51,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_regulated_integration.py",
+    "seconds": 2.42,
+    "exit_code": 1,
+    "counts": {
+     "failed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_regulated_v2_integration.py",
+    "seconds": 2.47,
+    "exit_code": 1,
+    "counts": {
+     "failed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_water.py",
+    "seconds": 17.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_catalog_planning.py",
+    "seconds": 5.79,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_cotransport_spec.py",
+    "seconds": 9.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_energy.py",
+    "seconds": 5.14,
+    "exit_code": 0,
+    "counts": {
+     "passed": 28
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_energy_spec.py",
+    "seconds": 4.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 43
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_energy_water.py",
+    "seconds": 4.93,
+    "exit_code": 0,
+    "counts": {
+     "passed": 34
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_energy_water_spec.py",
+    "seconds": 12.5,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_profile_interventions_dispatch.py",
+    "seconds": 18.33,
+    "exit_code": 0,
+    "counts": {
+     "passed": 14
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_reference.py",
+    "seconds": 2.07,
+    "exit_code": 0,
+    "counts": {
+     "passed": 21
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_water_kinetic_spec.py",
+    "seconds": 5.58,
+    "exit_code": 0,
+    "counts": {
+     "passed": 30
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_water_spec.py",
+    "seconds": 3.95,
+    "exit_code": 0,
+    "counts": {
+     "passed": 161
+    }
+   },
+   {
+    "file": "tests/unit/test_template_diagnostic.py",
+    "seconds": 3.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_tissue_calcium.py",
+    "seconds": 6.81,
+    "exit_code": 1,
+    "counts": {
+     "failed": 17,
+     "passed": 5,
+     "error": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_tissue_profile_preparation.py",
+    "seconds": 11.06,
+    "exit_code": 1,
+    "counts": {
+     "failed": 2,
+     "passed": 47
+    }
+   },
+   {
+    "file": "tests/unit/test_two_task_diagnostic.py",
+    "seconds": 3.14,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_two_task_readout.py",
+    "seconds": 3.93,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_two_task_templates.py",
+    "seconds": 4.33,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 18
+    }
+   },
+   {
+    "file": "tests/unit/test_two_task_timing_refinement.py",
+    "seconds": 4.29,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_unstimulated_diagnostic.py",
+    "seconds": 3.58,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_unstimulated_readout.py",
+    "seconds": 3.73,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_voltage_gated_artifact_audit.py",
+    "seconds": 0.57,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_voltage_gated_build_audit.py",
+    "seconds": 8.64,
+    "exit_code": 1,
+    "counts": {
+     "failed": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_voltage_gated_channel_reference.py",
+    "seconds": 1.07,
+    "exit_code": 1,
+    "counts": {
+     "failed": 2,
+     "passed": 103
+    }
+   },
+   {
+    "file": "tests/unit/test_voltage_gated_dynamics.py",
+    "seconds": 14.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 93
+    }
+   }
+  ],
+  "2": [
+   {
+    "file": "tests/integration/test_environment_barrier_execution.py",
+    "seconds": 69.22,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/integration/test_joint_water_profile_barrier_preparation_cli.py",
+    "seconds": 78.7,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/integration/test_owned_calcium_profile_barrier_preparation_cli.py",
+    "seconds": 55.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/integration/test_physiology_protein_charge_rhs.py",
+    "seconds": 73.74,
+    "exit_code": 0,
+    "counts": {
+     "passed": 26
+    }
+   },
+   {
+    "file": "tests/integration/test_physiology_tissue_step_checkpoint.py",
+    "seconds": 46.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/integration/test_source_pair_cli.py",
+    "seconds": 22.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/integration/test_surface_open_calcium_bath_phase_public.py",
+    "seconds": 34.68,
+    "exit_code": 1,
+    "counts": {
+     "failed": 14
+    }
+   },
+   {
+    "file": "tests/integration/test_tissue_phase_cli.py",
+    "seconds": 44.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 14
+    }
+   },
+   {
+    "file": "tests/integration/test_tissue_profiles_cli.py",
+    "seconds": 52.54,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_active_polygon_physiology_preparation.py",
+    "seconds": 31.83,
+    "exit_code": 1,
+    "counts": {
+     "failed": 36,
+     "passed": 41
+    }
+   },
+   {
+    "file": "tests/unit/test_active_profile_barrier_phase_reference.py",
+    "seconds": 41.5,
+    "exit_code": 0,
+    "counts": {
+     "passed": 24
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_pool.py",
+    "seconds": 27.9,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 20,
+     "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_network_reactions.py",
+    "seconds": 20.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42,
+     "skipped": 50
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_trajectory.py",
+    "seconds": 57.99,
+    "exit_code": 0,
+    "counts": {
+     "passed": 46,
+     "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_betse_tissue_contact.py",
+    "seconds": 36.45,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16,
+     "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_calcium_activated_catalog_planning.py",
+    "seconds": 20.64,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_channel_compensation_design.py",
+    "seconds": 31.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 21
+    }
+   },
+   {
+    "file": "tests/unit/test_comparison_evidence.py",
+    "seconds": 49.72,
+    "exit_code": 1,
+    "counts": {
+     "failed": 4,
+     "passed": 192
+    }
+   },
+   {
+    "file": "tests/unit/test_compartment_reactions.py",
+    "seconds": 25.59,
+    "exit_code": 0,
+    "counts": {
+     "passed": 34,
+     "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_default_world_adapter.py",
+    "seconds": 60.39,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_calcium_pumps.py",
+    "seconds": 21.18,
+    "exit_code": 0,
+    "counts": {
+     "passed": 66
+    }
+   },
+   {
+    "file": "tests/unit/test_finite_ecm_polygon_preparation.py",
+    "seconds": 70.76,
+    "exit_code": 1,
+    "counts": {
+     "failed": 14,
+     "passed": 64
+    }
+   },
+   {
+    "file": "tests/unit/test_graph_evaluation.py",
+    "seconds": 59.53,
+    "exit_code": 1,
+    "counts": {
+     "failed": 4,
+     "passed": 271
+    }
+   },
+   {
+    "file": "tests/unit/test_local_channel_design.py",
+    "seconds": 33.26,
+    "exit_code": 0,
+    "counts": {
+     "passed": 33
+    }
+   },
+   {
+    "file": "tests/unit/test_morris_lecar_repair.py",
+    "seconds": 23.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 52
+    }
+   },
+   {
+    "file": "tests/unit/test_morris_lecar_water_repair_planning.py",
+    "seconds": 23.36,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_native_multi_cell_caller_native_source.py",
+    "seconds": 20.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 25
+    }
+   },
+   {
+    "file": "tests/unit/test_open_calcium.py",
+    "seconds": 27.95,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
+    }
+   },
+   {
+    "file": "tests/unit/test_open_calcium_regression.py",
+    "seconds": 20.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
+    }
+   },
+   {
+    "file": "tests/unit/test_owned_barrier_phase_reference.py",
+    "seconds": 53.84,
+    "exit_code": 0,
+    "counts": {
+     "passed": 49
+    }
+   },
+   {
+    "file": "tests/unit/test_owned_barrier_phase_turnover.py",
+    "seconds": 34.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_active_temperature_compilation.py",
+    "seconds": 61.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_active_temperature_open_stages.py",
+    "seconds": 23.69,
+    "exit_code": 0,
+    "counts": {
+     "passed": 20
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_boundary_voltage.py",
+    "seconds": 52.56,
+    "exit_code": 0,
+    "counts": {
+     "passed": 71
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_chemical_arrays.py",
+    "seconds": 35.2,
+    "exit_code": 0,
+    "counts": {
+     "passed": 38
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_drive_arrays.py",
+    "seconds": 41.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 55
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_electrical_arrays.py",
+    "seconds": 38.8,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_interval_accounting.py",
+    "seconds": 20.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 40
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_packet_provider.py",
+    "seconds": 65.26,
+    "exit_code": 0,
+    "counts": {
+     "passed": 53
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_transition_arrays.py",
+    "seconds": 57.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 66
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_transition_commit.py",
+    "seconds": 75.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 97
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_work_arrays.py",
+    "seconds": 67.8,
+    "exit_code": 0,
+    "counts": {
+     "passed": 39
+    }
+   },
+   {
+    "file": "tests/unit/test_physiology_temperature.py",
+    "seconds": 40.96,
+    "exit_code": 0,
+    "counts": {
+     "passed": 38
+    }
+   },
+   {
+    "file": "tests/unit/test_potassium_catalog.py",
+    "seconds": 40.05,
+    "exit_code": 0,
+    "counts": {
+     "passed": 146
+    }
+   },
+   {
+    "file": "tests/unit/test_random_tissue_profile_preparation.py",
+    "seconds": 43.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 35
+    }
+   },
+   {
+    "file": "tests/unit/test_reaction_transport.py",
+    "seconds": 26.31,
+    "exit_code": 0,
+    "counts": {
+     "passed": 80
+    }
+   },
+   {
+    "file": "tests/unit/test_sodium_catalog.py",
+    "seconds": 37.84,
+    "exit_code": 0,
+    "counts": {
+     "passed": 115
+    }
+   },
+   {
+    "file": "tests/unit/test_stable_seed_control_volumes.py",
+    "seconds": 45.74,
+    "exit_code": 0,
+    "counts": {
+     "passed": 41
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_active_profile_interventions_dispatch.py",
+    "seconds": 63.62,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_bath_phase_reference.py",
+    "seconds": 42.23,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_atp_transport.py",
+    "seconds": 60.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 53
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_atp_transport_reference.py",
+    "seconds": 62.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_irreversible_transport_reference.py",
+    "seconds": 35.19,
+    "exit_code": 0,
+    "counts": {
+     "passed": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_regulated_v2.py",
+    "seconds": 45.9,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 40
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_water_repair.py",
+    "seconds": 21.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_water.py",
+    "seconds": 37.8,
+    "exit_code": 0,
+    "counts": {
+     "passed": 60
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_cotransport.py",
+    "seconds": 33.23,
+    "exit_code": 0,
+    "counts": {
+     "passed": 37
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_cotransport_water.py",
+    "seconds": 32.95,
+    "exit_code": 0,
+    "counts": {
+     "passed": 45
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_cotransport_water_response.py",
+    "seconds": 35.21,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_transport.py",
+    "seconds": 41.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 33,
+     "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_tissue_field.py",
+    "seconds": 26.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 33,
+     "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_tissue_profile_composition_preparation.py",
+    "seconds": 25.75,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 44
+    }
+   }
+  ],
+  "3": [
+   {
+    "file": "tests/integration/test_active_profile_barrier_phase_cli.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_active_tissue_phase_cli.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_cli.py",
+    "seconds": 90.01,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_joint_water_barrier_phase_cli.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_joint_water_hcn_interfaces.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_joint_water_profile_barrier_phase_cli.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_joint_water_profile_interfaces.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_joint_water_tissue_phase_cli.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_owned_barrier_phase_cli.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_owned_calcium_profile_barrier_phase_cli.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_owned_calcium_tissue_phase_cli.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_block_calendar.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_block_step.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_initial_loop.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_loop_checkpoint.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_modulated_schedule.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_native_schedule.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_permeability_schedule.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_protein_batch_loop.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_protein_block_calendar.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_protein_charge_step.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_protein_checkpoint.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_protein_loop.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_protein_transition.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_physiology_spatial_schedule.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_surface_bath_events_public.py",
+    "seconds": 90.08,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_surface_bath_phase_public.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_surface_calcium_energy_atp_transport_excision_public.py",
+    "seconds": 90.05,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_surface_calcium_energy_atp_transport_public.py",
+    "seconds": 90.21,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_surface_calcium_energy_irreversible_transport_public.py",
+    "seconds": 90.08,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_surface_open_calcium_bath_public.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_surface_open_calcium_public.py",
+    "seconds": 90.07,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/integration/test_tissue_profiles_composed_cli.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_active_ecm_polygon_preparation.py",
+    "seconds": 90.01,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_active_membrane_profile_phase_handoff.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_active_profile_barrier_interventions.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_active_profile_barrier_interventions_dispatch.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_active_profile_barrier_phase_handoff.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_assembly_cell.py",
+    "seconds": 90.21,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_assembly_cluster.py",
+    "seconds": 90.12,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_assembly_mobile_pump_repair.py",
+    "seconds": 90.05,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_assembly_mobile_repair.py",
+    "seconds": 90.06,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_assembly_repair.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_assembly_repair_recovery.py",
+    "seconds": 90.21,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_batch.py",
+    "seconds": 90.08,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_batch_windows.py",
+    "seconds": 90.09,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_active.py",
+    "seconds": 90.05,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_betse_spatial_refinement.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_bioelectric_cell.py",
+    "seconds": 90.07,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_bioelectric_pair.py",
+    "seconds": 90.17,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_calcium_activated_catalog.py",
+    "seconds": 90.19,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_channel_catalog_v2.py",
+    "seconds": 90.15,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_environment_barrier_composition_preparation.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_environment_barrier_interventions.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {
+     "passed": 62
+    }
+   },
+   {
+    "file": "tests/unit/test_er_calcium.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_hcn_extra_catalog.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_integrated_ensemble.py",
+    "seconds": 90.24,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_barrier_interventions.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_barrier_interventions_dispatch.py",
+    "seconds": 90.07,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_barrier_phase_handoff.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_profile_barrier_interventions_dispatch.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_profile_barrier_phase_handoff.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_profile_barrier_phase_reference.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_profile_barrier_phase_turnover.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_profile_barriers.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_profile_interventions.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_joint_water_profile_phase_handoff.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_membrane_profile_phase_handoff.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_morris_lecar_catalog.py",
+    "seconds": 90.19,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_morris_lecar_energy_water.py",
+    "seconds": 90.24,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_morris_lecar_repair_compiled.py",
+    "seconds": 90.29,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_morris_lecar_water.py",
+    "seconds": 90.2,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_multispecies_membrane.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_numerical_refinement.py",
+    "seconds": 90.05,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_open_calcium_bath_events.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_open_calcium_bath_events_reference.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {
+     "passed": 33
+    }
+   },
+   {
+    "file": "tests/unit/test_open_calcium_bath_phase_handoff.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_open_calcium_bath_phase_reference.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_barrier_interventions.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_barrier_interventions_dispatch.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_barrier_phase_handoff.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_calcium_profile_barrier_interventions_dispatch.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_calcium_profile_barrier_phase_handoff.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_calcium_profile_barrier_phase_reference.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_calcium_profile_barrier_phase_turnover.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_calcium_profile_barriers.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_calcium_profile_interventions.py",
+    "seconds": 90.12,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_calcium_profile_interventions_dispatch.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_owned_calcium_profile_phase_handoff.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_active_temperature.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_active_temperature_arrays.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_active_temperature_closed_compilation.py",
+    "seconds": 90.06,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_active_temperature_compiled_stages.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_active_temperature_open_compilation.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_boundary_voltage_transition.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_global_control_view.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_initial_preparation.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_protein_interval_arrays.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_tissue_loop.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_physiology_tissue_step.py",
+    "seconds": 90.06,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_scalar_tail_reuse.py",
+    "seconds": 90.16,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_source_pair.py",
+    "seconds": 90.07,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_spatial_calcium.py",
+    "seconds": 90.18,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_stable_mesh_metric_reconstruction.py",
+    "seconds": 90.01,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_stable_mesh_operator_reconstruction.py",
+    "seconds": 90.01,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_stable_seed_explicit_ecm_partition.py",
+    "seconds": 90.01,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_active_excision.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_active_profile_interventions.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_bath_phase_handoff.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium.py",
+    "seconds": 90.22,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_catalog.py",
+    "seconds": 90.2,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_cav.py",
+    "seconds": 90.14,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_cav_full.py",
+    "seconds": 90.2,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_channels.py",
+    "seconds": 90.25,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy.py",
+    "seconds": 90.22,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_atp_transport_excision.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_excision.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_irreversible_transport_excision.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_mitochondria.py",
+    "seconds": 90.08,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_mitochondria_excision.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_mitochondria_planning.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_regulated.py",
+    "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_regulated_v2_excision.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_regulated_v2_excision_full_schedule.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_transport.py",
+    "seconds": 90.22,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_transport_excision.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_transport_planning.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_water_excision.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_water_hcn_extra.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_water_integration.py",
+    "seconds": 90.3,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_water_repair_hcn_extra.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_energy_water_repair_integration.py",
+    "seconds": 90.16,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_excision.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_hcn.py",
+    "seconds": 90.15,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_hcn_full.py",
+    "seconds": 90.2,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_kv1.py",
+    "seconds": 90.21,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_kv1_full.py",
+    "seconds": 90.19,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_sodium.py",
+    "seconds": 90.18,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_sodium_full.py",
+    "seconds": 90.18,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_calcium_water_integration.py",
+    "seconds": 90.27,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_catalog.py",
+    "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_channels.py",
+    "seconds": 90.19,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_cotransport_water_jax.py",
+    "seconds": 90.16,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_cotransport_water_response_capture.py",
+    "seconds": 90.06,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_cotransport_water_response_full.py",
+    "seconds": 90.2,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_energy_execution.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_energy_qualification.py",
+    "seconds": 90.17,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_energy_water_execution.py",
+    "seconds": 90.05,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_energy_water_qualification.py",
+    "seconds": 90.21,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_excision.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_field.py",
+    "seconds": 90.12,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_hcn.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_kinetic.py",
+    "seconds": 90.21,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_mobile_channel.py",
+    "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_mobile_pump.py",
+    "seconds": 90.19,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_mobile_pump_repair.py",
+    "seconds": 90.35,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_mobile_repair.py",
+    "seconds": 90.19,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_profile_epoch_dispatch.py",
+    "seconds": 90.11,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_profile_interventions.py",
+    "seconds": 90.11,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_pump.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_redistribution.py",
+    "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_repair.py",
+    "seconds": 90.12,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_repair_full.py",
+    "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_repair_recovery.py",
+    "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_sodium.py",
+    "seconds": 90.12,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_tissue.py",
+    "seconds": 90.11,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_water.py",
+    "seconds": 90.11,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_water_execution.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_water_kinetic.py",
+    "seconds": 90.47,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_water_kinetic_execution.py",
+    "seconds": 90.04,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_tissue.py",
+    "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_voltage_gated_membrane.py",
+    "seconds": 90.09,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_windows.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   }
+  ]
+ },
+ "note": "Tier 3 files exceeded the cap; run them deliberately, not as a gate. exit_code/counts are the measured outcome, so pre-existing failures are visible."
+}

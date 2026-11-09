@@ -51,6 +51,20 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Fast test tiers (9 November).** Each test file was timed separately
+  (`scripts/test_tiers.py`) under a standard environment: `JAX_ENABLE_X64=1`
+  and per-file output and evidence roots, run in a clean worktree. Tiers are in
+  `tests/test_tiers.json`.
+  - Tier 1: 260 files, about 6 min on 4 cores, 6,251 passing tests.
+  - Tier 2: 62 files, about 11 min, 2,659 passing tests.
+  - Tier 3: 173 files exceed the 90 s cap and are run deliberately.
+  - 73 tier-1 and 8 tier-2 files fail at baseline: stale hash pins, missing old
+    evidence files, and one test still importing a deleted frozen module. The
+    gate flags only changes from these recorded outcomes; cleaning them up
+    belongs to stage B.
+  - [Measurements](/mnt/workspaces/Cells/test-tiers-20261109-02/measure/measured.json),
+    plus the first full pass under `test-tiers-20261108-01`.
+
 - **Heredity design and re-hosting probe G0 (8–9 November).**
   - **E07-v1 design:** "write, release, replace", in [the design doc](docs/HEREDITY_FIRST_EXPERIMENT.md).
     Single-cell pre-screens find NaV1.2 window current plus Kir2.1 bistability

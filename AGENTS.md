@@ -45,6 +45,11 @@ part of the engine.
   hashes of other source files as literals in new code.
 - If a check needs more than 30 minutes to reach the code under test, build a
   faster harness first.
+- The routine test gate is `scripts/test_tiers.py run --tiers tests/test_tiers.json
+  --tier 1` (about 6 minutes on four cores). Add tier 2 (about 11 more minutes)
+  before landing engine changes; run tier 3 deliberately. A gate passes when
+  outcomes match the recorded tier baseline. Re-measure tiers after adding or
+  fixing tests.
 
 # Running jobs
 
