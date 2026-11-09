@@ -1,0 +1,236 @@
+{
+  "schema": "cells.morphogenesis_protocol@1",
+  "id": "mg0a-gradient-v1",
+  "status": "PRE-REGISTERED 2026-11-09, committed before the judged run. Criteria were set from the plan (docs/MORPHOGENESIS_PLAN.md, 'First experiments, pre-registration elements') and from theory. Two design changes followed development runs and were accepted by the lead before any judged run: the time-step observation times moved earlier (dev-02 errors at 3600 and 14400 s sat at the round-off floor), and the A6 resolution floor moved from 1e-12 to 1e-14 after the reference floor was measured (1.4e-15 to 4e-15). No physics threshold changed.",
+  "rung": "MG0a",
+  "question": "Does a decaying morphogen spreading from a source on fixed tissue reproduce the gradient: the exact discrete steady state, the continuum decay length lambda = sqrt(D/k) on a regular strip, its scaling with D/k and its convergence under grid refinement, with conserved mass?",
+  "engine_models": [
+    "reaction_transport@1 (src/cells/models/reaction_transport.py), unmodified; RK4, CPU, float64"
+  ],
+  "driver": "validation/morphogenesis/mg0a_gradient.py",
+  "command": "PYTHONPATH=src:. JAX_ENABLE_X64=1 CUDA_VISIBLE_DEVICES= taskset -c 0,1 python -m validation.morphogenesis.mg0a_gradient all --output RUN_DIR --protocol THIS_FILE",
+  "model_mapping": {
+    "morphogen": "species A: contact transport g = D h l/d (two-point flux), decay A -> B at k, reverse rate 0",
+    "product": "species B: immobile (permeability 0); its amount is the decay ledger",
+    "source": "one reservoir cell, volume 1e6 pL, initial A 1 fmol/pL, no decay, ordinary contacts to the tissue; it drains at the exact slowest-mode rate mu (mu/k about 4e-7), which the primary reference includes",
+    "initial_tissue": "empty (A = B = 0)",
+    "horizon": "40/k from the empty start (other modes decay by at least e^-40)",
+    "step": "largest power of two with h*alpha <= 0.4 (the model admits 0.5)"
+  },
+  "parameters": {
+    "source_values": "Kicheva et al. 2007 Science 315:521 (wing-disc Dpp; research-verified.json claim C1c): lambda 20.2 +/- 5.7 um = 7.7 cells, D 0.10 um^2/s, k 2.52e-4 1/s",
+    "cell_width_um": "20.2/7.7 = 2.623",
+    "cell_height_um": 10.0,
+    "continuum_lambda_um": "sqrt(0.10/2.52e-4) = 19.92 (7.59 cells); the measured 20.2 um is reported as context, not judged",
+    "strip": "64 cells (8.4 lambda), reservoir as cell 0 at the strip's cell spacing",
+    "scaling": "D/k x0.25, x1, x4 (D varied, k fixed); strips of 64, 64 and 160 cells",
+    "refinement": "cell width 2a, a, a/2 on the same physical strip (32, 64, 128 cells), D and k fixed. An a/4 level (3.2e5 steps) is not used: in development run dev-01 the engine's step-count-independent closed-world balance guard refused it on accumulated reservoir rounding (recorded as an engine gap)",
+    "timestep": "64-cell strip, dt 16, 8, 4, 2, 1 s, observed at 300, 600 and 900 s against the exact transient. The first draft observed at 900, 3600 and 14400 s; development run dev-02 showed the later errors at the round-off floor (1e-15), which A6_resolution would have reported as unresolved, so the observation times were moved earlier before any judged run. The thresholds were not changed",
+    "polygon": "Voronoi tissue of a jittered hexagonal lattice: 12 x 40 cells, spacing 2.623 um, jitter +/-0.2 spacing, seed 0; reservoir coupled to the first lattice column",
+    "cut": "64-cell strip; contact 12-13 closed at t_cut = 40/k, reopened 5/k later (cut_and_restore), never reopened (cut_without_restore), or never closed (no_cut); horizon 40/k after the restore time"
+  },
+  "references": {
+    "primary": "Exact slowest eigenmode of the discrete linear system (finite reservoir included), computed in the driver with scipy: rate mu from the secular equation (brentq), tissue shape phi from a sparse direct solve. The engine's late profile c/c_reservoir is compared cell by cell.",
+    "transient": "Exact piecewise solution by symmetric eigendecomposition (scipy.linalg.eigh), including decay and contact ledgers.",
+    "continuum": "lambda = sqrt(D/k); discrete exponent lambda_d = a/arccosh(1 + (k - mu) a^2/(2D)); predicted discretisation error (a/lambda)^2/24 (0.07% at the Kicheva values)",
+    "independence": "No Cells numerical, topology or schedule code is used by the references; only the definition JSON is shared."
+  },
+  "observables": {
+    "profile_vs_exact_rel_max": "max over tissue cells of |c_i/c_0 / phi_i - 1| at the horizon",
+    "lambda_cosh_fit": "least-squares fit of C0 cosh((L - x)/lambda)/cosh(L/lambda), L = (n + 1/2) a, to the engine's strip profile",
+    "log_slope_lambda_vs_D_over_k": "slope of ln(lambda_fit) against ln(D/k) over the three scaling cases",
+    "observed_orders (refinement)": "log2 ratio of |lambda_fit/sqrt(D/k) - 1| between successive halvings of a",
+    "observed_orders (timestep)": "log2 ratio of the norm-wise transient error between successive halvings of dt",
+    "tissue_mass_balance_rel_max": "|tissue (A + B) - net source-contact transfer| / net source transfer, over observations after t = 0",
+    "cell_ledger_rel_max": "per-cell |A - A0 - contact receipts + conversion| / (|receipts| + |conversion|)",
+    "closed_world_total_rel_max": "|total A + B - initial total| / initial total",
+    "transient_normwise_rel_error": "max |A_engine - A_exact| / max |A_exact| over tissue cells, cut arms, at each observation time after t = 0",
+    "distal_max_over_source": "isolated distal fragment, cut without restore: max c/c_reservoir at the horizon"
+  },
+  "controls": {
+    "no_cut": "same schedule grid, contacts never closed: late profile equals phi",
+    "cut_without_restore": "proximal fragment reaches the exact truncated-strip mode; the source-free distal fragment decays",
+    "uniform_state": "not applicable to MG0a: the linear steady state is unique"
+  },
+  "criteria": [
+    {
+      "id": "A1_primary_strip",
+      "metrics": [
+        "strip.profile_vs_exact_rel_max",
+        "scaling.cases.0.profile_vs_exact_rel_max",
+        "scaling.cases.1.profile_vs_exact_rel_max",
+        "scaling.cases.2.profile_vs_exact_rel_max",
+        "refinement.cases.0.profile_vs_exact_rel_max",
+        "refinement.cases.1.profile_vs_exact_rel_max",
+        "refinement.cases.2.profile_vs_exact_rel_max"
+      ],
+      "comparison": "le",
+      "threshold": 1e-09,
+      "basis": "plan: discrete profile within 1e-9 relative of the exact linear-system solution"
+    },
+    {
+      "id": "A2_primary_polygon",
+      "metrics": [
+        "polygon.profile_vs_exact_rel_max"
+      ],
+      "comparison": "le",
+      "threshold": 1e-09,
+      "basis": "as A1, on the polygon tissue"
+    },
+    {
+      "id": "A3_continuum_lambda",
+      "metrics": [
+        "strip.lambda_fit_vs_continuum_rel",
+        "scaling.cases.0.lambda_fit_vs_continuum_rel",
+        "scaling.cases.1.lambda_fit_vs_continuum_rel",
+        "scaling.cases.2.lambda_fit_vs_continuum_rel",
+        "refinement.cases.0.lambda_fit_vs_continuum_rel",
+        "refinement.cases.1.lambda_fit_vs_continuum_rel",
+        "refinement.cases.2.lambda_fit_vs_continuum_rel"
+      ],
+      "comparison": "abs_le",
+      "threshold": 0.01,
+      "basis": "plan: continuum lambda within 1% on a regular strip; predicted error 0.29% at the shortest (3.8-cell) lambda"
+    },
+    {
+      "id": "A4_lambda_scaling",
+      "metrics": [
+        "scaling.log_slope_lambda_vs_D_over_k"
+      ],
+      "comparison": "within",
+      "threshold": [
+        0.495,
+        0.505
+      ],
+      "basis": "continuum slope 1/2; the discrete correction lowers it by about (a/lambda)^2/12 averaged over the range, at most 0.003"
+    },
+    {
+      "id": "A5_refinement_order",
+      "metrics": [
+        "refinement.observed_orders"
+      ],
+      "comparison": "within",
+      "threshold": [
+        1.9,
+        2.1
+      ],
+      "basis": "lambda_d/lambda - 1 = (a/lambda)^2/24 + O(a^4): second order"
+    },
+    {
+      "id": "A6_timestep_order",
+      "metrics": [
+        "timestep.observed_orders.2",
+        "timestep.observed_orders.3"
+      ],
+      "comparison": "within",
+      "threshold": [
+        3.7,
+        4.3
+      ],
+      "basis": "classical RK4 is fourth order; judged on the two finest pairs (4->2 s, 2->1 s) at 300, 600 and 900 s. If any error in those pairs is below 1e-14 (A6_resolution) the criterion is reported as unresolved, not passed"
+    },
+    {
+      "id": "A6_resolution",
+      "metrics": [
+        "timestep.finest_pairs_min_error"
+      ],
+      "comparison": "ge",
+      "threshold": 1e-14,
+      "basis": "A6 is resolved only if every error in its two finest pairs is at least 1e-14, 2.5 to 7 times the eigendecomposition reference's measured floor (1.4e-15 to 4e-15 where the RK4 error vanishes, dev-02). If this fails, A6 is reported as unresolved and the protocol does not pass. The first draft used 1e-12, set before the floor was measured; dev-05's smallest finest-pair error was 1.0e-13, with order 4.04."
+    },
+    {
+      "id": "A7_mass_and_ledgers",
+      "metrics": [
+        "strip.tissue_mass_balance_rel_max",
+        "strip.cell_ledger_rel_max",
+        "strip.closed_world_total_rel_max",
+        "polygon.tissue_mass_balance_rel_max",
+        "polygon.cell_ledger_rel_max",
+        "polygon.closed_world_total_rel_max",
+        "scaling.cases.0.tissue_mass_balance_rel_max",
+        "scaling.cases.1.tissue_mass_balance_rel_max",
+        "scaling.cases.2.tissue_mass_balance_rel_max",
+        "refinement.cases.0.tissue_mass_balance_rel_max",
+        "refinement.cases.1.tissue_mass_balance_rel_max",
+        "refinement.cases.2.tissue_mass_balance_rel_max",
+        "cut.arms.no_cut.tissue_mass_balance_rel_max",
+        "cut.arms.cut_without_restore.tissue_mass_balance_rel_max",
+        "cut.arms.cut_and_restore.tissue_mass_balance_rel_max",
+        "cut.arms.cut_and_restore.cell_ledger_rel_max"
+      ],
+      "comparison": "le",
+      "threshold": 1e-09,
+      "basis": "plan: mass residual below 1e-9 relative"
+    },
+    {
+      "id": "A8_nonnegative",
+      "metrics": [
+        "strip.min_amount_fmol",
+        "polygon.min_amount_fmol",
+        "cut.arms.cut_and_restore.min_amount_fmol"
+      ],
+      "comparison": "ge",
+      "threshold": 0.0,
+      "basis": "positivity of the closed linear system at h*alpha <= 0.5"
+    },
+    {
+      "id": "A9_cut_restore_returns",
+      "metrics": [
+        "cut.restored_vs_uncut_final_rel_max",
+        "cut.arms.cut_and_restore.profile_vs_exact_rel_max",
+        "cut.arms.no_cut.profile_vs_exact_rel_max"
+      ],
+      "comparison": "le",
+      "threshold": 1e-09,
+      "basis": "unique linear steady state: restored profile equals the uncut one (machinery check, not memory)"
+    },
+    {
+      "id": "A10_cut_controls",
+      "metrics": [
+        "cut.arms.cut_without_restore.profile_vs_exact_rel_max"
+      ],
+      "comparison": "le",
+      "threshold": 1e-09,
+      "basis": "proximal fragment of the unrestored cut equals its exact truncated-strip mode"
+    },
+    {
+      "id": "A11_cut_distal_decays",
+      "metrics": [
+        "cut.arms.cut_without_restore.distal_max_over_source"
+      ],
+      "comparison": "le",
+      "threshold": 1e-12,
+      "basis": "source-free fragment decays at rate >= k for 45/k (exact about 3e-20)"
+    },
+    {
+      "id": "A12_cut_transients",
+      "metrics": [
+        "cut.arms.no_cut.transient_normwise_rel_error",
+        "cut.arms.cut_without_restore.transient_normwise_rel_error",
+        "cut.arms.cut_and_restore.transient_normwise_rel_error"
+      ],
+      "comparison": "le",
+      "threshold": 1e-06,
+      "basis": "RK4 transient error at h*alpha <= 0.4 across the cut and restore events; generous bound, not a fitted tolerance; t = 0 is excluded (both solutions are exactly zero in the empty tissue)"
+    }
+  ],
+  "reported_not_judged": [
+    "lambda_vs_kicheva_measured_um (model 19.9-19.94 um against measured 20.2 +/- 5.7 um)",
+    "lambda_three_point_um and lambda_fit_vs_discrete_rel",
+    "dirichlet_vs_quasi_steady_rel_max (held-source difference, about mu/k)",
+    "polygon diagnostic_effective_lambda_um (two-point flux on Voronoi cells; no continuum criterion off the regular strip)",
+    "runtime_checks (engine's own balance and accounting guards), wall time, peak RSS"
+  ],
+  "engine_gaps_recorded": [
+    "reaction_transport@1 has no source term; the source is a large-volume reservoir cell",
+    "reaction_transport@1 has no excision or replacement event contract (core/excision.py covers surface_* families only); the cut is contact closure, i.e. isolation, not removal",
+    "reaction_transport@1 closed-world balance guard (512 eps x initial total, models/reaction_transport.py check_values) does not grow with the step count; with a dominant reservoir, per-step rounding drifts the total (ratio to the guard 0.026 at 2e4 steps, 0.071 at 8e4) and a 3.2e5-step run was refused (dev-01, refinement a/4). Proposed minimal change: allow rounding per accepted step, e.g. 512 eps x total x max(1, sqrt(steps)), or compensated summation of the amount update"
+  ],
+  "outcome_rules": "Pass if every judged criterion passes. A failure is recorded with its results and kept; any revised protocol gets a new id (v2) and is reported as weaker evidence. A6 unresolved is reported as such and does not count as a pass.",
+  "resources": "CPUs 0-1, CPU backend only, RSS below 4 GiB; expected under 10 minutes",
+  "development_runs": {
+    "dev-01-mg0a": "first pass; refinement a/4 refused by the engine's closed-world balance guard (kept as evidence); cut arm failed on a driver windowing bug (fixed)",
+    "dev-02-mg0a": "all parts ran; late time-step observations at the round-off floor (design fixed: earlier times)",
+    "dev-05-mg0a-timestep": "time-step and cut parts after the fixes"
+  }
+}
