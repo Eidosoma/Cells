@@ -45,7 +45,7 @@ starts, and production design is deferred until parity is established.
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
-| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1) and batched worlds (G4) landed; ledger rounding fix in progress; GH200 throughput unmeasured |
+| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1) and batched worlds (G4) landed; ledger rounding fix in progress; GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling**; the coupling choice is with the user |
 | 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a passed**; MG0b driver landed, blocked on the ledger rounding fix |
 | 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; C landed, qualification waits on the ledger fix |
 
@@ -54,6 +54,23 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Heredity pre-screen 7: written discs at E07-v1's couplings (9 November;
+  development, not judged).** This ran `resolved_pump_tissue@3` through
+  `stationary_continuation_analysis@1` on hexagonal heredity sheets with held baths
+  (F0 surrogate) and E07-v1's junctions. Driver: `validation/stationary/heredity_prescreen.py`
+  (`83b92b1`).
+  - With voltage-gated junctions, the 7-, 19- and 37-cell discs are stable at x0.3
+    and have no stationary state at x1, x3 or x10. 61- and 91-cell discs hold at
+    x1 (critical theta 1.909 and 2.257 against 1.657). With open junctions, no
+    disc holds at any arm.
+  - Uniform H is stable at every arm.
+  - At x1 the written 19-cell disc is lost in 0.5–1 s, and the 37-cell disc in
+    30–60 s.
+  - Heterogeneity at 15% CV lowers the 37-cell critical coupling by 9–16%.
+  - So 12 of E07-v1's 14 stage-A write arms, and most stage-B arms, would fail
+    retention by construction. The choice is with the user (D133).
+  - Evidence: [summary](/mnt/workspaces/Cells/heredity-design-20261108-01/prescreen-07-stationary/summary.md),
+    `final.json`. Pre-screen 8 (newcomer conversion against coupling) is running.
 - **Stationary-state analysis (E) qualified (9 November).**
   `stationary_continuation_analysis@1` (`890567b`, opt-in, D135) passed all 16
   criteria of the pre-registered protocol `stationary-analysis-e-v1`
