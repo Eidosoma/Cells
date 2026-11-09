@@ -1,7 +1,7 @@
 {
  "kind": "cells.protocol@1",
  "id": "projective-c-qualification-v1",
- "status": "Pre-registration draft 02 (lead review of draft 01, 9 November 2026), with amendment 1. Committed to the repository before any judged run. The ledger rounding fix is on main (03a2853).",
+ "status": "Pre-registration draft 02 (lead review of draft 01, 9 November 2026), with amendments 1 and 2. Committed to the repository before any judged run. The ledger rounding fix is on main (03a2853).",
  "purpose": "Qualify the opt-in coarse projective mode projective_forward_euler@1 (execution.projective; D135 option C) against fine stepping of the same definition, on overlapping model-time windows, before it is used for long-horizon questions. Integration alone grants no scientific acceptance.",
  "reference_method": "Gear and Kevrekidis, Projective methods for stiff differential equations: problems with gaps in their eigenvalue spectrum, SIAM J Sci Comput 24:1091-1106 (2003): bursts of the inner integrator, then a forward-Euler extrapolation of the full state from the chord of the last m inner steps.",
  "engine_models": [
@@ -177,6 +177,16 @@
     "transient_end": "'The transient ends' at the time of the last fine-reference row after the cue onset (F1) or the switch onset (F2) whose |dVm/dt| exceeds max_membrane_voltage_rate_V_per_s.",
     "switch_time": "F2 switch times ('first fine row with Vm < -50 mV') are recorded during each run at fine-row resolution for both runs, not read from the observation grid.",
     "backend": "Every judged run is on CPU, float64. The F2 pre-scan only selects the NaV1.2 scale. It may run on the L4 with its backend recorded, and the selected scale's lingering time is then taken from the judged CPU fine reference."
+   }
+  },
+  {
+   "id": "amendment-2",
+   "date": "2026-11-09",
+   "before_any_judged_run": "before any F2 run (the pre-scan included). The first batch (Q1, Q1L, F1, A1, Q2) had started at ca70d4a, and this amendment touches none of its cases or criteria.",
+   "by": "lead, on the qual-01 launch report",
+   "readings": {
+    "f2_switch_onset": "The F2 switch onset is the time of the first fine-reference row at or after the window start (10 s) whose max over patches of |dVm/dt| exceeds max_membrane_voltage_rate_V_per_s. It is the fallback criterion's 'switch onset' for F2, and the start from which 'the transient ends' (amendment 1) is measured. If no such row exists in the reference, the F2 fallback criterion fails.",
+    "q2_five_cell_fallback": "Q2's 5-cell world (U +- 2 mV, U +- 5 mV, D) is run only if the 7-cell Q2 run is refused on global charge. Both are then reported, and Q2 is judged on the 5-cell run, as the case already states."
    }
   }
  ]
