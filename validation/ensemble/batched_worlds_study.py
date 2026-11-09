@@ -1,12 +1,15 @@
 """Throughput of vectorized resolved-pump worlds (core/vector_windows.py) on one GPU.
 
-Engine models: resolved_pump_tissue@1 and resolved_pump_tissue@2, IMEX
-ARS(2,2,2) at dt = 1 ms on the synthetic 825-node world of
-validation/tissue/resolved_scale_world.py (225 cells, 600 outside nodes).
-The @2 world adds Cl and Ca with BETSE's mammal concentrations (M rebalances
-charge) and a ca_atp_mass_action_positive@1 pump on every patch, with BETSE's
-default Ca-ATPase coefficients. Worlds are replicas unless --heterogeneous; each
-world still holds and processes its own parameter arrays.
+Engine models: resolved_pump_tissue@1, @2 and @3, IMEX ARS(2,2,2) at dt = 1 ms
+on the synthetic 825-node world of validation/tissue/resolved_scale_world.py
+(225 cells, 600 outside nodes). The @2 world adds Cl and Ca with BETSE's mammal
+concentrations (M rebalances charge) and a ca_atp_mass_action_positive@1 pump
+on every patch, with BETSE's default Ca-ATPase coefficients. The @3 world is the
+heredity tissue of validation/tissue/surface_pump_v3_study.tissue_definition:
+NaV1.2 and Kir2.1 populations on every patch (2580 populations, the heredity
+parameter set, Na leak x0.2). Worlds are replicas unless --heterogeneous (pump
+capacity, and for @3 the channel permeabilities, spread by 0-20%); each world
+still holds and processes its own parameter arrays.
 
 Parts (one process each, so compile time and peak memory are per configuration):
   vector      compile one window for --worlds B, then time chained windows on the
@@ -20,6 +23,11 @@ Parts (one process each, so compile time and peak memory are per configuration):
   equivalence heterogeneous worlds (--heterogeneous implied): the vectorized batch
               against each world's own windowed run (core/windows.py) on the same
               backend; state and membrane-voltage differences
+  checks      one world's accepted rows (core/runner.run): the model's device checks
+              against its host check_values row for row (verdicts and diagnostics
+              relative to their bounds), at the rows' own step counts and at
+              hour-scale counts, and seeded faults (a channel transfer, a channel
+              gate, a metabolic booking) caught at the same row by both
 Usage:
   python -m validation.ensemble.batched_worlds_study PART --model 1 --worlds 64 \
       --output DIR [--window 32] [--seconds 30] [--dcgm-root DIR] [--backend gpu]
@@ -108,16 +116,26 @@ def calcium_world(raw):
 def definition(model, *, steps, backend, scale=1.0, observe_every=None):
     end = steps * 1e-3
     every = steps if observe_every is None else observe_every
-    raw = world.definition(
-        dt=1e-3,
-        end_time=end,
-        observation_times=[k * every * 1e-3 for k in range(steps // every)] + [end],
-        solver=imex.ARS222_ID,
-        backend=backend,
-    )
+    times = [k * every * 1e-3 for k in range(steps // every)] + [end]
+    if model == 3:
+        from validation.tissue import surface_pump_v3_study as heredity
+
+        raw = heredity.tissue_definition(
+            dt=1e-3, end_time=end, backend=backend, observation_times=times
+        )
+        for channel in raw["model"]["channels"]:
+            channel["max_permeability_m_per_s"] *= scale
+    else:
+        raw = world.definition(
+            dt=1e-3,
+            end_time=end,
+            observation_times=times,
+            solver=imex.ARS222_ID,
+            backend=backend,
+        )
     for membrane in raw["model"]["membranes"]:
         membrane["pump"]["capacity_fmol_per_s"] *= scale
-    return raw if model == 1 else calcium_world(raw)
+    return calcium_world(raw) if model == 2 else raw
 
 
 def batch(args, steps):
@@ -265,7 +283,9 @@ def part_components(args):
     label = f"components-model{args.model}-worlds{args.worlds}"
     report = dict(part="components", model=args.model, worlds=args.worlds, window=args.window)
     plan, model, state, current, arguments, _ = setup(args, args.window * 3, report)
-    _, steps, counts, table, held, _, params, active, constants = arguments(current, state)
+    # Window arguments: state, then the round's steps, counts, held controls,
+    # their index, observation slots and first step index; then the residents.
+    _, steps, counts, table, held, _, _, params, active, constants = arguments(current, state)
     control = jax.tree.map(lambda t: t[:, 0], table)
     dt = steps[:, 0]
 
@@ -440,6 +460,145 @@ def part_equivalence(args):
     write(args, label + ".json", report)
 
 
+# Accepted steps in one hour at dt = 1 ms: the checks part's hour-scale counts.
+HOUR_STEPS = 3_600_000
+
+
+def seeded_fault(history, p, kind, row):
+    """A copy of a history with one fault from ``row`` on, and its expected check."""
+    values = {k: np.array(v, copy=True) for k, v in history._asdict().items()}
+    if kind == "channel_transfer":  # 1e-6 fmol of K through population 0, unbooked.
+        values["channel_transferred"][row:, 1, 0] += 1e-6
+        return type(history)(**values), "local"
+    if kind == "channel_gate":  # Population 0's first gate above 1.
+        values["channel_gate"][row:, 0, 0] = 1.0 + 1e-9
+        return type(history)(**values), "domain"
+    if kind == "metabolic":  # 1e-10 pJ of Na/K pump work on patch 0, no cycles.
+        values["metabolic_work_pJ"][row:, 0] += 1e-10
+        return type(history)(**values), "metabolic_work"
+    raise ValueError(kind)
+
+
+def part_checks(args):
+    """Device checks against host check_values on one world's accepted rows."""
+    from cells.core.errors import NumericalError
+    from cells.core.runner import run
+    from cells.models import surface_pump as family
+    from cells.models.registry import get_model
+
+    label = f"checks-{args.backend}-model{args.model}"
+    steps = args.window * args.max_windows
+    spec = parse_spec(definition(args.model, steps=steps, backend=args.backend))
+    model = get_model(spec.model)
+    report = dict(part="checks", backend=args.backend, model=args.model, steps=steps)
+    tick = time.perf_counter()
+    value = run(spec)
+    report["run_seconds"] = time.perf_counter() - tick
+    history = model.STATE_TYPE(*(np.asarray(v) for v in value.history))
+    rows = len(history.amount_increment)
+    _, p = model.initial_values(spec)
+    constants = model.device_check_constants(spec)
+    device = jax.devices(args.backend)[0]
+    checks = jax.jit(jax.vmap(model.device_checks, in_axes=(0, 0, None, None, 0)))
+    params = jax.device_put(p, device)
+
+    def device_rows(history, offset):
+        previous = type(history)(*(np.concatenate((v[:1], v[:-1])) for v in history))
+        failed, values = checks(
+            jax.device_put(previous, device),
+            jax.device_put(history, device),
+            params,
+            jax.device_put(constants, device),
+            jax.device_put(offset + np.arange(rows), device),
+        )
+        return np.asarray(failed), np.asarray(values)
+
+    def host_row(history, j, offset):
+        row = type(history)(*(v[j : j + 1] for v in history))
+        try:
+            return model.check_values(row, spec, steps=[offset + j]), None
+        except NumericalError as error:
+            return None, str(error)
+
+    tol = min(spec.execution.material_balance_atol_fmol)
+    scales = {  # Smallest bound of each rounding residual (host bounds).
+        "max_balance_error_fmol": tol,
+        "max_extracellular_balance_error_fmol": tol,
+        "max_global_balance_error_fmol": tol,
+        "max_capacitor_charge_error_C": 3e-25,
+        "max_electrode_charge_error_C": 3e-25,
+        "max_global_charge_error_C": family.GLOBAL_CHARGE_ATOL_C,
+        "max_reservoir_work_error_pJ": 3e-12,
+        "max_electrode_work_error_pJ": 3e-12,
+        "max_metabolic_work_error_pJ": 3e-12,
+        "max_global_charge_bound_ratio": 1.0,
+    }
+    for offset in (0, HOUR_STEPS):
+        tick = time.perf_counter()
+        failed, values = device_rows(history, offset)
+        device_seconds = time.perf_counter() - tick
+        tick = time.perf_counter()
+        differences, host_failures = {}, []
+        for j in range(rows):
+            host, message = host_row(history, j, offset)
+            if message is not None:
+                host_failures.append([j, message])
+                continue
+            for k, (key, value) in enumerate(host.items()):
+                difference = abs(float(values[j, k]) - value)
+                # Rounding residuals relative to their smallest bound; the energy
+                # residual (a truncation quantity) relative to itself.
+                scale = scales.get(key, max(abs(value), 1e-300))
+                differences[key] = max(differences.get(key, 0.0), difference / scale)
+        report[f"passing_offset_{offset}"] = dict(
+            rows=rows,
+            device_failed_rows=int(failed.any(axis=1).sum()),
+            host_failures=host_failures,
+            max_difference_over_scale=differences,
+            device_seconds=device_seconds,
+            host_seconds=time.perf_counter() - tick,
+            device_max=dict(
+                zip(model.DEVICE_DIAGNOSTICS, values.max(axis=0).tolist(), strict=True)
+            ),
+        )
+        write(args, label + ".json", report)
+    faults, row = {}, rows // 2
+    for kind in ("channel_transfer", "channel_gate", "metabolic"):
+        if kind.startswith("channel") and args.model != 3:
+            continue
+        corrupted, expected = seeded_fault(history, p, kind, row)
+        failed, _ = device_rows(corrupted, 0)
+        device_first = np.flatnonzero(failed.any(axis=1))
+        host_first = None
+        for j in range(rows):
+            _, message = host_row(corrupted, j, 0)
+            if message is not None:
+                host_first = [j, message]
+                break
+        first = int(device_first[0]) if len(device_first) else None
+        faults[kind] = dict(
+            seeded_row=row,
+            expected_check=expected,
+            host_first=host_first,
+            device_first_row=first,
+            device_checks=None
+            if first is None
+            else [c for c, f in zip(model.DEVICE_CHECKS, failed[first], strict=True) if f],
+            agree=host_first is not None
+            and first == host_first[0]
+            and model.device_failure_message(model.DEVICE_CHECKS[int(np.argmax(failed[first]))])
+            == host_first[1],
+        )
+        write(args, label + ".json", report | dict(faults=faults))
+    report["faults"] = faults
+    report["all_agree"] = (
+        all(not report[f"passing_offset_{o}"]["host_failures"] for o in (0, HOUR_STEPS))
+        and all(report[f"passing_offset_{o}"]["device_failed_rows"] == 0 for o in (0, HOUR_STEPS))
+        and all(f["agree"] and f["host_first"][0] == row for f in faults.values())
+    )
+    write(args, label + ".json", report)
+
+
 # Heredity tier 1 (docs/HEREDITY_FIRST_EXPERIMENT.md, design.json): world-steps
 # at dt = 1 ms, and the design's x1.25 allowance for NaV/Kir gates (G1).
 TIER_1_WORLD_STEPS = 6431040000
@@ -477,13 +636,42 @@ def part_summary(args):
                     for name in ("sm_active", "sm_occupancy", "dram_active")
                 },
                 failures=r.get("failures"),
+                # @3 carries the channels; @1/@2 take the design's allowance.
                 l4_tier_1_gpu_hours=TIER_1_WORLD_STEPS
-                * CHANNEL_ALLOWANCE
+                * (1.0 if r["model"] == 3 else CHANNEL_ALLOWANCE)
                 / r["world_steps_per_second"]
                 / 3600
                 if r.get("world_steps_per_second")
                 else None,
             )
+        )
+    endtoend = []
+    for path in sorted(Path(args.output).glob("endtoend-model*-worlds*.json")):
+        r = json.loads(path.read_text())
+        endtoend.append(
+            dict(
+                model=r["model"],
+                worlds=r["worlds"],
+                window=r["window"],
+                steps=r["steps"],
+                ms_per_batch_step=r["steady_ms_per_batch_step"],
+                ms_per_world_step=r["steady_ms_per_batch_step"] / r["worlds"],
+                execute_ms_per_world_step=1e3
+                * r["timings"]["execute_seconds"]
+                / (r["steps"] * r["worlds"]),
+                analysis_seconds=r["timings"]["analysis_seconds"],
+                peak_device_bytes=(r.get("memory") or {}).get("peak_bytes_in_use"),
+            )
+        )
+    sequential = []
+    for path in sorted(Path(args.output).glob("sequential-model*-worlds*.json")):
+        r = json.loads(path.read_text())
+        sequential.append(
+            {k: r[k] for k in ("model", "worlds", "window", "steps")}
+            | {
+                "execute_ms_per_batch_step": r["execute_ms_per_batch_step"],
+                "host_check_ms_per_batch_step": r["host_check_ms_per_batch_step"],
+            }
         )
     failures = sorted(p.name for p in Path(args.output).glob("*.failure.json"))
     write(
@@ -492,10 +680,14 @@ def part_summary(args):
         dict(
             kind="cells.batched_worlds_summary@1",
             rows=sorted(rows, key=lambda r: (r["model"], r["heterogeneous"], r["worlds"])),
+            endtoend=sorted(endtoend, key=lambda r: (r["model"], r["worlds"])),
+            sequential=sorted(sequential, key=lambda r: (r["model"], r["worlds"])),
             failures=failures,
             tier_1_world_steps=TIER_1_WORLD_STEPS,
             channel_allowance=CHANNEL_ALLOWANCE,
-            l4_tier_1_gpu_hours_scope="measured L4 rate x 1.25 channel allowance; not GH200",
+            l4_tier_1_gpu_hours_scope=(
+                "measured L4 rate (x 1.25 channel allowance for models 1 and 2); not GH200"
+            ),
         ),
     )
 
@@ -507,14 +699,15 @@ PARTS = dict(
     endtoend=part_endtoend,
     sequential=part_sequential,
     equivalence=part_equivalence,
+    checks=part_checks,
 )
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("part", choices=sorted(PARTS))
-    parser.add_argument("--model", type=int, choices=(1, 2), required=True)
-    parser.add_argument("--worlds", type=int, required=True)
+    parser.add_argument("--model", type=int, choices=(1, 2, 3), required=True)
+    parser.add_argument("--worlds", type=int, default=1)
     parser.add_argument("--output", required=True)
     parser.add_argument("--window", type=int, default=32)
     parser.add_argument("--max-windows", type=int, default=40)

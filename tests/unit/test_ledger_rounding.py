@@ -154,19 +154,22 @@ def host_first_failure(model, spec, history):
     return low, fails(low)
 
 
-def seeded(history, p, fault, row):
-    """A copy of the history with one physical-size error from ``row`` on."""
+def seeded(history, p, fault, row, size=1e-12):
+    """A copy of the history with one physical-size error from ``row`` on.
+
+    Leaks grow by ``size`` of the largest per-step exchange at each step.
+    """
     values = {k: np.array(v, copy=True) for k, v in history._asdict().items()}
     bath = int(np.flatnonzero(p.reservoir)[0])
     k = 1  # K
     rows = np.arange(len(values["amount_increment"]))
     after = np.clip(rows - row + 1, 0, None)
-    if fault == "supply_leak":  # 1e-12 of a step's K exchange at that bath, every step.
+    if fault == "supply_leak":  # size of a step's K exchange at that bath, every step.
         step = np.max(np.abs(np.diff(values["reservoir_supplied"][:, k, bath])))
-        values["reservoir_supplied"][:, k, bath] += 1e-12 * step * after
-    elif fault == "electrode_leak":  # 1e-12 of a step's plate-charge change, every step.
+        values["reservoir_supplied"][:, k, bath] += size * step * after
+    elif fault == "electrode_leak":  # size of a step's plate-charge change, every step.
         step = np.max(np.abs(np.diff(values["electrode_charge_transferred_C"][:, bath])))
-        values["electrode_charge_transferred_C"][:, bath] += 1e-12 * step * after
+        values["electrode_charge_transferred_C"][:, bath] += size * step * after
     elif fault == "mis_signed":  # One step's K membrane transfer booked with the wrong sign.
         patch = 0
         cell = int(p.membrane_cell[patch])
@@ -176,12 +179,17 @@ def seeded(history, p, fault, row):
     return type(history)(**values)
 
 
-@pytest.mark.parametrize("version", [1, 2])
+@pytest.mark.parametrize("version", [1, 2, 3])
 @pytest.mark.parametrize("fault", ["supply_leak", "electrode_leak", "mis_signed"])
 def test_seeded_errors_fail_host_and_device_at_the_same_row(version, fault, runs):
     model, spec, _, history, p = runs[version]
     row = 100
-    corrupted = seeded(history, p, fault, row)
+    # With Kir2.1 and NaV1.2 (@3) the largest per-step K exchange at the bath,
+    # which sizes the leak, is 11x smaller than without channels: a 1e-12 supply
+    # leak reaches 0.35 of the global-charge bound in 2 s (host and device agree
+    # that it passes), so @3's supply leak is 1e-11 of a step.
+    size = 1e-11 if version == 3 and fault == "supply_leak" else 1e-12
+    corrupted = seeded(history, p, fault, row, size)
     host = host_first_failure(model, spec, corrupted)
     device = device_rows(model, spec, corrupted, p)
     assert host[0] is not None and device[0] is not None, (host, device)
@@ -243,13 +251,13 @@ def test_work_ledger_allowance_detects_twice_its_floor_at_each_horizon(version, 
             message = str(error)
         assert (message is not None) == detected, (factor, message)
         assert not detected or message.endswith("metabolic_work")
-        if version < 3:  # The device check gives the same verdict with the same count.
-            checks = jax.jit(model.device_checks)
-            row = type(seeded)(*(v[0] for v in seeded))
-            failed, _ = checks(row, row, p, model.device_check_constants(spec), n)
-            failed = np.asarray(failed)
-            assert bool(failed.any()) == detected
-            assert not detected or model.DEVICE_CHECKS[int(np.argmax(failed))] == "metabolic_work"
+        # The device check gives the same verdict with the same count.
+        checks = jax.jit(model.device_checks)
+        row = type(seeded)(*(v[0] for v in seeded))
+        failed, _ = checks(row, row, p, model.device_check_constants(spec), n)
+        failed = np.asarray(failed)
+        assert bool(failed.any()) == detected
+        assert not detected or model.DEVICE_CHECKS[int(np.argmax(failed))] == "metabolic_work"
 
 
 def test_work_ledger_bound_scales_with_the_row_step_count(runs):

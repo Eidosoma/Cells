@@ -212,6 +212,7 @@ def parse_spec(data):
         "resolved_tissue@12",
         "resolved_pump_tissue@1",
         "resolved_pump_tissue@2",
+        "resolved_pump_tissue@3",
         "resolved_calcium@1",
         "resolved_calcium@2",
         "resolved_calcium@3",

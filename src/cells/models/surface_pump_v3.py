@@ -9,7 +9,9 @@ components, and has its own per-species transfer and dissipation ledgers. The
 field law, factored solver, junction gate, both pumps and every @2 check are
 those of models/surface_pump_v2.py; each rate below is @2's sequence of
 operations with the channel terms appended, so with no channels this identity
-reproduces resolved_pump_tissue@2.
+reproduces resolved_pump_tissue@2. Accepted rows are checked on the host
+(check_values) or, in vectorized worlds and projective bursts, on the device
+(device_checks): the same tests with the same bounds.
 
 Time integration. RK4 (reference runs) integrates the gate equations with every
 other rate. The IMEX steps keep the split of @1 and @2: face electromigration
@@ -790,6 +792,9 @@ def channel_magnitudes(row, p, *, xp=np):
     return first.ledger_magnitudes(row, p, membrane, metabolic, xp=xp)
 
 
+DISSIPATION_FIELDS = tuple(k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ"))
+
+
 def check_values(state, spec, steps=None):
     """The family's host checks (surface_pump.checked_rows) with the channel ledgers."""
     _, p = initial_values(spec)
@@ -800,8 +805,50 @@ def check_values(state, spec, steps=None):
         domain=domain_valid,
         balances=balances,
         magnitudes=channel_magnitudes,
-        dissipation=tuple(k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ")),
+        dissipation=DISSIPATION_FIELDS,
         steps=steps,
+    )
+
+
+# Device checks (cells.core.vector_windows, core/projective.py): check_values'
+# tests per accepted row, compiled. They are the host tests with the same
+# functions and bounds: domain_valid (channel laws and padding, gates in [0, 1],
+# no gate state on gate-free leaks or padding, no transfer or heat on an absent
+# route), every ledger of balances() with the channel transfers in the membrane
+# total and their heat in the energy ledger, bounds from surface_pump.ledger_limits
+# with channel_magnitudes, and every dissipation field, channels' included.
+DEVICE_CHECKS = first.DEVICE_CHECKS
+DEVICE_DIAGNOSTICS = first.DEVICE_DIAGNOSTICS
+device_failure_message = first.device_failure_message
+device_check_constants = first.device_check_constants
+
+
+def device_balances(state, p):
+    """balances() with jax.numpy: the same channel terms, then @2's, in the same order."""
+    total = state.membrane_transferred + channel_to_membrane(state.channel_transferred, p, xp=jnp)
+    result = second.device_balances(state._replace(membrane_transferred=total), p)
+    result["energy"] += jnp.sum(state.channel_dissipated_energy_pJ)
+    return result
+
+
+def device_checks(previous, row, p, constants, steps):
+    """check_values' tests for one accepted row on the device: (failed, diagnostics).
+
+    steps is the row's accepted-step count, the host check's value for that row.
+    """
+    from cells.models.surface_pump_checks import row_checks
+
+    return row_checks(
+        previous,
+        row,
+        p,
+        constants,
+        steps,
+        domain_valid=domain_valid,
+        balances=device_balances,
+        limits=first.ledger_limits,
+        magnitudes=channel_magnitudes,
+        dissipation=DISSIPATION_FIELDS,
     )
 
 
