@@ -2,6 +2,13 @@
 
 World IDs are stable scheduling identities. These deterministic replicas do not
 add stochastic samples; no random perturbation or biological variation is implied.
+
+world_batching selects how a task's worlds execute. "lax_map" (the default)
+maps worlds one after another and checks every accepted row on the host
+(core/batch_windows.py). "vmap" advances the task's worlds as one vectorized
+batch with the model's device checks (core/vector_windows.py); it needs a model
+with device checks and is not yet qualified for production. The default is
+omitted from definitions, so existing fingerprints and checkpoints are unchanged.
 """
 
 import json
@@ -20,10 +27,15 @@ from cells.core.grid import refinement_times
 from cells.core.resources import trace_bytes
 from cells.core.specs import digest as definition_digest
 from cells.core.specs import parse_spec as parse_ionic
+from cells.core.vector_windows import plan_vector_windows, run_vector_windowed
 from cells.core.windows import WindowPolicy
 from cells.models.registry import get_model
 
 MODEL_ID = "ionic_worlds@1"
+WORLD_BATCHING = ("lax_map", "vmap")
+# Vectorized worlds keep their parameters and dense field temporaries resident
+# together, so their working bound is the device's, admitted at compile time.
+MAX_WORKING_BYTES = {"lax_map": 2 * 1024**3, "vmap": 80 * 1024**3}
 
 
 @dataclass(frozen=True)
@@ -38,13 +50,17 @@ class IonicSpec:
     max_wall_seconds: float
     model: str = MODEL_ID
     recording: str = "summary"
+    world_batching: str = "lax_map"
 
     @property
     def end_time_s(self):
         return self.simulation.experiment.end_time
 
     def to_dict(self):
-        return vars(self) | {"simulation": self.simulation.to_dict()}
+        value = vars(self) | {"simulation": self.simulation.to_dict()}
+        if self.world_batching == "lax_map":
+            del value["world_batching"]
+        return value
 
     @property
     def fingerprint(self):
@@ -100,6 +116,7 @@ def parse_spec(data):
         max_output_bytes=512 * 1024**2,
         max_wall_seconds=600.0,
         recording="summary",
+        world_batching="lax_map",
     )
     if (
         not isinstance(data, dict)
@@ -110,9 +127,11 @@ def parse_spec(data):
         raise ValueError("Require an explicit ionic_worlds@1 simulation definition")
     values = defaults | data
     validate_population(values["worlds"], values["world_id_start"], values["seed"])
+    if type(values["world_batching"]) is not str or values["world_batching"] not in WORLD_BATCHING:
+        raise ValueError("world_batching must be lax_map or vmap")
     bounds = {
         "window_steps": (1, 4096),
-        "max_working_bytes": (1024**2, 2 * 1024**3),
+        "max_working_bytes": (1024**2, MAX_WORKING_BYTES[values["world_batching"]]),
         "max_output_bytes": (1024**2, 8 * 1024**3),
     }
     for key, (low, high) in bounds.items():
@@ -192,6 +211,7 @@ def parse_spec(data):
         "resolved_calcium_energy_membrane_profile_epoch@1",
         "resolved_tissue@12",
         "resolved_pump_tissue@1",
+        "resolved_pump_tissue@2",
         "resolved_calcium@1",
         "resolved_calcium@2",
         "resolved_calcium@3",
@@ -246,7 +266,8 @@ def parse_spec(data):
     spec = IonicSpec(**(values | {"simulation": simulation}))
     if spec.output_bound > spec.max_output_bytes:
         raise ValueError("Ionic complete-checkpoint output allowance exceeded")
-    plan_batch_windows(spec.batch(), WindowPolicy(spec.window_steps, "checkpoints"))
+    planner = plan_vector_windows if spec.world_batching == "vmap" else plan_batch_windows
+    planner(spec.batch(), WindowPolicy(spec.window_steps, "checkpoints"))
     return spec
 
 
@@ -261,7 +282,8 @@ def run(spec, *, backend="gpu", state=None, callback=None):
         if monotonic() - began > spec.max_wall_seconds:
             raise ValueError("Ionic task wall budget exceeded")
 
-    result = run_batch_windowed(
+    runner = run_vector_windowed if spec.world_batching == "vmap" else run_batch_windowed
+    result = runner(
         spec.batch(), WindowPolicy(spec.window_steps, "checkpoints"), checkpoints=state, sink=record
     )
     model = get_model(spec.simulation.model)
@@ -298,6 +320,7 @@ def run(spec, *, backend="gpu", state=None, callback=None):
         "elapsed_seconds": monotonic() - began,
         "backend": backend,
         "precision": "float64",
+        "world_batching": spec.world_batching,
     }
 
 

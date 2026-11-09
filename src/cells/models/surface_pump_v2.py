@@ -595,76 +595,64 @@ def balances(state, p):
     return result
 
 
+DISSIPATION_FIELDS = tuple(k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ"))
+
+
 def check_values(state, spec):
     """surface_pump.check_values with the calcium pump ledgers."""
     _, p = initial_values(spec)
-    rows = (
-        [state]
-        if state.amount_increment.ndim == 2
-        else [STATE_TYPE(*(v[i] for v in state)) for i in range(len(state.amount_increment))]
+    return first.checked_rows(
+        state, spec, p, domain=domain_valid, balances=balances, dissipation=DISSIPATION_FIELDS
     )
-    names = (
-        "balance_error_fmol",
-        "extracellular_balance_error_fmol",
-        "global_balance_error_fmol",
-        "capacitor_charge_error_C",
-        "electrode_charge_error_C",
-        "global_charge_error_C",
-        "energy_balance_error_pJ",
-        "reservoir_work_error_pJ",
-        "electrode_work_error_pJ",
-        "metabolic_work_error_pJ",
+
+
+# Device checks (cells.core.vector_windows): check_values' tests per accepted row.
+DEVICE_CHECKS = first.DEVICE_CHECKS
+DEVICE_DIAGNOSTICS = first.DEVICE_DIAGNOSTICS
+device_failure_message = first.device_failure_message
+device_check_constants = first.device_check_constants
+
+
+def device_balances(state, p):
+    """balances() with jax.numpy: the same calcium terms in the same order."""
+    from cells.models.surface_pump_checks import tissue_balances
+
+    total = (
+        state.membrane_transferred
+        - p.stoichiometry * state.pump_cycles
+        - p.calcium_stoichiometry * state.calcium_pump_cycles
     )
-    diagnostics = {"max_" + k: 0.0 for k in names}
-    diagnostics["max_energy_balance_relative"] = 0.0
-    diagnostics["max_global_charge_bound_ratio"] = 0.0
-    rtol = ENERGY_RTOL[spec.execution.solver]
-    tol = np.asarray(spec.execution.material_balance_atol_fmol)
-    with np.errstate(all="ignore"):
-        for row in rows:
-            if not domain_valid(row, p, p.active, xp=np):
-                raise NumericalError("Invalid resolved pump inventory, gates or padding; no repair")
-            b = balances(row, p)
-            q = np.r_[p.initial_cell_charge_C, p.initial_outside_charge_C]
-            q = q + tissue.charge_increment(row, p, xp=np)
-            flows = sum(
-                float(np.sum(np.abs(getattr(row, k))))
-                for k in STATE_TYPE._fields
-                if k.endswith(("_dissipated_energy_pJ", "_work_pJ"))
-            )
-            limits = (
-                tol[:, None],
-                tol[:, None],
-                tol,
-                field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(q),
-                field.CHARGE_ATOL_C
-                + field.CHARGE_RTOL * np.abs(row.electrode_charge_transferred_C),
-                global_charge_bound(row, p),
-                tissue.ENERGY_ATOL_PJ + rtol * flows,
-                3e-12,
-                3e-12,
-                3e-12,
-            )
-            for (name, value), key, bound in zip(b.items(), names, limits, strict=True):
-                if not np.isfinite(value).all() or np.any(np.abs(value) > bound):
-                    raise NumericalError("Resolved pump accounting failed: " + name)
-                key = "max_" + key
-                diagnostics[key] = max(diagnostics[key], float(np.max(np.abs(value), initial=0)))
-            diagnostics["max_energy_balance_relative"] = max(
-                diagnostics["max_energy_balance_relative"],
-                float(abs(b["energy"]) / max(flows, tissue.ENERGY_ATOL_PJ)),
-            )
-            diagnostics["max_global_charge_bound_ratio"] = max(
-                diagnostics["max_global_charge_bound_ratio"],
-                float(abs(b["global_charge"]) / limits[5]),
-            )
-    for name in (k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ")):
-        value = getattr(state, name)
-        if np.min(value, initial=0) < -1e-12 or (
-            state.amount_increment.ndim == 3 and np.min(np.diff(value, axis=0), initial=0) < -1e-12
-        ):
-            raise NumericalError("Resolved pump dissipation cannot be negative or decrease")
-    return diagnostics
+    result = tissue_balances(state, total, p)
+    result["energy"] += (
+        jnp.sum(state.pump_dissipated_energy_pJ)
+        + jnp.sum(state.calcium_pump_dissipated_energy_pJ)
+        - jnp.sum(state.metabolic_work_pJ)
+        - jnp.sum(state.calcium_metabolic_work_pJ)
+    )
+    result["metabolic_work"] = jnp.concatenate(
+        (
+            state.metabolic_work_pJ + 1e-3 * p.pump_drive * state.pump_cycles,
+            state.calcium_metabolic_work_pJ
+            + 1e-3 * p.calcium_pump_drive * state.calcium_pump_cycles,
+        )
+    )
+    return result
+
+
+def device_checks(previous, row, p, constants):
+    """check_values' tests for one accepted row on the device: (failed, diagnostics)."""
+    from cells.models.surface_pump_checks import row_checks
+
+    return row_checks(
+        previous,
+        row,
+        p,
+        constants,
+        domain_valid=domain_valid,
+        balances=device_balances,
+        limits=first.ledger_limits,
+        dissipation=DISSIPATION_FIELDS,
+    )
 
 
 OBSERVATION_FIELDS = (

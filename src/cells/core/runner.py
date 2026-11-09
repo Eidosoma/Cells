@@ -39,7 +39,14 @@ def timeline(spec: SimulationSpec) -> np.ndarray:
     return times
 
 
-def validate_checkpoint(spec: SimulationSpec, checkpoint: Checkpoint, times=None) -> None:
+def validate_checkpoint(
+    spec: SimulationSpec, checkpoint: Checkpoint, times=None, *, initial=None
+) -> None:
+    """Refuse a checkpoint that is not an accepted, valid state of this definition.
+
+    ``initial`` may pass initialise(spec) when several checkpoints of one
+    definition are validated, so the initial state is built once.
+    """
     model = get_model(spec.model)
     if times is None:
         times = checked_grid(spec)
@@ -62,7 +69,7 @@ def validate_checkpoint(spec: SimulationSpec, checkpoint: Checkpoint, times=None
         or type(checkpoint.layout) is not model.LAYOUT_TYPE
     ):
         raise ConfigError("Checkpoint state/layout types do not match the declared model")
-    initial = initialise(spec)
+    initial = initialise(spec) if initial is None else initial
     if checkpoint.time < initial.time:
         raise ConfigError("Checkpoint precedes this model's initial epoch")
     for name, values, target in zip(

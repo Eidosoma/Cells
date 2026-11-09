@@ -369,69 +369,96 @@ def explicit_rate_bound(spec):
     return max(face, 2 * np.max(cells / capacitance), np.max(membranes / capacitance))
 
 
-def global_charge_bound(row, p):
+def global_charge_bound(row, p, *, xp=np):
     """Floor plus a rounding allowance on the absolute terms of the global-charge sum."""
-    moved = CHARGE_PER_FMOL * np.sum(np.abs(p.valence * row.reservoir_supplied))
-    moved += np.sum(np.abs(row.electrode_charge_transferred_C))
+    moved = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence * row.reservoir_supplied))
+    moved += xp.sum(xp.abs(row.electrode_charge_transferred_C))
     return GLOBAL_CHARGE_ATOL_C + GLOBAL_CHARGE_ROUNDING * moved
 
 
-def check_values(state, spec):
-    """Family ledgers and tolerances; energy also allows the declared IMEX bound.
+# Ledgers in balances() order: diagnostic name and checked bound per entry.
+LEDGER_DIAGNOSTICS = (
+    "balance_error_fmol",
+    "extracellular_balance_error_fmol",
+    "global_balance_error_fmol",
+    "capacitor_charge_error_C",
+    "electrode_charge_error_C",
+    "global_charge_error_C",
+    "energy_balance_error_pJ",
+    "reservoir_work_error_pJ",
+    "electrode_work_error_pJ",
+    "metabolic_work_error_pJ",
+)
+LEDGERS = (
+    "local",
+    "outside",
+    "total",
+    "charge",
+    "electrode",
+    "global_charge",
+    "energy",
+    "reservoir_work",
+    "electrode_work",
+    "metabolic_work",
+)
+DOMAIN_MESSAGE = "Invalid resolved pump inventory, gates or padding; no repair"
+LEDGER_MESSAGE = "Resolved pump accounting failed: "
+DISSIPATION_MESSAGE = "Resolved pump dissipation cannot be negative or decrease"
+DISSIPATION_FIELDS = tuple(k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ"))
 
-    The global-charge bound scales with the charge moved (global_charge_bound).
+
+def ledger_limits(row, p, tol, rtol, *, xp=np):
+    """(flows, bounds): the integrated energy flows and each ledger's bound, in order.
+
+    tol is the per-species material tolerance and rtol the solver's energy
+    tolerance. The host check and the device checks share these bounds.
     """
-    _, p = kinetic.initial_values(spec)
+    q = xp.concatenate((p.initial_cell_charge_C, p.initial_outside_charge_C))
+    q = q + tissue.charge_increment(row, p, xp=xp)
+    terms = [
+        xp.sum(xp.abs(getattr(row, k)))
+        for k in type(row)._fields
+        if k.endswith(("_dissipated_energy_pJ", "_work_pJ"))
+    ]
+    # On the host, Python floats keep sum()'s compensated float summation.
+    flows = sum(float(t) for t in terms) if xp is np else sum(terms)
+    return flows, (
+        tol[:, None],
+        tol[:, None],
+        tol,
+        field.CHARGE_ATOL_C + field.CHARGE_RTOL * xp.abs(q),
+        field.CHARGE_ATOL_C + field.CHARGE_RTOL * xp.abs(row.electrode_charge_transferred_C),
+        global_charge_bound(row, p, xp=xp),
+        tissue.ENERGY_ATOL_PJ + rtol * flows,
+        3e-12,
+        3e-12,
+        3e-12,
+    )
+
+
+def checked_rows(state, spec, p, *, domain, balances, dissipation):
+    """Host checks of every accepted row (one row or a [time, ...] history)."""
     rows = (
         [state]
         if state.amount_increment.ndim == 2
-        else [STATE_TYPE(*(v[i] for v in state)) for i in range(len(state.amount_increment))]
+        else [type(state)(*(v[i] for v in state)) for i in range(len(state.amount_increment))]
     )
-    names = (
-        "balance_error_fmol",
-        "extracellular_balance_error_fmol",
-        "global_balance_error_fmol",
-        "capacitor_charge_error_C",
-        "electrode_charge_error_C",
-        "global_charge_error_C",
-        "energy_balance_error_pJ",
-        "reservoir_work_error_pJ",
-        "electrode_work_error_pJ",
-        "metabolic_work_error_pJ",
-    )
-    diagnostics = {"max_" + k: 0.0 for k in names}
+    diagnostics = {"max_" + k: 0.0 for k in LEDGER_DIAGNOSTICS}
     diagnostics["max_energy_balance_relative"] = 0.0
     diagnostics["max_global_charge_bound_ratio"] = 0.0
     rtol = ENERGY_RTOL[spec.execution.solver]
     tol = np.asarray(spec.execution.material_balance_atol_fmol)
     with np.errstate(all="ignore"):
         for row in rows:
-            if not domain_valid(row, p, p.active, xp=np):
-                raise NumericalError("Invalid resolved pump inventory, gates or padding; no repair")
+            if not domain(row, p, p.active, xp=np):
+                raise NumericalError(DOMAIN_MESSAGE)
             b = balances(row, p)
-            q = np.r_[p.initial_cell_charge_C, p.initial_outside_charge_C]
-            q = q + tissue.charge_increment(row, p, xp=np)
-            flows = sum(
-                float(np.sum(np.abs(getattr(row, k))))
-                for k in STATE_TYPE._fields
-                if k.endswith(("_dissipated_energy_pJ", "_work_pJ"))
-            )
-            limits = (
-                tol[:, None],
-                tol[:, None],
-                tol,
-                field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(q),
-                field.CHARGE_ATOL_C
-                + field.CHARGE_RTOL * np.abs(row.electrode_charge_transferred_C),
-                global_charge_bound(row, p),
-                tissue.ENERGY_ATOL_PJ + rtol * flows,
-                3e-12,
-                3e-12,
-                3e-12,
-            )
-            for (name, value), key, bound in zip(b.items(), names, limits, strict=True):
+            flows, limits = ledger_limits(row, p, tol, rtol)
+            for (name, value), key, bound in zip(
+                b.items(), LEDGER_DIAGNOSTICS, limits, strict=True
+            ):
                 if not np.isfinite(value).all() or np.any(np.abs(value) > bound):
-                    raise NumericalError("Resolved pump accounting failed: " + name)
+                    raise NumericalError(LEDGER_MESSAGE + name)
                 key = "max_" + key
                 diagnostics[key] = max(diagnostics[key], float(np.max(np.abs(value), initial=0)))
             diagnostics["max_energy_balance_relative"] = max(
@@ -442,13 +469,87 @@ def check_values(state, spec):
                 diagnostics["max_global_charge_bound_ratio"],
                 float(abs(b["global_charge"]) / limits[5]),
             )
-    for name in (k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ")):
+    for name in dissipation:
         value = getattr(state, name)
         if np.min(value, initial=0) < -1e-12 or (
             state.amount_increment.ndim == 3 and np.min(np.diff(value, axis=0), initial=0) < -1e-12
         ):
-            raise NumericalError("Resolved pump dissipation cannot be negative or decrease")
+            raise NumericalError(DISSIPATION_MESSAGE)
     return diagnostics
+
+
+def check_values(state, spec):
+    """Family ledgers and tolerances; energy also allows the declared IMEX bound.
+
+    The global-charge bound scales with the charge moved (global_charge_bound).
+    """
+    _, p = kinetic.initial_values(spec)
+    return checked_rows(
+        state, spec, p, domain=domain_valid, balances=balances, dissipation=DISSIPATION_FIELDS
+    )
+
+
+# Device checks: compiled windows evaluate check_values' tests per accepted row
+# (cells.core.vector_windows). Failure codes are in host order; the diagnostics
+# are check_values' keys, reduced by maximum over a world's accepted rows.
+DEVICE_CHECKS = ("domain", *LEDGERS, "dissipation")
+DEVICE_DIAGNOSTICS = (
+    *("max_" + k for k in LEDGER_DIAGNOSTICS),
+    "max_energy_balance_relative",
+    "max_global_charge_bound_ratio",
+)
+
+
+def device_failure_message(check):
+    if check == "domain":
+        return DOMAIN_MESSAGE
+    if check == "dissipation":
+        return DISSIPATION_MESSAGE
+    return LEDGER_MESSAGE + check
+
+
+def device_check_constants(spec):
+    from cells.models.surface_pump_checks import CheckConstants
+
+    return CheckConstants(
+        np.asarray(spec.execution.material_balance_atol_fmol, dtype=np.float64),
+        np.asarray(ENERGY_RTOL[spec.execution.solver], dtype=np.float64),
+    )
+
+
+def device_balances(state, p):
+    """balances() with jax.numpy (surface_kinetic.balances for an empty channel set)."""
+    from cells.models.surface_pump_checks import tissue_balances
+
+    total = (
+        state.membrane_transferred
+        + kinetic.channel_to_membrane(state.channel_transferred, p, xp=jnp)
+        - p.stoichiometry * state.pump_cycles
+    )
+    result = tissue_balances(state, total, p)
+    result["energy"] += (
+        jnp.sum(state.channel_dissipated_energy_pJ)
+        + jnp.sum(state.pump_dissipated_energy_pJ)
+        - jnp.sum(state.metabolic_work_pJ)
+    )
+    result["metabolic_work"] = state.metabolic_work_pJ + 1e-3 * p.pump_drive * state.pump_cycles
+    return result
+
+
+def device_checks(previous, row, p, constants):
+    """check_values' tests for one accepted row on the device: (failed, diagnostics)."""
+    from cells.models.surface_pump_checks import row_checks
+
+    return row_checks(
+        previous,
+        row,
+        p,
+        constants,
+        domain_valid=domain_valid,
+        balances=device_balances,
+        limits=ledger_limits,
+        dissipation=DISSIPATION_FIELDS,
+    )
 
 
 def summarize(history, diagnostics, spec):
