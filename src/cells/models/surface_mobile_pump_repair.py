@@ -358,7 +358,7 @@ def pump_balances(state, p):
     )
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     _, p = initial_values(spec)
     outward = -np.einsum("sk,...kn->...sn", p.mobile_pump_stoichiometry, state.mobile_pump_cycles)
     extra = (
@@ -367,7 +367,7 @@ def check_values(state, spec):
         state.mobile_pump_metabolic_work_pJ.sum(axis=-2),
     )
     diagnostics = prior.check_values(
-        prior_state(state), prior_spec(spec), additional_transport=extra
+        prior_state(state), prior_spec(spec), steps, additional_transport=extra
     )
     rows = (
         [state]

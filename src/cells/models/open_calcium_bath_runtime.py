@@ -127,7 +127,7 @@ class Adapter(controller.Adapter):
         result["program_energy"] = program
         return result
 
-    def check_values(self, state, spec):
+    def check_values(self, state, spec, steps=None):
         _, p = self.initial_values(spec)
         if state.phase_clock_s.ndim not in (1, 2) or state.phase_clock_s.shape[-1:] != (1,):
             raise NumericalError("Owned-calcium bath clock has incompatible shape")
@@ -137,7 +137,7 @@ class Adapter(controller.Adapter):
             else [self.STATE_TYPE(*(v[i] for v in state)) for i in range(len(state.phase_clock_s))]
         )
         diagnostics = {}
-        for row in rows:
+        for row, count in zip(rows, passive.row_steps(rows, steps), strict=True):
             if not self.domain_valid(row, p, p.active, xp=np):
                 raise NumericalError("Invalid complete calcium/fuel bath domain; no state repair")
             charge = np.r_[
@@ -148,7 +148,7 @@ class Adapter(controller.Adapter):
                 local=tolerance[:, None],
                 outside=tolerance[:, None],
                 total=tolerance,
-                charge=surface_field.CHARGE_ATOL_C + surface_field.CHARGE_RTOL * np.abs(charge),
+                charge=passive.capacitor_tolerance(charge, self.parent_state(row), p, count),
                 electrode=surface_field.CHARGE_ATOL_C,
                 global_charge=3e-25,
                 energy=calcium.ENERGY_ATOL_PJ,

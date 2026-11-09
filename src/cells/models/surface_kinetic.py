@@ -744,7 +744,7 @@ def balances(state, p):
     return result
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -767,7 +767,7 @@ def check_values(state, spec):
         )
     }
     with np.errstate(all="ignore"):
-        for row in rows:
+        for row, count in zip(rows, base.row_steps(rows, steps), strict=True):
             if not domain_valid(row, p, p.active, xp=np):
                 raise NumericalError(
                     "Invalid resolved kinetic inventory, gates or padding; no repair"
@@ -781,7 +781,7 @@ def check_values(state, spec):
                 tol[:, None],
                 tol[:, None],
                 tol,
-                field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(q),
+                base.capacitor_tolerance(q, row, p, count),
                 field.CHARGE_ATOL_C
                 + field.CHARGE_RTOL * np.abs(row.electrode_charge_transferred_C),
                 3e-25,

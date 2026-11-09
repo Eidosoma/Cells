@@ -105,8 +105,8 @@ def check_steps(spec, steps, controls):
     check_carried_pool_turnover(spec, float(np.max(steps, initial=0)))
 
 
-def check_values(state, spec):
-    return scheduled.check_values(state, scheduled_spec(spec))
+def check_values(state, spec, steps=None):
+    return scheduled.check_values(state, scheduled_spec(spec), steps=steps)
 
 
 def check_checkpoint(spec, checkpoint):

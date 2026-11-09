@@ -240,6 +240,34 @@ def charge_increment(state, p, *, xp):
     )
 
 
+def charge_increment_magnitude(state, p, *, xp):
+    """Summed |z F dn| of each node's stored increments (charge_increment's terms)."""
+    return CHARGE_PER_FMOL * xp.concatenate(
+        (
+            xp.sum(xp.abs(p.valence * state.amount_increment), axis=0),
+            xp.sum(xp.abs(p.valence * state.extracellular_amount_increment), axis=0),
+        )
+    )
+
+
+def capacitor_tolerance(charge_C, state, p, steps, *, xp=np):
+    """Capacitor-ledger bound per node for charge_C = initial + charge_increment(state).
+
+    field.charge_tolerance: representative rows (component net charge) allow the
+    rounding of state's increments over steps accepted steps.
+    """
+    increment = charge_increment_magnitude(state, p, xp=xp)
+    return field.charge_tolerance(charge_C, increment, steps, field_layout(p), xp=xp)
+
+
+def row_steps(rows, steps):
+    """Accepted-step index of each checked row; without steps, 0 (no allowance)."""
+    steps = [0] * len(rows) if steps is None else list(steps)
+    if len(steps) != len(rows):
+        raise ValueError("Require one accepted-step count per checked row")
+    return steps
+
+
 def field_values(state, control, p, *, xp=jnp):
     ci, co = physical_amounts(state, p)
     q = charge_increment(state, p, xp=xp)
@@ -475,7 +503,7 @@ def balances(state, p, *, intracellular_energy_change_pJ=None):
     )
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -497,7 +525,7 @@ def check_values(state, spec):
         )
     }
     with np.errstate(all="ignore"):
-        for row in rows:
+        for row, count in zip(rows, row_steps(rows, steps), strict=True):
             if not domain_valid(row, p, p.active, xp=np):
                 raise NumericalError("Invalid resolved inventory, ledger or padding; no repair")
             b = balances(row, p)
@@ -505,7 +533,7 @@ def check_values(state, spec):
             q = np.r_[p.initial_cell_charge_C, p.initial_outside_charge_C] + charge_increment(
                 row, p, xp=np
             )
-            charge_tol = field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(q)
+            charge_tol = capacitor_tolerance(q, row, p, count)
             limits = (
                 tol[:, None],
                 tol[:, None],

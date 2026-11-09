@@ -413,10 +413,13 @@ def channel_balances(state, p):
     return dict(local=local, cell=cell, energy=energy)
 
 
-def check_values(state, spec, *, additional_transport=None):
+def check_values(state, spec, steps=None, *, additional_transport=None):
     _, p = initial_values(spec)
     diagnostics = prior.check_values(
-        accounting_state(state, p), accounting_spec(spec), additional_transport=additional_transport
+        accounting_state(state, p),
+        accounting_spec(spec),
+        steps,
+        additional_transport=additional_transport,
     )
     rows = (
         [state]

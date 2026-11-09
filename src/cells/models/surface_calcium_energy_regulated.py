@@ -347,8 +347,8 @@ def balances(state, p):
     return base.balances(state, base_layout(p))
 
 
-def check_values(state, spec):
-    result = base.check_values(state, base_spec(spec))
+def check_values(state, spec, steps=None):
+    result = base.check_values(state, base_spec(spec), steps=steps)
     _, p = initial_values(spec)
     rows = (
         [state]

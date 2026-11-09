@@ -504,8 +504,10 @@ def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np):
     tol is the per-species material tolerance, rtol the solver's energy tolerance,
     steps the accepted steps at this row and magnitudes the row's
     ledger_magnitudes. Running material and work ledgers add
-    LEDGER_STEP_ROUNDING eps x steps x their magnitudes. The host check and the
-    device checks share these bounds.
+    LEDGER_STEP_ROUNDING eps x steps x their magnitudes, and the capacitor
+    ledger's representative rows their component net-charge rounding
+    (surface_field.charge_tolerance). The host check and the device checks share
+    these bounds.
     """
     q = xp.concatenate((p.initial_cell_charge_C, p.initial_outside_charge_C))
     q = q + tissue.charge_increment(row, p, xp=xp)
@@ -521,7 +523,7 @@ def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np):
         tol[:, None],
         tol[:, None],
         tol,
-        field.CHARGE_ATOL_C + field.CHARGE_RTOL * xp.abs(q),
+        tissue.capacitor_tolerance(q, row, p, steps, xp=xp),  # Component net charge.
         field.CHARGE_ATOL_C + field.CHARGE_RTOL * xp.abs(row.electrode_charge_transferred_C),
         global_charge_bound(row, p, xp=xp),
         tissue.ENERGY_ATOL_PJ + rtol * flows,

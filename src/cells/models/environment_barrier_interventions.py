@@ -274,8 +274,8 @@ def check_steps(spec, steps, controls):
             raise ConfigError("ECM RK4 steps must resolve transition time/8")
 
 
-def check_values(state, spec):
-    diagnostics = base.check_values(base_state(state), accounting_spec(spec))
+def check_values(state, spec, steps=None):
+    diagnostics = base.check_values(base_state(state), accounting_spec(spec), steps=steps)
     _, p = initial_values(spec)
     rows = (
         [state]

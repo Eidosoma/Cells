@@ -295,8 +295,6 @@ def test_invalid_field_definition_rejected(fault):
 @pytest.mark.parametrize(
     "fault",
     [
-        "charge",
-        "gauge_charge",
         "padding_charge",
         "boundary",
         "nan",
@@ -307,11 +305,7 @@ def test_invalid_field_definition_rejected(fault):
 )
 def test_incompatible_or_invalid_stage_rejected(fault, device):
     raw = fixtures.definition("padded" if fault == "padding_charge" else "closed")
-    if fault == "charge":
-        raw["outside_charge_C"][0] += 1e-16
-    elif fault == "gauge_charge":
-        raw["outside_charge_C"][4] += 1e-16
-    elif fault == "padding_charge":
+    if fault == "padding_charge":
         raw["cell_charge_C"][-1] = 1e-16
     elif fault == "boundary":
         raw["boundary_V"][0] = 0.01
@@ -326,6 +320,23 @@ def test_incompatible_or_invalid_stage_rejected(fault, device):
         raw["outside_charge_C"][0] -= 1e-8
     actual = selected(fixtures.arrays(raw), device)
     assert not actual.converged
+
+
+@pytest.mark.parametrize("node", [0, 4])  # A floating component's representative; the gauge.
+def test_representative_net_charge_is_reported_not_converged_on(node, device):
+    """A representative's charge enters no potential or offset: the solve converges
+    and reports it; the identities' capacitor ledgers check it (charge_tolerance)."""
+    raw = fixtures.definition("closed")
+    layout = fixtures.arrays(raw)[-1]
+    n = len(raw["cell_charge_C"])
+    assert bool(model.representatives(layout)[n + node])
+    before = selected(fixtures.arrays(raw), device)
+    raw["outside_charge_C"][node] += 1e-16
+    actual = selected(fixtures.arrays(raw), device)
+    assert bool(actual.converged) and float(actual.charge_normalized) > 1e6
+    change = actual.charge_residual_C[n + node] - before.charge_residual_C[n + node]
+    np.testing.assert_allclose(change, -1e-16, rtol=1e-9)
+    np.testing.assert_array_equal(actual.potential_V, before.potential_V)
 
 
 def test_exhausted_newton_solve_fails(device):

@@ -367,7 +367,7 @@ def balances(state, p):
     return result
 
 
-def check_values(state, spec, *, layout=None):
+def check_values(state, spec, steps=None, *, layout=None):
     p = initial_values(spec)[1] if layout is None else layout
     rows = (
         [state]
@@ -398,7 +398,7 @@ def check_values(state, spec, *, layout=None):
                 )
             }
         )
-    for row in rows:
+    for row, count in zip(rows, base.row_steps(rows, steps), strict=True):
         if not domain_valid(row, p, p.active, xp=np):
             raise NumericalError("Invalid mobile pump inventory, history or padding; no repair")
         b = balances(row, p)
@@ -410,7 +410,7 @@ def check_values(state, spec, *, layout=None):
             tol[:, None],
             tol[:, None],
             tol,
-            field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(q),
+            base.capacitor_tolerance(q, row, p, count),
             field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(row.electrode_charge_transferred_C),
             3e-25,
             base.ENERGY_ATOL_PJ,

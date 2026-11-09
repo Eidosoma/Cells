@@ -177,11 +177,11 @@ def check_steps(spec, steps, controls):
     scheduled.check_steps(spec, steps, controls)
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     clock = np.asarray(state.phase_clock_s)
     if clock.ndim not in (1, 2) or clock.shape[-1:] != (1,):
         raise NumericalError("Active scheduled phase clock has incompatible shape")
-    diagnostics = base.check_values(parent_state(state), accounting_spec(spec))
+    diagnostics = base.check_values(parent_state(state), accounting_spec(spec), steps=steps)
     _, p = initial_values(spec)
     rows = (
         [state]

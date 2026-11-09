@@ -76,8 +76,8 @@ def check_steps(spec, steps, controls):
     return scheduled.check_steps(scheduled_spec(spec), steps, controls)
 
 
-def check_values(state, spec):
-    return scheduled.check_values(state, scheduled_spec(spec))
+def check_values(state, spec, steps=None):
+    return scheduled.check_values(state, scheduled_spec(spec), steps=steps)
 
 
 def check_checkpoint(spec, checkpoint):

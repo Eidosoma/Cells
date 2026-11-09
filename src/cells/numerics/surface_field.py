@@ -29,6 +29,24 @@ CURRENT_RTOL = 2e-12
 CHARGE_ATOL_C = 3e-25
 CHARGE_RTOL = 2e-12
 NEWTON_TARGET = 0.01
+# Component net charge. Each capacitor component's representative node is fixed
+# in the reduction, so its charge enters no potential and no offset: its row
+# residual is the component's net charge, a conservation quantity rather than a
+# convergence one. solve() reports it in charge_residual_C and charge_normalized
+# but leaves it out of convergence; the identities' capacitor ledgers check it
+# with charge_tolerance. Node increments are the state, so rounding in their
+# stage additions (at most five per IMEX step, each up to u = eps/2 of the
+# increment) moves a floating component's net charge by at most
+# COMPONENT_STEP_ROUNDING eps x steps x its summed |z F dn| of stored increments.
+# A closed world's gauge component holds the world's net charge less the
+# floating components', and the implicit face drift returns a floating
+# component's net charge to the gauge, so its rows allow the world's summed
+# increments. Measured on the closed @1 fixture at 1 ms over 8000 steps
+# (ledger-fix-20261109-01/diag/gauge_magnitudes.json): floating components
+# stayed within 1e-26 C; the single-node gauge component reached 5.7e-25 C,
+# 1.6 eps x the world's increments, about 1e4x inside the allowance; the fixed
+# bound alone refuses that world within 5 s (3.6 s on the runner's grid).
+COMPONENT_STEP_ROUNDING = 2.5
 MAX_NODES = 256
 FACTORED_MAX_NODES = 2048
 NODE_BOUNDS = {SOLVER_ID: MAX_NODES, FACTORED_SOLVER_ID: FACTORED_MAX_NODES}
@@ -174,6 +192,35 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     return Layout(*values)
 
 
+def representatives(p, *, xp=np):
+    """Node mask of component representatives: fixed in the reduction, active, not held.
+
+    A representative's capacitor row residual is its component's net charge
+    (the gauge of a closed world, or the lowest outside node of a floating
+    component). Reservoir nodes are held and checked by the electrode ledger.
+    """
+    n = p.surface.cell_active.size
+    held = xp.concatenate((xp.zeros(n, dtype=bool), xp.asarray(p.surface.reservoir)))
+    return xp.asarray(p.fixed) & xp.asarray(p.active) & ~held
+
+
+def charge_tolerance(charge_C, increment_C, steps, p, *, xp=np):
+    """Capacitor-ledger bound per node (cells, then outside nodes).
+
+    charge_C is each node's charge and increment_C its summed |z F dn| of stored
+    increments. Every row allows CHARGE_ATOL_C + CHARGE_RTOL |charge|; each
+    representative row, which carries its component's net charge, also allows
+    COMPONENT_STEP_ROUNDING eps x steps x the summed increments of its floating
+    component, or of the whole world for the gauge's component, with steps the
+    accepted steps at that state.
+    """
+    bound = CHARGE_ATOL_C + CHARGE_RTOL * xp.abs(charge_C)
+    basis = xp.asarray(p.floating_basis)
+    summed = xp.where(xp.asarray(p.offset_free), basis.T @ increment_C, xp.sum(increment_C))
+    rounding = COMPONENT_STEP_ROUNDING * np.finfo(float).eps * steps * (basis @ summed)
+    return bound + xp.where(representatives(p, xp=xp), rounding, 0.0)
+
+
 def cholesky_solve(factor, rhs, *, xp):
     """Solve L L^T x = rhs with a lower factor; rhs may carry trailing columns."""
     if xp is not np:
@@ -230,8 +277,10 @@ def solve(
     Charge inputs include fixed backgrounds and use coulombs. boundary_V is
     nonzero only at reservoir/gauge owners; boundary voltages are held constant
     when reporting instantaneous capacitor/electrode energy and charge rates.
-    All capacitor constraints (including floating representatives) are checked.
-    Invalid/incompatible states or exhausted roots return converged=False.
+    Every capacitor row is reported; convergence tests the solved rows, while
+    each representative's row (its component's net charge) is the identities'
+    capacitor-ledger check (charge_tolerance). Invalid/incompatible states or
+    exhausted roots return converged=False.
     """
     if type(max_iterations) is not int or max_iterations < 0:
         raise ValueError("Require a nonnegative Newton bound")
@@ -343,7 +392,10 @@ def solve(
     cap_charge = p.capacitor_matrix @ phi
     residual = xp.where(required, cap_charge - charge, 0.0)
     charge_scale = xp.maximum(xp.abs(charge), xp.abs(cap_charge))
-    charge_norm = xp.max(xp.abs(residual) / (CHARGE_ATOL_C + CHARGE_RTOL * charge_scale))
+    charge_bound = CHARGE_ATOL_C + CHARGE_RTOL * charge_scale
+    charge_norm = xp.max(xp.abs(residual) / charge_bound)
+    solved = required & ~p.fixed  # Representatives carry net charge, not a solve residual.
+    solved_norm = xp.max(xp.where(solved, xp.abs(residual), 0.0) / charge_bound)
     electrode_charge = xp.where(s.reservoir, cap_charge[n:] - outside_charge_C, 0.0)
     amount_rates = xp.concatenate((rates.cell_rate_fmol_s, rates.outside_rate_fmol_s), axis=1)
     ionic_rate = CHARGE_PER_FMOL * xp.sum(z * amount_rates, axis=0)
@@ -397,5 +449,5 @@ def solve(
     )
     for value in physical:
         valid &= xp.all(xp.isfinite(value))
-    converged = valid & accepted & (norm <= NEWTON_TARGET) & (charge_norm <= 1.0)
+    converged = valid & accepted & (norm <= NEWTON_TARGET) & (solved_norm <= 1.0)
     return Values(*physical, rates, count, converged)

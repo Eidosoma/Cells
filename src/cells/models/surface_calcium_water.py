@@ -319,7 +319,7 @@ def free_energy_change(state, p):
     return value
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -327,7 +327,7 @@ def check_values(state, spec):
         else [STATE_TYPE(*(v[i] for v in state)) for i in range(len(state.amount_increment))]
     )
     diagnostics = {}
-    for row in rows:
+    for row, count in zip(rows, passive.row_steps(rows, steps), strict=True):
         if not domain_valid(row, p, p.active, xp=np):
             raise NumericalError("Invalid owned calcium/water state, volume or padding")
         b = balances(row, p)
@@ -339,7 +339,7 @@ def check_values(state, spec):
             local=tolerance[:, None],
             outside=tolerance[:, None],
             total=tolerance,
-            charge=field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(charge),
+            charge=passive.capacitor_tolerance(charge, row, p, count),
             electrode=field.CHARGE_ATOL_C,
             global_charge=3e-25,
             energy=calcium.ENERGY_ATOL_PJ,

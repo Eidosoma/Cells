@@ -316,7 +316,7 @@ class Adapter:
         )
         return result
 
-    def check_values(self, state, spec):
+    def check_values(self, state, spec, steps=None):
         _, p = self.initial_values(spec)
         if state.phase_clock_s.ndim not in (1, 2) or state.phase_clock_s.shape[-1:] != (1,):
             raise NumericalError("Bath clock has incompatible shape")
@@ -340,7 +340,7 @@ class Adapter:
             names += ("metabolic_work_error_pJ",)
         diagnostics = {"max_" + k: 0.0 for k in names}
         tol = np.asarray(spec.execution.material_balance_atol_fmol)
-        for row in rows:
+        for row, count in zip(rows, passive.row_steps(rows, steps), strict=True):
             if not self.domain_valid(row, p, p.active, xp=np):
                 raise NumericalError(
                     "Invalid bath state, physical owner, ledger or clock; no repair"
@@ -353,7 +353,7 @@ class Adapter:
                 tol[:, None],
                 tol[:, None],
                 tol,
-                surface_field.CHARGE_ATOL_C + surface_field.CHARGE_RTOL * np.abs(q),
+                passive.capacitor_tolerance(q, physical, p, count),
                 surface_field.CHARGE_ATOL_C
                 + surface_field.CHARGE_RTOL * np.abs(physical.electrode_charge_transferred_C),
                 3e-25,

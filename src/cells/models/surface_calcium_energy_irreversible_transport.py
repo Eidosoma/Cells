@@ -319,8 +319,8 @@ def balances(state, p):
     return result
 
 
-def check_values(state, spec):
-    diagnostics = legacy.check_values(legacy_state(state), spec)
+def check_values(state, spec, steps=None):
+    diagnostics = legacy.check_values(legacy_state(state), spec, steps=steps)
     _, p = initial_values(spec)
     rows = (
         [state]

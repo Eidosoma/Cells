@@ -16,6 +16,12 @@ Parts (each writes <part>[-<label>].json in --output; failures are kept as resul
               the runner (the reference refused before the electrode fix).
   reaction    MG0a's a/4 strip (256 cells, 1e6 pL reservoir) to 40/k in runner
               windows: the reaction_transport@1 guards over 3.2e5 RK4 steps.
+  gauge       component net charge (capacitor-ledger representative rows) over
+              --minutes at --dt in runner windows, for --world closed (the @1
+              closed fixture: three components, one gauged) or w225 (the
+              225-cell @1 scale world: about 180 single-node far-field
+              components): per window the largest residual against the fixed
+              bound and against the step allowance, and its growth exponent.
 Usage:
   python -m validation.tissue.ledger_rounding_study PART --output DIR [options]
 """
@@ -36,39 +42,33 @@ jax.config.update("jax_enable_x64", True)
 
 
 def _run_windows(raw, *, window_s, record=None):
-    """Runner windows (branch checkpoints) of one definition; diagnostics per window."""
-    from cells.core.runner import branch_checkpoint, run
-    from cells.core.specs import parse_spec
+    """The engine's windowed run (core.windows) of one definition; diagnostics per window.
 
-    end, dt = raw["experiment"]["end_time"], raw["execution"]["dt"]
-    steps = max(1, round(window_s / dt))
-    ends, k = [], steps
-    while k * dt < end - 0.5 * dt:
-        ends.append(k * dt)
-        k += steps
-    ends.append(end)
-    previous, checkpoint, windows = None, None, []
-    for stop in ends:
-        window = copy.deepcopy(raw)
-        ex = window["experiment"]
-        ex["end_time"] = stop
-        ex["observation_times"] = [stop]
-        for key in ("membrane_controls", "junction_controls", "pump_controls"):
-            for group in ex.get(key, []):
-                group["schedule"] = [c for c in group["schedule"] if c["time"] <= stop]
-        for group in ex.get("channel_controls", []):
-            group["schedule"] = [c for c in group["schedule"] if c["time"] <= stop]
-        spec = parse_spec(window)
-        if checkpoint is not None:
-            checkpoint = branch_checkpoint(previous, checkpoint, spec)
-        started = time.perf_counter()
-        value = run(spec, checkpoint)
-        entry = dict(end_s=stop, wall_s=time.perf_counter() - started)
-        entry.update({k: float(v) for k, v in value.diagnostics.items() if np.isscalar(v)})
+    Each window ends on an observation time, so record(result) sees its end row.
+    """
+    from cells.core.grid import EventGrid
+    from cells.core.specs import parse_spec
+    from cells.core.windows import WindowPolicy, run_windowed
+
+    raw = copy.deepcopy(raw)
+    steps = max(1, round(window_s / raw["execution"]["dt"]))
+    grid = EventGrid(parse_spec(raw))
+    last = len(grid) - 1
+    ends = sorted({*range(steps, last, steps), last})
+    raw["experiment"]["observation_times"] = [grid[0], *(grid[k] for k in ends)]
+    spec = parse_spec(raw)
+    windows, clock = [], [time.perf_counter()]
+
+    def sink(result):
+        now = time.perf_counter()
+        entry = dict(end_s=float(result.final.time), wall_s=now - clock[0])
+        clock[0] = now
+        entry.update({k: float(v) for k, v in result.diagnostics.items() if np.isscalar(v)})
         if record is not None:
-            entry.update(record(value))
+            entry.update(record(result))
         windows.append(entry)
-        previous, checkpoint = spec, value.final
+
+    run_windowed(spec, WindowPolicy(steps, "observations"), sink=sink)
     return windows
 
 
@@ -247,6 +247,77 @@ def part_reaction(args):
     )
 
 
+def gauge_raw(world, *, dt, end_time, backend):
+    if world == "closed":
+        from validation.tissue import surface_pump_fixtures as fixtures
+
+        raw = fixtures.definition("closed", solver="imex_ars222_face_electromigration@1")
+        raw["execution"].update(dt=dt, max_steps=int(math.ceil(end_time / dt)) + 8)
+        raw["execution"]["backend"] = backend
+        raw["experiment"].update(end_time=end_time, observation_times=[0.0, end_time])
+        return raw
+    from validation.tissue import resolved_scale_world as scale
+
+    return scale.definition(dt=dt, end_time=end_time, backend=backend)
+
+
+def part_gauge(args):
+    from cells.core.specs import parse_spec
+    from cells.models import surface_tissue as tissue
+    from cells.models.registry import get_model
+    from cells.numerics import surface_field as field
+
+    raw = gauge_raw(args.world, dt=args.dt, end_time=60.0 * args.minutes, backend=args.backend)
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    _, p = model.initial_values(spec)
+    p = type(p)(*(np.asarray(v) for v in p))
+    layout = tissue.field_layout(p)
+    reps = np.flatnonzero(field.representatives(layout))
+    eps = np.finfo(float).eps
+
+    def record(value):
+        state = model.STATE_TYPE(*(np.asarray(v) for v in value.final.state))
+        n = value.final.step_index
+        q = np.r_[p.initial_cell_charge_C, p.initial_outside_charge_C]
+        q = q + tissue.charge_increment(state, p, xp=np)
+        residual = np.abs(model.balances(state, p)["charge"])[reps]
+        fixed = (field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(q))[reps]
+        bound = tissue.capacitor_tolerance(q, state, p, n)[reps]
+        increment = tissue.charge_increment_magnitude(state, p, xp=np)
+        component = (layout.floating_basis @ (layout.floating_basis.T @ increment))[reps]
+        worst = int(np.argmax(residual / fixed))
+        return dict(
+            step=int(n),
+            max_residual_C=float(residual.max(initial=0)),
+            max_fixed_ratio=float((residual / fixed).max(initial=0)),
+            max_allowance_ratio=float((residual / bound).max(initial=0)),
+            worst_node=int(reps[worst]),
+            worst_residual_over_eps_increments=float(
+                residual[worst] / max(eps * component[worst], 1e-300)
+            ),
+        )
+
+    windows = _run_windows(raw, window_s=args.window, record=record)
+    steps = np.array([w["step"] for w in windows], dtype=float)
+    worst = np.array([w["max_residual_C"] for w in windows])
+    use = (worst > 0) & (steps > 0)
+    slope = (
+        float(np.polyfit(np.log(steps[use]), np.log(worst[use]), 1)[0]) if use.sum() > 2 else None
+    )
+    return dict(
+        world=args.world,
+        dt_s=args.dt,
+        minutes=args.minutes,
+        representatives=len(reps),
+        components=int(layout.floating_basis.shape[1]),
+        windows=windows,
+        loglog_slope_max_residual=slope,
+        worst_fixed_ratio=max(w["max_fixed_ratio"] for w in windows),
+        worst_allowance_ratio=max(w["max_allowance_ratio"] for w in windows),
+    )
+
+
 PARTS = dict(
     trajectory=part_trajectory,
     compare=part_compare,
@@ -254,6 +325,7 @@ PARTS = dict(
     relax=part_relax,
     fine=part_fine,
     reaction=part_reaction,
+    gauge=part_gauge,
 )
 
 
@@ -270,6 +342,9 @@ def main():
     parser.add_argument("--cells", type=int, default=2)
     parser.add_argument("--minutes", type=float, default=30.0)
     parser.add_argument("--window", type=float, default=20.0)
+    parser.add_argument("--world", choices=("closed", "w225"), default="closed")
+    parser.add_argument("--dt", type=float, default=1e-3)
+    parser.add_argument("--backend", choices=("cpu", "gpu"), default="cpu")
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)

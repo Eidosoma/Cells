@@ -20,8 +20,15 @@ from cells.core.errors import NumericalError
 from cells.core.runner import run
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
-from cells.models import reaction_transport, surface_pump, surface_pump_v2, surface_pump_v3
+from cells.models import (
+    reaction_transport,
+    surface_pump,
+    surface_pump_v2,
+    surface_pump_v3,
+    surface_tissue,
+)
 from cells.models.registry import get_model
+from cells.numerics import surface_field
 from cells.numerics import surface_imex as imex
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from validation.tissue import surface_pump_v3_fixtures as fixtures
@@ -381,6 +388,155 @@ def test_projective_checks_see_global_step_counts(monkeypatch):
     monkeypatch.setattr(surface_pump, "device_checks", keyed)
     with pytest.raises(NumericalError, match=f"at {grid[target]} s"):
         run(projective_world("device"))
+
+
+# --- component net charge (field gauge) ----------------------------------------------
+
+
+def pump_fixture(arm, version=1, **execution):
+    from validation.tissue import surface_pump_fixtures, surface_pump_v2_fixtures
+
+    fixtures = {1: surface_pump_fixtures, 2: surface_pump_v2_fixtures}[version]
+    raw = fixtures.definition(arm, solver=imex.ARS222_ID)
+    raw["execution"].update(execution)
+    return raw
+
+
+def field_layout_of(spec, model=surface_pump):
+    _, p = model.initial_values(spec)
+    p = type(p)(*(np.asarray(v) for v in p))
+    return p, surface_tissue.field_layout(p)
+
+
+def test_representatives_are_the_gauge_and_each_floating_component_owner():
+    _, closed = field_layout_of(parse_spec(pump_fixture("closed")))
+    _, release = field_layout_of(parse_spec(pump_fixture("release")))
+    np.testing.assert_array_equal(np.flatnonzero(surface_field.representatives(closed)), [3, 5, 7])
+    np.testing.assert_array_equal(closed.offset_free, [True, True, False])  # Gauge last.
+    assert np.flatnonzero(closed.gauge_mask).tolist() == [7 - closed.surface.cell_active.size]
+    np.testing.assert_array_equal(np.flatnonzero(surface_field.representatives(release)), [5])
+
+
+def test_field_convergence_leaves_out_the_representative_net_charge():
+    """A representative's charge enters no potential: it is reported, not converged on."""
+    from cells.core.state import initialise
+
+    spec = parse_spec(pump_fixture("release"))
+    p, layout = field_layout_of(spec)
+    state = initialise(spec).state
+    c = control_values(spec, [0.0])
+    control = type(c)(*(v[0] for v in c))
+    before = surface_tissue.field_values(state, control, p, xp=np)
+    charged = p._replace(initial_outside_charge_C=p.initial_outside_charge_C.copy())
+    rep = int(np.flatnonzero(surface_field.representatives(layout))[0])
+    n = p.active.size
+    charged.initial_outside_charge_C[rep - n] += 1e-20  # About 3e4 x its bound.
+    after = surface_tissue.field_values(state, control, charged, xp=np)
+    assert bool(before.converged) and bool(after.converged)
+    assert after.charge_normalized > 1e4 and before.charge_normalized < 1
+    np.testing.assert_allclose(after.charge_residual_C[rep] - before.charge_residual_C[rep], -1e-20)
+    np.testing.assert_array_equal(after.potential_V, before.potential_V)
+
+
+def test_component_allowance_uses_its_own_increments_or_the_world_at_the_gauge():
+    _, layout = field_layout_of(parse_spec(pump_fixture("closed")))
+    size = layout.active.size
+    increment = np.arange(1.0, size + 1.0) * 1e-12
+    charge = np.zeros(size)
+    extra = surface_field.charge_tolerance(charge, increment, 1000, layout) - (
+        surface_field.charge_tolerance(charge, increment, 0, layout)
+    )
+    rounding = surface_field.COMPONENT_STEP_ROUNDING * EPS * 1000
+    expected = np.zeros(size)
+    for rep, members in ((3, [0, 3, 4]), (5, [1, 5, 6])):  # Floating: own increments.
+        expected[rep] = rounding * increment[members].sum()
+    expected[7] = rounding * increment.sum()  # The gauge's component: the world's.
+    np.testing.assert_allclose(extra, expected, rtol=1e-12, atol=0)
+
+
+@pytest.mark.parametrize("version", [1, 2])
+def test_seeded_net_charge_in_a_floating_component_fails_host_and_device_at_its_row(version):
+    """1e-13 fmol of K booked into a floating component's outside node and no ledger.
+
+    That is 1e-24 C, ten times the capacitor bound and 1/200 of the material
+    tolerance: the component net-charge check alone catches it, at that row.
+    """
+    model = {1: surface_pump, 2: surface_pump_v2}[version]
+    spec = parse_spec(pump_fixture("release", version))
+    value = run(spec)
+    history = model.STATE_TYPE(*(np.asarray(v) for v in value.history))
+    _, p = model.initial_values(spec)
+    layout = surface_tissue.field_layout(type(p)(*(np.asarray(v) for v in p)))
+    node = int(np.flatnonzero(surface_field.representatives(layout))[0]) - p.active.size
+    row, k = 10, 1
+    amounts = history.extracellular_amount_increment.copy()
+    amounts[row:, k, node] += 1e-13
+    corrupted = history._replace(extracellular_amount_increment=amounts)
+    assert 1e-13 < 0.01 * min(spec.execution.material_balance_atol_fmol)
+    expected = (row, "Resolved pump accounting failed: charge")
+    assert host_first_failure(model, spec, corrupted) == expected
+    assert device_rows(model, spec, corrupted, p) == expected
+    assert host_first_failure(model, spec, history) == (None, None)
+
+
+@pytest.mark.parametrize("version", [1, 2])
+def test_seeded_net_charge_on_the_gauge_component_fails_host_and_device_at_its_row(version):
+    """A K booking on the closed world's gauge node (its own component) and no ledger.
+
+    The gauge row allows the world's summed increments, so its floor is the
+    capacitor bound plus that allowance: twice the floor at row 5 of a 1 ms run
+    fails host and device at that row, half of it passes every row.
+    """
+    model = {1: surface_pump, 2: surface_pump_v2}[version]
+    raw = pump_fixture("closed", version, dt=1e-3, max_steps=20)
+    raw["experiment"].update(end_time=0.01, observation_times=[0.0, 0.01])
+    spec = parse_spec(raw)
+    history = model.STATE_TYPE(*(np.asarray(v) for v in run(spec).history))
+    _, p = model.initial_values(spec)
+    host = type(p)(*(np.asarray(v) for v in p))
+    layout = surface_tissue.field_layout(host)
+    n, gauge = host.active.size, int(np.flatnonzero(layout.gauge_mask)[0])
+    assert not layout.offset_free[-1] and layout.floating_basis[n + gauge, -1] == 1
+    row, k = 5, 1
+    state = type(history)(*(v[row] for v in history))
+    q = np.r_[host.initial_cell_charge_C, host.initial_outside_charge_C]
+    q = q + surface_tissue.charge_increment(state, host, xp=np)
+    bound = surface_tissue.capacitor_tolerance(q, state, host, row)[n + gauge]
+    residual = abs(model.balances(state, host)["charge"][n + gauge])
+    floor = (bound - residual) / CHARGE_PER_FMOL  # fmol of K at the gauge node.
+    assert 0 < floor < 1e-14 < 0.01 * min(spec.execution.material_balance_atol_fmol)
+    expected = (row, "Resolved pump accounting failed: charge")
+    for factor, detected in ((2.0, True), (0.5, False)):
+        amounts = history.extracellular_amount_increment.copy()
+        amounts[row:, k, gauge] += factor * floor
+        corrupted = history._replace(extracellular_amount_increment=amounts)
+        found = expected if detected else (None, None)
+        assert host_first_failure(model, spec, corrupted) == found, factor
+        assert device_rows(model, spec, corrupted, p) == found, factor
+
+
+def test_closed_fixture_runs_past_the_fixed_bound_refusal():
+    """The gauged closed world at 1 ms: the fixed bound refused it within 5 s."""
+    end = 5.0
+    raw = pump_fixture("closed", dt=1e-3, max_steps=round(end / 1e-3) + 8)
+    raw["experiment"].update(end_time=end, observation_times=[0.0, end])
+    spec = parse_spec(raw)
+    value = run(spec)
+    final = surface_pump.STATE_TYPE(*(np.asarray(v) for v in value.final.state))
+    p, layout = field_layout_of(spec)
+    rep = np.flatnonzero(surface_field.representatives(layout))
+    q = np.r_[p.initial_cell_charge_C, p.initial_outside_charge_C]
+    q = q + surface_tissue.charge_increment(final, p, xp=np)
+    residual = np.abs(surface_pump.balances(final, p)["charge"])
+    fixed = surface_field.CHARGE_ATOL_C + surface_field.CHARGE_RTOL * np.abs(q)
+    steps = value.final.step_index
+    bound = surface_tissue.capacitor_tolerance(q, final, p, steps)
+    assert steps == 5000
+    assert np.all(residual[rep] < 1e-2 * bound[rep]), residual[rep] / bound[rep]
+    unrepresented = np.setdiff1d(np.arange(q.size), rep)  # Solved rows keep the fixed bound.
+    np.testing.assert_array_equal(bound[unrepresented], fixed[unrepresented])
+    # The gauge row passed the fixed bound on the way, which refused this world before.
+    assert value.diagnostics["max_capacitor_charge_error_C"] > surface_field.CHARGE_ATOL_C
 
 
 # --- reaction_transport@1 -----------------------------------------------------------

@@ -336,8 +336,8 @@ def surface_balances(state, p):
     )
 
 
-def check_values(state, spec):
-    diagnostics = base.check_values(base_state(state), accounting_spec(spec))
+def check_values(state, spec, steps=None):
+    diagnostics = base.check_values(base_state(state), accounting_spec(spec), steps=steps)
     _, p = initial_values(spec)
     rows = (
         [state]

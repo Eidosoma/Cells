@@ -55,8 +55,8 @@ class Adapter:
     def check_steps(self, spec, steps, controls):
         return self.scheduled.check_steps(self.schema.scheduled_spec(spec), steps, controls)
 
-    def check_values(self, state, spec):
-        return self.scheduled.check_values(state, self.schema.scheduled_spec(spec))
+    def check_values(self, state, spec, steps=None):
+        return self.scheduled.check_values(state, self.schema.scheduled_spec(spec), steps=steps)
 
     def check_checkpoint(self, spec, checkpoint):
         return self.scheduled.check_checkpoint(self.schema.scheduled_spec(spec), checkpoint)

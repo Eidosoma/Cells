@@ -227,7 +227,7 @@ def balances(state, p):
     return result
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -237,7 +237,7 @@ def check_values(state, spec):
     diagnostics = dict.fromkeys(DIAGNOSTICS.values(), 0.0)
     tol = np.asarray(spec.execution.material_balance_atol_fmol)
     with np.errstate(all="ignore"):
-        for row in rows:
+        for row, count in zip(rows, passive.row_steps(rows, steps), strict=True):
             if not domain_valid(row, p, p.active, xp=np):
                 raise NumericalError(
                     "Invalid cotransport/finite-energy/water state, bounds or padding"
@@ -249,7 +249,7 @@ def check_values(state, spec):
                 local=tol[:, None],
                 outside=tol[:, None],
                 total=tol,
-                charge=field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(charge),
+                charge=passive.capacitor_tolerance(charge, row, p, count),
                 electrode=field.CHARGE_ATOL_C
                 + field.CHARGE_RTOL * np.abs(row.electrode_charge_transferred_C),
                 global_charge=3e-25,

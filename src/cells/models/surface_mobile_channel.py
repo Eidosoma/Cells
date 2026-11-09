@@ -336,9 +336,11 @@ def channel_balances(state, p):
     return dict(local=local, cell=cell, energy=energy)
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     _, p = initial_values(spec)
-    result = prior.check_values(prior_state(state), prior_spec(spec), layout=accounting_layout(p))
+    result = prior.check_values(
+        prior_state(state), prior_spec(spec), layout=accounting_layout(p), steps=steps
+    )
     rows = (
         [state]
         if state.amount_increment.ndim == 2

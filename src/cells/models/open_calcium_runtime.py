@@ -210,11 +210,11 @@ class Adapter:
     def balances(self, state, p):
         return self.base.balances(self.parent_state(state), self.parent_layout(p))
 
-    def check_values(self, state, spec):
+    def check_values(self, state, spec, steps=None):
         # Static reservoirs retain the exact parent's full per-owner material,
         # ER/plasma/fuel work, capacitor, charge and chemical-ledger checks.
         diagnostics = self.base.check_values(
-            self.parent_state(state), self.schema.equation_spec(spec)
+            self.parent_state(state), self.schema.equation_spec(spec), steps=steps
         )
         _, p = self.initial_values(spec)
         rows = (

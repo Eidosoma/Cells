@@ -44,8 +44,8 @@ def check_steps(spec, steps, controls):
     return base.check_steps(base_spec(spec), steps, controls)
 
 
-def check_values(state, spec):
-    return base.check_values(state, base_spec(spec))
+def check_values(state, spec, steps=None):
+    return base.check_values(state, base_spec(spec), steps=steps)
 
 
 def observe_history(times, history, layout, requested, spec):

@@ -763,7 +763,7 @@ def balances(state, p, *, additional_transport=None):
     return b
 
 
-def check_values(state, spec, *, additional_transport=None):
+def check_values(state, spec, steps=None, *, additional_transport=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -771,7 +771,7 @@ def check_values(state, spec, *, additional_transport=None):
         else [STATE_TYPE(*(v[i] for v in state)) for i in range(len(state.amount_increment))]
     )
     diagnostics = {}
-    for i, row in enumerate(rows):
+    for i, (row, count) in enumerate(zip(rows, base.row_steps(rows, steps), strict=True)):
         if not domain_valid(row, p, p.active, xp=np):
             raise NumericalError("Invalid resolved calcium inventory, ownership, gate or padding")
         extra = additional_transport
@@ -786,7 +786,7 @@ def check_values(state, spec, *, additional_transport=None):
             local=tol[:, None],
             outside=tol[:, None],
             total=tol,
-            charge=field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(q),
+            charge=base.capacitor_tolerance(q, row, p, count),
             electrode=field.CHARGE_ATOL_C,
             global_charge=3e-25,
             energy=ENERGY_ATOL_PJ,

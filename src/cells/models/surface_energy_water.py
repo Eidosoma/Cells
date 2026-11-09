@@ -319,7 +319,7 @@ def balances(state, p):
     )
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -347,7 +347,7 @@ def check_values(state, spec):
     )
     diagnostics = {"max_" + k: 0.0 for k in names}
     with np.errstate(all="ignore"):
-        for row in rows:
+        for row, count in zip(rows, passive.row_steps(rows, steps), strict=True):
             if not domain_valid(row, p, p.active, xp=np):
                 raise NumericalError("Invalid finite-energy/water state, bounds or padding")
             b = balances(row, p)
@@ -359,7 +359,7 @@ def check_values(state, spec):
                 tol[:, None],
                 tol[:, None],
                 tol,
-                field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(charge),
+                passive.capacitor_tolerance(charge, row, p, count),
                 field.CHARGE_ATOL_C
                 + field.CHARGE_RTOL * np.abs(row.electrode_charge_transferred_C),
                 3e-25,

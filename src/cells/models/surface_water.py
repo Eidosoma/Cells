@@ -281,7 +281,7 @@ def balances(state, p):
     return b | dict(water_local=local, water_outside=outside, water_total=np.sum(delta))
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -304,7 +304,7 @@ def check_values(state, spec):
     )
     diagnostics = {"max_" + k: 0.0 for k in names}
     with np.errstate(all="ignore"):
-        for row in rows:
+        for row, count in zip(rows, prior.row_steps(rows, steps), strict=True):
             if not domain_valid(row, p, p.active, xp=np):
                 raise NumericalError("Invalid water/ionic state, volume bounds, ledger or padding")
             b = balances(row, p)
@@ -316,7 +316,7 @@ def check_values(state, spec):
                 tolerance[:, None],
                 tolerance[:, None],
                 tolerance,
-                field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(charge),
+                prior.capacitor_tolerance(charge, row, p, count),
                 field.CHARGE_ATOL_C
                 + field.CHARGE_RTOL * np.abs(row.electrode_charge_transferred_C),
                 3e-25,

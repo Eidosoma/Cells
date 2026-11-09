@@ -313,7 +313,7 @@ def balances(state, p):
     return result
 
 
-def check_values(state, spec, *, additional_transport=None):
+def check_values(state, spec, steps=None, *, additional_transport=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -324,7 +324,10 @@ def check_values(state, spec, *, additional_transport=None):
         if not domain_valid(row, p, p.active, xp=np):
             raise NumericalError("Invalid injury damage, ledger, transport or padding")
     diagnostics = prior.check_values(
-        accounting_state(state), accounting_spec(spec), additional_transport=additional_transport
+        accounting_state(state),
+        accounting_spec(spec),
+        steps,
+        additional_transport=additional_transport,
     )
     diagnostics["max_damage_ledger_error"] = float(
         np.max(

@@ -367,7 +367,7 @@ def balances(state, p):
     return result
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -376,7 +376,7 @@ def check_values(state, spec):
     )
     diagnostics = {}
     with np.errstate(all="ignore"):
-        for row in rows:
+        for row, count in zip(rows, surface.row_steps(rows, steps), strict=True):
             if not domain_valid(row, p, p.active, xp=np):
                 raise NumericalError(
                     "Invalid mitochondrial inventory, ownership, voltage or ledger"
@@ -389,7 +389,7 @@ def check_values(state, spec):
                 local=tolerance[:, None],
                 outside=tolerance[:, None],
                 total=tolerance,
-                charge=fuel.field.CHARGE_ATOL_C + fuel.field.CHARGE_RTOL * np.abs(charge),
+                charge=surface.capacitor_tolerance(charge, row, p, count),
                 electrode=fuel.field.CHARGE_ATOL_C,
                 global_charge=3e-25,
                 energy=ENERGY_ATOL_PJ,
