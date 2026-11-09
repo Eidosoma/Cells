@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-08 UTC.
+Last updated: 2026-11-09 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -43,15 +43,61 @@ starts, and production design is deferred until parity is established.
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
 | 5 | Further mechanism families from the parity ladder, on CPU and L4 | Planned |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
-| 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | Planned (map ready) |
+| 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
-| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Designed; user choices recorded in D133 |
-| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | MG0 drivers in progress |
+| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1) and batched worlds (G4) landed; ledger rounding fix in progress; GH200 throughput unmeasured |
+| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a passed**; MG0b driver landed, blocked on the ledger rounding fix |
+| 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | In development |
 
 ## Runs
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Stage B landed (9 November).**
+  - Neutral names throughout `src/cells`: 7 modules and more than 65 law IDs
+    renamed, the junction law merged and 4 mixed modules split.
+  - The physiology stack moved to `validation/betse/physiology`.
+  - Hash-pinned source manifests retired.
+  - No BETSE-specific ID or import remains in `src`; the boundary test
+    enforces it. The remaining text mentions are source citations, which are
+    allowed, plus some leftover message wording, which is a follow-up.
+
+  Tiers 1 and 2 ran from a clean snapshot of the rebased branch (`0736231`,
+  [gate](/mnt/workspaces/Cells/stage-b-20261109-01/landing-01/gate-01/)).
+  Three files differ from the record:
+  - two polygon-preparation files now pass in full, 77 and 78 tests, because
+    the hash pins they failed on were retired;
+  - `test_default_world_adapter` grew to 19 tests in the rung-1 work and now
+    takes about 220 s, so it belongs in tier 3.
+
+- **Channel model and batched worlds landed (9 November).**
+  - `resolved_pump_tissue@3` (`6853aa6`) adds Kv1.5, Kir2.1, NaV1.2 and K/Na
+    leak populations to the IMEX pump family, with exponential gate updates.
+    - The heredity cell reproduces the pre-screen states, H −79.556 mV and
+      D −21.518 mV.
+    - On 825 nodes on the L4, Vm agrees with the 0.25 ms run to 7.5 nV at 1 ms
+      but not at 2 ms (145 µV); CPU and L4 agree.
+    - [Evidence](/mnt/workspaces/Cells/pump-channels-20261109-01/).
+  - Batched worlds (`5d61544`): `run_vector_windowed` vmaps worlds, with
+    domain, ledger and dissipation checks on the device.
+    - Bitwise equal to single worlds on CPU with compiler rewrites off;
+      5.7e-16 V on the L4.
+    - L4 throughput per world-step, 825 nodes at 1 ms: 26.7 ms one world at a
+      time; 2.38 ms at 64 worlds; 2.10 ms at 256; 3.79 ms end to end with
+      observations. SM active 80–94%.
+    - The heredity plan assumed 0.47 ms on GH200; at the L4 rate, tier 1 would
+      need about 6,800 GPU-hours. A GH200 measurement is now the deciding
+      input. [Evidence](/mnt/workspaces/Cells/batched-worlds-20261109-01/).
+  - Gate: [tiers 1 and 2](/mnt/workspaces/Cells/land-g1-g4-20261109-01/gate-02/).
+    Three files differ, none because of these changes: two read-only fixture
+    copies (fixed in `7ec5589`) and the adapter file above. The 68 new tests
+    pass (one skipped).
+  - **Found afterwards:** long runs and worlds with many held baths were
+    refused by rounding in the conservation checks, not by physics errors.
+    The fix is in progress: electrode charge is now booked consistently, and
+    allowances derived from rounding grow with the step count. It blocks MG0b
+    and hour-scale qualification.
 
 - **MG0a morphogen gradient passes (9 November).** `reaction_transport@1`,
   unmodified, ran under the protocol `mg0a-gradient-v1`, committed beforehand
