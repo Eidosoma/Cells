@@ -321,5 +321,15 @@
   "engine_gaps_recorded: the draft's first (global-charge guard) and third (open-gate step bound) entries closed by the ledger fix, with how; the second (no excision) unchanged",
   "development_runs: dev-06 timing note; the ledger agent's width check and dev-07 added",
   "unchanged: id, question, world, registered prediction values, parts, controls, criteria, limitations, outcome_rules"
- ]
+ ],
+ "lead_review": {
+  "date": "2026-11-09",
+  "decision": "Registered with every criterion as drafted blind. The weaknesses below were found on review. They are recorded rather than repaired, because B4's sign had already been seen in dev-06 before registration and the others need no repair to keep the protocol honest.",
+  "known_weaknesses": {
+   "B4_moves_above": "Judged on |shift|; the basis predicts a positive shift (into H). The signed value is saved as engine_shift_cells of the factor-2.0 entry of pinning.cases and reported next to the verdict. A wrong-way move of 2 cells or more would pass B4 but contradict the basis, and would be reported as such.",
+   "B5_anchored_narrows": "Threshold 0 admits equal widths (no narrowing). The registered reduced widths (0.35, 0.15, 0.0) are compared in the unjudged registered-predictions rows. Narrowing is claimed only if the decrements are positive.",
+   "B6_cut_restore_returns": "At kappa 0.25 every cell is bistable and the walls are pinned, so return after cut and restore is close to guaranteed by construction. B6 tests the cut and restore machinery and the conservation across it, not a memory mechanism.",
+   "B7_charge": "Redundant with the engine's own global-charge guard, which refuses a run before the ratio reaches 1. It is kept as a recorded margin."
+  }
+ }
 }
