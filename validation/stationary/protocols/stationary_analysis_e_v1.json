@@ -1,0 +1,91 @@
+{
+ "schema": "cells.analysis_protocol@1",
+ "id": "fixed-points-e-v1",
+ "status": "PRE-REGISTERED 2026-11-09, committed after the lead's review and before the judged run. Criteria and tolerance formulas were written after development run dev-01 (non-judged) and before any judged run; tolerances are error-estimate budgets computed in the run from each solution's own Newton correction and each reference's error estimate, times a fixed factor, with nothing fitted. E4's slow-mode results have no independent reference and are reported, not judged. The judged run uses a fresh snapshot of the committed revision.",
+ "question": "Does the opt-in analysis stationary_continuation_analysis@1 find the stationary states of configured resolved pump worlds, classify their stability, and locate continuation folds, in agreement with independent reduced models to within error estimates, and what does it say about a written D disc of 7 cells in a 61-cell sheet?",
+ "analysis": "stationary_continuation_analysis@1: src/cells/analysis/stationary.py (coordinates, conservation laws, Newton and pseudo-transient solves, stability, step-map consistency), src/cells/analysis/continuation.py (pseudo-arclength continuation, folds, Hopf points), src/cells/analysis/cli.py (cells stationary CONFIG --output DIR).",
+ "engine_models": [
+  "resolved_pump_tissue@1 (src/cells/core/surface_pump_spec.py, src/cells/models/surface_pump.py), unmodified: E1, D1",
+  "resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, src/cells/models/surface_pump_v3.py), unmodified: E2, E3, E4",
+  "The analysis evaluates each model's own derivative (model.rhs / readouts, which contains the algebraic field solve) and its checked IMEX step (model.checked_step, imex_ars222_face_electromigration@1 at the declared dt) on candidate states; CPU, float64."
+ ],
+ "driver": "validation/stationary/targets.py, parts default, heredity, mg0b, tissue (judged) and default_run (diagnostic); worlds in validation/stationary/worlds.py; reduced references in validation/stationary/reduced.py",
+ "command": "PYTHONPATH=SNAPSHOT/src:SNAPSHOT JAX_ENABLE_X64=1 taskset -c 0,1 python -m validation.stationary.targets mg0b heredity default tissue default_run --output RUN/results (snapshot made by python -m validation.stationary.targets snapshot --output RUN/snapshot)",
+ "references": {
+  "reduced_model": "validation/morphogenesis/mg0b_theory.py (numpy/scipy, imports no Cells code): single-cell fluxes, I(V), slow_states (brentq xtol 1e-15 V; composition iterated to 1e-13 relative), fast_states (brentq xtol 1e-15 V).",
+  "reduced_jacobian": "validation/stationary/reduced.py slow_jacobian: the reduced model's 3-ion slow Jacobian (V = F vol (Na + K - M - P) / C, gates at steady state) as d/dc at fixed V plus d/dV times the exact dV/dc = F vol z / C, each by Richardson-extrapolated central differences (h = 1e-6 mM and 1e-6 V, and halves); elementwise error estimate |fine - coarse| + 8 eps max|f| / h. (dev-01 used one quotient in c through V, whose rounding the voltage's cancellation amplifies; its estimate omitted that rounding and the default-world RC eigenvalue then fell outside its budget, 4.2e-8 against 3.2e-8 per s. The split reference agrees with the engine to 1.1e-11 per s against a 3.5e-11 bound.)",
+  "reduced_fold": "validation/stationary/reduced.py fold: window edge solved as I(V) = 0 = dI/dV (brentq, slope by central difference h = 1e-6 V); error estimate |u(h) - u(h/2)| + 1e-14.",
+  "reduced_graph": "validation/stationary/reduced.py graph_*: C dV/dt = -I(V_i) - G (L V)_i on the 61-cell sheet graph at frozen composition (equal compositions make each constant-field junction exactly ohmic), Newton to 1e-15 V; its fold by natural continuation plus existence bisection, error estimate |extrapolated - bisected| + bracket, the extrapolation taking the leading eigenvalue squared as linear in G* - G.",
+  "records_reported_only": [
+   "/mnt/workspaces/Cells/heredity-design-20261108-01/prescreen-03.json (default-world slow state and time constants)",
+   "/mnt/workspaces/Cells/heredity-design-20261108-01/prescreen-06.json (heredity H, U, D slow states and time constants)",
+   "/mnt/workspaces/Cells/morphogenesis-mg0-20261109-01/dev-04-mg0b/theory.json (u_M, composition, fast states, grid-based window [0.37708, 0.67947]); mg0b_reduced_predictions.json"
+  ]
+ },
+ "error_budget": {
+  "factor": 10,
+  "state": "|engine - reference| <= 10 x (engine error estimate + reference error estimate [+ 1e-15 V root tolerance for voltages]) + 64 eps |reference value|. Engine error estimate: one Newton correction at the engine solution (u units: 1 mM, gate fraction, 10 mV), mapped to each quantity (voltage: the field voltage after applying the correction). Reference error estimate: one Newton correction at the reference solution with the reference's own residual and Jacobian (slow: reduced slow_rhs and slow_jacobian; fast: |I(V)| / |dI/dV|; graph: one graph Newton correction).",
+  "eigenvalues": "|lambda_engine - lambda_reference| <= first-order bound of the reference (kappa_i ||dJ||_2 with dJ its Jacobian error estimate) + the engine's (kappa_i ||64 eps |J|||_2). The engine side is the adiabatic ion Jacobian A - B D^-1 C (gates eliminated quasi-statically), the quantity the reduced 3-ion model approximates; the full spectrum including gate modes is reported.",
+  "stability": "An eigenvalue counts as unstable (stable) only if its real part exceeds (is below minus) its first-order bound kappa eps ||J||_F sqrt(n); otherwise it is marginal and the state is classified marginal. Conservation-law directions are removed by the reduction and listed as neutral directions, not counted.",
+  "folds": "|u_engine - u_reference| <= 10 x (engine fold error + reference fold error). Engine fold error: corrector tolerance (1e-10) + the parameter change over the last two arclength-bisection points.",
+  "step_map": "Distance to the nearest fixed point of the engine's step map Phi_T (one Newton correction of (Phi_T(u) - u)/T at the solution) <= its rounding floor ||(T B^T J B)^-1||_inf x 4 k eps max(1, |u|), for T = 1 and 2 declared steps."
+ },
+ "criteria": {
+  "E1": {
+   "world": "default-world cell (worlds.default_world_cell: prescreen-03 world block, no channels, Na leak x1), resolved_pump_tissue@1, slow mode from the INIT-end composition, rhs formulation, dense",
+   "E1.1": "Damped Newton converges (full step <= 1e-10) with error estimate <= 1e-10.",
+   "E1.2": "V, Na, K, M within the state budget of the reduced model's single slow state (mg0b_theory.slow_states with no Kir2.1, no NaV1.2, Na leak x1).",
+   "E1.3": "Classification stable with exactly three eigenvalues, none marginal; exactly one neutral direction (closed_species_total of P in cell_0); the three eigenvalues within the eigenvalue budget of the reduced Jacobian's.",
+   "E1.4": "Step-map distances for T = 1 and 2 steps <= their rounding floors; the step-map formulation's own Newton solution differs from the rhs solution by <= 2 x its floor (max norm, u units)."
+  },
+  "E2": {
+   "world": "heredity cell (validation/tissue/surface_pump_v3_fixtures.heredity_cells at the pre-screen H state, with worlds.ionic_background so the cell carries only P as fixed charge, as in the reduced model), resolved_pump_tissue@3, slow mode; guesses: the three HEREDITY_STATES with their steady-state gates",
+   "E2.1": "Newton converges from each guess to three distinct states (voltages separated by > 1 mV).",
+   "E2.2": "Each state within the state budget of the reduced model's nearest slow state (mg0b_theory.slow_states, NaV1.2 availability 1, no control).",
+   "E2.3": "H and D stable, U unstable with exactly one unstable eigenvalue; no marginal eigenvalue; one neutral direction (P in cell_0).",
+   "E2.4": "For each state the three adiabatic ion eigenvalues within the eigenvalue budget of the reduced Jacobian's.",
+   "E2.5": "Step-map criteria of E1.4 for each state."
+  },
+  "E3": {
+   "world": "MG0b cell (mg0b_domain_wall.chain_definition with one cell, NaV1.2 availability 0.4, control population at u_M = 0.5640141230484589, composition of dev-04 theory.json), fast mode (frozen composition), rhs formulation",
+   "E3.1": "Fast H, U, D (guesses: the theory.json fast states) within the state budget of mg0b_theory.fast_states at u_M.",
+   "E3.2": "H and D stable, U unstable with exactly one unstable eigenvalue.",
+   "E3.3": "Continuation in the control population's availability from H at u_M upward reaches the bound u = 1 and finds exactly two folds, each within the fold budget of the directly solved reduced fold.",
+   "E3.4": "The published grid-based window [0.3770832679975349, 0.6794743366336637] lies inside the engine window, each edge by at most reduced.grid_miss_bound plus the fold budget.",
+   "E3.5": "Each fold is a fold, not a branch point: smallest relative singular value of [F_z F_u] above 1e3 x that of F_z; and the located point's unstable count equals that of the stable side (0 here), the crossing eigenvalue being the one at zero."
+  },
+  "E4": {
+   "world": "61-cell hexagonal sheet (radius 4) of heredity cells, each facing its own held bath, joined by 156 open-gated constant-field junctions (mg0b junction law, P blocked); a written disc of the centre cell and its 6 neighbours. Coupling theta = junction permeability scale in units of G = g_H.",
+   "E4.1": "Fast mode, MG0b set (NaV 0.4, control at u_M, composition c everywhere), theta = 0.01, guess D in the disc and H outside: Newton converges; 7 D cells inside the disc and none outside (D: V above the fast U voltage); every voltage within the state budget of the graph reference; engine classification stable and the graph reference's leading rate negative.",
+   "E4.2": "Continuation upward in theta finds a first fold theta*_fast within the fold budget of the graph reference's fold, confirmed as a fold as in E3.5, with the branch stable (unstable count 0) at every point below it. The sheet's hexagonal symmetry makes ring modes degenerate, so beyond the fold the unstable count rises through symmetric branch points (reported as real crossings, not followed); these are not judged.",
+   "E4.3": "Slow mode, heredity set (NaV 1, no control; disc cells at the slow D state, others at H), theta = 0.01: Newton converges with 7 D cells inside and none outside; the classification is stable or unstable (not marginal); one neutral direction per cell (P); step-map criteria of E1.4. No independent reference exists for this case: the slow disc state, its stability and any fold below theta = 4 are engine findings, reported with these internal checks. Continuation: step 0.5, maximal step 5 u (the slow branch moves about 900 u of composition per unit theta), at most 300 points. Reported: the first special point that ends the stable range (dev-03/04: a loss of stability through a symmetry-degenerate real crossing before the fold), its parameter error estimate and multiplicity; a fold found there must pass E3.5's rank test (its unstable-count condition does not apply when stability was lost earlier)."
+  }
+ },
+ "diagnostics_not_judged": {
+  "D1": "default_run: the qualified windowed runner on a 100 s default-world run (expected refused by the family's host ledger checks, the known issue under repair; the refusal is recorded), then the default-world cell from its INIT end for 2e5 s at dt 10 ms by iterating the model's checked IMEX step through the analysis step map (each step's validity enforced, no host ledger checks, no ledgers carried). Reported: final distance to the analysis state and the late (t >= 5e4 s) log-slope of the distance against the slowest eigenvalue. When the ledger-check fix lands, D1 should be repeated through the qualified runner and can then become a criterion."
+ },
+ "reported_not_judged": [
+  "Engine minus pre-screen records (prescreen-03, prescreen-06) for states and time constants; the pre-screen states come from grid interpolation in V and its eigenvalues from a central-difference 3x3 Jacobian (h = 1e-8 relative), so their errors are not error-estimated (dev-01: slow time constants differ by up to 1.7 percent, the reduced Richardson reference agrees with the engine).",
+  "Full spectra with gate modes, relaxation times, multipliers of the step map and their log(mu)/T rates.",
+  "Continuation diagrams (all points: parameter, voltages, unstable count, leading eigenvalues).",
+  "E4 slow-mode fold coupling theta*_slow and the disc state's voltages and eigenvalues."
+ ],
+ "engine_gaps_recorded": [
+  "The @1/@2/@3 host ledger checks (check_values) refuse a 100 s default-world run at dt 10 ms and a 1000 s run started at the stationary state (electrode and metabolic_work ledgers; dev probes, 2026-11-09). This blocks qualified long runs for D1; another agent is fixing the checks."
+ ],
+ "limitations": [
+  "Supported models: resolved_pump_tissue@1/@2/@3 only (MODEL_IDS); others are refused.",
+  "Worlds with floating capacitor components: the rhs formulation holds each component's charge at its base total (the representative node's background absorbs rounding); solving far from the base state there was not developed further than conservation-law tests.",
+  "Continuation and fold refinement use dense linear algebra (up to 2500 coordinates); Newton-Krylov and Arnoldi are available for larger worlds but unpreconditioned.",
+  "The fast mode is defined for the rhs formulation only (frozen composition is not a state the engine's step can represent)."
+ ],
+ "outcome_rules": "Every criterion is evaluated on the judged run's saved JSON; all E criteria passing qualifies the analysis for these worlds and modes. A failed criterion is recorded and kept with its evidence; budgets, factors and worlds are not changed after the judged run. Numerical failures (non-convergence, invalid evaluations) count as failures of the criteria they block.",
+ "resources": "CPUs 0 and 1 only, CPU backend, no GPU. dev-01 wall time is recorded in its log; launch detached.",
+ "development_runs": [
+  "dev-01: ../dev-01 (snapshot ../dev-01/snapshot of worktree branch worktree-agent-a7df99e91d9f5a6e7 at afeea34, clean); parts mg0b, heredity, default, default_run, tissue; log ../dev-01/log.txt, results ../dev-01/results. All E1-E4 quantities inside their budgets except E1.3's RC eigenvalue (4.2e-8 against 3.2e-8 per s), traced to the then reference Jacobian (see references.reduced_jacobian) and fixed in validation/stationary/reduced.py; E4.3's continuation advanced only to theta = 0.033 in 200 points (step capped at 0.1 u), so the slow fold was not reached. D1: runner probe refused (electrode ledger); the 2e5 s step-map trajectory ends 5.80e-4 mM from the analysis state, the slowest mode predicting 5.81e-4 mM, late log-slope / slowest rate - 1 = 3.2e-5.",
+  "dev-02: ../dev-02 (snapshot of d430a99, clean): parts mg0b, heredity, default, tissue with the split reference Jacobian, u-unit step-map agreement and slow-mode continuation steps up to 20 u; default_run not repeated. E1-E3 and E4.1-E4.2 inside budgets. E4.3: the slow disc is stable up to theta = 0.0663 and the branch turns before 0.0682, but a 14-20 u step jumped over the fold and the bisection located a 'fold' at theta = 0.0711 with 9 unstable modes, an invalid location kept as evidence; fixed in continuation.py by re-walking a step in 16 sub-steps before bisecting.",
+  "dev-03: ../dev-03 (snapshot of c39716c on main 66980a0, clean): parts mg0b and tissue with the re-walk and slow steps capped at 5 u. E3 and E4.1-E4.2 unchanged and inside budgets. E4.3: the slow disc is stable at every point up to theta = 0.0681; at 0.0704 two eigenvalues have crossed zero with the tangent still turning forward (no fold, no Hopf point in that step: a degenerate real crossing, reported but not located); a Hopf point (0.0707) and the fold (0.0711, 9 unstable modes on the far side already) follow.",
+  "dev-04: ../dev-04 (snapshot of d4018ce, clean): part tissue with the loss of stability without a fold located ('stability_change', with its crossing multiplicity). E4.1-E4.2 as before (fast fold 0.10466666 against graph 0.10466665, budget 2.8e-7). E4.3: the slow disc loses stability at theta = 0.0701027 (parameter error estimate 1e-10) where a complex pair crosses (leading eigenvalues -1.8e-11 +- 0.05585i per s: a Hopf point, period 112 s; the pair was real at the previous point, so dev-04 labelled it stability_change; 6265d9f labels such a point hopf). Further Hopf points at 0.07065 and 0.07108 and the fold at 0.07112 follow on the unstable side.",
+  "Judged run: a fresh snapshot of the committed revision (at least 6265d9f), parts mg0b heredity default tissue (and default_run as D1)."
+ ]
+}
