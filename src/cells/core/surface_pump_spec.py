@@ -3,7 +3,7 @@
 The rates and ledgers are those of resolved_tissue@2 with no channel
 population: passive constant-field patches, the nak_atp_mass_action_positive@1
 pump, the physical-time junction gate (junction_voltage_relaxation@1, the same
-equations as betse_rate_junction_relaxation@1), logmean extracellular faces
+equations as the rate-based junction law), logmean extracellular faces
 and held reservoirs, closed by resolved_capacitor_components_current_continuity@1.
 Differences: temperature may lie anywhere in the pump's 200-400 K domain (the
 gate law has no temperature term), the field uses the Cholesky-factored solver

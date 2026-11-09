@@ -1,7 +1,7 @@
 """Pure continuous m/h kinetics in volts/seconds; no implicit preparation.
 
 SPEC-006 specifies the BETSE-v1.5.0 Kv1p5-derived engineering law. This is not
-native BETSE execution or a temperature-calibrated channel catalog.
+an external-reference execution or a temperature-calibrated channel catalog.
 """
 
 import jax.numpy as jnp

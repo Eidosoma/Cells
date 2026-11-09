@@ -1,7 +1,7 @@
 """Matrix-free projected CG for the Cells homogeneous-flux rectangle.
 
 Solve L phi = rhs on the mean-zero subspace, with a zero-mean voltage reference.
-The connected rectangular metric is the existing Cells law, not BETSE's native
+The connected rectangular metric is the existing Cells law, not a
 scalar-delta convention. No dense matrix, inverse, masked domain or tissue owner
 is constructed. Storage is O(batch size * number of cells).
 

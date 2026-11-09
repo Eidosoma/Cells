@@ -1,7 +1,7 @@
 """Positive-domain calcium extrusion and reversible 3-Na/1-Ca exchange.
 
 PMCA preserves BETSE 1.5's one-Ca, numeric-mM ATP quotient. NCX is a named
-synthetic symmetric-barrier law, not a fit or a native BETSE transporter.
+synthetic symmetric-barrier law, not a fit or an external-reference transporter.
 Positive cycles move Ca out; NCX additionally moves three Na inward.
 """
 

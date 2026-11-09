@@ -1,9 +1,9 @@
 """Cells rectangular, cell-centred, homogeneous-Neumann Poisson convention.
 
 Each physical axis has its own uniform spacing. Observed coordinates are
-retained, never rescaled to BETSE's scalar stencil delta. The operator is the
+retained, never rescaled to a scalar stencil delta. The operator is the
 conservative five-point Laplacian with zero normal flux at the outer faces.
-It is separate from native BETSE source correspondence and from live tissue,
+It is separate from any external-reference correspondence and from live tissue,
 material, masked-domain, phase or checkpoint admission.
 
 bind() computes one bounded dense inverse on the CPU using the same declared

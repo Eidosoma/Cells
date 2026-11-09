@@ -1,7 +1,7 @@
 """BETSE v1.5.0 Cav1p2 targets/time constants in volts and seconds.
 
 The native -10 mV shift is part of this law. Continuous relaxation is integrated
-by Cells' ordinary solver; this is not BETSE's semi-implicit time updater.
+by Cells' ordinary solver; this is not a semi-implicit time updater.
 """
 
 import jax.numpy as jnp

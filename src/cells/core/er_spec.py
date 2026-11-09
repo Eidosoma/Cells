@@ -164,7 +164,7 @@ def parse(data):
     if pump is not None:
         _fields(pump, {f.name for f in fields(ERPump)}, "ER pump")
         if pump["law"] != PUMP_LAW or pump["metabolism"] != METABOLISM:
-            raise ConfigError("ER pump requires its named BETSE law and maintained mM quotient")
+            raise ConfigError("ER pump requires its named law and a maintained mM quotient")
         drive = signed_number(pump["delta_g0_J_per_mol"], "ER hydrolysis potential")
         if abs(drive) > 100000:
             raise ConfigError("ER hydrolysis potential exceeds the bounded domain")
@@ -180,7 +180,7 @@ def parse(data):
     if release is not None:
         _fields(release, {f.name for f in fields(ERRelease)}, "ER release")
         if release["law"] != RELEASE_LAW:
-            raise ConfigError("ER release requires its named calcium-only BETSE law")
+            raise ConfigError("ER release requires its named calcium-only law")
         release = ERRelease(
             RELEASE_LAW,
             bound(release["permeability_m_per_s"], "release permeability", 0, 1e-3),

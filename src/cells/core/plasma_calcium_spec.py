@@ -156,7 +156,7 @@ def parse(data, *, ionic_family=None):
         if p is not None:
             _fields(p, {f.name for f in fields(ERPump)}, "plasma pump")
             if p["law"] != PUMP_LAW or p["metabolism"] != METABOLISM:
-                raise ConfigError("Plasma pump requires its named BETSE law and mM quotient")
+                raise ConfigError("Plasma pump requires its named law and a mM quotient")
             drive = signed_number(p["delta_g0_J_per_mol"], "plasma hydrolysis potential")
             if abs(drive) > 100000:
                 raise ConfigError("Plasma hydrolysis potential exceeds the bounded domain")

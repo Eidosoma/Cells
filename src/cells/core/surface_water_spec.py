@@ -2,7 +2,7 @@
 
 Impermeant osmolyte amounts are explicit and independent of fixed charge. The
 compliant volumes do not change interface geometry, and this Cells extension
-does not establish native BETSE volume-trajectory correspondence.
+does not establish correspondence with an external reference volume trajectory.
 """
 
 from bisect import bisect_right

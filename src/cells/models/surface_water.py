@@ -2,7 +2,7 @@
 
 Volume changes enter every ionic stage through concentration = amount / volume.
 Interfaces, capacitances and topology stay fixed. This is not shape mechanics,
-solvent drag, an extracellular fluid field or a native BETSE volume trajectory.
+solvent drag, an extracellular fluid field or an external reference volume trajectory.
 """
 
 from dataclasses import make_dataclass, replace
