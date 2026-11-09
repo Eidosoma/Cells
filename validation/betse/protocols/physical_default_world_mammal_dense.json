@@ -1,0 +1,170 @@
+{
+  "schema": "cells.betse_comparison_protocol@1",
+  "id": "physical-default-world-mammal-dense",
+  "purpose": "Judge Cells' own physics (resolved_pump_tissue@2: rung 1, Na K Cl Ca P M and the plasma-membrane Ca-ATPase) on BETSE's default world with the mammal ion profile against the plain-BETSE case parity-rung1-20261108-01/betse-reference/default-world-mammal-dense. DRAFT: fixed and committed by the lead before the judged runs.",
+  "betse_case": "default-world-mammal-dense",
+  "phases": [
+    "init",
+    "sim"
+  ],
+  "time_alignment_atol_s": 1e-09,
+  "min_common_samples": 1,
+  "compare_final": true,
+  "cells_run": {
+    "model": "resolved_pump_tissue@2",
+    "solver": "imex_ars222_face_electromigration@1",
+    "dt_init_s": 0.001,
+    "dt_sim_s": 0.0001,
+    "constants": "CODATA (Cells default)",
+    "sim_start": "Cells' own INIT end state",
+    "backends": [
+      "cpu",
+      "gpu (L4)"
+    ]
+  },
+  "observables": {
+    "vm_time": {
+      "final": "vm",
+      "tolerance": "voltage"
+    },
+    "vm_ave_time": {
+      "final": "vm_ave",
+      "tolerance": "voltage"
+    },
+    "cc_time": {
+      "final": "cc_cells",
+      "tolerance": "cell_concentration"
+    },
+    "cc_env_time": {
+      "final": "cc_env",
+      "tolerance": "ecm_concentration",
+      "exclude": "grid_boundary_ring"
+    },
+    "venv_time": {
+      "final": "v_env",
+      "tolerance": "voltage",
+      "judged": false
+    },
+    "diag_*": {
+      "judged": false
+    }
+  },
+  "tolerance_quantities": {
+    "voltage": {
+      "kind": "abs",
+      "units": "V"
+    },
+    "cell_concentration": {
+      "kind": "rel",
+      "units": "1"
+    },
+    "ecm_concentration": {
+      "kind": "rel",
+      "units": "1"
+    }
+  },
+  "tolerance_classes": {
+    "physical_route_vs_betse_10ms_init": {
+      "voltage": {
+        "init": 0.0004,
+        "sim": 7e-06
+      },
+      "cell_concentration": {
+        "init": {
+          "by_ion": {
+            "Na": 8e-06,
+            "K": 5e-07,
+            "Cl": 8e-06,
+            "Ca": 0.5,
+            "P": 1e-12,
+            "M": 9e-07
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Na": 3e-06,
+            "K": 3e-07,
+            "Cl": 2e-06,
+            "Ca": 4e-05,
+            "P": 1e-12,
+            "M": 6e-08
+          }
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "by_ion": {
+            "Na": 9e-05,
+            "K": 0.002,
+            "Cl": 4e-05,
+            "Ca": 5e-05,
+            "P": 1e-12,
+            "M": 3e-05
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Na": 9e-05,
+            "K": 0.002,
+            "Cl": 4e-05,
+            "Ca": 2e-05,
+            "P": 1e-12,
+            "M": 3e-05
+          }
+        }
+      }
+    }
+  },
+  "verdict_class": "physical_route_vs_betse_10ms_init",
+  "tolerance_derivation": {
+    "method": "3 x (sum of measured difference terms + X_ext), rounded up to one significant figure; per ion for concentrations (a zero sum gets the floor 1e-12)",
+    "inputs": "parity-rung1-20261108-01/protocol-numbers/derived.json",
+    "sums_before_margin": {
+      "voltage": {
+        "init": 0.00013325962464654875,
+        "sim": 2.124030292716591e-06
+      },
+      "cell_concentration": {
+        "init": {
+          "Na": 2.665099678553581e-06,
+          "K": 1.3393597877279836e-07,
+          "Cl": 2.4440057212999434e-06,
+          "Ca": 0.15040077369565957,
+          "P": 0.0,
+          "M": 2.9589734780688243e-07
+        },
+        "sim": {
+          "Na": 7.505488977859798e-07,
+          "K": 7.33236856380739e-08,
+          "Cl": 4.541325417728013e-07,
+          "Ca": 1.1321068520000308e-05,
+          "P": 0.0,
+          "M": 1.7372467547875616e-08
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "Na": 2.9933912554759483e-05,
+          "K": 0.0005342818861505705,
+          "Cl": 1.0620539600157906e-05,
+          "Ca": 1.4536495027937405e-05,
+          "P": 0.0,
+          "M": 8.61910588097908e-06
+        },
+        "sim": {
+          "Na": 2.946107178588174e-05,
+          "K": 0.0005192493171335198,
+          "Cl": 1.048797232441975e-05,
+          "Ca": 5.275226576918961e-06,
+          "P": 0.0,
+          "M": 6.995638244009263e-06
+        }
+      }
+    }
+  },
+  "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+  "notes": [
+    "Reported only: venv_time (BETSE's screened, smoothed estimate has no Cells counterpart) and Cells diag_* arrays.",
+    "Gate open fraction is not in the comparison layout and is not judged."
+  ]
+}
