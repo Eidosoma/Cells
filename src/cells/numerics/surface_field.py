@@ -24,6 +24,21 @@ SOLVER_ID = "capacitive_reduction_gauged_damped_newton@1"
 # once at bind, so each stage needs two triangular solves instead of two dense
 # LU solves. This removes the dense O(N^3)-per-stage bound of version 1.
 FACTORED_SOLVER_ID = "capacitive_reduction_gauged_damped_newton@2"
+# Version 2 plus convergence at the attainable rounding floor of the offset
+# Newton. Its iterations are version 2's, so wherever version 2 converges the
+# result is bitwise the same; where version 2 stops above NEWTON_TARGET (line
+# search unable to decrease, or the iteration bound), version 3 also accepts a
+# residual within CURRENT_FLOOR_ULPS ulps of its potentials. The floor: a
+# component's offset, and so each potential phi, is resolved only to about
+# eps |phi|; a potential change of one ulp moves a face current by G (|phi_s| +
+# |phi_r|) eps (G its conductance) and a junction current by its slope times
+# eps (|phi_a| + |phi_b|). The computed Kirchhoff residual cannot be driven
+# below about eps x that incident sum. Measured at refused P4 and P2 parity
+# states: 1.2 eps x the sum under XLA and numpy alike, while the norm against
+# CURRENT_ATOL_A differed 5x between them. 1e3 ulps is a potential error of
+# about 1e-14 V; a solve whose residual is above it is still refused.
+FLOOR_SOLVER_ID = "capacitive_reduction_gauged_damped_newton@3"
+CURRENT_FLOOR_ULPS = 1e3
 CURRENT_ATOL_A = 1e-23
 CURRENT_RTOL = 2e-12
 CHARGE_ATOL_C = 3e-25
@@ -49,7 +64,11 @@ NEWTON_TARGET = 0.01
 COMPONENT_STEP_ROUNDING = 2.5
 MAX_NODES = 256
 FACTORED_MAX_NODES = 2048
-NODE_BOUNDS = {SOLVER_ID: MAX_NODES, FACTORED_SOLVER_ID: FACTORED_MAX_NODES}
+NODE_BOUNDS = {
+    SOLVER_ID: MAX_NODES,
+    FACTORED_SOLVER_ID: FACTORED_MAX_NODES,
+    FLOOR_SOLVER_ID: FACTORED_MAX_NODES,
+}
 
 
 class Layout(NamedTuple):
@@ -70,6 +89,10 @@ class Layout(NamedTuple):
 # capacitor_solve_matrix. A distinct pytree type keeps the dispatch static.
 FactoredLayout = NamedTuple(
     "FactoredLayout", [(k, object) for k in (*Layout._fields, "capacitor_factor")]
+)
+# Version 3 layout: version 2's plus its floor in ulps (CURRENT_FLOOR_ULPS).
+FloorLayout = NamedTuple(
+    "FloorLayout", [(k, object) for k in (*FactoredLayout._fields, "current_floor")]
 )
 
 
@@ -103,7 +126,8 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     A reservoir is both a concentration bath and a voltage clamp in this law.
     Closed graphs require exactly one outside gauge. All floating components
     need a charged outside-face path to a clamp/gauge even if junctions close.
-    The factored solver returns a FactoredLayout with the same reduction.
+    The factored solver returns a FactoredLayout with the same reduction, and
+    the floor solver a FloorLayout.
     """
     if solver not in NODE_BOUNDS:
         raise ValueError("Unknown resolved field solver")
@@ -189,6 +213,8 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     )
     if solver == FACTORED_SOLVER_ID:
         return FactoredLayout(*values, factor)
+    if solver == FLOOR_SOLVER_ID:
+        return FloorLayout(*values, factor, np.asarray(CURRENT_FLOOR_ULPS))
     return Layout(*values)
 
 
@@ -242,7 +268,7 @@ def cholesky_solve(factor, rhs, *, xp):
 
 def _capacitor_solve(charge, boundary, p, *, xp):
     rhs = xp.where(~p.fixed, (charge - p.capacitor_matrix @ boundary) / p.capacitor_scale, 0.0)
-    if isinstance(p, FactoredLayout):
+    if isinstance(p, (FactoredLayout, FloorLayout)):
         return cholesky_solve(p.capacitor_factor, rhs, xp=xp) + boundary
     return xp.linalg.solve(p.capacitor_solve_matrix, rhs) + boundary
 
@@ -280,7 +306,8 @@ def solve(
     Every capacitor row is reported; convergence tests the solved rows, while
     each representative's row (its component's net charge) is the identities'
     capacitor-ledger check (charge_tolerance). Invalid/incompatible states or
-    exhausted roots return converged=False.
+    exhausted roots return converged=False; with a FloorLayout, a root within
+    the attainable current floor (FLOOR_SOLVER_ID) counts as found.
     """
     if type(max_iterations) is not int or max_iterations < 0:
         raise ValueError("Require a nonnegative Newton bound")
@@ -387,7 +414,17 @@ def solve(
     else:
         state = jax.lax.while_loop(keep_going, iteration, state)
     count, offset, _, accepted = state
-    phi, rates, current_residual, norm, _, valid = evaluate(offset)
+    phi, rates, current_residual, norm, slope, valid = evaluate(offset)
+    rooted = accepted & (norm <= NEWTON_TARGET)
+    if isinstance(p, FloorLayout):  # Version 3: or within the attainable floor.
+        size = xp.abs(phi)
+        incident = xp.abs(p.face_incidence) @ (
+            conductance * (size[n + s.face_sender] + size[n + s.face_receiver])
+        ) + xp.abs(p.junction_incidence) @ (
+            slope * (size[s.junction_sender] + size[s.junction_receiver])
+        )
+        floor = p.current_floor * np.finfo(float).eps * incident
+        rooted |= xp.all(xp.abs(current_residual) <= floor)
     patch_charge = s.membrane_capacitance * rates.membrane_voltage_V
     cap_charge = p.capacitor_matrix @ phi
     residual = xp.where(required, cap_charge - charge, 0.0)
@@ -449,5 +486,5 @@ def solve(
     )
     for value in physical:
         valid &= xp.all(xp.isfinite(value))
-    converged = valid & accepted & (norm <= NEWTON_TARGET) & (solved_norm <= 1.0)
+    converged = valid & rooted & (solved_norm <= 1.0)
     return Values(*physical, rates, count, converged)

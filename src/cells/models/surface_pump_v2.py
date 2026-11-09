@@ -57,6 +57,10 @@ LAYOUT_TYPE = NamedTuple(
     "SurfacePumpCalciumLayout",
     [(k, object) for k in (*first.LAYOUT_TYPE._fields, *CALCIUM_LAYOUT_FIELDS)],
 )
+FLOOR_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.FLOOR_SOLVER_ID.
+    "SurfacePumpCalciumFloorLayout",
+    [(k, object) for k in (*first.FLOOR_LAYOUT_TYPE._fields, *CALCIUM_LAYOUT_FIELDS)],
+)
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
 
@@ -129,7 +133,8 @@ def initial_values(spec):
         for name, value in zip(declared._fields[1:], declared[1:], strict=True):
             v["calcium_pump_" + name][i] = value
     zero = np.zeros(nm)
-    return STATE_TYPE(*state, zero, zero.copy(), zero.copy()), LAYOUT_TYPE(**v)
+    kind = FLOOR_LAYOUT_TYPE if "field_current_floor" in v else LAYOUT_TYPE
+    return STATE_TYPE(*state, zero, zero.copy(), zero.copy()), kind(**v)
 
 
 def calcium_inputs(ci, co, voltage, temperature, p, *, xp):

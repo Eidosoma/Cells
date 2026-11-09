@@ -67,6 +67,11 @@ FACTORED_LAYOUT_TYPE = NamedTuple(
     "SurfaceTissueFactoredLayout",
     [(k, object) for k in (*LAYOUT_TYPE._fields, "field_capacitor_factor")],
 )
+# Only identities that declare field.FLOOR_SOLVER_ID bind this layout.
+FLOOR_LAYOUT_TYPE = NamedTuple(
+    "SurfaceTissueFloorLayout",
+    [(k, object) for k in (*FACTORED_LAYOUT_TYPE._fields, "field_current_floor")],
+)
 
 
 def batch_signature(model):
@@ -95,7 +100,13 @@ def working_size(spec):
 
 
 def field_layout(p):
-    kind = field.FactoredLayout if hasattr(p, "field_capacitor_factor") else field.Layout
+    kind = (
+        field.FloorLayout
+        if hasattr(p, "field_current_floor")
+        else field.FactoredLayout
+        if hasattr(p, "field_capacitor_factor")
+        else field.Layout
+    )
     return kind(
         surface.Layout(*(getattr(p, k) for k in surface.Layout._fields)),
         *(getattr(p, "field_" + k) for k in kind._fields if k != "surface"),
@@ -163,11 +174,12 @@ def initial_values(spec):
     gauge = np.zeros(o, dtype=bool)
     if m.gauge_reference is not None:
         gauge[oids.index(m.gauge_reference)] = True
-    # Only an exact factored declaration changes the binding; all others are v1.
-    factored = getattr(x, "field_solver", None) == field.FACTORED_SOLVER_ID
-    bound = field.bind(
-        surface.Layout(**v), gauge, solver=field.FACTORED_SOLVER_ID if factored else field.SOLVER_ID
-    )
+    # Only an exact factored (version 2 or 3) declaration changes the binding;
+    # all others are version 1.
+    solver = getattr(x, "field_solver", None)
+    if solver not in (field.FACTORED_SOLVER_ID, field.FLOOR_SOLVER_ID):
+        solver = field.SOLVER_ID
+    bound = field.bind(surface.Layout(**v), gauge, solver=solver)
     v.update({"field_" + k: value for k, value in bound._asdict().items() if k != "surface"})
     v.update(
         active=v["cell_active"],
@@ -219,7 +231,11 @@ def initial_values(spec):
         np.zeros(o),
         np.zeros(o),
     )
-    return state, (FACTORED_LAYOUT_TYPE if factored else LAYOUT_TYPE)(**v)
+    kind = {
+        field.FACTORED_SOLVER_ID: FACTORED_LAYOUT_TYPE,
+        field.FLOOR_SOLVER_ID: FLOOR_LAYOUT_TYPE,
+    }.get(solver, LAYOUT_TYPE)
+    return state, kind(**v)
 
 
 def physical_amounts(state, p):

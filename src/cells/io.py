@@ -20,7 +20,7 @@ import cells
 from cells.core.devices import execution_device
 from cells.core.runner import RunResult, validate_checkpoint
 from cells.core.specs import ConfigError, SimulationSpec, digest, parse_spec, read_json
-from cells.core.state import Checkpoint
+from cells.core.state import Checkpoint, initialise
 from cells.models.registry import get_model
 
 RUNTIME_PACKAGES = ("jax", "jaxlib", "numpy", "scipy", "ml_dtypes", "opt_einsum")
@@ -161,16 +161,18 @@ def load_snapshot(directory: str | Path) -> Snapshot:
         raise ConfigError("Invalid checkpoint clock fields")
     if isinstance(clock["time"], bool) or not isinstance(clock["time"], (int, float)):
         raise ConfigError("Invalid checkpoint time")
+    initial = initialise(spec)
+    kind = type(initial.layout)  # The definition's layout (its declared field solver).
     try:
         with np.load(path / "state.npz", allow_pickle=False) as archive:
-            if set(archive.files) != set(model.STATE_TYPE._fields + model.LAYOUT_TYPE._fields):
+            if set(archive.files) != set(model.STATE_TYPE._fields + kind._fields):
                 raise ConfigError("Invalid checkpoint state fields")
             state = model.STATE_TYPE(*(archive[name] for name in model.STATE_TYPE._fields))
-            layout = model.LAYOUT_TYPE(*(archive[name] for name in model.LAYOUT_TYPE._fields))
+            layout = kind(*(archive[name] for name in kind._fields))
     except (ValueError, OSError, zipfile.BadZipFile) as exc:
         raise ConfigError(f"Cannot read numeric checkpoint: {exc}") from exc
     checkpoint = Checkpoint(state, layout, **clock)
-    validate_checkpoint(spec, checkpoint)
+    validate_checkpoint(spec, checkpoint, initial=initial)
     device = execution_device(spec.execution.backend)
     checkpoint = Checkpoint(jax.device_put(state, device), jax.device_put(layout, device), **clock)
     return Snapshot(spec, checkpoint, fingerprint)

@@ -22,6 +22,8 @@ Parts (each writes <part>[-<label>].json in --output; failures are kept as resul
               225-cell @1 scale world: about 180 single-node far-field
               components): per window the largest residual against the fixed
               bound and against the step allowance, and its growth exponent.
+  windowed    a definition JSON (--definition, optionally --field-solver) through
+              the windowed runner: whether it runs to its end, per-window maxima.
 Usage:
   python -m validation.tissue.ledger_rounding_study PART --output DIR [options]
 """
@@ -84,6 +86,8 @@ def part_trajectory(args):
             for group in raw["experiment"].get(key, []):
                 group["schedule"] = [c for c in group["schedule"] if c["time"] <= args.end]
     raw["execution"]["backend"] = "cpu"
+    if args.field_solver:
+        raw["execution"]["field_solver"] = args.field_solver
     value = run(parse_spec(raw))
     np.savez_compressed(
         Path(args.output) / f"trajectory-{args.label}.npz",
@@ -92,6 +96,7 @@ def part_trajectory(args):
     )
     return dict(
         definition=str(args.definition),
+        field_solver=raw["execution"].get("field_solver"),
         end_time_s=raw["experiment"]["end_time"],
         steps=len(value.times) - 1,
         diagnostics=value.diagnostics,
@@ -318,6 +323,25 @@ def part_gauge(args):
     )
 
 
+def part_windowed(args):
+    """A definition (--definition, optional --field-solver) through the windowed runner."""
+    raw = json.loads(Path(args.definition).read_text())
+    raw["execution"]["backend"] = args.backend
+    if args.field_solver:
+        raw["execution"]["field_solver"] = args.field_solver
+    windows = _run_windows(raw, window_s=args.window)
+    keys = [k for k in windows[0] if k.startswith("max_")]
+    return dict(
+        definition=str(args.definition),
+        field_solver=raw["execution"].get("field_solver"),
+        dt_s=raw["execution"]["dt"],
+        end_time_s=raw["experiment"]["end_time"],
+        reached_s=windows[-1]["end_s"],
+        windows=windows,
+        worst={k: max(w[k] for w in windows) for k in keys},
+    )
+
+
 PARTS = dict(
     trajectory=part_trajectory,
     compare=part_compare,
@@ -326,6 +350,7 @@ PARTS = dict(
     fine=part_fine,
     reaction=part_reaction,
     gauge=part_gauge,
+    windowed=part_windowed,
 )
 
 
@@ -345,6 +370,7 @@ def main():
     parser.add_argument("--world", choices=("closed", "w225"), default="closed")
     parser.add_argument("--dt", type=float, default=1e-3)
     parser.add_argument("--backend", choices=("cpu", "gpu"), default="cpu")
+    parser.add_argument("--field-solver", dest="field_solver")
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)

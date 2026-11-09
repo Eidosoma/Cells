@@ -116,7 +116,11 @@ def test_cholesky_solve_host_and_device_match_dense_solve():
 
 
 def test_node_bounds_by_solver_version():
-    assert field.NODE_BOUNDS == {field.SOLVER_ID: 256, field.FACTORED_SOLVER_ID: 2048}
+    assert field.NODE_BOUNDS == {
+        field.SOLVER_ID: 256,
+        field.FACTORED_SOLVER_ID: 2048,
+        field.FLOOR_SOLVER_ID: 2048,  # Version 2's reduction and bound.
+    }
     n, o = 1, 299
     layout = surface.Layout(
         np.asarray(298.15),

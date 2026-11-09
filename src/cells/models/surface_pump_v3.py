@@ -83,6 +83,16 @@ LAYOUT_TYPE = NamedTuple(
         )
     ],
 )
+FLOOR_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.FLOOR_SOLVER_ID.
+    "SurfacePumpChannelFloorLayout",
+    [
+        (k, object)
+        for k in (
+            *(k for k in second.FLOOR_LAYOUT_TYPE._fields if k != "channel_species"),
+            *CHANNEL_LAYOUT_FIELDS,
+        )
+    ],
+)
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
 GATE_INTEGRATOR_ID = gates.LAW_ID
@@ -146,7 +156,8 @@ def initial_values(spec):
         channel_transferred=np.zeros((s, nc)),
         channel_dissipated_energy_pJ=np.zeros((s, nc)),
     )
-    return STATE_TYPE(**(state._asdict() | channel)), LAYOUT_TYPE(**v)
+    kind = FLOOR_LAYOUT_TYPE if "field_current_floor" in v else LAYOUT_TYPE
+    return STATE_TYPE(**(state._asdict() | channel)), kind(**v)
 
 
 def channel_kinetics(voltage, codes, *, xp=jnp):

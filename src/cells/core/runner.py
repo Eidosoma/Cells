@@ -72,12 +72,15 @@ def validate_checkpoint(
         spec, checkpoint.time
     ):
         raise ConfigError("Checkpoint event position is inconsistent with its schedule")
+    initial = initialise(spec) if initial is None else initial
+    # The layout type the definition binds (a declared field solver can select
+    # its own, e.g. surface_field.FLOOR_SOLVER_ID), or the model's.
     if (
         type(checkpoint.state) is not model.STATE_TYPE
-        or type(checkpoint.layout) is not model.LAYOUT_TYPE
+        or type(checkpoint.layout) not in (model.LAYOUT_TYPE, type(initial.layout))
+        or len(checkpoint.layout) != len(initial.layout)
     ):
         raise ConfigError("Checkpoint state/layout types do not match the declared model")
-    initial = initialise(spec) if initial is None else initial
     if checkpoint.time < initial.time:
         raise ConfigError("Checkpoint precedes this model's initial epoch")
     for name, values, target in zip(

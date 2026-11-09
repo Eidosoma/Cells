@@ -42,6 +42,11 @@ LAYOUT_TYPE = NamedTuple(
     "SurfacePumpLayout",
     [(k, object) for k in (*kinetic.FACTORED_LAYOUT_TYPE._fields, *IMEX_FIELDS)],
 )
+# Declared field solver surface_field.FLOOR_SOLVER_ID: the same with its floor.
+FLOOR_LAYOUT_TYPE = NamedTuple(
+    "SurfacePumpFloorLayout",
+    [(k, object) for k in (*kinetic.FLOOR_LAYOUT_TYPE._fields, *IMEX_FIELDS)],
+)
 # Energy residual allowed relative to the integrated work and dissipation flows.
 # RK4 keeps the family's absolute bound alone. A first/second-order step does
 # not integrate the energy identity exactly: measured residuals were 4e-4/2e-6
@@ -101,7 +106,11 @@ def working_size(spec):
 
 def initial_values(spec):
     state, layout = kinetic.initial_values(spec)
-    if type(layout) is not kinetic.FACTORED_LAYOUT_TYPE:
+    kinds = {
+        kinetic.FACTORED_LAYOUT_TYPE: LAYOUT_TYPE,
+        kinetic.FLOOR_LAYOUT_TYPE: FLOOR_LAYOUT_TYPE,
+    }
+    if type(layout) not in kinds:
         raise ConfigError("Resolved pump tissue requires the factored field layout")
     solver = spec.execution.solver
     tableau = (
@@ -109,7 +118,7 @@ def initial_values(spec):
         if solver in imex.TABLEAUX
         else imex.Tableau(np.zeros((0, 0)), np.zeros((0, 0)), np.asarray(0.0))
     )
-    return state, LAYOUT_TYPE(*layout, *tableau)
+    return state, kinds[type(layout)](*layout, *tableau)
 
 
 def explicit_rates(state, potential, control, p, *, xp=jnp):

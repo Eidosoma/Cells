@@ -23,7 +23,7 @@ from cells.core.multispecies_spec import identifier
 from cells.core.specs import ChannelChange, ConfigError, _fields, _number
 from cells.core.voltage_gated_spec import fraction
 from cells.numerics import surface_imex as imex
-from cells.numerics.surface_field import FACTORED_SOLVER_ID
+from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
 from cells.processes import junction_gate
 from cells.processes.kinetic_pump import TEMPERATURE_DOMAIN_K
 
@@ -172,7 +172,12 @@ def parse(data):
                 fraction(c["availability"], "availability") * (gates[group["junction_id"]][3])
             )
     m["id"], x["solver"] = base.MODEL_ID, "rk4"
-    passive = base.parse(raw, field_solver=FACTORED_SOLVER_ID)
+    # The factored field, version 2 or (declared) version 3; any other declaration
+    # fails the passive parser's field solver check as before.
+    declared = x.get("field_solver")
+    passive = base.parse(
+        raw, field_solver=FLOOR_SOLVER_ID if declared == FLOOR_SOLVER_ID else FACTORED_SOLVER_ID
+    )
     m0 = passive.model
     membranes = tuple(
         kinetic.Membrane(**asdict(p), pump=parse_pump(q, m0.species_ids, m0.valence))

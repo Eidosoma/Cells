@@ -93,6 +93,11 @@ FACTORED_LAYOUT_TYPE = NamedTuple(
     "SurfaceKineticFactoredLayout",
     [(k, object) for k in (*LAYOUT_TYPE._fields, "field_capacitor_factor")],
 )
+# The floor field (surface_field.FLOOR_SOLVER_ID): version 2's layout and its floor.
+FLOOR_LAYOUT_TYPE = NamedTuple(
+    "SurfaceKineticFloorLayout",
+    [(k, object) for k in (*FACTORED_LAYOUT_TYPE._fields, "field_current_floor")],
+)
 CHANNEL_LAYOUT_TYPE = NamedTuple(
     "SurfaceChannelLayout", [(k, object) for k in (*LAYOUT_TYPE._fields, "channel_laws")]
 )
@@ -311,7 +316,7 @@ def initial_values(spec):
     if "field_capacitor_factor" in v:
         if layout_type is not LAYOUT_TYPE:
             raise ConfigError("The factored resolved field excludes channel catalogs")
-        layout_type = FACTORED_LAYOUT_TYPE
+        layout_type = FLOOR_LAYOUT_TYPE if "field_current_floor" in v else FACTORED_LAYOUT_TYPE
     transfer_shape = (len(m.species_ids), nc) if multi_ion else (nc,)
     return (
         STATE_TYPE(
