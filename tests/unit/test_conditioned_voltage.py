@@ -252,7 +252,7 @@ def test_changed_protocol_is_refused(tmp_path):
 
 def test_changed_dataset_is_refused(tmp_path):
     directory = tmp_path / "data"
-    shutil.copytree(driver.data_check.DATA, directory)
+    shutil.copytree(driver.data_check.DATA, directory, copy_function=shutil.copyfile)
     path = directory / "voltage_endpoints.csv"
     path.write_bytes(path.read_bytes() + b"\n")
     with pytest.raises(ValueError, match="dataset changed"):

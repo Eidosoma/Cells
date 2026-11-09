@@ -12,7 +12,7 @@ from scripts import check_biological_benchmark as check
 @pytest.fixture
 def dataset(tmp_path):
     target = tmp_path / "data"
-    shutil.copytree(check.DATA, target)
+    shutil.copytree(check.DATA, target, copy_function=shutil.copyfile)
     return target
 
 
