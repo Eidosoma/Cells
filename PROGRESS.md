@@ -47,12 +47,40 @@ starts, and production design is deferred until parity is established.
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
 | 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1) and batched worlds (G4) landed; ledger rounding fix in progress; GH200 throughput unmeasured |
 | 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a passed**; MG0b driver landed, blocked on the ledger rounding fix |
-| 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | In development |
+| 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; C landed, qualification waits on the ledger fix |
 
 ## Runs
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Stationary-state analysis (E) qualified (9 November).**
+  `stationary_continuation_analysis@1` (`890567b`, opt-in, D135) passed all 16
+  criteria of the pre-registered protocol `stationary-analysis-e-v1`
+  (`2b4dd5e`). The run used a clean snapshot of that commit, on CPU; the
+  verdict came from `validation/stationary/judge.py`
+  ([judgement](/mnt/workspaces/Cells/fixed-points-e-20261109-01/judged-01/judgement.json)).
+  It ran `resolved_pump_tissue@1` and `@3` unmodified.
+
+  | Target | Result | Agreement |
+  | --- | --- | --- |
+  | Default-world cell (`@1`) | −6.07376 mV, K 239.21 mM, 493 mOsm; stable, τ 0.259 s, 189 s and 16,661 s | 3.5e-14 V against the reduced model (budget 8.8e-12); eigenvalues 1.1e-11 /s |
+  | Heredity cell (`@3`) | H −79.556 mV and D −21.518 mV stable; U −39.445 mV with one unstable mode | at most 6.6e-15 V |
+  | MG0b cell, fast mode | folds at u = 0.3770832491 and 0.6794743372 | 1.2e-15 from the reduced folds |
+  | 61-cell sheet, written 7-cell disc, fast mode | stable up to a fold at θ = 0.10467 g_H | 8.8e-9 from an independent graph model (budget 2.8e-7) |
+
+  Reported, not judged (no reference exists): in slow mode the disc loses
+  stability through a Hopf point at θ = 0.0701 g_H (period about 112 s).
+  Diagnostic D1: a 2e5 s step-map run ends where the slowest mode predicts.
+  Its qualified-runner probe was refused by the ledger-rounding issue, and it
+  is repeated once the fix lands.
+
+- **Projective mode (C) landed (9 November), not yet qualified.**
+  `projective_forward_euler@1` (`ab27087`, opt-in, D135) runs bursts of the
+  unchanged fine engine with checked extrapolated jumps. Its qualification
+  protocol is committed (`3b906ca`) and waits on the ledger-rounding fix.
+  Development runs over 30 s: error at most 0.42 of the allowance, 2.5× fewer
+  fine steps during relaxation.
 
 - **Stage B landed (9 November).**
   - Neutral names throughout `src/cells`: 7 modules and more than 65 law IDs
