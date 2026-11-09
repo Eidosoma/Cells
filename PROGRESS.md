@@ -39,6 +39,7 @@ starts, and production design is deferred until parity is established.
 | 1 | Plain BETSE reference outputs (default world; seven-cell fixture) | Done |
 | 2 | Coverage map of default-world mechanisms, and the parity ladder | Done ([map](/mnt/workspaces/Cells/cells-betse-default-coverage-20261108-01/coverage.json)) |
 | 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | Passed (pre-registered protocols D and F) |
+| 3b | Parity rung 1: Cl/Ca ions plus the plasma-membrane Ca pump (`resolved_pump_tissue@2`) | **Failed v1 protocols** on one item; attribution in progress |
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
 | 5 | Further mechanism families from the parity ladder, on CPU and L4 | Planned |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
@@ -50,6 +51,26 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Parity rung 1 (mammal ion profile): pre-registered FAIL (9 November).**
+  `resolved_pump_tissue@2` was judged against plain BETSE's mammal-profile
+  default world (Na, K, Cl, Ca, P, M plus the plasma-membrane Ca pump) under
+  protocols committed beforehand (`82452a0`). The runs were from a clean
+  snapshot of that commit.
+  [Results](/mnt/workspaces/Cells/parity-rung1-20261108-01/judged-01/).
+  - D (CPU and L4, identical) and F (L4) all **fail on one item**: SIM
+    extracellular Ca, worst relative error 4.42e-5 against a tolerance of 2e-5.
+  - Everything else passes:
+    - Vm: F INIT 1.82 µV against 20 µV.
+    - Cell concentrations, including Ca: F INIT 1.2e-3 against 5e-3.
+    - INIT extracellular concentrations, including Ca at 4.42e-5 against 5e-5.
+  - The Ca offset is steady: identical in INIT and SIM, and in D and F, so it
+    is not BETSE's step error. The budget predicted 1.45e-5 (INIT) and 5.3e-6
+    (SIM); the likely missing term is the new mechanism itself, the Cells Ca
+    pump law against BETSE's `pumpCaATP`.
+  - Next: attribute it with emulator variants, then pre-register a v2
+    derivation and run it fresh. The v1 failure stays on record; nothing is
+    retuned.
 
 - **Fast test tiers (9 November).** Each test file was timed separately
   (`scripts/test_tiers.py`) under a standard environment: `JAX_ENABLE_X64=1`
