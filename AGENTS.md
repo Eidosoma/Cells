@@ -36,6 +36,23 @@ part of the engine.
   user's direction. It remains recoverable from the tag
   `native-betse-frozen-2026-11-08`; do not reintroduce it.
 
+# Reference simulators and new physics
+
+The same rule applies to every external simulator used for verification, such
+as BETSE, BITSEY, tyssue, Chaste, Morpheus, CompuCell3D, PhysiCell and cellGPU.
+
+- They are references only: run them out of process and compare against their
+  saved outputs. Never import them into `src/cells` or copy their code; several
+  are copyleft.
+- Physics that an experiment needs, for example mechanics, topology changes,
+  growth or new transport, is added to `src/cells` as Cells models. Those
+  models use neutral names, keep conserved accounting, and come with tests and
+  the tier gate.
+- `validation/` holds experiment drivers, analysis, independent reference
+  solutions and reference runners. It must not hold physics the engine lacks.
+  When a driver finds an engine gap, report it and add the feature to the
+  engine.
+
 # Milestones and provenance
 
 - Every milestone names the Cells engine models it runs. A milestone that runs
