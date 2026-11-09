@@ -211,9 +211,28 @@ def node_charge(state, p, *, xp=jnp):
     return xp.concatenate((p.initial_cell_charge_C + q[:n], p.initial_outside_charge_C + q[n:]))
 
 
+def electrode_increment(state, stage, p, *, xp=jnp):
+    """Charge (C) the held nodes' electrodes deliver over a step, per extracellular slot.
+
+    The change of the held nodes' plate charges that the start and end charge
+    states determine (surface_tissue.capacitor_change), which is the reference
+    the electrode and global-charge checks compare against. The step's own
+    potentials give the same charges only to solve accuracy: the start (Newton
+    field) and end (implicit operator) solves differ by about 0.1 ulp of the
+    plate charge, and that difference does not telescope, so the ledger drifted
+    linearly with the step count (4e-29 C per step on held-bath cells, ledger
+    accumulation rounding below 1e-28 C in 5000 steps). This difference does
+    telescope. Only ledgers use it; no rate reads it.
+    """
+    n = p.active.size
+    _, start, _ = tissue.capacitor_change(state, p, xp=xp)
+    _, end, _ = tissue.capacitor_change(stage, p, xp=xp)
+    return xp.where(p.reservoir, end[n:] - start[n:], 0.0)
+
+
 def imex_step(state, dt, control, p, *, xp=jnp):
     """One stiffly accurate IMEX step; returns (new or unchanged state, valid)."""
-    f, n = tissue.field_layout(p), p.active.size
+    f = tissue.field_layout(p)
     s, explicit_matrix, implicit_matrix = f.surface, p.imex_explicit, p.imex_implicit
     stages = explicit_matrix.shape[0]
     first = readouts(state, control, p, xp=xp)
@@ -265,11 +284,7 @@ def imex_step(state, dt, control, p, *, xp=jnp):
         * p.temperature
         * xp.sum(xp.where(weight > 0, flux * flux / xp.where(weight > 0, weight, 1.0), 0.0), axis=0)
     )
-    electrode = xp.where(
-        p.reservoir,
-        (p.field_capacitor_matrix @ potential)[n:] - (p.field_capacitor_matrix @ start)[n:],
-        0.0,
-    )
+    electrode = electrode_increment(state, stage, p, xp=xp)
     co = xp.where(p.outside_active, p.extracellular_amount_reference / p.extracellular_volume, 1.0)
     mu = R * p.temperature * xp.log(co) + p.valence * F * p.boundary_V
     stage = stage._replace(
@@ -311,13 +326,27 @@ def check_steps(spec, steps, controls):
             raise ConfigError(
                 "Resolved pump observations require accepted integration boundaries"
             ) from error
-    bound = max(
-        (1.3 * np.exp(77 * p.threshold_voltage_V) + 20 for p in spec.model.junctions), default=0.0
-    )
-    if np.max(steps, initial=0) * bound > GATE_STEP_BOUND:
+    if np.max(steps, initial=0) * junction_gate_rate_bound(spec) > GATE_STEP_BOUND:
         raise ConfigError("Resolved junction step exceeds conservative kinetic bound")
     if np.max(steps, initial=0) * explicit_rate_bound(spec) > EXPLICIT_STEP_BOUND:
         raise ConfigError("IMEX step exceeds the explicit-rate stability bound")
+
+
+def junction_gate_rate_bound(spec):
+    """Bound (1/s) on the junction gates' relaxation rates (1.3 exp(77 threshold) + 20).
+
+    A junction whose minimum open fraction is 1 has its gate pinned at 1: the
+    gate starts at 1 (initial >= minimum) and its rate alpha (1 - g) - beta
+    (g - minimum) is exactly zero there, so it sets no step bound.
+    """
+    return max(
+        (
+            1.3 * np.exp(77 * p.threshold_voltage_V) + 20
+            for p in spec.model.junctions
+            if p.minimum_open_fraction < 1
+        ),
+        default=0.0,
+    )
 
 
 def explicit_rate_bound(spec):

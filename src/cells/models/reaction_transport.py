@@ -31,6 +31,17 @@ STATE_AXES = {
     "transferred": ["species", "edge_slot"],
     "converted": ["cell_slot"],
 }
+# Rounding allowance per accepted RK4 step, in eps times the magnitude it applies
+# to. Each stored value is updated as y + (dt/6)(k1 + 2k2 + 2k3 + k4), which rounds
+# by at most u |y_new| + 4u |dy| (u = eps/2, to first order), and the step bound
+# h alpha <= 0.5 keeps sum |dy| <= 2 h alpha total <= total in this closed
+# positive system: a step moves the total by at most 2.5 eps x total. The
+# rounding of a slowly draining dominant amount is systematic, not a random walk:
+# MG0a's a/4 strip (1e6 fmol reservoir, 257 cells, dt 0.5 s) drifted 6.8, 796 and
+# -2.0e4 eps x total at 1e4, 8e4 and 2.4e5 steps, identically for perturbed starts
+# (ledger-fix-20261109-01/diag/reaction_drift.json). So the allowance grows
+# linearly with the step count, at this worst-case rate.
+STEP_ROUNDING = 2.5
 
 
 class Parameters(NamedTuple):
@@ -176,14 +187,30 @@ def check_values(state, spec):
     if not all(np.isfinite(v).all() for v in (balance, concentration, residual, scale)):
         raise NumericalError("Non-finite graph concentration or accounting")
     eps = np.finfo(np.float64).eps
-    if np.any(np.abs(balance) > 512 * eps * max(1.0, total_initial)):
+    steps = horizon_steps(spec)
+    balance_bound = eps * max(1.0, total_initial) * (512 + STEP_ROUNDING * steps)
+    if np.any(np.abs(balance) > balance_bound):
         raise NumericalError("Closed-world total amount conservation failed")
-    if np.any(np.abs(residual) > 1024 * eps * scale):
+    # Each cell's amount and its incident ledgers round per step; bound their
+    # magnitudes over the horizon by the initial and current values.
+    touched = np.zeros_like(amount)
+    np.add.at(touched, (..., layout.senders), np.abs(transferred))
+    np.add.at(touched, (..., layout.receivers), np.abs(transferred))
+    magnitude = np.abs(initial.amount) + np.abs(amount) + touched + np.abs(reacted)
+    residual_bound = 1024 * eps * scale + STEP_ROUNDING * eps * steps * magnitude
+    if np.any(np.abs(residual) > residual_bound):
         raise NumericalError("Per-species/cell reaction and contact accounting failed")
     return {
         "max_balance_error_fmol": float(np.max(np.abs(balance))),
         "max_process_accounting_error_fmol": float(np.max(np.abs(residual))),
     }
+
+
+def horizon_steps(spec):
+    """Accepted steps from t = 0 to this definition's end: no row has taken more."""
+    from cells.core.grid import EventGrid
+
+    return len(EventGrid(spec)) - 1
 
 
 @dataclass(frozen=True)

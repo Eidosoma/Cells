@@ -349,3 +349,31 @@ def single_patch(*, dt=2.5e-6, end_time=0.001, solver="rk4", temperature_K=298.1
     ]
     raw["execution"]["channel_capacity"] = len(PATCH_CHANNELS)
     return raw
+
+
+def as_pump_tissue(raw, version):
+    """A channel-free @3 definition as resolved_pump_tissue@1 or @2 (same world)."""
+    raw = copy.deepcopy(raw)
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    if m.pop("channels") or e.pop("channel_controls"):
+        raise ValueError("Only channel-free worlds have an @1/@2 counterpart")
+    x.pop("channel_capacity")
+    m["id"] = f"resolved_pump_tissue@{version}"
+    if version == 1:
+        for p in m["membranes"]:
+            if p.pop("calcium_pump") is not None:
+                raise ValueError("resolved_pump_tissue@1 has no calcium pump")
+        e.pop("calcium_pump_controls")
+    return raw
+
+
+def relaxing_cells(count):
+    """Pre-screen U composition, Vm offsets +2, -2 (then +-1, +-3) mV; U's gates.
+
+    The cells settle onto H and D and keep relaxing for hundreds of seconds, so
+    their held baths keep exchanging charge (the case that drifted the
+    electrode ledger before it telescoped).
+    """
+    u = HEREDITY_STATES["U"]
+    offsets = [2.0, -2.0, 1.0, -1.0, 3.0, -3.0][:count]
+    return [kicked(u, mv) for mv in offsets], [u[0]] * count

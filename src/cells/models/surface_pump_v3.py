@@ -569,7 +569,7 @@ def stage_gates(gate, start, stage, fraction, dt, p, *, xp=jnp):
 
 def imex_step(state, dt, control, p, *, xp=jnp):
     """surface_pump_v2.imex_step with channel currents and exponential stage gates."""
-    f, n = tissue.field_layout(p), p.active.size
+    f = tissue.field_layout(p)
     s, explicit_matrix, implicit_matrix = f.surface, p.imex_explicit, p.imex_implicit
     stages = explicit_matrix.shape[0]
     first_values = readouts(state, control, p, xp=xp)
@@ -638,11 +638,7 @@ def imex_step(state, dt, control, p, *, xp=jnp):
         * p.temperature
         * xp.sum(xp.where(weight > 0, flux * flux / xp.where(weight > 0, weight, 1.0), 0.0), axis=0)
     )
-    electrode = xp.where(
-        p.reservoir,
-        (p.field_capacitor_matrix @ potential)[n:] - (p.field_capacitor_matrix @ start)[n:],
-        0.0,
-    )
+    electrode = first.electrode_increment(state, stage, p, xp=xp)
     co = xp.where(p.outside_active, p.extracellular_amount_reference / p.extracellular_volume, 1.0)
     mu = R * p.temperature * xp.log(co) + p.valence * F * p.boundary_V
     stage = stage._replace(
@@ -754,10 +750,7 @@ def check_steps(spec, steps, controls):
             raise ConfigError("IMEX step exceeds the explicit-rate stability bound")
         if step * second.calcium_rate_bound(base) > EXPLICIT_STEP_BOUND:
             raise ConfigError("IMEX step exceeds the explicit calcium pump rate bound")
-    bound = max(
-        (1.3 * np.exp(77 * p.threshold_voltage_V) + 20 for p in spec.model.junctions), default=0.0
-    )
-    if step * bound > first.GATE_STEP_BOUND:
+    if step * first.junction_gate_rate_bound(spec) > first.GATE_STEP_BOUND:
         raise ConfigError("Resolved junction step exceeds conservative kinetic bound")
 
 
