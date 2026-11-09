@@ -6,7 +6,8 @@
   "/mnt/workspaces/Cells/test-tiers-20261109-03/measure/measured.json",
   "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/gate-02/new-measured/measured.json",
   "/mnt/workspaces/Cells/ledger-fix-20261109-01/measure4/measured.json",
-  "/mnt/workspaces/Cells/projective-c-20261109-01/qual-gate-01/measure/measured.json"
+  "/mnt/workspaces/Cells/projective-c-20261109-01/qual-gate-01/measure/measured.json",
+  "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/gate-01/measured/measured.json"
  ],
  "measured_provenance": [
   {
@@ -54,6 +55,14 @@
    "root": "/mnt/workspaces/Cells/projective-c-20261109-01/qual-gate-01/source",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-09T21:59:20+00:00"
+  },
+  {
+   "git_revision": "03a28537d60d5f50cf2625e1f9653c610089273d",
+   "dirty": true,
+   "patch_sha256": "c46f246e01fe8ada595b9325c885743dee2cb77e83caf42637b7749b35799748",
+   "root": "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/source",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-09T22:14:50+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -470,7 +479,7 @@
    },
    {
     "file": "tests/unit/test_betse_network_emulator.py",
-    "seconds": 7.31,
+    "seconds": 10.69,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -494,10 +503,10 @@
    },
    {
     "file": "tests/unit/test_betse_parity_tooling.py",
-    "seconds": 9.97,
+    "seconds": 6.27,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 5
     }
    },
    {
@@ -643,10 +652,11 @@
    },
    {
     "file": "tests/unit/test_cells_betse_compare.py",
-    "seconds": 1.72,
+    "seconds": 1.98,
     "exit_code": 0,
     "counts": {
-     "passed": 22
+     "passed": 20,
+     "skipped": 3
     }
    },
    {

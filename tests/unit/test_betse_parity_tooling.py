@@ -180,3 +180,90 @@ def test_recipe_reproduces_the_registered_rung1_v2_tolerances():
         ).read_text()
     )
     assert derived["tolerance"] == protocol["tolerance_classes"][protocol["verdict_class"]]
+
+
+def test_comparator_judges_against_a_declared_reference_layout(tmp_path):
+    """A protocol ``reference`` replaces the BETSE arrays by a pinned comparison layout."""
+    import hashlib
+
+    from tests.unit.test_cells_betse_compare import EXAMPLE, make_betse
+    from validation.betse import cells_betse_compare as cmp
+
+    protocol = json.loads(EXAMPLE.read_text())
+    betse = make_betse(tmp_path / "betse")
+    geometry = betse["files"]["geometry.npz"]["sha256"]
+    change = {"phase": "sim", "observable": "cc_env_time", "index": [2, 1, 4]}
+    shifted = {**change, "new_value": 103.0 * (1 + 1e-6)}  # far outside both classes
+    reference = tmp_path / "reference"
+    cmp.write_layout(
+        reference,
+        cmp.layout_from_betse(tmp_path / "betse", betse, protocol, shifted),
+        protocol_sha256="0" * 64,  # the reference's own run protocol; not this one
+        betse_geometry_sha256=geometry,
+        provenance={"producer": "reference"},
+    )
+    digest = hashlib.sha256((reference / cmp.LAYOUT_MANIFEST).read_bytes()).hexdigest()
+
+    def judged(name, spec, perturbation):
+        path = tmp_path / f"{name}.json"
+        path.write_text(json.dumps(protocol | {"reference": spec}))
+        sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        phases = cmp.layout_from_betse(tmp_path / "betse", betse, protocol, perturbation)
+        cmp.write_layout(
+            tmp_path / name,
+            phases,
+            protocol_sha256=sha,
+            betse_geometry_sha256=geometry,
+            provenance={"producer": "test"},
+        )
+        return cmp.run_comparison(tmp_path / "betse", tmp_path / name, path)
+
+    spec = {"kind": "comparison_layout", "path": str(reference), "manifest_sha256": digest}
+    same = judged("same", spec, shifted)
+    assert same["verdict"] == "pass" and same["reference"]["manifest_sha256"] == digest
+    plain = judged("plain", spec, None)  # equal to BETSE, so it differs from the reference
+    assert plain["verdict"] == "fail"
+    worst = plain["phases"]["sim"]["observables"]["cc_env_time"]["history"]["max_rel"]
+    assert worst["element"] == [1, 4]
+    refused = judged("refused", spec | {"manifest_sha256": "f" * 64}, shifted)
+    assert refused["verdict"] == "refused" and "manifest_sha256" in refused["refusals"][0]
+    (reference / "sim_final.npz").write_bytes(b"tampered")
+    tampered = judged("tampered", spec, shifted)
+    assert tampered["verdict"] == "refused" and "sim_final.npz" in tampered["refusals"][0]
+
+
+def test_field_solver_is_declared_and_must_match_the_protocol(tmp_path):
+    from cells.core.specs import parse_spec
+    from tests.unit.test_default_world_adapter import DT, MAMMAL, judged_protocol_file, write_case
+    from validation.betse import default_world_adapter as adapter
+
+    case = write_case(tmp_path / "betse", ions=MAMMAL)
+    world = adapter.betse_world(case, blind=True)
+    start = adapter.phase_start(world, "init")
+    floor = adapter.RESOLVED_FLOOR_FIELD_SOLVER
+    assert adapter.RESOLVED_FIELD_SOLVER == "capacitive_reduction_gauged_damped_newton@2"
+    assert floor == "capacitive_reduction_gauged_damped_newton@3"
+    default = adapter.resolved_definition(world, "init", start, dt=1e-3)
+    declared = adapter.resolved_definition(world, "init", start, dt=1e-3, field_solver=floor)
+    assert default["execution"]["field_solver"] == adapter.RESOLVED_FIELD_SOLVER
+    assert declared["execution"]["field_solver"] == floor
+    assert {k: v for k, v in declared["execution"].items() if k != "field_solver"} == {
+        k: v for k, v in default["execution"].items() if k != "field_solver"
+    }
+    assert parse_spec(declared).execution.field_solver == floor
+    with pytest.raises(adapter.AdapterError, match="field solver"):
+        adapter.resolved_definition(world, "init", start, dt=1e-3, field_solver="newton@9")
+    run = dict(
+        device_kind="cpu", dt_init=DT["init"], dt_sim=DT["sim"], solver=adapter.RESOLVED_SOLVER
+    )
+    world = world | {"case": "synthetic"}
+    model = adapter.RESOLVED_CALCIUM_MODEL_ID
+    plain = judged_protocol_file(tmp_path, model=model)  # names no field solver: for @2
+    adapter.judged_protocol(plain, world, **run)
+    with pytest.raises(adapter.AdapterError, match="field_solver"):
+        adapter.judged_protocol(plain, world, **run, field_solver=floor)
+    (tmp_path / "floor").mkdir()
+    declares = judged_protocol_file(tmp_path / "floor", model=model, field_solver=floor)
+    adapter.judged_protocol(declares, world, **run, field_solver=floor)
+    with pytest.raises(adapter.AdapterError, match="field_solver"):
+        adapter.judged_protocol(declares, world, **run)

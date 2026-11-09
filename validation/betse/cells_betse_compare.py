@@ -36,6 +36,13 @@ Inputs (no BETSE or Cells imports; any Cells model or route can produce the resu
     phase's value may instead be ``{"by_ion": {ion: number, ...}}`` naming every ion
     of the case, for observables with an ions axis (cc_time, cc_env_time): each ion
     is then judged against its own tolerance (worst errors reported per ion).
+  - ``"reference": {"kind": "comparison_layout", "path": DIR, "manifest_sha256": H}``:
+    judge the Cells result against another result in the comparison layout of the
+    same case (e.g. the BETSE-order emulator with a declared model difference, a
+    two-stage parity rung's first stage) instead of the BETSE extraction's arrays.
+    The BETSE case still supplies geometry, ion order, axes and units; the reference
+    must be built on its geometry.npz and match the manifest SHA-256 the protocol
+    fixed before the Cells run, with every listed npz matching its recorded SHA-256.
 
 Samples are paired on common elapsed times only (BETSE sample k holds the state
 after k + 1 updates; see the extract manifest ``time``). The comparator refuses
@@ -263,6 +270,38 @@ def load_betse(path):
     if problems:
         raise Refusal(f"BETSE extraction fails verification: {problems[:3]}")
     return directory, _json(directory / "manifest.json")
+
+
+def load_reference_layout(spec, geometry_sha256):
+    """(directory, manifest) of a protocol's reference comparison layout, checked."""
+    if not isinstance(spec, dict) or spec.get("kind") != "comparison_layout":
+        raise Refusal("protocol reference must be {'kind': 'comparison_layout', ...}")
+    directory = Path(spec.get("path", ""))
+    if not (directory / LAYOUT_MANIFEST).is_file():
+        raise Refusal(f"reference layout has no {LAYOUT_MANIFEST}: {directory}")
+    if sha256_file(directory / LAYOUT_MANIFEST) != spec.get("manifest_sha256"):
+        raise Refusal("reference layout manifest differs from the protocol's manifest_sha256")
+    manifest = _json(directory / LAYOUT_MANIFEST)
+    if manifest.get("kind") != LAYOUT_KIND:
+        raise Refusal(f"reference is not in the comparison layout ({LAYOUT_KIND})")
+    if manifest.get("betse_geometry_sha256") != geometry_sha256:
+        raise Refusal("reference layout was not built on this BETSE case's geometry.npz")
+    for name, digest in (manifest.get("files") or {}).items():
+        if sha256_file(directory / name) != digest:
+            raise Refusal(f"reference layout file {name} differs from its recorded sha256")
+    return directory, manifest
+
+
+def reference_times(manifest, phase):
+    """A reference layout's sample times in the BETSE extraction's time-record form."""
+    declared = manifest.get("phases", {}).get(phase)
+    if not declared:
+        raise Refusal(f"{phase}: absent from the reference layout")
+    return {
+        "elapsed_after_update_s": declared["elapsed_after_update_s"],
+        "final_state_elapsed_s": declared["final_elapsed_s"],
+        "n_steps": len(declared["elapsed_after_update_s"]),
+    }
 
 
 def load_layout(path, protocol_sha256, geometry_sha256):
@@ -545,9 +584,18 @@ def cells_only(context, entries, data, declared):
 # ............................................................ comparison
 
 
-def _phase_inputs(phase, betse_dir, betse, layout_dir, layout, protocol):
-    if phase not in betse.get("time", {}):
+def _phase_inputs(phase, betse_dir, betse, layout_dir, layout, protocol, reference=None):
+    """Reference and Cells arrays and times of one phase.
+
+    ``reference`` (directory, manifest) replaces the BETSE extraction's arrays and
+    times by a reference comparison layout's (protocol ``reference``).
+    """
+    if reference is not None:
+        source_dir, times = reference[0], reference_times(reference[1], phase)
+    elif phase not in betse.get("time", {}):
         raise Refusal(f"{phase}: absent from the BETSE extraction")
+    else:
+        source_dir, times = betse_dir, betse["time"][phase]
     declared = layout.get("phases", {}).get(phase)
     if not declared:
         raise Refusal(f"{phase}: absent from the Cells comparison manifest")
@@ -556,12 +604,11 @@ def _phase_inputs(phase, betse_dir, betse, layout_dir, layout, protocol):
         if not (layout_dir / name).is_file():
             raise Refusal(f"{phase}: Cells layout lacks {name}")
     data = {
-        "betse_history": _npz(betse_dir / names["history"]),
-        "betse_final": _npz(betse_dir / names["final"]),
+        "betse_history": _npz(source_dir / names["history"]),
+        "betse_final": _npz(source_dir / names["final"]),
         "cells_history": _npz(layout_dir / names["history"]),
         "cells_final": _npz(layout_dir / names["final"]),
     }
-    times = betse["time"][phase]
     pairs = align(
         times["elapsed_after_update_s"],
         declared.get("elapsed_after_update_s", []),
@@ -634,6 +681,15 @@ def run_comparison(betse_path, cells_path, protocol_path):
             "case": betse.get("source_run", {}).get("case"),
             "run": betse.get("source_run", {}).get("directory"),
         }
+        reference = None
+        if "reference" in protocol:
+            reference = load_reference_layout(protocol["reference"], geometry_sha)
+            record["reference"] = {
+                "directory": str(reference[0].resolve()),
+                "manifest_sha256": sha256_file(reference[0] / LAYOUT_MANIFEST),
+                "provenance": reference[1].get("provenance"),
+                "note": "judged against this reference layout, not the BETSE arrays",
+            }
         layout_dir, layout = load_layout(cells_path, protocol_sha, geometry_sha)
         record["cells"] = {
             "directory": str(layout_dir),
@@ -657,7 +713,7 @@ def run_comparison(betse_path, cells_path, protocol_path):
         phases = {}
         for phase in protocol["phases"]:
             data, pairs, times, declared = _phase_inputs(
-                phase, betse_dir, betse, layout_dir, layout, protocol
+                phase, betse_dir, betse, layout_dir, layout, protocol, reference
             )
             arrays = betse["files"]
             present = {

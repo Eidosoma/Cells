@@ -28,6 +28,7 @@ identity.
         --case CASE --protocol P.json --out DIR [--dt-factor F --sim-start chained]
     ... difference-budget --case CASE --pair NAME BASE OTHER ... --out FILE.json
     ... run-resolved --case CASE --device cpu --dt-init 1e-3 --out DIR [--protocol P.json]
+        [--field-solver capacitive_reduction_gauged_damped_newton@3]
 """
 
 import argparse
@@ -414,6 +415,11 @@ def main(argv=None):
     blind.add_argument("--dt-init", type=float, default=1e-3)
     blind.add_argument("--dt-sim", type=float, default=1e-4)
     blind.add_argument("--window-steps", type=int, default=250)
+    blind.add_argument(
+        "--field-solver",
+        choices=adapter.RESOLVED_FIELD_SOLVERS,
+        default=adapter.RESOLVED_FIELD_SOLVER,
+    )
     blind.add_argument("--protocol", help="pre-registered protocol (judged run); omit for blind")
     blind.add_argument("--out", required=True)
     args = parser.parse_args(argv)
@@ -426,6 +432,7 @@ def main(argv=None):
             dt_sim=args.dt_sim,
             window_steps=args.window_steps,
             protocol_path=args.protocol,
+            field_solver=args.field_solver,
         )
         print(json.dumps({"valid": record["valid"], "device": record["device"]}, indent=2))
         return 0 if record["valid"] else 1

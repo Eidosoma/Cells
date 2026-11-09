@@ -814,6 +814,10 @@ RESOLVED_CALCIUM_MODEL_ID = "resolved_pump_tissue@2"  # with BETSE's Ca-ATPase
 RESOLVED_CALCIUM_PUMP_LAW = "ca_atp_mass_action_positive@1"
 RESOLVED_SOLVER = "imex_ars222_face_electromigration@1"
 RESOLVED_FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
+# Opt-in: version 2 plus convergence at the Newton's attainable rounding floor (bitwise
+# version 2 wherever version 2 converges; numerics/surface_field.py FLOOR_SOLVER_ID).
+RESOLVED_FLOOR_FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@3"
+RESOLVED_FIELD_SOLVERS = (RESOLVED_FIELD_SOLVER, RESOLVED_FLOOR_FIELD_SOLVER)
 RESOLVED_CLOSURE = "resolved_capacitor_components_current_continuity@1"
 NEUTRAL_ROUNDOFF = 1e-14  # |sum z*amount| / sum |z*amount| treated as a neutral composition
 
@@ -847,8 +851,11 @@ def resolved_definition(
     observation_elapsed=None,
     backend="cpu",
     solver=RESOLVED_SOLVER,
+    field_solver=RESOLVED_FIELD_SOLVER,
 ):
     """resolved_pump_tissue@1 (or @2, see resolved_model_id) definition of one BETSE phase.
+
+    ``field_solver`` is the declared field solve (RESOLVED_FIELD_SOLVERS; default @2).
 
     Cells keep BETSE's order; outside nodes are the row-major ECM grid points, the
     edge ring being reservoirs held at c_env_bound and 0 V. One junction per
@@ -864,6 +871,8 @@ def resolved_definition(
     unchanged (recomputing charge from absolute amounts would add roundoff that
     floating capacitor components cannot hold).
     """
+    if field_solver not in RESOLVED_FIELD_SOLVERS:
+        raise AdapterError(f"field solver {field_solver!r} is not one of {RESOLVED_FIELD_SOLVERS}")
     from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
     species = world["species"]
@@ -1068,7 +1077,7 @@ def resolved_definition(
             "jit": True,
             "precision": "float64",
             "solver": solver,
-            "field_solver": RESOLVED_FIELD_SOLVER,
+            "field_solver": field_solver,
             "max_steps": steps,
             "max_trace_bytes": 8 * 2**30,
             "material_balance_atol_fmol": {sp: 1e-10 for sp in species},
@@ -1258,11 +1267,20 @@ class ResolvedBackend(NamedTuple):
 
 
 def judged_protocol(
-    protocol_path, world, *, device_kind, dt_init, dt_sim, solver, model_id=resolved_model_id
+    protocol_path,
+    world,
+    *,
+    device_kind,
+    dt_init,
+    dt_sim,
+    solver,
+    model_id=resolved_model_id,
+    field_solver=RESOLVED_FIELD_SOLVER,
 ):
     """(protocol, sha256) of a pre-registered protocol whose case and cells_run match the run.
 
-    ``model_id`` maps the world to the run's model identity (the backend's).
+    ``model_id`` maps the world to the run's model identity (the backend's). A protocol
+    that names no field solver was registered for the default (@2).
     """
     protocol, sha = compare.load_protocol(protocol_path)
     run = protocol.get("cells_run") or {}
@@ -1270,6 +1288,7 @@ def judged_protocol(
         "betse_case": (protocol.get("betse_case"), world["case"]),
         "model": (run.get("model"), model_id(world)),
         "solver": (run.get("solver"), solver),
+        "field_solver": (run.get("field_solver", RESOLVED_FIELD_SOLVER), field_solver),
         "dt_init_s": (run.get("dt_init_s"), dt_init),
         "dt_sim_s": (run.get("dt_sim_s"), dt_sim),
         "sim_start": (run.get("sim_start"), "Cells' own INIT end state"),
@@ -1290,6 +1309,7 @@ def run_resolved(
     dt_init=1e-3,
     dt_sim=1e-4,
     solver=RESOLVED_SOLVER,
+    field_solver=RESOLVED_FIELD_SOLVER,
     window_steps=250,
     protocol_path=None,
     backend=None,
@@ -1301,7 +1321,8 @@ def run_resolved(
     comparator refuses it; with one (judged run) the protocol must match the case and
     the run (``judged_protocol``) and its sha256 goes into the layout manifest.
     ``backend`` (ResolvedBackend, default DEFAULT_RESOLVED) supplies the world,
-    definition, handoff and model identity.
+    definition, handoff and model identity; ``field_solver`` is declared in every
+    phase's definition (default @2, opt-in @3).
     """
     import jax
 
@@ -1323,6 +1344,7 @@ def run_resolved(
             dt_sim=dt_sim,
             solver=solver,
             model_id=backend.model_id,
+            field_solver=field_solver,
         )
     out = reference_run.resolve_out(out)
     out.mkdir(parents=True, exist_ok=False)
@@ -1330,12 +1352,19 @@ def run_resolved(
     start, phases, records = phase_start(world, "init"), {}, {}
     for phase, dt in (("init", dt_init), ("sim", dt_sim)):
         definition = backend.definition(
-            world, phase, start, dt=dt, backend=device_kind, solver=solver
+            world,
+            phase,
+            start,
+            dt=dt,
+            backend=device_kind,
+            solver=solver,
+            field_solver=field_solver,
         )
         reference_run.write_json(out / f"{phase}_definition.json", definition)
         record = {
             "dt_s": dt,
             "solver": solver,
+            "field_solver": field_solver,
             "start": "configured" if phase == "init" else "own INIT end",
         }
         records[phase] = record
@@ -1667,6 +1696,7 @@ def cmd_run_resolved(args):
         dt_init=args.dt_init,
         dt_sim=args.dt_sim,
         solver=args.solver,
+        field_solver=args.field_solver,
         window_steps=args.window_steps,
         protocol_path=args.protocol,
     )
@@ -1725,7 +1755,9 @@ def cmd_betse_step_term(args):
 def cmd_resolved_definition(args):
     world = betse_world(args.case)
     start = phase_start(world, args.phase, "betse")
-    definition = resolved_definition(world, args.phase, start, dt=args.dt, backend=args.device)
+    definition = resolved_definition(
+        world, args.phase, start, dt=args.dt, backend=args.device, field_solver=args.field_solver
+    )
     out = reference_run.resolve_out(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     reference_run.write_json(out, definition)
@@ -1773,6 +1805,9 @@ def main(argv=None):
     blind.add_argument("--dt-init", type=float, default=1e-3)
     blind.add_argument("--dt-sim", type=float, default=1e-4)
     blind.add_argument("--solver", default=RESOLVED_SOLVER)
+    blind.add_argument(
+        "--field-solver", choices=RESOLVED_FIELD_SOLVERS, default=RESOLVED_FIELD_SOLVER
+    )
     blind.add_argument("--window-steps", type=int, default=250)
     blind.add_argument(
         "--protocol", help="pre-registered protocol of a judged run (default: blind)"
@@ -1807,6 +1842,9 @@ def main(argv=None):
     resolved.add_argument("--phase", choices=PHASES, default="init")
     resolved.add_argument("--dt", type=float, required=True)
     resolved.add_argument("--device", choices=("cpu", "gpu"), default="cpu")
+    resolved.add_argument(
+        "--field-solver", choices=RESOLVED_FIELD_SOLVERS, default=RESOLVED_FIELD_SOLVER
+    )
     resolved.add_argument("--out", required=True)
     resolved.set_defaults(func=cmd_resolved_definition)
     args = parser.parse_args(argv)
