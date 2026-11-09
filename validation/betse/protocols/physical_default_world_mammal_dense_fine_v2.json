@@ -1,0 +1,175 @@
+{
+  "schema": "cells.betse_comparison_protocol@1",
+  "id": "physical-default-world-mammal-dense-fine-v2",
+  "purpose": "Judge Cells' own physics (resolved_pump_tissue@2: rung 1, Na K Cl Ca P M and the plasma-membrane Ca-ATPase) on BETSE's default world with the mammal ion profile against the plain-BETSE case parity-rung1-20261108-01/betse-reference/default-world-mammal-dense-fine. DRAFT: fixed and committed by the lead before the judged runs. VERSION 2, registered after the v1 protocol FAILED on one item (SIM extracellular Ca, 4.42e-5 against 2e-5; see PROGRESS.md). Attribution (parity-rung1-20261108-01/attribution-01) found the v1 field-law proxy one-sided: it removed only BETSE's drift and never saw Cells' own exterior field. v2 adds a field term computed from blind Cells-only potentials, plus the measured Ca-pump-law term. A v2 pass is weaker evidence than a first-time pass and is reported as such.",
+  "betse_case": "default-world-mammal-dense-fine",
+  "phases": [
+    "init",
+    "sim"
+  ],
+  "time_alignment_atol_s": 1e-09,
+  "min_common_samples": 1,
+  "compare_final": true,
+  "cells_run": {
+    "model": "resolved_pump_tissue@2",
+    "solver": "imex_ars222_face_electromigration@1",
+    "dt_init_s": 0.0001,
+    "dt_sim_s": 0.0001,
+    "constants": "CODATA (Cells default)",
+    "sim_start": "Cells' own INIT end state",
+    "backends": [
+      "gpu (L4)"
+    ]
+  },
+  "observables": {
+    "vm_time": {
+      "final": "vm",
+      "tolerance": "voltage"
+    },
+    "vm_ave_time": {
+      "final": "vm_ave",
+      "tolerance": "voltage"
+    },
+    "cc_time": {
+      "final": "cc_cells",
+      "tolerance": "cell_concentration"
+    },
+    "cc_env_time": {
+      "final": "cc_env",
+      "tolerance": "ecm_concentration",
+      "exclude": "grid_boundary_ring"
+    },
+    "venv_time": {
+      "final": "v_env",
+      "tolerance": "voltage",
+      "judged": false
+    },
+    "diag_*": {
+      "judged": false
+    }
+  },
+  "tolerance_quantities": {
+    "voltage": {
+      "kind": "abs",
+      "units": "V"
+    },
+    "cell_concentration": {
+      "kind": "rel",
+      "units": "1"
+    },
+    "ecm_concentration": {
+      "kind": "rel",
+      "units": "1"
+    }
+  },
+  "tolerance_classes": {
+    "physical_route_vs_betse_0p1ms_init": {
+      "voltage": {
+        "init": 2e-05,
+        "sim": 7e-06
+      },
+      "cell_concentration": {
+        "init": {
+          "by_ion": {
+            "Na": 7e-07,
+            "K": 5e-08,
+            "Cl": 3e-07,
+            "Ca": 0.005,
+            "P": 1e-12,
+            "M": 4e-08
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Na": 7e-07,
+            "K": 5e-08,
+            "Cl": 2e-07,
+            "Ca": 0.0003,
+            "P": 1e-12,
+            "M": 3e-08
+          }
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "by_ion": {
+            "Na": 0.0002,
+            "K": 0.002,
+            "Cl": 0.0002,
+            "Ca": 0.0003,
+            "P": 1e-12,
+            "M": 0.0002
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Na": 0.0002,
+            "K": 0.002,
+            "Cl": 0.0002,
+            "Ca": 0.0002,
+            "P": 1e-12,
+            "M": 0.0002
+          }
+        }
+      }
+    }
+  },
+  "verdict_class": "physical_route_vs_betse_0p1ms_init",
+  "tolerance_derivation": {
+    "method": "3 x (sum of measured difference terms + X_ext), rounded up to one significant figure; per ion for concentrations (a zero sum gets the floor 1e-12)",
+    "inputs": "parity-rung1-20261108-01/protocol-numbers/derived.json",
+    "sums_before_margin": {
+      "voltage": {
+        "init": 3.9421079269535855e-06,
+        "sim": 2.1240280295536002e-06
+      },
+      "cell_concentration": {
+        "init": {
+          "Na": 2.3074416707689496e-07,
+          "K": 1.6429477198658387e-08,
+          "Cl": 7.300888667793934e-08,
+          "Ca": 0.001546758776305432,
+          "P": 0.0,
+          "M": 1.252416199920923e-08
+        },
+        "sim": {
+          "Na": 2.1179619485804262e-07,
+          "K": 1.547718115764533e-08,
+          "Cl": 5.304229048497487e-08,
+          "Ca": 1.1222800955563601e-05,
+          "P": 0.0,
+          "M": 9.430639432518324e-09
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "Na": 2.9421476291326784e-05,
+          "K": 0.0005203320936005558,
+          "Cl": 1.047593410094307e-05,
+          "Ca": 1.345032513308639e-05,
+          "P": 0.0,
+          "M": 8.516659478124073e-06
+        },
+        "sim": {
+          "Na": 2.9415065465301185e-05,
+          "K": 0.0005188262428094851,
+          "Cl": 1.0483338602349412e-05,
+          "Ca": 5.268787556723864e-06,
+          "P": 0.0,
+          "M": 6.9806250812828865e-06
+        }
+      }
+    },
+    "v2_added_terms": [
+      "calcium_pump_law_cells_vs_betse",
+      "cells_exterior_field_boltzmann_response"
+    ],
+    "v2_reasoning": "Proposed v2 rung-1 tolerances: the v1 terms plus the two terms v1 did not measure.\n\nSame pinned method: tolerance = 3 x (sum of measured terms + X_ext), rounded up to one significant\nfigure. Added terms (each measurable before any judged run, without BETSE results):\n  calcium_pump_law_cells_vs_betse: emulator with Cells' Ca-ATPase law (its constants and the\n    RT ln 1000 standard-state mapping) against BETSE's pumpCaATP (attribution-01/emulator).\n  cells_exterior_field_boltzmann_response: Cells' resolved exterior potentials (blind runs)\n    redistribute each mobile ion by exp(-z F (phi - <phi>) / RT) at local equilibrium. BETSE's\n    field enters only through its own (scaled) drift, whose removal the v1 drift-off term sizes;\n    that proxy cannot see Cells' field. ECM term: |z| F max|phi - <phi>| / RT. Cell Ca, whose\n    concentration is set by the leak/pump flux balance rather than by its inventory, follows the\n    exterior Ca at its patches, so the same Ca term applies to cell Ca; for the other ions the\n    propagated change is the exchanged fraction of the inventory times that term (below 1e-7).\nUsage: derive_v2.py RUNG_DIR OUT.json\n",
+    "v2_derivation_file": "/mnt/workspaces/Cells/parity-rung1-20261108-01/attribution-01/derived_v2.json"
+  },
+  "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+  "notes": [
+    "Reported only: venv_time (BETSE's screened, smoothed estimate has no Cells counterpart) and Cells diag_* arrays.",
+    "Gate open fraction is not in the comparison layout and is not judged."
+  ]
+}
