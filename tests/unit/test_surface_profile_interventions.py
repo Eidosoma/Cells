@@ -25,7 +25,7 @@ from cells.models import surface_profile_interventions as model
 from cells.models import surface_tissue as parent
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from validation.topology import surface_profile_interventions_fixtures as fixtures
 from validation.topology import surface_profile_interventions_reference as reference
 

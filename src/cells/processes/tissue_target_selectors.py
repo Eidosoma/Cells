@@ -1,6 +1,7 @@
-"""Pinned native tissue selectors, explicit stable owners and intervention maps.
+"""Tissue target selectors, explicit stable owners and intervention maps.
 
-Host bindings retain ordered duplicate target occurrences and source ALL aliases
+Selector conventions follow BETSE v1.5.0 (cited source; no BETSE code). Host
+bindings retain ordered duplicate target occurrences and ALL aliases
 without mutating the authoritative layout. Percentage permutations are explicit
 inputs; physical geometry, RNG streams, cutting and solver/checkpoint state are
 caller-owned. Numerical kernels operate only on declared owner axes.
@@ -17,7 +18,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-LAW_ID = "betse_tissue_profiles_source_v1_5_0@1"
+LAW_ID = "tissue_target_selectors@1"
 IONS = ("Na", "K", "Cl", "Ca", "M", "P")
 EVENT_ORDER = ("Na_mem", "K_mem", "Cl_mem", "Ca_mem", "pressure", "ecmJ")
 MEMBRANE_EVENT, PRESSURE_EVENT, ECM_EVENT = 1, 2, 3
@@ -572,15 +573,6 @@ def insular_membrane_weights(binding, partner_membrane, original_cell_neighbors,
         membership = xp.asarray(b.kernel.cells[i])
         blocked |= b.kernel.insular[i] & (membership[owner] != membership[other])
     return xp.where((partner != xp.arange(m)) & (blocked | ~neighbors[owner, other]), 0.0, 1.0)
-
-
-def global_gj_prefix_targets(layout, requested_percent):
-    """Native global GJ target bug: shuffled copy is unused; actual prefix wins."""
-    t = validate_layout(layout)
-    if not _number(requested_percent):
-        raise ValueError("Require finite numeric global GJ percentage")
-    percent = min(100, max(1, int(requested_percent)))
-    return _target(t, "membrane", t.membrane_ids[: int((percent / 100) * len(t.membrane_ids))])
 
 
 def compile_interventions(binding, interventions, *, event_capacity=None, target_capacity=None):

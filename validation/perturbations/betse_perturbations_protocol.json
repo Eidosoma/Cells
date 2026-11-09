@@ -1,6 +1,6 @@
 {
   "kind": "cells.betse_perturbations_contract@1",
-  "law_id": "betse_perturbations_source_v1_5_0@1",
+  "law_id": "physiological_noise_perturbations@1",
   "purpose": "Separate native RNG/timing/owner semantics from explicitly stable Cells perturbations and reproducible component replay",
   "native_source": {
     "version": "1.5.0",

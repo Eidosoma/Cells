@@ -16,7 +16,7 @@ from cells.core.specs import ConfigError
 from cells.models import surface_active_bath_events as active
 from cells.models import surface_passive_bath_events as passive
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import betse_environment_transport as literal
+from cells.processes import extracellular_face_transport as literal
 from cells.processes.electrochemistry import F, R
 from validation.transport import surface_bath_events_fixtures as fixtures
 from validation.transport import surface_bath_events_reference as reference

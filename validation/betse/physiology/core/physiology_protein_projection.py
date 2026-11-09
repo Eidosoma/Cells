@@ -15,7 +15,7 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_tissue_binding as units
 from validation.betse.physiology.core.physiology_perturbation_step import BALANCE_RELATIVE_TOLERANCE
 

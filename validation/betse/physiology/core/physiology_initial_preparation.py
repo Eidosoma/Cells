@@ -15,8 +15,8 @@ from cells.core.runner import validate_checkpoint
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import Checkpoint
-from cells.processes import betse_perturbations as perturb
-from cells.processes import betse_tissue_profiles as selectors
+from cells.processes import tissue_target_selectors as selectors
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology import physiology_checkpoint as paired
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams

@@ -295,7 +295,7 @@
         "from_cell": "cell_0",
         "gate": {
           "initial_gate": 0.6,
-          "law": "betse_rate_junction_relaxation@1",
+          "law": "junction_voltage_relaxation@1",
           "minimum_open_fraction": 0.1,
           "threshold_voltage_V": 0.015
         },

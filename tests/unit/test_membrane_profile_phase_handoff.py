@@ -31,7 +31,7 @@ from cells.models import surface_profile_epoch as model
 from cells.models import surface_profile_interventions as scheduled
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from validation.topology import membrane_profile_phase_handoff_fixtures as fixtures
 from validation.topology import membrane_profile_phase_handoff_reference as reference
 

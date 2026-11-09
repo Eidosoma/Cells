@@ -15,7 +15,7 @@ from cells.core.specs import ConfigError
 from cells.models import surface_open_calcium_bath_events as calcium
 from cells.models import surface_open_calcium_energy_bath_events as fuel
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import betse_environment_transport as literal
+from cells.processes import extracellular_face_transport as literal
 from cells.processes.electrochemistry import F
 from validation.tissue import open_calcium_bath_fixtures as fixtures
 from validation.tissue import open_calcium_bath_reference as reference

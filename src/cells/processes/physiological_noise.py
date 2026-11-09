@@ -1,8 +1,9 @@
-"""Pinned physiological noise arithmetic and explicit, separately named RNG laws.
+"""Physiological noise arithmetic with prescribed draws and stable-owner sampling.
 
-Native replay uses a local NumPy MT19937 state including its Gaussian cache;
-it never changes the process-global RNG. Cells stable-owner Threefry sampling
-is a distinct law. Geometry, phase scheduling and full physiology are external.
+Noise formulae follow BETSE v1.5.0 (cited source; no BETSE code). Draws arrive
+as prescribed values, either from Cells stable-owner Threefry sampling or from
+an external generator (for example a validation adapter replaying a reference
+run). Geometry, phase scheduling and full physiology are external.
 """
 
 import hashlib
@@ -15,8 +16,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-LAW_ID = "betse_perturbations_source_v1_5_0@1"
-NATIVE_RNG_ID = "numpy_mt19937_legacy_state_with_gaussian_cache@1"
+LAW_ID = "physiological_noise_perturbations@1"
 STABLE_RNG_ID = "threefry2x32_seed_world64_tick64_owner_sha256_site_open52_boxmuller@1"
 SITES = ("static_K", "protein_flux", "boundary_choice", "microtubule_gaussian")
 MAX_OWNERS = 4096
@@ -550,74 +550,6 @@ def micro_domain_valid(
 
 
 @dataclass(frozen=True)
-class NativeStream:
-    state_json: str
-    numpy_version: str
-    identity: str
-
-
-def _native_stream(state, version):
-    if version != np.__version__:
-        raise ValueError("Native replay requires the recorded NumPy version")
-    if not isinstance(state, (tuple, list)) or len(state) != 5 or state[0] != "MT19937":
-        raise ValueError("Require complete MT19937 algorithm/words/position/Gaussian cache state")
-    algorithm, words, position, cached, gaussian = state
-    if (
-        not isinstance(words, (tuple, list, np.ndarray))
-        or len(words) != 624
-        or not any(words)
-        or any(
-            not isinstance(v, (int, np.integer))
-            or isinstance(v, (bool, np.bool_))
-            or not 0 <= int(v) < 2**32
-            for v in words
-        )
-        or type(position) is not int
-        or not 0 <= position <= 624
-        or type(cached) is not int
-        or cached not in (0, 1)
-        or not _number(gaussian)
-    ):
-        raise ValueError("Invalid native MT19937 state, including Gaussian cache")
-    normalized = [algorithm, [int(v) for v in words], position, cached, float(gaussian)]
-    payload = dict(rng_id=NATIVE_RNG_ID, numpy_version=version, state=normalized)
-    return NativeStream(json.dumps(normalized, separators=(",", ":")), version, _hash(payload))
-
-
-def native_stream(seed):
-    _uint(seed, 32)
-    rng = np.random.RandomState(seed)
-    state = rng.get_state()
-    return _native_stream(
-        [state[0], state[1].tolist(), int(state[2]), int(state[3]), float(state[4])], np.__version__
-    )
-
-
-def native_stream_manifest(stream):
-    expected = _native_stream(json.loads(stream.state_json), stream.numpy_version)
-    if expected != stream:
-        raise ValueError("Stale native RNG identity")
-    return dict(
-        rng_id=NATIVE_RNG_ID,
-        numpy_version=stream.numpy_version,
-        state=json.loads(stream.state_json),
-        identity=stream.identity,
-    )
-
-
-def native_stream_from_manifest(record):
-    if (
-        set(record) != {"rng_id", "numpy_version", "state", "identity"}
-        or record["rng_id"] != NATIVE_RNG_ID
-    ):
-        raise ValueError("Unsupported/incomplete native replay state")
-    stream = _native_stream(record["state"], record["numpy_version"])
-    if stream.identity != record["identity"]:
-        raise ValueError("Native RNG state identity mismatch")
-    return stream
-
-
-@dataclass(frozen=True)
 class StableCoordinates:
     seed: int
     world_id: int
@@ -754,32 +686,6 @@ def draw_from_manifest(record, binding):
     return draw
 
 
-def sample_native(stream, binding, *, site, tick):
-    manifest = native_stream_manifest(stream)
-    rng = np.random.RandomState(0)
-    state = manifest["state"]
-    rng.set_state((state[0], np.asarray(state[1], np.uint32), state[2], state[3], state[4]))
-    provenance = dict(
-        rng_id=NATIVE_RNG_ID, before_identity=stream.identity, numpy_version=np.__version__
-    )
-    if site == "boundary_choice":
-        at = int(rng.choice(len(binding.boundary_cell_occurrences)))
-        value = np.asarray([binding.cell_ids.index(binding.boundary_cell_occurrences[at])], int)
-        provenance["source_occurrence_index"] = at
-    elif site == "microtubule_gaussian":
-        value = rng.normal(loc=0.0, scale=1.0, size=len(binding.membrane_ids))
-    elif site in ("static_K", "protein_flux"):
-        value = rng.random(len(binding.membrane_ids))
-    else:
-        raise ValueError("Unsupported native perturbation RNG site")
-    after = rng.get_state()
-    next_stream = _native_stream(
-        [after[0], after[1].tolist(), int(after[2]), int(after[3]), float(after[4])], np.__version__
-    )
-    provenance["after_identity"] = next_stream.identity
-    return prescribed_draw(site, tick, value, binding, provenance=provenance), next_stream
-
-
 def sample_stable(coordinates, binding, *, site, tick):
     _uint(coordinates.seed, 32)
     _uint(coordinates.world_id, 64)
@@ -824,7 +730,8 @@ class Replay(NamedTuple):
     time_s: float
 
 
-def replay_record(binding, controls, replay):
+def replay_record(binding, controls, replay, *, rng_manifest=None):
+    """Replay record; an externally defined sequential RNG law passes its own manifest."""
     controls = validate_controls(controls)
     _uint(replay.tick, 64)
     if not _number(replay.time_s) or replay.time_s < 0:
@@ -847,14 +754,14 @@ def replay_record(binding, controls, replay):
         for v in replay.diffusion
     ) or any(v.ndim != 1 or not np.isfinite(v).all() or np.any(v < 0) for v in pstate):
         raise ValueError("Replay records require finite unbatched declared component buffers")
-    if isinstance(replay.rng, NativeStream):
-        rng = native_stream_manifest(replay.rng)
+    if rng_manifest is not None:
+        rng = rng_manifest
     elif isinstance(replay.rng, StableCoordinates):
         _uint(replay.rng.seed, 32)
         _uint(replay.rng.world_id, 64)
         rng = dict(rng_id=STABLE_RNG_ID, seed=replay.rng.seed, world_id=replay.rng.world_id)
     else:
-        raise ValueError("Replay must declare native sequential or stable-owner RNG law")
+        raise ValueError("Replay must declare a stable-owner RNG law or supply a manifest")
     payload = dict(
         law_id=LAW_ID,
         layout_identity=binding.identity,
@@ -868,7 +775,8 @@ def replay_record(binding, controls, replay):
     return dict(payload, identity=_hash(payload))
 
 
-def restore_replay(record, binding, controls):
+def restore_replay(record, binding, controls, *, restore_rng=None):
+    """Restore a replay; `restore_rng(manifest)` restores an externally defined RNG law."""
     if (
         record.get("law_id") != LAW_ID
         or record.get("layout_identity") != binding.identity
@@ -881,10 +789,11 @@ def restore_replay(record, binding, controls):
     ):
         raise ValueError("Replay buffer/RNG/clock identity mismatch")
     raw = record["rng"]
-    if raw.get("rng_id") == NATIVE_RNG_ID:
-        rng = native_stream_from_manifest(raw)
-    elif raw.get("rng_id") == STABLE_RNG_ID and set(raw) == {"rng_id", "seed", "world_id"}:
+    external = None
+    if raw.get("rng_id") == STABLE_RNG_ID and set(raw) == {"rng_id", "seed", "world_id"}:
         rng = StableCoordinates(raw["seed"], raw["world_id"])
+    elif restore_rng is not None and raw.get("rng_id") != STABLE_RNG_ID:
+        rng, external = restore_rng(raw), raw
     else:
         raise ValueError("Unsupported replay RNG law")
     state = Replay(
@@ -894,6 +803,6 @@ def restore_replay(record, binding, controls):
         record["tick"],
         record["time_s"],
     )
-    if replay_record(binding, controls, state) != record:
+    if replay_record(binding, controls, state, rng_manifest=external) != record:
         raise ValueError("Incomplete replay fields")
     return state

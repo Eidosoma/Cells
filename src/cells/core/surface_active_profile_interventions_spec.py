@@ -9,7 +9,7 @@ from cells.core import surface_kinetic_spec as base
 from cells.core import surface_profile_interventions_spec as native_spec
 from cells.core import tissue_profile_preparation as profiles
 from cells.core.specs import ConfigError, SimulationSpec, _fields, _integer, _number, digest
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 MODEL_ID = "resolved_active_membrane_profiles@1"
 TIMING_POLICY = native_spec.TIMING_POLICY

@@ -19,7 +19,7 @@ from cells.core import surface_calcium_spec as calcium
 from cells.core import surface_kinetic_spec as ionic
 from cells.core import surface_tissue_spec as passive
 from cells.core.specs import SimulationSpec
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams
 

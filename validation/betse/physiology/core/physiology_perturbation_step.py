@@ -15,7 +15,7 @@ from types import MappingProxyType
 import numpy as np
 
 from cells.core.errors import NumericalError
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_random_streams as streams
 
 MAX_LOOP_CALLS = 2**64 - 1

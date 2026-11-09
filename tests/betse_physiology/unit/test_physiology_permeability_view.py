@@ -13,12 +13,12 @@ from cells.core.errors import NumericalError
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import betse_perturbations as perturb
 from tests.betse_physiology.unit.test_physiology_tissue_binding import (
     arguments,
     component_state,
     definition,
 )
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams
 from validation.betse.physiology.core import physiology_tissue_binding as units

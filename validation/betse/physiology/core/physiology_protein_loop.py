@@ -20,8 +20,8 @@ from cells.core.grid import EventGrid
 from cells.core.schedule import event_index
 from cells.models import compartment_reactions as chemistry
 from cells.numerics import surface_field as field
-from cells.processes import betse_perturbations as perturb
 from cells.processes.electrochemistry import R
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_permeability_schedule as schedules
 from validation.betse.physiology.core import physiology_perturbation_phases as phases
 from validation.betse.physiology.core import physiology_perturbation_step as component_step

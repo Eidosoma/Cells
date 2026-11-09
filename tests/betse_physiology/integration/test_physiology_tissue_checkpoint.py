@@ -10,7 +10,6 @@ from cells.core.schedule import event_index
 from cells.core.specs import ConfigError, digest, parse_spec, read_json
 from cells.core.state import Checkpoint
 from cells.models.registry import get_model
-from cells.processes import betse_perturbations as perturb
 from tests.betse_physiology.integration.test_physiology_checkpoint import (
     assert_same_component,
     write_json,
@@ -21,6 +20,7 @@ from tests.betse_physiology.unit.test_physiology_tissue_binding import (
     evidence,
 )
 from tests.unit.test_surface_kinetic import exact
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology import physiology_checkpoint as paired
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams

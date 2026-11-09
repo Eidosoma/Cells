@@ -16,7 +16,7 @@ from cells.core.environment_barrier_interventions_spec import MODEL_ID, base_spe
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
 from cells.models import surface_tissue as base
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 OBSERVER_ID = "resolved_scheduled_extracellular_barrier_readouts@1"
 OBSERVATION_SAMPLING = base.OBSERVATION_SAMPLING

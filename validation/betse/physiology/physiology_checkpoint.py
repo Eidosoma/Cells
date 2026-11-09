@@ -120,7 +120,7 @@ def _component_clock(state):
 
 
 def _component_record(state, binding, stream):
-    from cells.processes import betse_perturbations as perturb
+    from validation.betse.physiology import native_noise as perturb
     from validation.betse.physiology.core import physiology_perturbation_step as step
 
     step.validate_state(state, binding)
@@ -141,7 +141,7 @@ def _component_record(state, binding, stream):
 
 
 def _restore_component(record, binding, stream):
-    from cells.processes import betse_perturbations as perturb
+    from validation.betse.physiology import native_noise as perturb
     from validation.betse.physiology.core import physiology_perturbation_step as step
 
     if not isinstance(record, dict) or set(record) != COMPONENT_FIELDS:

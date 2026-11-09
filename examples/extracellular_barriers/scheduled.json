@@ -1270,7 +1270,7 @@
         "source_definition_sha256": "1899cc2027e002e34d4f6ac10972cb7208077d5450f1132262411aecf1e8f05d",
         "prepared_definition_sha256": "2eead1277367e59a0de9c93794b187868afb215e81c3bb0c39321d2a18a09db3",
         "grid": {
-          "source_law_id": "betse_environment_transport_source_v1_5_0@1",
+          "source_law_id": "extracellular_face_transport@1",
           "face_law_id": "bernoulli_fitted_environment_faces@1",
           "identity": "b945f831049879b522e5c850e06b062331d2ef713ddeb34984c3a60b61ee6594",
           "site_ids": [
@@ -1337,7 +1337,7 @@
           "native_version": "1.5.0",
           "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
           "coefficient_kernel_sha256": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
-          "source_law": "betse_environment_transport_source_v1_5_0@1",
+          "source_law": "extracellular_face_transport@1",
           "native_scope": "Static initDenv overwrite order and prescribed ionic TJ multiplication",
           "cells_face_law": "logmean_electrodiffusion@1",
           "excluded": "Native collocated update/bath setters, Bernoulli face law, flow and moving geometry"

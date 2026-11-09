@@ -1,7 +1,7 @@
 {
   "version": "physical_time_junction_coupled@1",
   "model": "finite_extracellular@3",
-  "law": "betse_rate_junction_relaxation@1",
+  "law": "junction_voltage_relaxation@1",
   "cases": ["single_mixed", "network_mixed", "disconnected_mixed"],
   "duration_s": 1.0,
   "cells_steps_s": [0.0001, 0.00005],

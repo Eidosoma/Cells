@@ -9,7 +9,6 @@ import pytest
 
 from cells.core.errors import NumericalError
 from cells.core.specs import digest
-from cells.processes import betse_perturbations as perturb
 from cells.processes import spatial_modulation as spatial
 from tests.betse_physiology.integration.test_physiology_modulated_schedule import initialize
 from tests.betse_physiology.integration.test_physiology_modulated_schedule import (
@@ -23,6 +22,7 @@ from tests.betse_physiology.integration.test_physiology_protein_loop import budg
 from tests.betse_physiology.integration.test_physiology_protein_transition import plain_component
 from tests.betse_physiology.unit.test_physiology_permeability_view import exact_tree
 from tests.betse_physiology.unit.test_physiology_tissue_step import evidence
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology import physiology_protein_loop_io as persistence
 from validation.betse.physiology.core import physiology_native_calendar as calendars
 from validation.betse.physiology.core import physiology_permeability_schedule as schedule

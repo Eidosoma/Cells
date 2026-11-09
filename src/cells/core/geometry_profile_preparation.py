@@ -15,7 +15,7 @@ import numpy as np
 from cells.core import geometry_tissue_preparation as geometric
 from cells.core import tissue_profile_preparation as profiles
 from cells.core.specs import ConfigError, digest
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 BRIDGE_ID = "initial_geometry_static_profiles@1"
 REQUEST_KIND = "cells.initial_geometry_profile_request@1"

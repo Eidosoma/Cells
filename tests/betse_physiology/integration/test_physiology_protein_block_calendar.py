@@ -21,13 +21,13 @@ import numpy as np
 import pytest
 
 from cells.core.specs import ConfigError, digest
-from cells.processes import betse_perturbations as perturb
 from cells.processes import global_controls as setters
 from tests.betse_physiology.integration.test_physiology_modulated_schedule import inputs as template
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import active_nodes
 from tests.betse_physiology.integration.test_physiology_protein_loop import budget
 from tests.betse_physiology.unit.test_physiology_protein_packet_provider import canonical
 from tests.betse_physiology.unit.test_physiology_tissue_step import KINDS, evidence
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology import physiology_protein_batch_loop_io as raw_io
 from validation.betse.physiology import physiology_protein_block_calendar_io as persistence
 from validation.betse.physiology import physiology_protein_loop_io as bare_io

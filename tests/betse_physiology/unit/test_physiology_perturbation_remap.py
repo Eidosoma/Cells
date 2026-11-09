@@ -6,7 +6,7 @@ from decimal import Decimal, localcontext
 import numpy as np
 import pytest
 
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_remap as remap
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams

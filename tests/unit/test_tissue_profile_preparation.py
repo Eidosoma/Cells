@@ -15,7 +15,7 @@ from cells.core import tissue_profile_preparation as bridge
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.coupling.selective import selective_flux
 from cells.models.registry import get_model
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from cells.processes.electrochemistry import F, R
 from validation.topology import tissue_profile_preparation_fixtures as fixtures
 from validation.topology import tissue_profile_preparation_reference as reference

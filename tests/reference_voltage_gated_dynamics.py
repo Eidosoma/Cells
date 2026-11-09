@@ -6,6 +6,7 @@ the candidate instead calls the frozen SPEC-006 Bernoulli/gate evaluator.
 """
 
 import copy
+import json
 import hashlib
 import math
 from dataclasses import asdict, dataclass
@@ -104,7 +105,9 @@ def load_panel():
     physical = ROOT / plan["physical_panel"]
     if hashlib.sha256(physical.read_bytes()).hexdigest() != plan["physical_panel_sha256"]:
         raise ValueError("Frozen SPEC-006 physical panel changed")
-    return plan, resolve_cases(plan, ionic.load_json(physical))
+    # The frozen panel predates the neutral channel IDs; translate at load, keep its hash.
+    text = json.dumps(ionic.load_json(physical)).replace("betse_kv1p5_mh@1", "kv1p5_mh@1")
+    return plan, resolve_cases(plan, json.loads(text))
 
 
 def initial_state(case, *, absolute=False):

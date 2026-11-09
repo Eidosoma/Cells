@@ -22,7 +22,7 @@ from cells.core.state import Checkpoint
 from cells.core.surface_profile_epoch_spec import MODEL_ID, POLICIES
 from cells.models import surface_profile_interventions as dynamics
 from cells.models import surface_tissue as passive
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 REQUEST_KIND = "cells.passive_membrane_phase_handoff_request@1"
 KIND = "cells.passive_membrane_phase_handoff_preparation@1"

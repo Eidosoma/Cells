@@ -1,6 +1,6 @@
 {
   "kind": "cells.betse_tissue_profiles_contract@1",
-  "law_id": "betse_tissue_profiles_source_v1_5_0@1",
+  "law_id": "tissue_target_selectors@1",
   "purpose": "Resolve picker mutation/aliasing, overlap precedence, duplicate owner sequences, bitmap sampling and intervention axis/order before stable-ID composition",
   "native_source": {
     "version": "1.5.0",

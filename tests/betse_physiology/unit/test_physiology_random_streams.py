@@ -7,7 +7,7 @@ from dataclasses import FrozenInstanceError, replace
 import numpy as np
 import pytest
 
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_random_streams as streams
 
 

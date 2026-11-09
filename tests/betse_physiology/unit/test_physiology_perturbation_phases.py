@@ -5,7 +5,6 @@ from dataclasses import asdict, replace
 import numpy as np
 import pytest
 
-from cells.processes import betse_perturbations as perturb
 from tests.betse_physiology.unit import test_physiology_perturbation_step as component_tests
 from tests.betse_physiology.unit.test_physiology_perturbation_step import (
     equal_buffers,
@@ -13,6 +12,7 @@ from tests.betse_physiology.unit.test_physiology_perturbation_step import (
     initialise,
 )
 from tests.betse_physiology.unit.test_physiology_tissue_step import evidence
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_phases as phases
 from validation.betse.physiology.core import physiology_perturbation_step as component_step
 from validation.betse.physiology.core import physiology_random_streams as streams

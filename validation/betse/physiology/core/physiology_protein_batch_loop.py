@@ -16,8 +16,8 @@ import numpy as np
 
 from cells.core.errors import NumericalError
 from cells.core.specs import SimulationSpec, digest
-from cells.processes import betse_perturbations as perturb
 from cells.processes.electrochemistry import F, R
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_protein_loop as loop
 from validation.betse.physiology.core import physiology_protein_packet_provider as provider
 from validation.betse.physiology.core import (

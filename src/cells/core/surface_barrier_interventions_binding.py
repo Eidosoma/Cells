@@ -10,7 +10,7 @@ from cells.core import environment_barrier_composition_preparation as composed
 from cells.core import environment_barrier_interventions_spec as native
 from cells.core.multispecies_spec import identifier
 from cells.core.specs import ConfigError, _fields, _integer, _number, digest
-from cells.processes.betse_tissue_profiles import IONS
+from cells.processes.tissue_target_selectors import IONS
 
 TIMING_POLICY = native.TIMING_POLICY
 Event = native.Event

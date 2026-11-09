@@ -17,7 +17,7 @@ from cells.core.specs import (
     _number,
     digest,
 )
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 MODEL_ID = "resolved_membrane_profiles@1"
 TIMING_POLICY = "phase_clock_rk_stage_native_logistic@1"

@@ -163,7 +163,7 @@ def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
             permeability_m_per_s={s: float(jperm[index[s], a]) for s in MOBILE},
             law="constant_field@1",
             gate=dict(
-                law="betse_rate_junction_relaxation@1",
+                law="junction_voltage_relaxation@1",
                 threshold_voltage_V=float(junction_gate["threshold_voltage_V"][a]),
                 minimum_open_fraction=float(junction_gate["minimum_open_fraction"][a]),
                 initial_gate=float(m["initial"]["junction_open"][a]),

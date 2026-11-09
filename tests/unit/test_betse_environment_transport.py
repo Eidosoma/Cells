@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import betse_environment_transport as transport
+from validation.betse import native_environment_paths as transport
 from validation.transport import betse_environment_transport_reference as reference
 from validation.transport.betse_environment_transport_fixtures import (
     UNIT,
@@ -953,13 +953,13 @@ def test_manifest_readonly_source_inputs_and_declared_face_permutation():
 
 
 def test_optional_frozen_geometry_grid_contract_and_reference_independence():
-    from cells.processes import betse_geometry
+    from cells.processes import geometry_operator_binding
 
     grid = transport.bind_grid(grid_spec())
     ny, nx = grid.shape
     h = grid.delta_m
-    frozen = betse_geometry.bind_grid(
-        betse_geometry.GridSpec(
+    frozen = geometry_operator_binding.bind_grid(
+        geometry_operator_binding.GridSpec(
             grid.site_ids,
             grid.shape,
             (0, nx * h, 0, ny * h),

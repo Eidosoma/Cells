@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from cells.core.specs import parse_spec
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams
 from validation.betse.physiology.core import physiology_tissue_binding as adapter

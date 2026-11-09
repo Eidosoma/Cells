@@ -27,7 +27,7 @@ from cells.models import surface_calcium_energy_hcn_extra as fuel_parent
 from cells.models import surface_calcium_energy_profile_interventions as fuel_runtime
 from cells.models import surface_calcium_profile_interventions as calcium_runtime
 from cells.models.surface_tissue import charge_increment
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 REQUEST_KIND = "cells.owned_calcium_membrane_phase_handoff_request@1"
 KIND = "cells.owned_calcium_membrane_phase_handoff_preparation@1"

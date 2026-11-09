@@ -6,10 +6,10 @@ import numpy as np
 import pytest
 
 from cells.numerics import surface_field
-from cells.processes import betse_perturbations as perturb
 from cells.processes.electrochemistry import F
 from tests.betse_physiology.unit.test_physiology_tissue_binding import bind, component_state
 from tests.betse_physiology.unit.test_physiology_tissue_step import KINDS, evidence
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as component_step
 from validation.betse.physiology.core import physiology_protein_projection as projection
 from validation.betse.physiology.core import physiology_random_streams as streams

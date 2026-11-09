@@ -27,7 +27,7 @@ from cells.models import surface_calcium_energy_water_profile_interventions as w
 from cells.models import surface_calcium_energy_water_repair_hcn_extra as repair_parent
 from cells.models import surface_calcium_energy_water_repair_profile_interventions as repair
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from tests.owned_joint_water_hcn_helpers import changed
 from validation.topology import joint_water_profile_interventions_fixtures as fixtures
 from validation.topology import joint_water_profile_interventions_reference as reference

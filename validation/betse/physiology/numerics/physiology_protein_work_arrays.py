@@ -11,10 +11,10 @@ from typing import NamedTuple
 import jax.numpy as jnp
 
 from cells.numerics.extracellular_field import ordered_scatter
-from cells.processes.betse_perturbations import ProteinState
 from cells.processes.electrochemistry import F, R
 from validation.betse.physiology.core import physiology_protein_chemical_arrays as chemical
 from validation.betse.physiology.core.physiology_perturbation_step import BALANCE_RELATIVE_TOLERANCE
+from validation.betse.physiology.native_noise import ProteinState
 from validation.betse.physiology.numerics import physiology_protein_electrical_arrays as electrical
 from validation.betse.physiology.numerics import physiology_protein_interval_arrays as endpoints
 

@@ -15,7 +15,7 @@ import pytest
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.models.registry import get_model
-from cells.processes import betse_tissue_profiles as profiles
+from cells.processes import tissue_target_selectors as profiles
 from tests.betse_physiology.unit.test_physiology_target_selection import streams
 from validation.betse.physiology import random_tissue_profiles as public
 from validation.betse.physiology.core import physiology_target_selection as selection

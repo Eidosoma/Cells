@@ -10,7 +10,7 @@ from typing import NamedTuple
 import jax
 import jax.numpy as jnp
 
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_protein_chemical_arrays as chemical
 from validation.betse.physiology.core.physiology_perturbation_step import BALANCE_RELATIVE_TOLERANCE
 from validation.betse.physiology.numerics import physiology_protein_drive_arrays as drive

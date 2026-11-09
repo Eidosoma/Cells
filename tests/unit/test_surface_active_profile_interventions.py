@@ -26,8 +26,8 @@ from cells.io import load_snapshot, write_snapshot
 from cells.models import surface_active_profile_interventions as model
 from cells.models import surface_hcn_extra as parent
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
-from cells.processes import betse_tissue_profiles as native
 from cells.processes import hcn_extra_catalog
+from cells.processes import tissue_target_selectors as native
 from validation.topology import surface_active_profile_interventions_fixtures as fixtures
 from validation.topology import surface_active_profile_interventions_reference as reference
 

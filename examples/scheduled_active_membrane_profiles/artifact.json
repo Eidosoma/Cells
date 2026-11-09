@@ -329,7 +329,7 @@
           },
           "law": "constant_field@1",
           "gate": {
-            "law": "betse_rate_junction_relaxation@1",
+            "law": "junction_voltage_relaxation@1",
             "threshold_voltage_V": 0.015,
             "minimum_open_fraction": 0.1,
             "initial_gate": 0.4
@@ -348,7 +348,7 @@
           },
           "law": "constant_field@1",
           "gate": {
-            "law": "betse_rate_junction_relaxation@1",
+            "law": "junction_voltage_relaxation@1",
             "threshold_voltage_V": 0.015,
             "minimum_open_fraction": 0.1,
             "initial_gate": 0.5
@@ -367,7 +367,7 @@
           },
           "law": "constant_field@1",
           "gate": {
-            "law": "betse_rate_junction_relaxation@1",
+            "law": "junction_voltage_relaxation@1",
             "threshold_voltage_V": 0.015,
             "minimum_open_fraction": 0.1,
             "initial_gate": 0.6000000000000001
@@ -1715,7 +1715,7 @@
                 },
                 "law": "constant_field@1",
                 "gate": {
-                  "law": "betse_rate_junction_relaxation@1",
+                  "law": "junction_voltage_relaxation@1",
                   "threshold_voltage_V": 0.015,
                   "minimum_open_fraction": 0.1,
                   "initial_gate": 0.4
@@ -1734,7 +1734,7 @@
                 },
                 "law": "constant_field@1",
                 "gate": {
-                  "law": "betse_rate_junction_relaxation@1",
+                  "law": "junction_voltage_relaxation@1",
                   "threshold_voltage_V": 0.015,
                   "minimum_open_fraction": 0.1,
                   "initial_gate": 0.5
@@ -1753,7 +1753,7 @@
                 },
                 "law": "constant_field@1",
                 "gate": {
-                  "law": "betse_rate_junction_relaxation@1",
+                  "law": "junction_voltage_relaxation@1",
                   "threshold_voltage_V": 0.015,
                   "minimum_open_fraction": 0.1,
                   "initial_gate": 0.6000000000000001
@@ -3932,7 +3932,7 @@
         "provenance": {
           "kind": "cells.resolved_tissue_profile_preparation@1",
           "bridge_id": "resolved_tissue_static_profiles@1",
-          "law_id": "betse_tissue_profiles_source_v1_5_0@1",
+          "law_id": "tissue_target_selectors@1",
           "source_definition": {
             "schema_version": 1,
             "model": {
@@ -4262,7 +4262,7 @@
                   },
                   "law": "constant_field@1",
                   "gate": {
-                    "law": "betse_rate_junction_relaxation@1",
+                    "law": "junction_voltage_relaxation@1",
                     "threshold_voltage_V": 0.015,
                     "minimum_open_fraction": 0.1,
                     "initial_gate": 0.4
@@ -4281,7 +4281,7 @@
                   },
                   "law": "constant_field@1",
                   "gate": {
-                    "law": "betse_rate_junction_relaxation@1",
+                    "law": "junction_voltage_relaxation@1",
                     "threshold_voltage_V": 0.015,
                     "minimum_open_fraction": 0.1,
                     "initial_gate": 0.5
@@ -4300,7 +4300,7 @@
                   },
                   "law": "constant_field@1",
                   "gate": {
-                    "law": "betse_rate_junction_relaxation@1",
+                    "law": "junction_voltage_relaxation@1",
                     "threshold_voltage_V": 0.015,
                     "minimum_open_fraction": 0.1,
                     "initial_gate": 0.6000000000000001
@@ -6682,7 +6682,7 @@
             "is_ecm": false
           },
           "binding": {
-            "law_id": "betse_tissue_profiles_source_v1_5_0@1",
+            "law_id": "tissue_target_selectors@1",
             "layout_identity": "768545e14bc3135ff81521109063e4c382a5f41d5a7edbe062998063246c3321",
             "names": [
               "Default",
@@ -8409,7 +8409,7 @@
     }
   },
   "profiles": {
-    "law_id": "betse_tissue_profiles_source_v1_5_0@1",
+    "law_id": "tissue_target_selectors@1",
     "layout_identity": "768545e14bc3135ff81521109063e4c382a5f41d5a7edbe062998063246c3321",
     "names": [
       "Default",
@@ -8589,7 +8589,7 @@
     "identity": "00f836be060f4de089751e5356446c2aceddda125da21dd8f51edfd1692c6265"
   },
   "interventions": {
-    "law_id": "betse_tissue_profiles_source_v1_5_0@1",
+    "law_id": "tissue_target_selectors@1",
     "profiles_identity": "00f836be060f4de089751e5356446c2aceddda125da21dd8f51edfd1692c6265",
     "names": [
       "event-Na_mem",

@@ -11,8 +11,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import betse_perturbations as perturb
-from cells.processes import betse_tissue_profiles as profiles
+from cells.processes import tissue_target_selectors as profiles
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_target_selection as selection
 from validation.perturbations import target_selection_native as native
 from validation.perturbations import target_selection_reference as reference

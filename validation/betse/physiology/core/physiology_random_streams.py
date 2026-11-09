@@ -12,7 +12,7 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 
 KIND = "cells.physiology_random_stream@1"
 MAX_TICK = 2**64 - 1

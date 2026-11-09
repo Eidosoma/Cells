@@ -1,6 +1,6 @@
 {
   "kind": "cells.betse_environment_transport_contract@1",
-  "source_law_id": "betse_environment_transport_source_v1_5_0@1",
+  "source_law_id": "extracellular_face_transport@1",
   "conservative_law_id": "bernoulli_fitted_environment_faces@1",
   "purpose": "Separate native collocated grid/barrier/bath semantics from an explicitly conservative positive face operator",
   "native_source": {

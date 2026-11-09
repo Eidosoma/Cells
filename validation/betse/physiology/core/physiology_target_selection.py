@@ -15,8 +15,8 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.processes import betse_perturbations as perturb
-from cells.processes import betse_tissue_profiles as profiles
+from validation.betse import native_profile_conventions as profiles
+from validation.betse.physiology import native_noise as perturb
 
 KIND = "cells.native_target_selection_stream@1"
 PYTHON_KIND = "cells.cpython_random_state@1"

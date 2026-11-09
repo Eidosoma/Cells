@@ -10,7 +10,6 @@ import pytest
 from cells.core.grid import EventGrid
 from cells.core.specs import digest, parse_spec
 from cells.core.state import Checkpoint
-from cells.processes import betse_perturbations as perturb
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import (
     active_nodes,
     changed_protein,
@@ -22,6 +21,7 @@ from tests.betse_physiology.unit.test_physiology_tissue_binding import (
     definition,
 )
 from tests.betse_physiology.unit.test_physiology_tissue_step import KINDS, control, evidence
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology import physiology_protein_checkpoint as persistence
 from validation.betse.physiology.core import physiology_perturbation_step as component_step
 from validation.betse.physiology.core import physiology_protein_charge_interval as interval

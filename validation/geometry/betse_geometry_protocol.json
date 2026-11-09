@@ -1,6 +1,6 @@
 {
   "kind": "cells.betse_geometry_contract@1",
-  "law_id": "betse_geometry_source_v1_5_0@1",
+  "law_id": "geometry_operator_binding@1",
   "purpose": "Qualify stable geometry/owner/operator binding independently of physical amount remap",
   "native_source": {
     "version": "1.5.0",

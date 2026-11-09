@@ -29,7 +29,7 @@ from cells.models import surface_calcium_energy_hcn_extra as fuel_parent
 from cells.models import surface_calcium_energy_profile_interventions as fuel
 from cells.models import surface_calcium_profile_interventions as calcium
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from validation.topology import owned_calcium_profile_interventions_fixtures as fixtures
 from validation.topology import owned_calcium_profile_interventions_reference as reference
 

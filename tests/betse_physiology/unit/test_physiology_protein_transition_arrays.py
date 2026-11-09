@@ -14,7 +14,6 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.processes import betse_perturbations as perturb
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import changed_protein
 from tests.betse_physiology.unit.test_physiology_protein_drive_arrays import (
     PROVENANCE,
@@ -30,6 +29,7 @@ from tests.betse_physiology.unit.test_physiology_protein_interval_accounting imp
 from tests.betse_physiology.unit.test_physiology_protein_work_arrays import frame, geometry
 from tests.betse_physiology.unit.test_physiology_tissue_binding import arguments, component_state
 from tests.betse_physiology.unit.test_physiology_tissue_step import KINDS, case, control, tissue
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_phases as phases
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams

@@ -10,7 +10,7 @@ import pytest
 from cells.__main__ import main
 from cells.core.specs import digest, parse_spec
 from cells.models.registry import get_model
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from cells.tissue_profiles import REQUEST_KIND, prepare_request, read_preparation
 from tests.integration.test_cli import cli
 from validation.topology import tissue_profile_preparation_fixtures as fixtures

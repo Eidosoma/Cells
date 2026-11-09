@@ -29,7 +29,7 @@ from cells.core.state import initialise
 from cells.io import load_snapshot, write_snapshot
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from tests.owned_joint_water_hcn_helpers import changed as changed_complete_owner
 from validation.transport import joint_water_profile_barrier_interventions_fixtures as fixtures
 from validation.transport import joint_water_profile_barrier_interventions_reference as reference

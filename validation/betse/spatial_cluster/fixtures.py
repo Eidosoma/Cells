@@ -129,7 +129,7 @@ def definition(*, end=0.02, dt=0.0001, backend="cpu", arm="baseline", padded=Tru
                     "area_m2": 1e-10,
                     "permeability_m_per_s": mapped((3e-10, 5e-10, 4e-10)),
                     "gate": {
-                        "law": "betse_rate_junction_relaxation@1",
+                        "law": "junction_voltage_relaxation@1",
                         "threshold_voltage_V": 0.015,
                         "minimum_open_fraction": 0.1,
                         "initial_gate": 0.6,

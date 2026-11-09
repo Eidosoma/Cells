@@ -13,8 +13,8 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.processes import betse_perturbations as perturb
 from cells.processes import tissue_removal as cut
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams
 

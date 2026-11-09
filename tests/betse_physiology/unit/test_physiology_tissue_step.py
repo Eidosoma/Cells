@@ -16,13 +16,13 @@ from cells.core.schedule import control_values, event_index
 from cells.core.specs import parse_spec
 from cells.core.state import Checkpoint
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import betse_perturbations as perturb
 from tests.betse_physiology.unit.test_physiology_permeability_view import exact_tree, fingerprints
 from tests.betse_physiology.unit.test_physiology_tissue_binding import (
     arguments,
     component_state,
     definition,
 )
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as component_step
 from validation.betse.physiology.core import physiology_random_streams as streams
 from validation.betse.physiology.core import physiology_tissue_binding as units

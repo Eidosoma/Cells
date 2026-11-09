@@ -17,7 +17,7 @@ import numpy as np
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.surface_tissue_spec import SurfaceTissueModel
 from cells.models import surface_tissue
-from cells.processes import betse_environment_transport as native
+from cells.processes import extracellular_face_transport as native
 
 BRIDGE_ID = "resolved_static_environment_barriers@1"
 REQUEST_KIND = "cells.environment_barrier_preparation_request@1"

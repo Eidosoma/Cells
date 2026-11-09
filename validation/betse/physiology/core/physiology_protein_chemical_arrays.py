@@ -11,8 +11,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes.betse_perturbations import ProteinState
 from validation.betse.physiology.core.physiology_perturbation_step import BALANCE_RELATIVE_TOLERANCE
+from validation.betse.physiology.native_noise import ProteinState
 from validation.betse.physiology.numerics.physiology_protein_interval_arrays import (
     _log_ratio,
     _two_product,

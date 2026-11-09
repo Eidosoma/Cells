@@ -7,7 +7,7 @@ import numpy as np
 from cells.core import surface_barrier_interventions_binding as barriers
 from cells.core import surface_profile_interventions_spec as membranes
 from cells.core.specs import ConfigError
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 
 def views(spec):

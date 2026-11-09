@@ -20482,7 +20482,7 @@
       "request_sha256": "97155ae454493a26c6d1bbef55115f4233b29031c128e18d0737ffdf85fc532c",
       "prepared_definition_sha256": "99a630b7f2554644e94d0e5bd722711f9bd807a2247e419ddbea5293f34841d1",
       "geometry_manifest": {
-        "law_id": "betse_geometry_source_v1_5_0@1",
+        "law_id": "geometry_operator_binding@1",
         "identity": "cd8213aeda8205c62989ebf4cfa5544da9cd68a30fd6a52e0187d8c05f033902",
         "mesh_identity": "482a6dceb97cf70c676f441a40a03b1cecf0f27d11e7060ccd14c7afa387f507",
         "grid_identity": "99d6f206c38ed759e1153d9e2c3d230e6765935be8e636398f0b9239bce996f8",
@@ -20761,7 +20761,7 @@
           "native_case": "irregular-centroid-aux"
         }
       },
-      "geometry_law_id": "betse_geometry_source_v1_5_0@1",
+      "geometry_law_id": "geometry_operator_binding@1",
       "volume_policy": "native_radial",
       "cell_measures_m3": {
         "seed-r0-c0": {

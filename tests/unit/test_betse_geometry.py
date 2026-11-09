@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import betse_geometry as geometry
+from validation.betse import native_geometry_operators as geometry
 from validation.geometry import betse_geometry_reference as reference
 from validation.geometry.betse_geometry_fixtures import cases, grid_cases, limitations
 
@@ -717,13 +717,13 @@ def test_native_and_environment_spatial_refinement_limits():
 
 
 def test_existing_profile_and_cut_interfaces_use_declared_geometry_only():
-    from cells.processes import betse_tissue_profiles, tissue_removal
+    from cells.processes import tissue_removal, tissue_target_selectors
 
     _, binding = prepared()
     mesh = binding.mesh
     k = binding.kernel
-    profile = betse_tissue_profiles.validate_layout(
-        betse_tissue_profiles.Layout(
+    profile = tissue_target_selectors.validate_layout(
+        tissue_target_selectors.Layout(
             mesh.cell_ids,
             binding.membrane_ids,
             binding.grid.environment_ids,
@@ -756,7 +756,7 @@ def test_existing_profile_and_cut_interfaces_use_declared_geometry_only():
         "existing-interface-binding",
         dict(
             status="passed",
-            profile_layout_identity=betse_tissue_profiles.layout_identity(profile),
+            profile_layout_identity=tissue_target_selectors.layout_identity(profile),
             cut_topology_identity=tissue_removal.layout_identity(top),
             geometry_identity=binding.identity,
             cut_executed=False,

@@ -14,7 +14,7 @@ import numpy as np
 
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.models import surface_tissue
-from cells.processes import betse_geometry as geometry
+from cells.processes import geometry_operator_binding as geometry
 
 BRIDGE_ID = "native_geometry_passive_tissue@1"
 REQUEST_KIND = "cells.initial_static_geometry_tissue_request@1"

@@ -29,7 +29,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
         )
     for p in m["junctions"]:
         p["gate"] = dict(
-            law="betse_rate_junction_relaxation@1",
+            law="junction_voltage_relaxation@1",
             threshold_voltage_V=0.015,
             minimum_open_fraction=0.1,
             initial_gate=0.6,

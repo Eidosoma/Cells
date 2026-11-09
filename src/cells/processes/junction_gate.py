@@ -1,4 +1,6 @@
-"""Continuous physical-time junction conductance from pinned BETSE rate equations.
+"""Continuous physical-time junction conductance from the BETSE v1.5.0 rate equations.
+
+The rate equations are cited from BETSE v1.5.0 (no BETSE code is used).
 
 The finite_extracellular@3 composition evaluates the rates at common solver
 stages. State g is relative intrinsic conductance in [minimum, 1]. Availability
@@ -12,10 +14,9 @@ from typing import Any, NamedTuple
 
 import jax.numpy as jnp
 
-LAW_ID = "betse_rate_junction_relaxation@1"
-# Neutral identifier for the same equations, used by identities from
-# resolved_pump_tissue@1 on; earlier identities keep LAW_ID.
-RELAXATION_LAW_ID = "junction_voltage_relaxation@1"
+LAW_ID = "junction_voltage_relaxation@1"
+# Alias kept for importers that still use the earlier name; same law.
+RELAXATION_LAW_ID = LAW_ID
 MAX_ABS_VOLTAGE_V = 0.120
 
 

@@ -39,7 +39,7 @@ def definition(c, protocol, dt, backend):
     for edge in raw["model"]["junctions"]:
         edge.pop("residual_fraction")
         edge["gate"] = {
-            "law": "betse_rate_junction_relaxation@1",
+            "law": "junction_voltage_relaxation@1",
             "threshold_voltage_V": protocol["threshold_voltage_V"],
             "minimum_open_fraction": protocol["minimum_open_fraction"],
             "initial_gate": protocol["initial_gate"],

@@ -10,7 +10,6 @@ import pytest
 
 from cells.core.errors import NumericalError
 from cells.core.specs import digest
-from cells.processes import betse_perturbations as perturb
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import active_nodes
 from tests.betse_physiology.integration.test_physiology_protein_transition import (
     fixture,
@@ -18,6 +17,7 @@ from tests.betse_physiology.integration.test_physiology_protein_transition impor
 )
 from tests.betse_physiology.unit.test_physiology_permeability_view import exact_tree
 from tests.betse_physiology.unit.test_physiology_tissue_step import control, evidence
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology import physiology_protein_loop_io as persistence
 from validation.betse.physiology.core import physiology_protein_loop as loop
 from validation.betse.physiology.core import physiology_protein_transition as transition

@@ -23,7 +23,7 @@ from cells.io import load_snapshot, write_snapshot
 from cells.models import surface_active_profile_barrier_interventions as model
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from validation.transport import active_profile_barrier_interventions_fixtures as fixtures
 from validation.transport import active_profile_barrier_interventions_reference as reference
 

@@ -24,7 +24,7 @@ from cells.core.surface_active_profile_epoch_spec import MODEL_ID, POLICIES
 from cells.models import surface_active_profile_interventions as dynamics
 from cells.models import surface_hcn_extra as parent
 from cells.models.surface_tissue import charge_increment
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 REQUEST_KIND = "cells.active_membrane_phase_handoff_request@1"
 KIND = "cells.active_membrane_phase_handoff_preparation@1"

@@ -16,7 +16,7 @@ from cells.core import tissue_profile_preparation as direct
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.models.registry import get_model
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from validation.topology import tissue_profile_composition_fixtures as fixtures
 from validation.topology import tissue_profile_composition_reference as reference
 

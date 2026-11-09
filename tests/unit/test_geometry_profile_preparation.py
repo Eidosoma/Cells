@@ -17,7 +17,7 @@ from cells.core import geometry_profile_preparation as bridge
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.models import surface_tissue as model
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from validation.geometry import geometry_profile_preparation_fixtures as fixtures
 from validation.geometry import geometry_profile_preparation_reference as reference
 from validation.tissue import surface_dynamics_reference as equations

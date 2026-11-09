@@ -12,7 +12,7 @@ from cells import tissue_profiles as static
 from cells.core import tissue_profile_composition_preparation as composed
 from cells.core import tissue_profile_preparation as direct
 from cells.core.specs import ConfigError, digest, parse_spec
-from cells.processes import betse_tissue_profiles as profiles
+from cells.processes import tissue_target_selectors as profiles
 from validation.betse.physiology.core import physiology_target_selection as selection
 
 KIND = "cells.random_tissue_profile_preparation@1"

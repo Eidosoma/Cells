@@ -240,7 +240,7 @@ def bind(spec):
     if not np.isfinite(matrix).all():
         raise ValueError("Unrepresentable physical Laplacian")
     # Stabilize dimensions before the same declared-nullspace construction used
-    # by betse_geometry.bind_grid: P inv(M-J/n) P / scale. No rank-cutoff pinv.
+    # by geometry_operator_binding.bind_grid: P inv(M-J/n) P / scale. No rank-cutoff pinv.
     scale = max(cx, cy)
     constant = np.ones((n, n), dtype=np.float64) / n
     projection = np.eye(n) - constant

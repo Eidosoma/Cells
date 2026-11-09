@@ -13,7 +13,7 @@ from cells.core import surface_profile_interventions_spec as membrane
 from cells.core import tissue_profile_composition_preparation as composed
 from cells.core import tissue_profile_preparation as direct
 from cells.core.specs import ConfigError, _fields, _integer, _number, digest
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 from cells.processes.electrochemistry import F, R
 
 TIMING_POLICY = membrane.TIMING_POLICY

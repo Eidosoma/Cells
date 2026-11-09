@@ -16,7 +16,7 @@ import numpy as np
 
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.models.registry import get_model
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 BRIDGE_ID = "resolved_tissue_static_profiles@1"
 KIND = "cells.resolved_tissue_profile_preparation@1"

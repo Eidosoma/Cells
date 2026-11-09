@@ -11,11 +11,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 from validation.perturbations import betse_perturbations_reference as reference
 from validation.perturbations.betse_perturbations_fixtures import base, cases, limitations
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 PROTOCOL = json.loads(
     (ROOT / "validation/perturbations/betse_perturbations_protocol.json").read_text()
 )

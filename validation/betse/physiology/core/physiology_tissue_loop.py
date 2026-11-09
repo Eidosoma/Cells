@@ -18,7 +18,7 @@ from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.runner import validate_checkpoint
 from cells.core.state import Checkpoint
-from cells.processes import betse_perturbations as perturb
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as component_step
 from validation.betse.physiology.core import physiology_random_streams as streams
 from validation.betse.physiology.core import physiology_tissue_binding as units

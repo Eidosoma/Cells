@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import betse_tissue_profiles as profiles
+from validation.betse import native_profile_conventions as profiles
 from validation.topology import betse_tissue_profiles_reference as reference
 from validation.topology.betse_tissue_profiles_fixtures import base, cases, limitations
 

@@ -27,7 +27,7 @@ from cells.models import surface_calcium_energy_water_profile_interventions as w
 from cells.models import surface_calcium_energy_water_repair_hcn_extra as repair_parent
 from cells.models import surface_calcium_energy_water_repair_profile_interventions as repair_runtime
 from cells.models.surface_tissue import charge_increment
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 REQUEST_KIND = "cells.joint_water_membrane_phase_handoff_request@1"
 KIND = "cells.joint_water_membrane_phase_handoff_preparation@1"

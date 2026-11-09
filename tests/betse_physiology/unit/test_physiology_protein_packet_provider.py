@@ -11,7 +11,6 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.processes import betse_perturbations as perturb
 from tests.betse_physiology.unit.test_physiology_protein_drive_arrays import (
     PROVENANCE,
     host_residual,
@@ -28,6 +27,7 @@ from tests.betse_physiology.unit.test_physiology_tissue_binding import (
     definition,
 )
 from tests.betse_physiology.unit.test_physiology_tissue_step import KINDS, case, control
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_protein_packet_provider as provider
 from validation.betse.physiology.core import physiology_random_streams as streams
 from validation.betse.physiology.core import physiology_tissue_binding as units

@@ -56,7 +56,7 @@ def definition(arm="open", *, catalog="compact", backend="cpu", padded=False):
     for j, row in enumerate(m["junctions"]):
         row["permeability_m_per_s"]["Ca"] = 1e-9
         row["gate"] = dict(
-            law="betse_rate_junction_relaxation@1",
+            law="junction_voltage_relaxation@1",
             threshold_voltage_V=0.015,
             minimum_open_fraction=0.1,
             initial_gate=0.4 + 0.1 * j,

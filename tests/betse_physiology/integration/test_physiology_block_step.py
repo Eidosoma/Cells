@@ -13,7 +13,6 @@ from cells.core.grid import EventGrid
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import Checkpoint
-from cells.processes import betse_perturbations as perturb
 from cells.processes import global_controls as setters
 from tests.betse_physiology.integration.test_physiology_checkpoint import assert_same_component
 from tests.betse_physiology.integration.test_physiology_tissue_step_checkpoint import hashes
@@ -27,6 +26,7 @@ from tests.betse_physiology.unit.test_physiology_tissue_binding import (
     component_state,
     definition,
 )
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology import physiology_block_checkpoint as io
 from validation.betse.physiology.core import physiology_block_control_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams

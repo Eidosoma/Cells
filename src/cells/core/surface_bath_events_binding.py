@@ -12,7 +12,7 @@ from dataclasses import asdict, dataclass, fields
 import numpy as np
 
 from cells.core.specs import ConfigError, _fields, _number, digest
-from cells.processes.betse_environment_transport import BathEvent, compile_baths
+from cells.processes.extracellular_face_transport import BathEvent, compile_baths
 
 TIMING_POLICY = "phase_clock_rk_stage_native_logistic@1"
 CONTROLLER_POLICY = "explicit_ideal_reservoir_dose_voltage_compensation_work@1"

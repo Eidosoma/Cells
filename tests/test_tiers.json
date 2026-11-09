@@ -65,6 +65,15 @@
     }
    },
    {
+    "file": "tests/betse_physiology/unit/test_native_noise.py",
+    "seconds": 13.21,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19,
+     "skipped": 42
+    }
+   },
+   {
     "file": "tests/betse_physiology/unit/test_physiology_active_temperature_fuel_stages.py",
     "seconds": 6.82,
     "exit_code": 0,
@@ -437,15 +446,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 24
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_perturbations.py",
-    "seconds": 13.21,
-    "exit_code": 0,
-    "counts": {
-     "passed": 19,
-     "skipped": 42
     }
    },
    {

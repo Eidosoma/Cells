@@ -16,7 +16,7 @@ from cells.core import owned_calcium_profile_barrier_preparation as calcium_comb
 from cells.core import tissue_profile_composition_preparation as composed
 from cells.core import tissue_profile_preparation as bridge
 from cells.core.specs import ConfigError, digest
-from cells.processes import betse_tissue_profiles as native
+from cells.processes import tissue_target_selectors as native
 
 REQUEST_KIND = "cells.tissue_profile_preparation_request@1"
 REQUEST_FIELDS = {

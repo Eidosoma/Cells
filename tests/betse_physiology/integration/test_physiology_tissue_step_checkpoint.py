@@ -11,10 +11,10 @@ import pytest
 
 from cells.core.grid import EventGrid
 from cells.core.specs import ConfigError, read_json
-from cells.processes import betse_perturbations as perturb
 from tests.betse_physiology.integration.test_physiology_checkpoint import assert_same_component
 from tests.betse_physiology.unit.test_physiology_permeability_view import exact_tree
 from tests.betse_physiology.unit.test_physiology_tissue_step import case
+from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology import physiology_checkpoint as paired
 from validation.betse.physiology.core import physiology_perturbation_step as component_step
 from validation.betse.physiology.core import physiology_random_streams as streams
