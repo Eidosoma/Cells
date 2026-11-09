@@ -1,7 +1,7 @@
 {
  "kind": "cells.protocol@1",
  "id": "projective-c-qualification-v1",
- "status": "Pre-registration draft 02 (lead review of draft 01, 9 November 2026). Committed to the repository before any judged run; not runnable until the ledger rounding fix is on main.",
+ "status": "Pre-registration draft 02 (lead review of draft 01, 9 November 2026), with amendment 1. Committed to the repository before any judged run. The ledger rounding fix is on main (03a2853).",
  "purpose": "Qualify the opt-in coarse projective mode projective_forward_euler@1 (execution.projective; D135 option C) against fine stepping of the same definition, on overlapping model-time windows, before it is used for long-horizon questions. Integration alone grants no scientific acceptance.",
  "reference_method": "Gear and Kevrekidis, Projective methods for stiff differential equations: problems with gaps in their eigenvalue spectrum, SIAM J Sci Comput 24:1091-1106 (2003): bursts of the inner integrator, then a forward-Euler extrapolation of the full state from the chord of the last m inner steps.",
  "engine_models": [
@@ -165,5 +165,19 @@
   "tolerances": "1 uM, 10 uV and 1e-4 are the strict level; Q1L adds a 10x looser level. Absolute caps tie both to the parity tolerances.",
   "second_order_outer_step": "Deferred. A separate later identity, only if measured speed-ups are insufficient.",
   "device_checks_for_@3": "Yes, as separate engine work (needed for batched @3 heredity runs). Not part of this protocol."
- }
+ },
+ "amendments": [
+  {
+   "id": "amendment-1",
+   "date": "2026-11-09",
+   "before_any_judged_run": true,
+   "by": "lead, on the driver review of 0e7433b",
+   "readings": {
+    "fallback_fine_row": "In criteria.fallback, 'a fine row' means a row of the checked fine reference (reference.fine). It is the only run with rows inside an accepted jump interval [from, to + K h]. The reference records max over patches of |dVm/dt| for every row, or the equivalent set of rows above the threshold, so the criterion can be judged from saved results.",
+    "transient_end": "'The transient ends' at the time of the last fine-reference row after the cue onset (F1) or the switch onset (F2) whose |dVm/dt| exceeds max_membrane_voltage_rate_V_per_s.",
+    "switch_time": "F2 switch times ('first fine row with Vm < -50 mV') are recorded during each run at fine-row resolution for both runs, not read from the observation grid.",
+    "backend": "Every judged run is on CPU, float64. The F2 pre-scan only selects the NaV1.2 scale. It may run on the L4 with its backend recorded, and the selected scale's lingering time is then taken from the judged CPU fine reference."
+   }
+  }
+ ]
 }
