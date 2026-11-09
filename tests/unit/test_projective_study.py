@@ -2,7 +2,8 @@
 
 Q1L honours its tolerance_override and its absolute caps are reported, not
 judged; every other buildable case takes the protocol's projective parameters
-unchanged and has judged caps. Cases the driver cannot build are refused.
+unchanged. Q2 is the seven-cell world. Cases the driver cannot build are
+refused. (The protocol parts run end to end in test_projective_protocol_runs.py.)
 """
 
 import json
@@ -57,23 +58,28 @@ def test_buildable_cases_take_the_protocol_parameters(case_id):
     assert raw["model"]["id"] == case["model"]
 
 
-def test_absolute_caps_are_judged_except_for_q1l():
-    assert study.REPORTED_CAPS == {"Q1L-relax-pair-loose"}
-    assert "except Q1L" in PROTOCOL["criteria"]["absolute_caps"]
-    theirs = dict(
-        membrane_voltage_V=np.array([-0.08, -0.03]), concentration_mM=np.array([10.0, 140.0])
-    )
-    mine = dict(
-        membrane_voltage_V=theirs["membrane_voltage_V"] + [0.0, 3e-5],
-        concentration_mM=theirs["concentration_mM"] * (1 + np.array([1e-4, 0.0])),
-    )
-    caps = study.absolute_caps(mine, theirs, judged=False)
-    assert caps["judged"] is False and not caps["within"]
-    assert np.isclose(caps["voltage_V"], 3e-5) and np.isclose(caps["relative_concentration"], 1e-4)
-    assert study.absolute_caps(theirs, theirs, judged=True)["within"]
-
-
-@pytest.mark.parametrize("case_id", ["Q2-relax-world", "F2-near-fold", "unknown"])
+@pytest.mark.parametrize("case_id", ["F2-near-fold", "unknown"])
 def test_cases_without_a_driver_world_are_refused(case_id):
     with pytest.raises(ValueError):
         study.protocol_case(PROTOCOL, case_id)
+
+
+def test_q2_is_the_seven_cell_world():
+    """U -+2 mV, U -+5 mV, H, D and H + 10 mV, each with its own held bath."""
+    from cells.core.state import initialise
+    from cells.models import surface_pump_projective as readouts
+    from validation.tissue import surface_pump_v3_fixtures as heredity
+
+    raw, _ = study.protocol_definition(PROTOCOL, "Q2-relax-world")
+    spec = parse_spec(raw)
+    assert len(spec.model.cells) == 7 and sum(x.reservoir for x in spec.model.extracellular) == 7
+    p = readouts.host_layout(initialise(spec).layout)
+    active = np.asarray(p.membrane_active, dtype=bool)
+    u, h, d = (heredity.HEREDITY_STATES[k][0] for k in "UHD")
+    expected = np.array([u - 0.002, u + 0.002, u - 0.005, u + 0.005, h, d, h + 0.010])
+    np.testing.assert_allclose(
+        np.asarray(p.initial_membrane_voltage_V)[active],
+        expected[np.asarray(p.membrane_cell)[active]],
+        rtol=0,
+        atol=1e-12,
+    )

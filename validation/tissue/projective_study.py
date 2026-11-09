@@ -21,19 +21,33 @@ validation/tissue/protocols/projective_c_qualification_v1.json): each named case
 is built from the protocol, never from the command line: its world (the driver
 case of PROTOCOL_WORLDS), horizon, window, observation spacing, the protocol's
 projective_parameters (burst, slope, jump rule, tolerance, safety, row checks)
-and the case's tolerance_override. The absolute caps of criteria.absolute_caps
-(|dVm| and |dc|/c at every observation) are computed for every case and marked
-judged or reported per the protocol (REPORTED_CAPS: Q1L's are reported, not
-judged). Cases this driver cannot build are refused.
+and the case's tolerance_override. Each projective part records whether the
+case's absolute caps (criteria.absolute_caps) are judged or, for Q1L, reported
+(REPORTED_CAPS); validation/tissue/projective_judge.py evaluates them. Cases
+this driver cannot build are refused. A protocol run is one part
+of one case per process (--part):
+  projective  the definition through cells.core.runner.run (every accepted row
+              checked); saves the projective report, the error coordinates at
+              every observation, fine-row switch times and wall time.
+  reference   the checked fine reference (protocol reference.fine): the same
+              definition without execution.projective through
+              cells.core.windows.run_windowed, every row checked; saves the
+              coordinates at every observation, its wall time, fine-row switch
+              times and, for every row, max over patches of |dVm/dt| (the
+              backward difference over the step ending at that row; amendment 1)
+              in <case>-reference-rates.npz. Cases with the same fine definition
+              (Q1, Q1L) share one reference; validation/tissue/projective_judge.py
+              pairs them by the fine definition's digest.
 
 Usage:
   python -m validation.tissue.projective_study CASE [CASE ...] --output DIR
       [--end SECONDS] [--every SECONDS]
-  python -m validation.tissue.projective_study --protocol PROTOCOL.json CASE_ID [...]
-      --output DIR
+  python -m validation.tissue.projective_study --protocol PROTOCOL.json --part PART
+      CASE_ID --output DIR
 """
 
 import argparse
+import hashlib
 import json
 import resource
 import time
@@ -45,12 +59,16 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.projective import _Bursts  # noqa: E402
+from cells.core.grid import EventGrid  # noqa: E402
+from cells.core.projective import ROW_FINE, _Bursts  # noqa: E402
 from cells.core.runner import run  # noqa: E402
 from cells.core.specs import parse_spec  # noqa: E402
 from cells.core.state import initialise  # noqa: E402
 from cells.models import surface_pump_projective as readouts  # noqa: E402
+from cells.models import surface_tissue as tissue  # noqa: E402
 from cells.models.registry import get_model  # noqa: E402
+from cells.numerics import surface_field as field  # noqa: E402
+from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
 from validation.tissue import projective_fixtures as fixtures  # noqa: E402
 
 ESTIMATE_FACTOR = 2.0  # Allowance / summed first-order local-error estimates.
@@ -60,6 +78,7 @@ PROTOCOL_WORLDS = {
     "Q1L-relax-pair-loose": "relax3",
     "F1-cue-in-window": "cue3",
     "A1-pump-pair": "pair1",
+    "Q2-relax-world": "world7",
 }
 # criteria.absolute_caps: "All cases except Q1L"; Q1L's purpose: "the absolute caps
 # are reported, not judged".
@@ -189,6 +208,17 @@ def case_cue3(args):
     return _heredity(args, _near_saddle(), cue=(start, round(start + 0.3, 3)))
 
 
+def case_world7(args):
+    """@3 seven independent cells: U -+2 mV, U -+5 mV, H, D and H kicked by +10 mV."""
+    from validation.tissue import surface_pump_v3_fixtures as heredity
+
+    states = heredity.HEREDITY_STATES
+    u, h, d = states["U"][:4], states["H"][:4], states["D"][:4]
+    cells = [(u[0] + dv, *u[1:]) for dv in (-0.002, 0.002, -0.005, 0.005)]
+    cells += [h, d, (h[0] + 0.010, *h[1:])]
+    return _heredity(args, cells)
+
+
 def _tolerance(args):
     return dict(
         concentration_mM=args.tol_concentration,
@@ -203,6 +233,7 @@ CASES = dict(
     closed1=case_closed1,
     relax3=case_relax3,
     cue3=case_cue3,
+    world7=case_world7,
 )
 
 
@@ -255,27 +286,202 @@ def protocol_definition(protocol, case_id):
     return raw, case
 
 
-def absolute_caps(mine, theirs, *, judged):
-    """criteria.absolute_caps at one observation, from the two runs' coordinates.
+SWITCH_V = -0.050  # near_fold_accuracy: switch time, first fine row with Vm < -50 mV.
+REFERENCE_WINDOW_STEPS = 3000  # Rows per checked window of the fine reference.
 
-    |dVm| <= 20 uV over every patch and |dc|/c <= 2e-4 over every species in every
-    active cell and finite outside node (c the fine value).
+
+def fine_definition(raw):
+    """The same definition without execution.projective (protocol reference.fine)."""
+    return dict(raw, execution={k: v for k, v in raw["execution"].items() if k != "projective"})
+
+
+def definition_digest(raw):
+    return hashlib.sha256(json.dumps(raw, sort_keys=True).encode()).hexdigest()
+
+
+def voltage_map(p):
+    """(initial Vm, A): active patch voltages are initial + A @ q, q the node charge increments.
+
+    The capacitor map of surface_tissue.capacitor_change (models/surface_pump_projective
+    membrane_voltage), linear in q, applied to unit charges once.
     """
-    dv = float(np.max(np.abs(mine["membrane_voltage_V"] - theirs["membrane_voltage_V"]), initial=0))
-    c = theirs["concentration_mM"]
-    dc = float(np.max(np.abs(mine["concentration_mM"] - c) / np.abs(c), initial=0))
+    layout = tissue.field_layout(p)
+    size, n = layout.active.size, p.active.size
+    active = np.asarray(p.membrane_active, dtype=bool)
+    columns = []
+    for j in range(size):
+        unit = np.zeros(size)
+        unit[j] = 1.0
+        dp = field._capacitor_solve(unit, np.zeros(size), layout, xp=np)
+        columns.append((dp[p.membrane_cell] - dp[n + p.membrane_outside])[active])
+    return np.asarray(p.initial_membrane_voltage_V)[active], np.stack(columns, axis=1)
+
+
+def row_voltages(rows, p, vmap):
+    """Active patch voltages (V) of every row of a [row, ...] state history."""
+    initial, matrix = vmap
+    z = np.asarray(p.valence).reshape(-1)
+    q = CHARGE_PER_FMOL * np.concatenate(
+        (
+            np.einsum("s,rsn->rn", z, np.asarray(rows.amount_increment)),
+            np.einsum("s,rsn->rn", z, np.asarray(rows.extracellular_amount_increment)),
+        ),
+        axis=1,
+    )
+    return initial + q @ matrix.T
+
+
+def first_below(times, voltages, level=SWITCH_V):
+    """Per patch, the time of the first row with Vm < level (None if none)."""
+    out = []
+    for k in range(voltages.shape[1]):
+        hits = np.flatnonzero(voltages[:, k] < level)
+        out.append(float(times[hits[0]]) if len(hits) else None)
+    return out
+
+
+def _observed(model, spec, p, times, rows, kinds=None):
+    """Error coordinates at every observation time (fine rows) of a run's rows."""
+    out = []
+    for t in spec.experiment.observation_times:
+        hits = np.flatnonzero(times == t)
+        if not len(hits):
+            continue
+        i = int(hits[0])
+        if kinds is not None and kinds[i] != ROW_FINE:
+            raise ValueError(f"observation {t} s is not a fine row")
+        row = type(rows)(*(np.asarray(v[i]) for v in rows))
+        coords = readouts.coordinates(model, row, p)
+        out.append(dict(time_s=float(t), **{k: v.tolist() for k, v in coords.items()}))
+    return out
+
+
+def protocol_reference(protocol, case_id):
+    """The checked fine reference of a protocol case (one process, detached)."""
+    from cells.core.windows import WindowPolicy, run_windowed
+
+    raw, case = protocol_definition(protocol, case_id)
+    fine = fine_definition(raw)
+    spec = parse_spec(fine)
+    model = get_model(spec.model)
+    p = readouts.host_layout(initialise(spec).layout)
+    vmap = voltage_map(p)
+    grid = EventGrid(spec)
+    rate = np.zeros(len(grid))
+    threshold = protocol["projective_parameters"]["safety"]["max_membrane_voltage_rate_V_per_s"]
+    switch = [None] * len(vmap[0])
+    observations, diagnostics, windows = [], {}, [0]
+
+    def sink(result):
+        times = np.asarray(result.times)
+        first = grid.exact_index(float(times[0]))
+        vm = row_voltages(result.history, p, vmap)
+        if len(times) > 1:
+            dv = np.max(np.abs(np.diff(vm, axis=0)), axis=1, initial=0.0)
+            rate[first + 1 : first + len(times)] = dv / np.diff(times)
+        for k, t in enumerate(first_below(times, vm)):
+            if switch[k] is None and t is not None:
+                switch[k] = t
+        observations.extend(
+            o
+            for o in _observed(model, spec, p, times, result.history)
+            if not observations or o["time_s"] > observations[-1]["time_s"]
+        )
+        for name, value in result.diagnostics.items():
+            if np.isscalar(value):
+                diagnostics[name] = max(diagnostics.get(name, -np.inf), float(value))
+        windows[0] += 1
+
+    started = time.perf_counter()
+    run_windowed(spec, WindowPolicy(REFERENCE_WINDOW_STEPS, "observations"), sink=sink)
+    wall = time.perf_counter() - started
+    above = np.flatnonzero(rate > threshold)
     return dict(
-        judged=judged,
-        voltage_V=dv,
-        voltage_cap_V=VOLTAGE_CAP_V,
-        relative_concentration=dc,
-        relative_concentration_cap=CONCENTRATION_CAP,
-        within=dv <= VOLTAGE_CAP_V and dc <= CONCENTRATION_CAP,
+        part="reference",
+        case=case_id,
+        protocol=protocol["id"],
+        fine_definition_sha256=definition_digest(fine),
+        definition=fine,
+        wall_s=wall,
+        windows=windows[0],
+        window_steps=REFERENCE_WINDOW_STEPS,
+        steps=len(grid) - 1,
+        diagnostics=diagnostics,
+        observations=observations,
+        switch_below_m50mV_s=switch,
+        rate_threshold_V_per_s=threshold,
+        rows_above_threshold=int(len(above)),
+        max_rate_V_per_s=float(rate.max(initial=0.0)),
+        peak_rss_MiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024,
+    ), dict(max_abs_dvm_dt_V_per_s=rate, times_s=np.asarray([grid[k] for k in range(len(grid))]))
+
+
+def protocol_projective(protocol, case_id):
+    """The projective run of a protocol case (one process, detached)."""
+    raw, case = protocol_definition(protocol, case_id)
+    spec = parse_spec(raw)
+    started = time.perf_counter()
+    result = run(spec)
+    wall = time.perf_counter() - started
+    model = get_model(spec.model)
+    p = readouts.host_layout(result.final.layout)
+    vm = row_voltages(result.history, p, voltage_map(p))
+    fine = np.asarray(result.row_kinds) == ROW_FINE
+    report = dict(result.projective)
+    return dict(
+        part="projective",
+        case=case_id,
+        protocol=protocol["id"],
+        protocol_case=case,
+        caps_judged=case_id not in REPORTED_CAPS,
+        definition=raw,
+        fine_definition_sha256=definition_digest(fine_definition(raw)),
+        wall_s=wall,
+        timings=result.timings,
+        diagnostics=result.diagnostics,
+        rows=int(len(result.times)),
+        fine_rows=int(np.count_nonzero(fine)),
+        observations=_observed(
+            model, spec, p, np.asarray(result.times), result.history, np.asarray(result.row_kinds)
+        ),  # fmt: skip
+        switch_below_m50mV_s=first_below(np.asarray(result.times)[fine], vm[fine]),
+        report=report,
+        peak_rss_MiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024,
     )
 
 
-VOLTAGE_CAP_V = 20e-6  # The rung-0/1 F-protocol Vm tolerance.
-CONCENTRATION_CAP = 2e-4  # The rung-1 extracellular tolerance.
+def run_protocol_part(protocol, part, case_id, output):
+    """Run one part of one case; write <case>-<part>.json, or <case>-<part>-failure.json."""
+    out = Path(output)
+    out.mkdir(parents=True, exist_ok=True)
+    began = time.perf_counter()
+    digest = definition_digest(fine_definition(protocol_definition(protocol, case_id)[0]))
+    try:
+        if part == "reference":
+            entry, arrays = protocol_reference(protocol, case_id)
+            np.savez_compressed(out / f"{case_id}-reference-rates.npz", **arrays)
+        else:
+            entry = protocol_projective(protocol, case_id)
+        entry["seconds"] = time.perf_counter() - began
+        path = out / f"{case_id}-{part}.json"
+    except Exception as error:  # A failure or refusal is a result; keep it.
+        entry = dict(
+            part=part,
+            case=case_id,
+            fine_definition_sha256=digest,
+            status="failed",
+            error=repr(error),
+            traceback=traceback.format_exc(),
+            seconds=time.perf_counter() - began,
+            peak_rss_MiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024,
+        )
+        path = out / f"{case_id}-{part}-failure.json"
+    else:
+        entry["status"] = "completed"
+    with open(path, "x") as stream:  # Never overwrite a result.
+        stream.write(json.dumps(entry, indent=1, default=_json) + "\n")
+    print(json.dumps(dict(case=case_id, part=part, status=entry["status"], path=str(path))))
+    return entry
 
 
 def fine_reference(spec, times):
@@ -309,8 +515,8 @@ def fine_reference(spec, times):
     return rows, timing
 
 
-def compare(spec, result, rows, *, caps_judged=None):
-    """Per observation: errors and allowances; with caps_judged, also the absolute caps."""
+def compare(spec, result, rows):
+    """Development mode: per observation, errors and estimate-based allowances."""
     model, p = get_model(spec.model), readouts.host_layout(result.final.layout)
     tolerance = {k: getattr(spec.projective.tolerance, k) for k in readouts.COORDINATES}
     jumps = result.projective["jump_log"]
@@ -325,8 +531,6 @@ def compare(spec, result, rows, *, caps_judged=None):
             error = float(np.max(np.abs(mine[k] - theirs[k]), initial=0.0))
             allowance = ESTIMATE_FACTOR * tolerance[k] * estimate
             entry[k] = dict(error=error, allowance=allowance)
-        if caps_judged is not None:
-            entry["absolute_caps"] = absolute_caps(mine, theirs, judged=caps_judged)
         table.append(entry)
     worst = {
         k: dict(
@@ -362,12 +566,8 @@ def summary(report):
 
 
 def run_case(name, args):
-    protocol = getattr(args, "protocol_document", None)
-    if protocol is None:
-        raw, caps_judged, case = CASES[name](args), None, None
-    else:
-        raw, case = protocol_definition(protocol, name)
-        caps_judged = name not in REPORTED_CAPS
+    """Development mode: a driver case against the unchecked fine harness."""
+    raw = CASES[name](args)
     spec = parse_spec(raw)
     fine = dict(raw, execution={k: v for k, v in raw["execution"].items() if k != "projective"})
     fine_spec = parse_spec(fine)
@@ -376,12 +576,10 @@ def run_case(name, args):
     result = run(spec)
     projective_wall = time.perf_counter() - started
     rows, reference_timing = fine_reference(fine_spec, spec.experiment.observation_times)
-    table, worst = compare(spec, result, rows, caps_judged=caps_judged)
+    table, worst = compare(spec, result, rows)
     report = dict(result.projective)
     entry = dict(
         case=name,
-        protocol=None if protocol is None else protocol["id"],
-        protocol_case=case,
         definition=raw,
         projective_wall_s=projective_wall,
         projective_timings=result.timings,
@@ -421,6 +619,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("cases", nargs="+")
     parser.add_argument("--protocol", help="build the named protocol cases from this file")
+    parser.add_argument("--part", choices=("projective", "reference"))
     parser.add_argument("--output", required=True)
     parser.add_argument("--end", type=float, default=300.0)
     parser.add_argument("--every", type=float, default=30.0)
@@ -438,7 +637,11 @@ def main():
         args.protocol_document = json.loads(Path(args.protocol).read_text())
         for name in args.cases:  # Refuse before anything runs.
             protocol_case(args.protocol_document, name)
-    elif not set(args.cases) <= set(CASES):
+        if args.part is None or len(args.cases) != 1:
+            parser.error("--protocol runs one --part of one case per process")
+        run_protocol_part(args.protocol_document, args.part, args.cases[0], args.output)
+        return
+    if not set(args.cases) <= set(CASES):
         parser.error(f"cases must be among {sorted(CASES)} without --protocol")
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
