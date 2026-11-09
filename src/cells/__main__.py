@@ -31,6 +31,9 @@ def _parser() -> argparse.ArgumentParser:
     commands.add_parser("tissue-profiles", help="prepare and replay static tissue profiles")
     commands.add_parser("tissue-phase", help="carry INIT history into a new SIM phase")
     commands.add_parser(
+        "stationary", help="opt-in stationary states, stability and continuation (read-only)"
+    )
+    commands.add_parser(
         "tissue-geometry", help="prepare and replay initial passive tissue geometry"
     )
     validate = commands.add_parser("validate", help="validate a definition and its resource bounds")
@@ -173,6 +176,10 @@ def _batch_window_main(args):
 
 def main(argv=None) -> int:
     args = sys.argv[1:] if argv is None else argv
+    if args and args[0] == "stationary":
+        from cells.analysis.cli import main as stationary_main
+
+        return stationary_main(args[1:])
     if args and args[0] == "tissue-phase":
         from cells.tissue_phase import main as phase_main
 
