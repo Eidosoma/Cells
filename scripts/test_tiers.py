@@ -165,12 +165,27 @@ def measure(args):
 def tiers(args):
     # Later measurements override earlier ones per file (e.g. a re-measured subset).
     records = [json.loads(Path(m).read_text()) for m in args.measured]
-    latest = {}
+    latest, sources, provenance = {}, [], []
+    if args.base:
+        # Keep an existing tiers record (whose paths may have been edited, e.g. after
+        # test files moved) and override only re-measured files.
+        base = json.loads(Path(args.base).read_text())
+        for tier, rows in base["tiers"].items():
+            for row in rows:
+                latest[row["file"]] = {**row, "timed_out": tier == "3"}
+        sources, provenance = list(base["measured"]), list(base["measured_provenance"])
     for record in records:
         for row in record["files"]:
             latest[row["file"]] = row
+    existing = set(_test_files())
+    dropped = sorted(f for f in latest if f not in existing)
+    for name in dropped:
+        del latest[name]
+    if dropped:
+        print("dropped (no longer in tests/):", dropped)
     measured = {
-        "provenance": [r["provenance"] for r in records],
+        "sources": sources + [str(m) for m in args.measured],
+        "provenance": provenance + [r["provenance"] for r in records],
         "cap_seconds": records[-1]["cap_seconds"],
     }
     groups = {"1": [], "2": [], "3": []}
@@ -186,7 +201,7 @@ def tiers(args):
         )
     doc = {
         "kind": "cells.test_tiers@1",
-        "measured": [str(m) for m in args.measured],
+        "measured": measured["sources"],
         "measured_provenance": measured["provenance"],
         "fast_seconds": args.fast,
         "cap_seconds": measured["cap_seconds"],
@@ -254,6 +269,7 @@ def main(argv=None):
     m.add_argument("--only-tiers", type=int, nargs="+", default=[1, 2])
     t = sub.add_parser("tiers")
     t.add_argument("--measured", required=True, nargs="+")
+    t.add_argument("--base", help="existing tiers JSON to keep, overriding re-measured files")
     t.add_argument("--out", required=True)
     t.add_argument("--fast", type=float, default=20.0)
     r = sub.add_parser("run")
