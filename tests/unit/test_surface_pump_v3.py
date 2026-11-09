@@ -357,7 +357,7 @@ def test_restart_is_bitwise_and_invalid_channel_controls_refuse_the_step(tmp_pat
 @pytest.mark.parametrize(
     "fault",
     [
-        "old_law_id",
+        "retired_law_id",
         "unknown_law",
         "ion",
         "ion_ratio",
@@ -376,8 +376,8 @@ def test_definition_errors_reject(fault):
     raw = fixtures.definition("clamped", solver=imex.ARS222_ID)
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     channel = m["channels"][2]  # NaV1.2 on patch 2.
-    if fault == "old_law_id":
-        channel["kinetic_law"] = sodium_channels.LAW_ID
+    if fault == "retired_law_id":  # Renamed to nav1p2_m3h_regularized@1 (stage B).
+        channel["kinetic_law"] = "betse_nav1p2_m3h_regularized@1"
     elif fault == "unknown_law":
         channel["kinetic_law"] = "nav1p3_m3h_regularized@1"
     elif fault == "ion":

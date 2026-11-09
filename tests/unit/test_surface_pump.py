@@ -172,7 +172,7 @@ def test_rk4_identity_reproduces_resolved_tissue_2_without_channels(arm):
     [
         "cold",
         "hot",
-        "old_gate_law",
+        "retired_gate_law",
         "channels",
         "channel_capacity",
         "dense_field",
@@ -189,8 +189,8 @@ def test_definition_errors_reject(fault):
         m["temperature_K"] = 199.0
     elif fault == "hot":
         m["temperature_K"] = 400.5
-    elif fault == "old_gate_law":
-        m["junctions"][0]["gate"]["law"] = "junction_voltage_relaxation@1"
+    elif fault == "retired_gate_law":  # Merged into junction_voltage_relaxation@1 (stage B).
+        m["junctions"][0]["gate"]["law"] = "betse_rate_junction_relaxation@1"
     elif fault == "channels":
         m["channels"] = []
     elif fault == "channel_capacity":
