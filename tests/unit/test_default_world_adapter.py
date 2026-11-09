@@ -525,7 +525,12 @@ def test_emulator_runs_the_calcium_pump_and_each_model_difference(calcium_case, 
     history = np.load(tmp_path / "base" / "init_history.npz")["cc_time"]
     ca = MAMMAL["species"].index("Ca")
     assert np.all(np.diff(history[:, ca], axis=0) < 0)  # the pump extrudes Ca
-    for name, factor in (("ecm_drift_off", 1), ("gate_once_no_lag", 1), ("compact_ecm_faces", 10)):
+    for name, factor in (
+        ("ecm_drift_off", 1),
+        ("gate_once_no_lag", 1),
+        ("compact_ecm_faces", 10),
+        ("cells_calcium_pump_law", 1),
+    ):
         record = adapter.run_emulator(
             calcium_case,
             protocol,

@@ -14,6 +14,7 @@ this step's exterior update, the step-start Vm; its flux joins the membrane
 transfer of the same update.
 """
 
+import math
 from typing import NamedTuple
 
 import jax
@@ -165,19 +166,29 @@ def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     after_ecm = (reset + delta).reshape(old.outside_concentration.shape)
     if p.calcium is not None:
         ca = p.calcium.index
-        calcium = (
-            laws.calcium_pump_kinetics(
-                old.cell_concentration[ca, t.cell_owner],
-                after_ecm[ca, t.outside_owner],
-                vm,
-                t.temperature,
-                p.calcium.parameters,
-                p.calcium.available,
-                variant,
-                xp=xp,
+        inputs = (old.cell_concentration[ca, t.cell_owner], after_ecm[ca, t.outside_owner], vm)
+        if variant.cells_calcium_law:  # Model difference: Cells' law and constants.
+            from cells.processes import calcium_atpase
+            from cells.processes.electrochemistry import R
+
+            q = p.calcium.parameters
+            law = calcium_atpase.Parameters(
+                q.capacity_fmol_per_s,
+                q.atp_mM,
+                q.adp_mM,
+                q.pi_mM,
+                q.km_ca_mM,
+                q.km_atp_mM,
+                q.delta_g0_J_per_mol + R * t.temperature * math.log(1000.0),
+            )
+            rate = calcium_atpase.kinetics(
+                *inputs, t.temperature, law, p.calcium.available, xp=xp
+            ).cycles_fmol_s
+        else:
+            rate = laws.calcium_pump_kinetics(
+                *inputs, t.temperature, p.calcium.parameters, p.calcium.available, variant, xp=xp
             )[0]
-            * t.membrane_open
-        )
+        calcium = rate * t.membrane_open
         membrane = membrane - (species == ca) * calcium
     ordinary = ordinary._replace(membrane_inward_fmol_s=membrane)
 

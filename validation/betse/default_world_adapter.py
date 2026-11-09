@@ -67,6 +67,7 @@ EXECUTED = (
     "src/cells/processes/kinetic_pump.py",
     "src/cells/processes/er_calcium.py",
     "src/cells/processes/plasma_calcium.py",
+    "src/cells/processes/calcium_atpase.py",
     "src/cells/processes/voltage_gates.py",
     "validation/source_snapshot.py",
     "validation/betse/default_world_adapter.py",
@@ -1704,7 +1705,12 @@ def main(argv=None):
         "--model-difference",
         action="append",
         default=[],
-        choices=("ecm_drift_off", "compact_ecm_faces", "gate_once_no_lag"),
+        choices=(
+            "ecm_drift_off",
+            "compact_ecm_faces",
+            "gate_once_no_lag",
+            "cells_calcium_pump_law",
+        ),
         help="switch on one deliberate Cells-model difference (emulator/laws.py), to size it",
     )
     run.add_argument("--out", required=True, help="fresh layout directory")

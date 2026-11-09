@@ -42,6 +42,7 @@ class Variant(NamedTuple):
     compact_ecm_faces: bool = False
     gate_once: bool = False
     no_membrane_lag: bool = False
+    cells_calcium_law: bool = False
 
 
 # Model differences an emulator run may switch on (sizes, not a Cells model):
@@ -57,6 +58,10 @@ MODEL_DIFFERENCES = {
     # Physical-time junction gate (once per step for every ion) and no membrane
     # concentration lag (membranes see the bulk cell concentration).
     "gate_once_no_lag": ("gate_once", "no_membrane_lag"),
+    # Cells' plasma-membrane Ca-ATPase law (cells.processes.calcium_atpase, with Cells'
+    # constants and the 1 M standard energy deltaGATP + R T ln(1000) that the adapter maps)
+    # in place of BETSE's pumpCaATP, evaluated at BETSE's point in the update.
+    "cells_calcium_pump_law": ("cells_calcium_law",),
 }
 
 
