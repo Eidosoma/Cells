@@ -1,0 +1,325 @@
+{
+ "schema": "cells.morphogenesis_protocol@1",
+ "id": "mg0b-domain-wall-v1",
+ "status": "PRE-REGISTERED 2026-11-09 when the lead commits this file to main, before the judged run. Registered predictions and criteria were set from theory and from the reduced-model predictions (mg0b_reduced_predictions.json: independent numpy/scipy model, no engine run) before any engine development run of the wall, pinning, hysteresis or cut parts, and are unchanged from the draft (protocols-draft/mg0b_domain_wall_v1.json, 13:40 UTC). Engine runs of those parts since the draft (dev-06, guard bypassed, not evidence; the ledger agent's width check; dev-07, completion only) changed no prediction or criterion. The draft was BLOCKED by its 'engine gap 3': the global-charge guard refused every chain of more than about 6 cells (first entry of engine_gaps_recorded); the ledger rounding fix (tag ledger-rounding-fix-2026-11-09, 5ba4426..9f59fb0, main 03a2853) closed it, and dev-07 confirmed that every part's largest chain and longest horizon now completes. Changes from the draft: changes_from_draft.",
+ "rung": "MG0b",
+ "question": "On a chain of resolved bioelectric cells with Kir2.1, NaV1.2, leaks and gap junctions, does a bistable voltage domain wall form with width scaling as sqrt(G), pin at weak coupling, show hysteresis under a slowly ramped control, and does a written domain return after its tissue is cut and restored?",
+ "engine_models": [
+  "resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, src/cells/models/surface_pump_v3.py), unmodified, at the revision of the judged run's clean snapshot (main, including the ledger rounding fix, tag ledger-rounding-fix-2026-11-09); IMEX ARS(2,2,2) (imex_ars222_face_electromigration@1) with face electromigration implicit; field solver capacitive_reduction_gauged_damped_newton@2 as the heredity fixture declares (the opt-in @3 is not used); dt 1 ms (0.5 and 0.25 ms in the timestep part); CPU, float64"
+ ],
+ "driver": "validation/morphogenesis/mg0b_domain_wall.py; reduced model validation/morphogenesis/mg0b_theory.py. Verdict: mg0b_domain_wall.judge on the saved (JSON) results, every criterion evaluated with validation/morphogenesis/mg0a_gradient.evaluate (a missing metric fails its criterion; a failed part fails the protocol); `mg0b_domain_wall judge --output RUN_DIR --protocol THIS_FILE` re-evaluates a saved results.json into judgement.json",
+ "command": "PYTHONPATH=src:. JAX_ENABLE_X64=1 CUDA_VISIBLE_DEVICES= taskset -c 0,1 python -m validation.morphogenesis.mg0b_domain_wall all --output RUN_DIR --protocol THIS_FILE (from a clean snapshot of the commit that registers this file; detached; expected about 55 minutes)",
+ "theory_sources": {
+  "McNamara 2020": "McNamara HM et al., Bioelectrical domain walls in homogeneous tissues, Nat Phys 16:357-364 (2020), PMC8008956: C_m dV/dt = G_cxn lap V - I(V); walls stationary only at the equal-area (Maxwell) balance in a homogeneous tissue, otherwise they migrate to expand the stronger state; width grows as sqrt(G_cxn); hysteresis under a ramped depolarising (CheRiff) conductance, vanishing in well-coupled tissue",
+  "Keener 1987": "Keener JP, Propagation and its failure in coupled systems of discrete excitable cells, SIAM J Appl Math 47:556-572, doi:10.1137/0147038: on a discrete chain a bistable front is pinned (propagation failure) below a critical coupling that depends on the detuning"
+ },
+ "world": {
+  "cell": "heredity cell of validation/tissue/surface_pump_v3_fixtures.py (heredity_cells): BETSE-default membrane coefficients, Na leak x0.2, Kir2.1 1e-8 m/s, NaV1.2 2.5e-7 m/s, Na/K-ATPase, held bath per cell, 310 K, fixed volume",
+  "nav_availability": "0.4 (held). Needed so that a cell without the control is monostable H and a hysteresis loop can close; at full NaV1.2 the D state persists at zero control",
+  "control": "per-cell Na-leak population naleak_always_open@1 with 2e-10 m/s at availability u",
+  "write": "per-cell Na-leak population, 1.92e-9 m/s, on from 0.05 to 0.35 s in written cells",
+  "junctions": "constant_field@1, Na K M permeable (P blocked), area 1e-11 m^2; gate junction_voltage_relaxation@1 held open (minimum open fraction 1, initial 1, threshold 0); permeability set so that G = kappa g_H, g_H the H-state slope conductance",
+  "initial_state": "every cell in the self-consistent slow H state at the Maxwell control u_M (composition = slow H at u_M; fast I-V equal-area at u_M)",
+  "why_not_kir_plus_leak_alone": "Checked (development note): with this Kir2.1 law (m_inf half-point -96.5 mV, slope 23 mV) Kir2.1 plus a Na leak alone is bistable only in a 2.5% window of P_leak/P_Kir, with both states depolarised (-24 and +36 mV); with the default K and anion leaks the window is under 0.2% at P_Kir 1e-6 m/s and absent at 1e-7 m/s or less. McNamara-type bistability here needs the NaV1.2 window current, as the heredity pre-screen found"
+ },
+ "registered_predictions": {
+  "source": "mg0b_theory at the committed revision; values from /mnt/workspaces/Cells/morphogenesis-mg0-20261109-01/protocols-draft/mg0b_reduced_predictions.json and /mnt/workspaces/Cells/morphogenesis-mg0-20261109-01/dev-03-mg0b/theory.json (theory only). The judged run recomputes them; verdict.registered_predictions_check reports the differences, unjudged",
+  "u_maxwell": 0.56401,
+  "fast_states_mV": {
+   "H": -59.451,
+   "U": -40.195,
+   "D": -24.257
+  },
+  "slope_conductance_S": {
+   "H": 4.129e-11,
+   "D": 7.554e-11
+  },
+  "membrane_time_constant_s": {
+   "H": 0.395,
+   "D": 0.216
+  },
+  "fixed_composition_bistable_u": [
+   0.3771,
+   0.6795
+  ],
+  "continuum_width_cells": {
+   "0.25": 1.492,
+   "0.5": 2.11,
+   "1": 2.985,
+   "2": 4.221,
+   "4": 5.969,
+   "8": 8.442
+  },
+  "reduced_width_cells_at_6s": {
+   "0.25": 1.42,
+   "0.5": 1.899,
+   "1": 2.853,
+   "2": 4.118,
+   "4": 5.928,
+   "8": 8.396
+  },
+  "reduced_log_slope_kappa_1_to_8": 0.52,
+  "critical_coupling_ratio_at_u_M_plus_0.03": 0.2977,
+  "reduced_pin_shift_cells": {
+   "0.5": 0.093,
+   "0.8": 0.058,
+   "1.25": 2.262,
+   "2": 5.675
+  },
+  "reduced_hysteresis": {
+   "uncoupled": [
+    0.325,
+    0.75
+   ],
+   "coupled_uniform": [
+    0.325,
+    0.75
+   ],
+   "anchored_kappa_0.25": [
+    0.375,
+    0.725
+   ],
+   "anchored_kappa_1": [
+    0.475,
+    0.625
+   ],
+   "anchored_kappa_4": [
+    0.525,
+    0.525
+   ]
+  },
+  "cut_and_restore_outcome": "returns (walls pinned at kappa 0.25, every cell bistable; isolation does not change cell states)"
+ },
+ "parts": {
+  "single": "two uncoupled cells at u_M for 4 s; cell 1 written",
+  "width": "48-cell chain at u_M, right half written; kappa 0.25, 0.5, 1, 2, 4, 8; width (V_D - V_H)/max nearest-neighbour step at 6 s",
+  "timestep": "the kappa 2 wall at dt 1, 0.5 and 0.25 ms",
+  "pinning": "48-cell chain, right half written at u_M; control switched to u_M + 0.03 at 1 s; front shift (sum of (V - V_H)/(V_D - V_H)) from 2 to 22 s; couplings 0.5, 0.8, 1.25, 2 x the reduced critical coupling",
+  "hysteresis": "staircase u 0.2 -> 0.9 -> 0.2 in steps of 0.025, 1 s each, read at the end of each step; D fraction = share of cells above the fast U voltage. Arms: uncoupled and coupled uniform (kappa 1), 24 cells; anchored (3 control-free H cells at one end, 3 permanently written D cells at the other; judged over the 10 interior cells), kappa 0.25, 1, 4, 16 cells",
+  "cut": "60-cell chain at u_M, kappa 0.25, cells 20-39 written; junctions (19,20) and (39,40) closed at 6 s, reopened at 12 s, end 24 s. D cells = cells above the fast U voltage"
+ },
+ "controls": {
+  "no_cut": "same schedule, junctions never closed",
+  "cut_without_restore": "junctions closed at 6 s and never reopened",
+  "uniform_state": "no write; same cut and restore",
+  "uncoupled_cells": "hysteresis arm without junctions (single-cell loop)"
+ },
+ "criteria": [
+  {
+   "id": "B0_single_cell",
+   "metrics": [
+    "single.h_drift_V"
+   ],
+   "comparison": "le",
+   "threshold": 1e-06,
+   "basis": "the declared H state is stationary in the engine"
+  },
+  {
+   "id": "B0_written_D",
+   "metrics": [
+    "single.written_vs_fast_D_V"
+   ],
+   "comparison": "abs_le",
+   "threshold": 0.001,
+   "basis": "a written cell settles on the reduced model's fast D (the write loads under 1% Na)"
+  },
+  {
+   "id": "B1_width_scaling",
+   "metrics": [
+    "width.log_slope_width_vs_coupling"
+   ],
+   "comparison": "within",
+   "threshold": [
+    0.45,
+    0.55
+   ],
+   "basis": "continuum width proportional to sqrt(G) (McNamara 2020); fit over kappa 1, 2, 4, 8; reduced discrete slope 0.520"
+  },
+  {
+   "id": "B2_width_vs_reduced",
+   "metrics": [
+    "width.width_vs_reduced_rel"
+   ],
+   "comparison": "abs_le",
+   "threshold": 0.05,
+   "basis": "stationary wall of the same laws; residual differences from gate kinetics are transient and from composition drift small over 6 s"
+  },
+  {
+   "id": "B3_timestep",
+   "metrics": [
+    "timestep.width_vs_finest_rel"
+   ],
+   "comparison": "abs_le",
+   "threshold": 0.01,
+   "basis": "ARS(2,2,2) preserves steady states; 1 and 0.5 ms against 0.25 ms"
+  },
+  {
+   "id": "B3_timestep_profile",
+   "metrics": [
+    "timestep.max_vm_vs_finest_V"
+   ],
+   "comparison": "le",
+   "threshold": 0.0005,
+   "basis": "as B3, whole profile"
+  },
+  {
+   "id": "B4_pinned_below",
+   "metrics": [
+    "pinning.weak_shift_cells"
+   ],
+   "comparison": "le",
+   "threshold": 0.5,
+   "basis": "Keener 1987: below the predicted critical coupling (0.5 G*) the wall stays within half a cell over 20 s"
+  },
+  {
+   "id": "B4_moves_above",
+   "metrics": [
+    "pinning.strong_shift_cells"
+   ],
+   "comparison": "ge",
+   "threshold": 2.0,
+   "basis": "above it (2 G*) the wall moves into H (reduced 5.7 cells)"
+  },
+  {
+   "id": "B5_uncoupled_loop",
+   "metrics": [
+    "hysteresis.arms.uncoupled.loop_width"
+   ],
+   "comparison": "ge",
+   "threshold": 0.05,
+   "basis": "single-cell bistability gives a hysteresis loop"
+  },
+  {
+   "id": "B5_uncoupled_vs_reduced",
+   "metrics": [
+    "hysteresis.uncoupled_switch_vs_reduced"
+   ],
+   "comparison": "abs_le",
+   "threshold": 0.05,
+   "basis": "switching points within two ramp steps of the reduced model under the same ramp (quasi-static gates and fixed composition in the reduced model)"
+  },
+  {
+   "id": "B5_uniform_equals_single",
+   "metrics": [
+    "hysteresis.coupled_uniform_vs_uncoupled"
+   ],
+   "comparison": "abs_le",
+   "threshold": 0.025,
+   "basis": "a homogeneous chain in a uniform state evolves as one cell (no junction current)"
+  },
+  {
+   "id": "B5_anchored_narrows",
+   "metrics": [
+    "hysteresis.anchored_width_decrements"
+   ],
+   "comparison": "ge",
+   "threshold": 0.0,
+   "basis": "with a wall present the loop is set by depinning, which narrows as coupling grows (McNamara: hysteresis vanishes in tissue); reduced widths 0.35, 0.15, 0.0"
+  },
+  {
+   "id": "B6_written_domain",
+   "metrics": [
+    "cut.arms.no_cut.jaccard_vs_written.1"
+   ],
+   "comparison": "ge",
+   "threshold": 0.9,
+   "basis": "the write produced the declared domain before the cut"
+  },
+  {
+   "id": "B6_cut_restore_returns",
+   "metrics": [
+    "cut.arms.cut_and_restore.final_jaccard_vs_precut"
+   ],
+   "comparison": "ge",
+   "threshold": 0.9,
+   "basis": "pre-declared outcome: returns"
+  },
+  {
+   "id": "B6_controls",
+   "metrics": [
+    "cut.arms.no_cut.final_jaccard_vs_precut",
+    "cut.arms.cut_without_restore.final_jaccard_vs_precut"
+   ],
+   "comparison": "ge",
+   "threshold": 0.9,
+   "basis": "no cut: the domain persists; cut without restore: the isolated domain and background keep their states"
+  },
+  {
+   "id": "B6_uniform_control",
+   "metrics": [
+    "cut.uniform_max_d_count"
+   ],
+   "comparison": "le",
+   "threshold": 0,
+   "basis": "no domain appears without a write"
+  },
+  {
+   "id": "B6_vs_reduced",
+   "metrics": [
+    "cut.arms.no_cut.final_jaccard_vs_reduced",
+    "cut.arms.cut_without_restore.final_jaccard_vs_reduced",
+    "cut.arms.cut_and_restore.final_jaccard_vs_reduced"
+   ],
+   "comparison": "ge",
+   "threshold": 0.9,
+   "basis": "engine domain matches the reduced model's"
+  },
+  {
+   "id": "B7_energy",
+   "metrics": [
+    "numerics.max_energy_balance_relative"
+   ],
+   "comparison": "le",
+   "threshold": 0.002,
+   "basis": "surface_pump ENERGY_RTOL for ARS(2,2,2)"
+  },
+  {
+   "id": "B7_charge",
+   "metrics": [
+    "numerics.max_global_charge_bound_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "engine global-charge bound"
+  }
+ ],
+ "reported_not_judged": [
+  "hysteresis loop widths and switching points of every arm, with the reduced predictions",
+  "pinning shifts at 0.8 and 1.25 G*, and the reduced shifts",
+  "wall front positions over time, continuum widths",
+  "maximum cell composition drift per run (fixed-volume ion loading of D cells, time constant about 225 s)",
+  "wall time, peak RSS",
+  "verdict.registered_predictions_check: this run's theory and reduced-model values against the registered predictions (registered values are rounded)"
+ ],
+ "engine_gaps_recorded": [
+  "CLOSED (the draft's first entry, 'engine gap 3' in its status) by the ledger rounding fix (tag ledger-rounding-fix-2026-11-09): resolved_pump_tissue@3 refused chains of more than about 6 held-bath cells on global_charge (about 5e-26 C per held bath against the fixed floor GLOBAL_CHARGE_ATOL_C = 3e-25 C; dev-04, dev-06). The residual was not a per-bath rounding floor: each IMEX step booked the electrode increment by differencing plate charges from two different field solves, which did not telescope; it is now booked from the step's start and end charge states (5ba4426). The floor is unchanged and the draft's proposed extensive floor was not needed. dev-07: every case completed; worst global-charge bound ratio 0.012 for the 48-cell wall at 1 ms (refused within 0.5 s before the fix), 0.036 for the 60-cell cut and restore, 0.091 at most (16-cell anchored hysteresis over 57 s); worst energy balance 2.0e-5 relative (bound 2e-3); peak RSS 1.8 GiB; 20.4 minutes for theory and six arms.",
+  "No excision or carrier-replacement event for resolved_pump_tissue@3: the cut is junction closure (isolation), so a written domain whose carriers are removed and replaced by naive cells cannot be tested yet (heredity design gap G2)",
+  "CLOSED (the draft's third entry) by 5ba4426: a junction gate pinned open (minimum open fraction 1) has zero rate and no longer sets @3's gate-rate step bound. The driver still sets threshold 0, so the definitions are those of the draft"
+ ],
+ "limitations": [
+  "1-D chain only: no curvature-driven wall motion (2-D) yet",
+  "fixed volume: D cells load K and anions (heredity design: D residence capped near 70 min); runs here last 6-58 s",
+  "junction voltage gating held open; self-insulation is a later arm",
+  "bistability is chosen through parameters (NaV availability 0.4, control conductance), so results show sufficiency, not spontaneous memory"
+ ],
+ "outcome_rules": "Pass if every judged criterion passes. A failure is recorded and kept; any revised protocol gets a new id and is reported as weaker evidence.",
+ "resources": "CPUs 0-1, CPU backend only, RSS below 4 GiB, detached with a log; expected about 55 minutes (dev-07 timings)",
+ "development_runs": {
+  "dev-03-mg0b": "theory and single-cell parts (passed)",
+  "dev-04-mg0b": "width and timestep refused by the @3 global-charge guard; stopped; failure_note.json",
+  "dev-06-mg0b-guard-bypassed-diagnostic": "NOT EVIDENCE: design check with @3 check_values replaced in-process; ledger residuals recomputed against the real bounds; its wall and pinning outputs (diagnostic.json, 13:41 UTC) postdate the draft criteria (13:40 UTC)",
+  "ledger-fix-20261109-01/mg0b-width": "the ledger agent's check of the fix (15:51 UTC, its snapshot source-fix-01): the width part's six 48-cell walls completed; after the draft; not evidence for this protocol",
+  "dev-07-mg0b-postfix": "after the fix, clean snapshot of 03a2853: theory plus one arm per part at its largest chain and longest horizon (48-cell wall at 1 ms and at 0.25 ms, 48-cell pinning over 22 s, 24- and 16-cell hysteresis over 57 s, 60-cell cut and restore over 24 s); completion and engine numerics only, criteria not evaluated. dev-07: every case completed; worst global-charge bound ratio 0.012 for the 48-cell wall at 1 ms (refused within 0.5 s before the fix), 0.036 for the 60-cell cut and restore, 0.091 at most (16-cell anchored hysteresis over 57 s); worst energy balance 2.0e-5 relative (bound 2e-3); peak RSS 1.8 GiB; 20.4 minutes for theory and six arms."
+ },
+ "changes_from_draft": [
+  "status: BLOCKED note replaced by the registration statement and the ledger fix",
+  "engine_models: committed revision with the ledger fix; field solver @2 and integrator ID stated; 'uncommitted at drafting time' removed",
+  "driver: the judge (judge, rejudge) and the evaluation rule stated",
+  "command and resources: clean-snapshot requirement and the expected wall time from dev-07 (the draft's 60-90 minutes was an estimate)",
+  "registered_predictions.source: absolute paths; the run's unjudged reproduction check named",
+  "reported_not_judged: the registered-prediction reproduction check added",
+  "engine_gaps_recorded: the draft's first (global-charge guard) and third (open-gate step bound) entries closed by the ledger fix, with how; the second (no excision) unchanged",
+  "development_runs: dev-06 timing note; the ledger agent's width check and dev-07 added",
+  "unchanged: id, question, world, registered prediction values, parts, controls, criteria, limitations, outcome_rules"
+ ]
+}

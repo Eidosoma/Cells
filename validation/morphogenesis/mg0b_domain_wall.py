@@ -31,6 +31,13 @@ Usage:
   python -m validation.morphogenesis.mg0b_domain_wall PART [PART ...] --output DIR
       [--protocol FILE] [--quick]
   PART: theory single width timestep pinning hysteresis cut   (or: all)
+  python -m validation.morphogenesis.mg0b_domain_wall judge --output DIR --protocol FILE
+      re-evaluates DIR/results.json into DIR/judgement.json (no runs)
+
+With --protocol, results.json carries the verdict: every criterion is evaluated
+on the saved (JSON) results, a missing metric fails its criterion, and a failed
+part fails the protocol. The verdict also reports, unjudged, the run's theory
+and reduced-model values against the protocol's registered predictions.
 """
 
 import argparse
@@ -47,6 +54,7 @@ from pathlib import Path
 import numpy as np
 
 from validation.morphogenesis import mg0b_theory as theory
+from validation.morphogenesis.mg0a_gradient import _jsonable, evaluate
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 MODEL_ID = "resolved_pump_tissue@3"
@@ -58,8 +66,10 @@ WRITE_M_S = 4 * 9 * fixtures.HEREDITY_PERMEABILITY["Na"]  # 4x the @3 write test
 JUNCTION_AREA_M2 = 1.0e-11
 JUNCTION_SPECIES = ("Na", "K", "M")
 # With minimum open fraction 1 the gate's target is 1 at every voltage, so the
-# gate stays exactly open and the threshold has no effect; threshold 0 keeps
-# @3's conservative gate-rate step bound (1.3 exp(77 threshold) + 20 1/s) small.
+# gate stays exactly open and the threshold has no effect. Threshold 0 kept @3's
+# conservative gate-rate step bound (1.3 exp(77 threshold) + 20 1/s) small; since
+# the ledger rounding fix (5ba4426) a gate pinned open has zero rate and sets no
+# step bound, and the threshold is kept so the definitions are unchanged.
 GATE_OPEN = dict(
     law="junction_voltage_relaxation@1",
     threshold_voltage_V=0.0,
@@ -765,12 +775,99 @@ def numerics_summary(results):
 
     walk(results)
     keys = ("max_energy_balance_relative", "max_global_charge_bound_ratio")
-    worst = {k: max((r["diagnostics_max"].get(k, 0.0) for r in runs), default=None) for k in keys}
+    worst = {}
+    for k in keys:
+        # A run without the diagnostic makes the worst value unknown (None), so a
+        # criterion on it fails instead of passing on a default.
+        values = [r["diagnostics_max"].get(k) for r in runs]
+        worst[k] = None if not values or None in values else max(values)
     drift = [r.get("max_cell_composition_drift_rel") for r in runs]
     worst["max_cell_composition_drift_rel"] = max((d for d in drift if d is not None), default=None)
     worst["engine_runs"] = len(runs)
     worst["energy_rtol_ars222"] = 2e-3  # surface_pump.ENERGY_RTOL[ARS(2,2,2)]
     return worst
+
+
+# Registered prediction names of the hysteresis arms (protocol registered_predictions).
+_HYSTERESIS_REGISTERED = dict(
+    uncoupled="uncoupled",
+    coupled_uniform="coupled_uniform",
+    anchored_weak="anchored_kappa_0.25",
+    anchored_mid="anchored_kappa_1",
+    anchored_strong="anchored_kappa_4",
+)
+
+
+def registered_predictions_check(protocol, parts):
+    """Rows comparing the protocol's registered predictions with this run's theory.
+
+    Reported, not judged: the registered values were rounded when written, so
+    rows give the difference without a threshold. A missing run value is None.
+    """
+    reg = protocol.get("registered_predictions")
+    if not reg:
+        return []
+    rows = []
+
+    def row(name, registered, get):
+        try:
+            value = float(get())
+        except (KeyError, IndexError, TypeError):
+            value = None
+        rows.append(
+            dict(
+                name=name,
+                registered=registered,
+                run=value,
+                difference=None if value is None else value - registered,
+            )
+        )
+
+    theory_ = parts.get("theory", {})
+    row("u_maxwell", reg["u_maxwell"], lambda: theory_["u_maxwell"])
+    for k, v in reg["fast_states_mV"].items():
+        row(f"fast_state_{k}_mV", v, lambda k=k: 1e3 * theory_["fast_states_V"][k])
+    for k, v in reg["slope_conductance_S"].items():
+        row(f"slope_conductance_{k}_S", v, lambda k=k: theory_["slope_conductance_S"][k])
+    for i, v in enumerate(reg["fixed_composition_bistable_u"]):
+        row(f"bistable_u_{i}", v, lambda i=i: theory_["bistable_control_range"][i])
+    for k, v in reg["continuum_width_cells"].items():
+        row(f"continuum_width_{k}", v, lambda k=k: theory_["continuum_width_cells"][str(float(k))])
+    walls = {w["coupling_ratio"]: w for w in parts.get("width", {}).get("walls", [])}
+    for k, v in reg["reduced_width_cells_at_6s"].items():
+        row(f"reduced_width_{k}", v, lambda k=k: walls[float(k)]["reduced_width_cells"])
+    row(
+        "reduced_log_slope",
+        reg["reduced_log_slope_kappa_1_to_8"],
+        lambda: parts["width"]["reduced_log_slope"],
+    )
+    row(
+        "critical_ratio",
+        reg[f"critical_coupling_ratio_at_u_M_plus_{PIN_DETUNING:g}"],
+        lambda: parts["pinning"]["critical_ratio"],
+    )
+    cases = {c["factor"]: c for c in parts.get("pinning", {}).get("cases", [])}
+    for k, v in reg["reduced_pin_shift_cells"].items():
+        row(f"reduced_pin_shift_{k}", v, lambda k=k: cases[float(k)]["reduced_shift_cells"])
+    arms = parts.get("hysteresis", {}).get("arms", {})
+    for arm, key in _HYSTERESIS_REGISTERED.items():
+        down, up = reg["reduced_hysteresis"][key]
+        row(f"reduced_{arm}_u_down", down, lambda arm=arm: arms[arm]["reduced_u_down"])
+        row(f"reduced_{arm}_u_up", up, lambda arm=arm: arms[arm]["reduced_u_up"])
+    return rows
+
+
+def judge(protocol, parts, failures):
+    """Verdict from saved results: every criterion is evaluated, even after a part failure.
+
+    A criterion whose metric is missing fails (mg0a_gradient.evaluate). A part
+    failure fails the protocol whatever the criteria say.
+    """
+    verdict = evaluate(protocol, parts)
+    verdict["failed_parts"] = sorted(failures)
+    verdict["passed"] = bool(verdict["passed"] and not failures)
+    verdict["registered_predictions_check"] = registered_predictions_check(protocol, parts)
+    return verdict
 
 
 PARTS = dict(
@@ -784,21 +881,8 @@ PARTS = dict(
 )
 
 
-def main(argv=None):
-    import jax
-
-    jax.config.update("jax_enable_x64", True)
-    from validation.morphogenesis.mg0a_gradient import _jsonable, evaluate
-
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("parts", nargs="+", choices=[*PARTS, "all"])
-    parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--protocol", type=Path)
-    parser.add_argument("--quick", action="store_true")
-    args = parser.parse_args(argv)
-    args.output.mkdir(parents=True, exist_ok=True)
-    args._theory = None
-    parts = list(PARTS) if "all" in args.parts else args.parts
+def run_parts(args, parts):
+    """Run parts in order, writing each part's JSON; a failed part is kept as evidence."""
     results, failures = {}, {}
     for part in parts:
         t0 = time.perf_counter()
@@ -815,21 +899,63 @@ def main(argv=None):
         status = "ok" if part in results else "FAILED"
         print(f"{part}: {status} in {time.perf_counter() - t0:.1f} s", flush=True)
     results["numerics"] = numerics_summary(results)
+    return results, failures
+
+
+def build_report(results, failures, protocol=None):
+    """The results record; the verdict is evaluated on its saved (JSON) form."""
     report = dict(
         kind="cells.morphogenesis_mg0b_results@1",
         engine_model=MODEL_ID,
-        parts=_jsonable(results),
+        parts=json.loads(json.dumps(_jsonable(results))),
         failures=failures,
         peak_rss_MiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024,
     )
-    if args.protocol is not None:
-        protocol = json.loads(args.protocol.read_text())
+    if protocol is not None:
         report["protocol_id"] = protocol["id"]
-        report["verdict"] = (
-            evaluate(protocol, report["parts"])
-            if not failures
-            else dict(passed=False, reason="part failures")
+        report["verdict"] = judge(protocol, report["parts"], failures)
+    return report
+
+
+def rejudge(results_path, protocol, destination):
+    """Re-evaluate a saved results.json against a protocol into a new judgement file."""
+    saved = json.loads(Path(results_path).read_text())
+    judgement = dict(
+        kind="cells.morphogenesis_mg0b_judgement@1",
+        results=str(results_path),
+        protocol_id=protocol["id"],
+        verdict=judge(protocol, saved["parts"], saved.get("failures", {})),
+    )
+    if "verdict" in saved:
+        judgement["matches_saved_verdict"] = (
+            json.loads(json.dumps(_jsonable(judgement["verdict"]))) == saved["verdict"]
         )
+    with Path(destination).open("x") as stream:
+        json.dump(judgement, stream, indent=1)
+    return judgement
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("parts", nargs="+", choices=[*PARTS, "all", "judge"])
+    parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--protocol", type=Path)
+    parser.add_argument("--quick", action="store_true")
+    args = parser.parse_args(argv)
+    protocol = None if args.protocol is None else json.loads(args.protocol.read_text())
+    if "judge" in args.parts:  # Saved results only: no engine or reduced-model run.
+        if args.parts != ["judge"] or protocol is None:
+            parser.error("judge takes no other parts and needs --protocol")
+        judgement = rejudge(args.output / "results.json", protocol, args.output / "judgement.json")
+        print(f"passed: {judgement['verdict']['passed']}", flush=True)
+        return 0 if judgement["verdict"]["passed"] else 1
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    args.output.mkdir(parents=True, exist_ok=True)
+    args._theory = None
+    results, failures = run_parts(args, list(PARTS) if "all" in args.parts else args.parts)
+    report = build_report(results, failures, protocol)
     with (args.output / "results.json").open("x") as stream:
         json.dump(report, stream, indent=1)
     if failures:
