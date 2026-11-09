@@ -8,7 +8,10 @@ says which BETSE array feeds which quantity. Backends:
 * ``emulator``: validation/betse/emulator, BETSE's own update order. With BETSE's
   constants it should reproduce BETSE to roundoff; it attributes differences.
 * ``resolved``: ``resolved_definition`` builds resolved_pump_tissue@1 inputs
-  (cells, outside nodes, patches, junctions, faces, ring reservoirs at 0 V).
+  (cells, outside nodes, patches, junctions, faces, ring reservoirs at 0 V), or
+  resolved_pump_tissue@2 when the ion profile enables Ca and BETSE's Ca-ATPase
+  runs (alpha_Ca > 0): every patch then also carries a ca_atp_mass_action_positive@1
+  pump.
 
 Each run is INIT then SIM. SIM starts from BETSE's init_final.npz (``--sim-start
 betse``, the default, so SIM errors exclude INIT errors) or from the backend's own
@@ -26,7 +29,9 @@ geometry sha256 fixed before the run.
     python3 validation/betse/default_world_adapter.py resolved-definition \\
         --case CASE --phase init --dt 1e-3 --out FILE.json
     ... run --dt-factor F --sim-start chained ...      (emulator at BETSE's dt / F)
+    ... run --model-difference NAME ...   (one Cells-model difference on, e.g. ecm_drift_off)
     ... difference-budget --case CASE --pair NAME BASE OTHER ... --out FILE.json
+    ... betse-step-term --dense CASE --fine CASE --out FILE.json  (plain BETSE vs BETSE)
     ... snapshot --engine --out RUN/source; ... run-resolved --case CASE --device gpu --out DIR
     ... layout-differences --a LAYOUT_A --b LAYOUT_B --out FILE.json   (e.g. CPU vs L4)
 
@@ -60,6 +65,8 @@ EXECUTED = (
     "src/cells/processes/electrochemistry.py",
     "src/cells/processes/junction_gate.py",
     "src/cells/processes/kinetic_pump.py",
+    "src/cells/processes/er_calcium.py",
+    "src/cells/processes/plasma_calcium.py",
     "src/cells/processes/voltage_gates.py",
     "validation/source_snapshot.py",
     "validation/betse/default_world_adapter.py",
@@ -73,6 +80,7 @@ EXECUTED = (
     "validation/betse/protocols/emulator_default_world.json",
     "validation/betse/protocols/emulator_default_world_dense.json",
     "validation/betse/protocols/default_world_dense_example.json",
+    "validation/betse/protocols/emulator_default_world_mammal_dense.json",
 )
 
 # Backend-neutral quantity -> (units, BETSE source). Per-phase entries hold one value
@@ -105,6 +113,13 @@ WORLD_UNITS = {
     "pump_km_k_mM": ("mM", "params KmNK_K"),
     "pump_km_atp_mM": ("mM", "params KmNK_ATP"),
     "pump_delta_g0_J_mol": ("J/mol", "params deltaGATP"),
+    "calcium_pump": (
+        "-",
+        "None, or (ions_dict Ca and alpha_Ca > 0) the Ca-ATPase of sim.py ca_handler: "
+        "capacity_fmol_s = alpha_Ca * mem_sa * 1e15; km_ca_mM, km_atp_mM = KmCa_Ca, KmCa_ATP; "
+        "delta_g_mM_quotient_J_mol = deltaGATP, which pumpCaATP uses with a numeric-mM ATP "
+        "quotient (the Na/K pump's quotient is molar); pools cATP, cADP, cPi",
+    ),
     "gate_threshold_V": ("V", "params gj_vthresh (mV) * 1e-3"),
     "gate_minimum_open": ("1", "params gj_min"),
     "permittivity_F_m": ("F/m", "params er * eo"),
@@ -255,6 +270,7 @@ def betse_world(path, *, blind=False):
         "pump_km_k_mM": float(p["KmNK_K"]),
         "pump_km_atp_mM": float(p["KmNK_ATP"]),
         "pump_delta_g0_J_mol": float(p["deltaGATP"]),
+        "calcium_pump": _calcium_pump(p, species, area),
         "gate_threshold_V": float(p["gj_vthresh"]) * 1e-3,
         "gate_minimum_open": float(p["gj_min"]),
         "permittivity_F_m": float(p["er"]) * float(p["eo"]),
@@ -280,6 +296,28 @@ def betse_world(path, *, blind=False):
     }
     _check_world(world)
     return world
+
+
+def _calcium_pump(p, species, area):
+    """BETSE's plasma-membrane Ca-ATPase on every membrane, or None.
+
+    sim.py runs ca_handler when the ion profile enables Ca (the extraction then
+    lists a Ca ion) and pumps when alpha_Ca > 0.
+    """
+    enabled = p.get("ions_dict", {}).get("Ca", int("Ca" in species))
+    if bool(enabled) != ("Ca" in species):
+        raise AdapterError("ions_dict and the extracted ion order disagree on Ca")
+    if "Ca" not in species or not float(p["alpha_Ca"]) > 0:
+        return None
+    return {
+        "capacity_fmol_s": float(p["alpha_Ca"]) * area * 1e15,
+        "km_ca_mM": float(p["KmCa_Ca"]),
+        "km_atp_mM": float(p["KmCa_ATP"]),
+        "atp_mM": float(p["cATP"]),
+        "adp_mM": float(p["cADP"]),
+        "pi_mM": float(p["cPi"]),
+        "delta_g_mM_quotient_J_mol": float(p["deltaGATP"]),
+    }
 
 
 def _check_world(w):
@@ -378,7 +416,7 @@ RESOLVED_OBSERVED = (
 
 
 def resolved_layout_phase(world, definition, observations):
-    """Comparison-layout phase from resolved_pump_tissue@1 observations of one phase.
+    """Comparison-layout phase from resolved_pump_tissue@1/@2 observations of one phase.
 
     Judged arrays follow physical_route_observables.txt: vm_ave_time is each cell's
     charge voltage Q_cell / sum(C_patch), with Q_cell = initial_charge_C + F * sum
@@ -511,9 +549,34 @@ def emulator_inputs(world, phase, start, variant):
         ),
     )
     na, k = world["species"].index("Na"), world["species"].index("K")
+    calcium = None
+    if world["calcium_pump"] is not None:
+        from cells.processes import er_calcium
+
+        c = world["calcium_pump"]
+        calcium = active.CalciumPump(
+            np.asarray(world["species"].index("Ca")),
+            er_calcium.PumpParameters(
+                c["capacity_fmol_s"],
+                *(
+                    np.full(m, c[key])
+                    for key in (
+                        "km_ca_mM",
+                        "km_atp_mM",
+                        "atp_mM",
+                        "adp_mM",
+                        "pi_mM",
+                        "delta_g_mM_quotient_J_mol",
+                    )
+                ),
+            ),
+            np.ones(m),
+        )
     layout = junction.validate_layout(
         junction.Layout(
-            active.Layout(tissue, pump, np.asarray(na), np.asarray(k), np.ones(m), np.zeros(m)),
+            active.Layout(
+                tissue, pump, np.asarray(na), np.asarray(k), np.ones(m), np.zeros(m), calcium
+            ),
             junction_gate.Parameters(
                 np.full(m, world["gate_threshold_V"]), np.full(m, world["gate_minimum_open"])
             ),
@@ -599,7 +662,9 @@ def emulator_phase(state, layout, dt, steps, variant, device, substeps=1):
     }
 
 
-def run_emulator(case, protocol_path, out, *, constants, device_kind, sim_start, dt_factor=1):
+def run_emulator(
+    case, protocol_path, out, *, constants, device_kind, sim_start, dt_factor=1, differences=()
+):
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -607,7 +672,7 @@ def run_emulator(case, protocol_path, out, *, constants, device_kind, sim_start,
 
     protocol, protocol_sha = compare.load_protocol(protocol_path)
     world = betse_world(case)
-    variant = laws.default_world(constants)
+    variant = laws.default_world(constants, differences)
     device = jax.devices(device_kind)[0]
     phases, records, chained = {}, {}, None
     for phase in PHASES:
@@ -645,6 +710,7 @@ def run_emulator(case, protocol_path, out, *, constants, device_kind, sim_start,
         "model": "validation/betse/emulator (BETSE-order kernel, not an engine model)",
         "variant": variant._asdict(),
         "constants": constants,
+        "model_differences": list(differences),
         "dt_factor": dt_factor,
         "device": str(device),
         "jax": jax.__version__,
@@ -734,10 +800,32 @@ def _quantity(protocol, name):
 # ............................................................ resolved backend inputs
 
 RESOLVED_MODEL_ID = "resolved_pump_tissue@1"
+RESOLVED_CALCIUM_MODEL_ID = "resolved_pump_tissue@2"  # with BETSE's Ca-ATPase
+RESOLVED_CALCIUM_PUMP_LAW = "ca_atp_mass_action_positive@1"
 RESOLVED_SOLVER = "imex_ars222_face_electromigration@1"
 RESOLVED_FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
 RESOLVED_CLOSURE = "resolved_capacitor_components_current_continuity@1"
 NEUTRAL_ROUNDOFF = 1e-14  # |sum z*amount| / sum |z*amount| treated as a neutral composition
+
+
+def resolved_model_id(world):
+    """resolved_pump_tissue@1, or @2 when the world has BETSE's Ca-ATPase."""
+    return RESOLVED_MODEL_ID if world["calcium_pump"] is None else RESOLVED_CALCIUM_MODEL_ID
+
+
+def calcium_standard_energy(world):
+    """The Ca pump's 1 M standard energy: pumpCaATP's numeric-mM quotient plus R T ln(1000).
+
+    BETSE's Ca-ATPase quotient cADP * cPi * cCao / (cATP * cCai) is in numeric mM
+    (its Na/K quotient is molar), so its deltaGATP is a 1 mM-standard energy. Cells'
+    ca_atp_mass_action_positive@1 declares a 1 M standard state, as the Na/K law does;
+    with the same R both give the same chemical drive. Cells' (CODATA) R is used, so
+    only the constants differ, as for every other law.
+    """
+    from cells.processes.electrochemistry import R
+
+    c = world["calcium_pump"]
+    return c["delta_g_mM_quotient_J_mol"] + R * world["temperature_K"] * math.log(1000.0)
 
 
 def resolved_definition(
@@ -750,7 +838,7 @@ def resolved_definition(
     backend="cpu",
     solver=RESOLVED_SOLVER,
 ):
-    """resolved_pump_tissue@1 definition of one BETSE phase (contract of 8 November).
+    """resolved_pump_tissue@1 (or @2, see resolved_model_id) definition of one BETSE phase.
 
     Cells keep BETSE's order; outside nodes are the row-major ECM grid points, the
     edge ring being reservoirs held at c_env_bound and 0 V. One junction per
@@ -821,6 +909,7 @@ def resolved_definition(
         node.update(reservoir=k in ring, boundary_potential_V=0.0)
         outside.append(node)
     area = world["membrane_area_m2"]
+    calcium = world["calcium_pump"]
     membranes = []
     for j in range(m):
         perm = world["membrane_permeability_m_s"][phase][:, j]
@@ -852,6 +941,23 @@ def resolved_definition(
                 },
             }
         )
+        if calcium is not None:
+            membranes[-1]["calcium_pump"] = {
+                "id": f"capump-{j}",
+                "law": RESOLVED_CALCIUM_PUMP_LAW,
+                "roles": {"calcium": "Ca"},
+                "stoichiometry": {"Ca": -1},
+                "capacity_fmol_per_s": float(calcium["capacity_fmol_s"][j]),
+                "km_ca_mM": calcium["km_ca_mM"],
+                "km_atp_mM": calcium["km_atp_mM"],
+                "metabolism": {
+                    "kind": "maintained_chemical_reservoirs@1",
+                    "atp_mM": calcium["atp_mM"],
+                    "adp_mM": calcium["adp_mM"],
+                    "pi_mM": calcium["pi_mM"],
+                    "delta_g0_J_per_mol": calcium_standard_energy(world),
+                },
+            }
     junctions, pairs = [], set()
     partner, owner = world["membrane_partner"], world["membrane_cell"]
     for j in range(m):
@@ -914,10 +1020,22 @@ def resolved_definition(
         {0.0, steps * dt}
         | {round(t / dt) * dt for t in elapsed if abs(t / dt - round(t / dt)) < 1e-6}
     )
+    experiment = {
+        "end_time": steps * dt,
+        "observation_times": observed,
+        # Every route is listed, fully available from t = 0 (no BETSE events).
+        "membrane_controls": _controls("membrane", membranes),
+        "junction_controls": _controls("junction", junctions),
+        "pump_controls": _controls("pump", [row["pump"] for row in membranes]),
+    }
+    if calcium is not None:
+        experiment["calcium_pump_controls"] = _controls(
+            "pump", [row["calcium_pump"] for row in membranes]
+        )
     return {
         "schema_version": 1,
         "model": {
-            "id": RESOLVED_MODEL_ID,
+            "id": resolved_model_id(world),
             "temperature_K": world["temperature_K"],
             "species": [{"id": sp, "valence": int(valence[i])} for i, sp in enumerate(species)],
             "cells": cells,
@@ -928,14 +1046,7 @@ def resolved_definition(
             # Reservoirs exist, so no gauge node is chosen.
             "closure": {"law": RESOLVED_CLOSURE, "gauge_reference": None},
         },
-        "experiment": {
-            "end_time": steps * dt,
-            "observation_times": observed,
-            # Every route is listed, fully available from t = 0 (no BETSE events).
-            "membrane_controls": _controls("membrane", membranes),
-            "junction_controls": _controls("junction", junctions),
-            "pump_controls": _controls("pump", [row["pump"] for row in membranes]),
-        },
+        "experiment": experiment,
         "execution": {
             "dt": dt,
             "capacity": n,
@@ -1076,9 +1187,11 @@ def _resolved_checks(definition, obs, newton):
     }
 
 
-def _window_sink(observed, newton, control):
-    """Collect a window's needed observations, field solve and ledgers at its end state."""
-    from cells.models import surface_pump as model
+def _window_sink(observed, newton, control, model):
+    """Collect a window's needed observations, field solve and ledgers at its end state.
+
+    ``model`` is the definition's model module (resolved_pump_tissue@1 or @2).
+    """
     from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
     def sink(window):
@@ -1118,7 +1231,7 @@ def judged_protocol(protocol_path, world, *, device_kind, dt_init, dt_sim, solve
     run = protocol.get("cells_run") or {}
     expected = {
         "betse_case": (protocol.get("betse_case"), world["case"]),
-        "model": (run.get("model"), RESOLVED_MODEL_ID),
+        "model": (run.get("model"), resolved_model_id(world)),
         "solver": (run.get("solver"), solver),
         "dt_init_s": (run.get("dt_init_s"), dt_init),
         "dt_sim_s": (run.get("dt_sim_s"), dt_sim),
@@ -1143,7 +1256,7 @@ def run_resolved(
     window_steps=250,
     protocol_path=None,
 ):
-    """resolved_pump_tissue@1 run: INIT then SIM from its own INIT end, windowed.
+    """resolved_pump_tissue@1/@2 run: INIT then SIM from its own INIT end, windowed.
 
     Reads BETSE inputs only (``betse_world(blind=True)``) and computes no difference
     from BETSE. Without ``protocol_path`` the layout names no protocol, so the
@@ -1156,6 +1269,7 @@ def run_resolved(
     from cells.core.schedule import control_values
     from cells.core.specs import parse_spec
     from cells.core.windows import WindowPolicy, run_windowed
+    from cells.models.registry import get_model
 
     world = betse_world(case, blind=True)
     protocol = sha = None
@@ -1189,7 +1303,7 @@ def run_resolved(
             controls = control_values(spec, [0.0])
             control = type(controls)(*(np.asarray(v[0]) for v in controls))
 
-            sink = _window_sink(observed, newton, control)
+            sink = _window_sink(observed, newton, control, get_model(spec.model))
             started = time.perf_counter()
             result = run_windowed(spec, WindowPolicy(window_steps), sink=sink)
             record["wall_s"] = time.perf_counter() - started
@@ -1226,7 +1340,7 @@ def run_resolved(
         "kind": "cells.default_world_adapter_run@1",
         "created_utc": reference_run.utc_now(),
         "backend": "resolved",
-        "model": RESOLVED_MODEL_ID,
+        "model": resolved_model_id(world),
         "blind": (
             "BETSE inputs only (manifest, geometry.npz, init_final parameter arrays); "
             "no BETSE history or end state read; no Cells-vs-BETSE difference computed"
@@ -1304,6 +1418,57 @@ def _labels(world, name, element):
     return ion | {"site": k, "row": k // cols, "col": k % cols}
 
 
+def _difference_rows(world, times, history, final):
+    """BUDGET rows of two runs of one case: max difference over samples and at the end.
+
+    Concentration rows add per-ion maxima (``by_ion``), and ``cc_env_time_interior``
+    repeats the ECM row without the boundary ring (as the judged protocols do).
+    """
+    rows = {}
+    ring = np.zeros(math.prod(world["grid_shape"]), dtype=bool)
+    ring[world["ring_sites"]] = True
+    for name, kind in (*BUDGET.items(), ("cc_env_time_interior", "rel")):
+        source = name.removesuffix("_interior")
+        end = compare.SUPPORTED[source]
+        pick = 0 if kind == "abs" else 1
+        err = compare.errors(history[0][source], history[1][source])[pick]
+        ferr = compare.errors(final[0][end], final[1][end])[pick]
+        if name != source:  # interior: ring sites cannot be the maximum
+            err, ferr = np.where(ring, -1.0, err), np.where(ring, -1.0, ferr)
+        i = np.unravel_index(int(np.argmax(err)), err.shape)
+        j = np.unravel_index(int(np.argmax(ferr)), ferr.shape)
+        series = np.concatenate([history[0][source], final[0][end][None]])
+        if name != source:
+            series = series[..., ~ring]
+        rows[name] = {
+            "kind": "absolute (V)" if kind == "abs" else "relative to the base value",
+            "max": float(err[i]),
+            "elapsed_s": float(times[i[0]]),
+            "element": [int(v) for v in i[1:]],
+            "labels": _labels(world, source, [int(v) for v in i[1:]]),
+            "base_value": float(history[0][source][i]),
+            "other_value": float(history[1][source][i]),
+            "final": {
+                "max": float(ferr[j]),
+                "element": [int(v) for v in j],
+                "labels": _labels(world, source, [int(v) for v in j]),
+                "base_value": float(final[0][end][j]),
+                "other_value": float(final[1][end][j]),
+            },
+            "base_change_over_phase": compare.dynamic_range(series, kind),
+        }
+        if source in ("cc_time", "cc_env_time"):
+            rows[name]["by_ion"] = {
+                ion: {
+                    "max": float(err[:, k].max()),
+                    "final_max": float(ferr[k].max()),
+                    "elapsed_s": float(times[int(np.argmax(err[:, k].max(axis=-1)))]),
+                }
+                for k, ion in enumerate(world["species"])
+            }
+    return rows
+
+
 def layout_difference(world, base, other):
     """Per phase and BUDGET observable: max |difference| over every common sample (where and
     when) and at the phase end, with the base's own change over the phase."""
@@ -1315,32 +1480,7 @@ def layout_difference(world, base, other):
             raise compare.Refusal(f"{phase}: the layouts sample different times")
         history = [_npz(Path(d) / f"{phase}_history.npz") for d in (base, other)]
         final = [_npz(Path(d) / f"{phase}_final.npz") for d in (base, other)]
-        rows = {}
-        for name, kind in BUDGET.items():
-            end = compare.SUPPORTED[name]
-            pick = 0 if kind == "abs" else 1
-            err = compare.errors(history[0][name], history[1][name])[pick]
-            i = np.unravel_index(int(np.argmax(err)), err.shape)
-            ferr = compare.errors(final[0][end], final[1][end])[pick]
-            j = np.unravel_index(int(np.argmax(ferr)), ferr.shape)
-            series = np.concatenate([history[0][name], final[0][end][None]])
-            rows[name] = {
-                "kind": "absolute (V)" if kind == "abs" else "relative to the base value",
-                "max": float(err[i]),
-                "elapsed_s": float(times[0][i[0]]),
-                "element": [int(v) for v in i[1:]],
-                "labels": _labels(world, name, [int(v) for v in i[1:]]),
-                "base_value": float(history[0][name][i]),
-                "other_value": float(history[1][name][i]),
-                "final": {
-                    "max": float(ferr[j]),
-                    "element": [int(v) for v in j],
-                    "labels": _labels(world, name, [int(v) for v in j]),
-                    "base_value": float(final[0][end][j]),
-                    "other_value": float(final[1][end][j]),
-                },
-                "base_change_over_phase": compare.dynamic_range(series, kind),
-            }
+        rows = _difference_rows(world, times[0], history, final)
         phases[phase] = {"samples": len(times[0]), "observables": rows}
     return {
         "base": str(Path(base).resolve()),
@@ -1348,6 +1488,51 @@ def layout_difference(world, base, other):
         "runs": [
             json.loads((Path(d) / "run.json").read_text()).get("variant") for d in (base, other)
         ],
+        "phases": phases,
+    }
+
+
+def betse_step_term(world, dense, fine):
+    """Plain BETSE against plain BETSE with a smaller INIT step on the same seed.
+
+    Measures BETSE's own INIT step error. A fine INIT sample lies one fine step after
+    the dense sample it pairs with (BETSE sample k is the state after k + 1 updates);
+    the INIT end and all SIM samples coincide exactly. Reads BETSE outputs only.
+    """
+    directories = [load_case(case)[0] for case in (dense, fine)]
+    manifests = [json.loads((d / "manifest.json").read_text()) for d in directories]
+    if len({m["files"]["geometry.npz"]["sha256"] for m in manifests}) != 1:
+        raise AdapterError("the two BETSE cases have different geometries")
+    phases = {}
+    for phase in PHASES:
+        times = [np.asarray(m["time"][phase]["elapsed_after_update_s"]) for m in manifests]
+        steps = [m["time"][phase]["dt_s"] for m in manifests]
+        offset = steps[1] if steps[1] < steps[0] else 0.0
+        pairs = []
+        for i, t in enumerate(times[0]):
+            j = int(np.argmin(np.abs(times[1] - (t + offset))))
+            if abs(times[1][j] - (t + offset)) <= 1e-9:
+                pairs.append((i, j))
+        if not pairs:
+            raise AdapterError(f"{phase}: no paired samples")
+        index = [np.array([p[k] for p in pairs]) for k in (0, 1)]
+        history = [
+            {k: v[index[n]] for k, v in _npz(d / f"{phase}_history.npz").items() if k in BUDGET}
+            for n, d in enumerate(directories)
+        ]
+        final = [_npz(d / f"{phase}_final.npz") for d in directories]
+        phases[phase] = {
+            "samples": len(pairs),
+            "pairing_offset_s": offset,
+            "dt_s": steps,
+            "observables": _difference_rows(world, times[0][index[0]], history, final),
+        }
+    return {
+        "kind": "cells.betse_step_term@1",
+        "created_utc": reference_run.utc_now(),
+        "dense": str(directories[0]),
+        "fine": str(directories[1]),
+        "reads": "plain BETSE outputs of both cases only (no Cells model)",
         "phases": phases,
     }
 
@@ -1404,6 +1589,7 @@ def cmd_run(args):
         device_kind=args.device,
         sim_start=args.sim_start,
         dt_factor=args.dt_factor,
+        differences=tuple(args.model_difference),
     )
     summary = {
         k: record[k]
@@ -1474,6 +1660,16 @@ def cmd_difference_budget(args):
     return 0
 
 
+def cmd_betse_step_term(args):
+    world = betse_world(args.dense, blind=True)
+    out = reference_run.resolve_out(args.out)
+    result = provenance(betse_step_term(world, args.dense, args.fine))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    reference_run.write_json(out, compare.json_safe(result))
+    print(json.dumps({"out": str(out)}, indent=2))
+    return 0
+
+
 def cmd_resolved_definition(args):
     world = betse_world(args.case)
     start = phase_start(world, args.phase, "betse")
@@ -1504,9 +1700,16 @@ def main(argv=None):
     run.add_argument("--device", choices=("cpu", "gpu"), default="cpu")
     run.add_argument("--sim-start", choices=("betse", "chained"), default="betse")
     run.add_argument("--dt-factor", type=int, default=1, help="updates of dt/f per BETSE dt")
+    run.add_argument(
+        "--model-difference",
+        action="append",
+        default=[],
+        choices=("ecm_drift_off", "compact_ecm_faces", "gate_once_no_lag"),
+        help="switch on one deliberate Cells-model difference (emulator/laws.py), to size it",
+    )
     run.add_argument("--out", required=True, help="fresh layout directory")
     run.set_defaults(func=cmd_run)
-    blind = sub.add_parser("run-resolved", help="blind resolved_pump_tissue@1 INIT then SIM")
+    blind = sub.add_parser("run-resolved", help="blind resolved_pump_tissue@1/@2 INIT then SIM")
     blind.add_argument("--case", required=True)
     blind.add_argument("--device", choices=("cpu", "gpu"), default="cpu")
     blind.add_argument("--dt-init", type=float, default=1e-3)
@@ -1530,13 +1733,18 @@ def main(argv=None):
     )
     budget.add_argument("--out", required=True, help="fresh JSON file")
     budget.set_defaults(func=cmd_difference_budget)
+    step = sub.add_parser("betse-step-term", help="plain BETSE dense vs fine INIT step")
+    step.add_argument("--dense", required=True, help="BETSE case at BETSE's INIT dt")
+    step.add_argument("--fine", required=True, help="same seed, smaller INIT dt")
+    step.add_argument("--out", required=True, help="fresh JSON file")
+    step.set_defaults(func=cmd_betse_step_term)
     pair = sub.add_parser("compare-layouts", help="two layouts of one case (e.g. CPU vs L4)")
     pair.add_argument("--a", required=True)
     pair.add_argument("--b", required=True)
     pair.add_argument("--protocol", required=True)
     pair.add_argument("--out", required=True)
     pair.set_defaults(func=cmd_compare_layouts)
-    resolved = sub.add_parser("resolved-definition", help="resolved_pump_tissue@1 inputs")
+    resolved = sub.add_parser("resolved-definition", help="resolved_pump_tissue@1/@2 inputs")
     resolved.add_argument("--case", required=True)
     resolved.add_argument("--phase", choices=PHASES, default="init")
     resolved.add_argument("--dt", type=float, required=True)

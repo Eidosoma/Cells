@@ -344,16 +344,59 @@ def transport(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
         p.boundary_concentration[:, None, None],
         co,
     )
-    gx, gy = gradient(reset, p.spacing, xp=xp)
     mobility = p.diffusivity * p.valence[:, None, None] * p.native_q_over_kb / p.temperature
-    fx = -p.diffusivity * gx + mobility * f.outside_field_x_V_m * reset
-    fy = -p.diffusivity * gy + mobility * f.outside_field_y_V_m * reset
+    drift = 0.0 if variant.ecm_drift_off else 1.0
+    if variant.compact_ecm_faces:
+        fx, fy, delta = compact_faces(reset, f, p, dt, mobility, drift, xp=xp)
+        return Rates(membrane, junction, fx, fy), reset, delta, f
+    gx, gy = gradient(reset, p.spacing, xp=xp)
+    fx = -p.diffusivity * gx + drift * mobility * f.outside_field_x_V_m * reset
+    fy = -p.diffusivity * gy + drift * mobility * f.outside_field_y_V_m * reset
     fx, fy = (xp.where(p.moving[:, None, None], v, 0) for v in (fx, fy))
     delta = dt * (
         gradient(-fx, p.spacing, xp=xp, native_edges=True)[0]
         + gradient(-fy, p.spacing, xp=xp, native_edges=True)[1]
     )
     return Rates(membrane, junction, fx, fy), reset, delta, f
+
+
+def compact_faces(c, f, p, dt, mobility, drift, *, xp=jnp):
+    """Model-difference variant: conservative fluxes on faces between grid neighbours.
+
+    Face coefficients and concentrations are arithmetic means of the two squares;
+    the face field is the difference of BETSE's scaled potential across the face.
+    The boundary ring keeps its reset values (held reservoirs), as in Cells.
+    """
+    h = p.spacing
+    phi = 2 / (p.screening_wavenumber * h) * p.cell_size_ratio * f.outside_potential_V
+    moving = p.moving[:, None, None]
+
+    def face(axis):
+        def pair(v):
+            n = v.shape[axis]
+            return (
+                xp.take(v, xp.arange(1, n), axis=axis),
+                xp.take(v, xp.arange(n - 1), axis=axis),
+            )
+
+        (c1, c0), (d1, d0), (m1, m0) = pair(c), pair(p.diffusivity), pair(mobility)
+        p1, p0 = pair(phi[None])
+        flux = -0.5 * (d1 + d0) * (c1 - c0) / h - drift * 0.5 * (m1 + m0) * (p1 - p0) / h * 0.5 * (
+            c1 + c0
+        )
+        return xp.where(moving, flux, 0.0)
+
+    fx, fy = face(2), face(1)
+    zero_x = xp.zeros(c.shape[:2] + (1,), dtype=c.dtype)
+    zero_y = xp.zeros((c.shape[0], 1, c.shape[2]), dtype=c.dtype)
+    divergence = (
+        xp.concatenate((fx, zero_x), axis=2)
+        - xp.concatenate((zero_x, fx), axis=2)
+        + xp.concatenate((fy, zero_y), axis=1)
+        - xp.concatenate((zero_y, fy), axis=1)
+    ) / h
+    ring = boundary_mask(p.boundary_values.shape, xp=xp)
+    return fx, fy, xp.where(ring, 0.0, -dt * divergence)
 
 
 def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):

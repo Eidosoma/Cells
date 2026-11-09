@@ -112,7 +112,11 @@ def step(state, p, dt, control, *, xp=jnp, variant=laws.QUALIFIED):
     opening, calls = state.junction_open, []
     weights = xp.zeros_like(tissue.junction_permeability)
     species = xp.arange(tissue.valence.size)[:, None]
-    for index in range(p.moving_order.size):
+    if variant.gate_once:  # Model difference: one physical-time update for every ion.
+        opening = gate_step(opening, voltage, block, dt, p.junction, xp=xp)
+        calls.append(opening)
+        weights = weights + opening
+    for index in range(0 if variant.gate_once else p.moving_order.size):
         opening = gate_step(opening, voltage, block, dt, p.junction, xp=xp)
         calls.append(opening)
         weights = weights + (species == p.moving_order[index]) * opening

@@ -189,6 +189,10 @@ def event_index(spec, time):
 
 
 def control_values(spec, times):
+    from cells.core import surface_pump_v2_spec as pump_v2
+
+    if isinstance(spec.model, pump_v2.SurfacePumpModel):
+        return pump_v2.control_values(spec, times)
     from cells.core import surface_open_calcium_bath_epoch_spec as calcium_bath_epoch
     from cells.core import surface_open_calcium_energy_bath_epoch_spec as energy_bath_epoch
 

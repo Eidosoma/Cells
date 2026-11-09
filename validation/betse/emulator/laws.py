@@ -8,14 +8,18 @@ static per run, so jit compiles them as constants:
   BETSE's rounded F = 96485 C/mol and R = 8.314 J/(mol K)
   (betse/science/parameters.py, v1.5.0);
 * the qualified envelope: grid-site bound and whether a Kv1p5 population (whose
-  m/h panel is fixed at 298.15 K) may be present.
+  m/h panel is fixed at 298.15 K) may be present;
+* optional model differences (``MODEL_DIFFERENCES``), each one deliberate difference
+  of Cells' own physics from BETSE's order, switched on alone to size it for a
+  difference budget. BETSE's order has none of them.
 
 The laws below are the arithmetic of cells.processes.electrochemistry
-(electrochemical_potential, ghk_leak), cells.coupling.selective.selective_flux and
-cells.processes.kinetic_pump (chemical_drive, kinetics, domain_valid) with F and R
-passed explicitly. With CODATA constants they are the same operations in the same
-order as those engine laws; tests/unit/test_betse_emulator_laws.py checks bitwise
-equality, so the qualified variant is unchanged by the move out of the engine.
+(electrochemical_potential, ghk_leak), cells.coupling.selective.selective_flux,
+cells.processes.kinetic_pump (chemical_drive, kinetics, domain_valid) and the
+plasma-membrane Ca-ATPase kernel cells.processes.plasma_calcium.pump_rates with F
+and R passed explicitly. With CODATA constants they are the same operations in the
+same order as those engine laws; tests/unit/test_betse_emulator_laws.py checks
+bitwise equality, so the qualified variant is unchanged by the move out of the engine.
 """
 
 from typing import NamedTuple
@@ -34,6 +38,26 @@ class Variant(NamedTuple):
     gas_J_mol_K: float
     max_grid_sites: int
     kv1p5_population: bool
+    ecm_drift_off: bool = False
+    compact_ecm_faces: bool = False
+    gate_once: bool = False
+    no_membrane_lag: bool = False
+
+
+# Model differences an emulator run may switch on (sizes, not a Cells model):
+MODEL_DIFFERENCES = {
+    # No extracellular electromigration: bounds the effect of Cells' resolved capacitor
+    # field replacing BETSE's screened, smoothed exterior potential (the drift it drives).
+    "ecm_drift_off": ("ecm_drift_off",),
+    # Conservative compact faces between neighbouring grid squares (BETSE's arithmetic-mean
+    # coefficients at each face, face-centred field), the boundary ring held: Cells'
+    # finite-volume exterior instead of BETSE's 2-delta-wide central divergence. Explicit
+    # Euler with compact faces needs a smaller step than BETSE's 10 ms INIT step.
+    "compact_ecm_faces": ("compact_ecm_faces",),
+    # Physical-time junction gate (once per step for every ion) and no membrane
+    # concentration lag (membranes see the bulk cell concentration).
+    "gate_once_no_lag": ("gate_once", "no_membrane_lag"),
+}
 
 
 # Registered compatibility configs: CODATA constants, <= 256 grid sites, Kv1p5 at 298.15 K.
@@ -44,13 +68,18 @@ BETSE_R_J_MOL_K = 8.314
 DEFAULT_WORLD_MAX_GRID_SITES = 1024
 
 
-def default_world(constants):
-    """Channel-free default-world variant with BETSE's or Cells' constants."""
+def default_world(constants, differences=()):
+    """Channel-free default-world variant with BETSE's or Cells' constants.
+
+    ``differences`` names MODEL_DIFFERENCES to switch on (none: BETSE's order).
+    """
     values = {
         "betse": (BETSE_F_C_MOL, BETSE_R_J_MOL_K),
         "codata": (electrochemistry.F, electrochemistry.R),
     }[constants]
-    return Variant(f"default_world_{constants}", *values, DEFAULT_WORLD_MAX_GRID_SITES, False)
+    flags = {flag: True for name in differences for flag in MODEL_DIFFERENCES[name]}
+    name = "_".join([f"default_world_{constants}", *sorted(differences)])
+    return Variant(name, *values, DEFAULT_WORLD_MAX_GRID_SITES, False, **flags)
 
 
 def electrochemical_potential(ci, co, voltage, valence, temperature, variant, *, xp=jnp):
@@ -191,3 +220,44 @@ def pump_domain_valid(
     return (
         valid & xp.isfinite(affinity) & (xp.abs(affinity) <= kinetic_pump.MAX_ABS_AFFINITY_OVER_RT)
     )
+
+
+def calcium_pump_kinetics(
+    ca_inside_mM,
+    ca_outside_mM,
+    voltage_V,
+    temperature_K,
+    parameters,
+    availability,
+    variant,
+    *,
+    xp=jnp,
+):
+    """Signed one-Ca extrusion cycles (fmol/s), cycle energy and drive (J/mol).
+
+    plasma_calcium.pump_rates (er_calcium.pump_rates at -Vm) with explicit F and R:
+    ``parameters`` is an er_calcium.PumpParameters whose standard energy uses the
+    numeric-mM quotient of BETSE's pumpCaATP (sim_toolbox.py), Vm is inside minus
+    outside. Equals BETSE's -alpha_Ca * frwd * (1 - Q/Keq) per unit area.
+    """
+    p = parameters
+    r, f = variant.gas_J_mol_K, variant.faraday_C_mol
+    drive = p.delta_g0_J_per_mol + r * temperature_K * (
+        xp.log(p.adp_mM) + xp.log(p.pi_mM) - xp.log(p.atp_mM)
+    )
+    voltage = -voltage_V
+    energy = (
+        drive + r * temperature_K * (xp.log(ca_outside_mM) - xp.log(ca_inside_mM)) + 2 * f * voltage
+    )
+    affinity = energy / (r * temperature_K)
+    log_saturation = -xp.logaddexp(0.0, xp.log(p.km_ca_mM) - xp.log(ca_inside_mM))
+    log_saturation -= xp.logaddexp(0.0, xp.log(p.km_atp_mM) - xp.log(p.atp_mM))
+    enabled = (p.capacity_fmol_per_s > 0) & (availability > 0)
+    magnitude = xp.exp(
+        xp.log(xp.where(enabled, p.capacity_fmol_per_s, 1.0))
+        + xp.log(xp.where(enabled, availability, 1.0))
+        + log_saturation
+        + xp.maximum(affinity, 0.0)
+    )
+    departure = xp.where(affinity >= 0, xp.expm1(-affinity), -xp.expm1(affinity))
+    return xp.where(enabled, magnitude * departure, 0.0), energy, drive

@@ -6,6 +6,12 @@ and ordinary membrane fluxes use lagged membrane concentrations. The dynamic
 channel uses bulk cell and post-diffusion exterior concentrations, transfers
 material first, then ordinary membrane/junction transfers complete the step.
 Metabolic pools are maintained inputs, not a finite ATP or energy balance.
+
+An optional plasma-membrane Ca-ATPase (``Layout.calcium``) follows BETSE 1.5's
+ca_handler order (sim.py, after the electrodiffusion loop): current bulk cell Ca
+(update_intra has reset the membrane copy), Ca at the membrane's grid square after
+this step's exterior update, the step-start Vm; its flux joins the membrane
+transfer of the same update.
 """
 
 from typing import NamedTuple
@@ -14,11 +20,17 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes import kinetic_pump, voltage_gates
+from cells.processes import er_calcium, kinetic_pump, voltage_gates
 from validation.betse.emulator import laws
 from validation.betse.emulator import spatial as passive
 
 MODEL_ID = "betse_spatial_nak_kv1p5@1"
+
+
+class CalciumPump(NamedTuple):
+    index: object  # Ca species index (scalar)
+    parameters: er_calcium.PumpParameters  # Per membrane; numeric-mM standard energy.
+    available: object
 
 
 class Layout(NamedTuple):
@@ -28,6 +40,7 @@ class Layout(NamedTuple):
     potassium_index: object
     pump_available: object
     channel_permeability: object
+    calcium: CalciumPump | None = None
 
 
 class State(NamedTuple):
@@ -49,7 +62,8 @@ def validate_layout(layout, *, variant=laws.QUALIFIED):
     p = Layout(
         tissue,
         kinetic_pump.Parameters(*(np.asarray(x) for x in layout.pump)),
-        *(np.asarray(x) for x in layout[2:]),
+        *(np.asarray(x) for x in layout[2:6]),
+        validate_calcium(layout.calcium, tissue),
     )
     m, s = tissue.membrane_area.size, tissue.valence.size
     for name in ("sodium_index", "potassium_index"):
@@ -84,6 +98,32 @@ def validate_layout(layout, *, variant=laws.QUALIFIED):
         if not low <= tissue.temperature <= high:
             raise ValueError("Channel-free variant requires a pump-domain temperature")
     return p
+
+
+def validate_calcium(calcium, tissue):
+    if calcium is None:
+        return None
+    m = tissue.membrane_area.size
+    c = CalciumPump(
+        np.asarray(calcium.index),
+        er_calcium.PumpParameters(*(np.asarray(x, dtype=np.float64) for x in calcium.parameters)),
+        np.asarray(calcium.available, dtype=np.float64),
+    )
+    index = c.index
+    if index.shape != () or index.dtype.kind not in "iu" or not 0 <= index < tissue.valence.size:
+        raise ValueError("Invalid calcium species index")
+    if tissue.valence[index] != 2 or not tissue.moving[index]:
+        raise ValueError("The calcium pump role must be a moving divalent cation")
+    for name, value in [*c.parameters._asdict().items(), ("available", c.available)]:
+        if value.shape != (m,) or not np.isfinite(value).all():
+            raise ValueError("Invalid calcium pump parameter: " + name)
+    if np.any(c.parameters.capacity_fmol_per_s < 0):
+        raise ValueError("Calcium pump capacity must be nonnegative")
+    if any(np.any(v <= 0) for v in c.parameters[1:6]):
+        raise ValueError("Calcium pump substrates and Km must be positive")
+    if np.any((c.available < 0) | (c.available > 1)):
+        raise ValueError("Calcium pump availability must be in [0,1]")
+    return c
 
 
 def initial_state(tissue, p, m_gate, h_gate):
@@ -122,11 +162,27 @@ def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     species = xp.arange(t.valence.size)[:, None]
     pump_flux = (-3 * (species == na) + 2 * (species == k)) * cycles
     membrane = ordinary.membrane_inward_fmol_s + pump_flux
+    after_ecm = (reset + delta).reshape(old.outside_concentration.shape)
+    if p.calcium is not None:
+        ca = p.calcium.index
+        calcium = (
+            laws.calcium_pump_kinetics(
+                old.cell_concentration[ca, t.cell_owner],
+                after_ecm[ca, t.outside_owner],
+                vm,
+                t.temperature,
+                p.calcium.parameters,
+                p.calcium.available,
+                variant,
+                xp=xp,
+            )[0]
+            * t.membrane_open
+        )
+        membrane = membrane - (species == ca) * calcium
     ordinary = ordinary._replace(membrane_inward_fmol_s=membrane)
 
     targets, tau = voltage_gates.kinetics(vm, xp=xp)
     gates = (tau * xp.stack((state.m_gate, state.h_gate)) + dt * targets) / (tau + dt)
-    after_ecm = (reset + delta).reshape(old.outside_concentration.shape)
     channel = laws.ghk_leak(
         old.cell_concentration[k, t.cell_owner],
         after_ecm[k, t.outside_owner],
@@ -147,9 +203,13 @@ def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     outside_channel = after_ecm - dt * (channel_flux @ outside.T) / voxel_fmol
     after_membrane = after_channel + dt * (membrane @ cells.T) / (t.cell_volume * 1e15)
     gap = ordinary.junction_outward_fmol_s
+    cell_end = after_membrane - dt * (gap @ cells.T) / (t.cell_volume * 1e15)
+    # BETSE's membranes keep the post-membrane, pre-junction value (a lag) unless the
+    # no_membrane_lag model difference is on.
+    seen = cell_end if variant.no_membrane_lag else after_membrane
     tissue = passive.State(
-        after_membrane - dt * (gap @ cells.T) / (t.cell_volume * 1e15),
-        xp.where(t.moving[:, None], after_membrane[:, t.cell_owner], old.membrane_concentration),
+        cell_end,
+        xp.where(t.moving[:, None], seen[:, t.cell_owner], old.membrane_concentration),
         outside_channel - dt * (membrane @ outside.T) / voxel_fmol,
         old.membrane_inward_fmol + dt * membrane,
         old.junction_outward_fmol + dt * gap,

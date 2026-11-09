@@ -32,7 +32,10 @@ Inputs (no BETSE or Cells imports; any Cells model or route can produce the resu
     ``flat``) but leave it out of the verdict; it may be absent from the Cells
     result. ``diag_*`` entries (a name or the wildcard ``"diag_*"``, always
     ``judged`` false) report the Cells layout's diag arrays with no BETSE pairing.
-  - a tolerance class value is a number for every phase or ``{phase: number}``.
+  - a tolerance class value is a number for every phase or ``{phase: number}``; a
+    phase's value may instead be ``{"by_ion": {ion: number, ...}}`` naming every ion
+    of the case, for observables with an ions axis (cc_time, cc_env_time): each ion
+    is then judged against its own tolerance (worst errors reported per ion).
 
 Samples are paired on common elapsed times only (BETSE sample k holds the state
 after k + 1 updates; see the extract manifest ``time``). The comparator refuses
@@ -126,14 +129,42 @@ def _valid_tolerance(value, phases):
         number = isinstance(v, (int, float)) and not isinstance(v, bool)
         return number and math.isfinite(v) and v > 0
 
+    def entry(v):
+        if isinstance(v, dict):
+            ions = v.get("by_ion")
+            return (
+                set(v) == {"by_ion"}
+                and isinstance(ions, dict)
+                and ions
+                and all(isinstance(k, str) and positive(t) for k, t in ions.items())
+            )
+        return positive(v)
+
     if isinstance(value, dict):
-        return set(phases) <= set(value) <= set(PHASES) and all(map(positive, value.values()))
+        return set(phases) <= set(value) <= set(PHASES) and all(map(entry, value.values()))
     return positive(value)
 
 
 def resolve_tolerance(value, phase):
-    """A tolerance class value: one number for every phase, or {phase: number}."""
+    """A tolerance class value: one number for every phase, or {phase: number | by_ion}."""
     return value[phase] if isinstance(value, dict) else value
+
+
+def _smallest(tolerance):
+    """The tolerance itself, or the smallest per-ion tolerance (flat checks of unpaired data)."""
+    return min(tolerance["by_ion"].values()) if isinstance(tolerance, dict) else tolerance
+
+
+def _per_ion(error, axis):
+    """Largest value per ion of an error (or change) array whose ion axis is ``axis``."""
+    return error.max(axis=tuple(i for i in range(error.ndim) if i != axis))
+
+
+def _relative_change(series):
+    change = series.max(axis=0) - series.min(axis=0)
+    scale = np.abs(series).max(axis=0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return change, np.where(scale > 0, change / scale, 0.0)
 
 
 def grid_boundary_ring(geometry):
@@ -386,8 +417,11 @@ def compare_observable(context, name, row, betse_h, cells_h, betse_f, cells_f, p
             }
         worst = max(worst, {"abs": fa.max(), "rel": fr.max()}[kind])
         series = np.concatenate([betse_h, betse_f[None]], axis=0)
+        final_errors = (fa, fr)
     else:
         series = betse_h
+        final_errors = None
+    full_series = series
     if mask is not None:
         series = series[:, ~mask]  # the judged elements' own change
         result["excluded"] = excluded
@@ -399,12 +433,49 @@ def compare_observable(context, name, row, betse_h, cells_h, betse_f, cells_f, p
     result["classes"] = {}
     for label, values in context["classes"].items():
         tolerance = resolve_tolerance(values[row["tolerance"]], context["phase"])
+        if isinstance(tolerance, dict):
+            result["classes"][label] = _by_ion_class(
+                context, name, axes, kind, tolerance, (absolute, relative), final_errors,
+                full_series, mask,
+            )  # fmt: skip
+            continue
         result["classes"][label] = {
             "tolerance": tolerance,
             "pass": bool(worst <= tolerance),
             "flat": bool(measure <= tolerance),
         }
     return result
+
+
+def _by_ion_class(context, name, axes, kind, tolerance, history, final, series, mask):
+    """Verdict of one class whose tolerance names a value per ion."""
+    ions = context["ions"]
+    if "ions" not in axes or not ions or set(tolerance["by_ion"]) != set(ions):
+        raise Refusal(f"{name}: per-ion tolerances need an ions axis and every case ion {ions}")
+    axis = axes.index("ions")
+    pick = 0 if kind == "abs" else 1
+    worst = _per_ion(history[pick], axis + 1)
+    if final is not None:
+        worst = np.maximum(worst, _per_ion(final[pick], axis))
+    change = _relative_change(series)[pick]
+    if mask is not None:
+        change = np.where(mask, -1.0, change)
+    measure = _per_ion(change, axis)
+    rows = {}
+    for i, ion in enumerate(ions):
+        limit = tolerance["by_ion"][ion]
+        rows[ion] = {
+            "worst": float(worst[i]),
+            "tolerance": limit,
+            "pass": bool(worst[i] <= limit),
+            "flat": bool(measure[i] <= limit),
+        }
+    return {
+        "tolerance": tolerance,
+        "pass": all(r["pass"] for r in rows.values()),
+        "flat": all(r["flat"] for r in rows.values()),
+        "by_ion": rows,
+    }
 
 
 def absent_observable(context, name, row, betse_h, betse_f):
@@ -416,7 +487,7 @@ def absent_observable(context, name, row, betse_h, betse_f):
     classes = {}
     for label, values in context["classes"].items():
         tolerance = resolve_tolerance(values[row["tolerance"]], context["phase"])
-        classes[label] = {"tolerance": tolerance, "flat": bool(measure <= tolerance)}
+        classes[label] = {"tolerance": tolerance, "flat": bool(measure <= _smallest(tolerance))}
     return {
         "units": context["units"][name],
         "tolerance": row["tolerance"],
@@ -465,7 +536,7 @@ def cells_only(context, entries, data, declared):
                         tolerance = resolve_tolerance(values[row["tolerance"]], context["phase"])
                         out["classes"][label] = {
                             "tolerance": tolerance,
-                            "flat": bool(measure <= tolerance),
+                            "flat": bool(measure <= _smallest(tolerance)),
                         }
             report[name] = out
     return report
@@ -662,6 +733,15 @@ def json_safe(value):
     return value
 
 
+def _tolerance_text(cls):
+    if "by_ion" not in cls:
+        return f"{cls['tolerance']:.3g}"
+    return ", ".join(
+        f"{ion} {row['worst']:.3g} of {row['tolerance']:.3g}{'' if row['pass'] else ' FAIL'}"
+        for ion, row in cls["by_ion"].items()
+    )
+
+
 def summarize(record):
     """Short human-readable digest of a comparison record."""
     summary = {
@@ -697,7 +777,7 @@ def summarize(record):
             )
             lines[name] = (
                 f"{'pass' if cls['pass'] else 'FAIL'}: worst {obs['kind']} error "
-                f"{obs['worst_error_in_tolerance_kind']:.3g} (tol {cls['tolerance']:.3g}); "
+                f"{obs['worst_error_in_tolerance_kind']:.3g} (tol {_tolerance_text(cls)}); "
                 f"{where}; reference change {change}{flat}"
             )
             if not obs.get("judged", True):

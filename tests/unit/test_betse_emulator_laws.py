@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from cells.coupling.selective import selective_flux
-from cells.processes import electrochemistry, kinetic_pump
+from cells.processes import electrochemistry, er_calcium, kinetic_pump, plasma_calcium
 from validation.betse.emulator import laws
 
 CODATA = laws.QUALIFIED
@@ -75,3 +75,44 @@ def test_betse_constants_change_only_through_f_and_r():
         flux, laws.ghk_leak(ci, co, v, 1, scaled_t, 1e-10, 2e-9, 1.0, CODATA, xp=np), rtol=1e-12
     )
     assert laws.default_world("codata")[1:3] == CODATA[1:3]
+
+
+def calcium_inputs(seed, size=64):
+    rng = np.random.default_rng(seed)
+    pump = er_calcium.PumpParameters(
+        rng.uniform(0, 1, size), rng.uniform(1e-4, 1e-2, size), rng.uniform(0.1, 1, size),
+        *(rng.uniform(0.05, 3, size) for _ in range(3)), rng.uniform(-45e3, -30e3, size),
+    )  # fmt: skip
+    return (
+        rng.uniform(1e-5, 1e-3, size),
+        rng.uniform(0.5, 3.0, size),
+        rng.uniform(-0.1, 0.05, size),
+        rng.uniform(280, 320, size),
+        pump,
+    )
+
+
+@pytest.mark.parametrize("xp", [np, jnp], ids=["numpy", "jax"])
+def test_codata_calcium_pump_equals_the_engine_kernel_bitwise(xp):
+    jax.config.update("jax_enable_x64", True)
+    ci, co, v, t, pump = calcium_inputs(11)
+    engine = plasma_calcium.pump_rates(ci, co, v, t, pump, 0.8, xp=xp)
+    emulator = laws.calcium_pump_kinetics(ci, co, v, t, pump, 0.8, CODATA, xp=xp)
+    for a, b in zip(engine, emulator, strict=True):
+        np.testing.assert_array_equal(np.asarray(b), np.asarray(a))
+
+
+def test_betse_calcium_pump_is_pumpcaatp_per_unit_area():
+    """BETSE 1.5 pumpCaATP: f = -alpha frwd (1 - Q/Keq), numeric-mM quotient, into cell +."""
+    ci, co, v, t, pump = calcium_inputs(13)
+    betse = laws.default_world("betse")
+    f, r = betse.faraday_C_mol, betse.gas_J_mol_K
+    area = 2e-10
+    alpha = pump.capacity_fmol_per_s / area / 1e15  # mol / (m^2 s)
+    q = pump.adp_mM * pump.pi_mM * co / (pump.atp_mM * ci)
+    keq = np.exp(-(pump.delta_g0_J_per_mol / (r * t) - 2 * (f * v / (r * t))))
+    forward = (ci / pump.km_ca_mM) * (pump.atp_mM / pump.km_atp_mM)
+    forward = forward / ((1 + ci / pump.km_ca_mM) * (1 + pump.atp_mM / pump.km_atp_mM))
+    flux = -alpha * forward * (1 - q / keq)
+    cycles, _, _ = laws.calcium_pump_kinetics(ci, co, v, t, pump, 1.0, betse, xp=np)
+    np.testing.assert_allclose(-cycles / area / 1e15, flux, rtol=1e-12)

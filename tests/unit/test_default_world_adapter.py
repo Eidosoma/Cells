@@ -37,12 +37,41 @@ PARAMS = {
     **adapter.REQUIRED_PARAMS,
 }  # fmt: skip
 KEYED = {"cell_radius": 5e-6, "is_ecm": True, "cell_polarizability": 0.0}
+# BETSE's "mammal" ion profile (parameters.py _load_ion_profile) and its Ca-ATPase defaults.
+MAMMAL = {
+    "species": ["Na", "K", "Cl", "Ca", "P", "M"],
+    "valence": [1, 1, -1, 2, -1, -1],
+    "cell": [12.0, 139.0, 4.0, 5e-5, 135.0, 12.0001],
+    "env": [145.0, 5.0, 115.0, 2.0, 10.0, 29.0],
+    "free": np.array([1.33e-9, 1.96e-9, 2.03e-9, 1e-10, 0.0, 1e-9]),
+    "dm": np.array([2e-18, 1e-18, 1e-18, 1e-18, 0.0, 1e-18]),
+    "params": {
+        "alpha_Ca": 5e-8,
+        "KmCa_Ca": 1e-3,
+        "KmCa_ATP": 0.5,
+        "ions_dict": {"Na": 1, "K": 1, "Cl": 1, "Ca": 1, "H": 0, "P": 1, "M": 1},
+    },
+}
 
 
-def write_case(directory, *, params=None, dm_history=None):
-    """A complete synthetic extraction with BETSE's array names, axes and units."""
+def write_case(directory, *, params=None, dm_history=None, ions=None):
+    """A complete synthetic extraction with BETSE's array names, axes and units.
+
+    ``ions`` (e.g. MAMMAL) replaces the basic profile's species, concentrations,
+    diffusion constants and adds its parameters.
+    """
+    species, valence, cell0, env0, free, dm = (
+        (SPECIES, VALENCE, CELL, ENV, FREE, DM)
+        if ions is None
+        else tuple(ions[k] for k in ("species", "valence", "cell", "env", "free", "dm"))
+    )
+    profile = {
+        "cell_concs": dict(zip(species, cell0, strict=True)),
+        "env_concs": dict(zip(species, env0, strict=True)),
+        **({} if ions is None else ions["params"]),
+    }
     directory.mkdir()
-    s, m, o = len(SPECIES), AREA.size, ROWS * COLS
+    s, m, o = len(species), AREA.size, ROWS * COLS
     geometry = {
         "cell_vol": (np.array([5e-16, 6e-16]), "m^3"),
         "mem_sa": (AREA, "m^2"),
@@ -64,18 +93,18 @@ def write_case(directory, *, params=None, dm_history=None):
     debye = (
         PARAMS["NAv"]
         * PARAMS["q"] ** 2
-        * np.square(VALENCE)
+        * np.square(valence)
         / (80.0 * 8.854e-12 * 1.3806e-23 * 310)
     )
-    start_env = np.repeat(np.array(ENV)[:, None], o, axis=1)  # INIT starts from env_concs
+    start_env = np.repeat(np.array(env0)[:, None], o, axis=1)  # INIT starts from env_concs
     for phase in adapter.PHASES:
         n = STEPS[phase]
-        env = np.repeat(np.array(ENV)[:, None], o, axis=1) * (1 + 1e-6 * rng.random((s, o)))
-        cell = np.repeat(np.array(CELL)[:, None], 2, axis=1)
+        env = np.repeat(np.array(env0)[:, None], o, axis=1) * (1 + 1e-6 * rng.random((s, o)))
+        cell = np.repeat(np.array(cell0)[:, None], 2, axis=1)
         final = {
-            "Dm_cells": np.repeat(DM[:, None], m, axis=1),
-            "D_env": np.repeat(FREE[:, None], o, axis=1),
-            "D_gj": np.repeat(FREE[:, None], m, axis=1),
+            "Dm_cells": np.repeat(dm[:, None], m, axis=1),
+            "D_env": np.repeat(free[:, None], o, axis=1),
+            "D_gj": np.repeat(free[:, None], m, axis=1),
             "cc_cells": cell,
             "cc_at_mem": cell[:, OWNER],
             "cc_env": env,
@@ -110,19 +139,19 @@ def write_case(directory, *, params=None, dm_history=None):
                 "NaKATP_block": 1,
                 "gj_block": 1,
                 "bound_V": {"T": 0, "B": 0, "L": 0, "R": 0},
-                "movingIons": [0, 1, 2, 3],
-                "c_env_bound": ENV,
+                "movingIons": list(range(s)),
+                "c_env_bound": list(env0),
                 "ko_env": float(np.sqrt(debye @ start_env).mean()),
             }
         }
-        all_params[phase] = {**PARAMS, "dt": DT[phase], **(params or {})}
+        all_params[phase] = {**PARAMS, **profile, "dt": DT[phase], **(params or {})}
         start_env = env  # SIM starts from init_final
     manifest = {
         "kind": ex.KIND,
         "status": "complete",
         "files": files,
         "time": time,
-        "ions": {"order": SPECIES, "valence": VALENCE},
+        "ions": {"order": species, "valence": valence},
         "final_state": scalars,
         "parameters": {
             "all_simple_attributes": all_params,
@@ -311,7 +340,8 @@ def test_dt_factor_keeps_betse_sampling_and_feeds_the_budget(case, emulated, tmp
     world = adapter.betse_world(case)
     budget = adapter.layout_difference(world, root / "layout", tmp_path / "f2")
     for phase, row in budget["phases"].items():
-        assert row["samples"] == STEPS[phase] and set(row["observables"]) == set(adapter.BUDGET)
+        assert row["samples"] == STEPS[phase]
+        assert set(row["observables"]) == {*adapter.BUDGET, "cc_env_time_interior"}
         for obs in row["observables"].values():
             assert np.isfinite(obs["max"]) and np.isfinite(obs["final"]["max"])
             assert obs["elapsed_s"] in [(k + 1) * DT[phase] for k in range(STEPS[phase])]
@@ -449,3 +479,91 @@ def test_judged_run_names_its_protocol_and_is_judgeable(case, tmp_path):
             dt_init=2 * DT["init"],
         )
     assert not (tmp_path / "refused").exists()
+
+
+@pytest.fixture(scope="module")
+def calcium_case(tmp_path_factory):
+    return write_case(tmp_path_factory.mktemp("adapter-ca") / "betse", ions=MAMMAL)
+
+
+def test_calcium_profile_maps_the_ca_atpase_to_the_second_identity(case, calcium_case):
+    from cells.core.specs import parse_spec
+    from cells.models import surface_pump_v2
+    from cells.models.registry import get_model
+    from cells.processes import calcium_atpase
+    from cells.processes.electrochemistry import R
+
+    assert adapter.betse_world(case)["calcium_pump"] is None
+    world = adapter.betse_world(calcium_case)
+    pump = world["calcium_pump"]
+    np.testing.assert_allclose(pump["capacity_fmol_s"], 5e-8 * AREA * 1e15)
+    assert (pump["km_ca_mM"], pump["km_atp_mM"]) == (1e-3, 0.5)
+    assert pump["delta_g_mM_quotient_J_mol"] == -37000.0
+    raw = adapter.resolved_definition(world, "init", adapter.phase_start(world, "init"), dt=1e-3)
+    assert raw["model"]["id"] == adapter.RESOLVED_CALCIUM_MODEL_ID
+    calcium = raw["model"]["membranes"][1]["calcium_pump"]
+    assert calcium["capacity_fmol_per_s"] == pytest.approx(5e-8 * 2e-10 * 1e15)
+    assert calcium["roles"] == {"calcium": "Ca"} and calcium["stoichiometry"] == {"Ca": -1}
+    delta = calcium["metabolism"]["delta_g0_J_per_mol"]
+    assert delta == pytest.approx(-37000.0 + R * 310.0 * math.log(1000.0), rel=1e-15)
+    # The 1 M standard energy gives pumpCaATP's numeric-mM drive (with Cells' R).
+    parameters = calcium_atpase.Parameters(1.0, 1.5, 0.1, 0.1, 1e-3, 0.5, delta)
+    drive = calcium_atpase.chemical_drive(parameters, 310.0, xp=np)
+    assert drive == pytest.approx(-37000.0 + R * 310.0 * math.log(0.1 * 0.1 / 1.5), rel=1e-14)
+    ids = [row["calcium_pump"]["id"] for row in raw["model"]["membranes"]]
+    assert [c["pump_id"] for c in raw["experiment"]["calcium_pump_controls"]] == ids
+    assert get_model(parse_spec(raw).model) is surface_pump_v2
+
+
+def test_emulator_runs_the_calcium_pump_and_each_model_difference(calcium_case, tmp_path):
+    protocol = tmp_path / "protocol.json"
+    shutil.copyfile(PROTOCOL, protocol)
+    world = adapter.betse_world(calcium_case)
+    run = dict(constants="betse", device_kind="cpu", sim_start="chained")
+    base = adapter.run_emulator(calcium_case, protocol, tmp_path / "base", **run)
+    assert base["valid"] and base["model_differences"] == []
+    history = np.load(tmp_path / "base" / "init_history.npz")["cc_time"]
+    ca = MAMMAL["species"].index("Ca")
+    assert np.all(np.diff(history[:, ca], axis=0) < 0)  # the pump extrudes Ca
+    for name, factor in (("ecm_drift_off", 1), ("gate_once_no_lag", 1), ("compact_ecm_faces", 10)):
+        record = adapter.run_emulator(
+            calcium_case,
+            protocol,
+            tmp_path / name,
+            **run,
+            dt_factor=factor,
+            differences=(name,),
+        )
+        assert record["valid"] and record["model_differences"] == [name]
+        budget = adapter.layout_difference(world, tmp_path / "base", tmp_path / name)
+        rows = budget["phases"]["init"]["observables"]
+        assert rows["vm_ave_time"]["max"] > 0
+        assert set(rows["cc_time"]["by_ion"]) == set(MAMMAL["species"])
+        assert rows["cc_env_time_interior"]["max"] <= rows["cc_env_time"]["max"]
+
+
+def test_betse_step_term_pairs_fine_samples_one_fine_step_later(case, tmp_path):
+    fine = tmp_path / "fine"
+    shutil.copytree(case, fine)
+    manifest = json.loads((fine / "manifest.json").read_text())
+    for phase in adapter.PHASES:
+        manifest["time"][phase]["dt_s"] = DT[phase]
+    step = DT["init"] / 10  # INIT only: SIM keeps its step, so its samples coincide
+    manifest["time"]["init"]["dt_s"] = step
+    manifest["time"]["init"]["elapsed_after_update_s"] = [
+        t + step for t in manifest["time"]["init"]["elapsed_after_update_s"]
+    ]
+    (fine / "manifest.json").write_text(json.dumps(manifest))
+    dense = tmp_path / "dense"
+    shutil.copytree(case, dense)
+    manifest = json.loads((dense / "manifest.json").read_text())
+    for phase in adapter.PHASES:
+        manifest["time"][phase]["dt_s"] = DT[phase]
+    (dense / "manifest.json").write_text(json.dumps(manifest))
+    world = adapter.betse_world(dense, blind=True)
+    result = adapter.betse_step_term(world, dense, fine)
+    assert result["phases"]["init"]["pairing_offset_s"] == pytest.approx(step)
+    assert result["phases"]["sim"]["pairing_offset_s"] == 0.0
+    for phase, row in result["phases"].items():
+        assert row["samples"] == STEPS[phase]
+        assert all(o["max"] == 0 for o in row["observables"].values())  # same arrays

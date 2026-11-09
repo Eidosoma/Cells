@@ -365,6 +365,68 @@ def test_tolerances_may_differ_per_phase(case):
             cmp.load_protocol(broken["protocol_path"])
 
 
+def test_tolerances_may_differ_per_ion(case):
+    """Each ion meets its own tolerance; the worst error of each ion is reported."""
+
+    def per_ion(protocol):
+        for values in protocol["tolerance_classes"].values():
+            values["cell_concentration"] = {
+                "init": {"by_ion": {"Na": 1e-3, "K": 1e-9}},
+                "sim": 1e-9,
+            }
+
+    ionic = with_protocol(case, per_ion)
+    na = bump(case, "init", "cc_time", [1, 0, 1], factor=1 + 1e-4)
+    result = layout(ionic, "ion-na", perturbation=na)
+    cls = result["phases"]["init"]["observables"]["cc_time"]["classes"]["codata_constants"]
+    assert result["verdict"] == "pass" and cls["pass"]
+    assert cls["by_ion"]["Na"]["worst"] == pytest.approx(1e-4) and cls["by_ion"]["K"]["worst"] == 0
+    assert cls["by_ion"]["Na"]["tolerance"] == 1e-3 and not cls["by_ion"]["Na"]["flat"]
+    line = cmp.summarize(result)["phases"]["init"]["observables"]["cc_time"]
+    assert "Na 0.0001 of 0.001" in line
+    k = bump(case, "init", "cc_time", [1, 1, 0], factor=1 + 1e-8)
+    failed = layout(ionic, "ion-k", perturbation=k)
+    cls = failed["phases"]["init"]["observables"]["cc_time"]["classes"]["codata_constants"]
+    assert (
+        failed["verdict"] == "fail"
+        and not cls["by_ion"]["K"]["pass"]
+        and cls["by_ion"]["Na"]["pass"]
+    )
+    for i, broken in enumerate(
+        (
+            {"init": {"by_ion": {"Na": 1e-3}}, "sim": 1e-9},  # an ion missing
+            {"init": {"by_ion": {"Na": 1e-3, "K": 1e-9, "Ca": 1.0}}, "sim": 1e-9},
+        )
+    ):
+        bad = with_protocol(
+            case,
+            lambda p, v=broken: p["tolerance_classes"]["codata_constants"].update(
+                cell_concentration=v
+            ),
+            name=f"bad-{i}.json",
+        )
+        refused = layout(bad, f"ion-bad-{i}")
+        assert refused["verdict"] == "refused" and "per-ion" in refused["refusals"][0]
+    for value in ({"init": {"by_ion": {}}, "sim": 1e-9}, {"init": {"ions": {"Na": 1}}, "sim": 1}):
+        invalid = with_protocol(
+            case,
+            lambda p, v=value: p["tolerance_classes"]["codata_constants"].update(
+                cell_concentration=v
+            ),
+            name="invalid.json",
+        )
+        with pytest.raises(cmp.Refusal):
+            cmp.load_protocol(invalid["protocol_path"])
+    voltage = with_protocol(
+        case,
+        lambda p: p["tolerance_classes"]["codata_constants"].update(
+            voltage={"init": {"by_ion": {"Na": 1.0, "K": 1.0}}, "sim": 1.0}
+        ),
+        name="voltage.json",
+    )
+    assert layout(voltage, "ion-voltage")["verdict"] == "refused"  # no ions axis
+
+
 # ............................................................ regression
 
 BASELINE = "432e62b"  # comparator before exclusions, reported-only and per-phase tolerances
