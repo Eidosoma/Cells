@@ -41,7 +41,7 @@ starts, and production design is deferred until parity is established.
 | 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | Passed (pre-registered protocols D and F) |
 | 3b | Parity rung 1: Cl/Ca ions plus the plasma-membrane Ca pump (`resolved_pump_tissue@2`) | v1 failed (one item); **v2 passed** (registered after attribution; weaker evidence) |
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
-| 5 | Further mechanism families from the parity ladder, on CPU and L4 | Planned |
+| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers) and P4 (general-network channels) passed** on CPU; further rungs planned |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
@@ -54,6 +54,31 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Parity rungs P2 and P4 pass (9 November).** The five protocols were
+  registered at `621e2be` and judged once each, from a clean snapshot of that
+  commit, on CPU
+  ([evidence](/mnt/workspaces/Cells/parity-rung2-4-20261109-03/), `margins.json`).
+  Tolerances use the pinned method (3 × the sum of measured terms), with no
+  provisional terms. Each protocol lists its non-discriminating quantities, and
+  no claim rests on those.
+  - **P2 stage (i)**, the verdict: `resolved_pump_tissue@2` (field solver @3)
+    against the BETSE-order emulator with Cells' harmonic faces, at BETSE dt/100.
+    The reference is first order: observed order 1.00–1.01 over dt/10–dt/300.
+    PASS. The barrier claim rests on:
+    - ECM K: worst error 0.17 of tolerance, with the barrier effect 252× the error;
+    - cell Na, K, M and Cl: effect 3–13× the error.
+    Cell K passed with almost no margin: 0.984 (INIT) and 0.996 (SIM) of a
+    2e-8 tolerance. The error is about 3.8× the raw term sum, at a
+    tight-junction boundary cell. The budget most likely leaves out the
+    exterior-field Boltzmann term for non-Ca ions: the rung-1 convention set it
+    to 0 below 1e-7. A bounded attribution run is under way; the verdict stands.
+  - **P2 stage (ii)**, the emulator against plain BETSE (tooling): PASS, worst 0.33.
+  - **P2 direct**, Cells against BETSE: reported only; PASS, worst 0.30.
+  - **P4 KLeak** (`resolved_pump_tissue@3` with channel populations, BETSE's
+    general network): PASS, worst 0.29. The channel's effect is 46× the error on
+    INIT Vm and 1.2e4× on SIM Vm.
+  - **P4 Kv1p5+KLeak:** PASS, worst 0.31. Kv1p5's effect is 1.7e3× the error on
+    SIM Vm.
 - **MG0b bistable domain wall passes (9 November).** `resolved_pump_tissue@3`,
   unmodified (IMEX ARS(2,2,2), field solver @2, dt 1 ms, CPU, float64), ran on chains
   of resolved cells with Kir2.1, NaV1.2, leaks and gap junctions. The protocol
