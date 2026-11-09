@@ -57,8 +57,25 @@ def _test_files():
 
 
 def _run_file(path, cpu, cap, log_dir):
-    env = dict(os.environ, PYTHONPATH=str(ROOT / "src"), CUDA_VISIBLE_DEVICES="")
-    log = log_dir / (path.replace("/", "__") + ".log")
+    """One test file under the standard gate environment.
+
+    Scientific code is float64 (JAX_ENABLE_X64), and tests that write outputs or
+    component evidence get their own directories under the run, never shared paths.
+    """
+    slug = path.replace("/", "__")
+    outputs = log_dir.parent / "outputs" / slug
+    evidence = log_dir.parent / "evidence" / slug
+    outputs.mkdir(parents=True, exist_ok=True)
+    evidence.mkdir(parents=True, exist_ok=True)
+    env = dict(
+        os.environ,
+        PYTHONPATH=str(ROOT / "src"),
+        CUDA_VISIBLE_DEVICES="",
+        JAX_ENABLE_X64="1",
+        CELLS_OUTPUT_ROOT=str(outputs),
+        CELLS_COMPONENT_EVIDENCE=str(evidence),
+    )
+    log = log_dir / (slug + ".log")
     cmd = [
         "taskset",
         "-c",
@@ -123,6 +140,10 @@ def measure(args):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     files = _test_files()
+    if args.only:
+        doc = json.loads(Path(args.only).read_text())
+        chosen = {r["file"] for t in args.only_tiers for r in doc["tiers"][str(t)]}
+        files = [f for f in files if f in chosen]
     header = {
         "kind": "cells.test_file_costs@1",
         "provenance": _provenance(),
@@ -135,9 +156,18 @@ def measure(args):
 
 
 def tiers(args):
-    measured = json.loads(Path(args.measured).read_text())
+    # Later measurements override earlier ones per file (e.g. a re-measured subset).
+    records = [json.loads(Path(m).read_text()) for m in args.measured]
+    latest = {}
+    for record in records:
+        for row in record["files"]:
+            latest[row["file"]] = row
+    measured = {
+        "provenance": [r["provenance"] for r in records],
+        "cap_seconds": records[-1]["cap_seconds"],
+    }
     groups = {"1": [], "2": [], "3": []}
-    for row in measured["files"]:
+    for row in latest.values():
         tier = "3" if row["timed_out"] else ("1" if row["seconds"] < args.fast else "2")
         groups[tier].append(
             {
@@ -149,7 +179,7 @@ def tiers(args):
         )
     doc = {
         "kind": "cells.test_tiers@1",
-        "measured": str(args.measured),
+        "measured": [str(m) for m in args.measured],
         "measured_provenance": measured["provenance"],
         "fast_seconds": args.fast,
         "cap_seconds": measured["cap_seconds"],
@@ -213,8 +243,10 @@ def main(argv=None):
     m.add_argument("--out", required=True)
     m.add_argument("--cpus", type=cpus, default=[4, 5, 6, 7])
     m.add_argument("--cap", type=float, default=90.0)
+    m.add_argument("--only", help="tiers JSON restricting which files to measure")
+    m.add_argument("--only-tiers", type=int, nargs="+", default=[1, 2])
     t = sub.add_parser("tiers")
-    t.add_argument("--measured", required=True)
+    t.add_argument("--measured", required=True, nargs="+")
     t.add_argument("--out", required=True)
     t.add_argument("--fast", type=float, default=20.0)
     r = sub.add_parser("run")
