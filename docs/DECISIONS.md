@@ -4531,6 +4531,19 @@ keeps its own source snapshots. Each batch is gated by test tier 1, and by tier
   - a BITSEY cross-check of the experiment driver is optional and runs in
     parallel.
 
+## D134: Morphogenesis track choices
+
+2026-11-09, user decisions on the [morphogenesis plan](MORPHOGENESIS_PLAN.md):
+- **MG0 starts now**, in parallel with the heredity work: MG0a, a morphogen
+  gradient on fixed tissue, then MG0b, a bistable voltage domain wall cut and
+  restored on the channel model.
+- **Mechanics** from MG1 onward is a 2-D vertex model: Farhadifar energy,
+  differentiable in JAX, GPU-batched with padded topology. tyssue, run out of
+  process, is the first reference.
+- **Long-term targets:** the Drosophila wing disc, for its quantitative
+  morphogen and topology data, with planarian anterior–posterior polarity on
+  fixed geometry in parallel for the bioelectric link.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

@@ -46,7 +46,7 @@ starts, and production design is deferred until parity is established.
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | Planned (map ready) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
 | 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Designed; user choices recorded in D133 |
-| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md)) | Planned with verified sources; MG0 decisions pending |
+| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | MG0 drivers in progress |
 
 ## Runs
 
