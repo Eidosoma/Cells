@@ -141,7 +141,12 @@ def cycle_report(rho, rate, *, burst, slope, ratios, neutral_rate=1e-9):
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
 
     jax.config.update("jax_enable_x64", True)
-    heredity_modes(sys.argv[1])
+    parser = argparse.ArgumentParser(description=heredity_modes.__doc__.splitlines()[0])
+    parser.add_argument("output")
+    parser.add_argument("--burst", type=int, default=2000)
+    parser.add_argument("--slope", type=int, default=250)
+    args = parser.parse_args()
+    heredity_modes(args.output, burst=args.burst, slope=args.slope)
