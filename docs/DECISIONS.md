@@ -4544,6 +4544,26 @@ keeps its own source snapshots. Each batch is gated by test tier 1, and by tier
   morphogen and topology data, with planarian anterior–posterior polarity on
   fixed geometry in parallel for the bioelectric link.
 
+## D135: Optional long-horizon time modes
+
+2026-11-09, user decision. The fine engine needs about 1 ms steps, while
+heredity and morphogenesis questions run over hours to months. Coarser time
+modes are added, all **optional and configurable**. The qualified fine engine
+stays the default and is unchanged when a mode is off.
+- **Now, E:** stationary-state, stability and one-parameter continuation
+  analysis of a configured world, with no time stepping.
+- **Now, C:** coarse projective integration (Gear and Kevrekidis 2003). Bursts
+  of the unchanged fine engine are followed by extrapolated jumps, inside
+  configured windows and never across a scheduled input.
+- **Later, B:** a quasi-steady electrical model in which Vm, the field and fast
+  gates become algebraic, with a fine/coarse handoff at checkpoints.
+
+Each mode has a neutral ID, a declared validity domain, automatic fallback to
+fine stepping and its own pre-registered qualification against the fine mode.
+For days to months, the slow physics must also grow (water and volume,
+metabolism, expression, turnover); a coarse mode alone does not make a
+fixed-volume world realistic.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
