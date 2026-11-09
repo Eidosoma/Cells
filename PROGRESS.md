@@ -69,9 +69,26 @@ machine-readable inputs, results, checks and failures.
     - cell Na, K, M and Cl: effect 3–13× the error.
     Cell K passed with almost no margin: 0.984 (INIT) and 0.996 (SIM) of a
     2e-8 tolerance. The error is about 3.8× the raw term sum, at a
-    tight-junction boundary cell. The budget most likely leaves out the
-    exterior-field Boltzmann term for non-Ca ions: the rung-1 convention set it
-    to 0 below 1e-7. A bounded attribution run is under way; the verdict stands.
+    tight-junction boundary cell.
+  - **Attribution after the verdict** ([evidence](/mnt/workspaces/Cells/parity-rung2-4-20261109-04/attribution.json)):
+    - The rung-1 convention set the exterior-field Boltzmann term to 0 for
+      non-Ca cell ions. Measured by propagation through the reference
+      emulator, it is 6.2e-8 for cell K, and 6.3e-7 for Na, 2.7e-7 for Cl and
+      9.4e-9 for M.
+    - With that term included, the cell-ion tolerances would be 10–100× wider,
+      and cell K, Na, Cl and M would not discriminate the barrier.
+    - **So P2's barrier claim rests on ECM K alone**, whose field term was
+      already in the sum (effect 43× the tolerance, 252× the error). The verdict
+      stands, but the cell-ion discrimination reported above is withdrawn.
+    - The observed cell-K difference has the opposite sign to both measured
+      field terms, so its mechanism is unidentified (open). A next step would
+      drive the emulator's membranes with Cells' actual exterior concentrations.
+    - **Method for later rungs:** no term is cut off by an absolute threshold.
+      Every cell-ion field term is measured by propagation, at the cost of one
+      emulator run. A term may stay unmeasured only under a recorded bound of at
+      most 10% of the measured sum for the same quantity, phase and ion.
+      Heuristic scalings follow the same rule: the X_ext concentration
+      heuristic overstated the direct value 1600×.
   - **P2 stage (ii)**, the emulator against plain BETSE (tooling): PASS, worst 0.33.
   - **P2 direct**, Cells against BETSE: reported only; PASS, worst 0.30.
   - **P4 KLeak** (`resolved_pump_tissue@3` with channel populations, BETSE's
