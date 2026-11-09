@@ -299,7 +299,7 @@ def endpoint_work(chemical_change, *, capacitor_energy_change_pJ, clamp_work_pJ)
             dict(
                 kind=KIND,
                 optional_Cells_physics=True,
-                native_BETSE_energy_law=False,
+                reference_energy_law=False,
                 fixed_ion_constraints=True,
                 holding_work_included=False,
                 total_protocol_work_claim=False,

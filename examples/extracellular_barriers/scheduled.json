@@ -1336,7 +1336,6 @@
         "source_correspondence": {
           "native_version": "1.5.0",
           "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
-          "coefficient_kernel_sha256": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
           "source_law": "extracellular_face_transport@1",
           "native_scope": "Static initDenv overwrite order and prescribed ionic TJ multiplication",
           "cells_face_law": "logmean_electrodiffusion@1",
@@ -1527,7 +1526,7 @@
         ],
         "initial_state_sha256": "cc65204e01739462aa1520efadace12f4f643d085e5b8b59f847edf8bd7a5e12",
         "scope": "Initial static ionic barriers on a finite sealed uniform grid. Existing Cells Logmean transport, charge/current closure and material/energy ledgers remain. No native stencil, bath event, dynamic barrier, moving geometry or flow claim.",
-        "identity": "ebd159c24f9cb65d35c23ce4d612e746affc1f5aad2da1d67e2ece1ad540450c"
+        "identity": "8eb4ded2c81a8ee5b8c0aad19e40b63dd9b44f8e4fbb3e9d694db775076d81de"
       }
     },
     "intervention": {

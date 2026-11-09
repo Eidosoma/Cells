@@ -192,7 +192,7 @@ def compare(candidate, request, target, definitions, partial):
         numerical_tolerances_changed=False,
         process_guards_changed=False,
         retry_or_hidden_subdivision=False,
-        native_BETSE_equivalence=False,
+        reference_trajectory_equivalence=False,
     )
     need(
         metadata.digest(candidate["provenance"]) == metadata.digest(expected_provenance),

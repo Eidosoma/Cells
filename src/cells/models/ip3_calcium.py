@@ -151,7 +151,7 @@ def summarize(history, diagnostics, spec):
         "final_ip3_cytosol_mM": concentration[-1].tolist(),
         "final_ip3_release_fraction": fraction[-1].tolist(),
         "claim_scope": (
-            "Pinned BETSE IP3/calcium release factor using finite owned ligand chemistry; "
+            "BETSE v1.5.0 IP3/calcium release factor using finite owned ligand chemistry; "
             "synthetic IP3 buffering, no native full trajectories or biological calibration"
         ),
     }

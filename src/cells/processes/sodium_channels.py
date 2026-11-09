@@ -1,6 +1,6 @@
 """Named NaV1.2/Kv1.5/Kir2.1 laws for the resolved multispecies catalog.
 
-NaV1.2 follows pinned BETSE 1.5.0 Nav1p2 coefficients, including its voltage
+NaV1.2 follows BETSE v1.5.0 Nav1p2 coefficients, including its voltage
 shifts and m**3*h opening. Removable rate singularities use their analytic
 limits. This is a continuous-time law, not the native discrete update clock.
 """

@@ -1,4 +1,4 @@
-"""Pinned BETSE IP3 Hill factor, evaluated on the current owned concentration."""
+"""BETSE v1.5.0 IP3 Hill factor, evaluated on the current owned concentration."""
 
 import jax.numpy as jnp
 

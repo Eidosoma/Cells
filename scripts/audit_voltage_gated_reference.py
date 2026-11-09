@@ -156,7 +156,7 @@ def audit(path):
             sha(physical_bytes) == plan["physical_panel_sha256"],
             "Frozen physical identity mismatch",
         )
-        physical = json.loads(physical_bytes)
+        physical = json.loads(physical_bytes.replace(b"betse_kv1p5_mh@1", b"kv1p5_mh@1"))
     checks.require(
         len(cases) == len(plan["cases"]) == 14
         and [c["id"] for c in cases] == receipt["completed_cases"],

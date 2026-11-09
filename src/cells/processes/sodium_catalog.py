@@ -1,4 +1,4 @@
-"""All seven pinned BETSE sodium classes as regularized continuous gate laws.
+"""All seven BETSE v1.5.0 sodium classes as regularized continuous gate laws.
 
 Standalone sodium codes 2 and 18--23; zero is neutral padding only here.
 Voltage is [..., population] in V, gates/targets/tau are [..., 2, population].

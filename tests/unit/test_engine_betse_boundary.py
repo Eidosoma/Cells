@@ -12,6 +12,8 @@ from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[2] / "src"
 FROZEN = re.compile(r"(^|\.)betse_(native|normal)_")
+# Law/schema IDs such as "betse_x@1" or "cells.betse_y@2" (any case) are BETSE-specific names.
+BETSE_ID = re.compile(r"betse[^\s\"']*@\d+", re.IGNORECASE)
 
 
 def _modules():
@@ -49,3 +51,40 @@ def test_no_frozen_betse_tooling_modules():
 def test_live_modules_do_not_load_betse():
     loaders = sorted(name for name, path in _modules().items() if _loads_betse(path))
     assert not loaders, loaders
+
+
+def test_no_betse_in_module_names():
+    named = sorted(name for name in _modules() if "betse" in name.lower())
+    assert not named, named
+
+
+def test_no_betse_in_law_or_schema_ids():
+    """String literals shaped like IDs; docstrings (plain citations) stay allowed."""
+    found = []
+    for name, path in _modules().items():
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        docstrings = {
+            id(node.body[0].value)
+            for node in ast.walk(tree)
+            if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.body
+            and isinstance(node.body[0], ast.Expr)
+            and isinstance(node.body[0].value, ast.Constant)
+        }
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Constant)
+                and isinstance(node.value, str)
+                and id(node) not in docstrings
+                and BETSE_ID.search(node.value)
+            ):
+                found.append((name, node.value[:60]))
+    assert not found, found
+
+
+def test_no_betse_in_src_data_file_names():
+    files = sorted(
+        str(p.relative_to(SRC)) for p in SRC.rglob("*") if p.is_file() and "betse" in p.name.lower()
+    )
+    files = [f for f in files if "__pycache__" not in f]
+    assert not files, files

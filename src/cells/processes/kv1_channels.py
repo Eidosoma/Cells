@@ -1,4 +1,4 @@
-"""Complete pinned BETSE Kv1 family in the shared multi-ion channel catalog.
+"""Complete BETSE v1.5.0 Kv1 family in the shared multi-ion channel catalog.
 
 Kv1.1/2/3/4/6 extend the previously qualified Kv1.5, Kir2.1, NaV1.2 and HCN
 laws. Voltage is in volts and time constants in seconds. These continuous

@@ -1,4 +1,4 @@
-"""Pinned BETSE HCN leak and fixed cAMP-shift variants, in volts and seconds.
+"""BETSE v1.5.0 HCN leak and fixed cAMP-shift variants, in volts and seconds.
 
 HCN4_cAMP initializes at a -20 mV source shift and updates at -24 mV.
 The explicit initial_gates helper preserves that distinction. These are fixed

@@ -23,10 +23,18 @@ def artifact(name="irregular-native-radial"):
     root = (
         Path(os.environ.get("CELLS_GEOMETRY_PROFILE_REFERENCE", str(HANDOFF / "examples"))) / name
     )
-    return {
+    stored = {
         key: json.loads((root / (key + ".json")).read_text())
         for key in ("definition", "provenance")
     }
+    # The frozen handoff predates the neutral geometry law ID. Re-prepare its recipe under
+    # the current law; the prepared definition must be unchanged.
+    from cells.core import geometry_tissue_preparation as bridge
+
+    again = bridge.prepare(stored["provenance"]["request"])
+    if again.definition != stored["definition"]:
+        raise ValueError("Frozen geometry preparation no longer reproduces its definition")
+    return {"definition": again.definition, "provenance": again.provenance}
 
 
 def selector(kind, value=None, *, identity=None, permutation=None):

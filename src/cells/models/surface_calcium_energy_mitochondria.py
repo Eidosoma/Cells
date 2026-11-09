@@ -2,7 +2,7 @@
 
 The physical model uses continuous passive transport and charge-consistent
 voltage. Native Euler/cache/copy-initialization correspondence is kept in the
-separate betse_mitochondria component, never substituted into this RK4 RHS.
+separate mitochondrial component, never substituted into this RK4 RHS.
 """
 
 from dataclasses import make_dataclass, replace

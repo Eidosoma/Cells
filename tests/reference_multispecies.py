@@ -74,8 +74,10 @@ def load_json(path):
     def invalid_constant(value):
         raise ValueError(f"Nonfinite JSON constant: {value}")
 
+    # Frozen, hash-pinned reference panels predate the neutral channel IDs; translate at load.
+    text = Path(path).read_text().replace("betse_kv1p5_mh@1", "kv1p5_mh@1")
     return json.loads(
-        Path(path).read_text(),
+        text,
         object_pairs_hook=unique,
         parse_constant=invalid_constant,
         parse_float=lambda value: number(float(value), "JSON number"),

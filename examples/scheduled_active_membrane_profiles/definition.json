@@ -6474,8 +6474,8 @@
             "channel_capacity": 57
           }
         },
-        "source_definition_sha256": "b2c60d32ea4d73c4d4919be07d6471d97ed950080d47f1e747f1d84330970fc7",
-        "prepared_definition_sha256": "db8dec7e1a8bcb22875eee2d2487a6f7349d8520b052ee71f14b3ad0da50e480",
+        "source_definition_sha256": "d31c389c9b09d6ff94036a93f53e586b5904a15be12071ea4c06784bd37b26fe",
+        "prepared_definition_sha256": "5a8fcd4e4c4d0822fd72bcd6124706a9583cde295b4df62597c72cd4d130aadb",
         "geometry": {
           "layout": {
             "cell_ids": [
@@ -6681,7 +6681,7 @@
         },
         "binding": {
           "law_id": "tissue_target_selectors@1",
-          "layout_identity": "768545e14bc3135ff81521109063e4c382a5f41d5a7edbe062998063246c3321",
+          "layout_identity": "07d3bdf074a0ef17161f7f48142af61acd52851aeabd02dc909103440945887c",
           "names": [
             "Default",
             "Region",
@@ -6857,7 +6857,7 @@
               false
             ]
           },
-          "identity": "00f836be060f4de089751e5356446c2aceddda125da21dd8f51edfd1692c6265"
+          "identity": "b185cc29fa25789b784ec599027e5011c9fdfaa8bb8af88236631b8e1b489b44"
         },
         "conversion": "static_D_over_explicit_thickness_unit_rho@1",
         "units": {
@@ -6876,8 +6876,6 @@
         "source_correspondence": {
           "native_version": "1.5.0",
           "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
-          "profile_kernel_sha256": "840482d6612a4f0502eac9214acc1d90559345cb757d847f72f4dc8843502be1",
-          "native_electroflux_ast_sha256": "fdea0e87111b95676927b226fdd3dd56db1ca20849dcd55da581c350d2eb4183",
           "native_flux": "betse/science/sim_toolbox.py:electroflux and update_Co",
           "native_geometry": "betse/science/sim.py passes p.tm and initial rho_channel=1",
           "cells_flux": "cells.coupling.selective.selective_flux, via cells.numerics.surface_transport"
@@ -7158,7 +7156,7 @@
         "dynamic_scope": "Static membrane profiles and insular targets; interventions/pressure/ECM transport separate",
         "junction_scope": "One explicit reciprocal contact per edge; IDs, intrinsic gates and schedules preserved",
         "native_scope": "Frozen selector/ordered-overlap/insular kernels; no full native geometry/solver equivalence",
-        "identity": "e28b009d28d3d887d5c22906dc30ee25fb1fe71f4118a42f2e1fa232b23d1594"
+        "identity": "41a7eb607ab9f4c04eb8ad5e0916423095154d88090e26d39fcc0b9540adcdd3"
       }
     },
     "interventions": [

@@ -512,7 +512,7 @@ def advance(request, *, observer=None):
             numerical_tolerances_changed=False,
             process_guards_changed=False,
             retry_or_hidden_subdivision=False,
-            native_BETSE_equivalence=False,
+            reference_trajectory_equivalence=False,
         )
         partial["common_endpoint_accepted"] = True
         value = Result(

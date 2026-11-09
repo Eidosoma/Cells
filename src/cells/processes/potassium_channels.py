@@ -1,6 +1,6 @@
 """Named potassium gate laws for resolved tissue, in volts and seconds.
 
-Kir2.1 coefficients and m*h**2 opening correspond to pinned BETSE 1.5.0's
+Kir2.1 coefficients and m*h**2 opening correspond to BETSE v1.5.0's
 Kir2p1. This independently expressed continuous law is not its discrete clock
 or a new fit to measurements. See docs/TISSUE_RETURN_CURRENT.md.
 """

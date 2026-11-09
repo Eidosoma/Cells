@@ -1,11 +1,14 @@
 # Physiological perturbations, random streams and checkpoints
 
+> Moved to `validation/betse/physiology/` on 9 November 2026 (D132): the BETSE-loop
+> reproduction harness, not engine code.
+
 Cells provides explicit random-stream ownership in
-[`physiology_random_streams.py`](../src/cells/core/physiology_random_streams.py)
+[`physiology_random_streams.py`](../validation/betse/physiology/core/physiology_random_streams.py)
 and a checked component update in
-[`physiology_perturbation_step.py`](../src/cells/core/physiology_perturbation_step.py),
+[`physiology_perturbation_step.py`](../validation/betse/physiology/core/physiology_perturbation_step.py),
 with a paired checkpoint format in
-[`physiology_checkpoint.py`](../src/cells/physiology_checkpoint.py). These reuse
+[`physiology_checkpoint.py`](../validation/betse/physiology/physiology_checkpoint.py). These reuse
 the [qualified BETSE perturbation samplers](../agent-work/cells-worker-01/workfiles/BETSE_PERTURBATIONS_HANDOFF.md).
 They support explicit component/tissue updates and exact restart. The
 whole-loop operation below preserves physiological update frequency across
@@ -47,7 +50,7 @@ remain bound to their original layout and cannot be reused as new-layout draws.
 
 ## Native tissue-target selection
 
-[`physiology_target_selection`](../src/cells/core/physiology_target_selection.py)
+[`physiology_target_selection`](../validation/betse/physiology/core/physiology_target_selection.py)
 owns the two separate random tapes used by native target preparation. PERCENT
 pickers shuffle the current logical cell order with NumPy's legacy MT19937;
 global gap-junction setup shuffles a copied membrane array with Python's random
@@ -90,7 +93,7 @@ source/restart evidence separately from tissue evolution or GPU qualification.
 
 ### Preparing physical tissue profiles
 
-[`random_tissue_profile_preparation`](../src/cells/core/random_tissue_profile_preparation.py)
+[`random_tissue_profile_preparation`](../validation/betse/physiology/core/random_tissue_profile_preparation.py)
 connects these native selections to the existing static physical preparation.
 Its exact admitted models are `resolved_tissue@1`, `resolved_tissue@12`,
 `resolved_calcium@11` and `resolved_calcium_energy@5`. It creates a new initial
@@ -118,9 +121,9 @@ successor for diagnosis. The caller replaces its source only after success.
 The public module provides a complete durable bundle:
 
 ```sh
-python -m cells.random_tissue_profiles prepare request.json --output prepared
-python -m cells.random_tissue_profiles replay prepared/provenance.json --output replayed
-python -m cells.random_tissue_profiles validate replayed
+python -m validation.betse.physiology.random_tissue_profiles prepare request.json --output prepared
+python -m validation.betse.physiology.random_tissue_profiles replay prepared/provenance.json --output replayed
+python -m validation.betse.physiology.random_tissue_profiles validate replayed
 ```
 
 The manifest binds the definition, complete recipe, successor stream and exact
@@ -134,7 +137,7 @@ limits are recorded in [Progress](../PROGRESS.md).
 
 ### Initializing physiology after random preparation
 
-[`physiology_initial_preparation`](../src/cells/core/physiology_initial_preparation.py)
+[`physiology_initial_preparation`](../validation/betse/physiology/core/physiology_initial_preparation.py)
 continues the exact selected NumPy tape into the qualified static-potassium
 initializer. It creates a full initial numeric checkpoint, physical owner
 binding and component state for the same four ordinary families. Component axes
@@ -166,13 +169,13 @@ This initial bundle does not project protein charge or initialize a complete
 charged loop. Failed static/physical admission retains the selection prefix and
 any proposed component buffers/tape; no source is partially committed.
 
-The [public bundle interface](../src/cells/physiology_initial_preparation_io.py)
+The [public bundle interface](../validation/betse/physiology/physiology_initial_preparation_io.py)
 wraps the existing complete bound physiology checkpoint:
 
 ```sh
-python -m cells.physiology_initial_preparation_io prepare request.json --output initialized
-python -m cells.physiology_initial_preparation_io validate initialized
-python -m cells.physiology_initial_preparation_io replay initialized/initialization.json --output replayed
+python -m validation.betse.physiology.physiology_initial_preparation_io prepare request.json --output initialized
+python -m validation.betse.physiology.physiology_initial_preparation_io validate initialized
+python -m validation.betse.physiology.physiology_initial_preparation_io replay initialized/initialization.json --output replayed
 ```
 
 The request uses `schema_version: 1`, kind
@@ -190,7 +193,7 @@ qualification status and scope are recorded in [Progress](../PROGRESS.md).
 
 ### Starting complete loops from reproducible initialization
 
-[`physiology_initial_loop_io`](../src/cells/physiology_initial_loop_io.py)
+[`physiology_initial_loop_io`](../validation/betse/physiology/physiology_initial_loop_io.py)
 retains the full initial bundle under `origin/` and a corresponding managed
 checkpoint under `loop/`. The handoff adds an explicit zero-loop cursor while
 preserving both random histories, all numeric state/layout bytes, component
@@ -200,15 +203,15 @@ single static successor. Source/runtime identities and nested payload hashes
 are checked before the final outer manifest is published.
 
 ```sh
-python -m cells.physiology_initial_loop_io prepare initialized --output loop-start
-python -m cells.physiology_initial_loop_io validate loop-start
+python -m validation.betse.physiology.physiology_initial_loop_io prepare initialized --output loop-start
+python -m validation.betse.physiology.physiology_initial_loop_io validate loop-start
 ```
 
 Advance its managed child through the existing complete-loop operation:
 
 ```python
-from cells.physiology_initial_loop_io import load_handoff
-from cells.physiology_checkpoint import advance_loop_checkpoint
+from validation.betse.physiology.physiology_initial_loop_io import load_handoff
+from validation.betse.physiology.physiology_checkpoint import advance_loop_checkpoint
 
 start = load_handoff("loop-start")
 binding = start.initialization.binding.component
@@ -269,7 +272,7 @@ sampling. The component neither retries nor repairs rejected values.
 
 ## Explicit tissue owners and units
 
-[`physiology_tissue_binding.py`](../src/cells/core/physiology_tissue_binding.py)
+[`physiology_tissue_binding.py`](../validation/betse/physiology/core/physiology_tissue_binding.py)
 binds the component to the exact ordinary passive, 56-law ionic, calcium and
 finite-fuel model classes. `bind_tissue` requires complete explicit cell,
 membrane, environment and ion ID permutations, a positive thickness in metres
@@ -302,7 +305,7 @@ merely by recalculating a record hash.
 
 ## Applying permeability to a complete tissue readout
 
-[`physiology_permeability_view.evaluate`](../src/cells/models/physiology_permeability_view.py)
+[`physiology_permeability_view.evaluate`](../validation/betse/physiology/models/physiology_permeability_view.py)
 takes the exact ordinary `spec`, accepted `state`, original `layout`, explicit
 held `control`, tissue `binding`, component state and a positive `step_s`.
 It maps the component's current `D` to physical `P`, replaces only passive
@@ -332,7 +335,7 @@ through an accepted interval. Automatic component scheduling remains separate.
 
 ## Advancing a bound tissue checkpoint
 
-[`physiology_tissue_step.advance`](../src/cells/core/physiology_tissue_step.py)
+[`physiology_tissue_step.advance`](../validation/betse/physiology/core/physiology_tissue_step.py)
 accepts the original `spec`, numeric `checkpoint`, tissue `binding` and component
 state. It attempts exactly the next interval on the original `EventGrid`.
 An optional `end_time_s` must equal that next point; the helper cannot skip a
@@ -349,11 +352,11 @@ the original layout, binding and component. Its immutable trial includes the
 raw stage states, derivatives and statuses. `TissueStepRejected` preserves the
 uncommitted trial and source objects without clipping, repair or retry.
 
-[`advance_tissue_checkpoint`](../src/cells/physiology_checkpoint.py) connects
+[`advance_tissue_checkpoint`](../validation/betse/physiology/physiology_checkpoint.py) connects
 that step to complete bound checkpoint files:
 
 ```python
-from cells.physiology_checkpoint import advance_tissue_checkpoint
+from validation.betse.physiology.physiology_checkpoint import advance_tissue_checkpoint
 
 result = advance_tissue_checkpoint(
     "before-step", "after-step", tissue_binding.component,
@@ -384,7 +387,7 @@ single-step operation, preventing silent loss of its scheduling association.
 
 ## Advancing a complete physiological loop
 
-[`physiology_tissue_loop.advance`](../src/cells/core/physiology_tissue_loop.py)
+[`physiology_tissue_loop.advance`](../validation/betse/physiology/core/physiology_tissue_loop.py)
 combines one component update with every original tissue/control interval up
 to the next declared physiological boundary. Its fixed physiological duration
 is `component.controls.dt_s`; the finer tissue timestep is `spec.execution.dt`.
@@ -404,7 +407,7 @@ component.loop_calls - loop_index`.
 The public operation starts from an explicitly bound checkpoint:
 
 ```python
-from cells.physiology_checkpoint import (
+from validation.betse.physiology.physiology_checkpoint import (
     initialise_loop_checkpoint,
     advance_loop_checkpoint,
     load_physiology_checkpoint,
@@ -446,7 +449,7 @@ solver and GPU execution require their own extensions and qualification.
 
 ## Separate pre-ion and post-ion component phases
 
-[`physiology_perturbation_phases`](../src/cells/core/physiology_perturbation_phases.py)
+[`physiology_perturbation_phases`](../validation/betse/physiology/core/physiology_perturbation_phases.py)
 exposes the component ordering needed for a future charged physiological loop.
 `prepare(component, tissue_binding.component)` returns a sealed proposal whose
 `held_state` contains finalized SIM permeability. Protein, random state, controls
@@ -471,7 +474,7 @@ Qualification status is recorded in [Progress](../PROGRESS.md).
 
 ## Protein amounts and electrostatic response
 
-[`physiology_protein_projection`](../src/cells/core/physiology_protein_projection.py)
+[`physiology_protein_projection`](../validation/betse/physiology/core/physiology_protein_projection.py)
 projects protein concentration into amount and charge using actual cell and
 exterior volumes. Callers declare both valence and Faraday constant. Results
 use physical tissue-owner order without inactive padding. Membrane protein
@@ -494,7 +497,7 @@ test separately from input-stock floating-point resolution and conversion
 roundoff. `storage_resolution_used` identifies reliance on the latter bound.
 This diagnostic never relaxes the electrical field's charge/current tolerances.
 
-[`physiology_protein_charge_view.evaluate`](../src/cells/models/physiology_protein_charge_view.py)
+[`physiology_protein_charge_view.evaluate`](../validation/betse/physiology/models/physiology_protein_charge_view.py)
 compares electrostatic fields at one accepted numeric checkpoint. It uses the
 checkpoint's original scheduled controls, geometry and mobile-ion inventories,
 holding current component permeability fixed in both solves. The caller
@@ -534,7 +537,7 @@ Existing loop checkpoints retain their uncoupled-protein contract.
 
 ## Conditional protein endpoint work
 
-[`physiology_protein_thermodynamics`](../src/cells/core/physiology_protein_thermodynamics.py)
+[`physiology_protein_thermodynamics`](../validation/betse/physiology/core/physiology_protein_thermodynamics.py)
 defines an optional ideal-solution chemical energy at fixed owner volumes:
 `G = R T sum(n * (log(c / c0) - 1))`. Temperature, standard concentration `c0`
 and gas constant are declared inputs. Each actual cell/exterior stock counts
@@ -545,7 +548,7 @@ floor. Endpoint differences preserve small changes without subtracting rounded
 total energies. This is an explicit Cells assumption, not a native BETSE
 protein energy law or a measured biological free energy.
 
-[`physiology_protein_work_view.evaluate`](../src/cells/models/physiology_protein_work_view.py)
+[`physiology_protein_work_view.evaluate`](../validation/betse/physiology/models/physiology_protein_work_view.py)
 combines that chemical difference with two qualified field views at one accepted
 tissue checkpoint. Supply a common `charge_reference` component, `before` and
 `after` components, a distinct `protein_species_id`, valence and positive
@@ -581,7 +584,7 @@ trajectory energy accounting remain separate work.
 
 ## Complete rates with held protein charge
 
-[`physiology_protein_charge_rhs.evaluate`](../src/cells/models/physiology_protein_charge_rhs.py)
+[`physiology_protein_charge_rhs.evaluate`](../validation/betse/physiology/models/physiology_protein_charge_rhs.py)
 routes the separately owned protein charge through the complete passive,
 channel/pump, calcium/ER and finite-fuel rate calculations. Supply the original
 checkpoint, tissue binding, explicit reference/current components, distinct
@@ -619,7 +622,7 @@ Qualification details,
 including CPU array execution and independent references, live in
 [Progress](../PROGRESS.md).
 
-[`physiology_protein_charge_step.array_rk4_step`](../src/cells/core/physiology_protein_charge_step.py)
+[`physiology_protein_charge_step.array_rk4_step`](../validation/betse/physiology/core/physiology_protein_charge_step.py)
 uses these complete rates at every RK4 stage with one held protein charge,
 permeability and control packet. Ionic, gating, ER and fuel states evolve in
 the trial. Stage domains, field validity and gross turnover remain mandatory;
@@ -630,7 +633,7 @@ integrated energy histories, protocol work, clock ordering or restart.
 
 ## Accepted intervals with held protein charge
 
-[`physiology_protein_charge_interval`](../src/cells/core/physiology_protein_charge_interval.py)
+[`physiology_protein_charge_interval`](../validation/betse/physiology/core/physiology_protein_charge_interval.py)
 owns a separate `HeldProteinCheckpoint`. It retains an accepted ordinary seed,
 the unchanged layout, explicit charge-reference and current components, and the
 complete evolved numeric state. The current protein and permeability are fixed
@@ -646,7 +649,7 @@ right-continuous endpoint before returning a new checkpoint. Failed attempts
 retain the source, raw trial and available accounting report. They publish no
 new state and do not retry automatically.
 
-[`physiology_protein_interval_accounting`](../src/cells/core/physiology_protein_interval_accounting.py)
+[`physiology_protein_interval_accounting`](../validation/betse/physiology/core/physiology_protein_interval_accounting.py)
 checks both the attempted interval and the unchanged seed-to-current history.
 It retains ionic, chemical, ER, fuel, boundary/work and dissipation checks with
 the original model's tolerances. Stable chemical and capacitor differences use
@@ -658,7 +661,7 @@ balances, limits, energy terms and failed checks.
 
 ```python
 from cells.core import physiology_protein_charge_interval as held
-from cells.physiology_protein_checkpoint import (
+from validation.betse.physiology.physiology_protein_checkpoint import (
     load_held_protein_checkpoint, write_held_protein_checkpoint,
 )
 
@@ -689,7 +692,7 @@ work. Run evidence and current qualification status are recorded only in
 
 ### Array accounting for batched execution
 
-[`physiology_protein_interval_arrays`](../src/cells/numerics/physiology_protein_interval_arrays.py)
+[`physiology_protein_interval_arrays`](../validation/betse/physiology/numerics/physiology_protein_interval_arrays.py)
 provides NumPy/JAX interval balances with static model family and array inputs.
 The caller supplies admitted complete states, original layout with held
 permeability, padded protein-charge increments, actual endpoint controls and
@@ -724,7 +727,7 @@ establish GPU performance, GPU parity or cross-runtime checkpoint migration.
 
 ### Protein chemical energy in arrays
 
-[`physiology_protein_chemical_arrays.change`](../src/cells/core/physiology_protein_chemical_arrays.py)
+[`physiology_protein_chemical_arrays.change`](../validation/betse/physiology/core/physiology_protein_chemical_arrays.py)
 evaluates the optional ideal-protein chemical functional using NumPy/JAX arrays.
 It requires complete before/after `ProteinState` buffers, cell and environment
 volumes in m3 on the matching component-owner axes, and explicit scalar float64
@@ -744,7 +747,7 @@ qualification status are recorded in [Progress](../PROGRESS.md).
 
 ### Protein electrical endpoint work in arrays
 
-[`physiology_protein_electrical_arrays.evaluate`](../src/cells/numerics/physiology_protein_electrical_arrays.py)
+[`physiology_protein_electrical_arrays.evaluate`](../validation/betse/physiology/numerics/physiology_protein_electrical_arrays.py)
 accepts actual before/after `ArrayEndpoint` provider records and an explicit
 `requested_material_charge_change_C` vector on the padded physical-node axis.
 The complete ionic state, permeability, geometry and controls must be fixed.
@@ -768,7 +771,7 @@ records. Compiled endpoint field solves and GPU qualification remain separate.
 
 ### Combined protein endpoint work in arrays
 
-[`physiology_protein_work_arrays.evaluate`](../src/cells/numerics/physiology_protein_work_arrays.py)
+[`physiology_protein_work_arrays.evaluate`](../validation/betse/physiology/numerics/physiology_protein_work_arrays.py)
 combines chemical and electrical work from a common input frame. It accepts
 the original charge-reference protein, before/after protein states, their actual
 field endpoint records and a complete numeric `WorkGeometry`. Explicit valence,
@@ -792,7 +795,7 @@ memory limits separately from future GPU execution and transition admission.
 
 ### Declared protein energy budgets in arrays
 
-[`physiology_protein_drive_arrays.evaluate`](../src/cells/numerics/physiology_protein_drive_arrays.py)
+[`physiology_protein_drive_arrays.evaluate`](../validation/betse/physiology/numerics/physiology_protein_drive_arrays.py)
 recomputes the complete associated endpoint work before checking explicit signed
 external work and nonnegative dissipation, both scalar float64 values in pJ.
 The required provenance describes the supplied budget; it is not evidence of a
@@ -814,7 +817,7 @@ transition and GPU qualifications.
 
 ### Supplied-packet protein transitions in arrays
 
-[`physiology_protein_transition_arrays`](../src/cells/numerics/physiology_protein_transition_arrays.py)
+[`physiology_protein_transition_arrays`](../validation/betse/physiology/numerics/physiology_protein_transition_arrays.py)
 proposes a complete post-ion component update from an explicitly supplied random
 packet. Numeric records retain all protein/diffusion buffers, controls,
 component time/call count and source/successor streams. Native records include
@@ -840,7 +843,7 @@ reduced-geometry compiled CPU qualification and future GPU work.
 
 ### Real protein packets for array transitions
 
-[`physiology_protein_packet_provider`](../src/cells/core/physiology_protein_packet_provider.py)
+[`physiology_protein_packet_provider`](../validation/betse/physiology/core/physiology_protein_packet_provider.py)
 connects actual owned random streams to the supplied-packet array contract.
 `encode_source` checks complete host ownership and the original phase/clock
 preflight without drawing. `provide` uses the qualified sampler and returns the
@@ -868,11 +871,11 @@ qualification.
 
 ### Atomic component commits across independent worlds
 
-[`physiology_protein_transition_commit`](../src/cells/core/physiology_protein_transition_commit.py)
+[`physiology_protein_transition_commit`](../validation/betse/physiology/core/physiology_protein_transition_commit.py)
 checks actual provider packets, complete host bindings, field endpoints and the
 original transition/declared-work admission before selecting each world's next
 component state. Its
-[array kernel](../src/cells/numerics/physiology_protein_transition_commit_arrays.py)
+[array kernel](../validation/betse/physiology/numerics/physiology_protein_transition_commit_arrays.py)
 selects the complete accepted protein/diffusion/control/stream/time/call record.
 A refused world retains every parent bit, including Gaussian cache bits, and
 keeps its speculative packet, trial and diagnostics separately. No arithmetic
@@ -892,7 +895,7 @@ and failure-isolation results are recorded in [Progress](../PROGRESS.md).
 
 ## Post-ion protein updates with a declared energy budget
 
-[`physiology_protein_transition`](../src/cells/core/physiology_protein_transition.py)
+[`physiology_protein_transition`](../validation/betse/physiology/core/physiology_protein_transition.py)
 adds a post-ion split operator. Its input is an accepted held-protein endpoint
 and the exact pre-ion preparation used by that interval. The numeric seed and
 endpoint must span one full declared nominal component duration. The complete
@@ -934,7 +937,7 @@ receipt = protein_update.accept(
 )
 ```
 
-[`physiology_protein_transition_io`](../src/cells/physiology_protein_transition_io.py)
+[`physiology_protein_transition_io`](../validation/betse/physiology/physiology_protein_transition_io.py)
 stores the source held checkpoint, preparation and declared-drive receipt in a
 new directory, committing its manifest last. Loading replays the saved proposal
 from its original RNG and requires the exact packet/component/field/budget
@@ -951,7 +954,7 @@ calibration and GPU qualification remain separate.
 
 ## Repeated charged loops and restart
 
-[`physiology_protein_loop`](../src/cells/core/physiology_protein_loop.py)
+[`physiology_protein_loop`](../validation/betse/physiology/core/physiology_protein_loop.py)
 owns complete nominal loops with changing protein charge. It keeps the original
 ordinary seed and explicitly conditioned starting field, plus the current full
 ionic state, protein component, random stream, original-grid cursor and separate
@@ -984,7 +987,7 @@ energy.
 
 ```python
 from cells.core import physiology_protein_loop as loops
-from cells.physiology_protein_loop_io import (
+from validation.betse.physiology.physiology_protein_loop_io import (
     load_protein_loop_checkpoint, write_protein_loop_checkpoint,
 )
 
@@ -1019,7 +1022,7 @@ numerical qualification results are tracked in [Progress](../PROGRESS.md).
 
 ### Scheduled permeability in charged loops
 
-[`physiology_permeability_schedule`](../src/cells/core/physiology_permeability_schedule.py)
+[`physiology_permeability_schedule`](../validation/betse/physiology/core/physiology_permeability_schedule.py)
 binds an explicit intervention program to the original specification, tissue
 owners, initial component and nominal loop clock. `BufferChange` replaces the
 complete scheduled diffusion modifier in m2/s from its declared loop onward.
@@ -1080,7 +1083,7 @@ comparisons and coupled-trajectory qualification are distinguished in
 
 ### Native phase labels and elapsed call boundaries
 
-[`physiology_native_calendar`](../src/cells/core/physiology_native_calendar.py)
+[`physiology_native_calendar`](../validation/betse/physiology/core/physiology_native_calendar.py)
 prepares the pinned BETSE phase calendar explicitly. For `N > 1`, its event
 labels run from zero through `N*dt` in `N` calls, while every update still uses
 `dt`. A one-call phase has label zero and advances a full `dt`. Sampled source
@@ -1308,7 +1311,7 @@ changes requires explicit thermal/electrode work and updated physical owners.
 
 ### Applying boundary voltage to complete tissue rates
 
-[`physiology_boundary_voltage`](../src/cells/core/physiology_boundary_voltage.py)
+[`physiology_boundary_voltage`](../validation/betse/physiology/core/physiology_boundary_voltage.py)
 binds the native top/bottom/left/right sides to explicitly named physical
 reservoirs. A side may have several owners; a corner shared by different sides
 must receive consistent voltages. Empty sides cannot be driven. Unmapped
@@ -1316,7 +1319,7 @@ reservoirs retain their original potential, and a finite exterior compartment
 or gauge is never silently converted into an electrode. The source's ordered
 positive/negative writes on the same side remain distinct from corner conflicts.
 
-The [complete rate view](../src/cells/models/physiology_boundary_voltage_view.py)
+The [complete rate view](../validation/betse/physiology/models/physiology_boundary_voltage_view.py)
 checks the original source history, then changes only the temporary clamp
 voltage array. It retains full ionic/calcium/fuel rates, physical field closure,
 controls, charge/capacitance anchors and unchanged numerical/turnover limits.
@@ -1337,7 +1340,7 @@ Actual source, independent-field and software evidence is recorded in
 
 ### Applying held temperature to complete tissue rates
 
-[`physiology_temperature`](../src/cells/core/physiology_temperature.py) binds
+[`physiology_temperature`](../validation/betse/physiology/core/physiology_temperature.py) binds
 native temperature setters to the actual cell, environment, membrane, junction,
 face, channel, store and fuel-pool owners. `bind` requires a temperature-only
 program and complete ordered owners; `record`/`restore` preserve that association.
@@ -1345,7 +1348,7 @@ program and complete ordered owners; `record`/`restore` preserve that associatio
 source multiplier to the original temperature in kelvin. Invalid native proposals
 remain available on a refused trial.
 
-The [complete temperature view](../src/cells/models/physiology_temperature_view.py)
+The [complete temperature view](../validation/betse/physiology/models/physiology_temperature_view.py)
 checks the source state under its original definition, then evaluates the full
 passive field, transport rates and reservoir powers at held temperature. It keeps
 the original anchors, inventories, controls, histories and clocks; neither a new
@@ -1356,7 +1359,7 @@ Changed temperature is supported for passive `resolved_tissue@1`. The five
 reviewed active ionic/calcium/fuel identities retain their declared 298.15 K
 restriction, including empty or blocked channel populations. Their identity
 checks are separate from changed-temperature passive coverage. The
-[`inventory` function](../src/cells/core/physiology_temperature.py) lists parameter
+[`inventory` function](../validation/betse/physiology/core/physiology_temperature.py) lists parameter
 roles and missing thermal assumptions; it does not invent a common Q10 or
 activation-energy law for the channel, pump, ER and fuel systems.
 
@@ -1379,10 +1382,10 @@ temperature behavior of a complete native simulation.
 
 ### Explicit active-temperature rate contract
 
-[`physiology_active_temperature`](../src/cells/core/physiology_active_temperature.py)
+[`physiology_active_temperature`](../validation/betse/physiology/core/physiology_active_temperature.py)
 requires the explicit policy `active_uniform_isothermal_fixed_empirical_kinetics@1`
 and complete ordered physical owners. Its
-[rate view](../src/cells/models/physiology_active_temperature_view.py) accepts
+[rate view](../validation/betse/physiology/models/physiology_active_temperature_view.py) accepts
 source states belonging to the five reviewed active identities at their original
 298.15 K. It checks the original history and layout first, then evaluates a
 private coefficient projection under the held temperature. It returns complete
@@ -1409,7 +1412,7 @@ The [contract note](../agent-work/cells-specialist/ACTIVE_TEMPERATURE_CONTRACT.m
 details these assumptions; [Progress](../PROGRESS.md) records tested regimes,
 source comparisons and execution limits.
 
-The [array implementation](../src/cells/models/physiology_active_temperature_arrays.py)
+The [array implementation](../validation/betse/physiology/models/physiology_active_temperature_arrays.py)
 also provides `compiled_world_stages(family)` for separate JAX compilation of
 input projection, complete physics and admission checks. Pass the returned
 stages to `evaluate_batch_staged` and reuse them across homogeneous cohorts;
@@ -1449,7 +1452,7 @@ The original attempt and the separate cache-managed check retain distinct
 result and failure records in Progress.
 
 The host interface
-[`compile_cpu_stages`](../src/cells/core/physiology_active_temperature_compilation.py)
+[`compile_cpu_stages`](../validation/betse/physiology/core/physiology_active_temperature_compilation.py)
 now packages that preparation for callers. Supply the complete trusted cohort
 and its batched proposals; it revalidates cohort provenance before compiling
 one world's stage shapes. Closed ionic, calcium and finite-fuel cohorts use
@@ -1467,7 +1470,7 @@ before compilation. CPU memory qualifications and the remaining backend/trajecto
 limits are recorded in Progress.
 
 Open-bath calcium and finite-fuel worlds have separate pure stages in
-[`physiology_active_temperature_open_arrays`](../src/cells/models/physiology_active_temperature_open_arrays.py).
+[`physiology_active_temperature_open_arrays`](../validation/betse/physiology/models/physiology_active_temperature_open_arrays.py).
 `world_stages(family, xp=...)` separates ionic physics, calcium/ER completion,
 optional finite-pool exchange and the final reservoir closure. The original
 state, layout and controls remain fixed across those calls. Actual reservoir
@@ -1481,7 +1484,7 @@ checks recorded in Progress. The closed-family CPU warmup interface continues
 to refuse open families. None of these stages advances time or temperature.
 
 The separate host entry point
-[`compile_open_cpu_stages`](../src/cells/core/physiology_active_temperature_open_compilation.py)
+[`compile_open_cpu_stages`](../validation/betse/physiology/core/physiology_active_temperature_open_compilation.py)
 prepares these open-bath families for CPU execution. It validates the complete
 trusted cohort and proposal shapes, then retains five calcium or six finite-fuel
 executables. Reservoir closure follows complete parent physics with the original
@@ -1493,10 +1496,10 @@ does not establish a memory bound, GPU execution or advancing trajectories.
 
 ### Combining temperature, voltage and blocker readouts
 
-[`physiology_global_control_view`](../src/cells/core/physiology_global_control_view.py)
+[`physiology_global_control_view`](../validation/betse/physiology/core/physiology_global_control_view.py)
 binds one native setter program to complete physical owners, explicit boundary
 reservoirs and exclusive junction membrane pairs. Its
-[complete rate view](../src/cells/models/physiology_global_control_view.py)
+[complete rate view](../validation/betse/physiology/models/physiology_global_control_view.py)
 requires the original complete checkpoint and the explicit held-temperature
 policy above. It applies temperature, junction block, Na/K pump block and
 voltage in source order, then evaluates the complete coupled rates and field.
@@ -1515,7 +1518,7 @@ standalone control's evidence.
 
 ### Applying blockers to ordinary tissue rates
 
-[`physiology_block_control_view`](../src/cells/models/physiology_block_control_view.py)
+[`physiology_block_control_view`](../validation/betse/physiology/models/physiology_block_control_view.py)
 connects junction and Na/K pump blockers to complete passive, ionic, calcium and
 finite-fuel readouts. `bind` requires an explicit membrane pair for every actual
 junction, with the first membrane owned by its sender cell and the second by
@@ -1543,7 +1546,7 @@ interval qualification below and future actuator-work accounting.
 
 ### Blocker controls in arrays
 
-[`physiology_block_control_arrays`](../src/cells/numerics/physiology_block_control_arrays.py)
+[`physiology_block_control_arrays`](../validation/betse/physiology/numerics/physiology_block_control_arrays.py)
 maps the same complete blocker state onto ordinary control packets using NumPy
 or JAX arrays. `compile_kernel(spec, tissue_binding, binding)` checks actual
 contact owners and produces immutable numeric maps. Recompile from the saved
@@ -1574,7 +1577,7 @@ end-to-end performance measurements.
 
 ### Accepted intervals with held blockers
 
-[`physiology_block_control_step`](../src/cells/core/physiology_block_control_step.py)
+[`physiology_block_control_step`](../validation/betse/physiology/core/physiology_block_control_step.py)
 adds an explicit ordinary-grid policy to the rate view. `initialise` binds an
 accepted ordinary checkpoint, complete component state, blocker binding and
 carried blocker buffer. It performs no event call. `advance` applies the setters
@@ -1593,7 +1596,7 @@ or voltage boundaries. The model contains no drug-delivery or other blocker
 actuator cost; accepting its internal energy accounting does not establish
 that missing physical driving law.
 
-[`physiology_block_checkpoint`](../src/cells/physiology_block_checkpoint.py)
+[`physiology_block_checkpoint`](../validation/betse/physiology/physiology_block_checkpoint.py)
 saves the complete association around the existing tissue/component snapshot.
 It preserves the program, contact owners, carried factors, enable flag, original
 interval origin, complete RNG state and source/runtime pins. Publication commits
@@ -1610,9 +1613,9 @@ the current qualification and its numerical scope.
 
 ### Native-calendar blocker calls
 
-[`physiology_block_calendar`](../src/cells/core/physiology_block_calendar.py)
+[`physiology_block_calendar`](../validation/betse/physiology/core/physiology_block_calendar.py)
 associates the blocker checkpoint with a complete original
-[`NativePhaseCalendar`](../src/cells/core/physiology_native_calendar.py).
+[`NativePhaseCalendar`](../validation/betse/physiology/core/physiology_native_calendar.py).
 For `N` calls, BETSE's event labels span `0` through `N * dt` in `N` samples;
 the physical call still advances from `k * dt` to `(k + 1) * dt`. The controller
 never substitutes the difference between event labels for elapsed duration.
@@ -1629,7 +1632,7 @@ call must end exactly on the original grid before any event fires. An accepted
 endpoint remains valid if a later, unrequested call would be off-grid or its
 event would fail.
 
-[`physiology_block_calendar_io`](../src/cells/physiology_block_calendar_io.py)
+[`physiology_block_calendar_io`](../validation/betse/physiology/physiology_block_calendar_io.py)
 saves the original calendar and accepted call cursor around the complete bound
 blocker snapshot. It preserves the original phase length on restart; replacing
 it with the remaining call count would change event labels. Publication writes
@@ -1649,7 +1652,7 @@ qualification separately from biological-duration or source whole-loop claims.
 
 ## Cell removal and surviving owners
 
-[`remap_component(state, old_binding, new_binding)`](../src/cells/core/physiology_perturbation_remap.py)
+[`remap_component(state, old_binding, new_binding)`](../validation/betse/physiology/core/physiology_perturbation_remap.py)
 returns the surviving component state, an immutable removal archive and
 diagnostics. It reuses the existing cell-cut ownership and quantity contract.
 Every surviving cell keeps all its membranes; environment and ion owner sets
@@ -1695,7 +1698,7 @@ incomplete, mixed or modified payloads on restoration. Existing source/runtime
 compatibility and physical checkpoint checks remain in force.
 
 ```python
-from cells.physiology_checkpoint import (
+from validation.betse.physiology.physiology_checkpoint import (
     load_physiology_checkpoint,
     write_physiology_checkpoint,
 )

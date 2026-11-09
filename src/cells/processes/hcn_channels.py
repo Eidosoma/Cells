@@ -1,4 +1,4 @@
-"""HCN1/2/4 gates and fixed Na/K/Ca permeability ratios from pinned BETSE 1.5.0.
+"""HCN1/2/4 gates and fixed Na/K/Ca permeability ratios from BETSE v1.5.0.
 
 One population has one m/h state and one availability, shared by its ion routes.
 The unused h gate follows the source's relaxation but does not affect opening.

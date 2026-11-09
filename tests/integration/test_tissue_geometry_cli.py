@@ -14,6 +14,7 @@ import numpy as np
 import pytest
 
 from cells import tissue_geometry as cli
+from cells.core import geometry_tissue_preparation as bridge
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.models import surface_tissue as model
 
@@ -62,10 +63,17 @@ def qualified():
     path = Path(os.environ.get("CELLS_GEOMETRY_CLI_REFERENCE", CONTRACT["frozen_example"]["path"]))
     for name, expected in CONTRACT["frozen_example"]["files_sha256"].items():
         assert sha(path / name) == expected
-    return {
+    frozen = {
         name: cli.read_json(path / name)
         for name in ("request.json", "definition.json", "provenance.json")
     }
+    # The frozen provenance predates the neutral geometry law ID, which is part of its
+    # identity. Re-prepare the frozen recipe under the current law; the physical definition
+    # must still equal the frozen one exactly.
+    again = bridge.prepare(frozen["provenance.json"]["request"])
+    assert again.definition == frozen["definition.json"]
+    frozen["provenance.json"] = again.provenance
+    return frozen
 
 
 def child(arguments, cwd, *, entry=None):
