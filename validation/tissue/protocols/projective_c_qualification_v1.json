@@ -1,0 +1,169 @@
+{
+ "kind": "cells.protocol@1",
+ "id": "projective-c-qualification-v1",
+ "status": "Pre-registration draft 02 (lead review of draft 01, 9 November 2026). Committed to the repository before any judged run; not runnable until the ledger rounding fix is on main.",
+ "purpose": "Qualify the opt-in coarse projective mode projective_forward_euler@1 (execution.projective; D135 option C) against fine stepping of the same definition, on overlapping model-time windows, before it is used for long-horizon questions. Integration alone grants no scientific acceptance.",
+ "reference_method": "Gear and Kevrekidis, Projective methods for stiff differential equations: problems with gaps in their eigenvalue spectrum, SIAM J Sci Comput 24:1091-1106 (2003): bursts of the inner integrator, then a forward-Euler extrapolation of the full state from the chord of the last m inner steps.",
+ "engine_models": [
+  "resolved_pump_tissue@3 (IMEX imex_ars222_face_electromigration@1 at dt = 1 ms, the inner integrator, unchanged)",
+  "resolved_pump_tissue@1 (case A1 only, same solver)"
+ ],
+ "code": {
+  "runner": "src/cells/core/projective.py (through cells.core.runner.run)",
+  "block": "src/cells/core/projective_spec.py (execution.projective)",
+  "numerics": "src/cells/numerics/projective.py",
+  "readouts": "src/cells/models/surface_pump_projective.py",
+  "driver": "validation/tissue/projective_study.py (judged mode: fully checked fine reference, see reference)",
+  "fixtures": "validation/tissue/surface_pump_v3_fixtures.py heredity_cells (heredity pre-screen parameters, 310 K, fixed volume); validation/tissue/projective_fixtures.py",
+  "provenance": "Git revision, dirty diff and a frozen snapshot (validation/source_snapshot.py freeze) recorded in each run's inputs"
+ },
+ "dependencies": [
+  "BLOCKING: the resolved pump family's ledger rounding fix (electrode booking, step-scaled work/material allowances, component net-charge check) must be on main. The fix must leave fine trajectories bitwise unchanged; the qualified revision includes it.",
+  "The tier-1 and tier-2 gates pass at the qualified revision."
+ ],
+ "projective_parameters": {
+  "burst_steps": 3000,
+  "burst_basis": "Linear spectrum of the fine ARS step at the heredity steady states (validation/tissue/projective_spectrum.py, dev-03/spectrum.json). H: slow modes 1/5500 s and 1/219 s, fast modes -3.87 +- 0.78i, -140, -1159 and -6804 per s. D: slow 1/11100 s and 1/212 s, fast -3.40, -11.2, -430 +- 8.6i and -2891 per s. With m = 250, the largest fast-mode cycle growth for jumps of 2, 10, 30, 60 and 120 s (dev-03/burst-growth.json) is 0.011, 0.058, 0.18, 0.35 and 0.71 at K = 2000 (D), but at most 0.024 at K = 3000. K = 3000 (3 s) keeps every admitted jump up to max_steps below the pre-registered 0.1. Before the runs, the same check is repeated at the qualified revision.",
+  "slope_steps": 250,
+  "slope_basis": "m h = 0.25 s, about the slowest fast relaxation time, so the chord change |v1 - v0| bounds the fast remainder of the slope (factor 1/(exp(m h / tau) - 1) <= 1); a longer chord divides the per-step rounding carried by a jump by m.",
+  "jump": {
+   "rule": "error_controlled",
+   "min_steps": 1000,
+   "max_steps": 120000,
+   "max_growth": 2.0,
+   "safety_factor": 0.5
+  },
+  "tolerance": {
+   "concentration_mM": 0.001,
+   "membrane_voltage_V": 1e-05,
+   "gate": 0.0001
+  },
+  "tolerance_basis": "Declared per-jump local accuracy targets (not fitted): 1 uM composition, 10 uV membrane voltage, 1e-4 gate fraction.",
+  "safety": {
+   "max_membrane_voltage_rate_V_per_s": 0.001,
+   "max_gate_distance": 0.001,
+   "max_correction": 1.0,
+   "energy_defect_rtol": 0.002,
+   "energy_defect_atol_pJ": 1e-09,
+   "rejection_shrink": 0.25,
+   "cooldown_bursts": 2
+  },
+  "energy_basis": "energy_defect_rtol equals the fine engine's declared ARS energy tolerance per unit of energy flow (ENERGY_RTOL 2e-3): a jump may not integrate the energy identity worse than the fine solver's declared bound. The fine cumulative bound still applies to every row.",
+  "row_checks": "host (resolved_pump_tissue@3 declares no device checks)"
+ },
+ "reference": {
+  "fine": "The same definition without execution.projective, through cells.core.windows.run_windowed (observation recording): every fine row passes check_values. Run detached.",
+  "same_inputs": "Identical model, experiment, fine execution fields and initial state; observation times are fine rows in both runs (the projective runner never ends a jump closer than one burst to an observation)."
+ },
+ "cases": [
+  {
+   "id": "Q1-relax-pair",
+   "model": "resolved_pump_tissue@3",
+   "world": "heredity_cells([U - 2 mV, U + 2 mV]) with steady gates at the initial voltages: two independent cells, one held bath each, that settle within 2 s onto the H and D branches and relax compositions over hundreds of seconds (driver case relax3)",
+   "horizon_s": 1800,
+   "windows": [
+    [
+     10,
+     1800
+    ]
+   ],
+   "observation_every_s": 60
+  },
+  {
+   "id": "Q1L-relax-pair-loose",
+   "model": "resolved_pump_tissue@3",
+   "world": "heredity_cells([U - 2 mV, U + 2 mV]) with steady gates at the initial voltages: two independent cells, one held bath each, that settle within 2 s onto the H and D branches and relax compositions over hundreds of seconds (driver case relax3)",
+   "horizon_s": 1800,
+   "windows": [
+    [
+     10,
+     1800
+    ]
+   ],
+   "observation_every_s": 60,
+   "tolerance_override": {
+    "concentration_mM": 0.01,
+    "membrane_voltage_V": 0.0001,
+    "gate": 0.001
+   },
+   "purpose": "Same world at 10x looser per-jump tolerances: shows how error and speed-up scale with the declared tolerance. Judged on the estimator criterion; the absolute caps are reported, not judged."
+  },
+  {
+   "id": "Q2-relax-world",
+   "model": "resolved_pump_tissue@3",
+   "world": "heredity_cells with 7 cells: U +- 2 mV, U +- 5 mV, H, D and H kicked by +10 mV (7 held baths; if the global-charge fix still refuses 7 baths, 5 cells: U +- 2 mV, U +- 5 mV, D)",
+   "horizon_s": 600,
+   "windows": [
+    [
+     10,
+     600
+    ]
+   ],
+   "observation_every_s": 30
+  },
+  {
+   "id": "F1-cue-in-window",
+   "model": "resolved_pump_tissue@3",
+   "world": "Q1 plus a 9x Na-leak cue channel on cell 0 switched on at 900 s and off at 900.3 s (driver case cue3)",
+   "horizon_s": 1800,
+   "windows": [
+    [
+     10,
+     1800
+    ]
+   ],
+   "observation_every_s": 60,
+   "must_fall_back": true
+  },
+  {
+   "id": "F2-near-fold",
+   "model": "resolved_pump_tissue@3",
+   "world": "One heredity cell started on the D branch with the NaV1.2 permeability scaled just below the value at which the D steady state disappears, so that the fine trajectory lingers near the D ghost and then switches to H inside the window. The scale is chosen before any projective run from fine runs alone (a recorded pre-scan, smallest scale step 1%) such that the fine lingering time is 200-1200 s.",
+   "horizon_s": 1800,
+   "windows": [
+    [
+     10,
+     1800
+    ]
+   ],
+   "observation_every_s": 30,
+   "must_fall_back": true
+  },
+  {
+   "id": "A1-pump-pair",
+   "model": "resolved_pump_tissue@1",
+   "world": "projective_fixtures.pump_cells([H, LOADED]): two independent @1 cells with the heredity passive and pump parameters, no channels (driver case pair1)",
+   "horizon_s": 600,
+   "windows": [
+    [
+     10,
+     600
+    ]
+   ],
+   "observation_every_s": 30
+  }
+ ],
+ "criteria": {
+  "accuracy": "At every observation time t and for each error-coordinate class q (concentration_mM of every species in every cell, membrane_voltage_V of every patch, every gate): max |z_q(projective) - z_q(fine)| <= S * tol_q * E(t) + floor_q, with E(t) the sum over accepted jumps ending at or before t of max(estimate_normalized, a_posteriori_normalized), S = 2, floor_q = 1e-9 (mM, V, fraction). Basis: the per-jump estimate is the leading forward-Euler local error (settling term plus (1/2) y'' D (D + m h)) in tolerance units; on contracting slow dynamics global error is at most the sum of local errors; S covers the next-order terms. Before the first jump both runs execute the same compiled fine steps, so differences there are 0.",
+  "near_fold_accuracy": "F2: the sum-of-local-errors bound does not hold through a switch. Required instead: (a) both runs end on the same branch (H: Vm < -60 mV, D: Vm > -35 mV) at every observation after both have switched; (b) the switch times (first fine row with Vm < -50 mV) differ by at most 5% of the fine lingering time; (c) after both switches, the accuracy criterion holds with E(t) summed over the jumps after the later switch.",
+  "fallback": "F1 and F2: no accepted jump interval [from, to + K h] contains a scheduled input change or a fine row whose |dVm/dt| exceeds max_membrane_voltage_rate_V_per_s; at least one recorded fallback or rejection with reason voltage_rate, gate_distance, error_estimate, event_in_slope_rows, correction or a_posteriori_estimate occurs within 10 s after the cue (F1) or the switch onset (F2); jumps resume (at least one accepted jump) within 120 s after the transient ends.",
+  "conservation": "Every accepted row, fine or jumped, passes the fine engine's check_values (domain, all ledgers at their fine bounds, nonnegative nondecreasing dissipation); any refusal, fine or jumped, fails the case. For every jump and every linear ledger (material local/outside/total, capacitor, electrode and global charge, reservoir, electrode and metabolic work) the record gives the residual before and after, the fine drift carried by the extrapolation (r times the residual change over the chord) and the affine excess (after minus the affine prediction). Reported separately as the jump drift beyond fine stepping, with no pass threshold in this protocol (its own bound is set later from these measurements).",
+  "energy": "Every accepted jump satisfies |energy-ledger change| <= energy_defect_atol_pJ + energy_defect_rtol * (energy flow through the jump), enforced by the runner; the maximum ratio is reported.",
+  "speedup": "Reported, not judged, per case and per phase (Q1, Q1L: 10-600 s relaxation, 600-1800 s near stationary): fine steps executed, including discarded verification bursts, against fine steps traversed; number and length distribution of accepted jumps; wall time of the projective run against the fine reference on the same CPUs with the same host row checks.",
+  "absolute_caps": "All cases except Q1L, at every observation: |dVm| <= 20 uV (the rung-0/1 F-protocol Vm tolerance) and |dc|/c <= 2e-4 for every species in every compartment (the rung-1 extracellular tolerance). Basis: projective error may not exceed what the BETSE-parity qualification already accepts for the fine engine. F2 applies these only after both runs have switched."
+ },
+ "outputs": "Per case: projective report (every jump, rejection and fallback with reasons and estimates), comparison table at every observation, fine diagnostics of both runs, timings, peak RSS; failures preserved under the run directory.",
+ "runs": "/mnt/workspaces/Cells/projective-c-20261109-01/qual-NN/ (each case detached, durable logs, result or failure JSON)",
+ "development_evidence": {
+  "note": "Development runs only, not judged; 30 s horizons below the ledger-bound refusal; unchecked fine reference harness (same compiled step kernel, per-row checks omitted).",
+  "dev-02/relax3.json": "@3 Q1 world, K = 1000, m = 250, window [3, 30] s: 8 jumps of 1.6-2.7 s (error-estimate bound), no rejections; a priori and a posteriori estimates agree (0.50 vs 0.49). Worst error/allowance at S = 2: concentration 0.42, voltage 0.08, gate 0.08. The error was 0.84 of tol * sum(estimates), so S = 2 leaves a 2.4x margin. Energy defects were 0.03 of their bound. Linear ledgers: each jump carried the fine drift of the residuals (electrode about 1e-25 C per jump). The affine excess beyond it was largest for global charge (up to 5.3e-26 C, 18 % of its 3e-25 C floor), at most 8.4e-27 C for electrode, 8.8e-15 pJ for reservoir work (0.3 % of its floor) and 1.1e-15 fmol for material (1e-5 of the tolerance).",
+  "dev-02/pair1.json": "@1 A1 world, window [10, 30] s: 6 jumps, worst error/allowance 0.42 (voltage).",
+  "dev-02/cue3": "Refused by the electrode-ledger bound shortly after the cue; the fine checked run of the same definition is refused as well (engine issue, not the jump)."
+ },
+ "answered_questions": {
+  "compensated_remainders": "Not applicable: the ledger fix uses step-scaled check allowances (option B), with no compensation state.",
+  "tolerances": "1 uM, 10 uV and 1e-4 are the strict level; Q1L adds a 10x looser level. Absolute caps tie both to the parity tolerances.",
+  "second_order_outer_step": "Deferred. A separate later identity, only if measured speed-ups are insufficient.",
+  "device_checks_for_@3": "Yes, as separate engine work (needed for batched @3 heredity runs). Not part of this protocol."
+ }
+}
