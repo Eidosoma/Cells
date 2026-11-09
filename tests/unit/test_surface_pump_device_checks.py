@@ -48,8 +48,9 @@ def runs():
 def device_rows(model, spec, history, p):
     """(failed [row, check], values [row, diagnostic]); row 0 is its own predecessor."""
     previous = type(history)(*(np.concatenate((v[:1], v[:-1])) for v in history))
-    checks = jax.jit(jax.vmap(model.device_checks, in_axes=(0, 0, None, None)))
-    failed, values = checks(previous, history, p, model.device_check_constants(spec))
+    checks = jax.jit(jax.vmap(model.device_checks, in_axes=(0, 0, None, None, 0)))
+    steps = np.arange(len(history.amount_increment))  # The run starts at step 0.
+    failed, values = checks(previous, history, p, model.device_check_constants(spec), steps)
     return np.asarray(failed), np.asarray(values)
 
 
@@ -57,7 +58,9 @@ def host_first_failure(model, spec, history):
     """First row at which the host check of the history up to it raises, and why."""
     for j in range(len(history.amount_increment)):
         try:
-            model.check_values(type(history)(*(v[: j + 1] for v in history)), spec)
+            model.check_values(
+                type(history)(*(v[: j + 1] for v in history)), spec, steps=np.arange(j + 1)
+            )
         except NumericalError as error:
             return j, str(error)
     return None, None

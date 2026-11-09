@@ -23,6 +23,7 @@ from cells.core.resources import trace_bytes
 from cells.core.runner import (
     RunResult,
     branch_checkpoint,
+    check_steps,
     integration_steps,
     timeline,
     validate_checkpoint,
@@ -406,7 +407,10 @@ def run_batch(spec, checkpoints=None, *, timing_repeats=1):
     for i, (world, checkpoint) in enumerate(zip(spec.worlds, starts, strict=True)):
         s, path = world.simulation, assembled[i]
         try:
-            diagnostics = model.check_values(path, s)
+            rows = len(jax.tree.leaves(path)[0])
+            diagnostics = model.check_values(
+                path, s, **check_steps(model, checkpoint.step_index, rows)
+            )
             requested = [t for t in s.experiment.observation_times if t >= checkpoint.time]
             observations = model.observe_history(times[i], path, checkpoint.layout, requested, s)
         except (ConfigError, NumericalError) as exc:

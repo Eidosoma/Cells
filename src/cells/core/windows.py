@@ -8,7 +8,7 @@ import numpy as np
 
 from cells.core.grid import EventGrid, checked_grid
 from cells.core.resources import trace_bytes
-from cells.core.runner import _run_segment, _WindowExecution, validate_checkpoint
+from cells.core.runner import _run_segment, _WindowExecution, takes_steps, validate_checkpoint
 from cells.core.specs import ConfigError, SimulationSpec, _integer, _number, parse_spec
 from cells.core.state import Checkpoint, initialise
 from cells.models.registry import get_model
@@ -102,18 +102,24 @@ def plan_windows(spec, policy=DEFAULT_POLICY, checkpoint=None):
     return plan
 
 
-def _observation_tail(model, spec, observations, previous):
-    """Read-only sampled-state continuity shared by scalar and cohort windows."""
+def _observation_tail(model, spec, observations, previous, grid):
+    """Read-only sampled-state continuity shared by scalar and cohort windows.
+
+    previous is the last sampled row of the earlier windows and, for models whose
+    checks take step counts, its accepted-step index on grid (those models observe
+    accepted integration boundaries only).
+    """
     if len(observations.times):
         sampled = model.STATE_TYPE(*(getattr(observations, k) for k in model.STATE_TYPE._fields))
+        counting = takes_steps(model)
+        steps = [grid.exact_index(float(t)) for t in observations.times] if counting else None
         if previous is not None:
-            model.check_values(
-                model.STATE_TYPE(
-                    *(np.concatenate((a, b)) for a, b in zip(previous, sampled, strict=True))
-                ),
-                spec,
+            row, step = previous
+            joined = model.STATE_TYPE(
+                *(np.concatenate((a, b)) for a, b in zip(row, sampled, strict=True))
             )
-        previous = model.STATE_TYPE(*(v[-1:].copy() for v in sampled))
+            model.check_values(joined, spec, **({"steps": [step, *steps]} if counting else {}))
+        previous = model.STATE_TYPE(*(v[-1:].copy() for v in sampled)), steps and steps[-1]
     for value in vars(observations).values():
         value.setflags(write=False)
     return previous
@@ -142,7 +148,9 @@ def _iter_windows(plan, checkpoint):
             requested[observation_index:stop],
             window_execution=execution,
         )
-        previous_observed = _observation_tail(model, spec, result.observations, previous_observed)
+        previous_observed = _observation_tail(
+            model, spec, result.observations, previous_observed, plan.grid
+        )
         observation_index = stop
         checkpoint = result.final
         yield result

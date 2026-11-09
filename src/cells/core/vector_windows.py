@@ -251,7 +251,20 @@ def _expand(mask, value):
 
 
 def _vector_window(
-    state, steps, counts, table, index, slots, params, active, constants, *, step, checks, rows
+    state,
+    steps,
+    counts,
+    table,
+    index,
+    slots,
+    first_step,
+    params,
+    active,
+    constants,
+    *,
+    step,
+    checks,
+    rows,
 ):
     """One window of every world: masked vmapped steps with per-row device checks.
 
@@ -259,11 +272,13 @@ def _vector_window(
     start row; row j is the state after slot j. ``rows`` is the number of stored
     observation rows per world. Returns the endpoint, the first failing row per
     world (-1 if none) and its failure bits, the diagnostic maxima over the
-    accepted rows (row 0 included) and the stored rows.
+    accepted rows (row 0 included) and the stored rows. first_step is each world's
+    global accepted-step index at row 0; the checks see first_step + row, the
+    host check's count for that row.
     """
     stepped, checked = jax.vmap(step), jax.vmap(checks)
     worlds = counts.shape[0]
-    failed, values = checked(state, state, params, constants)
+    failed, values = checked(state, state, params, constants, first_step)
     bits = _pack(failed, 1)
     ok = bits == 0
     first = jnp.where(ok, -1, 0).astype(jnp.int32)
@@ -278,7 +293,7 @@ def _vector_window(
         row, dt, held, slot = inputs
         control = jax.tree.map(lambda t: jax.vmap(lambda u, i: u[i])(t, held), table)
         updated, accepted = stepped(current, dt, control, params, active)
-        failed, values = checked(current, updated, params, constants)
+        failed, values = checked(current, updated, params, constants, first_step + row)
         flags = jnp.where(accepted, _pack(failed, 1), 1)
         live = (row <= counts) & ok
         failing = live & (flags != 0)
@@ -460,6 +475,7 @@ class _Round:
         counts = np.zeros(worlds, dtype=np.int32)
         index = np.zeros((worlds, width), dtype=np.int32)
         slots = np.full((worlds, width), plan.observation_rows, dtype=np.int32)
+        origin = np.zeros(worlds, dtype=np.int64)
         tables = [None] * worlds
         for group, grid in zip(plan.groups, grids, strict=True):
             lead, local = group[0], plan.worlds[group[0]]
@@ -486,10 +502,14 @@ class _Round:
                 self.times[i], self.chosen[i], self.rows[i] = times, chosen, rows
                 self.stops[i], self.live[i] = stop, live
                 counts[i], steps[i, :count], index[i, :count] = count, step, held
+                # The world's accepted steps at row 0: its window start, or its
+                # final step once its clock is done (starts lag a round here).
+                grid_i = plan.worlds[i].grid
+                origin[i] = grid_i.exact_index(float(times[0])) if live else len(grid_i) - 1
                 tables[i] = table
                 for slot, row in enumerate(stored):
                     slots[i, row - 1] = slot
-        self.arrays = (steps, counts, _stack(tables), index, slots)
+        self.arrays = (steps, counts, _stack(tables), index, slots, origin)
         self.observing = any(r > 0 for rows in self.rows for r in rows)
         self.seconds = perf_counter() - tick
 
@@ -626,7 +646,7 @@ def _iter_vector_windows(plan, checkpoints):
                         list(current.chosen[i]),
                         local.spec,
                     )
-                    tails[i] = _observation_tail(model, local.spec, found, tails[i])
+                    tails[i] = _observation_tail(model, local.spec, found, tails[i], local.grid)
                 except (ConfigError, NumericalError) as exc:
                     raise type(exc)(f"World {identity}: {exc}; vectorized batch refused") from exc
                 observations[identity] = found

@@ -235,7 +235,7 @@ def _iter_batch_windows(plan, checkpoints):
                     starts[identity].layout,
                     requested[observation_indices[i] : stop],
                 )
-                tails[i] = _observation_tail(model, local.spec, observations, tails[i])
+                tails[i] = _observation_tail(model, local.spec, observations, tails[i], local.grid)
             except (ConfigError, NumericalError) as exc:
                 raise type(exc)(f"World {identity}: {exc}; windowed batch refused") from exc
             observation_indices[i] = stop

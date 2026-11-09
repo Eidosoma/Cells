@@ -277,10 +277,12 @@ def part_components(args):
 
         return jax.lax.scan(body, state, None, length=args.window)[0]
 
+    zero = jnp.zeros(dt.shape[0], dtype=jnp.int64)  # Accepted-step count of each row.
+
     @jax.jit
     def checking(state):
         def body(total, _):
-            failed, values = jax.vmap(model.device_checks)(state, state, params, constants)
+            failed, values = jax.vmap(model.device_checks)(state, state, params, constants, zero)
             return total + values.sum() + failed.sum(), None
 
         return jax.lax.scan(body, 0.0, None, length=args.window)[0]

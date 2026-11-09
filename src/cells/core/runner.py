@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import math
 from dataclasses import dataclass, replace
 from time import perf_counter
@@ -90,7 +91,11 @@ def validate_checkpoint(
         array = np.asarray(values)
         if array.dtype != target.dtype or not np.array_equal(array, np.asarray(target)):
             raise ConfigError(f"Checkpoint layout {name} does not match the model definition")
-    model.check_values(model.STATE_TYPE(*(np.asarray(v) for v in checkpoint.state)), spec)
+    model.check_values(
+        model.STATE_TYPE(*(np.asarray(v) for v in checkpoint.state)),
+        spec,
+        **check_steps(model, checkpoint.step_index, 1),
+    )
     if hasattr(model, "check_checkpoint"):
         model.check_checkpoint(spec, checkpoint)
     if checkpoint.step_index == initial.step_index and any(
@@ -456,11 +461,29 @@ def _run_segment(spec, checkpoint, times, requested, *, started=None, window_exe
     )
 
 
+def takes_steps(model):
+    """Whether check_values takes each row's accepted-step index (steps=...).
+
+    Such checks scale their rounding allowances with the steps accepted so far.
+    """
+    try:
+        return "steps" in inspect.signature(model.check_values).parameters
+    except (TypeError, ValueError):
+        return False
+
+
+def check_steps(model, first, rows):
+    """check_values keywords for rows at consecutive global step indices from first."""
+    return {"steps": first + np.arange(rows)} if takes_steps(model) else {}
+
+
 def _analyse_segment(spec, checkpoint, times, arrays, final_state, layout, requested):
     """Shared ordinary model checks/observers on already computed accepted states."""
     model = get_model(spec.model)
     accepted_history = model.STATE_TYPE(*arrays)
-    diagnostics = model.check_values(accepted_history, spec)
+    diagnostics = model.check_values(
+        accepted_history, spec, **check_steps(model, checkpoint.step_index, len(times))
+    )
     observations = model.observe_history(times, accepted_history, layout, requested, spec)
     for values in (times, *arrays):
         values.setflags(write=False)

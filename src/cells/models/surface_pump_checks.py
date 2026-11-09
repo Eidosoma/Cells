@@ -108,18 +108,29 @@ def tissue_balances(state, membrane_total, p):
     )
 
 
-def row_checks(previous, row, p, constants, *, domain_valid, balances, limits, dissipation):
+def row_checks(
+    previous, row, p, constants, steps, *, domain_valid, balances, limits, magnitudes, dissipation
+):
     """(failed [checks], values [diagnostics]) for one accepted row and its predecessor.
 
     Checks, in host order: domain, each ledger of balances(), then dissipation
     (negative, or decreasing since previous). Values are the host diagnostics:
     each ledger's max |residual|, then the energy residual relative to its flows
-    and the global-charge residual relative to its bound. Nothing is skipped
+    and the global-charge residual relative to its bound. steps is the row's
+    accepted-step count (running-ledger rounding allowance). Nothing is skipped
     for an invalid row; a failed check marks the row, never repairs it.
     """
     failed = [~domain_valid(row, p, p.active, xp=jnp)]
     b = balances(row, p)
-    flows, bounds = limits(row, p, constants.material_atol, constants.energy_rtol, xp=jnp)
+    flows, bounds = limits(
+        row,
+        p,
+        constants.material_atol,
+        constants.energy_rtol,
+        steps=steps,
+        magnitudes=magnitudes(row, p, xp=jnp),
+        xp=jnp,
+    )
     values = []
     for value, bound in zip(b.values(), bounds, strict=True):
         magnitude = jnp.abs(value)

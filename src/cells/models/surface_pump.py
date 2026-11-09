@@ -57,6 +57,22 @@ ENERGY_RTOL = {"rk4": 0.0, imex.EULER_ID: 2e-2, imex.ARS222_ID: 2e-3}
 # moved charge still fails. The capacitor and electrode checks are unchanged.
 GLOBAL_CHARGE_ATOL_C = 3e-25
 GLOBAL_CHARGE_ROUNDING = 256 * np.finfo(float).eps
+# Running material and work ledgers: allowance per accepted step, in eps times the
+# magnitudes rounded into a ledger's residual. Each step adds its stage terms to a
+# stored ledger y as y + (w dt) r, at most five additions per IMEX step, each
+# rounding by up to u |y| (u = eps/2): 2.5 eps |y| per step. A residual compares
+# accumulators of one flow (amounts with the route ledgers; cycles x drive with
+# metabolic work; supply x mu with reservoir work; electrode charge x V with
+# electrode work), so after n accepted steps it is at most 2.5 eps x n x the sum
+# of their magnitudes (absolute values, never the cancelled net). The rounding is
+# systematic, not a random walk: small increments into growing sums gave residuals
+# growing as t^1.6 (13-32 eps x |ledger| at 1e4 steps, 140 at 1.2e5; 2-cell
+# relaxing held-bath world at 1 ms, ledger-fix-20261109-01/diag/work_ledgers.json),
+# about 1000x inside this allowance, which against the fixed 3e-12 pJ bound alone
+# refused that world within 150 s. With n the steps accepted at the row, a
+# booking error of relative size 2.5 eps n of the magnitudes is still caught:
+# 5.6e-13 after 1 s, 3.3e-11 after 1 min, 2.0e-9 after 1 h at dt = 1 ms.
+LEDGER_STEP_ROUNDING = 2.5
 GATE_STEP_BOUND = 0.125  # Same conservative junction-gate bound as resolved_tissue@2.
 # dt * (Gershgorin rate bound) <= 1: half the Euler/RK2 real-axis limit of 2.
 EXPLICIT_STEP_BOUND = 1.0
@@ -436,11 +452,60 @@ DISSIPATION_MESSAGE = "Resolved pump dissipation cannot be negative or decrease"
 DISSIPATION_FIELDS = tuple(k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ"))
 
 
-def ledger_limits(row, p, tol, rtol, *, xp=np):
+def ledger_magnitudes(row, p, membrane, metabolic, *, xp=np):
+    """Magnitudes rounded into each running ledger's residual, in LEDGERS order.
+
+    membrane is the [species, patch] sum of absolute membrane accumulators
+    (passive, channel and pump transfers) and metabolic the absolute work and
+    cycles x drive terms in balances() order. Ledgers that are not running sums
+    of one flow (capacitor, electrode, global charge, energy) get None.
+    """
+    di, do = row.amount_increment, row.extracellular_amount_increment
+    hj, hf = xp.abs(row.junction_transferred), xp.abs(row.face_transferred)
+    supplied = xp.abs(row.reservoir_supplied)
+    local = (
+        xp.abs(di)
+        + scatter(membrane, di, (p.membrane_cell,), xp=xp)
+        + scatter(hj, di, (p.junction_sender,), xp=xp)
+        + scatter(hj, di, (p.junction_receiver,), xp=xp)
+    )
+    outside = (
+        xp.abs(do)
+        + scatter(membrane, do, (p.membrane_outside,), xp=xp)
+        + scatter(hf, do, (p.face_sender,), xp=xp)
+        + scatter(hf, do, (p.face_receiver,), xp=xp)
+        + supplied
+    )
+    total = xp.sum(xp.abs(di), axis=1) + xp.sum(xp.abs(do), axis=1) + xp.sum(supplied, axis=1)
+    co = xp.where(p.outside_active, p.extracellular_amount_reference / p.extracellular_volume, 1.0)
+    mu = R * p.temperature * xp.log(co) + p.valence * F * p.boundary_V
+    reservoir_work = xp.abs(row.reservoir_work_pJ) + 1e-3 * xp.sum(xp.abs(mu) * supplied, axis=0)
+    electrode_work = xp.abs(row.electrode_work_pJ) + 1e12 * xp.abs(
+        p.boundary_V * row.electrode_charge_transferred_C
+    )
+    unchecked = (None, None, None, None)  # Capacitor, electrode, global charge, energy.
+    return (local, outside, total, *unchecked, reservoir_work, electrode_work, metabolic)
+
+
+def pump_magnitudes(row, p, *, xp=np):
+    """ledger_magnitudes for the Na/K pump ledgers (resolved_pump_tissue@1)."""
+    membrane = (
+        xp.abs(row.membrane_transferred)
+        + kinetic.channel_to_membrane(xp.abs(row.channel_transferred), p, xp=xp)
+        + xp.abs(p.stoichiometry * row.pump_cycles)
+    )
+    metabolic = xp.abs(row.metabolic_work_pJ) + 1e-3 * xp.abs(p.pump_drive * row.pump_cycles)
+    return ledger_magnitudes(row, p, membrane, metabolic, xp=xp)
+
+
+def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np):
     """(flows, bounds): the integrated energy flows and each ledger's bound, in order.
 
-    tol is the per-species material tolerance and rtol the solver's energy
-    tolerance. The host check and the device checks share these bounds.
+    tol is the per-species material tolerance, rtol the solver's energy tolerance,
+    steps the accepted steps at this row and magnitudes the row's
+    ledger_magnitudes. Running material and work ledgers add
+    LEDGER_STEP_ROUNDING eps x steps x their magnitudes. The host check and the
+    device checks share these bounds.
     """
     q = xp.concatenate((p.initial_cell_charge_C, p.initial_outside_charge_C))
     q = q + tissue.charge_increment(row, p, xp=xp)
@@ -451,7 +516,8 @@ def ledger_limits(row, p, tol, rtol, *, xp=np):
     ]
     # On the host, Python floats keep sum()'s compensated float summation.
     flows = sum(float(t) for t in terms) if xp is np else sum(terms)
-    return flows, (
+    rounding = LEDGER_STEP_ROUNDING * np.finfo(float).eps * steps
+    bounds = (
         tol[:, None],
         tol[:, None],
         tol,
@@ -463,26 +529,39 @@ def ledger_limits(row, p, tol, rtol, *, xp=np):
         3e-12,
         3e-12,
     )
+    return flows, tuple(
+        bound if magnitude is None else bound + rounding * magnitude
+        for bound, magnitude in zip(bounds, magnitudes, strict=True)
+    )
 
 
-def checked_rows(state, spec, p, *, domain, balances, dissipation):
-    """Host checks of every accepted row (one row or a [time, ...] history)."""
+def checked_rows(state, spec, p, *, domain, balances, magnitudes, dissipation, steps=None):
+    """Host checks of every accepted row (one row or a [time, ...] history).
+
+    steps: accepted steps at each row (its global step index). Without them the
+    running ledgers get no rounding allowance (the fixed bounds alone).
+    """
     rows = (
         [state]
         if state.amount_increment.ndim == 2
         else [type(state)(*(v[i] for v in state)) for i in range(len(state.amount_increment))]
     )
+    steps = [0] * len(rows) if steps is None else list(steps)
+    if len(steps) != len(rows):
+        raise ValueError("Require one accepted-step count per checked row")
     diagnostics = {"max_" + k: 0.0 for k in LEDGER_DIAGNOSTICS}
     diagnostics["max_energy_balance_relative"] = 0.0
     diagnostics["max_global_charge_bound_ratio"] = 0.0
     rtol = ENERGY_RTOL[spec.execution.solver]
     tol = np.asarray(spec.execution.material_balance_atol_fmol)
     with np.errstate(all="ignore"):
-        for row in rows:
+        for row, count in zip(rows, steps, strict=True):
             if not domain(row, p, p.active, xp=np):
                 raise NumericalError(DOMAIN_MESSAGE)
             b = balances(row, p)
-            flows, limits = ledger_limits(row, p, tol, rtol)
+            flows, limits = ledger_limits(
+                row, p, tol, rtol, steps=count, magnitudes=magnitudes(row, p, xp=np)
+            )
             for (name, value), key, bound in zip(
                 b.items(), LEDGER_DIAGNOSTICS, limits, strict=True
             ):
@@ -507,14 +586,22 @@ def checked_rows(state, spec, p, *, domain, balances, dissipation):
     return diagnostics
 
 
-def check_values(state, spec):
+def check_values(state, spec, steps=None):
     """Family ledgers and tolerances; energy also allows the declared IMEX bound.
 
-    The global-charge bound scales with the charge moved (global_charge_bound).
+    The global-charge bound scales with the charge moved (global_charge_bound);
+    running ledgers allow their rounding over the row's accepted steps.
     """
     _, p = kinetic.initial_values(spec)
     return checked_rows(
-        state, spec, p, domain=domain_valid, balances=balances, dissipation=DISSIPATION_FIELDS
+        state,
+        spec,
+        p,
+        domain=domain_valid,
+        balances=balances,
+        magnitudes=pump_magnitudes,
+        dissipation=DISSIPATION_FIELDS,
+        steps=steps,
     )
 
 
@@ -565,8 +652,11 @@ def device_balances(state, p):
     return result
 
 
-def device_checks(previous, row, p, constants):
-    """check_values' tests for one accepted row on the device: (failed, diagnostics)."""
+def device_checks(previous, row, p, constants, steps):
+    """check_values' tests for one accepted row on the device: (failed, diagnostics).
+
+    steps is the row's accepted-step count, the host check's value for that row.
+    """
     from cells.models.surface_pump_checks import row_checks
 
     return row_checks(
@@ -574,9 +664,11 @@ def device_checks(previous, row, p, constants):
         row,
         p,
         constants,
+        steps,
         domain_valid=domain_valid,
         balances=device_balances,
         limits=ledger_limits,
+        magnitudes=pump_magnitudes,
         dissipation=DISSIPATION_FIELDS,
     )
 

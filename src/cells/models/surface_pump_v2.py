@@ -594,11 +594,35 @@ def balances(state, p):
 DISSIPATION_FIELDS = tuple(k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ"))
 
 
-def check_values(state, spec):
+def calcium_magnitudes(row, p, *, xp=np):
+    """surface_pump.ledger_magnitudes with both pumps' accumulators."""
+    membrane = (
+        xp.abs(row.membrane_transferred)
+        + xp.abs(p.stoichiometry * row.pump_cycles)
+        + xp.abs(p.calcium_stoichiometry * row.calcium_pump_cycles)
+    )
+    metabolic = xp.concatenate(
+        (
+            xp.abs(row.metabolic_work_pJ) + 1e-3 * xp.abs(p.pump_drive * row.pump_cycles),
+            xp.abs(row.calcium_metabolic_work_pJ)
+            + 1e-3 * xp.abs(p.calcium_pump_drive * row.calcium_pump_cycles),
+        )
+    )
+    return first.ledger_magnitudes(row, p, membrane, metabolic, xp=xp)
+
+
+def check_values(state, spec, steps=None):
     """surface_pump.check_values with the calcium pump ledgers."""
     _, p = initial_values(spec)
     return first.checked_rows(
-        state, spec, p, domain=domain_valid, balances=balances, dissipation=DISSIPATION_FIELDS
+        state,
+        spec,
+        p,
+        domain=domain_valid,
+        balances=balances,
+        magnitudes=calcium_magnitudes,
+        dissipation=DISSIPATION_FIELDS,
+        steps=steps,
     )
 
 
@@ -635,7 +659,7 @@ def device_balances(state, p):
     return result
 
 
-def device_checks(previous, row, p, constants):
+def device_checks(previous, row, p, constants, steps):
     """check_values' tests for one accepted row on the device: (failed, diagnostics)."""
     from cells.models.surface_pump_checks import row_checks
 
@@ -644,9 +668,11 @@ def device_checks(previous, row, p, constants):
         row,
         p,
         constants,
+        steps,
         domain_valid=domain_valid,
         balances=device_balances,
         limits=first.ledger_limits,
+        magnitudes=calcium_magnitudes,
         dissipation=DISSIPATION_FIELDS,
     )
 

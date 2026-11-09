@@ -111,8 +111,9 @@ def test_electrode_ledger_feeds_no_rate(version):
 
 def device_rows(model, spec, history, p):
     previous = type(history)(*(np.concatenate((v[:1], v[:-1])) for v in history))
-    checks = jax.jit(jax.vmap(model.device_checks, in_axes=(0, 0, None, None)))
-    failed, _ = checks(previous, history, p, model.device_check_constants(spec))
+    checks = jax.jit(jax.vmap(model.device_checks, in_axes=(0, 0, None, None, 0)))
+    steps = np.arange(len(history.amount_increment))
+    failed, _ = checks(previous, history, p, model.device_check_constants(spec), steps)
     failed = np.asarray(failed)
     rows = np.flatnonzero(failed.any(axis=1))
     if not len(rows):
@@ -126,7 +127,9 @@ def host_first_failure(model, spec, history):
 
     def fails(j):
         try:
-            model.check_values(type(history)(*(v[: j + 1] for v in history)), spec)
+            model.check_values(
+                type(history)(*(v[: j + 1] for v in history)), spec, steps=np.arange(j + 1)
+            )
         except NumericalError as error:
             return str(error)
         return None
@@ -191,6 +194,193 @@ def test_seeded_leak_size_is_physical(runs):
     bath = int(np.flatnonzero(p.reservoir)[0])
     supply = np.max(np.abs(np.diff(history.reservoir_supplied[:, 1, bath])))
     assert 1e-28 < 1e-12 * supply * CHARGE_PER_FMOL < 1e-25
+
+
+# --- running work and material ledgers ---------------------------------------------
+
+
+def test_ledger_step_allowance_states_its_detection_floor():
+    """2.5 eps x n: 5.6e-13 after 1 s, 3.3e-11 after 1 min, 2.0e-9 after 1 h (dt 1 ms)."""
+    assert math.isclose(surface_pump.LEDGER_STEP_ROUNDING, 2.5)
+    for seconds, floor in ((1, 5.6e-13), (60, 3.3e-11), (3600, 2.0e-9)):
+        n = round(seconds / 1e-3)
+        assert math.isclose(surface_pump.LEDGER_STEP_ROUNDING * EPS * n, floor, rel_tol=0.02)
+
+
+def metabolic_case(runs, version):
+    """The run's last row, its magnitudes and the metabolic ledger's fixed bound."""
+    model, spec, _, history, p = runs[version]
+    row = type(history)(*(v[-1] for v in history))
+    magnitudes = {1: surface_pump.pump_magnitudes, 2: surface_pump_v2.calcium_magnitudes}
+    magnitude = magnitudes.get(version, surface_pump_v3.channel_magnitudes)(row, p)[-1]
+    return model, spec, history, p, row, np.asarray(magnitude)
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+@pytest.mark.parametrize("seconds", [1, 60, 3600])
+def test_work_ledger_allowance_detects_twice_its_floor_at_each_horizon(version, seconds, runs):
+    """A metabolic booking error of twice the allowance at n steps fails, half passes."""
+    model, spec, history, p, row, magnitude = metabolic_case(runs, version)
+    n = round(seconds / 1e-3)
+    allowance = 3e-12 + surface_pump.LEDGER_STEP_ROUNDING * EPS * n * magnitude
+    patch = int(np.argmax(magnitude[: row.metabolic_work_pJ.size]))  # Largest Na/K work.
+    one = type(history)(*(v[-1:] for v in history))
+    for factor, detected in ((2.0, True), (0.5, False)):
+        work = np.array(one.metabolic_work_pJ, copy=True)
+        work[0, patch] += factor * allowance[patch]
+        seeded = one._replace(metabolic_work_pJ=work)
+        try:
+            model.check_values(seeded, spec, steps=[n])
+            message = None
+        except NumericalError as error:
+            message = str(error)
+        assert (message is not None) == detected, (factor, message)
+        assert not detected or message.endswith("metabolic_work")
+        if version < 3:  # The device check gives the same verdict with the same count.
+            checks = jax.jit(model.device_checks)
+            row = type(seeded)(*(v[0] for v in seeded))
+            failed, _ = checks(row, row, p, model.device_check_constants(spec), n)
+            failed = np.asarray(failed)
+            assert bool(failed.any()) == detected
+            assert not detected or model.DEVICE_CHECKS[int(np.argmax(failed))] == "metabolic_work"
+
+
+def test_work_ledger_bound_scales_with_the_row_step_count(runs):
+    """Running ledgers gain 2.5 eps n x magnitude; the other bounds do not change."""
+    _, spec, history, p, row, _ = metabolic_case(runs, 1)
+    tol = np.asarray(spec.execution.material_balance_atol_fmol)
+    magnitudes = surface_pump.pump_magnitudes(row, p)
+    _, zero = surface_pump.ledger_limits(row, p, tol, 2e-3, steps=0, magnitudes=magnitudes)
+    _, later = surface_pump.ledger_limits(row, p, tol, 2e-3, steps=10**6, magnitudes=magnitudes)
+    for name, a, b, m in zip(surface_pump.LEDGERS, zero, later, magnitudes, strict=True):
+        if m is None:
+            np.testing.assert_array_equal(a, b, err_msg=name)
+        else:
+            np.testing.assert_allclose(b - a, 2.5 * EPS * 10**6 * m, rtol=1e-12, err_msg=name)
+
+
+def stepped_spec():
+    from validation.tissue import surface_pump_fixtures
+
+    raw = surface_pump_fixtures.definition("clamped", solver=imex.ARS222_ID)
+    raw["experiment"]["end_time"] = 0.0012
+    raw["experiment"]["observation_times"] = [0.0, 0.0007, 0.0012]
+    return parse_spec(raw)
+
+
+def test_host_windows_check_each_row_with_its_global_step_count(monkeypatch):
+    """Windowed host checks pass every row its index from t = 0, across windows."""
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.batch_windows import run_batch_windowed
+    from cells.core.grid import EventGrid
+    from cells.core.windows import WindowPolicy, run_windowed
+
+    spec, seen = stepped_spec(), []
+    original = surface_pump.check_values
+
+    def spy(state, spec, steps=None):
+        rows = 1 if state.amount_increment.ndim == 2 else len(state.amount_increment)
+        if steps is not None:
+            assert len(steps) == rows
+            seen.append([int(k) for k in steps])
+        return original(state, spec, steps=steps)
+
+    monkeypatch.setattr(surface_pump, "check_values", spy)
+    last = len(EventGrid(spec)) - 1
+    policy = WindowPolicy(5, "checkpoints")
+    for execute in (
+        lambda: run_windowed(spec, policy),
+        lambda: run_batch_windowed(BatchSpec((WorldSpec(1, spec),), 1, 10**6, 2**31), policy),
+    ):
+        seen.clear()
+        execute()
+        assert last > 5 and seen, seen
+        # Window checks: consecutive global indices covering 0..last. Observation
+        # tail rechecks: the observed rows' own indices.
+        windows = [s for s in seen if s == list(range(s[0], s[0] + len(s)))]
+        assert {k for s in windows for k in s} == set(range(last + 1)), seen
+        assert any(s[0] >= 5 and len(s) > 1 for s in windows), seen
+        observed = {round(t / spec.execution.dt) for t in spec.experiment.observation_times}
+        assert all(set(s) <= observed for s in seen if s not in windows), seen
+
+
+def test_device_window_checks_see_global_step_counts(monkeypatch):
+    """The device check of row j of a window gets the window's start step + j."""
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.grid import EventGrid
+    from cells.core.vector_windows import WorldCheckError, run_vector_windowed
+    from cells.core.windows import WindowPolicy
+
+    spec = stepped_spec()
+    last = len(EventGrid(spec)) - 1
+    target = last - 1  # In a later window: a window-local count never reaches it.
+    assert target > 5
+    original = surface_pump.device_checks
+
+    def device_checks(previous, row, p, constants, steps):
+        failed, values = original(previous, row, p, constants, steps)
+        return failed.at[1].set(failed[1] | (steps >= target)), values
+
+    monkeypatch.setattr(surface_pump, "device_checks", device_checks)
+    cohort = BatchSpec((WorldSpec(1, spec),), 1, 10**6, 2**31)
+    with pytest.raises(WorldCheckError) as caught:
+        run_vector_windowed(cohort, WindowPolicy(5, "checkpoints"))
+    assert caught.value.step_index == target
+    assert caught.value.checks[0] == surface_pump.DEVICE_CHECKS[1]
+
+
+def projective_world(row_checks):
+    from validation.tissue import projective_fixtures
+
+    raw = projective_fixtures.pump_cells(
+        [projective_fixtures.H], end_time=6.0, observation_times=[0.0, 3.0, 6.0]
+    )
+    raw["execution"]["projective"] = projective_fixtures.projective_block(
+        [(1.0, 6.0)],
+        burst_steps=100,
+        slope_steps=25,
+        max_steps=2000,
+        min_steps=50,
+        tolerance=dict(concentration_mM=1e-2, membrane_voltage_V=2e-3, gate=1e-2),
+        row_checks=row_checks,
+    )
+    return parse_spec(raw)
+
+
+def test_projective_checks_see_global_step_counts(monkeypatch):
+    """Bursts pass consecutive indices, a jump its two rows' indices; the device too."""
+    from cells.core.grid import EventGrid
+
+    seen, original = [], surface_pump.check_values
+
+    def spy(state, spec, steps=None):
+        seen.append(None if steps is None else [int(k) for k in steps])
+        return original(state, spec, steps=steps)
+
+    monkeypatch.setattr(surface_pump, "check_values", spy)
+    spec = projective_world("host")
+    grid = EventGrid(spec)
+    report = run(spec).projective
+    assert report["jumps"] >= 1 and None not in seen
+    jumps = [s for s in seen if len(s) == 2 and s[1] > s[0] + 1]
+    landed = {grid.exact_index(j["to_time_s"]) for j in report["jump_log"]}
+    assert {s[1] for s in jumps} >= landed  # Every accepted jump's row was checked at j.
+    bursts = [s for s in seen if s not in jumps]
+    assert all(s == list(range(s[0], s[0] + len(s))) for s in bursts)
+    assert any(s[0] in landed for s in bursts)  # A burst verifying a jump starts at j.
+    monkeypatch.setattr(surface_pump, "check_values", original)
+    # Device row checks: a check keyed on the global index fails at that row,
+    # beyond the last jump, so a jump-relative count would miss it.
+    target = max(landed) + 30
+    device = surface_pump.device_checks
+
+    def keyed(previous, row, p, constants, steps):
+        failed, values = device(previous, row, p, constants, steps)
+        return failed.at[1].set(failed[1] | (steps == target)), values
+
+    monkeypatch.setattr(surface_pump, "device_checks", keyed)
+    with pytest.raises(NumericalError, match=f"at {grid[target]} s"):
+        run(projective_world("device"))
 
 
 # --- reaction_transport@1 -----------------------------------------------------------

@@ -761,76 +761,37 @@ def balances(state, p):
     return result
 
 
-def check_values(state, spec):
-    """surface_pump_v2.check_values with the channel transfer and dissipation ledgers."""
+def channel_magnitudes(row, p, *, xp=np):
+    """surface_pump.ledger_magnitudes with both pumps' and the channels' accumulators."""
+    membrane = (
+        xp.abs(row.membrane_transferred)
+        + channel_to_membrane(xp.abs(row.channel_transferred), p, xp=xp)
+        + xp.abs(p.stoichiometry * row.pump_cycles)
+        + xp.abs(p.calcium_stoichiometry * row.calcium_pump_cycles)
+    )
+    metabolic = xp.concatenate(
+        (
+            xp.abs(row.metabolic_work_pJ) + 1e-3 * xp.abs(p.pump_drive * row.pump_cycles),
+            xp.abs(row.calcium_metabolic_work_pJ)
+            + 1e-3 * xp.abs(p.calcium_pump_drive * row.calcium_pump_cycles),
+        )
+    )
+    return first.ledger_magnitudes(row, p, membrane, metabolic, xp=xp)
+
+
+def check_values(state, spec, steps=None):
+    """The family's host checks (surface_pump.checked_rows) with the channel ledgers."""
     _, p = initial_values(spec)
-    rows = (
-        [state]
-        if state.amount_increment.ndim == 2
-        else [STATE_TYPE(*(v[i] for v in state)) for i in range(len(state.amount_increment))]
+    return first.checked_rows(
+        state,
+        spec,
+        p,
+        domain=domain_valid,
+        balances=balances,
+        magnitudes=channel_magnitudes,
+        dissipation=tuple(k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ")),
+        steps=steps,
     )
-    names = (
-        "balance_error_fmol",
-        "extracellular_balance_error_fmol",
-        "global_balance_error_fmol",
-        "capacitor_charge_error_C",
-        "electrode_charge_error_C",
-        "global_charge_error_C",
-        "energy_balance_error_pJ",
-        "reservoir_work_error_pJ",
-        "electrode_work_error_pJ",
-        "metabolic_work_error_pJ",
-    )
-    diagnostics = {"max_" + k: 0.0 for k in names}
-    diagnostics["max_energy_balance_relative"] = 0.0
-    diagnostics["max_global_charge_bound_ratio"] = 0.0
-    rtol = ENERGY_RTOL[spec.execution.solver]
-    tol = np.asarray(spec.execution.material_balance_atol_fmol)
-    with np.errstate(all="ignore"):
-        for row in rows:
-            if not domain_valid(row, p, p.active, xp=np):
-                raise NumericalError("Invalid resolved channel inventory, gates or padding")
-            b = balances(row, p)
-            q = np.r_[p.initial_cell_charge_C, p.initial_outside_charge_C]
-            q = q + tissue.charge_increment(row, p, xp=np)
-            flows = sum(
-                float(np.sum(np.abs(getattr(row, k))))
-                for k in STATE_TYPE._fields
-                if k.endswith(("_dissipated_energy_pJ", "_work_pJ"))
-            )
-            limits = (
-                tol[:, None],
-                tol[:, None],
-                tol,
-                field.CHARGE_ATOL_C + field.CHARGE_RTOL * np.abs(q),
-                field.CHARGE_ATOL_C
-                + field.CHARGE_RTOL * np.abs(row.electrode_charge_transferred_C),
-                global_charge_bound(row, p),
-                tissue.ENERGY_ATOL_PJ + rtol * flows,
-                3e-12,
-                3e-12,
-                3e-12,
-            )
-            for (name, value), key, bound in zip(b.items(), names, limits, strict=True):
-                if not np.isfinite(value).all() or np.any(np.abs(value) > bound):
-                    raise NumericalError("Resolved channel accounting failed: " + name)
-                key = "max_" + key
-                diagnostics[key] = max(diagnostics[key], float(np.max(np.abs(value), initial=0)))
-            diagnostics["max_energy_balance_relative"] = max(
-                diagnostics["max_energy_balance_relative"],
-                float(abs(b["energy"]) / max(flows, tissue.ENERGY_ATOL_PJ)),
-            )
-            diagnostics["max_global_charge_bound_ratio"] = max(
-                diagnostics["max_global_charge_bound_ratio"],
-                float(abs(b["global_charge"]) / limits[5]),
-            )
-    for name in (k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ")):
-        value = getattr(state, name)
-        if np.min(value, initial=0) < -1e-12 or (
-            state.amount_increment.ndim == 3 and np.min(np.diff(value, axis=0), initial=0) < -1e-12
-        ):
-            raise NumericalError("Resolved channel dissipation cannot be negative or decrease")
-    return diagnostics
 
 
 OBSERVATION_FIELDS = second.OBSERVATION_FIELDS

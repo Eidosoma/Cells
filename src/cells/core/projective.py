@@ -57,7 +57,9 @@ from cells.core.resources import trace_bytes
 from cells.core.runner import (
     RunResult,
     _compiled_window_rollout,
+    check_steps,
     integration_steps,
+    takes_steps,
     validate_checkpoint,
 )
 from cells.core.schedule import control_values, event_index
@@ -94,15 +96,18 @@ class ProjectiveRunResult(RunResult):
         )
 
 
-def _burst_checks(start, history, count, parameters, constants, *, checks):
+def _burst_checks(start, history, count, first, parameters, constants, *, checks):
     """The model's device checks of every burst row against its predecessor.
 
-    Returns the first failing row (-1 if none), its failed checks, and the
-    maximum of each diagnostic over the burst's real rows.
+    first is the burst start's global step index: history row k is index
+    first + 1 + k, the host check's step count for that row. Returns the first
+    failing row (-1 if none), its failed checks, and the maximum of each
+    diagnostic over the burst's real rows.
     """
     previous = jax.tree.map(lambda s, h: jnp.concatenate((s[None], h[:-1]), axis=0), start, history)
-    failed, values = jax.vmap(checks, in_axes=(0, 0, None, None))(
-        previous, history, parameters, constants
+    steps = first + 1 + jnp.arange(jax.tree.leaves(history)[0].shape[0], dtype=jnp.int64)
+    failed, values = jax.vmap(checks, in_axes=(0, 0, None, None, 0))(
+        previous, history, parameters, constants, steps
     )
     real = jnp.arange(failed.shape[0]) < count
     failed = failed & real[:, None]
@@ -168,23 +173,28 @@ class _Bursts:
         self.execute_seconds = 0.0
         self.check_seconds = 0.0
 
-    def run(self, state, times):
-        """(final device state, host rows [start, ...], diagnostics); raises on refusal."""
+    def run(self, state, times, first):
+        """(final device state, host rows [start, ...], diagnostics); raises on refusal.
+
+        first is the global step index of times[0]: the rows' step counts.
+        """
         final, rows, history, count = self._step(state, times)
         began = perf_counter()
         if self.row_checks == "device":
-            diagnostics = self._device_checks(state, history, count, times)
+            diagnostics = self._device_checks(state, history, count, times, first)
         else:
-            diagnostics = self.model.check_values(rows, self.spec)
+            counted = check_steps(self.model, first, count + 1)
+            diagnostics = self.model.check_values(rows, self.spec, **counted)
         self.check_seconds += perf_counter() - began
         return final, rows, diagnostics
 
-    def _device_checks(self, state, history, count, times):
+    def _device_checks(self, state, history, count, times, first):
         model = self.model
         args = (
             jax.device_put(state, self.device),
             history,
             np.int64(count),
+            np.int64(first),
             self.parameters,
             self.constants,
         )
@@ -433,7 +443,9 @@ class _Run:
             target = float(self.grid[index + steps])
             ratio = (target - t) / (t - t_base)
             jumped = method.extrapolate(last, base, ratio)
-            reason, details = self.check_jump(last, jumped, target, energy_last)
+            reason, details = self.check_jump(
+                last, jumped, target, energy_last, (index, index + steps)
+            )
             if reason is None:
                 details.update(
                     steps=int(steps),
@@ -447,8 +459,11 @@ class _Run:
             steps //= 2
         return None, failures
 
-    def check_jump(self, last, jumped, target, energy_last):
-        """(None, details) for a jumped row passing every row check, else (reason, details)."""
+    def check_jump(self, last, jumped, target, energy_last, indices):
+        """(None, details) for a jumped row passing every row check, else (reason, details).
+
+        indices: the global step indices of last and jumped (their step counts).
+        """
         model, p = self.model, self.p
         check = getattr(model.domain_valid, "with_control", None)
         with np.errstate(all="ignore"):
@@ -465,7 +480,8 @@ class _Run:
         began = perf_counter()
         try:
             pair = type(last)(*(np.stack((a, b)) for a, b in zip(last, jumped, strict=True)))
-            diagnostics = model.check_values(pair, self.spec)
+            counted = {"steps": list(indices)} if takes_steps(model) else {}
+            diagnostics = model.check_values(pair, self.spec, **counted)
         except NumericalError as error:
             return "checks: " + str(error), {}
         finally:
@@ -551,7 +567,7 @@ class _Run:
             count = min(K, last_index - index)
             times = self.times(index, index + count)
             try:
-                final, rows, diagnostics = self.bursts.run(state, times)
+                final, rows, diagnostics = self.bursts.run(state, times, index)
             except NumericalError as error:
                 if pending is None:
                     raise
