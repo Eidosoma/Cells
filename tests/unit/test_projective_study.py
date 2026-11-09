@@ -41,7 +41,7 @@ def test_q1l_takes_its_tolerance_override_and_nothing_else_changes():
 
 @pytest.mark.parametrize("case_id", sorted(study.PROTOCOL_WORLDS))
 def test_buildable_cases_take_the_protocol_parameters(case_id):
-    raw, case = study.protocol_definition(PROTOCOL, case_id)
+    raw, case = study.protocol_definition(PROTOCOL, case_id, f2_scale=0.9)
     block, jump = raw["execution"]["projective"], PARAMETERS["jump"]
     assert block["burst_steps"] == PARAMETERS["burst_steps"] == 3000
     assert block["slope_steps"] == PARAMETERS["slope_steps"]
@@ -58,7 +58,7 @@ def test_buildable_cases_take_the_protocol_parameters(case_id):
     assert raw["model"]["id"] == case["model"]
 
 
-@pytest.mark.parametrize("case_id", ["F2-near-fold", "unknown"])
+@pytest.mark.parametrize("case_id", ["unknown", "Q2-relax-world-7cell"])
 def test_cases_without_a_driver_world_are_refused(case_id):
     with pytest.raises(ValueError):
         study.protocol_case(PROTOCOL, case_id)
@@ -77,6 +77,48 @@ def test_q2_is_the_seven_cell_world():
     active = np.asarray(p.membrane_active, dtype=bool)
     u, h, d = (heredity.HEREDITY_STATES[k][0] for k in "UHD")
     expected = np.array([u - 0.002, u + 0.002, u - 0.005, u + 0.005, h, d, h + 0.010])
+    np.testing.assert_allclose(
+        np.asarray(p.initial_membrane_voltage_V)[active],
+        expected[np.asarray(p.membrane_cell)[active]],
+        rtol=0,
+        atol=1e-12,
+    )
+
+
+def test_f2_needs_its_prescan_scale_and_scales_nav():
+    """F2 runs the recorded pre-scan's NaV1.2 scale on one D-branch cell."""
+    with pytest.raises(ValueError, match="pre-scan"):
+        study.protocol_case(PROTOCOL, "F2-near-fold")
+    scaled, case = study.protocol_definition(PROTOCOL, "F2-near-fold", f2_scale=0.83)
+    nominal, _ = study.protocol_definition(PROTOCOL, "F2-near-fold", f2_scale=1.0)
+    assert len(scaled["model"]["cells"]) == 1 and case["id"] == "F2-near-fold"
+
+    def nav(raw):
+        return [c["max_permeability_m_per_s"] for c in raw["model"]["channels"]]
+
+    ratios = np.asarray(nav(scaled)) / np.asarray(nav(nominal))
+    assert np.any(np.isclose(ratios, 0.83)) and np.all(np.isclose(ratios, 0.83) | (ratios == 1))
+    block = scaled["execution"]["projective"]
+    assert [[w["start_time"], w["end_time"]] for w in block["windows"]] == case["windows"]
+    times = scaled["experiment"]["observation_times"]
+    assert np.allclose(np.diff(times), case["observation_every_s"])
+
+
+def test_q2_five_cell_variant_is_amendment_2s_world():
+    """Q2-relax-world-5cell: U -+2 mV, U -+5 mV and D, Q2's parameters otherwise."""
+    from cells.core.state import initialise
+    from cells.models import surface_pump_projective as readouts
+    from validation.tissue import surface_pump_v3_fixtures as heredity
+
+    five, case = study.protocol_definition(PROTOCOL, "Q2-relax-world-5cell")
+    seven, _ = study.protocol_definition(PROTOCOL, "Q2-relax-world")
+    assert case["id"] == "Q2-relax-world"
+    assert five["execution"]["projective"] == seven["execution"]["projective"]
+    spec = parse_spec(five)
+    p = readouts.host_layout(initialise(spec).layout)
+    active = np.asarray(p.membrane_active, dtype=bool)
+    u, d = (heredity.HEREDITY_STATES[k][0] for k in "UD")
+    expected = np.array([u - 0.002, u + 0.002, u - 0.005, u + 0.005, d])
     np.testing.assert_allclose(
         np.asarray(p.initial_membrane_voltage_V)[active],
         expected[np.asarray(p.membrane_cell)[active]],

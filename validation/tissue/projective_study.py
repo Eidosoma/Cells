@@ -38,6 +38,11 @@ of one case per process (--part):
               in <case>-reference-rates.npz. Cases with the same fine definition
               (Q1, Q1L) share one reference; validation/tissue/projective_judge.py
               pairs them by the fine definition's digest.
+F2-near-fold needs --f2-prescan, the recorded pre-scan whose selected NaV1.2
+scale it runs (validation/tissue/projective_prescan.py); the scale and the
+pre-scan file's digest are saved with each part. The run label
+Q2-relax-world-5cell is Q2 on its pre-approved 5-cell world (amendment 2), run
+only if the 7-cell Q2 is refused on global charge.
 
 Usage:
   python -m validation.tissue.projective_study CASE [CASE ...] --output DIR
@@ -79,7 +84,11 @@ PROTOCOL_WORLDS = {
     "F1-cue-in-window": "cue3",
     "A1-pump-pair": "pair1",
     "Q2-relax-world": "world7",
+    "F2-near-fold": "fold1",
 }
+# Run labels other than a case id: (protocol case, driver world). Amendment 2: Q2's
+# 5-cell world runs only if the 7-cell Q2 is refused on global charge.
+PROTOCOL_VARIANTS = {"Q2-relax-world-5cell": ("Q2-relax-world", "world5")}
 # criteria.absolute_caps: "All cases except Q1L"; Q1L's purpose: "the absolute caps
 # are reported, not judged".
 REPORTED_CAPS = frozenset({"Q1L-relax-pair-loose"})
@@ -219,6 +228,34 @@ def case_world7(args):
     return _heredity(args, cells)
 
 
+def case_world5(args):
+    """Q2's pre-approved fallback (amendment 2): U -+2 mV, U -+5 mV and D."""
+    from validation.tissue import surface_pump_v3_fixtures as heredity
+
+    states = heredity.HEREDITY_STATES
+    u, d = states["U"][:4], states["D"][:4]
+    cells = [(u[0] + dv, *u[1:]) for dv in (-0.002, 0.002, -0.005, 0.005)] + [d]
+    return _heredity(args, cells)
+
+
+def case_fold1(args):
+    """F2: one D-branch cell with NaV1.2 scaled by args.f2_scale (the recorded pre-scan)."""
+    from validation.tissue import projective_prescan as prescan
+
+    if getattr(args, "f2_scale", None) is None:
+        raise ValueError("F2 needs the NaV1.2 scale selected by its recorded pre-scan")
+    raw = prescan.f2_definition(args.f2_scale, end_time=args.end, every=args.every)
+    raw["execution"]["projective"] = fixtures.projective_block(
+        [(args.window_start, args.end)],
+        burst_steps=args.burst,
+        slope_steps=args.slope,
+        max_steps=args.max_steps,
+        tolerance=_tolerance(args),
+        row_checks=args.row_checks,
+    )
+    return raw
+
+
 def _tolerance(args):
     return dict(
         concentration_mM=args.tol_concentration,
@@ -234,16 +271,24 @@ CASES = dict(
     relax3=case_relax3,
     cue3=case_cue3,
     world7=case_world7,
+    world5=case_world5,
+    fold1=case_fold1,
 )
 
 
-def protocol_case(protocol, case_id):
-    """(driver world, argparse-like settings, projective block, case) of a protocol case."""
+def protocol_case(protocol, label, *, f2_scale=None):
+    """(driver world, argparse-like settings, projective block, case) of a protocol run.
+
+    label is a case id or a PROTOCOL_VARIANTS label; f2_scale is F2's NaV1.2 scale.
+    """
+    case_id, world = PROTOCOL_VARIANTS.get(label, (label, PROTOCOL_WORLDS.get(label)))
     cases = {c["id"]: c for c in protocol["cases"]}
     if case_id not in cases:
         raise ValueError(f"{case_id} is not a case of {protocol['id']}")
-    if case_id not in PROTOCOL_WORLDS:
-        raise ValueError(f"{case_id}: this driver has no world for it (not runnable)")
+    if world is None:
+        raise ValueError(f"{label}: this driver has no world for it (not runnable)")
+    if case_id == "F2-near-fold" and f2_scale is None:
+        raise ValueError("F2 needs the NaV1.2 scale selected by its recorded pre-scan")
     case, params = cases[case_id], protocol["projective_parameters"]
     (start, stop), = case["windows"]  # fmt: skip
     if stop != case["horizon_s"]:
@@ -274,13 +319,14 @@ def protocol_case(protocol, case_id):
         tol_voltage=tolerance["membrane_voltage_V"],
         tol_gate=tolerance["gate"],
         row_checks=block["row_checks"],
+        f2_scale=f2_scale,
     )
-    return PROTOCOL_WORLDS[case_id], settings, block, case
+    return world, settings, block, case
 
 
-def protocol_definition(protocol, case_id):
-    """The case's definition: the driver world with the protocol's projective block."""
-    world, settings, block, case = protocol_case(protocol, case_id)
+def protocol_definition(protocol, label, *, f2_scale=None):
+    """The run's definition: the driver world with the protocol's projective block."""
+    world, settings, block, case = protocol_case(protocol, label, f2_scale=f2_scale)
     raw = CASES[world](settings)
     raw["execution"]["projective"] = block  # Exactly the protocol's parameters.
     return raw, case
@@ -356,11 +402,11 @@ def _observed(model, spec, p, times, rows, kinds=None):
     return out
 
 
-def protocol_reference(protocol, case_id):
-    """The checked fine reference of a protocol case (one process, detached)."""
+def protocol_reference(protocol, case_id, *, f2_scale=None):
+    """The checked fine reference of a protocol run (one process, detached)."""
     from cells.core.windows import WindowPolicy, run_windowed
 
-    raw, case = protocol_definition(protocol, case_id)
+    raw, case = protocol_definition(protocol, case_id, f2_scale=f2_scale)
     fine = fine_definition(raw)
     spec = parse_spec(fine)
     model = get_model(spec.model)
@@ -416,9 +462,9 @@ def protocol_reference(protocol, case_id):
     ), dict(max_abs_dvm_dt_V_per_s=rate, times_s=np.asarray([grid[k] for k in range(len(grid))]))
 
 
-def protocol_projective(protocol, case_id):
-    """The projective run of a protocol case (one process, detached)."""
-    raw, case = protocol_definition(protocol, case_id)
+def protocol_projective(protocol, case_id, *, f2_scale=None):
+    """The projective run of a protocol run (one process, detached)."""
+    raw, case = protocol_definition(protocol, case_id, f2_scale=f2_scale)
     spec = parse_spec(raw)
     started = time.perf_counter()
     result = run(spec)
@@ -433,7 +479,7 @@ def protocol_projective(protocol, case_id):
         case=case_id,
         protocol=protocol["id"],
         protocol_case=case,
-        caps_judged=case_id not in REPORTED_CAPS,
+        caps_judged=case["id"] not in REPORTED_CAPS,
         definition=raw,
         fine_definition_sha256=definition_digest(fine_definition(raw)),
         wall_s=wall,
@@ -450,19 +496,24 @@ def protocol_projective(protocol, case_id):
     )
 
 
-def run_protocol_part(protocol, part, case_id, output):
-    """Run one part of one case; write <case>-<part>.json, or <case>-<part>-failure.json."""
+def run_protocol_part(protocol, part, case_id, output, *, f2_scale=None, prescan=None):
+    """Run one part of one run; write <label>-<part>.json, or <label>-<part>-failure.json.
+
+    prescan: provenance of F2's scale (the pre-scan file and its digest).
+    """
     out = Path(output)
     out.mkdir(parents=True, exist_ok=True)
     began = time.perf_counter()
-    digest = definition_digest(fine_definition(protocol_definition(protocol, case_id)[0]))
+    raw, _ = protocol_definition(protocol, case_id, f2_scale=f2_scale)
+    digest = definition_digest(fine_definition(raw))
     try:
         if part == "reference":
-            entry, arrays = protocol_reference(protocol, case_id)
+            entry, arrays = protocol_reference(protocol, case_id, f2_scale=f2_scale)
             np.savez_compressed(out / f"{case_id}-reference-rates.npz", **arrays)
         else:
-            entry = protocol_projective(protocol, case_id)
+            entry = protocol_projective(protocol, case_id, f2_scale=f2_scale)
         entry["seconds"] = time.perf_counter() - began
+        entry.update(f2_scale=f2_scale, prescan=prescan)
         path = out / f"{case_id}-{part}.json"
     except Exception as error:  # A failure or refusal is a result; keep it.
         entry = dict(
@@ -620,6 +671,7 @@ def main():
     parser.add_argument("cases", nargs="+")
     parser.add_argument("--protocol", help="build the named protocol cases from this file")
     parser.add_argument("--part", choices=("projective", "reference"))
+    parser.add_argument("--f2-prescan", help="F2: the recorded pre-scan (prescan.json)")
     parser.add_argument("--output", required=True)
     parser.add_argument("--end", type=float, default=300.0)
     parser.add_argument("--every", type=float, default=30.0)
@@ -635,11 +687,28 @@ def main():
     args.protocol_document = None
     if args.protocol:
         args.protocol_document = json.loads(Path(args.protocol).read_text())
+        scale, prescan = None, None
+        if args.f2_prescan:
+            text = Path(args.f2_prescan).read_bytes()
+            scale = json.loads(text)["selected_scale"]
+            if scale is None:
+                parser.error("the pre-scan selected no NaV1.2 scale")
+            prescan = dict(
+                path=str(Path(args.f2_prescan).resolve()),
+                sha256=hashlib.sha256(text).hexdigest(),
+            )
         for name in args.cases:  # Refuse before anything runs.
-            protocol_case(args.protocol_document, name)
+            protocol_case(args.protocol_document, name, f2_scale=scale)
         if args.part is None or len(args.cases) != 1:
             parser.error("--protocol runs one --part of one case per process")
-        run_protocol_part(args.protocol_document, args.part, args.cases[0], args.output)
+        run_protocol_part(
+            args.protocol_document,
+            args.part,
+            args.cases[0],
+            args.output,
+            f2_scale=scale,
+            prescan=prescan,
+        )
         return
     if not set(args.cases) <= set(CASES):
         parser.error(f"cases must be among {sorted(CASES)} without --protocol")

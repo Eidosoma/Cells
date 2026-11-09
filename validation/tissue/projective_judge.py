@@ -5,9 +5,11 @@ projective_study.py --protocol: <case>-projective.json, <case>-reference.json,
 <case>-reference-rates.npz, or their -failure.json) and the burst-growth check
 (spectrum/spectrum.json from validation/tissue/projective_spectrum.py), and
 evaluates every criterion exactly as validation/tissue/protocols/
-projective_c_qualification_v1.json states it, with amendment 1's readings;
-nothing is re-run. Errors, allowances and caps are recomputed here from the two
-runs' saved error coordinates and the saved jump, rejection and fallback logs.
+projective_c_qualification_v1.json states it, with the readings of amendment 1
+(fallback fine rows, transient end, switch times) and amendment 2 (F2's switch
+onset, Q2's 5-cell fallback); nothing is re-run. Errors, allowances and caps
+are recomputed here from the two runs' saved error coordinates and the saved
+jump, rejection and fallback logs.
 
 A case's projective run is paired with the reference run whose fine definition
 (the same definition without execution.projective) has the same digest, so
@@ -59,6 +61,7 @@ PHASES = {  # criteria.speedup: Q1, Q1L phases.
 }
 FALLBACK_CASES = ("F1-cue-in-window", "F2-near-fold")
 NEAR_FOLD = "F2-near-fold"
+Q2, Q2_FIVE = "Q2-relax-world", "Q2-relax-world-5cell"  # amendment 2: Q2's fallback run.
 
 
 def _digest(path):
@@ -88,6 +91,21 @@ def _cue_onset(definition):
     """The first scheduled change after t = 0 (F1: the cue channel switched on)."""
     changes = _changes(definition)
     return changes[0] if changes else None
+
+
+def f2_onset(rates, window_start, threshold):
+    """Amendment 2: the first reference row at or after the window start above the
+    voltage-rate threshold (None if none: the F2 fallback criterion then fails)."""
+    times, rate = rates["times_s"], rates["max_abs_dvm_dt_V_per_s"]
+    hits = np.flatnonzero((times >= window_start) & (rate > threshold))
+    return float(times[hits[0]]) if len(hits) else None
+
+
+def _refused_on_global_charge(entry):
+    """Whether a judged case entry failed because a run was refused on global charge."""
+    return entry["outcome"] == "fail" and any(
+        "global_charge" in str(c.get("reason", "")) for c in entry["criteria"]
+    )
 
 
 def _effort(jump):
@@ -379,11 +397,11 @@ def burst_growth(protocol, spectrum):
     )
 
 
-def judge_case(protocol, results, case):
-    """Every criterion of one protocol case from its saved parts."""
-    case_id = case["id"]
-    projective, ppath, pfailed = _load(results, f"{case_id}-projective")
-    out = dict(id=case_id, files={}, criteria=[])
+def judge_case(protocol, results, case, label=None):
+    """Every criterion of one protocol case from its saved parts (run label: files)."""
+    case_id, label = case["id"], label or case["id"]
+    projective, ppath, pfailed = _load(results, f"{label}-projective")
+    out = dict(id=case_id, run=label, files={}, criteria=[])
     if projective is None:
         out.update(outcome="not evaluable", reason="no projective result")
         return out
@@ -430,16 +448,7 @@ def judge_case(protocol, results, case):
         )
     if case_id in FALLBACK_CASES:
         rates_path = Path(str(rpath).replace("-reference.json", "-reference-rates.npz"))
-        if case_id == NEAR_FOLD:
-            criteria.append(
-                _criterion(
-                    protocol,
-                    "fallback",
-                    "not evaluable",
-                    reason="the protocol does not define F2's switch onset",
-                )
-            )
-        elif not rates_path.exists():
+        if not rates_path.exists():
             criteria.append(
                 _criterion(protocol, "fallback", "not evaluable", reason="rates file absent")
             )
@@ -447,15 +456,27 @@ def judge_case(protocol, results, case):
             with np.load(rates_path) as rates:
                 arrays = {k: rates[k] for k in rates.files}
             out["files"]["rates"] = dict(path=str(rates_path), sha256=_digest(rates_path))
-            criteria.append(
-                judge_fallback(
-                    protocol,
-                    projective,
-                    reference,
-                    arrays,
-                    onset=_cue_onset(projective["definition"]),
-                )  # fmt: skip
-            )
+            if case_id == NEAR_FOLD:
+                threshold = protocol["projective_parameters"]["safety"][
+                    "max_membrane_voltage_rate_V_per_s"
+                ]
+                onset = f2_onset(arrays, case["windows"][0][0], threshold)
+            else:
+                onset = _cue_onset(projective["definition"])
+            if onset is None and case_id == NEAR_FOLD:
+                criteria.append(
+                    _criterion(
+                        protocol,
+                        "fallback",
+                        "fail",
+                        reason="amendment 2: no reference row at or after the window start "
+                        "exceeds the voltage-rate threshold",
+                    )
+                )
+            else:
+                criteria.append(
+                    judge_fallback(protocol, projective, reference, arrays, onset=onset)
+                )
     out["speedup_reported"] = speedup(projective, reference, case_id)
     outcomes = [c["outcome"] for c in criteria if c["outcome"] != "reported"]
     out["outcome"] = (
@@ -474,7 +495,17 @@ def judge(results, protocol_path=PROTOCOL):
     spectrum_path = results / "spectrum" / "spectrum.json"
     spectrum = json.loads(spectrum_path.read_text()) if spectrum_path.exists() else None
     growth = burst_growth(protocol, spectrum)
-    cases = [judge_case(protocol, results, case) for case in protocol["cases"]]
+    cases = []
+    for case in protocol["cases"]:
+        entry = judge_case(protocol, results, case)
+        if case["id"] == Q2 and _refused_on_global_charge(entry):
+            # amendment 2: judged on the 5-cell run; the 7-cell refusal is reported.
+            five = judge_case(protocol, results, case, label=Q2_FIVE)
+            if five["outcome"] == "not evaluable" and five.get("reason") == "no projective result":
+                five.update(reason="7-cell Q2 refused on global charge; 5-cell run absent")
+            five["seven_cell_refusal_reported"] = entry
+            entry = five
+        cases.append(entry)
     outcomes = [growth["outcome"], *(c["outcome"] for c in cases)]
     verdict = (
         "fail"
@@ -493,7 +524,10 @@ def judge(results, protocol_path=PROTOCOL):
         ),
         readings="amendment-1: fallback fine rows are the checked reference's; a transient "
         "ends at the last reference row above the voltage-rate threshold after the onset; "
-        "switch times at fine-row resolution in both runs; judged runs on CPU float64",
+        "switch times at fine-row resolution in both runs; judged runs on CPU float64. "
+        "amendment-2: F2's switch onset is the first reference row at or after the window "
+        "start above that threshold (none: F2's fallback fails); Q2 is judged on its 5-cell "
+        "run if the 7-cell run was refused on global charge",
         burst_growth=growth,
         cases=cases,
         verdict=verdict,

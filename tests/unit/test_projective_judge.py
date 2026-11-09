@@ -215,7 +215,57 @@ def test_burst_growth_check_and_overall_verdict(tmp_path):
     assert judge.burst_growth(PROTOCOL, None)["outcome"] == "not evaluable"
     result = judge.judge(tmp_path)  # Nothing saved: incomplete, never pass.
     assert result["verdict"] == "incomplete"
-    assert result["protocol"]["amendments"] == ["amendment-1"]
+    assert result["protocol"]["amendments"] == ["amendment-1", "amendment-2"]
     judge.main([str(tmp_path)])
     with pytest.raises(FileExistsError):  # The judgement is never overwritten.
         judge.main([str(tmp_path)])
+
+
+def test_f2_switch_onset_is_amendment_2s_first_fast_reference_row():
+    data = rates(fast=(5.0, 300.0, 300.5))  # 5 s is before the 10 s window start.
+    assert judge.f2_onset(data, 10.0, 1e-3) == pytest.approx(300.0)
+    assert judge.f2_onset(rates(fast=(5.0,)), 10.0, 1e-3) is None
+
+
+def f2_files(directory, fast):
+    fine = [observation(t, vm=(-0.03,) if t < 600 else (-0.08,)) for t in (0.0, 300.0, 900.0)]
+    mine = projective([dict(o) for o in fine], [jump(650.0, 660.0), jump(950.0, 960.0)], fallbacks=[
+        dict(time_s=601.0, reason="voltage_rate")
+    ])  # fmt: skip
+    ref = reference(fine)
+    mine["switch_below_m50mV_s"], ref["switch_below_m50mV_s"] = [610.0], [600.0]
+    write(directory, "F2-near-fold-projective", mine)
+    write(directory, "F2-near-fold-reference", ref)
+    np.savez(directory / "F2-near-fold-reference-rates.npz", **rates(fast=fast))
+
+
+def test_f2_fallback_uses_the_onset_and_fails_without_one(tmp_path):
+    case = next(c for c in PROTOCOL["cases"] if c["id"] == "F2-near-fold")
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    f2_files(tmp_path / "a", fast=(600.0, 600.5))
+    f2_files(tmp_path / "b", fast=(5.0,))
+    passed = judge.judge_case(PROTOCOL, tmp_path / "a", case)
+    fallback = next(c for c in passed["criteria"] if c["id"] == "fallback")
+    assert fallback["outcome"] == "pass" and fallback["onset_s"] == pytest.approx(600.0)
+    missing = judge.judge_case(PROTOCOL, tmp_path / "b", case)
+    fallback = next(c for c in missing["criteria"] if c["id"] == "fallback")
+    assert fallback["outcome"] == "fail" and "amendment 2" in fallback["reason"]
+
+
+def test_q2_is_judged_on_its_five_cell_run_after_a_global_charge_refusal(tmp_path):
+    fine = [observation(0.0), observation(20.0)]
+    refusal = "NumericalError('Resolved pump accounting failed: global_charge')"
+    write(tmp_path, "Q2-relax-world-projective-failure", dict(status="failed", error=refusal))
+    write(tmp_path, "Q2-relax-world-5cell-projective", projective(fine, [jump(10.0, 12.0)]))
+    write(tmp_path, "Q2-relax-world-5cell-reference", reference(fine))
+    entry = next(c for c in judge.judge(tmp_path)["cases"] if c["id"] == "Q2-relax-world")
+    assert entry["run"] == "Q2-relax-world-5cell" and entry["outcome"] == "pass"
+    assert entry["seven_cell_refusal_reported"]["outcome"] == "fail"
+    other = tmp_path / "other"
+    other.mkdir()
+    electrode = "NumericalError('Resolved pump accounting failed: electrode')"
+    write(other, "Q2-relax-world-projective-failure", dict(status="failed", error=electrode))
+    write(other, "Q2-relax-world-5cell-projective", projective(fine, []))
+    entry = next(c for c in judge.judge(other)["cases"] if c["id"] == "Q2-relax-world")
+    assert entry["run"] == "Q2-relax-world" and entry["outcome"] == "fail"  # Not a fallback.
