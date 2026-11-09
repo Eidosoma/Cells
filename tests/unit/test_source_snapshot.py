@@ -93,6 +93,19 @@ def test_refuses_concurrent_change_and_preserves_partial_copy(checkout, tmp_path
     assert not (out / "SNAPSHOT.json").exists()
 
 
+def test_refuses_overlapping_targets(checkout, tmp_path):
+    (checkout / "new.py").write_text("new = 4\n")
+    for files in (
+        {"a": "tracked.py", "a/b.py": "new.py"},
+        {"a/b.py": "new.py", "a": "tracked.py"},
+    ):
+        with pytest.raises(ValueError, match="Overlapping"):
+            snapshot.freeze(checkout, tmp_path / "out", files)
+    assert not (tmp_path / "out").exists()
+    row = snapshot.freeze(checkout, tmp_path / "ok", {"a/x.py": "tracked.py", "a/y.py": "new.py"})
+    assert row is not None
+
+
 def test_refuses_overwrite_and_checkout_destination(checkout, tmp_path):
     out = tmp_path / "out"
     out.mkdir()

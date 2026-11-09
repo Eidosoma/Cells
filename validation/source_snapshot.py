@@ -242,12 +242,15 @@ def freeze(repository, destination, files):
     destination = Path(destination).absolute()
     if not isinstance(files, dict) or not files:
         raise ValueError("An explicit nonempty source mapping is required")
+    targets = set(files)
     for target, source in files.items():
         relative_path(target)
         relative_path(source)
         if Path(target).parts[0] in RESERVED:
             raise ValueError("Reserved snapshot metadata name")
-        if any(Path(target) in Path(other).parents for other in files if other != target):
+        # A target that is another target's parent directory overlaps it. Checking
+        # each target's own parents is linear; the pairwise scan took minutes.
+        if any(str(parent) in targets for parent in Path(target).parents):
             raise ValueError("Overlapping snapshot file paths")
     if destination.resolve().is_relative_to(repository):
         raise ValueError("Execution snapshots belong outside the editable checkout")
