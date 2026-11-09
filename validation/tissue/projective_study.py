@@ -16,9 +16,21 @@ S * tol_q * sum of estimate_normalized over the jumps accepted before t
 projective report (jumps, rejections, fallbacks, energy defects, linear-ledger
 records), step and wall-time speed-ups, and the fine engine diagnostics.
 
+Protocol cases (--protocol, a registered cells.protocol@1 such as
+validation/tissue/protocols/projective_c_qualification_v1.json): each named case
+is built from the protocol, never from the command line: its world (the driver
+case of PROTOCOL_WORLDS), horizon, window, observation spacing, the protocol's
+projective_parameters (burst, slope, jump rule, tolerance, safety, row checks)
+and the case's tolerance_override. The absolute caps of criteria.absolute_caps
+(|dVm| and |dc|/c at every observation) are computed for every case and marked
+judged or reported per the protocol (REPORTED_CAPS: Q1L's are reported, not
+judged). Cases this driver cannot build are refused.
+
 Usage:
   python -m validation.tissue.projective_study CASE [CASE ...] --output DIR
       [--end SECONDS] [--every SECONDS]
+  python -m validation.tissue.projective_study --protocol PROTOCOL.json CASE_ID [...]
+      --output DIR
 """
 
 import argparse
@@ -42,6 +54,16 @@ from cells.models.registry import get_model  # noqa: E402
 from validation.tissue import projective_fixtures as fixtures  # noqa: E402
 
 ESTIMATE_FACTOR = 2.0  # Allowance / summed first-order local-error estimates.
+# Protocol case id -> driver world. Cases absent here are not runnable on this driver.
+PROTOCOL_WORLDS = {
+    "Q1-relax-pair": "relax3",
+    "Q1L-relax-pair-loose": "relax3",
+    "F1-cue-in-window": "cue3",
+    "A1-pump-pair": "pair1",
+}
+# criteria.absolute_caps: "All cases except Q1L"; Q1L's purpose: "the absolute caps
+# are reported, not judged".
+REPORTED_CAPS = frozenset({"Q1L-relax-pair-loose"})
 REFERENCE_WIDTH = 5000  # Fine steps per reference burst.
 
 
@@ -184,6 +206,78 @@ CASES = dict(
 )
 
 
+def protocol_case(protocol, case_id):
+    """(driver world, argparse-like settings, projective block, case) of a protocol case."""
+    cases = {c["id"]: c for c in protocol["cases"]}
+    if case_id not in cases:
+        raise ValueError(f"{case_id} is not a case of {protocol['id']}")
+    if case_id not in PROTOCOL_WORLDS:
+        raise ValueError(f"{case_id}: this driver has no world for it (not runnable)")
+    case, params = cases[case_id], protocol["projective_parameters"]
+    (start, stop), = case["windows"]  # fmt: skip
+    if stop != case["horizon_s"]:
+        raise ValueError(f"{case_id}: a window must end at the horizon")
+    tolerance = dict(params["tolerance"]) | dict(case.get("tolerance_override", {}))
+    jump = params["jump"]
+    block = fixtures.projective_block(
+        [(float(start), float(stop))],
+        burst_steps=params["burst_steps"],
+        slope_steps=params["slope_steps"],
+        rule=jump["rule"],
+        max_steps=jump["max_steps"],
+        min_steps=jump["min_steps"],
+        max_growth=jump["max_growth"],
+        safety_factor=jump["safety_factor"],
+        tolerance=tolerance,
+        safety=params["safety"],
+        row_checks=params["row_checks"].split()[0],
+    )
+    settings = argparse.Namespace(
+        end=float(case["horizon_s"]),
+        every=float(case["observation_every_s"]),
+        window_start=float(start),
+        burst=params["burst_steps"],
+        slope=params["slope_steps"],
+        max_steps=jump["max_steps"],
+        tol_concentration=tolerance["concentration_mM"],
+        tol_voltage=tolerance["membrane_voltage_V"],
+        tol_gate=tolerance["gate"],
+        row_checks=block["row_checks"],
+    )
+    return PROTOCOL_WORLDS[case_id], settings, block, case
+
+
+def protocol_definition(protocol, case_id):
+    """The case's definition: the driver world with the protocol's projective block."""
+    world, settings, block, case = protocol_case(protocol, case_id)
+    raw = CASES[world](settings)
+    raw["execution"]["projective"] = block  # Exactly the protocol's parameters.
+    return raw, case
+
+
+def absolute_caps(mine, theirs, *, judged):
+    """criteria.absolute_caps at one observation, from the two runs' coordinates.
+
+    |dVm| <= 20 uV over every patch and |dc|/c <= 2e-4 over every species in every
+    active cell and finite outside node (c the fine value).
+    """
+    dv = float(np.max(np.abs(mine["membrane_voltage_V"] - theirs["membrane_voltage_V"]), initial=0))
+    c = theirs["concentration_mM"]
+    dc = float(np.max(np.abs(mine["concentration_mM"] - c) / np.abs(c), initial=0))
+    return dict(
+        judged=judged,
+        voltage_V=dv,
+        voltage_cap_V=VOLTAGE_CAP_V,
+        relative_concentration=dc,
+        relative_concentration_cap=CONCENTRATION_CAP,
+        within=dv <= VOLTAGE_CAP_V and dc <= CONCENTRATION_CAP,
+    )
+
+
+VOLTAGE_CAP_V = 20e-6  # The rung-0/1 F-protocol Vm tolerance.
+CONCENTRATION_CAP = 2e-4  # The rung-1 extracellular tolerance.
+
+
 def fine_reference(spec, times):
     """States at the given grid times from unchecked fine bursts (development harness)."""
     from cells.core.grid import EventGrid
@@ -215,7 +309,8 @@ def fine_reference(spec, times):
     return rows, timing
 
 
-def compare(spec, result, rows):
+def compare(spec, result, rows, *, caps_judged=None):
+    """Per observation: errors and allowances; with caps_judged, also the absolute caps."""
     model, p = get_model(spec.model), readouts.host_layout(result.final.layout)
     tolerance = {k: getattr(spec.projective.tolerance, k) for k in readouts.COORDINATES}
     jumps = result.projective["jump_log"]
@@ -230,6 +325,8 @@ def compare(spec, result, rows):
             error = float(np.max(np.abs(mine[k] - theirs[k]), initial=0.0))
             allowance = ESTIMATE_FACTOR * tolerance[k] * estimate
             entry[k] = dict(error=error, allowance=allowance)
+        if caps_judged is not None:
+            entry["absolute_caps"] = absolute_caps(mine, theirs, judged=caps_judged)
         table.append(entry)
     worst = {
         k: dict(
@@ -265,7 +362,12 @@ def summary(report):
 
 
 def run_case(name, args):
-    raw = CASES[name](args)
+    protocol = getattr(args, "protocol_document", None)
+    if protocol is None:
+        raw, caps_judged, case = CASES[name](args), None, None
+    else:
+        raw, case = protocol_definition(protocol, name)
+        caps_judged = name not in REPORTED_CAPS
     spec = parse_spec(raw)
     fine = dict(raw, execution={k: v for k, v in raw["execution"].items() if k != "projective"})
     fine_spec = parse_spec(fine)
@@ -274,10 +376,12 @@ def run_case(name, args):
     result = run(spec)
     projective_wall = time.perf_counter() - started
     rows, reference_timing = fine_reference(fine_spec, spec.experiment.observation_times)
-    table, worst = compare(spec, result, rows)
+    table, worst = compare(spec, result, rows, caps_judged=caps_judged)
     report = dict(result.projective)
     entry = dict(
         case=name,
+        protocol=None if protocol is None else protocol["id"],
+        protocol_case=case,
         definition=raw,
         projective_wall_s=projective_wall,
         projective_timings=result.timings,
@@ -315,7 +419,8 @@ def _json(value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("cases", nargs="+", choices=sorted(CASES))
+    parser.add_argument("cases", nargs="+")
+    parser.add_argument("--protocol", help="build the named protocol cases from this file")
     parser.add_argument("--output", required=True)
     parser.add_argument("--end", type=float, default=300.0)
     parser.add_argument("--every", type=float, default=30.0)
@@ -328,6 +433,13 @@ def main():
     parser.add_argument("--window-start", type=float, default=3.0)
     parser.add_argument("--row-checks", choices=("host", "device"), default="host")
     args = parser.parse_args()
+    args.protocol_document = None
+    if args.protocol:
+        args.protocol_document = json.loads(Path(args.protocol).read_text())
+        for name in args.cases:  # Refuse before anything runs.
+            protocol_case(args.protocol_document, name)
+    elif not set(args.cases) <= set(CASES):
+        parser.error(f"cases must be among {sorted(CASES)} without --protocol")
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     status = {}
