@@ -17,7 +17,8 @@
         "failed": 0,
         "error": 16,
         "skipped": 0
-      }
+      },
+      "status": "retired: superseded by parity rungs P3/P4"
     },
     {
       "module": "tests/unit/test_betse_spatial_interventions.py",
@@ -27,7 +28,8 @@
         "failed": 0,
         "error": 20,
         "skipped": 0
-      }
+      },
+      "status": "retired: superseded by parity rungs P3/P4"
     },
     {
       "module": "tests/unit/test_betse_spatial_intervention_refinement.py",
@@ -37,7 +39,8 @@
         "failed": 0,
         "error": 32,
         "skipped": 0
-      }
+      },
+      "status": "retired: superseded by parity rungs P3/P4"
     },
     {
       "module": "tests/unit/test_betse_junction_runtime.py",
@@ -47,7 +50,8 @@
         "failed": 0,
         "error": 30,
         "skipped": 0
-      }
+      },
+      "status": "retired: superseded by parity rungs P3/P4"
     },
     {
       "module": "tests/unit/test_betse_mixed_interventions.py",
@@ -57,7 +61,8 @@
         "failed": 1,
         "error": 26,
         "skipped": 0
-      }
+      },
+      "status": "retired: superseded by parity rungs P3/P4"
     },
     {
       "module": "tests/unit/test_two_task_readout.py",
@@ -249,7 +254,8 @@
         "failed": 0,
         "error": 0,
         "skipped": 0
-      }
+      },
+      "status": "retired: superseded by parity rungs P3/P4"
     },
     {
       "test": "tests/unit/test_numerical_refinement::test_native_discrete_clock_refuses_refinement",
@@ -259,7 +265,8 @@
         "failed": 2,
         "error": 0,
         "skipped": 0
-      }
+      },
+      "status": "retired: superseded by parity rungs P3/P4"
     },
     {
       "test": "tests/unit/test_scalar_tail_reuse::test_complete_physical_state_and_native_step_tail[native_discrete]",
@@ -269,7 +276,8 @@
         "failed": 0,
         "error": 0,
         "skipped": 0
-      }
+      },
+      "status": "retired: superseded by parity rungs P3/P4"
     }
   ],
   "assay_modules_needing_the_runner": [
