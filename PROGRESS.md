@@ -53,6 +53,29 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **MG0a morphogen gradient passes (9 November).** `reaction_transport@1`,
+  unmodified, ran under the protocol `mg0a-gradient-v1`, committed beforehand
+  (`e8ded03`). The run used a clean snapshot of that commit, on CPU in float64
+  ([results](/mnt/workspaces/Cells/morphogenesis-mg0-20261109-01/judged-01/results/results.json)).
+  The source is a large-volume reservoir cell (the model has no source term).
+  The references are independent numpy/scipy solutions. All 12 criteria pass:
+  - profile against the exact discrete steady state: at most 4.6e-13
+    relative on strips and 3.0e-14 on the Voronoi tissue, against 1e-9;
+  - decay length against √(D/k) = 19.92 µm (Kicheva 2007 wing-disc values):
+    +0.072%, as predicted by the discretisation error;
+  - scaling slope 0.499 (registered window 0.495–0.505); refinement order
+    1.99–2.00; RK4 time-step order 4.02–4.04, resolved above the reference
+    floor;
+  - mass and per-cell ledgers at most 1.1e-13 relative;
+  - cut and restore returns the uncut profile within 1.8e-15; the
+    cut-without-restore distal fragment decays to 8e-22.
+
+  Two design changes made after development runs are recorded in the
+  protocol; no physics threshold moved. The steady state is unique, so the cut
+  tests the machinery, not memory. Engine gaps found by the driver: no source
+  term, no excision contract, and a closed-world balance guard that does not
+  grow with step count. The guard gap limited refinement to three levels.
+
 - **Parity rung 1 v2 passes (9 November).** Attribution of the v1 failure
   ([summary](/mnt/workspaces/Cells/parity-rung1-20261108-01/attribution-01/summary.json)):
   - **Not the Ca pump.** With matched constants, Cells' Ca-pump law
