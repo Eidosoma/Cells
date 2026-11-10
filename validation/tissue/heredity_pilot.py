@@ -784,11 +784,14 @@ def part_sheetreplay(args):
     From a sheet definition's initial state (--start-written for pre-screen 7's
     written start), or from a longsheet snapshot (--replay-snapshot, world
     --replay-world), the engine's own checked step (models/surface_pump_v3.
-    checked_step, unmodified) advances --replay-seconds at --dt with the
-    controls held per 20 ms chunk, the model's device checks applied to every
-    row. Records every 20 ms the disc's D counts and voltage range, and which
-    checks fail where, so a loss is timed even where the runner would refuse
-    (the dissipation check on junction heat, gap A). A refused step ends it.
+    checked_step, unmodified) advances with the model's device checks applied to
+    every row: phase 1 for --replay-seconds at --dt (records every 20 ms), then,
+    unless every disc cell is H by then, phase 2 at --replay-dt-after up to
+    --replay-until (records every 1 s to 600 s, then every 5 s). Every row of
+    this output is non-refusing: a row whose checks fail is kept and marked with
+    the failing checks, so a loss and the 70-minute composition and osmotic
+    record continue where the runner refuses (the dissipation check on junction
+    heat, gap A). A step the model itself refuses ends the replay.
     """
     import jax.numpy as jnp
 
@@ -800,100 +803,351 @@ def part_sheetreplay(args):
     output.mkdir(parents=True, exist_ok=True)
     cells, _ = worlds.hexagon(SHEET_RADIUS)
     n = len(cells)
+    disc_cells = args.discs[0]
     if args.replay_snapshot:
         from cells.batch_io import load_batch_snapshot
 
         snapshot = load_batch_snapshot(args.replay_snapshot)
         world = next(w for w in snapshot.spec.worlds if w.world_id == args.replay_world)
         spec, checkpoint = world.simulation, snapshot.checkpoints[world.world_id]
-        state0, layout, t0 = checkpoint.state, checkpoint.layout, checkpoint.time
-        disc_cells = args.discs[0]
+        state0, layout = checkpoint.state, checkpoint.layout
+        t0, count0 = checkpoint.time, checkpoint.step_index
         source = dict(snapshot=args.replay_snapshot, world=args.replay_world)
     else:
-        disc_cells = args.discs[0]
         raw, _, _ = long_sheet_definition(
             disc_cells, args.scales[0], args.dt, args.replay_seconds, args.backend,
             written=args.start_written,
         )  # fmt: skip
         spec = parse_spec(raw)
         state0, layout = model.initial_values(spec)
-        t0 = 0.0
+        t0, count0 = 0.0, 0
         source = dict(definition="long_sheet_definition", written=args.start_written)
     disc = np.zeros(n, dtype=bool)
     disc[[i for i, c in enumerate(cells) if worlds.ring(c) <= DISCS[disc_cells]]] = True
     p = type(layout)(*(jnp.asarray(v) for v in layout))
     host = type(layout)(*(np.asarray(v) for v in layout))
+    volume = np.asarray(host.volume)[:n]
+    # Osmotic excess is relative to each cell's own osmolarity at t = 0 (the definition).
+    osm0 = np.sum(np.asarray(host.amount_reference)[:, :n], axis=0) / volume
     constants = jax.tree.map(jnp.asarray, model.device_check_constants(spec))
-    chunk = max(1, int(round(0.02 / args.dt)))
-    total = int(round(args.replay_seconds / args.dt))
+    compiled = {}
 
-    def advance(state, control, index):
-        def body(carry, _):
-            y, k = carry
-            new, ok = model.checked_step(y, args.dt, control, p, p.active)
-            failed, _ = model.device_checks(y, new, p, constants, k + 1)
-            return (new, k + 1), (ok, failed)
+    def advance(dt, chunk):
+        if (dt, chunk) not in compiled:
 
-        return jax.lax.scan(body, (state, index), None, length=chunk)
+            def run(state, control, index):
+                def body(carry, _):
+                    y, k = carry
+                    new, ok = model.checked_step(y, dt, control, p, p.active)
+                    failed, _ = model.device_checks(y, new, p, constants, k + 1)
+                    return (new, k + 1), (ok, failed)
 
-    compiled = jax.jit(advance)
+                return jax.lax.scan(body, (state, index), None, length=chunk)
+
+            compiled[(dt, chunk)] = jax.jit(run)
+        return compiled[(dt, chunk)]
+
     state = model.STATE_TYPE(*(jnp.asarray(v) for v in state0))
-    rows, checks, refused = [], {}, None
-    first = int(round(t0 / args.dt))
+    rows, checks, refused, data = [], {}, None, dict(t=[], vm=[], conc=[])
+    t, count = t0, count0
+    streams = open(output / "rows.jsonl", "a", buffering=1)
+    phase_one_end = t0 + args.replay_seconds
+    until = phase_one_end if args.replay_until is None else args.replay_until
     tick = time.perf_counter()
-    for c in range(-(-total // chunk)):
-        k0 = first + c * chunk
-        controls = control_values(spec, [k0 * args.dt])
+    phase = 1
+    while t < until - 1e-9 and refused is None:
+        if phase == 1 and t >= phase_one_end - 1e-9:
+            phase = 2
+            if rows and rows[-1]["d_inside"] == 0:
+                break  # The whole disc is H: nothing left to follow.
+        dt = args.dt if phase == 1 else (args.replay_dt_after or args.dt)
+        every = 0.02 if phase == 1 else (1.0 if t < 600.0 - 1e-9 else 5.0)
+        chunk = max(1, int(round(every / dt)))
+        stop = phase_one_end if phase == 1 else until
+        chunk = max(1, min(chunk, int(round((stop - t) / dt))))
+        controls = control_values(spec, [t])
         control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
-        (state, _), (ok, failed) = compiled(state, control, jnp.asarray(k0))
+        (state, _), (ok, failed) = advance(dt, chunk)(state, control, jnp.asarray(count))
         ok, failed = np.asarray(ok), np.asarray(failed)
         if not ok.all():
-            refused = (k0 + int(np.argmin(ok)) + 1) * args.dt
+            refused = t + dt * (int(np.argmin(ok)) + 1)
             break
+        marks = {}
         for j, name in enumerate(model.DEVICE_CHECKS):
             hit = np.flatnonzero(failed[:, j])
             if len(hit):
+                marks[name] = int(len(hit))
                 entry = checks.setdefault(name, dict(rows=0, first_s=None, last_s=None))
                 entry["rows"] += int(len(hit))
-                entry["first_s"] = entry["first_s"] or (k0 + int(hit[0]) + 1) * args.dt
-                entry["last_s"] = (k0 + int(hit[-1]) + 1) * args.dt
+                entry["first_s"] = entry["first_s"] or t + dt * (int(hit[0]) + 1)
+                entry["last_s"] = t + dt * (int(hit[-1]) + 1)
+        t, count = t + chunk * dt, count + chunk
         row = model.STATE_TYPE(*(np.asarray(v) for v in state))
-        end = control_values(spec, [(k0 + chunk) * args.dt])
+        end = control_values(spec, [t])
         values = model.readouts(row, type(end)(*(np.asarray(v[0]) for v in end)), host, xp=np)
         vm = np.asarray(values.field.rates.membrane_voltage_V)[:n]
+        amounts, _ = model.physical_amounts(row, host)
+        conc = np.asarray(amounts)[:, :n] / volume
+        excess = conc.sum(axis=0) / osm0 - 1.0
         d = vm > THRESHOLD_V
-        rows.append(
-            dict(
-                t=(k0 + chunk) * args.dt,
-                d_inside=int(d[disc].sum()),
-                d_outside=int(d[~disc].sum()),
-                disc_vm_V=[float(vm[disc].min()), float(vm[disc].max())],
-            )
+        record = dict(
+            t=round(t, 9),
+            phase=phase,
+            dt_s=dt,
+            non_refusing=True,
+            failed_checks_in_interval=marks,
+            d_inside=int(d[disc].sum()),
+            d_outside=int(d[~disc].sum()),
+            disc_vm_V=[float(vm[disc].min()), float(vm[disc].max())],
+            disc_mean_mM=dict(zip(ION_IDS, conc[:, disc].mean(axis=1).tolist(), strict=True)),
+            disc_osmotic_excess=[float(excess[disc].min()), float(excess[disc].max())],
+            max_osmotic_excess=float(excess.max()),
+            flagged=bool(excess.max() > OSMOTIC_FLAG),
+            censored=bool(excess.max() > OSMOTIC_CENSOR),
         )
+        rows.append(record)
+        streams.write(json.dumps(record) + "\n")
+        data["t"].append(t)
+        data["vm"].append(vm)
+        data["conc"].append(conc[:3])
+    streams.close()
+    np.savez(
+        output / "cells.npz",
+        times_s=np.array(data["t"]),
+        vm_V=np.array(data["vm"]),
+        concentration_mM=np.array(data["conc"]),
+        species=np.array(ION_IDS[:3]),
+        initial_osmolarity_mM=osm0,
+    )
     first_lost = next((r["t"] for r in rows if r["d_inside"] < disc.sum()), None)
     all_lost = next((r["t"] for r in rows if r["d_inside"] == 0), None)
     write_json(
         output / "replay.json",
         dict(
-            kind="cells.heredity_pilot_w1_sheet_replay@1",
+            kind="cells.heredity_pilot_w1_sheet_replay@2",
             source=source,
             disc_cells=disc_cells,
             s=args.scales[0],
             dt_s=args.dt,
+            dt_after_s=args.replay_dt_after,
             start_s=t0,
-            seconds=args.replay_seconds,
-            record_every_s=chunk * args.dt,
+            phase_one_seconds=args.replay_seconds,
+            until_s=until,
             refused_at_s=refused,
             failed_device_checks=checks,
+            all_rows_non_refusing=True,
             first_D_lost_by_s=first_lost,
             all_D_lost_by_s=all_lost,
             d_inside_at_end=rows[-1]["d_inside"] if rows else None,
             max_d_outside=max((r["d_outside"] for r in rows), default=None),
+            first_flag_s=next((r["t"] for r in rows if r["flagged"]), None),
+            first_censor_s=next((r["t"] for r in rows if r["censored"]), None),
+            max_osmotic_excess=max((r["max_osmotic_excess"] for r in rows), default=None),
+            last_time_s=rows[-1]["t"] if rows else None,
             wall_seconds=time.perf_counter() - tick,
-            rows=rows,
+            rows=rows if len(rows) <= 2000 else None,
         ),
     )
     log(f"replay {label}: first D lost by {first_lost}, all by {all_lost}, checks {checks}")
+
+
+HEAT_CLASSES = (
+    "membrane_dissipated_energy_pJ",
+    "junction_dissipated_energy_pJ",
+    "channel_dissipated_energy_pJ",
+    "pump_dissipated_energy_pJ",
+)
+RATIO_EDGES = (0.4142135623730951, 0.8284271247461902)  # q2/q1 below: negative; detectable
+
+
+def part_heatdrift(args):
+    """Gap-A measurements over whole histories of one sheet world (host-side analysis).
+
+    Replays one sheet world from its definition (cue-written or --start-written)
+    with the engine's unmodified checked step for --replay-seconds at --dt and,
+    for every step, from the start state's own rates (readouts) and the step's
+    booked increments: each tableau-booked route's start-stage power q1 and,
+    exactly, its gamma-stage power q2 = (B/dt - delta q1) / (1 - delta), B the
+    booked increment. Accumulated over the history:
+      (b) the energy ledger's signed residual and bound under the tableau
+          booking, and the residual each junction-heat alternative would leave
+          (residual + sum of alternative - booked): start stage dt q1, gamma stage
+          dt q2, trapezoid dt (q1 + q1_next) / 2, face-like dt 1e-3 sum J_app^2
+          dmu_1 / J_1;
+      (c) the smallest q2/q1 per route class (routes with q1 above 1e-9 of the
+          class's largest), and the junction steps by q2/q1 band;
+      (d) whether a row test against a stored start-stage power, increment >=
+          delta dt q1, would reject the wrong-signed booking -B of each junction
+          step (analytically: exactly when q2 > 2|delta| / (1 - delta) q1).
+    Faces are not tableau-booked (J^2 RT / W) and are left out. Evidence only.
+    """
+    import jax.numpy as jnp
+
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models import surface_pump as first
+    from cells.models import surface_pump_v3 as model
+    from cells.models.surface_pump_checks import DISSIPATION_ATOL_PJ
+    from cells.numerics import surface_imex as imex
+
+    label = args.label or "heatdrift"
+    output = Path(args.output) / f"heatdrift-{label}"
+    output.mkdir(parents=True, exist_ok=True)
+    disc_cells = args.discs[0]
+    raw, _, phases = long_sheet_definition(
+        disc_cells, args.scales[0], args.dt, args.replay_seconds, args.backend,
+        written=args.start_written,
+    )  # fmt: skip
+    spec = parse_spec(raw)
+    state0, layout = model.initial_values(spec)
+    p = type(layout)(*(jnp.asarray(v) for v in layout))
+    constants = model.device_check_constants(spec)
+    tol = jnp.asarray(constants.material_atol)
+    rtol = float(first.ENERGY_RTOL[spec.execution.solver])
+    delta = float(imex.TABLEAUX[imex.ARS222_ID].explicit[2, 0])
+    dt = args.dt
+    energy_index = first.LEDGERS.index("energy")
+    junctions = jnp.asarray(layout.junction_active)
+    variants = ("tableau", "b_start_stage", "b_gamma_stage", "b_trapezoid", "a_face_like")
+
+    def run(carry, control):
+        def body(c, _):
+            y, k, previous, acc, low, bands, caught = c
+            start = model.readouts(y, control, p)
+            new, ok = model.checked_step(y, dt, control, p, p.active)
+            q1 = {name: getattr(start.derivative, name) for name in HEAT_CLASSES}
+            booked = {name: getattr(new, name) - getattr(y, name) for name in HEAT_CLASSES}
+            q2 = {n_: (booked[n_] / dt - delta * q1[n_]) / (1 - delta) for n_ in HEAT_CLASSES}
+            lows = []
+            for name in HEAT_CLASSES:
+                scale = jnp.max(jnp.abs(q1[name]))
+                use = q1[name] > 1e-9 * scale
+                ratio = jnp.where(use, q2[name] / jnp.where(use, q1[name], 1.0), jnp.inf)
+                lows.append(jnp.min(ratio))
+            low = jnp.minimum(low, jnp.stack(lows))
+            jq1, jb = q1["junction_dissipated_energy_pJ"], booked["junction_dissipated_energy_pJ"]
+            jq2 = q2["junction_dissipated_energy_pJ"]
+            use = junctions & (jq1 > 1e-9 * jnp.max(jq1))
+            ratio = jnp.where(use, jq2 / jnp.where(use, jq1, 1.0), 0.0)
+            bands = bands + jnp.stack(
+                [
+                    jnp.sum(use & (ratio < RATIO_EDGES[0])),
+                    jnp.sum(use & (ratio >= RATIO_EDGES[0]) & (ratio <= RATIO_EDGES[1])),
+                    jnp.sum(use & (ratio > RATIO_EDGES[1])),
+                ]
+            )
+            # (d) a stored start-stage power: is the wrong-signed booking -B rejected?
+            rejected = -jb < delta * dt * jq1 - DISSIPATION_ATOL_PJ
+            caught = caught + jnp.stack(
+                [
+                    jnp.sum(use & (ratio > RATIO_EDGES[1]) & rejected),
+                    jnp.sum(use & (ratio > RATIO_EDGES[1])),
+                    jnp.sum(use & (ratio <= RATIO_EDGES[1]) & rejected),
+                    jnp.sum(use & (ratio <= RATIO_EDGES[1])),
+                ]
+            )
+            applied = (new.junction_transferred - y.junction_transferred) / dt
+            flux = start.field.rates.junction_flux_fmol_s
+            mu = start.field.rates.junction_delta_mu_J_mol
+            resistance = jnp.where(flux != 0, mu / jnp.where(flux != 0, flux, 1.0), 0.0)
+            face_like = dt * 1e-3 * jnp.sum(applied * applied * resistance, axis=0)
+            prev_b, prev_q1, have = previous
+            trapezoid = jnp.where(have, jnp.sum(dt * 0.5 * (prev_q1 + jq1) - prev_b), 0.0)
+            acc = acc + jnp.stack(
+                [
+                    0.0,
+                    jnp.sum(dt * jq1 - jb),
+                    jnp.sum(dt * jq2 - jb),
+                    trapezoid,
+                    jnp.sum(face_like - jb),
+                ]
+            )
+            return (new, k + 1, (jb, jq1, True), acc, low, bands, caught), ok
+
+        return jax.lax.scan(body, carry, None, length=args_chunk)
+
+    args_chunk = max(1, int(round(0.5 / dt)))  # Cue edges (0.5 and 2.5 s) fall between chunks.
+    compiled = jax.jit(run)
+    state = model.STATE_TYPE(*(jnp.asarray(v) for v in state0))
+    zeros_j = jnp.zeros_like(state.junction_dissipated_energy_pJ)
+    carry = (
+        state,
+        jnp.asarray(0),
+        (zeros_j, zeros_j, jnp.asarray(False)),
+        jnp.zeros(len(variants)),
+        jnp.full(len(HEAT_CLASSES), jnp.inf),
+        jnp.zeros(3, dtype=jnp.int64),
+        jnp.zeros(4, dtype=jnp.int64),
+    )
+    samples, refused, t = [], None, 0.0
+    total = int(round(args.replay_seconds / dt))
+    tick = time.perf_counter()
+    for c in range(-(-total // args_chunk)):
+        controls = control_values(spec, [c * args_chunk * dt])
+        control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
+        if not args.start_written and (
+            0 < phases["on_s"] - c * args_chunk * dt < args_chunk * dt
+            or 0 < phases["off_s"] - c * args_chunk * dt < args_chunk * dt
+        ):
+            raise ValueError("Analysis chunks must not straddle a cue edge")
+        carry, ok = compiled(carry, control)
+        if not np.asarray(ok).all():
+            refused = (c * args_chunk + int(np.argmin(np.asarray(ok))) + 1) * dt
+            break
+        t = (c + 1) * args_chunk * dt
+        row = carry[0]
+        energy = float(model.device_balances(row, p)["energy"])
+        magnitudes = model.channel_magnitudes(row, p, xp=jnp)
+        _, bounds = first.ledger_limits(
+            row, p, tol, rtol, steps=int(carry[1]), magnitudes=magnitudes, xp=jnp
+        )
+        bound = float(bounds[energy_index])
+        acc = np.asarray(carry[3])
+        samples.append(
+            dict(
+                t=t,
+                energy_bound_pJ=bound,
+                **{
+                    f"{v}_residual_over_bound": (energy + float(a)) / bound
+                    for v, a in zip(variants, acc, strict=True)
+                },
+            )
+        )
+    low, bands, caught = (np.asarray(v) for v in carry[4:])
+    result = dict(
+        kind="cells.heredity_pilot_w1_heatdrift@1",
+        world=dict(
+            disc_cells=disc_cells, s=args.scales[0], written_start=args.start_written, **phases
+        ),
+        dt_s=dt,
+        seconds=args.replay_seconds,
+        delta=delta,
+        refused_at_s=refused,
+        last_time_s=t,
+        max_abs_residual_over_bound={
+            v: max((abs(s_[f"{v}_residual_over_bound"]) for s_ in samples), default=None)
+            for v in variants
+        },
+        end_residual_over_bound={v: samples[-1][f"{v}_residual_over_bound"] for v in variants}
+        if samples
+        else None,
+        min_q2_over_q1={name: float(x) for name, x in zip(HEAT_CLASSES, low, strict=True)},
+        latent_refusal_classes=[
+            n_ for n_, x in zip(HEAT_CLASSES, low, strict=True) if x < RATIO_EDGES[0]
+        ],
+        junction_steps_by_q2_over_q1=dict(
+            below_0_414=int(bands[0]), between=int(bands[1]), above_0_828=int(bands[2])
+        ),
+        stored_q1_row_test_on_wrong_sign=dict(
+            rejected_above_0_828=int(caught[0]),
+            steps_above_0_828=int(caught[1]),
+            rejected_at_or_below_0_828=int(caught[2]),
+            steps_at_or_below_0_828=int(caught[3]),
+        ),
+        wall_seconds=time.perf_counter() - tick,
+        samples=samples,
+    )
+    write_json(output / "heatdrift.json", result)
+    log(f"heatdrift {label}: {result['max_abs_residual_over_bound']} {result['min_q2_over_q1']}")
 
 
 def summarize_longsheet(output):
@@ -2138,6 +2392,8 @@ def main(argv=None):
     parser.add_argument("--replay-snapshot", help="sheetreplay: a longsheet cohort snapshot")
     parser.add_argument("--replay-world", type=int, default=1)
     parser.add_argument("--replay-seconds", type=float, default=10.0)
+    parser.add_argument("--replay-until", type=float, help="sheetreplay: continue to this time")
+    parser.add_argument("--replay-dt-after", type=float, help="sheetreplay: dt after phase 1")
     args = parser.parse_args(argv)
     Path(args.output).mkdir(parents=True, exist_ok=True)
     status = 0
@@ -2170,6 +2426,7 @@ PARTS = dict(
     floor=part_floor,
     longsheet=part_longsheet,
     sheetreplay=part_sheetreplay,
+    heatdrift=part_heatdrift,
 )
 
 if __name__ == "__main__":
