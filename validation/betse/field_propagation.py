@@ -13,7 +13,9 @@ the emulator with its membrane processes seeing a Cells run's own exterior poten
              exterior field, carried dynamically into the cells)
   vpatch     each membrane's voltage shifted by -(phi_site - <phi>_cell), <phi>_cell the
              area-weighted mean over the cell's membranes (Cells' patch voltage against
-             the cell's charge voltage)
+             the cell's charge voltage); the network runner also starts the SIM channel
+             gates at the steady state of Vm plus the INIT phase's last shift, where Cells'
+             handoff starts them (its INIT-end patch voltage)
   both       both at once
 
 Only what the leaks, pumps and channels (and channel gates) see changes
@@ -71,7 +73,12 @@ class Runner(NamedTuple):
     """One emulator route: world, phase inputs, one update, observables, chained end.
 
     world(case, *, blind)                        -> world (default_world_adapter keys)
-    inputs(world, phase, start, variant)         -> (state, layout, ko_env)
+    inputs(world, phase, start, variant, gate_shift)
+                                                 -> (state, layout, ko_env); gate_shift
+                                                    [membrane] or None: the network runner
+                                                    starts SIM channel gates at the steady
+                                                    state of Vm + gate_shift (the default
+                                                    runner has none and ignores it)
     split(layout) / join(traced, static)         -> layout without / with its static parts
     drive(world, phase, inputs)                  -> per-sample step inputs [steps, ...] (or
                                                     None) from MembraneInputs (or None)
@@ -134,7 +141,9 @@ def _default_runner():
 
     return Runner(
         adapter.betse_world,
-        adapter.emulator_inputs,
+        lambda world, phase, start, variant, gate_shift=None: adapter.emulator_inputs(
+            world, phase, start, variant
+        ),
         lambda layout: (layout, None),
         lambda traced, static: traced,
         lambda world, phase, inputs: inputs,
@@ -149,8 +158,10 @@ def _network_runner():
     from validation.betse import network_world_adapter as net
     from validation.betse.emulator import network, spatial
 
-    def inputs(world, phase, start, variant):
-        state, layout, ko, _ = net.network_inputs(world, phase, start, variant)
+    def inputs(world, phase, start, variant, gate_shift=None):
+        state, layout, ko, _ = net.network_inputs(
+            world, phase, start, variant, gate_voltage_shift=gate_shift
+        )
         return state, layout, ko
 
     def step(state, layout, dt, drive, variant):
@@ -339,15 +350,21 @@ def run_propagation(
     variant = laws.default_world(constants, tuple(differences))
     device = jax.devices(device_kind)[0]
     phases, records, chained = {}, {}, None
+    # With the patch-voltage shift on, SIM channel gates start where Cells' handoff puts them:
+    # the steady state of the patch voltage, here Vm plus the INIT phase's last shift.
+    gate_shift = None
     for phase in PHASES:
         start = adapter.phase_start(world, phase, sim_start, chained)
-        state, layout, ko = route.inputs(world, phase, start, variant)
-        dt, steps = world["dt_s"][phase], world["steps"][phase]
         inputs, stats = None, None
         if mode != "base":
             inputs, stats = field_inputs(
                 world, phase, cells_layout, boltzmann=boltzmann, vpatch=vpatch
             )
+        shift = gate_shift if phase == "sim" else None
+        state, layout, ko = route.inputs(world, phase, start, variant, shift)
+        if phase == "init" and vpatch:
+            gate_shift = np.asarray(inputs.voltage_shift[-1], dtype=np.float64)
+        dt, steps = world["dt_s"][phase], world["steps"][phase]
         drive = route.drive(world, phase, inputs)
         result = driven_phase(
             route, state, layout, dt / dt_factor, steps, dt_factor, drive, variant, device
@@ -364,6 +381,7 @@ def run_propagation(
             "start": "configured cell/env concentrations" if phase == "init" else sim_start,
             "field_inputs": stats,
             "ko_env_per_m": ko,
+            "channel_gate_shift_max_abs_V": None if shift is None else float(np.abs(shift).max()),
         }
         elapsed = [(k + 1) * dt for k in range(steps)]  # BETSE sample k: after k + 1 of its dt
         phases[phase] = adapter.layout_phase(
@@ -380,6 +398,7 @@ def run_propagation(
         "mode": mode,
         "boltzmann_outside_scale": boltzmann,
         "patch_voltage_shift": vpatch,
+        "sim_gate_shift": vpatch,
         "cells_layout": None if mode == "base" else str(Path(cells_layout).resolve()),
         "variant": variant._asdict() | {"field_mode": mode},
         "constants": constants,
