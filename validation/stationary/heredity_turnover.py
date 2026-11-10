@@ -547,7 +547,10 @@ def turnover_summary(records, carriers, written, plan, radius):
         founders_remaining_in_disc_end=records[-1]["founders_remaining_in_disc"]
         if records
         else None,
-        jaccard_at_minutes={f"{m}": at(60.0 * m) for m in (5, 10, 20, 30, 40, 50)},
+        jaccard_at_minutes={
+            f"{m}": at(60.0 * m)
+            for m in (5, 10, 20, 30, 40, 50, *range(60, int(plan["total_steps"] * DT / 60) + 1, 10))
+        },
         newcomers_in_disc=len(disc_new),
         newcomers_in_disc_end_d_fraction=float(np.mean([c["end_state"] == "D" for c in disc_new]))
         if disc_new
@@ -556,7 +559,221 @@ def turnover_summary(records, carriers, written, plan, radius):
         newcomers_by_ring={str(k): by_ring[k] for k in sorted(by_ring)},
         disc_ring_max=radius,
         record_times_s=[times[0], times[-1]] if times else None,
+        after_each_turnover=_after_each_turnover(records, plan),
     )
+
+
+def _after_each_turnover(records, plan):
+    """Oldest-first: the first record after every slot has been replaced m times."""
+    if plan["order"] != "oldest":
+        return None
+    n, out = plan["sheet_cells"], []
+    for m in range(1, plan["count"] // n + 1):
+        last = float(plan["steps"][m * n - 1] * DT)
+        r = next((r for r in records if r["time_s"] > last), None)
+        out.append(
+            dict(turnover=m, last_replaced_s=last)
+            | ({} if r is None else dict(time_s=r["time_s"], jaccard=r["jaccard"], d=r["d_total"]))
+        )
+    return out
+
+
+# ------------------------------------------------------------------ mechanism
+
+MECHANISM_SCALE = 0.6
+MECHANISM_WAITS = (20.0, 200.0, 1500.0)  # s after the last neighbour replacement
+MECHANISM_LOG = (0.0, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 1500.0)
+MECHANISM_FINE = (0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0, 20.0, 30.0)
+MECHANISM_SETTLE = 10.0  # s between neighbour replacements
+
+
+def composition(case, u, cells, scale):
+    """Per cell: Vm (mV), intracellular concentrations (mM) and channel gates at u."""
+    pb = case.pb
+    if not hasattr(case, "label_index"):
+        case.label_index = {label: i for i, label in enumerate(pb.labels())}
+    ref, vol = np.asarray(pb.p.amount_reference), np.asarray(pb.p.volume)
+    species, v = list(pb.spec.model.species_ids), case.voltages(u, scale)
+    rows = []
+    for i in cells:
+        row = dict(cell=int(i), V_mV=1e3 * float(v[i]))
+        for k, sp in enumerate(species):
+            pos = case.label_index.get(f"{sp}@cell_{i}")
+            if pos is not None:
+                row[f"{sp}_mM"] = float(ref[k, i] / vol[i] + u[pos])
+        for label in (f"gate{g}@{c}_{i}" for c in ("nav", "kir") for g in (0, 1)):
+            row[label.split("@")[0] + "_" + label.split("@")[1].split("_")[0]] = float(
+                u[case.label_index[label]]
+            )
+        rows.append(row)
+    return rows
+
+
+def _forward(case, u, scale, seconds):
+    k = int(round(seconds / DT))
+    if k == 0:
+        return u
+    rate = np.asarray(case.advance(u, scale, k))
+    if not np.all(np.isfinite(rate)):
+        raise RuntimeError("a step was refused (NaN)")
+    return u + k * DT * rate
+
+
+def _corner_birth(case, u, scale, corner, rule):
+    """A corner newcomer placed at u: its voltage and gates over 30 s, and the outcome."""
+    lo = case.gate_range[0]
+    u0, gates = place(case, u, [corner], rule, scale)
+    edges = np.asarray(case.edges)[case.gate_edge[gates - lo]]
+    others = [int(b if a == corner else a) for a, b in edges]
+    d0 = case.voltages(u, scale) > case.threshold
+    rows, t, x = [], 0.0, u0
+    for target in (0.0, *MECHANISM_FINE):
+        x, t = _forward(case, x, scale, target - t), target
+        v = case.voltages(x, scale)
+        rows.append(
+            dict(
+                time_s=t,
+                V_mV=1e3 * float(v[corner]),
+                gates_to_d=[float(x[g]) for g, j in zip(gates, others, strict=True) if d0[j]],
+                gates_to_h=[float(x[g]) for g, j in zip(gates, others, strict=True) if not d0[j]],
+                neighbour_V_mV=[1e3 * float(v[j]) for j in others],
+            )
+        )
+    d = case.voltages(x, scale) > case.threshold
+    intact = bool(
+        np.all(
+            d[case.full & (np.arange(len(d)) != corner)]
+            == d0[case.full & (np.arange(len(d)) != corner)]
+        )
+    )
+    return dict(
+        converted=bool(d[corner]),
+        others_unchanged=intact,
+        newcomer=composition(case, x, [corner], scale)[0],
+        trajectory=rows,
+    )
+
+
+def mechanism(output, rule="inherit"):
+    """Are converted newcomers weaker D neighbours than founders, and why?
+
+    In the stationary 37-cell disc at MECHANISM_SCALE, a corner newcomer (3 disc
+    neighbours) is placed (a) next to founders, (b) after its ring-2 neighbour was
+    replaced by a newcomer that converted, (c) after all three disc neighbours were
+    (one at a time, MECHANISM_SETTLE apart, each checked D). (b) and (c) branch at
+    MECHANISM_WAITS after the last neighbour replacement; (c) also records the
+    converted newcomers' composition at MECHANISM_LOG against the founders' (the
+    stationary D) and the H template. The stationary disc's leading eigenvalues
+    give the slowest relaxation rates.
+    """
+    unit = hp.units()["theta_per_unit_scale"]
+    s = MECHANISM_SCALE
+    case = Sheet(*SCREEN_DISC)
+    corner = hc.slots(case, case.radius)["boundary"]
+    neighbours = sorted(
+        int(b if a == corner else a)
+        for a, b in case.edges
+        if corner in (a, b) and case.full[b if a == corner else a]
+    )
+    ring2 = [j for j in neighbours if case.rings[j] == case.radius - 1]
+    sides = [j for j in neighbours if case.rings[j] == case.radius]
+    _log(f"mechanism: corner {corner}, disc neighbours {neighbours} (ring 2 {ring2})")
+    u_disc = hc.disc_state(case, s, unit)
+    if u_disc is None:
+        raise RuntimeError("no stationary disc")
+    out = dict(
+        kind="cells.heredity_design_prescreen@9_mechanism",
+        scope="Design input only (development analysis, not judged); no ledgers carried.",
+        scale=s,
+        rule=rule,
+        corner=corner,
+        disc_neighbours=neighbours,
+        founder_d=composition(case, u_disc, neighbours, s),
+        h_template=composition(case, np.asarray(case.pb.anchor), [corner], s)[0],
+        stationary_spectrum=hp.classify(case, u_disc, s),
+        checks=checks(case, u_disc, s),
+        cases=[],
+    )
+    _log(f"  founders: {out['founder_d']}")
+    started = time.perf_counter()
+    case_a = dict(name="founders", replaced=[], births=[])
+    case_a["births"].append(
+        dict(
+            wait_s=None, neighbours=out["founder_d"], **_corner_birth(case, u_disc, s, corner, rule)
+        )
+    )
+    out["cases"].append(case_a)
+    _log(f"  founders: corner converted {case_a['births'][0]['converted']}")
+    for name, sequence, waits in (
+        ("one converted neighbour", ring2, MECHANISM_WAITS[:2]),
+        ("three converted neighbours", ring2 + sides, MECHANISM_WAITS),
+    ):
+        u, entry = np.array(u_disc, copy=True), dict(name=name, replaced=sequence, births=[])
+        for j in sequence:
+            u, _ = place(case, u, [j], rule, s)
+            u = _forward(case, u, s, MECHANISM_SETTLE)
+            if not case.voltages(u, s)[j] > case.threshold:
+                entry["error"] = f"neighbour {j} did not convert"
+        entry["relaxation"], t = [], 0.0
+        for target in sorted(set(MECHANISM_LOG) | set(waits)):
+            if target > waits[-1]:
+                break
+            u, t = _forward(case, u, s, target - t), target
+            if target in MECHANISM_LOG:
+                entry["relaxation"].append(dict(time_s=t, cells=composition(case, u, sequence, s)))
+            if target in waits:
+                entry["births"].append(
+                    dict(
+                        wait_s=t,
+                        neighbours=composition(case, u, neighbours, s),
+                        **_corner_birth(case, u, s, corner, rule),
+                    )
+                )
+                _log(f"  {name}, wait {t:g} s: corner converted {entry['births'][-1]['converted']}")
+        out["cases"].append(entry)
+    out["wall_seconds"] = time.perf_counter() - started
+    with open(output / "mechanism.json", "x") as stream:
+        json.dump(targets._json(out), stream, indent=1)
+    with open(output / "mechanism_table.md", "x") as stream:
+        stream.write(mechanism_table(out) + "\n")
+    return out
+
+
+def mechanism_table(out):
+    def fmt(row):
+        return (
+            f"{row['V_mV']:.1f} mV, Na {row['Na_mM']:.2f}, K {row['K_mM']:.2f}, "
+            f"M {row['M_mM']:.2f} mM"
+        )
+
+    lines = [
+        f"Stationary disc at s {out['scale']:g}; corner {out['corner']}, "
+        f"neighbours {out['disc_neighbours']}; rule {out['rule']}.",
+        "",
+        f"H template: {fmt(out['h_template'])}",
+        "Founder D neighbours: " + "; ".join(fmt(r) for r in out["founder_d"]),
+        "Leading eigenvalues of the stationary disc (1/s): "
+        + ", ".join(
+            f"{a:.3g}{b:+.3g}i" for a, b in out["stationary_spectrum"]["leading_eigenvalues_per_s"]
+        ),
+        "",
+        "| case | wait s | corner converts | others unchanged | D neighbours at birth |",
+        "|---|---|---|---|---|",
+    ]
+    for c in out["cases"]:
+        for b in c["births"]:
+            nb = "founders" if b["wait_s"] is None else "; ".join(fmt(r) for r in b["neighbours"])
+            lines.append(
+                f"| {c['name']} | {b['wait_s'] if b['wait_s'] is not None else '-'} | "
+                f"{b['converted']} | {b['others_unchanged']} | {nb} |"
+            )
+    lines += ["", "| case | t after last replacement s | converted newcomers |", "|---|---|---|"]
+    for c in out["cases"]:
+        for r in c.get("relaxation", []):
+            lines.append(
+                f"| {c['name']} | {r['time_s']:g} | " + "; ".join(fmt(x) for x in r["cells"]) + " |"
+            )
+    return "\n".join(lines)
 
 
 # ------------------------------------------------------------------ stage 3
@@ -1039,6 +1256,7 @@ def main(argv=None):
     parser.add_argument("--tag", default="main")
     parser.add_argument("--summarize", action="store_true", help="results.json and table.md")
     parser.add_argument("--final", action="store_true", help="final.json over the stage dirs")
+    parser.add_argument("--mechanism", action="store_true", help="corner births next to newcomers")
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)  # results are never overwritten
     if args.screen:
@@ -1063,6 +1281,9 @@ def main(argv=None):
         summarize(args.output)
     elif args.final:
         final(args.output)
+    elif args.mechanism:
+        mechanism(args.output)
+        _log("mechanism done")
     else:
         parser.error("give --screen, --turnover or --summarize")
     return 0
