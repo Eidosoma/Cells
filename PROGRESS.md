@@ -45,7 +45,7 @@ starts, and production design is deferred until parity is established.
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
-| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4) and the ledger rounding fix landed; GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling. Pre-screen 8: no retaining coupling renews the disc rim**; the design choice is with the user |
+| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4), the ledger rounding fix and @3 device checks landed; @3 on the L4 is 2.28 ms per world-step at 256 worlds (tier 1 about 4,100 L4 GPU-hours); GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling. Pre-screen 8: no retaining coupling renews the disc rim**; the design choice is with the user |
 | 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); MG1 (2-D vertex mechanics) next |
 | 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 not evaluable (no lingering scale found) |
 
@@ -54,6 +54,34 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Device checks and batched worlds for `resolved_pump_tissue@3` landed (10 November).**
+  `surface_pump_v3.device_checks` runs @3's own domain, ledger, bound and
+  dissipation checks on the device through the shared `row_checks`, with the
+  host's functions, names and messages; `ionic_worlds@1` admits @3 under the
+  opt-in `world_batching="vmap"`. Host checks and trajectories are unchanged.
+  - **Tests:** device and host give the same verdict and first message on 20
+    seeded faults covering all 12 checks, at step 0 and 3.6e6; batched
+    heterogeneous worlds match single-world runs to 1e-12 relative, and bitwise
+    with rewrites disabled; a fault in one world stops vmap and `lax_map` at the
+    same step. The four new or changed files are tier 3 (275–604 s each).
+  - **Heredity tissue (825 nodes, 2580 channel populations):** host and device
+    checks agree on 129 rows on CPU and on the L4 (largest diagnostic
+    difference 3.5e-3 of the smallest bound); batched worlds agree with single
+    worlds to 1.1e-15 V on the L4.
+  - **L4 throughput per world-step:** 12.5 ms at 1 world, 2.64 ms at 64, 2.34 ms
+    at 128 and 2.28 ms at 256 (execute only; @1 was 2.10 ms). End to end, with
+    host observers every 128 steps, 4.0–4.5 ms. 256 worlds need a preallocated
+    allocator on the L4 (on-demand allocation ran out of memory; both failures
+    are kept).
+  - **Cost:** at 2.28 ms, E07-v1's tier 1 (1,786 world-hours) is about 4,100 L4
+    GPU-hours, against the design's assumed 560–840. GH200 throughput is the
+    open number.
+  - **Gate:** tier 1+2 passed on the branch (326 files; `test_projective_judge`
+    then differed only because it predated amendment 2), and again on merged
+    main `e79c0b7` from a clean snapshot (266 + 60 files, none changed).
+  - Evidence: `/mnt/workspaces/Cells/device-checks-v3-20261109-01/` (gate,
+    `study-01-cpu`, `study-01-gpu`, `study-02-gpu`) and
+    `/mnt/workspaces/Cells/land-v3-device-20261110-01/`.
 - **Projective (C) qualification qual-01: FAIL (9–10 November).** Protocol
   `projective-c-qualification-v1` with amendments 1 and 2, judged once from a
   clean snapshot of `ca70d4a` on CPU float64
