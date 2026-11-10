@@ -45,7 +45,7 @@ starts, and production design is deferred until parity is established.
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
-| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4), the ledger rounding fix and @3 device checks landed; @3 on the L4 is 2.28 ms per world-step at 256 worlds (tier 1 about 4,100 L4 GPU-hours execute-only, about 7,200 end to end); GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling. Pre-screen 8: no retaining coupling renews the disc rim**; the design choice is with the user |
+| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4), the ledger rounding fix and @3 device checks landed; @3 on the L4 is 2.28 ms per world-step at 256 worlds (tier 1 about 4,100 L4 GPU-hours execute-only, about 7,200 end to end); GH200 throughput unmeasured. **Pre-screens 7–8 (retention, rim renewal) are in doubt**: they start from the fully loaded stationary D composition (+31% osmolarity), while cue-written discs carry H composition and behave differently (W1 sheet check, pre-screen 9); the design choice waits on fresh-disc runs |
 | 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); MG1 (2-D vertex mechanics) next |
 | 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 not evaluable (no lingering scale found) |
 
@@ -54,6 +54,17 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Caveat on heredity pre-screens 7–9 (10 November).** Every pre-screen starts
+  from the stationary written disc, whose D cells carry the fully loaded slow
+  composition (Na+K+M+P about 372–380 mM against 284 mM for H, +31% osmolarity, past
+  E07-v1's 15% censor). A disc written by the cue starts with H composition; K and
+  anions load with an effective time constant of 40–50 min (pre-screen 9's mechanism
+  run). The sign of the effect is mixed: on the held-bath sheet, cue-written 19-cell
+  discs at s 1.0 were still held after 20 s where pre-screen 7 predicts loss within
+  1 s, while freshly converted cells are weaker neighbours for rim conversion
+  (pre-screen 9). So pre-screen 7's retention thresholds, the "12 of 14 arms fail"
+  reading, and the stage-A-at-x0.3 recommendation are on hold until fresh-disc runs
+  (70 min, with composition and osmotic excess) report.
 - **Parity P3 (scheduled interventions, first subset) passes (10 November).**
   Four protocols, `validation/betse/protocols/physical_p3_*_dense.json`, registered at
   `95f30b5` on `resolved_pump_tissue@3` with the event adapter (`ac2e127`): pump
