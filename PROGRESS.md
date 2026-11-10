@@ -62,12 +62,24 @@ machine-readable inputs, results, checks and failures.
   run). The sign of the effect is mixed: on the held-bath sheet, cue-written 19-cell
   discs at s 1.0 were still held after 20 s where pre-screen 7 predicts loss within
   1 s, while freshly converted cells are weaker neighbours for rim conversion
-  (pre-screen 9). That composition is the cause is still an inference across two
-  drivers; a control (W1's driver started from pre-screen 7's loaded disc, no cue)
-  and a frozen-composition stationary comparison are queued. Until they and the
+  (pre-screen 9). A control in W1's driver, started from pre-screen 7's loaded
+  disc with no cue, loses the 19-cell disc at s 1.0 in 0.56–0.62 s (pre-screen 7:
+  0.5–1 s), so the drivers agree and the starting composition explains the
+  difference (development run). A frozen-composition stationary comparison of the
+  mechanism (junction conductance rises with ion content in the constant-field law,
+  ×1.57 on a D–D junction) is queued. Until they and the
   fresh-disc runs (70 min, with composition and osmotic excess) report, pre-screen
   7's retention thresholds, the "12 of 14 arms fail" reading and the
   stage-A-at-x0.3 recommendation are on hold.
+- **Known refusal in the pump family (10 November).** `resolved_pump_tissue@1`–`@3`
+  refuse any step in which a junction's power falls by more than about 59%:
+  ARS(2,2,2) books junction heat with weights (δ, 1−δ), δ = −0.707, so the booked
+  increment goes negative and trips the strict dissipation check. It occurs at
+  heterogeneous cue onsets (W1 pilot, 5.000→5.001 s) and on homogeneous sheets
+  during disc loss. Stage powers are nonnegative analytically, so an in-step bound
+  would never fire; that fix (option I) is withdrawn, and a single wrong-signed
+  junction booking is never caught by the energy ledger. Alternatives (an opt-in
+  nonnegative booking) are being measured; nothing is changed yet.
 - **Parity P3 (scheduled interventions, first subset) passes (10 November).**
   Four protocols, `validation/betse/protocols/physical_p3_*_dense.json`, registered at
   `95f30b5` on `resolved_pump_tissue@3` with the event adapter (`ac2e127`): pump
