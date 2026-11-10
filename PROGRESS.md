@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-09 UTC.
+Last updated: 2026-11-10 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -45,14 +45,55 @@ starts, and production design is deferred until parity is established.
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
-| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4) and the ledger rounding fix landed; GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling**; the coupling choice is with the user |
+| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4) and the ledger rounding fix landed; GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling. Pre-screen 8: no retaining coupling renews the disc rim**; the design choice is with the user |
 | 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); MG1 (2-D vertex mechanics) next |
-| 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; C landed; its 30-min qualification is next (the ledger fix is in) |
+| 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 pending |
 
 ## Runs
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Projective (C) qualification qual-01: FAIL (9–10 November).** Protocol
+  `projective-c-qualification-v1` with amendments 1 and 2, judged once from a
+  clean snapshot of `ca70d4a` on CPU float64
+  ([judgement](/mnt/workspaces/Cells/projective-c-20261109-01/qual-01/judgement.json)).
+  Two cases pass, four fail, F2 is not yet evaluable.
+  - **Fails only on the absolute caps** (|dVm| ≤ 20 µV, |dc|/c ≤ 2e-4, the parity
+    tolerances), in Q1, Q2, F1 and A1. |dc|/c reaches 1.25e-3 (Q1, F1), 1.16e-3
+    (Q2) and 1.53e-3 (A1). The worst entry is cytosolic Na (about 6 mM, |dc| about
+    8 µM), over the cap from the first observation after the window opens (60 s).
+    |dVm| stays within 20 µV except in A1 (62 µV).
+  - **Passes:** pre-run burst growth (0.024 < 0.1), accuracy against the
+    estimator allowance in every case (worst ratio 0.40–0.51), energy (defect at
+    most 0.09 of its bound), conservation, and F1's fallback around the cue.
+  - **Reading:** the per-jump tolerance of 1 µM, summed over 100–170 jumps,
+    admits about 0.16 mM, while the cap admits about 1.2 µM at 6 mM Na. The
+    error estimator was accurate, but the tolerance it was held to was looser
+    than the caps. The verdict stands; a later qualification needs error control
+    budgeted against the caps.
+  - Reported speed-up: 2.2–3.5× fewer fine steps, 1.4–3.3× wall time.
+  - F2 (switch near the fold): the NaV1.2 pre-scan has found no lingering
+    scale yet (no switch down to 0.75; 0.70 switches at 2 s). The judged pair is
+    frozen from `eaff6eb` and launches when the scan picks a scale.
+- **Heredity pre-screen 8: newcomer conversion next to the retention window
+  (9–10 November; development, not judged).** Driver
+  `validation/stationary/heredity_conversion.py` (`370ceb6`), on
+  `resolved_pump_tissue@3` through `stationary_continuation_analysis@1` plus
+  600 s forward runs; homogeneous sheets; 63 runs, none refused.
+  - **No coupling renews the whole disc** (19, 37, 61, 91 cells). Corner rim
+    newcomers never convert: they stay H up to s 0.7 and destroy the disc from
+    s 1.0 or at the window edge. Centre newcomers convert everywhere in the
+    window; mid-side ones only near s 0.5–1.0; outside newcomers never.
+  - A 9-cell rim batch at s 0.2 stays H (disc holds 28 of 37 for 600 s); at
+    s 0.7 the disc is lost in 0.5 s.
+  - Rim newcomers are insulated by their closing junction gates (the design's
+    self-insulation risk). Under oldest-first turnover the disc erodes, so B1 is
+    predicted to fail at every retaining coupling; A1 and C1 are unaffected.
+  - Closers: seed 3's cells 64 and 73 have no D state at their draws (low NaV with
+    high Kir); 10% CV moves the 37-cell boundary by −6%.
+  - Evidence: [summary](/mnt/workspaces/Cells/heredity-design-20261108-01/prescreen-08-conversion/summary.md),
+    `final.json`.
 
 - **Parity rungs P2 and P4 pass (9 November).** The five protocols were
   registered at `621e2be` and judged once each, from a clean snapshot of that
@@ -151,7 +192,7 @@ machine-readable inputs, results, checks and failures.
   - So 12 of E07-v1's 14 stage-A write arms, and most stage-B arms, would fail
     retention by construction. The choice is with the user (D133).
   - Evidence: [summary](/mnt/workspaces/Cells/heredity-design-20261108-01/prescreen-07-stationary/summary.md),
-    `final.json`. Pre-screen 8 (newcomer conversion against coupling) is running.
+    `final.json`. Pre-screen 8 (newcomer conversion) is above.
 - **Stationary-state analysis (E) qualified (9 November).**
   `stationary_continuation_analysis@1` (`890567b`, opt-in, D135) passed all 16
   criteria of the pre-registered protocol `stationary-analysis-e-v1`
