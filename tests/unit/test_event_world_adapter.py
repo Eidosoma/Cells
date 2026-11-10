@@ -367,7 +367,9 @@ def test_field_propagation_events_runner_is_the_event_emulator(cases, tmp_path):
 
 def test_judged_runs_name_their_protocols_and_are_judgeable(cases, tmp_path):
     """The judged path: one protocol per case, each layout carries its sha256, the comparator
-    accepts it (either verdict: synthetic data), and a mismatched protocol refuses early."""
+    accepts it, and a mismatched protocol refuses early. As the P3 protocols, the verdict is
+    SIM only and INIT is reported, not judged: an INIT exceedance (tolerances of 1e-30 here)
+    is shown but does not decide the verdict (SIM tolerances of 10 pass)."""
     template = json.loads(
         (ROOT / "validation/betse/protocols/physical_p4_kleak_dense.json").read_text()
     )
@@ -381,6 +383,14 @@ def test_judged_runs_name_their_protocols_and_are_judgeable(cases, tmp_path):
             "dt_sim_s": SIM_DT,
             "backends": ["cpu"],
         }
+        protocol |= {"phases": ["sim"], "reported_phases": ["init"]}
+        for values in protocol["tolerance_classes"].values():
+            for quantity, row in values.items():
+                if quantity == "voltage":
+                    values[quantity] = {"init": 1e-30, "sim": 10.0}
+                else:
+                    for phase, tight in (("init", 1e-30), ("sim", 10.0)):
+                        row[phase]["by_ion"] = {i: tight for i in row[phase]["by_ion"]}
         paths.append(tmp_path / f"{name}.json")
         paths[-1].write_text(json.dumps(protocol))
     options = dict(device_kind="cpu", window_steps=2, dt_init=1e-3, protocol_paths=paths)
@@ -393,7 +403,16 @@ def test_judged_runs_name_their_protocols_and_are_judgeable(cases, tmp_path):
         manifest = json.loads((layout / cmp.LAYOUT_MANIFEST).read_text())
         assert runs[name]["protocol"]["sha256"] == sha == manifest["protocol_sha256"]
         result = cmp.run_comparison(cases[name], layout, path)
-        assert not result["refusals"] and result["verdict"] in ("pass", "fail")
+        assert not result["refusals"] and result["verdict"] == "pass"
+        init = result["phases"]["init"]
+        assert init["reported_not_judged"] and "reported_not_judged" not in result["phases"]["sim"]
+        assert all(obs["judged"] is False for obs in init["observables"].values())
+        lines = cmp.summarize(result)["phases"]["init"]["observables"]
+        assert lines["vm_time"].startswith("reported, not judged: FAIL")
+    bad = json.loads(paths[0].read_text()) | {"reported_phases": ["sim"]}
+    (tmp_path / "bad.json").write_text(json.dumps(bad))
+    with pytest.raises(cmp.Refusal, match="disjoint"):
+        cmp.load_protocol(tmp_path / "bad.json")
     with pytest.raises(adapter.AdapterError, match="dt_sim_s"):
         ewa.run_resolved_events(
             [cases["na"], cases["pump"]], tmp_path / "refused", dt_sim=SIM_DT / 2, **options

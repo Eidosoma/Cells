@@ -43,6 +43,10 @@ Inputs (no BETSE or Cells imports; any Cells model or route can produce the resu
     The BETSE case still supplies geometry, ion order, axes and units; the reference
     must be built on its geometry.npz and match the manifest SHA-256 the protocol
     fixed before the Cells run, with every listed npz matching its recorded SHA-256.
+  - ``"reported_phases": [phase, ...]``: phases compared exactly as the judged
+    ``phases`` (same observables; the tolerance classes must cover them) but left
+    out of the verdict: their observables carry ``"judged": false``, the phase record
+    ``"reported_not_judged": true``, and the summary marks them "reported, not judged".
 
 Samples are paired on common elapsed times only (BETSE sample k holds the state
 after k + 1 updates; see the extract manifest ``time``). The comparator refuses
@@ -214,6 +218,15 @@ def load_protocol(path):
     phases = protocol.get("phases")
     if not phases or not set(phases) <= set(PHASES) or len(set(phases)) != len(phases):
         raise Refusal(f"protocol phases must be a subset of {PHASES}")
+    reported = protocol.get("reported_phases", [])
+    if (
+        not isinstance(reported, list)
+        or not set(reported) <= set(PHASES)
+        or len(set(reported)) != len(reported)
+        or set(reported) & set(phases)
+    ):
+        raise Refusal(f"reported_phases must be a subset of {PHASES} disjoint from phases")
+    phases = [*phases, *reported]
     quantities = protocol.get("tolerance_quantities") or {}
     if not quantities or any(q.get("kind") not in ("abs", "rel") for q in quantities.values()):
         raise Refusal("every tolerance quantity needs kind 'abs' or 'rel'")
@@ -711,14 +724,20 @@ def run_comparison(betse_path, cells_path, protocol_path):
         if any(row.get("exclude") == RING for row in paired.values()):
             context["ring"] = grid_boundary_ring(geometry)
         phases = {}
-        for phase in protocol["phases"]:
+        reported = protocol.get("reported_phases", [])
+        for phase in [*protocol["phases"], *reported]:
+            rows = (
+                {k: v | {"judged": False} for k, v in paired.items()}
+                if phase in reported
+                else paired
+            )
             data, pairs, times, declared = _phase_inputs(
                 phase, betse_dir, betse, layout_dir, layout, protocol, reference
             )
             arrays = betse["files"]
             present = {
                 name: _check_series(phase, name, row, data, arrays, layout)
-                for name, row in paired.items()
+                for name, row in rows.items()
             }
             context["phase"] = phase
             context["axes"] = {
@@ -729,7 +748,7 @@ def run_comparison(betse_path, cells_path, protocol_path):
             }
             context["times"] = {"final": times.get("final_state_elapsed_s")}
             observables = {}
-            for name, row in paired.items():
+            for name, row in rows.items():
                 final = row.get("final") if protocol.get("compare_final", True) else None
                 betse_final = data["betse_final"][final] if final else None
                 if not present[name]:
@@ -757,6 +776,8 @@ def run_comparison(betse_path, cells_path, protocol_path):
             }
             if diagnostics:
                 phases[phase]["cells_only"] = cells_only(context, diagnostics, data, declared)
+            if phase in reported:
+                phases[phase]["reported_not_judged"] = True
         record["phases"] = phases
         judged = [
             obs
@@ -819,7 +840,7 @@ def summarize(record):
             cls = obs["classes"][label]
             change = f"{obs['dynamic_range']['max_temporal_change']:.3g} {obs['units']}"
             flat = " (FLAT)" if cls["flat"] else ""
-            if cls["flat"]:
+            if cls["flat"] and not row.get("reported_not_judged"):
                 summary["flat_in_verdict_class"].append(f"{phase}/{name}")
             if obs.get("absent_in_cells"):
                 lines[name] = "reported-only: absent from the Cells result; reference change "
@@ -836,7 +857,9 @@ def summarize(record):
                 f"{obs['worst_error_in_tolerance_kind']:.3g} (tol {_tolerance_text(cls)}); "
                 f"{where}; reference change {change}{flat}"
             )
-            if not obs.get("judged", True):
+            if row.get("reported_not_judged"):
+                lines[name] = "reported, not judged: " + lines[name]
+            elif not obs.get("judged", True):
                 lines[name] = "reported-only, " + lines[name]
             if "excluded" in obs:
                 ring = obs["excluded"]["history"]["max_abs" if obs["kind"] == "abs" else "max_rel"]
@@ -845,6 +868,8 @@ def summarize(record):
                     f"(their worst {obs['kind']} error {ring['value']:.3g})"
                 )
         summary["phases"][phase] = {"common_samples": row["common_samples"], "observables": lines}
+        if row.get("reported_not_judged"):
+            summary["phases"][phase]["reported_not_judged"] = True
         for name, diag in row.get("cells_only", {}).items():
             span = diag.get("dynamic_range")
             lines[name] = (
@@ -904,7 +929,7 @@ def write_layout(directory, phases, *, protocol_sha256, betse_geometry_sha256, p
 def layout_from_betse(betse_dir, betse, protocol, perturbation=None):
     """The BETSE extraction's own observables as comparison-layout phases (optionally perturbed)."""
     phases = {}
-    for phase in protocol["phases"]:
+    for phase in [*protocol["phases"], *protocol.get("reported_phases", [])]:
         history = _npz(Path(betse_dir) / f"{phase}_history.npz")
         final = _npz(Path(betse_dir) / f"{phase}_final.npz")
         phases[phase] = {

@@ -4,7 +4,6 @@
   "purpose": "Rung P3 (scheduled interventions): judge Cells' own physics (resolved_pump_tissue@3, field solver @3) on the rung-1 mammal default world with BETSE's event: change K mem, multiplier 9 (K permeability x10) on the 19-cell Spot, updates 50-249 of SIM, against the plain-BETSE case parity-p3-interventions-20261110-01/betse-reference/p3-k-mem-dense. Tolerances by the pinned method (3 x the sum of measured terms, every term measured with the event on); cell-ion field terms by propagation through the event emulator.",
   "betse_case": "p3-k-mem-dense",
   "phases": [
-    "init",
     "sim"
   ],
   "time_alignment_atol_s": 1e-09,
@@ -182,7 +181,8 @@
   "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
   "notes": [
     "Reported only: venv_time and Cells diag_* arrays.",
-    "INIT is event-free and equals the rung-1 mammal INIT bitwise in BETSE; it is judged with the same tolerances but carries no claim about the event.",
+    "Verdict on SIM only; INIT is compared with the INIT tolerances above and reported, not judged (comparator reported_phases). Reason: INIT is event-free, is one Cells INIT run shared by the four P3 cases, and is bitwise rung-1's plain-BETSE INIT; Cells' INIT on this world was already judged (rung 1 v2 with resolved_pump_tissue@2, P4 with @3), so it is not blind and carries no event claim. Any INIT exceedance will be reported prominently. This was decided (by the lead, 10 November) before any P3 INIT error was looked at.",
+    "The patch-voltage term is measured by propagation (cells_field_patch_voltage_propagated) and replaces P4's X_ext heuristic, per the post-P2 rule (measure, don't scale): the judged Vm is the charge-based cell vm_ave (Q_cell / sum C_patch), so the within-cell patch spread enters only through the membrane dynamics, which the propagation measures. Evidence: field-01/xext_crosscheck.json (the voltage shifts applied, at most 0.512 uV, equal the blind D run's X_ext to 1.1e-11 relative; their effect cancels within each cell).",
     "BETSE's GJ block multiplies the stored gate state; Cells' junction availability the conductance; they agree here because the block is a full step held to the end of SIM."
   ],
   "cells_run": {
@@ -319,17 +319,6 @@
     }
   },
   "non_discriminating": [
-    "init/voltage",
-    "init/cell_concentration/Ca",
-    "init/cell_concentration/Cl",
-    "init/cell_concentration/K",
-    "init/cell_concentration/M",
-    "init/cell_concentration/Na",
-    "init/ecm_concentration/Ca",
-    "init/ecm_concentration/Cl",
-    "init/ecm_concentration/K",
-    "init/ecm_concentration/M",
-    "init/ecm_concentration/Na",
     "sim/cell_concentration/Na",
     "sim/ecm_concentration/Ca",
     "sim/ecm_concentration/Cl",
@@ -446,5 +435,8 @@
     "Step term dt1-dt10 x 10/9 (first order): the order check on p3-na-mem-gj-block-dense (pass: dt1-dt10 x 10/9 stands for all four cases) observed orders 0.996-1.086 on the checked entries (window 0.9-1.1).",
     "One seeded geometry; one Spot (19 cells); events in the 35-ms SIM only; ECM concentrations do not discriminate any event in that window.",
     "The GJ block is a full step held to the end of SIM; BETSE's ramps, partial blocks and release are not represented (BETSE blocks the stored gate state)."
+  ],
+  "reported_phases": [
+    "init"
   ]
 }
