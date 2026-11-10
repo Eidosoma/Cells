@@ -79,6 +79,7 @@ Usage: python -m validation.stationary.heredity_turnover --output DIR
 """
 
 import argparse
+import dataclasses
 import json
 import sys
 import time
@@ -150,8 +151,12 @@ class Sheet(hp.Case):
         return np.asarray(self._fields(u, scale)[1])
 
 
-def place(case, u, cells, rule, scale):
-    """Newcomers in cells under a gate rule (module docstring); returns (u, incident gates)."""
+def place(case, u, cells, rule, scale, template=None):
+    """Newcomers in cells under a gate rule (module docstring); returns (u, incident gates).
+
+    template: (positions, values) of the newcomer's own amounts and channel gates in
+    place of the sheet's H initial values (Redraw: its own isolated H state).
+    """
     index = hc.newcomer_index(case, cells)
     lo, hi = case.gate_range
     gates = index[(index >= lo) & (index < hi)]
@@ -164,6 +169,11 @@ def place(case, u, cells, rule, scale):
         neighbour_d = np.array([d[b] if a in mine else d[a] for a, b in ends], dtype=bool)
     new = np.array(u, copy=True)
     new[own] = anchor[own]
+    if template is not None:
+        positions, values = template
+        if set(np.asarray(positions).tolist()) != set(own.tolist()):
+            raise ValueError("a newcomer template must cover exactly the slot's own entries")
+        new[positions] = values
     if rule == "open":
         new[gates] = anchor[gates]
     elif rule == "inherit_to_d":
@@ -351,9 +361,14 @@ def _jaccard(d, written):
     return float(np.sum(d & written) / union) if union else 1.0
 
 
-def turnover(case, u_disc, scale, rule, rate, order, unit, horizon=HORIZON_S):
-    """One turnover run from the stationary disc; returns the result record."""
+def turnover(case, u_disc, scale, rule, rate, order, unit, horizon=HORIZON_S, redraw=None):
+    """One turnover run from the stationary disc; returns the result record.
+
+    redraw: a Redraw (heterogeneous worlds, D133), or None (newcomers take the slot's
+    parameters and the sheet's H initial values).
+    """
     n, written = len(case.cells), case.full
+    advance = case.advance if redraw is None else redraw.advance
     plan = schedule(n, rate, order, horizon)
     event_at = {int(k): i for i, k in enumerate(plan["steps"])}
     every = int(round(RECORD_S / DT))
@@ -379,7 +394,7 @@ def turnover(case, u_disc, scale, rule, rate, order, unit, horizon=HORIZON_S):
     started = time.perf_counter()
     for k in marks:
         if k > k_now:
-            step_rate = np.asarray(case.advance(u, scale, k - k_now))
+            step_rate = np.asarray(advance(u, scale, k - k_now))
             if not np.all(np.isfinite(step_rate)):
                 stop = dict(time_s=k * DT, reason="a step was refused (NaN)")
                 break
@@ -424,7 +439,8 @@ def turnover(case, u_disc, scale, rule, rate, order, unit, horizon=HORIZON_S):
             slot = int(plan["slots"][event_at[k]])
             old = carriers[current[slot]]
             old.update(death_s=t, end_state="D" if d[slot] else "H", end_voltage_mV=1e3 * v[slot])
-            u, _ = place(case, u, [slot], rule, scale)
+            drawn = None if redraw is None else redraw.birth(slot)
+            u, _ = place(case, u, [slot], rule, scale, None if drawn is None else drawn[:2])
             applied += 1
             current[slot] = len(carriers)
             carriers.append(
@@ -439,6 +455,7 @@ def turnover(case, u_disc, scale, rule, rate, order, unit, horizon=HORIZON_S):
                     end_state=None,
                     end_voltage_mV=None,
                     first_d_s=None,
+                    **({} if drawn is None else drawn[2]),
                 )
             )
     end_t = k_now * DT
@@ -471,6 +488,8 @@ def turnover(case, u_disc, scale, rule, rate, order, unit, horizon=HORIZON_S):
         records=records,
         lineage=carriers,
         schedule=plan_out,
+        heterogeneity=case.label.get("heterogeneity"),
+        newcomers=None if redraw is None else redraw.describe(),
     )
 
 
@@ -540,6 +559,130 @@ def turnover_summary(records, carriers, written, plan, radius):
     )
 
 
+# ------------------------------------------------------------------ stage 3
+
+HETEROGENEITY = dict(seed=1, cell_cv=0.10, junction_cv=0.20)  # pre-screen 8's CV10 world
+NEWCOMER_SEED = 11
+FACTOR_KEYS = ("nav", "kir", "na_leak", "pump")
+LEAVES = ("channel_permeability", "membrane_permeability", "pump_capacity")
+
+
+def _with(pb, leaves):
+    """The problem with these per-cell layout leaves (traced inside jit; analysis plumbing)."""
+    return dataclasses.replace(
+        pb, p=pb.p._replace(**dict(zip(LEAVES, leaves, strict=True))), _cache={}
+    )
+
+
+def _factor_index(pb, cells):
+    """Per cell: (NaV1.2 channel, Kir2.1 channel, Na row, membrane) layout indices.
+
+    worlds.e07_sheet_definition applies the factors to channels nav_i and kir_i, membrane
+    i's Na permeability and membrane i's pump capacity.
+    """
+    m = pb.spec.model
+    channels = [c.id for c in m.channels]
+    na = list(m.species_ids).index("Na")
+    return [(channels.index(f"nav_{i}"), channels.index(f"kir_{i}"), na, i) for i in range(cells)]
+
+
+def _rescale(leaves, index, old, new):
+    cp, mp, pc = (np.array(x, copy=True) for x in leaves)
+    nav, kir, na, membrane = index
+    cp[nav] *= new["nav"] / old["nav"]
+    cp[kir] *= new["kir"] / old["kir"]
+    mp[na, membrane] *= new["na_leak"] / old["na_leak"]
+    pc[membrane] *= new["pump"] / old["pump"]
+    return cp, mp, pc
+
+
+class SingleCell:
+    """The isolated heredity cell (own held bath) with per-cell factors as arguments."""
+
+    def __init__(self):
+        from cells.analysis import stationary as sa
+        from cells.core.specs import parse_spec
+
+        raw = worlds.e07_sheet_definition([hc._states()["H"]], [], gated=True, dt=DT)
+        self.pb = pb = sa.problem(parse_spec(worlds.ionic_background(raw)), mode="slow")
+        self.leaves = tuple(np.asarray(getattr(pb.p, k)) for k in LEAVES)
+        self.index = _factor_index(pb, 1)[0]
+        self.red, self.sa = pb.reduction(), sa
+
+        def residual(u, leaves):
+            return _with(pb, leaves).rhs_residual(u, None)
+
+        self._r = jax.jit(residual)
+        self._j = jax.jit(jax.jacfwd(residual))
+
+    def h_state(self, factors):
+        """Newton from the declared H state to the cell's own H steady state."""
+        ones = dict.fromkeys(FACTOR_KEYS, 1.0)
+        leaves = _rescale(self.leaves, self.index, ones, factors)
+        red, u = self.red, self.red.project(self.pb.anchor)
+        for _ in range(40):
+            r, jac = np.asarray(self._r(u, leaves)), np.asarray(self._j(u, leaves))
+            step = red.full(-np.linalg.solve(red.operator(jac), red.vector(r)))
+            u = u + step
+            if self.sa._norm(step) <= self.sa.NEWTON_TOLERANCE:
+                break
+        else:
+            raise RuntimeError(f"isolated H Newton did not converge for {factors}")
+        v = float(np.asarray(self.pb.evaluate(u)[3])[0])
+        rate = float(np.max(np.abs(np.asarray(self._r(u, leaves)))))
+        return u, v, rate
+
+
+class Redraw:
+    """D133 newcomers: each draws its own per-cell factors (lognormal, mean one, the world's
+    per-cell CV, numpy default generator with NEWCOMER_SEED, one draw per newcomer in event
+    order, keys in FACTOR_KEYS order); its template is its own isolated H steady state
+    (SingleCell, Newton from the declared H). Junction factors stay with the slot's junctions.
+    The step map runs with the current per-cell layout leaves as arguments.
+    """
+
+    def __init__(self, case, founder_factors, cv, seed=NEWCOMER_SEED):
+        self.case, self.cv, self.seed = case, cv, seed
+        self.factors = [dict(f) for f in founder_factors]
+        self.rng = np.random.default_rng(seed)
+        pb = case.pb
+        self.leaves = tuple(np.asarray(getattr(pb.p, k)) for k in LEAVES)
+        self.index = _factor_index(pb, len(case.cells))
+        self.single = SingleCell()
+        self._advance = jax.jit(lambda u, s, k, leaves: _with(pb, leaves).step_residual(u, s, k))
+        sheet = {label: i for i, label in enumerate(pb.labels())}
+        own = [i for i, label in enumerate(self.single.pb.labels()) if label.endswith("_0")]
+        self.labels = [self.single.pb.labels()[i] for i in own]
+        self.own, self.sheet = np.asarray(own), sheet
+        self.count = 0
+
+    def advance(self, u, scale, k):
+        return self._advance(u, scale, k, self.leaves)
+
+    def positions(self, slot):
+        return np.array([self.sheet[label[:-2] + f"_{slot}"] for label in self.labels])
+
+    def birth(self, slot):
+        """New factors for slot; returns (positions, template values, lineage fields)."""
+        f = {k: float(worlds.lognormal_factors(1, self.cv, self.rng)[0]) for k in FACTOR_KEYS}
+        u1, v1, rate = self.single.h_state(f)
+        self.leaves = _rescale(self.leaves, self.index[slot], self.factors[slot], f)
+        self.factors[slot] = f
+        self.count += 1
+        lineage = dict(factors=f, template_voltage_mV=1e3 * v1, template_max_rate=rate)
+        return self.positions(slot), u1[self.own], lineage
+
+    def describe(self):
+        return dict(
+            rule="each newcomer draws its own per-cell factors (D133); template = its own "
+            "isolated H steady state; junction factors stay with the slot",
+            factor_keys=FACTOR_KEYS,
+            cell_cv=self.cv,
+            seed=self.seed,
+            draws=self.count,
+        )
+
+
 def parse_plan(text):
     runs = []
     for item in text.split(","):
@@ -550,10 +693,18 @@ def parse_plan(text):
     return runs
 
 
-def turnover_runs(output, plan, tag, horizon=HORIZON_S, disc_cells=37):
-    """Stage 2: the planned turnover runs, one line in runs_TAG.jsonl as each ends."""
+def turnover_runs(output, plan, tag, horizon=HORIZON_S, disc_cells=37, heterogeneous=False):
+    """Stages 2-3: the planned turnover runs, one line in runs_TAG.jsonl as each ends.
+
+    heterogeneous: HETEROGENEITY's world, newcomers drawing their own factors (Redraw);
+    each run starts a fresh Redraw, so every run sees the same newcomer draws.
+    """
     unit = hp.units()["theta_per_unit_scale"]
-    case = Sheet(*DISCS[disc_cells])
+    hetero = HETEROGENEITY if heterogeneous else None
+    case = Sheet(*DISCS[disc_cells], heterogeneity=hetero)
+    founders = None
+    if hetero:
+        founders = worlds.e07_heterogeneity(len(case.cells), len(case.edges), **hetero)[0]
     states = {}
     progress = open(output / f"runs_{tag}.jsonl", "x")
     for s, rule, rate, order in plan:
@@ -574,7 +725,8 @@ def turnover_runs(output, plan, tag, horizon=HORIZON_S, disc_cells=37):
                     error="no stationary disc",
                 )
             else:
-                res = turnover(case, states[s], s, rule, rate, order, unit, horizon)
+                redraw = None if not hetero else Redraw(case, founders, hetero["cell_cv"])
+                res = turnover(case, states[s], s, rule, rate, order, unit, horizon, redraw)
                 res["checks"] = states[(s, "checks")]
                 sm = res["summary"]
                 _log(
@@ -772,6 +924,7 @@ def main(argv=None):
     parser.add_argument("--turnover", action="store_true", help="stage 2 turnover runs")
     parser.add_argument("--plan", help="s:rule:rate:order[,...]")
     parser.add_argument("--disc", type=int, default=37, choices=sorted(DISCS))
+    parser.add_argument("--heterogeneous", action="store_true", help="stage 3 world (D133)")
     parser.add_argument("--horizon", type=float, default=HORIZON_S)
     parser.add_argument("--tag", default="main")
     parser.add_argument("--summarize", action="store_true", help="results.json and table.md")
@@ -786,7 +939,14 @@ def main(argv=None):
         screen(args.output, [float(s) for s in args.scales.split(",")], args.tag, rules, names)
         _log("screen done")
     elif args.turnover:
-        turnover_runs(args.output, parse_plan(args.plan), args.tag, args.horizon, args.disc)
+        turnover_runs(
+            args.output,
+            parse_plan(args.plan),
+            args.tag,
+            args.horizon,
+            args.disc,
+            args.heterogeneous,
+        )
         _log("turnover done")
     elif args.summarize:
         summarize(args.output)
