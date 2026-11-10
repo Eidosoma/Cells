@@ -415,3 +415,20 @@ def test_sim_gates_can_start_at_a_shifted_voltage(heredity_case):
             want = net.steady_gates(["nav1p2", "kir2p1", "naleak"], vm + shift)
             np.testing.assert_allclose(moved.gates, want, rtol=1e-14)
             assert not np.array_equal(moved.gates[:2], plain.gates[:2])
+
+
+def test_gate_lag_is_the_distance_from_the_steady_state():
+    vm = np.linspace(-0.08, -0.02, 12).reshape(3, 4)  # [update, membrane]
+    for kind in ("nav1p2", "kir2p1"):
+        steady = np.moveaxis(network.kinetics(kind, vm, xp=np)[0], -2, 1)  # [update, 2, m]
+        assert net.gate_lag(kind, steady, vm) == {
+            "gate_lag_max_abs": [0.0, 0.0],
+            "open_fraction_lag_max_rel": 0.0,
+        }
+        lagged = steady.copy()
+        lagged[1, 0, 2] += 0.01
+        lagged[2, 1, 3] -= 0.002
+        out = net.gate_lag(kind, lagged, vm)
+        np.testing.assert_allclose(out["gate_lag_max_abs"], [0.01, 0.002], rtol=1e-9)
+        assert out["open_fraction_lag_max_rel"] > 0
+    assert net.gate_lag("naleak", np.ones((3, 2, 4)), vm) == {}

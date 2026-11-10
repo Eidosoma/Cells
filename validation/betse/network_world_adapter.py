@@ -262,6 +262,28 @@ def network_inputs(world, phase, start, variant, *, gate_voltage_shift=None):
     return network.State(state, np.asarray(gates, dtype=np.float64)), p, ko, vm
 
 
+def gate_lag(kind, gates, vm):
+    """How far a channel's gates trail their steady state along a recorded trajectory.
+
+    ``gates`` [update, 2, membrane] after each recorded update, ``vm`` [update, membrane] the
+    Vm after it: the largest |gate - gate_inf(Vm)| per gate, and the largest |P - P_inf| of
+    the open probability relative to the largest P_inf (P = m^a h^b). Zero lag means the
+    phase tests the steady law only, not the time constants. Leaks have no gates.
+    """
+    from validation.betse.emulator import network
+
+    if network.LAWS[kind][0] is None:
+        return {}
+    target = np.moveaxis(network.kinetics(kind, np.asarray(vm), xp=np)[0], -2, 0)
+    gate = np.moveaxis(np.asarray(gates), 1, 0)
+    lag = np.abs(gate - target).reshape(2, -1).max(axis=1)
+    opening, steady = network.opening(kind, gate), network.opening(kind, target)
+    return {
+        "gate_lag_max_abs": [float(lag[0]), float(lag[1])],
+        "open_fraction_lag_max_rel": float(np.abs(opening - steady).max() / steady.max()),
+    }
+
+
 def network_phase(state, layout, dt, steps, variant, device, substeps=1):
     """default_world_adapter.emulator_phase with the network step."""
     import jax
@@ -391,6 +413,7 @@ def run_network_emulator(
                     ],
                     "m_range": [float(gates[:, c, 0].min()), float(gates[:, c, 0].max())],
                     "h_range": [float(gates[:, c, 1].min()), float(gates[:, c, 1].max())],
+                    **gate_lag(kind, gates[:, c], result["vm"]),
                 }
                 for c, (name, kind, dm, _) in enumerate(world["network_channels"])
             ],
