@@ -41,7 +41,7 @@ starts, and production design is deferred until parity is established.
 | 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | Passed (pre-registered protocols D and F) |
 | 3b | Parity rung 1: Cl/Ca ions plus the plasma-membrane Ca pump (`resolved_pump_tissue@2`) | v1 failed (one item); **v2 passed** (registered after attribution; weaker evidence) |
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
-| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers), P3 (scheduled interventions, first subset) and P4 (general-network channels) passed** on CPU; P4b (NaV1.2, Kir2.1, Na leak) in preparation; L4 runs of P2–P4 not yet done |
+| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers), P3 (scheduled interventions, first subset) and P4 (general-network channels) passed** on CPU; **P4b (NaV1.2, Kir2.1, Na leak) passed** over −15 to −34 mV; a Kir2.1 case near −80 mV in preparation; L4 runs of P2–P4 not yet done |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
@@ -71,6 +71,31 @@ machine-readable inputs, results, checks and failures.
   fresh-disc runs (70 min, with composition and osmotic excess) report, pre-screen
   7's retention thresholds, the "12 of 14 arms fail" reading and the
   stage-A-at-x0.3 recommendation are on hold.
+- **Parity P4b, the heredity carrier channels, passes (10 November).** Two protocols,
+  registered at `acd4ead` (a merge, so the derivation revision `6239c5d` stays
+  reachable), judged once each from a clean snapshot of it on CPU, both phases
+  judged, no refusals
+  ([judged](/mnt/workspaces/Cells/parity-p4b-channels-20261110-01/judged-01/), `margins.json`).
+  `resolved_pump_tissue@3` with NaV1.2, Kir2.1, Na leak and K leak populations against
+  BETSE's general network (`Nav1p2`, `Kir2p1`, `NaLeak`, `KLeak`) on the rung-1
+  mammal world.
+
+  | Case | Verdict | Worst item | INIT Vm (tol.) | SIM Vm (tol.) |
+  | --- | --- | --- | --- | --- |
+  | h1: NaV1.2 + leaks in INIT, Kir2.1 on at SIM | pass | 0.41 (INIT ECM M) | 0.40 mV (2) | 0.94 µV (6) |
+  | h2: Kir2.1 + leaks in INIT, NaV1.2 on at SIM | pass | 0.35 (SIM ECM Ca) | 0.47 mV (2) | 1.71 µV (20) |
+
+  - Each channel's effect over the observed error: NaV1.2 Vm 25 (INIT) and 3661 (SIM
+    switch-on); Kir2.1 Vm 18 (INIT) and 1485 (SIM switch-on); cell Na and K 130–1800.
+  - Formulation check first: Cells' `nav1p2_m3h_regularized@1`, `kir2p1_mh2@1` and
+    `naleak_always_open@1` equal BETSE's classes to 5e-14 over −120…+60 mV (Cells
+    uses the analytic limits where BETSE gives NaN at −25, −40 and −65.000123 mV).
+  - INIT Vm sits at BETSE's own 10 ms step term (0.40 and 0.48 mV measured).
+  - **Limits:** covered voltages are NaV1.2 0 to −16.9 mV (h1) and −34.2 to −27.9 mV
+    (h2), Kir2.1 −15.5 to −16.9 mV (h1) and 0 to −34.2 mV (h2); not Kir2.1 near the H
+    state (−80 mV) nor NaV1.2 at −60 to −35 mV. Time constants are not tested except
+    NaV1.2 h's lag in h2. CPU only, one geometry. A third case for Kir2.1 near −80 mV
+    (`p4b-kir-h`, tissue Na leak ×0.2) is being derived.
 - **Known refusal in the pump family (10 November).** `resolved_pump_tissue@1`–`@3`
   refuse any step in which a junction's power falls by more than about 59%:
   ARS(2,2,2) books junction heat with weights (δ, 1−δ), δ = −0.707, so the booked
