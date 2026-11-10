@@ -776,6 +776,257 @@ def mechanism_table(out):
     return "\n".join(lines)
 
 
+# ------------------------------------------------------------------ frozen composition
+
+FROZEN_DISCS = ((6, 2), (6, 3))  # 19 and 37 cells in the 127-cell sheet
+FROZEN_SCALES = (0.3, 0.6)  # states reported here: voltages, gates, junction conductances
+
+
+class FrozenDisc(hp.Case):
+    """Pre-screen 7's gated sheet in fast mode with the disc's frozen composition chosen.
+
+    stationary_continuation_analysis@1's fast mode freezes every amount at the base
+    state's (the definition's initial amounts); node charges and gates are the unknowns.
+    Disc cells are declared at the D voltage with composition 'H' (the isolated-H template:
+    Na, K, M of HEREDITY_STATES H) or 'D' (the loaded slow D state of HEREDITY_STATES D, as
+    pre-screen 7's fast sweeps); cells outside are H. The declared D voltage sets the
+    channel and junction gates' initial values (e07_sheet_definition). With the H
+    composition the cell's ionic charge gives the H voltage, so the written guess adds to
+    each disc cell's node charge C (V_D - V_H) (CHARGE_UNIT_V coordinates).
+    """
+
+    def __init__(self, sheet_radius, disc_radius, composition):
+        from cells.analysis import stationary as sa
+        from cells.core.specs import parse_spec
+
+        self.cells, self.edges = worlds.hexagon(sheet_radius)
+        states = hc._states()
+        self.threshold = states["U"][0]
+        self.disc = np.array([worlds.ring(c) <= disc_radius for c in self.cells])
+        h, d = states["H"], states["D"]
+        disc_state = d if composition == "D" else (d[0], *h[1:4])
+        written = [disc_state if x else h for x in self.disc]
+        raw = worlds.e07_sheet_definition(written, self.edges, gated=True, dt=DT)
+        base = parse_spec(worlds.ionic_background(raw))
+        q = sa.parameter(base, "junction_permeability_scale", "all")
+        self.pb = sa.problem(base, mode="fast", parameter=q)
+        guess = np.array(self.pb.anchor, copy=True)
+        if composition == "H":
+            charge = next(b for b in self.pb.blocks if b.field == "node_charge")
+            for j, node in enumerate(charge.flat):
+                if node < len(self.cells) and self.disc[node]:
+                    guess[j] += (d[0] - h[0]) / sa.CHARGE_UNIT_V
+        self.written = guess
+        self.uniform = self.pb.anchor
+        self.full = self.disc.copy()
+        self.composition = dict(
+            disc=dict(zip(("Na_mM", "K_mM", "M_mM"), disc_state[1:4], strict=True)),
+            outside=dict(zip(("Na_mM", "K_mM", "M_mM"), h[1:4], strict=True)),
+        )
+        self.label = dict(
+            sheet_cells=len(self.cells),
+            junctions=len(self.edges),
+            disc_cells=int(self.disc.sum()),
+            gating="voltage-gated",
+            mode="fast",
+            frozen_disc_composition=composition,
+            heterogeneity=None,
+        )
+
+
+def junction_conductance(case, u, scale, edge):
+    """One junction at u: Vj, gate and slope conductance dI/dVj of constant_field@1.
+
+    The engine's constant-field law (cells.processes.electrochemistry.ghk_leak) with the
+    junction's area and permeabilities x scale, the two cells' frozen concentrations and
+    the state's Vj; the slope is a central difference (1e-5 V). Open = gate 1; effective =
+    times the state's gate (availability 1).
+    """
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL, ghk_leak
+
+    j, (a, b) = worlds.e07_junction(), case.edges[edge]
+    ids = [s for s, _ in worlds.SPECIES if s != "P"]
+    z = dict(worlds.SPECIES)
+    conc = [case.composition["disc" if case.disc[i] else "outside"] for i in (a, b)]
+    v = case.voltages(u, scale)
+    vj = float(v[a] - v[b])
+
+    def current(x):
+        return CHARGE_PER_FMOL * sum(
+            z[s]
+            * float(
+                ghk_leak(
+                    np.asarray(conc[0][f"{s}_mM"]),
+                    np.asarray(conc[1][f"{s}_mM"]),
+                    np.asarray(x),
+                    z[s],
+                    worlds.TEMPERATURE_K,
+                    j["area_m2"],
+                    scale * j["permeability_m_per_s"][s],
+                    1.0,
+                    xp=np,
+                )
+            )
+            for s in ids
+        )
+
+    # ghk_leak is the flux into the first ("in") side: conductance = -d(current in)/dVj.
+    slope = -(current(vj + 1e-5) - current(vj - 1e-5)) / 2e-5
+    lo = next(start for start, b2 in _starts(case.pb) if b2.field == "junction_gate")
+    gate = float(u[lo + int(np.flatnonzero(_gate_flat(case.pb) == edge)[0])])
+    return dict(
+        edge=int(edge),
+        cells=[int(a), int(b)],
+        kind=(
+            "D-D"
+            if case.disc[a] and case.disc[b]
+            else "D-H"
+            if case.disc[a] or case.disc[b]
+            else "H-H"
+        ),
+        vj_mV=1e3 * vj,
+        gate=gate,
+        open_slope_S=slope,
+        effective_S=slope * gate,
+    )
+
+
+def _starts(pb):
+    start, out = 0, []
+    for b in pb.blocks:
+        out.append((start, b))
+        start += len(b.flat)
+    return out
+
+
+def _gate_flat(pb):
+    return np.asarray(next(b for b in pb.blocks if b.field == "junction_gate").flat)
+
+
+def frozen(output):
+    """Written 19- and 37-cell discs continued in theta at frozen composition H or D."""
+    hp.BISECTIONS = hc.BISECTIONS
+    u = hp.units()
+    unit = u["theta_per_unit_scale"]
+    out = dict(
+        kind="cells.heredity_design_prescreen@9_frozen",
+        scope="Design input only (development analysis, not judged).",
+        mode="fast (stationary_continuation_analysis@1): amounts frozen at the definition's "
+        "initial values; node charges and gates solved",
+        units=u,
+        bisections=hp.BISECTIONS,
+        prescreen_7_fast_reference=dict(
+            note="pre-screen 7's fast sweeps (disc at the loaded D composition), final.json",
+            stable_up_to_theta={"19": 1.269, "37": 1.743},
+        ),
+        cases=[],
+        failures=[],
+    )
+    progress = open(output / "runs_frozen.jsonl", "x")
+    for sheet, radius in FROZEN_DISCS:
+        for composition in ("H", "D"):
+            started = time.perf_counter()
+            try:
+                case = FrozenDisc(sheet, radius, composition)
+                _log(f"frozen {case.label}")
+                result = hp.sweep(case, unit, np.asarray(hp.ARMS), classify_from=0.0)
+                result["composition"] = case.composition
+                where = hc.slots(case, radius)
+                index = {c: i for i, c in enumerate(case.cells)}
+                pairs = dict(
+                    centre_to_ring1=(where["centre"], index[(1, 0)]),
+                    corner_to_outside=(where["boundary"], index[(radius + 1, 0)]),
+                    outside_to_outside=(where["outside"], index[(radius + 2, -1)]),
+                )
+                edges = {
+                    name: next(k for k, e in enumerate(case.edges) if set(e) == set(pair))
+                    for name, pair in pairs.items()
+                }
+                result["states"] = []
+                for s in FROZEN_SCALES:
+                    x = hc.disc_state(case, s, unit)
+                    if x is None:
+                        result["states"].append(dict(scale=s, theta=s * unit, error="no disc"))
+                        continue
+                    v = case.voltages(x, s)
+                    result["states"].append(
+                        dict(
+                            scale=s,
+                            theta=s * unit,
+                            centre_V_mV=1e3 * float(v[where["centre"]]),
+                            corner_V_mV=1e3 * float(v[where["boundary"]]),
+                            outside_V_mV=1e3 * float(v[where["outside"]]),
+                            junctions={
+                                k: junction_conductance(case, x, s, e) for k, e in edges.items()
+                            },
+                        )
+                    )
+                result["wall_seconds"] = time.perf_counter() - started
+                out["cases"].append(result)
+                line = targets._json(result)
+            except Exception as error:  # Kept as evidence.
+                line = dict(
+                    case=[sheet, radius, composition], error=repr(error), tb=traceback.format_exc()
+                )
+                out["failures"].append(line)
+            progress.write(json.dumps(line) + "\n")
+            progress.flush()
+    progress.close()
+    with open(output / "frozen.json", "x") as stream:
+        json.dump(targets._json(out), stream, indent=1)
+    with open(output / "frozen_table.md", "x") as stream:
+        stream.write(frozen_table(targets._json(out)) + "\n")
+    return out
+
+
+def frozen_table(out):
+    unit = out["units"]["theta_per_unit_scale"]
+    lines = [
+        "| disc | frozen disc composition | stable up to theta (s) | loss | branch ends theta |",
+        "|---|---|---|---|---|",
+    ]
+    for c in out["cases"]:
+        sb, eb = c.get("stability_boundary"), c.get("existence_boundary")
+        loss = sb["theta"] if sb and sb.get("theta") is not None else (eb or {}).get("theta")
+        kind = "-" if not sb or not sb.get("kind") else sb["kind"].split(" ")[0]
+        loss_text = (
+            "no start"
+            if c.get("start")
+            else ("-" if loss is None else f"{loss:.4g} ({loss / unit:.3g})")
+        )
+        end = "-" if not eb else f"{eb['theta']:.4g}"
+        lines.append(
+            f"| {c['case']['disc_cells']} | {c['case']['frozen_disc_composition']} | "
+            f"{loss_text} | {kind} | {end} |"
+        )
+    lines += [
+        "",
+        "| disc | composition | s | centre / corner / outside V mV | junction: Vj mV, gate, "
+        "open slope nS, effective nS |",
+        "|---|---|---|---|---|",
+    ]
+    for c in out["cases"]:
+        for st in c.get("states", []):
+            if "error" in st:
+                lines.append(
+                    f"| {c['case']['disc_cells']} | "
+                    f"{c['case']['frozen_disc_composition']} | {st['scale']:g} | "
+                    f"{st['error']} | |"
+                )
+                continue
+            js = "; ".join(
+                f"{k} ({j['kind']}): {j['vj_mV']:.1f}, {j['gate']:.3f}, "
+                f"{1e9 * j['open_slope_S']:.3g}, {1e9 * j['effective_S']:.3g}"
+                for k, j in st["junctions"].items()
+            )
+            lines.append(
+                f"| {c['case']['disc_cells']} | {c['case']['frozen_disc_composition']} | "
+                f"{st['scale']:g} | {st['centre_V_mV']:.1f} / {st['corner_V_mV']:.1f} / "
+                f"{st['outside_V_mV']:.1f} | {js} |"
+            )
+    return "\n".join(lines)
+
+
 # ------------------------------------------------------------------ stage 3
 
 HETEROGENEITY = dict(seed=1, cell_cv=0.10, junction_cv=0.20)  # pre-screen 8's CV10 world
@@ -1256,6 +1507,7 @@ def main(argv=None):
     parser.add_argument("--tag", default="main")
     parser.add_argument("--summarize", action="store_true", help="results.json and table.md")
     parser.add_argument("--final", action="store_true", help="final.json over the stage dirs")
+    parser.add_argument("--frozen", action="store_true", help="fast-mode frozen discs")
     parser.add_argument("--mechanism", action="store_true", help="corner births next to newcomers")
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)  # results are never overwritten
@@ -1281,6 +1533,9 @@ def main(argv=None):
         summarize(args.output)
     elif args.final:
         final(args.output)
+    elif args.frozen:
+        frozen(args.output)
+        _log("frozen done")
     elif args.mechanism:
         mechanism(args.output)
         _log("mechanism done")
