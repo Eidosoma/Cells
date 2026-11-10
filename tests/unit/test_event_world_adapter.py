@@ -7,6 +7,7 @@ definitions, including the leak-population equivalence the Na/K mem mapping rest
 """
 
 import copy
+import hashlib
 import json
 import math
 
@@ -14,8 +15,9 @@ import jax
 import numpy as np
 import pytest
 
-from tests.unit.test_default_world_adapter import AREA, MAMMAL, PROTOCOL, write_case
+from tests.unit.test_default_world_adapter import AREA, MAMMAL, PROTOCOL, ROOT, write_case
 from validation.betse import betse_reference_extract as ex
+from validation.betse import cells_betse_compare as cmp
 from validation.betse import default_world_adapter as adapter
 from validation.betse import event_world_adapter as ewa
 from validation.betse.emulator import events as ev
@@ -361,3 +363,39 @@ def test_field_propagation_events_runner_is_the_event_emulator(cases, tmp_path):
         b = np.load(tmp_path / "base" / f"{phase}_history.npz")
         for name in a.files:
             assert np.array_equal(a[name], b[name]), (phase, name)
+
+
+def test_judged_runs_name_their_protocols_and_are_judgeable(cases, tmp_path):
+    """The judged path: one protocol per case, each layout carries its sha256, the comparator
+    accepts it (either verdict: synthetic data), and a mismatched protocol refuses early."""
+    template = json.loads(
+        (ROOT / "validation/betse/protocols/physical_p4_kleak_dense.json").read_text()
+    )
+    paths = []
+    for name in ("na", "pump"):
+        protocol = copy.deepcopy(template) | {"id": f"synthetic-{name}", "betse_case": "synthetic"}
+        protocol["cells_run"] |= {
+            "model": ewa.RESOLVED_MODEL_ID,
+            "field_solver": adapter.RESOLVED_FIELD_SOLVER,
+            "dt_init_s": 1e-3,
+            "dt_sim_s": SIM_DT,
+            "backends": ["cpu"],
+        }
+        paths.append(tmp_path / f"{name}.json")
+        paths[-1].write_text(json.dumps(protocol))
+    options = dict(device_kind="cpu", window_steps=2, dt_init=1e-3, protocol_paths=paths)
+    runs = ewa.run_resolved_events(
+        [cases["na"], cases["pump"]], tmp_path / "judged", dt_sim=SIM_DT, **options
+    )
+    for name, path in zip(("na", "pump"), paths, strict=True):
+        sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        layout = tmp_path / "judged" / name / "layout"
+        manifest = json.loads((layout / cmp.LAYOUT_MANIFEST).read_text())
+        assert runs[name]["protocol"]["sha256"] == sha == manifest["protocol_sha256"]
+        result = cmp.run_comparison(cases[name], layout, path)
+        assert not result["refusals"] and result["verdict"] in ("pass", "fail")
+    with pytest.raises(adapter.AdapterError, match="dt_sim_s"):
+        ewa.run_resolved_events(
+            [cases["na"], cases["pump"]], tmp_path / "refused", dt_sim=SIM_DT / 2, **options
+        )
+    assert not (tmp_path / "refused").exists()

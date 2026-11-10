@@ -1,0 +1,450 @@
+{
+  "schema": "cells.betse_comparison_protocol@1",
+  "id": "physical-p3-k-mem-dense",
+  "purpose": "Rung P3 (scheduled interventions): judge Cells' own physics (resolved_pump_tissue@3, field solver @3) on the rung-1 mammal default world with BETSE's event: change K mem, multiplier 9 (K permeability x10) on the 19-cell Spot, updates 50-249 of SIM, against the plain-BETSE case parity-p3-interventions-20261110-01/betse-reference/p3-k-mem-dense. Tolerances by the pinned method (3 x the sum of measured terms, every term measured with the event on); cell-ion field terms by propagation through the event emulator.",
+  "betse_case": "p3-k-mem-dense",
+  "phases": [
+    "init",
+    "sim"
+  ],
+  "time_alignment_atol_s": 1e-09,
+  "min_common_samples": 1,
+  "compare_final": true,
+  "observables": {
+    "vm_time": {
+      "final": "vm",
+      "tolerance": "voltage"
+    },
+    "vm_ave_time": {
+      "final": "vm_ave",
+      "tolerance": "voltage"
+    },
+    "cc_time": {
+      "final": "cc_cells",
+      "tolerance": "cell_concentration"
+    },
+    "cc_env_time": {
+      "final": "cc_env",
+      "tolerance": "ecm_concentration",
+      "exclude": "grid_boundary_ring"
+    },
+    "venv_time": {
+      "final": "v_env",
+      "tolerance": "voltage",
+      "judged": false
+    },
+    "diag_*": {
+      "judged": false
+    }
+  },
+  "tolerance_quantities": {
+    "voltage": {
+      "kind": "abs",
+      "units": "V"
+    },
+    "cell_concentration": {
+      "kind": "rel",
+      "units": "1"
+    },
+    "ecm_concentration": {
+      "kind": "rel",
+      "units": "1"
+    }
+  },
+  "tolerance_classes": {
+    "physical_route_vs_betse_10ms_init": {
+      "cell_concentration": {
+        "init": {
+          "by_ion": {
+            "Ca": 0.5,
+            "Cl": 8e-06,
+            "K": 4e-07,
+            "M": 1e-06,
+            "Na": 9e-06,
+            "P": 1e-12
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Ca": 0.0005,
+            "Cl": 2e-06,
+            "K": 3e-07,
+            "M": 7e-08,
+            "Na": 3e-06,
+            "P": 1e-12
+          }
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "by_ion": {
+            "Ca": 0.0003,
+            "Cl": 0.0002,
+            "K": 0.002,
+            "M": 0.0002,
+            "Na": 0.0002,
+            "P": 1e-12
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Ca": 0.0003,
+            "Cl": 0.0002,
+            "K": 0.002,
+            "M": 0.0002,
+            "Na": 0.0002,
+            "P": 1e-12
+          }
+        }
+      },
+      "voltage": {
+        "init": 0.0005,
+        "sim": 3e-05
+      }
+    }
+  },
+  "verdict_class": "physical_route_vs_betse_10ms_init",
+  "tolerance_derivation": {
+    "method": "3 x (sum of measured difference terms), rounded up to one significant figure; per ion for concentrations (a zero sum gets the floor 1e-12)",
+    "tool": "validation/betse/protocol_tolerances.py",
+    "recipe": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/protocols/recipe_p3_k_mem_dense.json",
+    "inputs": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/protocols/derived_p3_k_mem_dense.json",
+    "terms": [
+      "betse_step",
+      "calcium_pump_law_cells_vs_betse",
+      "cells_exterior_field_boltzmann_response",
+      "cells_field_boltzmann_propagated",
+      "cells_field_patch_voltage_propagated",
+      "cells_numerics_ars222",
+      "conservative_compact_ecm_faces_at_dt_over_10",
+      "constants_codata_vs_betse",
+      "exterior_field_law_bound_ecm_drift_off",
+      "physical_time_gate_and_no_concentration_lag"
+    ],
+    "provisional_terms": [],
+    "largest_term": {
+      "cell_concentration": {
+        "init": "betse_step",
+        "sim": "cells_exterior_field_boltzmann_response"
+      },
+      "ecm_concentration": {
+        "init": "conservative_compact_ecm_faces_at_dt_over_10",
+        "sim": "conservative_compact_ecm_faces_at_dt_over_10"
+      },
+      "voltage": {
+        "init": "betse_step",
+        "sim": "physical_time_gate_and_no_concentration_lag"
+      }
+    },
+    "sums_before_margin": {
+      "cell_concentration": {
+        "init": {
+          "Ca": 0.152925819695457,
+          "Cl": 2.5297968230881913e-06,
+          "K": 1.1584141903937853e-07,
+          "M": 3.019275835231704e-07,
+          "Na": 2.8634433999030976e-06,
+          "P": 0.0
+        },
+        "sim": {
+          "Ca": 0.00016165618794244168,
+          "Cl": 5.181696680096866e-07,
+          "K": 9.247545758671177e-08,
+          "M": 2.2416223163382288e-08,
+          "Na": 9.280877055003118e-07,
+          "P": 0.0
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "Ca": 7.446320993068172e-05,
+          "Cl": 4.056717278318122e-05,
+          "K": 0.0005643808459545657,
+          "M": 3.856722139799858e-05,
+          "Na": 5.988809853816996e-05,
+          "P": 0.0
+        },
+        "sim": {
+          "Ca": 6.738334797795166e-05,
+          "Cl": 4.1624447584558826e-05,
+          "K": 0.0005504043765079986,
+          "M": 3.809300692602867e-05,
+          "Na": 6.057093944105258e-05,
+          "P": 0.0
+        }
+      },
+      "voltage": {
+        "init": 0.00013459381352092114,
+        "sim": 7.0721210546700886e-06
+      }
+    }
+  },
+  "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+  "notes": [
+    "Reported only: venv_time and Cells diag_* arrays.",
+    "INIT is event-free and equals the rung-1 mammal INIT bitwise in BETSE; it is judged with the same tolerances but carries no claim about the event.",
+    "BETSE's GJ block multiplies the stored gate state; Cells' junction availability the conductance; they agree here because the block is a full step held to the end of SIM."
+  ],
+  "cells_run": {
+    "model": "resolved_pump_tissue@3",
+    "solver": "imex_ars222_face_electromigration@1",
+    "field_solver": "capacitive_reduction_gauged_damped_newton@3",
+    "dt_init_s": 0.001,
+    "dt_sim_s": 0.0001,
+    "constants": "CODATA (Cells default)",
+    "sim_start": "Cells' own INIT end state",
+    "backends": [
+      "cpu"
+    ],
+    "optional_repeat": "gpu (L4): reported only, as layout-differences against the judged CPU run; not a verdict",
+    "note": "@3 IMEX ARS(2,2,2) with the event controls; field solver @3 as P4. Judged runs on CPU; the Cells-only terms were measured on CPU (blind-01) in the same shared-INIT form",
+    "mapping": "event_world_adapter.py run-resolved: default_world_adapter's resolved_pump_tissue@2 definition as resolved_pump_tissue@3; INIT once (no event fires in INIT; the cases' INIT inputs are checked identical), SIM per case from that INIT end. Controls change only at BETSE update boundaries (integer multiples of the Cells dt) and take BETSE's applied values (pulse at BETSE's update label): Na/K pump availability 1 - pulse on every pump; junction availability 1 - pulse on every junction (a full step held to the end of SIM only); change Na/K mem: one naleak_always_open@1 / kleak_always_open@1 population per target patch, max_permeability = multiplier * Dm_default / tm (Dm_default: BETSE's default-profile Dm, mem_perms), abundance 1, availability pulse"
+  },
+  "discrimination": {
+    "k_mem_vs_none (BETSE)": {
+      "file": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/terms/option_vs_rung1_p3-k-mem-dense.json",
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 0.0,
+          "cell_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0
+          },
+          "ecm_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0
+          }
+        },
+        "sim": {
+          "voltage": 112.79366227767845,
+          "cell_concentration": {
+            "Ca": 49.247546247956926,
+            "Cl": 1.4485479342952967,
+            "K": 18.1161853482969,
+            "M": 14.245046364671479,
+            "Na": 0.9978627346509573
+          },
+          "ecm_concentration": {
+            "Ca": 0.0009464489119555688,
+            "Cl": 0.0008331480199817603,
+            "K": 0.09843467485675811,
+            "M": 0.0008593926891064816,
+            "Na": 0.0016113270768125239
+          }
+        }
+      }
+    },
+    "cells_only: p3-k-mem-dense vs default-world-mammal-dense (blind D)": {
+      "file": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/blind-01/D",
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 0.0,
+          "cell_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0
+          },
+          "ecm_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0
+          }
+        },
+        "sim": {
+          "voltage": 112.74169865446737,
+          "cell_concentration": {
+            "Ca": 49.28863256175172,
+            "Cl": 1.4509090574086256,
+            "K": 18.109921414065976,
+            "M": 14.274245840937178,
+            "Na": 0.9991113121163432
+          },
+          "ecm_concentration": {
+            "Ca": 0.002399632010772835,
+            "Cl": 0.010129043462233006,
+            "K": 0.08482167187754898,
+            "M": 0.008867158107169221,
+            "Na": 0.009894012778389687
+          }
+        }
+      }
+    }
+  },
+  "discrimination_ratio": {
+    "effect": "k_mem_vs_none (BETSE)",
+    "definition": "the event's own effect in plain BETSE (max over samples and phase end, interior ECM) divided by this protocol's tolerance, per phase and quantity (ion); ions at the 1e-12 floor (immobile P) are left out; INIT has no event (ratio 0 by design)",
+    "init": {
+      "voltage": 0.0,
+      "cell_concentration": {
+        "Ca": 0.0,
+        "Cl": 0.0,
+        "K": 0.0,
+        "M": 0.0,
+        "Na": 0.0
+      },
+      "ecm_concentration": {
+        "Ca": 0.0,
+        "Cl": 0.0,
+        "K": 0.0,
+        "M": 0.0,
+        "Na": 0.0
+      }
+    },
+    "sim": {
+      "voltage": 112.79366227767845,
+      "cell_concentration": {
+        "Ca": 49.247546247956926,
+        "Cl": 1.4485479342952967,
+        "K": 18.1161853482969,
+        "M": 14.245046364671479,
+        "Na": 0.9978627346509573
+      },
+      "ecm_concentration": {
+        "Ca": 0.0009464489119555688,
+        "Cl": 0.0008331480199817603,
+        "K": 0.09843467485675811,
+        "M": 0.0008593926891064816,
+        "Na": 0.0016113270768125239
+      }
+    }
+  },
+  "non_discriminating": [
+    "init/voltage",
+    "init/cell_concentration/Ca",
+    "init/cell_concentration/Cl",
+    "init/cell_concentration/K",
+    "init/cell_concentration/M",
+    "init/cell_concentration/Na",
+    "init/ecm_concentration/Ca",
+    "init/ecm_concentration/Cl",
+    "init/ecm_concentration/K",
+    "init/ecm_concentration/M",
+    "init/ecm_concentration/Na",
+    "sim/cell_concentration/Na",
+    "sim/ecm_concentration/Ca",
+    "sim/ecm_concentration/Cl",
+    "sim/ecm_concentration/K",
+    "sim/ecm_concentration/M",
+    "sim/ecm_concentration/Na"
+  ],
+  "non_discriminating_rule": "Quantities listed here (ratio <= 1) are still judged, but the event's effect does not exceed their tolerance, so no claim about the event may rest on them.",
+  "status": "PROPOSED, not registered: numbers from emulator-only budgets, plain BETSE vs plain BETSE and blind Cells-only runs (snapshot in RUN/source); no Cells-vs-BETSE difference has been computed for this case. To be fixed and committed by the lead before any judged run.",
+  "event_timing": {
+    "term": 0.0,
+    "reason": "Cells' controls change at BETSE's update boundaries (integer multiples of the Cells dt) and take BETSE's applied values (pulse at BETSE's update labels, exactly 0 or 1 here); the emulator with the same values reproduces plain BETSE to roundoff (emulator-01/check-comparison), and BETSE's own histories show the event at update 50 (and 250)",
+    "sensitivity_reported_not_summed": {
+      "event_clock_nominal_vs_betse": {
+        "init": {
+          "voltage": 0.0,
+          "cell_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0,
+            "P": 0.0
+          },
+          "ecm_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0,
+            "P": 0.0
+          }
+        },
+        "sim": {
+          "voltage": 1.711459038590199e-05,
+          "cell_concentration": {
+            "Ca": 6.503112896920747e-05,
+            "Cl": 8.437882428082942e-09,
+            "K": 2.6879899922840067e-08,
+            "M": 3.0174229316794307e-09,
+            "Na": 8.597270176252901e-09,
+            "P": 0.0
+          },
+          "ecm_concentration": {
+            "Ca": 7.753864280910134e-10,
+            "Cl": 4.693350086209573e-10,
+            "K": 1.0861701153497016e-06,
+            "M": 4.500044486640983e-10,
+            "Na": 8.612708023215236e-10,
+            "P": 0.0
+          }
+        }
+      },
+      "event_shift_one_update": {
+        "init": {
+          "voltage": 0.0,
+          "cell_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0,
+            "P": 0.0
+          },
+          "ecm_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0,
+            "P": 0.0
+          }
+        },
+        "sim": {
+          "voltage": 1.834318293485876e-05,
+          "cell_concentration": {
+            "Ca": 0.00012304057681186752,
+            "Cl": 1.4641472171041257e-08,
+            "K": 2.8826417115521083e-08,
+            "M": 5.0587606998086754e-09,
+            "Na": 1.514798734326126e-08,
+            "P": 0.0
+          },
+          "ecm_concentration": {
+            "Ca": 1.439463281651231e-09,
+            "Cl": 8.427293238656482e-10,
+            "K": 1.1816015242496533e-06,
+            "M": 8.648046192288738e-10,
+            "Na": 1.627435976361092e-09,
+            "P": 0.0
+          }
+        }
+      }
+    },
+    "emulator_vs_betse_check": {
+      "protocol": "validation/betse/protocols/emulator_p3_events_dense.json",
+      "summary": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/emulator-01/check-comparison/p3-k-mem-dense/summary.json",
+      "init/vm_time": "pass: worst abs error 4.53e-13 (tol 1e-09); history max at t=3.23 s {'membranes': 463, 'owner_cell': 81}; reference change 0.0222 V",
+      "init/cc_time": "pass: worst rel error 6.23e-12 (tol 1e-11); history max at t=0.47 s {'ions': 3, 'ion': 'Ca', 'cells': 65}; reference change 0.247 mol/m^3",
+      "init/cc_env_time": "pass: worst rel error 8.91e-16 (tol 1e-11); history max at t=4.49 s {'ions': 1, 'ion': 'K', 'environment': 464}; reference change 0.0351 mol/m^3",
+      "sim/vm_time": "pass: worst abs error 3.12e-13 (tol 1e-09); history max at t=0.0273 s {'membranes': 577, 'owner_cell': 101}; reference change 0.00338 V",
+      "sim/cc_time": "pass: worst rel error 1.25e-12 (tol 1e-11); history max at t=0.035 s {'ions': 3, 'ion': 'Ca', 'cells': 166}; reference change 0.0017 mol/m^3",
+      "sim/cc_env_time": "pass: worst rel error 5.36e-16 (tol 1e-11); history max at t=0.035 s {'ions': 1, 'ion': 'K', 'environment': 263}; reference change 0.00098 mol/m^3"
+    }
+  },
+  "betse_step_order_check": {
+    "file": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/protocols/order_check.json",
+    "rule": "The step term of all four P3 cases is the emulator's dt1-dt10 difference x 10/9 (first order).\nCheck: on the most demanding case, with a dt100 base, the observed order\n    p = log10( |dt1 - dt10| / |dt10 - dt100| )\nmust lie in 0.9-1.1 for every judged entry (phase, quantity, ion) whose step term is at least\n10% of that entry's sum of measured terms (the pinned 10% rule: smaller entries cannot move\ntheir tolerance by more than that). Entries with a zero dt10-dt100 difference are reported.\nIf any checked entry is outside the window, the step term of all four cases must come from\ndt1-dt100 (dt100 runs for every case) and the recipes are regenerated; recorded either way.\nUsage: order_check.py RUN_DIR   (PYTHONPATH = RUN_DIR/source/src:RUN_DIR/source)",
+    "verdict": "pass: dt1-dt10 x 10/9 stands for all four cases",
+    "failed_entries": 0
+  },
+  "limits": [
+    "BETSE's own step error is measured through the event emulator (proven equal to plain BETSE to roundoff on these cases: SIM Vm 3.2e-13 V), not by a plain-BETSE fine reference; in P4 the plain-BETSE dense-vs-fine pair agreed with the emulator's dt1-dt100 pair within 2% (parity-rung2-4-20261109-01/emulator-01).",
+    "Step term dt1-dt10 x 10/9 (first order): the order check on p3-na-mem-gj-block-dense (pass: dt1-dt10 x 10/9 stands for all four cases) observed orders 0.996-1.086 on the checked entries (window 0.9-1.1).",
+    "One seeded geometry; one Spot (19 cells); events in the 35-ms SIM only; ECM concentrations do not discriminate any event in that window.",
+    "The GJ block is a full step held to the end of SIM; BETSE's ramps, partial blocks and release are not represented (BETSE blocks the stored gate state)."
+  ]
+}
