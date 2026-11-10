@@ -395,3 +395,23 @@ def test_resolved_definition_maps_heredity_laws_ions_and_gates(heredity_case):
     }
     assert availability == {"Nav": 1.0, "Kir": 1.0, "Na_Leak": 0.0}
     assert get_model(parse_spec(raw).model) is surface_pump_v3
+
+
+def test_sim_gates_can_start_at_a_shifted_voltage(heredity_case):
+    """Field propagation (patch-voltage modes): SIM gates at the steady state of Vm + shift."""
+    world = net.network_world(heredity_case)
+    variant = laws.default_world("betse")
+    shift = np.linspace(-2e-6, 3e-6, AREA.size)
+    for phase in ("init", "sim"):
+        start = adapter.phase_start(world, phase, "betse")
+        plain, _, _, vm = net.network_inputs(world, phase, start, variant)
+        moved, _, _, vm2 = net.network_inputs(
+            world, phase, start, variant, gate_voltage_shift=shift
+        )
+        assert np.array_equal(vm, vm2)
+        if phase == "init":  # BETSE's INIT gates start at 0 V; no shift applies
+            assert np.array_equal(moved.gates, plain.gates)
+        else:
+            want = net.steady_gates(["nav1p2", "kir2p1", "naleak"], vm + shift)
+            np.testing.assert_allclose(moved.gates, want, rtol=1e-14)
+            assert not np.array_equal(moved.gates[:2], plain.gates[:2])

@@ -222,7 +222,14 @@ def run_network_resolved(case, out, **kwargs):
     return adapter.run_resolved(case, out, backend=NETWORK_RESOLVED, **kwargs)
 
 
-def network_inputs(world, phase, start, variant):
+def network_inputs(world, phase, start, variant, *, gate_voltage_shift=None):
+    """(state, layout, ko_env, Vm) of a phase; channel gates as BETSE initialises them.
+
+    INIT gates: the steady state at Vm = 0 (or ``start["channel_gates"]``); SIM gates: the
+    steady state at the SIM start state's Vm (BETSE re-reads the network). Optional
+    ``gate_voltage_shift`` [membrane] (field propagation, patch-voltage modes): SIM gates at
+    the steady state of Vm + shift, as Cells' handoff sets them from its own patch voltages.
+    """
     from validation.betse.emulator import network, spatial
 
     state, layout, ko = adapter.emulator_inputs(world, phase, start, variant)
@@ -248,7 +255,10 @@ def network_inputs(world, phase, start, variant):
         )
     gates = start.get("channel_gates")
     if gates is None or phase == "sim":  # BETSE re-reads the network at SIM start
-        gates = network.steady_gates(kinds, vm)
+        shift = 0.0
+        if phase == "sim" and gate_voltage_shift is not None:
+            shift = np.asarray(gate_voltage_shift, dtype=np.float64)
+        gates = network.steady_gates(kinds, vm + shift)
     return network.State(state, np.asarray(gates, dtype=np.float64)), p, ko, vm
 
 
