@@ -228,3 +228,64 @@ def test_a_field_moves_the_cells_and_is_read_by_the_tolerance_recipe(case, tmp_p
     term = tol.term(ctx, {"budget": str(path), "pairs": ["field"]})
     assert term["sim"]["voltage"] > 0
     assert term["sim"]["cell_concentration"]["K"] > 0
+
+
+@pytest.mark.parametrize("mode", ["base", "boltzmann", "vpatch", "both"])
+def test_sim_gates_start_at_the_patch_voltage_only_with_the_shift(
+    network_case, tmp_path, monkeypatch, mode
+):
+    """Network runner: SIM-start gates at g_inf(Vm + the INIT phase's last shift) in vpatch and
+    both; base and boltzmann pass no shift, so their SIM inputs are bitwise the plain ones.
+
+    The emulator phase is stubbed (it returns its start state), so only the phase inputs are
+    exercised; the plain runs themselves are checked by the base/zero-field test above.
+    """
+    world = net.network_world(network_case)
+    variant = laws.default_world("betse")
+    o = int(np.prod(world["grid_shape"]))
+    rng = np.random.default_rng(11)
+    table = {p: rng.normal(0, 1e-3, (world["steps"][p], o)) for p in adapter.PHASES}
+    cells = fake_cells_layout(world, tmp_path / "cells", lambda p, k: table[p][k])
+    protocol = tmp_path / "protocol.json"
+    shutil.copyfile(PROTOCOL, protocol)
+    seen = []
+
+    def stub(route, state, layout, dt, steps, substeps, drive, variant, device):
+        seen.append(state)
+        observed = [np.asarray(v) for v in route.observe(state, layout, variant)]
+        return {
+            "valid": True,
+            "accepted_samples": steps,
+            "first_rejected_sample": None,
+            "wall_s_including_compile": 0.0,
+            **dict(
+                zip(
+                    ("vm", "cell_mM", "env_mM", "v_env", "gate_open"),
+                    [np.stack([v] * steps) for v in observed],
+                    strict=True,
+                )
+            ),
+            "end": route.end(state),
+        }
+
+    monkeypatch.setattr(fp, "driven_phase", stub)
+    record = fp.run_propagation(
+        network_case, protocol, cells, tmp_path / mode, mode=mode, runner_name="network"
+    )
+    assert record["sim_gate_shift"] == (mode in ("vpatch", "both"))
+    init, sim = seen
+    start = adapter.phase_start(world, "sim", "chained", fp.runner("network").end(init))
+    plain, _, _, vm = net.network_inputs(world, "sim", start, variant)
+    if mode in ("base", "boltzmann"):
+        for a, b in zip(leaves(sim), leaves(plain), strict=True):
+            assert np.array_equal(a, b)
+        assert record["phases"]["sim"]["channel_gate_shift_max_abs_V"] is None
+    else:
+        shift = fp.field_inputs(world, "init", cells, boltzmann=False, vpatch=True)[0].voltage_shift
+        kinds = [k for _, k, _, _ in world["network_channels"]]
+        want = net.steady_gates(kinds, vm + shift[-1])
+        assert np.array_equal(np.asarray(sim.gates), want)
+        assert not np.array_equal(np.asarray(sim.gates), np.asarray(plain.gates))
+        for a, b in zip(leaves(sim.junction), leaves(plain.junction), strict=True):
+            assert np.array_equal(a, b)
+        assert record["phases"]["sim"]["channel_gate_shift_max_abs_V"] == np.abs(shift[-1]).max()

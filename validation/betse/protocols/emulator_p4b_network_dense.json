@@ -1,0 +1,71 @@
+{
+  "schema": "cells.betse_comparison_protocol@1",
+  "id": "emulator-p4b-network-dense",
+  "purpose": "Judge the BETSE-order emulator with general-network ion channels (validation/betse/network_world_adapter.py, emulator/network.py; BETSE's F and R, BETSE's Ca-ATPase) on the P4b plain-BETSE cases (parity-p4b-channels-20261110-01): p4b-nav-kirsim-dense (Nav1p2 max Dm 1.875e-15 m^2/s, Kir2p1 7.5e-17 switched on at SIM start ('init active: False'), NaLeak 2e-18, KLeak 6e-18) and p4b-kir-navsim-dense (Kir2p1, Nav1p2 switched on at SIM start, NaLeak, KLeak, same values), and their leave-one-out cases, on the rung-1 mammal default world; it must agree to roundoff. Tooling check, not an engine model; same tolerances as emulator-p4-network-dense.",
+  "phases": [
+    "init",
+    "sim"
+  ],
+  "time_alignment_atol_s": 1e-09,
+  "min_common_samples": 1,
+  "compare_final": true,
+  "observables": {
+    "vm_time": {
+      "final": "vm",
+      "tolerance": "voltage"
+    },
+    "vm_ave_time": {
+      "final": "vm_ave",
+      "tolerance": "voltage"
+    },
+    "cc_time": {
+      "final": "cc_cells",
+      "tolerance": "cell_concentration"
+    },
+    "cc_env_time": {
+      "final": "cc_env",
+      "tolerance": "ecm_concentration"
+    },
+    "venv_time": {
+      "final": "v_env",
+      "tolerance": "voltage"
+    }
+  },
+  "tolerance_quantities": {
+    "voltage": {
+      "kind": "abs",
+      "units": "V"
+    },
+    "cell_concentration": {
+      "kind": "rel",
+      "units": "1"
+    },
+    "ecm_concentration": {
+      "kind": "rel",
+      "units": "1"
+    }
+  },
+  "tolerance_classes": {
+    "codata_constants": {
+      "voltage": 1e-05,
+      "cell_concentration": 1e-06,
+      "ecm_concentration": 1e-07
+    },
+    "matched_constants_or_cpu_gpu": {
+      "voltage": 1e-09,
+      "cell_concentration": 1e-11,
+      "ecm_concentration": 1e-11
+    }
+  },
+  "verdict_class": "matched_constants_or_cpu_gpu",
+  "notes": [
+    "matched_constants_or_cpu_gpu: the emulator with BETSE's constants against BETSE, or one Cells result against another of the same case (CPU vs GPU). codata_constants is reported for reference only.",
+    "Relative errors divide by |BETSE value|; a zero reference value admits only exact agreement.",
+    "SIM starts from BETSE's init_final.npz unless the run record says sim_start = chained.",
+    "Observables whose own change over a phase does not exceed the tolerance are reported as flat (non-discriminating)."
+  ],
+  "betse_cases": [
+    "p4b-nav-kirsim-dense",
+    "p4b-kir-navsim-dense"
+  ]
+}
