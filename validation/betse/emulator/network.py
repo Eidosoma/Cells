@@ -69,15 +69,27 @@ def validate_layout(p, *, variant):
     return p
 
 
-def step(state, p, dt, control, *, xp=jnp, variant=laws.QUALIFIED):
-    """One BETSE update with network channels; unchanged state on an invalid trial."""
+def step(state, p, dt, control, *, xp=jnp, variant=laws.QUALIFIED, membrane_inputs=None):
+    """One BETSE update with network channels; unchanged state on an invalid trial.
+
+    ``membrane_inputs`` (spatial.MembraneInputs or None) changes only what the membrane
+    processes see: junction.step's, and here the channels and their gates.
+    """
     t = p.junction.active.tissue
     old = state.junction.active.tissue
     base, rates, valid = junction.step(
-        state.junction, p.junction, dt, control, xp=xp, variant=variant
+        state.junction,
+        p.junction,
+        dt,
+        control,
+        xp=xp,
+        variant=variant,
+        membrane_inputs=membrane_inputs,
     )
     field = passive.field(old, t, xp=xp, variant=variant)
     vm = field.membrane_voltage_V
+    if membrane_inputs is not None:
+        vm = vm + membrane_inputs.voltage_shift
     _, reset, delta, _ = passive.transport(old, t, dt, xp=xp, variant=variant)
     after_ecm = (reset + delta).reshape(old.outside_concentration.shape)
     cells, outside = passive.ownership(t, xp=xp)
@@ -97,7 +109,7 @@ def step(state, p, dt, control, *, xp=jnp, variant=laws.QUALIFIED):
         flux = (
             laws.ghk_leak(
                 cell[ion, t.cell_owner],
-                env[ion, t.outside_owner],
+                passive.membrane_view(env[ion, t.outside_owner], vm, membrane_inputs, ion)[0],
                 vm,
                 t.valence[ion],
                 t.temperature,

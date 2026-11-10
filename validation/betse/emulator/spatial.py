@@ -78,6 +78,32 @@ class Rates(NamedTuple):
     outside_flux_y_mol_m2_s: object
 
 
+class MembraneInputs(NamedTuple):
+    """Inputs the membrane processes see in place of the emulator's own (term propagation).
+
+    ``outside_scale`` [species, membrane] multiplies the outside concentration at each
+    membrane; ``voltage_shift`` [membrane] (V) is added to its membrane voltage. Leaks,
+    pumps and channels (and channel gates) see both; junctions, junction gates, the
+    ECM update and every recorded observable keep the emulator's own values. ``None``
+    (the default everywhere) is the plain emulator, by the same code path.
+    validation/betse/field_propagation.py builds them from a Cells run's exterior field.
+    """
+
+    outside_scale: object
+    voltage_shift: object
+
+
+def membrane_view(outside_at_membrane, voltage, inputs, species=None):
+    """(outside concentration, voltage) a membrane process sees; unchanged without inputs.
+
+    ``outside_at_membrane`` is [species, membrane], or [membrane] of ``species``.
+    """
+    if inputs is None:
+        return outside_at_membrane, voltage
+    scale = inputs.outside_scale if species is None else inputs.outside_scale[species]
+    return outside_at_membrane * scale, voltage + inputs.voltage_shift
+
+
 def boundary_mask(shape, *, xp=jnp):
     rows, cols = shape
     y, x = xp.arange(rows)[:, None], xp.arange(cols)[None, :]
@@ -306,14 +332,20 @@ def domain_valid(state, *, xp=jnp):
     )
 
 
-def transport(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
-    """Old-state passive rates and exterior update, before membrane transfer."""
+def transport(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED, membrane_inputs=None):
+    """Old-state passive rates and exterior update, before membrane transfer.
+
+    ``membrane_inputs`` (MembraneInputs or None) changes only what the membrane leak sees.
+    """
     f = field(state, p, xp=xp, variant=variant)
     z = p.valence[:, None]
+    outside, voltage = membrane_view(
+        state.outside_concentration[:, p.outside_owner], f.membrane_voltage_V, membrane_inputs
+    )
     membrane = laws.ghk_leak(
         state.membrane_concentration,
-        state.outside_concentration[:, p.outside_owner],
-        f.membrane_voltage_V,
+        outside,
+        voltage,
         z,
         p.temperature,
         p.membrane_area,

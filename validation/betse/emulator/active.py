@@ -146,12 +146,19 @@ def domain_valid(state, *, xp=jnp):
     )
 
 
-def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
+def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED, membrane_inputs=None):
+    """One update; ``membrane_inputs`` (spatial.MembraneInputs or None) changes only what
+    the leak, the pumps and the Kv1p5 population (and its gates) see."""
     t, old = p.tissue, state.tissue
     cells, outside = passive.ownership(t, xp=xp)
-    ordinary, reset, delta, field = passive.transport(old, t, dt, xp=xp, variant=variant)
-    vm, na, k = field.membrane_voltage_V, p.sodium_index, p.potassium_index
-    cin, cout = old.membrane_concentration, old.outside_concentration[:, t.outside_owner]
+    ordinary, reset, delta, field = passive.transport(
+        old, t, dt, xp=xp, variant=variant, membrane_inputs=membrane_inputs
+    )
+    na, k = p.sodium_index, p.potassium_index
+    cin = old.membrane_concentration
+    cout, vm = passive.membrane_view(
+        old.outside_concentration[:, t.outside_owner], field.membrane_voltage_V, membrane_inputs
+    )
     mu_na = laws.electrochemical_potential(cin[na], cout[na], vm, 1, t.temperature, variant, xp=xp)
     mu_k = laws.electrochemical_potential(cin[k], cout[k], vm, 1, t.temperature, variant, xp=xp)
     cycles = (
@@ -166,7 +173,8 @@ def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     after_ecm = (reset + delta).reshape(old.outside_concentration.shape)
     if p.calcium is not None:
         ca = p.calcium.index
-        inputs = (old.cell_concentration[ca, t.cell_owner], after_ecm[ca, t.outside_owner], vm)
+        seen_ca, _ = passive.membrane_view(after_ecm[ca, t.outside_owner], vm, membrane_inputs, ca)
+        inputs = (old.cell_concentration[ca, t.cell_owner], seen_ca, vm)
         if variant.cells_calcium_law:  # Model difference: Cells' law and constants.
             from cells.processes import calcium_atpase
             from cells.processes.electrochemistry import R
@@ -196,7 +204,7 @@ def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED):
     gates = (tau * xp.stack((state.m_gate, state.h_gate)) + dt * targets) / (tau + dt)
     channel = laws.ghk_leak(
         old.cell_concentration[k, t.cell_owner],
-        after_ecm[k, t.outside_owner],
+        passive.membrane_view(after_ecm[k, t.outside_owner], vm, membrane_inputs, k)[0],
         vm,
         1,
         t.temperature,

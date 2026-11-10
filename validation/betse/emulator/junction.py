@@ -103,7 +103,8 @@ def gate_step(gate, voltage, block, dt, parameters, *, xp=jnp):
     return opening * block
 
 
-def step(state, p, dt, control, *, xp=jnp, variant=laws.QUALIFIED):
+def step(state, p, dt, control, *, xp=jnp, variant=laws.QUALIFIED, membrane_inputs=None):
+    """One update; ``membrane_inputs`` (spatial.MembraneInputs or None) goes to active.step."""
     tissue = p.active.tissue
     field = passive.field(state.active.tissue, tissue, xp=xp, variant=variant)
     vm = field.membrane_voltage_V
@@ -125,7 +126,9 @@ def step(state, p, dt, control, *, xp=jnp, variant=laws.QUALIFIED):
         pump_available=p.active.pump_available * control.pump,
         channel_permeability=p.active.channel_permeability * control.channel,
     )
-    trial, rates, valid = active.step(state.active, effective, dt, xp=xp, variant=variant)
+    trial, rates, valid = active.step(
+        state.active, effective, dt, xp=xp, variant=variant, membrane_inputs=membrane_inputs
+    )
     candidate = State(trial, opening)
     valid &= domain_valid(state, xp=xp) & domain_valid(candidate, xp=xp)
     valid &= xp.all(xp.isfinite(voltage) & (xp.abs(voltage) <= junction_gate.MAX_ABS_VOLTAGE_V))
