@@ -10,7 +10,8 @@
   "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/gate-01/measured/measured.json",
   "/mnt/workspaces/Cells/device-checks-v3-20261109-01/gate-01-measure/measured.json",
   "/mnt/workspaces/Cells/land-field-propagation-20261110-01/measure/measured.json",
-  "/mnt/workspaces/Cells/land-p3-events-20261110-01/measure/measured.json"
+  "/mnt/workspaces/Cells/land-p3-events-20261110-01/measure/measured.json",
+  "/mnt/workspaces/Cells/land-p4b-protocols-20261110-01/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -90,6 +91,14 @@
    "root": "/mnt/workspaces/Cells/land-p3-events-20261110-01/source",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-10T18:14:21+00:00"
+  },
+  {
+   "git_revision": "acd4ead96a3e96af70adc7387ec1a02991dff543",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/land-p4b-protocols-20261110-01/source",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-10T22:27:57+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -506,10 +515,10 @@
    },
    {
     "file": "tests/unit/test_betse_network_emulator.py",
-    "seconds": 10.69,
+    "seconds": 5.2,
     "exit_code": 0,
     "counts": {
-     "passed": 5
+     "passed": 11
     }
    },
    {
