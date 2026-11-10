@@ -81,7 +81,12 @@ def test_world_maps_only_ion_channel_networks(network_case, tmp_path):
     }
     for change, message in (
         ({"biomolecules": [{"name": "X"}]}, "biomolecules"),
-        ({"channels": [CHANNELS[0] | {"channel type": "Kir2p1"}]}, "only K Kv1p5 and KLeak"),
+        ({"channels": [CHANNELS[0] | {"channel type": "Kv3p1"}]}, "only K Kv1p5, K KLeak"),
+        ({"channels": [CHANNELS[0] | {"channel type": "Nav1p2"}]}, "only K Kv1p5, K KLeak"),
+        (
+            {"channels": [CHANNELS[0] | {"channel class": "Na", "channel type": "Nav1p3"}]},
+            "only K Kv1p5",
+        ),
         ({"channels": [CHANNELS[0] | {"apply to": ["spot"]}]}, "apply to"),
         ({"channels": [CHANNELS[0] | {"channel inhibitors": ["X"]}]}, "unmapped keys"),
         ({"channels": []}, "no channels"),
@@ -221,3 +226,172 @@ def test_resolved_definition_adds_one_population_per_patch_and_channel(network_c
     ]
     assert set(sim_availability) == {1.0}
     assert math.isclose(sim["execution"]["dt"], 1e-4)
+
+
+# ............................................. heredity carriers (rung P4b): Na and Kir2.1
+
+NAV, KIR, NALEAK = 2e-15, 7.5e-17, 4e-19  # max Dm, m^2/s
+HEREDITY_CHANNELS = [
+    {"name": "Nav", "channel class": "Na", "channel type": "Nav1p2", "max Dm": NAV,
+     "apply to": "all", "init active": True},
+    {"name": "Kir", "channel class": "K", "channel type": "Kir2p1", "max Dm": KIR,
+     "apply to": "all", "init active": True},
+    {"name": "Na_Leak", "channel class": "Na", "channel type": "NaLeak", "max Dm": NALEAK,
+     "apply to": "all", "init active": False},
+]  # fmt: skip
+
+
+@pytest.fixture(scope="module")
+def heredity_case(tmp_path_factory):
+    jax.config.update("jax_enable_x64", True)
+    params = {"molecules_enabled": True, "network_config": network_config(HEREDITY_CHANNELS)}
+    return write_case(tmp_path_factory.mktemp("heredity") / "betse", ions=MAMMAL, params=params)
+
+
+def nav1p2_steady_and_tau(vm):
+    """BETSE vg_na.py Nav1p2 as written there (mV, ms), returned in SI."""
+    V = 1e3 * np.asarray(vm, dtype=np.float64)
+    a = (0.182 * ((V - 10.0) - -35.0)) / (1 - (np.exp(-((V - 10.0) - -35.0) / 9)))
+    b = (0.124 * (-(V - 10.0) - 35.0)) / (1 - (np.exp(-(-(V - 10.0) - 35.0) / 9)))
+    h_tau = 1 / (
+        (0.024 * ((V - 10.0) - -50.0)) / (1 - (np.exp(-((V - 10.0) - -50.0) / 5)))
+        + (0.0091 * (-(V - 10.0) - 75.000123)) / (1 - (np.exp(-(-(V - 10) - 75.000123) / 5)))
+    )
+    steady = (a / (a + b), 1.0 / (1 + np.exp((V - -65.0 - 10.0) / 6.2)))
+    return steady, (1e-3 / (a + b), 1e-3 * h_tau)
+
+
+def kir2p1_steady_and_tau(vm):
+    """BETSE vg_k.py Kir2p1 as written there (mV, ms), returned in SI."""
+    V = 1e3 * np.asarray(vm, dtype=np.float64)
+    steady = (
+        1 / (1 + np.exp((V - (-96.48)) / 23.26)),
+        1 / (1 + np.exp((V - (-168.28)) / -44.13)),
+    )
+    tau = (
+        3.7 + (-3.37 / (1 + np.exp((V - -32.9) / 27.93))),
+        0.85 + (306.3 / (1 + np.exp((V - -118.29) / -27.23))),
+    )
+    return steady, (1e-3 * tau[0], 1e-3 * tau[1])
+
+
+def test_heredity_channels_map_to_their_ions_and_laws(heredity_case):
+    world = net.network_world(heredity_case)
+    assert world["network_channels"] == [
+        ("Nav", "nav1p2", NAV, True),
+        ("Kir", "kir2p1", KIR, True),
+        ("Na_Leak", "naleak", NALEAK, False),
+    ]
+    assert [net.channel_ion(k) for _, k, _, _ in world["network_channels"]] == ["Na", "K", "Na"]
+    _, p, _, _ = net.network_inputs(
+        world, "init", adapter.phase_start(world, "init"), laws.default_world("betse")
+    )
+    assert p.ion == tuple(world["species"].index(i) for i in ("Na", "K", "Na"))
+    for vm in (np.linspace(-0.12, 0.06, 19) + 1.234e-4, np.zeros(3)):
+        gates = net.steady_gates(["nav1p2", "kir2p1", "naleak"], vm)
+        np.testing.assert_allclose(gates[0], nav1p2_steady_and_tau(vm)[0], rtol=1e-13)
+        np.testing.assert_allclose(gates[1], kir2p1_steady_and_tau(vm)[0], rtol=1e-13)
+        assert np.array_equal(gates[2], np.ones((2, vm.size)))
+    assert network.opening("nav1p2", np.array([0.5, 0.25])) == 0.5**3 * 0.25
+    assert network.opening("kir2p1", np.array([0.5, 0.25])) == 0.5 * 0.25**2
+    assert network.opening("naleak", np.array([0.5, 0.25])) == 1.0
+
+
+@pytest.mark.parametrize("phase, leak_on", [("init", 0.0), ("sim", 1.0)])
+def test_heredity_step_matches_betse_order_by_hand(heredity_case, phase, leak_on):
+    """One update: Nav1p2 (m^3 h, Na), Kir2p1 (m h^2, K), then NaLeak (Na; off in INIT).
+
+    Gates by BETSE's semi-implicit Euler at the step-start Vm from BETSE's own mV/ms
+    expressions; each channel's flux on the concentrations the previous channel left.
+    """
+    world = net.network_world(heredity_case)
+    variant = laws.default_world("betse")
+    start = adapter.phase_start(world, phase, "betse")
+    state, p, _, vm0 = net.network_inputs(world, phase, start, variant)
+    dt = world["dt_s"][phase]
+    control = junction.Control(*(np.ones(AREA.size) for _ in junction.Control._fields))
+    new, _, valid = network.step(state, p, dt, control, xp=np, variant=variant)
+    assert bool(valid)
+    base, _, _ = junction.step(state.junction, p.junction, dt, control, xp=np, variant=variant)
+
+    t, old = p.junction.active.tissue, state.junction.active.tissue
+    na, k = world["species"].index("Na"), world["species"].index("K")
+    _, reset, delta, field = passive.transport(old, t, dt, xp=np, variant=variant)
+    vm = np.asarray(field.membrane_voltage_V)
+    env = np.asarray(reset + delta).reshape(old.outside_concentration.shape).copy()
+    after_ecm, cell = env.copy(), np.asarray(old.cell_concentration).copy()
+    gates = []
+    for law in (nav1p2_steady_and_tau, kir2p1_steady_and_tau):
+        steady, tau = law(vm)
+        (m0, h0), _ = law(vm0)  # BETSE's channel init at this phase's start
+        m = (tau[0] * m0 + dt * steady[0]) / (tau[0] + dt)
+        h = (tau[1] * h0 + dt * steady[1]) / (tau[1] + dt)
+        gates.append(np.stack((m, h)))
+    voxel = world["site_volume_m3"] * 1e15
+    cell_pL = world["cell_volume_m3"] * 1e15
+    moved = np.zeros((len(world["species"]), AREA.size))
+    for ion, permeability, opening in (
+        (na, NAV / TM, gates[0][0] ** 3 * gates[0][1]),
+        (k, KIR / TM, gates[1][0] * gates[1][1] ** 2),
+        (na, leak_on * NALEAK / TM, 1.0),
+    ):
+        flux = ghk_inward_fmol_s(
+            cell[ion, OWNER], env[ion, SITE], vm, 1, permeability, opening, variant
+        )
+        np.add.at(cell[ion], OWNER, dt * flux / cell_pL[OWNER])
+        np.add.at(env[ion], SITE, -dt * flux / voxel)
+        moved[ion] += dt * flux
+    tissue = new.junction.active.tissue
+    np.testing.assert_allclose(
+        tissue.cell_concentration,
+        np.asarray(base.active.tissue.cell_concentration) + cell - old.cell_concentration,
+        rtol=1e-13,
+    )
+    np.testing.assert_allclose(
+        tissue.outside_concentration,
+        np.asarray(base.active.tissue.outside_concentration) + env - after_ecm,
+        rtol=1e-13,
+    )
+    np.testing.assert_allclose(
+        tissue.membrane_inward_fmol,
+        np.asarray(base.active.tissue.membrane_inward_fmol) + moved,
+        rtol=1e-12,
+        atol=1e-30,
+    )
+    np.testing.assert_allclose(new.gates[0], gates[0], rtol=1e-12)
+    np.testing.assert_allclose(new.gates[1], gates[1], rtol=1e-12)
+    assert np.array_equal(new.gates[2], np.ones((2, AREA.size)))
+    residual = passive.accounting(old, tissue, t)
+    assert max(float(np.abs(v).max()) for v in residual.values()) < 1e-12
+
+
+def test_resolved_definition_maps_heredity_laws_ions_and_gates(heredity_case):
+    from cells.core.specs import parse_spec
+    from cells.models import surface_pump_v3
+    from cells.models.registry import get_model
+
+    world = net.network_world(heredity_case, blind=True)
+    start = adapter.phase_start(world, "init")
+    raw = net.NETWORK_RESOLVED.definition(world, "init", start, dt=1e-3)
+    m = len(raw["model"]["membranes"])
+    expect = {
+        "Nav": ("nav1p2_m3h_regularized@1", NAV, "Na", nav1p2_steady_and_tau(0.0)[0]),
+        "Kir": ("kir2p1_mh2@1", KIR, "K", kir2p1_steady_and_tau(0.0)[0]),
+        "Na_Leak": ("naleak_always_open@1", NALEAK, "Na", None),
+    }
+    assert len(raw["model"]["channels"]) == 3 * m
+    for c in raw["model"]["channels"]:
+        law, dm, ion, gate = expect[c["id"].split("-")[1]]
+        assert c["kinetic_law"] == law
+        assert c["max_permeability_m_per_s"] == pytest.approx(dm / TM)
+        assert c["permeant_ions"] == [{"species_id": ion, "relative_permeability": 1.0}]
+        if gate is None:
+            assert c["initial_gate"] == []
+        else:
+            np.testing.assert_allclose(c["initial_gate"], np.ravel(gate), rtol=1e-13)
+    availability = {
+        c["channel_id"].split("-")[1]: c["schedule"][0]["availability"]
+        for c in raw["experiment"]["channel_controls"]
+    }
+    assert availability == {"Nav": 1.0, "Kir": 1.0, "Na_Leak": 0.0}
+    assert get_model(parse_spec(raw).model) is surface_pump_v3

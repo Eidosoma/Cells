@@ -2,8 +2,9 @@
 """BETSE's default world with general-network ion channels, run by the BETSE-order emulator.
 
 Extends ``default_world_adapter`` to plain-BETSE cases whose general network holds only
-ion channels (no biomolecules, reactions, transporters or modulators): currently Kv1p5
-and KLeak on every membrane, with no inhibitors or activators. ``network_world`` reads
+ion channels (no biomolecules, reactions, transporters or modulators): K channels Kv1p5,
+Kir2p1 and KLeak (vg_k.py) and Na channels Nav1p2 and NaLeak (vg_na.py) on every
+membrane, with no inhibitors or activators. ``network_world`` reads
 the case with ``default_world_adapter.betse_world``, the only relaxation being that the
 network is on (``molecules_enabled``); every other adapter requirement and check
 applies. It adds the channel list from the case's ``network_config``.
@@ -16,8 +17,10 @@ network at SIM start with the INIT-end Vm). Validation tooling; no Cells engine 
 
 ``run-resolved`` runs Cells' own physics, resolved_pump_tissue@3: default_world_adapter's
 resolved_pump_tissue@2 definition (``run_resolved``, blind) plus one channel population per
-membrane patch and network channel (Kv1p5 -> kv1p5_mh@1, KLeak -> kleak_always_open@1),
-max_permeability = max Dm / tm, abundance 1, permeant K. Its gates start as BETSE's do: the
+membrane patch and network channel (RESOLVED_LAWS: Kv1p5 -> kv1p5_mh@1, Kir2p1 ->
+kir2p1_mh2@1, Nav1p2 -> nav1p2_m3h_regularized@1, KLeak -> kleak_always_open@1, NaLeak ->
+naleak_always_open@1), max_permeability = max Dm / tm, abundance 1, permeant ion the
+channel's own (K or Na, relative permeability 1). Its gates start as BETSE's do: the
 steady state at 0 V in INIT and, at the SIM handoff, the steady state at the membrane
 voltage of Cells' own INIT end. Channels with ``init active: false`` get availability 0 in
 INIT. It is default_world_adapter.run_resolved with the backend NETWORK_RESOLVED
@@ -50,15 +53,27 @@ from validation.betse import betse_reference_run as reference_run  # noqa: E402
 from validation.betse import default_world_adapter as adapter  # noqa: E402
 
 PHASES = adapter.PHASES
-# BETSE channel type (vg_k.py) -> emulator kind; both are K channels.
-CHANNEL_TYPES = {"Kv1p5": "kv1p5", "KLeak": "kleak"}
+# BETSE (channel class, channel type) -> emulator kind (emulator/network.py LAWS).
+CHANNEL_TYPES = {
+    ("K", "Kv1p5"): "kv1p5",
+    ("K", "KLeak"): "kleak",
+    ("K", "Kir2p1"): "kir2p1",
+    ("Na", "Nav1p2"): "nav1p2",
+    ("Na", "NaLeak"): "naleak",
+}
 CHANNEL_KEYS = {"name", "channel class", "channel type", "max Dm", "apply to", "init active"}
 EXECUTED = (
     "validation/betse/network_world_adapter.py",
     "validation/betse/emulator/network.py",
 )
 RESOLVED_CHANNEL_MODEL_ID = "resolved_pump_tissue@3"
-RESOLVED_LAWS = {"kv1p5": "kv1p5_mh@1", "kleak": "kleak_always_open@1"}
+RESOLVED_LAWS = {
+    "kv1p5": "kv1p5_mh@1",
+    "kleak": "kleak_always_open@1",
+    "kir2p1": "kir2p1_mh2@1",
+    "nav1p2": "nav1p2_m3h_regularized@1",
+    "naleak": "naleak_always_open@1",
+}
 # default_world_adapter's requirements with the general network on (its only relaxation).
 NETWORK_REQUIRED = adapter.REQUIRED_PARAMS | {"molecules_enabled": True}
 
@@ -80,14 +95,16 @@ def network_channels(params):
     for c in config.get("channels") or []:
         if extra := sorted(set(c) - CHANNEL_KEYS):
             raise NetworkError(f"channel {c.get('name')}: unmapped keys {extra}")
-        if c.get("channel class") != "K" or c.get("channel type") not in CHANNEL_TYPES:
-            raise NetworkError(f"channel {c.get('name')}: only K Kv1p5 and KLeak are mapped")
+        kind = CHANNEL_TYPES.get((c.get("channel class"), c.get("channel type")))
+        if kind is None:
+            mapped = ", ".join(f"{a} {b}" for a, b in CHANNEL_TYPES)
+            raise NetworkError(f"channel {c.get('name')}: only {mapped} are mapped")
         if c.get("apply to") != "all":
             raise NetworkError(f"channel {c.get('name')}: only 'apply to: all' is mapped")
         dm = float(c["max Dm"])
         if not np.isfinite(dm) or dm < 0:
             raise NetworkError(f"channel {c.get('name')}: max Dm must be finite and >= 0")
-        channels.append((c["name"], CHANNEL_TYPES[c["channel type"]], dm, bool(c["init active"])))
+        channels.append((c["name"], kind, dm, bool(c["init active"])))
     if not channels:
         raise NetworkError("network has no channels")
     return channels
@@ -101,8 +118,9 @@ def network_world(case, *, blind=False):
     channels = {phase: network_channels(params[phase]) for phase in PHASES}
     if channels["init"] != channels["sim"]:
         raise NetworkError("network channels differ between INIT and SIM")
-    if "K" not in world["species"]:
-        raise NetworkError("K channels need a K ion")
+    for _, kind, _, _ in channels["init"]:
+        if channel_ion(kind) not in world["species"]:
+            raise NetworkError(f"{kind} channels need a {channel_ion(kind)} ion")
     world["network_channels"] = channels["init"]
     world["membrane_thickness_m"] = float(params["init"]["tm"])
     return world
@@ -111,11 +129,28 @@ def network_world(case, *, blind=False):
 # ............................................................ resolved backend (@3)
 
 
-def steady_mh(vm):
-    """Kv1p5 (m, h) steady state at each membrane voltage: [2, membrane]."""
-    from cells.processes import voltage_gates
+def channel_ion(kind):
+    """The permeant ion of an emulator channel kind (K or Na)."""
+    from validation.betse.emulator import network
 
-    return voltage_gates.kinetics(np.asarray(vm, dtype=np.float64).reshape(-1), xp=np)[0]
+    return network.LAWS[kind][2]
+
+
+def channel_gated(kind):
+    """True for a kind with (m, h) relaxation gates; False for the always-open leaks."""
+    from validation.betse.emulator import network
+
+    return network.LAWS[kind][0] is not None
+
+
+def steady_gates(kinds, vm):
+    """(m, h) steady state of each channel kind at each membrane voltage: [kind, 2, membrane].
+
+    BETSE's channel init (networks.py init_channel); leaks keep ones (they carry no gate).
+    """
+    from validation.betse.emulator import network
+
+    return network.steady_gates(kinds, np.asarray(vm, dtype=np.float64).reshape(-1), xp=np)
 
 
 def resolved_channel_definition(world, phase, start, **kwargs):
@@ -124,9 +159,11 @@ def resolved_channel_definition(world, phase, start, **kwargs):
     model, experiment = definition["model"], definition["experiment"]
     if world["calcium_pump"] is None:
         raise NetworkError("resolved_pump_tissue@3 extends @2: the world needs its Ca-ATPase")
-    mh = steady_mh(start.get("channel_vm_V", np.zeros(len(model["membranes"]))))
+    kinds = [kind for _, kind, _, _ in world["network_channels"]]
+    gates = steady_gates(kinds, start.get("channel_vm_V", np.zeros(len(model["membranes"]))))
     channels, controls = [], []
-    for name, kind, dm, init_active in world["network_channels"]:
+    for c, (name, kind, dm, init_active) in enumerate(world["network_channels"]):
+        mh, gated = gates[c], channel_gated(kind)
         available = 1.0 if phase == "sim" or init_active else 0.0
         for j, row in enumerate(model["membranes"]):
             cid = f"chan-{name}-{j}"
@@ -137,8 +174,10 @@ def resolved_channel_definition(world, phase, start, **kwargs):
                     "kinetic_law": RESOLVED_LAWS[kind],
                     "max_permeability_m_per_s": dm / world["membrane_thickness_m"],
                     "abundance": 1.0,
-                    "initial_gate": [float(mh[0, j]), float(mh[1, j])] if kind == "kv1p5" else [],
-                    "permeant_ions": [{"species_id": "K", "relative_permeability": 1.0}],
+                    "initial_gate": [float(mh[0, j]), float(mh[1, j])] if gated else [],
+                    "permeant_ions": [
+                        {"species_id": channel_ion(kind), "relative_permeability": 1.0}
+                    ],
                 }
             )
             controls.append(
@@ -189,12 +228,11 @@ def network_inputs(world, phase, start, variant):
     state, layout, ko = adapter.emulator_inputs(world, phase, start, variant)
     channels, m = world["network_channels"], world["membrane_area_m2"].size
     kinds = tuple(kind for _, kind, _, _ in channels)
-    k = world["species"].index("K")
     p = network.validate_layout(
         network.Layout(
             layout,
             kinds,
-            tuple(k for _ in channels),
+            tuple(world["species"].index(channel_ion(kind)) for kind in kinds),
             np.stack([np.full(m, dm / world["membrane_thickness_m"]) for _, _, dm, _ in channels]),
             np.asarray([1.0 if phase == "sim" or active else 0.0 for _, _, _, active in channels]),
         ),
@@ -296,7 +334,7 @@ def run_network_emulator(
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from validation.betse.emulator import laws
+    from validation.betse.emulator import laws, network
 
     protocol, protocol_sha = adapter.compare.load_protocol(protocol_path)
     world = network_world(case)
@@ -333,8 +371,8 @@ def run_network_emulator(
                     "permeability_m_s": dm / world["membrane_thickness_m"],
                     "active": bool(layout.active[c] > 0),
                     "open_fraction_end_range": [
-                        float((gates[-1, c, 0] * gates[-1, c, 1]).min()),
-                        float((gates[-1, c, 0] * gates[-1, c, 1]).max()),
+                        float(np.min(network.opening(kind, gates[-1, c]))),
+                        float(np.max(network.opening(kind, gates[-1, c]))),
                     ],
                 }
                 for c, (name, kind, dm, _) in enumerate(world["network_channels"])
