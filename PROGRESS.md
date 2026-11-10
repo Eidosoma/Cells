@@ -45,7 +45,7 @@ starts, and production design is deferred until parity is established.
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
-| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4), the ledger rounding fix and @3 device checks landed; @3 on the L4 is 2.28 ms per world-step at 256 worlds (tier 1 about 4,100 L4 GPU-hours); GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling. Pre-screen 8: no retaining coupling renews the disc rim**; the design choice is with the user |
+| 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4), the ledger rounding fix and @3 device checks landed; @3 on the L4 is 2.28 ms per world-step at 256 worlds (tier 1 about 4,100 L4 GPU-hours execute-only, about 7,200 end to end); GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling. Pre-screen 8: no retaining coupling renews the disc rim**; the design choice is with the user |
 | 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); MG1 (2-D vertex mechanics) next |
 | 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 not evaluable (no lingering scale found) |
 
@@ -54,6 +54,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Parity P3 (scheduled interventions) registered (10 November), not yet judged.**
+  Four protocols, `validation/betse/protocols/physical_p3_*_dense.json`, registered at
+  `95f30b5` on `resolved_pump_tissue@3` with the event adapter (`ac2e127`): pump
+  block, Na mem ×10 and K mem ×10 on a 19-cell spot, and Na mem plus a full
+  gap-junction block. BETSE's events are additive ("multiplier m" gives (1+m)×
+  base); pump and junction blocks are global; the junction block maps only as a
+  full step held to the end of SIM.
+  - The event emulator reproduces plain BETSE to roundoff (SIM Vm 3.2e-13 V), and
+    every case's INIT is bitwise rung 1's.
+  - Verdict on SIM only; INIT is reported, not judged (event-free and already
+    judged in rung 1 and P4; decided before any P3 INIT error was seen).
+  - SIM Vm effect over tolerance: pump 197, Na 40, K 113, junction block 102. ECM
+    does not move in 35 ms and is listed as non-discriminating.
+  - Method: pinned (3 × measured terms); step terms at dt10 with a dt100 order
+    check (observed order 0.996–1.086, window 0.9–1.1); no BETSE fine runs (step
+    error through the emulator); within-cell patch spread measured by propagation
+    instead of P4's heuristic.
+  - Engine gaps (Cl/Ca mem, environment, temperature, ECM break, external voltage)
+    are proposals on hold. Evidence: `/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/`.
 - **Device checks and batched worlds for `resolved_pump_tissue@3` landed (10 November).**
   `surface_pump_v3.device_checks` runs @3's own domain, ledger, bound and
   dissipation checks on the device through the shared `row_checks`, with the
@@ -73,9 +92,10 @@ machine-readable inputs, results, checks and failures.
     host observers every 128 steps, 4.0–4.5 ms. 256 worlds need a preallocated
     allocator on the L4 (on-demand allocation ran out of memory; both failures
     are kept).
-  - **Cost:** at 2.28 ms, E07-v1's tier 1 (1,786 world-hours) is about 4,100 L4
-    GPU-hours, against the design's assumed 560–840. GH200 throughput is the
-    open number.
+  - **Cost:** E07-v1's tier 1 (1,786 world-hours) is about 4,100 L4 GPU-hours
+    execute-only (2.28 ms) and about 7,200 end to end with observers (4.01 ms),
+    against the design's assumed 560–840 (4.9–13×). The earlier @1 figure of
+    6,800 below is end to end. GH200 throughput is the open number.
   - **Gate:** tier 1+2 passed on the branch (326 files; `test_projective_judge`
     then differed only because it predated amendment 2), and again on merged
     main `e79c0b7` from a clean snapshot (266 + 60 files, none changed).
