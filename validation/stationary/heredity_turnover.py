@@ -762,10 +762,96 @@ def _load_runs(directory):
     return runs
 
 
+def rim_births(run):
+    """Rim newcomers by their neighbourhood at birth and whether they were ever D.
+
+    Rim = the written disc's outer ring; corner = 3 disc neighbours, side = 4. D
+    neighbours are read from the last record at or before the birth (records every
+    RECORD_S, so a neighbour replaced within that interval can be misread); founder or
+    newcomer is the neighbour slot's carrier at the birth (lineage, exact).
+    """
+    cells, edges = worlds.hexagon(
+        next(s for s, r in DISCS.values() if 3 * r * (r + 1) + 1 == run["disc_cells"])
+    )
+    radius = DISCS[run["disc_cells"]][1]
+    neighbours = {i: set() for i in range(len(cells))}
+    for a, b in edges:
+        neighbours[a].add(b)
+        neighbours[b].add(a)
+    history = {}
+    for c in run["lineage"]:
+        history.setdefault(c["slot"], []).append(c)
+    last_founder = run["summary"]["last_founder_replaced_s"]
+    times = [r["time_s"] for r in run["records"]]
+    counts = {}
+    for c in run["lineage"]:
+        if c["founder"] or worlds.ring(cells[c["slot"]]) != radius:
+            continue
+        k = int(np.searchsorted(times, c["birth_s"], side="right")) - 1
+        d = run["records"][k]["d_slots"]
+        d_old = d_new = 0
+        for j in neighbours[c["slot"]]:
+            if d[j] == "1":
+                holder = max(
+                    (x for x in history[j] if x["birth_s"] <= c["birth_s"]),
+                    key=lambda x: x["birth_s"],
+                )
+                d_old += holder["founder"]
+                d_new += not holder["founder"]
+        inside = sum(worlds.ring(cells[j]) <= radius for j in neighbours[c["slot"]])
+        key = (
+            "corner" if inside == 3 else "side",
+            d_old + d_new,
+            d_new,
+            last_founder is not None and c["birth_s"] <= last_founder,
+            "D" if c["first_d_s"] is not None else "H",
+        )
+        counts[key] = counts.get(key, 0) + 1
+    return [
+        dict(
+            slot_kind=k[0],
+            d_neighbours=k[1],
+            newcomer_d_neighbours=k[2],
+            within_first_founder_turnover=k[3],
+            outcome=k[4],
+            count=v,
+        )
+        for k, v in sorted(counts.items())
+    ]
+
+
 def summarize(directory):
     """results.json and table.md from every runs_*.jsonl in the directory."""
     directory = Path(directory)
-    runs = _load_runs(directory)
+    out, lines = _summary(_load_runs(directory))
+    with open(directory / "results.json", "x") as stream:
+        json.dump(targets._json(out), stream, indent=1)
+    with open(directory / "table.md", "x") as stream:
+        stream.write("\n".join(lines) + "\n")
+    return out
+
+
+STAGES = ("pilot", "stage1-screen", "stage1b-attribution", "stage2-turnover", "stage3-robustness")
+
+
+def final(root):
+    """final.json and final_table.md over every stage directory's runs_*.jsonl."""
+    root, runs = Path(root), []
+    for stage in STAGES:
+        if (root / stage).is_dir():
+            runs += [dict(r, source=f"{stage}/{r['source']}") for r in _load_runs(root / stage)]
+    out, lines = _summary(runs)
+    out["kind"] = "cells.heredity_design_prescreen@9_final"
+    out["stages"] = [s for s in STAGES if (root / s).is_dir()]
+    with open(root / "final.json", "x") as stream:
+        json.dump(targets._json(out), stream, indent=1)
+    with open(root / "final_table.md", "x") as stream:
+        stream.write("\n".join(lines) + "\n")
+    return out
+
+
+def _summary(runs):
+    """(results, table lines) for screen and turnover runs."""
     screens = [r for r in runs if r.get("kind") == "screen"]
     turns = [r for r in runs if r.get("kind") == "turnover"]
     lines, out = (
@@ -838,11 +924,26 @@ def summarize(directory):
         ]
 
     def head(r):
+        het = " het" if r.get("heterogeneity") else ""
+        short = r.get("horizon_s", HORIZON_S) != HORIZON_S
+        horizon = f" ({r['horizon_s']:g} s pilot)" if short else ""
         return (
-            f"| {r['disc_cells']} | {r['scale']:g} | {r['rule']} | "
-            f"{r['rate_percent_per_min']:g} | {r['order']} |"
+            f"| {r.get('disc_cells', '-')}{het} | {r['scale']:g} | {r['rule']} | "
+            f"{r['rate_percent_per_min']:g} | {r['order']}{horizon} |"
         )
 
+    def order(r):
+        return (
+            r.get("disc_cells", 0),
+            bool(r.get("heterogeneity")),
+            r["scale"],
+            r["rule"],
+            r["rate_percent_per_min"],
+            r["order"],
+            r.get("horizon_s", 0),
+        )
+
+    turns = sorted(turns, key=order)
     if turns:
         out["turnover"] = [
             {
@@ -852,26 +953,18 @@ def summarize(directory):
             }
             for r in turns
         ]
+        for entry, r in zip(out["turnover"], turns, strict=True):
+            if "error" not in r:
+                entry["rim_births"] = rim_births(r)
         lines += [
             "| disc | s | rule | %/min | order | J 10 / 20 / 30 / 40 / 50 min | J min | "
-            "J<0.8 from s | D end | founders left | disc newcomers D at end | stop |",
-            "|---|---|---|---|---|---|---|---|---|---|---|---|",
+            "J<0.8 from s | J (D) after last founder | D end | founders left | "
+            "disc newcomers D at end | stop |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
         ]
-        for r in sorted(
-            turns,
-            key=lambda r: (
-                r.get("disc_cells", 0),
-                r["scale"],
-                r["rule"],
-                r["rate_percent_per_min"],
-                r["order"],
-            ),
-        ):
+        for r in turns:
             if "error" in r:
-                lines.append(
-                    f"| - | {r['scale']:g} | {r['rule']} | {r['rate_percent_per_min']:g} "
-                    f"| {r['order']} | {r['error']} | | | | | | |"
-                )
+                lines.append(f"{head(r)} {r['error']} | | | | | | | | |")
                 continue
             sm = r["summary"]
             js = " / ".join(
@@ -886,9 +979,11 @@ def summarize(directory):
                 if not r["stopped"]
                 else f"{r['stopped']['reason']} at {r['stopped']['time_s']:g} s"
             )
+            after = sm["at_first_record_after_last_founder"]
+            after = "-" if after is None else f"{after['jaccard']:.3f} ({after['d_total']})"
             lines.append(
                 f"{head(r)} {js} | {sm['jaccard_min']:.2f} | {sm['first_record_below_0p8_s']} | "
-                f"{sm['d_total_end']} | {sm['founders_remaining_end']} | "
+                f"{after} | {sm['d_total_end']} | {sm['founders_remaining_end']} | "
                 f"{'-' if frac is None else f'{frac:.2f}'} ({sm['newcomers_in_disc']}) | {stop} |"
             )
         lines += [
@@ -907,11 +1002,26 @@ def summarize(directory):
                 if int(k) <= sm["disc_ring_max"]
             )
             lines.append(f"{head(r)} {rings} | {sm['newcomers_outside_ever_d']} |")
-    with open(directory / "results.json", "x") as stream:
-        json.dump(targets._json(out), stream, indent=1)
-    with open(directory / "table.md", "x") as stream:
-        stream.write("\n".join(lines) + "\n")
-    return out
+        lines += [
+            "",
+            "Rim newcomers by neighbourhood at birth (rim_births): "
+            "kind, D neighbours / of which newcomers -> ever D or H, count; "
+            "first = born within the first founder turnover.",
+            "",
+            "| disc | s | rule | %/min | order | rim births |",
+            "|---|---|---|---|---|---|",
+        ]
+        for entry, r in zip(out["turnover"], turns, strict=True):
+            if "rim_births" not in entry:
+                continue
+            text = "; ".join(
+                f"{b['slot_kind']} {b['d_neighbours']}/{b['newcomer_d_neighbours']}"
+                f"{' first' if b['within_first_founder_turnover'] else ''} -> "
+                f"{b['outcome']} x{b['count']}"
+                for b in entry["rim_births"]
+            )
+            lines.append(f"{head(r)} {text} |")
+    return out, lines
 
 
 def main(argv=None):
@@ -928,6 +1038,7 @@ def main(argv=None):
     parser.add_argument("--horizon", type=float, default=HORIZON_S)
     parser.add_argument("--tag", default="main")
     parser.add_argument("--summarize", action="store_true", help="results.json and table.md")
+    parser.add_argument("--final", action="store_true", help="final.json over the stage dirs")
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)  # results are never overwritten
     if args.screen:
@@ -950,6 +1061,8 @@ def main(argv=None):
         _log("turnover done")
     elif args.summarize:
         summarize(args.output)
+    elif args.final:
+        final(args.output)
     else:
         parser.error("give --screen, --turnover or --summarize")
     return 0
