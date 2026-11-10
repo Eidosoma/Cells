@@ -567,26 +567,6 @@
             0.00012241095507987704
           ],
           "open_fraction_lag_max_rel": 0.07685940619613028
-        },
-        "Kir": {
-          "active": false,
-          "m_range": [
-            0.01555197628591507,
-            0.01555197628591507
-          ],
-          "h_range": [
-            0.9784011343902208,
-            0.9784011343902208
-          ],
-          "open_fraction_range": [
-            0.01488742136232431,
-            0.01488742136232431
-          ],
-          "gate_lag_max_abs": [
-            0.014345395505531629,
-            0.008842103865546291
-          ],
-          "open_fraction_lag_max_rel": 0.4702902621688801
         }
       },
       "sim": {
@@ -634,8 +614,10 @@
     }
   },
   "limits": [
-    "BETSE's own step error is measured through the BETSE-order emulator (which reproduces plain BETSE to roundoff on these cases: emulator/<case>-check-comparison), not by a fine-INIT BETSE twin; P4's dense-vs-fine BETSE step term agreed with the emulator's within 2%.",
-    "One seeded geometry; BETSE's 5 s INIT at 10 ms and 35 ms SIM at 0.1 ms. Gates restart at steady state at SIM start, so time constants enter only through gate lag while Vm drifts (gate_lag); no time-constant claim where that lag is small.",
+    "BETSE's own step error is measured through the BETSE-order emulator (which reproduces plain BETSE to roundoff on these cases: emulator/<case>-check-comparison), not by a fine-INIT BETSE twin (lead, 10 November). In P4 (parity-rung2-4-20261109-01/emulator-01) plain BETSE's dense-vs-fine step term was 0.980-0.999 of the emulator's dt-vs-dt/100 term for Vm, 0.92-1.04 for cell Na, K, Cl and M and 0.73-0.99 for cell Ca (both cases, INIT and SIM); the largest excess, 4.3% (cell Na, INIT, p4-kv1p5-kleak), is the recorded bound on the unmeasured part: at most 4.3% of the step term, so under 10% of the measured sum.",
+    "Covered voltage range (BETSE Vm over samples and membranes; INIT starts at 0 V): NaV1.2 and Na leak 0 to -15.5 mV (INIT) and -15.5 to -16.9 mV (SIM); Kir2.1 -15.5 to -16.9 mV (SIM only). The judged claim is agreement over this range; law-level agreement over -120...+60 mV is the separate formulation check (parity-p4b-channels-20261110-01/formulation-01). Kir2.1 near the H state (-80 mV) and NaV1.2's lower window region (-60...-35 mV) are not exercised by either P4b case.",
+    "One seeded geometry; BETSE's 5 s INIT at 10 ms and 35 ms SIM at 0.1 ms. Gates restart at steady state at SIM start, so time constants enter only through gate lag while Vm drifts (gate_lag). Here SIM open-fraction lags are 1.1% (NaV1.2) and 0.4% (Kir2.1): SIM tests the steady laws, not the time constants. INIT lags include BETSE's one-step offset at 10 ms, so no kinetics claim rests on INIT.",
+    "SIM ratios of channels already active in INIT are the INIT differences carried into SIM (Vm moves little there); the SIM-only tests are the channels switched on at SIM start.",
     "Channel populations on every membrane with 'apply to: all'; no activators, inhibitors, modulators or events.",
     "The compact-ECM-face and gate-once terms are measured at dt/10 (P4: dt/100), as for P3; P2's gate term at dt/10 was within 3% of its dt/100 value (parity-rung2-4-20261109-02). If the step-order rule fires, both move to dt/100 with the step terms."
   ]
