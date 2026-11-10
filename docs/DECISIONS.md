@@ -4583,6 +4583,22 @@ missing features to the current engine, biologically valid ones".
   as per-hemichannel junction gating or a rule for newcomer junctions, are
   sourced from the literature before any design.
 
+## D137: Test Cortés-Poza (2026) in Cells
+
+2026-11-10, user decision on the [test plan](CORTES_POZA_2026_TEST_PLAN.md) for
+"A hybrid mathematical framework for morphogenesis and regeneration" (J. Math.
+Biol. 93, 43): "Sounds good on phase 0, and authors code can be outside refrence
+and you rank this, we are in no rush".
+- **Phase 0 approved as tooling.** The author's code is an external reference:
+  run out of process, never copied or imported, with its licence checked first.
+- **The lead ranks the work:**
+  1. Phase 0 on the next free agent slot;
+  2. cell replacement (G2) next;
+  3. Phase 1 after the junction-heat fix and the frozen-composition comparison;
+  4. Phases 2–3 through the engine-feature queue (D136).
+- **The abstract regulatory modules stay out of the engine.** Only claims with a
+  physical mapping are tested.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
