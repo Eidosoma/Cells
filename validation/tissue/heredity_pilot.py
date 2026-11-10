@@ -1240,10 +1240,11 @@ def part_heat(args):
     than surface_pump_checks.DISSIPATION_ATOL_PJ in a step. This replays the
     engine's own checked step (models/surface_pump_v3.checked_step, unmodified,
     no runner checks) from the cue-on cohort snapshot through the cue and after
-    it, and records each step's negative increments of every dissipation field:
-    how many routes, the most negative value, and for junctions the cells and
-    junction voltages before and after the step. Evidence only; nothing here is
-    a run of the experiment.
+    it, and records each step's negative increments of every dissipation field
+    (how many routes, the most negative value, the worst junction's cells), the
+    model's own device checks on every replayed row (models/surface_pump_v3.
+    device_checks: which checks fail and where), and at each 0.1 s the disc's D
+    counts. Evidence only: an unchecked replay is not a run of the experiment.
     """
     import jax.numpy as jnp
 
@@ -1266,17 +1267,21 @@ def part_heat(args):
         worlds={},
     )
     fields = model.DISSIPATION_FIELDS
+    names = ["heat.json", *(f"heat-{k:02d}.json" for k in range(2, 100))]
+    name = next(n for n in names if not (output / n).exists())  # Never overwrite a replay.
 
-    def advance(state, control, p):
-        def body(y, _):
+    def advance(state, control, p, constants, index):
+        def body(carry, _):
+            y, n = carry
             new, ok = model.checked_step(y, DT, control, p, p.active)
+            failed, _ = model.device_checks(y, new, p, constants, n + 1)
             change = [getattr(new, k) - getattr(y, k) for k in fields]
             low = jnp.stack([jnp.min(c) for c in change])
             count = jnp.stack([jnp.sum(c < -DISSIPATION_ATOL_PJ) for c in change])
             j = new.junction_dissipated_energy_pJ - y.junction_dissipated_energy_pJ
-            return new, (ok, low, count, jnp.argmin(j))
+            return (new, n + 1), (ok, low, count, jnp.argmin(j), failed)
 
-        return jax.lax.scan(body, state, None, length=chunk)
+        return jax.lax.scan(body, (state, index), None, length=chunk)
 
     chunk = 100
     compiled = jax.jit(advance)
@@ -1284,7 +1289,11 @@ def part_heat(args):
         spec, checkpoint = world.simulation, snapshot.checkpoints[world.world_id]
         p = type(checkpoint.layout)(*(jnp.asarray(v) for v in checkpoint.layout))
         state = model.STATE_TYPE(*(jnp.asarray(v) for v in checkpoint.state))
-        events, refused = [], None
+        constants = jax.tree.map(jnp.asarray, model.device_check_constants(spec))
+        host = type(checkpoint.layout)(*(np.asarray(v) for v in checkpoint.layout))
+        disc = np.zeros(tissue.cells, dtype=bool)
+        disc[tissue.disc(run["worlds"][str(world.world_id)]["disc_cells"])] = True
+        events, refused, checks, counts = [], None, {}, []
         first, cue_end = int(round(checkpoint.time / DT)), int(round(off / DT))
         for n in range(-(-steps // chunk)):
             k0 = first + n * chunk
@@ -1293,8 +1302,20 @@ def part_heat(args):
                 raise ValueError("Diagnostic chunks must not straddle the cue end")
             controls = control_values(spec, [t])
             control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
-            state, (ok, low, count, worst) = compiled(state, control, p)
-            ok, low, count, worst = (np.asarray(v) for v in (ok, low, count, worst))
+            (state, _), outputs = compiled(state, control, p, constants, jnp.asarray(k0))
+            ok, low, count, worst, failed = (np.asarray(v) for v in outputs)
+            for c, check in enumerate(model.DEVICE_CHECKS):
+                rows = np.flatnonzero(failed[:, c])
+                if len(rows):
+                    entry = checks.setdefault(check, dict(rows=0, first_s=None))
+                    entry["rows"] += int(len(rows))
+                    entry["first_s"] = entry["first_s"] or (k0 + int(rows[0]) + 1) * DT
+            row = model.STATE_TYPE(*(np.asarray(v) for v in state))
+            end = control_values(spec, [(k0 + chunk) * DT])
+            values = model.readouts(row, type(end)(*(np.asarray(v[0]) for v in end)), host, xp=np)
+            vm = np.asarray(values.field.rates.membrane_voltage_V)[: len(tissue.owner)]
+            d = vm @ tissue.average > THRESHOLD_V
+            counts.append([(k0 + chunk) * DT, int(d[disc].sum()), int(d[~disc].sum())])
             if not ok.all():
                 refused = (k0 + int(np.argmin(ok)) + 1) * DT
                 break
@@ -1318,11 +1339,13 @@ def part_heat(args):
             disc_cells=run["worlds"][str(world.world_id)]["disc_cells"],
             steps_with_decrease=len(events),
             refused_at_s=refused,
+            failed_device_checks=checks,
+            d_counts_t_inside_outside=counts,
             events=events[:200],
             event_times_s=[e["step_end_s"] for e in events],
         )
         log(f"heat world {world.world_id}: {len(events)} steps with a decrease")
-        write_json(output / "heat.json", report)
+        write_json(output / name, report)
 
 
 def main(argv=None):
