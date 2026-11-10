@@ -656,7 +656,10 @@ def part_summary(args):
                 steps=r["steps"],
                 ms_per_batch_step=r["steady_ms_per_batch_step"],
                 ms_per_world_step=r["steady_ms_per_batch_step"] / r["worlds"],
-                execute_ms_per_world_step=1e3
+                # The host waits for a window only after finishing the previous
+                # one (the device runs ahead), so this is the wait left over, not
+                # the device time: the vector part measures that.
+                device_wait_ms_per_world_step=1e3
                 * r["timings"]["execute_seconds"]
                 / (r["steps"] * r["worlds"]),
                 analysis_seconds=r["timings"]["analysis_seconds"],
