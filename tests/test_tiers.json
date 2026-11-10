@@ -8,7 +8,8 @@
   "/mnt/workspaces/Cells/ledger-fix-20261109-01/measure4/measured.json",
   "/mnt/workspaces/Cells/projective-c-20261109-01/qual-gate-01/measure/measured.json",
   "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/gate-01/measured/measured.json",
-  "/mnt/workspaces/Cells/device-checks-v3-20261109-01/gate-01-measure/measured.json"
+  "/mnt/workspaces/Cells/device-checks-v3-20261109-01/gate-01-measure/measured.json",
+  "/mnt/workspaces/Cells/land-field-propagation-20261110-01/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -72,6 +73,14 @@
    "root": "/mnt/workspaces/Cells/device-checks-v3-20261109-01/source-gate-01",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-10T00:38:43+00:00"
+  },
+  {
+   "git_revision": "48d20db6025acbb3c06f3fc1c78d76f0c4a1e721",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/land-field-propagation-20261110-01/source",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-10T17:33:24+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3182,6 +3191,12 @@
    {
     "file": "tests/unit/test_field_floor.py",
     "seconds": 90.18,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_field_propagation.py",
+    "seconds": 90.27,
     "exit_code": null,
     "counts": {}
    },
