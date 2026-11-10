@@ -374,6 +374,13 @@ def run_network_emulator(
                         float(np.min(network.opening(kind, gates[-1, c]))),
                         float(np.max(network.opening(kind, gates[-1, c]))),
                     ],
+                    # Over every recorded update and membrane (gates after the update).
+                    "open_fraction_range": [
+                        float(np.min(network.opening(kind, np.moveaxis(gates[:, c], 1, 0)))),
+                        float(np.max(network.opening(kind, np.moveaxis(gates[:, c], 1, 0)))),
+                    ],
+                    "m_range": [float(gates[:, c, 0].min()), float(gates[:, c, 0].max())],
+                    "h_range": [float(gates[:, c, 1].min()), float(gates[:, c, 1].max())],
                 }
                 for c, (name, kind, dm, _) in enumerate(world["network_channels"])
             ],
