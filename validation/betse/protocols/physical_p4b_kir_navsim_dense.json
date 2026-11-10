@@ -1,0 +1,648 @@
+{
+  "schema": "cells.betse_comparison_protocol@1",
+  "id": "physical-p4b-kir-navsim-dense",
+  "purpose": "Rung P4b (heredity carrier channels, G1b): judge Cells' own physics (resolved_pump_tissue@3 with network channel populations) on the rung-1 mammal default world: Kir2.1 (1e-8 m/s), Na leak and K leak active from INIT; NaV1.2 (2.5e-7 m/s) switched on at SIM start. INIT rests near -34.2 mV; SIM ramps Vm about +6.2 mV over 35 ms (0.15-0.19 mV/ms) as NaV1.2 activates and inactivates. Against the plain-BETSE case parity-p4b-channels-20261110-01/derive-01/betse-reference/p4b-kir-navsim-dense (general network with only these channels, no biomolecules). Tolerances by the pinned method (3 x the sum of measured terms; every cell-ion field term propagated through the reference emulator).",
+  "betse_case": "p4b-kir-navsim-dense",
+  "phases": [
+    "init",
+    "sim"
+  ],
+  "time_alignment_atol_s": 1e-09,
+  "min_common_samples": 1,
+  "compare_final": true,
+  "observables": {
+    "vm_time": {
+      "final": "vm",
+      "tolerance": "voltage"
+    },
+    "vm_ave_time": {
+      "final": "vm_ave",
+      "tolerance": "voltage"
+    },
+    "cc_time": {
+      "final": "cc_cells",
+      "tolerance": "cell_concentration"
+    },
+    "cc_env_time": {
+      "final": "cc_env",
+      "tolerance": "ecm_concentration",
+      "exclude": "grid_boundary_ring"
+    },
+    "venv_time": {
+      "final": "v_env",
+      "tolerance": "voltage",
+      "judged": false
+    },
+    "diag_*": {
+      "judged": false
+    }
+  },
+  "tolerance_quantities": {
+    "voltage": {
+      "kind": "abs",
+      "units": "V"
+    },
+    "cell_concentration": {
+      "kind": "rel",
+      "units": "1"
+    },
+    "ecm_concentration": {
+      "kind": "rel",
+      "units": "1"
+    }
+  },
+  "tolerance_classes": {
+    "physical_route_vs_betse_10ms_init": {
+      "cell_concentration": {
+        "init": {
+          "by_ion": {
+            "Ca": 0.5,
+            "Cl": 2e-05,
+            "K": 3e-06,
+            "M": 2e-06,
+            "Na": 3e-05,
+            "P": 1e-12
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Ca": 0.0007,
+            "Cl": 3e-06,
+            "K": 9e-07,
+            "M": 2e-07,
+            "Na": 2e-05,
+            "P": 1e-12
+          }
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "by_ion": {
+            "Ca": 0.0003,
+            "Cl": 0.0002,
+            "K": 0.0007,
+            "M": 0.0002,
+            "Na": 0.0002,
+            "P": 1e-12
+          }
+        },
+        "sim": {
+          "by_ion": {
+            "Ca": 0.0002,
+            "Cl": 0.0002,
+            "K": 0.0005,
+            "M": 0.0002,
+            "Na": 0.0002,
+            "P": 1e-12
+          }
+        }
+      },
+      "voltage": {
+        "init": 0.002,
+        "sim": 2e-05
+      }
+    }
+  },
+  "verdict_class": "physical_route_vs_betse_10ms_init",
+  "tolerance_derivation": {
+    "method": "3 x (sum of measured difference terms), rounded up to one significant figure; per ion for concentrations (a zero sum gets the floor 1e-12)",
+    "tool": "validation/betse/protocol_tolerances.py",
+    "recipe": "/mnt/workspaces/Cells/parity-p4b-channels-20261110-01/derive-01/protocols/recipe_p4b_kir_navsim_dense.json",
+    "inputs": "/mnt/workspaces/Cells/parity-p4b-channels-20261110-01/derive-01/protocols/derived_p4b_kir_navsim_dense.json",
+    "terms": [
+      "betse_init_step",
+      "calcium_pump_law_cells_vs_betse",
+      "cells_exterior_field_boltzmann_response",
+      "cells_exterior_field_propagated",
+      "cells_numerics_ars222",
+      "conservative_compact_ecm_faces_at_dt_over_10",
+      "constants_codata_vs_betse",
+      "exterior_field_law_bound_ecm_drift_off",
+      "physical_time_gate_and_no_concentration_lag"
+    ],
+    "provisional_terms": [],
+    "largest_term": {
+      "cell_concentration": {
+        "init": "betse_init_step",
+        "sim": "betse_init_step"
+      },
+      "ecm_concentration": {
+        "init": "conservative_compact_ecm_faces_at_dt_over_10",
+        "sim": "conservative_compact_ecm_faces_at_dt_over_10"
+      },
+      "voltage": {
+        "init": "betse_init_step",
+        "sim": "constants_codata_vs_betse"
+      }
+    },
+    "sums_before_margin": {
+      "cell_concentration": {
+        "init": {
+          "Ca": 0.1424162030546426,
+          "Cl": 3.4865786348243447e-06,
+          "K": 7.561703600628457e-07,
+          "M": 4.3921709271962656e-07,
+          "Na": 7.780958579323599e-06,
+          "P": 0.0
+        },
+        "sim": {
+          "Ca": 0.0002194441256120434,
+          "Cl": 8.929454769182899e-07,
+          "K": 2.8328154072040047e-07,
+          "M": 4.763623405196121e-08,
+          "Na": 3.4216297351480016e-06,
+          "P": 0.0
+        }
+      },
+      "ecm_concentration": {
+        "init": {
+          "Ca": 6.899465892875059e-05,
+          "Cl": 3.468710979159118e-05,
+          "K": 0.00020628033706455025,
+          "M": 3.420211148880082e-05,
+          "Na": 4.08884586999041e-05,
+          "P": 0.0
+        },
+        "sim": {
+          "Ca": 6.0661152441058136e-05,
+          "Cl": 3.4440279014760896e-05,
+          "K": 0.00016010797307623517,
+          "M": 3.411162063511984e-05,
+          "Na": 4.479746584920648e-05,
+          "P": 0.0
+        }
+      },
+      "voltage": {
+        "init": 0.00048030630971866717,
+        "sim": 5.909752938544004e-06
+      }
+    },
+    "step_order_rule": {
+      "rule": "BETSE's step term is (10/9) |x(dt) - x(dt/10)| (emulator, SIM chained) if the observed order on p4b-kir-navsim-dense (dt, dt/10, dt/100) is within 0.9-1.1 for Vm and every cell ion but P in INIT and SIM; otherwise |x(dt) - x(dt/100)| for every step term in both P4b cases, and the compact-ECM-face and gate-once terms at dt/100 instead of dt/10 (lead, 10 November). A failed check counts as the fallback.",
+      "check": "/mnt/workspaces/Cells/parity-p4b-channels-20261110-01/derive-01/emulator/order_check_p4b-kir-navsim-dense.json",
+      "outcome": "step terms (10/9)|dt1 - dt10| in every P4b case"
+    },
+    "field_terms": "cell-ion, Vm and ECM field terms propagated through the BETSE-order emulator (validation/betse/field_propagation.py --runner network; boltzmann, vpatch and both on the (1 ms, 0.1 ms) and (0.5 ms, 0.05 ms) blind layouts; max over the six pairs). The X_ext per-volt heuristic is not used. The ECM Boltzmann response of Cells' own exterior field (field_layouts) stays as in P4."
+  },
+  "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+  "notes": [
+    "Reported only: venv_time (BETSE's screened, smoothed estimate has no Cells counterpart) and Cells diag_* arrays.",
+    "Gate open fractions are not in the comparison layout and are not judged.",
+    "Leave-one-out plain-BETSE cases: parity-p4b-channels-20261110-01/derive-01/betse-reference/p4b-kir-navsim-no-<channel>-dense."
+  ],
+  "cells_run": {
+    "model": "resolved_pump_tissue@3",
+    "solver": "imex_ars222_face_electromigration@1",
+    "field_solver": "capacitive_reduction_gauged_damped_newton@3",
+    "dt_init_s": 0.001,
+    "dt_sim_s": 0.0001,
+    "constants": "CODATA (Cells default)",
+    "sim_start": "Cells' own INIT end state",
+    "backends": [
+      "cpu"
+    ],
+    "optional_repeat": "gpu (L4): reported only, as layout-differences against the judged CPU run; not a verdict",
+    "note": "@3 IMEX ARS(2,2,2) with exponential stage gates (exponential_mean_rate_linear_target_gates@1); field solver @3 as P4. Judged runs on CPU; Cells-only terms from blind CPU runs at (1 ms, 0.1 ms) and (0.5 ms, 0.05 ms) INIT/SIM steps (SIM has channel dynamics)",
+    "mapping": "network_world_adapter.py run-resolved (NETWORK_RESOLVED): one population per membrane patch and network channel, Nav1p2 -> nav1p2_m3h_regularized@1 (Na), Kir2p1 -> kir2p1_mh2@1 (K), NaLeak -> naleak_always_open@1 (Na), KLeak -> kleak_always_open@1 (K); max_permeability = max Dm / tm, abundance 1, relative permeability 1; availability 1, or 0 in INIT for 'init active: False'; gates (m_inf, h_inf)(0 V) in INIT and (m_inf, h_inf)(Cells' INIT-end patch Vm) at the SIM handoff (BETSE re-reads the network at SIM start)"
+  },
+  "discrimination": {
+    "nav1p2_given_rest (BETSE)": {
+      "option_term": {
+        "file": "/mnt/workspaces/Cells/parity-p4b-channels-20261110-01/derive-01/terms/option_p4b-kir-navsim-no-nav1p2-dense_vs_p4b-kir-navsim-dense.json"
+      },
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 0.0,
+          "cell_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0
+          },
+          "ecm_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0
+          }
+        },
+        "sim": {
+          "voltage": 312.1213616060292,
+          "cell_concentration": {
+            "Ca": 77.16168047966147,
+            "Cl": 1.3886597482242455,
+            "K": 0.9326395374555568,
+            "M": 3.1461612559250884,
+            "Na": 11.216263033954133
+          },
+          "ecm_concentration": {
+            "Ca": 0.002628545408203128,
+            "Cl": 0.0011855680763811702,
+            "K": 0.03438719066051613,
+            "M": 0.0013301340213887603,
+            "Na": 0.06876625419221014
+          }
+        }
+      }
+    },
+    "kir2p1_given_rest (BETSE)": {
+      "option_term": {
+        "file": "/mnt/workspaces/Cells/parity-p4b-channels-20261110-01/derive-01/terms/option_p4b-kir-navsim-no-kir2p1-dense_vs_p4b-kir-navsim-dense.json"
+      },
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 4.379449742017855,
+          "cell_concentration": {
+            "Ca": 0.49422905189107236,
+            "Cl": 82.29211054295735,
+            "K": 190.0643253708056,
+            "M": 121.54164842054544,
+            "Na": 183.45858928781774
+          },
+          "ecm_concentration": {
+            "Ca": 0.008965791848273,
+            "Cl": 0.028786748036079505,
+            "K": 2.6386950782707066,
+            "M": 0.10436355310581044,
+            "Na": 0.39368532761463115
+          }
+        },
+        "sim": {
+          "voltage": 438.4317444545919,
+          "cell_concentration": {
+            "Ca": 354.5508228372689,
+            "Cl": 552.4929054379573,
+            "K": 637.6954888291644,
+            "M": 1223.8909737156694,
+            "Na": 279.4124037310397
+          },
+          "ecm_concentration": {
+            "Ca": 0.0082631443513182,
+            "Cl": 0.021979355201994608,
+            "K": 3.6912152746643896,
+            "M": 0.10438927824744691,
+            "Na": 0.4080583124547245
+          }
+        }
+      }
+    },
+    "naleak_given_rest (BETSE)": {
+      "option_term": {
+        "file": "/mnt/workspaces/Cells/parity-p4b-channels-20261110-01/derive-01/terms/option_p4b-kir-navsim-no-naleak-dense_vs_p4b-kir-navsim-dense.json"
+      },
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 12.825416362743855,
+          "cell_concentration": {
+            "Ca": 0.8105641171933906,
+            "Cl": 182.04223041212492,
+            "K": 277.27300123244487,
+            "M": 320.6609212191648,
+            "Na": 414.9314314113272
+          },
+          "ecm_concentration": {
+            "Ca": 0.030422973980901026,
+            "Cl": 0.09679291768913321,
+            "K": 4.123011738941625,
+            "M": 0.325758361120254,
+            "Na": 0.8417173911523292
+          }
+        },
+        "sim": {
+          "voltage": 1583.9301370265518,
+          "cell_concentration": {
+            "Ca": 622.169199724206,
+            "Cl": 1223.7824196808585,
+            "K": 931.8085414605192,
+            "M": 3233.174449156959,
+            "Na": 637.752344446374
+          },
+          "ecm_concentration": {
+            "Ca": 0.04676818706263846,
+            "Cl": 0.09738351685734328,
+            "K": 5.800739509097874,
+            "M": 0.3271075618950195,
+            "Na": 0.9089477104130074
+          }
+        }
+      }
+    }
+  },
+  "discrimination_ratio": {
+    "effect": "nav1p2_given_rest (BETSE)",
+    "definition": "the option's own effect (plain BETSE with the channel against the same case without it; max over samples and phase end, interior ECM) divided by this protocol's tolerance, per phase and quantity (ion); ions at the 1e-12 floor (immobile P) are left out",
+    "init": {
+      "voltage": 0.0,
+      "cell_concentration": {
+        "Ca": 0.0,
+        "Cl": 0.0,
+        "K": 0.0,
+        "M": 0.0,
+        "Na": 0.0
+      },
+      "ecm_concentration": {
+        "Ca": 0.0,
+        "Cl": 0.0,
+        "K": 0.0,
+        "M": 0.0,
+        "Na": 0.0
+      }
+    },
+    "sim": {
+      "voltage": 312.1213616060292,
+      "cell_concentration": {
+        "Ca": 77.16168047966147,
+        "Cl": 1.3886597482242455,
+        "K": 0.9326395374555568,
+        "M": 3.1461612559250884,
+        "Na": 11.216263033954133
+      },
+      "ecm_concentration": {
+        "Ca": 0.002628545408203128,
+        "Cl": 0.0011855680763811702,
+        "K": 0.03438719066051613,
+        "M": 0.0013301340213887603,
+        "Na": 0.06876625419221014
+      }
+    }
+  },
+  "non_discriminating": [
+    "init/voltage",
+    "init/cell_concentration/Ca",
+    "init/cell_concentration/Cl",
+    "init/cell_concentration/K",
+    "init/cell_concentration/M",
+    "init/cell_concentration/Na",
+    "init/ecm_concentration/Ca",
+    "init/ecm_concentration/Cl",
+    "init/ecm_concentration/K",
+    "init/ecm_concentration/M",
+    "init/ecm_concentration/Na",
+    "sim/cell_concentration/K",
+    "sim/ecm_concentration/Ca",
+    "sim/ecm_concentration/Cl",
+    "sim/ecm_concentration/K",
+    "sim/ecm_concentration/M",
+    "sim/ecm_concentration/Na"
+  ],
+  "non_discriminating_rule": "Quantities listed here (ratio <= 1; per channel under discrimination_by_channel) are still judged, but that channel's effect does not exceed their tolerance, so no claim about that channel may rest on them.",
+  "status": "PROPOSED, not registered: numbers from emulator-only budgets, emulator field propagation, plain BETSE vs plain BETSE and blind Cells-only runs; no Cells-vs-BETSE or Cells-vs-emulator difference has been computed for this case. To be fixed and committed by the lead before any judged run.",
+  "discrimination_by_channel": {
+    "nav1p2": {
+      "law": "nav1p2_m3h_regularized@1",
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 0.0,
+          "cell_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0
+          },
+          "ecm_concentration": {
+            "Ca": 0.0,
+            "Cl": 0.0,
+            "K": 0.0,
+            "M": 0.0,
+            "Na": 0.0
+          }
+        },
+        "sim": {
+          "voltage": 312.1213616060292,
+          "cell_concentration": {
+            "Ca": 77.16168047966147,
+            "Cl": 1.3886597482242455,
+            "K": 0.9326395374555568,
+            "M": 3.1461612559250884,
+            "Na": 11.216263033954133
+          },
+          "ecm_concentration": {
+            "Ca": 0.002628545408203128,
+            "Cl": 0.0011855680763811702,
+            "K": 0.03438719066051613,
+            "M": 0.0013301340213887603,
+            "Na": 0.06876625419221014
+          }
+        }
+      },
+      "non_discriminating": [
+        "init/voltage",
+        "init/cell_concentration/Ca",
+        "init/cell_concentration/Cl",
+        "init/cell_concentration/K",
+        "init/cell_concentration/M",
+        "init/cell_concentration/Na",
+        "init/ecm_concentration/Ca",
+        "init/ecm_concentration/Cl",
+        "init/ecm_concentration/K",
+        "init/ecm_concentration/M",
+        "init/ecm_concentration/Na",
+        "sim/cell_concentration/K",
+        "sim/ecm_concentration/Ca",
+        "sim/ecm_concentration/Cl",
+        "sim/ecm_concentration/K",
+        "sim/ecm_concentration/M",
+        "sim/ecm_concentration/Na"
+      ]
+    },
+    "kir2p1": {
+      "law": "kir2p1_mh2@1",
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 4.379449742017855,
+          "cell_concentration": {
+            "Ca": 0.49422905189107236,
+            "Cl": 82.29211054295735,
+            "K": 190.0643253708056,
+            "M": 121.54164842054544,
+            "Na": 183.45858928781774
+          },
+          "ecm_concentration": {
+            "Ca": 0.008965791848273,
+            "Cl": 0.028786748036079505,
+            "K": 2.6386950782707066,
+            "M": 0.10436355310581044,
+            "Na": 0.39368532761463115
+          }
+        },
+        "sim": {
+          "voltage": 438.4317444545919,
+          "cell_concentration": {
+            "Ca": 354.5508228372689,
+            "Cl": 552.4929054379573,
+            "K": 637.6954888291644,
+            "M": 1223.8909737156694,
+            "Na": 279.4124037310397
+          },
+          "ecm_concentration": {
+            "Ca": 0.0082631443513182,
+            "Cl": 0.021979355201994608,
+            "K": 3.6912152746643896,
+            "M": 0.10438927824744691,
+            "Na": 0.4080583124547245
+          }
+        }
+      },
+      "non_discriminating": [
+        "init/cell_concentration/Ca",
+        "init/ecm_concentration/Ca",
+        "init/ecm_concentration/Cl",
+        "init/ecm_concentration/M",
+        "init/ecm_concentration/Na",
+        "sim/ecm_concentration/Ca",
+        "sim/ecm_concentration/Cl",
+        "sim/ecm_concentration/M",
+        "sim/ecm_concentration/Na"
+      ]
+    },
+    "naleak": {
+      "law": "naleak_always_open@1",
+      "effect_over_tolerance": {
+        "init": {
+          "voltage": 12.825416362743855,
+          "cell_concentration": {
+            "Ca": 0.8105641171933906,
+            "Cl": 182.04223041212492,
+            "K": 277.27300123244487,
+            "M": 320.6609212191648,
+            "Na": 414.9314314113272
+          },
+          "ecm_concentration": {
+            "Ca": 0.030422973980901026,
+            "Cl": 0.09679291768913321,
+            "K": 4.123011738941625,
+            "M": 0.325758361120254,
+            "Na": 0.8417173911523292
+          }
+        },
+        "sim": {
+          "voltage": 1583.9301370265518,
+          "cell_concentration": {
+            "Ca": 622.169199724206,
+            "Cl": 1223.7824196808585,
+            "K": 931.8085414605192,
+            "M": 3233.174449156959,
+            "Na": 637.752344446374
+          },
+          "ecm_concentration": {
+            "Ca": 0.04676818706263846,
+            "Cl": 0.09738351685734328,
+            "K": 5.800739509097874,
+            "M": 0.3271075618950195,
+            "Na": 0.9089477104130074
+          }
+        }
+      },
+      "non_discriminating": [
+        "init/cell_concentration/Ca",
+        "init/ecm_concentration/Ca",
+        "init/ecm_concentration/Cl",
+        "init/ecm_concentration/M",
+        "init/ecm_concentration/Na",
+        "sim/ecm_concentration/Ca",
+        "sim/ecm_concentration/Cl",
+        "sim/ecm_concentration/M",
+        "sim/ecm_concentration/Na"
+      ]
+    }
+  },
+  "gate_lag": {
+    "source": "/mnt/workspaces/Cells/parity-p4b-channels-20261110-01/derive-01/emulator/p4b-kir-navsim-dense-check/run.json",
+    "definition": "per phase and gated channel: gate and open-fraction ranges over every update and membrane, the largest |gate - gate_inf(Vm)| and the largest |P - P_inf| / max P_inf (network_world_adapter.gate_lag); a small lag means that phase tests the steady law, not the time constants",
+    "phases": {
+      "init": {
+        "Kir": {
+          "active": true,
+          "m_range": [
+            0.01555197628591919,
+            0.06427173374027874
+          ],
+          "h_range": [
+            0.9542932622202568,
+            0.9784011343902207
+          ],
+          "open_fraction_range": [
+            0.01488742136232825,
+            0.058768721836184826
+          ],
+          "gate_lag_max_abs": [
+            0.002295090316987953,
+            0.012135218862311059
+          ],
+          "open_fraction_lag_max_rel": 0.03476998523372231
+        },
+        "Nav": {
+          "active": false,
+          "m_range": [
+            0.959359583096871,
+            0.959359583096871
+          ],
+          "h_range": [
+            0.00014038693324995807,
+            0.00014038693324995807
+          ],
+          "open_fraction_range": [
+            0.00012395696699687365,
+            0.00012395696699687365
+          ],
+          "gate_lag_max_abs": [
+            0.6133988905690071,
+            0.0335184647373258
+          ],
+          "open_fraction_lag_max_rel": 0.9274510210383186
+        }
+      },
+      "sim": {
+        "Kir": {
+          "active": true,
+          "m_range": [
+            0.05063401477347843,
+            0.06427214567008044
+          ],
+          "h_range": [
+            0.9542892547204013,
+            0.9546416196035384
+          ],
+          "open_fraction_range": [
+            0.04614483262527745,
+            0.058530585175282104
+          ],
+          "gate_lag_max_abs": [
+            0.0009576193099334399,
+            0.005447847003346773
+          ],
+          "open_fraction_lag_max_rel": 0.011948274917020187
+        },
+        "Nav": {
+          "active": true,
+          "m_range": [
+            0.34596069252666695,
+            0.5124171720142122
+          ],
+          "h_range": [
+            0.013763954148137613,
+            0.0336588516708255
+          ],
+          "open_fraction_range": [
+            0.001393732953196423,
+            0.0018597568410783532
+          ],
+          "gate_lag_max_abs": [
+            0.0023911166434033015,
+            0.0032468635925460634
+          ],
+          "open_fraction_lag_max_rel": 0.11061166368685768
+        }
+      }
+    }
+  },
+  "limits": [
+    "BETSE's own step error is measured through the BETSE-order emulator (which reproduces plain BETSE to roundoff on these cases: emulator/<case>-check-comparison), not by a fine-INIT BETSE twin; P4's dense-vs-fine BETSE step term agreed with the emulator's within 2%.",
+    "One seeded geometry; BETSE's 5 s INIT at 10 ms and 35 ms SIM at 0.1 ms. Gates restart at steady state at SIM start, so time constants enter only through gate lag while Vm drifts (gate_lag); no time-constant claim where that lag is small.",
+    "Channel populations on every membrane with 'apply to: all'; no activators, inhibitors, modulators or events.",
+    "The compact-ECM-face and gate-once terms are measured at dt/10 (P4: dt/100), as for P3; P2's gate term at dt/10 was within 3% of its dt/100 value (parity-rung2-4-20261109-02). If the step-order rule fires, both move to dt/100 with the step terms."
+  ]
+}
