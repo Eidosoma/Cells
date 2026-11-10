@@ -33,8 +33,15 @@ incident junction gates, which follow one of three rules:
   Vj does not depend on the gate values (checked in each run's checks block:
   the field is evaluated with every gate at 0.967 and at 0.1), so no fixed
   point is involved.
-Rules (b) and (c) depart from design.json's replacement specification; they
-are screened, not proposed.
+Attribution variants of (b) (stage-1 screens only): which side of the inherited
+gate state does the work? A neighbour is D when its membrane voltage is above
+the slow U voltage at the moment of replacement (before the reset).
+- inherit_to_d (i): inherited gates on junctions to D neighbours, 0.967 to H
+  neighbours.
+- inherit_to_h (ii): 0.967 on junctions to D neighbours, inherited gates only
+  on junctions to H neighbours.
+Rules (b), (c), (i) and (ii) depart from design.json's replacement
+specification; they are screened, not proposed.
 
 Not varied: the junction gate rate. junction_voltage_relaxation@1's rates
 (alpha 1.3/s, beta up to 20/s) are constants of the law; a junction gate
@@ -91,6 +98,7 @@ from validation.stationary import targets, worlds  # noqa: E402
 
 DT = hc.DT  # 5 ms, admitted by check_steps (pre-screens 7 and 8)
 RULES = ("open", "inherit", "steady")  # (a), (b), (c)
+ATTRIBUTION_RULES = ("inherit_to_d", "inherit_to_h")  # (i), (ii): halves of (b)
 SLOT_NAMES = ("centre", "boundary", "side", "outside")  # boundary = the corner rim cell
 SLOT_DISC_NEIGHBOURS = dict(centre=6, boundary=3, side=4, outside=2)
 SCREEN_DISC = (6, 3)  # (sheet radius, disc radius): 127-cell sheet, 37-cell disc
@@ -149,10 +157,19 @@ def place(case, u, cells, rule, scale):
     gates = index[(index >= lo) & (index < hi)]
     own = index[(index < lo) | (index >= hi)]
     anchor = np.asarray(case.pb.anchor)
+    if rule in ATTRIBUTION_RULES:
+        d = case.voltages(u, scale) > case.threshold  # neighbours' states before the reset
+        mine = set(cells)
+        ends = np.asarray(case.edges)[case.gate_edge[gates - lo]]
+        neighbour_d = np.array([d[b] if a in mine else d[a] for a, b in ends], dtype=bool)
     new = np.array(u, copy=True)
     new[own] = anchor[own]
     if rule == "open":
         new[gates] = anchor[gates]
+    elif rule == "inherit_to_d":
+        new[gates[~neighbour_d]] = anchor[gates[~neighbour_d]]
+    elif rule == "inherit_to_h":
+        new[gates[neighbour_d]] = anchor[gates[neighbour_d]]
     elif rule == "steady":
         edge = case.gate_edge[gates - lo]
         vj = case.junction_voltages(new, scale)[edge]
@@ -207,7 +224,7 @@ def defect_at(defect, scale, unit):
     return "stable" if up_to is None or scale < up_to else "unstable"
 
 
-def screen(output, scales, tag, rules=RULES):
+def screen(output, scales, tag, rules=RULES, slot_names=SLOT_NAMES):
     """Stage 1: single newcomers in the stationary 37-cell disc, per rule and slot."""
     unit = hp.units()["theta_per_unit_scale"]
     defects = _prescreen8_defects()
@@ -225,7 +242,7 @@ def screen(output, scales, tag, rules=RULES):
         check = checks(case, u_disc, s)
         _log(f"  checks {check}")
         for rule in rules:
-            for name in SLOT_NAMES:
+            for name in slot_names:
                 cells, inside = [where[name]], name != "outside"
                 others = int(case.full.sum()) - (1 if inside else 0)
                 started = time.perf_counter()
@@ -286,10 +303,12 @@ def screen(output, scales, tag, rules=RULES):
 
 def screen_verdict(by_slot):
     """pass / partial / fail for one (rule, s) from its four slot outcomes."""
-    ok = {k: by_slot.get(k, {}).get("outcome") for k in SLOT_NAMES}
-    rim = [ok["boundary"] == "converts to D", ok["side"] == "converts to D"]
-    if all(rim) and ok["centre"] == "converts to D" and ok["outside"] == "stays H":
-        return "pass"
+    ok = {k: by_slot[k].get("outcome") for k in by_slot}
+    rim = [ok.get("boundary") == "converts to D", ok.get("side") == "converts to D"]
+    rest = ok.get("centre", "converts to D") == "converts to D"
+    rest &= ok.get("outside", "stays H") == "stays H"
+    if all(rim) and rest:
+        return "pass" if set(ok) >= set(SLOT_NAMES) else "pass (slots run: rim only)"
     return "partial" if any(rim) else "fail"
 
 
@@ -525,7 +544,7 @@ def parse_plan(text):
     runs = []
     for item in text.split(","):
         s, rule, rate, order = item.split(":")
-        if rule not in RULES or order not in ("oldest", "random"):
+        if rule not in RULES + ATTRIBUTION_RULES or order not in ("oldest", "random"):
             raise ValueError(f"bad plan item {item}")
         runs.append((float(s), rule, float(rate), order))
     return runs
@@ -749,6 +768,7 @@ def main(argv=None):
     parser.add_argument("--screen", action="store_true", help="stage 1 single newcomers")
     parser.add_argument("--scales", default="0.3,0.6")
     parser.add_argument("--rules", default=",".join(RULES))
+    parser.add_argument("--slots", default=",".join(SLOT_NAMES))
     parser.add_argument("--turnover", action="store_true", help="stage 2 turnover runs")
     parser.add_argument("--plan", help="s:rule:rate:order[,...]")
     parser.add_argument("--disc", type=int, default=37, choices=sorted(DISCS))
@@ -758,8 +778,12 @@ def main(argv=None):
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)  # results are never overwritten
     if args.screen:
-        rules = tuple(args.rules.split(","))
-        screen(args.output, [float(s) for s in args.scales.split(",")], args.tag, rules)
+        rules, names = tuple(args.rules.split(",")), tuple(args.slots.split(","))
+        if any(r not in RULES + ATTRIBUTION_RULES for r in rules) or any(
+            k not in SLOT_NAMES for k in names
+        ):
+            parser.error("unknown rule or slot")
+        screen(args.output, [float(s) for s in args.scales.split(",")], args.tag, rules, names)
         _log("screen done")
     elif args.turnover:
         turnover_runs(args.output, parse_plan(args.plan), args.tag, args.horizon, args.disc)
