@@ -519,6 +519,292 @@ def sheet_outcome(rows, case):
     )
 
 
+# --------------------------------------------------- 70-minute sheet retention
+
+LONG_SCALES = (0.3, 0.6, 1.0)
+LONG_CUE_S = (0.5, 2.5)  # Na leak x10 on [0.5, 2.5) s: the cue chosen above (2 s).
+LONG_END_S = 4200.0  # D133's 70 min D-residence cap.
+OSMOTIC_FLAG, OSMOTIC_CENSOR = 0.10, 0.15  # E07: flag above 10%, censor above 15%.
+# Written before the 70-minute runs, from pre-screens 7-9 and the 20 s sheet check
+# (checks/sheet: cue-written discs, H composition, all held at s 0.3 and 1.0 for 20 s).
+LONG_PREDICTIONS = dict(
+    kind="cells.heredity_pilot_w1_long_sheet_predictions@1",
+    status="written before the 70-minute sheet runs; development analysis, not judged",
+    sources=[
+        "prescreen-07-stationary/summary.md: stationary D-composition discs stable for s < 0.661 "
+        "(19) and s < 0.922 (37); at s 1 started from D they are lost in 0.5-1 s and 30-60 s",
+        "prescreen-09-turnover/mechanism: cells written from the H composition load slowly "
+        "(K 136 -> 153, M 7 -> 29 mM over 1500 s); loading takes about 40-50 min",
+        "heredity-pilot-w1 checks/sheet: cue-written discs keep the H composition (K 136, M 7) "
+        "and all held 20 s, also at s 1.0; the frozen-composition disc at H composition exists "
+        "at s 1.0 although the D-composition one does not (pre-screen 7)",
+        "design.json R1: written D cells reach about +8-9% osmolarity at 1 h, +15% at 2 h",
+    ],
+    arms={
+        "s0.3": "both discs written and held for 70 min (inside the stationary window)",
+        "s0.6": "37-cell disc held for 70 min; 19-cell disc held (s 0.6 is 9% below its "
+        "stationary edge 0.661), the least certain of the held arms",
+        "s1.0": "both written and held at first (frozen-composition disc at H composition); "
+        "lost once composition loading removes that disc, before full loading: the 19-cell "
+        "disc first, the 37-cell disc later, both within 70 min, most likely between 5 and "
+        "45 min after the cue; the loss is collective within seconds once it starts",
+    },
+    osmotic="held discs approach the 10% flag near 60-70 min (relative to the cell's own "
+    "osmolarity at t = 0); none reaches the 15% censor within 70 min",
+    spontaneous_D_outside_disc="none in any arm",
+)
+
+
+def long_sheet_definition(disc_cells, s, dt, end_s, backend):
+    """Pre-screen 7's sheet with the cue, on a dt grid, to end_s (every event i * dt)."""
+    cells, edges = worlds.hexagon(SHEET_RADIUS)
+    on, off = int(round(LONG_CUE_S[0] / dt)), int(round(LONG_CUE_S[1] / dt))
+    end = int(round(end_s / dt))
+    raw = worlds.ionic_background(
+        worlds.e07_sheet_definition([H_STATE[:4]] * len(cells), edges, scale=s, gated=True, dt=dt)
+    )
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    disc = [i for i, c in enumerate(cells) if worlds.ring(c) <= DISCS[disc_cells]]
+    for i in (i for i, c in enumerate(cells) if worlds.ring(c) <= DISCS[37]):
+        schedule = [dict(time=0.0, availability=0.0)]
+        if i in disc:
+            schedule += [
+                dict(time=on * dt, availability=1.0),
+                dict(time=off * dt, availability=0.0),
+            ]
+        m["channels"].append(
+            fixtures.channel(
+                f"cue_{i}",
+                i,
+                NALEAK_LAW_ID,
+                "Na",
+                (CUE_FACTOR - 1) * m["membranes"][i]["permeability_m_per_s"]["Na"],
+                1.0,
+                [],
+            )
+        )
+        e["channel_controls"].append(dict(channel_id=f"cue_{i}", schedule=schedule))
+    x["channel_capacity"] = len(m["channels"])
+    per_s = int(round(1.0 / dt))
+    steps = {0, *range(0, on, max(1, int(round(0.1 / dt))))}
+    steps |= set(range(on, off + 3 * per_s, max(1, int(round(0.02 / dt)))))
+    steps |= set(range(off + 3 * per_s, off + 15 * per_s, max(1, int(round(0.1 / dt)))))
+    steps |= set(range(off + 15 * per_s, min(end, 600 * per_s), per_s))
+    steps |= set(range(600 * per_s, end, 5 * per_s))
+    observed = sorted(t for t in steps | {end} if t <= end)
+    e["end_time"] = end * dt
+    e["observation_times"] = [t * dt for t in observed]
+    x.update(backend=backend, max_steps=end + 8)
+    return raw, np.array(disc), dict(on_s=on * dt, off_s=off * dt, end_s=end * dt, dt_s=dt)
+
+
+class SheetRecorder:
+    """Per-cell Vm, composition and osmolarity of each sheet world, written as it runs."""
+
+    def __init__(self, output, discs, cells, *, snapshots=(), batch=None):
+        self.output, self.discs, self.cells = Path(output), discs, cells
+        self.output.mkdir(parents=True, exist_ok=True)
+        self.snapshots, self.batch = sorted(snapshots), batch
+        self.data = {w: dict(t=[], vm=[], conc=[]) for w in discs}
+        self.initial = {}
+        self.streams = {w: open(self.output / f"world-{w}.jsonl", "a", buffering=1) for w in discs}
+        self.windows = open(self.output / "windows.jsonl", "a", buffering=1)
+        self.last = time.perf_counter()
+
+    def __call__(self, window):
+        tick = time.perf_counter()
+        n = self.cells
+        for wid, found in window.observations.items():
+            inside = np.zeros(n, dtype=bool)
+            inside[self.discs[wid]] = True
+            vm = np.asarray(found.membrane_voltage_V)[:, :n]
+            conc = np.asarray(found.amount)[:, :, :n] / fixtures.HEREDITY_VOLUME_PL
+            osm = conc.sum(axis=1)
+            if wid not in self.initial:
+                self.initial[wid] = osm[0]
+            excess = osm / self.initial[wid] - 1.0
+            for row, t in enumerate(np.asarray(found.times)):
+                d = vm[row] > THRESHOLD_V
+                ex = excess[row][inside]
+                self.streams[wid].write(
+                    json.dumps(
+                        dict(
+                            t=float(t),
+                            d_inside=int(d[inside].sum()),
+                            d_outside=int(d[~inside].sum()),
+                            disc_vm_V=[float(vm[row][inside].min()), float(vm[row][inside].max())],
+                            outside_vm_V=[
+                                float(vm[row][~inside].min()),
+                                float(vm[row][~inside].max()),
+                            ],
+                            disc_mean_mM=dict(
+                                zip(
+                                    ION_IDS, conc[row][:, inside].mean(axis=1).tolist(), strict=True
+                                )
+                            ),
+                            disc_osmotic_excess=[float(ex.min()), float(ex.max())],
+                            max_osmotic_excess=float(excess[row].max()),
+                            flagged=bool(excess[row].max() > OSMOTIC_FLAG),
+                            censored=bool(excess[row].max() > OSMOTIC_CENSOR),
+                            cue_availability=float(
+                                np.asarray(found.channel_availability)[row][2 * n :].max()
+                            ),
+                        )
+                    )
+                    + "\n"
+                )
+                self.data[wid]["t"].append(float(t))
+                self.data[wid]["vm"].append(vm[row])
+                self.data[wid]["conc"].append(conc[row][:3])
+        self.windows.write(
+            json.dumps(
+                dict(
+                    index=window.index,
+                    timings=window.timings,
+                    diagnostics={str(w): d for w, d in window.diagnostics.items()},
+                    end_times={str(w): c.time for w, c in window.checkpoints.items()},
+                    sink_seconds=time.perf_counter() - tick,
+                )
+            )
+            + "\n"
+        )
+        if time.perf_counter() - self.last > 600:
+            self.save()
+        ends = {c.time for c in window.checkpoints.values()}
+        if self.snapshots and len(ends) == 1:
+            end = ends.pop()
+            due = [t for t in self.snapshots if end >= t - 1e-9]
+            if due:
+                from cells.batch_io import write_batch_snapshot
+
+                self.save()
+                write_batch_snapshot(
+                    self.output.parent / "snapshots" / f"t{end:09.3f}",
+                    self.batch,
+                    dict(window.checkpoints),
+                )
+                self.snapshots = [t for t in self.snapshots if t not in due]
+
+    def save(self):
+        for wid, d in self.data.items():
+            if d["t"]:
+                np.savez(
+                    self.output / f"world-{wid}-cells.npz",
+                    times_s=np.array(d["t"]),
+                    vm_V=np.array(d["vm"]),
+                    concentration_mM=np.array(d["conc"]),
+                    species=np.array(ION_IDS[:3]),
+                    initial_osmolarity_mM=self.initial.get(wid, np.array([])),
+                )
+        self.last = time.perf_counter()
+
+    def close(self):
+        self.save()
+        for stream in (*self.streams.values(), self.windows):
+            stream.close()
+
+
+def part_longsheet(args):
+    """Cue-written 19- and 37-cell discs on the homogeneous held-bath sheet, 70 min."""
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.windows import WindowPolicy
+
+    output = Path(args.output) / (f"longsheet-{args.label}" if args.label else "longsheet")
+    output.mkdir(parents=True, exist_ok=True)
+    if not (output / "predictions.json").exists():
+        write_json(output / "predictions.json", LONG_PREDICTIONS)
+    cases, members, discs = [], [], {}
+    for disc_cells in args.discs:
+        for s in args.scales:
+            raw, disc, phases = long_sheet_definition(
+                disc_cells, s, args.dt, args.long_end_seconds, args.backend
+            )
+            wid = len(cases) + 1
+            cases.append(dict(world=wid, disc_cells=disc_cells, s=s, **phases))
+            members.append(WorldSpec(wid, parse_spec(raw)))
+            discs[wid] = disc
+    spec = BatchSpec(tuple(members), len(members), 2**53 - 1, 2**53 - 1)
+    report = dict(
+        kind="cells.heredity_pilot_w1_long_sheet@1",
+        world="validation/stationary/worlds.e07_sheet_definition: 127-cell hexagon, own held "
+        "baths, E07 gated junctions at s, homogeneous heredity cells (ionic background), "
+        "cue populations on the 37-cell disc's cells",
+        engine_model="resolved_pump_tissue@3 through core/vector_windows.py (device checks)",
+        cases=cases,
+        threshold_V=THRESHOLD_V,
+        osmotic=dict(
+            excess="cell osmolarity (Na + K + M + P) over its own value at t = 0, minus 1",
+            flag=OSMOTIC_FLAG,
+            censor=OSMOTIC_CENSOR,
+        ),
+        window_steps=WINDOW_STEPS,
+    )
+    write_json(output / "longsheet.json", report)
+    n = len(worlds.hexagon(SHEET_RADIUS)[0])
+    marks = [t for t in np.arange(600.0, args.long_end_seconds, 600.0)]
+    recorder = SheetRecorder(output / "records", discs, n, snapshots=marks, batch=spec)
+    tick = time.perf_counter()
+    result, failure = run_batch(spec, WindowPolicy(WINDOW_STEPS, "checkpoints"), recorder)
+    report["wall_seconds"] = time.perf_counter() - tick
+    report["resources"] = resources()
+    if failure is not None:
+        report["failure"] = failure
+        write_json(output / f"failure-{int(time.time())}.json", failure)
+    else:
+        report.update(timings=result.timings, batch_resources=dict(result.resources))
+        report["diagnostics"] = {str(k): w.diagnostics for k, w in result.worlds.items()}
+    write_json(output / "longsheet.json", report)
+    summarize_longsheet(output)
+    return 1 if failure is not None else 0
+
+
+def summarize_longsheet(output):
+    output = Path(output)
+    report = json.loads((output / "longsheet.json").read_text())
+    rows = {}
+    for case in report["cases"]:
+        path = output / "records" / f"world-{case['world']}.jsonl"
+        records = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+        off, disc = case["off_s"], case["disc_cells"]
+        after = [r for r in records if r["t"] >= off - 1e-9]
+        written = bool(after and after[0]["d_inside"] == disc and after[0]["d_outside"] == 0)
+        cells = output / "records" / f"world-{case['world']}-cells.npz"
+        per_cell = None
+        if cells.exists():
+            with np.load(cells) as data:
+                t, vm = data["times_s"], data["vm_V"]
+            inside = np.zeros(vm.shape[1], dtype=bool)
+            inside[
+                [
+                    i
+                    for i, c in enumerate(worlds.hexagon(SHEET_RADIUS)[0])
+                    if worlds.ring(c) <= DISCS[disc]
+                ]
+            ] = True
+            later = t >= off - 1e-9
+            lost = {}
+            for i in np.flatnonzero(inside):
+                h = later & (vm[:, i] <= THRESHOLD_V)
+                lost[int(i)] = None if not h.any() else float(t[np.flatnonzero(h)[0]] - off)
+            per_cell = lost
+        rows[str(case["world"])] = dict(
+            case,
+            written=written,
+            first_D_lost_bracket_s=_bracket(after, off, lambda r, n=disc: r["d_inside"] < n),
+            all_D_lost_bracket_s=_bracket(after, off, lambda r: r["d_inside"] == 0),
+            d_inside_at_end=records[-1]["d_inside"] if records else None,
+            max_d_outside=max((r["d_outside"] for r in records), default=None),
+            first_flag_s=next((r["t"] for r in records if r["flagged"]), None),
+            first_censor_s=next((r["t"] for r in records if r["censored"]), None),
+            max_osmotic_excess=max((r["max_osmotic_excess"] for r in records), default=None),
+            last_time_s=records[-1]["t"] if records else None,
+            disc_mean_at_end_mM=records[-1]["disc_mean_mM"] if records else None,
+            cell_first_H_after_cue_off_s=per_cell,
+        )
+    kind = "cells.heredity_pilot_w1_long_sheet_results@1"
+    write_json(output / "results.json", dict(kind=kind, failure=report.get("failure"), worlds=rows))
+
+
 # ------------------------------------------------------------- start state
 
 
@@ -1348,6 +1634,209 @@ def part_heat(args):
         write_json(output / name, report)
 
 
+def part_gapa(args):
+    """Measurements for the junction-heat refusal (no engine change; evidence only).
+
+    On the refused step of a run (its cue-on snapshot, first step): per junction
+    the booked heat increment, the explicit stage powers q1 (start) and q2 (at
+    gamma dt) of ARS(2,2,2), whose weights are (delta, 1 - delta) with delta < 0,
+    and the alternatives:
+      (a) face-like: dt 1e-3 sum_s J_app^2 dmu_1 / J_1 (J_app the step's booked
+          flux, dmu_1 / J_1 the start stage's resistance), nonnegative;
+      (b) nonnegative stage weights: dt q1, dt q2, and dt (q1 + q_end) / 2 with
+          q_end the end state's power (trapezoid);
+      (c) the derived bound increment >= delta dt q1 per route.
+    The energy ledger's defect under (a) and (b) is the sum of (alternative -
+    booked) over junctions for this step, set against the row's energy residual
+    and bound (surface_pump.ledger_limits). Then, on the seeded-fault fixture of
+    tests/unit/test_surface_pump_v3_device_checks.py and test_surface_pump_device_
+    checks.py, the allowance (c) would give each seeded route at the seeded row.
+    """
+    from cells.batch_io import load_batch_snapshot
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models import surface_pump as first
+    from cells.models import surface_pump_v3 as model
+    from cells.models.surface_pump_checks import DISSIPATION_ATOL_PJ
+    from cells.numerics import surface_imex as imex
+
+    tableau = imex.TABLEAUX[imex.ARS222_ID].explicit
+    delta, weights = float(tableau[2, 0]), np.asarray(tableau[2, :2], dtype=float)
+    output = Path(args.output) / ("run" if args.label is None else f"run-{args.label}")
+    run = json.loads((output / "run.json").read_text())
+    on = run["phases_s"]["cue_on"]
+    snapshot = load_batch_snapshot(output / "snapshots" / f"t{on:09.3f}")
+    tissue = Tissue()
+    report = dict(
+        kind="cells.heredity_pilot_w1_gap_a@1",
+        snapshot=str(output / "snapshots" / f"t{on:09.3f}"),
+        tableau_weights=weights.tolist(),
+        delta=delta,
+        dissipation_atol_pJ=DISSIPATION_ATOL_PJ,
+        energy_rtol=first.ENERGY_RTOL[imex.ARS222_ID],
+        worlds={},
+    )
+    for world in snapshot.spec.worlds:
+        spec, checkpoint = world.simulation, snapshot.checkpoints[world.world_id]
+        state = model.STATE_TYPE(*(np.asarray(v) for v in checkpoint.state))
+        p = type(checkpoint.layout)(*(np.asarray(v) for v in checkpoint.layout))
+        controls = control_values(spec, [checkpoint.time])
+        control = type(controls)(*(np.asarray(v[0]) for v in controls))
+        new, ok, stages = _instrumented_step_at(model, state, control, p, DT)
+        start = model.readouts(state, control, p, xp=np)
+        end = model.readouts(new, control, p, xp=np)
+        q1, q2 = (np.asarray(s.junction_dissipated_energy_pJ) for s in stages[:2])
+        q_end = np.asarray(end.derivative.junction_dissipated_energy_pJ)
+        booked = new.junction_dissipated_energy_pJ - state.junction_dissipated_energy_pJ
+        flux = np.asarray(start.field.rates.junction_flux_fmol_s)
+        mu = np.asarray(start.field.rates.junction_delta_mu_J_mol)
+        applied = (new.junction_transferred - state.junction_transferred) / DT
+        resistance = np.where(flux != 0, mu / np.where(flux != 0, flux, 1.0), 0.0)
+        alternatives = {
+            "a_face_like": DT * 1e-3 * np.sum(applied * applied * resistance, axis=0),
+            "b_start_stage": DT * q1,
+            "b_gamma_stage": DT * q2,
+            "b_trapezoid_end": DT * 0.5 * (q1 + q_end),
+        }
+        bound_c = delta * DT * q1
+        active = np.asarray(p.junction_active)
+        negative = np.flatnonzero(active & (booked < -DISSIPATION_ATOL_PJ))
+        steps = checkpoint.step_index + 1
+        _, bounds = first.ledger_limits(
+            new,
+            p,
+            np.asarray(spec.execution.material_balance_atol_fmol),
+            first.ENERGY_RTOL[spec.execution.solver],
+            steps=steps,
+            magnitudes=model.channel_magnitudes(new, p, xp=np),
+            xp=np,
+        )
+        energy = float(model.balances(new, p)["energy"])
+        energy_bound = float(bounds[first.LEDGERS.index("energy")])
+        value = dict(
+            step=[checkpoint.time, checkpoint.time + DT],
+            step_valid=ok,
+            tableau_reproduces_booking_max_abs_pJ=float(
+                np.max(np.abs(booked - DT * (weights[0] * q1 + weights[1] * q2)))
+            ),
+            negative_junctions=[
+                dict(
+                    junction=int(j),
+                    cells=list(tissue.pairs[j]),
+                    rings=[int(tissue.ring[c]) for c in tissue.pairs[j]],
+                    booked_pJ=float(booked[j]),
+                    q1_pJ_s=float(q1[j]),
+                    q2_pJ_s=float(q2[j]),
+                    q_end_pJ_s=float(q_end[j]),
+                    bound_c_pJ=float(bound_c[j]),
+                    margin_over_bound_c_pJ=float(booked[j] - bound_c[j]),
+                    vj_start_mV=1e3 * float(np.asarray(start.field.rates.junction_voltage_V)[j]),
+                    vj_end_mV=1e3 * float(np.asarray(end.field.rates.junction_voltage_V)[j]),
+                    **{f"{k}_pJ": float(v[j]) for k, v in alternatives.items()},
+                )
+                for j in negative
+            ],
+            bound_c_all_junctions=dict(
+                min_margin_pJ=float(np.min((booked - bound_c)[active])),
+                violations=int(np.sum((booked - bound_c)[active] < 0)),
+            ),
+            booked_step_heat_pJ=float(np.sum(booked[active])),
+            energy_residual_pJ=energy,
+            energy_bound_pJ=energy_bound,
+            defect_per_step_pJ={
+                k: float(np.sum((v - booked)[active])) for k, v in alternatives.items()
+            },
+            alternatives_min_pJ={k: float(np.min(v[active])) for k, v in alternatives.items()},
+        )
+        report["worlds"][str(world.world_id)] = value
+        log(
+            f"gap A world {world.world_id}: {len(negative)} negative, {value['defect_per_step_pJ']}"
+        )
+        write_json(output / "gap_a.json", report)
+    report["seeded_faults"] = seeded_fault_allowances(delta)
+    write_json(output / "gap_a.json", report)
+
+
+def seeded_fault_allowances(delta):
+    """The (c) allowance on the routes the dissipation-fault tests seed, at their row.
+
+    tests/unit/test_surface_pump_v3_device_checks.py seeds a 2e-12 pJ decrease of
+    face 0's heat and of the Kv1.5 population's heat at ROW = 5 of the clamped
+    eight-population IMEX run (end 1.2 ms); test_surface_pump_device_checks.py
+    seeds the face decrease. Here the allowance |delta| dt q1 of each seeded route
+    is evaluated at the seeded step's start row, for (c) applied to the routes
+    whose heat the tableau books (membrane, junction, channel, pump) - faces book
+    J^2 RT / W >= 0 and keep the strict test either way.
+    """
+    from cells.core.runner import run
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models import surface_pump_v3 as model
+    from cells.numerics import surface_imex as imex
+    from validation.tissue import surface_pump_v3_fixtures as fixtures
+
+    raw = fixtures.definition("clamped", solver=imex.ARS222_ID, backend="cpu")
+    raw["experiment"]["end_time"] = 0.0012
+    raw["experiment"]["observation_times"] = [0.0, 0.0012]
+    spec = parse_spec(raw)
+    value = run(spec)
+    history = model.STATE_TYPE(*(np.asarray(v) for v in value.history))
+    _, p = model.initial_values(spec)
+    p = type(p)(*(np.asarray(v) for v in p))
+    row, seeded = 5, 2e-12
+    times = np.asarray(value.times)
+    dt = float(times[row] - times[row - 1])
+    controls = control_values(spec, [float(times[row - 1])])
+    control = type(controls)(*(np.asarray(v[0]) for v in controls))
+    previous = model.STATE_TYPE(*(v[row - 1] for v in history))
+    _, _, stages = _instrumented_step_at(model, previous, control, p, dt)
+    q1 = stages[0]
+    kv = 0  # channel_0, the fixture's first Kv1.5 population (the test's kv)
+    allowance = dict(
+        channel_kv15=abs(delta)
+        * dt
+        * float(np.max(np.asarray(q1.channel_dissipated_energy_pJ)[:, kv])),
+        face_0_if_tableau_booked=abs(delta)
+        * dt
+        * float(
+            np.asarray(
+                model.readouts(previous, control, p, xp=np).derivative.face_dissipated_energy_pJ
+            )[0]
+        ),
+        junctions_max=abs(delta)
+        * dt
+        * float(np.max(np.asarray(q1.junction_dissipated_energy_pJ), initial=0.0)),
+    )
+    return dict(
+        fixture="validation/tissue/surface_pump_v3_fixtures.definition('clamped'), ARS(2,2,2), "
+        "end 1.2 ms (the tests' runs['clamped'])",
+        row=row,
+        dt_s=dt,
+        seeded_decrease_pJ=seeded,
+        allowance_pJ=allowance,
+        still_trips={k: seeded > v for k, v in allowance.items()},
+    )
+
+
+def _instrumented_step_at(model, state, control, p, dt):
+    """One declared IMEX step on the host, with each explicit stage's rates recorded.
+
+    models/surface_pump_v3.imex_step is run unchanged (xp=numpy); its module-level
+    explicit_rates is wrapped for the call only, to copy the stage rates out.
+    """
+    stages, original = [], model.explicit_rates
+
+    def recording(*args, **kwargs):
+        rates, ok = original(*args, **kwargs)
+        stages.append(rates)
+        return rates, ok
+
+    model.explicit_rates = recording
+    try:
+        new, ok = model.imex_step(state, dt, control, p, xp=np)
+    finally:
+        model.explicit_rates = original
+    return new, bool(ok), stages
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("parts", nargs="+", choices=sorted(PARTS))
@@ -1366,6 +1855,8 @@ def main(argv=None):
     parser.add_argument("--label", help="run subdirectory suffix (pilots)")
     parser.add_argument("--sheet-after-seconds", type=float, default=SHEET_AFTER_STEPS * DT)
     parser.add_argument("--heat-after-seconds", type=float, default=3.0)
+    parser.add_argument("--dt", type=float, default=DT, help="longsheet step (s)")
+    parser.add_argument("--long-end-seconds", type=float, default=LONG_END_S)
     args = parser.parse_args(argv)
     Path(args.output).mkdir(parents=True, exist_ok=True)
     status = 0
@@ -1394,6 +1885,8 @@ PARTS = dict(
     run=part_run,
     summarize=part_summarize,
     heat=part_heat,
+    gapa=part_gapa,
+    longsheet=part_longsheet,
 )
 
 if __name__ == "__main__":
