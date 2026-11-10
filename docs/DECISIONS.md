@@ -4564,6 +4564,25 @@ For days to months, the slow physics must also grow (water and volume,
 metabolism, expression, turnover); a coarse mode alone does not make a
 fixed-volume world realistic.
 
+## D136: Experiments drive biologically valid engine features
+
+2026-11-10, user decision, after the heredity pre-screens showed written D cells
+loading K⁺ and anions in a fixed volume: "lets use this test as others to add
+missing features to the current engine, biologically valid ones".
+- **Rule:** when an experiment exposes a missing mechanism, add it to `src/cells`
+  as a Cells model, not as a driver reset or a tuned rule.
+  - Each model has a biological basis with cited parameter sources.
+  - It gets a neutral name, an opt-in versioned ID, conserved accounting, tests,
+    the tier gate and its own qualification against an independent reference.
+  - The default engine is unchanged when it is off.
+- **Water and volume:** D133 deferred these ("water and volume come later"). Work
+  on them now starts as an opt-in water-and-volume model for the pump-channel
+  tissue family. Whether E07-v1 uses it is decided when the experiment is
+  redesigned.
+- **Hypotheses stay hypotheses:** mechanisms proposed from model behaviour, such
+  as per-hemichannel junction gating or a rule for newcomer junctions, are
+  sourced from the literature before any design.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
