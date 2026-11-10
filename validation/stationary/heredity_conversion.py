@@ -113,9 +113,16 @@ class Pattern(hp.Case):
 
 
 def slots(case, disc_radius):
+    """centre; boundary = corner (r, 0), 3 disc neighbours; outside = (r + 1, -1), 2 disc
+    neighbours; side = mid-side boundary cell (r, -1), 4 disc neighbours (follow-up)."""
     index = {c: i for i, c in enumerate(case.cells)}
     r = disc_radius
-    return dict(centre=index[(0, 0)], boundary=index[(r, 0)], outside=index[(r + 1, -1)])
+    return dict(
+        centre=index[(0, 0)],
+        boundary=index[(r, 0)],
+        outside=index[(r + 1, -1)],
+        side=index[(r, -1)],
+    )
 
 
 def sector(case, count=BATCH_CELLS):
@@ -618,6 +625,108 @@ def transient_table(out):
     return "\n".join(lines)
 
 
+FOLLOWUP_DEFECTS = ((6, 3, "side"), (8, 5, "side"))
+FOLLOWUP_RUNS = (  # (sheet radius, disc radius, slot, scales; "edge" = the window's edge point)
+    (6, 3, "side", (0.2, 0.3, 0.5, 0.7, "edge")),
+    (6, 3, "batch", (0.2, 0.7)),
+    (8, 4, "boundary", (0.5, 0.7)),
+    (8, 5, "boundary", (0.5, 0.7)),
+    (8, 5, "side", (0.3, 0.7, 1.0)),
+)
+
+
+def followup(output, stationary_path):
+    """Stage C: the mid-side boundary cell, the batch at the weakest single conversion
+    (s 0.2, where the centre newcomer converts slowest; the corner never converts) and at
+    s 0.7, and the corner at s 0.5 and 0.7 of the 61- and 91-cell discs."""
+    hp.BISECTIONS = BISECTIONS
+    saved = json.loads(Path(stationary_path).read_text())
+    entries = {e["disc_cells"]: e for e in saved["discs"]}
+    unit = hp.units()["theta_per_unit_scale"]
+    out = dict(
+        kind="cells.heredity_design_prescreen@8_followup",
+        scope="Design input only (development analysis, not judged); no ledgers carried.",
+        stationary=str(stationary_path),
+        dt_s=DT,
+        record_times_s=[*TIMES, HORIZON],
+        defects={},
+        runs=[],
+        failures=[],
+    )
+    progress = open(output / "runs.jsonl", "x")
+    for sheet, radius, name in FOLLOWUP_DEFECTS:
+        base = Pattern(sheet, radius)
+        entry = entries[int(base.full.sum())]
+        cells = [slots(base, radius)[name]]
+        _log(f"defect {name} {cells} in disc {entry['disc_cells']} (sheet {sheet})")
+        try:
+            case = Pattern(sheet, radius, cells)
+            result = hp.sweep(case, unit, np.asarray(entry["scales"]), classify_from=CLASSIFY_FROM)
+            result["outcomes"] = _outcomes(result, entry["scales"], unit)
+            out["defects"].setdefault(str(entry["disc_cells"]), {})[name] = result
+            entry["defects"][name] = result
+            _log(f"  outcomes {result['outcomes']}")
+        except Exception as error:  # Kept as evidence.
+            out["failures"].append(
+                dict(case=[sheet, radius, name], error=repr(error), tb=traceback.format_exc())
+            )
+    cases = {}
+    for sheet, radius, name, scales in FOLLOWUP_RUNS:
+        try:
+            if (sheet, radius) not in cases:
+                case = Pattern(sheet, radius)
+                advance = jax.jit(lambda x, s, k, c=case: c.pb.step_residual(x, s, k))
+                cases[(sheet, radius)] = (case, advance, {})
+            case, advance, states = cases[(sheet, radius)]
+            entry = entries[int(case.full.sum())]
+            if name == "batch":
+                cells = entry["defects"]["batch"]["case"]["holes"]
+            else:
+                cells = [slots(case, radius)[name]]
+            inside = name != "outside"
+            for s in scales:
+                s = entry["edge_scale"] if s == "edge" else float(s)
+                if s not in states:
+                    states[s] = disc_state(case, s, unit)
+                u_disc = states[s]
+                if u_disc is None:
+                    res = dict(disc_cells=entry["disc_cells"], scale=s, slot=name, error="no disc")
+                else:
+                    started = time.perf_counter()
+                    others = int(case.full.sum()) - (len(cells) if inside else 0)
+                    rows, u_end = run(case, advance, place(case, u_disc, cells), s, cells, inside)
+                    gap = np.max(np.abs(case.voltages(u_end, s) - case.voltages(u_disc, s)))
+                    res = dict(
+                        disc_cells=entry["disc_cells"],
+                        scale=s,
+                        theta=s * unit,
+                        slot=name if name != "batch" else f"batch of {len(cells)}",
+                        cells=cells,
+                        stationary=_defect(entry, name, s),
+                        **verdict(rows, cells, others, inside),
+                        max_abs_V_from_disc_mV=1e3 * float(gap),
+                        wall_seconds=time.perf_counter() - started,
+                        trajectory=rows,
+                    )
+                    _log(
+                        f"  disc {entry['disc_cells']} s {s:.4g} {res['slot']}: {res['outcome']} "
+                        f"latency {res['latency_bracket_s']} (defect {res['stationary']})"
+                    )
+                out["runs"].append(res)
+                progress.write(json.dumps(targets._json(res)) + "\n")
+                progress.flush()
+        except Exception as error:  # Kept as evidence.
+            out["failures"].append(
+                dict(case=[sheet, radius, name], error=repr(error), tb=traceback.format_exc())
+            )
+    progress.close()
+    with open(output / "followup.json", "x") as stream:
+        json.dump(targets._json(out), stream, indent=1)
+    with open(output / "followup_table.md", "x") as stream:
+        stream.write(transient_table(targets._json(dict(out, batch=None))) + "\n")
+    return out
+
+
 SHORT = {"converts to D": "D", "stays H": "H", "disc lost (all H)": "lost"}
 
 
@@ -633,19 +742,28 @@ def _stable_up_to(defect, unit):
 def summarize(directory):
     """Retention window against conversion, per disc: final.json and final_table.md."""
     directory = Path(directory)
-    st = json.loads((directory / "stationary" / "stationary.json").read_text())
-    tr = json.loads((directory / "transient" / "transient.json").read_text())
+
+    def load(name):
+        path = directory / name
+        return json.loads(path.read_text()) if path.exists() else None
+
+    st, tr = load("stationary/stationary.json"), load("transient/transient.json")
+    fu = load("followup/followup.json") or dict(defects={}, runs=[])
     unit = st["units"]["theta_per_unit_scale"]
+    singles = [r for r in tr["runs"] + fu["runs"] if not r.get("slot", "").startswith("batch")]
+    batches = [tr["batch"]] if tr.get("batch") else []
+    batches += [r for r in fu["runs"] if r.get("slot", "").startswith("batch")]
     rows = []
     for e in st["discs"]:
+        defects = dict(e["defects"], **fu["defects"].get(str(e["disc_cells"]), {}))
         keep_to = e["retention"]["s_stability_loss"]
-        hold = {k: _stable_up_to(e["defects"].get(k), unit) for k in ("centre", "boundary")}
-        known = [v for v in hold.values() if v is not None]
-        start = max(known) if len(known) == 2 else None
-        runs = [r for r in tr["runs"] if r["disc_cells"] == e["disc_cells"] and "outcome" in r]
+        hold = {k: _stable_up_to(defects.get(k), unit) for k in ("centre", "boundary", "side")}
+        pair = [hold[k] for k in ("centre", "boundary")]
+        start = None if None in pair else max(pair)
         by_s = {}
-        for r in runs:
-            by_s.setdefault(r["scale"], {})[r["slot"]] = r
+        for r in singles:
+            if r["disc_cells"] == e["disc_cells"] and "outcome" in r:
+                by_s.setdefault(r["scale"], {})[r["slot"]] = r
         rows.append(
             dict(
                 disc_cells=e["disc_cells"],
@@ -668,46 +786,65 @@ def summarize(directory):
         kind="cells.heredity_design_prescreen@8_summary",
         units=st["units"],
         discs=rows,
-        batch=tr.get("batch") and {k: v for k, v in tr["batch"].items() if k != "trajectory"},
+        batches=[{k: v for k, v in b.items() if k != "trajectory"} for b in batches],
         seed3_cells=st.get("seed3_cells"),
         cv10={
             k: (st.get("cv10") or {}).get(k)
             for k in ("case", "start", "stability_boundary", "existence_boundary")
         },
-        sources=dict(stationary="stationary/stationary.json", transient="transient/transient.json"),
+        sources=dict(
+            stationary="stationary/stationary.json",
+            transient="transient/transient.json",
+            followup="followup/followup.json",
+        ),
     )
     with open(directory / "final.json", "x") as stream:
         json.dump(targets._json(out), stream, indent=1)
-    lines = [
-        "| disc | retention: s below | centre defect stable to s | corner defect stable to s | "
-        "stationary conversion window s | transients: s -> centre / corner / outside |",
-        "|---|---|---|---|---|---|",
-    ]
 
     def f(v):
         return "-" if v is None else f"{v:.3g}"
 
+    def short(x):
+        if x is None:
+            return "-"
+        text = SHORT.get(x["outcome"], x["outcome"])
+        if text == "D" and x["latency_bracket_s"]:
+            text += f" ({x['latency_bracket_s'][0]:g}-{x['latency_bracket_s'][1]:g} s)"
+        return text
+
+    lines = [
+        "| disc | retention: s below | defect stable to s: centre / corner / side | "
+        "stationary window s (centre and corner) |",
+        "|---|---|---|---|",
+    ]
     for r in rows:
-        window = r["stationary_conversion_window_s"]
-        window = "none" if window is None else f"{window[0]:.3g}-{window[1]:.3g}"
-        cells = []
-        for s, slots in r["transient"].items():
-            parts = []
-            for k in ("centre", "boundary", "outside"):
-                x = slots.get(k)
-                if x is None:
-                    parts.append("-")
-                    continue
-                text = SHORT.get(x["outcome"], x["outcome"])
-                if text == "D" and x["latency_bracket_s"]:
-                    text += f" ({x['latency_bracket_s'][1]:g} s)"
-                parts.append(text)
-            cells.append(f"s {s}: " + " / ".join(parts))
+        w = r["stationary_conversion_window_s"]
+        w = "none" if w is None else f"{w[0]:.3g}-{w[1]:.3g}"
+        h = r["defect_stable_up_to_s"]
         lines.append(
             f"| {r['disc_cells']} | {f(r['retention_s_below'])} | "
-            f"{f(r['defect_stable_up_to_s']['centre'])} | "
-            f"{f(r['defect_stable_up_to_s']['boundary'])} | {window} | " + "; ".join(cells) + " |"
+            f"{f(h['centre'])} / {f(h['boundary'])} / {f(h['side'])} | {w} |"
         )
+    names = ("centre", "boundary", "side", "outside")
+    lines += [
+        "",
+        "| disc | s | centre | corner | side | outside |",
+        "|---|---|---|---|---|---|",
+    ]
+    for r in rows:
+        for s, slots in r["transient"].items():
+            cells = " | ".join(short(slots.get(k)) for k in names)
+            lines.append(f"| {r['disc_cells']} | {s} | {cells} |")
+    lines += ["", "| batch (37-cell disc) | s | stationary defect | outcome | latency s |"]
+    lines += ["|---|---|---|---|---|"]
+    for b in batches:
+        if "outcome" in b:
+            lat = b["latency_bracket_s"]
+            lat = "-" if lat is None else f"{lat[0]:g}-{lat[1]:g}"
+            lines.append(
+                f"| {len(b['cells'])} cells | {b['scale']:.4g} | {b['stationary']} | "
+                f"{b['outcome']} | {lat} |"
+            )
     with open(directory / "final_table.md", "x") as stream:
         stream.write("\n".join(lines) + "\n")
     return out
@@ -718,7 +855,8 @@ def main(argv=None):
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--stationary", action="store_true", help="defect states and closers")
     parser.add_argument("--transient", type=Path, help="forward runs from a stationary.json")
-    parser.add_argument("--summarize", action="store_true", help="final.json from both stages")
+    parser.add_argument("--followup", type=Path, help="stage C from a stationary.json")
+    parser.add_argument("--summarize", action="store_true", help="final.json from all stages")
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)  # results are never overwritten
     if args.stationary:
@@ -727,10 +865,13 @@ def main(argv=None):
     elif args.transient:
         transient(args.output, args.transient)
         _log("transient done")
+    elif args.followup:
+        followup(args.output, args.followup)
+        _log("followup done")
     elif args.summarize:
         summarize(args.output)
     else:
-        parser.error("give --stationary, --transient or --summarize")
+        parser.error("give --stationary, --transient, --followup or --summarize")
     return 0
 
 
