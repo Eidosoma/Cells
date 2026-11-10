@@ -47,7 +47,7 @@ starts, and production design is deferred until parity is established.
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
 | 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4) and the ledger rounding fix landed; GH200 throughput unmeasured. **Pre-screen 7: E07-v1's discs are not retained at x1 coupling. Pre-screen 8: no retaining coupling renews the disc rim**; the design choice is with the user |
 | 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); MG1 (2-D vertex mechanics) next |
-| 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 pending |
+| 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 not evaluable (no lingering scale found) |
 
 ## Runs
 
@@ -73,9 +73,13 @@ machine-readable inputs, results, checks and failures.
     than the caps. The verdict stands; a later qualification needs error control
     budgeted against the caps.
   - Reported speed-up: 2.2–3.5× fewer fine steps, 1.4–3.3× wall time.
-  - F2 (switch near the fold): the NaV1.2 pre-scan has found no lingering
-    scale yet (no switch down to 0.75; 0.70 switches at 2 s). The judged pair is
-    frozen from `eaff6eb` and launches when the scan picks a scale.
+  - **F2 (switch near the fold) is not evaluable:** the registered NaV1.2
+    pre-scan (13 runs on the L4,
+    [prescan.json](/mnt/workspaces/Cells/projective-c-20261109-01/qual-01/f2-prescan/prescan.json))
+    selected no scale, so the judged pair was not launched. The D state survives
+    1800 s at scale 0.72 (Vm −28.2 mV) and switches within 3 s at 0.71, so no
+    point on the 1% grid lingers for the required 200–1200 s. A usable F2 needs a
+    protocol change (a finer scale step or another starting state).
 - **Heredity pre-screen 8: newcomer conversion next to the retention window
   (9–10 November; development, not judged).** Driver
   `validation/stationary/heredity_conversion.py` (`370ceb6`), on
