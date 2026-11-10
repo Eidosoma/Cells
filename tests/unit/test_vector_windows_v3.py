@@ -213,6 +213,37 @@ def test_a_failing_world_refuses_its_window_on_both_paths(kind, monkeypatch):
         assert f"at accepted time {grid[row]}; vectorized batch refused" in str(error)
 
 
+def test_held_controls_are_the_per_slot_schedule_controls_read_once(monkeypatch):
+    """held_controls on a scheduled @3 world: each slot's held row is the slot's own
+    control (the release schedule and a world-specific change), its segments are
+    event_index per slot, and the schedule is read a fixed number of times per call
+    however many slots the window has (@3 rebuilds experiment.changes per access)."""
+    from cells.core import surface_pump_v2_spec
+    from cells.core.schedule import event_index
+    from cells.core.vector_windows import held_controls
+
+    spec = definition(change=CHANGE)
+    grid = EventGrid(spec)
+    times = np.array([grid[i] for i in range(len(grid))])
+    starts = times[:-1]
+    assert len({event_index(spec, t) for t in starts}) >= 3  # Start, releases and the change.
+    table, index = held_controls(spec, times, 4)
+    for a, b in zip(table, control_values(spec, starts), strict=True):
+        np.testing.assert_array_equal(np.asarray(a)[index], b)
+    segment = np.array([event_index(spec, t) for t in starts])
+    np.testing.assert_array_equal(np.unique(segment, return_inverse=True)[1], index)
+    reads = []
+    original = surface_pump_v2_spec.Experiment.changes
+    counted = property(lambda self: reads.append(1) or original.fget(self))
+    monkeypatch.setattr(surface_pump_v2_spec.Experiment, "changes", counted)
+    per_call = []
+    for window in (times[:4], times):  # Three slots, then every slot of the run.
+        reads.clear()
+        held_controls(spec, window, 4)
+        per_call.append(len(reads))
+    assert per_call[0] == per_call[1]
+
+
 def ionic_definition(**extra):
     simulation = definition().to_dict()
     return dict(model="ionic_worlds@1", simulation=simulation, worlds=2, window_steps=5) | extra

@@ -408,9 +408,14 @@ def held_controls(spec, times, rows):
     Controls are held between schedule changes (event_index), so evaluating a
     segment once equals evaluating each of its steps. The segment's last step is
     evaluated too and must agree, refusing a schedule that varies within one.
+    Each slot's segment is event_index's own expression on the change times,
+    which are read once per call: some identities rebuild experiment.changes
+    from every schedule on each access, which per slot dominated the host time
+    of windows of heterogeneous tissue worlds.
     """
     starts = times[:-1]
-    segment = np.fromiter((event_index(spec, t) for t in starts), np.int64, len(starts))
+    changes = [change.time for change in spec.experiment.changes]
+    segment = np.fromiter((bisect_right(changes, t) - 1 for t in starts), np.int64, len(starts))
     edges = np.flatnonzero(np.r_[True, segment[1:] != segment[:-1]])
     if len(edges) > rows:
         raise ConfigError("Window holds more control segments than planned")
