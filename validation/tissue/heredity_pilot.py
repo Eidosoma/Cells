@@ -555,19 +555,30 @@ LONG_PREDICTIONS = dict(
 )
 
 
-def long_sheet_definition(disc_cells, s, dt, end_s, backend):
-    """Pre-screen 7's sheet with the cue, on a dt grid, to end_s (every event i * dt)."""
+def long_sheet_definition(disc_cells, s, dt, end_s, backend, *, written=False):
+    """Pre-screen 7's sheet with the cue, on a dt grid, to end_s (every event i * dt).
+
+    written: no cue; the disc starts as pre-screen 7's transient did, at the
+    single-cell D slow state (HEREDITY_STATES D: loaded composition) inside the
+    disc and H outside, with each gate at its steady state for those voltages
+    (heredity_prescreen.Case.written), the cue populations held at 0.
+    """
     cells, edges = worlds.hexagon(SHEET_RADIUS)
     on, off = int(round(LONG_CUE_S[0] / dt)), int(round(LONG_CUE_S[1] / dt))
     end = int(round(end_s / dt))
+    disc = [i for i, c in enumerate(cells) if worlds.ring(c) <= DISCS[disc_cells]]
+    states = [fixtures.HEREDITY_STATES["H"][:4]] * len(cells)
+    if written:
+        states = [
+            fixtures.HEREDITY_STATES["D" if i in disc else "H"][:4] for i in range(len(cells))
+        ]
     raw = worlds.ionic_background(
-        worlds.e07_sheet_definition([H_STATE[:4]] * len(cells), edges, scale=s, gated=True, dt=dt)
+        worlds.e07_sheet_definition(states, edges, scale=s, gated=True, dt=dt)
     )
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
-    disc = [i for i, c in enumerate(cells) if worlds.ring(c) <= DISCS[disc_cells]]
     for i in (i for i, c in enumerate(cells) if worlds.ring(c) <= DISCS[37]):
         schedule = [dict(time=0.0, availability=0.0)]
-        if i in disc:
+        if i in disc and not written:
             schedule += [
                 dict(time=on * dt, availability=1.0),
                 dict(time=off * dt, availability=0.0),
@@ -717,10 +728,19 @@ def part_longsheet(args):
     for disc_cells in args.discs:
         for s in args.scales:
             raw, disc, phases = long_sheet_definition(
-                disc_cells, s, args.dt, args.long_end_seconds, args.backend
-            )
+                disc_cells, s, args.dt, args.long_end_seconds, args.backend,
+                written=args.start_written,
+            )  # fmt: skip
             wid = len(cases) + 1
-            cases.append(dict(world=wid, disc_cells=disc_cells, s=s, **phases))
+            cases.append(
+                dict(
+                    world=wid,
+                    disc_cells=disc_cells,
+                    s=s,
+                    written_start=args.start_written,
+                    **phases,
+                )
+            )
             members.append(WorldSpec(wid, parse_spec(raw)))
             discs[wid] = disc
     spec = BatchSpec(tuple(members), len(members), 2**53 - 1, 2**53 - 1)
@@ -741,7 +761,7 @@ def part_longsheet(args):
     )
     write_json(output / "longsheet.json", report)
     n = len(worlds.hexagon(SHEET_RADIUS)[0])
-    marks = [t for t in np.arange(600.0, args.long_end_seconds, 600.0)]
+    marks = [t for t in np.arange(120.0, args.long_end_seconds, 120.0)]  # Resume and replay points.
     recorder = SheetRecorder(output / "records", discs, n, snapshots=marks, batch=spec)
     tick = time.perf_counter()
     result, failure = run_batch(spec, WindowPolicy(WINDOW_STEPS, "checkpoints"), recorder)
@@ -758,6 +778,124 @@ def part_longsheet(args):
     return 1 if failure is not None else 0
 
 
+def part_sheetreplay(args):
+    """Checked replay of one sheet world: device checks recorded on every row, not refusing.
+
+    From a sheet definition's initial state (--start-written for pre-screen 7's
+    written start), or from a longsheet snapshot (--replay-snapshot, world
+    --replay-world), the engine's own checked step (models/surface_pump_v3.
+    checked_step, unmodified) advances --replay-seconds at --dt with the
+    controls held per 20 ms chunk, the model's device checks applied to every
+    row. Records every 20 ms the disc's D counts and voltage range, and which
+    checks fail where, so a loss is timed even where the runner would refuse
+    (the dissipation check on junction heat, gap A). A refused step ends it.
+    """
+    import jax.numpy as jnp
+
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models import surface_pump_v3 as model
+
+    label = args.label or "replay"
+    output = Path(args.output) / f"sheetreplay-{label}"
+    output.mkdir(parents=True, exist_ok=True)
+    cells, _ = worlds.hexagon(SHEET_RADIUS)
+    n = len(cells)
+    if args.replay_snapshot:
+        from cells.batch_io import load_batch_snapshot
+
+        snapshot = load_batch_snapshot(args.replay_snapshot)
+        world = next(w for w in snapshot.spec.worlds if w.world_id == args.replay_world)
+        spec, checkpoint = world.simulation, snapshot.checkpoints[world.world_id]
+        state0, layout, t0 = checkpoint.state, checkpoint.layout, checkpoint.time
+        disc_cells = args.discs[0]
+        source = dict(snapshot=args.replay_snapshot, world=args.replay_world)
+    else:
+        disc_cells = args.discs[0]
+        raw, _, _ = long_sheet_definition(
+            disc_cells, args.scales[0], args.dt, args.replay_seconds, args.backend,
+            written=args.start_written,
+        )  # fmt: skip
+        spec = parse_spec(raw)
+        state0, layout = model.initial_values(spec)
+        t0 = 0.0
+        source = dict(definition="long_sheet_definition", written=args.start_written)
+    disc = np.zeros(n, dtype=bool)
+    disc[[i for i, c in enumerate(cells) if worlds.ring(c) <= DISCS[disc_cells]]] = True
+    p = type(layout)(*(jnp.asarray(v) for v in layout))
+    host = type(layout)(*(np.asarray(v) for v in layout))
+    constants = jax.tree.map(jnp.asarray, model.device_check_constants(spec))
+    chunk = max(1, int(round(0.02 / args.dt)))
+    total = int(round(args.replay_seconds / args.dt))
+
+    def advance(state, control, index):
+        def body(carry, _):
+            y, k = carry
+            new, ok = model.checked_step(y, args.dt, control, p, p.active)
+            failed, _ = model.device_checks(y, new, p, constants, k + 1)
+            return (new, k + 1), (ok, failed)
+
+        return jax.lax.scan(body, (state, index), None, length=chunk)
+
+    compiled = jax.jit(advance)
+    state = model.STATE_TYPE(*(jnp.asarray(v) for v in state0))
+    rows, checks, refused = [], {}, None
+    first = int(round(t0 / args.dt))
+    tick = time.perf_counter()
+    for c in range(-(-total // chunk)):
+        k0 = first + c * chunk
+        controls = control_values(spec, [k0 * args.dt])
+        control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
+        (state, _), (ok, failed) = compiled(state, control, jnp.asarray(k0))
+        ok, failed = np.asarray(ok), np.asarray(failed)
+        if not ok.all():
+            refused = (k0 + int(np.argmin(ok)) + 1) * args.dt
+            break
+        for j, name in enumerate(model.DEVICE_CHECKS):
+            hit = np.flatnonzero(failed[:, j])
+            if len(hit):
+                entry = checks.setdefault(name, dict(rows=0, first_s=None, last_s=None))
+                entry["rows"] += int(len(hit))
+                entry["first_s"] = entry["first_s"] or (k0 + int(hit[0]) + 1) * args.dt
+                entry["last_s"] = (k0 + int(hit[-1]) + 1) * args.dt
+        row = model.STATE_TYPE(*(np.asarray(v) for v in state))
+        end = control_values(spec, [(k0 + chunk) * args.dt])
+        values = model.readouts(row, type(end)(*(np.asarray(v[0]) for v in end)), host, xp=np)
+        vm = np.asarray(values.field.rates.membrane_voltage_V)[:n]
+        d = vm > THRESHOLD_V
+        rows.append(
+            dict(
+                t=(k0 + chunk) * args.dt,
+                d_inside=int(d[disc].sum()),
+                d_outside=int(d[~disc].sum()),
+                disc_vm_V=[float(vm[disc].min()), float(vm[disc].max())],
+            )
+        )
+    first_lost = next((r["t"] for r in rows if r["d_inside"] < disc.sum()), None)
+    all_lost = next((r["t"] for r in rows if r["d_inside"] == 0), None)
+    write_json(
+        output / "replay.json",
+        dict(
+            kind="cells.heredity_pilot_w1_sheet_replay@1",
+            source=source,
+            disc_cells=disc_cells,
+            s=args.scales[0],
+            dt_s=args.dt,
+            start_s=t0,
+            seconds=args.replay_seconds,
+            record_every_s=chunk * args.dt,
+            refused_at_s=refused,
+            failed_device_checks=checks,
+            first_D_lost_by_s=first_lost,
+            all_D_lost_by_s=all_lost,
+            d_inside_at_end=rows[-1]["d_inside"] if rows else None,
+            max_d_outside=max((r["d_outside"] for r in rows), default=None),
+            wall_seconds=time.perf_counter() - tick,
+            rows=rows,
+        ),
+    )
+    log(f"replay {label}: first D lost by {first_lost}, all by {all_lost}, checks {checks}")
+
+
 def summarize_longsheet(output):
     output = Path(output)
     report = json.loads((output / "longsheet.json").read_text())
@@ -765,7 +903,8 @@ def summarize_longsheet(output):
     for case in report["cases"]:
         path = output / "records" / f"world-{case['world']}.jsonl"
         records = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
-        off, disc = case["off_s"], case["disc_cells"]
+        off = 0.0 if case.get("written_start") else case["off_s"]  # Losses timed from here.
+        disc = case["disc_cells"]
         after = [r for r in records if r["t"] >= off - 1e-9]
         written = bool(after and after[0]["d_inside"] == disc and after[0]["d_outside"] == 0)
         cells = output / "records" / f"world-{case['world']}-cells.npz"
@@ -1756,6 +1895,140 @@ def part_gapa(args):
     write_json(output / "gap_a.json", report)
 
 
+FLOOR_MODES = ("wrong_sign", "doubled", "all_wrong_sign")
+
+
+def part_floor(args):
+    """Detection floor of the energy ledger for mis-booked junction heat (pilot world).
+
+    If row checks stop testing junction heat (gap A option I), the energy ledger
+    is its only row-level guard. From the run's cue-on snapshot, the engine's own
+    checked step is stepped through the cue and after it with a seeded booking
+    error added after every step: the junction with the most heat at the start
+    books its increment with the wrong sign ("wrong_sign") or twice ("doubled"),
+    or every junction books the wrong sign ("all_wrong_sign"). The model's device
+    checks evaluate every row; reported is the first row the energy check fails
+    (the dissipation check is ignored here: it is what option I would drop), and
+    the seeded energy error against the energy bound over time. Evidence only.
+    """
+    import jax.numpy as jnp
+
+    from cells.batch_io import load_batch_snapshot
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models import surface_pump as first
+    from cells.models import surface_pump_v3 as model
+
+    output = Path(args.output) / ("run" if args.label is None else f"run-{args.label}")
+    run = json.loads((output / "run.json").read_text())
+    on, off = run["phases_s"]["cue_on"], run["phases_s"]["cue_off"]
+    snapshot = load_batch_snapshot(output / "snapshots" / f"t{on:09.3f}")
+    steps = int(round((off - on) / DT)) + int(round(args.heat_after_seconds / DT))
+    energy = model.DEVICE_CHECKS.index("energy")
+    names = model.DEVICE_DIAGNOSTICS
+    error_at, relative_at = (
+        names.index("max_energy_balance_error_pJ"),
+        names.index("max_energy_balance_relative"),
+    )
+    chunk = 100
+
+    def advance(state, control, p, constants, index, mask, factor):
+        def body(carry, _):
+            y, n, seeded = carry
+            new, ok = model.checked_step(y, DT, control, p, p.active)
+            increment = new.junction_dissipated_energy_pJ - y.junction_dissipated_energy_pJ
+            error = mask * factor * increment
+            new = new._replace(
+                junction_dissipated_energy_pJ=new.junction_dissipated_energy_pJ + error
+            )
+            failed, values = model.device_checks(y, new, p, constants, n + 1)
+            seeded = seeded + jnp.sum(error)
+            return (new, n + 1, seeded), (
+                ok,
+                failed[energy],
+                values[error_at],
+                values[relative_at],
+                seeded,
+            )
+
+        return jax.lax.scan(body, (state, index, jnp.asarray(0.0)), None, length=chunk)
+
+    compiled = jax.jit(advance)
+    report = dict(
+        kind="cells.heredity_pilot_w1_energy_floor@1",
+        snapshot=str(output / "snapshots" / f"t{on:09.3f}"),
+        energy_rtol=first.ENERGY_RTOL[imex_id()],
+        steps=steps,
+        worlds={},
+    )
+    for world in snapshot.spec.worlds:
+        spec, checkpoint = world.simulation, snapshot.checkpoints[world.world_id]
+        p = type(checkpoint.layout)(*(jnp.asarray(v) for v in checkpoint.layout))
+        host = type(checkpoint.layout)(*(np.asarray(v) for v in checkpoint.layout))
+        constants = jax.tree.map(jnp.asarray, model.device_check_constants(spec))
+        start = model.STATE_TYPE(*(np.asarray(v) for v in checkpoint.state))
+        controls = control_values(spec, [checkpoint.time])
+        control0 = type(controls)(*(np.asarray(v[0]) for v in controls))
+        rates = np.asarray(
+            model.readouts(start, control0, host, xp=np).derivative.junction_dissipated_energy_pJ
+        )
+        top = int(np.argmax(np.where(np.asarray(host.junction_active), rates, -np.inf)))
+        result = dict(top_junction=top, top_junction_start_power_pJ_s=float(rates[top]), modes={})
+        for mode in FLOOR_MODES:
+            mask = np.zeros_like(rates)
+            if mode == "all_wrong_sign":
+                mask[np.asarray(host.junction_active)] = 1.0
+            else:
+                mask[top] = 1.0
+            factor = -2.0 if "wrong_sign" in mode else 1.0
+            state = model.STATE_TYPE(*(jnp.asarray(v) for v in checkpoint.state))
+            first_step, n0, samples = None, int(round(checkpoint.time / DT)), []
+            seeded_total = 0.0
+            for k in range(-(-steps // chunk)):
+                k0 = n0 + k * chunk
+                controls = control_values(spec, [k0 * DT])
+                control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
+                (state, _, seeded), out = compiled(
+                    state, control, p, constants, jnp.asarray(k0), jnp.asarray(mask), factor
+                )
+                ok, energy_failed, error, relative, running = (np.asarray(v) for v in out)
+                running = running + seeded_total
+                seeded_total = float(running[-1])
+                if not ok.all():
+                    result["modes"][mode] = dict(
+                        refused_step_at_s=(k0 + int(np.argmin(ok)) + 1) * DT
+                    )
+                    break
+                if energy_failed.any() and first_step is None:
+                    first_step = k0 + int(np.argmax(energy_failed)) + 1 - n0
+                flows = np.where(relative > 0, error / np.where(relative > 0, relative, 1.0), 0.0)
+                bound = 2e-8 + report["energy_rtol"] * flows
+                samples.append(
+                    dict(
+                        t_s=(k0 + chunk) * DT,
+                        seeded_error_pJ=float(running[-1]),
+                        energy_residual_pJ=float(error[-1]),
+                        energy_bound_pJ=float(bound[-1]),
+                        residual_over_bound=float(error[-1] / bound[-1]),
+                    )
+                )
+                if first_step is not None:
+                    break
+            if mode not in result["modes"]:
+                result["modes"][mode] = dict(
+                    first_energy_failure_steps_after_cue_on=first_step,
+                    samples=samples,
+                )
+            log(f"floor world {world.world_id} {mode}: first energy failure {first_step}")
+            report["worlds"][str(world.world_id)] = result
+            write_json(output / "energy_floor.json", report)
+
+
+def imex_id():
+    from cells.numerics import surface_imex as imex
+
+    return imex.ARS222_ID
+
+
 def seeded_fault_allowances(delta):
     """The (c) allowance on the routes the dissipation-fault tests seed, at their row.
 
@@ -1857,6 +2130,14 @@ def main(argv=None):
     parser.add_argument("--heat-after-seconds", type=float, default=3.0)
     parser.add_argument("--dt", type=float, default=DT, help="longsheet step (s)")
     parser.add_argument("--long-end-seconds", type=float, default=LONG_END_S)
+    parser.add_argument(
+        "--start-written",
+        action="store_true",
+        help="longsheet: pre-screen 7's written start, no cue",
+    )
+    parser.add_argument("--replay-snapshot", help="sheetreplay: a longsheet cohort snapshot")
+    parser.add_argument("--replay-world", type=int, default=1)
+    parser.add_argument("--replay-seconds", type=float, default=10.0)
     args = parser.parse_args(argv)
     Path(args.output).mkdir(parents=True, exist_ok=True)
     status = 0
@@ -1886,7 +2167,9 @@ PARTS = dict(
     summarize=part_summarize,
     heat=part_heat,
     gapa=part_gapa,
+    floor=part_floor,
     longsheet=part_longsheet,
+    sheetreplay=part_sheetreplay,
 )
 
 if __name__ == "__main__":
