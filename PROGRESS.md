@@ -41,7 +41,7 @@ starts, and production design is deferred until parity is established.
 | 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | Passed (pre-registered protocols D and F) |
 | 3b | Parity rung 1: Cl/Ca ions plus the plasma-membrane Ca pump (`resolved_pump_tissue@2`) | v1 failed (one item); **v2 passed** (registered after attribution; weaker evidence) |
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
-| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers) and P4 (general-network channels) passed** on CPU; further rungs planned |
+| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers), P3 (scheduled interventions, first subset) and P4 (general-network channels) passed** on CPU; P4b (NaV1.2, Kir2.1, Na leak) in preparation; L4 runs of P2–P4 not yet done |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
@@ -54,7 +54,7 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
-- **Parity P3 (scheduled interventions) registered (10 November), not yet judged.**
+- **Parity P3 (scheduled interventions, first subset) passes (10 November).**
   Four protocols, `validation/betse/protocols/physical_p3_*_dense.json`, registered at
   `95f30b5` on `resolved_pump_tissue@3` with the event adapter (`ac2e127`): pump
   block, Na mem ×10 and K mem ×10 on a 19-cell spot, and Na mem plus a full
@@ -71,6 +71,26 @@ machine-readable inputs, results, checks and failures.
     check (observed order 0.996–1.086, window 0.9–1.1); no BETSE fine runs (step
     error through the emulator); within-cell patch spread measured by propagation
     instead of P4's heuristic.
+  - **Judged once each** from a clean snapshot of `95f30b5`, CPU, 16 min; no refusals
+    ([judged](/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/judged-01/), `margins.json`):
+
+    | Case | Verdict | Worst SIM item | SIM Vm error (tol.) | Vm error / raw term sum |
+    | --- | --- | --- | --- | --- |
+    | Pump block | pass | Vm 0.29 | 2.0 µV (7) | 0.92 |
+    | Na mem ×10 | pass | Vm 0.27 | 107 µV (400) | 0.92 |
+    | K mem ×10 | pass | ECM K 0.27 (non-discriminating) | 3.5 µV (30) | 0.50 |
+    | Na mem + junction block | pass | Vm 0.29 | 14 µV (50) | 0.97 |
+
+  - The measured term sums predict the Vm errors (0.92–0.97 of the raw sum in three
+    cases), so the ×3 factor is the whole margin. Na mem's tolerance is wide because
+    BETSE advances the junction gate once per ion per step (a 99 µV term).
+  - The worst SIM cell Na, K, Cl and M errors are identical in all four cases: the
+    offset carried from the shared INIT end, not the events (which move these ions
+    10–100× their tolerances). So the cell-ion verdicts lean on the INIT end state,
+    which is reported: worst INIT item cell Ca at 0.30 of tolerance, Vm 132 µV (500).
+  - **Limits:** Cl mem is not judged (engine gap); sharp steps only, no ramps; the
+    junction block only as a held full step; CPU only, one geometry, one 19-cell spot,
+    35 ms SIM; all ECM entries non-discriminating.
   - Engine gaps (Cl/Ca mem, environment, temperature, ECM break, external voltage)
     are proposals on hold. Evidence: `/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/`.
 - **Device checks and batched worlds for `resolved_pump_tissue@3` landed (10 November).**
