@@ -188,7 +188,7 @@ def _blind_case(path):
     return directory, manifest
 
 
-def betse_world(path, *, blind=False, required=None):
+def betse_world(path, *, blind=False, required=None, events=False):
     """Backend-neutral physical inputs of one BETSE default-world case (see WORLD_UNITS).
 
     ``blind`` reads no BETSE history or end-state observable: only the manifest,
@@ -199,6 +199,13 @@ def betse_world(path, *, blind=False, required=None):
     ``required`` replaces REQUIRED_PARAMS, the BETSE settings a case must have. An
     extension that maps one more BETSE feature (e.g. network_world_adapter.py, the
     general network's ion channels) passes REQUIRED_PARAMS with that one entry changed.
+
+    ``events`` (default False) admits BETSE's scheduled interventions, which fire in SIM
+    only: the SIM blocks and the SIM Dm_cells history are then left to the event
+    mapping (event_world_adapter.py), and the SIM membrane permeability is BETSE's
+    unaffected base (sim_final Dm_base, which must equal the INIT Dm_cells; an extract
+    without Dm_base keeps the constancy check). Without it a case with any event option
+    on (global_options, scheduled_options) is refused.
     """
     directory, manifest = _blind_case(path) if blind else load_case(path)
     params = {phase: betse_parameters(manifest, phase) for phase in PHASES}
@@ -209,10 +216,28 @@ def betse_world(path, *, blind=False, required=None):
             if params[phase].get(name) != value:
                 raise AdapterError(f"{phase}: BETSE {name}={params[phase].get(name)!r}")
         for name, value in REQUIRED_SCALARS.items():
+            if events:
+                continue  # checked below: BETSE keeps a configured block as an array
             if scalars[phase].get(name) != value:
                 raise AdapterError(f"{phase}: BETSE {name}={scalars[phase].get(name)!r}")
+        on = sorted(
+            name
+            for group in ("global_options", "scheduled_options")
+            for name, value in (params[phase].get(group) or {}).items()
+            if value != 0
+        )
+        if on and not events:
+            raise AdapterError(f"{phase}: BETSE events {on} are on (map them with events=True)")
         if any(v != 0 for v in scalars[phase]["bound_V"].values()):
             raise AdapterError("nonzero global boundary voltages are not mapped")
+    if events:  # no event fires in INIT: every block is 1 there (scalar, or the array of
+        # ones init_dynamics makes for a configured block); SIM is the event mapping's
+        with np.load(directory / "init_final.npz", allow_pickle=False) as init_final:
+            for name, value in REQUIRED_SCALARS.items():
+                scalar = scalars["init"].get(name)
+                array = init_final[name] if name in init_final.files else None
+                if scalar != value and (array is None or not np.all(array == value)):
+                    raise AdapterError(f"init: BETSE {name}={scalar!r} under events")
     p = params["init"]
     geometry = _npz(directory / "geometry.npz")
     if blind:
@@ -233,7 +258,11 @@ def betse_world(path, *, blind=False, required=None):
     membrane_permeability = {}
     for phase in PHASES:
         dm = finals[phase]["Dm_cells"]
-        if not blind:
+        if not blind and events and phase == "sim" and "Dm_base" in finals["sim"]:
+            dm = finals["sim"]["Dm_base"]  # events change Dm_cells in SIM; this is the base
+            if not np.array_equal(dm, finals["init"]["Dm_cells"]):
+                raise AdapterError("SIM Dm_base differs from the INIT Dm_cells")
+        elif not blind:
             history = _npz(directory / f"{phase}_history.npz", ["dd_time"])["dd_time"]
             if not np.all(history == dm[None]):
                 raise AdapterError(f"{phase}: Dm_cells is not constant (channels or events)")

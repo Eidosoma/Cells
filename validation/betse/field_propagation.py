@@ -27,12 +27,13 @@ difference-budget pairs that validation/betse/protocol_tolerances.py reads
 
 Landed from the one-off P2 attribution script (parity-rung2-4-20261109-04/
 field_attribution.py), generalised: any runner (``default``: default_world_adapter's
-emulator; ``network``: network_world_adapter's general-network channels), dt factor,
-constants, model differences and SIM start. Validation tooling; no Cells engine model.
+emulator; ``network``: network_world_adapter's general-network channels; ``events``:
+event_world_adapter's scheduled interventions), dt factor, constants, model differences
+and SIM start. Validation tooling; no Cells engine model.
 
     PYTHONPATH=SRC/src:SRC python3 -B validation/betse/field_propagation.py run \\
         --case CASE --protocol P.json --cells-layout CELLS_RUN/layout --mode boltzmann \\
-        [--runner default|network] [--dt-factor 10] [--constants betse] \\
+        [--runner default|network|events] [--dt-factor 10] [--constants betse] \\
         [--sim-start chained] [--model-difference NAME] --out DIR
     ... budget --case CASE [--runner R] --pair NAME BASE OTHER ... --out FILE.json
 """
@@ -193,7 +194,13 @@ def _network_runner():
     )
 
 
-RUNNERS = {"default": _default_runner, "network": _network_runner}
+def _events_runner():
+    from validation.betse import event_world_adapter
+
+    return event_world_adapter._events_runner()
+
+
+RUNNERS = {"default": _default_runner, "network": _network_runner, "events": _events_runner}
 
 
 def runner(name):
