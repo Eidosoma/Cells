@@ -19,7 +19,7 @@ whole-cell integration is ongoing.
 
 One of Cells' central goals is to test the ideas in our
 [*Plastic Heredity*](https://doi.org/10.5281/zenodo.22143269) and
-[*How Patterns Return*](https://doi.org/10.5281/zenodo.23327869)
+[*How Patterns Return*](https://doi.org/10.5281/zenodo.23327869) (early draft)
 preprints in the most biologically and physically realistic simulations we can
 build and verify.
 
