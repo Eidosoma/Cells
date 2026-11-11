@@ -211,8 +211,11 @@ def hessian(tissue, x, step=1e-6):
     return 0.5 * (h + h.T)
 
 
-def relax(tissue, x0, *, gtol=1e-13, maxiter=200000):
-    """L-BFGS with the closed-form gradient; returns (positions, max |F|, result)."""
+def relax(tissue, x0, *, gtol=1e-13, maxiter=200000, polish=False):
+    """L-BFGS with the closed-form gradient (and optionally a Newton polish).
+
+    Returns (positions, max |F|, scipy result).
+    """
     shape = x0.shape
 
     def fun(flat):
@@ -227,19 +230,57 @@ def relax(tissue, x0, *, gtol=1e-13, maxiter=200000):
         options={"maxiter": maxiter, "maxcor": 50, "gtol": gtol, "ftol": 1e-18},
     )
     x = result.x.reshape(shape)
+    if polish:
+        x = newton_polish(tissue, x)
     return x, float(np.max(np.abs(gradient(tissue, x)))), result
 
 
-def newton_polish(tissue, x, iterations=5):
-    """Newton steps with the finite-difference Hessian; zero modes excluded."""
+def _newton(gradient_of, hessian_of, z, iterations):
+    """Newton steps (pseudo-inverse over nonzero modes) accepted while max |g| decreases.
+
+    The acceptance test uses the gradient, not the energy: energies carry a large
+    constant (Farhadifar's -N Gamma p0^2 / 2 in Staddon units), so their rounding
+    floor stops energy-based line searches at gradients near 1e-7.
+    """
+    g = gradient_of(z)
     for _ in range(iterations):
-        g = gradient(tissue, x).ravel()
-        h = hessian(tissue, x)
-        values, vectors = np.linalg.eigh(h)
+        values, vectors = np.linalg.eigh(hessian_of(z))
         keep = np.abs(values) > 1e-9 * np.max(np.abs(values))
         step = vectors[:, keep] @ ((vectors[:, keep].T @ g) / values[keep])
-        x = x - step.reshape(x.shape)
-    return x
+        t = 1.0
+        while t > 1e-4:
+            trial = z - t * step
+            g_trial = gradient_of(trial)
+            if np.max(np.abs(g_trial)) < np.max(np.abs(g)):
+                z, g = trial, g_trial
+                break
+            t *= 0.5
+        else:
+            break
+    return z
+
+
+def _fd_hessian(gradient_of, z, step=1e-6):
+    columns = []
+    for k in range(z.size):
+        plus, minus = z.copy(), z.copy()
+        plus[k] += step
+        minus[k] -= step
+        columns.append((gradient_of(plus) - gradient_of(minus)) / (2 * step))
+    h = np.array(columns).T
+    return 0.5 * (h + h.T)
+
+
+def newton_polish(tissue, x, iterations=6):
+    """Newton polish of a near minimum with the finite-difference Hessian."""
+    shape = np.asarray(x).shape
+
+    def grad(z):
+        return gradient(tissue, z.reshape(shape)).ravel()
+
+    return _newton(
+        grad, lambda z: _fd_hessian(grad, z), np.asarray(x, float).ravel(), iterations
+    ).reshape(shape)
 
 
 def box_stress(tissue, x, strain=1e-6):
@@ -296,8 +337,13 @@ def path_energy_and_gradient(tissue, z, junction, length):
     return energy(tissue, y), np.concatenate([g.ravel(), [g_theta]])
 
 
-def contraction(tissue, x0, junction, fractions, *, gtol=1e-11):
-    """Quasi-static contraction with scipy L-BFGS; returns (energies, positions)."""
+def contraction(tissue, x0, junction, fractions, *, gtol=1e-11, polish="none"):
+    """Quasi-static contraction with scipy L-BFGS from a minimum x0.
+
+    polish: "none", "end" (Newton polish of the last point; the barrier needs only
+    E(last) - E(first), and the first point is x0 itself when fractions start at 1)
+    or "all". Returns (energies, positions, initial length).
+    """
     tail, head = tissue.junction_tail[junction], tissue.junction_head[junction]
     d = x0[head] + tissue.junction_image[junction] @ tissue.box.T - x0[tail]
     length0, theta = float(np.linalg.norm(d)), float(np.arctan2(d[1], d[0]))
@@ -313,7 +359,13 @@ def contraction(tissue, x0, junction, fractions, *, gtol=1e-11):
             options={"maxiter": 200000, "maxcor": 50, "gtol": gtol, "ftol": 1e-20},
         )
         z = result.x
-        energies.append(float(result.fun))
+        if polish == "all" or (polish == "end" and fraction == fractions[-1]):
+
+            def grad(w, length=length):
+                return path_energy_and_gradient(tissue, w, junction, length)[1]
+
+            z = _newton(grad, lambda w: _fd_hessian(grad, w), z, 6)
+        energies.append(path_energy_and_gradient(tissue, z, junction, length)[0])
         positions.append(place(tissue, z[:-1].reshape(-1, 2), junction, length, z[-1]))
     return np.array(energies), positions, length0
 

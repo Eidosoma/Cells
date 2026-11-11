@@ -47,9 +47,9 @@ def barriers(quick=False):
         for p0 in points:
             model = driver.staddon_model(4 if quick else 8, r, p0, sigma=0.02, seed=0)
             tissue = _tissue(model)
-            x, force, _ = ref.relax(tissue, tissue.position, gtol=1e-12)
+            x, force, _ = ref.relax(tissue, tissue.position, gtol=1e-12, polish=True)
             for k, junction in enumerate(driver.orientation_junctions(model)):
-                energies, _, length0 = ref.contraction(tissue, x, junction, fractions)
+                energies, _, length0 = ref.contraction(tissue, x, junction, fractions, polish="end")
                 rows.append(
                     {
                         "r": r,
@@ -109,7 +109,7 @@ def recoil(quick=False):
     eps = 1e-4
     small = ref.with_control(before, driver.cut_control(model, junction, eps, 0.0)[1])
     opening, rate_small, tau = ref.linear_recoil(before, small, x, junction, RECOIL_TIMES)
-    relaxed, force, _ = ref.relax(after, x, gtol=1e-12)
+    relaxed, force, _ = ref.relax(after, x, gtol=1e-12, polish=True)
     d1 = relaxed[head] + before.junction_image[junction] @ before.box.T - relaxed[tail]
     cells = [before.cell_ids.index(c) for c in cut["contractility"]]
     area0, perimeter0, _ = ref.geometry(after, x)

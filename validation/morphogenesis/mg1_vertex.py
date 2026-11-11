@@ -503,7 +503,9 @@ def part_barrier(args):
                             {"model": model, "experiment": {"parameter_controls": [{}]}}
                         )
                         x = eq.position[: len(tissue.position)]
-                        energies, _, _ = ref.contraction(tissue, x, junction, fractions)
+                        energies, _, _ = ref.contraction(
+                            tissue, x, junction, fractions, polish="end"
+                        )
                         row["reference_barrier"] = float(energies[-1] - energies[0])
                         row["reference_energy_max_difference"] = float(
                             np.max(np.abs(np.asarray(path.energies) - energies))
