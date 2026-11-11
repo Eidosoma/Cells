@@ -15,15 +15,23 @@ groups, modelled consumers of signals, and tests of concurrent function and
 causal use. These are design requirements below, not implemented capabilities
 or evidence that Cells already exhibits biological polycomputing.
 
+**Update, 11 November 2026.** The status parts of this page were refreshed after
+the 8 November reset, when BETSE became an out-of-process reference (D131). The
+design principles below are unchanged. [Progress](../PROGRESS.md) remains the
+source of current status; this page keeps only numbers that constrain the
+architecture. The JUPITER and JAX source checks below are still those of
+October.
+
 ## Current foundation and remaining design gaps
 
 | Area | Foundation in the current stack | Still needed |
 | --- | --- | --- |
-| Shared physical dynamics | Versioned array models for ions, fields, gates, chemistry and selected coupled families; [dynamic BETSE junctions](../src/cells/models/betse_junction.py) use ordinary execution and snapshots | Broader physiological coupling, mechanics, growth and turnover; biological calibration of each new mechanism |
+| Shared physical dynamics | Versioned array models for ions, fields, gates, chemistry and selected coupled families. The bioelectric tissue family is `resolved_pump_tissue@1`–`@3` (pumps, channel populations, voltage-gated junctions, extracellular field), checked against BETSE run separately. Osmotic water and volume (`resolved_pump_water@1`) is qualified; its volume-regulation extension `@2` has stationary states judged | Mechanics coupled to transport, growth, gene regulation coupled to tissue, membrane trafficking; biological calibration of each new mechanism |
+| Turnover and mechanics | In development on branches, not on main: cell replacement (`resolved_pump_replacement@1`, a wrapper with a junction-formation law) and 2-D vertex mechanics (`apical_vertex_mechanics@1`, whose first judged run failed and is being revised) | Qualification of both; vacancies, division and growth; coupling mechanics to transport on moving geometry |
 | Assembly and history | [Finite-pool stochastic assembly](CAPSID_ASSEMBLY.md) retains bonds, event clocks and material; assembly can regulate selected ionic channels | Physically justified feedback into assembly, resource-dependent synthesis/remodelling and additional writable slow state |
 | Measurements and interventions | [Model observations](../src/cells/observers.py), scheduled controls, complete checkpoints and branching | A reusable collection of versioned task/readout definitions, restricted physical consumers and simultaneous-task assays |
-| Resolution and clocks | Fixed-geometry fields, common-step integration and event-split assembly/ionic coupling | Qualified fine/coarse maps, coupled multirate/stiff solvers and preservation of task-relevant histories |
-| GPU execution | CPU/L4 paths, independent-world queues, stable world identities and [offline plans for up to 16 GPUs](../src/cells/ensemble/plan.py) | JUPITER qualification, multi-node queue/failure handling and partitioning one interacting world |
+| Resolution and clocks | Fixed-geometry fields, common-step IMEX integration, event-split assembly/ionic coupling, an operator split for water, and a qualified stationary/continuation analysis mode | Qualified fine/coarse maps, a coarse time mode that meets the parity tolerances, multirate solvers and preservation of task-relevant histories |
+| GPU execution | CPU/L4 paths, independent-world queues, stable world identities, [offline plans for up to 16 GPUs](../src/cells/ensemble/plan.py), and batched (`vmap`) worlds with on-device row checks for the pump-tissue family | JUPITER (GH200) throughput and qualification, deterministic GPU replay, multi-node queue/failure handling and partitioning one interacting world |
 | Field scaling | Explicit graph ownership and bounded dense field/linear solves in current families | Sparse or matrix-free solvers, preconditioning and communication costs qualified on larger fixtures |
 
 This is a map of architectural responsibilities. Passing one model family does
@@ -106,6 +114,23 @@ at its endpoints. Convert amounts to concentration changes only with the
 appropriate compartment volume. Charge current follows the declared species
 fluxes and valences, plus separately modeled electrode/displacement/gating
 currents where applicable. A ledger records transfer history, not extra matter.
+
+**Composition by wrapping (current practice).** New mechanisms are added as
+versioned, opt-in models that call an already qualified model's own step rather
+than copying it. Examples:
+- `resolved_pump_water@1` runs water half-steps around `resolved_pump_tissue@3`'s
+  checked step (a Strang split).
+- The cell-replacement wrapper applies events and a formation law around the same
+  step.
+- `@3` itself accepts opt-in hooks, such as an extra membrane process or a
+  nonnegative junction-heat booking.
+
+The rules:
+- When off, the wrapper or option must reproduce the inner model bitwise, which is
+  tested.
+- It reuses the inner model's check functions, so later fixes to the inner model
+  reach it unchanged.
+- It carries its own ledgers for anything it adds.
 
 Source-scaled EMT coordinates do not become physical ion amounts through a
 generic field mapping. Adapters need explicit units, clock meanings and tested
@@ -213,6 +238,17 @@ observer order, output cadence, window size or device placement must preserve
 the declared physical trajectory/replay contract. An observer's random noise
 uses a separate stream from biological stochastic events.
 
+A worked example from development runs (heredity pre-screen 9, not judged):
+- Cells newly converted to the depolarised (D) state had D voltage but still
+  carried resting-state ion composition.
+- As neighbours, they pulled a newcomer toward D more weakly than long-standing
+  D cells did.
+- Voltage alone would have classed both kinds of cell as identical, but slow
+  composition, which loads over tens of minutes, decided what happened next.
+
+Readouts and coarse models must therefore keep such slow state when the
+question involves history.
+
 Treat functional diversity as an accuracy requirement for a proposed coarse
 model. Qualify each retained task and its response to interventions; a smaller
 model that preserves task A but destroys task B has a restricted scope. Reduced
@@ -231,9 +267,11 @@ No single information measure or universal polycomputing score is selected.
 
 The [first implementation protocol](TWO_TASK_READOUT_ASSAY.md) specifies the
 location/timing panel, restricted voltage readers, calibration holdouts and
-controls on the existing dynamic-junction runtime. Current run status remains
-in [Progress](../PROGRESS.md); implementing the assay does not assume a positive
-task or biological result.
+controls. Its original runtime, a re-hosted BETSE junction model, was removed in
+the 8 November reset. Re-hosting the assay on Cells' own physics is pending
+(Progress, plan step 8), and further readout research is deferred by roadmap
+priority 6. Implementing the assay does not assume a positive task or biological
+result.
 
 1. Start with a small, already qualified physical family. Define two distinct
    input/output tasks and evaluate both from each shared trajectory. A possible
@@ -296,12 +334,37 @@ refinement/derefinement requires its own state-transfer and hysteresis/error
 policy. Memory preservation is tested by future interventions, not just by
 matching the current mean phenotype.
 
+## Time scales and long-horizon modes
+
+The fast and slow processes Cells now couples span seconds to hours. Each entry
+is marked by the kind of evidence behind it.
+
+| Process | Time scale | Basis |
+| --- | --- | --- |
+| Junction voltage gating | 0.05–0.4 s | Model law (`junction_voltage_relaxation@1`) |
+| Cell voltage relaxation, default-world cell | slowest modes 0.26 s, 189 s, 16,661 s | Qualified stationary analysis |
+| Osmotic water exchange | about 0.5–85 s, depending on water permeability | Literature parameters (water model design note) |
+| Ion loading of a newly depolarised cell | effective τ 40–50 min (asymptotic 1.5–2.6 h) | Development runs (pre-screen 9) |
+| New gap-junction formation after replacement | lag about 2–20 min, then τ 15–60 min | Literature (cell-replacement design) |
+
+The integrator step is set by the fastest processes (1 ms for the full tissue),
+while the questions run for hours. Three optional coarse time modes address this
+(D135); the fine engine stays the default:
+- **E, stationary states and continuation:** qualified.
+- **C, projective integration:** failed its qualification, because its errors
+  exceeded the parity tolerances. It is paused.
+- **B, a quasi-steady electrical mode:** planned, after a feasibility estimate.
+
 ## Coupled numerical execution
 
 Retain a common-step detailed reference before introducing multirate updates.
-Candidate methods include explicit local stepping, implicit stiff blocks,
-implicit-explicit splitting and field/pressure solves; no package or universal
-method is selected in this design. Each block specifies its domain checks,
+What is qualified so far:
+- **Pump-tissue family:** IMEX ARS(2,2,2) at 1 ms. On the 825-node tissue it agrees
+  with a 0.25 ms run to nanovolts; 2 ms does not.
+- **Water:** a second-order Strang split around that step.
+
+Other candidate methods remain open (local stepping, implicit stiff blocks,
+field/pressure solves); no universal method is selected. Each block specifies its domain checks,
 error target, dense-output/event semantics, constraint residuals and restart
 requirements. Fast electrical dynamics cannot be assigned a larger timestep
 just because the calculation moves to a GPU.
@@ -344,6 +407,19 @@ with fixed rate parameters cannot silently stand in for this extension.
 | Independent experiments | Whole worlds across devices; compatible worlds batched within each device | Dispatch/results, no biological exchange between worlds |
 | One interacting tissue/organ | Spatial cell/edge/mesh partitions within one world | Halo/stage values, single-owned boundary transfers, constraint reductions and field solves |
 | Coupled organs | Organ ports plus whichever spatial partitions each organ needs | Conserved port transfers and shared transport/field dynamics on the coupled clock |
+
+**Batched worlds (measured on one L4).** Independent worlds of the same model
+are batched with `vmap`, and row checks run on the device.
+- **Cost per world-step for the 825-node heredity tissue:**
+  - 12.5 ms for one world;
+  - 2.64 ms at 64 worlds;
+  - 2.28 ms at 256 worlds (execution only);
+  - 4.0–4.5 ms end to end with host observers.
+- **The largest single cost** is the dense field factorisation: 41.5 ms of a
+  154 ms batch step at 64 worlds. A sparse or matrix-free solver is therefore the
+  main lever for throughput.
+- **Memory:** 256 worlds need a preallocated allocator on the L4.
+- **GH200:** throughput is unmeasured, and it decides the JUPITER budget.
 
 The existing ensemble queue assigns complete independent worlds to workers.
 An interacting organ may instead require several devices within one world.
@@ -420,6 +496,14 @@ must be qualified; reductions may change rounding order across devices. Require
 bounded scientific/numerical agreement, not universal bitwise cross-device
 trajectories. Current exact-replay guarantees keep their original scope.
 
+Repeat runs on one L4 were observed not to be bitwise identical (11 November,
+one development observation; the likely cause, atomic scatter-adds, is not
+confirmed). Two consequences follow:
+- Bitwise restart and replay are CPU guarantees for now.
+- GPU parity protocols carry a measured run-to-run term.
+
+Deterministic GPU operations, and what they cost, are still to be measured.
+
 Stochastic assembly already derives draws from world identity, registered
 seeds and event counters, with per-cell stream identities in coupled clusters.
 It retains pending events across observation/window boundaries. Extend that
@@ -462,23 +546,28 @@ halos, compilation, transfers, diagnostics, output and checkpoints. Report
 end-to-end time alongside kernel time. No speedup, whole-organ capacity or
 hardware purchase is inferred from this design.
 
-## Build order
+## Build order and open coupling gaps
 
-Keep the [current BETSE and physiology sequence](ROADMAP.md) moving. The
-architecture additions can be exercised incrementally:
+The current order is in the [roadmap](ROADMAP.md) and [Progress](../PROGRESS.md).
+The architectural gaps that the next steps run into are:
 
-1. Add a small versioned task/readout collection to an existing qualified model,
-   with frozen calibration and passive-observer invariance checks. Reuse ordinary
-   branches, windows and independent-world execution.
-2. Run the two-task assay above with bounded inputs and negative controls, then
-   introduce a local physical consumer only when its mechanism is specified.
-   This can begin on CPU/L4 without waiting for organs or sixteen GPUs.
-3. Add bidirectional assembly/regulatory coupling and longer memory only with
-   physical laws and qualified event/ODE coupling. Use E04/E09/E11 to locate
-   state and test its use, then E12 to test reductions against both tasks.
-4. Qualify JUPITER ensembles on one node before expanding to two/four. Develop
-   sparse field solves and partitioned interacting-world fixtures separately;
-   demonstrate local multi-GPU coupling before multi-host coupling.
+- **Mechanics with transport on moving geometry.** Vertex mechanics and the
+  bioelectric layer can only couple once transport handles time-varying geometry
+  (morphogenesis MG4, engine gap 6).
+- **Water in a finite extracellular space.** In the full tissue, cell and
+  extracellular water form one closed component. Water arms therefore use
+  held-bath worlds until extracellular flow is modelled.
+- **Vacancies.** Cell replacement swaps a cell in place. A true vacancy or lesion,
+  as needed for regeneration, needs a separate removal-and-regrowth operation.
+- **Membrane abundance as state.** Gene regulation and a planned Golgi and
+  membrane-trafficking pathway would change channel, pump and connexin
+  abundances over time. Today these are parameters, not state.
+- **Readouts and consumers.** The task/readout and physical-consumer contracts
+  above still await a concrete fixture (see the two-task assay status).
+- **Scale.**
+  - Qualify JUPITER ensembles on one node before two or four.
+  - Develop sparse field solves and partitioned single-world fixtures separately.
+  - Demonstrate multi-GPU coupling on one host before multi-host.
 
 No new experiment, controller, distributed runtime or polycomputing result is
 delivered by this documentation review. Current run evidence stays in
