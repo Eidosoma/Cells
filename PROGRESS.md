@@ -54,6 +54,28 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Heredity pre-screen 9: newcomer rules under turnover (10–11 November;
+  development, not judged).** Driver `validation/stationary/heredity_turnover.py`
+  (`e06b104`), on `resolved_pump_tissue@3` sheets; 51 runs plus mechanism and
+  frozen-composition checks, none refused.
+  - **Control rule (open newcomer gates):** the rim stays H and the disc erodes or
+    unzips; B1 fails at s 0.3 and 0.6, as predicted.
+  - **Inherited gates:** gates to H neighbours carried across the replacement
+    (state inheritance, against D133). They renew the rim only partly at s 0.6:
+    J 0.811 after one turnover, 0.297 after two.
+  - **91-cell disc at s 1.0** (homogeneous, inherit): J = 1.000 through two full
+    turnovers, every newcomer converted. A heterogeneous 37-cell world at s 0.6
+    fails B1 in the first turnover.
+  - **Newcomer composition:** converted newcomers start at H composition and pull
+    weaker. They load with τ 40–50 min, and junction conductance rises with ion
+    content (×1.57 D–D).
+  - **Fresh discs:** at fresh composition, discs are retained to about 3× stronger
+    coupling in fast mode (19 cells to s 2.23, 37 cells to 3.10, against 0.766 and
+    1.05 loaded).
+  - Replacement is done by the driver (engine gap G2, next in the feature queue);
+    the gate rate is not configurable (G6).
+  - Evidence: [summary](/mnt/workspaces/Cells/heredity-design-20261108-01/prescreen-09-turnover/summary.md),
+    `final.json`.
 - **Caveat on heredity pre-screens 7–9 (10 November).** Every pre-screen starts
   from the stationary written disc, whose D cells carry the fully loaded slow
   composition (Na+K+M+P about 372–380 mM against 284 mM for H, +31% osmolarity, past
