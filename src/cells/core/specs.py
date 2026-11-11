@@ -779,6 +779,11 @@ class SimulationSpec:
             from cells.core.grid import require_refinement_model
 
             require_refinement_model(self)
+        from cells.core.apical_vertex_spec import ApicalVertexModel
+        from cells.core.apical_vertex_spec import to_dict as apical_vertex_to_dict
+
+        if isinstance(m, ApicalVertexModel):
+            return apical_vertex_to_dict(self)
         from cells.core import surface_open_calcium_bath_epoch_spec as calcium_bath_epoch
         from cells.core import surface_open_calcium_energy_bath_epoch_spec as energy_bath_epoch
 
@@ -1463,6 +1468,10 @@ def parse_spec(data: dict) -> SimulationSpec:
         from cells.core.projective_spec import parse_definition
 
         return parse_definition(data, parse_spec)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "apical_vertex_mechanics@1":
+        from cells.core.apical_vertex_spec import parse as parse_apical_vertex
+
+        return parse_apical_vertex(data)
     if (
         isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_open_calcium_bath_epoch@1"

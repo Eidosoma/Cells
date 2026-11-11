@@ -137,6 +137,12 @@ from cells.models import (
 
 
 def get_model(spec):
+    from cells.core.apical_vertex_spec import ApicalVertexModel
+
+    if isinstance(spec, ApicalVertexModel):
+        from cells.models import apical_vertex
+
+        return apical_vertex
     from cells.core import surface_open_calcium_bath_epoch_spec as calcium_bath_epoch
     from cells.core import surface_open_calcium_energy_bath_epoch_spec as energy_bath_epoch
 
