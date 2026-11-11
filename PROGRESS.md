@@ -188,8 +188,23 @@ machine-readable inputs, results, checks and failures.
   heterogeneous cue onsets (W1 pilot, 5.000→5.001 s) and on homogeneous sheets
   during disc loss. Stage powers are nonnegative analytically, so an in-step bound
   would never fire; that fix (option I) is withdrawn, and a single wrong-signed
-  junction booking is never caught by the energy ledger. Alternatives (an opt-in
-  nonnegative booking) are being measured; nothing is changed yet.
+  junction booking is never caught by the energy ledger.
+  - **Fix landed 11 November (gap A):** an opt-in `"junction_heat_booking":
+    "trapezoid_nonnegative@1"` on @3. Junction heat is booked as dt·(q_start +
+    q_end)/2, with no extra field solve.
+    - Default runs and fingerprints are unchanged. With the option, trajectories are
+      bitwise the default's on CPU; only junction heat differs. The strict row tests
+      are kept.
+    - The cost is +0.45% on the L4 at 64 worlds.
+    - With the option, the 5 ms collapse and the full-tissue cue step are accepted,
+      with energy residuals of about 1e-7 of flows.
+  - **Host-cost fix landed with it (gap B):** `held_controls` reads the schedule's
+    change times once per call, so output is identical and the host overhead per
+    world-step is gone.
+  - **Gate:** tier 1+2 from a clean snapshot of `bd0a41d` (327 files, none changed).
+    The tier-3 files touching @3 and the vector windows are running; seven E/C test
+    files, missing from the tier record, are added to the gate.
+  - Evidence: `/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/`.
 - **Parity P3 (scheduled interventions, first subset) passes (10 November).**
   Four protocols, `validation/betse/protocols/physical_p3_*_dense.json`, registered at
   `95f30b5` on `resolved_pump_tissue@3` with the event adapter (`ac2e127`): pump
