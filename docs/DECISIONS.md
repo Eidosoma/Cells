@@ -4696,6 +4696,25 @@ ad-hoc, object oriented multiscale and clean".
   - unqualified operator combinations may run only as labelled development runs, with
     judged status only from registered protocols.
 
+## D144: Qualify the simulator for many uses, not one experiment
+
+2026-11-11, user direction: "we never want to build something in the simulator or
+models just for one experiment, but rather work on slowly qualifying the simulator
+for different work".
+- **General features only.** An experiment can reveal a missing mechanism (D136),
+  but the engine gains a general, reusable model or operator, not an
+  experiment-specific one. Experiment-specific choices stay in validation drivers
+  and protocols.
+- **Qualification grows step by step.** Each feature is qualified against
+  independent references and judged runs, so the qualified scope widens over time.
+- **Current examples:**
+  - Division is built as general operators: membrane insertion, a restricted
+    compartment, partition and bridge closure. Xenopus is the first validation case.
+  - Current injection is planned as a general control.
+  - The definition-check bound is to scale with any cell size.
+  - The protein catalogue is shared by every model.
+- Builds on D136, D142 and D143.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

@@ -5,6 +5,11 @@ The binding rules for agents and contributors are in [AGENTS.md](../AGENTS.md).
 
 ## Working principles
 
+- Never build something into the simulator or its models for a single experiment.
+  An experiment may reveal a missing mechanism (D136), but what is added is a
+  general, reusable, cited model or operator. The simulator is then qualified step
+  by step for a widening range of work, so each qualified piece serves many
+  experiments (user, 11 November 2026; D144).
 - Keep model equations, numerical methods, experiment interventions, and
   measurements explicit and separately versioned.
 - Use array-based state and JAX kernels suitable for CPU and GPU execution.
