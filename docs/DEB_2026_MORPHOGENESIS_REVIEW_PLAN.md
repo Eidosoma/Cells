@@ -5,7 +5,7 @@ Embryonic Morphogenesis from Fertilization to Organogenesis", *npj Systems
 Biology and Applications* 12, 156 (2026), doi:10.1038/s41540-026-00788-y, CC
 BY-NC-ND 4.0. We read it through Europe PMC (PMC13675182), verbatim up to
 reference 62 of 71. This plan cites the paper and reproduces none of its text or
-tables. Status: proposed, not yet approved.
+tables. Status: the additions to MG1 are accepted (D138); MG1 starts when the machine is fully free.
 
 ## What it is
 

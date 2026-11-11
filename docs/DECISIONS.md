@@ -4599,6 +4599,21 @@ and you rank this, we are in no rush".
 - **The abstract regulatory modules stay out of the engine.** Only claims with a
   physical mapping are tested.
 
+## D138: MG1 start and the paper backlog
+
+2026-11-11, user decisions:
+- **MG1.** "start is when the machine is fully free and according to your plan and
+  priorities". MG1 (2-D vertex mechanics) starts once the machine has no outside
+  jobs. Its pre-registered acceptance includes the additions from the
+  [Deb et al. review plan](DEB_2026_MORPHOGENESIS_REVIEW_PLAN.md): junction recoil
+  after ablation, and synthetic tension inference.
+- **Backlog.** The user is building a backlog of papers to model ("I'm also
+  creating a bit of a backlog for us"). Each paper gets a review, a mapping to
+  Cells and a plan, indexed in [PAPER_BACKLOG.md](PAPER_BACKLOG.md); the lead
+  orders it against the engine-feature queue (D136). Reproducing a paper's own
+  model or code is tooling and needs the user's approval per paper (D137 covers
+  only Cortés-Poza Phase 0).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
