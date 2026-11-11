@@ -16,6 +16,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Scientific basis and calibration plan](SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack) | References across the stack, future cell/organ data resources and the limits of model and experimental evidence |
 | [Roadmap](ROADMAP.md) | Development priorities, dependencies and completion criteria |
 | [Experiment programme](EXPERIMENTS.md) | Proposed memory and relay assays; implementing their prerequisites does not establish an assay result |
+| [Paper backlog](PAPER_BACKLOG.md) and [GRN wet-lab validations](GRN_WETLAB_VALIDATION.md) | Papers under test, and gene-network models validated against experiments (logged) |
 
 ## Models and execution
 
