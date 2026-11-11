@@ -51,3 +51,27 @@ def test_vmapped_steps_and_the_step_bound():
     for a, b in zip(refused, s, strict=True):
         np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
     assert bool(single(s, p, 0.5 / rho)[1])
+
+
+def test_energy_rise_alone_refuses_a_step(monkeypatch):
+    spec = parse_spec(honeycomb(displacement=0.005, seed=8, solver="euler"))
+    state, layout = av.initial_values(spec)
+    state = jax.tree.map(jnp.asarray, state)
+    p = jax.tree.map(jnp.asarray, av.parameters(spec, layout))
+    x, mech = state.position, av.mechanics(state)
+    force = vm.forces(x, p.topology, p.box, mech)
+    hessian = jax.hessian(vm.energy)(x, p.topology, p.box, mech)
+    n = x.size
+    curvature = float(force.ravel() @ (hessian.reshape(n, n) @ force.ravel()))
+    dt = 3.0 * float(jnp.sum(force * force)) / curvature  # Euler overshoots: energy rises.
+    trial = x + dt * force
+    assert float(vm.energy(trial, p.topology, p.box, mech)) > float(
+        vm.energy(x, p.topology, p.box, mech)
+    )
+    assert bool(vm.domain_valid(trial, p.topology, p.box, p.length_floor))
+    monkeypatch.setattr(av, "_rate", lambda s, q: jnp.array(0.0))  # Disable the step bound.
+    control = av.Control(*state[2:6])
+    refused, ok = jax.jit(lambda s: av.checked_step(s, dt, control, p, None))(state)
+    assert not bool(ok)
+    for a, b in zip(refused, state, strict=True):
+        np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
