@@ -1,8 +1,9 @@
 """stationary_continuation_analysis@1 before and after the volume extension, on @1-@3.
 
 The analysis gained volume coordinates and closed-water laws for
-resolved_pump_water@1. This driver loads the module as committed at a given
-revision (git show REV:src/cells/analysis/stationary.py) next to the current
+resolved_pump_water@1. This driver loads the module as committed before that
+change (a file extracted with git show REV:src/cells/analysis/stationary.py, so
+the driver also runs from a frozen snapshot without .git) next to the current
 one and checks, on resolved_pump_tissue@1 (default-world cell), @3 (heredity
 H and D cells) and @3 (seven-cell gated sheet), that every existing identity is
 unchanged: the same blocks and units, the same laws and law matrix, bitwise
@@ -10,15 +11,14 @@ equal residuals and Jacobians at the base state for both formulations, and
 bitwise equal Newton solutions and stability spectra for the cells.
 
 Writes result.json (verdict and per-world records) or failure.json.
-Usage: python -m validation.stationary.volume_regression --revision REV --output DIR
+Usage: python -m validation.stationary.volume_regression --committed FILE --revision REV
+       --output DIR
 """
 
 import argparse
 import importlib.util
 import json
-import subprocess
 import sys
-import tempfile
 import traceback
 from pathlib import Path
 
@@ -33,19 +33,10 @@ from cells.core.specs import parse_spec  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
 from validation.tissue import pump_water_fixtures as fixtures  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
 ARS = "imex_ars222_face_electromigration@1"
 
 
-def committed(revision):
-    source = subprocess.run(
-        ["git", "-C", str(ROOT), "show", f"{revision}:src/cells/analysis/stationary.py"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
-    path = Path(tempfile.mkdtemp()) / "stationary_committed.py"
-    path.write_text(source)
+def committed(path):
     spec = importlib.util.spec_from_file_location("stationary_committed", path)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -90,6 +81,7 @@ def compare(spec, old, solve):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--committed", required=True)
     parser.add_argument("--revision", required=True)
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
@@ -97,7 +89,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     records = {}
     try:
-        old = committed(args.revision)
+        old = committed(args.committed)
         from validation.tissue import surface_pump_v3_fixtures as v3
 
         cases = dict(
