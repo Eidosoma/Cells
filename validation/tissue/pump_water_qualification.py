@@ -227,9 +227,75 @@ def stationary_phase(predictions):
                 consistency=sa.consistency(pb, solution.u),
                 stability=sa.stability(pb, solution.u),
                 reference=reference,
+                state_arrays=dict(
+                    amount_fmol={
+                        sid: float(
+                            p.amount_reference[ids.index(sid), 0]
+                            + state.amount_increment[ids.index(sid), 0]
+                        )
+                        for sid in ids
+                    },
+                    volume_pL=volume,
+                    charge_C=charge,
+                    channel_gate=np.asarray(state.channel_gate).tolist(),
+                ),
             )
         records.append(record)
     return records
+
+
+def stationary_definition(predictions, record, hours, interval_s=600.0):
+    """The P2 definition started at an engine stationary state, run for `hours`."""
+    raw = copy.deepcopy(predictions["P2"]["definition"])
+    arrays = record["state_arrays"]
+    cell = raw["model"]["cells"][0]
+    z = {s["id"]: s["valence"] for s in raw["model"]["species"]}
+    cell["initial_amount_fmol"] = dict(arrays["amount_fmol"])
+    cell["volume_pL"] = arrays["volume_pL"]
+    # The declared charge is F (sum z N + X) with the definition's background X.
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+
+    cell["initial_charge_C"] = CHARGE_PER_FMOL * (
+        sum(z[s] * n for s, n in arrays["amount_fmol"].items())
+        + cell["fixed_charge_equivalent_fmol"]
+    )
+    gates = np.asarray(arrays["channel_gate"])
+    for i, channel in enumerate(raw["model"]["channels"]):
+        if channel["initial_gate"]:
+            channel["initial_gate"] = [float(g) for g in gates[: len(channel["initial_gate"]), i]]
+    end = hours * 3600.0
+    raw["experiment"]["end_time"] = end
+    raw["experiment"]["observation_times"] = [
+        float(t) for t in np.arange(0.0, end + 0.5 * interval_s, interval_s)
+    ]
+    return raw
+
+
+def drift(predictions, stationary, hours, label="H"):
+    """Hour-scale run from the engine's stationary state: drift and ledgers."""
+    record = next(r for r in stationary if r["label"] == label and r["converged"])
+    raw = stationary_definition(predictions, record, hours)
+    started = time.perf_counter()
+    observed, diagnostics, seconds = engine_observations(raw, 1e-3, window_steps=20000)
+    times = sorted(observed)
+    first = observed[times[0]]
+    return dict(
+        label=label,
+        hours=hours,
+        steps=int(round(hours * 3600 / 1e-3)),
+        wall_seconds=time.perf_counter() - started,
+        run_seconds=seconds,
+        diagnostics=diagnostics,
+        drift={
+            key: [float(np.max(np.abs(observed[t][key] - first[key]))) for t in times]
+            for key in QUANTITIES
+        },
+        times=[float(t) for t in times],
+        start=dict(
+            volume_pL=record["volume_pL"],
+            membrane_voltage_V=record["state"]["membrane_voltage_V"]["membrane_0"],
+        ),
+    )
 
 
 def consistent(record, bound):
@@ -302,7 +368,9 @@ def judge(predictions, protocol, parts):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("phase", choices=("dt-study", "stationary", "judge"))
+    parser.add_argument("phase", choices=("dt-study", "stationary", "judge", "drift"))
+    parser.add_argument("--stationary", help="stationary.json (drift phase)")
+    parser.add_argument("--hours", type=float, default=1.0)
     parser.add_argument("--predictions", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--protocol")
@@ -316,6 +384,9 @@ def main():
             result = dt_study(predictions, args.parts)
         elif args.phase == "stationary":
             result = stationary_phase(predictions)
+        elif args.phase == "drift":
+            stationary = json.loads(Path(args.stationary).read_text())
+            result = drift(predictions, stationary, args.hours)
         else:
             result = judge(predictions, json.loads(Path(args.protocol).read_text()), args.parts)
         (out / f"{args.phase}.json").write_text(json.dumps(result, indent=2, default=float) + "\n")

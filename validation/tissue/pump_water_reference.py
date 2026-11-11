@@ -93,6 +93,12 @@ def schedule_value(schedule, t):
     return value
 
 
+def kcc_cycles(k_in, m_in, k_out, m_out, volume, kcc):
+    """Outward cycles (fmol/s): k a exp[(V - V_set)/(s V_set)] (K_i M_i - K_o M_o)."""
+    factor = np.exp((volume - kcc["set_volume_pL"]) / (kcc["steepness"] * kcc["set_volume_pL"]))
+    return kcc["capacity_fmol_s_mM2"] * kcc["availability"] * factor * (k_in * m_in - k_out * m_out)
+
+
 @dataclass
 class World:
     raw: dict
@@ -159,7 +165,11 @@ def load(raw):
 class Reference:
     """The ODE system of one world: pack/unpack, right-hand side, integration."""
 
-    def __init__(self, raw):
+    def __init__(self, raw, kcc=None):
+        """kcc: optional KCC-type route on every membrane, a dict with
+        capacity_fmol_s_mM2, set_volume_pL, steepness and availability (W2;
+        k_anion_symport_mass_action@1 transcribed from its docstring)."""
+        self.kcc = kcc
         w = self.w = load(raw)
         self.s = len(w.species)
         self.z = w.z
@@ -372,6 +382,18 @@ class Reference:
             q += 1
         np.subtract.at(cell_rate, (slice(None), self.mem_cell), flux)
         np.add.at(out_rate, (slice(None), self.mem_out), flux)
+        if self.kcc is not None:
+            k_idx, m_idx = self.w.species.index("K"), self.w.species.index("M")
+            cycles = kcc_cycles(
+                ci[k_idx, self.mem_cell],
+                ci[m_idx, self.mem_cell],
+                co[k_idx, self.mem_out],
+                co[m_idx, self.mem_out],
+                volume[self.mem_cell],
+                self.kcc,
+            )
+            flux[k_idx] += cycles
+            flux[m_idx] += cycles
         # Junctions and their gates.
         jrate = np.zeros_like(jg)
         if len(jg):
@@ -579,3 +601,212 @@ def cell_stationary_states(raw, *, grid=None):
         osmolarity = conc["Na"] + conc["K"] + conc["M"] + particles / volume
         states.append((v, conc, volume, osmolarity))
     return states
+
+
+def regulated_stationary_states(raw, kcc, *, grid=None):
+    """Stationary states of one held-bath heredity cell with water and a KCC-type route.
+
+    With the route, M is no longer at its Nernst distribution, so for each Vm the
+    four balances (Na, K and M fluxes, and osmotic balance) are solved together
+    for (Na, K, M, V); the residual is again the charge C Vm - F (sum z N + X).
+    kcc=None reproduces cell_stationary_states. Returns
+    [(Vm, {Na, K, M}, V, osmolarity, kcc_cycles_fmol_s)] sorted by Vm.
+    """
+    w = Reference(raw, kcc)
+    if w.n != 1 or len(w.w.membranes) != 1 or w.of:
+        raise ValueError("One cell, one membrane, a held bath")
+    cell = w.w.cells[0]
+    species = w.w.species
+    idx = {s: species.index(s) for s in species}
+    rt = R * w.w.temperature
+    bath = w.out_amount0[:, 0] / w.out_volume0[0]
+    c_bath = float(np.sum(bath))
+    fixed = {s: w.amount0[idx[s], 0] for s in species if s not in ("Na", "K", "M")}
+    particles = sum(fixed.values()) + w.impermeant[0]
+    control = w.controls(0.0)
+
+    def opening(i, v):
+        kind = w.ch_kind[i]
+        if kind == "leak":
+            return 1.0
+        target, _ = (nav_kinetics if kind == "nav" else kir_kinetics)(v)
+        return target[0] ** 3 * target[1] if kind == "nav" else target[0] * target[1] ** 2
+
+    def inward(v, conc, volume):
+        out = {}
+        for s in ("Na", "K", "M"):
+            k = idx[s]
+            perm = w.perm[k, 0] * control.membrane[0]
+            for i in range(len(w.ch_kind)):
+                if w.ch_species[i] == k:
+                    perm += w.ch_perm[i] * opening(i, v) * control.channel[i]
+            out[s] = -float(
+                ghk_outward(conc[s], bath[k], v, w.z[k], w.w.temperature, w.area[0] * perm)
+            )
+        pump = w.pump[0]
+        if pump is not None:
+            m = pump["metabolism"]
+            q = SimpleNamespace(
+                temperature_K=w.w.temperature,
+                pump=dict(
+                    km_na_mM=pump["km_na_mM"],
+                    km_k_mM=pump["km_k_mM"],
+                    km_atp_mM=pump["km_atp_mM"],
+                    atp_mM=m["atp_mM"],
+                    adp_mM=m["adp_mM"],
+                    pi_mM=m["pi_mM"],
+                    delta_g0_J_per_mol=m["delta_g0_J_per_mol"],
+                ),
+                bath_mM=dict(Na=bath[idx["Na"]], K=bath[idx["K"]]),
+                pump_capacity_mol_s=pump["capacity_fmol_per_s"] * control.pump[0],
+            )
+            cycles = float(theory.pump_cycles_mol_s(q, dict(Na=conc["Na"], K=conc["K"]), v))
+            out["Na"] -= 3 * cycles
+            out["K"] += 2 * cycles
+        regulated = 0.0
+        if kcc is not None:
+            regulated = float(
+                kcc_cycles(conc["K"], conc["M"], bath[idx["K"]], bath[idx["M"]], volume, kcc)
+            )
+            out["K"] -= regulated
+            out["M"] -= regulated
+        return out, regulated
+
+    def pressure(volume):
+        return w.modulus[0] * (volume / w.vref[0] - 1) + w.offset[0]
+
+    def equations(x, v):
+        na, k, m, volume = np.exp(x)
+        conc = dict(Na=na, K=k, M=m)
+        flux, _ = inward(v, conc, volume)
+        return np.array(
+            [
+                1e3 * flux["Na"],
+                1e3 * flux["K"],
+                1e3 * flux["M"],
+                (na + k + m + particles / volume - c_bath - pressure(volume) / rt) / c_bath,
+            ]
+        )
+
+    cache = {}
+
+    def nested(v):
+        """Robust fallback: Gauss-Seidel brentq on Na, K, M at each V, brentq on V."""
+
+        def composition(volume, start):
+            conc = dict(start)
+            for _ in range(200):
+                old = dict(conc)
+                for s, high in (("Na", 5e3), ("K", 5e4), ("M", 5e4)):
+                    conc[s] = optimize.brentq(
+                        lambda x, s=s: inward(v, dict(conc, **{s: x}), volume)[0][s],
+                        1e-9,
+                        high,
+                        xtol=1e-15,
+                        rtol=1e-15,
+                    )
+                if all(abs(conc[s] - old[s]) <= 1e-14 * conc[s] for s in conc):
+                    break
+            return conc
+
+        start = dict(Na=10.0, K=140.0, M=bath[idx["M"]] * math.exp(F * v / rt))
+
+        def residual(volume):
+            c = composition(volume, start)
+            return c["Na"] + c["K"] + c["M"] + particles / volume - c_bath - pressure(volume) / rt
+
+        # The validity range of the water law (0.5-2 V0) with a margin; beyond it
+        # the exponential volume factor overflows for steep routes.
+        low, high = 0.3 * w.volume0[0], 3.0 * w.volume0[0]
+        if not residual(low) > 0 > residual(high):
+            return None
+        volume = optimize.brentq(residual, low, high, xtol=1e-17, rtol=1e-15)
+        c = composition(volume, start)
+        x = np.log([c["Na"], c["K"], c["M"], volume])
+        return x, float(np.max(np.abs(equations(x, v))))
+
+    def solve(v):
+        if v in cache:
+            return cache[v]
+        m0 = bath[idx["M"]] * math.exp(F * v / rt)
+        guesses = [np.log([10.0, 140.0, m0, w.volume0[0]])]
+        if cache:
+            nearest = min(
+                (t for t in cache if cache[t] is not None), key=lambda t: abs(t - v), default=None
+            )
+            if nearest is not None:
+                guesses.insert(0, cache[nearest][0])
+        result = None
+        for guess in guesses:
+            sol = optimize.root(equations, guess, args=(v,), method="hybr", tol=1e-14)
+            if sol.success and np.max(np.abs(equations(sol.x, v))) < 1e-9:
+                result = (sol.x, float(np.max(np.abs(equations(sol.x, v)))))
+                break
+        if result is None:
+            result = nested(v)
+        cache[v] = result
+        return result
+
+    def charge_residual(v):
+        solved = solve(v)
+        if solved is None:
+            return math.nan
+        na, k, m, volume = np.exp(solved[0])
+        ionic = (w.z[idx["Na"]] * na + w.z[idx["K"]] * k + w.z[idx["M"]] * m) * volume
+        ionic += sum(w.z[idx[s]] * n for s, n in fixed.items())
+        return w.cell_cap[0] * v - F * MOL_PER_FMOL * (ionic + cell["fixed_charge_equivalent_fmol"])
+
+    grid = np.linspace(-0.110, 0.0, 221) if grid is None else grid
+    values = np.array([charge_residual(v) for v in grid])
+    finite = np.isfinite(values)
+    states = []
+    for i in np.flatnonzero(
+        finite[:-1] & finite[1:] & (np.sign(values[:-1]) * np.sign(values[1:]) < 0)
+    ):
+        v = optimize.brentq(charge_residual, grid[i], grid[i + 1], xtol=1e-16, rtol=1e-15)
+        na, k, m, volume = np.exp(solve(v)[0])
+        conc = dict(Na=float(na), K=float(k), M=float(m))
+        _, regulated = inward(v, conc, volume)
+        osmolarity = na + k + m + particles / volume
+        states.append((v, conc, float(volume), float(osmolarity), regulated))
+    return states
+
+
+def stationary_spectrum(raw, kcc, state, *, step=1e-7):
+    """Leading eigenvalues (1/s) of the reference Jacobian at a stationary state.
+
+    The state is (Vm, {Na, K, M}, V, ...) from a stationary solver; gates sit at
+    their steady state. Central differences of Reference.rhs in relative steps,
+    on every coordinate except the closed impermeant amounts (zero rows).
+    """
+    r = Reference(raw, kcc)
+    vm, conc, volume = state[0], state[1], state[2]
+    y = r.initial()
+    dn, _, dv, _, gates, _ = r.unpack(y)
+    for s, c in conc.items():
+        k = r.w.species.index(s)
+        dn[k, 0] = c * volume - r.amount0[k, 0]
+    dv[0] = volume - r.volume0[0]
+    k = 0
+    for kind in r.ch_kind:
+        if kind != "leak":
+            gates[k] = (nav_kinetics if kind == "nav" else kir_kinetics)(vm)[0]
+            k += 1
+    closed = [r.w.species.index(s) for s in r.w.species if s not in conc]
+    free = [i for i in range(len(y)) if not (i < r.s * r.n and i // r.n in closed)]
+    base = r.rhs(0.0, y)
+    scale = np.abs(np.concatenate((r.amount0.ravel(), np.zeros(len(y) - r.s * r.n))))
+    jac = np.zeros((len(free), len(free)))
+    for col, i in enumerate(free):
+        h = step * max(1.0, abs(y[i]) + scale[i])
+        plus, minus = y.copy(), y.copy()
+        plus[i] += h
+        minus[i] -= h
+        jac[:, col] = (r.rhs(0.0, plus)[free] - r.rhs(0.0, minus)[free]) / (2 * h)
+    values = np.linalg.eigvals(jac)
+    order = np.argsort(-values.real)
+    return dict(
+        leading_growth_rate_per_s=float(values.real[order[0]]),
+        eigenvalues_per_s=[[float(v.real), float(v.imag)] for v in values[order][:6]],
+        residual_inf=float(np.max(np.abs(base[free]))),
+    )
