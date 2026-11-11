@@ -161,9 +161,7 @@ def windowed_pair(raw, window_steps=4000):
     for spec in pair_specs(raw):
         seen = []
         started = time.perf_counter()
-        result = run_windowed(
-            spec, WindowPolicy(window_steps, "observations"), sink=seen.append
-        )
+        result = run_windowed(spec, WindowPolicy(window_steps, "observations"), sink=seen.append)
         out.append((spec, result, seen, time.perf_counter() - started))
     (_, a, wa, sa), (_, b, wb, sb) = out
     differences = []
@@ -606,6 +604,7 @@ PARTS = {
 
 
 def _provenance():
+    import json
     import os
     import platform
     import subprocess
@@ -614,18 +613,29 @@ def _provenance():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[2]
+    common = dict(
+        argv=sys.argv,
+        host=platform.node(),
+        cpus=sorted(os.sched_getaffinity(0)),
+        root=str(root),
+        utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    )
+    snapshot = root / "SNAPSHOT.json"
+    if snapshot.is_file():  # An execution snapshot (validation/source_snapshot.py).
+        record = json.loads(snapshot.read_text())
+        return common | dict(
+            revision=record["git_revision"],
+            patch_sha256=record["patch_sha256"],
+            dirty=bool(record["selected_status_porcelain_v1_z"]),
+        )
     command = ["git", "-C", str(root)]
 
     def output(*args):
         return subprocess.run([*command, *args], capture_output=True, text=True).stdout.strip()
 
-    return dict(
-        argv=sys.argv,
-        host=platform.node(),
-        cpus=sorted(os.sched_getaffinity(0)),
+    return common | dict(
         revision=output("rev-parse", "HEAD"),
         dirty=output("status", "--porcelain", "--untracked-files=no"),
-        utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     )
 
 
