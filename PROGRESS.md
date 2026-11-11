@@ -202,8 +202,13 @@ machine-readable inputs, results, checks and failures.
     change times once per call, so output is identical and the host overhead per
     world-step is gone.
   - **Gate:** tier 1+2 from a clean snapshot of `bd0a41d` (327 files, none changed).
-    The tier-3 files touching @3 and the vector windows are running; seven E/C test
-    files, missing from the tier record, are added to the gate.
+    The tier-3 files touching @3 and the vector windows also pass, run in full
+    (ledger rounding 41, @3 35 + 1 skip, device checks 45, junction heat 5, vector
+    windows 8 + 1, v3 6 + 1).
+  - **Seven E/C test files** (projective, projective runner, and five stationary-
+    analysis files) were missing from the tier record, so the routine gate never
+    ran them. All pass (47 tests) and are now in tiers 1 and 2. The new junction-heat
+    test is in tier 3.
   - Evidence: `/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/`.
 - **Parity P3 (scheduled interventions, first subset) passes (10 November).**
   Four protocols, `validation/betse/protocols/physical_p3_*_dense.json`, registered at
