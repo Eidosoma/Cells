@@ -116,6 +116,15 @@ def stage0(output):
             {"kind": "static", "name": "static"},
             {"kind": "static", "name": "static_cut", "control": cut},
             {"kind": "euler", "name": "euler", "dt": dt, "steps": steps},
+            {
+                "kind": "euler",
+                "name": "euler_cut",
+                "dt": dt,
+                "steps": steps,
+                "schedule": [{"step": steps // 2, "control": cut}],
+            },
+            {"kind": "euler_shipped", "name": "euler_shipped", "dt": dt, "updates": steps},
+            {"kind": "relax", "name": "relax", "gtol": 1e-11},
         ]
         results = run_tyssue(definition, operations, output / name)
         case = {"cells": tissue.cells, "vertices": len(x0)}
@@ -143,6 +152,36 @@ def stage0(output):
                 np.max(np.abs(modulo_box(tyssue_final - x, tissue.box)))
             ),
         }
+        x = x0.copy()
+        for n in range(steps):
+            stepped = cut_tissue if n >= steps // 2 else tissue
+            x = x - dt * ref.gradient(stepped, x) / tissue.friction[:, None]
+        case["euler_cut_parity"] = {
+            "cut_at_step": steps // 2,
+            "max_position_difference_mod_box": float(
+                np.max(np.abs(modulo_box(results["euler_cut"]["position"][-1] - x, tissue.box)))
+            ),
+        }
+        shipped = results["euler_shipped"]
+        case["euler_shipped_report"] = {
+            "updates_requested": steps,
+            "updates_taken": int(shipped["updates_taken"]),
+            "max_difference_from_exact_euler_mod_box": float(
+                np.max(np.abs(modulo_box(shipped["position"] - tyssue_final, tissue.box)))
+            ),
+            "note": "tyssue's EulerSolver updates geometry once per step (lagged gradient)",
+        }
+        x_ref, f_ref, _ = ref.relax(tissue, x0, gtol=1e-11)
+        relaxed = results["relax"]
+        e_ref = ref.energy(tissue, x_ref)
+        case["relax"] = {
+            "energy_reference": e_ref,
+            "energy_tyssue": float(relaxed["energy"]),
+            "energy_relative_difference": abs(float(relaxed["energy"]) - e_ref) / abs(e_ref),
+            "max_force_reference": f_ref,
+            "max_gradient_tyssue": float(relaxed["max_gradient"]),
+            "iterations_tyssue": int(relaxed["iterations"]),
+        }
         case["reference_self_check"] = ref.self_check(tissue, x0)
         report["cases"][name] = case
     report["environment"] = results["environment"]
@@ -155,14 +194,32 @@ def stage0(output):
         for c in report["cases"].values()
     )
     worst_euler = max(
-        c["euler_parity"]["max_position_difference_mod_box"] for c in report["cases"].values()
+        max(c[k]["max_position_difference_mod_box"] for k in ("euler_parity", "euler_cut_parity"))
+        for c in report["cases"].values()
+    )
+    worst_relax = max(c["relax"]["energy_relative_difference"] for c in report["cases"].values())
+    counts = all(
+        c["euler_shipped_report"]["updates_taken"] == steps for c in report["cases"].values()
     )
     report["verdict"] = {
         "energy_relative_max": worst,
         "gradient_abs_max": worst_gradient,
         "euler_position_max": worst_euler,
-        "pass": bool(worst <= 1e-12 and worst_gradient <= 1e-10 and worst_euler <= 1e-10),
-        "criteria": "energy <= 1e-12 relative; gradient <= 1e-10 absolute; 20 Euler steps <= 1e-10",
+        "relax_energy_relative_max": worst_relax,
+        "euler_shipped_update_count_as_requested": counts,
+        "pass": bool(
+            worst <= 1e-12
+            and worst_gradient <= 1e-10
+            and worst_euler <= 1e-10
+            and worst_relax <= 1e-10
+            and counts
+        ),
+        "criteria": (
+            "energy <= 1e-12 relative; gradient <= 1e-10 absolute; 20 Euler steps, "
+            "intact and with a cut at step 10, <= 1e-10; relaxed energies <= 1e-10 relative; "
+            "the shipped EulerSolver takes the requested number of updates (its lag is "
+            "reported, not judged)"
+        ),
     }
     (output / "stage0.json").write_text(json.dumps(report, indent=1))
     return report
