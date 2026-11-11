@@ -37,6 +37,31 @@ These studies show that weighted-threshold and logical architectures, related to
 Wagner's abstract evolutionary networks, can describe real regulatory systems.
 They do not validate properties of randomly generated Wagner networks.
 
+## Data sources
+
+**Arc Institute Virtual Cell Initiative**
+([initiative](https://arcinstitute.org/virtual-cell-initiative),
+[atlas](https://github.com/ArcInstitute/arc-virtual-cell-atlas)). Checked 11 November
+2026 from Arc's own pages and the atlas README. The papers, the challenge website
+and the 2026 rules were not read.
+
+| Resource | What it is | Use for Cells |
+| --- | --- | --- |
+| Virtual Cell Challenge 2025 data | CRISPRi knockdowns of 300 genes in H1 human embryonic stem cells, about 1,000 cells each, single-cell RNA-seq; train, validation and test splits; CC0 | **Best fit.** Held-out knockdown responses to test a calibrated network, for example the iPSC reprogramming network, H1 being a pluripotent line. Still to check: that the test responses are public, and how many of the 300 targets are nodes of a candidate network |
+| Tahoe-100M | About 100 million cells from 50 human cancer lines under about 1,100 drugs at several doses; RNA-seq; CC0 | Drug-response tests for regulatory networks. Check its line list for colorectal lines, which matter to the [REVERT plan](SHIN_2025_REVERT_PLAN.md). Its cell-cycle phase scores are inferred labels, not division dynamics |
+| scBaseCount | Over 500 million cells, 21 organisms, 72 tissues; CC0 | Background expression. The species list is unread, so it is not yet known whether Xenopus or C. elegans are included |
+| State model, cell-eval | A machine-learned perturbation model (weights and outputs under a non-commercial licence) and its evaluation code (licence unread) | Not used: Cells does not train models. Using State's outputs as a comparator would be a licence decision for the user |
+
+**Limits.**
+- **Snapshots only.** Each dataset is one time point of fixed cells, with no time
+  course or lineage. It can test how a calibrated network responds to knockdowns,
+  but neither heredity question (lasting after the cue, outliving the carriers).
+- **Judge on network nodes.** The challenge scores genome-wide expression. A small
+  mechanistic network must be judged on its own nodes only.
+- **mRNA is only a hint for channels.** It suggests which channels, pumps and
+  connexins a cell type has, but gives neither abundance nor conductance.
+- **Absent:** membrane potential, imaging and embryos.
+
 ## Plan, when the track starts
 
 1. **Verify.** Read each paper (Europe PMC for open access), confirm the claims
