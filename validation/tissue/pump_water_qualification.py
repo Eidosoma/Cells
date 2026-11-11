@@ -14,11 +14,14 @@ writing <phase>.json in --output (or <phase>-failure.json):
   judge       with the tolerances pinned in --protocol, one 1-ms engine run per world
               (and the stationary states) against the frozen predictions; a verdict
               per item. Whether a heredity disc renews is not an acceptance item.
+  drift       an hour-scale 1-ms run of the P2 cell from the engine's stationary
+              state --label (H, U or D; from --stationary): drift and ledgers.
 
 Quantities: cell volume (pL), membrane voltage (V), cell concentrations (mM) and,
 in P5, the finite outside volume (pL).
 Usage: python -m validation.tissue.pump_water_qualification PHASE --predictions FILE
        --output DIR [--protocol FILE] [--parts P1 P2 ...]
+       [--stationary FILE --hours H --label H|U|D]   (drift)
 """
 
 import argparse
@@ -391,6 +394,7 @@ def main():
     parser.add_argument("phase", choices=("dt-study", "stationary", "judge", "drift"))
     parser.add_argument("--stationary", help="stationary.json (drift phase)")
     parser.add_argument("--hours", type=float, default=1.0)
+    parser.add_argument("--label", default="H", choices=("H", "U", "D"), help="drift start state")
     parser.add_argument("--predictions", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--protocol")
@@ -406,7 +410,7 @@ def main():
             result = stationary_phase(predictions)
         elif args.phase == "drift":
             stationary = json.loads(Path(args.stationary).read_text())
-            result = drift(predictions, stationary, args.hours)
+            result = drift(predictions, stationary, args.hours, label=args.label)
         else:
             result = judge(predictions, json.loads(Path(args.protocol).read_text()), args.parts)
         (out / f"{args.phase}.json").write_text(json.dumps(result, indent=2, default=float) + "\n")
