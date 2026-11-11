@@ -259,8 +259,8 @@ polarity on fixed geometry (D134).
 
 ## Order
 
-1. Phase 0 on the next free agent slot.
-2. Cell replacement (G2) on the slot after that.
-3. Phase 1 once the junction-heat fix lands and the frozen-composition run
-   reports.
+1. Phase 0: done 11 November (results above).
+2. Cell replacement (G2): stage 1 built on a branch.
+3. Phase 1 once the junction-heat fix lands (the frozen-composition comparison has
+   reported; see PROGRESS, pre-screen 9).
 4. Phases 2 and 3 follow the engine-feature queue (D136).

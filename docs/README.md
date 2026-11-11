@@ -149,9 +149,11 @@ catalogue are provenance records, not bundled manuscripts.
 
 ## Capability overview and planned resources (moved from the project README)
 
-Moved from the project README on 11 November 2026, unchanged except for link paths and
-heading levels. The README now carries a short summary;
-[Progress](../PROGRESS.md) holds the current status.
+**Historical overview.** Moved from the project README on 11 November 2026,
+unchanged except for link paths and heading levels. It describes the project before
+the 8 November reset; its "In progress" and "Planned" parts are out of date. The
+README now carries a short current summary, and [Progress](../PROGRESS.md) holds the
+current status.
 
 ### References and calibration
 

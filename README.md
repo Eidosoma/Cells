@@ -53,15 +53,15 @@ Plain-language summary. Details, numbers and evidence are in
 
 | Track | In simple terms | State |
 | --- | --- | --- |
-| **Checking the physics against BETSE** | We run the established BETSE simulator separately and compare its saved outputs with Cells' own physics, under rules fixed before each run. | Passes for every mechanism tested so far (one rung only after a revised method): BETSE's default tissue, calcium and its pump, extracellular barriers, scheduled interventions (pump block, sodium and potassium permeability, junction block), and voltage-gated channels including the heredity channels NaV1.2 and Kir2.1. Still open: GPU runs of the later rungs, several intervention types, noise, networks and channel time constants. See the [BETSE coverage](docs/BETSE_CAPABILITY_ROADMAP.md) and [comparison tools](validation/betse/README.md) |
-| **First heredity experiment** | Can a brief signal write a voltage pattern into a tissue, and does the pattern survive while its cells are replaced? | Designed, not yet run. In development runs a brief cue writes a depolarised disc, and freshly written discs held for 70 minutes. Renewing a disc through cell turnover has not worked so far under biologically supported rules. The design is being revised as water, volume and cell replacement enter the engine. See the [experiment design](docs/HEREDITY_FIRST_EXPERIMENT.md) |
+| **Checking the physics against BETSE** | We run the established BETSE simulator separately and compare its saved outputs with Cells' own physics, under rules fixed before each run. | Passes for every mechanism tested so far (one rung only after a revised method): BETSE's default tissue, calcium and its pump, extracellular barriers, scheduled interventions (pump block, sodium and potassium permeability, junction block), and voltage-gated channels including the heredity channels NaV1.2 and Kir2.1. Still open: GPU runs of the later rungs, several intervention types, noise, networks and channel time constants. See the [current results](PROGRESS.md#plan-betse-parity-on-cpu-and-l4-then-jupiter-from-8-november), the [coverage map](docs/BETSE_CAPABILITY_ROADMAP.md) (which also records the earlier, superseded comparison track) and the [comparison tools](validation/betse/README.md) |
+| **First heredity experiment** | Can a brief signal write a voltage pattern into a tissue, and does the pattern survive while its cells are replaced? | Designed, not yet run. In development runs a brief cue writes a depolarised disc, and freshly written discs held for 70 minutes. Renewal through cell turnover is still open. With newcomers fully coupled on arrival, the disc eroded. A rule that kept the departing cell's junction state renewed one large disc, but it has no biological basis and is excluded ([D139](docs/DECISIONS.md)). The literature rule, in which newcomers arrive uncoupled and form junctions over time, has not been run under turnover yet. The design is being revised as water, volume and cell replacement enter the engine. See the [experiment design](docs/HEREDITY_FIRST_EXPERIMENT.md) |
 | **New biology in the engine** | Mechanisms the experiments showed were missing. | In development, not yet on main: osmotic water and cell volume, volume regulation, and cell replacement in which new cells form junctions over time ([D139](docs/DECISIONS.md)). Planned: gene regulation coupled to tissue |
 | **Long-run time modes** | Faster ways to study hours to months, all optional. | A fixed-point and continuation analysis is qualified. Projective time-stepping failed its qualification. A quasi-steady electrical mode is planned ([D135](docs/DECISIONS.md)) |
 | **Morphogenesis** | How tissues take and repair shape. | A morphogen gradient and a bistable voltage domain wall passed. 2-D cell mechanics (vertex model) has started. See the [morphogenesis plan](docs/MORPHOGENESIS_PLAN.md) |
 | **Papers to test** | Published models we review and test in Cells. | Three reviewed, each with a test plan. See the [paper backlog](docs/PAPER_BACKLOG.md) |
 | **Computing** | Where it runs. | Local CPUs and one NVIDIA L4 GPU, with many independent worlds batched on the GPU. JUPITER (GH200) throughput is not yet measured. See [GPU execution](docs/GPU_ENSEMBLES.md) and the [JUPITER runbook](docs/JUPITER_RUNBOOK.md) |
 
-## What Cells can do today
+## What Cells can do (as of 11 November 2026)
 
 ![Cells today: bioelectricity, calcium signalling and protein assembly. A shared work queue distributes independent simulations among GPU workers and collects results and checkpoints. CPU and L4 are verified locally; Jupiter qualification is planned.](docs/assets/cells-current.png)
 
@@ -70,8 +70,8 @@ Plain-language summary. Details, numbers and evidence are in
   - voltage-gated and leak channels;
   - gap junctions and extracellular fields;
   - all with material, charge and energy accounting.
-- **Tissue preparation:** geometry, regional membrane profiles, timed
-  interventions and cell removal, in selected model families.
+- **Tissue preparation and interventions:** tissue geometry, timed changes to pump,
+  channel and junction availability, and cell removal, in selected model families.
 - **Cell chemistry:** calcium and IP3 signalling, internal compartments,
   reactions, fuel and osmotic water in selected families.
 - **Regulatory cell state:** isolated regulatory circuits and a bounded two-cell
@@ -121,12 +121,14 @@ The routine gate runs the test tiers and compares each file's outcome with the
 recorded baseline:
 
 ```bash
-.venv/bin/python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 1 --out runs/my-gate
-.venv/bin/python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 1 2 --out runs/my-gate-12
+.venv/bin/python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 1 --out runs/my-gate --cpus 0,1,2,3
+.venv/bin/python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 1 2 --out runs/my-gate-12 --cpus 0,1,2,3
 ```
 
-Tier 1 takes about 6 minutes on four cores. Add tier 2 before landing engine
-changes; tier 3 holds the slow files. [AGENTS.md](AGENTS.md) gives the full
+`--cpus` lists the cores to pin test files to; the default is 4–7. The tier baseline
+was recorded on the project host, so file times elsewhere will differ, but
+outcomes should match. Tier 1 takes about 6 minutes on four cores. Add tier 2
+before landing engine changes; tier 3 holds the slow files. [AGENTS.md](AGENTS.md) gives the full
 working rules. The original spatial-build verification matrix is kept in the
 [development history](docs/DEVELOPMENT_HISTORY.md#original-spatial-build-verification-matrix-moved-from-the-readme).
 
