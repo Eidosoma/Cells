@@ -81,7 +81,7 @@ Plain-language summary. Details, numbers and evidence are in
 | **New biology in the engine** | Mechanisms the experiments showed were missing. | Qualified and on main: osmotic water and cell volume, with volume regulation. In development: cell replacement in which new cells form junctions over time. Planned: gene regulation coupled to tissue |
 | **Long-run time modes** | Faster ways to study hours to months, all optional. | A fixed-point and continuation analysis is qualified. Projective time-stepping failed its qualification. A quasi-steady electrical mode is planned |
 | **Morphogenesis** | How tissues take and repair shape. | A morphogen gradient and a bistable voltage domain wall passed. 2-D cell mechanics (vertex model) has started. See the [morphogenesis plan](docs/MORPHOGENESIS_PLAN.md) |
-| **Papers to test** | Published models we review and test in Cells. | Three reviewed, each with a test plan. See the [paper backlog](docs/PAPER_BACKLOG.md) |
+| **Papers to test** | Published models we review and test in Cells. | Three reviewed, each with a test plan. A track of gene-network models validated against wet-lab experiments is logged for the coming gene-regulation layer. See the [paper backlog](docs/PAPER_BACKLOG.md) and [GRN wet-lab validations](docs/GRN_WETLAB_VALIDATION.md) |
 | **Computing** | Where it runs. | Local CPUs and one NVIDIA L4 GPU, with many independent worlds batched on the GPU. JUPITER (GH200) throughput is not yet measured. See [GPU execution](docs/GPU_ENSEMBLES.md) and the [JUPITER runbook](docs/JUPITER_RUNBOOK.md) |
 
 ## What Cells can do (as of 11 November 2026)
@@ -172,6 +172,7 @@ working rules. The original spatial-build verification matrix is kept in the
 | [Roadmap](docs/ROADMAP.md) | Development priorities and completion criteria |
 | [Heredity experiment](docs/HEREDITY_FIRST_EXPERIMENT.md) and [morphogenesis plan](docs/MORPHOGENESIS_PLAN.md) | The two experimental tracks |
 | [Paper backlog](docs/PAPER_BACKLOG.md) | Papers under test, with reviews and plans |
+| [GRN wet-lab validations](docs/GRN_WETLAB_VALIDATION.md) | Gene-network models checked against experiments, as benchmarks for the gene-regulation layer |
 | [Architecture](docs/ARCHITECTURE.md) | Simulator structure, state, numerical execution and checkpoints |
 | [Multiscale and parallel design](docs/MULTISCALE_EXECUTION_ARCHITECTURE.md) | How mechanisms, resolution, coupled clocks and device placement fit together |
 | [Scientific basis](docs/SCIENTIFIC_BASIS.md) | Research sources, hypotheses and evidence limits |
