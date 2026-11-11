@@ -1,0 +1,14 @@
+{
+  "kind": "cells.pump_water_kcc_qualification_protocol@1",
+  "predictions": "validation/tissue/pump_water_kcc_predictions.json",
+  "judge": "validation/tissue/pump_water_kcc_qualification.py",
+  "registered": "before the judged run; the predictions were frozen first (01117a1)",
+  "stationary": {
+    "volume_relative": 1e-06,
+    "voltage_V": 1e-06,
+    "cycles_relative": 1e-05,
+    "step_map_correction": 1e-08
+  },
+  "stability": "the engine's dense classification must equal the sign of the reference spectrum's leading growth rate (stable or unstable)",
+  "rationale": "Engine and reference implement the same declared laws; both solve the stationary equations to about 1e-10 in their units, so these bounds test modelling equivalence with a wide margin over solver precision, not rounding. Stationary states need no time step, so no dt term enters. Whether a heredity disc renews is not an acceptance item."
+}

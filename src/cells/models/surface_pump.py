@@ -55,11 +55,19 @@ FLOOR_LAYOUT_TYPE = NamedTuple(
 # are compared with RK4 separately in tests/unit/test_surface_pump.py.
 ENERGY_RTOL = {"rk4": 0.0, imex.EULER_ID: 2e-2, imex.ARS222_ID: 2e-3}
 # Global charge (electrode charge plus charge-weighted reservoir supply) cancels
-# terms that grow with the charge moved through the boundary, so its rounding
-# accumulates with their magnitude: a fixed floor fails long runs. The bound adds
-# a rounding allowance of 256 float64 eps per unit of that magnitude; observed
-# residuals stay near 1-3 eps, while a conservation error of 1e-13 or more of the
-# moved charge still fails. The capacitor and electrode checks are unchanged.
+# terms that grow with the charge moved through the boundary (moved_charge), so
+# its rounding accumulates with their magnitude: a fixed floor fails long runs.
+# global_charge_bound adds 256 float64 eps per unit of that magnitude. Both terms
+# are running accumulators, so like the material and work ledgers the check also
+# allows LEDGER_STEP_ROUNDING eps x steps x moved charge (ledger_magnitudes).
+# Short runs stay near 1-3 eps, but on a 7-cell gated sheet with held baths at
+# 0.25 ms the residual wandered up to about 200 eps of the moved charge and
+# crossed the fixed 256 eps after 1.06e5 steps (resolved_pump_tissue@3 alone,
+# water-volume-pump-20261110-01/w1-gcharge-diag-01). With n accepted steps a
+# conservation error of more than (256 + 2.5 n) eps of the moved charge (and the
+# 3e-25 C floor) fails: 6.1e-13 after 1 s, 3.3e-11 after 1 min, 2.0e-9 after 1 h
+# at dt = 1 ms. Recorded max_global_charge_bound_ratio values divide by this
+# checked bound, so they are not comparable with values recorded before it.
 GLOBAL_CHARGE_ATOL_C = 3e-25
 GLOBAL_CHARGE_ROUNDING = 256 * np.finfo(float).eps
 # Running material and work ledgers: allowance per accepted step, in eps times the
@@ -423,11 +431,19 @@ def explicit_rate_bound(spec):
     return max(face, 2 * np.max(cells / capacitance), np.max(membranes / capacitance))
 
 
-def global_charge_bound(row, p, *, xp=np):
-    """Floor plus a rounding allowance on the absolute terms of the global-charge sum."""
+def moved_charge(row, p, *, xp=np):
+    """Absolute terms of the global-charge sum (C): charge-weighted supply, electrode charge."""
     moved = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence * row.reservoir_supplied))
-    moved += xp.sum(xp.abs(row.electrode_charge_transferred_C))
-    return GLOBAL_CHARGE_ATOL_C + GLOBAL_CHARGE_ROUNDING * moved
+    return moved + xp.sum(xp.abs(row.electrode_charge_transferred_C))
+
+
+def global_charge_bound(row, p, *, xp=np):
+    """Floor plus a rounding allowance on the absolute terms of the global-charge sum.
+
+    The checked bound also adds the per-step allowance on the same magnitude
+    (ledger_limits with ledger_magnitudes).
+    """
+    return GLOBAL_CHARGE_ATOL_C + GLOBAL_CHARGE_ROUNDING * moved_charge(row, p, xp=xp)
 
 
 # Ledgers in balances() order: diagnostic name and checked bound per entry.
@@ -466,8 +482,9 @@ def ledger_magnitudes(row, p, membrane, metabolic, *, xp=np):
 
     membrane is the [species, patch] sum of absolute membrane accumulators
     (passive, channel and pump transfers) and metabolic the absolute work and
-    cycles x drive terms in balances() order. Ledgers that are not running sums
-    of one flow (capacitor, electrode, global charge, energy) get None.
+    cycles x drive terms in balances() order. Global charge sums the electrode
+    and charge-weighted supply accumulators and gets their absolute terms
+    (moved_charge). The capacitor, electrode and energy checks get None.
     """
     di, do = row.amount_increment, row.extracellular_amount_increment
     hj, hf = xp.abs(row.junction_transferred), xp.abs(row.face_transferred)
@@ -492,8 +509,10 @@ def ledger_magnitudes(row, p, membrane, metabolic, *, xp=np):
     electrode_work = xp.abs(row.electrode_work_pJ) + 1e12 * xp.abs(
         p.boundary_V * row.electrode_charge_transferred_C
     )
-    unchecked = (None, None, None, None)  # Capacitor, electrode, global charge, energy.
-    return (local, outside, total, *unchecked, reservoir_work, electrode_work, metabolic)
+    unchecked = (None, None)  # Capacitor, electrode.
+    charge = moved_charge(row, p, xp=xp)
+    rest = (None, reservoir_work, electrode_work, metabolic)  # Energy gets None.
+    return (local, outside, total, *unchecked, charge, *rest)
 
 
 def pump_magnitudes(row, p, *, xp=np):

@@ -12,7 +12,11 @@ gates and junction gates); every other field is an accumulating ledger
 (transfers, dissipation, work, electrode charge, pump cycles) that no rate
 reads. A candidate is a vector u of the active dynamical entries in units of
 1 mM (amount / node volume), gate fraction, or 10 mV (fast-mode charge offset /
-node capacitance); the ledgers are held at zero.
+node capacitance); the ledgers are held at zero. resolved_pump_water@1 adds the
+compliant volumes (VOLUME_FIELDS: cells and finite extracellular nodes, in units
+of 1e-3 of the declared node volume) as dynamical fields of the slow mode; the
+fast mode freezes them with the composition. Models without these fields get
+exactly the blocks and laws they had.
 
 Two stationary problems (MODES):
 
@@ -55,7 +59,9 @@ derived structurally, then checked numerically:
   that charge implicitly through the faces, so for the step map it is a fast
   mode (multiplier near 0), not a law;
 * closed charge totals (fast mode): the charge of a connected set without a
-  reservoir.
+  reservoir;
+* closed water volumes (slow mode, models with VOLUME_FIELDS): the total volume
+  of a set of compliant nodes joined by open water routes without a held bath.
 
 Each law is a column c of a matrix C with c . du/dt = 0. The problem is solved
 on the affine set C^T u = C^T u_base, u = u_p + B z with B an orthonormal basis
@@ -90,17 +96,26 @@ from cells.core.specs import ConfigError
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
 ANALYSIS_ID = "stationary_continuation_analysis@1"
-MODEL_IDS = ("resolved_pump_tissue@1", "resolved_pump_tissue@2", "resolved_pump_tissue@3")
+MODEL_IDS = (
+    "resolved_pump_tissue@1",
+    "resolved_pump_tissue@2",
+    "resolved_pump_tissue@3",
+    "resolved_pump_water@1",
+    "resolved_pump_water@2",
+)
 DYNAMIC_FIELDS = (
     "amount_increment",
     "extracellular_amount_increment",
     "channel_gate",
     "junction_gate",
 )
+# Dynamical only in models that declare them (resolved_pump_water@1).
+VOLUME_FIELDS = ("volume_increment_pL", "extracellular_volume_increment_pL")
 MODES = ("slow", "fast")
 FORMULATIONS = ("rhs", "step_map")
 GLOBALIZATIONS = ("newton", "pseudo_transient", "auto")
 AMOUNT_UNIT_mM = 1.0
+VOLUME_UNIT = 1e-3  # Of the declared node volume: a 0.1% swelling.
 CHARGE_UNIT_V = 0.01
 EPS = float(np.finfo(float).eps)
 # Newton stops when a full correction is at most this in u units (1e-10 mM,
@@ -148,6 +163,9 @@ PARAMETER_KINDS = {
     "channel_permeability_scale": ("layout", "channel_permeability"),
     "membrane_permeability_scale": ("layout", "membrane_permeability"),
     "junction_permeability_scale": ("layout", "junction_permeability"),
+    # resolved_pump_water@1: water route availability and hydraulic conductance.
+    "water_availability": ("control", "water"),
+    "hydraulic_permeability_scale": ("layout", "water_conductance_pL_per_Pa_s"),
 }
 
 
@@ -155,7 +173,9 @@ def _owner_ids(spec, owner):
     m = spec.model
     if owner == "channel":
         return [c.id for c in getattr(m, "channels", ())]
-    if owner == "membrane":
+    if owner in ("membrane", "water", "hydraulic"):
+        if owner != "membrane" and not hasattr(m, "water"):
+            raise ConfigError("Water parameters require a model with water routes")
         return [p.id for p in m.membranes]
     if owner == "junction":
         return [p.id for p in m.junctions]
@@ -304,7 +324,9 @@ class Problem:
         p, control = self._apply(theta)
         parts = self._split(u)
         state = {
-            k: jnp.asarray(v) if k in DYNAMIC_FIELDS else jnp.zeros_like(jnp.asarray(v))
+            k: jnp.asarray(v)
+            if k in DYNAMIC_FIELDS or k in VOLUME_FIELDS
+            else jnp.zeros_like(jnp.asarray(v))
             for k, v in self.base._asdict().items()
         }
         for b in self.blocks:
@@ -558,6 +580,15 @@ def _blocks(spec, p, base, mode):
             unit = np.broadcast_to(np.asarray(volume)[None, :] * AMOUNT_UNIT_mM, (s, n))
             labels = tuple(f"{species[i // n]}@{nodes[i % n]}" for i in flat)
             blocks.append(Block(name, "amount", flat, unit.ravel()[flat], labels))
+        if all(k in type(base)._fields for k in VOLUME_FIELDS):
+            for name, mask, volume, nodes in (
+                (VOLUME_FIELDS[0], np.asarray(p.active), p.volume, cells),
+                (VOLUME_FIELDS[1], finite, p.extracellular_volume, outside),
+            ):
+                flat = np.flatnonzero(mask)
+                unit = np.asarray(volume)[flat] * VOLUME_UNIT
+                labels = tuple(f"volume@{nodes[i]}" for i in flat)
+                blocks.append(Block(name, "volume", flat, unit, labels))
     else:
         flat = np.flatnonzero(np.r_[np.asarray(p.active), finite])
         capacitance = np.diagonal(np.asarray(p.field_capacitor_matrix))[flat]
@@ -635,6 +666,23 @@ def _components(p, control, species):
     return list(groups.values())
 
 
+def _water_components(p, control):
+    """Node sets (cell + outside numbering) joined by open water routes."""
+    n, o = np.asarray(p.active).size, np.asarray(p.outside_active).size
+    union = _Union(n + o)
+    open_route = (
+        np.asarray(p.membrane_active)
+        & (np.asarray(p.water_conductance_pL_per_Pa_s) > 0)
+        & (np.asarray(control.water) > 0)
+    )
+    for m in np.flatnonzero(open_route):
+        union.join(int(p.membrane_cell[m]), n + int(p.membrane_outside[m]))
+    groups = {}
+    for i in np.flatnonzero(np.r_[np.asarray(p.active), np.asarray(p.outside_active)]):
+        groups.setdefault(union.root(int(i)), []).append(int(i))
+    return list(groups.values())
+
+
 def conservation_laws(pb, formulation):
     """Structural laws [coordinate, law] in u space for one formulation (module doc)."""
     p, control, spec = pb.p, pb.control, pb.spec
@@ -693,6 +741,28 @@ def conservation_laws(pb, formulation):
                         ),
                     )
                 )
+    if pb.mode == "slow" and VOLUME_FIELDS[0] in position:
+        for members in _water_components(p, control):
+            if reservoir[members].any():
+                continue
+            c = np.zeros(size)
+            for i in members:
+                key, node = (VOLUME_FIELDS[0], i) if i < n else (VOLUME_FIELDS[1], i - n)
+                if key not in position:
+                    continue
+                begin, b = position[key]
+                where = np.flatnonzero(b.flat == node)
+                c[begin + where] = b.unit[where]
+            candidates.append(
+                (
+                    c,
+                    dict(
+                        kind="closed_water_volume",
+                        species=None,
+                        nodes=[names[i] for i in members],
+                    ),
+                )
+            )
     if formulation == "rhs":
         basis = np.asarray(p.field_floating_basis)
         free = np.asarray(p.field_offset_free)
@@ -1226,9 +1296,13 @@ def describe(pb, u, theta=None):
     state, p = _numpy(state), _numpy(p)
     m = pb.spec.model
     cells, outside = _names(pb.spec, pb.p)
-    ci = (p.amount_reference + state.amount_increment) / p.volume
+    volume, extracellular_volume = p.volume, p.extracellular_volume
+    if all(hasattr(state, k) for k in VOLUME_FIELDS):
+        volume = volume + getattr(state, VOLUME_FIELDS[0])
+        extracellular_volume = extracellular_volume + getattr(state, VOLUME_FIELDS[1])
+    ci = (p.amount_reference + state.amount_increment) / volume
     co = (p.extracellular_amount_reference + state.extracellular_amount_increment) / np.where(
-        p.outside_active, p.extracellular_volume, 1.0
+        p.outside_active, extracellular_volume, 1.0
     )
     finite = np.flatnonzero(np.asarray(p.outside_active) & ~np.asarray(p.reservoir))
     parts = pb._split(np.asarray(u))
@@ -1252,6 +1326,11 @@ def describe(pb, u, theta=None):
             for label, v in zip(b.labels, parts[b.field], strict=True)
         },
     )
+    if all(hasattr(state, k) for k in VOLUME_FIELDS):
+        out["cell_volume_pL"] = {cells[i]: float(volume[i]) for i in np.flatnonzero(p.active)}
+        out["extracellular_volume_pL"] = {
+            outside[i]: float(extracellular_volume[i]) for i in finite
+        }
     if pb.mode == "fast":
         b = pb.blocks[0]
         out["charge_offset_C"] = {

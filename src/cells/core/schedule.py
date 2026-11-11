@@ -191,7 +191,13 @@ def event_index(spec, time):
 def control_values(spec, times):
     from cells.core import surface_pump_v2_spec as pump_v2
     from cells.core import surface_pump_v3_spec as pump_v3
+    from cells.core import surface_pump_water_spec as pump_water
+    from cells.core import surface_pump_water_v2_spec as pump_water_v2
 
+    if isinstance(spec.model, pump_water_v2.SurfacePumpRegulatedWaterModel):
+        return pump_water_v2.control_values(spec, times)
+    if isinstance(spec.model, pump_water.SurfacePumpWaterModel):
+        return pump_water.control_values(spec, times)
     if isinstance(spec.model, pump_v3.SurfacePumpChannelModel):
         return pump_v3.control_values(spec, times)
     if isinstance(spec.model, pump_v2.SurfacePumpModel):

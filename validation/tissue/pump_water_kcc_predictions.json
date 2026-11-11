@@ -1,0 +1,1583 @@
+{
+  "reference": "validation/tissue/pump_water_reference.py (numpy/scipy, no Cells code)",
+  "law": "k_anion_symport_mass_action@1 with exponential_volume_activation@1",
+  "definition": {
+    "schema_version": 1,
+    "model": {
+      "id": "resolved_pump_water@1",
+      "temperature_K": 310.0,
+      "species": [
+        {
+          "id": "Na",
+          "valence": 1
+        },
+        {
+          "id": "K",
+          "valence": 1
+        },
+        {
+          "id": "M",
+          "valence": -1
+        },
+        {
+          "id": "P",
+          "valence": -1
+        }
+      ],
+      "cells": [
+        {
+          "id": "cell_0",
+          "volume_pL": 0.7505222518670602,
+          "initial_amount_fmol": {
+            "Na": 4.454019878031574,
+            "K": 102.2001158140796,
+            "M": 5.347092846055745,
+            "P": 101.32050400205313
+          },
+          "fixed_charge_equivalent_fmol": 1.586795405084107e-05,
+          "initial_charge_C": -1.2972730823853619e-12
+        }
+      ],
+      "extracellular": [
+        {
+          "id": "bath_0",
+          "volume_pL": 1.0,
+          "initial_amount_fmol": {
+            "Na": 145.0,
+            "K": 5.0,
+            "M": 140.0,
+            "P": 10.0
+          },
+          "fixed_charge_equivalent_fmol": -0.0,
+          "initial_charge_C": 0.0,
+          "reservoir": true,
+          "boundary_potential_V": 0.0
+        }
+      ],
+      "membranes": [
+        {
+          "id": "membrane_0",
+          "inside": "cell_0",
+          "outside": "bath_0",
+          "area_m2": 3.261272165616906e-10,
+          "capacitance_F": 1.6306360828084532e-11,
+          "permeability_m_per_s": {
+            "Na": 5.3333333333333356e-11,
+            "K": 1.333333333333334e-10,
+            "M": 1.333333333333334e-10,
+            "P": 0.0
+          },
+          "law": "constant_field@1",
+          "pump": {
+            "id": "pump_0",
+            "law": "nak_atp_mass_action_positive@1",
+            "roles": {
+              "sodium": "Na",
+              "potassium": "K"
+            },
+            "stoichiometry": {
+              "Na": -3,
+              "K": 2
+            },
+            "capacity_fmol_per_s": 0.03261272165616906,
+            "km_na_mM": 12.0,
+            "km_k_mM": 0.2,
+            "km_atp_mM": 0.5,
+            "metabolism": {
+              "kind": "maintained_chemical_reservoirs@1",
+              "atp_mM": 1.5,
+              "adp_mM": 0.1,
+              "pi_mM": 0.1,
+              "delta_g0_J_per_mol": -37000.0
+            }
+          },
+          "calcium_pump": null
+        }
+      ],
+      "junctions": [],
+      "faces": [],
+      "closure": {
+        "law": "resolved_capacitor_components_current_continuity@1",
+        "gauge_reference": null
+      },
+      "channels": [
+        {
+          "id": "kir_0",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "kir2p1_mh2@1",
+          "max_permeability_m_per_s": 1e-08,
+          "abundance": 1.0,
+          "initial_gate": [
+            0.3257238404690036,
+            0.8818959951742664
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "nav_0",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "nav1p2_m3h_regularized@1",
+          "max_permeability_m_per_s": 2.5e-07,
+          "abundance": 1.0,
+          "initial_gate": [
+            0.003408456163783261,
+            0.9813060987456566
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Na",
+              "relative_permeability": 1.0
+            }
+          ]
+        }
+      ],
+      "water": {
+        "law": "ideal_osmosis_linear_compliance_water@1",
+        "compartments": [
+          {
+            "compartment_id": "cell_0",
+            "reference_volume_pL": 0.7505222518670602,
+            "minimum_volume_pL": 0.3752611259335301,
+            "maximum_volume_pL": 1.5010445037341205,
+            "impermeant_amount_fmol": 0.0,
+            "bulk_modulus_Pa": 60.0,
+            "pressure_offset_Pa": 40.0
+          }
+        ],
+        "baths": [
+          {
+            "compartment_id": "bath_0",
+            "hydrostatic_pressure_Pa": 0.0
+          }
+        ],
+        "membranes": [
+          {
+            "membrane_id": "membrane_0",
+            "hydraulic_permeability_m_per_Pa_s": 2.1032143119310793e-13
+          }
+        ]
+      }
+    },
+    "experiment": {
+      "end_time": 1.0,
+      "observation_times": [
+        0.0,
+        1.0
+      ],
+      "membrane_controls": [
+        {
+          "membrane_id": "membrane_0",
+          "schedule": [
+            {
+              "time": 0.0,
+              "availability": 1.0
+            }
+          ]
+        }
+      ],
+      "junction_controls": [],
+      "pump_controls": [
+        {
+          "pump_id": "pump_0",
+          "schedule": [
+            {
+              "time": 0.0,
+              "availability": 1.0
+            }
+          ]
+        }
+      ],
+      "calcium_pump_controls": [],
+      "channel_controls": [
+        {
+          "channel_id": "kir_0",
+          "schedule": [
+            {
+              "time": 0.0,
+              "availability": 1.0
+            }
+          ]
+        },
+        {
+          "channel_id": "nav_0",
+          "schedule": [
+            {
+              "time": 0.0,
+              "availability": 1.0
+            }
+          ]
+        }
+      ],
+      "water_controls": [
+        {
+          "membrane_id": "membrane_0",
+          "schedule": [
+            {
+              "time": 0.0,
+              "availability": 1.0
+            }
+          ]
+        }
+      ]
+    },
+    "execution": {
+      "dt": 0.001,
+      "capacity": 1,
+      "extracellular_capacity": 1,
+      "membrane_capacity": 1,
+      "edge_capacity": 0,
+      "face_capacity": 0,
+      "channel_capacity": 2,
+      "backend": "cpu",
+      "jit": true,
+      "precision": "float64",
+      "solver": "imex_ars222_face_electromigration@1",
+      "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+      "max_steps": 1008,
+      "max_trace_bytes": 2147483648,
+      "material_balance_atol_fmol": {
+        "Na": 1e-10,
+        "K": 1e-10,
+        "M": 1e-10,
+        "P": 1e-10
+      }
+    }
+  },
+  "reference_product_difference_mM2": 12600,
+  "route_free": [
+    {
+      "branch": 0,
+      "converged": true,
+      "membrane_voltage_V": -0.08134148809059488,
+      "concentration_mM": {
+        "Na": 5.976696613793063,
+        "K": 144.0206485315846,
+        "M": 6.663939979550938
+      },
+      "volume_pL": 0.7067908630163712,
+      "volume_ratio": 0.9417320555894255,
+      "osmolarity_mM": 300.0141626220253,
+      "route_cycles_fmol_s": 0.0,
+      "headroom_to_maximum": 1.1237463332903217,
+      "spectrum": {
+        "leading_growth_rate_per_s": -0.00017819581090253574,
+        "eigenvalues_per_s": [
+          [
+            -0.00017819581090253574,
+            0.0
+          ],
+          [
+            -0.004908893555766627,
+            0.0
+          ],
+          [
+            -0.0750689470080262,
+            0.0
+          ],
+          [
+            -3.9995663251728777,
+            0.8227194783422934
+          ],
+          [
+            -3.9995663251728777,
+            -0.8227194783422934
+          ],
+          [
+            -154.8466438721033,
+            0.0
+          ]
+        ],
+        "residual_inf": 7.34427819537683e-09
+      }
+    },
+    {
+      "branch": 1,
+      "converged": true,
+      "membrane_voltage_V": -0.041122443114224715,
+      "concentration_mM": {
+        "Na": 8.97689019048339,
+        "K": 141.02820196696806,
+        "M": 30.03212942228809
+      },
+      "volume_pL": 0.8444697537400826,
+      "volume_ratio": 1.1251761711785506,
+      "osmolarity_mM": 300.0184329295996,
+      "route_cycles_fmol_s": 0.0,
+      "headroom_to_maximum": 0.7774994274053342,
+      "spectrum": {
+        "leading_growth_rate_per_s": 11.018768882745245,
+        "eigenvalues_per_s": [
+          [
+            11.018768882745245,
+            0.0
+          ],
+          [
+            -9.186461665493077e-05,
+            0.0
+          ],
+          [
+            -0.004058022604301054,
+            0.0
+          ],
+          [
+            -0.06282261449363287,
+            0.0
+          ],
+          [
+            -3.3998440689995606,
+            0.0
+          ],
+          [
+            -95.97268345251346,
+            0.0
+          ]
+        ],
+        "residual_inf": 1.9259151452239664e-08
+      }
+    },
+    {
+      "branch": 2,
+      "converged": true,
+      "membrane_voltage_V": -0.017340147723486306,
+      "concentration_mM": {
+        "Na": 8.646162453153861,
+        "K": 141.36928217419086,
+        "M": 73.15149440058606
+      },
+      "volume_pL": 1.3181414341727726,
+      "volume_ratio": 1.756298938364128,
+      "osmolarity_mM": 300.0331245337668,
+      "route_cycles_fmol_s": 0.0,
+      "headroom_to_maximum": 0.13875830379016385,
+      "spectrum": {
+        "leading_growth_rate_per_s": -2.9859914684707452e-05,
+        "eigenvalues_per_s": [
+          [
+            -2.9859914684707452e-05,
+            0.0
+          ],
+          [
+            -0.0026602069908051463,
+            0.0
+          ],
+          [
+            -0.04027976475849552,
+            0.0
+          ],
+          [
+            -3.368961898690116,
+            0.0
+          ],
+          [
+            -11.292127740699506,
+            0.0
+          ],
+          [
+            -407.061803843082,
+            0.0
+          ]
+        ],
+        "residual_inf": 1.8763942484560028e-07
+      }
+    }
+  ],
+  "arms": {
+    "red_cell_4-lew_s1": {
+      "flux_mmol_L_h": 4.0,
+      "parameters": {
+        "capacity_fmol_s_mM2": 6.618362009409701e-08,
+        "set_volume_pL": 0.7505222518670602,
+        "steepness": 1.0,
+        "availability": 1.0
+      },
+      "states": [
+        {
+          "branch": 0,
+          "converged": true,
+          "membrane_voltage_V": -0.08136557365948381,
+          "concentration_mM": {
+            "Na": 5.977261605908402,
+            "K": 144.0200640455157,
+            "M": 6.548834857802942
+          },
+          "volume_pL": 0.7062237915868607,
+          "volume_ratio": 0.9409764864799157,
+          "osmolarity_mM": 300.0141450334944,
+          "route_cycles_fmol_s": 1.5171045977757836e-05,
+          "headroom_to_maximum": 1.1254516225817386,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.00019088764653590965,
+            "eigenvalues_per_s": [
+              [
+                -0.00019088764653590965,
+                0.0
+              ],
+              [
+                -0.004913528259532715,
+                0.0
+              ],
+              [
+                -0.07512998083468013,
+                0.0
+              ],
+              [
+                -4.000829589244388,
+                0.8219906341545407
+              ],
+              [
+                -4.000829589244388,
+                -0.8219906341545407
+              ],
+              [
+                -155.04398058723115,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.4416459416393671e-09
+          }
+        },
+        {
+          "branch": 1,
+          "converged": true,
+          "membrane_voltage_V": -0.04092828850250227,
+          "concentration_mM": {
+            "Na": 9.042469749319359,
+            "K": 140.96228601830651,
+            "M": 27.510511021771208
+          },
+          "volume_pL": 0.8270884180676832,
+          "volume_ratio": 1.1020171833815062,
+          "osmolarity_mM": 300.0178938226313,
+          "route_cycles_fmol_s": 0.000232917612482789,
+          "headroom_to_maximum": 0.8148537338256929,
+          "spectrum": {
+            "leading_growth_rate_per_s": 11.117025949548522,
+            "eigenvalues_per_s": [
+              [
+                11.117025949548522,
+                0.0
+              ],
+              [
+                -0.00010721431612961078,
+                0.0
+              ],
+              [
+                -0.004155712714498144,
+                0.0
+              ],
+              [
+                -0.06414374896050284,
+                0.0
+              ],
+              [
+                -3.399072377045955,
+                0.0
+              ],
+              [
+                -97.76917593305691,
+                0.0
+              ]
+            ],
+            "residual_inf": 9.103890847794253e-09
+          }
+        },
+        {
+          "branch": 2,
+          "converged": true,
+          "membrane_voltage_V": -0.018021670417657107,
+          "concentration_mM": {
+            "Na": 8.88565166896536,
+            "K": 141.12616723471362,
+            "M": 58.06083315352159
+          },
+          "volume_pL": 1.1018635807085482,
+          "volume_ratio": 1.4681291300390664,
+          "osmolarity_mM": 300.0264163670251,
+          "route_cycles_fmol_s": 0.0007920716605928168,
+          "headroom_to_maximum": 0.3622779897751778,
+          "spectrum": {
+            "leading_growth_rate_per_s": -5.1873319748878006e-05,
+            "eigenvalues_per_s": [
+              [
+                -5.1873319748878006e-05,
+                0.0
+              ],
+              [
+                -0.0032112710065266693,
+                0.0
+              ],
+              [
+                -0.04818136959779252,
+                0.0
+              ],
+              [
+                -3.371188807377436,
+                0.0
+              ],
+              [
+                -11.467172973249443,
+                0.0
+              ],
+              [
+                -410.31446014253146,
+                0.0
+              ]
+            ],
+            "residual_inf": 4.988497572693835e-08
+          }
+        }
+      ],
+      "d_volume_ratio": 1.4681291300390664,
+      "d_volume_change_against_route_free": -0.16407788106589194
+    },
+    "red_cell_4-kaji_s0.12": {
+      "flux_mmol_L_h": 4.0,
+      "parameters": {
+        "capacity_fmol_s_mM2": 6.618362009409701e-08,
+        "set_volume_pL": 0.7505222518670602,
+        "steepness": 0.12,
+        "availability": 1.0
+      },
+      "states": [
+        {
+          "branch": 0,
+          "converged": true,
+          "membrane_voltage_V": -0.0813575040217418,
+          "concentration_mM": {
+            "Na": 5.977072312692737,
+            "K": 144.02025986913634,
+            "M": 6.587401109143109
+          },
+          "volume_pL": 0.7064136888688337,
+          "volume_ratio": 0.9412295066688583,
+          "osmolarity_mM": 300.01415092343007,
+          "route_cycles_fmol_s": 1.0087007803925324e-05,
+          "headroom_to_maximum": 1.1248802612215987,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.00018710829608162228,
+            "eigenvalues_per_s": [
+              [
+                -0.00018710829608162228,
+                0.0
+              ],
+              [
+                -0.004911974699540848,
+                0.0
+              ],
+              [
+                -0.07510886040595648,
+                0.0
+              ],
+              [
+                -4.000406368242848,
+                0.8222351723623712
+              ],
+              [
+                -4.000406368242848,
+                -0.8222351723623712
+              ],
+              [
+                -154.97785694125756,
+                0.0
+              ]
+            ],
+            "residual_inf": 3.217786600865283e-09
+          }
+        },
+        {
+          "branch": 1,
+          "converged": true,
+          "membrane_voltage_V": -0.04079221952777055,
+          "concentration_mM": {
+            "Na": 9.088584748248298,
+            "K": 140.9159397988178,
+            "M": 25.72507381712161
+          },
+          "volume_pL": 0.8152079326897868,
+          "volume_ratio": 1.0861875589455332,
+          "osmolarity_mM": 300.01752533239704,
+          "route_cycles_fmol_s": 0.00039701818325455504,
+          "headroom_to_maximum": 0.8413026217512494,
+          "spectrum": {
+            "leading_growth_rate_per_s": 11.181812488963116,
+            "eigenvalues_per_s": [
+              [
+                11.181812488963116,
+                0.0
+              ],
+              [
+                -0.0001460012526502218,
+                0.0
+              ],
+              [
+                -0.004224548708311592,
+                0.0
+              ],
+              [
+                -0.06505346812924075,
+                0.0
+              ],
+              [
+                -3.3985205037473665,
+                0.0
+              ],
+              [
+                -99.0452649177712,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.7263744862664913e-08
+          }
+        },
+        {
+          "branch": 2,
+          "converged": true,
+          "membrane_voltage_V": -0.018905468079774758,
+          "concentration_mM": {
+            "Na": 9.20003164548039,
+            "K": 140.8084339109187,
+            "M": 38.65042310543866
+          },
+          "volume_pL": 0.9098336394342627,
+          "volume_ratio": 1.2122673740463876,
+          "osmolarity_mM": 300.0204602839362,
+          "route_cycles_fmol_s": 0.001840607953086144,
+          "headroom_to_maximum": 0.6498010610681251,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.00023078354124847055,
+            "eigenvalues_per_s": [
+              [
+                -0.00023078354124847055,
+                0.0
+              ],
+              [
+                -0.0039074240900034704,
+                0.0
+              ],
+              [
+                -0.058228797131268946,
+                0.0
+              ],
+              [
+                -3.3746295205716894,
+                0.0
+              ],
+              [
+                -11.585332989769956,
+                0.0
+              ],
+              [
+                -414.69994130412965,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.3004808625881813e-08
+          }
+        }
+      ],
+      "d_volume_ratio": 1.2122673740463876,
+      "d_volume_change_against_route_free": -0.3097602306953897
+    },
+    "red_cell_15-lew_s1": {
+      "flux_mmol_L_h": 15.0,
+      "parameters": {
+        "capacity_fmol_s_mM2": 2.4818857535286383e-07,
+        "set_volume_pL": 0.7505222518670602,
+        "steepness": 1.0,
+        "availability": 1.0
+      },
+      "states": [
+        {
+          "branch": 0,
+          "converged": true,
+          "membrane_voltage_V": -0.08141817407353279,
+          "concentration_mM": {
+            "Na": 5.9784954296918285,
+            "K": 144.0187876756018,
+            "M": 6.2974138744780195
+          },
+          "volume_pL": 0.7049883115294043,
+          "volume_ratio": 0.9393303260171407,
+          "osmolarity_mM": 300.0141067133147,
+          "route_cycles_fmol_s": 4.833816197521917e-05,
+          "headroom_to_maximum": 1.1291764404969338,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.00022558010478751224,
+            "eigenvalues_per_s": [
+              [
+                -0.00022558010478751224,
+                0.0
+              ],
+              [
+                -0.004923660690398389,
+                0.0
+              ],
+              [
+                -0.07526376631840415,
+                0.0
+              ],
+              [
+                -4.003587695953472,
+                0.8203880898405892
+              ],
+              [
+                -4.003587695953472,
+                -0.8203880898405892
+              ],
+              [
+                -155.47518902268848,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.6510731735683633e-09
+          }
+        },
+        {
+          "branch": 1,
+          "converged": true,
+          "membrane_voltage_V": -0.04057265961091429,
+          "concentration_mM": {
+            "Na": 9.163239394113717,
+            "K": 140.84091985124405,
+            "M": 22.81383118745236
+          },
+          "volume_pL": 0.7965513790140916,
+          "volume_ratio": 1.061329463626862,
+          "osmolarity_mM": 300.01694667271977,
+          "route_cycles_fmol_s": 0.0006631781787633718,
+          "headroom_to_maximum": 0.884428981331995,
+          "spectrum": {
+            "leading_growth_rate_per_s": 11.278999500695747,
+            "eigenvalues_per_s": [
+              [
+                11.278999500695747,
+                0.0
+              ],
+              [
+                -0.0001462540951834936,
+                0.0
+              ],
+              [
+                -0.004336041683604639,
+                0.0
+              ],
+              [
+                -0.0666054388294435,
+                0.0
+              ],
+              [
+                -3.397611123589181,
+                0.0
+              ],
+              [
+                -101.13413308586534,
+                0.0
+              ]
+            ],
+            "residual_inf": 3.115848353092114e-09
+          }
+        },
+        {
+          "branch": 2,
+          "converged": true,
+          "membrane_voltage_V": -0.018753850874664767,
+          "concentration_mM": {
+            "Na": 9.145881369085355,
+            "K": 140.86308236388638,
+            "M": 41.959651197376765
+          },
+          "volume_pL": 0.9376951716735517,
+          "volume_ratio": 1.2493902337217382,
+          "osmolarity_mM": 300.02132444918,
+          "route_cycles_fmol_s": 0.001659493185243764,
+          "headroom_to_maximum": 0.600780881760467,
+          "spectrum": {
+            "leading_growth_rate_per_s": -9.609579082859232e-05,
+            "eigenvalues_per_s": [
+              [
+                -9.609579082859232e-05,
+                0.0
+              ],
+              [
+                -0.0037900776722479645,
+                0.0
+              ],
+              [
+                -0.056615132274490956,
+                0.0
+              ],
+              [
+                -3.3739910701503777,
+                0.0
+              ],
+              [
+                -11.574675916276865,
+                0.0
+              ],
+              [
+                -413.9315187154313,
+                0.0
+              ]
+            ],
+            "residual_inf": 9.548979328844885e-09
+          }
+        }
+      ],
+      "d_volume_ratio": 1.2493902337217382,
+      "d_volume_change_against_route_free": -0.2886232483375185
+    },
+    "red_cell_15-kaji_s0.12": {
+      "flux_mmol_L_h": 15.0,
+      "parameters": {
+        "capacity_fmol_s_mM2": 2.4818857535286383e-07,
+        "set_volume_pL": 0.7505222518670602,
+        "steepness": 0.12,
+        "availability": 1.0
+      },
+      "states": [
+        {
+          "branch": 0,
+          "converged": true,
+          "membrane_voltage_V": -0.08139479815886896,
+          "concentration_mM": {
+            "Na": 5.977947121976529,
+            "K": 144.01935488654576,
+            "M": 6.409154038018421
+          },
+          "volume_pL": 0.7055368674819275,
+          "volume_ratio": 0.9400612250026918,
+          "osmolarity_mM": 300.0141237275616,
+          "route_cycles_fmol_s": 3.3592569492888726e-05,
+          "headroom_to_maximum": 1.1275210026817915,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.00021098169758518445,
+            "eigenvalues_per_s": [
+              [
+                -0.00021098169758518445,
+                0.0
+              ],
+              [
+                -0.004919154368069239,
+                0.0
+              ],
+              [
+                -0.07520202115254607,
+                0.0
+              ],
+              [
+                -4.00236210265289,
+                0.8211021063544447
+              ],
+              [
+                -4.00236210265289,
+                -0.8211021063544447
+              ],
+              [
+                -155.28351615565845,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.8288452709079767e-09
+          }
+        },
+        {
+          "branch": 1,
+          "converged": true,
+          "membrane_voltage_V": -0.04043856186472041,
+          "concentration_mM": {
+            "Na": 9.208968988435208,
+            "K": 140.7949718365436,
+            "M": 21.01816375703363
+          },
+          "volume_pL": 0.785463763352777,
+          "volume_ratio": 1.0465562631871252,
+          "osmolarity_mM": 300.0166027744731,
+          "route_cycles_fmol_s": 0.00082649294953443,
+          "headroom_to_maximum": 0.9110296028512688,
+          "spectrum": {
+            "leading_growth_rate_per_s": 11.33374596772317,
+            "eigenvalues_per_s": [
+              [
+                11.33374596772317,
+                0.0
+              ],
+              [
+                -0.00022074135149099255,
+                0.0
+              ],
+              [
+                -0.004404477198191366,
+                0.0
+              ],
+              [
+                -0.06749309013148365,
+                0.0
+              ],
+              [
+                -3.3970443995666617,
+                0.0
+              ],
+              [
+                -102.42808694493557,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.4549308332930031e-08
+          }
+        },
+        {
+          "branch": 2,
+          "converged": true,
+          "membrane_voltage_V": -0.01932547091237587,
+          "concentration_mM": {
+            "Na": 9.350308854023266,
+            "K": 140.65690382735656,
+            "M": 29.544849718813932
+          },
+          "volume_pL": 0.841069522212176,
+          "volume_ratio": 1.120645683881941,
+          "osmolarity_mM": 300.01832746655896,
+          "route_cycles_fmol_s": 0.0023439453724889868,
+          "headroom_to_maximum": 0.7846854083905956,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.0003224815658750954,
+            "eigenvalues_per_s": [
+              [
+                -0.0003224815658750954,
+                0.0
+              ],
+              [
+                -0.004227707464543264,
+                0.0
+              ],
+              [
+                -0.06296838372460652,
+                0.0
+              ],
+              [
+                -3.376512355927565,
+                0.0
+              ],
+              [
+                -11.592344558947223,
+                0.0
+              ],
+              [
+                -416.8731368537256,
+                0.0
+              ]
+            ],
+            "residual_inf": 6.392772761463207e-09
+          }
+        }
+      ],
+      "d_volume_ratio": 1.120645683881941,
+      "d_volume_change_against_route_free": -0.3619277109364164
+    },
+    "red_cell_20-lew_s1": {
+      "flux_mmol_L_h": 20.0,
+      "parameters": {
+        "capacity_fmol_s_mM2": 3.309181004704851e-07,
+        "set_volume_pL": 0.7505222518670602,
+        "steepness": 1.0,
+        "availability": 1.0
+      },
+      "states": [
+        {
+          "branch": 0,
+          "converged": true,
+          "membrane_voltage_V": -0.08143718553752383,
+          "concentration_mM": {
+            "Na": 5.978941352100586,
+            "K": 144.01832638463418,
+            "M": 6.20652784263463
+          },
+          "volume_pL": 0.7045427614993531,
+          "volume_ratio": 0.9387366726924821,
+          "osmolarity_mM": 300.0140928939436,
+          "route_cycles_fmol_s": 6.0337652584720456e-05,
+          "headroom_to_maximum": 1.1305229231788774,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.00024127363893419653,
+            "eigenvalues_per_s": [
+              [
+                -0.00024127363893419653,
+                0.0
+              ],
+              [
+                -0.004927327196533922,
+                0.0
+              ],
+              [
+                -0.07531234160368207,
+                0.0
+              ],
+              [
+                -4.004584314062052,
+                0.8198052114478428
+              ],
+              [
+                -4.004584314062052,
+                -0.8198052114478428
+              ],
+              [
+                -155.63112396155228,
+                0.0
+              ]
+            ],
+            "residual_inf": 4.86417788686005e-10
+          }
+        },
+        {
+          "branch": 1,
+          "converged": true,
+          "membrane_voltage_V": -0.04046056601988706,
+          "concentration_mM": {
+            "Na": 9.201458761574832,
+            "K": 140.80251766171799,
+            "M": 21.313702868659153
+          },
+          "volume_pL": 0.7872673463001032,
+          "volume_ratio": 1.0489593670828985,
+          "osmolarity_mM": 300.01665871517594,
+          "route_cycles_fmol_s": 0.000799657969873771,
+          "headroom_to_maximum": 0.9066515470107257,
+          "spectrum": {
+            "leading_growth_rate_per_s": 11.325007532606087,
+            "eigenvalues_per_s": [
+              [
+                11.325007532606087,
+                0.0
+              ],
+              [
+                -0.00016312888805238807,
+                0.0
+              ],
+              [
+                -0.004393180886877904,
+                0.0
+              ],
+              [
+                -0.06739208506011268,
+                0.0
+              ],
+              [
+                -3.3971379770345718,
+                0.0
+              ],
+              [
+                -102.21481420349991,
+                0.0
+              ]
+            ],
+            "residual_inf": 5.093620674151168e-09
+          }
+        },
+        {
+          "branch": 2,
+          "converged": true,
+          "membrane_voltage_V": -0.018939868047535204,
+          "concentration_mM": {
+            "Na": 9.212326555753602,
+            "K": 140.79602961544498,
+            "M": 37.901105416796824
+          },
+          "volume_pL": 0.9037532055056539,
+          "volume_ratio": 1.2041657702451911,
+          "osmolarity_mM": 300.0202716905874,
+          "route_cycles_fmol_s": 0.0018817523930464064,
+          "headroom_to_maximum": 0.6609008904087699,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.00011397948401450225,
+            "eigenvalues_per_s": [
+              [
+                -0.00011397948401450225,
+                0.0
+              ],
+              [
+                -0.003934133648624638,
+                0.0
+              ],
+              [
+                -0.05874169548064369,
+                0.0
+              ],
+              [
+                -3.37477733224198,
+                0.0
+              ],
+              [
+                -11.587164314851657,
+                0.0
+              ],
+              [
+                -414.8753704390649,
+                0.0
+              ]
+            ],
+            "residual_inf": 2.8860369728957243e-08
+          }
+        }
+      ],
+      "d_volume_ratio": 1.2041657702451911,
+      "d_volume_change_against_route_free": -0.31437311499670506
+    },
+    "red_cell_20-kaji_s0.12": {
+      "flux_mmol_L_h": 20.0,
+      "parameters": {
+        "capacity_fmol_s_mM2": 3.309181004704851e-07,
+        "set_volume_pL": 0.7505222518670602,
+        "steepness": 0.12,
+        "availability": 1.0
+      },
+      "states": [
+        {
+          "branch": 0,
+          "converged": true,
+          "membrane_voltage_V": -0.08140915146747771,
+          "concentration_mM": {
+            "Na": 5.978283796548482,
+            "K": 144.01900660413654,
+            "M": 6.34054457962346
+          },
+          "volume_pL": 0.7051999481254326,
+          "volume_ratio": 0.9396123117883844,
+          "osmolarity_mM": 300.0141132775261,
+          "route_cycles_fmol_s": 4.264555063294756e-05,
+          "headroom_to_maximum": 1.128537456255077,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.00022158743175546564,
+            "eigenvalues_per_s": [
+              [
+                -0.00022158743175546564,
+                0.0
+              ],
+              [
+                -0.00492191968284238,
+                0.0
+              ],
+              [
+                -0.07523797490172196,
+                0.0
+              ],
+              [
+                -4.003114666746384,
+                0.8206640341455463
+              ],
+              [
+                -4.003114666746384,
+                -0.8206640341455463
+              ],
+              [
+                -155.40119952614975,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.0937923721643884e-09
+          }
+        },
+        {
+          "branch": 1,
+          "converged": true,
+          "membrane_voltage_V": -0.04034766655921117,
+          "concentration_mM": {
+            "Na": 9.240017710700206,
+            "K": 140.76377706788466,
+            "M": 19.79373423012086
+          },
+          "volume_pL": 0.7780786585126291,
+          "volume_ratio": 1.0367163086464357,
+          "osmolarity_mM": 300.0163737148912,
+          "route_cycles_fmol_s": 0.0009374879790785982,
+          "headroom_to_maximum": 0.9291680697212654,
+          "spectrum": {
+            "leading_growth_rate_per_s": 11.368809688346387,
+            "eigenvalues_per_s": [
+              [
+                11.368809688346387,
+                0.0
+              ],
+              [
+                -0.0002447358051810642,
+                0.0
+              ],
+              [
+                -0.00445092101864923,
+                0.0
+              ],
+              [
+                -0.0681281297858971,
+                0.0
+              ],
+              [
+                -3.396655433078282,
+                0.0
+              ],
+              [
+                -103.31302788044513,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.6672780028122165e-08
+          }
+        },
+        {
+          "branch": 2,
+          "converged": true,
+          "membrane_voltage_V": -0.019419510054830218,
+          "concentration_mM": {
+            "Na": 9.383988853621945,
+            "K": 140.62296586493235,
+            "M": 27.520278324654445
+          },
+          "volume_pL": 0.8271692003684309,
+          "volume_ratio": 1.1021248181658805,
+          "osmolarity_mM": 300.01789632820993,
+          "route_cycles_fmol_s": 0.0024568549636776746,
+          "headroom_to_maximum": 0.8146764931111283,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.00034925802638937145,
+            "eigenvalues_per_s": [
+              [
+                -0.00034925802638937145,
+                0.0
+              ],
+              [
+                -0.004298252821128583,
+                0.0
+              ],
+              [
+                -0.06402261730073015,
+                0.0
+              ],
+              [
+                -3.376958166888922,
+                0.0
+              ],
+              [
+                -11.589209785249343,
+                0.0
+              ],
+              [
+                -417.37033213778284,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.3846114691291693e-08
+          }
+        }
+      ],
+      "d_volume_ratio": 1.1021248181658805,
+      "d_volume_change_against_route_free": -0.37247310575018966
+    },
+    "neuron_scale_model_derived-lew_s1": {
+      "flux_mmol_L_h": 21600.0,
+      "parameters": {
+        "capacity_fmol_s_mM2": 0.00035739154850812394,
+        "set_volume_pL": 0.7505222518670602,
+        "steepness": 1.0,
+        "availability": 1.0
+      },
+      "states": [
+        {
+          "branch": 0,
+          "converged": true,
+          "membrane_voltage_V": -0.08171748054146018,
+          "concentration_mM": {
+            "Na": 5.985514481075847,
+            "K": 144.01152721486156,
+            "M": 4.8656807314556465
+          },
+          "volume_pL": 0.6980343663763678,
+          "volume_ratio": 0.9300648510285747,
+          "osmolarity_mM": 300.0138910267667,
+          "route_cycles_fmol_s": 0.0002379790984277292,
+          "headroom_to_maximum": 1.1503876829536837,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.004977045866238494,
+            "eigenvalues_per_s": [
+              [
+                -0.004977045866238494,
+                0.0
+              ],
+              [
+                -0.05505601564570381,
+                0.0
+              ],
+              [
+                -0.09221552105874911,
+                0.0
+              ],
+              [
+                -4.019262122892123,
+                0.8109820719447788
+              ],
+              [
+                -4.019262122892123,
+                -0.8109820719447788
+              ],
+              [
+                -157.93516175412847,
+                0.0
+              ]
+            ],
+            "residual_inf": 4.000884276646998e-09
+          }
+        },
+        {
+          "branch": 1,
+          "converged": true,
+          "membrane_voltage_V": -0.039280102666293996,
+          "concentration_mM": {
+            "Na": 9.606719301580606,
+            "K": 140.39547837419485,
+            "M": 5.0340236349884435
+          },
+          "volume_pL": 0.6988695989917681,
+          "volume_ratio": 0.931177719585533,
+          "osmolarity_mM": 300.0139169327,
+          "route_cycles_fmol_s": 0.0022533375472319982,
+          "headroom_to_maximum": 1.1478177129175724,
+          "spectrum": {
+            "leading_growth_rate_per_s": 11.647312556101108,
+            "eigenvalues_per_s": [
+              [
+                11.647312556101108,
+                0.0
+              ],
+              [
+                -0.0049820321374795295,
+                0.0
+              ],
+              [
+                -0.05404861582863659,
+                0.0
+              ],
+              [
+                -0.09140542402331009,
+                0.0
+              ],
+              [
+                -3.3918019005168074,
+                0.0
+              ],
+              [
+                -114.1872174760746,
+                0.0
+              ]
+            ],
+            "residual_inf": 7.610636653795242e-09
+          }
+        },
+        {
+          "branch": 2,
+          "converged": true,
+          "membrane_voltage_V": -0.02048430694564452,
+          "concentration_mM": {
+            "Na": 9.764698104254736,
+            "K": 140.23977583883163,
+            "M": 5.071224430753071
+          },
+          "volume_pL": 0.6990599227921388,
+          "volume_ratio": 0.9314313080699479,
+          "osmolarity_mM": 300.0139228358648,
+          "route_cycles_fmol_s": 0.0037333057791288054,
+          "headroom_to_maximum": 1.1472329549929685,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.005053159446869382,
+            "eigenvalues_per_s": [
+              [
+                -0.005053159446869382,
+                0.0
+              ],
+              [
+                -0.05391259392560714,
+                0.0
+              ],
+              [
+                -0.09143648516856427,
+                0.0
+              ],
+              [
+                -3.382721365034619,
+                0.0
+              ],
+              [
+                -11.423688655002662,
+                0.0
+              ],
+              [
+                -423.5346099582767,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.7379156494617514e-08
+          }
+        }
+      ],
+      "d_volume_ratio": 0.9314313080699479,
+      "d_volume_change_against_route_free": -0.46966243176260625
+    },
+    "neuron_scale_model_derived-kaji_s0.12": {
+      "flux_mmol_L_h": 21600.0,
+      "parameters": {
+        "capacity_fmol_s_mM2": 0.00035739154850812394,
+        "set_volume_pL": 0.7505222518670602,
+        "steepness": 0.12,
+        "availability": 1.0
+      },
+      "states": [
+        {
+          "branch": 0,
+          "converged": true,
+          "membrane_voltage_V": -0.08171678999853856,
+          "concentration_mM": {
+            "Na": 5.98549829042004,
+            "K": 144.01154396115783,
+            "M": 4.868986045149316
+          },
+          "volume_pL": 0.6980502623475414,
+          "volume_ratio": 0.9300860309084971,
+          "osmolarity_mM": 300.013891519803,
+          "route_cycles_fmol_s": 0.0002375397864485176,
+          "headroom_to_maximum": 1.150338714415938,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.004976684949621973,
+            "eigenvalues_per_s": [
+              [
+                -0.004976684949621973,
+                0.0
+              ],
+              [
+                -0.03750207742170585,
+                0.0
+              ],
+              [
+                -0.08125845349680216,
+                0.0
+              ],
+              [
+                -4.019225999619438,
+                0.8110043439012545
+              ],
+              [
+                -4.019225999619438,
+                -0.8110043439012545
+              ],
+              [
+                -157.92947404538387,
+                0.0
+              ]
+            ],
+            "residual_inf": 4.5534407624140853e-10
+          }
+        },
+        {
+          "branch": 1,
+          "converged": true,
+          "membrane_voltage_V": -0.039282323998214144,
+          "concentration_mM": {
+            "Na": 9.605954413847094,
+            "K": 140.39624636404764,
+            "M": 5.065347414090849
+          },
+          "volume_pL": 0.6990206212683144,
+          "volume_ratio": 0.9313789425022028,
+          "osmolarity_mM": 300.01392161687187,
+          "route_cycles_fmol_s": 0.0022505863850321556,
+          "headroom_to_maximum": 1.1473536803686861,
+          "spectrum": {
+            "leading_growth_rate_per_s": 11.64700413583861,
+            "eigenvalues_per_s": [
+              [
+                11.64700413583861,
+                0.0
+              ],
+              [
+                -0.004980201829121865,
+                0.0
+              ],
+              [
+                -0.03710519328648892,
+                0.0
+              ],
+              [
+                -0.08089002471212013,
+                0.0
+              ],
+              [
+                -3.3918125383009428,
+                0.0
+              ],
+              [
+                -114.16366270799564,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.444820636560959e-08
+          }
+        },
+        {
+          "branch": 2,
+          "converged": true,
+          "membrane_voltage_V": -0.020481801090211867,
+          "concentration_mM": {
+            "Na": 9.763806105039134,
+            "K": 140.24067288917848,
+            "M": 5.122846424609744
+          },
+          "volume_pL": 0.6993089796177336,
+          "volume_ratio": 0.931763152762061,
+          "osmolarity_mM": 300.0139305607181,
+          "route_cycles_fmol_s": 0.003730318525855987,
+          "headroom_to_maximum": 1.146468224324308,
+          "spectrum": {
+            "leading_growth_rate_per_s": -0.005051209365218088,
+            "eigenvalues_per_s": [
+              [
+                -0.005051209365218088,
+                0.0
+              ],
+              [
+                -0.03724391072947757,
+                0.0
+              ],
+              [
+                -0.08078199764517668,
+                0.0
+              ],
+              [
+                -3.382706067329035,
+                0.0
+              ],
+              [
+                -11.424373509751183,
+                0.0
+              ],
+              [
+                -423.5178839727712,
+                0.0
+              ]
+            ],
+            "residual_inf": 1.72035449204388e-08
+          }
+        }
+      ],
+      "d_volume_ratio": 0.931763152762061,
+      "d_volume_change_against_route_free": -0.46947348631325003
+    }
+  },
+  "seconds": 389.5023139952682,
+  "provenance": {
+    "computed_by": "python -m validation.tissue.pump_water_kcc_predictions",
+    "computed_from": "/mnt/workspaces/Cells/water-volume-pump-20261110-01/w2-predictions-01/source (clean, git 5385215160b44eeaf92cc0ca543c65051c28e611)",
+    "run": "/mnt/workspaces/Cells/water-volume-pump-20261110-01/w2-predictions-01 (logs/, out/kcc-predictions.json)",
+    "frozen_utc": "2026-11-11",
+    "note": "Frozen before any W2 engine qualification run (development tests only so far)."
+  }
+}

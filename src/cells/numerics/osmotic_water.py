@@ -182,6 +182,39 @@ def evaluate(volume_pL, amount_fmol, availability, p, *, xp=np):
     )
 
 
+class EdgeValues(NamedTuple):
+    osmotic_pressure_Pa: object
+    hydrostatic_pressure_Pa: object
+    water_potential_Pa: object
+    edge_flow_pL_s: object
+    edge_dissipation_pJ_s: object
+
+
+def edge_exchange(volume_pL, amount_fmol, availability, p, *, xp=np):
+    """evaluate()'s node pressures, edge flows and edge heat, without accumulating them.
+
+    The same operations in the same order as evaluate(), so the values agree
+    bitwise with its fields of the same names. A caller accumulates the flows
+    onto its own owners: for example a held bath, whose volume and composition
+    are fixed, supplies the water it exchanges instead of changing its volume.
+    """
+    volume = xp.where(p.active, volume_pL, 1.0)
+    amount = xp.asarray(amount_fmol)
+    rt = R * p.temperature_K
+    osmolytes = xp.sum(amount, axis=0) + p.impermeant_amount_fmol
+    osmotic = xp.where(p.active, rt * osmolytes / volume, 0.0)
+    extension = volume - p.reference_volume_pL
+    hydrostatic = xp.where(
+        p.active,
+        p.bulk_modulus_Pa * extension / p.reference_volume_pL + p.pressure_offset_Pa,
+        0.0,
+    )
+    potential = hydrostatic - osmotic
+    drive = potential[p.sender] - potential[p.receiver]
+    flow = xp.where(p.edge_active, p.conductance_pL_per_Pa_s * availability * drive, 0.0)
+    return EdgeValues(osmotic, hydrostatic, potential, flow, 1e-3 * flow * drive)
+
+
 def relaxation_rate_bound(maximum_osmolyte_amount_fmol, p, *, xp=np):
     """Water-volume Jacobian row bound with the current solute amounts held fixed.
 

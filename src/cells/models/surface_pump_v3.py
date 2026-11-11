@@ -30,6 +30,23 @@ bound at any explicit stage. The step size the openings admit is therefore a
 property of the run, not of the definition: window currents admit
 millisecond steps, a fully open NaV1.2 population of 2.5e-7 m/s needs about
 0.37 ms.
+
+Extra membrane processes (opt-in hook for composing models; none by default).
+readouts, explicit_rates and imex_step take an optional membrane_process,
+called as membrane_process(ci, co, volume, voltage, xp=xp) with the patch's cell
+and outside concentrations [species, membrane] (mM), its cell's volume
+[membrane] (pL, the layout's) and its membrane voltage [membrane] (V). It
+returns a MembraneProcess: outward flux [species, membrane] (fmol/s), heat
+[membrane] (pJ/s) and a validity flag. The flux is added to the explicit
+membrane terms at every explicit stage (and to readouts, so rhs and the field's
+charge rates see it); its heat enters readouts' dissipation. imex_step then also
+returns the step's applied transfer (the tableau's explicit weights, the exact
+amount change) and its heat, booked as dt (q_start + q_end) / 2 from the start
+state and the end state at its last-stage potentials, so a process whose heat
+is nonnegative never books a negative increment. The composing model owns those
+ledgers. The explicit-stage refusal (membrane_rate) does not include the
+process: it must add no membrane conductance the family's bound does not cover
+(an electroneutral process adds none). With no process the code is unchanged.
 """
 
 from dataclasses import make_dataclass, replace
@@ -121,6 +138,14 @@ physical_amounts = first.physical_amounts
 global_charge_bound = first.global_charge_bound
 node_charge = first.node_charge
 rebind = first.rebind
+
+
+class MembraneProcess(NamedTuple):
+    """An extra explicit membrane process's rates (see the module docstring)."""
+
+    flux: object  # [species, membrane] outward fmol/s
+    heat: object  # [membrane] pJ/s
+    valid: object
 
 
 class Values(NamedTuple):
@@ -231,8 +256,11 @@ def channel_heat(heat, p, *, xp=jnp):
     )
 
 
-def readouts(state, control, p, *, xp=jnp):
-    """surface_pump_v2.readouts with the channel populations' currents and gate rates."""
+def readouts(state, control, p, *, xp=jnp, membrane_process=None):
+    """surface_pump_v2.readouts with the channel populations' currents and gate rates.
+
+    membrane_process: the opt-in extra membrane process (module docstring).
+    """
     from cells.core.schedule import SurfaceControl
 
     v = tissue.field_values(
@@ -287,6 +315,16 @@ def readouts(state, control, p, *, xp=jnp):
         - p.calcium_stoichiometry * ca_cycles
         + channel_to_membrane(channel, p, xp=xp)
     )
+    process = None
+    if membrane_process is not None:  # Opt-in (static); none by default.
+        process = membrane_process(
+            ci[:, p.membrane_cell],
+            co[:, p.membrane_outside],
+            p.volume[p.membrane_cell],
+            r.membrane_voltage_V,
+            xp=xp,
+        )
+        extra = extra + process.flux
     cell = r.cell_rate_fmol_s - scatter(extra, r.cell_rate_fmol_s, (p.membrane_cell,), xp=xp)
     out_extra = scatter(extra, r.outside_rate_fmol_s, (p.membrane_outside,), xp=xp)
     outside = r.outside_rate_fmol_s + xp.where(p.reservoir, 0.0, out_extra)
@@ -295,6 +333,8 @@ def readouts(state, control, p, *, xp=jnp):
     total_membrane_d = (
         r.membrane_dissipation_pJ_s + pump_d + ca_d + channel_heat(channel_d, p, xp=xp)
     )
+    if process is not None:
+        total_membrane_d = total_membrane_d + process.heat
     total_rates = r._replace(
         cell_rate_fmol_s=cell,
         outside_rate_fmol_s=outside,
@@ -352,6 +392,8 @@ def readouts(state, control, p, *, xp=jnp):
     valid = v.converged & xp.all(pump.domain_valid(*args, xp=xp))
     valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
+    if process is not None:
+        valid &= process.valid
     for value in control:
         valid &= xp.all(xp.isfinite(value) & (value >= 0) & (value <= 1))
     valid &= xp.all(
@@ -450,10 +492,12 @@ def control_domain_valid(state, control, p, active, *, xp=jnp):
 domain_valid.with_control = control_domain_valid
 
 
-def explicit_rates(state, potential, control, p, *, xp=jnp):
+def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=None):
     """surface_pump_v2.explicit_rates with the channel currents at the same potentials.
 
     The gate rate is zero here: IMEX steps set gates by the exponential update.
+    With a membrane_process (opt-in) its flux joins the explicit membrane terms
+    and the call returns (rates, valid, MembraneProcess); otherwise (rates, valid).
     """
     s, n = tissue.field_layout(p).surface, p.active.size
     ci, co = physical_amounts(state, p)
@@ -503,6 +547,16 @@ def explicit_rates(state, potential, control, p, *, xp=jnp):
         - p.calcium_stoichiometry * ca_cycles
         + channel_to_membrane(channel, p, xp=xp)
     )
+    process = None
+    if membrane_process is not None:  # Opt-in (static); none by default.
+        process = membrane_process(
+            ci[:, p.membrane_cell],
+            co[:, p.membrane_outside],
+            p.volume[p.membrane_cell],
+            r.membrane_voltage_V,
+            xp=xp,
+        )
+        extra = extra + process.flux
     zero = xp.zeros_like(co)
     inflow = (
         scatter(r.membrane_flux_fmol_s + extra, zero, (p.membrane_outside,), xp=xp)
@@ -553,6 +607,10 @@ def explicit_rates(state, potential, control, p, *, xp=jnp):
         valid &= xp.all(xp.isfinite(value))
     for value in control:
         valid &= xp.all((value >= 0) & (value <= 1))
+    if process is not None:
+        valid &= process.valid & xp.all(xp.isfinite(process.flux))
+        valid &= xp.all(xp.isfinite(process.heat))
+        return rates, valid, process
     return rates, valid
 
 
@@ -592,8 +650,16 @@ def stage_gates(gate, start, stage, fraction, dt, p, *, xp=jnp):
     return xp.where(p.channel_gate_active, advanced, gate), stage[2]
 
 
-def imex_step(state, dt, control, p, *, xp=jnp):
-    """surface_pump_v2.imex_step with channel currents and exponential stage gates."""
+def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None):
+    """surface_pump_v2.imex_step with channel currents and exponential stage gates.
+
+    With a membrane_process (opt-in, module docstring) the call returns
+    (state, valid, (transfer, heat)): the process's applied transfer
+    [species, membrane] (fmol) and its trapezoid heat [membrane] (pJ) over the
+    step, for the composing model's own ledgers. Otherwise (state, valid).
+    """
+    hook = {} if membrane_process is None else dict(membrane_process=membrane_process)
+    processes = []
     f = tissue.field_layout(p)
     s, explicit_matrix, implicit_matrix = f.surface, p.imex_explicit, p.imex_implicit
     stages = explicit_matrix.shape[0]
@@ -611,7 +677,8 @@ def imex_step(state, dt, control, p, *, xp=jnp):
         implicit_matrix[-1, -1] * dt, imex.face_laplacian(weight, s, xp=xp), p.boundary_V, f, xp=xp
     )
     valid &= ok
-    rates, ok = explicit_rates(state, start, control, p, xp=xp)
+    rates, ok, *process = explicit_rates(state, start, control, p, xp=xp, **hook)
+    processes += process
     explicit, implicit, valid = [rates], [None], valid & ok
     # Channel currents are explicit: refuse the step where their actual
     # conductance at an explicit stage exceeds the family's stability bound.
@@ -645,7 +712,8 @@ def imex_step(state, dt, control, p, *, xp=jnp):
         )
         stage, valid = stage._replace(channel_gate=gate), valid & ok
         if i < stages - 1:
-            rates, ok = explicit_rates(stage, potential, control, p, xp=xp)
+            rates, ok, *process = explicit_rates(stage, potential, control, p, xp=xp, **hook)
+            processes += process
             explicit.append(rates)
             valid &= ok & (dt * membrane_rate(stage, control, p, xp=xp) <= EXPLICIT_STEP_BOUND)
     last = stages - 1
@@ -688,7 +756,27 @@ def imex_step(state, dt, control, p, *, xp=jnp):
     valid &= domain_valid(stage, p, p.active, xp=xp)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))
-    return jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage), valid
+    if membrane_process is None:
+        return jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage), valid
+    # The process's applied transfer (the tableau's explicit weights: the exact
+    # amount change it made) and its heat, the trapezoid of its start power and
+    # its power at the end state and last-stage potentials.
+    transfer = dt * sum(explicit_matrix[last, j] * processes[j].flux for j in range(stages - 1))
+    n = p.active.size
+    ci, co = physical_amounts(stage, p)
+    end = membrane_process(
+        xp.where(p.active, ci / p.volume, 1.0)[:, p.membrane_cell],
+        xp.where(p.outside_active, co / p.extracellular_volume, 1.0)[:, p.membrane_outside],
+        p.volume[p.membrane_cell],
+        xp.where(
+            p.membrane_active, potential[p.membrane_cell] - potential[n + p.membrane_outside], 0.0
+        ),
+        xp=xp,
+    )
+    heat = 0.5 * dt * (processes[0].heat + end.heat)
+    valid &= end.valid & xp.all(xp.isfinite(heat)) & xp.all(xp.isfinite(transfer))
+    new = jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage)
+    return new, valid, (transfer, heat)
 
 
 def junction_heat_rate(state, potential, control, p, *, xp=jnp):
