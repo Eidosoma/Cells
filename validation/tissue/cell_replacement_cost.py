@@ -232,7 +232,96 @@ def part_parse(args):
     return out
 
 
-PARTS = dict(overhead=part_overhead, eventmap=part_eventmap, sheet=part_sheet, parse=part_parse)
+def part_swap(args):
+    """D->H replacements under IMEX through the row-checked runner (127-cell sheet).
+
+    The written 37-cell disc at s 0.3 (declared D states), default formation (A0 0,
+    lag 600 s, tau 1800 s): two rim D cells and one interior D cell get the isolated-H
+    template at step 200. core/runner.run applies every host row check; this part
+    then reports, per row, each ledger's largest |residual| / bound (electrode first).
+    """
+    from cells.core.runner import run
+    from cells.models import surface_pump as first
+    from validation.stationary import worlds
+
+    seconds = args.steps * DT
+    raw = fx.heredity_sheet(6, 3, scale=0.3, dt=DT, end_time=seconds)
+    raw["experiment"]["observation_times"] = [0.0, seconds]
+    cells, _ = worlds.hexagon(6)
+    rings = [worlds.ring(c) for c in cells]
+    rim = [i for i, r in enumerate(rings) if r == 3][:2]
+    inner = [i for i, r in enumerate(rings) if r == 1][:1]
+    h = next(i for i, r in enumerate(rings) if r == 6)
+    template = fx.template_from_cell(raw, f"cell_{h}", "h")
+    (t,) = exact_event_times((200,), DT)
+    events = [(t, f"cell_{i}", "h", f"n{i}") for i in (*rim, *inner)]
+    spec = parse_spec(fx.with_replacement(raw, [template], events))
+    started = time.perf_counter()
+    result = run(spec)
+    wall = time.perf_counter() - started
+    p = replacement.initial_values(spec)[1]
+    tol = np.asarray(spec.execution.material_balance_atol_fmol)
+    rtol = first.ENERGY_RTOL[spec.execution.solver]
+    names = list(first.LEDGERS)
+    ratios = []
+    for i in range(len(result.times)):
+        row = replacement.STATE_TYPE(*(np.asarray(v[i]) for v in result.history))
+        b = replacement.balances(row, p)
+        _, limits = first.ledger_limits(
+            row, p, tol, rtol, steps=i, magnitudes=replacement.magnitudes(row, p, xp=np)
+        )
+        ratios.append(
+            [
+                float(np.max(np.abs(np.asarray(v)) / np.broadcast_to(bd, np.shape(v)), initial=0))
+                for v, bd in zip(b.values(), limits, strict=True)
+            ]
+        )
+    ratios = np.asarray(ratios)
+    k = int(np.flatnonzero(result.times == t)[0])
+    v = np.asarray(
+        [
+            replacement.field_values(
+                replacement.STATE_TYPE(*(np.asarray(x[i]) for x in result.history)),
+                replacement.Control(
+                    *(np.asarray(c[0]) for c in control_values(spec, [result.times[i]]))
+                ),
+                p,
+                xp=np,
+            ).rates.membrane_voltage_V
+            for i in (k, k + 1, len(result.times) - 1)
+        ]
+    )
+    replaced = [*rim, *inner]
+    return dict(
+        cells=len(cells),
+        steps=args.steps,
+        replaced_slots=replaced,
+        replaced_rings=[rings[i] for i in replaced],
+        event_time_s=t,
+        wall_s=wall,
+        ledgers=names,
+        max_ratio_overall=dict(zip(names, ratios.max(axis=0).tolist(), strict=True)),
+        ratio_after_event=dict(zip(names, ratios[k + 1].tolist(), strict=True)),
+        ratio_at_end=dict(zip(names, ratios[-1].tolist(), strict=True)),
+        electrode_ratio_series=ratios[:, names.index("electrode")][
+            :: max(1, args.steps // 50)
+        ].tolist(),
+        replaced_voltage_mV=dict(
+            at_event=(1e3 * v[0][replaced]).tolist(),
+            after=(1e3 * v[1][replaced]).tolist(),
+            end=(1e3 * v[2][replaced]).tolist(),
+        ),
+        generation_end=np.asarray(result.history.generation)[-1].tolist(),
+    )
+
+
+PARTS = dict(
+    overhead=part_overhead,
+    eventmap=part_eventmap,
+    sheet=part_sheet,
+    parse=part_parse,
+    swap=part_swap,
+)
 
 
 def main(argv=None):
