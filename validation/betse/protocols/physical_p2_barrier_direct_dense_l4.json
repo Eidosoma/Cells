@@ -1,0 +1,420 @@
+{
+ "schema": "cells.betse_comparison_protocol@1",
+ "id": "physical-p2-barrier-direct-dense-l4",
+ "purpose": "Backend variant of the registered protocol physical-p2-barrier-direct-dense for the Cells backend gpu (L4): same case, observables, phases, mapping and tolerance derivation, plus measured backend terms (tolerance_derivation.backend_terms). The registered purpose follows. Rung 2 (P2), reported comparison: Cells' own physics (resolved_pump_tissue@2) on p2-barrier-dense directly against plain BETSE, tolerances by the rung-1 v2 method including the stencil term. Reported alongside the two stages, which give the rung's verdict; with the stencil term inside the tolerance this comparison cannot discriminate the barrier (see discrimination).",
+ "betse_case": "p2-barrier-dense",
+ "phases": [
+  "init",
+  "sim"
+ ],
+ "time_alignment_atol_s": 1e-09,
+ "min_common_samples": 1,
+ "compare_final": true,
+ "observables": {
+  "vm_time": {
+   "final": "vm",
+   "tolerance": "voltage"
+  },
+  "vm_ave_time": {
+   "final": "vm_ave",
+   "tolerance": "voltage"
+  },
+  "cc_time": {
+   "final": "cc_cells",
+   "tolerance": "cell_concentration"
+  },
+  "cc_env_time": {
+   "final": "cc_env",
+   "tolerance": "ecm_concentration",
+   "exclude": "grid_boundary_ring"
+  },
+  "venv_time": {
+   "final": "v_env",
+   "tolerance": "voltage",
+   "judged": false
+  },
+  "diag_*": {
+   "judged": false
+  }
+ },
+ "tolerance_quantities": {
+  "voltage": {
+   "kind": "abs",
+   "units": "V"
+  },
+  "cell_concentration": {
+   "kind": "rel",
+   "units": "1"
+  },
+  "ecm_concentration": {
+   "kind": "rel",
+   "units": "1"
+  }
+ },
+ "tolerance_classes": {
+  "physical_route_vs_betse_10ms_init": {
+   "voltage": {
+    "init": 0.0005,
+    "sim": 2e-05
+   },
+   "cell_concentration": {
+    "init": {
+     "by_ion": {
+      "Ca": 0.5,
+      "Cl": 8e-06,
+      "K": 9e-07,
+      "M": 2e-06,
+      "Na": 2e-05,
+      "P": 1e-12
+     }
+    },
+    "sim": {
+     "by_ion": {
+      "Ca": 0.0008,
+      "Cl": 2e-06,
+      "K": 7e-07,
+      "M": 2e-07,
+      "Na": 8e-06,
+      "P": 1e-12
+     }
+    }
+   },
+   "ecm_concentration": {
+    "init": {
+     "by_ion": {
+      "Ca": 0.0008,
+      "Cl": 0.0006,
+      "K": 0.03,
+      "M": 0.0004,
+      "Na": 0.002,
+      "P": 1e-12
+     }
+    },
+    "sim": {
+     "by_ion": {
+      "Ca": 0.0008,
+      "Cl": 0.0006,
+      "K": 0.03,
+      "M": 0.0004,
+      "Na": 0.002,
+      "P": 1e-12
+     }
+    }
+   }
+  }
+ },
+ "verdict_class": "physical_route_vs_betse_10ms_init",
+ "tolerance_derivation": {
+  "method": "3 x (sum of measured difference terms), rounded up to one significant figure; per ion for concentrations (a zero sum gets the floor 1e-12)",
+  "tool": "validation/betse/protocol_tolerances.py",
+  "recipe": "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/protocols/recipe_p2_barrier_direct_dense.json",
+  "inputs": "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/protocols/derived_p2_barrier_direct_dense.json",
+  "terms": [
+   "X_ext_within_cell_patch_voltage_spread",
+   "betse_init_step",
+   "calcium_pump_law_cells_vs_betse",
+   "cells_cpu_vs_l4_backend",
+   "cells_exterior_field_boltzmann_response",
+   "cells_l4_run_to_run",
+   "cells_numerics_ars222",
+   "conservative_compact_ecm_faces_at_dt_over_100",
+   "constants_codata_vs_betse",
+   "exterior_field_law_bound_ecm_drift_off",
+   "physical_time_gate_and_no_concentration_lag"
+  ],
+  "provisional_terms": [],
+  "largest_term": {
+   "cell_concentration": {
+    "init": "betse_init_step",
+    "sim": "cells_exterior_field_boltzmann_response"
+   },
+   "ecm_concentration": {
+    "init": "conservative_compact_ecm_faces_at_dt_over_100",
+    "sim": "conservative_compact_ecm_faces_at_dt_over_100"
+   },
+   "voltage": {
+    "init": "betse_init_step",
+    "sim": "X_ext_within_cell_patch_voltage_spread"
+   }
+  },
+  "sums_before_margin": {
+   "voltage": {
+    "init": 0.0001354498492847691,
+    "sim": 4.332474536404794e-06
+   },
+   "cell_concentration": {
+    "init": {
+     "Ca": 0.15064903150029957,
+     "Cl": 2.534166449419587e-06,
+     "K": 2.6901060769383087e-07,
+     "M": 3.348340576866429e-07,
+     "Na": 4.3055238301352745e-06,
+     "P": 0.0
+    },
+    "sim": {
+     "Ca": 0.00025116860016908556,
+     "Cl": 5.440937574580987e-07,
+     "K": 2.0977794265864934e-07,
+     "M": 5.669103960994008e-08,
+     "Na": 2.4080626155444472e-06,
+     "P": 0.0
+    }
+   },
+   "ecm_concentration": {
+    "init": {
+     "Ca": 0.0002559800117145667,
+     "Cl": 0.00017567805605651386,
+     "K": 0.00670344129121366,
+     "M": 0.0001244713463291539,
+     "Na": 0.00034550326242366655,
+     "P": 0.0
+    },
+    "sim": {
+     "Ca": 0.0002560650681120977,
+     "Cl": 0.00017634659254762633,
+     "K": 0.006730340436204131,
+     "M": 0.00012463388071883987,
+     "Na": 0.0003467142539261575,
+     "P": 0.0
+    }
+   }
+  },
+  "backend_terms": {
+   "rule": "new sum = registered sums_before_margin + these terms; new tolerance = max(registered tolerance, 3 x new sum rounded up to one significant figure, floor 1e-12)",
+   "terms": {
+    "cells_cpu_vs_l4_backend": {
+     "layouts": [
+      "/mnt/workspaces/Cells/parity-rung2-4-20261109-03/stage1/run/layout",
+      "/mnt/workspaces/Cells/parity-l4-20261111-01/blind-A/p2-barrier/run/layout"
+     ],
+     "role": "judged CPU run vs blind L4 run A",
+     "values": {
+      "init": {
+       "voltage": 3.712308238590367e-15,
+       "cell_concentration": {
+        "Na": 7.51387925483625e-16,
+        "K": 2.044631052813711e-16,
+        "Cl": 4.4259085699105456e-16,
+        "Ca": 9.653978233414433e-14,
+        "P": 0.0,
+        "M": 2.960543879029057e-16
+       },
+       "ecm_concentration": {
+        "Na": 3.920235713251545e-16,
+        "K": 7.106189256422718e-16,
+        "Cl": 6.178634075042274e-16,
+        "Ca": 2.220487475439285e-16,
+        "P": 0.0,
+        "M": 4.900294478173453e-16
+       }
+      },
+      "sim": {
+       "voltage": 3.1884217488453714e-15,
+       "cell_concentration": {
+        "Na": 9.017519977512677e-16,
+        "K": 2.0427998837567908e-16,
+        "Cl": 4.408857871836397e-16,
+        "Ca": 8.868546703505416e-14,
+        "P": 0.0,
+        "M": 2.9605017339903925e-16
+       },
+       "ecm_concentration": {
+        "Na": 3.920210847692254e-16,
+        "K": 3.569391841022687e-16,
+        "Cl": 3.7071802458193266e-16,
+        "Ca": 4.44091248906302e-16,
+        "P": 0.0,
+        "M": 2.4501472074860124e-16
+       }
+      }
+     }
+    },
+    "cells_l4_run_to_run": {
+     "layouts": [
+      "/mnt/workspaces/Cells/parity-l4-20261111-01/blind-A/p2-barrier/run/layout",
+      "/mnt/workspaces/Cells/parity-l4-20261111-01/blind-B/p2-barrier/run/layout"
+     ],
+     "role": "blind L4 run A vs blind L4 run B",
+     "values": {
+      "init": {
+       "voltage": 6.418476861114186e-16,
+       "cell_concentration": {
+        "Na": 3.0149936441763407e-16,
+        "K": 2.0445091920781484e-16,
+        "Cl": 2.2197568713190283e-16,
+        "Ca": 1.0105059793241941e-14,
+        "P": 0.0,
+        "M": 2.9605045412790487e-16
+       },
+       "ecm_concentration": {
+        "Na": 3.920235110571965e-16,
+        "K": 5.330978743442349e-16,
+        "Cl": 6.178635266678894e-16,
+        "Ca": 2.220487783636062e-16,
+        "P": 0.0,
+        "M": 3.67522098794348e-16
+       }
+      },
+      "sim": {
+       "voltage": 2.914335439641036e-16,
+       "cell_concentration": {
+        "Na": 3.0059468976580087e-16,
+        "K": 2.0427810087636684e-16,
+        "Cl": 2.2101130601747036e-16,
+        "Ca": 5.0564986557302165e-15,
+        "P": 0.0,
+        "M": 2.9605017339903935e-16
+       },
+       "ecm_concentration": {
+        "Na": 3.9202108476922526e-16,
+        "K": 3.631586206873474e-16,
+        "Cl": 3.7071807661985486e-16,
+        "Ca": 2.220488127127467e-16,
+        "P": 0.0,
+        "M": 2.450147038152806e-16
+       }
+      }
+     }
+    }
+   },
+   "registered_tolerance_reproduced_from_sums": true,
+   "not_reproduced": [],
+   "changed": []
+  }
+ },
+ "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+ "notes": [
+  "Reported only: venv_time (BETSE's screened, smoothed estimate has no Cells counterpart) and Cells diag_* arrays.",
+  "Gate open fraction is not in the comparison layout and is not judged.",
+  "Its judged run names this protocol (layouts carry their protocol's sha256); on CPU it repeats stage (i)'s Cells run bit for bit, only the reference differs.",
+  "L4 variant (parity-l4-20261111-01): backend terms from the judged CPU run of physical_p2_barrier_direct_dense.json (/mnt/workspaces/Cells/parity-rung2-4-20261109-03/stage1/run/layout) and two blind L4 runs (/mnt/workspaces/Cells/parity-l4-20261111-01/blind-A/p2-barrier/run, /mnt/workspaces/Cells/parity-l4-20261111-01/blind-B/p2-barrier/run) from snapshot c819a4e41e5f61829ee604cfc3081f75408c0da2; the backend term also contains any engine difference between the two snapshots (the engine commits in between are recorded as leaving default trajectories unchanged).",
+  "L4 runs are not bitwise reproducible run to run; cells_l4_run_to_run measures that."
+ ],
+ "cells_run": {
+  "model": "resolved_pump_tissue@2",
+  "solver": "imex_ars222_face_electromigration@1",
+  "field_solver": "capacitive_reduction_gauged_damped_newton@3",
+  "dt_init_s": 0.001,
+  "dt_sim_s": 0.0001,
+  "constants": "CODATA (Cells default)",
+  "sim_start": "Cells' own INIT end state",
+  "backends": [
+   "gpu (L4)"
+  ],
+  "note": "as rung 1 (D) with the barrier as input data only; field solver @3 because @2 refuses this world at its rounding floor (1, 0.5 and 2 ms; parity-rung2-4-20261109-01 blind-01, blind-03). Judged runs on CPU; the Cells-only terms were measured on the L4 (blind-01), which differs from CPU only at rounding level",
+  "mapping": "default_world_adapter.resolved_definition: D_env (init_final.npz) per square; face diffusivity 2 D_a D_b / (D_a + D_b); field_solver declared @3 (opt-in; bitwise @2 wherever @2 converges)"
+ },
+ "verdict_role": "reported; the rung's verdict is stage (i) and stage (ii)",
+ "discrimination": {
+  "barrier_vs_none (BETSE)": {
+   "option_term": {
+    "file": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/terms/option_vs_rung1_p2-barrier-dense.json"
+   },
+   "effect_over_tolerance": {
+    "init": {
+     "voltage": 0.018524780331360957,
+     "cell_concentration": {
+      "Ca": 0.0004917353993078381,
+      "Cl": 0.0550192538681002,
+      "K": 0.21179953400828438,
+      "M": 0.03316186022127872,
+      "Na": 0.12379486303318105
+     },
+     "ecm_concentration": {
+      "Ca": 0.025214100714976567,
+      "Cl": 0.22813441013470495,
+      "K": 0.6053140188749674,
+      "M": 0.03369734504498014,
+      "Na": 0.2877448987406936
+     }
+    },
+    "sim": {
+     "voltage": 0.4671959593518723,
+     "cell_concentration": {
+      "Ca": 0.3100868440590849,
+      "Cl": 0.22354490089294732,
+      "K": 0.27613519530864256,
+      "M": 0.33670222484045376,
+      "Na": 0.3137905583841666
+     },
+     "ecm_concentration": {
+      "Ca": 0.025282839049246976,
+      "Cl": 0.2295559005407445,
+      "K": 0.6088537421703182,
+      "M": 0.033482329405730725,
+      "Na": 0.2896506625678824
+     }
+    }
+   }
+  }
+ },
+ "discrimination_ratio": {
+  "effect": "barrier_vs_none (BETSE)",
+  "definition": "the option's own effect (max over samples and phase end, interior ECM) divided by this protocol's tolerance, per phase and quantity (ion); ions at the 1e-12 floor (immobile P) are left out",
+  "init": {
+   "voltage": 0.018524780331360957,
+   "cell_concentration": {
+    "Ca": 0.0004917353993078381,
+    "Cl": 0.0550192538681002,
+    "K": 0.21179953400828438,
+    "M": 0.03316186022127872,
+    "Na": 0.12379486303318105
+   },
+   "ecm_concentration": {
+    "Ca": 0.025214100714976567,
+    "Cl": 0.22813441013470495,
+    "K": 0.6053140188749674,
+    "M": 0.03369734504498014,
+    "Na": 0.2877448987406936
+   }
+  },
+  "sim": {
+   "voltage": 0.4671959593518723,
+   "cell_concentration": {
+    "Ca": 0.3100868440590849,
+    "Cl": 0.22354490089294732,
+    "K": 0.27613519530864256,
+    "M": 0.33670222484045376,
+    "Na": 0.3137905583841666
+   },
+   "ecm_concentration": {
+    "Ca": 0.025282839049246976,
+    "Cl": 0.2295559005407445,
+    "K": 0.6088537421703182,
+    "M": 0.033482329405730725,
+    "Na": 0.2896506625678824
+   }
+  }
+ },
+ "non_discriminating": [
+  "init/voltage",
+  "init/cell_concentration/Ca",
+  "init/cell_concentration/Cl",
+  "init/cell_concentration/K",
+  "init/cell_concentration/M",
+  "init/cell_concentration/Na",
+  "init/ecm_concentration/Ca",
+  "init/ecm_concentration/Cl",
+  "init/ecm_concentration/K",
+  "init/ecm_concentration/M",
+  "init/ecm_concentration/Na",
+  "sim/voltage",
+  "sim/cell_concentration/Ca",
+  "sim/cell_concentration/Cl",
+  "sim/cell_concentration/K",
+  "sim/cell_concentration/M",
+  "sim/cell_concentration/Na",
+  "sim/ecm_concentration/Ca",
+  "sim/ecm_concentration/Cl",
+  "sim/ecm_concentration/K",
+  "sim/ecm_concentration/M",
+  "sim/ecm_concentration/Na"
+ ],
+ "non_discriminating_rule": "Quantities listed here (ratio <= 1) are still judged, but the option's effect does not exceed their tolerance, so no claim about the option may rest on them.",
+ "status": "REGISTERED L4 variant (lead, main, 11 November 2026, before any judged L4 run): numbers from the registered protocol's derivation plus measured Cells-vs-Cells backend terms; no L4 Cells-vs-BETSE difference has been computed. To be committed by the lead before any judged L4 run.",
+ "base_protocol": {
+  "id": "physical-p2-barrier-direct-dense",
+  "path": "/mnt/workspaces/Cells/parity-l4-20261111-01/source/validation/betse/protocols/physical_p2_barrier_direct_dense.json",
+  "sha256": "43b991de1a6f9ff2f5f6c4eb71132ef4ddf40a6445aa54b60d1c9774c7fd88ba"
+ }
+}

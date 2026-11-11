@@ -1,0 +1,564 @@
+{
+ "schema": "cells.betse_comparison_protocol@1",
+ "id": "physical-p3-k-mem-dense-l4",
+ "purpose": "Backend variant of the registered protocol physical-p3-k-mem-dense for the Cells backend gpu (L4): same case, observables, phases, mapping and tolerance derivation, plus measured backend terms (tolerance_derivation.backend_terms). The registered purpose follows. Rung P3 (scheduled interventions): judge Cells' own physics (resolved_pump_tissue@3, field solver @3) on the rung-1 mammal default world with BETSE's event: change K mem, multiplier 9 (K permeability x10) on the 19-cell Spot, updates 50-249 of SIM, against the plain-BETSE case parity-p3-interventions-20261110-01/betse-reference/p3-k-mem-dense. Tolerances by the pinned method (3 x the sum of measured terms, every term measured with the event on); cell-ion field terms by propagation through the event emulator.",
+ "betse_case": "p3-k-mem-dense",
+ "phases": [
+  "sim"
+ ],
+ "time_alignment_atol_s": 1e-09,
+ "min_common_samples": 1,
+ "compare_final": true,
+ "observables": {
+  "vm_time": {
+   "final": "vm",
+   "tolerance": "voltage"
+  },
+  "vm_ave_time": {
+   "final": "vm_ave",
+   "tolerance": "voltage"
+  },
+  "cc_time": {
+   "final": "cc_cells",
+   "tolerance": "cell_concentration"
+  },
+  "cc_env_time": {
+   "final": "cc_env",
+   "tolerance": "ecm_concentration",
+   "exclude": "grid_boundary_ring"
+  },
+  "venv_time": {
+   "final": "v_env",
+   "tolerance": "voltage",
+   "judged": false
+  },
+  "diag_*": {
+   "judged": false
+  }
+ },
+ "tolerance_quantities": {
+  "voltage": {
+   "kind": "abs",
+   "units": "V"
+  },
+  "cell_concentration": {
+   "kind": "rel",
+   "units": "1"
+  },
+  "ecm_concentration": {
+   "kind": "rel",
+   "units": "1"
+  }
+ },
+ "tolerance_classes": {
+  "physical_route_vs_betse_10ms_init": {
+   "voltage": {
+    "init": 0.0005,
+    "sim": 3e-05
+   },
+   "cell_concentration": {
+    "init": {
+     "by_ion": {
+      "Ca": 0.5,
+      "Cl": 8e-06,
+      "K": 4e-07,
+      "M": 1e-06,
+      "Na": 9e-06,
+      "P": 1e-12
+     }
+    },
+    "sim": {
+     "by_ion": {
+      "Ca": 0.0005,
+      "Cl": 2e-06,
+      "K": 3e-07,
+      "M": 7e-08,
+      "Na": 3e-06,
+      "P": 1e-12
+     }
+    }
+   },
+   "ecm_concentration": {
+    "init": {
+     "by_ion": {
+      "Ca": 0.0003,
+      "Cl": 0.0002,
+      "K": 0.002,
+      "M": 0.0002,
+      "Na": 0.0002,
+      "P": 1e-12
+     }
+    },
+    "sim": {
+     "by_ion": {
+      "Ca": 0.0003,
+      "Cl": 0.0002,
+      "K": 0.002,
+      "M": 0.0002,
+      "Na": 0.0002,
+      "P": 1e-12
+     }
+    }
+   }
+  }
+ },
+ "verdict_class": "physical_route_vs_betse_10ms_init",
+ "tolerance_derivation": {
+  "method": "3 x (sum of measured difference terms), rounded up to one significant figure; per ion for concentrations (a zero sum gets the floor 1e-12)",
+  "tool": "validation/betse/protocol_tolerances.py",
+  "recipe": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/protocols/recipe_p3_k_mem_dense.json",
+  "inputs": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/protocols/derived_p3_k_mem_dense.json",
+  "terms": [
+   "betse_step",
+   "calcium_pump_law_cells_vs_betse",
+   "cells_cpu_vs_l4_backend",
+   "cells_exterior_field_boltzmann_response",
+   "cells_field_boltzmann_propagated",
+   "cells_field_patch_voltage_propagated",
+   "cells_l4_run_to_run",
+   "cells_numerics_ars222",
+   "conservative_compact_ecm_faces_at_dt_over_10",
+   "constants_codata_vs_betse",
+   "exterior_field_law_bound_ecm_drift_off",
+   "physical_time_gate_and_no_concentration_lag"
+  ],
+  "provisional_terms": [],
+  "largest_term": {
+   "cell_concentration": {
+    "init": "betse_step",
+    "sim": "cells_exterior_field_boltzmann_response"
+   },
+   "ecm_concentration": {
+    "init": "conservative_compact_ecm_faces_at_dt_over_10",
+    "sim": "conservative_compact_ecm_faces_at_dt_over_10"
+   },
+   "voltage": {
+    "init": "betse_step",
+    "sim": "physical_time_gate_and_no_concentration_lag"
+   }
+  },
+  "sums_before_margin": {
+   "voltage": {
+    "init": 0.00013459381352519203,
+    "sim": 7.072121058469133e-06
+   },
+   "cell_concentration": {
+    "init": {
+     "Ca": 0.15292581969556018,
+     "Cl": 2.5297968237524875e-06,
+     "K": 1.1584141944830116e-07,
+     "M": 3.0192758411527105e-07,
+     "Na": 2.8634434008050733e-06,
+     "P": 0.0
+    },
+    "sim": {
+     "Ca": 0.00016165618804123106,
+     "Cl": 5.181696688920041e-07,
+     "K": 9.24754581993709e-08,
+     "M": 2.241622375548267e-08,
+     "Na": 9.280877065521446e-07,
+     "P": 0.0
+    }
+   },
+   "ecm_concentration": {
+    "init": {
+     "Ca": 7.446320993112582e-05,
+     "Cl": 4.0567172784664126e-05,
+     "K": 0.0005643808459558122,
+     "M": 3.856722139897865e-05,
+     "Na": 5.988809853934602e-05,
+     "P": 0.0
+    },
+    "sim": {
+     "Ca": 6.738334797883984e-05,
+     "Cl": 4.162444758530028e-05,
+     "K": 0.0005504043765090654,
+     "M": 3.809300692676371e-05,
+     "Na": 6.057093944183662e-05,
+     "P": 0.0
+    }
+   }
+  },
+  "backend_terms": {
+   "rule": "new sum = registered sums_before_margin + these terms; new tolerance = max(registered tolerance, 3 x new sum rounded up to one significant figure, floor 1e-12)",
+   "terms": {
+    "cells_cpu_vs_l4_backend": {
+     "layouts": [
+      "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/judged-01/run/p3-k-mem-dense/layout",
+      "/mnt/workspaces/Cells/parity-l4-20261111-01/blind-A/p3-k-mem/run/p3-k-mem-dense/layout"
+     ],
+     "role": "judged CPU run vs blind L4 run A",
+     "values": {
+      "init": {
+       "voltage": 3.6637359812630166e-15,
+       "cell_concentration": {
+        "Na": 6.011108013977088e-16,
+        "K": 2.0446131405170107e-16,
+        "Cl": 4.4227143852419663e-16,
+        "Ca": 9.484941042895587e-14,
+        "P": 0.0,
+        "M": 2.960502984346058e-16
+       },
+       "ecm_concentration": {
+        "Na": 5.880340467477382e-16,
+        "K": 7.107166645441017e-16,
+        "Cl": 7.414509639379288e-16,
+        "Ca": 2.220513852375563e-16,
+        "P": 0.0,
+        "M": 4.900375336928172e-16
+       }
+      },
+      "sim": {
+       "voltage": 3.4937330806172895e-15,
+       "cell_concentration": {
+        "Na": 7.514640645344533e-16,
+        "K": 2.0427857663425375e-16,
+        "Cl": 6.612972437369189e-16,
+        "Ca": 9.285093559197538e-14,
+        "P": 0.0,
+        "M": 2.9605019156550257e-16
+       },
+       "ecm_concentration": {
+        "Na": 3.920155671736876e-16,
+        "K": 5.333693874842885e-16,
+        "Cl": 3.707263133011171e-16,
+        "Ca": 4.440924568104498e-16,
+        "P": 0.0,
+        "M": 3.675202749917048e-16
+       }
+      }
+     }
+    },
+    "cells_l4_run_to_run": {
+     "layouts": [
+      "/mnt/workspaces/Cells/parity-l4-20261111-01/blind-A/p3-k-mem/run/p3-k-mem-dense/layout",
+      "/mnt/workspaces/Cells/parity-l4-20261111-01/blind-B/p3-k-mem/run/p3-k-mem-dense/layout"
+     ],
+     "role": "blind L4 run A vs blind L4 run B",
+     "values": {
+      "init": {
+       "voltage": 6.071532165918825e-16,
+       "cell_concentration": {
+        "Na": 3.008648372418146e-16,
+        "K": 2.0446131405170112e-16,
+        "Cl": 2.2202482415454976e-16,
+        "Ca": 8.350555891004224e-15,
+        "P": 0.0,
+        "M": 2.960503452933714e-16
+       },
+       "ecm_concentration": {
+        "Na": 5.880276529392626e-16,
+        "K": 5.357845544881817e-16,
+        "Cl": 7.414509639379294e-16,
+        "Ca": 2.220511859598722e-16,
+        "P": 0.0,
+        "M": 4.900350529297437e-16
+       }
+      },
+      "sim": {
+       "voltage": 3.0531133177191805e-16,
+       "cell_concentration": {
+        "Na": 3.003686914166044e-16,
+        "K": 4.083805542242654e-16,
+        "Cl": 2.2102026391293714e-16,
+        "Ca": 5.938456510278224e-15,
+        "P": 0.0,
+        "M": 2.960501915655026e-16
+       },
+       "ecm_concentration": {
+        "Na": 3.920182218318979e-16,
+        "K": 5.333693874842882e-16,
+        "Cl": 3.707256139800783e-16,
+        "Ca": 4.440916429370758e-16,
+        "P": 0.0,
+        "M": 3.6751974189661923e-16
+       }
+      }
+     }
+    }
+   },
+   "registered_tolerance_reproduced_from_sums": true,
+   "not_reproduced": [],
+   "changed": []
+  }
+ },
+ "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+ "notes": [
+  "Reported only: venv_time and Cells diag_* arrays.",
+  "Verdict on SIM only; INIT is compared with the INIT tolerances above and reported, not judged (comparator reported_phases). Reason: INIT is event-free, is one Cells INIT run shared by the four P3 cases, and is bitwise rung-1's plain-BETSE INIT; Cells' INIT on this world was already judged (rung 1 v2 with resolved_pump_tissue@2, P4 with @3), so it is not blind and carries no event claim. Any INIT exceedance will be reported prominently. This was decided (by the lead, 10 November) before any P3 INIT error was looked at.",
+  "The patch-voltage term is measured by propagation (cells_field_patch_voltage_propagated) and replaces P4's X_ext heuristic, per the post-P2 rule (measure, don't scale): the judged Vm is the charge-based cell vm_ave (Q_cell / sum C_patch), so the within-cell patch spread enters only through the membrane dynamics, which the propagation measures. Evidence: field-01/xext_crosscheck.json (the voltage shifts applied, at most 0.512 uV, equal the blind D run's X_ext to 1.1e-11 relative; their effect cancels within each cell).",
+  "BETSE's GJ block multiplies the stored gate state; Cells' junction availability the conductance; they agree here because the block is a full step held to the end of SIM.",
+  "L4 variant (parity-l4-20261111-01): backend terms from the judged CPU run of physical_p3_k_mem_dense.json (/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/judged-01/run/p3-k-mem-dense/layout) and two blind L4 runs (/mnt/workspaces/Cells/parity-l4-20261111-01/blind-A/p3-k-mem/run, /mnt/workspaces/Cells/parity-l4-20261111-01/blind-B/p3-k-mem/run) from snapshot c819a4e41e5f61829ee604cfc3081f75408c0da2; the backend term also contains any engine difference between the two snapshots (the engine commits in between are recorded as leaving default trajectories unchanged).",
+  "L4 runs are not bitwise reproducible run to run; cells_l4_run_to_run measures that.",
+  "On the L4 each P3 case runs in its own invocation (INIT, then that case's SIM from its INIT end), so each case writes its own result; the registered CPU run shared one INIT among the four cases (same inputs, checked identical)."
+ ],
+ "cells_run": {
+  "model": "resolved_pump_tissue@3",
+  "solver": "imex_ars222_face_electromigration@1",
+  "field_solver": "capacitive_reduction_gauged_damped_newton@3",
+  "dt_init_s": 0.001,
+  "dt_sim_s": 0.0001,
+  "constants": "CODATA (Cells default)",
+  "sim_start": "Cells' own INIT end state",
+  "backends": [
+   "gpu (L4)"
+  ],
+  "note": "@3 IMEX ARS(2,2,2) with the event controls; field solver @3 as P4. Judged runs on CPU; the Cells-only terms were measured on CPU (blind-01) in the same shared-INIT form",
+  "mapping": "event_world_adapter.py run-resolved: default_world_adapter's resolved_pump_tissue@2 definition as resolved_pump_tissue@3; INIT once (no event fires in INIT; the cases' INIT inputs are checked identical), SIM per case from that INIT end. Controls change only at BETSE update boundaries (integer multiples of the Cells dt) and take BETSE's applied values (pulse at BETSE's update label): Na/K pump availability 1 - pulse on every pump; junction availability 1 - pulse on every junction (a full step held to the end of SIM only); change Na/K mem: one naleak_always_open@1 / kleak_always_open@1 population per target patch, max_permeability = multiplier * Dm_default / tm (Dm_default: BETSE's default-profile Dm, mem_perms), abundance 1, availability pulse"
+ },
+ "discrimination": {
+  "k_mem_vs_none (BETSE)": {
+   "file": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/terms/option_vs_rung1_p3-k-mem-dense.json",
+   "effect_over_tolerance": {
+    "init": {
+     "voltage": 0.0,
+     "cell_concentration": {
+      "Ca": 0.0,
+      "Cl": 0.0,
+      "K": 0.0,
+      "M": 0.0,
+      "Na": 0.0
+     },
+     "ecm_concentration": {
+      "Ca": 0.0,
+      "Cl": 0.0,
+      "K": 0.0,
+      "M": 0.0,
+      "Na": 0.0
+     }
+    },
+    "sim": {
+     "voltage": 112.79366227767845,
+     "cell_concentration": {
+      "Ca": 49.247546247956926,
+      "Cl": 1.4485479342952967,
+      "K": 18.1161853482969,
+      "M": 14.245046364671479,
+      "Na": 0.9978627346509573
+     },
+     "ecm_concentration": {
+      "Ca": 0.0009464489119555688,
+      "Cl": 0.0008331480199817603,
+      "K": 0.09843467485675811,
+      "M": 0.0008593926891064816,
+      "Na": 0.0016113270768125239
+     }
+    }
+   }
+  },
+  "cells_only: p3-k-mem-dense vs default-world-mammal-dense (blind D)": {
+   "file": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/blind-01/D",
+   "effect_over_tolerance": {
+    "init": {
+     "voltage": 0.0,
+     "cell_concentration": {
+      "Ca": 0.0,
+      "Cl": 0.0,
+      "K": 0.0,
+      "M": 0.0,
+      "Na": 0.0
+     },
+     "ecm_concentration": {
+      "Ca": 0.0,
+      "Cl": 0.0,
+      "K": 0.0,
+      "M": 0.0,
+      "Na": 0.0
+     }
+    },
+    "sim": {
+     "voltage": 112.74169865446737,
+     "cell_concentration": {
+      "Ca": 49.28863256175172,
+      "Cl": 1.4509090574086256,
+      "K": 18.109921414065976,
+      "M": 14.274245840937178,
+      "Na": 0.9991113121163432
+     },
+     "ecm_concentration": {
+      "Ca": 0.002399632010772835,
+      "Cl": 0.010129043462233006,
+      "K": 0.08482167187754898,
+      "M": 0.008867158107169221,
+      "Na": 0.009894012778389687
+     }
+    }
+   }
+  }
+ },
+ "discrimination_ratio": {
+  "effect": "k_mem_vs_none (BETSE)",
+  "definition": "the event's own effect in plain BETSE (max over samples and phase end, interior ECM) divided by this protocol's tolerance, per phase and quantity (ion); ions at the 1e-12 floor (immobile P) are left out; INIT has no event (ratio 0 by design)",
+  "init": {
+   "voltage": 0.0,
+   "cell_concentration": {
+    "Ca": 0.0,
+    "Cl": 0.0,
+    "K": 0.0,
+    "M": 0.0,
+    "Na": 0.0
+   },
+   "ecm_concentration": {
+    "Ca": 0.0,
+    "Cl": 0.0,
+    "K": 0.0,
+    "M": 0.0,
+    "Na": 0.0
+   }
+  },
+  "sim": {
+   "voltage": 112.79366227767845,
+   "cell_concentration": {
+    "Ca": 49.247546247956926,
+    "Cl": 1.4485479342952967,
+    "K": 18.1161853482969,
+    "M": 14.245046364671479,
+    "Na": 0.9978627346509573
+   },
+   "ecm_concentration": {
+    "Ca": 0.0009464489119555688,
+    "Cl": 0.0008331480199817603,
+    "K": 0.09843467485675811,
+    "M": 0.0008593926891064816,
+    "Na": 0.0016113270768125239
+   }
+  }
+ },
+ "non_discriminating": [
+  "init/voltage",
+  "init/cell_concentration/Ca",
+  "init/cell_concentration/Cl",
+  "init/cell_concentration/K",
+  "init/cell_concentration/M",
+  "init/cell_concentration/Na",
+  "init/ecm_concentration/Ca",
+  "init/ecm_concentration/Cl",
+  "init/ecm_concentration/K",
+  "init/ecm_concentration/M",
+  "init/ecm_concentration/Na",
+  "sim/cell_concentration/Na",
+  "sim/ecm_concentration/Ca",
+  "sim/ecm_concentration/Cl",
+  "sim/ecm_concentration/K",
+  "sim/ecm_concentration/M",
+  "sim/ecm_concentration/Na"
+ ],
+ "non_discriminating_rule": "Quantities listed here (ratio <= 1) are still judged, but the event's effect does not exceed their tolerance, so no claim about the event may rest on them.",
+ "status": "REGISTERED L4 variant (lead, main, 11 November 2026, before any judged L4 run): numbers from the registered protocol's derivation plus measured Cells-vs-Cells backend terms; no L4 Cells-vs-BETSE difference has been computed. To be committed by the lead before any judged L4 run.",
+ "event_timing": {
+  "term": 0.0,
+  "reason": "Cells' controls change at BETSE's update boundaries (integer multiples of the Cells dt) and take BETSE's applied values (pulse at BETSE's update labels, exactly 0 or 1 here); the emulator with the same values reproduces plain BETSE to roundoff (emulator-01/check-comparison), and BETSE's own histories show the event at update 50 (and 250)",
+  "sensitivity_reported_not_summed": {
+   "event_clock_nominal_vs_betse": {
+    "init": {
+     "voltage": 0.0,
+     "cell_concentration": {
+      "Ca": 0.0,
+      "Cl": 0.0,
+      "K": 0.0,
+      "M": 0.0,
+      "Na": 0.0,
+      "P": 0.0
+     },
+     "ecm_concentration": {
+      "Ca": 0.0,
+      "Cl": 0.0,
+      "K": 0.0,
+      "M": 0.0,
+      "Na": 0.0,
+      "P": 0.0
+     }
+    },
+    "sim": {
+     "voltage": 1.711459038590199e-05,
+     "cell_concentration": {
+      "Ca": 6.503112896920747e-05,
+      "Cl": 8.437882428082942e-09,
+      "K": 2.6879899922840067e-08,
+      "M": 3.0174229316794307e-09,
+      "Na": 8.597270176252901e-09,
+      "P": 0.0
+     },
+     "ecm_concentration": {
+      "Ca": 7.753864280910134e-10,
+      "Cl": 4.693350086209573e-10,
+      "K": 1.0861701153497016e-06,
+      "M": 4.500044486640983e-10,
+      "Na": 8.612708023215236e-10,
+      "P": 0.0
+     }
+    }
+   },
+   "event_shift_one_update": {
+    "init": {
+     "voltage": 0.0,
+     "cell_concentration": {
+      "Ca": 0.0,
+      "Cl": 0.0,
+      "K": 0.0,
+      "M": 0.0,
+      "Na": 0.0,
+      "P": 0.0
+     },
+     "ecm_concentration": {
+      "Ca": 0.0,
+      "Cl": 0.0,
+      "K": 0.0,
+      "M": 0.0,
+      "Na": 0.0,
+      "P": 0.0
+     }
+    },
+    "sim": {
+     "voltage": 1.834318293485876e-05,
+     "cell_concentration": {
+      "Ca": 0.00012304057681186752,
+      "Cl": 1.4641472171041257e-08,
+      "K": 2.8826417115521083e-08,
+      "M": 5.0587606998086754e-09,
+      "Na": 1.514798734326126e-08,
+      "P": 0.0
+     },
+     "ecm_concentration": {
+      "Ca": 1.439463281651231e-09,
+      "Cl": 8.427293238656482e-10,
+      "K": 1.1816015242496533e-06,
+      "M": 8.648046192288738e-10,
+      "Na": 1.627435976361092e-09,
+      "P": 0.0
+     }
+    }
+   }
+  },
+  "emulator_vs_betse_check": {
+   "protocol": "validation/betse/protocols/emulator_p3_events_dense.json",
+   "summary": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/emulator-01/check-comparison/p3-k-mem-dense/summary.json",
+   "init/vm_time": "pass: worst abs error 4.53e-13 (tol 1e-09); history max at t=3.23 s {'membranes': 463, 'owner_cell': 81}; reference change 0.0222 V",
+   "init/cc_time": "pass: worst rel error 6.23e-12 (tol 1e-11); history max at t=0.47 s {'ions': 3, 'ion': 'Ca', 'cells': 65}; reference change 0.247 mol/m^3",
+   "init/cc_env_time": "pass: worst rel error 8.91e-16 (tol 1e-11); history max at t=4.49 s {'ions': 1, 'ion': 'K', 'environment': 464}; reference change 0.0351 mol/m^3",
+   "sim/vm_time": "pass: worst abs error 3.12e-13 (tol 1e-09); history max at t=0.0273 s {'membranes': 577, 'owner_cell': 101}; reference change 0.00338 V",
+   "sim/cc_time": "pass: worst rel error 1.25e-12 (tol 1e-11); history max at t=0.035 s {'ions': 3, 'ion': 'Ca', 'cells': 166}; reference change 0.0017 mol/m^3",
+   "sim/cc_env_time": "pass: worst rel error 5.36e-16 (tol 1e-11); history max at t=0.035 s {'ions': 1, 'ion': 'K', 'environment': 263}; reference change 0.00098 mol/m^3"
+  }
+ },
+ "betse_step_order_check": {
+  "file": "/mnt/workspaces/Cells/parity-p3-interventions-20261110-01/protocols/order_check.json",
+  "rule": "The step term of all four P3 cases is the emulator's dt1-dt10 difference x 10/9 (first order).\nCheck: on the most demanding case, with a dt100 base, the observed order\n    p = log10( |dt1 - dt10| / |dt10 - dt100| )\nmust lie in 0.9-1.1 for every judged entry (phase, quantity, ion) whose step term is at least\n10% of that entry's sum of measured terms (the pinned 10% rule: smaller entries cannot move\ntheir tolerance by more than that). Entries with a zero dt10-dt100 difference are reported.\nIf any checked entry is outside the window, the step term of all four cases must come from\ndt1-dt100 (dt100 runs for every case) and the recipes are regenerated; recorded either way.\nUsage: order_check.py RUN_DIR   (PYTHONPATH = RUN_DIR/source/src:RUN_DIR/source)",
+  "verdict": "pass: dt1-dt10 x 10/9 stands for all four cases",
+  "failed_entries": 0
+ },
+ "limits": [
+  "BETSE's own step error is measured through the event emulator (proven equal to plain BETSE to roundoff on these cases: SIM Vm 3.2e-13 V), not by a plain-BETSE fine reference; in P4 the plain-BETSE dense-vs-fine pair agreed with the emulator's dt1-dt100 pair within 2% (parity-rung2-4-20261109-01/emulator-01).",
+  "Step term dt1-dt10 x 10/9 (first order): the order check on p3-na-mem-gj-block-dense (pass: dt1-dt10 x 10/9 stands for all four cases) observed orders 0.996-1.086 on the checked entries (window 0.9-1.1).",
+  "One seeded geometry; one Spot (19 cells); events in the 35-ms SIM only; ECM concentrations do not discriminate any event in that window.",
+  "The GJ block is a full step held to the end of SIM; BETSE's ramps, partial blocks and release are not represented (BETSE blocks the stored gate state)."
+ ],
+ "reported_phases": [
+  "init"
+ ],
+ "base_protocol": {
+  "id": "physical-p3-k-mem-dense",
+  "path": "/mnt/workspaces/Cells/parity-l4-20261111-01/source/validation/betse/protocols/physical_p3_k_mem_dense.json",
+  "sha256": "c4dffe588f8333829ba67e82d4ec8abe4c732fea5257a7830d26b83df18839e9"
+ }
+}

@@ -1,0 +1,450 @@
+{
+ "schema": "cells.betse_comparison_protocol@1",
+ "id": "physical-p4-kv1p5-kleak-dense-l4",
+ "purpose": "Backend variant of the registered protocol physical-p4-kv1p5-kleak-dense for the Cells backend gpu (L4): same case, observables, phases, mapping and tolerance derivation, plus measured backend terms (tolerance_derivation.backend_terms). The registered purpose follows. Rung 4 (P4, network ion channels): judge Cells' own physics (resolved_pump_tissue@3 with one kv1p5_mh@1 population (P = 1e-15 / 7.5e-9 = 1.333e-7 m/s) then one kleak_always_open@1 population per membrane, abundance 1) on the rung-1 mammal default world against the plain-BETSE case parity-rung2-4-20261109-01/betse-reference/p4-kv1p5-kleak-dense (general network with only these channels, no biomolecules). Tolerances by the rung-1 v2 method; Cells-only terms from blind @3 runs at 1 ms and 0.5 ms INIT (field solver @3).",
+ "betse_case": "p4-kv1p5-kleak-dense",
+ "phases": [
+  "init",
+  "sim"
+ ],
+ "time_alignment_atol_s": 1e-09,
+ "min_common_samples": 1,
+ "compare_final": true,
+ "observables": {
+  "vm_time": {
+   "final": "vm",
+   "tolerance": "voltage"
+  },
+  "vm_ave_time": {
+   "final": "vm_ave",
+   "tolerance": "voltage"
+  },
+  "cc_time": {
+   "final": "cc_cells",
+   "tolerance": "cell_concentration"
+  },
+  "cc_env_time": {
+   "final": "cc_env",
+   "tolerance": "ecm_concentration",
+   "exclude": "grid_boundary_ring"
+  },
+  "venv_time": {
+   "final": "v_env",
+   "tolerance": "voltage",
+   "judged": false
+  },
+  "diag_*": {
+   "judged": false
+  }
+ },
+ "tolerance_quantities": {
+  "voltage": {
+   "kind": "abs",
+   "units": "V"
+  },
+  "cell_concentration": {
+   "kind": "rel",
+   "units": "1"
+  },
+  "ecm_concentration": {
+   "kind": "rel",
+   "units": "1"
+  }
+ },
+ "tolerance_classes": {
+  "physical_route_vs_betse_10ms_init": {
+   "voltage": {
+    "init": 0.003,
+    "sim": 1e-05
+   },
+   "cell_concentration": {
+    "init": {
+     "by_ion": {
+      "Ca": 0.5,
+      "Cl": 2e-05,
+      "K": 5e-06,
+      "M": 2e-06,
+      "Na": 2e-05,
+      "P": 1e-12
+     }
+    },
+    "sim": {
+     "by_ion": {
+      "Ca": 0.0003,
+      "Cl": 2e-06,
+      "K": 2e-06,
+      "M": 8e-07,
+      "Na": 2e-05,
+      "P": 1e-12
+     }
+    }
+   },
+   "ecm_concentration": {
+    "init": {
+     "by_ion": {
+      "Ca": 0.0003,
+      "Cl": 0.0002,
+      "K": 0.001,
+      "M": 0.0002,
+      "Na": 0.0002,
+      "P": 1e-12
+     }
+    },
+    "sim": {
+     "by_ion": {
+      "Ca": 0.0003,
+      "Cl": 0.0002,
+      "K": 0.0009,
+      "M": 0.0002,
+      "Na": 0.0002,
+      "P": 1e-12
+     }
+    }
+   }
+  }
+ },
+ "verdict_class": "physical_route_vs_betse_10ms_init",
+ "tolerance_derivation": {
+  "method": "3 x (sum of measured difference terms), rounded up to one significant figure; per ion for concentrations (a zero sum gets the floor 1e-12)",
+  "tool": "validation/betse/protocol_tolerances.py",
+  "recipe": "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/protocols/recipe_p4_kv1p5_kleak_dense.json",
+  "inputs": "/mnt/workspaces/Cells/parity-rung2-4-20261109-02/protocols/derived_p4_kv1p5_kleak_dense.json",
+  "terms": [
+   "X_ext_within_cell_patch_voltage_spread",
+   "betse_init_step",
+   "calcium_pump_law_cells_vs_betse",
+   "cells_cpu_vs_l4_backend",
+   "cells_exterior_field_boltzmann_response",
+   "cells_l4_run_to_run",
+   "cells_numerics_ars222",
+   "conservative_compact_ecm_faces_at_dt_over_100",
+   "constants_codata_vs_betse",
+   "exterior_field_law_bound_ecm_drift_off",
+   "physical_time_gate_and_no_concentration_lag"
+  ],
+  "provisional_terms": [],
+  "largest_term": {
+   "cell_concentration": {
+    "init": "betse_init_step",
+    "sim": "cells_exterior_field_boltzmann_response"
+   },
+   "ecm_concentration": {
+    "init": "conservative_compact_ecm_faces_at_dt_over_100",
+    "sim": "conservative_compact_ecm_faces_at_dt_over_100"
+   },
+   "voltage": {
+    "init": "betse_init_step",
+    "sim": "constants_codata_vs_betse"
+   }
+  },
+  "sums_before_margin": {
+   "voltage": {
+    "init": 0.0006831263568244025,
+    "sim": 3.2017385332682355e-06
+   },
+   "cell_concentration": {
+    "init": {
+     "Ca": 0.13816401926116514,
+     "Cl": 4.030223536688776e-06,
+     "K": 1.5861975989056564e-06,
+     "M": 5.054182819154775e-07,
+     "Na": 5.4836450712222945e-06,
+     "P": 0.0
+    },
+    "sim": {
+     "Ca": 9.508187494752667e-05,
+     "Cl": 4.810083747558628e-07,
+     "K": 4.3377623037377785e-07,
+     "M": 2.513041389089451e-07,
+     "Na": 4.758118431572576e-06,
+     "P": 0.0
+    }
+   },
+   "ecm_concentration": {
+    "init": {
+     "Ca": 8.775889578999045e-05,
+     "Cl": 4.46711078173938e-05,
+     "K": 0.00032894695597683805,
+     "M": 4.73398798479206e-05,
+     "Na": 5.483026970793071e-05,
+     "P": 0.0
+    },
+    "sim": {
+     "Ca": 7.963206432881715e-05,
+     "Cl": 4.3277417358943174e-05,
+     "K": 0.00029673345154508825,
+     "M": 4.7267403386292075e-05,
+     "Na": 5.380881019605823e-05,
+     "P": 0.0
+    }
+   }
+  },
+  "backend_terms": {
+   "rule": "new sum = registered sums_before_margin + these terms; new tolerance = max(registered tolerance, 3 x new sum rounded up to one significant figure, floor 1e-12)",
+   "terms": {
+    "cells_cpu_vs_l4_backend": {
+     "layouts": [
+      "/mnt/workspaces/Cells/parity-rung2-4-20261109-03/p4kv/run/layout",
+      "/mnt/workspaces/Cells/parity-l4-20261111-01/blind-A/p4-kv1p5-kleak/run/layout"
+     ],
+     "role": "judged CPU run vs blind L4 run A",
+     "values": {
+      "init": {
+       "voltage": 4.73232564246473e-15,
+       "cell_concentration": {
+        "Na": 1.1943782209613404e-15,
+        "K": 2.0447487475394786e-16,
+        "Cl": 4.426034393602493e-16,
+        "Ca": 9.08055186578214e-14,
+        "P": 0.0,
+        "M": 2.9621233409391146e-16
+       },
+       "ecm_concentration": {
+        "Na": 5.880350012393096e-16,
+        "K": 7.113111667451184e-16,
+        "Cl": 6.178953932911648e-16,
+        "Ca": 2.220582712043105e-16,
+        "P": 0.0,
+        "M": 4.900291912493489e-16
+       }
+      },
+      "sim": {
+       "voltage": 4.385380947269368e-15,
+       "cell_concentration": {
+        "Na": 1.3437478797068048e-15,
+        "K": 4.086786494995127e-16,
+        "Cl": 4.4241911286679933e-16,
+        "Ca": 8.400998012513058e-14,
+        "P": 0.0,
+        "M": 2.961552954316092e-16
+       },
+       "ecm_concentration": {
+        "Na": 3.9202127762350207e-16,
+        "K": 5.33206938042145e-16,
+        "Cl": 3.707369268305967e-16,
+        "Ca": 4.440934841587986e-16,
+        "P": 0.0,
+        "M": 3.6752072144635756e-16
+       }
+      }
+     }
+    },
+    "cells_l4_run_to_run": {
+     "layouts": [
+      "/mnt/workspaces/Cells/parity-l4-20261111-01/blind-A/p4-kv1p5-kleak/run/layout",
+      "/mnt/workspaces/Cells/parity-l4-20261111-01/blind-B/p4-kv1p5-kleak/run/layout"
+     ],
+     "role": "blind L4 run A vs blind L4 run B",
+     "values": {
+      "init": {
+       "voltage": 2.914335439641036e-16,
+       "cell_concentration": {
+        "Na": 2.9834001531643413e-16,
+        "K": 2.0444373580460888e-16,
+        "Cl": 2.219665646374875e-16,
+        "Ca": 4.481134588241616e-15,
+        "P": 0.0,
+        "M": 2.961511324545616e-16
+       },
+       "ecm_concentration": {
+        "Na": 5.879826632400946e-16,
+        "K": 7.10822434361573e-16,
+        "Cl": 6.17894144951318e-16,
+        "Ca": 2.22058271857409e-16,
+        "P": 0.0,
+        "M": 4.900212680886626e-16
+       }
+      },
+      "sim": {
+       "voltage": 2.0122792321330962e-16,
+       "cell_concentration": {
+        "Na": 2.9795223769713997e-16,
+        "K": 2.0437987271459176e-16,
+        "Cl": 2.2149978627769746e-16,
+        "Ca": 2.9835169201206206e-15,
+        "P": 0.0,
+        "M": 2.9615395386558357e-16
+       },
+       "ecm_concentration": {
+        "Na": 3.920198851738576e-16,
+        "K": 5.331054783325979e-16,
+        "Cl": 3.7071790339780883e-16,
+        "Ca": 4.4408485069130354e-16,
+        "P": 0.0,
+        "M": 4.900276286041099e-16
+       }
+      }
+     }
+    }
+   },
+   "registered_tolerance_reproduced_from_sums": true,
+   "not_reproduced": [],
+   "changed": []
+  }
+ },
+ "observable_mapping": "BETSE vm in this world is cell charge / (cm * sum mem_sa), uniform within a cell (Phi_b = 0; v_env not subtracted; sim.py:2029). Cells vm_ave = Q_cell / sum C_patch with C_patch = cm * mem_sa, broadcast to membranes for vm. Patch voltages and exterior potentials are diag_* arrays, reported only. Boundary-ring ECM sites are excluded: BETSE resets them each step, the resolved model holds them as reservoirs.",
+ "notes": [
+  "Reported only: venv_time (BETSE's screened, smoothed estimate has no Cells counterpart) and Cells diag_* arrays.",
+  "Gate open fraction is not in the comparison layout and is not judged.",
+  "Emulator terms reused from parity-rung2-4-20261109-01/emulator-01 (BETSE-order kernel, unaffected by the field solver); the network runner reproduces those runs from this snapshot (emulator-01/p4kv-dt1_vs_20261109-01.json).",
+  "L4 variant (parity-l4-20261111-01): backend terms from the judged CPU run of physical_p4_kv1p5_kleak_dense.json (/mnt/workspaces/Cells/parity-rung2-4-20261109-03/p4kv/run/layout) and two blind L4 runs (/mnt/workspaces/Cells/parity-l4-20261111-01/blind-A/p4-kv1p5-kleak/run, /mnt/workspaces/Cells/parity-l4-20261111-01/blind-B/p4-kv1p5-kleak/run) from snapshot c819a4e41e5f61829ee604cfc3081f75408c0da2; the backend term also contains any engine difference between the two snapshots (the engine commits in between are recorded as leaving default trajectories unchanged).",
+  "L4 runs are not bitwise reproducible run to run; cells_l4_run_to_run measures that."
+ ],
+ "cells_run": {
+  "model": "resolved_pump_tissue@3",
+  "solver": "imex_ars222_face_electromigration@1",
+  "field_solver": "capacitive_reduction_gauged_damped_newton@3",
+  "dt_init_s": 0.001,
+  "dt_sim_s": 0.0001,
+  "constants": "CODATA (Cells default)",
+  "sim_start": "Cells' own INIT end state",
+  "backends": [
+   "gpu (L4)"
+  ],
+  "note": "@3 IMEX ARS(2,2,2) with exponential stage gates (exponential_mean_rate_linear_target_gates@1); field solver @3 because @2 refuses the pinned 0.5 ms runs at its rounding floor. Judged runs on CPU; the Cells-only terms were measured on the L4 (blind-01), which differs from CPU only at rounding level",
+  "mapping": "network_world_adapter.py run-resolved (NETWORK_RESOLVED): one population per membrane patch and network channel, Kv1p5 -> kv1p5_mh@1, KLeak -> kleak_always_open@1, max_permeability = max Dm / tm, abundance 1, permeant K (1.0); availability 1 (0 in INIT for 'init active: false'); gates (m_inf, h_inf)(0 V) in INIT and (m_inf, h_inf)(Cells' INIT-end patch Vm) at the SIM handoff (BETSE re-reads the network at SIM start: an initial condition of the experiment)"
+ },
+ "discrimination": {
+  "kv1p5_given_kleak (BETSE)": {
+   "option_term": {
+    "file": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/emulator-01/option_kleak_vs_kv1p5_kleak.json"
+   },
+   "effect_over_tolerance": {
+    "init": {
+     "voltage": 0.8076687646873595,
+     "cell_concentration": {
+      "Ca": 0.09974512915113486,
+      "Cl": 13.325802552582976,
+      "K": 14.876660623685755,
+      "M": 23.48006127357298,
+      "Na": 32.50910962515215
+     },
+     "ecm_concentration": {
+      "Ca": 0.0022925803988197943,
+      "Cl": 0.005392578806801317,
+      "K": 0.29378735175353554,
+      "M": 0.024670558073931467,
+      "Na": 0.05595800918635673
+     }
+    },
+    "sim": {
+     "voltage": 248.23867419531476,
+     "cell_concentration": {
+      "Ca": 167.9808457881069,
+      "Cl": 134.5251736755768,
+      "K": 37.60204612292083,
+      "M": 59.26881571256924,
+      "Na": 32.82392653436784
+     },
+     "ecm_concentration": {
+      "Ca": 0.0022809344933046377,
+      "Cl": 0.00540019051458663,
+      "K": 0.3308801732316832,
+      "M": 0.024768844508742942,
+      "Na": 0.05615296125960299
+     }
+    }
+   }
+  },
+  "network_vs_none (BETSE)": {
+   "option_term": {
+    "file": "/mnt/workspaces/Cells/parity-rung2-4-20261109-01/terms/option_vs_rung1_p4-kv1p5-kleak-dense.json"
+   },
+   "effect_over_tolerance": {
+    "init": {
+     "voltage": 8.455267381735476,
+     "cell_concentration": {
+      "Ca": 1.824126613208172,
+      "Cl": 214.4622724474475,
+      "K": 188.25237584504882,
+      "M": 332.47521107740465,
+      "Na": 406.24669710000853
+     },
+     "ecm_concentration": {
+      "Ca": 0.026846530729892473,
+      "Cl": 0.07776763301199748,
+      "K": 2.9543925320746887,
+      "M": 0.29274743719729673,
+      "Na": 0.5663668657179326
+     }
+    },
+    "sim": {
+     "voltage": 2451.363611340367,
+     "cell_concentration": {
+      "Ca": 2571.4971375409154,
+      "Cl": 2159.693566797764,
+      "K": 473.8097635800082,
+      "M": 837.1783197556364,
+      "Na": 409.19038126551163
+     },
+     "ecm_concentration": {
+      "Ca": 0.018565166365930013,
+      "Cl": 0.06781115038503445,
+      "K": 3.2869343528781783,
+      "M": 0.2930272276270285,
+      "Na": 0.5666275836224727
+     }
+    }
+   }
+  }
+ },
+ "discrimination_ratio": {
+  "effect": "kv1p5_given_kleak (BETSE)",
+  "definition": "the option's own effect (max over samples and phase end, interior ECM) divided by this protocol's tolerance, per phase and quantity (ion); ions at the 1e-12 floor (immobile P) are left out",
+  "init": {
+   "voltage": 0.8076687646873595,
+   "cell_concentration": {
+    "Ca": 0.09974512915113486,
+    "Cl": 13.325802552582976,
+    "K": 14.876660623685755,
+    "M": 23.48006127357298,
+    "Na": 32.50910962515215
+   },
+   "ecm_concentration": {
+    "Ca": 0.0022925803988197943,
+    "Cl": 0.005392578806801317,
+    "K": 0.29378735175353554,
+    "M": 0.024670558073931467,
+    "Na": 0.05595800918635673
+   }
+  },
+  "sim": {
+   "voltage": 248.23867419531476,
+   "cell_concentration": {
+    "Ca": 167.9808457881069,
+    "Cl": 134.5251736755768,
+    "K": 37.60204612292083,
+    "M": 59.26881571256924,
+    "Na": 32.82392653436784
+   },
+   "ecm_concentration": {
+    "Ca": 0.0022809344933046377,
+    "Cl": 0.00540019051458663,
+    "K": 0.3308801732316832,
+    "M": 0.024768844508742942,
+    "Na": 0.05615296125960299
+   }
+  }
+ },
+ "non_discriminating": [
+  "init/voltage",
+  "init/cell_concentration/Ca",
+  "init/ecm_concentration/Ca",
+  "init/ecm_concentration/Cl",
+  "init/ecm_concentration/K",
+  "init/ecm_concentration/M",
+  "init/ecm_concentration/Na",
+  "sim/ecm_concentration/Ca",
+  "sim/ecm_concentration/Cl",
+  "sim/ecm_concentration/K",
+  "sim/ecm_concentration/M",
+  "sim/ecm_concentration/Na"
+ ],
+ "non_discriminating_rule": "Quantities listed here (ratio <= 1) are still judged, but the option's effect does not exceed their tolerance, so no claim about the option may rest on them.",
+ "status": "REGISTERED L4 variant (lead, main, 11 November 2026, before any judged L4 run): numbers from the registered protocol's derivation plus measured Cells-vs-Cells backend terms; no L4 Cells-vs-BETSE difference has been computed. To be committed by the lead before any judged L4 run.",
+ "base_protocol": {
+  "id": "physical-p4-kv1p5-kleak-dense",
+  "path": "/mnt/workspaces/Cells/parity-l4-20261111-01/source/validation/betse/protocols/physical_p4_kv1p5_kleak_dense.json",
+  "sha256": "f4d447b7b9ad1b0a427d49842da970d4458490028cc7711ee387463ec55ce834"
+ }
+}
