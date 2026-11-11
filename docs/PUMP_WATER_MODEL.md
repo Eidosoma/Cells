@@ -48,8 +48,12 @@ For the IMEX solvers the step is the Strang splitting
 
 - **I_dt** is @3's own `checked_step`, at the volumes left by the first half, frozen
   over the ionic step. @3's code is called, never copied, so @3's fixes apply here
-  unchanged. An optimization barrier keeps @3's step compiled as a unit; it changes
-  the schedule, not the arithmetic.
+  unchanged.
+- **The optimization barrier.** `jax.lax.optimization_barrier` wraps @3's step,
+  inputs and outputs, so XLA compiles it as one unit. It changes the schedule, never
+  the arithmetic. Its purpose is bitwise water-off equivalence with @3 under default
+  XLA flags (see Equivalence below). Its cost is measured as water-off against @3
+  alone on the 825-node world.
 - **W_h** advances the volumes at frozen amounts by Heun's method.
 - **Why the result is consistent.** The two pieces act on disjoint variables, so:
   - a zero of the full right-hand side is a fixed point of every piece, and so of

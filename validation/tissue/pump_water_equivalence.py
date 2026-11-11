@@ -11,13 +11,14 @@ than a unit test:
   every @3 state field, observation and check diagnostic must be bitwise equal,
   and every water field exactly zero;
 * uncompiled (jit off), ARS(2,2,2) over --eager-steps steps: the same;
-* cost: wall time per step of @3 and of the water model with water open
-  (closed-tissue water on the finite squares, a cost measurement only: that
-  configuration is not a qualified water arm).
+* cost: execution time of the compiled water-off runs against @3 alone (the cost
+  of the split step and its optimization barrier), and of @3 against the water
+  model with water open (closed-tissue water on the finite squares, a cost
+  measurement only: that configuration is not a qualified water arm).
 
 Writes result.json (verdict and per-case records) or failure.json (traceback).
 Usage: python -m validation.tissue.pump_water_equivalence --output DIR
-       [--steps 1200] [--eager-steps 3] [--cost-steps 200]
+       [--steps 1200] [--eager-steps 3] [--cost-steps 200] [--cost-repeats 3]
 """
 
 import argparse
@@ -79,6 +80,36 @@ def compare(reference, result):
     return record
 
 
+def water_off_cost(cases):
+    """Compiled execution time of each water-off case against @3 alone."""
+    return {
+        c["case"]: dict(
+            ionic_execute_seconds=c["timings"][0]["execute_seconds"],
+            water_off_execute_seconds=c["timings"][1]["execute_seconds"],
+            ratio=c["timings"][1]["execute_seconds"] / c["timings"][0]["execute_seconds"],
+        )
+        for c in cases
+        if c["case"].startswith("compiled")
+    }
+
+
+def interleaved_cost(steps, repeats):
+    """Water-off against @3 alone, alternating runs (CPU 7 is shared): median times."""
+    reference, water = definitions(imex.ARS222_ID, steps)
+    times = dict(ionic=[], water_off=[])
+    for _ in range(repeats):
+        for key, spec in (("ionic", reference), ("water_off", water)):
+            times[key].append(timed(spec)[1]["execute_seconds"])
+    medians = {k: float(np.median(v)) for k, v in times.items()}
+    return dict(
+        steps=steps,
+        repeats=repeats,
+        execute_seconds=times,
+        median_ratio=medians["water_off"] / medians["ionic"],
+        per_step_ms={k: 1e3 * v / steps for k, v in medians.items()},
+    )
+
+
 def timed(spec):
     started = time.perf_counter()
     result = run(spec)
@@ -91,6 +122,7 @@ def main():
     parser.add_argument("--steps", type=int, default=1200)
     parser.add_argument("--eager-steps", type=int, default=3)
     parser.add_argument("--cost-steps", type=int, default=200)
+    parser.add_argument("--cost-repeats", type=int, default=3)
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
@@ -125,6 +157,8 @@ def main():
             verdict="pass" if all(c["bitwise"] for c in cases) else "fail",
             cases=cases,
             cost=cost,
+            cost_water_off=water_off_cost(cases),
+            cost_water_off_interleaved=interleaved_cost(args.cost_steps, args.cost_repeats),
         )
         (out / "result.json").write_text(json.dumps(result, indent=2) + "\n")
     except Exception:

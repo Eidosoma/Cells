@@ -216,13 +216,58 @@ def p6():
     return dict(definition=raw, observations=values, reference_seconds=seconds)
 
 
+def annotate(predictions):
+    """How close each predicted stationary state, and the D trajectory, come to Vmax.
+
+    A pure function of the computed predictions and their definitions (no new
+    computation). Pf does not enter a stationary state, so the aquaporin arm has
+    the approved arm's states.
+    """
+    out = {}
+    for arm, states in predictions["P2"]["states"].items():
+        raw = predictions["P2"]["definition"]
+        v0 = raw["model"]["cells"][0]["volume_pL"]
+        vmax = raw["model"]["water"]["compartments"][0]["maximum_volume_pL"]
+        out[arm] = [
+            dict(
+                membrane_voltage_V=s["membrane_voltage_V"],
+                volume_ratio=s["volume_ratio"],
+                maximum_ratio=vmax / v0,
+                headroom_to_maximum=vmax / s["volume_pL"] - 1,
+                fraction_of_allowed_swelling=(s["volume_ratio"] - 1) / (vmax / v0 - 1),
+            )
+            for s in states
+        ]
+    out["aquaporin_arm"] = "Pf does not enter stationary states: the approved arm's states apply"
+    trajectory = predictions["P2"].get("from_D")
+    if trajectory is not None:
+        raw = trajectory["definition"]
+        v0 = raw["model"]["cells"][0]["volume_pL"]
+        vmax = raw["model"]["water"]["compartments"][0]["maximum_volume_pL"]
+        peak = max(o["cell_volume_pL"][0] for o in trajectory["observations"].values())
+        out["from_D_trajectory"] = dict(
+            largest_volume_ratio_at_predicted_times=peak / v0, maximum_ratio=vmax / v0
+        )
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
     parser.add_argument("--parts", nargs="*", default=list(PARTS))
+    parser.add_argument(
+        "--annotate",
+        help="Add the D-against-Vmax summary to this predictions.json and write "
+        "predictions-frozen.json into --output (no new computation)",
+    )
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
+    if args.annotate:
+        predictions = json.loads(Path(args.annotate).read_text())
+        predictions["stationary_volume_against_maximum"] = annotate(predictions)
+        (out / "predictions-frozen.json").write_text(json.dumps(predictions, indent=2) + "\n")
+        return
     result = dict(
         reference="validation/tissue/pump_water_reference.py (numpy/scipy, no Cells code)",
         tolerances=dict(radau_rtol=1e-11, atol=1e-15),

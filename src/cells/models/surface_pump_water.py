@@ -31,6 +31,13 @@ its actual state exceeds MAX_WATER_RELAXATION_PER_STEP. Any refused piece
 refuses the whole step (the previous state is returned). With every water
 route closed the flows are exact zeros and @3's step sees exactly @3's inputs.
 RK4 (reference runs) integrates the coupled, unsplit right-hand side.
+
+Compilation. @3's step is wrapped in jax.lax.optimization_barrier (its inputs
+and its outputs) so that XLA compiles it as one unit and does not fuse the
+water arithmetic into it. This changes the schedule only, never the arithmetic.
+It is what makes the water-off run bitwise equal to @3 under default XLA flags:
+without it, fusion and FMA contraction differed in @3's dissipation accumulators
+by about 1 ulp (bitwise again with XLA's algsimp and fusion passes disabled).
 """
 
 from dataclasses import make_dataclass, replace

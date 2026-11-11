@@ -232,6 +232,14 @@ def stationary_phase(predictions):
     return records
 
 
+def consistent(record, bound):
+    """Every step-map fixed-point correction within the bound (or 4x its rounding floor)."""
+    checks = [v for k, v in record.items() if k.startswith("step_map_")]
+    if not checks:
+        return False
+    return all(v["correction"] <= max(bound, 4 * (v["rounding_floor"] or 0.0)) for v in checks)
+
+
 def judge(predictions, protocol, parts):
     tolerances = protocol["tolerances"]
     items = []
@@ -265,6 +273,27 @@ def judge(predictions, protocol, parts):
                 seconds=seconds,
             )
         )
+    if not parts or "P2" in parts:
+        bounds = protocol["stationary"]
+        for record in stationary_phase(predictions):
+            reference = record.get("reference")
+            ok = record["converged"]
+            entry = dict(world="P2_stationary", quantity=record["label"], record=record)
+            if ok:
+                vm = record["state"]["membrane_voltage_V"]["membrane_0"]
+                volume_error = (
+                    abs(record["volume_pL"] - reference["volume_pL"]) / reference["volume_pL"]
+                )
+                voltage_error = abs(vm - reference["membrane_voltage_V"])
+                ok = (
+                    volume_error <= bounds["volume_relative"]
+                    and voltage_error <= bounds["voltage_V"]
+                    and record["identity_relative_error"] <= bounds["identity_relative"]
+                    and consistent(record["consistency"], bounds["step_map_correction"])
+                )
+                entry.update(volume_relative_error=volume_error, voltage_error_V=voltage_error)
+            entry["pass_"] = bool(ok)
+            items.append(entry)
     return dict(
         verdict="pass" if all(i["pass_"] for i in items) else "fail",
         items=items,
