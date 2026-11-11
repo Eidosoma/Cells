@@ -19,15 +19,15 @@ whole-cell integration is ongoing.
 
 One of Cells' central goals is to test the ideas in our
 [*Plastic Heredity*](https://doi.org/10.5281/zenodo.22143269) and
-[*How Forms Become Reconstructible*](https://doi.org/10.5281/zenodo.23327869)
+[*How Patterns Return*](https://doi.org/10.5281/zenodo.23327869)
 preprints in the most biologically and physically realistic simulations we can
 build and verify.
 
-![Cells research goals: ask questions from Plastic Heredity and How Forms Become Reconstructible, model realistic cells and tissues, remove cues and disrupt pathways, and measure memory, inheritance and form.](docs/assets/cells-research-goals.png)
+![Cells research goals: ask questions from Plastic Heredity and How Patterns Return, model realistic cells and tissues, remove cues and disrupt pathways, and measure memory, inheritance and form.](docs/assets/cells-research-goals.png)
 
 - **Plastic Heredity:** When does inherited organisation break, recover or
   persist? What lets an acquired state pass to new carriers and be renewed?
-- **How Forms Become Reconstructible:** How do experience, retained cellular
+- **How Patterns Return:** How do experience, retained cellular
   state and tissue organisation affect which patterns and functions can be
   expressed, repaired or reconstructed?
 

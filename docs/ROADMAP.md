@@ -49,7 +49,7 @@ make unfinished mechanisms compatible.
    source-specific clock semantics separately from physical-time models.
 3. Use BITSEY as the regulatory/ionic reference and reproduce the cellular
    state-writing, transmission, revision and replacement experiments in
-   *How Forms Become Reconstructible*. Start with the corrected-clock lineage
+   *How Patterns Return*. Start with the corrected-clock lineage
    assays below, alongside continuing BETSE work.
 4. Develop assembly coupling as an explicit model hypothesis. Keep finite protein
    material and ionic inventories distinct; use intervention and conservation
@@ -228,7 +228,7 @@ and qualification evidence belong in [Progress](../PROGRESS.md).
 
 ## BITSEY replication
 
-The first target is the Forms programme's corrected-clock BITSEY experiments,
+The first target is the *How Patterns Return* programme's corrected-clock BITSEY experiments,
 with [source versions and provenance](SCIENTIFIC_BASIS.md#betse-and-bitsey-as-complementary-references)
 kept explicit. Existing isolated regulation, the coupled two-cell model and
 independent graph references are starting components; full lineage reproduction
@@ -269,7 +269,7 @@ The later P31/P32 pause studies are separate source campaigns; P32's completion
 on 12 October postdates Forms v0.17. Preserve the original P10/P27/P30 numerical
 failures when selecting their corrected successors. These are externally
 scheduled cellular assays with supplied fresh cells, not autonomous division.
-Agreement with BITSEY equations, reproduction of the Forms extensions and
+Agreement with BITSEY equations, reproduction of the *How Patterns Return* extensions and
 biological validation are separate completion claims; the original cancer
 paper's table/geometry correspondence also remains a separate question.
 

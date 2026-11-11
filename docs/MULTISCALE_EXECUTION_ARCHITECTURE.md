@@ -5,7 +5,7 @@ review: **2026-10-11**. This is the target architecture for
 [multiscale composition](MULTISCALE_DESIGN.md), BETSE calibration of the
 bioelectric layer, [BITSEY regulatory/ionic and lineage replication](ROADMAP.md#bitsey-replication),
 and experiments motivated by *Plastic Heredity* and
-*How Forms Become Reconstructible*. [Progress](../PROGRESS.md) owns run status;
+*How Patterns Return*. [Progress](../PROGRESS.md) owns run status;
 [BETSE coverage](BETSE_CAPABILITY_ROADMAP.md) owns the mechanism inventory.
 
 The existing separation of physical state, observations, numerical methods and
@@ -262,7 +262,7 @@ task or biological result.
 This connects directly to [E04's history challenge](EXPERIMENTS.md#e04-extension-matched-phenotype-different-history)
 and [E09/E11/E12](EXPERIMENTS.md#later-experiments), rather than creating a separate
 polycomputing engine. *Plastic Heredity* asks what is carried and renewed;
-*How Forms Become Reconstructible* adds whether changed carriers/readers can
+*How Patterns Return* adds whether changed carriers/readers can
 restore a function. Multiple readouts alone establish neither.
 
 The assembly layer supplies a candidate substrate with explicit structure and

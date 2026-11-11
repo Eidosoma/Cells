@@ -48,7 +48,7 @@ it does not measure learned burst-to-burst error correction. The paper's damage
 comparison must not become a calibration of our synthetic membrane leak/closure
 law.
 
-For *Plastic Heredity* and *How Forms Become Reconstructible*, this motivates a
+For *Plastic Heredity* and *How Patterns Return*, this motivates a
 test of histories that leave similar present activity but different subsequent
 responses. In a future model we could match baseline burst statistics, apply the
 same new challenge, then selectively restore, freeze or exchange candidate slow

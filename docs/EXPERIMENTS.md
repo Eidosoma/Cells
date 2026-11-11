@@ -66,7 +66,7 @@ are prescribed inputs: they do not demonstrate autonomous damage detection or
 selection of a repair response. Coupled voltage, calcium and channel dynamics
 provide prerequisites on which later explicit sensing/actuation models can build.
 
-For *How Forms Become Reconstructible*, the local **v2.2 working draft** already
+For *How Patterns Return*, the local **v2.2 working draft** already
 distinguishes observer from reader/writer in section 2.1, and explicitly leaves
 autonomous maintenance and valuation open in section 8.3. A possible discussion
 addition, not an amendment made to the manuscript, is:

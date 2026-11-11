@@ -125,7 +125,7 @@ candidates in the detailed model before interpreting recovery. Our
 location and timing need separate margins and a joint criterion. Keep its
 existing cues, readers and registered outcomes fixed; a search is a new assay.
 
-For *Plastic Heredity* and *How Forms Become Reconstructible*, the proposed
+For *Plastic Heredity* and *How Patterns Return*, the proposed
 connection is recovery of function through different underlying configurations.
 External optimization establishes reachability under supplied control. To test
 adaptive reconstruction, add a lawful local controller, remove external help,

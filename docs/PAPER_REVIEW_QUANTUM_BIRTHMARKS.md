@@ -10,7 +10,7 @@ Scarring*](https://doi.org/10.1103/dhzb-28rb), Physical Review X **16**, 031063,
 **Relevant as inspiration for testing retained history, identifying its physical
 carriers, and evaluating reduced models.** For Cells, the useful question is
 whether preparations that look similar now retain differences that predict later
-behaviour. This fits *Plastic Heredity*, *How Forms Become Reconstructible* and
+behaviour. This fits *Plastic Heredity*, *How Patterns Return* and
 the planned two-task assay. The experiments below are proposals, with no assumed
 positive outcome.
 

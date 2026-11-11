@@ -1715,7 +1715,7 @@ Results and retained failures belong in [Progress](../PROGRESS.md).
 existing source comparisons. Joint-state motion, its bookkeeping and this
 mobile-channel/calcium/injury composition are separately specified Cells work.
 They do not establish native BETSE moving-protein trajectory equivalence,
-autonomous anatomical repair, wetlab agreement or the Forms transmission assays.
+autonomous anatomical repair, wetlab agreement or the *How Patterns Return* transmission assays.
 Assembly integration is described below; other mobile channel families remain extensions.
 
 ### Mobile pumps with owned calcium and prescribed repair

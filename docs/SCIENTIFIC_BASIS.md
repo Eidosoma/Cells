@@ -108,7 +108,7 @@ relevant to the Plastic Heredity and Forms experiments.
 simulations; its [capability inventory](BETSE_CAPABILITY_ROADMAP.md) defines the
 comparison scope. **BITSEY** supplies the coupled regulatory/ionic reference and
 the cellular model used for our transmission and replacement extensions in
-*How Forms Become Reconstructible*. Both are active reference choices.
+*How Patterns Return*. Both are active reference choices.
 
 BITSEY is a simplified BETSE-derived simulator. Its
 [own README](https://gitlab.com/grodstein/bitsey/-/blob/b2cb370aaecbc8299f259bc4251d5396c81f19a6/README.md)
@@ -162,7 +162,7 @@ an earlier source version. The navigation review on **2026-10-11** did not repea
 the underlying literature searches or experimental analyses. Individual dated
 reviews below record their own scope.
 
-The Forms preprint is now titled *How Forms Become Reconstructible*. The September
+The Forms preprint was titled *How Forms Become Reconstructible* and, from 11 November 2026, *How Patterns Return*. The September
 orientation below retains the title used at that review.
 
 | Reviewed material | Maintained entry point | Scope |
