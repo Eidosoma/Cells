@@ -611,7 +611,141 @@ def long_sheet_definition(disc_cells, s, dt, end_s, backend, *, written=False):
     x.update(backend=backend, max_steps=end + 8)
     if JUNCTION_HEAT is not None:
         m["junction_heat_booking"] = JUNCTION_HEAT
+    if WATER is not None:
+        raw = water_sheet(raw, len(cells))
     return raw, np.array(disc), dict(on_s=on * dt, off_s=off * dt, end_s=end * dt, dt_s=dt)
+
+
+# ------------------------------------------------------- water arms (development)
+
+# --water selects the volume model for every sheet world this process builds:
+# "water1" is resolved_pump_water@1 (osmotic water, compliant cells, no
+# regulation), "water2" is resolved_pump_water@2 with one KCC-type route per
+# membrane at the red-cell capacity 4 mmol/(L cells h) and steepness s = 1
+# (Lew et al. 1991). Both use the approved heredity water-arm parameters of
+# validation/tissue/pump_water_fixtures.with_water (Pf 3e-3 cm/s, K 60 Pa,
+# P0 40 Pa, bounds 0.5 and 2 V0 with V0 the declared cell volume). A run that
+# reaches a volume bound is refused by the model: a lysis (2 V0) or collapse
+# (0.5 V0) censor.
+WATER = None
+WATER_KINDS = ("water1", "water2")
+KCC_FLUX_MMOL_L_H, KCC_STEEPNESS = 4.0, 1.0
+
+
+def with_volume_model(raw, kind):
+    from validation.tissue import pump_water_fixtures as water
+
+    raw = water.with_water(raw)
+    if kind == "water2":
+        raw = water.with_symport(raw, flux_mmol_L_h=KCC_FLUX_MMOL_L_H, steepness=KCC_STEEPNESS)
+    return raw
+
+
+def water_cell_start(kind):
+    """The engine's stationary H of one sheet cell under the volume model (cached).
+
+    One heredity cell (held bath, ionic background as on the sheet) with the
+    volume model, solved by stationary_continuation_analysis@1 (dense Newton)
+    from the frozen reference H state of that model (validation/tissue/
+    pump_water_predictions.json, P2 approved branch 0; pump_water_kcc_
+    predictions.json, arm red_cell_4-lew_s1 branch 0). A uniform held-bath sheet
+    at this state in every cell is stationary (no junction currents at Vj = 0).
+    """
+    if kind in _WATER_STARTS:
+        return _WATER_STARTS[kind]
+    from cells.analysis import stationary as sa
+    from validation.tissue import pump_water_kcc_qualification as kcc
+
+    predictions = json.loads(
+        (Path(__file__).parent / "pump_water_kcc_predictions.json").read_text()
+    )
+    reference = (
+        predictions["route_free"][0]
+        if kind == "water1"
+        else predictions["arms"]["red_cell_4-lew_s1"]["states"][0]
+    )
+    raw = worlds.ionic_background(fixtures.heredity_cells([H_STATE[:4]], dt=DT))
+    spec = parse_spec(with_volume_model(raw, kind))
+    pb = sa.problem(spec)
+    solution = sa.newton(pb, kcc.guess(pb, reference))
+    if not solution.converged:
+        raise RuntimeError(f"No stationary H for {kind}: {solution.message}")
+    state, p, _ = pb.embed(solution.u)
+    state, p = sa._numpy(state), sa._numpy(p)
+    ids = list(spec.model.species_ids)
+    amounts = {
+        s: float(p.amount_reference[k, 0] + state.amount_increment[k, 0]) for k, s in enumerate(ids)
+    }
+    gates = np.asarray(state.channel_gate)
+    value = dict(
+        kind=kind,
+        amounts_fmol=amounts,
+        volume_pL=float(p.volume[0] + state.volume_increment_pL[0]),
+        reference_volume_pL=float(p.volume[0]),
+        vm_V=sa.describe(pb, solution.u)["membrane_voltage_V"]["membrane_0"],
+        kir_gate=[float(g) for g in gates[:, 0]],
+        nav_gate=[float(g) for g in gates[:, 1]],
+        newton=dict(iterations=solution.iterations, residual_inf_per_s=solution.residual_inf),
+        reference=reference,
+    )
+    _WATER_STARTS[kind] = value
+    return value
+
+
+_WATER_STARTS = {}
+
+
+def water_sheet(raw, cells):
+    """A @3 sheet definition (cells at H, volume V0) under the volume model, every cell at
+    the model's stationary H (water_cell_start): amounts, volume, charge and gates."""
+    start = water_cell_start(WATER)
+    raw = with_volume_model(raw, WATER)
+    m = raw["model"]
+    reference = {c["compartment_id"]: c["reference_volume_pL"] for c in m["water"]["compartments"]}
+    for cell in m["cells"][:cells]:
+        if abs(reference[cell["id"]] - start["reference_volume_pL"]) > 1e-15:
+            raise ValueError("Sheet cells must share the start cell's reference volume")
+        cell["initial_amount_fmol"] = dict(start["amounts_fmol"])
+        cell["volume_pL"] = start["volume_pL"]
+        cell["fixed_charge_equivalent_fmol"] = 0.0
+        cell["initial_charge_C"] = ionic_charge(cell["initial_amount_fmol"])
+    for c in m["channels"]:
+        if c["kinetic_law"] == fixtures.KIR2P1_LAW_ID:
+            c["initial_gate"] = list(start["kir_gate"])
+        elif c["kinetic_law"] == fixtures.NAV1P2_LAW_ID:
+            c["initial_gate"] = list(start["nav_gate"])
+    return raw
+
+
+WATER_PREDICTIONS = dict(
+    kind="cells.heredity_pilot_w1_water_sheet_predictions@1",
+    status="written before the water sheet runs; development analysis, not judged",
+    sources=[
+        "validation/tissue/pump_water_predictions.json (W1, frozen): water stationary states "
+        "of the heredity cell, approved parameters: H -81.3 mV at 0.942 V0, U -41.1 mV at "
+        "1.125 V0, D -17.3 mV at 1.756 V0 (stable; 0.14 V0 headroom to 2 V0); a written D "
+        "start swells 0.75 -> 0.98 pL in 60 s; a lone D cell in an H ring (P4) is lost in 5 s",
+        "validation/tissue/pump_water_kcc_predictions.json (W2, frozen), red_cell_4-lew_s1: "
+        "H -81.4 mV at 0.941 V0; D -18.0 mV at 1.468 V0 (stable)",
+        "heredity-pilot-w1 sheet70 (fixed volume, same sheet, cue and s): every 37-cell disc "
+        "and the 19-cell discs at s 0.6 and 0.3 held 70 min; the 19-cell disc at s 1.0 was "
+        "lost at once 988-993 s after the cue; disc osmotic excess 11.7-12.1% at 70 min",
+    ],
+    arms={
+        "water1, s0.3 and s0.6, 19 and 37": "written and held for 70 min, as in fixed volume",
+        "water1, s1.0, 37": "written and held for 70 min",
+        "water1, s1.0, 19": "written, then lost at once within 70 min (fixed volume: 16.5 min); "
+        "the time differs from fixed volume because loading now swells the cells instead of "
+        "concentrating them, direction not predicted",
+        "water2 (KCC 4, s 1)": "as water1 in every arm: the route's efflux at the H state is "
+        "1.5e-5 fmol/s, and at D-like states a few mM per hour, small against the loading",
+    },
+    volume="H cells stay at their stationary 0.94 V0. D disc cells swell as they load: by "
+    "70 min about +10-15% over their start (the fixed-volume excess, now as volume), about "
+    "1.05-1.10 V0, far below 2 V0; no lysis or collapse censor in any arm; water2's D cells "
+    "swell slightly less than water1's",
+    spontaneous_D_outside_disc="none in any arm",
+)
 
 
 class SheetRecorder:
@@ -621,7 +755,7 @@ class SheetRecorder:
         self.output, self.discs, self.cells = Path(output), discs, cells
         self.output.mkdir(parents=True, exist_ok=True)
         self.snapshots, self.batch = sorted(snapshots), batch
-        self.data = {w: dict(t=[], vm=[], conc=[]) for w in discs}
+        self.data = {w: dict(t=[], vm=[], conc=[], volume=[]) for w in discs}
         self.initial = {}
         self.streams = {w: open(self.output / f"world-{w}.jsonl", "a", buffering=1) for w in discs}
         self.windows = open(self.output / "windows.jsonl", "a", buffering=1)
@@ -634,11 +768,22 @@ class SheetRecorder:
             inside = np.zeros(n, dtype=bool)
             inside[self.discs[wid]] = True
             vm = np.asarray(found.membrane_voltage_V)[:, :n]
-            conc = np.asarray(found.amount)[:, :, :n] / fixtures.HEREDITY_VOLUME_PL
-            osm = conc.sum(axis=1)
+            # Volume models observe each cell's volume; fixed volume is V0 throughout.
+            # Osmotic excess is then the excess of the cell's solute content (osmolarity
+            # times volume) over its own at t = 0: fixed volume, the osmolarity excess;
+            # with water (osmolarity held near the bath's), the swelling it drives.
+            volume = (
+                np.asarray(found.cell_volume_pL)[:, :n]
+                if hasattr(found, "cell_volume_pL")
+                else np.full(vm.shape, fixtures.HEREDITY_VOLUME_PL)
+            )
+            amount = np.asarray(found.amount)[:, :, :n]
+            conc = amount / volume[:, None, :]
+            content = amount.sum(axis=1)
             if wid not in self.initial:
-                self.initial[wid] = osm[0]
-            excess = osm / self.initial[wid] - 1.0
+                self.initial[wid] = content[0]
+            excess = content / self.initial[wid] - 1.0
+            ratio = volume / fixtures.HEREDITY_VOLUME_PL
             for row, t in enumerate(np.asarray(found.times)):
                 d = vm[row] > THRESHOLD_V
                 ex = excess[row][inside]
@@ -665,6 +810,15 @@ class SheetRecorder:
                             cue_availability=float(
                                 np.asarray(found.channel_availability)[row][2 * n :].max()
                             ),
+                            disc_volume_ratio=[
+                                float(ratio[row][inside].min()),
+                                float(ratio[row][inside].max()),
+                            ],
+                            outside_volume_ratio=[
+                                float(ratio[row][~inside].min()),
+                                float(ratio[row][~inside].max()),
+                            ],
+                            max_volume_ratio=float(ratio[row].max()),
                         )
                     )
                     + "\n"
@@ -672,6 +826,7 @@ class SheetRecorder:
                 self.data[wid]["t"].append(float(t))
                 self.data[wid]["vm"].append(vm[row])
                 self.data[wid]["conc"].append(conc[row][:3])
+                self.data[wid]["volume"].append(volume[row])
         self.windows.write(
             json.dumps(
                 dict(
@@ -709,8 +864,9 @@ class SheetRecorder:
                     times_s=np.array(d["t"]),
                     vm_V=np.array(d["vm"]),
                     concentration_mM=np.array(d["conc"]),
+                    volume_pL=np.array(d["volume"]),
                     species=np.array(ION_IDS[:3]),
-                    initial_osmolarity_mM=self.initial.get(wid, np.array([])),
+                    initial_content_fmol=self.initial.get(wid, np.array([])),
                 )
         self.last = time.perf_counter()
 
@@ -728,7 +884,9 @@ def part_longsheet(args):
     output = Path(args.output) / (f"longsheet-{args.label}" if args.label else "longsheet")
     output.mkdir(parents=True, exist_ok=True)
     if not (output / "predictions.json").exists():
-        write_json(output / "predictions.json", LONG_PREDICTIONS)
+        write_json(
+            output / "predictions.json", LONG_PREDICTIONS if WATER is None else WATER_PREDICTIONS
+        )
     cases, members, discs = [], [], {}
     for disc_cells in args.discs:
         for s in args.scales:
@@ -754,13 +912,22 @@ def part_longsheet(args):
         world="validation/stationary/worlds.e07_sheet_definition: 127-cell hexagon, own held "
         "baths, E07 gated junctions at s, homogeneous heredity cells (ionic background), "
         "cue populations on the 37-cell disc's cells",
-        engine_model="resolved_pump_tissue@3 through core/vector_windows.py (device checks)",
+        engine_model=members[0].simulation.to_dict()["model"]["id"]
+        + " through core/vector_windows.py (device checks)",
+        volume_model=WATER,
+        water_start=None if WATER is None else water_cell_start(WATER),
+        kcc=None
+        if WATER != "water2"
+        else dict(flux_mmol_L_h=KCC_FLUX_MMOL_L_H, steepness=KCC_STEEPNESS),
+        junction_heat_booking=JUNCTION_HEAT,
         cases=cases,
         threshold_V=THRESHOLD_V,
         osmotic=dict(
-            excess="cell osmolarity (Na + K + M + P) over its own value at t = 0, minus 1",
+            excess="cell solute content (Na + K + M + P amounts) over its own at t = 0, minus "
+            "1 (fixed volume: the osmolarity excess; with water: what drives the swelling)",
             flag=OSMOTIC_FLAG,
             censor=OSMOTIC_CENSOR,
+            volume_ratio="V / V0, V0 the declared cell volume 0.7505 pL; bounds 0.5 and 2",
         ),
         window_steps=WINDOW_STEPS,
     )
@@ -774,6 +941,23 @@ def part_longsheet(args):
     report["resources"] = resources()
     if failure is not None:
         report["failure"] = failure
+        # A step refusal with a cell at its volume bound is the lysis (2 V0) or collapse
+        # (0.5 V0) censor of the volume models; the last record before it says which.
+        rows = [
+            json.loads(line)
+            for line in (output / "records" / "world-1.jsonl").read_text().splitlines()
+            if line.strip()
+        ]
+        last = rows[-1] if rows else None
+        report["censor"] = (
+            None
+            if WATER is None or last is None
+            else "lysis (volume bound 2 V0)"
+            if last["max_volume_ratio"] >= 0.98 * 2.0
+            else "collapse (volume bound 0.5 V0)"
+            if min(last["disc_volume_ratio"][0], last["outside_volume_ratio"][0]) <= 1.02 * 0.5
+            else None
+        )
         write_json(output / f"failure-{int(time.time())}.json", failure)
     else:
         report.update(timings=result.timings, batch_resources=dict(result.resources))
@@ -1195,6 +1379,12 @@ def summarize_longsheet(output):
             first_flag_s=next((r["t"] for r in records if r["flagged"]), None),
             first_censor_s=next((r["t"] for r in records if r["censored"]), None),
             max_osmotic_excess=max((r["max_osmotic_excess"] for r in records), default=None),
+            max_volume_ratio=max((r.get("max_volume_ratio", 1.0) for r in records), default=None),
+            disc_volume_ratio_at_end=records[-1].get("disc_volume_ratio") if records else None,
+            outside_volume_ratio_at_end=records[-1].get("outside_volume_ratio")
+            if records
+            else None,
+            censor=report.get("censor"),
             last_time_s=records[-1]["t"] if records else None,
             disc_mean_at_end_mM=records[-1]["disc_mean_mM"] if records else None,
             cell_first_H_after_cue_off_s=per_cell,
@@ -2402,9 +2592,10 @@ def main(argv=None):
     parser.add_argument("--replay-until", type=float, help="sheetreplay: continue to this time")
     parser.add_argument("--replay-dt-after", type=float, help="sheetreplay: dt after phase 1")
     parser.add_argument("--junction-heat", help="@3 junction_heat_booking for every world built")
+    parser.add_argument("--water", choices=WATER_KINDS, help="sheet worlds' volume model")
     args = parser.parse_args(argv)
-    global JUNCTION_HEAT
-    JUNCTION_HEAT = args.junction_heat
+    global JUNCTION_HEAT, WATER
+    JUNCTION_HEAT, WATER = args.junction_heat, args.water
     Path(args.output).mkdir(parents=True, exist_ok=True)
     status = 0
     for name in args.parts:
