@@ -14,7 +14,8 @@
   "/mnt/workspaces/Cells/land-p4b-protocols-20261110-01/measure/measured.json",
   "/mnt/workspaces/Cells/land-parity-tools-20261111-01/measure/measured.json",
   "/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/untracked/measured.json",
-  "/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/new-measure/measured.json"
+  "/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/new-measure/measured.json",
+  "/mnt/workspaces/Cells/land-water-20261111-01/new-measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -126,6 +127,14 @@
    "root": "/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/source",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-11T11:13:10+00:00"
+  },
+  {
+   "git_revision": "9c43b368e9baf80a95d95afe8adb78312921e19d",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/land-water-20261111-01/source",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-11T14:21:08+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1172,6 +1181,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_k_anion_symport.py",
+    "seconds": 2.27,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -2770,6 +2787,14 @@
     }
    },
    {
+    "file": "tests/unit/test_stationary_water.py",
+    "seconds": 55.5,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
     "file": "tests/unit/test_surface_active_profile_interventions_dispatch.py",
     "seconds": 63.62,
     "exit_code": 0,
@@ -2856,6 +2881,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_pump_v3_membrane_process.py",
+    "seconds": 59.1,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
     }
    },
    {
@@ -3926,6 +3959,30 @@
    {
     "file": "tests/unit/test_surface_pump_v3_junction_heat.py",
     "seconds": 90.15,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_pump_water.py",
+    "seconds": 90.09,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_pump_water_device_checks.py",
+    "seconds": 90.11,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_pump_water_equivalence.py",
+    "seconds": 90.12,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_pump_water_v2.py",
+    "seconds": 90.1,
     "exit_code": null,
     "counts": {}
    },

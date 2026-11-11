@@ -75,14 +75,36 @@ machine-readable inputs, results, checks and failures.
     run, with or without the junction-heat option (likely atomic scatter-adds).
     Bitwise restart on the GPU would need deterministic XLA ops, whose cost is
     unmeasured. One L4 refusal (pilot-03, 0.047 s) did not reproduce.
+- **Osmotic water and volume qualified and landed (11 November).**
+  - **`resolved_pump_water@1`:** osmotic water and compliant volumes on
+    `resolved_pump_tissue@3`, through a Strang split around @3's own step.
+    - With water off it is bitwise @3 on CPU (single cell, 7-cell sheet, 825-node
+      tissue, vmap).
+    - **W1 judge: 25 of 25 pass,** one run from `628a3d0`, against predictions P1–P6
+      frozen from an independent numpy/scipy reference (`b0ff7e2`). Every trajectory
+      sits at about 1/3 of its tolerance, i.e. the engine's own 1 ms step error. The
+      engine converges on the reference at second order.
+    - **Procedure:** the W1 tolerances were pinned on the agent's branch (`628a3d0`)
+      before the run, but not publicly registered on main first. P5 is judged on
+      volumes and concentrations only (its Vm is constant by construction), as
+      decided before any judged result.
+    - Predictions to compare later, not claims: with water, the heredity D state
+      swells to 1.76 V0 (approved parameters).
+  - **`resolved_pump_water@2`:** adds a KCC-type K⁺/anion symport
+    (`k_anion_symport_mass_action@1`). Its stationary judge passed 24 of 24; D
+    swells 1.1–1.5× instead of 1.76×.
+  - **Global-charge bound:** the ledger now gets the per-step rounding allowance of
+    the other running ledgers, with no trajectory change. Reduced sensitivity: a
+    persistent supply-booking leak is caught only above about 2.5 eps × moved charge
+    per step. Global-charge ratios recorded before and after are not comparable.
+  - **Also:** an opt-in membrane-process hook in @3 (default off, unchanged), and
+    volume blocks in `stationary_continuation_analysis@1` (existing IDs bitwise
+    unchanged).
+  - **Gate:** tier 1+2 from a clean snapshot of the merge (334 files, none changed).
+    15 tier-3 and new test files pass in full.
+  - Evidence: `/mnt/workspaces/Cells/water-volume-pump-20261110-01/` and
+    `/mnt/workspaces/Cells/land-water-20261111-01/`.
 - **In development on branches, not yet on main (11 November):**
-  - **Osmotic water and volume:** `resolved_pump_water@1`, with water off bitwise
-    equal to @3. Its stationary states, the 825-node equivalence and a 1 h drift
-    pass. The dt study and judged run wait on a global-charge rounding-bound fix in
-    `surface_pump.py`.
-  - **Volume regulation:** `resolved_pump_water@2`, a KCC-type K–anion route. Its
-    stationary judge passed 24 of 24 against frozen predictions; D swells 1.1–1.5×
-    instead of 1.76×.
   - **Cell replacement:** `resolved_pump_replacement@1` (G2), with a
     literature-based junction formation law (D139). Stage 1 is built and tested;
     the donor-copy template is being added.
