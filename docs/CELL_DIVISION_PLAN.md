@@ -62,6 +62,41 @@ searches on 11 November established.
 | **Epithelial monolayer, e.g. MDCK** | Yes | Yes, and it matches the vertex-mechanics ladder. One study (Voltron sensor) reports that membrane potential regulates cell density through growth, proliferation and elimination (search result) | Live imaging, cycle reporters, density and voltage data (to verify) | Membrane potential against density, and proliferation after depolarisation. Needs growth and mechanics (MG1–MG3) |
 | **Microbes** (E. coli size "adder", fission yeast size control, B. subtilis biofilm signalling) | Yes | Poorly. Cell walls and turgor, proton-motive force and no gap junctions, so little of the qualified engine applies | The richest division-size datasets (mother machines). Taheri-Araghi 2015 has an erratum and its data location is unconfirmed. The fission-yeast sizer mechanism is contested. B. subtilis membrane-potential memory (Yang et al. 2020, Cell Systems) was seen only through press coverage | Size at birth and division laws; would need a separate physiology |
 
+## Stage 1 result (11 November 2026)
+
+Verification report and sourced tables:
+`/mnt/workspaces/Cells/cell-division-20261111-01/verification/`.
+
+- **Go: Xenopus first.** For 1 to 4 cells there are tabulated means with SDs and n
+  (DiCaprio, French & Sanders 1974, Table I): membrane potential, input resistance,
+  capacitance, junctional resistance and coupling ratio, plus ion activities (de Laat
+  et al. 1974; Gillespie 1983; Slack et al. 1973).
+- **First judged observable:** blastomere membrane potential at 2 and 4 cells in
+  Steinberg's medium (−15.5 ± 1.6 and −16.0 ± 2.4 mV, n = 9 and 10), sampled at the
+  matching cycle phase.
+  - Input resistance from the same embryos calibrates how much of the new membrane
+    reaches the bath.
+  - The junction rule cannot set Em at 2 cells (the blastomeres are symmetric).
+  - A rough estimate gives about −23 mV, so the test can fail.
+  - Capacitance and coupling ratio are set by the area and junction rules, so they
+    are not judged.
+- **The frog parameter set** (76 sourced rows) includes:
+  - an egg of 1.28 mm;
+  - specific capacitance 0.4–0.6 µF/cm²;
+  - old membrane 40–74 kΩ·cm² and new cleavage membrane about 0.4–2 kΩ·cm², more
+    K-selective;
+  - no electrogenic pump detected at first cleavage;
+  - ion activities on stated bases.
+- **BETSE's amphibian profile** is unsourced and mammal-like, so it is only a sanity
+  check.
+- **Conflicts for the design note:**
+  - whether the new membrane differs from the old;
+  - whether the cleft between blastomeres is sealed;
+  - under a sealed cleft, the membrane and junction rules may share a parameter.
+- **Open:** three J Cell Biol papers are readable only through the PMC open-access
+  bucket, which needs the user's approval. The new-membrane area per cleavage was not
+  found.
+
 ## Order of work (lead's ranking under D141)
 
 Both subjects are early embryos, so neither needs growth at first.
