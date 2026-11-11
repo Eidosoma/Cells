@@ -498,7 +498,7 @@ def part_barrier(args):
                         "energies": path.energies,
                         "max_force": float(np.max(path.max_forces)),
                     }
-                    if p0 < theory.P_STAR and seed == 0:
+                    if quick and p0 < theory.P_STAR and seed == 0:
                         tissue = ref.from_definition(
                             {"model": model, "experiment": {"parameter_controls": [{}]}}
                         )
@@ -545,7 +545,7 @@ def part_barrier(args):
         },
     }
     registered = getattr(args, "registered", None)
-    if registered is not None and not quick:
+    if registered is not None:
         differences = []
         for value in registered["barriers"]:
             match = [
@@ -639,7 +639,7 @@ def part_recoil(args):
         **_diagnostics(result),
     }
     x_final = np.asarray(result.final.state.position)[:v]
-    x_ref, f_ref, _ = ref.relax(after, x_cut[:v], gtol=1e-12)
+    x_ref, f_ref, _ = ref.relax(after, x_cut[:v], gtol=1e-12, polish=True)
     shift = np.mean(x_final - x_ref, axis=0)
     d0 = float(np.linalg.norm(d))
     d1 = float(obs.junction_length[-1][junction] - d0)
@@ -937,6 +937,7 @@ def part_tyssue(args):
         {"kind": "static", "name": "static"},
         {"kind": "relax", "name": "relax", "gtol": 1e-12},
         {"kind": "euler", "name": "euler", "dt": EULER_DT, "steps": steps},
+        {"kind": "euler_shipped", "name": "euler_shipped", "dt": EULER_DT, "updates": steps},
         {
             "kind": "euler",
             "name": "euler_cut",
@@ -991,6 +992,13 @@ def part_tyssue(args):
             )
         ),
     }
+    shipped = results["euler_shipped"]
+    out["euler_shipped"] = {
+        "updates_taken": int(shipped["updates_taken"]),
+        "difference_from_exact_euler": float(
+            np.max(np.abs(ty.modulo_box(shipped["position"] - x_euler[:v], tissue.box)))
+        ),
+    }
     area = float(np.linalg.det(tissue.box))
     g_pure = (
         float(stretch[0]["energy"]) + float(stretch[2]["energy"]) - 2 * float(stretch[1]["energy"])
@@ -1013,15 +1021,15 @@ def part_tyssue(args):
     return out
 
 
-PARTS = dict(
+PARTS = dict(  # Cheap parts first.
     theory=part_theory,
+    numerics=part_numerics,
     ground=part_ground,
-    rigidity=part_rigidity,
-    barrier=part_barrier,
     recoil=part_recoil,
     inference=part_inference,
-    numerics=part_numerics,
     tyssue=part_tyssue,
+    rigidity=part_rigidity,
+    barrier=part_barrier,
 )
 
 

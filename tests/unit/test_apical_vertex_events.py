@@ -75,3 +75,21 @@ def test_restart_from_a_written_snapshot_is_bitwise(tmp_path):
     final = load_snapshot(tmp_path / "run" / "checkpoint_final")
     for a, b in zip(whole.final.state, final.checkpoint.state, strict=True):
         np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
+
+
+def test_windowed_run_equals_the_whole_run():
+    from cells.core.windows import WindowPolicy, run_windowed
+
+    definition = honeycomb(
+        displacement=0.05, seed=9, end_time=4.0, observation_times=[0.0, 1.0, 2.5, 4.0], dt=0.125
+    )
+    spec = parse_spec(definition)
+    whole = run(spec)
+    windows = []
+    windowed = run_windowed(spec, WindowPolicy(window_steps=8), sink=windows.append)
+    for a, b in zip(whole.final.state, windowed.final.state, strict=True):
+        np.testing.assert_allclose(np.asarray(a), np.asarray(b), rtol=0, atol=1e-15)
+    energy = np.concatenate([w.observations.energy for w in windows])
+    np.testing.assert_allclose(energy, whole.observations.energy, rtol=1e-15)
+    assert set(windowed.diagnostics) == set(whole.diagnostics)
+    assert all(k.startswith("max_") for k in windowed.diagnostics)

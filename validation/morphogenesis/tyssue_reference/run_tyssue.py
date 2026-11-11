@@ -186,7 +186,8 @@ def run_relax(definition, op, model):
             "ftol": 1e-18,
         },
     )
-    set_positions(sheet, result.x.reshape(shape))
+    flat = newton_polish(sheet, model, result.x, shape, op.get("newton", 4))
+    set_positions(sheet, flat.reshape(shape))
     energy, terms, grad = evaluate(sheet, model)
     return {
         "energy": energy,
@@ -194,8 +195,48 @@ def run_relax(definition, op, model):
         "gradient": grad,
         "position": positions(sheet),
         "iterations": np.array(result.nit),
+        "lbfgs_max_gradient": np.array(np.max(np.abs(fun(result.x)[1]))),
         "max_gradient": np.array(np.max(np.abs(grad))),
     }
+
+
+def newton_polish(sheet, model, flat, shape, iterations, step=1e-6):
+    """Newton steps on tyssue's own gradient, accepted while max |g| decreases.
+
+    scipy's L-BFGS line search stops near |g| 1e-8 here (energy rounding); the
+    Hessian is the central difference of tyssue's gradient, its zero modes excluded.
+    """
+
+    def grad(z):
+        set_positions(sheet, z.reshape(shape))
+        return evaluate(sheet, model)[2].ravel()
+
+    z = np.array(flat, dtype=float)
+    g = grad(z)
+    for _ in range(iterations):
+        if np.max(np.abs(g)) < 1e-13:
+            break
+        columns = []
+        for k in range(z.size):
+            plus, minus = z.copy(), z.copy()
+            plus[k] += step
+            minus[k] -= step
+            columns.append((grad(plus) - grad(minus)) / (2 * step))
+        h = np.array(columns).T
+        values, vectors = np.linalg.eigh(0.5 * (h + h.T))
+        keep = np.abs(values) > 1e-9 * np.max(np.abs(values))
+        move = vectors[:, keep] @ ((vectors[:, keep].T @ g) / values[keep])
+        t = 1.0
+        while t > 1e-4:
+            trial = z - t * move
+            g_trial = grad(trial)
+            if np.max(np.abs(g_trial)) < np.max(np.abs(g)):
+                z, g = trial, g_trial
+                break
+            t *= 0.5
+        else:
+            break
+    return z
 
 
 def run_euler(definition, op, model):
