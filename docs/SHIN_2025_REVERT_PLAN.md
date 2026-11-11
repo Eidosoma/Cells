@@ -121,9 +121,9 @@ in `/mnt/workspaces/Cells/paper-shin-2025-revert-20261111-01/`.
     1,000 starts. That matches 87.5%, but this is not confirmed.
 - **Clamping both YY1 and MYC off removes every state with MYC or YY1 on.**
   - 14 fixed points remain.
-  - Fully normal-like states, with all five cancer genes off, take about 22% of
+  - Fully normal-like states, with all five cancer genes off, take 25% of
     states.
-  - The largest remaining basins keep CDX2 on, through its self-loop.
+  - The other 75% keep CDX2 on, through its self-loop.
 - **One knockdown alone does not do it.** Clamping YY1 off leaves MYC-on states
   in the largest basins. Clamping MYC off leaves YY1-on states. This agrees with
   the paper's statement that the combination is needed.
