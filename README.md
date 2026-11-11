@@ -65,9 +65,10 @@ made. Above it, we aim to simulate the assembly of proteins into complexes and
 molecular machines, from protein cages today toward structures such as the
 proteasome and larger, and how those machines are used in cells and tissues.
 
-A complete and faithful simulation of a real cell is still a long way off. In our
-view, progress in AI and in mathematics may shorten that road more than it seems
-today.
+Our goal is a complete and faithful simulation of a real cell, and in time of the
+tissues and organs it builds. Each qualified mechanism is a step toward it, and we
+believe progress in AI and in mathematics can bring that goal closer than it
+seems today.
 
 ## Where things stand (11 November 2026)
 
