@@ -76,7 +76,10 @@ STATE_AXES = second.STATE_AXES | {
 }
 STATE_TYPE = NamedTuple("SurfacePumpChannelState", [(k, object) for k in STATE_AXES])
 # junction_heat_trapezoid: one element with the trapezoid_nonnegative@1 junction-heat
-# booking, none by default, so the step's branch is static (shape, not value).
+# booking, none by default, so the step's branch is static (shape, not value). Every
+# @3 layout carries it (empty by default); the state layout (STATE_TYPE) is unchanged,
+# and @3 checkpoints from source before this field do not load (snapshots already
+# refuse a source change).
 CHANNEL_LAYOUT_FIELDS = (
     "channel_laws",
     "channel_relative_permeability",

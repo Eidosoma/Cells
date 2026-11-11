@@ -98,6 +98,9 @@ VALENCE = dict(scale_world.SPECIES)
 BASELINE_STEPS = 30_000
 RETENTION_STEPS = 180_000
 WINDOW_STEPS = 200
+# @3's junction_heat_booking for every world this process builds (--junction-heat);
+# None keeps the default (explicit_tableau, omitted from definitions).
+JUNCTION_HEAT = None
 
 
 def log(line):
@@ -606,6 +609,8 @@ def long_sheet_definition(disc_cells, s, dt, end_s, backend, *, written=False):
     e["end_time"] = end * dt
     e["observation_times"] = [t * dt for t in observed]
     x.update(backend=backend, max_steps=end + 8)
+    if JUNCTION_HEAT is not None:
+        m["junction_heat_booking"] = JUNCTION_HEAT
     return raw, np.array(disc), dict(on_s=on * dt, off_s=off * dt, end_s=end * dt, dt_s=dt)
 
 
@@ -1349,6 +1354,8 @@ def tissue_world(
         e["channel_controls"].append(dict(channel_id=f"cue_{k}", schedule=schedule))
     x["channel_capacity"] = len(m["channels"])
     x["max_trace_bytes"] = max_trace_bytes
+    if JUNCTION_HEAT is not None:
+        m["junction_heat_booking"] = JUNCTION_HEAT
     factor = junction_multiplier(tissue, s)
     for k, junction in enumerate(m["junctions"]):
         junction["permeability_m_per_s"] = {
@@ -2394,7 +2401,10 @@ def main(argv=None):
     parser.add_argument("--replay-seconds", type=float, default=10.0)
     parser.add_argument("--replay-until", type=float, help="sheetreplay: continue to this time")
     parser.add_argument("--replay-dt-after", type=float, help="sheetreplay: dt after phase 1")
+    parser.add_argument("--junction-heat", help="@3 junction_heat_booking for every world built")
     args = parser.parse_args(argv)
+    global JUNCTION_HEAT
+    JUNCTION_HEAT = args.junction_heat
     Path(args.output).mkdir(parents=True, exist_ok=True)
     status = 0
     for name in args.parts:
