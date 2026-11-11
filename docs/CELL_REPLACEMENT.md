@@ -130,17 +130,18 @@ The 825-node world was not compared.
 - A replaced slot needs a held bath (a reservoir node) in its capacitor component, as in
   the heredity sheets. A gauge node alone is refused: the field law holds a floating
   component's net charge, and an event changes it. Finite-ECM worlds come later.
-- **RK4 with large charge displacements.** RK4 reference runs pass with small charge
-  displacements, such as H newcomers in H slots. A D↔H swap displaces about 1e-12 C on
-  the slot. @3's RK4 electrode ledger integrates the electrode current, while the check
-  recomputes the plate charge. After such a swap that ledger exceeded its relative
-  bound (2e-12) by about 4% within 30 steps.
-  - The IMEX steps telescope the electrode charge. In one IMEX run (127-cell sheet,
-    three D→H swaps, 2800 steps after the events) the electrode residual stayed at
-    zero and every ledger at or below 0.2% of its bound
-    (`cell_replacement_cost swap`). Hour-scale IMEX runs are not yet measured.
-  - The booked image charge gets the family's per-step running allowance.
-  - The RK4 case is open for stage 2.
+- **RK4 and large charge displacements.** After a whole-content swap, a slot's amount
+  increment (against the founder's reference) is about 50 fmol. Each step rounds it by
+  eps times that, which moves the slot's charge by about 1e-24 C.
+  - IMEX books the electrode charge from the rounded states and telescopes.
+  - RK4 integrates it from stage currents, so the plate charge and the electrode sum
+    random-walk apart. Diagnosis (`rk4-electrode/` in the design directory): this is
+    rounding, not a booking error, and the plate-charge evaluation is exact to 1.5e-33 C.
+  - The wrapper gives the electrode ledger a running allowance for the replaced cells'
+    charge magnitude at their held nodes (`replaced_charge_magnitude`). It is zero for
+    founders, so bounds without events stay @3's exactly.
+  - The same effect is latent in @3's RK4 path; it is recorded in PROGRESS, and @3 is
+    unchanged.
 - In-place swap only: no vacancy, no release of contents, no neighbour uncoupling.
 - No stationary-analysis projection (stage 3) and no projective mode.
 - **Regression against pre-screen 9 (development).**

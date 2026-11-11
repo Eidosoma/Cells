@@ -79,6 +79,7 @@ from cells.core.surface_pump_v3_spec import LAW_CODES
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as ionic
 from cells.models import surface_tissue as tissue
+from cells.numerics.extracellular_field import scatter
 from cells.processes import junction_formation as formation
 from cells.processes import junction_gate
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
@@ -702,16 +703,36 @@ def device_balances(state, p):
     return _terms(ionic.device_balances(ionic_state(state), ionic_layout(p)), state, xp=jnp)
 
 
+def replaced_charge_magnitude(row, p, *, xp=np):
+    """Per outside node: F sum |z| |amount increment| of the replaced cells facing it.
+
+    After a whole-content swap a slot's amount increment (against the founder's
+    declared reference) is a cell's worth of ions, about 50 fmol. Each step that
+    updates it rounds by eps times its size, which moves the slot's charge by about
+    1e-24 C. IMEX books the electrode from the rounded states and telescopes; RK4
+    integrates the electrode from stage currents, so the plate charge and the
+    electrode sum random-walk apart by that much per step (diagnosis,
+    cell-replacement-g2-20261111-01/rk4-electrode: not a booking error, and not the
+    plate-charge evaluation, which exact arithmetic reproduces to 1.5e-33 C). Zero
+    for founders, so it vanishes without events.
+    """
+    replaced = row.generation > 0
+    cell = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence * row.amount_increment), axis=0)
+    per_patch = xp.where(p.membrane_active & replaced[p.membrane_cell], cell[p.membrane_cell], 0.0)
+    return scatter(per_patch, xp.zeros_like(p.boundary_V), (p.membrane_outside,), xp=xp)
+
+
 def magnitudes(row, p, *, xp=np):
     """@3's ledger magnitudes plus the replacement terms (first.LEDGERS order).
 
-    Material: removed + supplied amounts. Electrode and energy (None for @3, whose
-    bounds are fixed) take the booked image charge and the energy magnitudes; global
-    charge adds the replacement charge to @3's own moved-charge magnitude. Without
-    events every bound is @3's exactly (bound + 0). The electrode term is the
-    family's running-ledger allowance: after
-    an image charge is booked, each step's electrode increment is added to a sum of
-    that size, rounding eps times it per step.
+    Material: removed + supplied amounts. Global charge adds the replacement charge
+    to @3's own moved-charge magnitude. Electrode and energy (None for @3, whose
+    bounds are fixed) take, as running-ledger allowances (LEDGER_STEP_ROUNDING eps
+    x steps x magnitude): the booked image charge plus the replaced cells' charge
+    magnitude at their held nodes (replaced_charge_magnitude, the RK4 rounding of
+    large post-swap increments), and the booked energy terms. Every replacement
+    term is zero for founders, so without events every bound is @3's exactly
+    (bound + 0).
     """
     result = list(ionic.channel_magnitudes(ionic_state(row), ionic_layout(p), xp=xp))
     moved = row.replacement_removed_fmol + row.replacement_supplied_fmol
@@ -719,7 +740,8 @@ def magnitudes(row, p, *, xp=np):
     result[2] = result[2] + xp.sum(moved, axis=1)
     charge = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence) * moved)
     result[5] = charge if result[5] is None else result[5] + charge  # @3's moved charge.
-    result[4] = row.replacement_image_charge_C
+    held = xp.where(p.reservoir, replaced_charge_magnitude(row, p, xp=xp), 0.0)
+    result[4] = row.replacement_image_charge_C + held
     result[6] = xp.sum(row.replacement_energy_magnitude_pJ)
     return tuple(result)
 

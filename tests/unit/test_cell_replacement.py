@@ -449,16 +449,32 @@ def test_events_on_the_padded_reference_world_close_every_ledger():
 
 
 def test_events_with_rk4_close_every_ledger():
-    """H newcomers in H slots (small charge displacement): see docs/CELL_REPLACEMENT.md.
+    """D<->H swaps (about 1e-12 C displaced per slot) and an H->H swap under RK4.
 
-    A D<->H swap displaces about 1e-12 C on the slot; @3's RK4 electrode ledger then
-    exceeds its relative bound (2e-12) by a few percent within about 30 steps.
+    The replaced slots' charge magnitude is the electrode ledger's running allowance
+    for the rounding of their large post-swap increments (replaced_charge_magnitude).
     """
     raw = rk4_sheet()
     t1, t2 = exact_event_times((4, 9), 2.5e-6)
-    events = ((t1, "cell_0", "h", "n1"), (t2, "cell_0", "h", "n2"), (t2, "cell_1", "h", "n3"))
+    events = ((t1, "cell_1", "h", "n1"), (t2, "cell_0", "d", "n2"), (t2, "cell_3", "h", "n3"))
     result = run(parse_spec(fx.with_replacement(raw, templates(raw), events)))  # Host checks.
-    assert np.asarray(result.history.generation)[-1].tolist() == [2, 1, 0, 0, 0, 0, 0]
+    assert np.asarray(result.history.generation)[-1].tolist() == [1, 1, 0, 1, 0, 0, 0]
+
+
+def test_the_electrode_allowance_is_zero_without_events(runs):
+    """Founders contribute nothing, so the bounds stay @3's exactly without events."""
+    base = runs["base"]
+    spec = parse_spec(fx.with_replacement(sheet()))
+    p = model.initial_values(spec)[1]
+    zeros = {
+        k: np.zeros_like(np.asarray(getattr(model.initial_values(spec)[0], k)))
+        for k in model.REPLACEMENT_STATE_AXES
+    }
+    row = model.STATE_TYPE(*(np.asarray(v[-1]) for v in base.history), *zeros.values())
+    assert np.any(np.asarray(row.amount_increment) != 0)  # The founders moved.
+    assert not np.any(model.replaced_charge_magnitude(row, p, xp=np))
+    assert not np.any(model.magnitudes(row, p, xp=np)[4])
+    assert model.magnitudes(row, p, xp=np)[6] == 0
 
 
 def test_template_route_values_act_in_a_compiled_run():
