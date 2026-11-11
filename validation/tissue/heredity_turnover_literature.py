@@ -1060,10 +1060,19 @@ def analyse(out):
             base = c["arrival_osmotic_excess"]
             c["max_excess_against_arrival"] = float((1 + ex.max()) / (1 + base) - 1.0)
     turn = p["turnover_complete_s"]
+    absorbed = result["stop"] == "all_h"
 
-    def at_or_before(x):
+    def at_or_before(x, values=None):
+        values = jac if values is None else values
+        if x > t[-1] + 1e-9:
+            return 0.0 if absorbed else None  # All H is absorbing; otherwise not reached.
         i = np.searchsorted(t, x + 1e-9) - 1
-        return None if i < 0 or x > t[-1] + 1e-9 else float(jac[i])
+        return None if i < 0 else float(values[i])
+
+    def basis(x):
+        if x <= t[-1] + 1e-9:
+            return "record"
+        return "absorbed (all H)" if absorbed else result["stop"]
 
     def window(lo, hi):
         m = (t > lo) & (t <= hi + 1e-9)
@@ -1086,11 +1095,37 @@ def analyse(out):
             k = (c["slot_class"], c["kind"], "D donor" if c.get("donor_D_at_event") else
                  "H donor" if c.get("donor_D_at_event") is False else "template")  # fmt: skip
             entry = classes.setdefault(
-                " / ".join(k), dict(newcomers=0, ever_D=0, D_at_end_of_life=0)
+                " / ".join(k),
+                dict(newcomers=0, ever_D=0, D_at_end_of_life=0, ages=[], abundances=[]),
             )
             entry["newcomers"] += 1
             entry["ever_D"] += int(c.get("first_D_s") is not None)
             entry["D_at_end_of_life"] += int(bool(c.get("D_at_last_record")))
+            if c.get("first_D_age_s") is not None and not c.get("D_at_first_record"):
+                entry["ages"].append(c["first_D_age_s"])
+                entry["abundances"].append(c["abundance_at_first_D"])
+    for entry in classes.values():
+        ages, abundances = entry.pop("ages"), entry.pop("abundances")
+        entry["converted_from_H"] = len(ages)
+        entry["median_conversion_age_s"] = float(np.median(ages)) if ages else None
+        entry["conversion_abundance_range"] = (
+            [float(min(abundances)), float(max(abundances))] if abundances else None
+        )
+    # Collective loss: the largest fall of the sheet's D count between two 10 s records,
+    # less the D carriers removed by events in that interval.
+    total = d.sum(axis=1)
+    drops = []
+    for i in range(1, len(t)):
+        removed = sum(
+            1
+            for e in applied
+            if t[i - 1] < e["step"] * dt <= t[i] + 1e-9
+            and (r_ := by_time.get(round(e["step"] * dt, 9))) is not None
+            and r_["vm"][e["slot"]] > THRESHOLD_V
+        )
+        drops.append((int(total[i - 1] - total[i]) - removed, float(t[i])))
+    largest = max(drops, default=(0, None))
+    largest = largest if largest[0] > 0 else (0, None)
     after_cue = START_S - CUE_OFF_S
     summary = dict(
         kind="cells.heredity_turnover_literature_outcome@1",
@@ -1103,7 +1138,10 @@ def analyse(out):
         turnovers_complete_s=turn,
         turnovers_reached=reached,
         jaccard_after_turnover=[at_or_before(x) for x in turn],
+        jaccard_after_turnover_basis=[basis(x) for x in turn],
+        d_inside_after_turnover=[at_or_before(x, d[:, disc].sum(axis=1)) for x in turn],
         jaccard_min_in_turnover=[window(0.0, turn[0]), window(turn[0], turn[1])],
+        largest_10s_fall_of_D_beyond_events=dict(cells=largest[0], at_s=largest[1]),
         first_jaccard_below_0p8_s=below,
         first_disc_loss_s=first_lost,
         all_h_s=all_h,
@@ -1187,11 +1225,18 @@ def part_analyse(args):
     table = {}
     for name in names:
         o = analyse(base / name)
-        table[name] = {k: o[k] for k in ("stop", "end_s", "jaccard_after_turnover",
-                                         "first_disc_loss_s", "all_h_s", "max_d_outside",
-                                         "isolated_newcomers_ever_D",
-                                         "b1_jaccard_0p8_through_two_turnovers")}  # fmt: skip
-        table[name]["osmotic"] = o["osmotic"]
+        table[name] = {k: o[k] for k in ("stop", "end_s", "planned_end_s", "refusal",
+                                         "turnovers_complete_s", "jaccard_after_turnover",
+                                         "jaccard_after_turnover_basis",
+                                         "d_inside_after_turnover", "jaccard_min_in_turnover",
+                                         "first_jaccard_below_0p8_s", "first_disc_loss_s",
+                                         "all_h_s", "max_d_outside", "newcomers",
+                                         "isolated_newcomers_ever_D", "newcomer_classes",
+                                         "founders_lost_before_replacement",
+                                         "d_newcomers_lost_before_replacement",
+                                         "largest_10s_fall_of_D_beyond_events",
+                                         "b1_jaccard_0p8_through_two_turnovers",
+                                         "osmotic", "against_prediction")}  # fmt: skip
         log(f"{name}: {json.dumps(table[name], default=float)[:400]}")
     if args.all:
         write_json(Path(args.output) / "summary.json", dict(arms=table, provenance=provenance()))
