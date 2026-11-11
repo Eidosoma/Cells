@@ -15,8 +15,9 @@ model's domain is never accepted: FIRE stops the motion and halves its step,
 Newton halves its step. With box=True an outer Newton iteration relaxes the
 upper-triangular box: strains e = (e_xx, e_yy, e_xy) applied affinely to vertices
 and box, the step solving K e = -dE/de with K the relaxed elastic matrix below,
-each candidate box followed by a vertex relaxation and accepted only if the
-relaxed energy decreases.
+each candidate box followed by a vertex relaxation and accepted only if the box
+force dE/de decreases (the relaxed energy sits at its rounding floor near the
+minimum).
 
 moduli: linear response of a stationary state to strains F = I + sum_k e_k M_k
 applied to the vertices and the box (Maloney & Lemaitre 2006, PRE 74:016118):
@@ -53,6 +54,8 @@ SHEAR = np.array([[0.0, 1.0], [0.0, 0.0]])
 DILATION = np.eye(2)
 BOX_STRAINS = (np.array([[1.0, 0.0], [0.0, 0.0]]), np.array([[0.0, 0.0], [0.0, 1.0]]), SHEAR)
 ZERO_MODE_RTOL = 1e-9
+# FIRE hands over to Newton at this largest force on contraction paths.
+PATH_COARSE = 1e-3
 
 
 @dataclass(frozen=True)
@@ -261,6 +264,15 @@ def _strain_response(pb, x, box, generators):
     return full[n:, n:], full[:n, n:], full[:n, :n], gradient[n:]
 
 
+def strain_gradient(pb, x, box, generators=BOX_STRAINS):
+    """dE/de for strains F = I + sum_k e_k M_k at e = 0 (no Hessian)."""
+    generators = jnp.asarray(np.array(generators))
+    index = jnp.asarray(pb.vertices)
+    z = jnp.zeros(2 * len(pb.vertices) + generators.shape[0])
+    args = (jnp.asarray(x), index, generators, jnp.asarray(box), pb.topology, pb.mechanics)
+    return np.asarray(_strain_gradient(z, *args))[2 * len(pb.vertices) :]
+
+
 def relaxed_elasticity(pb, x, box=None, generators=BOX_STRAINS):
     """(relaxed d2E/de2, affine d2E/de2, dE/de, vertex Hessian eigenvalues)."""
     box = np.asarray(pb.box if box is None else box)
@@ -289,10 +301,14 @@ def moduli(pb, x, box=None):
 
 
 def relax_vertices(pb, x0, box=None, *, tolerance=1e-12, polish=True):
-    x, fire_steps = fire(pb, x0, box, tolerance=tolerance)
+    """FIRE (to 1e-6 when polishing), Newton to the tolerance, then FIRE if needed."""
+    x, fire_steps = fire(pb, x0, box, tolerance=max(tolerance, 1e-6) if polish else tolerance)
     newton_steps = 0
     if polish:
         x, newton_steps = newton(pb, x, box, tolerance=0.1 * tolerance)
+        if max_force(pb, x, box) > tolerance:
+            x, more = fire(pb, x, box, tolerance=tolerance)
+            fire_steps += more
     return x, fire_steps, newton_steps
 
 
@@ -310,7 +326,7 @@ def minimize(pb, x0=None, *, box=False, tolerance=1e-12, stress_tolerance=1e-11,
         if np.max(np.abs(gradient)) <= stress_tolerance * area or box_steps >= max_box:
             break
         step = -np.linalg.solve(relaxed, gradient)
-        e_now, t = energy(pb, x, current), 1.0
+        t = 1.0
         while t > 1e-6:
             deformation = np.eye(2) + np.tensordot(t * step, np.array(BOX_STRAINS), axes=1)
             trial_box = deformation @ current
@@ -321,7 +337,9 @@ def minimize(pb, x0=None, *, box=False, tolerance=1e-12, stress_tolerance=1e-11,
             except ConfigError:
                 t *= 0.5
                 continue
-            if energy(pb, trial, trial_box) <= e_now:
+            # Accept while the box force dE/de decreases (energies sit at their rounding
+            # floor near the minimum, gradients do not).
+            if np.max(np.abs(strain_gradient(pb, trial, trial_box))) < np.max(np.abs(gradient)):
                 x, current = trial, trial_box
                 fire_steps, newton_steps = fire_steps + f_steps, newton_steps + n_steps
                 break
@@ -381,54 +399,96 @@ def _path_valid(pb, x, junction, ends):
     )
 
 
+_path_hessian = jax.jit(jax.hessian(_path_energy))
+
+
 def _minimize_path(pb, junction, length, x, theta, *, tolerance, max_iterations=400000):
+    """FIRE to a coarse tolerance, Newton (dense Hessian) to the tolerance, FIRE fallback.
+
+    Newton steps use the positive modes of the Hessian, are accepted while the largest
+    force decreases and the state stays in the path domain; zero modes (translations,
+    the angle at zero length, the placed head vertex, floppy modes) take no step.
+    """
     t = pb.host_topology
     ends = (int(t.junction_tail[junction]), int(t.junction_head[junction]))
     shift = jnp.asarray(np.asarray(t.junction_image[junction]) @ pb.box.T)
     args = (junction, ends[0], ends[1], shift, length, jnp.asarray(pb.box))
 
     def value_and_grad(z):
-        return _path_value_and_grad(z, *args, pb.topology, pb.mechanics)
+        e, g = _path_value_and_grad(jnp.asarray(z), *args, pb.topology, pb.mechanics)
+        return float(e), np.where(keep, -np.asarray(g), 0.0)
 
-    def place(x, theta):
-        return _place_jit(x, theta, ends[0], ends[1], shift, length)
+    def place(z):
+        return np.asarray(
+            _place_jit(jnp.asarray(z[:-1].reshape(-1, 2)), z[-1], ends[0], ends[1], shift, length)
+        )
+
+    def converged(f, limit):
+        return np.max(np.abs(f[:-1])) <= limit and abs(f[-1]) <= limit * length + 1e-300
 
     z = np.concatenate([np.asarray(x).ravel(), [theta]])
     keep = np.zeros(z.size, dtype=bool)
     keep[np.concatenate([2 * pb.vertices, 2 * pb.vertices + 1])] = True
     keep[[2 * ends[1], 2 * ends[1] + 1]] = False
     keep[-1] = True
-    v, dt, alpha, positive = np.zeros_like(z), 0.02, 0.1, 0
-    e, g = value_and_grad(jnp.asarray(z))
-    f = np.where(keep, -np.asarray(g), 0.0)
-    for _ in range(max_iterations):
-        if np.max(np.abs(f[:-1])) <= tolerance and abs(f[-1]) <= tolerance * length + 1e-300:
-            break
-        power = np.sum(f * v)
-        if power > 0:
-            v = (1 - alpha) * v + alpha * np.linalg.norm(v) * f / np.linalg.norm(f)
-            if positive > 5:
-                dt, alpha = min(1.1 * dt, 0.2), 0.99 * alpha
-            positive += 1
-        else:
-            v[:] = 0.0
-            dt, alpha, positive = 0.5 * dt, 0.1, 0
-        v = v + dt * f
-        trial = z + dt * v
-        placed = np.asarray(place(jnp.asarray(trial[:-1].reshape(-1, 2)), trial[-1]))
-        if not _path_valid(pb, placed, junction, ends):
-            v[:] = 0.0
-            dt *= 0.5
-            if dt < 1e-14:
-                raise ConfigError("Contraction left the model domain")
-            continue
-        z = trial
-        e, g = value_and_grad(jnp.asarray(z))
-        f = np.where(keep, -np.asarray(g), 0.0)
-    else:
+
+    def run_fire(z, limit):
+        v, dt, alpha, positive = np.zeros_like(z), 0.02, 0.1, 0
+        e, f = value_and_grad(z)
+        for _ in range(max_iterations):
+            if converged(f, limit):
+                return z, e, f
+            power = np.sum(f * v)
+            if power > 0:
+                v = (1 - alpha) * v + alpha * np.linalg.norm(v) * f / np.linalg.norm(f)
+                if positive > 5:
+                    dt, alpha = min(1.1 * dt, 0.2), 0.99 * alpha
+                positive += 1
+            else:
+                v[:] = 0.0
+                dt, alpha, positive = 0.5 * dt, 0.1, 0
+            v = v + dt * f
+            trial = z + dt * v
+            if not _path_valid(pb, place(trial), junction, ends):
+                v[:] = 0.0
+                dt *= 0.5
+                if dt < 1e-14:
+                    raise ConfigError("Contraction left the model domain")
+                continue
+            z = trial
+            e, f = value_and_grad(z)
         raise ConfigError("Contraction minimization did not converge")
-    placed = np.asarray(place(jnp.asarray(z[:-1].reshape(-1, 2)), z[-1]))
-    return placed, float(z[-1]), float(e), float(np.max(np.abs(f)))
+
+    def run_newton(z, e, f):
+        index = np.flatnonzero(keep)
+        for _ in range(20):
+            if converged(f, tolerance):
+                break
+            h = np.asarray(_path_hessian(jnp.asarray(z), *args, pb.topology, pb.mechanics))
+            values, vectors = np.linalg.eigh(h[np.ix_(index, index)])
+            # Positive modes only: degenerate (compatible) minima carry tiny negative
+            # eigenvalues from rounding; a real saddle is caught by the force test.
+            nonzero = values > ZERO_MODE_RTOL * np.max(np.abs(values))
+            step = vectors[:, nonzero] @ ((vectors[:, nonzero].T @ f[index]) / values[nonzero])
+            s = 1.0
+            while s > 1e-4:
+                trial = z.copy()
+                trial[index] += s * step
+                if _path_valid(pb, place(trial), junction, ends):
+                    e_trial, f_trial = value_and_grad(trial)
+                    if np.max(np.abs(f_trial)) < np.max(np.abs(f)):
+                        z, e, f = trial, e_trial, f_trial
+                        break
+                s *= 0.5
+            else:
+                break
+        return z, e, f
+
+    z, e, f = run_fire(z, max(tolerance, PATH_COARSE))
+    z, e, f = run_newton(z, e, f)
+    if not converged(f, tolerance):
+        z, e, f = run_fire(z, tolerance)
+    return place(z), float(z[-1]), e, float(np.max(np.abs(f)))
 
 
 def contraction(pb, x, junction, fractions, *, tolerance=1e-11):
