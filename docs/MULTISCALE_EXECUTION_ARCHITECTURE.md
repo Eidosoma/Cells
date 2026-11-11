@@ -578,7 +578,8 @@ The architectural gaps that the next steps run into are:
   as needed for regeneration, needs a separate removal-and-regrowth operation.
 - **Membrane abundance as state.** Gene regulation and a planned Golgi and
   membrane-trafficking pathway would change channel, pump and connexin
-  abundances over time. Today these are parameters, not state.
+  abundances over time. Today these are parameters, not state. Their identities
+  would come from the planned [protein catalogue](PROTEIN_CATALOGUE_PLAN.md).
 - **Readouts and consumers.** The task/readout and physical-consumer contracts
   above still await a concrete fixture (see the two-task assay status).
 - **Scale.**

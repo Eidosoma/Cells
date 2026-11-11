@@ -17,6 +17,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Roadmap](ROADMAP.md) | Development priorities, dependencies and completion criteria |
 | [Experiment programme](EXPERIMENTS.md) | Proposed memory and relay assays; implementing their prerequisites does not establish an assay result |
 | [Paper backlog](PAPER_BACKLOG.md) and [GRN wet-lab validations](GRN_WETLAB_VALIDATION.md) | Papers under test, and gene-network models validated against experiments (logged) |
+| [Protein catalogue plan](PROTEIN_CATALOGUE_PLAN.md) | Path to protein identities linked to atlases (UniProt, Human Protein Atlas, PDB, Reactome) |
 
 ## Models and execution
 

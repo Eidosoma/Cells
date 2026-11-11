@@ -85,7 +85,12 @@ make unfinished mechanisms compatible.
    (partition with closed ledgers, new membrane and contacts, lineage), then Xenopus
    early cleavage and the C. elegans early embryo, adding the physiology each needs.
    See the [cell-division plan](CELL_DIVISION_PLAN.md).
-8. **Golgi apparatus and membrane trafficking (planned, not started).** Proteins
+8. **Protein identity and atlas data (path started).** A small curated catalogue gives
+   each modelled channel, pump, transporter and junction channel a stable identity linked to
+   UniProt, the Human Protein Atlas, PDB and Reactome, with assembly stoichiometry and
+   parameter provenance. It is metadata and does not change the physics. See the
+   [protein catalogue plan](PROTEIN_CATALOGUE_PLAN.md).
+9. **Golgi apparatus and membrane trafficking (planned, not started).** Proteins
    made at the endoplasmic reticulum pass through the Golgi, where they are
    modified, sorted and packaged for the membrane or for secretion. In Cells this
    is the link between gene regulation and the membrane. The plan is a conserved
