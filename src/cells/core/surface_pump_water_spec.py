@@ -95,6 +95,7 @@ class SurfacePumpWaterModel:
     gauge_reference: str | None
     channels: tuple
     water: Water
+    junction_heat_booking: str = ionic.DEFAULT_JUNCTION_HEAT  # @3's option, parsed by @3.
 
 
 class Control(NamedTuple):

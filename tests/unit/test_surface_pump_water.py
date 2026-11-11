@@ -78,6 +78,17 @@ def test_definition_round_trip_and_dispatch():
     assert [c["compartment_id"] for c in raw["model"]["water"]["baths"]] == ["bath_0"]
 
 
+def test_junction_heat_option_passes_through_to_resolved_pump_tissue_3():
+    raw = fixtures.with_water(fixtures.gated_sheet(end_time=0.01))
+    assert "junction_heat_booking" not in parse_spec(raw).to_dict()["model"]
+    raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+    spec = parse_spec(raw)
+    assert spec.model.junction_heat_booking == "trapezoid_nonnegative@1"
+    assert parse_spec(spec.to_dict()) == spec
+    _, p = surface_pump_water.initial_values(spec)
+    assert p.junction_heat_trapezoid.shape == (1,)
+
+
 def _edit(path, value):
     def apply(raw):
         target = raw
