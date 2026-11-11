@@ -64,7 +64,7 @@ Plain-language summary. Details, numbers and evidence are in
 
 ## What Cells can do (as of 11 November 2026)
 
-![Cells today: bioelectricity, calcium signalling and protein assembly. A shared work queue distributes independent simulations among GPU workers and collects results and checkpoints. CPU and L4 are verified locally; Jupiter qualification is planned.](docs/assets/cells-current.png)
+![Cells today, 11 November 2026: cell electricity, cell signals and protein assembly. Tested cases agree with BETSE, with more checks ahead. In early tests, voltage patterns held for 70 minutes; memory through cell replacement remains unproven. Runs locally on CPU and L4 GPU; Jupiter tests are still ahead.](docs/assets/cells-current.png)
 
 - **Electrical cells and tissues:**
   - ion transport, membrane voltage and pumps;

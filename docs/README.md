@@ -195,7 +195,7 @@ for source roles, existing evidence and the path to independent experimental tes
 
 ### Current functionality
 
-![Cells today: bioelectricity, calcium signalling and protein assembly. A shared work queue distributes independent simulations among GPU workers and collects results and checkpoints. CPU and L4 are verified locally; Jupiter qualification is planned.](assets/cells-current.png)
+![Cells today, 11 November 2026: cell electricity, cell signals and protein assembly. Tested cases agree with BETSE, with more checks ahead. In early tests, voltage patterns held for 70 minutes; memory through cell replacement remains unproven. Runs locally on CPU and L4 GPU; Jupiter tests are still ahead.](assets/cells-current.png)
 
 - **Electrical cells and tissues:** ion transport, membrane voltage, pumps,
   channels, gap junctions and extracellular fields in selected model families.
@@ -225,8 +225,8 @@ for source roles, existing evidence and the path to independent experimental tes
   simulation ensembles, with CPU/L4 comparisons and conservation checks.
 
 For GPU ensembles, workers take batches of independent simulations from a shared
-queue and save their results and checkpoints. The four-worker illustration shows
-that execution design. Numerical qualification has used CPUs and one L4; Jupiter
+queue and save their results and checkpoints. Numerical qualification has used
+CPUs and one L4; Jupiter
 execution remains to be qualified. Distributing one interacting tissue across
 multiple GPUs requires further development. See the
 [GPU and ensemble guide](GPU_ENSEMBLES.md).
@@ -246,13 +246,12 @@ hypothesis.
 
 ### Planned
 
-![Planned Cells development: broader BETSE channel and transport coverage; integrated assembly, energy and mechanics; Jupiter scaling from four to sixteen GPUs; and tissue-to-organ models.](assets/cells-future.png)
+![Where Cells goes next, 11 November 2026: cell water and size control, cell replacement and tissue mechanics are in development. Broader GPU checks and Jupiter runs are planned. Whole cells, organs and organ systems are longer-term goals.](assets/cells-future.png)
 
 The next directions are richer integrated cell physiology, broader BETSE/BITSEY
 verification, reproduction of the Forms assays, and Jupiter qualification from
 four to sixteen GPUs. Experimental calibration, broader energy and water
-coupling, mechanics and organ models extend that programme. The organ
-illustration is schematic; it does not select a particular organ to build first.
+coupling, mechanics and organ models extend that programme.
 Detailed scope and priorities are recorded in [Progress](../PROGRESS.md) and the
 [Roadmap](ROADMAP.md).
 
