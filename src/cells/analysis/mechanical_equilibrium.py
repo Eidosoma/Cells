@@ -39,17 +39,25 @@ is twice this one).
 
 Each contraction point is minimized in three stages over the free coordinates:
 (1) FIRE to max |F| <= PATH_COARSE (globalization); (2) trust-region Newton on the
-energy with the exact Hessian over all modes (scipy trust-exact; negative curvature
-is handled by the trust region); (3) Levenberg-Marquardt on the force residual,
-delta = -(H^2 + mu I)^-1 H g, accepting a step when max |F| decreases, never by
-comparing energies. Stage 3 exists because a path that crosses the constrained
-network's own compatibility transition (at a critical contraction fraction) meets
-critically flat points: a band of near-zero Hessian modes, where FIRE converges only
-algebraically and energy-based acceptance stalls at the energy's float64 resolution
-(Farhadifar energies carry a large cancelling constant). The accepted point must
-have no Hessian eigenvalue below -ZERO_MODE_RTOL x the largest (a minimum, not a
-saddle). A point that does not converge raises PathNotConverged with its stage
-diagnostics; nothing is clipped or accepted.
+energy with the exact Hessian over all modes (scipy trust-exact; negative curvature is
+handled by the trust region); (3) damped Newton on the force residual through the
+Hessian's eigendecomposition, delta = -sum_i v_i (v_i . g) / (|lambda_i| + mu), with mu
+adapted and a step accepted when the residual's 2-norm decreases, never by comparing
+energies; convergence is tested on the max-norm. Stage 2 minimizes the energy change
+from its start point computed term by term (_path_energy_change), which resolves the
+small changes that the total energy's float64 rounding hides. Stages 2 and 3 repeat in
+cycles, each re-anchored, until the tolerance is met or a cycle fails to halve the
+largest force (at most PATH_CYCLES).
+
+Stage 3 exists because a path that crosses the constrained network's own
+compatibility transition (at a critical contraction fraction) meets critically flat
+points: a band of near-zero Hessian modes, where FIRE converges only algebraically
+and energy-based acceptance stalls at the energy's float64 resolution (Farhadifar
+energies carry a large cancelling constant). Normal equations (H^2) would square the
+condition number there; the eigendecomposition does not. The accepted point must have
+no Hessian eigenvalue below -ZERO_MODE_RTOL x the largest (a minimum, not a saddle).
+A point that does not converge raises PathNotConverged with its stage diagnostics;
+nothing is clipped or accepted.
 """
 
 from dataclasses import dataclass, field
@@ -72,7 +80,12 @@ ZERO_MODE_RTOL = 1e-9
 # FIRE hands over to the trust-region Newton at this largest force on contraction paths.
 PATH_COARSE = 1e-3
 PATH_TRUST_ITERATIONS = 2000
-PATH_POLISH_ITERATIONS = 100
+PATH_POLISH_ITERATIONS = 30
+PATH_CYCLES = 8
+# Stages 2 and 3 move at most this fraction of the shortest junction per step: on
+# near-singular (compatible) landscapes an unbounded Newton step can jump to a locally
+# valid but globally crossed configuration.
+PATH_STEP_FRACTION = 0.05
 
 
 class PathNotConverged(ConfigError):
@@ -402,6 +415,60 @@ _path_value_and_grad = jax.jit(jax.value_and_grad(_path_energy))
 _place_jit = jax.jit(_place)
 
 
+def _path_energy_change(z, anchor, junction, tail, head, shift, length, box, topology, mechanics):
+    """E(z) - E(anchor) term by term from the displacement, without large cancellation.
+
+    The total energy carries large cancelling terms (Gamma L^2 / 2 against Lambda l), so
+    its float64 resolution near a minimum is far coarser than the energy changes a
+    critically flat point needs. Here every term's change is a product of O(delta) and
+    O(1) quantities: dl = dd.(2 d0 + dd) / (|d0 + dd| + |d0|), Gamma/2 dL (2 L0 + dL),
+    K/2 dA (2 (A0 - A_pref) + dA) with dA from shoelace differences, Lambda dl. The
+    contracted junction's length is prescribed (dl = 0); its head vertex follows the tail
+    and the angle through a stable cosine/sine difference.
+    """
+    t, m = topology, mechanics
+    x0 = anchor[:-1].reshape(-1, 2)
+    dx = z[:-1].reshape(-1, 2) - x0
+    theta, theta0 = z[-1], anchor[-1]
+    half = 0.5 * (theta - theta0)
+    mid = 0.5 * (theta + theta0)
+    turn = 2.0 * jnp.sin(half) * jnp.array([-jnp.sin(mid), jnp.cos(mid)])
+    dx = dx.at[head].set(dx[tail] + length * turn)
+    x0 = _place(x0, theta0, tail, head, shift, length)
+    count = t.junction_active.shape[0]
+    mask = jnp.arange(count) == junction
+    g0 = vm.geometry(x0, t, box, prescribed=(mask, jnp.where(mask, length, 0.0)))
+    dd = jnp.where(t.junction_active[:, None], dx[t.junction_head] - dx[t.junction_tail], 0.0)
+    d0 = g0.junction_vector
+    norm1 = vm.guarded_norm(d0 + dd, t.junction_active & ~mask)
+    norm0 = vm.guarded_norm(d0, t.junction_active & ~mask)
+    denominator = jnp.where(t.junction_active & ~mask, norm1 + norm0, 1.0)
+    dl = jnp.where(
+        t.junction_active & ~mask, jnp.sum(dd * (2.0 * d0 + dd), axis=-1) / denominator, 0.0
+    )
+    size = t.cell_active.shape[0]
+    dL = vm.scatter_add(jnp.where(t.he_active, dl[t.he_junction], 0.0), t.he_cell, size)
+    du = dx[t.he_tail] - dx[t.cell_reference][t.he_cell]
+    du = jnp.where(t.he_active[:, None], du, 0.0)
+    u0 = g0.corner
+    w0, dw = u0[t.he_next], du[t.he_next]
+    twice = vm.cross(du, w0) + vm.cross(u0, dw) + vm.cross(du, dw)
+    dA = 0.5 * vm.scatter_add(jnp.where(t.he_active, twice, 0.0), t.he_cell, size)
+    area = jnp.where(
+        t.cell_active,
+        0.5 * m.area_elasticity * dA * (2.0 * (g0.area - m.preferred_area) + dA),
+        0.0,
+    )
+    perimeter = jnp.where(
+        t.cell_active, 0.5 * m.contractility * dL * (2.0 * g0.perimeter + dL), 0.0
+    )
+    line = jnp.where(t.junction_active, m.line_tension * dl, 0.0)
+    return jnp.sum(area) + jnp.sum(perimeter) + jnp.sum(line)
+
+
+_path_energy_change_jit = jax.jit(_path_energy_change)
+
+
 @jax.jit
 def _path_valid_jit(x, topology, box, floor, junction, tail, head):
     """The model domain with the contracted junction and its two vertices exempt."""
@@ -458,8 +525,16 @@ def _minimize_path(pb, junction, length, x, theta, *, tolerance, max_iterations=
         h = np.asarray(_path_hessian(jnp.asarray(full(q)), *args, pb.topology, pb.mechanics))
         return h[np.ix_(index, index)]
 
-    def size(g):  # The angle's force is a torque: compare it per unit length.
-        return max(np.max(np.abs(g[:angle])), abs(g[angle]) / length if length > 0 else 0.0)
+    def scaled(g):  # The angle's force is a torque: compare it per unit length.
+        g = g.copy()
+        g[angle] = g[angle] / length if length > 0 else 0.0
+        return g
+
+    def size(g):  # Convergence: the registered max-norm tolerance.
+        return float(np.max(np.abs(scaled(g))))
+
+    def norm(g):  # LM acceptance: the residual 2-norm, which LM steps decrease.
+        return float(np.linalg.norm(scaled(g)))
 
     def place(q):
         z = full(q)
@@ -469,6 +544,14 @@ def _minimize_path(pb, junction, length, x, theta, *, tolerance, max_iterations=
 
     def valid(q):
         return _path_valid(pb, place(q), junction, ends)
+
+    def embedded(q):  # Local validity and no crossing junctions (host check).
+        return valid(q) and not vm.crossing_junctions(place(q), t, pb.box)
+
+    def step_limit(q):
+        lengths = vm.geometry(place(q), t, pb.box, xp=np).length
+        others = np.asarray(t.junction_active) & (np.arange(len(lengths)) != junction)
+        return PATH_STEP_FRACTION * float(np.min(lengths[others]))
 
     diagnostics = {}
     # Stage 1: FIRE to a coarse force (globalization).
@@ -502,46 +585,80 @@ def _minimize_path(pb, junction, length, x, theta, *, tolerance, max_iterations=
         q = trial
         e, g = energy_and_gradient(q)
     diagnostics["fire"] = {"iterations": iterations, "max_force": size(g)}
-    # Stage 2: trust-region Newton on the energy, all modes, exact Hessian.
-    if size(g) > tolerance:
+
+    def trust_region(q, e, g):
+        """Stage 2: trust-region Newton on the energy change from q (all modes)."""
+        anchor = jnp.asarray(full(q))
+
+        def change_and_gradient(qq):
+            zz = jnp.asarray(full(qq))
+            delta = _path_energy_change_jit(zz, anchor, *args, pb.topology, pb.mechanics)
+            return float(delta), energy_and_gradient(qq)[1]
+
+        limit = step_limit(q)
         result = optimize.minimize(
-            energy_and_gradient,
+            change_and_gradient,
             q,
             jac=True,
             hess=hessian,
             method="trust-exact",
-            options={"gtol": tolerance, "maxiter": PATH_TRUST_ITERATIONS},
+            options={
+                "gtol": tolerance,
+                "maxiter": PATH_TRUST_ITERATIONS,
+                "initial_trust_radius": 0.2 * limit,
+                "max_trust_radius": limit,
+            },
         )
-        if valid(result.x):
+        if embedded(result.x):
             e_t, g_t = energy_and_gradient(result.x)
             if size(g_t) < size(g):
                 q, e, g = result.x, e_t, g_t
-        diagnostics["trust_region"] = {
-            "iterations": int(result.nit),
-            "message": str(result.message),
-            "max_force": size(g),
-        }
-    # Stage 3: Levenberg-Marquardt on the force residual (no energy comparison).
-    steps = 0
-    if size(g) > tolerance:
-        h = hessian(q)
-        mu = 1e-12 * np.max(np.abs(np.linalg.eigvalsh(h))) ** 2
-        while steps < PATH_POLISH_ITERATIONS:
+        return q, e, g, int(result.nit)
+
+    def polish(q, e, g):
+        """Stage 3: damped Newton on the force residual (eigendecomposition)."""
+        mu = 1e-14 * np.max(np.abs(np.linalg.eigvalsh(hessian(q))))
+        steps = 0
+        while steps < PATH_POLISH_ITERATIONS and size(g) > tolerance:
             steps += 1
-            h = hessian(q)
+            values, vectors = np.linalg.eigh(hessian(q))
+            projected = vectors.T @ g
+            limit = step_limit(q)
             for _ in range(40):
-                trial = q - np.linalg.solve(h @ h + mu * np.eye(len(h)), h @ g)
+                delta = vectors @ (projected / (np.abs(values) + mu))
+                longest = float(np.max(np.abs(delta)))
+                if longest > limit:
+                    delta = delta * (limit / longest)
+                trial = q - delta
                 if valid(trial):
                     e_t, g_t = energy_and_gradient(trial)
-                    if size(g_t) < size(g):
+                    if norm(g_t) < norm(g):
                         q, e, g, mu = trial, e_t, g_t, mu / 3
                         break
                 mu *= 4
             else:
                 break
-            if size(g) <= tolerance:
-                break
-        diagnostics["polish"] = {"iterations": steps, "max_force": size(g)}
+        return q, e, g, steps
+
+    # Stages 2 and 3 in cycles, each re-anchored at the last point, until the tolerance
+    # is met or a cycle does not halve the largest force.
+    cycles = []
+    while size(g) > tolerance and len(cycles) < PATH_CYCLES:
+        before = size(g)
+        q, e, g, trust_iterations = trust_region(q, e, g)
+        after_trust = size(g)
+        q, e, g, polish_iterations = polish(q, e, g)
+        cycles.append(
+            {
+                "trust_region_iterations": trust_iterations,
+                "after_trust_region": after_trust,
+                "polish_iterations": polish_iterations,
+                "max_force": size(g),
+            }
+        )
+        if size(g) > 0.5 * before:
+            break
+    diagnostics["cycles"] = cycles
     values = np.linalg.eigvalsh(hessian(q))
     top = np.max(np.abs(values))
     diagnostics["spectrum"] = {
@@ -555,6 +672,8 @@ def _minimize_path(pb, junction, length, x, theta, *, tolerance, max_iterations=
         )
     if diagnostics["spectrum"]["negative"]:
         raise PathNotConverged("Contraction point is not a minimum (negative modes)", diagnostics)
+    if not embedded(q):
+        raise PathNotConverged("Contraction point has crossing junctions", diagnostics)
     z = full(q)
     return place(q), float(z[-1]), e, float(size(g)), diagnostics
 
