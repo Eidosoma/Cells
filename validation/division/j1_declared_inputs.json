@@ -1,0 +1,342 @@
+{
+ "kind": "cells.division.j1_declared_inputs@1",
+ "status": "REGISTERED by the lead on main (11 November 2026) before any model computed an Em for J1. The first Em under these defaults, from R-full, is the prediction of record.",
+ "design": "docs/CELL_DIVISION_DESIGN.md sections 7, 8.1 and 9 (S0b)",
+ "parameter_table": "/mnt/workspaces/Cells/cell-division-20261111-01/verification/xenopus_parameters.csv (v2)",
+ "rationale": "validation/division/j1_declared_inputs.md",
+ "marks": "V read in the full text; S our arithmetic or interpretation; F read off a figure; T standard table",
+ "species": [
+  {
+   "id": "Na",
+   "valence": 1
+  },
+  {
+   "id": "K",
+   "valence": 1
+  },
+  {
+   "id": "Cl",
+   "valence": -1
+  }
+ ],
+ "constants": {
+  "F": "N_A e (exact SI)",
+  "R": "N_A k_B (exact SI)"
+ },
+ "time": {
+  "zero": "onset of first cleavage (furrow onset)",
+  "j1_s": 1800.0,
+  "horizon_s": 2100.0,
+  "note": "J1 is read at onset of second cleavage, 30 min (dLB74 p13 and single-egg traces 29.5-30.6 min, F). The trace spread is smaller than the onset range below, which changes the insertion duration the same way, so the J1 time itself is not ranged."
+ },
+ "observable": {
+  "id": "J1",
+  "quantity": "Em, cytosol minus bath, of normal eggs (vitelline membrane intact, no cytochalasin B) at onset of second cleavage",
+  "measured_mean_V": -0.0203,
+  "measured_se_V": 0.0008,
+  "n": 20,
+  "source": "dLB74 Table I (p532)",
+  "mark": "V",
+  "prediction_of_record": "Em at j1_s from the reference (R-full) under every default, with the access factor A/L calibrated on rm2_target_ohm, whatever it is (computed_after_registration)"
+ },
+ "rm_definition": {
+  "basis": "dLB74 p530 (V): constant-current pulses of 1.2 s and 3e-8 A every 10 s, polarity alternated; intracellular voltages sampled every second in phase with the front edges of the pulses. Rm is the simulated response to this protocol, in the reference and in the engine, not a linear-circuit value.",
+  "pulse_amplitude_A": 3e-08,
+  "pulse_duration_s": 1.2,
+  "pulse_period_s": 10.0,
+  "first_pulse_onset_s": 0.0,
+  "first_pulse_sign": 1,
+  "alternating": true,
+  "runs_throughout": true,
+  "sign_convention": "positive current enters the cytosol and leaves through the membranes (depolarizing)",
+  "injected_carrier_fractions": {
+   "K": 0.4912,
+   "Cl": 0.5088
+  },
+  "injected_carrier_note": "Positive current is carried by K+ entering the cytosol and Cl- leaving it, in the free-solution proportion D_K/(D_K+D_Cl) of the 3 M KCl electrode filling (dLB74 p530). About 0.37 pmol per pulse, net zero over a pair.",
+  "em_sample": "V(t_k): the potential at the front edge of pulse k (continuous there, so the pre-pulse value), with the protocol running",
+  "deflection": "dV_k = V(t_k + 1.0 s) - V(t_k): the sample one second after the front edge, inside the 1.2-s pulse",
+  "rm_rule": "Rm(k) = (|dV_(k-1)| + |dV_k|) / (2 x 3e-8 A): the mean of one depolarizing and one hyperpolarizing chord",
+  "rm1_pulse_pair": [
+   0,
+   1
+  ],
+  "j1_pulse_pair": [
+   179,
+   180
+  ],
+  "j1_em_pulse": 180
+ },
+ "calibration_targets": {
+  "rm1_target_ohm": {
+   "default": 852000.0,
+   "low": 804000.0,
+   "high": 900000.0,
+   "range_basis": "mean +/- 1 SE (48 kOhm, n = 22)",
+   "in_band": true,
+   "sets": "the old membrane's P_Na = P_K, from the pulse response of the uncleaved egg (pair rm1_pulse_pair); computed_after_registration and recalibrated for every band member",
+   "source": "dLB74 Table I (p532), onset of first cleavage, normal eggs",
+   "mark": "V",
+   "note": "The stage-2 smoke test set P from the slope at rest instead; that is not the same quantity at 15-25 mV excursions."
+  },
+  "rm2_target_ohm": {
+   "default": 488000.0,
+   "low": 460000.0,
+   "high": 516000.0,
+   "range_basis": "mean +/- 1 SE (28 kOhm, n = 17)",
+   "in_band": true,
+   "sets": "the access factor A/L, from the pulse response at J1 (pair j1_pulse_pair); computed_after_registration and recalibrated for every band member and arm",
+   "source": "dLB74 Table I (p532), onset of second cleavage, normal eggs, the same series as J1",
+   "mark": "V"
+  }
+ },
+ "inputs": {
+  "temperature_K": {
+   "default": 295.15,
+   "low": 293.15,
+   "high": 297.15,
+   "range_basis": "stated range 20-24 C",
+   "in_band": true,
+   "source": "dLB74 p530 (room temperature 20-24 C)",
+   "mark": "V"
+  },
+  "cytosol_volume_m3": {
+   "default": 7.82e-10,
+   "in_band": false,
+   "source": "dL74 Table 2: water 0.782 +/- 0.028 (SEM) uL per egg at onset of first cleavage",
+   "mark": "V",
+   "note": "Fixed: concentrations are per litre of cell water; the volume enters only through the slow composition drift of a cytosol with no pump."
+  },
+  "cytosol_Na_mM": {
+   "default": 19.4,
+   "low": 19.0,
+   "high": 19.8,
+   "range_basis": "mean +/- 1 SEM (0.4, n = 82)",
+   "in_band": true,
+   "source": "dL74 Table 4, activity at onset of first cleavage (ion-selective electrode)",
+   "mark": "V",
+   "note": "Initial value; the cytosol then evolves. dL74's 22.4 +/- 1.1 mM at onset of second cleavage is a reported check, not an input."
+  },
+  "cytosol_K_mM": {
+   "default": 51.4,
+   "low": 50.9,
+   "high": 51.9,
+   "range_basis": "mean +/- 1 SEM (0.5, n = 109)",
+   "in_band": true,
+   "source": "dL74 Table 4, activity, first and second cleavage pooled",
+   "mark": "V"
+  },
+  "cytosol_Cl_mM": {
+   "default": 53.1,
+   "in_band": false,
+   "source": "dL74 Table 4, activity, pooled",
+   "mark": "V",
+   "note": "Fixed: neither membrane is Cl-permeable, so cytosolic Cl enters only the injected-current carrier."
+  },
+  "bath": {
+   "NaCl_mM": 58.2,
+   "KCl_mM": 0.67,
+   "activity_coefficient": 0.8134328358208955,
+   "activity_mM": {
+    "Na": 47.34179104477612,
+    "K": 0.545,
+    "Cl": 47.886791044776125
+   },
+   "potential_V": 0.0,
+   "held": true,
+   "in_band": false,
+   "source": "Steinberg's solution as in the smoke driver; a_K 0.545 mM for 0.67 mM KCl (dL74 p11) applied to every ion",
+   "mark": "V (a_K), S (applied to Na and Cl)",
+   "note": "Ca(NO3)2, MgSO4 and Tris are omitted, as in the smoke test. The lumen draws this fluid as it grows."
+  },
+  "old_membrane": {
+   "area_m2": 8.69e-06,
+   "capacitance_F": 3.1682e-08,
+   "relative_permeability": {
+    "Na": 1.0,
+    "K": 1.0,
+    "Cl": 0.0
+   },
+   "permeability_rule": "P_Na = P_K = P_old with P_old set so that the pulse-protocol Rm of the uncleaved egg equals rm1_target_ohm (computed_after_registration)",
+   "initial_state": "the cell starts at the old membrane's zero-current potential (independent of P_old when P_Na = P_K)",
+   "in_band": "through rm1_target_ohm only",
+   "source": "folded area 1.7 x 5.11 mm2 (dLB74 p534, BdL73 p93); P_Na/P_K about 1 and no Cl effect (dL74 p9); capacitance 0.62 uF/cm2 on the geometric 5.11 mm2 (DFS74 Table I), as in the smoke test",
+   "mark": "V",
+   "note": "Constant through first cleavage (the parallel-branch analysis of dLB74 assumes the same). No pump (dL74 p13; K83 p1760)."
+  },
+  "new_membrane_specific_resistance_ohm_m2": {
+   "default": 0.159,
+   "low": 0.136,
+   "high": 0.182,
+   "range_basis": "the two exposed arms (1.36 and 1.82 kOhm cm2) around the authors' mean 1.59",
+   "in_band": true,
+   "source": "dLB74 p535",
+   "mark": "V",
+   "conversion_rule": "P_K,new is set so that the constant-field slope conductance per area at -60 mV, with the declared cytosol inside and the bath outside, equals 1/r_new; P_Na,new = rho x P_K,new; P_Cl,new = 0. -60 mV is the exposed arms' Em at onset of second cleavage (-60.0 and -60.9 mV), where r_new was measured; their pulse excursions (5-10 mV) make the mean chord close to that slope.",
+   "derived_now_default_PK_m_per_s": 1.5795776e-07
+  },
+  "new_membrane_PNa_over_PK": {
+   "default": 0.033522,
+   "low": 0.019266,
+   "high": 0.047778,
+   "range_basis": "the two exposed arms; default their mean",
+   "in_band": true,
+   "source": "dLB74 Table I means and p535 (R_new 553 and 210 kOhm): branch EMFs -90.8 mV (-VM) and -74.4 mV (+VM +CCB), each inverted through the constant-field voltage equation with the declared cytosol and bath",
+   "mark": "S (derived_now)"
+  },
+  "new_membrane_PCl": {
+   "default": 0.0,
+   "in_band": false,
+   "source": "dLB74: 'most probably a relatively high permeability for K+'; K83: outward furrow current carried mainly by K+, reversed by Ba2+",
+   "mark": "V (selectivity), S (P_Cl = 0)"
+  },
+  "new_membrane_specific_capacitance_F_m2": {
+   "default": 0.0062,
+   "low": 0.004,
+   "high": 0.01,
+   "range_basis": "declared range (not measured)",
+   "in_band": true,
+   "source": "DFS74 Table I whole-blastomere 0.62 uF/cm2 on smooth area; design note 4.2",
+   "mark": "V (DFS74 value), S (use for new membrane)"
+  },
+  "new_membrane_faces": "all new membrane faces the cleft lumen; none faces the bath directly. dLB74's 0.14 mm2 'effectively exposed' is a parallel-branch reading of the same Rm and is not an input.",
+  "insertion_onset_s": {
+   "default": 420.0,
+   "low": 360.0,
+   "high": 480.0,
+   "range_basis": "stated range: the Em and Rm change invariably starts 6-8 min after onset of first cleavage",
+   "in_band": true,
+   "source": "dLB74 p531 and p535; new membrane present at 7-8 min, absent at 3-4 min (BdL73)",
+   "mark": "V"
+  },
+  "new_membrane_area_at_j1_m2": {
+   "default": 1.39e-06,
+   "low": 1.303e-06,
+   "high": 1.477e-06,
+   "range_basis": "mean +/- 1 SE (SD 0.29 mm2, n = 11)",
+   "in_band": true,
+   "source": "BdL73 Table II (p96), series 1 (normal); both faces of the cleft; measured in other eggs in 1/10 Steinberg after fixation",
+   "mark": "V (value), S (both faces)"
+  },
+  "insertion_activation_area_m2": {
+   "default": 1e-09,
+   "in_band": false,
+   "note": "Numerical: the patch and the lumen switch on with 1e-3 mm2 at insertion onset (about 1 s of insertion). The sensitivity to 1e-10 m2 is part of the reference term."
+  },
+  "insertion_schedule": {
+   "primary": "the total area at J1 and the onset are primary; the rate follows from them",
+   "default": "uniform: A(t) = A0 + r (t - t_on) with r = (A_J1 - A0)/(j1_s - t_on), about 0.060 mm2/min, continuing at r after J1",
+   "band_member_back_loaded": {
+    "initial_rate_m2_per_s": 6.6667e-10,
+    "initial_duration_s": 600.0,
+    "rule": "0.04 mm2/min for 10 min from onset, then the uniform rate that reaches A_J1 at J1 (about 0.076 mm2/min under the other defaults)",
+    "in_band": true,
+    "basis": "The task and design give 0.04-0.06 mm2/min. 0.04 is the rate measured in the treatment arms, constant for 7-10 min in -VM eggs (dLB74 p536, V); 0.06 is the normal-egg mean implied by the total (S). A constant 0.04 would give 0.92 mm2 at J1, outside BdL73's total, so the low end enters as this schedule shape."
+   },
+   "retrieval": "none (insertion only)"
+  },
+  "gap_width_m": {
+   "default": 2e-06,
+   "low": 1.5e-06,
+   "high": 2.5e-06,
+   "range_basis": "stated figure-read range",
+   "in_band": true,
+   "source": "BdL73 TEM micrographs (Figs. 7-8); fixation shrinkage unknown",
+   "mark": "F",
+   "lumen_volume_rule": "V_lumen = w x A_new / 2: w times one face, since A_new counts both faces"
+  },
+  "lumen": {
+   "composition_at_activation": "bath",
+   "growth": "the added volume fills with bath fluid at bath composition (reservoir supply)",
+   "fixed_charge": 0.0,
+   "water_flow": "none: the volume is prescribed"
+  },
+  "access": {
+   "geometry": "one face from the lumen to the held bath with a single geometric factor A/L, constant from activation (computed_after_registration)",
+   "diffusivity_m2_per_s": {
+    "Na": 1.33e-09,
+    "K": 1.96e-09,
+    "Cl": 2.03e-09
+   },
+   "diffusivity_source": "free-solution values at 25 C as tabulated by aqion.de from phreeqc.dat (read 11 November 2026), which also cites Vanysek, CRC Handbook of Chemistry and Physics; consistent with limiting conductivities 50.1, 73.5, 76.4 S cm2/mol (Laidler & Meiser 1982). Only the ratios matter once A/L is calibrated, so the common temperature factor cancels.",
+   "diffusivity_mark": "T",
+   "selectivity_default": "free_solution: k_s = (A/L) D_s with the ratios above (Nernst-Einstein)",
+   "law_default": "logmean",
+   "law_definitions": {
+    "constant_field": "J_s (lumen to bath) = k_s z_s u (c_lumen - c_bath exp(-z_s u)) / (1 - exp(-z_s u)), u = F (phi_lumen - phi_bath) / RT",
+    "logmean": "J_s = k_s Lm(c_lumen, c_bath) (ln(c_lumen/c_bath) + z_s u), Lm(a, b) = (a - b)/(ln a - ln b); the engine's face law logmean_electrodiffusion@1 (docs/SPATIAL_EXTRACELLULAR_SPEC.md)"
+   },
+   "lead_decision": "law_default is 'logmean' (lead, at registration): the rim access is aqueous and electroneutral, and R-full and the engine's faces then share one law; constant_field is a reported arm"
+  }
+ },
+ "arms": [
+  {
+   "id": "access_law_other",
+   "change": "the access law constant_field (the default is logmean)",
+   "A_over_L": "recalibrated",
+   "in_band": false
+  },
+  {
+   "id": "cation_selective_seal",
+   "change": "access D_Cl = 0, cation ratios free-solution",
+   "A_over_L": "recalibrated",
+   "in_band": false,
+   "basis": "design note 7: a rim seal about 30 times tighter than the open slab need not keep free-solution ratios"
+  },
+  {
+   "id": "narrow_gap",
+   "change": "w = 0.5 um",
+   "A_over_L": "recalibrated",
+   "in_band": false,
+   "basis": "design note 4.2: fixation shrinkage unknown; the in-vivo gap may be narrower"
+  }
+ ],
+ "band": {
+  "members": "each in_band input at its low and its high end, one at a time, the others at default; the schedule member is one-sided",
+  "recalibration": "A/L is recalibrated on rm2 for every member; P_old on rm1 whenever rm1, temperature or the cytosol changes; P_K,new by its rule whenever r_new, rho, temperature or the cytosol changes",
+  "combination": "worst case: lo = E0 + sum_i min(0, d_i-, d_i+), hi = E0 + sum_i max(0, d_i-, d_i+), with d_i = Em(member) - E0",
+  "corner_check": "the 2^3 corners of the three inputs with the largest |d_i| (others at default); a corner outside [lo, hi] widens the band to include it",
+  "range_rule": "stated ranges are used as given (w, c_new, r_new, rho, onset, temperature, schedule); measured means without one enter at +/- 1 SE (rm1, rm2, area, cytosol Na and K). The worst-case sum of four or more 1-SE shifts is at least a 2-SE quadrature combination.",
+  "arms": "reported with their Em and verdict; they do not enter the band"
+ },
+ "judging": {
+  "pass": "[lo - t, hi + t] overlaps [m - 2 SE, m + 2 SE] = [-21.9, -18.7] mV",
+  "t": "numerical tolerance: the reference term of R-full (solver settings and activation area), plus at S4 the engine's step term; fixed by the S4 protocol",
+  "maximum_band_width_V": 0.008,
+  "width_definition": "W = (hi - lo) + 2 t",
+  "beyond_maximum": "J1 is reported, not judged",
+  "derivation": "The nearer and firmer failure limit is the sealed or identical-membrane value, the old membrane's zero-current potential L_s = -9.9 mV (measured -9.7 +/- 0.6 mV at onset of first cleavage). A passing band has lo - t <= m + 2 SE = -18.7 mV, so its top can reach -18.7 mV + W. Every passing band excludes L_s only if -18.7 + W < -9.9, i.e. W < 8.8 mV (9.0 with the measured -9.7); 8 mV keeps a 0.8-mV margin. The other limit, a bath-equivalent lumen (-37 to -44 mV, linear estimate), allows W < 15.1 mV and does not bind. The number follows from the limits and the datum only, not from any expected band."
+ },
+ "reported_not_judged": [
+  "Em and Rm time courses from 0 to 35 min (onset at 6-8 min, the change over 7-17 min, the late 1-3 mV depolarisation)",
+  "the separate depolarizing and hyperpolarizing chords at J1, and Em at J1 without the pulse train",
+  "lumen composition and potential; cytosolic Na at J1 against dL74's 22.4 +/- 1.1 mM",
+  "the exposed arms (-VM and +VM +CCB) simulated with the new membrane facing the bath: Em and Rm at second cleavage against dLB74 Table I (a consistency check of the r_new and rho rules, which come from the same arms)",
+  "the bath-equivalent and sealed limits under the J1 inputs"
+ ],
+ "stated_limits": [
+  "well-mixed cytosol; uniform, constant old membrane; held bath",
+  "no pump; no Ca2+ or Cl- currents; no gating of the new K conductance beyond constant field",
+  "cytosol and bath on the activity basis; bound ions not represented; bath Ca, Mg and buffer omitted",
+  "prescribed lumen volume with no water flow; constant A/L from activation (a rim that tightens late is not modelled)",
+  "vitelline membrane and perivitelline space not modelled; ideal electrodes"
+ ],
+ "reference_numerics": {
+  "integrator": "scipy.integrate.solve_ivp Radau, rtol 1e-10, split at every pulse edge and sample time",
+  "states": "free-node charges (cytosol, lumen) and the Na and K amounts of both; Cl from charge",
+  "reference_term": "largest |dEm| at J1 against rtol 1e-8, BDF at rtol 1e-10, and activation area 1e-10 m2; reported with the prediction",
+  "procedure": "the limits and synthetic cases are tested first; the commit is frozen; the defaults are then run once, logged, and that Em is the prediction of record"
+ },
+ "lead_decisions": [
+  "Access law default. The brief says constant field; the engine's faces use logmean_electrodiffusion@1. Recommended: logmean as default, because the rim access is aqueous and electroneutral (the log-mean law is exact for linear concentration profiles there, while constant field assumes a linear potential, as in a membrane), and because R-full and the S4 engine run then share one law. The other law is a reported arm either way.",
+  "Arms reported-only, not in the band: the cation-selective seal and w = 0.5 um (design note 7 and 9 read both ways).",
+  "The back-loaded schedule as an in-band member (from the 0.04-0.06 mm2/min range).",
+  "Maximum band width 8 mV including 2 t."
+ ],
+ "lead_decisions_taken": [
+  "1. Access law default: logmean (logmean_electrodiffusion form); constant_field is a reported arm.",
+  "2. The cation-selective seal (access D_Cl = 0) and w = 0.5 um are reported-only arms, not in the band.",
+  "3. The back-loaded insertion schedule (0.04 mm2/min for 10 min, then about 0.076) is an in-band member.",
+  "4. Maximum band width W = (hi - lo) + 2t <= 8 mV; beyond it J1 is reported, not judged. The default point prediction's distance from the measured mean is reported alongside."
+ ]
+}
