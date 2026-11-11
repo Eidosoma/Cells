@@ -1,0 +1,1547 @@
+{
+ "schema": "cells.morphogenesis_protocol@1",
+ "id": "mg1-vertex-mechanics-v2",
+ "status": "REGISTERED by the lead on main (11 November 2026) before any judged run of v2; supersedes mg1-vertex-mechanics-v1, whose judged run judged-01 FAILED 52/57 (PROGRESS 6c36abd) and stays on record. A v2 pass is weaker evidence: the criteria were revised after a failed judged run, and engine I3 errors and B-relevant barriers were seen during diagnosis (disclosed below).",
+ "rung": "MG1",
+ "question": "Does passive 2-D apical vertex mechanics relax to known equilibria: the case-I hexagonal ground state, the ordered network's rigidity threshold and T1 barrier, the recoil after ablating a junction, and the junction tensions encoded in an equilibrium geometry?",
+ "engine_models": [
+  "apical_vertex_mechanics@1 (src/cells/models/apical_vertex.py), RK4 and Euler, CPU float64",
+  "mechanical_equilibrium_analysis@1 (src/cells/analysis/mechanical_equilibrium.py)",
+  "junction_tension_inference@1 (src/cells/analysis/junction_tension_inference.py)"
+ ],
+ "driver": "validation/morphogenesis/mg1_vertex.py",
+ "command": "PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu taskset -c 4,5 python -m validation.morphogenesis.mg1_vertex all --output RUN_DIR --protocol THIS_FILE",
+ "theory_sources": {
+  "energy": "Farhadifar et al. 2007 Curr Biol 17:2095, doi:10.1016/j.cub.2007.11.049 (Box 1; Fig. 1 cases)",
+  "moduli": "Staddon et al. 2023 Soft Matter 19:3080, doi:10.1039/D2SM01580C (checked by one-cell minimization)",
+  "barrier": "Bi et al. 2015 Nat Phys 11:1074, doi:10.1038/nphys3471 (arXiv:1409.0593v4 Methods)",
+  "linear_response": "Maloney & Lemaitre 2006 PRE 74:016118, doi:10.1103/PhysRevE.74.016118",
+  "fire": "Bitzek et al. 2006 PRL 97:170201, doi:10.1103/PhysRevLett.97.170201",
+  "inference": "Chiou et al. 2012 PLoS Comput Biol 8:e1002512; Ishihara & Sugimura 2012 J Theor Biol 313:201",
+  "tyssue": "Theis et al. 2021 JOSS 6:2973, doi:10.21105/joss.02973 (GPL-3.0; run out of process)"
+ },
+ "conventions": {
+  "units": "reduced: lengths sqrt(A0), energies K A0^2, moduli K A0, time eta/(K A0); eta = 1",
+  "staddon": "r = Gamma_bar, p0 = -Lambda_bar/(2 Gamma_bar); E_Farhadifar = E_Staddon - N Gamma_bar p0^2/2",
+  "bi": "Bi's r = 1/r_Staddon and Bi's energy = 2 E_Staddon (barriers reported in both units)"
+ },
+ "world": {
+  "lattices": "pointy-top periodic honeycombs (cells/core/vertex_preparation.py), n x n cells, rectangular box",
+  "perturbation": "seeded Gaussian vertex displacement (PCG64), sigma 0.05 (case I) or 0.02 (ordered Staddon lattices)",
+  "steps": "dt = largest power of two with dt * rho(initial) <= 0.5 x solver bound (rho the Hessian bound)",
+  "windows": "engine runs use run_windowed with 4096-step windows (bounded memory)"
+ },
+ "registered_predictions": {
+  "theory": {
+   "units": "reduced: lengths sqrt(A0), energies K A0^2, moduli K A0, time eta/(K A0)",
+   "p_star": 3.7224194364083982,
+   "pentagon_threshold": 3.8119352775338693,
+   "minimal_perimeter": {
+    "3": 4.559014113909554,
+    "4": 3.9999999999999996,
+    "5": 3.8119352775338693,
+    "6": 3.7224194364083982,
+    "7": 3.672068807445035,
+    "8": 3.6407188844978187,
+    "9": 3.619796739263585
+   },
+   "cases": {
+    "I": {
+     "lambda_bar": 0.12,
+     "gamma_bar": 0.04,
+     "area": 0.5756908158941938,
+     "perimeter": 2.8243593858849114,
+     "side": 0.4707265643141519,
+     "energy_per_cell": 0.419020823824086,
+     "shear_modulus": 0.21215459205290305,
+     "bulk_modulus": 0.5021002884468009,
+     "recoil_opening_rate": 0.4659487508707929,
+     "recoil_opening_rate_junction_only": 0.24,
+     "box_scan": {
+      "0.95": {
+       "area": 0.5195609613445099,
+       "energy_per_cell": 0.42038427715602894,
+       "stress_half_trace": -0.04838348323943209
+      },
+      "0.975": {
+       "area": 0.5472660818594179,
+       "energy_per_cell": 0.4193718498380746,
+       "stress_half_trace": -0.024650860832345522
+      },
+      "1.0": {
+       "area": 0.5756908158941938,
+       "energy_per_cell": 0.419020823824086,
+       "stress_half_trace": -1.1102230246251565e-16
+      },
+      "1.025": {
+       "area": 0.6048351634488374,
+       "energy_per_cell": 0.41939256358279364,
+       "stress_half_trace": 0.025554565727941403
+      },
+      "1.05": {
+       "area": 0.6346991245233486,
+       "energy_per_cell": 0.42054998711378133,
+       "stress_half_trace": 0.05199968696749832
+      }
+     }
+    },
+    "II": {
+     "lambda_bar": 0.0,
+     "gamma_bar": 0.1,
+     "area": 0.3071796769724491,
+     "perimeter": 2.0631060226151776,
+     "side": 0.34385100376919625,
+     "energy_per_cell": 0.45282032302755093,
+     "shear_modulus": 0.3464101615137754,
+     "bulk_modulus": 0.3071796769724491,
+     "recoil_opening_rate": 0.4126212045230355,
+     "recoil_opening_rate_junction_only": 0.0,
+     "box_scan": {
+      "0.95": {
+       "area": 0.2772296584676353,
+       "energy_per_cell": 0.4532688248317703,
+       "stress_half_trace": -0.029950018504813825
+      },
+      "0.975": {
+       "area": 0.2920126804219344,
+       "energy_per_cell": 0.4529353419197326,
+       "stress_half_trace": -0.015166996550514678
+      },
+      "1.0": {
+       "area": 0.3071796769724491,
+       "energy_per_cell": 0.45282032302755093,
+       "stress_half_trace": 0.0
+      },
+      "1.025": {
+       "area": 0.3227306481191793,
+       "energy_per_cell": 0.45294123937935415,
+       "stress_half_trace": 0.015550971146730208
+      },
+      "1.05": {
+       "area": 0.33866559386212514,
+       "energy_per_cell": 0.4533160045087427,
+       "stress_half_trace": 0.03148591688967606
+      }
+     }
+    }
+   },
+   "ordered_moduli": {
+    "r=0.04,p0=3.0": {
+     "G": 0.024098929972440484,
+     "B": 1.0662672746881885
+    },
+    "r=0.04,p0=3.2": {
+     "G": 0.01732740372956784,
+     "B": 1.0865818534168066
+    },
+    "r=0.04,p0=3.4": {
+     "G": 0.010634075282769793,
+     "B": 1.106661838757201
+    },
+    "r=0.04,p0=3.5": {
+     "G": 0.007315675613022046,
+     "B": 1.116617037766444
+    },
+    "r=0.04,p0=3.6": {
+     "G": 0.004015584883595533,
+     "B": 1.1265173099547237
+    },
+    "r=0.04,p0=3.65": {
+     "G": 0.0023722852849716427,
+     "B": 1.1314472087505951
+    },
+    "r=0.04,p0=3.7": {
+     "G": 0.0007334205363452187,
+     "B": 1.1363638029964744
+    },
+    "r=0.04,p0=3.71": {
+     "G": 0.0004061757319351967,
+     "B": 1.1373455374097046
+    },
+    "r=0.04,p0=3.72": {
+     "G": 7.910612881508186e-05,
+     "B": 1.1383267462190647
+    },
+    "r=0.04,p0=3.73": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=0.04,p0=3.75": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=0.04,p0=3.8": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=0.04,p0=3.9": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=0.1,p0=3.0": {
+     "G": 0.0516018789775661,
+     "B": 1.1916045245810771
+    },
+    "r=0.1,p0=3.2": {
+     "G": 0.03695982487025058,
+     "B": 1.2355306869030236
+    },
+    "r=0.1,p0=3.4": {
+     "G": 0.02260136161500085,
+     "B": 1.278606076668773
+    },
+    "r=0.1,p0=3.5": {
+     "G": 0.01552194164320847,
+     "B": 1.29984433658415
+    },
+    "r=0.1,p0=3.6": {
+     "G": 0.008505902659379602,
+     "B": 1.3208924535356366
+    },
+    "r=0.1,p0=3.65": {
+     "G": 0.0050209610879972015,
+     "B": 1.331347278249784
+    },
+    "r=0.1,p0=3.7": {
+     "G": 0.0015510533136066178,
+     "B": 1.3417570015729556
+    },
+    "r=0.1,p0=3.71": {
+     "G": 0.000858853338374104,
+     "B": 1.3438336014986532
+    },
+    "r=0.1,p0=3.72": {
+     "G": 0.00016724253965779895,
+     "B": 1.345908433894802
+    },
+    "r=0.1,p0=3.73": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=0.1,p0=3.75": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=0.1,p0=3.8": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=0.1,p0=3.9": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=1.0,p0=3.0": {
+     "G": 0.14602652112842568,
+     "B": 4.026022051752476
+    },
+    "r=1.0,p0=3.2": {
+     "G": 0.10664859641894321,
+     "B": 4.144155825880926
+    },
+    "r=1.0,p0=3.4": {
+     "G": 0.06640101545769177,
+     "B": 4.264898568764678
+    },
+    "r=1.0,p0=3.5": {
+     "G": 0.045990969814676985,
+     "B": 4.326128705693723
+    },
+    "r=1.0,p0=3.6": {
+     "G": 0.02540949026721072,
+     "B": 4.387873144336122
+    },
+    "r=1.0,p0=3.65": {
+     "G": 0.015058703258254168,
+     "B": 4.418925505362992
+    },
+    "r=1.0,p0=3.7": {
+     "G": 0.004670042588876349,
+     "B": 4.450091487371126
+    },
+    "r=1.0,p0=3.71": {
+     "G": 0.002587903393212017,
+     "B": 4.456337904958118
+    },
+    "r=1.0,p0=3.72": {
+     "G": 0.0005043238533135392,
+     "B": 4.462588643577813
+    },
+    "r=1.0,p0=3.73": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=1.0,p0=3.75": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=1.0,p0=3.8": {
+     "G": 0.0,
+     "B": 1.0
+    },
+    "r=1.0,p0=3.9": {
+     "G": 0.0,
+     "B": 1.0
+    }
+   }
+  },
+  "reference_values": {
+   "kind": "cells.morphogenesis_mg1_reference_values@1",
+   "independence": "numpy/scipy reference and closed forms; the definition JSON is shared",
+   "quick": false,
+   "barriers": [
+    {
+     "r": 0.1,
+     "p0": 3.5,
+     "orientation": 0,
+     "junction": 99,
+     "relaxed_max_force": 7.942438982719579e-16,
+     "barrier": 0.009136510769195638,
+     "energies": [
+      -39.08289966351637,
+      -39.08280593757922,
+      -39.08252928154149,
+      -39.08207394064708,
+      -39.08144126687994,
+      -39.080630288925875,
+      -39.079638223591054,
+      -39.07846092226652,
+      -39.07709325029851,
+      -39.07552940144144,
+      -39.07467197642559,
+      -39.07413290176564,
+      -39.073763152747176
+     ],
+     "initial_length": 0.6106974563658163
+    },
+    {
+     "r": 0.1,
+     "p0": 3.5,
+     "orientation": 1,
+     "junction": 100,
+     "relaxed_max_force": 7.942438982719579e-16,
+     "barrier": 0.00932627697731192,
+     "energies": [
+      -39.08289966351637,
+      -39.082803630908145,
+      -39.082520390842284,
+      -39.08205457244085,
+      -39.08140777769025,
+      -39.08057918561132,
+      -39.079566095464585,
+      -39.07836439954404,
+      -39.076968982327536,
+      -39.07537404853322,
+      -39.07449983204072,
+      -39.07395028379448,
+      -39.07357338653906
+     ],
+     "initial_length": 0.6106974563658194
+    },
+    {
+     "r": 0.1,
+     "p0": 3.5,
+     "orientation": 2,
+     "junction": 98,
+     "relaxed_max_force": 7.942438982719579e-16,
+     "barrier": 0.009136510769181427,
+     "energies": [
+      -39.08289966351637,
+      -39.08280593757924,
+      -39.08252928154152,
+      -39.082073940647085,
+      -39.08144126687991,
+      -39.08063028892591,
+      -39.079638223591076,
+      -39.07846092226649,
+      -39.077093250298546,
+      -39.075529401441464,
+      -39.07467197642557,
+      -39.0741329017656,
+      -39.07376315274719
+     ],
+     "initial_length": 0.6106974563658186
+    },
+    {
+     "r": 0.1,
+     "p0": 3.7,
+     "orientation": 0,
+     "junction": 99,
+     "relaxed_max_force": 1.0269562977782698e-15,
+     "barrier": 0.0019951760732368484,
+     "energies": [
+      -43.80680587877648,
+      -43.806795981470216,
+      -43.80676498125245,
+      -43.80670843220634,
+      -43.80661924165303,
+      -43.80648834059628,
+      -43.80630520254843,
+      -43.80605826861452,
+      -43.80573530444273,
+      -43.80532369785557,
+      -43.80508067006258,
+      -43.80492202391221,
+      -43.80481070270324
+     ],
+     "initial_length": 0.6194402134687352
+    },
+    {
+     "r": 0.1,
+     "p0": 3.7,
+     "orientation": 1,
+     "junction": 100,
+     "relaxed_max_force": 1.0269562977782698e-15,
+     "barrier": 0.0020349127931140742,
+     "energies": [
+      -43.80680587877648,
+      -43.8067957308731,
+      -43.806763950402086,
+      -43.80670598606096,
+      -43.80661461339146,
+      -43.806480640050175,
+      -43.80629343209139,
+      -43.80604133758871,
+      -43.80571204033398,
+      -43.805292854447686,
+      -43.80504554830163,
+      -43.80488417407235,
+      -43.804770965983366
+     ],
+     "initial_length": 0.6194402134687649
+    },
+    {
+     "r": 0.1,
+     "p0": 3.7,
+     "orientation": 2,
+     "junction": 98,
+     "relaxed_max_force": 1.0269562977782698e-15,
+     "barrier": 0.0019951760732226376,
+     "energies": [
+      -43.80680587877648,
+      -43.806795981470074,
+      -43.80676498125236,
+      -43.80670843220636,
+      -43.80661924165254,
+      -43.806488340596616,
+      -43.80630520254834,
+      -43.806058268614265,
+      -43.80573530444292,
+      -43.80532369785568,
+      -43.80508067006265,
+      -43.80492202391222,
+      -43.80481070270326
+     ],
+     "initial_length": 0.6194402134687905
+    },
+    {
+     "r": 1.0,
+     "p0": 3.5,
+     "orientation": 0,
+     "junction": 99,
+     "relaxed_max_force": 3.9968028886505635e-15,
+     "barrier": 0.02599981638081772,
+     "energies": [
+      -391.6582909169067,
+      -391.6580311410121,
+      -391.65726582172937,
+      -391.65600549261103,
+      -391.6542489815464,
+      -391.65198587351284,
+      -391.64919856993333,
+      -391.6458639915055,
+      -391.64195497251643,
+      -391.6374413941132,
+      -391.63494790477756,
+      -391.6333736887447,
+      -391.6322911005259
+     ],
+     "initial_length": 0.591182133009239
+    },
+    {
+     "r": 1.0,
+     "p0": 3.5,
+     "orientation": 1,
+     "junction": 100,
+     "relaxed_max_force": 3.9968028886505635e-15,
+     "barrier": 0.02665728004291168,
+     "energies": [
+      -391.6582909169067,
+      -391.6580246233871,
+      -391.65724027551994,
+      -391.65594876024096,
+      -391.6541487898499,
+      -391.6518294890246,
+      -391.6489725578696,
+      -391.6455540545269,
+      -391.6415458467029,
+      -391.63691678359106,
+      -391.6343591069006,
+      -391.6327442376118,
+      -391.6316336368638
+     ],
+     "initial_length": 0.5911821330092364
+    },
+    {
+     "r": 1.0,
+     "p0": 3.5,
+     "orientation": 2,
+     "junction": 98,
+     "relaxed_max_force": 3.9968028886505635e-15,
+     "barrier": 0.02599981638081772,
+     "energies": [
+      -391.6582909169067,
+      -391.6580311410114,
+      -391.65726582172954,
+      -391.6560054926109,
+      -391.65424898154527,
+      -391.6519858735128,
+      -391.64919856993305,
+      -391.6458639915054,
+      -391.64195497251643,
+      -391.63744139411335,
+      -391.6349479047778,
+      -391.63337368874454,
+      -391.6322911005259
+     ],
+     "initial_length": 0.5911821330092416
+    },
+    {
+     "r": 1.0,
+     "p0": 3.7,
+     "orientation": 0,
+     "junction": 99,
+     "relaxed_max_force": 5.329070518200751e-15,
+     "barrier": 0.007122422296731656,
+     "energies": [
+      -438.0764100740572,
+      -438.0763803826911,
+      -438.07628575643275,
+      -438.0761078896867,
+      -438.0758177503199,
+      -438.07537812920424,
+      -438.0747456382559,
+      -438.0738723561406,
+      -438.07270719698494,
+      -438.071197039921,
+      -438.0702956612693,
+      -438.0697040885918,
+      -438.0692876517605
+     ],
+     "initial_length": 0.6174991327918001
+    },
+    {
+     "r": 1.0,
+     "p0": 3.7,
+     "orientation": 1,
+     "junction": 100,
+     "relaxed_max_force": 5.329070518200751e-15,
+     "barrier": 0.007332781826107748,
+     "energies": [
+      -438.0764100740572,
+      -438.07637961411893,
+      -438.0762824549118,
+      -438.0760996187442,
+      -438.0758011238455,
+      -438.0753486282992,
+      -438.0746974619939,
+      -438.0737982969771,
+      -438.07259854168257,
+      -438.0710434952657,
+      -438.070115303408,
+      -438.0695061257053,
+      -438.0690772922311
+     ],
+     "initial_length": 0.6174991327918464
+    },
+    {
+     "r": 1.0,
+     "p0": 3.7,
+     "orientation": 2,
+     "junction": 98,
+     "relaxed_max_force": 5.329070518200751e-15,
+     "barrier": 0.0071224222966179696,
+     "energies": [
+      -438.0764100740572,
+      -438.07638038269647,
+      -438.0762857564323,
+      -438.07610788968685,
+      -438.0758177503209,
+      -438.0753781292046,
+      -438.07474563825565,
+      -438.07387235613754,
+      -438.07270719698494,
+      -438.0711970399208,
+      -438.07029566126755,
+      -438.0697040885921,
+      -438.0692876517606
+     ],
+     "initial_length": 0.6174991327918107
+    },
+    {
+     "r": 10.0,
+     "p0": 3.5,
+     "orientation": 0,
+     "junction": 99,
+     "relaxed_max_force": 5.3290705182007514e-14,
+     "barrier": 0.04569047332961418,
+     "energies": [
+      -3919.5806298800353,
+      -3919.5803135809742,
+      -3919.579360008917,
+      -3919.5777192742335,
+      -3919.575293800403,
+      -3919.5719482723384,
+      -3919.56751768537,
+      -3919.5618138788536,
+      -3919.5546308609155,
+      -3919.5457491628486,
+      -3919.540599931409,
+      -3919.5372668681266,
+      -3919.5349394067057
+     ],
+     "initial_length": 0.5842866543790529
+    },
+    {
+     "r": 10.0,
+     "p0": 3.5,
+     "orientation": 1,
+     "junction": 100,
+     "relaxed_max_force": 5.3290705182007514e-14,
+     "barrier": 0.047266056564694736,
+     "energies": [
+      -3919.5806298800353,
+      -3919.580305413819,
+      -3919.5793266490286,
+      -3919.577640614004,
+      -3919.5751444263883,
+      -3919.5716957580908,
+      -3919.5671212865136,
+      -3919.5612235415124,
+      -3919.553786477797,
+      -3919.5445800269276,
+      -3919.5392384818474,
+      -3919.5357796469634,
+      -3919.5333638234706
+     ],
+     "initial_length": 0.5842866543790279
+    },
+    {
+     "r": 10.0,
+     "p0": 3.5,
+     "orientation": 2,
+     "junction": 98,
+     "relaxed_max_force": 5.3290705182007514e-14,
+     "barrier": 0.04569047332915943,
+     "energies": [
+      -3919.5806298800353,
+      -3919.580313580968,
+      -3919.5793600089205,
+      -3919.5777192742353,
+      -3919.5752938004066,
+      -3919.571948272325,
+      -3919.567517685364,
+      -3919.56181387885,
+      -3919.5546308609173,
+      -3919.5457491628476,
+      -3919.5405999314034,
+      -3919.5372668681325,
+      -3919.534939406706
+     ],
+     "initial_length": 0.5842866543790036
+    },
+    {
+     "r": 10.0,
+     "p0": 3.7,
+     "orientation": 0,
+     "junction": 99,
+     "relaxed_max_force": 6.394884621840902e-14,
+     "barrier": 0.025033614009771554,
+     "energies": [
+      -4380.795512814814,
+      -4380.795473506739,
+      -4380.795322873854,
+      -4380.794966221794,
+      -4380.79425835439,
+      -4380.793014368472,
+      -4380.791018416143,
+      -4380.788030835141,
+      -4380.783793959147,
+      -4380.778036856722,
+      -4380.774500894777,
+      -4380.77214846388,
+      -4380.770479200804
+     ],
+     "initial_length": 0.6167706123565266
+    },
+    {
+     "r": 10.0,
+     "p0": 3.7,
+     "orientation": 1,
+     "junction": 100,
+     "relaxed_max_force": 6.394884621840902e-14,
+     "barrier": 0.026158820047385234,
+     "energies": [
+      -4380.795512814814,
+      -4380.795472421071,
+      -4380.795316880257,
+      -4380.794946842146,
+      -4380.794210081282,
+      -4380.792912824041,
+      -4380.790828940378,
+      -4380.787707423101,
+      -4380.783278474501,
+      -4380.777258468406,
+      -4380.773560415658,
+      -4380.77109997164,
+      -4380.769353994767
+     ],
+     "initial_length": 0.6167706123556904
+    },
+    {
+     "r": 10.0,
+     "p0": 3.7,
+     "orientation": 2,
+     "junction": 98,
+     "relaxed_max_force": 6.394884621840902e-14,
+     "barrier": 0.025033614009771554,
+     "energies": [
+      -4380.795512814814,
+      -4380.795473506622,
+      -4380.795322873565,
+      -4380.79496622181,
+      -4380.794258354484,
+      -4380.79301436856,
+      -4380.791018416025,
+      -4380.788030835153,
+      -4380.7837939591345,
+      -4380.778036856699,
+      -4380.774500894814,
+      -4380.77214846388,
+      -4380.770479200804
+     ],
+     "initial_length": 0.6167706123556538
+    }
+   ],
+   "moduli": [
+    {
+     "r": 0.04,
+     "p0": 3.0,
+     "G_reference": 0.024098937394818574,
+     "B_reference": 1.0662675126906656,
+     "G_theory": 0.024098929972440484,
+     "B_theory": 1.0662672746881885,
+     "G_rel_difference": 3.07996168257658e-07,
+     "B_rel_difference": 2.2321089909605518e-07
+    },
+    {
+     "r": 0.1,
+     "p0": 3.5,
+     "G_reference": 0.015521962261119336,
+     "B_reference": 1.2998445788620847,
+     "G_theory": 0.01552194164320847,
+     "B_theory": 1.29984433658415,
+     "G_rel_difference": 1.3283074592329433e-06,
+     "B_rel_difference": 1.863899605394964e-07
+    },
+    {
+     "r": 1.0,
+     "p0": 3.6,
+     "G_reference": 0.02540969823450725,
+     "B_reference": 4.387873381025566,
+     "G_theory": 0.02540949026721072,
+     "B_theory": 4.387873144336122,
+     "G_rel_difference": 8.184630795133795e-06,
+     "B_rel_difference": 5.394172444336086e-08
+    }
+   ],
+   "recoil": {
+    "n": 12,
+    "junction": 220,
+    "initial_length": 0.4707265643141523,
+    "opening_rate": 0.46594875087079296,
+    "opening_rate_theory": 0.4659487508707929,
+    "small_cut_fraction": 0.0001,
+    "small_cut_times": [
+     0.5,
+     1.0,
+     2.0,
+     5.0,
+     10.0,
+     20.0,
+     50.0
+    ],
+    "small_cut_opening_per_fraction": [
+     0.1661055032880989,
+     0.2506125938502377,
+     0.32426514464803824,
+     0.37643264446664415,
+     0.3923553732591825,
+     0.39954564193537717,
+     0.40345290390784
+    ],
+    "small_cut_rate_per_fraction": 0.46594875087066373,
+    "small_cut_tau_effective": 0.8686200600566033,
+    "full_cut_relaxed_max_force": 1.5616848092481206e-15,
+    "full_cut_opening_d1": 0.5642532796044972,
+    "full_cut_cell_area_change": 0.565106405436556,
+    "full_cut_cell_perimeter_change": 1.452787069349042
+   },
+   "wall_seconds": 2768.800882558804
+  },
+  "reference_values_provenance": "validation/morphogenesis/mg1_references.py at clean revision 9777a35; output and log in /mnt/workspaces/Cells/morphogenesis-mg1-20261111-01/references-03",
+  "inference_noise": {
+   "rule": "the 3 largest integer decades sigma = 10^k with max(kappa_ref) sigma / min(l_ref) <= 0.001",
+   "levels": [
+    1e-09,
+    1e-08,
+    1e-07
+   ],
+   "kappa_max": 1601.3709609708012,
+   "mean_junction_length_min": 0.4716480645197943,
+   "kappa_sigma_over_l_at_top_level": 0.00033952666859795715,
+   "reference_slopes_consistency_only": [
+    1.0002291348167451,
+    1.000177179571684,
+    0.9993960717683319,
+    0.9990876433230814,
+    1.0003871639623587,
+    1.0007444878999696,
+    0.9995005777283076,
+    1.001717461124504,
+    0.9996002611319065,
+    0.9974257091579382
+   ],
+   "provenance": "validation/morphogenesis/mg1_noise_reference.py at clean revision aeb25b3 (numpy/scipy reference; definitions from the driver's inference_model); output and log in /mnt/workspaces/Cells/morphogenesis-mg1-20261111-01/noise-reference-01"
+  }
+ },
+ "criteria": [
+  {
+   "id": "G1_energy",
+   "metrics": [
+    "ground.case_I_metrics.energy_per_cell_rel_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "case-I energy per cell equals e* = 0.4190208238 (Farhadifar 2007 Fig. 2B hexagonal level ~0.42) after engine relaxation from 12x12 (5 seeds), 8x8 and 16x16 perturbed lattices",
+   "judged": true
+  },
+  {
+   "id": "G2_regular_shapes",
+   "metrics": [
+    "ground.case_I_metrics.shape_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-08,
+   "basis": "every area, perimeter and junction length relaxes to the regular hexagon of area a* = 0.5756908159",
+   "judged": true
+  },
+  {
+   "id": "G3_stress_free",
+   "metrics": [
+    "ground.case_I_metrics.stress_abs_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "the box stress vanishes at a* (e'(a*) = 0)",
+   "judged": true
+  },
+  {
+   "id": "G3_scan_energy",
+   "metrics": [
+    "ground.scan_metrics.energy_rel_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "relaxed energy per cell equals e(a) on the box scan s = 0.95, 0.975, 1.025, 1.05",
+   "judged": true
+  },
+  {
+   "id": "G3_scan_stress",
+   "metrics": [
+    "ground.scan_metrics.stress_abs_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "half the trace of the box stress equals e'(a) on the scan",
+   "judged": true
+  },
+  {
+   "id": "G3_scan_shear",
+   "metrics": [
+    "ground.scan_metrics.shear_stress_abs_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-10,
+   "basis": "no shear stress on the scan",
+   "judged": true
+  },
+  {
+   "id": "G3_scan_minimum",
+   "metrics": [
+    "ground.scan_metrics.ground_is_scan_minimum"
+   ],
+   "comparison": "ge",
+   "threshold": 1e-06,
+   "basis": "the a* box has the lowest energy of the scan",
+   "judged": true
+  },
+  {
+   "id": "G4_ledgers",
+   "metrics": [
+    "ground.case_I_metrics.allowance_used_max"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "the energy balance E + D - W = E0 stays within its declared allowance",
+   "judged": true
+  },
+  {
+   "id": "G4_momentum",
+   "metrics": [
+    "ground.case_I_metrics.momentum_drift_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "the friction-weighted vertex sum is conserved (net force zero)",
+   "judged": true
+  },
+  {
+   "id": "G4_area_identity",
+   "metrics": [
+    "ground.case_I_metrics.area_identity_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-11,
+   "basis": "cell areas tile the periodic box",
+   "judged": true
+  },
+  {
+   "id": "G5_box_relaxation",
+   "metrics": [
+    "ground.box_relaxation.area_error"
+   ],
+   "comparison": "le",
+   "threshold": 1e-08,
+   "basis": "analysis box relaxation from a 5%-stretched perturbed lattice reaches a*",
+   "judged": true
+  },
+  {
+   "id": "G5_box_stress",
+   "metrics": [
+    "ground.box_relaxation.stress_abs_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "the relaxed box is stress-free",
+   "judged": true
+  },
+  {
+   "id": "G6_case_II",
+   "metrics": [
+    "ground.case_II.energy_per_cell_rel_error"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "case II (0, 0.1): e* = 0.4528203230",
+   "judged": true
+  },
+  {
+   "id": "G6_case_II_area",
+   "metrics": [
+    "ground.case_II.area_max_error"
+   ],
+   "comparison": "le",
+   "threshold": 1e-08,
+   "basis": "case II area a* = 0.3071796770",
+   "judged": true
+  },
+  {
+   "id": "S1_shear",
+   "metrics": [
+    "rigidity.metrics.G_rel_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-06,
+   "basis": "linear-response shear modulus equals G = r (p - p0) p / (4a) (Staddon 2023) on 8x8 and 2x2 lattices",
+   "judged": true
+  },
+  {
+   "id": "S1_bulk",
+   "metrics": [
+    "rigidity.metrics.B_rel_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-06,
+   "basis": "linear-response bulk modulus equals B = a + r p p0 / (4a)",
+   "judged": true
+  },
+  {
+   "id": "S1_affine",
+   "metrics": [
+    "rigidity.metrics.affine_ratio_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-06,
+   "basis": "relaxed G is two thirds of affine G",
+   "judged": true
+  },
+  {
+   "id": "S1_stable",
+   "metrics": [
+    "rigidity.metrics.negative_modes_max"
+   ],
+   "comparison": "le",
+   "threshold": 0,
+   "basis": "stress-free incompatible states have no negative Hessian modes",
+   "judged": true
+  },
+  {
+   "id": "S2_dynamic",
+   "metrics": [
+    "rigidity.metrics.dynamic_G_rel_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 0.0001,
+   "basis": "engine relaxations in boxes sheared by +-1e-3 give G within 1e-4 (4x4, points away from p*)",
+   "judged": true
+  },
+  {
+   "id": "S3_compatible_energy",
+   "metrics": [
+    "rigidity.metrics.compatible_excess_abs_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-12,
+   "basis": "above p* a fixed box at a = 1 holds zero-energy (compatible) states",
+   "judged": true
+  },
+  {
+   "id": "S3_compatible_shear",
+   "metrics": [
+    "rigidity.metrics.compatible_G_abs_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-10,
+   "basis": "G = 0 in the compatible regime",
+   "judged": true
+  },
+  {
+   "id": "S3_compatible_bulk",
+   "metrics": [
+    "rigidity.metrics.compatible_B_minus_one_abs_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-08,
+   "basis": "B = 1 in the compatible regime (a jump of r p*^2/4 at p*)",
+   "judged": true
+  },
+  {
+   "id": "S3_compatible_dynamic",
+   "metrics": [
+    "rigidity.metrics.dynamic_compatible_excess_abs_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-12,
+   "basis": "sheared compatible boxes relax to zero energy in the engine",
+   "judged": true
+  },
+  {
+   "id": "S4_zero_of_G",
+   "metrics": [
+    "rigidity.metrics.zero_of_G_error_abs_max"
+   ],
+   "comparison": "le",
+   "threshold": 0.001,
+   "basis": "a linear fit of G over p0 = 3.70, 3.71, 3.72 vanishes at p* = 3.7224194 within 1e-3",
+   "judged": true
+  },
+  {
+   "id": "B1_positive_below_pentagon",
+   "metrics": [
+    "barrier.metrics.barrier_below_pentagon_min"
+   ],
+   "comparison": "ge",
+   "threshold": 1e-10,
+   "basis": "exact bound: a zero-energy T1 state needs p0 >= 3.8119350 (unit-area pentagon), so every barrier below is positive",
+   "judged": true
+  },
+  {
+   "id": "B2_vanishing_window",
+   "metrics": [
+    "barrier.metrics.vanishing_points"
+   ],
+   "comparison": "within",
+   "threshold": [
+    3.8119,
+    3.83
+   ],
+   "basis": "THEORY THAT MAY FAIL: Bi 2015 mean-field barrier vanishing at 3.812; the upper end allows constraints of the surrounding lattice in a fixed box",
+   "judged": true
+  },
+  {
+   "id": "B3_registered",
+   "metrics": [
+    "barrier.metrics.registered_barrier_rel_difference_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-07,
+   "basis": "engine barriers (FIRE/Newton, prescribed length) equal the committed independent reference values (scipy plus Newton polish, closed-form gradient) in the incompatible regime (unique minima)",
+   "judged": true
+  },
+  {
+   "id": "B4_path_converged",
+   "metrics": [
+    "barrier.metrics.path_max_force",
+    "barrier.metrics.failed_paths"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "every contraction point is a converged constrained minimum (max force <= 1e-9) and no path failed (failed_paths, a count, must be 0 under the same threshold); v2 records a failed path as a row instead of aborting the part",
+   "judged": true
+  },
+  {
+   "id": "R1_velocity_jump",
+   "metrics": [
+    "recoil.metrics.velocity_jump_rel_error"
+   ],
+   "comparison": "le",
+   "threshold": 1e-12,
+   "basis": "the velocity jump across the cut equals grad Delta E_cut / eta (exact at any residual force)",
+   "judged": true
+  },
+  {
+   "id": "R1_opening_rate",
+   "metrics": [
+    "recoil.metrics.opening_rate_abs_error"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "opening rate 2 (Lambda + Gamma L) / eta = 0.4659487509 at 120-degree junctions",
+   "judged": true
+  },
+  {
+   "id": "R1_control_work",
+   "metrics": [
+    "recoil.metrics.control_work_rel_error"
+   ],
+   "comparison": "le",
+   "threshold": 1e-12,
+   "basis": "the control-work ledger books exactly the energy the cut removes",
+   "judged": true
+  },
+  {
+   "id": "R1_registered_rate",
+   "metrics": [
+    "recoil.metrics.registered_opening_rate_abs_difference"
+   ],
+   "comparison": "le",
+   "threshold": 1e-09,
+   "basis": "the engine opening rate equals the committed reference value",
+   "judged": true
+  },
+  {
+   "id": "R2_small_cut",
+   "metrics": [
+    "recoil.metrics.small_cut_deviation_smallest_eps"
+   ],
+   "comparison": "le",
+   "threshold": 0.001,
+   "basis": "a cut of fraction 1e-4 follows the reference linear response within 1e-3",
+   "judged": true
+  },
+  {
+   "id": "R2_small_cut_slope",
+   "metrics": [
+    "recoil.metrics.small_cut_deviation_slope"
+   ],
+   "comparison": "within",
+   "threshold": [
+    0.9,
+    1.1
+   ],
+   "basis": "the deviation from linear response grows as O(eps)",
+   "judged": true
+  },
+  {
+   "id": "R2_tau",
+   "metrics": [
+    "recoil.metrics.small_cut_tau_rel_difference"
+   ],
+   "comparison": "le",
+   "threshold": 0.001,
+   "basis": "the effective relaxation time Delta d_inf / d'(0+) equals the linear prediction",
+   "judged": true
+  },
+  {
+   "id": "R2_registered_tau",
+   "metrics": [
+    "recoil.metrics.registered_tau_rel_difference"
+   ],
+   "comparison": "le",
+   "threshold": 0.001,
+   "basis": "and the committed reference value",
+   "judged": true
+  },
+  {
+   "id": "R3_full_cut_state",
+   "metrics": [
+    "recoil.metrics.final_position_difference"
+   ],
+   "comparison": "le",
+   "threshold": 1e-07,
+   "basis": "the long-time state after the full cut equals the reference minimizer of the post-cut energy",
+   "judged": true
+  },
+  {
+   "id": "R3_full_cut_energy",
+   "metrics": [
+    "recoil.metrics.final_energy_rel_difference"
+   ],
+   "comparison": "le",
+   "threshold": 1e-10,
+   "basis": "and its energy",
+   "judged": true
+  },
+  {
+   "id": "R3_registered_d1",
+   "metrics": [
+    "recoil.metrics.registered_d1_rel_difference"
+   ],
+   "comparison": "le",
+   "threshold": 1e-06,
+   "basis": "the relaxed opening d1 equals the committed reference value",
+   "judged": true
+  },
+  {
+   "id": "R4_ledger",
+   "metrics": [
+    "recoil.metrics.allowance_used"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "energy balance within its allowance",
+   "judged": true
+  },
+  {
+   "id": "I0_equilibrium",
+   "metrics": [
+    "inference.metrics.max_force_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-11,
+   "basis": "the engine relaxed the synthetic tissues to force balance",
+   "judged": true
+  },
+  {
+   "id": "I1_known_pressure",
+   "metrics": [
+    "inference.metrics.known_pressure_rel_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-07,
+   "basis": "total junction tensions T_j = Lambda_j + Gamma (L_a + L_b) recovered with pressures known",
+   "judged": true
+  },
+  {
+   "id": "I2_null_dimension",
+   "metrics": [
+    "inference.metrics.joint_null_dimensions"
+   ],
+   "comparison": "within",
+   "threshold": [
+    2,
+    2
+   ],
+   "basis": "the joint problem's null space is exactly the two gauges (scale, pressure offset)",
+   "judged": true
+  },
+  {
+   "id": "I2_joint",
+   "metrics": [
+    "inference.metrics.joint_rel_error_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-05,
+   "basis": "T / <T> recovered jointly (condition number 1e4 to 1e5 measured before registration)",
+   "judged": true
+  },
+  {
+   "id": "I3_noise_linear",
+   "metrics": [
+    "inference.metrics.noise_slopes"
+   ],
+   "comparison": "within",
+   "threshold": [
+    0.9,
+    1.1
+   ],
+   "basis": "the known-pressure error is linear in position noise at the registered levels (registered_predictions.inference_noise: chosen before any v2 engine run by an a-priori rule from the independent reference, not from engine output)",
+   "judged": true
+  },
+  {
+   "id": "N1_rk4_order",
+   "metrics": [
+    "numerics.metrics.rk4_orders"
+   ],
+   "comparison": "within",
+   "threshold": [
+    3.7,
+    4.3
+   ],
+   "basis": "RK4 order 4 +- 0.3 (the approved note); dev-03 measured 4.14, 4.08, 4.04",
+   "judged": true
+  },
+  {
+   "id": "N1_euler_order",
+   "metrics": [
+    "numerics.metrics.euler_orders"
+   ],
+   "comparison": "within",
+   "threshold": [
+    0.9,
+    1.1
+   ],
+   "basis": "Euler order 1",
+   "judged": true
+  },
+  {
+   "id": "N2_allowance",
+   "metrics": [
+    "numerics.metrics.allowance_used_max"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "the declared energy allowance is conservative at every studied step",
+   "judged": true
+  },
+  {
+   "id": "N3_refusals",
+   "metrics": [
+    "numerics.metrics.refusals_all"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "an oversized step and an edge collapse are refused",
+   "judged": true
+  },
+  {
+   "id": "N4_gradient",
+   "metrics": [
+    "numerics.metrics.grad_vs_closed_form_rel"
+   ],
+   "comparison": "le",
+   "threshold": 1e-12,
+   "basis": "jax.grad forces equal the closed-form reference on a perturbed 12x12 lattice",
+   "judged": true
+  },
+  {
+   "id": "T1_static_energy",
+   "metrics": [
+    "tyssue.metrics.static_energy_rel"
+   ],
+   "comparison": "le",
+   "threshold": 1e-12,
+   "basis": "tyssue static energy",
+   "judged": true
+  },
+  {
+   "id": "T1_static_gradient",
+   "metrics": [
+    "tyssue.metrics.static_gradient_abs"
+   ],
+   "comparison": "le",
+   "threshold": 1e-10,
+   "basis": "tyssue static gradient",
+   "judged": true
+  },
+  {
+   "id": "T2_relax_energy",
+   "metrics": [
+    "tyssue.metrics.relax_energy_rel"
+   ],
+   "comparison": "le",
+   "threshold": 1e-10,
+   "basis": "relaxed energies",
+   "judged": true
+  },
+  {
+   "id": "T2_relax_state",
+   "metrics": [
+    "tyssue.metrics.relax_position"
+   ],
+   "comparison": "le",
+   "threshold": 1e-07,
+   "basis": "relaxed states (modulo box, translation)",
+   "judged": true
+  },
+  {
+   "id": "T3_euler",
+   "metrics": [
+    "tyssue.metrics.euler_position"
+   ],
+   "comparison": "le",
+   "threshold": 1e-10,
+   "basis": "40 forward-Euler steps: Cells euler against tyssue's gradient with two geometry updates",
+   "judged": true
+  },
+  {
+   "id": "T4_euler_cut",
+   "metrics": [
+    "tyssue.metrics.euler_cut_position"
+   ],
+   "comparison": "le",
+   "threshold": 1e-10,
+   "basis": "with a cut scheduled at step 20",
+   "judged": true
+  },
+  {
+   "id": "T5_pure_shear",
+   "metrics": [
+    "tyssue.metrics.pure_shear_rel"
+   ],
+   "comparison": "le",
+   "threshold": 0.0001,
+   "basis": "tyssue pure-shear modulus equals the Cells simple-shear modulus (isotropic hexagonal elasticity)",
+   "judged": true
+  }
+ ],
+ "reported_not_judged": [
+  "barrier: compatible-regime barriers per seed (degenerate starting states; path dependence)",
+  "barrier: barriers in Bi's units",
+  "recoil: opening curve and its exponential fit d0 + d1 (1 - exp(-t/tau)); d1/d0, area and perimeter changes of the two cut cells (context: wing disc d1 2.85 um, tau 13-94 s)",
+  "inference: Bayesian MAP at position noise 1e-3 and 1e-2 (RMS error, correlation, ABIC hyperparameter and whether it sits on the grid edge)",
+  "inference: condition numbers of the joint problem",
+  "numerics: recoil time-step errors",
+  "tyssue: the shipped EulerSolver's lag (stage 0: 1.6e-3 after 20 steps)"
+ ],
+ "limitations": [
+  "fixed topology: no T1, T2, division or extrusion; Bi's disordered p0* = 3.813 moves to MG2",
+  "periodic boxes only; reduced units; no physical calibration",
+  "CPU float64; vectorized-world and GPU execution not qualified here",
+  "tension inference with straight junctions: identifiable only up to scale and pressure offset, Lambda only given Gamma (Godolphim 2025)"
+ ],
+ "outcome_rules": {
+  "pass": "every judged criterion passes and no part fails",
+  "failure": "a failed criterion or part is reported with its evidence; thresholds are not changed after the run",
+  "B2": "registered as theory that may fail; its failure is a scientific outcome, not a defect"
+ },
+ "resources": "CPUs 4 and 5 (taskset), one process, parts in the order theory, numerics, ground, recoil, inference, tyssue, rigidity, barrier; detached with durable logs and failure evidence; run from a clean snapshot of the registration commit. Estimated 2.5-3 h from the dry run (dry-run-01, 2 h 57 min on non-registered inputs: barrier 6324 s for 144 paths, 7-106 s each; rigidity 1938 s there because its grid reached r = 2, about 480 s for the registered r <= 1 in judged-01; tyssue 897 s; the other parts 2-9 min each)",
+ "known_weaknesses_for_review": {
+  "R1": "the velocity jump is exact by construction of a parameter change; it tests the cut machinery, the force evaluation and the control-work ledger, not mechanics",
+  "R2": "linear response is computed from the same energy (independent code); it tests the integration of the dynamics and the small-strain regime, not the physics of ablation",
+  "B2": "not proved for a lattice in a fixed box; compatible starting states are degenerate, so barriers between p* and 3.8119 can depend on the start (reported per seed)",
+  "S2": "dynamic shear points avoid p* (critical slowing down); near p* only linear response is judged",
+  "I": "synthetic data from the same force-balance form the inference assumes (best case); the noise tests and the reported Bayesian results show how fast it degrades",
+  "T3": "parity is with forward Euler over tyssue's own gradient after two geometry updates, because tyssue 1.1.0's shipped EulerSolver lags by one update (stage 0)",
+  "G": "relaxation criteria are numerical once the analytic ground state is reached; the physics content is the match to e*, a* and e'(a)",
+  "B4": "B4 now also fails on any non-converged path (counted, not aborting), so B1-B3 stay evaluable",
+  "I3_v2": "the v2 noise levels follow judged-01's failure; the rule is a-priori and reference-only, but engine values at those levels were seen (disclosures)"
+ },
+ "development_runs": [
+  {
+   "id": "dev-01-quick",
+   "outcome": "six parts failed: observations lacked the state fields windowed runs check",
+   "change": "observations carry every state field (no physics or threshold change)"
+  },
+  {
+   "id": "dev-02-quick",
+   "outcome": "all parts ran at the reduced scale (4 x 4 lattices, short grids)",
+   "change": "cut and contraction junctions chosen on the regular lattice (the engine and the references had picked different junctions); the noise-linearity test scales one draw; barrier point 3.8119 replaced by 3.811 (3.5e-5 below the pentagon value its barrier would sit near the 1e-10 floor); barrier grid trimmed for run time"
+  },
+  {
+   "id": "dev-03-dt-study",
+   "outcome": "numerics part at full scale (the dt study): sets the RK4 order window",
+   "change": "N1 RK4 window set from it before registration"
+  },
+  {
+   "id": "references-01",
+   "outcome": "stopped: it used the position-dependent junction choice",
+   "change": "rerun as references-02 after the fix"
+  },
+  {
+   "id": "references-02",
+   "outcome": "superseded: scipy L-BFGS stopped at |F| 7.5e-8 to 3e-6 (energy rounding floor of its line search), limiting the full-cut d1 to about 2e-6",
+   "change": "reference Newton polish with gradient-based acceptance (|F| 3e-6 -> 6e-14)"
+  },
+  {
+   "id": "dev-04-quick",
+   "outcome": "all parts ran at the reduced scale at the rebased head (water merge)",
+   "change": null
+  },
+  {
+   "id": "dev-05-smoke-offgrid",
+   "outcome": "full-size smoke test at points off every registered grid: 8 x 8 analysis at r = 0.04, 0.1, 10 (p0 3.55) and 4 x 4 sheared compatible engine relaxations (p0 3.95)",
+   "change": null
+  },
+  {
+   "id": "dev-06-registered-path",
+   "outcome": "registered-value comparisons exercised at the 4 x 4 scale: engine and references cut the same junction, d1 agrees to 3e-14, barriers to 4e-12",
+   "change": "tyssue relaxation and the recoil runtime minimizer polished by Newton; judged barriers compared with the registered values only"
+  },
+  {
+   "id": "dev-07-quick-barrier",
+   "outcome": "after dev-05 showed a 300 s r = 10 path: FIRE hands over to Newton (dense Hessian, positive modes, force-decrease acceptance) at |F| 1e-3; r = 10 paths 11 s, r = 1 about 2 s, barriers unchanged to 1e-11",
+   "change": "the box relaxation accepts steps while dE/de decreases (energy at its rounding floor)"
+  },
+  {
+   "id": "dev-08-quick-ground",
+   "outcome": "box relaxation after that change",
+   "change": null
+  },
+  {
+   "id": "references-03",
+   "outcome": "the committed reference values (registered_predictions.reference_values), from clean revision 9777a35",
+   "change": null
+  },
+  {
+   "id": "judged-01",
+   "outcome": "v1 judged run: FAIL 52/57 (B1-B4 unevaluated, I3)",
+   "change": null
+  },
+  {
+   "id": "diag-barrier-01",
+   "outcome": "barrier failure reproduced from the judged source and attributed: a critically flat point where a compatible start loses compatibility (lambda_c); FIRE algebraic, energy-based acceptance at the energy's float64 resolution",
+   "change": "the v2 path minimizer"
+  },
+  {
+   "id": "diag-i3-01",
+   "outcome": "I3 attributed: linear to 1e-6, nonlinear at 1e-5 (kappa sigma / l about 0.03)",
+   "change": "noise levels by an a-priori reference rule"
+  },
+  {
+   "id": "noise-reference-01",
+   "outcome": "the reference-only noise study at aeb25b3: levels 1e-9, 1e-8, 1e-7",
+   "change": null
+  },
+  {
+   "id": "dev-09-quick-v2",
+   "outcome": "all parts at the reduced scale with the v2 code",
+   "change": null
+  },
+  {
+   "id": "dry-run-01",
+   "outcome": "full-scale end-to-end run on DRY_RUN_INPUTS (non-registered): parts ['barrier', 'ground', 'inference', 'numerics', 'recoil', 'rigidity', 'theory', 'tyssue'], failures []; barrier failed_paths 0 of 144 paths; every criterion's metric resolves except the 4 registered-value comparisons (skipped by design without a protocol); informatively, all 53 evaluable criteria met their thresholds (check.json, informative_evaluation.json)",
+   "change": null
+  }
+ ],
+ "supersedes": {
+  "protocol": "mg1-vertex-mechanics-v1 (main 70f5456)",
+  "judged_run": "/mnt/workspaces/Cells/morphogenesis-mg1-20261111-01/judged-01 (52/57; margins.json)",
+  "failures": {
+   "B1-B4": "unevaluated: the barrier part stopped at r = 10, p0 = 3.75, seed 0, junction 99, contraction fraction 0.4 (Contraction minimization did not converge)",
+   "I3_noise_linear": "3 of 10 slopes outside [0.9, 1.1] (0.74, 0.88, 1.13)"
+  }
+ },
+ "disclosures": [
+  "I3: during the diagnosis of judged-01 (diag-i3-01) the engine's known-pressure errors were computed on four of the registered inference rows (8x8 seeds 0 and 3, 12x12 seeds 2 and 4) over sigma 1e-10 to 1e-4 along the registered noise draw, including the v2 levels 1e-9, 1e-8 and 1e-7 (slopes over those levels 0.997 to 1.002). The v2 levels were then set by the a-priori reference rule above, not from these values.",
+  "B: the barrier reproduction (diag-barrier-01) ran the registered barrier inputs at r = 0.1 and 1 under the v1 minimizer: barriers below the pentagon threshold were positive, the barrier at p0 3.815 was positive (about 1e-7) and at 3.82 about 0, so the vanishing point lay in (3.815, 3.82] for both r, inside B2's registered window. At r = 10 only the first compatible start was run (the failure).",
+  "Evidence strength: a v2 pass is weaker evidence than a first-registration pass, because v2 follows a failed judged run and the values above were seen before registration."
+ ],
+ "changes_from_v1": [
+  "mechanical_equilibrium_analysis@1 contraction points: FIRE to 1e-3, then cycles of a trust-region Newton on a cancellation-free energy change and a damped Newton on the force residual (eigendecomposition, 2-norm acceptance), with bounded steps, a negative-mode check and a crossing check; non-convergence raises PathNotConverged with diagnostics (internal tolerance 1e-11 unchanged)",
+  "driver: every barrier path is a recorded row; failed_paths counted in B4; every part writes <part>.json or <part>.failure.json, and ground, rigidity, barrier and inference also <part>.cases.jsonl as cases complete",
+  "I3 noise levels: registered_predictions.inference_noise (v1: 1e-7, 1e-6, 1e-5)",
+  "driver --dry-run (non-registered inputs, refuses --protocol) used for the end-to-end check",
+  "all other inputs (REGISTERED_INPUTS) and all thresholds as in v1"
+ ]
+}
