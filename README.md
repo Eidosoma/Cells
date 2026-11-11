@@ -42,7 +42,7 @@ the starting point; metabolism, mechanics, growth and turnover are planned
 extensions. Cells' purpose is to study how these processes work together in the
 same evolving cells and tissues. When an experiment shows that a mechanism is
 missing, we add it to the engine as a cited, biologically grounded model rather
-than working around it ([D136](docs/DECISIONS.md)). The goal is to find where
+than working around it. The goal is to find where
 the ideas hold, fail or need revision. See the
 [research background](docs/SCIENTIFIC_BASIS.md) and
 [planned experiments](docs/EXPERIMENTS.md).
