@@ -1,0 +1,581 @@
+"""Independent reduced reference for resolved_pump_water@1 (numpy/scipy; no Cells code).
+
+It reads a plain resolved_pump_water@1 definition (the JSON dict) and writes the
+declared laws as one smooth ODE system, integrated with scipy's Radau or DOP853 at
+tight tolerances. Nothing in src/cells is imported. The channel, junction-gate and
+constant-field laws are transcribed from the laws resolved_pump_tissue@3 declares
+(processes/sodium_channels.py, potassium_channels.py, junction_gate.py,
+coupling/selective.py). The pump is mg0b_theory's transcription of
+kinetic_pump.LAW_ID, already judged against the engine. The water law is written
+from docs/WATER_VOLUME_REFERENCE.md and docs/PUMP_WATER_MODEL.md:
+
+    Pi = R T (sum N + I) / V,  P = K (V/Vref - 1) + P0,  psi = P - Pi
+    Q = 1e15 A Lp a (psi_cell - psi_outside)   [pL/s, cell to outside]
+
+Scope (refused otherwise): every membrane faces a held bath or the declared
+gauge node, so each cell's potential is its charge over its capacitance and the
+outside potential is 0. Channels: NaV1.2 (m^3 h), Kir2.1 (m h^2), K and Na
+leaks. Junctions: constant field with the voltage-relaxation gate. Controls are
+piecewise constant; integration restarts at every change.
+
+State: amount increments of cells and finite outside nodes (fmol), volume
+increments (pL), channel gates and junction gates. Concentrations are amount
+over current volume everywhere.
+"""
+
+import math
+from dataclasses import dataclass
+from types import SimpleNamespace
+
+import numpy as np
+from scipy import integrate, optimize
+
+from validation.morphogenesis import mg0b_theory as theory
+
+F, R = theory.F, theory.R
+MOL_PER_FMOL = 1e-15
+GATED = {"nav1p2_m3h_regularized@1": "nav", "kir2p1_mh2@1": "kir"}
+LEAKS = {"kleak_always_open@1", "naleak_always_open@1"}
+
+
+def bernoulli(x):
+    return theory.bernoulli(x)
+
+
+def logistic(x):
+    e = np.exp(-np.abs(x))
+    return np.where(x >= 0, 1 / (1 + e), e / (1 + e))
+
+
+def nav_kinetics(v):
+    """NaV1.2 (m, h) targets and time constants (s); processes/sodium_channels.py."""
+    shifted = (v + 0.025) / 0.009
+    a = 0.182 * 9 * bernoulli(-shifted)
+    b = 0.124 * 9 * bernoulli(shifted)
+    recovery = 0.024 * 5 * bernoulli(-(v + 0.040) / 0.005)
+    inactivation = 0.0091 * 5 * bernoulli((v + 0.065000123) / 0.005)
+    target = np.array([a / (a + b), 1 / (1 + np.exp((v + 0.055) / 0.0062))])
+    tau = np.array([0.001 / (a + b), 0.001 / (recovery + inactivation)])
+    return target, tau
+
+
+def kir_kinetics(v):
+    """Kir2.1 (m, h) targets and time constants (s); processes/potassium_channels.py."""
+    target = np.array([logistic(-(v + 0.09648) / 0.02326), logistic((v + 0.16828) / 0.04413)])
+    tau = np.array(
+        [
+            0.0037 - 0.00337 * logistic(-(v + 0.0329) / 0.02793),
+            0.00085 + 0.3063 * logistic((v + 0.11829) / 0.02723),
+        ]
+    )
+    return target, tau
+
+
+def junction_rates(vj, threshold, minimum):
+    """alpha, beta (1/s) of junction_voltage_relaxation@1 (processes/junction_gate.py)."""
+    shift = np.abs(vj) - threshold
+    alpha = 1.3 * np.exp(-77.0 * shift)
+    beta = 20.0 / (1.0 + np.exp(-(math.log(0.065) + 140.0 * shift)))
+    return alpha, beta
+
+
+def ghk_outward(c_from, c_to, dv, z, temperature, area_permeability):
+    """Constant-field flux from `from` to `to` (fmol/s), coupling/selective.py's form."""
+    x = z * F * dv / (R * temperature)
+    return area_permeability / MOL_PER_FMOL * (c_from * bernoulli(-x) - c_to * bernoulli(x))
+
+
+def schedule_value(schedule, t):
+    value = schedule[0]["availability"]
+    for change in schedule:
+        if change["time"] <= t:
+            value = change["availability"]
+    return value
+
+
+@dataclass
+class World:
+    raw: dict
+    species: list
+    z: np.ndarray
+    temperature: float
+    cells: list
+    outside: list
+    membranes: list
+    channels: list
+    junctions: list
+    water: dict
+    times: list  # every control change time
+
+
+def load(raw):
+    m, e = raw["model"], raw["experiment"]
+    if m["id"] != "resolved_pump_water@1":
+        raise ValueError("The reference reads resolved_pump_water@1 definitions")
+    species = [s["id"] for s in m["species"]]
+    gauge = m["closure"]["gauge_reference"]
+    outside = m["extracellular"]
+    held = {o["id"] for o in outside if o.get("reservoir", False) or o["id"] == gauge}
+    for p in m["membranes"]:
+        if p["outside"] not in held:
+            raise ValueError("The reference needs every membrane to face a held bath or the gauge")
+        if p.get("calcium_pump") is not None:
+            raise ValueError("The reference has no calcium pump")
+    for c in m["channels"]:
+        if c["kinetic_law"] not in GATED and c["kinetic_law"] not in LEAKS:
+            raise ValueError("Unsupported channel law " + c["kinetic_law"])
+    times = sorted(
+        {
+            0.0,
+            *(
+                c["time"]
+                for key in (
+                    "membrane_controls",
+                    "junction_controls",
+                    "pump_controls",
+                    "channel_controls",
+                    "water_controls",
+                )
+                for g in e.get(key, [])
+                for c in g["schedule"]
+            ),
+        }
+    )
+    return World(
+        raw,
+        species,
+        np.array([s["valence"] for s in m["species"]], dtype=float),
+        float(m["temperature_K"]),
+        m["cells"],
+        outside,
+        m["membranes"],
+        m["channels"],
+        m["junctions"],
+        m["water"],
+        times,
+    )
+
+
+class Reference:
+    """The ODE system of one world: pack/unpack, right-hand side, integration."""
+
+    def __init__(self, raw):
+        w = self.w = load(raw)
+        self.s = len(w.species)
+        self.z = w.z
+        self.n = len(w.cells)
+        cid = {c["id"]: i for i, c in enumerate(w.cells)}
+        oid = {c["id"]: i for i, c in enumerate(w.outside)}
+        self.finite = [
+            i for i, o in enumerate(w.outside) if not o.get("reservoir", False)
+        ]  # Finite outside nodes (the gauge included).
+        self.of = len(self.finite)
+        self.amount0 = np.array(
+            [[c["initial_amount_fmol"][s] for s in w.species] for c in w.cells]
+        ).T
+        self.volume0 = np.array([c["volume_pL"] for c in w.cells])
+        self.charge0 = np.array([c["initial_charge_C"] for c in w.cells])
+        self.out_amount0 = np.array(
+            [[o["initial_amount_fmol"][s] for s in w.species] for o in w.outside]
+        ).T
+        self.out_volume0 = np.array([o["volume_pL"] for o in w.outside])
+        self.mem_cell = np.array([cid[p["inside"]] for p in w.membranes])
+        self.mem_out = np.array([oid[p["outside"]] for p in w.membranes])
+        self.area = np.array([p["area_m2"] for p in w.membranes])
+        self.cap = np.array([p["capacitance_F"] for p in w.membranes])
+        self.perm = np.array(
+            [[p["permeability_m_per_s"][s] for s in w.species] for p in w.membranes]
+        ).T
+        self.cell_cap = np.bincount(self.mem_cell, weights=self.cap, minlength=self.n)
+        mids = {p["id"]: i for i, p in enumerate(w.membranes)}
+        self.ch_mem = np.array([mids[c["membrane_id"]] for c in w.channels], dtype=int)
+        self.ch_kind = [GATED.get(c["kinetic_law"], "leak") for c in w.channels]
+        self.ch_species = np.array(
+            [w.species.index(c["permeant_ions"][0]["species_id"]) for c in w.channels], dtype=int
+        )
+        self.ch_perm = np.array(
+            [c["max_permeability_m_per_s"] * c["abundance"] for c in w.channels]
+        )
+        self.gated = [i for i, k in enumerate(self.ch_kind) if k != "leak"]
+        self.gate0 = np.array([g for i in self.gated for g in w.channels[i]["initial_gate"]])
+        self.j_send = np.array([cid[j["sender"]] for j in w.junctions], dtype=int)
+        self.j_recv = np.array([cid[j["receiver"]] for j in w.junctions], dtype=int)
+        self.j_ap = np.array(
+            [[j["area_m2"] * j["permeability_m_per_s"][s] for s in w.species] for j in w.junctions]
+        ).T.reshape(self.s, len(w.junctions))
+        self.j_thr = np.array([j["gate"]["threshold_voltage_V"] for j in w.junctions])
+        self.j_min = np.array([j["gate"]["minimum_open_fraction"] for j in w.junctions])
+        self.j_gate0 = np.array([j["gate"]["initial_gate"] for j in w.junctions])
+        # Water: node parameters for cells and finite outside nodes, baths' potentials.
+        rows = {c["compartment_id"]: c for c in w.water["compartments"]}
+        nodes = [c["id"] for c in w.cells] + [w.outside[i]["id"] for i in self.finite]
+        self.vref = np.array([rows[k]["reference_volume_pL"] for k in nodes])
+        self.vmin = np.array([rows[k]["minimum_volume_pL"] for k in nodes])
+        self.vmax = np.array([rows[k]["maximum_volume_pL"] for k in nodes])
+        self.impermeant = np.array([rows[k]["impermeant_amount_fmol"] for k in nodes])
+        self.modulus = np.array([rows[k]["bulk_modulus_Pa"] for k in nodes])
+        self.offset = np.array([rows[k]["pressure_offset_Pa"] for k in nodes])
+        baths = {b["compartment_id"]: b["hydrostatic_pressure_Pa"] for b in w.water["baths"]}
+        lp = {
+            r["membrane_id"]: r["hydraulic_permeability_m_per_Pa_s"] for r in w.water["membranes"]
+        }
+        self.conductance = np.array([1e15 * p["area_m2"] * lp[p["id"]] for p in w.membranes])
+        rt = R * w.temperature
+        self.bath_psi = np.zeros(len(w.outside))
+        for i, o in enumerate(w.outside):
+            if o["id"] in baths:
+                self.bath_psi[i] = (
+                    baths[o["id"]] - rt * np.sum(self.out_amount0[:, i]) / o["volume_pL"]
+                )
+        self.pump = [p.get("pump") for p in w.membranes]
+        self.sizes = (
+            self.s * self.n,
+            self.s * self.of,
+            self.n,
+            self.of,
+            len(self.gate0),
+            len(w.junctions),
+        )
+
+    # ------------------------------------------------------------ state
+
+    def initial(self):
+        return np.concatenate(
+            (np.zeros(self.sizes[0] + self.sizes[1] + self.n + self.of), self.gate0, self.j_gate0)
+        )
+
+    def unpack(self, y):
+        parts, start = [], 0
+        for size in self.sizes:
+            parts.append(y[start : start + size])
+            start += size
+        dn, dno, dv, dvo, gates, jg = parts
+        return (
+            dn.reshape(self.s, self.n),
+            dno.reshape(self.s, self.of),
+            dv,
+            dvo,
+            gates.reshape(-1, 2) if len(gates) else gates.reshape(0, 2),
+            jg,
+        )
+
+    def controls(self, t):
+        e = self.w.raw["experiment"]
+
+        def by(key, idkey, ids):
+            groups = {g[idkey]: g["schedule"] for g in e.get(key, [])}
+            return np.array([schedule_value(groups[i], t) for i in ids]) if ids else np.zeros(0)
+
+        mids = [p["id"] for p in self.w.membranes]
+        return SimpleNamespace(
+            membrane=by("membrane_controls", "membrane_id", mids),
+            junction=by("junction_controls", "junction_id", [j["id"] for j in self.w.junctions]),
+            pump=by(
+                "pump_controls",
+                "pump_id",
+                [p["pump"]["id"] for p in self.w.membranes if p.get("pump")],
+            ),
+            channel=by("channel_controls", "channel_id", [c["id"] for c in self.w.channels]),
+            water=by("water_controls", "membrane_id", mids),
+        )
+
+    def physical(self, y):
+        dn, dno, dv, dvo, gates, jg = self.unpack(y)
+        amount = self.amount0 + dn
+        volume = self.volume0 + dv
+        out_amount = self.out_amount0.copy()
+        out_volume = self.out_volume0.copy()
+        out_amount[:, self.finite] += dno
+        out_volume[self.finite] += dvo
+        charge = self.charge0 + F * MOL_PER_FMOL * np.sum(self.z[:, None] * dn, axis=0)
+        vm = charge / self.cell_cap
+        return amount, volume, out_amount, out_volume, vm, gates, jg
+
+    # ------------------------------------------------------------ laws
+
+    def rhs(self, t, y, control=None):
+        c = self.controls(t) if control is None else control
+        amount, volume, out_amount, out_volume, vm, gates, jg = self.physical(y)
+        temperature, z = self.w.temperature, self.z
+        ci, co = amount / volume, out_amount / out_volume
+        cell_rate = np.zeros_like(amount)
+        out_rate = np.zeros_like(out_amount)
+        v_mem = vm[self.mem_cell]
+        # Passive membrane routes (outward positive).
+        flux = (
+            ghk_outward(
+                ci[:, self.mem_cell],
+                co[:, self.mem_out],
+                v_mem,
+                z[:, None],
+                temperature,
+                self.area * self.perm,
+            )
+            * c.membrane
+        )
+        # Channels.
+        gate_rate = np.zeros_like(gates)
+        k = 0
+        for i, kind in enumerate(self.ch_kind):
+            mem, sp = self.ch_mem[i], self.ch_species[i]
+            if kind == "leak":
+                opening = 1.0
+            else:
+                g = gates[k]
+                target, tau = (nav_kinetics if kind == "nav" else kir_kinetics)(v_mem[mem])
+                gate_rate[k] = (target - g) / tau
+                opening = g[0] ** 3 * g[1] if kind == "nav" else g[0] * g[1] ** 2
+                k += 1
+            flux[sp, mem] += (
+                ghk_outward(
+                    ci[sp, self.mem_cell[mem]],
+                    co[sp, self.mem_out[mem]],
+                    v_mem[mem],
+                    z[sp],
+                    temperature,
+                    self.area[mem] * self.ch_perm[i],
+                )
+                * opening
+                * c.channel[i]
+            )
+        # Na/K pumps (mg0b_theory's transcription of the declared law).
+        q = 0
+        for mem, pump in enumerate(self.pump):
+            if pump is None:
+                continue
+            na, kk = (
+                self.w.species.index(pump["roles"]["sodium"]),
+                self.w.species.index(pump["roles"]["potassium"]),
+            )
+            m = pump["metabolism"]
+            p = SimpleNamespace(
+                temperature_K=temperature,
+                pump=dict(
+                    km_na_mM=pump["km_na_mM"],
+                    km_k_mM=pump["km_k_mM"],
+                    km_atp_mM=pump["km_atp_mM"],
+                    atp_mM=m["atp_mM"],
+                    adp_mM=m["adp_mM"],
+                    pi_mM=m["pi_mM"],
+                    delta_g0_J_per_mol=m["delta_g0_J_per_mol"],
+                ),
+                bath_mM=dict(Na=co[na, self.mem_out[mem]], K=co[kk, self.mem_out[mem]]),
+                pump_capacity_mol_s=pump["capacity_fmol_per_s"] * c.pump[q],
+            )
+            cycles = float(
+                theory.pump_cycles_mol_s(
+                    p, dict(Na=ci[na, self.mem_cell[mem]], K=ci[kk, self.mem_cell[mem]]), v_mem[mem]
+                )
+            )
+            flux[na, mem] += 3 * cycles
+            flux[kk, mem] -= 2 * cycles
+            q += 1
+        np.subtract.at(cell_rate, (slice(None), self.mem_cell), flux)
+        np.add.at(out_rate, (slice(None), self.mem_out), flux)
+        # Junctions and their gates.
+        jrate = np.zeros_like(jg)
+        if len(jg):
+            vj = vm[self.j_send] - vm[self.j_recv]
+            jflux = ghk_outward(
+                ci[:, self.j_send], ci[:, self.j_recv], vj, z[:, None], temperature, self.j_ap
+            ) * (jg * c.junction)
+            np.subtract.at(cell_rate, (slice(None), self.j_send), jflux)
+            np.add.at(cell_rate, (slice(None), self.j_recv), jflux)
+            alpha, beta = junction_rates(vj, self.j_thr, self.j_min)
+            jrate = alpha * (1 - jg) - beta * (jg - self.j_min)
+        # Water at current amounts and volumes.
+        rt = R * temperature
+        nodes_amount = np.concatenate((amount, out_amount[:, self.finite]), axis=1)
+        nodes_volume = np.concatenate((volume, out_volume[self.finite]))
+        psi_nodes = (
+            self.modulus * (nodes_volume / self.vref - 1)
+            + self.offset
+            - rt * (np.sum(nodes_amount, axis=0) + self.impermeant) / nodes_volume
+        )
+        psi_out = self.bath_psi.copy()
+        psi_out[self.finite] = psi_nodes[self.n :]
+        qflow = self.conductance * c.water * (psi_nodes[self.mem_cell] - psi_out[self.mem_out])
+        dv = -np.bincount(self.mem_cell, weights=qflow, minlength=self.n)
+        dvo_all = np.bincount(self.mem_out, weights=qflow, minlength=len(self.w.outside))
+        return np.concatenate(
+            (
+                cell_rate.ravel(),
+                out_rate[:, self.finite].ravel(),
+                dv,
+                dvo_all[self.finite],
+                gate_rate.ravel(),
+                jrate,
+            )
+        )
+
+    def integrate(self, end, t_eval, *, method="Radau", rtol=1e-11, atol=None, y0=None):
+        """Piecewise-constant controls: one solve per interval between control changes."""
+        y = self.initial() if y0 is None else np.asarray(y0, dtype=float)
+        atol = 1e-15 if atol is None else atol
+        points = [t for t in self.w.times if 0 < t < end] + [end]
+        start, out = 0.0, {}
+        t_eval = sorted(set(float(t) for t in t_eval))
+        if 0.0 in t_eval:
+            out[0.0] = y.copy()
+        for stop in points:
+            control = self.controls(start)
+            inside = [t for t in t_eval if start < t <= stop]
+            solution = integrate.solve_ivp(
+                lambda t, v, control=control: self.rhs(t, v, control),
+                (start, stop),
+                y,
+                method=method,
+                t_eval=inside or None,
+                rtol=rtol,
+                atol=atol,
+                dense_output=False,
+            )
+            if not solution.success:
+                raise RuntimeError(solution.message)
+            for t, column in zip(solution.t, solution.y.T, strict=True):
+                out[float(t)] = column.copy()
+            y = solution.y[:, -1].copy()
+            start = stop
+        return {t: out[t] for t in t_eval}
+
+    def observe(self, y):
+        amount, volume, out_amount, out_volume, vm, gates, jg = self.physical(y)
+        return dict(
+            cell_volume_pL=volume.tolist(),
+            membrane_voltage_V=vm[self.mem_cell].tolist(),
+            cell_concentration_mM=(amount / volume).T.tolist(),
+            cell_osmolarity_mM=(
+                (np.sum(amount, axis=0) + self.impermeant[: self.n]) / volume
+            ).tolist(),
+            extracellular_volume_pL=out_volume[self.finite].tolist(),
+        )
+
+
+# ------------------------------------------------------------ stationary states
+
+
+def cell_stationary_states(raw, *, grid=None):
+    """Stationary states of one heredity cell facing a held bath, with water.
+
+    For a given Vm the Na and K balances (pump, leaks, channels at their voltage
+    steady state) fix the Na and K concentrations; M is at its Nernst
+    distribution (passive routes only); the volume follows from osmotic balance
+    sum(c) + (N_fixed + I)/V = c_bath + P(V)/RT; the residual is the charge,
+    C Vm - F (sum z N + X). Roots in Vm on the grid are refined by brentq.
+    Returns [(Vm, {Na, K, M}, V, osmolarity)] sorted by Vm.
+    """
+    w = Reference(raw)
+    if w.n != 1 or len(w.w.membranes) != 1 or w.of:
+        raise ValueError("One cell, one membrane, a held bath")
+    cell = w.w.cells[0]
+    species = w.w.species
+    idx = {s: species.index(s) for s in species}
+    rt = R * w.w.temperature
+    bath = w.out_amount0[:, 0] / w.out_volume0[0]
+    c_bath = float(np.sum(bath))
+    fixed = {s: w.amount0[idx[s], 0] for s in species if s not in ("Na", "K", "M")}
+    control = w.controls(0.0)
+
+    def openings(v):
+        out = []
+        for kind in w.ch_kind:
+            if kind == "leak":
+                out.append(1.0)
+            elif kind == "nav":
+                target, _ = nav_kinetics(v)
+                out.append(target[0] ** 3 * target[1])
+            else:
+                target, _ = kir_kinetics(v)
+                out.append(target[0] * target[1] ** 2)
+        return out
+
+    def inward(v, conc):
+        """Inward fluxes (fmol/s) of Na and K at v with steady gates."""
+        opening = openings(v)
+        out = {}
+        for s in ("Na", "K"):
+            k = idx[s]
+            perm = w.perm[k, 0] * control.membrane[0]
+            for i, o in enumerate(opening):
+                if w.ch_species[i] == k:
+                    perm += w.ch_perm[i] * o * control.channel[i]
+            out[s] = -float(
+                ghk_outward(conc[s], bath[k], v, w.z[k], w.w.temperature, w.area[0] * perm)
+            )
+        pump = w.pump[0]
+        if pump is not None:
+            m = pump["metabolism"]
+            q = SimpleNamespace(
+                temperature_K=w.w.temperature,
+                pump=dict(
+                    km_na_mM=pump["km_na_mM"],
+                    km_k_mM=pump["km_k_mM"],
+                    km_atp_mM=pump["km_atp_mM"],
+                    atp_mM=m["atp_mM"],
+                    adp_mM=m["adp_mM"],
+                    pi_mM=m["pi_mM"],
+                    delta_g0_J_per_mol=m["delta_g0_J_per_mol"],
+                ),
+                bath_mM=dict(Na=bath[idx["Na"]], K=bath[idx["K"]]),
+                pump_capacity_mol_s=pump["capacity_fmol_per_s"] * control.pump[0],
+            )
+            cycles = float(theory.pump_cycles_mol_s(q, dict(Na=conc["Na"], K=conc["K"]), v))
+            out["Na"] -= 3 * cycles
+            out["K"] += 2 * cycles
+        return out
+
+    def composition(v):
+        conc = dict(Na=12.0, K=140.0, M=bath[idx["M"]] * math.exp(F * v / rt))
+        for _ in range(80):
+            na = optimize.brentq(
+                lambda x, c=conc: inward(v, dict(c, Na=x))["Na"], 1e-6, 5e3, xtol=1e-14, rtol=1e-15
+            )
+            kk = optimize.brentq(
+                lambda x, na=na, c=conc: inward(v, dict(c, Na=na, K=x))["K"],
+                1e-6,
+                5e4,
+                xtol=1e-14,
+                rtol=1e-15,
+            )
+            done = abs(na - conc["Na"]) <= 1e-14 * na and abs(kk - conc["K"]) <= 1e-14 * kk
+            conc = dict(conc, Na=na, K=kk)
+            if done:
+                break
+        return conc
+
+    def volume_of(conc):
+        mobile = conc["Na"] + conc["K"] + conc["M"]
+        particles = sum(fixed.values()) + w.impermeant[0]
+
+        def residual(volume):
+            pressure = w.modulus[0] * (volume / w.vref[0] - 1) + w.offset[0]
+            return mobile + particles / volume - c_bath - pressure / rt
+
+        low, high = 1e-3 * w.volume0[0], 1e3 * w.volume0[0]
+        if residual(high) > 0:
+            return math.nan  # Mobile ions alone exceed the bath: no finite volume.
+        return optimize.brentq(residual, low, high, xtol=1e-17, rtol=1e-15)
+
+    def charge_residual(v):
+        conc = composition(v)
+        volume = volume_of(conc)
+        if not math.isfinite(volume):
+            return math.nan
+        ionic = sum(w.z[idx[s]] * conc[s] * volume for s in ("Na", "K", "M"))
+        ionic += sum(w.z[idx[s]] * n for s, n in fixed.items())
+        return w.cell_cap[0] * v - F * MOL_PER_FMOL * (ionic + cell["fixed_charge_equivalent_fmol"])
+
+    grid = np.linspace(-0.110, 0.0, 221) if grid is None else grid
+    values = np.array([charge_residual(v) for v in grid])
+    states = []
+    finite = np.isfinite(values)
+    for i in np.flatnonzero(
+        finite[:-1] & finite[1:] & (np.sign(values[:-1]) * np.sign(values[1:]) < 0)
+    ):
+        v = optimize.brentq(charge_residual, grid[i], grid[i + 1], xtol=1e-16, rtol=1e-15)
+        conc = composition(v)
+        volume = volume_of(conc)
+        particles = sum(fixed.values()) + w.impermeant[0]
+        osmolarity = conc["Na"] + conc["K"] + conc["M"] + particles / volume
+        states.append((v, conc, volume, osmolarity))
+    return states
