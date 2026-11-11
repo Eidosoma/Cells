@@ -41,7 +41,7 @@ starts, and production design is deferred until parity is established.
 | 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | Passed (pre-registered protocols D and F) |
 | 3b | Parity rung 1: Cl/Ca ions plus the plasma-membrane Ca pump (`resolved_pump_tissue@2`) | v1 failed (one item); **v2 passed** (registered after attribution; weaker evidence) |
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
-| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers), P3 (scheduled interventions, first subset) and P4 (general-network channels) passed** on CPU; **P4b (NaV1.2, Kir2.1, Na leak) passed** (three cases; NaV1.2 not yet at the D-state voltage); L4 runs of P2–P4 not yet done |
+| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers), P3 (scheduled interventions, first subset) and P4 (general-network channels) passed** on CPU; **P4b (NaV1.2, Kir2.1, Na leak) passed** (four cases, NaV1.2 including the D-state voltage); L4 runs of P2–P4 not yet done |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
@@ -107,6 +107,7 @@ machine-readable inputs, results, checks and failures.
   | h1: NaV1.2 + leaks in INIT, Kir2.1 on at SIM | pass | 0.41 (INIT ECM M) | 0.40 mV (2) | 0.94 µV (6) |
   | h2: Kir2.1 + leaks in INIT, NaV1.2 on at SIM | pass | 0.35 (SIM ECM Ca) | 0.47 mV (2) | 1.71 µV (20) |
   | kir-h: Kir2.1 alone, tissue Na leak ×0.2 (registered `bc86673`) | pass | 0.35 (SIM ECM M) | 0.30 mV (1) | 4.2 µV (40) |
+  | nav-kleak: NaV1.2 + K leak at rest −21.2 mV (registered `f79cc30`; own order check fired, dt/100 terms) | pass | 0.475 (SIM ECM M) | 0.53 mV (2) | 0.39 µV (3) |
 
   - Each channel's effect over the observed error: NaV1.2 Vm 25 (INIT) and 3661 (SIM
     switch-on); Kir2.1 Vm 18 (INIT) and 1485 (SIM switch-on); cell Na and K 130–1800.
@@ -115,9 +116,10 @@ machine-readable inputs, results, checks and failures.
     uses the analytic limits where BETSE gives NaN at −25, −40 and −65.000123 mV).
   - INIT Vm sits at BETSE's own 10 ms step term (0.40 and 0.48 mV measured).
   - **Limits:**
-    - **NaV1.2 voltages:** covered from 0 to −16.9 mV (h1) and −27.9 to −34.2 mV (h2).
-      The heredity D state (−21.5 mV) lies in the gap between them, and the unstable
-      point (−39 mV) lies below them.
+    - **NaV1.2 voltages:** covered from 0 to −16.9 mV (h1), −27.9 to −34.2 mV (h2) and
+      0 to −21.2 mV, resting at −21.2 mV (nav-kleak), which includes the heredity D
+      state (−21.5 mV). Its lower window (−60 to −35 mV) and the unstable point
+      (−39 mV) are not exercised.
     - **Kir2.1 voltages:** covered from 0 to −34.2 mV (h1, h2) and 0 to −91 mV
       (kir-h). kir-h rests at −91 mV, not at H; it passes −80 mV only on the way down
       in INIT, at BETSE's 10 ms steps.
