@@ -4614,6 +4614,21 @@ and you rank this, we are in no rush".
   model or code is tooling and needs the user's approval per paper (D137 covers
   only Cortés-Poza Phase 0).
 
+## D139: Cell replacement (G2) rules
+
+2026-11-11, user decisions on the [G2 design note](/mnt/workspaces/Cells/cell-replacement-g2-20261111-01/design-note-G2.md):
+- **"Inherit" is excluded.** The literature (abstracts) says whole gap-junction
+  plaques leave with a departing cell, and a newcomer forms new channels after a lag
+  (about 2–20 min) over tens of minutes. No junction gate state carries across a
+  replacement. The engine offers only the parameterised formation law (initial
+  abundance, lag, time constant and gate at arrival, all declared). Pre-screen 9's
+  inherit results, including the 91-cell full renewal, stay as driver evidence
+  labelled biologically unsupported.
+- **Newcomer templates: both kinds now.** These are isolated cells at their own
+  steady state (D133) and a donor copy (division: the newcomer takes a declared
+  neighbour's contents). The donor copy is a different heredity claim, an inheritance
+  route for the written state, and its arms are labelled as such.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
