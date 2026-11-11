@@ -83,7 +83,7 @@ machine-readable inputs, results, checks and failures.
     lack of its 4 GiB disk reserve while the workspace disk was full. Rerun from the
     same snapshot after space was freed, it passes as recorded (16 passed, 1 skipped).
     The tier-3 and new files pass in full. The tier record adds the two new files
-    (271/67/195).
+    (271/66/196, with `test_cell_replacement_vector.py` in tier 3: 85–101 s against the 90 s cap).
 - **Parity on the L4: variants registered (11 November).** None of the 12 P2–P4b
   protocols allowed a GPU run, so each has a registered L4 variant built by
   `validation/betse/backend_variant.py`
@@ -105,6 +105,11 @@ machine-readable inputs, results, checks and failures.
     diagnosis, and a pass is labelled weaker evidence.
   - **Dry run:** a full-scale run on non-registered inputs passed (144 barrier paths,
     none failed).
+  - **Timing, disclosed:**
+    - v2 was committed on main at `699e96d` (20:25:59 UTC);
+    - the judged run started at 20:27:57 from a clean snapshot of `840488e`, which
+      contains it (empty patch; protocol bytes equal main's);
+    - the commit was pushed at about 21:17, after the run began.
 - **Cell division, stage 1 (11 November).** Verified data for the
   [cell-division plan](docs/CELL_DIVISION_PLAN.md) (D141):
   - Xenopus goes first;
