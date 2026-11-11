@@ -2,12 +2,13 @@
 
 ![Cells logo: three connected cells beside the Cells wordmark.](docs/assets/cells-logo.png)
 
-Cells is an independent multiscale simulator for investigating how
+Cells is a GPU-native multiscale simulator for investigating how
 molecular assembly, cell physiology and communication shape memory, inheritance
 and tissue organisation. We are building toward integrated whole-cell models,
-whole organs and interacting organ systems. The simulation stack is **Python and
-JAX**, with independent CPU references and local NVIDIA GPU execution.
-[Progress](PROGRESS.md) holds the detailed current status and evidence.
+whole organs and interacting organ systems. It is written in **Python and JAX**,
+so the same models compile for NVIDIA GPUs and for CPUs, and the CPU runs serve
+as independent references. [Progress](PROGRESS.md) holds the detailed current
+status and evidence.
 
 ![A cutaway animal cell maps its membrane to bioelectricity, cytoplasm to chemistry and transport, ER to calcium signalling, mitochondria to organelle physiology, regulatory machinery to regulatory cell state, protein complexes to molecular assembly, ATP and volume to fuel and water, and cell contacts to tissue communication.](docs/assets/cells-biology-map.png)
 
