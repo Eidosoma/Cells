@@ -4649,9 +4649,10 @@ beneath (GRNs) and above how the proteins are used".
 - **Priority.** Simulating cell division in a simple subject with a lot of wet-lab
   data is high priority. It is the first slice of morphogenesis rung MG3, brought
   forward.
-- **Subjects.** "Either Xenopus or C. elegans"; both early embryos are the first
-  subjects. The lead ranks them: Xenopus cleavage first for its bioelectric fit,
-  then C. elegans.
+- **Subjects.** "Either Xenopus or C. elegans": either is acceptable as the first
+  subject. The lead's order is Xenopus cleavage first, for its bioelectric fit,
+  then C. elegans. The order swaps if verification finds the Xenopus data too
+  thin.
 - **Rule.** "As with all our tests we should add to our simulation or models as we
   need those, we want the simulation/modeling to be as realistic as possible."
   Whatever physiology a subject needs (for example cortical polarity and spindle
