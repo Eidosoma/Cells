@@ -94,6 +94,51 @@ steps:
 - the question of whether a reversion switch exists, which parallels rewriting a
   stored bioelectric state.
 
+## Quick check of the published rules (11 November 2026)
+
+The user supplied Supplementary Tables S1–S3. We enumerated every one of the
+2¹⁷ = 131,072 states of the 17-gene combined network in Table S2. This is a
+development check of the paper's network, not a Cells engine model; evidence is
+in `/mnt/workspaces/Cells/paper-shin-2025-revert-20261111-01/`.
+
+- **31 attractors, all fixed points.**
+  - The asynchronous terminal sets are the same 31 single states, so this
+    network's attractors do not depend on the update scheme. That answers the
+    synchronous-updating concern for this network.
+  - The paper reports nine attractors, one of them cyclic, from 1,000 random
+    starts. That may describe a different network size (Table S3 lists 13-, 17-
+    and 21-node networks), and 1,000 starts miss most basins here, many of which
+    are under 1% of states.
+- **The many attractors come largely from self-loops.**
+  - Six genes keep themselves on: BHLHE40, CDX2, DDIT3, KLF6, RELB and YY1.
+  - FOXO3 also needs JUN.
+  - The inference adds self-activation to any node without an activating input,
+    so the landscape's multiplicity is partly an artefact of the method.
+- **Cancer-like states.**
+  - 12 fixed points have MYC, CDX2, YY1, SREBF1 and SMARCA4 all on; together
+    their basins hold 87.5% of states.
+  - Table S3 reports a basin size of 875 for several networks, possibly 875 of
+    1,000 starts. That matches 87.5%, but this is not confirmed.
+- **Clamping both YY1 and MYC off removes every state with MYC or YY1 on.**
+  - 14 fixed points remain.
+  - Fully normal-like states, with all five cancer genes off, take about 22% of
+    states.
+  - The largest remaining basins keep CDX2 on, through its self-loop.
+- **One knockdown alone does not do it.** Clamping YY1 off leaves MYC-on states
+  in the largest basins. Clamping MYC off leaves YY1-on states. This agrees with
+  the paper's statement that the combination is needed.
+- **Table S3:**
+  - YY1 plus MYC is the best double perturbation in most of the 19 listed
+    hyperparameter cases, with final scores of 0.038–0.143.
+  - SREBF1 plus MYC and YY1 plus CDX2 also appear.
+  - The network size varies from 13 to 21 nodes with the settings.
+  - The BasinSize column mixes fractions (0.36–0.73) with the value 875, so its
+    units are unclear.
+
+So the published rules reproduce the in-model claim that a YY1 plus MYC knockdown
+removes the cancer attractors. The robustness and causal questions in the review
+above are unchanged by this check.
+
 ## What "model it in Cells" can mean
 
 The model is a data-inferred Boolean network with no rate constants, ions,
