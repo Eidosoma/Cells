@@ -24,6 +24,7 @@ from tests.apical_vertex_fixtures import (
     arrays,
     honeycomb,
     jax_forces,
+    jax_stress,
 )
 from validation.morphogenesis import mg1_reference as ref
 from validation.morphogenesis import mg1_theory as theory
@@ -70,19 +71,11 @@ def test_regular_honeycomb_energy_stress_and_reference():
     np.testing.assert_allclose(g.perimeter[:16], P_CASE, rtol=1e-12)
     energy = vm.energy(state.position, topo, layout.box, av.mechanics(state), xp=np)
     assert abs(energy / 16 - E_STAR) <= 1e-12 * E_STAR
-    stress = np.asarray(
-        vm.box_stress(
-            jnp.asarray(state.position), topo, jnp.asarray(layout.box), av.mechanics(state)
-        )
-    )
+    stress = jax_stress(state, layout)
     assert np.max(np.abs(stress)) < 1e-11
     for scale in (0.95, 1.05):
         spec, state, layout, topo = arrays(honeycomb(area=A_STAR * scale**2))
-        stress = np.asarray(
-            vm.box_stress(
-                jnp.asarray(state.position), topo, jnp.asarray(layout.box), av.mechanics(state)
-            )
-        )
+        stress = jax_stress(state, layout)
         expected = theory.stress_half_trace(A_STAR * scale**2, LAMBDA, GAMMA)
         assert abs(0.5 * np.trace(stress) - expected) <= 1e-10 * abs(expected)
         assert abs(stress[0, 1]) < 1e-12 and abs(stress[1, 0]) < 1e-12
@@ -114,6 +107,7 @@ def test_crossing_junctions_are_detected():
     moved = state.position.copy()
     moved[0] += [3.0 * P_CASE / 6, 0.0]  # Three hexagon sides across its neighbours.
     assert vm.crossing_junctions(moved, topo, layout.box) > 0
+    assert not vm.domain_valid(moved, topo, layout.box, 1e-3, xp=np)  # Fold-over: winding.
 
 
 def test_periodic_image_shift_leaves_energy_unchanged():
@@ -150,5 +144,6 @@ def test_hessian_rate_bounds_the_hessian(line_tension):
     )
     n = state.position.size
     largest = np.max(np.abs(np.linalg.eigvalsh(np.asarray(hessian).reshape(n, n))))
-    rho = vm.hessian_rate(state.position, topo, layout.box, av.mechanics(state), layout.friction)
+    mech = av.mechanics(state)
+    rho = vm.hessian_rate(state.position, topo, layout.box, mech, layout.friction, xp=np)
     assert largest <= float(rho)

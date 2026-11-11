@@ -1,5 +1,6 @@
 """Shared helpers for the apical_vertex_mechanics@1 tests (periodic honeycombs)."""
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -34,9 +35,24 @@ def arrays(definition):
     return spec, state, layout, av.topology(layout)
 
 
+_forces = jax.jit(vm.forces)
+_stress = jax.jit(vm.box_stress)
+
+
 def jax_forces(state, layout):
     return np.asarray(
-        vm.forces(
+        _forces(
+            jnp.asarray(state.position),
+            av.topology(layout),
+            jnp.asarray(layout.box),
+            av.mechanics(state),
+        )
+    )
+
+
+def jax_stress(state, layout):
+    return np.asarray(
+        _stress(
             jnp.asarray(state.position),
             av.topology(layout),
             jnp.asarray(layout.box),
