@@ -81,7 +81,11 @@ make unfinished mechanisms compatible.
    benchmarking, intervention and licensing caveats remain implementation inputs.
    Revisit its scope after additional platform capabilities are verified;
    do not automatically extend the search or launch confirmation runs.
-7. **Golgi apparatus and membrane trafficking (planned, not started).** Proteins
+7. **Cell division (high priority, D141).** Division as an engine operation
+   (partition with closed ledgers, new membrane and contacts, lineage), then Xenopus
+   early cleavage and the C. elegans early embryo, adding the physiology each needs.
+   See the [cell-division plan](CELL_DIVISION_PLAN.md).
+8. **Golgi apparatus and membrane trafficking (planned, not started).** Proteins
    made at the endoplasmic reticulum pass through the Golgi, where they are
    modified, sorted and packaged for the membrane or for secretion. In Cells this
    is the link between gene regulation and the membrane. The plan is a conserved

@@ -4643,6 +4643,21 @@ beneath (GRNs) and above how the proteins are used".
   would come from structural data or prediction. The current cage model uses a
   prescribed contact graph.
 
+## D141: Cell division, high priority
+
+2026-11-11, user decisions on the [cell-division plan](CELL_DIVISION_PLAN.md):
+- **Priority.** Simulating cell division in a simple subject with a lot of wet-lab
+  data is high priority. It is the first slice of morphogenesis rung MG3, brought
+  forward.
+- **Subjects.** "Either Xenopus or C. elegans"; both early embryos are the first
+  subjects. The lead ranks them: Xenopus cleavage first for its bioelectric fit,
+  then C. elegans.
+- **Rule.** "As with all our tests we should add to our simulation or models as we
+  need those, we want the simulation/modeling to be as realistic as possible."
+  Whatever physiology a subject needs (for example cortical polarity and spindle
+  positioning for C. elegans) is added to the engine as cited, opt-in models
+  (D136). It is not prescribed.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
