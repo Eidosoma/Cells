@@ -10,7 +10,7 @@ are separate outcomes; [Progress](../PROGRESS.md) owns run status and evidence.
 The [frozen protocol](../validation/assays/two_task_protocol.json) fixes the
 input panel, reader, splits, margins, controls and resource bounds before
 held-out evaluation. It authenticates the completed BETSE prerequisite and
-the unchanged [seven-cell fixture](../configs/betse_spatial_junction.json).
+the unchanged [seven-cell fixture](../validation/betse/emulator/configs/betse_spatial_junction.json) (moved with the BETSE-order emulator on 8 November).
 BETSE calibrates and verifies this bioelectric layer of the larger Cells model;
 the new cue panel is a synthetic experiment, without a new claim of native
 mixed-intervention equivalence or biological calibration.

@@ -120,14 +120,14 @@ versioned, opt-in models that call an already qualified model's own step rather
 than copying it. Examples:
 - `resolved_pump_water@1` runs water half-steps around `resolved_pump_tissue@3`'s
   checked step (a Strang split).
-- The cell-replacement wrapper applies events and a formation law around the same
-  step.
+- The cell-replacement wrapper, still on a branch, applies events and a formation
+  law around the same step.
 - `@3` itself accepts opt-in hooks, such as an extra membrane process or a
   nonnegative junction-heat booking.
 
 The rules:
-- When off, the wrapper or option must reproduce the inner model bitwise, which is
-  tested.
+- When off, the wrapper or option must reproduce the inner model bitwise. This is
+  tested on CPU.
 - It reuses the inner model's check functions, so later fixes to the inner model
   reach it unchanged.
 - It carries its own ledgers for anything it adds.
@@ -238,7 +238,8 @@ observer order, output cadence, window size or device placement must preserve
 the declared physical trajectory/replay contract. An observer's random noise
 uses a separate stream from biological stochastic events.
 
-A worked example from development runs (heredity pre-screen 9, not judged):
+A worked example from development runs (heredity pre-screen 9, not judged, under
+a newcomer rule since excluded as biologically unsupported):
 - Cells newly converted to the depolarised (D) state had D voltage but still
   carried resting-state ion composition.
 - As neighbours, they pulled a newcomer toward D more weakly than long-standing
@@ -267,10 +268,12 @@ No single information measure or universal polycomputing score is selected.
 
 The [first implementation protocol](TWO_TASK_READOUT_ASSAY.md) specifies the
 location/timing panel, restricted voltage readers, calibration holdouts and
-controls. Its original runtime, a re-hosted BETSE junction model, was removed in
-the 8 November reset. Re-hosting the assay on Cells' own physics is pending
-(Progress, plan step 8), and further readout research is deferred by roadmap
-priority 6. Implementing the assay does not assume a positive task or biological
+controls. Its runtime, the BETSE-order junction model
+`betse_spatial_nak_kv1p5_dynamic_gj@1`, moved out of the engine into the BETSE
+emulator (`validation/betse/emulator/`) in the 8 November reset (D131). The engine
+no longer dispatches to it, so the assay's ordinary runner tests are skipped until
+it is re-hosted on Cells' own tissue model (`rehost_pending.json`; Progress, plan
+step 8). Further readout research is deferred by roadmap priority 6. Implementing the assay does not assume a positive task or biological
 result.
 
 1. Start with a small, already qualified physical family. Define two distinct
@@ -341,18 +344,20 @@ is marked by the kind of evidence behind it.
 
 | Process | Time scale | Basis |
 | --- | --- | --- |
+| Fast channel gates (NaV1.2 activation) and membrane charging | below 1 ms to a few ms; these set the 1 ms step | Model laws; the 1 ms step is qualified, 2 ms is not |
 | Junction voltage gating | 0.05–0.4 s | Model law (`junction_voltage_relaxation@1`) |
-| Cell voltage relaxation, default-world cell | slowest modes 0.26 s, 189 s, 16,661 s | Qualified stationary analysis |
+| Default-world cell, slowest modes overall | 0.26 s, 189 s, 16,661 s | Qualified stationary analysis |
 | Osmotic water exchange | about 0.5–85 s, depending on water permeability | Literature parameters (water model design note) |
-| Ion loading of a newly depolarised cell | effective τ 40–50 min (asymptotic 1.5–2.6 h) | Development runs (pre-screen 9) |
-| New gap-junction formation after replacement | lag about 2–20 min, then τ 15–60 min | Literature (cell-replacement design) |
+| Ion loading of a newly depolarised cell | effective τ 40–50 min (asymptotic 1.5–2.6 h) | Development runs on held-bath sheets next to loaded neighbours (pre-screen 9) |
+| New gap-junction formation after replacement | lag about 2–20 min, then τ 15–60 min | Ranges proposed in the cell-replacement design note, from literature abstracts |
 
 The integrator step is set by the fastest processes (1 ms for the full tissue),
 while the questions run for hours. Three optional coarse time modes address this
 (D135); the fine engine stays the default:
 - **E, stationary states and continuation:** qualified.
 - **C, projective integration:** failed its qualification, because its errors
-  exceeded the parity tolerances. It is paused.
+  exceeded the parity tolerances. Pausing it is the lead's recommendation; the
+  user has not yet ruled on it.
 - **B, a quasi-steady electrical mode:** planned, after a feasibility estimate.
 
 ## Coupled numerical execution
@@ -415,9 +420,9 @@ are batched with `vmap`, and row checks run on the device.
   - 2.64 ms at 64 worlds;
   - 2.28 ms at 256 worlds (execution only);
   - 4.0–4.5 ms end to end with host observers.
-- **The largest single cost** is the dense field factorisation: 41.5 ms of a
-  154 ms batch step at 64 worlds. A sparse or matrix-free solver is therefore the
-  main lever for throughput.
+- **Largest measured component:** the dense field factorisation, 41.5 ms of a
+  154 ms batch step at 64 worlds, about a quarter. The rest of the step is not
+  broken down.
 - **Memory:** 256 worlds need a preallocated allocator on the L4.
 - **GH200:** throughput is unmeasured, and it decides the JUPITER budget.
 
@@ -500,7 +505,7 @@ Repeat runs on one L4 were observed not to be bitwise identical (11 November,
 one development observation; the likely cause, atomic scatter-adds, is not
 confirmed). Two consequences follow:
 - Bitwise restart and replay are CPU guarantees for now.
-- GPU parity protocols carry a measured run-to-run term.
+- GPU parity protocols being drafted add a measured run-to-run term.
 
 Deterministic GPU operations, and what they cost, are still to be measured.
 
