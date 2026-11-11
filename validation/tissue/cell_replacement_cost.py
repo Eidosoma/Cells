@@ -355,27 +355,30 @@ def part_inheritance(args):
         threshold_mV=1e3 * threshold,
         arms=[],
     )
-    for rule, formation in rules.items():
-        for kind, event in newcomers.items():
-            spec = parse_spec(fx.with_replacement(raw, templates, [event], formation=formation))
-            started = time.perf_counter()
-            result = run(spec)  # Host row checks on every accepted row.
-            obs = result.observations
-            v = np.asarray(obs.membrane_voltage_V)
-            slot_v = 1e3 * v[:, slot]
-            disc = [i for i, r in enumerate(rings) if r <= 3]
-            out["arms"].append(
-                dict(
-                    formation=rule,
-                    newcomer=kind,
-                    observation_times_s=np.asarray(obs.times).tolist(),
-                    slot_voltage_mV=slot_v.tolist(),
-                    slot_end_state="D" if v[-1, slot] > threshold else "H",
-                    disc_d_cells_end=int(np.sum(v[-1, disc] > threshold)),
-                    wall_s=time.perf_counter() - started,
-                )
-            )
-            print(out["arms"][-1], flush=True)
+    bookings = ("explicit_tableau", "trapezoid_nonnegative@1")  # @3's junction heat options.
+    for booking in bookings:
+        for rule, formation in rules.items():
+            for kind, event in newcomers.items():
+                definition = fx.with_replacement(raw, templates, [event], formation=formation)
+                definition["model"]["junction_heat_booking"] = booking
+                arm = dict(formation=rule, newcomer=kind, junction_heat_booking=booking)
+                started = time.perf_counter()
+                try:
+                    result = run(parse_spec(definition))  # Host row checks, every row.
+                    obs = result.observations
+                    v = np.asarray(obs.membrane_voltage_V)
+                    disc = [i for i, r in enumerate(rings) if r <= 3]
+                    arm.update(
+                        observation_times_s=np.asarray(obs.times).tolist(),
+                        slot_voltage_mV=(1e3 * v[:, slot]).tolist(),
+                        slot_end_state="D" if v[-1, slot] > threshold else "H",
+                        disc_d_cells_end=int(np.sum(v[-1, disc] > threshold)),
+                    )
+                except Exception as error:  # A refusal is kept as evidence.
+                    arm.update(error=repr(error))
+                arm["wall_s"] = time.perf_counter() - started
+                out["arms"].append(arm)
+                print(arm, flush=True)
     return out
 
 
