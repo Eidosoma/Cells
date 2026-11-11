@@ -49,7 +49,7 @@ def definitions(solver, steps, *, jit=True, availability=0.0):
         channel_change=(round(steps // 3 * dt, 9), 0.5),
         pump_change=(round(steps // 2 * dt, 9), 0.8),
     )
-    raw["experiment"]["observation_times"] = [0.0, round(steps // 4 * dt, 9), end]
+    raw["experiment"]["observation_times"] = sorted({0.0, round(steps // 4 * dt, 9), end})
     raw["execution"]["jit"] = jit
     return parse_spec(raw), parse_spec(fixtures.with_water(raw, availability=availability))
 
@@ -123,43 +123,55 @@ def main():
     parser.add_argument("--eager-steps", type=int, default=3)
     parser.add_argument("--cost-steps", type=int, default=200)
     parser.add_argument("--cost-repeats", type=int, default=3)
+    parser.add_argument(
+        "--parts",
+        nargs="*",
+        default=["compiled", "eager", "cost"],
+        choices=("compiled", "eager", "cost"),
+    )
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     cases = []
     try:
-        for solver in (imex.EULER_ID, imex.ARS222_ID):
-            reference, water = definitions(solver, args.steps)
+        if "compiled" in args.parts:
+            for solver in (imex.EULER_ID, imex.ARS222_ID):
+                reference, water = definitions(solver, args.steps)
+                a, ta = timed(reference)
+                b, tb = timed(water)
+                cases.append(
+                    dict(case=f"compiled-{solver}", steps=args.steps, timings=[ta, tb])
+                    | compare(a, b)
+                )
+                (out / "progress.json").write_text(json.dumps(cases, indent=2) + "\n")
+        if "eager" in args.parts:
+            reference, water = definitions(imex.ARS222_ID, args.eager_steps, jit=False)
             a, ta = timed(reference)
             b, tb = timed(water)
             cases.append(
-                dict(case=f"compiled-{solver}", steps=args.steps, timings=[ta, tb]) | compare(a, b)
+                dict(case="uncompiled-ars222", steps=args.eager_steps, timings=[ta, tb])
+                | compare(a, b)
             )
             (out / "progress.json").write_text(json.dumps(cases, indent=2) + "\n")
-        reference, water = definitions(imex.ARS222_ID, args.eager_steps, jit=False)
-        a, ta = timed(reference)
-        b, tb = timed(water)
-        cases.append(
-            dict(case="uncompiled-ars222", steps=args.eager_steps, timings=[ta, tb]) | compare(a, b)
-        )
-        reference, water = definitions(imex.ARS222_ID, args.cost_steps, availability=1.0)
-        _, ta = timed(reference)
-        _, tb = timed(water)
-        cost = dict(
-            steps=args.cost_steps,
-            ionic_execute_seconds=ta["execute_seconds"],
-            water_execute_seconds=tb["execute_seconds"],
-            ratio=tb["execute_seconds"] / ta["execute_seconds"],
-            timings=[ta, tb],
-            note="water open on the finite squares: cost only, not a qualified water arm",
-        )
         result = dict(
             verdict="pass" if all(c["bitwise"] for c in cases) else "fail",
             cases=cases,
-            cost=cost,
             cost_water_off=water_off_cost(cases),
-            cost_water_off_interleaved=interleaved_cost(args.cost_steps, args.cost_repeats),
         )
+        if "cost" in args.parts:
+            result["cost_water_off_interleaved"] = interleaved_cost(
+                args.cost_steps, args.cost_repeats
+            )
+            reference, water = definitions(imex.ARS222_ID, args.cost_steps, availability=1.0)
+            _, ta = timed(reference)
+            _, tb = timed(water)
+            result["cost_water_open"] = dict(
+                steps=args.cost_steps,
+                ionic_execute_seconds=ta["execute_seconds"],
+                water_execute_seconds=tb["execute_seconds"],
+                ratio=tb["execute_seconds"] / ta["execute_seconds"],
+                note="water open on the finite squares: cost only, not a qualified water arm",
+            )
         (out / "result.json").write_text(json.dumps(result, indent=2) + "\n")
     except Exception:
         (out / "failure.json").write_text(

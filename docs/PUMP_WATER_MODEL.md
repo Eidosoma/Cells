@@ -151,6 +151,57 @@ the water arithmetic into @3's step differently, and `channel_dissipated_energy_
 differed by about 1 ulp. That field was bitwise again with XLA's algsimp and fusion
 passes disabled, and it is bitwise with the barrier.
 
+## resolved_pump_water@2: one volume-regulation route (KCC-type)
+
+`resolved_pump_water@2` is `resolved_pump_water@1` plus KCC-type K⁺/anion symport
+routes. Files: `src/cells/core/surface_pump_water_v2_spec.py`,
+`src/cells/models/surface_pump_water_v2.py`, and the law in
+`src/cells/processes/k_anion_symport.py`.
+
+**The law, `k_anion_symport_mass_action@1`.** One route per declared membrane:
+
+```text
+J = k a f(V) (K_i A_i - K_o A_o)        outward cycles, fmol/s; one K+ and one anion each
+f(V) = exp[(V - V_set) / (s V_set)]     exponential_volume_activation@1
+heat = 1e-3 J R T ln(K_i A_i / (K_o A_o)) >= 0
+```
+
+- Roles are named in the definition. In the heredity world they are K and M (the Cl⁻
+  surrogate).
+- The route carries no current.
+- It is given to @3's opt-in membrane-process hook (`surface_pump_v3.MembraneProcess`),
+  so it is one more explicit membrane term at every @3 stage, in readouts and in rhs.
+- @3 returns the applied transfer and the trapezoid heat, which this model books in
+  `symport_cycles_fmol` and `symport_dissipated_energy_pJ`. Material ledgers include
+  the transfers, the energy ledger includes the heat, and dissipation includes the
+  heat field.
+- With no route declared, the step is `resolved_pump_water@1`'s exactly.
+- Stationary states stay exact fixed points of the split step: the route moves amounts
+  inside @3's step, and water acts on volumes only.
+
+**Sources** (marks: FT full text, FT-img equation image, ABS abstract, Der derived):
+- Mass action with an exponential volume factor and s = 1: Lew, Freeman, Ortiz &
+  Bookchin 1991, J Clin Invest 87:100 (FT-img).
+- s ≈ 0.12: matches the 4–5× K⁺ flux at relative volume 1.2 of Kaji 1986, J Gen
+  Physiol 88:719 (ABS, Der).
+- 1:1 stoichiometry: Jennings & Adame 2001, Am J Physiol Cell Physiol 281:C825 (ABS).
+- Capacity default, the red-cell range 4–20 mmol/(L cells·h) of K:Cl efflux at Lew's
+  reference product difference. These are reticulocyte-rich and young-cell data:
+  Brugnara 1986/1987 quoted in Lew 1991 (FT), and Canessa et al. 1987, J Membr Biol
+  97:97 (ABS). They are not normal mature red cells.
+- Neuron-scale arm, model-derived: Staley & Proctor 1999, J Physiol 519:693 (ABS).
+- Block arm: VU0463271 as the selective availability schedule (IC50 61 nM, >100-fold
+  over NKCC1; Delpire et al. 2012, Bioorg Med Chem Lett 22:4532, ABS). DIOA is
+  non-selective: it also inhibits the Na,K- and H,K-ATPases.
+
+**Limits of the route:**
+- Activation is instantaneous. The ~10 min activation lag of red-cell KCC
+  (Jennings & al-Rohil 1990, J Gen Physiol 95:1021, ABS) is not modelled.
+- The law reverses at the 1:1 equilibrium. Delpire & Lauf 1991 (J Gen Physiol 97:173,
+  ABS) report net efflux persisting until the outside product is about 2× the inside
+  one.
+- No pH, Mg or phosphorylation state.
+
 ## Limits
 
 - **Qualified scope: held-bath worlds only.** In W225 every patch faces a *finite*
@@ -164,7 +215,7 @@ passes disabled, and it is bitwise with the barrier.
   - solvent drag;
   - solute partial volumes;
   - non-ideal activities;
-  - volume regulation (RVD and RVI routes are W2, after a literature note);
+  - volume regulation, other than the one KCC-type route of resolved_pump_water@2;
   - a temperature law for Lp.
 - **Calibration and BETSE.** Parameters are literature ranges for generic animal cells,
   not a calibration to one cell type. BETSE v1.5.0 has no active volume update, so it
