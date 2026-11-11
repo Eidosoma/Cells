@@ -281,3 +281,57 @@ def test_margins_per_option():
     assert set(kir) == {"init/voltage", "sim/voltage", "sim/cell_concentration/K"}
     assert kir["init/voltage"]["effect_over_error"] == pytest.approx(20 * 1e-3 / 2e-4)
     assert kir["sim/cell_concentration/K"]["margin_tolerance_over_error"] == pytest.approx(2.5)
+
+
+def test_backend_variant_adds_terms_and_never_tightens(tmp_path, monkeypatch):
+    from validation.betse import backend_variant as bv
+    from validation.betse import protocol_tolerances as pt
+
+    base = json.loads(
+        (ROOT / "validation/betse/protocols/physical_p4b_nav_kleak_dense.json").read_text()
+    )
+    path = tmp_path / "base.json"
+    path.write_text(json.dumps(base))
+    label = base["verdict_class"]
+    old = base["tolerance_classes"][label]
+    sums = base["tolerance_derivation"]["sums_before_margin"]
+
+    def zero():
+        return {
+            p: {
+                "voltage": 0.0,
+                "cell_concentration": {i: 0.0 for i in IONS},
+                "ecm_concentration": {i: 0.0 for i in IONS},
+            }
+            for p in ("init", "sim")
+        }
+
+    big = zero()
+    big["sim"]["voltage"] = 10 * sums["voltage"]["sim"]  # widens SIM Vm
+    big["init"]["cell_concentration"]["Na"] = 1e-30  # far below rounding: no change
+    terms = {"cpu_vs_l4": big, "l4_run_to_run": zero()}
+    monkeypatch.setattr(pt, "Context", lambda case, base: None)
+    monkeypatch.setattr(pt, "term", lambda ctx, spec: terms[spec["layouts"][0]])
+    spec = {
+        "case": "unused",
+        "backend": "gpu (L4)",
+        "terms": {n: {"layouts": [n, "b"], "role": n} for n in terms},
+        "notes": ["extra"],
+    }
+    out = bv.variant(spec, path)
+    tol = out["tolerance_classes"][label]
+    assert out["id"] == base["id"] + "-l4" and out["cells_run"]["backends"] == ["gpu (L4)"]
+    assert "optional_repeat" not in out["cells_run"]
+    assert tol["voltage"]["sim"] == pt.up1(3 * 11 * sums["voltage"]["sim"])
+    assert tol["voltage"]["init"] == old["voltage"]["init"]
+    assert tol["cell_concentration"]["init"] == old["cell_concentration"]["init"]
+    bt = out["tolerance_derivation"]["backend_terms"]
+    assert bt["changed"] == ["sim/voltage"] and bt["registered_tolerance_reproduced_from_sums"]
+    assert set(out["tolerance_derivation"]["terms"]) >= set(terms)
+    factor = old["voltage"]["sim"] / tol["voltage"]["sim"]
+    channel = out["discrimination_by_channel"]["nav1p2"]["effect_over_tolerance"]
+    registered = base["discrimination_by_channel"]["nav1p2"]["effect_over_tolerance"]
+    assert channel["sim"]["voltage"] == pytest.approx(registered["sim"]["voltage"] * factor)
+    assert out["discrimination_ratio"]["sim"]["voltage"] == pytest.approx(channel["sim"]["voltage"])
+    assert out["base_protocol"]["id"] == base["id"] and out["notes"][-1] == "extra"
+    assert base["tolerance_classes"][label] == old  # input untouched
