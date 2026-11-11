@@ -69,14 +69,17 @@ machine-readable inputs, results, checks and failures.
     [summary](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/sheet70/summary-six-arms.json)):
     - **Five held to 70 min:** 37 cells at s 1.0, 0.6 and 0.3, and 19 cells at s 0.6
       and 0.3.
-    - **The 19-cell disc at s 1.0 was lost all at once,** about 16.5 min after the
-      cue (987.5–992.5 s, record interval 5 s; a 1 ms replay is next).
+    - **The 19-cell disc at s 1.0 was lost all at once,** 990.46 s (16.5 min) after
+      the cue in a 1 ms replay, inside the 5 ms run's bracket. All 19 cells went to
+      H within 0.12 s; no check failed and no step was refused.
+    - **Before the loss it was drifting toward U, not loading.** Just before
+      collapse its Vm was −37.8 to −30.6 mV, with K 134.6 and M 11.2 mM (content
+      excess 2.7–3.1%). The held discs had instead loaded to K about 146 and M
+      about 22 mM by 70 min. So the loaded-composition limit from pre-screen 9 does
+      not explain this loss; the small disc at strong coupling slid toward the
+      unstable state before it could load. The mechanism is not yet identified.
     - **Predictions:** written beforehand, they predicted loss at s 1.0 for both
       sizes. The 19-cell prediction held; the 37-cell one was falsified.
-    - **Consistency:** the frozen-composition limits from pre-screen 9 fit the
-      outcome, although it was not tested as a cause. At loaded composition the
-      19-cell disc is retained only to s 0.766 and the 37-cell disc to 1.05, so as
-      the 19-cell disc loads it would cross s 1.0, while the 37-cell disc would not.
     - **Osmotic excess** (against each cell's own start) passed 10% at 56–58 min in
       the held arms and peaked at 11.7–12.1% (censor 15%).
     - Held baths supply K without limit, so loading may be overstated.
