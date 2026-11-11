@@ -28,8 +28,8 @@ de Laat, Buwalda & Habets 1974, Exp Cell Res 89:1. Marks: **V** read in the full
   opaque reference to a future curated catalogue (the identity hook the lead asked for).
 - **Division is a process** (§4): about 7 min of furrowing without new membrane, then
   insertion of new, K-selective membrane at the measured rate into a **restricted cleft
-  compartment**, then an **isopotential partition** event when the cytoplasmic bridge is
-  narrow enough, then bridge closure. An instant split stays a declared test limit only.
+  compartment**, then an **isopotential partition** event at a declared time, into fresh
+  daughter slots, then bridge closure. An instant split stays a declared test limit only.
 - **Charge and energy laws** (§5). Insertion conserves the free-node charges; the clamps
   supply image charge with its work; the capacitor free energy falls by
   H = ½ ∫ (ΔV)² dC ≥ 0, booked as heat. The partition keeps every potential continuous;
@@ -57,8 +57,10 @@ de Laat, Buwalda & Habets 1974, Exp Cell Res 89:1. Marks: **V** read in the full
    judged status only from registered protocols (recommended).
 
 **Open questions for the review:** new-membrane capacitance (not measured); when the
-partition happens (bridge closure is not measured); the cleft-node stiffness at 1 ms
-(§5.4); one old-membrane calibration per dataset (dLB74 against DFS74 batches).
+partition happens (bridge closure is not measured); the cleft access's selectivity (§7);
+the cleft-node stiffness at 1 ms (§5.4); one old-membrane calibration per dataset (dLB74
+against DFS74 batches); and, for later triggered divisions, re-anchoring at the event
+against D057 (§5.2).
 
 ## 1. What stages 1b and 2 established
 
@@ -69,12 +71,13 @@ Biol papers: 11 rows corrected in place, 28 appended, every row with a source an
 The stage-1 table is kept as `xenopus_parameters.v1.csv`. Appendix A lists the changes.
 Two corrections matter for the design:
 - the folded area is **1.7 × the measured geometric 5.11 ± 0.09 mm²** (contour +30%;
-  dLB74 p533, BdL73 p92), not 1.64 × a smooth sphere;
+  dLB74 p534, BdL73 p93), not 1.64 × a smooth sphere;
 - the old membrane's 74 kΩ·cm² is **852 kΩ × 8.69 mm²** (43.5 kΩ·cm² on the geometric
   area), and the new membrane is **1.82 and 1.36 kΩ·cm²** (mean 1.59), from resistances
   and areas measured in different eggs and media.
 
-The stage-1 report's "TEA no effect" (K83) is not in K83's text and is not carried over.
+The J Cell Biol notes' "TEA no effect" (K83) was not found in K83's PDF text layer, so it
+is not carried over. Those notes were checked against the PDF, so it needs a second look.
 
 ### 1.2 Scale smoke test (accepted)
 
@@ -124,17 +127,17 @@ Not tested yet: whole-content increments after a partition (§5.4), and runs of 
 
 | Time after furrow onset | Event | Source |
 | --- | --- | --- |
-| 0–7 min | Groove 100 µm deep at about 4 min, furrow 150 µm at about 8 min. The extra surface comes from smoothing the folded egg surface. Em and Rm are unchanged | BdL73 p95 (V); dLB74 p530, p537 (V) |
-| 4–8 min | New, smooth, unpigmented membrane appears (absent at 3–4 min, present at 7–8 min). Em and Rm start changing at 6–8 min | BdL73 (V); dLB74 p530 (V) |
-| 7–17 min | Rm falls steeply; Em becomes about 10 mV more negative. New membrane grows at about 0.04 mm²/min (in the treatment arms); about 0.06 mm²/min in normal eggs (S) | dLB74 p530, p535 (V) |
-| Late in the cycle | Em depolarises by 1–3 mV as the blastomeres become apposed more closely | dLB74 p530 (V) |
-| About 30 min | Onset of second cleavage. Normal eggs: Em −20.3 ± 0.8 mV (SE, 20), Rm 488 ± 28 kΩ (17). New membrane 1.39 ± 0.29 mm² (SD, 11; probably both faces, S; other eggs, in 1/10 Steinberg); cytoplasmic bridge 0.26 ± 0.18 mm²; coupling V2/V1 above 0.95 throughout first cleavage | dLB74 Table I, p537 (V); BdL73 Table II (p95) and p94 (V); single-egg traces (F) |
+| 0–7 min | Groove 100 µm deep at about 4 min, furrow 150 µm at about 8 min. The extra surface comes from smoothing the folded egg surface. Em and Rm are unchanged | BdL73 p96 (V); dLB74 p531, p538 (V) |
+| 4–8 min | New, smooth, unpigmented membrane appears (absent at 3–4 min, present at 7–8 min). Em and Rm start changing at 6–8 min | BdL73 (V); dLB74 p531 (V) |
+| 7–17 min | Rm falls steeply; Em becomes about 10 mV more negative. New membrane grows at about 0.04 mm²/min (in the treatment arms); about 0.06 mm²/min in normal eggs (S) | dLB74 p531, p536 (V) |
+| Late in the cycle | Em depolarises by 1–3 mV as the blastomeres become apposed more closely | dLB74 p531 (V) |
+| About 30 min | Onset of second cleavage. Normal eggs: Em −20.3 ± 0.8 mV (SE, 20), Rm 488 ± 28 kΩ (17). New membrane 1.39 ± 0.29 mm² (SD, 11; probably both faces, S; other eggs, in 1/10 Steinberg); cytoplasmic bridge 0.26 ± 0.18 mm²; coupling V2/V1 above 0.95 throughout first cleavage | dLB74 Table I, p538 (V); BdL73 Table II (p96) and p95 (V); single-egg traces (F) |
 | About 35 min | First cleavage complete; the second has already begun | DFS74 p395, citing Bluemink 1971 (V, secondary) |
 | Second cycle | DFS74's 2-cell values, sampled after the second furrow began: Em −15.5 ± 1.6 mV (SD, 9), Rm per cell 1.05 MΩ, Rj 0.286 MΩ, coupling ratio 0.772 | DFS74 Table I (V) |
 
 Three facts shape the design: the new membrane is a different membrane (low resistance,
 K-selective, Ba²⁺-sensitive: dLB74, K83); it lines a narrow cleft rather than facing the
-bath (only about 0.14 mm² of it acts as bath-exposed: dLB74 p534); and the two halves
+bath (only about 0.14 mm² of it acts as bath-exposed: dLB74 p535); and the two halves
 stay one electrical compartment until the bridge closes.
 
 ## 2. Entities and owned state
@@ -172,10 +175,13 @@ Two populations of the same molecular species in different domains share the spe
 For the frog membrane no gene product is established in the sources read, so every
 population is unassigned (catalogue null).
 
-**Slots.** Every array is padded to declared capacities: the run's final cell count, and
-the patches, populations, contacts, outside nodes and faces it will need. A daughter's
-slot, patches and populations, and each cleft node, are declared inactive until their
-event. Shapes never change in a run.
+**Slots.** Every array is padded to declared capacities: the cell slots, patches,
+populations, contacts, outside nodes and faces the run will need. Shapes never change in a
+run. Each daughter takes a fresh slot, declared inactive until its event, with its anchors
+at its expected content; the parent's slot is retired at the partition (the rule and its
+reason are in §5.2). One round of division from one cell therefore needs 3 cell slots, and
+1 → 2 → 4 cells needs 7. Each cleft node is likewise declared inactive until insertion
+begins.
 
 **Interfaces between scales.**
 - Molecule to membrane: a patch's conductance for a law is the sum over its populations
@@ -307,7 +313,9 @@ GPU runs keep bounded agreement only: repeat L4 runs were not bitwise in one obs
 ### 3.8 Padded slots, topology changes, the field solve and vmap
 
 - **Activation** flips masks in state at the event. The view passes them to @3's activity
-  arrays and to the field's `fixed` and `active` masks.
+  arrays and to the field's `fixed` and `active` masks. A slot can only be switched on if
+  its anchors were declared for it (§5.2): a padded slot's zero reference amounts are not
+  valid in @3's chemical-energy term.
 - **Event maps** are gathers and scatters with static index arrays from the schedule.
 - **vmap:** worlds batch when capacities and the operator list match. Event times,
   fractions and rates are per-world data.
@@ -346,9 +354,10 @@ GPU runs keep bounded agreement only: repeat L4 runs were not bitwise in one obs
 2. **Insertion (about 7 min to partition).** At onset, the parent's cleft-facing patch
    (new-membrane domain) and the cleft compartment are activated with a small declared
    area. New membrane then grows at the declared rate; the cleft lumen grows with it.
-3. **Partition (an event).** The parent becomes two daughters when the bridge aperture
-   reaches the stiffness limit (§5.4). This is a declared time, because bridge closure was
-   not measured.
+3. **Partition (an event).** The parent becomes two daughters at a declared time (or a
+   declared bridge aperture), because bridge closure was not measured. The step's explicit
+   bound only refuses (§5.4): if the declared aperture is too wide for the step, the step
+   is refused and needs a smaller dt. The event never moves with dt.
 4. **Bridge closure.** The aperture shrinks to zero. Coupling then runs through the
    trans-cleft path (§7).
 5. **Next division.** The same operators run on each daughter, each with its own furrow
@@ -362,7 +371,7 @@ GPU runs keep bounded agreement only: repeat L4 runs were not bitwise in one obs
 - Applied in half-steps at fixed free-node charges (§5.1).
 - Ledgers: area inserted, abundance inserted, image-charge electrode transfer and its work,
   insertion heat H ≥ 0.
-- Parameters: r about 0.04–0.06 mm²/min from about 7 min (dLB74 p535, S); total 1.39 mm²
+- Parameters: r about 0.04–0.06 mm²/min from about 7 min (dLB74 p536, S); total 1.39 mm²
   at onset of second cleavage (BdL73). c_new is not measured: 0.62 µF/cm², DFS74's
   whole-cell value on a smooth basis, as the default, with arms 0.4 and 1.0. ρ_k from the
   new membrane's 1.36–1.82 kΩ·cm² and selectivity (§6).
@@ -381,9 +390,10 @@ GPU runs keep bounded agreement only: repeat L4 runs were not bitwise in one obs
 - Fixed lumen volume is the simpler arm.
 
 **`isopotential_partition@1`** (event)
-- Declares: time, parent slot, daughter slot (inactive until then), volume fraction f,
-  area fraction a_k per patch, two new carrier IDs, the bridge contact and its initial
-  aperture.
+- Declares: time, parent slot, two fresh daughter slots (inactive until then, anchors
+  declared at their expected content, §5.2), volume fraction f, area fraction a_k per
+  patch, two new carrier IDs, the bridge contact and its initial aperture. The parent's
+  slot is retired.
 - Map: §5.2. Lineage: the parent's carrier ends; two daughters begin, with inheritance
   route "division".
 - Ledgers: partition transfers of amount, volume, area and abundance between slots (they
@@ -463,8 +473,24 @@ a_k and 1 − a_k.
      booked as **partition work** supplied by the unmodelled contractile machinery.
 
    A symmetric partition changes no energy at all.
-6. **Anchors stay immutable** (D057). A daughter's increments carry its whole content,
-   about 2 × 10⁷ fmol per species for an egg (§5.4).
+6. **Anchors for slots that switch on.**
+   - Padded slots hold reference amounts 0, volume 1 and charge anchor 0, and padded
+     patches an initial voltage 0 (`surface_tissue.initial_values`). @3's chemical-energy
+     term takes log(a/V) and log1p(δ/a) on the reference, masked only by activity, so a
+     padded slot cannot simply be switched on.
+   - **Rule for prescribed divisions:** both daughters take fresh slots, declared inactive,
+     whose anchors are their expected content: reference amounts, volume and charge anchor
+     f (or 1 − f) times the parent's declared ones. Their patches are declared inactive,
+     and the event sets their split areas (patch area is state). The parent's slot is
+     retired at the event.
+   - Anchors stay immutable (D057). Active slots keep small increments (f times the
+     parent's increment, plus δ). The whole-content transfer, about 4 × 10⁷ fmol per
+     species for an egg, is booked once, on the retired slot, which no longer evolves.
+   - The composite owns the capacitor-energy term (§5.3), so a patch's declared initial
+     voltage does not matter.
+   - Triggered divisions (later) cannot declare their anchors in advance. Setting anchors at
+     the event is re-anchoring, a decision against D057; until it is taken, triggered
+     divisions are refused.
 
 ### 5.3 Where each term is booked
 
@@ -497,15 +523,18 @@ a_k and 1 − a_k.
   - First numerical task: a step study of the cleft egg at 1, 0.5 and 0.25 ms against
     RK4. Outcomes: 0.5 ms, or an implicit membrane–cleft term as a new solver version.
 - **Bridge stiffness.** A bridge of conductance G_b is an explicit junction term:
-  dt × 2 G_b / C ≤ 1 gives R_b ≥ about 100 kΩ for a daughter of about 20 nF at 1 ms. That
-  is an aperture of at most about 10 µm (for a cytoplasmic resistivity of about 2 Ω·m, to
-  be sourced). The 0.26 mm² bridge at onset of second cleavage (radius 0.29 mm, about
-  3.5 kΩ) is far below that limit, so the egg is rightly one compartment then.
+  dt × 2 G_b / C ≤ 1 gives R_b ≥ about 100 kΩ for a daughter of about 20 nF at 1 ms, an
+  aperture of at most about 10 µm (for a cytoplasmic resistivity of about 2 Ω·m, to be
+  sourced). This is a refusal condition only: a declared partition with a wider aperture
+  refuses the step at 1 ms and needs a smaller dt. The 0.26 mm² bridge at onset of second
+  cleavage (radius 0.29 mm, about 3.5 kΩ) is far wider, so the egg is rightly one
+  compartment then.
 - **Scale.**
-  - After a partition, a daughter's increments are its whole content (§5.2). G2 saw RK4
-    electrode-ledger drift after 50 fmol swaps; at egg scale the same effect is about
-    10⁶ times larger. IMEX telescopes the electrode booking, but RK4 reference runs need
-    G2's replaced-slot allowance generalised to partitioned slots.
+  - With fresh daughter slots (§5.2), active slots keep small increments; the retired
+    parent slot carries the whole content but no longer evolves. Without that rule, G2's
+    RK4 electrode-ledger drift after 50 fmol swaps would be about 10⁶ times larger at egg
+    scale. What remains is the rounding of the event map itself, a one-step transfer of
+    about 4 × 10⁷ fmol, which needs an event magnitude allowance as G2's has.
   - The definition-check bound (§1.2) must be scale-aware before egg worlds are routine.
   - The material atol of 1e-10 fmol held over 60 s, but not yet with large increments over
     30 min.
@@ -517,8 +546,8 @@ a_k and 1 − a_k.
 | Domain | Biology | Engine representation | Source |
 | --- | --- | --- | --- |
 | Old (egg) membrane | 74 kΩ·cm² on the folded area; P_Na/P_K about 1; Cl⁻ substitution has no effect | Constant-field leak with P_Na = P_K and P_Cl = 0 (the smoke test reproduces −9.9 mV and 852 kΩ). As populations: Na and K leak laws (`naleak_always_open@1`, `kleak_always_open@1`), so that insertion and partition act on abundances | dL74; dLB74 Table I (V) |
-| New (furrow) membrane | 1.36–1.82 kΩ·cm²; mainly K⁺; outward current reversed by 1 mM Ba²⁺; five-fold lower particle density | A K leak population plus a small Na leak, at P_Na/P_K ≈ 0.02–0.05. That ratio comes from the exposed arms' branch EMFs, −91 and −74 mV (S). Ba²⁺ is an availability schedule on the K population: a qualitative check against K83's reversal | dLB74 p534 (V); K83 Table II (V) |
-| Pump | None detected at first cleavage: ouabain and ethacrynic acid without effect; pump current below 0.01 µA/cm² | `pump: null`, the route the smoke test used | dL74 p13; K83 p1759 (V) |
+| New (furrow) membrane | 1.36–1.82 kΩ·cm²; mainly K⁺; outward current reversed by 1 mM Ba²⁺; five-fold lower particle density | A K leak population plus a small Na leak, at P_Na/P_K ≈ 0.02–0.05. That ratio comes from the exposed arms' branch EMFs, −91 and −74 mV (S). Ba²⁺ is an availability schedule on the K population: a qualitative check against K83's reversal | dLB74 p535 (V); K83 Table II (V) |
+| Pump | None detected at first cleavage: ouabain and ethacrynic acid without effect; pump current below 0.01 µA/cm² | `pump: null`, the route the smoke test used | dL74 p13; K83 p1760 (V) |
 
 **Missing in the engine:**
 - abundance as state, insertion, and the cleft (§4);
@@ -546,7 +575,7 @@ a_k and 1 − a_k.
 **Why restricted, and why the restriction is not the open slab.**
 - The Rm drop from 852 to 488 kΩ in normal eggs shows the new membrane does reach the
   bath, so the cleft is not sealed before partition. Yet only about 0.14 of 1.39 mm²
-  acts as exposed (dLB74 p534).
+  acts as exposed (dLB74 p535).
 - With all new membrane in the cleft (114 kΩ at 1.59 kΩ·cm²), the access must be about
   1 MΩ in series (S).
 - An open slab of the fixed gap would give ρ/(8πw) ≈ 30 kΩ (w = 2 µm, ρ ≈ 1.6 Ω·m for
@@ -564,8 +593,13 @@ lowers that membrane's driving force. The limits:
 
 The measured −20.3 mV lies between them. A normal egg's apparent branch EMF of −35 mV
 would correspond to roughly 12 mM K⁺ in an otherwise bath-like lumen (S). Where the model
-lands is set by A/L (from Rm) and by w (from TEM), not by Em, so J1 can fail on either
-side. The lumen's K⁺ exchange time V_c / (D_K A/L) is about 8 min (S), comparable with
+lands is set by A/L (from Rm), by w (from TEM) and by the access selectivity, not by Em,
+so J1 can fail on either side. The selectivity is a declared assumption: free-solution
+diffusivity ratios (Nernst–Einstein) by default. A rim seal about 30 times tighter than
+the open slab need not have them, and that ratio sets K⁺ accumulation against electrical
+conductance, which is what J1 judges. A cation-selective seal is the sensitivity arm.
+
+The lumen's K⁺ exchange time V_c / (D_K A/L) is about 8 min (S), comparable with
 insertion. The lumen is therefore not quasi-steady, and w must be pre-registered as a
 band.
 
@@ -614,12 +648,13 @@ and its potential (Slack & Warner 1973) are in the parameter table.
 | Quantity | Set from | Source |
 | --- | --- | --- |
 | Old-membrane permeability (P_Na = P_K) | Rm 852 kΩ at onset of first cleavage; Em −9.7 mV checks the selectivity | dLB74 Table I |
-| New-membrane specific conductance | 1.36–1.82 kΩ·cm² | dLB74 p534 (vitelline membrane removed; +CCB) |
+| New-membrane specific conductance | 1.36–1.82 kΩ·cm² | dLB74 p535 (vitelline membrane removed; +CCB) |
 | New-membrane selectivity | Branch EMFs −91 and −74 mV | dLB74 Table I, the same two arms (S) |
-| New-membrane area and rate | 1.39 mm²; about 0.04–0.06 mm²/min from about 7 min | BdL73 Table II; dLB74 p535 |
+| New-membrane area and rate | 1.39 mm²; about 0.04–0.06 mm²/min from about 7 min | BdL73 Table II; dLB74 p536 |
 | New-membrane capacitance | Declared 0.62 µF/cm², arms 0.4–1.0 (not measured) | DFS74 whole-cell value |
 | Lumen volume | w 1.5–2.5 µm × face area | BdL73 micrographs (F) |
 | Cleft access A/L | Rm 488 kΩ, normal eggs, onset of second cleavage | dLB74 Table I |
+| Cleft access selectivity | Declared: free-solution diffusivity ratios; arm: a cation-selective seal | Assumption |
 | Cytosol and medium | Activities | dL74 Tables 2, 4 |
 | **Predicted:** Em of normal eggs at onset of second cleavage (J1); DFS74 2- and 4-cell Em (J2) | | |
 
@@ -632,8 +667,9 @@ and its potential (Slack & Warner 1973) are in the parameter table.
    - ion-selective electrodes (activities).
 2. A/L is fitted to one number, Rm, and Em is a different observable. With the
    bath-equivalent lumen the calibration already fixes Em at −37 to −44 mV, which
-   disagrees with the data. The lumen's composition shift is a consequence of the same
-   geometry through Nernst–Einstein, not a new parameter.
+   disagrees with the data. The lumen's composition shift then follows from the same
+   geometry under the declared access selectivity (§7), with no parameter fitted to Em;
+   that selectivity is an assumption with its own arm, not a measurement.
 3. J2 uses another laboratory's eggs, with the laws carried over unchanged.
 
 ### 8.4 Independent references for the division operation
@@ -695,17 +731,19 @@ about 10–20 runs of 30 min of model time each.
    - a uniform old membrane;
    - a held bath;
    - no vitelline-membrane mechanics.
-6. **J1's power.** If the w band makes the prediction band wide, J1 is weak. Publish the
-   band in the protocol, before the run.
+6. **J1's power.** If the bands on w, c_new and the access selectivity make the prediction
+   band wide, J1 is weak. Publish the band in the protocol, before the run.
 
 ## Appendix A. Parameter table v2
 
 Files in `verification/`:
 - `xenopus_parameters.v1.csv`: the stage-1 table, 76 rows, unchanged (sha256 `7d5928…f06a5`);
-- `xenopus_parameters.csv`: v2, 104 rows (sha256 `1f78ed…28bb`);
+- `xenopus_parameters.csv`: v2, 104 rows (sha256 `b4b953…0a12`);
 - `xenopus_parameters_v2_edit.py`: reads v1 and writes v2.
 
-Each corrected row quotes its v1 value, source and mark in its note.
+Each corrected row quotes its v1 value, source and mark in its note. Printed page numbers
+were checked page by page against the PDFs, and agree with the J Cell Biol notes (for
+example R_new and the 0.14 mm² on dLB74 p535, the smoothing passage on p538).
 
 **Corrected in place (11 rows):**
 - the folded egg area (basis 1.7 × the measured 5.11 mm²);
