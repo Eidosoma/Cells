@@ -27,7 +27,8 @@ Criteria (criteria.json, written by --criteria before any run):
   residual form, u + T (Phi_T(u) - u) / T, not bitwise.
 
 Usage: python -m validation.tissue.cell_replacement_r1 --output DIR
-       [--criteria] (--case s:rate:order ... | --screen s:slot ...)
+       [--criteria] (--case s:rate:order ... | --screen s:slot ... | --checked s:rate:order ...)
+--checked is R2: the case through the row-checked windowed runner (criteria_r2.json).
 """
 
 import argparse
@@ -355,6 +356,115 @@ def screen_compare(mine, theirs):
     )
 
 
+BOOKING = "trapezoid_nonnegative@1"
+CRITERIA_R2 = dict(
+    kind="cells.cell_replacement_r2_criteria@1",
+    scope="R2: the R1 rule (a) cases through the row-checked windowed runner, with ledgers",
+    reference=str(PRESCREEN),
+    method="core/windows.run_windowed from the stationary disc declared as the initial state; "
+    "the coupling scale is in the definition (e07_sheet_definition scale); "
+    f"junction_heat_booking {BOOKING}; host row checks on every accepted row",
+    pass_if=[
+        "no refusal (a refusal is reported with its time and check, not worked around)",
+        "identical d_slots at every record, identical stop time",
+        f"written disc voltage range within {VOLTAGE_TOL_MV} mV at every record",
+    ],
+    cases=["0.6:20:oldest", "0.6:6:random", "0.3:6:oldest"],
+)
+
+
+def checked_case(scale, rate, order):
+    """R2: one R1 case through run_windowed with every host row check."""
+    from cells.core.errors import NumericalError
+    from cells.core.windows import WindowPolicy, run_windowed
+
+    unit = hp.units()["theta_per_unit_scale"]
+    case = ht.Sheet(*ht.DISCS[37])
+    n, written = len(case.cells), case.full
+    theirs = reference(scale, rate, order)
+    end = (theirs.get("stopped") or {}).get("time_s") or HORIZON
+    plan = ht.schedule(n, rate, order, HORIZON)
+    started = time.perf_counter()
+    u_disc = hc.disc_state(case, scale, unit)
+    state_inner, p_inner, _ = case.pb.embed(u_disc, scale)
+    states = {k: v[:4] for k, v in v3fx.HEREDITY_STATES.items()}
+    raw = worlds.ionic_background(
+        worlds.e07_sheet_definition(
+            [states["H"]] * n, case.edges, scale=scale, gated=True, dt=DT, end_time=end
+        )
+    )
+    template = fx.template_from_cell(raw, "cell_0", "h")  # The sheet's H initial state.
+    # The declared initial state is the stationary disc (so every ledger starts closed).
+    m = raw["model"]
+    amounts = np.asarray(p_inner.amount_reference) + np.asarray(state_inner.amount_increment)
+    names = [row["id"] for row in m["species"]]
+    for i, cell in enumerate(m["cells"]):
+        cell["initial_amount_fmol"] = {k: float(amounts[j, i]) for j, k in enumerate(names)}
+    gates = np.asarray(state_inner.channel_gate)
+    for k, c in enumerate(m["channels"]):
+        c["initial_gate"] = [float(g) for g in gates[: len(c["initial_gate"]), k]]
+    for k, j in enumerate(m["junctions"]):
+        j["gate"]["initial_gate"] = float(np.asarray(state_inner.junction_gate)[k])
+    raw = worlds.ionic_background(raw)
+    every = int(round(RECORD_S / DT))
+    raw["experiment"]["observation_times"] = [
+        k * DT for k in range(0, int(round(end / DT)) + 1, every)
+    ]
+    raw["model"]["junction_heat_booking"] = BOOKING
+    events = [
+        (int(k) * DT, f"cell_{int(slot)}", "h", f"n{i}")
+        for i, (k, slot) in enumerate(zip(plan["steps"], plan["slots"], strict=True))
+        if int(k) * DT < end
+    ]
+    spec = parse_spec(fx.with_replacement(raw, [template], events, formation=RULE_A))
+    _, p = model.initial_values(spec)
+    layout_difference = {
+        k: float(
+            np.max(np.abs(np.asarray(getattr(p, k)) - np.asarray(getattr(p_inner, k))), initial=0)
+        )
+        for k in ("junction_permeability", "membrane_permeability", "channel_permeability")
+    }
+    records, refusal = [], None
+
+    def sink(window):
+        obs = window.observations
+        for t, v in zip(np.asarray(obs.times), np.asarray(obs.membrane_voltage_V), strict=True):
+            v = v[:n]
+            records.append(
+                dict(
+                    time_s=float(t),
+                    d_slots="".join("1" if x else "0" for x in v > case.threshold),
+                    written_voltage_range_mV=[
+                        1e3 * float(v[written].min()),
+                        1e3 * float(v[written].max()),
+                    ],
+                )
+            )
+
+    diagnostics = None
+    try:
+        result = run_windowed(spec, WindowPolicy(2000, "observations"), sink=sink)
+        diagnostics = result.diagnostics
+    except NumericalError as error:
+        refusal = dict(after_record_s=records[-1]["time_s"] if records else None, error=str(error))
+    stop = next((r["time_s"] for r in records if r["time_s"] > 0 and "1" not in r["d_slots"]), None)
+    kept = [r for r in records if stop is None or r["time_s"] <= stop]
+    return dict(
+        scale=scale,
+        rate_percent_per_min=rate,
+        order=order,
+        end_time_s=end,
+        events=len(events),
+        junction_heat_booking=BOOKING,
+        layout_max_abs_difference_from_analysis=layout_difference,
+        records=kept,
+        stop_time_s=stop,
+        refused=refusal,
+        diagnostics=diagnostics,
+        wall_s=time.perf_counter() - started,
+    )
+
+
 def provenance():
     git = ["git", "-C", str(Path(__file__).resolve().parents[2])]
     return dict(
@@ -376,14 +486,25 @@ def main(argv=None):
     parser.add_argument("--criteria", action="store_true")
     parser.add_argument("--case", action="append", default=[])
     parser.add_argument("--screen", action="append", default=[])
+    parser.add_argument("--checked", action="append", default=[])
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)
     if args.criteria:
-        name = "criteria_c.json" if args.screen else "criteria.json"
+        name, criteria = (
+            ("criteria_r2.json", CRITERIA_R2)
+            if args.checked
+            else ("criteria_c.json", CRITERIA_C)
+            if args.screen
+            else ("criteria.json", CRITERIA)
+        )
         with open(args.output / name, "x") as f:
-            json.dump((CRITERIA_C if args.screen else CRITERIA) | provenance(), f, indent=1)
+            json.dump(criteria | provenance(), f, indent=1)
         return
-    needed = (["criteria.json"] if args.case else []) + (["criteria_c.json"] if args.screen else [])
+    needed = (
+        (["criteria.json"] if args.case else [])
+        + (["criteria_c.json"] if args.screen else [])
+        + (["criteria_r2.json"] if args.checked else [])
+    )
     if any(not (args.output / n).exists() for n in needed):
         raise SystemExit("Write the criteria (--criteria) before any run")
     for item in args.case:
@@ -397,6 +518,15 @@ def main(argv=None):
         with open(args.output / f"r1_{item.replace(':', '_')}.json", "x") as f:
             json.dump(result, f, indent=1)
         print(item, json.dumps(result["comparison"]), flush=True)
+    for item in args.checked:
+        s_, rate, order = item.split(":")
+        scale, rate = float(s_), float(rate)
+        mine = checked_case(scale, rate, order)
+        comparison = compare(mine, reference(scale, rate, order))
+        result = dict(case=item, comparison=comparison, engine=mine) | provenance()
+        with open(args.output / f"r2_{item.replace(':', '_')}.json", "x") as f:
+            json.dump(result, f, indent=1, default=float)
+        print(item, json.dumps(comparison, default=float)[:600], flush=True)
     for item in args.screen:
         s, slot = item.split(":")
         mine = screen_case(float(s), slot)
