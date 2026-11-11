@@ -4634,12 +4634,14 @@ and you rank this, we are in no rush".
 2026-11-11, user clarification: "our ambition is assembly of structures like the
 proteasome and up but not protein folding itself, while we'll still simulate both
 beneath (GRNs) and above how the proteins are used".
-- **In scope:** the assembly of folded proteins into complexes and molecular
-  machines, from protein cages (the first case) toward structures such as the
-  proteasome and larger. Also in scope: the gene regulation that sets protein
-  amounts, and how assembled machines act in cells and tissues.
-- **Out of scope:** protein folding itself. Folded structures and interfaces come
-  from structural data or prediction and feed the interaction rules.
+- **Skipped:** protein folding itself, the one level not simulated.
+- **Beneath it:** gene regulation, which sets how much of each protein is made.
+- **Above it:** the assembly of proteins into complexes and molecular machines,
+  from protein cages (the first case) toward structures such as the proteasome and
+  larger, and how those machines are used in cells and tissues.
+- **Lead note, not part of the user's decision:** folded structures and interfaces
+  would come from structural data or prediction. The current cage model uses a
+  prescribed contact graph.
 
 ## Implementation choices and remaining work
 

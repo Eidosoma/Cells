@@ -1,10 +1,11 @@
-> **Scope for Cells (user decision, 11 November 2026; [D140](DECISIONS.md)).** Cells
-> aims to simulate how folded proteins assemble into complexes and molecular
-> machines, from protein cages toward structures such as the proteasome and larger.
-> It does not simulate protein folding: folded structures and interfaces come from
-> structural data or prediction, and feed the interaction rules. Gene regulation
-> beneath assembly, and the use of the assembled machines in cell physiology above
-> it, are modelled. This note surveys methods more broadly than that scope.
+> **Scope for Cells ([D140](DECISIONS.md), 11 November 2026).** The one level Cells
+> skips is protein folding itself. Beneath it, Cells aims to simulate the gene
+> regulation that sets protein amounts. Above it, Cells aims to simulate the
+> assembly of proteins into complexes and molecular machines, from protein cages
+> toward structures such as the proteasome and larger, and how those machines are
+> used in cell physiology. (Lead note: folded structures and interfaces would come
+> from structural data or prediction; the current cage model uses a prescribed
+> contact graph.) This note surveys methods more broadly than that scope.
 
 Yes. **We can simulate protein components moving, rotating, binding, separating, and assembling into larger structures from mathematical interaction rules.** Electrostatics is an important part of that, alongside shape, water, hydrogen bonding, molecular flexibility, and the entropy gained or lost during binding.
 

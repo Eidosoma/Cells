@@ -6,12 +6,12 @@ criteria. [Progress](../PROGRESS.md) owns current status, active runs and result
 The [earlier roadmap](history/ROADMAP_BEFORE_2026-10-11.md) retains the original
 build sequence and its historical status statements.
 
-Cells' molecular target is the assembly of folded proteins into complexes and
-machines, from protein cages toward structures such as the proteasome and larger,
-with gene regulation beneath and the machines' use in physiology above; protein
-folding itself is out of scope ([D140](DECISIONS.md)).
+On the molecular side, Cells skips protein folding itself. It aims to simulate
+gene regulation beneath folding, and above it the assembly of proteins into
+complexes and machines (from protein cages toward structures such as the
+proteasome and larger) and their use in physiology ([D140](DECISIONS.md)).
 Cells' wider target is integrated cell physiology, molecular assembly, tissues
-and organs for testing the Plastic Heredity and Forms ideas. The
+and organs for testing the Plastic Heredity and *How Patterns Return* ideas. The
 [calibration plan](SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack) combines
 model references with measured molecular, cellular, anatomical and functional
 evidence. Source-model comparisons support that programme one layer at a time.

@@ -32,7 +32,11 @@ design for SPEC-009; it is not new biology or executed upstream solver evidence.
 Direction and resource review: **2026-10-12**, with the cortical-learning
 validation candidate added **2026-10-24**. Cells' scientific scope is the
 coupling of molecular assembly, regulation, bioelectricity, chemistry and future
-metabolism, mechanics and turnover within cells, tissues and organs. BETSE is
+metabolism, mechanics and turnover within cells, tissues and organs. On the
+molecular side it skips protein folding itself: gene regulation is simulated
+beneath folding, and assembly of proteins into complexes and machines, toward
+structures such as the proteasome, and their use are simulated above it
+([D140](DECISIONS.md)). BETSE is
 inspiration and a calibration/verification instrument for the bioelectric layer;
 BITSEY provides a related regulatory/ionic reference. Coverage of those simulators
 is an engineering milestone within the broader research programme.

@@ -40,13 +40,12 @@ Realism means explicit physical mechanisms, material and energy accounting, and
 calibration against measurements. Bioelectricity, chemistry and assembly provide
 the starting point; metabolism, mechanics, growth and turnover are planned
 extensions. Cells' purpose is to study how these processes work together in the
-same evolving cells and tissues. On the molecular side, the ambition is the
-assembly of folded proteins into complexes and molecular machines, from protein
-cages today toward structures such as the proteasome and larger. Protein folding
-itself is not simulated: folded structures come from structural data or
-prediction. Beneath assembly, Cells models the gene regulation that sets how much
-of each protein is made; above it, how the assembled machines are used in cells
-and tissues. When an experiment shows that a mechanism is
+same evolving cells and tissues. On the molecular side, the one level we skip is
+protein folding itself. Beneath it, we aim to simulate the gene regulation that
+sets how much of each protein is made. Above it, we aim to simulate the assembly
+of proteins into complexes and molecular machines, from protein cages today
+toward structures such as the proteasome and larger, and how those machines are
+used in cells and tissues ([D140](docs/DECISIONS.md)). When an experiment shows that a mechanism is
 missing, we add it to the engine as a cited, biologically grounded model rather
 than working around it ([D136](docs/DECISIONS.md)). The goal is to find where
 the ideas hold, fail or need revision. See the
