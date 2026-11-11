@@ -1,0 +1,79 @@
+{
+ "kind": "cells.qualification_protocol@1",
+ "id": "G2-Q1",
+ "title": "Qualification of resolved_pump_replacement@1 (scheduled cell replacement on resolved_pump_tissue@3)",
+ "status": "proposed; registered by the lead before any judged run",
+ "engine_model": "resolved_pump_replacement@1 (inner resolved_pump_tissue@3; junction_formation delayed_first_order_junction_formation@1)",
+ "design": "/mnt/workspaces/Cells/cell-replacement-g2-20261111-01/design-note-G2.md; qualification/protocol-G2-Q1-draft.md",
+ "predictions": {
+  "file": "validation/tissue/cell_replacement_q1_predictions.json",
+  "producer": "validation/tissue/cell_replacement_predictions.py (references only, no engine run)",
+  "references": "validation/tissue/cell_replacement_reference.py: R-ops, R-full (pump_water_reference with water closed), R-fast (mg0b_theory reduced chain); hand checks validation/tissue/test_cell_replacement_reference.py",
+  "worlds": "stored whole in the predictions file; the judged run parses exactly these definitions"
+ },
+ "judged_run": {
+  "once": true,
+  "source": "a clean snapshot of the registration commit (validation/source_snapshot.py)",
+  "hardware": "CPU, one core per process, x64",
+  "solver": "imex_ars222_face_electromigration@1 at dt 1 ms unless an item says otherwise",
+  "junction_heat_booking": "trapezoid_nonnegative@1 for Q3-Q5 (the default for Q1, Q2, Q6, Q7 as declared)",
+  "refusal": "a refused step or check fails its item and is reported with the check; nothing is retried or worked around"
+ },
+ "tolerance_rule": {
+  "method": "pinned: 3 x (engine step term + reference term + rounding term), per compared quantity and record, maximum over the records",
+  "engine_step_term": "|engine(dt 1 ms) - engine(dt 0.5 ms)| from a dt study run after registration and before the judged run (development, recorded with its own snapshot)",
+  "reference_term": "|reference - reference at tolerances x 0.1| (Radau/BDF), computed with the predictions",
+  "rounding_term": "the engine's own ledger bounds (Q1), 64 eps x magnitude (Q2)",
+  "q4_reduction_term": "|R-full - R-fast| per record, measured from the references (q4_reduction_term_V in the predictions); Q4 adds it to the sum"
+ },
+ "items": {
+  "Q1": {
+   "claim": "Every @3 ledger closes across replacement events with the replacement terms, on host (surface_pump.checked_rows) and device (surface_pump_checks.row_checks), for one, simultaneous, both-ends, second-generation and donor-copy events.",
+   "cases": "all W7 and C9 cases of the predictions, plus W37 (validation/tissue/cell_replacement_cost.py swap world, 3000 steps)",
+   "pass": "no ledger, domain or dissipation check fails on any accepted row, on host or device"
+  },
+  "Q2": {
+   "claim": "The engine's event map equals R-ops on each case's first event set applied to the declared initial state.",
+   "compared": "slot amounts, slot channel gates, incident junction gates, removed, supplied, replacement charge, image charge at held nodes, booked free energy",
+   "pass": "within 64 eps x magnitude per quantity (amounts and gates exact to rounding)"
+  },
+  "Q3": {
+   "claim": "After events, trajectories agree with R-full.",
+   "compared": "every cell's Vm and the replaced slots' amounts at every 0.1 s record over 10 s",
+   "cases": "W7 and C9, three formation rules",
+   "pass": "within the pinned tolerance at every record"
+  },
+  "Q4": {
+   "claim": "On the ungated chain C9, Vm after replacement agrees with the reduced chain R-fast, and the end state (D or H of every cell at 10 s) is the same.",
+   "cases": "C9 isolated template and donor copy, three formation rules",
+   "pass": "Vm within the pinned tolerance (reduction term included) at every record; identical end-state classification (threshold the U state, -39.45 mV)"
+  },
+  "Q5": {
+   "claim": "Newcomer trajectories converge under dt 5, 2, 1, 0.5 ms with the split's observed order (formation half-steps around ARS(2,2,2)).",
+   "cases": "W7 short-lag and C9 donor short-lag",
+   "pass": "observed order between 1.8 and 2.2 on the slot Vm over the records after the first event"
+  },
+  "Q6": {
+   "claim": "Restart at t_e - dt, t_e and t_e + dt is bitwise; vmap cohorts of 2 and 8 worlds with different schedules reproduce their scalar runs.",
+   "pass": "bitwise for restart; within 1e-12 relative per state field for vmap"
+  },
+  "Q7": {
+   "claim": "Without events the model equals resolved_pump_tissue@3 bitwise on the 825-node world.",
+   "pass": "bitwise on every @3 state field, observation and check diagnostic over 200 steps (detached driver)"
+  }
+ },
+ "non_discriminating": "outside amounts in held-bath worlds (held baths); junction gates of ungated C9 junctions; named before the judged run",
+ "exclusions": [
+  "finite-ECM and floating-component worlds (refused at parse)",
+  "the water inner model (stage 3)",
+  "hour-scale runs",
+  "templates with route values in Q3 (R-full covers none)"
+ ],
+ "order": [
+  "1 references and hand checks committed",
+  "2 predictions frozen and committed (validation/tissue/cell_replacement_q1_predictions.json)",
+  "3 protocol registered by the lead on main",
+  "4 dt study and reference-term measurement (development) pin the tolerances into this file, committed before the judged run",
+  "5 judged run once; PROGRESS entry with links"
+ ]
+}
