@@ -47,8 +47,18 @@ expression.
 
 The engine's laws act on **functional units** (an assembled channel, a pump, a
 junction channel), not on single gene products. Most channel laws take BETSE
-v1.5.0's coefficient sets, which come from published channel models; the
-organism and source of each still need recording.
+v1.5.0's coefficient sets. Where those coefficients came from, and from which
+organism, still needs recording for each one.
+
+This is a **partial first pass**, from a name search of the specs. Not yet listed:
+- the calcium pumps;
+- ER calcium and IP3 release;
+- calcium-activated potassium channels;
+- `kcc_reversible_tanh@1`;
+- the T- and N-type CaV laws;
+- the mitochondrial processes.
+
+Stage 2 makes the full list.
 
 | Engine law (examples) | Functional unit | Likely gene products (to verify) | Note |
 | --- | --- | --- | --- |
@@ -57,8 +67,8 @@ organism and source of each still need recording.
 | `kv1p5_mh@1` and Kv1 family | Kv1.5 channel | KCNA5 (tetramer) | BETSE coefficients |
 | HCN1/2/4 laws | HCN channels | HCN1, HCN2, HCN4 (tetramers) | BETSE coefficients |
 | `cav1p2_m2h@1`, CaV laws | CaV1.2 and others | CACNA1C and auxiliary subunits | BETSE coefficients |
-| Pump law in `resolved_pump_tissue` | Na⁺/K⁺-ATPase | ATP1A1 and ATP1B1 (αβ, with optional FXYD) | |
-| `k_anion_symport_mass_action@1` | K–Cl cotransporter (red-cell capacity) | SLC12A4 (KCC1), others possible | Mass-action law |
+| Pump laws (for example `nak_atp_mass_action_positive@1`) | Na⁺/K⁺-ATPase | Generic: 3 Na⁺ out and 2 K⁺ in per cycle, not isoform-specific. Candidate products ATP1A1–4 with ATP1B1–3 (αβ, optional FXYD) | Assigning an isoform would be a new claim |
+| `k_anion_symport_mass_action@1` | KCC-type K⁺–anion symport (1:1, a Cl-like anion; capacity set from red cells) | Generic KCC-type. Candidate products SLC12A4–7 (KCC1–4) | Mass-action law, volume-activated; isoform not assigned |
 | `junction_voltage_relaxation@1` | Gap-junction channel | Generic | Its source says **no connexin catalog or biological fit is implied**. Labelling it "Cx43" would be a new claim, not a relabel |
 | Leak laws | Background conductances | Unassigned | Not protein-specific |
 | Capsid assembly ([CAPSID_ASSEMBLY.md](CAPSID_ASSEMBLY.md)) | Protein cage | Prescribed contact graph | The first D140 assembly case |
@@ -141,8 +151,11 @@ statements avoids most of the question. Bulk copying of atlas data is not planne
    - evidence records;
    - the hook into membrane-domain populations;
    - bitwise-off checks.
-4. **Implementation:** catalogue schema, loader and tests; metadata only at first.
-   Abundance as state comes with the trafficking or division work that needs it.
+4. **Implementation:** catalogue schema, loader and tests.
+   - It comes with the first engine model that consumes it, for example abundance as
+     state in the division or trafficking work.
+   - A metadata-only catalogue would run no engine model, so under AGENTS.md it
+     counts as tooling and needs the user's explicit approval on its own.
 5. **Data tooling** (ingesting from the UniProt or Human Protein Atlas APIs). This is
    tooling and needs the user's approval.
 
