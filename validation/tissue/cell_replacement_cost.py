@@ -15,6 +15,12 @@ IMEX ARS(2,2,2) at dt 1 ms, compiled checked steps in lax.scan with held control
   sheet     a 217-cell heredity sheet (held baths, written disc), @3 against the
             wrapper with one replacement per 0.2 s (literature formation rule),
             through the windowed runner (host checks included), one world.
+  parse     parse_spec and schedule host costs against the number of events.
+  swap      D->H replacements under IMEX, row-checked, ledger ratios per row.
+  inheritance  development check (not a claim): an interior disc slot among D
+            neighbours gets either a donor copy of the D centre (inheritance route)
+            or the isolated H template, under the literature formation rule and
+            under the immediate limit (A0 1, lag 0, law_open).
 
 Usage: python -m validation.tissue.cell_replacement_cost PART --output DIR
        [--steps N] [--worlds B] [--repeats R]
@@ -315,12 +321,71 @@ def part_swap(args):
     )
 
 
+def part_inheritance(args):
+    """Donor copy against isolated template in the disc interior (development check)."""
+    from cells.core.runner import run
+    from validation.stationary import worlds
+
+    seconds = args.steps * DT
+    raw = fx.heredity_sheet(6, 3, scale=0.3, dt=DT, end_time=seconds)
+    cells, _ = worlds.hexagon(6)
+    rings = [worlds.ring(c) for c in cells]
+    centre = rings.index(0)
+    slot = rings.index(1)
+    h = rings.index(6)
+    (t,) = exact_event_times((args.steps // 3,), DT)
+    times = sorted({0.0, t, *exact_event_times((args.steps // 3 + 100, 2 * args.steps // 3), DT)})
+    raw["experiment"]["observation_times"] = [*times, seconds]
+    templates = [fx.template_from_cell(raw, f"cell_{h}", "h")]
+    rules = dict(
+        literature=dict(fx.FORMATION),
+        immediate=dict(fx.FORMATION, initial_abundance=1.0, lag_s=0.0),
+    )
+    newcomers = dict(
+        donor_copy=(t, f"cell_{slot}", None, "newcomer", f"cell_{centre}"),
+        isolated_template=(t, f"cell_{slot}", "h", "newcomer"),
+    )
+    threshold = 1e-3 * -39.4452  # The U state of the heredity cell (fixtures.HEREDITY_STATES).
+    out = dict(
+        cells=len(cells),
+        slot=slot,
+        slot_ring=1,
+        donor=centre,
+        event_time_s=t,
+        threshold_mV=1e3 * threshold,
+        arms=[],
+    )
+    for rule, formation in rules.items():
+        for kind, event in newcomers.items():
+            spec = parse_spec(fx.with_replacement(raw, templates, [event], formation=formation))
+            started = time.perf_counter()
+            result = run(spec)  # Host row checks on every accepted row.
+            obs = result.observations
+            v = np.asarray(obs.membrane_voltage_V)
+            slot_v = 1e3 * v[:, slot]
+            disc = [i for i, r in enumerate(rings) if r <= 3]
+            out["arms"].append(
+                dict(
+                    formation=rule,
+                    newcomer=kind,
+                    observation_times_s=np.asarray(obs.times).tolist(),
+                    slot_voltage_mV=slot_v.tolist(),
+                    slot_end_state="D" if v[-1, slot] > threshold else "H",
+                    disc_d_cells_end=int(np.sum(v[-1, disc] > threshold)),
+                    wall_s=time.perf_counter() - started,
+                )
+            )
+            print(out["arms"][-1], flush=True)
+    return out
+
+
 PARTS = dict(
     overhead=part_overhead,
     eventmap=part_eventmap,
     sheet=part_sheet,
     parse=part_parse,
     swap=part_swap,
+    inheritance=part_inheritance,
 )
 
 

@@ -67,7 +67,11 @@ def template_from_cell(raw, cell_id, template_id, *, routes=None):
 
 
 def with_replacement(raw, templates=(), events=(), *, formation=None, capacity=None):
-    """The raw definition as resolved_pump_replacement@1; events (time, slot, template, carrier)."""
+    """The raw definition as resolved_pump_replacement@1.
+
+    events: (time, slot, template, carrier) for isolated templates, or (time, slot,
+    template or None, carrier, donor) for donor copies.
+    """
     raw = copy.deepcopy(raw)
     raw["model"]["id"] = "resolved_pump_replacement@1"
     raw["model"]["replacement"] = dict(
@@ -77,8 +81,29 @@ def with_replacement(raw, templates=(), events=(), *, formation=None, capacity=N
         templates=[copy.deepcopy(t) for t in templates],
         template_capacity=max(1, len(templates)) if capacity is None else capacity,
     )
-    raw["experiment"]["replacement_events"] = [
-        dict(time=t, slot=slot, template=template, carrier_id=carrier)
-        for t, slot, template, carrier in events
-    ]
+    raw["experiment"]["replacement_events"] = [event(*e) for e in events]
     return raw
+
+
+def event(time, slot, template, carrier, donor=None):
+    """An isolated_template event, or a donor_copy (inheritance route) when donor is given."""
+    return dict(
+        time=time,
+        slot=slot,
+        newcomer="isolated_template" if donor is None else "donor_copy",
+        template=template,
+        donor=donor,
+        carrier_id=carrier,
+    )
+
+
+def route_template(template_id, routes=None):
+    """A route-only template (route values for donor copies; no state)."""
+    return dict(
+        id=template_id,
+        volume_pL=None,
+        fixed_charge_equivalent_fmol=None,
+        amounts_fmol=None,
+        channel_gates=None,
+        route_values=copy.deepcopy(NO_ROUTES if routes is None else routes),
+    )

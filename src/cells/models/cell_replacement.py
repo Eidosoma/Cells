@@ -26,9 +26,12 @@ at t_e is the departing carrier's last state; t_e + dt is the newcomer's first.
 Event map, per replaced slot i:
   * removal: the occupant's amounts are booked in replacement_removed_fmol (waste;
     the contents leave the system);
-  * supply: the template's amounts are booked in replacement_supplied_fmol; the
-    slot's amounts and channel gates become the template's; generation and
-    occupant_template (1 + template row) advance;
+  * supply: the template's amounts, or for a donor copy (an inheritance route)
+    the donor's amounts before any event at that time, are booked in
+    replacement_supplied_fmol (the donor keeps its contents); the slot's amounts
+    and channel gates become the template's or the donor's (by channel law);
+    generation and occupant_template (1 + the route template's row, 0 for the
+    slot's own route values) advance;
   * incident junctions: lag and deficit restart from the declared arrival state,
     the gate is the junction law's value at Vj = 0 (law_open) or its steady state at
     the post-event Vj (law_steady, one extra field solve);
@@ -113,6 +116,7 @@ REPLACEMENT_LAYOUT_FIELDS = (
     "template_calcium_pump_density",
     "template_calcium_pump_density_set",
     "slot_event_count",  # [capacity] int64
+    "cell_law_channel",  # [capacity, law] int64: the cell's population of that law; -1 none.
     "formation_initial_abundance",
     "formation_lag_s",
     "formation_time_constant_s",
@@ -244,9 +248,10 @@ def _template_tables(spec, rows):
         template_calcium_pump_density_set=np.zeros(rows, dtype=bool),
     )
     for k, template in enumerate(r.templates):
-        t["template_amount_fmol"][k] = template.amounts_fmol
-        for law, gates in template.channel_gates:
-            t["template_channel_gate"][k, : len(gates), laws.index(law)] = gates
+        if template.amounts_fmol is not None:  # Route-only templates keep the padding.
+            t["template_amount_fmol"][k] = template.amounts_fmol
+            for law, gates in template.channel_gates:
+                t["template_channel_gate"][k, : len(gates), laws.index(law)] = gates
         for name, values, index in (
             ("template_channel_permeability", template.channel_permeability_m_per_s, laws),
             ("template_channel_abundance", template.channel_abundance, laws),
@@ -264,6 +269,24 @@ def _template_tables(spec, rows):
     return t
 
 
+def law_channels(spec):
+    """[capacity, law] channel index of each cell's population of a law (-1: none).
+
+    Donor copies read a donor's gates by law; the parser admits only donors with
+    exactly one population of each gated law the slot has.
+    """
+    m, x = spec.model, spec.execution
+    cells = {c.id: i for i, c in enumerate(m.cells)}
+    owner = {p.id: cells[p.inside] for p in m.membranes}
+    laws = list(LAW_CODES)
+    table = -np.ones((x.capacity, len(laws)), dtype=np.int64)
+    for k, c in enumerate(m.channels):
+        i, law = owner[c.membrane_id], laws.index(c.kinetic_law)
+        if table[i, law] < 0:
+            table[i, law] = k
+    return table
+
+
 def initial_values(spec):
     state, p = ionic.initial_values(projection(spec))
     m, x, r = spec.model, spec.execution, spec.model.replacement
@@ -275,6 +298,7 @@ def initial_values(spec):
         counts[order[v.slot]] += 1
     values = _template_tables(spec, r.template_capacity) | dict(
         slot_event_count=counts,
+        cell_law_channel=law_channels(spec),
         formation_initial_abundance=np.asarray(f.initial_abundance),
         formation_lag_s=np.asarray(f.lag_s),
         formation_time_constant_s=np.asarray(f.time_constant_s),
@@ -370,16 +394,21 @@ def check_definition(spec):
     checked = set()
     with np.errstate(all="ignore"):
         for v in small.experiment.replacement_events:
-            if v.template in checked:
+            key = (v.template, v.donor is not None)
+            if key in checked:
                 continue
-            checked.add(v.template)
+            checked.add(key)
             i = order[v.slot]
-            generation, template = np.zeros_like(base.generation), np.zeros_like(base.template)
-            generation[i], template[i] = 1, rows[v.template]
-            control = base._replace(generation=generation, template=template)
+            generation, template, donor = (np.zeros_like(base.generation) for _ in range(3))
+            generation[i] = 1
+            template[i] = 0 if v.template is None else rows[v.template]
+            donor[i] = 0 if v.donor is None else order[v.donor] + 1
+            control = base._replace(generation=generation, template=template, donor=donor)
             after, ok = apply_events(state, control, p, xp=np)
             if not ok or not control_domain_valid(after, control, p, p.active, xp=np):
-                raise ConfigError(f"Template {v.template} is outside the domain at slot {v.slot}")
+                raise ConfigError(
+                    f"Newcomer {v.carrier_id} ({v.newcomer}) is outside the domain at {v.slot}"
+                )
 
 
 def check_steps(spec, steps, controls):
@@ -399,7 +428,8 @@ def worst_case(spec):
     names = {t.id: t for t in spec.model.replacement.templates}
     by_slot = {}
     for v in spec.experiment.replacement_events:
-        by_slot.setdefault(v.slot, set()).add(v.template)
+        if v.template is not None:  # Donor copies without one keep the slot's routes.
+            by_slot.setdefault(v.slot, set()).add(v.template)
     membranes = []
     for p in m.membranes:
         templates = [names[t] for t in by_slot.get(p.inside, ())]
@@ -440,15 +470,23 @@ def event_map(state, due, control, p, *, xp=jnp):
     """Replace the carriers of the due slots (module docstring); the new state."""
     n = p.active.size
     row = xp.maximum(control.template - 1, 0)
+    copy = control.donor > 0  # Donor copies (inheritance route); else the template.
+    donor = xp.maximum(control.donor - 1, 0)
     reference = p.amount_reference
     old = reference + state.amount_increment
-    template = p.template_amount_fmol[row].T
+    # Supply: the template's amounts, or the donor's before any event at this time.
+    template = xp.where(copy[None, :], old[:, donor], p.template_amount_fmol[row].T)
     slot = due[None, :]
     increment = xp.where(slot, template - reference, state.amount_increment)
     dq = CHARGE_PER_FMOL * xp.sum(p.valence * (template - old), axis=0)
     cell = p.membrane_cell[p.channel_membranes]
     replaced = (due[cell] & p.channel_active)[None, :] & p.channel_gate_active
-    gate = p.template_channel_gate[row[cell], :, p.channel_laws].T
+    source = xp.maximum(p.cell_law_channel[donor[cell], p.channel_laws], 0)
+    gate = xp.where(
+        copy[cell][None, :],
+        state.channel_gate[:, source],
+        p.template_channel_gate[row[cell], :, p.channel_laws].T,
+    )
     edge = p.junction_active & (due[p.junction_sender] | due[p.junction_receiver])
     lag0, deficit0 = formation.arrival(formation_parameters(p), xp=xp)
     params = junction_gate.Parameters(p.junction_threshold_voltage, p.junction_minimum)
@@ -510,7 +548,8 @@ def apply_events(state, control, p, *, xp=jnp):
     """(state after the due replacements, schedule consistency) at a step start."""
     due = p.active & (control.generation == state.generation + 1)
     stale = p.active & ~due & (control.generation != state.generation)
-    ok = ~xp.any(stale) & xp.all(xp.where(due, control.template >= 1, True))
+    supplied = (control.template >= 1) | (control.donor >= 1)
+    ok = ~xp.any(stale) & xp.all(xp.where(due, supplied, True))
     if xp is np:
         return (event_map(state, due, control, p, xp=np) if np.any(due) else state), ok
     return (
@@ -529,7 +568,7 @@ def replacement_domain_valid(state, p, *, xp=jnp):
     g, t = state.generation, state.occupant_template
     rows = p.template_amount_fmol.shape[0]
     valid = xp.all((g >= 0) & (g <= p.slot_event_count))
-    valid &= xp.all((t >= 0) & (t <= rows)) & xp.all((g == 0) == (t == 0))
+    valid &= xp.all((t >= 0) & (t <= rows)) & xp.all(xp.where(g == 0, t == 0, True))
     valid &= xp.all(xp.where(p.active, True, (g == 0) & (t == 0)))
     valid &= formation.domain_valid(
         state.junction_lag_remaining_s, state.junction_abundance_deficit, xp=xp

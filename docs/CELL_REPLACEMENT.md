@@ -42,6 +42,32 @@ the newcomer's isolated steady state, computed by the driver; the engine draws
 nothing. A template may only replace a slot's existing routes, by positive values, on
 a slot of the same volume and fixed charge background.
 
+## Newcomer kinds (D139)
+
+Each event declares its newcomer kind, and the lineage records it.
+
+- **`isolated_template`.** The newcomer is a declared template: no state is inherited.
+- **`donor_copy`, an inheritance route.** It models a newcomer born by a neighbour's
+  division.
+  - **What is copied.** The newcomer takes the amounts and channel gates that a
+    declared donor (a cell sharing a junction with the slot) holds at the event time,
+    before any event at that time. Gates are copied by channel law.
+  - **Route values.** They are the slot's own, or those of a declared route-only
+    template.
+  - **Supply.** The supply is the copied amounts. The donor keeps its contents and its
+    volume.
+  - **Lineage.** The record carries `inheritance_route`, the donor and the donor's
+    carrier at the event time.
+  - **Admission.** The donor must have the slot's volume and fixed charge background,
+    and exactly one population of each gated law the slot has.
+
+**Limit of donor copies.** A real division halves the parent's contents and volume. The
+daughters then grow back, and mitotic cells swell and condense along the way
+(Zlotek-Zlotkiewicz et al. 2015, J Cell Biol 211:765; Habela and Sontheimer 2007, Cell
+Cycle 6:1613). Restoring the donor needs cell growth, which is out of scope, so the
+donor is not depleted. The copy models a division-born newcomer's composition, not the
+division's mass balance.
+
 ## Junction formation, `delayed_first_order_junction_formation@1`
 
 A newcomer's junction channels are new: the departing cell's plaques leave whole as
@@ -66,7 +92,8 @@ and multiplies the junction's availability; the voltage gate keeps its own law.
 Newly formed channels take the junction's current gate state. That is exact only when
 formation is much slower than gating (at most about 0.4 s), hence the 40 s floor.
 Pre-screen 9's driver rules (a) and (c) are the limit A0 = 1, lag 0 with `law_open` and
-`law_steady`. Its "inherit" rule has no mechanism in the literature and is not offered.
+`law_steady`. Its "inherit" rule, gate state carried across a replacement, has no
+mechanism in the literature and stays excluded (D139).
 
 ## Time integration
 

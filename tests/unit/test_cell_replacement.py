@@ -510,3 +510,130 @@ def test_law_steady_compiled_with_an_inner_schedule_change_between_events():
     assert np.allclose(
         np.asarray(compiled.junction_gate), expected.junction_gate, rtol=0, atol=1e-14
     )
+
+
+# ------------------------------------------------------------------ donor copies (D139)
+
+FAST_NAV = dict(fx.NO_ROUTES, channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3e-7})
+DONOR_EVENTS = (
+    (T1, "cell_0", None, "c1", "cell_3"),  # Copy of the D centre; the slot's own routes.
+    (T2, "cell_4", "fast_nav", "c2", "cell_3"),  # Copy with a route-only template...
+    (T2, "cell_3", "h", "c3"),  # ...while the donor itself is replaced at the same time.
+)
+
+
+def donor_spec(events=DONOR_EVENTS):
+    raw = sheet()
+    return parse_spec(
+        fx.with_replacement(raw, [*templates(raw), fx.route_template("fast_nav", FAST_NAV)], events)
+    )
+
+
+@pytest.fixture(scope="module")
+def donor_run():
+    return run(donor_spec())
+
+
+def test_donor_copy_takes_the_donor_state_before_events_at_its_time(donor_run):
+    result, spec = donor_run, donor_run.spec
+    h, p = result.history, model.initial_values(spec)[1]
+    amounts = np.asarray(p.amount_reference) + np.asarray(h.amount_increment)
+    gates = np.asarray(h.channel_gate)
+    k1, k2 = row(result, T1), row(result, T2)
+    chan = {c.id: i for i, c in enumerate(spec.model.channels)}
+    supplied = np.asarray(h.replacement_supplied_fmol)
+    assert np.array_equal(supplied[k1 + 1, :, 0], amounts[k1, :, 3])
+    assert np.array_equal(supplied[k2 + 1, :, 4], amounts[k2, :, 3])  # Pre-event donor.
+    state = model.STATE_TYPE(*(np.asarray(v[k2]) for v in h))
+    control = model.Control(*(np.asarray(v[0]) for v in model.control_values(spec, [T2])))
+    after, ok = model.apply_events(state, control, p, xp=np)
+    assert ok
+    for law in ("nav", "kir"):
+        assert np.array_equal(
+            after.channel_gate[:, chan[f"{law}_4"]], gates[k2, :, chan[f"{law}_3"]]
+        )
+    assert np.asarray(h.occupant_template)[-1].tolist() == [0, 0, 0, 1, 3, 0, 0]
+    view = model.ionic_layout(p, after, xp=np)
+    assert view.channel_permeability[chan["nav_4"]] == 3e-7
+    assert view.channel_permeability[chan["nav_0"]] == p.channel_permeability[chan["nav_0"]]
+
+
+def test_donor_copies_close_every_ledger_and_restart_bitwise(donor_run):
+    result = donor_run
+    diagnostics = model.check_values(result.history, result.spec, list(range(len(result.times))))
+    assert diagnostics["max_balance_error_fmol"] < 1e-12
+    for time in (T1, T2):
+        restarted = run(result.spec, result.checkpoint_at(time))
+        k = row(result, time)
+        for key in model.STATE_TYPE._fields:
+            a = np.asarray(getattr(restarted.history, key))
+            assert np.array_equal(a, np.asarray(getattr(result.history, key))[k:]), key
+
+
+def test_donor_copies_agree_on_host_and_device(donor_run):
+    """@3's device-check comparison (test_surface_pump_v3_device_checks) on donor rows."""
+    from cells.models import surface_pump
+    from cells.numerics import surface_field
+
+    result = donor_run
+    h, p = result.history, model.initial_values(result.spec)[1]
+    constants = model.device_check_constants(result.spec)
+    rows = [model.STATE_TYPE(*(np.asarray(v[i]) for v in h)) for i in range(len(result.times))]
+    check = jax.jit(lambda a, b, s: model.device_checks(a, b, p, constants, s))
+    tol = np.asarray(result.spec.execution.material_balance_atol_fmol).min()
+    bounds = {  # Smallest bound of each rounding residual (host bounds).
+        "max_balance_error_fmol": tol,
+        "max_extracellular_balance_error_fmol": tol,
+        "max_global_balance_error_fmol": tol,
+        "max_capacitor_charge_error_C": surface_field.CHARGE_ATOL_C,
+        "max_electrode_charge_error_C": surface_field.CHARGE_ATOL_C,
+        "max_global_charge_error_C": surface_pump.GLOBAL_CHARGE_ATOL_C,
+        "max_reservoir_work_error_pJ": 3e-12,
+        "max_electrode_work_error_pJ": 3e-12,
+        "max_metabolic_work_error_pJ": 3e-12,
+        "max_global_charge_bound_ratio": 1.0,
+    }
+    for i in range(1, len(rows)):
+        failed, values = check(rows[i - 1], rows[i], i)
+        assert not np.any(np.asarray(failed)), i
+        host = model.check_values(rows[i], result.spec, [i])
+        device = dict(zip(model.DEVICE_DIAGNOSTICS, np.asarray(values).tolist(), strict=True))
+        for key, value in host.items():
+            if key in bounds:
+                assert abs(device[key] - value) <= 0.02 * bounds[key], (i, key)
+            else:  # Energy: truncation, plus the rounding of the booked replacement terms.
+                booked = 64 * np.finfo(float).eps * np.sum(rows[i].replacement_energy_magnitude_pJ)
+                assert abs(device[key] - value) <= 1e-9 * abs(value) + 1e-15 + booked, (i, key)
+    k = row(result, T2) + 1
+    bad = rows[k]._replace(replacement_supplied_fmol=rows[k].replacement_supplied_fmol * 1.000001)
+    with pytest.raises(NumericalError, match="local"):
+        model.check_values(bad, result.spec, [k])
+    failed, _ = check(rows[k - 1], bad, k)
+    assert dict(zip(model.DEVICE_CHECKS, np.asarray(failed).tolist(), strict=True))["local"]
+
+
+def test_donor_copies_are_labelled_as_an_inheritance_route(donor_run):
+    records = model.summarize(donor_run.history, donor_run.diagnostics, donor_run.spec)["lineage"]
+    newcomers = {r["carrier_id"]: r for r in records if not r["founder"]}
+    assert newcomers["c1"]["newcomer"] == "donor_copy" and newcomers["c1"]["inheritance_route"]
+    assert newcomers["c2"]["donor"] == "cell_3" and newcomers["c2"]["donor_carrier"] == "cell_3"
+    assert newcomers["c3"]["newcomer"] == "isolated_template"
+    assert not newcomers["c3"]["inheritance_route"]
+    raw = donor_spec().to_dict()
+    kinds = [e["newcomer"] for e in raw["experiment"]["replacement_events"]]
+    assert kinds == ["donor_copy", "isolated_template", "donor_copy"]  # Sorted by (time, slot).
+
+
+@pytest.mark.parametrize(
+    "events, message",
+    [
+        (((T1, "cell_0", None, "c1", "cell_6"),), "shares no junction"),
+        (((T1, "cell_0", None, "c1", "cell_0"),), "donor"),
+        (((T1, "cell_0", "h", "c1", "cell_3"),), "route-only"),
+        (((T1, "cell_0", "fast_nav", "c1"),), "full template"),
+        (((T1, "cell_0", None, "c1"),), "full template"),
+    ],
+)
+def test_invalid_donor_copies_are_refused(events, message):
+    with pytest.raises(ConfigError, match=message):
+        donor_spec(events)
