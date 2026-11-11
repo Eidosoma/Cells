@@ -11,10 +11,10 @@ and plan. Order is the lead's, per D137 and D138.
 
 The overall order is set against the engine-feature queue (D136), currently:
 
-1. water and volume (built on a branch; judged run pending);
-2. cell replacement (G2, stage 1 built; donor-copy template in progress);
+1. water and volume (qualified and on main, 11 November);
+2. cell replacement (G2: protocol registered; tolerances being pinned);
 3. Cortés-Poza Phase 0 (done);
-4. MG1 (design started);
-5. Cortés-Poza Phase 1 after the junction-heat fix;
+4. MG1 (judged run failed 52/57; being diagnosed);
+5. Cortés-Poza Phase 1 (unblocked: the junction-heat fix and the frozen-composition comparison are both in; next free slot);
 6. the gene-regulation layer (heredity Stage D, parity P8);
 7. REVERT reproduction.

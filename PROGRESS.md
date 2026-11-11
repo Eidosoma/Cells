@@ -46,7 +46,7 @@ starts, and production design is deferred until parity is established.
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
 | 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4), the ledger rounding fix and @3 device checks landed; @3 on the L4 is 2.28 ms per world-step at 256 worlds (tier 1 about 4,100 L4 GPU-hours execute-only, about 7,200 end to end); GH200 throughput unmeasured. **Pre-screens 7–8 (retention, rim renewal) are in doubt**: they start from the fully loaded stationary D composition (+31% osmolarity), while cue-written discs carry H composition and behave differently (W1 sheet check, pre-screen 9); the design choice waits on fresh-disc runs |
-| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); MG1 (2-D vertex mechanics) design started 11 November (D138) |
+| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); **MG1 (2-D vertex mechanics) judged run failed** (52/57; barrier minimizer and I3), being diagnosed |
 | 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 not evaluable (no lingering scale found) |
 
 ## Runs
@@ -76,8 +76,9 @@ machine-readable inputs, results, checks and failures.
     Bitwise restart on the GPU would need deterministic XLA ops, whose cost is
     unmeasured. One L4 refusal (pilot-03, 0.047 s) did not reproduce.
 - **MG1 (2-D vertex mechanics) judged run: FAIL (11 November).** Protocol
-  `mg1-vertex-mechanics-v1`, registered at `70f5456`, run once from a clean
-  snapshot on CPU
+  `mg1-vertex-mechanics-v1`, registered at `70f5456`. Run once on CPU from a clean
+  snapshot of `db82f63` (the MG1 branch rebased on `70f5456`; empty patch; protocol
+  bytes equal main's)
   ([results](/mnt/workspaces/Cells/morphogenesis-mg1-20261111-01/judged-01/results/results.json)).
   - **52 of 57 criteria pass:** the case-I ground state, the box stress, ordered-
     network rigidity, recoil after a junction cut, numerics (RK4 order about 4,
@@ -87,8 +88,9 @@ machine-readable inputs, results, checks and failures.
     converge (`ConfigError`), so criteria B1–B4 have no values and count as failed.
   - **I3 (noise linearity of tension inference) failed** on its own values.
   - Per the outcome rules, thresholds are not changed. The causes are being
-    diagnosed (development); any rerun will be a new judged run with this one kept
-    on record.
+    diagnosed (development). Any rerun is a new judged run under a v2 protocol,
+    with all 57 criteria, this run kept on record, and a pass labelled weaker
+    evidence. I3's window will not be re-derived from engine output.
 - **Osmotic water and volume qualified and landed (11 November).**
   - **`resolved_pump_water@1`:** osmotic water and compliant volumes on
     `resolved_pump_tissue@3`, through a Strang split around @3's own step.
@@ -220,6 +222,16 @@ machine-readable inputs, results, checks and failures.
     - **Kinetics:** almost untested. Only NaV1.2 h's lag enters (h2 SIM); τ_m and the
       Kir2.1 time constants are not tested.
     - CPU only, one geometry.
+- **Latent RK4 electrode rounding in `resolved_pump_tissue@3` (11 November).**
+  - **Where it shows:** under RK4, the electrode ledger integrates stage currents
+    and does not see the rounding of large amount increments.
+  - **When it trips:** in plain @3 increments stay small, so this is latent. After
+    a whole-content swap in cell replacement, the gap random-walks past the bound
+    (5.5e-24 against 2.2e-24 C in 51 steps).
+  - **Not affected:** IMEX books the electrode from rounded states, so it telescopes
+    exactly.
+  - **Handling:** `resolved_pump_replacement@1` adds an allowance for replaced slots
+    only. @3 itself is unchanged.
 - **Known refusal in the pump family (10 November).** `resolved_pump_tissue@1`–`@3`
   refuse any step in which a junction's power falls by more than about 59%:
   ARS(2,2,2) books junction heat with weights (δ, 1−δ), δ = −0.707, so the booked
