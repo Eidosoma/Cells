@@ -58,6 +58,9 @@ def main():
     args = parser.parse_args()
     predictions = json.loads(Path(args.predictions).read_text())
     study = json.loads(Path(args.dt_study).read_text())
+    refused = {name: sorted(r["failures"]) for name, r in study.items() if "failures" in r}
+    if refused:  # No tolerance is pinned from an incomplete study.
+        raise SystemExit(f"dt study has refused runs (world: dt): {refused}")
     tolerances, terms, orders = {}, {}, {}
     for name, path in qualification.TRAJECTORIES.items():
         if name not in study:

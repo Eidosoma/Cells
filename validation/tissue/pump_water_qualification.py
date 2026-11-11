@@ -113,17 +113,37 @@ def p1_reference(predictions):
     }
 
 
-def dt_study(predictions, parts):
-    out = {}
+def dt_study(predictions, parts, progress=None):
+    """The dt study of every predicted world; a failed run is recorded, not fatal.
+
+    progress: a path rewritten after every run with each world's completed and
+    failed runs (so a long study leaves its evidence as it goes).
+    """
+    out, log = {}, {}
     for name, path in TRAJECTORIES.items():
         if parts and path[0] not in parts:
             continue
         entry = item(predictions, path)
         raw = entry["definition"]
-        runs = {}
+        runs, failures = {}, {}
         for dt in STEPS_S:
-            observed, diagnostics, seconds = engine_observations(raw, dt)
-            runs[dt] = dict(observed=observed, diagnostics=diagnostics, seconds=seconds)
+            started = time.perf_counter()
+            try:
+                observed, diagnostics, seconds = engine_observations(raw, dt)
+                runs[dt] = dict(observed=observed, diagnostics=diagnostics, seconds=seconds)
+                log.setdefault(name, {})[str(dt)] = dict(status="ok", seconds=seconds)
+            except Exception as error:  # A refused run is evidence: record it.
+                failures[str(dt)] = dict(
+                    error=repr(error),
+                    traceback=traceback.format_exc()[-3000:],
+                    seconds=time.perf_counter() - started,
+                )
+                log.setdefault(name, {})[str(dt)] = dict(status="failed", error=repr(error))
+            if progress is not None:
+                Path(progress).write_text(json.dumps(log, indent=2) + "\n")
+        if failures:
+            out[name] = dict(failures=failures, completed=[str(dt) for dt in runs])
+            continue
         times = sorted(runs[STEPS_S[0]]["observed"])
         record = dict(times=times, seconds={str(dt): r["seconds"] for dt, r in runs.items()})
         record["diagnostics"] = {str(dt): r["diagnostics"] for dt, r in runs.items()}
@@ -381,7 +401,7 @@ def main():
     predictions = json.loads(Path(args.predictions).read_text())
     try:
         if args.phase == "dt-study":
-            result = dt_study(predictions, args.parts)
+            result = dt_study(predictions, args.parts, progress=out / "dt-study-progress.json")
         elif args.phase == "stationary":
             result = stationary_phase(predictions)
         elif args.phase == "drift":
