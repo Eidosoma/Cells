@@ -217,6 +217,37 @@ def hessian_rate(position, topology, box, mechanics, friction, *, xp=jnp):
     return xp.max(rate)
 
 
+def crossing_junctions(position, topology, box):
+    """Number of pairs of junctions without a common vertex whose segments cross.
+
+    Host check (numpy). The local domain tests (positive areas, rotations) cannot
+    see a junction crossing a distant one. Each second segment is moved by the
+    periodic image that brings its midpoint nearest the first's, which is exact
+    while junctions are shorter than half the box's shortest width.
+    """
+    t = topology
+    active = np.flatnonzero(np.asarray(t.junction_active))
+    g = geometry(np.asarray(position), t, np.asarray(box), xp=np)
+    start = np.asarray(position)[np.asarray(t.junction_tail)[active]]
+    vector = g.junction_vector[active]
+    middle = start + 0.5 * vector
+    tail, head = np.asarray(t.junction_tail)[active], np.asarray(t.junction_head)[active]
+    i, j = np.triu_indices(len(active), k=1)
+    disjoint = (tail[i] != tail[j]) & (tail[i] != head[j]) & (head[i] != tail[j])
+    disjoint &= head[i] != head[j]
+    i, j = i[disjoint], j[disjoint]
+    image = np.round((middle[i] - middle[j]) @ np.linalg.inv(np.asarray(box)).T)
+    p, r = start[i], vector[i]
+    q, s = start[j] + image @ np.asarray(box).T, vector[j]
+
+    def side(a, b, c):
+        return cross(b - a, c - a)
+
+    first = side(p, p + r, q) * side(p, p + r, q + s)
+    second = side(q, q + s, p) * side(q, q + s, p + r)
+    return int(np.count_nonzero((first < 0) & (second < 0)))
+
+
 def bounded_below(mechanics, topology, *, xp=np):
     """False if a cell without contractility borders a junction with negative tension.
 

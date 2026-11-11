@@ -108,6 +108,14 @@ def test_forces_match_closed_form_reference_and_balance():
     assert np.all(jax_forces(pstate, playout)[len(force) :] == 0)
 
 
+def test_crossing_junctions_are_detected():
+    spec, state, layout, topo = arrays(honeycomb(displacement=0.05, seed=2))
+    assert vm.crossing_junctions(state.position, topo, layout.box) == 0
+    moved = state.position.copy()
+    moved[0] += [3.0 * P_CASE / 6, 0.0]  # Three hexagon sides across its neighbours.
+    assert vm.crossing_junctions(moved, topo, layout.box) > 0
+
+
 def test_periodic_image_shift_leaves_energy_unchanged():
     definition = honeycomb(displacement=0.03, seed=1)
     spec, state, layout, topo = arrays(definition)

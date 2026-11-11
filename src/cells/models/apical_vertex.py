@@ -319,6 +319,8 @@ def check_definition(spec):
     for i in range(len(times)):
         if not vm.bounded_below(vm.Mechanics(*(v[i] for v in controls)), topo, xp=np):
             raise ConfigError("A cell without contractility borders a negative-tension junction")
+    if vm.crossing_junctions(state.position, topo, layout.box):
+        raise ConfigError("Initial junctions cross: not a planar periodic tiling")
 
 
 def check_steps(spec, steps, controls):
@@ -490,6 +492,9 @@ def observe_history(times, history, layout, requested, spec):
     rows = VertexState(*(np.asarray(v)[index] for v in history))
     layout = VertexLayout(*(np.asarray(v) for v in layout))
     topo = topology(layout)
+    for time, position in zip(requested, rows.position, strict=True):
+        if vm.crossing_junctions(position, topo, layout.box):
+            raise NumericalError(f"Junctions cross at t = {time}: the tiling is no longer planar")
     with jax.default_device(jax.devices("cpu")[0]):
         mech = vm.Mechanics(*(_on_cpu(getattr(rows, k)) for k in VertexState._fields[2:6]))
         values = [
