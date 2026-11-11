@@ -352,14 +352,15 @@ def test_the_event_map_sets_the_law_open_gate_and_the_template_state():
 def test_held_components_are_found_on_the_capacitor_graph():
     from types import SimpleNamespace
 
-    # Nodes 0, 1 cells; 2, 3 outside. 0-2 held at 2; 1-3 floating (3 not fixed).
+    # Nodes 0, 1 cells; 2, 3 outside. 0-2 with bath 2; 1-3 floating (3 a gauge, not a bath).
     c = np.zeros((4, 4))
     c[0, 2] = c[2, 0] = c[1, 3] = c[3, 1] = -1.0
     layout = SimpleNamespace(
         field_capacitor_matrix=c,
-        field_fixed=np.array([False, False, True, False]),
+        field_fixed=np.array([False, False, True, True]),
         field_active=np.ones(4, dtype=bool),
         active=np.ones(2, dtype=bool),
+        reservoir=np.array([True, False]),
     )
     assert model.held_cells(layout).tolist() == [True, False]
 
@@ -408,33 +409,56 @@ def test_faults_are_refused_on_host_and_device(runs, fault):
 # ------------------------------------------------------------------ wider worlds
 
 
-def reference_raw(solver):
-    """@3's padded reference world: finite outside nodes, faces, Ca pumps, a channel release."""
-    raw = v3fx.definition("release", solver=solver)
-    if solver != "rk4":
-        raw["experiment"]["end_time"] = 0.0012
-        raw["experiment"]["observation_times"] = [0.0, 0.0007, 0.0012]
+def reference_raw():
+    """@3's padded reference world: finite outside nodes, faces, Ca pumps, a gauge and a
+    mid-run channel release (IMEX ARS(2,2,2))."""
+    raw = v3fx.definition("release", solver=imex.ARS222_ID)
+    raw["experiment"]["end_time"] = 0.0012
+    raw["experiment"]["observation_times"] = [0.0, 0.0007, 0.0012]
     return raw
 
 
-@pytest.mark.parametrize("solver", ("rk4", imex.ARS222_ID))
-def test_without_events_reproduces_the_padded_reference_world_bitwise(solver):
-    raw = reference_raw(solver)
+def rk4_sheet():
+    """The heredity sheet with RK4 at @3's NaV1.2 RK4 step bound (2.5 us), 40 steps."""
+    raw = fx.heredity_sheet(1, 0, dt=2.5e-6, end_time=40 * 2.5e-6, solver="rk4")
+    raw["experiment"]["observation_times"] = [0.0, 20 * 2.5e-6, 40 * 2.5e-6]
+    return raw
+
+
+@pytest.mark.parametrize("world", ("padded", "rk4"))
+def test_without_events_reproduces_wider_worlds_bitwise(world):
+    raw = reference_raw() if world == "padded" else rk4_sheet()
     assert_reproduces(run(parse_spec(raw)), run(parse_spec(fx.with_replacement(raw))))
 
 
-@pytest.mark.parametrize("solver", ("rk4", imex.ARS222_ID))
-def test_events_on_the_padded_reference_world_close_every_ledger(solver):
-    raw = reference_raw(solver)
+def test_events_on_the_padded_reference_world_close_every_ledger():
+    raw = reference_raw()
     dt = raw["execution"]["dt"]
     t1, t2 = exact_event_times((4, 9), dt)
     templates = [
         fx.template_from_cell(raw, "cell_0", "own_0"),
         fx.template_from_cell(raw, "cell_1", "own_1"),
     ]
-    events = ((t1, "cell_0", "own_0", "n1"), (t2, "cell_1", "own_1", "n2"))
+    events = ((t1, "cell_0", "own_0", "n1"), (t2, "cell_0", "own_0", "n2"))
     result = run(parse_spec(fx.with_replacement(raw, templates, events)))  # Host checks.
-    assert np.asarray(result.history.generation)[-1][:2].tolist() == [1, 1]
+    assert np.asarray(result.history.generation)[-1][:2].tolist() == [2, 0]
+    # cell_1 faces finite outside nodes only (its component has the gauge, no bath).
+    floating = ((t1, "cell_1", "own_1", "n1"),)
+    with pytest.raises(ConfigError, match="held-bath"):
+        parse_spec(fx.with_replacement(raw, templates, floating))
+
+
+def test_events_with_rk4_close_every_ledger():
+    """H newcomers in H slots (small charge displacement): see docs/CELL_REPLACEMENT.md.
+
+    A D<->H swap displaces about 1e-12 C on the slot; @3's RK4 electrode ledger then
+    exceeds its relative bound (2e-12) by a few percent within about 30 steps.
+    """
+    raw = rk4_sheet()
+    t1, t2 = exact_event_times((4, 9), 2.5e-6)
+    events = ((t1, "cell_0", "h", "n1"), (t2, "cell_0", "h", "n2"), (t2, "cell_1", "h", "n3"))
+    result = run(parse_spec(fx.with_replacement(raw, templates(raw), events)))  # Host checks.
+    assert np.asarray(result.history.generation)[-1].tolist() == [2, 1, 0, 0, 0, 0, 0]
 
 
 def test_template_route_values_act_in_a_compiled_run():

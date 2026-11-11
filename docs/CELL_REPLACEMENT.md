@@ -87,14 +87,30 @@ replacement fields (generation within the schedule, formation state, signed ledg
 ## Equivalence with resolved_pump_tissue@3
 
 Without events, every @3 state field, observation and check diagnostic equals @3's run
-bitwise (IMEX Euler and ARS(2,2,2), compiled and uncompiled), and every replacement
-field is zero (`tests/unit/test_cell_replacement.py`).
+bitwise, and every replacement field is zero (`tests/unit/test_cell_replacement.py`).
+This is tested on:
+
+- the heredity sheet with IMEX Euler and ARS(2,2,2), compiled and uncompiled, and with
+  RK4;
+- @3's padded reference world, which has finite outside nodes, faces, Ca pumps, a gauge
+  and a mid-run channel release (ARS(2,2,2)).
+
+The 825-node world was not compared.
 
 ## Limits (stage 1)
 
 - Inner model `resolved_pump_tissue@3` only; the water model is stage 3.
-- Replaced slots must have a held node in their capacitor component (held-bath worlds
-  such as the heredity sheets); finite-ECM worlds come later.
+- A replaced slot needs a held bath (a reservoir node) in its capacitor component, as in
+  the heredity sheets. A gauge node alone is refused: the field law holds a floating
+  component's net charge, and an event changes it. Finite-ECM worlds come later.
+- **RK4 with large charge displacements.** RK4 reference runs pass with small charge
+  displacements, such as H newcomers in H slots. A D↔H swap displaces about 1e-12 C on
+  the slot. @3's RK4 electrode ledger integrates the electrode current, while the check
+  recomputes the plate charge. After such a swap that ledger exceeded its relative
+  bound (2e-12) by about 4% within 30 steps.
+  - The IMEX steps telescope the electrode charge and are not affected.
+  - The booked image charge gets the family's per-step running allowance.
+  - The RK4 case is open for stage 2.
 - In-place swap only: no vacancy, no release of contents, no neighbour uncoupling.
 - No stationary-analysis projection (stage 3) and no projective mode.
 - Not yet qualified: R1 regression against pre-screen 9, independent references and

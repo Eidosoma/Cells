@@ -49,8 +49,9 @@ plus the replacement terms: local and total material (+ removed - supplied),
 global charge (+ replacement charge), energy (- booked free energy); the material,
 global-charge and energy rounding magnitudes add the replacement terms; the
 domain adds the replacement fields. Stage 1 scope: worlds whose replaced slots
-are in capacitor components with a held node (an event changes a floating
-component's net charge, which the field law requires to be constant).
+are in capacitor components with a held bath (an event changes a floating
+component's net charge, which the field law holds constant; a gauge node alone
+does not hold it).
 """
 
 from dataclasses import make_dataclass, replace
@@ -94,6 +95,7 @@ REPLACEMENT_STATE_AXES = {
     "replacement_charge_C": ["cell_slot"],
     "replacement_free_energy_pJ": ["cell_slot"],
     "replacement_energy_magnitude_pJ": ["cell_slot"],
+    "replacement_image_charge_C": ["extracellular_slot"],  # Sum of |image charge| booked.
 }
 STATE_AXES = ionic.STATE_AXES | REPLACEMENT_STATE_AXES
 STATE_TYPE = NamedTuple("SurfacePumpReplacementState", [(k, object) for k in STATE_AXES])
@@ -288,6 +290,7 @@ def initial_values(spec):
         np.zeros(n),
         np.zeros(n),
         np.zeros(n),
+        np.zeros(x.extracellular_capacity),
     )
     kind = FLOOR_LAYOUT_TYPE if type(p) is ionic.FLOOR_LAYOUT_TYPE else LAYOUT_TYPE
     return STATE_TYPE(*state, *extra), kind(*p, *(values[k] for k in REPLACEMENT_LAYOUT_FIELDS))
@@ -310,9 +313,15 @@ def compact(spec):
 
 
 def held_cells(p):
-    """Cells whose capacitor component contains a held (fixed-potential) node."""
+    """Cells whose capacitor component contains a held bath (a reservoir node).
+
+    A gauge node is not enough: it fixes the potential reference of a floating
+    component whose net charge the field law holds constant, and an event changes
+    the replaced cell's charge (the inner step then refuses).
+    """
     matrix = np.asarray(p.field_capacitor_matrix)
-    fixed, active = np.asarray(p.field_fixed), np.asarray(p.field_active)
+    active = np.asarray(p.field_active)
+    fixed = np.concatenate((np.zeros(p.active.size, dtype=bool), np.asarray(p.reservoir)))
     nodes = matrix.shape[0]
     label = -np.ones(nodes, dtype=np.int64)
     held = []
@@ -353,7 +362,7 @@ def check_definition(spec):
         if not held[order[v.slot]]:
             raise ConfigError(
                 f"Replacement slot {v.slot} has no held node in its capacitor component "
-                "(stage 1 supports held components only)"
+                "(stage 1 supports held-bath components only)"
             )
     rows = {t.id: k + 1 for k, t in enumerate(small.model.replacement.templates)}
     controls = control_values(small, [0.0])
@@ -482,6 +491,7 @@ def event_map(state, due, control, p, *, xp=jnp):
     magnitude = xp.abs(g0) + xp.abs(g1) + (xp.abs(e0) + xp.abs(e1) + xp.sum(xp.abs(work))) / count
     return new._replace(
         electrode_charge_transferred_C=state.electrode_charge_transferred_C + electrode,
+        replacement_image_charge_C=state.replacement_image_charge_C + xp.abs(electrode),
         electrode_work_pJ=state.electrode_work_pJ + work,
         replacement_free_energy_pJ=xp.where(
             due,
@@ -539,6 +549,10 @@ def replacement_domain_valid(state, p, *, xp=jnp):
         value = getattr(state, name)
         valid &= xp.all(xp.isfinite(value)) & xp.all(xp.where(fresh, value == 0, True))
     valid &= xp.all(state.replacement_energy_magnitude_pJ >= 0)
+    image = state.replacement_image_charge_C
+    valid &= xp.all(xp.isfinite(image)) & xp.all(image >= 0)
+    valid &= xp.all(xp.where(p.reservoir, True, image == 0))
+    valid &= xp.where(xp.any(g > 0), True, xp.all(image == 0))
     return valid
 
 
@@ -652,15 +666,19 @@ def device_balances(state, p):
 def magnitudes(row, p, *, xp=np):
     """@3's ledger magnitudes plus the replacement terms (first.LEDGERS order).
 
-    Material: removed + supplied amounts. Global charge and energy (None for @3,
-    whose bounds are fixed) take the replacement charge and energy magnitudes, so
-    without events the bounds are @3's exactly (bound + 0).
+    Material: removed + supplied amounts. Electrode, global charge and energy (None
+    for @3, whose bounds are fixed) take the booked image charge, the replacement
+    charge and the energy magnitudes, so without events the bounds are @3's exactly
+    (bound + 0). The electrode term is the family's running-ledger allowance: after
+    an image charge is booked, each step's electrode increment is added to a sum of
+    that size, rounding eps times it per step.
     """
     result = list(ionic.channel_magnitudes(ionic_state(row), ionic_layout(p), xp=xp))
     moved = row.replacement_removed_fmol + row.replacement_supplied_fmol
     result[0] = result[0] + moved
     result[2] = result[2] + xp.sum(moved, axis=1)
     result[5] = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence) * moved)
+    result[4] = row.replacement_image_charge_C
     result[6] = xp.sum(row.replacement_energy_magnitude_pJ)
     return tuple(result)
 
