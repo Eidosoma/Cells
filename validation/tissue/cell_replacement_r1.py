@@ -53,7 +53,7 @@ from validation.stationary import worlds  # noqa: E402
 from validation.tissue import cell_replacement_fixtures as fx  # noqa: E402
 from validation.tissue import surface_pump_v3_fixtures as v3fx  # noqa: E402
 
-PRESCREEN = ht.PRESCREEN.parent / "prescreen-09-turnover" / "stage2-turnover"
+PRESCREEN = ht.PRESCREEN_8.parent / "prescreen-09-turnover" / "stage2-turnover"
 DT, RECORD_S, HORIZON = ht.DT, ht.RECORD_S, ht.HORIZON_S
 VOLTAGE_TOL_MV = 1e-3
 RULE_A = dict(
