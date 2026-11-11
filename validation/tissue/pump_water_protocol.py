@@ -18,7 +18,7 @@ the tolerances. The stationary states are judged to 1e-6 relative in volume and
 1e-10 in its units, so this is a modelling-equivalence bound, not a rounding bound.
 
 Usage: python -m validation.tissue.pump_water_protocol --predictions FILE --dt-study FILE
-       --output FILE
+       [FILE ...] --output FILE   (a study run in parts: one dt-study.json per part)
 """
 
 import argparse
@@ -53,11 +53,16 @@ def reference_stability(predictions, name, path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--predictions", required=True)
-    parser.add_argument("--dt-study", required=True)
+    parser.add_argument("--dt-study", required=True, nargs="+", help="dt-study.json, one per part")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
     predictions = json.loads(Path(args.predictions).read_text())
-    study = json.loads(Path(args.dt_study).read_text())
+    study = {}
+    for path in args.dt_study:  # A study run in parts (e.g. one per core): each world once.
+        part = json.loads(Path(path).read_text())
+        if repeated := sorted(set(study) & set(part)):
+            raise SystemExit(f"worlds in more than one dt study part: {repeated}")
+        study |= part
     refused = {name: sorted(r["failures"]) for name, r in study.items() if "failures" in r}
     if refused:  # No tolerance is pinned from an incomplete study.
         raise SystemExit(f"dt study has refused runs (world: dt): {refused}")
