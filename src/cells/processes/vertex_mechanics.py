@@ -107,12 +107,23 @@ def cross(a, b):
     return a[..., 0] * b[..., 1] - a[..., 1] * b[..., 0]
 
 
-def geometry(position, topology, box, *, xp=jnp):
+def geometry(position, topology, box, *, xp=jnp, prescribed=None):
+    """Areas, perimeters and junction lengths.
+
+    prescribed = (mask [J], lengths [J]) replaces the computed length of the masked
+    junctions by the given values (used by analyses that contract a junction to a
+    set length, down to exactly zero, without a sqrt(0) gradient).
+    """
     t = topology
     shift = t.junction_image @ box.T
     vector = position[t.junction_head] + shift - position[t.junction_tail]
     vector = xp.where(t.junction_active[:, None], vector, 0.0)
-    length = guarded_norm(vector, t.junction_active, xp=xp)
+    if prescribed is None:
+        length = guarded_norm(vector, t.junction_active, xp=xp)
+    else:
+        mask, values = prescribed
+        computed = guarded_norm(vector, t.junction_active & ~mask, xp=xp)
+        length = xp.where(mask & t.junction_active, values, computed)
     reference = position[t.cell_reference][t.he_cell]
     corner = position[t.he_tail] + t.he_image @ box.T - reference
     corner = xp.where(t.he_active[:, None], corner, 0.0)
@@ -128,9 +139,9 @@ def geometry(position, topology, box, *, xp=jnp):
     return Geometry(area, xp.where(t.cell_active, perimeter, 0.0), length, vector, corner)
 
 
-def energy_terms(position, topology, box, mechanics, *, xp=jnp):
+def energy_terms(position, topology, box, mechanics, *, xp=jnp, prescribed=None):
     """(area, perimeter, line) energies per cell, cell and junction; 0 on padding."""
-    g = geometry(position, topology, box, xp=xp)
+    g = geometry(position, topology, box, xp=xp, prescribed=prescribed)
     t, m = topology, mechanics
     area = xp.where(t.cell_active, 0.5 * m.area_elasticity * (g.area - m.preferred_area) ** 2, 0.0)
     perimeter = xp.where(t.cell_active, 0.5 * m.contractility * g.perimeter**2, 0.0)
@@ -138,8 +149,10 @@ def energy_terms(position, topology, box, mechanics, *, xp=jnp):
     return area, perimeter, line
 
 
-def energy(position, topology, box, mechanics, *, xp=jnp):
-    area, perimeter, line = energy_terms(position, topology, box, mechanics, xp=xp)
+def energy(position, topology, box, mechanics, *, xp=jnp, prescribed=None):
+    area, perimeter, line = energy_terms(
+        position, topology, box, mechanics, xp=xp, prescribed=prescribed
+    )
     return xp.sum(area) + xp.sum(perimeter) + xp.sum(line)
 
 
