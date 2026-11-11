@@ -108,7 +108,10 @@ The 825-node world was not compared.
   the slot. @3's RK4 electrode ledger integrates the electrode current, while the check
   recomputes the plate charge. After such a swap that ledger exceeded its relative
   bound (2e-12) by about 4% within 30 steps.
-  - The IMEX steps telescope the electrode charge and are not affected.
+  - The IMEX steps telescope the electrode charge. In one IMEX run (127-cell sheet,
+    three D→H swaps, 2800 steps after the events) the electrode residual stayed at
+    zero and every ledger at or below 0.2% of its bound
+    (`cell_replacement_cost swap`). Hour-scale IMEX runs are not yet measured.
   - The booked image charge gets the family's per-step running allowance.
   - The RK4 case is open for stage 2.
 - In-place swap only: no vacancy, no release of contents, no neighbour uncoupling.
