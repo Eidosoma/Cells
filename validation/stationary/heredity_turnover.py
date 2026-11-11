@@ -1393,8 +1393,10 @@ def _summary(runs):
 
     def head(r):
         het = " het" if r.get("heterogeneity") else ""
-        short = r.get("horizon_s", HORIZON_S) != HORIZON_S
-        horizon = f" ({r['horizon_s']:g} s pilot)" if short else ""
+        span = r.get("horizon_s", HORIZON_S)
+        horizon = (
+            "" if span == HORIZON_S else f" ({span:g} s{' pilot' if span < HORIZON_S else ''})"
+        )
         return (
             f"| {r.get('disc_cells', '-')}{het} | {r['scale']:g} | {r['rule']} | "
             f"{r['rate_percent_per_min']:g} | {r['order']}{horizon} |"
