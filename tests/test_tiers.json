@@ -11,7 +11,8 @@
   "/mnt/workspaces/Cells/device-checks-v3-20261109-01/gate-01-measure/measured.json",
   "/mnt/workspaces/Cells/land-field-propagation-20261110-01/measure/measured.json",
   "/mnt/workspaces/Cells/land-p3-events-20261110-01/measure/measured.json",
-  "/mnt/workspaces/Cells/land-p4b-protocols-20261110-01/measure/measured.json"
+  "/mnt/workspaces/Cells/land-p4b-protocols-20261110-01/measure/measured.json",
+  "/mnt/workspaces/Cells/land-parity-tools-20261111-01/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -99,6 +100,14 @@
    "root": "/mnt/workspaces/Cells/land-p4b-protocols-20261110-01/source",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-10T22:27:57+00:00"
+  },
+  {
+   "git_revision": "7829d34ee98564a1c3c4ba0892d7f25099c242ea",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/land-parity-tools-20261111-01/source",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-11T00:56:59+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1429,6 +1438,14 @@
     "exit_code": 1,
     "counts": {
      "failed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_parity_tools.py",
+    "seconds": 8.51,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
