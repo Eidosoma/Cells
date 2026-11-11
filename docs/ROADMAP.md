@@ -81,11 +81,30 @@ make unfinished mechanisms compatible.
    benchmarking, intervention and licensing caveats remain implementation inputs.
    Revisit its scope after additional platform capabilities are verified;
    do not automatically extend the search or launch confirmation runs.
+7. **Golgi apparatus and membrane trafficking (planned, not started).** Proteins
+   made at the endoplasmic reticulum pass through the Golgi, where they are
+   modified, sorted and packaged for the membrane or for secretion. In Cells this
+   is the link between gene regulation and the membrane. The plan is a conserved
+   trafficking pathway (ER, Golgi and vesicle pools with transit delays and
+   sorting fractions) that delivers channels, pumps and connexins to the membrane
+   and secretes signalling molecules such as morphogens. With it:
+   - membrane abundances can change over time, which the bioelectric layer reads;
+   - the junction-formation law used in cell replacement can draw on a real
+     supply of connexins;
+   - morphogen sources can come from secretion rather than being prescribed.
+
+   Glycosylation chemistry and the Golgi's own structure are out of scope; the
+   transport, sorting and timing are in scope. Per the engine-feature rule
+   (D136), the literature step (transit times, sorting fractions, connexin
+   assembly along the pathway) comes first, and the model would be an opt-in,
+   versioned extension with conserved accounting.
 
 The first [water/volume component](TISSUE_RETURN_CURRENT.md#osmotic-water-and-compliant-volumes)
 couples conservative solvent transfer to passive ions in compliant compartments.
-Its qualification is tracked in Progress. Integrating it with pumps, channels,
-calcium and assembly comes before evolving geometry and fluid fields. Broader
+Its qualification is tracked in Progress. The version on the pump-and-channel
+tissue, `resolved_pump_water@1` and its volume-regulation extension `@2`, was
+qualified on 11 November 2026. Integration with calcium and assembly comes
+before evolving geometry and fluid fields. Broader
 biophysical mechanics, spatial redistribution and mitochondrial energy dynamics
 still require additional laws and references; existing components provide
 prerequisites rather than complete coverage.
