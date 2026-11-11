@@ -146,3 +146,117 @@ outside this checkout. They are not public downloads. Repository reports and
 protocols provide the readable scope; the original artifacts retain the detailed
 inputs, results, failures and hashes. External research-tree paths in the source
 catalogue are provenance records, not bundled manuscripts.
+
+## Capability overview and planned resources (moved from the project README)
+
+Moved from the project README on 11 November 2026, unchanged except for link paths and
+heading levels. The README now carries a short summary;
+[Progress](../PROGRESS.md) holds the current status.
+
+### References and calibration
+
+We draw on several sources, each serving a particular part of the simulator:
+
+| Part of Cells | Reference and role |
+| --- | --- |
+| Bioelectric layer | [BETSE](BETSE_CAPABILITY_ROADMAP.md) provides scientific inspiration and a calibration and verification instrument for electrical transport, channels, pumps, junctions and fields. |
+| Regulation and cellular-state transmission | [BITSEY](ROADMAP.md#bitsey-replication) supplies regulatory/ionic reference models; reproducing the Forms paper's writing, retention and replacement experiments is the first assay target. |
+| Protein-cage assembly | [Asor et al.'s mass-photometry study and stochastic model](CAPSID_ASSEMBLY.md) underpin the assembly branch. The paper contains real measurements; fitting Cells to those data remains future work. |
+| Physical chemistry and electrodiffusion | [Thermodynamic reaction-network and electrodiffusion references](SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack) guide material, charge and energy accounting and numerical checks. |
+
+Scientific feature parity with BETSE and BITSEY remains a verification goal for
+the relevant layers within this broader programme. Comparisons cover declared
+models and conditions; experimental calibration requires measured data.
+
+For whole-cell and organ development, the planned resource set includes:
+
+- **Cell physiology and energy:** published models from
+  [Physiome/CellML](https://physiomeproject.org/data-repositories/physiome-model-repository)
+  and [BioModels](https://www.ebi.ac.uk/training/online/courses/biomodels-quick-tour/what-is-biomodels/),
+  alongside the [mitochondrial model and measurement leads](PAPER_REVIEW_MITOCHONDRIA.md).
+- **Molecular quantities and locations:** [BioNumbers](https://bionumbers.hms.harvard.edu/aboutus.aspx)
+  and the [Human Protein Atlas](https://www.proteinatlas.org/about/introduction),
+  with each value traced to its experimental conditions.
+- **Tissue composition and anatomy:** [CCI-seq](PAPER_REVIEW_CCI_SEQ.md),
+  [Human Cell Atlas](https://data.humancellatlas.org/), and
+  [HuBMAP](https://portal.hubmapconsortium.org/)/[Human Reference Atlas](https://humanatlas.io/asctb-tables)
+  for cell types, neighbourhoods and spatial organisation.
+- **Measured function:** matched experiments on voltage, calcium, ATP, oxygen
+  use, transport, growth and mechanical responses; later, organ-level recordings
+  from resources such as [PhysioNet](https://physionet.org/about/) where appropriate.
+
+These are candidates for future benchmarks. The first organ and species are
+still to be selected; human atlases apply to compatible human targets. Anatomical
+or expression data do not by themselves specify transport rates or validate organ
+function. See the [calibration plan](SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack)
+for source roles, existing evidence and the path to independent experimental tests.
+
+### Current functionality
+
+![Cells today: bioelectricity, calcium signalling and protein assembly. A shared work queue distributes independent simulations among GPU workers and collects results and checkpoints. CPU and L4 are verified locally; Jupiter qualification is planned.](assets/cells-current.png)
+
+- **Electrical cells and tissues:** ion transport, membrane voltage, pumps,
+  channels, gap junctions and extracellular fields in selected model families.
+- **Tissue geometry:** [prepare passive tissue inputs from recorded BETSE meshes](TISSUE_GEOMETRY.md),
+  with explicit volumes, membrane properties and a portable preparation recipe.
+- **Regional tissue profiles:** [prepare different membrane transport properties
+  and junction barriers](TISSUE_RETURN_CURRENT.md#static-tissue-profile-preparation)
+  from explicit geometry for selected tissue, calcium, fuel, water and regulation
+  models, with a reproducible preparation recipe. Timed interventions support
+  [passive membranes](TISSUE_RETURN_CURRENT.md#scheduled-passive-membrane-profiles)
+  and [tissues with active channels and pumps](TISSUE_RETURN_CURRENT.md#scheduled-active-membrane-profiles).
+  Passive and active tissues support [carrying initialized state into a new experiment](TISSUE_PHASES.md).
+- **Cell removal:** [cut and resume selected tissue models](TISSUE_RETURN_CURRENT.md#cell-removal-and-absolute-time-continuation),
+  preserving surviving material, [channel and junction gate states](TISSUE_RETURN_CURRENT.md#cell-removal-with-channels-and-maintained-fuel-pumps)
+  and [calcium/ER stores](TISSUE_RETURN_CURRENT.md#cell-removal-with-owned-calcium-and-er-stores),
+  with complete prior history.
+- **Cell chemistry:** calcium and IP3 signalling, internal compartments and
+  chemical reactions, including [passive mitochondrial ion exchange and voltage](TISSUE_RETURN_CURRENT.md#finite-mitochondrial-ion-and-voltage-coupling).
+- **Fuel and cell volume:** finite ATP supplies and osmotic water flow, including
+  a [combined calcium/ER, ATP and water model](TISSUE_RETURN_CURRENT.md#owned-calcium-finite-fuel-and-compliant-water)
+  with [prescribed injury and resealing](TISSUE_RETURN_CURRENT.md#prescribed-repair-with-owned-calcium-finite-fuel-and-water).
+- **Regulatory cell state:** BITSEY-based isolated regulation and a bounded
+  [two-cell regulatory/ionic model](SOURCE_EMT_PAIR.md).
+- **Protein assembly:** stochastic cage formation, finite material pools,
+  breakable bonds and experimental coupling to cell models.
+- **Repeatable experiments:** checkpoints, restart, branching and independent
+  simulation ensembles, with CPU/L4 comparisons and conservation checks.
+
+For GPU ensembles, workers take batches of independent simulations from a shared
+queue and save their results and checkpoints. The four-worker illustration shows
+that execution design. Numerical qualification has used CPUs and one L4; Jupiter
+execution remains to be qualified. Distributing one interacting tissue across
+multiple GPUs requires further development. See the
+[GPU and ensemble guide](GPU_ENSEMBLES.md).
+
+BITSEY's nominal model clock is kept distinct from physically calibrated time. The
+[assembly-to-cell coupling](CAPSID_ASSEMBLY.md) is an experimental modelling
+hypothesis.
+
+### In progress
+
+- Combining spatial fields, active membrane transport and dynamic junctions in
+  BETSE comparisons.
+- Extending verification of the integrated cell, tissue and assembly models.
+- Bringing new components into the shared configuration, checkpoint and ensemble
+  workflows.
+- Qualifying [regional membrane interventions with calcium stores and finite ATP](TISSUE_RETURN_CURRENT.md#scheduled-membrane-profiles-with-calcium-stores-and-finite-fuel).
+
+### Planned
+
+![Planned Cells development: broader BETSE channel and transport coverage; integrated assembly, energy and mechanics; Jupiter scaling from four to sixteen GPUs; and tissue-to-organ models.](assets/cells-future.png)
+
+The next directions are richer integrated cell physiology, broader BETSE/BITSEY
+verification, reproduction of the Forms assays, and Jupiter qualification from
+four to sixteen GPUs. Experimental calibration, broader energy and water
+coupling, mechanics and organ models extend that programme. The organ
+illustration is schematic; it does not select a particular organ to build first.
+Detailed scope and priorities are recorded in [Progress](../PROGRESS.md) and the
+[Roadmap](ROADMAP.md).
+
+### Development history
+
+Earlier milestones, qualification results and retained failures are recorded in
+[Development history](DEVELOPMENT_HISTORY.md). See [Progress](../PROGRESS.md)
+for current status.
+

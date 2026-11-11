@@ -719,3 +719,67 @@ seconds. The prior native clock discrepancy and passing refinement remain
 splitting. See [MODEL-005 acceptance](../reports/MODEL005_ACCEPTANCE.md). No new
 dependency, physical EMT calibration or full Levin-assay parity is claimed.
 
+## Original spatial-build verification matrix (moved from the README)
+
+Moved from the project README on 11 November 2026, unchanged except for link paths
+and the heading level. The current routine gate is the tier runner described in the
+[README](../README.md#verify) and [AGENTS.md](../AGENTS.md).
+
+
+The matrix below belongs to the original spatial build. Newer chemistry,
+assembly, tissue and GPU families have their own qualification protocols in the
+[model guides](README.md#models-and-execution). This historical matrix and
+the release counts below are not the complete current test inventory. Use
+[Progress](../PROGRESS.md) to identify the relevant completed or active qualification.
+
+```bash
+.venv/bin/python scripts/test_spatial_extracellular_build.py --output reports/my-test-matrix
+.venv/bin/ruff check src tests scripts
+.venv/bin/ruff format --check src tests scripts
+```
+
+Tests use temporary directories and retained numerical reference fixtures; neither
+network nor the upstream checkout is needed. The matrix explicitly separates
+current production from ten NUM-005 modules under preserved 0.10.0, three
+SPEC-006/NUM-007 modules under preserved 0.11.0 and three physical-graph reference
+modules under preserved 0.12.0, plus six finite-outside reference/test-context
+modules under preserved 0.13.0 and two NUM-010 reference modules under preserved
+0.14.0. All three earlier drivers and the original reference guards remain unchanged.
+It explicitly retains the original 13 prospective NUM-009 v1 complete-session
+tests as unexecuted (that scientific run stopped), runs their maintained v2
+replacement, and still runs v1 preflight/stopped-evidence tests. No skip is
+counted as passing acceptance. The matrix
+uses CPUs 0–3 and an independent temporary evidence copy (currently about 7.5 GB);
+the historical confinement/source guards stay intact. See the
+[multispecies test-context explanation](MULTISPECIES_MEMBRANE.md#run-resume-and-qualify).
+Generated `runs/` are local and excluded from Git. Earlier window/clock acceptance, exact seven-model scalar and cohort
+regressions, preserved 0.9.0 replay and memory/cost measurements are in
+[CORE-005b acceptance](../reports/CORE005B_ACCEPTANCE.md). The preceding scalar-window
+release is in [CORE-005a acceptance](../reports/CORE005A_ACCEPTANCE.md). The preceding batch
+implementation/profile is in [CORE-004 acceptance](../reports/CORE004_ACCEPTANCE.md).
+The preceding source-model release is in
+[MODEL-005 acceptance](../reports/MODEL005_ACCEPTANCE.md). Earlier physical-pair
+evidence is in [MODEL-004 acceptance](../reports/MODEL004_ACCEPTANCE.md). Physical-cell
+evidence is in [MODEL-003 acceptance](../reports/MODEL003_ACCEPTANCE.md); composition
+evidence is in [CORE-003 acceptance](../reports/CORE003_ACCEPTANCE.md).
+The subsequent [SPEC-002 design gate](../reports/SPEC002_DESIGN_CHECK.md) adds
+709 instantaneous contact/source checks. [NUM-003 qualification](../reports/NUM003_REFERENCE.md)
+now passes all 20 independent physical-pair cases at RK4/1 ms with cubic
+observations. Those design/reference stages left 0.5.0 unchanged; MODEL-004 now
+implements the qualified physical pair (670 release tests). SPEC-003 adds the
+complete source-compatible design/native RHS panel and 65 tests. NUM-004 adds
+48 numerical, native-audit and artifact/protocol tests. MODEL-005 adds 69 production
+engineering and CLI checks. CORE-004 adds 43 batch unit tests and one fresh-process
+CLI case. CORE-005a adds 86 window/clock/recording/replay checks; CORE-005b adds
+75 cohort-window checks. That 0.10.0 release suite passed 1057 tests.
+Pair acceptance commands are in [M1c-a acceptance](../reports/M1C_A_ACCEPTANCE.md);
+source capture and regulatory reruns are in [M1b acceptance](../reports/M1B_ACCEPTANCE.md).
+
+Snapshots deliberately require matching source/runtime identity. Old 0.1.0,
+0.2.0, 0.3.0, 0.4.0, 0.5.0, 0.6.0, 0.7.0, 0.8.0, 0.9.0 and 0.10.0 runs are preserved with archived source bundles. See the
+[0.10.0 preservation receipt](../reports/core-006-preservation.json),
+[0.9.0 preservation record](../reports/CORE005B_ACCEPTANCE.md#preserved-source-and-checkpoints),
+[0.5.0 preservation instructions](../reports/MODEL004_ACCEPTANCE.md#version-preservation)
+and [earlier versions](../reports/M1C_A_ACCEPTANCE.md#previous-model-regression-and-preserved-versions)
+to inspect them. They are not silently migrated into this version.
+

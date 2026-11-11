@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-10 UTC.
+Last updated: 2026-11-11 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -46,7 +46,7 @@ starts, and production design is deferred until parity is established.
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
 | 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4), the ledger rounding fix and @3 device checks landed; @3 on the L4 is 2.28 ms per world-step at 256 worlds (tier 1 about 4,100 L4 GPU-hours execute-only, about 7,200 end to end); GH200 throughput unmeasured. **Pre-screens 7–8 (retention, rim renewal) are in doubt**: they start from the fully loaded stationary D composition (+31% osmolarity), while cue-written discs carry H composition and behave differently (W1 sheet check, pre-screen 9); the design choice waits on fresh-disc runs |
-| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); MG1 (2-D vertex mechanics) next |
+| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); MG1 (2-D vertex mechanics) design started 11 November (D138) |
 | 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 not evaluable (no lingering scale found) |
 
 ## Runs
@@ -54,6 +54,38 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Heredity pilot W1: the cue writes discs; fresh discs hold for 70 min (10–11
+  November; development, not judged).** Driver `validation/tissue/heredity_pilot.py`
+  on `resolved_pump_tissue@3`; evidence `/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/`.
+  - **The cue:** an added Na leak at 9× each disc patch's leak for 2 s, through the
+    engine's channel availability schedule. No engine gap.
+  - **Full 825-node heterogeneous tissue at s 1.0 (replay):** 19- and 37-cell discs
+    were written within 0.4 s and stayed fully D through the run, with no D outside.
+    The default @3 refuses the cue step (junction-heat refusal, below). The
+    opt-in junction-heat booking accepts it, with the energy ledger closing to about
+    1e-7 of flows.
+  - **Held-bath 127-cell sheet, cue-written 37-cell disc, 70 min at dt 5 ms:** held
+    fully D at s 1.0, 0.6 and 0.3, with no D outside. Pre-screen 7 predicted loss at
+    s 1.0. Osmotic excess against each cell's start passed 10% at 56–58 min and
+    peaked at 11.7–12.1% (censor 15%). Held baths supply K without limit, so loading
+    may be overstated. The 19-cell arms are running.
+  - **Control:** started from pre-screen 7's loaded disc with no cue, the driver
+    loses the disc in 0.56–0.62 s, as pre-screen 7 does.
+  - **L4 reproducibility:** runs on the L4 are not bitwise reproducible from run to
+    run, with or without the junction-heat option (likely atomic scatter-adds).
+    Bitwise restart on the GPU would need deterministic XLA ops, whose cost is
+    unmeasured. One L4 refusal (pilot-03, 0.047 s) did not reproduce.
+- **In development on branches, not yet on main (11 November):**
+  - **Osmotic water and volume:** `resolved_pump_water@1`, with water off bitwise
+    equal to @3. Its stationary states, the 825-node equivalence and a 1 h drift
+    pass. The dt study and judged run wait on a global-charge rounding-bound fix in
+    `surface_pump.py`.
+  - **Volume regulation:** `resolved_pump_water@2`, a KCC-type K–anion route. Its
+    stationary judge passed 24 of 24 against frozen predictions; D swells 1.1–1.5×
+    instead of 1.76×.
+  - **Cell replacement:** `resolved_pump_replacement@1` (G2), with a
+    literature-based junction formation law (D139). Stage 1 is built and tested;
+    the donor-copy template is being added.
 - **Cortés-Poza (2026) Phase 0: reproduction with corrections and a plain baseline
   (11 November; tooling, D137, no Cells engine model).** The author's code at `2b53a08`
   (MIT) was run out of process, with the review's corrections and a plain
