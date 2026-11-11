@@ -41,7 +41,7 @@ starts, and production design is deferred until parity is established.
 | 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | Passed (pre-registered protocols D and F) |
 | 3b | Parity rung 1: Cl/Ca ions plus the plasma-membrane Ca pump (`resolved_pump_tissue@2`) | v1 failed (one item); **v2 passed** (registered after attribution; weaker evidence) |
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
-| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers), P3 (scheduled interventions, first subset) and P4 (general-network channels) passed** on CPU; **P4b (NaV1.2, Kir2.1, Na leak) passed** (four cases, NaV1.2 including the D-state voltage); **L4 variants of all 12 registered** (tolerances unchanged), judged L4 runs next |
+| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers), P3 (scheduled interventions, first subset) and P4 (general-network channels) passed** on CPU; **P4b (NaV1.2, Kir2.1, Na leak) passed** (four cases, NaV1.2 including the D-state voltage); **all 12 also pass on the L4** (registered L4 variants, tolerances unchanged; worst 0.996 of tolerance, P2 stage 1 cell K, as on CPU) |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
@@ -93,7 +93,24 @@ machine-readable inputs, results, checks and failures.
   - **L4 run to run:** Vm up to 6.5e-16 V and cell ions up to 1.0e-14 relative.
   - Both terms are at least 1e5 below every tolerance, so no tolerance changed.
   - **Rehearsal:** a full-size run of the judged chain on a non-registered case passed
-    (worst 0.60 of tolerance; not a verdict). The 12 judged L4 runs are next.
+    (worst 0.60 of tolerance; not a verdict).
+  - **Judged L4 runs: all 12 pass (11 November, 21:18–22:40 UTC).** Each protocol ran once
+    from a clean snapshot of the registering commit `25d0fe9`, host on CPU 6
+    ([margins](/mnt/workspaces/Cells/parity-l4-20261111-01/judged/margins.json)). All 24
+    run and compare steps exited 0, and none was refused.
+
+    | Protocol | Worst, fraction of tolerance |
+    | --- | --- |
+    | P2 stage 1 | 0.996 (cell K, as on CPU) |
+    | P2 direct | 0.30 |
+    | P3, four cases | 0.27–0.29 |
+    | P4 | 0.29–0.31 |
+    | P4b | 0.35–0.48 |
+
+    - **Status line:** the registered variants differ from the drafts only in their status
+      line. The drafts are kept beside them.
+    - **What this establishes:** every parity rung so far now passes on CPU and on the
+      L4.
 - **MG1 v2 registered; judged run under way (11 November).**
   - **The two failures were diagnosed:**
     - The barrier crash was a genuinely flat landscape where a compatible start
