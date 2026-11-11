@@ -181,7 +181,58 @@ def part_sheet(args):
     return out
 
 
-PARTS = dict(overhead=part_overhead, eventmap=part_eventmap, sheet=part_sheet)
+def part_parse(args):
+    """parse_spec and schedule host costs against the number of events (127-cell sheet).
+
+    Unique templates: one per newcomer (D133 draws), each checked once by a host field
+    solve in check_definition. Shared: one template for every event. event_index and
+    control_values are timed per call over a 1024-step window, as held_controls uses them.
+    """
+    from cells.core.schedule import event_index
+
+    raw = fx.heredity_sheet(6, 3, scale=0.3, dt=DT, end_time=3000.0)
+    raw["experiment"]["observation_times"] = [0.0, 3000.0]
+    cells = len(raw["model"]["cells"])
+    out = dict(cells=cells, cases=[])
+    for count, unique in ((10, True), (100, True), (300, True), (300, False), (2250, False)):
+        steps = [int(round((k + 0.5) * 3000.0 / count / DT)) for k in range(count)]
+        times = exact_event_times(steps, DT)
+        templates, events = [], []
+        for k, t in enumerate(times):
+            name = f"t{k}" if unique else "t0"
+            if unique or k == 0:
+                template = fx.template_from_cell(raw, "cell_0", name)
+                template["route_values"]["channel_permeability_m_per_s"] = {
+                    "nav1p2_m3h_regularized@1": 2.5e-7 * (1 + 1e-3 * (k % 7))
+                }
+                templates.append(template)
+            events.append((t, f"cell_{(37 * k) % cells}", name, f"n{k}"))
+        definition = fx.with_replacement(raw, templates, events)
+        started = time.perf_counter()
+        spec = parse_spec(definition)
+        parse_s = time.perf_counter() - started
+        window = np.arange(1024) * DT + times[count // 2] - 512 * DT
+        started = time.perf_counter()
+        for t in window:
+            event_index(spec, float(t))
+        index_ms = 1e3 * (time.perf_counter() - started) / len(window)
+        started = time.perf_counter()
+        control_values(spec, window)
+        controls_s = time.perf_counter() - started
+        out["cases"].append(
+            dict(
+                events=count,
+                unique_templates=unique,
+                parse_s=parse_s,
+                event_index_ms_per_call=index_ms,
+                control_values_s_per_1024_steps=controls_s,
+            )
+        )
+        print(out["cases"][-1], flush=True)
+    return out
+
+
+PARTS = dict(overhead=part_overhead, eventmap=part_eventmap, sheet=part_sheet, parse=part_parse)
 
 
 def main(argv=None):

@@ -30,6 +30,7 @@ from cells.processes import junction_formation as formation
 from cells.processes import junction_gate
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from validation.tissue import cell_replacement_fixtures as fx
+from validation.tissue import surface_pump_v3_fixtures as v3fx
 
 DT = 1e-3
 STEPS = 50
@@ -402,3 +403,86 @@ def test_faults_are_refused_on_host_and_device(runs, fault):
     assert flags[check] and sum(flags.values()) >= 1
     clean, _ = model.device_checks(rows[0], rows[1], p, constants, k)
     assert not np.any(np.asarray(clean))
+
+
+# ------------------------------------------------------------------ wider worlds
+
+
+def reference_raw(solver):
+    """@3's padded reference world: finite outside nodes, faces, Ca pumps, a channel release."""
+    raw = v3fx.definition("release", solver=solver)
+    if solver != "rk4":
+        raw["experiment"]["end_time"] = 0.0012
+        raw["experiment"]["observation_times"] = [0.0, 0.0007, 0.0012]
+    return raw
+
+
+@pytest.mark.parametrize("solver", ("rk4", imex.ARS222_ID))
+def test_without_events_reproduces_the_padded_reference_world_bitwise(solver):
+    raw = reference_raw(solver)
+    assert_reproduces(run(parse_spec(raw)), run(parse_spec(fx.with_replacement(raw))))
+
+
+@pytest.mark.parametrize("solver", ("rk4", imex.ARS222_ID))
+def test_events_on_the_padded_reference_world_close_every_ledger(solver):
+    raw = reference_raw(solver)
+    dt = raw["execution"]["dt"]
+    t1, t2 = exact_event_times((4, 9), dt)
+    templates = [
+        fx.template_from_cell(raw, "cell_0", "own_0"),
+        fx.template_from_cell(raw, "cell_1", "own_1"),
+    ]
+    events = ((t1, "cell_0", "own_0", "n1"), (t2, "cell_1", "own_1", "n2"))
+    result = run(parse_spec(fx.with_replacement(raw, templates, events)))  # Host checks.
+    assert np.asarray(result.history.generation)[-1][:2].tolist() == [1, 1]
+
+
+def test_template_route_values_act_in_a_compiled_run():
+    """A newcomer's own parameter draw: NaV1.2, Na leak and pump capacity overrides."""
+    raw = sheet()
+    plain = fx.template_from_cell(raw, "cell_1", "plain")
+    drawn = fx.template_from_cell(raw, "cell_1", "drawn")
+    drawn["route_values"].update(
+        channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3.0e-7},
+        membrane_permeability_m_per_s={"Na": 8e-11},
+        pump_capacity_fmol_per_s_m2=1.2e8,
+    )
+    results = {
+        name: run(parse_spec(fx.with_replacement(raw, [t], [(T1, "cell_0", name, "n1")])))
+        for name, t in (("plain", plain), ("drawn", drawn))
+    }
+    k = row(results["plain"], T1)
+    nav = [i for i, c in enumerate(results["plain"].spec.model.channels) if c.id == "nav_0"][0]
+    flux = {n: r.observations.channel_flux_fmol_s for n, r in results.items()}
+    times = {n: r.observations.times for n, r in results.items()}
+    after = int(np.flatnonzero(times["plain"] > T1)[0])
+    assert not np.allclose(flux["plain"][after, :, nav], flux["drawn"][after, :, nav])
+    for key in surface_pump_v3.STATE_TYPE._fields:  # Identical until the event.
+        a = np.asarray(getattr(results["plain"].history, key))[: k + 1]
+        b = np.asarray(getattr(results["drawn"].history, key))[: k + 1]
+        assert np.array_equal(a, b), key
+
+
+def test_law_steady_compiled_with_an_inner_schedule_change_between_events():
+    raw = sheet()
+    for control in raw["experiment"]["channel_controls"]:
+        if control["channel_id"].startswith("nav_"):
+            control["schedule"] = [
+                dict(time=0.0, availability=control["schedule"][0]["availability"]),
+                dict(time=T2, availability=0.5),
+            ]
+    steady = dict(fx.FORMATION, initial_abundance=1.0, lag_s=0.0, gate_at_arrival="law_steady")
+    events = ((T1, "cell_0", "h", "n1"), (T3, "cell_3", "h", "n2"))
+    spec = parse_spec(fx.with_replacement(raw, templates(raw), events, formation=steady))
+    assert [c.time for c in spec.experiment.changes] == [0.0, T1, T2, T3]
+    result = run(spec)  # Compiled, host-checked.
+    assert np.asarray(result.history.generation)[-1].tolist() == [1, 0, 0, 1, 0, 0, 0]
+    k = row(result, T3)
+    state = model.STATE_TYPE(*(np.asarray(v[k]) for v in result.history))
+    p = model.initial_values(spec)[1]
+    control = model.Control(*(np.asarray(v[0]) for v in model.control_values(spec, [T3])))
+    expected, _ = model.apply_events(state, control, p, xp=np)
+    compiled = jax.jit(lambda s, c, q: model.apply_events(s, c, q))(state, control, p)[0]
+    assert np.allclose(
+        np.asarray(compiled.junction_gate), expected.junction_gate, rtol=0, atol=1e-14
+    )
