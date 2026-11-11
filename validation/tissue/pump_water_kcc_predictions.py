@@ -14,9 +14,12 @@ water parameters) with one route of k_anion_symport_mass_action@1 on its membran
             Proctor 1999 (Vmax 6 mmol/(L s) = 21,600 mmol/(L h)).
   steepness s = 1 (Lew 1991) and s = 0.12 (Kaji 1986's 4-5x at 1.2 V, derived).
 
-For each arm: the stationary states (Vm, composition, V/V0, osmolarity, route
-cycles), the reference Jacobian's leading growth rate at each state, the D
-volume against the route-free D (W1 P2) and its headroom to Vmax. The block arm
+For each arm: each route-free branch (H, U, D) continued in the route's capacity
+from 0 (ref.continued_stationary_states), with its stationary state (Vm,
+composition, V/V0, osmolarity, route cycles), the reference Jacobian's leading
+growth rate, its headroom to Vmax and, for D, its volume against the route-free
+D (W1 P2); a branch lost during continuation (for example at a fold) is
+reported with the capacity fraction where it was lost. The block arm
 (VU0463271, availability 0) is the route-free W1 world.
 
 Usage: python -m validation.tissue.pump_water_kcc_predictions --output DIR
@@ -46,24 +49,37 @@ def capacity(flux_mmol_L_h, volume_pL):
     return flux_mmol_L_h * volume_pL / 3600.0 / REFERENCE_PRODUCT_DIFFERENCE_mM2
 
 
-def states(raw, kcc):
+def record(raw, kcc, state):
     v0 = raw["model"]["cells"][0]["volume_pL"]
     vmax = raw["model"]["water"]["compartments"][0]["maximum_volume_pL"]
+    vm, conc, volume, osmolarity, cycles = state
+    return dict(
+        membrane_voltage_V=vm,
+        concentration_mM=conc,
+        volume_pL=volume,
+        volume_ratio=volume / v0,
+        osmolarity_mM=osmolarity,
+        route_cycles_fmol_s=cycles,
+        headroom_to_maximum=vmax / volume - 1,
+        spectrum=ref.stationary_spectrum(raw, kcc, state),
+    )
+
+
+def states(raw, kcc):
+    """Route-free states, or the branches continued in capacity from them."""
+    if kcc is None:
+        return [
+            dict(branch=i, converged=True, **record(raw, None, (*s, 0.0)))
+            for i, s in enumerate(ref.cell_stationary_states(raw))
+        ]
     out = []
-    for state in ref.regulated_stationary_states(raw, kcc):
-        vm, conc, volume, osmolarity, cycles = state
-        out.append(
-            dict(
-                membrane_voltage_V=vm,
-                concentration_mM=conc,
-                volume_pL=volume,
-                volume_ratio=volume / v0,
-                osmolarity_mM=osmolarity,
-                route_cycles_fmol_s=cycles,
-                headroom_to_maximum=vmax / volume - 1,
-                spectrum=ref.stationary_spectrum(raw, kcc, state),
+    for branch in ref.continued_stationary_states(raw, kcc):
+        if branch["converged"]:
+            out.append(
+                dict(branch=branch["branch"], converged=True, **record(raw, kcc, branch["state"]))
             )
-        )
+        else:
+            out.append(branch)
     return out
 
 
@@ -86,7 +102,7 @@ def main():
     try:
         started = time.perf_counter()
         result["route_free"] = states(raw, None)
-        route_free_d = max(result["route_free"], key=lambda s: s["membrane_voltage_V"])
+        route_free_d = max(result["route_free"], key=lambda x: x["membrane_voltage_V"])
         for cname, flux in CAPACITIES.items():
             for sname, s in STEEPNESS.items():
                 kcc = dict(
@@ -96,7 +112,12 @@ def main():
                     availability=1.0,
                 )
                 found = states(raw, kcc)
-                depolarized = [x for x in found if x["membrane_voltage_V"] > -0.03]
+                # The D branch: the one continued from the most depolarized route-free state.
+                d_branch = max(
+                    range(len(result["route_free"])),
+                    key=lambda i: result["route_free"][i]["membrane_voltage_V"],
+                )
+                depolarized = [x for x in found if x["branch"] == d_branch and x["converged"]]
                 result["arms"][f"{cname}-{sname}"] = dict(
                     flux_mmol_L_h=flux,
                     parameters=kcc,

@@ -95,6 +95,59 @@ def with_water(
     return raw
 
 
+SYMPORT_REFERENCE_DIFFERENCE_mM2 = 140 * 95 - 5 * 140  # Lew et al. 1991 reference state
+
+
+def symport_capacity(flux_mmol_L_h, volume_pL):
+    """k (fmol/(s mM^2)) giving flux_mmol_L_h (mmol/(L cells h)) of K:anion efflux at the
+    Lew et al. 1991 reference product difference with the volume factor at 1."""
+    return flux_mmol_L_h * volume_pL / 3600.0 / SYMPORT_REFERENCE_DIFFERENCE_mM2
+
+
+def with_symport(raw, *, flux_mmol_L_h=15.0, steepness=1.0, availability=1.0, membranes=None):
+    """A resolved_pump_water@2 definition of a resolved_pump_water@1 definition.
+
+    One KCC-type route (k_anion_symport_mass_action@1, roles K and M) on each
+    listed membrane (default all), capacity from a red-cell flux per cell volume
+    (default 15 mmol/(L cells h), Lew et al. 1991), set volume the cell's water
+    reference volume, the given steepness (1: Lew 1991; 0.12: Kaji 1986, derived).
+    membranes=[] declares no route.
+    """
+    raw = copy.deepcopy(raw)
+    m, e = raw["model"], raw["experiment"]
+    if m["id"] != "resolved_pump_water@1":
+        raise ValueError("with_symport() takes a resolved_pump_water@1 definition")
+    m["id"] = "resolved_pump_water@2"
+    cells = {c["id"]: c for c in m["cells"]}
+    reference = {c["compartment_id"]: c["reference_volume_pL"] for c in m["water"]["compartments"]}
+    chosen = [p for p in m["membranes"] if membranes is None or p["id"] in membranes]
+    m["symport"] = dict(
+        law="k_anion_symport_mass_action@1",
+        volume_factor="exponential_volume_activation@1",
+        roles=dict(potassium="K", anion="M"),
+        routes=[
+            dict(
+                membrane_id=p["id"],
+                capacity_fmol_s_mM2=symport_capacity(
+                    flux_mmol_L_h, cells[p["inside"]]["volume_pL"]
+                ),
+                set_volume_pL=reference[p["inside"]],
+                steepness=steepness,
+            )
+            for p in chosen
+        ],
+    )
+    schedule = (
+        [dict(time=0.0, availability=float(availability))]
+        if not isinstance(availability, (list, tuple))
+        else [dict(time=float(t), availability=float(a)) for t, a in availability]
+    )
+    e["symport_controls"] = [
+        dict(membrane_id=p["id"], schedule=copy.deepcopy(schedule)) for p in chosen
+    ]
+    return raw
+
+
 def scheduled(raw, *, channel_change=(0.4, 0.5), pump_change=(0.6, 0.8)):
     """A @3 definition with a NaV1.2 availability change and a Na/K pump change.
 
