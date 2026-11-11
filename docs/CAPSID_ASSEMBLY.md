@@ -15,6 +15,9 @@ assumptions remain distinct.
 
 ## Model and scope
 
+Cells' molecular scope is assembly of folded subunits into complexes and machines,
+not protein folding ([D140](DECISIONS.md)); this cage model is the first case.
+
 Each world contains a single connected assembly on 20 permitted sites. A site
 represents one trimer, or three protein monomers. The full cage is a
 dodecahedron with 30 contacts and three neighbors per site. Its contact graph
