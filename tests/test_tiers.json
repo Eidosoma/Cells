@@ -2599,6 +2599,14 @@
     }
    },
    {
+    "file": "tests/unit/test_cell_replacement_vector.py",
+    "seconds": 84.91,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
     "file": "tests/unit/test_channel_compensation_design.py",
     "seconds": 31.92,
     "exit_code": 0,
@@ -3294,6 +3302,12 @@
    },
    {
     "file": "tests/unit/test_calcium_activated_catalog.py",
+    "seconds": 90.19,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_cell_replacement.py",
     "seconds": 90.19,
     "exit_code": null,
     "counts": {}

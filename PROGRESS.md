@@ -41,12 +41,12 @@ starts, and production design is deferred until parity is established.
 | 3 | Cells run of BETSE's default world, compared with step 1 (physical route, D131) | Passed (pre-registered protocols D and F) |
 | 3b | Parity rung 1: Cl/Ca ions plus the plasma-membrane Ca pump (`resolved_pump_tissue@2`) | v1 failed (one item); **v2 passed** (registered after attribution; weaker evidence) |
 | 4 | The same comparison on the L4 GPU | Passed (CPU and L4 identical) |
-| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers), P3 (scheduled interventions, first subset) and P4 (general-network channels) passed** on CPU; **P4b (NaV1.2, Kir2.1, Na leak) passed** (four cases, NaV1.2 including the D-state voltage); L4 runs of P2–P4 not yet done |
+| 5 | Further mechanism families from the parity ladder, on CPU and L4 | **P2 (ECM barriers), P3 (scheduled interventions, first subset) and P4 (general-network channels) passed** on CPU; **P4b (NaV1.2, Kir2.1, Na leak) passed** (four cases, NaV1.2 including the D-state voltage); **L4 variants of all 12 registered** (tolerances unchanged), judged L4 runs next |
 | 6 | JUPITER environment and one-node pilot | Recipe and runbook ready; untested on site |
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
 | 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4), the ledger rounding fix and @3 device checks landed; @3 on the L4 is 2.28 ms per world-step at 256 worlds (tier 1 about 4,100 L4 GPU-hours execute-only, about 7,200 end to end); GH200 throughput unmeasured. **Pre-screens 7–8 (retention, rim renewal) are in doubt**: they start from the fully loaded stationary D composition (+31% osmolarity), while cue-written discs carry H composition and behave differently (W1 sheet check, pre-screen 9); the design choice waits on fresh-disc runs |
-| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); **MG1 (2-D vertex mechanics) judged run failed** (52/57; barrier minimizer and I3), being diagnosed |
+| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); **MG1 (2-D vertex mechanics) judged run failed** (52/57); v2 registered after diagnosis and a full dry run, its judged run under way |
 | 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 not evaluable (no lingering scale found) |
 
 ## Runs
@@ -54,6 +54,81 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Cell replacement qualified and landed (11 November).** `resolved_pump_replacement@1`
+  is an opt-in wrapper over `resolved_pump_tissue@3`.
+  - **What it does:** scheduled newcomer events with waste and supply ledgers and
+    lineage, with the literature-based delayed junction-formation law, and both
+    newcomer kinds (isolated template and donor copy, D139).
+  - **Judged run G2-Q1:** one run from a clean snapshot of `81d5de7`, with protocol and
+    predictions byte-equal to main `2cd2b3a`
+    ([evidence](/mnt/workspaces/Cells/cell-replacement-g2-20261111-01/qualification/judged-01/README.md)).
+    All 7 items pass:
+
+    | Item | Result |
+    | --- | --- |
+    | Ledgers | Worst energy residual 9.8e-7 of flows |
+    | Event map against an independent operator | 0.0041 of tolerance |
+    | Trajectories against an independent reference | 0.44 of tolerance, as second order predicts |
+    | Fast-chain end states | Identical in all six cases |
+    | Order | 2.05 and 2.07 (amendment A3) |
+    | Restart and vmap | Bitwise, or within 9.5e-15 |
+    | 825-node no-event equivalence | Bitwise |
+
+  - **Caveats:** in Q4 only the end states discriminate, because the voltage ratio is
+    1/3 by construction. Q5 mostly measures a newcomer relaxing on its own.
+  - **Limits:** in-place swap only (no vacancy); the donor copy does not halve the
+    parent; the water inner model and finite extracellular worlds are stage 3.
+  - **Gate:** tier 1+2 from a clean snapshot of the merge `2f372c5` (337 files) changed
+    one file, `test_betse_tissue_contact.py`. Its BETSE reference refused to start for
+    lack of its 4 GiB disk reserve while the workspace disk was full. Rerun from the
+    same snapshot after space was freed, it passes as recorded (16 passed, 1 skipped).
+    The tier-3 and new files pass in full. The tier record adds the two new files
+    (271/67/195).
+- **Parity on the L4: variants registered (11 November).** None of the 12 P2–P4b
+  protocols allowed a GPU run, so each has a registered L4 variant built by
+  `validation/betse/backend_variant.py`
+  ([evidence](/mnt/workspaces/Cells/parity-l4-20261111-01/)).
+  - **CPU against L4:** Vm up to 1.1e-14 V and cell ions up to 1.9e-13 relative.
+    Bitwise CPU reruns confirm this is the backend alone.
+  - **L4 run to run:** Vm up to 6.5e-16 V and cell ions up to 1.0e-14 relative.
+  - Both terms are at least 1e5 below every tolerance, so no tolerance changed.
+  - **Rehearsal:** a full-size run of the judged chain on a non-registered case passed
+    (worst 0.60 of tolerance; not a verdict). The 12 judged L4 runs are next.
+- **MG1 v2 registered; judged run under way (11 November).**
+  - **The two failures were diagnosed:**
+    - The barrier crash was a genuinely flat landscape where a compatible start
+      loses compatibility. It is fixed with a trust-region Newton step and a
+      force-residual polish.
+    - I3's registered noise range was past the linear regime.
+  - **v2:** the same 57 criteria and thresholds. Its noise levels come from a
+    reference-only study and a rule fixed in advance. It discloses what was seen during
+    diagnosis, and a pass is labelled weaker evidence.
+  - **Dry run:** a full-scale run on non-registered inputs passed (144 barrier paths,
+    none failed).
+- **Cell division, stage 1 (11 November).** Verified data for the
+  [cell-division plan](docs/CELL_DIVISION_PLAN.md) (D141):
+  - Xenopus goes first;
+  - the first judged observable is blastomere Em at 2 and 4 cells, with Rm from the
+    same eggs as calibrator;
+  - new cleavage membrane is low-resistance and mainly K-selective.
+
+  Evidence: `/mnt/workspaces/Cells/cell-division-20261111-01/verification/`.
+- **Heredity pilot W1, water arms (11 November; development, in progress).** The
+  sheet70 discs are rerun under `resolved_pump_water@1` and `@2`, with predictions
+  written first ([runs](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/runs.jsonl)).
+  - **Three of 12 arms done:** the 37-cell disc held for 70 min at s 1.0 (water, and
+    water with KCC) and at s 0.3, with no refusal and no volume censor.
+  - **Swelling:** disc cells swelled to 1.03–1.06 V0, about 12% over their start.
+    Solute loading matches fixed volume, now taking the form of swelling.
+  - **KCC effect:** small, as predicted.
+  - **Running:** the 19-cell discs at s 1.0, under both water models.
+- **Workspace disk (11 November).** `/mnt/workspaces` filled, which is what blocked the
+  BETSE test above. At the user's direction, the AI scientist project folder
+  `groups/35` (564 GB, 49,589 files) moved to
+  `/mnt/datasets/workspaces-archive-20261111/groups/35`, leaving a symlink. It was
+  checked file by file
+  ([log](/mnt/workspaces/Cells/disk-move-20261111-01/move.log)), and 523 GB is now
+  free.
 - **Heredity pilot W1: the cue writes discs; fresh discs hold for 70 min (10–11
   November; development, not judged).** Driver `validation/tissue/heredity_pilot.py`
   on `resolved_pump_tissue@3`; evidence `/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/`.
