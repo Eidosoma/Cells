@@ -203,8 +203,9 @@ class OsmoticWater(Operator):
         valid &= w1.water_control_valid(control.water, p, xp=xp)
         return rates, valid, w1.water_energy_rate(w, p, xp=xp), w
 
-    def domain_valid(self, state, p, *, xp):
-        return w1.water_domain_valid(state, p, xp=xp)
+    def domain_valid(self, state, p, valid, *, xp):
+        own = w1.water_domain_valid(state, p, xp=xp)
+        return own if valid is None else valid & own
 
     # ------------------------------------------------------------ ledgers
 

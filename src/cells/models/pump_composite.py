@@ -339,12 +339,16 @@ class Composition:
         without coupled operators), or @3's IMEX step with the in-step process.
         A refused piece refuses the step, which returns the start state.
         """
+        idle = tuple(op for op in self.operators if op.statically_idle(p))
+        active = tuple(op for op in self.operators if op not in idle)
         valid, current = None, state
         for op in self.events:
-            current, ok = op.event(current, control, p, xp=xp)
-            valid = _and(valid, ok)
+            if op in active:
+                current, ok = op.event(current, control, p, xp=xp)
+                valid = _and(valid, ok)
         h = 0.5 * dt
-        for op in self.splits:
+        splits = tuple(op for op in self.splits if op in active)
+        for op in splits:
             current, ok = op.half_step(current, h, control, p, xp=xp)
             valid = _and(valid, ok)
             valid = _and(valid, op.control_valid(control, p, xp=xp))
@@ -372,17 +376,26 @@ class Composition:
             moved, ok, applied, heat = self.inner.barrier((moved, ok, applied, heat), xp=xp)
         current = current._replace(**moved._asdict())
         last = None
-        for op in reversed(self.splits):
+        for op in reversed(splits):
             current, ok_half = op.half_step(current, h, control, p, xp=xp)
             last = _and(last, ok_half)
         if process is not None:
             current = process.book_process(current, state, applied, heat, p)
-        valid = _and(_and(_and(valid, ok), last), self._end_domain(current, p, xp=xp))
-        return jax.tree.map(lambda old, new: xp.where(valid, new, old), state, current), valid
+        valid = _and(_and(_and(valid, ok), last), self._end_domain(current, p, active, xp=xp))
+        if not idle:
+            return jax.tree.map(lambda old, new: xp.where(valid, new, old), state, current), valid
+        # Statically idle operators' fields pass through; the rest is selected.
+        passed = {k for op in idle for k in op.STATE_AXES}
+        selected = {
+            k: xp.where(valid, getattr(current, k), getattr(state, k))
+            for k in self.STATE_TYPE._fields
+            if k not in passed
+        }
+        return state._replace(**selected), valid
 
     imex_step = split_step
 
-    def _end_domain(self, state, p, *, xp):
+    def _end_domain(self, state, p, operators, *, xp):
         """Domain of the step's end state: the inner one at the view if a split moved it."""
         valid = None
         if self.domain_views:
@@ -392,8 +405,8 @@ class Composition:
                 p.active,
                 xp=xp,
             )
-        for op in self.operators:
-            valid = _and(valid, op.domain_valid(state, p, xp=xp))
+        for op in operators:
+            valid = op.domain_valid(state, p, valid, xp=xp)
         return valid
 
     # ------------------------------------------------------------ readouts
@@ -445,7 +458,7 @@ class Composition:
         )
         valid = self.inner.domain_valid(self.inner.inner_state(state), layout, active, xp=xp)
         for op in self.operators:
-            valid = _and(valid, op.domain_valid(state, p, xp=xp))
+            valid = op.domain_valid(state, p, valid, xp=xp)
         return valid
 
     def control_domain_valid(self, state, control, p, active, *, xp=jnp):

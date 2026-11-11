@@ -163,6 +163,11 @@ class Operator:
         """True when the in-step process is statically absent (by layout shape)."""
         return True
 
+    def statically_idle(self, p):
+        """True when every part is statically absent (by layout shape): the step then
+        skips the operator entirely and its owned fields pass through unchanged."""
+        return False
+
     def process(self, control, p):
         """The inner model's membrane-process callable."""
         raise NotImplementedError
@@ -176,8 +181,9 @@ class Operator:
         zeros = {k: xp.zeros_like(getattr(state, k)) for k in self.STATE_AXES}
         return zeros, None, None, None
 
-    def domain_valid(self, state, p, *, xp):
-        return None
+    def domain_valid(self, state, p, valid, *, xp):
+        """The running domain conjunction `valid` (None: nothing yet) with this operator's."""
+        return valid
 
     # ------------------------------------------------------------ ledgers
 

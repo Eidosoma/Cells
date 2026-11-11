@@ -182,6 +182,9 @@ class KAnionSymport(Operator):
     def idle_process(self, p):
         return not p.symport_present.shape[0]
 
+    def statically_idle(self, p):
+        return self.idle_process(p)  # No route declared: the step is water's alone.
+
     def process(self, control, p):
         return w2.membrane_process(control.symport, p)
 
@@ -209,12 +212,12 @@ class KAnionSymport(Operator):
         )
         return rates, ok, None, s
 
-    def domain_valid(self, state, p, *, xp):
+    def domain_valid(self, state, p, valid, *, xp):
         route = p.symport_route & p.membrane_active
-        valid = xp.asarray(True)
         for name in self.STATE_AXES:
             value = getattr(state, name)
-            valid &= xp.all(xp.isfinite(value)) & xp.all(xp.where(route, True, value == 0))
+            own = xp.all(xp.isfinite(value)) & xp.all(xp.where(route, True, value == 0))
+            valid = own if valid is None else valid & own
         return valid
 
     # ------------------------------------------------------------ ledgers

@@ -238,8 +238,9 @@ class ScheduledReplacement(Operator):
         rates.update(junction_lag_remaining_s=lag, junction_abundance_deficit=deficit)
         return rates, rep.replacement_domain_valid(state, p, xp=xp), None, None
 
-    def domain_valid(self, state, p, *, xp):
-        return rep.replacement_domain_valid(state, p, xp=xp)
+    def domain_valid(self, state, p, valid, *, xp):
+        own = rep.replacement_domain_valid(state, p, xp=xp)
+        return own if valid is None else valid & own
 
     # ------------------------------------------------------------ ledgers
 
