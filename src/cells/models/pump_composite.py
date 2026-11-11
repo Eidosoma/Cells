@@ -282,12 +282,13 @@ class Composition:
         return identity(spec.model)
 
     def batch_signature(self, model):
-        parts = tuple(
-            part
-            for op, d in zip(self.operators, model.operators, strict=True)
-            for part in op.batch_signature(d)
-        )
-        return (MODEL_ID, model.inner_model, self.laws, *self.inner.batch_signature(model), *parts)
+        """The run identity and array axes of `model` (any composition: batches compare
+        every world's signature with the first world's)."""
+        from cells.models.operators import OPERATORS
+
+        laws = composite_spec.operator_laws(model)
+        parts = tuple(part for d in model.operators for part in OPERATORS[d.law].batch_signature(d))
+        return (MODEL_ID, model.inner_model, laws, *self.inner.batch_signature(model), *parts)
 
     def working_size(self, spec):
         return self.inner.working_size(projection(spec)) + sum(
