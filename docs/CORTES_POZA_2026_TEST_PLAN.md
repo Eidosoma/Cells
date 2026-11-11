@@ -116,6 +116,71 @@ It matches what the heredity pre-screens found. In pre-screen 9, the junction
 state carried across a replacement decided rim renewal, and slow ion composition
 decided whether converted cells could pass D on.
 
+## Phase 0 results (11 November 2026)
+
+This is tooling under D137; no Cells engine model ran. The author's code at
+`2b53a08` (MIT) was run unmodified, out of process, in its own environment.
+Corrections were applied as runtime subclasses, and a plain bistable chain with
+fixed conductances was the baseline. Evidence:
+`/mnt/workspaces/Cells/cortes-poza-2026-phase0-20261111-01/`. The runner restates
+upstream protocol lines (parameters, initial conditions, loops) to stay bit-identical,
+so it is kept with the evidence and not added to this repository.
+
+- **Shipped settings differ from the paper.**
+  - The experiments use dt 0.05; the paper says 0.01.
+  - Several parameters differ from Table 3 (β1, β2; a and G in Fig. 4).
+  - No entry point matches the paper's settings.
+- **Remark 4 is a typo.** The printed barrier is 4× too large. Integrating the
+  cubic gives 81a/64 = 1.519, so √(2ΔU) = 1.743, the paper's estimate. The general
+  form is (a/12)(V₀ − V₋)³(2V₊ − V₋ − V₀).
+- **Nucleation (Exp. 1)** reproduces δ* ≈ 1.9–2.0, but only under the code's "12% of
+  cells above 0.75" metric. With the paper's own both-phases criterion,
+  δ* ≈ 1.25. The plain chain nucleates at least as easily (code metric 1.74,
+  both-phases 1.1), so the threshold does not come from the regulatory or memory
+  layers. At dt 0.05, 1–9 of 30 runs per δ ≥ 1.7 go non-finite and are counted as
+  "no pattern".
+- **Regeneration (Exp. 2)** reproduces fidelity 1.00 only with the one-sided coded
+  metric.
+  - With the paper's two-sided definition, agreement is 0.93, 0.83, 0.73 and 0.63
+    at lesion fractions 0.1, 0.3, 0.5 and 0.7. No run reaches 0.95.
+  - Correcting the lesion (removing cells and their junctions) and the birth rule
+    gives 0.93–0.80.
+  - The plain chain recovers better: 0.97–1.0 for a centred lesion, and 1.0–0.89
+    for a shifted one.
+- **Energy.**
+  - The per-edge energy never rises in the fixed-conductance system or in the
+    code's "pure" adapting case, so Theorem 1's system holds.
+  - In the full model it rises in 4,649 of 5,000 steps, driven by the dG/dt term
+    that Eq. 39 omits.
+  - The code's double-counted coupling term makes even the frozen system rise.
+  - Remark 8's statements and Fig. 4's caption are contradicted by the author's own
+    outputs.
+- **Switching.**
+  - Fig. 7's τ_ε curve is the closed-form logistic.
+  - In a simulated τ_ε sweep, τ_ε ≤ 10 gives no complete reversal at any amplitude.
+    The code's switching rule nevertheless reports p = 1, because it counts collapse
+    to uniform depolarisation as a switch.
+  - Conjecture 3 (A*(12) < 2.5) holds, but also in the plain chain (A* ≈ 1.48), so it
+    needs neither the regulatory nor the memory layer.
+- **The paper's patterns are not long-lived.** In every author parameter set the
+  unforced, unlesioned half-depolarised pattern collapses to uniform depolarisation,
+  by t ≈ 160–450. With the memory variable frozen it persists to t = 562, and the
+  plain chain persists in every case. So the slow memory erases the pattern rather
+  than storing it. The route (through conductances or the regulatory network) is not
+  separated.
+- **Limits of this reproduction:**
+  - N, seeds and grids that the paper does not give were chosen by us and labelled
+    in the results;
+  - regeneration outcomes were identical across seeds, so each condition is
+    effectively one trial;
+  - the long-horizon controls used one seed each;
+  - the paper's figures were not seen;
+  - dt was checked only for Exp. 1 and the energy runs.
+- **Conclusion for Phase 1.** The bioelectric layer's own physics (bistability,
+  pinning, nucleation, strength–duration switching) carries every reproduced effect.
+  Phase 1 therefore tests those effects in Cells against the plain bistable baseline,
+  not against the author model's added layers.
+
 ## Mapping to Cells
 
 Cells tests whether the paper's attractor claims survive conserved ion-level

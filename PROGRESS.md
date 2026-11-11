@@ -54,6 +54,29 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Cortés-Poza (2026) Phase 0: reproduction with corrections and a plain baseline
+  (11 November; tooling, D137, no Cells engine model).** The author's code at `2b53a08`
+  (MIT) was run out of process, with the review's corrections and a plain
+  bistable-chain baseline
+  ([plan, Phase 0 results](docs/CORTES_POZA_2026_TEST_PLAN.md); evidence
+  `/mnt/workspaces/Cells/cortes-poza-2026-phase0-20261111-01/`).
+  - **Regeneration fidelity:** 1.00 only with the one-sided coded metric. Two-sided
+    agreement is 0.63–0.93, below 0.95 in every run, and the plain chain recovers
+    better.
+  - **Full-model energy:** rises in 93% of steps, through the omitted dG/dt term.
+  - **Memory switching curve:** a formula. Simulated, slow memory erases the
+    patterns.
+  - **Remark 4:** a 4× typo.
+  - **Thresholds:** the nucleation and switching thresholds also appear in the plain
+    chain.
+  - **For Phase 1:** test bistability, pinning, nucleation and strength–duration
+    switching in Cells against the plain baseline.
+  - **Limits:**
+    - N, seeds and grids that the paper does not give were chosen by us;
+    - regeneration outcomes were identical across seeds, so each condition is
+      effectively one trial;
+    - the long-horizon controls used one seed;
+    - the paper's figures were not seen.
 - **Heredity pre-screen 9: newcomer rules under turnover (10–11 November;
   development, not judged).** Driver `validation/stationary/heredity_turnover.py`
   (`e06b104`), on `resolved_pump_tissue@3` sheets; 51 runs plus mechanism and
