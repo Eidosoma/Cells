@@ -75,6 +75,20 @@ machine-readable inputs, results, checks and failures.
     run, with or without the junction-heat option (likely atomic scatter-adds).
     Bitwise restart on the GPU would need deterministic XLA ops, whose cost is
     unmeasured. One L4 refusal (pilot-03, 0.047 s) did not reproduce.
+- **MG1 (2-D vertex mechanics) judged run: FAIL (11 November).** Protocol
+  `mg1-vertex-mechanics-v1`, registered at `70f5456`, run once from a clean
+  snapshot on CPU
+  ([results](/mnt/workspaces/Cells/morphogenesis-mg1-20261111-01/judged-01/results/results.json)).
+  - **52 of 57 criteria pass:** the case-I ground state, the box stress, ordered-
+    network rigidity, recoil after a junction cut, numerics (RK4 order about 4,
+    Euler about 1), tension inference with known pressures, and the tyssue
+    comparison.
+  - **The barrier part failed** before judging: its contraction minimizer did not
+    converge (`ConfigError`), so criteria B1–B4 have no values and count as failed.
+  - **I3 (noise linearity of tension inference) failed** on its own values.
+  - Per the outcome rules, thresholds are not changed. The causes are being
+    diagnosed (development); any rerun will be a new judged run with this one kept
+    on record.
 - **Osmotic water and volume qualified and landed (11 November).**
   - **`resolved_pump_water@1`:** osmotic water and compliant volumes on
     `resolved_pump_tissue@3`, through a Strang split around @3's own step.
@@ -102,6 +116,9 @@ machine-readable inputs, results, checks and failures.
     unchanged).
   - **Gate:** tier 1+2 from a clean snapshot of the merge (334 files, none changed).
     15 tier-3 and new test files pass in full.
+  - **1 h drift of the D state** (3.6e6 steps at 1 ms, no refusal): volume moves by
+    2e-16 pL, Vm by 4.3e-14 V and concentrations by 3e-14 mM. Every ledger stays at
+    rounding (energy 7e-8 pJ).
   - Evidence: `/mnt/workspaces/Cells/water-volume-pump-20261110-01/` and
     `/mnt/workspaces/Cells/land-water-20261111-01/`.
 - **In development on branches, not yet on main (11 November):**
