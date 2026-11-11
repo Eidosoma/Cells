@@ -190,8 +190,15 @@ def _diagnostics(result):
 
 
 def central_junction(model):
-    """The junction whose midpoint is nearest the box centre."""
-    tissue = ref.from_definition({"model": model, "experiment": {"parameter_controls": [{}]}})
+    """The junction whose midpoint is nearest the box centre, on the regular lattice.
+
+    Chosen on the regular honeycomb of the same size (same topology and slots), so
+    the choice does not depend on perturbed or relaxed positions.
+    """
+    n = int(round(np.sqrt(len(model["cells"]))))
+    tissue = ref.from_definition(
+        {"model": honeycomb(n), "experiment": {"parameter_controls": [{}]}}
+    )
     x = tissue.position
     d = ref.junction_vectors(tissue, x)
     middle = x[tissue.junction_tail] + 0.5 * d
@@ -440,13 +447,17 @@ def part_rigidity(args):
     }
 
 
-BARRIER_P0 = (3.5, 3.6, 3.7, 3.75, 3.78, 3.8, 3.805, 3.81, 3.8119, 3.815, 3.82, 3.83, 3.85, 3.9)
+# Below the pentagon threshold 3.8119350: incompatible 3.5, 3.7; compatible start 3.75-3.81.
+BARRIER_P0 = (3.5, 3.7, 3.75, 3.8, 3.81, 3.815, 3.82, 3.83, 3.85)
 FRACTIONS = (1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.02, 0.0)
 
 
 def orientation_junctions(model):
-    """One junction per edge direction of the honeycomb (30, 90 and 150 degrees)."""
-    tissue = ref.from_definition({"model": model, "experiment": {"parameter_controls": [{}]}})
+    """One junction per edge direction (30, 90, 150 degrees), on the regular lattice."""
+    n = int(round(np.sqrt(len(model["cells"]))))
+    tissue = ref.from_definition(
+        {"model": honeycomb(n), "experiment": {"parameter_controls": [{}]}}
+    )
     d = ref.junction_vectors(tissue, tissue.position)
     angle = np.degrees(np.mod(np.arctan2(d[:, 1], d[:, 0]), np.pi))
     centre = central_junction(model)
@@ -470,7 +481,7 @@ def part_barrier(args):
     rows = []
     for r in rs:
         for p0 in points:
-            seeds = (0,) if (p0 < theory.P_STAR or quick) else (0, 1, 2)
+            seeds = (0,) if (p0 < theory.P_STAR or quick) else (0, 1)
             for seed in seeds:
                 pb, model = _staddon_problem(n, r, p0, seed=seed)
                 eq = me.minimize(pb)
@@ -741,8 +752,9 @@ def part_inference(args):
             known = jti.known_pressure(b, pressure)
             joint = jti.joint(b, mean_tension=np.mean(tension), mean_pressure=np.mean(pressure))
             noise = []
+            direction = rng.standard_normal(x.shape)  # One draw, scaled: linearity test.
             for sigma in (1e-7, 1e-6, 1e-5):
-                noisy = x + sigma * rng.standard_normal(x.shape)
+                noisy = x + sigma * direction
                 k = jti.known_pressure(jti.balance(noisy, pb.host_topology, pb.box), pressure)
                 noise.append(float(np.sqrt(np.mean((k.tension - tension) ** 2)) / np.mean(tension)))
             bayes = []

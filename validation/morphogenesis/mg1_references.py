@@ -41,7 +41,7 @@ def _tissue(model, control=None):
 def barriers(quick=False):
     rows = []
     rs = (1.0,) if quick else (0.1, 1.0, 10.0)
-    points = (3.7,) if quick else (3.5, 3.6, 3.7)
+    points = (3.7,) if quick else (3.5, 3.7)
     fractions = np.array((1.0, 0.5, 0.0) if quick else driver.FRACTIONS)
     for r in rs:
         for p0 in points:

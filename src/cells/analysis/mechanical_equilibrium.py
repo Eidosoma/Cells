@@ -358,17 +358,26 @@ _path_value_and_grad = jax.jit(jax.value_and_grad(_path_energy))
 _place_jit = jax.jit(_place)
 
 
+@jax.jit
+def _path_valid_jit(x, topology, box, floor, junction, tail, head):
+    """The model domain with the contracted junction and its two vertices exempt."""
+    g = vm.geometry(x, topology, box)
+    others = topology.junction_active & (jnp.arange(topology.junction_active.shape[0]) != junction)
+    sums = vm.corner_angle_sums(x, topology, box)
+    slots = jnp.arange(topology.vertex_active.shape[0])
+    check = topology.vertex_active & (slots != tail) & (slots != head)
+    ok = jnp.all(jnp.isfinite(x))
+    ok &= jnp.all(jnp.where(topology.cell_active, g.area > 0, True))
+    ok &= jnp.all(jnp.where(others, g.length >= floor, True))
+    ok &= jnp.all(jnp.where(check, jnp.abs(sums - vm.TWO_PI) <= vm.ANGLE_SUM_ATOL, True))
+    return ok
+
+
 def _path_valid(pb, x, junction, ends):
-    t = pb.host_topology
-    g = vm.geometry(x, t, pb.box, xp=np)
-    others = np.asarray(t.junction_active) & (np.arange(len(g.length)) != junction)
-    sums = vm.corner_angle_sums(x, t, pb.box, xp=np)
-    check = np.asarray(t.vertex_active).copy()
-    check[list(ends)] = False
     return bool(
-        np.all(g.area[np.asarray(t.cell_active)] > 0)
-        and np.all(g.length[others] >= pb.length_floor)
-        and np.all(np.abs(sums[check] - vm.TWO_PI) <= vm.ANGLE_SUM_ATOL)
+        _path_valid_jit(
+            jnp.asarray(x), pb.topology, jnp.asarray(pb.box), pb.length_floor, junction, *ends
+        )
     )
 
 
