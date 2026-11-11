@@ -10,9 +10,9 @@ so the same models compile for NVIDIA GPUs and for CPUs, and the CPU runs serve
 as independent references. [Progress](PROGRESS.md) holds the detailed current
 status and evidence.
 
-![A cutaway animal cell maps its membrane to bioelectricity, cytoplasm to chemistry and transport, ER to calcium signalling, mitochondria to organelle physiology, regulatory machinery to regulatory cell state, protein complexes to molecular assembly, ATP and volume to fuel and water, and cell contacts to tissue communication.](docs/assets/cells-biology-map.png)
+![A cutaway animal cell maps its membrane to bioelectricity, cytoplasm to chemistry and transport, ER to calcium signalling, Golgi apparatus to protein modification, sorting and packaging, mitochondria to organelle physiology, regulatory machinery to regulatory cell state, protein complexes to molecular assembly, ATP and volume to fuel and water, and cell contacts to tissue communication.](docs/assets/cells-biology-map.png)
 
-This schematic maps cell biology to selected Cells model capabilities;
+This schematic links cell structures and biological processes;
 whole-cell integration is ongoing.
 
 ## Why we are building Cells
