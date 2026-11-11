@@ -385,7 +385,7 @@ class ReducedChain:
                 if i in (a, b):
                     self.start[k] = t
 
-    def integrate(self, end, t_eval):
+    def integrate(self, end, t_eval, *, rtol=1e-10, atol=1e-13):
         lag = self.formation["lag_s"]
         events_at = {}
         for e in self.events:
@@ -407,8 +407,8 @@ class ReducedChain:
                 self.v,
                 method="BDF",
                 t_eval=inside or None,
-                rtol=1e-10,
-                atol=1e-13,
+                rtol=rtol,
+                atol=atol,
                 max_step=0.05,
             )
             if not solution.success:
