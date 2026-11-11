@@ -27,7 +27,7 @@ Criteria (criteria.json, written by --criteria before any run):
   residual form, u + T (Phi_T(u) - u) / T, not bitwise.
 
 Usage: python -m validation.tissue.cell_replacement_r1 --output DIR
-       (--criteria | --case s:rate:order [--case ...])
+       [--criteria] (--case s:rate:order ... | --screen s:slot ...)
 """
 
 import argparse
@@ -75,6 +75,22 @@ CRITERIA = dict(
     ],
     report_otherwise="first divergence: time, slots that differ, largest range difference",
     cases=["0.6:20:oldest", "0.6:6:random", "0.3:6:oldest"],
+)
+SCREENS = [f"{s}:{slot}" for s in ("0.3", "0.6") for slot in ht.SLOT_NAMES]
+CRITERIA_C = dict(
+    kind="cells.cell_replacement_r1c_criteria@1",
+    scope="R1 rule (c): pre-screen 9 stage-1 single-newcomer screens, steady rule",
+    reference=str(PRESCREEN.parent / "stage1-screen" / "runs_main.jsonl"),
+    rule="pre-screen 9 rule (c) 'steady' as A0 1, lag 0, law_steady",
+    method="newcomer placed by the engine's event map; forward through heredity_conversion.run "
+    "(the driver's records, early stop and verdict) with the wrapper's checked step",
+    pass_if=[
+        "same record times, and identical slots_d, disc_other_d and outside_other_d per record",
+        f"slot voltage within {VOLTAGE_TOL_MV} mV per record",
+        "same number of records, outcome and latency bracket",
+    ],
+    report_otherwise="first divergence (record), placement difference from the driver's place()",
+    cases=SCREENS,
 )
 
 
@@ -225,6 +241,120 @@ def compare(mine, theirs):
     )
 
 
+RULE_C = dict(RULE_A, gate_at_arrival="law_steady")
+
+
+def screen_case(scale, slot_name):
+    """Rule (c): one newcomer placed by the engine's event map at the stationary disc,
+    then forward through heredity_conversion.run (the driver's own records, early stop
+    and verdict) with the wrapper's checked step as the advance."""
+    unit = hp.units()["theta_per_unit_scale"]
+    case = ht.Sheet(*ht.SCREEN_DISC)
+    slot = hc.slots(case, case.radius)[slot_name]
+    inside = slot_name != "outside"
+    started = time.perf_counter()
+    u_disc = hc.disc_state(case, scale, unit)
+    state_inner, p_inner, control_inner = case.pb.embed(u_disc, scale)
+    states = {k: v[:4] for k, v in v3fx.HEREDITY_STATES.items()}
+    raw = worlds.ionic_background(
+        worlds.e07_sheet_definition(
+            [states["H"]] * len(case.cells), case.edges, gated=True, dt=DT, end_time=1.0
+        )
+    )
+    raw["experiment"]["observation_times"] = [0.0, 1.0]
+    template = fx.template_from_cell(raw, "cell_0", "h")
+    spec = parse_spec(
+        fx.with_replacement(raw, [template], [(DT, f"cell_{slot}", "h", "n0")], formation=RULE_C)
+    )
+    state, p = model.initial_values(spec)
+    p = p._replace(**{k: np.asarray(getattr(p_inner, k)) for k in type(p_inner)._fields})
+    extra = {k: np.asarray(getattr(state, k)) for k in model.REPLACEMENT_STATE_AXES}
+    state = model.STATE_TYPE(*(np.asarray(v) for v in state_inner), *extra.values())
+    control = model.Control(*(np.asarray(v[0]) for v in model.control_values(spec, [DT])))
+    control = control._replace(
+        **{k: np.asarray(getattr(control_inner, k)) for k in control_inner._fields}
+    )
+    after, ok = jax.jit(lambda x, c, q: model.apply_events(x, c, q))(
+        jax.tree.map(jnp.asarray, state), jax.tree.map(jnp.asarray, control), p
+    )
+    assert bool(ok)
+    after = model.STATE_TYPE(*(np.asarray(v) for v in after))
+    u0 = np.asarray(case.pb.coordinates(model.ionic_state(after), model.ionic_layout(p, xp=np)))
+    driver_u0, _ = ht.place(case, u_disc, [slot], "steady", scale)
+    kept = {k: after[i] for i, k in enumerate(model.STATE_TYPE._fields) if k in extra}
+    pj, cj = jax.tree.map(jnp.asarray, p), jax.tree.map(jnp.asarray, control)
+
+    @jax.jit
+    def residual(u, k):
+        inner, _, _ = case.pb.embed(u, scale)
+        x = model.STATE_TYPE(*inner, *(jnp.asarray(kept[k_]) for k_ in extra))
+
+        def body(_, carry):
+            y, good = carry
+            y, valid = model.checked_step(y, DT, cj, pj, pj.active)
+            return y, good & valid
+
+        final, good = jax.lax.fori_loop(0, k, body, (x, jnp.asarray(True)))
+        rate = (case.pb._extract(model.ionic_state(final)) - u) / (k * DT)
+        return jnp.where(good, rate, jnp.nan)
+
+    rows, _ = hc.run(case, lambda u, s_, k: residual(jnp.asarray(u), k), u0, scale, [slot], inside)
+    others = int(case.full.sum()) - (1 if inside else 0)
+    return dict(
+        scale=scale,
+        slot=slot_name,
+        cell=slot,
+        placement_max_abs_difference=float(np.max(np.abs(u0 - driver_u0))),
+        **hc.verdict(rows, [slot], others, inside),
+        trajectory=rows,
+        wall_s=time.perf_counter() - started,
+    )
+
+
+def screen_reference(scale, slot_name):
+    path = PRESCREEN.parent / "stage1-screen" / "runs_main.jsonl"
+    for line in path.read_text().splitlines():
+        r = json.loads(line)
+        if r.get("rule") == "steady" and r["scale"] == scale and r["slot"] == slot_name:
+            return r
+    raise KeyError((scale, slot_name))
+
+
+def screen_compare(mine, theirs):
+    first, worst = None, 0.0
+    counts = ("slots_d", "disc_other_d", "outside_other_d")
+    pairs = list(zip(mine["trajectory"], theirs["trajectory"], strict=False))
+    for a, b in pairs:
+        if "slots_d" not in a or "slots_d" not in b:
+            same = a.get("refused") == b.get("refused")
+            first = first or (None if same else dict(time_s=a.get("time_s"), reason="refusal"))
+            continue
+        diff = max(
+            abs(x - y) for x, y in zip(a["slot_voltage_mV"], b["slot_voltage_mV"], strict=True)
+        )
+        worst = max(worst, diff)
+        if first is None and (
+            a["time_s"] != b["time_s"] or any(a[k] != b[k] for k in counts) or diff > VOLTAGE_TOL_MV
+        ):
+            first = dict(time_s=a["time_s"], engine=a, prescreen=b)
+    same = (
+        len(mine["trajectory"]) == len(theirs["trajectory"])
+        and mine["outcome"] == theirs["outcome"]
+        and mine["latency_bracket_s"] == theirs["latency_bracket_s"]
+    )
+    return dict(
+        verdict="pass" if first is None and same else "diverged",
+        rows=dict(engine=len(mine["trajectory"]), prescreen=len(theirs["trajectory"])),
+        outcome=dict(engine=mine["outcome"], prescreen=theirs["outcome"]),
+        latency_bracket_s=dict(
+            engine=mine["latency_bracket_s"], prescreen=theirs["latency_bracket_s"]
+        ),
+        max_slot_voltage_difference_mV=worst,
+        placement_max_abs_difference=mine["placement_max_abs_difference"],
+        first_divergence=first,
+    )
+
+
 def provenance():
     git = ["git", "-C", str(Path(__file__).resolve().parents[2])]
     return dict(
@@ -245,13 +375,16 @@ def main(argv=None):
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--criteria", action="store_true")
     parser.add_argument("--case", action="append", default=[])
+    parser.add_argument("--screen", action="append", default=[])
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)
     if args.criteria:
-        with open(args.output / "criteria.json", "x") as f:
-            json.dump(CRITERIA | provenance(), f, indent=1)
+        name = "criteria_c.json" if args.screen else "criteria.json"
+        with open(args.output / name, "x") as f:
+            json.dump((CRITERIA_C if args.screen else CRITERIA) | provenance(), f, indent=1)
         return
-    if not (args.output / "criteria.json").exists():
+    needed = (["criteria.json"] if args.case else []) + (["criteria_c.json"] if args.screen else [])
+    if any(not (args.output / n).exists() for n in needed):
         raise SystemExit("Write the criteria (--criteria) before any run")
     for item in args.case:
         s, rate, order = item.split(":")
@@ -264,6 +397,15 @@ def main(argv=None):
         with open(args.output / f"r1_{item.replace(':', '_')}.json", "x") as f:
             json.dump(result, f, indent=1)
         print(item, json.dumps(result["comparison"]), flush=True)
+    for item in args.screen:
+        s, slot = item.split(":")
+        mine = screen_case(float(s), slot)
+        comparison = screen_compare(mine, screen_reference(float(s), slot))
+        result = dict(case=item, rule="c (law_steady)", comparison=comparison, engine=mine)
+        result |= provenance()
+        with open(args.output / f"r1c_{item.replace(':', '_')}.json", "x") as f:
+            json.dump(result, f, indent=1, default=float)
+        print(item, json.dumps(comparison, default=float)[:600], flush=True)
 
 
 if __name__ == "__main__":
