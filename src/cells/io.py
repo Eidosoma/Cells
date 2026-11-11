@@ -260,6 +260,12 @@ def write_run(
                 {"stage_domain": model.STAGE_DOMAIN_ID} if hasattr(model, "STAGE_DOMAIN_ID") else {}
             ),
         },
+        # A composite run's identity (composite, inner and ordered operator IDs).
+        **(
+            {"composition": model.composition_identity(result.spec)}
+            if hasattr(model, "composition_identity")
+            else {}
+        ),
         "random_state": "unused: deterministic model",
         "timings": {
             **result.timings,

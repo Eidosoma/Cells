@@ -710,6 +710,12 @@ def get_model(spec):
         from cells.models import cell_replacement
 
         return cell_replacement
+    from cells.core.pump_composite_spec import CompositeModel
+
+    if isinstance(spec, CompositeModel):  # One cached implementation per operator list.
+        from cells.models import pump_composite
+
+        return pump_composite.model_for(spec)
     if isinstance(spec, SurfacePumpChannelModel):
         from cells.models import surface_pump_v3
 

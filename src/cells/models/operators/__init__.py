@@ -1,0 +1,20 @@
+"""Operators of the composite pump-tissue model: an explicit registry, no plugins.
+
+Each operator implements the contract of models/operators/contract.py for one law
+(docs/CELL_DIVISION_DESIGN.md §3.3). New combinations are definitions
+(core/pump_composite_spec.py), not model families (D142, D143).
+"""
+
+from cells.models.operators.cell_replacement import ScheduledReplacement
+from cells.models.operators.contract import check_declarations
+from cells.models.operators.k_anion_symport import KAnionSymport
+from cells.models.operators.osmotic_water import OsmoticWater
+
+OPERATORS = {
+    op.LAW_ID: op
+    for op in (
+        check_declarations(OsmoticWater)(),
+        check_declarations(KAnionSymport)(),
+        check_declarations(ScheduledReplacement)(),
+    )
+}
