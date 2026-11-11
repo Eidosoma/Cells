@@ -64,7 +64,7 @@ Plain-language summary. Details, numbers and evidence are in
 
 ## What Cells can do (as of 11 November 2026)
 
-![Cells today, 11 November 2026: cell electricity, cell signals and protein assembly. Tested cases agree with BETSE, with more checks ahead. In early tests, voltage patterns held for 70 minutes; memory through cell replacement remains unproven. Runs locally on CPU and L4 GPU; Jupiter tests are still ahead.](docs/assets/cells-current.png)
+![Cells today, 11 November 2026: cell electricity; tissue preparation and interventions; calcium, reactions, fuel and water; simple gene control circuits; protein cage assembly; and saving, restarting and comparing runs. Material, charge and energy checks, with CPU and L4 GPU execution. Capabilities vary by model; whole-cell integration is ongoing.](docs/assets/cells-current.png)
 
 - **Electrical cells and tissues:**
   - ion transport, membrane voltage and pumps;
@@ -85,6 +85,13 @@ Plain-language summary. Details, numbers and evidence are in
 
 Each capability's scope and limits are in its model guide; see the
 [documentation index](docs/README.md).
+
+## Roadmap
+
+![Cells roadmap, 11 November 2026: water and cell size, cell replacement and tissue mechanics are in development. Next tests cover memory through cell replacement and more physics comparisons before Jupiter. Longer-term goals are integrated whole-cell models, organs and organ systems.](docs/assets/cells-roadmap.png)
+
+See the [roadmap](docs/ROADMAP.md) for priorities and [progress](PROGRESS.md)
+for current results.
 
 ## References and calibration
 

@@ -195,7 +195,7 @@ for source roles, existing evidence and the path to independent experimental tes
 
 ### Current functionality
 
-![Cells today, 11 November 2026: cell electricity, cell signals and protein assembly. Tested cases agree with BETSE, with more checks ahead. In early tests, voltage patterns held for 70 minutes; memory through cell replacement remains unproven. Runs locally on CPU and L4 GPU; Jupiter tests are still ahead.](assets/cells-current.png)
+![Cells today, 11 November 2026: cell electricity; tissue preparation and interventions; calcium, reactions, fuel and water; simple gene control circuits; protein cage assembly; and saving, restarting and comparing runs. Material, charge and energy checks, with CPU and L4 GPU execution. Capabilities vary by model; whole-cell integration is ongoing.](assets/cells-current.png)
 
 - **Electrical cells and tissues:** ion transport, membrane voltage, pumps,
   channels, gap junctions and extracellular fields in selected model families.
