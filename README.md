@@ -40,17 +40,35 @@ Realism means explicit physical mechanisms, material and energy accounting, and
 calibration against measurements. Bioelectricity, chemistry and assembly provide
 the starting point; metabolism, mechanics, growth and turnover are planned
 extensions. Cells' purpose is to study how these processes work together in the
-same evolving cells and tissues. On the molecular side, the one level we skip is
-protein folding itself. Beneath it, we aim to simulate the gene regulation that
-sets how much of each protein is made. Above it, we aim to simulate the assembly
-of proteins into complexes and molecular machines, from protein cages today
-toward structures such as the proteasome and larger, and how those machines are
-used in cells and tissues ([D140](docs/DECISIONS.md)). When an experiment shows that a mechanism is
+same evolving cells and tissues. When an experiment shows that a mechanism is
 missing, we add it to the engine as a cited, biologically grounded model rather
 than working around it ([D136](docs/DECISIONS.md)). The goal is to find where
 the ideas hold, fail or need revision. See the
 [research background](docs/SCIENTIFIC_BASIS.md) and
 [planned experiments](docs/EXPERIMENTS.md).
+
+## Ambition
+
+Cells starts small on purpose. The first versions work with one cell up to a few
+hundred. The aim at that scale is to reproduce published models and experiments,
+run new ones, and see which mechanisms and equations produce each result. Larger
+tissues and whole organs come later, built from parts that have already held up
+at the smaller scale. The [roadmap](#roadmap) shows the order.
+
+The simulator is modular. New mechanisms are added as separate, versioned models
+or options. Each is checked on its own and stays off unless an experiment selects
+it, so the biology can grow one piece at a time.
+
+On the molecular side, the one level we skip is protein folding itself. Beneath
+it, we aim to simulate the gene regulation that sets how much of each protein is
+made. Above it, we aim to simulate the assembly of proteins into complexes and
+molecular machines, from protein cages today toward structures such as the
+proteasome and larger, and how those machines are used in cells and tissues
+([D140](docs/DECISIONS.md)).
+
+A complete and faithful simulation of a real cell is still a long way off. In our
+view, progress in AI and in mathematics may shorten that road more than it seems
+today.
 
 ## Where things stand (11 November 2026)
 
