@@ -874,13 +874,200 @@ def part_record(args):
     return out
 
 
-PARTS = dict(record=part_record)
+BAND_METHOD = "LSODA"  # band and arms; agrees with Radau on the default (record reference term)
+
+
+def record_file(args):
+    path = Path(args.record) if args.record else Path(args.output) / "prediction_of_record.json"
+    return json.loads(path.read_text())
+
+
+def member(d, values, record, *, method=BAND_METHOD):
+    """Calibrate P_old and A/L for one set of values; Em at J1 from the calibrated run."""
+    started = time.perf_counter()
+    egg, log = calibrated(d, values, method=method, guess=record["a_over_l_m"], step=0.02)
+    hit = [e for e in log if e["a_over_l_m"] == egg.a_over_l_m]
+    if hit:
+        em, rm = hit[-1]["em_at_pulse_V"], hit[-1]["rm_ohm"]
+    else:
+        j1, _ = j1_readout(d, egg, method=method)
+        em, rm = j1["em_V"], j1["rm_ohm"]
+    return dict(
+        em_V=em,
+        rm_ohm=rm,
+        p_old_m_s=egg.p_old,
+        a_over_l_m=egg.a_over_l_m,
+        new_permeability_m_s=list(egg.new_permeability),
+        evaluations=len(log),
+        wall_s=time.perf_counter() - started,
+    )
+
+
+def band_combination(record, base_em, results, d):
+    """Worst-case sum of one-at-a-time shifts (registered band rule)."""
+    shifts = {}
+    for label, r in results.items():
+        name, end = label.split(":")
+        shifts.setdefault(name, {})[end] = r["em_V"] - base_em
+    lo = hi = 0.0
+    per_input = {}
+    for name, ends in shifts.items():
+        values = list(ends.values())
+        down, up = min(0.0, *values), max(0.0, *values)
+        lo += down
+        hi += up
+        per_input[name] = dict(ends, largest_abs_V=max(abs(v) for v in values))
+    e0 = record["prediction_of_record_V"]
+    return dict(lo_V=e0 + lo, hi_V=e0 + hi, width_V=hi - lo, per_input=per_input)
+
+
+def part_band(args):
+    """One-at-a-time band members, the worst-case band, then the corner check of the top three."""
+    d = load_declared()
+    record = record_file(args)
+    out_path = Path(args.output)
+    base_values = scalar_values(d)
+    base = member(d, base_values, record)
+    log_line("band default", base["em_V"], "evaluations", base["evaluations"])
+    results = {}
+    for label, override in band_members(d):
+        results[label] = dict(member(d, scalar_values(d, override), record), override=override)
+        log_line("band", label, results[label]["em_V"], results[label]["evaluations"])
+        (out_path / "band_partial.json").write_text(
+            json.dumps(dict(default=base, members=results), indent=1, default=float) + "\n"
+        )
+    band = band_combination(record, base["em_V"], results, d)
+    top = sorted(band["per_input"], key=lambda k: -band["per_input"][k]["largest_abs_V"])[:3]
+    corners = {}
+    for signs in [(a, b, c) for a in (0, 1) for b in (0, 1) for c in (0, 1)]:
+        override = {}
+        for name, s in zip(top, signs, strict=True):
+            if name == "insertion_schedule":
+                if s:
+                    override["schedule"] = "back_loaded"
+                continue
+            group = "calibration_targets" if name.startswith("rm") else "inputs"
+            override[name] = float(d[group][name]["high" if s else "low"])
+        label = ",".join(f"{n}:{'high' if s else 'low'}" for n, s in zip(top, signs, strict=True))
+        corners[label] = dict(member(d, scalar_values(d, override), record), override=override)
+        log_line("corner", label, corners[label]["em_V"])
+        (out_path / "band_partial.json").write_text(
+            json.dumps(
+                dict(default=base, members=results, corners=corners), indent=1, default=float
+            )
+            + "\n"
+        )
+    shift = record["prediction_of_record_V"] - base["em_V"]
+    corner_em = [c["em_V"] + shift for c in corners.values()]
+    lo = min(band["lo_V"], *corner_em)
+    hi = max(band["hi_V"], *corner_em)
+    return dict(
+        method=BAND_METHOD,
+        rtol=1e-10,
+        prediction_of_record_V=record["prediction_of_record_V"],
+        default_band_method_V=base["em_V"],
+        default=base,
+        members=results,
+        additive=band,
+        top_three=top,
+        corners=corners,
+        corners_outside_additive=[
+            k for k, c in corners.items() if not band["lo_V"] <= c["em_V"] + shift <= band["hi_V"]
+        ],
+        band_lo_V=lo,
+        band_hi_V=hi,
+        band_width_V=hi - lo,
+    )
+
+
+def part_arms(args):
+    """The registered arms (reported only), the J1 limits and the exposed-arm checks."""
+    d = load_declared()
+    record = record_file(args)
+    out = {}
+    for label, override in (
+        ("access_law_constant_field", {"access_law": "constant_field"}),
+        ("cation_selective_seal", {"access_selectivity": "cation_selective"}),
+        ("narrow_gap_0.5um", {"gap_width_m": 0.5e-6}),
+    ):
+        out[label] = dict(member(d, scalar_values(d, override), record), override=override)
+        log_line("arm", label, out[label]["em_V"])
+    values = scalar_values(d)
+    egg = replace(build(d, values), p_old=record["p_old_m_s"], a_over_l_m=record["a_over_l_m"])
+    limits = {}
+    for label, al in (("bath_equivalent_A_over_L_1e-2_m", 1e-2), ("sealed_A_over_L_0", 0.0)):
+        j1, _ = j1_readout(d, replace(egg, a_over_l_m=al), method=BAND_METHOD)
+        limits[label] = dict(em_V=j1["em_V"], rm_ohm=j1["rm_ohm"])
+        log_line("limit", label, j1["em_V"], j1["rm_ohm"])
+    out["limits_at_default_calibration"] = limits
+    # Exposed arms: the new membrane faces the bath (dLB74 -VM and +VM +CCB; areas BdL73
+    # Table II; 0.04 mm2/min from onset until the arm's total; old membrane on the arm's Rm1).
+    j1_s = float(d["time"]["j1_s"])
+    exposed = {}
+    for label, rm1, total, em_measured, rm_measured in (
+        ("-VM", 901e3, 0.33e-6, -0.0600, 336e3),
+        ("+VM+CCB", 779e3, 0.65e-6, -0.0609, 165e3),
+    ):
+        rate = 0.04e-6 / 60.0
+        duration = (total - egg.activation_area_m2) / rate
+        arm = replace(
+            build(d, values),
+            new_faces="bath",
+            schedule=((egg.onset_s, rate), (egg.onset_s + duration, 0.0)),
+        )
+        pair = tuple(d["rm_definition"]["rm1_pulse_pair"])
+        arm = replace(arm, p_old=calibrate_old(arm, rm1, pair, method=BAND_METHOD))
+        j1, _ = j1_readout(d, arm, method=BAND_METHOD)
+        exposed[label] = dict(
+            em_V=j1["em_V"],
+            rm_ohm=j1["rm_ohm"],
+            measured_em_V=em_measured,
+            measured_rm_ohm=rm_measured,
+            area_at_j1_m2=arm.area(j1_s),
+            p_old_m_s=arm.p_old,
+        )
+        log_line("exposed", label, j1["em_V"], j1["rm_ohm"])
+    out["exposed_arms"] = exposed
+    return out
+
+
+def part_timecourse(args):
+    """The default definition (record's calibration) to the 35-min horizon, with and without
+    the pulse train: Em and Rm at every pulse pair, and the J1 readouts."""
+    d = load_declared()
+    record = record_file(args)
+    egg = replace(
+        build(d, scalar_values(d)), p_old=record["p_old_m_s"], a_over_l_m=record["a_over_l_m"]
+    )
+    horizon = float(d["time"]["horizon_s"])
+    j1_s = float(d["time"]["j1_s"])
+    run = simulate(egg, horizon, method=BAND_METHOD, record=(j1_s,))
+    ks = sorted(k for k in run.onset_V if k in run.sample_V and k - 1 in run.sample_V)
+    p = egg.pulses
+    quiet = simulate(
+        replace(egg, pulses=replace(p, enabled=False)), j1_s, method=BAND_METHOD, record=(j1_s,)
+    )
+    return dict(
+        method=BAND_METHOD,
+        times_s=[p.onset(k) for k in ks],
+        em_V=[run.onset_V[k] for k in ks],
+        rm_ohm=[run.rm(k)[0] for k in ks],
+        at_j1=run.at[j1_s],
+        unpulsed_at_j1=quiet.at[j1_s],
+        unpulsed_minus_pulsed_em_at_j1_V=quiet.at[j1_s]["V"] - run.at[j1_s]["V"],
+        steps=run.steps,
+        wall_s=run.wall_s,
+    )
+
+
+PARTS = dict(record=part_record, band=part_band, arms=part_arms, timecourse=part_timecourse)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("parts")
     parser.add_argument("--output", required=True)
+    parser.add_argument("--record", default=None, help="prediction_of_record.json (band, arms)")
     args = parser.parse_args(argv)
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)

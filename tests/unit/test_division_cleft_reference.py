@@ -301,3 +301,20 @@ def test_band_members_follow_the_registered_ranges():
     labels = [label for label, _ in members]
     assert "rm2_target_ohm:low" in labels and "insertion_schedule:back_loaded" in labels
     assert dict(members)["gap_width_m:high"] == {"gap_width_m": 2.5e-6}
+
+
+def test_band_combination_is_the_registered_worst_case_sum():
+    record = {"prediction_of_record_V": -0.0128}
+    base = -0.0128 + 1e-12  # the band integrator's default, a hair off the record
+    results = {
+        "a:low": {"em_V": base - 0.002},
+        "a:high": {"em_V": base + 0.001},
+        "b:low": {"em_V": base + 0.0005},
+        "b:high": {"em_V": base + 0.0015},  # both ends on one side
+        "insertion_schedule:back_loaded": {"em_V": base - 0.0003},
+    }
+    band = ref.band_combination(record, base, results, None)
+    assert band["lo_V"] == pytest.approx(-0.0128 - 0.0023, abs=1e-15)
+    assert band["hi_V"] == pytest.approx(-0.0128 + 0.0025, abs=1e-15)
+    assert band["width_V"] == pytest.approx(0.0048, abs=1e-15)
+    assert band["per_input"]["a"]["largest_abs_V"] == pytest.approx(0.002, abs=1e-15)
