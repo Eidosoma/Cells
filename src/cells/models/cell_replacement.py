@@ -705,10 +705,11 @@ def device_balances(state, p):
 def magnitudes(row, p, *, xp=np):
     """@3's ledger magnitudes plus the replacement terms (first.LEDGERS order).
 
-    Material: removed + supplied amounts. Electrode, global charge and energy (None
-    for @3, whose bounds are fixed) take the booked image charge, the replacement
-    charge and the energy magnitudes, so without events the bounds are @3's exactly
-    (bound + 0). The electrode term is the family's running-ledger allowance: after
+    Material: removed + supplied amounts. Electrode and energy (None for @3, whose
+    bounds are fixed) take the booked image charge and the energy magnitudes; global
+    charge adds the replacement charge to @3's own moved-charge magnitude. Without
+    events every bound is @3's exactly (bound + 0). The electrode term is the
+    family's running-ledger allowance: after
     an image charge is booked, each step's electrode increment is added to a sum of
     that size, rounding eps times it per step.
     """
@@ -716,7 +717,8 @@ def magnitudes(row, p, *, xp=np):
     moved = row.replacement_removed_fmol + row.replacement_supplied_fmol
     result[0] = result[0] + moved
     result[2] = result[2] + xp.sum(moved, axis=1)
-    result[5] = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence) * moved)
+    charge = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence) * moved)
+    result[5] = charge if result[5] is None else result[5] + charge  # @3's moved charge.
     result[4] = row.replacement_image_charge_C
     result[6] = xp.sum(row.replacement_energy_magnitude_pJ)
     return tuple(result)
