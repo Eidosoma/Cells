@@ -1125,8 +1125,8 @@ def main(argv=None):
     jax.config.update("jax_enable_x64", True)
     args.output.mkdir(parents=True, exist_ok=True)
     args.registered = None
-    if protocol is not None and "reference_values_file" in protocol:
-        args.registered = json.loads(Path(protocol["reference_values_file"]).read_text())
+    if protocol is not None:  # Reference values committed in the protocol (mg1_references.py).
+        args.registered = protocol.get("registered_predictions", {}).get("reference_values")
     results, failures = run_parts(args, list(PARTS) if "all" in args.parts else args.parts)
     report = build_report(results, failures, protocol)
     with (args.output / "results.json").open("x") as stream:

@@ -3,10 +3,11 @@
 numpy/scipy (mg1_reference.py) and the analytic values (mg1_theory.py); no Cells
 dynamics or analysis code runs here. The only shared input is the definition JSON,
 built by the driver's honeycomb helpers (preparation geometry). The output is
-committed with the protocol as its registered reference values.
+embedded in the protocol as registered_predictions.reference_values (run it from a
+clean commit and keep its output and revision with the evidence).
 
   PYTHONPATH=src:. taskset -c 5 python -m validation.morphogenesis.mg1_references \\
-      --output validation/morphogenesis/protocols/mg1_reference_values_v1.json
+      --output EVIDENCE_DIR/mg1_reference_values_v1.json
 
 Values:
   barriers   ordered 8 x 8 networks in the incompatible regime (unique minima):
