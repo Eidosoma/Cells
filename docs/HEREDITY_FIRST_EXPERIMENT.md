@@ -8,18 +8,82 @@ single-cell pre-screens are in
 
 ## Why this experiment
 
-E07-v1, "write, release, replace", is the only candidate that tests both
-Plastic Heredity questions in one physical tissue: does a written cellular
-state persist after its cue is removed, and does it survive replacement of its
-carriers? It runs in three pre-registered stages:
+*Plastic Heredity* asks two things about an acquired state, a change a cell picks
+up from its surroundings rather than from its genes:
+1. **Does it last?** Once the signal that caused it is gone, does the cell keep it?
+2. **Does it outlive the cells that hold it?** When those cells die and are
+   replaced by new ones, does the state pass on?
 
-- **A** the E03 core with the E04 commitment readout (write, release, retain);
-- **B** scripted carrier replacement (E05/E07 renewal);
-- **C** E04-extension branches from A/B checkpoints (matched phenotype, different
-  history).
+E07-v1 tests both in one simulated tissue, under the same physics. The plan:
+1. **Write.** A brief signal switches a small disc of cells from their resting
+   voltage (H) to a depolarised voltage (D).
+2. **Release.** The signal stops. Does the disc stay D?
+3. **Replace.** The disc's cells are replaced one by one with fresh resting cells.
+   Does the D pattern survive once none of the original cells is left?
+
+Experiments that test only one of the questions on their own are listed in
+[Experiments](EXPERIMENTS.md) (E03 for lasting, E05 for passing on).
+
+It runs in three pre-registered stages:
+- **A, write and retain:** the write and release steps, plus a check for hidden
+  differences between cells that look the same (E03 and E04 in
+  [Experiments](EXPERIMENTS.md)).
+- **B, renewal:** scripted replacement of the disc's cells (E05 and E07).
+- **C, history:** restarts from saved stage A and B states, comparing cells that
+  look alike but got there by different histories (the E04 extension).
 
 E06 and the BITSEY-geometry E04 need the nominal-clock regulatory graph and stay
 on the BITSEY track.
+
+## Where the design stands (11 November 2026)
+
+Not yet run. Development runs since 8 November changed several assumptions
+behind the protocol below, so the protocol is due to be revised with the user
+before any judged run. Details and evidence are in [Progress](../PROGRESS.md).
+
+**Retention.**
+- **The cue works.** In the full tissue, a brief Na-leak cue writes a D disc
+  within 0.4 s (pilot W1).
+- **Fresh discs hold.** On a simplified sheet, cue-written 37-cell discs held
+  for 70 min at couplings ×0.3, ×0.6 and ×1. A 19-cell disc held at ×0.3 and
+  ×0.6 but was lost after 16.5 min at ×1.
+- **Earlier limits were too pessimistic.** Pre-screen 7 started from fully loaded
+  D cells, and its coupling limits should not be used for cue-written discs.
+
+**Renewal.**
+- **No supported rule has passed.** With newcomers fully coupled on arrival, the
+  disc erodes. A rule that kept the departing cell's junction state renewed one
+  large disc, but it has no biological basis and is excluded (D139).
+- **The literature rule is untested.** In it, newcomers arrive uncoupled and form
+  junctions over tens of minutes. It has not been run under turnover yet. It
+  needs the cell-replacement model, which is in qualification.
+- **Rates may need rethinking.** At 2–20 %/min, newcomers live only 5–50 min,
+  about as long as junction formation takes. The replacement rates may need to be
+  set relative to that time.
+- **B1 needs strengthening.** One turnover is not a steady state: under the
+  excluded rule a disc passed B1 after one turnover and collapsed in the second.
+
+**Volume.**
+- **Water and volume are now in the engine** (D133 had deferred them), so the
+  fixed-volume cap below can be revisited.
+- **With water,** a D cell swells, to about 1.76× its volume without regulation
+  and 1.1–1.5× with K–Cl cotransport.
+- **Water runs on fresh discs** are in progress.
+
+**Cost.**
+- **On the L4,** a batched world-step costs 2.28 ms at 256 worlds, or 4.0–4.5 ms
+  with observers. Tier 1 is therefore about 4,100–7,200 L4 GPU-hours, against
+  the 560–840 estimated below.
+- **GH200 throughput is unmeasured.**
+
+**Engine gaps from the build plan.**
+
+| Gap | Status |
+| --- | --- |
+| G1 channel populations and G1b parity | Done |
+| G4 batched worlds | Done |
+| G2 carrier replacement | Built; qualification in progress |
+| G6 gate-rate control | Not built |
 
 ## What the pre-screen found (single-cell, design inputs only)
 
@@ -37,7 +101,7 @@ on the BITSEY track.
 - Voltage-gated junctions act in 0.05–0.4 s and close to about 0.1 at
   |Vj| ≥ 55 mV, so written domains may self-insulate.
 
-## Protocol (pre-registered before running)
+## Protocol (draft of 8 November, to be revised before registration)
 
 | Element | Specification |
 | --- | --- |
