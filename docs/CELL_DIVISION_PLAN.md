@@ -93,9 +93,25 @@ Verification report and sourced tables:
   - whether the new membrane differs from the old;
   - whether the cleft between blastomeres is sealed;
   - under a sealed cleft, the membrane and junction rules may share a parameter.
-- **Open:** three J Cell Biol papers are readable only through the PMC open-access
-  bucket, which needs the user's approval. The new-membrane area per cleavage was not
-  found.
+- **Three J Cell Biol papers (read with the user's approval, 11 November).** de Laat &
+  Bluemink 1974, Bluemink & de Laat 1973 and Kline et al. 1983
+  ([notes](/mnt/workspaces/Cells/cell-division-20261111-01/verification/jcb-papers-report.md)).
+  - **New membrane differs from old: resolved.** It is low-resistance (1.36–1.82
+    kΩ·cm², against 43–74 kΩ·cm² for the egg membrane) and mainly K-selective.
+    - Three treatment groups give the same result with the same impalement.
+    - A non-invasive probe shows outward current only at new membrane, which Ba²⁺
+      reverses.
+  - **Amount and timing:**
+    - about 1.39 mm² of new membrane by the second cleavage, probably both faces;
+    - insertion starts 4–8 min after the furrow appears and grows at about
+      0.04–0.06 mm²/min;
+    - only about 0.14 mm² (10%) is effectively open to the bath in intact eggs.
+  - **The cleft is narrowed but not resolved.** No tight junctions; an open lumen about
+    2 µm wide. It is to be modelled as a restricted compartment with its own access,
+    calibrated on input resistance and tested on Em.
+  - **Second judged dataset:** dLB74 Table I gives Em −20.3 ± 0.8 mV (SE, n = 20) with
+    Rm 488 ± 28 kΩ from the same eggs at onset of second cleavage.
+  - **Can fail:** a bath-equivalent cleft would predict −37 to −44 mV.
 
 ## Order of work (lead's ranking under D141)
 
