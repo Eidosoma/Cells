@@ -425,6 +425,14 @@
     }
    },
    {
+    "file": "tests/unit/test_apical_vertex.py",
+    "seconds": 15.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_controls.py",
     "seconds": 9.32,
     "exit_code": 0,
@@ -2563,6 +2571,38 @@
     }
    },
    {
+    "file": "tests/unit/test_apical_vertex_events.py",
+    "seconds": 63.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_apical_vertex_padding.py",
+    "seconds": 47.05,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_apical_vertex_runs.py",
+    "seconds": 50.21,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_apical_vertex_steps.py",
+    "seconds": 54.7,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_pool.py",
     "seconds": 27.9,
     "exit_code": 1,
@@ -2642,11 +2682,43 @@
     }
    },
    {
+    "file": "tests/unit/test_junction_tension_inference.py",
+    "seconds": 22.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_local_channel_design.py",
     "seconds": 33.26,
     "exit_code": 0,
     "counts": {
      "passed": 33
+    }
+   },
+   {
+    "file": "tests/unit/test_mechanical_equilibrium.py",
+    "seconds": 47.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_mechanical_equilibrium_failures.py",
+    "seconds": 54.49,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_mechanical_equilibrium_paths.py",
+    "seconds": 52.9,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {

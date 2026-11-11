@@ -46,7 +46,7 @@ starts, and production design is deferred until parity is established.
 | 7 | Stage B: neutral names; physiology stack moved to `validation/betse` | **Done** (tag `stage-b-neutral-names-2026-11-09`) |
 | 8 | Re-host the short decodability assays on Cells physics | G0 probe viable; channels next |
 | 9 | First heredity experiment, E07-v1 ([design](docs/HEREDITY_FIRST_EXPERIMENT.md)) | Channel model (G1), batched worlds (G4), the ledger rounding fix and @3 device checks landed; @3 on the L4 is 2.28 ms per world-step at 256 worlds (tier 1 about 4,100 L4 GPU-hours execute-only, about 7,200 end to end); GH200 throughput unmeasured. **Pre-screens 7–8 (retention, rim renewal) are in doubt**: they start from the fully loaded stationary D composition (+31% osmolarity), while cue-written discs carry H composition and behave differently (W1 sheet check, pre-screen 9); the design choice waits on fresh-disc runs |
-| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); **MG1 (2-D vertex mechanics) judged run failed** (52/57); v2 registered after diagnosis and a full dry run, its judged run under way |
+| 10 | Morphogenesis track ([plan](docs/MORPHOGENESIS_PLAN.md); D134) | **MG0a and MG0b passed** (MG0 complete); **MG1 (2-D vertex mechanics) passed v2** (57/57; weaker evidence after the failed v1, 52/57) and is landed on main |
 | 11 | Optional long-horizon modes (D135): E fixed points and continuation, C projective integration | **E qualified**; **C qualification qual-01 failed** (absolute caps; accuracy against its own estimator passed); F2 not evaluable (no lingering scale found) |
 
 ## Runs
@@ -111,6 +111,29 @@ machine-readable inputs, results, checks and failures.
       line. The drafts are kept beside them.
     - **What this establishes:** every parity rung so far now passes on CPU and on the
       L4.
+- **MG1 qualified and landed (11–12 November).** `apical_vertex_mechanics@1`,
+  `mechanical_equilibrium_analysis@1` and `junction_tension_inference@1` passed protocol
+  v2.
+  - **Judged run:** 57 of 57 criteria, run once (judged-02, 20:27–22:42 UTC) from a clean
+    snapshot of `840488e`
+    ([results](/mnt/workspaces/Cells/morphogenesis-mg1-20261111-01/judged-02/results/results.json),
+    [margins](/mnt/workspaces/Cells/morphogenesis-mg1-20261111-01/judged-02/margins.json)).
+    Re-judging the saved results reproduces the verdict.
+  - **Weaker evidence by its own rules:** v2 follows the failed judged-01, and values were
+    seen while diagnosing it (disclosed in v2).
+  - **Tightest margins:**
+    - the barrier vanishes at p0 = 3.82, 0.0081 above the window's 3.8119 lower bound;
+    - Euler order 0.998;
+    - I3 slopes 0.997–1.002 (noise 1e-9 to 1e-7);
+    - small-cut recoil slope 0.999.
+  - **Other values:** rigidity vanishes at p0 = 3.7224 for every r; 144 barrier paths, none
+    failed (max |F| 9.8e-12).
+  - **Gate:** tier 1+2 from a clean snapshot of the merge `90ceec5` (337 files) matches the
+    record. The 9 new test files pass in full and enter the tier record (1 in tier 1,
+    8 in tier 2; 272/74/196).
+  - **Process slip, disclosed:** the merge was pushed at about 23:00 UTC together with
+    J1's registration, before this gate finished at 23:48. The gate then passed with no
+    changes, so nothing was reverted.
 - **MG1 v2 registered; judged run under way (11 November).**
   - **The two failures were diagnosed:**
     - The barrier crash was a genuinely flat landscape where a compatible start
