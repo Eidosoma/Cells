@@ -3,11 +3,14 @@
 Electrode ledger: each IMEX step books the change of the held nodes' plate charges
 that its start and end charge states determine, so the ledger telescopes onto the
 electrode check's reference (it drifted linearly with the step count before). It
-feeds no rate. Seeded errors of physical size, a per-step leak of 1e-12 of a step's
-transfer and a single mis-signed transfer, still fail the host and the device
-checks at the same row. reaction_transport@1: the allowance grows linearly with
-the step count at the derived worst-case rate, and the resulting detection limit
-is stated. A pinned junction gate sets no gate-rate step bound.
+feeds no rate. Seeded errors of physical size, a per-step electrode leak of 1e-12
+of a step's transfer and a single mis-signed transfer, still fail the host and the
+device checks at the same row. Global charge allows its rounding per accepted step
+like the running ledgers: the seeded supply leaks now pass, and the stated
+persistent-leak and one-off floors are tested. reaction_transport@1: the allowance
+grows linearly with the step count at the derived worst-case rate, and the
+resulting detection limit is stated. A pinned junction gate sets no gate-rate step
+bound.
 """
 
 import math
@@ -180,16 +183,11 @@ def seeded(history, p, fault, row, size=1e-12):
 
 
 @pytest.mark.parametrize("version", [1, 2, 3])
-@pytest.mark.parametrize("fault", ["supply_leak", "electrode_leak", "mis_signed"])
+@pytest.mark.parametrize("fault", ["electrode_leak", "mis_signed"])
 def test_seeded_errors_fail_host_and_device_at_the_same_row(version, fault, runs):
     model, spec, _, history, p = runs[version]
     row = 100
-    # With Kir2.1 and NaV1.2 (@3) the largest per-step K exchange at the bath,
-    # which sizes the leak, is 11x smaller than without channels: a 1e-12 supply
-    # leak reaches 0.35 of the global-charge bound in 2 s (host and device agree
-    # that it passes), so @3's supply leak is 1e-11 of a step.
-    size = 1e-11 if version == 3 and fault == "supply_leak" else 1e-12
-    corrupted = seeded(history, p, fault, row, size)
+    corrupted = seeded(history, p, fault, row)
     host = host_first_failure(model, spec, corrupted)
     device = device_rows(model, spec, corrupted, p)
     assert host[0] is not None and device[0] is not None, (host, device)
@@ -201,6 +199,46 @@ def test_seeded_errors_fail_host_and_device_at_the_same_row(version, fault, runs
         # a row or two. The leak is caught within 2 s by the same check.
         assert host[1] == device[1] and abs(host[0] - device[0]) <= 3, (host, device)
         assert row < host[0] < 2000 and host[1].endswith(("global_charge", "electrode")), host
+
+
+# Supply leaks and the global-charge floors. The global-charge allowance grows by
+# LEDGER_STEP_ROUNDING eps x moved charge (surface_pump.moved_charge) per accepted
+# step, so a persistent supply leak is caught only above about 2.5 eps x moved
+# charge per step; a one-off error must exceed (256 + 2.5 n) eps x moved charge
+# + 3e-25 C after n steps. With Kir2.1 and NaV1.2 (@3) the largest per-step K
+# exchange at the bath, which sizes a seed, is 11x smaller than without channels,
+# so @3's seed is 1e-11 of a step and @1/@2's 1e-12.
+SUPPLY_LEAK_SEED = {1: 1e-12, 2: 1e-12, 3: 1e-11}
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_seeded_supply_leaks_stay_below_the_global_charge_floor(version, runs):
+    """The seeded supply leaks are 0.19 (@1, @2) and 0.32 (@3) of the per-step floor.
+
+    Before the per-step allowance they failed global_charge at rows 430 and 401
+    of this 2 s run (reduced sensitivity, recorded at landing). Now they stay
+    below the bound (at most 0.39 and 0.53 of it), on the host and the device.
+    """
+    model, spec, _, history, p = runs[version]
+    corrupted = seeded(history, p, "supply_leak", 100, SUPPLY_LEAK_SEED[version])
+    assert host_first_failure(model, spec, corrupted) == (None, None)
+    assert device_rows(model, spec, corrupted, p) == (None, None)
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_supply_leak_at_twice_the_per_step_floor_fails_host_and_device(version, runs):
+    """A supply leak of 2 x 2.5 eps x the run's moved charge per step fails global_charge."""
+    model, spec, _, history, p = runs[version]
+    bath = int(np.flatnonzero(p.reservoir)[0])
+    step = np.max(np.abs(np.diff(history.reservoir_supplied[:, 1, bath])))  # As seeded() sizes.
+    last = type(history)(*(v[-1] for v in history))
+    floor = surface_pump.LEDGER_STEP_ROUNDING * EPS * surface_pump.moved_charge(last, p)
+    corrupted = seeded(history, p, "supply_leak", 100, 2 * floor / (CHARGE_PER_FMOL * step))
+    host = host_first_failure(model, spec, corrupted)
+    device = device_rows(model, spec, corrupted, p)
+    message = surface_pump.LEDGER_MESSAGE + "global_charge"
+    assert host[1] == device[1] == message and abs(host[0] - device[0]) <= 3, (host, device)
+    assert 100 < host[0] < 2000, host
 
 
 def test_seeded_leak_size_is_physical(runs):
@@ -258,6 +296,64 @@ def test_work_ledger_allowance_detects_twice_its_floor_at_each_horizon(version, 
         failed = np.asarray(failed)
         assert bool(failed.any()) == detected
         assert not detected or model.DEVICE_CHECKS[int(np.argmax(failed))] == "metabolic_work"
+
+
+def seeded_charge_verdicts(runs, version, seconds, factor):
+    """(host message, first failed device check) for a K supply error of factor x the allowance.
+
+    The allowance is global charge's at the run's last row with n = seconds / 1 ms
+    accepted steps. The error is charge-weighted K supply at a held bath.
+    """
+    model, spec, history, p, row, _ = metabolic_case(runs, version)
+    n = round(seconds / 1e-3)
+    moved = surface_pump.moved_charge(row, p)
+    allowance = (
+        surface_pump.global_charge_bound(row, p)
+        + surface_pump.LEDGER_STEP_ROUNDING * EPS * n * moved
+    )
+    bath = int(np.flatnonzero(p.reservoir)[0])
+    one = type(history)(*(v[-1:] for v in history))
+    supplied = np.array(one.reservoir_supplied, copy=True)
+    supplied[0, 1, bath] += factor * allowance / CHARGE_PER_FMOL  # K, z = +1.
+    seeded = one._replace(reservoir_supplied=supplied)
+    try:
+        model.check_values(seeded, spec, steps=[n])
+        message = None
+    except NumericalError as error:
+        message = str(error).removeprefix(surface_pump.LEDGER_MESSAGE)
+    checks = jax.jit(model.device_checks)
+    seeded_row = type(seeded)(*(v[0] for v in seeded))
+    failed, _ = checks(seeded_row, seeded_row, p, model.device_check_constants(spec), n)
+    failed = np.asarray(failed)
+    device = model.DEVICE_CHECKS[int(np.argmax(failed))] if failed.any() else None
+    return message, device
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+@pytest.mark.parametrize("seconds", [1, 60])
+def test_global_charge_allowance_detects_twice_its_floor_at_each_horizon(version, seconds, runs):
+    """Global charge allows (256 + 2.5 n) eps of the moved charge: 2x fails, 0.5x passes.
+
+    Below the material allowance at these horizons, so only the charge
+    accounting sees the error; host and device agree.
+    """
+    for factor, expected in ((2.0, "global_charge"), (0.5, None)):
+        assert seeded_charge_verdicts(runs, version, seconds, factor) == (expected, expected)
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_hour_scale_charge_error_is_caught_first_by_the_material_ledger(version, runs):
+    """After 1 h of steps the charge allowance (2e-9 of the moved charge) exceeds one
+    species' material allowance, so twice it in K supply fails the outside ledger first."""
+    assert seeded_charge_verdicts(runs, version, 3600, 2.0) == ("outside", "outside")
+
+
+def test_global_charge_detection_floor_is_stated():
+    """(256 + 2.5 n) eps: 6.1e-13 after 1 s, 3.3e-11 after 1 min, 2.0e-9 after 1 h (1 ms)."""
+    for seconds, floor in ((1, 6.1e-13), (60, 3.3e-11), (3600, 2.0e-9)):
+        n = round(seconds / 1e-3)
+        rounding = surface_pump.GLOBAL_CHARGE_ROUNDING + surface_pump.LEDGER_STEP_ROUNDING * EPS * n
+        assert math.isclose(rounding, floor, rel_tol=0.02)
 
 
 def test_work_ledger_bound_scales_with_the_row_step_count(runs):
