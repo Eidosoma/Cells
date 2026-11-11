@@ -50,7 +50,7 @@ de Laat, Buwalda & Habets 1974, Exp Cell Res 89:1. Marks: **V** read in the full
   ledger at most 1% of its bound. It found one magnitude problem, at the definition check:
   a fixed 1e-20 C bound below the float64 resolution of an egg's fixed background.
 
-**Decisions for the user**
+**Decisions for the user** (decided 11 November 2026, D143: decision 1 as "re-express everything now"; decisions 2–4 taken as the lead's stated defaults)
 1. Adopt the composite model with operators as the D142 answer, and let water@1 and
    replacement@1 be re-expressed through it under bitwise guards (§3.6). The alternative,
    keeping them frozen and composing only new IDs, duplicates their laws.
@@ -722,7 +722,7 @@ and its potential (Slack & Warner 1973) are in the parameter table.
 | --- | --- | --- |
 | S0 (done) | Parameter table v2; scale smoke test | – |
 | S0b (next, before the composer) | (1) R-full, the numpy/scipy reference of the cleft egg, and J1's prediction band from it under the declared defaults; (2) if a static cleft egg can be written as a plain `@3` definition (a new-membrane patch facing a finite outside node with one face to the bath), the step study at 1, 0.5 and 0.25 ms. An implicit membrane–cleft term would change the inner solver, so this is learned before S1; (3) Rm as the simulated pulse response, and the current-injection gap; (4) the smoke test extended to J1's 35-min horizon | 2–3 days |
-| S1 composer | Operator contract, composite model, @3 adapter. Re-express water@1, @2 and replacement@1 bitwise. Tier gate | 2–3 agent-days |
+| S1 composer | Operator contract, composite model, @3 adapter. Re-express water@1, @2 and replacement@1 bitwise now (D143); a model whose guard fails stays frozen. Tier gate | 2–3 agent-days |
 | S2 membrane state | Areas, capacitances and abundances as entity state; insertion with the §5.1 law; capacitor factor on the device. Analytic and bitwise tests | 2 days |
 | S3 cleft egg | Lumen operator and access face; the step study (stiffness); development calibration of A/L; R-full | 3 days, plus CPU hours |
 | S4 J1 | Protocol registered before the run (tolerances: step term, reference term, w and c_new bands); judged run from a clean snapshot | 2 days |

@@ -4675,6 +4675,27 @@ ad-hoc, object oriented multiscale and clean".
   interfaces rather than a new model family for each combination.
 - **First application:** cell division (D141).
 
+## D143: One composite tissue model, adopted now
+
+2026-11-11, user decision on the [cell-division design note](CELL_DIVISION_DESIGN.md):
+"Re-express everything now".
+- **The composite.** One composite pump-tissue model runs `resolved_pump_tissue@3`'s own
+  step plus declared operators. Water, cell replacement, division, and later growth and
+  mechanics are operators, and new combinations are definitions rather than model
+  families (D142).
+- **Now, not later.** The composer stage rebuilds the qualified `resolved_pump_water@1`,
+  `resolved_pump_water@2` and `resolved_pump_replacement@1` through the composite at
+  once.
+  - Each must be bitwise equal to its frozen model on its own test and qualification
+    worlds before its module becomes a thin composition.
+  - If a guard fails, that model stays frozen and the failure is reported. Integration
+    grants no new acceptance.
+- **Lead defaults stated with this decision (the user may object):**
+  - J1 is the first judged run;
+  - the first slice's stated limits are accepted;
+  - unqualified operator combinations may run only as labelled development runs, with
+    judged status only from registered protocols.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
