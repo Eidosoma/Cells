@@ -9,6 +9,14 @@ population format of resolved_tissue@5 and later). The experiment adds
 execution ``channel_capacity``. With no channels the identity reproduces
 resolved_pump_tissue@2.
 
+An optional model key ``junction_heat_booking`` selects how IMEX steps book
+junction heat. The default, ``explicit_tableau`` (omitted from definitions, so
+default fingerprints are unchanged), books it with the tableau's explicit
+weights like every other route. ``trapezoid_nonnegative@1`` books
+dt (q_start + q_end) / 2 from the junction powers at the step's start and end
+states, which cannot be negative; trajectories and every other booking are the
+default's (models/surface_pump_v3.imex_step).
+
 The gate laws are the existing Cells kinetics under neutral IDs (the stage-B
 proposals in stage-b-plan-20261108-01): Kv1.5 m*h (processes/voltage_gates.py),
 Kir2.1 m*h^2 (processes/potassium_channels.py) and NaV1.2 m^3*h
@@ -37,6 +45,9 @@ KIR2P1_LAW_ID = "kir2p1_mh2@1"
 NAV1P2_LAW_ID = "nav1p2_m3h_regularized@1"
 KLEAK_LAW_ID = "kleak_always_open@1"
 NALEAK_LAW_ID = "naleak_always_open@1"
+DEFAULT_JUNCTION_HEAT = "explicit_tableau"
+TRAPEZOID_JUNCTION_HEAT = "trapezoid_nonnegative@1"
+JUNCTION_HEAT_BOOKINGS = (DEFAULT_JUNCTION_HEAT, TRAPEZOID_JUNCTION_HEAT)
 # Codes 0-2 are those of processes/sodium_channels.LAW_CODES, whose dispatch the
 # model reuses; 3 and 4 are gate-free leaks. Padding slots are inactive, not a code.
 LAW_CODES = {KV1P5_LAW_ID: 0, KIR2P1_LAW_ID: 1, NAV1P2_LAW_ID: 2, KLEAK_LAW_ID: 3, NALEAK_LAW_ID: 4}
@@ -66,6 +77,7 @@ class SurfacePumpChannelModel:
     faces: tuple
     gauge_reference: str | None
     channels: tuple[kinetic.ChannelPopulation, ...]
+    junction_heat_booking: str = DEFAULT_JUNCTION_HEAT
 
 
 @dataclass(frozen=True)
@@ -150,6 +162,8 @@ def to_dict(spec):
     raw = second.to_dict(projection(spec))
     raw["model"]["id"] = MODEL_ID
     raw["model"]["channels"] = [channel_to_dict(p) for p in m.channels]
+    if m.junction_heat_booking != DEFAULT_JUNCTION_HEAT:
+        raw["model"]["junction_heat_booking"] = m.junction_heat_booking
     raw["experiment"]["channel_controls"] = [
         dict(channel_id=p.id, schedule=[asdict(c) for c in g])
         for p, g in zip(m.channels, e.channels, strict=True)
@@ -172,6 +186,11 @@ def parse(data):
         raise ConfigError("Declare channels, channel_controls and channel_capacity")
     channels, controls = m.pop("channels"), e.pop("channel_controls")
     capacity = x.pop("channel_capacity")
+    booking = m.pop("junction_heat_booking", DEFAULT_JUNCTION_HEAT)
+    if type(booking) is not str or booking not in JUNCTION_HEAT_BOOKINGS:
+        raise ConfigError("junction_heat_booking must be " + " or ".join(JUNCTION_HEAT_BOOKINGS))
+    if booking != DEFAULT_JUNCTION_HEAT and x.get("solver") == "rk4":
+        raise ConfigError("A junction-heat booking option requires an IMEX solver")
     if type(channels) is not list:
         raise ConfigError("channels requires an explicit list")
     m["id"] = second.MODEL_ID
@@ -201,9 +220,10 @@ def parse(data):
         **{
             k: getattr(model, k)
             for k in SurfacePumpChannelModel.__dataclass_fields__
-            if k != "channels"
+            if k not in ("channels", "junction_heat_booking")
         },
         channels=parsed,
+        junction_heat_booking=booking,
     )
     experiment = Experiment(
         **{

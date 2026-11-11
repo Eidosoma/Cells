@@ -113,7 +113,7 @@ def calcium_world(raw):
     return raw
 
 
-def definition(model, *, steps, backend, scale=1.0, observe_every=None):
+def definition(model, *, steps, backend, scale=1.0, observe_every=None, junction_heat=None):
     end = steps * 1e-3
     every = steps if observe_every is None else observe_every
     times = [k * every * 1e-3 for k in range(steps // every)] + [end]
@@ -125,6 +125,8 @@ def definition(model, *, steps, backend, scale=1.0, observe_every=None):
         )
         for channel in raw["model"]["channels"]:
             channel["max_permeability_m_per_s"] *= scale
+        if junction_heat is not None:  # @3's opt-in junction-heat booking.
+            raw["model"]["junction_heat_booking"] = junction_heat
     else:
         raw = world.definition(
             dt=1e-3,
@@ -139,7 +141,12 @@ def definition(model, *, steps, backend, scale=1.0, observe_every=None):
 
 
 def batch(args, steps):
-    options = dict(steps=steps, backend=args.backend, observe_every=args.observe_every)
+    options = dict(
+        steps=steps,
+        backend=args.backend,
+        observe_every=args.observe_every,
+        junction_heat=args.junction_heat,
+    )
     if args.heterogeneous:
         # A 0-20% spread of pump capacity; each world is parsed separately.
         sims = [
@@ -220,6 +227,7 @@ def part_vector(args):
 
     label = f"vector-model{args.model}-worlds{args.worlds}"
     label += "-heterogeneous" if args.heterogeneous else ""
+    label += "-junction-trapezoid" if args.junction_heat else ""
     report = dict(
         part="vector",
         model=args.model,
@@ -719,6 +727,9 @@ def main():
     parser.add_argument("--dcgm-root")
     parser.add_argument("--heterogeneous", action="store_true")
     parser.add_argument("--observe-every", type=int, help="observation spacing in steps")
+    parser.add_argument(
+        "--junction-heat", help="model 3: junction_heat_booking (e.g. trapezoid_nonnegative@1)"
+    )
     args = parser.parse_args()
     Path(args.output).mkdir(parents=True, exist_ok=True)
     label = f"{args.part}-{args.backend}-model{args.model}-worlds{args.worlds}"

@@ -46,6 +46,7 @@ from cells.core.surface_pump_v3_spec import (
     LAW_CODES,
     MODEL_ID,
     NAV1P2_LAW_ID,
+    TRAPEZOID_JUNCTION_HEAT,
     Control,
     projection,
 )
@@ -74,7 +75,14 @@ STATE_AXES = second.STATE_AXES | {
     "channel_dissipated_energy_pJ": ["species", "channel_slot"],
 }
 STATE_TYPE = NamedTuple("SurfacePumpChannelState", [(k, object) for k in STATE_AXES])
-CHANNEL_LAYOUT_FIELDS = ("channel_laws", "channel_relative_permeability", "channel_gate_active")
+# junction_heat_trapezoid: one element with the trapezoid_nonnegative@1 junction-heat
+# booking, none by default, so the step's branch is static (shape, not value).
+CHANNEL_LAYOUT_FIELDS = (
+    "channel_laws",
+    "channel_relative_permeability",
+    "channel_gate_active",
+    "junction_heat_trapezoid",
+)
 LAYOUT_TYPE = NamedTuple(
     "SurfacePumpChannelLayout",
     [
@@ -141,6 +149,7 @@ def initial_values(spec):
         channel_laws=np.zeros(nc, dtype=np.int64),
         channel_relative_permeability=np.zeros((s, nc)),
         channel_gate_active=np.zeros((2, nc), dtype=bool),
+        junction_heat_trapezoid=np.zeros(int(m.junction_heat_booking == TRAPEZOID_JUNCTION_HEAT)),
     )
     gate, mids = np.zeros((2, nc)), [p.id for p in m.membranes]
     for i, c in enumerate(m.channels):
@@ -661,10 +670,54 @@ def imex_step(state, dt, control, p, *, xp=jnp):
         + 1e-3 * xp.sum(mu * (dt * applied("reservoir_supplied")), axis=0),
         electrode_work_pJ=state.electrode_work_pJ + 1e12 * p.boundary_V * electrode,
     )
+    if p.junction_heat_trapezoid.shape[0]:  # trapezoid_nonnegative@1 (a static choice).
+        # The tableau's explicit weights (delta, 1 - delta), delta < 0, book a negative
+        # junction heat increment where a junction's power falls by more than 59% in a
+        # step (its voltage crossing zero). This booking instead averages the start
+        # and end states' junction powers, both >= 0 (sum_s J_s dmu_s with J_s and dmu_s
+        # of one sign); the end state's at its last-stage potentials, which satisfy
+        # C phi = its charges. Only this ledger changes: the state is the default's.
+        end_power = junction_heat_rate(stage, potential, control, p, xp=xp)
+        stage = stage._replace(
+            junction_dissipated_energy_pJ=state.junction_dissipated_energy_pJ
+            + 0.5 * dt * (explicit[0].junction_dissipated_energy_pJ + end_power)
+        )
     valid &= domain_valid(stage, p, p.active, xp=xp)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))
     return jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage), valid
+
+
+def junction_heat_rate(state, potential, control, p, *, xp=jnp):
+    """Each junction's dissipation (pJ/s) at the given node potentials.
+
+    The junction part of numerics/surface_transport.transport: constant-field
+    flux (coupling/selective.selective_flux) at the gated opening times the
+    species' electrochemical potential difference, summed over species.
+    """
+    s = tissue.field_layout(p).surface
+    ci, _ = physical_amounts(state, p)
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    active = s.junction_active
+    left = xp.where(active, ci[:, s.junction_sender], 1.0)
+    right = xp.where(active, ci[:, s.junction_receiver], 1.0)
+    dv = xp.where(active, potential[s.junction_sender] - potential[s.junction_receiver], 0.0)
+    mu = R * s.temperature * (xp.log(left) - xp.log(right)) + s.valence * F * dv
+    flux = selective_flux(
+        left,
+        right,
+        dv,
+        s.valence,
+        s.temperature,
+        s.junction_area,
+        s.junction_permeability,
+        0.0,
+        1.0,
+        control.junction * state.junction_gate,
+        xp=xp,
+    )
+    flux, mu = xp.where(active, flux, 0.0), xp.where(active, mu, 0.0)
+    return 1e-3 * xp.sum(flux * mu, axis=0)
 
 
 def checked_step(state, dt, control, p, active):
@@ -944,4 +997,5 @@ def summarize(history, diagnostics, spec):
         "calcium_pump_law": calcium_atpase.LAW_ID,
         "channel_laws": {c.id: c.kinetic_law for c in spec.model.channels},
         "membrane_transfer_ledger": "baseline passive only; channel and pump ledgers separate",
+        "junction_heat_booking": spec.model.junction_heat_booking,
     }
