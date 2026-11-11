@@ -189,6 +189,10 @@ def event_index(spec, time):
 
 
 def control_values(spec, times):
+    from cells.core import apical_vertex_spec as apical_vertex
+
+    if isinstance(spec.model, apical_vertex.ApicalVertexModel):
+        return apical_vertex.control_values(spec, times)
     from cells.core import cell_replacement_spec as replacement
     from cells.core import surface_pump_v2_spec as pump_v2
     from cells.core import surface_pump_v3_spec as pump_v3
