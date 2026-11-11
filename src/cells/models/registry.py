@@ -685,6 +685,7 @@ def get_model(spec):
         from cells.models import environment_barrier_interventions
 
         return environment_barrier_interventions
+    from cells.core.cell_replacement_spec import CellReplacementModel
     from cells.core.surface_pump_spec import SurfacePumpModel
     from cells.core.surface_pump_v2_spec import SurfacePumpModel as SurfacePumpModelV2
     from cells.core.surface_pump_v3_spec import SurfacePumpChannelModel
@@ -699,6 +700,10 @@ def get_model(spec):
         from cells.models import surface_pump_water
 
         return surface_pump_water
+    if isinstance(spec, CellReplacementModel):
+        from cells.models import cell_replacement
+
+        return cell_replacement
     if isinstance(spec, SurfacePumpChannelModel):
         from cells.models import surface_pump_v3
 
