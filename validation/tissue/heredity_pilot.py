@@ -1668,16 +1668,22 @@ class Observer:
         ends = {c.time for c in window.checkpoints.values()}
         if self.snapshots and len(ends) == 1:
             end = ends.pop()
-            if any(abs(end - t) < 0.5 * DT for t in self.snapshots):
-                from cells.batch_io import write_batch_snapshot
+            due = [t for t in self.snapshots if end >= t - 0.5 * DT]
+            if due:
+                self.snapshot(window)
+                self.snapshots = [t for t in self.snapshots if t not in due]
 
-                self.save()
-                write_batch_snapshot(
-                    self.output.parent / "snapshots" / f"t{end:09.3f}",
-                    self.batch,
-                    dict(window.checkpoints),
-                )
-                self.snapshots = [t for t in self.snapshots if abs(end - t) >= 0.5 * DT]
+    def snapshot(self, window):
+        """A complete cohort snapshot at the window's end (a resume point)."""
+        from cells.batch_io import write_batch_snapshot
+
+        end = max(c.time for c in window.checkpoints.values())
+        path = self.output.parent / "snapshots" / f"t{end:09.3f}"
+        if path.exists():
+            return path
+        self.save()
+        write_batch_snapshot(path, self.batch, dict(window.checkpoints))
+        return path
 
     def save(self):
         for wid in self.meta:
@@ -1712,6 +1718,53 @@ def run_batch(spec, policy, observer, checkpoints=None):
 
     try:
         return run_vector_windowed(spec, policy, checkpoints, sink=observer), None
+    except WorldCheckError as error:
+        return None, dict(
+            error=repr(error),
+            world_id=error.world_id,
+            step_index=error.step_index,
+            time_interval=error.time_interval,
+            checks=error.checks,
+            traceback=traceback.format_exc(),
+        )
+    except Exception as error:
+        return None, dict(error=repr(error), traceback=traceback.format_exc())
+    finally:
+        observer.close()
+
+
+def run_segment(spec, policy, observer, checkpoints, stop_time):
+    """Windows of a vectorized run up to stop_time (s), then a snapshot; failures kept.
+
+    iter_vector_windows is consumed window by window; the first window ending at
+    or after stop_time ends the segment with a cohort snapshot there (the resume
+    point for the next segment, --resume). Returns (summary, failure).
+    """
+    from cells.core.vector_windows import WorldCheckError, iter_vector_windows
+    from cells.core.windows import merge_diagnostics
+
+    timings, diagnostics, executed, last, end = {}, {}, 0, None, None
+    try:
+        for window in iter_vector_windows(spec, policy, checkpoints):
+            observer(window)
+            for name, value in window.timings.items():
+                timings[name] = timings.get(name, 0.0) + value
+            for identity, values in window.diagnostics.items():
+                merge_diagnostics(diagnostics.setdefault(identity, {}), values)
+            executed += window.resources["executed_world_steps"]
+            last = window
+            end = max(c.time for c in window.checkpoints.values())
+            if stop_time is not None and end >= stop_time - 0.5 * DT:
+                break
+        snapshot = None if last is None else str(observer.snapshot(last))
+        return dict(
+            timings=timings,
+            diagnostics={str(k): v for k, v in diagnostics.items()},
+            executed_world_steps=executed,
+            end_time_s=end,
+            snapshot=snapshot,
+            checkpoints=None if last is None else dict(last.checkpoints),
+        ), None
     except WorldCheckError as error:
         return None, dict(
             error=repr(error),
@@ -1862,6 +1915,43 @@ def run_steps(args, prepared):
     return on, off, end
 
 
+# The full-tissue hold (run --predictions hold): written before the run from the
+# held-bath sheet results; development analysis, nothing is judged against it.
+HOLD_PREDICTIONS = dict(
+    kind="cells.heredity_pilot_w1_full_tissue_hold_predictions@1",
+    status="written before the full-tissue hold run; development analysis, not judged",
+    world="825-node heterogeneous tissue (seed 2: 10% CV per cell, 20% per junction), finite "
+    "extracellular squares with the outer ring held, resolved_pump_tissue@3 with the "
+    "trapezoid junction-heat booking, dt 1 ms; 6 s preparation, 10 s baseline, Na leak x10 "
+    "cue for 2 s, 70 min retention run in segments of at most 20 min",
+    sources=[
+        "sheet70 (homogeneous 127-cell held-bath sheet, 5 ms; 1 ms around the loss): 37-cell "
+        "discs held 70 min at s 1.0, 0.6 and 0.3; 19-cell discs held at s 0.6 and 0.3 and were "
+        "lost at s 1.0 990.5 s after the cue, all 19 within 0.12 s, while the disc drifted toward "
+        "U without loading (K 134.6, M 11.2 mM); disc content excess 3.9-4.0% at 20 min and "
+        "11.7-12.1% at 70 min in the discs that held",
+        "pilot-04 and its replay (this tissue, seed 2, s 1.0): both discs written within "
+        "0.3-0.4 s of the cue and held 5 s (pilot-04) and 30 s (replay)",
+        "pre-screen 7: 10% CV heterogeneity lowers the 37-cell disc's stability edge by about 6%",
+    ],
+    arms={
+        "all six": "written: every disc cell D within 0.5 s of cue on, no D outside the disc",
+        "37-cell, s 1.0, 0.6 and 0.3": "held through the first 20-min segment (and, as on the "
+        "sheet, through 70 min)",
+        "19-cell, s 0.6 and 0.3": "held through the first segment",
+        "19-cell, s 1.0": "lost at once (all cells within about 1 s), as on the sheet, but "
+        "earlier than the sheet's 16.5 min because heterogeneity lowers the edge: most likely 5 "
+        "to 20 min after the cue, so within the first segment",
+    },
+    loading="the disc's squares are finite and refill only by diffusion through the "
+    "extracellular grid from the held ring 7-9 cells away, so K taken up by the disc depletes "
+    "them: disc-square K falls below the bath's 5 mM (most likely to 3-4.5 mM) and disc K "
+    "loading is slower than on the sheet; M (140 mM outside) is barely limited. Disc-mean "
+    "content excess at 20 min below the sheet's 3.9-4.0%, most likely 2-3.5%",
+    spontaneous_D_outside_disc="none",
+)
+
+
 # Pre-registered expectations from pre-screens 7 and 8 (simplified held-bath sheets,
 # discs started from their stationary D state), recorded before the full run and
 # written unchanged to the output directory. Nothing is judged against them here.
@@ -1939,10 +2029,13 @@ def part_run(args):
         label = f"from-t{next(iter(checkpoints.values())).time:09.3f}"
         records, report_path = output / f"records-{label}", output / f"run-{label}.json"
     if not (output / "predictions.json").exists():
-        write_json(output / "predictions.json", PREDICTIONS)
+        chosen = HOLD_PREDICTIONS if args.predictions == "hold" else PREDICTIONS
+        write_json(output / "predictions.json", chosen)
     report = dict(
         kind="cells.heredity_pilot_w1_run@1",
         resumed_from=args.resume,
+        junction_heat_booking=JUNCTION_HEAT,
+        segment_seconds=args.segment_seconds,
         phases_s=dict(
             preparation_end=first * DT,
             cue_on=on * DT,
@@ -1967,14 +2060,56 @@ def part_run(args):
         if not path.exists():
             path.write_text(json.dumps(world.simulation.to_dict()) + "\n")
     marks = [on, off, off + 30_000, off + 90_000]
+    if args.snapshot_every:
+        every = int(round(args.snapshot_every / DT))
+        marks += list(range(first + every, end, every))
     observer = Observer(
         tissue,
         meta,
         records,
-        snapshots=[k * DT for k in marks if first < k < end],
+        snapshots=sorted({k * DT for k in marks if first < k < end}),
         batch=spec,
     )
     tick = time.perf_counter()
+    if args.segment_seconds is not None:
+        start_time = next(iter(checkpoints.values())).time
+        stop = start_time + args.segment_seconds
+        summary, failure = run_segment(
+            spec, WindowPolicy(WINDOW_STEPS, "checkpoints"), observer, checkpoints, stop
+        )
+        report["run_wall_seconds"] = time.perf_counter() - tick
+        report["resources"] = resources()
+        if failure is not None:
+            report["failure"] = failure
+            write_json(report_path, report)
+            write_json(output / f"failure-{int(time.time())}.json", failure)
+            return 1
+        summary.pop("checkpoints")
+        timings = summary["timings"]
+        windows = [
+            json.loads(line)["timings"]["execute_seconds"]
+            for line in (records / "windows.jsonl").read_text().splitlines()[1:]
+            if line.strip()
+        ]
+        report.update(
+            segment=summary,
+            cost=dict(
+                world_steps=summary["executed_world_steps"],
+                worlds=len(spec.worlds),
+                wall_ms_per_world_step=1e3
+                * report["run_wall_seconds"]
+                / max(summary["executed_world_steps"], 1),
+                compile_seconds=timings.get("compile_seconds"),
+                execute_seconds=timings.get("execute_seconds"),
+                host_analysis_seconds=timings.get("analysis_seconds"),
+                median_window_execute_s=float(np.median(windows)) if windows else None,
+                ms_per_batch_step_median=1e3 * float(np.median(windows)) / WINDOW_STEPS
+                if windows
+                else None,
+            ),
+        )
+        write_json(report_path, report)
+        return 0
     result, failure = run_batch(
         spec, WindowPolicy(WINDOW_STEPS, "checkpoints"), observer, checkpoints
     )
@@ -2593,6 +2728,11 @@ def main(argv=None):
     parser.add_argument("--replay-dt-after", type=float, help="sheetreplay: dt after phase 1")
     parser.add_argument("--junction-heat", help="@3 junction_heat_booking for every world built")
     parser.add_argument("--water", choices=WATER_KINDS, help="sheet worlds' volume model")
+    parser.add_argument(
+        "--segment-seconds", type=float, help="run: stop after this much model time (snapshot)"
+    )
+    parser.add_argument("--snapshot-every", type=float, help="run: snapshot every s of model time")
+    parser.add_argument("--predictions", choices=("e07", "hold"), default="e07")
     args = parser.parse_args(argv)
     global JUNCTION_HEAT, WATER
     JUNCTION_HEAT, WATER = args.junction_heat, args.water
