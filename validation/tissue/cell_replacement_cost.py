@@ -9,7 +9,9 @@ IMEX ARS(2,2,2) at dt 1 ms, compiled checked steps in lax.scan with held control
             (formation updates, occupant view, schedule predicate; the event map
             skipped by lax.cond), single world; and vmapped over --worlds replicas,
             where lax.cond becomes a select, so the event map runs every step.
-  eventmap  the event map alone on the 825-node world, one slot due, compiled.
+  eventmap  the event map alone on the 825-node world, one slot due, compiled, with
+            device-resident inputs (the first, superseded run converted host arrays
+            on every call).
   sheet     a 217-cell heredity sheet (held baths, written disc), @3 against the
             wrapper with one replacement per 0.2 s (literature formation rule),
             through the windowed runner (host checks included), one world.
@@ -119,6 +121,8 @@ def part_eventmap(args):
     )
     slots = np.asarray(p.active) & (np.asarray(due_control.generation) == 1)
     function = jax.jit(lambda s, c, q: replacement.event_map(s, jnp.asarray(slots), c, q))
+    # Device-resident inputs, as inside a compiled window (no per-call host conversion).
+    state, due_control, p = jax.device_put((state, due_control, p))
     started = time.perf_counter()
     compiled = function.lower(state, due_control, p).compile()
     compile_s = time.perf_counter() - started
