@@ -60,6 +60,12 @@ def at_dt(raw, dt):
     end = raw["experiment"]["end_time"]
     raw["execution"]["max_steps"] = int(round(end / dt)) + 16
     raw["model"]["junction_heat_booking"] = BOOKING
+    # The frozen definitions declare records at decimal times (round(0.1 k, 10)); the
+    # engine observes only accepted boundaries, which are the float products k * dt.
+    # Each record maps to its own boundary, a shift below 1e-16 s (protocol amendment).
+    raw["experiment"]["observation_times"] = [
+        int(round(t / dt)) * dt for t in raw["experiment"]["observation_times"]
+    ]
     return raw
 
 
@@ -80,7 +86,8 @@ def engine_records(raw, dt):
         amount = np.asarray(obs.amount)[k]
         records.append(
             dict(
-                time_s=float(t),
+                time_s=float(raw["experiment"]["observation_times"][k]),
+                engine_time_s=float(t),
                 membrane_voltage_V=np.asarray(obs.membrane_voltage_V)[k].tolist(),
                 slot_amount_fmol={i: amount[:, i].tolist() for i in slots},
             )
