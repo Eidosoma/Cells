@@ -132,10 +132,26 @@ def part_eventmap(args):
         started = time.perf_counter()
         jax.block_until_ready(compiled(state, due_control, p))
         times.append(time.perf_counter() - started)
+
+    # The same map applied --steps times inside one compiled scan (no dispatch per call).
+    def repeated(s, c, q):
+        def body(x, _):
+            return replacement.event_map(x, jnp.asarray(slots), c, q), None
+
+        return jax.lax.scan(body, s, None, length=args.steps)[0]
+
+    looped = jax.jit(repeated).lower(state, due_control, p).compile()
+    jax.block_until_ready(looped(state, due_control, p))
+    in_scan = []
+    for _ in range(args.repeats):
+        started = time.perf_counter()
+        jax.block_until_ready(looped(state, due_control, p))
+        in_scan.append(1e3 * (time.perf_counter() - started) / args.steps)
     return dict(
         compile_s=compile_s,
         per_call_ms=[1e3 * t for t in times],
         median_ms=1e3 * float(np.median(times)),
+        in_scan_per_application_ms=in_scan,
     )
 
 
