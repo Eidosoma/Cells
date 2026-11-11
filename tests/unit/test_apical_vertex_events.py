@@ -38,8 +38,8 @@ def test_ablation_books_control_work_and_the_velocity_jump():
     before, after = tissue, ref.with_control(tissue, controls[1])
     x = tissue.position
     expected_work = ref.energy(after, x) - ref.energy(before, x)
-    assert abs(obs.control_work[1]) == 0
-    assert abs(obs.control_work[2] - expected_work) <= 1e-12 * abs(expected_work)
+    assert abs(obs.total_control_work[1]) == 0
+    assert abs(obs.total_control_work[2] - expected_work) <= 1e-12 * abs(expected_work)
     # The jump of velocity across the event, at the event row, is exact.
     jump = ref.velocity_jump(before, after, x)
     state, layout = av.initial_values(spec)

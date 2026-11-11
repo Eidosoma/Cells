@@ -40,6 +40,7 @@ class Tissue:
     vertex_ids: tuple
     junction_ids: tuple
     cell_ids: tuple
+    cell_edge_junctions: tuple  # per cell: junction index of the edge from corner k to k+1
 
     @property
     def cells(self):
@@ -68,10 +69,38 @@ def from_definition(definition, control=None):
         vertex_ids=tuple(vid),
         junction_ids=tuple(j["id"] for j in junctions),
         cell_ids=tuple(c["id"] for c in cells),
+        cell_edge_junctions=_edge_junctions(m, slot),
     )
     if control is None:
         control = definition["experiment"]["parameter_controls"][0]
     return with_control(tissue, control)
+
+
+def _edge_junctions(model, slot):
+    declared = {}
+    for i, j in enumerate(model["junctions"]):
+        a, b, n = slot[j["vertices"][0]], slot[j["vertices"][1]], tuple(j["image"])
+        declared[(a, b, *n)] = i
+        declared[(b, a, -n[0], -n[1])] = i
+    rows = []
+    for c in model["cells"]:
+        k = c["corners"]
+        rows.append(
+            np.array(
+                [
+                    declared[
+                        (
+                            slot[k[n]["vertex"]],
+                            slot[k[(n + 1) % len(k)]["vertex"]],
+                            k[(n + 1) % len(k)]["image"][0] - k[n]["image"][0],
+                            k[(n + 1) % len(k)]["image"][1] - k[n]["image"][1],
+                        )
+                    ]
+                    for n in range(len(k))
+                ]
+            )
+        )
+    return tuple(rows)
 
 
 def with_control(tissue, control):
@@ -126,19 +155,31 @@ def energy(tissue, x, box=None):
     )
 
 
-def gradient(tissue, x):
-    """Closed-form dE/dx, [V, 2]."""
+def _units(vectors, keep):
+    norms = np.linalg.norm(vectors, axis=1)
+    safe = np.where(keep, norms, 1.0)
+    return np.where(keep[:, None], vectors / safe[:, None], 0.0)
+
+
+def gradient(tissue, x, fixed=None):
+    """Closed-form dE/dx, [V, 2].
+
+    fixed: a junction whose length is held constant (prescribed): its line term and
+    its edges' perimeter derivatives are omitted (they vanish), so a junction
+    contracted to exactly zero length has a finite gradient.
+    """
     t = tissue
     g = np.zeros_like(x)
-    d = junction_vectors(t, x)
-    unit = d / np.linalg.norm(d, axis=1)[:, None]
+    keep = np.ones(len(t.line_tension), dtype=bool)
+    if fixed is not None:
+        keep[fixed] = False
+    unit = _units(junction_vectors(t, x), keep)
     np.add.at(g, t.junction_head, t.line_tension[:, None] * unit)
     np.add.at(g, t.junction_tail, -t.line_tension[:, None] * unit)
     area, perimeter, _ = geometry(t, x)
     for c, (vertices, u) in enumerate(zip(t.cell_vertices, corners(t, x), strict=True)):
         following, previous = np.roll(u, -1, axis=0), np.roll(u, 1, axis=0)
-        edge = following - u
-        e = edge / np.linalg.norm(edge, axis=1)[:, None]
+        e = _units(following - u, t.cell_edge_junctions[c] != (-1 if fixed is None else fixed))
         d_perimeter = np.roll(e, 1, axis=0) - e  # incoming unit minus outgoing unit
         d_area = 0.5 * np.stack(
             [following[:, 1] - previous[:, 1], previous[:, 0] - following[:, 0]], axis=1
@@ -232,3 +273,88 @@ def self_check(tissue, x, step=1e-6):
             energy(tissue, plus.reshape(x.shape)) - energy(tissue, minus.reshape(x.shape))
         ) / (2 * step)
     return float(np.max(np.abs(numeric - gradient(tissue, x).ravel())))
+
+
+def place(tissue, x, junction, length, theta):
+    """Positions with the junction's head at x_tail - B n + length (cos theta, sin theta)."""
+    y = np.array(x, dtype=float)
+    tail, head = tissue.junction_tail[junction], tissue.junction_head[junction]
+    shift = tissue.junction_image[junction] @ tissue.box.T
+    y[head] = y[tail] - shift + length * np.array([np.cos(theta), np.sin(theta)])
+    return y
+
+
+def path_energy_and_gradient(tissue, z, junction, length):
+    """Energy and gradient in (positions, theta) with the junction's length prescribed."""
+    x, theta = z[:-1].reshape(-1, 2), z[-1]
+    y = place(tissue, x, junction, length, theta)
+    g = gradient(tissue, y, fixed=junction)
+    tail, head = tissue.junction_tail[junction], tissue.junction_head[junction]
+    g[tail] += g[head]
+    g_theta = g[head] @ (length * np.array([-np.sin(theta), np.cos(theta)]))
+    g[head] = 0.0
+    return energy(tissue, y), np.concatenate([g.ravel(), [g_theta]])
+
+
+def contraction(tissue, x0, junction, fractions, *, gtol=1e-11):
+    """Quasi-static contraction with scipy L-BFGS; returns (energies, positions)."""
+    tail, head = tissue.junction_tail[junction], tissue.junction_head[junction]
+    d = x0[head] + tissue.junction_image[junction] @ tissue.box.T - x0[tail]
+    length0, theta = float(np.linalg.norm(d)), float(np.arctan2(d[1], d[0]))
+    z = np.concatenate([np.asarray(x0, dtype=float).ravel(), [theta]])
+    energies, positions = [], []
+    for fraction in fractions:
+        length = fraction * length0
+        result = optimize.minimize(
+            lambda w, length=length: path_energy_and_gradient(tissue, w, junction, length),
+            z,
+            jac=True,
+            method="L-BFGS-B",
+            options={"maxiter": 200000, "maxcor": 50, "gtol": gtol, "ftol": 1e-20},
+        )
+        z = result.x
+        energies.append(float(result.fun))
+        positions.append(place(tissue, z[:-1].reshape(-1, 2), junction, length, z[-1]))
+    return np.array(energies), positions, length0
+
+
+def strained(tissue, x, deformation):
+    """The tissue and positions after an affine deformation of vertices and box."""
+    return replace(tissue, box=deformation @ tissue.box), np.asarray(x) @ deformation.T
+
+
+def relaxed_curvature(tissue, x, generator, *, strain=1e-3, gtol=1e-12):
+    """d2E/de2 of the relaxed energy by central differences of relaxed strained states."""
+    values = []
+    for e in (-strain, 0.0, strain):
+        t, y = strained(tissue, x, np.eye(2) + e * np.asarray(generator))
+        y, _, _ = relax(t, y, gtol=gtol)
+        values.append(energy(t, y))
+    return (values[0] - 2 * values[1] + values[2]) / strain**2
+
+
+def linear_recoil(before, after, x, junction, times):
+    """Linear response to a parameter change at equilibrium x (uniform friction).
+
+    delta x(t) = sum_k (1 - exp(-lambda_k t / eta)) (v_k . f / lambda_k) v_k over the
+    nonzero modes of the post-change Hessian, f the force jump. Returns the opening
+    d(t) - d0 to first order, its initial rate and the effective time
+    tau = Delta d_inf / d'(0).
+    """
+    eta = float(after.friction[0])
+    if np.any(after.friction != eta):
+        raise ValueError("linear_recoil assumes uniform friction")
+    f = (gradient(before, x) - gradient(after, x)).ravel()
+    values, vectors = np.linalg.eigh(hessian(after, x))
+    keep = np.abs(values) > 1e-9 * np.max(np.abs(values))
+    tail, head = after.junction_tail[junction], after.junction_head[junction]
+    d = x[head] + after.junction_image[junction] @ after.box.T - x[tail]
+    unit = d / np.linalg.norm(d)
+    selector = np.zeros_like(x)
+    selector[head], selector[tail] = unit, -unit
+    weights = (vectors[:, keep].T @ selector.ravel()) * (vectors[:, keep].T @ f)
+    lam = values[keep]
+    opening = np.array([np.sum(weights * (1 - np.exp(-lam * t / eta)) / lam) for t in times])
+    rate = float(selector.ravel() @ f / eta)
+    final = float(np.sum(weights / lam))
+    return opening, rate, final / rate

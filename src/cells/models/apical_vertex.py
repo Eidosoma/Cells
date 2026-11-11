@@ -434,11 +434,9 @@ def check_values(state, spec, steps=None):
         ),
         "max_momentum_drift": float(np.max(np.abs(momentum))),
         "max_area_identity_error": float(np.max(area_error)),
-        "min_cell_area": float(np.min(min_area)),
-        "min_junction_length": float(np.min(min_length)),
-        "final_energy": float(energy[-1]),
-        "final_dissipated_energy": float(dissipated[-1]),
-        "final_control_work": float(work[-1]),
+        # Maximum reducers only (windowed runs merge diagnostics by maximum).
+        "max_inverse_min_junction_length": float(1.0 / np.min(min_length)),
+        "max_inverse_min_cell_area": float(1.0 / np.min(min_area)),
     }
 
 
@@ -449,8 +447,17 @@ def working_size(spec):
 
 @dataclass(frozen=True)
 class Observations:
+    """Accepted rows: every state field (raw, for windowed continuity) and derived values."""
+
     times: np.ndarray
     position: np.ndarray
+    dissipated: np.ndarray
+    line_tension: np.ndarray
+    contractility: np.ndarray
+    area_elasticity: np.ndarray
+    preferred_area: np.ndarray
+    control_work: np.ndarray
+    energy_allowance: np.ndarray
     cell_area: np.ndarray
     cell_perimeter: np.ndarray
     junction_length: np.ndarray
@@ -461,7 +468,7 @@ class Observations:
     max_force: np.ndarray
     box_stress: np.ndarray
     dissipated_energy: np.ndarray
-    control_work: np.ndarray
+    total_control_work: np.ndarray
     energy_residual: np.ndarray
 
 
@@ -491,6 +498,21 @@ def observe_history(times, history, layout, requested, spec):
         raise ConfigError("Vertex observations are read only at accepted rows")
     rows = VertexState(*(np.asarray(v)[index] for v in history))
     layout = VertexLayout(*(np.asarray(v) for v in layout))
+    if len(requested) == 0:  # A window without observations.
+        x = spec.execution
+        empty = np.zeros((0,))
+        return Observations(
+            requested,
+            *rows,
+            np.zeros((0, x.capacity)),
+            np.zeros((0, x.capacity)),
+            np.zeros((0, x.junction_capacity)),
+            *(empty for _ in range(5)),
+            np.zeros((0, 2, 2)),
+            empty,
+            empty,
+            empty,
+        )
     topo = topology(layout)
     for time, position in zip(requested, rows.position, strict=True):
         if vm.crossing_junctions(position, topo, layout.box):
@@ -509,7 +531,7 @@ def observe_history(times, history, layout, requested, spec):
     work = rows.control_work[:, 0]
     return Observations(
         requested,
-        rows.position,
+        *rows,
         area,
         perimeter,
         length,
