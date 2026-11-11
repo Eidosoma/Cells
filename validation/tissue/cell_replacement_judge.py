@@ -12,7 +12,7 @@ Items (validation/tissue/cell_replacement_protocol.json):
   Q2  the engine's event map against R-ops on each case's first event set
   Q3  every cell's Vm and the replaced slots' amounts against R-full, pinned tolerances
   Q4  C9: Vm against R-fast (pinned, reduction term included) and the end states
-  Q5  W7 and C9 donor short-lag at dt 5, 2, 1, 0.5 ms: observed order in [1.8, 2.2]
+  Q5  W7 and C9 isolated short-lag at dt 2, 1, 0.5, 0.25 ms: order in [1.8, 2.2] (A3)
   Q6  restart at t_e - dt, t_e, t_e + dt bitwise; vmap cohorts of 2 and 8 worlds
   Q7  no events on the 825-node world: bitwise equal to resolved_pump_tissue@3
 
@@ -348,28 +348,39 @@ def observed_order(errors_by_dt, fine):
     return 0.5 * (lo + hi)
 
 
+Q5_CASES = ("W7/short_lag", "C9/isolated/short_lag")  # Amendment A3.
+Q5_DTS = (2e-3, 1e-3, 5e-4, 2.5e-4)
+
+
 def q5(protocol, predictions, out):
-    dts = (5e-3, 2e-3, 1e-3, 5e-4)
-    for name in ("W7/short_lag", "C9/donor/short_lag"):
+    """Amendment A3: order log2(D(1 ms, 0.5 ms) / D(0.5 ms, 0.25 ms)), D the max over the
+    records after the first event of |slot Vm(h) - slot Vm(h/2)|; window [1.8, 2.2]."""
+    for name in Q5_CASES:
         raw = predictions["cases"][name]["definition"]
         slots = qual.slots_of(raw)
         first = min(e["time"] for e in raw["experiment"]["replacement_events"])
         series = {}
         try:
-            for dt in dts:
+            for dt in Q5_DTS:
                 _, result = engine(raw, dt)
-                v = np.asarray(result.observations.membrane_voltage_V)[:, slots]
-                series[dt] = v
+                series[dt] = np.asarray(result.observations.membrane_voltage_V)[:, slots]
             after = np.asarray(raw["experiment"]["observation_times"]) > first
-            errors = {
-                dt: float(np.max(np.abs(series[dt][after] - series[dts[-1]][after])))
-                for dt in dts[:-1]
+            differences = {
+                f"{a:g}-{b:g}": float(np.max(np.abs(series[a][after] - series[b][after])))
+                for a, b in zip(Q5_DTS[:-1], Q5_DTS[1:], strict=True)
             }
-            p = observed_order({k: v for k, v in errors.items() if k in (2e-3, 1e-3)}, dts[-1])
+            ratios = {
+                f"h {h:g}": float(
+                    np.log2(differences[f"{2 * h:g}-{h:g}"] / differences[f"{h:g}-{h / 2:g}"])
+                )
+                for h in (1e-3, 5e-4)
+            }
+            p = ratios["h 0.0005"]
             out["Q5"]["cases"][name] = dict(
-                verdict="pass" if p is not None and 1.8 <= p <= 2.2 else "fail",
+                verdict="pass" if 1.8 <= p <= 2.2 else "fail",
                 observed_order=p,
-                errors_against_dt_0p5ms_V={f"{k:g}": v for k, v in errors.items()},
+                coarser_ratio_order=ratios["h 0.001"],
+                successive_differences_V=differences,
             )
         except Exception as error:
             out["Q5"]["cases"][name] = dict(verdict="fail", refused=repr(error))
