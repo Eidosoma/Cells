@@ -103,8 +103,10 @@ Xenbase and WormBase are the model-organism databases.
    for example connexon = 6 × Cx43 and junction channel = 2 connexons. This is the
    D140 ladder.
 2. **Membrane abundance as state.** A membrane domain holds populations of identified
-   functional units, each with its own abundance. The cell-division design note is
-   defining membrane domains now, and has been asked to leave a catalogue hook.
+   functional units, each with its own abundance. The
+   [cell-division design note](CELL_DIVISION_DESIGN.md) defines this: each population
+   declares a `functional_unit` ID and an opaque `catalogue` reference into this
+   catalogue.
 3. **Physics unchanged.** Identity metadata must leave every trajectory bitwise
    unchanged.
 4. **Offline and versioned.**

@@ -110,6 +110,31 @@ machine-readable inputs, results, checks and failures.
     - the judged run started at 20:27:57 from a clean snapshot of `840488e`, which
       contains it (empty patch; protocol bytes equal main's);
     - the commit was pushed at about 21:17, after the run began.
+- **Cell division: design note (draft) and egg-scale smoke test (11 November).**
+  [CELL_DIVISION_DESIGN.md](docs/CELL_DIVISION_DESIGN.md) answers D142. One composite
+  pump-tissue model runs `resolved_pump_tissue@3`'s own step plus declared operators
+  (water, replacement, division); new combinations are definitions, not model families.
+  It is merged as a draft for review, before any model produced an Em for the first
+  judged observable.
+  - **Smoke test:** one Xenopus-egg-sized cell at rest, on `@3` and on
+    `resolved_pump_water@1`, 60 s at 1 ms with host and device checks on every row
+    ([evidence](/mnt/workspaces/Cells/cell-division-20261111-01/scale-smoke-01/)). It was
+    accepted, with every ledger at most 1% of its bound; Vm −9.945 mV; fluxes equal an
+    independent constant-field calculation to 8 digits.
+  - **Scale:** the egg's volume is about 10⁶ times a heredity cell's, six orders of
+    magnitude, not nine as first stated.
+  - **Engine gaps found:**
+    - `surface_tissue.check_definition` has an absolute 1e-20 C bound on the gap
+      between the charge anchor and the inventory. An egg built like the heredity
+      fixtures misses it by 1.2e-20 C, whereas one float64 step of its fixed background
+      is 1.8e-19 C. It should scale with Σ|zFn|, as the running ledgers do. The same
+      module also has an absolute energy floor (`ENERGY_ATOL_PJ`) to review. The fix
+      lands separately, with the gate.
+    - The pump-tissue family has no current-injection control. Rm must be the simulated
+      response to dLB74's pulse protocol, because constant-field membranes rectify.
+  - **Next (S0b, before any composer code):** an independent numpy reference of the
+    cleft egg and J1's prediction of record; a static cleft-egg step study if it can be
+    written as a plain `@3` definition; the pulse-response Rm; the smoke test to 35 min.
 - **Cell division, stage 1 (11 November).** Verified data for the
   [cell-division plan](docs/CELL_DIVISION_PLAN.md) (D141):
   - Xenopus goes first;

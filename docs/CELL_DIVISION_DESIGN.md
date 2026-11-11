@@ -1,7 +1,9 @@
 # Cell division: design note (D141, D142)
 
 Status: **draft for review by the lead and the advisor, before any engine code**
-(11 November 2026). It covers stages 1b (parameter table), 2 (scale smoke test) and the
+(11 November 2026). Merged to main on 11 November 2026, before any engine or
+reference model had produced an Em for J1, so the choices declared here are on
+record first. It covers stages 1b (parameter table), 2 (scale smoke test) and the
 design of engine piece 1 in the [cell-division plan](CELL_DIVISION_PLAN.md). Nothing here
 is built or qualified. Evidence: `/mnt/workspaces/Cells/cell-division-20261111-01/`
 (`verification/` for the tables and paper notes, `scale-smoke-01/` for the smoke test).
@@ -24,8 +26,10 @@ de Laat, Buwalda & Habets 1974, Exp Cell Res 89:1. Marks: **V** read in the full
   combinations become definitions, not model families (§3).
 - **Entities own state; operators write it only through ledgers** (§2). Membrane surfaces
   are split into domains (old and new membrane), and each domain holds **populations of
-  identified molecular species** whose abundance is state, with a stable species ID and an
-  opaque reference to a future curated catalogue (the identity hook the lead asked for).
+  identified functional units** (an assembled channel, pump, transporter or connexin
+  channel) whose abundance is state. Each has a stable unit ID and an opaque reference to
+  the planned [protein catalogue](PROTEIN_CATALOGUE_PLAN.md) (the identity hook the lead
+  asked for). "Functional unit" avoids a clash with ion species.
 - **Division is a process** (§4): about 7 min of furrowing without new membrane, then
   insertion of new, K-selective membrane at the measured rate into a **restricted cleft
   compartment**, then an **isopotential partition** event at a declared time, into fresh
@@ -160,9 +164,9 @@ This follows the ownership table of the
 | **Lineage** | Records: carrier, kind (founder, newcomer, daughter), parents, slot, birth, death, inheritance route | Event operators only | Slots, which are storage |
 
 **Populations and the identity hook (the lead's constraint).** A membrane domain holds
-populations of identified molecular species: channels, pumps, transporters and connexin
+populations of identified functional units: channels, pumps, transporters and connexin
 channels. Each population declares:
-- `molecular_species`: a stable ID and a `catalogue` reference, either null or
+- `functional_unit`: a stable ID and a `catalogue` reference, either null or
   `{"catalogue": <id>, "entry": <key>}`. The reference is opaque to the engine: physics
   comes only from the kinetic law and its parameters. The curated catalogue (gene-product
   accessions, assembly stoichiometry) is designed separately; the two are reconciled at
@@ -171,7 +175,7 @@ channels. Each population declares:
 - State: abundance N and its gates. Today's `channel_abundance` is then N divided by the
   patch area times a reference density, presented to the inner model as layout (§3.3).
 
-Two populations of the same molecular species in different domains share the species ID.
+Two populations of the same functional unit in different domains share the unit ID.
 For the frog membrane no gene product is established in the sources read, so every
 population is unassigned (catalogue null).
 
@@ -203,7 +207,7 @@ Both existing extensions wrap `resolved_pump_tissue@3` the same way:
 - they give @3's `checked_step` a **view** of its layout: current volumes (water), or each
   slot's template routes and junction availability × formation abundance (replacement);
 - they split the step around @3's step behind `jax.lax.optimization_barrier`: W ∘ I ∘ W
-  for water, E ∘ F ∘ I ∘ F for replacement;
+  for water, F ∘ I ∘ F ∘ E for replacement (composition order: the event map E acts first, as in `cell_replacement.checked_step`);
 - they add their terms to @3's own check functions.
 
 Each wraps @3 alone: replacement wraps the fixed-volume model, and replacement over water
@@ -261,7 +265,7 @@ Phi_dt = P1(dt/2) o ... o Pm(dt/2) o I_dt[view] o Pm(dt/2) o ... o P1(dt/2) o E
 - E: the event maps due at the step start, in the declared order. Two events on one slot
   at one time are refused.
 - P: the split processes; I: @3's own `checked_step` at the view, behind the barrier.
-- Water's W ∘ I ∘ W and replacement's E ∘ F ∘ I ∘ F are instances.
+- Water's W ∘ I ∘ W and replacement's F ∘ I ∘ F ∘ E are instances.
 - The symmetric order is second order when each piece is, and it keeps an exact
   stationary state a fixed point when the pieces act on disjoint variables (the water
   model's argument).
@@ -585,6 +589,15 @@ a_k and 1 − a_k.
   more closely"), or the gap in vivo is narrower than in fixed tissue. Keeping volume
   (TEM) and access (Rm) as separate parameters covers both.
 
+**Rm is defined operationally.** dLB74 measured it with 3 × 10⁻⁸ A pulses of 1.2 s
+every 10 s, alternating in polarity (dLB74 p530), giving excursions of 15–25 mV on a
+−10 to −20 mV membrane. Constant-field membranes rectify, strongly so for a K-selective
+membrane facing low K⁺. Rm is therefore the simulated response to that same pulse
+protocol, in the reference and in the engine. The linear-circuit numbers in this note,
+including the −37 to −44 mV limit, are estimates only. **Engine gap:** the pump-tissue
+family has no current-injection control, so the pulse protocol needs one, reported
+before S3.
+
 **How it predicts Em.** K⁺ leaving through the new membrane accumulates in the lumen and
 lowers that membrane's driving force. The limits:
 - fast exchange (a bath-equivalent lumen): the parallel-branch value, −37 to −44 mV;
@@ -628,6 +641,15 @@ and its potential (Slack & Warner 1973) are in the parameter table.
   - It fails if the cleft behaves like the bath (−37 to −44 mV), if the new membrane were
     identical to the old (about −10 mV), or if the cleft were sealed (Rm would stay near
     852 kΩ).
+  - **Prediction of record.** Before any model produces an Em, the protocol fixes:
+    - default values for the gap width, the access selectivity, the new-membrane
+      capacitance and selectivity, and the insertion rate;
+    - the declared ranges around them;
+    - a maximum prediction band width.
+
+    The first Em under the defaults, from the independent reference (R-full), is the
+    prediction of record, whatever it is. If the ranges give a band wider than the
+    maximum, J1 is reported, not judged.
 - **J2.** DFS74 Table I blastomere Em at 2 cells (−15.5 ± 1.6 mV, SD, n = 9) and 4 cells
   (−16.0 ± 2.4 mV, n = 10).
   - Sampled at DFS74's phases: 2 cells after the second furrow began, 4 cells after the
@@ -699,6 +721,7 @@ and its potential (Slack & Warner 1973) are in the parameter table.
 | Stage | Content | Rough effort |
 | --- | --- | --- |
 | S0 (done) | Parameter table v2; scale smoke test | – |
+| S0b (next, before the composer) | (1) R-full, the numpy/scipy reference of the cleft egg, and J1's prediction band from it under the declared defaults; (2) if a static cleft egg can be written as a plain `@3` definition (a new-membrane patch facing a finite outside node with one face to the bath), the step study at 1, 0.5 and 0.25 ms. An implicit membrane–cleft term would change the inner solver, so this is learned before S1; (3) Rm as the simulated pulse response, and the current-injection gap; (4) the smoke test extended to J1's 35-min horizon | 2–3 days |
 | S1 composer | Operator contract, composite model, @3 adapter. Re-express water@1, @2 and replacement@1 bitwise. Tier gate | 2–3 agent-days |
 | S2 membrane state | Areas, capacitances and abundances as entity state; insertion with the §5.1 law; capacitor factor on the device. Analytic and bitwise tests | 2 days |
 | S3 cleft egg | Lumen operator and access face; the step study (stiffness); development calibration of A/L; R-full | 3 days, plus CPU hours |
@@ -730,7 +753,9 @@ about 10–20 runs of 30 min of model time each.
      isopotential (dLB74's two electrodes agreed);
    - a uniform old membrane;
    - a held bath;
-   - no vitelline-membrane mechanics.
+   - no vitelline-membrane mechanics;
+   - a prescribed lumen volume with no water flow, although solute build-up in the lumen is
+     what J1 judges.
 6. **J1's power.** If the bands on w, c_new and the access selectivity make the prediction
    band wide, J1 is weak. Publish the band in the protocol, before the run.
 
