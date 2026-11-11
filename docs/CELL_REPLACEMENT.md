@@ -124,7 +124,7 @@ This is tested on:
 
 The 825-node world was not compared.
 
-## Limits (stage 1)
+## Limits
 
 - Inner model `resolved_pump_tissue@3` only; the water model is stage 3.
 - A replaced slot needs a held bath (a reservoir node) in its capacitor component, as in
@@ -153,5 +153,16 @@ The 825-node world was not compared.
     `trapezoid_nonnegative@1` show no refusal and identical D sets.
   - The drivers are `validation/tissue/cell_replacement_r1.py`; the evidence is in the
     design directory's `r1/` and `r2/`.
-- **Not yet qualified:** protocol G2-Q1 (drafted), with its independent references and
-  frozen predictions, comes next.
+- **Qualified under protocol G2-Q1** (registered with frozen predictions and pinned
+  tolerances; judged once from a clean snapshot; 7 of 7 items pass):
+  - ledgers on host and device;
+  - the event map against an independent operator;
+  - trajectories against an independent reduced reference;
+  - the reduced chain's end states;
+  - observed second order;
+  - restart and vmap identity;
+  - no-event bitwise equality with @3 on the 825-node world.
+
+  The scope is held-bath heredity worlds, IMEX ARS(2,2,2) at 1 ms, with
+  `trapezoid_nonnegative@1`. Evidence is in the design directory's
+  `qualification/judged-01/`.
