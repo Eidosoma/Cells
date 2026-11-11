@@ -143,5 +143,13 @@ The 825-node world was not compared.
   - The RK4 case is open for stage 2.
 - In-place swap only: no vacancy, no release of contents, no neighbour uncoupling.
 - No stationary-analysis projection (stage 3) and no projective mode.
-- Not yet qualified: R1 regression against pre-screen 9, independent references and
-  the qualification protocol follow (stage 2). R2 waits for the junction-heat option.
+- **Regression against pre-screen 9 (R1, rule a only).** The wrapper reproduces three of
+  pre-screen 9's open-rule turnover runs: identical D sets at every record, identical
+  stop times, and written-disc voltages within 1.3e-10 mV
+  (`validation/tissue/cell_replacement_r1.py`; evidence in the design directory's
+  `r1/`).
+- **Not yet qualified.** Still to come:
+  - rule (c) against pre-screen 9's single-newcomer screens;
+  - R2 through the row-checked runner, now possible with the opt-in junction heat
+    booking;
+  - the independent references and the qualification protocol.
