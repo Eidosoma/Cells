@@ -689,7 +689,12 @@ def get_model(spec):
     from cells.core.surface_pump_v2_spec import SurfacePumpModel as SurfacePumpModelV2
     from cells.core.surface_pump_v3_spec import SurfacePumpChannelModel
     from cells.core.surface_pump_water_spec import SurfacePumpWaterModel
+    from cells.core.surface_pump_water_v2_spec import SurfacePumpRegulatedWaterModel
 
+    if isinstance(spec, SurfacePumpRegulatedWaterModel):
+        from cells.models import surface_pump_water_v2
+
+        return surface_pump_water_v2
     if isinstance(spec, SurfacePumpWaterModel):
         from cells.models import surface_pump_water
 
