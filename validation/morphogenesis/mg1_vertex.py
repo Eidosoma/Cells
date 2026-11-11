@@ -24,7 +24,11 @@ Parts (each writes DIR/<part>.json; a failed part is kept as evidence):
       validation.morphogenesis.mg1_vertex all --output RUN_DIR --protocol PROTOCOL
   ... judge --output RUN_DIR --protocol PROTOCOL   re-evaluates RUN_DIR/results.json
 
---quick runs a reduced development scale (never judged).
+--quick runs a reduced development scale (never judged). --dry-run runs the full scale on
+the non-registered DRY_RUN_INPUTS (never judged; registered comparisons are skipped).
+Every part writes <part>.json on success or <part>.failure.json on failure, and its cases
+to <part>.cases.jsonl as they complete. The barrier part records a failed path as a row
+(failed_paths, judged in B4) instead of aborting.
 """
 
 import argparse
@@ -206,6 +210,69 @@ def central_junction(model):
     return int(np.argmin(np.linalg.norm(middle - centre, axis=1)))
 
 
+REGISTERED_INPUTS = dict(
+    ground_runs=((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (8, 0), (16, 0)),
+    scan_scales=(0.95, 0.975, 1.025, 1.05),
+    scan_seed=0,
+    case_ii_seed=0,
+    box_seed=1,
+    box_stretch=1.05,
+    rigidity_r=(0.04, 0.1, 1.0),
+    incompatible=(3.0, 3.2, 3.4, 3.5, 3.6, 3.65, 3.7, 3.71, 3.72),
+    compatible=(3.73, 3.75, 3.8, 3.9),
+    rigidity_seeds=(0, 1),
+    dynamic=((0.04, 3.0), (0.1, 3.0), (0.1, 3.5), (1.0, 3.6), (1.0, 3.8)),
+    dynamic_seed=0,
+    barrier_r=(0.1, 1.0, 10.0),
+    barrier_p0=(3.5, 3.7, 3.75, 3.8, 3.81, 3.815, 3.82, 3.83, 3.85),
+    barrier_seeds=(0, 1),
+    recoil_seed=0,
+    inference_seeds=(0, 1, 2, 3, 4),
+    numerics_seed=2,
+    numerics_cut_junction=0,
+    gradient_seed=9,
+    tyssue_seed=0,
+)
+# Non-registered inputs for the full-scale dry run (--dry-run; never judged): every seed
+# shifted by 100 and every grid point moved off the registered values, keeping the
+# regimes (incompatible, compatible starts, r = 10 compatible starts, points near p*).
+DRY_RUN_INPUTS = dict(
+    ground_runs=((12, 100), (12, 101), (12, 102), (12, 103), (12, 104), (8, 100), (16, 100)),
+    scan_scales=(0.96, 0.98, 1.02, 1.04),
+    scan_seed=100,
+    case_ii_seed=100,
+    box_seed=101,
+    box_stretch=1.04,
+    rigidity_r=(0.05, 0.3, 2.0),
+    incompatible=(3.1, 3.3, 3.45, 3.55, 3.62, 3.68, 3.705, 3.712, 3.719),
+    compatible=(3.74, 3.77, 3.82, 3.95),
+    rigidity_seeds=(100, 101),
+    dynamic=((0.05, 3.1), (0.3, 3.3), (0.3, 3.55), (2.0, 3.62), (2.0, 3.85)),
+    dynamic_seed=100,
+    barrier_r=(0.3, 3.0, 10.0),
+    barrier_p0=(3.55, 3.68, 3.74, 3.79, 3.805, 3.812, 3.817, 3.825, 3.84),
+    barrier_seeds=(100, 101),
+    recoil_seed=100,
+    inference_seeds=(100, 101, 102, 103, 104),
+    numerics_seed=102,
+    numerics_cut_junction=1,
+    gradient_seed=109,
+    tyssue_seed=100,
+)
+
+
+def inputs(args):
+    return SimpleNamespace(
+        **(DRY_RUN_INPUTS if getattr(args, "dry_run", False) else REGISTERED_INPUTS)
+    )
+
+
+def record(args, part, item):
+    """Append one case to <part>.cases.jsonl as it completes (kept even if the part fails)."""
+    with (args.output / f"{part}.cases.jsonl").open("a") as stream:
+        stream.write(json.dumps(_jsonable(item)) + "\n")
+
+
 def _ref_tissue(defn, control=None):
     return ref.from_definition(defn, control)
 
@@ -218,11 +285,11 @@ def part_theory(args):
 
 
 def part_ground(args):
-    quick = args.quick
+    quick, inp = args.quick, inputs(args)
     a_star, p, side, e_star = theory.ground_state(LAMBDA, GAMMA)
     horizon = 200.0 if quick else 800.0
     cases = []
-    runs = [(4, 0)] if quick else [(12, s) for s in range(5)] + [(8, 0), (16, 0)]
+    runs = [(4, inp.ground_runs[0][1])] if quick else list(inp.ground_runs)
     for n, seed in runs:
         model = honeycomb(n, sigma=0.05, seed=seed)
         end = horizon if quick else HORIZON[n]
@@ -242,10 +309,11 @@ def part_ground(args):
                 **_diagnostics(result),
             }
         )
+        record(args, "ground", cases[-1])
     scan = []
-    for s in (0.95, 0.975, 1.025, 1.05):
+    for s in inp.scan_scales:
         a = a_star * s * s
-        model = honeycomb(4 if quick else 8, area=a, sigma=0.02, seed=0)
+        model = honeycomb(4 if quick else 8, area=a, sigma=0.02, seed=inp.scan_seed)
         cells = len(model["cells"])
         result = run_engine(definition(model, end=horizon, observe=[]))
         obs = result.observations
@@ -262,9 +330,14 @@ def part_ground(args):
                 "energy_above_ground": obs.energy[-1] / cells - e_star,
             }
         )
+        record(args, "ground", {"scan": scan[-1]})
     a2, p2, _, e2 = theory.ground_state(*CASE_II)
     model = honeycomb(
-        4 if quick else 12, line_tension=CASE_II[0], contractility=CASE_II[1], sigma=0.03
+        4 if quick else 12,
+        line_tension=CASE_II[0],
+        contractility=CASE_II[1],
+        sigma=0.03,
+        seed=inp.case_ii_seed,
     )
     result = run_engine(definition(model, end=horizon if quick else HORIZON[12], observe=[]))
     cells = len(model["cells"])
@@ -277,7 +350,9 @@ def part_ground(args):
     from cells.core import vertex_preparation as prep
     from cells.core.specs import parse_spec
 
-    model = honeycomb(4 if quick else 8, area=a_star * 1.05**2, sigma=0.02, seed=1)
+    model = honeycomb(
+        4 if quick else 8, area=a_star * inp.box_stretch**2, sigma=0.02, seed=inp.box_seed
+    )
     spec = parse_spec(prep.definition(model, end_time=1.0, observation_times=[0.0], dt=1e-6))
     pb = me.problem(spec)
     eq = me.minimize(pb, box=True)
@@ -311,11 +386,6 @@ def part_ground(args):
     }
 
 
-RIGIDITY_R = (0.04, 0.1, 1.0)
-INCOMPATIBLE = (3.0, 3.2, 3.4, 3.5, 3.6, 3.65, 3.7, 3.71, 3.72)
-COMPATIBLE = (3.73, 3.75, 3.8, 3.9)
-
-
 def _staddon_problem(n, r, p0, *, sigma=0.02, seed=0):
     from cells.analysis import mechanical_equilibrium as me
     from cells.core import vertex_preparation as prep
@@ -329,17 +399,17 @@ def _staddon_problem(n, r, p0, *, sigma=0.02, seed=0):
 def part_rigidity(args):
     from cells.analysis import mechanical_equilibrium as me
 
-    quick = args.quick
+    quick, inp = args.quick, inputs(args)
     n = 4 if quick else 8
     rows = []
-    rs = (1.0,) if quick else RIGIDITY_R
-    points = (3.5, 3.7) if quick else INCOMPATIBLE
+    rs = (1.0,) if quick else inp.rigidity_r
+    points = (3.5, 3.7) if quick else inp.incompatible
     for r in rs:
         for p0 in points:
             g, b = theory.moduli(r, p0)
             row = {"r": r, "p0": p0, "G_theory": g, "B_theory": b}
             for size in (n, 2):
-                pb, _ = _staddon_problem(size, r, p0)
+                pb, _ = _staddon_problem(size, r, p0, seed=inp.rigidity_seeds[0])
                 eq = me.minimize(pb)
                 m = me.moduli(pb, eq.position)
                 row[f"n{size}"] = {
@@ -352,10 +422,11 @@ def part_rigidity(args):
                     "stress_abs_max": float(np.max(np.abs(m.stress))),
                 }
             rows.append(row)
+            record(args, "rigidity", row)
     compatible = []
     for r in rs:
-        for p0 in (3.75,) if quick else COMPATIBLE:
-            for seed in (0, 1):
+        for p0 in (3.75,) if quick else inp.compatible:
+            for seed in inp.rigidity_seeds:
                 pb, _ = _staddon_problem(n, r, p0, seed=seed)
                 eq = me.minimize(pb)
                 m = me.moduli(pb, eq.position)
@@ -370,15 +441,14 @@ def part_rigidity(args):
                         "B_minus_one": m.bulk - 1.0,
                     }
                 )
+                record(args, "rigidity", {"compatible": compatible[-1]})
     dynamic = []
     gamma = 1e-3
     # Sheared-box engine relaxations on 4 x 4 lattices away from p* (critical slowing
     # down there makes gradient flow impractically slow; near p* the analysis judges).
-    points = (
-        ((1.0, 3.6),) if quick else ((0.04, 3.0), (0.1, 3.0), (0.1, 3.5), (1.0, 3.6), (1.0, 3.8))
-    )
+    points = ((1.0, 3.6),) if quick else inp.dynamic
     for r, p0 in points:
-        model = staddon_model(4, r, p0, sigma=0.02, seed=0)
+        model = staddon_model(4, r, p0, sigma=0.02, seed=inp.dynamic_seed)
         energies = []
         for g_ in (-gamma, 0.0, gamma):
             result = run_engine(definition(sheared(model, g_), end=1200.0, observe=[]))
@@ -399,6 +469,7 @@ def part_rigidity(args):
                 else None,
             }
         )
+        record(args, "rigidity", {"dynamic": dynamic[-1]})
     zero = {}
     for r in rs:
         tail = [row for row in rows if row["r"] == r][-3:]
@@ -447,8 +518,9 @@ def part_rigidity(args):
     }
 
 
-# Below the pentagon threshold 3.8119350: incompatible 3.5, 3.7; compatible start 3.75-3.81.
-BARRIER_P0 = (3.5, 3.7, 3.75, 3.8, 3.81, 3.815, 3.82, 3.83, 3.85)
+# Registered barrier grid. Below the pentagon threshold 3.8119350: incompatible 3.5, 3.7;
+# compatible starts 3.75-3.81.
+BARRIER_P0 = REGISTERED_INPUTS["barrier_p0"]
 FRACTIONS = (1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.02, 0.0)
 
 
@@ -471,34 +543,56 @@ def orientation_junctions(model):
 
 
 def part_barrier(args):
-    from cells.analysis import mechanical_equilibrium as me
+    """T1 contraction barriers; every path is a recorded row and a failed path never aborts.
 
-    quick = args.quick
+    A row's status is "converged" or "failed" (with the error and the minimizer's stage
+    diagnostics). Metrics use converged rows; failed_paths counts the others (B4). A p0
+    counts as vanishing only if all of its paths converged with |barrier| <= 1e-10.
+    """
+    from cells.analysis import mechanical_equilibrium as me
+    from cells.core.specs import ConfigError
+
+    quick, inp = args.quick, inputs(args)
     n = 4 if quick else 8
-    rs = (1.0,) if quick else (0.1, 1.0, 10.0)
-    points = (3.7, 3.85) if quick else BARRIER_P0
+    rs = (1.0,) if quick else inp.barrier_r
+    points = (3.7, 3.85) if quick else inp.barrier_p0
     fractions = np.array((1.0, 0.5, 0.0) if quick else FRACTIONS)
+    first_seed = inp.barrier_seeds[0]
     rows = []
     for r in rs:
         for p0 in points:
-            seeds = (0,) if (p0 < theory.P_STAR or quick) else (0, 1)
+            seeds = (first_seed,) if (p0 < theory.P_STAR or quick) else inp.barrier_seeds
             for seed in seeds:
                 pb, model = _staddon_problem(n, r, p0, seed=seed)
-                eq = me.minimize(pb)
+                try:
+                    eq, start_error = me.minimize(pb), None
+                except ConfigError as error:
+                    eq, start_error = None, repr(error)
                 for k, junction in enumerate(orientation_junctions(model)):
-                    path = me.contraction(pb, eq.position, junction, fractions)
-                    row = {
-                        "r": r,
-                        "p0": p0,
-                        "seed": seed,
-                        "orientation": k,
-                        "junction": junction,
-                        "barrier": path.barrier,
-                        "barrier_bi_units": 2 * path.barrier,
-                        "energies": path.energies,
-                        "max_force": float(np.max(path.max_forces)),
-                    }
-                    if quick and p0 < theory.P_STAR and seed == 0:
+                    row = {"r": r, "p0": p0, "seed": seed, "orientation": k, "junction": junction}
+                    t0 = time.perf_counter()
+                    if eq is None:
+                        row.update(status="failed", error="start minimization: " + start_error)
+                    else:
+                        try:
+                            path = me.contraction(pb, eq.position, junction, fractions)
+                        except ConfigError as error:
+                            row.update(
+                                status="failed",
+                                error=repr(error),
+                                diagnostics=getattr(error, "diagnostics", None),
+                            )
+                        else:
+                            row.update(
+                                status="converged",
+                                barrier=path.barrier,
+                                barrier_bi_units=2 * path.barrier,
+                                energies=path.energies,
+                                max_force=float(np.max(path.max_forces)),
+                                diagnostics=path.diagnostics,
+                            )
+                    row["seconds"] = time.perf_counter() - t0
+                    if quick and row["status"] == "converged" and p0 < theory.P_STAR:
                         tissue = ref.from_definition(
                             {"model": model, "experiment": {"parameter_controls": [{}]}}
                         )
@@ -507,27 +601,23 @@ def part_barrier(args):
                             tissue, x, junction, fractions, polish="end"
                         )
                         row["reference_barrier"] = float(energies[-1] - energies[0])
-                        row["reference_energy_max_difference"] = float(
-                            np.max(np.abs(np.asarray(path.energies) - energies))
-                        )
                     rows.append(row)
-    below = [row["barrier"] for row in rows if row["p0"] < theory.minimal_perimeter(5)]
+                    record(args, "barrier", row)
+    done = [row for row in rows if row["status"] == "converged"]
+    below = [row["barrier"] for row in done if row["p0"] < theory.minimal_perimeter(5)]
     vanishing = {}
     for r in rs:
         zero_points = sorted(
-            {
-                row["p0"]
+            p0
+            for p0 in {row["p0"] for row in rows if row["r"] == r}
+            if all(
+                row["status"] == "converged" and abs(row["barrier"]) <= 1e-10
                 for row in rows
-                if row["r"] == r
-                and all(
-                    abs(other["barrier"]) <= 1e-10
-                    for other in rows
-                    if other["r"] == r and other["p0"] == row["p0"]
-                )
-            }
+                if row["r"] == r and row["p0"] == p0
+            )
         )
         vanishing[f"r={r}"] = zero_points[0] if zero_points else None
-    references = [row for row in rows if "reference_barrier" in row]
+    references = [row for row in done if "reference_barrier" in row]
     result = {
         "rows": rows,
         "vanishing_point": vanishing,
@@ -541,7 +631,8 @@ def part_barrier(args):
             )
             if references
             else None,
-            "path_max_force": max(row["max_force"] for row in rows),
+            "path_max_force": max(row["max_force"] for row in done) if done else None,
+            "failed_paths": len(rows) - len(done),
         },
     }
     registered = getattr(args, "registered", None)
@@ -550,11 +641,11 @@ def part_barrier(args):
         for value in registered["barriers"]:
             match = [
                 row
-                for row in rows
+                for row in done
                 if row["r"] == value["r"]
                 and row["p0"] == value["p0"]
                 and row["junction"] == value["junction"]
-                and row["seed"] == 0
+                and row["seed"] == first_seed
             ]
             differences.append(
                 abs(match[0]["barrier"] - value["barrier"]) / abs(value["barrier"])
@@ -571,10 +662,10 @@ def part_recoil(args):
     from cells.models import apical_vertex as av
     from cells.processes import vertex_mechanics as vm
 
-    quick = args.quick
+    quick, inp = args.quick, inputs(args)
     n = 4 if quick else 12
     a_star, p_case, _, _ = theory.ground_state(LAMBDA, GAMMA)
-    prep_model = honeycomb(n, sigma=0.05, seed=0)
+    prep_model = honeycomb(n, sigma=0.05, seed=inp.recoil_seed)
     prepared = run_engine(definition(prep_model, end=200.0 if quick else 1200.0, observe=[]))
     x_eq = np.asarray(prepared.final.state.position)
     base = with_positions(prep_model, x_eq)
@@ -723,6 +814,26 @@ def part_recoil(args):
     return out
 
 
+def inference_model(n, seed):
+    """The synthetic inference tissue (shared with mg1_noise_reference.py).
+
+    Returns (model, rng); the rng continues to the noise draw after relaxation.
+    """
+    model = honeycomb(n, sigma=0.0)
+    rng = np.random.Generator(np.random.PCG64(seed))
+    for j in model["junctions"]:
+        j["line_tension"] = LAMBDA * (1 + 0.2 * rng.standard_normal())
+    model = with_positions(
+        model,
+        np.array([v["position"] for v in model["vertices"]])
+        + 0.01 * rng.standard_normal((len(model["vertices"]), 2)),
+    )
+    return model, rng
+
+
+INFERENCE_HORIZON = {8: 1000.0, 12: 1600.0}
+
+
 def part_inference(args):
     import jax
 
@@ -730,20 +841,13 @@ def part_inference(args):
     from cells.analysis import mechanical_equilibrium as me
     from cells.core.specs import parse_spec
 
-    quick = args.quick
+    quick, inp = args.quick, inputs(args)
+    levels = tuple(args.noise_levels)
     rows = []
     for n in (4,) if quick else (8, 12):
-        for seed in (0,) if quick else range(5):
-            model = honeycomb(n, sigma=0.0)
-            rng = np.random.Generator(np.random.PCG64(seed))
-            for j in model["junctions"]:
-                j["line_tension"] = LAMBDA * (1 + 0.2 * rng.standard_normal())
-            model = with_positions(
-                model,
-                np.array([v["position"] for v in model["vertices"]])
-                + 0.01 * rng.standard_normal((len(model["vertices"]), 2)),
-            )
-            defn = definition(model, end=400.0 if quick else {8: 1000.0, 12: 1600.0}[n], observe=[])
+        for seed in inp.inference_seeds[:1] if quick else inp.inference_seeds:
+            model, rng = inference_model(n, seed)
+            defn = definition(model, end=400.0 if quick else INFERENCE_HORIZON[n], observe=[])
             result = run_engine(defn)
             spec = parse_spec(defn)
             pb = me.problem(spec, position=np.asarray(result.final.state.position))
@@ -755,7 +859,7 @@ def part_inference(args):
             joint = jti.joint(b, mean_tension=np.mean(tension), mean_pressure=np.mean(pressure))
             noise = []
             direction = rng.standard_normal(x.shape)  # One draw, scaled: linearity test.
-            for sigma in (1e-7, 1e-6, 1e-5):
+            for sigma in levels:
                 noisy = x + sigma * direction
                 k = jti.known_pressure(jti.balance(noisy, pb.host_topology, pb.box), pressure)
                 noise.append(float(np.sqrt(np.mean((k.tension - tension) ** 2)) / np.mean(tension)))
@@ -800,13 +904,13 @@ def part_inference(args):
                         np.max(np.abs(joint.tension - tension)) / np.mean(tension)
                     ),
                     "joint_condition": joint.condition_beyond_gauges,
+                    "noise_levels": list(levels),
                     "noise_rms": noise,
-                    "noise_slope": float(
-                        np.polyfit(np.log10([1e-7, 1e-6, 1e-5]), np.log10(noise), 1)[0]
-                    ),
+                    "noise_slope": float(np.polyfit(np.log10(levels), np.log10(noise), 1)[0]),
                     "bayesian": bayes,
                 }
             )
+            record(args, "inference", rows[-1])
     return {
         "rows": rows,
         "metrics": {
@@ -835,8 +939,8 @@ def part_numerics(args):
     from cells.models import apical_vertex as av
     from cells.processes import vertex_mechanics as vm
 
-    quick = args.quick
-    model = honeycomb(4, sigma=0.05, seed=2)
+    quick, inp = args.quick, inputs(args)
+    model = honeycomb(4, sigma=0.05, seed=inp.numerics_seed)
     end = 4.0
     v = len(model["vertices"])
     reference, _ = _engine_positions(model, 2.0**-9, "rk4", end)
@@ -858,7 +962,7 @@ def part_numerics(args):
         }
     # Recoil transient: a cut at t = 0.5 of an equilibrium honeycomb.
     base = honeycomb(4)
-    controls = cut_control(base, 0, 1.0, 0.5)
+    controls = cut_control(base, inp.numerics_cut_junction, 1.0, 0.5)
     recoil_ref, _ = _engine_positions(base, 2.0**-9, "rk4", 2.5, controls)
     recoil = []
     for dt in (2.0**-3, 2.0**-4) if quick else (2.0**-3, 2.0**-4, 2.0**-5, 2.0**-6):
@@ -880,7 +984,7 @@ def part_numerics(args):
     except NumericalError:
         refusals["edge_collapse"] = True
     # jax.grad against the closed form on a perturbed 12 x 12 lattice.
-    big = honeycomb(4 if quick else 12, sigma=0.05, seed=9)
+    big = honeycomb(4 if quick else 12, sigma=0.05, seed=inp.gradient_seed)
     spec = parse_spec(definition(big, end=1.0, observe=[]))
     state, layout = av.initial_values(spec)
     f = np.asarray(
@@ -915,9 +1019,9 @@ def part_tyssue(args):
     from cells.core.specs import parse_spec
     from validation.morphogenesis import mg1_tyssue as ty
 
-    quick = args.quick
+    quick, inp = args.quick, inputs(args)
     n = 4 if quick else 12
-    model = honeycomb(n, sigma=0.05, seed=0)
+    model = honeycomb(n, sigma=0.05, seed=inp.tyssue_seed)
     defn = definition(model, end=1.0, observe=[])
     tissue = ref.from_definition(defn)
     x0 = tissue.position
@@ -1070,8 +1174,9 @@ def run_parts(args, parts):
             (args.output / f"{part}.json").write_text(
                 json.dumps(_jsonable(results[part]), indent=1)
             )
-        except Exception as error:  # Preserve the failure as evidence.
+        except Exception as error:  # Preserve the failure as evidence, in the part's own file.
             failures[part] = dict(error=repr(error), traceback=traceback.format_exc())
+            (args.output / f"{part}.failure.json").write_text(json.dumps(failures[part], indent=1))
         status = "ok" if part in results else "FAILED"
         print(f"{part}: {status} in {time.perf_counter() - t0:.1f} s", flush=True)
     return results, failures
@@ -1118,6 +1223,16 @@ def main(argv=None):
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--protocol", type=Path)
     parser.add_argument("--quick", action="store_true")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="full scale on the non-registered inputs (DRY_RUN_INPUTS); refuses --protocol",
+    )
+    parser.add_argument(
+        "--noise-study",
+        type=Path,
+        help="without --protocol: I3 noise levels from a mg1_noise_reference.py output",
+    )
     args = parser.parse_args(argv)
     protocol = None if args.protocol is None else json.loads(args.protocol.read_text())
     if "judge" in args.parts:
@@ -1128,13 +1243,23 @@ def main(argv=None):
         return 0 if judgement["verdict"]["passed"] else 1
     if protocol is not None and args.quick:
         parser.error("--quick is a development scale and is never judged")
+    if protocol is not None and args.dry_run:
+        parser.error("--dry-run uses non-registered inputs and is never judged")
+    if protocol is not None and args.noise_study is not None:
+        parser.error("with --protocol the noise levels are the registered ones")
     import jax
 
     jax.config.update("jax_enable_x64", True)
     args.output.mkdir(parents=True, exist_ok=True)
     args.registered = None
     if protocol is not None:  # Reference values committed in the protocol (mg1_references.py).
-        args.registered = protocol.get("registered_predictions", {}).get("reference_values")
+        registered = protocol.get("registered_predictions", {})
+        args.registered = registered.get("reference_values")
+        args.noise_levels = registered["inference_noise"]["levels"]
+    elif args.noise_study is not None:
+        args.noise_levels = json.loads(args.noise_study.read_text())["levels"]
+    else:  # Development without a study: the levels v2 expects from its rule (not judged).
+        args.noise_levels = [1e-9, 1e-8, 1e-7]
     results, failures = run_parts(args, list(PARTS) if "all" in args.parts else args.parts)
     report = build_report(results, failures, protocol)
     with (args.output / "results.json").open("x") as stream:

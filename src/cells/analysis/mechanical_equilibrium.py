@@ -36,14 +36,29 @@ arises, and the length floor and rotation test exempt that junction and its two
 vertices only. Each lambda starts from the previous minimum. The barrier is
 E(lambda=0) - E(lambda=1) (Bi et al. 2015, Nat Phys 11:1074, Methods, whose energy
 is twice this one).
+
+Each contraction point is minimized in three stages over the free coordinates:
+(1) FIRE to max |F| <= PATH_COARSE (globalization); (2) trust-region Newton on the
+energy with the exact Hessian over all modes (scipy trust-exact; negative curvature
+is handled by the trust region); (3) Levenberg-Marquardt on the force residual,
+delta = -(H^2 + mu I)^-1 H g, accepting a step when max |F| decreases, never by
+comparing energies. Stage 3 exists because a path that crosses the constrained
+network's own compatibility transition (at a critical contraction fraction) meets
+critically flat points: a band of near-zero Hessian modes, where FIRE converges only
+algebraically and energy-based acceptance stalls at the energy's float64 resolution
+(Farhadifar energies carry a large cancelling constant). The accepted point must
+have no Hessian eigenvalue below -ZERO_MODE_RTOL x the largest (a minimum, not a
+saddle). A point that does not converge raises PathNotConverged with its stage
+diagnostics; nothing is clipped or accepted.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import jax
 import jax.numpy as jnp
 import numpy as np
+from scipy import optimize
 
 from cells.core.specs import ConfigError
 from cells.processes import vertex_mechanics as vm
@@ -54,8 +69,18 @@ SHEAR = np.array([[0.0, 1.0], [0.0, 0.0]])
 DILATION = np.eye(2)
 BOX_STRAINS = (np.array([[1.0, 0.0], [0.0, 0.0]]), np.array([[0.0, 0.0], [0.0, 1.0]]), SHEAR)
 ZERO_MODE_RTOL = 1e-9
-# FIRE hands over to Newton at this largest force on contraction paths.
+# FIRE hands over to the trust-region Newton at this largest force on contraction paths.
 PATH_COARSE = 1e-3
+PATH_TRUST_ITERATIONS = 2000
+PATH_POLISH_ITERATIONS = 100
+
+
+class PathNotConverged(ConfigError):
+    """A contraction point did not converge; diagnostics name the stage reached."""
+
+    def __init__(self, message, diagnostics):
+        super().__init__(message)
+        self.diagnostics = diagnostics
 
 
 @dataclass(frozen=True)
@@ -102,6 +127,7 @@ class ContractionPath:
     max_forces: np.ndarray
     barrier: float
     initial_length: float
+    diagnostics: tuple = field(default=())
 
 
 def problem(spec, *, position=None, control=0, box=None):
@@ -403,92 +429,134 @@ _path_hessian = jax.jit(jax.hessian(_path_energy))
 
 
 def _minimize_path(pb, junction, length, x, theta, *, tolerance, max_iterations=400000):
-    """FIRE to a coarse tolerance, Newton (dense Hessian) to the tolerance, FIRE fallback.
+    """Coarse FIRE, trust-region Newton, force-residual LM polish (module docstring).
 
-    Newton steps use the positive modes of the Hessian, are accepted while the largest
-    force decreases and the state stays in the path domain; zero modes (translations,
-    the angle at zero length, the placed head vertex, floppy modes) take no step.
+    Returns (positions, theta, energy, max force, diagnostics).
     """
     t = pb.host_topology
     ends = (int(t.junction_tail[junction]), int(t.junction_head[junction]))
     shift = jnp.asarray(np.asarray(t.junction_image[junction]) @ pb.box.T)
     args = (junction, ends[0], ends[1], shift, length, jnp.asarray(pb.box))
+    z0 = np.concatenate([np.asarray(x).ravel(), [theta]])
+    keep = np.zeros(z0.size, dtype=bool)
+    keep[np.concatenate([2 * pb.vertices, 2 * pb.vertices + 1])] = True
+    keep[[2 * ends[1], 2 * ends[1] + 1]] = False
+    keep[-1] = True
+    index = np.flatnonzero(keep)
+    angle = len(index) - 1
 
-    def value_and_grad(z):
-        e, g = _path_value_and_grad(jnp.asarray(z), *args, pb.topology, pb.mechanics)
-        return float(e), np.where(keep, -np.asarray(g), 0.0)
+    def full(q):
+        z = z0.copy()
+        z[index] = q
+        return z
 
-    def place(z):
+    def energy_and_gradient(q):
+        e, g = _path_value_and_grad(jnp.asarray(full(q)), *args, pb.topology, pb.mechanics)
+        return float(e), np.asarray(g)[index]
+
+    def hessian(q):
+        h = np.asarray(_path_hessian(jnp.asarray(full(q)), *args, pb.topology, pb.mechanics))
+        return h[np.ix_(index, index)]
+
+    def size(g):  # The angle's force is a torque: compare it per unit length.
+        return max(np.max(np.abs(g[:angle])), abs(g[angle]) / length if length > 0 else 0.0)
+
+    def place(q):
+        z = full(q)
         return np.asarray(
             _place_jit(jnp.asarray(z[:-1].reshape(-1, 2)), z[-1], ends[0], ends[1], shift, length)
         )
 
-    def converged(f, limit):
-        return np.max(np.abs(f[:-1])) <= limit and abs(f[-1]) <= limit * length + 1e-300
+    def valid(q):
+        return _path_valid(pb, place(q), junction, ends)
 
-    z = np.concatenate([np.asarray(x).ravel(), [theta]])
-    keep = np.zeros(z.size, dtype=bool)
-    keep[np.concatenate([2 * pb.vertices, 2 * pb.vertices + 1])] = True
-    keep[[2 * ends[1], 2 * ends[1] + 1]] = False
-    keep[-1] = True
-
-    def run_fire(z, limit):
-        v, dt, alpha, positive = np.zeros_like(z), 0.02, 0.1, 0
-        e, f = value_and_grad(z)
-        for _ in range(max_iterations):
-            if converged(f, limit):
-                return z, e, f
-            power = np.sum(f * v)
-            if power > 0:
-                v = (1 - alpha) * v + alpha * np.linalg.norm(v) * f / np.linalg.norm(f)
-                if positive > 5:
-                    dt, alpha = min(1.1 * dt, 0.2), 0.99 * alpha
-                positive += 1
-            else:
-                v[:] = 0.0
-                dt, alpha, positive = 0.5 * dt, 0.1, 0
-            v = v + dt * f
-            trial = z + dt * v
-            if not _path_valid(pb, place(trial), junction, ends):
-                v[:] = 0.0
-                dt *= 0.5
-                if dt < 1e-14:
-                    raise ConfigError("Contraction left the model domain")
-                continue
-            z = trial
-            e, f = value_and_grad(z)
-        raise ConfigError("Contraction minimization did not converge")
-
-    def run_newton(z, e, f):
-        index = np.flatnonzero(keep)
-        for _ in range(20):
-            if converged(f, tolerance):
-                break
-            h = np.asarray(_path_hessian(jnp.asarray(z), *args, pb.topology, pb.mechanics))
-            values, vectors = np.linalg.eigh(h[np.ix_(index, index)])
-            # Positive modes only: degenerate (compatible) minima carry tiny negative
-            # eigenvalues from rounding; a real saddle is caught by the force test.
-            nonzero = values > ZERO_MODE_RTOL * np.max(np.abs(values))
-            step = vectors[:, nonzero] @ ((vectors[:, nonzero].T @ f[index]) / values[nonzero])
-            s = 1.0
-            while s > 1e-4:
-                trial = z.copy()
-                trial[index] += s * step
-                if _path_valid(pb, place(trial), junction, ends):
-                    e_trial, f_trial = value_and_grad(trial)
-                    if np.max(np.abs(f_trial)) < np.max(np.abs(f)):
-                        z, e, f = trial, e_trial, f_trial
+    diagnostics = {}
+    # Stage 1: FIRE to a coarse force (globalization).
+    q, dt, alpha, positive, iterations = z0[index].copy(), 0.02, 0.1, 0, 0
+    v = np.zeros_like(q)
+    e, g = energy_and_gradient(q)
+    while size(g) > max(tolerance, PATH_COARSE):
+        iterations += 1
+        if iterations > max_iterations:
+            raise PathNotConverged(
+                "Contraction FIRE stage did not reach its coarse force", diagnostics
+            )
+        f = -g
+        power = np.sum(f * v)
+        if power > 0:
+            v = (1 - alpha) * v + alpha * np.linalg.norm(v) * f / np.linalg.norm(f)
+            if positive > 5:
+                dt, alpha = min(1.1 * dt, 0.2), 0.99 * alpha
+            positive += 1
+        else:
+            v[:] = 0.0
+            dt, alpha, positive = 0.5 * dt, 0.1, 0
+        v = v + dt * f
+        trial = q + dt * v
+        if not valid(trial):
+            v[:] = 0.0
+            dt *= 0.5
+            if dt < 1e-14:
+                raise PathNotConverged("Contraction left the model domain", diagnostics)
+            continue
+        q = trial
+        e, g = energy_and_gradient(q)
+    diagnostics["fire"] = {"iterations": iterations, "max_force": size(g)}
+    # Stage 2: trust-region Newton on the energy, all modes, exact Hessian.
+    if size(g) > tolerance:
+        result = optimize.minimize(
+            energy_and_gradient,
+            q,
+            jac=True,
+            hess=hessian,
+            method="trust-exact",
+            options={"gtol": tolerance, "maxiter": PATH_TRUST_ITERATIONS},
+        )
+        if valid(result.x):
+            e_t, g_t = energy_and_gradient(result.x)
+            if size(g_t) < size(g):
+                q, e, g = result.x, e_t, g_t
+        diagnostics["trust_region"] = {
+            "iterations": int(result.nit),
+            "message": str(result.message),
+            "max_force": size(g),
+        }
+    # Stage 3: Levenberg-Marquardt on the force residual (no energy comparison).
+    steps = 0
+    if size(g) > tolerance:
+        h = hessian(q)
+        mu = 1e-12 * np.max(np.abs(np.linalg.eigvalsh(h))) ** 2
+        while steps < PATH_POLISH_ITERATIONS:
+            steps += 1
+            h = hessian(q)
+            for _ in range(40):
+                trial = q - np.linalg.solve(h @ h + mu * np.eye(len(h)), h @ g)
+                if valid(trial):
+                    e_t, g_t = energy_and_gradient(trial)
+                    if size(g_t) < size(g):
+                        q, e, g, mu = trial, e_t, g_t, mu / 3
                         break
-                s *= 0.5
+                mu *= 4
             else:
                 break
-        return z, e, f
-
-    z, e, f = run_fire(z, max(tolerance, PATH_COARSE))
-    z, e, f = run_newton(z, e, f)
-    if not converged(f, tolerance):
-        z, e, f = run_fire(z, tolerance)
-    return place(z), float(z[-1]), e, float(np.max(np.abs(f)))
+            if size(g) <= tolerance:
+                break
+        diagnostics["polish"] = {"iterations": steps, "max_force": size(g)}
+    values = np.linalg.eigvalsh(hessian(q))
+    top = np.max(np.abs(values))
+    diagnostics["spectrum"] = {
+        "negative": int(np.sum(values < -ZERO_MODE_RTOL * top)),
+        "near_zero": int(np.sum(np.abs(values) <= ZERO_MODE_RTOL * top)),
+        "largest": float(top),
+    }
+    if size(g) > tolerance:
+        raise PathNotConverged(
+            f"Contraction point did not converge (max force {size(g):.2e})", diagnostics
+        )
+    if diagnostics["spectrum"]["negative"]:
+        raise PathNotConverged("Contraction point is not a minimum (negative modes)", diagnostics)
+    z = full(q)
+    return place(q), float(z[-1]), e, float(size(g)), diagnostics
 
 
 def contraction(pb, x, junction, fractions, *, tolerance=1e-11):
@@ -500,15 +568,20 @@ def contraction(pb, x, junction, fractions, *, tolerance=1e-11):
     tail, head = int(t.junction_tail[junction]), int(t.junction_head[junction])
     d = np.asarray(x)[head] + np.asarray(t.junction_image[junction]) @ pb.box.T - x[tail]
     length0, theta = float(np.linalg.norm(d)), float(np.arctan2(d[1], d[0]))
-    energies, positions, forces = [], [], []
+    energies, positions, forces, stages = [], [], [], []
     current = np.array(x)
     for fraction in fractions:
-        current, theta, e, f = _minimize_path(
-            pb, junction, fraction * length0, current, theta, tolerance=tolerance
-        )
+        try:
+            current, theta, e, f, diagnostics = _minimize_path(
+                pb, junction, fraction * length0, current, theta, tolerance=tolerance
+            )
+        except PathNotConverged as error:
+            error.diagnostics = dict(error.diagnostics, fraction=float(fraction))
+            raise
         energies.append(e)
         positions.append(current.copy())
         forces.append(f)
+        stages.append(dict(diagnostics, fraction=float(fraction)))
         if vm.crossing_junctions(current, t, pb.box):
             raise ConfigError("Contraction produced crossing junctions")
     energies = np.array(energies)
@@ -519,4 +592,5 @@ def contraction(pb, x, junction, fractions, *, tolerance=1e-11):
         np.array(forces),
         float(energies[-1] - energies[0]),
         length0,
+        tuple(stages),
     )

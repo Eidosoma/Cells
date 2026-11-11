@@ -410,3 +410,34 @@ def linear_recoil(before, after, x, junction, times):
     rate = float(selector.ravel() @ f / eta)
     final = float(np.sum(weights / lam))
     return opening, rate, final / rate
+
+
+def force_balance(tissue, x):
+    """Independent force-balance matrices of a geometry: (tension [2V, J], pressure [2V, C]).
+
+    At each vertex sum_j T_j u_j + sum_c P_c dA_c/dx = 0, with u_j the unit vector along
+    junction j away from the vertex and dA_c/dx_k = 1/2 J (u_{k+1} - u_{k-1}) the
+    shoelace gradient (J the 90-degree rotation that gives (dy, -dx)).
+    """
+    v = len(x)
+    d = junction_vectors(tissue, x)
+    unit = d / np.linalg.norm(d, axis=1)[:, None]
+    tension = np.zeros((2 * v, len(unit)))
+    for j, (a, b) in enumerate(zip(tissue.junction_tail, tissue.junction_head, strict=True)):
+        tension[2 * a : 2 * a + 2, j] += unit[j]
+        tension[2 * b : 2 * b + 2, j] -= unit[j]
+    pressure = np.zeros((2 * v, tissue.cells))
+    for c, (vertices, u) in enumerate(zip(tissue.cell_vertices, corners(tissue, x), strict=True)):
+        chord = np.roll(u, -1, axis=0) - np.roll(u, 1, axis=0)
+        for k, vertex in enumerate(vertices):
+            pressure[2 * vertex : 2 * vertex + 2, c] += 0.5 * np.array([chord[k, 1], -chord[k, 0]])
+    return tension, pressure
+
+
+def true_tensions(tissue, x):
+    """T_j = Lambda_j + Gamma_a L_a + Gamma_b L_b and P_c = -K_c (A_c - A0_c)."""
+    area, perimeter, _ = geometry(tissue, x)
+    total = tissue.line_tension.astype(float).copy()
+    for c, junctions in enumerate(tissue.cell_edge_junctions):
+        total[junctions] += tissue.contractility[c] * perimeter[c]
+    return total, -tissue.area_elasticity * (area - tissue.preferred_area)
