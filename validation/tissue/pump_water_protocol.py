@@ -11,7 +11,13 @@ For every trajectory world and quantity:
 - The reference stability term is |ref(rtol 1e-11) - ref(rtol 1e-12)|, maximum over
   the same times; this script recomputes the reference at 1e-12.
 
-Like the parity method, the factor 3 covers terms measured once. The order check
+P1 is judged on its volume (the exact solution) only. P5, with every ion route
+closed, holds Vm at its initial value by construction: its step and stability
+terms are exactly zero, so the rule would pin a zero tolerance, a bitwise test
+of two independent Vm computations rather than a water prediction; P5 is judged
+on its volumes and concentrations (set before the judged run, without comparing
+engine and reference Vm). Like the parity method, the factor 3 covers terms
+measured once. The order check
 (observed order >= 1.8 for ARS on the 4-2-1-0.5 ms sequence) is recorded with
 the tolerances. The stationary states are judged to 1e-6 relative in volume and
 1e-6 V in Vm: the reference solves them to about 1e-12 and the engine Newton to
@@ -74,6 +80,8 @@ def main():
         tolerances[name], terms[name] = {}, {}
         for key, values in study[name]["step_error_term_1ms"].items():
             if name == "P1" and key != "cell_volume_pL":
+                continue
+            if name == "P5" and key == "membrane_voltage_V":  # Held by construction.
                 continue
             if key not in stability and name != "P1":
                 continue
