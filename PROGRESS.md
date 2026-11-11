@@ -64,11 +64,22 @@ machine-readable inputs, results, checks and failures.
     The default @3 refuses the cue step (junction-heat refusal, below). The
     opt-in junction-heat booking accepts it, with the energy ledger closing to about
     1e-7 of flows.
-  - **Held-bath 127-cell sheet, cue-written 37-cell disc, 70 min at dt 5 ms:** held
-    fully D at s 1.0, 0.6 and 0.3, with no D outside. Pre-screen 7 predicted loss at
-    s 1.0. Osmotic excess against each cell's start passed 10% at 56–58 min and
-    peaked at 11.7–12.1% (censor 15%). Held baths supply K without limit, so loading
-    may be overstated. The 19-cell arms are running.
+  - **Held-bath 127-cell sheet, cue-written discs, 70 min at dt 5 ms** (six arms,
+    none refused, no D outside any disc;
+    [summary](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/sheet70/summary-six-arms.json)):
+    - **Five held to 70 min:** 37 cells at s 1.0, 0.6 and 0.3, and 19 cells at s 0.6
+      and 0.3.
+    - **The 19-cell disc at s 1.0 was lost all at once,** about 16.5 min after the
+      cue (987.5–992.5 s, record interval 5 s; a 1 ms replay is next).
+    - **Predictions:** written beforehand, they predicted loss at s 1.0 for both
+      sizes. The 19-cell prediction held; the 37-cell one was falsified.
+    - **Consistency:** the frozen-composition limits from pre-screen 9 fit the
+      outcome, although it was not tested as a cause. At loaded composition the
+      19-cell disc is retained only to s 0.766 and the 37-cell disc to 1.05, so as
+      the 19-cell disc loads it would cross s 1.0, while the 37-cell disc would not.
+    - **Osmotic excess** (against each cell's own start) passed 10% at 56–58 min in
+      the held arms and peaked at 11.7–12.1% (censor 15%).
+    - Held baths supply K without limit, so loading may be overstated.
   - **Control:** started from pre-screen 7's loaded disc with no cue, the driver
     loses the disc in 0.56–0.62 s, as pre-screen 7 does.
   - **L4 reproducibility:** runs on the L4 are not bitwise reproducible from run to
