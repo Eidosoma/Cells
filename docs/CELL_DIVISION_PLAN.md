@@ -95,6 +95,28 @@ The order:
 4. **An epithelial monolayer later,** once growth and vertex mechanics (MG1–MG3)
    exist.
 
+## Architecture first (D142)
+
+Division touches every scale: compartments, membranes, contacts, tissue topology
+and lineage. Before any engine code, its design note sets out a clean,
+object-oriented multiscale design, not an ad-hoc patch:
+
+- **Entities:**
+  - name the entities (cell, compartment, membrane surface, contact, tissue,
+    lineage record);
+  - say what state each owns and what it must not be conflated with;
+  - follow the ownership table on the
+    [multiscale architecture page](MULTISCALE_EXECUTION_ARCHITECTURE.md).
+- **Operations:** division, replacement, growth and later mechanics are operations
+  on those entities, each with a declared interface. They compose with each other,
+  without a new monolithic model family for every combination (for example water
+  plus replacement plus division plus mechanics).
+- **Interfaces:** state the interfaces between scales, for example how a tissue
+  topology change reaches the field solve and the batched layouts.
+- **Kernels:** the hot loops stay functional JAX arrays. The object structure
+  lives in the specs, models and operators that build them.
+- **Review:** the lead and the advisor review the design before implementation.
+
 ## Stages
 
 1. **Verify.** Read the papers for both subjects and confirm the data (values,

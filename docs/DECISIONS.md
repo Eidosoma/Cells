@@ -4659,6 +4659,22 @@ beneath (GRNs) and above how the proteins are used".
   positioning for C. elegans) is added to the engine as cited, opt-in models
   (D136). It is not prescribed.
 
+## D142: Architect new features cleanly
+
+2026-11-11, user direction: "make sure to architecture new features well not
+ad-hoc, object oriented multiscale and clean".
+- **Design first.** Every new engine feature starts with a design note, reviewed
+  by the lead and the advisor before code.
+- **What the note sets out:**
+  - the entities it touches and the state each owns;
+  - the operations it adds and their interfaces;
+  - how it composes with the other features across scales.
+- **Object-oriented at the level of entities, specs, models and operators.** The
+  hot loops stay functional JAX array kernels.
+- **Composition over combination families.** Features compose through shared
+  interfaces rather than a new model family for each combination.
+- **First application:** cell division (D141).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

@@ -115,6 +115,18 @@ appropriate compartment volume. Charge current follows the declared species
 fluxes and valences, plus separately modeled electrode/displacement/gating
 currents where applicable. A ledger records transfer history, not extra matter.
 
+**Architecture requirement for new features (user, 11 November 2026; D142).**
+New features are designed first, as clean, object-oriented multiscale components,
+not ad-hoc additions:
+- clear entities with owned state;
+- operations with declared interfaces that compose across scales;
+- a design note reviewed before code.
+
+Hot loops stay functional JAX array kernels underneath. Wrapping, below, is one
+composition mechanism. As features multiply (water, replacement, division,
+mechanics, regulation), they should compose through shared entity and operator
+interfaces, rather than through a new model family per combination.
+
 **Composition by wrapping (current practice).** New mechanisms are added as
 versioned, opt-in models that call an already qualified model's own step rather
 than copying it. Examples:
