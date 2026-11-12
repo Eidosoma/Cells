@@ -692,6 +692,8 @@ def main(argv=None):
                 equal = all(p["equal"] for p in result["points"]) and result.get(
                     "trajectory_1s", {}
                 ).get("equal", True)
+            if "device" in result:  # The device row checks are part of the verdict.
+                equal = bool(equal) and result["device"]["equal"]
             summary["worlds"][name] = dict(equal=bool(equal), file=path.name)
         except Exception as error:  # A refusal or crash is evidence: record it.
             result = dict(

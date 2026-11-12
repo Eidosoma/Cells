@@ -123,12 +123,13 @@ def jaxprs(directory):
 def _traced(spec, model, arrays):
     """jaxpr text of the checked step, right-hand side and device row checks."""
     import jax
+    import jax.numpy as jnp
 
     s, c, p = arrays
-    dt = spec.execution.dt
+    dt = jnp.asarray(spec.execution.dt)  # Traced, as in the runner's rollout.
     constants = model.device_check_constants(spec)
 
-    def step(s, c, q):
+    def step(s, dt, c, q):
         return model.checked_step(s, dt, c, q, q.active)
 
     def rhs(s, c, q):
@@ -138,7 +139,7 @@ def _traced(spec, model, arrays):
         return model.device_checks(s, s, q, constants, 3)
 
     return dict(
-        checked_step=str(jax.make_jaxpr(step)(s, c, p)),
+        checked_step=str(jax.make_jaxpr(step)(s, dt, c, p)),
         rhs=str(jax.make_jaxpr(rhs)(s, c, p)),
         device_checks=str(jax.make_jaxpr(checks)(s, p)),
     )
