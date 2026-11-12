@@ -29,13 +29,17 @@ import numpy as np
 
 VOLATILE = {"created_utc", "timings", "utc"}
 # Digests of JSON text that contains the renamed strings, or of engine source.
+# A cohort's snapshot_sha256 is the world snapshot's manifest_sha256; state and
+# chunk digests (state_sha256, sha256) are compared like any other field.
 DERIVED = {
     "definition_sha256",
     "spec_sha256",
     "manifest_sha256",
+    "snapshot_sha256",
     "parent_definition_sha256",
     "parent_snapshot_sha256",
     "parent_batch_snapshot_sha256",
+    "batch_definition_sha256",
     "batch_sha256",
     "fingerprint",
     "files_sha256",
