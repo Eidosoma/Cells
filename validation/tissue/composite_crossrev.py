@@ -100,18 +100,23 @@ def worlds():
 
 
 def qualification_worlds(all_steps=False):
-    """W1's judged trajectories, W2's arms and G2-Q1's cases, as their guards run them.
+    """The guarded qualification worlds, as their guards run them.
 
-    Each at its guarded step size (W1 and G2-Q1 at 1 ms, W2 at its definition's). With
-    all_steps, also W1's trajectories at every step size of W1's dt study and Q5's cases
-    at every step size of Q5.
+    W1's judged trajectories, W2's arms, G2-Q1's cases, W37, and the 825-node world with
+    closed water and with event-free replacement, each at its guarded step size (W1,
+    G2-Q1, W37 and the 825-node world at 1 ms, W2 at its definition's). With all_steps,
+    also W1's trajectories at every step size of W1's dt study and Q5's cases at every
+    step size of Q5.
     """
     import json
 
+    from validation.tissue import cell_replacement_fixtures as rfx
     from validation.tissue import cell_replacement_judge as judge
     from validation.tissue import cell_replacement_qualification as g2q
+    from validation.tissue import pump_water_fixtures as wfx
     from validation.tissue import pump_water_kcc_qualification as w2q
     from validation.tissue import pump_water_qualification as w1q
+    from validation.tissue import surface_pump_v3_study as study
 
     root = Path(w1q.__file__).parent  # The predictions of the revision under test.
     w1, w2, g2 = (
@@ -132,7 +137,35 @@ def qualification_worlds(all_steps=False):
     for case, entry in g2["cases"].items():
         for dt in judge.Q5_DTS if all_steps and case in judge.Q5_CASES else (1e-3,):
             out[f"G2_{case.replace('/', '_')}@{dt:g}"] = g2q.at_dt(entry["definition"], dt)
+    out["W37"] = _w37()
+    tissue = study.tissue_definition(dt=1e-3, end_time=0.2, observation_times=[0.0, 0.1, 0.2])
+    out["S825_closed_water"] = wfx.with_water(tissue, availability=0.0)
+    out["S825_event_free"] = rfx.with_replacement(tissue)
     return out
+
+
+def _w37():
+    """The W37 world of composite_guard.part_w37: rim and inner replacements."""
+    from cells.core.cell_replacement_spec import exact_event_times
+    from validation.stationary import worlds as hexagons
+    from validation.tissue import cell_replacement_fixtures as rfx
+    from validation.tissue import cell_replacement_judge as judge
+    from validation.tissue import cell_replacement_qualification as g2q
+
+    registered = judge.REGISTERED
+    raw = rfx.heredity_sheet(6, 3, scale=0.3, dt=1e-3, end_time=3.0)
+    raw["experiment"]["observation_times"] = [0.0, 3.0]
+    raw["model"]["junction_heat_booking"] = g2q.BOOKING
+    cells, _ = hexagons.hexagon(6)
+    rings = [hexagons.ring(c) for c in cells]
+    rims = [i for i, r in enumerate(rings) if r == 3]
+    inners = [i for i, r in enumerate(rings) if r == 1]
+    slots = [*(rims[k] for k in registered["w37_rim"]), inners[registered["w37_inner"]]]
+    h = next(i for i, r in enumerate(rings) if r == 6)
+    (t,) = exact_event_times((registered["w37_step"],), 1e-3)
+    template = rfx.template_from_cell(raw, f"cell_{h}", "h")
+    events = [(t, f"cell_{i}", "h", f"n{i}") for i in slots]
+    return rfx.with_replacement(raw, [template], events)
 
 
 def _worlds(world_set, all_steps):
