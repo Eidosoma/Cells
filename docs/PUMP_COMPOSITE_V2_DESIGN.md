@@ -80,6 +80,16 @@ otherwise never run it.
 
 ### 1.1 Energy roles declared, not recognised by suffix
 
+**Built (bbe40af):**
+- The composite binds its step checks: @3's bound checks on `inner_check_spec`, then
+  each operator's; definition-only parts are evaluated once per clock (R5).
+- @3's free energy has its declared owner in the adapter (`chemical_free_energy_pJ`,
+  `capacitor_free_energy_pJ`). Replacement and injection book their exact changes with
+  it, and injection's temporary import is gone.
+- **Still open:** the declared energy-role table below, which needs the family's
+  energy-bound function in `surface_pump.py` (outside the composite's files).
+
+
 This starts after the plan-validation fix lands; that fix is editing `surface_pump*.py`.
 
 **Today:**
