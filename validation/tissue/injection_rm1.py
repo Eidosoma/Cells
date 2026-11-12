@@ -1,4 +1,4 @@
-"""First acceptance of electrode_current_injection@1: Rm1 on the uncleaved egg (PROPOSED).
+"""First acceptance of electrode_current_injection@1: Rm1 on the uncleaved egg (registered).
 
 docs/PUMP_COMPOSITE_V2_DESIGN.md §4.1. The engine egg is R-full's own uncleaved egg:
 cleft_egg_reference.build(declared inputs, default values, p_old = the record's p_old_m_s)
@@ -39,7 +39,7 @@ if __name__ == "__main__":
             sys.path.insert(0, str(entry))
 
 LAW = "electrode_current_injection@1"
-STATUS = "PROPOSED first acceptance of electrode_current_injection@1; not judged."
+STATUS = "Development action of the first acceptance of electrode_current_injection@1; not judged."
 RECORD = ROOT / "validation/division/j1_prediction_of_record.json"
 PROTOCOL = ROOT / "validation/tissue/injection_rm1_protocol.json"
 

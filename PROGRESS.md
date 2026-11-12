@@ -58,6 +58,27 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Current injection: first acceptance passed (Rm1 on the uncleaved egg against R-full;
+  12 November).** Engine models: `resolved_pump_composite@1` over `resolved_pump_tissue@3`
+  with `electrode_current_injection@1`.
+  - **Definition:** R-full's own uncleaved egg (its `build()` from
+    `j1_declared_inputs.json` with the record's P_old), written as `@3`; J1's pulse protocol
+    (±30 nA for 1.2 s every 10 s, K 0.4912 / Cl 0.5088); J1's Rm rule on pulses 0 and 1.
+    Every field matches R-full's egg; the declared differences are activities used as
+    concentrations, N_A·e against F (3.4e-11) and a 1.3e-16 volume rounding.
+  - **Development dt study** (seen before registration): Rm1 is 852298.5 Ω at 1 ms and
+    852073.9 Ω at 0.5 ms against R-full's 852000.0 Ω. The error is second order (ratio
+    4.04) and extrapolates to within about 1 Ω of R-full.
+  - **Registered** in
+    [`injection_rm1_protocol.json`](validation/tissue/injection_rm1_protocol.json): pass
+    when |Rm1(1 ms) − 852000.0 Ω| ≤ 3 × (step term 224.58 Ω + reference term 1.7e-6 Ω) =
+    673.74 Ω. The judged run happens once, from a clean snapshot of main.
+  - **Judged run: pass.** Rm1 = 852298.5 Ω, +298.5 Ω against the 673.74 Ω tolerance,
+    from a clean snapshot of main at `2aa2793` (CPU 5, no OOM). It equals the 1 ms
+    development run bit for bit, as expected on CPU.
+  - Evidence: [development](/mnt/workspaces/Cells/composite-v2-20261112-01/rm1-dtstudy/),
+    [judged](/mnt/workspaces/Cells/composite-v2-20261112-01/rm1-judged/judged.json).
+
 - **Combined landing: the plan-validation fix, composite v2 §1.2–§1.4, the L4 agreement
   driver, `electrode_current_injection@1` and the J1 diagnostic code (12 November).** One
   tier 1 + 2 gate on the combined tree: 355 files, no changed outcome, no OOM kill
