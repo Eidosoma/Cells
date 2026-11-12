@@ -632,10 +632,17 @@ WATER_KINDS = ("water1", "water2")
 KCC_FLUX_MMOL_L_H, KCC_STEEPNESS = 4.0, 1.0
 
 
-def with_volume_model(raw, kind):
+# --water-availability: the water routes' availability in the sheet worlds (default 1).
+# 0 is the water-off control: the full water code with exact zero flows, so the volume
+# stays at the start's (the model's stationary H, solved with water on) and the ionic
+# dynamics are @3's at that volume and composition.
+WATER_AVAILABILITY = 1.0
+
+
+def with_volume_model(raw, kind, availability=1.0):
     from validation.tissue import pump_water_fixtures as water
 
-    raw = water.with_water(raw)
+    raw = water.with_water(raw, availability=availability)
     if kind == "water2":
         raw = water.with_symport(raw, flux_mmol_L_h=KCC_FLUX_MMOL_L_H, steepness=KCC_STEEPNESS)
     return raw
@@ -699,7 +706,7 @@ def water_sheet(raw, cells):
     """A @3 sheet definition (cells at H, volume V0) under the volume model, every cell at
     the model's stationary H (water_cell_start): amounts, volume, charge and gates."""
     start = water_cell_start(WATER)
-    raw = with_volume_model(raw, WATER)
+    raw = with_volume_model(raw, WATER, availability=WATER_AVAILABILITY)
     m = raw["model"]
     reference = {c["compartment_id"]: c["reference_volume_pL"] for c in m["water"]["compartments"]}
     for cell in m["cells"][:cells]:
@@ -715,6 +722,20 @@ def water_sheet(raw, cells):
         elif c["kinetic_law"] == fixtures.NAV1P2_LAW_ID:
             c["initial_gate"] = list(start["nav_gate"])
     return raw
+
+
+WATER_OFF_PREDICTIONS = dict(
+    kind="cells.heredity_pilot_w1_water_off_control_predictions@1",
+    status="written before the water-off control run; development analysis, not judged",
+    question="the 19-cell disc at s 1.0 was lost 990.5 s after the cue in fixed volume but "
+    "345-348 s after it under water1 and water2, with the disc swollen only 1% (0.941 -> "
+    "0.951 V0) at the loss; the water worlds also start from a different H (the model's "
+    "stationary H: -81.3 mV, K 144, M 6.7 mM at 0.942 V0, against -79.6 mV, K 136, M 7.1 mM). "
+    "Same water1 world and start with every water route closed (availability 0): volume "
+    "held at the start, ionic dynamics as @3",
+    prediction="the start state, not volume change, sets the earlier loss: the disc is lost "
+    "at about the water1 time, 330-370 s after the cue (not near the fixed-volume 990 s)",
+)
 
 
 WATER_PREDICTIONS = dict(
@@ -884,9 +905,10 @@ def part_longsheet(args):
     output = Path(args.output) / (f"longsheet-{args.label}" if args.label else "longsheet")
     output.mkdir(parents=True, exist_ok=True)
     if not (output / "predictions.json").exists():
-        write_json(
-            output / "predictions.json", LONG_PREDICTIONS if WATER is None else WATER_PREDICTIONS
-        )
+        chosen = LONG_PREDICTIONS if WATER is None else WATER_PREDICTIONS
+        if WATER is not None and WATER_AVAILABILITY == 0.0:
+            chosen = WATER_OFF_PREDICTIONS
+        write_json(output / "predictions.json", chosen)
     cases, members, discs = [], [], {}
     for disc_cells in args.discs:
         for s in args.scales:
@@ -915,6 +937,7 @@ def part_longsheet(args):
         engine_model=members[0].simulation.to_dict()["model"]["id"]
         + " through core/vector_windows.py (device checks)",
         volume_model=WATER,
+        water_availability=None if WATER is None else WATER_AVAILABILITY,
         water_start=None if WATER is None else water_cell_start(WATER),
         kcc=None
         if WATER != "water2"
@@ -2729,13 +2752,18 @@ def main(argv=None):
     parser.add_argument("--junction-heat", help="@3 junction_heat_booking for every world built")
     parser.add_argument("--water", choices=WATER_KINDS, help="sheet worlds' volume model")
     parser.add_argument(
+        "--water-availability", type=float, default=1.0, help="sheet worlds' water routes"
+    )
+    parser.add_argument(
         "--segment-seconds", type=float, help="run: stop after this much model time (snapshot)"
     )
     parser.add_argument("--snapshot-every", type=float, help="run: snapshot every s of model time")
     parser.add_argument("--predictions", choices=("e07", "hold"), default="e07")
     args = parser.parse_args(argv)
     global JUNCTION_HEAT, WATER
+    global WATER_AVAILABILITY
     JUNCTION_HEAT, WATER = args.junction_heat, args.water
+    WATER_AVAILABILITY = args.water_availability
     Path(args.output).mkdir(parents=True, exist_ok=True)
     status = 0
     for name in args.parts:
