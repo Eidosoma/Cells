@@ -93,6 +93,16 @@ machine-readable inputs, results, checks and failures.
     - the cost probe alone, with a 45-min limit and Python's fault handler.
   - **Finished by 13:00:** the J1 band, its arms and time course; the step-study
     remainder; the 35-min smoke (see the S0b entry below).
+  - **Cost probe diagnosed: an engine performance bug, not a GPU hang.** Rerun alone on
+    CPU 6 from 13:01, it again wrote no window. At 40 min a SIGABRT dumped its stack
+    ([log](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/logs/ft-costprobe.log),
+    exit 134).
+    - It sat in host-side plan validation. `_validate_window_plan` checks the whole
+      declared clock, 4218 s at 1 ms, in chunks of at most 1024 steps.
+    - For each chunk, `check_steps` recomputes bounds that depend only on the definition,
+      through `initial_values`, which includes the 825-node field bind.
+    - An engine fix, computing those bounds once per definition with no numerical change,
+      is in progress. The GPU segment waits for it.
   - **A further fix:** the step study's `compare` part had written the J1 comparison over
     the activation one, because it used one file name for both starts.
     - Both are kept now: `compare.json` was regenerated from the same snapshot and inputs,
