@@ -1,6 +1,6 @@
 {
  "kind": "cells.division.j1_diagnostic_arms@1",
- "status": "DRAFT for the lead's review (12 November 2026). No arm in this file has been run. It is registered on main before any run; implementation and runs follow registration.",
+ "status": "REGISTERED by the lead on main (12 November 2026) before any arm was run; decisions in lead_decisions_taken.",
  "selection_datum": "From here on J1 (dLB74 Table I: Em -20.3 +/- 0.8 mV, SE, n = 20, normal eggs at onset of second cleavage) is a selection datum: it is used to compare models, not judged as a prediction. Nothing in this file is a prediction of record. No parameter value is ever picked from Em: every curve is reported whole, and where a curve crosses the datum window that is reported as a fact about the curve, not as a value of its parameter.",
  "context": {
   "registered_inputs": "validation/division/j1_declared_inputs.json (main d7a1797), unchanged",
@@ -9,7 +9,7 @@
   "progress": "PROGRESS.md S0b entry (main efa0e54)",
   "corrections_carried": [
    "dLB74's 0.14 mm2 'exposed' (p535) is the parallel reading of the same Rm series (1148 +/- 104 kOhm, n = 17), not independent evidence; here it is the end point of arm A1's curve, never an input.",
-   "The measured Em lies between two readings of one Rm 488 kOhm (restricted lumen -12.8 mV; bath-exposed patch about -40 mV), so a mix reaching -20.3 mV proves nothing by itself; arms are also compared on the time-course shape and on check C1.",
+   "The measured Em lies between two readings of one Rm 488 kOhm (restricted lumen -12.8 mV; bath-exposed patch about -40 mV), so a mix reaching -20.3 mV proves nothing by itself; arms are also compared on the time-course shape.",
    "R-full's time course differs in shape from dLB74's (step to -15.2 mV at 8 min, Rm fall mostly in 7-10 min, against a gradual 10-mV fall over 7-17 min): see time_course."
   ]
  },
@@ -21,13 +21,13 @@
   "base_case_check": "Each arm's null setting (f = 0, G_z = 0, N = 1, P_Cl = 0, alpha = 0, beta = 1) must reproduce the prediction of record within the record's reference term; this is a unit test before any arm runs.",
   "integrator": "LSODA, rtol 1e-10, as the band (agrees with the registered Radau to 2.3e-12 V on the default); the distributed lumen (A3) may use BDF with a declared sparsity pattern, cross-checked on one point against Radau.",
   "j2": "J2 is off limits: no DFS74 or J2 quantity is computed for any model, including the current one, until a revised model is frozen.",
-  "combinations": "Arms are run one at a time. No combination is run until the single arms are reported and the lead asks for one."
+  "combinations": "Arms are run one at a time. No combination is run until the single arms are reported and the lead asks for one.",
+  "held_check": "Check C1 is held (held_check_C1_for_frozen_candidates): no solution B or C run in this pass."
  },
  "report_per_point": {
   "at_j1": "Em and Rm (pulse protocol), the separate chords, A/L or kappa, P_old, the lumen composition and potential, cytosolic Na (dL74 measured 22.4 +/- 1.1 mM)",
   "time_course": "Em at every pulse front edge and Rm at every pulse pair from 0 to 35 min",
-  "descriptors": "time_course.descriptors for every point",
-  "check_C1": "if the lead adopts check C1"
+  "descriptors": "time_course.descriptors for every point"
  },
  "time_course": {
   "status": "Reported and compared, not judged: dLB74 gives a description and single-egg traces.",
@@ -56,37 +56,8 @@
    "D5_rm_fraction_of_fall_by_10_min": "(Rm(7) - Rm(10)) / (Rm(7) - Rm(17))",
    "D6_rm_ratio_17_over_7": "Rm(17) / Rm(7)",
    "D7_late_rm_rise_kOhm": "Rm(J1) - minimum Rm before J1"
-  }
- },
- "check_C1_bath_potassium_step": {
-  "status": "PROPOSED; the lead decides whether it is reported for every point. Not used to select.",
-  "why": "The only independent datum read at the same stage that probes the cleft's exchange with the bath. It separates the two readings of one Rm: a bath-facing fraction (A1) follows the bath's K+ directly, a restricted lumen through its own composition.",
-  "protocol": "The egg cleaves in solution B (a_K 4.07 mM), and separately in solution C (a_K 10.17 mM), from t = 0, with the pulse train running; P_old and A/L are those calibrated in Steinberg for the same point (membrane properties, not changed by the medium). Report Em at J1 and the 0-35 min time course.",
-  "solutions_activity_mM": {
-   "B": {
-    "Na": 43.79,
-    "K": 4.067,
-    "Cl": 47.86
-   },
-   "C": {
-    "Na": 37.69,
-    "K": 10.17,
-    "Cl": 47.86
-   }
   },
-  "solution_basis": "dL74 Table 5 (p9, V; page rendered): B NaCl 53.84 + KCl 5.00 mM, C NaCl 46.34 + KCl 12.50 mM, each with Ca(NO3)2 0.34, MgSO4 0.83 and Tris; activity coefficient 0.814 for Na+, K+ and Cl- (Table 5 footnote a, V); Ca, Mg and Tris omitted as for Steinberg",
-  "data": {
-   "source": "dL74 p10-11",
-   "mark": "V",
-   "values": "normally cleaving eggs at onset of second cleavage: Em -17.1 mV in Steinberg, -12.3 mV in solution B; at a_K 10.17 mM (solution C) or more, Em not significantly different from the uncleaved egg's; the authors derive P_Na/P_K = 0.73 for these eggs",
-   "note": "dL74's eggs read -17.1 mV in Steinberg, a different series from dLB74's -20.3 mV."
-  },
-  "cost": "two runs of 0-35 min per point (about 10 s each)",
-  "protocol_basis": {
-   "source": "dL74 p9",
-   "mark": "V",
-   "what": "Em, Rm and the intracellular activities were measured in eggs bathed in the media of Table 5 during cleavage, with and without the vitelline membrane; the values of Em were taken at the time of onset of second cleavage"
-  }
+  "exclusion": "Each arm's descriptors_set_by_construction are left out of that arm's comparison."
  },
  "arms": [
   {
@@ -133,7 +104,10 @@
     "P_old on Rm1",
     "A/L on Rm2"
    ],
-   "points": 6
+   "points": 6,
+   "descriptors_set_by_construction": {
+    "D1_onset_min": "follows the declared insertion onset (7 min), shared by every arm"
+   }
   },
   {
    "id": "A2_peri_furrow_old_membrane_zone",
@@ -201,7 +175,10 @@
     "P_old on Rm1 (unchanged: the zone starts after the Rm1 pulses)",
     "A/L on Rm2"
    ],
-   "points": 6
+   "points": 6,
+   "descriptors_set_by_construction": {
+    "D1_onset_min": "follows the declared insertion onset (7 min), shared by every arm"
+   }
   },
   {
    "id": "A3_distributed_lumen",
@@ -258,7 +235,7 @@
       "free": 0
      },
      "kind": "single",
-     "points": "w in {1.5, 2.0, 2.5} um at the default bridge; bridge area at its low and high ends at w = 2.0 um; N = 10; N = 20 at the defaults (convergence)"
+     "points": "defaults (w 2.0 um, bridge 0.26 mm2) at N = 1, 10 and 20; w 1.5 and 2.5 um at N = 10; bridge area low and high at N = 10 (7 calibrated points)"
     },
     {
      "id": "A3_geometric_access",
@@ -270,14 +247,25 @@
      },
      "kind": "single, uncalibrated",
      "role": "Rm2 becomes a check (expected well below 488 kOhm by the S estimate)",
-     "points": "w in {1.5, 2.0, 2.5} um, N = 10"
+     "points": "w 1.5, 2.0 and 2.5 um at N = 10; w 2.0 um at N = 20 (4 uncalibrated runs)"
     }
    ],
    "recalibrate": [
     "P_old on Rm1",
     "rim A/L on Rm2 (A3_rim_calibrated only)"
    ],
-   "points": 9
+   "points": 11,
+   "descriptors_set_by_construction": {
+    "D1_onset_min": "follows the declared insertion onset (7 min), shared by every arm"
+   },
+   "ring_counts": {
+    "values": [
+     1,
+     10,
+     20
+    ],
+    "rule": "N = 1 is the registered lumen (base-case check); 10 and 20 are reported side by side at the defaults; the w and bridge-area ranges and the geometric-access check run at N = 10; the geometric access also at N = 20 (w = 2.0 um). All N are reported."
+   }
   },
   {
    "id": "A4_old_membrane_chloride",
@@ -320,14 +308,21 @@
      0.06,
      0.12
     ],
-    "range_basis": "[0, 0.12]: dL74's null at a 2-mV detection limit (S)"
+    "range_basis": "[0, 0.12]: the 2-mV detection limit only sets where the curve ends (dL74 states none, S)",
+    "marked": {
+     "x": 0.06,
+     "meaning": "the end a 1-mV detection limit would give"
+    }
    },
    "recalibrate": [
     "P_old on Rm1 (Cl included)",
     "A/L on Rm2"
    ],
    "note": "K83's Cl- efflux is near the furrow and in a low-Cl medium; dL74's null in cleaving eggs (p9) also bounds a Cl- conductance confined to the A2 zone, which is a combination and not run.",
-   "points": 3
+   "points": 3,
+   "descriptors_set_by_construction": {
+    "D1_onset_min": "follows the declared insertion onset (7 min), shared by every arm"
+   }
   },
   {
    "id": "A5_calcium",
@@ -435,7 +430,10 @@
     "A/L on Rm2"
    ],
    "points": "4 central + 12 one-at-a-time fits (A6c, A6d)",
-   "data_used": "A6c and A6d fit the exposed arms' own Em2 and Rm2 (dLB74 Table I), the same data the registered rules were derived from by linear-circuit approximations; no fit touches J1's Em or Rm."
+   "data_used": "A6c and A6d fit the exposed arms' own Em2 and Rm2 (dLB74 Table I), the same data the registered rules were derived from by linear-circuit approximations; no fit touches J1's Em or Rm.",
+   "descriptors_set_by_construction": {
+    "D1_onset_min": "follows the declared insertion onset (7 min), shared by every arm"
+   }
   },
   {
    "id": "A7_depth_dependent_access",
@@ -513,7 +511,18 @@
     "P_old on Rm1",
     "kappa on Rm2"
    ],
-   "points": 6
+   "points": 6,
+   "descriptors_set_by_construction": {
+    "A7a_depth_scaling": {
+     "D1_onset_min": "follows the declared insertion onset (7 min), shared by every arm"
+    },
+    "A7b_late_apposition": {
+     "D1_onset_min": "follows the declared insertion onset (7 min), shared by every arm",
+     "D3_em_minimum (its time)": "the ramp starts at 15 min, read from the same trace's Em minimum (Fig. 2, F)",
+     "D4_late_change_mV": "the late depolarisation is produced by the ramp, whose timing was read from the same Fig. 2 trace",
+     "D7_late_rm_rise_kOhm": "the late Rm rise is produced by the same ramp (timing from Fig. 2)"
+    }
+   }
   },
   {
    "id": "A8_computed_arms",
@@ -546,27 +555,60 @@
  ],
  "compute": {
   "basis": "the band: about 23 CPU-min for 32 calibrated members (about 43 s each on a free core) at a 1.5 GB peak",
-  "per_point": "one calibration (about 45 s) + the 35-min time course (about 10 s) + check C1 if adopted (about 20 s)",
+  "per_point": "one calibration (about 45 s) + the 35-min time course (about 10 s)",
   "estimate_cpu_min": {
    "A1": 8,
    "A2": 8,
-   "A3": "60-150, untimed: 34-64 states; scipy BDF was about 6x slower than LSODA on the earlier synthetic timing, so one synthetic N = 10 pulsed run is timed before launch",
+   "A3": "45-120, untimed: N = 1 about 1 min; N = 10 (34 states) and N = 20 (64 states) with BDF and a sparse Jacobian, scipy BDF having been about 6x slower than LSODA on the earlier synthetic timing; one synthetic N = 10 pulsed run is timed before launch",
    "A4": 4,
    "A6": "75 (two exposed-arm fits of about 4 min, 12 one-at-a-time fits, 16 J1 calibrations)",
-   "A7": 8,
-   "total": "about 2.5-5 CPU-hours, depending on A3"
+   "A7": 7,
+   "total": "about 2.5-4 CPU-hours, depending on A3"
   },
   "memory": "at most about 1.5 GB per process, as the band",
-  "launch": "/home/robert/Cells/scripts/run_detached.sh NAME 3G --oom-first --cpus 5 -- <command>, one job per arm group (A1+A2+A4+A7; A3; A6), never nohup or &; from frozen clean snapshots",
-  "implementation_before_runs": "R-full extensions with unit tests (each null setting reproduces the record): mixed facing (A1), zone conductance (A2), segmented lumen (A3, new module), old P_Cl (A4), exposed-arm fit (A6), time-dependent access (A7), bath switch (C1)"
+  "launch": "/home/robert/Cells/scripts/run_detached.sh NAME 3G --oom-first --wait-headroom 2G --cpus 5 -- <command>, one job per arm group (A1+A2+A4+A7; A3; A6), never nohup or &; from a frozen clean snapshot of main",
+  "implementation_before_runs": "R-full extensions with unit tests (each null setting reproduces the record): mixed facing (A1), zone conductance (A2), segmented lumen (A3, new module), old P_Cl (A4), exposed-arm fit (A6), time-dependent access (A7)"
  },
- "lead_decisions": [
-  "Adopt check C1 (eggs cleaving in solutions B and C, dL74 p9-11) for every point, or drop it.",
-  "A2: the zone's selectivity is the old membrane's; a Na/Cl-selective zone (K83's carriers) would add unknowns and is not proposed.",
-  "A3: annulus geometry with inward growth, fixed rings and in-place bath fill, as declared; A3_geometric_access kept as a check.",
-  "A4: the 2-mV detection limit behind x <= 0.12 (dL74 states none; 1 mV gives 0.06).",
-  "A7a: the alpha set {0.5, 1, 2}.",
-  "A7b: the beta set {0.8, 0.6, 0.4} and the ramp timing (15 to 28 min) from one trace (F).",
-  "Whether to add the inward-rectifier curve (dropped by default)."
+ "held_check_C1_for_frozen_candidates": {
+  "status": "HELD for frozen candidates. Not computed in this pass for any model, tests included. Its use is decided under a rule registered before its first run, when candidate models are frozen. Its Steinberg leg corresponds to J1, which is already computed, so only the B and C legs would be blind, and the judged quantity would be the shift within dL74's own series.",
+  "why_held": "It is the only blind test a revised model can face soon (J2 needs the partition, which R-full lacks); once numbers sit beside dL74's, they select.",
+  "no_runs": "No solution B or C run anywhere in this pass; a bath switch, if built now, is tested on a synthetic bath only.",
+  "would_be": {
+   "protocol": "The egg cleaves in solution B (a_K 4.07 mM), and separately in solution C (a_K 10.17 mM), from t = 0, with the pulse train running; P_old and A/L are those calibrated in Steinberg for the same point (membrane properties, not changed by the medium). Report Em at J1 and the 0-35 min time course.",
+   "protocol_basis": {
+    "source": "dL74 p9",
+    "mark": "V",
+    "what": "Em, Rm and the intracellular activities were measured in eggs bathed in the media of Table 5 during cleavage, with and without the vitelline membrane; the values of Em were taken at the time of onset of second cleavage"
+   },
+   "solutions_activity_mM": {
+    "B": {
+     "Na": 43.79,
+     "K": 4.067,
+     "Cl": 47.86
+    },
+    "C": {
+     "Na": 37.69,
+     "K": 10.17,
+     "Cl": 47.86
+    }
+   },
+   "solution_basis": "dL74 Table 5 (p9, V; page rendered): B NaCl 53.84 + KCl 5.00 mM, C NaCl 46.34 + KCl 12.50 mM, each with Ca(NO3)2 0.34, MgSO4 0.83 and Tris; activity coefficient 0.814 for Na+, K+ and Cl- (Table 5 footnote a, V); Ca, Mg and Tris omitted as for Steinberg",
+   "data": {
+    "source": "dL74 p10-11",
+    "mark": "V",
+    "values": "normally cleaving eggs at onset of second cleavage: Em -17.1 mV in Steinberg, -12.3 mV in solution B; at a_K 10.17 mM (solution C) or more, Em not significantly different from the uncleaved egg's; the authors derive P_Na/P_K = 0.73 for these eggs",
+    "note": "dL74's eggs read -17.1 mV in Steinberg, a different series from dLB74's -20.3 mV."
+   }
+  }
+ },
+ "lead_decisions_taken": [
+  "C1 is held for frozen candidates (held_check_C1_for_frozen_candidates): not computed in this pass for any model, tests included.",
+  "A2's zone takes the old membrane's selectivity, so it adds one unknown.",
+  "A3's geometry is accepted, with N = 1, 10 and 20, and A3_geometric_access is kept as a check.",
+  "A4's curve ends at the 2-mV limit (x = 0.12), with x = 0.06 (1 mV) marked.",
+  "A7a's alpha set {0.5, 1, 2} is accepted.",
+  "A7b's beta set {0.8, 0.6, 0.4} is accepted, with the ramp from 15 to 28 min from Fig. 2 (F); D4 and D7 (and the time in D3) are excluded from A7b's comparison.",
+  "The inward-rectifier curve is dropped.",
+  "'No value is picked from Em' stays. Fixing a curve's unknown at its J1 crossing, to give C1 a prediction, would be a later declared calibration made when candidates are frozen."
  ]
 }
