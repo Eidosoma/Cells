@@ -247,21 +247,33 @@ machine-readable inputs, results, checks and failures.
       fit cleanly: +VM +CCB Rm is 3.4 SE from its mean, and −VM Em 2.2 SE.
     - Cytosolic Na at J1 is 20.1 mM; dL74 measured 22.4 ± 1.1 mM.
   - **What it means:** the declared model as a whole misses J1. Which assumption is wrong
-    is not isolated. The declared assumptions with independent evidence against them in
-    the papers:
-    - all new membrane faces the lumen; dLB74 p535 puts 0.14 mm² effectively in contact
-      with the bath in intact eggs;
-    - a uniform, constant old membrane; K83 measures 4–30 times more current in the old
-      membrane beside the furrow;
-    - a well-mixed lumen with one access path, for a furrow about 150 µm deep and 2 µm
-      wide;
-    - no Ca²⁺ or Cl⁻ currents; K83 assigns old-membrane inward current to Na⁺, Ca²⁺ and
-      Cl⁻;
-    - the new-membrane rules, given the exposed-arm misfit above.
-  - **Next:**
-    - Any revision is post hoc for J1. It needs a new declared prediction and a judged
-      test on data never computed: J2 (DFS74 Table I) has not been computed.
-    - The decision is with the user.
+    is not isolated.
+    - The measured Em lies between two readings of the same Rm 488 kΩ. All new membrane
+      behind a restricted lumen gives −12.8 mV; a bath-exposed patch gives −37 to −44 mV.
+      A mix of the two can reach −20.3 mV, so a match alone proves nothing.
+    - dLB74's 0.14 mm² "exposed to the outer medium" (p535) is not independent evidence.
+      It is calculated from the same Rm series (1148 ± 104 kΩ, n = 17, the parallel
+      reading of Rm2) as the bath-exposed reading.
+    - The declared assumptions with independent evidence against them in the papers:
+      - a uniform, constant old membrane; K83 measures 4–30 times more current in the
+        old membrane beside the furrow;
+      - a well-mixed lumen with one access path, for a furrow about 150 µm deep and
+        2 µm wide;
+      - no Ca²⁺ or Cl⁻ currents; K83 assigns old-membrane inward current to Na⁺, Ca²⁺
+        and Cl⁻;
+      - the new-membrane rules, given the exposed-arm misfit above.
+    - **The time-course shape differs too** (reported, single traces). In R-full, Em
+      steps to −15.2 mV at 8 min and then relaxes to −12.8 mV as the lumen fills with K.
+      Rm falls mostly within 7–10 min (852 to 525 kΩ). dLB74 describes Em falling about
+      10 mV gradually over 7–17 min, with Rm falling over the same period.
+  - **Next (the user chose this with the advisor, 12 November):** a diagnostic on R-full.
+    - The arm file is registered on main before any run. J1 is now a selection datum.
+    - Each arm states its change, its source and what is recalibrated.
+    - An arm that adds an unknown with no measurement of its own is reported as a curve
+      of Em against that unknown at fixed Rm. No value is picked from Em.
+    - Arms are compared on the time-course shape as well as on Em at J1.
+    - No model computes J2 until a revised model is frozen. The revision comes back to
+      the user with the results.
     - Composite S1 and the division operators continue unaffected.
   - **Rerun check:** the four band members finished before the crash were recomputed on
     the rerun and agree to every printed digit.
