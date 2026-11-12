@@ -1,4 +1,9 @@
-"""Strict nominal-coordinate pair schema; no source assay names or implicit units."""
+"""Strict nominal-coordinate pair schema; no source assay names or implicit units.
+
+The scaled parameter set and nominal units are those of the miR200/Zeb gap-junction
+model in BITSEY (Grodstein and Pietak, https://gitlab.com/grodstein/bitsey) at commit
+b2cb370 (cited source; no BITSEY code).
+"""
 
 from dataclasses import asdict
 
@@ -21,18 +26,18 @@ from cells.core.specs import (
     _vector,
 )
 
-PARAMETER_SET = "bitsey-b2cb370-emt-pair-simple"
+PARAMETER_SET = "emt-mirna-pair-scaled-simple"
 IONS = ("Na", "K", "Cl")
 REGULATION = ("miR200_total", "Zeb_mRNA_total", "ZEB_prot")
 CONTEXT = ("P", "snail", "ST")
 ROUTES = ("ions", "mirna")
 UNITS = {
-    "time": "bitsey_time_unit",
+    "time": "nominal_time_unit",
     "ionic_concentration": "mol/m3",
-    "regulatory_coordinate": "bitsey_scaled_coordinate",
+    "regulatory_coordinate": "scaled_coordinate",
     "voltage": "V",
     "length": "m",
-    "diffusion": "m2/bitsey_time_unit",
+    "diffusion": "m2/nominal_time_unit",
 }
 
 

@@ -4746,6 +4746,53 @@ can in parallel".
 - **Resource note:** more RAM on the VM is the cheapest gain in parallelism. Memory, not CPU
   or GPU, is the limit.
 
+## D146: Neutral names for BITSEY-derived identifiers
+
+2026-11-12, user direction. BITSEY (Grodstein and Pietak,
+https://gitlab.com/grodstein/bitsey, pinned at `b2cb370`) is an external reference
+like BETSE (D131). It runs out of process, Cells compares against its saved
+outputs, and `src/cells` carries no BITSEY-named identifiers. This is a pure
+rename with no numerical change:
+
+| Kind | Old | New |
+| --- | --- | --- |
+| Model ID | `bitsey_emt_pair@1` | `emt_mirna_pair@1` |
+| Observer ID | `bitsey_nominal_pair_pure_readouts@1` | `emt_mirna_pair_pure_readouts@1` |
+| Parameter set of the pair | `bitsey-b2cb370-emt-pair-simple` | `emt-mirna-pair-scaled-simple` |
+| Parameter set of `emt_mirna@1` | `bitsey-b2cb370-mirna-simple` | `emt-mirna-scaled-simple` |
+| Time unit | `bitsey_time_unit` | `nominal_time_unit` |
+| Regulatory coordinate unit | `bitsey_scaled_coordinate` | `scaled_coordinate` |
+| Junction diffusion unit | `m2/bitsey_time_unit` | `m2/nominal_time_unit` |
+
+- **Citation:** the source stays cited in docstrings and in the
+  `upstream_revision` summary field. As with BETSE, docstring citations and
+  disclaimers that name BITSEY remain.
+- **No aliases:** old configs and checkpoints are refused. Runs recorded before
+  the rename are reproduced from their frozen snapshots and from the tag
+  `bitsey-names-frozen-2026-11-12`.
+- **Frozen inputs keep their labels:** the reference panel
+  (`bitsey_emt_pair@1-design`), the E02 protocol (`bitsey_emt_graph@1-design`),
+  the probe fixtures and `docs/E02_SWITCHING_PROTOCOL.md` record what was
+  registered.
+- **Audit:**
+  - Nothing in the engine imports BITSEY. `emt_mirna.py` and `source_pair.py`
+    are independent implementations that use the source's parameter values.
+  - Classification of `processes/source_electrochemistry.py` lines 17–56 is
+    pending. It writes published laws, but it reproduces the source's
+    implementation choices for parity; the user decides.
+  - Left for a later decision: BITSEY's species names (`miR200_total`,
+    `Zeb_mRNA_total`, `ZEB_prot`, `snail`, `ST`), which are schema keys, and the
+    `source_*` module, class and stage-domain names.
+  - BITSEY declares no licence. Its files say "See LICENSE", but no licence
+    file exists anywhere in its history, so its code may not be copied.
+  - The five `scripts/capture_*` tools that import BITSEY in a worker process
+    belong in `validation/bitsey/`.
+- **Evidence:**
+  - `/mnt/workspaces/Cells/bitsey-rename-20261112-01/`: the audit and licence
+    findings, the bitwise identity of ten runs, and the tests before and after.
+  - `/mnt/workspaces/Cells/bitsey-rename-20261112-02/`: the tests after the
+    rebase onto `5fdbeb3`.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

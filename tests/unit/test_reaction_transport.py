@@ -88,7 +88,7 @@ def test_definition_round_trip_and_axes(name):
         (("model", "initial_state", "amount"), [[1e308, 1e308, 0], [0, 0, 0]]),
         (("model", "initial_state", "volume"), [1, 0, 2]),
         (("model", "initial_state", "volume"), [1e308, 1e308, 1]),
-        (("model", "units", "time"), "bitsey_time_unit"),
+        (("model", "units", "time"), "nominal_time_unit"),
         (("model", "parameters", "reaction", "from_species"), "missing"),
         (("model", "parameters", "reaction", "to_species"), "A"),
         (("model", "parameters", "reaction", "forward_rate"), [1, 2]),

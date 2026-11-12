@@ -66,7 +66,7 @@ status. It accounts for every row of the first pass. A census buckets all 778
 versioned identifiers in `src/cells`, so none is left unreviewed.
 
 **Counts.**
-- 80 laws: 78 with ID constants, and two functions of the nominal `bitsey_emt_pair@1`
+- 80 laws: 78 with ID constants, and two functions of the nominal `emt_mirna_pair@1`
   profile.
 - One assembly model.
 - 49 functional units.
@@ -103,7 +103,7 @@ versioned identifiers in `src/cells`, so none is left unreviewed.
 | Ca-activated K | `cagpotassium_numeric_mM_scale@1` | KCNMA1 Q12791 (cited model) or KCNN1-3 (BETSE label) | BK: 4 alpha (PDB 6V38) | BETSE legacy function; Cox, Cui & Aldrich 1997 (BK clone mslo) | generic: BETSE says "SK" but cites a BK model |
 | Leaks, defaults, lumped permeabilities | six always-open leaks, `hcn_leak_open@1`, `kv_ml1_dynamic_m@1`, `constant_field@1`, `neutral_mobile_leak@1`, `ideal_osmosis_linear_compliance_water@1` | none | none | BETSE leak classes; constant-field flux; ideal osmosis | generic |
 | Gap-junction channel | `junction_voltage_relaxation@1`, `symmetric_opposing_relaxation@1`, `delayed_first_order_junction_formation@1` | connexins as candidates, e.g. GJA1 P17302 | 2 connexons x 6 (PDB 7Z22) | BETSE rates from axolotl blastomeres (Harris 1983), no connexin identified; synthetic gate; cited plaque studies | generic |
-| Cx45/Cx45, Cx40/Cx37 channels | gate tables of `junction_flux()` in the nominal `bitsey_emt_pair@1` profile | GJC1 P36383; GJA5 P36382 + GJA4 P35212 | 2 x 6 | Chen-Izu et al. 2001 Table 1 (values match exactly) | assigned in source |
+| Cx45/Cx45, Cx40/Cx37 channels | gate tables of `junction_flux()` in the nominal `emt_mirna_pair@1` profile | GJC1 P36383; GJA5 P36382 + GJA4 P35212 | 2 x 6 | Chen-Izu et al. 2001 Table 1 (values match exactly) | assigned in source |
 | Na+/K+-ATPase | `nak_atp_mass_action_positive@1`, `nak_atp_affinity_tanh@1`, nominal profile pump | ATP1A1-4 (ATP1A1 P05023), ATP1B1-3, FXYD | alpha:beta:FXYD 1:1:1 (PDB 7E1Z); 3 Na out, 2 K in | BETSE pump form; BETSE's default Km values carry an uncited "alpha1" comment | generic |
 | PMCA | `plasma_calcium_pump_positive@1`, `ca_atp_mass_action_positive@1`, `finite_atp_pmca_positive@1` | ATP2B1-4 (ATP2B1 P20020); NPTN, BSG | 1:1 with neuroplastin (PDB 6A69); 1 Ca per ATP | BETSE | generic |
 | ER Ca pump | `er_calcium_pump_positive@1`, `finite_atp_er_1ca_positive@1` | ATP2A1-3 (ATP2A2 P16615) | monomer (PDB 1SU4, rabbit); the law moves 1 Ca, SERCA moves 2 | BETSE | generic |
@@ -129,7 +129,7 @@ versioned identifiers in `src/cells`, so none is left unreviewed.
 - **Xenopus coverage is uneven.** A gene-name search found no Xenopus laevis UniProt
   entry for twelve candidate genes, among them HCN2, HCN4, SCN2A, SCN8A and ITPR3.
 - **The only connexin-assigned junction law is a compatibility profile.** It belongs
-  to the nominal `bitsey_emt_pair@1` profile (Cx45/Cx45 and Cx40/Cx37). There is
+  to the nominal `emt_mirna_pair@1` profile (Cx45/Cx45 and Cx40/Cx37). There is
   none for Cx43.
 - **Abundance as state already exists in two places.** The mobile leak and Na+/K+-ATPase
   populations (`resolved_redistribution@1/@2`) hold membrane amounts per patch, and

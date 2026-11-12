@@ -2,6 +2,8 @@
 
 No additional gate or cache memory, no physical RNA charge mapping, and no
 legacy integrator timing. The shared checked engine owns all time advancement.
+The source is the miR200/Zeb gap-junction model of BITSEY (Grodstein and Pietak,
+https://gitlab.com/grodstein/bitsey) at commit b2cb370; see docs/SOURCE_EMT_PAIR_SPEC.md.
 """
 
 from dataclasses import dataclass
@@ -20,7 +22,7 @@ from cells.observers import hermite_bounds, sample_hermite_history
 from cells.processes import source_electrochemistry as laws
 
 STATE_TYPE, LAYOUT_TYPE = SourcePairState, SourcePairLayout
-OBSERVER_ID = "bitsey_nominal_pair_pure_readouts@1"
+OBSERVER_ID = "emt_mirna_pair_pure_readouts@1"
 OBSERVATION_SAMPLING = "read_only_interval_control_cubic_hermite_extrema_checked@1"
 STAGE_DOMAIN_ID = (
     "source_ions_1e-6_to_1000_regulation_0_to_1000_abs_voltage_le_0.2_finite_padding@1"
@@ -416,7 +418,7 @@ def summarize(history, diagnostics, spec):
             "or full Levin-assay parity"
         ),
         "upstream_revision": emt_mirna.UPSTREAM_REVISION,
-        "clock": "bitsey_time_unit",
+        "clock": "nominal_time_unit",
         "state_axes": STATE_AXES,
         "external_support": [
             "maintained bath",

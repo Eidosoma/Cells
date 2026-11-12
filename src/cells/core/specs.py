@@ -17,14 +17,15 @@ if TYPE_CHECKING:
 
 MODEL_ID = "source_decay@1"
 UNITS = {"amount": "fmol", "volume": "pL", "time": "s"}
+# The EMT models cite BITSEY (Grodstein and Pietak) at b2cb370; see models/emt_mirna.py.
 EMT_MODEL_ID = "emt_mirna@1"
-EMT_UNITS = {"concentration": "bitsey_scaled_coordinate", "time": "bitsey_time_unit"}
-EMT_PARAMETER_SET = "bitsey-b2cb370-mirna-simple"
+EMT_UNITS = {"concentration": "scaled_coordinate", "time": "nominal_time_unit"}
+EMT_PARAMETER_SET = "emt-mirna-scaled-simple"
 PAIR_MODEL_ID = "passive_pair@1"
 REACTION_TRANSPORT_ID = "reaction_transport@1"
 BIOELECTRIC_ID = "bioelectric_cell@1"
 BIOELECTRIC_PAIR_ID = "bioelectric_pair@1"
-SOURCE_PAIR_ID = "bitsey_emt_pair@1"
+SOURCE_PAIR_ID = "emt_mirna_pair@1"
 MULTISPECIES_ID = "multispecies_membrane@1"
 VOLTAGE_GATED_ID = "voltage_gated_membrane@1"
 PHYSICAL_IONIC_GRAPH_ID = "physical_ionic_graph@1"
