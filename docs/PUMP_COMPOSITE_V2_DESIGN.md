@@ -126,11 +126,20 @@ columns). The owner is the last writer in declared order.
   {inner column: reason}.
 - The composite builds the column-ownership map when the composition is built. Every
   column has exactly one owner, the inner model by default.
-- It refuses two operators replacing the same column, and an operator replacing another
-  operator's column.
+- Replacement is a declared chain in operator order, and a column's owner is the last in
+  its chain. This corrects the reviewed rule, which refused a second replacer and the
+  replacement of another operator's column.
+  - The implementation found that existing compositions already chain: water replaces the
+    inner energy-balance rate, and the symport then replaces both energy columns.
+  - The reviewed rule would therefore have refused water@2.
+- It refuses:
+  - a column added by two owners;
+  - a replaced column that no earlier owner observes;
+  - an operator that returns a column it did not declare, or omits one it did.
 - The assembly checks that each operator returns exactly its declared keys (host side, on
   every row).
-- Water@2's energy columns become a declared `REPLACES`.
+- Water declares that it replaces the inner `energy_balance_pJ_s`. The symport declares
+  that it replaces `energy_balance_pJ` and `energy_balance_pJ_s`.
 
 ### 1.3 Combination rules checked when a composition is built
 

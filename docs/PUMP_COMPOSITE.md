@@ -51,6 +51,14 @@ batch signature, the summary and the run manifest (`composition`).
 | Ledgers | terms added to @3's ledgers and rounding magnitudes, its own ledgers with their bounds |
 | Domain and refusal | its domain and control validity (any failure refuses the step, which returns the start state); `REQUIRES` (laws that must precede it) |
 | Schedule | its experiment keys, parsed and checked at the definition (event times exact multiples of dt) |
+| Observation ownership | its own columns (state fields and readouts); `REPLACES`, {column: reason}, for the inner or earlier operators' columns it computes instead. Replacement is a declared chain in order and the last is the owner. Returned columns are checked against the declaration on every row ([v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §1.2) |
+| Views read and writes accepted | `VIEW_READS`: inner view fields read at their current value, provided by an earlier operator. `ACCEPTS_WRITES`, {owned field: own ledgers}: fields a later operator may write; the writer adds its terms to those ledgers and their magnitudes (`external_ledger_terms`, `external_magnitude_terms`) |
+| Event replacements | `EVENT_REPLACES`, {field: (removed, supplied)}: the fields an event map replaces, with their owned accumulators |
+
+When a composition is built, the composite checks these declarations and builds its
+field-to-owner map: each state field's owner and writers, each layout and control field's
+owner, each view field's provider and readers, and each observation column's owner chain.
+Runs write the map to their manifest as `field_owners`, beside `composition`.
 
 ## The step
 
