@@ -134,7 +134,8 @@ against the converted tree:
 - `validation/tissue/composite_crossrev.py`: the jaxprs of the checked steps (IMEX and RK4),
   right-hand sides and device checks, traced with dt as an argument, are textually
   identical, and every initial state, layout and control array is identical, on small
-  worlds of every structure and on W1's, W2's and G2-Q1's own worlds;
+  worlds of every structure and on every guarded qualification world (W1, W2, G2-Q1, W37,
+  the 825-node world);
 - the W2 judge (all eight arms) and W1's stationary phase give identical outputs;
 - `validation/tissue/composite_dump.py`: saved runs of short worlds of every structure and
   W2's 1 s trajectories are bit-identical;
