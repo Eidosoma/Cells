@@ -58,6 +58,60 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Cell division S0b: J1 diagnostic arms on R-full. No single arm gives both J1's level
+  and the registered time course; cause not isolated (12 November; development, not judged).**
+  - **What ran:** the arms registered at `cfe0fa3`
+    ([rationale](validation/division/j1_diagnostic_arms.md)), on R-full only, from a clean
+    snapshot of branch commit `556b5eb` (merged with this entry). 3.9 CPU-hours in detached
+    units on CPU 5, plus a one-point Radau check; every unit exited 0.
+    [Evidence](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/j1-diagnostic-01/):
+    `g1/` (A1, A2, A4, A7a, A7b), `a3/`, `a6/`, `radau_check/`.
+    - No engine run, and no C1 or J2 quantity. The only root searches are each curve's
+      A/L → 0 end and A6's fits to each arm's own Em2 and Rm2; nothing targets J1's Em.
+  - **Em at J1** (window −21.9 to −18.7 mV; record −12.795 mV, reproduced to 2.3e-12 V).
+    Every calibrated point recalibrates on Rm1 and Rm2, so Rm at J1 is 488.00 kΩ throughout.
+
+    | Arm | Em at J1 (mV) |
+    | --- | --- |
+    | A1 bath-facing fraction f, 0.01 to its end (0.0728) | −16.9 to −36.1 |
+    | A2 furrow-zone conductance, to its end | −12.4 to −9.9 |
+    | A3 ring lumen, calibrated (N = 1, 10, 20; w and bridge ranged) | −12.76 to −12.86 |
+    | A4 old-membrane P_Cl/P_K, 0.03 to 0.12 | −12.6 to −11.9 |
+    | A6 new-membrane rules and fits (all 14 fits converged) | −12.4 to −15.2 |
+    | A7a access scaled with furrow depth, α 0.5 to 2 | −12.80 to −12.84 |
+    | A7b late apposition, β 0.8 to 0.4 | −12.78 to −12.79 |
+    | A8 (computed earlier) | −12.6 to −16.5 |
+
+  - **A1 alone crosses the window**, at f ≈ 0.015–0.024 by interpolation. The curve is
+    monotone from −13 to −36 mV at one Rm, so the crossing was expected and selects
+    nothing; no f is adopted. Near it Em is still falling at J1 (D4 −0.05 to −0.08 mV) and
+    Rm has no late rise (D7 −0.2 to −0.6 kΩ), against the registered p531 description.
+  - **A7a is the only calibrated arm with a late Rm rise** (D7 +64, +130, +224 kΩ at α 0.5,
+    1, 2), with a deeper, later Em minimum (8.7–9.7 min). Rm2 fixes the access at J1, so
+    A3, A7a and A7b stay within 0.07 mV of the record there.
+  - **Shared by every calibrated arm:** the Rm fall is front-loaded (D5 0.85–0.94, except
+    A1 from f 0.03 and A2 from half its end); the Em minimum comes at 7–10 min; cytosolic
+    Na at J1 is 20.0–20.2 mM against the measured 22.4 ± 1.1 mM.
+  - **Without a rim restriction** (the geometric-access check) Rm at J1 is 104–108 kΩ,
+    4.5–4.7× below Rm2. Its N = 10, w = 2.5 µm point **failed** (integration failure at
+    insertion onset, 420–421 s); it is recorded in `a3_final.json` and not rerun.
+  - **Fig. 2 values**, read after the runs from one egg and not registered targets: D2 ≈
+    −10 mV, D3 ≈ 15 min and −19.5 mV, D4 ≈ +2.5 mV, D5 ≈ 0.46, D6 ≈ 0.64, D7 ≈ +80 kΩ.
+  - **Deviations from the registration:**
+    - A3 used BDF with a batched finite-difference Jacobian, not a declared sparsity
+      pattern; the Radau check on the N = 10 default point agrees to 2e-13 V.
+    - A3 used two undeclared numerics: a 1e-11 m² seed face per ring and a 1e-12 mM
+      concentration floor in the log-mean flux.
+    - The snapshot is of the branch commit, not main.
+    - A1's curve ends at f = 0.0728 (root search), not the estimated 0.10.
+    - The Radau check ran from a driver in the evidence folder; it is now the runner's
+      `radau-check` group, not rerun.
+  - **Code:** `validation/division/cleft_egg_reference.py` (extended; the null path is
+    unchanged), `cleft_rings_reference.py` (A3), `j1_diagnostic_runner.py`; tests
+    `tests/unit/test_division_diagnostic_*.py` (11 + 2 + 1 pass).
+  - **Next:** the cleft-model choice is the user's (a registered combination round,
+    freezing candidates for C1, or parking it). C1 and J2 stay held.
+
 - **Heredity pilot W1, water arms: held discs also hold under water; the osmotically
   balanced start, not water itself, makes the marginal loss 3× earlier (11–12
   November; development, not judged).**
