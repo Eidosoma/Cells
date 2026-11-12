@@ -1,6 +1,14 @@
 # Composite v2: contract hardening, the entity volume ledger, membrane state, current injection
 
-**Status: proposed design, for review before any code (D142).** It serves two gates of the
+**Status: reviewed by the lead and the advisor on 12 November; code starts after this
+revision is merged (D142).**
+- Decisions 1, 5, 6 and 7 are accepted.
+- Decisions 2 and 3 are accepted with the changes made here.
+- Decision 4, and §2 as a whole, stay open until the renewal assay asks for them. Only
+  §2's contract parts are approved: `VIEW_READS`, `ACCEPTS_WRITES` and `EVENT_REPLACES`,
+  which live in §1.
+
+It serves two gates of the
 [current plan](CURRENT_PLAN.md) (D145): *composition* (the ownership and conflict
 contract, the entity volume ledger, water plus replacement, GPU agreement by tolerance)
 and *lifecycle operators* (membrane state as entity state, insertion, current
@@ -15,14 +23,21 @@ What does not change:
   behaviour comes with new operator law IDs.
 
 Order of work:
-1. contract hardening (§1), which everything else uses;
-2. current injection (§4), which is small and unblocks the Rm pulse response against
-   R-full;
-3. stage S2, membrane state and insertion (§3);
-4. the entity volume ledger and water plus replacement (§2), built when the renewal assay
-   needs it (D144). Its contract parts come with §1.
+1. §1.2–§1.4 (observation ownership, combination rules, cross-operator writes), once the
+   composite has landed;
+2. §1.1 (energy roles), once the plan-validation fix has landed. That fix is editing
+   `surface_pump*.py` now;
+3. current injection (§4);
+4. stage S2, membrane state and insertion (§3);
+5. the entity volume ledger and water plus replacement (§2): open, built when the renewal
+   assay asks for it (D144).
 
-Plus the L4 agreement (§5).
+Alongside: the L4 agreement (§5). Its CPU-only driver parts come once CPU 4 is free; the
+GPU runs come in a slot the lead gives.
+
+Every new operator ships a **tier-1 smoke test under 20 s**: one tiny world, a few steps,
+its ledgers closing and its idle identity. Its proofs are tier 3, so the routine gate would
+otherwise never run it.
 
 **The entity table** (the plan's ownership contract) mapped onto owners in the composite:
 
@@ -39,9 +54,33 @@ Plus the L4 agreement (§5).
 | Cell and lineage | Identity, membership, ancestry | Replacement's lineage records | Replacement events; partition later |
 | Extracellular environment | Finite nodes' amounts and volumes | @3 and water | Transport, water, bath supply (booked) |
 
+**Ownership is per field, not per entity.**
+- One operator can own fields of two entities: `membrane_entity_state` holds the
+  membrane domain's and the population's fields.
+- One entity's fields can have several owners: the compartment's amounts are @3's and its
+  volume is water's.
+- When a composition is built, the composite builds a field-to-owner map, with each
+  field's writers. It checks that every field has one owner and that every write is
+  accepted by the field's owner.
+- The map is written to the run manifest beside `composition`. It is a new optional key:
+  existing manifests lack it, and readers treat it as optional.
+- **Explicit choice: no typed entity classes for now.** The entities are documentation
+  over the field map.
+
+**Run identity (decision 1).**
+- `composition_identity` is (composite ID, inner ID, ordered operator law IDs).
+  Declarations do not enter it.
+- The batch signature adds each operator's declaration data and the array axes.
+- §1 adds declarations and no state fields, so it changes neither of these. Existing
+  manifests' `composition` entries and checkpoints' identities stay valid.
+- A later operator that adds state fields changes the batch signature for compositions
+  that include it, and only for those.
+
 ## 1. Contract hardening
 
 ### 1.1 Energy roles declared, not recognised by suffix
+
+This starts after the plan-validation fix lands; that fix is editing `surface_pump*.py`.
 
 **Today:**
 - Operators declare `HEAT_FIELDS` and `WORK_FIELDS`, and the composite's dissipation list
@@ -136,7 +175,11 @@ Each rule is a build-time check with a refusal message.
   undeclared returned column, a write the owner does not accept, an event writing an
   undeclared field.
 
-## 2. The entity volume ledger: water plus replacement
+## 2. The entity volume ledger: water plus replacement (open)
+
+Open until the renewal assay asks for it. Its contract parts (`VIEW_READS`,
+`ACCEPTS_WRITES`, `EVENT_REPLACES`) are approved and built with §1. The rest is kept here
+as the plan.
 
 **Today the composition is refused:**
 - water provides `volume` and `extracellular_volume`;
@@ -240,12 +283,35 @@ not change during the run.
 | --- | --- |
 | R1, bind once | Topology indices, slot capacities, species, law parameters, declared reference values (V0, A0, C0, declared abundances, anchors) and bath potentials are bound on the host, once. |
 | R2, views from state | Volume (water), area, capacitance and abundance density (membrane state), and activity masks (events) are computed on the device from state by their single provider. |
-| R3, derived arrays | Arrays derived from R2 inputs (the field arrays) are recomputed on the device only when an input changed in that step; otherwise the bound arrays are selected, so the result is bitwise when idle. |
+| R3, derived arrays | Arrays derived from R2 inputs (the field arrays) are taken from the recomputed values only when an input changed in that step; otherwise the bound arrays are selected, so the result is bitwise when idle. The recomputation itself is not skipped (below). |
 | R4, when evaluated | After events; after the first split halves for providers whose view follows their split part; held through the inner step (Strang); re-checked at the step end. |
-| R5, definition-time checks | Explicit step bounds, rounding floors and admission checks that depend on an R2 input are computed at the schedule's declared worst case (the largest area and abundance an insertion schedule reaches). Otherwise they move into the step's domain check as a refusal. They are never taken silently from the initial value. |
+| R5, definition-time checks | Explicit step bounds, rounding floors and admission checks that depend on an R2 input are computed once per definition on the operator-adjusted check spec, never on the raw inner spec. That spec is each provider's `inner_check_spec`, the worst case of the views it provides: water's declared minimum volumes; insertion's largest area, capacitance and abundance over its schedule. The plan-validation fix's once-per-definition bounds must take that spec. A check that has no worst case moves into the step's domain check as a refusal. |
 | R6, host consumers | Observations, checks and summaries recompute the view from each saved row (as `observe_history` does). |
 | R7, restart | A view is a pure function of state and the bound layout, so restart saves nothing more. |
 | R8, anchors | Increments from declared values; zero increments reproduce the declared values bit for bit. |
+
+**R3's cost: the refactorisation is a select by value.**
+- `refresh_field` combines the recomputed and bound arrays with `xp.where`. So whenever
+  any operator provides a field input, the capacitor matrix, solve matrix and Cholesky
+  factor are recomputed every step, changed or not.
+- A `lax.cond` would skip that only in unbatched runs: under vmap, a per-world predicate
+  turns the cond into a select and both branches run. The static-branch rule (§3.7)
+  covers which code is present, not this per-step cost.
+- Estimated cost (to be measured on CPU and the L4 at the start of S2, before choosing):
+  - one dense refactorisation of the n-node system costs about n³/3 operations;
+  - for the egg worlds (n up to a few dozen) that is negligible, about 4 × 10⁴ at n = 50;
+  - at the 825-node world it is about 1.9 × 10⁸ per world-step, probably several to tens
+    of milliseconds in float64 on one CPU core or the L4.
+
+Options:
+- (a) accept it, and refuse a field-input provider above a declared node count;
+- (b) refactorise only at declared insertion epochs: C is held between epochs and the
+  §5.1 booking is exact at each one;
+- (c) a rank-k update of the factor for the k patches whose C changed, about k n²
+  operations. It is bitwise when idle only if it is skipped statically or shown to be
+  exact at ΔC = 0.
+
+Proposal: (a) for S2–S5 (egg worlds), with (b) or (c) decided before any large-world use.
 
 **Audit before code:** list @3's layout quantities that its binding derives from area,
 capacitance or abundance. Each becomes an R2 view or is refused when its input is
@@ -254,6 +320,7 @@ state-dependent. Known so far:
 - the field arrays (R3).
 
 **S2 guards:**
+- a tier-1 smoke test under 20 s for each of the two new operators;
 - idle membrane state equals the composition without it, bitwise;
 - insertion at r = 0 equals idle;
 - one-patch analytic checks: |Vm| falls by C/(C + ΔC) at fixed charge, and
@@ -265,10 +332,19 @@ state-dependent. Known so far:
 
 ## 4. Current injection as a general control
 
-**Physics.** An electrode delivers a declared current I(t) into a cell compartment. A
-declared ion species (z) carries it from an external source (the pipette's reservoir), and
+**Physics.** An electrode delivers a declared current I(t) into a cell compartment, and
 the return flows through the clamped bath.
-- Amounts: ΔN = I Δt / (zF), booked as `injection_supplied_fmol`.
+- **Carriers.** Each electrode declares its carrier fractions; none is hard-coded. The
+  default is the rule registered for J1 (`rm_definition.injected_carrier_fractions` in
+  `validation/division/j1_declared_inputs.json`): {K: 0.4912, Cl: 0.5088}, the
+  free-solution proportion for a 3 M KCl filling (dLB74 p530).
+- **Both polarities.** A positive current is K⁺ entering and Cl⁻ leaving the cytosol:
+  ΔN_K = +f_K I Δt / F and ΔN_Cl = −f_Cl I Δt / F, for a total charge I Δt. A negative
+  current reverses both.
+- **Booking.** Supply and removal are both booked (`injection_supplied_fmol`,
+  `injection_removed_fmol`), with the electrode's reservoir as source and sink.
+- **Refusal.** The domain check refuses a step in which the cytosol cannot supply a
+  removed carrier: its amount would fall below its floor within the half-step.
 - Charge: it enters the cytosol; the clamps supply the image charge Δq_b, with work.
 - Work: the source supplies W_src = ΔG_entities − W_clamps, the exact free-energy change
   of the cell less the clamps' work, booked as the declared work field
@@ -277,7 +353,8 @@ the return flows through the clamped bath.
 ### 4.1 How it enters: an operator with a split part (no @3 change)
 - Operator `electrode_current_injection@1`; schedule `injection_controls` (piecewise-constant
   current per cell, per world).
-- Entity writes: `amount_increment` ← (`injection_supplied_fmol`, `injection_charge_C`);
+- Entity writes: `amount_increment` ← (`injection_supplied_fmol`, `injection_removed_fmol`,
+  `injection_charge_C`);
   `electrode_charge_transferred_C` ← `injection_image_charge_C`; `electrode_work_pJ` ← the
   clamps' work.
 - Bookings are exact for each half-step (§1.3).
@@ -287,9 +364,23 @@ the return flows through the clamped bath.
 
 **Accuracy.** Strang splitting is O(dt²) on the transient. For the new membrane τ = RC is
 about 0.5–1.8 ms (1.36–1.82 kΩ·cm² with c_new 0.4–1.0 µF/cm², design §4.2), comparable to
-the step. The S0b Rm pulse response (design §9) compares 1,
-0.5 and 0.25 ms against R-full. If the steady ΔV error at 1 ms exceeds what J1 needs, take
-the fallback.
+the step.
+
+**First acceptance: Rm1 = 852 kΩ on the uncleaved egg**, against R-full's first pulse
+pair. That egg ran 35 min at 1 ms cleanly. Its tolerance (step term + reference term) is
+registered before the run. This test decides whether the split part is accurate enough or
+the fallback below is needed.
+
+**The cleft-egg study cannot run as first written.** At 1 ms the cleft egg is refused, and
+RK4 fails the electrode ledger from the J1 state. It needs the recorded egg-scale gaps
+closed, in this order:
+1. **The 1e-20 C definition charge bound in `surface_tissue.check_definition`.** Egg-scale
+   charges need a bound scaled to the charges, and this check gates the definition itself.
+2. **`ENERGY_ATOL_PJ`.** An absolute energy floor is too small for egg-scale energies over
+   a 35 min run.
+3. **The explicit bound at 1 ms in the cleft transient.** It needs the step study at 0.5
+   and 0.25 ms, or an implicit membrane–cleft term (design §5.4).
+4. **RK4 electrode rounding,** for the RK4 reference comparison.
 
 **Fallback: a second opt-in hook in @3, `cell_source`.**
 - Default `None`, like the membrane-process hook. It takes the injected flux
@@ -305,6 +396,9 @@ the fallback.
 ### 4.2 Guards for injection
 - An idle injection equals the composition without it, bitwise (no electrode, and I = 0
   throughout).
+- A tier-1 smoke test under 20 s.
+- Both polarities; carrier fractions taken from the declaration; the refusal when the
+  cytosol cannot supply a removed carrier.
 - A single-cell analytic test: a linear membrane gives ΔV = I R_m at steady state. Its
   transient is compared at three step sizes.
 - Ledgers: material, charge (image charge at the clamps) and energy (W_src − H − ΔG = 0)
@@ -355,6 +449,10 @@ One GPU process at a time, in the slot the lead gives.
   method's `validation/betse/protocol_tolerances.py` imports BETSE-side modules, so a
   `validation/tissue` driver must not import it (AGENTS.md).
 
+**Stop rule before run C.** If any backend term exceeds the registered terms it is added
+to (W1's and G2-Q1's step and reference terms; for W2, its registered tolerance), stop.
+Diagnose the GPU difference, and do not register the variant.
+
 **Verdict (as the method judges):** each qualification's own judge, run on C against its
 own reference with the variant tolerances, passes every item it passes on CPU.
 - Not the verdict: C against the CPU result within the variant tolerance. For W1 and
@@ -364,6 +462,8 @@ own reference with the variant tolerances, passes every item it passes on CPU.
   quantity and record.
 - Discrimination ratios are rescaled where the protocol has them, and the
   non-discriminating lists are recomputed.
+- The result, pass or fail, is recorded as the first L4 qualification of water and
+  replacement as compositions.
 
 **Driver (outstanding, `validation/tissue/composite_l4_agreement.py`).** Planned actions:
 - `run --part {w1,w2,g2} --label NAME`: runs each part's worlds through the qualification
@@ -372,26 +472,26 @@ own reference with the variant tolerances, passes every item it passes on CPU.
 - `variant`: writes the variant protocol, PROPOSED until you register it;
 - `judge`: runs each qualification's judge on C with the variant tolerances.
 
+Its CPU-only parts and the CPU-against-CPU test are written once your gate frees CPU 4
+(about 18:00). Nothing runs on the GPU until you give a slot.
+
 It still needs:
 - the three drivers' return shapes (`engine_observations`, `judge_arm`, `engine_records`);
 - the mapping from saved quantities to each protocol's tolerance keys;
 - a CPU-against-CPU test, where the terms are zero and the variant equals the registered
   protocol.
 
-## 6. Open choices for the lead
-1. The composite's model ID stays `resolved_pump_composite@1` through §1, since every
-   existing result stays bitwise; new behaviour comes with new operator law IDs.
-2. §1.1: an optional field-list argument to the family's energy-bound function (default
-   unchanged), rather than reproducing the bound inside the composite.
-3. §4: injection by a split part first, with the S0b step study deciding whether the @3
-   opt-in source hook is needed.
-4. §2: newcomers keep the slot's declared impermeant content in the first slice.
-5. §3: capacitance kept as state alongside area, or derived from area (my proposal: state).
-6. §1.3: at most one in-step process per composition, until @3's hook can return one
-   applied transfer per process. This narrows "fluxes add" for in-step processes; split
-   parts and the RK4 coupled right-hand side do add.
-7. §5: the verdict is each qualification's own judge with the variant tolerances, as the
-   method judges; C against CPU is reported but not judged.
+## 6. Decisions (review of 12 November)
+
+| # | Choice | Decision |
+| --- | --- | --- |
+| 1 | The composite's model ID stays `resolved_pump_composite@1` through §1; new behaviour comes with new operator law IDs | Accepted. The identity is unchanged by declarations (Run identity, above) |
+| 2 | §1.1: an optional field-list argument to the family's energy-bound function, default unchanged | Accepted; it waits for the plan-validation fix to land |
+| 3 | §4: injection by a split part first | Accepted. The first acceptance is Rm1 on the uncleaved egg. Carrier fractions are declared per electrode (J1's rule as default), with both polarities, removal booked and a refusal |
+| 4 | §2: newcomers keep the slot's declared impermeant content | Open, with §2, until the renewal assay asks |
+| 5 | §3: capacitance kept as state alongside area | Accepted |
+| 6 | §1.3: at most one in-step process per composition | Accepted |
+| 7 | §5: the verdict is each qualification's own judge with the variant tolerances | Accepted, with the stop rule before run C |
 
 Rough effort:
 
