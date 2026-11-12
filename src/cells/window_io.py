@@ -164,6 +164,12 @@ def write_windowed_run(
                     else {}
                 ),
             },
+            # A composite run's identity (composite, inner and ordered operator IDs).
+            **(
+                {"composition": model.composition_identity(spec)}
+                if hasattr(model, "composition_identity")
+                else {}
+            ),
             "resources": result.resources
             | {
                 "saved_accepted_records": saved_accepted,

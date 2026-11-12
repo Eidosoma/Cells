@@ -6,6 +6,15 @@ Design, literature and the probe of @3's checks:
 `/mnt/workspaces/Cells/cell-replacement-g2-20261111-01/design-note-G2.md`. Status and
 runs: [Progress](../PROGRESS.md).
 
+**Implementation (D143).** `resolved_pump_replacement@1` is a thin composition of the
+[composite pump-tissue model](PUMP_COMPOSITE.md): `resolved_pump_composite@1` with the
+operator `scheduled_cell_replacement@1`. The event map, the formation half-steps and the
+ledgers moved unchanged into `src/cells/models/operators/cell_replacement.py`; the model
+module re-exports them. The definition format, the step, the checks and the qualified
+scope below are unchanged. Before the conversion the composition was bitwise equal to
+the earlier implementation on the model's test and qualification worlds (evidence:
+`/mnt/workspaces/Cells/composite-s1-20261111-01/`).
+
 Files: `src/cells/core/cell_replacement_spec.py` (definition),
 `src/cells/models/cell_replacement.py` (model), the junction law
 `src/cells/processes/junction_formation.py`, worlds

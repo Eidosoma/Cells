@@ -148,6 +148,12 @@ def write_windowed_batch(
                     else {}
                 ),
             },
+            # A composite run's identity (composite, inner and ordered operator IDs).
+            **(
+                {"composition": model.composition_identity(spec.worlds[0].simulation)}
+                if hasattr(model, "composition_identity")
+                else {}
+            ),
             "resources": result.resources | {"periodic_snapshots": snapshot_count},
             "timings": result.timings | {"payload_complete_seconds": perf_counter() - started},
             "timing_scope": (

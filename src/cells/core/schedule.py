@@ -205,6 +205,10 @@ def control_values(spec, times):
         return pump_water.control_values(spec, times)
     if isinstance(spec.model, replacement.CellReplacementModel):
         return replacement.control_values(spec, times)
+    from cells.core import pump_composite_spec as composite
+
+    if isinstance(spec.model, composite.CompositeModel):
+        return composite.control_values(spec, times)
     if isinstance(spec.model, pump_v3.SurfacePumpChannelModel):
         return pump_v3.control_values(spec, times)
     if isinstance(spec.model, pump_v2.SurfacePumpModel):
