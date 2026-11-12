@@ -60,14 +60,26 @@ from cells.numerics import surface_field  # noqa: E402
 
 
 def provenance():
+    """The checkout's Git revision and dirty paths, or a frozen snapshot's record."""
+
     def git(*args):
         return subprocess.run(
             ["git", "-C", str(ROOT), *args], capture_output=True, text=True, check=True
         ).stdout.strip()
 
-    return {
-        "git_revision": git("rev-parse", "HEAD"),
-        "dirty_paths": git("status", "--porcelain", "--untracked-files=no").splitlines(),
+    try:
+        source = {
+            "git_revision": git("rev-parse", "HEAD"),
+            "dirty_paths": git("status", "--porcelain", "--untracked-files=no").splitlines(),
+        }
+    except (OSError, subprocess.CalledProcessError):  # validation/source_snapshot.py copy
+        snapshot = json.loads((ROOT / "SNAPSHOT.json").read_text())
+        source = {
+            "snapshot": str(ROOT / "SNAPSHOT.json"),
+            "git_revision": snapshot["git_revision"],
+            "dirty": bool(snapshot["selected_status_porcelain_v1_z"]),
+        }
+    return source | {
         "python": sys.executable,
         "platform": platform.platform(),
         "cpu_affinity": sorted(os.sched_getaffinity(0)),
