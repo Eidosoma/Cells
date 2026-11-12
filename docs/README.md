@@ -9,6 +9,7 @@ the [project README](../README.md) gives the short feature overview.
 | Guide | What it explains |
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | State ownership, numerical execution, experiments, checkpoints and outputs |
+| [Architecture review notes](ARCHITECTURE_REVIEW_NOTES.md) | Read-only review of 12 November 2026: two coexisting designs, the operator contract, the GPU-native scope, execution paths and candidate follow-ups (for review) |
 | [Multiscale composition](MULTISCALE_DESIGN.md) | How cells, regions and future organs compose without confusing membership with physical exchange |
 | [Parallel execution architecture](MULTISCALE_EXECUTION_ARCHITECTURE.md) | Resolution, coupled clocks, device placement and the requirements for future distributed tissues |
 | [BETSE capability coverage](BETSE_CAPABILITY_ROADMAP.md) | Implemented subsets, reference correspondence and remaining mechanism gaps |
