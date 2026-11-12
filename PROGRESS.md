@@ -58,6 +58,56 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Combined landing: the plan-validation fix, composite v2 §1.2–§1.4, the L4 agreement
+  driver, `electrode_current_injection@1` and the J1 diagnostic code (12 November).** One
+  tier 1 + 2 gate on the combined tree: 355 files, no changed outcome, no OOM kill
+  ([gate](/mnt/workspaces/Cells/land-20261112b/)). New test files measured into the tier
+  record: four in tier 1, `test_current_injection_runs.py` (81 s) and
+  `test_division_diagnostic_record.py` (30 s) in tier 2, and the ring-model record test
+  (about 150 s) in tier 3.
+  - **Plan-validation fix.** `bind_step_checks(spec)` binds `resolved_pump_tissue@1`–`@3`'s
+    step checks to their definition. The observation boundaries, the explicit, calcium and
+    junction bounds, and the gated RK4 laws are evaluated once per definition rather than
+    once per 1,024-step chunk; `core.grid.clock_checks` gives `checked_grid` and the
+    projective clock admission the bound checks with no control tables. Other models keep
+    `check_steps` per chunk.
+    - Refusals, messages and their order are unchanged; the traced step, layouts, initial
+      states and controls hash identically.
+    - The 825-node clock check drops from 59.6 CPU-min to 6.9 s; on the L4 the W1 probe's
+      plan validation takes 106 s.
+    - All 29 related files pass at the fix head, the composite's tier-3 files included
+      ([evidence](/mnt/workspaces/Cells/clock-validation-20261112-01/summary.json)). One
+      failure, `test_numerical_refinement.py::test_legacy_hash_and_empty_omission` (a
+      fingerprint literal), also fails on main before the fix; the tier record times that
+      file out, so it carries no outcome.
+    - **Open:** the composites (water `@1`, `@2`, replacement `@1`) still check per chunk,
+      with 5, 6 and 2 layout builds; `pump_composite` adopts binding next (v2 §1.1).
+  - **Composite v2 §1.2–§1.4 (D143).** Operators declare `REPLACES`, `VIEW_READS`,
+    `ACCEPTS_WRITES` and `EVENT_REPLACES`, checked at registration and at composite build:
+    writers follow the owners that accept their fields, view readers follow providers, and
+    each observation column has one owner. Replacement is a declared chain in operator
+    order, the last replacer owning the column; the reviewed one-replacer rule would have
+    refused water@2 as qualified. Returned columns are checked against the declaration on
+    every row, and the field-to-owner map is written to all three manifest writers.
+    - Guards against snapshot `8416a72`: jaxprs 36/36 and 78/78 and bindings 12/12 and
+      56/56 identical; 17 dumped worlds bit-identical; composite test files 59/59 and the
+      frozen models' own files 130/130.
+    - Not yet enforced: free-energy booking by events and split parts (needs §1.1).
+      `ACCEPTS_WRITES` and `VIEW_READS` have no production user yet.
+  - **L4 agreement driver** (`validation/tissue/composite_l4_agreement.py`). It runs each
+    qualification's own engine functions (W1, W2, G2-Q1), measures the backend and
+    run-to-run terms and writes PROPOSED variant protocols with the widening and stop
+    rules. CPU dry runs give zero terms and the registered tolerances unchanged. Judged
+    runs of G2-Q1, W1 and W2 now accept only the registered protocol or a registered
+    backend variant of it. The L4 runs wait for the GPU.
+  - **`electrode_current_injection@1`.** A scheduled current into a cell through declared
+    carrier fractions (K 0.4912 / Cl 0.5088), both polarities, separate supply and removal
+    bookings, and refusal when a cell cannot supply a carrier. It is split around the step
+    (not coupled into RK4, so stationary analyses exclude it), and borrows the replacement
+    law's free-energy terms until §1.1. Not yet accepted; its first acceptance (Rm1 on
+    R-full's uncleaved egg) lands next.
+  - [Composite evidence and log](/mnt/workspaces/Cells/composite-v2-20261112-01/HANDOFF.md).
+
 - **Cell division S0b: J1 diagnostic arms on R-full. No single arm gives both J1's level
   and the registered time course; cause not isolated (12 November; development, not judged).**
   - **What ran:** the arms registered at `cfe0fa3`
