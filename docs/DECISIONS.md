@@ -4746,7 +4746,7 @@ can in parallel".
 - **Resource note:** more RAM on the VM is the cheapest gain in parallelism. Memory, not CPU
   or GPU, is the limit.
 
-## D1xx (proposed; the lead assigns the number): neutral names for BITSEY-derived identifiers
+## D146: Neutral names for BITSEY-derived identifiers
 
 2026-11-12, user direction. BITSEY (Grodstein and Pietak,
 https://gitlab.com/grodstein/bitsey, pinned at `b2cb370`) is an external reference
@@ -4787,7 +4787,11 @@ rename with no numerical change:
     file exists anywhere in its history, so its code may not be copied.
   - The five `scripts/capture_*` tools that import BITSEY in a worker process
     belong in `validation/bitsey/`.
-- **Evidence:** `/mnt/workspaces/Cells/bitsey-rename-20261112-01/`.
+- **Evidence:**
+  - `/mnt/workspaces/Cells/bitsey-rename-20261112-01/`: the audit and licence
+    findings, the bitwise identity of ten runs, and the tests before and after.
+  - `/mnt/workspaces/Cells/bitsey-rename-20261112-02/`: the tests after the
+    rebase onto `5fdbeb3`.
 
 ## Implementation choices and remaining work
 
