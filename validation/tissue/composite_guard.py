@@ -411,7 +411,7 @@ def _w2_arm_states(predictions, arm):
     for reference in predictions["arms"][arm]["states"]:
         if not reference["converged"]:
             continue
-        label = reference["branch"]
+        label = f"branch_{reference['branch']}"  # Branches are numbered.
         guess = w2q.guess(pb, reference)
         states["guess_" + label] = sa._numpy(pb.embed(guess)[0])
         solution = sa.newton(pb, guess)
