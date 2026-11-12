@@ -163,9 +163,35 @@ def structure_errors(inner, operators):
         for name in op.CONTROL_FACTORS:
             if name not in inner.CONTROL_FIELDS:
                 errors.append(f"{op.LAW_ID} multiplies {name}, which is not an inner control")
-        for name in (*op.ENTITY_WRITES, *op.STATE_RESETS):
+        for name in op.STATE_RESETS:
             if name not in inner.STATE_FIELDS:
-                errors.append(f"{op.LAW_ID} writes {name}, which is not inner state")
+                errors.append(f"{op.LAW_ID} resets {name}, which is not inner state")
+    accepted, provided, columns = {}, set(), {k: ["inner"] for k in inner.OBSERVATION_FIELDS}
+    for op in operators:
+        # Writers follow owners: an entity write targets inner state or a field an
+        # earlier operator accepts.
+        for name in op.ENTITY_WRITES:
+            if name not in inner.STATE_FIELDS and name not in accepted:
+                errors.append(
+                    f"{op.LAW_ID} writes {name}, which is neither inner state nor accepted "
+                    "by an earlier operator"
+                )
+        accepted.update(dict.fromkeys(op.ACCEPTS_WRITES, op.LAW_ID))
+        for name in op.VIEW_READS:
+            if name not in provided:
+                errors.append(f"{op.LAW_ID} reads the view {name}; no earlier operator provides it")
+        provided.update(op.VIEW_FIELDS)
+        # One owner per observation column; replacement is a declared chain in order.
+        for name in op.observed_columns():
+            if name in columns:
+                errors.append(f"{op.LAW_ID} adds the column {name}, which {columns[name][-1]} owns")
+            else:
+                columns[name] = [op.LAW_ID]
+        for name in op.REPLACES:
+            if name in columns:
+                columns[name].append(op.LAW_ID)
+            else:
+                errors.append(f"{op.LAW_ID} replaces {name}, which no earlier owner observes")
     for op in operators:
         for name in op.CONFLICTS_VIEW:
             if providers.get(name, op.LAW_ID) != op.LAW_ID:
@@ -183,6 +209,48 @@ def structure_errors(inner, operators):
     return errors
 
 
+def field_map(inner, operators):
+    """The composition's field-to-owner map (written to the run manifest).
+
+    State fields with their owner and writers (entity writes and resets), layout and
+    control fields with their owner, view fields with their provider and readers, and
+    each observation column's owner chain (its owner is the last).
+    """
+    state = {k: {"owner": "inner", "writers": []} for k in inner.STATE_FIELDS}
+    layout = dict.fromkeys(inner.LAYOUT_TYPE._fields, "inner")
+    control = dict.fromkeys(inner.CONTROL_FIELDS, "inner")
+    columns = {k: ["inner"] for k in inner.OBSERVATION_FIELDS}
+    for op in operators:
+        state |= {k: {"owner": op.LAW_ID, "writers": []} for k in op.STATE_AXES}
+        layout |= dict.fromkeys(op.LAYOUT_FIELDS, op.LAW_ID)
+        control |= dict.fromkeys(op.CONTROL_FIELDS, op.LAW_ID)
+        columns |= {k: [op.LAW_ID] for k in op.observed_columns()}
+        for k in op.REPLACES:
+            columns[k] = [*columns[k], op.LAW_ID]
+    for op in operators:
+        for k in dict.fromkeys((*op.ENTITY_WRITES, *op.STATE_RESETS)):
+            state[k]["writers"].append(op.LAW_ID)
+    views = {
+        k: {"provider": op.LAW_ID, "readers": [r.LAW_ID for r in operators if k in r.VIEW_READS]}
+        for op in operators
+        for k in op.VIEW_FIELDS
+    }
+    return dict(state=state, layout=layout, control=control, views=views, observations=columns)
+
+
+def accepted_writers(operators):
+    """{owner law: ((writer, the owner's ledgers its writes reach), ...)} in declared order."""
+    owners = {k: op for op in operators for k in op.ACCEPTS_WRITES}
+    writers = {}
+    for op in operators:
+        for field in op.ENTITY_WRITES:
+            if field in owners:
+                owner = owners[field]
+                reached = writers.setdefault(owner.LAW_ID, {}).setdefault(op.LAW_ID, [op, []])
+                reached[1] += [k for k in owner.ACCEPTS_WRITES[field] if k not in reached[1]]
+    return {law: tuple((w, tuple(k)) for w, k in byw.values()) for law, byw in writers.items()}
+
+
 class Composition:
     """The model protocol of one composition (attributes as a model module's)."""
 
@@ -191,6 +259,9 @@ class Composition:
         if errors:
             raise ConfigError("Invalid operator composition: " + "; ".join(errors))
         self.inner, self.operators = inner, operators
+        self.FIELD_MAP = field_map(inner, operators)
+        self.writers_of = accepted_writers(operators)
+        self.observed_keys = {op.LAW_ID: {*op.observed_columns(), *op.REPLACES} for op in operators}
         self.laws = tuple(op.LAW_ID for op in operators)
         self.MODEL_ID = MODEL_ID
         self.OBSERVER_ID = OBSERVER_ID
@@ -280,6 +351,10 @@ class Composition:
 
     def composition_identity(self, spec):
         return identity(spec.model)
+
+    def field_owners(self, spec):
+        """The field-to-owner map (field_map), written to run manifests."""
+        return self.FIELD_MAP
 
     def batch_signature(self, model):
         """The run identity and array axes of `model` (any composition: batches compare
@@ -547,7 +622,35 @@ class Composition:
         for op in self.operators:
             result, ledgers = op.ledger_terms(result, row, p, xp=xp)
             extra |= ledgers
+        for op in self.operators:
+            if op.LAW_ID in self.writers_of:
+                extra |= self._with_writers(op, {k: extra[k] for k in op.LEDGERS}, row, p, xp=xp)
         return result | extra if own else result
+
+    def _with_writers(self, owner, values, row, p, *, xp, magnitudes=False):
+        """An owner's own ledgers (or their magnitudes), {name: value}, with the terms
+        of the later operators that write its accepted fields (v2 design §1.4)."""
+        for writer, ledgers in self.writers_of.get(owner.LAW_ID, ()):
+            add = writer.external_magnitude_terms if magnitudes else writer.external_ledger_terms
+            terms = add({k: values[k] for k in ledgers}, row, p, xp=xp)
+            values = values | {k: terms[k] for k in ledgers}
+        return values
+
+    def _own_ledgers(self, op, row, p, *, xp):
+        values = op.own_ledgers(row, p, xp=xp)
+        return (
+            self._with_writers(op, values, row, p, xp=xp)
+            if op.LAW_ID in self.writers_of
+            else values
+        )
+
+    def _own_magnitudes(self, op, row, p, *, xp):
+        values = op.own_magnitudes(row, p, xp=xp)
+        if op.LAW_ID not in self.writers_of:
+            return values
+        named = dict(zip(op.LEDGERS, values, strict=True))
+        named = self._with_writers(op, named, row, p, xp=xp, magnitudes=True)
+        return tuple(named[k] for k in op.LEDGERS)
 
     def inner_balances(self, state, p):
         """The inner ledgers with the operators' terms (host; the inner row checks)."""
@@ -572,7 +675,9 @@ class Composition:
 
     def magnitudes(self, row, p, *, xp=np):
         inner = self.inner_magnitudes(row, p, xp=xp)
-        own = tuple(m for op in self.own_ledger_operators for m in op.own_magnitudes(row, p, xp=xp))
+        own = tuple(
+            m for op in self.own_ledger_operators for m in self._own_magnitudes(op, row, p, xp=xp)
+        )
         return (*inner, *own)
 
     def ledger_limits(self, row, p, tol, rtol, *, steps, magnitudes, xp=np):
@@ -620,8 +725,8 @@ class Composition:
         with np.errstate(all="ignore"):
             for row, count in zip(rows, counts, strict=True):
                 for op in self.own_ledger_operators:
-                    values = op.own_ledgers(row, p, xp=np)
-                    bounds = op.own_bounds(op.own_magnitudes(row, p, xp=np), count)
+                    values = self._own_ledgers(op, row, p, xp=np)
+                    bounds = op.own_bounds(self._own_magnitudes(op, row, p, xp=np), count)
                     for (name, value), key, bound in zip(
                         values.items(), op.LEDGER_DIAGNOSTICS, bounds, strict=True
                     ):
@@ -677,7 +782,11 @@ class Composition:
             )
             row = {k: v[0] for k, v in vars(observed).items()}
             for op in self.operators:
-                row.update(op.observe(row, state, control, p, view, self, spec))
+                columns = op.observe(row, state, control, p, view, self, spec)
+                if set(columns) != self.observed_keys[op.LAW_ID]:
+                    undeclared = sorted(set(columns) ^ self.observed_keys[op.LAW_ID])
+                    raise ConfigError(f"{op.LAW_ID} observes {undeclared} against its declaration")
+                row.update(columns)
             records.append(row)
         if records:
             return self.Observations(

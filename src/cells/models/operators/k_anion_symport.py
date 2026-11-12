@@ -162,6 +162,10 @@ class KAnionSymport(Operator):
     }
     READOUT = "symport"
     READOUT_COLUMNS = SYMPORT_READOUTS
+    REPLACES = {
+        "energy_balance_pJ": "the composite's energy ledger with the symport terms",
+        "energy_balance_pJ_s": "the composite readouts' energy-balance rate",
+    }
     FINITE_RATES = True
     REQUIRES = (WATER_LAW_ID,)
 

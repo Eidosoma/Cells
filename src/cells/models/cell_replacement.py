@@ -127,6 +127,11 @@ def composition_identity(spec):
     return composite_spec.identity(composite(spec).model)
 
 
+def field_owners(spec):
+    """The composition's field-to-owner map (run manifests, beside the identity)."""
+    return _model.field_owners(composite(spec))
+
+
 def batch_signature(model):
     r, f = model.replacement, model.replacement.junction_formation
     return (
