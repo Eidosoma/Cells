@@ -4751,8 +4751,8 @@ can in parallel".
 2026-11-12, user direction. BITSEY (Grodstein and Pietak,
 https://gitlab.com/grodstein/bitsey, pinned at `b2cb370`) is an external reference
 like BETSE (D131). It runs out of process, Cells compares against its saved
-outputs, and `src/cells` carries no BITSEY names. This is a pure rename with no
-numerical change:
+outputs, and `src/cells` carries no BITSEY-named identifiers. This is a pure
+rename with no numerical change:
 
 | Kind | Old | New |
 | --- | --- | --- |
@@ -4775,10 +4775,14 @@ numerical change:
   the probe fixtures and `docs/E02_SWITCHING_PROTOCOL.md` record what was
   registered.
 - **Audit:**
-  - No BITSEY function is transcribed and nothing in the engine imports BITSEY.
-  - `processes/source_electrochemistry.py` writes published laws but reproduces
-    the source's numerical conventions for parity. Whether that is acceptable
-    is the user's decision.
+  - Nothing in the engine imports BITSEY. `emt_mirna.py` and `source_pair.py`
+    are independent implementations that use the source's parameter values.
+  - Classification of `processes/source_electrochemistry.py` lines 17–56 is
+    pending. It writes published laws, but it reproduces the source's
+    implementation choices for parity; the user decides.
+  - Left for a later decision: BITSEY's species names (`miR200_total`,
+    `Zeb_mRNA_total`, `ZEB_prot`, `snail`, `ST`), which are schema keys, and the
+    `source_*` module, class and stage-domain names.
   - BITSEY declares no licence. Its files say "See LICENSE", but no licence
     file exists anywhere in its history, so its code may not be copied.
   - The five `scripts/capture_*` tools that import BITSEY in a worker process
