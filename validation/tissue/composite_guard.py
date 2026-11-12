@@ -196,6 +196,40 @@ def windowed_pair(raw, window_steps=4000):
     )
 
 
+_EVALUATORS = {}
+
+
+def _evaluators(model, steps):
+    """rhs, its state Jacobian and the k-step map of a model, compiled once per model.
+
+    The control, layout and step are arguments, so worlds of one shape share the
+    compiled functions (a model object is kept in the key's value, so its id is not
+    reused while cached).
+    """
+    import jax
+    import jax.numpy as jnp
+
+    key = (id(model), steps)
+    if key not in _EVALUATORS:
+
+        def rhs(s, control, p):
+            return model.rhs(s, control, p, p.active)
+
+        def step_map(s, control, p, dt):
+            def body(carry, _):
+                moved, ok = model.checked_step(carry[0], dt, control, p, p.active)
+                return (moved, carry[1] & ok), None
+
+            (final, ok), _ = jax.lax.scan(body, (s, jnp.asarray(True)), None, length=steps)
+            return final, ok
+
+        _EVALUATORS[key] = (
+            model,
+            (jax.jit(rhs), jax.jit(jax.jacfwd(rhs)), jax.jit(step_map)),
+        )
+    return _EVALUATORS[key][1]
+
+
 def evaluation_pair(raw, states, *, steps=4):
     """rhs, its state Jacobian and the k-step map, frozen and composite, at given states.
 
@@ -218,27 +252,15 @@ def evaluation_pair(raw, states, *, steps=4):
         controls = control_values(spec, [0.0])
         control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
         p = jax.tree.map(jnp.asarray, p)
-        dt = spec.execution.dt
-
-        def rhs(s, model=model, control=control, p=p):
-            return model.rhs(s, control, p, p.active)
-
-        def step_map(s, model=model, control=control, p=p, dt=dt):
-            def body(carry, _):
-                moved, ok = model.checked_step(carry[0], dt, control, p, p.active)
-                return (moved, carry[1] & ok), None
-
-            (final, ok), _ = jax.lax.scan(body, (s, jnp.asarray(True)), None, length=steps)
-            return final, ok
-
-        functions.append((model, jax.jit(rhs), jax.jit(jax.jacfwd(rhs)), jax.jit(step_map)))
+        dt = jnp.asarray(spec.execution.dt)
+        functions.append((model, *_evaluators(model, steps), control, p, dt))
     for label, state in states.items():
         values = []
-        for model, rhs, jac, step_map in functions:
+        for model, rhs, jac, step_map, control, p, dt in functions:
             s = model.STATE_TYPE(
                 *(jnp.asarray(getattr(state, k)) for k in model.STATE_TYPE._fields)
             )
-            values.append((rhs(s), jac(s), step_map(s)))
+            values.append((rhs(s, control, p), jac(s, control, p), step_map(s, control, p, dt)))
         (r0, j0, m0), (r1, j1, m1) = values
         differences = []
         for name in type(r0)._fields:
