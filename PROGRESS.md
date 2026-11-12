@@ -125,8 +125,13 @@ machine-readable inputs, results, checks and failures.
   - **Retention is as in fixed volume.** In both water models, 37-cell discs held 70 min
     at s 1.0, 0.6 and 0.3, and 19-cell discs held at s 0.6 and 0.3.
   - **The 19-cell disc at s 1.0 was lost at 345–348 s after the cue**, against 990.5 s
-    in fixed volume. These times come from 5 ms runs with 1 s records and are not yet
-    re-timed at 1 ms.
+    in fixed volume (5 ms runs, 1 s records).
+    - **Re-timed at 1 ms (12 November):** water1, water2 and the water-off control lose
+      the disc in the same 1 s brackets as at 5 ms (347–348, 345–346 and 304–305 s), with
+      per-cell Vm within 0.02 mV before the loss. Fixed volume at 1 ms lost it at 990.46 s,
+      so the shift is 2.85× (water1) and the water-dynamics effect +14.1%. Snapshot
+      `source-w1a-02` (`f42eaa4`);
+      [comparison](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/sheet70w/retiming-1ms.json).
   - **The cause is the start state.**
     - The declared heredity H is hypo-osmotic, 284 against 300 mOsm.
     - Under water each cell starts at its model's balanced stationary H: 0.942 V0, 1.7 mV
