@@ -61,16 +61,25 @@ junction channel), not on single gene products. The full inventory is
 (`cells.protein_catalogue.law_inventory@2`, source fec863f). For every law it records
 the file and docstring, the unit, candidate products with human and Xenopus laevis
 UniProt accessions and isoforms, the assembly and its source, the coefficient source
-with the published model behind it, the parameter set, and a status. It also accounts
-for every row of the first pass.
+with the published model behind it, the kind of evidence, the parameter set, and a
+status. It accounts for every row of the first pass. A census buckets all 778
+versioned identifiers in `src/cells`, so none is left unreviewed.
 
 **Counts.**
-- 79 laws: 77 with ID constants, and two functions of the nominal `bitsey_emt_pair@1`
+- 80 laws: 78 with ID constants, and two functions of the nominal `bitsey_emt_pair@1`
   profile.
 - One assembly model.
-- 48 functional units.
-- Laws by status: 41 assigned in source, 7 candidate, 31 generic.
-- 86 candidate genes, 74 of them with a Xenopus laevis UniProt entry.
+- 49 functional units.
+- Laws by status: 41 assigned in source, 7 candidate, 32 generic.
+- The 41 assigned laws by evidence:
+  - 12 expressed isoforms;
+  - 6 with the isoform named only in the cited title;
+  - 4 native currents;
+  - 2 neuron models;
+  - 12 Morris-Lecar reductions;
+  - 5 whose BETSE citation gives no detail.
+- 93 candidate genes, 81 of them with a Xenopus laevis UniProt entry. Auxiliary
+  subunits are listed as whole families, because no source pairs them.
 
 **Status.**
 - **Assigned in source:** the law, its docs or its cited source names the product.
@@ -92,7 +101,7 @@ for every row of the first pass.
 | T-type CaV3.1, 3.3 | `cav3p1_mh_piecewise_tau_m@1`, `cav3p3_mh@1`, `cav_t_ml_instantaneous@1` | CACNA1G O43497, CACNA1I Q9P0X4 | alpha1 alone (PDB 6KZO) | BETSE (Traboulsie 2007, expressed) | assigned |
 | Native L-type and HVA Ca | `ca_l2_m2h@1`, `ca_l3_shift15_m2h@1`, `cav_g_m2h_regularized@1` | CACNA1C, CACNA1D (others for Cav_G; inference) | as HVA | BETSE, modified Avery 1996; Reuveni 1993 | candidate |
 | Ca-activated K | `cagpotassium_numeric_mM_scale@1` | KCNMA1 Q12791 (cited model) or KCNN1-3 (BETSE label) | BK: 4 alpha (PDB 6V38) | BETSE legacy function; Cox, Cui & Aldrich 1997 (BK clone mslo) | generic: BETSE says "SK" but cites a BK model |
-| Leaks and defaults | six always-open leaks, `hcn_leak_open@1`, `kv_ml1_dynamic_m@1`, `constant_field@1`, `neutral_mobile_leak@1` | none | none | BETSE leak classes; constant-field flux | generic |
+| Leaks, defaults, lumped permeabilities | six always-open leaks, `hcn_leak_open@1`, `kv_ml1_dynamic_m@1`, `constant_field@1`, `neutral_mobile_leak@1`, `ideal_osmosis_linear_compliance_water@1` | none | none | BETSE leak classes; constant-field flux; ideal osmosis | generic |
 | Gap-junction channel | `junction_voltage_relaxation@1`, `symmetric_opposing_relaxation@1`, `delayed_first_order_junction_formation@1` | connexins as candidates, e.g. GJA1 P17302 | 2 connexons x 6 (PDB 7Z22) | BETSE rates from axolotl blastomeres (Harris 1983), no connexin identified; synthetic gate; cited plaque studies | generic |
 | Cx45/Cx45, Cx40/Cx37 channels | gate tables of `junction_flux()` in the nominal `bitsey_emt_pair@1` profile | GJC1 P36383; GJA5 P36382 + GJA4 P35212 | 2 x 6 | Chen-Izu et al. 2001 Table 1 (values match exactly) | assigned in source |
 | Na+/K+-ATPase | `nak_atp_mass_action_positive@1`, `nak_atp_affinity_tanh@1`, nominal profile pump | ATP1A1-4 (ATP1A1 P05023), ATP1B1-3, FXYD | alpha:beta:FXYD 1:1:1 (PDB 7E1Z); 3 Na out, 2 K in | BETSE pump form; BETSE's default Km values carry an uncited "alpha1" comment | generic |
@@ -239,7 +248,7 @@ Bulk copying of atlas data is not planned.
    - WormBase is unverified.
 2. **Inventory and mapping.** **Done** (12 November 2026), `law_inventory_v2.json`
    and the table above.
-   - It covers 79 laws and 48 functional units.
+   - It covers 80 laws and 49 functional units.
    - The connexin worked case leaves the junction law generic.
 3. **Design note** (D142), after the cell-division design note is reviewed, so the
    two agree on membrane domains:
