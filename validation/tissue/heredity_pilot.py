@@ -1362,6 +1362,154 @@ def part_heatdrift(args):
     log(f"heatdrift {label}: {result['max_abs_residual_over_bound']} {result['min_q2_over_q1']}")
 
 
+SUMMARY_MARKS_S = (10, 50, 100, 200, 300, 600, 900, 1200, 1800, 2400, 3000, 3600)
+
+
+def sheet_arm_summary(directory, disc, written_start=False):
+    """One 70-minute sheet arm from its records: outcome, track and the pre-loss state.
+
+    Times in the track and the loss brackets are seconds after the cue ends (after
+    t = 0 for a written start). Content excess is each cell's solute content over
+    its own at t = 0 (fixed volume: the osmolarity excess); volume ratios are V/V0.
+    """
+    directory = Path(directory)
+    report = json.loads((directory / "longsheet.json").read_text())
+    if "wall_seconds" not in report:
+        return "running"
+    rows = [
+        json.loads(line)
+        for line in (directory / "records" / "world-1.jsonl").read_text().splitlines()
+        if line.strip()
+    ]
+    off = 0.0 if written_start else LONG_CUE_S[1]
+    after = [r for r in rows if r["t"] >= off - 1e-9]
+    lost = next((i for i, r in enumerate(after) if r["d_inside"] < disc), None)
+
+    def compact(r):
+        return dict(
+            t_after_cue_s=round(r["t"] - off, 3),
+            d_inside=r["d_inside"],
+            d_outside=r["d_outside"],
+            disc_vm_mV=[round(1e3 * v, 2) for v in r["disc_vm_V"]],
+            outside_vm_mV=[round(1e3 * v, 2) for v in r["outside_vm_V"]],
+            disc_mean_mM={k: round(v, 3) for k, v in r["disc_mean_mM"].items() if k != "P"},
+            disc_content_excess_pct=[round(100 * v, 2) for v in r["disc_osmotic_excess"]],
+            max_content_excess_pct=round(100 * r["max_osmotic_excess"], 2),
+            disc_volume_ratio=[round(v, 4) for v in r.get("disc_volume_ratio", (1.0, 1.0))],
+            outside_volume_ratio=[round(v, 4) for v in r.get("outside_volume_ratio", (1.0, 1.0))],
+        )
+
+    track = {}
+    for mark in SUMMARY_MARKS_S:
+        r = next((x for x in after if x["t"] - off >= mark - 1e-6), None)
+        if r is not None:
+            track[str(mark)] = compact(r)
+    first_flag = next((r["t"] for r in rows if r["max_osmotic_excess"] > OSMOTIC_FLAG), None)
+    return dict(
+        model=report.get("engine_model", "resolved_pump_tissue@3").split(" ")[0],
+        volume_model=report.get("volume_model"),
+        water_availability=report.get("water_availability"),
+        failure=(report.get("failure") or {}).get("error"),
+        censor=report.get("censor"),
+        wall_hours=round(report["wall_seconds"] / 3600, 2),
+        written=bool(after and after[0]["d_inside"] == disc and after[0]["d_outside"] == 0),
+        loss_bracket_s=None
+        if lost is None
+        else [round(after[lost - 1]["t"] - off, 3), round(after[lost]["t"] - off, 3)],
+        all_lost_bracket_s=_bracket(after, off, lambda r: r["d_inside"] == 0),
+        pre_loss=None if lost is None else compact(after[lost - 1]),
+        d_inside_at_end=rows[-1]["d_inside"],
+        max_d_outside=max(r["d_outside"] for r in rows),
+        last_time_s=rows[-1]["t"],
+        first_excess_above_10pct_min=None if first_flag is None else round(first_flag / 60, 1),
+        max_content_excess_pct=round(100 * max(r["max_osmotic_excess"] for r in rows), 2),
+        max_volume_ratio=round(max(r.get("max_volume_ratio", 1.0) for r in rows), 4),
+        end=compact(rows[-1]),
+        track=track,
+    )
+
+
+def part_sheetsummary(args):
+    """All 70-minute sheet arms in --output: fixed volume (sheet70), water (sheet70w).
+
+    Writes sheet70w/summary-sheet-arms.json (or -<label>): every arm's outcome,
+    track and pre-loss state, and the paired differences at 70 min (water2 minus
+    water1, water1 minus fixed volume) of the disc means for arms that held.
+    """
+    base = Path(args.output)
+    arms = {}
+    for disc in (37, 19):
+        for s in ("1.0", "0.6", "0.3"):
+            for key, path in (
+                (f"fixed-disc{disc}-s{s}", base / "sheet70" / f"longsheet-v2-disc{disc}-s{s}"),
+                (
+                    f"water1-disc{disc}-s{s}",
+                    base / "sheet70w" / f"longsheet-water1-disc{disc}-s{s}",
+                ),
+                (
+                    f"water2-disc{disc}-s{s}",
+                    base / "sheet70w" / f"longsheet-water2-disc{disc}-s{s}",
+                ),
+            ):
+                if (path / "records" / "world-1.jsonl").exists() and (
+                    path / "longsheet.json"
+                ).exists():
+                    arms[key] = sheet_arm_summary(path, disc)
+                else:
+                    arms[key] = "missing"
+    control = base / "sheet70w" / "longsheet-water1-off-disc19-s1.0"
+    if (control / "longsheet.json").exists():
+        arms["water1-off-disc19-s1.0"] = sheet_arm_summary(control, 19)
+
+    def end_means(key):
+        arm = arms.get(key)
+        if not isinstance(arm, dict) or arm["d_inside_at_end"] == 0:
+            return None
+        return arm["end"]
+
+    differences = {}
+    for disc in (37, 19):
+        for s in ("1.0", "0.6", "0.3"):
+            fixed, one, two = (
+                end_means(f"{m}-disc{disc}-s{s}") for m in ("fixed", "water1", "water2")
+            )
+            entry = {}
+            if one and two:
+                entry["water2_minus_water1"] = dict(
+                    disc_mean_mM={
+                        k: round(two["disc_mean_mM"][k] - one["disc_mean_mM"][k], 3)
+                        for k in one["disc_mean_mM"]
+                    },
+                    disc_volume_ratio_max=round(
+                        two["disc_volume_ratio"][1] - one["disc_volume_ratio"][1], 4
+                    ),
+                    max_content_excess_pct=round(
+                        two["max_content_excess_pct"] - one["max_content_excess_pct"], 2
+                    ),
+                )
+            if one and fixed:
+                entry["water1_minus_fixed"] = dict(
+                    disc_mean_mM={
+                        k: round(one["disc_mean_mM"][k] - fixed["disc_mean_mM"][k], 3)
+                        for k in one["disc_mean_mM"]
+                    },
+                    max_content_excess_pct=round(
+                        one["max_content_excess_pct"] - fixed["max_content_excess_pct"], 2
+                    ),
+                )
+            differences[f"disc{disc}-s{s}"] = entry
+    name = "summary-sheet-arms" + (f"-{args.label}" if args.label else "") + ".json"
+    out = dict(
+        kind="cells.heredity_pilot_w1_sheet_arms_summary@1",
+        sources=dict(fixed=str(base / "sheet70"), water=str(base / "sheet70w")),
+        marks_s_after_cue=SUMMARY_MARKS_S,
+        arms=arms,
+        differences_at_70_min=differences,
+    )
+    write_json(base / "sheet70w" / name, out)
+    log(f"sheet summary written: {name}")
+
+
 def summarize_longsheet(output):
     output = Path(output)
     report = json.loads((output / "longsheet.json").read_text())
@@ -2790,6 +2938,7 @@ PARTS = dict(
     prepare=part_prepare,
     run=part_run,
     summarize=part_summarize,
+    sheetsummary=part_sheetsummary,
     heat=part_heat,
     gapa=part_gapa,
     floor=part_floor,
