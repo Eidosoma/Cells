@@ -58,6 +58,58 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Composite tissue model landed (12 November; D143).** `resolved_pump_composite@1` is
+  `@3`'s own step plus declared operators ([PUMP_COMPOSITE.md](docs/PUMP_COMPOSITE.md)).
+  `resolved_pump_water@1`, `@2` and `resolved_pump_replacement@1` are now thin
+  compositions; none had to stay frozen.
+  - **In-tree guards, all bitwise equal:**
+    - the empty composition equals `@3` (9/9 cases, and the 825-node world);
+    - water test worlds 15/15; replacement 17/17;
+    - W1's six judged trajectories, its stationary states and a 60 s drift;
+    - W2's 8 arms;
+    - G2-Q1's 9 cases with device checks on every row;
+    - W37; Q5 (2 step sizes); Q6 cohorts.
+  - **Cross-revision guards** (frozen `8416a72` against the converted tree):
+    - jaxprs with dt traced: 36/36 on the base worlds, 69/69 on the qualification worlds,
+      78/78 at the head;
+    - bindings at every step size used;
+    - W2's judge on all 8 arms identical;
+    - 17/17 saved runs bit-identical;
+    - the frozen models' own tests, unmodified, 130/130 against the thin modules.
+  - **Step studies:** W1's dt study and 6 of Q5's 8 worlds were not rerun. The argument
+    for equality (dt-traced jaxprs, with bound shapes and bindings checked at every step
+    size) is written into the evidence README with its limits.
+  - **Gate:** tiers 1 and 2 at `3f7d93e`, 349 files, none changed. The composite's
+    identity, water and replacement files are tier 3: 12–23 min each, and they need more
+    than 3 GB in one process.
+  - Integration grants no new acceptance. GPU agreement by tolerance is pending.
+  - Evidence: `/mnt/workspaces/Cells/composite-s1-20261111-01/README.md` and
+    `land-composite-20261112-01/`. Landed at `54a2ea0`.
+- **Plan-validation fix accepted on the L4; full-tissue hold segment 1 started (12 November).**
+  - **The fix:** `bind_step_checks(spec)` evaluates `@1`–`@3`'s definition-only
+    step-check quantities once per definition, not once per 1,024-step chunk. The
+    definition stays unchanged, and the traced code hashes identically before and after.
+  - **On CPU,** the 825-node clock check drops from 59.6 min of CPU to 6.9 s:
+    - layout builds from 8,240 to 2;
+    - control tables from 4,120 to 0.
+  - **The acceptance probe on the L4** (from `source-09`, main `efa8267` plus the fix,
+    into `fulltissue-v2/`):
+    - start, prepare and probe all exit 0;
+    - the probe wrote 10 windows, with all six worlds at t = 8 s and no failed check;
+    - plan validation took 106 s, against a 40+ min stall before; compile 210 s.
+  - **Segment 1** (1,200 s of model time, snapshots every 300 s) has run from the same
+    snapshot since 18:39.
+    - The measured rate is 11.1 s per 200-step window of six worlds. That projects to
+      about 18.5 h per segment and about 65 h for the whole hold on the L4.
+    - GH200 arrives next week. Each 300-s snapshot is a point to reassess.
+  - **Open findings:**
+    - `run.json` reports 0.41 ms per batch step against 55 ms seen, so the per-window
+      wall lies outside every recorded timing;
+    - `experiment.changes` is recomputed on every access, at 13.6 ms each;
+    - the composite and the models that wrap `@3` still rebuild per chunk. Their owner
+      adopts the fix.
+  - The fix lands after a rebase onto the composite.
+  - Evidence: `/mnt/workspaces/Cells/clock-validation-20261112-01/summary.json`.
 - **Out-of-memory crash and relaunch (12 November).**
   - **Cause:** at 01:36:13 UTC the composite S1 guard on the water@2 qualification
     worlds was 8.2 GB resident, mid-compile. It set off a machine-wide out-of-memory
