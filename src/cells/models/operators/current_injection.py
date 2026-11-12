@@ -20,9 +20,14 @@ and the charge f_s I h of each carrier sums to I h. Bookings, exact for each hal
   _electric, imported, until §1.1 gives them a declared owner).
 Refusal: a half-step in which a cell could not supply a removed carrier (its amount would
 not stay positive). No electrode: statically idle. No current in a step: the half-step
-selects the start state. Current changes are exact multiples of dt. Under RK4 the half-
-steps stay around the inner step ("split"); the right-hand side does not carry the
-injection, so analyses through it see the uninjected model.
+selects the start state. Current changes are exact multiples of dt.
+Departures from the v2 note, accepted by the lead (12 November):
+* RK4 keeps the half-steps around the inner step ("split", not "coupled"): the
+  composite's coupled right-hand side takes operator rates on owned fields only, and the
+  injection writes @3's amounts. The step term of a dt study captures the splitting
+  error, and the stationary right-hand side leaves this forcing out, as it should.
+* The free-energy terms are the replacement law's _chemical and _electric, imported (not
+  copied) until the v2 note's §1.1 gives @3's free energy a declared owner.
 """
 
 from bisect import bisect_right

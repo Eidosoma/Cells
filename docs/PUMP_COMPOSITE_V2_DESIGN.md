@@ -402,6 +402,14 @@ closed, in this order:
 - the existing membrane-process hook: it carries passive transmembrane fluxes with
   nonnegative heat, so a source's work would have to appear as negative heat.
 
+**As built (cd2859d), with the lead's acceptance:**
+- RK4 keeps the half-steps around the inner step ("split"), not "coupled". The coupled
+  right-hand side takes operator rates on owned fields only, and injection writes @3's
+  amounts. A dt study's step term captures the splitting error, and the stationary
+  right-hand side leaves the forcing out.
+- The free-energy terms are the replacement law's `_chemical` and `_electric`, imported
+  until §1.1 gives @3's free energy a declared owner.
+
 ### 4.2 Guards for injection
 - An idle injection equals the composition without it, bitwise (no electrode, and I = 0
   throughout).
