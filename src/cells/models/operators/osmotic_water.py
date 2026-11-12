@@ -30,6 +30,7 @@ Contract (models/operators/contract.py):
 
 from bisect import bisect_right
 from dataclasses import asdict, replace
+from functools import cached_property
 from typing import NamedTuple
 
 import jax.numpy as jnp
@@ -400,6 +401,49 @@ def minimum_volume_spec(spec, declaration):
 # ------------------------------------------------------------------ the operator
 
 
+class WaterStepChecks:
+    """The water bounds of one definition, for every chunk of its clock.
+
+    What they read from the definition (the minimum-volume projection's explicit and
+    calcium bounds, each building a layout, and the water relaxation rate at the declared
+    state) is evaluated at its first use and kept; a call makes check_steps' refusals in
+    check_steps' order.
+    """
+
+    def __init__(self, spec, declaration, model):
+        self.spec, self.declaration, self.model = spec, declaration, model
+
+    @cached_property
+    def low(self):
+        return ionic_spec.projection(minimum_volume_spec(self.spec, self.declaration))
+
+    @cached_property
+    def explicit_rate(self):
+        return first.explicit_rate_bound(self.low)
+
+    @cached_property
+    def calcium_rate(self):
+        return second.calcium_rate_bound(self.low)
+
+    @cached_property
+    def water_rate(self):
+        state, p = self.model.initial_values(self.spec)
+        return water_rate(state, p.membrane_active.astype(float), p, xp=np)
+
+    def __call__(self, steps):
+        step = np.max(steps, initial=0)
+        if self.spec.execution.solver != "rk4":
+            if step * self.explicit_rate > EXPLICIT_STEP_BOUND:
+                raise ConfigError("IMEX step exceeds the explicit-rate bound at minimum volumes")
+            if step * self.calcium_rate > EXPLICIT_STEP_BOUND:
+                raise ConfigError("IMEX step exceeds the calcium pump bound at minimum volumes")
+        rate = self.water_rate
+        if not np.isfinite(rate) or step * rate > MAX_WATER_RELAXATION_PER_STEP * (
+            1 + 16 * np.finfo(float).eps
+        ):
+            raise ConfigError("Water relaxation requires a smaller step (dt x rate exceeds 0.05)")
+
+
 class OsmoticWater(Operator):
     LAW_ID = LAW_ID
     STEP_ID = WATER_STEP_ID
@@ -472,19 +516,10 @@ class OsmoticWater(Operator):
     def check_steps(self, spec, declaration, schedule, steps, controls, model):
         """The water bounds: @3's explicit bounds at the declared minimum volumes, and
         dt x the water relaxation rate at the declared state with every route open."""
-        step = np.max(steps, initial=0)
-        if spec.execution.solver != "rk4":
-            low = ionic_spec.projection(minimum_volume_spec(spec, declaration))
-            if step * first.explicit_rate_bound(low) > EXPLICIT_STEP_BOUND:
-                raise ConfigError("IMEX step exceeds the explicit-rate bound at minimum volumes")
-            if step * second.calcium_rate_bound(low) > EXPLICIT_STEP_BOUND:
-                raise ConfigError("IMEX step exceeds the calcium pump bound at minimum volumes")
-        state, p = model.initial_values(spec)
-        rate = water_rate(state, p.membrane_active.astype(float), p, xp=np)
-        if not np.isfinite(rate) or step * rate > MAX_WATER_RELAXATION_PER_STEP * (
-            1 + 16 * np.finfo(float).eps
-        ):
-            raise ConfigError("Water relaxation requires a smaller step (dt x rate exceeds 0.05)")
+        self.bind_check_steps(spec, declaration, schedule, model)(steps)
+
+    def bind_check_steps(self, spec, declaration, schedule, model):
+        return WaterStepChecks(spec, declaration, model)
 
     def batch_signature(self, declaration):
         w = declaration

@@ -149,6 +149,13 @@ class Operator:
     def check_steps(self, spec, declaration, schedule, steps, controls, model):
         """Step-size refusals of this operator (after the inner model's)."""
 
+    def bind_check_steps(self, spec, declaration, schedule, model):
+        """check_steps bound to one definition: a callable of each chunk's steps (the
+        composite's bind_step_checks). The default calls check_steps per chunk; an
+        operator whose checks read the definition (a layout, say) binds those parts once,
+        evaluated at first use in check_steps' order (v2 design R5)."""
+        return lambda steps: self.check_steps(spec, declaration, schedule, steps, None, model)
+
     def batch_signature(self, declaration):
         return (self.LAW_ID,)
 
