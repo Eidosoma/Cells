@@ -29,9 +29,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Plan: BETSE parity on CPU and L4, then JUPITER (from 8 November)
 
-A new order (gates and their evidence) is proposed in
-[docs/CURRENT_PLAN.md](docs/CURRENT_PLAN.md), dated 12 November and awaiting the user's
-adoption. This table stays as the status record of the 8 November plan.
+The order (gates and their evidence) is now
+[docs/CURRENT_PLAN.md](docs/CURRENT_PLAN.md), adopted 12 November (D145).
+This table stays as the status record of the 8 November plan.
 
 Target: BETSE parity of the Cells engine, compared against output from plain
 BETSE and run on CPU and the local L4. The JUPITER allocation (10,000 GH200

@@ -4715,6 +4715,37 @@ for different work".
   - The protein catalogue is shared by every model.
 - Builds on D136, D142 and D143.
 
+## D145: The current plan is adopted, with the L4 now and GH200 next week
+
+2026-11-12, user direction: "so we get GH200 access by end of next week so let's wait with
+that and use the L4 we have that one just for us rest you you guys suggest - as much as we
+can in parallel".
+- **Adopted:** [CURRENT_PLAN.md](CURRENT_PLAN.md), the gates and their completion evidence.
+  It was built from two architecture reviews and the advisor's review.
+- **GH200 (JUPITER) work waits for access, expected by the end of next week.**
+  - The L4 is used fully meanwhile, for us only.
+  - The only GH200 preparation now: make the L4 step-profile harness rerunnable on GH200
+    on day one.
+- **The open choices, taken as suggested by the lead and the advisor:**
+
+  | Choice | Taken as |
+  | --- | --- |
+  | Check C1 | Stays held |
+  | Single-world size | Set later from the L4 profile and the GH200 measurements |
+  | Molecular-loop unit | Provisionally the junction-channel population, which both renewal and division consume; confirmed at that gate |
+  | Heredity or division | Both in parallel: division work takes the agent slots; heredity takes the cores and the L4 |
+  | E07-v1 redesign | Stays open until the turnover results exist |
+
+- **Parallelism stays within AGENTS.md:** one lead, at most four subagents on disjoint files,
+  memory-capped units, and one GPU process at a time.
+  - Parallel work comes from inside the gates.
+  - Cortés-Poza Phase 1, the GRN track and catalogue stage 3 stay held.
+- **Not approved by this entry:** the two tooling items, a public validation package and a
+  versioned checkpoint migration. They need the user's explicit approval when they become
+  due.
+- **Resource note:** more RAM on the VM is the cheapest gain in parallelism. Memory, not CPU
+  or GPU, is the limit.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

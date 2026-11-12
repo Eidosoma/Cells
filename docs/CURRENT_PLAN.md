@@ -1,7 +1,10 @@
-# Current plan (proposed, 12 November 2026)
+# Current plan (adopted 12 November 2026)
 
-Status: **proposed, for the user's adoption.** No decision entry is written until the user
-confirms.
+Status: **adopted 12 November 2026 ([D145](DECISIONS.md#d145-the-current-plan-is-adopted-with-the-l4-now-and-gh200-next-week)).**
+GH200 access is expected by the end of next week, and the L4 is used fully meanwhile. The
+open choices were taken as the lead and the advisor suggested (D145). The two tooling items
+(a public validation package and checkpoint migration) still need the user's explicit
+approval.
 
 **What this file holds.** It is an ordering document: what comes next, in what order, and
 the evidence that closes each gate.
@@ -241,16 +244,23 @@ any reduced model must keep the slow variables that carry history. Matching pres
 voltage or shape is not enough: fresh and fully loaded depolarised cells already show
 that.
 
-## Decisions for the user
+## Decisions taken (D145) and still open
 
-1. Adopt this plan, or amend it.
-2. **Resources:** GH200 access (JUPITER), and more RAM on the VM. Memory, not CPU or GPU,
-   limits throughput now.
-3. **Scale:** the single-world size needed in the next year, which decides the
-   field-solver work.
-4. **Molecular loop:** which functional unit closes it.
-5. **Tooling approvals:** the public validation package, and a versioned checkpoint
-   migration operation.
-6. **E07-v1:** the redesign, once the turnover results are in.
-7. **Priority while memory is short:** heredity or division.
-8. **Checks and settings:** whether to keep C1 held, and whether to enable linger.
+**Taken:**
+- The plan is adopted.
+- GH200 (JUPITER) work waits for access, expected by the end of next week. The L4 is used
+  fully meanwhile.
+- The suggested choices, as listed in D145:
+  - C1 stays held.
+  - The single-world size is set from the L4 profile and the GH200 numbers.
+  - The molecular-loop unit is provisionally the junction-channel population.
+  - Heredity and division run in parallel: division takes the agent slots; heredity takes
+    the cores and the L4.
+  - The E07-v1 redesign stays open until the turnover results exist.
+
+**Still open:**
+- The two tooling approvals: the public validation package and the versioned checkpoint
+  migration.
+- More RAM on the VM.
+- Linger: run `loginctl enable-linger robert` yourself. The agent's attempt was blocked as a
+  persistence change.
