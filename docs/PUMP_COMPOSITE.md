@@ -12,7 +12,9 @@ Files:
   inner identity and ordered operator list);
 - `src/cells/models/pump_composite_adapter.py`: the @3 entity adapter;
 - `src/cells/models/operators/`: the contract and the operators;
-- `validation/tissue/composite_guard.py`: the bitwise guards against the frozen models.
+- `validation/tissue/composite_guard.py`: the bitwise guards against the frozen models;
+- `validation/tissue/composite_crossrev.py` and `composite_dump.py`: the cross-revision
+  guards of the thin modules (compiled programs and bindings; saved runs).
 
 **Status: development.** Integration grants no acceptance. A composition is not qualified
 by its parts: unqualified combinations run as labelled development runs
@@ -89,30 +91,49 @@ components) and is not used by any S1 operator: it is unit-tested against
 
 ## Equivalence with the frozen models (design §3.7)
 
-Bitwise means every state field, observation column and `max_` diagnostic equal under
-`np.array_equal`, as the frozen models' own equivalence tests compare; the guards also
-report whether the bit patterns are identical (they were in every case).
+Bitwise means every compared state field, observation column and `max_` diagnostic equal
+under `np.array_equal` (NaN-aware), as the frozen models' own equivalence tests compare;
+wherever the guards record bit patterns, they were identical. Every run, its snapshot and
+result: `/mnt/workspaces/Cells/composite-s1-20261111-01/README.md`.
 
 - **(a) The empty composition equals `resolved_pump_tissue@3`**
   (`tests/unit/test_pump_composite_identity.py`): heredity cell and seven-cell sheet with
   Euler and ARS(2,2,2), uncompiled, @3's padded reference world, RK4, a vmap batch and
-  restart. Its checked step is @3's own.
+  restart; and the 825-node world (200 steps). Its checked step is @3's own.
 - **(b) An idle operator equals the composition without it:** closed water equals the
   empty composition; a symport with no route or every route blocked equals water alone;
-  replacement without events equals the empty composition (Euler, ARS(2,2,2), RK4).
+  replacement without events equals the empty composition (Euler, ARS(2,2,2), RK4); on
+  the 825-node world, closed water and event-free replacement equal @3.
 - **(c) Re-expressed water@1, water@2 and replacement@1 equal the frozen models** on their
   test worlds (`test_pump_composite_water.py`, `test_pump_composite_replacement.py`) and
-  their qualification worlds (`validation/tissue/composite_guard.py`, detached): W1's
-  judged trajectories, W1's stationary states (right-hand side, Jacobian and step map at
-  the guesses and Newton solutions), W2's arms (the same, plus 1 s trajectories), G2-Q1's
-  nine cases with device checks on every row, W37, Q5's step sequence, Q6's cohorts, and
-  the 825-node world.
+  on their qualification worlds (`validation/tissue/composite_guard.py`, run detached):
+  - W1: the six judged trajectories through the judge's windowed path, the P2 stationary
+    states (right-hand side, Jacobian and 4-step map at the guesses and the Newton
+    solutions) and a 60 s drift from the stationary H state;
+  - W2: all eight arms (the same evaluations at every predicted branch, and 1 s
+    trajectories);
+  - G2-Q1: the nine cases with the device row checks of every row, W37, and Q6's cohorts
+    as vmap batches;
+  - the 825-node world with closed water and with event-free replacement.
+
+  The dt studies (W1's; G2-Q1's Q5, of which two of eight worlds ran, equal) were not
+  repeated. For every world of both studies, the checked step, right-hand side and device
+  checks trace to identical jaxprs with dt as an argument, and the bound inputs (initial
+  state, layout, controls at every change time) are identical at every step size of the
+  studies (`composite_crossrev.py`, qualification set), so each step size runs the same
+  program on the same inputs.
 - **(d) Restart and vmap identity:** restart is bitwise, before, at and after events; vmap
   batches equal the frozen models' batches.
-- **Compiled programs.** The checked steps (IMEX and RK4), right-hand sides and device
-  checks of the re-expressed models trace to jaxprs textually identical to the frozen
-  implementation's, so the compiled programs are the same for any step size.
 
-After the conversion, `frozen_definition` and the thin modules run one composition; the
-comparison with the earlier implementation is `validation/tissue/composite_dump.py`
-(saved runs from the frozen snapshot against the converted tree).
+**Thin compositions.** Since the conversion, `frozen_definition` and the thin modules run
+one composition, so the guards above would compare the composition with itself. The
+comparison with the earlier implementation is across revisions, from the frozen snapshot
+against the converted tree:
+- `validation/tissue/composite_crossrev.py`: the jaxprs of the checked steps (IMEX and RK4),
+  right-hand sides and device checks, traced with dt as an argument, are textually
+  identical, and every initial state, layout and control array is identical, on small
+  worlds of every structure and on W1's, W2's and G2-Q1's own worlds;
+- the W2 judge (all eight arms) and W1's stationary phase give identical outputs;
+- `validation/tissue/composite_dump.py`: saved runs of short worlds of every structure and
+  W2's 1 s trajectories are bit-identical;
+- the frozen models' own test files (130 tests) pass unmodified against the thin modules.
