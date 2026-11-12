@@ -62,6 +62,8 @@ W2_QUANTITIES = (
 W1_STATIONARY = W2_QUANTITIES[:2]
 G2_KEYS = ("membrane_voltage_V", "slot_amount_fmol")
 STATUS = "PROPOSED backend variant (composite L4 agreement), not registered."
+# Registering a variant replaces this status with one beginning "registered" (a commit by
+# the lead); judges then accept the file for a judged run (judged_protocol).
 
 
 def up1(x):
@@ -75,6 +77,86 @@ def up1(x):
 def registered(part):
     """(predictions, protocol) of the part at this revision."""
     return tuple(json.loads((TISSUE / name).read_text()) for name in FILES[part])
+
+
+BASES = {part: f"validation/tissue/{names[1]}" for part, names in FILES.items()}
+
+
+# ------------------------------------------------------------------ judged runs
+
+
+def tolerance_sites(part, base):
+    """Key paths of the tolerances a backend variant may widen; nothing else may differ."""
+    if part == "w1":
+        sites = [
+            ("tolerances", w, q) for w, quantities in base["tolerances"].items() for q in quantities
+        ]
+        return sites + [("stationary", bound) for _, bound, _ in W1_STATIONARY]
+    if part == "w2":
+        return [("stationary", bound) for _, bound, _ in W2_QUANTITIES]
+    cases = base["pinned_tolerances"]["cases"]
+    return [
+        ("pinned_tolerances", "cases", case, entry, "tolerance")
+        for case, entries in cases.items()
+        for entry in entries
+        if entry.startswith(("q3_", "q4_"))
+    ]
+
+
+def _at(tree, path):
+    for key in path:
+        tree = tree[key]
+    return tree
+
+
+def variant_errors(part, candidate, base):
+    """Why `candidate` is not a registered backend variant of `base` (empty: it is one).
+
+    Its backend_variant block says registered and names the base protocol. Every field but
+    that block and the widened tolerances equals the registered protocol's (compared field by
+    field against the registered file). A widened tolerance is never below the registered one.
+    """
+    block = candidate.get("backend_variant")
+    if not isinstance(block, dict):
+        return ["it has no backend_variant block"]
+    errors = []
+    status = block.get("status")
+    if not (isinstance(status, str) and status.startswith("registered")):
+        errors.append("its backend_variant status does not say registered")
+    if block.get("base") != BASES[part]:
+        errors.append(f"its backend_variant block does not name the base protocol {BASES[part]}")
+    rest = copy.deepcopy({k: v for k, v in candidate.items() if k != "backend_variant"})
+    for path in tolerance_sites(part, base):
+        old = _at(base, path)
+        try:
+            new = _at(rest, path)
+        except (KeyError, TypeError):
+            errors.append(f"it lacks the tolerance {'/'.join(path)}")
+            continue
+        if type(new) not in (int, float) or new < old:
+            errors.append(f"its tolerance {'/'.join(path)} is not a number at least as registered")
+        _at(rest, path[:-1])[path[-1]] = old
+    if rest != base:
+        errors.append(
+            "a field other than the widened tolerances differs from the registered protocol"
+        )
+    return errors
+
+
+def judged_protocol(part, path):
+    """(protocol, judged, reason) for a judge's --protocol file.
+
+    A judged run takes the registered protocol itself or a registered backend variant of it;
+    any other file is for dry runs only.
+    """
+    base = registered(part)[1]
+    candidate = json.loads(Path(path).read_text())
+    if candidate == base:
+        return candidate, True, "the registered protocol"
+    errors = variant_errors(part, candidate, base)
+    if not errors:
+        return candidate, True, f"a registered backend variant of {BASES[part]}"
+    return candidate, False, "dry run only: " + "; ".join(errors)
 
 
 # ------------------------------------------------------------------ run
@@ -295,6 +377,7 @@ def variant(part, protocol, terms):
     # The protocol's own fields (its status included) are kept; the variant's are here.
     out["backend_variant"] = dict(
         status=STATUS,
+        base=BASES[part],
         rule="max(registered, up1(3 x (registered sum + backend + run-to-run))); fixed "
         "tolerances max(registered, up1(3 x (backend + run-to-run))); registered kept "
         "exactly when nothing is added",

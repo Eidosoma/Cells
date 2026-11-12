@@ -512,11 +512,31 @@ def provenance():
     )
 
 
+def run_kind(protocol=None, predictions=None, parameters=None):
+    """(dry run?, the protocol's acceptance) of a judge invocation.
+
+    A --protocol file is judged only when it is a registered backend variant of the
+    registered protocol (validation/tissue/composite_l4_agreement.judged_protocol); any
+    other file, and any --predictions or --parameters, make a dry run.
+    """
+    from validation.tissue import composite_l4_agreement as agreement
+
+    judged, acceptance = True, None
+    if protocol:
+        _, judged, acceptance = agreement.judged_protocol("g2", protocol)
+    return bool(not judged or predictions or parameters), acceptance
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--items", type=lambda s: s.split(","), required=True)
-    parser.add_argument("--protocol", type=Path, help="dry runs only (default: registered)")
+    parser.add_argument(
+        "--protocol",
+        type=Path,
+        help="a registered backend variant for a judged run; any other file for dry runs "
+        "only (default: registered)",
+    )
     parser.add_argument("--predictions", type=Path, help="dry runs only (default: registered)")
     parser.add_argument("--parameters", type=Path, help="dry runs only: W37 and Q7 inputs (JSON)")
     args = parser.parse_args(argv)
@@ -525,7 +545,7 @@ def main(argv=None):
     params = dict(REGISTERED)
     if args.parameters:
         params |= json.loads(args.parameters.read_text())
-    dry = bool(args.protocol or args.predictions or args.parameters)
+    dry, acceptance = run_kind(args.protocol, args.predictions, args.parameters)
     kwargs = dict(
         Q1=dict(
             w37=dict(
@@ -558,6 +578,7 @@ def main(argv=None):
                 dry_run=dry,
                 inputs=dict(
                     protocol=str(args.protocol or qual.PROTOCOL),
+                    protocol_acceptance=acceptance or "the registered protocol",
                     predictions=str(args.predictions or qual.PREDICTIONS),
                     parameters=params,
                 ),

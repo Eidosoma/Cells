@@ -98,6 +98,82 @@ def test_variant_rows_follow_the_rule():
     assert out["stationary"]["voltage_V"] == expected
 
 
+RUNS = dict(w1=w1_run(), w2=w2_run(), g2=g2_run())
+
+
+def registered_variant(part):
+    protocol = agreement.registered(part)[1]
+    run = RUNS[part]
+    out = agreement.variant(part, protocol, agreement.measured(part, run, run, run))
+    out["backend_variant"]["status"] = "registered at a lead's commit (test)"
+    return protocol, out
+
+
+def judged(part, protocol, tmp_path):
+    path = tmp_path / f"{part}.json"
+    path.write_text(json.dumps(protocol))
+    return agreement.judged_protocol(part, path)[1:]
+
+
+@pytest.mark.parametrize("part", ["w1", "w2", "g2"])
+def test_judged_runs_take_the_registered_protocol_or_a_registered_variant(part, tmp_path):
+    protocol, out = registered_variant(part)
+    assert out["backend_variant"]["base"] == agreement.BASES[part]
+    assert judged(part, protocol, tmp_path) == (True, "the registered protocol")
+    assert judged(part, out, tmp_path)[0]
+    (site, *_) = agreement.tolerance_sites(part, protocol)
+    widened = copy.deepcopy(out)
+    parent = agreement._at(widened, site[:-1])
+    parent[site[-1]] = 2 * parent[site[-1]]  # A wider tolerance stays a registered variant.
+    assert judged(part, widened, tmp_path)[0]
+
+
+@pytest.mark.parametrize("part", ["w1", "w2", "g2"])
+def test_judged_runs_refuse_other_files(part, tmp_path):
+    protocol, out = registered_variant(part)
+    site = agreement.tolerance_sites(part, protocol)[0]
+    proposed = copy.deepcopy(out)
+    proposed["backend_variant"]["status"] = agreement.STATUS
+    ok, reason = judged(part, proposed, tmp_path)
+    assert not ok and "does not say registered" in reason
+    edited = copy.deepcopy(out)
+    edited["edited_field"] = "not in the registered protocol"
+    ok, reason = judged(part, edited, tmp_path)
+    assert not ok and "a field other than the widened tolerances differs" in reason
+    plain = copy.deepcopy(protocol)  # An edited protocol, not a variant.
+    parent = agreement._at(plain, site[:-1])
+    parent[site[-1]] = 2 * parent[site[-1]]
+    ok, reason = judged(part, plain, tmp_path)
+    assert not ok and "no backend_variant block" in reason
+    tighter = copy.deepcopy(out)
+    parent = agreement._at(tighter, site[:-1])
+    parent[site[-1]] = 0.5 * parent[site[-1]]
+    ok, reason = judged(part, tighter, tmp_path)
+    assert not ok and "at least as registered" in reason
+    elsewhere = copy.deepcopy(out)
+    elsewhere["backend_variant"]["base"] = "validation/tissue/another_protocol.json"
+    ok, reason = judged(part, elsewhere, tmp_path)
+    assert not ok and "does not name the base protocol" in reason
+
+
+def test_the_g2_judge_marks_other_protocols_dry(tmp_path):
+    from validation.tissue import cell_replacement_judge as judge
+
+    protocol, out = registered_variant("g2")
+    path = tmp_path / "variant.json"
+    path.write_text(json.dumps(out))
+    dry, acceptance = judge.run_kind(path)
+    assert not dry and acceptance.startswith("a registered backend variant")
+    assert judge.run_kind() == (False, None)  # The default is unchanged.
+    out["backend_variant"]["status"] = agreement.STATUS
+    path.write_text(json.dumps(out))
+    dry, acceptance = judge.run_kind(path)
+    assert dry and acceptance.startswith("dry run only")
+    path.write_text(json.dumps(protocol))
+    assert judge.run_kind(path) == (False, "the registered protocol")
+    assert judge.run_kind(path, parameters=tmp_path / "p.json")[0]  # Still a dry run.
+
+
 def test_w2_reads_the_qualifications_own_judge_output(tmp_path):
     item = dict(arm="red_cell_15-kaji_s0.12", branch=0, **w2_run()["red_cell_15-kaji_s0.12"]["0"])
     path = tmp_path / "w2-judge.json"

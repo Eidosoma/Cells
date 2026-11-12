@@ -412,7 +412,15 @@ def main():
             stationary = json.loads(Path(args.stationary).read_text())
             result = drift(predictions, stationary, args.hours, label=args.label)
         else:
-            result = judge(predictions, json.loads(Path(args.protocol).read_text()), args.parts)
+            # A judged run takes the registered protocol or a registered backend variant of
+            # it; any other file is marked a dry run (composite_l4_agreement.judged_protocol).
+            from validation.tissue import composite_l4_agreement as agreement
+
+            protocol, judged, acceptance = agreement.judged_protocol("w1", args.protocol)
+            result = judge(predictions, protocol, args.parts)
+            result.update(
+                dry_run=not judged, protocol=args.protocol, protocol_acceptance=acceptance
+            )
         (out / f"{args.phase}.json").write_text(json.dumps(result, indent=2, default=float) + "\n")
     except Exception:
         (out / f"{args.phase}-failure.json").write_text(
