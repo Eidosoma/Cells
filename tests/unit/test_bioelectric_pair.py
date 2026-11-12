@@ -57,7 +57,7 @@ def test_roundtrip_ids_and_complete_state(name):
     "path,value",
     [
         (("model", "species"), ["Na", "K", "Ca"]),
-        (("model", "units", "time"), "bitsey_time_unit"),
+        (("model", "units", "time"), "nominal_time_unit"),
         (("model", "units", "gate"), "instantaneous"),
         (("model", "population", "count"), 3),
         (("model", "population", "count"), True),

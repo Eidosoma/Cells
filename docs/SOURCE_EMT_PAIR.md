@@ -1,6 +1,11 @@
 # Source-compatible EMT pair: Cells 0.7.0
 
-`bitsey_emt_pair@1` couples source-scaled regulation, Na/K/Cl membrane exchange
+`emt_mirna_pair@1` (named `bitsey_emt_pair@1` before 12 November 2026, with
+observer `bitsey_nominal_pair_pure_readouts@1`, parameter set
+`bitsey-b2cb370-emt-pair-simple` and units `bitsey_time_unit` and
+`bitsey_scaled_coordinate`; now `emt_mirna_pair_pure_readouts@1`,
+`emt-mirna-pair-scaled-simple`, `nominal_time_unit` and `scaled_coordinate`)
+couples source-scaled regulation, Na/K/Cl membrane exchange
 and selective contact transport through the shared JAX engine. It is the seventh
 production model, not a replacement for the physical bioelectric pair. The
 [specification](SOURCE_EMT_PAIR_SPEC.md), [numerical contract](SOURCE_EMT_PAIR_NUMERICS.md)

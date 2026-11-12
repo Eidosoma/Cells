@@ -43,7 +43,9 @@ Snail is a fixed, explicit model parameter, set to 72 in both reference cases.
 The source's normal, non-iterative mode is retained: ITERATE=False and no
 MIR200_TGT forcing. A change to that approximation requires a different model
 identity, not a silent numerical correction. The parameter-set identifier is
-`bitsey-b2cb370-mirna-simple`; the Cells model identifier is `emt_mirna@1`.
+`emt-mirna-scaled-simple`; the Cells model identifier is `emt_mirna@1`. Until
+12 November 2026 the parameter set was named `bitsey-b2cb370-mirna-simple`; runs
+recorded before then carry that name.
 
 There are no contacts in these cases. In the source, these regulatory species
 have zero membrane permeability, their regulatory slopes ignore voltage, and
@@ -61,8 +63,8 @@ complete BITSEY cell-state packet or a biological inheritance boundary.
 
 ## Coordinates, equations, and algebraic refresh
 
-Coordinates are labelled `bitsey_scaled_coordinate`, and time is
-`bitsey_time_unit`. The source scales Snail, miR200, Zeb mRNA, and ZEB protein
+Coordinates are labelled `scaled_coordinate`, and time is `nominal_time_unit`
+(`bitsey_scaled_coordinate` and `bitsey_time_unit` before 12 November 2026). The source scales Snail, miR200, Zeb mRNA, and ZEB protein
 by 2500, 250, 30, and 18000 respectively. Its regulatory comments describe rates
 per hour while the simulator describes its clock as seconds; M1b does not resolve
 or silently convert that physical-time correspondence. These numbers must not be

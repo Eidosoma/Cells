@@ -73,7 +73,7 @@ def test_schema_roundtrip_and_owned_layout(name):
     [
         (("model", "species"), ["Na", "K", "Ca"]),
         (("model", "units", "voltage"), "mV"),
-        (("model", "units", "time"), "bitsey_time_unit"),
+        (("model", "units", "time"), "nominal_time_unit"),
         (("model", "population", "count"), 2),
         (("model", "population", "cell_id"), True),
         (("model", "initial_state", "amount_fmol"), [0, 1, 1]),

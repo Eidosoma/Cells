@@ -4746,6 +4746,44 @@ can in parallel".
 - **Resource note:** more RAM on the VM is the cheapest gain in parallelism. Memory, not CPU
   or GPU, is the limit.
 
+## D1xx (proposed; the lead assigns the number): neutral names for BITSEY-derived identifiers
+
+2026-11-12, user direction. BITSEY (Grodstein and Pietak,
+https://gitlab.com/grodstein/bitsey, pinned at `b2cb370`) is an external reference
+like BETSE (D131). It runs out of process, Cells compares against its saved
+outputs, and `src/cells` carries no BITSEY names. This is a pure rename with no
+numerical change:
+
+| Kind | Old | New |
+| --- | --- | --- |
+| Model ID | `bitsey_emt_pair@1` | `emt_mirna_pair@1` |
+| Observer ID | `bitsey_nominal_pair_pure_readouts@1` | `emt_mirna_pair_pure_readouts@1` |
+| Parameter set of the pair | `bitsey-b2cb370-emt-pair-simple` | `emt-mirna-pair-scaled-simple` |
+| Parameter set of `emt_mirna@1` | `bitsey-b2cb370-mirna-simple` | `emt-mirna-scaled-simple` |
+| Time unit | `bitsey_time_unit` | `nominal_time_unit` |
+| Regulatory coordinate unit | `bitsey_scaled_coordinate` | `scaled_coordinate` |
+| Junction diffusion unit | `m2/bitsey_time_unit` | `m2/nominal_time_unit` |
+
+- **Citation:** the source stays cited in docstrings and in the
+  `upstream_revision` summary field. As with BETSE, docstring citations and
+  disclaimers that name BITSEY remain.
+- **No aliases:** old configs and checkpoints are refused. Runs recorded before
+  the rename are reproduced from their frozen snapshots and from the tag
+  `bitsey-names-frozen-2026-11-12`.
+- **Frozen inputs keep their labels:** the reference panel
+  (`bitsey_emt_pair@1-design`), the E02 protocol (`bitsey_emt_graph@1-design`),
+  the probe fixtures and `docs/E02_SWITCHING_PROTOCOL.md` record what was
+  registered.
+- **Audit:**
+  - No BITSEY function is transcribed and nothing in the engine imports BITSEY.
+  - `processes/source_electrochemistry.py` writes published laws but reproduces
+    the source's numerical conventions for parity. Whether that is acceptable
+    is the user's decision.
+  - BITSEY has no licence.
+  - The five `scripts/capture_*` tools that import BITSEY in a worker process
+    belong in `validation/bitsey/`.
+- **Evidence:** `/mnt/workspaces/Cells/bitsey-rename-20261112-01/`.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
