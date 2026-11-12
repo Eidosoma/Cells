@@ -177,9 +177,21 @@ class Operator:
         raise NotImplementedError
 
     def rates(self, state, control, p, view, *, xp):
-        """(derivatives {owned field: rate}, valid, energy-rate term or None, readout)."""
+        """(derivatives {owned field: rate}, validity of the rates or None, readout).
+
+        The readouts fold, in this order: every operator's rate validity, every
+        operator's rate_checks, the finiteness of the FINITE_RATES operators' rates,
+        then the energy_rate terms (the frozen models' order)."""
         zeros = {k: xp.zeros_like(getattr(state, k)) for k in self.STATE_AXES}
-        return zeros, None, None, None
+        return zeros, None, None
+
+    def rate_checks(self, state, control, p, valid, *, xp):
+        """The readouts' running validity with this operator's state and control checks."""
+        return valid
+
+    def energy_rate(self, readout, p, *, xp):
+        """Its term of the energy-balance rate (pJ/s), or None."""
+        return None
 
     def domain_valid(self, state, p, valid, *, xp):
         """The running domain conjunction `valid` (None: nothing yet) with this operator's."""
@@ -191,16 +203,17 @@ class Operator:
         """The row as the inner ledgers must see it (transfers it books in inner terms)."""
         return row
 
-    def balance_terms(self, result, row, p, *, xp):
-        """The inner ledgers' dict with this operator's terms added."""
-        return result
+    def ledger_terms(self, result, row, p, *, xp):
+        """(the inner ledgers' dict with this operator's terms, its own ledgers' dict)."""
+        return result, {}
 
     def magnitude_terms(self, magnitudes, row, p, *, xp):
         """The inner rounding magnitudes (a list in the inner LEDGERS order) with its terms."""
         return magnitudes
 
     def own_ledgers(self, row, p, *, xp):
-        return {}
+        """Its own ledgers alone (the host check of its ledgers)."""
+        return self.ledger_terms({"energy": 0.0}, row, p, xp=xp)[1]
 
     def own_magnitudes(self, row, p, *, xp):
         return ()

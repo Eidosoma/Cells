@@ -236,7 +236,10 @@ class ScheduledReplacement(Operator):
         lag, deficit = rep.formation_rates(state, p, xp=xp)
         rates = {k: xp.zeros_like(getattr(state, k)) for k in self.STATE_AXES}
         rates.update(junction_lag_remaining_s=lag, junction_abundance_deficit=deficit)
-        return rates, rep.replacement_domain_valid(state, p, xp=xp), None, None
+        return rates, None, None
+
+    def rate_checks(self, state, control, p, valid, *, xp):
+        return valid & rep.replacement_domain_valid(state, p, xp=xp)
 
     def domain_valid(self, state, p, valid, *, xp):
         own = rep.replacement_domain_valid(state, p, xp=xp)
@@ -244,8 +247,8 @@ class ScheduledReplacement(Operator):
 
     # ------------------------------------------------------------ ledgers
 
-    def balance_terms(self, result, row, p, *, xp):
-        return rep._terms(result, row, xp=xp)
+    def ledger_terms(self, result, row, p, *, xp):
+        return rep._terms(result, row, xp=xp), {}
 
     def magnitude_terms(self, magnitudes, row, p, *, xp):
         """resolved_pump_replacement@1's rounding terms (models/cell_replacement.magnitudes)."""

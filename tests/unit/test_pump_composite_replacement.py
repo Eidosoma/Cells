@@ -197,7 +197,8 @@ def test_refusals_are_the_frozen_verdicts():
         with pytest.raises(ConfigError, match="held-bath") as error:
             parse_spec(candidate)
         messages.append(str(error.value))
-    assert messages[0] == messages[1]
+    # Each definition format prefixes its own name; the refusal's reason is the same.
+    assert messages[0].split(": ", 1)[1] == messages[1].split(": ", 1)[1]
     off_grid = replaced()
     off_grid["experiment"]["replacement_events"][0]["time"] = 0.0105
     for candidate in (off_grid, cs.frozen_definition(off_grid)):

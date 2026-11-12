@@ -213,9 +213,7 @@ def parse(data):
 
     try:
         check_definition(spec)
-    except (ArithmeticError, ValueError) as error:
-        if isinstance(error, ConfigError):
-            raise
+    except (ArithmeticError, ValueError) as error:  # ConfigError included, as the family does.
         raise ConfigError("Invalid composite definition: " + str(error)) from error
     return spec
 

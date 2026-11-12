@@ -413,35 +413,38 @@ class Composition:
     # ------------------------------------------------------------ readouts
 
     def readouts(self, state, control, p, *, xp=jnp):
-        """The inner readouts at the view (with the in-step process) plus the operators' rates."""
+        """The inner readouts at the view (with the in-step process) plus the operators' rates.
+
+        Validity folds the operators' rate validity, then their state and control
+        checks, then the finiteness of their rates; the energy-balance rate adds their
+        terms last (the frozen models' order).
+        """
+        inner_control = self.control_view(control, state, p, xp=xp)
         view = self.view(p, state, xp=xp)
         hook = {}
         if self.process_operator is not None:
             hook = dict(membrane_process=self.process_operator.process(control, p))
-        v = self.inner.readouts(
-            self.inner.inner_state(state),
-            self.control_view(control, state, p, xp=xp),
-            view,
-            xp=xp,
-            **hook,
-        )
-        derivative, valid = list(v.derivative), v.valid
-        energy = v.field.energy_balance_pJ_s
-        finite, blocks = [], []
-        for op in self.operators:
-            rates, ok, term, readout = op.rates(state, control, p, view, xp=xp)
-            values = [rates[k] for k in op.STATE_AXES]
-            derivative.extend(values)
+        v = self.inner.readouts(self.inner.inner_state(state), inner_control, view, xp=xp, **hook)
+        computed = [op.rates(state, control, p, view, xp=xp) for op in self.operators]
+        derivative = list(v.derivative)
+        for op, (rates, _, _) in zip(self.operators, computed, strict=True):
+            derivative.extend(rates[k] for k in op.STATE_AXES)
+        valid = v.valid
+        for _, ok, _ in computed:
             valid = _and(valid, ok)
+        for op in self.operators:
+            valid = op.rate_checks(state, control, p, valid, xp=xp)
+        for op, (rates, _, _) in zip(self.operators, computed, strict=True):
             if op.FINITE_RATES:
-                finite.extend(values)
+                for k in op.STATE_AXES:
+                    valid &= xp.all(xp.isfinite(rates[k]))
+        energy = v.field.energy_balance_pJ_s
+        for op, (_, _, readout) in zip(self.operators, computed, strict=True):
+            term = op.energy_rate(readout, p, xp=xp)
             if term is not None:
                 energy = energy + term
-            if op.READOUT:
-                blocks.append(readout)
-        for value in finite:
-            valid &= xp.all(xp.isfinite(value))
         field = v.field._replace(energy_balance_pJ_s=energy, converged=valid)
+        blocks = [r for op, (_, _, r) in zip(self.operators, computed, strict=True) if op.READOUT]
         return self.VALUES_TYPE(field, self.STATE_TYPE(*derivative), v, *blocks, valid)
 
     def field_values(self, state, control, p, *, xp=jnp):
@@ -526,32 +529,27 @@ class Composition:
             row = op.adjust_inner(row, p, xp=xp)
         return row
 
-    def _inner_terms(self, result, row, p, *, xp):
+    def _ledgers(self, state, p, *, xp, own):
+        """The inner ledgers (declared layout) with the operators' terms, in declared
+        order, then (own) the operators' own ledgers; one ledger call per operator."""
+        row = self._adjusted(state, p, xp=xp)
+        inner = self.inner.balances if xp is np else self.inner.device_balances
+        result = inner(self.inner.inner_state(row), self.inner.inner_layout(p))
+        extra = {}
         for op in self.operators:
-            result = op.balance_terms(result, row, p, xp=xp)
-        return result
+            result, ledgers = op.ledger_terms(result, row, p, xp=xp)
+            extra |= ledgers
+        return result | extra if own else result
 
     def inner_balances(self, state, p):
-        """The inner ledgers (declared layout) with the operators' terms (host)."""
-        row = self._adjusted(state, p, xp=np)
-        result = self.inner.balances(self.inner.inner_state(row), self.inner.inner_layout(p))
-        return self._inner_terms(result, row, p, xp=np)
+        """The inner ledgers with the operators' terms (host; the inner row checks)."""
+        return self._ledgers(state, p, xp=np, own=False)
 
     def balances(self, state, p):
-        row = self._adjusted(state, p, xp=np)
-        result = self.inner.balances(self.inner.inner_state(row), self.inner.inner_layout(p))
-        result = self._inner_terms(result, row, p, xp=np)
-        for op in self.own_ledger_operators:
-            result = result | op.own_ledgers(row, p, xp=np)
-        return result
+        return self._ledgers(state, p, xp=np, own=True)
 
     def device_balances(self, state, p):
-        row = self._adjusted(state, p, xp=jnp)
-        result = self.inner.device_balances(self.inner.inner_state(row), self.inner.inner_layout(p))
-        result = self._inner_terms(result, row, p, xp=jnp)
-        for op in self.own_ledger_operators:
-            result = result | op.own_ledgers(row, p, xp=jnp)
-        return result
+        return self._ledgers(state, p, xp=jnp, own=True)
 
     def inner_magnitudes(self, row, p, *, xp=np):
         adjusted = self._adjusted(row, p, xp=xp)
@@ -565,8 +563,9 @@ class Composition:
         return tuple(magnitudes)
 
     def magnitudes(self, row, p, *, xp=np):
+        inner = self.inner_magnitudes(row, p, xp=xp)
         own = tuple(m for op in self.own_ledger_operators for m in op.own_magnitudes(row, p, xp=xp))
-        return (*self.inner_magnitudes(row, p, xp=xp), *own)
+        return (*inner, *own)
 
     def ledger_limits(self, row, p, tol, rtol, *, steps, magnitudes, xp=np):
         count = len(self.inner.LEDGERS)
