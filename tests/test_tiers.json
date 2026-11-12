@@ -16,7 +16,9 @@
   "/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/untracked/measured.json",
   "/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/new-measure/measured.json",
   "/mnt/workspaces/Cells/land-water-20261111-01/new-measure/measured.json",
-  "/mnt/workspaces/Cells/land-composite-20261112-01/measure-new/measured.json"
+  "/mnt/workspaces/Cells/land-composite-20261112-01/measure-new/measured.json",
+  "/mnt/workspaces/Cells/clock-validation-20261112-01/tiers-measure-02/measured.json",
+  "/mnt/workspaces/Cells/land-20261112b/measure-new/measured.json"
  ],
  "measured_provenance": [
   {
@@ -143,6 +145,20 @@
    "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-composite",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-12T16:42:52+00:00"
+  },
+  {
+   "git_revision": "a96d092c7a5dc0a9ade8a31496d820e3011bc79d",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a611639e3bbf2b0a7",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-12T18:42:49+00:00"
+  },
+  {
+   "git_revision": "a7f23e526d1db01dc66bc5b1fc8b7545421559dc",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261112b",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-12T21:59:01+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -796,6 +812,14 @@
     }
    },
    {
+    "file": "tests/unit/test_composite_l4_agreement.py",
+    "seconds": 4.25,
+    "exit_code": 0,
+    "counts": {
+     "passed": 15
+    }
+   },
+   {
     "file": "tests/unit/test_conditioned_voltage.py",
     "seconds": 1.02,
     "exit_code": 0,
@@ -845,6 +869,14 @@
     }
    },
    {
+    "file": "tests/unit/test_current_injection.py",
+    "seconds": 3.84,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
     "file": "tests/unit/test_distributed_cue.py",
     "seconds": 3.37,
     "exit_code": 0,
@@ -858,6 +890,14 @@
     "exit_code": 0,
     "counts": {
      "skipped": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_division_diagnostic_models.py",
+    "seconds": 6.3,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
     }
    },
    {
@@ -1603,10 +1643,10 @@
    },
    {
     "file": "tests/unit/test_pump_composite_contract.py",
-    "seconds": 6.96,
+    "seconds": 4.28,
     "exit_code": 0,
     "counts": {
-     "passed": 10
+     "passed": 14
     }
    },
    {
@@ -2259,6 +2299,14 @@
     }
    },
    {
+    "file": "tests/unit/test_surface_pump_step_checks.py",
+    "seconds": 4.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 37
+    }
+   },
+   {
     "file": "tests/unit/test_surface_reference.py",
     "seconds": 2.07,
     "exit_code": 0,
@@ -2689,11 +2737,27 @@
     }
    },
    {
+    "file": "tests/unit/test_current_injection_runs.py",
+    "seconds": 81.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_division_cleft_reference.py",
     "seconds": 72.33,
     "exit_code": 0,
     "counts": {
      "passed": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_division_diagnostic_record.py",
+    "seconds": 29.89,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    },
    {
@@ -3423,6 +3487,12 @@
    {
     "file": "tests/unit/test_default_world_adapter.py",
     "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_division_diagnostic_record_rings.py",
+    "seconds": 90.01,
     "exit_code": null,
     "counts": {}
    },

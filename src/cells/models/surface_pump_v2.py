@@ -12,6 +12,7 @@ identity reproduces resolved_pump_tissue@1.
 """
 
 from dataclasses import make_dataclass, replace
+from functools import cached_property
 from typing import NamedTuple
 
 import jax
@@ -566,11 +567,32 @@ def calcium_rate_bound(spec):
 
 
 def check_steps(spec, steps, controls):
-    first.check_steps(spec, steps, controls)
-    if spec.execution.solver != "rk4" and (
-        np.max(steps, initial=0) * calcium_rate_bound(spec) > EXPLICIT_STEP_BOUND
-    ):
-        raise ConfigError("IMEX step exceeds the explicit calcium pump rate bound")
+    """The step checks of one chunk of steps (StepChecks); they read no controls."""
+    bind_step_checks(spec)(steps)
+
+
+def bind_step_checks(spec):
+    """check_steps bound to one definition, for every chunk of its clock (StepChecks)."""
+    return StepChecks(spec)
+
+
+class StepChecks(first.StepChecks):
+    """@1's bound step checks (surface_pump.StepChecks), then the calcium pump bound.
+
+    The calcium bound builds the layout too; like @1's bounds it is evaluated at
+    its first use and kept for the later chunks of the clock.
+    """
+
+    @cached_property
+    def calcium_rate(self):
+        return calcium_rate_bound(self.spec)
+
+    def __call__(self, steps):
+        super().__call__(steps)
+        if self.spec.execution.solver != "rk4" and (
+            np.max(steps, initial=0) * self.calcium_rate > EXPLICIT_STEP_BOUND
+        ):
+            raise ConfigError("IMEX step exceeds the explicit calcium pump rate bound")
 
 
 def balances(state, p):

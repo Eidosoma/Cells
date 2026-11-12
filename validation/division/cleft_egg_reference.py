@@ -166,6 +166,16 @@ class Egg:
     pulses: Pulses = field(default_factory=Pulses)
     old_capacitance_rate_F_s: float = 0.0  # tests only: one-patch insertion
     initial_V: float = math.nan  # tests only: start here instead of the zero-current potential
+    # J1 diagnostic arms (validation/division/j1_diagnostic_arms.json); all null by default, and
+    # a null egg runs the registered Model unchanged.
+    bath_fraction: float = 0.0  # A1: fraction of new membrane facing the bath directly
+    zone_ratio: float = 0.0  # A2: furrow-zone permeability-area over the old membrane's, at J1
+    zone_reference_area_m2: float = math.nan  # A2: new-membrane area at which zone_ratio holds
+    access_shape: tuple = ()  # A7: ("depth", alpha, r_egg, r_mouth, d_ref) / ("ramp", beta, t0, t1)
+
+    @property
+    def extended(self):
+        return self.bath_fraction != 0.0 or self.zone_ratio != 0.0 or bool(self.access_shape)
 
     @property
     def rt(self):
@@ -471,6 +481,132 @@ class Model:
         return e
 
 
+def access_scale(egg, t, area):
+    """A7: the access multiplier s(t) (1 without a shape); area is the new membrane at t."""
+    if not egg.access_shape:
+        return 1.0
+    kind = egg.access_shape[0]
+    if kind == "depth":
+        _, alpha, r_egg, r_mouth, d_ref = egg.access_shape
+        r_in = math.sqrt(max(r_mouth * r_mouth - area / 2.0 / math.pi, 0.0))
+        return ((r_egg - r_in) / d_ref) ** (-alpha)
+    if kind == "ramp":
+        _, beta, t0, t1 = egg.access_shape
+        ramp = min(max((t - t0) / (t1 - t0), 0.0), 1.0)
+        return 1.0 - (1.0 - beta) * ramp
+    raise ValueError(egg.access_shape)
+
+
+class ExtendedModel(Model):
+    """The registered Model plus the J1 diagnostic extensions (A1 bath-facing fraction f, A2
+    furrow zone, A7 time-dependent access). With every extension null it reduces to Model.
+
+    A1: of the new membrane at area A, f A faces the bath (in parallel with the old membrane:
+    capacitance c_new f A, constant-field flux at the old membrane's voltage) and (1 - f) A faces
+    the lumen, whose volume is w (1 - f) A / 2. A2: an old-membrane-like conductance with
+    permeability-area zone_ratio x (A / A_ref) x the old membrane's, at the old membrane's
+    voltage, facing the bath. A7: the access conductance is A/L x s(t) x D.
+    """
+
+    def derived(self, t, y, seg):
+        egg = self.egg
+        if not seg.lumen:
+            return Model.derived(self, t, y, seg)
+        vi = egg.cytosol_volume_m3
+        n_cl_i = y[NAI] + y[KI] + self.x_i - y[QI]
+        ci = (y[NAI] * FMOL / vi, y[KI] * FMOL / vi, n_cl_i * FMOL / vi)
+        qi = y[QI] * FMOL * F
+        area = seg.area_a0 + seg.rate * (t - seg.area_t0)
+        f = egg.bath_fraction
+        c_nb = egg.new_specific_capacitance_F_m2 * f * area
+        c_nl = egg.new_specific_capacitance_F_m2 * (1.0 - f) * area
+        vc = egg.gap_width_m * (1.0 - f) * area / 2.0
+        n_cl_c = y[NAC] + y[KC] - y[QC]
+        cc = (y[NAC] * FMOL / vc, y[KC] * FMOL / vc, n_cl_c * FMOL / vc)
+        qc = y[QC] * FMOL * F
+        phi_i = (qi + qc) / (self.c_old(t) + c_nb)
+        v_new = -qc / c_nl
+        return dict(
+            ci=ci,
+            phi_i=phi_i,
+            phi_c=phi_i - v_new,
+            v_new=v_new,
+            area=area,
+            c_new=c_nl,
+            c_bath_facing=c_nb,
+            cc=cc,
+            vc=vc,
+        )
+
+    def rhs(self, t, y, seg):
+        egg = self.egg
+        if not seg.lumen:
+            return Model.rhs(self, t, y, seg)
+        s = self.derived(t, y, seg)
+        rt = egg.rt
+        u_old = F * s["phi_i"] / rt
+        ci, cc, area = s["ci"], s["cc"], s["area"]
+        f = egg.bath_fraction
+        j_old = [
+            ghk_flux(p, z, u_old, a, b)
+            for p, z, a, b in zip(self.pa_old, Z, ci, egg.bath_mM, strict=True)
+        ]
+        if egg.zone_ratio:
+            scale = egg.zone_ratio * area / egg.zone_reference_area_m2
+            j_zone = [
+                ghk_flux(scale * p, z, u_old, a, b)
+                for p, z, a, b in zip(self.pa_old, Z, ci, egg.bath_mM, strict=True)
+            ]
+        else:
+            j_zone = [0.0, 0.0, 0.0]
+        u_new = F * s["v_new"] / rt
+        j_lumen = [
+            ghk_flux(p * (1.0 - f) * area, z, u_new, a, b)
+            for p, z, a, b in zip(egg.new_permeability, Z, ci, cc, strict=True)
+        ]
+        j_bath = (
+            [
+                ghk_flux(p * f * area, z, u_old, a, b)
+                for p, z, a, b in zip(egg.new_permeability, Z, ci, egg.bath_mM, strict=True)
+            ]
+            if f
+            else [0.0, 0.0, 0.0]
+        )
+        u_c = F * s["phi_c"] / rt
+        scale_acc = access_scale(egg, t, area)
+        j_acc = [
+            access_flux(egg.access_law, k * scale_acc, z, u_c, a, b)
+            for k, z, a, b in zip(self.k_acc, Z, cc, egg.bath_mM, strict=True)
+        ]
+        dvc = egg.gap_width_m * (1.0 - f) * seg.rate / 2.0
+        dy = np.zeros(NSTATE)
+        dy[NAC] = (j_lumen[0] - j_acc[0] + egg.bath_mM[0] * dvc) / FMOL
+        dy[KC] = (j_lumen[1] - j_acc[1] + egg.bath_mM[1] * dvc) / FMOL
+        dy[QC] = (
+            math.fsum(z * (a - b) for z, a, b in zip(Z, j_lumen, j_acc, strict=True))
+            + self.supply_charge * dvc
+        ) / FMOL
+        c_rate = egg.new_specific_capacitance_F_m2 * seg.rate
+        dy[HEAT] = (
+            0.5 * s["v_new"] ** 2 * (1.0 - f) * c_rate + 0.5 * s["phi_i"] ** 2 * f * c_rate
+        ) * 1e12
+        out = [a + b + c + d for a, b, c, d in zip(j_old, j_zone, j_lumen, j_bath, strict=True)]
+        inj_k = egg.pulses.carrier_K * seg.current_A / F
+        dy[NAI] = -out[0] / FMOL
+        dy[KI] = (-out[1] + inj_k) / FMOL
+        dy[QI] = (-math.fsum(z * o for z, o in zip(Z, out, strict=True)) + seg.current_A / F) / FMOL
+        return dy
+
+    def capacitor_energy_J(self, t, y, seg):
+        if not seg.lumen:
+            return Model.capacitor_energy_J(self, t, y, seg)
+        s = self.derived(t, y, seg)
+        return (
+            0.5 * (self.c_old(t) + s["c_bath_facing"]) * s["phi_i"] ** 2
+            + 0.5 * s["c_new"] * s["v_new"] ** 2
+        )
+
+
 # ---------------------------------------------------------------- integration
 
 
@@ -542,8 +678,10 @@ def simulate(egg, t_end, *, record=(), rtol=1e-10, method="Radau", lumen_state=N
         assert egg.onset_s == 0.0 and egg.new_faces == "lumen"
         y, background = np.asarray(initial[0], dtype=float).copy(), float(initial[1])
         v0 = math.nan
-    model = Model(egg, background)
+    model = (ExtendedModel if egg.extended else Model)(egg, background)
     points = breakpoints(egg, t_end, record)
+    if egg.access_shape and egg.access_shape[0] == "ramp":
+        points = sorted({*points, *(t for t in egg.access_shape[2:] if 0.0 < t < t_end)})
     p = egg.pulses
     onset_V, sample_V, at = {}, {}, {}
     pulse_of_onset = {}
@@ -593,11 +731,17 @@ def simulate(egg, t_end, *, record=(), rtol=1e-10, method="Radau", lumen_state=N
         if egg.new_faces == "lumen" and not lumen and t0 >= egg.onset_s:
             lumen = True
             area0 = egg.area(t0)
-            vc = egg.gap_width_m * area0 / 2.0
+            vc = egg.gap_width_m * (1.0 - egg.bath_fraction) * area0 / 2.0
             y = y.copy()
             y[QC] = 0.0
             y[NAC] = egg.bath_mM[0] * vc / FMOL
             y[KC] = egg.bath_mM[1] * vc / FMOL
+            if egg.bath_fraction:
+                # A1: the bath-facing part switches on in parallel at fixed charge; book its heat.
+                qi = y[QI] * FMOL * F
+                c = model.c_old(t0)
+                c_nb = egg.new_specific_capacitance_F_m2 * egg.bath_fraction * area0
+                y[HEAT] += 0.5 * qi * qi * (1.0 / c - 1.0 / (c + c_nb)) * 1e12
             if lumen_state is not None:
                 y = lumen_state(egg, y)
         seg = segment_for(t0, t1)
@@ -622,12 +766,15 @@ def simulate(egg, t_end, *, record=(), rtol=1e-10, method="Radau", lumen_state=N
 # ---------------------------------------------------------------- calibration
 
 
-def rm_at(egg, pair, *, rtol=1e-10, method="Radau"):
-    """Pulse-protocol Rm (ohm) from the declared pulse pair, and its run."""
+def rm_at(egg, pair, *, rtol=1e-10, method="Radau", runner=None):
+    """Pulse-protocol Rm (ohm) from the declared pulse pair, and its run.
+
+    runner: the integrator (default this module's simulate; the ring model passes its own).
+    """
     k_prev, k = pair
     p = egg.pulses
     t_end = p.onset(k) + p.sample_s
-    run = simulate(egg, t_end, rtol=rtol, method=method)
+    run = (runner or simulate)(egg, t_end, rtol=rtol, method=method)
     return run.rm(k)[0], run
 
 
@@ -673,7 +820,7 @@ def solve_decreasing(miss, x0, *, step, xtol, ftol=1e-10, max_secant=10):
     return brentq(f, pos, neg, xtol=xtol, rtol=1e-15), log
 
 
-def calibrate_old(egg, target_ohm, pair, *, rtol=1e-10, method="Radau"):
+def calibrate_old(egg, target_ohm, pair, *, rtol=1e-10, method="Radau", runner=None):
     """P_old (m/s) with the uncleaved egg's pulse Rm equal to target (insertion after the pair).
 
     The search starts from the closed-form slope estimate at rest.
@@ -686,7 +833,9 @@ def calibrate_old(egg, target_ohm, pair, *, rtol=1e-10, method="Radau"):
     estimate = 1.0 / (target_ohm * g)
 
     def miss(log_p):
-        rm = rm_at(replace(egg, p_old=10.0**log_p), pair, rtol=rtol, method=method)[0]
+        rm = rm_at(replace(egg, p_old=10.0**log_p), pair, rtol=rtol, method=method, runner=runner)[
+            0
+        ]
         return math.log(rm / target_ohm)
 
     x, _ = solve_decreasing(miss, math.log10(estimate), step=0.01, xtol=1e-11)
@@ -704,13 +853,16 @@ def calibrate_access(
     step=0.05,
     method="Radau",
     ftol=1e-10,
+    runner=None,
 ):
     """A/L (m) with the pulse Rm at J1 equal to target; returns (A/L, [(A/L, Rm)])."""
 
     evaluations = []
 
     def miss(log_al):
-        rm, run = rm_at(replace(egg, a_over_l_m=10.0**log_al), pair, rtol=rtol, method=method)
+        rm, run = rm_at(
+            replace(egg, a_over_l_m=10.0**log_al), pair, rtol=rtol, method=method, runner=runner
+        )
         evaluations.append(
             dict(
                 a_over_l_m=10.0**log_al,
@@ -775,13 +927,13 @@ def calibrated(d, values, *, rtol=1e-10, method="Radau", guess=1.6e-6, step=0.05
     return replace(egg, a_over_l_m=al), log
 
 
-def j1_readout(d, egg, *, rtol=1e-10, method="Radau", t_end=None, record=()):
+def j1_readout(d, egg, *, rtol=1e-10, method="Radau", t_end=None, record=(), runner=None):
     rm = d["rm_definition"]
     k_prev, k = rm["j1_pulse_pair"]
     p = egg.pulses
     j1 = float(d["time"]["j1_s"])
     t_end = p.onset(k) + p.sample_s if t_end is None else t_end
-    run = simulate(egg, t_end, rtol=rtol, method=method, record=(j1, *record))
+    run = (runner or simulate)(egg, t_end, rtol=rtol, method=method, record=(j1, *record))
     rm2, dv_prev, dv = run.rm(k)
     em = run.onset_V[rm["j1_em_pulse"]]
     return dict(

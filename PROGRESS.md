@@ -58,6 +58,162 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Combined landing: the plan-validation fix, composite v2 §1.2–§1.4, the L4 agreement
+  driver, `electrode_current_injection@1` and the J1 diagnostic code (12 November).** One
+  tier 1 + 2 gate on the combined tree: 355 files, no changed outcome, no OOM kill
+  ([gate](/mnt/workspaces/Cells/land-20261112b/)). New test files measured into the tier
+  record: four in tier 1, `test_current_injection_runs.py` (81 s) and
+  `test_division_diagnostic_record.py` (30 s) in tier 2, and the ring-model record test
+  (about 150 s) in tier 3.
+  - **Plan-validation fix.** `bind_step_checks(spec)` binds `resolved_pump_tissue@1`–`@3`'s
+    step checks to their definition. The observation boundaries, the explicit, calcium and
+    junction bounds, and the gated RK4 laws are evaluated once per definition rather than
+    once per 1,024-step chunk; `core.grid.clock_checks` gives `checked_grid` and the
+    projective clock admission the bound checks with no control tables. Other models keep
+    `check_steps` per chunk.
+    - Refusals, messages and their order are unchanged; the traced step, layouts, initial
+      states and controls hash identically.
+    - The 825-node clock check drops from 59.6 CPU-min to 6.9 s; on the L4 the W1 probe's
+      plan validation takes 106 s.
+    - All 29 related files pass at the fix head, the composite's tier-3 files included
+      ([evidence](/mnt/workspaces/Cells/clock-validation-20261112-01/summary.json)). One
+      failure, `test_numerical_refinement.py::test_legacy_hash_and_empty_omission` (a
+      fingerprint literal), also fails on main before the fix; the tier record times that
+      file out, so it carries no outcome.
+    - **Open:** the composites (water `@1`, `@2`, replacement `@1`) still check per chunk,
+      with 5, 6 and 2 layout builds; `pump_composite` adopts binding next (v2 §1.1).
+  - **Composite v2 §1.2–§1.4 (D143).** Operators declare `REPLACES`, `VIEW_READS`,
+    `ACCEPTS_WRITES` and `EVENT_REPLACES`, checked at registration and at composite build:
+    writers follow the owners that accept their fields, view readers follow providers, and
+    each observation column has one owner. Replacement is a declared chain in operator
+    order, the last replacer owning the column; the reviewed one-replacer rule would have
+    refused water@2 as qualified. Returned columns are checked against the declaration on
+    every row, and the field-to-owner map is written to all three manifest writers.
+    - Guards against snapshot `8416a72`: jaxprs 36/36 and 78/78 and bindings 12/12 and
+      56/56 identical; 17 dumped worlds bit-identical; composite test files 59/59 and the
+      frozen models' own files 130/130.
+    - Not yet enforced: free-energy booking by events and split parts (needs §1.1).
+      `ACCEPTS_WRITES` and `VIEW_READS` have no production user yet.
+  - **L4 agreement driver** (`validation/tissue/composite_l4_agreement.py`). It runs each
+    qualification's own engine functions (W1, W2, G2-Q1), measures the backend and
+    run-to-run terms and writes PROPOSED variant protocols with the widening and stop
+    rules. CPU dry runs give zero terms and the registered tolerances unchanged. Judged
+    runs of G2-Q1, W1 and W2 now accept only the registered protocol or a registered
+    backend variant of it. The L4 runs wait for the GPU.
+  - **`electrode_current_injection@1`.** A scheduled current into a cell through declared
+    carrier fractions (K 0.4912 / Cl 0.5088), both polarities, separate supply and removal
+    bookings, and refusal when a cell cannot supply a carrier. It is split around the step
+    (not coupled into RK4, so stationary analyses exclude it), and borrows the replacement
+    law's free-energy terms until §1.1. Not yet accepted; its first acceptance (Rm1 on
+    R-full's uncleaved egg) lands next.
+  - [Composite evidence and log](/mnt/workspaces/Cells/composite-v2-20261112-01/HANDOFF.md).
+
+- **Cell division S0b: J1 diagnostic arms on R-full. No single arm gives both J1's level
+  and the registered time course; cause not isolated (12 November; development, not judged).**
+  - **What ran:** the arms registered at `cfe0fa3`
+    ([rationale](validation/division/j1_diagnostic_arms.md)), on R-full only, from a clean
+    snapshot of branch commit `556b5eb` (merged with this entry). 3.9 CPU-hours in detached
+    units on CPU 5, plus a one-point Radau check; every unit exited 0.
+    [Evidence](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/j1-diagnostic-01/):
+    `g1/` (A1, A2, A4, A7a, A7b), `a3/`, `a6/`, `radau_check/`.
+    - No engine run, and no C1 or J2 quantity. The only root searches are each curve's
+      A/L → 0 end and A6's fits to each arm's own Em2 and Rm2; nothing targets J1's Em.
+  - **Em at J1** (window −21.9 to −18.7 mV; record −12.795 mV, reproduced to 2.3e-12 V).
+    Every calibrated point recalibrates on Rm1 and Rm2, so Rm at J1 is 488.00 kΩ throughout.
+
+    | Arm | Em at J1 (mV) |
+    | --- | --- |
+    | A1 bath-facing fraction f, 0.01 to its end (0.0728) | −16.9 to −36.1 |
+    | A2 furrow-zone conductance, to its end | −12.4 to −9.9 |
+    | A3 ring lumen, calibrated (N = 1, 10, 20; w and bridge ranged) | −12.76 to −12.86 |
+    | A4 old-membrane P_Cl/P_K, 0.03 to 0.12 | −12.6 to −11.9 |
+    | A6 new-membrane rules and fits (all 14 fits converged) | −12.4 to −15.2 |
+    | A7a access scaled with furrow depth, α 0.5 to 2 | −12.80 to −12.84 |
+    | A7b late apposition, β 0.8 to 0.4 | −12.78 to −12.79 |
+    | A8 (computed earlier) | −12.6 to −16.5 |
+
+  - **A1 alone crosses the window**, at f ≈ 0.015–0.024 by interpolation. The curve is
+    monotone from −13 to −36 mV at one Rm, so the crossing was expected and selects
+    nothing; no f is adopted. Near it Em is still falling at J1 (D4 −0.05 to −0.08 mV) and
+    Rm has no late rise (D7 −0.2 to −0.6 kΩ), against the registered p531 description.
+  - **A7a is the only calibrated arm with a late Rm rise** (D7 +64, +130, +224 kΩ at α 0.5,
+    1, 2), with a deeper, later Em minimum (8.7–9.7 min). Rm2 fixes the access at J1, so
+    A3, A7a and A7b stay within 0.07 mV of the record there.
+  - **Shared by every calibrated arm:** the Rm fall is front-loaded (D5 0.85–0.94, except
+    A1 from f 0.03 and A2 from half its end); the Em minimum comes at 7–10 min; cytosolic
+    Na at J1 is 20.0–20.2 mM against the measured 22.4 ± 1.1 mM.
+  - **Without a rim restriction** (the geometric-access check) Rm at J1 is 104–108 kΩ,
+    4.5–4.7× below Rm2. Its N = 10, w = 2.5 µm point **failed** (integration failure at
+    insertion onset, 420–421 s); it is recorded in `a3_final.json` and not rerun.
+  - **Fig. 2 values**, read after the runs from one egg and not registered targets: D2 ≈
+    −10 mV, D3 ≈ 15 min and −19.5 mV, D4 ≈ +2.5 mV, D5 ≈ 0.46, D6 ≈ 0.64, D7 ≈ +80 kΩ.
+  - **Deviations from the registration:**
+    - A3 used BDF with a batched finite-difference Jacobian, not a declared sparsity
+      pattern; the Radau check on the N = 10 default point agrees to 2e-13 V.
+    - A3 used two undeclared numerics: a 1e-11 m² seed face per ring and a 1e-12 mM
+      concentration floor in the log-mean flux.
+    - The snapshot is of the branch commit, not main.
+    - A1's curve ends at f = 0.0728 (root search), not the estimated 0.10.
+    - The Radau check ran from a driver in the evidence folder; it is now the runner's
+      `radau-check` group, not rerun.
+  - **Code:** `validation/division/cleft_egg_reference.py` (extended; the null path is
+    unchanged), `cleft_rings_reference.py` (A3), `j1_diagnostic_runner.py`; tests
+    `tests/unit/test_division_diagnostic_*.py` (11 + 2 + 1 pass).
+  - **Next:** the cleft-model choice is the user's (a registered combination round,
+    freezing candidates for C1, or parking it). C1 and J2 stay held.
+
+- **Heredity pilot W1, water arms: held discs also hold under water; the osmotically
+  balanced start, not water itself, makes the marginal loss 3× earlier (11–12
+  November; development, not judged).**
+  - **What ran:** the sheet70 discs under `resolved_pump_water@1` and `@2` (KCC at
+    red-cell capacity 4, s 1), dt 5 ms, plus a water-off control.
+    - Predictions were written first.
+    - There were no refusals and no volume censors.
+    - The four arms killed by the 12 November crash were rerun.
+    - [note](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/sheet70w/NOTE-water-sheet-results.md),
+      [summary](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/sheet70w/summary-sheet-arms.json)
+  - **Retention is as in fixed volume.** In both water models, 37-cell discs held 70 min
+    at s 1.0, 0.6 and 0.3, and 19-cell discs held at s 0.6 and 0.3.
+  - **The 19-cell disc at s 1.0 was lost at 345–348 s after the cue**, against 990.5 s
+    in fixed volume (5 ms runs, 1 s records).
+    - **Re-timed at 1 ms (12 November):** water1, water2 and the water-off control lose
+      the disc in the same 1 s brackets as at 5 ms (347–348, 345–346 and 304–305 s), with
+      per-cell Vm within 0.02 mV before the loss. Fixed volume at 1 ms lost it at 990.46 s,
+      so the shift is 2.85× (water1) and the water-dynamics effect +14.1%. Snapshot
+      `source-w1a-02` (`f42eaa4`);
+      [comparison](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/sheet70w/retiming-1ms.json).
+  - **The cause is the start state.**
+    - The declared heredity H is hypo-osmotic, 284 against 300 mOsm.
+    - Under water each cell starts at its model's balanced stationary H: 0.942 V0, 1.7 mV
+      more polarised, K 144 rather than 136 mM.
+    - The water-off control (balanced start, `@3` at fixed volume) lost the disc at
+      304–305 s.
+    - So water dynamics move the loss by only about 14%, and the +1% swelling before the
+      loss slightly delays it.
+  - **Loss account, refined.**
+    - Every disc loads Na after writing, from 6 to 10–11.6 mM by about 10 min, and drifts
+      more polarised.
+    - Na load does not separate lost from held discs. The drift does: just before
+      collapse the most depolarised cell sat near −27 mV in the lost discs, against −20
+      to −23 mV in the held ones.
+    - Candidate carrier: Na-driven drift together with a small disc and strong coupling.
+      Untested.
+  - **Water matters for slow composition and volume.**
+    - Solute loading is the same in every model: 11.7–12.5% content excess at 70 min.
+    - Under water it shows as swelling from 0.94 to 1.03–1.06 V0.
+    - Disc K is 7–8.5 mM lower than in fixed volume.
+    - KCC at capacity 4 is invisible over 70 min, but caps stationary D at 1.47 V0 instead
+      of 1.76.
+  - **Predictions** held as written, except two:
+    - the marginal loss came earlier under water, a direction not predicted;
+    - the control lost its disc at 304 s, against a predicted 330–370 s.
+  - **For the E07-v1 redesign** (the user's decision):
+    - start from a balanced H;
+    - use water2 for hour-scale renewal, with water1 and a higher KCC capacity as
+      robustness arms;
+    - s 0.6 with a 37-cell disc is safe for retention, though pre-screen 8 found renewal
+      failing at every coupling that retains;
+    - turnover results are pending.
 - **Composite tissue model landed (12 November; D143).** `resolved_pump_composite@1` is
   `@3`'s own step plus declared operators ([PUMP_COMPOSITE.md](docs/PUMP_COMPOSITE.md)).
   `resolved_pump_water@1`, `@2` and `resolved_pump_replacement@1` are now thin
@@ -428,9 +584,11 @@ machine-readable inputs, results, checks and failures.
     - **The 19-cell disc at s 1.0 was lost all at once,** 990.46 s (16.5 min) after
       the cue in a 1 ms replay, inside the 5 ms run's bracket. All 19 cells went to
       H within 0.12 s; no check failed and no step was refused.
-    - **Before the loss it was drifting toward U, not loading.** Just before
-      collapse its Vm was −37.8 to −30.6 mV, with K 134.6 and M 11.2 mM (content
-      excess 2.7–3.1%). The held discs had instead loaded to K about 146 and M
+    - **Before the loss it was drifting toward U, with K and M not loading** (Na
+      loaded to 11.6 mM). Just before collapse its Vm was about −32 to −27 mV, with
+      K 134.6 and M 11.2 mM (content excess 2.7–3.1%). A range of −37.8 to −30.6 mV
+      quoted here earlier was sampled mid-collapse, 0.06 s before the first flip;
+      corrected 12 November. The held discs had instead loaded to K about 146 and M
       about 22 mM by 70 min. So the loaded-composition limit from pre-screen 9 does
       not explain this loss; the small disc at strong coupling slid toward the
       unstable state before it could load. The mechanism is not yet identified.
