@@ -9,6 +9,17 @@ Files: `src/cells/core/surface_pump_water_spec.py` (definition),
 `src/cells/models/surface_pump_water.py` (model), the law
 `src/cells/numerics/osmotic_water.py`, worlds `validation/tissue/pump_water_fixtures.py`.
 
+**Implementation (D143).** `resolved_pump_water@1` and `@2` are thin compositions of the
+[composite pump-tissue model](PUMP_COMPOSITE.md): `resolved_pump_composite@1` with the
+operator `ideal_osmosis_linear_compliance_water@1` (and, for `@2`,
+`k_anion_symport_mass_action@1`). The water law, its Heun half-steps and ledgers and the
+route law moved unchanged into `src/cells/models/operators/osmotic_water.py` and
+`k_anion_symport.py`; the model modules re-export them. The definition formats, the
+step, the checks and the qualified scope below are unchanged. Before the conversion the
+composition was bitwise equal to the earlier implementation on the models' test and
+qualification worlds, and the compiled steps, right-hand sides and device checks trace
+to identical jaxprs (evidence: `/mnt/workspaces/Cells/composite-s1-20261111-01/`).
+
 ## Physics
 
 Water crosses each membrane patch by the law `ideal_osmosis_linear_compliance_water@1`

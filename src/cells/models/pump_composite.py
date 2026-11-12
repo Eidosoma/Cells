@@ -500,6 +500,14 @@ class Composition:
                     "An RK4 composition with a coupled operator cannot hold event maps, "
                     "split-only parts or integer state"
                 )
+        dt, end = spec.execution.dt, spec.experiment.end_time
+        for op, _, schedule in entries(spec):
+            if op.EVENT and any(
+                not 0 < t < end or int(round(t / dt)) * dt != t for t in op.schedule_times(schedule)
+            ):
+                raise ConfigError(
+                    f"{op.LAW_ID} event times must be exact multiples of dt inside the horizon"
+                )
         small = compact(spec)
         state, p = self.initial_values(small)
         if self.field_inputs:

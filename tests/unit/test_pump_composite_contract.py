@@ -224,3 +224,16 @@ def test_operator_declarations_are_checked():
             check_declarations(bad)
     for op in OPERATORS.values():
         check_declarations(type(op))
+
+
+def test_event_times_off_the_dt_grid_are_refused_for_any_event_operator():
+    from dataclasses import replace
+
+    raw, _, _ = frozen_worlds()["replacement"]
+    spec = parse_spec(cs.frozen_definition(raw))
+    (schedule,) = spec.experiment.operators
+    (event,) = schedule.data
+    shifted = cs.OperatorSchedule(schedule.law, (replace(event, time=event.time + 1e-4),))
+    bad = replace(spec, experiment=replace(spec.experiment, operators=(shifted,)))
+    with pytest.raises(ConfigError, match="exact multiples of dt"):
+        get_model(spec.model).check_definition(bad)

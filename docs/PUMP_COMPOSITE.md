@@ -87,7 +87,32 @@ input changed that step. That path covers held-bath topologies only (no floating
 components) and is not used by any S1 operator: it is unit-tested against
 `surface_field.bind`, not exercised in a run.
 
-## Equivalence with the frozen models
+## Equivalence with the frozen models (design §3.7)
 
-See `tests/unit/test_pump_composite_*.py` and the qualification-world guards recorded in
-`/mnt/workspaces/Cells/composite-s1-20261111-01/`.
+Bitwise means every state field, observation column and `max_` diagnostic equal under
+`np.array_equal`, as the frozen models' own equivalence tests compare; the guards also
+report whether the bit patterns are identical (they were in every case).
+
+- **(a) The empty composition equals `resolved_pump_tissue@3`**
+  (`tests/unit/test_pump_composite_identity.py`): heredity cell and seven-cell sheet with
+  Euler and ARS(2,2,2), uncompiled, @3's padded reference world, RK4, a vmap batch and
+  restart. Its checked step is @3's own.
+- **(b) An idle operator equals the composition without it:** closed water equals the
+  empty composition; a symport with no route or every route blocked equals water alone;
+  replacement without events equals the empty composition (Euler, ARS(2,2,2), RK4).
+- **(c) Re-expressed water@1, water@2 and replacement@1 equal the frozen models** on their
+  test worlds (`test_pump_composite_water.py`, `test_pump_composite_replacement.py`) and
+  their qualification worlds (`validation/tissue/composite_guard.py`, detached): W1's
+  judged trajectories, W1's stationary states (right-hand side, Jacobian and step map at
+  the guesses and Newton solutions), W2's arms (the same, plus 1 s trajectories), G2-Q1's
+  nine cases with device checks on every row, W37, Q5's step sequence, Q6's cohorts, and
+  the 825-node world.
+- **(d) Restart and vmap identity:** restart is bitwise, before, at and after events; vmap
+  batches equal the frozen models' batches.
+- **Compiled programs.** The checked steps (IMEX and RK4), right-hand sides and device
+  checks of the re-expressed models trace to jaxprs textually identical to the frozen
+  implementation's, so the compiled programs are the same for any step size.
+
+After the conversion, `frozen_definition` and the thin modules run one composition; the
+comparison with the earlier implementation is `validation/tissue/composite_dump.py`
+(saved runs from the frozen snapshot against the converted tree).
