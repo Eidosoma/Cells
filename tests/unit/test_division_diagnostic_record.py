@@ -2,7 +2,8 @@
 
 Each case runs the registered J1 definition once (0 to J1 with the pulse train, LSODA) at the
 record's calibration (P_old and A/L), through the extension's own code path, and must give the
-record's Em within the record's reference term. Slow (tier 2): one J1 run per case.
+record's Em within the record's reference term. The ring model's case (one ring) is in
+test_division_diagnostic_record_rings.py, which uses this module's helpers.
 """
 
 import json
@@ -49,9 +50,3 @@ def test_depth_shape_with_alpha_zero_reproduces_the_record():
 def test_ramp_shape_with_beta_one_reproduces_the_record():
     d, egg = record_egg(access_shape=("ramp", 1.0, 900.0, 1680.0))
     check(d, egg)
-
-
-def test_ring_model_with_one_ring_reproduces_the_record():
-    r_b, r_m = geometry()
-    d, egg = record_egg()
-    check(d, egg, rings.runner(rings.Rings(1, r_b, r_m)))
