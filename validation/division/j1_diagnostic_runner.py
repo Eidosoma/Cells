@@ -8,10 +8,17 @@ geometric-access check, then runs the registered 0-35 min protocol and reports E
 the time course, the descriptors D1-D7 (each arm's by-construction ones flagged) and the lumen.
 
 Groups (python -m validation.division.j1_diagnostic_runner GROUP --output DIR):
-  timing  a synthetic egg-scale cell (non-J1 compositions) with N = 1 and N = 10 rings, pulsed
-  g1      A1 (f), A2 (zone), A4 (P_Cl), A7a (alpha), A7b (beta), with the null point first
-  a3      the ring lumen: N = 1, 10, 20; w and bridge ranges; the geometric-access check
-  a6      the new-membrane rules per exposed arm and the self-consistent fits
+  timing       a synthetic egg-scale cell (non-J1 compositions) with N = 1 and N = 10 rings, pulsed
+  g1           A1 (f), A2 (zone), A4 (P_Cl), A7a (alpha), A7b (beta), with the null point first
+  a3           the ring lumen: N = 1, 10, 20; w and bridge ranges; the geometric-access check
+  a6           the new-membrane rules per exposed arm and the self-consistent fits
+  radau-check  A3's one-point Radau cross-check of an a3 result (--a3-final PATH): the N = 10
+               default point integrated once to J1 with Radau at its BDF calibration
+
+The 12 November 2026 cross-check result
+(/mnt/workspaces/Cells/cell-division-s0b-20261111-01/j1-diagnostic-01/radau_check/result.json)
+was produced by that evidence folder's driver.py against snapshot 556b5eb, before the radau-check
+group existed. The group repeats the driver's computation and writes the same result fields.
 """
 
 import argparse
@@ -318,6 +325,50 @@ def group_a3(args):
     return out
 
 
+# The registered one-point cross-check of A3's BDF integrator against Radau.
+RADAU_CHECK_CASE = dict(n=10, w=2.0e-6, bridge=0.26e-6, rim="calibrated")
+
+
+def radau_check_inputs(d, a3_final):
+    """The N = 10 default point of an a3_final.json, rebuilt as group_a3 builds it, at the P_old
+    and rim A/L its BDF calibration found, with a Radau ring geometry."""
+    a3 = json.loads(Path(a3_final).read_text())
+    point = next(p for p in a3["points"] if p["case"] == RADAU_CHECK_CASE)
+    if "error" in point:
+        raise RuntimeError(f"the BDF point failed: {point['error']}")
+    egg = replace(
+        default_egg(d, gap_width_m=RADAU_CHECK_CASE["w"]),
+        p_old=point["p_old_m_s"],
+        a_over_l_m=point["a_over_l_m"],
+    )
+    geom = rings.Rings(
+        RADAU_CHECK_CASE["n"], point["r_bridge_m"], point["r_mouth_m"], method="Radau"
+    )
+    return point, egg, geom
+
+
+def group_radau_check(args):
+    """A3's one-point Radau cross-check: the N = 10 default point integrated once to J1 with Radau
+    (rtol 1e-10, the same batched finite-difference Jacobian), Em and Rm at J1 against BDF's."""
+    d = ref.load_declared()
+    point, egg, geom = radau_check_inputs(d, args.a3_final)
+    j1, run = ref.j1_readout(d, egg, runner=rings.runner(geom))
+    out = dict(
+        group="radau-check",
+        a3_final=str(Path(args.a3_final).resolve()),
+        case=RADAU_CHECK_CASE,
+        radau_em_V=j1["em_V"],
+        radau_rm_ohm=j1["rm_ohm"],
+        bdf_em_V=point["em_j1_V"],
+        bdf_rm_ohm=point["rm_j1_ohm"],
+        d_em_V=j1["em_V"] - point["em_j1_V"],
+        d_rm_relative=j1["rm_ohm"] / point["rm_j1_ohm"] - 1.0,
+        radau_steps=run.steps,
+    )
+    log_line("radau-check", f"dEm {out['d_em_V']:.3g} V", f"dRm/Rm {out['d_rm_relative']:.3g}")
+    return out
+
+
 def exposed_arm(d, values, *, rm1, area, new_permeability):
     """The exposed arm: new membrane facing the bath, 0.04 mm2/min from onset to `area`."""
     rate = 0.04e-6 / 60.0
@@ -469,14 +520,23 @@ def group_timing(args):
     return out
 
 
-GROUPS = dict(timing=group_timing, g1=group_g1, a3=group_a3, a6=group_a6)
+GROUPS = {
+    "timing": group_timing,
+    "g1": group_g1,
+    "a3": group_a3,
+    "a6": group_a6,
+    "radau-check": group_radau_check,
+}
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("group", choices=sorted(GROUPS))
     parser.add_argument("--output", required=True)
+    parser.add_argument("--a3-final", help="radau-check only: the a3_final.json to cross-check")
     args = parser.parse_args(argv)
+    if args.group == "radau-check" and not args.a3_final:
+        parser.error("radau-check needs --a3-final PATH")
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
