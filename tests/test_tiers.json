@@ -15,7 +15,8 @@
   "/mnt/workspaces/Cells/land-parity-tools-20261111-01/measure/measured.json",
   "/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/untracked/measured.json",
   "/mnt/workspaces/Cells/land-gapA-gapB-20261111-01/new-measure/measured.json",
-  "/mnt/workspaces/Cells/land-water-20261111-01/new-measure/measured.json"
+  "/mnt/workspaces/Cells/land-water-20261111-01/new-measure/measured.json",
+  "/mnt/workspaces/Cells/land-composite-20261112-01/measure-new/measured.json"
  ],
  "measured_provenance": [
   {
@@ -135,6 +136,13 @@
    "root": "/mnt/workspaces/Cells/land-water-20261111-01/source",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-11T14:21:08+00:00"
+  },
+  {
+   "git_revision": "3f7d93e82449eae4cc55a0126d832e9e8befcf13",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-composite",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-12T16:42:52+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1583,6 +1591,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_pump_composite_adapter.py",
+    "seconds": 9.09,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_pump_composite_contract.py",
+    "seconds": 6.96,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
     }
    },
    {
@@ -3655,6 +3679,24 @@
    {
     "file": "tests/unit/test_owned_calcium_profile_phase_handoff.py",
     "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_pump_composite_identity.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_pump_composite_replacement.py",
+    "seconds": 90.16,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_pump_composite_water.py",
+    "seconds": 90.11,
     "exit_code": null,
     "counts": {}
    },
