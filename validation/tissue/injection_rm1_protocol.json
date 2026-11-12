@@ -2,7 +2,7 @@
  "kind": "cells.injection_rm1_protocol@1",
  "id": "injection-rm1-uncleaved-egg",
  "title": "First acceptance of electrode_current_injection@1: Rm1 on the uncleaved egg against R-full",
- "status": "PROPOSED: not registered; the lead registers it by changing this status in a commit on main",
+ "status": "registered by the lead on main, 12 November 2026, before the judged run. The development observations below (1 ms and 0.5 ms) were seen before registration; the tolerance rule follows the v2 note and is not chosen from them",
  "engine_models": [
   "resolved_pump_composite@1",
   "resolved_pump_tissue@3",

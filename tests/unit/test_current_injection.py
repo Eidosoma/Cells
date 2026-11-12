@@ -100,8 +100,10 @@ def test_the_rm1_judged_run_needs_a_registered_protocol_and_a_clean_snapshot(tmp
     from validation.tissue import injection_rm1 as rm1
 
     protocol = json.loads(rm1.PROTOCOL.read_text())
-    assert protocol["status"].startswith("PROPOSED")
-    assert "not registered" in rm1.judged_run_refusal(protocol, tmp_path)
+    # The checked-in protocol is registered (lead, 12 November); its proposed form is refused.
+    assert protocol["status"].startswith("registered")
+    proposed = dict(protocol, status="PROPOSED (test)")
+    assert "not registered" in rm1.judged_run_refusal(proposed, tmp_path)
     registered = dict(protocol, status="registered at a lead's commit (test)")
     assert "clean execution snapshot" in rm1.judged_run_refusal(registered, tmp_path)
     clean = dict(status="complete", patch_sha256=hashlib.sha256(b"").hexdigest())
