@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-11 UTC.
+Last updated: 2026-11-12 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -53,6 +53,44 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Out-of-memory crash and relaunch (12 November).**
+  - **Cause:** at 01:36:13 UTC the composite S1 guard on the water@2 qualification
+    worlds was 8.2 GB resident, mid-compile. It set off a machine-wide out-of-memory
+    kill. systemd then stopped the whole terminal-session scope that held it, and with
+    it the lead session, its agents and every detached job (setsid does not leave the
+    cgroup). Nothing ran from 01:36 to 12:30.
+  - **Cut short:** outputs are kept with the suffix `.killed-oom-20261112`.
+
+    | Work | State at the crash |
+    | --- | --- |
+    | W1 water sheet arms | 8 of 12 finished. Killed: `water2-disc37-s0.6` at t = 4080 of 4200 s, and `water1-disc19-s0.6` and `water2-disc19-s0.3` about 30 min in. `water2-disc19-s0.6` never started |
+    | W1 full-tissue cost probe | Started 23:25. It wrote no window in 2 h 10 min, against a measured 482 s compile at 64 worlds, so it never finished; cause unknown. The first segment never started |
+    | Turnover pre-screen | 3 of 21 arms finished. 2 were killed and 16 never started |
+    | J1 band | 4 of about 24 members done: the default and 3 one-at-a-time members, −12.67 to −12.89 mV |
+    | J1-state step study | RK4 0.05 ms, rfull and compare missing |
+    | 35-min egg smoke | Never started |
+    | Composite S1 guards | `w2` killed; `scale` killed |
+
+  - **Fix:** [`scripts/run_detached.sh`](scripts/run_detached.sh) runs each long job as
+    its own systemd user unit in `cells.slice`.
+    - Each unit has its own memory cap, and the slice caps the total at 16 GB.
+    - `OOMPolicy=continue` keeps a queue going past one killed item.
+    - A positive `OOMScoreAdjust` makes a Cells job the victim before the user's other
+      services.
+    - Tested: a unit over its cap is killed alone.
+    - Subagents' long test runs go through it too.
+  - **Relaunched from zero:** same snapshots and arguments; the new launchers record
+    why. The band and the longsheet part have no resume.
+    - The J1 band ([`queue_rerun.sh`](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/rfull-band-01/queue_rerun.sh), CPU 5).
+    - The J1 step-study remainder, then the smoke ([`queue_j1_rest.sh`](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/static-cleft-steps-01/queue_j1_rest.sh), CPU 7).
+    - Water queue A ([`launch6.sh`](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/launch6.sh), CPU 0).
+    - The composite `w2` guard alone, with 11 GB, to measure its peak.
+  - **Held until the `w2` peak is known:**
+    - water queue B;
+    - the turnover remainder ([`arms-rest.sh`](/mnt/workspaces/Cells/heredity-turnover-literature-20261111-01/arms-rest.sh)
+      with `queues-rest.json`; `queues.json` unchanged);
+    - the cost probe alone, with a 45-min limit and Python's fault handler.
 
 - **Cell replacement qualified and landed (11 November).** `resolved_pump_replacement@1`
   is an opt-in wrapper over `resolved_pump_tissue@3`.
