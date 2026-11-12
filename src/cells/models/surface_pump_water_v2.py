@@ -149,6 +149,11 @@ def check_steps(spec, steps, controls):
     _model.check_steps(composite(spec), steps, controls)
 
 
+def bind_step_checks(spec):
+    """check_steps bound to one definition (core/grid.clock_checks): the composite's."""
+    return _model.bind_step_checks(composite(spec))
+
+
 # Row checks: the composite's (@3's own check functions with the water and route terms).
 DISSIPATION_FIELDS = _model.DISSIPATION_FIELDS
 LEDGER_DIAGNOSTICS = w1.LEDGER_DIAGNOSTICS

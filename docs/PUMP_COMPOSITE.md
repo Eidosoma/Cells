@@ -87,6 +87,14 @@ Observations are @3's at each row's view (with factored availabilities held at t
 effective values), then each operator's columns; an operator may override the energy
 columns (water@2 does).
 
+The step checks are bound to the definition (`bind_step_checks`, used by `core/grid`).
+They are @3's bound checks on the operator-adjusted check spec (each operator's
+`inner_check_spec`: water's minimum volumes, replacement's worst case), then each
+operator's bound checks. What they read from the definition, for example the layouts
+of the explicit-rate bounds, is evaluated once per clock at first use, in the order of
+`check_steps`. Water@1, water@2 and replacement@1 used to build 5, 6 and 2 layouts per
+chunk; they now build that many per clock.
+
 ## The entity adapter
 
 The adapter maps operator-provided entity quantities onto @3's layout names and
@@ -96,6 +104,11 @@ Cholesky factor, fixed and active masks) on the device and selects them only whe
 input changed that step. That path covers held-bath topologies only (no floating
 components) and is not used by any S1 operator: it is unit-tested against
 `surface_field.bind`, not exercised in a run.
+
+The adapter is also the declared owner of @3's free energy: `chemical_free_energy_pJ`, each
+cell's chemical term against its reference at the declared volume, and
+`capacitor_free_energy_pJ`, the capacitor energy. An operator that changes @3's state outside
+its step books the exact change with these. Replacement events and injection half-steps do.
 
 ## Equivalence with the frozen models (design §3.7)
 

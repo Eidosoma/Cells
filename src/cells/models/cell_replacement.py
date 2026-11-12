@@ -181,6 +181,11 @@ def check_steps(spec, steps, controls):
     _model.check_steps(composite(spec), steps, controls)
 
 
+def bind_step_checks(spec):
+    """check_steps bound to one definition (core/grid.clock_checks): the composite's."""
+    return _model.bind_step_checks(composite(spec))
+
+
 def worst_case(spec):
     return operator.worst_case(spec, spec.model.replacement, spec.experiment.replacement_events)
 

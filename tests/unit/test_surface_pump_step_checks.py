@@ -254,15 +254,14 @@ def test_a_long_clock_builds_each_layout_once(monkeypatch, version, solver, buil
     assert layouts[0] == builds
 
 
-def test_composites_keep_their_step_checks_per_chunk(monkeypatch):
+def test_composites_bind_their_step_checks(monkeypatch):
     """Water @1/@2 and replacement @1 are compositions over @3 (models/pump_composite.py).
 
     Their check_steps is the composite's: @3's step checks on the definition the
-    operators declare, then each operator's own (the water bounds, for instance).
-    The composite does not bind those to the definition yet, so clock_checks calls
-    it once per chunk with the chunk's control table and no operator refusal is
-    skipped; the thin modules must not expose @3's bind_step_checks either. When
-    pump_composite binds its step checks, this test changes with it.
+    operators declare (each operator's inner_check_spec, v2 design R5), then each
+    operator's own (the water bounds, for instance). The composite binds those to the
+    definition (bind_step_checks), so the layouts they read are built once per clock, not
+    once per chunk, no chunk builds a control table, and no operator refusal is skipped.
     """
     from cells.models import (
         cell_replacement,
@@ -272,14 +271,19 @@ def test_composites_keep_their_step_checks_per_chunk(monkeypatch):
     )
 
     for module in (surface_pump_water, surface_pump_water_v2, cell_replacement):
-        assert not hasattr(module, "bind_step_checks"), module.__name__
-    assert not hasattr(pump_composite.Composition, "bind_step_checks")
-    spec = parse_spec(water.with_water(water.heredity_cell(end_time=3.0)))
-    assert get_model(spec.model) is surface_pump_water
-    composite = counted(monkeypatch, pump_composite.Composition, "check_steps")
+        assert hasattr(module, "bind_step_checks"), module.__name__
+    assert hasattr(pump_composite.Composition, "bind_step_checks")
+    layouts = counted(monkeypatch, tissue, "initial_values")
     tables = counted(monkeypatch, grid_module, "control_values")
-    grid = checked_grid(spec)
-    assert -(-(len(grid) - 1) // 1024) == 3 and composite[0] == tables[0] == 3
+    builds = []
+    for chunks in (3, 6):
+        spec = parse_spec(water.with_water(water.heredity_cell(end_time=chunks * 1.0)))
+        assert get_model(spec.model) is surface_pump_water
+        layouts[0] = tables[0] = 0
+        grid = checked_grid(spec)
+        assert -(-(len(grid) - 1) // 1024) == chunks and tables[0] == 0
+        builds.append(layouts[0])
+    assert builds[0] == builds[1] > 0  # Once per clock: 3 or 6 chunks build the same.
     # 100 cm/s: dt x the water relaxation rate far above 0.05, an operator's refusal.
     fast = parse_spec(water.with_water(water.heredity_cell(end_time=0.01), pf_m_s=1.0))
     with pytest.raises(ConfigError, match="Water relaxation"):
