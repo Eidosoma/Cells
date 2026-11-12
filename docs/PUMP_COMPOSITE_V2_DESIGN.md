@@ -24,6 +24,21 @@ Order of work:
 
 Plus the L4 agreement (§5).
 
+**The entity table** (the plan's ownership contract) mapped onto owners in the composite:
+
+| Entity | Its state | Owner | Writers |
+| --- | --- | --- | --- |
+| Compartment | Amounts | @3 | @3's step; replacement events; injection (§4); partition later |
+| | Volume | Water (`volume_increment_pL`) | Water's flow; replacement events (§2) |
+| | Fixed-charge background | @3, constant except at events | Events |
+| Membrane domain | Area, capacitance | Not owned today (@3 layout). `membrane_entity_state` (§3) | Insertion (§3); partition and mechanics later |
+| Functional-unit population | Abundance (gates are @3's) | Not owned today (@3 layout). `membrane_entity_state` (§3) | Insertion; replacement templates; trafficking and regulation later |
+| Contact | Gate state | @3 | @3's step |
+| | Junction abundance | Replacement's formation law | Replacement's formation law |
+| | Aperture | Not owned yet | Bridge closure (S5) |
+| Cell and lineage | Identity, membership, ancestry | Replacement's lineage records | Replacement events; partition later |
+| Extracellular environment | Finite nodes' amounts and volumes | @3 and water | Transport, water, bath supply (booked) |
+
 ## 1. Contract hardening
 
 ### 1.1 Energy roles declared, not recognised by suffix
@@ -108,6 +123,9 @@ Each rule is a build-time check with a refusal message.
   jaxpr, are unchanged.
 
 ### 1.5 Guards for §1 (all on CPU)
+- **The families that share `surface_pump.py`.** @1, @2 and @3's own test files pass, and
+  their checked steps, right-hand sides and device checks trace to identical jaxprs
+  across revisions (§4.3 for each), since the energy-bound function is shared.
 - **Existing compositions bitwise.** Measured across revisions (composite_crossrev,
   composite_dump), before against after §1:
   - the S1 composite test files and the frozen models' own test files pass;
@@ -156,6 +174,12 @@ So the composition is IMEX only, and it stays so.
 1. Replacement@2 over closed water (availability 0), with template volume equal to the
    declared volume, equals replacement@1 bitwise: the volume view is V0 + 0.0, and the
    dilution and elastic changes are exact zeros.
+   - This holds for the free-energy accumulator only if @2 computes @3's terms with
+     replacement@1's own expressions, in the same order, and adds the other owners'
+     terms after them.
+   - Audit before code: whether @3's per-entity free-energy terms can be reached through
+     the adapter without copying. Today they live in the replacement law (`_chemical`,
+     `_electric`).
 2. Event-free replacement@2 over water equals water@1 bitwise.
 3. Water's volume and energy ledgers close across events on a world whose replaced cell
    has swollen or shrunk; material and charge reconcile.
@@ -287,14 +311,15 @@ the fallback.
   close.
 - Restart across a current step; vmap with per-world currents.
 
-### 4.3 Guards protecting @3's default path (for §1.1's argument and the §4.1 fallback)
-- @3's own test files pass unchanged.
-- @3's checked step, right-hand side and device checks without the new argument or hook
-  trace to jaxprs identical to the frozen @3's, with dt traced. This is composite_crossrev
-  run on @3 worlds across revisions.
+### 4.3 Guards protecting the default paths (for §1.1's argument and the §4.1 fallback)
+- @3's own test files pass unchanged. For §1.1, so do @1's and @2's, since they share
+  `surface_pump.py`.
+- Without the new argument or hook, each family's checked step, right-hand side and device
+  checks trace to jaxprs identical to the frozen family's, with dt traced. This is
+  composite_crossrev run on @1, @2 and @3 worlds across revisions.
 - The empty composition equals @3 (the S1 identity tests).
 
-## 5. L4 agreement for the composite (protocol draft; the driver follows the review)
+## 5. L4 agreement for the composite (protocol draft; the driver is outstanding)
 
 The plan's completion evidence is GPU agreement by tolerance, because L4 repeats are not
 bitwise. It is a **backend variant** of each qualification's own registered protocol,
@@ -302,8 +327,9 @@ following `validation/betse/backend_variant.py`.
 
 **Worlds and quantities:** each protocol's judged quantities.
 - W1: the six trajectories' quantities at their records.
-- W2: per arm and branch, volume, voltage, route cycles, the step-map correction, the
-  classification and the leading growth rate.
+- W2: per arm and branch, volume, voltage, route cycles and the step-map correction,
+  which have registered tolerances; and the stability classification, which the
+  protocol judges by sign only (no tolerance on the growth rate).
 - G2-Q1: the nine cases' compared quantities per record.
 
 **Runs:** all from one clean snapshot of the landed head, x64.
@@ -325,24 +351,32 @@ One GPU process at a time, in the slot the lead gives.
 - W2: its stationary tolerances are fixed, not derived. So new tolerance =
   max(registered, up1(3 × (backend + run-to-run))).
 - The classification and convergence of every W2 branch must match exactly.
+- `up1` (round up to one significant figure) is reimplemented in the tissue driver. The
+  method's `validation/betse/protocol_tolerances.py` imports BETSE-side modules, so a
+  `validation/tissue` driver must not import it (AGENTS.md).
 
-**Verdict:**
-- run C agrees with the CPU reference within the variant tolerance for every quantity and
-  record;
-- each qualification's own judge, run on C, gives the same item verdicts as on CPU.
+**Verdict (as the method judges):** each qualification's own judge, run on C against its
+own reference with the variant tolerances, passes every item it passes on CPU.
+- Not the verdict: C against the CPU result within the variant tolerance. For W1 and
+  G2-Q1 the variant still carries the step-error term, so that test could hide a
+  GPU-specific difference well above the measured backend term.
+- Reported beside the verdict: the raw backend and run-to-run terms of C against CPU, per
+  quantity and record.
+- Discrimination ratios are rescaled where the protocol has them, and the
+  non-discriminating lists are recomputed.
 
-Discrimination ratios are rescaled as the method does, and the non-discriminating lists
-are recomputed.
-
-**Driver (planned, `validation/tissue/composite_l4_agreement.py`):**
+**Driver (outstanding, `validation/tissue/composite_l4_agreement.py`).** Planned actions:
 - `run --part {w1,w2,g2} --label NAME`: runs each part's worlds through the qualification
   drivers' own engine functions and saves the judged quantities;
 - `terms`: computes the measured terms;
 - `variant`: writes the variant protocol, PROPOSED until you register it;
-- `judge`: judges run C.
+- `judge`: runs each qualification's judge on C with the variant tolerances.
 
-It is tested on CPU, where CPU against CPU gives zero terms and the variant equals the
-registered protocol.
+It still needs:
+- the three drivers' return shapes (`engine_observations`, `judge_arm`, `engine_records`);
+- the mapping from saved quantities to each protocol's tolerance keys;
+- a CPU-against-CPU test, where the terms are zero and the variant equals the registered
+  protocol.
 
 ## 6. Open choices for the lead
 1. The composite's model ID stays `resolved_pump_composite@1` through §1, since every
@@ -353,6 +387,11 @@ registered protocol.
    opt-in source hook is needed.
 4. §2: newcomers keep the slot's declared impermeant content in the first slice.
 5. §3: capacitance kept as state alongside area, or derived from area (my proposal: state).
+6. §1.3: at most one in-step process per composition, until @3's hook can return one
+   applied transfer per process. This narrows "fluxes add" for in-step processes; split
+   parts and the RK4 coupled right-hand side do add.
+7. §5: the verdict is each qualification's own judge with the variant tolerances, as the
+   method judges; C against CPU is reported but not judged.
 
 Rough effort:
 
