@@ -136,7 +136,11 @@ def main():
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     predictions = json.loads(Path(args.predictions).read_text())
-    protocol = json.loads(Path(args.protocol).read_text())
+    # A judged run takes the registered protocol or a registered backend variant of it; any
+    # other file is marked a dry run (composite_l4_agreement.judged_protocol).
+    from validation.tissue import composite_l4_agreement as agreement
+
+    protocol, judged, acceptance = agreement.judged_protocol("w2", args.protocol)
     arms = args.arms or list(predictions["arms"])
     items = []
     try:
@@ -147,7 +151,13 @@ def main():
                 item["seconds"] = time.perf_counter() - started
             items += found
             (out / "progress.json").write_text(json.dumps(items, indent=2, default=float) + "\n")
-        result = dict(verdict="pass" if all(i["pass_"] for i in items) else "fail", items=items)
+        result = dict(
+            verdict="pass" if all(i["pass_"] for i in items) else "fail",
+            dry_run=not judged,
+            protocol=args.protocol,
+            protocol_acceptance=acceptance,
+            items=items,
+        )
         (out / "w2-judge.json").write_text(json.dumps(result, indent=2, default=float) + "\n")
     except Exception:
         (out / "failure.json").write_text(

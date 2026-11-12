@@ -418,6 +418,7 @@ class OsmoticWater(Operator):
     LEDGER_MESSAGE = WATER_LEDGER_MESSAGE
     READOUT = "water"
     READOUT_COLUMNS = WATER_READOUTS
+    REPLACES = {"energy_balance_pJ_s": "the inner energy-balance rate plus the water terms"}
     FINITE_RATES = True
 
     # ------------------------------------------------------------ definition

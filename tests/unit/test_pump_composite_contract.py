@@ -237,3 +237,128 @@ def test_event_times_off_the_dt_grid_are_refused_for_any_event_operator():
     bad = replace(spec, experiment=replace(spec.experiment, operators=(shifted,)))
     with pytest.raises(ConfigError, match="exact multiples of dt"):
         get_model(spec.model).check_definition(bad)
+
+
+# ---------------------------------------------------------------- ownership (v2 §1.2-§1.4)
+
+
+class Owner(Operator):
+    """A test owner: one owned field other operators may write, booked in its ledger."""
+
+    LAW_ID = "test_owner@1"
+    SPLIT = True
+    RK4 = "split"
+    STATE_AXES = {"owned_pL": ["cell_slot"], "owned_meter": ["cell_slot"]}
+    LEDGERS = ("owned_balance",)
+    LEDGER_DIAGNOSTICS = ("owned_balance_error",)
+    ACCEPTS_WRITES = {"owned_pL": ("owned_balance",)}
+
+
+class OwnerWriter(Operator):
+    """A test writer of the owner's field, with its accumulator."""
+
+    LAW_ID = "test_writer@1"
+    EVENT = True
+    STATE_AXES = {"written_pL": ["cell_slot"]}
+    ENTITY_WRITES = {"owned_pL": ("written_pL",)}
+
+    def external_ledger_terms(self, ledgers, row, p, *, xp):
+        return {k: v - 1.0 for k, v in ledgers.items()}
+
+    def external_magnitude_terms(self, magnitudes, row, p, *, xp):
+        return {k: v + 2.0 for k, v in magnitudes.items()}
+
+
+class ColumnThief(Operator):
+    LAW_ID = "column_thief@1"
+    SPLIT = True
+    RK4 = "split"
+    READOUT_COLUMNS = ("energy_balance_pJ_s",)
+
+
+class GhostReplacer(Operator):
+    LAW_ID = "ghost_replacer@1"
+    SPLIT = True
+    RK4 = "split"
+    REPLACES = {"no_such_column": "test"}
+
+
+class EarlyReader(Operator):
+    LAW_ID = "early_reader@1"
+    SPLIT = True
+    RK4 = "split"
+    VIEW_READS = ("volume",)
+
+
+def test_ownership_refusals_when_a_composition_is_built():
+    errors = pump_composite.structure_errors(pump3, (ColumnThief(),))
+    assert any("adds the column energy_balance_pJ_s, which inner owns" in e for e in errors)
+    errors = pump_composite.structure_errors(pump3, (GhostReplacer(),))
+    assert any("replaces no_such_column" in e for e in errors)
+    errors = pump_composite.structure_errors(pump3, (EarlyReader(),))
+    assert any("reads the view volume; no earlier operator provides it" in e for e in errors)
+    assert pump_composite.structure_errors(pump3, (OPERATORS[WATER], EarlyReader())) == []
+    errors = pump_composite.structure_errors(pump3, (OwnerWriter(), Owner()))  # Writer first.
+    assert any("writes owned_pL, which is neither inner state nor accepted" in e for e in errors)
+    assert pump_composite.structure_errors(pump3, (Owner(), OwnerWriter())) == []
+
+
+def test_ownership_declarations_are_checked():
+    class SelfReplacer(Operator):
+        LAW_ID = "self_replacer@1"
+        EVENT = True
+        READOUT_COLUMNS = ("mine",)
+        REPLACES = {"mine": "own column"}
+
+    class Unledgered(Owner):
+        LAW_ID = "unledgered@1"
+        ACCEPTS_WRITES = {"owned_pL": ("not_a_ledger",)}
+
+    class Eventless(Operator):
+        LAW_ID = "eventless@1"
+        SPLIT = True
+        RK4 = "split"
+        STATE_AXES = {"a": ["cell_slot"], "b": ["cell_slot"]}
+        ENTITY_WRITES = {"amount_increment": ("a",)}
+        EVENT_REPLACES = {"amount_increment": ("a", "b")}
+
+    class ReadsAndHolds(Operator):
+        LAW_ID = "reads_and_holds@1"
+        EVENT = True
+        VIEW_READS = ("volume",)
+        CONFLICTS_VIEW = ("volume",)
+
+    for bad in (SelfReplacer, Unledgered, Eventless, ReadsAndHolds):
+        with pytest.raises(ValueError):
+            check_declarations(bad)
+    check_declarations(Owner)
+    check_declarations(OwnerWriter)
+
+
+def test_field_map_and_column_chains_of_the_registered_compositions():
+    water2 = pump_composite.implementation(pump3.MODEL_ID, (WATER, SYMPORT))
+    columns = water2.FIELD_MAP["observations"]
+    assert columns["energy_balance_pJ_s"] == ["inner", WATER, SYMPORT]
+    assert columns["energy_balance_pJ"] == [WATER, SYMPORT]
+    assert water2.FIELD_MAP["state"]["amount_increment"] == {"owner": "inner", "writers": [SYMPORT]}
+    assert water2.FIELD_MAP["views"]["volume"] == {"provider": WATER, "readers": []}
+    replacement = pump_composite.implementation(pump3.MODEL_ID, (REPLACEMENT,))
+    assert replacement.FIELD_MAP["state"]["channel_gate"]["writers"] == [REPLACEMENT]
+    for laws in ((), (WATER,), (WATER, SYMPORT), (REPLACEMENT,)):
+        assert pump_composite.implementation(pump3.MODEL_ID, laws).writers_of == {}
+
+
+def test_writers_terms_reach_only_the_owners_accepted_ledgers():
+    from types import SimpleNamespace
+
+    owner, writer = Owner(), OwnerWriter()
+    writers = pump_composite.accepted_writers((owner, writer))
+    assert writers == {Owner.LAW_ID: ((writer, ("owned_balance",)),)}
+    host = SimpleNamespace(writers_of=writers)
+    values = {"owned_balance": 3.0, "untouched": 5.0}
+    out = pump_composite.Composition._with_writers(host, owner, values, None, None, xp=None)
+    assert out == {"owned_balance": 2.0, "untouched": 5.0}
+    out = pump_composite.Composition._with_writers(
+        host, owner, values, None, None, xp=None, magnitudes=True
+    )
+    assert out == {"owned_balance": 5.0, "untouched": 5.0}

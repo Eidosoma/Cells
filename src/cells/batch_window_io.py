@@ -150,7 +150,10 @@ def write_windowed_batch(
             },
             # A composite run's identity (composite, inner and ordered operator IDs).
             **(
-                {"composition": model.composition_identity(spec.worlds[0].simulation)}
+                {
+                    "composition": model.composition_identity(spec.worlds[0].simulation),
+                    "field_owners": model.field_owners(spec.worlds[0].simulation),
+                }
                 if hasattr(model, "composition_identity")
                 else {}
             ),

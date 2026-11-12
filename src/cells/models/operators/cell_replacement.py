@@ -622,6 +622,9 @@ class ScheduledReplacement(Operator):
         "electrode_work_pJ": ("replacement_free_energy_pJ", "replacement_energy_magnitude_pJ"),
     }
     STATE_RESETS = ("channel_gate", "junction_gate")
+    EVENT_REPLACES = {
+        "amount_increment": ("replacement_removed_fmol", "replacement_supplied_fmol"),
+    }
     READOUT_COLUMNS = REPLACEMENT_READOUTS
 
     # ------------------------------------------------------------ definition

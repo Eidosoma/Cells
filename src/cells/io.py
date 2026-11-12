@@ -262,7 +262,10 @@ def write_run(
         },
         # A composite run's identity (composite, inner and ordered operator IDs).
         **(
-            {"composition": model.composition_identity(result.spec)}
+            {
+                "composition": model.composition_identity(result.spec),
+                "field_owners": model.field_owners(result.spec),
+            }
             if hasattr(model, "composition_identity")
             else {}
         ),

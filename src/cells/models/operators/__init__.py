@@ -7,6 +7,7 @@ Each operator implements the contract of models/operators/contract.py for one la
 
 from cells.models.operators.cell_replacement import ScheduledReplacement
 from cells.models.operators.contract import check_declarations
+from cells.models.operators.current_injection import ElectrodeCurrentInjection
 from cells.models.operators.k_anion_symport import KAnionSymport
 from cells.models.operators.osmotic_water import OsmoticWater
 
@@ -16,5 +17,6 @@ OPERATORS = {
         check_declarations(OsmoticWater)(),
         check_declarations(KAnionSymport)(),
         check_declarations(ScheduledReplacement)(),
+        check_declarations(ElectrodeCurrentInjection)(),
     )
 }

@@ -37,6 +37,23 @@ Declarations (class attributes):
   precede it in the operator list.
 * Schedule: ``EXPERIMENT_KEYS`` (its schedule in the definition's experiment),
   parsed and checked at the definition (event times are exact multiples of dt).
+* Ownership (docs/PUMP_COMPOSITE_V2_DESIGN.md §1.2–§1.4), checked when a
+  composition is built and recorded in its field map:
+  - observation columns: its own are its state fields and ``READOUT_COLUMNS``;
+    ``REPLACES`` ({column: reason}) names the inner or earlier operators' columns it
+    computes instead. Replacement is a declared chain in operator order (water
+    replaces the inner energy-balance rate, the symport then both energy columns),
+    and the column's owner is the last in the chain. ``observe`` returns exactly its
+    own and replaced columns;
+  - ``VIEW_READS``: inner view fields it reads at their provided (current) value;
+    an earlier operator must provide each;
+  - ``ACCEPTS_WRITES`` ({owned field: its own ledgers}): fields a later operator may
+    write (an ``ENTITY_WRITES`` target). The writer adds its booked terms to those
+    ledgers and their rounding magnitudes (``external_ledger_terms``,
+    ``external_magnitude_terms``); with no writer nothing changes;
+  - ``EVENT_REPLACES`` ({field: (removed, supplied)}): fields its event map
+    replaces, with the owned accumulators that book what was removed and supplied.
+    Intensive fields set at events without a ledger are ``STATE_RESETS``.
 
 Methods take the composite's full state, control and layout NamedTuples, whose
 fields are the inner model's followed by each operator's in declared order.
@@ -85,6 +102,16 @@ class Operator:
     READOUT_COLUMNS = ()
     FINITE_RATES = False
     REQUIRES = ()
+    # Ownership (module docstring).
+    REPLACES = MappingProxyType({})
+    VIEW_READS = ()
+    ACCEPTS_WRITES = MappingProxyType({})
+    EVENT_REPLACES = MappingProxyType({})
+
+    @classmethod
+    def observed_columns(cls):
+        """Its own observation columns: its state fields, then READOUT_COLUMNS."""
+        return (*cls.STATE_AXES, *cls.READOUT_COLUMNS)
 
     # ------------------------------------------------------------ definition
 
@@ -218,6 +245,14 @@ class Operator:
     def own_magnitudes(self, row, p, *, xp):
         return ()
 
+    def external_ledger_terms(self, ledgers, row, p, *, xp):
+        """An earlier owner's accepted ledgers ({name: value}) with this writer's terms."""
+        return ledgers
+
+    def external_magnitude_terms(self, magnitudes, row, p, *, xp):
+        """An earlier owner's accepted ledger magnitudes ({name: value}) with its terms."""
+        return magnitudes
+
     def own_bounds(self, magnitudes, steps):
         return ()
 
@@ -260,4 +295,26 @@ def check_declarations(operator):
         raise ValueError(f"{name}: one diagnostic per own ledger")
     if operator.VIEW_FOLLOWS_SPLIT and not (operator.SPLIT and operator.VIEW_FIELDS):
         raise ValueError(f"{name}: a view that follows the split needs both")
+    own = operator.observed_columns()
+    if len(set(own)) != len(own):
+        raise ValueError(f"{name}: an observation column is declared twice")
+    for column, reason in operator.REPLACES.items():
+        if column in own or not (isinstance(reason, str) and reason):
+            raise ValueError(f"{name}: a replaced column {column} is not its own and has a reason")
+    if set(operator.VIEW_READS) & set((*operator.VIEW_FIELDS, *operator.CONFLICTS_VIEW)):
+        raise ValueError(f"{name}: a view field is read, provided or held as declared, not two")
+    for field, ledgers in operator.ACCEPTS_WRITES.items():
+        if field not in operator.STATE_AXES or not ledgers:
+            raise ValueError(f"{name}: an accepted write {field} needs an owned field")
+        if any(k not in operator.LEDGERS for k in ledgers):
+            raise ValueError(f"{name}: an accepted write {field} is booked in its own ledgers")
+    if operator.EVENT_REPLACES and not operator.EVENT:
+        raise ValueError(f"{name}: replaced fields need an event map")
+    for field, accumulators in operator.EVENT_REPLACES.items():
+        removed_supplied = len(accumulators) == 2 and set(accumulators) <= set(operator.STATE_AXES)
+        if field not in operator.ENTITY_WRITES or not removed_supplied:
+            raise ValueError(
+                f"{name}: an event replaces {field} as an entity write, booked in owned "
+                "removed and supplied accumulators"
+            )
     return operator

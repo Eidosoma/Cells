@@ -166,7 +166,10 @@ def write_windowed_run(
             },
             # A composite run's identity (composite, inner and ordered operator IDs).
             **(
-                {"composition": model.composition_identity(spec)}
+                {
+                    "composition": model.composition_identity(spec),
+                    "field_owners": model.field_owners(spec),
+                }
                 if hasattr(model, "composition_identity")
                 else {}
             ),
