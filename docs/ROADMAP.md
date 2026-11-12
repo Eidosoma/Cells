@@ -27,6 +27,11 @@ Cells model needs its own CPU/GPU evidence before GPU parity is claimed.
 
 ## Current development priorities
 
+**Proposed order from 12 November 2026:** [CURRENT_PLAN.md](CURRENT_PLAN.md), awaiting the
+user's adoption. It sets the gates: execution, then composition and lifecycle operators,
+compute limits, coupled renewal, a molecular loop and a tissue unit. The priorities below
+keep their content.
+
 **BETSE parity first, then JUPITER (from 8 November 2026).** The immediate goal
 is BETSE parity of the Cells engine, tested on CPU and the local L4: Cells-engine
 runs compared against output from plain, unmodified BETSE. Parity starts with

@@ -127,8 +127,8 @@ or a local cache.
      `_work_pJ`), not by declaration alone.
   2. Observation columns can be overridden by operator order: water@2 overrides water@1's
      energy columns.
-  3. Only one in-step process is allowed at a time. Check this against the division design
-     (insertion, cleft and partition together).
+  3. Only one in-step process is allowed at a time. This is not an S2 prerequisite: the
+     division design uses split parts and an event (see the corrections below).
 - **Entities are field names today.** Stage S2 (membrane areas, capacitances and
   abundances as entity state) is where a typed entity schema should be decided. The
   protein catalogue's `functional_unit` and `catalogue` references attach there.
@@ -170,8 +170,9 @@ the host for checks and set-up, and JAX on the device for stepping.
    about 2.3 ms per world. The six-world full-tissue hold sits in the weak regime.
 2. **Single-world scaling is limited by a dense solve every step.**
    - `numerics/surface_imex.factor_operator` (lines 101–115) runs a dense Cholesky on
-     (C + aL) over the free nodes at every IMEX step. L changes with gated junction
-     conductances.
+     (C + aL) over the free nodes at every IMEX step. L is the extracellular
+     face-conductance Laplacian, which changes with the face concentrations. This was
+     corrected after the second review; an earlier wording said gated junctions.
    - The cost grows with the cube of the node count. That is fine at 825 nodes, but rules
      out a single organ-scale world without a sparse or iterative solver.
    - The capacitor solve is factorised once, at set-up (`numerics/surface_field.py` line
@@ -183,8 +184,10 @@ the host for checks and set-up, and JAX on the device for stepping.
    - `cell_replacement`.
 
    Other families run through `core/batch.py` (`lax.map`) with checks on the host.
-4. **Compile behaviour has no stated rule** for what is a traced input and what is a
-   constant built into the program. Evidence:
+4. **Compile behaviour has no library-wide policy or budget.**
+   `compile_window` does keep an executable cache (see the corrections below). What is
+   missing is a rule for what is a traced input and what is a constant built into the
+   program. Evidence:
    - 482 s at 64 worlds;
    - about 8 GB resident for one composite guard compile;
    - compiled programs accumulating past 3 GB across one test file;
@@ -229,6 +232,47 @@ where a model has device checks. Keep the others as declared reference paths.
 - Model-ID use has not been counted.
 - The L4 batch-step profile is one measurement.
 - Float64 across devices is unmeasured.
+
+## Corrections after the second review (12 November 2026)
+
+A second reviewer, whose review the user supplied, read public `main` at `541ac11`. The
+lead checked each point below against the code before recording it.
+
+1. **The per-step IMEX matrix is not built from junctions.** It is the face-conductance
+   Laplacian of the extracellular electrodiffusion faces.
+   - Its weights come from the evolving extracellular face concentrations, as log-means
+     (`numerics/surface_imex.py`, `face_laplacian` and `factor_operator`).
+   - Junctions stay explicit in the IMEX split.
+   - It still has to be refactorised every step, because those concentrations change.
+2. **Node limits and solves.**
+   - The factored field solvers are limited to 2,048 electrical nodes (cells plus
+     extracellular nodes; `FACTORED_MAX_NODES`). The unfactored solver's limit is 256.
+   - The capacitor solve and the floating-offset solve are separate
+     (`numerics/surface_field.py`).
+   - Any scalable solver has to cover all of these.
+3. **Compile.** `core/vector_windows.compile_window` already keeps an executable cache.
+   - Its key is the checked step, the device checks, the rows, the tree structure, and
+     each leaf's shape, dtype and sharding.
+   - It holds 4 entries and records XLA's memory analysis.
+   - So the finding is: a cache exists, but there is no library-wide compile policy or
+     resource budget. That replaces "no stated rule" in §4.
+4. **The single in-step process is not a prerequisite for division stage S2.**
+   - The division design assigns insertion to a split process and partition to an event
+     (§4.1–§4.2 of the design note).
+   - The limit matters when several transport laws must be evaluated at the same
+     integration stages. Introduce that with a concrete case.
+5. **Missing from these notes: checkpoint continuity.**
+   - `io.load_snapshot` and `batch_io.load_batch_snapshot` reject a checkpoint whose
+     source hashes (every `.py` under `src/cells`) or runtime differ from the
+     installation's.
+   - So any engine change invalidates resuming from older snapshots. For example, the W1
+     hold's prepared state (`source-08`) will not load once the plan-validation fix lands.
+   - A separately identified, versioned state-import or migration operation is a
+     candidate. It is tooling, and needs approval. Exact replay, migration to a new engine
+     version, and biological inheritance should remain three distinct operations.
+
+The plan that follows from these notes and the second review is
+[CURRENT_PLAN.md](CURRENT_PLAN.md).
 
 ## Questions for discussion
 
