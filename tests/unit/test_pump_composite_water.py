@@ -14,12 +14,13 @@ availability 0) equals the empty composition, and a symport without routes or
 with every route blocked equals water alone (IMEX).
 (d) Restart is bitwise; a vmap batch reproduces the frozen model's batch bitwise.
 
-These tests passed against the frozen implementation (commit 82fe086, run from
-snapshot-8416a72 before the rebase; evidence in
-/mnt/workspaces/Cells/composite-s1-20261111-01/tests/). Since commit d2e5a57 the
-water@1 and water@2 modules are thin compositions, so here "frozen" is the frozen
-definition format run through its own model module, and the tests guard that it and
-its composite rewrite (core/pump_composite_spec.frozen_definition) run identically.
+These tests passed against the frozen implementation (execution snapshot
+snapshot-8416a72; evidence and the snapshots' revisions in
+/mnt/workspaces/Cells/composite-s1-20261111-01/README.md). Since the conversion
+(snapshot-0161127) the water@1 and water@2 modules are thin compositions, so here
+"frozen" is the frozen definition format run through its own model module, and the
+tests guard that it and its composite rewrite
+(core/pump_composite_spec.frozen_definition) run identically.
 The comparison with the earlier implementation is the cross-revision guard
 (validation/tissue/composite_crossrev.py for compiled programs and bindings,
 validation/tissue/composite_dump.py for runs; both from the frozen snapshot).

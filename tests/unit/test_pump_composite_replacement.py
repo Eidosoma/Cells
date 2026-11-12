@@ -13,13 +13,14 @@ verdicts; device checks give the frozen bits on injected faults.
 (d) Restart before, at and after an event is bitwise; a vmap batch with two
 schedules reproduces the frozen model's batch bitwise.
 
-These tests passed against the frozen implementation (commit 82fe086, run from
-snapshot-8416a72 before the rebase; evidence in
-/mnt/workspaces/Cells/composite-s1-20261111-01/tests/). Since the replacement
-module became a thin composition, "frozen" is the frozen definition format run
-through its own model module, and the tests guard that it and its composite rewrite
-run identically; the comparison with the earlier implementation is the
-cross-revision guard (validation/tissue/composite_crossrev.py and composite_dump.py).
+These tests passed against the frozen implementation (execution snapshot
+snapshot-8416a72; evidence and the snapshots' revisions in
+/mnt/workspaces/Cells/composite-s1-20261111-01/README.md). Since the replacement
+module became a thin composition (snapshot-115cdcf), "frozen" is the frozen
+definition format run through its own model module, and the tests guard that it and
+its composite rewrite run identically; the comparison with the earlier
+implementation is the cross-revision guard (validation/tissue/composite_crossrev.py
+and composite_dump.py).
 """
 
 import copy

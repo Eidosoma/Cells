@@ -117,11 +117,13 @@ result: `/mnt/workspaces/Cells/composite-s1-20261111-01/README.md`.
   - the 825-node world with closed water and with event-free replacement.
 
   The dt studies (W1's; G2-Q1's Q5, of which two of eight worlds ran, equal) were not
-  repeated. For every world of both studies, the checked step, right-hand side and device
-  checks trace to identical jaxprs with dt as an argument, and the bound inputs (initial
-  state, layout, controls at every change time) are identical at every step size of the
-  studies (`composite_crossrev.py`, qualification set), so each step size runs the same
-  program on the same inputs.
+  repeated. Each world of both studies, traced at 1 ms with dt as an argument, gives
+  identical jaxprs for the checked step, right-hand side and device checks; its bound
+  inputs (initial state, layout, controls at every change time) have the same shapes and
+  dtypes at every step size of the studies and are identical, frozen and thin, at each
+  (`composite_crossrev.py`, qualification set). So each step size runs the same program on
+  the same inputs. The device checks' constants, which depend on dt, come from @3's own
+  function in both.
 - **(d) Restart and vmap identity:** restart is bitwise, before, at and after events; vmap
   batches equal the frozen models' batches.
 
