@@ -14,9 +14,16 @@ frozen-format definitions:
 compare checks the two saved sets: jaxpr text equality, and array dtype, shape and
 bytes. Identical programs on identical inputs run identically on a CPU.
 
-Usage (PYTHONPATH at the revision under test):
-  python -m validation.tissue.composite_crossrev jaxprs DIR
-  python -m validation.tissue.composite_crossrev bindings DIR
+Two world sets: base (small worlds of every structure: routes, sheets, RK4, events,
+donors, padding) and qualification (the guarded qualification worlds themselves:
+W1's trajectories, W2's arms and G2-Q1's cases). For the qualification set, bindings
+are also saved at every step size of the dt studies the guards did not repeat (W1's
+and Q5's), since dt enters the bound inputs (step counts, event steps) as well as
+the traced program.
+
+Usage (PYTHONPATH at the revision under test; SET is base, the default, or qualification):
+  python -m validation.tissue.composite_crossrev jaxprs DIR [SET]
+  python -m validation.tissue.composite_crossrev bindings DIR [SET]
   python -m validation.tissue.composite_crossrev compare A B
 """
 
@@ -92,6 +99,50 @@ def worlds():
     return out
 
 
+def qualification_worlds(all_steps=False):
+    """W1's judged trajectories, W2's arms and G2-Q1's cases, as their guards run them.
+
+    Each at its guarded step size (W1 and G2-Q1 at 1 ms, W2 at its definition's). With
+    all_steps, also W1's trajectories at every step size of W1's dt study and Q5's cases
+    at every step size of Q5.
+    """
+    import json
+
+    from validation.tissue import cell_replacement_judge as judge
+    from validation.tissue import cell_replacement_qualification as g2q
+    from validation.tissue import pump_water_kcc_qualification as w2q
+    from validation.tissue import pump_water_qualification as w1q
+
+    root = Path(w1q.__file__).parent  # The predictions of the revision under test.
+    w1, w2, g2 = (
+        json.loads((root / name).read_text())
+        for name in (
+            "pump_water_predictions.json",
+            "pump_water_kcc_predictions.json",
+            "cell_replacement_q1_predictions.json",
+        )
+    )
+    out = {}
+    for name, path in w1q.TRAJECTORIES.items():
+        raw = w1q.item(w1, path)["definition"]
+        for dt in w1q.STEPS_S if all_steps else (1e-3,):
+            out[f"W1_{name}@{dt:g}"] = w1q.with_step(raw, dt)
+    for arm in w2["arms"]:
+        out["W2_" + arm] = w2q.definition(w2, arm)
+    for case, entry in g2["cases"].items():
+        for dt in judge.Q5_DTS if all_steps and case in judge.Q5_CASES else (1e-3,):
+            out[f"G2_{case.replace('/', '_')}@{dt:g}"] = g2q.at_dt(entry["definition"], dt)
+    return out
+
+
+def _worlds(world_set, all_steps):
+    if world_set == "base":
+        return worlds()
+    if world_set == "qualification":
+        return qualification_worlds(all_steps)
+    raise SystemExit(f"Unknown world set {world_set!r} (base or qualification)")
+
+
 def _setup(raw):
     import jax
     import jax.numpy as jnp
@@ -108,13 +159,13 @@ def _setup(raw):
     return spec, model, jax.tree.map(jnp.asarray, (state, control, p))
 
 
-def jaxprs(directory):
+def jaxprs(directory, world_set="base"):
     import jax
 
     jax.config.update("jax_enable_x64", True)
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
-    for name, raw in worlds().items():
+    for name, raw in _worlds(world_set, all_steps=False).items():
         for kind, text in _traced(*_setup(raw)).items():
             (directory / f"{name}.{kind}.txt").write_text(text)
         print(name, flush=True)
@@ -145,7 +196,7 @@ def _traced(spec, model, arrays):
     )
 
 
-def bindings(directory):
+def bindings(directory, world_set="base"):
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -155,7 +206,7 @@ def bindings(directory):
 
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
-    for name, raw in worlds().items():
+    for name, raw in _worlds(world_set, all_steps=True).items():
         spec = parse_spec(raw)
         state, layout = get_model(spec.model).initial_values(spec)
         times = sorted({0.0, *(c.time for c in spec.experiment.changes), spec.experiment.end_time})
@@ -181,6 +232,10 @@ def compare(a, b):
         same &= equal
         print(path.name, "identical" if equal else "DIFFERS")
     for path in sorted(a.glob("*.npz")):
+        if not (b / path.name).exists():
+            same = False
+            print(path.name, "DIFFERS (missing in", b, ")")
+            continue
         x, y = np.load(path), np.load(b / path.name)
         names = set(x.files) | set(y.files)
         diffs = [
@@ -201,8 +256,8 @@ def compare(a, b):
 if __name__ == "__main__":
     action = sys.argv[1]
     if action == "jaxprs":
-        jaxprs(sys.argv[2])
+        jaxprs(*sys.argv[2:4])
     elif action == "bindings":
-        bindings(sys.argv[2])
+        bindings(*sys.argv[2:4])
     else:
         sys.exit(0 if compare(sys.argv[2], sys.argv[3]) else 1)
