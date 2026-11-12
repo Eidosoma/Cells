@@ -1,0 +1,47 @@
+{
+ "kind": "cells.injection_rm1_protocol@1",
+ "id": "injection-rm1-uncleaved-egg",
+ "title": "First acceptance of electrode_current_injection@1: Rm1 on the uncleaved egg against R-full",
+ "status": "PROPOSED: not registered; the lead registers it by changing this status in a commit on main",
+ "engine_models": [
+  "resolved_pump_composite@1",
+  "resolved_pump_tissue@3",
+  "electrode_current_injection@1"
+ ],
+ "driver": "validation/tissue/injection_rm1.py (action judge)",
+ "definition_source": {
+  "egg": "validation/division/cleft_egg_reference.py build(declared inputs, scalar_values(declared inputs), p_old = the record's p_old_m_s): R-full's own uncleaved egg, written as resolved_pump_tissue@3 by injection_rm1.definition",
+  "declared_inputs": "validation/division/j1_declared_inputs.json",
+  "p_old_source": "validation/division/j1_prediction_of_record.json p_old_m_s",
+  "electrode": "one electrode in the egg; J1's rm_definition pulse protocol (3e-8 A, 1.2 s, every 10 s, alternating from t = 0 positive) and carrier fractions rm_definition.injected_carrier_fractions (K 0.4912, Cl 0.5088), the field R-full's Pulses read",
+  "solver": "imex_ars222_face_electromigration@1"
+ },
+ "declared_differences": [
+  "The engine's ideal concentrations equal R-full's compositions, which are activities (the activity basis).",
+  "The initial charge anchor uses the engine's charge per fmol (N_A e) where R-full uses its rounded F: a 3.4e-11 relative difference, as egg_scale_smoke.",
+  "The cytosol volume converts m3 to pL with a 1.3e-16 relative rounding (field comparison: /mnt/workspaces/Cells/composite-v2-20261112-01/rm1-draft/compare.json)."
+ ],
+ "observable": "Rm1 = (|dV_0| + |dV_1|) / (2 x 3e-8 A), dV_k = V(t_k + 1.0 s) - V(t_k), V the egg's membrane voltage (J1 rm_rule, rm1_pulse_pair 0, 1)",
+ "reference_rm1_ohm": 852000.0000019374,
+ "reference_source": "validation/division/j1_prediction_of_record.json rm1_ohm (R-full, Radau rtol 1e-10)",
+ "judged_dt_s": 0.001,
+ "engine_step_term_ohm": 224.58158374822233,
+ "engine_step_term_rule": "|Rm1(1 ms) - Rm1(0.5 ms)|, development runs from a clean snapshot of 60d40de",
+ "engine_step_term_evidence": [
+  "/mnt/workspaces/Cells/composite-v2-20261112-01/rm1-dtstudy/study-1ms.json",
+  "/mnt/workspaces/Cells/composite-v2-20261112-01/rm1-dtstudy/study-0.5ms.json"
+ ],
+ "reference_term_ohm": 1.7419224604964256e-06,
+ "reference_term_rule": "max |Rm1 - record| over R-full's integrator variants (Radau rtol 1e-8, BDF rtol 1e-10, LSODA rtol 1e-10)",
+ "reference_term_evidence": "/mnt/workspaces/Cells/composite-v2-20261112-01/rm1-dtstudy/reference.json",
+ "tolerance_rule": "3 x (engine step term + reference term)",
+ "tolerance_ohm": 673.7447564704344,
+ "verdict_rule": "pass when |Rm1(judged dt) - reference_rm1_ohm| <= tolerance_ohm",
+ "development_observations": {
+  "rm1_1ms_ohm": 852298.5007130516,
+  "rm1_0p5ms_ohm": 852073.9191293034,
+  "observed_order": 2.014,
+  "note": "Second order; the 1 ms error of 298.5 Ohm is about 4/3 of the step difference. The tolerance detects an engine-to-reference offset above roughly 375 Ohm."
+ },
+ "judged_run": "once, after registration, from a clean execution snapshot of main (validation/source_snapshot.py; no dirty patch); the driver refuses an unregistered protocol and a run outside a clean snapshot"
+}

@@ -22,6 +22,8 @@ Actions:
   compare --output FILE          the engine definition against R-full's egg, field by field
   study --dt S --output FILE     a development engine run, giving Rm1 and its V samples
   reference --output FILE        R-full's Rm1 reference term
+  judge --output FILE            the judged run: a registered protocol (status beginning
+                                 "registered") and a clean execution snapshot only
 """
 
 import argparse
@@ -39,6 +41,7 @@ if __name__ == "__main__":
 LAW = "electrode_current_injection@1"
 STATUS = "PROPOSED first acceptance of electrode_current_injection@1; not judged."
 RECORD = ROOT / "validation/division/j1_prediction_of_record.json"
+PROTOCOL = ROOT / "validation/tissue/injection_rm1_protocol.json"
 
 
 def rfull():
@@ -215,10 +218,50 @@ def reference_term():
     )
 
 
+def judged_run_refusal(protocol, root=ROOT):
+    """Why a judged run may not start (None: it may): an unregistered protocol, or a
+    source that is not a clean execution snapshot (validation/source_snapshot.py)."""
+    import hashlib
+
+    status = protocol.get("status")
+    if not (isinstance(status, str) and status.startswith("registered")):
+        return "the Rm1 protocol is not registered (its status does not begin 'registered')"
+    manifest = Path(root) / "SNAPSHOT.json"
+    if not manifest.exists():
+        return "a judged run comes from a clean execution snapshot of main, not a checkout"
+    snapshot = json.loads(manifest.read_text())
+    clean = snapshot.get("patch_sha256") == hashlib.sha256(b"").hexdigest()
+    if snapshot.get("status") != "complete" or not clean:
+        return "the execution snapshot is incomplete or carries uncommitted changes"
+    return None
+
+
+def judge(protocol_path=PROTOCOL):
+    """The judged run of a registered protocol, at its judged dt, with its verdict."""
+    protocol = json.loads(Path(protocol_path).read_text())
+    refusal = judged_run_refusal(protocol)
+    if refusal:
+        raise SystemExit("Refused: " + refusal)
+    result = study(protocol["judged_dt_s"])
+    difference = result["rm1_ohm"] - protocol["reference_rm1_ohm"]
+    snapshot = json.loads((ROOT / "SNAPSHOT.json").read_text())
+    return dict(
+        protocol=str(protocol_path),
+        protocol_status=protocol["status"],
+        source_revision=snapshot["git_revision"],
+        rm1_ohm=result["rm1_ohm"],
+        reference_rm1_ohm=protocol["reference_rm1_ohm"],
+        difference_ohm=difference,
+        tolerance_ohm=protocol["tolerance_ohm"],
+        verdict="pass" if abs(difference) <= protocol["tolerance_ohm"] else "fail",
+        run=result,
+    )
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="action", required=True)
-    for name in ("compare", "study", "reference"):
+    for name in ("compare", "study", "reference", "judge"):
         one = sub.add_parser(name)
         one.add_argument("--output", type=Path, required=True)
         if name == "study":
@@ -229,8 +272,10 @@ def main(argv=None):
         result = dict(status=STATUS, differences=compare(raw), definition=raw)
     elif args.action == "study":
         result = dict(status=STATUS + " Development dt study.", **study(args.dt))
-    else:
+    elif args.action == "reference":
         result = dict(status=STATUS, **reference_term())
+    else:
+        result = judge()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=1, default=float) + "\n")
     print(args.action, "written", args.output)
