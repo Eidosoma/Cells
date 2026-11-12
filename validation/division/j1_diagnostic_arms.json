@@ -60,20 +60,33 @@
  },
  "check_C1_bath_potassium_step": {
   "status": "PROPOSED; the lead decides whether it is reported for every point. Not used to select.",
-  "why": "The only independent datum read at the same stage that probes the cleft's exchange with the bath. It separates the two readings of one Rm: a bath-facing fraction (A1) answers a bath K step fast and in full, a restricted lumen slowly.",
-  "protocol": "At J1 the bath switches from Steinberg to solution B (a_K 4.07 mM), and separately to solution C (a_K 10.17 mM), with the pulse train running; report Em from 0 to 10 min after the switch (the papers do not state the reading time).",
+  "why": "The only independent datum read at the same stage that probes the cleft's exchange with the bath. It separates the two readings of one Rm: a bath-facing fraction (A1) follows the bath's K+ directly, a restricted lumen through its own composition.",
+  "protocol": "The egg cleaves in solution B (a_K 4.07 mM), and separately in solution C (a_K 10.17 mM), from t = 0, with the pulse train running; P_old and A/L are those calibrated in Steinberg for the same point (membrane properties, not changed by the medium). Report Em at J1 and the 0-35 min time course.",
   "solutions_activity_mM": {
-   "B": {"Na": 43.79, "K": 4.067, "Cl": 47.86},
-   "C": {"Na": 37.69, "K": 10.17, "Cl": 47.86}
+   "B": {
+    "Na": 43.79,
+    "K": 4.067,
+    "Cl": 47.86
+   },
+   "C": {
+    "Na": 37.69,
+    "K": 10.17,
+    "Cl": 47.86
+   }
   },
-  "solution_basis": "dL74 Table 5 (p9, V): B NaCl 53.84 + KCl 5.00 mM, C NaCl 46.34 + KCl 12.50 mM; the registered activity coefficient 0.545/0.67 (S); Ca, Mg and Tris omitted as for Steinberg",
+  "solution_basis": "dL74 Table 5 (p9, V; page rendered): B NaCl 53.84 + KCl 5.00 mM, C NaCl 46.34 + KCl 12.50 mM, each with Ca(NO3)2 0.34, MgSO4 0.83 and Tris; activity coefficient 0.814 for Na+, K+ and Cl- (Table 5 footnote a, V); Ca, Mg and Tris omitted as for Steinberg",
   "data": {
    "source": "dL74 p10-11",
    "mark": "V",
    "values": "normally cleaving eggs at onset of second cleavage: Em -17.1 mV in Steinberg, -12.3 mV in solution B; at a_K 10.17 mM (solution C) or more, Em not significantly different from the uncleaved egg's; the authors derive P_Na/P_K = 0.73 for these eggs",
    "note": "dL74's eggs read -17.1 mV in Steinberg, a different series from dLB74's -20.3 mV."
   },
-  "cost": "two continuations of 10 min per point"
+  "cost": "two runs of 0-35 min per point (about 10 s each)",
+  "protocol_basis": {
+   "source": "dL74 p9",
+   "mark": "V",
+   "what": "Em, Rm and the intracellular activities were measured in eggs bathed in the media of Table 5 during cleavage, with and without the vitelline membrane; the values of Em were taken at the time of onset of second cleavage"
+  }
  },
  "arms": [
   {
@@ -81,18 +94,45 @@
    "change": "A constant fraction f of the new membrane faces the bath directly, inserted on the same schedule; the rest faces the lumen, whose volume is w x one face of the lumen-facing part.",
    "relaxes": "inputs.new_membrane_faces ('all new membrane faces the cleft lumen')",
    "sources": [
-    {"paper": "dLB74", "page": "p535", "mark": "V", "what": "1148 +/- 104 kOhm (n = 17), 0.14 mm2 'effectively exposed': the parallel reading of the same Rm series, so it marks the curve's end point (A/L -> 0), not a measurement of f"},
-    {"paper": "Byers & Armstrong 1986 (J Cell Biol 102:2176)", "page": "abstract", "mark": "V (abstract only)", "what": "furrow membrane from internal stores inserted near the outer pigmented surface: some new membrane may sit at the furrow mouth"}
+    {
+     "paper": "dLB74",
+     "page": "p535",
+     "mark": "V",
+     "what": "1148 +/- 104 kOhm (n = 17), 0.14 mm2 'effectively exposed': the parallel reading of the same Rm series, so it marks the curve's end point (A/L -> 0), not a measurement of f"
+    },
+    {
+     "paper": "Byers & Armstrong 1986 (J Cell Biol 102:2176)",
+     "page": "abstract",
+     "mark": "V (abstract only), as recorded in the v2 parameter table; not re-read this session",
+     "what": "furrow membrane from internal stores inserted near the outer pigmented surface: some new membrane may sit at the furrow mouth"
+    }
    ],
-   "unknowns": {"added": ["f"], "measured_or_geometric": [], "fixed_by_rm2": "A/L", "free": 1},
+   "unknowns": {
+    "added": [
+     "f"
+    ],
+    "measured_or_geometric": [],
+    "fixed_by_rm2": "A/L",
+    "free": 1
+   },
    "kind": "curve",
    "curve": {
     "parameter": "f",
-    "values": [0.01, 0.02, 0.03, 0.05, 0.07, "end"],
+    "values": [
+     0.01,
+     0.02,
+     0.03,
+     0.05,
+     0.07,
+     "end"
+    ],
     "end": "the f at which the calibrated A/L reaches 0 (sealed lumen plus exposed patch: the parallel reading), found by root search; about 0.10 by the linear estimate (S)",
     "range_basis": "f has no measurement of its own; [0, end] is everything Rm2 allows (f = 0 is the record)"
    },
-   "recalibrate": ["P_old on Rm1", "A/L on Rm2"],
+   "recalibrate": [
+    "P_old on Rm1",
+    "A/L on Rm2"
+   ],
    "points": 6
   },
   {
@@ -100,21 +140,67 @@
    "change": "An extra old-membrane conductance G_z(t) beside the furrow, with the old membrane's selectivity (P_Na = P_K, P_Cl = 0), switching on with insertion and growing in proportion to the new-membrane area: G_z(t) = G_z(J1) A_new(t)/A_new(J1).",
    "relaxes": "stated_limits[0] ('uniform, constant old membrane')",
    "sources": [
-    {"paper": "K83", "page": "p1753 (abstract)", "mark": "V", "what": "inward current enters the old membrane non-uniformly, largest beside the new membrane; 'heterogeneous ion channel distribution'"},
-    {"paper": "K83", "page": "p1760", "mark": "V", "what": "inward current at the old membrane bordering the new membrane is 4 to 30 times larger than farther away"},
-    {"paper": "K83", "page": "p1754", "mark": "V", "what": "at the equator, the inward current at 200 um from the furrow centre is 0.66 +/- 0.20 and at 300 um 0.42 +/- 0.22 of its value at 100 um (six eggs): it falls by about a third per 100 um (this settles the v2 table's OCR question)"},
-    {"paper": "K83", "page": "p1753 (methods)", "mark": "V", "what": "all currents measured in 5% De Boer's Ringer (5.5 mM NaCl), not Steinberg"},
-    {"paper": "this file", "page": "-", "mark": "S", "what": "read as conductance in R-full's isopotential bath (decay length about 235 um, both sides of a 4.1-mm furrow, old density 0.23 uS/mm2 geometric), K83's 4-30x would add 1.3-12.8 uS; Rm1 -> Rm2 allows at most 0.88 uS in total (linear reading). So K83 does not fix G_z in R-full's frame (its pattern may be largely the extracellular return path, which R-full cannot represent); G_z stays an unknown bounded by Rm2"}
+    {
+     "paper": "K83",
+     "page": "p1753 (abstract)",
+     "mark": "V",
+     "what": "inward current enters the old membrane non-uniformly, largest beside the new membrane; 'heterogeneous ion channel distribution'"
+    },
+    {
+     "paper": "K83",
+     "page": "p1760",
+     "mark": "V",
+     "what": "inward current at the old membrane bordering the new membrane is 4 to 30 times larger than farther away"
+    },
+    {
+     "paper": "K83",
+     "page": "p1755",
+     "mark": "V",
+     "what": "at the equator, the inward current at 200 um from the furrow centre is 0.66 +/- 0.20 and at 300 um 0.42 +/- 0.22 of its value at 100 um (six eggs): it falls by about a third per 100 um (this settles the v2 table's OCR question)"
+    },
+    {
+     "paper": "K83",
+     "page": "p1753 (methods)",
+     "mark": "V",
+     "what": "all currents measured in 5% De Boer's Ringer (5.5 mM NaCl), not Steinberg"
+    },
+    {
+     "paper": "this file",
+     "page": "-",
+     "mark": "S",
+     "what": "read as conductance in R-full's isopotential bath (decay length about 235 um, both sides of a 4.1-mm furrow, old density 0.23 uS/mm2 geometric), K83's 4-30x would add 1.3-12.8 uS; Rm1 -> Rm2 allows at most 0.88 uS in total (linear reading). So K83 does not fix G_z in R-full's frame (its pattern may be largely the extracellular return path, which R-full cannot represent); G_z stays an unknown bounded by Rm2"
+    }
    ],
-   "unknowns": {"added": ["G_z(J1)"], "declared": ["zone selectivity = old membrane's", "time course proportional to A_new(t)"], "measured_or_geometric": [], "fixed_by_rm2": "A/L", "free": 1},
+   "unknowns": {
+    "added": [
+     "G_z(J1)"
+    ],
+    "declared": [
+     "zone selectivity = old membrane's",
+     "time course proportional to A_new(t)"
+    ],
+    "measured_or_geometric": [],
+    "fixed_by_rm2": "A/L",
+    "free": 1
+   },
    "kind": "curve",
    "curve": {
     "parameter": "G_z(J1) as a fraction of its end value",
-    "values": [0.1, 0.25, 0.5, 0.75, 0.9, "end"],
+    "values": [
+     0.1,
+     0.25,
+     0.5,
+     0.75,
+     0.9,
+     "end"
+    ],
     "end": "the G_z(J1) at which the calibrated A/L reaches 0 (the zone alone explains the Rm fall), found by root search; about 0.88 uS by the linear estimate (S)",
     "range_basis": "Rm2 consistency; K83's ratio, which in this frame exceeds the end, is reported beside the curve"
    },
-   "recalibrate": ["P_old on Rm1 (unchanged: the zone starts after the Rm1 pulses)", "A/L on Rm2"],
+   "recalibrate": [
+    "P_old on Rm1 (unchanged: the zone starts after the Rm1 pulses)",
+    "A/L on Rm2"
+   ],
    "points": 6
   },
   {
@@ -123,60 +209,233 @@
    "geometry": {
     "bridge_radius_mm": 0.2877,
     "mouth_radius_mm": 0.5513,
-    "growth": "the slit's inner edge r_in(t) moves inward as new membrane is inserted: A_face(t) = pi (r_mouth^2 - r_in(t)^2), A_face = A_new/2 on the registered schedule",
+    "growth": "Fixed rings: the slit [r_bridge, r_mouth] is divided into N rings of equal radial width at J1's geometry. The slit's inner edge r_in(t) moves inward as new membrane is inserted on the registered schedule, with A_face(t) = pi (r_mouth^2 - r_in(t)^2) and A_face = A_new/2. A ring switches on when r_in(t) enters it; the ring containing r_in(t) grows (its membrane area and volume), the others are fixed.",
     "basis": "bridge 0.26 mm2 (BdL73 p95, V; 0.18 kind not stated); new membrane 1.39 mm2 on both sheets (BdL73 Table II p96 and the double sheet, p92, V); egg radius 0.65 mm (dL74 p5, V); the annulus shape and the inward growth are declared (S). The mouth then lies 99 um below the egg surface, beside BdL73's groove of about 100 um at 4 min and 150 um at 8 min (p96, V), with almost parallel deep walls (p96, V)",
-    "gap_width_um": {"default": 2.0, "low": 1.5, "high": 2.5, "source": "BdL73 Figs. 7-8", "mark": "F"}
+    "gap_width_um": {
+     "default": 2.0,
+     "low": 1.5,
+     "high": 2.5,
+     "source": "BdL73 Figs. 7-8",
+     "mark": "F"
+    },
+    "fill": "New volume appears in place in the growing ring and is filled with bath fluid at bath composition, as the registered single lumen is (reservoir supply). With N = 1 this reduces exactly to the registered rule. Stated limit: no flow along the slit; fluid drawn inward from the mouth would carry lumen fluid, so in-place bath fill understates deep-end K+ accumulation.",
+    "bridge_area_mm2": {
+     "default": 0.26,
+     "low": 0.206,
+     "high": 0.314,
+     "range_basis": "mean +/- 1 SE (0.18 read as SD, kind not stated, n = 11)",
+     "source": "BdL73 p95",
+     "mark": "V",
+     "effect": "bridge radius 0.256-0.316 mm, mouth 83-114 um below the surface, radial extent 0.25-0.28 mm (S)"
+    }
    },
-   "relaxes": "the single well-mixed lumen node with one access (design note 7; PROGRESS lists it as a declared assumption)",
+   "relaxes": "inputs.lumen (one well-mixed lumen) and inputs.access.geometry (one access face from a single lumen node); design note 7",
    "sources": [
-    {"paper": "BdL73", "page": "p92, p95, p96, Table II, Figs. 7-8", "mark": "V / F", "what": "as in geometry.basis"},
-    {"paper": "this file", "page": "-", "mark": "S", "what": "the slit's own end-to-mouth resistance is 68-113 kOhm for w 2.5-1.5 um (sigma 0.61 S/m, Steinberg on the activity basis), about 10x below the access that the calibration needs, so a rim restriction remains"}
+    {
+     "paper": "BdL73",
+     "page": "p92, p95, p96, Table II, Figs. 7-8",
+     "mark": "V / F",
+     "what": "as in geometry.basis"
+    },
+    {
+     "paper": "this file",
+     "page": "-",
+     "mark": "S",
+     "what": "the slit's own end-to-mouth resistance is 68-113 kOhm for w 2.5-1.5 um (sigma 0.61 S/m, Steinberg on the activity basis), about 10x below the access that the calibration needs, so a rim restriction remains"
+    }
    ],
    "variants": [
-    {"id": "A3_rim_calibrated", "unknowns": {"added": [], "measured_or_geometric": ["geometry", "w"], "fixed_by_rm2": "rim A/L", "free": 0}, "kind": "single", "points": "w in {1.5, 2.0, 2.5} um with N = 10; N = 20 at w = 2.0 um (convergence)"},
-    {"id": "A3_geometric_access", "change": "no rim factor: the mouth segment connects to the bath directly", "unknowns": {"added": [], "fixed_by_rm2": "nothing", "free": 0}, "kind": "single, uncalibrated", "role": "Rm2 becomes a check (expected well below 488 kOhm by the S estimate)", "points": "w in {1.5, 2.0, 2.5} um, N = 10"}
+    {
+     "id": "A3_rim_calibrated",
+     "unknowns": {
+      "added": [],
+      "measured_or_geometric": [
+       "geometry",
+       "w",
+       "bridge area"
+      ],
+      "fixed_by_rm2": "rim A/L",
+      "free": 0
+     },
+     "kind": "single",
+     "points": "w in {1.5, 2.0, 2.5} um at the default bridge; bridge area at its low and high ends at w = 2.0 um; N = 10; N = 20 at the defaults (convergence)"
+    },
+    {
+     "id": "A3_geometric_access",
+     "change": "no rim factor: the mouth segment connects to the bath directly",
+     "unknowns": {
+      "added": [],
+      "fixed_by_rm2": "nothing",
+      "free": 0
+     },
+     "kind": "single, uncalibrated",
+     "role": "Rm2 becomes a check (expected well below 488 kOhm by the S estimate)",
+     "points": "w in {1.5, 2.0, 2.5} um, N = 10"
+    }
    ],
-   "recalibrate": ["P_old on Rm1", "rim A/L on Rm2 (A3_rim_calibrated only)"],
-   "points": 7
+   "recalibrate": [
+    "P_old on Rm1",
+    "rim A/L on Rm2 (A3_rim_calibrated only)"
+   ],
+   "points": 9
   },
   {
    "id": "A4_old_membrane_chloride",
    "change": "The old membrane gets P_Cl = x P_K (whole egg, from t = 0).",
    "relaxes": "stated_limits[1] ('no Ca2+ or Cl- currents', the Cl part) and inputs.old_membrane.relative_permeability.Cl = 0",
    "sources": [
-    {"paper": "dL74", "page": "p8-9; Table 5 p9", "mark": "V", "what": "in the uncleaved egg, replacing Cl- by SO4 (solution G) had no significant effect on the parameters measured"},
-    {"paper": "K83", "page": "p1758", "mark": "V", "what": "in 5% De Boer's, replacing Cl- by methanesulfonate raised the inward furrow current by 70% (4 of 5 eggs) and 1 mM DIDS lowered it by 65%: Cl- efflux carries part of the inward current near the furrow"},
-    {"paper": "this file", "page": "-", "mark": "S", "what": "dL74's null bounds x: a shift under 2 mV on Cl- replacement needs x <= 0.12 (under 1 mV: 0.06). E_Cl in Steinberg is +2.6 mV; x = 0.12 moves the uncleaved rest by +1.2 mV, within 2 SE of the measured -9.7 +/- 0.6 mV"}
+    {
+     "paper": "dL74",
+     "page": "p8-9; Table 5 p9 (rendered)",
+     "mark": "V",
+     "what": "replacing Cl- by SO4 (solution G: no NaCl, KCl 0.67, Na2SO4 29.1 mM) had no significant effect in the uncleaved egg (p8-9), and changes in external Cl- activity had no effect in cleaving eggs either, with or without the vitelline membrane, Em read at onset of second cleavage (p9)"
+    },
+    {
+     "paper": "K83",
+     "page": "p1759",
+     "mark": "V",
+     "what": "in 5% De Boer's, replacing Cl- by methanesulfonate raised the inward furrow current by 70% (4 of 5 eggs) and 1 mM DIDS lowered it by 65%: Cl- efflux carries part of the inward current near the furrow"
+    },
+    {
+     "paper": "this file",
+     "page": "-",
+     "mark": "S",
+     "what": "dL74's null bounds x: a shift under 2 mV on Cl- replacement needs x <= 0.12 (under 1 mV: 0.06). E_Cl in Steinberg is +2.6 mV; x = 0.12 moves the uncleaved rest by +1.2 mV, within 2 SE of the measured -9.7 +/- 0.6 mV"
+    }
    ],
-   "unknowns": {"added": ["x = P_Cl/P_K (old)"], "measured_or_geometric": [], "bounded_by": "dL74's null replacement (S, declared 2-mV detection limit; the paper states none)", "fixed_by_rm2": "A/L", "free": 1},
+   "unknowns": {
+    "added": [
+     "x = P_Cl/P_K (old)"
+    ],
+    "measured_or_geometric": [],
+    "bounded_by": "dL74's null replacement (S, declared 2-mV detection limit; the paper states none)",
+    "fixed_by_rm2": "A/L",
+    "free": 1
+   },
    "kind": "curve",
-   "curve": {"parameter": "x", "values": [0.03, 0.06, 0.12], "range_basis": "[0, 0.12]: dL74's null at a 2-mV detection limit (S)"},
-   "recalibrate": ["P_old on Rm1 (Cl included)", "A/L on Rm2"],
-   "note": "K83's Cl- efflux is near the furrow and in a low-Cl medium; a Cl- conductance confined to the A2 zone is a combination, not run.",
+   "curve": {
+    "parameter": "x",
+    "values": [
+     0.03,
+     0.06,
+     0.12
+    ],
+    "range_basis": "[0, 0.12]: dL74's null at a 2-mV detection limit (S)"
+   },
+   "recalibrate": [
+    "P_old on Rm1 (Cl included)",
+    "A/L on Rm2"
+   ],
+   "note": "K83's Cl- efflux is near the furrow and in a low-Cl medium; dL74's null in cleaving eggs (p9) also bounds a Cl- conductance confined to the A2 zone, which is a combination and not run.",
    "points": 3
   },
   {
    "id": "A5_calcium",
    "status": "OUT OF SCOPE",
-   "why": "K83 (p1758, V) implicates Ca2+ influx (2 mM Mn2+ cut the furrow current to 42%, 1 mM Co2+ to 52%). But no source read fixes the old membrane's Ca2+ permeability, the cytosol's Ca2+ buffering or extrusion, or Steinberg's Ca2+ activity on the activity basis. Without buffering and extrusion, an unbuffered 1-nA influx would raise free Ca2+ by about 7 uM/s in 0.78 uL (S), so R-full cannot carry Ca2+ honestly. Its electrical effect would be an inward current with a positive EMF, i.e. depolarising."
+   "why": "K83 (p1759, V) implicates Ca2+ influx (2 mM Mn2+ cut the furrow current to 42%, 1 mM Co2+ to 52%). But no source read fixes the old membrane's Ca2+ permeability, the cytosol's Ca2+ buffering or extrusion, or Steinberg's Ca2+ activity on the activity basis. Without buffering and extrusion, an unbuffered 1-nA influx would raise free Ca2+ by about 7 uM/s in 0.78 uL (S), so R-full cannot carry Ca2+ honestly. Its electrical effect would be an inward current with a positive EMF, i.e. depolarising."
   },
   {
    "id": "A6_new_membrane_rules_per_exposed_arm",
    "relaxes": "inputs.new_membrane_specific_resistance_ohm_m2.default and inputs.new_membrane_PNa_over_PK.default (each the mean of the two exposed arms); for A6c/A6d also their conversion rules (slope at -60 mV; branch-EMF inversion)",
    "why": "With the registered rules, the simulated exposed arms miss their own data: -VM Em -54.4 against -60.0 +/- 2.5 mV (2.2 SE); +VM +CCB Rm 199 against 165 +/- 10 kOhm (3.4 SE).",
    "variants": [
-    {"id": "A6a_minus_VM_rules", "change": "r_new 1.82 kOhm cm2 with P_Na/P_K 0.0193, paired", "sources": [{"paper": "dLB74", "page": "p535; Table I p532", "mark": "V (inputs), S (rules)"}, {"paper": "BdL73", "page": "Table II p96", "mark": "V"}], "unknowns": {"added": [], "free": 0}, "kind": "single"},
-    {"id": "A6b_plus_VM_plus_CCB_rules", "change": "r_new 1.36 kOhm cm2 with P_Na/P_K 0.0478, paired", "sources": [{"paper": "dLB74", "page": "p535; Table I p532", "mark": "V (inputs), S (rules)"}, {"paper": "BdL73", "page": "Table II p96", "mark": "V"}], "unknowns": {"added": [], "free": 0}, "kind": "single"},
-    {"id": "A6c_minus_VM_fit", "change": "P_K,new and P_Na/P_K fitted so that R-full's exposed -VM arm (new membrane facing the bath; its own old membrane on Rm1 901 kOhm; 0.33 mm2 at 0.04 mm2/min from 7 min) reproduces that arm's pulse Em2 -60.0 mV and Rm2 336 kOhm; then J1 with those values", "unknowns": {"added": ["P_K,new", "P_Na/P_K"], "fixed_by": "Em2 and Rm2 of the arm (2 data, 2 unknowns)", "free": 0}, "kind": "single", "range": "one at a time: Em2 +/- 2.5 mV, Rm2 +/- 31 kOhm, area +/- 0.018 mm2 (SE from SD 0.06, n = 11)"},
-    {"id": "A6d_plus_VM_plus_CCB_fit", "change": "as A6c for +VM +CCB: Rm1 779 kOhm, 0.65 mm2, Em2 -60.9 mV, Rm2 165 kOhm", "unknowns": {"added": ["P_K,new", "P_Na/P_K"], "fixed_by": "Em2 and Rm2 of the arm", "free": 0}, "kind": "single", "range": "one at a time: Em2 +/- 3.4 mV, Rm2 +/- 10 kOhm, area +/- 0.039 mm2 (SE from SD 0.15, n = 15)"}
+    {
+     "id": "A6a_minus_VM_rules",
+     "change": "r_new 1.82 kOhm cm2 with P_Na/P_K 0.0193, paired",
+     "sources": [
+      {
+       "paper": "dLB74",
+       "page": "p535; Table I p532",
+       "mark": "V (inputs), S (rules)"
+      },
+      {
+       "paper": "BdL73",
+       "page": "Table II p96",
+       "mark": "V"
+      }
+     ],
+     "unknowns": {
+      "added": [],
+      "free": 0
+     },
+     "kind": "single"
+    },
+    {
+     "id": "A6b_plus_VM_plus_CCB_rules",
+     "change": "r_new 1.36 kOhm cm2 with P_Na/P_K 0.0478, paired",
+     "sources": [
+      {
+       "paper": "dLB74",
+       "page": "p535; Table I p532",
+       "mark": "V (inputs), S (rules)"
+      },
+      {
+       "paper": "BdL73",
+       "page": "Table II p96",
+       "mark": "V"
+      }
+     ],
+     "unknowns": {
+      "added": [],
+      "free": 0
+     },
+     "kind": "single"
+    },
+    {
+     "id": "A6c_minus_VM_fit",
+     "change": "P_K,new and P_Na/P_K fitted so that R-full's exposed -VM arm (new membrane facing the bath; its own old membrane on Rm1 901 kOhm; 0.33 mm2 at 0.04 mm2/min from 7 min) reproduces that arm's pulse Em2 -60.0 mV and Rm2 336 kOhm; then J1 with those values",
+     "unknowns": {
+      "added": [
+       "P_K,new",
+       "P_Na/P_K"
+      ],
+      "fixed_by": "Em2 and Rm2 of the arm (2 data, 2 unknowns)",
+      "free": 0
+     },
+     "kind": "single",
+     "range": "one at a time: Em2 +/- 2.5 mV, Rm2 +/- 31 kOhm, area +/- 0.018 mm2 (SE from SD 0.06, n = 11)"
+    },
+    {
+     "id": "A6d_plus_VM_plus_CCB_fit",
+     "change": "as A6c for +VM +CCB: Rm1 779 kOhm, 0.65 mm2, Em2 -60.9 mV, Rm2 165 kOhm",
+     "unknowns": {
+      "added": [
+       "P_K,new",
+       "P_Na/P_K"
+      ],
+      "fixed_by": "Em2 and Rm2 of the arm",
+      "free": 0
+     },
+     "kind": "single",
+     "range": "one at a time: Em2 +/- 3.4 mV, Rm2 +/- 10 kOhm, area +/- 0.039 mm2 (SE from SD 0.15, n = 15)"
+    }
    ],
    "sources_common": [
-    {"paper": "dLB74", "page": "Table I p532", "mark": "V", "what": "Em1, Rm1, Em2, Rm2 of both exposed arms"},
-    {"paper": "dLB74", "page": "p536", "mark": "V", "what": "growth about 0.04 mm2/min, constant for 7-10 min (-VM) and 15-17 min (+VM +CCB)"},
-    {"paper": "BdL73", "page": "Table II p96", "mark": "V", "what": "areas 0.33 +/- 0.06 and 0.65 +/- 0.15 mm2 (SD), other eggs, 1/10 Steinberg"}
+    {
+     "paper": "dLB74",
+     "page": "Table I p532",
+     "mark": "V",
+     "what": "Em1, Rm1, Em2, Rm2 of both exposed arms"
+    },
+    {
+     "paper": "dLB74",
+     "page": "p536",
+     "mark": "V",
+     "what": "growth about 0.04 mm2/min, constant for 7-10 min (-VM) and 15-17 min (+VM +CCB)"
+    },
+    {
+     "paper": "BdL73",
+     "page": "Table II p96",
+     "mark": "V",
+     "what": "areas 0.33 +/- 0.06 and 0.65 +/- 0.15 mm2 (SD), other eggs, 1/10 Steinberg"
+    }
    ],
-   "recalibrate": ["P_old on Rm1 (852 kOhm for J1; each exposed arm's own Rm1 inside its fit)", "A/L on Rm2"],
-   "points": "4 central + 12 one-at-a-time fits (A6c, A6d)"
+   "recalibrate": [
+    "P_old on Rm1 (852 kOhm for J1; each exposed arm's own Rm1 inside its fit)",
+    "A/L on Rm2"
+   ],
+   "points": "4 central + 12 one-at-a-time fits (A6c, A6d)",
+   "data_used": "A6c and A6d fit the exposed arms' own Em2 and Rm2 (dLB74 Table I), the same data the registered rules were derived from by linear-circuit approximations; no fit touches J1's Em or Rm."
   },
   {
    "id": "A7_depth_dependent_access",
@@ -184,39 +443,106 @@
    "variants": [
     {
      "id": "A7a_depth_scaling",
-     "change": "A/L(t) = kappa (d(t)/d(J1))^-alpha, with d(t) the furrow depth to the slit's inner edge: 0.15 mm (BdL73's depth at about 8 min) plus the slit's radial extent from A3's geometry (S); kappa calibrated on Rm2",
-     "sources": [{"paper": "BdL73", "page": "p96", "mark": "V", "what": "groove about 100 um at about 4 min, furrow about 150 um at about 8 min; later depths are not measured"}],
-     "unknowns": {"added": ["alpha"], "fixed_by_rm2": "kappa", "free": 1},
+     "change": "A/L(t) = kappa (d(t)/d(J1))^-alpha, with d(t) = R_egg - r_in(t), the depth from the egg surface to the slit's inner edge on A3's geometry (S): 0.099 mm at activation and 0.362 mm at J1; kappa calibrated on Rm2",
+     "sources": [
+      {
+       "paper": "BdL73",
+       "page": "p96",
+       "mark": "V",
+       "what": "groove about 100 um at about 4 min, furrow about 150 um at about 8 min; A3's geometry gives 0.099 mm at activation and about 0.108 mm at 8 min (S), its own check; later depths are not measured"
+      }
+     ],
+     "unknowns": {
+      "added": [
+       "alpha"
+      ],
+      "fixed_by_rm2": "kappa",
+      "free": 1
+     },
      "kind": "curve",
-     "curve": {"parameter": "alpha", "values": [0.5, 1.0, 2.0], "range_basis": "0 is the registered constant access; 1 is an access whose resistance grows with the path length, as a uniform resistive slit's does (S); 2 bounds a steeper narrowing"}
+     "curve": {
+      "parameter": "alpha",
+      "values": [
+       0.5,
+       1.0,
+       2.0
+      ],
+      "range_basis": "0 is the registered constant access; 1 is an access whose resistance grows with the path length, as a uniform resistive slit's does (S); 2 bounds a steeper narrowing"
+     }
     },
     {
      "id": "A7b_late_apposition",
      "change": "A/L(t) = kappa [1 - (1 - beta) s(t)], with s rising linearly from 0 at 15 min to 1 at 28 min after onset of first cleavage, then held; kappa calibrated on Rm2",
      "sources": [
-      {"paper": "dLB74", "page": "p531", "mark": "V", "what": "the small Em drop before second cleavage coincides with closer apposition of the blastomeres; often a small Rm increase precedes second cleavage"},
-      {"paper": "dLB74", "page": "Fig. 2", "mark": "F", "what": "single egg: Em depolarises about 3 mV from about 15 min; Rm rises from about 0.51 to 0.59 MOhm between about 22 and 28 min; this sets the ramp's timing"}
+      {
+       "paper": "dLB74",
+       "page": "p531",
+       "mark": "V",
+       "what": "the small Em drop before second cleavage coincides with closer apposition of the blastomeres; often a small Rm increase precedes second cleavage"
+      },
+      {
+       "paper": "dLB74",
+       "page": "Fig. 2",
+       "mark": "F",
+       "what": "single egg: Em depolarises about 3 mV from about 15 min; Rm rises from about 0.51 to 0.59 MOhm between about 22 and 28 min; this sets the ramp's timing"
+      }
      ],
-     "unknowns": {"added": ["beta"], "declared": ["ramp timing (F)"], "fixed_by_rm2": "kappa", "free": 1},
+     "unknowns": {
+      "added": [
+       "beta"
+      ],
+      "declared": [
+       "ramp timing (F)"
+      ],
+      "fixed_by_rm2": "kappa",
+      "free": 1
+     },
      "kind": "curve",
-     "curve": {"parameter": "beta", "values": [0.8, 0.6, 0.4], "range_basis": "1 is no tightening; the single trace's late Rm rise of about 15% is drawn beside the curve as a reference, not used to pick beta"}
+     "curve": {
+      "parameter": "beta",
+      "values": [
+       0.8,
+       0.6,
+       0.4
+      ],
+      "range_basis": "1 is no tightening; the single trace's late Rm rise of about 15% is drawn beside the curve as a reference, not used to pick beta"
+     }
     }
    ],
-   "recalibrate": ["P_old on Rm1", "kappa on Rm2"],
+   "recalibrate": [
+    "P_old on Rm1",
+    "kappa on Rm2"
+   ],
    "points": 6
   },
   {
    "id": "A8_computed_arms",
    "status": "COMPUTED, NOT RERUN (J1 Em only; no time course)",
-   "results_mV": {"cation_selective_seal": -16.53, "constant_field_access": -12.59, "narrow_gap_0.5_um": -12.72},
+   "results_mV": {
+    "cation_selective_seal": -16.53,
+    "constant_field_access": -12.59,
+    "narrow_gap_0.5_um": -12.72
+   },
    "source": "/mnt/workspaces/Cells/cell-division-s0b-20261111-01/rfull-band-01/results/arms.json"
   }
  ],
  "considered_and_dropped": [
-  {"id": "inward_rectifying_new_membrane", "why": "K83's Ba2+ reversal (Table II p1759, V) hints at, but does not establish, an inward rectifier; the only shape available is the mammalian Kir2.1 law, which would add an unsourced shape with at least two unknowns that Rm2 cannot fix. Can be added as a one-parameter curve if the lead wants it."},
-  {"id": "lumen_water_flow", "why": "At J1 the lumen holds 99.5 mM of permeant ions against the bath's 95.7 mM (about 4% hyperosmotic, S); the prescribed volume is a declared limit with a small expected effect."},
-  {"id": "cytosolic_gradients_near_the_furrow", "why": "At J1 the new membrane's K+ efflux in R-full (about 1.2e-13 mol/s over 1.39 mm2, i.e. 9e-8 mol m-2 s-1) depletes cytosolic K+ next to it by about 0.004 mM over 100 um (S): negligible."},
-  {"id": "combinations", "why": "Not run until the single arms are reported (rules.combinations)."}
+  {
+   "id": "inward_rectifying_new_membrane",
+   "why": "K83's Ba2+ reversal (Table II p1759, V) hints at, but does not establish, an inward rectifier; the only shape available is the mammalian Kir2.1 law, which would add an unsourced shape with at least two unknowns that Rm2 cannot fix. Can be added as a one-parameter curve if the lead wants it."
+  },
+  {
+   "id": "lumen_water_flow",
+   "why": "At J1 the lumen holds 99.5 mM of permeant ions against the bath's 95.7 mM (about 4% hyperosmotic, S); the prescribed volume is a declared limit with a small expected effect."
+  },
+  {
+   "id": "cytosolic_gradients_near_the_furrow",
+   "why": "At J1 the new membrane's K+ efflux in R-full (about 1.2e-13 mol/s over 1.39 mm2, i.e. 9e-8 mol m-2 s-1) depletes cytosolic K+ next to it by about 0.004 mM over 100 um (S): negligible."
+  },
+  {
+   "id": "combinations",
+   "why": "Not run until the single arms are reported (rules.combinations)."
+  }
  ],
  "compute": {
   "basis": "the band: about 23 CPU-min for 32 calibrated members (about 43 s each on a free core) at a 1.5 GB peak",
@@ -224,21 +550,23 @@
   "estimate_cpu_min": {
    "A1": 8,
    "A2": 8,
-   "A3": "35-60 (34-64 states; BDF with a sparse Jacobian, about 5-10 min per calibration)",
+   "A3": "60-150, untimed: 34-64 states; scipy BDF was about 6x slower than LSODA on the earlier synthetic timing, so one synthetic N = 10 pulsed run is timed before launch",
    "A4": 4,
    "A6": "75 (two exposed-arm fits of about 4 min, 12 one-at-a-time fits, 16 J1 calibrations)",
    "A7": 8,
-   "total": "about 2.5 CPU-hours (about 2.2 h without C1)"
+   "total": "about 2.5-5 CPU-hours, depending on A3"
   },
   "memory": "at most about 1.5 GB per process, as the band",
   "launch": "/home/robert/Cells/scripts/run_detached.sh NAME 3G --oom-first --cpus 5 -- <command>, one job per arm group (A1+A2+A4+A7; A3; A6), never nohup or &; from frozen clean snapshots",
   "implementation_before_runs": "R-full extensions with unit tests (each null setting reproduces the record): mixed facing (A1), zone conductance (A2), segmented lumen (A3, new module), old P_Cl (A4), exposed-arm fit (A6), time-dependent access (A7), bath switch (C1)"
  },
  "lead_decisions": [
-  "Adopt check C1 (bath K steps, dL74 p10-11) for every point, or drop it.",
+  "Adopt check C1 (eggs cleaving in solutions B and C, dL74 p9-11) for every point, or drop it.",
   "A2: the zone's selectivity is the old membrane's; a Na/Cl-selective zone (K83's carriers) would add unknowns and is not proposed.",
-  "A3: annulus geometry with inward growth, as declared; A3_geometric_access kept as a check.",
-  "A7b: the ramp timing from one trace (F).",
+  "A3: annulus geometry with inward growth, fixed rings and in-place bath fill, as declared; A3_geometric_access kept as a check.",
+  "A4: the 2-mV detection limit behind x <= 0.12 (dL74 states none; 1 mV gives 0.06).",
+  "A7a: the alpha set {0.5, 1, 2}.",
+  "A7b: the beta set {0.8, 0.6, 0.4} and the ramp timing (15 to 28 min) from one trace (F).",
   "Whether to add the inward-rectifier curve (dropped by default)."
  ]
 }

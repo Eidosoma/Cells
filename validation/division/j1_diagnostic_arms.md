@@ -8,7 +8,8 @@ the band −14.58 to −11.32 mV misses −21.9 to −18.7 mV by 4.1 mV). The ma
 **J1 is now a selection datum.** Nothing here is a prediction of record, and no parameter is ever
 picked from Em. One Rm (488 kΩ) admits readings from −12.8 mV (restricted lumen) to about −40 mV
 (bath-exposed patch), so a match alone proves nothing. Arms are therefore also compared on the
-0–35 min shape of Em and Rm, and, if adopted, on the bath K step of check C1.
+0–35 min shape of Em and Rm and, if adopted, on check C1: Em at J1 in eggs cleaving in higher-K
+media (dL74 p9–11; −17.1 mV in Steinberg and −12.3 mV in solution B, in dL74's own series).
 
 ## Counting parameters
 
@@ -20,7 +21,7 @@ geometric gets single values.
 | --- | --- | --- | --- |
 | A1 | Fraction f of new membrane faces the bath | f | Curve to the point where A/L reaches 0 (the parallel reading, f ≈ 0.10) |
 | A2 | Extra old-membrane conductance beside the furrow (K83) | G_z | Curve to the point where A/L reaches 0 (≈ 0.88 µS) |
-| A3 | Lumen as an annular slit in N segments | none (geometry declared, w measured) | Single per w; plus an uncalibrated geometric access as a check |
+| A3 | Lumen as an annular slit in N fixed rings, growing inward, filled in place with bath fluid (N = 1 is the registered lumen) | none (geometry declared; w and bridge area measured) | Single, ranged over w and bridge area; plus an uncalibrated geometric access as a check |
 | A4 | Old-membrane P_Cl (K83; bounded by dL74's null) | x = P_Cl/P_K ≤ 0.12 | Curve |
 | A5 | Ca²⁺ | – | Out of scope: no permeability, buffering or extrusion sourced |
 | A6 | New-membrane rules from each exposed arm alone; self-consistent fits | none (2 data fix 2 unknowns per arm) | Single, with ranges from each arm's SEs |
@@ -30,11 +31,12 @@ geometric gets single values.
 ## What the sources fix
 
 - **K83 does not fix A2's zone in R-full's frame.** Its 4–30× current ratio (p1760) and decay
-  (to 0.66 at 200 µm and 0.42 at 300 µm of the 100-µm value, p1754) were measured in 5% De Boer's.
+  (to 0.66 at 200 µm and 0.42 at 300 µm of the 100-µm value, p1755) were measured in 5% De Boer's.
   Read as conductance in an isopotential bath, they add 1.3–12.8 µS. Rm1 → Rm2 allows 0.88 µS in
   all. Much of K83's pattern may be the extracellular return path, which R-full cannot represent.
-- **dL74 bounds A4.** Replacing Cl⁻ by SO4²⁻ had no significant effect (p8–9). A 2-mV detection
-  limit gives P_Cl/P_K ≤ 0.12.
+- **dL74 bounds A4.** Replacing Cl⁻ by SO4²⁻ (solution G, Table 5, rendered) had no significant
+  effect in the uncleaved egg (p8–9), nor did changes in external Cl⁻ in cleaving eggs (p9). A
+  2-mV detection limit, which the paper does not state, gives P_Cl/P_K ≤ 0.12 (1 mV gives 0.06).
 - **A3's geometry** follows from the bridge (0.26 mm²) and the new-membrane area. The slit mouth
   then sits 99 µm below the surface, beside BdL73's 100–150-µm groove. The slit alone gives
   68–113 kΩ, so a rim restriction remains.
@@ -45,5 +47,7 @@ geometric gets single values.
 ## Rules
 
 R-full only, with no engine runs. No DFS74 or J2 quantity is computed for any model until a revised
-model is frozen. Arms are run one at a time. Compute is about 2.5 CPU-hours at about 1.5 GB per
-process, in three detached jobs through `scripts/run_detached.sh … 3G --oom-first --cpus 5`.
+model is frozen. Arms are run one at a time. Compute is about 2.5–5 CPU-hours at about 1.5 GB per
+process; A3 is untimed, so one synthetic N = 10 pulsed run is timed first. Runs go in three
+detached jobs through `scripts/run_detached.sh … 3G --oom-first --cpus 5`. Seven choices await the
+lead (`lead_decisions` in the JSON).
