@@ -58,6 +58,53 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Heredity pilot W1, water arms: held discs also hold under water; the osmotically
+  balanced start, not water itself, makes the marginal loss 3× earlier (11–12
+  November; development, not judged).**
+  - **What ran:** the sheet70 discs under `resolved_pump_water@1` and `@2` (KCC at
+    red-cell capacity 4, s 1), dt 5 ms, plus a water-off control.
+    - Predictions were written first.
+    - There were no refusals and no volume censors.
+    - The four arms killed by the 12 November crash were rerun.
+    - [note](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/sheet70w/NOTE-water-sheet-results.md),
+      [summary](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/sheet70w/summary-sheet-arms.json)
+  - **Retention is as in fixed volume.** In both water models, 37-cell discs held 70 min
+    at s 1.0, 0.6 and 0.3, and 19-cell discs held at s 0.6 and 0.3.
+  - **The 19-cell disc at s 1.0 was lost at 345–348 s after the cue**, against 990.5 s
+    in fixed volume. These times come from 5 ms runs with 1 s records and are not yet
+    re-timed at 1 ms.
+  - **The cause is the start state.**
+    - The declared heredity H is hypo-osmotic, 284 against 300 mOsm.
+    - Under water each cell starts at its model's balanced stationary H: 0.942 V0, 1.7 mV
+      more polarised, K 144 rather than 136 mM.
+    - The water-off control (balanced start, `@3` at fixed volume) lost the disc at
+      304–305 s.
+    - So water dynamics move the loss by only about 14%, and the +1% swelling before the
+      loss slightly delays it.
+  - **Loss account, refined.**
+    - Every disc loads Na after writing, from 6 to 10–11.6 mM by about 10 min, and drifts
+      more polarised.
+    - Na load does not separate lost from held discs. The drift does: just before
+      collapse the most depolarised cell sat near −27 mV in the lost discs, against −20
+      to −23 mV in the held ones.
+    - Candidate carrier: Na-driven drift together with a small disc and strong coupling.
+      Untested.
+  - **Water matters for slow composition and volume.**
+    - Solute loading is the same in every model: 11.7–12.5% content excess at 70 min.
+    - Under water it shows as swelling from 0.94 to 1.03–1.06 V0.
+    - Disc K is 7–8.5 mM lower than in fixed volume.
+    - KCC at capacity 4 is invisible over 70 min, but caps stationary D at 1.47 V0 instead
+      of 1.76.
+  - **Predictions** held as written, except two:
+    - the marginal loss came earlier under water, a direction not predicted;
+    - the control lost its disc at 304 s, against a predicted 330–370 s.
+  - **For the E07-v1 redesign** (the user's decision):
+    - start from a balanced H;
+    - use water2 for hour-scale renewal, with water1 and a higher KCC capacity as
+      robustness arms;
+    - s 0.6 with a 37-cell disc is safe for retention, though pre-screen 8 found renewal
+      failing at every coupling that retains;
+    - turnover results are pending.
 - **Composite tissue model landed (12 November; D143).** `resolved_pump_composite@1` is
   `@3`'s own step plus declared operators ([PUMP_COMPOSITE.md](docs/PUMP_COMPOSITE.md)).
   `resolved_pump_water@1`, `@2` and `resolved_pump_replacement@1` are now thin
@@ -428,9 +475,11 @@ machine-readable inputs, results, checks and failures.
     - **The 19-cell disc at s 1.0 was lost all at once,** 990.46 s (16.5 min) after
       the cue in a 1 ms replay, inside the 5 ms run's bracket. All 19 cells went to
       H within 0.12 s; no check failed and no step was refused.
-    - **Before the loss it was drifting toward U, not loading.** Just before
-      collapse its Vm was −37.8 to −30.6 mV, with K 134.6 and M 11.2 mM (content
-      excess 2.7–3.1%). The held discs had instead loaded to K about 146 and M
+    - **Before the loss it was drifting toward U, with K and M not loading** (Na
+      loaded to 11.6 mM). Just before collapse its Vm was about −32 to −27 mV, with
+      K 134.6 and M 11.2 mM (content excess 2.7–3.1%). A range of −37.8 to −30.6 mV
+      quoted here earlier was sampled mid-collapse, 0.06 s before the first flip;
+      corrected 12 November. The held discs had instead loaded to K about 146 and M
       about 22 mM by 70 min. So the loaded-composition limit from pre-screen 9 does
       not explain this loss; the small disc at strong coupling slid toward the
       unstable state before it could load. The mechanism is not yet identified.
