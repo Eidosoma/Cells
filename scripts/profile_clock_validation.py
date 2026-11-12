@@ -28,6 +28,12 @@ definition), or --small CELLS: independent resolved_pump_tissue@3 heredity cells
 (validation/tissue/surface_pump_v3_fixtures.py) on a 4218 s clock at 1 ms with an
 observation every 0.48 s (8788 times), the clock of the W1 full-tissue probe.
 
+--cohort PATH...: instead, the whole vectorized preflight of those definitions as
+one cohort (one world each): core.vector_windows.plan_vector_windows with 200-step
+checkpoint windows from their initial states, as a cost probe's segment start
+makes it (parsing, cohort admission and every distinct definition's checked_grid),
+with the same counts.
+
   JAX_PLATFORMS=cpu PYTHONPATH=src:. taskset -c 6 python \\
       scripts/profile_clock_validation.py --definition world-1.json --full --out r.json
 """
@@ -249,29 +255,59 @@ def profile(raw, args):
     return result
 
 
+def profile_cohort(paths):
+    """plan_vector_windows of one world per definition (200-step checkpoint windows)."""
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.vector_windows import plan_vector_windows
+    from cells.core.windows import WindowPolicy
+
+    start = perf_counter()
+    worlds = tuple(
+        WorldSpec(i, parse_spec(json.loads(Path(p).read_text())))
+        for i, p in enumerate(paths, start=1)
+    )
+    parse_seconds = perf_counter() - start
+    batch = BatchSpec(worlds, len(worlds), 2**53 - 1, 2**53 - 1)
+    with counted() as counts, chunk_limit(None) as seen:
+        start = perf_counter()
+        plan = plan_vector_windows(batch, WindowPolicy(200, "checkpoints"))
+        seconds = perf_counter() - start
+    return {
+        "worlds": len(worlds),
+        "parse_seconds": parse_seconds,
+        "plan_vector_windows_seconds": seconds,
+        "checked_chunks": seen[0],
+        "calls": dict(counts),
+        "window_width": plan.width,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--definition", help="parse_spec JSON definition")
     source.add_argument("--small", type=int, metavar="CELLS", help="heredity cells on 4218 s")
+    source.add_argument("--cohort", nargs="+", help="definitions planned as one cohort")
     parser.add_argument("--chunks", type=int, default=4, help="chunks per sample (default 4)")
     parser.add_argument("--repeat", type=int, default=3, help="calls per minimum (default 3)")
     parser.add_argument("--full", action="store_true", help="also time the whole checked_grid")
     parser.add_argument("--out", help="write the JSON result here (default: stdout only)")
     args = parser.parse_args()
-    raw = (
-        json.loads(Path(args.definition).read_text())
-        if args.definition
-        else small_definition(args.small)
-    )
-    result = {
-        "kind": "cells.clock_validation_profile@1",
-        "provenance": provenance(),
-        "source": args.definition or f"small:{args.small}",
-        "chunks": args.chunks,
-        "repeat": args.repeat,
-        **profile(raw, args),
-    }
+    result = {"kind": "cells.clock_validation_profile@1", "provenance": provenance()}
+    if args.cohort:
+        result |= {"source": args.cohort, **profile_cohort(args.cohort)}
+    else:
+        raw = (
+            json.loads(Path(args.definition).read_text())
+            if args.definition
+            else small_definition(args.small)
+        )
+        result |= {
+            "source": args.definition or f"small:{args.small}",
+            "chunks": args.chunks,
+            "repeat": args.repeat,
+            **profile(raw, args),
+        }
     text = json.dumps(result, indent=1)
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
