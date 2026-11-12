@@ -528,12 +528,14 @@ def main(argv=None):
         result = dict(verdict="error", error=repr(error), tb=traceback.format_exc())
     result["provenance"] = smoke.provenance()
     result["part_wall_s"] = time.perf_counter() - started
-    name = (
-        args.part
-        if args.part not in ("run", "diagnose", "rfull")
-        else f"{args.part}_{args.start}"
-        + ("" if args.part == "rfull" else f"_{args.solver}_{args.dt:g}")
-    )
+    # One file per start for every start-dependent part, so the two starts never overwrite
+    # each other (compare.json once held whichever start ran last; 12 November).
+    if args.part in ("run", "diagnose"):
+        name = f"{args.part}_{args.start}_{args.solver}_{args.dt:g}"
+    elif args.part in ("rfull", "compare"):
+        name = f"{args.part}_{args.start}"
+    else:
+        name = args.part
     (output / f"{name}.json").write_text(json.dumps(result, indent=1, default=float) + "\n")
     print(name, result.get("verdict", "done"), f"{result['part_wall_s']:.1f} s", flush=True)
 
