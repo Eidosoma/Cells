@@ -1,0 +1,32 @@
+{
+ "kind": "cells.division.j1_prediction_of_record@1",
+ "status": "The first Em of the J1 definition under the registered defaults from R-full's registered integrator (Radau, rtol 1e-10), recorded before any band member or arm was run.",
+ "prediction_of_record_V": -0.01279493588555045,
+ "measured_mean_V": -0.0203,
+ "measured_se_V": 0.0008,
+ "default_minus_measured_V": 0.007505064114449549,
+ "rm_at_j1_ohm": 487999.9999995038,
+ "rm1_ohm": 852000.0000019374,
+ "p_old_m_s": 6.161109067285096e-10,
+ "a_over_l_m": 1.5406297557105433e-06,
+ "new_permeability_m_s": [
+  5.295055573143822e-09,
+  1.5795762702535115e-07,
+  0.0
+ ],
+ "lsoda_search_last": {
+  "a_over_l_m": 1.5406297557105433e-06,
+  "rm_ohm": 487999.99999786,
+  "em_at_pulse_V": -0.012794935887853624,
+  "wall_s": 170.3824734883383,
+  "d_em_from_record_V": -2.303175011819647e-12
+ },
+ "declared_inputs": "validation/division/j1_declared_inputs.json (main d7a1797)",
+ "declared_sha256": "755774abf3e191fa785ed07ab73eb69da82b0bb67e100d2ae3ad8ff58060506c",
+ "rfull_commit": "abca302a77194cc815661814654b43b7d6b5cc75",
+ "snapshot": "/mnt/workspaces/Cells/cell-division-s0b-20261111-01/rfull-record-01/snapshot",
+ "snapshot_manifest_sha256": "08b526f2cff9b2f28c0eefa9aa905c9d6661503903d20c78cb1b0b29a2bbfa66",
+ "evidence": "/mnt/workspaces/Cells/cell-division-s0b-20261111-01/rfull-record-01/results/prediction_of_record.json",
+ "evidence_sha256": "b44de74eb477e8dda7aef5b37cd17420f911e28393e71ac129524afceceb9625",
+ "written_utc": "2026-11-11T23:51:39Z (run log; local time 23:51:39)"
+}
