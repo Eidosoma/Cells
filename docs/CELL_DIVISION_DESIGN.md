@@ -8,6 +8,16 @@ design of engine piece 1 in the [cell-division plan](CELL_DIVISION_PLAN.md). Not
 is built or qualified. Evidence: `/mnt/workspaces/Cells/cell-division-20261111-01/`
 (`verification/` for the tables and paper notes, `scale-smoke-01/` for the smoke test).
 
+**Update, 12 November 2026: J1 fails on the reference (R-full) within the declared
+ranges.** There is no engine run yet, and the cause is not isolated.
+- The R-full band is −14.6 to −11.3 mV, against the measured −20.3 ± 0.8 mV, and misses
+  the ±2 SE window by 4.1 mV.
+- Which declared assumption of §7–§9 is wrong is open.
+- Any revision is post hoc for J1. It needs a new declared prediction and a judged test
+  on data never computed, such as J2.
+- The operators of §3–§6 do not depend on the outcome.
+- Details: [PROGRESS](../PROGRESS.md), the S0b entry.
+
 Paper abbreviations: **dLB74** de Laat & Bluemink 1974, J Cell Biol 60:529; **BdL73**
 Bluemink & de Laat 1973, J Cell Biol 59:89; **K83** Kline, Robinson & Nuccitelli 1983,
 J Cell Biol 97:1753; **DFS74** DiCaprio, French & Sanders 1974, Biophys J 14:387; **dL74**

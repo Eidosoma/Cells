@@ -86,11 +86,18 @@ machine-readable inputs, results, checks and failures.
     - The J1 step-study remainder, then the smoke ([`queue_j1_rest.sh`](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/static-cleft-steps-01/queue_j1_rest.sh), CPU 7).
     - Water queue A ([`launch6.sh`](/mnt/workspaces/Cells/heredity-pilot-w1-20261110-01/launch6.sh), CPU 0).
     - The composite `w2` guard alone, with 11 GB, to measure its peak.
-  - **Held until the `w2` peak is known:**
+  - **Started at 13:01**, after the `w2` guard passed with an 8 GB peak:
     - water queue B;
     - the turnover remainder ([`arms-rest.sh`](/mnt/workspaces/Cells/heredity-turnover-literature-20261111-01/arms-rest.sh)
       with `queues-rest.json`; `queues.json` unchanged);
     - the cost probe alone, with a 45-min limit and Python's fault handler.
+  - **Finished by 13:00:** the J1 band, its arms and time course; the step-study
+    remainder; the 35-min smoke (see the S0b entry below).
+  - **A further fix:** the step study's `compare` part had written the J1 comparison over
+    the activation one, because it used one file name for both starts.
+    - Both are kept now: `compare.json` was regenerated from the same snapshot and inputs,
+      and the J1 result is `compare_j1.json`.
+    - The driver now writes one file per start (`45fc727`).
 
 - **Cell replacement qualified and landed (11 November).** `resolved_pump_replacement@1`
   is an opt-in wrapper over `resolved_pump_tissue@3`.
@@ -188,7 +195,7 @@ machine-readable inputs, results, checks and failures.
     - the judged run started at 20:27:57 from a clean snapshot of `840488e`, which
       contains it (empty patch; protocol bytes equal main's);
     - the commit was pushed at about 21:17, after the run began.
-- **Cell division S0b: J1 prediction of record (12 November; development).**
+- **Cell division S0b: J1 prediction of record and verdict; J1 fails on the reference (12 November; development).**
   - **J1's declared inputs** were registered at `d7a1797` before any model computed an
     Em.
   - **The reference:** R-full, an independent numpy/scipy model of the egg with its
@@ -200,10 +207,54 @@ machine-readable inputs, results, checks and failures.
       ([record](validation/division/j1_prediction_of_record.json)).
   - **Against the data:** the measured value is −20.3 ± 0.8 mV, so the default sits 7.5 mV
     (9.4 SE) above it.
-    - The new membrane's P_Na swaps lumen Na for K, so the lumen fills with K and Em sits
-      near the sealed limit.
-    - J1 passes only if the declared band reaches −18.7 mV (plus the numerical tolerance)
-      within the 8-mV maximum width. The band and the arms are still running.
+  - **Verdict, 12 November: J1 fails on the reference (R-full) within the declared
+    ranges.** There is no engine run yet, and the cause is not isolated
+    ([verdict](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/rfull-band-01/results/j1_verdict.json);
+    declared inputs unchanged since `d7a1797`).
+    - **The band:** one-at-a-time members, summed worst case, corners checked. It runs
+      from −14.58 to −11.32 mV.
+    - **Width:** W = 3.26 mV, with t = 0.18 µV. That is inside the 8-mV maximum, so J1 is
+      judged.
+    - **The miss:** the band lies wholly above the datum's ±2 SE window of −21.9 to
+      −18.7 mV, and misses it by 4.1 mV.
+    - **Largest shifts:** the new membrane's P_Na/P_K (0.42 mV) and the Rm2 and Rm1 targets
+      (0.37 and 0.33 mV). No corner falls outside the summed band.
+    - **In R-full at J1:** the lumen holds 29 mM K, against 0.55 mM in the bath, and
+      21 mM Na, against 47 mM. The K potential across the new membrane is about −14 mV.
+  - **Arms and limits (reported, not banded):**
+
+    | Case | Em (mV) | Rm (kΩ) | Measured |
+    | --- | --- | --- | --- |
+    | Cation-selective rim | −16.5 | 488 (calibrated) | – |
+    | Constant-field access | −12.6 | 488 (calibrated) | – |
+    | 0.5 µm gap | −12.7 | 488 (calibrated) | – |
+    | Bath-equivalent lumen (limit) | −69.4 | 125 | – |
+    | Sealed lumen (limit) | −9.9 | 852 | – |
+    | Exposed arm −VM | −54.4 | 309 | −60.0 ± 2.5 mV, 336 ± 31 kΩ |
+    | Exposed arm +VM +CCB | −61.4 | 199 | −60.9 ± 3.4 mV, 165 ± 10 kΩ |
+
+    - The exposed arms are the data the new-membrane rules came from, and they do not
+      fit cleanly: +VM +CCB Rm is 3.4 SE from its mean, and −VM Em 2.2 SE.
+    - Cytosolic Na at J1 is 20.1 mM; dL74 measured 22.4 ± 1.1 mM.
+  - **What it means:** the declared model as a whole misses J1. Which assumption is wrong
+    is not isolated. The declared assumptions with independent evidence against them in
+    the papers:
+    - all new membrane faces the lumen; dLB74 p535 puts 0.14 mm² effectively in contact
+      with the bath in intact eggs;
+    - a uniform, constant old membrane; K83 measures 4–30 times more current in the old
+      membrane beside the furrow;
+    - a well-mixed lumen with one access path, for a furrow about 150 µm deep and 2 µm
+      wide;
+    - no Ca²⁺ or Cl⁻ currents; K83 assigns old-membrane inward current to Na⁺, Ca²⁺ and
+      Cl⁻;
+    - the new-membrane rules, given the exposed-arm misfit above.
+  - **Next:**
+    - Any revision is post hoc for J1. It needs a new declared prediction and a judged
+      test on data never computed: J2 (DFS74 Table I) has not been computed.
+    - The decision is with the user.
+    - Composite S1 and the division operators continue unaffected.
+  - **Rerun check:** the four band members finished before the crash were recomputed on
+    the rerun and agree to every printed digit.
   - **Static cleft egg as a plain `@3` definition:**
     - **1 ms is refused** by @3's explicit-rate bound (dt × rate = 1.145); 0.5 ms and finer
       are accepted. The division work therefore needs about 0.5 ms or an implicit
@@ -212,9 +263,25 @@ machine-readable inputs, results, checks and failures.
       the energy ledger fails at IMEX 0.5 and 0.25 ms (37% and 6.9% of flows) and nearly
       closes under RK4 at 0.1 ms. Whether gradual insertion stays within the bound is
       pending.
-  - **Engine gaps:** no current-injection control (Rm cannot be run on the engine yet);
-    the explicit-rate bound at 1 ms; the energy ledger in a stiff membrane–cleft
-    transient.
+    - **From R-full's J1 state, over 2 s:** IMEX ARS(2,2,2) passes every check on every
+      row at 0.5, 0.25 and 0.125 ms, and agrees with R-full to 3e-10, 1e-11 and 2e-12 V.
+      The energy-ledger failure belongs to the switch-on transient.
+    - **RK4 from the same state:** at 0.1 and 0.05 ms it agrees to 5e-13 V, but fails the
+      electrode ledger on 19,511 and 38,761 rows (225 and 599 times its bound). This is
+      consistent with the latent `@3` RK4 electrode rounding recorded on 11 November: the
+      excess grows with the step count at the two step sizes run
+      ([comparison](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/static-cleft-steps-01/results/compare_j1.json)).
+  - **Egg smoke to 35 min:** the uncleaved egg on `@3`, at IMEX 1 ms for 2100 s through
+    the vector-window runner, is accepted.
+    - Device checks passed on every row, and the worst ledger reached 5.3e-4 of its bound.
+    - Wall time 228 s ([result](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/smoke-35min-01/results/long.json)).
+    - On a free core the band members took about 40 s instead of 8–17 min. Last night's
+      long times were likely from sharing cores at nice 10 (not measured).
+  - **Engine gaps:**
+    - no current-injection control, so Rm cannot be run on the engine yet;
+    - the explicit-rate bound at 1 ms;
+    - the energy ledger in a stiff switch-on transient;
+    - RK4 electrode-ledger rounding over long runs.
   - Evidence: `/mnt/workspaces/Cells/cell-division-s0b-20261111-01/`.
 - **Cell division: design note (draft) and egg-scale smoke test (11 November).**
   [CELL_DIVISION_DESIGN.md](docs/CELL_DIVISION_DESIGN.md) answers D142. One composite
