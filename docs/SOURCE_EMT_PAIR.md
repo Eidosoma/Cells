@@ -1,16 +1,18 @@
 # Source-compatible EMT pair: Cells 0.7.0
 
-`emt_mirna_pair@1` (named `bitsey_emt_pair@1` before 12 November 2026, with
-observer `bitsey_nominal_pair_pure_readouts@1`, parameter set
-`bitsey-b2cb370-emt-pair-simple` and units `bitsey_time_unit` and
-`bitsey_scaled_coordinate`; now `emt_mirna_pair_pure_readouts@1`,
-`emt-mirna-pair-scaled-simple`, `nominal_time_unit` and `scaled_coordinate`)
-couples source-scaled regulation, Na/K/Cl membrane exchange
+`emt_mirna_pair@1` couples source-scaled regulation, Na/K/Cl membrane exchange
 and selective contact transport through the shared JAX engine. It is the seventh
 production model, not a replacement for the physical bioelectric pair. The
 [specification](SOURCE_EMT_PAIR_SPEC.md), [numerical contract](SOURCE_EMT_PAIR_NUMERICS.md)
 and [acceptance report](../reports/MODEL005_ACCEPTANCE.md) distinguish its equations,
 qualified scope and engineering evidence.
+
+Before 12 November 2026 the model was named `bitsey_emt_pair@1`, with observer
+`bitsey_nominal_pair_pure_readouts@1`, parameter set `bitsey-b2cb370-emt-pair-simple`
+and units `bitsey_time_unit` and `bitsey_scaled_coordinate`. These are now
+`emt_mirna_pair_pure_readouts@1`, `emt-mirna-pair-scaled-simple`,
+`nominal_time_unit` and `scaled_coordinate`; runs recorded earlier carry the old
+names. The source, BITSEY at commit b2cb370, is cited in the specification.
 
 This is a bounded nominal-clock source-compatible model, not physical EMT
 calibration, full Levin-assay parity, a memory/heredity result or an organ.

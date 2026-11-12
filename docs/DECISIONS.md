@@ -4779,7 +4779,8 @@ numerical change:
   - `processes/source_electrochemistry.py` writes published laws but reproduces
     the source's numerical conventions for parity. Whether that is acceptable
     is the user's decision.
-  - BITSEY has no licence.
+  - BITSEY declares no licence. Its files say "See LICENSE", but no licence
+    file exists anywhere in its history, so its code may not be copied.
   - The five `scripts/capture_*` tools that import BITSEY in a worker process
     belong in `validation/bitsey/`.
 - **Evidence:** `/mnt/workspaces/Cells/bitsey-rename-20261112-01/`.

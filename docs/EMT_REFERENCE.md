@@ -64,7 +64,8 @@ complete BITSEY cell-state packet or a biological inheritance boundary.
 ## Coordinates, equations, and algebraic refresh
 
 Coordinates are labelled `scaled_coordinate`, and time is `nominal_time_unit`
-(`bitsey_scaled_coordinate` and `bitsey_time_unit` before 12 November 2026). The source scales Snail, miR200, Zeb mRNA, and ZEB protein
+(`bitsey_scaled_coordinate` and `bitsey_time_unit` before 12 November 2026).
+The source scales Snail, miR200, Zeb mRNA, and ZEB protein
 by 2500, 250, 30, and 18000 respectively. Its regulatory comments describe rates
 per hour while the simulator describes its clock as seconds; M1b does not resolve
 or silently convert that physical-time correspondence. These numbers must not be
