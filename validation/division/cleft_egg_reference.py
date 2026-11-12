@@ -528,14 +528,20 @@ def atol_vector():
     return a
 
 
-def simulate(egg, t_end, *, record=(), rtol=1e-10, method="Radau", lumen_state=None):
+def simulate(egg, t_end, *, record=(), rtol=1e-10, method="Radau", lumen_state=None, initial=None):
     """Integrate from t = 0 to t_end; returns a Run.
 
     lumen_state (tests only): a callable(egg, y) -> y applied at activation instead of the
-    default (bath composition, zero charge).
+    default (bath composition, zero charge). initial (static comparisons only): (y, background)
+    to start from, with the lumen already active (requires onset 0 and a lumen-facing patch).
     """
     started = time.perf_counter()
-    y, background, v0 = initial_state(egg)
+    if initial is None:
+        y, background, v0 = initial_state(egg)
+    else:
+        assert egg.onset_s == 0.0 and egg.new_faces == "lumen"
+        y, background = np.asarray(initial[0], dtype=float).copy(), float(initial[1])
+        v0 = math.nan
     model = Model(egg, background)
     points = breakpoints(egg, t_end, record)
     p = egg.pulses
@@ -548,7 +554,7 @@ def simulate(egg, t_end, *, record=(), rtol=1e-10, method="Radau", lumen_state=N
             pulse_of_onset[p.onset(k)] = k
             pulse_of_sample[p.onset(k) + p.sample_s] = k
             k += 1
-    lumen = False
+    lumen = initial is not None  # a given start already has its lumen
     atol = atol_vector()
     steps = 0
     record = set(record)

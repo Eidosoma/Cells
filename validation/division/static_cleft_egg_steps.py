@@ -369,16 +369,74 @@ def part_diagnose(args):
     out["device"] = smoke.device_rows(raw["model"]["id"], spec, result)
     failing = out["device"]["device_failing_rows"]
     out["first_failing_time_s"] = float(result.times[failing[0]]) if failing else None
+    out["observed"] = observed_rows(spec, result, raw["experiment"]["observation_times"])
     out["wall_s"] = time.perf_counter() - started
     return out
 
 
+def observed_rows(spec, result, times):
+    """Potentials, cleft amounts, and the energy residual against its flows at the given times
+    (the model's observer and the checks' own balance and limit functions, on the host)."""
+    import jax.numpy as jnp
+
+    from cells.core.state import initialise
+    from cells.models import surface_pump as first
+    from cells.models import surface_pump_v3 as v3
+
+    layout = jax.tree.map(np.asarray, initialise(spec).layout)
+    index = [int(np.flatnonzero(np.isclose(result.times, t, rtol=0, atol=1e-12))[0]) for t in times]
+    rows = type(result.history)(*(np.asarray(v)[index] for v in result.history))
+    obs = v3.observe_history(
+        np.asarray(result.times)[index], rows, layout, list(np.asarray(result.times)[index]), spec
+    )
+    p = v3.initial_values(spec)[1]
+    constants = v3.device_check_constants(spec)
+
+    def one(row, count):
+        b = v3.device_balances(row, p)
+        flows, bounds = first.ledger_limits(
+            row,
+            p,
+            constants.material_atol,
+            constants.energy_rtol,
+            steps=count,
+            magnitudes=v3.channel_magnitudes(row, p, xp=jnp),
+            xp=jnp,
+        )
+        return b["energy"], flows, bounds[list(first.LEDGERS).index("energy")]
+
+    energy, flows, bound = (
+        np.asarray(x)
+        for x in jax.jit(jax.vmap(one))(jax.tree.map(jnp.asarray, rows), jnp.asarray(index))
+    )
+    return dict(
+        times_s=[float(t) for t in np.asarray(obs.times)],
+        cell_potential_V=np.asarray(obs.cell_potential_V)[:, 0].tolist(),
+        cleft_potential_V=np.asarray(obs.extracellular_potential_V)[:, 1].tolist(),
+        cleft_amount_fmol=np.asarray(obs.extracellular_amount)[:, :, 1].tolist(),
+        energy_residual_pJ=energy.tolist(),
+        energy_flows_pJ=flows.tolist(),
+        energy_bound_pJ=bound.tolist(),
+    )
+
+
 def part_rfull(args):
+    """R-full on the same static definition and start (the engine-versus-reference check)."""
     egg, _ = static_egg(args.record)
     times = observation_times(args.end)
-    run = ref.simulate(egg, args.end, record=tuple(times), method="Radau", rtol=1e-10)
+    initial = None
+    start = start_state(args)
+    if start is not None:
+        y = np.asarray(start["state"], dtype=float)
+        n_cl = start["cytosol_mM"][2] * egg.cytosol_volume_m3 / ref.FMOL
+        background = y[ref.QI] - (y[ref.NAI] + y[ref.KI] - n_cl)
+        initial = (y, background)
+    run = ref.simulate(
+        egg, args.end, record=tuple(times), method="Radau", rtol=1e-10, initial=initial
+    )
     rows = [run.at[t] for t in times]
     return dict(
+        start=args.start,
         times_s=times,
         cell_potential_V=[r["V"] for r in rows],
         cleft_potential_V=[r["phi_lumen"] for r in rows],
@@ -390,47 +448,59 @@ def part_rfull(args):
 
 
 def part_compare(args):
-    """Errors of each run against the finest run and against R-full (files in --output)."""
+    """For --start: each diagnose rollout's trajectory against the finest one and R-full, with
+    its worst energy residual over bound (the trajectories come from the rollouts, since the
+    host-checked runs are refused)."""
     folder = Path(args.output)
     runs = {}
-    for path in sorted(folder.glob("run_*.json")):
+    for path in sorted(folder.glob(f"diagnose_{args.start}_*.json")):
         r = json.loads(path.read_text())
-        if r.get("verdict") == "accepted":
+        if "observed" in r:
             runs[path.stem] = r
-    rfull = (
-        json.loads((folder / "rfull.json").read_text())
-        if (folder / "rfull.json").exists()
-        else None
-    )
+    rfull_path = folder / f"rfull_{args.start}.json"
+    rfull = json.loads(rfull_path.read_text()) if rfull_path.exists() else None
     if not runs:
-        return dict(note="no accepted runs")
+        return dict(note="no diagnose rollouts for this start")
     finest = min(runs, key=lambda k: runs[k]["dt"])
     t_ref = np.asarray(runs[finest]["observed"]["times_s"])
 
-    def series(r):
-        o = r["observed"]
+    def series(o):
         return np.asarray(o["cell_potential_V"]), np.asarray(o["cleft_potential_V"])
 
-    vi_ref, vc_ref = series(runs[finest])
-    out = dict(finest=finest, against_finest={}, against_rfull={})
-    for name, r in runs.items():
-        vi, vc = series(r)
-        assert np.allclose(np.asarray(r["observed"]["times_s"]), t_ref, rtol=0, atol=1e-12)
-        early = t_ref <= 0.1
-        out["against_finest"][name] = dict(
+    vi_ref, vc_ref = series(runs[finest]["observed"])
+    out = dict(start=args.start, finest=finest, runs={})
+    for name, r in sorted(runs.items(), key=lambda kv: -kv[1]["dt"]):
+        o = r["observed"]
+        vi, vc = series(o)
+        assert np.allclose(np.asarray(o["times_s"]), t_ref, rtol=0, atol=1e-12)
+        late = t_ref > 0.1
+        ratios = r["device"]["ledger_ratio_to_bound"]
+        row = dict(
+            solver=r["solver"],
             dt=r["dt"],
-            max_cell_V=float(np.max(np.abs(vi - vi_ref))),
-            max_cleft_V=float(np.max(np.abs(vc - vc_ref))),
-            max_cleft_V_after_100ms=float(np.max(np.abs((vc - vc_ref)[~early]))),
-            end_cell_V=float(abs(vi[-1] - vi_ref[-1])),
+            failing_rows=r["device"]["device_failing_row_count"],
+            failed_checks=r["device"]["device_failed_checks"],
+            worst_ratio={k: v["max_ratio"] for k, v in ratios.items()},
+            max_energy_residual_over_flows=float(
+                np.max(
+                    np.abs(o["energy_residual_pJ"]) / np.maximum(np.abs(o["energy_flows_pJ"]), 2e-8)
+                )
+            ),
+            vs_finest_max_cell_V=float(np.max(np.abs(vi - vi_ref))),
+            vs_finest_max_cleft_V=float(np.max(np.abs(vc - vc_ref))),
+            vs_finest_max_cleft_V_after_100ms=float(np.max(np.abs((vc - vc_ref)[late])))
+            if late.any()
+            else None,
         )
         if rfull is not None:
-            ti = np.asarray(rfull["times_s"])
-            assert np.allclose(ti, t_ref, rtol=0, atol=1e-12)
-            out["against_rfull"][name] = dict(
-                max_cell_V=float(np.max(np.abs(vi - np.asarray(rfull["cell_potential_V"])))),
-                max_cleft_V=float(np.max(np.abs(vc - np.asarray(rfull["cleft_potential_V"])))),
+            assert np.allclose(np.asarray(rfull["times_s"]), t_ref, rtol=0, atol=1e-12)
+            row["vs_rfull_max_cell_V"] = float(
+                np.max(np.abs(vi - np.asarray(rfull["cell_potential_V"])))
             )
+            row["vs_rfull_max_cleft_V"] = float(
+                np.max(np.abs(vc - np.asarray(rfull["cleft_potential_V"])))
+            )
+        out["runs"][name] = row
     return out
 
 
