@@ -71,6 +71,22 @@ DERIVED_FIELD_ARRAYS = (
 LEDGERS = first.LEDGERS
 LEDGER_DIAGNOSTICS = first.LEDGER_DIAGNOSTICS
 DISSIPATION_FIELDS = ionic.DISSIPATION_FIELDS
+# @3's energy roles by name (v2 design §1.1): heat (dissipation, nonnegative increments) and
+# work (supplied energy). The composite's energy-role table starts from these.
+HEAT_FIELDS = (
+    "membrane_dissipated_energy_pJ",
+    "junction_dissipated_energy_pJ",
+    "face_dissipated_energy_pJ",
+    "channel_dissipated_energy_pJ",
+    "pump_dissipated_energy_pJ",
+    "calcium_pump_dissipated_energy_pJ",
+)
+WORK_FIELDS = (
+    "reservoir_work_pJ",
+    "electrode_work_pJ",
+    "metabolic_work_pJ",
+    "calcium_metabolic_work_pJ",
+)
 OBSERVATION_FIELDS = ionic.OBSERVATION_FIELDS
 BATCH_CAPACITIES = ionic.BATCH_CAPACITIES
 ENERGY_RTOL = ionic.ENERGY_RTOL

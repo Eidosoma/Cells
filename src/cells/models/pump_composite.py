@@ -288,6 +288,13 @@ class Composition:
             self.STATE_AXES.update(op.STATE_AXES)
         self.STATE_DTYPES = {k: v for op in operators for k, v in op.STATE_DTYPES.items()}
         self.STATE_TYPE = NamedTuple("CompositeState", [(k, object) for k in self.STATE_AXES])
+        # The energy-role table (v2 design §1.1): every heat and work field by declaration
+        # (@3's from the adapter, each operator's HEAT_FIELDS and WORK_FIELDS), in state
+        # order; the energy ledger's flow bound reads these, not field-name suffixes.
+        roles = {*inner.HEAT_FIELDS, *inner.WORK_FIELDS}
+        for op in operators:
+            roles |= {*op.HEAT_FIELDS, *op.WORK_FIELDS}
+        self.ENERGY_FLOW_FIELDS = tuple(k for k in self.STATE_TYPE._fields if k in roles)
         extra = tuple(k for op in operators for k in op.LAYOUT_FIELDS)
         self.LAYOUT_TYPE = NamedTuple(
             "CompositeLayout", [(k, object) for k in (*inner.LAYOUT_TYPE._fields, *extra)]
@@ -703,7 +710,14 @@ class Composition:
     def ledger_limits(self, row, p, tol, rtol, *, steps, magnitudes, xp=np):
         count = len(self.inner.LEDGERS)
         flows, bounds = self.inner.ledger_limits(
-            row, p, tol, rtol, steps=steps, magnitudes=magnitudes[:count], xp=xp
+            row,
+            p,
+            tol,
+            rtol,
+            steps=steps,
+            magnitudes=magnitudes[:count],
+            xp=xp,
+            flow_fields=self.ENERGY_FLOW_FIELDS,
         )
         if not self.own_ledger_operators:
             return flows, bounds

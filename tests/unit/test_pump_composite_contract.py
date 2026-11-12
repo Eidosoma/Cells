@@ -362,3 +362,17 @@ def test_writers_terms_reach_only_the_owners_accepted_ledgers():
         host, owner, values, None, None, xp=None, magnitudes=True
     )
     assert out == {"owned_balance": 5.0, "untouched": 5.0}
+
+
+def test_the_energy_role_table_is_the_suffix_selection_for_every_composition():
+    """v2 design §1.1: the energy ledger's flow bound reads a declared table (@3's heat and work
+    fields from the adapter, each operator's HEAT_FIELDS and WORK_FIELDS, in state order). For
+    every registered composition it is today's suffix selection, so the bounds are unchanged."""
+    suffixes = ("_dissipated_energy_pJ", "_work_pJ")
+    assert set(pump3.HEAT_FIELDS) == {k for k in pump3.STATE_FIELDS if k.endswith(suffixes[0])}
+    assert set(pump3.WORK_FIELDS) == {k for k in pump3.STATE_FIELDS if k.endswith(suffixes[1])}
+    injection = "electrode_current_injection@1"
+    for laws in ((), (WATER,), (WATER, SYMPORT), (REPLACEMENT,), (injection,)):
+        model = pump_composite.implementation(pump3.MODEL_ID, laws)
+        fields = model.STATE_TYPE._fields
+        assert model.ENERGY_FLOW_FIELDS == tuple(k for k in fields if k.endswith(suffixes)), laws
