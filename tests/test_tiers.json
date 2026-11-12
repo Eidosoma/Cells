@@ -2665,6 +2665,14 @@
     }
    },
    {
+    "file": "tests/unit/test_division_cleft_reference.py",
+    "seconds": 72.33,
+    "exit_code": 0,
+    "counts": {
+     "passed": 17
+    }
+   },
+   {
     "file": "tests/unit/test_finite_calcium_pumps.py",
     "seconds": 21.18,
     "exit_code": 0,

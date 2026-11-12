@@ -150,6 +150,34 @@ machine-readable inputs, results, checks and failures.
     - the judged run started at 20:27:57 from a clean snapshot of `840488e`, which
       contains it (empty patch; protocol bytes equal main's);
     - the commit was pushed at about 21:17, after the run began.
+- **Cell division S0b: J1 prediction of record (12 November; development).**
+  - **J1's declared inputs** were registered at `d7a1797` before any model computed an
+    Em.
+  - **The reference:** R-full, an independent numpy/scipy model of the egg with its
+    restricted cleft (`validation/division/cleft_egg_reference.py`; 17 tests pass).
+    - It calibrates the old membrane on pulse Rm1 = 852 kΩ and the cleft access on pulse
+      Rm2 = 488 kΩ.
+    - It predicts **Em = −12.795 mV** at onset of second cleavage, under the defaults.
+    - The prediction was committed at `7c1b70c` before any band member ran
+      ([record](validation/division/j1_prediction_of_record.json)).
+  - **Against the data:** the measured value is −20.3 ± 0.8 mV, so the default sits 7.5 mV
+    (9.4 SE) above it.
+    - The new membrane's P_Na swaps lumen Na for K, so the lumen fills with K and Em sits
+      near the sealed limit.
+    - J1 passes only if the declared band reaches −18.7 mV (plus the numerical tolerance)
+      within the 8-mV maximum width. The band and the arms are still running.
+  - **Static cleft egg as a plain `@3` definition:**
+    - **1 ms is refused** by @3's explicit-rate bound (dt × rate = 1.145); 0.5 ms and finer
+      are accepted. The division work therefore needs about 0.5 ms or an implicit
+      membrane–cleft term.
+    - **Energy ledger:** with the whole 1.39 mm² patch switched on uncharged at once,
+      the energy ledger fails at IMEX 0.5 and 0.25 ms (37% and 6.9% of flows) and nearly
+      closes under RK4 at 0.1 ms. Whether gradual insertion stays within the bound is
+      pending.
+  - **Engine gaps:** no current-injection control (Rm cannot be run on the engine yet);
+    the explicit-rate bound at 1 ms; the energy ledger in a stiff membrane–cleft
+    transient.
+  - Evidence: `/mnt/workspaces/Cells/cell-division-s0b-20261111-01/`.
 - **Cell division: design note (draft) and egg-scale smoke test (11 November).**
   [CELL_DIVISION_DESIGN.md](docs/CELL_DIVISION_DESIGN.md) answers D142. One composite
   pump-tissue model runs `resolved_pump_tissue@3`'s own step plus declared operators
