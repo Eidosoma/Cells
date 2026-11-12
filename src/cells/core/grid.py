@@ -137,7 +137,26 @@ def checked_grid(spec, *, window_steps=1024):
     if base > spec.execution.max_trace_bytes:
         raise ConfigError("Checkpoint storage estimate exceeds max_trace_bytes")
     width = min(window_steps, max(1, (spec.execution.max_trace_bytes - base) // per_step))
-    model = get_model(spec.model)
+    check = clock_checks(spec)
     for times in grid.windows(0, width):
-        model.check_steps(spec, np.diff(times), control_values(spec, times[:-1]))
+        check(np.diff(times), times)
     return grid
+
+
+def clock_checks(spec):
+    """The model's step checks for the chunks of one definition's clock.
+
+    Returns check(steps, times): times are a chunk's accepted boundaries and steps
+    its integration steps. A model whose step checks read only the steps and the
+    definition provides bind_step_checks(spec), the checks bound to the
+    definition: what they read from it (for example rate bounds that build the
+    layout) is then evaluated once for the whole clock, not once per chunk, and
+    no chunk builds a control table (models/surface_pump.py). Any other model's
+    check_steps gets each chunk's steps and control table.
+    """
+    model = get_model(spec.model)
+    bind = getattr(model, "bind_step_checks", None)
+    if bind is None:
+        return lambda steps, times: model.check_steps(spec, steps, control_values(spec, times[:-1]))
+    bound = bind(spec)
+    return lambda steps, times: bound(steps)

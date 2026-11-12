@@ -50,6 +50,7 @@ process: it must add no membrane conductance the family's bound does not cover
 """
 
 from dataclasses import make_dataclass, replace
+from functools import cached_property
 from typing import NamedTuple
 
 import jax
@@ -882,33 +883,61 @@ def check_steps(spec, steps, controls):
     explicit-rate and calcium bounds depend only on the channel-free part. RK4
     also keeps the channel family's qualified step bounds. IMEX channel
     stiffness depends on the openings, so each IMEX step refuses itself when
-    dt * membrane_rate exceeds the explicit bound at a stage.
+    dt * membrane_rate exceeds the explicit bound at a stage. The checks of one
+    chunk of steps (StepChecks); they read no controls.
     """
-    from cells.core.grid import EventGrid
+    bind_step_checks(spec)(steps)
 
-    step, base = np.max(steps, initial=0), projection(spec)
-    if spec.execution.solver == "rk4":
-        tissue.check_steps(spec, steps, controls)
-        laws = {c.kinetic_law for c in spec.model.channels if c.initial_gate}
-        if NAV1P2_LAW_ID in laws and step > RK4_SODIUM_STEP + 1e-16:
-            raise ConfigError("Resolved NaV1.2 channels require RK4 steps <= 2.5 us")
-        if laws and step > RK4_POTASSIUM_STEP + 1e-16:
-            raise ConfigError("Resolved gated channels require RK4 steps <= 25 us")
-    else:
-        grid = EventGrid(spec)
-        for t in spec.experiment.observation_times:
-            try:
-                grid.exact_index(t)
-            except ConfigError as error:
-                raise ConfigError(
-                    "Resolved pump observations require accepted integration boundaries"
-                ) from error
-        if step * first.explicit_rate_bound(base) > EXPLICIT_STEP_BOUND:
-            raise ConfigError("IMEX step exceeds the explicit-rate stability bound")
-        if step * second.calcium_rate_bound(base) > EXPLICIT_STEP_BOUND:
-            raise ConfigError("IMEX step exceeds the explicit calcium pump rate bound")
-    if step * first.junction_gate_rate_bound(spec) > first.GATE_STEP_BOUND:
-        raise ConfigError("Resolved junction step exceeds conservative kinetic bound")
+
+def bind_step_checks(spec):
+    """check_steps bound to one definition, for every chunk of its clock (StepChecks)."""
+    return StepChecks(spec)
+
+
+class StepChecks(first.StepChecks):
+    """check_steps for one definition, called with the steps of each chunk of its clock.
+
+    As surface_pump.StepChecks: what the checks read from the definition alone
+    (accepted observations, the explicit-rate and calcium bounds of the
+    channel-free projection, each building its layout, the junction bound and the
+    gated RK4 laws) is evaluated at its first use and kept for the later chunks.
+    A call makes check_steps' refusals in check_steps' order.
+    """
+
+    @cached_property
+    def base(self):
+        """The channel-free (@2) projection that the explicit and calcium bounds read."""
+        return projection(self.spec)
+
+    @cached_property
+    def explicit_rate(self):
+        return first.explicit_rate_bound(self.base)
+
+    @cached_property
+    def calcium_rate(self):
+        return second.calcium_rate_bound(self.base)
+
+    @cached_property
+    def gated_laws(self):
+        return {c.kinetic_law for c in self.spec.model.channels if c.initial_gate}
+
+    def __call__(self, steps):
+        spec, step = self.spec, np.max(steps, initial=0)
+        if spec.execution.solver == "rk4":
+            tissue.check_steps(spec, steps, None)
+            laws = self.gated_laws
+            if NAV1P2_LAW_ID in laws and step > RK4_SODIUM_STEP + 1e-16:
+                raise ConfigError("Resolved NaV1.2 channels require RK4 steps <= 2.5 us")
+            if laws and step > RK4_POTASSIUM_STEP + 1e-16:
+                raise ConfigError("Resolved gated channels require RK4 steps <= 25 us")
+        else:
+            self.require_accepted_observations()
+            if step * self.explicit_rate > EXPLICIT_STEP_BOUND:
+                raise ConfigError("IMEX step exceeds the explicit-rate stability bound")
+            if step * self.calcium_rate > EXPLICIT_STEP_BOUND:
+                raise ConfigError("IMEX step exceeds the explicit calcium pump rate bound")
+        if step * self.junction_rate > first.GATE_STEP_BOUND:
+            raise ConfigError("Resolved junction step exceeds conservative kinetic bound")
 
 
 def balances(state, p):

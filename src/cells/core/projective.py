@@ -52,7 +52,7 @@ import numpy as np
 
 from cells.core.devices import execution_device
 from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid, require_refinement_model
+from cells.core.grid import EventGrid, clock_checks, require_refinement_model
 from cells.core.resources import trace_bytes
 from cells.core.runner import (
     RunResult,
@@ -270,10 +270,11 @@ def _merge(total, current):
         total[name] = max(total.get(name, 0.0), float(value))
 
 
-def _admit_clock(spec, model, grid):
-    """check_steps over every fine interval of the grid, in bounded chunks."""
+def _admit_clock(spec, grid):
+    """check_steps over every fine interval of the grid, in bounded chunks (clock_checks)."""
+    check = clock_checks(spec)
     for times in grid.windows(0, CLOCK_CHUNK):
-        model.check_steps(spec, integration_steps(spec, times), control_values(spec, times[:-1]))
+        check(integration_steps(spec, times), times)
 
 
 class _Run:
@@ -286,7 +287,7 @@ class _Run:
             raise ConfigError("Projective execution requires the model's checked step")
         require_refinement_model(spec)
         self.grid = EventGrid(spec)
-        _admit_clock(spec, self.model, self.grid)
+        _admit_clock(spec, self.grid)
         self.checkpoint = initialise(spec) if checkpoint is None else checkpoint
         validate_checkpoint(spec, self.checkpoint, self.grid)
         self.layout = self.checkpoint.layout

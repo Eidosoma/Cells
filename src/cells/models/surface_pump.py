@@ -10,6 +10,7 @@ first/second-order step does not integrate the energy identity exactly.
 """
 
 from dataclasses import replace
+from functools import cached_property
 from typing import NamedTuple
 
 import jax
@@ -347,8 +348,17 @@ def check_definition(spec):
 
 
 def check_steps(spec, steps, controls):
-    if spec.execution.solver == "rk4":
-        return kinetic.check_steps(spec, steps, controls)
+    """The step checks of one chunk of steps (StepChecks); they read no controls."""
+    bind_step_checks(spec)(steps)
+
+
+def bind_step_checks(spec):
+    """check_steps bound to one definition, for every chunk of its clock (StepChecks)."""
+    return StepChecks(spec)
+
+
+def accepted_observations(spec):
+    """Refuse an observation time that is not an accepted boundary of the event grid."""
     from cells.core.grid import EventGrid
 
     grid = EventGrid(spec)
@@ -359,10 +369,51 @@ def check_steps(spec, steps, controls):
             raise ConfigError(
                 "Resolved pump observations require accepted integration boundaries"
             ) from error
-    if np.max(steps, initial=0) * junction_gate_rate_bound(spec) > GATE_STEP_BOUND:
-        raise ConfigError("Resolved junction step exceeds conservative kinetic bound")
-    if np.max(steps, initial=0) * explicit_rate_bound(spec) > EXPLICIT_STEP_BOUND:
-        raise ConfigError("IMEX step exceeds the explicit-rate stability bound")
+
+
+class StepChecks:
+    """check_steps for one definition, called with the steps of each chunk of its clock.
+
+    core.grid.checked_grid validates a definition's whole declared clock (at every
+    plan, restart and segment start) in chunks of at most 1024 steps. These checks
+    read a chunk's largest step and quantities of the definition alone: whether
+    its observations are accepted boundaries, and its rate bounds, of which
+    explicit_rate_bound builds the layout (initial_values). Each such quantity is
+    evaluated at its first use and kept for the later chunks, so a chunk costs a
+    few comparisons. (Re-evaluated per chunk, @3's took 0.77 s per chunk at 825
+    nodes, an hour for a 4.2e6-step clock: clock-validation-20261112-01.) A call
+    makes check_steps' refusals in check_steps' order. No check reads the chunk's
+    controls, nor do the resolved tissue RK4 checks it calls (surface_kinetic).
+    """
+
+    def __init__(self, spec):
+        self.spec = spec
+        self._observations_accepted = False
+
+    def require_accepted_observations(self):
+        if not self._observations_accepted:
+            accepted_observations(self.spec)
+            self._observations_accepted = True
+
+    @cached_property
+    def junction_rate(self):
+        return junction_gate_rate_bound(self.spec)
+
+    @cached_property
+    def explicit_rate(self):
+        return explicit_rate_bound(self.spec)
+
+    def __call__(self, steps):
+        spec = self.spec
+        if spec.execution.solver == "rk4":
+            kinetic.check_steps(spec, steps, None)
+            return
+        self.require_accepted_observations()
+        step = np.max(steps, initial=0)
+        if step * self.junction_rate > GATE_STEP_BOUND:
+            raise ConfigError("Resolved junction step exceeds conservative kinetic bound")
+        if step * self.explicit_rate > EXPLICIT_STEP_BOUND:
+            raise ConfigError("IMEX step exceeds the explicit-rate stability bound")
 
 
 def junction_gate_rate_bound(spec):
