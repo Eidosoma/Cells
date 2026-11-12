@@ -58,7 +58,7 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
-- **Current injection: first acceptance registered (Rm1 on the uncleaved egg against R-full;
+- **Current injection: first acceptance passed (Rm1 on the uncleaved egg against R-full;
   12 November).** Engine models: `resolved_pump_composite@1` over `resolved_pump_tissue@3`
   with `electrode_current_injection@1`.
   - **Definition:** R-full's own uncleaved egg (its `build()` from
@@ -73,7 +73,11 @@ machine-readable inputs, results, checks and failures.
     [`injection_rm1_protocol.json`](validation/tissue/injection_rm1_protocol.json): pass
     when |Rm1(1 ms) − 852000.0 Ω| ≤ 3 × (step term 224.58 Ω + reference term 1.7e-6 Ω) =
     673.74 Ω. The judged run happens once, from a clean snapshot of main.
-  - [Evidence](/mnt/workspaces/Cells/composite-v2-20261112-01/rm1-dtstudy/).
+  - **Judged run: pass.** Rm1 = 852298.5 Ω, +298.5 Ω against the 673.74 Ω tolerance,
+    from a clean snapshot of main at `2aa2793` (CPU 5, no OOM). It equals the 1 ms
+    development run bit for bit, as expected on CPU.
+  - Evidence: [development](/mnt/workspaces/Cells/composite-v2-20261112-01/rm1-dtstudy/),
+    [judged](/mnt/workspaces/Cells/composite-v2-20261112-01/rm1-judged/judged.json).
 
 - **Combined landing: the plan-validation fix, composite v2 §1.2–§1.4, the L4 agreement
   driver, `electrode_current_injection@1` and the J1 diagnostic code (12 November).** One
