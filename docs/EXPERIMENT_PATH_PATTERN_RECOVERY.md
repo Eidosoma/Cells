@@ -78,7 +78,7 @@ It goes only through what the repository states; the preprint was not read for t
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Bioelectric communication | Pump family: `resolved_pump_tissue@3`; the composite with replacement, the formation law and injection (§1.1) | Junction abundance driven by activity or state; noise | (a) A regulated junction-channel population. (b) A noise operator on the composite | (a) Planned: the molecular-loop unit (D145). (b) Planned as a need (E07 tier 2), undesigned | (a) E07 renewal; S5 division; Cortés-Poza group 2. (b) E07 tier 2 | Molecular loop; composition |
 | 2 | Positional signalling | Standalone `reaction_transport@1` (MG0a); prescribed prepatterns only (§1.2) | A secreted signal; a cell response to it; binding | (a) Secreted-species transport v1. (b) State-dependent secretion and a responder coupling. (c) The site-occupancy primitive | (a) Planned (D150; design only, code after S5a). (b) Asked (bone review, question 3); this path is its second consumer. (c) Planned as a requirement, undesigned | (a) GZMK review; ROADMAP item 9; MG4. (b) Bone review ranks 1, 2 and 5; MG4; Cortés-Poza's wound signal. (c) Kinetochore review; the Fgf8 sink case | Composition (after S5a); then the extracellular-environment entity |
-| 3 | Self-organisation (reaction–diffusion) | Closed chemistry (`compartment_reactions@1`); `network_reactions@1` on the calcium-energy family, with its own species state (§1.3) | Driven nonlinear reactions on the inventory that transport moves | Reactions on the shared inventory: a composite operator that writes @3's species rows | **New here:** the one new question for the user (§6) | MG0c; GZMK review item 2 (catalysis on a substrate); the reaction–diffusion part of BITSEY parity | Composition (the ownership contract); a design note first |
+| 3 | Self-organisation (reaction–diffusion) | Closed chemistry (`compartment_reactions@1`); `network_reactions@1` on the calcium-energy family, with its own species state (§1.3) | Driven nonlinear reactions on the inventory that transport moves | Reactions on the shared inventory: a composite operator that writes @3's species rows | **Decided:** designed as a general feature (user, 13 November; D152); a design note first | MG0c; GZMK review item 2 (catalysis on a substrate); the reaction–diffusion part of BITSEY parity | Composition (the ownership contract); a design note first |
 | 4 | Gene regulation (the shared network) | Standalone `emt_mirna@1` and `emt_mirna_pair@1`; regulation factors on the calcium-energy family; nothing on the pump family (§1.4) | A regulatory network on the tissue family | A regulatory-network operator on the composite | Planned, **held** (D145) | Heredity Stage D; parity P8; the GRN wet-lab track; the REVERT plan; the partial-reprogramming benchmark (D151) | D145's hold; molecular loop |
 | 5 | Persistent memory | The bistable heredity cell; slow ion loading; junction abundance (§1.5) | A regulatory memory with its own timescale; a booked change to one slow variable in place | (a) Row 4's slow nodes. (b) A declared, booked state-intervention event | (a) Planned, held (Stage D). (b) Planned as a deliverable (causal carriers), undesigned | (b) Coupled renewal's causal carriers; Cortés-Poza T6 | Coupled renewal |
 | 6 | Mechanical coupling | Standalone `apical_vertex_mechanics@1` (MG1), coupled to nothing (§1.6) | Mechanics in the tissue world; mechanics → bioelectric; directed migration | (a) Mechanics as a composite operator on shared geometry. (b) A per-patch mechanical observable and a mechanically gated conductance. (c) Directed cell migration | (a) Planned (MG4; morphogenesis gaps 6–7). (b) Asked (bone review, question 2); this path is its second consumer. (c) **New here:** a gap (§1.6) | (a) MG4; the integrated tissue unit. (b) Bone review ranks 3–4. (c) The 24 October comparisons; field-directed migration (Zhao 2006) | Integrated tissue unit |
@@ -380,7 +380,7 @@ A collapse to a uniform state is never a return (Cortés-Poza Phase 0).
 2. **D150 v1** (composition, after S5a): a measurable gradient with no response yet.
 3. **A responder side and state-dependent secretion,** if the user takes them (bone review,
    question 3).
-4. **Reactions on the shared inventory,** if the user wants them (§6), with MG0c as their
+4. **Reactions on the shared inventory** (D152), designed first, with MG0c as their
    qualification case.
 5. **The gene-regulation layer,** when D145's hold lifts.
 6. **The new lifecycle piece, an excision operator for the composite;** then growth and
@@ -418,8 +418,8 @@ version of E15 is registered only after the features it uses have qualified.
   [bone review](PAPER_REVIEW_BONE_MECHANOSENSING.md) (its questions 3 and 2). This path is
   recorded as their second consumer and does not ask again.
 
-**The one new question for the user:** should reactions on the shared inventory, for
-Turing-type self-organisation and MG0c, be designed as a general feature?
+**The user's answer (13 November 2026):** yes. Reactions on the shared inventory, for
+Turing-type self-organisation and MG0c, are designed as a general feature (D152).
 
 **To settle when the path is activated:**
 - the overlap with Cortés-Poza T6 and Phase 3, both held;

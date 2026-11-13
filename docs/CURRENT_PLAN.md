@@ -137,10 +137,15 @@ assay needs it, not before.
 **Secreted-species transport (D150).**
 - **Design landed** ([note](SECRETED_SPECIES_TRANSPORT_DESIGN.md)): one inventory in @3 (neutral
   species rows), and split operators for turnover and for secretion and uptake.
-- **Version 1 code follows S5a.** Its checks before code are a five-species world through every
-  admitted path, a fixed-species-count audit, and its first acceptance decided.
+- **Version 1 code follows S5a.** Its checks before code are done ([note §11](SECRETED_SPECIES_TRANSPORT_DESIGN.md)):
+  ions unchanged in every admitted path, no fixed species counts (at most 7 species), and a
+  numerical first acceptance.
 - **Deferred under D151:** a transport-only drift valence, and drawing on finite energy pools.
   Secreted proteins in the catalogue belong to stage 3.
+
+**Reactions on the shared inventory (D152).** Driven nonlinear reactions that write @3's species
+rows, as a general composite operator. Its consumers are MG0c's Turing case, GZMK item 2 and E15.
+The design note comes first, written against D150 v1's design. Code follows D150 v1's code.
 
 ### Gate: lifecycle operators
 
