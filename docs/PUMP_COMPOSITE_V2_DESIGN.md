@@ -473,24 +473,40 @@ is its anchor (D057), already counted on the declared layout.
     a growing patch closing every host check; and crossrev of injection without field
     inputs (the heredity cell, and the Rm1 egg that the judged Rm1 ran on), whose jaxprs
     and bindings are identical to 00672e8.
-- **(c) Found 13 November, open: injection's electrode-ledger drift at egg scale.**
+- **(c) Found 13 November, open: an electrode-ledger drift at egg scale, seeded by the
+  pulses** (composite-v2-20261112-01/s3-prereq/electrode_diag*.json).
   - The uncleaved Rm1 egg, with its two pulses (0–12 s), run to 420 s at 1 ms fails the
-    host electrode ledger (composite-v2-20261112-01/s3-prereq/electrode_diag.json).
-    - The residual is 1.6 × 10⁻²⁰ C after the pulses. It drifts at about 2 × 10⁻²³ C per
-      step to 200 s.
-    - From about 300 s it grows linearly at 7 × 10⁻²² C per step, reaching
-      8.4 × 10⁻¹⁷ C at 420 s, 5 times its bound. The bound grows by only
-      4 × 10⁻²³ C per step (the step-scaled allowance on injection's image charge).
-  - Without the electrode the residual is exactly 0 at every one of the 420,000 rows:
-    @3's electrode increment is a difference of plate charges and telescopes exactly
-    there.
-  - Not caused by this round's change: the crossrev above shows injection's program and
-    bindings unchanged. The judged Rm1 ran 12 s and passed.
-  - The cause is not isolated. Injection books its image charge as the same difference
-    of plate charges, and it is idle after 12 s, yet the drift continues and changes rate
-    near 300 s.
-  - S3 needs 2100 s with 210 pulses, so this blocks S3's egg runs until it is diagnosed
-    and fixed, or bounded with a justified allowance.
+    host electrode ledger: 8.4 × 10⁻¹⁷ C at 420 s, 5 times its bound.
+  - Three arms:
+    - pulses: the residual is 1.6 × 10⁻²⁰ C after the pulses, 1.6 × 10⁻¹⁸ C at 270 s,
+      then grows linearly at 7.0 × 10⁻²² C per step;
+    - the electrode declared, with zero current throughout: exactly 0 at every sampled
+      row;
+    - no operator: exactly 0 at every one of the 420,001 rows.
+    So the operator's presence does not cause it; the pulses seed it.
+  - What the pulses leave: a nonzero Cl increment in the cell, −7.3 × 10⁻¹² fmol
+    (P_Cl = 0, so without them only Na and K ever move).
+  - The drift's signature:
+    - its knee comes between steps 290,000 and 300,000, where the Na increment crosses
+      2¹⁶ fmol (the K increment is its negative);
+    - after it, the rate is F × ulp(9.29 × 10⁴ fmol) / 2 = 7.02 × 10⁻²² C, half an ulp
+      of the charge terms per step.
+  - Hypothesis, not yet verified: @3's IMEX electrode increment
+    (`surface_pump.electrode_increment`) is a difference of plate charges evaluated at a
+    step's end and again at the next step's start. It telescopes only if those two
+    evaluations agree bit for bit, and with a third species carrying a nonzero increment
+    they evidently do not, for example by summing the species in different orders. The
+    egg's large increments (about 10⁵ fmol of Na and K by 420 s) make each disagreement
+    half an ulp of a large charge term.
+  - If so, this is @3's booking at egg-scale increments, not injection's, and any world
+    with three moving species at that scale is exposed (S3's cleft moves Cl through the
+    access).
+  - The fix, or a justified step-scaled allowance (2.5 eps × steps × F Σ |z Δn| covers
+    half an ulp per step), lives in `surface_pump*.py` and needs the lead's approval.
+  - Not caused by this round's change (the crossrev above). The judged Rm1 ran 12 s and
+    passed.
+  - S3 runs 2100 s with 210 pulses and increments of several 10⁵ fmol, so its egg runs
+    wait for (c).
   - The same run gives the engine's energy bound used in (a). The pulses leave about
     0.45 pJ each in the energy residual, scheme error within IMEX's tolerance.
 

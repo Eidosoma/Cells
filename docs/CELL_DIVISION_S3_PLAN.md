@@ -85,13 +85,17 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
     it is refused. The numbers above are checked with R-full's functions before the
     plan is final.
 
-- **(c) Found while measuring (a), open: injection's electrode-ledger drift at egg scale.**
-  The uncleaved Rm1 egg with its two pulses, run to 420 s, fails the host electrode ledger
-  (8.4 × 10⁻¹⁷ C at 420 s, 5 times its bound; a linear drift of 7 × 10⁻²² C per step from
-  about 300 s). Without the electrode the residual is exactly 0. The cause is not isolated
-  (details: v2 design §3). S3 runs 2100 s with 210 pulses, so its egg runs wait for (c):
-  diagnose, then fix the booking or bound it with a justified allowance. That is the
-  first S3 task, before the lumen operator.
+- **(c) Found while measuring (a), open: an electrode-ledger drift at egg scale.** The
+  uncleaved Rm1 egg with its two pulses, run to 420 s, fails the host electrode ledger.
+  - The residual is 8.4 × 10⁻¹⁷ C, 5 times its bound. From the step where the Na
+    increment crosses 2¹⁶ fmol, it drifts by exactly half an ulp of the charge terms per
+    step (7.0 × 10⁻²² C).
+  - With the electrode at zero current, or without it, the residual is exactly 0. The
+    pulses seed it by leaving a third species, Cl, with a nonzero increment.
+  - The hypothesis (v2 design §3): @3's IMEX electrode increment stops telescoping bit
+    for bit. If so, the fix or a justified allowance is in `surface_pump*.py` and needs
+    the lead's approval.
+  - That is S3's first task, before the lumen operator.
 
 ## 3. Numerics and cost
 
@@ -149,8 +153,8 @@ implicit membrane–cleft term would then be a new solver version (division desi
 
 ## 5. Order of work (CPU 4, through run_detached)
 
-1. Prerequisite (c): the electrode-ledger drift with injection at egg scale, diagnosed
-   and fixed or bounded (a 420 s run reproduces it in 9 min).
+1. Prerequisite (c): the electrode-ledger drift at egg scale, the hypothesis verified
+   and the fix or allowance approved and built (a 420 s run reproduces it in 1 min).
 2. The lumen operator and its guards.
 3. The engine definition, and `compare` against R-full's build.
 4. Development runs: the step study, and R-full's reference term per quantity.

@@ -141,4 +141,6 @@ def test_pulses_across_the_onset_and_their_vmapped_batch():
         for name in type(final)._fields:
             a, b = np.asarray(getattr(final, name)), np.asarray(getattr(single.history, name))[-1]
             scale = np.max(np.abs(b), initial=0.0)
+            if name == "injection_work_pJ":  # A difference of free energies: their magnitudes.
+                scale = np.max(np.asarray(single.history.injection_energy_magnitude_pJ)[-1])
             assert np.max(np.abs(a - b), initial=0.0) <= 1e-12 * scale + 1e-30, (k, name)
