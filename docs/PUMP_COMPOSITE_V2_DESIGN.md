@@ -595,6 +595,35 @@ is its anchor (D057), already counted on the declared layout.
     The crossrev baseline is then renewed at the landing commit, and 8416a72 stays as the
     record before it. Otherwise the change takes a new ID (D147), or an allowance where
     the residual is representable precision; that choice is the user's.
+  - **The guard, fix against no fix: physical fields are identical, so the stop rule did
+    not trigger** (composite-v2-20261112-01/s3-fix/guard/compare-final.json).
+    - Setup: snapshot-s3f (69df9f9) against snapshot-s3g (e32c20a), run by
+      `validation/tissue/inplace_fix_guard.py`. Peak memory was 3.2 GB.
+    - Every state field, observation column, physical diagnostic and device-check flag is
+      bitwise identical in all 58 worlds:
+      - @1 and @2 worlds, under RK4 and IMEX;
+      - crossrev's injection and base worlds;
+      - the 17 saved runs, and the Rm1 egg to 420 s;
+      - G2-Q1's nine cases and W37, with device checks on every row;
+      - the 825-node world as @3, as its empty composition, with closed water and with
+        event-free replacement;
+      - Q6's cohorts, both as vector windows and as lax_map batches;
+      - W1's six judged trajectories, through the windowed program.
+    - `replacement_steady`, a base world, is refused by @3's dissipation check in both
+      revisions alike. With its checks recorded rather than enforced, it is identical too.
+    - Ledger accumulators: only `electrode_charge_transferred_C` changes, in 18 worlds.
+      Each change is that world's own unfixed electrode-ledger residual, which the fix
+      removes: 8.4 × 10⁻¹⁷ C for the egg at 420 s, 2.0 × 10⁻²⁰ C for Rm1 at 12 s,
+      2.7 × 10⁻²⁵ C for W1's P2 from D, and 10⁻³⁰ to 7 × 10⁻²⁸ C elsewhere. After the fix,
+      `max_electrode_charge_error_C` is 0 in each of these worlds.
+    - The field solve's own charge sum is unchanged: in the egg's compiled program it is
+      the same kernel, instruction for instruction (s3-fix/hlo-s3g).
+    - Step time (medians of four runs each, before against after):
+      - the egg: 0.0517 against 0.0516 ms;
+      - the 825-node world: 48.5 against 49.9 ms as @3, and 48.3 against 50.4 ms with
+        closed water. The fastest runs are equal (47.8 against 47.8 and 47.2 ms), so the
+        difference lies within the run-to-run spread;
+      - compile times are unchanged.
   - The same run gives the engine's energy bound used in (a). The pulses leave about
     0.45 pJ each in the energy residual, scheme error within IMEX's tolerance.
 
