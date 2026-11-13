@@ -126,3 +126,49 @@ def test_the_furrow_world_through_one_to_two_to_four_with_second_onsets():
         assert lumen[row[onset], k] == 0 and lumen[row[0.006], k] > lumen[row[0.005], k] > 0, node
     e = [j.id for j in spec.model.junctions].index("bridge_1")
     assert np.asarray(h.junction_gate)[-1, e] == 0 and np.asarray(h.bridge_aperture_m)[-1, e] == 0
+
+
+def vector_batch(specs):
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.vector_windows import run_vector_windowed
+    from cells.core.windows import WindowPolicy
+
+    worlds = tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs))
+    return run_vector_windowed(
+        BatchSpec(worlds, len(worlds), 10**6, 2**31), WindowPolicy(2, "checkpoints")
+    )
+
+
+def test_a_batch_of_furrow_worlds_mixes_by_value():
+    """Q6's mixed batch: one vector-window program, with device checks on every row, runs
+    furrow worlds that differ only by value. Their division times, fractions, apertures and
+    closure times differ, and in one the division never happens. Each world reproduces its own
+    scalar run to 1e-12 of each field's scale, bitwise against the batch reversed. A batch
+    mixing in the bridge-free compact world (other slot maps) is refused."""
+    from validation.tissue import composite_guard as guard
+
+    carriers = {"Na": 0.5, "K": 0.5}
+    raws = [
+        fx.cleft_divided(carriers=carriers, bridge=("linear", 0.001)),
+        fx.cleft_divided(at=0.003, carriers=carriers, bridge=("linear", 0.001)),
+        fx.cleft_divided(f=0.75, area_fraction=0.6, carriers=carriers, bridge=("linear", 0.001)),
+        fx.cleft_divided(carriers=carriers, bridge=("linear", 0.0005, 1.8 * fx.APERTURE_M)),
+        fx.cleft_divided(events=False, carriers=carriers, bridge=("linear", 0.001)),
+    ]
+    specs = []
+    for raw in raws:
+        raw["experiment"]["observation_times"] = TIMES
+        specs.append(parse_spec(raw))
+    batch, backwards = vector_batch(specs), vector_batch(specs[::-1])
+    for k, spec in enumerate(specs):
+        x = batch.worlds[k + 1].final.state
+        y = backwards.worlds[len(specs) - k].final.state
+        for name in type(x)._fields:
+            assert guard.compare_arrays(name, getattr(x, name), getattr(y, name)) is None, name
+        single = run(spec)
+        for name in type(x)._fields:
+            a, b = np.asarray(getattr(x, name)), np.asarray(getattr(single.history, name))[-1]
+            scale = np.max(np.abs(b), initial=0.0)
+            assert np.max(np.abs(a - b), initial=0.0) <= 1e-12 * scale + 1e-30, (k, name)
+    with pytest.raises(Exception, match="signature|batch|differ"):
+        vector_batch([specs[0], parse_spec(fx.divided(end=END))])

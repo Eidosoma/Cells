@@ -17,7 +17,7 @@ A J1 source in a module is any of:
 A partition source is any of:
 * a string constant naming the partition law;
 * an import of the engine's partition operator or its definition helper, of R-ops, of S5's compact
-  worlds (tests/partition_fixtures) or of the Q10 driver;
+  worlds (tests/partition_fixtures), of the Q10 driver or of the egg-scale division world;
 * the use of R-tissue's division entry point. R-tissue's static entry point is kept apart, so its
   cross-check against R-full may read J1.
 
@@ -59,6 +59,7 @@ PARTITION_MODULES = {
     "validation.division.partition_reference",  # R-ops.
     "tests.partition_fixtures",  # S5's compact worlds (the lead, 13 November).
     "validation.division.q10_sensitivity",  # The Q10 driver.
+    "validation.division.egg_division_world",  # S5's egg-scale accounting world.
 }
 PARTITION_FUNCTIONS = {"validation.division.cleft_tissue_reference.simulate_divisions"}
 # Text that every source of each kind must contain (the pre-filter).
@@ -72,6 +73,7 @@ PARTITION_MARKERS = (
     "simulate_divisions",
     "partition_fixtures",
     "q10_sensitivity",
+    "egg_division_world",
 )
 EXEMPT = {}  # {path: reason}; a J2 driver enters only after the user releases J2.
 
