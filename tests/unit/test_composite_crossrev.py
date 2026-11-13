@@ -24,7 +24,8 @@ def x64():
 
 
 def program(values, where="jit"):
-    """A traced program that closes over one array, inside jit, a scan body or a cond branch."""
+    """A traced program that closes over one array, inside jit, a scan body, a cond branch
+    or a while loop's condition (where a solver's acceptance gate lives)."""
     table = np.asarray(values, dtype=np.float64)
 
     def f(x):
@@ -34,6 +35,9 @@ def program(values, where="jit"):
             ones = x * jnp.ones(table.shape)
             body = lambda c, _: (c + jnp.asarray(table), None)  # noqa: E731
             return jax.lax.scan(body, ones, None, length=2)[0]
+        if where == "while":
+            gate = lambda c: jnp.any(c[1] > jnp.asarray(table))  # noqa: E731
+            return jax.lax.while_loop(gate, lambda c: (c[0] + 1, c[1] * 0.5), (0, x))[0]
         return jax.lax.cond(
             x > 0, lambda v: v + jnp.asarray(table), lambda v: v * jnp.ones(table.shape), x
         )
@@ -41,7 +45,30 @@ def program(values, where="jit"):
     return jax.make_jaxpr(f)(1.0)
 
 
-@pytest.mark.parametrize("where", ["jit", "scan", "cond"])
+@pytest.mark.parametrize("kind", ["float", "array0d"])
+@pytest.mark.parametrize("where", ["plain", "while"])
+def test_a_one_ulp_scalar_reaches_the_text_or_the_record(kind, where):
+    """A scalar such as a solver target is a literal (printed in the text, at full precision)
+    or a constant (recorded): a one-ulp change must show in one of them."""
+
+    def scalar_program(value):
+        scalar = value if kind == "float" else np.asarray(value)
+
+        def f(x):
+            if where == "plain":
+                return x * scalar
+            gate = lambda c: c[1] > scalar  # noqa: E731
+            return jax.lax.while_loop(gate, lambda c: (c[0] + 1, c[1] * 0.5), (0, x))[0]
+
+        return jax.make_jaxpr(f)(1.0)
+
+    target = 0.01
+    a, b = scalar_program(target), scalar_program(float(np.nextafter(target, 1.0)))
+    assert str(a) != str(b) or crossrev.const_record(a) != crossrev.const_record(b)
+    assert crossrev.const_record(a) == crossrev.const_record(scalar_program(target))
+
+
+@pytest.mark.parametrize("where", ["jit", "scan", "cond", "while"])
 def test_text_omits_a_constant_that_the_record_keeps(where):
     a, b = program([1.0, 2.0, 3.0], where), program([1.0, 2.0, 4.0], where)
     assert str(a) == str(b)  # The reason the constants are recorded at all.
