@@ -60,8 +60,13 @@
  },
  "evidence": {
   "probe": "/mnt/workspaces/Cells/cell-division-s3-20261113-01/probe/ (the bounded ledger probe through the onset plus 1e5 steps at 0.25 ms; no Q quantity)",
-  "study": null,
+  "study": [
+   "/mnt/workspaces/Cells/cell-division-s3-20261113-01/study2/study-0.5ms.json",
+   "/mnt/workspaces/Cells/cell-division-s3-20261113-01/study2/study-0.25ms.json",
+   "/mnt/workspaces/Cells/cell-division-s3-20261113-01/study2/study-0.125ms.json"
+  ],
   "reference": null
  },
+ "development_runs": "approved by the lead, 13 November; not judged. The three studies ran in vector windows with device checks on every row from the clean snapshot snapshot-s3e (dbb2478; each run's observation rows, diagnostics and final checkpoint are kept beside its file, study2/study-*-run/); R-full's reference from snapshot-s3d (26ae933), whose reference code and R-full equal dbb2478's; terms and fill from a snapshot of the branch head that adds the per-step values (a09d5cf or later). An earlier 0.5 ms run (snapshot-s3d) finished every step with every device check passed and failed only in its post-processing (study/study-0.5ms.log)",
  "judged_run": "once, on CPU, after registration, from a clean execution snapshot of main (validation/source_snapshot.py; no dirty patch); the driver refuses an unregistered protocol and a run outside a clean snapshot; the protocol records the judged step and the commit"
 }
