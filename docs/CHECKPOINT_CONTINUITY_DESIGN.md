@@ -220,8 +220,8 @@ fingerprint differs from the driver's rebuilt definitions.
 - The record lists the changed files only so that a reviewer can read them. The probe, not
   an argument about which files "feed no rate", decides whether a change reaches the run.
 - **The canonical examples:**
-  - the phase markers (host-only), whose landing crossrev found identical (36/36, 78/78 and
-    6/6);
+  - the phase markers (host-only). Crossrev found the landing round that added them, with
+    S3's engine side, identical to the ledger-fix revisions: 36/36, 78/78 and 6/6;
   - the `changes` cache;
   - docstring and comment edits inside traced model code (probe 3b);
   - unrelated models landing.
@@ -289,9 +289,9 @@ keep their own records.
 | `machine`, `gpu.device_kind`, `gpu.platform` | device | Host part first: B and H recomputed on the new machine's CPU, identical. Then tolerance |
 
 **Why compiler fields go to tolerance.**
-- Probe 2 shows that executable bytes are no usable identity. A serialized CPU executable
-  differed between two compiles of one function in one process. The optimized HLO carries
-  source file metadata and changes when a line moves.
+- The executable toy (Appendix B) shows that executable bytes are no usable identity. A
+  serialized CPU executable differed between two compiles of one function in one process.
+  The optimized HLO carries source file metadata and changes when a line moves.
 - So no decided bitwise test exists for a compiler change. A CPU compiler change is
   measured on CPU, where repeats are bitwise and the run-to-run term is zero.
 
@@ -415,7 +415,7 @@ inside AGENTS.md's 30-minute rule.
 | --- | --- | --- |
 | 1 | Can a batch snapshot's own definitions be traced at cohort level, deterministically? | Yes. Vector window (vmapped, width 8, three rounds), `lax.map` batch, runner and scalar window programs, and per-world step-level texts. Two processes: 12 of 12 texts and 5 of 5 binding sets identical |
 | 2 | Does jaxpr text carry constant values? | No. Two functions closing over different 5- and 1,000-element arrays print **identical jaxpr text**; their constants and their StableHLO differ. In the real worlds, the path programs close over no constants (the check constants are arguments), but crossrev-style device-check texts close over three |
-| 2 | Other toy questions | No object addresses in jaxpr text (custom_jvp included). StableHLO `as_text()` has no locations. Cross-lowering for `cuda` and `rocm` works on this CPU host. Serialized CPU executables are not a stable identity (above) |
+| 2 | Other toy questions | No object addresses in jaxpr text (custom_jvp included). StableHLO `as_text()` has no locations. Cross-lowering for `cuda` and `rocm` works on this CPU host. Serialized CPU executables are not a stable identity (§3.4) |
 | 3a | Host-only edits (a phase helper, a host attribute on `_Round`) against a program edit (an optimization barrier on `dt` in `pump_composite.checked_step`), on scratch copies | Host edits: `source_hashes()` differs (today's loader refuses), but programs, constants and bindings are **identical**, so case 1 admits. Program edit: every path program's jaxpr and StableHLO differ, with bindings identical, so case 1 refuses |
 | 3b | Comment and docstring edits inside traced model code (`checked_step` in `pump_composite.py`, `capacitor_change` in `surface_tissue.py`), which move lines | `source_hashes()` differs, but texts (12/12), constants and bindings (5/5) are **identical**, so case 1 admits. Neither jaxpr text nor StableHLO carries source positions |
 
@@ -553,7 +553,7 @@ Reading saved bytes without executing from them is not a migration.
 
 | Class | Tools | Disposition |
 | --- | --- | --- |
-| Read-only comparison or audit (no execution from the state) | 22 of the 32: `jupiter_check`, `tile_benchmark`, `parallel_cluster`, `profile_cluster`, `spatial_matrix`, `compare_throughput`, `open_calcium_trajectory_compare`, `verify_windows_build` (which uses `load_snapshot`), the two spatial-extracellular audits in `scripts/`, and the BETSE-side audits (`*_audit_cells`, `*_context`, `timed_cells_check`, `family_audit`, `matched_windows`, `cells_review`, `diagnose`, `preparation_review`) | Exempt: nothing continues |
+| Read-only comparison or audit, or a writer of its own output (no execution from the state) | 22 of the 32: `jupiter_check`, `tile_benchmark`, `parallel_cluster`, `profile_cluster`, `spatial_matrix`, `compare_throughput`, `open_calcium_trajectory_compare`, `verify_windows_build` (which uses `load_snapshot`), the two spatial-extracellular audits in `scripts/`, the eleven BETSE-side audits (`*_audit_cells`, `*_context`, `timed_cells_check`, `family_audit`, `matched_windows`, `cells_review`, `diagnose`, `preparation_review`), and `open_calcium_trajectory_production` (writes its own `full-state.npz`) | Exempt: nothing continues |
 | Own paired formats with identity checks | the five `validation/betse/physiology/*` IO modules (numeric part through `load_snapshot` and `write_snapshot`) | Exempt: already under the loaders' rule |
 | Rebuild and execute outside the loaders | `scripts/profile_dispatch.py` (L4 timing on held states under other XLA flags); `field_floor_held.py` (`--state`, run **under version 3**: a deliberate case-3 diagnostic of version-2 states) | Exempt as diagnostics: no output is a continuation of the run. Each records the snapshot digest and both identities in its output (rule (b)), and the guard test lists them with this reason |
 | Import into a new definition | `heredity_turnover_literature.start_state` (sheet70 states into `resolved_pump_replacement@1`), used by E07-v1; its `importcheck` is the empirical import check; `static_cleft_egg_steps.start_state` (R-full's recorded J1 state, a reference record) | Rule (b). The turnover pre-screen and E07-v1 are exempt while their runs last (E07-v1 is running now). New imports record the source digest and identity |
