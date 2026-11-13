@@ -58,6 +58,28 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Energy roles declared, and the hold's window timing diagnosed (13 November).** Tier 1 + 2
+  gate: 356 files, no changed outcome ([gate](/mnt/workspaces/Cells/land-20261113b/)).
+  - **Energy roles** (completes v2 §1.1): heat and work fields are declared by name (the
+    adapter's `HEAT_FIELDS` and `WORK_FIELDS`, and each operator's own). They reach
+    `surface_pump.ledger_limits` through its new optional `flow_fields` argument; the
+    default keeps suffix selection. For every registered composition the declared table
+    equals the suffix selection, and the guards against `8416a72` are identical.
+  - **Window timing** (read-only on the hold):
+    - On the L4, 88% of the hold's wall time is inside the GPU dispatch call, about 53 ms
+      per batch step for six worlds; host work is about 12%.
+    - The 0.41 ms per step in `run.json` was the previous window's host tail, not device
+      time.
+    - Leading hypothesis, untested: the field solve's data-dependent `while_loop`s are
+      driven from the host.
+    - Segment 1 ends about 15:25–16:55 UTC: 20–22 h per 1,200 s segment and 71–77 h for
+      the whole hold.
+  - **Fix:** pump-family experiments keep their built `changes`. That takes the call from
+    10.3 ms to 0.4 µs (and `event_index` from 10.3 ms to 1.3 µs), about 2% of a window.
+    The jaxpr, a scalar run and a six-window vectorized run are bitwise identical. The
+    hold stays on `source-09`.
+  - [Evidence](/mnt/workspaces/Cells/window-timing-20261112-01/summary.json).
+
 - **Heredity turnover under the literature newcomer rule: no disc renewed, and B1 failed
   in all 21 arms, as predicted (11–13 November; development pre-screen, not judged).**
   Driver `validation/tissue/heredity_turnover_literature.py` on
