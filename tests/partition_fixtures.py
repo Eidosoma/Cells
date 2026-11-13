@@ -37,10 +37,11 @@ CONTACT = dict(
 
 def parent(*, end=0.004, neighbour=False):
     """The heredity cell facing its held bath, without its pump (@3, raw); with neighbour, a
-    second heredity cell (cell_1) in contact with it."""
+    second heredity cell (cell_1, in the depolarised state D, so the contact carries current
+    and its gate moves) in contact with it."""
     if neighbour:
-        kind = v3f.HEREDITY_STATES["H"][:4]
-        base = v3f.heredity_cells([kind, kind], dt=DT, end_time=end)
+        kinds = [v3f.HEREDITY_STATES[k][:4] for k in ("H", "D")]
+        base = v3f.heredity_cells(kinds, dt=DT, end_time=end)
     else:
         base = wfx.heredity_cell("H", dt=DT, end_time=end)
     base["experiment"]["observation_times"] = [0.0, end]

@@ -155,16 +155,24 @@ def test_the_manifest_names_the_closer(division_run, tmp_path):
 
 
 def test_a_neighbour_contact_runs_through_the_division():
-    """§8.1's variant on the device: the gated contact maps to the daughters (their gates the
-    parent's at the event, the parent's padding after it) and every check closes."""
+    """§8.1's variant on the device: the gated contact to a depolarised neighbour carries
+    current and its gate moves; at the division it maps to the daughters (their gates the
+    parent's, the parent's padding after it), its history retires into the record, and every
+    check closes."""
     result = run(parse_spec(world(neighbour=True)))
-    times = np.asarray(result.times)
-    gate = np.asarray(result.history.junction_gate)  # [contact, contact_d1, contact_d2]
+    h, times = result.history, np.asarray(result.times)
+    gate = np.asarray(h.junction_gate)  # [contact, contact_d1, contact_d2]
     before, after = times <= fx.EVENT + 1e-12, times > fx.EVENT + 1e-12
     assert (gate[before, 0] > 0).all() and not gate[before, 1:].any()
+    assert gate[before, 0][-1] < gate[0, 0]  # The gate closes towards its minimum.
     assert not gate[after, 0].any() and (gate[after, 1:] > 0).all()
-    transferred = np.asarray(result.history.junction_transferred)
-    assert np.abs(transferred[after][:, :, 1:]).max() > 0  # The daughters' contacts carry.
+    transferred = np.asarray(h.junction_transferred)  # [time, species, edge]
+    carried = np.abs(transferred[before][-1, :, 0]).max()
+    assert carried > 1e-9  # fmol, far above rounding (about 1e-19 at this scale).
+    record = np.asarray(h.partition_retired_junction_transferred_fmol)[after][0][:, 0]
+    assert np.array_equal(record, transferred[before][-1, :, 0])  # Retired whole at the event.
+    assert not transferred[after][:, :, 0].any()
+    assert np.abs(transferred[-1, :, 1:]).max() > 1e-9  # The daughters' contacts carry.
 
 
 def test_a_bridge_closes_through_the_run_and_restarts_bitwise():
