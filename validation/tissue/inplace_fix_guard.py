@@ -447,6 +447,9 @@ def compare(before, after):
         )
     for path in sorted(Path(before).glob("*-failure.json")):
         name = path.stem[: -len("-failure")]
+        if name in report:  # Compared after all, in a recorded part.
+            report[name]["also_refused_with_enforced_checks"] = True
+            continue
         report[name] = dict(
             before_failed=True,
             after_failed=(Path(after) / path.name).exists(),
