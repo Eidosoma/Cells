@@ -21,6 +21,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Roadmap](ROADMAP.md) | Development priorities, dependencies and completion criteria |
 | [Experiment programme](EXPERIMENTS.md) | Proposed memory and relay assays; implementing their prerequisites does not establish an assay result |
 | [E07-v1 renewal-stage design](E07_V1_DESIGN.md) | PROPOSED, not registered: donor copies with state-blind donors, an isolated threshold-finding set, the copy-only null, and composite v2's decision 4 for donor copies |
+| [Pattern-recovery experiment path](EXPERIMENT_PATH_PATTERN_RECOVERY.md) | Backlog, not active (13 November 2026): which layers restore a pattern after damage rather than only generating it, the engine-feature gap table and a minimal first version |
 | [Paper backlog](PAPER_BACKLOG.md) and [GRN wet-lab validations](GRN_WETLAB_VALIDATION.md) | Papers under test, and gene-network models validated against experiments (logged) |
 | [Protein catalogue plan](PROTEIN_CATALOGUE_PLAN.md) | Path to protein identities linked to atlases (UniProt, Human Protein Atlas, PDB, Reactome) |
 

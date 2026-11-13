@@ -83,6 +83,8 @@ distinction between read-only observers and causal feedback. The published
 revision are distinct versions; this brainstorm does not attribute new results
 to either.
 
+A backlog path built on these comparisons, [pattern recovery after damage](EXPERIMENT_PATH_PATTERN_RECOVERY.md) as layers are added one at a time, is logged with its engine-feature gaps (13 November 2026; not active).
+
 ## First engineering assay
 
 E00 is the one-cell source-and-decay pulse fixture described in
