@@ -63,7 +63,7 @@ def part_record(_args=None):
         d_rm_relative=j1["rm_ohm"] / float(record["rm_at_j1_ohm"]) - 1.0,
         at_j1=j1["at_j1"],
         target_V=TARGET_V,
-        passes=abs(d_em) <= TARGET_V,
+        passes=bool(abs(d_em) <= TARGET_V),
         steps=run.steps,
         wall_s=run.wall_s,
     )
@@ -108,7 +108,7 @@ def part_pulses(_args=None):
         ),
         v0=(full.v0, tissue.v0),
         target_V=TARGET_V,
-        passes=max(abs(x) for x in [*front.values(), *sample.values()]) <= TARGET_V,
+        passes=bool(max(abs(x) for x in [*front.values(), *sample.values()]) <= TARGET_V),
         steps=dict(rfull=full.steps, rtissue=tissue.steps),
         wall_s=dict(rfull=full.wall_s, rtissue=tissue.wall_s),
     )
