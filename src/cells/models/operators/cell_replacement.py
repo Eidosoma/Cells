@@ -45,7 +45,9 @@ Contract (models/operators/contract.py):
 * parts: an event map and a split process (the exact formation update over dt/2),
   kept split under an RK4 inner step;
 * refusal: a schedule disagreement refuses the step; templates are checked
-  against the declared slot volume, so no other operator may provide a volume;
+  against the declared slot volume, so no other operator may provide a volume, and
+  template pump densities are scaled by the declared patch area, so none may provide
+  an area;
   replaced slots need a held bath in their capacitor component.
 """
 
@@ -606,7 +608,9 @@ class ScheduledReplacement(Operator):
         "calcium_pump_capacity",
     )
     CONTROL_FACTORS = ("junction",)
-    CONFLICTS_VIEW = ("volume", "extracellular_volume")
+    # Templates are checked at the declared volumes; template pump densities are scaled by the
+    # declared patch areas.
+    CONFLICTS_VIEW = ("volume", "extracellular_volume", "membrane_area")
     ENTITY_WRITES = {
         "amount_increment": (
             "replacement_removed_fmol",

@@ -320,7 +320,10 @@ Tests, on CPU:
 1. the empty composition equals @3;
 2. each idle operator equals the composition without it;
 3. re-expressed water@1, @2 and replacement@1 equal the frozen models;
-4. every division operator idle equals @3 on the 825-node world.
+4. every division operator idle equals @3 on the 825-node world. Deferred (13 November)
+   until option (b) or (c) of the v2 design §3 is decided: option (a) refuses a
+   field-input provider above 64 field nodes. S2 runs the idle guard on the largest world
+   under the cap instead, the 19-cell sheet padded to 64 field nodes.
 
 GPU runs keep bounded agreement only: repeat L4 runs were not bitwise in one observation.
 
@@ -562,6 +565,15 @@ a_k and 1 − a_k.
 | Old (egg) membrane | 74 kΩ·cm² on the folded area; P_Na/P_K about 1; Cl⁻ substitution has no effect | Constant-field leak with P_Na = P_K and P_Cl = 0 (the smoke test reproduces −9.9 mV and 852 kΩ). As populations: Na and K leak laws (`naleak_always_open@1`, `kleak_always_open@1`), so that insertion and partition act on abundances | dL74; dLB74 Table I (V) |
 | New (furrow) membrane | 1.36–1.82 kΩ·cm²; mainly K⁺; outward current reversed by 1 mM Ba²⁺; five-fold lower particle density | A K leak population plus a small Na leak, at P_Na/P_K ≈ 0.02–0.05. That ratio comes from the exposed arms' branch EMFs, −91 and −74 mV (S). Ba²⁺ is an availability schedule on the K population: a qualitative check against K83's reversal | dLB74 p535 (V); K83 Table II (V) |
 | Pump | None detected at first cleavage: ouabain and ethacrynic acid without effect; pump current below 0.01 µA/cm² | `pump: null`, the route the smoke test used | dL74 p13; K83 p1760 (V) |
+
+**Declared departure in S2 (accepted 13 November; [v2 design](PUMP_COMPOSITE_V2_DESIGN.md)
+§3).** `scheduled_membrane_insertion@1` refuses channel populations on a patch that opens at
+an onset. @3's domain requires an inactive population to carry law code 0, and the onset
+masks the patch, not the population's law. Until that is lifted, the new membrane's K and
+Na leak is the furrow patch's passive permeability (per area, so it scales with the inserted
+area), not leak populations. A Ba²⁺ schedule then acts on the patch's membrane availability,
+which also scales its Na leak. Populations on patches that are open from the start are
+inserted with their declared densities.
 
 **Missing in the engine:**
 - abundance as state, insertion, and the cleft (§4);
