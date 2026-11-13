@@ -258,7 +258,13 @@ Bulk copying of atlas data is not planned.
    - evidence records;
    - the hook into membrane-domain populations; the mobile pump and leak populations
      are the obvious first consumers;
-   - bitwise-off checks.
+   - bitwise-off checks;
+   - **an abundance field** (user decision, 13 November 2026). It holds measured evidence
+     with provenance: copies per assembled structure, any functional threshold, species,
+     cell type, cycle state, condition, temperature, method, uncertainty and fluorophore
+     artefacts. [Hirano et al. 2026](PAPER_REVIEW_KINETOCHORE_COUNTS.md) is the model
+     record. Engine abundance stays state with one owner; the catalogue field is evidence.
+     Stage 3 itself stays held under D145 until its slot.
 4. **Implementation:** catalogue schema, loader and tests.
    - It comes with the first engine model that consumes it, for example abundance as
      state in the division or trafficking work.

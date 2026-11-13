@@ -89,6 +89,8 @@ make unfinished mechanisms compatible.
    (partition with closed ledgers, new membrane and contacts, lineage), then Xenopus
    early cleavage and the C. elegans early embryo, adding the physiology each needs.
    See the [cell-division plan](CELL_DIVISION_PLAN.md).
+   Mitosis (chromosomes, spindle, kinetochores) is in scope down the road, under the
+   endogenous lifecycle (user, 13 November 2026); nothing is built for it now.
 8. **Protein identity and atlas data (path started).** A small curated catalogue gives
    each modelled channel, pump, transporter and junction channel a stable identity linked to
    UniProt, the Human Protein Atlas, PDB and Reactome, with assembly stoichiometry and
