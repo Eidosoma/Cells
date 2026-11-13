@@ -575,6 +575,13 @@ is its anchor (D057), already counted on the declared layout.
     - The ledger accumulators are `electrode_charge_transferred_C` and the fields booked
       from capacitor_change's plate charges and patch voltages: electrode work, image
       charge, and injection's and replacement's work and energy magnitude.
+    - Clarified after the first parts: the observers record every state field as an
+      observation column under its own name. Those columns count as the accumulators, as
+      in the lead's definition of physical fields (state, observations and diagnostics
+      other than the ledger accumulators). In the Rm1
+      egg, `observations.electrode_charge_transferred_C` was the only column that
+      changed. Every other observation, including the derived readouts (potentials,
+      `electrode_charge_C`, residuals), stays physical.
     - If any physical bit changes in any qualified world, the fix is not admissible in
       place. It then needs a new ID or the allowance, which is the user's decision. The
       comparison is reported, and the work stops there.

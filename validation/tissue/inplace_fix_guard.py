@@ -358,8 +358,9 @@ def _seconds(record):
 
 
 def _field(key):
-    """The state field an array key names, or None for observations and other arrays."""
-    for marker in (".history.", ".final.", "history.", "final."):
+    """The state field an array key names, or that an observation column records (the
+    observers record every state field under its own name), else None."""
+    for marker in (".history.", ".final.", "history.", "final.", ".observations.", "observations."):
         if marker in key:
             return key.split(marker, 1)[1]
     return None
