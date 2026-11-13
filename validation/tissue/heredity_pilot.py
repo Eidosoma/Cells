@@ -78,6 +78,7 @@ from cells.core.specs import parse_spec  # noqa: E402
 from cells.core.surface_pump_v3_spec import NALEAK_LAW_ID  # noqa: E402
 from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
+from validation.tissue import field_solver_choice  # noqa: E402
 from validation.tissue import resolved_scale_world as scale_world  # noqa: E402
 from validation.tissue import surface_pump_v3_fixtures as fixtures  # noqa: E402
 from validation.tissue import surface_pump_v3_study as heredity  # noqa: E402
@@ -1618,7 +1619,12 @@ def part_start(args):
             tick = time.perf_counter()
             record = dict(seed=seed, s=s, analysis=sa.ANALYSIS_ID, mode="slow", formulation="rhs")
             try:
-                spec = parse_spec(held_bath_definition(tissue, seed, s))
+                spec = parse_spec(
+                    field_solver_choice.declare(
+                        held_bath_definition(tissue, seed, s), args.field_solver
+                    )
+                )
+                record["field_solver"] = spec.execution.field_solver
                 pb = sa.problem(spec, mode="slow")
                 record["coordinates"] = int(len(pb.anchor))
                 solution = sa.newton(pb, pb.anchor)
@@ -1674,11 +1680,31 @@ def load_start(directory, seed, s):
 
 
 def tissue_world(
-    tissue, seed, s, start, *, end_step, observed, backend, cue=None, max_trace_bytes=2**34
+    tissue,
+    seed,
+    s,
+    start,
+    *,
+    end_step,
+    observed,
+    backend,
+    cue=None,
+    max_trace_bytes=2**34,
+    field_solver="auto",
 ):
-    """The full tissue at arm (seed, s) from a start state; cue = (disc cells, on, off)."""
+    """The full tissue at arm (seed, s) from a start state; cue = (disc cells, on, off).
+
+    field_solver: a field_solver_choice choice. auto follows D147: the full tissue has free
+    field offsets (finite extracellular space), so it declares version 3; "2" reproduces
+    the definitions made before D147.
+    """
+    explicit = field_solver_choice.SOLVERS.get(field_solver)
     raw = heredity.tissue_definition(
-        dt=DT, end_time=end_step * DT, backend=backend, observation_times=[k * DT for k in observed]
+        dt=DT,
+        end_time=end_step * DT,
+        backend=backend,
+        observation_times=[k * DT for k in observed],
+        field_solver=explicit or field_solver_choice.SOLVERS["2"],
     )
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     cell_factors, junction_factors = heterogeneity(tissue, seed)
@@ -1749,6 +1775,8 @@ def tissue_world(
         if counter[j] != 0.0:
             square["initial_amount_fmol"]["K"] += counter[j] / CHARGE_PER_FMOL
             square["initial_charge_C"] = float(counter[j])
+    if explicit is None:
+        raw = field_solver_choice.declare(raw, field_solver)
     return raw
 
 
@@ -1967,7 +1995,7 @@ def prepare_worlds(args, tissue, *, end_step, observed, cue_for=None):
                 cue = None if disc is None else cue_for(disc)
                 raw = tissue_world(
                     tissue, seed, s, start, end_step=end_step, observed=observed,
-                    backend=args.backend, cue=cue,
+                    backend=args.backend, cue=cue, field_solver=args.field_solver,
                 )  # fmt: skip
                 spec = parse_spec(raw)
                 wid = len(members) + 1
@@ -2043,6 +2071,7 @@ def part_prepare(args):
         kind="cells.heredity_pilot_w1_prepare@1",
         steps=end,
         worlds={str(w): dict(seed=m["seed"], s=m["s"]) for w, m in meta.items()},
+        field_solvers=sorted({w.simulation.execution.field_solver for w in spec.worlds}),
         definition_seconds=time.perf_counter() - tick,
         criterion=dict(vm_drift_mV=STATIONARY_VM_DRIFT_MV, relative=STATIONARY_RELATIVE_DRIFT),
     )
@@ -2206,6 +2235,7 @@ def part_run(args):
         kind="cells.heredity_pilot_w1_run@1",
         resumed_from=args.resume,
         junction_heat_booking=JUNCTION_HEAT,
+        field_solvers=sorted({w.simulation.execution.field_solver for w in spec.worlds}),
         segment_seconds=args.segment_seconds,
         phases_s=dict(
             preparation_end=first * DT,
@@ -2907,6 +2937,13 @@ def main(argv=None):
     )
     parser.add_argument("--snapshot-every", type=float, help="run: snapshot every s of model time")
     parser.add_argument("--predictions", choices=("e07", "hold"), default="e07")
+    parser.add_argument(
+        "--field-solver",
+        choices=field_solver_choice.CHOICES,
+        default="auto",
+        help="start, prepare and run: auto declares version 3 where a definition has free "
+        "field offsets (D147); 2 reproduces the definitions made before D147",
+    )
     args = parser.parse_args(argv)
     global JUNCTION_HEAT, WATER
     global WATER_AVAILABILITY
