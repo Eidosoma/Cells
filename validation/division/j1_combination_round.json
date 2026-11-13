@@ -1,0 +1,256 @@
+{
+ "kind": "cells.division.j1_combination_round@1",
+ "status": "PROPOSED, revision 2 (13 November 2026), after the lead's and the advisor's review of the first draft. A draft for registration by the lead: not registered, and nothing in it has been run. No run starts until the lead registers this file on main.",
+ "approval": "The user approved a J1 combination round on 13 November 2026 ('Lets go on your suggestions'). The lead's brief of the same day sets its contents, and the lead's review set revision 2. The advisor reviewed both.",
+ "context": {
+  "arm_file": "validation/division/j1_diagnostic_arms.json (registered at cfe0fa3); its definitions of A1, A6c, A7a and the descriptors D1-D7 are used unchanged",
+  "registered_inputs": "validation/division/j1_declared_inputs.json (main d7a1797), unchanged",
+  "prediction_of_record": "validation/division/j1_prediction_of_record.json: Em -12.795 mV",
+  "single_arm_results": "/mnt/workspaces/Cells/cell-division-s0b-20261111-01/j1-diagnostic-01/ (snapshot 556b5eb); PROGRESS.md, S0b J1 diagnostic entry (12 November)",
+  "what_they_showed": [
+   "Only A1 (bath-facing fraction f) moves Em at J1 into the window, at f of about 0.015-0.024 by interpolation. There Em is still falling at J1 and Rm has no late rise.",
+   "Only A7a (access scaled with furrow depth) gives a late Rm rise (D7 +64, +130, +224 kOhm at alpha 0.5, 1, 2). Rm2 pins the access at J1, so A7a moves Em at J1 by at most 0.04 mV.",
+   "Every calibrated point shares two mismatches with dLB74's description: the Rm fall is front-loaded (D5 0.85-0.94, except A1 from f 0.03 and A2 from half its end), and the Em minimum comes at 7-10 min."
+  ]
+ },
+ "rules": {
+  "model": "R-full only (validation/division/cleft_egg_reference.py). No engine run and nothing in src/.",
+  "base": "Each arm changes only what it states. Every other input keeps its registered default, including the uniform insertion schedule.",
+  "recalibration": "Every point: P_old on pulse Rm1 = 852 kOhm and the access A/L (or its scale kappa) on pulse Rm2 = 488 kOhm at J1, as in the arm file. Same pulse protocol and readout.",
+  "integrator": "LSODA, rtol 1e-10, as the band and the single arms.",
+  "null_path": "R-full's null path stays bit-identical: no change to cleft_egg_reference.py or cleft_rings_reference.py is needed (see code). If implementation finds otherwise, the extension goes behind a null-default field with a null-reproduction test, and the lead is told before it lands.",
+  "held": "C1 and J2 stay held: no solution B or C run anywhere and no DFS74 or J2 quantity for any model, tests included.",
+  "cytosolic_Na": "Reported at J1 beside dL74's measured 22.4 +/- 1.1 mM. Never selected on.",
+  "no_value_from_Em": "Apart from f's declared calibration (calibration_per_unknown), no parameter value is picked from Em or from the time course. Curves are reported whole."
+ },
+ "calibration_per_unknown": [
+  {
+   "unknown": "P_old (old membrane, P_Na = P_K, P_Cl = 0)",
+   "datum": "Rm1 = 852 kOhm, dLB74 Table I (p532)",
+   "arms": "all"
+  },
+  {
+   "unknown": "access A/L, or kappa when the access is time-dependent",
+   "datum": "Rm2 = 488 kOhm at J1, dLB74 Table I (p532)",
+   "arms": "all"
+  },
+  {
+   "unknown": "f, the bath-facing fraction of new membrane (A1)",
+   "datum": "J1: Em = -20.3 mV at onset of second cleavage, dLB74 Table I (p532)",
+   "rule": "f is fixed where Em at J1 crosses -20.3 mV. This is the declared calibration anticipated by the arm file's last lead decision. Root search on f, starting from the bracket the A1 curve gives (0.01 to 0.03) and widened to [0, f_end] if needed, absolute tolerance 1e-8 in f. P_old and kappa are recalibrated at every evaluation.",
+   "consequence": "J1 is used up for the arms containing A1: it calibrates them and cannot test them.",
+   "arms": "A1_x_A7a"
+  },
+  {
+   "unknown": "alpha, the depth-scaling exponent (A7a)",
+   "datum": "none. No measurement fixes alpha, so alpha is a curve. A1_x_A7a runs at {0, 0.5, 1, 2}; the other arms at {0, 1}.",
+   "marks": "alpha = 0 is the registered constant access. alpha = 1 is marked, before any run, as the access of a uniform resistive slit, whose resistance grows with path length (arm file A7a range_basis, S).",
+   "use": "Only alpha = 0 and alpha = 1 can yield a frozen candidate (freezing_and_exit). A1_x_A7a's points at 0.5 and 2 are sensitivity only.",
+   "arms": "all"
+  },
+  {
+   "unknown": "cation-selective seal (A8)",
+   "datum": "none needed: a fixed rule (access D_Cl = 0, cation ratios free-solution; j1_declared_inputs arms, design note 7). It adds no unknown.",
+   "arms": "seal_x_A7a, seal_x_A6c"
+  },
+  {
+   "unknown": "P_K,new and P_Na/P_K of the -VM fit (A6c)",
+   "datum": "the -VM exposed arm's pulse Em2 -60.0 mV and Rm2 336 kOhm, dLB74 Table I (p532) and p535: 2 data for 2 unknowns",
+   "rule": "The central fit only, taken as recorded in j1-diagnostic-01/a6/a6_final.json (P_K,new 1.711e-7 m/s, rho 0.01112) and not refit. It is fitted on the exposed arm, which has no lumen and no access, so it depends on neither alpha nor the seal.",
+   "arms": "A6c_x_A7a, seal_x_A6c"
+  }
+ ],
+ "what_is_left_as_the_test": {
+  "A1_x_A7a": "Rm1, Rm2 and J1 are all used as calibration data. The only test in this round is the 0-35 min shape against the registered criteria (pass_criteria). The out-of-sample test of a frozen candidate is C1, held until a candidate is frozen.",
+  "seal_x_A6c": "The only combination without A1 whose level at J1 is not known in advance. Em at J1 (T-J1) is a real test for it, together with the shape criteria.",
+  "seal_x_A7a and A6c_x_A7a": "Their T-J1 results are known in advance, because A7a moves Em at J1 by at most 0.04 mV (arms.predicted_T_J1); both are expected to fail T-J1. They are kept for what is not known: the seal's time course, which was never computed, and the shape of the A6c level-shifter with the late-rise mechanism at the marked alpha.",
+  "never_tested_here": "Cytosolic Na (reported only), C1 and J2 (held)."
+ },
+ "pass_criteria": {
+  "route": "dLB74's description of the series (p531, V), converted to numbers below and registered before any run of this round. Fig. 2 (one egg) is not a target. However, Fig. 2 did influence two thresholds: T-D7 and T-R17 were restated after the drafter checked Fig. 2's egg against their first forms. Both forms are registered, and freezing needs both (two_forms).",
+  "why_not_fig2_as_target": [
+   "p531 describes dLB74's series ('often' marks features not seen in every egg). That is the series whose Table I means calibrate R-full. Fig. 2 is one egg, and no spread is given from which to set a tolerance.",
+   "Fig. 2's trace was read approximately (F, 400 dpi), and that prose reading was registered at cfe0fa3, before the single-arm runs. Its D-values, however, were first computed after those runs (PROGRESS, 12 November), and no digitisation with an uncertainty exists. Targets and tolerances set from those values now would be chosen with the single-arm results in view.",
+   "The p531 statements bear on exactly the features at issue: how Em falls and when it reaches its minimum, how long the Rm fall lasts, and how large the late changes are."
+  ],
+  "drafting_disclosure": "The drafter knew the single-arm results and the post-run Fig. 2 values while writing every conversion below. The lead should review the thresholds with that in mind.",
+  "fig2": "Fig. 2's values are reported beside every point and never judged. Approximate post-run values in the egg's own terms: D2 -10 mV; D3 time 15 min; D4 +2.5 mV; D5 0.46; plateau 0.84 MOhm, lowest 0.51 MOhm (reached by 13.5 min), 0.59 MOhm at second cleavage; D7 +80 kOhm. In those terms the first form of T-D7 (a quarter of the egg's plateau-to-J1 fall, 62.5 kOhm) would reject the egg; the restated form (a quarter of its fall to the lowest Rm, 82.5 kOhm) admits it at its boundary. The egg's Em at second cleavage, about -17 mV, belongs to one egg and is not compared with T-J1.",
+  "criteria": [
+   {
+    "id": "T-J1",
+    "applies_to": "seal_x_A7a, A6c_x_A7a, seal_x_A6c (set by construction for A1_x_A7a)",
+    "text": "dLB74 Table I (p532): -20.3 +/- 0.8 mV (SE, n = 20)",
+    "criterion": "Em at J1 in [-21.9, -18.7] mV (the registered window, mean +/- 2 SE)"
+   },
+   {
+    "id": "T-D2",
+    "text": "'in the next 10 min it becomes about 10 mV more negative'",
+    "criterion": "D2 = Em(17) - Em(7) in [-12.5, -7.5] mV",
+    "conversion": "A stated round value is read as the interval that rounds to it at the next coarser step: 5 mV for 'about 10 mV'."
+   },
+   {
+    "id": "T-D3",
+    "text": "'during the second half of cleavage it often shows a small decrease (1-3 mV) preceding the onset of second cleavage'",
+    "criterion": "D3 time >= 15.0 min. The value of the minimum is not judged.",
+    "conversion": "The 15 min is not in the p531 wording; it comes from the declared time base. Cleavage here runs from the onset of first cleavage (time zero) to the onset of second cleavage, J1, which is declared at 30 min (j1_declared_inputs time.j1_s, from dLB74 p13). The second half of cleavage is therefore 15-30 min. The decrease that 'often' marks the second half starts at the Em minimum, and when it is absent Em keeps falling to J1, so in either case the minimum before J1 is not in the first half."
+   },
+   {
+    "id": "T-D4",
+    "text": "the same sentence: '(1-3 mV)', 'often'",
+    "criterion": "D4 = Em(J1) - Em minimum <= +3.0 mV",
+    "conversion": "The stated upper end. There is no lower bound, because 'often' allows the decrease to be absent."
+   },
+   {
+    "id": "T-D5",
+    "text": "'Rm is constant initially, drops drastically from 7 till 17 min'",
+    "criterion": "D5 = (Rm(7) - Rm(10)) / (Rm(7) - Rm(17)) <= 0.66",
+    "conversion": "The fall must not end before 16 min. The stated end, 17 min, is read to +/- 1 min, and 'ends' is read as 95% complete. An exponential fall from 7 min that is 95% complete at 16 min (time constant 3.0 min) gives D5 = 0.66; a slower or more even fall gives less (uniform over 7-17 min: 0.30)."
+   },
+   {
+    "id": "T-R17",
+    "text": "the same sentence: 'till 17 min'",
+    "first_form": "Rm(17 min) <= 512 kOhm: 93.5% of the Rm1 -> Rm2 fall (852 - 0.935 x 364 kOhm). Written before the Fig. 2 check.",
+    "restated_form": "F17 = (Rm1 - Rm(17)) / (Rm1 - Rm_low) >= 0.935. Rm1 is the initial plateau (the calibrated 852 kOhm) and Rm_low the lowest Rm from 0 to J1 inclusive. Restated after the Fig. 2 check, to measure the fall to the lowest Rm, as p531 describes it. Without a late rise the two forms agree.",
+    "conversion": "The fall must end by 18 min, read the same way as T-D5. An exponential fall from 7 min that is 95% complete at 18 min (time constant 3.67 min) has done 93.5% of its fall at 17 min."
+   },
+   {
+    "id": "T-D7",
+    "text": "'and often shows a small increase before second cleavage'",
+    "first_form": "D7 = Rm(J1) - minimum Rm before J1 <= 91 kOhm: a quarter of the Rm1 -> Rm2 fall (364 kOhm). Written before the Fig. 2 check.",
+    "restated_form": "D7 <= 0.25 (Rm1 - Rm_low): a quarter of the fall from the plateau to the lowest Rm. With Rm(J1) at the calibrated 488 kOhm this is D7 <= 121 kOhm. Restated after the Fig. 2 check.",
+    "conversion": "'Small' is read as at most a quarter of the drastic fall. There is no lower bound, because 'often' allows the increase to be absent."
+   }
+  ],
+  "two_forms": "A point passes for freezing only if it passes every applicable criterion under both forms of T-R17 and T-D7. If an eligible point passes every criterion under one form and fails under the other, the question is parked, even if another point passes under both. The forms then decide rather than the model. This guards only the freeze: a false park is recoverable, a spent C1 is not.",
+  "by_construction": {
+   "all_arms": "D1 and the constant Em and Rm before onset both follow the declared insertion onset (7 min, inside the stated 6-8 min). They are excluded.",
+   "A1_x_A7a": "Em at J1 is set by f's calibration and excluded. Rm at J1 (kappa) and Rm1 (P_old) are calibration data in every arm."
+  },
+  "pass_rule": "A point passes when every applicable criterion holds at that point, under the forms stated in two_forms. No tolerance is added for numerical error: descriptors are computed from the time course at the registered pulse times, to about 1e-6 of each threshold.",
+  "orientation_only": "For orientation only, applying the criteria under either form to the single-arm time courses in j1-diagnostic-01, which are not re-judged: the record fails T-J1, T-D2, T-D3 and T-D5. A1 near its crossing (f 0.02) fails T-D2, T-D5 and T-R17 (Rm(17) 527 kOhm, F17 0.893). A7a alone fails T-D3, T-D4 and T-D5 at every alpha, plus T-D7 at alpha 1 (D7 130 kOhm against limits of 91 and 123) and at alpha 2. No single-arm point passes every shape criterion."
+ },
+ "arms": [
+  {
+   "id": "A1_x_A7a",
+   "change": "A1 (a fraction f of new membrane faces the bath) together with A7a (the lumen's access scales with furrow depth, A/L(t) = kappa (d(t)/d(J1))^-alpha). Both are as defined in the arm file. A7a's depth d(t) follows the total inserted area, as registered; the bath-facing part does not change the slit geometry.",
+   "roles": "f sets the level at J1; alpha produces the late Rm rise.",
+   "points": "alpha in {0, 0.5, 1, 2}, with f calibrated on J1 at each (4 points). alpha = 0 is A1 alone at its J1 crossing.",
+   "fields": "Egg.bath_fraction and Egg.access_shape ('depth', alpha, R_egg, r_mouth, d_ref), as in the single arms; the access_shape is left empty at alpha = 0",
+   "predicted_T_J1": "not a test: -20.3 mV by construction (f calibrated)",
+   "descriptors_set_by_construction": "D1; Em at J1"
+  },
+  {
+   "id": "seal_x_A7a",
+   "change": "The A8 cation-selective seal (access D_Cl = 0) together with A7a.",
+   "roles": "a level-shifter without bath-facing membrane, plus the late Rm rise. Kept for the seal's time course, which was never computed.",
+   "points": "alpha in {0, 1} (2 points)",
+   "fields": "scalar override access_selectivity = 'cation_selective', plus Egg.access_shape at alpha = 1",
+   "predicted_T_J1": "fails. alpha 0: -16.53 mV, as already computed for the seal alone (rfull-band-01/results/arms.json, J1 only). alpha 1: -16.55 mV, the seal's value plus A7a's single-arm shift at alpha 1 (-0.019 mV).",
+   "descriptors_set_by_construction": "D1"
+  },
+  {
+   "id": "A6c_x_A7a",
+   "change": "The A6c -VM fit (central: new-membrane P_K,new and P_Na/P_K fitted to the -VM exposed arm) together with A7a.",
+   "roles": "a level-shifter without bath-facing membrane, plus the late Rm rise at the marked alpha",
+   "points": "the central fit at alpha = 1 (1 point). Its alpha = 0 point is the single-arm A6c central point in a6_final.json and is not rerun.",
+   "fields": "Egg.new_permeability = (rho P_K, P_K, 0) from a6_final.json, plus Egg.access_shape",
+   "predicted_T_J1": "fails: -13.78 mV, A6c's single-arm value (-13.761 mV) plus A7a's single-arm shift at alpha 1 (-0.019 mV)",
+   "descriptors_set_by_construction": "D1"
+  },
+  {
+   "id": "seal_x_A6c",
+   "change": "The A8 cation-selective seal together with the A6c central fit; at alpha = 1, also A7a.",
+   "roles": "the only combination of level-shifters without A1 whose level at J1 is not already known",
+   "points": "alpha in {0, 1} (2 points)",
+   "fields": "scalar override access_selectivity = 'cation_selective', Egg.new_permeability from a6_final.json, plus Egg.access_shape at alpha = 1",
+   "predicted_T_J1": "an additive estimate, made before any run: -17.50 mV at alpha 0 and -17.51 mV at alpha 1. These are the record (-12.795 mV) plus the seal's single-arm shift (-3.734 mV) and A6c's (-0.966 mV), plus A7a's at alpha 1. The estimate would miss the window by 1.2 mV. The interaction of the seal with A6c is not estimated; this pairing's run measures it.",
+   "descriptors_set_by_construction": "D1"
+  }
+ ],
+ "shared_mismatch_arm": {
+  "decision": "None: no cited measurement supports one. The back-loaded schedule is left out (lead's review, 13 November).",
+  "front_loaded_Rm_fall": "The nearest candidate was the registered back-loaded insertion schedule (0.04 mm2/min for 10 min, then about 0.076; j1_declared_inputs, an in-band member). Its 0.04 mm2/min is a rate dLB74 derived from Rm in treated eggs: without the vitelline membrane (growth lasting 7-10 min) and with it plus CCB (15-17 min) (p536, V). It therefore does not measure normal eggs' early insertion. Normal eggs' schedule is measured only by the total at J1 (BdL73 Table II) and the onset. BdL73 also says of eggs cleaving without the vitelline membrane that 'Such eggs, which manage to complete division, show a reduced rate of membrane growth' (p100; page located in the text extraction, not checked on the rendered page). The sentence does not say what the rate is reduced relative to, so nothing here rests on it.",
+  "early_Em_minimum": "No source gives a mechanism. The measured slit width range (1.5-2.5 um, BdL73 Figs. 7-8) did not move the minimum in A3. BdL73's furrow depths at about 4 and 8 min (p96) are already used by A7a.",
+  "other_sources_checked": "K83: the outward current over new membrane grows up to 10-fold during the 20 min before second cleavage as more new membrane appears (fertilization envelope removed; Results, p1754-1755 in the text extraction). This reflects continuing insertion, not a schedule."
+ },
+ "freezing_and_exit": {
+  "eligible_points": "alpha = 0 (the registered access) and alpha = 1 (marked) in each arm. A6c enters through its central fit only. A1_x_A7a's points at alpha 0.5 and 2 are sensitivity points.",
+  "frozen_candidates": "Each eligible point that passes for freezing (pass_criteria.two_forms) is frozen as computed: f, kappa, P_old, alpha, the seal or the A6c fit, and all registered inputs. It is written to a candidates file with the run's snapshot and nothing is refit.",
+  "sensitivity_only": "If only a sensitivity point (alpha 0.5 or 2) passes, it is recorded, the question is parked, and there is no third round.",
+  "form_dependent": "If the two forms of T-R17 and T-D7 disagree at an eligible point, the question is parked (pass_criteria.two_forms).",
+  "after_freezing": "A C1 registration is drafted from held_check_C1_for_frozen_candidates.would_be (dL74 p9-11; solutions B and C) and registered on main, with its rule, before C1's first run. J2 stays held.",
+  "parking": "If no point is frozen, the cleft-model question is parked. R-full with the registered inputs stays the reference, and its J1 failure and the shared shape mismatches are recorded as unexplained. C1 and J2 stay held. Resuming needs new measurements or the user's decision.",
+  "no_third_round": "Either way, no third diagnostic round is registered.",
+  "failures": "A point that fails to integrate is recorded as failed and does not pass. It may be rerun once with Radau at rtol 1e-10 (the record's registered integrator), reported as such.",
+  "no_crossing": "If f has no J1 crossing in [0, f_end] at some alpha, that is reported and no candidate exists at that alpha."
+ },
+ "report_per_point": {
+  "at_j1": "As in the arm file: Em and Rm (pulse protocol), the separate chords, A/L or kappa, P_old, the lumen composition and potential, and cytosolic Na. Also f (where calibrated), alpha, the seal or the A6c fit, Em(0), and Em at J1 beside the arm's predicted_T_J1.",
+  "time_course": "Em at every pulse front edge and Rm at every pulse pair, from 0 to 35 min",
+  "descriptors": "D1-D7 as defined in the arm file (time_course.descriptors), Rm(17 min), Rm_low and F17. Each criterion's value and pass or fail is reported under both forms where two exist, with by-construction items marked. Fig. 2's post-run values are given beside them.",
+  "verdict": "per eligible point: passes for freezing, fails, or form-dependent. Per round: the frozen candidates, or parking with its reason."
+ },
+ "considered_and_dropped": [
+  {
+   "id": "back_loaded_schedule",
+   "why": "Unsupported for normal eggs (shared_mismatch_arm). Left out at the lead's review."
+  },
+  {
+   "id": "A7b_late_apposition",
+   "why": "Its late descriptors (D4, D7 and the time of D3) are set by construction from Fig. 2's trace, so it cannot test the late features that the pairings with A7a test."
+  },
+  {
+   "id": "A2 and A4 as level-shifters",
+   "why": "Both move Em at J1 away from the datum (A2 to -9.9 mV, A4 to -11.9 mV)."
+  },
+  {
+   "id": "A3_ring_lumen",
+   "why": "At the calibrated points it moved Em at J1 by under 0.07 mV and left the descriptors unchanged (D7 +0.5 kOhm). The single well-mixed lumen stays."
+  },
+  {
+   "id": "A6c's one-at-a-time fits, and seal_x_A7a and A6c_x_A7a at alpha 0.5 and 2",
+   "why": "Cut at the lead's review: their T-J1 results are known in advance, and they cannot be frozen."
+  },
+  {
+   "id": "triples with A1 (A1 x A7a x seal, A1 x A6c x A7a)",
+   "why": "They add unknowns and no test that the pairings lack. They can be added if the lead asks."
+  },
+  {
+   "id": "Fig. 2 as a digitised single-egg target",
+   "why": "See pass_criteria.why_not_fig2_as_target. Choosing that route would need a fresh digitisation of both traces, with an uncertainty from repeated reads, registered before any run of this round."
+  },
+  {
+   "id": "inward_rectifying_new_membrane",
+   "why": "Still unsourced in shape (arm file)."
+  }
+ ],
+ "code": {
+  "model_changes": "None. Every arm is built from fields that already exist and are null by default: Egg.bath_fraction, Egg.access_shape, Egg.new_permeability, and the scalar override access_selectivity. cleft_egg_reference.py and cleft_rings_reference.py are not changed, so R-full's null path stays bit-identical. tests/unit/test_division_cleft_reference.py and test_division_diagnostic_*.py remain the null-reproduction guard.",
+  "new_code_after_registration": "The f calibration helper (a root search of Em at J1 on f, with P_old and kappa recalibrated at each evaluation) and this round's groups, in validation/division/ beside the diagnostic runner. Two unit tests on synthetic cells go with them (no solution B or C, tiers by measurement). The first is the helper's. The second is the combined path's null reduction: the combinations have never run together, and the existing tests cover each extension's null only separately. With f = 0, A1 x A7a must reproduce A7a alone; with alpha = 0, each arm must reproduce its level-shifters alone (A1; the seal; A6c; the seal with A6c). None is written in this draft, and nothing runs until the file is registered.",
+  "verified": "A7a's depth law receives the total new-membrane area in the extended path (ExtendedModel's right-hand side passes the segment's total area to access_scale), as arms.A1_x_A7a states."
+ },
+ "compute": {
+  "basis": "From the single-arm round's journal: about 2.4 CPU-min per calibrated point with its time course (g1: 22 points in 52 CPU-min), and a peak of 0.20-0.26 GB per process. f's calibration takes about 7 calibrated J1 evaluations per point by root search from the A1 bracket, about 15 CPU-min per point.",
+  "units": [
+   {
+    "name": "j1comb-a1",
+    "content": "the null check (the record within its reference term), then A1_x_A7a at 4 alpha",
+    "cpu_min": 65,
+    "memory": "cap 3G; expected peak about 0.3 GB"
+   },
+   {
+    "name": "j1comb-pairs",
+    "content": "seal_x_A7a (2 points), A6c_x_A7a (1), seal_x_A6c (2)",
+    "cpu_min": 15,
+    "memory": "cap 3G; expected peak about 0.3 GB"
+   }
+  ],
+  "total": "about 1.3 CPU-hours (up to 2 with margin)",
+  "launch": "/home/robert/Cells/scripts/run_detached.sh NAME 3G --oom-first --wait-headroom 2G --cpus <as the lead assigns> -- <command>, one unit per row above, never nohup or &. Runs come from a clean snapshot of the registered commit, with command.txt and run.log per unit, in /mnt/workspaces/Cells/cell-division-s0b-20261111-01/j1-combination-01/."
+ },
+ "lead_decisions_requested": [
+  "The reading of 'if the two forms disagree, the question is parked': as drafted, it applies to any eligible point, even when another point passes under both forms. The alternative is to apply it to that point only.",
+  "The f root-search tolerance and the failure rule (one Radau rerun).",
+  "Cores for the two units."
+ ]
+}
