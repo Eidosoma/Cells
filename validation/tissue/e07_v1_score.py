@@ -125,7 +125,20 @@ def weight_after_first_turnover(folder, outcome):
     _, edges, _ = e7.sheet()
     out = run.junction_weight(edges, s["d"][reg], s["abundance"][reg], s["gate"][reg], mask)
     out["window"] = window
-    return out
+    return out, t[mask]
+
+
+def law_a(folder, outcome, times):
+    """The formation law's A (all junctions) from the schedule, over the given records
+    (validation/tissue/e07_v1_turnover.abundance_series, called as the driver calls it)."""
+    plan = series(str(folder))["plan"]
+    ev = [(int(k), int(slot), None if donor is None else int(donor))
+          for k, slot, donor, *_ in plan["events"]]  # fmt: skip
+    law = e7.abundance_series(ev, outcome["size"], plan["planned_end_s"], plan["formation"],
+                              dt=plan["dt"])  # fmt: skip
+    index = {round(float(x), 9): i for i, x in enumerate(law["t"])}
+    vals = [law["all"][index[round(float(x), 9)]] for x in times if round(float(x), 9) in index]
+    return float(np.mean(vals)) if vals else None
 
 
 def max_excess_to_end(folder):
@@ -145,6 +158,14 @@ def score(base, protocol, development=False):
     runs = load_runs(base, development)
     pred = protocol["predictions"]
     scores = {}
+    expected = set(runs) if development else {
+        f"{a['id']}/seed{r}" for a in e7.arm_set() for r in a["seeds"]}  # fmt: skip
+    missing = sorted(expected - set(runs))
+    scores["coverage"] = dict(expected=len(expected), loaded=len(runs), missing=missing)
+
+    def complete(prefixes):
+        """No expected run of these arms is missing (an item is not scored otherwise)."""
+        return not any(k.startswith(prefixes) for k in missing)
 
     def group(name, s):
         return {k: v for k, v in runs.items() if v["outcome"]["group"] == name
@@ -289,7 +310,7 @@ def score(base, protocol, development=False):
         H_copies=sum(v["outcome"]["H_copies"] for v in a_runs.values()),
         H_copies_converted=converted,
         scored_as="no H copy converted (to the judged record) in any (a) run",
-        held=bool(a_runs) and converted == 0,
+        held=(bool(a_runs) and converted == 0) if complete(("a-",)) else None,
     )
     scores["E3"] = e3
 
@@ -343,6 +364,7 @@ def score(base, protocol, development=False):
                 interior_converted_any_neighbours=sum(r["converted"] and r["interior"]
                                                       for r in rows),
                 templates_converted=o["templates_converted"], templates=o["templates"],
+                templates_converted_recomputed=sum(r["converted"] for r in rows),
                 all_H_s=all_h_time(m["folder"]),
                 first_turnover_s=series(str(m["folder"]))["plan"]["turnover_complete_s"][0],
             )  # fmt: skip
@@ -350,7 +372,12 @@ def score(base, protocol, development=False):
                    default=None)  # fmt: skip
         star_5 = max((tau for tau, x in per.items() if x["converted"]), default=None)
         entry = dict(per_tau={str(t_): x for t_, x in sorted(per.items())},
-                     tau_star_single_draw=star, tau_star_among_5plus_D=star_5)  # fmt: skip
+                     tau_star_single_draw=star, tau_star_among_5plus_D=star_5,
+                     tau_star_definitions="items.E5: the largest ladder tau with at least one "
+                     "converted interior newcomer (tau_star_single_draw, scored); the driver's "
+                     "summary.json counts only interior newcomers arriving with five or more D "
+                     "neighbours (tau_star_among_5plus_D): a driver-versus-protocol discrepancy, "
+                     "reported whether or not the two values differ")  # fmt: skip
         if s == 0.6:
             f = {tau: per[tau]["fraction"] if tau in per else None for tau in e7.LADDER_TAU_S}
             f300 = 0.0 if f[300.0] is None and 300.0 in per else f[300.0]
@@ -396,15 +423,20 @@ def score(base, protocol, development=False):
     e6 = {}
     for k, m in a_runs.items():
         o = m["outcome"]
-        w = weight_after_first_turnover(m["folder"], o)
+        w, times = weight_after_first_turnover(m["folder"], o)
         dd, dh, hh = ratio(w, "D-D"), ratio(w, "D-H"), ratio(w, "H-H")
         a, a_law = w["all"]["A"], law[o["group"]]
+        s_ = series(str(m["folder"]))
+        truncated = bool(s_["t"][s_["regular"]][-1] < o["judged_target_s"] - 1e-9)
+        a_ok = None if truncated else within(a, 0.75 * a_law, 1.25 * a_law)
+        ratios_ok = bool((dh is None or within(dh, 0.05, 0.2)) and (dd is None or dd >= 0.8)
+                         and (hh is None or hh >= 0.8))  # fmt: skip
         e6[k] = dict(
-            window=w["window"], A=a, law_A=a_law, records=w["all"]["records"],
-            weight_over_A={"D-D": dd, "D-H": dh, "H-H": hh},
-            held=None if a is None else bool(
-                within(a, 0.75 * a_law, 1.25 * a_law) and (dh is None or within(dh, 0.05, 0.2))
-                and (dd is None or dd >= 0.8) and (hh is None or hh >= 0.8)),
+            window=w["window"], A=a, law_A_quoted=a_law,
+            law_A_same_records=law_a(m["folder"], o, times), records=w["all"]["records"],
+            truncated=truncated, A_within_25_percent_of_quoted=a_ok,
+            weight_over_A={"D-D": dd, "D-H": dh, "H-H": hh}, ratios_held=ratios_ok,
+            held=None if a is None else bool(ratios_ok and a_ok is not False),
         )  # fmt: skip
     scored = [x["held"] for x in e6.values() if x["held"] is not None]
     scores["E6"] = dict(
@@ -417,7 +449,7 @@ def score(base, protocol, development=False):
         "25% of the law's value; weight / A at least 0.8 on D-D and H-H junctions and in "
         "[0.05, 0.2] on D-H junctions (a junction class absent from the window is not scored; "
         "a run with no record in the window is not evaluable)",
-        held=bool(scored) and all(scored),
+        held=(bool(scored) and all(scored)) if complete(("a-",)) else None,
     )
 
     # Validity (item E2).
@@ -442,7 +474,7 @@ def score(base, protocol, development=False):
     )  # fmt: skip
     val = scores["validity"]
     val["held"] = bool(every and not val["refusals"] and not val["censored"] and not failed
-                       and worst <= 0.13)  # fmt: skip
+                       and worst <= 0.13) if complete(("",)) else None  # fmt: skip
 
     # B1, reported beside the null's P(B1).
     b1 = {k: m["outcome"]["b1"] for k, m in every if "b1" in m["outcome"]}
@@ -452,8 +484,30 @@ def score(base, protocol, development=False):
         predicted=pred["B1"],
         runs=b1,
         scored_as="B1 false in every fast k1 and (b) run, and true in the (c) run at s 0.6",
-        held=bool(fast_b) and not any(fast_b.values()) and c06 == [True],
+        held=(bool(fast_b) and not any(fast_b.values()) and c06 == [True])
+        if complete(("a-donor-fast-k1", "b-", "c-"))
+        else None,
     )
+
+    # Cross-checks against the driver's summary and outcomes.
+    checks = dict(
+        templates_converted_recomputed_equal=all(
+            x["templates_converted"] == x["templates_converted_recomputed"]
+            for item in e5.values() for x in item["per_tau"].values()),
+    )  # fmt: skip
+    summary_path = Path(base) / "summary.json"
+    if summary_path.exists():
+        sm = json.loads(summary_path.read_text())
+        mine = {k: v["class_"] for k, v in e3["groups"].items()}
+        checks.update(
+            group_classes_equal_summary=mine
+            == {k: v["class_"] for k, v in sm["group_classes"].items()},
+            tau_star_among_5plus_D_equals_summary={
+                str(s): e5[f"s{s}"]["tau_star_among_5plus_D"] for s in (0.6, 1.0)
+                if e5.get(f"s{s}", {}).get("per_tau")} == sm["tau_star_single_draw"],
+            summary_runs=len(sm["runs"]), summary_development_runs=sm["development_runs"],
+        )  # fmt: skip
+    scores["cross_checks"] = checks
     return scores
 
 
@@ -461,6 +515,28 @@ def held(value):
     if "held" in value:
         return value["held"]
     return {k: held(v) for k, v in value.items() if isinstance(v, dict) and k != "groups"}
+
+
+READINGS = [
+    "held means held under the reading in its item's scored_as; these readings are the "
+    "scorer's, not the registration's, and were fixed before any judged outcome existed",
+    "E1: 'about 10 uV' read as at most 10 uV over all records; amounts at most 3e-6",
+    "E3 fast k1 s 1.0 and fast k3 s 0.6: the ranges read jointly per run (erosion with dJ, "
+    "and D-loss, in range), counted against the group's two-thirds number",
+    "E3 fast k1 s 0.6: 'low effective coupling' read as every neutral run's mean weight "
+    "(E6's readout to the judged record, all junctions) at most half the nominal",
+    "E3 fast k3 s 1.0: 'stronger than at k1' read as a lower mean dJ than fast k1 s 1.0",
+    "all H: the stop rule's record (the first of two consecutive 10 s records with no D)",
+    "E4 s 1.0: 'after the second turnover' read as at the judged record; collective loss as "
+    "5 or more cells from D to H between consecutive 10 s records, replaced slots excluded",
+    "E5 s 0.6: a 300 s run with no candidate newcomer counts as 0; 'falls with tau' as "
+    "non-increasing fractions; tau* as items.E5 defines it",
+    "E6: A within 25% of the quoted value (not scored for a run cut short before its judged "
+    "record); weight / A at least 0.8 on D-D and H-H, in [0.05, 0.2] on D-H; an absent "
+    "junction class not scored",
+    "validity: 'about 12.5%' read as at most 0.13, any cell and record to the run's end",
+    "an item whose runs are not all present is not scored (held null)",
+]
 
 
 def main(argv=None):
@@ -474,11 +550,14 @@ def main(argv=None):
     protocol = json.loads(Path(args.protocol).read_text())
     value = dict(kind="cells.e07_v1_scores@1", protocol=args.protocol,
                  note="post-processing of the judged outputs; no rule or prediction changed",
-                 development=args.development,
+                 development=args.development, readings=READINGS,
                  scores=score(args.output, protocol, args.development))  # fmt: skip
     name = "scores-development.json" if args.development else "scores.json"
     run.write_json(Path(args.output) / name, value)
-    print(json.dumps({k: held(v) for k, v in value["scores"].items()}, indent=1))
+    print(json.dumps({k: held(v) for k, v in value["scores"].items()
+                      if k not in ("coverage", "cross_checks")}, indent=1))  # fmt: skip
+    print(json.dumps(dict(coverage=value["scores"]["coverage"],
+                          cross_checks=value["scores"]["cross_checks"])))  # fmt: skip
     return 0
 
 
