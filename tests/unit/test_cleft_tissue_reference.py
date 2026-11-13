@@ -419,6 +419,119 @@ def test_a_parent_whose_bridge_is_still_open_cannot_divide():
     rt.check_world(early)  # 0.12 >= 0.05 + 0.04: closed.
 
 
+def compact_four():
+    """The topology of design §4.3 and §6.2 (1 -> 2 -> 4 with second furrows): P's furrow opens
+    cleft c1; P divides at 0.1 s (bridge b, closed by 0.2 s); each daughter opens its own second
+    furrow into a new cleft (c2a, c2b) joined to c1 at the centre, then divides with its three
+    patches (old, first furrow, second furrow). 7 cells, 3 clefts, 20 patches, 5 faces,
+    3 bridges; B divides asymmetrically (carriers K and Cl)."""
+    w = 1e-6
+    cells = {"P": rt.CellSpec(2.0, CYT)}
+    patches = {
+        "P.old": rt.PatchSpec("P", "bath", OLD, area_m2=4e-10, capacitance_F=4e-12),
+        "P.f1": rt.PatchSpec(
+            "P",
+            "c1",
+            FURROW,
+            area_m2=1e-11,
+            specific_capacitance_F_m2=1e-2,
+            onset_s=0.02,
+            schedule=((0.02, 2e-10), (0.1, 0.0)),
+        ),
+    }
+    plan = (
+        ("P", ("A", "B"), 0.1, 0.5, 0.5, "b"),
+        ("A", ("A1", "A2"), 0.25, 0.5, 0.5, "bA"),
+        ("B", ("B1", "B2"), 0.26, 0.4, 0.6, "bB"),
+    )
+    second = {"A": ("c2a", 0.15), "B": ("c2b", 0.16)}
+    divisions = {}
+    for parent, daughters, t, f, a, bridge in plan:
+        kinds = ("old", "f1") if parent == "P" else ("old", "f1", "f2")
+        maps = {}
+        for kind in kinds:
+            node = {"old": "bath", "f1": "c1"}.get(kind) or second[parent][0]
+            perm = OLD if kind == "old" else FURROW
+            c_d = 0.0 if kind == "old" else 1e-2
+            for d, share in zip(daughters, (a, 1.0 - a), strict=True):
+                schedule = (
+                    ((t, 1e-10 * share), (t + 0.1, 0.0)) if kind == "f1" and parent == "P" else ()
+                )
+                patches[f"{d}.{kind}"] = rt.PatchSpec(
+                    d, node, perm, specific_capacitance_F_m2=c_d, schedule=schedule
+                )
+            maps[f"{parent}.{kind}"] = (f"{daughters[0]}.{kind}", f"{daughters[1]}.{kind}", a)
+        for d in daughters:
+            cells[d] = rt.CellSpec()
+        divisions[parent] = rt.DivisionSpec(
+            parent,
+            daughters,
+            t,
+            f,
+            maps,
+            carriers={} if a == f else {"K": 0.5, "Cl": 0.5},
+            bridge=bridge,
+            bridge_spec=rt.BridgeSpec(3e-8, D_CYT, "linear", 0.1 if parent == "P" else 0.05),
+        )
+    for parent, (node, onset) in second.items():
+        patches[f"{parent}.f2"] = rt.PatchSpec(
+            parent,
+            node,
+            FURROW,
+            area_m2=5e-12,
+            specific_capacitance_F_m2=1e-2,
+            onset_s=onset,
+            schedule=((onset, 1e-10), (onset + 0.09, 0.0)),
+        )
+    # A's and B's second-furrow patches split again at their divisions (no further insertion).
+    clefts = {c: rt.CleftSpec(w) for c in ("c1", "c2a", "c2b")}
+    faces = {
+        "c1.access": rt.FaceSpec(("c1", "bath"), 1e-7, D_FREE),
+        "c2a.access": rt.FaceSpec(("c2a", "bath"), 1e-7, D_FREE),
+        "c2b.access": rt.FaceSpec(("c2b", "bath"), 1e-7, D_FREE),
+        "centre.a": rt.FaceSpec(("c1", "c2a"), 5e-8, D_FREE),
+        "centre.b": rt.FaceSpec(("c2b", "c1"), 5e-8, D_FREE),
+    }
+    return rt.World(T, BATH, cells, patches, clefts, faces, divisions=divisions)
+
+
+def test_the_compact_one_to_two_to_four_world_with_second_furrows():
+    world = compact_four()
+    assert (len(world.cells), len(world.clefts), len(world.patches), len(world.faces)) == (
+        7,
+        3,
+        20,
+        5,
+    )
+    times = (0.05, 0.1, 0.15, 0.16, 0.2, 0.25, 0.26, 0.3)
+    r = run(world, 0.3, times)
+    assert [e["division"] for e in r.events] == ["P", "A", "B"]
+    for e in r.events:
+        name, ratio = e["result"].worst()
+        assert ratio <= rops.TOLERANCE_EPS, (e["division"], name, ratio)
+        before = e["result"].values["potentials_before_V"]
+        after = e["result"].values["potentials_after_V"]
+        for node in ("c1", "c2a", "c2b"):  # Outside potentials are unchanged by a birth.
+            if node in before:
+                assert after[node] == pytest.approx(before[node], abs=1e-15)
+    final = r.at[0.3]
+    assert set(final["V"]) == {"A1", "A2", "B1", "B2"}
+    assert set(final["lumens"]) == {"c1", "c2a", "c2b"}
+    assert final["phase"]["bridges"] == {"b": "retired", "bA": "live", "bB": "live"}
+    assert r.at[0.15]["phase"]["clefts"] == {"c1": "live", "c2a": "live", "c2b": "pending"}
+    for t in times:  # Each lumen follows its live facing area (A.5), through every birth.
+        rec = r.at[t]
+        for c, lumen in rec["lumens"].items():
+            facing = [k for k, p in rec["patches"].items() if world.patches[k].node == c]
+            area = math.fsum(rec["patches"][k]["area_m2"] for k in facing)
+            assert lumen["volume_pL"] == pytest.approx(1e-6 * area / 2.0 / 1e-15, rel=1e-14)
+    # c1's facing area is continuous through the three births (insertion stopped by 0.2 s).
+    c1 = [r.at[t]["lumens"]["c1"]["volume_pL"] for t in (0.2, 0.25, 0.26, 0.3)]
+    assert max(c1) - min(c1) <= 1e-14 * c1[0]
+    b = r.events[2]["result"].values
+    assert np.any(b["delta_fmol"] != 0.0) and b["unmixing_pJ"] > 0.0
+
+
 def with_neighbour():
     """A founder M beside P, joined by a gated contact; P divides symmetrically at 0.05 s and the
     contact splits a_e = 0.25 to D1-M, 0.75 to D2-M, each keeping the parent's gate."""
