@@ -1,6 +1,14 @@
 # Secreted-species transport (design)
 
-**Status: proposed, 13 November 2026, for the lead's and the advisor's review (D142). No code.**
+**Status: accepted by the lead with the advisor, 13 November 2026 (merged at ffc985a). Version 1
+code follows S5a. No code yet.** The main choices stand: one inventory in @3 as neutral species
+rows, uptake as a plain sink (a), and identity on the operator declarations. The lead's
+pre-code checks were run the same day. Their results and the amendments they bring are in §11:
+- replacement rates belong to the occupant;
+- the first acceptance is numerical qualification;
+- a face diffusivity is the effective (FRAP) kind;
+- the energy guard of record is the species-only world.
+
 D150 promoted this feature. The user's words were: "we do have plans to be able to run special
 modes of Cells at differnt timescales, so down the road nothing right now but for sure the
 secreted-species transport now". The decision reads:
@@ -30,8 +38,8 @@ No model, solver or shared function changes.
 
 **Basis.**
 - The [v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §1–§4 (the contract).
-- The S5 design, `docs/CELL_DIVISION_S5_DESIGN.md`, which is **not on main**. It is cited at
-  34edc86 on branch `worktree-agent-aa650be3bffdbdb54`.
+- The [S5 design](CELL_DIVISION_S5_DESIGN.md), on main since 3480082. It was first cited at
+  34edc86 on the S5 branch.
 - The [protein catalogue plan](PROTEIN_CATALOGUE_PLAN.md).
 - The [field-solver interface](FIELD_SOLVER_INTERFACE_DESIGN.md).
 
@@ -284,7 +292,9 @@ why the energy guard needs a species-only world (§7).
 - production P (fmol/s) or clearance k (1/s);
 - changes at exact multiples of dt.
 
-These are per-world control data, never closed-over constants.
+These are per-world control data, never closed-over constants. Cell-side routes are keyed by
+carrier, not slot (§5.2): a slot's controls follow its occupant, and a newcomer takes its
+template's or donor's rates.
 
 **Law, exact over each half-step.** For one node with total production P and total clearance k
 on one species:
@@ -342,6 +352,9 @@ processes, so the cleared amount is shared in proportion to the rate constants.
 | `first_order` | export | k_e n_c (1/s), constitutive export of the pool | moved = n_c (1 − e^{−k_e h}) |
 | `first_order` | import | k_u A c_o: k_u is an uptake velocity (m/s, like a permeability), A the declared patch area | moved = n_o (1 − e^{−κh}), κ = k_u A / V_o |
 | `saturable` | import | A V_max c_o / (K_M + c_o), with V_max in fmol s⁻¹ m⁻² and K_M in mM | n_o' solves b ln(n_o/n_o') + (n_o − n_o') = a h, with a = A V_max and b = K_M V_o: a fixed number of Newton steps, starting from the first-order step at c_o, with the residual checked (a failed solve refuses) |
+
+**Whose rates.** Every route's rates and law parameters belong to the cell's carrier and follow
+it through replacement (§5.2).
 
 **Where the material lands.**
 - An export lands in the patch's outside node. A patch on a held bath is refused: secretion
@@ -650,10 +663,47 @@ new code. Checked in `core/cell_replacement_spec.py`:
 - a template's route values replace only routes the slot already has, by a positive value, so
   a newcomer cannot make the species permeant.
 
-**What does not come free: secretion capacity follows the slot, not the occupant.**
-- Version 1's rates are per slot and scheduled. A newcomer secretes only if the schedule says so
-  from the event time.
-- Occupant-indexed rates would read replacement's `occupant_template` (later; open question 9).
+**Rates belong to the occupant: carriers have identity, slots are storage** (S5's rule; the
+lead's decision of 13 November, replacing this note's earlier "rates follow the slot").
+
+**The rule:**
+- The cell-side rates are properties of the carrier that occupies a slot: production, clearance
+  of the cell's pool, export (secretion) and import (uptake), with their law parameters (k_e,
+  k_u, V_max, K_M).
+- **Founders.** Rates are declared per founder carrier.
+- **Isolated template.** A newcomer takes the rates its template declares. The operators'
+  declarations key them by replacement template ID, beside the template's amounts.
+- **Donor copy.** A newcomer takes the donor's rates at the event time, before any event at that
+  time (replacement's own rule for the donor's amounts).
+- **Never from the previous occupant.** A slot's earlier rates never carry over to the
+  newcomer.
+- **Daughters** of an S5 partition are new carriers with their own declared rates.
+- **Time schedules are keyed by carrier ID.** A carrier's schedule applies while it occupies a
+  slot.
+- **Node-side clearance stays per node.** An outside node is environment, not a carrier.
+
+**How version 1 implements it, with no new state.**
+- Replacement@1's events are prescribed, so the occupant of every slot at every step is known at
+  the definition.
+- Each operator builds each slot's rate controls from its occupants' declared rates, switching at
+  the event step. These are per-world control data, recomputed from the definition at a restart
+  (R7).
+- Triggered lifecycles (milestone 2) will not know their occupants at the definition. Their
+  rates move into state written at birth, by an event map that reads the lifecycle records.
+
+**Guard: the swap.** A founder with nonzero rates is replaced:
+- by a template with other rates, including zero: the slot's controls switch to the template's
+  rates exactly at the event step;
+- by a donor copy: the slot takes the donor's rates;
+- in neither case does the previous occupant's rate apply after the event.
+
+The guard includes a restart across the event. Probe 2 checked the part that exists today:
+replacement@1 swaps the species' pool (§11).
+
+**A difference to settle.** Replacement@1's own rule for **ion route values** in a donor copy is
+"the slot's own, or a declared route-only template's", not the donor's. The rule above gives the
+donor's rates for these laws. The two rules differ, and whether to align them is the lead's
+question (§10, question 9).
 
 **Composition:**
 - replacement@1 composes in version 1, since both read declared volumes;
@@ -713,30 +763,74 @@ reading.
 and distribution during zebrafish dorsal-ventral patterning. *eLife* 2017;6:e25861.**
 [doi:10.7554/eLife.25861](https://doi.org/10.7554/eLife.25861), PMID 28857744, PMC5658070,
 CC BY.
-- **How the values were obtained.** They came through the fetch tool's extraction of the
-  Europe PMC full-text XML, which covered characters 0–200,000 of about 280,000. The figures
-  themselves were not seen. The values below are as the extraction quoted them; check them
-  against the paper's text and figures 3–4 at registration.
+- **How the values were read (re-read 13 November, at the lead's request).** The whole
+  open-access JATS XML was downloaded from Europe PMC (PMC5658070, 281,353 bytes, SHA-256
+  250e9c67…bbae). Its sentences were then extracted by text search, not by the fetch tool's
+  summary. File and digest are in the evidence folder's `sources/`. The figures themselves were
+  not seen. Every value below is a quoted sentence of the text; the earlier extraction's values
+  all match.
 
-- **Values (as stated):**
+- **Values (as stated in the text):**
 
   | Quantity | BMP2b | Chordin |
   | --- | --- | --- |
   | FRAP effective D (± SEM), µm²/s | 2.0 ± 0.4 (Dendra2), 2.6 ± 0.7 (sfGFP) | 6.0 ± 0.7 (Dendra2), 7.3 ± 3.9 (sfGFP) |
-  | FCS local free D, µm²/s | 46 ± 1 | 59 ± 2 |
+  | FCS free D, µm²/s, with the fit's parameters constrained (Figure 4) | 46 ± 1 | 59 ± 2 |
+  | FCS free D, freely fitted (20–30% lower) | 35 ± 2 | 50 ± 3 |
   | FDAP clearance k1, /s | (8.9 ± 0.1) × 10⁻⁵ (half-life 130 min) | (9.6 ± 0.3) × 10⁻⁵ (120 min) |
-  | 50% of maximum at 60 min, from the source | about 30–40 µm | about 50–60 µm |
+  | 50% of maximum at 60 min post-transplantation, from the source boundary | 30–40 µm | 50–60 µm |
 
-  - The authors attribute the FRAP–FCS gap to binding to immobile extracellular molecules.
-  - The source is a clone of 50–75 cells transplanted at sphere stage (5–5.5 hpf). The authors'
-    model blastoderm is 300 µm.
-- **What it tests.** Time-dependent formation, far from steady state: 60 min against 1/k ≈ 3.1 h.
-  - D and k are measured independently, and the normalised profile does not depend on the
-    source's production rate (**S**). So the predicted half-maximum distance at 60 min is a
-    genuine prediction, for two species with different D and similar k.
-  - It also separates the two diffusivities. Version 1 must carry the FRAP D: the FCS D would
-    spread the profile over √(D t) ≈ 400 µm in an hour, wider than the embryo (**S**). The gap is
-    the occupancy door's quantity (§2.5).
+  - The authors measured FCS "in very small extracellular volumes far away from cell surfaces".
+    They write that diffusivities "are reduced at the global scale when they move across a field
+    of cells".
+  - The FRAP fits use "a model with uniform production, diffusion, and clearance", constrained by
+    the FDAP k1. **The FRAP D is a model-derived effective D.**
+  - The source is a clone of about 50–75 cells transplanted at sphere stage (5–5.5 hpf).
+  - **The paper fits a model of the same kind.** It fitted "a gradient formation model based on
+    local production, uniform diffusion, and clearance constrained with our measured protein
+    half-lives in a realistic three-dimensional zebrafish embryo-like geometry", and found the
+    best agreement at D = 4 µm²/s (BMP2b) and 6 µm²/s (Chordin). It also simulated gradient
+    formation for 70 min against data at about 70–75 min.
+
+- **Which diffusivity a face carries (declared, at the lead's request).** In version 1 a face
+  diffusivity is an **effective** diffusivity, the FRAP kind.
+  - With no binding, the face law must reproduce how the whole mobile and reversibly bound pool
+    spreads over tissue scales.
+  - An FCS free diffusivity is admissible only together with an explicit binding model (the
+    occupancy primitive, §2.5), never alone on a face.
+  - The two differ about twentyfold for BMP2b (46 against 2.0–2.6 µm²/s, 18–23×) and eight- to
+    tenfold for Chordin (**S**).
+  - Using the free value would spread the profile over √(D t) ≈ 400 µm in an hour, wider than
+    the embryo (**S**).
+  - The clearance constant is likewise the whole pool's (FDAP), consistent with an effective D.
+
+- **The first acceptance is numerical qualification, not a biological test** (the lead's check).
+  - **Can a version 1 run of this target differ from the closed form? No** (**S**, and probe 2,
+    §11):
+    - with uniform D and k, a source and fixed volumes, the species' equations are the linear
+      diffusion–decay problem;
+    - the species is decoupled from the ions (z = 0, impermeant; the ionic fields are bitwise
+      unchanged);
+    - so the engine's solution is the closed-form or discrete solution, to discretisation error.
+  - A comparison with the measured distances would therefore test the diffusion–clearance model
+    and the paper's parameters, not the engine, and the paper has already fitted that model
+    itself. Running it on the engine would come close to reproducing the paper's own model,
+    which is tooling needing the user's approval (D138; D151 keeps that line).
+  - **So the first acceptance is registered as numerical qualification.** The engine is checked
+    against independent closed-form and discrete references in a radial geometry and a
+    non-dimensional regime of this kind (kt below 1, profiles over a few λ). Nothing is compared
+    with the paper's data, and its simulation is not reproduced.
+  - **The references are textbook solutions, not a reference solution of the paper** (D151):
+    - a sphere held at a fixed concentration with first-order decay (the planar Danckwerts form
+      through v = r u, **S**);
+    - the finite-domain steady state;
+    - the exact solution of the same finite-volume system.
+
+    They take none of the paper's data and fit nothing to it.
+  - **A biological comparison against this target becomes informative** when the engine's
+    model holds something the closed form lacks: cell-resolved uptake geometry, binding and
+    occupancy, volume change, or regulation. It is then registered on its own, with the user's
+    approval if it reproduces the paper's model.
 - **Geometry.** A radial reduction (shells as finite nodes, face areas 4πr², volumes 4πr² Δr)
   around a spherical source.
   - @3's faces accept those areas and volumes, so the radial finite-volume scheme needs no new
@@ -745,7 +839,8 @@ CC BY.
     membrane has not been tried.
   - The registration fixes the clone radius, the extracellular fraction and the start of
     secretion before any run.
-- **First target.**
+- **Standing.** First target, registered as numerical qualification (above). Its biological
+  comparison is deferred under D151, not closed.
 
 **2. Kicheva A, Pantazis P, Bollenbach T, Kalaidzidis Y, Bittig T, Jülicher F, González-Gaitán M.
 Kinetics of morphogen gradient formation. *Science* 2007;315(5811):521–525.**
@@ -931,8 +1026,10 @@ volume ledger, S5a or checkpoint continuity, except the adapter addition, which 
 7. Is an **electrophoretic drift valence** (transport-only) wanted later (§3)?
 8. **Calibration access.** Is institutional access available for Kicheva 2007 and Müller 2012?
    Their values could not be read here. Pomreinke 2017 is the first target either way (§6).
-9. Should **secretion capacity follow the occupant** (cell type) rather than the slot after a
-   replacement (§5.2)?
+9. **Decided by the lead (13 November):** rates follow the occupant; carriers have identity,
+   slots are storage (§5.2). **Left open for the lead:** whether replacement@1's rule for ion
+   route values in a donor copy (the slot's own or a route-only template's) should be aligned
+   with the donor rule adopted here.
 10. **Catalogue scope:** should it extend to secreted proteins (the granzyme K review, question
     6)?
 11. Should the laws later **draw their energy from finite energy pools** (ATP for synthesis,
