@@ -1,7 +1,7 @@
 # E07-v1 renewal stage: donor copies with an isolated boundary set
 
-**Status: PROPOSED (13 November 2026), not registered.** No engine run belongs to this
-design until the lead registers its protocol. The user chose option (c) on 13 November:
+**Status: registered by the lead on main (13 November 2026), before any engine run.** The
+lead's decisions are in the protocol's `lead_decisions_taken`. The user chose option (c) on 13 November:
 donor copies are the main route, and isolated newcomers with fast junction formation form
 a boundary set. The design builds on the literature-rule turnover pre-screen
 ([Progress](../PROGRESS.md); evidence

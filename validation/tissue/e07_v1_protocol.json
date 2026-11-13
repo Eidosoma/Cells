@@ -2,7 +2,7 @@
  "kind": "cells.experiment_protocol@1",
  "id": "E07-v1-B",
  "title": "E07-v1 renewal stage: donor copies (an inheritance route) with an isolated threshold-finding set, on cue-written discs",
- "status": "PROPOSED 2026-11-13 (revision 2, after the lead's and the advisor's review); not registered. No engine run belongs to it until the lead registers it.",
+ "status": "Registered by the lead on main, 13 November 2026, after the advisor's review of revision 1 and before any engine run (user approval of option (c): 13 November). No engine run has been made.",
  "user_decision": "option (c), 13 November 2026: donor copies as the main route, plus isolated newcomers with fast junction formation as a boundary set",
  "design": "docs/E07_V1_DESIGN.md",
  "decisions": {
@@ -1090,5 +1090,10 @@
   "3 the engine-run driver (validation only; analysis out of process) and a dry run on non-registered seeds (r >= 101), development",
   "4 after d020c3b lands: one clean snapshot of main with the driver; E1 from it",
   "5 the judged arms, once, from the same snapshot"
+ ],
+ "lead_decisions_taken": [
+  "Revision 2 is registered as drafted: central arms judged at the control's end (4080 s), censored runs judged at their last valid record against the paired null and never dropped, the run as the unit of analysis with the two-thirds rule per arm group and s, fast k3 arms at s 1.0 and 0.6, E6 junction weight per run, and 'no D outside the disc' dropped.",
+  "Execution: one clean snapshot of main taken after the S3 ledger fix (d020c3b) and the E07-v1 engine-run driver have landed; E1 and every judged arm run from it, in the protocol's order.",
+  "Units: at most two at once on CPUs 2 and 3, each capped at 6G with the analysis out of process, and one at a time while an 8G L4 test is scheduled."
  ]
 }
