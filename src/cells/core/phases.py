@@ -20,6 +20,7 @@ device_from_launch). Paths without that key run synchronously: execution is thei
 execute time.
 """
 
+import contextlib
 import logging
 import sys
 import time
@@ -83,6 +84,19 @@ def enable(stream=None, level=logging.INFO):
     LOGGER.addHandler(handler)
     LOGGER.setLevel(level)
     return handler
+
+
+@contextlib.contextmanager
+def enabled(stream=None, level=logging.INFO):
+    """enable() for the duration of a block; the logger's handlers and level are restored."""
+    handlers, previous = list(LOGGER.handlers), LOGGER.level
+    handler = enable(stream, level)
+    try:
+        yield handler
+    finally:
+        if handler not in handlers:
+            LOGGER.removeHandler(handler)
+        LOGGER.setLevel(previous)
 
 
 def _seconds(value):

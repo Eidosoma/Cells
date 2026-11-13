@@ -2981,21 +2981,22 @@ def main(argv=None):
     JUNCTION_HEAT, WATER = args.junction_heat, args.water
     WATER_AVAILABILITY = args.water_availability
     Path(args.output).mkdir(parents=True, exist_ok=True)
-    phases.enable(sys.stdout)  # Plan validation, binding, compile, first window as they end.
     status = 0
-    for name in args.parts:
-        started = time.perf_counter()
-        log(f"part {name}")
-        try:
-            status |= PARTS[name](args) or 0
-        except Exception as error:  # Preserved as evidence; later parts still run.
-            status = 1
-            write_json(
-                Path(args.output) / f"{name}.failure.json",
-                dict(error=repr(error), traceback=traceback.format_exc()),
-            )
-            log(f"part {name} failed: {error!r}")
-        log(f"part {name} done in {time.perf_counter() - started:.1f} s")
+    # Plan validation, binding, compile and the first window to the run log as they end.
+    with phases.enabled(sys.stdout):
+        for name in args.parts:
+            started = time.perf_counter()
+            log(f"part {name}")
+            try:
+                status |= PARTS[name](args) or 0
+            except Exception as error:  # Preserved as evidence; later parts still run.
+                status = 1
+                write_json(
+                    Path(args.output) / f"{name}.failure.json",
+                    dict(error=repr(error), traceback=traceback.format_exc()),
+                )
+                log(f"part {name} failed: {error!r}")
+            log(f"part {name} done in {time.perf_counter() - started:.1f} s")
     return status
 
 

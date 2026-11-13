@@ -107,3 +107,11 @@ def test_phase_totals_group_the_timings():
     # bookkeeping (launch dispatch, Python), never negative.
     assert real["other"] == {} and real["unaccounted"] >= -1e-6
     assert real["execution"] <= real["device_from_launch"]
+
+
+def test_enabled_restores_the_logger():
+    level, handlers = phases.LOGGER.level, list(phases.LOGGER.handlers)
+    with phases.enabled(io.StringIO()) as handler:
+        assert handler in phases.LOGGER.handlers
+        assert phases.LOGGER.isEnabledFor(logging.INFO)
+    assert phases.LOGGER.handlers == handlers and phases.LOGGER.level == level
