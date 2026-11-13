@@ -185,6 +185,10 @@ def null_series(events, size, end_s, *, dt=DT, record_s=RECORD_S, n_cells=None):
     label = inside.copy()
     times = np.round(np.arange(0.0, end_s + 1e-9, record_s), 9)
     out = dict(t=times, J=[], d_inside=[], d_outside=[])
+    _, _, neighbours = sheet()
+    # Newcomer classes: (copy of D, copy of H or template) x D neighbours at arrival
+    # (index 0-6), in the null's own state just before the event.
+    classes = dict(D_copy=np.zeros(7, int), H_copy=np.zeros(7, int), template=np.zeros(7, int))
     k = 0
     for t in times:
         # Apply every event strictly before this record; events at one step read their
@@ -195,16 +199,22 @@ def null_series(events, size, end_s, *, dt=DT, record_s=RECORD_S, n_cells=None):
             while k < len(events) and events[k][0] == step:
                 batch.append(events[k])
                 k += 1
-            new = [
-                (slot, False if donor is None else bool(label[donor])) for _, slot, donor in batch
-            ]
+            new = []
+            for _, slot, donor in batch:
+                value = False if donor is None else bool(label[donor])
+                around = int(label[neighbours[slot]].sum())
+                kind = "template" if donor is None else "D_copy" if value else "H_copy"
+                classes[kind][around] += 1
+                new.append((slot, value))
             for slot, value in new:
                 label[slot] = value
         union = np.sum(label | inside)
         out["J"].append(float(np.sum(label & inside) / union) if union else 1.0)
         out["d_inside"].append(int(label[inside].sum()))
         out["d_outside"].append(int(label[~inside].sum()))
-    return {key: np.asarray(v) for key, v in out.items()}
+    result = {key: np.asarray(v) for key, v in out.items()}
+    result["classes"] = classes
+    return result
 
 
 def series_summary(series, turnover):
@@ -217,7 +227,15 @@ def series_summary(series, turnover):
     through = t <= turnover[1] + 1e-9
     below = np.flatnonzero(j < B1_J)
     window = [(t > 0) & (t <= turnover[0] + 1e-9), (t > turnover[0]) & (t <= turnover[1] + 1e-9)]
+    c = series["classes"]
     return dict(
+        D_copies=int(c["D_copy"].sum()),
+        D_copies_with_4plus_H_neighbours=int(c["D_copy"][:3].sum()),
+        H_copies=int(c["H_copy"].sum()),
+        H_copies_with_5plus_D_neighbours=int(c["H_copy"][5:].sum()),
+        templates=int(c["template"].sum()),
+        templates_with_5plus_D_neighbours=int(c["template"][5:].sum()),
+        classes_by_D_neighbours={key: v.tolist() for key, v in c.items()},
         J_after_turnover=[at_or_before(x) for x in turnover],
         J_min_in_turnover=[float(j[w].min()) for w in window],
         b1=bool(np.all(j[through] >= B1_J)),
@@ -259,6 +277,17 @@ def distribution(scope, rule, size, residence_s, end_s, seeds):
         J_min_first_turnover=quant([r["J_min_in_turnover"][0] for r in rows]),
         d_total_end=quant([r["d_total_end"] for r in rows]),
         d_outside_max=quant([r["d_outside_max"] for r in rows]),
+        D_copies=quant([r["D_copies"] for r in rows]),
+        D_copies_with_4plus_H_neighbours=quant(
+            [r["D_copies_with_4plus_H_neighbours"] for r in rows]
+        ),
+        H_copies=quant([r["H_copies"] for r in rows]),
+        H_copies_with_5plus_D_neighbours=quant(
+            [r["H_copies_with_5plus_D_neighbours"] for r in rows]
+        ),
+        templates_with_5plus_D_neighbours=quant(
+            [r["templates_with_5plus_D_neighbours"] for r in rows]
+        ),
         all_H_by_end_probability=float(np.mean([r["all_H_by_end"] for r in rows])),
         band=dict(
             t_s=first[0].tolist(),
@@ -367,7 +396,7 @@ def part_null(args):
         wall_s=time.perf_counter() - tick,
         provenance=provenance(),
     )
-    path = out / "null.json"
+    path = out / f"{args.name}.json"
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(value, indent=1) + "\n")
     tmp.replace(path)
@@ -407,6 +436,7 @@ def main(argv=None):
     parser.add_argument("part", choices=["null", "offsets"])
     parser.add_argument("--output", required=True)
     parser.add_argument("--seeds", type=int, default=2000)
+    parser.add_argument("--name", default="null", help="null part: output file stem")
     args = parser.parse_args(argv)
     (part_null if args.part == "null" else part_offsets)(args)
     return 0
