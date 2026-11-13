@@ -2,7 +2,7 @@
  "kind": "cells.cleft_egg_s3_protocol@1",
  "id": "s3-cleft-egg-against-rfull",
  "title": "S3: the engine's one-cell Xenopus egg with its furrow and restricted cleft against R-full",
- "status": "PROPOSED (draft by the S3 agent, 13 November 2026; not registered; the lead registers it at landing). Values filled by cleft_egg_engine fill from the development runs the lead approved (the dt study at 0.5, 0.25 and 0.125 ms and R-full's reference). The reference-term rule is the lead's ruling of 13 November, made after the development data (reference_term_rule, reference_term_disclosure); the tolerance rule is the plan's (docs/CELL_DIVISION_S3_PLAN.md \u00a74). The 0.25 ms development run is the judged run's program, so engine minus R-full at the judged step is already known (development_observations)",
+ "status": "registered by the lead on main, 13 November 2026, before the judged run. The development dt study and R-full reference were seen before registration (development_observations); the integrator-only reference term was chosen after them and is the stricter rule (reference_term_disclosure).",
  "purpose": "Qualify the engine's cleft egg against the registered independent reference R-full on J1's state and trajectory. Not a J1 verdict against the data (J1 was judged on R-full on 12 November).",
  "engine_models": [
   "resolved_pump_composite@1",
@@ -17,7 +17,7 @@
   "egg": "validation/division/cleft_egg_reference.py build(declared inputs, scalar_values(declared inputs), p_old = the record's p_old_m_s, a_over_l = the record's a_over_l_m): R-full's own egg, written by cleft_egg_engine.definition",
   "declared_inputs": "validation/division/j1_declared_inputs.json",
   "calibration_source": "validation/division/j1_prediction_of_record.json (p_old_m_s 6.161109067285096e-10, a_over_l_m 1.5406297557105433e-06)",
-  "schedule": "the default (uniform) schedule only: the furrow opens at 420 s with A_on = 1e-9 m2 and grows at r = (A_J1 - A_on) / (1800 s - 420 s) to the 2100 s horizon; the back-loaded band member is out of S3's comparison (plan \u00a76)",
+  "schedule": "the default (uniform) schedule only: the furrow opens at 420 s with A_on = 1e-9 m2 and grows at r = (A_J1 - A_on) / (1800 s - 420 s) to the 2100 s horizon; the back-loaded band member is out of S3's comparison (plan §6)",
   "electrode": "one electrode in the egg; rm_definition's pulse train (3e-8 A, 1.2 s, every 10 s, alternating from t = 0 positive) throughout, carried by K 0.4912 and Cl 0.5088 (rm_definition.injected_carrier_fractions, the field R-full's Pulses read)",
   "solver": "imex_ars222_face_electromigration@1, run in vector windows with device checks on every row",
   "field_comparison": "cleft_egg_engine compare: 30 fields, 26 exactly R-full's, 2 within 1e-12 (unit conversion and one-ulp event times), 2 declared (the cytosol charge anchor and initial potential at 3.9e-11 relative, the consistent anchor's egg-scale granularity, bound 1.1e-9); /mnt/workspaces/Cells/cell-division-s3-20261113-01/step1-tests/compare.json"
@@ -48,7 +48,7 @@
  "reference_term_rule": "max |Q(variant) - Q(default)| over R-full's integrator variants: Radau rtol 1e-8, BDF rtol 1e-10 and LSODA rtol 1e-10 (Q4: the maximum over pulses and variants). The lead's ruling, 13 November: the reference term bounds R-full's own numerical error. The engine runs R-full's own activation area, so the activation-area variant (1e-10 m2, which J1's reference_numerics included) measures a sensitivity both models share, not a reference error; it is reported per quantity (values.*.shared_sensitivity) and stays outside the tolerance",
  "tolerance_rule": "3 x (engine step term + reference term), per quantity (the rule Rm1's registered protocol uses)",
  "verdict_rule": "pass when every judged |engine(judged dt) - R-full| is within its tolerance (Q4: the maximum over pulses); a failure is recorded and diagnosed, never retuned",
- "stop_rule": "before registration: stop and report if the study shows no convergence or the energy ledger fails at an admitted step; an implicit membrane-cleft term would then be a new solver version (division design \u00a75.4). Observed orders are reported and inspected (about 2 for ARS(2,2,2))",
+ "stop_rule": "before registration: stop and report if the study shows no convergence or the energy ledger fails at an admitted step; an implicit membrane-cleft term would then be a new solver version (division design §5.4). Observed orders are reported and inspected (about 2 for ARS(2,2,2))",
  "stop_condition": "registered by the lead, 13 November: stop and report (non-convergence under the plan's stop rule) if any judged quantity's step term fails to decrease from the (0.5, 0.25 ms) pair to the (0.25, 0.125 ms) pair; a step term that is 0 at both pairs does not stop. Evaluated by cleft_egg_engine terms (stop, non_converging); fill refuses a study that met it",
  "values": {
   "Q1_em_at_j1_V": {

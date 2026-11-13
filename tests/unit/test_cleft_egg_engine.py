@@ -88,8 +88,10 @@ def test_the_judged_run_needs_a_registered_protocol_and_a_clean_snapshot(tmp_pat
     import json
 
     protocol = json.loads(engine.PROTOCOL.read_text())
-    assert protocol["status"].startswith("PROPOSED")  # The draft, until the lead registers it.
-    assert "not registered" in engine.judged_run_refusal(protocol, tmp_path)
+    # The checked-in protocol is registered (lead, 13 November); its proposed form is refused.
+    assert protocol["status"].startswith("registered")
+    proposed = dict(protocol, status="PROPOSED (test)")
+    assert "not registered" in engine.judged_run_refusal(proposed, tmp_path)
     registered = dict(protocol, status="registered at a lead's commit (test)")
     assert "clean execution snapshot" in engine.judged_run_refusal(registered, tmp_path)
     clean = dict(status="complete", patch_sha256=hashlib.sha256(b"").hexdigest())
@@ -217,7 +219,15 @@ def test_fill_writes_a_proposed_draft_and_refuses_a_stopped_study(tmp_path):
     for s in studies:
         paths.append(tmp_path / f"study-{s['dt']!r}.json")
         paths[-1].write_text(json.dumps(s))
-    filled = engine.fill(tmp_path / "terms.json", tmp_path / "reference.json", paths)
+    # fill writes drafts only: a registered protocol is refused, so fill a proposed copy.
+    with pytest.raises(SystemExit):
+        engine.fill(tmp_path / "terms.json", tmp_path / "reference.json", paths)
+    draft = tmp_path / "protocol-draft.json"
+    checked_in = json.loads(engine.PROTOCOL.read_text())
+    draft.write_text(json.dumps(dict(checked_in, status="PROPOSED (test copy)")))
+    filled = engine.fill(
+        tmp_path / "terms.json", tmp_path / "reference.json", paths, protocol_path=draft
+    )
     assert filled["status"].startswith("PROPOSED")
     assert set(filled["values"]) == set(json.loads(engine.PROTOCOL.read_text())["values"])
     assert all(v["tolerance"] > 0 for v in filled["values"].values())
