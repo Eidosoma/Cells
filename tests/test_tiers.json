@@ -21,7 +21,8 @@
   "/mnt/workspaces/Cells/land-20261112b/measure-new/measured.json",
   "/mnt/workspaces/Cells/land-20261112c/measure-new/measured.json",
   "/mnt/workspaces/Cells/land-20261113a/measure-new/measured.json",
-  "/mnt/workspaces/Cells/land-20261113b/measure-new/measured.json"
+  "/mnt/workspaces/Cells/land-20261113b/measure-new/measured.json",
+  "/mnt/workspaces/Cells/land-20261113c/measure-new/measured.json"
  ],
  "measured_provenance": [
   {
@@ -183,6 +184,13 @@
    "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113b",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-13T00:52:16+00:00"
+  },
+  {
+   "git_revision": "cce915e742b4f7859fcf8a4d75432e6680bfefd7",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-13T02:53:54+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1344,11 +1352,27 @@
     }
    },
    {
+    "file": "tests/unit/test_membrane_insertion.py",
+    "seconds": 3.43,
+    "exit_code": 0,
+    "counts": {
+     "passed": 23
+    }
+   },
+   {
     "file": "tests/unit/test_membrane_redistribution.py",
     "seconds": 9.7,
     "exit_code": 0,
     "counts": {
      "passed": 34
+    }
+   },
+   {
+    "file": "tests/unit/test_membrane_state.py",
+    "seconds": 2.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
     }
    },
    {
@@ -1667,10 +1691,10 @@
    },
    {
     "file": "tests/unit/test_pump_composite_adapter.py",
-    "seconds": 9.09,
+    "seconds": 6.89,
     "exit_code": 0,
     "counts": {
-     "passed": 4
+     "passed": 5
     }
    },
    {
@@ -3647,6 +3671,12 @@
    {
     "file": "tests/unit/test_ledger_rounding.py",
     "seconds": 90.11,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_membrane_insertion_runs.py",
+    "seconds": 90.09,
     "exit_code": null,
     "counts": {}
    },
