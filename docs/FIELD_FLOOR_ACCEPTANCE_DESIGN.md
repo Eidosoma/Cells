@@ -15,14 +15,16 @@ where `R_k` is component `k`'s Kirchhoff current residual and `scale` is the lar
 or junction current. The loop decides to stop on the same test, evaluated on its last
 line-search trial.
 
-On the W1 hold's 825-node tissue, a converged root's residual sits at 0.7–1.0 of that
+On the W1 hold's 825-node tissue, a converged root's residual sits at 0.8–1.1 of that
 target: it is at the rounding floor of the current balance, not above it. Whether a
 converged root is accepted then depends on how XLA compiled the evaluation.
 
-- **The CPU vectorized program refuses** world 3 at [0.085, 0.086] s (0.010193 of the
-  tolerance, against 0.006940 unbatched from the same state) and world 1 at
-  [0.186, 0.187] s (0.0100014 against 0.003145).
-- **The scalar `jit` program and the NumPy path accept** the same steps.
+- **The CPU vectorized program refuses** world 3 at [0.085, 0.086] s and world 1 at
+  [0.186, 0.187] s. Their normalized residuals are 0.010193 and 0.0100014, against
+  0.006940 and 0.003145 unbatched from the same states.
+- **The scalar `jit` program and the NumPy path accept** the same steps. The scalar
+  program reaches the edge later: it refuses world 3 at [0.452, 0.453] s (1.11 of the
+  target) and world 1 at [0.464, 0.465] s (1.02).
 - **The L4 accepted** these worlds over 0–6 s, and has since accepted more than 1,100
   windows of the hold.
 
@@ -73,11 +75,14 @@ is still refused.
   bitwise equal to version 2 on every fixture where version 2 converges. It refuses a
   solve stopped above the floor. Its snapshots round-trip and resume bitwise.
 - **Routing is a definition choice, not a code change.** `field_solver` is part of each
-  definition. New runs (the agreement runs, a later full-tissue hold, E07) declare
-  version 3. Old evidence stays reproducible exactly as recorded.
+  definition. New runs with finite extracellular space (a later full-tissue hold, E07)
+  declare version 3. Old evidence stays reproducible exactly as recorded.
+- **The agreement's worlds stay on version 2.** W1, W2 and G2-Q1 have no free field
+  offsets, so the floor never decides there (see the margins below). Switching them would
+  change registered definitions for nothing.
 
-A switched definition is a new definition: new snapshots, no resume across the switch.
-Batch snapshots check every source file's hash, and the layout type differs.
+A switched definition is a new definition. It needs new snapshots and cannot resume a
+version-2 snapshot, because the definition and its layout type differ.
 
 ## Which evidence could change
 
@@ -86,7 +91,8 @@ reached the edge is bitwise in states, observations, diagnostics and ledgers.
 
 What does change for a switched definition:
 
-- the layout type (`FloorLayout`, one more leaf, `current_floor`);
+- the layout type: the model's floor layout (for the hold's model,
+  `SurfacePumpChannelFloorLayout`) has one more leaf, `field_current_floor`;
 - the jaxpr, which gains the floor computation after the loop. Its only output is the
   solve's `converged`, and so the step's validity.
 
@@ -101,23 +107,29 @@ records are new evidence and get judged as such.
      only by the post-loop floor operations and the extra layout leaf.
    - Show that the step's state outputs do not depend on the floor except through
      validity.
-2. **Dumps:** rerun the composite's guarded dumps with version 3: W1, W2, G2-Q1, Q5, Q6,
-   W37 and the 825-node world. Compare every state, observation and diagnostic bitwise
-   with the version-2 dumps, and list any step that version 2 refused.
-3. **Qualification judges:** rerun W1, W2 and G2-Q1's own judges with version 3. The
-   verdicts must be identical, or changed only where version 2 had refused.
-4. **The defect's own cases:** the CPU vectorized hold worlds at 0.085 s and 0.186 s must
-   be accepted under version 3. Record each residual's ratio to its floor.
-5. **L4:** the agreement's backend terms with version 3. The stop rule then no longer
-   sees this refusal class unless a solve genuinely stalls.
+2. **Dumps:** rerun the composite's guarded dumps with version 3 declared: W1, W2, G2-Q1,
+   Q5, Q6, W37 and the 825-node world. This tests version 3; it does not switch those
+   definitions. Every state, observation and diagnostic must match the version-2 dumps
+   bitwise, except at steps version 2 refused, which are listed.
+3. **Qualification judges:** rerun W1, W2 and G2-Q1's own judges with version 3 declared.
+   The verdicts must be identical. These worlds have no free offsets, so this is a cheap
+   control, not a risk.
+4. **The defect's own cases (done on CPU; last section):** version 3 accepts the hold's
+   worlds where version 2 refused, in the vectorized and scalar programs. It matches
+   version 2 bitwise before that; the 200-step vectorized program was not compared state
+   by state.
+5. **L4:** the hold's worlds with version 3 from t = 0, on the L4 and on the CPU, past the
+   CPU's edge steps: both must accept. The agreement's L4 terms are unchanged, because its
+   worlds stay on version 2.
 
 ## Can a refusal class still differ by backend afterwards
 
 Yes, at any threshold, but this one moves away from the noise. Version 3 moves the
-field-solve edge from about 1× the rounding floor to about 1e3× it. The measured backend
-and program differences in the residual are within about 5×, so they cannot cross that
-edge unless the Newton genuinely stalls within that factor of the floor. A genuine stall
-is refused on every backend.
+field-solve edge from about 1× the rounding floor to 1e3× it. At the hold's four edge
+states, every residual is within 2 ulps of its floor (last section), a margin of at least
+500×. The measured backend and program differences in the residual are within about 5×.
+They cannot cross that edge unless the Newton genuinely stalls within that factor of the
+floor. A genuine stall is refused on every backend.
 
 Other thresholds keep their designed margins:
 
@@ -131,25 +143,51 @@ reason not to tighten `NEWTON_TARGET`.
 
 ## Margins on the agreement's worlds (CPU)
 
-The post-loop residual as a fraction of `NEWTON_TARGET`, worst state per world family:
-unbatched, batched one world at a time, and batched six at a time. The data is in
-`results/margins-*.json`; every K-th accepted state was evaluated.
+The post-loop residual as a fraction of `NEWTON_TARGET`, at every K-th accepted state. It
+was evaluated with `jit` (unbatched), and with `jit(vmap)` on one state and on six. Every
+world declares solver version 2. The data is in `results/margins-*.json`.
 
 | Family | Worlds | Free offsets | Worst fraction of the target |
 | --- | --- | --- | --- |
-| W1 trajectories (water @1) | 6 | 0 | 0 (no Newton iteration) |
-| W2 arms (water @2, stationary branches) | 8 | 0 | 0 (no Newton iteration) |
-| G2-Q1 cases (replacement @1) | 9 | 0 | 0 (no Newton iteration) |
-| The hold's worlds from t = 0 (@3, finite extracellular space) | 3 | 172 | 0.80–0.995 |
-| The hold's six worlds at t = 8 s | 6 | 172 | 0.04–0.45 |
+| W1 trajectories | 6 | 0 | 0 (no Newton iteration) |
+| W2 arms (stationary branches) | 8 | 0 | 0 (no Newton iteration) |
+| G2-Q1 cases | 9 | 0 | 0 (no Newton iteration) |
+| The hold's preparation worlds, from t = 0 | 3 | 172 | 0.92 unbatched, 0.98 batched, 0.995 batched six |
+| The hold's six worlds at t = 8 s | 6 | 172 | 0.18 unbatched, 0.45 batched |
 
-**The qualification worlds cannot reach this edge.** Every outside node is a held bath,
-or the single floating component is the gauge, so the field Newton has no unknowns. It
-takes no iteration, and the residual is exactly 0.
+**The qualification worlds cannot reach this edge, so the agreement runs are not
+exposed.** Every outside node is a held bath, or (W1's P5) the single floating component
+is the gauge. The field Newton has no unknowns: it takes no iteration, and the residual is
+exactly 0.
 
-**The hold's tissue lives at the edge.** From t = 0, about half of its states are above
-0.3 of the target and the worst is 0.995. The CPU's scalar `jit` trajectory itself was
-refused near 0.45 s (world 3) and 0.46 s (world 1).
+**The hold's tissue lives at the edge.** From t = 0, about half of its sampled states are
+above 0.3 of the target, and the worst is 0.995. Exposure needs free field offsets, which
+means finite extracellular space: the full-tissue worlds and E07.
 
-**Exposure needs floating capacitor components**, which means finite extracellular
-space. That covers the full-tissue worlds and E07.
+## Version 3 on the hold's edge states (CPU)
+
+`t0_v3.py` and `t0_scalar_v3.py` step the preparation's three worlds from t = 0, once
+with version 2 and once with version 3 declared (`results/t0-v3.json`,
+`results/t0-scalar-v3-w*.json`; version 2's widths from `results/t0-widths-main.json`).
+
+| Program | Version 2 refuses | Version 3 | Equal to version 2 before that |
+| --- | --- | --- | --- |
+| Vectorized, windows of 1 to 186 steps | world 3 at [0.085, 0.086] s | accepts to 0.6 s | bitwise, 85 steps × 3 worlds (1-step windows) |
+| Vectorized, 200-step windows | world 1 at [0.186, 0.187] s | accepts to 0.6 s | not compared |
+| Scalar `jit`, world 1 | [0.464, 0.465] s | accepts to 0.6 s | bitwise, 464 steps |
+| Scalar `jit`, world 3 | [0.452, 0.453] s | accepts to 0.6 s | bitwise, 452 steps |
+| Scalar `jit`, world 2 | none to 0.6 s | accepts to 0.6 s | bitwise, 600 steps |
+
+**The scalar program reaches the edge too.** At both scalar refusals, the failing term is
+the start-of-step field solve: one Newton iteration, then 1.02 (world 1) and 1.11
+(world 3) of the target. The refusal is not specific to `vmap`. Which step a program
+refuses also depends on its window length.
+
+**Every refused residual is within 2 ulps of its floor.** We lowered `current_floor` in
+version 3's layout from 1e3 ulps (of eps × the incident sum) to 0:
+
+- version 3 accepts the scalar edge states from 1 ulp;
+- it accepts the vectorized edge states (world 3 at 0.085 s, world 1 at 0.186 s) from
+  2 ulps batched, and at 0 unbatched, where version 2's own test passes.
+
+So at the edge this tissue reaches, version 3's 1e3 ulps leave a margin of at least 500×.
