@@ -595,8 +595,24 @@ is its anchor (D057), already counted on the declared layout.
     The crossrev baseline is then renewed at the landing commit, and 8416a72 stays as the
     record before it. Otherwise the change takes a new ID (D147), or an allowance where
     the residual is representable precision; that choice is the user's.
-  - **The guard, fix against no fix: physical fields are identical, so the stop rule did
-    not trigger** (composite-v2-20261112-01/s3-fix/guard/compare-final.json).
+  - **The stop rule triggered (13 November): the fix moves registered judge numbers.**
+    Forward runs are identical, but W2's stationary judge changes.
+    - Two outputs of W2's judge change at about 10⁻¹⁴ relative, fix against no fix: the
+      step-map consistency corrections (one Newton step, J⁻¹(Φ_T(u) − u)) and their
+      rounding floors. That is 43 numbers in 24 items (composite-v2-20261112-01/s3-fix/
+      judges).
+    - Unchanged: the residuals Φ_T(u) − u, bitwise in all 72 entries, and every verdict
+      (pass).
+    - The run without the fix reproduces the recorded judged run (10 November) bit for bit,
+      and the only source change is `capacitor_change`. The moved quantity is therefore
+      the step map's Jacobian J. The stationary analysis takes it by automatic
+      differentiation through the checked step, and XLA compiles that derivative program
+      differently once the booking's sums are explicit and behind a barrier.
+    - By D148's draft this is not an in-place fix, because a judge's registered numbers
+      change. It needs a new ID or the allowance, and that is the user's decision. The
+      fix stays branch work, unlanded.
+  - **The forward guard, fix against no fix: physical fields are identical**
+    (composite-v2-20261112-01/s3-fix/guard/compare-final.json).
     - Setup: snapshot-s3f (69df9f9) against snapshot-s3g (e32c20a), run by
       `validation/tissue/inplace_fix_guard.py`. Peak memory was 3.2 GB.
     - Every state field, observation column, physical diagnostic and device-check flag is
