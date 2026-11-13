@@ -172,8 +172,11 @@ def insertion_to_dict(declaration):
     )
 
 
-def parse_controls(raw, base, declaration):
-    """One rate schedule per inserted patch, in declaration order (retrieval is refused)."""
+def parse_controls(raw, base, declaration, *, onsets=None):
+    """One rate schedule per inserted patch, in declaration order (retrieval is refused).
+
+    onsets: the onset rule applied to the parsed schedule (default check_onsets, this law's;
+    scheduled_membrane_insertion@2 passes its own). Host side only."""
     by_patch = {}
     end = base.experiment.end_time
     for entry in raw["insertion_controls"]:
@@ -212,7 +215,7 @@ def parse_controls(raw, base, declaration):
     if set(by_patch) != set(declared):
         raise ConfigError("Every inserted patch, and only those, has an insertion schedule")
     schedule = tuple(by_patch[k] for k in declared)
-    check_onsets(base, schedule)
+    (check_onsets if onsets is None else onsets)(base, schedule)
     return schedule
 
 
