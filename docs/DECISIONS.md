@@ -4861,6 +4861,47 @@ rename with no numerical change:
     1e12 ulps, which scales to about 4e-20 at 1e3. That bound, not the checks, is what
     makes the cap safe.
 
+## D148: An in-place fix to shared qualified code
+
+2026-11-13, lead decision, reviewed with the advisor (drafted in
+[the v2 design note](PUMP_COMPOSITE_V2_DESIGN.md) §3, S3 prerequisite (c)).
+- **D147 makes an ID promise its semantics.** A change to a solver's iterations or
+  acceptance takes a new ID. A fix to code that qualified models share may instead be made
+  in place, but only if all four criteria below hold, fix against no fix.
+- **The criteria:**
+  1. Physical fields are bitwise identical in every qualified world and in every program:
+     scalar, windowed, vector-window and batch runs, and the derivative programs the judges
+     use. That covers every state field, observation column and diagnostic, except the
+     ledger accumulators and their residual diagnostics.
+  2. Verdicts, and every registered number other than those ledger diagnostics, are
+     unchanged.
+  3. Ledger accumulators and their residual diagnostics change only at rounding level, and
+     every case is listed.
+  4. The crossrev baseline is renewed at the landing commit. 8416a72 stays as the earlier
+     record.
+- **Otherwise** the change takes a new ID (D147), or an allowance where the residual is
+  representable precision. That choice is the user's.
+- **The ledger diagnostics.** The residual diagnostics of the electrode, global-charge and
+  energy ledgers are functions of the ledger accumulators, so a fix to an accumulator
+  changes them. That is the fix working, not a moved number: electrode errors go to 0, and
+  global-charge ratios move within rounding. For example, Rm1's bound ratio went from
+  0.0236 to 0.0241, well inside its bound.
+- **The first case, `surface_tissue.capacitor_change` (S3 prerequisite (c)).**
+  - Explicit species-order adds make every evaluation of a state's plate charges one
+    computation. Before, XLA summed them in two orders, and the Xenopus egg's electrode
+    ledger drifted by 7e-22 C per step.
+  - **With an optimization barrier added, it was not admissible.** The forward runs were
+    identical, but the barrier changed the step-map Jacobian that the stationary judges take
+    by automatic differentiation. W1 and W2 moved 49 consistency numbers (by 1e-14 to 1e-13
+    relative), with their verdicts unchanged, so the stop rule triggered.
+  - **Without the barrier (option 3, registered before its runs at c540fdb), it was
+    admissible.**
+    - The judges were unchanged apart from the ledger diagnostics.
+    - The forward subset was identical.
+    - The egg's electrode ledger stays within one ulp of its plate charge on every row.
+  - Evidence: `/mnt/workspaces/Cells/composite-v2-20261112-01/s3-fix/`, listing every
+    ledger change.
+
 ## D149: The EMT-miRNA pair's source profile keeps the reference's numerical conventions
 
 2026-11-13, user decision, reviewed by the advisor. This settles D146's pending
@@ -4890,6 +4931,7 @@ emulator.
   No code is copied, since BITSEY declares no licence.
 - **Not a precedent.** New physics in `src/cells` follows AGENTS.md. A further exception
   needs its own user decision.
+
 
 ## Implementation choices and remaining work
 
