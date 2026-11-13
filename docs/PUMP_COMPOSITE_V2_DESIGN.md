@@ -556,6 +556,13 @@ user's decision. These runs take a few hours of detached CPU time.
   - The `volume` world set leaves this commit's `composite_crossrev.py`: three agents write that
     file, so the set returns on top of the extended tool once it has landed on main, and is
     recorded then with constants.
+  - Run at 18:37 from the after side's snapshot (1ea8efa's src) with the copy beside the
+    baseline: identical in all three sets (base 36/36 texts, 36/36 constants, 12/12 bindings;
+    qualification 78/78, 78/78, 56/56; injection 6/6, 6/6, 2/2).
+  - Then, at the lead's request, main (a6efe1c, whose tool is aaa0044's byte for byte and whose
+    src is 4465b48's) was merged, the `volume` set added on top, and A.1 runs once more from a
+    clean snapshot of that commit with its own tool, under the same pass rule. The `volume` set's
+    first record, with constants, comes from the same run.
 
 **B. The new composition.** A tier-1 smoke test under 20 s covers the NumPy event map and
 ledgers, the analytic checks and the refusals. The compiled runs go in tier 2 or 3.
