@@ -509,7 +509,7 @@ is its anchor (D057), already counted on the declared layout.
       t_Cl is 1.009 ulp, and −6.96 × 10⁻²² C above it, where t_Cl is 0.504 ulp;
     - with t_Cl = 0 both orders agree, which explains the exact zeros.
   - The evidence:
-    - after the knee (step 296,107), each step's booking equals the exact plate-charge
+    - after the knee (history row 296,107), each step's booking equals the exact plate-charge
       change, in rational arithmetic on the saved amounts, plus −6.958102 × 10⁻²² C, with
       a spread of 10⁻³⁵ C over 400 steps;
     - summing F[((t_Na + t_K) + t_Cl) − ((t_Na + t_Cl) + t_K)] over the saved states from
@@ -523,15 +523,43 @@ is its anchor (D057), already counted on the declared layout.
     reading them back. Here they agree bit for bit (the prediction above), but this is a
     second way the two evaluations could differ.
   - The proposed remedy is an exact one: one computation of each state's plate charge,
-    in `surface_tissue.capacitor_change`.
+    in `surface_tissue.capacitor_change` (shared @3 code, so it needs the lead's approval).
     - It sums the species with explicit adds in species order, and on the device it puts
-      an optimization barrier on the amounts it sums.
-    - Fields: none. Trajectories: unchanged, because capacitor_change feeds no rate.
+      an optimization barrier on the amounts it sums (s3-prereq/proposed/).
+    - Tested as written (mechanism3/): the egg's ledger is exactly 0 at 12 s and at
+      420 s, and every field of all 420,001 rows except `electrode_charge_transferred_C`
+      is bitwise identical.
+    - Installed in the injection, insertion and adapter test files, those files pass,
+      including vmap and the composition with insertion at the view. Replacement's
+      vector-window file also passes; it runs a vmapped batch with device checks.
+    - Fields: none. Trajectories: unchanged, because capacitor_change feeds no rate
+      (measured on the egg; elsewhere from the call graph).
     - Ledger fields: change at the rounding level where XLA's order differed.
-    - Jaxprs: change in every checked step and device check, so the crossrev needs a run
-      comparison. Host values: unchanged.
+    - Jaxprs: from the call graph, every checked step and device check that calls it
+      changes, so the crossrev needs a run comparison and a new baseline.
+    - Host values: unchanged where NumPy already sums in species order. That holds for
+      every shape tried except a single column with 8 or more species, where NumPy sums
+      pairwise.
+    - Exact under three conditions:
+      - valences are 0, ±1 or ±2, because the kernels contract z n into the accumulate,
+        which is harmless only when z n is exact;
+      - the solve keeps its zero boundary, because the end's kernel contracts
+        F Σ − C·boundary into one fused multiply-subtract;
+      - no held node couples to three or more charged free nodes. Such a node would
+        expose the matrix product's node sum in the same way; neither the egg nor S3 has
+        one.
+  - On S3's path, with a field-input provider:
+    - the bookings at the view are @3's step and injection, both through
+      capacitor_change, and the remedy covers them;
+    - insertion's image charge (`adapter.fixed_charge_change`) is computed directly, not
+      as a difference of two evaluations;
+    - the check's view term (`adapter.view_capacitor_terms`, through `node_potentials`) is
+      evaluated once per row and has its own allowance, rounding × |absolute plate
+      charges|, about 5 × 10⁻²⁵ C per step at egg scale. Unfixed, the drift (7 × 10⁻²² C
+      per step) would exceed that allowance.
   - A step-scaled allowance would be the wrong kind. The residual is not the state's
-    representable precision, and at 420 s the allowance would be 4 × 10⁻¹⁵ C.
+    representable precision, and at 420 s the allowance would be 4 × 10⁻¹⁵ C, 250 times
+    the present bound.
   - Not caused by this round's change (the crossrev above). The judged Rm1 ran 12 s and
     passed. S3's egg runs wait for (c).
   - The same run gives the engine's energy bound used in (a). The pulses leave about

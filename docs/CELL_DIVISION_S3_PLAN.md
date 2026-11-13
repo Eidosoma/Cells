@@ -95,9 +95,10 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
     so the electrode increments stop telescoping.
   - Written as explicit adds in species order, the sum closes the ledger exactly at
     420 s, and every other field stays bitwise identical.
-  - The fix is proposed in `surface_tissue.capacitor_change`, with no new fields and no
-    trajectory change. It waits for the lead's approval and is S3's first task, before
-    the lumen operator.
+  - The fix is proposed in `surface_tissue.capacitor_change`: explicit adds, plus an
+    optimization barrier on the device. It adds no fields and changes no trajectory, and
+    it was tested as written on the egg and in the composite test files. It waits for the
+    lead's approval and is S3's first task, before the lumen operator.
 
 ## 3. Numerics and cost
 
