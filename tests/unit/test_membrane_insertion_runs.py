@@ -131,7 +131,7 @@ def test_rk4_keeps_the_exact_half_steps():
 
 
 def test_a_resolved_access_books_the_onsets_charging_heat():
-    """S3 prerequisite (a). With a fast access (about 5 us), 1 us steps resolve the furrow's
+    """S3 prerequisite (a). With a fast access (about 5 us), 0.1 us steps resolve the furrow's
     charging after the onset, and the host energy check holds far below its heat
     1/2 C_on Vm^2; 1 ms steps book that heat only to the solver's tolerance, which this
     small world's energy bound does not cover, so the run is refused."""
@@ -142,7 +142,7 @@ def test_a_resolved_access_books_the_onsets_charging_heat():
         base["execution"].update(dt=dt, max_steps=int(round(end / dt)) + 8)
         return parse_spec(fx.with_operators(base, fx.furrow_insertion(rate=0.0, onset=onset)))
 
-    fine = run(onset_world(1e-6, 1e-5, 6e-5))  # 50 steps after the onset, about 10 RC times.
+    fine = run(onset_world(1e-7, 1e-5, 6e-5))  # 500 steps after the onset, about 10 RC times.
     furrow = float(fine.spec.model.membranes[1].capacitance_F)
     vm = float(np.asarray(fine.observations.membrane_voltage_V)[1][0])
     heat = 0.5e12 * furrow * vm**2
