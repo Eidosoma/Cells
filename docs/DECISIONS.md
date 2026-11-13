@@ -4793,6 +4793,74 @@ rename with no numerical change:
   - `/mnt/workspaces/Cells/bitsey-rename-20261112-02/`: the tests after the
     rebase onto `5fdbeb3`.
 
+## D147: Definitions with free field offsets declare field solver version 3
+
+2026-11-13, lead decision, reviewed by the advisor (draft for landing with
+[FIELD_FLOOR_ACCEPTANCE_DESIGN.md](FIELD_FLOOR_ACCEPTANCE_DESIGN.md)).
+- **The trigger is mechanical.** It applies to the resolved pump family, whose field
+  solve is `numerics/surface_field.py`'s capacitive reduction and which accepts both
+  versions: `resolved_pump_tissue@1`–`@3`, `resolved_pump_water@1`–`@2` and
+  `resolved_pump_replacement@1` (shown by `test_field_floor.py` and the note's guard 1).
+  A new definition of the family with at least one free field offset declares
+  `capacitive_reduction_gauged_damped_newton@3`. The count needs only the definition:
+  the `field_offset_free` leaf of `initialise(spec).layout`, set by finite extracellular
+  space with floating components. Definitions with no free offset keep version 2,
+  because the floor never decides their acceptance.
+- **In the drivers:** `validation/tissue/field_solver_choice.py` applies the trigger
+  (choice `auto`); `heredity_pilot.py`'s `--field-solver` defaults to it for its start,
+  prepare and run parts, and `--field-solver 2` reproduces the definitions made before
+  this decision. Builders keep their earlier default, version 2, so guard worlds and
+  studies built through them are unchanged.
+- **Drivers that must call `field_solver_choice.declare()`:** `heredity_pilot.py` (it
+  does), and every new run driver that builds a free-offset world, E07-v1's among them.
+  `tests/unit/test_d147_drivers.py` fails for a run driver under `validation/` that
+  uses a builder of such a world (the modules `resolved_scale_world`,
+  `surface_pump_v3_study` and `heredity_pilot`, or the fixture function
+  `pump_water_fixtures.scale_world`) without the choice, unless it is exempted there with
+  its reason. The check is static and sees only those builders: a driver that builds a
+  free-offset world any other way must call `declare()` by this rule alone.
+- **The exemptions are narrow.** The studies recorded before this decision
+  (`batched_worlds_study`, `cell_replacement_cost`, `ledger_rounding_study`,
+  `resolved_scale_study`, `surface_pump_v3_study`) are exempt only for reproducing their
+  recorded runs. Any new run they make of a free-offset world declares its field solver
+  by this decision. The cross-revision guards, the judges and the floor tools are exempt
+  because they run definitions as declared, or both versions on purpose.
+- **Why.** Version 2 accepts a field solve only below `NEWTON_TARGET`. On the W1 hold's
+  825-node tissue (172 free offsets), a converged root sits at 0.8–1.1 of that target,
+  at the rounding floor of the current balance. Whether it is accepted then depends on
+  the compiled program: the CPU's vectorized and scalar programs refuse at different
+  steps, and the L4 has not refused these worlds. Version 3 also accepts a residual
+  within `CURRENT_FLOOR_ULPS` (1e3) ulps of the attainable floor. It iterates exactly as
+  version 2. On that tissue the cap lies about 8–2,200 times above `NEWTON_TARGET`,
+  depending on the component.
+- **Unchanged:** version 2's semantics and every solver and model ID. Every qualified
+  world (W1, W2, G2-Q1), the hold's segment 1 and every saved snapshot keep version 2.
+  There is no migration.
+- **A switch is a new definition.** It cannot resume or start from a version-2
+  checkpoint (`validate_checkpoint` refuses its layout), so a run is rerun from its
+  start under version 3.
+- **A change to a solver's iterations or acceptance is a new solver ID**, never an edit
+  to an existing one. For example, fixed-count masked loops would be a new ID.
+- **Evidence** (`/mnt/workspaces/Cells/window-timing-20261112-01/`,
+  `/mnt/workspaces/Cells/field-floor-guards-20261113-01/`):
+  - Margins: W1's trajectories, W2's arms, G2-Q1's cases and the turnover pre-screen's
+    discs have no free offsets, and their residual is exactly 0. The hold's
+    preparation worlds sit at 0.92–0.995 of the target from t = 0.
+  - Version 3 on the hold's edge states (CPU): it accepts every state version 2
+    refused, in the vectorized and scalar programs. Its states are bitwise version 2's
+    before each refusal. Every refused residual is within 2 ulps of its floor.
+  - Guard 1, on 41 worlds before and after main's S2: the floor's magnitude reaches two
+    multiplications and one comparison per field solve. Every output depends on it only
+    through that comparison's boolean, and the device row checks never read it.
+  - Guard 2: W1, W2, G2-Q1, Q5, Q6, W37 and the 825-node world run equal under both
+    versions (bitwise, with device row checks, where the part records them).
+  - Guard 6: the @3 tests pass. A solve held just under the cap, 866–2,166 times
+    `NEWTON_TARGET` on the hold's states, passes every row check and ledger. Its state
+    change over 20 steps (at most 5e-13) cannot be told from rounding. The checks cannot
+    see the residual even under caps 1e9 times wider; there the change reaches 4e-11 at
+    1e12 ulps, which scales to about 4e-20 at 1e3. That bound, not the checks, is what
+    makes the cap safe.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

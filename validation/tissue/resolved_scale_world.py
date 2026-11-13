@@ -88,7 +88,11 @@ def definition(
     backend="cpu",
     seed=0,
     max_trace_bytes=2**34,
+    field_solver="capacitive_reduction_gauged_damped_newton@2",
 ):
+    """The scale world's definition. field_solver: the declared field solver; the default
+    is the version every definition made before D147 declares (drivers choose by D147 with
+    validation/tissue/field_solver_choice.py)."""
     g = geometry(seed)
     ids = [s for s, _ in SPECIES]
 
@@ -219,7 +223,7 @@ def definition(
         jit=True,
         precision="float64",
         solver=solver,
-        field_solver="capacitive_reduction_gauged_damped_newton@2",
+        field_solver=field_solver,
         max_steps=int(math.ceil(end_time / dt)) + 8,
         max_trace_bytes=max_trace_bytes,
         material_balance_atol_fmol=mapped([1e-10] * len(ids)),
