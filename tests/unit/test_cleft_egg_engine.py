@@ -55,6 +55,20 @@ def test_the_engine_egg_is_rfulls_field_by_field():
     assert engine.anchor_granularity(raw) < 1e-8  # The declared bound stays small.
 
 
+def test_the_horizon_ledgers_cover_every_probed_ledger_shape():
+    """The study's horizon ledgers (ledger_ratios) on the egg's initial row: every probed ledger,
+    the fill's [species, outside] ledger included, gives its residual, bound and ratio."""
+    from cells.models.registry import get_model
+
+    spec = parse_spec(engine.definition())
+    state, _ = get_model(spec.model).initial_values(spec)
+    ratios = engine.ledger_ratios(spec, state, 0)
+    assert set(ratios) == set(engine.PROBE_LEDGERS)
+    for name, v in ratios.items():
+        assert v["bound"] > 0 and 0.0 <= v["ratio"] <= 1.0, (name, v)
+        assert v["ratio"] == v["residual"] / v["bound"], name
+
+
 def test_event_and_observation_times_lie_on_each_study_step():
     for dt in engine.STUDY_DTS:
         raw = engine.definition(dt)

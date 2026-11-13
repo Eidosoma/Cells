@@ -780,13 +780,12 @@ def ledger_ratios(spec, state, steps, names=PROBE_LEDGERS):
     )
     out = {}
     for name in names:
-        value = np.ravel(np.abs(np.asarray(values[name])))
-        bound = np.ravel(
-            np.broadcast_to(np.asarray(bounds[list(model.LEDGERS).index(name)]), value.shape)
-        )
-        i = int(np.argmax(value / bound))
+        residual = np.abs(np.asarray(values[name]))
+        bound = np.broadcast_to(np.asarray(bounds[list(model.LEDGERS).index(name)]), residual.shape)
+        residual, bound = np.ravel(residual), np.ravel(bound)  # The bound shaped first, then both.
+        i = int(np.argmax(residual / bound))
         out[name] = dict(
-            residual=float(value[i]), bound=float(bound[i]), ratio=float(value[i] / bound[i])
+            residual=float(residual[i]), bound=float(bound[i]), ratio=float(residual[i] / bound[i])
         )
     return out
 
@@ -829,12 +828,14 @@ def admit(dts=STUDY_DTS, window_steps=STUDY_WINDOW):
     return dict(cases=cases)
 
 
-def study(dt, *, window_steps=STUDY_WINDOW):
+def study(dt, *, window_steps=STUDY_WINDOW, keep=None):
     """One development run of the study (plan §3-§4): the engine's Q1-Q5 at dt, from the old
     membrane's voltage and the observer's lumen at every observation time
     (windowed_observations), with the device checks' diagnostics and, at the horizon (the
     final row), the electrode, reservoir-work, energy and fill residuals against their
-    bounds."""
+    bounds. keep: a folder for the run's observation rows, diagnostics and final checkpoint,
+    written before any post-processing (cells.io.write_snapshot), so a later failure loses no
+    run."""
     import time
 
     from cells.core.specs import parse_spec
@@ -847,6 +848,18 @@ def study(dt, *, window_steps=STUDY_WINDOW):
     cleft = [c["id"] for c in raw["model"]["extracellular"]].index("cleft")
     old = [m["id"] for m in raw["model"]["membranes"]].index("old_membrane")
     stacked, diagnostics, timings, final = windowed_observations(spec, window_steps=window_steps)
+    if keep is not None:  # The run's rows and final checkpoint, before any post-processing.
+        import numpy as np
+
+        from cells.io import write_snapshot
+
+        keep = Path(keep)
+        keep.mkdir(parents=True, exist_ok=True)
+        np.savez(keep / "observations.npz", **stacked)
+        (keep / "run.json").write_text(
+            json.dumps(dict(dt=dt, diagnostics=diagnostics, timings=timings), default=float)
+        )
+        write_snapshot(keep / "final", spec, final)
     times = stacked["times"].tolist()
     voltages = stacked["membrane_voltage_V"][:, old].tolist()
     lumen = stacked["lumen_concentration_mM"][:, :, cleft].tolist()
@@ -1108,7 +1121,8 @@ def main(argv=None):
     elif args.action == "admit":
         result = dict(status=STATUS + " The study's admission; no step taken.", **admit())
     elif args.action == "study":
-        result = dict(status=STATUS + " Development dt study.", **study(args.dt))
+        keep = args.output.with_name(args.output.stem + "-run")
+        result = dict(status=STATUS + " Development dt study.", **study(args.dt, keep=keep))
     elif args.action == "terms":
         studies = [json.loads(Path(f).read_text()) for f in args.studies]
         result = dict(status=STATUS + " Step terms of the dt study.", **terms(studies))
