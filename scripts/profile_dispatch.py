@@ -281,7 +281,10 @@ def solve_timing(args):
             # Per world: the solve's Newton iterations, its largest normalized current
             # residual (convergence needs <= surface_field.NEWTON_TARGET) and convergence.
             "iterations": np.asarray(out.iterations).tolist(),
-            "current_normalized_max": np.max(np.asarray(out.current_normalized), axis=-1).tolist(),
+            "current_normalized_max": np.asarray(out.current_normalized)
+            .reshape(len(specs), -1)
+            .max(axis=1)
+            .tolist(),
             "converged": np.asarray(out.converged).tolist(),
             "newton_target": surface_field.NEWTON_TARGET,
         }
