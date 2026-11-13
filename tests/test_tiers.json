@@ -28,7 +28,8 @@
   "/mnt/workspaces/Cells/field-solver-driver-20261113-01/measure-new/measured.json",
   "/mnt/workspaces/Cells/d147-guard-20261113-01/measure-new/measured.json",
   "/mnt/workspaces/Cells/d147-guard-20261113-01/measure-new2/measured.json",
-  "/mnt/workspaces/Cells/land-20261113g/measure-new/measured.json"
+  "/mnt/workspaces/Cells/land-20261113g/measure-new/measured.json",
+  "/mnt/workspaces/Cells/land-20261113h/measure-new/measured.json"
  ],
  "measured_provenance": [
   {
@@ -240,6 +241,13 @@
    "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113g",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-13T10:10:32+00:00"
+  },
+  {
+   "git_revision": "ee785503fcd1275443f1d01808bcc25a78075884",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113h",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-13T11:53:08+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2092,6 +2100,14 @@
     "counts": {
      "failed": 1,
      "passed": 38
+    }
+   },
+   {
+    "file": "tests/unit/test_source_profile_boundary.py",
+    "seconds": 14.4,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    },
    {
