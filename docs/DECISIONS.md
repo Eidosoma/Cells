@@ -4984,6 +4984,36 @@ we want to test all of this in the end".
     which stays tooling needing the user's approval per paper (D138);
   - building a feature for one paper (D144).
 
+## D152: Reactions on the shared inventory are designed as a general feature
+
+2026-11-13, user decision on the pattern-recovery path (E15,
+[note](EXPERIMENT_PATH_PATTERN_RECOVERY.md)): "Yes on the question and lets go as you see fit
+otherwise". The question was whether reactions acting on the same molecules that transport moves
+should be designed as a general engine feature.
+- **What it means.** Driven, open, nonlinear reactions that write @3's species rows become a
+  general composite operator. These are the one inventory that membranes, faces and D150's
+  operators move. The operator is the engine's route to Turing-type self-organisation.
+- **Consumers named so far:**
+  - MG0c, Turing patterning at the predicted wavelength, which is its qualification case;
+  - the GZMK review's catalysis on a substrate (item 2);
+  - E15's self-organisation layer.
+- **Design first (D142).** The note is written against D150 v1's accepted design. It settles
+  the GZMK review's shared-state question: `network_reactions@1` keeps its own species state
+  beside the physical inventory. The design must give:
+  - one owner per species row (the ownership contract);
+  - conserved material and charge;
+  - energy booked in the composite's ledgers;
+  - bitwise idleness at zero rate (D136);
+  - cited kinetics.
+- **Order.** The design note starts when a subagent slot is free. Code follows D150 v1's code
+  (after S5a) and the note's acceptance.
+- **What it does not authorise:**
+  - code before the note is accepted;
+  - any change to `network_reactions@1` or the calcium-energy family;
+  - lifting D145's holds;
+  - a law or species named for one experiment (D144);
+  - reproducing a paper's model (D138).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

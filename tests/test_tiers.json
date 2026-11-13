@@ -34,7 +34,8 @@
   "/mnt/workspaces/Cells/land-20261113l/measure-new/measured.json",
   "/mnt/workspaces/Cells/land-20261113m/measure-new/measured.json",
   "/mnt/workspaces/Cells/land-20261113o/measure-new2/measured.json",
-  "/mnt/workspaces/Cells/land-20261113p/measure-new/measured.json"
+  "/mnt/workspaces/Cells/land-20261113p/measure-new/measured.json",
+  "/mnt/workspaces/Cells/land-20261113r/measure-new/measured.json"
  ],
  "measured_provenance": [
   {
@@ -288,6 +289,13 @@
    "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113p",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-13T18:28:46+00:00"
+  },
+  {
+   "git_revision": "c7ca23acc861bc906782e57314972abd62d032ae",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113r",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-13T22:15:39+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1749,6 +1757,14 @@
     }
    },
    {
+    "file": "tests/unit/test_partition_reference.py",
+    "seconds": 2.31,
+    "exit_code": 0,
+    "counts": {
+     "passed": 37
+    }
+   },
+   {
     "file": "tests/unit/test_passive_pair.py",
     "seconds": 16.64,
     "exit_code": 0,
@@ -2952,6 +2968,22 @@
     }
    },
    {
+    "file": "tests/unit/test_cleft_tissue_reference.py",
+    "seconds": 22.26,
+    "exit_code": 0,
+    "counts": {
+     "passed": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_cleft_tissue_static.py",
+    "seconds": 20.07,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
     "file": "tests/unit/test_comparison_evidence.py",
     "seconds": 49.72,
     "exit_code": 1,
@@ -3730,6 +3762,12 @@
    {
     "file": "tests/unit/test_channel_catalog_v2.py",
     "seconds": 90.15,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_cleft_tissue_crosscheck.py",
+    "seconds": 90.01,
     "exit_code": null,
     "counts": {}
    },

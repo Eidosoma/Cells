@@ -1148,9 +1148,23 @@ The draft decision (number assigned at landing) waits for the user's answers.
   call.
 - Is it within the rule?
 
+### 13.7 The user's answer (13 November 2026)
+
+- **The question in §13.6.** The user delegated it: "lets go as you see fit otherwise". The
+  lead's ruling is that the case-1 probe is within AGENTS.md's rule:
+  - it runs once per admission, before and outside the resumed run, as the crossrev guard and
+    the D148 dumps do;
+  - it inspects no Python bytecode;
+  - the resumed run carries no per-call hook or check.
+- **The AGENTS.md sentences are not added.** The provenance rule for a resumed run is carried
+  by the decision in Appendix A, which lands with the implementation: the run names both
+  sources and runtimes, and the record that admitted it. The user can still ask for the
+  sentences.
+- **Implementation starts** on the first landing's scope (§13.1).
+
 ## Appendix A: the draft decision (number assigned at landing)
 
-**Held for the user's answers** to §13.6. It is drafted as of the coordinator's answers; the
+**The user's answer** to §13.6 is in §13.7. It is drafted as of the coordinator's answers; the
 first landing's scope, vector windows on CPU, is in §13.1.
 
 > ## D1xx (number assigned at landing): Checkpoints resume across a source or runtime change only through a recorded admission
