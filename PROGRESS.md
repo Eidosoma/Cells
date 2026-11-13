@@ -170,8 +170,13 @@ machine-readable inputs, results, checks and failures.
     `runtime_identity`. That covers the package versions, `XLA_FLAGS` and, on GPU, the device
     kind, so an L4 checkpoint cannot resume on GH200. `runner.validate_checkpoint` also
     refuses a layout that differs from the declared model's.
-  - **Already outside that rule:** about 20 validation tools read saved `state.npz` files
-    directly, an unrecorded form of migration.
+  - **Already outside that rule** (corrected from the design's §7): 32 non-test files under
+    `validation/` and `scripts/` name `state.npz`, but most only read or write saved bytes.
+    - Three uses crossed an identity: `scripts/profile_dispatch.py` (held L4 states under
+      other XLA flags), `field_floor_held.py` (version 3 on version-2 states), and E07-v1's
+      import of the sheet70 start states, which crosses the D148 ledger fix.
+    - The driver-owned resumes have no identity check: `e07_v1_run.py`, the turnover tool's
+      `checkpoint.npz`, and `open_calcium_bath_trajectory_production.py`'s handoff.
   - **Plan:** a fresh agent writes the design only, in the slot the S3 agent frees, ahead of
     the one-execution-path work, since both own the checkpoint validation.
     - It keeps four cases apart:

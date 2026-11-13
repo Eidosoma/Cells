@@ -1,4 +1,6 @@
 **Partial reprogramming across three human lineages, and what Cells can take from it
+
+**Update, 13 November 2026 (D151).** The user: "we want to test all of this in the end". Every ranked candidate below is deferred, not closed; its prerequisite and gate stand as written, and any "park" or "not recommended" reads as "deferred".
 — reviewed 13 November 2026**
 
 Kaho Washizu, Xun Wang, Julia M. Draper, Shinya Yamanaka and Akira Kunitomi,

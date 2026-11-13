@@ -4959,6 +4959,31 @@ sure the secreted-species transport now".
 - The checkpoint-continuity decision drafted as "D150" in its design note takes the next free
   number when the user approves it.
 
+## D151: Every reviewed candidate is deferred, not closed
+
+2026-11-13, user decision on the paper reviews, with the advisor's help: "Have advisier help but
+we want to test all of this in the end".
+- **What it means.** Every ranked candidate in the paper reviews stays on the list as deferred,
+  with its prerequisite and gate named. Covered: partial reprogramming, granzyme K and tissue
+  ageing, kinetochore counts, and the earlier reviews. Wording such as "not recommended", "park"
+  or "not a Cells target" in the backlog becomes "deferred".
+- **Partial reprogramming, taken now:**
+  - **E07-v2** adopts the write–clear–challenge rules, translated to Cells, drafted after
+    E07-v1's analysis. It is in the coupled-renewal gate of CURRENT_PLAN.
+  - **Functional challenges,** in order: a second cue, injected current, then an osmotic step,
+    which needs replacement over water.
+  - **The cross-lineage perturbation test** is logged as a second-tier benchmark for the future
+    gene-regulation layer, as a direction-of-response test only.
+  - **Watch** for the peer-reviewed version, its GEO accession and its code deposit when E07-v2
+    is drafted and when the gene-regulation track opens.
+- **What it does not authorise:**
+  - any change to the registered E07-v1, whose protocol, frozen scorer and judged items stay as
+    they are;
+  - lifting D145's holds (Cortés-Poza Phase 1, the gene-regulation track, catalogue stage 3);
+  - reproducing a paper's own pipeline, model or code, or writing a reference solution for it,
+    which stays tooling needing the user's approval per paper (D138);
+  - building a feature for one paper (D144).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

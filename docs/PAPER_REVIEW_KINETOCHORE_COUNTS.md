@@ -1,4 +1,6 @@
 **Absolute kinetochore protein copy numbers by FCS-calibrated counting, and what
+
+**Update, 13 November 2026 (D151).** The user: "we want to test all of this in the end". Every ranked candidate below is deferred, not closed; its prerequisite and gate stand as written, and any "park" or "not recommended" reads as "deferred".
 Cells can take from it — reviewed 13 November 2026**
 
 Yasuhiro Hirano, Yusuke Takenoshita, Akira Kitamura, Toru Hirota and Tatsuo
