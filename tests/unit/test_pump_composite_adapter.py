@@ -84,9 +84,23 @@ def test_a_changed_capacitance_refreshes_to_the_changed_binding():
             )
 
 
+def nodes(p):
+    return p.active.size + p.outside_active.size
+
+
 def test_floating_components_are_refused_for_a_field_input_provider():
-    pump3.check_field_inputs(surface_pump_v3.initial_values(parse_spec(sheet()))[1])
+    p = surface_pump_v3.initial_values(parse_spec(sheet()))[1]
+    pump3.check_field_inputs(p, nodes(p))
     raw = v3fx.definition("release", solver=imex.ARS222_ID)
     p = surface_pump_v3.initial_values(parse_spec(raw))[1]
     with pytest.raises(ConfigError, match="reservoir"):
-        pump3.check_field_inputs(p)
+        pump3.check_field_inputs(p, nodes(p))
+
+
+def test_a_field_input_provider_is_refused_above_the_node_cap():
+    """Option (a) of v2 design §3: the per-step refactorisation is accepted up to 64 field
+    nodes; the refusal names the two alternatives."""
+    p = surface_pump_v3.initial_values(parse_spec(sheet()))[1]
+    pump3.check_field_inputs(p, pump3.FIELD_INPUT_NODE_CAP)
+    with pytest.raises(ConfigError, match=r"limited to 64 field nodes.*\(b\).*\(c\)"):
+        pump3.check_field_inputs(p, pump3.FIELD_INPUT_NODE_CAP + 1)

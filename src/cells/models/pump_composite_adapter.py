@@ -9,17 +9,26 @@ layout. This adapter is the only place that knows @3's names:
   never copied; @3's code is not changed;
 * the view: entity quantities provided by operators, mapped onto @3's layout
   names (VIEW_FIELDS: volumes, membrane areas and capacitances, charge anchors,
-  channel abundance and route values, activity masks) and control names
-  (CONTROL_FIELDS: availabilities, multiplied by declared factors);
+  channel abundance and route values, activity masks and the reference amounts
+  of outside nodes that are switched off) and control names (CONTROL_FIELDS:
+  availabilities, multiplied by declared factors);
 * the field arrays derived from capacitances and masks (field_capacitor_matrix,
   _scale, _solve_matrix, _factor, field_fixed, field_active). They are bound on
   the host once. When an operator provides a capacitance or a mask (FIELD_INPUTS),
   refresh_field recomputes them on the device and selects them only where an input
   differs from the bound one in that step, so an unchanged step uses the bound
-  arrays bitwise. The recomputation covers held-bath topologies (every capacitor
-  component holds a reservoir, so the floating basis is empty); a definition with
-  floating components and a field-input provider is refused (topology epochs are
-  later work, §3.8). No S1 operator provides a field input.
+  arrays bitwise. The recomputation runs every step (a select by value), so a
+  field-input provider is refused above FIELD_INPUT_NODE_CAP field nodes (option (a)
+  of v2 design §3). It covers held-bath topologies (every capacitor component holds
+  a reservoir, so the floating basis is empty); a definition with floating
+  components and a field-input provider is refused (topology epochs are later work,
+  §3.8). membrane_entity_state@1 and scheduled_membrane_insertion@1 (S2) are the
+  first field-input providers;
+* @3's free energy and its capacitor field at a view: chemical_free_energy_pJ and
+  capacitor_free_energy_pJ (balances' own terms), view_capacitor_terms (the energy
+  rule: @3's term on the declared layout brought to the physical capacitor energy at
+  the view, with the clamps' plate charges) and fixed_charge_change (one capacitance
+  change at fixed free-node charges: potentials, image charge and heat).
 """
 
 import jax
@@ -30,6 +39,9 @@ from cells.core.specs import ConfigError
 from cells.core.surface_pump_v2_spec import Control
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as ionic
+from cells.models import surface_tissue as tissue
+from cells.numerics import surface_field as field
+from cells.numerics.extracellular_field import scatter
 from cells.processes.electrochemistry import R
 
 MODEL_ID = ionic.MODEL_ID
@@ -57,9 +69,16 @@ VIEW_FIELDS = (
     "membrane_active",
     "channel_active",
     "junction_active",
+    "face_active",
+    "extracellular_amount_reference",
 )
 # Inputs of the derived field arrays: providing one makes the view refresh them.
 FIELD_INPUTS = ("membrane_capacitance", "active", "outside_active", "membrane_active")
+# Option (a) of v2 design §3 (R3): the refresh refactorises every step once a field input is
+# provided, so a field-input provider is refused above this many field nodes (cells plus
+# outside nodes, padded). Measured on one CPU core (composite-v2-20261112-01/s2-r3-cost): +7.5%
+# per step at 2 nodes, noise at 14, +20% at 254 and +48% at 825.
+FIELD_INPUT_NODE_CAP = 64
 DERIVED_FIELD_ARRAYS = (
     "field_capacitor_matrix",
     "field_capacitor_scale",
@@ -235,8 +254,19 @@ def refresh_field(q, bound, *, xp=jnp):
     return q._replace(**values)
 
 
-def check_field_inputs(p):
-    """Refuse a field-input provider on a layout with floating capacitor components."""
+def check_field_inputs(p, nodes):
+    """Refuse a field-input provider above the node cap or with floating capacitor components.
+
+    nodes: the definition's padded field size (cell plus outside capacity).
+    """
+    if nodes > FIELD_INPUT_NODE_CAP:
+        raise ConfigError(
+            f"An operator that changes capacitances or activity masks refactorises the field "
+            f"every step, so it is limited to {FIELD_INPUT_NODE_CAP} field nodes (cell plus "
+            f"outside capacity; this definition has {nodes}). Larger worlds need option (b), "
+            "refactorising only at declared insertion epochs, or (c), a rank-k update of the "
+            "factor (docs/PUMP_COMPOSITE_V2_DESIGN.md §3)"
+        )
     basis = np.asarray(p.field_floating_basis)
     if basis.size and basis.shape[1]:
         raise ConfigError(
@@ -267,3 +297,112 @@ def chemical_free_energy_pJ(delta, p, *, xp):
 def capacitor_free_energy_pJ(dv, p, *, xp):
     """Capacitor energy against the initial membrane voltages, pJ."""
     return 0.5e12 * xp.sum(p.membrane_capacitance * dv * (2 * p.initial_membrane_voltage_V + dv))
+
+
+# @3's capacitor field at a view (v2 design §3, the energy rule; division design §5.1). @3's
+# balances run on the declared layout, so their capacitor term is 1/2 sum C0 dv_b (2 V0 + dv_b)
+# = 1/2 sum C0 (Vb^2 - V0^2), with Vb = V0 + dv_b the patch voltages that the declared
+# capacitances and masks give the current charges. Once an operator provides capacitances or
+# masks, the physical capacitor energy is 1/2 sum C V^2 - 1/2 sum C0 V0^2, with C and V at the
+# view and the reference fixed at the declared initial state. view_capacitor_terms gives the
+# difference, and the matching difference of the held nodes' plate charges for @3's electrode
+# ledger. fixed_charge_change applies one capacitance change at fixed free-node charges.
+
+
+def node_potentials(state, q, *, xp):
+    """Node potentials (V) of @3's capacitor field at layout q: the charge anchors plus the
+    state's increments on the free nodes, the held nodes at their bath potentials."""
+    n = q.active.size
+    charge = xp.concatenate((q.initial_cell_charge_C, q.initial_outside_charge_C))
+    charge = charge + tissue.charge_increment(state, q, xp=xp)
+    boundary = xp.concatenate((xp.zeros(n), q.boundary_V))
+    return field._capacitor_solve(charge, boundary, tissue.field_layout(q), xp=xp)
+
+
+def patch_voltages(phi, q, *, xp):
+    n = q.active.size
+    return xp.where(q.membrane_active, phi[q.membrane_cell] - phi[n + q.membrane_outside], 0.0)
+
+
+def field_inputs_changed(view, bound, *, xp):
+    """Whether a field input of the view differs from the declared one (as refresh_field tests)."""
+    changed = xp.asarray(False)
+    for name in FIELD_INPUTS:
+        changed |= xp.any(getattr(view, name) != getattr(bound, name))
+    return changed
+
+
+def view_capacitor_terms(state, view, bound, *, xp):
+    """@3's capacitor and electrode terms at the view, against its own on the declared layout.
+
+    view: @3's layout at the composite state with its field arrays refreshed; bound: the
+    declared layout. Returns (energy pJ, electrode C [outside], energy magnitude pJ,
+    electrode magnitude C [outside]):
+    * energy, 1/2 sum [(C - C0) V^2 + C0 (V - Vb)(V + Vb)], which brings @3's term
+      1/2 sum C0 (Vb^2 - V0^2) to 1/2 sum C V^2 - 1/2 sum C0 V0^2. C and V are the view's
+      capacitances and patch voltages at the current charges (0 on inactive patches); C0 and
+      Vb = V0 + dv_b are @3's own, from the declared layout. No bulk energies are subtracted;
+    * electrode, at each held node the view's plate charge less the declared layout's, both at
+      the current charges: the clamps supplied the view's plate charges, so @3's electrode
+      ledger subtracts it;
+    * the magnitudes of their terms, for the rounding allowance.
+    All four are exact zeros, selected, when no field input differs from the declared one.
+    """
+    n = bound.active.size
+    _, cap, dv = tissue.capacitor_change(state, bound, xp=xp)
+    vb = bound.initial_membrane_voltage_V + dv
+    phi = node_potentials(state, view, xp=xp)
+    v = patch_voltages(phi, view, xp=xp)
+    c = xp.where(view.membrane_active, view.membrane_capacitance, 0.0)
+    c0 = xp.where(bound.membrane_active, bound.membrane_capacitance, 0.0)
+    energy = 0.5e12 * xp.sum((c - c0) * v**2 + c0 * (v - vb) * (v + vb))
+    initial = xp.concatenate((bound.initial_cell_charge_C, bound.initial_outside_charge_C))
+    boundary = xp.concatenate((xp.zeros(n), bound.boundary_V))
+    base = field._capacitor_solve(initial, boundary, tissue.field_layout(bound), xp=xp)
+    declared = (bound.field_capacitor_matrix @ base + cap)[n:]
+    plates = (view.field_capacitor_matrix @ phi)[n:]
+    changed = field_inputs_changed(view, bound, xp=xp)
+    held = changed & bound.reservoir
+    return (
+        xp.where(changed, energy, 0.0),
+        xp.where(held, plates - declared, 0.0),
+        xp.where(changed, 0.5e12 * xp.sum(c * v**2 + c0 * vb**2), 0.0),
+        xp.where(held, xp.abs(plates) + xp.abs(declared), 0.0),
+    )
+
+
+def fixed_charge_change(state, q, dc, bound, *, xp):
+    """One capacitance change C -> C + dc at fixed free-node charges (division design §5.1).
+
+    q: @3's layout at the current view, its field arrays refreshed; dc [membrane] >= 0. With
+    dKphi = sum_k dc_k V_k e_k, the free potentials move by delta_f = -(K'_ff)^-1 (dKphi)_f and
+    the held nodes' plate charges by dq_b = (K' delta + dKphi)_b. The capacitor free energy
+    G = max over phi_f of [q_f phi_f - 1/2 phi K phi] falls by
+        H = 1/2 sum_k dc_k V_k^2 + 1/2 delta_f (dKphi)_f >= 0,
+    whose second term, -1/2 (dKphi)_f (K'_ff)^-1 (dKphi)_f, is of second order: no bulk
+    energies are subtracted. A one-patch cell gives V' = V C / C' and H = q^2 dc / (2 C C').
+
+    Returns (q' with its field arrays refreshed, dq_b [outside] (zero off the held nodes), H per
+    patch in pJ (the total shared in proportion to the first-order terms), the first-order
+    terms 1/2 dc V^2 in pJ, the second-order term in pJ, the patch voltages before and after).
+    """
+    n, o = q.active.size, q.outside_active.size
+    phi = node_potentials(state, q, xp=xp)
+    v = patch_voltages(phi, q, xp=xp)
+    q1 = refresh_field(q._replace(membrane_capacitance=q.membrane_capacitance + dc), bound, xp=xp)
+    s = xp.where(q.membrane_active, dc * v, 0.0)
+    dk = xp.concatenate(
+        (
+            scatter(s, xp.zeros(n), (q.membrane_cell,), xp=xp),
+            -scatter(s, xp.zeros(o), (q.membrane_outside,), xp=xp),
+        )
+    )
+    delta = field._capacitor_solve(-dk, xp.zeros_like(dk), tissue.field_layout(q1), xp=xp)
+    image = (q1.field_capacitor_matrix @ delta + dk)[n:]
+    first = 0.5e12 * s * v
+    second = 0.5e12 * xp.sum(xp.where(q1.field_fixed, 0.0, delta * dk))
+    total = xp.sum(first)
+    positive = total > 0
+    share = xp.where(positive, (total + second) / xp.where(positive, total, 1.0), 0.0)
+    after = patch_voltages(phi + delta, q1, xp=xp)
+    return q1, xp.where(bound.reservoir, image, 0.0), first * share, first, second, v, after

@@ -593,7 +593,8 @@ class Composition:
         small = compact(spec)
         state, p = self.initial_values(small)
         if self.field_inputs:
-            self.inner.check_field_inputs(p)
+            x = spec.execution
+            self.inner.check_field_inputs(p, x.capacity + x.extracellular_capacity)
         controls = composite_spec.control_values(small, [c.time for c in small.experiment.changes])
         with np.errstate(all="ignore"):
             for i in range(len(controls.membrane)):

@@ -9,6 +9,8 @@ from cells.models.operators.cell_replacement import ScheduledReplacement
 from cells.models.operators.contract import check_declarations
 from cells.models.operators.current_injection import ElectrodeCurrentInjection
 from cells.models.operators.k_anion_symport import KAnionSymport
+from cells.models.operators.membrane_insertion import ScheduledMembraneInsertion
+from cells.models.operators.membrane_state import MembraneEntityState
 from cells.models.operators.osmotic_water import OsmoticWater
 
 OPERATORS = {
@@ -18,5 +20,7 @@ OPERATORS = {
         check_declarations(KAnionSymport)(),
         check_declarations(ScheduledReplacement)(),
         check_declarations(ElectrodeCurrentInjection)(),
+        check_declarations(MembraneEntityState)(),
+        check_declarations(ScheduledMembraneInsertion)(),
     )
 }
