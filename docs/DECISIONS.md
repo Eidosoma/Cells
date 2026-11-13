@@ -4814,10 +4814,11 @@ rename with no numerical change:
 - **Drivers that must call `field_solver_choice.declare()`:** `heredity_pilot.py` (it
   does), and every new run driver that builds a free-offset world, E07-v1's among them.
   `tests/unit/test_d147_drivers.py` fails for a run driver under `validation/` that
-  imports a builder of such a world (`resolved_scale_world`, `surface_pump_v3_study`,
-  `heredity_pilot`) without the choice, unless it is exempted there with its reason. The
-  check sees imports only: a driver that builds a new free-offset world from scratch must
-  call `declare()` by this rule alone.
+  uses a builder of such a world (the modules `resolved_scale_world`,
+  `surface_pump_v3_study` and `heredity_pilot`, or the fixture function
+  `pump_water_fixtures.scale_world`) without the choice, unless it is exempted there with
+  its reason. The check is static and sees only those builders: a driver that builds a
+  free-offset world any other way must call `declare()` by this rule alone.
 - **Why.** Version 2 accepts a field solve only below `NEWTON_TARGET`. On the W1 hold's
   825-node tissue (172 free offsets), a converged root sits at 0.8–1.1 of that target,
   at the rounding floor of the current balance. Whether it is accepted then depends on
