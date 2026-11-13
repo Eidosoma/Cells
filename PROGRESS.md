@@ -58,6 +58,26 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Checkpoint continuity approved as tooling (13 November).** The user's words: "yes fix
+  checkpoint continuty also". This approves the versioned checkpoint migration, which D145 listed
+  as unapproved tooling; the public validation package is still unapproved.
+  - **What refuses resumes today:** `io.load_snapshot` and `batch_io.load_batch_snapshot`
+    refuse any change in the SHA-256 of every `.py` under `src/cells`, and any change in
+    `runtime_identity`. That covers the package versions, `XLA_FLAGS` and, on GPU, the device
+    kind, so an L4 checkpoint cannot resume on GH200. `runner.validate_checkpoint` also
+    refuses a layout that differs from the declared model's.
+  - **Already outside that rule:** about 20 validation tools read saved `state.npz` files
+    directly, an unrecorded form of migration.
+  - **Plan:** a fresh agent writes the design only, in the slot the S3 agent frees, ahead of
+    the one-execution-path work, since both own the checkpoint validation.
+    - It keeps four cases apart:
+      - **source changed, step program identical:** admitted;
+      - **program changed, physical fields unchanged:** only with a D148 record;
+      - **definition, layout, solver or model ID changed:** refused (D146, D147);
+      - **runtime changed:** its own rule, with a move to GH200 judged by tolerance.
+    - Refusal stays the default, and every migration is an explicit, recorded step.
+    - Registered runs are unchanged, and the first consumer is a CPU development run.
+
 - **Hold segment 2 continues on version 2. The L4 dispatch test rules out loop control
   (13 November).**
   - **The hold.** Segment 1 ended cleanly at 14:48 UTC: 6,000 windows and snapshot
