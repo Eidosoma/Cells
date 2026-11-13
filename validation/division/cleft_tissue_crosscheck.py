@@ -8,7 +8,8 @@ simulate_static) with R-full's registered integrator (Radau, rtol 1e-10). It is 
 * R-full itself, run in the same job: V at every pulse's front edge and sample to the horizon,
   and the state at J1.
 The target is 1e-10 V on every pulse edge (design §7.2). This module reads the J1 inputs and the
-record and holds no division (the J2 bright line, design §10.1).
+record and holds no division (the J2 bright line, design §10.1); each part's result records the
+partition modules loaded in its process, which must be none (an error otherwise).
 
 Parts (python -m validation.division.cleft_tissue_crosscheck PART[,PART] --output DIR):
   record   R-tissue's J1 readout (to J1 plus one sample) against the record
@@ -116,6 +117,14 @@ def part_pulses(_args=None):
 PARTS = dict(record=part_record, pulses=part_pulses)
 
 
+def partition_modules_loaded():
+    """The loaded modules under validation.division whose names mention a partition (R-tissue
+    loads R-ops on its division path only)."""
+    return sorted(
+        m for m in sys.modules if m.startswith("validation.division.") and "partition" in m
+    )
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("parts")
@@ -131,6 +140,10 @@ def main(argv=None):
         except Exception as error:  # Kept as the part's result.
             result = dict(verdict="error", error=repr(error), tb=traceback.format_exc())
         result["part"] = name
+        # The bright line at run time: this process must never have loaded a partition module.
+        result["partition_modules_loaded"] = partition_modules_loaded()
+        if result["partition_modules_loaded"]:
+            result["verdict"] = "error"
         result["provenance"] = ref.provenance()
         result["part_wall_s"] = time.perf_counter() - started
         text = json.dumps(result, indent=1, default=float) + "\n"

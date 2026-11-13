@@ -6,8 +6,12 @@ own Rm and calibration functions. Every cell is a synthetic fixture (tests/divis
 not the J1 egg. This module holds no division (the J2 bright line, design §10.1).
 """
 
+import ast
 import math
+import subprocess
+import sys
 from dataclasses import replace
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -15,6 +19,8 @@ import pytest
 from tests.division_fixtures import growing, synthetic
 from validation.division import cleft_egg_reference as ref
 from validation.division import cleft_tissue_reference as rt
+
+ROOT = Path(__file__).resolve().parents[2]
 
 TARGET_V = 1e-10  # Design §7.2: R-tissue reproduces R-full to 1e-10 V on every pulse edge.
 FAST = ref.Pulses(amplitude_A=2e-10, duration_s=0.12, period_s=0.5, sample_s=0.1)
@@ -132,3 +138,21 @@ def test_from_egg_reads_r_fulls_fields_and_refuses_its_extensions():
     ):
         with pytest.raises(ValueError):
             rt.from_egg(replace(egg, **change))
+
+
+def test_the_static_entry_point_never_loads_the_partition_map():
+    """The J2 bright line at run time: a static run (a synthetic egg through the runner hook, in
+    a fresh process) leaves every partition module unloaded, as in the J1 cross-check's process."""
+    code = (
+        "import sys\n"
+        "from tests.division_fixtures import growing\n"
+        "from validation.division import cleft_tissue_reference as rt\n"
+        "rt.runner(growing(), 1.0)\n"
+        "print(sorted(m for m in sys.modules if m.startswith('validation.division')))\n"
+    )
+    out = subprocess.run(
+        [sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True, check=True
+    )
+    loaded = ast.literal_eval(out.stdout.strip().splitlines()[-1])
+    assert "validation.division.cleft_tissue_reference" in loaded
+    assert not [m for m in loaded if "partition" in m]

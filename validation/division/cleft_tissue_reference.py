@@ -37,7 +37,8 @@ slots. Records at a time are taken after the events at that time (R-full's conve
 Two entry points (the J2 bright line, design §10.1): simulate_static, for a world without
 divisions (R-tissue's cross-check against R-full on S3's egg calls it, from
 cleft_tissue_crosscheck.py), and simulate_divisions, for prescribed divisions, which refuses a
-world converted from an R-full egg (from_egg). This module reads no declared input of any
+world converted from an R-full egg (from_egg). R-ops is loaded on the division path only, so a
+static run never loads the partition map. This module reads no declared input of any
 experiment: every world is passed in.
 """
 
@@ -50,10 +51,19 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import brentq
 
 from validation.division import cleft_egg_reference as rfull
-from validation.division import partition_reference as rops
 
-F, R, FMOL = rops.F, rops.R, 1e-15
-assert F == rfull.F and R == rfull.R  # The same exact SI products.
+F, R, FMOL = rfull.F, rfull.R, 1e-15  # The exact SI products (R-ops uses the same).
+EPS = float(np.finfo(float).eps)
+
+
+def _rops():
+    """R-ops (validation/division/partition_reference.py), loaded on the division path only, so
+    the static entry point never loads the partition map (the J2 bright line, design §10.1)."""
+    from validation.division import partition_reference
+
+    return partition_reference
+
+
 BATH = "bath"
 ORIGIN_WORLD = "world"
 ORIGIN_EGG = "rfull_egg"  # from_egg; refused by simulate_divisions (design §10.1)
@@ -310,7 +320,7 @@ def check_world(world):
             raise ValueError("injection carriers are charged species")
         if (
             any(not x >= 0.0 for x in inj.carriers.values())
-            or abs(math.fsum(inj.carriers.values()) - 1.0) > 4 * rops.EPS
+            or abs(math.fsum(inj.carriers.values()) - 1.0) > 4 * EPS
         ):
             raise ValueError("injection carrier fractions are >= 0 and sum to 1")
     # The divisions in event order (time, then declared order), replaying contact liveness.
@@ -366,7 +376,7 @@ def check_world(world):
         for other in w.divisions.values():
             if d.parent in other.daughters and other.bridge:
                 spec = other.bridge_spec
-                if rops.aperture(spec.a0_m, spec.law, spec.tau_s, other.time_s, d.time_s) > 0.0:
+                if _rops().aperture(spec.a0_m, spec.law, spec.tau_s, other.time_s, d.time_s) > 0.0:
                     raise ValueError(
                         f"division {dname}: the parent's bridge {other.bridge} is still open"
                     )
@@ -554,7 +564,7 @@ class _Segment:
         if bridge is None:
             return coef
         spec, born = bridge
-        a = rops.aperture(spec.a0_m, spec.law, spec.tau_s, born, t)
+        a = _rops().aperture(spec.a0_m, spec.law, spec.tau_s, born, t)
         return tuple(a * c for c in coef)
 
     def rhs(self, t, y):
@@ -668,7 +678,7 @@ class _Segment:
                 entry.update(
                     kind="bridge",
                     gate=spec.gate,
-                    aperture_m=rops.aperture(spec.a0_m, spec.law, spec.tau_s, born, t),
+                    aperture_m=_rops().aperture(spec.a0_m, spec.law, spec.tau_s, born, t),
                 )
             record["junctions"][name] = entry
         # A junction slot that is not live reads gate 0 (the lead's addition to A.6 item 5).
@@ -815,6 +825,7 @@ class _Tissue:
     def divide(self, t, dname):
         """R-ops' map at the division's time, then the new liveness (A.6). Returns the pre-event
         R-ops snapshot and R-ops' result."""
+        rops = _rops()
         w = self.world
         d = w.divisions[dname]
         seg = _Segment(self, t, t)
@@ -926,7 +937,7 @@ def zero_current_potential(pa, c_in, c_out, z, temperature_K, bracket=(-0.2, 0.2
         lambda v: ghk_current(v, pa, c_in, c_out, z, temperature_K),
         *bracket,
         xtol=1e-15,
-        rtol=4 * rops.EPS,
+        rtol=4 * EPS,
     )
 
 
@@ -940,7 +951,7 @@ def _breakpoints(world, t_end, record):
         if d.time_s < t_end:
             points.add(d.time_s)
         if d.bridge:
-            end = rops.closure_end(d.bridge_spec.law, d.bridge_spec.tau_s, d.time_s)
+            end = _rops().closure_end(d.bridge_spec.law, d.bridge_spec.tau_s, d.time_s)
             if end < t_end:
                 points.add(end)
     for inj in world.injections:
