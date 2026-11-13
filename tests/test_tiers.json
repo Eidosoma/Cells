@@ -19,7 +19,8 @@
   "/mnt/workspaces/Cells/land-composite-20261112-01/measure-new/measured.json",
   "/mnt/workspaces/Cells/clock-validation-20261112-01/tiers-measure-02/measured.json",
   "/mnt/workspaces/Cells/land-20261112b/measure-new/measured.json",
-  "/mnt/workspaces/Cells/land-20261112c/measure-new/measured.json"
+  "/mnt/workspaces/Cells/land-20261112c/measure-new/measured.json",
+  "/mnt/workspaces/Cells/land-20261113a/measure-new/measured.json"
  ],
  "measured_provenance": [
   {
@@ -167,6 +168,13 @@
    "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261112c",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-12T22:24:58+00:00"
+  },
+  {
+   "git_revision": "843b60b97ee197f9213d4bfcb8e05b21cabdc7eb",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-13T00:20:52+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2308,7 +2316,7 @@
    },
    {
     "file": "tests/unit/test_surface_pump_step_checks.py",
-    "seconds": 4.38,
+    "seconds": 7.9,
     "exit_code": 0,
     "counts": {
      "passed": 37

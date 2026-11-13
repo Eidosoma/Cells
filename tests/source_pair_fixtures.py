@@ -50,21 +50,21 @@ def definition(
     return {
         "schema_version": 1,
         "model": {
-            "id": "bitsey_emt_pair@1",
+            "id": "emt_mirna_pair@1",
             "ionic_species": ["Na", "K", "Cl"],
             "regulatory_coordinates": ["miR200_total", "Zeb_mRNA_total", "ZEB_prot"],
             "units": {
-                "time": "bitsey_time_unit",
+                "time": "nominal_time_unit",
                 "ionic_concentration": "mol/m3",
-                "regulatory_coordinate": "bitsey_scaled_coordinate",
+                "regulatory_coordinate": "scaled_coordinate",
                 "voltage": "V",
                 "length": "m",
-                "diffusion": "m2/bitsey_time_unit",
+                "diffusion": "m2/nominal_time_unit",
             },
             "population": {"count": 2, "cell_ids": ids},
             "initial_state": {"ions": ions.tolist(), "regulation": regulation.tolist()},
             "parameters": {
-                "parameter_set": "bitsey-b2cb370-emt-pair-simple",
+                "parameter_set": "emt-mirna-pair-scaled-simple",
                 "context": {
                     name: row.tolist()
                     for name, row in zip(("P", "snail", "ST"), context, strict=True)

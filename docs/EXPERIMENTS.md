@@ -288,7 +288,7 @@ use different switches. These checks do not complete E02 trajectories; the
 separately implemented [physical gated pair](BIOELECTRIC_PAIR.md) must not be
 presented as a source-assay reproduction.
 
-E02 engineering update (MODEL-005): [bitsey_emt_pair@1](SOURCE_EMT_PAIR.md) now
+E02 engineering update (MODEL-005): [emt_mirna_pair@1](SOURCE_EMT_PAIR.md) (then `bitsey_emt_pair@1`) now
 couples complete ionic/regulatory state on the shared JAX engine, with 14 frozen
 short-horizon reference cases, independent route controls, exact replay and
 future branching. This validates the bounded source-compatible mechanisms, not

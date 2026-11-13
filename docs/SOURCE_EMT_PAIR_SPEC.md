@@ -3,7 +3,7 @@
 SPEC-003 / D024, 2026-09-08. This document preserves the original design and
 instantaneous-reference contract. Subsequent [NUM-004 qualification](SOURCE_EMT_PAIR_NUMERICS.md)
 now validates the bounded independent trajectories and corresponding refined
-native paths. MODEL-005 now implements [bitsey_emt_pair@1](SOURCE_EMT_PAIR.md) in
+native paths. MODEL-005 now implements [emt_mirna_pair@1](SOURCE_EMT_PAIR.md) in
 Cells 0.7.0 against those frozen references. The original provisional identity
 was `bitsey_emt_pair@1-design`; its reference JSON remains a numerical input,
 not a runnable Cells configuration. See the
