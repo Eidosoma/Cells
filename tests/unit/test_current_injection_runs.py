@@ -70,3 +70,28 @@ def test_a_cell_that_cannot_supply_a_removed_carrier_refuses():
     spec = parse_spec(definition([(0, -1e-3)], carriers={"K": 1.0}, end=DT))  # 1 mA out of K.
     with pytest.raises(Exception, match="(?i)refus|domain|invalid"):
         run(spec)
+
+
+def test_injection_composes_with_insertion():
+    """S3 prerequisite (b): pulses into a cell whose patch grows, between two clamps. The
+    runner's host checks close every ledger, the electrode and energy ones included, with
+    injection booking the clamps' plate charges at the view."""
+    from tests import membrane_insertion_fixtures as mfx
+
+    end = 0.004
+    raw = mfx.with_operators(
+        mfx.two_clamps(end=end), {"membrane_0": ({}, None, [(0.0, 2e-8)])}
+    )  # The patch area grows by a quarter over the run.
+    cell = raw["model"]["cells"][0]["id"]
+    raw["model"]["operators"].append(
+        dict(law=LAW, electrodes=[dict(cell_id=cell, carriers={"K": 0.4912, "M": 0.5088})])
+    )
+    pulses = [(0.0, 1e-12), (0.001, 0.0), (0.002, -1e-12), (0.003, 0.0)]
+    schedule = [dict(time=t, current_A=i) for t, i in pulses]
+    raw["experiment"]["injection_controls"] = [dict(cell_id=cell, schedule=schedule)]
+    result = run(parse_spec(raw))  # Host checks on every accepted row.
+    history = result.history
+    assert np.asarray(history.membrane_area_increment_m2)[-1][0] > 0
+    assert np.all(np.asarray(history.injection_image_charge_C)[-1] > 0)
+    charge = np.asarray(history.injection_charge_C)[-1][0]
+    assert charge == pytest.approx(0.0, abs=1e-27)  # +1 pA and -1 pA for 1 ms each.
