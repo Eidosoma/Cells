@@ -58,6 +58,13 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **G2-Q1's judge runs again as registered (13 November).** Its Q2 part had failed on the
+  tree since `92a4eeb`, when replacement@1 became a thin composite module and stopped
+  exporting `CHARGE_PER_FMOL`, which the judge reads. The thin module re-exports it, and Q2
+  run as registered equals the recorded judged run. A tier-1 test,
+  `tests/unit/test_judge_imports.py`, checks that every name the registered judges (G2-Q1,
+  W1, W2, Rm1) import or read exists. Tier 1 gate: 284 files, no changed outcome.
+
 - **Field-solve acceptance: a convergence test with no margin on the full tissue; new
   definitions with free field offsets declare solver version 3 (D147; 13 November).**
   - **The defect.** Version 2 accepts a field solve when the normalized residual is ≤ 0.01.
