@@ -10,8 +10,9 @@ and the lead's rulings are in §11:
 - a face diffusivity is the effective (FRAP) kind;
 - the energy guards of record are the species-only world and a NumPy ΔG test per law, because
   the shared bound is blind to the species at µM–nM;
-- guard worlds start from a resolved switch-on. A switch-on from the trace is transported
-  exactly, but the host energy ledger refuses it;
+- guard worlds start from a pre-formed profile, a resolved switch-on. A switch-on from the trace
+  is transported exactly, but the host energy ledger refuses it. In a mixed world its onset
+  energy booking is a known limit, so production worlds should start resolved too;
 - RK4 with a diffusing species is guarded, not refused;
 - version 1 refuses a donor copy with different route values, the stationary analysis on the
   composite, and worlds of more than 7 species.
@@ -102,13 +103,18 @@ division design.
      at µM–nM: it is 1.7 to 1,721 times the species' whole free-energy change. So the energy
      guards of record are a species-only world and a NumPy ΔG test per law, and the operators'
      docstrings say so.
-   - **Guard worlds start from a resolved switch-on.** A switch-on from the trace is transported
-     exactly. But its first step books the face heat 2.5–4% off (30% at dt·K_ii 0.30). Under ARS
-     that is 1–9% of the step's own flows, so the host energy ledger refuses it at every step
-     size probed (dt·K_ii 0.005 to 0.30). Probe 5 confirmed this cause; its size is smaller than
-     first inferred.
-   - **RK4** with a diffusing species is guarded, not refused. From a resolved start it is exact
-     to rounding (§4.2).
+   - **Guard worlds start from a pre-formed profile,** a resolved switch-on. A ramped source is
+     not admissible until a probe measures it.
+     - A switch-on from the trace is transported exactly. But its first step books the face heat
+       2.5–4% off (30% at dt·K_ii 0.30).
+     - Under ARS that is 1–9% of the step's own flows, so the host energy ledger refuses it at
+       every step size probed (dt·K_ii 0.005 to 0.30).
+     - Probe 5 confirmed this cause; its size is smaller than first inferred.
+   - **A known limit.** In a mixed world the same onset booking is a few percent off and passes
+     unseen under the ions' bound. The species-only world and the NumPy ΔG tests certify the
+     laws, and production worlds should start resolved too (§2.6).
+   - **RK4** with a diffusing species is guarded, not refused. From a pre-formed profile it is
+     exact to rounding (§4.2).
 9. **Calibration:** Pomreinke et al. 2017 (BMP2b and Chordin; values read) first; Kicheva et al.
    2007 and Müller et al. 2012 (records verified; full text not readable here) (§6). Its first
    acceptance is numerical qualification against closed forms, not a comparison with the data.
@@ -522,9 +528,18 @@ primitive replaces the sink as a new law ID, and transport is unchanged.
 - **No ECM entity** (its item 5).
 - **No convection.**
 - **A continuum** (§1.3).
-- **At most 7 species per world** (the lead's ruling, §11.5). A definition with more is refused
-  at the definition, and the refusal names the cap. Proposed: the two new operators' definition
-  checks refuse it, since @3 itself is unchanged.
+- **At most 7 species per world** (the lead's ruling, §11.5).
+  - **The refusal.** The two new operators' definition checks refuse a world with more, and the
+    refusal names the cap and its reason. No model changes.
+  - **The reason.** Host-side NumPy sums over the species axis switch to pairwise summation at
+    8 or more terms. Host checks could then add the species in a different order from the
+    device's explicit species-order adds (D148).
+  - So version 1 admits at most 7 species until that is checked.
+- **The onset energy booking in mixed worlds** (a known limit, the lead's ruling, §11.4).
+  - A switch-on from the trace is transported exactly.
+  - Under the ions' bound, the species' onset energy booking is off by a few percent and goes
+    unseen. The species-only world and the NumPy ΔG test per law certify the laws (§7).
+  - Production worlds should also start from a resolved switch-on.
 - **No stationary analysis on the composite** (§8).
 - **No donor copy whose route values differ from the slot's** (§5.2).
 
@@ -636,8 +651,8 @@ counter-ions. Its effective valence would need a screened-mobility source.
       the ledger refuses.
   - **Scope.** Those rows had no ion diffusion on any face. RK4 with ion-carrying faces is not
     covered here, and it needs nanosecond steps.
-- **So RK4 guards use two worlds,** both started from a resolved switch-on. The second is
-  proposed in this round (§11.5, item 9):
+- **So RK4 guards use two worlds,** both started from a pre-formed profile. The second was
+  proposed in this round and accepted (§11.5, item 9):
   - **a face-free world** for the operators' work: a passive cell, its finite node joined to it
     only by a membrane patch, and a held bath, with compressed rates within @3's RK4 step limit
     of 100 µs;
@@ -902,7 +917,8 @@ CC BY.
     approval if it reproduces the paper's model.
 - **Geometry.** A radial reduction around a spherical source: shells as finite nodes with their
   exact volumes. Each face is declared with the exact spherical-shell conductance between the
-  points it joins: area 4π r_a r_b over length r_b − r_a (proposed in §11.5, item 8).
+  points it joins: area 4π r_a r_b over length r_b − r_a. This is a requirement on the builders
+  of radial calibration worlds (accepted by the lead, §11.5, item 8).
   - Planar areas 4πr² at the edges are wrong at first order in Δr/R at the source. They made the
     probes' continuum gap 10 to 12.5 times larger (§11.3, NumPy only, **S**).
   - @3's faces accept those areas and volumes, so the radial finite-volume scheme needs no new
@@ -1003,14 +1019,15 @@ PMID 19741606. **Record verified.**
   - So it uses µM-scale amounts in pL nodes: about 1e-3 fmol and energies of about 1e-2 pJ, some
     5 × 10⁵ times the floor (**S**).
   - This is the guard of the face heat.
-- **The guard-world rule: a resolved switch-on.** Every guard world that reaches the host
-  energy ledger starts the species from a resolved state. There are two ways:
-  - **a pre-formed profile** (measured): half the steady profile passes every row under ARS at
-    dt·K_ii up to 0.30, the largest probed, and under RK4 at 0.005 (§11.2, §11.4);
-  - **or a source ramped over many steps** (not measured). A ramp resolves the switch-on only if
-    each step changes the receiving node's concentration by a small factor (**S**). A linear
-    ramp from zero still lifts the first node from the trace by many decades in its first step.
-    So a ramped start must be measured before a guard relies on it.
+- **The guard-world rule: a resolved switch-on, by a pre-formed profile** (the lead's ruling).
+  Every version 1 guard world that reaches the host energy ledger starts the species from a
+  pre-formed profile, the measured arm. Half the steady profile passes every row under ARS at
+  dt·K_ii up to 0.30, the largest probed, and under RK4 at 0.005 (§11.2, §11.4).
+  - **A ramped source is unmeasured and not admissible** in a version 1 guard world until a
+    probe measures it.
+  - A ramp would resolve the switch-on only if each step changed the receiving node's
+    concentration by a small factor (**S**). A linear ramp from zero still lifts the first node
+    from the trace by many decades in its first step.
 
   **No bound on dt·D/Δr² is set beyond stability.** Resolved starts passed at every dt·K_ii
   probed, up to 0.30.
@@ -1019,8 +1036,8 @@ PMID 19741606. **Record verified.**
   the face heat 2.5–4% off, and 30% off at dt·K_ii 0.30. That is 1–9% of the step's own flows,
   against a bound of 2e-3 of the accumulated flows, so the host energy ledger refuses it at every
   step size probed, dt·K_ii 0.005 to 0.30 (§11.4).
-- **RK4 runs** of the face-free world and the species-only radial world (§4.2), from resolved
-  starts. Their energy bound has no solver tolerance (`ENERGY_RTOL` 0 for RK4), so they check the
+- **RK4 runs** of the face-free world and the species-only radial world (§4.2), from pre-formed
+  profiles. Their energy bound has no solver tolerance (`ENERGY_RTOL` 0 for RK4), so they check the
   operators' work and the face heat to 2e-8 pJ.
 
 **Analytic limits** (independent NumPy references, written from Appendix A, not from engine
@@ -1268,7 +1285,8 @@ included. Probes 3 to 5 find out why.
     2.5 µm, 1.1e-3 at 2 µm and 2.9e-4 at 1 µm.
   - The observed orders become 1.77 (5 to 2.5 µm) and 1.90 (2 to 1 µm). With the declared
     faces, the NumPy steady states reproduce the engine's (5.79e-2 and 1.94e-2).
-  - So radial worlds declare each face with that conductance (§6, **S**).
+  - So the builders of radial calibration worlds declare each face with that conductance (§6;
+    accepted, §11.5, item 8).
 
 **(b) The switch-on through the checked step map,** without the runner's host checks: 2.5 µm,
 1 ms, 2,000 steps. No step was refused.
@@ -1364,8 +1382,13 @@ stays in every later row.
 - **In a mixed world the same onset error passes unseen,** because the shared bound is the
   ions' (§11.1). Probe 1's chain had a six-decade front at t = 0 and passed every host check
   (§1.2). The error misbooks a few percent of one step's species heat, up to a third at dt·K_ii
-  0.30, and leaves transport exact (**S**). **Proposed** (this round, for the lead): declare it
-  as a limit of the booking. It is not a guard.
+  0.30, and leaves transport exact (**S**).
+- **This is a known limit** (the lead's ruling, 13 November; §2.6).
+  - Transport is exact.
+  - Under the ions' bound, the species' onset energy booking is off by a few percent and goes
+    unseen.
+  - The species-only world and the NumPy ΔG test per law certify the laws.
+  - Production worlds should also start from a resolved switch-on.
 
 ### 11.5 Amendments and rulings
 
@@ -1379,26 +1402,27 @@ stays in every later row.
 4. **The energy guards of record** are the species-only world and a NumPy ΔG test per law.
    Each operator's docstring states that the shared IMEX bound is blind to these bookings at
    µM–nM, with bound/change from 1.7 to 1,721 (§7).
-5. **The guard-world rule: a resolved switch-on** (§7).
-   - The start is either a pre-formed profile (measured) or a source ramped over many steps (not
-     measured).
+5. **The guard-world rule: a resolved switch-on, by a pre-formed profile** (§7).
+   - Version 1 guard worlds use a pre-formed profile only, the measured arm.
+   - A ramped source is unmeasured and not admissible until a probe measures it.
    - No bound on dt·D/Δr² is set beyond stability. Resolved starts pass at every dt·K_ii probed,
      up to 0.30.
 6. **RK4 with a diffusing species is guarded, not refused** (§4.2). This is the decision the lead
    asked for, from probe 3's two RK4 rows.
-   - From a resolved start it is exact to rounding.
+   - From a pre-formed profile it is exact to rounding.
    - An unresolved onset is refused by the ledger, for the cause that ARS shares.
 
-**Proposed in this round, for the lead** (not directed):
+**Proposed in this round and accepted by the lead** (13 November):
 
 7. **The stiff-front positivity guard runs the checked step map,** because the host ledger
    refuses an unresolved onset (§7).
-8. **Radial worlds declare exact shell conductances** (§6). The probes' planar face areas made
-   the continuum gap 10 to 12.5 times larger (§11.3). This rests on NumPy alone; no engine run
-   used those faces.
-9. **The species-only radial world, with zero ion face diffusivity, is an RK4 guard world** for
-   transport and face heat, beside the face-free world (§4.2).
-10. **The onset misbooking in mixed worlds is declared as a limit** of the booking (§11.4).
+8. **Radial calibration worlds declare exact spherical-shell conductances,** a requirement on
+   their builders (§6). The probes' planar face areas made the continuum gap 10 to 12.5 times
+   larger (§11.3). This rests on NumPy alone; no engine run has used those faces yet.
+9. **The species-only radial world, with zero ion face diffusivity, is the RK4 guard world** for
+   transport and face heat, beside the face-free world for the operators' work (§4.2).
+10. **The onset energy booking in mixed worlds is a known limit** (§2.6, §11.4).
+11. **The two new operators perform the 7-species refusal** (§2.6).
 
 **The lead's rulings (13 November)**, also recorded in the evidence folder's HANDOFF.md:
 1. **Donor copies.** Version 1 refuses a donor copy whose declared route values (ion and
@@ -1406,11 +1430,24 @@ stays in every later row.
    §10, question 9).
 2. **The stationary analysis is not admitted on the composite in version 1.** Per-species
    tolerance scaling is required before trace or nM species use the plain @3 path (§8).
-3. **At most 7 species per world in version 1.** A definition with more is refused at the
-   definition, with a message naming the cap (§2.6). The cap's own reason is the lead's, and this
-   note's evidence does not record it. Which component refuses is proposed in §2.6.
+3. **At most 7 species per world in version 1** (§2.6).
+   - The two new operators' definition checks refuse a world with more, with a message naming
+     the cap. No model changes.
+   - The reason: host-side NumPy sums over the species axis switch to pairwise summation at 8
+     or more terms. Host checks could then add the species in a different order from the
+     device's explicit species-order adds (D148).
+   - The cap holds until that is checked.
 4. **The energy guards of record** are those of item 4: the species-only world and a NumPy ΔG
    test per law, with the docstring statement (§7).
+5. **The ramped-source arm.** Version 1 guard worlds use a pre-formed profile only, the measured
+   arm. A ramped source is not admissible until a probe measures it (§7).
+6. **The mixed-world onset is a known limit.**
+   - Transport is exact.
+   - Under the ions' bound, the species' onset energy booking is off by a few percent and goes
+     unseen.
+   - The species-only world and the NumPy ΔG test per law certify the laws.
+   - Production worlds should also start from a resolved switch-on (§2.6, §11.4).
+7. **This round's five proposals are accepted** (items 7 to 11 above).
 
 ## Appendix A. Equations for the independent references
 
