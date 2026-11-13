@@ -2,7 +2,7 @@
  "kind": "cells.cleft_egg_s3_protocol@1",
  "id": "s3-cleft-egg-against-rfull",
  "title": "S3: the engine's one-cell Xenopus egg with its furrow and restricted cleft against R-full",
- "status": "PROPOSED (draft by the S3 agent, 13 November 2026; not registered). Values filled by cleft_egg_engine fill from the development runs the lead approved (the dt study at 0.5, 0.25 and 0.125 ms and R-full's reference), for the lead's review; the tolerance rule is the plan's (docs/CELL_DIVISION_S3_PLAN.md §4) and was not chosen from any run",
+ "status": "PROPOSED (draft by the S3 agent, 13 November 2026; not registered). Values filled by cleft_egg_engine fill from the development runs the lead approved (the dt study at 0.5, 0.25 and 0.125 ms and R-full's reference), for the lead's review. The 0.25 ms development run is the judged run's program, so engine minus R-full at the judged step is already known for every quantity (development_notes); the tolerance rule is the plan's (docs/CELL_DIVISION_S3_PLAN.md §4) and was not chosen from any run",
  "purpose": "Qualify the engine's cleft egg against the registered independent reference R-full on J1's state and trajectory. Not a J1 verdict against the data (J1 was judged on R-full on 12 November).",
  "engine_models": [
   "resolved_pump_composite@1",
@@ -354,12 +354,39 @@
   "reference": "/mnt/workspaces/Cells/cell-division-s3-20261113-01/study/reference.json",
   "terms": "/mnt/workspaces/Cells/cell-division-s3-20261113-01/study2/terms.json"
  },
- "development_runs": "approved by the lead, 13 November; not judged. The three studies ran in vector windows with device checks on every row from the clean snapshot snapshot-s3e (dbb2478; each run's observation rows, diagnostics and final checkpoint are kept beside its file, study2/study-*-run/); R-full's reference from snapshot-s3d (26ae933), whose reference code and R-full equal dbb2478's; terms and fill from a snapshot of the branch head that adds the per-step values (a09d5cf or later). An earlier 0.5 ms run (snapshot-s3d) finished every step with every device check passed and failed only in its post-processing (study/study-0.5ms.log)",
+ "development_runs": "approved by the lead, 13 November; not judged. The three studies ran in vector windows with device checks on every row from the clean snapshot snapshot-s3e (dbb2478; each run's observation rows, diagnostics and final checkpoint are kept beside its file, study2/study-*-run/); R-full's reference from snapshot-s3d (26ae933), whose reference code and R-full equal dbb2478's; terms and fill from snapshot-s3f (376019a), which adds the per-step values. An earlier 0.5 ms run (snapshot-s3d) finished every step with every device check passed and failed only in its post-processing (study/study-0.5ms.log)",
  "judged_run": "once, on CPU, after registration, from a clean execution snapshot of main (validation/source_snapshot.py; no dirty patch); the driver refuses an unregistered protocol and a run outside a clean snapshot; the protocol records the judged step and the commit",
  "development_notes": {
   "stop_condition": "not met: every judged step term decreases from the (0.5, 0.25 ms) pair to the (0.25, 0.125 ms) pair (terms.json: stop false)",
-  "observed_orders": "by inspection: Q3 (Rm1, before the onset) 2.01; the post-onset quantities 3.0 (Q4) to 5.6 (Q2): the 0.5 ms values lie outside the asymptotic range (dt x explicit rate 0.88 there, against the bound 1). At the judged pair the engine's distance from R-full is 1.2 to 1.5 times its step term (Q1, Q2, Q5), close to the 4/3 of second order",
-  "reference_terms": "the activation-area variant (1e-10 m2) dominates every reference term but Q3's; the integrator variants give at most 2.1e-11 V (Q1), 4.6e-5 Ohm (Q2), 2.4e-11 V (Q4), 6.1e-8 mM (Q5 K) and 3.4e-8 mM (Q5 Na). Q4's term (1.42e-4 V) is at pulse 43, 10 s after the onset. The rule takes the maximum over the four variants, as the record's part_record does",
-  "horizon_ledgers": "at 2100 s, residual against bound: reservoir work 5.9e-3, 1.08e-2 and 9.6e-3, fill 1.04e-2, 6.6e-3 and 7.3e-3, electrode at most 5e-9 and energy at most 1.6e-3, at 0.5, 0.25 and 0.125 ms; every device check passed on every row of the three runs"
+  "observed_orders": "reported, not judged. Coarse-pair orders (terms: log2 of the (0.5, 0.25) over the (0.25, 0.125) step difference): Q1 5.55, Q2 5.63, Q3 2.01, Q4 3.04, Q5 K 4.77, Q5 Na 4.85. Fine-pair orders against R-full (log2 of |E(0.25) - R| over |E(0.125) - R|): Q1 2.31, Q2 1.52, Q3 2.00, Q4 2.31, Q5 K 2.80, Q5 Na 2.19; Q2's 0.125 ms distance (2.7 Ohm) is far above R-full's integrator term (4.6e-5 Ohm), so its order is resolved. A 0.0625 ms run would pin the order at the judged pair",
+  "reference_terms": "the activation-area variant (1e-10 m2) dominates every reference term but Q3's: under the registered rule (the maximum over the four variants, as part_record forms J1's) the tolerances lie 1401 (Q1), 3 (Q2), 3719 (Q4), 2104 (Q5 K) and 5345 (Q5 Na) times above the 0.25 ms distances from R-full. The engine runs R-full's own activation area, so that variant is a model sensitivity both share rather than a reference error. With the integrator variants only (Radau rtol 1e-8, BDF, LSODA: 2.1e-11 V, 4.6e-5 Ohm, 2.4e-11 V, 6.1e-8 and 3.4e-8 mM) the tolerances would be 1.01e-9 V (Q1), 15.3 Ohm (Q2), 2.75e-7 V (Q4), 2.63e-6 mM (Q5 K) and 1.89e-6 mM (Q5 Na), 1.96 to 2.76 times above the 0.25 ms distances. Both choices pass on the development data, and the choice is no longer blind: it is the lead's. Q4's registered term (1.42e-4 V) is at pulse 43, 10 s after the onset",
+  "horizon_ledgers": "at 2100 s, residual against bound: reservoir work 5.9e-3, 1.08e-2 and 9.6e-3, fill 1.04e-2, 6.6e-3 and 7.3e-3, electrode at most 5e-9 and energy at most 1.6e-3, at 0.5, 0.25 and 0.125 ms. These are final-row ratios, not run maxima; the device checks bound every row below 1 (they passed on every row of the three runs). The largest run maximum reported by the device checks is the global-charge ratio: 0.022, 0.039 and 0.037",
+  "engine_minus_rfull": {
+   "0.5 ms": {
+    "Q1_em_at_j1_V": 1.523e-08,
+    "Q2_rm_at_j1_ohm": -245.3,
+    "Q3_rm1_ohm": 73.92,
+    "Q4_em_trajectory_V_max": 8.683e-07,
+    "Q5_lumen_K_mM": -2.328e-05,
+    "Q5_lumen_Na_mM": 1.79e-05
+   },
+   "0.25 ms": {
+    "Q1_em_at_j1_V": 3.963e-10,
+    "Q2_rm_at_j1_ohm": 7.835,
+    "Q3_rm1_ohm": 18.39,
+    "Q4_em_trajectory_V_max": 1.148e-07,
+    "Q5_lumen_K_mM": -9.533e-07,
+    "Q5_lumen_Na_mM": 7.628e-07
+   },
+   "0.125 ms": {
+    "Q1_em_at_j1_V": 7.991e-11,
+    "Q2_rm_at_j1_ohm": 2.725,
+    "Q3_rm1_ohm": 4.587,
+    "Q4_em_trajectory_V_max": 2.322e-08,
+    "Q5_lumen_K_mM": -1.366e-07,
+    "Q5_lumen_Na_mM": 1.674e-07
+   },
+   "note": "development information, not a verdict; Q4 at pulse 47 in all three"
+  }
  }
 }
