@@ -16,7 +16,10 @@ ranges.** There is no engine run yet, and the cause is not isolated.
 - Any revision is post hoc for J1. It needs a new declared prediction and a judged test
   on data never computed, such as J2.
 - The operators of §3–§6 do not depend on the outcome.
-- Details: [PROGRESS](../PROGRESS.md), the S0b entry.
+- **13 November:** the registered diagnostic arms and the combination round on R-full found no
+  cleft model that gives both J1's level and the measured time course. The round is parked
+  under its exit rule, so C1 and J2 stay held until new measurements or the user's decision.
+- Details: [PROGRESS](../PROGRESS.md), the S0b entries.
 
 Paper abbreviations: **dLB74** de Laat & Bluemink 1974, J Cell Biol 60:529; **BdL73**
 Bluemink & de Laat 1973, J Cell Biol 59:89; **K83** Kline, Robinson & Nuccitelli 1983,

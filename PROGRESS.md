@@ -58,6 +58,32 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Cell division S0b: the registered J1 combination round is parked (13 November;
+  development, judged by its own registered criteria).** No eligible point passes, under
+  either criterion form. Nothing is frozen and no C1 registration follows. R-full with the
+  registered inputs stays the reference, and its J1 failure and the shared shape mismatches
+  are recorded as unexplained. C1 and J2 stay held, and there is no third round
+  ([registration](validation/division/j1_combination_round.md),
+  [evidence](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/j1-combination-01/)).
+  - **What ran:** nine points on R-full, from a clean snapshot of main `6b77733`, in two
+    units (66 CPU-min in total, no OOM). The null check reproduced the record to 2.3e-12 V.
+    - A1 × A7a, with f calibrated at J1 at α 0, 0.5, 1 and 2 (f = 0.0193 throughout).
+    - Seal × A7a and seal × A6c at α 0 and 1.
+    - A6c × A7a at α 1.
+  - **The front-loaded Rm fall fails at all nine points** (D5 0.85–0.98, against ≤ 0.66).
+    It is the only criterion A1 × A7a fails at the marked α = 1.
+  - **The early Em minimum** (T-D3) fails everywhere except A1 × A7a at α 0–1, where Em is
+    still falling at J1.
+  - **Pairings without A1 miss the J1 window.** Seal × A7a gives −16.5 mV and A6c × A7a
+    −13.8 mV, both within 0.04 mV of their registered predictions. Seal × A6c gives −18.4 mV,
+    0.9 mV more negative than its additive estimate and 0.3 mV short of the window.
+  - **The two T-D7 forms** disagree at two points, both of which fail other criteria under
+    both forms. No verdict depends on the form.
+  - **Reported only:** cytosolic Na at J1 is 20.1–20.3 mM, against the measured
+    22.4 ± 1.1 mM.
+  - **Resuming** needs new measurements or the user's decision. One cosmetic runner bug:
+    the null check's flag is written as 1.0 rather than true.
+
 - **E07-v1 registered (13 November; renewal stage, option (c)).** Registered before any engine
   run: [design](docs/E07_V1_DESIGN.md) and
   [protocol](validation/tissue/e07_v1_protocol.json).
