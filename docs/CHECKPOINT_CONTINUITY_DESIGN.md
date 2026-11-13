@@ -153,7 +153,18 @@ fingerprint differs from the driver's rebuilt definitions.
        text.
    - Crossrev's bindings omit the check constants. A change in the array's values would
      therefore pass crossrev as identical.
-   - This bears on D148's fourth criterion. It is an open question (§12).
+   - This bears on D148's fourth criterion.
+   - **Closed by slice 0 (13 November, coordinator):**
+     - Crossrev now records every closed-over constant and binds the check constants
+       (`aaa0044`).
+     - The retro-check found both identical:
+       - from 8416a72 to main in the base set (36 of 36) and the qualification set (78 of
+         78);
+       - from 00672e8 (the injection set's first record) to main in the injection set (6
+         of 6).
+     - So every past crossrev verdict stands.
+     - The baseline of record was re-taken with constants:
+       `/mnt/workspaces/Cells/cell-division-s3-20261113-01/crossrev-constants/`.
 8. **The resume check in `heredity_pilot.py`** is at 2252–2254.
 
 ## 3. The four cases
@@ -785,9 +796,13 @@ fixes in the checkout and generate a new snapshot for a later run.":
    - case 1: the lead;
    - case 2: the lead, naming the decision, with the user informed;
    - runtime tolerance: a lead-registered variant.
-5. **The crossrev constants gap** (§2.2, item 7). Should crossrev digest constants and bind
-   `parameters()` and the check constants now, and renew the baseline? This affects what
-   D148's fourth criterion has covered so far.
+5. **The crossrev constants gap** (§2.2, item 7). Closed by slice 0: constants and check
+   constants are recorded, the retro-check found them identical, and the baseline was
+   re-taken.
+   - `parameters()` is not bound separately, and needs no binding for this family. It
+     returns the layout (`surface_tissue.parameters`, reached through the composite
+     adapter, `surface_pump_v3`, `surface_pump` and `surface_kinetic`).
+   - Crossrev passes `initial_values`' layout as the parameters, and binds it.
 6. **Bypass exemptions.** Are the running tools exempt until their runs end: E07-v1, the
    turnover pre-screen, `profile_dispatch.py` and `field_floor_held.py`?
 7. **Lineage.** Accept re-stamped `checkpoint_initial`, with the lineage carried in the run's
