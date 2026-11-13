@@ -320,8 +320,11 @@ took their field solver from `validation/tissue/resolved_scale_world.py`, which 
 version 2, and `heredity_pilot.py` did not override it. The field solver is now a parameter
 of the builder (default still version 2), and `heredity_pilot.py`'s `--field-solver`
 (default `auto`, D147) declares version 3 for the full tissue's preparation and run.
-`--field-solver 2` rebuilds the hold's preparation definitions with source-09's
-fingerprints, and `auto` differs from them only in the solver
-(`/mnt/workspaces/Cells/field-solver-driver-20261113-01/reproduce-hold.json`). The restart
-itself is prepared, not launched: `heredity-pilot-w1-20261110-01/launch8.sh` and
+`--field-solver 2` rebuilds the hold's three preparation and six run definitions with
+source-09's fingerprints, and `auto` differs from them only in the solver
+(`/mnt/workspaces/Cells/field-solver-driver-20261113-01/reproduce-hold*.json`). A CPU dry
+run of start, prepare, run and resume under `auto` declared version 2 for the held-bath
+start graph and version 3 for the rest, and resumed from a version-3 snapshot. A new-code
+`run` from a version-2 preparation needs `--field-solver 2`. The restart itself is
+prepared, not launched: `heredity-pilot-w1-20261110-01/launch8.sh` and
 `restart-v3-note.md`.
