@@ -58,6 +58,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **E07-v1 registered (13 November; renewal stage, option (c)).** Registered before any engine
+  run: [design](docs/E07_V1_DESIGN.md) and
+  [protocol](validation/tissue/e07_v1_protocol.json).
+  - **The frame.** Donors are drawn without regard to state, over the whole sheet, and
+    each run is judged against its paired copy-only null. Copying alone never passes B1
+    (0 of 2,000 seeds), so a positive B1 needs recruitment. Disc-only donors are a
+    control.
+  - **The formation law** gives time-averaged junction abundance after the first
+    turnover of only 0.20 (fast k1) and 0.15 (central k1). That is why fast k3 arms were
+    added, and why junction weight is reported per run (E6).
+  - **Judging.** Each run is classed and judged by 4080 s, the control's end. Censored
+    runs are judged at their last valid record and never dropped. Arm (b) is
+    threshold-finding.
+  - **Scale:** 38 judged runs plus E1, about 50 core-hours.
+  - **Execution:** one clean snapshot of main after the S3 ledger fix and the engine-run
+    driver land.
+  - Tier 1 gate: no changed outcome
+    ([gate](/mnt/workspaces/Cells/land-20261113j/)).
+
 - **User decisions of 13 November, taken on the lead's suggestions after the advisor's
   review.**
   - **D149:** `processes/source_electrochemistry.py` keeps the reference's four
