@@ -58,13 +58,19 @@ BRACKETS = dict(
 # pre-screen's predictions were frozen; it tests no literature value.
 LADDER_TAU_S = (40.0, 120.0, 300.0)
 FAST_RESIDENCE_S = 1020.0  # k1 of the fast bracket: lag + tau.
+# The no-turnover control (sheet70) ran to 4200 s of its clock: 4080 s after this start,
+# 70 min after the cue. No arm is judged beyond it.
+CONTROL_END_S = 4080.0
 
 
 def ladder_formation(tau):
     return dict(lag_s=tau * 2.0 / 15.0, time_constant_s=tau)
 
 
-def _arm(group, label, kind, scope, rule, size, s, formation, residence, seeds, note):
+def _arm(group, label, kind, scope, rule, size, s, formation, residence, seeds, note,
+         *, end_s=None, judged="second turnover"):  # fmt: skip
+    """judged: the record an arm is judged at ("second turnover", "first turnover" or
+    "control end"), the last 10 s record at or before that time."""
     return dict(
         id=f"{group}-{label}-d{size}-s{s}",
         group=group,
@@ -75,35 +81,50 @@ def _arm(group, label, kind, scope, rule, size, s, formation, residence, seeds, 
         s=s,
         formation=dict(formation),
         residence_s=residence,
-        end_s=2 * residence + END_MARGIN_S,
+        end_s=2 * residence + END_MARGIN_S if end_s is None else end_s,
+        judged_at=judged,
         seeds=list(seeds),
         note=note,
     )
 
 
+# Seeds per (a) fast k1 disc, weighted to s 1.0 where an effect is predicted; s 0.3 is
+# predicted to equal the null exactly, so one deviation falsifies it.
+FAST_K1_SEEDS = {(37, 1.0): 8, (37, 0.6): 4, (19, 0.6): 4, (37, 0.3): 2, (19, 0.3): 2}
+
+
 def arm_set():
     """The PROPOSED arm set: (a) test, (b) threshold-finding, (c) control."""
-    held = ((37, 1.0), (37, 0.6), (37, 0.3), (19, 0.6), (19, 0.3))
     fast, central = BRACKETS["fast"], BRACKETS["central"]
     arms = []
-    for size, s in held:
+    for (size, s), n in FAST_K1_SEEDS.items():
         arms.append(
             _arm("a", "donor-fast-k1", "donor", "sheet", "neighbour", size, s, fast,
-                 FAST_RESIDENCE_S, (1, 2, 3, 4),
+                 FAST_RESIDENCE_S, range(1, n + 1),
                  "inheritance route; state-blind replacement and donors")
         )  # fmt: skip
     for size, s in ((37, 1.0), (37, 0.6)):
         arms.append(
             _arm("a", "donor-central-k1", "donor", "sheet", "neighbour", size, s, central,
                  central["lag_s"] + central["time_constant_s"], (1, 2),
-                 "inheritance route; central bracket; ends 87 min after the cue")
+                 "inheritance route; central bracket; judged at the control's end, 70 min "
+                 "after the cue (1.7 turnovers)", end_s=CONTROL_END_S, judged="control end")
+        )  # fmt: skip
+    for size, s in ((37, 1.0), (37, 0.6)):
+        arms.append(
+            _arm("a", "donor-fast-k3", "donor", "sheet", "neighbour", size, s, fast,
+                 3 * FAST_RESIDENCE_S, (1, 2, 3),
+                 "inheritance route; junctions have time to re-form (k3); judged after the "
+                 "first turnover (53 min after the cue), run to the control's end",
+                 end_s=CONTROL_END_S, judged="first turnover")
         )  # fmt: skip
     for size, s in ((37, 1.0), (37, 0.6)):
         for tau in LADDER_TAU_S:
             arms.append(
                 _arm("b", f"iso-tau{tau:g}", "iso", "sheet", "isolated", size, s,
                      ladder_formation(tau), FAST_RESIDENCE_S, (1,),
-                     "threshold-finding: tau below the literature range")
+                     "threshold-finding: tau below the literature range; one seed, so tau* "
+                     "is a single draw")
             )  # fmt: skip
     for size, s in ((37, 1.0), (37, 0.6)):
         arms.append(
@@ -112,6 +133,13 @@ def arm_set():
                  "control: disc slots and disc donors pass B1 by construction under copying")
         )  # fmt: skip
     return arms
+
+
+def judged_time(arm, turnover):
+    return dict(
+        **{"second turnover": turnover[1], "first turnover": turnover[0]},
+        **{"control end": arm["end_s"]},
+    )[arm["judged_at"]]
 
 
 # ------------------------------------------------------------------ geometry
@@ -217,7 +245,57 @@ def null_series(events, size, end_s, *, dt=DT, record_s=RECORD_S, n_cells=None):
     return result
 
 
-def series_summary(series, turnover):
+def abundance_series(events, size, end_s, formation, *, dt=DT, record_s=RECORD_S):
+    """The formation law's junction abundance A at each record, from the schedule alone.
+
+    A junction restarts (A0 0, the lag, then first-order growth) whenever either of its
+    two cells is replaced; a founder junction holds A = 1 until then. A is the factor on
+    a junction's declared permeability before its voltage gate.
+    """
+    _, edges, _ = sheet()
+    inside = disc(size)
+    lag, tau = formation["lag_s"], formation["time_constant_s"]
+    restart = np.full(len(edges), -np.inf)
+    incident = {}
+    for k, (a, b) in enumerate(edges):
+        incident.setdefault(a, []).append(k)
+        incident.setdefault(b, []).append(k)
+    internal = np.array([a in inside and b in inside for a, b in edges])
+    boundary = np.array([(a in inside) != (b in inside) for a, b in edges])
+    times = np.round(np.arange(0.0, end_s + 1e-9, record_s), 9)
+    out = dict(t=times, all=[], disc_internal=[], disc_boundary=[])
+    k = 0
+    for t in times:
+        while k < len(events) and events[k][0] * dt < t - 1e-9:
+            restart[incident[events[k][1]]] = events[k][0] * dt
+            k += 1
+        formed = np.isfinite(restart)
+        age = np.where(formed, t - np.where(formed, restart, 0.0), 0.0)
+        a = np.where(formed, 1.0 - np.exp(-np.maximum(age - lag, 0.0) / tau), 1.0)
+        out["all"].append(float(a.mean()))
+        out["disc_internal"].append(float(a[internal].mean()))
+        out["disc_boundary"].append(float(a[boundary].mean()))
+    return {key: np.asarray(v) for key, v in out.items()}
+
+
+def abundance_summary(series, turnover, judged_s):
+    """Time averages of A (all junctions, inside the disc, across its edge) by window."""
+    t = series["t"]
+    windows = dict(
+        first_turnover=(t > 0) & (t <= turnover[0] + 1e-9),
+        after_first_turnover=(t > turnover[0] + 1e-9) & (t <= judged_s + 1e-9),
+        to_judged_record=(t > 0) & (t <= judged_s + 1e-9),
+    )
+    return {
+        name: {
+            key: (float(series[key][mask].mean()) if mask.any() else None)
+            for key in ("all", "disc_internal", "disc_boundary")
+        }
+        for name, mask in windows.items()
+    }
+
+
+def series_summary(series, turnover, judged_s=None):
     """The readouts of the engine arms' analysis, on a null series."""
     t, j = series["t"], series["J"]
 
@@ -236,9 +314,11 @@ def series_summary(series, turnover):
         templates=int(c["template"].sum()),
         templates_with_5plus_D_neighbours=int(c["template"][5:].sum()),
         classes_by_D_neighbours={key: v.tolist() for key, v in c.items()},
-        J_after_turnover=[at_or_before(x) for x in turnover],
-        J_min_in_turnover=[float(j[w].min()) for w in window],
-        b1=bool(np.all(j[through] >= B1_J)),
+        J_after_turnover=[at_or_before(x) if x <= t[-1] + 1e-9 else None for x in turnover],
+        J_at_judged_record=None if judged_s is None else at_or_before(judged_s),
+        judged_s=judged_s,
+        J_min_in_turnover=[float(j[w].min()) if w.any() else None for w in window],
+        b1=None if turnover[1] > t[-1] + 1e-9 else bool(np.all(j[through] >= B1_J)),
         first_J_below_0p8_s=None if not len(below) else float(t[below[0]]),
         d_inside_end=int(series["d_inside"][-1]),
         d_outside_max=int(series["d_outside"].max()),
@@ -247,19 +327,28 @@ def series_summary(series, turnover):
     )
 
 
-def distribution(scope, rule, size, residence_s, end_s, seeds):
-    """Null readouts over replicate seeds, with quantile bands of J(t)."""
+def distribution(scope, rule, size, residence_s, end_s, seeds, judged=None):
+    """Null readouts over replicate seeds, with quantile bands of J(t).
+
+    judged: "first turnover", "second turnover" or "control end" adds J at that record.
+    """
     rows, js, first = [], [], None
     for seed in seeds:
         p = plan(scope=scope, rule=rule, size=size, residence_s=residence_s, end_s=end_s, seed=seed)
         series = null_series(p["events"], size, end_s)
-        rows.append(series_summary(series, p["turnover_complete_s"]))
+        judged_s = None if judged is None else judged_time(
+            dict(judged_at=judged, end_s=end_s), p["turnover_complete_s"]
+        )  # fmt: skip
+        rows.append(series_summary(series, p["turnover_complete_s"], judged_s))
         js.append(series["J"])
         first = first or (series["t"], p["turnover_complete_s"])
     js = np.array(js)
     q = (0.05, 0.25, 0.5, 0.75, 0.95)
 
     def quant(values):
+        values = [v for v in values if v is not None]
+        if not values:
+            return None
         return dict(zip([f"q{int(100 * x):02d}" for x in q],
                         np.quantile(values, q).tolist(), strict=True))  # fmt: skip
 
@@ -271,7 +360,11 @@ def distribution(scope, rule, size, residence_s, end_s, seeds):
         end_s=end_s,
         seeds=len(seeds),
         turnover_complete_s=first[1],
-        b1_probability=float(np.mean([r["b1"] for r in rows])),
+        judged_at=judged,
+        J_at_judged_record=quant([r["J_at_judged_record"] for r in rows]),
+        b1_probability=None
+        if any(r["b1"] is None for r in rows)
+        else float(np.mean([r["b1"] for r in rows])),
         J_after_first_turnover=quant([r["J_after_turnover"][0] for r in rows]),
         J_after_second_turnover=quant([r["J_after_turnover"][1] for r in rows]),
         J_min_first_turnover=quant([r["J_min_in_turnover"][0] for r in rows]),
@@ -354,36 +447,50 @@ def part_null(args):
     tick = time.perf_counter()
     seeds = range(1, args.seeds + 1)
     configs = {}
+    designs = (
+        ("state-blind donors, whole sheet (test)", "sheet", "neighbour"),
+        ("disc slots, disc donors (control)", "disc", "disc_neighbour"),
+        ("isolated templates, whole sheet (boundary reference)", "sheet", "isolated"),
+        ("disc slots, state-blind donors (the pre-screen's design)", "disc", "neighbour"),
+    )
+    runs = (
+        ("fast-k1", FAST_RESIDENCE_S, 2 * FAST_RESIDENCE_S + END_MARGIN_S, "second turnover"),
+        ("central-k1-to-control-end", 2400.0, CONTROL_END_S, "control end"),
+        ("fast-k3-to-control-end", 3 * FAST_RESIDENCE_S, CONTROL_END_S, "first turnover"),
+    )
     for size in (37, 19):
-        for label, residence in (("fast-k1", FAST_RESIDENCE_S), ("central-k1", 2400.0)):
-            end = 2 * residence + END_MARGIN_S
-            for name, scope, rule in (
-                ("state-blind donors, whole sheet (test)", "sheet", "neighbour"),
-                ("disc slots, disc donors (control)", "disc", "disc_neighbour"),
-                ("isolated templates, whole sheet (boundary reference)", "sheet", "isolated"),
-                ("disc slots, state-blind donors (the pre-screen's design)", "disc", "neighbour"),
-            ):  # fmt: skip
+        for label, residence, end, judged in runs:
+            for name, scope, rule in designs:
+                if label != "fast-k1" and (scope, rule) != ("sheet", "neighbour"):
+                    continue
                 key = f"{scope}-{rule}-d{size}-{label}"
                 configs[key] = dict(
-                    description=name, **distribution(scope, rule, size, residence, end, seeds)
+                    description=name,
+                    **distribution(scope, rule, size, residence, end, seeds, judged),
                 )
                 c = configs[key]
-                print(f"{key}: P(B1) {c['b1_probability']:.3f}, J T1 median "
-                      f"{c['J_after_first_turnover']['q50']:.3f}, T2 median "
-                      f"{c['J_after_second_turnover']['q50']:.3f}", flush=True)  # fmt: skip
+                print(f"{key}: P(B1) {c['b1_probability']}, J at judged record median "
+                      f"{c['J_at_judged_record']['q50']:.3f}", flush=True)  # fmt: skip
     registered = {}
     for arm in arm_set():
         for seed in arm["seeds"]:
             p = plan(scope=arm["scope"], rule=arm["rule"], size=arm["size"],
                      residence_s=arm["residence_s"], end_s=arm["end_s"], seed=seed)  # fmt: skip
             series = null_series(p["events"], arm["size"], arm["end_s"])
+            judged_s = judged_time(arm, p["turnover_complete_s"])
+            abundance = abundance_series(p["events"], arm["size"], arm["end_s"], arm["formation"])
             registered[f"{arm['id']}/seed{seed}"] = dict(
                 events=len(p["events"]),
                 isolated_events=sum(d is None for _, _, d in p["events"]),
-                **series_summary(series, p["turnover_complete_s"]),
+                turnover_complete_s=p["turnover_complete_s"],
+                **series_summary(series, p["turnover_complete_s"], judged_s),
+                law_junction_abundance=abundance_summary(
+                    abundance, p["turnover_complete_s"], judged_s
+                ),
                 series=dict(t_s=series["t"].tolist(), J=series["J"].tolist(),
                             d_inside=series["d_inside"].tolist(),
-                            d_outside=series["d_outside"].tolist()),
+                            d_outside=series["d_outside"].tolist(),
+                            law_abundance_all=abundance["all"].tolist()),
             )  # fmt: skip
     value = dict(
         kind="cells.e07_v1_copy_only_null@1",
