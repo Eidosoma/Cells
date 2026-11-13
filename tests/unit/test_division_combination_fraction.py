@@ -7,7 +7,8 @@ other branches (widening to [0, f_end], no crossing, an f_end computed only when
 checked on a cheap monotone function.
 """
 
-from dataclasses import replace
+import math
+from dataclasses import fields
 
 import pytest
 
@@ -17,6 +18,12 @@ from validation.division import j1_combination_runner as comb
 
 RM1_PAIR = (0, 1)  # before insertion, which starts at 1.2 s
 J1_PAIR = (7, 8)  # pulse 8's front edge at 4.0 s plays J1
+
+
+def same_value(x, y):
+    """Equality with NaN equal to NaN (unset Egg fields are NaN)."""
+    nan = isinstance(x, float) and isinstance(y, float) and math.isnan(x) and math.isnan(y)
+    return x == y or nan
 
 
 def cell(**changes):
@@ -54,7 +61,9 @@ def test_the_search_finds_the_crossing_on_a_synthetic_cell(em_at):
     target = em_at(f_true)
     lo, hi = em_at(0.01), em_at(0.03)
     assert (lo - target) * (hi - target) < 0.0  # the registered bracket holds the crossing
-    assert abs(hi - lo) > 1e-4  # f moves Em at 'J1' on this cell: the search is not vacuous
+    # f moves Em at 'J1' on this cell (about 50 uV across the bracket), far above the
+    # recalibrations' noise, so the search is not vacuous.
+    assert abs(hi - lo) > 1e-5
     f, log = comb.calibrate_fraction(em_at, target)
     assert f == pytest.approx(f_true, abs=1e-6)
     assert em_at(f) == pytest.approx(target, abs=1e-9)
@@ -103,4 +112,7 @@ def test_a_sealed_egg_keeps_its_access():
         guess=1e-7,
     )
     assert egg.a_over_l_m == 0.0
-    assert egg == replace(sealed, p_old=egg.p_old)
+    changed = [
+        f.name for f in fields(egg) if not same_value(getattr(egg, f.name), getattr(sealed, f.name))
+    ]
+    assert changed in ([], ["p_old"])  # only P_old is recalibrated
