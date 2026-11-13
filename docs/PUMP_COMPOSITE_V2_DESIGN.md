@@ -585,16 +585,9 @@ is its anchor (D057), already counted on the declared layout.
     - If any physical bit changes in any qualified world, the fix is not admissible in
       place. It then needs a new ID or the allowance, which is the user's decision. The
       comparison is reported, and the work stops there.
-  - **D148, drafted for DECISIONS.md after D147: an in-place fix to shared qualified
-    code.** D147 makes an ID promise its semantics, so a change to a solver's iterations
-    or acceptance takes a new ID. A fix to code that qualified models share, such as
-    `capacitor_change` here, may instead be made in place only when, fix against no fix:
-    - no physical field changes in any qualified world, in any program;
-    - every judge's registered numbers are unchanged;
-    - ledger accumulators change only at the rounding level.
-    The crossrev baseline is then renewed at the landing commit, and 8416a72 stays as the
-    record before it. Otherwise the change takes a new ID (D147), or an allowance where
-    the residual is representable precision; that choice is the user's.
+  - **D148, an in-place fix to shared qualified code, is in DECISIONS.md, after D147.** It
+    was decided by the lead on 13 November, accepting the exemption for ledger
+    diagnostics. The draft that the stop rule applied is above.
   - **The stop rule triggered (13 November): the fix moves registered judge numbers.**
     Forward runs are identical, but W2's stationary judge changes.
     - Two outputs of W2's judge change at about 10⁻¹⁴ relative, fix against no fix: the
