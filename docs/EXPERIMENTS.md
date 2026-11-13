@@ -83,6 +83,8 @@ distinction between read-only observers and causal feedback. The published
 revision are distinct versions; this brainstorm does not attribute new results
 to either.
 
+A backlog path built on these comparisons, E15, [pattern recovery after damage](EXPERIMENT_PATH_PATTERN_RECOVERY.md) as layers are added one at a time, is logged with its engine-feature gaps (13 November 2026; not active).
+
 ## First engineering assay
 
 E00 is the one-cell source-and-decay pulse fixture described in
@@ -553,6 +555,7 @@ and run evidence, when available, belong in [Progress](../PROGRESS.md).
 | E12: scale reduction | Which smaller state descriptions preserve causal behaviour? | Held-out dynamics and intervention comparisons across resolutions |
 | E13: first organ function | Can a data-defined model reproduce the selected whole-organ function within scope? | Explicit species/extent/geometry, external support, resolution, omissions, and validation observations |
 | E14: interacting organs | Do configured organ instances influence one another through the declared routes? | Generic coupling tests first; disconnected/isolated controls, exchange accounting, delays, and coupled-function validation |
+| E15: pattern recovery after damage (backlog; [path](EXPERIMENT_PATH_PATTERN_RECOVERY.md)) | Which combinations of positional signalling, mechanical coupling, bioelectric communication and persistent memory restore a pattern after damage, beyond generating and maintaining it? | A responder side for secreted species, reactions on the shared inventory, a regulatory-network operator, an excision operator for the composite, mechanics on shared geometry |
 
 For E10, include constant, slowly changing, rapidly changing, returning, and misleading-cue
 environments. Compare rewritable inheritance, ordinary/fixed inheritance, and
