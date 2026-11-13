@@ -55,7 +55,11 @@ Declarations (class attributes):
     ``external_magnitude_terms``); with no writer nothing changes;
   - ``EVENT_REPLACES`` ({field: (removed, supplied)}): fields its event map
     replaces, with the owned accumulators that book what was removed and supplied.
-    Intensive fields set at events without a ledger are ``STATE_RESETS``.
+    Intensive fields set at events without a ledger are ``STATE_RESETS``;
+  - ``ONSET_ANCHORED_VIEWS``: view fields it provides at their declared value at every
+    node until an onset opens it, so the node opens with its declared content (its
+    anchor, D057); insertion's onset rule admits their providers (a restricted lumen's
+    volume grows only with its patch's area after the onset).
 
 Methods take the composite's full state, control and layout NamedTuples, whose
 fields are the inner model's followed by each operator's in declared order.
@@ -113,6 +117,7 @@ class Operator:
     VIEW_READS = ()
     ACCEPTS_WRITES = MappingProxyType({})
     EVENT_REPLACES = MappingProxyType({})
+    ONSET_ANCHORED_VIEWS = ()
 
     @classmethod
     def observed_columns(cls):
@@ -323,6 +328,8 @@ def check_declarations(operator):
             raise ValueError(f"{name}: a replaced column {column} is not its own and has a reason")
     if set(operator.VIEW_READS) & set((*operator.VIEW_FIELDS, *operator.CONFLICTS_VIEW)):
         raise ValueError(f"{name}: a view field is read, provided or held as declared, not two")
+    if not set(operator.ONSET_ANCHORED_VIEWS) <= set(operator.VIEW_FIELDS):
+        raise ValueError(f"{name}: an onset-anchored view field is one it provides")
     for field, ledgers in operator.ACCEPTS_WRITES.items():
         if field not in operator.STATE_AXES or not ledgers:
             raise ValueError(f"{name}: an accepted write {field} needs an owned field")

@@ -38,7 +38,8 @@ Refusals:
   schedule that disagrees with the onset state (restart);
 * an onset patch with channel populations or a pump, facing a held bath or a node with a
   nonzero charge anchor or with patches that open at another time, or whose node's volume an
-  operator provides;
+  operator provides, unless that operator keeps the declared volume until the onset
+  (ONSET_ANCHORED_VIEWS: restricted_cleft_lumen@1, whose volume grows with the patch's area);
 * another operator that books image charge on the declared layout (replacement): those
   bookings would miss the changed capacitances. Injection books at the view (BOOKS_AT_VIEW)
   and composes;
@@ -323,7 +324,9 @@ def check_definition(spec, declaration, schedule, model):
                 "declared layout"
             )
     if onset_entities(spec, schedule)[0] and any(
-        "extracellular_volume" in op.VIEW_FIELDS for op in model.operators
+        "extracellular_volume" in op.VIEW_FIELDS
+        and "extracellular_volume" not in op.ONSET_ANCHORED_VIEWS
+        for op in model.operators
     ):
         raise ConfigError("An onset node's volume must be its declared anchor")
 
