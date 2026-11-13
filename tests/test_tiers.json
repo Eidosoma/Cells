@@ -26,7 +26,8 @@
   "/mnt/workspaces/Cells/land-20261113d/measure-new/measured.json",
   "/mnt/workspaces/Cells/field-floor-guards-20261113-01/guard6/measure-new/measured.json",
   "/mnt/workspaces/Cells/field-solver-driver-20261113-01/measure-new/measured.json",
-  "/mnt/workspaces/Cells/d147-guard-20261113-01/measure-new/measured.json"
+  "/mnt/workspaces/Cells/d147-guard-20261113-01/measure-new/measured.json",
+  "/mnt/workspaces/Cells/d147-guard-20261113-01/measure-new2/measured.json"
  ],
  "measured_provenance": [
   {
@@ -224,6 +225,13 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a611639e3bbf2b0a7",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-13T05:58:23+00:00"
+  },
+  {
+   "git_revision": "d8564e93569e628bed9f213c9e31a9b0bf957be9",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a611639e3bbf2b0a7",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-13T06:03:39+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -943,10 +951,10 @@
    },
    {
     "file": "tests/unit/test_d147_drivers.py",
-    "seconds": 10.64,
+    "seconds": 10.95,
     "exit_code": 0,
     "counts": {
-     "passed": 9
+     "passed": 11
     }
    },
    {
