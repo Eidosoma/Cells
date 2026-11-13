@@ -133,6 +133,8 @@ the [project README](../README.md) gives the short feature overview.
   secondary assessment and places a secreted-protease ageing module against the gates.
 - [Kinetochore protein counts review](PAPER_REVIEW_KINETOCHORE_COUNTS.md) reads Hirano et al.'s
   FCS-calibrated counts as an abundance-evidence standard for the protein catalogue.
+- [Bone mechanosensing review](PAPER_REVIEW_BONE_MECHANOSENSING.md) reads Zhang et al.'s abstract
+  for Cells: mechanically gated conductance and state-dependent secretion as deferred features.
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.
