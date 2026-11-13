@@ -19,6 +19,10 @@ Contract (models/operators/contract.py):
   ``extracellular_volume``; the view follows the split, so @3's domain is evaluated
   at the current volumes and re-checked at the step end. The water conductances are
   bound from the declared patch areas, so no other operator may provide an area;
+* accepted writes: the cell volume increments, which a later operator may set at its
+  events (scheduled_cell_replacement@2) with removed and supplied volumes booked in the
+  local and total water ledgers; node_free_energy_pJ is water's endpoint free energy per
+  node, whose change such a writer books (docs/PUMP_COMPOSITE_V2_DESIGN.md §2);
 * parts: a split process (Heun half-steps, heun_frozen_amount_water@1); under RK4
   its rates join the coupled right-hand side;
 * ledgers: its four water ledgers (cell, outside and total water, bath work) with
@@ -286,6 +290,33 @@ def water_ledgers(state, p, *, xp):
     )
 
 
+def node_free_energy_pJ(state, p, *, xp=jnp):
+    """Water's endpoint free energy per node (pJ), cells then outside slots: its free-energy
+    owner declaration (docs/PUMP_COMPOSITE_V2_DESIGN.md §1.1, §2.5).
+
+    Against the declared volume V0 at the current amounts, on finite nodes (0 elsewhere):
+    the dilution -RT N_tot log(V/V0), which brings @3's chemical term on V0 to the
+    physical one, and the elastic U(V) - U(V0). An operator that changes a node's amounts or
+    volume outside water's step books the change of this term (scheduled_cell_replacement@2).
+    These are the per-node terms water_ledgers sums into the energy ledger, in the same
+    expressions; water_ledgers keeps its own code, so water's programs are unchanged, and
+    tests/unit/test_cell_replacement_v2.py holds the two equal to rounding.
+    """
+    q = water_parameters(p)
+    finite = finite_nodes(p, xp=xp)
+    initial = xp.concatenate((p.volume, p.extracellular_volume))
+    delta = xp.concatenate((state.volume_increment_pL, state.extracellular_volume_increment_pL))
+    total_osmolytes = xp.sum(amounts(state, p, xp=xp), axis=0) + q.impermeant_amount_fmol
+    ratio = xp.where(finite, delta / initial, 0.0)
+    rt = 1e-3 * R * q.temperature_K
+    dilution = -rt * xp.where(finite, total_osmolytes * xp.log1p(ratio), 0.0)
+    stiffness = xp.where(finite, q.bulk_modulus_Pa / q.reference_volume_pL, 0.0)
+    pressure = xp.where(
+        finite, stiffness * (initial - q.reference_volume_pL) + q.pressure_offset_Pa, 0.0
+    )
+    return dilution + 1e-3 * (pressure * delta + 0.5 * stiffness * delta**2)
+
+
 def water_magnitudes(row, p, *, xp=np):
     """Magnitudes rounded into each water ledger, in WATER_LEDGERS order."""
     dv, dve = row.volume_increment_pL, row.extracellular_volume_increment_pL
@@ -460,6 +491,10 @@ class OsmoticWater(Operator):
     # The water conductance 1e15 A Lp is bound from the declared patch areas.
     CONFLICTS_VIEW = ("membrane_area",)
     VIEW_FOLLOWS_SPLIT = True
+    # A later operator may write the cell volumes (a replacement event's newcomer volume,
+    # scheduled_cell_replacement@2); it books removed and supplied volumes in these ledgers.
+    # Without such a writer nothing changes (v2 design §1.4).
+    ACCEPTS_WRITES = {"volume_increment_pL": ("water_local", "water_total")}
     LEDGERS = WATER_LEDGERS
     LEDGER_DIAGNOSTICS = WATER_DIAGNOSTICS
     LEDGER_MESSAGE = WATER_LEDGER_MESSAGE

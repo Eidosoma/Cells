@@ -58,6 +58,37 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Water plus replacement: `scheduled_cell_replacement@2`, the volume ledger (composite v2
+  §2; 13 November).** @2 runs @1's event map unchanged, then:
+  - gives the newcomer its volume: a template's declared volume, or for a donor copy the donor's
+    (decision 10);
+  - books removed and supplied volume in water's ledgers;
+  - books water's dilution and elastic free-energy change in fields of its own.
+
+  It refuses `law_steady` over water, and it refuses `[water, injection@1]` (injection's view
+  conflict on volume).
+  - **Guard A, outcome A under its registered rule:** no qualified program changed.
+    - Crossrev with constants is identical to the baseline of record (36/36/12, 78/78/56,
+      6/6/2).
+    - All 58 forward worlds are identical in every field, ledger accumulators included.
+    - The W1 and W2 judges are identical, step-map numbers included. Rm1 and G2-Q1 are
+      identical apart from provenance strings.
+    - 24 files (354 tests) pass, the frozen models' 130 included.
+  - **Guard B passes:**
+    - without events the composition equals water alone, bitwise;
+    - with water closed it equals @1 on @1's fields, bitwise;
+    - every ledger closes across events (energy within 1e-9 pJ, water within 1e-14 pL);
+    - water's first flow after an event is analytic to 1e-12;
+    - restart and vmap pass.
+  - **Cost:** about 1.5 ms per step on the 127-cell sheet (water alone 4.3–5.5 ms, with @2
+    6.0–7.0 ms); compile goes from 28 s to 44 s.
+  - **Open:** `law_steady` over water, and an injection law that books dilution. Both wait for
+    a consumer. All runs so far are development runs; no judged run uses @2 yet.
+  - **Gate:** tiers 1 and 2 on the merged tree, 374 files, no changed outcome
+    ([gate](/mnt/workspaces/Cells/land-20261113s/)). New files: `test_cell_replacement_v2.py`
+    in tier 1, `test_cell_replacement_v2_runs.py` in tier 3.
+  - [Evidence and log](/mnt/workspaces/Cells/composite-v2-s2-20261113-01/HANDOFF.md).
+
 - **The S5 independent references, R-ops and R-tissue (13 November).** A separate agent wrote
   them from Appendix A and §10.1 of the [S5 design](docs/CELL_DIVISION_S5_DESIGN.md). It read no
   S5 engine code, and its read list is in the log.

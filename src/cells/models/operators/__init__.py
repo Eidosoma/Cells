@@ -7,6 +7,7 @@ Each operator implements the contract of models/operators/contract.py for one la
 
 from cells.models.operators.bridge_closure import CytoplasmicBridgeClosure
 from cells.models.operators.cell_replacement import ScheduledReplacement
+from cells.models.operators.cell_replacement_v2 import ScheduledReplacementOverWater
 from cells.models.operators.contract import check_declarations
 from cells.models.operators.current_injection import ElectrodeCurrentInjection
 from cells.models.operators.k_anion_symport import KAnionSymport
@@ -24,6 +25,7 @@ OPERATORS = {
         check_declarations(OsmoticWater)(),
         check_declarations(KAnionSymport)(),
         check_declarations(ScheduledReplacement)(),
+        check_declarations(ScheduledReplacementOverWater)(),
         check_declarations(ElectrodeCurrentInjection)(),
         check_declarations(MembraneEntityState)(),
         check_declarations(ScheduledMembraneInsertion)(),

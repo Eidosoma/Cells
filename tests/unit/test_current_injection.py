@@ -213,3 +213,20 @@ def test_the_view_reaches_injection_only_with_a_field_input():
     alone = get_model(parse_spec(definition([(0, 1e-12)])).model)
     assert not alone.field_inputs  # The half-step call is then the declared-layout one.
     assert get_model(parse_spec(at_view()).model).field_inputs
+
+
+def test_injection_over_water_is_refused():
+    """Injection books @3's free-energy change on the declared volume, but not water's dilution
+    term -RT N_tot log(V/V0) of the injected amounts, so a volume owner is refused (CONFLICTS_VIEW
+    volume; v2 design §2.10, question 6: a probe left exactly that term unbooked)."""
+    from cells.core import pump_composite_spec as cs
+    from validation.tissue import pump_water_fixtures as wfx
+
+    base = wfx.heredity_cell("H", dt=DT, end_time=4 * DT)
+    base["experiment"]["observation_times"] = [0.0, 4 * DT]
+    raw = cs.frozen_definition(wfx.with_water(base, pf_m_s=5e-4))
+    injected = definition([(0, 1e-12)])
+    raw["model"]["operators"] += injected["model"]["operators"]
+    raw["experiment"]["injection_controls"] = injected["experiment"]["injection_controls"]
+    with pytest.raises(ConfigError, match="reads volume as declared"):
+        parse_spec(raw)
