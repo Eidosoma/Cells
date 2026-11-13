@@ -70,7 +70,7 @@ division design.
      - around a held sphere, the engine matches the exact solution of its finite-volume system
        to 4.4e-7 of c0 at 1 ms, second order in dt (ratios 4.02 and 4.01);
      - that solution converges to the closed forms as the shells refine (observed orders 1.58
-       and 1.84). The gap's size is the declared face geometry's (§11.3).
+       and 1.84). The gap's size is the declared face geometry's (NumPy, §11.3).
 3. **Sources and sinks are writers** of that inventory, through `ENTITY_WRITES` with their own
    accumulators, as injection and the lumen are (§2.2, §2.3):
    - production and first-order clearance at nodes (`scheduled_species_turnover@1`);
@@ -104,8 +104,9 @@ division design.
      docstrings say so.
    - **Guard worlds start from a resolved switch-on.** A switch-on from the trace is transported
      exactly. But its first step books the face heat 2.5–4% off (30% at dt·K_ii 0.30). Under ARS
-     that is 1–9% of the step's own flows, so the host energy ledger refuses it at any step
-     size.
+     that is 1–9% of the step's own flows, so the host energy ledger refuses it at every step
+     size probed (dt·K_ii 0.005 to 0.30). Probe 5 confirmed this cause; its size is smaller than
+     first inferred.
    - **RK4** with a diffusing species is guarded, not refused. From a resolved start it is exact
      to rounding (§4.2).
 9. **Calibration:** Pomreinke et al. 2017 (BMP2b and Chordin; values read) first; Kicheva et al.
@@ -522,7 +523,8 @@ primitive replaces the sink as a new law ID, and transport is unchanged.
 - **No convection.**
 - **A continuum** (§1.3).
 - **At most 7 species per world** (the lead's ruling, §11.5). A definition with more is refused
-  at the definition, and the refusal names the cap.
+  at the definition, and the refusal names the cap. Proposed: the two new operators' definition
+  checks refuse it, since @3 itself is unchanged.
 - **No stationary analysis on the composite** (§8).
 - **No donor copy whose route values differ from the slot's** (§5.2).
 
@@ -634,7 +636,8 @@ counter-ions. Its effective valence would need a screened-mobility source.
       the ledger refuses.
   - **Scope.** Those rows had no ion diffusion on any face. RK4 with ion-carrying faces is not
     covered here, and it needs nanosecond steps.
-- **So RK4 guards use two worlds,** both started from a resolved switch-on:
+- **So RK4 guards use two worlds,** both started from a resolved switch-on. The second is
+  proposed in this round (§11.5, item 9):
   - **a face-free world** for the operators' work: a passive cell, its finite node joined to it
     only by a membrane patch, and a held bath, with compressed rates within @3's RK4 step limit
     of 100 µs;
@@ -754,9 +757,11 @@ lead's decision of 13 November, replacing this note's earlier "rates follow the 
 
 **Guard: the swap.** A founder with nonzero rates is replaced:
 - by a template with other rates, including zero: the slot's controls switch to the template's
-  rates exactly at the event step;
-- by a donor copy: the slot takes the donor's rates;
-- in neither case does the previous occupant's rate apply after the event.
+  rates exactly at the event step, and the previous occupant's rate never applies after it;
+- by a donor copy whose route values (ion or secretion) differ from the slot's: refused at the
+  definition (the lead's ruling, below);
+- by an admitted donor copy: the slot takes the donor's rates, which equal its own, so its
+  controls are unchanged across the event.
 
 The guard includes a restart across the event. Probe 2 checked the part that exists today:
 replacement@1 swaps the species' pool (§11).
@@ -896,10 +901,10 @@ CC BY.
     occupancy, volume change, or regulation. It is then registered on its own, with the user's
     approval if it reproduces the paper's model.
 - **Geometry.** A radial reduction around a spherical source: shells as finite nodes with their
-  exact volumes, and each face declared with the exact spherical-shell conductance between the
-  points it joins, area 4π r_a r_b over length r_b − r_a.
-  - Planar areas 4πr² at the edges are wrong at first order in Δr/R at the source, which made
-    the probes' continuum gap 10 to 12.5 times larger (§11.3, **S**).
+  exact volumes. Each face is declared with the exact spherical-shell conductance between the
+  points it joins: area 4π r_a r_b over length r_b − r_a (proposed in §11.5, item 8).
+  - Planar areas 4πr² at the edges are wrong at first order in Δr/R at the source. They made the
+    probes' continuum gap 10 to 12.5 times larger (§11.3, NumPy only, **S**).
   - @3's faces accept those areas and volumes, so the radial finite-volume scheme needs no new
     code (**S**).
   - Each shell faces the cells within it, as the probe's chain does. A finite node facing no
@@ -1012,8 +1017,8 @@ PMID 19741606. **Record verified.**
 
   **Why.** A switch-on from the trace is transported exactly (probe 4), but its first step books
   the face heat 2.5–4% off, and 30% off at dt·K_ii 0.30. That is 1–9% of the step's own flows,
-  against a bound of 2e-3 of the accumulated flows, so the host energy ledger refuses it at any
-  step size (§11.4).
+  against a bound of 2e-3 of the accumulated flows, so the host energy ledger refuses it at every
+  step size probed, dt·K_ii 0.005 to 0.30 (§11.4).
 - **RK4 runs** of the face-free world and the species-only radial world (§4.2), from resolved
   starts. Their energy bound has no solver tolerance (`ENERGY_RTOL` 0 for RK4), so they check the
   operators' work and the face heat to 2e-8 pJ.
@@ -1080,9 +1085,11 @@ Nothing is built for months (D150). The design keeps the door open in four ways:
   - **Version 1 does not admit it on the composite** (the lead's ruling, 13 November). Probe 2
     found that it refuses the composite's ID (§11.1).
   - **Per-species tolerance scaling is required** before trace or nM species use it on plain
-    @3. Probe 2's solve there converged in 5 iterations with the species at its trace. Its
-    Newton test is not scaled per species, so it cannot judge a species many decades below the
-    ions (1e-9 mM there, against ions of 5–145 mM).
+    @3. Probe 2's solve there converged in 5 iterations, and S came out at the bath's trace
+    (1e-9 mM), the steady state of its initial pulse.
+  - **Its Newton test is not scaled per species.** It stops on one absolute correction of
+    1e-10 mM per amount (`NEWTON_TOLERANCE`, with `AMOUNT_UNIT_mM` = 1). That is 10% of a
+    1e-9 mM trace and 1e-4 of 1 nM.
 
 ## 9. Effort and order of work
 
@@ -1173,8 +1180,10 @@ These hold for the CPU programs probed (§1.2's caveat).
   resolved_pump_tissue@1, resolved_pump_tissue@2, resolved_pump_tissue@3, resolved_pump_water@1,
   resolved_pump_water@2, not resolved_pump_composite@1".
   - On plain @3 (the same world) it converged in 5 iterations, with and without S.
-  - The ions agreed within 2.8e-14 mM, and S stayed at its trace (1e-9 mM).
-  - Ruling 2 of §11.5 follows.
+  - The ions agreed within 2.8e-14 mM. S came out at the bath's trace everywhere (1e-9 mM): the
+    steady state, to which the chain's initial pulse of 1e-3 mM drains.
+  - Its Newton test is one absolute tolerance, 1e-10 mM per amount, for every species (§8).
+    Ruling 2 of §11.5 follows.
 - **No fixed species counts.** Every path ran the five-species world with no change. No module on
   those paths holds a species-count limit, by a search of the snapshot's source: @3's spec and
   model, the composite, replacement, the batch, the windows, the runner and the stationary
@@ -1272,8 +1281,10 @@ included. Probes 3 to 5 find out why.
 | 2 s | 4.2e-9 | 1.95e-2 |
 
 **Transport through the switch-on is exact to the discrete solution.** Its gap from the closed
-form equals the smooth start's at that width (1.9e-2 to 2.0e-2). So the refusal of §11.2 is the
-ledger's booking of the onset, not a transport error.
+form approaches the smooth start's at that width: 2.04e-2 against 1.99e-2 at 0.5 s, and 1.95e-2
+against 1.94e-2 at 2 s. The references differ: the infinite-medium form near the source here, and
+the finite-domain series for the smooth start. So the refusal of §11.2 is the ledger's booking of
+the onset, not a transport error.
 
 ### 11.4 Probe 5: the cause of the switch-on refusal, row by row
 
@@ -1308,7 +1319,16 @@ At row 1 those flows are the onset step's own.
 The implied heat is the one the energy identity requires, W − ΔG for the realised step. No step
 was refused by the model's own step.
 
-**The result: confirmed.** All five parts hold:
+**The result: the cause is confirmed, but its size is smaller than inferred.**
+- **Its location is fully confirmed.** Row 1 fails, every later step books within the bound, and
+  the other ledgers are clean.
+- **Its size is not "comparable to the step's own flow".** The onset residual is 1–2% of the
+  step's flows at dt·K_ii up to 0.05, 8.7% at 0.30 and 18% under RK4. Row 1 fails by 5–10 times
+  at dt·K_ii up to 0.05.
+- **The pre-set thresholds were met narrowly:** 1.04e-2 against 1e-2 in (b), and a 4.8-fold fall
+  against the 5-fold limit.
+
+All five parts of the criterion hold:
 - (a) every jump start fails first at row 1;
 - (b) the onset step's residual is 1.0–8.7% of its own flows under ARS, 5 to 44 times the
   bound.
@@ -1333,8 +1353,9 @@ stays in every later row.
   end, depending on the step and the shell.
 - ARS books the face heat as J²RT/W, with the weight at a predicted state. RK4 books it as a
   four-stage quadrature of RT J ln(c_a/c_b).
-- Either way a single step integrates a nearly log-singular path, so the relative error does not
-  shrink with the step. At 0.1 ms it settles at about 4% under ARS.
+- Either way a single step integrates a nearly log-singular path, so the relative error need not
+  shrink with the step. At 0.1 ms, the one smaller step probed, it is about 4% under ARS on both
+  widths.
 
 **What it means.**
 - The refusal is the ledger's booking of an unresolved onset. It is not a transport error
@@ -1343,7 +1364,8 @@ stays in every later row.
 - **In a mixed world the same onset error passes unseen,** because the shared bound is the
   ions' (§11.1). Probe 1's chain had a six-decade front at t = 0 and passed every host check
   (§1.2). The error misbooks a few percent of one step's species heat, up to a third at dt·K_ii
-  0.30, and leaves transport exact (**S**). This is a declared limit of the booking, not a guard.
+  0.30, and leaves transport exact (**S**). **Proposed** (this round, for the lead): declare it
+  as a limit of the booking. It is not a guard.
 
 ### 11.5 Amendments and rulings
 
@@ -1352,7 +1374,7 @@ stays in every later row.
 2. **A face diffusivity is the effective (FRAP) kind** (§2.1, §6).
 3. **The first acceptance is numerical qualification** (§6).
 
-**From these results:**
+**From these results, as the lead directed:**
 
 4. **The energy guards of record** are the species-only world and a NumPy ΔG test per law.
    Each operator's docstring states that the shared IMEX bound is blind to these bookings at
@@ -1362,13 +1384,21 @@ stays in every later row.
      measured).
    - No bound on dt·D/Δr² is set beyond stability. Resolved starts pass at every dt·K_ii probed,
      up to 0.30.
-6. **RK4 with a diffusing species is guarded, not refused** (§4.2).
+6. **RK4 with a diffusing species is guarded, not refused** (§4.2). This is the decision the lead
+   asked for, from probe 3's two RK4 rows.
    - From a resolved start it is exact to rounding.
    - An unresolved onset is refused by the ledger, for the cause that ARS shares.
+
+**Proposed in this round, for the lead** (not directed):
+
 7. **The stiff-front positivity guard runs the checked step map,** because the host ledger
    refuses an unresolved onset (§7).
 8. **Radial worlds declare exact shell conductances** (§6). The probes' planar face areas made
-   the continuum gap 10 to 12.5 times larger (§11.3).
+   the continuum gap 10 to 12.5 times larger (§11.3). This rests on NumPy alone; no engine run
+   used those faces.
+9. **The species-only radial world, with zero ion face diffusivity, is an RK4 guard world** for
+   transport and face heat, beside the face-free world (§4.2).
+10. **The onset misbooking in mixed worlds is declared as a limit** of the booking (§11.4).
 
 **The lead's rulings (13 November)**, also recorded in the evidence folder's HANDOFF.md:
 1. **Donor copies.** Version 1 refuses a donor copy whose declared route values (ion and
@@ -1378,7 +1408,7 @@ stays in every later row.
    tolerance scaling is required before trace or nM species use the plain @3 path (§8).
 3. **At most 7 species per world in version 1.** A definition with more is refused at the
    definition, with a message naming the cap (§2.6). The cap's own reason is the lead's, and this
-   note's evidence does not record it.
+   note's evidence does not record it. Which component refuses is proposed in §2.6.
 4. **The energy guards of record** are those of item 4: the species-only world and a NumPy ΔG
    test per law, with the docstring statement (§7).
 
