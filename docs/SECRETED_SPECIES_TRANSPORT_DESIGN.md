@@ -11,6 +11,7 @@ secreted-species transport now". The decision reads:
 - **Design first (D142),** then code behind the usual guards. Calibration comes from a measured
   protein or morphogen gradient in the literature.
 - **Deferred:** organ-scale ageing timescales (months) wait for Cells' planned long-time modes.
+  Nothing is built for them now.
 
 **Motivation.**
 - The [granzyme K review](PAPER_REVIEW_GZMK_AGEING.md) gives this as candidate 1 (§3 item 1 and
@@ -115,7 +116,8 @@ second inventory would be:
 The one-inventory design has none of these costs. Its price is the trace background (§1.3) and
 one species row in @3's per-species work (§4.4).
 
-**The writers' rules, from the advisor's review:**
+**The writers' rules** (from a consult with the advisor before writing; the design review itself
+is still to come):
 - **Book in own accumulators, never in @3's route accumulators.** @3's domain requires zero
   transfer wherever a route's coefficient is 0 (`surface_tissue.domain_valid`), and the species'
   membrane permeability is 0. So secretion and uptake cannot be booked as
@@ -319,6 +321,10 @@ processes, so the cleared amount is shared in proportion to the rate constants.
   - a volume provider or closer (`CONFLICTS_VIEW`).
 - At run time: non-finite values, and any amount that would not stay positive (unreachable for
   these closed forms with positive inputs).
+- **Each half-step returns, as its validity, the finiteness and positivity of every amount it
+  wrote**, as injection's `available` does. The composite re-runs @3's domain at the step end
+  only when an operator's view follows its split (`_end_domain`), so a second-half write is
+  guarded by this flag and the operator's own `domain_valid`, not by @3's.
 
 ### 2.3 `scheduled_species_exchange@1`: secretion and uptake across patches
 
@@ -371,7 +377,9 @@ opposite signs, and the total gains nothing.
   - a non-positive K_M, V_max or k_u;
   - schedule changes off the dt grid;
   - `CONFLICTS_VIEW` (`volume`, `extracellular_volume`, `membrane_area`) and closers.
-- At run time: a supply shortfall, a failed saturable solve and non-finite values.
+- At run time: a supply shortfall, a failed saturable solve and non-finite values. As in §2.2,
+  each half-step returns the finiteness and positivity of both amounts it wrote as its validity,
+  since @3's domain is not re-run after the second half.
 
 ### 2.4 Free energy and heat, law by law
 
@@ -553,8 +561,17 @@ counter-ions. Its effective valence would need a screened-mobility source.
 - **The species never sets dt.** @3's bound is 2 max Σ D A/(L V) over species. The species' D is
   20 to 20,000 times the ions' smaller, so the ions bind first. For a 10 µm cubic node at
   D = 1e-10 the species alone would allow 83 ms (**S**).
-- **RK4 reference runs** integrate the species with everything else. Their steps (2.5–100 µs)
-  make species timescales unreachable, so RK4 guards use compressed worlds (§4.5).
+- **RK4 reference runs** integrate the species with everything else, but under RK4 the face
+  electromigration is explicit. Physical faces relax charge in "a few tens of nanoseconds"
+  (`surface_imex`'s docstring), and the probe chain's face RC time is about 1 µs (**S**).
+  Compressing 1/k does not help, because the ions' face conductance sets the step. So RK4
+  guards use a **face-free world**:
+  - a passive cell, its finite node joined to it only by a membrane patch, and a held bath;
+  - compressed rates, within @3's RK4 step limit of 100 µs.
+
+  There, the operators' work is checked with no solver tolerance. The alternative is ion face
+  diffusivities small enough that the face RC time is resolved, as the cleft fixture's narrow
+  access does. Face heat is left to the IMEX species-only world (§7).
 
 ### 4.3 Splitting and the exact half-steps
 
@@ -626,8 +643,12 @@ lumen.
 - the template's declared pool, or a donor's, is supplied (D139's two routes).
 
 Its free-energy booking uses @3's terms over every species. So the species is replaced with no
-new code. Templates must declare a positive amount: the trace, or a loaded pool such as a
-granule-loaded newcomer.
+new code. Checked in `core/cell_replacement_spec.py`:
+- a template must name every declared species' amount, each positive: the trace, or a loaded
+  pool such as a granule-loaded newcomer;
+- a donor copy takes the donor's amounts, the species' included;
+- a template's route values replace only routes the slot already has, by a positive value, so
+  a newcomer cannot make the species permeant.
 
 **What does not come free: secretion capacity follows the slot, not the occupant.**
 - Version 1's rates are per slot and scheduled. A newcomer secretes only if the schedule says so
@@ -671,8 +692,9 @@ zero bookings. The species is never a mismatch carrier, because those are charge
 
 | With | Version 1 | Why |
 | --- | --- | --- |
-| @3 alone, injection, the k-anion symport | Composes | No view conflict. Injection refuses neutral carriers, so it never moves the species |
+| @3 alone, injection | Composes | No view conflict. Injection refuses neutral carriers, so it never moves the species |
 | replacement@1 | Composes | Both read declared volumes |
+| The k-anion symport | Waits | It requires water (`REQUIRES`). Its in-step process also makes RK4 run coupled, which refuses split parts kept "split" |
 | Water, restricted_cleft_lumen@1/@2 | Refused (`CONFLICTS_VIEW` volumes) | Version 1.1 (§5.1) |
 | membrane_entity_state@1 | Refused for exchange (`membrane_area`) | Uptake per area must read the current area; version 1.1 (`VIEW_READS`) |
 | Insertion@1/@2, partition, bridge (closers) | Refused (masks) | Version 1.1, under the living-interval rule (§5.3) |
@@ -681,14 +703,20 @@ zero bookings. The species is never a mismatch carrier, because those are charge
 ## 6. Calibration targets
 
 Every record was fetched by DOI from Europe PMC (title, authors, journal, volume, issue, pages,
-PMID), with no project details sent. The criterion is the advisor's: each target reports D (with
-its method), a clearance rate or half-life, and a length, in a stated geometry. That gives three
-measured quantities against two free parameters.
+PMID), with no project details sent. The selection criterion, from the pre-writing consult with
+the advisor: each target reports D (with its method), a clearance rate or half-life, and a
+length, in a stated geometry. That gives three measured quantities against two free parameters.
+It is **confirmed for target 1 only**; for targets 2 and 3 it is expected, to be confirmed on
+reading.
 
 **1. Pomreinke AP, Soh GH, Rogers KW, Bergmann JK, Bläßle AJ, Müller P. Dynamics of BMP signaling
 and distribution during zebrafish dorsal-ventral patterning. *eLife* 2017;6:e25861.**
 [doi:10.7554/eLife.25861](https://doi.org/10.7554/eLife.25861), PMID 28857744, PMC5658070,
-CC BY. **The full text was read (Europe PMC).**
+CC BY.
+- **How the values were obtained.** They came through the fetch tool's extraction of the
+  Europe PMC full-text XML, which covered characters 0–200,000 of about 280,000. The figures
+  themselves were not seen. The values below are as the extraction quoted them; check them
+  against the paper's text and figures 3–4 at registration.
 
 - **Values (as stated):**
 
@@ -729,8 +757,9 @@ Kinetics of morphogen gradient formation. *Science* 2007;315(5811):521–525.**
   wing. It gives no values. The publisher's page returned 403, so the values must be read before
   registration.
 - **What it tests.** The **steady-state** analytic limit λ = √(D/k) at biological scale, in the
-  wing disc's epithelial sheet. D and k come from FRAP and λ from the steady profile, for two
-  species in one tissue. The immobile fraction is a second pointer to the occupancy door.
+  wing disc's epithelial sheet, for two species in one tissue. The abstract names the effective
+  D and the degradation rate as measured; their method and the measured decay length are to be
+  confirmed on reading. The immobile fraction is a second pointer to the occupancy door.
 
 **3. Müller P, Rogers KW, Jordan BM, Lee JS, Robson D, Ramanathan S, Schier AF. Differential
 diffusivity of Nodal and Lefty underlies a reaction-diffusion patterning system. *Science*
@@ -793,7 +822,13 @@ PMID 19741606. **Record verified.**
 - **A species-only world.** The ions are quiescent (no pumps or channels, every node at bath
   composition), so the flows and the bound are the species' own, and a booking error shows in
   IMEX.
-- **RK4 runs** of a compressed world, whose energy bound has no solver tolerance.
+  - Its amounts sit well above the energy floor. `ENERGY_ATOL_PJ` is 2e-8 pJ, while a 1e-6 fmol
+    pool's energies are only about 1e-5 pJ.
+  - So it uses µM-scale amounts in pL nodes: about 1e-3 fmol and energies of about 1e-2 pJ, some
+    5 × 10⁵ times the floor (**S**).
+  - This is the guard of the face heat.
+- **RK4 runs of the face-free world** (§4.2), whose energy bound has no solver tolerance
+  (`ENERGY_RTOL` 0 for RK4). They check the operators' work exactly.
 
 **Analytic limits** (independent NumPy references, written from Appendix A, not from engine
 code):
