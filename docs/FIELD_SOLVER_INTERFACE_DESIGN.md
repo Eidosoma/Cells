@@ -30,19 +30,23 @@ computations are definition-invariant?
 **Falsification test.** The hypothesis is wrong if these take less than half the step at
 825 nodes on CPU.
 
-**Result: not falsified on CPU.** The GPU is not yet measured (§7).
-- **Pieces compiled alone.** The named pieces take 75% of the step in E07's 825-node world
-  and 81% in the hold's world 1, or 64% and 68% of step plus checks.
-- **The fused step's trace.** Dense Cholesky, triangular solves, LU and dense products take
-  49% of the hold world's step and device checks together.
-  - That is about 58% of the step alone, if the checks' 16% holds no factorisation or
-    triangular solve.
-  - It excludes the copies and element-wise passes that serve this work. The bound
-    capacitor factor is copied every step (7%), and validity checks run over the dense
-    factors.
+**Result on CPU: falsified as stated, by a narrow margin; it holds once the dense matrices'
+own handling is counted.** The GPU is not yet measured (§7). The authoritative measurement is
+the trace of the fused step (the hold world, step alone, each instruction's own time):
+- **Narrow form, as stated: falsified.** The four kernel classes (dense Cholesky, triangular
+  solves, LU, dense products) take 45% of the step's attributed instruction time, under half.
+  That is 36.0 of 80.1 ms per call, or 33% of the 110 ms to ready, the rest being executor
+  overhead.
+- **Broad form: holds.** Counting also the element-wise passes and copies on 825 × 825
+  arrays raises this to 70% of attributed time (51% of time to ready). Those passes exist
+  only because the matrices are dense: the operator's assembly and scaling, the copies of
+  factors, and the validity checks over them.
+- **Upper bound: the pieces compiled alone.** They give 75% (E07's world) and 81% (the hold's
+  world 1) of the step for the named pieces, and 79% batched over six worlds. Each such piece
+  carries its own copies and dense matrix-vector products, which the fused step partly shares.
 
-On CPU the step is dominated by work done on 825 × 825 dense matrices whose density is under
-1% (§3).
+**So on CPU the step is mostly work on dense node-space matrices, whose density is under 1%
+(§3).** The factorisation and solve kernels alone are just under half of it.
 
 ## 2. Where one step's time goes
 
@@ -73,30 +77,44 @@ offset LU solve plus one per iteration.
 | Named pieces, share of step plus checks | 45% | 64% | 68% |
 
 Reading notes:
-- **The pieces sum to the step.** At 825 nodes the rest of the step is near zero, so the
-  separately compiled pieces account for the fused step.
+- **The pieces overcount.** At 825 nodes the rest of the step comes out near zero, which leaves
+  no room for transport, kinetics and gates that the fused trace shows. Each piece compiled
+  alone carries its own copies and dense matrix-vector products, which the fused step partly
+  shares. Read the named shares as upper bounds; the fused trace below is the measurement.
 - **XLA CPU's triangular solves are slow.** A capacitor solve (two triangular solves at 825
   nodes) takes 6.6–10.2 ms. That is a CPU fact; the L4 split below is the device's.
 - **The sheet does dense work on diagonal matrices.** All 127 of its outside nodes are held
   baths. Its free operator and capacitor solve matrix are diagonal, its face Laplacian is
   empty and it has no floating groups.
 
-**The fused step on CPU.** The hold world, one world, step and device checks traced over five
-calls: about 98 ms per call is attributed to instructions, against about 124 ms to ready.
-Shares are of the attributed time, by each instruction's op_name.
+**The fused step on CPU.** The hold world, one world, the step alone, traced over five calls.
+Each instruction counts its own time, with nested events (a while loop's body) subtracted.
+About 80 ms per call is attributed to instructions, against 110 ms to ready. Classes follow
+each instruction's op_name; "on n × n arrays" counts instructions whose output holds at
+least 825² elements.
 
-| Class | Share |
-| --- | --- |
-| Dense Cholesky (with its symmetrisation and copies) | 21.3% |
-| Triangular solves | 16.3% |
-| LU (the 172 × 172 offset solves; XLA CPU runs them as loops) | 11.3% |
-| Dense products | 0.2% |
-| Copies | 11.9% |
-| · of which the bound capacitor factor's copy | 7.2% |
-| Scatters and gathers | 3.0% |
-| Element-wise and other | 35.6% |
+| Class | ms per call | Share of attributed | Of it on n × n arrays |
+| --- | --- | --- | --- |
+| Dense Cholesky (with its symmetrisation) | 19.9 | 24.8% | 19.9 |
+| Triangular solves | 11.9 | 14.8% | 0 (vector outputs) |
+| LU (the 172 × 172 offset solves) | 4.1 | 5.1% | 0 |
+| Dense products | 0.2 | 0.2% | 0 |
+| **The four kernel classes** | **36.0** | **44.9%** | |
+| Copies | 10.9 | 13.6% | 8.1 |
+| Element-wise and other | 30.8 | 38.4% | 12.2 |
+| Scatters, gathers, loops | 2.5 | 3.1% | 0.1 |
+| **Dense node-space work** (the four classes and the n × n passes) | **56.4** | **70.4%** | |
 
-The dense products are probably fused into multiply-add fusions here. One such fusion is 6.4%.
+**With the device checks** the program takes 123 ms to ready. The four classes are then 45.5%
+and dense node-space work 71.0%; the fused checks add about 8 ms of attributed time, against
+19 ms compiled alone.
+
+**The first trace overcounted.** An earlier version of the trace summed nested events, so a
+while loop's event and its body's instructions were both counted. It reported 49% for the four
+classes with checks (LU 11.3% instead of 4.7%). Both traces are kept.
+
+The dense face and Jacobian products appear as fused multiply-adds rather than as dots, so
+they sit in "element-wise".
 
 ### L4, six hold worlds at t = 8 s
 
@@ -141,14 +159,23 @@ Against the t = 8 s operator, the largest |λ − 1| of M₈⁻¹ M_t is:
 
 Over one 200-step window (t = 1,206.0 to 1,206.2 s) it is 3.3 × 10⁻¹⁰.
 
-So one factor serves the whole 1,200-s hold as a preconditioner with a contraction of about
-5 × 10⁻⁵ per refinement iteration. CG with Jacobi scaling instead needs about 180 iterations per
-10¹⁰ of residual reduction.
+So in the hold one factor would serve the whole 1,200 s as a preconditioner, with a contraction
+of about 5 × 10⁻⁵ per refinement iteration.
+
+This is the hold's quasi-steady state only. The movement jumped from 7 × 10⁻⁸ to 4.7 × 10⁻⁵
+between 16 and 18 s, and E07's cue phases are unmeasured.
+
+For Jacobi-scaled CG, the condition number bounds the count at about 180 iterations per 10¹⁰ of
+residual reduction (½√κ ln(2/ε)). That is a bound, not a measured count.
 
 ## 4. What every step recomputes
 
 Sources: `models/surface_pump_v3.imex_step`, `readouts`, `numerics/surface_field.solve`
 and `numerics/surface_imex`. The cost column gives CPU times for the hold world, per step.
+
+These costs were seen in single-step programs (the pieces and the one-step trace). Inside a
+window's scan the compiler may already hoist some definition-invariant work out of the loop.
+That is unverified for the window program.
 
 **Definition-invariant (could be bound once):**
 
@@ -194,8 +221,13 @@ and `numerics/surface_imex`. The cost column gives CPU times for the hold world,
 
 **The dense algebra spans both halves.** It is the operator's factorisation and stage solves
 in the rest of the step, and the capacitor solves, offset LU and products in the field solve.
-- **CPU ceiling.** Removing it entirely bounds the step's gain at 1 / (1 − 0.81) ≈ 5× on CPU
-  for the hold world, or 3.1× counting the device checks.
+- **CPU ceiling.** Making all dense node-space work free would bound the hold step's gain on
+  CPU between about 2× and 3.4×:
+  - about 2×: it is 51% of the fused step's time to ready;
+  - 3.4×: it is 70% of the step's attributed instruction time, if the executor overhead
+    shrank with it.
+
+  The pieces compiled alone (81%, so 5×) overstate it.
 - **L4 ceiling.** Its L4 share, and so its L4 ceiling, needs the kernel profile (§7).
 
 **At E07's batch size** the L4 step is per-world work, about 2.2 ms per added world. Cutting
@@ -252,8 +284,8 @@ C + aL's pattern, which topology fixes: 7,537 factor nonzeros at 825 nodes. Then
 The same applies to the capacitor factor and the offset system.
 
 **Expected gain.**
-- **CPU:** the named pieces are 81% of the hold step, so the gain approaches 5× if the
-  replacement is close to free.
+- **CPU:** dense node-space work is 51–70% of the fused hold step (§1). With a replacement
+  close to free, the gain is about 2× to 3.4× on CPU.
 - **GPU:** unknown. A sparse factorisation runs as dependent steps along the elimination tree.
   At six worlds it may not beat the dense batched kernels; at 256 worlds its work is tiny. The
   kernel profile decides.
@@ -282,9 +314,9 @@ checks.
 updates. There is no factorisation and no n² storage.
 
 **Iterations.**
-- With Jacobi preconditioning: condition 223, about 180 iterations per 10¹⁰ of residual
-  reduction.
-- Preconditioned by a reused factor (§6.3): two or three.
+- With Jacobi preconditioning: condition 223, at most about 180 iterations per 10¹⁰ of residual
+  reduction (a bound from the condition number, not a measurement).
+- Preconditioned by a reused factor (§6.3): two or three in the hold's quasi-steady state.
 
 **Expected gain.**
 - **CPU:** large. 180 sparse iterations are about 1.6 × 10⁶ operations per solve, against the
@@ -302,11 +334,16 @@ acceptance check's tolerance, and non-convergence is a refusal.
 ### 6.3 Factorisation reuse and rank updates (the composite note's R3 options (b) and (c))
 
 **The IMEX operator: reuse, not rank updates.** All 1,151 face weights move every step, so a
-rank update does not fit. Reuse does: the operator moves by under 5 × 10⁻⁵ over the whole hold.
-- **Refresh.** Refresh the factor at declared epochs, or when the refinement's measured
-  contraction exceeds a declared bound.
+rank update does not fit. Reuse does: in the hold the operator moves by under 5 × 10⁻⁵ over
+1,200 s.
+- **Refresh.** Refresh the factor at declared epochs, or between windows on the host.
+  Within a window the refresh cannot depend on a per-world measurement: under vmap a
+  per-world predicate turns the cond into a select, both branches run, and the
+  factorisation would still run every step (the composite note's R3 point).
 - **Solve.** Correct each solve with one or two refinement steps, or CG preconditioned by the
   factor.
+- **Its contraction is a check, not a trigger.** The contraction each refinement measures is
+  checked like any residual; exceeding its bound is a refusal.
 
 **The capacitor matrix** is constant in `resolved_pump_tissue@3`. Under a capacitance provider
 (the composite's R3) there are two options:
@@ -316,8 +353,10 @@ rank update does not fit. Reuse does: the operator moves by under 5 × 10⁻⁵ 
   idle only if skipped statically or shown exact at ΔC = 0.
 
 **Expected gain.**
-- **CPU:** this removes the per-step factorisation, 35.5 of 98.5 ms (36%), but adds refinement
-  solves. Alone it is at most 1.6×; it combines with §6.1's sparse solves.
+- **CPU:** this removes the per-step factorisation but adds refinement solves. In the fused
+  step the Cholesky and the operator's n × n assembly are about 32 of 80 ms of attributed
+  time. Alone, reuse is therefore at most about 1.4–1.6×; it combines with §6.1's sparse
+  solves.
 - **GPU:** follows the factorisation's share in the profile.
 
 **Numerics.** Epoch refactoring is exact. Refinement is tolerance-based.
@@ -354,20 +393,40 @@ Each must still be shown bitwise (a guard like D147's guard 1) before it can lan
 new ID. Adding an exact zero or skipping a copy is likely bitwise. Moving a product from the
 device to the host is not.
 
+Their cost inside a window's scan is unverified (§4): the compiler may already hoist some of
+them.
+
 ## 7. Measurements before any field-solver code
 
 **Kernel profile at the next L4 gap.** The plan is
-[kernel_profile_plan.sh](/mnt/workspaces/Cells/field-solver-limits-20261113-01/kernel_profile_plan.sh):
-`profile_step.py trace` at 6 and 256 worlds of E07's world, then 6 of the hold world, then the
-hold world's pieces on the device. It takes about 10–15 min, under 20.
-- **What it measures.** For each run: time to ready and the device time per operation class
-  (dense Cholesky, triangular solves, LU, dense products, scatters, gathers, copies, the rest).
-- **On GH200.** It reruns unchanged there, with PY and the input paths set.
-- **Falsification on the device.** The hypothesis holds on a device if the four dense classes
-  take at least half the attributed device time.
+[kernel_profile_plan.sh](/mnt/workspaces/Cells/field-solver-limits-20261113-01/kernel_profile_plan.sh),
+about 15 min, under 20:
+- `profile_step.py trace` at 6 and 256 worlds of E07's world, then at 6 of the hold world;
+- the hold world's pieces on the device;
+- the pieces vmapped over 6 hold worlds and over 256 of E07's.
+
+**What it measures.** For each trace: time to ready and each instruction's own device time, by
+operation class and on n × n arrays. For the batched pieces: each piece's batched time.
+
+**It is untested on a GPU.** Whether this jaxlib's profiler records device kernels with HLO
+names is open (venv-gpu holds libcupti). The batched pieces are the fallback that needs no
+profiler.
+
+**Inputs.**
+- From its start, E07's world takes no Newton iteration, so its traces hold no in-loop
+  Jacobian or LU; the hold world's trace does.
+- E07's definition declares version 2, although its free offsets would make a new run declare
+  version 3 under D147. The plan's FIELD_SOLVER variable sets the version.
+
+**On GH200.** It reruns unchanged there, with PY and the input paths set.
+
+**Falsification on the device**, as on the CPU:
+- the narrow form needs the four kernel classes at half or more of the attributed device time;
+- the broad form adds the n × n passes.
 
 **Decision after GH200.**
-- **If the dense classes dominate at E07's batch size,** prototype the sparse IMEX operator
-  (§6.1) with reuse (§6.3) first, as a new solver ID, and measure it on CPU, the L4 and GH200.
-- **If they do not,** this interface waits and the profile's leading class is the next
+- **If dense node-space work dominates at E07's batch size,** prototype the sparse IMEX
+  operator (§6.1) with reuse (§6.3) first, as a new solver ID, and measure it on CPU, the L4
+  and GH200.
+- **If it does not,** this interface waits and the profile's leading class is the next
   question.
