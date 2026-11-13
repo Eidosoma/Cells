@@ -23,8 +23,11 @@ Changed from @1:
 * Version 1 refuses an onset at a division's time.
 * The energy rule at the view is the composite's (§5.3). This operator books its heat in the
   energy ledger and its image charge in the rounding bounds, not the view's capacitor terms.
-* It precedes isopotential_partition@1: the partition's step-check share (R5) reads the area
-  inserted on the parent.
+* It precedes every operator that retires slots (isopotential_partition@1), whose step-check
+  share (R5) reads the area inserted on the parent.
+* It reads slot lifetimes through the contract (living_intervals, schedule_times of retiring
+  operators), never importing the operator that decides them. So S3's cleft egg on @2 (Q7)
+  cannot reach partition code through it; the J2 bright line's import scan asserts this.
 
 Kept from @1:
 * populations and pumps on onset patches are refused (decision 9: S5b);
@@ -48,7 +51,7 @@ from cells.core.specs import ConfigError
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
 from cells.models.operators import membrane_insertion as v1
-from cells.models.operators import membrane_state, partition
+from cells.models.operators import membrane_state
 from cells.models.operators.contract import Operator
 from cells.numerics.extracellular_field import scatter
 
@@ -79,36 +82,39 @@ def check_onsets(base, schedule):
             raise ConfigError("An onset node's charge anchor must be 0")
 
 
-def partition_schedule(spec):
-    """(the partition's declaration, its events), or (None, ()) without a partition."""
+def lifetimes(spec):
+    """(intervals, event times, retiring operators) of the composition, through the contract:
+    {cell: (birth, retirement)} from every operator's living_intervals, the event times of the
+    operators that retire slots, and those operators' laws in declared order. This module never
+    imports the operator that decides lifetimes (the J2 bright line's import scan)."""
+    intervals, times, retiring = {}, set(), []
     for op, declaration, schedule in composite_spec.entries(spec):
-        if op.LAW_ID == partition.LAW_ID:
-            return declaration, schedule
-    return None, ()
+        intervals |= op.living_intervals(spec, declaration, schedule)
+        if op.RETIRES:
+            times |= set(op.schedule_times(schedule))
+            retiring.append(op.LAW_ID)
+    return intervals, times, retiring
 
 
 def check_definition(spec, declaration, schedule, model):
-    """@1's composition rules, then the onsets and the rates against the partition's schedule
+    """@1's composition rules, then the onsets and the rates against the slots' lifetimes
     (module docstring)."""
     v1.check_definition(spec, declaration, schedule, model)
-    divisions, events = partition_schedule(spec)
+    intervals, division_times, retiring = lifetimes(spec)
     laws = [d.law for d in spec.model.operators]
-    if divisions is not None and laws.index(partition.LAW_ID) < laws.index(LAW_ID):
-        raise ConfigError(
-            f"{LAW_ID} precedes {partition.LAW_ID}: the partition's step-check share reads the "
-            "inserted area"
-        )
+    for law in retiring:
+        if laws.index(law) < laws.index(LAW_ID):
+            raise ConfigError(
+                f"{LAW_ID} precedes {law}: its step-check share (R5) reads the inserted area"
+            )
 
     def interval(cell):
-        if divisions is None:
-            return None, None
-        return partition.living_interval(divisions, events, cell)
+        return intervals.get(cell, (None, None))
 
     m = spec.model
     membranes = {p.id: p for p in m.membranes}
     onset = {s.membrane_id: s.onset_time for s in schedule}
     patches, nodes, _ = v1.onset_entities(spec, schedule)
-    division_times = {e.time for e in events}
     for k in sorted(patches):
         t = onset[k]
         if t in division_times:
@@ -284,6 +290,9 @@ class ScheduledMembraneInsertionV2(Operator):
 
     def check_steps(self, spec, declaration, schedule, steps, controls, model):
         StepChecks(spec, schedule)(steps)
+
+    def onset_patches(self, spec, declaration, schedule):
+        return {s.membrane_id: s.onset_time for s in schedule if s.onset_time is not None}
 
     def batch_signature(self, declaration):
         return (LAW_ID, tuple(p.membrane_id for p in declaration.patches))

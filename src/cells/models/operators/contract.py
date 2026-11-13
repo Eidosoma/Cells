@@ -189,6 +189,21 @@ class Operator:
         evaluated at first use in check_steps' order (v2 design R5)."""
         return lambda steps: self.check_steps(spec, declaration, schedule, steps, None, model)
 
+    def living_intervals(self, spec, declaration, schedule):
+        """{cell id: (birth, retirement)} for the cells whose lives this operator decides (None:
+        from the start, or never). Host side: other operators' definition checks read slot
+        lifetimes through it, without importing the operator that decides them."""
+        return {}
+
+    def patch_maps(self, declaration):
+        """{patch id: the patch ids this operator maps it onto} (host side, as above)."""
+        return {}
+
+    def onset_patches(self, spec, declaration, schedule):
+        """{patch id: onset time} for the patches this operator opens at an onset (host side,
+        as above)."""
+        return {}
+
     def batch_signature(self, declaration):
         return (self.LAW_ID,)
 

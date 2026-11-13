@@ -434,12 +434,10 @@ def check_structure(base, declaration):
                 raise ConfigError(f"Division {d.id}: contact areas follow the anchor rule")
         # The daughters hold only mapped slots: an unmapped one would open at birth with no
         # anchor from the parent (contacts may also be another division's targets or a bridge).
-        made_patches = {x for k in d.patches for x in k.daughters}
+        # A daughter's unmapped patch is admitted only as an onset patch opening after its birth
+        # (check_definition, which sees the onsets).
         made_populations = {x for c in d.populations for x in c.daughters}
         for daughter in d.daughters:
-            for p in m.membranes:
-                if p.inside == daughter and p.id not in made_patches:
-                    raise ConfigError(f"Division {d.id}: patch {p.id!r} of {daughter} is unmapped")
             for c in m.channels:
                 if membranes[c.membrane_id].inside == daughter and c.id not in made_populations:
                     raise ConfigError(
@@ -519,11 +517,27 @@ def living_interval(declaration, schedule, cell):
 
 
 def check_definition(spec, declaration, schedule, model):
-    """Composition refusals and activity outside a slot's living interval (module docstring)."""
+    """Composition refusals, a daughter's unmapped patches, and activity outside a slot's living
+    interval (module docstring)."""
     for op in model.operators:
         for law, reason in REFUSED_LAWS.items():
             if op.LAW_ID.startswith(law):
                 raise ConfigError(f"A partition cannot run with {op.LAW_ID}: {reason}")
+    onsets = {}
+    for op, op_declaration, op_schedule in composite_spec.entries(spec):
+        onsets |= op.onset_patches(spec, op_declaration, op_schedule)
+    for d in declaration.divisions:
+        made = {x for k in d.patches for x in k.daughters}
+        for daughter in d.daughters:
+            birth, _ = living_interval(declaration, schedule, daughter)
+            for p in spec.model.membranes:
+                if p.inside != daughter or p.id in made:
+                    continue
+                if not (p.id in onsets and (birth is None or onsets[p.id] > birth)):
+                    raise ConfigError(
+                        f"Division {d.id}: patch {p.id!r} of {daughter} is unmapped (only an "
+                        "onset patch opening after the daughter's birth may be)"
+                    )
     for op, op_declaration, op_schedule in composite_spec.entries(spec):
         if op.LAW_ID != "electrode_current_injection@1":
             continue
@@ -953,6 +967,17 @@ class IsopotentialPartition(Operator):
 
     def inner_check_spec(self, check_spec_, spec, declaration, schedule):
         return check_spec(check_spec_, spec, declaration)
+
+    def living_intervals(self, spec, declaration, schedule):
+        cells = {x for d in declaration.divisions for x in (d.parent, *d.daughters)}
+        return {c: living_interval(declaration, schedule, c) for c in sorted(cells)}
+
+    def patch_maps(self, declaration):
+        maps = {}
+        for d in declaration.divisions:
+            for k in d.patches:
+                maps.setdefault(k.parent, []).extend(k.daughters)
+        return {k: tuple(v) for k, v in maps.items()}
 
     def batch_signature(self, declaration):
         return (

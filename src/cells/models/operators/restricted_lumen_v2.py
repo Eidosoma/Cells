@@ -119,12 +119,12 @@ def lumens_to_dict(declaration):
 
 
 def descendants(spec):
-    """{patch id: the patch ids the partition's maps make of it, transitively}."""
-    divisions, _ = insertion.partition_schedule(spec)
+    """{patch id: the patch ids the composition's patch maps make of it, transitively} (through
+    the contract's patch_maps; this module never imports the operator that maps them)."""
     children = {}
-    for d in () if divisions is None else divisions.divisions:
-        for k in d.patches:
-            children.setdefault(k.parent, []).extend(k.daughters)
+    for op, declaration, _ in composite_spec.entries(spec):
+        for parent, daughters in op.patch_maps(declaration).items():
+            children.setdefault(parent, []).extend(daughters)
     found = {}
     for patch in [p.id for p in spec.model.membranes]:
         seen, stack = set(), list(children.get(patch, ()))

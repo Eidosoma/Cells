@@ -16,9 +16,14 @@ A J1 source in a module is any of:
 
 A partition source is any of:
 * a string constant naming the partition law;
-* an import of the engine's partition operator or its definition helper, or of R-ops;
+* an import of the engine's partition operator or its definition helper, of R-ops, of S5's compact
+  worlds (tests/partition_fixtures) or of the Q10 driver;
 * the use of R-tissue's division entry point. R-tissue's static entry point is kept apart, so its
   cross-check against R-full may read J1.
+
+insertion@2 and lumen@2 stay off the partition list, because Q7 puts them beside a J1 module, on
+the lead's condition: neither reaches a partition module through its explicit imports,
+transitively (the scan at the end, with a positive control).
 
 The check is static, at module granularity, and sees only the listed sources, as D147's driver
 test does. Use through an unlisted builder is outside its reach; the rule binds anyway (§10.1).
@@ -52,6 +57,8 @@ PARTITION_MODULES = {
     "cells.models.operators.partition",  # isopotential_partition@1.
     "cells.core.partition_spec",  # Its definition helper.
     "validation.division.partition_reference",  # R-ops.
+    "tests.partition_fixtures",  # S5's compact worlds (the lead, 13 November).
+    "validation.division.q10_sensitivity",  # The Q10 driver.
 }
 PARTITION_FUNCTIONS = {"validation.division.cleft_tissue_reference.simulate_divisions"}
 # Text that every source of each kind must contain (the pre-filter).
@@ -63,6 +70,8 @@ PARTITION_MARKERS = (
     "operators.partition",
     "operators import partition",
     "simulate_divisions",
+    "partition_fixtures",
+    "q10_sensitivity",
 )
 EXEMPT = {}  # {path: reason}; a J2 driver enters only after the user releases J2.
 
@@ -233,3 +242,69 @@ def test_the_scan_sees_each_form(source):
 def test_relative_imports_resolve():
     j1, _ = sources("from . import cleft_egg_engine\n", "validation.division.synthetic")
     assert "validation.division.cleft_egg_engine" in j1
+
+
+# ---------------------------------------------------------------- insertion@2 and lumen@2 (Q7)
+# S3's cleft egg on insertion@2 and lumen@2 (Q7) puts a J1 module beside them, so they stay off
+# the partition list on one condition (the lead, 13 November): neither imports anything on it,
+# transitively. The scan follows explicit imports through the repository's modules. It does not
+# follow the operator and model registries: every engine user reaches them, and they register
+# every law. Reaching the partition through them would need its law named in a definition, which
+# the literal check above sees.
+REGISTRIES = {"cells.models.operators", "cells.models.registry"}
+CLEAN = (
+    "cells.models.operators.membrane_insertion_v2",
+    "cells.models.operators.restricted_lumen_v2",
+)
+
+
+@functools.cache
+def module_file(name):
+    for base in (ROOT / "src", ROOT):
+        stem = base / name.replace(".", "/")
+        for path in (stem.with_suffix(".py"), stem / "__init__.py"):
+            if path.is_file():
+                return path
+    return None
+
+
+def reached(name):
+    """Every repository module reached from name through explicit imports (registries
+    recorded but not followed)."""
+    seen, stack = set(), [name]
+    while stack:
+        module = stack.pop()
+        if module in seen:
+            continue
+        seen.add(module)
+        if module_file(module) is None or (module in REGISTRIES and module != name):
+            continue
+        stack.extend(imports_of(module))
+    return seen
+
+
+@functools.cache
+def imports_of(module):
+    """The repository modules a module imports explicitly (each import's longest module
+    prefix)."""
+    out = set()
+    for dotted in imported(ast.parse(module_file(module).read_text()), module):
+        parts = dotted.split(".")
+        for k in range(len(parts), 0, -1):
+            candidate = ".".join(parts[:k])
+            if module_file(candidate) is not None:
+                out.add(candidate)
+                break
+    return tuple(sorted(out))
+
+
+@pytest.mark.parametrize("module", CLEAN)
+def test_insertion_v2_and_lumen_v2_reach_no_partition_code(module):
+    found = reached(module) & PARTITION_MODULES
+    assert not found, f"{module} reaches {sorted(found)}: Q7 could reach partition code through it"
+
+
+def test_the_import_scan_sees_a_partition_through_a_chain():
+    # The bridge imports the partition directly, and lumen@2 reaches insertion@2.
+    assert "cells.models.operators.partition" in reached("cells.models.operators.bridge_closure")
+    assert "cells.models.operators.membrane_insertion_v2" in reached(CLEAN[1])
