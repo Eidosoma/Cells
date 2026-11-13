@@ -52,7 +52,8 @@ static topology. A partition changes the topology at run time, and three as-buil
 4. **Bookings follow the v2 contract.** Moved quantities are signed transfers that sum to zero.
    The free-energy change (the unmixing term, 0 for a symmetric division) is partition work;
    the rounding-level image charge is booked at the view. The composite owns the energy rule at
-   the view (§3.6, §3.7, §5.3).
+   the view. With a closer present, its reference is the view of the initial state, through
+   two offsets bound once, so every ledger starts at zero (§3.6, §3.7, §5.3).
 5. **The bridge** is an @3 junction between the daughters, with a constant-field law,
    P_s A = 2 a D_s and a fixed open gate. The closure is an availability factor a(t)/a_0 with
    exact half-steps. The partition's aperture a_0 is bounded by the step; the closure time is
@@ -95,7 +96,9 @@ other operator can change them.
 - Lumen@1 refuses a node faced by more than one patch, and its target follows one patch's area.
 
 **1.4 The energy rule at the view** (v2 design §3, decision 9) is booked in insertion@1's
-`ledger_terms` (`adapter.view_capacitor_terms`).
+`ledger_terms` (`adapter.view_capacitor_terms`). Its reference is the declared layout at t = 0.
+That equals the view of the initial state only under insertion@1's onset rules; pending
+daughters break the equality (§3.6 point 4).
 
 **1.5 Limits carried from S3, all kept:**
 - the zero-charge onset;
@@ -298,11 +301,40 @@ static index arrays.
      ≥ 0 and about RT Σ_s δ_s² / (2 n_s f (1 − f)). It is the contractile machinery's work, as
      §5.2 says. The capacitor term is 0 up to rounding.
    - For f = a_k = ½ every term is an exact zero.
-4. **The energy rule at the view.**
-   - The composite's capacitor energy stays ½ Σ C V² − ½ Σ C0 V0², with C and V at the view.
-     The partition changes both masks and capacitances.
-   - The composite books `view_capacitor_terms` once per ledger evaluation (§5.3), so the
-     parent's term leaves and the daughters' enter without extra bookings.
+4. **The energy rule at the view, and its reference.**
+   - The composite books `view_capacitor_terms` once per ledger evaluation (§5.3). The
+     partition changes both masks and capacitances. With the reference below, the parent's
+     term leaves and the daughters' enter without extra bookings.
+   - **With a closer present, the reference must be the view of the initial state (found in
+     review).**
+     - `view_capacitor_terms` measures both of its terms against the declared layout at t = 0.
+       In that layout every declared slot is active, pending daughters included.
+     - For a patch closed at the view, @3's term plus the correction leaves −½ C0 V0². The
+       electrode residual becomes transferred − plates_view(t) + plates_declared(0).
+     - S2 and S3 had zero offsets only because insertion@1's onset rules (a finite node, a zero
+       charge anchor, every facing patch opening together) gave its onset patches V0 = 0. They
+       also left the bath's plate charge equal in both layouts.
+     - Pending daughters break all three. Their old patches face the held bath with charge
+       anchors f q_P, so V0 ≈ V_P.
+     - At egg scale the offsets would be about −½ Σ C0 V0² ≈ −1.6 pJ per generation in the
+       energy ledger, against `ENERGY_ATOL_PJ` = 2e-8 pJ at zero flows. In the electrode ledger
+       they would be about (C_D1 + C_D2) V ≈ 3e-10 C, against a bound of order 1e-23 C. Q1
+       would fail at row 0 on every S5 world (S).
+   - **The fix (static: only with a closer).** Two constants are bound once from the definition
+     (R1):
+     - E_ref = ½ Σ C0 V0² (declared) − ½ Σ C V² (view of the initial state);
+     - q_ref = plates_declared(0) − plates_view(0), at the held nodes.
+
+     The composite adds E_ref to the energy correction and subtracts q_ref in the electrode
+     correction. Then:
+     - the capacitor energy is ½ Σ C V²(t) − ½ Σ C V²(0), both at the view;
+     - the electrode residual is transferred − (plates_view(t) − plates_view(0));
+     - every ledger is zero at row 0 (to rounding: a host bind against a device solve) and
+       stays so up to the first event.
+   - No chemical offset is needed. Pending slots have zero increments, and proportional anchors
+     keep Σ G(ref) unchanged across a birth.
+   - Insertion@1's path (S3's world) is untouched: it has no closer, and its offsets are zero by
+     its onset rules.
 5. **No elastic term** (no water). With water (later), the partition writes water's volume
    increments through the v2 design §2 entity volume ledger.
 
@@ -321,7 +353,7 @@ static index arrays.
 | Partition: image charge at the clamps (rounding level) | @3's electrode transfer and work; `partition_image_charge_C` | Partition, at the view |
 | Partition: gates | Intensive copies (`STATE_RESETS`), no ledger | Partition |
 | Bridge aperture | `bridge_aperture_m[edge]` (own state; a factor on @3's junction availability) | Bridge closure |
-| Capacitance and mask changes in @3's electric term | ½ Σ [(C − C0) V² + C0 (V − Vb)(V + Vb)]; the clamps' plate-charge difference | Composite (§5.3) |
+| Capacitance and mask changes in @3's electric term | ½ Σ [(C − C0) V² + C0 (V − Vb)(V + Vb)] and the clamps' plate-charge difference; with a closer, also the bound offsets E_ref and q_ref (§3.6) | Composite (§5.3) |
 | Current injection | As built (v2 design §4) | Injection@1 |
 | Lineage | Host records from the schedule and `division_applied` (§6) | Partition |
 
@@ -329,7 +361,11 @@ static index arrays.
 - the moved amounts in the local and total magnitudes;
 - the record, through the adjusted row;
 - the image charge in the electrode and global-charge magnitudes;
-- |chemical terms| + |U| + |clamp work| in the energy magnitude.
+- |chemical terms| + |U| + |clamp work| in the energy magnitude;
+- |E_ref| and |q_ref| in the energy and electrode magnitudes. The view terms' magnitudes already
+  include the absolute declared plate charges and energies, pending slots included. The
+  allowance therefore stays of the order of the physical capacitor energy and plate charge
+  times the number of generations.
 
 For f = ½ the moved transfers balance exactly. Otherwise their rounding is ulp(Δn), not ulp(n),
 so no whole-content event allowance is needed: this improves on design §5.4's estimate.
@@ -406,6 +442,8 @@ full or not at all.
 - **Ledgers.** Transport and heat are @3's junction ledgers. The aperture is not conserved, so
   it has no ledger of its own. Domain: 0 ≤ a ≤ a_0, non-increasing, and a_0 before birth.
 - **Not G2's formation law:** here coupling falls, there it rises (design §4.2).
+- **The composite-v2 audit's "junction area: S5".** It is resolved by the availability factor.
+  `junction_area` stays declared at a_0 (R1), and no junction-area view is needed.
 
 ### 4.2 Stiffness and the partition's aperture
 - **The bound (explicit term, design §5.4).** At 0.25 ms, dt × 2 G_b / C_D ≤ 1 with C_D about
@@ -458,7 +496,9 @@ full or not at all.
   - Its onset is a closer (§2), not a provider. The adapter applies the padding.
   - **Onset rule generalised.** At an onset, the node's live facing patches are exactly those
     opening then; other facing patches must be closed then, as pending daughters are (checked
-    against the partition's schedule). The zero-charge onset therefore holds unchanged.
+    against the partition's schedule). The zero-charge onset therefore holds unchanged. So
+    does S3 prerequisite (a): each onset, the daughters' second furrows included, leaves at most
+    ½ C_on V_m² unbooked by IMEX, and the host energy check guards it.
   - Rates only on live patches: refused at run time against the view's mask, and at the
     definition against the partition's schedule.
   - It does not book the energy rule at the view (§5.3).
@@ -485,6 +525,9 @@ full or not at all.
 - **The rule.** The composite books `adapter.view_capacitor_terms` (energy and electrode) once
   per ledger evaluation, as the v2 design §3 anticipated. It does so whenever a writer of a
   field input does not declare that it books them itself. Insertion@1 declares that it does.
+- **The reference.** With a closer present, the reference is the view of the initial state:
+  the bound offsets E_ref and q_ref of §3.6 point 4. Without a closer the declared reference is
+  unchanged.
 - **The same rule moves the image-charge term.** The magnitude terms move with it.
 - **Static and bitwise for existing worlds.** S3's world (insertion@1) and every existing
   composition compile as today.
@@ -644,8 +687,10 @@ there too.
   - conjunction and propagation;
   - padding;
   - the provider-and-closer refusal;
-  - the energy rule moved to the composite (the total equals ½ Σ C V² − ½ Σ C0 V0² with a
-    closer present);
+  - the energy rule moved to the composite. With a closer present, the capacitor energy equals
+    ½ Σ C V²(t) − ½ Σ C V²(0) at the view, over a spread of states;
+  - every ledger is 0 at row 0 and up to the first event in a world with pending slots (the
+    offsets of §3.6 point 4);
   - adjusted-row checks.
 - **Partition:**
   - one event on a tiny world: every @3 and own ledger closing on host and device;
@@ -781,7 +826,7 @@ Each step lands behind its tier-1 tests. Long runs go through `scripts/run_detac
 | 5 | Slot reuse and capacity: none in S5 (2^(k+1) − 1 cells; 47 nodes at 16 cells) | Accept; reuse and re-anchoring at milestone 2 (user decision against D057) |
 | 6 | Lineage: declared carrier IDs, host records from applied flags, one record shape with replacement | Accept |
 | 7 | New versions insertion@2 and lumen@2; @1 stays registered for S3's world | Accept |
-| 8 | The composite owns the energy rule at the view (§5.3) | Accept (the v2 design's own plan) |
+| 8 | The composite owns the energy rule at the view (§5.3), referenced to the view of the initial state when a closer is present (§3.6 point 4) | Accept (the v2 design's own plan, plus the reference fix found in review) |
 | 9 | Populations on onset patches: admit now (one smoke test) or keep refused until a world needs them | Admit: the padding rule makes them valid; the Xenopus definitions keep passive membranes |
 | 10 | S5's worlds: compact and egg-scale nominal only; no J1-calibrated egg through partitions while J2 is held | Accept; the alternative is a ledger-only J1-calibrated run, which the lead may allow |
 | 11 | Scope refusals: pumps on dividing cells, water (volume provider), replacement, asymmetric egg-scale divisions until `check_definition`'s scale-aware bound | Accept; each has a later owner (pump state, v2 §2, the definition bound) |
