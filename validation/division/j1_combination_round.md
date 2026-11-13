@@ -64,10 +64,10 @@ before any run. Fig. 2 is not used, for three reasons:
   as 95% complete on an exponential fall from 7 min: time constants of 3.0 to 3.67 min.
 - **Fig. 2 is reported beside every point and never judged.** In its own terms it passes every
   shape criterion, with D3 and D7 at their boundaries. Its Em at second cleavage, about −17 mV,
-  belongs to one egg and is not compared with T-J1. That check led me to state T-R17 and T-D7
-  relative to the fall to the lowest Rm, as p531 describes it, rather than to Rm2.
-- **Disclosure.** I knew the single-arm results while converting the wording; the lead should
-  review the thresholds with that in mind.
+  belongs to one egg and is not compared with T-J1. That check led the drafter to state T-R17
+  and T-D7 relative to the fall to the lowest Rm, as p531 describes it, rather than to Rm2.
+- **Disclosure.** The drafter knew the single-arm results while converting the wording; the lead
+  should review the thresholds with that in mind.
 - **By construction, excluded in every arm:** D1 and the flat start, both set by the declared
   onset at 7 min. Also excluded: Em at J1 for A1 × A7a.
 
@@ -88,9 +88,9 @@ The lead asked for an arm here only if a cited measurement supports one, and non
 - **The back-loaded schedule is the nearest candidate, but it does not measure normal eggs.** It
   is the registered schedule of 0.04 mm²/min for 10 min, an in-band member. That rate was derived
   by dLB74 from Rm in treated eggs (p536): −VM eggs, with growth lasting 7–10 min, and +VM +CCB
-  eggs, with 15–17 min. BdL73 (p100, found in the text extraction) reports that −VM eggs grow
-  membrane at a reduced rate. Normal eggs' insertion is measured only by its total at J1 and its
-  onset.
+  eggs, with 15–17 min. Normal eggs' insertion is measured only by its total at J1 and its onset.
+  BdL73 does say that −VM eggs "show a reduced rate of membrane growth" (p100, found in the text
+  extraction), but not relative to what, so nothing here rests on it.
 - **No source gives a mechanism for the early Em minimum.** The measured slit widths did not move
   it in A3. BdL73's furrow depths at about 4 and 8 min are already in A7a.
 - **K83's growing outward current reflects more new membrane appearing, not a schedule.** It was
@@ -123,7 +123,10 @@ points, about 60 CPU-min, declared as unsupported for normal eggs.
   default (`bath_fraction`, `access_shape`, `new_permeability`, `access_selectivity`). R-full's
   null path therefore stays bit-identical; the existing null-reproduction tests remain the guard.
 - **New code comes only after registration:** the f calibration helper and this round's groups,
-  beside the diagnostic runner, with a unit test on a synthetic cell.
+  beside the diagnostic runner. Two unit tests on synthetic cells go with them: one for the
+  helper, and one for the combined path's null reduction. The pairings have never run together,
+  so with f = 0 A1 × A7a must reproduce A7a alone, and with α = 0 each pairing must reproduce its
+  level-shifter alone.
 - **Compute is about 2.1 CPU-hours (up to 3)**, at a peak of about 0.3 GB per process:
   - `j1comb-a1`: the null check and A1 × A7a, about 65 CPU-min, at about 15 CPU-min per
     f-calibrated point.
