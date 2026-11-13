@@ -59,7 +59,7 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
 - Actions `study`, `reference` and `judge` follow `injection_rm1.py`. The judge refuses
   an unregistered protocol or a source outside a clean execution snapshot.
 
-## 2. The prerequisites from S2 ((a) and (b) done and guarded on 13 November; (c) open)
+## 2. The prerequisites from S2 ((a) and (b) done and guarded on 13 November; (c) pinned down, its fix awaiting approval)
 
 - **(b) Injection at the view.** With a field-input provider, the composite passes the view
   to injection's half-steps (`BOOKS_AT_VIEW`). Injection then books the clamps' plate
@@ -85,17 +85,19 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
     it is refused. The numbers above are checked with R-full's functions before the
     plan is final.
 
-- **(c) Found while measuring (a), open: an electrode-ledger drift at egg scale.** The
-  uncleaved Rm1 egg with its two pulses, run to 420 s, fails the host electrode ledger.
-  - The residual is 8.4 × 10⁻¹⁷ C, 5 times its bound. From the step where the Na
-    increment crosses 2¹⁶ fmol, it drifts by exactly half an ulp of the charge terms per
-    step (7.0 × 10⁻²² C).
-  - With the electrode at zero current, or without it, the residual is exactly 0. The
-    pulses seed it by leaving a third species, Cl, with a nonzero increment.
-  - The hypothesis (v2 design §3): @3's IMEX electrode increment stops telescoping bit
-    for bit. If so, the fix or a justified allowance is in `surface_pump*.py` and needs
-    the lead's approval.
-  - That is S3's first task, before the lumen operator.
+- **(c) Found while measuring (a), and pinned down: an electrode-ledger drift at egg
+  scale** (v2 design §3).
+  - The uncleaved Rm1 egg with its two pulses, run to 420 s, fails the host electrode
+    ledger by 8.4 × 10⁻¹⁷ C, 5 times its bound.
+  - The cause: the compiled step sums a state's species charges in two orders, one at a
+    step's end and one at the next step's start. XLA leaves the order of a reduce
+    unspecified. The two orders differ by the rounding of Cl's small term at Na's ulp,
+    so the electrode increments stop telescoping.
+  - Written as explicit adds in species order, the sum closes the ledger exactly at
+    420 s, and every other field stays bitwise identical.
+  - The fix is proposed in `surface_tissue.capacitor_change`, with no new fields and no
+    trajectory change. It waits for the lead's approval and is S3's first task, before
+    the lumen operator.
 
 ## 3. Numerics and cost
 
@@ -153,8 +155,8 @@ implicit membrane–cleft term would then be a new solver version (division desi
 
 ## 5. Order of work (CPU 4, through run_detached)
 
-1. Prerequisite (c): the electrode-ledger drift at egg scale, the hypothesis verified
-   and the fix or allowance approved and built (a 420 s run reproduces it in 1 min).
+1. Prerequisite (c): the approved fix to the electrode-ledger drift, built with its guards
+   (a 420 s run reproduces the drift in 40 s).
 2. The lumen operator and its guards.
 3. The engine definition, and `compare` against R-full's build.
 4. Development runs: the step study, and R-full's reference term per quantity.

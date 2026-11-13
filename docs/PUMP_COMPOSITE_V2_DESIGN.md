@@ -473,40 +473,67 @@ is its anchor (D057), already counted on the declared layout.
     a growing patch closing every host check; and crossrev of injection without field
     inputs (the heredity cell, and the Rm1 egg that the judged Rm1 ran on), whose jaxprs
     and bindings are identical to 00672e8.
-- **(c) Found 13 November, open: an electrode-ledger drift at egg scale, seeded by the
-  pulses** (composite-v2-20261112-01/s3-prereq/electrode_diag*.json).
-  - The uncleaved Rm1 egg, with its two pulses (0–12 s), run to 420 s at 1 ms fails the
-    host electrode ledger: 8.4 × 10⁻¹⁷ C at 420 s, 5 times its bound.
-  - Three arms:
-    - pulses: the residual is 1.6 × 10⁻²⁰ C after the pulses, 1.6 × 10⁻¹⁸ C at 270 s,
-      then grows linearly at 7.0 × 10⁻²² C per step;
-    - the electrode declared, with zero current throughout: exactly 0 at every sampled
-      row;
-    - no operator: exactly 0 at every one of the 420,001 rows.
-    So the operator's presence does not cause it; the pulses seed it.
-  - What the pulses leave: a nonzero Cl increment in the cell, −7.3 × 10⁻¹² fmol
-    (P_Cl = 0, so without them only Na and K ever move).
-  - The drift's signature:
-    - its knee comes between steps 290,000 and 300,000, where the Na increment crosses
-      2¹⁶ fmol (the K increment is its negative);
-    - after it, the rate is F × ulp(9.29 × 10⁴ fmol) / 2 = 7.02 × 10⁻²² C, half an ulp
-      of the charge terms per step.
-  - Hypothesis, not yet verified: @3's IMEX electrode increment
-    (`surface_pump.electrode_increment`) is a difference of plate charges evaluated at a
-    step's end and again at the next step's start. It telescopes only if those two
-    evaluations agree bit for bit, and with a third species carrying a nonzero increment
-    they evidently do not, for example by summing the species in different orders. The
-    egg's large increments (about 10⁵ fmol of Na and K by 420 s) make each disagreement
-    half an ulp of a large charge term.
-  - If so, this is @3's booking at egg-scale increments, not injection's, and any world
-    with three moving species at that scale is exposed (S3's cleft moves Cl through the
-    access).
-  - The fix, or a justified step-scaled allowance (2.5 eps × steps × F Σ |z Δn| covers
-    half an ulp per step), lives in `surface_pump*.py` and needs the lead's approval.
+- **(c) Found and pinned down 13 November: an electrode-ledger drift at egg scale. The fix
+  waits for the lead's approval** (composite-v2-20261112-01/s3-prereq: electrode_diag*.json,
+  electrode_mechanism.json and mechanism2/).
+  - The symptom:
+    - the uncleaved Rm1 egg, with its two pulses (0–12 s), run to 420 s at 1 ms, fails the
+      host electrode ledger by 8.4 × 10⁻¹⁷ C, 5 times its bound;
+    - with the electrode at zero current throughout, or with no operator, the ledger is
+      exactly 0.
+  - The ledger's two sides. Both come from `surface_tissue.capacitor_change` on the
+    state's amounts; no flux or current enters either.
+    - Booked: `electrode_charge_transferred_C`. @3's IMEX step adds
+      `surface_pump.electrode_increment`, which is cap(end) − cap(start) at the held nodes.
+      Injection's half-steps and replacement's events add the same difference when they
+      change the state.
+    - Recomputed: the held nodes' plate charges cap[n:] of the current state, in
+      `surface_tissue.balances` (host) and `surface_pump_checks.tissue_balances` (device).
+    - The bookings telescope only if every evaluation of a state's plate charge gives the
+      same bits.
+  - Where it breaks: the compiled step evaluates that one function differently at the
+    start and at the end of a step. XLA leaves the order of a reduce unspecified.
+    - The start's species sum Σ z_s n_s (`electrode_increment`, line 262) is merged by
+      XLA with the identical sum in the start state's field solve
+      (`surface_tissue.field_values`). That kernel adds in species order:
+      (t_Na + t_K) + t_Cl, with t_s = z_s n_s.
+    - The end's sum (line 263) is fused with the computation of the end state's amounts.
+      That kernel is vectorized and adds its lanes as (t_Na + t_Cl) + t_K.
+    - Each state is one step's end and the next step's start, so it is evaluated once
+      each way.
+  - Why the pulses and the knee matter:
+    - the pulses leave t_Cl = 7.34 × 10⁻¹² fmol (P_Cl = 0, so nothing else moves Cl);
+    - (t_Na + t_K) + t_Cl is exact here, because t_Na + t_K cancels exactly;
+      t_Na + t_Cl rounds t_Cl at Na's ulp;
+    - each step therefore books F (t_Cl − ulp(n_Na)): +6.2 × 10⁻²⁴ C below 2¹⁶ fmol, where
+      t_Cl is 1.009 ulp, and −6.96 × 10⁻²² C above it, where t_Cl is 0.504 ulp;
+    - with t_Cl = 0 both orders agree, which explains the exact zeros.
+  - The evidence:
+    - after the knee (step 296,107), each step's booking equals the exact plate-charge
+      change, in rational arithmetic on the saved amounts, plus −6.958102 × 10⁻²² C, with
+      a spread of 10⁻³⁵ C over 400 steps;
+    - summing F[((t_Na + t_K) + t_Cl) − ((t_Na + t_Cl) + t_K)] over the saved states from
+      12 s to 420 s predicts the ledger's change, −8.44415674257 × 10⁻¹⁷ C, to 4 × 10⁻²⁹ C;
+    - the compiled rollout's two kernels show the two orders (mechanism2/kernels.txt);
+    - with the species sum written as explicit adds in species order, the ledger is
+      exactly 0 at 12 s and at 420 s, and every other field of the 420 s state is
+      bitwise identical. An optimization barrier between each state and its sum gives
+      the same result.
+  - A second exposure: the end's kernel recomputes the end state's amounts instead of
+    reading them back. Here they agree bit for bit (the prediction above), but this is a
+    second way the two evaluations could differ.
+  - The proposed remedy is an exact one: one computation of each state's plate charge,
+    in `surface_tissue.capacitor_change`.
+    - It sums the species with explicit adds in species order, and on the device it puts
+      an optimization barrier on the amounts it sums.
+    - Fields: none. Trajectories: unchanged, because capacitor_change feeds no rate.
+    - Ledger fields: change at the rounding level where XLA's order differed.
+    - Jaxprs: change in every checked step and device check, so the crossrev needs a run
+      comparison. Host values: unchanged.
+  - A step-scaled allowance would be the wrong kind. The residual is not the state's
+    representable precision, and at 420 s the allowance would be 4 × 10⁻¹⁵ C.
   - Not caused by this round's change (the crossrev above). The judged Rm1 ran 12 s and
-    passed.
-  - S3 runs 2100 s with 210 pulses and increments of several 10⁵ fmol, so its egg runs
-    wait for (c).
+    passed. S3's egg runs wait for (c).
   - The same run gives the engine's energy bound used in (a). The pulses leave about
     0.45 pJ each in the energy residual, scheme error within IMEX's tolerance.
 
