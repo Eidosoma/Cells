@@ -159,6 +159,28 @@ def overlap_summary(calls=({"arrays": [1]},), outputs=({"worlds": {}},), failure
     )
 
 
+def test_a_host_replay_that_raises_cannot_decide():
+    """H would pass vacuously if a check raised identically under both trees."""
+    clean = summary()
+    assert admit.host_replay_errors(clean) == []
+    raised = summary(
+        H=dict(
+            rows=[
+                {
+                    "state": "checkpoint",
+                    "world": 1,
+                    "step_index": 8,
+                    "check_values": {"raised": "ConfigError: refused"},
+                    "observe_history": {"times": probe.arr(np.zeros(1))},
+                    "summarize": "0" * 64,
+                }
+            ]
+        )
+    )
+    assert admit.host_replay_errors(raised) == ["checkpoint, world 1, step 8: check_values raised"]
+    assert admit.compare_probes(raised, raised, *(Path("."),) * 2)["H"]["identical"]  # Vacuous.
+
+
 def test_overlap_comparison_checks():
     report = admit.compare_overlaps(overlap_summary(), overlap_summary())
     assert all(report["checks"].values())

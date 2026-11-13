@@ -216,6 +216,16 @@ def compare_probes(s0, s1, dir0, dir1):
     return report
 
 
+def host_replay_errors(summary):
+    """H rows whose host code raised: such a replay compares nothing, so it cannot decide."""
+    return [
+        f"{row['state']}, world {row['world']}, step {row['step_index']}: {key} raised"
+        for row in (summary.get("H") or {}).get("rows", [])
+        for key, value in row.items()
+        if isinstance(value, dict) and set(value) == {"raised"}
+    ]
+
+
 def compare_overlaps(o0, o1):
     a, b = o0.get("O") or {}, o1.get("O") or {}
     report = {
@@ -332,6 +342,11 @@ def propose(args, launcher=None):
         return refuse(2, f"S0 does not reproduce the manifest's source_hashes: {changed}")
     if not s0["checkpoint"]["children_share_cohort_identity"]:
         return refuse(2, "the cohort's children do not share its identity")
+    raised = [
+        f"{label}: {e}" for label in ("S0", "S1") for e in host_replay_errors(summaries[label])
+    ]
+    if raised:  # H would pass vacuously on a replay that raises identically under both.
+        return refuse(3, f"the host replay raised, so H compares nothing: {raised[:6]}")
     comparison = compare_probes(s0, s1, out / "probe-s0", out / "probe-s1")
     differing = [part for part, row in comparison.items() if not row["identical"]]
     if differing:

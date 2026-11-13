@@ -626,6 +626,8 @@ def host_replay(states):
 
     states is [(label, world ID, definition, checkpoint)]. Per world, in time order, the
     windowed observation-continuity check joins each state's observation to the previous one.
+    A part that raises is recorded as {"raised": message}: it repeats or not under the other
+    tree, but it compares nothing, so admit.py cannot decide on it (host_replay_errors).
     """
     from cells.core.grid import EventGrid
     from cells.core.runner import check_steps
@@ -647,17 +649,21 @@ def host_replay(states):
                 history, s, **check_steps(model, checkpoint.step_index, 1)
             )
             row["check_values"] = exact(diagnostics)
-        except Exception as exc:  # noqa: BLE001  (a refusal is a result; it must repeat)
-            row["check_values"] = error(exc)
-        t = float(checkpoint.time)
+        except Exception as exc:  # noqa: BLE001  (recorded; admit.py cannot decide on it)
+            row["check_values"] = dict(raised=error(exc))
+        t, observed = float(checkpoint.time), None
         try:
             observed = model.observe_history(np.array([t]), history, layout, [t], s)
             row["observe_history"] = {k: arr(v) for k, v in sorted(vars(observed).items())}
-            tail = _observation_tail(model, s, observed, previous.get(world_id), EventGrid(s))
-            previous[world_id] = tail
-            row["observation_tail"] = exact(tail)
         except Exception as exc:  # noqa: BLE001
-            row["observe_history"] = error(exc)
+            row["observe_history"] = dict(raised=error(exc))
+        if observed is not None:
+            try:
+                tail = _observation_tail(model, s, observed, previous.get(world_id), EventGrid(s))
+                previous[world_id] = tail
+                row["observation_tail"] = exact(tail)
+            except Exception as exc:  # noqa: BLE001
+                row["observation_tail"] = dict(raised=error(exc))
         try:
             row["summarize"] = sha(
                 json.dumps(
@@ -665,7 +671,7 @@ def host_replay(states):
                 ).encode()
             )
         except Exception as exc:  # noqa: BLE001
-            row["summarize"] = error(exc)
+            row["summarize"] = dict(raised=error(exc))
         rows.append(row)
     return rows
 

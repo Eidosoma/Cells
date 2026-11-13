@@ -12,6 +12,7 @@ Scratch copies of src/cells in tmp_path, never trees under /mnt/workspaces:
   | -------- | ---------------------------------------------------------- | -------------- |
   | host     | a phase helper; a host attribute of vector_windows._Round   | admitted       |
   | benign   | a DEBUG phase marker per round in the driving loop          | admitted       |
+  | comment  | docstring and comment edits inside traced model code        | admitted       |
   | ulp      | the driving loop feeds round 2 a pump table one ulp lower   | refused by O   |
   | builder  | _Round raises later rounds' pump table by 1e-6              | refused by B   |
   | program  | an optimization barrier on dt in the composite step         | refused by P   |
@@ -52,6 +53,22 @@ EDITS = {
             "        self.seconds = perf_counter() - tick\n",
             "        self.seconds = perf_counter() - tick\n"
             "        self.host_note = worlds  # Acceptance-test edit: host only.\n",
+        ),
+    ],
+    "comment": [  # The design's comment-edit.patch: lines move inside traced code.
+        (
+            "models/pump_composite.py",
+            '        """The composite step (module docstring); RK4 for an empty tableau."""\n',
+            '        """The composite step (module docstring); RK4 for an empty tableau.\n\n'
+            "        Acceptance-test edit: a longer docstring, which moves every later line.\n"
+            '        """\n'
+            "        # Acceptance-test edit: a comment line inside traced code.\n",
+        ),
+        (
+            "models/surface_tissue.py",
+            "def capacitor_change(state, p, *, xp):\n",
+            "# Acceptance-test edit: a comment above traced code.\n\n\n"
+            "def capacitor_change(state, p, *, xp):\n",
         ),
     ],
     "benign": [
@@ -277,6 +294,13 @@ def test_a_benign_loop_edit_is_admitted(world):
     code, proposed, _, _ = propose(world, "benign")
     assert code == 0, proposed.get("reason")
     assert proposed["changed_files"] == ["core/vector_windows.py"]
+
+
+def test_comment_and_docstring_edits_in_traced_code_are_admitted(world):
+    """Neither jaxpr text nor StableHLO carries source positions (design probe 3b)."""
+    code, proposed, _, _ = propose(world, "comment")
+    assert code == 0, proposed.get("reason")
+    assert proposed["changed_files"] == ["models/pump_composite.py", "models/surface_tissue.py"]
 
 
 def test_a_one_ulp_loop_control_is_refused_by_the_overlap_arguments(world):
