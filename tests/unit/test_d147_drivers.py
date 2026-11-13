@@ -36,6 +36,7 @@ EXEMPT = {
     "validation/tissue/cell_replacement_judge.py": "G2-Q1's judge: registered definitions",
     "validation/tissue/composite_crossrev.py": "cross-revision guard: the same definitions",
     "validation/tissue/composite_guard.py": "cross-revision guard: the same definitions",
+    "validation/tissue/inplace_fix_guard.py": "D148 in-place-fix guard: recorded definitions",
     "validation/tissue/field_floor_guard.py": "declares version 2 and version 3 on purpose",
     "validation/tissue/field_floor_held.py": "declares version 3 on purpose (guard 6)",
     "validation/tissue/heredity_turnover_literature.py": "held-bath sheets only, no offsets",
