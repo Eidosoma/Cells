@@ -4,12 +4,12 @@
 revision is merged (D142).**
 - Decisions 1, 5, 6 and 7 are accepted.
 - Decisions 2 and 3 are accepted with the changes made here.
-- §2 was designed on 13 November and waits for the lead's and the advisor's review before
-  any code. Its contract parts (`VIEW_READS`, `ACCEPTS_WRITES` and `EVENT_REPLACES`) were
-  approved and built with §1. Decision 4 is settled for donor copies by
-  [E07_V1_DESIGN.md](E07_V1_DESIGN.md) §2. §2.2 carries it into @2: water's impermeant amount by
-  declaration, and the charged impermeant species through a list in @2's declaration (proposed,
-  §2.10 question 5). Decisions 10–12 are proposed.
+- §2 was designed, reviewed and approved on 13 November, then built and guarded the same day
+  (§2.11). Its contract parts (`VIEW_READS`, `ACCEPTS_WRITES` and `EVENT_REPLACES`) were built
+  with §1. Decision 4 is settled for donor copies by [E07_V1_DESIGN.md](E07_V1_DESIGN.md) §2,
+  and §2.2 carries it into @2: water's impermeant amount by declaration, and the charged
+  impermeant species through `impermeant_species` in @2's declaration. Decisions 10–12 are
+  accepted.
 - Built and guarded on 13 November: §1, current injection (§4, Rm1 passed) and stage S2
   (§3, with decisions 8 and 9). S3's prerequisites are listed in §3.
 
@@ -34,9 +34,9 @@ Order of work:
    `surface_pump*.py` now;
 3. current injection (§4);
 4. stage S2, membrane state and insertion (§3);
-5. the entity volume ledger and water plus replacement (§2): designed 13 November, with
-   code after review. Its consumers are the composition gate and E07's donor-copy arms run
-   past the fixed-volume budget (§2, D144).
+5. the entity volume ledger and water plus replacement (§2): designed, approved, built and
+   guarded on 13 November (§2.11). Its consumers are the composition gate and E07's donor-copy
+   arms run past the fixed-volume budget (§2, D144).
 
 Alongside: the L4 agreement (§5). Its CPU-only driver parts come once CPU 4 is free; the
 GPU runs come in a slot the lead gives.
@@ -204,11 +204,12 @@ Each rule is a build-time check with a refusal message.
 
 ## 2. The entity volume ledger: water plus replacement
 
-**Status: designed 13 November for the lead's and the advisor's review; no code yet.** Its
-contract parts (`VIEW_READS`, `ACCEPTS_WRITES`, `EVENT_REPLACES`) were built with §1. The
-composite already does the rest of what §2 needs: event maps run first and views are evaluated
-after them, an accepted writer's terms enter the owner's ledgers (§1.4), and a refused step
-returns the full start state. §2 changes no composite code.
+**Status: designed, reviewed and approved by the lead on 13 November (rulings in §2.10), built at
+1ea8efa and guarded (§2.11).** Its contract parts (`VIEW_READS`, `ACCEPTS_WRITES`,
+`EVENT_REPLACES`) were built with §1. The composite already does the rest of what §2 needs:
+event maps run first and views are evaluated after them, an accepted writer's terms enter the
+owner's ledgers (§1.4), and a refused step returns the full start state. §2 changes no composite
+code. Its runs stay labelled development until a protocol for the composition is registered.
 
 **The consumer.** The registered E07-v1 does not need §2: it runs at fixed volume and is judged
 by 70 min after the cue. §2 serves:
@@ -613,7 +614,12 @@ ledgers, the analytic checks and the refusals. The compiled runs go in tier 2 or
     candidate is R-full (`validation/tissue/cell_replacement_reference.py`) with open water and
     volume events.
 
-### 2.10 Open questions for the lead
+### 2.10 Open questions, and the lead's rulings (13 November)
+
+Rulings: 1 refused in this slice; 2 the keyword in `core/cell_replacement_spec.py`; 3
+parameterised, no duplication; 4 a new function beside an unchanged `water_ledgers`, with
+the equality test; 5 the proposal (the entity owns its invariant, D142); 6 refused now, with
+a test and a note; 7 accepted; 8 answered by the constants-aware baseline (§2.9).
 
 1. **`law_steady` over water.** Proposed: refused in this slice. The alternative is for the
    composite to pass its view to event maps that declare it, and for @1's arrival gate to take
@@ -646,6 +652,31 @@ ledgers, the analytic checks and the refusals. The compiled runs go in tier 2 or
    for water's share of an event's work.
 8. **The renewed crossrev baseline** (guard A.1) is the S3 agent's, at main's landing commit.
    Its path enters the registered guard when the lead sends it.
+
+### 2.11 As built and guarded (13 November)
+
+Code at 1ea8efa (tier record b799a27); A.1 re-registered at b1f103c; main merged at ec2cbf6;
+the `volume` crossrev set at 90865c9. Evidence: `/mnt/workspaces/Cells/composite-v2-s2-20261113-01/`
+(HANDOFF.md, guard-a/, dev-3, dev-4).
+
+| Guard | Result | Where |
+| --- | --- | --- |
+| A.1 crossrev with constants | Against the constants-aware baseline of record, from 1ea8efa's src and again from the merged head 90865c9: base 36/36 jaxpr texts, 36/36 constants files and 12/12 bindings; qualification 78/78, 78/78 and 56/56; injection 6/6, 6/6 and 2/2: identical. The first run, against the 4465b48 baseline without constants, was identical too. The `volume` set's first record, with constants: 14 files | guard-a/crossrev-constants, crossrev-merged |
+| A.2 forward guard | All 58 worlds, in the scalar, windowed, vector-window and batch programs: every state field, observation column and diagnostic identical, ledger accumulators included; no violation. The 825-node world's four runs in their own unit (peak 2.45 GB) | guard-a/guard/compare.json, guard-a/summary.json |
+| Outcome | **A, as registered: §2's code changes no qualified program.** Summarised against the registered rule in guard-a/summary.json | |
+| A.3 judges | W1 and W2 identical (the step-map numbers included). Rm1 and G2-Q1 (Q1 to Q7) identical apart from provenance strings: the judge's path and output directory, the protocol and predictions inside each snapshot, the source root and revision. Every verdict passes on both sides | guard-a/judges/before-vs-after.json |
+| A.4 tests at the after side | 24 files, 354 tests, all pass: the frozen models' 8 files (130 tests), the composite files, the S2 and S3 operators' smoke files, and the new files | guard-a/tests |
+| B.5 idle | [water, @2] without events equals [water] bitwise: the heredity cell with Euler and ARS(2,2,2), the gated sheet with ARS(2,2,2) | test_cell_replacement_v2_runs.py |
+| B.6 reduction to @1 | [closed water, @2] equals [@1] on @1's fields bitwise; volume accumulators V0 per event; water free energy and magnitude exactly 0 | runs |
+| B.7 analytic | Every ledger's residual unchanged across an event on shrunk and swollen occupants (energy within 1e-9 pJ, water within 1e-14 pL); the booked work equal to the free-energy change written out independently, to 1e-12 relative; the donor copy the donor's state bit for bit; `node_free_energy_pJ` equal to `water_ledgers`' terms to 1e-12 | test_cell_replacement_v2.py |
+| B.8 ledgers across events | Host checks on every row pass, cells shrinking and swelling, templates at 0.97 and 1.03 V0 and a copy of the D centre | runs |
+| B.9 transport at the view | The view carries V_new exactly; water's first flow analytic to 1e-12; the copy and the donor move by the same flow in the next step (within 1e-6 V0) | smoke, runs |
+| B.10 refusals | A template volume outside water's bounds and a copy with another impermeant content return the full start state; every definition refusal; the combined R5 bounds refuse what neither existing check sees | smoke, runs |
+| B.11 restart | Bitwise before, at and after an event, also through a snapshot; the manifest names @2 as the writer of `volume_increment_pL` | runs |
+| B.12 vmap | Bitwise against the reversed batch; within 1e-12 of each field's scale against single runs | runs |
+| B.13 cost | The 127-cell sheet, ms per step (three runs): water 4.30–5.54; with idle @2 5.98–7.02; with @2 and 19 events 6.10–6.98. @2 adds about 1.5 ms per step whether or not events fall, and its compile takes 44 s against water's 28 s | guard-a/cost |
+| Tiers | `test_cell_replacement_v2.py` tier 1 (3.2 s), `test_cell_replacement_v2_runs.py` tier 3 (about 6–10 min), `test_current_injection.py` tier 1 (2.7 s, 13 tests) | tests/test_tiers.json |
+| After the merge | At 90865c9: `test_composite_crossrev.py` (11), `test_composite_l4_agreement.py` (23), the new smoke file (10), injection (13), contract (15) and judge imports (6) pass | merged-tests |
 
 ## 3. Stage S2: membrane state as entity state
 
@@ -1362,15 +1393,15 @@ It still needs:
 | 1 | The composite's model ID stays `resolved_pump_composite@1` through §1; new behaviour comes with new operator law IDs | Accepted. The identity is unchanged by declarations (Run identity, above) |
 | 2 | §1.1: an optional field-list argument to the family's energy-bound function, default unchanged | Accepted; it waits for the plan-validation fix to land |
 | 3 | §4: injection by a split part first | Accepted. The first acceptance is Rm1 on the uncleaved egg. Carrier fractions are declared per electrode (J1's rule as default), with both polarities, removal booked and a refusal |
-| 4 | §2: newcomers keep the slot's declared impermeant content | Settled for donor copies in E07_V1_DESIGN §2 (13 November). Carried into @2 in §2.2: water's impermeant amount X is a declaration, and a donor copy needs the donor's water compartment to equal the slot's. The charged impermeant species are named in @2's declaration, checked from declarations and again at the event (proposed; §2.10, question 5) |
+| 4 | §2: newcomers keep the slot's declared impermeant content | Settled for donor copies in E07_V1_DESIGN §2 (13 November). Carried into @2 in §2.2: water's impermeant amount X is a declaration, and a donor copy needs the donor's water compartment to equal the slot's. The charged impermeant species are named in @2's declaration, checked from declarations and again at the event (ruled 13 November; §2.10, question 5) |
 | 5 | §3: capacitance kept as state alongside area | Accepted |
 | 6 | §1.3: at most one in-step process per composition | Accepted |
 | 7 | §5: the verdict is each qualification's own judge with the variant tolerances | Accepted, with the stop rule before run C |
 | 8 | §3, R3: option (a), with a field-input provider refused above 64 field nodes | Accepted (13 November), from the measured cost; (b) or (c) before larger worlds |
 | 9 | §3: the capacitor energy at a view is corrected in operator ledger terms; @3's balances stay on the declared layout | Accepted (13 November). The requirement is on the total, ½ Σ C V² − ½ Σ C0 V0²; the correction is derived against @3's actual term |
-| 10 | §2.2: a donor copy takes the donor's volume, an exact state copy | Proposed (13 November), for review |
-| 11 | §2.6: `law_steady` is refused over water in the first slice | Proposed (13 November), for review |
-| 12 | §2.3: water's free-energy change at events is booked in a field of its own | Proposed (13 November), for review |
+| 10 | §2.2: a donor copy takes the donor's volume, an exact state copy | Accepted (13 November) |
+| 11 | §2.6: `law_steady` is refused over water in the first slice | Accepted (13 November) |
+| 12 | §2.3: water's free-energy change at events is booked in a field of its own | Accepted (13 November) |
 
 Rough effort:
 
@@ -1379,6 +1410,6 @@ Rough effort:
 | §1 | 1.5 |
 | §4 | 1 |
 | §3 (as the division plan estimates) | 2 |
-| §2, after review | 1.5, plus a few hours of detached guard runs |
+| §2 | 1.5 (built and guarded 13 November) |
 | §5 driver | 0.5 |
 | §5 GPU runs | the slot you give |
