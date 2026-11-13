@@ -84,8 +84,9 @@ def quantities(result, spec):
     model = get_model(spec.model)
     _, p = model.initial_values(spec)
     h, times = result.history, np.asarray(result.times)
-    # The compare records are the last two observation times. The history also holds a row at
-    # every schedule change, so its rows are found by time, and the observations' by position.
+    # The compare records are the last two observation times. The history holds a row at every
+    # accepted step (every dt here; each time once, as the report's accepted_times_s shows), so
+    # its rows are found by time, and the observations' by position.
     observed = np.asarray(result.observations.times)
     seen = [len(observed) - 2, len(observed) - 1]
     rows = [
