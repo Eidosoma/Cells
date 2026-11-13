@@ -4861,6 +4861,36 @@ rename with no numerical change:
     1e12 ulps, which scales to about 4e-20 at 1e3. That bound, not the checks, is what
     makes the cap safe.
 
+## D149: The EMT-miRNA pair's source profile keeps the reference's numerical conventions
+
+2026-11-13, user decision, reviewed by the advisor. This settles D146's pending
+classification of `processes/source_electrochemistry.py`. The user's words were "Lets go
+on your suggestions, but get adviser view as well". They accepted the lead's suggestion:
+keep the module as a cited, independent profile rather than move it to a validation
+emulator.
+- **What the module holds.** It writes published laws: a constant-field leak, a pump
+  cycle and a gated junction flux. In lines 17–56 it also reproduces four implementation
+  choices of the reference (BITSEY, Grodstein and Pietak, pinned at `b2cb370`):
+  - the 1e-25 offset added to the constant-field argument;
+  - the pump switched off on membranes with no channels;
+  - the upwind donor of the junction flux;
+  - the miRNA scaling of the junction gate.
+- **This is an exception to AGENTS.md as written.** AGENTS.md says `src/cells` carries
+  no simulator-specific conventions, and the rule covers BITSEY. These four are such
+  conventions. They stay because they keep the recorded *How Patterns Return*
+  replication runs bitwise reproducible; moving them to a validation emulator would
+  break that continuity.
+- **They are confined to one model.** Only `cells.models.source_pair`
+  (`emt_mirna_pair@1`) imports the module, and its spec admits only the parameter set
+  `emt-mirna-pair-scaled-simple`. `tests/unit/test_source_profile_boundary.py` fails if
+  any other module imports it.
+- **Nothing is renamed; this is documentation.** The module name carries no BITSEY
+  identifier. BITSEY's species names and the `source_*` names stay as D146 left them,
+  open for a later decision. The module docstring cites the source and this decision.
+  No code is copied, since BITSEY declares no licence.
+- **Not a precedent.** New physics in `src/cells` follows AGENTS.md. A further exception
+  needs its own user decision.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

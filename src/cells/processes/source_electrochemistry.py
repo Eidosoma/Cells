@@ -2,6 +2,14 @@
 
 Not the physical-model pump/GHK contract. Constants, rounding and regularization
 are part of this source identity; no upstream implementation is imported.
+
+The four numerical conventions here are the reference's (BITSEY, Grodstein and
+Pietak, pinned at b2cb370): the 1e-25 offset in the constant-field argument, the
+pump off on membranes with no channels, the upwind junction donor and the miRNA
+gate scaling. They keep the recorded replication runs bitwise reproducible. D149
+admits them as an exception, reachable only through emt_mirna_pair@1
+(cells.models.source_pair) with the parameter set emt-mirna-pair-scaled-simple;
+tests/unit/test_source_profile_boundary.py keeps it that way.
 """
 
 import jax.numpy as jnp
