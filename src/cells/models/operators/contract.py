@@ -66,13 +66,17 @@ Declarations (class attributes):
     conjunction with the declared ones, as availability factors multiply. The adapter then
     propagates closure down the entity hierarchy (cell to its patches, patch to its
     populations, cell to its contacts, node to its faces) and presents every closed slot to
-    the inner model as padding. A mask has closers or a provider, never both, and a closer
-    counts as the mask's provider for ``CONFLICTS_VIEW``. With a closer the composite owns
-    the capacitor-energy correction at the view, referenced to the view of the initial state;
+    the inner model as padding. A closed contact's gate is state: the composite pads the bound
+    state (gate 0), and a closer that opens or closes a contact writes its gate at that event.
+    A mask has closers or a provider, never both, and a closer counts as the mask's provider
+    for ``CONFLICTS_VIEW``. With a closer the composite owns the capacitor-energy correction
+    at the view, referenced to the view of the initial state, and evaluates the inner domain
+    at the view;
   - ``RETIRES``: its event moves retired slots' inner history (transfers and heat) into its
     own record and zeroes them, so the inner model sees padding; its ``adjust_inner`` adds the
-    record back, and the composite runs its row checks on that adjusted row, so every inner
-    ledger and every heat element read as if nothing moved;
+    record back, and the composite runs its ledger and dissipation checks on that adjusted
+    row, so every inner ledger and every heat element read as if nothing moved (the domain is
+    read on the actual row, at the view);
   - ``BOOKS_AT_VIEW`` on an event map: the composite passes ``view``, a function of state
     giving its view, when a field input is provided.
 

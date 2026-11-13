@@ -152,3 +152,39 @@ def test_the_manifest_names_the_closer(division_run, tmp_path):
     manifest = json.loads((tmp_path / "run" / "manifest.json").read_text())
     views = manifest["field_owners"]["views"]
     assert views["active"]["closers"] == [fx.PARTITION]
+
+
+def test_a_neighbour_contact_runs_through_the_division():
+    """§8.1's variant on the device: the gated contact maps to the daughters (their gates the
+    parent's at the event, the parent's padding after it) and every check closes."""
+    result = run(parse_spec(world(neighbour=True)))
+    times = np.asarray(result.times)
+    gate = np.asarray(result.history.junction_gate)  # [contact, contact_d1, contact_d2]
+    before, after = times <= fx.EVENT + 1e-12, times > fx.EVENT + 1e-12
+    assert (gate[before, 0] > 0).all() and not gate[before, 1:].any()
+    assert not gate[after, 0].any() and (gate[after, 1:] > 0).all()
+    transferred = np.asarray(result.history.junction_transferred)
+    assert np.abs(transferred[after][:, :, 1:]).max() > 0  # The daughters' contacts carry.
+
+
+def test_a_bridge_closes_through_the_run_and_restarts_bitwise():
+    """An asymmetric division (unequal daughters, so the bridge carries current) whose bridge
+    closes linearly over 1 ms on the device: every check closes, the bridge's gate is padding
+    before the event and open after, its aperture reaches 0, and a restart at the event is
+    bitwise."""
+    raw = world(f=0.75, area_fraction=0.6, carriers={"Na": 0.5, "K": 0.5}, bridge=("linear", 0.001))
+    spec = parse_spec(raw)
+    result = run(spec)
+    times = np.asarray(result.times)
+    e = [j.id for j in spec.model.junctions].index("bridge_1")
+    gate = np.asarray(result.history.junction_gate)[:, e]
+    after = times > fx.EVENT + 1e-12
+    assert not gate[~after].any() and (gate[after] == 1).all()
+    aperture = np.asarray(result.history.bridge_aperture_m)[:, e]
+    assert (aperture[~after] == fx.APERTURE_M).all() and aperture[-1] == 0.0
+    transferred = np.asarray(result.history.junction_transferred)[:, :, e]
+    assert np.abs(transferred[-1]).max() > 0  # Current crossed the bridge before it closed.
+    checkpoint = result.checkpoint_at(fx.EVENT)
+    resumed = run(spec, checkpoint)
+    for a, b in zip(resumed.history, result.history, strict=True):
+        assert np.array_equal(np.asarray(a), np.asarray(b)[checkpoint.step_index :])

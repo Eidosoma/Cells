@@ -214,6 +214,50 @@ def test_the_event_changes_no_ledger_and_heat_stays_monotone():
     assert np.max(np.abs(model.balances(blank, p)["local"] - before["local"])) > 1e-6
 
 
+def test_a_neighbour_contact_maps_to_the_daughters_with_its_gate():
+    """A gated contact to a neighbour (§8.1's variant): its daughter contacts are padding until
+    the division (gate 0 and minimum 0 at the view), then take the parent contact's gate at the
+    event; the parent's contact becomes padding, its history in the record; no ledger moves."""
+    _, model, state, p = bind(fx.divided(neighbour=True))
+    q = model.view(p, state, xp=np)
+    assert list(q.junction_active) == [True, False, False]  # [contact, contact_d1, contact_d2]
+    assert list(state.junction_gate) == [fx.CONTACT["gate"]["initial_gate"], 0.0, 0.0]
+    assert list(q.junction_minimum) == [0.1, 0.0, 0.0]
+    assert adapter.domain_valid(adapter.inner_state(state), q, q.active, xp=np)
+    # A pre-event history: a gate away from its declared value, and transfers through the
+    # parent's patch and across the contact matched by the cells' increments. Dyadic values keep
+    # every sum exact, so the local ledger is exactly 0.
+    s = state._replace(
+        amount_increment=np.array(state.amount_increment, copy=True),
+        membrane_transferred=np.array(state.membrane_transferred, copy=True),
+        junction_transferred=np.array(state.junction_transferred, copy=True),
+        junction_gate=np.array([0.37, 0.0, 0.0]),
+        junction_dissipated_energy_pJ=np.array([2e-7, 0.0, 0.0]),
+    )
+    leak = np.array([-(2.0**-10), 2.0**-10, -(2.0**-12), 0.0])  # fmol
+    flow = np.array([2.0**-15, -(2.0**-16), 2.0**-17, 0.0])  # fmol
+    s.membrane_transferred[:, 0] = leak
+    s.junction_transferred[:, 0] = flow
+    s.amount_increment[:, 0] = -(leak + flow)
+    s.amount_increment[:, 1] = flow
+    new, ok = divide(model, s, p)
+    assert ok
+    assert list(new.junction_gate) == [0.0, 0.37, 0.37]
+    q1 = model.view(p, new, xp=np)
+    assert list(q1.junction_active) == [False, True, True]
+    assert list(q1.junction_minimum) == [0.0, 0.1, 0.1]
+    assert adapter.domain_valid(adapter.inner_state(new), q1, q1.active, xp=np)
+    assert np.array_equal(new.partition_retired_junction_transferred_fmol[:, 0], flow)
+    assert new.partition_retired_junction_heat_pJ[0] == 2e-7
+    assert not new.junction_transferred.any() and not new.junction_dissipated_energy_pJ.any()
+    before, after = model.balances(s, p), model.balances(new, p)
+    for name in before:
+        scale = np.max(np.abs(np.asarray(before[name])), initial=0.0)
+        diff = np.max(np.abs(np.asarray(after[name]) - np.asarray(before[name])), initial=0.0)
+        assert diff <= 1e-12 * max(scale, 1e-12), name
+    assert not np.asarray(before["local"]).any() and not np.asarray(after["local"]).any()
+
+
 def test_an_asymmetric_division_books_the_unmixing_work():
     f, a = 0.75, 0.6
     _, model, state, p = bind(fx.divided(f=f, area_fraction=a, carriers={"Na": 0.5, "K": 0.5}))

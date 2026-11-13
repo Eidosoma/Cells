@@ -24,10 +24,13 @@ The event map (§3.4), at the start of the step leaving a division's time:
 * amount increments split: daughter 1 takes f dn_P + delta, daughter 2 dn_P minus that, and the
   parent's increment becomes 0. Area, capacitance and population-abundance increments split by
   their fractions the same way; each move is booked as a signed transfer summing to zero;
-* population and contact gates are copied (intensive);
+* population and contact gates are copied (intensive). A contact that opens without a map (a
+  bridge between the daughters) takes its declared gate, and every contact closed at the view
+  holds @3's padded gate 0 (the composite pads the initial state the same way);
 * retirement (§3.5): the inner history of the parent's patches, populations and contacts
   (transfers and heat) moves into this operator's record and is zeroed, so the inner model sees
-  padding. adjust_inner adds the record back, and the composite runs every check on that row;
+  padding. adjust_inner adds the record back, and the composite runs its ledger and dissipation
+  checks on that row (the domain on the actual row, at the view);
 * the daughters' potentials must equal the parent's and the outside potentials stay put, within
   rounding (the isopotential check). The clamps' rounding-level plate-charge change is booked as
   electrode transfer with its work, at the view;
@@ -107,6 +110,7 @@ LAYOUT_FIELDS = (
     "partition_contact_parent",
     "partition_contact_daughters",
     "partition_contact_division",
+    "partition_birth_gate",  # [edge]: the declared gate, which a contact opening unmapped takes
 )
 RECORD = {  # The record field of each inner history field it retires.
     "membrane_transferred": "partition_retired_membrane_transferred_fmol",
@@ -515,7 +519,7 @@ def check_definition(spec, declaration, schedule, model):
                     )
 
 
-def bind(spec, declaration, schedule):
+def bind(spec, declaration, schedule, inner_state):
     m, x = spec.model, spec.execution
     cells = [c.id for c in m.cells]
     membranes = [p.id for p in m.membranes]
@@ -530,6 +534,7 @@ def bind(spec, declaration, schedule):
         partition_carrier_fraction=np.zeros((nd, s)),
         partition_born_of=-np.ones(n, dtype=np.int64),
         partition_retired_by=-np.ones(n, dtype=np.int64),
+        partition_birth_gate=np.array(inner_state.junction_gate, dtype=float, copy=True),
     )
     rows = dict(patch=[], channel=[], contact=[])
     for i, d in enumerate(declaration.divisions):
@@ -729,6 +734,7 @@ def event_map(state, due, p, *, xp, view):
         )
     junction_gate = state.junction_gate
     contact_due = due[p.partition_contact_division]
+    mapped = xp.zeros(junction_gate.shape, dtype=bool)
     for column in (0, 1):
         kids = p.partition_contact_daughters[:, column]
         junction_gate = _put(
@@ -737,7 +743,8 @@ def event_map(state, due, p, *, xp, view):
             xp.where(contact_due, junction_gate[p.partition_contact_parent], junction_gate[kids]),
             xp=xp,
         )
-    updates.update(channel_gate=gate, junction_gate=junction_gate)
+        mapped = _put(mapped, kids, mapped[kids] | contact_due, xp=xp)
+    updates.update(channel_gate=gate)
     # Retirement: the parent's patches, populations and contacts become padding to @3.
     retired = scatter(xp.where(due, 1.0, 0.0), xp.zeros(n), (parent,), xp=xp) > 0
     patches = retired[p.membrane_cell] & p.membrane_active
@@ -759,6 +766,11 @@ def event_map(state, due, p, *, xp, view):
     new = state._replace(**updates)
     # After the event, at the view: isopotential, plate charges, free energy.
     after = view(new)
+    # Contacts (a view reads no gate): one that opens takes the parent contact's gate when it
+    # maps one, else its declared gate (a bridge); a closed contact holds @3's padded 0.
+    opened = after.junction_active & ~before.junction_active
+    junction_gate = xp.where(opened & ~mapped, p.partition_birth_gate, junction_gate)
+    new = new._replace(junction_gate=xp.where(after.junction_active, junction_gate, 0.0))
     phi1, _, _, plates1, u1 = capacitor_state(new, after, xp=xp)
     scale = POTENTIAL_RTOL * xp.max(xp.abs(phi0)) + POTENTIAL_ATOL_V
     jump = xp.maximum(xp.abs(phi1[one] - phi0[parent]), xp.abs(phi1[two] - phi0[parent]))
@@ -964,7 +976,7 @@ class IsopotentialPartition(Operator):
     # ------------------------------------------------------------ binding
 
     def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
-        return bind(spec, declaration, schedule)
+        return bind(spec, declaration, schedule, inner_state)
 
     # ------------------------------------------------------------ step parts
 

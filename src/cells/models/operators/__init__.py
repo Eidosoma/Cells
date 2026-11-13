@@ -5,6 +5,7 @@ Each operator implements the contract of models/operators/contract.py for one la
 (core/pump_composite_spec.py), not model families (D142, D143).
 """
 
+from cells.models.operators.bridge_closure import CytoplasmicBridgeClosure
 from cells.models.operators.cell_replacement import ScheduledReplacement
 from cells.models.operators.contract import check_declarations
 from cells.models.operators.current_injection import ElectrodeCurrentInjection
@@ -26,5 +27,6 @@ OPERATORS = {
         check_declarations(ScheduledMembraneInsertion)(),
         check_declarations(RestrictedCleftLumen)(),
         check_declarations(IsopotentialPartition)(),
+        check_declarations(CytoplasmicBridgeClosure)(),
     )
 }

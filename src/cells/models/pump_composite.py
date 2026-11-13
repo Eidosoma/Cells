@@ -57,6 +57,7 @@ from cells.core.errors import NumericalError
 from cells.core.pump_composite_spec import MODEL_ID, entries, identity, projection
 from cells.core.specs import ChannelChange, ConfigError
 from cells.models import pump_composite_adapter as pump3
+from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.fixed_step import rk4_checked_step
 
@@ -81,6 +82,11 @@ def _and(a, b):
     if b is None:
         return a
     return a & b
+
+
+def _checked_above(row, p, active, *, xp):
+    """The domain of a row whose actual state was checked beforehand (retirement, S5 §3.5)."""
+    return xp.asarray(True)
 
 
 @cache
@@ -430,8 +436,23 @@ class Composition:
             self.FLOOR_LAYOUT_TYPE if type(p) is self.inner.FLOOR_LAYOUT_TYPE else self.LAYOUT_TYPE
         )
         if self.owns_view_energy:
+            values = self._closed_initial_state(self.STATE_TYPE(**values), kind, layout)
             layout.update(self._view_references(self.STATE_TYPE(**values), kind, layout))
         return self.STATE_TYPE(**values), kind(**layout)
+
+    def _closed_initial_state(self, state, kind, layout):
+        """The bound state with closed contacts' gates at @3's padded 0 (S5 design §2).
+
+        @3 binds every declared gate; a contact closed at the initial view holds 0 instead,
+        and the closer that opens it writes its gate at that event."""
+        o = layout["boundary_V"].size
+        zeros = dict(view_energy_reference_pJ=np.asarray(0.0), view_plate_reference_C=np.zeros(o))
+        p = kind(**layout, **zeros)
+        live = self._live_closers(p)
+        if not live:
+            return state._asdict()
+        view = self.inner.view(p, state, self.providers, live, xp=np)
+        return self.inner.close_state(state, view, xp=np)._asdict()
 
     def _view_references(self, state, kind, layout):
         """The energy rule's reference with a closer (S5 design §3.6 point 4), bound once (R1).
@@ -572,12 +593,12 @@ class Composition:
         """Domain of the step's end state: the inner one at the view if a split moved it."""
         valid = None
         if self.domain_views:
-            valid = self.inner.domain_valid(
-                self.inner.inner_state(state),
-                self.inner.view(p, state, self.domain_views, xp=xp),
-                p.active,
-                xp=xp,
+            view = (
+                self.view(p, state, xp=xp)  # Static: with S5's closers, the full view (§2).
+                if self.closers and self._live_closers(p)
+                else self.inner.view(p, state, self.domain_views, xp=xp)
             )
+            valid = self.inner.domain_valid(self.inner.inner_state(state), view, p.active, xp=xp)
         for op in operators:
             valid = op.domain_valid(state, p, valid, xp=xp)
         return valid
@@ -627,11 +648,14 @@ class Composition:
         return self.STATE_TYPE(*(xp.where(values.valid, v, xp.nan) for v in values.derivative))
 
     def _domain(self, state, p, active, *, xp=jnp):
-        layout = (
-            self.inner.view(p, state, self.domain_views, xp=xp)
-            if self.domain_views
-            else self.inner.inner_layout(p)
-        )
+        if self.closers and self._live_closers(p):
+            # Static: S5's closers (§2). Closed slots hold @3's padding, which the declared
+            # layout does not admit (a closed contact's gate 0 below its declared minimum).
+            layout = self.view(p, state, xp=xp)
+        elif self.domain_views:
+            layout = self.inner.view(p, state, self.domain_views, xp=xp)
+        else:
+            layout = self.inner.inner_layout(p)
         valid = self.inner.domain_valid(self.inner.inner_state(state), layout, active, xp=xp)
         for op in self.operators:
             valid = op.domain_valid(state, p, valid, xp=xp)
@@ -857,7 +881,10 @@ class Composition:
         operator's own ledgers against their bounds (in declared order).
         """
         _, p = self.initial_values(spec)
+        domain = self.domain_valid
         if self._live_retiring(p):  # S5 design §3.5: every check reads the record added back.
+            self._check_actual_domains(state, p)
+            domain = _checked_above
             state = self._adjusted(state, p, xp=np)
             balances = lambda s, q: self.inner_balances(s, q, adjust=False)  # noqa: E731
             magnitudes = lambda r, q, *, xp=np: self.inner_magnitudes(r, q, xp=xp, adjust=False)  # noqa: E731
@@ -867,7 +894,7 @@ class Composition:
             state,
             spec,
             p,
-            domain=self.domain_valid,
+            domain=domain,
             balances=balances,
             magnitudes=magnitudes,
             dissipation=self.DISSIPATION_FIELDS,
@@ -898,6 +925,21 @@ class Composition:
                         extra[key] = max(extra[key], float(np.max(np.abs(value), initial=0)))
         return diagnostics | extra
 
+    def _check_actual_domains(self, state, p):
+        """A retiring composition's domain, on each actual row at its view (S5 design §2): the
+        adjusted rows hold the retired history on closed slots, where @3 admits only padding."""
+        rows = (
+            [state]
+            if state.amount_increment.ndim == 2
+            else [
+                self.STATE_TYPE(*(v[i] for v in state)) for i in range(len(state.amount_increment))
+            ]
+        )
+        with np.errstate(all="ignore"):
+            for row in rows:
+                if not self.domain_valid(row, p, p.active, xp=np):
+                    raise NumericalError(DOMAIN_MESSAGE)
+
     def device_failure_message(self, check):
         for op in self.own_ledger_operators:
             if check in op.LEDGERS:
@@ -912,13 +954,14 @@ class Composition:
         nothing moved; the balances and magnitudes then do not adjust again (S5 design §3.5).
         """
         if self._live_retiring(p):
+            domain = self.domain_valid(row, p, p.active, xp=jnp)  # The actual row, at its view.
             return row_checks(
                 self._adjusted(previous, p, xp=jnp),
                 self._adjusted(row, p, xp=jnp),
                 p,
                 constants,
                 steps,
-                domain_valid=self.domain_valid,
+                domain_valid=lambda *_, **__: domain,
                 balances=lambda r, q: self.device_balances(r, q, adjust=False),
                 limits=self.ledger_limits,
                 magnitudes=lambda r, q, *, xp: self.magnitudes(r, q, xp=xp, adjust=False),

@@ -15,11 +15,68 @@ execution's capacities grow to hold the new slots.
 A split that does not sum exactly is refused here, as the partition's parser would refuse it.
 For f = 1/2 every split is exact. For other fractions the complement is exact by Sterbenz when
 a >= 1/2, so name the larger daughter first. Pumps on the parent are refused (later work).
+
+add_bridge writes the cytoplasmic bridge between two daughters (an @3 junction with
+P_s A = 2 a_0 D_s^cyt and a gate fixed open), and cytoplasmic_diffusivities gives D_s^cyt from a
+declared cytoplasmic conductivity (S5 design §4.2).
 """
 
 import copy
+import math
 
 from cells.core.specs import ConfigError
+
+F = 6.02214076e23 * 1.602176634e-19  # C/mol (exact SI product N_A e)
+R = 6.02214076e23 * 1.380649e-23  # J/(mol K) (exact SI product N_A k_B)
+BRIDGE_LENGTH_M = 1.0  # Only P A enters the junction law: area 2 a_0 x 1 m, P = D / (1 m).
+
+
+def cytoplasmic_diffusivities(sigma_S_per_m, cytosol_mM, free_diffusivity, valence, temperature_K):
+    """{species: D_s^cyt} = D_s sigma_cyt / sigma_free (S5 design §4.2, Appendix A.7).
+
+    sigma_free = (F^2 / RT) sum z_s^2 c_s D_s is the free-solution conductivity of the cytosol's
+    declared composition (mM = mol/m^3); one obstruction factor applies to every species.
+    """
+    free = (F * F / (R * temperature_K)) * math.fsum(
+        valence[s] ** 2 * cytosol_mM[s] * free_diffusivity[s] for s in free_diffusivity
+    )
+    return {s: d * sigma_S_per_m / free for s, d in free_diffusivity.items()}
+
+
+def add_bridge(raw, *, junction_id, daughters, aperture_m, diffusivity):
+    """Append a cytoplasmic bridge between two daughters (in place); return its bridge block
+    for cytoplasmic_bridge_closure@1 without the closure law (closure, closure_time_s).
+
+    The @3 junction has P_s A = 2 a_0 D_s^cyt (area 2 a_0 x 1 m, permeability D_s^cyt / 1 m)
+    and a gate fixed open (minimum open fraction 1, initial gate 1); its availability is 1.
+    """
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    species = [s["id"] for s in m["species"]]
+    m["junctions"].append(
+        dict(
+            id=junction_id,
+            sender=daughters[0],
+            receiver=daughters[1],
+            area_m2=2.0 * aperture_m * BRIDGE_LENGTH_M,
+            permeability_m_per_s={s: diffusivity.get(s, 0.0) / BRIDGE_LENGTH_M for s in species},
+            law="constant_field@1",
+            gate=dict(
+                law="junction_voltage_relaxation@1",
+                threshold_voltage_V=0.0,
+                minimum_open_fraction=1.0,
+                initial_gate=1.0,
+            ),
+        )
+    )
+    e.setdefault("junction_controls", []).append(
+        dict(junction_id=junction_id, schedule=[dict(time=0.0, availability=1.0)])
+    )
+    x["edge_capacity"] = max(x["edge_capacity"], len(m["junctions"]))
+    return dict(
+        junction_id=junction_id,
+        initial_aperture_m=aperture_m,
+        cytoplasmic_diffusivity_m2_per_s={s: diffusivity.get(s, 0.0) for s in species},
+    )
 
 
 def split(x, a):
@@ -47,11 +104,13 @@ def add_division(
     area_fractions=None,
     contact_fractions=None,
     mismatch_carriers=None,
+    bridges=(),
 ):
     """Append the daughter slots of one division to raw (in place); return its block.
 
     area_fractions and contact_fractions: {parent slot id: daughter 1's fraction} (default
-    volume_fraction and 1/2). Daughter slot ids are "<parent slot id>_<daughter id>".
+    volume_fraction and 1/2). Daughter slot ids are "<parent slot id>_<daughter id>". bridges:
+    the parent's bridge junctions to its sibling, which retire with it and are not mapped.
     """
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     cells = {c["id"]: c for c in m["cells"]}
@@ -106,7 +165,8 @@ def add_division(
                     control["channel_id"] = name
                     e["channel_controls"].append(control)
             populations.append(dict(parent=channel["id"], daughters=ids))
-    for junction in [j for j in m["junctions"] if parent in (j["sender"], j["receiver"])]:
+    incident = [j for j in m["junctions"] if parent in (j["sender"], j["receiver"])]
+    for junction in [j for j in incident if j["id"] not in bridges]:
         a = contact_fractions.get(junction["id"], 0.5)
         ids = [_slot(junction["id"], d) for d in daughters]
         for k, (daughter, name) in enumerate(zip(daughters, ids, strict=True)):

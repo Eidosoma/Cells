@@ -171,9 +171,21 @@ close (`active`, `outside_active`, `membrane_active`, `face_active`, `junction_a
     built: @3's field solve requires every inactive node to carry zero charge, and a pending
     daughter's declared anchor is f q_P. Insertion@1 never met this, because its onset rules
     force a zero anchor;
-  - `channel_laws` reads 0.
+  - `channel_laws` reads 0;
+  - a closed contact's `junction_minimum` reads 0, and its gate, which is state, holds 0. As
+    built (S5a part 2): @3's domain requires gate 0 on an inactive contact and a gate at or
+    above the minimum everywhere, and no declared gate may lie below its minimum. The composite
+    pads the bound state once (`adapter.close_state`: a contact closed at the initial view
+    holds gate 0). A closer that opens or closes a contact then writes its gate at that event
+    (§3.4 step 4).
 
-  The adapter lists these as `PADDED_FIELDS`. This is the only place that knows @3's names.
+  The adapter lists the layout fields as `PADDED_FIELDS`. This is the only place that knows
+  @3's names.
+- **Domain at the view (as built, S5a part 2).** With a closer, the composite evaluates @3's
+  domain at its view, closers included, not on the declared layout: a closed contact's padded
+  gate 0 lies below its declared minimum there. This applies to the definition's domain check,
+  the step end, and the host and device row checks. With a retiring operator the row checks
+  read the domain on the actual row at its view and the ledgers on the adjusted row (§3.5).
 - **Field inputs.** A closer of `active`, `outside_active` or `membrane_active` counts as a
   field-input provider. It therefore triggers the device refresh, the 64-node cap and the
   refusal of floating components.
@@ -276,10 +288,14 @@ At the start of the step leaving a division time, for each due division, in decl
    state, and the clamps' plate charges.
 3. **Content.** Write the daughters' increments and zero the parent's, booked as signed
    transfers. Write the area, capacitance and abundance increments the same way.
-4. **Intensive state.** Copy the gates.
+4. **Intensive state.** Copy the gates: the daughters' populations and mapped contacts take
+   the parent's.
 5. **Retirement.** Move the parent's @3 history into the record and zero it.
 6. **Apply.** Set `division_applied[d] = 1`. The closures now close the parent and open the
-   daughters, their patches, populations and contacts (the bridge included).
+   daughters, their patches, populations and contacts (the bridge included). As built: a
+   contact that opens without a map (the bridge) takes its declared gate, and every contact
+   closed at the post-event view holds gate 0, @3's padding (§2). The view reads no gate, so
+   the gates are written after it.
 7. **Post-event view and checks.**
    - Isopotential check: daughters at the parent's potential within a rounding allowance; the
      outside potentials unchanged.
@@ -307,8 +323,9 @@ static index arrays.
     (dissipated sum) and the charge ledgers.
 - **Checks on the adjusted row (composite, static).**
   - With an operator that declares `RETIRES`, the composite runs its host and device row checks
-    (domain, ledgers, dissipation) on the adjusted row, with balance and magnitude functions
-    that do not adjust again.
+    (ledgers, dissipation) on the adjusted row, with balance and magnitude functions that do
+    not adjust again. The domain is read on the actual row at its view (§2): the adjusted row
+    holds the retired history on closed slots, where @3 admits only padding.
   - Each heat element is then monotone across the event.
   - This changes only `pump_composite.py`, not `surface_pump*.py`. Compositions without a
     retiring operator are unchanged.
@@ -556,7 +573,15 @@ full or not at all.
   is not fixed open;
 - P_s A_j ≠ 2 a_0 D_s^cyt for its declared diffusivities and σ_cyt;
 - a start time other than its division's;
-- a negative or reopening aperture.
+- a negative or reopening aperture, or one below a_0 before its start (the domain);
+- as built: a daughter that divides again before its bridge has closed (a linear closure ends
+  at t_b + τ_c; an exponential one never ends);
+- as built: a_0 beyond the step bound of §4.2, by @3's explicit-rate step check, which counts
+  the bridge's declared conductance against the daughters' capacitances.
+
+As built (S5a part 2), the bridge's slot is padding until both daughters are born (closed, gate
+0, minimum 0 at the view), opens with them at its declared gate 1, and is padding again once
+either retires, its history in the partition's record (§2, §3.4).
 
 ## 5. New versions of S2 and S3 operators
 
@@ -1233,6 +1258,9 @@ partition, bridge, insertion@2 or lumen@2 code (§7). These conventions hold thr
      still count in the totals.
    - D1, D2, their patches and the bridge between them (aperture a_0) become live.
    - Outside nodes and faces are unchanged.
+   - Gates of contacts (the engine's representation, added in S5a part 2): a contact that is
+     not live (pending, or with a retired endpoint) reads gate 0. The bridge becomes live with
+     its declared gate (1: fixed open, A.7); the daughter contacts e¹ and e² take g_e (step 4).
 6. **Identities and outputs.**
    - Charge: Q_{D1} = Σ_k a_k q_k, and Q_{D1} + Q_{D2} = Q_P.
    - Potentials after (A.2 with the new liveness): φ_{D1} = φ_{D2} = φ_P, and every outside

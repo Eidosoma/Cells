@@ -5,25 +5,65 @@ neither J1 input (the J2 bright line, §10.1). The parent is the heredity cell w
 removed: pumps on a dividing cell are later work. It keeps its Kir2.1 and NaV1.2 populations, so
 the partition maps populations too. Daughter slots are written by core/partition_spec.add_division
 (the anchor rule), and membrane_entity_state@1 declares every population.
+
+Variants (§8.1): a neighbour cell (a second heredity cell, its own bath) with a gated contact to
+the parent, so the partition maps a contact; and a bridge between the daughters
+(cytoplasmic_bridge_closure@1, add_bridge) with sigma_cyt at its declared default.
 """
 
 from cells.core import partition_spec as ps
 from cells.core import pump_composite_spec as cs
 from tests import membrane_insertion_fixtures as ifx
 from validation.tissue import pump_water_fixtures as wfx
+from validation.tissue import surface_pump_v3_fixtures as v3f
 
 PARTITION = "isopotential_partition@1"
+BRIDGE = "cytoplasmic_bridge_closure@1"
 DT = 1e-3
 EVENT = 0.002
+# The bridge (S5 design §4.2): the declared cytoplasmic conductivity's default, standard
+# free-solution diffusivities (M as a chloride-like anion, P impermeant), and an aperture whose
+# conductance 2 a_0 sigma_cyt keeps dt x 2 G_b / C_daughter below 1 at 1 ms for this small cell.
+SIGMA_CYT = 0.5  # S/m
+FREE_D = {"Na": 1.33e-9, "K": 1.96e-9, "M": 2.03e-9, "P": 0.0}
+APERTURE_M = 2e-9
+# The neighbour's contact: nominal, with a voltage gate declared away from its steady state.
+CONTACT = dict(
+    area_m2=1e-10,
+    permeability_m_per_s={"Na": 1e-8, "K": 1e-8, "M": 1e-8, "P": 0.0},
+    gate=dict(threshold_voltage_V=0.015, minimum_open_fraction=0.1, initial_gate=0.8),
+)
 
 
-def parent(*, end=0.004):
-    """The heredity cell facing its held bath, without its pump (@3, raw)."""
-    base = wfx.heredity_cell("H", dt=DT, end_time=end)
+def parent(*, end=0.004, neighbour=False):
+    """The heredity cell facing its held bath, without its pump (@3, raw); with neighbour, a
+    second heredity cell (cell_1) in contact with it."""
+    if neighbour:
+        kind = v3f.HEREDITY_STATES["H"][:4]
+        base = v3f.heredity_cells([kind, kind], dt=DT, end_time=end)
+    else:
+        base = wfx.heredity_cell("H", dt=DT, end_time=end)
     base["experiment"]["observation_times"] = [0.0, end]
     for patch in base["model"]["membranes"]:
         patch["pump"] = None
     base["experiment"]["pump_controls"] = []
+    if neighbour:
+        gate = dict(law="junction_voltage_relaxation@1", **CONTACT["gate"])
+        base["model"]["junctions"] = [
+            dict(
+                id="contact",
+                sender="cell_0",
+                receiver="cell_1",
+                area_m2=CONTACT["area_m2"],
+                permeability_m_per_s=dict(CONTACT["permeability_m_per_s"]),
+                law="constant_field@1",
+                gate=gate,
+            )
+        ]
+        base["experiment"]["junction_controls"] = [
+            dict(junction_id="contact", schedule=[dict(time=0.0, availability=1.0)])
+        ]
+        base["execution"]["edge_capacity"] = 1
     return base
 
 
@@ -36,12 +76,18 @@ def divided(
     end=0.004,
     events=True,
     second=None,
+    bridge=None,
+    neighbour=False,
 ):
     """The parent, its two daughters (d1, d2) and the partition, as a composition (raw).
 
     second: a time for both daughters' own divisions (d1 -> g1, g2; d2 -> g3, g4), or None.
+    bridge: (closure law, closure time s[, aperture m]) for a bridge between d1 and d2 that starts
+    closing at the first division, or None.
+    neighbour: a neighbour cell (cell_1) with a gated contact to the parent, which the first
+    division maps to d1 and d2 (a_e = 1/2).
     """
-    raw = cs.frozen_definition(parent(end=end))
+    raw = cs.frozen_definition(parent(end=end, neighbour=neighbour))
     blocks = [
         ps.add_division(
             raw,
@@ -53,10 +99,34 @@ def divided(
             mismatch_carriers=carriers,
         )
     ]
+    bridges = []
+    if bridge is not None:
+        closure, tau, *rest = bridge
+        block = ps.add_bridge(
+            raw,
+            junction_id="bridge_1",
+            daughters=("d1", "d2"),
+            aperture_m=rest[0] if rest else APERTURE_M,
+            diffusivity=diffusivity(raw),
+        )
+        bridges.append(dict(block, closure=closure, closure_time_s=tau))
     if second is not None:
         for d, kids in (("d1", ("g1", "g2")), ("d2", ("g3", "g4"))):
-            blocks.append(ps.add_division(raw, division_id=f"second_{d}", parent=d, daughters=kids))
+            blocks.append(
+                ps.add_division(
+                    raw,
+                    division_id=f"second_{d}",
+                    parent=d,
+                    daughters=kids,
+                    bridges=("bridge_1",) if bridges else (),
+                )
+            )
     raw["model"]["operators"] = [ifx.membrane_state(raw), dict(law=PARTITION, divisions=blocks)]
+    if bridges:
+        raw["model"]["operators"].append(dict(law=BRIDGE, bridges=bridges))
+        raw["experiment"]["bridge_controls"] = (
+            [dict(junction_id="bridge_1", start_time=at)] if events else []
+        )
     schedule = []
     if events:
         schedule.append(dict(division="first", time=at, carriers=["c1", "c2"]))
@@ -82,3 +152,14 @@ def without_partition(*, end=0.004):
     raw = cs.frozen_definition(parent(end=end))
     raw["model"]["operators"] = [ifx.membrane_state(raw)]
     return raw
+
+
+def diffusivity(raw):
+    """The cytoplasmic diffusivities of the parent's cytosol at SIGMA_CYT (one obstruction
+    factor)."""
+    cell = next(c for c in raw["model"]["cells"] if c["id"] == "cell_0")
+    cytosol = {s: a / cell["volume_pL"] for s, a in cell["initial_amount_fmol"].items()}
+    valence = {s["id"]: s["valence"] for s in raw["model"]["species"]}
+    return ps.cytoplasmic_diffusivities(
+        SIGMA_CYT, cytosol, FREE_D, valence, raw["model"]["temperature_K"]
+    )

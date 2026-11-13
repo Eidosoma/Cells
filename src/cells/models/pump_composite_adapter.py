@@ -91,6 +91,7 @@ PADDED_FIELDS = (
     "initial_cell_charge_C",
     "initial_outside_charge_C",
     "channel_laws",
+    "junction_minimum",
 )
 # Option (a) of v2 design §3 (R3): the refresh refactorises every step once a field input is
 # provided, so a field-input provider is refused above this many field nodes (cells plus
@@ -207,8 +208,10 @@ def close(q, state, p, closers, *, xp):
       face at a closed node is closed.
     * Padding: a closed slot reads as @3's padded slot, the only kind @3's domain and field
       solve admit: its reference amounts and its charge anchor are 0 (so its physical amount
-      and its charge are exactly 0 with zero increments), and a closed population carries law
-      code 0.
+      and its charge are exactly 0 with zero increments), a closed population carries law
+      code 0 and a closed contact's minimum open fraction is 0. A closed contact's gate is
+      state and holds 0 (@3's domain): close_state pads it at the bind, and a closer that
+      opens or closes a contact writes its gate at that event.
     """
     masks = {k: getattr(q, k) for k in MASK_FIELDS}
     for operator in closers:
@@ -231,7 +234,15 @@ def close(q, state, p, closers, *, xp):
         initial_cell_charge_C=xp.where(cell, q.initial_cell_charge_C, 0.0),
         initial_outside_charge_C=xp.where(node, q.initial_outside_charge_C, 0.0),
         channel_laws=xp.where(channel, q.channel_laws, 0),
+        junction_minimum=xp.where(junction, q.junction_minimum, 0.0),
     )
+
+
+def close_state(state, q, *, xp):
+    """state with a closed contact's gate at 0, @3's padded value (q: a view with closers).
+
+    The composite applies it to the initial state; afterwards the closers keep it (close)."""
+    return state._replace(junction_gate=xp.where(q.junction_active, state.junction_gate, 0.0))
 
 
 def control_view(control, state, p, factors, *, xp=jnp):
