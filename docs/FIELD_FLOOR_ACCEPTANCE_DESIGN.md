@@ -112,40 +112,44 @@ judged as such.
 
 ## Guard plan
 
-1. **Cross-revision (jaxprs and bindings):**
+1. **Jaxprs and bindings (done: pass; last section):**
    - Version-2 definitions are unchanged, so their guards stay as they are.
    - For each world switched to version 3, show that the jaxpr differs from version 2's
      only by the post-loop floor operations and the extra layout leaf.
    - Show that the step's state outputs do not depend on the floor except through
      validity.
-2. **Dumps:** rerun the composite's guarded dumps with version 3 declared: W1, W2, G2-Q1,
-   Q5, Q6, W37 and the 825-node world. This tests version 3; it does not switch those
-   definitions. Every state, observation and diagnostic must match the version-2 dumps
-   bitwise, except at steps version 2 refused, which are listed.
+2. **Runs (done: equal; last section):** rerun the composite's guarded runs with version 3
+   declared: W1, W2, G2-Q1, Q5, Q6, W37 and the 825-node world. This tests version 3; it
+   does not switch those definitions. Every state, observation and diagnostic must match
+   version 2's bitwise, except at steps version 2 refused, which are listed.
 3. **Qualification judges:** rerun W1, W2 and G2-Q1's own judges with version 3 declared.
    The verdicts must be identical. These worlds have no free offsets, so this is a cheap
-   control, not a risk.
-4. **The defect's own cases (done on CPU; last section):** version 3 accepts the hold's
-   worlds where version 2 refused, in the vectorized and scalar programs. Its states match
-   version 2's bitwise before that; the 200-step vectorized program was not compared state
-   by state.
-5. **L4:** the hold's worlds with version 3 from t = 0, on the L4 and on the CPU, past the
-   CPU's edge steps: both must accept. Record the L4's floor multiple at those steps,
-   because the 500× margin was measured on the CPU only. The agreement's L4 terms are
-   unchanged, because its worlds stay on version 2.
-6. **A unit test for `resolved_pump_tissue@3` with version 3**, as `test_field_floor.py`
-   does for `@1` and `@2`, on a small fixture with free offsets: bitwise equal to version 2
-   where version 2 converges, a root at the floor accepted, one above it refused, and a
-   checkpoint round trip.
+   control, not a risk. (Not run: guard 2 already shows their runs bitwise.)
+4. **The defect's own cases (done on CPU; the section before last):** version 3 accepts the
+   hold's worlds where version 2 refused, in the vectorized and scalar programs. Its states
+   match version 2's bitwise before that; the 200-step vectorized program was not compared
+   state by state.
+5. **L4 (steps 6–7 of `l4_dispatch_plan.sh`):** the hold's worlds with version 3 from
+   t = 0, on the L4 and on the CPU, past the CPU's edge steps: both must accept. Record the
+   L4's floor multiple at those steps, because the 500× margin (in ulps) was measured on
+   the CPU only. The agreement's L4 terms are unchanged, because its worlds stay on
+   version 2.
+6. **A unit test for `resolved_pump_tissue@3` with version 3 (done: pass; last section)**,
+   as `test_field_floor.py` does for `@1` and `@2`, on a small fixture with free offsets:
+   bitwise equal to version 2 where version 2 converges, a root at the floor accepted, one
+   above it refused, and a checkpoint round trip. It also holds a solve just under the cap
+   on the 825-node tissue.
 
 ## Can a refusal class still differ by backend afterwards
 
 Yes, at any threshold, but this one moves away from the noise. Version 3 moves the
 field-solve edge from about 1× the rounding floor to 1e3× it. At the hold's four edge
-states, every residual is within 2 ulps of its floor (last section), a margin of at least
-500×. The measured backend and program differences in the residual are within about 5×.
-They cannot cross that edge unless the Newton genuinely stalls within that factor of the
-floor. A genuine stall is refused on every backend.
+states, every residual is within 2 ulps of its floor (see "Version 3 on the hold's edge
+states"), a margin of at least 500× in ulps. The measured backend and program differences
+in the residual are within about 5×. They cannot cross that edge unless the Newton
+genuinely stalls within that factor of the floor. A genuine stall is refused on every
+backend. Nothing else catches an inaccurate solve: the row checks and ledgers pass even
+under a cap 1e9 times wider (the positive control in the last section).
 
 Other thresholds keep their designed margins:
 
@@ -207,4 +211,104 @@ version 3's layout from 1e3 ulps (of eps × the incident sum) to 0:
 - it accepts the vectorized edge states (world 3 at 0.085 s, world 1 at 0.186 s) from
   2 ulps batched, and at 0 unbatched, where version 2's own test passes.
 
-So at the edge this tissue reaches, version 3's 1e3 ulps leave a margin of at least 500×.
+So at the edge this tissue reaches, version 3's 1e3 ulps leave a margin of at least 500× in
+ulps. In units of the target, the cap is much larger (the last section).
+
+## Guards on the CPU (13 November)
+
+The guards ran from execution snapshots `source-01` (`7a1f7f6`) to `source-04`
+(`9181b67`); guard 2 and the guard 6 tests ran from `source-01`. The results are in `/mnt/workspaces/Cells/field-floor-guards-20261113-01/`
+(`summary.json`).
+
+**Guard 1, jaxprs and bindings: pass on 41 worlds.** These are `composite_crossrev`'s base
+(12) and qualification (27) sets, which include the 825-node study tissue, and the hold's
+own preparation and run definitions (2, with 172 free offsets each). For each world,
+`field_floor_guard.py jaxprs` traces the checked step, the right-hand side and the device
+row checks under both declarations. It then follows the floor leaf through every nested
+jaxpr: calls, while, cond and scan.
+
+- The floor's magnitude reaches exactly three operations per field solve: two
+  multiplications (the floor itself) and one comparison (|R| ≤ floor).
+- Every output depends on the floor only through that comparison's boolean: the validity,
+  and the states through `where(valid, new, old)`.
+- The device row checks never read the floor.
+- Version 3 adds 42 equations per field solve to version 2's 11,500–51,800 and removes
+  none. This is a count by primitive, not a structural identity.
+- The bindings are identical except the added leaf, which holds 1e3.
+- At the merged head (main's S2, `source-03`), the result is the same on all 41 worlds.
+
+**Guard 2, runs: every part equal, 35 worlds and 2 vectorized cohorts.** Each part runs `composite_guard.py`'s comparison with the
+pair (version 2, version 3) of one definition instead of (frozen, composite). The part
+outputs keep `composite_guard`'s labels, so "frozen" means version 2 and "composite" means
+version 3. Every state, observation column and `max_` diagnostic is compared with
+`np.array_equal`; where the part records bit patterns and device row checks, those too.
+
+| Part | Worlds | Result |
+| --- | --- | --- |
+| W1 trajectories (windowed, 1 ms) | 6 | equal |
+| W2 arms (rhs, Jacobian and 4-step map at the stationary branches; 1 s run) | 8 | 48 of 48 points equal; the 1 s runs bitwise |
+| G2-Q1 cases | 9 | bitwise, device row checks bitwise |
+| Q5: G2-Q1 at 2, 1, 0.5 and 0.25 ms | 8 | bitwise |
+| Q6: G2-Q1's vectorized cohorts | 2 cohorts (10 worlds) | equal |
+| W37 | 1 | bitwise, device row checks bitwise |
+| The 825-node world: the study tissue (the hold's model), closed water, event-free replacement (200 steps) | 3 | bitwise, device row checks bitwise |
+
+The first W2 attempt was OOM-killed at its unit's 5G cap, compiling the right-hand side's
+Jacobian under both declarations; it was rerun alone at 8G.
+
+**Guard 6, tests: pass.** `test_field_floor_pump_v3.py` runs the @3 fixtures (three cells,
+one or two free offsets): version 3 is bitwise version 2, and a checkpoint round-trips and
+resumes bitwise. It is tier 3 (over the 90 s cap). `test_field_floor_held.py` covers a root
+at the floor accepted, one above it refused, and the held solve below; it is tier 2 (52 s).
+All 9 tests pass.
+
+**A solve held just under the cap passes every row check and ledger.**
+`field_floor_held.py` replaces the field solve on the host path. Each solve finds its root,
+then moves the free offsets along a direction until its residual is at 0.95 of version 3's
+cap. The cap is located by bisection against the solve's own test, and every held solve is
+checked to be refused at 0.9 of the cap. The run's host row checks (`check_values`, every
+ledger), device row checks, ledger margins and states are then compared with the normal run.
+"Largest" moves only the free component with the largest incident face current, where the
+floor binds; "uniform" moves every free offset alike.
+
+| State (20 held steps; the unit test 2) | Direction | Held residual, × target | Checks | Largest state change |
+| --- | --- | --- | --- | --- |
+| Preparation world 3 at 0.45 s (its CPU edge) | largest | 2,134–2,166 | all pass | 1.0e-13 |
+| Preparation world 3 at 0.45 s | uniform | 8.0–10.3 | all pass | 4.5e-16 |
+| Run world 1 at 8 s and at 306 s | largest | 1,003–1,005 and 866–867 | all pass | 4.6e-13 |
+| Run world 6 at 8 s and at 306 s | largest | 1,001–1,003 and 973–974 | all pass | 1.7e-13 |
+| Study tissue after 100 steps (the unit test) | largest | about 190 | all pass | below 1e-12 |
+
+"Checks" means every step accepted, `check_values` passing, no device row check failing,
+and the largest ledger ratio unchanged (0.0006–0.0012 of its bound in both runs). State
+changes are relative, over 20 steps, against the normal run; about 1e-13 is the rounding
+spread of two trajectories. In the uniform direction at the run states, the floor does not
+bind: the first refusal along that direction is version 2's own target, so the held
+residuals stay at 0.3–1.0 of it, and the checks pass there too (`held-uniform-run-*`). The
+first uniform runs held at a point past a refused gap, because acceptance along a direction
+need not be one interval; `9181b67` holds at the first boundary seen from the root.
+
+In target units the cap is not one number. On the hold's tissue it lies 8–2,200 times above
+`NEWTON_TARGET`, depending on the component the residual sits on; it is about 190 times on
+the study tissue.
+
+**Positive control: no row check or ledger can see the field residual.** The same edge state
+was held under caps of 1e6, 1e9 and 1e12 ulps instead of 1e3, which is up to 2×10^12 times
+the target. Every step was still accepted, every row check and ledger passed, and the
+largest ledger ratio stayed at 0.0011–0.0012. The state change grew with the cap: 5e-14 at
+1e6, 6.6e-13 at 1e9 and 4e-11 at 1e12 (the free offsets moved by 1.7e-10 V). The ledgers
+check conservation, which the update keeps whatever the potentials. So the pass at 1e3 ulps
+rests on the state change, which is at rounding level, and not on the checks. The field
+solve's own acceptance test is the only guard of its accuracy.
+
+**The turnover pre-screen's worlds have no free offsets.** These are the five sheet70
+discs: 37 cells at s 1.0, 0.6 and 0.3, and 19 cells at s 0.6 and 0.3, on the held-bath
+127-cell sheet under `resolved_pump_replacement@1` over @3. Their residual is exactly 0 with
+no Newton iteration, in all three programs (`margins-turnover.json`). The pre-screen's "no
+refusal" therefore did not depend on the program. E07-v1's registered world is the full
+tissue (172 free offsets), so D147 applies to it.
+
+**A restart under version 3 needs a driver change.** The hold's definitions take their field
+solver from `validation/tissue/resolved_scale_world.py`, which declares version 2, and
+`heredity_pilot.py` does not override it. A restart therefore needs the driver to declare
+version 3 for the preparation and the run, and then a new execution snapshot.

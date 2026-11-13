@@ -4830,8 +4830,15 @@ rename with no numerical change:
   - Version 3 on the hold's edge states (CPU): it accepts every state version 2
     refused, in the vectorized and scalar programs. Its states are bitwise version 2's
     before each refusal. Every refused residual is within 2 ulps of its floor.
-  - Guards 1, 2 and 6 of the note: jaxprs, bindings, runs against version 2, and the
-    tests of @3, including a solve held just under the cap.
+  - Guard 1, on 41 worlds before and after main's S2: the floor's magnitude reaches two
+    multiplications and one comparison per field solve. Every output depends on it only
+    through that comparison's boolean, and the device row checks never read it.
+  - Guard 2: W1, W2, G2-Q1, Q5, Q6, W37 and the 825-node world run equal under both
+    versions (bitwise, with device row checks, where the part records them).
+  - Guard 6: the @3 tests pass. A solve held just under the cap, 866–2,166 times
+    `NEWTON_TARGET` on the hold's states, passes every row check and ledger and moves the
+    state by at most 5e-13 over 20 steps. The checks cannot see the residual even under
+    caps 1e9 times wider, so that bound, not the checks, is what makes the cap safe.
 
 ## Implementation choices and remaining work
 
