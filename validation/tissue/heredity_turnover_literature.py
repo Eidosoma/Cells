@@ -1242,6 +1242,252 @@ def part_analyse(args):
         write_json(Path(args.output) / "summary.json", dict(arms=table, provenance=provenance()))
 
 
+def opportunity(out):
+    """Per newcomer: its coupling to D neighbours while its junctions form (post hoc analysis).
+
+    For each newcomer that arrived H (isolated templates, and donor copies of H cells) and
+    each D-arrival donor copy, over its own records: the closed-form abundance A of its
+    junctions, its D neighbours, its effective junction weight to D and to H neighbours
+    (sum over incident junctions of abundance x voltage gate; 6 is six formed, open
+    junctions) and its own Vm. It answers whether a newcomer that stayed H ever had the
+    neighbours and the coupling that conversion would need.
+    """
+    out = Path(out)
+    p = json.loads((out / "plan.json").read_text())
+    result = json.loads((out / "result.json").read_text())
+    z = np.load(out / "records.npz")
+    t, vm, ab, gate = z["t"], z["vm"], z["abundance"], z["gate"]
+    d = vm > THRESHOLD_V
+    _, edges, _ = sheet()
+    incident = {}
+    for k, (a, b) in enumerate(edges):
+        incident.setdefault(a, []).append((k, b))
+        incident.setdefault(b, []).append((k, a))
+    lag, tau, dt = p["formation"]["lag_s"], p["formation"]["time_constant_s"], p["dt"]
+    events = [e for e in p["events"] if e[0] < result["end_step"]]
+    rows = []
+    for idx, (step, slot, donor, carrier) in enumerate(events):
+        te = step * dt
+        death = next((s_ * dt for s_, sl, *_ in events[idx + 1 :] if sl == slot), None)
+        end_t = result["end_s"] if death is None else death
+        ii = np.flatnonzero((t > te + 1e-9) & (t <= end_t + 1e-9))
+        if not len(ii):
+            continue
+        age = t[ii] - te
+        a = 1.0 - np.exp(-np.maximum(age - lag, 0.0) / tau)
+        ks = [k for k, _ in incident[slot]]
+        js = [j for _, j in incident[slot]]
+        nd = d[np.ix_(ii, js)].sum(axis=1)
+        weight = ab[np.ix_(ii, ks)] * gate[np.ix_(ii, ks)]
+        to_d = np.where(d[np.ix_(ii, js)], weight, 0.0).sum(axis=1)
+        to_h = np.where(~d[np.ix_(ii, js)], weight, 0.0).sum(axis=1)
+        own = d[ii, slot]
+        arrived_d = bool(own[0])
+        formed = age > lag
+
+        def best(mask, a=a):
+            return float(a[mask].max()) if mask.any() else None
+
+        row = dict(
+            carrier=carrier,
+            slot=slot,
+            slot_class=slot_class(slot, p["size"]),
+            kind="iso" if donor is None else "donor",
+            arrived_D=arrived_d,
+            birth_s=te,
+            life_s=float(age[-1]),
+            max_abundance=float(a[-1]),
+            converted=bool(not arrived_d and own.any()),
+            fell_to_H=bool(arrived_d and (~own).any()),
+            max_abundance_with_5plus_D_neighbours=best(nd >= 5),
+            max_abundance_with_4plus_D_neighbours=best(nd >= 4),
+            D_neighbours_at_A_0p2=None if not (a >= 0.2).any() else int(nd[a >= 0.2][0]),
+            D_neighbours_at_A_0p6=None if not (a >= 0.6).any() else int(nd[a >= 0.6][0]),
+            max_weight_to_D=float(to_d.max()),
+            max_weight_to_H=float(to_h.max()),
+            max_own_vm_after_lag_mV=None
+            if not formed.any()
+            else 1e3 * float(vm[ii, slot][formed].max()),
+        )
+        rows.append(row)
+    write_json(out / "opportunity.json", dict(kind="cells.heredity_turnover_opportunity@1",
+                                               arm=out.name, newcomers=rows))  # fmt: skip
+    groups = {}
+    for r in rows:
+        if r["arrived_D"]:
+            key = f"{r['kind']} D arrival"
+        else:
+            where = "rim" if r["slot_class"].startswith("rim") else "interior or centre"
+            key = f"{r['kind']} H arrival, {where}"
+        g = groups.setdefault(key, dict(newcomers=0, converted=0, fell_to_H=0,
+                                        reached_A_0p2_with_5plus_D=0,
+                                        reached_A_0p6_with_5plus_D=0,
+                                        reached_A_0p6_with_4plus_D=0, max_own_vm_mV=None,
+                                        max_weight_to_D=0.0))  # fmt: skip
+        g["newcomers"] += 1
+        g["converted"] += int(r["converted"])
+        g["fell_to_H"] += int(r["fell_to_H"])
+        five, four = (
+            r["max_abundance_with_5plus_D_neighbours"],
+            r["max_abundance_with_4plus_D_neighbours"],
+        )
+        g["reached_A_0p2_with_5plus_D"] += int(five is not None and five >= 0.2)
+        g["reached_A_0p6_with_5plus_D"] += int(five is not None and five >= 0.6)
+        g["reached_A_0p6_with_4plus_D"] += int(four is not None and four >= 0.6)
+        if r["max_own_vm_after_lag_mV"] is not None and not r["arrived_D"]:
+            g["max_own_vm_mV"] = max(g["max_own_vm_mV"] or -1e9, r["max_own_vm_after_lag_mV"])
+        g["max_weight_to_D"] = max(g["max_weight_to_D"], r["max_weight_to_D"])
+    return groups
+
+
+def _osmotic_check(text, o):
+    """The registered osmotic prediction (text) against the observed flag and censor."""
+    flag = o["osmotic"]["first_flag_after_cue_min"] is not None
+    censor = o["osmotic"]["first_censor_after_cue_min"] is not None
+    after_cue = START_S - CUE_OFF_S
+    loss = o["all_h_s"] if o["all_h_s"] is not None else o["end_s"]
+    loss_after_cue_min = (loss + after_cue) / 60
+    if text.startswith("neither"):
+        return not flag and not censor, "neither flag nor censor"
+    if text.startswith("censored at about"):
+        return censor, "censor"
+    if text.startswith("flagged at about"):
+        return flag and not censor, "flag, no censor"
+    if text.startswith("flagged if the collective loss comes after 57 min"):
+        expect = loss_after_cue_min > 57
+        return (flag == expect) and not censor, (
+            f"{'flag' if expect else 'no flag'}, no censor (all H or end at "
+            f"{loss_after_cue_min:.1f} min after the cue)"
+        )
+    if text.startswith("censored if the collective loss comes after 97 min"):
+        expect = loss_after_cue_min > 97
+        return censor == expect, (
+            f"{'censor' if expect else 'no censor'} (all H or end at "
+            f"{loss_after_cue_min:.1f} min after the cue)"
+        )
+    return None, "not evaluated"
+
+
+COLLECTIVE_FALL_CELLS = 5  # Post hoc operational threshold, chosen after the runs.
+
+
+def _newcomer_check(pred, o, a):
+    classes = o["newcomer_classes"]
+    iso_conv = {k: v["converted_from_H"] for k, v in classes.items() if "/ iso /" in k}
+    interior = sum(v for k, v in iso_conv.items() if k.startswith(("interior", "centre")))
+    rim = sum(v for k, v in iso_conv.items() if k.startswith("rim"))
+    if a["kind"] == "iso":
+        if a["s"] == 1.0:
+            return interior >= 1 and rim == 0, f"{interior} interior, {rim} rim conversions"
+        if a["s"] == 0.6:
+            ok = rim == 0 and (interior == 0 if a["k"] == 1 else interior <= 3)
+            return ok, f"{interior} interior, {rim} rim conversions"
+        return interior + rim == 0, f"{interior + rim} conversions"
+    if a["s"] < 0.6:
+        lost = o["d_newcomers_lost_before_replacement"]
+        return lost == 0, f"{lost} D copies fell to H at s {a['s']}"
+    return None, "conditional ('may'); see opportunity"
+
+
+def part_summary(args):
+    """Every finished arm against predictions.json as registered, with the opportunity
+    analysis; writes summary.json (failed items listed exactly as predicted and observed)."""
+    base = Path(args.output)
+    registered = json.loads((base / "predictions.json").read_text())["arms"]
+    arms, failed, missing = {}, [], []
+    for name, pred in registered.items():
+        out = base / "arms" / name
+        if not (out / "outcome.json").exists():
+            missing.append(name)
+            continue
+        o = json.loads((out / "outcome.json").read_text())
+        own = json.loads((out / "predictions.json").read_text())
+        a = parse_arm(name)
+        r = o["residence_s"]
+        groups = opportunity(out)
+        items = {}
+        ap = o["against_prediction"]
+        items["b1"] = (ap["b1"]["observed"] == pred["b1"], pred["b1"], ap["b1"]["observed"])
+        for key in ("j_after_first_turnover", "j_after_second_turnover"):
+            v = ap[key]
+            basis = o["jaccard_after_turnover_basis"][key == "j_after_second_turnover"]
+            items[key] = (v["within"], v["predicted"], f"{v['observed']} ({basis})")
+        if "all_h" in ap:
+            v = ap["all_h"]
+            obs = (
+                None
+                if v["observed_s"] is None
+                else f"{v['observed_s']} s ({v['observed_s'] / r:.3f} R)"
+            )
+            items["all_h_by_s"] = (v["within"], v["predicted_s"], obs)
+        items["d_outside"] = (o["max_d_outside"] == pred["d_outside"], pred["d_outside"],
+                              o["max_d_outside"])  # fmt: skip
+        items["refusals"] = (o["refusal"] is None, 0, o["refusal"])
+        ok, expected = _osmotic_check(pred["osmotic"], o)
+        items["osmotic"] = (ok, f"{pred['osmotic']} [evaluated as: {expected}]",
+                            dict(flag_after_cue_min=o["osmotic"]["first_flag_after_cue_min"],
+                                 censor_after_cue_min=o["osmotic"]["first_censor_after_cue_min"],
+                                 max_excess=o["osmotic"]["max_excess"]))  # fmt: skip
+        fall = o["largest_10s_fall_of_D_beyond_events"]
+        collective = fall["cells"] >= COLLECTIVE_FALL_CELLS
+        text = pred["collective_loss"]
+        if text.startswith("yes"):
+            inside = o["all_h_s"] is not None and 0.25 * r <= o["all_h_s"] <= 0.75 * r
+            items["collective_loss"] = (collective and inside, text,
+                                        f"largest fall {fall['cells']} cells at {fall['at_s']} s; "
+                                        f"all H at {o['all_h_s']} s"
+                                        + ("" if o["all_h_s"] is None else
+                                           f" ({o['all_h_s'] / r:.3f} R)"))  # fmt: skip
+        elif text == "no":
+            observed = (
+                f"largest fall {fall['cells']} cells at {fall['at_s']} s "
+                f"(collective = {COLLECTIVE_FALL_CELLS} or more, post hoc)"
+            )
+            items["collective_loss"] = (not collective, text, observed)
+        else:
+            observed = f"largest fall {fall['cells']} cells at {fall['at_s']} s"
+            items["collective_loss"] = (not collective if a["s"] < 1.0 else None, text, observed)
+        ok, observed = _newcomer_check(pred, o, a)
+        items["newcomers_converting"] = (ok, pred["newcomers_converting"], observed)
+        arms[name] = dict(
+            prediction_copy_equals_registered=own == pred,
+            stop=o["stop"],
+            end_s=o["end_s"],
+            planned_end_s=o["planned_end_s"],
+            residence_s=r,
+            all_h_over_R=None if o["all_h_s"] is None else o["all_h_s"] / r,
+            jaccard_after_turnover=o["jaccard_after_turnover"],
+            jaccard_after_turnover_basis=o["jaccard_after_turnover_basis"],
+            d_inside_after_turnover=o["d_inside_after_turnover"],
+            first_jaccard_below_0p8_s=o["first_jaccard_below_0p8_s"],
+            founders_lost_before_replacement=o["founders_lost_before_replacement"],
+            d_newcomers_lost_before_replacement=o["d_newcomers_lost_before_replacement"],
+            largest_10s_fall=fall,
+            osmotic=o["osmotic"],
+            opportunity=groups,
+            items={k: dict(passed=v[0], predicted=v[1], observed=v[2]) for k, v in items.items()},
+        )
+        for key, (passed, predicted, observed) in items.items():
+            if passed is False:
+                failed.append(dict(arm=name, item=key, predicted=predicted, observed=observed))
+    value = dict(
+        kind="cells.heredity_turnover_literature_summary@1",
+        predictions="predictions.json as registered (2026-11-11T22:09Z, before any segment)",
+        post_hoc=[
+            f"collective loss = a fall of {COLLECTIVE_FALL_CELLS} or more D cells beyond events "
+            "within one 10 s record interval (threshold chosen after the runs)",
+            "opportunity.json per arm: coupling of each newcomer to D neighbours while its "
+            "junctions formed (analysis added after the runs)",
+        ],
+        arms=arms,
+        failed_items=failed,
+        arms_without_outcome=missing,
+        provenance=provenance(),
+    )
+    write_json(base / "summary.json", value)
+    log(f"summary: {len(arms)} arms, {len(failed)} failed items, missing {missing}")
+
+
 PARTS = dict(
     predictions=part_predictions,
     criteria=part_criteria,
@@ -1250,6 +1496,7 @@ PARTS = dict(
     compare=part_compare,
     arm=part_arm,
     analyse=part_analyse,
+    summary=part_summary,
 )
 
 
