@@ -1,6 +1,22 @@
 # Secreted-species transport (design)
 
-**Status: proposed, 13 November 2026, for the lead's and the advisor's review (D142). No code.**
+**Status: accepted by the lead with the advisor, 13 November 2026 (merged at ffc985a). Version 1
+code follows S5a. No code yet.** The main choices stand: one inventory in @3 as neutral species
+rows, uptake as a plain sink (a), and identity on the operator declarations. The lead's
+pre-code checks (probes 2 to 5) were run the same day. Their results, the amendments they bring
+and the lead's rulings are in §11:
+- replacement rates belong to the occupant;
+- the first acceptance is numerical qualification;
+- a face diffusivity is the effective (FRAP) kind;
+- the energy guards of record are the species-only world and a NumPy ΔG test per law, because
+  the shared bound is blind to the species at µM–nM;
+- guard worlds start from a pre-formed profile, a resolved switch-on. A switch-on from the trace
+  is transported exactly, but the host energy ledger refuses it. In a mixed world its onset
+  energy booking is a known limit, so production worlds should start resolved too;
+- RK4 with a diffusing species is guarded, not refused;
+- version 1 refuses a donor copy with different route values, the stationary analysis on the
+  composite, and worlds of more than 7 species.
+
 D150 promoted this feature. The user's words were: "we do have plans to be able to run special
 modes of Cells at differnt timescales, so down the road nothing right now but for sure the
 secreted-species transport now". The decision reads:
@@ -30,13 +46,14 @@ No model, solver or shared function changes.
 
 **Basis.**
 - The [v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §1–§4 (the contract).
-- The S5 design, `docs/CELL_DIVISION_S5_DESIGN.md`, which is **not on main**. It is cited at
-  34edc86 on branch `worktree-agent-aa650be3bffdbdb54`.
+- The [S5 design](CELL_DIVISION_S5_DESIGN.md), on main since 3480082. It was first cited at
+  34edc86 on the S5 branch.
 - The [protein catalogue plan](PROTEIN_CATALOGUE_PLAN.md).
 - The [field-solver interface](FIELD_SOLVER_INTERFACE_DESIGN.md).
 
 **Evidence and log:** `/mnt/workspaces/Cells/secreted-species-20261113-01/` (HANDOFF.md; the
-probe of §1.2). **S** marks our arithmetic or interpretation, as in the division design.
+probe of §1.2 and probes 2 to 5 of §11). **S** marks our arithmetic or interpretation, as in the
+division design.
 
 ## 0. Summary
 
@@ -47,13 +64,14 @@ probe of §1.2). **S** marks our arithmetic or interpretation, as in the divisio
 2. **Transport needs no new law.**
    - @3's face law carries the species. For z = 0 it is Fick's law exactly (§2.1).
    - Held baths are its far-field sinks, already booked as reservoir supply.
-   - **The probe** (§1.2) measured this on the engine as it is, at bab3d06:
-     - the definition parses;
-     - every host check passes;
-     - the face flux equals (D A/L) Δc to 1.0e-14 relative;
-     - the chain matches its exact solution to second order;
-     - every ionic field is bitwise unchanged by the declared species, in that compiled
-       program.
+   - **The probes** (§1.2, §11) measured this on the engine as it is:
+     - the definition parses, and the face flux equals (D A/L) Δc to 1.0e-14 relative;
+     - every ionic field is bitwise unchanged by the declared species, in every probed path:
+       scalar runs, a vector batch, restart and replacement. That holds in those CPU programs;
+     - around a held sphere, the engine matches the exact solution of its finite-volume system
+       to 4.4e-7 of c0 at 1 ms, second order in dt (ratios 4.02 and 4.01);
+     - that solution converges to the closed forms as the shells refine (observed orders 1.58
+       and 1.84). The gap's size is the declared face geometry's (NumPy, §11.3).
 3. **Sources and sinks are writers** of that inventory, through `ENTITY_WRITES` with their own
    accumulators, as injection and the lumen are (§2.2, §2.3):
    - production and first-order clearance at nodes (`scheduled_species_turnover@1`);
@@ -71,13 +89,36 @@ probe of §1.2). **S** marks our arithmetic or interpretation, as in the divisio
    does not apply to it.
 6. **"Absent" means a declared trace background.** @3's spec and domain require every species to
    be positive at every active node. The references include the trace: the equations are linear,
-   so its contribution is an additive solution bounded by c_bg (§1.3).
+   so its contribution is an additive solution bounded by c_bg (§1.3). Probe 3 measured it at
+   0.947 times the trace.
 7. **Version 1 is transport on a static tissue** (§5.5). Its operators refuse volume providers
    (water, the lumen), membrane-state areas and activity closers. Version 1.1 lifts these after
-   the volume ledger and S5a land; the contents themselves already compose (§5).
-8. **Calibration:** Pomreinke et al. 2017 (BMP2b and Chordin; values read) first; Kicheva et al.
-   2007 and Müller et al. 2012 (records verified; full text not readable here) (§6).
-9. **Effort:** about 6 agent-days (range 5–7.5), plus CPU hours for the calibration runs (§9).
+   the volume ledger and S5a land; the contents themselves already compose (§5). Version 1 also
+   refuses these, by the lead's rulings (§11.5):
+   - a donor copy whose route values differ from the slot's;
+   - the stationary analysis on the composite;
+   - worlds of more than 7 species.
+8. **The guards of record** (§7, §11.4).
+   - **Energy.** The shared IMEX energy bound is the ions' and cannot see the species' bookings
+     at µM–nM: it is 1.7 to 1,721 times the species' whole free-energy change. So the energy
+     guards of record are a species-only world and a NumPy ΔG test per law, and the operators'
+     docstrings say so.
+   - **Guard worlds start from a pre-formed profile,** a resolved switch-on. A ramped source is
+     not admissible until a probe measures it.
+     - A switch-on from the trace is transported exactly. But its first step books the face heat
+       2.5–4% off (30% at dt·K_ii 0.30).
+     - Under ARS that is 1–9% of the step's own flows, so the host energy ledger refuses it at
+       every step size probed (dt·K_ii 0.005 to 0.30).
+     - Probe 5 confirmed this cause; its size is smaller than first inferred.
+   - **A known limit.** In a mixed world the same onset booking is a few percent off and passes
+     unseen under the ions' bound. The species-only world and the NumPy ΔG tests certify the
+     laws, and production worlds should start resolved too (§2.6).
+   - **RK4** with a diffusing species is guarded, not refused. From a pre-formed profile it is
+     exact to rounding (§4.2).
+9. **Calibration:** Pomreinke et al. 2017 (BMP2b and Chordin; values read) first; Kicheva et al.
+   2007 and Müller et al. 2012 (records verified; full text not readable here) (§6). Its first
+   acceptance is numerical qualification against closed forms, not a comparison with the data.
+10. **Effort:** about 6 agent-days (range 5–7.5), plus CPU hours for the calibration runs (§9).
 
 ## 1. Entities and ownership
 
@@ -160,6 +201,9 @@ The bitwise result holds for this compiled CPU program. XLA's reduce order over 
 is program-specific (v2 §3, prerequisite (c)), so it is reported, not promised (§7, idle claim
 3).
 
+Probes 2 to 5 extended these checks to every admitted path, and to a radial world against the
+closed forms (§11).
+
 ### 1.3 Positivity: the trace background
 
 @3 requires every species to be positive at every active cell and finite node:
@@ -174,7 +218,8 @@ cell, node, bath and replacement template.
   solution of its own: the response to c_bg in the initial values and at the baths, which stays
   between 0 and c_bg (**S**, maximum principle). Compared quantities are chosen far above it.
 - **A guard shows insensitivity to it** (§7): c_bg changed by 10³ moves every compared quantity
-  by much less than its tolerance.
+  by much less than its tolerance. Probe 3 measured it in the radial world: a trace of 10⁻¹²,
+  10⁻⁹ and 10⁻⁶ of c0 moved the profile by 0.947 times the trace, linear and below c_bg (§11.2).
 - **Rejected:** a positivity-free @3 version. It would be heavy, and μ and the free energy are
   undefined at zero.
 - **Underflow.** A node cleared at rate k with no supply decays as e^{−kt}, reaching the smallest
@@ -284,7 +329,9 @@ why the energy guard needs a species-only world (§7).
 - production P (fmol/s) or clearance k (1/s);
 - changes at exact multiples of dt.
 
-These are per-world control data, never closed-over constants.
+These are per-world control data, never closed-over constants. Cell-side routes are keyed by
+carrier, not slot (§5.2): a slot's controls follow its occupant, and a newcomer takes its
+template's or donor's rates.
 
 **Law, exact over each half-step.** For one node with total production P and total clearance k
 on one species:
@@ -342,6 +389,9 @@ processes, so the cleared amount is shared in proportion to the rate constants.
 | `first_order` | export | k_e n_c (1/s), constitutive export of the pool | moved = n_c (1 − e^{−k_e h}) |
 | `first_order` | import | k_u A c_o: k_u is an uptake velocity (m/s, like a permeability), A the declared patch area | moved = n_o (1 − e^{−κh}), κ = k_u A / V_o |
 | `saturable` | import | A V_max c_o / (K_M + c_o), with V_max in fmol s⁻¹ m⁻² and K_M in mM | n_o' solves b ln(n_o/n_o') + (n_o − n_o') = a h, with a = A V_max and b = K_M V_o: a fixed number of Newton steps, starting from the first-order step at c_o, with the residual checked (a failed solve refuses) |
+
+**Whose rates.** Every route's rates and law parameters belong to the cell's carrier and follow
+it through replacement (§5.2).
 
 **Where the material lands.**
 - An export lands in the patch's outside node. A patch on a held bath is refused: secretion
@@ -478,6 +528,20 @@ primitive replaces the sink as a new law ID, and transport is unchanged.
 - **No ECM entity** (its item 5).
 - **No convection.**
 - **A continuum** (§1.3).
+- **At most 7 species per world** (the lead's ruling, §11.5).
+  - **The refusal.** The two new operators' definition checks refuse a world with more, and the
+    refusal names the cap and its reason. No model changes.
+  - **The reason.** Host-side NumPy sums over the species axis switch to pairwise summation at
+    8 or more terms. Host checks could then add the species in a different order from the
+    device's explicit species-order adds (D148).
+  - So version 1 admits at most 7 species until that is checked.
+- **The onset energy booking in mixed worlds** (a known limit, the lead's ruling, §11.4).
+  - A switch-on from the trace is transported exactly.
+  - Under the ions' bound, the species' onset energy booking is off by a few percent and goes
+    unseen. The species-only world and the NumPy ΔG test per law certify the laws (§7).
+  - Production worlds should also start from a resolved switch-on.
+- **No stationary analysis on the composite** (§8).
+- **No donor copy whose route values differ from the slot's** (§5.2).
 
 ## 3. Charge: neutral
 
@@ -549,7 +613,8 @@ counter-ions. Its effective valence would need a screened-mobility source.
         c' = (I − dt K + ½ dt² K²) c + dt (I − ½ dt K) b,
 
     since ARS(2,2,2)'s explicit weights give (1 − δ)γ = ½.
-  - It is second order: the probe measured a ratio of 4.00.
+  - It is second order: the probe measured a ratio of 4.00, and probe 3's radial world 4.02
+    and 4.01 (§11.2).
 - **Positivity** (**S**).
   - K has a positive diagonal and non-positive off-diagonal entries. The update's matrix is
     entrywise non-negative when dt (K_ii + K_jj) ≤ 2.
@@ -557,21 +622,46 @@ counter-ions. Its effective valence would need a screened-mobility source.
     the ions, a fortiori for the species.
   - So the trace background never goes non-positive under transport. The Euler variant's I − dt K
     needs dt K_ii ≤ 1, which holds as well.
-  - The probe ran six decades (1e-3 against 1e-9 mM) with no refusal.
+  - The probe ran six decades (1e-3 against 1e-9 mM) with no refusal. Probe 4 ran twelve
+    (1e-3 against 1e-15 mM) through the checked step, with no step refused. The runner's host
+    energy ledger refuses that start, a booking matter, not positivity (§11.4).
 - **The species never sets dt.** @3's bound is 2 max Σ D A/(L V) over species. The species' D is
   20 to 20,000 times the ions' smaller, so the ions bind first. For a 10 µm cubic node at
   D = 1e-10 the species alone would allow 83 ms (**S**).
 - **RK4 reference runs** integrate the species with everything else, but under RK4 the face
   electromigration is explicit. Physical faces relax charge in "a few tens of nanoseconds"
   (`surface_imex`'s docstring), and the probe chain's face RC time is about 1 µs (**S**).
-  Compressing 1/k does not help, because the ions' face conductance sets the step. So RK4
-  guards use a **face-free world**:
-  - a passive cell, its finite node joined to it only by a membrane patch, and a held bath;
-  - compressed rates, within @3's RK4 step limit of 100 µs.
+  Compressing 1/k does not help, because the ions' face conductance sets the step.
+- **Decision (13 November): RK4 with a diffusing species is guarded, not refused.** Probe 3 ran
+  the species-only radial world under RK4 at 0.1 ms. No ion diffuses on its faces.
+  - **From a pre-formed profile** it passed every host check. It matched the exact discrete
+    solution to 6.5e-16 of c0, with an energy residual of 3.2e-14 pJ against RK4's bound, the
+    absolute 2e-8 pJ (§11.2).
+  - **From the trace** the host energy ledger refused it, at dt·K_ii 0.005. Probe 5 found the
+    cause shared with ARS: row 1 fails. Its onset step books the face heat 42% high, 1.6e-4 pJ,
+    7,870 times the bound. From step 2 RK4 books to 4e-5 of each step's flows, falling to 1e-13.
+    With no relative allowance the onset error never dilutes, so every later row fails too
+    (§11.4).
+  - **Why guard rather than refuse.** Once the switch-on is resolved, RK4 transports and books
+    the species correctly.
+    - It is the sharpest reference available: exact to rounding against the discrete solution,
+      with no solver tolerance on energy.
+    - An unresolved onset is refused loudly by the ledger, not passed silently.
+    - A refusal would lose that reference, and the guard-world rule (§7) already excludes what
+      the ledger refuses.
+  - **Scope.** Those rows had no ion diffusion on any face. RK4 with ion-carrying faces is not
+    covered here, and it needs nanosecond steps.
+- **So RK4 guards use two worlds,** both started from a pre-formed profile. The second was
+  proposed in this round and accepted (§11.5, item 9):
+  - **a face-free world** for the operators' work: a passive cell, its finite node joined to it
+    only by a membrane patch, and a held bath, with compressed rates within @3's RK4 step limit
+    of 100 µs;
+  - **the species-only radial world**, with zero ion face diffusivity, for transport and the
+    face heat.
 
-  There, the operators' work is checked with no solver tolerance. The alternative is ion face
+  There, the energy is checked with no solver tolerance. The alternative remains ion face
   diffusivities small enough that the face RC time is resolved, as the cleft fixture's narrow
-  access does. Face heat is left to the IMEX species-only world (§7).
+  access does.
 
 ### 4.3 Splitting and the exact half-steps
 
@@ -650,10 +740,54 @@ new code. Checked in `core/cell_replacement_spec.py`:
 - a template's route values replace only routes the slot already has, by a positive value, so
   a newcomer cannot make the species permeant.
 
-**What does not come free: secretion capacity follows the slot, not the occupant.**
-- Version 1's rates are per slot and scheduled. A newcomer secretes only if the schedule says so
-  from the event time.
-- Occupant-indexed rates would read replacement's `occupant_template` (later; open question 9).
+**Rates belong to the occupant: carriers have identity, slots are storage** (S5's rule; the
+lead's decision of 13 November, replacing this note's earlier "rates follow the slot").
+
+**The rule:**
+- The cell-side rates are properties of the carrier that occupies a slot: production, clearance
+  of the cell's pool, export (secretion) and import (uptake), with their law parameters (k_e,
+  k_u, V_max, K_M).
+- **Founders.** Rates are declared per founder carrier.
+- **Isolated template.** A newcomer takes the rates its template declares. The operators'
+  declarations key them by replacement template ID, beside the template's amounts.
+- **Donor copy.** A newcomer takes the donor's rates at the event time, before any event at that
+  time (replacement's own rule for the donor's amounts). In version 1 a donor copy is admitted
+  only when its declared route values, ion and secretion, equal the slot's (the lead's ruling,
+  below).
+- **Never from the previous occupant.** A slot's earlier rates never carry over to the
+  newcomer.
+- **Daughters** of an S5 partition are new carriers with their own declared rates.
+- **Time schedules are keyed by carrier ID.** A carrier's schedule applies while it occupies a
+  slot.
+- **Node-side clearance stays per node.** An outside node is environment, not a carrier.
+
+**How version 1 implements it, with no new state.**
+- Replacement@1's events are prescribed, so the occupant of every slot at every step is known at
+  the definition.
+- Each operator builds each slot's rate controls from its occupants' declared rates, switching at
+  the event step. These are per-world control data, recomputed from the definition at a restart
+  (R7).
+- Triggered lifecycles (milestone 2) will not know their occupants at the definition. Their
+  rates move into state written at birth, by an event map that reads the lifecycle records.
+
+**Guard: the swap.** A founder with nonzero rates is replaced:
+- by a template with other rates, including zero: the slot's controls switch to the template's
+  rates exactly at the event step, and the previous occupant's rate never applies after it;
+- by a donor copy whose route values (ion or secretion) differ from the slot's: refused at the
+  definition (the lead's ruling, below);
+- by an admitted donor copy: the slot takes the donor's rates, which equal its own, so its
+  controls are unchanged across the event.
+
+The guard includes a restart across the event. Probe 2 checked the part that exists today:
+replacement@1 swaps the species' pool (§11).
+
+**A difference, settled for version 1 (the lead's ruling, 13 November).** Replacement@1's own rule
+for **ion route values** in a donor copy is "the slot's own, or a declared route-only template's",
+not the donor's (D139). The rule above gives the donor's rates for these laws.
+- **Version 1 refuses a donor copy whose declared route values (ion and secretion) differ from the
+  slot's.** The refusal is at the definition.
+- In every admitted donor copy the two rules therefore give the same values. D139 is kept, and
+  the occupant rule holds.
 
 **Composition:**
 - replacement@1 composes in version 1, since both read declared volumes;
@@ -713,39 +847,88 @@ reading.
 and distribution during zebrafish dorsal-ventral patterning. *eLife* 2017;6:e25861.**
 [doi:10.7554/eLife.25861](https://doi.org/10.7554/eLife.25861), PMID 28857744, PMC5658070,
 CC BY.
-- **How the values were obtained.** They came through the fetch tool's extraction of the
-  Europe PMC full-text XML, which covered characters 0–200,000 of about 280,000. The figures
-  themselves were not seen. The values below are as the extraction quoted them; check them
-  against the paper's text and figures 3–4 at registration.
+- **How the values were read (re-read 13 November, at the lead's request).** The whole
+  open-access JATS XML was downloaded from Europe PMC (PMC5658070, 281,353 bytes, SHA-256
+  250e9c67…bbae). Its sentences were then extracted by text search, not by the fetch tool's
+  summary. File and digest are in the evidence folder's `sources/`. The figures themselves were
+  not seen. Every value below is a quoted sentence of the text; the earlier extraction's values
+  all match.
 
-- **Values (as stated):**
+- **Values (as stated in the text):**
 
   | Quantity | BMP2b | Chordin |
   | --- | --- | --- |
   | FRAP effective D (± SEM), µm²/s | 2.0 ± 0.4 (Dendra2), 2.6 ± 0.7 (sfGFP) | 6.0 ± 0.7 (Dendra2), 7.3 ± 3.9 (sfGFP) |
-  | FCS local free D, µm²/s | 46 ± 1 | 59 ± 2 |
+  | FCS free D, µm²/s, with the fit's parameters constrained (Figure 4) | 46 ± 1 | 59 ± 2 |
+  | FCS free D, freely fitted (20–30% lower) | 35 ± 2 | 50 ± 3 |
   | FDAP clearance k1, /s | (8.9 ± 0.1) × 10⁻⁵ (half-life 130 min) | (9.6 ± 0.3) × 10⁻⁵ (120 min) |
-  | 50% of maximum at 60 min, from the source | about 30–40 µm | about 50–60 µm |
+  | 50% of maximum at 60 min post-transplantation, from the source boundary | 30–40 µm | 50–60 µm |
 
-  - The authors attribute the FRAP–FCS gap to binding to immobile extracellular molecules.
-  - The source is a clone of 50–75 cells transplanted at sphere stage (5–5.5 hpf). The authors'
-    model blastoderm is 300 µm.
-- **What it tests.** Time-dependent formation, far from steady state: 60 min against 1/k ≈ 3.1 h.
-  - D and k are measured independently, and the normalised profile does not depend on the
-    source's production rate (**S**). So the predicted half-maximum distance at 60 min is a
-    genuine prediction, for two species with different D and similar k.
-  - It also separates the two diffusivities. Version 1 must carry the FRAP D: the FCS D would
-    spread the profile over √(D t) ≈ 400 µm in an hour, wider than the embryo (**S**). The gap is
-    the occupancy door's quantity (§2.5).
-- **Geometry.** A radial reduction (shells as finite nodes, face areas 4πr², volumes 4πr² Δr)
-  around a spherical source.
+  - The authors measured FCS "in very small extracellular volumes far away from cell surfaces".
+    They write that diffusivities "are reduced at the global scale when they move across a field
+    of cells".
+  - The FRAP fits use "a model with uniform production, diffusion, and clearance", constrained by
+    the FDAP k1. **The FRAP D is a model-derived effective D.**
+  - The source is a clone of about 50–75 cells transplanted at sphere stage (5–5.5 hpf).
+  - **The paper fits a model of the same kind.** It fitted "a gradient formation model based on
+    local production, uniform diffusion, and clearance constrained with our measured protein
+    half-lives in a realistic three-dimensional zebrafish embryo-like geometry", and found the
+    best agreement at D = 4 µm²/s (BMP2b) and 6 µm²/s (Chordin). It also simulated gradient
+    formation for 70 min against data at about 70–75 min.
+
+- **Which diffusivity a face carries (declared, at the lead's request).** In version 1 a face
+  diffusivity is an **effective** diffusivity, the FRAP kind.
+  - With no binding, the face law must reproduce how the whole mobile and reversibly bound pool
+    spreads over tissue scales.
+  - An FCS free diffusivity is admissible only together with an explicit binding model (the
+    occupancy primitive, §2.5), never alone on a face.
+  - The two differ about twentyfold for BMP2b (46 against 2.0–2.6 µm²/s, 18–23×) and eight- to
+    tenfold for Chordin (**S**).
+  - Using the free value would spread the profile over √(D t) ≈ 400 µm in an hour, wider than
+    the embryo (**S**).
+  - The clearance constant is likewise the whole pool's (FDAP), consistent with an effective D.
+
+- **The first acceptance is numerical qualification, not a biological test** (the lead's check).
+  - **Can a version 1 run of this target differ from the closed form? No** (**S**, and probe 2,
+    §11):
+    - with uniform D and k, a source and fixed volumes, the species' equations are the linear
+      diffusion–decay problem;
+    - the species is decoupled from the ions (z = 0, impermeant; the ionic fields are bitwise
+      unchanged);
+    - so the engine's solution is the closed-form or discrete solution, to discretisation error.
+  - A comparison with the measured distances would therefore test the diffusion–clearance model
+    and the paper's parameters, not the engine, and the paper has already fitted that model
+    itself. Running it on the engine would come close to reproducing the paper's own model,
+    which is tooling needing the user's approval (D138; D151 keeps that line).
+  - **So the first acceptance is registered as numerical qualification.** The engine is checked
+    against independent closed-form and discrete references in a radial geometry and a
+    non-dimensional regime of this kind (kt below 1, profiles over a few λ). Nothing is compared
+    with the paper's data, and its simulation is not reproduced.
+  - **The references are textbook solutions, not a reference solution of the paper** (D151):
+    - a sphere held at a fixed concentration with first-order decay (the planar Danckwerts form
+      through v = r u, **S**);
+    - the finite-domain steady state;
+    - the exact solution of the same finite-volume system.
+
+    They take none of the paper's data and fit nothing to it.
+  - **A biological comparison against this target becomes informative** when the engine's
+    model holds something the closed form lacks: cell-resolved uptake geometry, binding and
+    occupancy, volume change, or regulation. It is then registered on its own, with the user's
+    approval if it reproduces the paper's model.
+- **Geometry.** A radial reduction around a spherical source: shells as finite nodes with their
+  exact volumes. Each face is declared with the exact spherical-shell conductance between the
+  points it joins: area 4π r_a r_b over length r_b − r_a. This is a requirement on the builders
+  of radial calibration worlds (accepted by the lead, §11.5, item 8).
+  - Planar areas 4πr² at the edges are wrong at first order in Δr/R at the source. They made the
+    probes' continuum gap 10 to 12.5 times larger (§11.3, NumPy only, **S**).
   - @3's faces accept those areas and volumes, so the radial finite-volume scheme needs no new
     code (**S**).
   - Each shell faces the cells within it, as the probe's chain does. A finite node facing no
     membrane has not been tried.
   - The registration fixes the clone radius, the extracellular fraction and the start of
     secretion before any run.
-- **First target.**
+- **Standing.** First target, registered as numerical qualification (above). Its biological
+  comparison is deferred under D151, not closed.
 
 **2. Kicheva A, Pantazis P, Bollenbach T, Kalaidzidis Y, Bittig T, Jülicher F, González-Gaitán M.
 Kinetics of morphogen gradient formation. *Science* 2007;315(5811):521–525.**
@@ -815,10 +998,19 @@ PMID 19741606. **Record verified.**
 - a negative control: a deliberately misbooked accumulator fails the species' row while the ions
   pass.
 
-**Energy:**
+**Energy: the guards of record** (the lead's ruling, §11.5):
+- **The shared bound is not one.** Under the IMEX solvers it is `ENERGY_ATOL_PJ` +
+  `ENERGY_RTOL` × the accumulated heat and work: 2e-8 pJ + 2e-3 × the flows under ARS(2,2,2),
+  and 2e-2 under Euler. In a mixed world those flows are the ions'. In probe 2 the bound was 1.7
+  times the species' whole free-energy change at µM and 1,721 times at nM (§11.1).
+  - **The docstring statement (required).** Each operator's module docstring, and the adapter
+    addition's, says: *under the IMEX solvers the shared energy bound is set by the ions' flows
+    and is blind to these bookings at µM–nM (bound/change 1.7 to 1,721 in a probed mixed world);
+    the species-only world and a NumPy ΔG test per law are the guards of record.*
+  - **Under RK4** the bound is the absolute 2e-8 pJ (`ENERGY_RTOL` 0, which the composite takes
+    from @3). It is not blind, but RK4 is practical only where no ion diffuses on a face (§4.2).
 - **A NumPy ΔG test per law:** booked work equals the exact change of G_s, written out
-  independently. This is the lumen's remedy, since the IMEX energy bound (2e-3 of the flows) is
-  set by the ions.
+  independently. This is the lumen's remedy.
 - **A species-only world.** The ions are quiescent (no pumps or channels, every node at bath
   composition), so the flows and the bound are the species' own, and a booking error shows in
   IMEX.
@@ -827,8 +1019,26 @@ PMID 19741606. **Record verified.**
   - So it uses µM-scale amounts in pL nodes: about 1e-3 fmol and energies of about 1e-2 pJ, some
     5 × 10⁵ times the floor (**S**).
   - This is the guard of the face heat.
-- **RK4 runs of the face-free world** (§4.2), whose energy bound has no solver tolerance
-  (`ENERGY_RTOL` 0 for RK4). They check the operators' work exactly.
+- **The guard-world rule: a resolved switch-on, by a pre-formed profile** (the lead's ruling).
+  Every version 1 guard world that reaches the host energy ledger starts the species from a
+  pre-formed profile, the measured arm. Half the steady profile passes every row under ARS at
+  dt·K_ii up to 0.30, the largest probed, and under RK4 at 0.005 (§11.2, §11.4).
+  - **A ramped source is unmeasured and not admissible** in a version 1 guard world until a
+    probe measures it.
+  - A ramp would resolve the switch-on only if each step changed the receiving node's
+    concentration by a small factor (**S**). A linear ramp from zero still lifts the first node
+    from the trace by many decades in its first step.
+
+  **No bound on dt·D/Δr² is set beyond stability.** Resolved starts passed at every dt·K_ii
+  probed, up to 0.30.
+
+  **Why.** A switch-on from the trace is transported exactly (probe 4), but its first step books
+  the face heat 2.5–4% off, and 30% off at dt·K_ii 0.30. That is 1–9% of the step's own flows,
+  against a bound of 2e-3 of the accumulated flows, so the host energy ledger refuses it at every
+  step size probed, dt·K_ii 0.005 to 0.30 (§11.4).
+- **RK4 runs** of the face-free world and the species-only radial world (§4.2), from pre-formed
+  profiles. Their energy bound has no solver tolerance (`ENERGY_RTOL` 0 for RK4), so they check the
+  operators' work and the face heat to 2e-8 pJ.
 
 **Analytic limits** (independent NumPy references, written from Appendix A, not from engine
 code):
@@ -837,6 +1047,7 @@ code):
 | --- | --- |
 | Fick identity | The face flux equals (D A/L) Δc to rounding (the probe: 1e-14) |
 | Transient chain | Against the matrix exponential, the observed order about 2 at 1, 0.5 and 0.25 ms (the probe: 4.00) |
+| Held sphere with decay | From a pre-formed profile, the engine against the exact solution of the same finite-volume system and against the finite-domain closed form (steady state plus sine series); the switch-on, through the checked step map, against the Danckwerts form (probes 3 and 4, §11.2–§11.3) |
 | Steady gradient with decay | **The discrete-chain steady state** against the engine, to its tolerance. With node spacing h and uniform clearance k, c_i = A r^i + B r^{−i}, where r + 1/r = 2 + k h²/D, with A and B from the source flux and the bath's c_b (**S**) |
 | The continuum limit | The fitted decay length tends to λ = √(D/k) as h/λ → 0, with error O(h²) (**S**) |
 | Turnover | Closed form n(t) = n0 e^{−kt} + (P/k)(1 − e^{−kt}) |
@@ -844,7 +1055,10 @@ code):
 | Mass balance | produced − cleared − bath absorbed = Σ Δn, per species |
 
 **Positivity:**
-- a stiff-front world (source 1e-3 mM into a 1e-12 mM trace) at the planned dt, with no refusal;
+- a stiff-front world (source 1e-3 mM into a 1e-15 mM trace) at the planned dt, through the
+  checked step map: every step accepted and every amount positive (probe 4: 2,000 steps, none
+  refused). The runner's host energy ledger refuses this start (§11.4), so this guard checks the
+  domain at every row, not the energy ledger;
 - background insensitivity (§1.3);
 - the refusal of an export flux beyond the pool, with the prior state kept bitwise.
 
@@ -885,6 +1099,14 @@ Nothing is built for months (D150). The design keeps the door open in four ways:
   finite extracellular amounts as dynamical fields. The operators' rates would enter its
   right-hand side only after the composite admits coupled rates on inner fields; today
   injection's are left out by design. That is a door, not a build.
+  - **Version 1 does not admit it on the composite** (the lead's ruling, 13 November). Probe 2
+    found that it refuses the composite's ID (§11.1).
+  - **Per-species tolerance scaling is required** before trace or nM species use it on plain
+    @3. Probe 2's solve there converged in 5 iterations, and S came out at the bath's trace
+    (1e-9 mM), the steady state of its initial pulse.
+  - **Its Newton test is not scaled per species.** It stops on one absolute correction of
+    1e-10 mM per amount (`NEWTON_TOLERANCE`, with `AMOUNT_UNIT_mM` = 1). That is 10% of a
+    1e-9 mM trace and 1e-4 of 1 nM.
 
 ## 9. Effort and order of work
 
@@ -931,12 +1153,301 @@ volume ledger, S5a or checkpoint continuity, except the adapter addition, which 
 7. Is an **electrophoretic drift valence** (transport-only) wanted later (§3)?
 8. **Calibration access.** Is institutional access available for Kicheva 2007 and Müller 2012?
    Their values could not be read here. Pomreinke 2017 is the first target either way (§6).
-9. Should **secretion capacity follow the occupant** (cell type) rather than the slot after a
-   replacement (§5.2)?
+9. **Decided by the lead (13 November):** rates follow the occupant; carriers have identity,
+   slots are storage (§5.2). Version 1 refuses a donor copy whose declared route values (ion and
+   secretion) differ from the slot's, which keeps D139 and the occupant rule consistent (§5.2,
+   §11.5).
 10. **Catalogue scope:** should it extend to secreted proteins (the granzyme K review, question
     6)?
 11. Should the laws later **draw their energy from finite energy pools** (ATP for synthesis,
     trafficking, endocytosis), making their work a metabolic cost (§2.4)?
+
+## 11. Pre-code checks: results and amendments (13 November)
+
+These are the lead's checks after the design landed. No engine code was changed.
+- **Source:** every probe ran from a clean snapshot of b7ac255 (`snapshot-probe2`).
+- **Execution:** each probe ran as its own unit through `scripts/run_detached.sh`, on CPU 7 with
+  a 3 GB cap. memory.events was all zero for each.
+- **Evidence:** scripts, logs and JSON are in the evidence folder, `probe2/` to `probe5/`.
+
+| Probe | Question | Exit, wall time, peak |
+| --- | --- | --- |
+| 2 (`cells-secreted-probe2`) | Every admitted path; energy-bound visibility | 0, 531 s, 1.79 GB |
+| 3 (`cells-secreted-probe3`) | The radial world's refusal, separated; order in dt; trace; RK4 | 0, 361 s, 1.47 GB |
+| 4 (`cells-secreted-probe4`) | The closed forms | 0, 132 s, 0.96 GB |
+| 5 (`cells-secreted-probe5`) | The cause of the switch-on refusal, row by row | 0, 443 s, 0.68 GB (a first launch stopped at a syntax error in the script at 0 s; its log is kept) |
+
+### 11.1 Probe 2: every admitted path
+
+**The world** is §1.2's chain with five species (four ions and S). It runs as the composite with
+no new operators, which equals @3, and also with replacement@1. Each path compares the S world
+against the same world without S.
+
+| Path | Result |
+| --- | --- |
+| A1: scalar runs | Every ion row of every species-axis field, and every other field, bitwise equal over the whole history. Only face heat and bath work differ, by S's own diffusion heat and supply work |
+| A2: a vector-window batch of three worlds, with device checks (final states compared) | Ion rows bitwise against the batch without S, the same two fields excepted. The batch is bitwise against its reverse and within 1.7e-15 (relative) of each world's scalar run. The device checks pass, with energy relative at most 6.5e-4 |
+| A3: restart at 0.1 s (the S world) | In process and through a written snapshot, the resumed history is bitwise equal to the uninterrupted run's |
+| A5: one replacement event | Ion rows bitwise. Besides the two fields, only the replacement free-energy terms differ, by S's share. **S's pool is swapped exactly:** the occupant's 7.505e-10 fmol (the trace) leaves as waste, the template's 1e-4 fmol is supplied, and the pool after the event is 1e-4 fmol |
+
+These hold for the CPU programs probed (§1.2's caveat).
+
+**Three further results:**
+- **The stationary analysis refuses the composite's ID** (A4): it "supports
+  resolved_pump_tissue@1, resolved_pump_tissue@2, resolved_pump_tissue@3, resolved_pump_water@1,
+  resolved_pump_water@2, not resolved_pump_composite@1".
+  - On plain @3 (the same world) it converged in 5 iterations, with and without S.
+  - The ions agreed within 2.8e-14 mM. S came out at the bath's trace everywhere (1e-9 mM): the
+    steady state, to which the chain's initial pulse of 1e-3 mM drains.
+  - Its Newton test is one absolute tolerance, 1e-10 mM per amount, for every species (§8).
+    Ruling 2 of §11.5 follows.
+- **No fixed species counts.** Every path ran the five-species world with no change. No module on
+  those paths holds a species-count limit, by a search of the snapshot's source: @3's spec and
+  model, the composite, replacement, the batch, the windows, the runner and the stationary
+  analysis.
+- **The shared energy bound is blind to the species** (part C).
+  - In A1's world run for 1 s, the bound at the end was 4.88e-3 pJ: 2e-8 + 2e-3 × 2.44 pJ of
+    flows, nearly all the ions'.
+  - S's whole free-energy change was −2.90e-3 pJ at µM (1e-3 mM in the first node), so
+    bound/change is 1.7.
+  - At nM (1e-6 mM) it was −2.83e-6 pJ, so bound/change is 1,721.
+
+**Part B,** the radial world, was refused by the host energy ledger on every solver tried, RK4
+included. Probes 3 to 5 find out why.
+
+### 11.2 Probe 3: the radial refusal separated; the order in dt, the trace and RK4
+
+**The world.**
+- A sphere of radius R = 10 µm is held at c0 = 1e-3 mM by a bath.
+- Shells are finite nodes out to 130 µm: 24 of 5 µm or 60 of 2 µm. Each shell faces a quiescent
+  cell through a capacitive patch.
+- An outer bath is held at the trace. Decay (k = 1/s) is a face to a 1e-30 mM sink.
+- D = 4e-10 m²/s, so λ = 20 µm.
+- No ion moves: every patch has zero permeability and every face zero ion diffusivity.
+- **A jump start** has every shell at the trace, 1e-15 mM, twelve decades below c0. **A smooth
+  start** has half the steady profile.
+
+| Start, shells | Solver, dt | max dt·K_ii | Host checks | Against the exact discrete solution, of c0 |
+| --- | --- | --- | --- | --- |
+| jump, 2 µm | ARS, 1 ms | 0.30 | refused (energy) | – |
+| jump, 2 µm | ARS, 0.1 ms | 0.030 | refused (energy) | – |
+| jump, 5 µm | ARS, 1 ms | 0.050 | refused (energy) | – |
+| smooth, 2 µm | ARS, 1 ms | 0.30 | pass; energy relative 4.1e-4 | 4.3e-7 |
+| smooth, 5 µm | ARS, 1 ms | 0.050 | pass; 6.5e-6 | 4.45e-7 |
+| smooth, 5 µm | ARS, 0.5 ms | 0.025 | pass; 1.7e-6 | 1.11e-7 |
+| smooth, 5 µm | ARS, 0.25 ms | 0.012 | pass; 4.2e-7 | 2.76e-8 |
+| smooth, 5 µm | RK4, 0.1 ms | 0.005 | pass; energy 3.2e-14 pJ | 6.5e-16 |
+| jump, 5 µm | RK4, 0.1 ms | 0.005 | refused (energy) | – |
+
+- **The cause is the switch-on, not stiffness.** Jump starts are refused at dt·K_ii from 0.030 to
+  0.30, and smooth starts pass at 0.050 and 0.30. A smaller step does not rescue a jump start.
+- **Second order in dt:** the smooth 5 µm errors give ratios 4.02 and 4.01.
+  - The energy residual relative to the flows is second order too: 6.5e-6, 1.7e-6 and 4.2e-7.
+  - It grows with dt·K_ii, reaching 4.1e-4 at 0.30. That is within the 2e-3 bound at every
+    smooth start probed.
+- **The trace** (smooth, 5 µm, 1 ms).
+  - Raising it from 10⁻¹⁵ c0 to 10⁻¹², 10⁻⁹ and 10⁻⁶ c0 moved the profile by 9.47e-13, 9.47e-10
+    and 9.47e-7 of c0. That is 0.947 times the trace: linear and below c_bg (§1.3).
+  - The agreement with the discrete reference, which carries the trace, stayed at 4.4457e-7, and
+    the energy residual at 6.5e-6.
+- **RK4.** Its bound has no solver tolerance: 2e-8 pJ absolute.
+  - From the smooth start it is exact to rounding.
+  - From the jump it is refused, at a dt·K_ii 60 times below the largest passing ARS start.
+  - §11.4 measures why, and §11.5 gives the decision.
+- **The discrete solution against the continuum** (NumPy, jump start).
+  - The steady state differs from the finite-domain closed form by 1.31e-2 of c0 at 2 µm and
+    3.66e-3 at 1 µm.
+  - The transient near the source (r ≤ R + 3λ, at 0.25 and 0.5 s) differs from the
+    infinite-medium form by 1.48e-2 and 4.12e-3.
+  - Both ratios are 3.59, an observed order of 1.84.
+
+### 11.3 Probe 4: the closed forms
+
+**(a) The smooth start through the runner,** with every host check enforced, for 6 s at 1 ms.
+- **The reference** is the continuum finite-domain solution from the same start: the steady state
+  u = (A e^{r/λ} + B e^{−r/λ})/r plus the sine series of v = r u, with eigenvalues D(nπ/L)² + k
+  and 400 terms.
+
+| Shell width | Max error, of c0, at 0.5 s and 6 s | Energy relative |
+| --- | --- | --- |
+| 5 µm (24 shells) | 5.94e-2, 5.79e-2 | 6.5e-6 |
+| 2.5 µm (48 shells) | 1.99e-2, 1.94e-2 | 1.6e-4 |
+
+- **The observed order:** the ratio is 2.98 at every observed time, an order of 1.58 from 5 to
+  2.5 µm. Probe 3's NumPy check gives 1.84 from 2 to 1 µm.
+- **The gap is the declared shells' discretisation, not the engine's transport.** The engine
+  matches the exact discrete solution to 4e-7 of c0 (§11.2).
+- **Its size is the declared face geometry's.** The probes' faces take the area 4πr² at the
+  edge, so the conductance at the curved source boundary is wrong at first order in Δr/R.
+  - Probe 5 (NumPy) declared the exact spherical-shell conductances 4πD r_a r_b/(r_b − r_a) on
+    the same shells instead.
+  - The steady gap then falls by a factor of 10 to 12.5: to 5.6e-3 of c0 at 5 µm, 1.6e-3 at
+    2.5 µm, 1.1e-3 at 2 µm and 2.9e-4 at 1 µm.
+  - The observed orders become 1.77 (5 to 2.5 µm) and 1.90 (2 to 1 µm). With the declared
+    faces, the NumPy steady states reproduce the engine's (5.79e-2 and 1.94e-2).
+  - So the builders of radial calibration worlds declare each face with that conductance (§6;
+    accepted, §11.5, item 8).
+
+**(b) The switch-on through the checked step map,** without the runner's host checks: 2.5 µm,
+1 ms, 2,000 steps. No step was refused.
+
+| Time | Against the exact discrete solution, of c0 | Against the Danckwerts form near the source (r ≤ R + 3λ), of c0 |
+| --- | --- | --- |
+| 0.25 s | 8.6e-7 | 2.19e-2 |
+| 0.5 s | 1.7e-7 | 2.04e-2 |
+| 1 s | 3.1e-8 | 1.97e-2 |
+| 2 s | 4.2e-9 | 1.95e-2 |
+
+**Transport through the switch-on is exact to the discrete solution.** Its gap from the closed
+form approaches the smooth start's at that width: 2.04e-2 against 1.99e-2 at 0.5 s, and 1.95e-2
+against 1.94e-2 at 2 s. The references differ: the infinite-medium form near the source here, and
+the finite-domain series for the smooth start. So the refusal of §11.2 is the ledger's booking of
+the onset, not a transport error.
+
+### 11.4 Probe 5: the cause of the switch-on refusal, row by row
+
+**The inferred cause** (probe 3): in the switch-on's first step the first shell rises from the
+trace by ten decades or more, and that step books its face heat poorly. The runner host-checks
+every accepted step as a row, against 2e-8 pJ + `ENERGY_RTOL` × the accumulated |heat| + |work|.
+At row 1 those flows are the onset step's own.
+
+**Method.**
+- The model's own checked step, the step the runner takes, ran the worlds of §11.2.
+- At every accepted row the runner's host check ran on that row (`surface_pump.checked_rows`,
+  `steps=[k]`). Its verdict matched `model.check_values` on every row compared: the first ten and
+  the first failure.
+- At each row the probe recorded:
+  - the energy residual E, here S's chemical change plus face heat minus bath work;
+  - the accumulated flows and the bound;
+  - the material and reservoir-work ledgers.
+- Per step, it recorded the residual's increment over the step's own flows.
+- **The criterion was written before the run** (HANDOFF). It has five parts, (a) to (e) below.
+
+| Start, shells | Solver, dt | dt·K_ii | Failing rows | Onset step: residual / its flows | Onset: booked against implied face heat, relative | Step 2: residual / its flows | Row 1: residual / bound |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| jump, 5 µm | ARS, 1 ms | 0.050 | 1–7 | 1.04e-2 | −0.025 | 1.8e-3 | 5.2 |
+| jump, 5 µm | ARS, 0.1 ms | 0.005 | 1–14 | 2.12e-2 | −0.041 | 1.5e-3 | 10.5 |
+| jump, 2 µm | ARS, 1 ms | 0.30 | 1–93 | 8.75e-2 | +0.31 | 1.9e-3 | 43.7 |
+| jump, 2 µm | ARS, 0.1 ms | 0.030 | 1–14 | 1.83e-2 | −0.042 | 1.9e-3 | 9.1 |
+| jump, 5 µm | RK4, 0.1 ms | 0.005 | all 500 | 0.177 | +0.42 | 3.7e-5 | 7,870 |
+| smooth, 5 µm | ARS, 1 ms | 0.050 | none | 6.5e-6 | −1.6e-5 | 5.7e-6 | 3.3e-3 |
+| smooth, 2 µm | ARS, 1 ms | 0.30 | none | 4.2e-4 | −1.2e-3 | 2.0e-4 | 0.21 |
+| smooth, 5 µm | RK4, 0.1 ms | 0.005 | none | 2.5e-13 | 6e-13 | 2.4e-13 | 1.8e-8 |
+
+The implied heat is the one the energy identity requires, W − ΔG for the realised step. No step
+was refused by the model's own step.
+
+**The result: the cause is confirmed, but its size is smaller than inferred.**
+- **Its location is fully confirmed.** Row 1 fails, every later step books within the bound, and
+  the other ledgers are clean.
+- **Its size is not "comparable to the step's own flow".** The onset residual is 1–2% of the
+  step's flows at dt·K_ii up to 0.05, 8.7% at 0.30 and 18% under RK4. Row 1 fails by 5–10 times
+  at dt·K_ii up to 0.05.
+- **The pre-set thresholds were met narrowly:** 1.04e-2 against 1e-2 in (b), and a 4.8-fold fall
+  against the 5-fold limit.
+
+All five parts of the criterion hold:
+- (a) every jump start fails first at row 1;
+- (b) the onset step's residual is 1.0–8.7% of its own flows under ARS, 5 to 44 times the
+  bound.
+  - At 0.1 ms it is 1.8–2.1% on both widths, so it does not vanish with dt.
+  - From 1 to 0.1 ms it rose twofold on 5 µm shells and fell 4.8-fold on 2 µm shells, whose
+    1 ms step has dt·K_ii 0.30;
+- (c) from step 2 every step books its heat within the bound: 1.5e-3 to 1.9e-3 of its flows at
+  step 2, and 3e-6 to 1.5e-5 by step 20;
+- (d) the smooth starts pass every row. The largest residual/bound is 0.21, at dt·K_ii 0.30;
+- (e) the local, outside, total and reservoir-work ledgers stay within their bounds at every row,
+  at most 0.70 of the bound. So the residual is the face-heat booking.
+
+**Why rows keep failing after step 1.** The energy ledger is cumulative, so the onset's error
+stays in every later row.
+- Under ARS a row passes once 2e-3 of the accumulated flows exceeds that error: from row 8, 15,
+  94 and 15, in the table's order.
+- RK4's bound has no relative part, so all 500 rows fail. From step 2, RK4 books to 4e-5 of each
+  step's flows, falling to 1e-13.
+
+**The mechanism** (**S**).
+- In the onset step, ln(c_a/c_b) on the source face falls from 27.6 to about 2–6 at the step's
+  end, depending on the step and the shell.
+- ARS books the face heat as J²RT/W, with the weight at a predicted state. RK4 books it as a
+  four-stage quadrature of RT J ln(c_a/c_b).
+- Either way a single step integrates a nearly log-singular path, so the relative error need not
+  shrink with the step. At 0.1 ms, the one smaller step probed, it is about 4% under ARS on both
+  widths.
+
+**What it means.**
+- The refusal is the ledger's booking of an unresolved onset. It is not a transport error
+  (§11.3 (b)), not positivity, and not stiffness.
+- It is a refusal, not a silent error. So guard worlds start from a resolved switch-on (§7).
+- **In a mixed world the same onset error passes unseen,** because the shared bound is the
+  ions' (§11.1). Probe 1's chain had a six-decade front at t = 0 and passed every host check
+  (§1.2). The error misbooks a few percent of one step's species heat, up to a third at dt·K_ii
+  0.30, and leaves transport exact (**S**).
+- **This is a known limit** (the lead's ruling, 13 November; §2.6).
+  - Transport is exact.
+  - Under the ions' bound, the species' onset energy booking is off by a few percent and goes
+    unseen.
+  - The species-only world and the NumPy ΔG test per law certify the laws.
+  - Production worlds should also start from a resolved switch-on.
+
+### 11.5 Amendments and rulings
+
+**From part 1 of the amendments** (7e55705):
+1. **Rates belong to the occupant** (§5.2).
+2. **A face diffusivity is the effective (FRAP) kind** (§2.1, §6).
+3. **The first acceptance is numerical qualification** (§6).
+
+**From these results, as the lead directed:**
+
+4. **The energy guards of record** are the species-only world and a NumPy ΔG test per law.
+   Each operator's docstring states that the shared IMEX bound is blind to these bookings at
+   µM–nM, with bound/change from 1.7 to 1,721 (§7).
+5. **The guard-world rule: a resolved switch-on, by a pre-formed profile** (§7).
+   - Version 1 guard worlds use a pre-formed profile only, the measured arm.
+   - A ramped source is unmeasured and not admissible until a probe measures it.
+   - No bound on dt·D/Δr² is set beyond stability. Resolved starts pass at every dt·K_ii probed,
+     up to 0.30.
+6. **RK4 with a diffusing species is guarded, not refused** (§4.2). This is the decision the lead
+   asked for, from probe 3's two RK4 rows.
+   - From a pre-formed profile it is exact to rounding.
+   - An unresolved onset is refused by the ledger, for the cause that ARS shares.
+
+**Proposed in this round and accepted by the lead** (13 November):
+
+7. **The stiff-front positivity guard runs the checked step map,** because the host ledger
+   refuses an unresolved onset (§7).
+8. **Radial calibration worlds declare exact spherical-shell conductances,** a requirement on
+   their builders (§6). The probes' planar face areas made the continuum gap 10 to 12.5 times
+   larger (§11.3). This rests on NumPy alone; no engine run has used those faces yet.
+9. **The species-only radial world, with zero ion face diffusivity, is the RK4 guard world** for
+   transport and face heat, beside the face-free world for the operators' work (§4.2).
+10. **The onset energy booking in mixed worlds is a known limit** (§2.6, §11.4).
+11. **The two new operators perform the 7-species refusal** (§2.6).
+
+**The lead's rulings (13 November)**, also recorded in the evidence folder's HANDOFF.md:
+1. **Donor copies.** Version 1 refuses a donor copy whose declared route values (ion and
+   secretion) differ from the slot's. That keeps D139 and the occupant rule consistent (§5.2;
+   §10, question 9).
+2. **The stationary analysis is not admitted on the composite in version 1.** Per-species
+   tolerance scaling is required before trace or nM species use the plain @3 path (§8).
+3. **At most 7 species per world in version 1** (§2.6).
+   - The two new operators' definition checks refuse a world with more, with a message naming
+     the cap. No model changes.
+   - The reason: host-side NumPy sums over the species axis switch to pairwise summation at 8
+     or more terms. Host checks could then add the species in a different order from the
+     device's explicit species-order adds (D148).
+   - The cap holds until that is checked.
+4. **The energy guards of record** are those of item 4: the species-only world and a NumPy ΔG
+   test per law, with the docstring statement (§7).
+5. **The ramped-source arm.** Version 1 guard worlds use a pre-formed profile only, the measured
+   arm. A ramped source is not admissible until a probe measures it (§7).
+6. **The mixed-world onset is a known limit.**
+   - Transport is exact.
+   - Under the ions' bound, the species' onset energy booking is off by a few percent and goes
+     unseen.
+   - The species-only world and the NumPy ΔG test per law certify the laws.
+   - Production worlds should also start from a resolved switch-on (§2.6, §11.4).
+7. **This round's five proposals are accepted** (items 7 to 11 above).
 
 ## Appendix A. Equations for the independent references
 
