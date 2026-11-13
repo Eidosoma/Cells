@@ -1,6 +1,6 @@
 {
  "kind": "cells.division.j1_combination_round@1",
- "status": "PROPOSED, revision 2 (13 November 2026), after the lead's and the advisor's review of the first draft. A draft for registration by the lead: not registered, and nothing in it has been run. No run starts until the lead registers this file on main.",
+ "status": "Registered by the lead on main, 13 November 2026, after the advisor's review of two drafts and before any run (user approval of the round: 13 November). Nothing in it has been run.",
  "approval": "The user approved a J1 combination round on 13 November 2026 ('Lets go on your suggestions'). The lead's brief of the same day sets its contents, and the lead's review set revision 2. The advisor reviewed both.",
  "context": {
   "arm_file": "validation/division/j1_diagnostic_arms.json (registered at cfe0fa3); its definitions of A1, A6c, A7a and the descriptors D1-D7 are used unchanged",
@@ -248,9 +248,10 @@
   "total": "about 1.3 CPU-hours (up to 2 with margin)",
   "launch": "/home/robert/Cells/scripts/run_detached.sh NAME 3G --oom-first --wait-headroom 2G --cpus <as the lead assigns> -- <command>, one unit per row above, never nohup or &. Runs come from a clean snapshot of the registered commit, with command.txt and run.log per unit, in /mnt/workspaces/Cells/cell-division-s0b-20261111-01/j1-combination-01/."
  },
- "lead_decisions_requested": [
-  "The reading of 'if the two forms disagree, the question is parked': as drafted, it applies to any eligible point, even when another point passes under both forms. The alternative is to apply it to that point only.",
-  "The f root-search tolerance and the failure rule (one Radau rerun).",
-  "Cores for the two units."
+ "lead_decisions_taken": [
+  "'If the two forms disagree, the question is parked' applies to the point where they disagree: that point is not frozen. Another eligible point that passes under both forms may be frozen.",
+  "The f root search and the failure rule are as drafted: a point that fails to integrate is recorded as failed and may be rerun once with Radau at rtol 1e-10; an alpha with no J1 crossing yields no candidate.",
+  "Cores: j1comb-a1 on CPU 0 and j1comb-pairs on CPU 1, each through scripts/run_detached.sh with a 3G cap, --oom-first and --wait-headroom 2G.",
+  "Runs come from a clean snapshot of main at the commit that lands this round's code (the f calibration helper, the groups and their two tests), which carries this registration unchanged."
  ]
 }

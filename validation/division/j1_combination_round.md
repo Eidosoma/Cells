@@ -1,6 +1,6 @@
 # J1 combination round on R-full: rationale
 
-**Proposed, revision 2 (13 November 2026): a draft for the lead to register. Nothing here has been
+**Registered by the lead on main, 13 November 2026, before any run.** The lead's decisions are in the JSON's `lead_decisions_taken`: a disagreement between the two criterion forms blocks freezing of that point only; runs come from a clean snapshot of main at the commit that lands this round's code.
 run.** The user approved a combination round ("Lets go on your suggestions"). The lead's brief set
 its contents and the lead's review set this revision; the advisor reviewed both. The
 machine-readable file is [`j1_combination_round.json`](j1_combination_round.json); the decisions
