@@ -637,30 +637,46 @@ is its anchor (D057), already counted on the declared layout.
       comparisons, which are booked from capacitor_change's plate charges and patch
       voltages, and every verdict holds, the result is reported and the lead decides.
     - (C) If anything else moves, the work stops, and options 1 and 2 go to the user.
-  - **Option 3's outcome: A, admissible under D148** (s3-fix/opt3-outcome.json, classified
-    by `classify_opt3.py`, written before the runs).
-    - The forward subset is physically bitwise identical: @1 and @2 under RK4 and IMEX,
-      the injection cell, Rm1 at 12 s, and the egg to 420 s.
-    - The egg's ledger is 0 at 420 s, and within one ulp of the plate charge on every one
-      of its 420,001 rows (largest 9.4 × 10⁻³⁸ C).
-    - The regression test and the judge-imports test pass at s3h.
-    - The judges against s3f:
-      - W2 is identical, including the 43 step-map numbers the barrier moved;
-      - W1 changes only in ledger diagnostics of three trajectory items: the electrode
-        error goes to 0 and the global-charge ratios fall. Its six step-map numbers are
-        identical;
-      - Rm1 changes only in its three ledger diagnostics. The global-charge bound ratio
-        rises from 0.0236 to 0.0241 while that error falls;
-      - G2-Q1 changes only in provenance, Q1 to Q7. That includes Q2, run as registered,
-        whose numbers equal the s3f run with the constant supplied, and therefore the
-        recorded ones.
+  - **Option 3's outcome: A under the rule registered at c540fdb.** That rule exempts the
+    residual diagnostics of the electrode, global-charge and energy ledgers; the lead rules
+    on the exemption (s3-fix/opt3-outcome.json, classified by `classify_opt3.py`, written
+    before the runs).
+    - The judge outputs that the exemption covers, all of which changed:
+      - W1: nine paths in three trajectory items. The electrode error goes to 0, and the
+        global-charge bound ratios fall from about 5 × 10⁻⁴ to about 3 × 10⁻⁶;
+      - Rm1: three paths. The electrode error falls from 2.0 × 10⁻²⁰ C to 0, and the
+        global-charge error from 3.6 × 10⁻²⁰ to 1.6 × 10⁻²⁰ C, but the global-charge bound
+        ratio rises from 0.0236 to 0.0241.
+    - The global-charge ledger is the electrodes' transferred charge plus the reservoirs'
+      supplied charge, and its bound uses the same magnitudes. So it depends on the fix only
+      through the electrode accumulator; the supplies are physical and unchanged.
+    - If the lead accepts the exemption, D148's second criterion should name it.
+    - Everything else is identical:
+      - W2 matches entirely, including the 43 step-map numbers the barrier moved, and W1's
+        six step-map numbers match too. So the barrier alone moved the step map's Jacobian;
+        the explicit adds do not;
+      - G2-Q1 differs only in provenance, Q1 to Q7. Q2 was run as registered at s3h, which
+        includes this option. Its numbers equal those of the s3f run with the constant
+        supplied, and so the recorded ones.
+    - The W1 and W2 "before" sides are today's s3f reruns, which reproduce the recorded
+      judged runs.
+    - The forward subset (seven worlds) is physically bitwise identical: @1 and @2 under
+      RK4 and IMEX, the injection cell, Rm1 at 12 s, and the egg to 420 s.
+    - The egg's ledger is 0 at 420 s and within one ulp of the plate charge on every one of
+      its 420,001 rows (largest 9.4 × 10⁻³⁸ C). Here "exact" means within one ulp per
+      row, not 0 on every row.
+    - At s3h, the regression test and the judge-imports test pass (8 tests).
     - The barrier's protection against recomputed stage amounts is dropped. The docstring
-      states that exposure, and the regression test guards it.
-    - Not rerun for option 3 (the subset was what the lead asked for): crossrev's base
-      worlds, the 17 saved runs, W37 and the 825-node world in their own programs, and
-      Q6's cohorts outside the judge. A full forward-guard rerun takes about 1.7 h on
-      CPU 4, and suits the landing round.
-  - **The forward guard, fix against no fix: physical fields are identical**
+      states the exposure, and the regression test guards it.
+    - Not run on option 3's code, all for the landing round:
+      - the forward guard's other parts. Only the s3h side is needed, about 50 minutes on
+        CPU 4, because the s3f side is reusable;
+      - the composite test files: injection, insertion, adapter and replacement vector,
+        last run with the barrier body;
+      - the tier gate;
+      - the step timing and the kernel check. Those below are the barrier version's.
+  - **The barrier version's forward guard (s3g), fix against no fix: physical fields are
+    identical**
     (composite-v2-20261112-01/s3-fix/guard/compare-final.json).
     - Setup: snapshot-s3f (69df9f9) against snapshot-s3g (e32c20a), run by
       `validation/tissue/inplace_fix_guard.py`. Peak memory was 3.2 GB.

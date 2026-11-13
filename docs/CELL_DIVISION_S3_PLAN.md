@@ -102,8 +102,11 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
     step-map consistency numbers by about 10⁻¹⁴ relative, through the Jacobian that
     automatic differentiation takes. Its verdicts are unchanged.
   - Option 3 drops the barrier and keeps the explicit adds. It was registered before its
-    runs, and its outcome is A: admissible under D148. W1's and W2's numbers are
-    unchanged, the egg's ledger is exact, and the forward subset is identical.
+    runs, and its outcome is A under that rule.
+    - W1's and W2's step-map numbers are unchanged, the egg's ledger is exact, and the
+      forward subset is identical.
+    - The rule exempts ledger diagnostics. W1's and Rm1's electrode and global-charge
+      ratios moved, and the lead rules on that exemption.
   - It lands alone, after the hold decision at the L4 gap. S3's egg runs wait for it on
     main (v2 design §3).
 
