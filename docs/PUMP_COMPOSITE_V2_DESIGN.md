@@ -637,6 +637,29 @@ is its anchor (D057), already counted on the declared layout.
       comparisons, which are booked from capacitor_change's plate charges and patch
       voltages, and every verdict holds, the result is reported and the lead decides.
     - (C) If anything else moves, the work stops, and options 1 and 2 go to the user.
+  - **Option 3's outcome: A, admissible under D148** (s3-fix/opt3-outcome.json, classified
+    by `classify_opt3.py`, written before the runs).
+    - The forward subset is physically bitwise identical: @1 and @2 under RK4 and IMEX,
+      the injection cell, Rm1 at 12 s, and the egg to 420 s.
+    - The egg's ledger is 0 at 420 s, and within one ulp of the plate charge on every one
+      of its 420,001 rows (largest 9.4 × 10⁻³⁸ C).
+    - The regression test and the judge-imports test pass at s3h.
+    - The judges against s3f:
+      - W2 is identical, including the 43 step-map numbers the barrier moved;
+      - W1 changes only in ledger diagnostics of three trajectory items: the electrode
+        error goes to 0 and the global-charge ratios fall. Its six step-map numbers are
+        identical;
+      - Rm1 changes only in its three ledger diagnostics. The global-charge bound ratio
+        rises from 0.0236 to 0.0241 while that error falls;
+      - G2-Q1 changes only in provenance, Q1 to Q7. That includes Q2, run as registered,
+        whose numbers equal the s3f run with the constant supplied, and therefore the
+        recorded ones.
+    - The barrier's protection against recomputed stage amounts is dropped. The docstring
+      states that exposure, and the regression test guards it.
+    - Not rerun for option 3 (the subset was what the lead asked for): crossrev's base
+      worlds, the 17 saved runs, W37 and the 825-node world in their own programs, and
+      Q6's cohorts outside the judge. A full forward-guard rerun takes about 1.7 h on
+      CPU 4, and suits the landing round.
   - **The forward guard, fix against no fix: physical fields are identical**
     (composite-v2-20261112-01/s3-fix/guard/compare-final.json).
     - Setup: snapshot-s3f (69df9f9) against snapshot-s3g (e32c20a), run by

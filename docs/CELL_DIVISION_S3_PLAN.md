@@ -101,8 +101,11 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
   - The stop rule triggered all the same. W2's stationary judge moves 43 registered
     step-map consistency numbers by about 10⁻¹⁴ relative, through the Jacobian that
     automatic differentiation takes. Its verdicts are unchanged.
-  - Whether the fix takes a new ID or the allowance is the user's decision. S3's egg runs
-    wait for it (v2 design §3).
+  - Option 3 drops the barrier and keeps the explicit adds. It was registered before its
+    runs, and its outcome is A: admissible under D148. W1's and W2's numbers are
+    unchanged, the egg's ledger is exact, and the forward subset is identical.
+  - It lands alone, after the hold decision at the L4 gap. S3's egg runs wait for it on
+    main (v2 design §3).
 
 ## 3. Numerics and cost
 
