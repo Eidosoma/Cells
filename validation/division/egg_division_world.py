@@ -35,11 +35,14 @@ end. Every cleft is a lumen.
 
 Checks, written to OUTPUT_DIR/egg_division.json:
 * Q1: the run's host checks on every row, and the diagnostics;
-* Q11: the written run replayed. check_values closes every ledger, the record is carried after
-  each partition, and the negative control (the record zeroed) fails the local ledger.
+* Q11: the recorded rows, written and replayed. check_values closes every ledger, the record is
+  carried after each partition, and the negative control (the record zeroed) fails the local
+  ledger.
+The run is windowed (cells.core.windows), because a whole trace would need about 4.2 GiB.
 
-Usage: python -m validation.division.egg_division_world OUTPUT_DIR [--end S]. Run it through
-scripts/run_detached.sh: about 120,000 steps.
+Usage: python -m validation.division.egg_division_world OUTPUT_DIR [--scale X]. X < 1 compresses
+every time, for a trial of the mechanics; 1 is the world. Run it through scripts/run_detached.sh:
+about 120,000 steps.
 """
 
 import argparse
@@ -122,8 +125,17 @@ def add_furrow(raw, *, patch_id, cell, node_id, face_id):
     )
 
 
-def definition(*, end=END, dt=DT, injection=True):
-    """The egg-scale division world as a raw composition (module docstring)."""
+def definition(*, scale=1.0, dt=DT, injection=True):
+    """The egg-scale division world as a raw composition (module docstring); scale compresses
+    every time, each placed on the step grid as k * dt."""
+
+    def at(time):
+        """time x scale on the step grid, as k * dt: the schedules' own test of exactness."""
+        return round(time * scale / dt) * dt
+
+    end, onset, first, second_onset, second = (
+        at(x) for x in (END, ONSET, FIRST, SECOND_ONSET, SECOND)
+    )
     base, _ = egg.egg_definition(end_time=end, dt=dt, observe_every=1.0)
     add_furrow(base, patch_id="furrow", cell="egg", node_id="cleft", face_id="access")
     raw = cs.frozen_definition(base)
@@ -151,13 +163,13 @@ def definition(*, end=END, dt=DT, injection=True):
             )
         )
     r = FURROW_RATE
-    schedules = {"furrow": (ONSET, [(0.0, 0.0), (ONSET, r), (FIRST, 0.0)])}
+    schedules = {"furrow": (onset, [(0.0, 0.0), (onset, r), (first, 0.0)])}
     for d, kids in halves.items():
-        schedules[f"furrow_{d}"] = (None, [(0.0, 0.0), (FIRST, 0.5 * r), (SECOND, 0.0)])
-        schedules[f"furrow2_{d}"] = (SECOND_ONSET, [(0.0, 0.0), (SECOND_ONSET, r), (SECOND, 0.0)])
+        schedules[f"furrow_{d}"] = (None, [(0.0, 0.0), (first, 0.5 * r), (second, 0.0)])
+        schedules[f"furrow2_{d}"] = (second_onset, [(0.0, 0.0), (second_onset, r), (second, 0.0)])
         for g in kids:
-            schedules[f"furrow_{d}_{g}"] = (None, [(0.0, 0.0), (SECOND, 0.25 * r)])
-            schedules[f"furrow2_{d}_{g}"] = (None, [(0.0, 0.0), (SECOND, 0.5 * r)])
+            schedules[f"furrow_{d}_{g}"] = (None, [(0.0, 0.0), (second, 0.25 * r)])
+            schedules[f"furrow2_{d}_{g}"] = (None, [(0.0, 0.0), (second, 0.5 * r)])
     m["operators"] = [
         dict(law="membrane_entity_state@1", populations=[]),
         dict(
@@ -181,10 +193,10 @@ def definition(*, end=END, dt=DT, injection=True):
         dict(law="isopotential_partition@1", divisions=blocks),
         dict(
             law="cytoplasmic_bridge_closure@1",
-            bridges=[dict(bridge, closure="linear", closure_time_s=CLOSURE_S)],
+            bridges=[dict(bridge, closure="linear", closure_time_s=at(CLOSURE_S))],
         ),
     ]
-    e["bridge_controls"] = [dict(junction_id="bridge_1", start_time=FIRST)]
+    e["bridge_controls"] = [dict(junction_id="bridge_1", start_time=first)]
     e["insertion_controls"] = [
         dict(
             membrane_id=k,
@@ -194,9 +206,9 @@ def definition(*, end=END, dt=DT, injection=True):
         for k, (onset, changes) in schedules.items()
     ]
     e["partition_events"] = [
-        dict(division="first", time=FIRST, carriers=["c1", "c2"]),
-        dict(division="second_e1", time=SECOND, carriers=["c11", "c12"]),
-        dict(division="second_e2", time=SECOND, carriers=["c21", "c22"]),
+        dict(division="first", time=first, carriers=["c1", "c2"]),
+        dict(division="second_e1", time=second, carriers=["c11", "c12"]),
+        dict(division="second_e2", time=second, carriers=["c21", "c22"]),
     ]
     if injection:
         m["operators"].append(
@@ -206,11 +218,11 @@ def definition(*, end=END, dt=DT, injection=True):
             )
         )
         pulses = [dict(time=0.0, current_A=0.0)]
-        for k, start in enumerate((6.0, 8.0, 10.0, 12.0)):  # Whole seconds: exact on the grid.
+        for k, start in enumerate(at(x) for x in (6.0, 8.0, 10.0, 12.0)):
             sign = 1.0 if k % 2 == 0 else -1.0
             pulses += [
                 dict(time=start, current_A=sign * INJECTION_A),
-                dict(time=start + 1.0, current_A=0.0),
+                dict(time=round((start + at(1.0)) / dt) * dt, current_A=0.0),
             ]
         e["injection_controls"] = [dict(cell_id="e1", schedule=pulses)]
     return raw
@@ -218,31 +230,42 @@ def definition(*, end=END, dt=DT, injection=True):
 
 def main(argv=None):
     from cells.core.errors import NumericalError
-    from cells.core.runner import run
     from cells.core.specs import parse_spec
-    from cells.io import write_run
+    from cells.core.windows import WindowPolicy, run_windowed
     from cells.models.operators import partition
     from cells.models.registry import get_model
 
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
-    parser.add_argument("--end", type=float, default=END)
+    parser.add_argument("--scale", type=float, default=1.0)
     args = parser.parse_args(argv)
     jax.config.update("jax_enable_x64", True)
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=False)
-    spec = parse_spec(definition(end=args.end))
+    spec = parse_spec(definition(scale=args.scale))
     model = get_model(spec.model)
+    rows, accepted, phases = [], [], []
+
+    def keep(window):
+        """Each window's recorded rows (its observation times), after the window's checks."""
+        rows.append([np.asarray(v) for v in window.history])
+        accepted.append(np.asarray(window.times))
+        phases.append(np.asarray(window.observations.partition_slot_phase))
+
     start = time.perf_counter()
-    result = run(spec)  # Q1: the runner's host checks raise on any failing row.
+    # Q1: windowed execution, whose host checks raise on any failing row of any window. A whole
+    # trace would need about 4.2 GiB at 120,000 steps (runner.trace_bytes).
+    result = run_windowed(spec, WindowPolicy(4096, "observations"), sink=keep)
     seconds = time.perf_counter() - start
-    write_run(output / "run", result)
-    saved = np.load(output / "run" / "trajectory.npz")
-    history = model.STATE_TYPE(*(saved[name] for name in model.STATE_TYPE._fields))
+    fields = model.STATE_TYPE._fields
+    arrays = {k: np.concatenate([r[i] for r in rows]) for i, k in enumerate(fields)}
+    np.savez(output / "trajectory.npz", accepted_times=np.concatenate(accepted), **arrays)
+    saved = np.load(output / "trajectory.npz")  # Q11: the written rows, replayed.
+    history = model.STATE_TYPE(*(saved[name] for name in fields))
     times = np.asarray(saved["accepted_times"])
     steps = np.rint(times / spec.execution.dt).astype(int)
     replay = model.check_values(history, spec, steps)  # Q11: the written run, replayed.
-    after = times > FIRST + 1e-9
+    after = times > round(FIRST * args.scale, 3) + 1e-9
     record = np.asarray(history.partition_retired_membrane_heat_pJ)
     blank = history._replace(
         **{k: np.zeros_like(getattr(history, k)) for k in partition.RECORD.values()}
@@ -254,7 +277,7 @@ def main(argv=None):
         negative = str(error)
     report = dict(
         status=STATUS,
-        end_s=args.end,
+        scale=args.scale,
         dt_s=spec.execution.dt,
         seconds=seconds,
         diagnostics={k: float(v) for k, v in result.diagnostics.items()},
@@ -262,7 +285,9 @@ def main(argv=None):
         record_after_first_partition_pJ=float(np.max(record[after])) if after.any() else None,
         record_before_first_partition_pJ=float(np.max(np.abs(record[~after]))),
         negative_control=negative,
-        final_phase=np.asarray(result.observations.partition_slot_phase)[-1].tolist(),
+        final_phase=np.concatenate(phases)[-1].tolist(),
+        windows=result.resources.get("windows"),
+        rows_replayed=int(len(times)),
     )
     (output / "egg_division.json").write_text(json.dumps(report, indent=1) + "\n")
     print(json.dumps(report, indent=1), flush=True)
