@@ -562,6 +562,32 @@ is its anchor (D057), already counted on the declared layout.
     the present bound.
   - Not caused by this round's change (the crossrev above). The judged Rm1 ran 12 s and
     passed. S3's egg runs wait for (c).
+  - **Approved 13 November as branch work, not to land yet.** It lands alone, in its own
+    round, after the hold decision at the L4 gap and after any restart snapshot is
+    frozen: it changes the hold model's step program, and `source-l4-05` lacks it.
+  - **Stop rule, written before the comparison.** The fix is compared against no fix:
+    snapshot-s3f (69df9f9) against the fix's snapshot.
+    - Coverage: every qualified world in the crossrev base, qualification and injection
+      sets, the 17 saved runs, the 825-node world, and @1 and @2, in their scalar,
+      vmapped and vector-window programs.
+    - Physical, for this rule: every state field except the ledger accumulators, every
+      observation, and every diagnostic except the ledger residuals.
+    - The ledger accumulators are `electrode_charge_transferred_C` and the fields booked
+      from capacitor_change's plate charges and patch voltages: electrode work, image
+      charge, and injection's and replacement's work and energy magnitude.
+    - If any physical bit changes in any qualified world, the fix is not admissible in
+      place. It then needs a new ID or the allowance, which is the user's decision. The
+      comparison is reported, and the work stops there.
+  - **D148, drafted for DECISIONS.md after D147: an in-place fix to shared qualified
+    code.** D147 makes an ID promise its semantics, so a change to a solver's iterations
+    or acceptance takes a new ID. A fix to code that qualified models share, such as
+    `capacitor_change` here, may instead be made in place only when, fix against no fix:
+    - no physical field changes in any qualified world, in any program;
+    - every judge's registered numbers are unchanged;
+    - ledger accumulators change only at the rounding level.
+    The crossrev baseline is then renewed at the landing commit, and 8416a72 stays as the
+    record before it. Otherwise the change takes a new ID (D147), or an allowance where
+    the residual is representable precision; that choice is the user's.
   - The same run gives the engine's energy bound used in (a). The pulses leave about
     0.45 pJ each in the energy residual, scheme error within IMEX's tolerance.
 
