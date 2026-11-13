@@ -86,7 +86,6 @@ from cells.models.operators.cell_replacement import (  # noqa: F401  (the operat
     replaced_charge_magnitude,
     replacement_domain_valid,
 )
-from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: F401  (G2-Q1's judge reads it)
 
 OBSERVER_ID = "resolved_pump_replacement_accepted_grid_readouts@1"
 OBSERVATION_SAMPLING = ionic.OBSERVATION_SAMPLING
