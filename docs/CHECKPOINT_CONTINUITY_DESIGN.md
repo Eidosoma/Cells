@@ -1156,6 +1156,9 @@ The draft decision (number assigned at landing) waits for the user's answers.
     the D148 dumps do;
   - it inspects no Python bytecode;
   - the resumed run carries no per-call hook or check.
+- **Confirmed.** After the lead told the user that it had taken their delegation to cover the
+  attestation question (the probe is within the rule, AGENTS.md unchanged), the user confirmed
+  it on 13 November: "sounds good".
 - **The AGENTS.md sentences are not added.** The provenance rule for a resumed run is carried
   by the decision in Appendix A, which lands with the implementation: the run names both
   sources and runtimes, and the record that admitted it. The user can still ask for the
@@ -1175,6 +1178,10 @@ first landing's scope, vector windows on CPU, is in §13.1.
 > - **The approval.** The user's words were "yes fix checkpoint continuty also". This
 >   approves the versioned checkpoint migration that D145 listed as unapproved tooling. The
 >   public validation package stays unapproved.
+> - **The attestation question.** The user delegated it ("lets go as you see fit otherwise").
+>   After the lead told the user that it had taken the delegation to cover the question (the
+>   case-1 probe is within AGENTS.md's rule, AGENTS.md unchanged), the user confirmed it on
+>   13 November: "sounds good".
 > - **Refusal stays the default.** `load_snapshot` and `load_batch_snapshot` refuse any
 >   change of source or runtime unless given a continuity record
 >   (`cells.checkpoint_continuity@1`).
