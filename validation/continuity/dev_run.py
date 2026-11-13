@@ -57,11 +57,12 @@ def write_json(path, value):
         handle.write("\n")
 
 
-def cohort(end_steps=40):
+def cohort(end_steps=40, backend="cpu"):
     """The probe-5 cohort (two worlds of the seven-cell sheet), over end_steps steps of 1 ms.
 
     World 1 replaces cell_0 at steps 5 and 16, world 2 cells 3 and 4 at step 9; observations
-    every 12 steps and at the end.
+    every 12 steps and at the end. backend="gpu" is for the GPU probe of design section 13.4
+    only; the first landing admits CPU definitions.
     """
     from cells.core.batch import BatchSpec, WorldSpec
     from cells.core.cell_replacement_spec import exact_event_times
@@ -73,6 +74,7 @@ def cohort(end_steps=40):
     def world(events):
         raw = fx.heredity_sheet(1, 0, dt=DT, end_time=end_steps * DT)
         raw["experiment"]["observation_times"] = [k * DT for k in observed]
+        raw["execution"]["backend"] = backend
         templates = [
             fx.template_from_cell(raw, "cell_1", "h"),
             fx.template_from_cell(raw, "cell_3", "d"),

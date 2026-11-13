@@ -20,7 +20,7 @@ from cells.core.specs import ConfigError
 from validation.continuity import (
     admit,
     probe,
-    verify_run,  # noqa: F401  (imports under this checkout)
+    verify_run,
 )
 
 
@@ -254,6 +254,52 @@ def test_lineage_is_checked_not_trusted(tmp_path, monkeypatch):
         admit.lineage_of(tmp_path / "run1")
     with pytest.raises(SystemExit, match="has no manifest.json"):
         admit.lineage_of(tmp_path / "absent")
+
+
+def test_verify_run_walks_the_lineage_back_to_a_fresh_run(tmp_path, monkeypatch):
+    """Two admissions of one run (design section 5): each record repeats its parent's chain."""
+    from tests.unit.test_continuity_loaders import build_record, change_source
+
+    path = cohort_snapshot(tmp_path)
+    change_source(monkeypatch)
+
+    def run(name, parent, record=None):
+        folder = tmp_path / name
+        (folder / "continuity").mkdir(parents=True)
+        provenance = {"operation": "fresh"}
+        if record is not None:
+            target = folder / "continuity" / "record.json"
+            target.write_text(json.dumps(record))
+            provenance = {
+                "operation": "admitted_resume",
+                "continuity_record": str(target),
+                "record_sha256": record["record_sha256"],
+            }
+        (folder / "manifest.json").write_text(json.dumps({"provenance": provenance}))
+        parent = None if parent is None else str(parent)
+        (folder / "inputs.json").write_text(json.dumps({"checkpoint_run": parent}))
+        return folder
+
+    run0 = run("run0", None)
+    first = build_record(path)
+    run1 = run("run1", run0, first)
+    link = {
+        "record": str(run1 / "continuity" / "record.json"),
+        "record_sha256": first["record_sha256"],
+    }
+    second = build_record(path, lineage=[link])
+    run2 = run("run2", run1, second)
+    report = verify_run.Report()
+    verify_run.lineage(run2, second, report)
+    assert report.ok
+    assert [c["check"] for c in report.checks] == [
+        "lineage[0].record",
+        "lineage[1].record",
+        "lineage[2].fresh",
+    ]
+    report = verify_run.Report()
+    verify_run.lineage(run2, build_record(path), report)  # The second without the first.
+    assert not report.ok and not report.checks[0]["ok"]
 
 
 def test_admit_proposes_what_the_loader_and_parse_record_accept():

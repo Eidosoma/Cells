@@ -15,7 +15,7 @@ Scratch copies of src/cells in tmp_path, never trees under /mnt/workspaces:
   | ulp      | the driving loop feeds round 2 a pump table one ulp lower   | refused by O   |
   | builder  | _Round raises later rounds' pump table by 1e-6              | refused by B   |
   | program  | an optimization barrier on dt in the composite step         | refused by P   |
-  | constant | the device-check constants one ulp up                       | refused (P, B) |
+  | constant | the device-check constant arrays one ulp up                 | refused (P, B) |
   | binding  | control_values one ulp lower on the pump table              | refused by B   |
   | observer | one ulp on every floating observation column but times      | refused by H   |
   | missing  | no _Round in core/vector_windows (renamed)                  | cannot decide  |
@@ -95,11 +95,11 @@ EDITS = {
         (
             "models/cell_replacement.py",
             "device_check_constants = _model.device_check_constants\n",
-            "def device_check_constants(spec):  # Acceptance-test edit: one ulp up.\n"
+            "def device_check_constants(spec):  # Acceptance-test edit: arrays one ulp up.\n"
             "    import jax\n\n"
-            "    return jax.tree.map(\n"
-            "        lambda v: np.nextafter(np.asarray(v), np.inf), "
-            "_model.device_check_constants(spec)\n"
+            "    return jax.tree.map(  # A scalar would print in the jaxpr text: arrays only.\n"
+            "        lambda v: np.nextafter(np.asarray(v), np.inf) if np.ndim(v) else v,\n"
+            "        _model.device_check_constants(spec),\n"
             "    )\n",
         )
     ],
@@ -194,22 +194,25 @@ def world(tmp_path_factory):
     return dict(base=base, s0=s0, launcher=Launcher(s0), run0=base / "run0")
 
 
+def admission(world, s1, out):
+    """admit.py propose's arguments: the checkpoint after round 1, S0 against s1."""
+    argv = [
+        "propose",
+        "--checkpoint", world["run0"] / "snapshots" / "round-000001",
+        "--checkpoint-run", world["run0"],
+        "--from-tree", world["s0"],
+        "--to-tree", s1,
+        "--out", out,
+        *WINDOW,
+        "--tool-root", ROOT,
+    ]  # fmt: skip
+    return admit.arguments([str(a) for a in argv])
+
+
 def propose(world, name):
     s1 = tree(world["base"], name, EDITS.get(name, ()))
     out = world["base"] / f"run-{name}" / "continuity"
-    args = admit.arguments(
-        [
-            "propose",
-            "--checkpoint", world["run0"] / "snapshots" / "round-000001",
-            "--checkpoint-run", world["run0"],
-            "--from-tree", world["s0"],
-            "--to-tree", s1,
-            "--out", out,
-            *WINDOW,
-            "--tool-root", ROOT,
-        ]
-    )  # fmt: skip
-    code = admit.propose(args, launcher=world["launcher"])
+    code = admit.propose(admission(world, s1, out), launcher=world["launcher"])
     verdict = json.loads((out / ("proposed.json" if code == 0 else "refusal.json")).read_text())
     return code, verdict, s1, out
 
@@ -291,7 +294,8 @@ def test_a_one_ulp_loop_control_is_refused_by_the_overlap_arguments(world):
     [
         ("builder", {"B"}, {"P0", "P", "H", "texts"}),  # Later rounds only.
         ("program", {"P0", "P", "texts"}, {"B", "H"}),
-        # The texts do not carry the constants' values; their digests and bindings do.
+        # The texts do not carry a closed-over array's values; its digests and bindings do.
+        # (A scalar constant prints as a literal, so the edit leaves the scalar alone.)
         ("constant", {"P0", "P", "B"}, {"H", "texts"}),
         ("binding", {"P0", "B"}, {"P", "H", "texts"}),
         ("observer", {"H"}, {"P0", "P", "B", "texts"}),
@@ -314,19 +318,7 @@ def test_a_tree_without_an_entry_point_cannot_decide(world):
     assert text.count("_Round(") == 2 and text.count("class _Round:") == 1
     path.write_text(text.replace("_Round", "_RoundBuilder"))
     out = world["base"] / "run-missing" / "continuity"
-    args = admit.arguments(
-        [
-            "propose",
-            "--checkpoint", world["run0"] / "snapshots" / "round-000001",
-            "--checkpoint-run", world["run0"],
-            "--from-tree", world["s0"],
-            "--to-tree", s1,
-            "--out", out,
-            *WINDOW,
-            "--tool-root", ROOT,
-        ]
-    )  # fmt: skip
-    assert admit.propose(args, launcher=world["launcher"]) == 3
+    assert admit.propose(admission(world, s1, out), launcher=world["launcher"]) == 3
     refusal = json.loads((out / "refusal.json").read_text())
     assert refusal["verdict"] == "cannot_decide"
     assert "cells.core.vector_windows._Round" in refusal["reason"]
