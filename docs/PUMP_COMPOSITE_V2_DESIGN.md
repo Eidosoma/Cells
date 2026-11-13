@@ -347,9 +347,19 @@ mostly call overhead, so the in-step increase is the number that matters.
 **Decision (lead, 13 November): option (a), capped at 64 field nodes.** A field-input
 provider is refused when the definition's padded field size (cell plus outside capacity)
 exceeds 64, with a message naming (b) and (c). S2–S5 need about 50 nodes or fewer (up to
-16 cells, their clefts and the bath), where the overhead is under 10%. (b) or (c) is decided
-before any larger world uses a field input. Insertion adds two refactorisations per
-half-step (before and after the change), which is small at the cap.
+16 cells, their clefts and the bath). (b) or (c) is decided before any larger world uses a
+field input.
+
+Insertion adds two refactorisations per half-step (before and after the change) and the
+view's capacitor solves in every checked row. Its own cost was measured after it was built
+(one core; median of 200 jitted steps; composite-v2-20261112-01/s2-cost):
+
+| World | Field nodes | Plain composite | Membrane state | Membrane state and insertion |
+| --- | --- | --- | --- | --- |
+| Cleft cell | 3 | 0.93 ms | 0.88 ms (noise) | 1.07 ms (+15%) |
+| 19-cell sheet at the cap, insertion into every patch | 64 | 1.51 ms | 1.70 ms (+13%) | 2.11 ms (+40%) |
+
+For S3's cleft egg (3 nodes, about 4 × 10⁶ steps) insertion adds about 15%.
 
 **Audit before code** (13 November): @3's layout quantities that its binding derives from
 area, capacitance or abundance, and how each is handled:
@@ -476,7 +486,7 @@ Evidence: composite-v2-20261112-01/s2-*, s2b-tests and s2-vmap.
 
 | Guard | Result | Where |
 | --- | --- | --- |
-| Tier-1 smoke test under 20 s for each operator | Membrane state 12 tests, insertion 22 tests, 2–3 s each | `test_membrane_state.py`, `test_membrane_insertion.py` |
+| Tier-1 smoke test under 20 s for each operator | Membrane state 12 tests, insertion 23 tests (at 00672e8), 2–3 s each | `test_membrane_state.py`, `test_membrane_insertion.py` |
 | The energy rule: the total is ½ Σ C V² − ½ Σ C0 V0² | Within 10⁻¹² of the bulk: one patch over 6 declared (C0, V0) × 12 current (C, V); two clamps over 12 states, with the plate charges | smoke |
 | Idle membrane state equals the composition without it | Bitwise: heredity cell, seven-cell sheet, and the 19-cell sheet at the 64-node cap (in place of the 825-node world) | runs |
 | Insertion at r = 0 equals idle | Bitwise (two clamps) | runs |
@@ -488,7 +498,8 @@ Evidence: composite-v2-20261112-01/s2-*, s2b-tests and s2-vmap.
 | Catalogue-metadata invariance | Bindings, batch signature, the step's jaxpr and the trajectory bitwise; the summary and the definition carry the references | smoke, runs |
 | Padded slots | Idle view bitwise; one half-step closes every ledger (two clamps, cleft onset) | smoke |
 | Existing compositions unchanged | Crossrev against 8416a72: base 36/36 jaxprs and 12/12 bindings, qualification 78/78 and 56/56, identical; 17 saved runs bit-identical; composite files pass (contract 15, adapter 5, injection 9 and 3, step checks 37, identity 9, water 15, replacement 17). Unit: 57 min CPU, peak 3.7 GB, memory.events all 0 | s2-crossrev-*, s2-dumps, s2-tests |
-| Targeted rerun at 965a804 | S2 smoke 12 and 22, runs 9/9 (288 s, the cap-edge idle guard included), contract 15, adapter 5, injection 9; the vmap probe. Unit: 6.8 min CPU, peak 2.1 GB, memory.events all 0. Water's and replacement's programs and bindings are unchanged by `CONFLICTS_VIEW`, a class declaration checked only when a composition is built | s2b-tests, s2-vmap |
+| Targeted rerun at 965a804 | S2 smoke 12 and 22, runs 9/9 (288 s, the cap-edge idle guard included), contract 15, adapter 5, injection 9; the vmap probe. Unit: 6.8 min CPU, peak 2.1 GB, memory.events all 0 | s2b-tests, s2-vmap |
+| Final rerun at 00672e8 (the onset masks selected by value) | Crossrev head side against the same frozen outputs: base 36/36 and 12/12, qualification 78/78 and 56/56, identical. This measures water's and replacement's programs and bindings unchanged after `CONFLICTS_VIEW` (603285a). S2 smoke 12 and 23 (worlds with and without an onset have the same shapes and batch signature), runs 9/9 (284 s); insertion's step cost. Unit: 8.4 min CPU, peak 2.2 GB, memory.events all 0 | s2d-crossrev-*, s2d-tests, s2-cost |
 | R-full comparison | S3 | – |
 
 ## 4. Current injection as a general control
