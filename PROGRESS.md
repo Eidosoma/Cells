@@ -58,6 +58,43 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Heredity turnover under the literature newcomer rule: no disc renewed, and B1 failed
+  in all 21 arms, as predicted (11–13 November; development pre-screen, not judged).**
+  Driver `validation/tissue/heredity_turnover_literature.py` on
+  `resolved_pump_replacement@1` (inner `@3`, IMEX ARS(2,2,2), dt 5 ms). 5 ms matches 1 ms
+  within 9 µV, with identical D sets. [Summary](/mnt/workspaces/Cells/heredity-turnover-literature-20261111-01/summary.json),
+  [log](/mnt/workspaces/Cells/heredity-turnover-literature-20261111-01/HANDOFF.md).
+  - **Design:**
+    - the five sheet70 discs that held 70 min, from their state 2 min after the cue;
+    - only disc cells are replaced, oldest first, with residence 1, 3 or 10 times the
+      formation time (fast 2 + 15, central 10 + 30, slow 20 + 60 min);
+    - newcomers are isolated H templates or donor copies of a random neighbour (D139);
+    - predictions were registered before any run.
+  - **Isolated newcomers: none of 317 became D.**
+    - Their junctions form only after their D neighbours have been replaced or pulled to
+      H, and their Vm never rose above −68.9 mV (D starts at −39.4 mV).
+    - Discs ended all H at 0.98 R (s 0.3), 0.59–0.96 R (s 0.6) and 0.23–0.81 R (s 1.0).
+      At s 1.0 that was 15–59 min after the cue, against 70 min without turnover.
+    - Stronger coupling made it worse.
+  - **Donor copies: persistence by copying only.**
+    - D copies stay D, but H cells from outside dividing into the rim erode it.
+    - J after one and two turnovers was 0.73–0.89 and 0.51–0.58 at s ≤ 0.6, and 0.59
+      and 0.43 at s 1.0 with k1. The disc was lost at k3 and k10.
+    - Each disc had one seed.
+  - **Predictions:** 26 registered items failed, listed in `summary.json`. Most are the
+    predicted interior conversions, loss windows and donor J ranges.
+  - **After the predictions were frozen,** a stress segment (formation tau 40 s, s 0.6,
+    six D founder neighbours) converted newcomers at A 0.59–0.68. Conversion needs D
+    neighbours that persist.
+  - **Also:** no refusal, no D outside the disc, no osmotic censor (max excess 14.4%).
+  - **Incidents:** out-of-memory kills stopped three arms (12 November 01:36 machine-wide;
+    19:33 in cells.slice). Each was rerun from the same snapshot; the 19:33 rerun
+    reproduced its completed run bitwise. The end-of-arm analysis peaks near 5 GB RSS, so
+    cap longer arms at 6G or run the analysis separately.
+  - **Engine gap:** replacement over the water inner model (G2 stage 3), needed for
+    donor-copy arms beyond about 95 min of inherited loading.
+  - **Next:** the E07-v1 redesign is the user's decision.
+
 - **Composite v2 §1.1: bound step checks and @3's free-energy owner (13 November).** The
   composite binds its step checks to the definition. @3's bound checks run on each
   operator's `inner_check_spec` adjustment, then each operator's own checks run; water's and
