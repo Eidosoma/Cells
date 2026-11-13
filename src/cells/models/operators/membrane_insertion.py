@@ -87,7 +87,6 @@ LAYOUT_FIELDS = (
     "insertion_onset_patch",  # [membrane] bool.
     "insertion_onset_node",  # [outside] bool.
     "insertion_onset_face",  # [face] bool.
-    "insertion_has_onset",  # shape (0,) or (1,): a static choice.
 )
 
 
@@ -307,7 +306,6 @@ def bind(spec, declaration, schedule):
         layout["insertion_onset_node"][outside.index(k)] = True
     for k in onset_faces:
         layout["insertion_onset_face"][faces.index(k)] = True
-    layout["insertion_has_onset"] = np.zeros(1 if patches else 0)
     sizes = dict(membrane_slot=nm, channel_slot=nc, extracellular_slot=o)
     state = {k: np.zeros([sizes[a] for a in axes]) for k, axes in STATE_AXES.items()}
     state["insertion_opened"] = np.zeros(nm, dtype=np.int64)
@@ -371,8 +369,9 @@ def opened(state, p, *, xp):
 
 
 def masks(state, p, *, xp):
-    """@3's activity masks with the onset entities closed until their onset (static: only for
-    definitions with onsets)."""
+    """@3's activity masks with the onset entities closed until their onset. Without onsets
+    (or once open) they are the declared masks and reference amounts bit for bit; no layout
+    shape depends on the schedule, so worlds with and without onsets batch together."""
     membrane = p.membrane_active & opened(state, p, xp=xp)
     facing = scatter(
         xp.where(membrane, 1.0, 0.0), xp.zeros(p.outside_active.size), (p.membrane_outside,), xp=xp
@@ -392,8 +391,7 @@ def capacitor_view(state, p, *, xp):
     declared layout)."""
     bound = adapter.inner_layout(p)
     values = dict(membrane_capacitance=membrane_state.capacitance(state, p, xp=xp))
-    if p.insertion_has_onset.shape[0]:
-        values |= masks(state, p, xp=xp)
+    values |= masks(state, p, xp=xp)
     return adapter.refresh_field(bound._replace(**values), bound, xp=xp), bound
 
 
@@ -573,11 +571,9 @@ class ScheduledMembraneInsertion(Operator):
     # ------------------------------------------------------------ step parts
 
     def view(self, state, p, q, *, xp):
-        return masks(state, p, xp=xp) if p.insertion_has_onset.shape[0] else {}
+        return masks(state, p, xp=xp)
 
     def event(self, state, control, p, *, xp):
-        if not p.insertion_has_onset.shape[0]:
-            return state, None
         return apply_onsets(state, control, p, xp=xp)
 
     def half_step(self, state, h, control, p, *, xp):

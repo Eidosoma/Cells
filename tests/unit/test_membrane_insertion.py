@@ -283,6 +283,25 @@ def test_padded_slots(world):
         assert np.max(np.abs(residual), initial=0.0) < 1e-15, (world, name)
 
 
+def test_worlds_with_and_without_an_onset_batch_together():
+    """The onset lives in the schedule, which the batch signature does not see: no layout or
+    state shape may depend on it."""
+    with_onset = bind(fx.with_operators(fx.cleft_cell(), fx.furrow_insertion()))
+    open_from_start = bind(
+        fx.with_operators(fx.cleft_cell(), {"furrow": ({}, None, [(0.0, 1e-11)])})
+    )
+    (spec, model, state, p), (other, _, state2, p2) = with_onset, open_from_start
+    assert model.batch_signature(spec.model) == model.batch_signature(other.model)
+    for x, y in ((state, state2), (p, p2)):
+        for name in type(x)._fields:
+            a, b = np.asarray(getattr(x, name)), np.asarray(getattr(y, name))
+            assert a.shape == b.shape and a.dtype == b.dtype, name
+    view, declared = model.view(p2, state2, xp=np), adapter.inner_layout(p2)
+    for name in declared._fields:  # Without an onset the masks are the declared ones.
+        a, b = np.asarray(getattr(view, name)), np.asarray(getattr(declared, name))
+        assert a.tobytes() == b.tobytes(), name
+
+
 def furrow(change):
     raw = fx.with_operators(fx.cleft_cell(), fx.furrow_insertion())
     change(raw)
