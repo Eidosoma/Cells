@@ -74,6 +74,24 @@ VIEW_FIELDS = (
 )
 # Inputs of the derived field arrays: providing one makes the view refresh them.
 FIELD_INPUTS = ("membrane_capacitance", "active", "outside_active", "membrane_active")
+# Activity masks an operator may close (docs/CELL_DIVISION_S5_DESIGN.md §2): close() combines
+# them by conjunction, propagates closure down the entity hierarchy and pads closed slots.
+MASK_FIELDS = (
+    "active",
+    "outside_active",
+    "membrane_active",
+    "face_active",
+    "junction_active",
+    "channel_active",
+)
+# Layout fields close() pads for closed slots (no operator provides them beside a closer).
+PADDED_FIELDS = (
+    "amount_reference",
+    "extracellular_amount_reference",
+    "initial_cell_charge_C",
+    "initial_outside_charge_C",
+    "channel_laws",
+)
 # Option (a) of v2 design §3 (R3): the refresh refactorises every step once a field input is
 # provided, so a field-input provider is refused above this many field nodes (cells plus
 # outside nodes, padded). Measured on one CPU core (composite-v2-20261112-01/s2-r3-cost): +7.5%
@@ -157,12 +175,13 @@ def inner_control(control):
     return Control(*(getattr(control, k) for k in CONTROL_FIELDS))
 
 
-def view(p, state, providers, *, xp=jnp):
+def view(p, state, providers, closers=(), *, xp=jnp):
     """@3's layout at the composite state: declared fields, replaced by the providers'.
 
     providers: operators with VIEW_FIELDS, in declared order (one provider per
     field, checked when the composite is built). Without providers this is the
-    declared layout itself.
+    declared layout itself. closers: operators that close activity masks (CLOSES), each
+    not statically idle; with none the call is exactly the one without closers.
     """
     q = inner_layout(p)
     provided = set()
@@ -170,9 +189,49 @@ def view(p, state, providers, *, xp=jnp):
         values = operator.view(state, p, q, xp=xp)
         q = q._replace(**values)
         provided |= set(values)
+    if closers:
+        q = close(q, state, p, closers, xp=xp)
+        provided |= set(MASK_FIELDS)
     if provided & set(FIELD_INPUTS):
         q = refresh_field(q, inner_layout(p), xp=xp)
     return q
+
+
+def close(q, state, p, closers, *, xp):
+    """q with every closer's masks applied (docs/CELL_DIVISION_S5_DESIGN.md §2).
+
+    * Conjunction: each mask is the running one AND every closer's, in declared order (exact,
+      and independent of order).
+    * Propagation down the entity hierarchy: a patch of a closed cell or node is closed, a
+      population on a closed patch is closed, a contact with a closed endpoint is closed and a
+      face at a closed node is closed.
+    * Padding: a closed slot reads as @3's padded slot, the only kind @3's domain and field
+      solve admit: its reference amounts and its charge anchor are 0 (so its physical amount
+      and its charge are exactly 0 with zero increments), and a closed population carries law
+      code 0.
+    """
+    masks = {k: getattr(q, k) for k in MASK_FIELDS}
+    for operator in closers:
+        for name, value in operator.closures(state, p, q, xp=xp).items():
+            masks[name] = masks[name] & value
+    cell, node = masks["active"], masks["outside_active"]
+    membrane = masks["membrane_active"] & cell[q.membrane_cell] & node[q.membrane_outside]
+    channel = masks["channel_active"] & membrane[q.channel_membranes]
+    junction = masks["junction_active"] & cell[q.junction_sender] & cell[q.junction_receiver]
+    face = masks["face_active"] & node[q.face_sender] & node[q.face_receiver]
+    return q._replace(
+        active=cell,
+        outside_active=node,
+        membrane_active=membrane,
+        channel_active=channel,
+        junction_active=junction,
+        face_active=face,
+        amount_reference=xp.where(cell, q.amount_reference, 0.0),
+        extracellular_amount_reference=xp.where(node, q.extracellular_amount_reference, 0.0),
+        initial_cell_charge_C=xp.where(cell, q.initial_cell_charge_C, 0.0),
+        initial_outside_charge_C=xp.where(node, q.initial_outside_charge_C, 0.0),
+        channel_laws=xp.where(channel, q.channel_laws, 0),
+    )
 
 
 def control_view(control, state, p, factors, *, xp=jnp):

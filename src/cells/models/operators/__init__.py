@@ -12,6 +12,7 @@ from cells.models.operators.k_anion_symport import KAnionSymport
 from cells.models.operators.membrane_insertion import ScheduledMembraneInsertion
 from cells.models.operators.membrane_state import MembraneEntityState
 from cells.models.operators.osmotic_water import OsmoticWater
+from cells.models.operators.partition import IsopotentialPartition
 from cells.models.operators.restricted_lumen import RestrictedCleftLumen
 
 OPERATORS = {
@@ -24,5 +25,6 @@ OPERATORS = {
         check_declarations(MembraneEntityState)(),
         check_declarations(ScheduledMembraneInsertion)(),
         check_declarations(RestrictedCleftLumen)(),
+        check_declarations(IsopotentialPartition)(),
     )
 }

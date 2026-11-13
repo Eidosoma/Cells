@@ -150,8 +150,9 @@ close (`active`, `outside_active`, `membrane_active`, `face_active`, `junction_a
 `channel_active`). Its `closures(state, p, q, *, xp)` returns {mask: open}. Then:
 - **Conjunction.** The view's mask is the declared mask AND each closer's mask, in declared
   order. Boolean conjunction is exact and independent of order.
-- **Closers or a provider, never both.** A composition in which one operator provides a mask
-  (insertion@1) and another closes it is refused.
+- **Closers or a provider, never both** (as built: no provider of any mask or padded field
+  beside a closer). Propagation rewrites every mask and padding rewrites the padded fields, so
+  a composition with a closer and a provider of any of them (insertion@1) is refused.
 - **A closer counts as the mask's provider for `CONFLICTS_VIEW`.** An operator that reads a
   mask from the declared layout (replacement@1 and @2) is refused beside any closer of it
   (§5.5).
@@ -166,10 +167,13 @@ close (`active`, `outside_active`, `membrane_active`, `face_active`, `junction_a
 - **Padded-slot semantics (adapter).** When any closer is present, the view presents every
   closed slot as @3 padding:
   - `amount_reference` and `extracellular_amount_reference` read 0;
+  - the charge anchors `initial_cell_charge_C` and `initial_outside_charge_C` read 0. As
+    built: @3's field solve requires every inactive node to carry zero charge, and a pending
+    daughter's declared anchor is f q_P. Insertion@1 never met this, because its onset rules
+    force a zero anchor;
   - `channel_laws` reads 0.
 
-  The adapter's `VIEW_FIELDS` gains `amount_reference` and `channel_laws`. This is the only
-  place that knows @3's names.
+  The adapter lists these as `PADDED_FIELDS`. This is the only place that knows @3's names.
 - **Field inputs.** A closer of `active`, `outside_active` or `membrane_active` counts as a
   field-input provider. It therefore triggers the device refresh, the 64-node cap and the
   refusal of floating components.
@@ -229,8 +233,12 @@ close (`active`, `outside_active`, `membrane_active`, `face_active`, `junction_a
   - Anchors stay immutable (D057), and active slots keep small increments.
 - **Exactness for f = a_k = ½.**
   - Halving is exact in binary floating point, and the complement Δ − ½Δ is exact (Sterbenz).
-  - So the event writes bitwise-identical daughter states, and every booking is an exact
-    zero.
+  - So the event writes bitwise-identical daughter states. The moved transfers and the
+    chemical part of the work are exact zeros.
+  - As built, two bookings are rounding-level rather than zero. They are the capacitor
+    energy's change ΔU and the clamps' plate-charge change, because each is a difference of
+    two solves over different topologies. In the compact world these are about 2e-17 pJ
+    against U ≈ 0.05 pJ, and about 2e-28 C.
   - Potentials solved afterwards may differ between the daughters in the last bit, by
     elimination order (§7.3).
 - **@3's definition charge check.**
@@ -736,7 +744,8 @@ there too.
 ### 7.3 Analytic limits
 - **Symmetric division.** f = a_k = ½ gives:
   - daughters' states bitwise identical at the event;
-  - every booking an exact 0;
+  - the moved transfers and the chemical part of the work exact zeros, with ΔU and the image
+    charge at rounding level (§3.2);
   - potentials equal to rounding afterwards. Elimination order can differ by an ulp, so the
     trajectories are equal to rounding, not bitwise.
 - **Asymmetric division.** The unmixing work equals RT Σ δ²/(2 n f (1 − f)) to leading order,
