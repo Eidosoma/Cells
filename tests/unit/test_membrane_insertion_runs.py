@@ -141,12 +141,13 @@ def test_a_resolved_access_books_the_onsets_charging_heat():
       check holds far below it."""
     from cells.core.errors import NumericalError
 
-    def onset_world(dt, onset, end):
+    def onset_world(dt, onset_steps, end_steps):
+        onset, end = onset_steps * dt, end_steps * dt  # Exact multiples of dt.
         base = fx.cleft_cell(end=end, observation_times=[0.0, onset, end], access_area_m2=1e-9)
-        base["execution"].update(dt=dt, max_steps=int(round(end / dt)) + 8)
+        base["execution"].update(dt=dt, max_steps=end_steps + 8)
         return parse_spec(fx.with_operators(base, fx.furrow_insertion(rate=0.0, onset=onset)))
 
-    coarse = onset_world(1e-3, 0.002, 0.004)
+    coarse = onset_world(1e-3, 2, 4)
     model = get_model(coarse.model)
     state, p = model.initial_values(coarse)
     control = model.CONTROL_TYPE(*(np.asarray(v[0]) for v in cs.control_values(coarse, [0.002])))
@@ -160,7 +161,7 @@ def test_a_resolved_access_books_the_onsets_charging_heat():
     assert residual == pytest.approx(-heat, rel=0.1)
     with pytest.raises(NumericalError, match="energy"):
         run(coarse)
-    fine = run(onset_world(1e-7, 1e-5, 6e-5))  # 500 steps after the onset, about 10 RC times.
+    fine = run(onset_world(1e-7, 100, 600))  # 500 steps after the onset, about 10 RC times.
     assert fine.diagnostics["max_energy_balance_error_pJ"] < 1e-2 * heat
     face_heat = np.asarray(fine.history.face_dissipated_energy_pJ)[-1].sum()
     assert face_heat == pytest.approx(heat, rel=0.1)  # The access booked the charging heat.
