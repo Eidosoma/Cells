@@ -59,7 +59,7 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
 - Actions `study`, `reference` and `judge` follow `injection_rm1.py`. The judge refuses
   an unregistered protocol or a source outside a clean execution snapshot.
 
-## 2. The prerequisites from S2 (done this round, guards pending CPU 4)
+## 2. The prerequisites from S2 ((a) and (b) done and guarded on 13 November; (c) open)
 
 - **(b) Injection at the view.** With a field-input provider, the composite passes the view
   to injection's half-steps (`BOOKS_AT_VIEW`). Injection then books the clamps' plate
@@ -72,18 +72,26 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
   composition, which is R-full's convention. The access then charges the patch to about
   Vm and dissipates ½ C_on Vm², whatever its resistance. That is the physics: charging an
   uncharged patch through a resistor.
-  - At the egg's access (about 0.94 µS from A/L = 1.54 × 10⁻⁶ m) the time constant
-    C_on / G_acc is about 7 µs, so no admitted step resolves it. Booking the charge as an
-    event would be the τ → 0 limit, wrong for a slow access. So neither is done.
-  - The unbooked part is bounded by ½ C_on Vm² ≈ ½ × 6.2 pF × (9.9 mV)² ≈ 3 × 10⁻⁴ pJ.
-    The host energy bound at 420 s is rtol × flows ≈ 2 × 10⁻³ × 3 × 10⁶ pJ ≈ 6 × 10³ pJ,
-    so the unbooked part is about 5 × 10⁻⁸ of it.
-  - The continuing insertion perturbs the cleft by about ½ ΔC Vm² ≈ 10⁻⁷ pJ per step,
-    under 1 pJ over the run.
+  - At the egg's access (0.94 µS from A/L = 1.54 × 10⁻⁶ m), the time constant
+    C_on / G_acc is 6.6 µs, so no admitted step resolves it. Booking the charge as an event
+    would be the τ → 0 limit, wrong for a slow access. So neither is done.
+  - The unbooked part is bounded by ½ C_on Vm² = ½ × 6.2 pF × (9.95 mV)² = 3.1 × 10⁻⁴ pJ.
+    The engine's host energy bound at 420 s, measured on the uncleaved Rm1 egg, is
+    4.5 × 10³ pJ, so the unbooked part is 7 × 10⁻⁸ of it.
+  - The continuing insertion perturbs the cleft by ½ ΔC Vm² = 1.5 × 10⁻⁷ pJ per 0.5 ms step,
+    0.43 pJ to J1 (R-full's values: composite-v2-20261112-01/s3-prereq).
   - Guards: one coarse step leaves exactly that heat unbooked; resolved steps (0.1 µs at
     a 5 µs access) book it in the access; a small world whose energy bound cannot cover
     it is refused. The numbers above are checked with R-full's functions before the
     plan is final.
+
+- **(c) Found while measuring (a), open: injection's electrode-ledger drift at egg scale.**
+  The uncleaved Rm1 egg with its two pulses, run to 420 s, fails the host electrode ledger
+  (8.4 × 10⁻¹⁷ C at 420 s, 5 times its bound; a linear drift of 7 × 10⁻²² C per step from
+  about 300 s). Without the electrode the residual is exactly 0. The cause is not isolated
+  (details: v2 design §3). S3 runs 2100 s with 210 pulses, so its egg runs wait for (c):
+  diagnose, then fix the booking or bound it with a justified allowance. That is the
+  first S3 task, before the lumen operator.
 
 ## 3. Numerics and cost
 
@@ -139,11 +147,13 @@ implicit membrane–cleft term would then be a new solver version (division desi
 
 ## 5. Order of work (CPU 4, through run_detached)
 
-1. The lumen operator and its guards.
-2. The engine definition, and `compare` against R-full's build.
-3. Development runs: the step study, and R-full's reference term per quantity.
-4. The registration draft, to the lead: references, terms, tolerances, judged step.
-5. The judged run, once.
+1. Prerequisite (c): the electrode-ledger drift with injection at egg scale, diagnosed
+   and fixed or bounded (a 420 s run reproduces it in 9 min).
+2. The lumen operator and its guards.
+3. The engine definition, and `compare` against R-full's build.
+4. Development runs: the step study, and R-full's reference term per quantity.
+5. The registration draft, to the lead: references, terms, tolerances, judged step.
+6. The judged run, once.
 
 ## 6. Choices for review
 
