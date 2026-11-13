@@ -122,7 +122,7 @@ class Bound:
             name = self.channels[j]
             populations[name] = rops.Population(
                 self.patches[int(p.channel_membranes[j])],
-                abundance_reference=float(p.channel_abundance[j]),
+                abundance_reference=float(declared_units(p, j)),
                 abundance_increment=float(state.population_abundance_increment[j]),
                 gates=tuple(float(g) for g in np.asarray(state.channel_gate)[:, j]),
             )
@@ -188,6 +188,15 @@ class Bound:
         return new, bool(ok)
 
 
+def declared_units(p, j):
+    """A population's declared abundance in units, as membrane_entity_state@1 counts it: @3's
+    channel_abundance (per area, a0) x the patch's declared area A0 x the reference density."""
+    patch = int(p.channel_membranes[j])
+    return (
+        p.channel_abundance[j] * p.membrane_area[patch] * p.population_reference_density_per_m2[j]
+    )
+
+
 HISTORY = (
     "membrane_transferred_fmol",
     "membrane_heat_pJ",
@@ -240,12 +249,7 @@ def compare(world, d, before, after, result):
             out[key] = ratio(value, v[key], mag[key])
     moved = np.asarray(after.partition_moved_fmol) - np.asarray(before.partition_moved_fmol)
     out["moved_fmol"] = max(
-        ratio(
-            moved[:, index[c]],
-            v["moved_fmol"][c],
-            np.abs(moved[:, index[c]]) + np.abs(v["moved_fmol"][c]),
-        )
-        for c in v["moved_fmol"]
+        ratio(moved[:, index[c]], v["moved_fmol"][c], mag["moved_fmol"][c]) for c in v["moved_fmol"]
     )
     area = np.asarray(p.membrane_area) + np.asarray(after.membrane_area_increment_m2)
     capacitance = np.asarray(p.membrane_capacitance) + np.asarray(
@@ -314,7 +318,7 @@ def compare(world, d, before, after, result):
             mine = w.channels.index(name)
             theirs = result.snapshot.populations[name]
             total = theirs.abundance_reference + theirs.abundance_increment
-            engine = p.channel_abundance[mine] + after.population_abundance_increment[mine]
+            engine = declared_units(p, mine) + after.population_abundance_increment[mine]
             abundance = max(abundance, ratio(engine, total, abs(engine) + abs(total)))
             g = np.asarray(after.channel_gate)[: len(theirs.gates), mine]
             gates = max(gates, ratio(g, theirs.gates, 1.0))
@@ -328,7 +332,17 @@ def perturbed(world, rng):
     fields = {k: np.array(getattr(s, k), copy=True) for k in type(s)._fields}
     cells = [world.cells.index(c) for c in ("cell_0", "cell_1")]
     amounts = np.asarray(world.p.amount_reference)[:, cells]
-    fields["amount_increment"][:, cells] = amounts * rng.uniform(-1e-3, 1e-3, amounts.shape)
+    # Increments within @3's domain: random content changes of 1e-3 of each amount, made
+    # electroneutral by M, the permeant anion, plus a net charge within 10% of the cell's
+    # declared charge. The potentials stay within a few mV of rest.
+    z = np.ravel(world.p.valence)
+    delta = amounts * rng.uniform(-1e-3, 1e-3, amounts.shape)
+    m = list(world.spec.model.species_ids).index("M")
+    delta[m] += np.sum(z[:, None] * delta, axis=0)  # z_M = -1: the content is now neutral.
+    charge = np.abs(np.asarray(world.p.initial_cell_charge_C)[cells])
+    k = list(world.spec.model.species_ids).index("K")
+    delta[k] += rng.uniform(-0.1, 0.1, len(cells)) * charge / CHARGE_PER_FMOL
+    fields["amount_increment"][:, cells] = delta
     live = [world.patches.index(k) for k in ("membrane_0", "membrane_1")]
     fields["membrane_transferred"][:, live] = rng.normal(0, 1e-4, (amounts.shape[0], len(live)))
     fields["membrane_dissipated_energy_pJ"][live] = rng.uniform(0, 1e-5, len(live))
