@@ -169,6 +169,43 @@ def test_with_a_capacitance_view_injection_books_the_views_plate_charges():
     assert np.max(np.abs(model.balances(declared, p)["electrode"])) > 1e-20
 
 
+def test_injection_across_a_masked_furrow_and_its_onset():
+    """S3's configuration: pulses into the cleft cell while its furrow and cleft are masked,
+    then after the onset opened them. The view carries the masks, so each half-step books
+    the bath's plate charge (one clamp: minus the injected charge) and every ledger closes."""
+    from tests import membrane_insertion_fixtures as mfx
+
+    raw = mfx.with_operators(mfx.cleft_cell(), mfx.furrow_insertion())
+    cell = raw["model"]["cells"][0]["id"]
+    raw["model"]["operators"].append(
+        dict(law=LAW, electrodes=[dict(cell_id=cell, carriers={"K": 0.4912, "M": 0.5088})])
+    )
+    raw["experiment"]["injection_controls"] = [
+        dict(cell_id=cell, schedule=[dict(time=0.0, current_A=0.0)])
+    ]
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    _, insertion, injection = model.operators
+    current = 1e-12
+    control = SimpleNamespace(injection_current_A=np.array([current]))
+    opening = SimpleNamespace(insertion_rate_m2_s=np.zeros(2), insertion_open=np.ones(2))
+    for opened in (False, True):
+        if opened:
+            state, ok = insertion.event(state, opening, p, xp=np)
+            assert ok and state.insertion_opened[1] == 1
+        view = model.view(p, state, xp=np)
+        assert bool(view.membrane_active[1]) is opened and bool(view.outside_active[1]) is opened
+        after, ok = injection.half_step(state, DT / 2, control, p, xp=np, view=view)
+        assert ok
+        booked = after.electrode_charge_transferred_C - state.electrode_charge_transferred_C
+        np.testing.assert_allclose(booked[0], -current * DT / 2, rtol=1e-10)
+        assert booked[1] == 0.0  # The cleft is not held.
+        for name, residual in model.balances(after, p).items():
+            assert np.max(np.abs(residual), initial=0.0) < LIMITS.get(name, 1e-15), (opened, name)
+        state = after
+
+
 def test_the_view_reaches_injection_only_with_a_field_input():
     from cells.models.operators import OPERATORS
 

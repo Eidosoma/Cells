@@ -89,9 +89,56 @@ def test_injection_composes_with_insertion():
     pulses = [(0.0, 1e-12), (0.001, 0.0), (0.002, -1e-12), (0.003, 0.0)]
     schedule = [dict(time=t, current_A=i) for t, i in pulses]
     raw["experiment"]["injection_controls"] = [dict(cell_id=cell, schedule=schedule)]
-    result = run(parse_spec(raw))  # Host checks on every accepted row.
+    raw["experiment"]["observation_times"] = [0.0, 0.002, end]
+    spec = parse_spec(raw)
+    result = run(spec)  # Host checks on every accepted row.
     history = result.history
     assert np.asarray(history.membrane_area_increment_m2)[-1][0] > 0
     assert np.all(np.asarray(history.injection_image_charge_C)[-1] > 0)
     charge = np.asarray(history.injection_charge_C)[-1][0]
     assert charge == pytest.approx(0.0, abs=1e-27)  # +1 pA and -1 pA for 1 ms each.
+    checkpoint = result.checkpoint_at(0.002)  # Restart between the pulses, mid-insertion.
+    resumed = run(spec, checkpoint)
+    for a, b in zip(resumed.history, history, strict=True):
+        assert np.array_equal(np.asarray(a), np.asarray(b)[checkpoint.step_index :])
+
+
+def pulsed_cleft(current):
+    """S3's configuration in small: pulses into the cleft cell before and after the furrow's
+    onset at 2 ms (a resolved access), with the furrow growing after it."""
+    from tests import membrane_insertion_fixtures as mfx
+
+    raw = mfx.with_operators(
+        mfx.cleft_cell(end=0.006, observation_times=[0.0, 0.002, 0.006]),
+        mfx.furrow_insertion(rate=1e-11, onset=0.002),
+    )
+    cell = raw["model"]["cells"][0]["id"]
+    raw["model"]["operators"].append(
+        dict(law=LAW, electrodes=[dict(cell_id=cell, carriers={"K": 0.4912, "M": 0.5088})])
+    )
+    pulses = [(0.0, current), (0.001, 0.0), (0.003, -current), (0.004, 0.0)]
+    schedule = [dict(time=t, current_A=i) for t, i in pulses]
+    raw["experiment"]["injection_controls"] = [dict(cell_id=cell, schedule=schedule)]
+    return parse_spec(raw)
+
+
+def test_pulses_across_the_onset_and_their_vmapped_batch():
+    """Host checks close with pulses before and after the onset; a vmapped batch of two
+    currents reproduces each world's own run to rounding (it compiles differently)."""
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.vector_windows import run_vector_windowed
+    from cells.core.windows import WindowPolicy
+
+    specs = [pulsed_cleft(1e-12), pulsed_cleft(2e-12)]
+    singles = [run(s) for s in specs]
+    for result in singles:
+        assert np.asarray(result.history.insertion_opened)[-1][1] == 1
+        assert np.all(np.asarray(result.history.injection_image_charge_C)[-1][0] > 0)
+    worlds = tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs))
+    batch = run_vector_windowed(BatchSpec(worlds, 2, 10**6, 2**31), WindowPolicy(3, "checkpoints"))
+    for k, single in enumerate(singles):
+        final = batch.worlds[k + 1].final.state
+        for name in type(final)._fields:
+            a, b = np.asarray(getattr(final, name)), np.asarray(getattr(single.history, name))[-1]
+            scale = np.max(np.abs(b), initial=0.0)
+            assert np.max(np.abs(a - b), initial=0.0) <= 1e-12 * scale + 1e-30, (k, name)

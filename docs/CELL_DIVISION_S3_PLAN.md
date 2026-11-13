@@ -97,9 +97,11 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
 
 - **Solver: IMEX ARS(2,2,2).** RK4 is not used for egg-length runs: @3's RK4 electrode
   rounding failed the static cleft egg's electrode ledger on long runs (S0b).
-- **Step: at most 0.5 ms.** @3's explicit-rate bound refuses 1 ms at the full new membrane
-  (dt × rate = 1.145, S0b). R5 takes the schedule's largest area, so the definition check
-  refuses it from the start. The study runs 0.5, 0.25 and 0.125 ms.
+- **Step: at most 0.5 ms (an estimate, verified first on the built definition).** @3's
+  explicit-rate bound refuses 1 ms at the full new membrane (dt × rate = 1.145, S0b). R5
+  takes the area at the 2100 s horizon with only C_old + C_on as capacitance, which scales
+  that to about 0.9 of the bound at 0.5 ms. The study then runs 0.5, 0.25 and 0.125 ms.
+  If 0.5 ms is refused, it runs 0.25, 0.125 and 0.0625 ms, and its cost doubles.
   - From R-full's J1 state, the static cleft egg agreed with R-full to 3 × 10⁻¹⁰,
     10⁻¹¹ and 2 × 10⁻¹² V at those steps (S0b).
 - **Cost** (one CPU core, vector windows with device checks):
