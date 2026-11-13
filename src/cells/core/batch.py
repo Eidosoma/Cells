@@ -16,6 +16,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.core import phases
 from cells.core.devices import execution_device
 from cells.core.errors import NumericalError
 from cells.core.grid import refinement_times
@@ -340,6 +341,7 @@ def run_batch(spec, checkpoints=None, *, timing_repeats=1):
     )
     jax.block_until_ready(inputs)
     prepared = perf_counter()
+    phases.mark("preparation", worlds=len(spec.worlds), seconds=prepared - started)
     compile_seconds, warmup_seconds = 0.0, 0.0
     samples, compiler_memory = [], None
     domain = getattr(model, "domain_valid", None)
@@ -348,6 +350,7 @@ def run_batch(spec, checkpoints=None, *, timing_repeats=1):
         if spec.worlds[0].simulation.execution.jit:
             compiled = _compiled_batch.lower(inputs, rhs, domain, stepper).compile()
             compile_seconds = perf_counter() - prepared
+            phases.mark("compile", seconds=compile_seconds)
             stats = compiled.memory_analysis()
             if stats is not None:
                 compiler_memory = {
@@ -378,6 +381,7 @@ def run_batch(spec, checkpoints=None, *, timing_repeats=1):
             outputs = execute()
             jax.block_until_ready(outputs)
             samples.append(perf_counter() - tick)
+        phases.mark("execute", worlds=len(spec.worlds), seconds=samples[-1])
         final, history, valid = outputs
         failed = np.argwhere(~np.asarray(valid))
         if len(failed):
