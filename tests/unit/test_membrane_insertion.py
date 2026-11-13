@@ -218,6 +218,44 @@ def test_the_onset_opens_the_patch_its_node_and_face():
         assert np.max(np.abs(residual), initial=0.0) < 1e-15, name
 
 
+def padded(base, extra=2):
+    x = base["execution"]
+    for key in ("capacity", "extracellular_capacity", "membrane_capacity", "channel_capacity"):
+        x[key] += extra
+    x["face_capacity"] += 1
+    return base
+
+
+@pytest.mark.parametrize("world", ["two_clamps", "cleft"])
+def test_padded_slots(world):
+    """Capacities above the declared counts, as division worlds are padded: the idle view is
+    the declared layout bitwise, and one insertion half-step closes every ledger."""
+    if world == "two_clamps":
+        raw = fx.with_operators(padded(fx.two_clamps()), {"membrane_0": ({}, None, [(0.0, 0.0)])})
+        rates, opened = [1e-9, 0, 0, 0], None
+    else:
+        raw = fx.with_operators(padded(fx.cleft_cell()), fx.furrow_insertion())
+        rates, opened = [0, 1e-9, 0, 0], [1, 1, 1, 1]
+    spec, model, state, p = bind(raw)
+    assert p.membrane_active.tolist() == [True, True, False, False]
+    if world == "cleft":
+        state, ok = model.operators[1].event(
+            state, SimpleNamespace(insertion_rate_m2_s=np.zeros(4), insertion_open=np.ones(4)), p,
+            xp=np,
+        )  # fmt: skip
+        assert ok
+    view, declared = model.view(p, state, xp=np), adapter.inner_layout(p)
+    for name in declared._fields:
+        a, b = np.asarray(getattr(view, name)), np.asarray(getattr(declared, name))
+        assert a.tobytes() == b.tobytes(), name
+    new, ok = half_step(model, state, p, rates, opened=opened)
+    assert ok and model.domain_valid(new, p, p.active, xp=np)
+    assert not np.any(np.asarray(new.membrane_area_increment_m2)[2:])  # Padding stays zero.
+    assert np.any(new.membrane_area_increment_m2)
+    for name, residual in model.balances(new, p).items():
+        assert np.max(np.abs(residual), initial=0.0) < 1e-15, (world, name)
+
+
 def furrow(change):
     raw = fx.with_operators(fx.cleft_cell(), fx.furrow_insertion())
     change(raw)

@@ -133,3 +133,13 @@ def test_a_state_owner_has_no_part_and_a_second_owner_is_refused():
     raw["model"]["operators"].append(copy.deepcopy(raw["model"]["operators"][0]))
     with pytest.raises(ConfigError, match="appears twice"):
         parse_spec(raw)
+
+
+def test_operators_that_read_the_declared_area_refuse_the_membrane_state():
+    """Water binds its conductance from the declared areas and replacement scales template
+    pumps by them: both hold membrane_area as declared (CONFLICTS_VIEW)."""
+    from cells.models import pump_composite
+
+    for law in ("ideal_osmosis_linear_compliance_water@1", "scheduled_cell_replacement@1"):
+        errors = pump_composite.structure_errors(adapter, (OPERATORS[law], OPERATORS[fx.STATE]))
+        assert any(f"{law} reads membrane_area as declared" in e for e in errors), law
