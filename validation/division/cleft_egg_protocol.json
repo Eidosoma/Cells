@@ -2,7 +2,7 @@
  "kind": "cells.cleft_egg_s3_protocol@1",
  "id": "s3-cleft-egg-against-rfull",
  "title": "S3: the engine's one-cell Xenopus egg with its furrow and restricted cleft against R-full",
- "status": "PROPOSED (draft by the S3 agent, 13 November 2026; not registered; the lead registers it at landing). Values filled by cleft_egg_engine fill from the development runs the lead approved (the dt study at 0.5, 0.25 and 0.125 ms and R-full's reference). The reference-term rule is the lead's ruling of 13 November, made after the development data (reference_term_rule, reference_term_disclosure); the tolerance rule is the plan's (docs/CELL_DIVISION_S3_PLAN.md §4). The 0.25 ms development run is the judged run's program, so engine minus R-full at the judged step is already known (development_observations)",
+ "status": "PROPOSED (draft by the S3 agent, 13 November 2026; not registered; the lead registers it at landing). Values filled by cleft_egg_engine fill from the development runs the lead approved (the dt study at 0.5, 0.25 and 0.125 ms and R-full's reference). The reference-term rule is the lead's ruling of 13 November, made after the development data (reference_term_rule, reference_term_disclosure); the tolerance rule is the plan's (docs/CELL_DIVISION_S3_PLAN.md \u00a74). The 0.25 ms development run is the judged run's program, so engine minus R-full at the judged step is already known (development_observations)",
  "purpose": "Qualify the engine's cleft egg against the registered independent reference R-full on J1's state and trajectory. Not a J1 verdict against the data (J1 was judged on R-full on 12 November).",
  "engine_models": [
   "resolved_pump_composite@1",
@@ -17,7 +17,7 @@
   "egg": "validation/division/cleft_egg_reference.py build(declared inputs, scalar_values(declared inputs), p_old = the record's p_old_m_s, a_over_l = the record's a_over_l_m): R-full's own egg, written by cleft_egg_engine.definition",
   "declared_inputs": "validation/division/j1_declared_inputs.json",
   "calibration_source": "validation/division/j1_prediction_of_record.json (p_old_m_s 6.161109067285096e-10, a_over_l_m 1.5406297557105433e-06)",
-  "schedule": "the default (uniform) schedule only: the furrow opens at 420 s with A_on = 1e-9 m2 and grows at r = (A_J1 - A_on) / (1800 s - 420 s) to the 2100 s horizon; the back-loaded band member is out of S3's comparison (plan §6)",
+  "schedule": "the default (uniform) schedule only: the furrow opens at 420 s with A_on = 1e-9 m2 and grows at r = (A_J1 - A_on) / (1800 s - 420 s) to the 2100 s horizon; the back-loaded band member is out of S3's comparison (plan \u00a76)",
   "electrode": "one electrode in the egg; rm_definition's pulse train (3e-8 A, 1.2 s, every 10 s, alternating from t = 0 positive) throughout, carried by K 0.4912 and Cl 0.5088 (rm_definition.injected_carrier_fractions, the field R-full's Pulses read)",
   "solver": "imex_ars222_face_electromigration@1, run in vector windows with device checks on every row",
   "field_comparison": "cleft_egg_engine compare: 30 fields, 26 exactly R-full's, 2 within 1e-12 (unit conversion and one-ulp event times), 2 declared (the cytosol charge anchor and initial potential at 3.9e-11 relative, the consistent anchor's egg-scale granularity, bound 1.1e-9); /mnt/workspaces/Cells/cell-division-s3-20261113-01/step1-tests/compare.json"
@@ -48,7 +48,7 @@
  "reference_term_rule": "max |Q(variant) - Q(default)| over R-full's integrator variants: Radau rtol 1e-8, BDF rtol 1e-10 and LSODA rtol 1e-10 (Q4: the maximum over pulses and variants). The lead's ruling, 13 November: the reference term bounds R-full's own numerical error. The engine runs R-full's own activation area, so the activation-area variant (1e-10 m2, which J1's reference_numerics included) measures a sensitivity both models share, not a reference error; it is reported per quantity (values.*.shared_sensitivity) and stays outside the tolerance",
  "tolerance_rule": "3 x (engine step term + reference term), per quantity (the rule Rm1's registered protocol uses)",
  "verdict_rule": "pass when every judged |engine(judged dt) - R-full| is within its tolerance (Q4: the maximum over pulses); a failure is recorded and diagnosed, never retuned",
- "stop_rule": "before registration: stop and report if the study shows no convergence or the energy ledger fails at an admitted step; an implicit membrane-cleft term would then be a new solver version (division design §5.4). Observed orders are reported and inspected (about 2 for ARS(2,2,2))",
+ "stop_rule": "before registration: stop and report if the study shows no convergence or the energy ledger fails at an admitted step; an implicit membrane-cleft term would then be a new solver version (division design \u00a75.4). Observed orders are reported and inspected (about 2 for ARS(2,2,2))",
  "stop_condition": "registered by the lead, 13 November: stop and report (non-convergence under the plan's stop rule) if any judged quantity's step term fails to decrease from the (0.5, 0.25 ms) pair to the (0.25, 0.125 ms) pair; a step term that is 0 at both pairs does not stop. Evaluated by cleft_egg_engine terms (stop, non_converging); fill refuses a study that met it",
  "values": {
   "Q1_em_at_j1_V": {
@@ -57,8 +57,11 @@
    "engine_step_term": 3.16435412595073e-10,
    "engine_coarse_difference": 1.4830862144279977e-08,
    "observed_order": 5.550547594170496,
-   "reference_term": 1.8475223435669708e-07,
-   "tolerance": 5.552060093078764e-07,
+   "reference_term": 2.0602384381840366e-11,
+   "tolerance": 1.0111133909307402e-09,
+   "shared_sensitivity": {
+    "activation_1e-10_m2": 1.8475223435669708e-07
+   },
    "engine_values_by_dt_s": {
     "0.0005": -0.012794920658346498,
     "0.00025": -0.012794935489208643,
@@ -71,8 +74,11 @@
    "engine_step_term": 5.109950855956413,
    "engine_coarse_difference": 253.1169685719069,
    "observed_order": 5.630351000153236,
-   "reference_term": 1.9565027226926759,
-   "tolerance": 21.199360735947266,
+   "reference_term": 4.5589928049594164e-05,
+   "tolerance": 15.329989337653387,
+   "shared_sensitivity": {
+    "activation_1e-10_m2": 1.9565027226926759
+   },
    "engine_values_by_dt_s": {
     "0.0005": 487754.7178051643,
     "0.00025": 488007.8347737362,
@@ -87,6 +93,9 @@
    "observed_order": 2.007940102070578,
    "reference_term": 1.7419224604964256e-06,
    "tolerance": 41.4161864327034,
+   "shared_sensitivity": {
+    "activation_1e-10_m2": 0.0
+   },
    "engine_values_by_dt_s": {
     "0.0005": 852073.9191293034,
     "0.00025": 852018.3927957483,
@@ -311,8 +320,11 @@
    "engine_step_term": 9.161092829994277e-08,
    "engine_coarse_difference": 7.535005005637752e-07,
    "observed_order": 3.0400168569306087,
-   "reference_term": 0.00014225254931982644,
-   "tolerance": 0.00042703248074437913,
+   "reference_term": 2.3771899379521066e-11,
+   "tolerance": 2.749041005979669e-07,
+   "shared_sensitivity": {
+    "activation_1e-10_m2": 0.00014225254931982644
+   },
    "engine_values_by_dt_s": null
   },
   "Q5_lumen_K_mM": {
@@ -321,8 +333,11 @@
    "engine_step_term": 8.16700033823281e-07,
    "engine_coarse_difference": 2.2322876606750697e-05,
    "observed_order": 4.772572852378175,
-   "reference_term": 0.0006678110787809999,
-   "tolerance": 0.0020058833364444695,
+   "reference_term": 6.090502679967358e-08,
+   "tolerance": 2.632815181868864e-06,
+   "shared_sensitivity": {
+    "activation_1e-10_m2": 0.0006678110787809999
+   },
    "engine_values_by_dt_s": {
     "0.0005": 29.146766176139778,
     "0.00025": 29.146788499016385,
@@ -335,8 +350,11 @@
    "engine_step_term": 5.954070090297137e-07,
    "engine_coarse_difference": 1.7134873729673927e-05,
    "observed_order": 4.846915545325702,
-   "reference_term": 0.001358443231129769,
-   "tolerance": 0.004077115914416396,
+   "reference_term": 3.416034388692424e-08,
+   "tolerance": 1.8887020587499137e-06,
+   "shared_sensitivity": {
+    "activation_1e-10_m2": 0.001358443231129769
+   },
    "engine_values_by_dt_s": {
     "0.0005": 20.62352810787769,
     "0.00025": 20.62351097300396,
@@ -362,6 +380,57 @@
   "observed_orders": "by inspection. Coarse-pair orders (terms: log2 of the (0.5, 0.25) over the (0.25, 0.125 ms) step difference): Q1 5.55, Q2 5.63, Q3 2.01, Q4 3.04, Q5 K 4.77, Q5 Na 4.85. Fine-pair orders against R-full (by_quantity.*.fine_pair_order_against_reference): about 2.3 (Q1, Q4), 1.5 (Q2), 2.0 (Q3), 2.8 and 2.2 (Q5 K and Na); Q2's 0.125 ms distance (2.7 Ohm) is far above R-full's integrator term (4.6e-5 Ohm), so its order is resolved",
   "stop_condition": "as run: not met. Every judged quantity's step term decreases from the (0.5, 0.25 ms) pair to the (0.25, 0.125 ms) pair (terms.json: stop false)",
   "finer_step": "a 0.0625 ms run is not needed (the lead, 13 November): the judged pair's orders (1.5 to 2.8) and the factor 3 of the tolerance rule cover the error at 0.25 ms",
-  "horizon_ledgers": "at 2100 s, residual against bound: reservoir work 5.9e-3, 1.08e-2 and 9.6e-3, fill 1.04e-2, 6.6e-3 and 7.3e-3, electrode at most 5e-9 and energy at most 1.6e-3, at 0.5, 0.25 and 0.125 ms. These are final-row ratios, not run maxima; the device checks bound every row below 1 and passed on every row of the three runs. The largest run maximum they report is the global-charge ratio: 0.022, 0.039 and 0.037"
+  "horizon_ledgers": "at 2100 s, residual against bound: reservoir work 5.9e-3, 1.08e-2 and 9.6e-3, fill 1.04e-2, 6.6e-3 and 7.3e-3, electrode at most 5e-9 and energy at most 1.6e-3, at 0.5, 0.25 and 0.125 ms. These are final-row ratios, not run maxima; the device checks bound every row below 1 and passed on every row of the three runs. The largest run maximum they report is the global-charge ratio: 0.022, 0.039 and 0.037",
+  "by_quantity": {
+   "Q1_em_at_j1_V": {
+    "engine_minus_reference": {
+     "0.0005": 1.5227203950876622e-08,
+     "0.00025": 3.963418065966451e-10,
+     "0.000125": 7.990639400157207e-11
+    },
+    "fine_pair_order_against_reference": 2.3103622970994073
+   },
+   "Q2_rm_at_j1_ohm": {
+    "engine_minus_reference": {
+     "0.0005": -245.28219433949562,
+     "0.00025": 7.8347742324112915,
+     "0.000125": 2.7248233764548786
+    },
+    "fine_pair_order_against_reference": 1.5237289852950358
+   },
+   "Q3_rm1_ohm": {
+    "engine_minus_reference": {
+     "0.0005": 73.9191273660399,
+     "0.00025": 18.392793810926378,
+     "0.000125": 4.587400075281039
+    },
+    "fine_pair_order_against_reference": 2.0033919994928104
+   },
+   "Q4_em_trajectory_V": {
+    "engine_minus_reference": {
+     "0.0005": 8.683295301507854e-07,
+     "0.00025": 1.1482902958701025e-07,
+     "0.000125": 2.3218101287067472e-08
+    },
+    "fine_pair_order_against_reference": 2.3061655091074607
+   },
+   "Q5_lumen_K_mM": {
+    "engine_minus_reference": {
+     "0.0005": -2.3276168462871283e-05,
+     "0.00025": -9.532918561205861e-07,
+     "0.000125": -1.3659182229730504e-07
+    },
+    "fine_pair_order_against_reference": 2.8030468590685587
+   },
+   "Q5_lumen_Na_mM": {
+    "engine_minus_reference": {
+     "0.0005": 1.7897679978062797e-05,
+     "0.00025": 7.628062483888698e-07,
+     "0.000125": 1.6739923935915613e-07
+    },
+    "fine_pair_order_against_reference": 2.1880236887930744
+   }
+  },
+  "stop_condition_met": false
  }
 }
