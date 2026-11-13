@@ -3,8 +3,8 @@
 **Registered by the lead on main, 13 November 2026, before any run.** The lead's decisions are in the JSON's `lead_decisions_taken`: a disagreement between the two criterion forms blocks freezing of that point only; runs come from a clean snapshot of main at the commit that lands this round's code.
 The user approved a combination round ("Lets go on your suggestions"). The lead's brief set
 its contents and the lead's review set this revision; the advisor reviewed both. The
-machine-readable file is [`j1_combination_round.json`](j1_combination_round.json); the decisions
-still open are in its `lead_decisions_requested`.
+machine-readable file is [`j1_combination_round.json`](j1_combination_round.json); the lead's
+decisions are in its `lead_decisions_taken`.
 
 **Why pair the arms.** The single arms ([rationale](j1_diagnostic_arms.md);
 [evidence](/mnt/workspaces/Cells/cell-division-s0b-20261111-01/j1-diagnostic-01/)) each did one
