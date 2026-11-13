@@ -58,6 +58,36 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Composite v2 §3, stage S2: membrane state and insertion landed (13 November).**
+  `membrane_entity_state@1` owns area and capacitance as state (R2 views).
+  `scheduled_membrane_insertion@1` inserts membrane on a patch as a split process, with
+  onset masks selected by value. Engine models: `resolved_pump_composite@1` over `@3`.
+  - **Energy:** @3's capacitor term reads the declared C0 and arrays, so insertion's ledger
+    terms add the correction. The total equals ½ΣCV² − ½ΣC0V0² to 1e-12 (one patch, and two
+    clamps with plate charges). The one-patch analytic checks hold: V′ = VC/C′,
+    H = ½q²ΔC/(CC′), ΔU = W − H.
+  - **Guards:**
+    - crossrev against `8416a72` identical, measured twice;
+    - 17 saved runs bit-identical;
+    - idle and rate 0 bitwise equal to the composition without the operators;
+    - restart across onset and insertion bitwise, and a reversed vmap batch bitwise;
+    - catalogue invariance holds, and every composite test file passes.
+  - **Limits:**
+    - Field-input providers are refused above 64 padded field nodes. The per-step
+      refactorisation costs +7.5% on the egg and +48% at 825 nodes.
+    - Every planned egg world fits (up to 16 cells, 47 nodes). The 825-node idle guard
+      waits for option (b) or (c).
+    - Insertion itself adds 15% per step on the cleft egg.
+  - **Departures and open items:**
+    - The new membrane's leak is its passive permeability. This departs from division
+      design §6, because @3 needs law code 0 for inactive populations.
+    - Water and replacement refuse to compose with membrane state (`CONFLICTS_VIEW`).
+    - S3 prerequisites: the onset energy at a fast access (about ½C_f·Vm² unbooked), and
+      injection booking its image charge at the view.
+  - Tier 1 + 2 gate: 358 files, no changed outcome
+    ([gate](/mnt/workspaces/Cells/land-20261113c/));
+    [evidence](/mnt/workspaces/Cells/composite-v2-20261112-01/HANDOFF.md).
+
 - **Energy roles declared, and the hold's window timing diagnosed (13 November).** Tier 1 + 2
   gate: 356 files, no changed outcome ([gate](/mnt/workspaces/Cells/land-20261113b/)).
   - **Energy roles** (completes v2 §1.1): heat and work fields are declared by name (the
