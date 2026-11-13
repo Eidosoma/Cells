@@ -374,6 +374,11 @@ def reading(record, result, t_all, d_all, osm_all, regular, *, abundance=None, g
     candidates = [r for r in templates if r["interior"] and r["d_neighbours"] >= 5]
     delta = 2.0 / size
     upto = t <= judged_t + 1e-9
+    # Reported beside the registered single-record dJ (not part of the run class): the
+    # deviation over the run's records to the judged record, and after the first turnover.
+    dj = np.array([e - null_j[round(float(x), 9)] for x, e in zip(t, j_engine, strict=True)])
+    window = upto & (t > 0)
+    later = window & (t > turnover[0] + 1e-9)
     out = dict(
         judged_target_s=target,
         judged_s=judged_t,
@@ -382,6 +387,14 @@ def reading(record, result, t_all, d_all, osm_all, regular, *, abundance=None, g
         J_null=j_null,
         delta_J=delta_j,
         delta=delta,
+        delta_J_over_records=dict(
+            mean=float(dj[window].mean()) if window.any() else None,
+            min=float(dj[window].min()) if window.any() else None,
+            max=float(dj[window].max()) if window.any() else None,
+            mean_after_first_turnover=float(dj[later].mean()) if later.any() else None,
+            nonzero_records=int(np.sum(np.abs(dj[window]) > 1e-12)),
+            records=int(window.sum()),
+        ),
         D_copies=len(d_copies),
         D_copies_lost=sum(r["lost"] for r in d_copies),
         D_loss_fraction=d_loss,
@@ -508,6 +521,7 @@ def part_summary(args):
                     "J_engine",
                     "J_null",
                     "delta_J",
+                    "delta_J_over_records",
                     "D_loss_fraction",
                     "recruitment_fraction",
                     "founders_lost",

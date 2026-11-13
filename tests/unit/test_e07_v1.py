@@ -205,3 +205,14 @@ def test_e1_segments_keep_their_step_in_the_file_name(tmp_path):
     coarse = run.e1_paths(tmp_path, "b-tau40-d37-s1.0", 101, 0.005)
     assert fine[0] != coarse[0] and fine[1] != coarse[1]
     assert fine[0].name == "b-tau40-d37-s1.0-seed101-dt0.001.npz"
+
+
+def test_deviation_over_records_is_reported_beside_the_judged_record():
+    rec = record()
+    t_all, d_all, osm, regular = synthetic(rec)
+    out = run.reading(rec, dict(stop="planned end"), t_all, d_all, osm, regular)
+    over = out["delta_J_over_records"]
+    assert over["mean"] == 0.0 and over["min"] == 0.0 and over["nonzero_records"] == 0
+    assert over["records"] == int(
+        np.sum((t_all[regular] > 0) & (t_all[regular] <= out["judged_s"]))
+    )
