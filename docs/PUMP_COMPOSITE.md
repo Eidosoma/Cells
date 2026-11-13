@@ -32,6 +32,9 @@ The experiment adds each operator's schedule under the operator's own keys:
 | `ideal_osmosis_linear_compliance_water@1` | `compartments`, `baths`, `membranes` | `water_controls` | `resolved_pump_water@1` |
 | `k_anion_symport_mass_action@1` | `volume_factor`, `roles`, `routes` | `symport_controls` | `resolved_pump_water@2` (with water before it) |
 | `scheduled_cell_replacement@1` | `junction_formation`, `templates`, `template_capacity` | `replacement_events` | `resolved_pump_replacement@1` |
+| `electrode_current_injection@1` | `electrodes` | `injection_controls` | none: a new law ([v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §4) |
+| `membrane_entity_state@1` | `populations` (functional unit, catalogue reference, reference density) | none | none: a state owner (v2 design §3) |
+| `scheduled_membrane_insertion@1` | `patches` (specific capacitance, inserted densities) | `insertion_controls` (onset, rates) | none: a new law (v2 design §3) |
 
 The blocks and keys are the frozen models' own, so `frozen_definition(raw)` rewrites a
 `resolved_pump_tissue@3`, water@1, water@2 or replacement@1 definition as the equivalent
@@ -47,7 +50,7 @@ batch signature, the summary and the run manifest (`composition`).
 | Owned state | `STATE_AXES` (only this operator writes them); heat and work fields declared, since the energy flows read the `_dissipated_energy_pJ` and `_work_pJ` suffixes by name |
 | Entity writes | `ENTITY_WRITES`: inner state fields it changes, each with the owned accumulators that close the inner ledgers; `STATE_RESETS`: intensive kinetic state set at events (gates), which has no ledger |
 | View fields | `VIEW_FIELDS`: @3 layout fields it provides from state, one provider each; `CONTROL_FACTORS`: @3 availabilities it multiplies (a product in declared order); `CONFLICTS_VIEW`: fields it reads as declared, which no other operator may provide |
-| Parts | event map (`EVENT`), split process (`SPLIT`, with its RK4 mode `coupled` or `split`), in-step membrane process (`PROCESS`, through @3's opt-in hook, at most one per composition). One law may contribute several parts |
+| Parts | event map (`EVENT`), split process (`SPLIT`, with its RK4 mode `coupled` or `split`), in-step membrane process (`PROCESS`, through @3's opt-in hook, at most one per composition). One law may contribute several parts. A state owner has none: it holds entity state that later operators write (`ACCEPTS_WRITES`) and provides it through the view (`membrane_entity_state@1`) |
 | Ledgers | terms added to @3's ledgers and rounding magnitudes, its own ledgers with their bounds |
 | Domain and refusal | its domain and control validity (any failure refuses the step, which returns the start state); `REQUIRES` (laws that must precede it) |
 | Schedule | its experiment keys, parsed and checked at the definition (event times exact multiples of dt) |
@@ -102,13 +105,19 @@ availabilities onto @3's controls. When an operator provides a capacitance or an
 mask, it recomputes the derived field arrays (capacitor matrix, scale, solve matrix,
 Cholesky factor, fixed and active masks) on the device and selects them only where an
 input changed that step. That path covers held-bath topologies only (no floating
-components) and is not used by any S1 operator: it is unit-tested against
-`surface_field.bind`, not exercised in a run.
+components). The recomputation runs every step once a field input is provided (a select by
+value), so such a composition is refused above 64 field nodes (option (a) of the v2 design
+§3, from the measured cost). The S2 operators, membrane state and insertion, are its first
+users.
 
 The adapter is also the declared owner of @3's free energy: `chemical_free_energy_pJ`, each
 cell's chemical term against its reference at the declared volume, and
 `capacitor_free_energy_pJ`, the capacitor energy. An operator that changes @3's state outside
 its step books the exact change with these. Replacement events and injection half-steps do.
+With a capacitance or mask view, `view_capacitor_terms` brings @3's capacitor term on the
+declared layout to the physical capacitor energy at the view, and the electrode ledger to
+the view's plate charges (the energy rule, v2 design §3); `fixed_charge_change` applies one
+capacitance change at fixed free-node charges (the insertion law).
 
 ## Equivalence with the frozen models (design §3.7)
 

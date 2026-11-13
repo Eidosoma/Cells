@@ -17,7 +17,8 @@ Contract (models/operators/contract.py):
   bath water work;
 * view: the current cell and outside volumes as @3's ``volume`` and
   ``extracellular_volume``; the view follows the split, so @3's domain is evaluated
-  at the current volumes and re-checked at the step end;
+  at the current volumes and re-checked at the step end. The water conductances are
+  bound from the declared patch areas, so no other operator may provide an area;
 * parts: a split process (Heun half-steps, heun_frozen_amount_water@1); under RK4
   its rates join the coupled right-hand side;
 * ledgers: its four water ledgers (cell, outside and total water, bath work) with
@@ -456,6 +457,8 @@ class OsmoticWater(Operator):
     CONTROL_FIELDS = ("water",)
     EXPERIMENT_KEYS = ("water_controls",)
     VIEW_FIELDS = ("volume", "extracellular_volume")
+    # The water conductance 1e15 A Lp is bound from the declared patch areas.
+    CONFLICTS_VIEW = ("membrane_area",)
     VIEW_FOLLOWS_SPLIT = True
     LEDGERS = WATER_LEDGERS
     LEDGER_DIAGNOSTICS = WATER_DIAGNOSTICS

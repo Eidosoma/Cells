@@ -25,7 +25,9 @@ Declarations (class attributes):
   leaving an event time (``EVENT``); a split process, half-steps around the inner
   step on its own variables (``SPLIT``); an in-step membrane process through the
   inner model's opt-in hook (``PROCESS``). One law may contribute several parts
-  (scheduled replacement: its event map restarts its formation law's state).
+  (scheduled replacement: its event map restarts its formation law's state). A
+  state owner has no part: it holds entity state that later operators write
+  (``ACCEPTS_WRITES``) and provides it through the view (membrane_entity_state).
   ``RK4`` declares a split part's behaviour under an RK4 inner step: "coupled"
   (its rates join the coupled right-hand side, which RK4 integrates unsplit) or
   "split" (exact half-steps kept around the inner RK4 step).
@@ -279,8 +281,13 @@ def check_declarations(operator):
         raise ValueError(f"{name}: a split part declares its RK4 mode, one of {RK4_MODES}")
     if not operator.SPLIT and operator.RK4 is not None:
         raise ValueError(f"{name}: an RK4 mode needs a split part")
-    if not (operator.EVENT or operator.SPLIT or operator.PROCESS):
-        raise ValueError(f"{name}: an operator contributes at least one part")
+    if not (operator.EVENT or operator.SPLIT or operator.PROCESS) and not (
+        operator.ACCEPTS_WRITES and operator.VIEW_FIELDS
+    ):
+        raise ValueError(
+            f"{name}: an operator contributes at least one part, or is a state owner that "
+            "provides views of fields later operators write (ACCEPTS_WRITES)"
+        )
     for field in operator.STATE_AXES:
         booked = field in operator.HEAT_FIELDS or field in operator.WORK_FIELDS
         if field.endswith((HEAT_SUFFIX, WORK_SUFFIX)) != booked:

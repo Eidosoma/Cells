@@ -7,6 +7,8 @@ revision is merged (D142).**
 - Decision 4, and §2 as a whole, stay open until the renewal assay asks for them. Only
   §2's contract parts are approved: `VIEW_READS`, `ACCEPTS_WRITES` and `EVENT_REPLACES`,
   which live in §1.
+- Built and guarded on 13 November: §1, current injection (§4, Rm1 passed) and stage S2
+  (§3, with decisions 8 and 9). S3's prerequisites are listed in §3.
 
 It serves two gates of the
 [current plan](CURRENT_PLAN.md) (D145): *composition* (the ownership and conflict
@@ -306,7 +308,7 @@ not change during the run.
 | R2, views from state | Volume (water), area, capacitance and abundance density (membrane state), and activity masks (events) are computed on the device from state by their single provider. |
 | R3, derived arrays | Arrays derived from R2 inputs (the field arrays) are taken from the recomputed values only when an input changed in that step; otherwise the bound arrays are selected, so the result is bitwise when idle. The recomputation itself is not skipped (below). |
 | R4, when evaluated | After events; after the first split halves for providers whose view follows their split part; held through the inner step (Strang); re-checked at the step end. |
-| R5, definition-time checks | Explicit step bounds, rounding floors and admission checks that depend on an R2 input are computed once per definition on the operator-adjusted check spec, never on the raw inner spec. That spec is each provider's `inner_check_spec`, the worst case of the views it provides: water's declared minimum volumes; insertion's largest area, capacitance and abundance over its schedule. The plan-validation fix's once-per-definition bounds must take that spec. A check that has no worst case moves into the step's domain check as a refusal. |
+| R5, definition-time checks | Explicit step bounds, rounding floors and admission checks that depend on an R2 input are computed once per definition on the operator-adjusted check spec, never on the raw inner spec. That spec is each provider's `inner_check_spec`, the worst case of the views it provides: water's declared minimum volumes; insertion's largest area with its declared (smallest) capacitance, and with onsets the definition before them (below). The plan-validation fix's once-per-definition bounds must take that spec. A check that has no worst case moves into the step's domain check as a refusal. |
 | R6, host consumers | Observations, checks and summaries recompute the view from each saved row (as `observe_history` does). |
 | R7, restart | A view is a pure function of state and the bound layout, so restart saves nothing more. |
 | R8, anchors | Increments from declared values; zero increments reproduce the declared values bit for bit. |
@@ -318,11 +320,8 @@ not change during the run.
 - A `lax.cond` would skip that only in unbatched runs: under vmap, a per-world predicate
   turns the cond into a select and both branches run. The static-branch rule (§3.7)
   covers which code is present, not this per-step cost.
-- Estimated cost (to be measured on CPU and the L4 at the start of S2, before choosing):
-  - one dense refactorisation of the n-node system costs about n³/3 operations;
-  - for the egg worlds (n up to a few dozen) that is negligible, about 4 × 10⁴ at n = 50;
-  - at the 825-node world it is about 1.9 × 10⁸ per world-step, probably several to tens
-    of milliseconds in float64 on one CPU core or the L4.
+- Estimate (before measuring): one dense refactorisation of the n-node system costs about
+  n³/3 operations, about 4 × 10⁴ at n = 50 and 1.9 × 10⁸ at 825 nodes.
 
 Options:
 - (a) accept it, and refuse a field-input provider above a declared node count;
@@ -332,24 +331,176 @@ Options:
   operations. It is bitwise when idle only if it is skipped statically or shown to be
   exact at ΔC = 0.
 
-Proposal: (a) for S2–S5 (egg worlds), with (b) or (c) decided before any large-world use.
+**Measured on CPU** (13 November; one core; the same compiled step with and without an
+operator that provides `membrane_capacitance`; composite-v2-20261112-01/s2-r3-cost):
 
-**Audit before code:** list @3's layout quantities that its binding derives from area,
-capacitance or abundance. Each becomes an R2 view or is refused when its input is
-state-dependent. Known so far:
-- `initial_cell_charge_C`: the charge anchor, already a view field;
-- the field arrays (R3).
+| World | Field nodes | Step | With the provider | Increase |
+| --- | --- | --- | --- | --- |
+| Uncleaved egg | 2 | 0.690 ms | 0.742 ms | +0.05 ms (+7.5%) |
+| Seven-cell sheet | 14 | 1.72 ms | 1.70 ms | within noise |
+| 127-cell sheet | 254 | 7.68 ms | 9.24 ms | +1.56 ms (+20%) |
+| 825-node world | 825 | 75.7 ms | 111.9 ms | +36.2 ms (+48%) |
 
-**S2 guards:**
-- a tier-1 smoke test under 20 s for each of the two new operators;
-- idle membrane state equals the composition without it, bitwise;
-- insertion at r = 0 equals idle;
-- one-patch analytic checks: |Vm| falls by C/(C + ΔC) at fixed charge, and
-  H = ½ q² ΔC / (C (C + ΔC));
-- image-charge booking, and the energy ledger ΔU = W − H;
-- restart across onset and insertion; vmap;
-- the catalogue-metadata invariance above;
-- R-full comparison in S3.
+As a separate call, the refresh costs 0.64, 1.00, 3.19 and 27.9 ms; at small sizes that is
+mostly call overhead, so the in-step increase is the number that matters.
+
+**Decision (lead, 13 November): option (a), capped at 64 field nodes.** A field-input
+provider is refused when the definition's padded field size (cell plus outside capacity)
+exceeds 64, with a message naming (b) and (c). S2–S5 need about 50 nodes or fewer (up to
+16 cells, their clefts and the bath). (b) or (c) is decided before any larger world uses a
+field input.
+
+Insertion adds two refactorisations per half-step (before and after the change) and the
+view's capacitor solves in every checked row. Its own cost was measured after it was built
+(one core; median of 200 jitted steps; composite-v2-20261112-01/s2-cost):
+
+| World | Field nodes | Plain composite | Membrane state | Membrane state and insertion |
+| --- | --- | --- | --- | --- |
+| Cleft cell | 3 | 0.93 ms | 0.88 ms (noise) | 1.07 ms (+15%) |
+| 19-cell sheet at the cap, insertion into every patch | 64 | 1.51 ms | 1.70 ms (+13%) | 2.11 ms (+40%) |
+
+For S3's cleft egg (3 nodes, about 4 × 10⁶ steps) insertion adds about 15%.
+
+**Audit before code** (13 November): @3's layout quantities that its binding derives from
+area, capacitance or abundance, and how each is handled:
+
+| Quantity | Binding | Handling |
+| --- | --- | --- |
+| `membrane_area`, `membrane_capacitance` | Copied per patch; read at run time (fluxes, capacitor terms, energy) | R2 views (membrane state) |
+| `channel_abundance` | Copied per population; channel flux ∝ P × abundance × area | R2 view, N / (A ρ_ref) |
+| Field arrays (capacitor matrix, scale, solve matrix, Cholesky factor, fixed and active masks) | From capacitances and masks | R3 (refresh) |
+| `initial_membrane_voltage_V` | A bind-time capacitor solve (`surface_tissue.py`, initial values) | Stays the declared reference V0 (R1); the energy rule below |
+| Explicit-rate bound | Definition time, from capacitance and area-scaled conductance | R5 (below) |
+| `pump_capacity`, `calcium_pump_capacity` | Per-membrane totals, not area-derived | Unchanged; inserting pumps is out of the first slice |
+| `face_factor` (D × area / length) | Per face | Fixed in S2; an R2 view when the lumen grows (S3) |
+| Junction area | Per junction | S5 |
+| Device-check constants, capacitor tolerance, ledger bounds | No bind-time area or capacitance; the latter two read the layout at run time | Unchanged |
+
+**The energy rule: the capacitor energy at a view.** The composite runs @3's balances on
+the declared layout, so @3's capacitor term reads the declared C0, the declared V0 and a
+charge response dv_b solved with the declared field arrays:
+
+    E3 = ½ Σ C0 dv_b (2 V0 + dv_b) = ½ Σ C0 (Vb² − V0²),   Vb = V0 + dv_b,
+
+where Vb is the patch voltage that the declared capacitances and masks give the current
+charges. It is not the actual voltage V once C ≠ C0: for one patch, V = q/C but
+Vb = q/C0. The requirement is on the total: the composite's capacitor energy must be the
+physical
+
+    E = ½ Σ C V² − ½ Σ C0 V0²,
+
+with C and V at the view and the reference fixed at the declared initial state. So the
+correction is
+
+    E − E3 = ½ Σ (C V² − C0 Vb²) = ½ Σ [(C − C0) V² + C0 (V − Vb)(V + Vb)].
+
+The second form subtracts no bulk energies. Neither simpler formula applies here: a term
+that read the view C with the view's response would need ½ (C − C0) V0², and a declared
+term with the actual voltage would need ½ (C − C0) V². Both assume V0 + dv equals the
+actual V, which fails as soon as C changes, because V0 and dv come from different
+capacitances. @3's electrode ledger needs the matching term: the clamps supplied the view's
+plate charges, so at each held node it subtracts q_b(view) − q_b(declared), both at the
+current charges. Both terms are exact zeros, selected, when no field input differs from its
+declared value (`adapter.view_capacitor_terms`). They are booked in insertion's ledger
+terms, since insertion is the only writer of capacitances and masks in S2. When a second
+writer arrives (partition, S5), the same function moves to the composite and is called once
+for any field-input provider: division design §5.3 names the composite as the owner. A
+tier-1 test checks the total against ½ C V² − ½ C0 V0² over a spread of declared (C0, V0)
+and current (C, V), on one patch and on two clamps with their plate charges.
+
+**The insertion change at fixed charges** (division design §5.1, `adapter.fixed_charge_change`).
+With dKφ = Σ_k ΔC_k V_k e_k, the free potentials move by δ_f = −(K'_ff)⁻¹ (dKφ)_f and the
+held nodes' plate charges by Δq_b = (K' δ + dKφ)_b. The capacitor free energy falls by
+
+    H = ½ Σ ΔC_k V_k² + ½ δ_f · (dKφ)_f = ½ Σ ΔC_k V_k² − ½ (dKφ)_fᵀ (K'_ff)⁻¹ (dKφ)_f ≥ 0,
+
+whose second term is of second order, so H too subtracts no bulk energies. One patch gives
+V' = V C/(C + ΔC) and H = ½ q² ΔC / (C (C + ΔC)); with W = Σ φ_b Δq_b, ΔU = W − H holds
+exactly in exact arithmetic.
+
+**Onset, as built.** A patch declared with an onset time is masked until then, with its
+outside node and that node's faces: the view masks `membrane_active`, `outside_active` and
+`face_active`, and the node's reference amounts read 0 while it is inactive. The adapter
+gained the last two as view fields. The anchors are declared in @3's model at the onset
+values (§3.8). The node is finite, has a zero charge anchor, and every patch facing it
+opens at the same time. The patch therefore opens at zero voltage with the node following
+its cell: the onset moves no charge, changes no energy and books nothing. The node's content
+is its anchor (D057), already counted on the declared layout.
+- Refused: channel populations or pumps on an onset patch; an onset patch facing a held
+  bath; an operator that provides the node's volume.
+- **Declared departure from division design §6 (accepted 13 November).** @3's domain
+  requires an inactive population to carry law code 0, and the onset masks the patch, not
+  the population's law. So the new membrane's leak is the onset patch's passive
+  permeability (per area, so it scales with the inserted area), not K and Na leak
+  populations, until populations on onset patches are built. Populations on patches open
+  from the start are inserted at their declared densities. The departure is recorded in
+  division design §6 too.
+
+**S3 prerequisites** (accepted 13 November). S3 cannot start its egg until both are met:
+- **The onset energy.** A wide access face makes the onset a transient faster than the step.
+  It charges the patch to about V_m through the face, which an IMEX step books only to its
+  own tolerance: about ½ C_f V_m² of heat goes unbooked when the access time constant is far
+  below dt. Plain @3 gives the same residual bit for bit with the cleft active from t = 0
+  (−0.0015217 pJ in the S2 probe, against a host energy bound of a few 10⁻⁶ pJ). So the egg's
+  access is either resolved by the step (division design §5.4's step study), or the onset
+  books the charge the clamp supplies, with its RC heat, as an event.
+- **Image charge at the view.** Insertion refuses to compose with an operator that books
+  image charge on the declared layout (injection, replacement), whose bookings would miss
+  the changed capacitances. Rm during cleavage needs injection with insertion, so injection
+  books its image charge and capacitor free energy at the view first.
+
+**R5 for insertion, as built.** The inner checks run on the definition with every inserted
+patch at its largest area over the schedule and its declared capacitance, which is the
+smallest. When onsets are present, insertion's own check adds the explicit-rate bound of
+the definition before any onset, with onset patches, nodes and faces removed. The cell's
+rate is total conductance over total capacitance, a Möbius function of the inserted area,
+so its maximum lies at an end of the schedule. The two checks bound it everywhere: the
+largest conductance over the smallest capacitance after onset, and the cell without its
+onset patches before. Channel populations are not in the definition-time bound, as before;
+@3's IMEX steps refuse themselves at the actual openings and areas of the view.
+
+**The egg worlds under the cap.** The cap counts padded capacity: cell slots plus outside
+slots. Division gives each daughter a fresh slot and retires the parent's (§5.2 of the
+division design), so a 1 → 2^k run needs 2^(k+1) − 1 cell slots, one cleft per furrow, and
+the bath.
+
+| Stage | World | Cell slots | Outside slots | Field nodes |
+| --- | --- | --- | --- | --- |
+| Rm1 (§4) | Uncleaved egg (`injection_rm1`) | 1 | 1 | 2 |
+| S3, S4 (J1) | Cleft egg: cytosol, cleft, bath (as in `static_cleft_egg_steps`) | 1 | 2 | 3 |
+| S5 | First partition, 1 → 2 (parent and two daughters) | 3 | 2 | 5 |
+| S5 | 1 → 2 → 4 | 7 | 4 | 11 |
+| Plan's maximum | 1 → … → 16 | 31 | 16 | 47 |
+
+All of these are under 64. The 825-node world of division design §3.7's idle guard is
+not, so that guard is deferred until (b) or (c) is decided. S2 runs the idle guard on
+the largest world the cap admits instead: the radius-2 heredity sheet (19 cells, each with
+its held bath, 42 gated junctions, 38 channel populations) padded to 32 + 32 = 64 field
+nodes.
+
+**S2 guards** (13 November). The guards of record ran from a clean snapshot of d58751b
+(unit cells-composite-s2-guards, CPU 4). The targeted rerun ran from a clean snapshot of
+965a804 (cells-composite-s2-followup), after water and replacement declared `membrane_area`
+in `CONFLICTS_VIEW` and the cap-edge, population and reversed-batch tests were added.
+Evidence: composite-v2-20261112-01/s2-*, s2b-tests and s2-vmap.
+
+| Guard | Result | Where |
+| --- | --- | --- |
+| Tier-1 smoke test under 20 s for each operator | Membrane state 12 tests, insertion 23 tests (at 00672e8), 2–3 s each | `test_membrane_state.py`, `test_membrane_insertion.py` |
+| The energy rule: the total is ½ Σ C V² − ½ Σ C0 V0² | Within 10⁻¹² of the bulk: one patch over 6 declared (C0, V0) × 12 current (C, V); two clamps over 12 states, with the plate charges | smoke |
+| Idle membrane state equals the composition without it | Bitwise: heredity cell, seven-cell sheet, and the 19-cell sheet at the 64-node cap (in place of the 825-node world) | runs |
+| Insertion at r = 0 equals idle | Bitwise (two clamps) | runs |
+| One-patch analytic | V' = V C/(C + ΔC) to 10⁻¹²; H = ½ q² ΔC / (C (C + ΔC)) to 10⁻⁹ at ΔC/C = 10⁻⁶, ½ and 1; ΔU = −H; every ledger below 10⁻¹⁵ | smoke |
+| Image charge and ΔU = W − H | Two clamps: Δq_b analytic to 10⁻¹², W = Σ φ_b Δq_b, ΔU = W − H to 10⁻¹², host checks pass | smoke |
+| Onset | Masked until the event; the declared layout bitwise after it; a stale schedule and a rate before onset refused; a compiled run closes every ledger | smoke, runs |
+| Restart across onset and insertion | Bitwise at 1 ms, at the onset (2 ms) and at 3 ms, also through a written snapshot; the manifest carries the field owners | runs |
+| vmap | Vector-window batch with device checks, three cleft worlds at three rates. Bitwise against the same worlds in reversed order (one compiled program). Within 1.6 × 10⁻¹³ of each field's scale against each world's own run, apart from the one-clamp image charge, which is rounding noise of about 10⁻³⁴ C. The same worlds without the S2 operators differ from their own runs by up to 1.3 × 10⁻¹³, in the same fields, so the difference is the vmapped program's, not S2's | runs, s2-vmap/probe.json |
+| Catalogue-metadata invariance | Bindings, batch signature, the step's jaxpr and the trajectory bitwise; the summary and the definition carry the references | smoke, runs |
+| Padded slots | Idle view bitwise; one half-step closes every ledger (two clamps, cleft onset) | smoke |
+| Existing compositions unchanged | Crossrev against 8416a72: base 36/36 jaxprs and 12/12 bindings, qualification 78/78 and 56/56, identical; 17 saved runs bit-identical; composite files pass (contract 15, adapter 5, injection 9 and 3, step checks 37, identity 9, water 15, replacement 17). Unit: 57 min CPU, peak 3.7 GB, memory.events all 0 | s2-crossrev-*, s2-dumps, s2-tests |
+| Targeted rerun at 965a804 | S2 smoke 12 and 22, runs 9/9 (288 s, the cap-edge idle guard included), contract 15, adapter 5, injection 9; the vmap probe. Unit: 6.8 min CPU, peak 2.1 GB, memory.events all 0 | s2b-tests, s2-vmap |
+| Final rerun at 00672e8 (the onset masks selected by value) | Crossrev head side against the same frozen outputs: base 36/36 and 12/12, qualification 78/78 and 56/56, identical. This measures water's and replacement's programs and bindings unchanged after `CONFLICTS_VIEW` (603285a). S2 smoke 12 and 23 (worlds with and without an onset have the same shapes and batch signature), runs 9/9 (284 s); insertion's step cost. Unit: 8.4 min CPU, peak 2.2 GB, memory.events all 0 | s2d-crossrev-*, s2d-tests, s2-cost |
+| R-full comparison | S3 | – |
 
 ## 4. Current injection as a general control
 
@@ -521,6 +672,8 @@ It still needs:
 | 5 | §3: capacitance kept as state alongside area | Accepted |
 | 6 | §1.3: at most one in-step process per composition | Accepted |
 | 7 | §5: the verdict is each qualification's own judge with the variant tolerances | Accepted, with the stop rule before run C |
+| 8 | §3, R3: option (a), with a field-input provider refused above 64 field nodes | Accepted (13 November), from the measured cost; (b) or (c) before larger worlds |
+| 9 | §3: the capacitor energy at a view is corrected in operator ledger terms; @3's balances stay on the declared layout | Accepted (13 November). The requirement is on the total, ½ Σ C V² − ½ Σ C0 V0²; the correction is derived against @3's actual term |
 
 Rough effort:
 
