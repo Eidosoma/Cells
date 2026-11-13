@@ -17,6 +17,7 @@ import jax
 import numpy as np
 
 import cells
+from cells import continuity as _continuity
 from cells.core.devices import execution_device
 from cells.core.runner import RunResult, validate_checkpoint
 from cells.core.specs import ConfigError, SimulationSpec, digest, parse_spec, read_json
@@ -76,6 +77,7 @@ class Snapshot:
     spec: SimulationSpec
     checkpoint: Checkpoint
     fingerprint: str
+    admission: object = None  # A continuity.Admission when a record admitted the load.
 
 
 def write_snapshot(directory: str | Path, spec: SimulationSpec, checkpoint: Checkpoint) -> Path:
@@ -120,7 +122,14 @@ def _write_snapshot_payload(directory, spec, checkpoint, *, identity=None):
     return path
 
 
-def load_snapshot(directory: str | Path) -> Snapshot:
+def load_snapshot(directory: str | Path, *, continuity=None) -> Snapshot:
+    """Restore a complete checkpoint; any change of source or runtime is refused.
+
+    continuity=None, the default, keeps every refusal. A cells.continuity.Request replaces
+    only the two identity comparisons, of source and of runtime, by its record's binding;
+    every other check runs as without it (docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 3.0).
+    batch_io.load_batch_snapshot passes each child of an admitted cohort here as its binding.
+    """
     path = Path(directory)
     manifest = read_json(path / "manifest.json")
     expected_fields = {
@@ -146,11 +155,31 @@ def load_snapshot(directory: str | Path) -> Snapshot:
         raise ConfigError("Not a complete Cells numerical checkpoint")
     if manifest["random_state"] is not None:
         raise ConfigError("These deterministic models have no random state")
-    if manifest["source_hashes"] != source_hashes():
-        raise ConfigError("Checkpoint model/engine source differs from this installation")
+    if continuity is None:
+        if manifest["source_hashes"] != source_hashes():
+            raise ConfigError("Checkpoint model/engine source differs from this installation")
+    else:  # The record binds this manifest and both sources (continuity.bind).
+        binding = _continuity.bind(
+            continuity,
+            kind=manifest["kind"],
+            fingerprint=fingerprint,
+            sources=manifest["source_hashes"],
+            current_sources=source_hashes(),
+        )
     spec = parse_spec(manifest["spec"])
-    if manifest["runtime"] != runtime_identity(spec.execution.backend):
-        raise ConfigError("Checkpoint runtime differs; cross-runtime migration is not supported")
+    admission = None
+    if continuity is None:
+        if manifest["runtime"] != runtime_identity(spec.execution.backend):
+            raise ConfigError(
+                "Checkpoint runtime differs; cross-runtime migration is not supported"
+            )
+    else:  # ... both runtimes, this definition and its clock; nothing else is relaxed.
+        admission = binding.require(
+            manifest["runtime"],
+            runtime_identity(spec.execution.backend),
+            {binding.key: spec},
+            {binding.key: manifest["clock"]},
+        )
     model = get_model(spec.model)
     if spec.fingerprint != manifest["spec_sha256"]:
         raise ConfigError("Checkpoint specification checksum mismatch")
@@ -175,7 +204,7 @@ def load_snapshot(directory: str | Path) -> Snapshot:
     validate_checkpoint(spec, checkpoint, initial=initial)
     device = execution_device(spec.execution.backend)
     checkpoint = Checkpoint(jax.device_put(state, device), jax.device_put(layout, device), **clock)
-    return Snapshot(spec, checkpoint, fingerprint)
+    return Snapshot(spec, checkpoint, fingerprint, admission)
 
 
 def write_run(

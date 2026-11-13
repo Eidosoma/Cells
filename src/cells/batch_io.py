@@ -5,6 +5,7 @@ from pathlib import Path
 from time import perf_counter
 from typing import Mapping
 
+from cells import continuity as _continuity
 from cells.core.batch import (
     BatchSpec,
     _checkpoint_map,
@@ -31,6 +32,7 @@ class BatchSnapshot:
     spec: BatchSpec
     checkpoints: Mapping[int, Checkpoint]
     fingerprint: str
+    admission: object = None  # A continuity.Admission when a record admitted the load.
 
 
 def _validate(spec, checkpoints):
@@ -87,7 +89,14 @@ def _write_batch_snapshot_payload(directory, spec, checkpoints):
     return path
 
 
-def load_batch_snapshot(directory):
+def load_batch_snapshot(directory, *, continuity=None):
+    """Restore a complete cohort; any change of source or runtime is refused.
+
+    continuity=None, the default, keeps every refusal. A cells.continuity.Request binds the
+    cohort manifest instead of the two identity comparisons, and each child is then loaded
+    against the cohort's admitted identity; every other cohort and child check runs as
+    without it (docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 6).
+    """
     path = Path(directory).resolve()
     manifest = _fields(
         read_json(path / "manifest.json"),
@@ -110,11 +119,29 @@ def load_batch_snapshot(directory):
         raise ConfigError("Unsupported batch checkpoint schema")
     if manifest["kind"] != "cells_independent_world_checkpoint":
         raise ConfigError("Not a complete independent-world checkpoint")
-    if manifest["source_hashes"] != source_hashes():
-        raise ConfigError("Batch checkpoint source differs from this installation")
+    if continuity is None:
+        if manifest["source_hashes"] != source_hashes():
+            raise ConfigError("Batch checkpoint source differs from this installation")
+    else:  # The record binds this cohort manifest and both sources (continuity.bind).
+        binding = _continuity.bind(
+            continuity,
+            kind=manifest["kind"],
+            fingerprint=fingerprint,
+            sources=manifest["source_hashes"],
+            current_sources=source_hashes(),
+        )
     spec, _ = checkpoint_batch_limits(parse_batch(manifest["spec"]))
-    if manifest["runtime"] != runtime_identity(spec.worlds[0].simulation.execution.backend):
-        raise ConfigError("Batch checkpoint runtime differs; no implicit migration")
+    admission = None
+    if continuity is None:
+        if manifest["runtime"] != runtime_identity(spec.worlds[0].simulation.execution.backend):
+            raise ConfigError("Batch checkpoint runtime differs; no implicit migration")
+    else:  # ... both runtimes and every world's definition; nothing else is relaxed.
+        admission = binding.require(
+            manifest["runtime"],
+            runtime_identity(spec.worlds[0].simulation.execution.backend),
+            {str(w.world_id): w.simulation for w in spec.worlds},
+            None,
+        )
     if manifest["spec_sha256"] != spec.fingerprint:
         raise ConfigError("Batch checkpoint specification checksum mismatch")
     records = manifest["worlds"]
@@ -130,11 +157,14 @@ def load_batch_snapshot(directory):
         child = (path / record["path"]).resolve()
         if not child.is_relative_to(path):
             raise ConfigError("Batch checkpoint child escapes its directory")
-        saved = load_snapshot(child)
+        if continuity is None:
+            saved = load_snapshot(child)
+        else:  # Against the cohort's admitted identity, not this installation's.
+            saved = load_snapshot(child, continuity=binding.child(world.world_id))
         if saved.spec != world.simulation or saved.fingerprint != record["snapshot_sha256"]:
             raise ConfigError("Batch checkpoint child specification/identity differs")
         checkpoints[world.world_id] = saved.checkpoint
-    return BatchSnapshot(spec, checkpoints, fingerprint)
+    return BatchSnapshot(spec, checkpoints, fingerprint, admission)
 
 
 def write_batch_run(directory, result, *, checkpoint_times=(), provenance=None):
