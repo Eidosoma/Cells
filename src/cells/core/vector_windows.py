@@ -37,6 +37,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.core import phases
 from cells.core.batch import (
     BatchSpec,
     WorldSpec,
@@ -184,9 +185,11 @@ def plan_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
     if not spec.worlds[0].simulation.execution.jit:
         raise ConfigError("Vectorized worlds require JIT execution")
     plans, shared, initial = [], {}, {}
+    planning = perf_counter()
     for world in spec.worlds:
         checkpoint = None if checkpoints is None else checkpoints[world.world_id]
         key = (id(world.simulation), None if checkpoint is None else checkpoint.time)
+        world_started, planned = perf_counter(), key not in shared
         try:
             if key not in shared:
                 local = _plan_windows_metadata(world.simulation, policy, checkpoint)
@@ -202,6 +205,13 @@ def plan_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
         except (ConfigError, NumericalError) as exc:
             raise type(exc)(f"World {world.world_id}: {exc}") from exc
         plans.append(local)
+        phases.mark(
+            "plan.world",
+            world=world.world_id,
+            seconds=perf_counter() - world_started,
+            shared_plan=not planned,
+        )
+    phases.mark("plan", worlds=len(plans), seconds=perf_counter() - planning)
     remaining = max(len(p.grid) - 1 - p.start_step for p in plans)
     width = max(1, min(plans[0].policy.window_steps, remaining))
     padded = len(plans) * width * max(1, -(-remaining // width))
@@ -569,6 +579,7 @@ def _iter_vector_windows(plan, checkpoints):
     device = execution_device(spec.worlds[0].simulation.execution.backend)
     state, params, active, constants, host_layouts = resident_inputs(plan, starts, model, device)
     static_seconds = perf_counter() - started
+    phases.mark("binding", worlds=len(ids), seconds=static_seconds)
     grids = [
         plan.worlds[g[0]].grid.windows(plan.worlds[g[0]].start_step, plan.policy.window_steps)
         for g in plan.groups
@@ -586,6 +597,7 @@ def _iter_vector_windows(plan, checkpoints):
         compile_seconds, memory = 0.0, None
         if executable is None:
             executable, compile_seconds, memory = compile_window(model, args, plan.observation_rows)
+            phases.mark("compile", seconds=compile_seconds)
             needed = memory and sum(
                 memory[k]
                 for k in ("argument_size_in_bytes", "output_size_in_bytes", "temp_size_in_bytes")
@@ -604,8 +616,18 @@ def _iter_vector_windows(plan, checkpoints):
     round_index = 0
     while current is not None:
         final, first, bits, maxima, stored = outputs
+        waiting = perf_counter()
         first, bits, maxima = jax.device_get((first, bits, maxima))
         execute_seconds = perf_counter() - launched
+        # The host's wait alone: window k + 1 runs while the host finishes window k, so
+        # execute_seconds (launch to summary) also covers that host work.
+        device_wait_seconds = perf_counter() - waiting
+        (phases.mark if round_index == 0 else phases.detail)(
+            "first_window" if round_index == 0 else "window",
+            index=round_index,
+            execute_seconds=execute_seconds,
+            steps=int(current.arrays[1].sum()),
+        )
         if np.any(first >= 0):
             _failure(plan, model, ids, current.times, first, bits)
         state = final
@@ -662,6 +684,7 @@ def _iter_vector_windows(plan, checkpoints):
             "window_preparation_seconds": current.seconds,
             "compile_seconds": compile_seconds,
             "execute_seconds": execute_seconds,
+            "device_wait_seconds": device_wait_seconds,
             "host_transfer_seconds": transfer_seconds,
             "analysis_seconds": perf_counter() - analysis_started,
         }

@@ -74,6 +74,7 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
+from cells.core import phases  # noqa: E402
 from cells.core.specs import parse_spec  # noqa: E402
 from cells.core.surface_pump_v3_spec import NALEAK_LAW_ID  # noqa: E402
 from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
@@ -106,6 +107,10 @@ JUNCTION_HEAT = None
 
 def log(line):
     print(f"[{time.strftime('%H:%M:%S')}] {line}", flush=True)
+
+
+# The four phases of a run (cells.core.phases), in the run log and the reports.
+PHASE_KEYS = ("preparation", "compile", "execution", "observation", "output")
 
 
 def write_json(path, value):
@@ -984,7 +989,11 @@ def part_longsheet(args):
         )
         write_json(output / f"failure-{int(time.time())}.json", failure)
     else:
-        report.update(timings=result.timings, batch_resources=dict(result.resources))
+        report.update(
+            timings=result.timings,
+            phases=phases.phase_totals(result.timings),
+            batch_resources=dict(result.resources),
+        )
         report["diagnostics"] = {str(k): w.diagnostics for k, w in result.worlds.items()}
     write_json(output / "longsheet.json", report)
     summarize_longsheet(output)
@@ -1916,7 +1925,10 @@ def run_batch(spec, policy, observer, checkpoints=None):
     from cells.core.vector_windows import WorldCheckError, run_vector_windowed
 
     try:
-        return run_vector_windowed(spec, policy, checkpoints, sink=observer), None
+        result = run_vector_windowed(spec, policy, checkpoints, sink=observer)
+        split = phases.phase_totals(result.timings)
+        log("phases " + " ".join(f"{k}={split[k]:.1f}s" for k in PHASE_KEYS))
+        return result, None
     except WorldCheckError as error:
         return None, dict(
             error=repr(error),
@@ -1943,9 +1955,15 @@ def run_segment(spec, policy, observer, checkpoints, stop_time):
     from cells.core.windows import merge_diagnostics
 
     timings, diagnostics, executed, last, end = {}, {}, 0, None, None
+    output_seconds = 0.0
     try:
-        for window in iter_vector_windows(spec, policy, checkpoints):
+        planning = time.perf_counter()
+        windows = iter_vector_windows(spec, policy, checkpoints)  # Plans before returning.
+        timings["preflight_seconds"] = time.perf_counter() - planning
+        for window in windows:
+            tick = time.perf_counter()
             observer(window)
+            output_seconds += time.perf_counter() - tick
             for name, value in window.timings.items():
                 timings[name] = timings.get(name, 0.0) + value
             for identity, values in window.diagnostics.items():
@@ -1955,9 +1973,14 @@ def run_segment(spec, policy, observer, checkpoints, stop_time):
             end = max(c.time for c in window.checkpoints.values())
             if stop_time is not None and end >= stop_time - 0.5 * DT:
                 break
+        tick = time.perf_counter()
         snapshot = None if last is None else str(observer.snapshot(last))
+        output_seconds += time.perf_counter() - tick
+        split = phases.phase_totals(timings, output_seconds=output_seconds)
+        log("phases " + " ".join(f"{k}={split[k]:.1f}s" for k in PHASE_KEYS))
         return dict(
             timings=timings,
+            phases=split,
             diagnostics={str(k): v for k, v in diagnostics.items()},
             executed_world_steps=executed,
             end_time_s=end,
@@ -2086,7 +2109,11 @@ def part_prepare(args):
         write_json(output / "prepare.json", report)
         write_json(output / "failure.json", failure)
         return 1
-    report.update(timings=result.timings, batch_resources=dict(result.resources))
+    report.update(
+        timings=result.timings,
+        phases=phases.phase_totals(result.timings),
+        batch_resources=dict(result.resources),
+    )
     checkpoints = result.checkpoints
     report["stationarity"] = {}
     for world in spec.worlds:
@@ -2321,7 +2348,11 @@ def part_run(args):
         write_json(report_path, report)
         write_json(output / f"failure-{int(time.time())}.json", failure)
         return 1
-    report.update(timings=result.timings, batch_resources=dict(result.resources))
+    report.update(
+        timings=result.timings,
+        phases=phases.phase_totals(result.timings),
+        batch_resources=dict(result.resources),
+    )
     report["diagnostics"] = {str(k): w.diagnostics for k, w in result.worlds.items()}
     world_steps = sum(w.resources["executed_steps"] for w in result.worlds.values())
     report["cost"] = dict(
@@ -2951,19 +2982,21 @@ def main(argv=None):
     WATER_AVAILABILITY = args.water_availability
     Path(args.output).mkdir(parents=True, exist_ok=True)
     status = 0
-    for name in args.parts:
-        started = time.perf_counter()
-        log(f"part {name}")
-        try:
-            status |= PARTS[name](args) or 0
-        except Exception as error:  # Preserved as evidence; later parts still run.
-            status = 1
-            write_json(
-                Path(args.output) / f"{name}.failure.json",
-                dict(error=repr(error), traceback=traceback.format_exc()),
-            )
-            log(f"part {name} failed: {error!r}")
-        log(f"part {name} done in {time.perf_counter() - started:.1f} s")
+    # Plan validation, binding, compile and the first window to the run log as they end.
+    with phases.enabled(sys.stdout):
+        for name in args.parts:
+            started = time.perf_counter()
+            log(f"part {name}")
+            try:
+                status |= PARTS[name](args) or 0
+            except Exception as error:  # Preserved as evidence; later parts still run.
+                status = 1
+                write_json(
+                    Path(args.output) / f"{name}.failure.json",
+                    dict(error=repr(error), traceback=traceback.format_exc()),
+                )
+                log(f"part {name} failed: {error!r}")
+            log(f"part {name} done in {time.perf_counter() - started:.1f} s")
     return status
 
 

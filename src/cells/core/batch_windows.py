@@ -9,6 +9,7 @@ from typing import Mapping
 import jax
 import numpy as np
 
+from cells.core import phases
 from cells.core.batch import (
     BatchSpec,
     _array_bytes,
@@ -49,6 +50,7 @@ class BatchWindowPlan:
 
 
 def plan_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
+    planning = perf_counter()
     spec, bound = checkpoint_batch_limits(spec)
     if checkpoints is not None:
         _checkpoint_map(spec, checkpoints)
@@ -84,12 +86,15 @@ def plan_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
         raise ConfigError("Estimated window aggregate arrays exceed batch max_working_bytes")
     # No control arrays or model-capacity allocation before aggregate refusal.
     for world, plan in zip(spec.worlds, plans, strict=True):
+        world_started = perf_counter()
         try:
             _validate_window_plan(
                 plan, None if checkpoints is None else checkpoints[world.world_id]
             )
         except (ConfigError, NumericalError) as exc:
             raise type(exc)(f"World {world.world_id}: {exc}") from exc
+        phases.mark("plan.world", world=world.world_id, seconds=perf_counter() - world_started)
+    phases.mark("plan", worlds=len(plans), seconds=perf_counter() - planning)
     return BatchWindowPlan(spec, plans[0].policy, tuple(plans), estimate, bound, fixed_width)
 
 
@@ -133,6 +138,7 @@ def _iter_batch_windows(plan, checkpoints):
     )
     jax.block_until_ready((state, parameters, active))
     preparation_seconds = perf_counter() - started
+    phases.mark("binding", worlds=len(ids), seconds=preparation_seconds)
     grids = [p.grid.windows(p.start_step, plan.policy.window_steps) for p in plan.worlds]
     observation_indices = [
         bisect_left(p.spec.experiment.observation_times, starts[i].time)
@@ -182,6 +188,7 @@ def _iter_batch_windows(plan, checkpoints):
                         inputs, rhs, domain, stepper
                     ).compile()
                     compile_seconds = perf_counter() - prepared
+                    phases.mark("compile", width=width, seconds=compile_seconds)
                 execute_started = perf_counter()
                 final, history, valid = executables[width](inputs)
             else:
@@ -190,6 +197,12 @@ def _iter_batch_windows(plan, checkpoints):
                     final, history, valid = _batch_rollout(inputs, rhs, domain, stepper)
             jax.block_until_ready((final, history, valid))
             execute_seconds = perf_counter() - execute_started
+            (phases.mark if round_index == 0 else phases.detail)(
+                "first_window" if round_index == 0 else "window",
+                index=round_index,
+                execute_seconds=execute_seconds,
+                steps=int(counts.sum()),
+            )
             failed = np.argwhere(~np.asarray(valid))
             if len(failed):
                 world, step = map(int, failed[0])

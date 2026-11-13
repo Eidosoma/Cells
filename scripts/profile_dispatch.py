@@ -22,6 +22,10 @@ harness measures the pieces, on the backend JAX selects (JAX_PLATFORMS, XLA_FLAG
   edges       field solver version 3's floor multiple at saved states (--states): the
               smallest current_floor at which each state's field solve converges,
               batched and unbatched
+  phases      the vectorized run path itself for --windows windows: its live phase
+              markers (cells.core.phases, with times) and its timings grouped into
+              preparation, execution, observation and output (a step profile to repeat
+              on the CPU, the L4 and GH200 with the same arguments)
   compare     saved window runs against a repeated baseline pair (within its spread,
               same refusals and end times), or solve runs against the first (same
               convergence flags and iterations)
@@ -62,7 +66,7 @@ import numpy as np  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core import vector_windows  # noqa: E402
+from cells.core import phases, vector_windows  # noqa: E402
 from cells.core.batch import BatchSpec, WorldSpec  # noqa: E402
 from cells.core.grid import EventGrid  # noqa: E402
 from cells.core.schedule import control_values  # noqa: E402
@@ -508,6 +512,51 @@ def split_timing(args):
     return result
 
 
+def phase_profile(args):
+    """The run path's own phases: markers as they happen and the four phase totals."""
+    import logging
+
+    specs, checkpoints = load(args)
+    batch = BatchSpec(
+        tuple(WorldSpec(i, s) for i, s in enumerate(specs, start=1)),
+        len(specs),
+        2**53 - 1,
+        2**53 - 1,
+    )
+    markers = []
+
+    class Collect(logging.Handler):
+        def emit(self, record):
+            markers.append(dict(created=record.created, phase=record.phase, **record.fields))
+
+    handler = Collect()
+    phases.LOGGER.addHandler(handler)
+    phases.LOGGER.setLevel(logging.DEBUG)
+    timings, started = {}, perf_counter()
+    try:
+        windows = vector_windows.iter_vector_windows(
+            batch, WindowPolicy(args.steps, "checkpoints"), checkpoints
+        )  # Plans before returning.
+        timings["preflight_seconds"] = perf_counter() - started
+        for k, window in enumerate(windows):
+            for name, value in window.timings.items():
+                timings[name] = timings.get(name, 0.0) + value
+            if k + 1 == args.windows:
+                break
+    finally:
+        phases.LOGGER.removeHandler(handler)
+    wall = perf_counter() - started
+    origin = markers[0]["created"] if markers else 0.0
+    for marker in markers:
+        marker["seconds_since_first"] = marker.pop("created") - origin
+    return {
+        "markers": markers,
+        "timings": timings,
+        "phases": phases.phase_totals(timings),
+        "wall_seconds": wall,
+    }
+
+
 def edge_floors(args):
     """Version 3's floor multiple at saved states: the smallest current_floor (ulps of eps
     times the incident sum) at which each state's field solve converges, batched (one
@@ -660,7 +709,7 @@ def compare_solves(paths, records):
     return out
 
 
-PARTS = ("iterations", "solve", "window", "split", "edges", "compare")
+PARTS = ("iterations", "solve", "window", "split", "phases", "edges", "compare")
 
 
 def main():
@@ -683,7 +732,7 @@ def main():
     args = parser.parse_args()
     if args.part != "compare" and not args.definitions:
         parser.error("--definitions is required")
-    if args.part in ("iterations", "solve", "window", "split") and not args.snapshot:
+    if args.part in ("iterations", "solve", "window", "split", "phases") and not args.snapshot:
         parser.error("--snapshot is required")
     started = perf_counter()
     parts = {
@@ -691,6 +740,7 @@ def main():
         "solve": solve_timing,
         "window": window_timing,
         "split": split_timing,
+        "phases": phase_profile,
         "edges": edge_floors,
         "compare": compare_runs,
     }
