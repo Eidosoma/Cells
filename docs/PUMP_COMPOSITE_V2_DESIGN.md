@@ -616,6 +616,27 @@ is its anchor (D057), already counted on the declared layout.
     - By D148's draft this is not an in-place fix, because a judge's registered numbers
       change. It needs a new ID or the allowance, and that is the user's decision. The
       fix stays branch work, unlanded.
+  - **Option 3, registered before any of its runs (13 November).** The species are added
+    explicitly in species order, with no barrier (f91ce9d, snapshot-s3h), compared against
+    snapshot-s3f (69df9f9) under the same stop rule.
+    - Runs at s3h:
+      - the forward guard's parts pump (@1 and @2), injection (the heredity cell, and
+        Rm1 at 12 s) and egg (420 s), compared with the guard's s3f outputs;
+      - the regression test;
+      - the registered judges W1, W2, G2-Q1 (Q1 to Q7) and Rm1, compared with their s3f
+        reruns, which reproduce the recorded judged runs. s3h runs Q2 as registered (it
+        includes e1cc472). For Q2 the s3f baseline is the run with the constant supplied.
+    - (A) Admissible under D148 only if all of these hold:
+      - every physical field in those parts is bitwise identical;
+      - the egg's host electrode ledger is exact: 0 at 420 s, and within one ulp of the
+        plate charge on every row;
+      - the regression test passes;
+      - every number in the judges' outputs is identical, except provenance and timing
+        and the residual diagnostics of the electrode, global-charge and energy ledgers.
+    - (B) If the only numbers that move are Q2's `image_charge` and `free_energy`
+      comparisons, which are booked from capacitor_change's plate charges and patch
+      voltages, and every verdict holds, the result is reported and the lead decides.
+    - (C) If anything else moves, the work stops, and options 1 and 2 go to the user.
   - **The forward guard, fix against no fix: physical fields are identical**
     (composite-v2-20261112-01/s3-fix/guard/compare-final.json).
     - Setup: snapshot-s3f (69df9f9) against snapshot-s3g (e32c20a), run by
