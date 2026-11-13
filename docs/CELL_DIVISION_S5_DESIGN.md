@@ -94,8 +94,12 @@ lands (§9).
   of 1e-16.
 - **So the stop branch is not triggered.** That branch was an ordered node sum or an allowance,
   with S5a at 1 → 2 only. Egg-scale 1 → 2 → 4 stays in the plan.
-- **Caveat.** The probe has no closer, so its program is not S5's. The S5 worlds' device checks
-  (Q1) measure the ratio again in their own program.
+- **Caveat: "clean" covers this compiled program only.** The exposure is specific to each
+  program.
+  - The probe has no closer.
+  - It ran the scalar rollout, one compiled program per window shape, with a separate vmapped
+    pass of per-row checks, as S3's probe did. S5's studies run vector windows.
+  - Q1's device checks remain the guard, and they measure the ratio again in S5's own programs.
 - **Evidence.** `cell-division-s5-20261113-01/probe/` (unit `cells-s5-probe`; memory.events all
   0; peak 0.9 GB).
 
@@ -495,6 +499,14 @@ full or not at all.
   - The lower end allows an obstruction factor of 2–5 for yolk, organelles and bound ions (S).
   - The bridge's cytoplasmic diffusivities are D_s^cyt = D_s (σ_cyt / σ_free): one obstruction
     factor for every species.
+  - **σ_cyt is not an independent unknown in the engine.**
+    - The engine sees the bridge only through P_s A_j (a/a_0) = 2 a σ_cyt D_s / σ_free: the
+      product a σ_cyt times fixed free-solution weights.
+    - So the declared parameter is in effect the bridge's initial conductance,
+      G_b0 = 2 a_0 σ_cyt. The step bounds it (R_b0 ≥ 32 kΩ at 0.25 ms), and Q10's range over a_0
+      at a fixed σ_cyt spans the same G_b0 as σ_cyt's band, a factor of 4.5.
+    - A source for σ_cyt is needed only to read G_b0 as an aperture in µm. Decision 12's wait
+      therefore does not hold up S5a's code.
 - **Partition time and a_0: an influence to measure, not a numerical device.**
   - Before the partition the cytosol is one node. That is valid while the bridge resistance is
     far below the membrane's: about 3.5 kΩ at J1 (design §5.4), with coupling above 0.95.
@@ -752,7 +764,11 @@ there too.
   - Nominal parameters (not Xenopus's), a cell of tissue scale with an old patch to the bath.
   - A furrow onset into a cleft with access, partition, bridge closure, second onsets and
     partitions, all within about 2 s, at 0.25 ms (seconds of CPU).
-  - Variants: a neighbour cell with a gated contact; populations on the dividing cell.
+  - Variants (S5a, with the partition): a neighbour cell with a gated contact, and populations
+    on the dividing cell's ordinary patches.
+    - They are checked by Q1, Q2 (R-ops maps them, Appendix A.6), Q6–Q9 and Q11.
+    - R-tissue's trajectories (Q3) use the base world: passive patches and bridges, with no gate
+      kinetics.
 - **Egg-scale accounting world.**
   - The egg's volume, contents and areas (dL74, the smoke test's), with the old membrane of the
     smoke test and a nominal new membrane and access.
@@ -840,6 +856,13 @@ The Q7 items:
   - **The pass criterion is S3's registered protocol against R-full.** S3's judge runs once, from
     a clean snapshot, on S3's definition with the two new versions, under S3's registered
     tolerances (Q1, Q2, Q4, Q5; Q3 reported).
+  - **The vehicle: a registered operator variant of S3's protocol.**
+    - S3's judge refuses an unregistered protocol, and S3's judged run is not rerun.
+    - The variant names S3's protocol as its base and changes only the operator list
+      (insertion@2 and lumen@2), with the tolerances unchanged. It is registered before its run.
+    - The precedent is the L4 backend variant of v2 §5: judges accept the registered protocol or
+      a registered variant of it (bb40855).
+    - S3's judge (`cleft_egg_engine judge`) gains that acceptance in S5a.
   - The comparison with S3's judged run is reported, bitwise or with each difference's size. It
     is not a pass criterion.
   - **Why this criterion.**
@@ -1030,11 +1053,11 @@ mirrors `tests/unit/test_d147_drivers.py`.
 | 7 | New versions insertion@2 and lumen@2; @1 stays registered for S3's world | Accepted |
 | 8 | The composite owns the energy rule at the view (§5.3), referenced to the view of the initial state when a closer is present (§3.6 point 4) | Accepted |
 | 9 | Populations on onset patches: admitted by the padding rule | Deferred to S5b; insertion@2 keeps insertion@1's refusal in S5a |
-| 10 | S5's worlds: built from neither J1 input; the J2 bright line (§10.1) | Settled by the bright line and its static test |
+| 10 | S5's worlds: built from neither J1 input; the J2 bright line (§10.1) | Not ruled on separately. My reading: it is governed by the lead's bright-line instruction. Pending the lead's confirmation |
 | 11 | Scope refusals: pumps on dividing cells, water (volume provider), replacement, asymmetric egg-scale divisions until `check_definition`'s scale-aware bound | Accepted |
-| 12 | Bridge: an @3 junction with P A = 2 a D_s and a fixed open gate, prescribed closure (linear or exponential), a_0 bounded by dt | Waits for the cytoplasmic conductivity's source; until then a declared assumption with a band (§4.2) |
+| 12 | Bridge: an @3 junction with P A = 2 a D_s and a fixed open gate, prescribed closure (linear or exponential), a_0 bounded by dt | Waits for the cytoplasmic conductivity's source; until then a declared assumption with a band. σ_cyt enters only through G_b0 = 2 a_0 σ_cyt, so the wait does not hold up S5a's code (§4.2) |
 | 13 | S4: superseded and reported, no run (§9) | Accepted; the lead records it when this note lands |
-| 14 | Staging | S5a (about 5.5 days) and S5b (about 3 days) approved. S5a lands after the volume ledger; code starts after the risk-1 probe and the constants-aware baseline |
+| 14 | Staging | S5a (about 5.5 days) and S5b (about 3.5 days, with the review's guards) approved. S5a lands after the volume ledger; code starts after the risk-1 probe and the constants-aware baseline |
 
 ## 13. Risks
 1. **The electrode ledger at four cells.**
@@ -1178,9 +1201,24 @@ partition, bridge, insertion@2 or lumen@2 code (§7). These conventions hold thr
      - increments Δ = n − n̄: Δ_{D1} = f Δ_P + δ and Δ_{D2} = Δ_P − Δ_{D1};
      - the parent's increment becomes 0, so the moved amounts are −Δ_P at P and +Δ_{D1}, +Δ_{D2}
        at the daughters.
-4. **Patches.**
-   - A_{k¹} = a_k A_k and A_{k²} = A_k − A_{k¹}; C likewise; permeability per area unchanged.
-   - Populations, when present (S5b): abundances split by a_k, gates copied.
+4. **Patches, populations and contacts.** The partition (S5a) maps all three. Only populations
+   on *onset* patches wait for S5b (decision 9).
+   - **Patches:** A_{k¹} = a_k A_k and A_{k²} = A_k − A_{k¹}; C likewise; permeability per area
+     unchanged.
+   - **Populations.** Each population j (abundance N_j in units, a unit permeability, gate
+     values g_j) on a parent patch k maps to declared populations j¹ on k¹ and j² on k², with the
+     same law and unit permeability.
+     - N_{j¹} = a_k N_j and N_{j²} = N_j − N_{j¹}.
+     - Both take the parent's gate values g_j (gates are intensive).
+     - A population's conductance is its abundance times its unit permeability, so the split
+       conserves it.
+   - **Contacts to neighbours.** Each contact e between P and a neighbour cell M (area A_e,
+     permeability per area, gate g_e) maps to declared daughter contacts e¹ (D1–M) and e² (D2–M).
+     - Their areas are a_e A_e and A_e − a_e A_e, with permeability per area unchanged.
+     - Both take g_e. a_e ∈ [0, 1] is declared from the geometry: 0 or 1 when only one daughter
+       touches M.
+     - The parent's contact retires with P.
+   - R-ops needs these maps only, not the gate kinetics.
 5. **Liveness.**
    - P and K_P stop being live (retired); their accumulated transfers and heats are kept, and
      still count in the totals.
