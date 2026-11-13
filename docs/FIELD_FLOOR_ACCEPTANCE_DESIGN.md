@@ -71,9 +71,11 @@ is still refused.
 - **Changing version 2 would change every version-2 jaxpr.** The composite's
   cross-revision guards compare jaxprs, so they would flag every world. The values would
   still be bitwise wherever version 2 converges.
-- **Version 3 already exists and is tested** (`tests/unit/test_field_floor.py`): it is
-  bitwise equal to version 2 on every fixture where version 2 converges. It refuses a
-  solve stopped above the floor. Its snapshots round-trip and resume bitwise.
+- **Version 3 already exists and is tested** (`tests/unit/test_field_floor.py`) on the
+  `resolved_pump_tissue@1` and `@2` fixtures. There it is bitwise equal to version 2
+  wherever version 2 converges, it refuses a solve stopped above the floor, and its
+  snapshots round-trip and resume bitwise. No test covers the hold's model,
+  `resolved_pump_tissue@3`; the CPU runs in the last section are its first evidence there.
 - **Routing is a definition choice, not a code change.** `field_solver` is part of each
   definition. New runs with finite extracellular space (a later full-tissue hold, E07)
   declare version 3. Old evidence stays reproducible exactly as recorded.
@@ -81,13 +83,17 @@ is still refused.
   offsets, so the floor never decides there (see the margins below). Switching them would
   change registered definitions for nothing.
 
-A switched definition is a new definition. It needs new snapshots and cannot resume a
-version-2 snapshot, because the definition and its layout type differ.
+A switched definition is a new definition. It cannot resume or start from a version-2
+checkpoint: `validate_checkpoint` (`core/runner.py`) refuses a layout without the floor
+leaf, and the hold's driver refuses a resume snapshot that holds other definitions. For
+the running hold, a refusal of this class on the L4 would mean a rerun from t = 0 (start,
+preparation and run) under version 3, not a resume.
 
 ## Which evidence could change
 
 Values change only at steps that version 2 refused. Every run, guard and dump that never
-reached the edge is bitwise in states, observations, diagnostics and ledgers.
+reached the edge should stay bitwise in states, observations, diagnostics and ledgers.
+The CPU runs in the last section show it for states; guard 2 checks the rest.
 
 What does change for a switched definition:
 
@@ -96,8 +102,9 @@ What does change for a switched definition:
 - the jaxpr, which gains the floor computation after the loop. Its only output is the
   solve's `converged`, and so the step's validity.
 
-Runs that stopped at a refusal of this class would continue under version 3. Their later
-records are new evidence and get judged as such.
+A run that stopped at a refusal of this class is rerun under version 3 from its start,
+not resumed (see above). Its records after the old refusal are new evidence and get
+judged as such.
 
 ## Guard plan
 
@@ -115,12 +122,17 @@ records are new evidence and get judged as such.
    The verdicts must be identical. These worlds have no free offsets, so this is a cheap
    control, not a risk.
 4. **The defect's own cases (done on CPU; last section):** version 3 accepts the hold's
-   worlds where version 2 refused, in the vectorized and scalar programs. It matches
-   version 2 bitwise before that; the 200-step vectorized program was not compared state
+   worlds where version 2 refused, in the vectorized and scalar programs. Its states match
+   version 2's bitwise before that; the 200-step vectorized program was not compared state
    by state.
 5. **L4:** the hold's worlds with version 3 from t = 0, on the L4 and on the CPU, past the
-   CPU's edge steps: both must accept. The agreement's L4 terms are unchanged, because its
-   worlds stay on version 2.
+   CPU's edge steps: both must accept. Record the L4's floor multiple at those steps,
+   because the 500× margin was measured on the CPU only. The agreement's L4 terms are
+   unchanged, because its worlds stay on version 2.
+6. **A unit test for `resolved_pump_tissue@3` with version 3**, as `test_field_floor.py`
+   does for `@1` and `@2`, on a small fixture with free offsets: bitwise equal to version 2
+   where version 2 converges, a root at the floor accepted, one above it refused, and a
+   checkpoint round trip.
 
 ## Can a refusal class still differ by backend afterwards
 
@@ -170,9 +182,9 @@ means finite extracellular space: the full-tissue worlds and E07.
 with version 2 and once with version 3 declared (`results/t0-v3.json`,
 `results/t0-scalar-v3-w*.json`; version 2's widths from `results/t0-widths-main.json`).
 
-| Program | Version 2 refuses | Version 3 | Equal to version 2 before that |
+| Program | Version 2 refuses | Version 3 | States equal to version 2's before that |
 | --- | --- | --- | --- |
-| Vectorized, windows of 1 to 186 steps | world 3 at [0.085, 0.086] s | accepts to 0.6 s | bitwise, 85 steps × 3 worlds (1-step windows) |
+| Vectorized, 1-step windows | world 3 at [0.085, 0.086] s (also with 10- to 186-step windows) | accepts to 0.6 s | bitwise, 85 steps × 3 worlds |
 | Vectorized, 200-step windows | world 1 at [0.186, 0.187] s | accepts to 0.6 s | not compared |
 | Scalar `jit`, world 1 | [0.464, 0.465] s | accepts to 0.6 s | bitwise, 464 steps |
 | Scalar `jit`, world 3 | [0.452, 0.453] s | accepts to 0.6 s | bitwise, 452 steps |
