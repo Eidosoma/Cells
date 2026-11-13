@@ -328,9 +328,44 @@ def derivative_from_field(values, p, *, xp=jnp):
     return STATE_TYPE(*(xp.where(values.converged, v, xp.nan) for v in result))
 
 
+def _species_sum(valence, amount):
+    """sum_s valence_s amount_s over the species axis, added in species order."""
+    total = valence[0] * amount[0]
+    for s in range(1, amount.shape[0]):
+        total = total + valence[s] * amount[s]
+    return total
+
+
 def capacitor_change(state, p, *, xp):
-    """Charge-only increment; patch voltages do not depend on floating offsets."""
-    q = charge_increment(state, p, xp=xp)
+    """Charge-only increment; patch voltages do not depend on floating offsets.
+
+    Returns the charge increments, the plate-charge changes and the patch-voltage changes.
+    The electrode ledger books differences of these plate charges between consecutive
+    states (surface_pump.electrode_increment, injection, replacement) and checks the sum
+    against them, so every evaluation of one state must give the same bits. The species
+    are therefore added explicitly in species order. XLA leaves the order of a reduce
+    unspecified, and on the Xenopus egg it chose differently at the start and at the end
+    of @3's step, so the electrode increments stopped telescoping (7e-22 C per step; v2
+    design §3, S3 prerequisite (c)).
+    Known exposure: XLA may still fuse the sum with the computation of the state, and
+    recompute the state's amounts inside that kernel. On the CPU the recomputed amounts
+    have equalled the stored ones, but nothing guarantees it; the egg-scale regression test
+    (tests/unit/test_capacitor_change.py) guards it. An optimization barrier on the amounts
+    would close the exposure, but it changes the derivative programs: the step map's
+    Jacobian in W1's and W2's stationary judges.
+    charge_increment, which the field solve uses, is unchanged. NumPy sums axis 0 in the
+    same order, except for a single column of 8 or more species. Exact on the CPU when
+    valences have magnitude 0, 1, 2, 4 or 8, which makes z n exact; the kernels contract
+    it into the accumulate. The spec admits integers in [-8, 8], and every world in use has
+    0, ±1 or ±2. Also needed: the solve's zero boundary (one kernel contracts F q - C b),
+    and no held node coupled to three or more charged free nodes, whose node sum XLA could
+    also associate differently. Held baths in tissue worlds couple to many free nodes, so
+    their electrode ledgers still rest on the bound. Not claimed for GPUs.
+    """
+    amount, outside = state.amount_increment, state.extracellular_amount_increment
+    q = CHARGE_PER_FMOL * xp.concatenate(
+        (_species_sum(p.valence, amount), _species_sum(p.valence, outside))
+    )
     dp = field._capacitor_solve(q, xp.zeros_like(q), field_layout(p), xp=xp)
     dv = xp.where(
         p.membrane_active, dp[p.membrane_cell] - dp[p.active.size + p.membrane_outside], 0.0

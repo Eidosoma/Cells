@@ -473,40 +473,258 @@ is its anchor (D057), already counted on the declared layout.
     a growing patch closing every host check; and crossrev of injection without field
     inputs (the heredity cell, and the Rm1 egg that the judged Rm1 ran on), whose jaxprs
     and bindings are identical to 00672e8.
-- **(c) Found 13 November, open: an electrode-ledger drift at egg scale, seeded by the
-  pulses** (composite-v2-20261112-01/s3-prereq/electrode_diag*.json).
-  - The uncleaved Rm1 egg, with its two pulses (0–12 s), run to 420 s at 1 ms fails the
-    host electrode ledger: 8.4 × 10⁻¹⁷ C at 420 s, 5 times its bound.
-  - Three arms:
-    - pulses: the residual is 1.6 × 10⁻²⁰ C after the pulses, 1.6 × 10⁻¹⁸ C at 270 s,
-      then grows linearly at 7.0 × 10⁻²² C per step;
-    - the electrode declared, with zero current throughout: exactly 0 at every sampled
-      row;
-    - no operator: exactly 0 at every one of the 420,001 rows.
-    So the operator's presence does not cause it; the pulses seed it.
-  - What the pulses leave: a nonzero Cl increment in the cell, −7.3 × 10⁻¹² fmol
-    (P_Cl = 0, so without them only Na and K ever move).
-  - The drift's signature:
-    - its knee comes between steps 290,000 and 300,000, where the Na increment crosses
-      2¹⁶ fmol (the K increment is its negative);
-    - after it, the rate is F × ulp(9.29 × 10⁴ fmol) / 2 = 7.02 × 10⁻²² C, half an ulp
-      of the charge terms per step.
-  - Hypothesis, not yet verified: @3's IMEX electrode increment
-    (`surface_pump.electrode_increment`) is a difference of plate charges evaluated at a
-    step's end and again at the next step's start. It telescopes only if those two
-    evaluations agree bit for bit, and with a third species carrying a nonzero increment
-    they evidently do not, for example by summing the species in different orders. The
-    egg's large increments (about 10⁵ fmol of Na and K by 420 s) make each disagreement
-    half an ulp of a large charge term.
-  - If so, this is @3's booking at egg-scale increments, not injection's, and any world
-    with three moving species at that scale is exposed (S3's cleft moves Cl through the
-    access).
-  - The fix, or a justified step-scaled allowance (2.5 eps × steps × F Σ |z Δn| covers
-    half an ulp per step), lives in `surface_pump*.py` and needs the lead's approval.
+- **(c) Found and pinned down 13 November: an electrode-ledger drift at egg scale. The fix
+  waits for the lead's approval** (composite-v2-20261112-01/s3-prereq: electrode_diag*.json,
+  electrode_mechanism.json and mechanism2/).
+  - The symptom:
+    - the uncleaved Rm1 egg, with its two pulses (0–12 s), run to 420 s at 1 ms, fails the
+      host electrode ledger by 8.4 × 10⁻¹⁷ C, 5 times its bound;
+    - with the electrode at zero current throughout, or with no operator, the ledger is
+      exactly 0.
+  - The ledger's two sides. Both come from `surface_tissue.capacitor_change` on the
+    state's amounts; no flux or current enters either.
+    - Booked: `electrode_charge_transferred_C`. @3's IMEX step adds
+      `surface_pump.electrode_increment`, which is cap(end) − cap(start) at the held nodes.
+      Injection's half-steps and replacement's events add the same difference when they
+      change the state.
+    - Recomputed: the held nodes' plate charges cap[n:] of the current state, in
+      `surface_tissue.balances` (host) and `surface_pump_checks.tissue_balances` (device).
+    - The bookings telescope only if every evaluation of a state's plate charge gives the
+      same bits.
+  - Where it breaks: the compiled step evaluates that one function differently at the
+    start and at the end of a step. XLA leaves the order of a reduce unspecified.
+    - The start's species sum Σ z_s n_s (`electrode_increment`, line 262) is merged by
+      XLA with the identical sum in the start state's field solve
+      (`surface_tissue.field_values`). That kernel adds in species order:
+      (t_Na + t_K) + t_Cl, with t_s = z_s n_s.
+    - The end's sum (line 263) is fused with the computation of the end state's amounts.
+      That kernel is vectorized and adds its lanes as (t_Na + t_Cl) + t_K.
+    - Each state is one step's end and the next step's start, so it is evaluated once
+      each way.
+  - Why the pulses and the knee matter:
+    - the pulses leave t_Cl = 7.34 × 10⁻¹² fmol (P_Cl = 0, so nothing else moves Cl);
+    - (t_Na + t_K) + t_Cl is exact here, because t_Na + t_K cancels exactly;
+      t_Na + t_Cl rounds t_Cl at Na's ulp;
+    - each step therefore books F (t_Cl − ulp(n_Na)): +6.2 × 10⁻²⁴ C below 2¹⁶ fmol, where
+      t_Cl is 1.009 ulp, and −6.96 × 10⁻²² C above it, where t_Cl is 0.504 ulp;
+    - with t_Cl = 0 both orders agree, which explains the exact zeros.
+  - The evidence:
+    - after the knee (history row 296,107), each step's booking equals the exact plate-charge
+      change, in rational arithmetic on the saved amounts, plus −6.958102 × 10⁻²² C, with
+      a spread of 10⁻³⁵ C over 400 steps;
+    - summing F[((t_Na + t_K) + t_Cl) − ((t_Na + t_Cl) + t_K)] over the saved states from
+      12 s to 420 s predicts the ledger's change, −8.44415674257 × 10⁻¹⁷ C, to 4 × 10⁻²⁹ C;
+    - the compiled rollout's two kernels show the two orders (mechanism2/kernels.txt);
+    - with the species sum written as explicit adds in species order, the ledger is
+      exactly 0 at 12 s and at 420 s, and every other field of the 420 s state is
+      bitwise identical. An optimization barrier between each state and its sum gives
+      the same result.
+  - A second exposure: the end's kernel recomputes the end state's amounts instead of
+    reading them back. Here they agree bit for bit (the prediction above), but this is a
+    second way the two evaluations could differ.
+  - The proposed remedy is an exact one: one computation of each state's plate charge,
+    in `surface_tissue.capacitor_change` (shared @3 code, so it needs the lead's approval).
+    - It sums the species with explicit adds in species order, and on the device it puts
+      an optimization barrier on the amounts it sums (s3-prereq/proposed/).
+    - Tested as written (mechanism3/): the egg's ledger is exactly 0 at 12 s and at
+      420 s, and every field of all 420,001 rows except `electrode_charge_transferred_C`
+      is bitwise identical.
+    - Installed in the injection, insertion and adapter test files, those files pass,
+      including vmap and the composition with insertion at the view. Replacement's
+      vector-window file also passes; it runs a vmapped batch with device checks.
+    - Fields: none. Trajectories: unchanged, because capacitor_change feeds no rate
+      (measured on the egg; elsewhere from the call graph).
+    - Ledger fields: change at the rounding level where XLA's order differed.
+    - Jaxprs: from the call graph, every checked step and device check that calls it
+      changes, so the crossrev needs a run comparison and a new baseline.
+    - Host values: unchanged where NumPy already sums in species order. That holds for
+      every shape tried except a single column with 8 or more species, where NumPy sums
+      pairwise.
+    - Exact under three conditions:
+      - valences are 0, ±1 or ±2, because the kernels contract z n into the accumulate,
+        which is harmless only when z n is exact;
+      - the solve keeps its zero boundary, because the end's kernel contracts
+        F Σ − C·boundary into one fused multiply-subtract;
+      - no held node couples to three or more charged free nodes. Such a node would
+        expose the matrix product's node sum in the same way; neither the egg nor S3 has
+        one.
+  - On S3's path, with a field-input provider:
+    - the bookings at the view are @3's step and injection, both through
+      capacitor_change, and the remedy covers them;
+    - insertion's image charge (`adapter.fixed_charge_change`) is computed directly, not
+      as a difference of two evaluations;
+    - the check's view term (`adapter.view_capacitor_terms`, through `node_potentials`) is
+      evaluated once per row and has its own allowance, rounding × |absolute plate
+      charges|, about 5 × 10⁻²⁵ C per step at egg scale. Unfixed, the drift (7 × 10⁻²² C
+      per step) would exceed that allowance.
+  - A step-scaled allowance would be the wrong kind. The residual is not the state's
+    representable precision, and at 420 s the allowance would be 4 × 10⁻¹⁵ C, 250 times
+    the present bound.
   - Not caused by this round's change (the crossrev above). The judged Rm1 ran 12 s and
-    passed.
-  - S3 runs 2100 s with 210 pulses and increments of several 10⁵ fmol, so its egg runs
-    wait for (c).
+    passed. S3's egg runs wait for (c).
+  - **Approved 13 November as branch work, not to land yet.** It lands alone, in its own
+    round, after the hold decision at the L4 gap and after any restart snapshot is
+    frozen: it changes the hold model's step program, and `source-l4-05` lacks it.
+  - **Stop rule, written before the comparison.** The fix is compared against no fix:
+    snapshot-s3f (69df9f9) against the fix's snapshot.
+    - Coverage: every qualified world in the crossrev base, qualification and injection
+      sets, the 17 saved runs, the 825-node world, and @1 and @2, in their scalar,
+      vmapped and vector-window programs.
+    - Physical, for this rule: every state field except the ledger accumulators, every
+      observation, and every diagnostic except the ledger residuals.
+    - The ledger accumulators are `electrode_charge_transferred_C` and the fields booked
+      from capacitor_change's plate charges and patch voltages: electrode work, image
+      charge, and injection's and replacement's work and energy magnitude.
+    - Clarified after the first parts: the observers record every state field as an
+      observation column under its own name. Those columns count as the accumulators, as
+      in the lead's definition of physical fields (state, observations and diagnostics
+      other than the ledger accumulators). In the Rm1
+      egg, `observations.electrode_charge_transferred_C` was the only column that
+      changed. Every other observation, including the derived readouts (potentials,
+      `electrode_charge_C`, residuals), stays physical.
+    - If any physical bit changes in any qualified world, the fix is not admissible in
+      place. It then needs a new ID or the allowance, which is the user's decision. The
+      comparison is reported, and the work stops there.
+  - **D148, an in-place fix to shared qualified code, is in DECISIONS.md, after D147.** It
+    was decided by the lead on 13 November, accepting the exemption for ledger
+    diagnostics. The draft that the stop rule applied is above.
+  - **The stop rule triggered (13 November): the fix moves registered judge numbers.**
+    Forward runs are identical, but W2's stationary judge changes.
+    - Two outputs of W2's judge change at about 10⁻¹⁴ relative, fix against no fix: the
+      step-map consistency corrections (one Newton step, J⁻¹(Φ_T(u) − u)) and their
+      rounding floors. That is 43 numbers in 24 items (composite-v2-20261112-01/s3-fix/
+      judges).
+    - Unchanged: the residuals Φ_T(u) − u, bitwise in all 72 entries, and every verdict
+      (pass).
+    - W1's judge behaves the same way. Six step-map numbers in its two stationary items
+      move by about 10⁻¹³ relative, and its verdicts are unchanged. Its trajectory items
+      change only in ledger diagnostics: the electrode error goes to 0 and the
+      global-charge ratios fall.
+    - Rm1's judge changes only in ledger diagnostics.
+    - The run without the fix reproduces the recorded judged run (10 November) bit for bit,
+      and the only source change is `capacitor_change`. The moved quantity is therefore
+      the step map's Jacobian J. The stationary analysis takes it by automatic
+      differentiation through the checked step, and XLA compiles that derivative program
+      differently once the booking's sums are explicit and behind a barrier.
+    - By D148's draft this is not an in-place fix, because a judge's registered numbers
+      change. It needs a new ID or the allowance, and that is the user's decision. The
+      fix stays branch work, unlanded.
+  - **Option 3, registered before any of its runs (13 November).** The species are added
+    explicitly in species order, with no barrier (f91ce9d, snapshot-s3h), compared against
+    snapshot-s3f (69df9f9) under the same stop rule.
+    - Runs at s3h:
+      - the forward guard's parts pump (@1 and @2), injection (the heredity cell, and
+        Rm1 at 12 s) and egg (420 s), compared with the guard's s3f outputs;
+      - the regression test;
+      - the registered judges W1, W2, G2-Q1 (Q1 to Q7) and Rm1, compared with their s3f
+        reruns, which reproduce the recorded judged runs. s3h runs Q2 as registered (it
+        includes e1cc472). For Q2 the s3f baseline is the run with the constant supplied.
+    - (A) Admissible under D148 only if all of these hold:
+      - every physical field in those parts is bitwise identical;
+      - the egg's host electrode ledger is exact: 0 at 420 s, and within one ulp of the
+        plate charge on every row;
+      - the regression test passes;
+      - every number in the judges' outputs is identical, except provenance and timing
+        and the residual diagnostics of the electrode, global-charge and energy ledgers.
+    - (B) If the only numbers that move are Q2's `image_charge` and `free_energy`
+      comparisons, which are booked from capacitor_change's plate charges and patch
+      voltages, and every verdict holds, the result is reported and the lead decides.
+    - (C) If anything else moves, the work stops, and options 1 and 2 go to the user.
+  - **Option 3's outcome: A under the rule registered at c540fdb.** That rule exempts the
+    residual diagnostics of the electrode, global-charge and energy ledgers; the lead rules
+    on the exemption (s3-fix/opt3-outcome.json, classified by `classify_opt3.py`, written
+    before the runs).
+    - The judge outputs that the exemption covers, all of which changed:
+      - W1: nine paths in three trajectory items. The electrode error goes to 0, and the
+        global-charge bound ratios fall from about 5 × 10⁻⁴ to about 3 × 10⁻⁶;
+      - Rm1: three paths. The electrode error falls from 2.0 × 10⁻²⁰ C to 0, and the
+        global-charge error from 3.6 × 10⁻²⁰ to 1.6 × 10⁻²⁰ C, but the global-charge bound
+        ratio rises from 0.0236 to 0.0241.
+    - The global-charge ledger is the electrodes' transferred charge plus the reservoirs'
+      supplied charge, and its bound uses the same magnitudes. So it depends on the fix only
+      through the electrode accumulator; the supplies are physical and unchanged.
+    - If the lead accepts the exemption, D148's second criterion should name it.
+    - Everything else is identical:
+      - W2 matches entirely, including the 43 step-map numbers the barrier moved, and W1's
+        six step-map numbers match too. So the barrier alone moved the step map's Jacobian;
+        the explicit adds do not;
+      - G2-Q1 differs only in provenance, Q1 to Q7. Q2 was run as registered at s3h, which
+        includes this option. Its numbers equal those of the s3f run with the constant
+        supplied, and so the recorded ones.
+    - The W1 and W2 "before" sides are today's s3f reruns, which reproduce the recorded
+      judged runs.
+    - The forward subset (seven worlds) is physically bitwise identical: @1 and @2 under
+      RK4 and IMEX, the injection cell, Rm1 at 12 s, and the egg to 420 s.
+    - The egg's ledger is 0 at 420 s and within one ulp of the plate charge on every one of
+      its 420,001 rows (largest 9.4 × 10⁻³⁸ C). Here "exact" means within one ulp per
+      row, not 0 on every row.
+    - At s3h, the regression test and the judge-imports test pass (8 tests).
+    - The barrier's protection against recomputed stage amounts is dropped. The docstring
+      states the exposure, and the regression test guards it.
+  - **Option 3's landing evidence (13 November), fix against no fix (s3f):**
+    - Source: snapshot-s3i (f651bfe), option 3 merged with main 82f9308. Its src is option
+      3's. The branch head 3d2e7a6 adds main e33ad71, which brings the Q2 re-export once,
+      as its only further src change.
+    - The full forward guard, all 58 worlds in every program: physical fields are bitwise
+      identical (s3-fix/guard-s3i/compare.json).
+    - Every ledger case (D148's third criterion):
+      - `electrode_charge_transferred_C` changes in 18 worlds, each by its own unfixed
+        residual. The largest differences are the egg at 420 s (8.4 × 10⁻¹⁷ C), Rm1
+        (2.0 × 10⁻²⁰), W1's P2 from D and from H (2.7 × 10⁻²⁵ and 4.1 × 10⁻²⁶), and W1's
+        P6 (6.9 × 10⁻²⁸).
+      - The rest change by 10⁻³⁰ to 7 × 10⁻²⁸ C: W2's eight 1 s trajectories, the routes
+        on and off, water, water_on, symport and symport_none.
+      - Alongside: the electrode and global-charge residual diagnostics, and the device-check
+        values of injection_rm1, symport, symport_none and water.
+    - The composite test files at s3i all pass: the regression test 2, injection 12 and its
+      runs 5, insertion 23 and its runs 10, adapter 5, and replacement vector 1.
+    - Step time, s3f against s3i over four alternated runs each, by median (fastest in
+      brackets):
+      - the egg: 0.0511 (0.0485) against 0.0526 (0.0498) ms;
+      - the 825-node world as @3: 49.4 (47.8) against 49.9 (46.9) ms;
+      - with closed water: 48.8 (47.9) against 49.5 (47.1) ms.
+      Compile times are unchanged, so the differences lie within the run-to-run spread.
+    - The crossrev baseline, renewed at s3i (s3-fix/crossrev-s3i):
+      - every jaxpr that traces capacitor_change differs: base 22 of 36, qualification 52
+        of 78, injection 4 of 6. The counts are the same against 8416a72 and against
+        f0c8e46;
+      - the right-hand sides and every binding are identical: 12, 56 and 2.
+      Retaken at the head (snapshot-s3j, 3d2e7a6), every jaxpr and binding matches s3i's,
+      and the regression and judge-imports tests pass (8). It is retaken once more at the
+      landing commit (D148's fourth criterion).
+    - History: e32c20a introduced the barrier version, and f91ce9d supersedes it by
+      removing the barrier. Their messages and this note record why.
+    - Not run: the tier gate, which is the lead's landing gate.
+  - **The barrier version's forward guard (s3g), fix against no fix: physical fields are
+    identical**
+    (composite-v2-20261112-01/s3-fix/guard/compare-final.json).
+    - Setup: snapshot-s3f (69df9f9) against snapshot-s3g (e32c20a), run by
+      `validation/tissue/inplace_fix_guard.py`. Peak memory was 3.2 GB.
+    - Every state field, observation column, physical diagnostic and device-check flag is
+      bitwise identical in all 58 worlds:
+      - @1 and @2 worlds, under RK4 and IMEX;
+      - crossrev's injection and base worlds;
+      - the 17 saved runs, and the Rm1 egg to 420 s;
+      - G2-Q1's nine cases and W37, with device checks on every row;
+      - the 825-node world as @3, as its empty composition, with closed water and with
+        event-free replacement;
+      - Q6's cohorts, both as vector windows and as lax_map batches;
+      - W1's six judged trajectories, through the windowed program.
+    - `replacement_steady`, a base world, is refused by @3's dissipation check in both
+      revisions alike. With its checks recorded rather than enforced, it is identical too.
+    - Ledger accumulators: only `electrode_charge_transferred_C` changes, in 18 worlds.
+      Each change is that world's own unfixed electrode-ledger residual, which the fix
+      removes: 8.4 × 10⁻¹⁷ C for the egg at 420 s, 2.0 × 10⁻²⁰ C for Rm1 at 12 s,
+      2.7 × 10⁻²⁵ C for W1's P2 from D, and 10⁻³⁰ to 7 × 10⁻²⁸ C elsewhere. After the fix,
+      `max_electrode_charge_error_C` is 0 in each of these worlds.
+    - The field solve's own charge sum is unchanged: in the egg's compiled program it is
+      the same kernel, instruction for instruction (s3-fix/hlo-s3g).
+    - Step time (medians of four runs each, before against after):
+      - the egg: 0.0517 against 0.0516 ms;
+      - the 825-node world: 48.5 against 49.9 ms as @3, and 48.3 against 50.4 ms with
+        closed water. The fastest runs are equal (47.8 against 47.8 and 47.2 ms), so the
+        difference lies within the run-to-run spread;
+      - compile times are unchanged.
   - The same run gives the engine's energy bound used in (a). The pulses leave about
     0.45 pJ each in the energy residual, scheme error within IMEX's tolerance.
 
