@@ -8,6 +8,7 @@ In NumPy on the S2 cleft cell (tests/membrane_insertion_fixtures.cleft_cell: a f
   ledger closes, and the second half-step of the step selects its start state bitwise;
 * at another lumen composition the fill heat is the exact W - dG of the fill (> 0), from the
   free energy written out here, and every ledger still closes;
+* Q5's observer reads the lumen filled to its patch's area, bitwise a NumPy fill of the state;
 * zero growth: the half-step selects its start state bitwise and the view is the declared
   layout;
 * definition refusals, insertion's onset rule admitting this operator, and the round trip.
@@ -132,15 +133,13 @@ def test_the_fill_books_bath_fluid_as_supply():
     assert diagnostics["max_lumen_fill_balance_error_fmol"] == 0.0
 
 
-def test_the_fill_heat_is_the_mixing_gap_at_another_composition():
-    """A neutral K-for-Na exchange through the furrow first enriches the cleft in K (its heat
-    set so that every ledger closes); a fill then mixes bath fluid into that lumen, and its
-    heat is W - dG of the fill from the free energy written out here."""
-    spec, model, state, p = bind(world(rate=3e-9))
+def k_enriched_and_grown(model, state, p, rate=3e-9):
+    """The opened cleft cell after a neutral K-for-Na exchange through the furrow (the cleft's
+    K rises from 0.05 to 0.07 fmol, its Na falls by as much; the furrow's heat set so that
+    every ledger closes), then one insertion half-step: a fill of another composition pending."""
     ins = model.operators[1]
-    state, ok = ins.event(state, controls(3e-9), p, xp=np)
-    na, k = 0, 1
-    x = 0.02  # fmol: the cleft's K rises from 0.05 to 0.07 fmol, its Na falls by as much.
+    state, ok = ins.event(state, controls(rate), p, xp=np)
+    na, k, x = 0, 1, 0.02
     amount, outside = state.amount_increment.copy(), state.extracellular_amount_increment.copy()
     moved = state.membrane_transferred.copy()
     amount[k, 0], amount[na, 0] = -x, x
@@ -155,8 +154,16 @@ def test_the_fill_heat_is_the_mixing_gap_at_another_composition():
     heat[FURROW] = released
     row = row._replace(membrane_dissipated_energy_pJ=heat)
     assert_ledgers_close(model, row, p, energy=1e-15)
-    grown, ok = ins.half_step(row, H, controls(3e-9), p, xp=np)
+    grown, ok = ins.half_step(row, H, controls(rate), p, xp=np)
     assert ok
+    return grown
+
+
+def test_the_fill_heat_is_the_mixing_gap_at_another_composition():
+    """A fill mixes bath fluid into a K-enriched lumen: its heat is W - dG of the fill from the
+    free energy written out here, and every ledger still closes."""
+    spec, model, state, p = bind(world(rate=3e-9))
+    grown = k_enriched_and_grown(model, state, p)
     new, ok = fill(model, grown, p)
     assert ok
     t = float(p.temperature)
@@ -173,6 +180,37 @@ def test_the_fill_heat_is_the_mixing_gap_at_another_composition():
     assert booked > 1e-4 * scale  # Far above rounding: K differs from the bath by 40%.
     rounding = 1e-14 * float(np.sum(new.lumen_energy_magnitude_pJ))  # Of the booked terms.
     assert_ledgers_close(model, new, p, energy=rounding)
+
+
+def test_the_observer_reads_the_lumen_filled_to_the_area():
+    """Q5's observer (the lead, 13 November): with a fill pending, the readouts are the lumen
+    filled to its patch's area, (n + c_b (T - dV)) / (V_on + T), bitwise what a NumPy fill of
+    the state gives; once filled, they are the state's own lumen."""
+    spec, model, state, p = bind(world(rate=3e-9))
+    grown = k_enriched_and_grown(model, state, p)
+    op = model.operators[2]
+    pending = op.observe(None, grown, None, p, model.view(p, grown, xp=np), model, spec)
+    new, ok = lumen.filled(grown, p, xp=np)
+    assert ok
+    view = model.view(p, new, xp=np)
+    volume = view.extracellular_volume[CLEFT]
+    amounts = (
+        view.extracellular_amount_reference[:, CLEFT] + new.extracellular_amount_increment[:, CLEFT]
+    )
+    assert np.asarray(pending["lumen_volume_pL"][CLEFT]).tobytes() == volume.tobytes()
+    concentration = pending["lumen_concentration_mM"][:, CLEFT]
+    assert concentration.tobytes() == (amounts / volume).tobytes()
+    target = 0.5e15 * WIDTH * float(grown.membrane_area_increment_m2[FURROW])
+    assert volume == pytest.approx(p.extracellular_volume[CLEFT] + target, rel=1e-12)
+    # The state's own lumen (before the fill) holds more K than the filled one reads.
+    held = model.view(p, grown, xp=np)
+    raw = (held.extracellular_amount_reference[:, CLEFT] + grown.extracellular_amount_increment[
+        :, CLEFT
+    ]) / held.extracellular_volume[CLEFT]  # fmt: skip
+    assert raw[1] > concentration[1] > bath_composition(p)[1]
+    filled_state = op.observe(None, new, None, p, view, model, spec)
+    for name in ("lumen_volume_pL", "lumen_concentration_mM"):
+        assert np.asarray(filled_state[name]).tobytes() == np.asarray(pending[name]).tobytes()
 
 
 def test_zero_growth_selects_the_start_state_bitwise():

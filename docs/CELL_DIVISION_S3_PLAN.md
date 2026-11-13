@@ -35,12 +35,41 @@ volume w A_new / 2, filled at bath composition as it grows, with no water flow.
     `reservoir_supplied`, and the work μ_b Δn in `reservoir_work_pJ`, as @3's own supply
     books it.
   - The energy ledger gets the dilution term at the view volume, water's expression.
+  - **The fill's energy budget** (as built; accepted by the lead, 13 November). With @3's free
+    energy at the view, G(n, V) = RT Σ_s n_s (ln(n_s / V) − 1), a fill dV with dn_s = c_b,s dV
+    changes G by dG = G(n + dn, V + dV) − G(n, V). The bath gives up W = Σ μ_b dn − Π_b dV:
+    its solutes' work, booked as @3 books its supply, and the volume work of its fluid at its
+    osmotic pressure Π_b = RT Σ c_b (the water law's bath water work at ψ_b = −Π_b). Their
+    difference, written with c' = (n + dn) / (V + dV) and φ(y) = y ln y − y + 1,
+    H = W − dG = RT Σ_s c'_s [V φ(c_s / c'_s) + dV φ(c_b,s / c'_s)] ≥ 0, is a Jensen gap, zero
+    at bath composition: the mixing heat of bath fluid entering a lumen of another
+    composition. So
+    dG = Σ μ_b dn − Π_b dV − H.
+    - Booked: −Π_b dV in the declared work field `lumen_fluid_work_pJ`, H in the declared heat
+      field `lumen_fill_dissipated_energy_pJ`. The dilution term −RT N ln(V / V_on) brings @3's
+      chemical term on the declared volume to G at the view.
+    - Without the last two terms the ledger misses RT c_tot dV per fill even at bath
+      composition: 3.26 × 10⁵ pJ by J1, against an IMEX bound of about 2 × 10³ pJ.
+    - Guards: an IMEX energy bound (2 × 10⁻³ of flows of order 10⁶ pJ in the egg) cannot see
+      an error in these terms. They are guarded by the NumPy mixing-gap test (H against
+      W − dG written out independently, to 10⁻⁹) and by an RK4 run, whose energy bound has no
+      solver tolerance (it closes below 10⁻¹² pJ).
   - Fluid added between the last insertion half-step and the end of the step lags by
-    half a step, a splitting error covered by the step study.
+    half a step, a splitting error covered by the step study. The dynamics see the midpoint
+    area and volume; at a saved row the volume trails the area by w r h / 2 (9 × 10⁻⁸ of the
+    lumen at J1 at 0.25 ms).
+  - **The observer** (the lead's ruling, 13 November): at saved times the lumen is read filled
+    to its patch's area, (n + c_b (T − ΔV)) / (V_on + T) with T = w (A − A_on) / 2, which is
+    R-full's lumen (volume w A / 2 exactly). It is written in the fill's own operations, so it
+    equals a NumPy fill of the saved row to that area bitwise (tested). Q5 is defined through
+    it; the dynamics are unchanged.
 - Refusals:
   - a lumen node that is not a finite onset node;
   - an onset volume that differs from w A_on / 2, or another provider of that volume;
   - a lumen facing more than one onset patch (later work).
+  - As built, also: a lumen faced by no patch; a source that is not a held bath, or not
+    electroneutral (the lumen has no background-charge state, so a bath's background could not
+    enter with its fluid); a shrinking fill, and a volume above its area's.
   - Insertion's onset rule ("an onset node's volume must be its declared anchor") admits
     this operator, whose volume at onset is the anchor.
 - Guards, as S2's:
@@ -48,6 +77,8 @@ volume w A_new / 2, filled at bath composition as it grows, with no water flow.
     world idle bitwise;
   - compiled: restart across the onset, vmap, and the composition without growth equal
     to S2's.
+  - Owed by S5: a padded-slot test of the lumen (S2 has one for insertion; the first
+    partition pads its slots).
 
 **The engine definition** (`validation/division/cleft_egg_engine.py`). It is built from
 R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L), as
@@ -139,7 +170,7 @@ reference alike:
 | Q2 | Rm at J1 | Pair (179, 180) | 488.000 kΩ (the A/L calibration target) |
 | Q3 | Rm1 (reported, not judged) | Pair (0, 1), before the onset | 852.000 kΩ |
 | Q4 | Em trajectory | V at the front edge of every pulse, 0 to 210; maximum difference | – |
-| Q5 | Lumen K and Na at J1 | mM, activity basis | about 29 and 21 mM |
+| Q5 | Lumen K and Na at J1 | mM, activity basis; the engine's observer reads the lumen filled to the area at 1800 s (§1) | about 29 and 21 mM |
 
 **Reference.** R-full under the registered defaults (Radau, rtol 10⁻¹⁰), at the record's
 calibration (P_old = 6.161 × 10⁻¹⁰ m/s, A/L = 1.5406 × 10⁻⁶ m), recomputed for each
@@ -168,8 +199,15 @@ implicit membrane–cleft term would then be a new solver version (division desi
 
 1. Prerequisite (c): the approved fix to the electrode-ledger drift, built with its guards
    (a 420 s run reproduces the drift in 40 s).
-2. The lumen operator and its guards.
-3. The engine definition, and `compare` against R-full's build.
+2. The lumen operator and its guards. Built and accepted 13 November
+   (`src/cells/models/operators/restricted_lumen.py`).
+3. The engine definition, and `compare` against R-full's build. Built 13 November
+   (`validation/division/cleft_egg_engine.py`): 30 fields, 26 exactly R-full's, 2 within
+   10⁻¹², 2 declared (the cytosol charge anchor's egg-scale granularity). Then, approved the
+   same day: a bounded ledger probe of the definition through the onset plus 10⁵ steps at
+   0.25 ms (no Q quantity), and the study, reference and judge actions, written without
+   running them, with the protocol drafted as PROPOSED
+   (`validation/division/cleft_egg_protocol.json`).
 4. Development runs: the step study, and R-full's reference term per quantity.
 5. The registration draft, to the lead: references, terms, tolerances, judged step.
 6. The judged run, once.

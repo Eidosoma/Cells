@@ -1,0 +1,66 @@
+{
+ "kind": "cells.cleft_egg_s3_protocol@1",
+ "id": "s3-cleft-egg-against-rfull",
+ "title": "S3: the engine's one-cell Xenopus egg with its furrow and restricted cleft against R-full",
+ "status": "PROPOSED (draft by the S3 agent, 13 November 2026; not registered). The values wait for the development runs (the dt study and R-full's reference terms), which wait for the lead's approval; the tolerance rule is the plan's (docs/CELL_DIVISION_S3_PLAN.md §4) and is not chosen from any run",
+ "purpose": "Qualify the engine's cleft egg against the registered independent reference R-full on J1's state and trajectory. Not a J1 verdict against the data (J1 was judged on R-full on 12 November).",
+ "engine_models": [
+  "resolved_pump_composite@1",
+  "resolved_pump_tissue@3",
+  "membrane_entity_state@1",
+  "scheduled_membrane_insertion@1",
+  "restricted_cleft_lumen@1",
+  "electrode_current_injection@1"
+ ],
+ "driver": "validation/division/cleft_egg_engine.py (actions study, terms, reference, judge)",
+ "definition_source": {
+  "egg": "validation/division/cleft_egg_reference.py build(declared inputs, scalar_values(declared inputs), p_old = the record's p_old_m_s, a_over_l = the record's a_over_l_m): R-full's own egg, written by cleft_egg_engine.definition",
+  "declared_inputs": "validation/division/j1_declared_inputs.json",
+  "calibration_source": "validation/division/j1_prediction_of_record.json (p_old_m_s 6.161109067285096e-10, a_over_l_m 1.5406297557105433e-06)",
+  "schedule": "the default (uniform) schedule only: the furrow opens at 420 s with A_on = 1e-9 m2 and grows at r = (A_J1 - A_on) / (1800 s - 420 s) to the 2100 s horizon; the back-loaded band member is out of S3's comparison (plan §6)",
+  "electrode": "one electrode in the egg; rm_definition's pulse train (3e-8 A, 1.2 s, every 10 s, alternating from t = 0 positive) throughout, carried by K 0.4912 and Cl 0.5088 (rm_definition.injected_carrier_fractions, the field R-full's Pulses read)",
+  "solver": "imex_ars222_face_electromigration@1, run in vector windows with device checks on every row",
+  "field_comparison": "cleft_egg_engine compare: 30 fields, 26 exactly R-full's, 2 within 1e-12 (unit conversion and one-ulp event times), 2 declared (the cytosol charge anchor and initial potential at 3.9e-11 relative, the consistent anchor's egg-scale granularity, bound 1.1e-9); /mnt/workspaces/Cells/cell-division-s3-20261113-01/step1-tests/compare.json"
+ },
+ "quantities": {
+  "Q1_em_at_j1_V": "V at the front edge of pulse 180 (1800 s, J1), the old membrane's voltage (cytosol minus bath)",
+  "Q2_rm_at_j1_ohm": "Rm of the pair (179, 180): (|dV_179| + |dV_180|) / (2 x 3e-8 A), dV_k = V(t_k + 1.0 s) - V(t_k) (rm_definition)",
+  "Q3_rm1_ohm": "Rm of the pair (0, 1), before the onset; reported, not judged (judged on the uncleaved egg in injection's acceptance)",
+  "Q4_em_trajectory_V": "V at the front edge of every pulse, 0 to 210; compared by the maximum |engine - R-full| over the pulses, and its terms are maxima over the pulses",
+  "Q5_lumen_K_mM": "the lumen's K at J1 (mM, activity basis): the engine's observer reads the lumen filled to its patch's area at 1800 s, (n + c_b (T - dV)) / (V_on + T) with T = w (A - A_on) / 2, which is R-full's lumen (volume w A / 2 exactly); restricted_cleft_lumen@1's lumen_concentration_mM",
+  "Q5_lumen_Na_mM": "the lumen's Na at J1, as Q5_lumen_K_mM"
+ },
+ "judged": [
+  "Q1_em_at_j1_V",
+  "Q2_rm_at_j1_ohm",
+  "Q4_em_trajectory_V",
+  "Q5_lumen_K_mM",
+  "Q5_lumen_Na_mM"
+ ],
+ "reference": "R-full (validation/division/cleft_egg_reference.py simulate to the 2100 s horizon) under the registered defaults (Radau, rtol 1e-10, split at every pulse edge and sample time) at the record's calibration, recomputed for each quantity by cleft_egg_engine reference from the snapshot the lead names; Q1, Q2 and Q3 are checked there against the record (prediction_of_record_V, rm_at_j1_ohm, rm1_ohm)",
+ "judged_dt_s": 0.00025,
+ "study_dts_s": [
+  0.0005,
+  0.00025,
+  0.000125
+ ],
+ "engine_step_term_rule": "|Q(0.25 ms) - Q(0.125 ms)| per quantity (Q4: the maximum over pulses), from three development runs (cleft_egg_engine study, then terms); the observed order log2(|Q(0.5 ms) - Q(0.25 ms)| / |Q(0.25 ms) - Q(0.125 ms)|) is checked per quantity (about 2 for ARS(2,2,2))",
+ "reference_term_rule": "max |Q(variant) - Q(default)| over R-full's Radau rtol 1e-8, BDF rtol 1e-10, LSODA rtol 1e-10 and activation area 1e-10 m2 (J1's reference_numerics, as part_record forms them); Q4: the maximum over pulses and variants",
+ "tolerance_rule": "3 x (engine step term + reference term), per quantity (the rule Rm1's registered protocol uses)",
+ "verdict_rule": "pass when every judged |engine(judged dt) - R-full| is within its tolerance (Q4: the maximum over pulses); a failure is recorded and diagnosed, never retuned",
+ "stop_rule": "before registration: stop and report if the study shows no convergence (an observed order far from 2) or the energy ledger fails at an admitted step; an implicit membrane-cleft term would then be a new solver version (division design §5.4)",
+ "values": {
+  "Q1_em_at_j1_V": {"judged": true, "reference": null, "engine_step_term": null, "observed_order": null, "reference_term": null, "tolerance": null},
+  "Q2_rm_at_j1_ohm": {"judged": true, "reference": null, "engine_step_term": null, "observed_order": null, "reference_term": null, "tolerance": null},
+  "Q3_rm1_ohm": {"judged": false, "reference": null, "engine_step_term": null, "observed_order": null, "reference_term": null, "tolerance": null},
+  "Q4_em_trajectory_V": {"judged": true, "reference": null, "engine_step_term": null, "observed_order": null, "reference_term": null, "tolerance": null},
+  "Q5_lumen_K_mM": {"judged": true, "reference": null, "engine_step_term": null, "observed_order": null, "reference_term": null, "tolerance": null},
+  "Q5_lumen_Na_mM": {"judged": true, "reference": null, "engine_step_term": null, "observed_order": null, "reference_term": null, "tolerance": null}
+ },
+ "evidence": {
+  "probe": "/mnt/workspaces/Cells/cell-division-s3-20261113-01/probe/ (the bounded ledger probe through the onset plus 1e5 steps at 0.25 ms; no Q quantity)",
+  "study": null,
+  "reference": null
+ },
+ "judged_run": "once, on CPU, after registration, from a clean execution snapshot of main (validation/source_snapshot.py; no dirty patch); the driver refuses an unregistered protocol and a run outside a clean snapshot; the protocol records the judged step and the commit"
+}

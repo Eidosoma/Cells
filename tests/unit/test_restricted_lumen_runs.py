@@ -3,7 +3,8 @@
 Through the runner and its host checks, on the S2 cleft cell (tests/membrane_insertion_fixtures):
 * growth: the lumen's volume follows w dA / 2, half a step behind the area at each step's end
   (the fill waits for the next step's first half), filled at the bath's composition; every
-  ledger closes on every row; the fill heat is nonnegative and nondecreasing;
+  ledger closes on every row; the fill heat is nonnegative and nondecreasing; the observer
+  reads each saved lumen filled to the area at its time, bitwise a NumPy fill of the row;
 * RK4 keeps the exact half-steps around its inner step, and its energy ledger, whose bound has
   no solver tolerance, closes with the fill's terms;
 * the composition without growth equals S2's, bitwise (membrane state and insertion, and with
@@ -29,6 +30,7 @@ from cells.core.vector_windows import run_vector_windowed
 from cells.core.windows import WindowPolicy
 from cells.io import load_snapshot, write_run, write_snapshot
 from cells.models.operators import restricted_lumen as lumen
+from cells.models.registry import get_model
 from tests import membrane_insertion_fixtures as fx
 from validation.tissue import composite_guard as guard
 
@@ -116,11 +118,33 @@ def test_growth_fills_the_lumen_and_closes_every_check(growth_run):
     assert replay.tobytes() == supplied.tobytes()
     heat = np.asarray(h.lumen_fill_dissipated_energy_pJ)[:, CLEFT]
     assert np.all(heat >= 0) and np.all(np.diff(heat) >= 0)
+    # Q5's observer reads each saved lumen filled to the area at its time: bitwise what a NumPy
+    # fill of the saved row gives, and V_on + w dA / 2 with no lag.
+    model = get_model(spec.model)
+    p = model.initial_values(spec)[1]
     observed = result.observations
     v_on = spec.model.extracellular[1].volume_pL
     column = np.asarray(observed.lumen_volume_pL)[:, CLEFT]
     assert not np.any(column[: TIMES.index(ONSET) + 1])
-    np.testing.assert_allclose(column[-1], v_on + volume[-1], rtol=1e-15)
+    checked = 0
+    for j, t in enumerate(np.asarray(observed.times)):
+        if t <= ONSET + 1e-12:
+            continue
+        i = int(np.flatnonzero(times == t)[0])
+        new, ok = lumen.filled(type(h)(*(np.asarray(v)[i] for v in h)), p, xp=np)
+        assert ok
+        view = model.view(p, new, xp=np)
+        filled_volume = view.extracellular_volume[CLEFT]
+        amounts = (
+            view.extracellular_amount_reference[:, CLEFT]
+            + new.extracellular_amount_increment[:, CLEFT]
+        )
+        assert column[j].tobytes() == filled_volume.tobytes(), t
+        concentration = np.asarray(observed.lumen_concentration_mM)[j, :, CLEFT]
+        assert concentration.tobytes() == (amounts / filled_volume).tobytes(), t
+        assert filled_volume == pytest.approx(v_on + 0.5e15 * WIDTH * area[i], rel=1e-12)
+        checked += 1
+    assert checked == len([t for t in TIMES if t > ONSET])
     for key in ("max_energy_balance_error_pJ", "max_lumen_fill_balance_error_fmol"):
         assert np.isfinite(result.diagnostics[key]), key
 
@@ -202,3 +226,19 @@ def test_the_vmapped_batch_reproduces_each_world(growth_run):
             scale = np.max(np.abs(b), initial=0.0)
             assert np.max(np.abs(a - b), initial=0.0) <= 1e-12 * scale + 1e-30, (world, name)
         assert np.isfinite(batch.worlds[world].diagnostics["max_lumen_fill_balance_error_fmol"])
+
+
+def test_the_studys_windowed_observations_reproduce_the_run(growth_run):
+    """The S3 study's observation path (cleft_egg_engine.windowed_observations: vector windows
+    with device checks, one world) on the cleft world: the observer's columns at every requested
+    time agree with the runner's to rounding (the vmapped program compiles differently)."""
+    from validation.division import cleft_egg_engine as engine
+
+    spec, result = growth_run
+    stacked, diagnostics, _ = engine.windowed_observations(spec, window_steps=2)
+    assert stacked["times"].tolist() == np.asarray(result.observations.times).tolist()
+    for name in ("membrane_voltage_V", "lumen_concentration_mM"):
+        a, b = stacked[name], np.asarray(getattr(result.observations, name))
+        assert a.shape == b.shape, name
+        assert np.max(np.abs(a - b)) <= 1e-12 * np.max(np.abs(b)) + 1e-30, name
+    assert np.isfinite(diagnostics["max_lumen_fill_balance_error_fmol"])

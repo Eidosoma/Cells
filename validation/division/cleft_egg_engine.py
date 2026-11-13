@@ -20,13 +20,27 @@ Event times (onset, pulse edges) and observation times are k dt; at the steps of
 are R-full's times to one ulp (compare reports it). Observations: every pulse's front edge and
 its sample 1 s later, through the horizon.
 
+Quantities (plan §4), the same rule in engine and R-full: Q1 V at the front edge of pulse 180
+(J1), Q2 Rm of the pair (179, 180), Q3 Rm1 of the pair (0, 1, reported only), Q4 V at the front
+edge of every pulse 0 to 210, Q5 the lumen's K and Na at J1 (mM, activity basis), which the
+engine's observer reads filled to the area at that time, as R-full defines the lumen.
+
 Actions (python -m validation.division.cleft_egg_engine ACTION --output FILE):
   compare      every field of the definition against R-full's build, with the declared
                differences
   check        the definition parsed at the step study's steps (0.5, 0.25 and 0.125 ms), with
                the runner's step checks (accepted or refused) and the explicit-rate bounds
-The development study, R-full's reference terms and the judged run (plan §5, steps 4-6) wait for
-the lead's approval; they follow injection_rm1.py's study, reference and judge.
+  probe [--dt] the bounded ledger probe: through the onset plus 1e5 steps, every row's device
+               checks and its electrode, reservoir-work, energy and fill residuals against their
+               bounds; refused steps counted; no Q quantity
+  study --dt   a development engine run in vector windows with device checks: Q1-Q5
+  terms --studies F2dt Fdt Fdt/2
+               each quantity's step term at the judged dt and its observed order
+  reference    R-full's Q1-Q5 under the registered defaults and its reference term per quantity
+  judge        the judged run: a registered protocol (status beginning "registered") and a clean
+               execution snapshot only
+study, reference and judge wait for the lead's approval (plan §5, steps 4-6); they follow
+injection_rm1.py's. The protocol is validation/division/cleft_egg_protocol.json (PROPOSED).
 """
 
 import argparse
@@ -497,26 +511,466 @@ def check(dts=STUDY_DTS):
     return dict(cases=cases)
 
 
+# ------------------------------------------------------------------ the bounded ledger probe
+
+PROBE_LEDGERS = ("electrode", "reservoir_work", "energy", "lumen_fill")
+PROBE_STEPS_AFTER_ONSET = 100_000
+PROBE_WINDOW = 89_000  # 20 windows of the 1.78e6 steps at 0.25 ms.
+
+
+def probe(dt=JUDGED_DT, after=PROBE_STEPS_AFTER_ONSET, width=PROBE_WINDOW, chunk=4096):
+    """The bounded ledger probe (the lead, 13 November).
+
+    The definition through the onset plus `after` steps at dt, rolled out in windows by the
+    runner's own checked step (runner._compiled_discrete_rollout, one compile per window
+    shape). Every row gets the composite's device checks and its electrode, reservoir-work,
+    energy and fill residuals against their bounds (the composite's balances, magnitudes and
+    ledger_limits, as egg_scale_smoke.device_rows does). Refused steps are counted, not raised,
+    and the probe stops after the first window that has one. No observation is taken and no
+    Q quantity is computed.
+    """
+    import time
+
+    import jax
+    import jax.numpy as jnp
+    import numpy as np
+
+    from cells.core import runner
+    from cells.core.schedule import control_values
+    from cells.core.specs import parse_spec
+    from cells.core.state import initialise
+    from cells.models.registry import get_model
+
+    started = time.perf_counter()
+    egg, _, _ = rfull()
+    onset_step = round(egg.onset_s / dt)
+    spec = parse_spec(definition(dt, end=(onset_step + after) * dt))
+    model = get_model(spec.model)
+    times = runner.timeline(spec)
+    total = len(times) - 1
+    checkpoint = initialise(spec)
+    state, layout = checkpoint.state, checkpoint.layout
+    parameters = model.parameters(spec, layout)
+    p = model.initial_values(spec)[1]
+    constants = model.device_check_constants(spec)
+    picked = [list(model.LEDGERS).index(k) for k in PROBE_LEDGERS]
+
+    def one(previous, row, steps):
+        failed, _ = model.device_checks(previous, row, p, constants, steps)
+        values = list(model.device_balances(row, p).values())
+        _, bounds = model.ledger_limits(
+            row,
+            p,
+            constants.material_atol,
+            constants.energy_rtol,
+            steps=steps,
+            magnitudes=model.magnitudes(row, p, xp=jnp),
+            xp=jnp,
+        )
+        worst = []
+        for k in picked:  # (ratio, |residual|, bound) at each ledger's worst entry.
+            value = jnp.ravel(jnp.abs(values[k]))
+            bound = jnp.ravel(jnp.broadcast_to(bounds[k], jnp.shape(values[k])))
+            ratio = value / bound
+            i = jnp.argmax(ratio)
+            worst.append(jnp.stack([ratio[i], value[i], bound[i]]))
+        return failed, jnp.stack(worst)
+
+    check = jax.jit(jax.vmap(one))
+    compiled, windows = {}, []
+    refused, first_refused, failing, failed_checks = 0, None, 0, set()
+    best = np.zeros((len(PROBE_LEDGERS), 3))
+    best_time = np.zeros(len(PROBE_LEDGERS))
+    for start in range(0, total, width):
+        stop = min(total, start + width)
+        window = times[start : stop + 1]
+        steps = runner.integration_steps(spec, window)
+        args = (state, steps, control_values(spec, window[:-1]), parameters, layout.active)
+        if len(steps) not in compiled:
+            compiled[len(steps)] = runner._compiled_discrete_rollout.lower(
+                *args, model.checked_step
+            ).compile()
+        final, history, valid = compiled[len(steps)](*args)
+        bad = np.flatnonzero(~np.asarray(valid))
+        refused += len(bad)
+        if len(bad) and first_refused is None:
+            first_refused = float(window[bad[0]])
+        history = jax.tree.map(np.asarray, history)
+        previous = jax.tree.map(
+            lambda s, h: np.concatenate((np.asarray(s)[None], h[:-1])), state, history
+        )
+        window_worst = np.zeros(len(PROBE_LEDGERS))
+        for a in range(0, len(steps), chunk):
+            b = min(len(steps), a + chunk)
+            failed, worst = (
+                np.asarray(x)
+                for x in check(
+                    jax.tree.map(lambda v, a=a, b=b: jnp.asarray(v[a:b]), previous),
+                    jax.tree.map(lambda v, a=a, b=b: jnp.asarray(v[a:b]), history),
+                    jnp.arange(start + a + 1, start + b + 1),
+                )
+            )
+            rows = np.flatnonzero(failed.any(axis=1))
+            failing += len(rows)
+            for r in rows:
+                failed_checks |= {
+                    c for c, f in zip(model.DEVICE_CHECKS, failed[r], strict=True) if f
+                }
+            for j in range(len(PROBE_LEDGERS)):
+                r = int(np.argmax(worst[:, j, 0]))
+                window_worst[j] = max(window_worst[j], worst[r, j, 0])
+                if worst[r, j, 0] > best[j, 0]:
+                    best[j], best_time[j] = worst[r, j], float(window[a + r + 1])
+        windows.append(
+            dict(
+                end_s=float(window[-1]),
+                max_ratio=dict(zip(PROBE_LEDGERS, window_worst.tolist(), strict=True)),
+            )
+        )
+        state = final
+        if len(bad):
+            break
+    return dict(
+        dt=dt,
+        onset_s=float(times[onset_step]),
+        end_s=float(times[-1]),
+        steps=total,
+        steps_after_onset=total - onset_step,
+        refused_steps=refused,
+        first_refused_time_s=first_refused,
+        device_failing_rows=failing,
+        device_failed_checks=sorted(failed_checks),
+        residual_against_bound={
+            name: dict(max_ratio=float(r), residual=float(v), bound=float(b), time_s=float(t))
+            for name, (r, v, b), t in zip(PROBE_LEDGERS, best, best_time, strict=True)
+        },
+        windows=windows,
+        wall_s=time.perf_counter() - started,
+    )
+
+
+# ------------------------------------------------------------------ quantities (plan §4)
+
+
+def pulse_samples(times, values, egg):
+    """({pulse k: value at its front edge}, {k: value 1 s later}) from (time, value) rows."""
+    p, front, sample = egg.pulses, {}, {}
+    for t, value in zip(times, values, strict=True):
+        k = round((t - p.first_onset_s) / p.period_s)
+        if abs(t - p.onset(k)) < 1e-6:
+            front[k] = value
+        elif abs(t - p.onset(k) - p.sample_s) < 1e-6:
+            sample[k] = value
+    return front, sample
+
+
+def quantities(front, sample, lumen_at_j1, egg, d):
+    """Q1-Q5 by the pulse protocol as rm_definition defines them, for engine and R-full alike.
+
+    front, sample: V at each pulse's front edge and 1 s later; lumen_at_j1: {species: mM} of the
+    lumen at J1 (the engine's observer reads it filled to the area at that time, as R-full).
+    """
+    rm, p = d["rm_definition"], egg.pulses
+
+    def chord(k):
+        return abs(sample[k] - front[k])
+
+    def rm_pair(a, b):  # Rm(k) = (|dV_(k-1)| + |dV_k|) / (2 x 3e-8 A).
+        return (chord(a) + chord(b)) / (2 * p.amplitude_A)
+
+    last = max(front)
+    return dict(
+        Q1_em_at_j1_V=front[rm["j1_em_pulse"]],
+        Q2_rm_at_j1_ohm=rm_pair(*rm["j1_pulse_pair"]),
+        Q3_rm1_ohm=rm_pair(*rm["rm1_pulse_pair"]),
+        Q4_em_trajectory_V=[front[k] for k in range(last + 1)],
+        Q5_lumen_at_j1_mM={s: lumen_at_j1[s] for s in ("K", "Na")},
+    )
+
+
+QUANTITIES = ("Q1_em_at_j1_V", "Q2_rm_at_j1_ohm", "Q3_rm1_ohm", "Q4_em_trajectory_V")
+JUDGED = (
+    "Q1_em_at_j1_V",
+    "Q2_rm_at_j1_ohm",
+    "Q4_em_trajectory_V",
+    "Q5_lumen_K_mM",
+    "Q5_lumen_Na_mM",
+)
+
+
+def flat(q):
+    """{name: float or [float]}: Q5 split into K and Na."""
+    out = {k: q[k] for k in QUANTITIES}
+    out |= {f"Q5_lumen_{s}_mM": q["Q5_lumen_at_j1_mM"][s] for s in ("K", "Na")}
+    return out
+
+
+def distance(a, b):
+    """|a - b|, or its maximum over pulses for the trajectory."""
+    if isinstance(a, list):
+        return max(abs(x - y) for x, y in zip(a, b, strict=True))
+    return abs(a - b)
+
+
+# ------------------------------------------------------------------ the study (not run yet)
+
+STUDY_WINDOW = 20_000
+
+
+OBSERVED = ("times", "membrane_voltage_V", "lumen_concentration_mM")
+
+
+def windowed_observations(spec, *, columns=OBSERVED, window_steps=STUDY_WINDOW):
+    """One world run in vector windows with device checks on every row (core/vector_windows):
+    the named observation columns at every requested time, stacked in time order, with the
+    world's device diagnostics and the run's timings. run() cannot hold a 2100 s history."""
+    import numpy as np
+
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.vector_windows import run_vector_windowed
+    from cells.core.windows import WindowPolicy
+
+    found = []
+
+    def sink(window):
+        found.extend(window.observations.values())
+
+    work = 2 * spec.execution.max_steps + 10**6
+    batch = BatchSpec((WorldSpec(1, spec),), 1, work, 2**31)
+    result = run_vector_windowed(batch, WindowPolicy(window_steps, "checkpoints"), sink=sink)
+    stacked = {k: np.concatenate([np.asarray(getattr(f, k)) for f in found]) for k in columns}
+    return stacked, dict(result.worlds[1].diagnostics), dict(result.timings)
+
+
+def engine_observations(dt, *, end=None, window_steps=STUDY_WINDOW):
+    """The old membrane's voltage and the observer's lumen at every observation time of the
+    definition (windowed_observations). Returns (times, voltages, lumen rows, diagnostics,
+    timings)."""
+    from cells.core.specs import parse_spec
+
+    raw = definition(dt, end=end)
+    cleft = [c["id"] for c in raw["model"]["extracellular"]].index("cleft")
+    old = [m["id"] for m in raw["model"]["membranes"]].index("old_membrane")
+    stacked, diagnostics, timings = windowed_observations(
+        parse_spec(raw), window_steps=window_steps
+    )
+    return (
+        stacked["times"].tolist(),
+        stacked["membrane_voltage_V"][:, old].tolist(),
+        stacked["lumen_concentration_mM"][:, :, cleft].tolist(),
+        diagnostics,
+        timings,
+    )
+
+
+def study(dt):
+    """One development run of the study (plan §3-§4): the engine's Q1-Q5 at dt."""
+    import time
+
+    from validation.division import cleft_egg_reference as ref
+
+    started = time.perf_counter()
+    egg, _, d = rfull()
+    times, voltages, lumen, diagnostics, timings = engine_observations(dt)
+    front, sample = pulse_samples(times, voltages, egg)
+    j1 = float(d["time"]["j1_s"])
+    row = min(range(len(times)), key=lambda i: abs(times[i] - j1))
+    assert abs(times[row] - j1) < 1e-6
+    at_j1 = dict(zip(ref.SPECIES, lumen[row], strict=True))
+    return dict(
+        dt=dt,
+        quantities=quantities(front, sample, at_j1, egg, d),
+        front_V=[front[k] for k in sorted(front)],
+        sample_V=[sample[k] for k in sorted(sample)],
+        lumen_at_j1_mM=at_j1,
+        device_diagnostics=diagnostics,
+        timings=timings,
+        wall_s=time.perf_counter() - started,
+    )
+
+
+def terms(studies, judged=JUDGED_DT):
+    """The engine step term of each quantity at the judged pair (judged dt against judged / 2)
+    and its observed order, log2(|Q(2 dt) - Q(dt)| / |Q(dt) - Q(dt / 2)|); for the trajectory,
+    the maxima over pulses. studies: the study outputs at 2 dt, dt and dt / 2."""
+    import math
+
+    by = {round(s["dt"], 12): flat(s["quantities"]) for s in studies}
+    coarse, mid, fine = (by[round(x, 12)] for x in (2 * judged, judged, judged / 2))
+    out = {}
+    for name in mid:
+        first, second = distance(coarse[name], mid[name]), distance(mid[name], fine[name])
+        order = math.log2(first / second) if first > 0 and second > 0 else None
+        out[name] = dict(
+            step_term=second, coarse_difference=first, observed_order=order, judged=name in JUDGED
+        )
+    return dict(judged_dt=judged, dts=sorted(by), terms=out)
+
+
+# ------------------------------------------------------------------ R-full's reference (not run)
+
+REFERENCE_VARIANTS = (
+    "radau_rtol_1e-8",
+    "bdf_rtol_1e-10",
+    "lsoda_rtol_1e-10",
+    "activation_1e-10_m2",
+)
+
+
+def rfull_quantities(egg, d, **kwargs):
+    """R-full's Q1-Q5 to the horizon (simulate, Radau rtol 1e-10 unless kwargs say otherwise)."""
+    from validation.division import cleft_egg_reference as ref
+
+    j1, horizon = float(d["time"]["j1_s"]), float(d["time"]["horizon_s"])
+    run = ref.simulate(egg, horizon, record=(j1,), **kwargs)
+    at_j1 = dict(zip(ref.SPECIES, run.at[j1]["lumen_mM"], strict=True))
+    q = quantities(dict(run.onset_V), dict(run.sample_V), at_j1, egg, d)
+    return q, dict(steps=run.steps, wall_s=run.wall_s)
+
+
+def reference():
+    """R-full's quantities under the registered defaults (Radau rtol 1e-10, the record's
+    calibration) and its reference term per quantity: the largest |dQ| over Radau rtol 1e-8,
+    BDF and LSODA at rtol 1e-10 and the activation area 1e-10 m2 (J1's reference_numerics,
+    as the record's part_record forms them). Q1 and Q2 are checked against the record."""
+    from dataclasses import replace
+
+    from validation.division import cleft_egg_reference as ref
+
+    egg, record, d = rfull()
+    values = ref.scalar_values(d)
+    small = replace(egg, activation_area_m2=1e-10)
+    small = replace(
+        small,
+        schedule=ref.uniform_schedule(
+            egg.onset_s, values["new_membrane_area_at_j1_m2"], 1e-10, float(d["time"]["j1_s"])
+        ),
+    )
+    default, info = rfull_quantities(egg, d)
+    rows = {"radau_rtol_1e-10": dict(quantities=default, **info)}
+    for label, e, kwargs in (
+        ("radau_rtol_1e-8", egg, dict(rtol=1e-8)),
+        ("bdf_rtol_1e-10", egg, dict(method="BDF")),
+        ("lsoda_rtol_1e-10", egg, dict(method="LSODA")),
+        ("activation_1e-10_m2", small, {}),
+    ):
+        q, info = rfull_quantities(e, d, **kwargs)
+        rows[label] = dict(quantities=q, **info)
+    base = flat(default)
+    reference_terms = {
+        name: max(
+            distance(flat(rows[v]["quantities"])[name], base[name]) for v in REFERENCE_VARIANTS
+        )
+        for name in base
+    }
+    return dict(
+        reference=base,
+        reference_terms=reference_terms,
+        rows=rows,
+        record_check=dict(
+            em_V=(base["Q1_em_at_j1_V"], record["prediction_of_record_V"]),
+            rm_at_j1_ohm=(base["Q2_rm_at_j1_ohm"], record["rm_at_j1_ohm"]),
+            rm1_ohm=(base["Q3_rm1_ohm"], record["rm1_ohm"]),
+        ),
+    )
+
+
+# ------------------------------------------------------------------ the judged run (not run)
+
+PROTOCOL = ROOT / "validation/division/cleft_egg_protocol.json"
+
+
+def judged_run_refusal(protocol, root=ROOT):
+    """Why a judged run may not start (None: it may): an unregistered protocol, or a source
+    that is not a clean execution snapshot (validation/source_snapshot.py), as injection_rm1's
+    judge refuses them."""
+    import hashlib
+
+    status = protocol.get("status")
+    if not (isinstance(status, str) and status.startswith("registered")):
+        return "the S3 protocol is not registered (its status does not begin 'registered')"
+    manifest = Path(root) / "SNAPSHOT.json"
+    if not manifest.exists():
+        return "a judged run comes from a clean execution snapshot of main, not a checkout"
+    snapshot = json.loads(manifest.read_text())
+    clean = snapshot.get("patch_sha256") == hashlib.sha256(b"").hexdigest()
+    if snapshot.get("status") != "complete" or not clean:
+        return "the execution snapshot is incomplete or carries uncommitted changes"
+    return None
+
+
+def verdicts(engine, protocol):
+    """Each quantity's |engine - reference| against its registered tolerance."""
+    out = {}
+    for name, entry in protocol["values"].items():
+        difference = distance(engine[name], entry["reference"])
+        out[name] = dict(
+            engine=engine[name] if not isinstance(engine[name], list) else None,
+            difference=difference,
+            tolerance=entry["tolerance"],
+            judged=entry["judged"],
+            verdict="pass" if difference <= entry["tolerance"] else "fail",
+        )
+    judged = [v["verdict"] for v in out.values() if v["judged"]]
+    return out, "pass" if judged and all(v == "pass" for v in judged) else "fail"
+
+
+def judge(protocol_path=PROTOCOL):
+    """The judged run of a registered protocol, once, at its judged dt, with its verdict."""
+    protocol = json.loads(Path(protocol_path).read_text())
+    refusal = judged_run_refusal(protocol)
+    if refusal:
+        raise SystemExit("Refused: " + refusal)
+    result = study(protocol["judged_dt_s"])
+    items, verdict = verdicts(flat(result["quantities"]), protocol)
+    snapshot = json.loads((ROOT / "SNAPSHOT.json").read_text())
+    return dict(
+        protocol=str(protocol_path),
+        protocol_status=protocol["status"],
+        source_revision=snapshot["git_revision"],
+        items=items,
+        verdict=verdict,
+        run=result,
+    )
+
+
+ACTIONS = ("compare", "check", "probe", "study", "terms", "reference", "judge")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="action", required=True)
-    for name in ("compare", "check"):
-        sub.add_parser(name).add_argument("--output", type=Path, required=True)
+    for name in ACTIONS:
+        one = sub.add_parser(name)
+        one.add_argument("--output", type=Path, required=True)
+        if name in ("probe", "study"):
+            one.add_argument("--dt", type=float, default=JUDGED_DT)
+        if name == "terms":
+            one.add_argument("--studies", type=Path, nargs=3, required=True)
     args = parser.parse_args(argv)
-    if args.action == "compare":
+    if args.action != "terms":
         import jax
 
+        jax.config.update("jax_enable_x64", True)
+    if args.action == "compare":
         from cells.core.specs import parse_spec
 
-        jax.config.update("jax_enable_x64", True)
         raw = definition()
         parse_spec(raw)  # The composite's definition checks (raises on a refusal).
         result = dict(status=STATUS, **compare_report(raw), definition=raw)
-    else:
-        import jax
-
-        jax.config.update("jax_enable_x64", True)
+    elif args.action == "check":
         result = dict(status=STATUS, **check())
+    elif args.action == "probe":
+        result = dict(status=STATUS + " Bounded ledger probe; no Q quantity.", **probe(args.dt))
+    elif args.action == "study":
+        result = dict(status=STATUS + " Development dt study.", **study(args.dt))
+    elif args.action == "terms":
+        studies = [json.loads(Path(f).read_text()) for f in args.studies]
+        result = dict(status=STATUS + " Step terms of the dt study.", **terms(studies))
+    elif args.action == "reference":
+        result = dict(status=STATUS + " R-full's reference terms.", **reference())
+    else:
+        result = judge()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=1, default=float) + "\n")
     print(args.action, "written", args.output)

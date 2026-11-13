@@ -22,16 +22,28 @@ its volume always agree (the lumen_fill ledger). Bookings, exact for each half-s
   composition), in the declared heat field lumen_fill_dissipated_energy_pJ;
 * the energy ledger's dilution term at the view volume, water's expression
   -RT N ln(V / V_on) (N the lumen's amounts), which brings @3's chemical term on the declared
-  volume to the physical one; with it dG = W_supply + W_fluid - H closes exactly;
+  volume to the physical one; with it the fill's budget dG = sum mu_b dn - Pi_b dV - H closes
+  exactly (the lead's ruling of 13 November; derivation in docs/CELL_DIVISION_S3_PLAN.md §1);
 * the clamps' image charge and its work at the view (BOOKS_AT_VIEW, as injection books it),
   for the rounding-level charge of a fill: the source is declared electroneutral. The electric
   energy of that charge (about 1e-18 pJ per fill in the egg) is left to the energy ledger's
   rounding.
+Guards of the fluid work and the mixing heat: an IMEX energy bound (2e-3 of the flows, of order
+1e6 pJ in the egg) cannot see an error in them, so their guards are the NumPy mixing-gap test
+(H against W - dG written out independently, tests/unit/test_restricted_lumen.py) and the RK4
+run, whose energy bound has no solver tolerance (tests/unit/test_restricted_lumen_runs.py).
 Fluid added between the last insertion half-step and the end of a step waits for the next
 step's first half (the operator follows insertion), a splitting error covered by a step study.
 A half-step with no fill selects its start state, so a lumen whose patch does not grow is
 bitwise idle; the second half-step of a step always selects (the area has not moved since the
 first).
+
+Observation: the readouts lumen_volume_pL and lumen_concentration_mM report each lumen as R-full
+defines it, filled to its patch's area at the saved time: V_on + T and
+(n + c_b (T - dV)) / (V_on + T), with T = w (A - A_on) / 2 and dV the state's filled volume.
+They are written in the fill's own operations, so they equal the state after a NumPy fill to
+that area bitwise. The dynamics are unchanged: the state keeps the volume of its last fill, at
+most half a step behind the area.
 
 Refusals:
 * a lumen node that is not a finite onset node of the insertion; a node faced by more than one
@@ -315,6 +327,24 @@ def filled(state, p, *, xp=jnp, view=None):
     return type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True))), valid
 
 
+def filled_to_area(state, p, reference, *, xp):
+    """([outside] volume pL, [species, outside] amounts fmol) of every node with each lumen filled
+    to its patch's area at this state: V_on + T and n + c_b (T - dV), T = w (A - A_on) / 2.
+
+    The observer's lumen, as R-full defines it. filled's own operations, in its order (the
+    decision, dV = T - V held, c_b dV, then the reference plus the new increment), so a NumPy
+    fill of the state to that area gives these values bitwise. reference: the extracellular
+    reference amounts as the view presents them (0 at a node an onset has not yet opened).
+    """
+    target = target_increment(state, p, xp=xp)
+    old = state.lumen_volume_increment_pL
+    lumen = p.lumen_node & (target > old)
+    dv = xp.where(lumen, target - old, 0.0)
+    increment = state.extracellular_amount_increment + source_composition(p, xp=xp) * dv
+    volume = p.extracellular_volume + xp.where(lumen, target, old)
+    return volume, reference + increment
+
+
 def dilution(row, p, *, xp):
     """Water's dilution term at the lumens' volumes, -RT N ln(V / V_on), pJ: @3's chemical term
     on the declared volume plus this is the physical free energy (osmotic_water.water_ledgers)."""
@@ -478,11 +508,15 @@ class RestrictedCleftLumen(Operator):
     # ------------------------------------------------------------ observations
 
     def observe(self, row, state, control, p, view, model, spec):
+        """The state fields, and each lumen filled to its patch's area at this time (module
+        docstring): R-full's lumen, whatever fill the next step's first half has pending."""
         columns = {k: getattr(state, k) for k in self.STATE_AXES}
         lumen = np.asarray(p.lumen_node) & np.asarray(view.outside_active)
-        volume = np.asarray(lumen_volume(state, p, xp=np))
-        amounts = np.asarray(view.extracellular_amount_reference) + np.asarray(
-            state.extracellular_amount_increment
+        volume, amounts = (
+            np.asarray(x)
+            for x in filled_to_area(
+                state, p, np.asarray(view.extracellular_amount_reference), xp=np
+            )
         )
         columns.update(
             lumen_volume_pL=np.where(lumen, volume, 0.0),

@@ -372,7 +372,7 @@ area, capacitance or abundance, and how each is handled:
 | `initial_membrane_voltage_V` | A bind-time capacitor solve (`surface_tissue.py`, initial values) | Stays the declared reference V0 (R1); the energy rule below |
 | Explicit-rate bound | Definition time, from capacitance and area-scaled conductance | R5 (below) |
 | `pump_capacity`, `calcium_pump_capacity` | Per-membrane totals, not area-derived | Unchanged; inserting pumps is out of the first slice |
-| `face_factor` (D × area / length) | Per face | Fixed in S2; an R2 view when the lumen grows (S3) |
+| `face_factor` (D × area / length) | Per face | Fixed in S2 and in S3: the access A/L stays constant from activation, as in R-full (the lumen grows its volume only) |
 | Junction area | Per junction | S5 |
 | Device-check constants, capacitor tolerance, ledger bounds | No bind-time area or capacitance; the latter two read the layout at run time | Unchanged |
 
@@ -727,6 +727,27 @@ is its anchor (D057), already counted on the declared layout.
       - compile times are unchanged.
   - The same run gives the engine's energy bound used in (a). The pulses leave about
     0.45 pJ each in the energy residual, scheme error within IMEX's tolerance.
+
+**The restricted lumen's fill (S3, `restricted_cleft_lumen@1`; the lead's ruling of 13
+November).** The lumen's volume follows its patch's area, V = V_on + w (A − A_on)/2, and each
+added dV fills with bath fluid, dn_s = c_b,s dV, with no water flow. Its energy budget:
+- @3's free energy at the view is G(n, V) = RT Σ_s n_s (ln(n_s / V) − 1). The dilution term
+  −RT N ln(V / V_on) (the water law's expression) brings @3's chemical term on the declared
+  volume to it.
+- The bath gives up W = Σ μ_b dn − Π_b dV. The first term is its solutes' supply work, booked as
+  @3 books its own supply (the bath's `reservoir_supplied` and `reservoir_work_pJ`). The second
+  is its fluid's volume work at the osmotic pressure Π_b = RT Σ c_b: the water law's bath water
+  work at ψ_b = −Π_b.
+- H = W − dG = RT Σ_s c'_s [V φ(c_s / c'_s) + dV φ(c_b,s / c'_s)], with φ(y) = y ln y − y + 1
+  and c' = (n + dn)/(V + dV), is a Jensen gap: nonnegative, and zero at bath composition. It is
+  the mixing heat of bath fluid entering a lumen of another composition.
+- So dG = Σ μ_b dn − Π_b dV − H. −Π_b dV is booked in the declared work field
+  `lumen_fluid_work_pJ` and H in the declared heat field `lumen_fill_dissipated_energy_pJ`.
+  Without them the ledger misses RT c_tot dV per fill even at bath composition (3.26 × 10⁵ pJ by
+  J1).
+- An IMEX energy bound (2 × 10⁻³ of the flows) cannot see an error in these terms at egg scale.
+  Their guards are a NumPy test of H against W − dG written out independently, and an RK4 run
+  whose energy bound has no solver tolerance (S3 plan §1).
 
 **R5 for insertion, as built.** The inner checks run on the definition with every inserted
 patch at its largest area over the schedule and its declared capacitance, which is the
