@@ -1,10 +1,14 @@
 # Checkpoint continuity (proposed design)
 
-Status: **proposed, 13 November 2026.** The lead and the advisor review it before any code
-exists. The user approved the tooling on 13 November: "yes fix checkpoint continuty also"
-(PROGRESS). The public validation package is not approved, and this note does not touch
-it. The draft decision is D150 (Appendix A). Evidence:
-`/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/`.
+Status: **proposed, 13 November 2026; the coordinator accepted the note, but the
+implementation waits on the blockers of §13.** No code exists yet.
+- The user approved the tooling on 13 November: "yes fix checkpoint continuty also"
+  (PROGRESS).
+- The public validation package is not approved, and this note does not touch it.
+- The draft decision (number assigned at landing; Appendix A) is **held for the user's
+  answers** (§13.6).
+- §13 records the coordinator's answers and the results of the blocker probes.
+- Evidence: `/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/`.
 
 **Engine models run:** none; this is tooling. The first consumer names its models (§10).
 
@@ -22,16 +26,18 @@ it. The draft decision is D150 (Appendix A). Evidence:
 
   | Case | Rule | Test |
   | --- | --- | --- |
-  | 1. Source changed; programs, bindings and host checks unchanged | Admitted | The continuity probe (§4), on CPU, at trace level, on the checkpoint's own definitions |
+  | 1. Source changed; programs, bindings and host checks unchanged | Admitted | The continuity probe (§4), on CPU, on the checkpoint's own definitions: at trace level (programs, bindings, host replay) plus a bitwise overlap of the first rounds under both trees (§3.1, §13.2) |
   | 2. Programs or bindings changed; physical fields unchanged | Only with a D148 record covering these definitions; the lead admits; never automatic | The probe's chain to the D148 revisions, and D148's guard on these definitions |
   | 3. Definition, layout, solver or model ID changed | Refused, as today | The loaders' existing checks, which no record relaxes |
-  | 4. Runtime changed | Its own rule, field by field | Host-side fields: the probe under both runtimes. Compiler and device fields: tolerance, by the backend-variant method with at least three repeats |
+  | 4. Runtime changed | Its own rule, field by field. **Parked** (§13): the first landing refuses every runtime change | Host-side fields: the probe under both runtimes. Compiler and device fields: tolerance, by the backend-variant method with at least three repeats |
 
 - **Unchanged:**
   - registered runs: the W1 hold on its frozen `source-09`, E07-v1 on its one snapshot,
     and judges on clean snapshots;
   - D146 (no aliases) and D147 (a solver switch is a new definition; no migration).
 - **The first consumer** is a CPU development run.
+- **The first landing:** case 1 only, for the vector-windows path and CPU definitions with
+  `jit: true`. Case 2 is admitted by the lead when needed; case 4 is parked (§13.1).
 
 ## 2. What refuses today, checked against the code (main `f76876d`)
 
@@ -217,15 +223,32 @@ fingerprint differs from the driver's rebuilt definitions.
       including this one), and on its saved observation rows where it recorded full
       histories;
     - the outputs must be identical.
-- No model program is compiled or executed. Vector windows' small gather of the resident
-  inputs does compile.
+  - **O, the bitwise overlap**, added after the driving-loop controls (§13.2):
+    - the resuming path runs on CPU from the checkpoint, under S0 and under S1, for the
+      first N rounds of the resume;
+    - every round's bound arguments are recorded at the executable call, by wrapping the
+      executable that `compile_window` returns where `launch` looks it up. They must be
+      identical across the trees, and equal to the tree's own builders' rounds from B.
+      This extends P0's first-round check to N rounds;
+    - every round's endpoint states, observations, device-check diagnostics, clock and
+      event index must be bitwise equal;
+    - N is at least two rounds. It runs past the next event and the next observation time
+      after the checkpoint, or to the end of the horizon if that comes sooner.
+- **Execution.**
+  - P, B and H compile and execute no model program. Vector windows' small gather of the
+    resident inputs does compile.
+  - O compiles the model's program once per tree and executes N rounds on CPU.
 - **The probe's own runtime.** B and H speak for the resuming run only if the probe ran under
   the resuming runtime's host-side fields: python, numpy, scipy, ml_dtypes, opt_einsum, jax,
   platform and machine.
   - The record keeps the probe's runtime, and the loader checks those fields against `to`.
   - Otherwise the probe is rerun under the resuming runtime (§3.4, host class).
 
-**Scope of the first landing.**
+**Scope of the first landing** (the coordinator's answer, §13):
+- **The vector-windows path only.** The other paths (runner, scalar windows, batch and
+  batch_windows) answer "cannot decide" until the consolidation gives one path. A request
+  that declares another path is refused. Probe 4 captured all five, so the extension is
+  the consolidation's to make.
 - **CPU definitions only** (`execution.backend: "cpu"`), with `jit: true`.
 - **GPU definitions are not yet admitted.** For them, the probe would trace on CPU with
   `execution_device` patched to the CPU device, and cross-lower the captured program for
@@ -237,20 +260,26 @@ fingerprint differs from the driver's rebuilt definitions.
   Only development drivers do, through the API.
 
 **What it decides.**
-- Identical programs (jaxpr text, constants, lowered StableHLO and compile arguments) and
-  identical bound inputs, under an identical runtime, give an identical compiled program on
-  identical inputs.
-- On CPU, the resumed run therefore equals S0's own continuation bitwise. CPU execution is
-  deterministic, and complete restart is an engine property the tier tests already check.
-- On a GPU it is the same program, so the resumed run varies only as S0's continuation
-  would.
-- Host acceptance and observation are decided on this run's own saved states.
+- **The programs.** P decides them: jaxpr text, constants, lowered StableHLO and compile
+  arguments of the program the path compiles.
+- **The bound inputs**, which are decided:
+  - for the first round, by P0 (the path's own call);
+  - for every round the builders produce, by B;
+  - for O's N rounds, at the executable call.
+  - Beyond N, a driving-loop change to what the builders produced is the residual below.
+- **The outputs.** Identical programs on identical inputs, under an identical runtime, give
+  identical outputs on CPU: CPU execution is deterministic, and complete restart is an
+  engine property the tier tests check. O shows it for N rounds.
+- On a GPU it is the same program on the same inputs, so the resumed run varies only as
+  S0's continuation would.
+- **Host acceptance and observation** are decided on this run's own saved states.
 
 **What it leaves, stated in every record.**
-- Host code paths that no saved state reaches, and the driving loop after its first round
-  (§4.2), are S1's.
+- Host code paths that no saved state reaches are S1's.
+- So is a driving-loop change that first acts after the overlap's N rounds. P0 sees the
+  first round, B the builders and O the first N rounds.
 - The consolidated execution path closes the second gap by exposing its rounds as a
-  host-only generator that its executor consumes (§6).
+  host-only generator that its executor consumes, which B then iterates (§6).
 
 **No narrowing.**
 - Every file under `src/cells` still counts.
@@ -289,6 +318,15 @@ admission time, with P, B and H as in case 1. It does not rely on the stored cro
 baselines, which hold step-level jaxpr text only and miss closed-over constants (§2.2,
 item 7).
 
+**Case 2's overlap is D148's guard run, not O.**
+- O cannot be bitwise for case 2, because a D148 change moves the ledger accumulators.
+- In its place, step 3's `inplace_fix_guard` comparison runs the overlap rounds from the
+  checkpoint under S0 and S1. It requires:
+  - physical fields bitwise;
+  - ledger fields at rounding level and listed;
+  - the bound arguments identical, apart from the inputs the decided change itself
+    alters.
+
 ### 3.3 Case 3: a definition, layout, solver or model ID changed: refused
 
 No new mechanism is needed. The checks of §3.0 step 3 already refuse:
@@ -311,6 +349,13 @@ fall to case 2 or are refused.
 keep their own records.
 
 ### 3.4 Case 4: the runtime changed
+
+**Parked** (the coordinator's answer, §13).
+- No run needs an L4-to-GH200 continuation now: the hold finishes on the L4, and E07 tier 1
+  would start fresh on GH200.
+- The first landing keeps the record format: every differing runtime field must be named.
+  But it admits no runtime change; any runtime difference refuses.
+- The rules below are the design for when a run needs them.
 
 **Rules.**
 - The loader requires the record to name exactly the set of runtime fields that differ
@@ -481,8 +526,9 @@ No unit's journal reports an out-of-memory kill (Appendix B).
 | 3b | Comment and docstring edits inside traced model code (`checked_step` in `pump_composite.py`, `capacitor_change` in `surface_tissue.py`), which move lines | `source_hashes()` differs, but texts (12/12), constants and bindings (5/5) are **identical**, so case 1 admits. Neither jaxpr text nor StableHLO carries source positions |
 | 4 | P0, the entry capture: does driving each path's own entry point, with its jitted rollout replaced by a recorder where the path looks it up, capture the program it compiles? | Yes, on all five paths: `iter_vector_windows`, `iter_batch_windows` (its `_compiled_batch`, imported by name), `run_batch`, `run` and `iter_windows`. 19–25 s per process, 0.43 GB. The captured StableHLO equals the path's direct `.lower()`. Compile arguments are empty. The vector capture **equals the first round rebuilt from the builders**. Repeated, host-edit and program-edit trees as in probe 3a: the program edit changes all five captured programs, with arguments equal |
 | 4 | H, host replay on saved states (here the snapshot's step-0 states): does it catch an observer-only change that P and B miss? | Yes. A one-ulp change to every floating observation column except `times`, in the composite's `observe_history`, leaves programs and bindings identical, and changes `observe_history` in both worlds (`check_values` and `summarize` unchanged). Case 1 refuses. A first form, which scaled the first float column, scaled `times` (0 at step 0) and changed nothing. It is kept as evidence of a probe flaw, not of H |
+| 5 | A mid-run checkpoint, the driving-loop controls and the bitwise overlap (executes the cohort on CPU) | P, B, P0 and H admit driving-loop changes. The overlap compares each round's arguments and outputs, and catches all three loop controls; the one-ulp control is caught on arguments only. Host-only edits, the benign loop edit among them, give a resume bitwise equal to the uninterrupted run (§13.2, §13.3) |
 
-Details are in Appendix B.
+Details are in Appendix B and §13.
 
 ## 5. The record
 
@@ -519,18 +565,22 @@ Details are in Appendix B.
   "source_admission": {"case": "identical_programs"},
   "runtime_admission": {"case": "none", "fields": []},
   "scope": {
-    "paths": ["vector_windows", "batch_windows", "lax_map_batch"],
+    "paths": ["vector_windows"],
     "policy": {"window_steps": 1000, "recording": "checkpoints"},
-    "horizon_rounds": 6000
+    "horizon_rounds": 6000,
+    "overlap_rounds": 3
   },
+  "lineage": [],
   "evidence": [
     {"role": "probe S0", "path": ".../continuity/probe-s0/summary.json", "sha256": "..."},
     {"role": "probe S1", "path": ".../continuity/probe-s1/summary.json", "sha256": "..."},
+    {"role": "overlap S0", "path": ".../continuity/overlap-s0/resume.json", "sha256": "..."},
+    {"role": "overlap S1", "path": ".../continuity/overlap-s1/resume.json", "sha256": "..."},
     {"role": "comparison", "path": ".../continuity/compare.json", "sha256": "..."}
   ],
   "residual": [
     "host checks and observers compared on 41 saved states; unreached host paths are S1's",
-    "the driving loop after its first round is S1's (section 4.2)"
+    "a driving-loop change that first acts after the overlap's 3 rounds is S1's (section 3.1)"
   ],
   "admitted_by": {"name": "<who>", "role": "lead"},
   "admitted_utc": "<UTC time>",
@@ -553,6 +603,35 @@ Details are in Appendix B.
 
 **Case 4** lists each differing field, with its class, `from`, `to`, test and evidence, and
 for tolerance the registered variant protocol.
+
+**Lineage: records chain.** The coordinator answered question 7 yes, provided records
+chain. Each record carries a `lineage` list: the records that admitted earlier resumes of
+the same run, oldest first.
+
+A second migration of one run looks like this:
+1. **Run 1**, under S0, writes checkpoint C1.
+2. **Record R1** admits C1 under S1: `from` S0, `to` S1, `lineage: []`.
+   - **Run 2** resumes C1 under S1. Its manifest's `provenance` names R1, and it writes
+     checkpoint C2.
+   - C2's manifest carries S1's identity, as any snapshot written under S1 does.
+3. **Record R2** admits C2 under S2: `from` S1, `to` S2, and
+
+   ```json
+   "lineage": [
+     {"record": ".../run-2/continuity/R1.json", "record_sha256": "<R1's record_sha256>"}
+   ]
+   ```
+
+4. **Run 3** resumes C2 under S2. Its `provenance` names R2, and through R2's `lineage` it
+   reaches R1 and run 1.
+
+The chain is checked, not trusted:
+- `admit.py` reads the manifest of the run folder that holds C2 (the run that wrote it).
+- If that run's `provenance` names a record, R2's `lineage` must end with it, with the same
+  `record_sha256`, and must repeat that record's own `lineage` before it.
+- `verify_run.py` walks the chain back to a run whose `provenance` is `fresh`.
+- The loader checks R2's binding only, because C2 was written under S1. The chain is
+  provenance, not admission: an earlier link never relaxes a later comparison.
 
 **Rules.**
 - **Location.** The record lives in the **new** run's folder, never in the snapshot's
@@ -582,7 +661,10 @@ for tolerance the registered variant protocol.
   - The loader refuses if:
     - the record's scope does not cover the declared path and policy;
     - the probe's host-side runtime fields differ from the `to` runtime (§3.1);
-    - the definition is a GPU, `jit: false` or projective one (§3.1, first landing).
+    - in the first landing:
+      - the declared path is not vector windows;
+      - any runtime field differs (case 4 is parked);
+      - the definition is a GPU, `jit: false` or projective one (§3.1).
   - The returned `Snapshot` gains an `admission` field, defaulting to `None`. The manifest
     schema stays 1, because its field set is exact.
 - **`batch_io.load_batch_snapshot(directory, *, continuity=None)`.**
@@ -629,8 +711,23 @@ Reading saved bytes without executing from them is not a migration.
 | Read-only comparison or audit, or a writer of its own output (no execution from the state) | 22 of the 32: `jupiter_check`, `tile_benchmark`, `parallel_cluster`, `profile_cluster`, `spatial_matrix`, `compare_throughput`, `open_calcium_trajectory_compare`, `verify_windows_build` (which uses `load_snapshot`), the two spatial-extracellular audits in `scripts/`, the eleven BETSE-side audits (`*_audit_cells`, `*_context`, `timed_cells_check`, `family_audit`, `matched_windows`, `cells_review`, `diagnose`, `preparation_review`), and `open_calcium_trajectory_production` (writes its own `full-state.npz`) | Exempt: nothing continues |
 | Own paired formats with identity checks | the five `validation/betse/physiology/*` IO modules (numeric part through `load_snapshot` and `write_snapshot`) | Exempt: already under the loaders' rule |
 | Rebuild and execute outside the loaders | `scripts/profile_dispatch.py` (L4 timing on held states under other XLA flags); `field_floor_held.py` (`--state`, run **under version 3**: a deliberate case-3 diagnostic of version-2 states) | Exempt as diagnostics: no output is a continuation of the run. Each records the snapshot digest and both identities in its output (rule (b)), and the guard test lists them with this reason |
-| Import into a new definition | `heredity_turnover_literature.start_state` (sheet70 states into `resolved_pump_replacement@1`), used by E07-v1; its `importcheck` is the empirical import check; `static_cleft_egg_steps.start_state` (R-full's recorded J1 state, a reference record) | Rule (b). The turnover pre-screen and E07-v1 are exempt while their runs last (E07-v1 is running now). New imports record the source digest and identity |
+| Import into a new definition | `heredity_turnover_literature.start_state` (sheet70 states into `resolved_pump_replacement@1`), used by E07-v1; its `importcheck` is the empirical import check; `static_cleft_egg_steps.start_state` (R-full's recorded J1 state, a reference record) | Rule (b). The turnover pre-screen and E07-v1 are exempt while their runs last (E07-v1 is running now; the coordinator agreed). New imports record the source digest and identity. **E07-v1's start states predate the D148 ledger fix** (checked below the table) |
 | Driver-owned resume, with no identity | `e07_v1_run.py` and `heredity_turnover_literature.py` (`checkpoint.npz` through the validation-side `Stepper`); `open_calcium_bath_trajectory_production.py` (`last-state.npz` handoff) | Exempt while their runs last, because each resumes inside one execution snapshot. New drivers write Cells snapshots, or record `source_hashes()` and `runtime_identity()` and refuse a resume under another unless given a record |
+
+**E07-v1's start states, checked against their manifests.**
+- **What they are.** The six sheet70 start states,
+  `sheet70/longsheet-v2-disc{19,37}-s{0.3,0.6,1.0}/snapshots/t00120.000/world-1`, are
+  `resolved_pump_tissue@3` states at t = 120 s (step 24,000), written on CPU.
+- **They were written before the D148 ledger fix.**
+  - Their manifests' `models/surface_tissue.py` digest begins `9d65b0ab`. That is the file
+    before `e32c20a`, the first `capacitor_change` change.
+  - The landed fix, `f91ce9d` (option 3), begins `6a25f813`.
+- **E07-v1 runs after the fix.** It runs from `e07-v1-judged-20261113-01/snapshot`
+  (`4465b48`), whose file begins `6a25f813`. So its import crosses the in-place fix.
+- **What the import carries.** Only amounts and channel and junction gates, as the new
+  definition's declared initial values. The ledger accumulators restart at zero.
+- **Why that matters.** D148 changed ledger accumulators only, with physical fields bitwise
+  in its guard worlds. The sheet70 runs themselves were not among those worlds.
 | Same-process restart and independent references | `betse/fresh_rerun/workers.py` (`restart.npz` written and read in one process); `open_calcium_bath_trajectory_oracle.py` (the independent oracle's own state) | Exempt: no source change can occur, or no Cells engine runs |
 
 **The guard** is a static test modelled on `test_d147_drivers.py`. It fails for any module
@@ -647,6 +744,8 @@ The validation-side `Stepper` is a fifth execution path outside `src/cells`. Tha
 for the consolidation (§12).
 
 ## 8. The GH200 move
+
+**Parked with case 4** (§13). No run needs to continue from an L4 checkpoint on GH200.
 
 **What differs from the L4:**
 - the device: GH200 against L4;
@@ -692,14 +791,14 @@ for any development checkpoint.
 | "Do not add per-call or bytecode attestation layers" | The probe runs once per admission, outside the run. The loader's default path is unchanged; with a record, it compares stored identity fields as it does today. Nothing hooks a call. No Python code object or bytecode is inspected. Traced device programs are compared, as the crossrev guard already does (D148, criterion 4) |
 | "do not embed SHA-256 hashes of other source files as literals in new code" | None. Hashes live in records and manifests, as data |
 | "integration alone grants no scientific acceptance" | The continuity code lands with its guards. An admitted resume serves development runs; judges and registered runs never pass a record (static test) |
-| "A milestone that runs none is tooling and needs the user's explicit approval" | Approved on 13 November, verbatim in D150. The first consumer names its engine models |
+| "A milestone that runs none is tooling and needs the user's explicit approval" | Approved on 13 November, quoted verbatim in the draft decision (number assigned at landing). The first consumer names its engine models |
 | "If a check needs more than 30 minutes to reach the code under test, build a faster harness first" | The probe reaches the code under test in seconds to minutes (§4.2). Tolerance runs are separate, registered measurements |
 | Running jobs (10 minutes or more detached) | Probes and tolerance repeats run through `scripts/run_detached.sh`, with caps from measured peaks |
 | Reference simulators | The tolerance step restates `up1` instead of importing from `validation/betse/`, as `composite_l4_agreement.py` does |
 | Lean workflow | One machine-readable record per resume, and one PROGRESS line per admitted resume. No new protocol documents |
 | Refusal stays the default (brief) | With `continuity=None`, the loaders run today's code path, with every refusal message unchanged (guard 1). A migration is one explicit `Request` per resume, backed by a record naming both sources, the evidence and who admitted it |
 | Registered runs are unchanged (brief) | No registered driver or judge passes a record (static test, guard 6). The W1 hold keeps `source-09`, E07-v1 its snapshot, and judges clean snapshots. The first consumer is a CPU development run |
-| One admission rule for all four execution paths (brief) | The rule sits in the two loaders, which every path's checkpoints pass through. The probe traces each path's own program: runner, scalar windows, batch, batch_windows and vector_windows. The consolidated path inherits the loader rule and the declared scope check |
+| One admission rule for all four execution paths (brief) | The rule sits in the two loaders, which every path's checkpoints pass through, and a request declares its path. The first landing admits the vector-windows path only, and the others answer "cannot decide" (the coordinator's answer). Probe 4 captured all five paths' programs, so the consolidated path inherits one rule rather than four |
 
 **Proposed wording, for the user to decide.** This design does not need it, but it makes the
 two-source provenance explicit. In "Milestones and provenance", replace:
@@ -742,7 +841,10 @@ fixes in the checkout and generate a new snapshot for a later run.":
    - a tolerance case without a registered variant;
    - a declared path or policy outside the record's scope;
    - a probe runtime whose host-side fields differ from `to`;
-   - in the first landing, a GPU, `jit: false` or projective definition.
+   - in the first landing:
+     - a declared path other than vector windows;
+     - any differing runtime field;
+     - a GPU, `jit: false` or projective definition.
 4. **Admitted cases, tested on small worlds, scalar and cohort, on scratch copies as in
    probe 3.**
    - A host-only edit and a comment edit are admitted. The resumed CPU run then equals the
@@ -767,21 +869,37 @@ fixes in the checkout and generate a new snapshot for a later run.":
    - A CPU development run resumes across a real host-only landing, with its record.
    - It is checked by `verify_run.py`, and compared bitwise with an uninterrupted S0
      continuation of the same checkpoint.
+8. **Acceptance for the build** (the coordinator's): an admitted resume equals the
+   uninterrupted run bitwise on CPU. Probe 5 (§13.2–13.3) is the template:
+   - a mid-run checkpoint with events and observations still ahead;
+   - a host-only edit, including one inside the driving loop, is admitted, and its resume
+     is bitwise equal to the uninterrupted run at every round;
+   - a driving-loop control passes P, B, P0 and H, and O refuses it. That includes a
+     one-ulp control that moves no output, which O refuses on its arguments;
+   - a builder control is refused by B.
+
+   The implementation's tests rerun all of this through `admit.py` and the loader.
 
 ## 11. Effort (agent-days; CPU time extra)
 
+Revised after the coordinator's answers (§13): vector windows only, runtime parked, overlap
+added.
+
 | Part | Days |
 | --- | --- |
-| `continuity.py`, the loader argument for scalar and cohort, tests 1–3, D148 guard runs for the landing | 1.5 |
-| `probe.py` (P0, P and B for runner, windows, batch, batch_windows and vector_windows; H), `admit.py`, `verify_run.py`, tests 4 | 3–4 |
+| `continuity.py`, the loader argument for scalar and cohort (declared scope, vector windows only), the lineage check, tests 1–3, D148 guard runs for the landing | 1.5 |
+| `probe.py` for vector windows (P0, P, B, H and O, from probes 4–5), `admit.py`, `verify_run.py`, tests 4 and the acceptance test 8 | 2.5–3 |
 | The bypass guard, exemption table, rule (b) records in four tools, a driver-checkpoint helper | 1 |
 | The first consumer, end to end on CPU | 0.5–1 |
-| **Case 1 usable on CPU** | **6–7.5** |
+| **Case 1 usable on CPU (vector windows)** | **5.5–6.5** |
+| GPU definitions, after §13.4's L4 probe | 1 |
 | Case 2 chain exercised on a real D148 case (when needed) | 1 |
-| Runtime: host-side two-environment probe; n-run tolerance terms; GPU cross-lowering compare (at GH200 access) | 2 |
-| **Total** | **9–10.5** |
+| Other paths: left to the consolidation | — |
+| Runtime and device rules: parked | — |
 
 ## 12. Open questions for the lead
+
+The coordinator answered these on 13 November (§13.1). They are kept as asked.
 
 1. **Path and policy.** Is a scope declared at load (refused there if the record does not
    cover it, and cross-checked by `verify_run.py`) enough until the consolidated path
@@ -815,11 +933,14 @@ fixes in the checkout and generate a new snapshot for a later run.":
     production path?
 11. **Not yet probed.** These need probing before the implementation relies on them:
     - **GPU definitions:** the `execution_device` patch, and `cuda` cross-lowering of
-      captured path programs. Cross-lowering was shown on a toy only.
-    - **Mid-run checkpoints.** Only step 0 was probed. A checkpoint with `start_step > 0`
-      exercises the planners' start and the remaining grid.
-    - **H on a real run's saved states:** periodic snapshots past step 0, and saved
-      observation rows of runs recording full histories.
+      captured path programs. Cross-lowering was shown on a toy only; §13.4 plans it for
+      the next L4 gap.
+    - ~~**Mid-run checkpoints.**~~ Probed in §13.3: step 8, with events and observations
+      still ahead.
+    - **H on a real run's saved states.** §13.3 replayed on a mid-run snapshot of a short
+      cohort. Still open: a long run's periodic snapshots, and the saved observation rows
+      of runs recording full histories.
+    - **The overlap on a large world:** compile and round cost of O for 825-node tissues.
     - **B over a long horizon:** the cost of iterating the round builder over thousands of
       rounds.
     - **Capture against rebuilt first round on the other paths.** Probe 4 compared them for
@@ -831,9 +952,208 @@ fixes in the checkout and generate a new snapshot for a later run.":
       tolerance terms.
     - **`jit: false` definitions** (refused in the first landing).
 
-## Appendix A: draft D150
+## 13. The coordinator's answers and the blocker probes (13 November)
 
-> ## D150: Checkpoints resume across a source or runtime change only through a recorded admission
+### 13.1 Answers recorded
+
+| Question (§12) | Answer |
+| --- | --- |
+| First landing | CPU definitions, **vector windows only**. The other paths answer "cannot decide" until the consolidation (§3.1) |
+| Runtime and device rules (case 4 beyond the record format; GH200, question 8) | **Parked.** No run needs an L4-to-GH200 continuation: the hold finishes on the L4, and E07 tier 1 would start fresh on GH200 (§3.4, §8) |
+| The draft decision (number assigned at landing) | **Held** for the user, together with the AGENTS.md sentences and the attestation question (§13.6) |
+| 1. Scope declared at load | Yes |
+| 2. Host-replay residual for development runs | Yes |
+| 3. The driving-loop residual | Decided with a control (§13.2) |
+| 4. Who admits | The coordinator's words: "the probe decides case 1 and I record it; I admit case 2; any registered run is the user's" |
+| 5. The crossrev constants gap | Closed by slice 0 (§2.2, item 7) |
+| 6. Bypass exemptions | Yes. E07-v1's start states predate the ledger fix (§7) |
+| 7. Lineage | Yes, if records chain. A second migration is shown in §5 |
+| 9. Scope (assembly, charged-surface backend, projective) | Yes, out of scope; they keep refusing |
+| 10. The validation-side `Stepper` | Left to the consolidation |
+
+### 13.2 The driving-loop control and the bitwise overlap (probe 5)
+
+**The controls.** Scratch copies of `src/cells` at the branch head alter host-computed
+controls from the resumed loop's second window on.
+- They change the `pump` control table, whose 28 entries per round are nonzero.
+- The **loop** controls edit only the driving loop, `_iter_vector_windows`. Three forms:
+  - **up:** ×(1 + 1e-6);
+  - **down:** ×(1 − 1e-6);
+  - **ulp:** one ulp toward zero.
+- The **builder** control applies the up form inside `_Round`, for rounds built with
+  `first_round=False`.
+- A **benign loop edit**, the coordinator's canonical case, adds a DEBUG phase marker
+  (`phases.detail`) for every round the driving loop builds after its first.
+- The patches are `loop-control.patch`, `loop-down.patch`, `loop-ulp.patch`,
+  `loop-benign.patch` and `round-control.patch` in the probe folder.
+
+**Results.** All from the mid-run checkpoint of §13.3, compared with the checkout tree.
+- O's outputs: states, observations and diagnostics against the uninterrupted run, at steps
+  16 and 24.
+- O's arguments: each round's bound arguments, recorded at the executable call (probe 5c),
+  against the checkout's and against the tree's own B.
+
+| Tree | P (12 texts, constants), B (5 binding groups), P0 (5 paths), H | O, outputs | O, arguments |
+| --- | --- | --- | --- |
+| Host-only edits | identical | **bitwise equal** | identical; equal to own B |
+| Benign loop edit | identical | **bitwise equal** | identical; equal to own B |
+| Loop control, up | identical | refused: the model's checked step refuses the altered window's first step, [0.016, 0.017], in both worlds (`checks: ['step']`, not a device check) | round 2 differs |
+| Loop control, down | identical | round 1 equal; **round 2 differs** in states, observations and diagnostics, both worlds | round 2 differs |
+| Loop control, one ulp | identical | bitwise equal at both rounds | **round 2 differs** |
+| Builder control | **B differs** (`vector_window_rounds`); the rest identical | refused, as for loop up | (refused by B) |
+
+**The answer to question 3.**
+- P, B, P0 and H admitted every driving-loop control. **The residual is real**, as the
+  coordinator expected.
+- So **O, the bitwise overlap, is added to case 1** (§3.1). It compares both each round's
+  bound arguments and its outputs.
+- O catches all three loop controls through the arguments:
+  - the ulp control fed a different pump table in round 2, so it **is refused**, although
+    no output bit moved in this run;
+  - up and down also fail on outputs.
+- The argument capture also proves the ulp edit was live: the first form of the observer
+  edit (probe 4) had been a silent no-op.
+- O admits the benign loop edit and the host-only edits: identical arguments, and outputs
+  bitwise equal to the uninterrupted run.
+- B catches the builder control. The builders are covered over the whole horizon, the
+  driving loop's own handling within O's rounds.
+
+**What O leaves.** A driving-loop change that first alters arguments after the overlap's N
+rounds is S1's.
+- No control in these probes acted after the overlap: N was the whole remaining horizon,
+  2 rounds. That is the only reason this run is fully decided.
+- N is in the record, beside the remaining horizon.
+- When N covers the remaining horizon, case 1 is fully decided on CPU, at the cost of
+  running the continuation under both trees.
+- The consolidation's host-only round generator, iterated by B, closes the rest.
+
+### 13.3 A mid-run checkpoint with events still ahead (probe 5)
+
+**The checkpoint.**
+- The probe cohort (two worlds) ran uninterrupted through vector windows (width 8, steps 0
+  to 24) on CPU under the checkout. Its cohort after round 1 was written as a batch
+  snapshot, `snap8`, at step 8.
+- Still ahead of it:
+  - world 2's two replacements at step 9;
+  - world 1's replacement at step 16;
+  - observations at steps 12 and 24.
+- The uninterrupted run's event indices go from (1, 0) at step 8 to (2, 1) at step 16.
+
+**Under the checkout**, from `snap8`:
+- P0 captured all five paths' programs, and the vector capture equals the first round
+  rebuilt from the builders.
+- B iterated both remaining rounds, and H replayed on `snap8`'s states.
+- The resume is **bitwise equal** to the uninterrupted run at steps 16 and 24, in every
+  state field, observation, diagnostic, time and event index. That is the restart property.
+
+**Under the host-edit tree:** P, B, P0 and H are identical, and the resume is bitwise
+equal. **The acceptance criterion holds:** an admitted resume equals the uninterrupted run
+bitwise on CPU.
+
+**Cost.**
+- Per tree: tracing 25–40 s, entry capture 23–41 s, resume 64–69 s (compile and two
+  rounds).
+- Units `cells-ccont-probe5`, `-probe5b` and `-probe5c`: peaks of 1.23, 1.19 and 1.18 GB,
+  with `memory.events` all zero (captured in the units).
+- Probe 5c reran every resume with the argument capture: checkout, host, benign loop edit,
+  and the three loop controls. Its outputs are `out5/resume2-*`, `compare-arguments-*` and
+  `compare-own-*`.
+
+### 13.4 Plan: a GPU batch snapshot traced twice from one source (next L4 gap)
+
+This blocks only the GPU extension of case 1; the first landing is CPU-only.
+
+**Questions.**
+1. Does a `backend: "gpu"` cohort trace identically in two processes from one source on
+   the GPU host? This covers P0 (with `cuda` lowering), P, B and H.
+2. Does a CPU-host trace give the GPU host's jaxprs, constants, bindings and host replay?
+   On the CPU host, `execution_device` is patched to the CPU device, and the captured
+   programs are cross-lowered for `cuda`.
+3. Does the cross-lowered `cuda` StableHLO equal the GPU host's own lowering?
+4. Can the overlap of §13.2 run on CPU for a GPU definition, with `execution_device`
+   patched, and repeat bitwise?
+
+**Inputs.**
+- The probe cohort (two `resolved_pump_replacement@1` worlds of the 7-cell sheet) with
+  `execution.backend: "gpu"`.
+- Run on the L4 for one vector window, then written with `write_batch_snapshot`, so its
+  manifest carries the GPU runtime.
+- The hold's own snapshots stay untouched.
+
+**Runs.**
+- In one L4 gap, as one GPU process (D145), venv-gpu, under 10 minutes of GPU time:
+  1. write the snapshot;
+  2. run `probe_entry.py` and `probe_trace.py` twice, in two processes, with the real
+     device.
+- Then on the CPU host, CPU 4, through `run_detached.sh`:
+  3. the same tracing with `execution_device` patched;
+  4. cross-lowering of the captured programs for `cuda`;
+  5. two overlap runs on CPU.
+
+**Decision.**
+- **All of 1–4 identical:** GPU definitions are probed on the CPU host and use no GPU
+  time. The record notes the patch.
+- **Only 3 differs:** the GPU-side lowering is done on the GPU host, lowering only.
+- **1 differs:** GPU definitions stay refused, and the difference is reported.
+- **Repeats:** the L4's non-repeatability doesn't enter. No GPU result is compared bitwise;
+  only traces and CPU runs are.
+
+### 13.5 Correction for PROGRESS
+
+PROGRESS's "about 20 validation tools read saved `state.npz` files directly, an unrecorded
+form of migration" should read:
+
+> **Already outside that rule:** 32 non-test files under `validation/` and `scripts/` name
+> `state.npz`, but most only read or write saved bytes. Two groups matter.
+> - **Three uses did cross an identity:**
+>   - `scripts/profile_dispatch.py`: held L4 states under other XLA flags;
+>   - `field_floor_held.py`: version 3 run on version-2 states;
+>   - E07-v1's import of the sheet70 start states, through
+>     `heredity_turnover_literature.py`, which crosses the D148 ledger fix.
+> - **The driver-owned resumes have no identity check:** `e07_v1_run.py` and the turnover
+>   tool's `checkpoint.npz`, and `open_calcium_bath_trajectory_production.py`'s handoff.
+>   Each resumes inside one execution snapshot today, but nothing would refuse a migration.
+> - The design note's §7 classifies all of them.
+
+### 13.6 For the user: the AGENTS.md sentences and one question
+
+The draft decision (number assigned at landing) waits for the user's answers.
+
+**The sentences** (§9, verbatim).
+- In "Milestones and provenance", replace "Run provenance is the Git revision, the dirty
+  diff and the frozen snapshot." with:
+
+  > Run provenance is the Git revision, the dirty diff and the frozen snapshot. A run
+  > resumed from a checkpoint written under another source or runtime names both, and the
+  > continuity record that admitted the resume (docs/CHECKPOINT_CONTINUITY_DESIGN.md).
+
+- Optional, in "Source code and outputs", after "Treat those snapshots as immutable: make
+  fixes in the checkout and generate a new snapshot for a later run.":
+
+  > Numerical checkpoints are immutable as well: a checkpoint written under one source is
+  > resumed under another only through a continuity record, never by editing or re-saving
+  > it.
+
+**The question.**
+- AGENTS.md says "Do not add per-call or bytecode attestation layers". The case-1 probe:
+  - compares lowered device programs across two source trees: jaxpr text, constants and
+    StableHLO;
+  - compares the arrays each tree binds over the remaining horizon, and its host checks
+    and observers on the run's saved states;
+  - executes the first N rounds of the resume on CPU under both trees, and compares their
+    outputs and their bound arguments bitwise.
+- It does so once per admission, before the resumed run and outside it, as the crossrev
+  guard and the D148 dumps already do between revisions.
+- It inspects no Python bytecode. The resumed run itself carries no hook or check of any
+  call.
+- Is it within the rule?
+
+## Appendix A: the draft decision (number assigned at landing)
+
+**Held for the user's answers** to §13.6. It is drafted as of the coordinator's answers; the
+first landing's scope, vector windows on CPU, is in §13.1.
+
+> ## D1xx (number assigned at landing): Checkpoints resume across a source or runtime change only through a recorded admission
 >
 > 2026-11-13, user approval of the tooling, with the lead's design reviewed by the advisor
 > (draft; it lands with the implementation,
@@ -849,23 +1169,31 @@ fixes in the checkout and generate a new snapshot for a later run.":
 >   - It lives in the new run's folder, and the run's provenance names it.
 > - **Four cases:**
 >   1. **Source changed, programs unchanged:** admitted when the continuity probe finds
->      three things identical:
->      - the programs each path compiles: jaxpr, constants, lowered StableHLO and compile
+>      four things identical:
+>      - the programs the path compiles: jaxpr, constants, lowered StableHLO and compile
 >        arguments;
 >      - the bindings over the remaining horizon;
->      - host acceptance and observation on the run's saved states.
+>      - host acceptance and observation on the run's saved states;
+>      - a bitwise overlap: the first rounds of the resume, run on CPU under both trees,
+>        past the next event and observation, with each round's bound arguments and
+>        outputs compared.
 >
 >      The probe runs on CPU, on the checkpoint's own definitions. No file is exempted by
->      argument. The first landing covers CPU definitions with `jit: true`.
+>      argument. The record states the overlap's length. A driving-loop change that first
+>      moves an output after it is the stated residual.
 >   2. **Programs or bindings changed, physical fields unchanged:** only with a D148 record
 >      covering those definitions, admitted by the lead. Never automatic.
 >   3. **Definition, layout, solver or model ID changed:** refused. No record relaxes these
 >      checks. D146 and D147 stand: no aliases, no migration.
->   4. **Runtime changed:** every differing field is named and tested.
->      - Host-side fields: decided at trace level on CPU.
->      - Compiler and device fields, including a move from the L4 to GH200: decided by
->        tolerance with the backend-variant method, at least three repeats, and terms taken
->        over all pairs.
+>   4. **Runtime changed:** every differing field is named in the record, and the first
+>      landing refuses them all. The rules are parked until a run needs them:
+>      - host-side fields, decided at trace level on CPU;
+>      - compiler and device fields, decided by tolerance with the backend-variant method,
+>        at least three repeats, and terms taken over all pairs.
+> - **The first landing:** the vector-windows path, CPU definitions with `jit: true`. Other
+>   paths answer "cannot decide" until the consolidation.
+> - **Who admits:** the probe decides case 1 and the lead records it; the lead admits
+>   case 2; any registered run is the user's.
 > - **Unchanged:** registered runs. The W1 hold stays on `source-09`, E07-v1 on its
 >   snapshot, and judges on clean snapshots. The first consumer is a CPU development run.
 > - **Bypasses.** Execution from saved state either loads through the loaders or declares
@@ -885,8 +1213,12 @@ fixes in the checkout and generate a new snapshot for a later run.":
 
 All under `/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/probe/` (`HANDOFF.md`
 one level up):
-- the scripts: `probe_trace.py` (probes 1–3) and `probe_entry.py` (probe 4);
-- the runners: `run.sh`, `run_comment.sh`, `run_entry.sh` and `run_entry_observer2.sh`;
+- the scripts: `probe_trace.py` (probes 1–3), `probe_entry.py` (probe 4) and
+  `probe_resume.py` (probe 5, with `make_control_copies.py`, `make_loop_variants.py` and
+  `make_loop_benign.py`);
+- the runners: `run.sh`, `run_comment.sh`, `run_entry.sh`, `run_entry_observer2.sh`,
+  `run_resume.sh`, `run_resume_variants.sh` and `run_resume_arguments.sh`; probe 5's
+  outputs are in `out5/`;
 - the edits applied to scratch copies of `src/cells` at `f76876d` (the source is unchanged
   at the later branch commits): `host-edit.patch`, `program-edit.patch`,
   `comment-edit.patch`, `observer-edit.patch` and `observer-edit-2.patch`;
