@@ -58,6 +58,22 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Composite v2 §1.1: bound step checks and @3's free-energy owner (13 November).** The
+  composite binds its step checks to the definition. @3's bound checks run on each
+  operator's `inner_check_spec` adjustment, then each operator's own checks run; water's and
+  the symport's definition-only bounds are computed once.
+  - Layout builds per clock are now constant (water@1 5, water@2 6, replacement@1 2), where
+    before that many were built per chunk; no control tables are built.
+  - @3's chemical and capacitor free energy are owned by `pump_composite_adapter`.
+    Replacement and injection use it there, so injection's temporary import is gone.
+  - Guards against snapshot `8416a72`: jaxprs 36/36 and 78/78 and bindings 12/12 and 56/56
+    identical; 17 dumped worlds bit-identical; the eight composite, injection and
+    step-check test files pass.
+  - Tier 1 + 2 gate: 355 files, no changed outcome
+    ([gate](/mnt/workspaces/Cells/land-20261113a/)).
+  - **Next:** the declared energy-role table (built and guarded, lands next round), then S2
+    membrane state (v2 §3), with field-input providers refused above 64 field nodes.
+
 - **BITSEY-derived identifiers renamed to neutral names (D146; 12 November).** A pure
   rename: `bitsey_emt_pair@1` → `emt_mirna_pair@1`, its observer →
   `emt_mirna_pair_pure_readouts@1`, the parameter sets → `emt-mirna-pair-scaled-simple` and
