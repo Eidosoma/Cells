@@ -80,6 +80,18 @@ otherwise never run it.
 
 ### 1.1 Energy roles declared, not recognised by suffix
 
+**Built (bbe40af):**
+- The composite binds its step checks: @3's bound checks on `inner_check_spec`, then
+  each operator's; definition-only parts are evaluated once per clock (R5).
+- @3's free energy has its declared owner in the adapter (`chemical_free_energy_pJ`,
+  `capacitor_free_energy_pJ`). Replacement and injection book their exact changes with
+  it, and injection's temporary import is gone.
+- The energy-role table (55b802e). The composite's flow bound reads @3's heat and work
+  fields by name (the adapter's `HEAT_FIELDS`, `WORK_FIELDS`) and each operator's
+  declared fields, in state order. `surface_pump.ledger_limits` gained one optional
+  `flow_fields` argument, whose default keeps the suffix selection for every other caller.
+
+
 This starts after the plan-validation fix lands; that fix is editing `surface_pump*.py`.
 
 **Today:**

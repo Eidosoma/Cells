@@ -16,8 +16,8 @@ and the charge f_s I h of each carrier sums to I h. Bookings, exact for each hal
   injection_image_charge_C;
 * the source's work, the free-energy change of the state less the clamps' work, in the
   declared work field injection_work_pJ. The membrane's response dissipates through @3's
-  own heat. The free-energy terms are @3's (the replacement law's _chemical and
-  _electric, imported, until §1.1 gives them a declared owner).
+  own heat. The free-energy terms are @3's, from their declared owner (the adapter's
+  chemical_free_energy_pJ and capacitor_free_energy_pJ; v2 design §1.1).
 Refusal: a half-step in which a cell could not supply a removed carrier (its amount would
 not stay positive). No electrode: statically idle. No current in a step: the half-step
 selects the start state. Current changes are exact multiples of dt.
@@ -26,8 +26,8 @@ Departures from the v2 note, accepted by the lead (12 November):
   composite's coupled right-hand side takes operator rates on owned fields only, and the
   injection writes @3's amounts. The step term of a dt study captures the splitting
   error, and the stationary right-hand side leaves this forcing out, as it should.
-* The free-energy terms are the replacement law's _chemical and _electric, imported (not
-  copied) until the v2 note's §1.1 gives @3's free energy a declared owner.
+* The free-energy terms were the replacement law's, imported, until §1.1 gave @3's free
+  energy its declared owner (pump_composite_adapter); they now come from there.
 """
 
 from bisect import bisect_right
@@ -39,7 +39,6 @@ import numpy as np
 from cells.core.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_tissue as tissue
-from cells.models.operators.cell_replacement import _chemical, _electric
 from cells.models.operators.contract import Operator
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
@@ -188,9 +187,10 @@ def injected(state, current, h, p, *, xp=jnp):
     _, end, dv1 = tissue.capacitor_change(adapter.inner_state(new), q, xp=xp)
     electrode = xp.where(p.reservoir, end[n:] - start[n:], 0.0)
     work = 1e12 * p.boundary_V * electrode
-    g0 = _chemical(state.amount_increment, p, xp=xp)
-    g1 = _chemical(increment, p, xp=xp)
-    e0, e1 = _electric(dv0, p, xp=xp), _electric(dv1, p, xp=xp)
+    g0 = adapter.chemical_free_energy_pJ(state.amount_increment, p, xp=xp)
+    g1 = adapter.chemical_free_energy_pJ(increment, p, xp=xp)
+    e0 = adapter.capacitor_free_energy_pJ(dv0, p, xp=xp)
+    e1 = adapter.capacitor_free_energy_pJ(dv1, p, xp=xp)
     cells = xp.any(delta != 0, axis=0)
     count = xp.maximum(xp.sum(cells), 1)
     shared = (e1 - e0 - xp.sum(work)) / count

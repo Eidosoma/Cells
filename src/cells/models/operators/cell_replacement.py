@@ -61,13 +61,14 @@ from cells.core import surface_pump_v3_spec as ionic_spec
 from cells.core.specs import ConfigError, _fields, _integer
 from cells.core.surface_pump_v2_spec import Control as IonicControl
 from cells.core.surface_pump_v3_spec import LAW_CODES
+from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump_v3 as ionic
 from cells.models import surface_tissue as tissue
 from cells.models.operators.contract import Operator
 from cells.numerics.extracellular_field import scatter
 from cells.processes import junction_formation as formation
 from cells.processes import junction_gate
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
+from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
 LAW_ID = replacement_spec.OPERATION_LAW_ID
 IONIC_FIELDS = ionic.STATE_TYPE._fields
@@ -233,15 +234,9 @@ def held_cells(p):
     return result
 
 
-def _chemical(delta, p, *, xp):
-    """Per-cell chemical free-energy change from the reference (balances' own term), pJ."""
-    a = xp.where(p.active, p.amount_reference, 1.0)
-    term = delta * (xp.log(a / p.volume) - 1) + (a + delta) * xp.log1p(delta / a)
-    return 1e-3 * R * p.temperature * xp.sum(xp.where(p.active, term, 0.0), axis=0)
-
-
-def _electric(dv, p, *, xp):
-    return 0.5e12 * xp.sum(p.membrane_capacitance * dv * (2 * p.initial_membrane_voltage_V + dv))
+# @3's free-energy terms, from their declared owner (the adapter; v2 design §1.1).
+_chemical = adapter.chemical_free_energy_pJ
+_electric = adapter.capacitor_free_energy_pJ
 
 
 def event_map(state, due, control, p, *, xp=jnp):

@@ -221,6 +221,11 @@ def check_steps(spec, steps, controls):
     _model.check_steps(composite(spec), steps, controls)
 
 
+def bind_step_checks(spec):
+    """check_steps bound to one definition (core/grid.clock_checks): the composite's."""
+    return _model.bind_step_checks(composite(spec))
+
+
 # Row checks: the composite's, which are @3's own check functions with the water
 # terms and ledgers (models/pump_composite.py).
 LEDGER_DIAGNOSTICS = (*first.LEDGER_DIAGNOSTICS, *WATER_DIAGNOSTICS)

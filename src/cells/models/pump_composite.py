@@ -288,6 +288,13 @@ class Composition:
             self.STATE_AXES.update(op.STATE_AXES)
         self.STATE_DTYPES = {k: v for op in operators for k, v in op.STATE_DTYPES.items()}
         self.STATE_TYPE = NamedTuple("CompositeState", [(k, object) for k in self.STATE_AXES])
+        # The energy-role table (v2 design §1.1): every heat and work field by declaration
+        # (@3's from the adapter, each operator's HEAT_FIELDS and WORK_FIELDS), in state
+        # order; the energy ledger's flow bound reads these, not field-name suffixes.
+        roles = {*inner.HEAT_FIELDS, *inner.WORK_FIELDS}
+        for op in operators:
+            roles |= {*op.HEAT_FIELDS, *op.WORK_FIELDS}
+        self.ENERGY_FLOW_FIELDS = tuple(k for k in self.STATE_TYPE._fields if k in roles)
         extra = tuple(k for op in operators for k in op.LAYOUT_FIELDS)
         self.LAYOUT_TYPE = NamedTuple(
             "CompositeLayout", [(k, object) for k in (*inner.LAYOUT_TYPE._fields, *extra)]
@@ -597,13 +604,33 @@ class Composition:
             op.check_definition(spec, declaration, schedule, self)
 
     def check_steps(self, spec, steps, controls):
-        """The inner step checks on the definition the operators declare, then theirs."""
+        """The inner step checks on the definition the operators declare, then theirs
+        (bind_step_checks for one chunk; the checks read no controls)."""
+        self.bind_step_checks(spec)(steps)
+
+    def bind_step_checks(self, spec):
+        """check_steps bound to one definition, for every chunk of its clock (core/grid).
+
+        The inner model's bound checks on the operator-adjusted check spec (each operator's
+        inner_check_spec: water's minimum volumes, replacement's worst case; v2 design R5),
+        then each operator's bound checks, in declared order. What they read from the
+        definition is evaluated once, at first use; each chunk passes its steps.
+        """
         check_spec = spec
         for op, declaration, schedule in entries(spec):
             check_spec = op.inner_check_spec(check_spec, spec, declaration, schedule)
-        self.inner.check_steps(check_spec, steps, controls)
-        for op, declaration, schedule in entries(spec):
-            op.check_steps(spec, declaration, schedule, steps, controls, self)
+        inner = self.inner.bind_step_checks(check_spec)
+        own = tuple(
+            op.bind_check_steps(spec, declaration, schedule, self)
+            for op, declaration, schedule in entries(spec)
+        )
+
+        def bound(steps):
+            inner(steps)
+            for check in own:
+                check(steps)
+
+        return bound
 
     # ------------------------------------------------------------ ledgers
 
@@ -683,7 +710,14 @@ class Composition:
     def ledger_limits(self, row, p, tol, rtol, *, steps, magnitudes, xp=np):
         count = len(self.inner.LEDGERS)
         flows, bounds = self.inner.ledger_limits(
-            row, p, tol, rtol, steps=steps, magnitudes=magnitudes[:count], xp=xp
+            row,
+            p,
+            tol,
+            rtol,
+            steps=steps,
+            magnitudes=magnitudes[:count],
+            xp=xp,
+            flow_fields=self.ENERGY_FLOW_FIELDS,
         )
         if not self.own_ledger_operators:
             return flows, bounds

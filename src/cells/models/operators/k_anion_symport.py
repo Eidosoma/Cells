@@ -148,6 +148,21 @@ def bind(spec, declaration):
 # ------------------------------------------------------------------ the operator
 
 
+def route_rate(spec, model):
+    """The largest route relaxation rate, k f (K_i + A_i) / V at the declared state with the
+    volume factor at the declared maximum volume (the symport's step bound, read once)."""
+    state, p = model.initial_values(spec)
+    cells = np.asarray(p.membrane_cell)
+    k, a = int(p.symport_potassium_species), int(p.symport_anion_species)
+    ci = (p.amount_reference + state.amount_increment) / p.volume
+    vmax = p.water_maximum_volume_pL[cells]
+    factor = np.exp(
+        (vmax - p.symport_set_volume_pL) / (p.symport_steepness * p.symport_set_volume_pL)
+    )
+    rate = p.symport_capacity_fmol_s_mM2 * factor * (ci[k, cells] + ci[a, cells]) / p.volume[cells]
+    return np.max(np.where(p.symport_route & p.membrane_active, rate, 0.0), initial=0.0)
+
+
 class KAnionSymport(Operator):
     LAW_ID = LAW_ID
     PROCESS = True
@@ -222,22 +237,21 @@ class KAnionSymport(Operator):
         k f (K_i + A_i) / V at the declared state with the volume factor at the
         declared maximum volume (the routes are electroneutral, so they add no
         membrane conductance to @3's explicit-stage bound)."""
+        self.bind_check_steps(spec, declaration, schedule, model)(steps)
+
+    def bind_check_steps(self, spec, declaration, schedule, model):
+        """The route bound with the declared state's rate computed once, at first use."""
         if not declaration.routes:
-            return
-        state, p = model.initial_values(spec)
-        cells = np.asarray(p.membrane_cell)
-        k, a = int(p.symport_potassium_species), int(p.symport_anion_species)
-        ci = (p.amount_reference + state.amount_increment) / p.volume
-        vmax = p.water_maximum_volume_pL[cells]
-        factor = np.exp(
-            (vmax - p.symport_set_volume_pL) / (p.symport_steepness * p.symport_set_volume_pL)
-        )
-        rate = (
-            p.symport_capacity_fmol_s_mM2 * factor * (ci[k, cells] + ci[a, cells]) / p.volume[cells]
-        )
-        rate = np.max(np.where(p.symport_route & p.membrane_active, rate, 0.0), initial=0.0)
-        if np.max(steps, initial=0) * rate > ionic.EXPLICIT_STEP_BOUND:
-            raise ConfigError("Symport rate exceeds the explicit-rate bound at maximum volume")
+            return lambda steps: None
+        cache = {}
+
+        def check(steps):
+            if "rate" not in cache:
+                cache["rate"] = route_rate(spec, model)
+            if np.max(steps, initial=0) * cache["rate"] > ionic.EXPLICIT_STEP_BOUND:
+                raise ConfigError("Symport rate exceeds the explicit-rate bound at maximum volume")
+
+        return check
 
     def batch_signature(self, declaration):
         return (declaration.law, tuple(r.membrane_id for r in declaration.routes))

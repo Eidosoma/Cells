@@ -30,6 +30,7 @@ from cells.core.specs import ConfigError
 from cells.core.surface_pump_v2_spec import Control
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as ionic
+from cells.processes.electrochemistry import R
 
 MODEL_ID = ionic.MODEL_ID
 STATE_AXES = ionic.STATE_AXES
@@ -70,6 +71,22 @@ DERIVED_FIELD_ARRAYS = (
 LEDGERS = first.LEDGERS
 LEDGER_DIAGNOSTICS = first.LEDGER_DIAGNOSTICS
 DISSIPATION_FIELDS = ionic.DISSIPATION_FIELDS
+# @3's energy roles by name (v2 design §1.1): heat (dissipation, nonnegative increments) and
+# work (supplied energy). The composite's energy-role table starts from these.
+HEAT_FIELDS = (
+    "membrane_dissipated_energy_pJ",
+    "junction_dissipated_energy_pJ",
+    "face_dissipated_energy_pJ",
+    "channel_dissipated_energy_pJ",
+    "pump_dissipated_energy_pJ",
+    "calcium_pump_dissipated_energy_pJ",
+)
+WORK_FIELDS = (
+    "reservoir_work_pJ",
+    "electrode_work_pJ",
+    "metabolic_work_pJ",
+    "calcium_metabolic_work_pJ",
+)
 OBSERVATION_FIELDS = ionic.OBSERVATION_FIELDS
 BATCH_CAPACITIES = ionic.BATCH_CAPACITIES
 ENERGY_RTOL = ionic.ENERGY_RTOL
@@ -93,6 +110,7 @@ magnitudes = ionic.channel_magnitudes
 ledger_limits = first.ledger_limits
 checked_rows = first.checked_rows
 check_steps = ionic.check_steps
+bind_step_checks = ionic.bind_step_checks
 batch_signature = ionic.batch_signature
 working_size = ionic.working_size
 observe_history = ionic.observe_history
@@ -230,3 +248,22 @@ def check_field_inputs(p):
 def barrier(values, *, xp=jnp):
     """jax.lax.optimization_barrier on the device; the identity on the host."""
     return jax.lax.optimization_barrier(values) if xp is jnp else values
+
+
+# @3's free energy (v2 design §1.1): the inner model's per-entity free-energy terms, owned here
+# with the rest of @3's names. Operators that change @3's state outside its step (replacement
+# events, injection half-steps) book their exact change with these; @3's balances hold the
+# same terms. The chemical term of each cell is against its reference at the declared volume,
+# in pJ; the capacitor term is over every membrane, in pJ.
+
+
+def chemical_free_energy_pJ(delta, p, *, xp):
+    """Per-cell chemical free-energy change from the reference (balances' own term), pJ."""
+    a = xp.where(p.active, p.amount_reference, 1.0)
+    term = delta * (xp.log(a / p.volume) - 1) + (a + delta) * xp.log1p(delta / a)
+    return 1e-3 * R * p.temperature * xp.sum(xp.where(p.active, term, 0.0), axis=0)
+
+
+def capacitor_free_energy_pJ(dv, p, *, xp):
+    """Capacitor energy against the initial membrane voltages, pJ."""
+    return 0.5e12 * xp.sum(p.membrane_capacitance * dv * (2 * p.initial_membrane_voltage_V + dv))

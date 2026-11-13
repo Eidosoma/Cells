@@ -577,7 +577,7 @@ def pump_magnitudes(row, p, *, xp=np):
     return ledger_magnitudes(row, p, membrane, metabolic, xp=xp)
 
 
-def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np):
+def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np, flow_fields=None):
     """(flows, bounds): the integrated energy flows and each ledger's bound, in order.
 
     tol is the per-species material tolerance, rtol the solver's energy tolerance,
@@ -586,15 +586,17 @@ def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np):
     LEDGER_STEP_ROUNDING eps x steps x their magnitudes, and the capacitor
     ledger's representative rows their component net-charge rounding
     (surface_field.charge_tolerance). The host check and the device checks share
-    these bounds.
+    these bounds. flow_fields: the heat and work fields by name, declared by the
+    caller (a composite's energy-role table); None selects every row field ending in
+    _dissipated_energy_pJ or _work_pJ, in field order.
     """
     q = xp.concatenate((p.initial_cell_charge_C, p.initial_outside_charge_C))
     q = q + tissue.charge_increment(row, p, xp=xp)
-    terms = [
-        xp.sum(xp.abs(getattr(row, k)))
-        for k in type(row)._fields
-        if k.endswith(("_dissipated_energy_pJ", "_work_pJ"))
-    ]
+    if flow_fields is None:
+        flow_fields = [
+            k for k in type(row)._fields if k.endswith(("_dissipated_energy_pJ", "_work_pJ"))
+        ]
+    terms = [xp.sum(xp.abs(getattr(row, k))) for k in flow_fields]
     # On the host, Python floats keep sum()'s compensated float summation.
     flows = sum(float(t) for t in terms) if xp is np else sum(terms)
     rounding = LEDGER_STEP_ROUNDING * np.finfo(float).eps * steps
