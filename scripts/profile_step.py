@@ -19,6 +19,9 @@ solves, the offset products and LU solves), and how sparse those operators are. 
             reduced IMEX operator, capacitor solve matrix, incidence matrices and offset
             matrices: size, nonzeros and the Cholesky factor's nonzeros (fill) and
             multiply-adds in natural, reverse Cuthill-McKee and minimum-degree order.
+  drift     host only: the free IMEX operator's condition number (plain and Jacobi-scaled)
+            at --snapshot and at each of --snapshots, and how far it moves from the
+            reference (largest |lambda - 1| of M_ref^-1 M), for iterative and reuse methods.
   trace     a kernel-level profile of --worlds copies of the first definition's state:
             the vmapped checked step and device checks, --repeat traced calls after a
             warm-up (jax.profiler, Perfetto trace kept beside --out), every executed
@@ -326,6 +329,66 @@ def sparsity(args):
     return {"worlds": worlds}
 
 
+def free_operator(spec, start):
+    """The IMEX operator C + aL on the free nodes at the checkpoint (host), as factored."""
+    p = jax.tree.map(np.asarray, start.layout)
+    f = tissue.field_layout(p)
+    dt, _ = step_inputs(spec, start)
+    _, co = concentrations(start.state, p)
+    weight, _ = imex.face_weights(co, f.surface, xp=np)
+    laplacian = np.asarray(imex.face_laplacian(weight, f.surface, xp=np))
+    operator, _ = imex.factor_operator(
+        p.imex_implicit[-1, -1] * dt, laplacian, p.boundary_V, f, xp=np
+    )
+    free = np.asarray(operator.free)
+    return np.asarray(operator.matrix)[np.ix_(free, free)]
+
+
+def drift(args):
+    """Conditioning of the free IMEX operator, and how far it moves between checkpoints.
+
+    For the first definition at --snapshot (the reference) and at each of --snapshots:
+    the operator's condition number, plain and after symmetric diagonal (Jacobi) scaling
+    (CG's iteration count grows with its square root), and against the reference the
+    largest |lambda - 1| of M_ref^-1 M (how good the reference factor is as a
+    preconditioner: refinement or CG with it contracts by about this factor per
+    iteration) and the relative Frobenius change.
+    """
+    from scipy.linalg import eigh, eigvalsh
+
+    specs, checkpoints = pd.load(args)
+    spec = specs[0]
+    reference = free_operator(spec, checkpoints[1] if checkpoints else initialise(spec))
+
+    def condition(m):
+        d = 1.0 / np.sqrt(np.diag(m))
+        plain, scaled = eigvalsh(m), eigvalsh(m * d[:, None] * d[None, :])
+        return {"plain": float(plain[-1] / plain[0]), "jacobi": float(scaled[-1] / scaled[0])}
+
+    out = {
+        "reference": {
+            "time": float(checkpoints[1].time) if checkpoints else 0.0,
+            "free_nodes": int(reference.shape[0]),
+            "condition": condition(reference),
+        }
+    }
+    later = {}
+    for path in args.snapshots or ():
+        start = pd.checkpoints_at(specs[:1], path)[1]
+        m = free_operator(spec, start)
+        later[Path(path).name] = {
+            "time": float(start.time),
+            "condition": condition(m),
+            "largest_abs_eig_minus_1": float(
+                np.max(np.abs(eigh(m, reference, eigvals_only=True) - 1))
+            ),
+            "relative_frobenius_change": float(
+                np.linalg.norm(m - reference) / np.linalg.norm(reference)
+            ),
+        }
+    return {"drift": out | {"later": later}}
+
+
 def source_map(compiled):
     """HLO instruction name -> (source file, line, op_name) from the compiled module."""
     out = {}
@@ -457,7 +520,8 @@ def trace_profile(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("part", choices=("pieces", "sparsity", "trace"))
+    parser.add_argument("part", choices=("pieces", "sparsity", "drift", "trace"))
+    parser.add_argument("--snapshots", nargs="+", help="further snapshots (drift)")
     parser.add_argument("--definitions", nargs="+", required=True)
     parser.add_argument("--snapshot", default="start", help="a batch snapshot directory, or start")
     parser.add_argument("--backend", help="override each definition's backend (cpu or gpu)")
@@ -467,7 +531,8 @@ def main():
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
     started = perf_counter()
-    part = {"pieces": piece_timing, "sparsity": sparsity, "trace": trace_profile}[args.part]
+    parts = dict(pieces=piece_timing, sparsity=sparsity, drift=drift, trace=trace_profile)
+    part = parts[args.part]
     result = {
         "kind": "cells.step_profile@1",
         "part": args.part,
