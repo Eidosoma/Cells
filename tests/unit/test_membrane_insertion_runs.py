@@ -10,10 +10,11 @@ Through the runner and its host checks:
   nonnegative and nondecreasing, and every ledger closes; RK4 keeps its exact half-steps;
 * restart across the onset and the insertion is bitwise, through a written snapshot too, and
   the run manifest carries the field owners;
-* the vmapped batch (vector windows, device checks) reproduces each world's own run to
+* the vmapped batch (vector windows, device checks) is bitwise against the same worlds in
+  reversed order (one compiled program) and reproduces each world's own run to
   1e-12 of each field's scale (it compiles differently, so not bitwise);
 * a catalogue reference changes neither the step's jaxpr nor the trajectory.
-About 3 minutes on one core (each run compiles); the tier-1 smoke tests are
+About 7 minutes on one core (each run compiles); the tier-1 smoke tests are
 test_membrane_state.py and test_membrane_insertion.py.
 """
 
@@ -154,13 +155,24 @@ def test_restart_across_onset_and_insertion_is_bitwise(cleft_run, tmp_path):
     assert summary["insertion_patches"]["furrow"]["onset_time"] == ONSET
 
 
+def vector_batch(specs):
+    worlds = tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs))
+    return run_vector_windowed(
+        BatchSpec(worlds, len(worlds), 10**6, 2**31), WindowPolicy(4, "checkpoints")
+    )
+
+
 def test_the_vmapped_batch_reproduces_each_world(cleft_run):
     rates = (0.5e-11, 1e-11, 2e-11)
     specs = [parse_spec(cleft(rate)) for rate in rates]
-    worlds = tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs))
-    batch = run_vector_windowed(
-        BatchSpec(worlds, len(worlds), 10**6, 2**31), WindowPolicy(4, "checkpoints")
-    )
+    batch = vector_batch(specs)
+    # The same worlds in reversed order run the same compiled program: bitwise, per world.
+    reversed_batch = vector_batch(specs[::-1])
+    for k in range(len(specs)):  # World IDs are 1, 2, ... in each batch's order.
+        x = batch.worlds[k + 1].final.state
+        y = reversed_batch.worlds[len(specs) - k].final.state
+        for name in type(x)._fields:
+            assert guard.compare_arrays(name, getattr(x, name), getattr(y, name)) is None, name
     for world, spec in zip(batch.worlds, specs, strict=True):
         single = cleft_run[1] if spec == cleft_run[0] else run(spec)
         final = batch.worlds[world].final.state
