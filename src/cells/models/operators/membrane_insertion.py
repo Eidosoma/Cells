@@ -19,7 +19,7 @@ membrane arrives uncharged.
   this operator's ledger terms (adapter.view_capacitor_terms), with the matching plate charges
   in @3's electrode ledger; @3's balances stay as they are, on the declared layout. This
   operator books the term as the only writer of capacitances and masks; a second writer
-  (partition, S4) moves it to the composite.
+  (partition, S5) moves it to the composite.
 A half-step with no rate selects its start state, so a zero schedule is bitwise idle.
 
 Onset (event part). A patch declared with an onset time is inactive until then, together with

@@ -187,6 +187,33 @@ def test_two_clamps_image_charge_and_energy():
     assert diagnostics["max_energy_balance_error_pJ"] < 1e-15
 
 
+def test_inserted_populations_follow_their_density():
+    """dN = rho dA for a population of the inserted membrane; the abundance view is then
+    (a0 A0 rho_ref + rho dA) / (A rho_ref), and an absent population is diluted."""
+    rho = 3e12  # Inserted Kir2.1 units per m^2; NaV1.2 is not inserted.
+    raw = fx.with_operators(fx.one_patch(), {"membrane_0": ({"kir_0": rho}, None, [(0.0, 0.0)])})
+    _, model, state, p = bind(raw)
+    a0, abundance0 = float(p.membrane_area[0]), np.asarray(p.channel_abundance)
+    rate = 0.2 * a0 / (fx.DT / 2)
+    new, ok = half_step(model, state, p, [rate])
+    assert ok
+    da = float(new.membrane_area_increment_m2[0])
+    assert da == pytest.approx(0.2 * a0, rel=1e-14)
+    assert new.inserted_units.tolist() == [rho * da, 0.0]
+    assert new.population_abundance_increment.tolist() == [rho * da, 0.0]
+    view = model.view(p, new, xp=np)
+    expected = (abundance0[0] * a0 * fx.DENSITY + rho * da) / ((a0 + da) * fx.DENSITY)
+    assert view.channel_abundance[0] == pytest.approx(expected, rel=1e-14)
+    assert view.channel_abundance[1] == pytest.approx(abundance0[1] * a0 / (a0 + da), rel=1e-14)
+    ledgers = model.balances(new, p)
+    for name in (
+        "membrane_area_entity",
+        "membrane_capacitance_entity",
+        "population_abundance_entity",
+    ):
+        assert not np.any(ledgers[name]), name
+
+
 def test_a_zero_rate_selects_the_start_state_bitwise():
     _, model, state, p = bind(fx.with_operators(fx.two_clamps(), IDLE))
     idle, ok = half_step(model, state, p, [0.0, 0.0])

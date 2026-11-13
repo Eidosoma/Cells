@@ -2,7 +2,8 @@
 
 Through the runner and its host checks:
 * idle membrane state equals the composition without it, bitwise (one heredity cell, the
-  seven-cell gated sheet);
+  seven-cell gated sheet, and the largest world the 64-node cap admits: the 19-cell sheet
+  padded to 64 field nodes, in place of division design §3.7's 825-node idle guard);
 * insertion at rate 0 equals the idle membrane state, bitwise;
 * onset and insertion on the cleft cell: the furrow, its cleft and access stay closed until
   the onset, the area grows at the declared rate after it, the insertion heat is booked
@@ -31,6 +32,7 @@ from cells.core.windows import WindowPolicy
 from cells.io import load_snapshot, write_run, write_snapshot
 from cells.models.registry import get_model
 from tests import membrane_insertion_fixtures as fx
+from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import composite_guard as guard
 from validation.tissue import pump_water_fixtures as wfx
 
@@ -59,11 +61,25 @@ def plain(base):
     return cs.frozen_definition(base)
 
 
+def at_the_cap():
+    """The largest world the 64-node cap admits: the radius-2 heredity sheet (19 cells, each
+    with its held bath, 42 gated junctions, 38 channel populations), padded to 32 cell and 32
+    outside slots. It stands in for division design §3.7's idle guard on the 825-node world,
+    which option (a) refuses (deferred until option (b) or (c) is decided)."""
+    base = rfx.heredity_sheet(2, 1, end_time=0.004)
+    base["experiment"]["observation_times"] = [0.0, 0.004]
+    x = base["execution"]
+    x.update(capacity=32, extracellular_capacity=32, membrane_capacity=32, channel_capacity=64)
+    x["edge_capacity"] += 2
+    return base
+
+
 @pytest.mark.parametrize(
     "world",
     [
         lambda: fx.one_patch(end=0.01, observation_times=[0.0, 0.005, 0.01]),
         lambda: wfx.gated_sheet(dt=fx.DT, end_time=0.004),
+        at_the_cap,
     ],
 )
 def test_idle_membrane_state_equals_the_composition_without_it(world):
