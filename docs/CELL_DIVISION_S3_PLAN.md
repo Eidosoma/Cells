@@ -80,7 +80,7 @@ R-full's own `Egg` (`cleft_egg_reference.build` with the record's P_old and A/L)
     so the unbooked part is about 5 × 10⁻⁸ of it.
   - The continuing insertion perturbs the cleft by about ½ ΔC Vm² ≈ 10⁻⁷ pJ per step,
     under 1 pJ over the run.
-  - Guards: one coarse step leaves exactly that heat unbooked; resolved steps (1 µs at
+  - Guards: one coarse step leaves exactly that heat unbooked; resolved steps (0.1 µs at
     a 5 µs access) book it in the access; a small world whose energy bound cannot cover
     it is refused. The numbers above are checked with R-full's functions before the
     plan is final.
