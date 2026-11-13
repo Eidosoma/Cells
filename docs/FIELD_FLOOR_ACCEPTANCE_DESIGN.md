@@ -1,8 +1,11 @@
-# Floor-aware field-solve acceptance for solver version 2 (design note, proposed)
+# Floor-aware field-solve acceptance (design note, approved as a routing policy)
 
-Status: proposed for the lead's and the advisor's review, 13 November 2026. No code has
-changed. The evidence is in `/mnt/workspaces/Cells/window-timing-20261112-01/`
-(`summary.json`, `results/t0-*.json`, `results/margins-*.json`).
+Status: approved by the lead as a routing policy on 13 November 2026, after the advisor's
+review. Version 2 is unchanged and new definitions with free field offsets declare
+version 3 (D147, drafted). No engine code has changed. The evidence is in
+`/mnt/workspaces/Cells/window-timing-20261112-01/` (`summary.json`, `results/t0-*.json`,
+`results/margins-*.json`) and, for the guards, in
+`/mnt/workspaces/Cells/field-floor-guards-20261113-01/` (last section).
 
 ## The defect
 
@@ -74,8 +77,9 @@ is still refused.
 - **Version 3 already exists and is tested** (`tests/unit/test_field_floor.py`) on the
   `resolved_pump_tissue@1` and `@2` fixtures. There it is bitwise equal to version 2
   wherever version 2 converges, it refuses a solve stopped above the floor, and its
-  snapshots round-trip and resume bitwise. No test covers the hold's model,
-  `resolved_pump_tissue@3`; the CPU runs in the last section are its first evidence there.
+  snapshots round-trip and resume bitwise. The hold's model, `resolved_pump_tissue@3`, is
+  now covered by `tests/unit/test_field_floor_pump_v3.py` and
+  `tests/unit/test_field_floor_held.py` (guard 6).
 - **Routing is a definition choice, not a code change.** `field_solver` is part of each
   definition. New runs with finite extracellular space (a later full-tissue hold, E07)
   declare version 3. Old evidence stays reproducible exactly as recorded.
@@ -174,7 +178,8 @@ exactly 0.
 
 **The hold's tissue lives at the edge.** From t = 0, about half of its sampled states are
 above 0.3 of the target, and the worst is 0.995. Exposure needs free field offsets, which
-means finite extracellular space: the full-tissue worlds and E07.
+means finite extracellular space: the full-tissue worlds, E07-v1's among them. The turnover
+pre-screen's held-bath sheets have none (last section).
 
 ## Version 3 on the hold's edge states (CPU)
 
