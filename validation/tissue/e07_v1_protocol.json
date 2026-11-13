@@ -1,0 +1,1094 @@
+{
+ "kind": "cells.experiment_protocol@1",
+ "id": "E07-v1-B",
+ "title": "E07-v1 renewal stage: donor copies (an inheritance route) with an isolated threshold-finding set, on cue-written discs",
+ "status": "PROPOSED 2026-11-13 (revision 2, after the lead's and the advisor's review); not registered. No engine run belongs to it until the lead registers it.",
+ "user_decision": "option (c), 13 November 2026: donor copies as the main route, plus isolated newcomers with fast junction formation as a boundary set",
+ "design": "docs/E07_V1_DESIGN.md",
+ "decisions": {
+  "D133": "E07-v1's first choices (isolated newcomers at their own steady state)",
+  "D139": "'inherit' excluded; donor copies are an inheritance route, labelled as such",
+  "D144": "validation drivers and protocols hold the experiment's choices; no engine change",
+  "D147": "the sheets have no free field offsets; definitions are built through validation/tissue/field_solver_choice.declare() (auto: version 2)",
+  "composite_v2_decision_4": "settled for donor copies in docs/E07_V1_DESIGN.md section 2: the slot's declared impermeant content, which equals the donor's in these worlds"
+ },
+ "engine_model": "resolved_pump_replacement@1 (resolved_pump_composite@1 with scheduled_cell_replacement@1 over resolved_pump_tissue@3; junction formation delayed_first_order_junction_formation@1)",
+ "drivers": {
+  "schedules_and_null": "validation/tissue/e07_v1_turnover.py (arm_set, plan, null_series, abundance_series)",
+  "engine_runs": "to be written after registration, reusing validation/tissue/heredity_turnover_literature.py's Stepper and run_segments; the arm process ends after writing records, checkpoint and result, and the analysis (outcome, opportunity, junction weight, run class) runs as its own process"
+ },
+ "world": {
+  "sheet": "heredity_pilot.long_sheet_definition's 127-cell held-bath sheet without its cue populations (availability 0 after the cue): E07 voltage-gated junctions at coupling scale s, homogeneous heredity cells, ionic background",
+  "discs": "the five that held 70 min without turnover in sheet70: 37 cells at s 1.0, 0.6 and 0.3; 19 cells at s 0.6 and 0.3",
+  "start": "sheet70's state at 120 s (2 min after the cue), declared as the initial state; every ledger starts at zero; time 0 is sheet70's 120 s",
+  "volume": "fixed (replacement over water waits for composite v2 section 2)"
+ },
+ "judged_window": {
+  "rule": "every arm is judged at or before 4080 s (70 min after the cue), the end of the no-turnover control (sheet70)",
+  "fast_k1_b_c": "the second turnover's completion (41 min after the cue)",
+  "central_k1": "the control's end, 70 min after the cue (1.7 turnovers)",
+  "fast_k3": "the first turnover's completion (53 min after the cue); run on to 70 min after the cue, the rest reported and not judged",
+  "central_choice": "judged at 70 min rather than a new no-turnover run to 87 min: sheet70 covers the window; no run can reach the censor by then (loading of about 12% at most); every founder is replaced by 42 min after the cue and about 70% of the second turnover is done; about 26 min of wall time less per run. The cost: no complete second turnover in the central arms"
+ },
+ "numerics": {
+  "solver": "imex_ars222_face_electromigration@1",
+  "dt_s": 0.005,
+  "dt_basis": "the pre-screen's check (5 ms against 1 ms within 9 uV and 2.3e-6 in amounts, identical D sets); outside G2-Q1's 1 ms scope, hence the gate E1 on the worst case",
+  "junction_heat_booking": "trapezoid_nonnegative@1",
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2 (D147 auto: 0 free offsets, e07-v1-design-20261113-01/offsets.json)",
+  "checks": "the model's checked_step and device row checks on every accepted row"
+ },
+ "execution": {
+  "units": "scripts/run_detached.sh, MemoryMax 6G each; the analysis out of process",
+  "concurrency": "at most two E07 units at once, and one while the L4 gap's 8G dispatch test is scheduled (cells.slice cap 15G)",
+  "source": "one clean snapshot of main taken after the S3 ledger fix (d020c3b) has landed, with the engine-run driver; E1 and every judged arm run from it",
+  "hardware": "CPU, one world per process, one thread"
+ },
+ "replacement": {
+  "scope": {
+   "a": "every cell of the sheet (127)",
+   "b": "every cell of the sheet (127)",
+   "c": "the disc's cells (37)"
+  },
+  "order": "oldest first: a seeded permutation orders the founders; each slot is then replaced every R, events at (j + 1/2) R / N on the dt grid (every 8.0 s at fast k1 over the whole sheet)",
+  "donor_rule": {
+   "a": "a junction neighbour of the slot, drawn uniformly and blind to its state",
+   "b": "none: the isolated H template (the sheet's declared H state)",
+   "c": "a disc neighbour of the slot, drawn uniformly (control)"
+  },
+  "seeds": "replicate r: permutation from numpy default_rng([20261113, 0, r]); donors, one per event in event order, from default_rng([20261113, 1, r])",
+  "newcomer_content": "donor copies: the donor's amounts of every species and channel gates (by law) at the event time; the slot's routes, volume and fixed-charge background; junctions restart the formation law (A0 0, law_open); no junction state is carried (D139). The driver checks every donor's P equals the slot's declared P",
+  "residence": "R = k (lag + tau): 1020 s (fast k1), 2400 s (central k1), 3060 s (fast k3); (b) R 1020 s"
+ },
+ "formation": {
+  "fast": {
+   "lag_s": 120.0,
+   "time_constant_s": 900.0,
+   "basis": "the division-born fast arm (Boassa 2010; design note G2 section 1.2), the literature ranges' lower ends"
+  },
+  "central": {
+   "lag_s": 600.0,
+   "time_constant_s": 1800.0,
+   "basis": "the documented default"
+  },
+  "threshold_finding": {
+   "time_constants_s": [
+    40.0,
+    120.0,
+    300.0
+   ],
+   "lag": "2 tau / 15 (the fast bracket's shape)",
+   "label": "threshold-finding: below the literature's 15-60 min; the 40 s point was seen only after the pre-screen's predictions were frozen; it tests no literature value; one seed, so tau* is a single draw"
+  },
+  "common": {
+   "initial_abundance": 0.0,
+   "gate_at_arrival": "law_open"
+  },
+  "abundance_under_turnover": "the law's time-averaged A from each run's schedule (null-v3.json): fast k1 0.42-0.43 in the first turnover and 0.20 after it; central k1 0.39 and 0.15; fast k3 0.61-0.62 in its first turnover; (b) tau 40, 120, 300 s 0.92, 0.79, 0.62 and 0.91, 0.76, 0.52; (c) 0.42 and 0.20 inside the disc. At k1 the nominal s overstates the coupling about fivefold"
+ },
+ "stop_rules": [
+  "planned end",
+  "all H: one minute after the first of two consecutive 10 s records with no D cell anywhere in the sheet (absorbing)",
+  "censor: the first record with osmotic excess above 15% against the H start in any cell; the run is judged at its last valid record and never dropped",
+  "refusal: a step the model refuses, or a failed device check on any row"
+ ],
+ "arms": [
+  {
+   "id": "a-donor-fast-k1-d37-s1.0",
+   "group": "a",
+   "kind": "donor",
+   "scope": "sheet",
+   "rule": "neighbour",
+   "size": 37,
+   "s": 1.0,
+   "formation": {
+    "lag_s": 120.0,
+    "time_constant_s": 900.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "note": "inheritance route; state-blind replacement and donors",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.5614,
+     "D_copies": 108,
+     "H_copies": 183,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 24,
+     "law_abundance_first_turnover": 0.428,
+     "law_abundance_after_first_turnover": 0.2037
+    },
+    "seed2": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.4211,
+     "D_copies": 97,
+     "H_copies": 194,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 22,
+     "law_abundance_first_turnover": 0.4298,
+     "law_abundance_after_first_turnover": 0.2054
+    },
+    "seed3": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.5745,
+     "D_copies": 80,
+     "H_copies": 211,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 10,
+     "law_abundance_first_turnover": 0.4172,
+     "law_abundance_after_first_turnover": 0.1997
+    },
+    "seed4": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.5455,
+     "D_copies": 66,
+     "H_copies": 225,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 9,
+     "law_abundance_first_turnover": 0.4297,
+     "law_abundance_after_first_turnover": 0.2058
+    },
+    "seed5": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.34,
+     "D_copies": 76,
+     "H_copies": 215,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 15,
+     "law_abundance_first_turnover": 0.4271,
+     "law_abundance_after_first_turnover": 0.2052
+    },
+    "seed6": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.4706,
+     "D_copies": 79,
+     "H_copies": 212,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 15,
+     "law_abundance_first_turnover": 0.4214,
+     "law_abundance_after_first_turnover": 0.2032
+    },
+    "seed7": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.4,
+     "D_copies": 104,
+     "H_copies": 187,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 22,
+     "law_abundance_first_turnover": 0.4223,
+     "law_abundance_after_first_turnover": 0.2049
+    },
+    "seed8": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.4643,
+     "D_copies": 98,
+     "H_copies": 193,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 23,
+     "law_abundance_first_turnover": 0.4288,
+     "law_abundance_after_first_turnover": 0.2039
+    }
+   }
+  },
+  {
+   "id": "a-donor-fast-k1-d37-s0.6",
+   "group": "a",
+   "kind": "donor",
+   "scope": "sheet",
+   "rule": "neighbour",
+   "size": 37,
+   "s": 0.6,
+   "formation": {
+    "lag_s": 120.0,
+    "time_constant_s": 900.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "note": "inheritance route; state-blind replacement and donors",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.5614,
+     "D_copies": 108,
+     "H_copies": 183,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 24,
+     "law_abundance_first_turnover": 0.428,
+     "law_abundance_after_first_turnover": 0.2037
+    },
+    "seed2": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.4211,
+     "D_copies": 97,
+     "H_copies": 194,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 22,
+     "law_abundance_first_turnover": 0.4298,
+     "law_abundance_after_first_turnover": 0.2054
+    },
+    "seed3": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.5745,
+     "D_copies": 80,
+     "H_copies": 211,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 10,
+     "law_abundance_first_turnover": 0.4172,
+     "law_abundance_after_first_turnover": 0.1997
+    },
+    "seed4": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.5455,
+     "D_copies": 66,
+     "H_copies": 225,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 9,
+     "law_abundance_first_turnover": 0.4297,
+     "law_abundance_after_first_turnover": 0.2058
+    }
+   }
+  },
+  {
+   "id": "a-donor-fast-k1-d19-s0.6",
+   "group": "a",
+   "kind": "donor",
+   "scope": "sheet",
+   "rule": "neighbour",
+   "size": 19,
+   "s": 0.6,
+   "formation": {
+    "lag_s": 120.0,
+    "time_constant_s": 900.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "note": "inheritance route; state-blind replacement and donors",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.25,
+     "D_copies": 33,
+     "H_copies": 258,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 6,
+     "law_abundance_first_turnover": 0.428,
+     "law_abundance_after_first_turnover": 0.2037
+    },
+    "seed2": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.6538,
+     "D_copies": 58,
+     "H_copies": 233,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 10,
+     "law_abundance_first_turnover": 0.4298,
+     "law_abundance_after_first_turnover": 0.2054
+    },
+    "seed3": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.4643,
+     "D_copies": 46,
+     "H_copies": 245,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 11,
+     "law_abundance_first_turnover": 0.4172,
+     "law_abundance_after_first_turnover": 0.1997
+    },
+    "seed4": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.4348,
+     "D_copies": 31,
+     "H_copies": 260,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 6,
+     "law_abundance_first_turnover": 0.4297,
+     "law_abundance_after_first_turnover": 0.2058
+    }
+   }
+  },
+  {
+   "id": "a-donor-fast-k1-d37-s0.3",
+   "group": "a",
+   "kind": "donor",
+   "scope": "sheet",
+   "rule": "neighbour",
+   "size": 37,
+   "s": 0.3,
+   "formation": {
+    "lag_s": 120.0,
+    "time_constant_s": 900.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1,
+    2
+   ],
+   "note": "inheritance route; state-blind replacement and donors",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.5614,
+     "D_copies": 108,
+     "H_copies": 183,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 24,
+     "law_abundance_first_turnover": 0.428,
+     "law_abundance_after_first_turnover": 0.2037
+    },
+    "seed2": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.4211,
+     "D_copies": 97,
+     "H_copies": 194,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 22,
+     "law_abundance_first_turnover": 0.4298,
+     "law_abundance_after_first_turnover": 0.2054
+    }
+   }
+  },
+  {
+   "id": "a-donor-fast-k1-d19-s0.3",
+   "group": "a",
+   "kind": "donor",
+   "scope": "sheet",
+   "rule": "neighbour",
+   "size": 19,
+   "s": 0.3,
+   "formation": {
+    "lag_s": 120.0,
+    "time_constant_s": 900.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1,
+    2
+   ],
+   "note": "inheritance route; state-blind replacement and donors",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.25,
+     "D_copies": 33,
+     "H_copies": 258,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 6,
+     "law_abundance_first_turnover": 0.428,
+     "law_abundance_after_first_turnover": 0.2037
+    },
+    "seed2": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.6538,
+     "D_copies": 58,
+     "H_copies": 233,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 10,
+     "law_abundance_first_turnover": 0.4298,
+     "law_abundance_after_first_turnover": 0.2054
+    }
+   }
+  },
+  {
+   "id": "a-donor-central-k1-d37-s1.0",
+   "group": "a",
+   "kind": "donor",
+   "scope": "sheet",
+   "rule": "neighbour",
+   "size": 37,
+   "s": 1.0,
+   "formation": {
+    "lag_s": 600.0,
+    "time_constant_s": 1800.0
+   },
+   "residence_s": 2400.0,
+   "end_s": 4080.0,
+   "judged_at": "control end",
+   "seeds": [
+    1,
+    2
+   ],
+   "note": "inheritance route; central bracket; judged at the control's end, 70 min after the cue (1.7 turnovers)",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 4080.0,
+     "J_null_at_judged_record": 0.5556,
+     "D_copies": 77,
+     "H_copies": 139,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 17,
+     "law_abundance_first_turnover": 0.3923,
+     "law_abundance_after_first_turnover": 0.1463
+    },
+    "seed2": {
+     "judged_s": 4080.0,
+     "J_null_at_judged_record": 0.4909,
+     "D_copies": 71,
+     "H_copies": 145,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 19,
+     "law_abundance_first_turnover": 0.3943,
+     "law_abundance_after_first_turnover": 0.1509
+    }
+   }
+  },
+  {
+   "id": "a-donor-central-k1-d37-s0.6",
+   "group": "a",
+   "kind": "donor",
+   "scope": "sheet",
+   "rule": "neighbour",
+   "size": 37,
+   "s": 0.6,
+   "formation": {
+    "lag_s": 600.0,
+    "time_constant_s": 1800.0
+   },
+   "residence_s": 2400.0,
+   "end_s": 4080.0,
+   "judged_at": "control end",
+   "seeds": [
+    1,
+    2
+   ],
+   "note": "inheritance route; central bracket; judged at the control's end, 70 min after the cue (1.7 turnovers)",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 4080.0,
+     "J_null_at_judged_record": 0.5556,
+     "D_copies": 77,
+     "H_copies": 139,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 17,
+     "law_abundance_first_turnover": 0.3923,
+     "law_abundance_after_first_turnover": 0.1463
+    },
+    "seed2": {
+     "judged_s": 4080.0,
+     "J_null_at_judged_record": 0.4909,
+     "D_copies": 71,
+     "H_copies": 145,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 19,
+     "law_abundance_first_turnover": 0.3943,
+     "law_abundance_after_first_turnover": 0.1509
+    }
+   }
+  },
+  {
+   "id": "a-donor-fast-k3-d37-s1.0",
+   "group": "a",
+   "kind": "donor",
+   "scope": "sheet",
+   "rule": "neighbour",
+   "size": 37,
+   "s": 1.0,
+   "formation": {
+    "lag_s": 120.0,
+    "time_constant_s": 900.0
+   },
+   "residence_s": 3060.0,
+   "end_s": 4080.0,
+   "judged_at": "first turnover",
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "note": "inheritance route; junctions have time to re-form (k3); judged after the first turnover (53 min after the cue), run to the control's end",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 3047.9528,
+     "J_null_at_judged_record": 0.6735,
+     "D_copies": 57,
+     "H_copies": 112,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 13,
+     "law_abundance_first_turnover": 0.6171,
+     "law_abundance_after_first_turnover": null
+    },
+    "seed2": {
+     "judged_s": 3047.9528,
+     "J_null_at_judged_record": 0.625,
+     "D_copies": 53,
+     "H_copies": 116,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 14,
+     "law_abundance_first_turnover": 0.6179,
+     "law_abundance_after_first_turnover": null
+    },
+    "seed3": {
+     "judged_s": 3047.9528,
+     "J_null_at_judged_record": 0.7561,
+     "D_copies": 50,
+     "H_copies": 119,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 7,
+     "law_abundance_first_turnover": 0.6089,
+     "law_abundance_after_first_turnover": null
+    }
+   }
+  },
+  {
+   "id": "a-donor-fast-k3-d37-s0.6",
+   "group": "a",
+   "kind": "donor",
+   "scope": "sheet",
+   "rule": "neighbour",
+   "size": 37,
+   "s": 0.6,
+   "formation": {
+    "lag_s": 120.0,
+    "time_constant_s": 900.0
+   },
+   "residence_s": 3060.0,
+   "end_s": 4080.0,
+   "judged_at": "first turnover",
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "note": "inheritance route; junctions have time to re-form (k3); judged after the first turnover (53 min after the cue), run to the control's end",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 3047.9528,
+     "J_null_at_judged_record": 0.6735,
+     "D_copies": 57,
+     "H_copies": 112,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 13,
+     "law_abundance_first_turnover": 0.6171,
+     "law_abundance_after_first_turnover": null
+    },
+    "seed2": {
+     "judged_s": 3047.9528,
+     "J_null_at_judged_record": 0.625,
+     "D_copies": 53,
+     "H_copies": 116,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 14,
+     "law_abundance_first_turnover": 0.6179,
+     "law_abundance_after_first_turnover": null
+    },
+    "seed3": {
+     "judged_s": 3047.9528,
+     "J_null_at_judged_record": 0.7561,
+     "D_copies": 50,
+     "H_copies": 119,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 7,
+     "law_abundance_first_turnover": 0.6089,
+     "law_abundance_after_first_turnover": null
+    }
+   }
+  },
+  {
+   "id": "b-iso-tau40-d37-s1.0",
+   "group": "b",
+   "kind": "iso",
+   "scope": "sheet",
+   "rule": "isolated",
+   "size": 37,
+   "s": 1.0,
+   "formation": {
+    "lag_s": 5.333333333333333,
+    "time_constant_s": 40.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1
+   ],
+   "note": "threshold-finding: tau below the literature range; one seed, so tau* is a single draw",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.0,
+     "D_copies": 0,
+     "H_copies": 0,
+     "templates_with_5plus_D_neighbours": 5,
+     "d_outside_max": 0,
+     "law_abundance_first_turnover": 0.9173,
+     "law_abundance_after_first_turnover": 0.9142
+    }
+   }
+  },
+  {
+   "id": "b-iso-tau120-d37-s1.0",
+   "group": "b",
+   "kind": "iso",
+   "scope": "sheet",
+   "rule": "isolated",
+   "size": 37,
+   "s": 1.0,
+   "formation": {
+    "lag_s": 16.0,
+    "time_constant_s": 120.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1
+   ],
+   "note": "threshold-finding: tau below the literature range; one seed, so tau* is a single draw",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.0,
+     "D_copies": 0,
+     "H_copies": 0,
+     "templates_with_5plus_D_neighbours": 5,
+     "d_outside_max": 0,
+     "law_abundance_first_turnover": 0.7886,
+     "law_abundance_after_first_turnover": 0.7638
+    }
+   }
+  },
+  {
+   "id": "b-iso-tau300-d37-s1.0",
+   "group": "b",
+   "kind": "iso",
+   "scope": "sheet",
+   "rule": "isolated",
+   "size": 37,
+   "s": 1.0,
+   "formation": {
+    "lag_s": 40.0,
+    "time_constant_s": 300.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1
+   ],
+   "note": "threshold-finding: tau below the literature range; one seed, so tau* is a single draw",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.0,
+     "D_copies": 0,
+     "H_copies": 0,
+     "templates_with_5plus_D_neighbours": 5,
+     "d_outside_max": 0,
+     "law_abundance_first_turnover": 0.6159,
+     "law_abundance_after_first_turnover": 0.522
+    }
+   }
+  },
+  {
+   "id": "b-iso-tau40-d37-s0.6",
+   "group": "b",
+   "kind": "iso",
+   "scope": "sheet",
+   "rule": "isolated",
+   "size": 37,
+   "s": 0.6,
+   "formation": {
+    "lag_s": 5.333333333333333,
+    "time_constant_s": 40.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1
+   ],
+   "note": "threshold-finding: tau below the literature range; one seed, so tau* is a single draw",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.0,
+     "D_copies": 0,
+     "H_copies": 0,
+     "templates_with_5plus_D_neighbours": 5,
+     "d_outside_max": 0,
+     "law_abundance_first_turnover": 0.9173,
+     "law_abundance_after_first_turnover": 0.9142
+    }
+   }
+  },
+  {
+   "id": "b-iso-tau120-d37-s0.6",
+   "group": "b",
+   "kind": "iso",
+   "scope": "sheet",
+   "rule": "isolated",
+   "size": 37,
+   "s": 0.6,
+   "formation": {
+    "lag_s": 16.0,
+    "time_constant_s": 120.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1
+   ],
+   "note": "threshold-finding: tau below the literature range; one seed, so tau* is a single draw",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.0,
+     "D_copies": 0,
+     "H_copies": 0,
+     "templates_with_5plus_D_neighbours": 5,
+     "d_outside_max": 0,
+     "law_abundance_first_turnover": 0.7886,
+     "law_abundance_after_first_turnover": 0.7638
+    }
+   }
+  },
+  {
+   "id": "b-iso-tau300-d37-s0.6",
+   "group": "b",
+   "kind": "iso",
+   "scope": "sheet",
+   "rule": "isolated",
+   "size": 37,
+   "s": 0.6,
+   "formation": {
+    "lag_s": 40.0,
+    "time_constant_s": 300.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1
+   ],
+   "note": "threshold-finding: tau below the literature range; one seed, so tau* is a single draw",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2035.9843,
+     "J_null_at_judged_record": 0.0,
+     "D_copies": 0,
+     "H_copies": 0,
+     "templates_with_5plus_D_neighbours": 5,
+     "d_outside_max": 0,
+     "law_abundance_first_turnover": 0.6159,
+     "law_abundance_after_first_turnover": 0.522
+    }
+   }
+  },
+  {
+   "id": "c-disconly-fast-k1-d37-s1.0",
+   "group": "c",
+   "kind": "donor",
+   "scope": "disc",
+   "rule": "disc_neighbour",
+   "size": 37,
+   "s": 1.0,
+   "formation": {
+    "lag_s": 120.0,
+    "time_constant_s": 900.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1
+   ],
+   "note": "control: disc slots and disc donors pass B1 by construction under copying",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2026.2162,
+     "J_null_at_judged_record": 1.0,
+     "D_copies": 85,
+     "H_copies": 0,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 0,
+     "law_abundance_first_turnover": 0.8035,
+     "law_abundance_after_first_turnover": 0.7074
+    }
+   }
+  },
+  {
+   "id": "c-disconly-fast-k1-d37-s0.6",
+   "group": "c",
+   "kind": "donor",
+   "scope": "disc",
+   "rule": "disc_neighbour",
+   "size": 37,
+   "s": 0.6,
+   "formation": {
+    "lag_s": 120.0,
+    "time_constant_s": 900.0
+   },
+   "residence_s": 1020.0,
+   "end_s": 2340.0,
+   "judged_at": "second turnover",
+   "seeds": [
+    1
+   ],
+   "note": "control: disc slots and disc donors pass B1 by construction under copying",
+   "null_paired": {
+    "seed1": {
+     "judged_s": 2026.2162,
+     "J_null_at_judged_record": 1.0,
+     "D_copies": 85,
+     "H_copies": 0,
+     "templates_with_5plus_D_neighbours": 0,
+     "d_outside_max": 0,
+     "law_abundance_first_turnover": 0.8035,
+     "law_abundance_after_first_turnover": 0.7074
+    }
+   }
+  }
+ ],
+ "null": {
+  "producer": "validation/tissue/e07_v1_turnover.py null (no engine)",
+  "evidence": "/mnt/workspaces/Cells/e07-v1-design-20261113-01/null-v3.json (source-03, revision b450c77)",
+  "definition": "labels copied along each run's own schedule and donor draws; a newcomer takes its donor's label at the event time (read before any event at that time), or H when isolated; records every 10 s, each before any event at its own time",
+  "checked": "on the pre-screen's own events, identical to the engine's J series at every record wherever the engine lost no D carrier and converted no newcomer",
+  "at_judged_records_2000_seeds": {
+   "a_fast_k1_d37": {
+    "judged_at": "second turnover",
+    "b1_probability": 0.0,
+    "J_at_judged_record": {
+     "q05": 0.348,
+     "q25": 0.444,
+     "q50": 0.5,
+     "q75": 0.571,
+     "q95": 0.655
+    },
+    "d_outside_max_median": 14.0
+   },
+   "a_fast_k1_d19": {
+    "judged_at": "second turnover",
+    "b1_probability": 0.0,
+    "J_at_judged_record": {
+     "q05": 0.174,
+     "q25": 0.308,
+     "q50": 0.393,
+     "q75": 0.48,
+     "q95": 0.591
+    },
+    "d_outside_max_median": 10.0
+   },
+   "a_central_k1_d37": {
+    "judged_at": "control end",
+    "b1_probability": null,
+    "J_at_judged_record": {
+     "q05": 0.392,
+     "q25": 0.481,
+     "q50": 0.541,
+     "q75": 0.6,
+     "q95": 0.681
+    },
+    "d_outside_max_median": 12.0
+   },
+   "a_central_k1_d19": {
+    "judged_at": "control end",
+    "b1_probability": null,
+    "J_at_judged_record": {
+     "q05": 0.219,
+     "q25": 0.346,
+     "q50": 0.433,
+     "q75": 0.519,
+     "q95": 0.625
+    },
+    "d_outside_max_median": 8.0
+   },
+   "a_fast_k3_d37": {
+    "judged_at": "first turnover",
+    "b1_probability": null,
+    "J_at_judged_record": {
+     "q05": 0.523,
+     "q25": 0.596,
+     "q50": 0.644,
+     "q75": 0.689,
+     "q95": 0.756
+    },
+    "d_outside_max_median": 10.0
+   },
+   "a_fast_k3_d19": {
+    "judged_at": "first turnover",
+    "b1_probability": null,
+    "J_at_judged_record": {
+     "q05": 0.364,
+     "q25": 0.471,
+     "q50": 0.542,
+     "q75": 0.609,
+     "q95": 0.708
+    },
+    "d_outside_max_median": 7.0
+   },
+   "c_d37": {
+    "judged_at": "second turnover",
+    "b1_probability": 1.0,
+    "J_at_judged_record": {
+     "q05": 1.0,
+     "q25": 1.0,
+     "q50": 1.0,
+     "q75": 1.0,
+     "q95": 1.0
+    },
+    "d_outside_max_median": 0.0
+   },
+   "prescreen_design_d37": {
+    "judged_at": "second turnover",
+    "b1_probability": 0.0115,
+    "J_at_judged_record": {
+     "q05": 0.351,
+     "q25": 0.486,
+     "q50": 0.568,
+     "q75": 0.649,
+     "q95": 0.784
+    },
+    "d_outside_max_median": 0.0
+   }
+  }
+ },
+ "analysis": {
+  "unit": "the run: copies within a run are not independent (collective falls); nothing is pooled per copy",
+  "run_readouts": {
+   "delta_J": "J_engine - J_null at the judged record, on the same draws",
+   "D_loss": "D copies that fell to H before their own replacement, over the D copies arrived (to the judged record)",
+   "recruitment": "H copies converted to D, over the H copies arrived",
+   "delta": "2 / N_disc: 0.054 (37 cells), 0.105 (19 cells)"
+  },
+  "run_class": {
+   "neutral": "|dJ| <= delta, D-loss <= 2% and recruitment <= 2%",
+   "erosion": "(dJ < -delta or D-loss > 5%) and not the recruitment condition",
+   "recruitment": "(dJ > +delta or recruitment > 5%) and not the erosion condition",
+   "mixed": "both the erosion and the recruitment conditions",
+   "small_bias": "otherwise"
+  },
+  "group_rule": "per arm group (fast k1, central k1, fast k3) and s, pooling its discs: a class holds when at least two thirds of the runs are in it (both runs for a group of two); otherwise the group is split at that s, every run is reported with its class, and no class is claimed",
+  "censored_runs": "judged at the last valid record (the last 10 s record with osmotic excess at or below 15% in every cell) against the paired null at that record; never dropped; the truncation is reported",
+  "d_outside": "expected under copying (null median 10-14 cells at most); reported against the paired null; never a stop, validity or prediction failure",
+  "carried_over": {
+   "no D outside the disc": "dropped",
+   "all-H stop": "kept, over the whole sheet",
+   "osmotic censor": "kept, with the censored-run rule",
+   "collective loss (5 cells in 10 s, post hoc)": "descriptive only",
+   "B1 as the criterion": "reported beside the null's P(B1), not decisive",
+   "J over the whole sheet": "kept, judged against the null",
+   "analysis in the arm process": "moved out of process",
+   "disc-only replacement": "only in the control"
+  }
+ },
+ "items": {
+  "E1": {
+   "name": "numerics gate on the worst case, before any judged arm",
+   "segments": [
+    "(a) fast k1, 37 cells, s 1.0, seed 1, the first 600 s (events every 8.0 s)",
+    "(b) tau 40 s, 37 cells, s 1.0, seed 1, the first 300 s",
+    "(b) tau 40 s, 37 cells, s 0.6, seed 1, the first 300 s"
+   ],
+   "criteria": "heredity-turnover-literature-20261111-01/numerics/criteria.json: no refusal; identical D sets outside 1 s of a state change, every change within 1 s; |dVm| <= 1 mV outside those windows; amounts and osmotic excess within 1e-4",
+   "outcome": "pass: the arms run at 5 ms; fail: at 1 ms with the minimal set"
+  },
+  "E2": {
+   "name": "validity",
+   "criteria": [
+    "no refusal and no failed device check in any judged run",
+    "every definition passes the driver's checks: P equality, D147 declare(), a layout equal to sheet70's",
+    "D outside the disc never counts against validity"
+   ]
+  },
+  "E3": {
+   "name": "(a) the class of every run, and of each arm group at each s (analysis)"
+  },
+  "E4": {
+   "name": "(c) control: disc slots, disc donors",
+   "criterion": "J = 1 at every record, no D copy and no founder lost; any loss reported with its time and neighbourhood"
+  },
+  "E5": {
+   "name": "(b) threshold-finding (reported, no pass or fail)",
+   "readouts": "per tau and s: isolated newcomers converted, as a fraction of those arriving with five or more D neighbours; dJ against the null; tau*, the largest ladder tau with at least one converted interior newcomer, a single draw"
+  },
+  "E6": {
+   "name": "junction weight per run (reported, qualifying E3-E5)",
+   "readouts": "every junction's abundance A and weight A x gate, time-averaged to the judged record and by junction class (D-D, D-H, H-H at each record), beside the law's A from the schedule; a neutral run with mean weight well below the nominal is read as neutral at low effective coupling"
+  },
+  "B1": {
+   "name": "J >= 0.8 through two turnovers",
+   "role": "reported for the fast k1, (b) and (c) runs beside the null's P(B1); not decisive (copying alone: 0 of 2000 seeds in (a))"
+  }
+ },
+ "predictions": {
+  "written": "2026-11-13, before any E07-v1 engine run",
+  "bases": [
+   "the literature-rule pre-screen (heredity-turnover-literature-20261111-01)",
+   "the stress segment N2 (seen after the pre-screen's predictions were frozen)",
+   "this null and the law's junction abundance (null-v3.json)"
+  ],
+  "E1": "passes (about 10 uV and 3e-6 or less)",
+  "E3": {
+   "fast_k1_s0.3": "neutral in all 4 runs; dJ = 0 at every record in at least 3",
+   "fast_k1_s0.6": "neutral holds (at least 6 of 8 runs), at low effective coupling",
+   "fast_k1_s1.0": "erosion holds (at least 6 of 8): dJ from -0.35 to -0.05, D-loss 5-25%; all H in at most 2 runs",
+   "central_k1": "erosion in both runs at s 1.0; neutral in both at s 0.6",
+   "fast_k3_s1.0": "erosion in all 3 runs, stronger than at k1: dJ after the first turnover from -0.6 to -0.1; all H by 70 min after the cue in at least 1",
+   "fast_k3_s0.6": "erosion holds (at least 2 of 3): dJ from -0.4 to -0.05",
+   "recruitment": "no H copy converts in any (a) run"
+  },
+  "E4": {
+   "s0.6": "J = 1 at every record",
+   "s1.0": "J >= 0.9 after the second turnover, no collective loss (low confidence)"
+  },
+  "E5": {
+   "s0.6": "recruitment falls with tau: >= 40% of interior newcomers arriving with five or more D neighbours at 40 s, >= 20% at 120 s, <= 20% at 300 s; tau* >= 120 s (a single draw)",
+   "s1.0": "all H within the first turnover at every tau; recruitment, if any, only at 40 s and early"
+  },
+  "E6": "mean weight after the first turnover about A on D-D and H-H junctions and about 0.1 A on D-H junctions (gate near its minimum), with A as the law gives (0.20 fast k1, 0.15 central k1; about 0.6 in fast k3's first turnover)",
+  "validity": "no refusal, no failed device check, no censor; at most about 12.5% excess by 70 min after the cue",
+  "B1": "fails in every fast k1 and (b) run; passes in (c) at s 0.6"
+ },
+ "budget": {
+  "cost": "7.7 ms per step with two units (5.8 ms with one): a 39-min run about 60 min, a 68-min run about 105 min of wall time; E1 about 3.1 core-hours; analyses about 1",
+  "proposed": "38 judged runs plus E1, about 50 core-hours: about 25 h on two units",
+  "minimal": "fast k1: 4 seeds at s 1.0, 2 per disc at s 0.6, 1 per disc at s 0.3; central 1 each; fast k3 2 each; (b) at s 0.6 only; (c); E1: about 29 core-hours, about 14.5 h",
+  "fuller": "the proposed set plus 16 fast k1 runs (8 at s 1.0, 4 per disc at s 0.6): about 66 core-hours"
+ },
+ "exclusions": [
+  "water and volume (composite v2 section 2, held until S3's fix and first round land)",
+  "k10 and second turnovers of k3 (beyond the control and the fixed-volume budget)",
+  "the full 825-node tissue (needs GH200 or a long-time method)",
+  "heterogeneous worlds and per-newcomer parameter draws",
+  "the inherit rule (D139)",
+  "literature-range formation for isolated newcomers (the pre-screen's 13 arms: none of 317 converted); not rerun"
+ ],
+ "order": [
+  "1 design, null and this PROPOSED protocol on the agent's branch",
+  "2 review by the lead and the advisor; registration by the lead on main",
+  "3 the engine-run driver (validation only; analysis out of process) and a dry run on non-registered seeds (r >= 101), development",
+  "4 after d020c3b lands: one clean snapshot of main with the driver; E1 from it",
+  "5 the judged arms, once, from the same snapshot"
+ ]
+}
