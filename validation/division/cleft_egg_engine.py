@@ -33,6 +33,8 @@ Actions (python -m validation.division.cleft_egg_engine ACTION --output FILE):
   probe [--dt] the bounded ledger probe: through the onset plus 1e5 steps, every row's device
                checks and its electrode, reservoir-work, energy and fill residuals against their
                bounds; refused steps counted; no Q quantity
+  admit        the study's admission at each of its steps (plan_vector_windows with the
+               study's batch and policy); no step is taken
   study --dt   a development engine run in vector windows with device checks: Q1-Q5
   terms --studies F2dt Fdt Fdt/2
                each quantity's step term at the judged dt and its observed order
@@ -720,26 +722,71 @@ STUDY_WINDOW = 20_000
 OBSERVED = ("times", "membrane_voltage_V", "lumen_concentration_mM")
 
 
+def study_batch(spec, window_steps=STUDY_WINDOW):
+    """The study's one-world vector-window batch and window policy, admission bounds included."""
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.windows import WindowPolicy
+
+    work = 2 * spec.execution.max_steps + 10**6
+    batch = BatchSpec((WorldSpec(1, spec),), 1, work, 2**31)
+    return batch, WindowPolicy(window_steps, "checkpoints")
+
+
 def windowed_observations(spec, *, columns=OBSERVED, window_steps=STUDY_WINDOW):
     """One world run in vector windows with device checks on every row (core/vector_windows):
     the named observation columns at every requested time, stacked in time order, with the
     world's device diagnostics and the run's timings. run() cannot hold a 2100 s history."""
     import numpy as np
 
-    from cells.core.batch import BatchSpec, WorldSpec
     from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
 
     found = []
 
     def sink(window):
         found.extend(window.observations.values())
 
-    work = 2 * spec.execution.max_steps + 10**6
-    batch = BatchSpec((WorldSpec(1, spec),), 1, work, 2**31)
-    result = run_vector_windowed(batch, WindowPolicy(window_steps, "checkpoints"), sink=sink)
+    batch, policy = study_batch(spec, window_steps)
+    result = run_vector_windowed(batch, policy, sink=sink)
     stacked = {k: np.concatenate([np.asarray(getattr(f, k)) for f in found]) for k in columns}
     return stacked, dict(result.worlds[1].diagnostics), dict(result.timings)
+
+
+def admit(dts=STUDY_DTS, window_steps=STUDY_WINDOW):
+    """The study's admission on the egg at each step: plan_vector_windows with the study's own
+    batch and policy (the cohort limits, the window plan, and the whole clock's checks through
+    core/grid's checked_grid). No step is taken and nothing is observed."""
+    from cells.core.errors import NumericalError
+    from cells.core.specs import ConfigError, parse_spec
+    from cells.core.vector_windows import plan_vector_windows
+
+    cases = []
+    for dt in dts:
+        spec = parse_spec(definition(dt))
+        batch, policy = study_batch(spec, window_steps)
+        case = dict(
+            dt=dt,
+            steps=int(round(spec.experiment.end_time / dt)),
+            window_steps=window_steps,
+            max_padded_steps=batch.max_padded_steps,
+            max_working_bytes=batch.max_working_bytes,
+        )
+        try:
+            plan = plan_vector_windows(batch, policy)
+        except (ConfigError, NumericalError) as error:  # Kept: a refusal is the result.
+            cases.append(dict(case, verdict="refused", refusal=str(error)))
+            continue
+        cases.append(
+            dict(
+                case,
+                verdict="admitted",
+                width=plan.width,
+                control_rows=plan.control_rows,
+                observation_rows=plan.observation_rows,
+                estimated_working_bytes=plan.estimated_working_bytes,
+                padded_step_bound=plan.padded_step_bound,
+            )
+        )
+    return dict(cases=cases)
 
 
 def engine_observations(dt, *, end=None, window_steps=STUDY_WINDOW):
@@ -934,7 +981,7 @@ def judge(protocol_path=PROTOCOL):
     )
 
 
-ACTIONS = ("compare", "check", "probe", "study", "terms", "reference", "judge")
+ACTIONS = ("compare", "check", "probe", "admit", "study", "terms", "reference", "judge")
 
 
 def main(argv=None):
@@ -962,6 +1009,8 @@ def main(argv=None):
         result = dict(status=STATUS, **check())
     elif args.action == "probe":
         result = dict(status=STATUS + " Bounded ledger probe; no Q quantity.", **probe(args.dt))
+    elif args.action == "admit":
+        result = dict(status=STATUS + " The study's admission; no step taken.", **admit())
     elif args.action == "study":
         result = dict(status=STATUS + " Development dt study.", **study(args.dt))
     elif args.action == "terms":
