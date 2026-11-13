@@ -39,8 +39,8 @@ Actions (python -m validation.division.cleft_egg_engine ACTION --output FILE):
   terms --studies F2dt Fdt Fdt/2
                each quantity's step term at the judged dt and its observed order
   reference    R-full's Q1-Q5 under the registered defaults and its reference term per quantity
-  fill --terms F --reference F
-               the protocol draft with its values filled in (still PROPOSED)
+  fill --terms F --reference F [--studies F ...]
+               the protocol draft with its values and development observations (still PROPOSED)
   judge        the judged run: a registered protocol (status beginning "registered") and a clean
                execution snapshot only
 study, reference and judge wait for the lead's approval (plan §5, steps 4-6); they follow
@@ -929,31 +929,87 @@ def terms(studies, judged=JUDGED_DT):
 
 def protocol_values(term_values, reference_values):
     """The protocol's values per quantity from terms and reference: the R-full reference, both
-    terms, the observed order and the tolerance 3 x (engine step term + reference term)."""
+    terms, the observed order, the tolerance 3 x (engine step term + reference term) and, as a
+    reported shared sensitivity outside the tolerance, the activation-area variant's |dQ|. The
+    reference terms are formed here from the reference's rows (reference_terms_from_rows), so
+    the rule is this module's whatever version wrote the file."""
+    base, ref_terms, shared = reference_terms_from_rows(reference_values["rows"])
     out = {}
     for name, t in term_values["terms"].items():
-        step, ref_term = t["step_term"], reference_values["reference_terms"][name]
+        step, ref_term = t["step_term"], ref_terms[name]
         out[name] = dict(
             judged=t["judged"],
-            reference=reference_values["reference"][name],
+            reference=base[name],
             engine_step_term=step,
             engine_coarse_difference=t["coarse_difference"],
             observed_order=t["observed_order"],
             reference_term=ref_term,
             tolerance=3 * (step + ref_term),
+            shared_sensitivity=shared[name],
             engine_values_by_dt_s=t.get("values"),
         )
     return out
 
 
+def development_observations(term_values, reference_values, studies=()):
+    """Engine minus R-full at each step of the study (the trajectory: its maximum over pulses),
+    and the fine-pair order against R-full, log2(|E(dt) - R| / |E(dt / 2) - R|) at the judged
+    pair: information for the protocol's reader, not a verdict."""
+    import math
+
+    base, _, _ = reference_terms_from_rows(reference_values["rows"])
+    judged = term_values["judged_dt"]
+    by = {round(s["dt"], 12): flat(s["quantities"]) for s in studies}
+    out = {}
+    for name, t in term_values["terms"].items():
+        values = t.get("values")
+        if values is not None:
+            engine = {float(k): v for k, v in values.items()}
+        else:
+            engine = {dt: q[name] for dt, q in by.items()}
+        if not engine:
+            continue
+        signed = not isinstance(base[name], list)
+        difference = {
+            repr(dt): (v - base[name]) if signed else distance(v, base[name])
+            for dt, v in sorted(engine.items(), reverse=True)
+        }
+        mid, fine = (engine.get(round(x, 12)) for x in (judged, judged / 2))
+        order = None
+        if mid is not None and fine is not None:
+            a, b = distance(mid, base[name]), distance(fine, base[name])
+            order = math.log2(a / b) if a > 0 and b > 0 else None
+        out[name] = dict(engine_minus_reference=difference, fine_pair_order_against_reference=order)
+    return out
+
+
 # ------------------------------------------------------------------ R-full's reference (not run)
 
-REFERENCE_VARIANTS = (
-    "radau_rtol_1e-8",
-    "bdf_rtol_1e-10",
-    "lsoda_rtol_1e-10",
-    "activation_1e-10_m2",
-)
+# The reference term bounds R-full's own numerical error: its integrator variants only (the
+# lead's ruling of 13 November). The activation area is R-full's and the engine's alike, so its
+# variant measures a sensitivity both share: reported per quantity, outside the tolerance.
+REFERENCE_VARIANTS = ("radau_rtol_1e-8", "bdf_rtol_1e-10", "lsoda_rtol_1e-10")
+SHARED_SENSITIVITIES = ("activation_1e-10_m2",)
+DEFAULT_VARIANT = "radau_rtol_1e-10"
+
+
+def reference_terms_from_rows(rows):
+    """(R-full's default Q, the reference term per quantity over REFERENCE_VARIANTS, {quantity:
+    {shared variant: |dQ|}}) from the reference action's rows."""
+    base = flat(rows[DEFAULT_VARIANT]["quantities"])
+    terms = {
+        name: max(
+            distance(flat(rows[v]["quantities"])[name], base[name]) for v in REFERENCE_VARIANTS
+        )
+        for name in base
+    }
+    shared = {
+        name: {
+            v: distance(flat(rows[v]["quantities"])[name], base[name]) for v in SHARED_SENSITIVITIES
+        }
+        for name in base
+    }
+    return base, terms, shared
 
 
 def rfull_quantities(egg, d, **kwargs):
@@ -969,9 +1025,10 @@ def rfull_quantities(egg, d, **kwargs):
 
 def reference():
     """R-full's quantities under the registered defaults (Radau rtol 1e-10, the record's
-    calibration) and its reference term per quantity: the largest |dQ| over Radau rtol 1e-8,
-    BDF and LSODA at rtol 1e-10 and the activation area 1e-10 m2 (J1's reference_numerics,
-    as the record's part_record forms them). Q1 and Q2 are checked against the record."""
+    calibration) and its reference term per quantity: the largest |dQ| over Radau rtol 1e-8 and
+    BDF and LSODA at rtol 1e-10 (REFERENCE_VARIANTS). The activation area 1e-10 m2, which J1's
+    reference_numerics included, is run too and reported as a shared sensitivity (the variants
+    as the record's part_record forms them). Q1, Q2 and Q3 are checked against the record."""
     from dataclasses import replace
 
     from validation.division import cleft_egg_reference as ref
@@ -986,7 +1043,7 @@ def reference():
         ),
     )
     default, info = rfull_quantities(egg, d)
-    rows = {"radau_rtol_1e-10": dict(quantities=default, **info)}
+    rows = {DEFAULT_VARIANT: dict(quantities=default, **info)}
     for label, e, kwargs in (
         ("radau_rtol_1e-8", egg, dict(rtol=1e-8)),
         ("bdf_rtol_1e-10", egg, dict(method="BDF")),
@@ -995,16 +1052,11 @@ def reference():
     ):
         q, info = rfull_quantities(e, d, **kwargs)
         rows[label] = dict(quantities=q, **info)
-    base = flat(default)
-    reference_terms = {
-        name: max(
-            distance(flat(rows[v]["quantities"])[name], base[name]) for v in REFERENCE_VARIANTS
-        )
-        for name in base
-    }
+    base, reference_terms, shared = reference_terms_from_rows(rows)
     return dict(
         reference=base,
         reference_terms=reference_terms,
+        shared_sensitivities=shared,
         rows=rows,
         record_check=dict(
             em_V=(base["Q1_em_at_j1_V"], record["prediction_of_record_V"]),
@@ -1076,22 +1128,29 @@ def judge(protocol_path=PROTOCOL):
 ACTIONS = ("compare", "check", "probe", "admit", "study", "terms", "reference", "fill", "judge")
 
 
-def fill(term_path, reference_path, protocol_path=PROTOCOL):
-    """The protocol draft with its values (protocol_values) and evidence filled in, still
-    PROPOSED: the lead registers it."""
+def fill(term_path, reference_path, study_paths=(), protocol_path=PROTOCOL):
+    """The protocol draft with its values (protocol_values), its development observations
+    (development_observations, the trajectory's from the study files) and evidence filled in,
+    still PROPOSED: the lead registers it."""
     protocol = json.loads(Path(protocol_path).read_text())
     if not protocol["status"].startswith("PROPOSED"):
         raise SystemExit("Refused: fill writes a PROPOSED draft only")
     term_values = json.loads(Path(term_path).read_text())
     reference_values = json.loads(Path(reference_path).read_text())
+    studies = [json.loads(Path(f).read_text()) for f in study_paths]
     if term_values["stop"]:
         raise SystemExit(
             "Refused: the study met the stop condition: " + str(term_values["non_converging"])
         )
     protocol["values"] = protocol_values(term_values, reference_values)
+    observations = protocol.setdefault("development_observations", {})
+    observations["by_quantity"] = development_observations(term_values, reference_values, studies)
+    observations["stop_condition_met"] = term_values["stop"]
     protocol["evidence"] = dict(
         protocol["evidence"], terms=str(term_path), reference=str(reference_path)
     )
+    if study_paths:
+        protocol["evidence"]["study"] = [str(f) for f in study_paths]
     return protocol
 
 
@@ -1108,6 +1167,7 @@ def main(argv=None):
         if name == "fill":
             one.add_argument("--terms", type=Path, required=True)
             one.add_argument("--reference", type=Path, required=True)
+            one.add_argument("--studies", type=Path, nargs="*", default=())
     args = parser.parse_args(argv)
     if args.action not in ("terms", "fill"):
         import jax
@@ -1134,7 +1194,7 @@ def main(argv=None):
     elif args.action == "reference":
         result = dict(status=STATUS + " R-full's reference terms.", **reference())
     elif args.action == "fill":
-        result = fill(args.terms, args.reference)
+        result = fill(args.terms, args.reference, args.studies)
     else:
         result = judge()
     args.output.parent.mkdir(parents=True, exist_ok=True)

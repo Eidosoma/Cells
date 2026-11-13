@@ -118,6 +118,28 @@ def synthetic(dt):
     return egg, d, front, sample, lumen
 
 
+def shifted(q, by):
+    """The quantities q with every value moved by `by` (the trajectory element by element)."""
+    out = {k: q[k] + by for k in ("Q1_em_at_j1_V", "Q2_rm_at_j1_ohm", "Q3_rm1_ohm")}
+    out["Q4_em_trajectory_V"] = [x + by for x in q["Q4_em_trajectory_V"]]
+    out["Q5_lumen_at_j1_mM"] = {s: v + by for s, v in q["Q5_lumen_at_j1_mM"].items()}
+    return out
+
+
+def synthetic_reference(q):
+    """A reference action's output around q: integrator variants within 1e-7, and an
+    activation-area variant 1e-3 away (a shared sensitivity, outside the tolerance)."""
+    rows = {engine.DEFAULT_VARIANT: dict(quantities=q)}
+    for label, by in (
+        ("radau_rtol_1e-8", 1e-7),
+        ("bdf_rtol_1e-10", -5e-8),
+        ("lsoda_rtol_1e-10", 2e-8),
+        ("activation_1e-10_m2", 1e-3),
+    ):
+        rows[label] = dict(quantities=shifted(q, by))
+    return dict(rows=rows)
+
+
 def test_quantities_terms_and_verdicts_follow_the_plan():
     egg, d, front, sample, lumen = synthetic(0.0)
     q = engine.quantities(front, sample, lumen, egg, d)
@@ -152,15 +174,16 @@ def test_quantities_terms_and_verdicts_follow_the_plan():
     growing[2]["quantities"]["Q1_em_at_j1_V"] = studies[1]["quantities"]["Q1_em_at_j1_V"] + 1.0
     stopped = engine.terms(growing)
     assert stopped["stop"] and stopped["non_converging"] == ["Q1_em_at_j1_V"]
-    # The protocol's values: both terms, the order, and 3 x (step term + reference term).
-    reference_values = dict(
-        reference=engine.flat(studies[2]["quantities"]),
-        reference_terms={name: 1e-7 for name in result["terms"]},
-    )
-    values = engine.protocol_values(result, reference_values)
+    # The protocol's values: both terms, the order, and 3 x (step term + reference term), the
+    # reference term over the integrator variants only (the lead's ruling); the activation-area
+    # variant is reported as a shared sensitivity outside the tolerance.
+    values = engine.protocol_values(result, synthetic_reference(studies[2]["quantities"]))
     for name, entry in values.items():
         step = result["terms"][name]["step_term"]
-        assert entry["tolerance"] == 3 * (step + 1e-7), name
+        assert entry["reference_term"] == pytest.approx(1e-7, rel=1e-2), name
+        assert entry["tolerance"] == 3 * (step + entry["reference_term"]), name
+        shared = entry["shared_sensitivity"]["activation_1e-10_m2"]
+        assert shared == pytest.approx(1e-3, rel=1e-6), name
         assert entry["observed_order"] == result["terms"][name]["observed_order"], name
         assert entry["judged"] == (name in engine.JUDGED), name
     engine_q = engine.flat(studies[1]["quantities"])
@@ -187,16 +210,28 @@ def test_fill_writes_a_proposed_draft_and_refuses_a_stopped_study(tmp_path):
         egg, d, front, sample, lumen = synthetic(dt)
         studies.append(dict(dt=dt, quantities=engine.quantities(front, sample, lumen, egg, d)))
     result = engine.terms(studies)
-    reference_values = dict(
-        reference=engine.flat(studies[2]["quantities"]),
-        reference_terms={name: 1e-7 for name in result["terms"]},
-    )
     (tmp_path / "terms.json").write_text(json.dumps(result))
-    (tmp_path / "reference.json").write_text(json.dumps(reference_values))
-    filled = engine.fill(tmp_path / "terms.json", tmp_path / "reference.json")
+    reference = synthetic_reference(studies[2]["quantities"])
+    (tmp_path / "reference.json").write_text(json.dumps(reference))
+    paths = []
+    for s in studies:
+        paths.append(tmp_path / f"study-{s['dt']!r}.json")
+        paths[-1].write_text(json.dumps(s))
+    filled = engine.fill(tmp_path / "terms.json", tmp_path / "reference.json", paths)
     assert filled["status"].startswith("PROPOSED")
     assert set(filled["values"]) == set(json.loads(engine.PROTOCOL.read_text())["values"])
     assert all(v["tolerance"] > 0 for v in filled["values"].values())
+    # The development observations: engine minus R-full at each step (the trajectory's from the
+    # study files) and the judged pair's order against R-full.
+    observed = filled["development_observations"]
+    assert observed["stop_condition_met"] is False
+    assert set(observed["by_quantity"]) == set(filled["values"])
+    q4 = observed["by_quantity"]["Q4_em_trajectory_V"]["engine_minus_reference"]
+    assert set(q4) == {repr(dt) for dt in engine.STUDY_DTS}
+    q1 = observed["by_quantity"]["Q1_em_at_j1_V"]
+    assert q1["engine_minus_reference"][repr(engine.STUDY_DTS[2])] == 0.0  # The reference's own.
+    assert q1["fine_pair_order_against_reference"] is None  # A zero distance has no order.
+    assert filled["evidence"]["study"] == [str(f) for f in paths]
     stopped = dict(result, stop=True, non_converging=["Q1_em_at_j1_V"])
     (tmp_path / "terms.json").write_text(json.dumps(stopped))
     with pytest.raises(SystemExit, match="stop condition"):
