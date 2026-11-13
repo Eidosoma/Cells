@@ -4797,11 +4797,11 @@ rename with no numerical change:
 
 2026-11-13, lead decision, reviewed by the advisor (draft for landing with
 [FIELD_FLOOR_ACCEPTANCE_DESIGN.md](FIELD_FLOOR_ACCEPTANCE_DESIGN.md)).
-- **The trigger is mechanical.** It applies to the families whose field solve is
-  `numerics/surface_field.py`'s capacitive reduction and that accept both versions: the
-  resolved pump family (`resolved_pump_tissue@1`–`@3`, `resolved_pump_water@1`–`@2`,
-  `resolved_pump_replacement@1`, the composite) and `surface_kinetic`. A new definition
-  of these families with at least one free field offset declares
+- **The trigger is mechanical.** It applies to the resolved pump family, whose field
+  solve is `numerics/surface_field.py`'s capacitive reduction and which accepts both
+  versions: `resolved_pump_tissue@1`–`@3`, `resolved_pump_water@1`–`@2` and
+  `resolved_pump_replacement@1` (shown by `test_field_floor.py` and the note's guard 1).
+  A new definition of the family with at least one free field offset declares
   `capacitive_reduction_gauged_damped_newton@3`. The count needs only the definition:
   the `field_offset_free` leaf of `initialise(spec).layout`, set by finite extracellular
   space with floating components. Definitions with no free offset keep version 2,
@@ -4809,11 +4809,11 @@ rename with no numerical change:
 - **Why.** Version 2 accepts a field solve only below `NEWTON_TARGET`. On the W1 hold's
   825-node tissue (172 free offsets), a converged root sits at 0.8–1.1 of that target,
   at the rounding floor of the current balance. Whether it is accepted then depends on
-  the compiled program: CPU vectorized, CPU scalar and L4 refuse at different steps.
-  Version 3 also accepts a residual within `CURRENT_FLOOR_ULPS` (1e3) ulps of the
-  attainable floor. It iterates exactly as version 2. On that tissue the cap lies about
-  10–2,200 times above `NEWTON_TARGET`, depending on the component; a solve held just
-  under it still passes every row check and ledger.
+  the compiled program: the CPU's vectorized and scalar programs refuse at different
+  steps, and the L4 has not refused these worlds. Version 3 also accepts a residual
+  within `CURRENT_FLOOR_ULPS` (1e3) ulps of the attainable floor. It iterates exactly as
+  version 2. On that tissue the cap lies about 8–2,200 times above `NEWTON_TARGET`,
+  depending on the component.
 - **Unchanged:** version 2's semantics and every solver and model ID. Every qualified
   world (W1, W2, G2-Q1), the hold's segment 1 and every saved snapshot keep version 2.
   There is no migration.
@@ -4836,9 +4836,11 @@ rename with no numerical change:
   - Guard 2: W1, W2, G2-Q1, Q5, Q6, W37 and the 825-node world run equal under both
     versions (bitwise, with device row checks, where the part records them).
   - Guard 6: the @3 tests pass. A solve held just under the cap, 866–2,166 times
-    `NEWTON_TARGET` on the hold's states, passes every row check and ledger and moves the
-    state by at most 5e-13 over 20 steps. The checks cannot see the residual even under
-    caps 1e9 times wider, so that bound, not the checks, is what makes the cap safe.
+    `NEWTON_TARGET` on the hold's states, passes every row check and ledger. Its state
+    change over 20 steps (at most 5e-13) cannot be told from rounding. The checks cannot
+    see the residual even under caps 1e9 times wider; there the change reaches 4e-11 at
+    1e12 ulps, which scales to about 4e-20 at 1e3. That bound, not the checks, is what
+    makes the cap safe.
 
 ## Implementation choices and remaining work
 

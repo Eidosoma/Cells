@@ -295,18 +295,19 @@ the study tissue.
 **Positive control: no row check or ledger can see the field residual.** The same edge state
 was held under caps of 1e6, 1e9 and 1e12 ulps instead of 1e3, which is up to 2×10^12 times
 the target. Every step was still accepted, every row check and ledger passed, and the
-largest ledger ratio stayed at 0.0011–0.0012. The state change grew with the cap: 5e-14 at
-1e6, 6.6e-13 at 1e9 and 4e-11 at 1e12 (the free offsets moved by 1.7e-10 V). The ledgers
-check conservation, which the update keeps whatever the potentials. So the pass at 1e3 ulps
-rests on the state change, which is at rounding level, and not on the checks. The field
-solve's own acceptance test is the only guard of its accuracy.
+largest ledger ratio stayed at 0.0011–0.0012. The state change cannot be told from
+rounding up to 1e9 ulps (1.0e-13 at 1e3, 5e-14 at 1e6, 6.6e-13 at 1e9) and reaches 4e-11 at
+1e12, where the free offsets moved by 1.7e-10 V. Scaled linearly from that point, the change
+at 1e3 ulps would be about 4e-20. The ledgers check conservation, which the update keeps
+whatever the potentials. So the pass at 1e3 ulps rests on that bound, not on the checks. The
+field solve's own acceptance test is the only guard of its accuracy.
 
 **The turnover pre-screen's worlds have no free offsets.** These are the five sheet70
 discs: 37 cells at s 1.0, 0.6 and 0.3, and 19 cells at s 0.6 and 0.3, on the held-bath
 127-cell sheet under `resolved_pump_replacement@1` over @3. Their residual is exactly 0 with
 no Newton iteration, in all three programs (`margins-turnover.json`). The pre-screen's "no
-refusal" therefore did not depend on the program. E07-v1's registered world is the full
-tissue (172 free offsets), so D147 applies to it.
+refusal" therefore did not depend on the program, for this refusal class. E07-v1's
+registered world is the full tissue (172 free offsets), so D147 applies to it.
 
 **A restart under version 3 needs a driver change.** The hold's definitions take their field
 solver from `validation/tissue/resolved_scale_world.py`, which declares version 2, and
