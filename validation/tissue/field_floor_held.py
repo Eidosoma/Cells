@@ -104,8 +104,12 @@ def held_solves(fraction=0.95, kind="uniform", records=None):
             return values
         d = direction(arguments, layout, offset, kind)
         low, high = 0.0, 1e-24
-        while bool(at(arguments, layout, offset + high * d).converged):
+        for _ in range(200):  # Bracket the cap: 1e-24 V doubled up to 1e36 V.
+            if not bool(at(arguments, layout, offset + high * d).converged):
+                break
             low, high = high, 2.0 * high
+        else:
+            raise RuntimeError("No refusal along the direction: the cap is not bracketed")
         for _ in range(60):
             middle = 0.5 * (low + high)
             if bool(at(arguments, layout, offset + middle * d).converged):
@@ -120,7 +124,7 @@ def held_solves(fraction=0.95, kind="uniform", records=None):
                 shift_V=fraction * low,
                 converged=bool(result.converged),
                 converged_at_0p9_cap=bool(
-                    at(arguments, layout, moved, floor=0.9 * field.CURRENT_FLOOR_ULPS).converged
+                    at(arguments, layout, moved, floor=0.9 * float(layout.current_floor)).converged
                 ),
                 fraction_of_target=float(np.max(result.current_normalized)) / field.NEWTON_TARGET,
                 root_fraction_of_target=float(np.max(values.current_normalized))
@@ -137,8 +141,11 @@ def held_solves(fraction=0.95, kind="uniform", records=None):
         field.solve = _SOLVE[0]
 
 
-def host_run(spec, state, steps, *, start_step=0):
-    """(history, step validity) of `steps` host-path IMEX steps from state at start_step."""
+def host_run(spec, state, steps, *, start_step=0, cap_ulps=None):
+    """(history, step validity) of `steps` host-path IMEX steps from state at start_step.
+
+    cap_ulps: another current floor for the layout (a positive control of the checks).
+    """
     from cells.core.grid import EventGrid
     from cells.core.schedule import control_values
     from cells.core.state import initialise
@@ -147,6 +154,8 @@ def host_run(spec, state, steps, *, start_step=0):
     model = get_model(spec.model)
     start = initialise(spec)
     p = type(start.layout)(*(np.asarray(v) for v in start.layout))
+    if cap_ulps is not None:
+        p = p._replace(field_current_floor=np.asarray(float(cap_ulps)))
     times = next(EventGrid(spec).windows(start_step, steps))
     table = control_values(spec, times[:-1])
     state = type(start.state)(*(np.asarray(v) for v in state))
@@ -245,8 +254,12 @@ def differences(a, b):
     return out
 
 
-def compare(spec, state, steps, *, start_step=0, fraction=0.95, kind="uniform"):
-    """The normal and the held host runs from one state: checks, ledgers and differences."""
+def compare(spec, state, steps, *, start_step=0, fraction=0.95, kind="uniform", cap_ulps=None):
+    """The normal and the held host runs from one state: checks, ledgers and differences.
+
+    cap_ulps: hold under another cap (the layout's current floor), a positive control:
+    how far a solve must be from its root before a row check or ledger refuses.
+    """
     from cells.models.registry import get_model
 
     model = get_model(spec.model)
@@ -256,9 +269,20 @@ def compare(spec, state, steps, *, start_step=0, fraction=0.95, kind="uniform"):
     for label in ("normal", "held"):
         context = held_solves(fraction, kind) if label == "held" else contextlib.nullcontext([])
         with context as records:
-            history, valid = host_run(spec, state, steps, start_step=start_step)
+            history, valid = host_run(
+                spec,
+                state,
+                steps,
+                start_step=start_step,
+                cap_ulps=cap_ulps if label == "held" else None,
+            )
         histories[label] = history
-        entry = dict(steps_valid=all(valid), solves=list(records))
+        entry = dict(
+            steps_valid=all(valid),
+            first_invalid_step=valid.index(False) if False in valid else None,
+            all_held=bool(records) and all(r["held"] for r in records),
+            solves=list(records),
+        )
         try:
             entry["check_values"] = model.check_values(history, spec, steps=rows)
         except Exception as error:  # A refusal is the finding.
@@ -289,6 +313,12 @@ def main(argv=None):
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--fraction", type=float, default=0.95)
     parser.add_argument("--direction", choices=DIRECTIONS, action="append")
+    parser.add_argument(
+        "--cap",
+        type=float,
+        action="append",
+        help="hold under this cap in ulps instead of the layout's (a positive control)",
+    )
     args = parser.parse_args(argv)
     if args.study:
         from validation.tissue import surface_pump_v3_study as study
@@ -325,10 +355,26 @@ def main(argv=None):
         directions={},
     )
     for kind in args.direction or ["uniform", "largest"]:
-        record["directions"][kind] = compare(
-            spec, state, args.steps, start_step=start_step, fraction=args.fraction, kind=kind
-        )
-        print(kind, json.dumps(record["directions"][kind]["held"]["ledger_ratios"]), flush=True)
+        for cap in args.cap or [None]:
+            label = kind if cap is None else f"{kind}@cap{cap:g}"
+            record["directions"][label] = compare(
+                spec,
+                state,
+                args.steps,
+                start_step=start_step,
+                fraction=args.fraction,
+                kind=kind,
+                cap_ulps=cap,
+            )
+            held = record["directions"][label]["held"]
+            print(
+                label,
+                held["steps_valid"],
+                held.get("check_values_error"),
+                held["device_failed_rows"],
+                json.dumps(held["ledger_ratios"]),
+                flush=True,
+            )
     args.out.write_text(json.dumps(record, indent=1, default=float) + "\n")
 
 

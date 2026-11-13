@@ -4793,6 +4793,46 @@ rename with no numerical change:
   - `/mnt/workspaces/Cells/bitsey-rename-20261112-02/`: the tests after the
     rebase onto `5fdbeb3`.
 
+## D147: Definitions with free field offsets declare field solver version 3
+
+2026-11-13, lead decision, reviewed by the advisor (draft for landing with
+[FIELD_FLOOR_ACCEPTANCE_DESIGN.md](FIELD_FLOOR_ACCEPTANCE_DESIGN.md)).
+- **The trigger is mechanical.** It applies to the families whose field solve is
+  `numerics/surface_field.py`'s capacitive reduction and that accept both versions: the
+  resolved pump family (`resolved_pump_tissue@1`–`@3`, `resolved_pump_water@1`–`@2`,
+  `resolved_pump_replacement@1`, the composite) and `surface_kinetic`. A new definition
+  of these families with at least one free field offset declares
+  `capacitive_reduction_gauged_damped_newton@3`. The count needs only the definition:
+  the `field_offset_free` leaf of `initialise(spec).layout`, set by finite extracellular
+  space with floating components. Definitions with no free offset keep version 2,
+  because the floor never decides their acceptance.
+- **Why.** Version 2 accepts a field solve only below `NEWTON_TARGET`. On the W1 hold's
+  825-node tissue (172 free offsets), a converged root sits at 0.8–1.1 of that target,
+  at the rounding floor of the current balance. Whether it is accepted then depends on
+  the compiled program: CPU vectorized, CPU scalar and L4 refuse at different steps.
+  Version 3 also accepts a residual within `CURRENT_FLOOR_ULPS` (1e3) ulps of the
+  attainable floor. It iterates exactly as version 2. On that tissue the cap lies about
+  10–2,200 times above `NEWTON_TARGET`, depending on the component; a solve held just
+  under it still passes every row check and ledger.
+- **Unchanged:** version 2's semantics and every solver and model ID. Every qualified
+  world (W1, W2, G2-Q1), the hold's segment 1 and every saved snapshot keep version 2.
+  There is no migration.
+- **A switch is a new definition.** It cannot resume or start from a version-2
+  checkpoint (`validate_checkpoint` refuses its layout), so a run is rerun from its
+  start under version 3.
+- **A change to a solver's iterations or acceptance is a new solver ID**, never an edit
+  to an existing one. For example, fixed-count masked loops would be a new ID.
+- **Evidence** (`/mnt/workspaces/Cells/window-timing-20261112-01/`,
+  `/mnt/workspaces/Cells/field-floor-guards-20261113-01/`):
+  - Margins: W1's trajectories, W2's arms, G2-Q1's cases and the turnover pre-screen's
+    discs have no free offsets, and their residual is exactly 0. The hold's
+    preparation worlds sit at 0.92–0.995 of the target from t = 0.
+  - Version 3 on the hold's edge states (CPU): it accepts every state version 2
+    refused, in the vectorized and scalar programs. Its states are bitwise version 2's
+    before each refusal. Every refused residual is within 2 ulps of its floor.
+  - Guards 1, 2 and 6 of the note: jaxprs, bindings, runs against version 2, and the
+    tests of @3, including a solve held just under the cap.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

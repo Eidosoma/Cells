@@ -5,8 +5,9 @@ loop, an acceptance test against the attainable current floor. Its layout has on
 the floor in ulps (field_current_floor). The guards check that nothing else changes.
 
 * jaxprs (guard 1): for every world of validation/tissue/composite_crossrev.py's sets (base,
-  qualification; plus the 825-node study tissue itself), trace the checked step and the
-  right-hand side with each declaration. Then, in version 3's jaxprs, follow every value
+  qualification; plus the 825-node study tissue itself), or of given definition files
+  (SET files), trace the checked step, the right-hand side and the device row checks with
+  each declaration. Then, in version 3's jaxprs, follow every value
   computed from the floor leaf, through every nested jaxpr (calls, while, cond, scan). A
   value is "value"-tainted when it depends on the floor's magnitude, and "control"-tainted
   when it depends on the floor only through booleans. Guard: no output is value-tainted,
@@ -22,8 +23,8 @@ the floor in ulps (field_current_floor). The guards check that nothing else chan
   water, event-free replacement) with device row checks.
 
 Usage (PYTHONPATH at the revision under test):
-  python -m validation.tissue.field_floor_guard jaxprs OUT.json [SET]
-  python -m validation.tissue.field_floor_guard bindings OUT.json [SET]
+  python -m validation.tissue.field_floor_guard jaxprs OUT.json [SET [DEFINITION.json ...]]
+  python -m validation.tissue.field_floor_guard bindings OUT.json [SET [DEFINITION.json ...]]
   python -m validation.tissue.field_floor_guard runs PART --output DIR [--worlds NAME,...]
 """
 
@@ -55,14 +56,23 @@ def version_pair(raw):
     )
 
 
-def guard_worlds(world_set):
+def guard_worlds(world_set, paths=()):
+    """base, qualification, or files: definitions (or snapshot manifests) at paths."""
     from validation.tissue import composite_crossrev as crossrev
     from validation.tissue import surface_pump_v3_study as study
 
     if world_set == "base":
         return crossrev.worlds()
+    if world_set == "files":
+        out = {}
+        for path in paths:
+            raw = json.loads(Path(path).read_text())
+            raw = raw.get("spec", raw)
+            raw["execution"]["backend"] = "cpu"
+            out[str(path)] = raw
+        return out
     if world_set != "qualification":
-        raise SystemExit(f"Unknown world set {world_set!r} (base or qualification)")
+        raise SystemExit(f"Unknown world set {world_set!r} (base, qualification or files)")
     out = crossrev.qualification_worlds()
     out["S825_tissue"] = study.tissue_definition(
         dt=1e-3, end_time=0.2, observation_times=[0.0, 0.1, 0.2]
@@ -187,8 +197,12 @@ def primitive_counts(jaxpr, counts=None):
     return counts
 
 
+FUNCTIONS = ("checked_step", "rhs", "device_checks")
+
+
 def _traced(raw):
-    """(jaxprs by function, flat input paths, state) of a world's checked step and rhs."""
+    """(jaxprs by function, flat input paths, state): the checked step, the right-hand
+    side and the device row checks, as composite_crossrev traces them (dt traced)."""
     import jax
     import jax.numpy as jnp
 
@@ -196,6 +210,7 @@ def _traced(raw):
 
     spec, model, (s, c, p) = crossrev._setup(raw)
     dt = jnp.asarray(spec.execution.dt)
+    constants = model.device_check_constants(spec)
 
     def step(s, dt, c, q):
         return model.checked_step(s, dt, c, q, q.active)
@@ -203,23 +218,26 @@ def _traced(raw):
     def rhs(s, c, q):
         return model.rhs(s, c, q, q.active)
 
+    def checks(s, q):
+        return model.device_checks(s, s, q, constants, 3)
+
+    def keys(tree):
+        return [jax.tree_util.keystr(k) for k, _ in jax.tree_util.tree_flatten_with_path(tree)[0]]
+
     paths = {
-        "checked_step": [
-            jax.tree_util.keystr(k)
-            for k, _ in jax.tree_util.tree_flatten_with_path((s, dt, c, p))[0]
-        ],
-        "rhs": [
-            jax.tree_util.keystr(k) for k, _ in jax.tree_util.tree_flatten_with_path((s, c, p))[0]
-        ],
+        "checked_step": keys((s, dt, c, p)),
+        "rhs": keys((s, c, p)),
+        "device_checks": keys((s, p)),
     }
     jaxprs = {
         "checked_step": jax.make_jaxpr(step)(s, dt, c, p),
         "rhs": jax.make_jaxpr(rhs)(s, c, p),
+        "device_checks": jax.make_jaxpr(checks)(s, p),
     }
     return jaxprs, paths, s
 
 
-def jaxprs(out, world_set="base"):
+def jaxprs(out, world_set="base", paths=()):
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -229,7 +247,7 @@ def jaxprs(out, world_set="base"):
 
     record = dict(world_set=world_set, worlds={})
     same = True
-    for name, raw in guard_worlds(world_set).items():
+    for name, raw in guard_worlds(world_set, paths).items():
         entry = {}
         try:
             p = initialise(parse_spec(raw)).layout
@@ -238,7 +256,7 @@ def jaxprs(out, world_set="base"):
             entry["declared"] = raw["execution"].get("field_solver")
             j2, _, _ = _traced(declared(raw, field.FACTORED_SOLVER_ID))
             j3, paths, state = _traced(declared(raw, field.FLOOR_SOLVER_ID))
-            for function in ("checked_step", "rhs"):
+            for function in FUNCTIONS:
                 floor = [i for i, k in enumerate(paths[function]) if "field_current_floor" in k]
                 if len(floor) != 1:
                     raise ValueError(f"{function}: {len(floor)} floor leaves")
@@ -259,7 +277,13 @@ def jaxprs(out, world_set="base"):
                     added=dict(sorted(added.items())),
                     equations=[sum(c2.values()), sum(c3.values())],
                 )
-                ok = VALUE not in outs and not removed and used
+                result["floor_used"] = bool(used)
+                # The step and rhs use the floor (their validity); the row checks need not.
+                ok = (
+                    VALUE not in outs
+                    and not removed
+                    and (bool(used) or function == "device_checks")
+                )
                 if function == "checked_step":
                     n = len(jax.tree_util.tree_leaves(state))
                     result["validity_taint"] = outs[n]
@@ -282,7 +306,7 @@ def jaxprs(out, world_set="base"):
     return same
 
 
-def bindings(out, world_set="base"):
+def bindings(out, world_set="base", paths=()):
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -292,7 +316,7 @@ def bindings(out, world_set="base"):
 
     record = dict(world_set=world_set, worlds={})
     same = True
-    for name, raw in guard_worlds(world_set).items():
+    for name, raw in guard_worlds(world_set, paths).items():
         arrays = []
         try:
             for spec in version_pair(raw):
@@ -436,9 +460,9 @@ def runs(argv):
 if __name__ == "__main__":
     action = sys.argv[1]
     if action == "jaxprs":
-        sys.exit(0 if jaxprs(*sys.argv[2:4]) else 1)
+        sys.exit(0 if jaxprs(sys.argv[2], *sys.argv[3:4], paths=sys.argv[4:]) else 1)
     elif action == "bindings":
-        sys.exit(0 if bindings(*sys.argv[2:4]) else 1)
+        sys.exit(0 if bindings(sys.argv[2], *sys.argv[3:4], paths=sys.argv[4:]) else 1)
     elif action == "runs":
         runs(sys.argv[2:])
     else:
