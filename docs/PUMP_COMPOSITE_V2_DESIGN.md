@@ -86,8 +86,10 @@ otherwise never run it.
 - @3's free energy has its declared owner in the adapter (`chemical_free_energy_pJ`,
   `capacitor_free_energy_pJ`). Replacement and injection book their exact changes with
   it, and injection's temporary import is gone.
-- **Still open:** the declared energy-role table below, which needs the family's
-  energy-bound function in `surface_pump.py` (outside the composite's files).
+- The energy-role table (55b802e). The composite's flow bound reads @3's heat and work
+  fields by name (the adapter's `HEAT_FIELDS`, `WORK_FIELDS`) and each operator's
+  declared fields, in state order. `surface_pump.ledger_limits` gained one optional
+  `flow_fields` argument, whose default keeps the suffix selection for every other caller.
 
 
 This starts after the plan-validation fix lands; that fix is editing `surface_pump*.py`.
