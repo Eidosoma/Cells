@@ -47,6 +47,7 @@ J1_MODULES = {
     "validation.division.j1_diagnostic_runner",
     "validation.division.j1_combination_runner",
     "validation.tissue.injection_rm1",
+    "validation.division.cleft_tissue_crosscheck",  # R-tissue against R-full (the lead).
 }
 REFERENCE = "validation.division.cleft_egg_reference"
 J1_FUNCTIONS = {
