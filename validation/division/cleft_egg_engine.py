@@ -17,7 +17,7 @@ writes the uncleaved egg. Engine models:
 * electrode_current_injection@1: dLB74's pulse train throughout, carried by K and Cl in J1's
   registered fractions (rm_definition), the same field R-full's Pulses read.
 Event times (onset, pulse edges) and observation times are k dt; at the steps of the study they
-are R-full's times exactly (compare reports it). Observations: every pulse's front edge and
+are R-full's times to one ulp (compare reports it). Observations: every pulse's front edge and
 its sample 1 s later, through the horizon.
 
 Actions (python -m validation.division.cleft_egg_engine ACTION --output FILE):
@@ -404,7 +404,7 @@ DECLARED_DIFFERENCES = dict(
         "inventories (egg_scale_smoke's consistent anchor: @3's definition check allows 1e-20 C "
         "between anchor and inventory). The background, about -4.7e7 fmol, is stored to its "
         "ulp while the cell's charge is about -3.3 fmol, so the anchor, and the initial potential "
-        "anchor / C_old, carry R-full's C_old v0 to 2 ulp(background) / |charge|, about 5e-9 "
+        "anchor / C_old, carry R-full's C_old v0 to 2 ulp(background) / |charge|, 1.1e-9 "
         "relative (here 3.9e-11, 4e-13 V)."
     ),
 )
