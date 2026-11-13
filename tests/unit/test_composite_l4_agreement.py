@@ -1,7 +1,8 @@
 """The L4 agreement driver's CPU-only parts (validation/tissue/composite_l4_agreement.py).
 
-Terms, the variant rule, the stop rule and the variant protocols, on synthetic saved runs
-against the registered W1, W2 and G2-Q1 protocols (no engine run).
+Terms of the three L4 repeats, the variant rule, the stop rule, the variant protocols and
+the judged run's deviation, on synthetic saved runs against the registered W1, W2 and G2-Q1
+protocols (no engine run).
 """
 
 import copy
@@ -60,7 +61,7 @@ def test_widening_never_tightens_and_keeps_the_registered_value_when_nothing_is_
 @pytest.mark.parametrize(("part", "run"), [("w1", w1_run()), ("w2", w2_run()), ("g2", g2_run())])
 def test_cpu_against_cpu_gives_the_registered_protocol(part, run):
     protocol = agreement.registered(part)[1]
-    out = agreement.variant(part, protocol, agreement.measured(part, run, run, run))
+    out = agreement.variant(part, protocol, agreement.measured(part, run, run, run, run))
     report = out.pop("backend_variant")
     assert report["status"] == agreement.STATUS
     assert out == protocol  # Zero terms: every field and tolerance exactly as registered.
@@ -72,30 +73,70 @@ def test_the_stop_rule():
     protocol = agreement.registered("w1")[1]
     tolerance = protocol["tolerances"]["P1"]["cell_volume_pL"]
     a = w1_run(volume=1.0 + tolerance)  # A backend term above the registered sum.
-    out = agreement.variant("w1", protocol, agreement.measured("w1", w1_run(), a, a))
+    out = agreement.variant("w1", protocol, agreement.measured("w1", w1_run(), a, a, a))
     assert out["backend_variant"]["stop_items"] == ["P1/cell_volume_pL"]
     assert out["tolerances"]["P1"]["cell_volume_pL"] >= tolerance
+    # One repeat of three above the sum is enough to stop.
+    out = agreement.variant(
+        "w1", protocol, agreement.measured("w1", w1_run(), w1_run(), a, w1_run())
+    )
+    assert out["backend_variant"]["stop_items"] == ["P1/cell_volume_pL"]
     changed = w1_run(converged=False)
-    out = agreement.variant("w1", protocol, agreement.measured("w1", w1_run(), changed, changed))
+    out = agreement.variant(
+        "w1", protocol, agreement.measured("w1", w1_run(), changed, changed, changed)
+    )
     assert out["backend_variant"]["stop_items"] == ["H"]
     protocol = agreement.registered("w2")[1]
     flipped = w2_run(classification="unstable")
-    out = agreement.variant("w2", protocol, agreement.measured("w2", w2_run(), flipped, flipped))
-    assert out["backend_variant"]["stop"]
+    out = agreement.variant(
+        "w2", protocol, agreement.measured("w2", w2_run(), w2_run(), w2_run(), flipped)
+    )
+    assert out["backend_variant"]["stop"]  # A changed classification in the third repeat.
     shifted = g2_run(voltage=-0.05 + 1e-3)
     protocol = agreement.registered("g2")[1]
-    out = agreement.variant("g2", protocol, agreement.measured("g2", g2_run(), shifted, shifted))
+    out = agreement.variant(
+        "g2", protocol, agreement.measured("g2", g2_run(), shifted, shifted, shifted)
+    )
     assert f"{W7}/q3_membrane_voltage_V" in out["backend_variant"]["stop_items"]
 
 
 def test_variant_rows_follow_the_rule():
     protocol = agreement.registered("w2")[1]
     a = w2_run(voltage=-0.08 + 2e-7)
-    out = agreement.variant("w2", protocol, agreement.measured("w2", w2_run(), a, w2_run()))
+    terms = agreement.measured("w2", w2_run(), a, w2_run(), w2_run())
+    out = agreement.variant("w2", protocol, terms)
     (row,) = [r for r in out["backend_variant"]["rows"] if r["item"] == "voltage_V"]
     expected = max(protocol["stationary"]["voltage_V"], agreement.up1(3 * (2e-7 + 2e-7)))
     assert row["backend"] == pytest.approx(2e-7) and row["tolerance"] == expected
     assert out["stationary"]["voltage_V"] == expected
+
+
+def test_terms_take_the_worst_repeat_and_the_widest_pair():
+    """Backend: the largest |reference - X| over A, B and D; run-to-run: the largest of the
+    three pairs' differences; each repeat's and pair's term is kept in the rows."""
+    protocol = agreement.registered("w2")[1]
+    a, b, d = (w2_run(voltage=-0.08 + dv) for dv in (1e-7, 3e-7, -2e-7))
+    terms = agreement.measured("w2", w2_run(), a, b, d)
+    entry = "red_cell_15-kaji_s0.12/0"
+    assert terms["backend"][entry]["voltage_V"] == pytest.approx(3e-7)
+    assert terms["run_to_run"][entry]["voltage_V"] == pytest.approx(5e-7)  # B against D.
+    assert sorted(terms["backend_each"]) == ["A", "B", "D"]
+    assert sorted(terms["run_to_run_pairs"]) == ["A-B", "A-D", "B-D"]
+    out = agreement.variant("w2", protocol, terms)
+    (row,) = [r for r in out["backend_variant"]["rows"] if r["item"] == "voltage_V"]
+    assert row["backend_each"] == pytest.approx({"A": 1e-7, "B": 3e-7, "D": 2e-7})
+    assert row["run_to_run_pairs"] == pytest.approx({"A-B": 2e-7, "A-D": 3e-7, "B-D": 5e-7})
+    expected = max(protocol["stationary"]["voltage_V"], agreement.up1(3 * (3e-7 + 5e-7)))
+    assert row["tolerance"] == expected
+    assert out["backend_variant"]["repeats"]["labels"] == ["A", "B", "D"]
+
+
+def test_one_pair_is_refused():
+    with pytest.raises(ValueError, match="take 3 L4 repeats"):
+        agreement.measured("w2", w2_run(), w2_run(), w2_run())
+    old = dict(backend={}, run_to_run={})  # A terms file of the earlier one-pair method.
+    with pytest.raises(ValueError, match="one pair are not accepted"):
+        agreement.variant("w2", agreement.registered("w2")[1], old)
 
 
 RUNS = dict(w1=w1_run(), w2=w2_run(), g2=g2_run())
@@ -104,7 +145,7 @@ RUNS = dict(w1=w1_run(), w2=w2_run(), g2=g2_run())
 def registered_variant(part):
     protocol = agreement.registered(part)[1]
     run = RUNS[part]
-    out = agreement.variant(part, protocol, agreement.measured(part, run, run, run))
+    out = agreement.variant(part, protocol, agreement.measured(part, run, run, run, run))
     out["backend_variant"]["status"] = "registered at a lead's commit (test)"
     return protocol, out
 
@@ -211,23 +252,73 @@ def two_worlds(part):
 
 @pytest.mark.parametrize("part", ["w1", "w2", "g2"])
 def test_terms_merge_a_run_split_over_gaps(part, tmp_path):
-    """A and B spread over GPU gaps (run --worlds) give the terms of whole runs."""
+    """Repeats spread over GPU gaps (run --worlds) give the terms of whole runs."""
     whole, (first, second) = two_worlds(part)
     reference = saved(tmp_path, "cpu.json", part, whole, backend="cpu")
     a = [saved(tmp_path, f"a{i}.json", part, q) for i, q in enumerate((first, second))]
     b = saved(tmp_path, "b.json", part, whole)
     out = tmp_path / "split.json"
-    split_argv = ["--reference", str(reference), "--runs", ",".join(map(str, a)), str(b)]
+    split_argv = ["--reference", str(reference), "--runs", ",".join(map(str, a)), str(b), str(b)]
     agreement.main(["terms", "--part", part, *split_argv, "--output", str(out)])
     joined = tmp_path / "whole.json"
-    whole_argv = ["--reference", str(reference), "--runs", str(b), str(b)]
+    whole_argv = ["--reference", str(reference), "--runs", str(b), str(b), str(b)]
     agreement.main(["terms", "--part", part, *whole_argv, "--output", str(joined)])
     split, single = json.loads(out.read_text()), json.loads(joined.read_text())
-    for key in ("backend", "run_to_run"):
+    for key in ("backend", "run_to_run", "backend_each", "run_to_run_pairs"):
         assert split[key] == single[key], key
-    assert split["runs"][0] == [str(p) for p in a]
+    assert split["runs"][0] == [str(p) for p in a] and split["labels"] == ["A", "B", "D"]
     merged, backend = agreement.load_runs(part, a)
     assert merged == whole and backend == "L4"
+
+
+def test_the_variant_files_record_the_three_repeats(tmp_path):
+    """terms then variant from saved files: the protocol names each repeat's files."""
+    reference = saved(tmp_path, "cpu.json", "w2", w2_run(), backend="cpu")
+    runs = [
+        saved(tmp_path, f"{x}.json", "w2", w2_run(voltage=-0.08 + dv))
+        for x, dv in zip("abd", (1e-7, 3e-7, -2e-7), strict=True)
+    ]
+    terms = tmp_path / "terms.json"
+    argv = ["--reference", str(reference), "--runs", *map(str, runs), "--output", str(terms)]
+    agreement.main(["terms", "--part", "w2", *argv])
+    agreement.main(["variant", "--part", "w2", "--terms", str(terms), "--output", str(tmp_path)])
+    block = json.loads((tmp_path / "protocol.json").read_text())["backend_variant"]
+    assert block["repeats"]["runs"] == {x: [str(p)] for x, p in zip("ABD", runs, strict=True)}
+    assert block["repeats"]["reference"] == [str(reference)]
+    report = json.loads((tmp_path / "variant.json").read_text())
+    assert all(sorted(row["backend_each"]) == ["A", "B", "D"] for row in report["rows"])
+
+
+def test_the_deviation_of_the_judged_run(tmp_path):
+    """|A - C| per quantity over the run-to-run term; unbounded where the repeats agreed
+    exactly and C does not; a changed classification is listed."""
+    reference = saved(tmp_path, "cpu.json", "w2", w2_run(), backend="cpu")
+    runs = [
+        saved(tmp_path, f"{x}.json", "w2", w2_run(voltage=-0.08 + dv))
+        for x, dv in zip("abd", (1e-7, 3e-7, -2e-7), strict=True)
+    ]
+    terms = tmp_path / "terms.json"
+    argv = ["--reference", str(reference), "--runs", *map(str, runs), "--output", str(terms)]
+    agreement.main(["terms", "--part", "w2", *argv])
+    c = w2_run(voltage=-0.08 + 1e-7 + 1e-6)  # 1e-6 from A: twice the run-to-run 5e-7.
+    c["red_cell_15-kaji_s0.12"]["0"]["volume_pL"] = 0.7 * (1 + 1e-9)  # Equal in A, B, D.
+    judged = saved(tmp_path, "c.json", "w2", c)
+    out = tmp_path / "deviation.json"
+    argv = ["--terms", str(terms), "--judged", str(judged), "--output", str(out)]
+    agreement.main(["deviation", "--part", "w2", *argv])
+    record = json.loads(out.read_text())
+    rows = {row["item"]: row for row in record["rows"]}
+    voltage = rows["red_cell_15-kaji_s0.12/0/voltage_V"]
+    assert voltage["deviation"] == pytest.approx(1e-6) and voltage["ratio"] == pytest.approx(2.0)
+    assert record["summary"]["unbounded"] == ["red_cell_15-kaji_s0.12/0/volume_relative"]
+    assert record["summary"]["largest_ratio"] == pytest.approx(2.0)
+    assert record["summary"]["changed"] == [] and record["a"] == [str(runs[0])]
+    flipped = saved(
+        tmp_path, "c2.json", "w2", w2_run(classification="unstable", voltage=-0.08 + 1e-7)
+    )
+    argv = ["--terms", str(terms), "--judged", str(flipped), "--output", str(out)]
+    agreement.main(["deviation", "--part", "w2", *argv])
+    assert json.loads(out.read_text())["summary"]["changed"] == ["red_cell_15-kaji_s0.12/0"]
 
 
 def test_split_runs_are_refused_when_inconsistent(tmp_path):
@@ -244,5 +335,8 @@ def test_split_runs_are_refused_when_inconsistent(tmp_path):
     reference = agreement.load_runs("g2", [saved(tmp_path, "cpu.json", "g2", whole)])[0]
     partial = agreement.load_runs("g2", [a1])[0]
     with pytest.raises(ValueError, match="run A lacks"):
-        agreement.same_worlds("g2", reference, partial, reference)
-    agreement.same_worlds("g2", reference, agreement.load_runs("g2", [a1, a2])[0], reference)
+        agreement.same_worlds("g2", reference, A=partial, B=reference, D=reference)
+    with pytest.raises(ValueError, match="run D lacks"):
+        agreement.same_worlds("g2", reference, A=reference, B=reference, D=partial)
+    joined = agreement.load_runs("g2", [a1, a2])[0]
+    agreement.same_worlds("g2", reference, A=joined, B=reference, D=reference)

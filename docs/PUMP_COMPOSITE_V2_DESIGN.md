@@ -1294,14 +1294,14 @@ following `validation/betse/backend_variant.py`.
 **Runs:** all from one clean snapshot of the landed head, x64.
 1. The CPU reference: the judged CPU outputs, which the composite reproduces bit for bit.
    It is rerun on CPU from the snapshot rather than reused across revisions.
-2. Two blind L4 runs, A and B.
+2. Three blind L4 runs, A, B and D (13 November: one L4 pair understated the spread; a third repeat exceeded it by up to 6×).
 3. One judged L4 run, C, after the variant is frozen.
 
 One GPU process at a time, in the slot the lead gives.
 
 **Measured terms:** per quantity and record, the maximum over samples of:
-- the backend term |CPU − A|;
-- the run-to-run term |A − B|.
+- the backend term: the largest |CPU − X| over A, B and D;
+- the run-to-run term: the largest difference between two of A, B and D.
 
 **Variant tolerance** (the method's rule; never tighter than registered):
 - W1 and G2-Q1: their tolerances are 3 × (registered terms), recorded per quantity and
@@ -1323,6 +1323,8 @@ own reference with the variant tolerances, passes every item it passes on CPU.
 - Not the verdict: C against the CPU result within the variant tolerance. For W1 and
   G2-Q1 the variant still carries the step-error term, so that test could hide a
   GPU-specific difference well above the measured backend term.
+- Reported beside the verdict: |A − C| over the run-to-run term, per quantity (the driver's
+  `deviation` action).
 - Reported beside the verdict: the raw backend and run-to-run terms of C against CPU, per
   quantity and record.
 - Discrimination ratios are rescaled where the protocol has them, and the

@@ -4901,6 +4901,15 @@ rename with no numerical change:
     - The egg's electrode ledger stays within one ulp of its plate charge on every row.
   - Evidence: `/mnt/workspaces/Cells/composite-v2-20261112-01/s3-fix/`, listing every
     ledger change.
+- **What crossrev compares** (`validation/tissue/composite_crossrev.py`): for each world of its base,
+  qualification and injection sets, traced at t = 0, the jaxpr text of the checked step, right-hand side and
+  device row checks, in which scalar constants such as `NEWTON_TARGET` appear as full-precision literals; the
+  dtype, shape and SHA-256 of every array those programs close over; and the initial state, layout, controls
+  at every schedule time and device-check constants. It does not compare the execution paths' rollout
+  programs or host-side checks (`check_values` and its tolerances). Constants are compared from 13 November
+  2026; the retro-check found them unchanged since `8416a72`, so earlier verdicts stand. The floor guard of
+  D147 compares primitive counts, not constants: rerun it with constants before version 3 serves a run of
+  record.
 
 ## D149: The EMT-miRNA pair's source profile keeps the reference's numerical conventions
 
