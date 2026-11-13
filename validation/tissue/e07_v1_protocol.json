@@ -1095,5 +1095,20 @@
   "Revision 2 is registered as drafted: central arms judged at the control's end (4080 s), censored runs judged at their last valid record against the paired null and never dropped, the run as the unit of analysis with the two-thirds rule per arm group and s, fast k3 arms at s 1.0 and 0.6, E6 junction weight per run, and 'no D outside the disc' dropped.",
   "Execution: one clean snapshot of main taken after the S3 ledger fix (d020c3b) and the E07-v1 engine-run driver have landed; E1 and every judged arm run from it, in the protocol's order.",
   "Units: at most two at once on CPUs 2 and 3, each capped at 6G with the analysis out of process, and one at a time while an 8G L4 test is scheduled."
- ]
+ ],
+ "development_observations": {
+  "run": "a development dry run on seed 101 (not a registered seed; not judged), 13 November 2026, 13:03-15:08 UTC: after registration (96879a4), before E1 and before any judged arm. Evidence: /mnt/workspaces/Cells/e07-v1-dryrun-20261113-01/ (HANDOFF.md, runs.jsonl, runs/*/seed101/, summary.json)",
+  "scope": "beyond a pipeline check: three registered arms at full length (a-donor-fast-k3-d37-s1.0, a-donor-fast-k1-d37-s1.0, b-iso-tau40-d37-s0.6); the control c-disconly-fast-k1-d37-s1.0 shortened to 600 s; the E1 segment a-fast-k1-d37-s1.0 shortened to 60 s at 1 ms and 5 ms",
+  "driver": "validation/tissue/e07_v1_run.py at 4c63988 (the arms, from the snapshot source-01) and 49de1b1 (the analyses rerun, from source-02)",
+  "fast_k1_d37_s1.0_seed101": "run class neutral: dJ 0.000 at the judged record (2030 s; J 0.565 against the null's 0.565). 3 founders lost before replacement; 0 of 67 D copies lost; 0 of 186 H copies converted. The engine differed from its null at 106 of 203 records, dJ from -0.081 to +0.023 (mean +0.007): founders are lost, then replacement overwrites them and J returns to the null",
+  "fast_k3_d37_s1.0_seed101": "run class neutral: dJ -0.006 at the first turnover (3040 s; J 0.744 against 0.750). 5 founders lost; 0 of 31 D copies lost; 0 of 95 H copies converted. dJ over records from -0.135 to 0 (mean -0.032)",
+  "tau40_d37_s0.6_seed101": "8 of 11 interior isolated newcomers that arrived with five or more D neighbours converted to D (8 of 126 newcomers in all); the sheet was all H at 1010 s, before the first turnover's completion; J stayed above the null (0) until then, by at most 0.19",
+  "control_disconly_d37_s1.0_seed101_600s": "2 founders lost by 600 s, the first at 490 s; J 0.946 at 600 s; no D copy lost. On this seed the registered E4 criterion (J = 1 at every record, no founder lost) would not be met",
+  "bearing_on_predictions": "on this seed both s 1.0 runs of (a) classed neutral, where the registered predictions are erosion (fast k1: in at least 6 of 8 runs; fast k3: in all 3)",
+  "other": "every definition used field solver version 2 (0 free offsets, declare(auto)), had donor P equal to the slot's P and a layout equal to sheet70's; no refusal; energy residual at most 6e-10 of flows; the E1 segment agreed between 5 ms and 1 ms within 1.2e-6 mV; 4.2-4.4 ms per step with one unit; arm processes peaked at 1.29-1.30 GB RSS; cells.slice memory.events unchanged over the run",
+  "rules_and_predictions": "no rule, criterion, prediction, arm, seed or tolerance changed. The lead decided on 13 November, after the advisor's review, not to amend the class rule: a change after these data would be post hoc"
+ },
+ "supplementary_readouts": {
+  "delta_J_over_records": "the mean, minimum and maximum of dJ = J_engine - J_null over the run's 10 s records up to the judged record, the mean after the first turnover, and the count of records where it is non-zero: added to the driver after the seed-101 development dry run (49de1b1); supplementary, not judged; no run class, group class or item depends on them. The driver labels them so in every outcome and summary"
+ }
 }
