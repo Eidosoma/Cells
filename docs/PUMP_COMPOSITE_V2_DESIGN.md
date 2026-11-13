@@ -470,7 +470,7 @@ guard 10).
 | `src/cells/models/operators/cell_replacement.py` | `worst_case`'s route maxima applied to a given definition, and `check_definition` and `apply_events` taking the event function, each an optional argument whose default is @1's own code. `apply_events` also runs on the device; with the default its trace is unchanged (guard A) | @1's module |
 | `src/cells/core/cell_replacement_spec.py` | `parse_events` and `check_template_on_slot` take the template-volume rule, with @1's as the default. The file is under this round's core/ restriction, so this needs approval; otherwise @2 duplicates the event parser (open question 2) | @1's parser |
 | `src/cells/models/operators/current_injection.py` | Only if open question 6 is accepted: `volume` added to `CONFLICTS_VIEW`, a declaration that refuses injection over water and changes no program | Injection@1's module (Rm1); covered by guard A |
-| `validation/tissue/composite_crossrev.py` | A new `volume` world set (water with @2) for later baselines; the existing sets are unchanged | Tool |
+| `validation/tissue/composite_crossrev.py` | A new `volume` world set (water with @2) for later baselines, added on top of the extended tool (constants) once it lands on main; the existing sets are unchanged | Tool |
 | `validation/tissue/cell_replacement_fixtures.py`, `tests/replacement_water_fixtures.py` | `over_water`, the [water, @2] definition builder; the test worlds | Fixtures |
 | `tests/unit/test_cell_replacement_v2.py`, `tests/unit/test_cell_replacement_v2_runs.py`, `tests/test_tiers.json` | Tier-1 smoke, compiled runs, and the tier rows (re-measured) | New |
 | `docs/PUMP_COMPOSITE.md`, `PROGRESS.md` | The operator table's row; status | Docs |
@@ -537,6 +537,25 @@ user's decision. These runs take a few hours of detached CPU time.
   decision.
 - Scripts: `composite-v2-s2-20261113-01/scripts/guard_a.sh` (parts crossrev, guard, guard825,
   compare, judges, tests).
+- **Amended by the lead (13 November, 18:10), after A.1's first run.** Crossrev compared neither
+  closed-over constant values nor the check constants in bindings, so a constant that only gates
+  acceptance could change unseen. The crossrev tool gains constant digests, and the baseline of
+  record is re-taken with them at main. A.1 runs again against that re-taken baseline. The first
+  A.1 run, against the 4465b48 baseline (identical in all three sets), stays as evidence and is
+  superseded. The forward guard, the judges and the tests stand as registered.
+- **A.1 as re-registered (13 November, before its rerun).**
+  - Baseline of record:
+    `/mnt/workspaces/Cells/cell-division-s3-20261113-01/crossrev-constants/baseline-of-record.json`,
+    with outputs under `crossrev-constants/{base,qualification,injection}/main`. It was taken at
+    main 7a8b538, whose src and crossrev fixtures are 4465b48's.
+  - Tool: the extended `validation/tissue/composite_crossrev.py` of commit aaa0044 (the copy beside
+    the baseline), run from the after side's snapshot as before. It also compares every constant
+    each traced program closes over, and the device-check constants.
+  - Pass: every jaxpr text, constants file and binding of the three sets identical to the
+    baseline. Any difference stops the work, as registered above.
+  - The `volume` world set leaves this commit's `composite_crossrev.py`: three agents write that
+    file, so the set returns on top of the extended tool once it has landed on main, and is
+    recorded then with constants.
 
 **B. The new composition.** A tier-1 smoke test under 20 s covers the NumPy event map and
 ledgers, the analytic checks and the refusals. The compiled runs go in tier 2 or 3.
