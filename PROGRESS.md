@@ -58,6 +58,24 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Crossrev now compares constants; earlier verdicts stand (13 November).** The
+  checkpoint-continuity design found that `composite_crossrev.py` compared jaxpr text and
+  bindings, but not the values of closed-over arrays or the device-check constants. A
+  constant that only gates acceptance could have changed unseen.
+  - The tool now records the dtype, shape and SHA-256 of every closed-over array, and the
+    check constants. Scalars such as `NEWTON_TARGET` were already caught as full-precision
+    literals in the text.
+  - The retro-check from `8416a72` to main found every constant unchanged, so the D148,
+    S2 and S3 crossrev verdicts stand.
+  - The new baseline of record, with constants, is
+    [crossrev-constants](/mnt/workspaces/Cells/cell-division-s3-20261113-01/crossrev-constants/baseline-of-record.json).
+  - D148 states what crossrev compares. The D147 floor guard compares primitive counts,
+    not constants, so it is rerun with constants before version 3 serves a run of record.
+  - Tier 1 gate: 290 files, no changed outcome.
+  - The proposed [checkpoint-continuity design](docs/CHECKPOINT_CONTINUITY_DESIGN.md)
+    landed with it. Implementation waits for its probes and for the user's answer on
+    AGENTS.md's attestation rule.
+
 - **Field-solver limits: on CPU the hold step is mostly work on dense node-space matrices that
   are under 1% dense. The factorisation and solve kernels alone are just under half. An
   interface is proposed, with no code (13 November; `resolved_pump_tissue@3`,
