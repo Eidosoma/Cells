@@ -283,35 +283,6 @@ def test_padded_slots(world):
         assert np.max(np.abs(residual), initial=0.0) < 1e-15, (world, name)
 
 
-FAST_ACCESS_M2 = 1e-9  # A/L = 1e-7 m: the cleft's RC time through the access is about 5 us.
-
-
-def onset_heat(model, state, p):
-    """1/2 C_on Vm^2 (pJ): the heat of charging the furrow, opened uncharged, to the cell's
-    membrane voltage through the access (whatever its resistance)."""
-    q, _ = insertion.capacitor_view(state, p, xp=np)
-    v = adapter.patch_voltages(adapter.node_potentials(state, q, xp=np), q, xp=np)
-    return 0.5e12 * float(p.membrane_capacitance[1]) * float(v[0]) ** 2
-
-
-def test_an_unresolved_access_leaves_the_onsets_charging_heat_unbooked():
-    """S3 prerequisite (a). The onset opens the furrow uncharged, as R-full does; the access
-    then charges it to about Vm, dissipating 1/2 C_on Vm^2. One step far longer than the
-    access time leaves that heat out of the booked dissipation, as plain @3 does with the
-    cleft active from the start: the energy residual is minus that heat, no more."""
-    raw = fx.with_operators(
-        fx.cleft_cell(access_area_m2=FAST_ACCESS_M2), fx.furrow_insertion(rate=0.0)
-    )
-    spec, model, state, p = bind(raw)
-    control = model.CONTROL_TYPE(*(np.asarray(v[0]) for v in cs.control_values(spec, [0.002])))
-    heat = onset_heat(model, state, p)
-    before = float(model.balances(state, p)["energy"])
-    after, ok = model.split_step(state, fx.DT, control, p, xp=np)
-    assert ok and after.insertion_opened[1] == 1
-    residual = float(model.balances(after, p)["energy"]) - before
-    assert residual == pytest.approx(-heat, rel=0.1)
-
-
 def test_worlds_with_and_without_an_onset_batch_together():
     """The onset lives in the schedule, which the batch signature does not see: no layout or
     state shape may depend on it."""
@@ -381,7 +352,11 @@ def test_definition_refusals(raw, message):
         parse_spec(raw)
 
 
-def test_injection_and_the_node_cap_are_refused():
+def test_image_charge_on_the_declared_layout_and_the_node_cap_are_refused():
+    """Injection books at the view and composes with insertion; an operator that books image
+    charge on the declared layout (as replacement's event map does) is refused."""
+    from cells.models.operators.contract import Operator
+
     raw = fx.with_operators(fx.one_patch(), IDLE)
     cell = raw["model"]["cells"][0]["id"]
     raw["model"]["operators"].append(
@@ -393,8 +368,19 @@ def test_injection_and_the_node_cap_are_refused():
     raw["experiment"]["injection_controls"] = [
         dict(cell_id=cell, schedule=[dict(time=0.0, current_A=0.0)])
     ]
+    spec = parse_spec(raw)  # Injection composes.
+
+    class DeclaredBooker(Operator):
+        LAW_ID = "declared_booker@1"
+        EVENT = True
+        STATE_AXES = {"booked_C": ["extracellular_slot"]}
+        ENTITY_WRITES = {"electrode_charge_transferred_C": ("booked_C",)}
+
+    (_, declaration, schedule) = cs.entries(spec)[1]
     with pytest.raises(ConfigError, match="books image charge on the declared layout"):
-        parse_spec(raw)
+        insertion.check_definition(
+            spec, declaration, schedule, SimpleNamespace(operators=(DeclaredBooker(),))
+        )
     wide = fx.with_operators(fx.one_patch())
     wide["execution"].update(capacity=40, extracellular_capacity=25)
     with pytest.raises(ConfigError, match="limited to 64 field nodes"):

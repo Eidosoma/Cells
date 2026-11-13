@@ -131,10 +131,14 @@ def test_rk4_keeps_the_exact_half_steps():
 
 
 def test_a_resolved_access_books_the_onsets_charging_heat():
-    """S3 prerequisite (a). With a fast access (about 5 us), 0.1 us steps resolve the furrow's
-    charging after the onset, and the host energy check holds far below its heat
-    1/2 C_on Vm^2; 1 ms steps book that heat only to the solver's tolerance, which this
-    small world's energy bound does not cover, so the run is refused."""
+    """S3 prerequisite (a). The onset opens the furrow uncharged, as R-full does; the access
+    then charges it to about Vm, dissipating 1/2 C_on Vm^2 whatever its resistance.
+    * One 1 ms step, far longer than the access time (about 5 us), leaves that heat out of
+      the booked dissipation, as plain @3 does with the cleft active from the start: the
+      energy residual is minus that heat, no more. This small world's energy bound does not
+      cover it, so a 1 ms run is refused.
+    * 0.1 us steps resolve the charging: the access books the heat, and the host energy
+      check holds far below it."""
     from cells.core.errors import NumericalError
 
     def onset_world(dt, onset, end):
@@ -142,15 +146,32 @@ def test_a_resolved_access_books_the_onsets_charging_heat():
         base["execution"].update(dt=dt, max_steps=int(round(end / dt)) + 8)
         return parse_spec(fx.with_operators(base, fx.furrow_insertion(rate=0.0, onset=onset)))
 
-    fine = run(onset_world(1e-7, 1e-5, 6e-5))  # 500 steps after the onset, about 10 RC times.
-    furrow = float(fine.spec.model.membranes[1].capacitance_F)
-    vm = float(np.asarray(fine.observations.membrane_voltage_V)[1][0])
+    coarse = onset_world(1e-3, 0.002, 0.004)
+    model = get_model(coarse.model)
+    state, p = model.initial_values(coarse)
+    control = model.CONTROL_TYPE(*(np.asarray(v[0]) for v in cs.control_values(coarse, [0.002])))
+    step = jax.jit(lambda s, c, q: model.split_step(s, 1e-3, c, q))
+    after, ok = jax.tree.map(np.asarray, step(state, control, p))
+    assert ok and after.insertion_opened[1] == 1
+    furrow = float(coarse.model.membranes[1].capacitance_F)
+    vm = float(np.asarray(run_view_voltage(model, state, p))[0])
     heat = 0.5e12 * furrow * vm**2
+    residual = model.balances(after, p)["energy"] - model.balances(state, p)["energy"]
+    assert residual == pytest.approx(-heat, rel=0.1)
+    with pytest.raises(NumericalError, match="energy"):
+        run(coarse)
+    fine = run(onset_world(1e-7, 1e-5, 6e-5))  # 500 steps after the onset, about 10 RC times.
     assert fine.diagnostics["max_energy_balance_error_pJ"] < 1e-2 * heat
     face_heat = np.asarray(fine.history.face_dissipated_energy_pJ)[-1].sum()
     assert face_heat == pytest.approx(heat, rel=0.1)  # The access booked the charging heat.
-    with pytest.raises(NumericalError, match="energy"):
-        run(onset_world(1e-3, 0.002, 0.004))
+
+
+def run_view_voltage(model, state, p):
+    """The patch voltages at the composite's view (the furrow masked before its onset)."""
+    from cells.models import pump_composite_adapter as adapter
+
+    q = model.view(p, state, xp=np)
+    return adapter.patch_voltages(adapter.node_potentials(state, q, xp=np), q, xp=np)
 
 
 def test_restart_across_onset_and_insertion_is_bitwise(cleft_run, tmp_path):
