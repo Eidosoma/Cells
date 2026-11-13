@@ -416,16 +416,24 @@ def drift(args):
 
 
 def source_map(compiled):
-    """HLO instruction name -> (source file, line, op_name) from the compiled module."""
+    """HLO instruction name -> (source file, line, op_name, largest output element count)
+    from the compiled module."""
     out = {}
-    pattern = re.compile(r"^\s*(?:ROOT )?%?([\w.\-]+) = .*?metadata=\{(.*)\}")
+    pattern = re.compile(r"^\s*(?:ROOT )?%?([\w.\-]+) = (.*?)metadata=\{(.*)\}")
     pairs = re.compile(r'(\w+)=("(?:[^"\\]|\\.)*"|[^\s}]+)')
+    shapes = re.compile(r"[a-z]\w*\[([\d,]*)\]")
     for line in compiled.as_text().splitlines():
         m = pattern.search(line)
         if not m:
             continue
-        meta = {k: v.strip('"') for k, v in pairs.findall(m.group(2))}
-        out[m.group(1)] = tuple(meta.get(k, "") for k in ("source_file", "source_line", "op_name"))
+        meta = {k: v.strip('"') for k, v in pairs.findall(m.group(3))}
+        head = m.group(2).split(" ", 1)[0] if not m.group(2).startswith("(") else m.group(2)
+        head = head[: head.find(")") + 1] if head.startswith("(") else head
+        sizes = [int(np.prod([int(d) for d in s.split(",") if d])) for s in shapes.findall(head)]
+        out[m.group(1)] = (
+            *(meta.get(k, "") for k in ("source_file", "source_line", "op_name")),
+            max(sizes, default=0),
+        )
     return out
 
 
@@ -545,14 +553,27 @@ def trace_profile(args):
         hlo = e.get("args", {}).get("hlo_op") or e.get("name", "")
         if hlo in sources:
             by_instruction[(track, hlo)] += own[id(e)]
-    classes, top = defaultdict(float), []
+    # Node-space size: an instruction whose largest output holds at least n x n elements per
+    # world works on a dense node-space matrix (assembly, scaling, copies, validity checks).
+    surface = tissue.field_layout(start.layout).surface
+    square = (surface.cell_active.size + surface.outside_active.size) ** 2 * copies
+    classes, dense_size, top = defaultdict(float), defaultdict(float), []
     for (track, hlo), us in sorted(by_instruction.items(), key=lambda kv: -kv[1]):
-        _, _, op = sources[hlo]
+        _, _, op, elements = sources[hlo]
         kind = operation_class(op, hlo)
         classes[(track, kind)] += us
+        if elements >= square:
+            dense_size[(track, kind)] += us
         if len(top) < 60:
             top.append(
-                {"track": track, "instruction": hlo, "us": us, "op_name": op[-160:], "class": kind}
+                {
+                    "track": track,
+                    "instruction": hlo,
+                    "us": us,
+                    "op_name": op[-160:],
+                    "class": kind,
+                    "output_elements": elements,
+                }
             )
     events_top = sorted(by_name.items(), key=lambda kv: -kv[1])[:60]
     return {
@@ -565,6 +586,7 @@ def trace_profile(args):
         "trace": str(traces[-1]) if traces else None,
         "us_per_track": dict(by_track),
         "us_per_class": {f"{t} | {k}": v for (t, k), v in classes.items()},
+        "us_per_class_node_square": {f"{t} | {k}": v for (t, k), v in dense_size.items()},
         "top_instructions": top,
         "top_events": [{"event": k, "us": v} for k, v in events_top],
         "attributed_us": sum(by_instruction.values()),
