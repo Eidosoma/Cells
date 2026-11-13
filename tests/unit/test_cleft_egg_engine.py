@@ -126,6 +126,24 @@ def test_quantities_terms_and_verdicts_follow_the_plan():
     assert (
         not result["terms"]["Q3_rm1_ohm"]["judged"] and result["terms"]["Q2_rm_at_j1_ohm"]["judged"]
     )
+    # The registered stop condition: every judged step term decreases here, so no stop.
+    assert not result["stop"] and result["non_converging"] == []
+    # A judged step term that grows from the coarse pair to the judged pair stops the study.
+    growing = [dict(s, quantities=dict(s["quantities"])) for s in studies]
+    growing[2]["quantities"]["Q1_em_at_j1_V"] = studies[1]["quantities"]["Q1_em_at_j1_V"] + 1.0
+    stopped = engine.terms(growing)
+    assert stopped["stop"] and stopped["non_converging"] == ["Q1_em_at_j1_V"]
+    # The protocol's values: both terms, the order, and 3 x (step term + reference term).
+    reference_values = dict(
+        reference=engine.flat(studies[2]["quantities"]),
+        reference_terms={name: 1e-7 for name in result["terms"]},
+    )
+    values = engine.protocol_values(result, reference_values)
+    for name, entry in values.items():
+        step = result["terms"][name]["step_term"]
+        assert entry["tolerance"] == 3 * (step + 1e-7), name
+        assert entry["observed_order"] == result["terms"][name]["observed_order"], name
+        assert entry["judged"] == (name in engine.JUDGED), name
     engine_q = engine.flat(studies[1]["quantities"])
     protocol = dict(values={})
     for name, value in engine_q.items():
@@ -140,3 +158,27 @@ def test_quantities_terms_and_verdicts_follow_the_plan():
     protocol["values"]["Q5_lumen_K_mM"]["tolerance"] = 2e-9
     protocol["values"]["Q3_rm1_ohm"]["tolerance"] = 0.0  # Reported only: it never fails the run.
     assert engine.verdicts(engine_q, protocol)[1] == "pass"
+
+
+def test_fill_writes_a_proposed_draft_and_refuses_a_stopped_study(tmp_path):
+    import json
+
+    studies = []
+    for dt in engine.STUDY_DTS:
+        egg, d, front, sample, lumen = synthetic(dt)
+        studies.append(dict(dt=dt, quantities=engine.quantities(front, sample, lumen, egg, d)))
+    result = engine.terms(studies)
+    reference_values = dict(
+        reference=engine.flat(studies[2]["quantities"]),
+        reference_terms={name: 1e-7 for name in result["terms"]},
+    )
+    (tmp_path / "terms.json").write_text(json.dumps(result))
+    (tmp_path / "reference.json").write_text(json.dumps(reference_values))
+    filled = engine.fill(tmp_path / "terms.json", tmp_path / "reference.json")
+    assert filled["status"].startswith("PROPOSED")
+    assert set(filled["values"]) == set(json.loads(engine.PROTOCOL.read_text())["values"])
+    assert all(v["tolerance"] > 0 for v in filled["values"].values())
+    stopped = dict(result, stop=True, non_converging=["Q1_em_at_j1_V"])
+    (tmp_path / "terms.json").write_text(json.dumps(stopped))
+    with pytest.raises(SystemExit, match="stop condition"):
+        engine.fill(tmp_path / "terms.json", tmp_path / "reference.json")

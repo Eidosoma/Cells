@@ -48,7 +48,8 @@
  "reference_term_rule": "max |Q(variant) - Q(default)| over R-full's Radau rtol 1e-8, BDF rtol 1e-10, LSODA rtol 1e-10 and activation area 1e-10 m2 (J1's reference_numerics, as part_record forms them); Q4: the maximum over pulses and variants",
  "tolerance_rule": "3 x (engine step term + reference term), per quantity (the rule Rm1's registered protocol uses)",
  "verdict_rule": "pass when every judged |engine(judged dt) - R-full| is within its tolerance (Q4: the maximum over pulses); a failure is recorded and diagnosed, never retuned",
- "stop_rule": "before registration: stop and report if the study shows no convergence (an observed order far from 2) or the energy ledger fails at an admitted step; an implicit membrane-cleft term would then be a new solver version (division design §5.4)",
+ "stop_rule": "before registration: stop and report if the study shows no convergence or the energy ledger fails at an admitted step; an implicit membrane-cleft term would then be a new solver version (division design §5.4). Observed orders are reported and inspected (about 2 for ARS(2,2,2))",
+ "stop_condition": "registered by the lead, 13 November: stop and report (non-convergence under the plan's stop rule) if any judged quantity's step term fails to decrease from the (0.5, 0.25 ms) pair to the (0.25, 0.125 ms) pair; a step term that is 0 at both pairs does not stop. Evaluated by cleft_egg_engine terms (stop, non_converging); fill refuses a study that met it",
  "values": {
   "Q1_em_at_j1_V": {"judged": true, "reference": null, "engine_step_term": null, "observed_order": null, "reference_term": null, "tolerance": null},
   "Q2_rm_at_j1_ohm": {"judged": true, "reference": null, "engine_step_term": null, "observed_order": null, "reference_term": null, "tolerance": null},

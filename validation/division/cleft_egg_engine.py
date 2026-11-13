@@ -39,6 +39,8 @@ Actions (python -m validation.division.cleft_egg_engine ACTION --output FILE):
   terms --studies F2dt Fdt Fdt/2
                each quantity's step term at the judged dt and its observed order
   reference    R-full's Q1-Q5 under the registered defaults and its reference term per quantity
+  fill --terms F --reference F
+               the protocol draft with its values filled in (still PROPOSED)
   judge        the judged run: a registered protocol (status beginning "registered") and a clean
                execution snapshot only
 study, reference and judge wait for the lead's approval (plan §5, steps 4-6); they follow
@@ -735,7 +737,8 @@ def study_batch(spec, window_steps=STUDY_WINDOW):
 def windowed_observations(spec, *, columns=OBSERVED, window_steps=STUDY_WINDOW):
     """One world run in vector windows with device checks on every row (core/vector_windows):
     the named observation columns at every requested time, stacked in time order, with the
-    world's device diagnostics and the run's timings. run() cannot hold a 2100 s history."""
+    world's device diagnostics, the run's timings and the world's final checkpoint. run()
+    cannot hold a 2100 s history."""
     import numpy as np
 
     from cells.core.vector_windows import run_vector_windowed
@@ -748,7 +751,44 @@ def windowed_observations(spec, *, columns=OBSERVED, window_steps=STUDY_WINDOW):
     batch, policy = study_batch(spec, window_steps)
     result = run_vector_windowed(batch, policy, sink=sink)
     stacked = {k: np.concatenate([np.asarray(getattr(f, k)) for f in found]) for k in columns}
-    return stacked, dict(result.worlds[1].diagnostics), dict(result.timings)
+    world = result.worlds[1]
+    return stacked, dict(world.diagnostics), dict(result.timings), world.final
+
+
+def ledger_ratios(spec, state, steps, names=PROBE_LEDGERS):
+    """Each named ledger's worst entry at one row, {name: (|residual|, bound, ratio)}, by the
+    device checks' own functions: the composite's device balances, magnitudes and ledger
+    limits, with steps the row's accepted-step count (the study's horizon: its final row)."""
+    import jax.numpy as jnp
+    import numpy as np
+
+    from cells.models.registry import get_model
+
+    model = get_model(spec.model)
+    p = model.initial_values(spec)[1]
+    constants = model.device_check_constants(spec)
+    row = type(state)(*(jnp.asarray(v) for v in state))
+    values = model.device_balances(row, p)
+    _, bounds = model.ledger_limits(
+        row,
+        p,
+        constants.material_atol,
+        constants.energy_rtol,
+        steps=steps,
+        magnitudes=model.magnitudes(row, p, xp=jnp),
+        xp=jnp,
+    )
+    out = {}
+    for name in names:
+        value = np.ravel(np.abs(np.asarray(values[name])))
+        bound = np.ravel(
+            np.broadcast_to(np.asarray(bounds[list(model.LEDGERS).index(name)]), value.shape)
+        )
+        i = int(np.argmax(value / bound))
+        out[name] = dict(
+            residual=float(value[i]), bound=float(bound[i]), ratio=float(value[i] / bound[i])
+        )
+    return out
 
 
 def admit(dts=STUDY_DTS, window_steps=STUDY_WINDOW):
@@ -789,36 +829,27 @@ def admit(dts=STUDY_DTS, window_steps=STUDY_WINDOW):
     return dict(cases=cases)
 
 
-def engine_observations(dt, *, end=None, window_steps=STUDY_WINDOW):
-    """The old membrane's voltage and the observer's lumen at every observation time of the
-    definition (windowed_observations). Returns (times, voltages, lumen rows, diagnostics,
-    timings)."""
-    from cells.core.specs import parse_spec
-
-    raw = definition(dt, end=end)
-    cleft = [c["id"] for c in raw["model"]["extracellular"]].index("cleft")
-    old = [m["id"] for m in raw["model"]["membranes"]].index("old_membrane")
-    stacked, diagnostics, timings = windowed_observations(
-        parse_spec(raw), window_steps=window_steps
-    )
-    return (
-        stacked["times"].tolist(),
-        stacked["membrane_voltage_V"][:, old].tolist(),
-        stacked["lumen_concentration_mM"][:, :, cleft].tolist(),
-        diagnostics,
-        timings,
-    )
-
-
-def study(dt):
-    """One development run of the study (plan §3-§4): the engine's Q1-Q5 at dt."""
+def study(dt, *, window_steps=STUDY_WINDOW):
+    """One development run of the study (plan §3-§4): the engine's Q1-Q5 at dt, from the old
+    membrane's voltage and the observer's lumen at every observation time
+    (windowed_observations), with the device checks' diagnostics and, at the horizon (the
+    final row), the electrode, reservoir-work, energy and fill residuals against their
+    bounds."""
     import time
 
+    from cells.core.specs import parse_spec
     from validation.division import cleft_egg_reference as ref
 
     started = time.perf_counter()
     egg, _, d = rfull()
-    times, voltages, lumen, diagnostics, timings = engine_observations(dt)
+    raw = definition(dt)
+    spec = parse_spec(raw)
+    cleft = [c["id"] for c in raw["model"]["extracellular"]].index("cleft")
+    old = [m["id"] for m in raw["model"]["membranes"]].index("old_membrane")
+    stacked, diagnostics, timings, final = windowed_observations(spec, window_steps=window_steps)
+    times = stacked["times"].tolist()
+    voltages = stacked["membrane_voltage_V"][:, old].tolist()
+    lumen = stacked["lumen_concentration_mM"][:, :, cleft].tolist()
     front, sample = pulse_samples(times, voltages, egg)
     j1 = float(d["time"]["j1_s"])
     row = min(range(len(times)), key=lambda i: abs(times[i] - j1))
@@ -831,15 +862,28 @@ def study(dt):
         sample_V=[sample[k] for k in sorted(sample)],
         lumen_at_j1_mM=at_j1,
         device_diagnostics=diagnostics,
+        horizon=dict(
+            time_s=float(final.time),
+            steps=int(final.step_index),
+            ledgers=ledger_ratios(spec, final.state, int(final.step_index)),
+        ),
         timings=timings,
         wall_s=time.perf_counter() - started,
     )
 
 
+STOP_CONDITION = (
+    "stop and report (non-convergence under the plan's stop rule) if any judged quantity's step "
+    "term fails to decrease from the (0.5, 0.25 ms) pair to the (0.25, 0.125 ms) pair; a step "
+    "term that is 0 at both pairs does not stop (the lead, 13 November)"
+)
+
+
 def terms(studies, judged=JUDGED_DT):
     """The engine step term of each quantity at the judged pair (judged dt against judged / 2)
     and its observed order, log2(|Q(2 dt) - Q(dt)| / |Q(dt) - Q(dt / 2)|); for the trajectory,
-    the maxima over pulses. studies: the study outputs at 2 dt, dt and dt / 2."""
+    the maxima over pulses. studies: the study outputs at 2 dt, dt and dt / 2. The orders are
+    reported for inspection; the registered stop condition (STOP_CONDITION) is evaluated."""
     import math
 
     by = {round(s["dt"], 12): flat(s["quantities"]) for s in studies}
@@ -849,9 +893,39 @@ def terms(studies, judged=JUDGED_DT):
         first, second = distance(coarse[name], mid[name]), distance(mid[name], fine[name])
         order = math.log2(first / second) if first > 0 and second > 0 else None
         out[name] = dict(
-            step_term=second, coarse_difference=first, observed_order=order, judged=name in JUDGED
+            step_term=second,
+            coarse_difference=first,
+            observed_order=order,
+            step_term_decreases=second < first or first == second == 0,
+            judged=name in JUDGED,
         )
-    return dict(judged_dt=judged, dts=sorted(by), terms=out)
+    stop = sorted(k for k, v in out.items() if v["judged"] and not v["step_term_decreases"])
+    return dict(
+        judged_dt=judged,
+        dts=sorted(by),
+        terms=out,
+        stop_condition=STOP_CONDITION,
+        stop=bool(stop),
+        non_converging=stop,
+    )
+
+
+def protocol_values(term_values, reference_values):
+    """The protocol's values per quantity from terms and reference: the R-full reference, both
+    terms, the observed order and the tolerance 3 x (engine step term + reference term)."""
+    out = {}
+    for name, t in term_values["terms"].items():
+        step, ref_term = t["step_term"], reference_values["reference_terms"][name]
+        out[name] = dict(
+            judged=t["judged"],
+            reference=reference_values["reference"][name],
+            engine_step_term=step,
+            engine_coarse_difference=t["coarse_difference"],
+            observed_order=t["observed_order"],
+            reference_term=ref_term,
+            tolerance=3 * (step + ref_term),
+        )
+    return out
 
 
 # ------------------------------------------------------------------ R-full's reference (not run)
@@ -981,7 +1055,26 @@ def judge(protocol_path=PROTOCOL):
     )
 
 
-ACTIONS = ("compare", "check", "probe", "admit", "study", "terms", "reference", "judge")
+ACTIONS = ("compare", "check", "probe", "admit", "study", "terms", "reference", "fill", "judge")
+
+
+def fill(term_path, reference_path, protocol_path=PROTOCOL):
+    """The protocol draft with its values (protocol_values) and evidence filled in, still
+    PROPOSED: the lead registers it."""
+    protocol = json.loads(Path(protocol_path).read_text())
+    if not protocol["status"].startswith("PROPOSED"):
+        raise SystemExit("Refused: fill writes a PROPOSED draft only")
+    term_values = json.loads(Path(term_path).read_text())
+    reference_values = json.loads(Path(reference_path).read_text())
+    if term_values["stop"]:
+        raise SystemExit(
+            "Refused: the study met the stop condition: " + str(term_values["non_converging"])
+        )
+    protocol["values"] = protocol_values(term_values, reference_values)
+    protocol["evidence"] = dict(
+        protocol["evidence"], terms=str(term_path), reference=str(reference_path)
+    )
+    return protocol
 
 
 def main(argv=None):
@@ -994,8 +1087,11 @@ def main(argv=None):
             one.add_argument("--dt", type=float, default=JUDGED_DT)
         if name == "terms":
             one.add_argument("--studies", type=Path, nargs=3, required=True)
+        if name == "fill":
+            one.add_argument("--terms", type=Path, required=True)
+            one.add_argument("--reference", type=Path, required=True)
     args = parser.parse_args(argv)
-    if args.action != "terms":
+    if args.action not in ("terms", "fill"):
         import jax
 
         jax.config.update("jax_enable_x64", True)
@@ -1018,6 +1114,8 @@ def main(argv=None):
         result = dict(status=STATUS + " Step terms of the dt study.", **terms(studies))
     elif args.action == "reference":
         result = dict(status=STATUS + " R-full's reference terms.", **reference())
+    elif args.action == "fill":
+        result = fill(args.terms, args.reference)
     else:
         result = judge()
     args.output.parent.mkdir(parents=True, exist_ok=True)

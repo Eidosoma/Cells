@@ -235,10 +235,15 @@ def test_the_studys_windowed_observations_reproduce_the_run(growth_run):
     from validation.division import cleft_egg_engine as engine
 
     spec, result = growth_run
-    stacked, diagnostics, _ = engine.windowed_observations(spec, window_steps=2)
+    stacked, diagnostics, _, final = engine.windowed_observations(spec, window_steps=2)
     assert stacked["times"].tolist() == np.asarray(result.observations.times).tolist()
     for name in ("membrane_voltage_V", "lumen_concentration_mM"):
         a, b = stacked[name], np.asarray(getattr(result.observations, name))
         assert a.shape == b.shape, name
         assert np.max(np.abs(a - b)) <= 1e-12 * np.max(np.abs(b)) + 1e-30, name
     assert np.isfinite(diagnostics["max_lumen_fill_balance_error_fmol"])
+    # The study's horizon ledgers: the final row's residuals against their bounds.
+    assert final.step_index == len(result.times) - 1
+    horizon = engine.ledger_ratios(spec, final.state, final.step_index)
+    assert set(horizon) == set(engine.PROBE_LEDGERS)
+    assert all(0.0 <= v["ratio"] <= 1.0 for v in horizon.values()), horizon
