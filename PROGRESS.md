@@ -58,6 +58,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **User decisions of 13 November, taken on the lead's suggestions after the advisor's
+  review.**
+  - **D149:** `processes/source_electrochemistry.py` keeps the reference's four
+    numerical conventions as a cited profile of `emt_mirna_pair@1`. This is an exception
+    to AGENTS.md, for bitwise continuity of the recorded replication runs.
+    `tests/unit/test_source_profile_boundary.py` confines the module to that model.
+    Nothing is renamed. Tier 1 gate: 285 files, no changed outcome.
+  - **J1:** a registered combination round. Its registration is being drafted, and
+    nothing runs until the lead registers it. The round has:
+    - an exit rule;
+    - numeric criteria fixed before the runs;
+    - a calibration datum per unknown;
+    - a pairing without A1.
+  - **E07-v1, option (c):** donor copies as the main route, and isolated newcomers with
+    fast junction formation as a threshold-finding set.
+    - Donors are drawn without regard to state; disc-only donors are a control.
+    - A copy-only null comes first, and a design and registration draft follow.
+    - Replacement over water (v2 §2) comes after the S3 fix lands.
+
 - **G2-Q1's judge runs again as registered (13 November).** Its Q2 part had failed on the
   tree since `92a4eeb`, when replacement@1 became a thin composite module and stopped
   exporting `CHARGE_PER_FMOL`, which the judge reads. The thin module re-exports it, and Q2
