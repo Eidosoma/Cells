@@ -79,6 +79,21 @@ class Experiment(kinetic.Experiment):
 
     @property
     def changes(self):
+        """The held availabilities at every change time, built once per experiment.
+
+        The schedules are immutable, so the rows are kept on the instance (outside
+        the dataclass fields) after the first access. Rebuilding them from every
+        schedule took about 10 ms per access at 825 nodes and 2802 channel
+        populations, and execution reads them in every window (the held controls,
+        each control table and each window's event index).
+        """
+        found = self.__dict__.get("_changes")
+        if found is None:
+            found = self._held_availabilities()
+            self.__dict__["_changes"] = found  # As functools.cached_property stores.
+        return found
+
+    def _held_availabilities(self):
         groups = (self.membranes, self.junctions, self.channels, self.pumps, self.calcium_pumps)
         times = sorted({0.0, *(c.time for family in groups for g in family for c in g)})
         return tuple(
