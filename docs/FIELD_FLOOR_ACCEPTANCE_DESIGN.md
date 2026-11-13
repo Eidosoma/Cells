@@ -315,7 +315,13 @@ no Newton iteration, in all three programs (`margins-turnover.json`). The pre-sc
 refusal" therefore did not depend on the program, for this refusal class. E07-v1's
 registered world is the full tissue (172 free offsets), so D147 applies to it.
 
-**A restart under version 3 needs a driver change.** The hold's definitions take their field
-solver from `validation/tissue/resolved_scale_world.py`, which declares version 2, and
-`heredity_pilot.py` does not override it. A restart therefore needs the driver to declare
-version 3 for the preparation and the run, and then a new execution snapshot.
+**A restart under version 3 needed a driver change; it is done.** The hold's definitions
+took their field solver from `validation/tissue/resolved_scale_world.py`, which declared
+version 2, and `heredity_pilot.py` did not override it. The field solver is now a parameter
+of the builder (default still version 2), and `heredity_pilot.py`'s `--field-solver`
+(default `auto`, D147) declares version 3 for the full tissue's preparation and run.
+`--field-solver 2` rebuilds the hold's preparation definitions with source-09's
+fingerprints, and `auto` differs from them only in the solver
+(`/mnt/workspaces/Cells/field-solver-driver-20261113-01/reproduce-hold.json`). The restart
+itself is prepared, not launched: `heredity-pilot-w1-20261110-01/launch8.sh` and
+`restart-v3-note.md`.

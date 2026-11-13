@@ -4806,6 +4806,11 @@ rename with no numerical change:
   the `field_offset_free` leaf of `initialise(spec).layout`, set by finite extracellular
   space with floating components. Definitions with no free offset keep version 2,
   because the floor never decides their acceptance.
+- **In the drivers:** `validation/tissue/field_solver_choice.py` applies the trigger
+  (choice `auto`); `heredity_pilot.py`'s `--field-solver` defaults to it for its start,
+  prepare and run parts, and `--field-solver 2` reproduces the definitions made before
+  this decision. Builders keep their earlier default, version 2, so guard worlds and
+  studies built through them are unchanged.
 - **Why.** Version 2 accepts a field solve only below `NEWTON_TARGET`. On the W1 hold's
   825-node tissue (172 free offsets), a converged root sits at 0.8–1.1 of that target,
   at the rounding floor of the current balance. Whether it is accepted then depends on
