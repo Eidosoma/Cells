@@ -32,7 +32,8 @@
   "/mnt/workspaces/Cells/land-20261113h/measure-new/measured.json",
   "/mnt/workspaces/Cells/land-20261113k/measure-new/measured.json",
   "/mnt/workspaces/Cells/land-20261113l/measure-new/measured.json",
-  "/mnt/workspaces/Cells/land-20261113m/measure-new/measured.json"
+  "/mnt/workspaces/Cells/land-20261113m/measure-new/measured.json",
+  "/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/slice0/tier-measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -272,6 +273,13 @@
    "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113m",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-13T15:51:02+00:00"
+  },
+  {
+   "git_revision": "aaa004466b3be872426bb4f2180a0df2f48af977",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-ab0b511c18853b6f0",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-13T18:21:05+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -927,6 +935,14 @@
    {
     "file": "tests/unit/test_cleft_egg_engine.py",
     "seconds": 19.0,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_composite_crossrev.py",
+    "seconds": 1.72,
     "exit_code": 0,
     "counts": {
      "passed": 6
