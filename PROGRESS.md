@@ -58,6 +58,76 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Crossrev now compares constants; earlier verdicts stand (13 November).** The
+  checkpoint-continuity design found that `composite_crossrev.py` compared jaxpr text and
+  bindings, but not the values of closed-over arrays or the device-check constants. A
+  constant that only gates acceptance could have changed unseen.
+  - The tool now records the dtype, shape and SHA-256 of every closed-over array, and the
+    check constants. Scalars such as `NEWTON_TARGET` were already caught as full-precision
+    literals in the text.
+  - The retro-check from `8416a72` to main found every constant unchanged, so the D148,
+    S2 and S3 crossrev verdicts stand.
+  - The new baseline of record, with constants, is
+    [crossrev-constants](/mnt/workspaces/Cells/cell-division-s3-20261113-01/crossrev-constants/baseline-of-record.json).
+  - D148 states what crossrev compares. The D147 floor guard compares primitive counts,
+    not constants, so it is rerun with constants before version 3 serves a run of record.
+  - Tier 1 gate: 290 files, no changed outcome.
+  - The proposed [checkpoint-continuity design](docs/CHECKPOINT_CONTINUITY_DESIGN.md)
+    landed with it. Implementation waits for its probes and for the user's answer on
+    AGENTS.md's attestation rule.
+
+- **Field-solver limits: on CPU the hold step is mostly work on dense node-space matrices that
+  are under 1% dense. The factorisation and solve kernels alone are just under half. An
+  interface is proposed, with no code (13 November; `resolved_pump_tissue@3`,
+  `capacitive_reduction_gauged_damped_newton@2`).**
+  - **Hypothesis and test.** Most of a hold step is dense float64 node-space linear algebra:
+    the IMEX operator's Cholesky every step, the capacitor and stage triangular solves, and
+    the offset LU and products. It is falsified if these take under half the step at 825
+    nodes on CPU.
+  - **Result on CPU: falsified as stated, narrowly.** The measurement is the hold world's
+    fused step on one core, each instruction's own time:
+    - the four kernel classes take 45% of attributed time (Cholesky 25%, triangular solves 15%,
+      LU 5%), or 33% of the 110 ms to ready;
+    - adding the n × n assembly, copies and checks that dense matrices need, dense node-space
+      work takes 70% (51% of time to ready);
+    - the pieces compiled alone (75–81%) are an upper bound;
+    - a first trace that summed nested events read 49% and is kept.
+  - **Sparsity at 825 nodes.**
+    - The free IMEX operator is 0.67% dense. Minimum degree gives a factor with 7,537
+      nonzeros and about 1,800 times less factorisation work than the dense Cholesky.
+    - The offset incidence is 0.40% dense, and the junction incidence is empty, so the
+      Jacobian's junction product adds an exact zero.
+    - At 254 nodes (the 127-cell sheet) every node-space operator is diagonal.
+  - **Conditioning and drift.** The operator's condition number is 223 after Jacobi scaling.
+    In the hold it moves at most 4.7 × 10⁻⁵ from t = 8 s to 1,206 s, and 3.3 × 10⁻¹⁰ over one
+    200-step window.
+  - **Design.**
+    - **Interface.** One solver per field-solver ID covers the capacitor, IMEX and offset
+      solves, in three phases: bind, prepare and solve. The existing residual checks are the
+      acceptance test.
+    - **Candidates.** Sparse direct with a bound ordering, PCG, and factor reuse at declared
+      epochs (the composite note's R3 options (b) and (c)). Each is a new solver ID with
+      tolerance-based qualification.
+    - **Node bound.** Each ID would declare its own node bound in place of the 2,048-node
+      dense limit.
+    - **Ceilings.** By the L4 split no single piece gives 2×. On CPU, making all dense
+      node-space work free gives about 2× to 3.4×.
+    - **Next.** No code until the kernel profile has run on the L4 and GH200.
+  - **Kernel profile plan.** About 15 min: traces of E07's world at 6 and 256 worlds and of the
+    hold world at 6, then the pieces on the device and batched.
+    - It reruns unchanged on GH200 and was smoke-tested on CPU.
+    - Device-kernel attribution is untested on a GPU; the batched pieces are the fallback.
+  - **The first pass's three hold steps refused** the hold's GPU backend on CPU. They are kept
+    in `logs/` and were rerun with `--backend cpu`.
+  - [Design note](docs/FIELD_SOLVER_INTERFACE_DESIGN.md),
+    [summary](/mnt/workspaces/Cells/field-solver-limits-20261113-01/summary.json),
+    [results](/mnt/workspaces/Cells/field-solver-limits-20261113-01/results/),
+    [kernel profile plan](/mnt/workspaces/Cells/field-solver-limits-20261113-01/kernel_profile_plan.sh).
+  - **Also landed:** the L4 agreement driver now takes three blind repeats (A, B, D)
+    before a judged run, after a third L4 repeat exceeded one pair's spread by up to 6×.
+    The definition-invariant waste found here is listed as a parked candidate for its own
+    D148 round. Tier 1 gates: 289 files, no changed outcome.
+
 - **Stage S3 judged: the engine's cleft egg agrees with R-full (13 November; registered
   protocol `486cc60`; verdict pass).**
   - **Engine models:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with
@@ -100,8 +170,13 @@ machine-readable inputs, results, checks and failures.
     `runtime_identity`. That covers the package versions, `XLA_FLAGS` and, on GPU, the device
     kind, so an L4 checkpoint cannot resume on GH200. `runner.validate_checkpoint` also
     refuses a layout that differs from the declared model's.
-  - **Already outside that rule:** about 20 validation tools read saved `state.npz` files
-    directly, an unrecorded form of migration.
+  - **Already outside that rule** (corrected from the design's §7): 32 non-test files under
+    `validation/` and `scripts/` name `state.npz`, but most only read or write saved bytes.
+    - Three uses crossed an identity: `scripts/profile_dispatch.py` (held L4 states under
+      other XLA flags), `field_floor_held.py` (version 3 on version-2 states), and E07-v1's
+      import of the sheet70 start states, which crosses the D148 ledger fix.
+    - The driver-owned resumes have no identity check: `e07_v1_run.py`, the turnover tool's
+      `checkpoint.npz`, and `open_calcium_bath_trajectory_production.py`'s handoff.
   - **Plan:** a fresh agent writes the design only, in the slot the S3 agent frees, ahead of
     the one-execution-path work, since both own the checkpoint validation.
     - It keeps four cases apart:

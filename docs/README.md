@@ -126,6 +126,13 @@ the [project README](../README.md) gives the short feature overview.
 - [T cell organelle coordination review](PAPER_REVIEW_T_CELL_ORGANELLES.md)
   proposes tests for calcium-linked clustering, directed delivery and imaging
   metrics, with explicit data and model prerequisites beyond BETSE parity.
+- [Partial reprogramming review](PAPER_REVIEW_PARTIAL_REPROGRAMMING.md) reads Washizu et
+  al.'s bioRxiv preprint for Cells: no engine feature, and write–clear–challenge rules for
+  cue experiments.
+- [Granzyme K and tissue ageing review](PAPER_REVIEW_GZMK_AGEING.md) checks a supplied
+  secondary assessment and places a secreted-protease ageing module against the gates.
+- [Kinetochore protein counts review](PAPER_REVIEW_KINETOCHORE_COUNTS.md) reads Hirano et al.'s
+  FCS-calibrated counts as an abundance-evidence standard for the protein catalogue.
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.

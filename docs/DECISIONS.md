@@ -4901,6 +4901,15 @@ rename with no numerical change:
     - The egg's electrode ledger stays within one ulp of its plate charge on every row.
   - Evidence: `/mnt/workspaces/Cells/composite-v2-20261112-01/s3-fix/`, listing every
     ledger change.
+- **What crossrev compares** (`validation/tissue/composite_crossrev.py`): for each world of its base,
+  qualification and injection sets, traced at t = 0, the jaxpr text of the checked step, right-hand side and
+  device row checks, in which scalar constants such as `NEWTON_TARGET` appear as full-precision literals; the
+  dtype, shape and SHA-256 of every array those programs close over; and the initial state, layout, controls
+  at every schedule time and device-check constants. It does not compare the execution paths' rollout
+  programs or host-side checks (`check_values` and its tolerances). Constants are compared from 13 November
+  2026; the retro-check found them unchanged since `8416a72`, so earlier verdicts stand. The floor guard of
+  D147 compares primitive counts, not constants: rerun it with constants before version 3 serves a run of
+  record.
 
 ## D149: The EMT-miRNA pair's source profile keeps the reference's numerical conventions
 
@@ -4932,6 +4941,48 @@ emulator.
 - **Not a precedent.** New physics in `src/cells` follows AGENTS.md. A further exception
   needs its own user decision.
 
+
+## D150: Secreted-species transport is promoted now
+
+2026-11-13, user decision after the granzyme K review
+([PAPER_REVIEW_GZMK_AGEING.md](PAPER_REVIEW_GZMK_AGEING.md)): "we do have plans to be able to
+run special modes of Cells at differnt timescales, so down the road nothing right now but for
+sure the secreted-species transport now".
+- **Promoted now:** general secreted-species transport. A protein-scale species is secreted by
+  cells, moves in extracellular space, and is taken up or cleared, with conserved accounting and
+  a catalogue identity. It is a general, reusable engine feature (D136, D144), never specific to
+  granzyme K, and it also serves the roadmap's morphogen-source goal (ROADMAP item 9).
+- **Design first (D142),** then code behind the usual guards. Calibration comes from a measured
+  protein or morphogen gradient in the literature.
+- **Deferred:** organ-scale ageing timescales (months) wait for Cells' planned long-time modes.
+  Nothing is built for them now.
+- The checkpoint-continuity decision drafted as "D150" in its design note takes the next free
+  number when the user approves it.
+
+## D151: Every reviewed candidate is deferred, not closed
+
+2026-11-13, user decision on the paper reviews, with the advisor's help: "Have advisier help but
+we want to test all of this in the end".
+- **What it means.** Every ranked candidate in the paper reviews stays on the list as deferred,
+  with its prerequisite and gate named. Covered: partial reprogramming, granzyme K and tissue
+  ageing, kinetochore counts, and the earlier reviews. Wording such as "not recommended", "park"
+  or "not a Cells target" in the backlog becomes "deferred".
+- **Partial reprogramming, taken now:**
+  - **E07-v2** adopts the write–clear–challenge rules, translated to Cells, drafted after
+    E07-v1's analysis. It is in the coupled-renewal gate of CURRENT_PLAN.
+  - **Functional challenges,** in order: a second cue, injected current, then an osmotic step,
+    which needs replacement over water.
+  - **The cross-lineage perturbation test** is logged as a second-tier benchmark for the future
+    gene-regulation layer, as a direction-of-response test only.
+  - **Watch** for the peer-reviewed version, its GEO accession and its code deposit when E07-v2
+    is drafted and when the gene-regulation track opens.
+- **What it does not authorise:**
+  - any change to the registered E07-v1, whose protocol, frozen scorer and judged items stay as
+    they are;
+  - lifting D145's holds (Cortés-Poza Phase 1, the gene-regulation track, catalogue stage 3);
+  - reproducing a paper's own pipeline, model or code, or writing a reference solution for it,
+    which stays tooling needing the user's approval per paper (D138);
+  - building a feature for one paper (D144).
 
 ## Implementation choices and remaining work
 
