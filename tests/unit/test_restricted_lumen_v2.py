@@ -15,7 +15,9 @@ In NumPy (no compile), on the furrow division world (tests/partition_fixtures.cl
   on the daughters and fill, with every ledger closed at each stage and the cleft open across
   the event;
 * refusals: a facing patch neither an onset patch nor a partition-born descendant of one, an
-  onset volume other than w A_on / 2, and a lumen node that is not an onset node.
+  onset volume other than w A_on / 2, and a lumen node that is not an onset node;
+* 1 -> 2 -> 4 with second onsets (cleft_quartered) walked through both onsets and both
+  partitions: every cleft opens at its onset, every ledger closes.
 """
 
 import copy
@@ -269,3 +271,32 @@ def test_definition_refusals(change, message):
     change(raw)
     with pytest.raises(ConfigError, match=message):
         parse_spec(raw)
+
+
+def test_the_quartered_world_walks_through_two_onsets_and_partitions():
+    """1 -> 2 -> 4 with second onsets (tests/partition_fixtures.cleft_quartered), walked in
+    NumPy one step's split parts at a time: the first cleft opens at its onset, the daughters'
+    second clefts at theirs, and every cleft stays open across both partitions. Every ledger
+    closes and @3's domain holds at the view at each record."""
+    spec, model, state, p = bind(fx.cleft_quartered(injection=1e-12))
+    ops = {op.LAW_ID: op for op in model.operators}
+    nodes = [c.id for c in spec.model.extracellular]
+    s = state
+    for t in (0.0, 0.001, 0.002, 0.003, 0.004, 0.005):
+        control = control_at(spec, model, t)
+        for law in (insertion_v2.LAW_ID, fx.PARTITION):
+            s, ok = ops[law].event(s, control, p, xp=np, view=lambda x: at_view(model, p, x))
+            assert ok, (law, t)
+        for _ in range(2):
+            for law in (insertion_v2.LAW_ID, v2.LAW_ID, fx.BRIDGE, fx.INJECTION):
+                kw = dict(view=at_view(model, p, s)) if ops[law].BOOKS_AT_VIEW else {}
+                s, ok = ops[law].half_step(s, H, control, p, xp=np, **kw)
+                assert ok is None or ok, (law, t)
+        q = at_view(model, p, s)
+        assert adapter.domain_valid(adapter.inner_state(s), q, q.active, xp=np), t
+        closes(model, s, p, f"t = {t}")
+        lumens = {k: s.lumen_volume_increment_pL[nodes.index(k)] for k in nodes[1:]}
+        assert (lumens["cleft"] > 0) == (t >= fx.ONSET)
+        assert (lumens["cleft2_d1"] > 0) == (lumens["cleft2_d2"] > 0) == (t >= fx.SECOND_ONSET)
+    assert list(q.active.astype(int)) == [0, 0, 0, 1, 1, 1, 1]
+    assert q.outside_active.all()

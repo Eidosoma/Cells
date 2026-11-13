@@ -283,6 +283,138 @@ def cleft_divided(
     return raw
 
 
+SECOND_ONSET = 0.003
+SECOND = 0.005
+
+
+def cleft_quartered(
+    *,
+    at=EVENT,
+    second_onset=SECOND_ONSET,
+    second=SECOND,
+    end=0.006,
+    rate=FURROW_RATE,
+    bridge=("linear", 0.001),
+    injection=None,
+):
+    """The furrow world through 1 -> 2 -> 4 with second onsets (§4.3, §8.1), as raw.
+
+    The first cleavage is cleft_divided's: the furrow opens at ONSET, cell_0 divides at `at`,
+    and the daughters' furrows keep inserting. A bridge closes over 1 ms (linear: d1 and d2
+    divide again). Then each daughter d opens a second furrow (furrow2_d) at second_onset, onto
+    its own new cleft (cleft2_d) with its own access face to the bath. At `second` each daughter
+    divides, and its three patches (old, first furrow, second furrow) split in half. Its
+    furrows' rates pass to its daughters' halves. Every cleft is a lumen. Optionally 1 pA goes
+    into d1 from its birth until its division. All fractions are 1/2.
+    """
+    base = ifx.cleft_cell(end=end, cleft_pL=CLEFT_PL)
+    base["experiment"]["observation_times"] = [0.0, end]
+    for patch in base["model"]["membranes"]:
+        patch["pump"] = None
+    base["experiment"]["pump_controls"] = []
+    raw = cs.frozen_definition(base)
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    blocks = [ps.add_division(raw, division_id="first", parent="cell_0", daughters=("d1", "d2"))]
+    bridges = []
+    if bridge is not None:
+        closure, tau, *rest = bridge
+        made = ps.add_bridge(
+            raw,
+            junction_id="bridge_1",
+            daughters=("d1", "d2"),
+            aperture_m=rest[0] if rest else APERTURE_M,
+            diffusivity=diffusivity(raw),
+        )
+        bridges.append(dict(made, closure=closure, closure_time_s=tau))
+    cleft = next(c for c in m["extracellular"] if c["id"] == "cleft")
+    furrow = next(p for p in m["membranes"] if p["id"] == "furrow")
+    access = next(f for f in m["faces"] if f["id"] == "access")
+    control = next(c for c in e["membrane_controls"] if c["membrane_id"] == "furrow")
+    for d in ("d1", "d2"):
+        node = dict(cleft, id=f"cleft2_{d}", initial_amount_fmol=dict(cleft["initial_amount_fmol"]))
+        m["extracellular"].append(node)
+        m["membranes"].append(
+            dict(
+                furrow,
+                id=f"furrow2_{d}",
+                inside=d,
+                outside=f"cleft2_{d}",
+                permeability_m_per_s=dict(furrow["permeability_m_per_s"]),
+            )
+        )
+        m["faces"].append(
+            dict(
+                access,
+                id=f"access2_{d}",
+                sender=f"cleft2_{d}",
+                diffusivity_m2_per_s=dict(access["diffusivity_m2_per_s"]),
+            )
+        )
+        e["membrane_controls"].append(dict(control, membrane_id=f"furrow2_{d}"))
+    x["extracellular_capacity"] = len(m["extracellular"])
+    x["membrane_capacity"] = len(m["membranes"])
+    x["face_capacity"] = len(m["faces"])
+    links = ("bridge_1",) if bridges else ()
+    for d, kids in (("d1", ("g1", "g2")), ("d2", ("g3", "g4"))):
+        blocks.append(
+            ps.add_division(raw, division_id=f"second_{d}", parent=d, daughters=kids, bridges=links)
+        )
+    halves = {"d1": ("g1", "g2"), "d2": ("g3", "g4")}
+    schedules = {"furrow": (ONSET, [(0.0, 0.0), (ONSET, rate), (at, 0.0)])}
+    for d, kids in halves.items():
+        schedules[f"furrow_{d}"] = (None, [(0.0, 0.0), (at, 0.5 * rate), (second, 0.0)])
+        schedules[f"furrow2_{d}"] = (
+            second_onset,
+            [(0.0, 0.0), (second_onset, rate), (second, 0.0)],
+        )
+        for g in kids:
+            schedules[f"furrow_{d}_{g}"] = (None, [(0.0, 0.0), (second, 0.25 * rate)])
+            schedules[f"furrow2_{d}_{g}"] = (None, [(0.0, 0.0), (second, 0.5 * rate)])
+    width = 2e-15 * CLEFT_PL / FURROW_AREA_M2  # V_on = w A_on / 2 for every cleft.
+    operators = [
+        ifx.membrane_state(raw),
+        dict(
+            law=INSERTION2,
+            patches=[
+                dict(
+                    membrane_id=k,
+                    specific_capacitance_F_per_m2=ifx.SPECIFIC_CAPACITANCE,
+                    population_densities_per_m2={},
+                )
+                for k in schedules
+            ],
+        ),
+        dict(
+            law=LUMEN2,
+            lumens=[
+                dict(node_id=k, source_id="bath_0", gap_width_m=width)
+                for k in ("cleft", "cleft2_d1", "cleft2_d2")
+            ],
+        ),
+        dict(law=PARTITION, divisions=blocks),
+    ]
+    if bridges:
+        operators.append(dict(law=BRIDGE, bridges=bridges))
+        e["bridge_controls"] = [dict(junction_id="bridge_1", start_time=at)]
+    m["operators"] = operators
+    e["insertion_controls"] = [
+        dict(
+            membrane_id=k,
+            onset_time=onset,
+            schedule=[dict(time=t, rate_m2_per_s=r) for t, r in changes],
+        )
+        for k, (onset, changes) in schedules.items()
+    ]
+    e["partition_events"] = [
+        dict(division="first", time=at, carriers=["c1", "c2"]),
+        dict(division="second_d1", time=second, carriers=["c11", "c12"]),
+        dict(division="second_d2", time=second, carriers=["c21", "c22"]),
+    ]
+    if injection is not None:
+        inject(raw, "d1", injection, at, stop=second)
+    return raw
+
+
 def without_divisions(*, end=0.004):
     """The parent alone with an idle partition (no divisions) and membrane state."""
     raw = cs.frozen_definition(parent(end=end))

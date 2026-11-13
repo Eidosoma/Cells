@@ -11,7 +11,9 @@ retiring path):
   bridge carries current. Every check closes, and the bridge retires with the second
   divisions into the record;
 * an exponential closure on a terminal division: every check closes, and the aperture is
-  a_0 exp(-(t - t_b) / tau) at the records.
+  a_0 exp(-(t - t_b) / tau) at the records;
+* the furrow world through 1 -> 2 -> 4 with second onsets (cleft_quartered), with an injection:
+  every check closes, every cleft opens at its onset and its lumen grows.
 A few minutes on one core (each world compiles).
 """
 
@@ -96,3 +98,31 @@ def test_an_exponential_closure_on_a_terminal_division():
     times = np.asarray(result.times)
     expected = fx.APERTURE_M * np.exp(-np.maximum(times - fx.EVENT, 0.0) / tau)
     assert np.allclose(aperture, expected, rtol=1e-13, atol=0)
+
+
+def test_the_furrow_world_through_one_to_two_to_four_with_second_onsets():
+    """tests/partition_fixtures.cleft_quartered on the device, with 1 pA into d1 so the
+    daughters differ: every check closes through the onset, the first division, the second
+    onsets and the second divisions. Every cleft opens at its onset and its lumen grows, and
+    the bridge retires closed into the record."""
+    raw = fx.cleft_quartered(injection=1e-12)
+    times = [0.0, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006]
+    raw["experiment"]["observation_times"] = times
+    spec = parse_spec(raw)
+    result = run(spec)
+    h = result.history
+    accepted = np.asarray(result.times)
+    row = {t: int(np.flatnonzero(np.isclose(accepted, t, rtol=0, atol=1e-12))[0]) for t in times}
+    nodes = [c.id for c in spec.model.extracellular]
+    phase = np.asarray(result.observations.partition_slot_phase)[-1]
+    assert list(phase) == [2, 2, 2, 1, 1, 1, 1]
+    lumen = np.asarray(h.lumen_volume_increment_pL)
+    for node, onset in (
+        ("cleft", fx.ONSET),
+        ("cleft2_d1", fx.SECOND_ONSET),
+        ("cleft2_d2", fx.SECOND_ONSET),
+    ):
+        k = nodes.index(node)
+        assert lumen[row[onset], k] == 0 and lumen[row[0.006], k] > lumen[row[0.005], k] > 0, node
+    e = [j.id for j in spec.model.junctions].index("bridge_1")
+    assert np.asarray(h.junction_gate)[-1, e] == 0 and np.asarray(h.bridge_aperture_m)[-1, e] == 0
