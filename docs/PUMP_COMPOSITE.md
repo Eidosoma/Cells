@@ -32,7 +32,8 @@ The experiment adds each operator's schedule under the operator's own keys:
 | `ideal_osmosis_linear_compliance_water@1` | `compartments`, `baths`, `membranes` | `water_controls` | `resolved_pump_water@1` |
 | `k_anion_symport_mass_action@1` | `volume_factor`, `roles`, `routes` | `symport_controls` | `resolved_pump_water@2` (with water before it) |
 | `scheduled_cell_replacement@1` | `junction_formation`, `templates`, `template_capacity` | `replacement_events` | `resolved_pump_replacement@1` |
-| `electrode_current_injection@1` | `electrodes` | `injection_controls` | none: a new law ([v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §4) |
+| `scheduled_cell_replacement@2` | `junction_formation`, `templates`, `template_capacity`, `impermeant_species` | `replacement_events` | none: @1 over water, which must precede it; newcomers bring their volume ([v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §2) |
+| `electrode_current_injection@1` | `electrodes` | `injection_controls` | none: a new law ([v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §4); refused over water, whose dilution term it does not book (§2.10) |
 | `membrane_entity_state@1` | `populations` (functional unit, catalogue reference, reference density) | none | none: a state owner (v2 design §3) |
 | `scheduled_membrane_insertion@1` | `patches` (specific capacitance, inserted densities) | `insertion_controls` (onset, rates) | none: a new law (v2 design §3) |
 

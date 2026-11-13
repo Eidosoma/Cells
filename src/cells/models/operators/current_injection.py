@@ -24,7 +24,9 @@ and the charge f_s I h of each carrier sums to I h. Bookings, exact for each hal
   declared layout's terms are used, as before, bit for bit.
 Refusal: a half-step in which a cell could not supply a removed carrier (its amount would
 not stay positive). No electrode: statically idle. No current in a step: the half-step
-selects the start state. Current changes are exact multiples of dt.
+selects the start state. Current changes are exact multiples of dt. A composition with a
+volume owner (water) is refused (CONFLICTS_VIEW volume): the source's work would miss water's
+dilution term of the injected amounts.
 Departures from the v2 note, accepted by the lead (12 November):
 * RK4 keeps the half-steps around the inner step ("split", not "coupled"): the
   composite's coupled right-hand side takes operator rates on owned fields only, and the
@@ -238,6 +240,11 @@ class ElectrodeCurrentInjection(Operator):
     SPLIT = True
     RK4 = "split"
     BOOKS_AT_VIEW = True
+    # Refused over a volume owner (water): the source's work is @3's free-energy change on the
+    # declared volume, without water's dilution term -RT N_tot log(V/V0), which the injected
+    # amounts change too (a probe left exactly that unbooked; v2 design §2.10, question 6).
+    # A law that books water's term (osmotic_water.node_free_energy_pJ) comes with a consumer.
+    CONFLICTS_VIEW = ("volume",)
     STATE_AXES = STATE_AXES
     WORK_FIELDS = ("injection_work_pJ",)
     LAYOUT_FIELDS = ("injection_cell", "injection_carrier_fraction")

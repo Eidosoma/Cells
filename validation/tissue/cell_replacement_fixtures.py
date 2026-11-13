@@ -107,3 +107,33 @@ def route_template(template_id, routes=None):
         channel_gates=None,
         route_values=copy.deepcopy(NO_ROUTES if routes is None else routes),
     )
+
+
+def over_water(
+    raw,
+    templates=(),
+    events=(),
+    *,
+    impermeant=("P",),
+    pf_m_s=5e-4,
+    availability=1.0,
+    impermeant_fmol=0.0,
+    formation=None,
+):
+    """[water, scheduled_cell_replacement@2] on a raw @3 definition (v2 design §2): water as
+    pump_water_fixtures.with_water declares it, then the replacement block of with_replacement
+    under law @2, with its impermeant species. Templates' volume_pL are arrival volumes."""
+    from cells.core import pump_composite_spec as cs
+    from validation.tissue import pump_water_fixtures as wfx
+
+    water = cs.frozen_definition(
+        wfx.with_water(
+            raw, pf_m_s=pf_m_s, availability=availability, impermeant_fmol=impermeant_fmol
+        )
+    )
+    v1 = cs.frozen_definition(with_replacement(raw, templates, events, formation=formation))
+    block = dict(copy.deepcopy(v1["model"]["operators"][0]), law="scheduled_cell_replacement@2")
+    block["impermeant_species"] = list(impermeant)
+    water["model"]["operators"].append(block)
+    water["experiment"]["replacement_events"] = v1["experiment"]["replacement_events"]
+    return water

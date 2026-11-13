@@ -241,7 +241,7 @@ energy. Its declarations beyond @1's:
 | `REQUIRES` | `ideal_osmosis_linear_compliance_water@1` before it (the symport's precedent) |
 | `VIEW_READS` | `volume`, read through water's own function (insertion and the lumen read membrane state's the same way) |
 | `CONFLICTS_VIEW` | `membrane_area` (pump densities scaled by the declared area, as in @1), and the capacitances and activity masks that @1's event map reads from the declared layout: `membrane_capacitance`, `active`, `outside_active`, `membrane_active`, `channel_active`, `junction_active` (§2.7). `volume` and `extracellular_volume` leave the list |
-| Declaration, added | `impermeant_species`: species IDs whose content every newcomer keeps from the slot's declaration (optional, default none; §2.2) |
+| Declaration, added | `impermeant_species`: species IDs whose content every newcomer keeps from the slot's declaration (an explicit list, possibly empty; §2.2) |
 | Owned state, added | `replacement_volume_removed_pL` and `replacement_volume_supplied_pL` (cell slot, ≥ 0); `replacement_water_free_energy_pJ` (cell slot, signed) and `replacement_water_energy_magnitude_pJ` (cell slot, ≥ 0). All are zero for founders |
 | Layout, added | `template_volume_pL` [template rows]: each template's declared volume (padding 1.0, never selected); `replacement_impermeant` [species]: the declared impermeant species |
 | `ENTITY_WRITES` and `EVENT_REPLACES`, added | `volume_increment_pL` ← (`replacement_volume_removed_pL`, `replacement_volume_supplied_pL`) |
@@ -467,10 +467,11 @@ guard 10).
 | `src/cells/models/operators/cell_replacement_v2.py` | New: @2, a subclass of @1's operator, with its event map, ledger terms, domain, checks and observation | New |
 | `src/cells/models/operators/__init__.py` | Register @2 | The registry; no program changes |
 | `src/cells/models/operators/osmotic_water.py` | `ACCEPTS_WRITES`, and a new `node_free_energy_pJ` that water itself does not call | Water@1's and @2's module; no existing function changes |
-| `src/cells/models/operators/cell_replacement.py` | Host side only: `worst_case`'s route maxima applied to a given definition, and `check_definition` taking the event function. Device functions are unchanged. The alternative is duplicates in @2's module (open question 3) | @1's module |
+| `src/cells/models/operators/cell_replacement.py` | `worst_case`'s route maxima applied to a given definition, and `check_definition` and `apply_events` taking the event function, each an optional argument whose default is @1's own code. `apply_events` also runs on the device; with the default its trace is unchanged (guard A) | @1's module |
 | `src/cells/core/cell_replacement_spec.py` | `parse_events` and `check_template_on_slot` take the template-volume rule, with @1's as the default. The file is under this round's core/ restriction, so this needs approval; otherwise @2 duplicates the event parser (open question 2) | @1's parser |
 | `src/cells/models/operators/current_injection.py` | Only if open question 6 is accepted: `volume` added to `CONFLICTS_VIEW`, a declaration that refuses injection over water and changes no program | Injection@1's module (Rm1); covered by guard A |
 | `validation/tissue/composite_crossrev.py` | A new `volume` world set (water with @2) for later baselines; the existing sets are unchanged | Tool |
+| `validation/tissue/cell_replacement_fixtures.py`, `tests/replacement_water_fixtures.py` | `over_water`, the [water, @2] definition builder; the test worlds | Fixtures |
 | `tests/unit/test_cell_replacement_v2.py`, `tests/unit/test_cell_replacement_v2_runs.py`, `tests/test_tiers.json` | Tier-1 smoke, compiled runs, and the tier rows (re-measured) | New |
 | `docs/PUMP_COMPOSITE.md`, `PROGRESS.md` | The operator table's row; status | Docs |
 
@@ -502,6 +503,40 @@ its stop rule before its runs, comparing §2's head against main at the landing 
 
 Any difference stops the work, and is reported. Under D148 the change then needs a new ID or the
 user's decision. These runs take a few hours of detached CPU time.
+
+**Guard A as registered (13 November, in the commit that adds §2's code, before any A run).**
+- **Sides.** Before: main 4465b48, from the S3 agent's clean snapshot
+  (`/mnt/workspaces/Cells/cell-division-s3-20261113-01/snapshot-main-4465b48`). After: the
+  registering commit, from its own clean snapshot (`composite-v2-s2-20261113-01/snapshot-after`).
+- **Qualified code this commit touches.** None of these changes the arithmetic of a qualified
+  program:
+  - `osmotic_water.py`: `ACCEPTS_WRITES` and the new `node_free_energy_pJ`, which water never
+    calls;
+  - `cell_replacement.py` (@1): `worst_case`, `check_definition` and `apply_events` take an
+    optional argument whose default is @1's own code. `apply_events` also runs on the device;
+    with the default its trace is unchanged;
+  - `current_injection.py`: `volume` in `CONFLICTS_VIEW`, a structure refusal;
+  - `core/cell_replacement_spec.py`: the template-volume keyword, default @1's rule;
+  - the registry, the cell-replacement fixtures (one new function) and `composite_crossrev.py`
+    (a new `volume` set; the other sets unchanged).
+- **Crossrev.** The after side's jaxprs and bindings of the base, qualification and injection
+  sets are compared with the baseline of record,
+  `/mnt/workspaces/Cells/cell-division-s3-20261113-01/crossrev-landing/baseline-of-record.json`
+  (outputs `crossrev-landing/{base,qualification,injection}/4465b48`; 8416a72 stays the earlier
+  record). Every jaxpr and binding must be identical. The new `volume` set is recorded at the
+  after side as its first record.
+- **Forward guard.** `inplace_fix_guard.py` dumps every part at both sides (the 825-node world in
+  its own unit), and its compare must find every state field, observation column and diagnostic
+  identical in every world, ledger accumulators included.
+- **Judges.** W1, W2, G2-Q1 (Q1–Q4, Q5–Q7) and Rm1 at both sides. Every number must be identical
+  apart from provenance and timing, under `compare_judges.py`'s rules (the S3 fix's tool).
+- **Tests.** The composite, frozen-model and new test files pass at the after side.
+- **Outcome.** (A) All identical: §2's code changes no qualified program, and lands under D148.
+  (B) Any difference: the queue stops at a crossrev difference, and every other difference is
+  reported. The work stops there; under D148 the change then needs a new ID or the user's
+  decision.
+- Scripts: `composite-v2-s2-20261113-01/scripts/guard_a.sh` (parts crossrev, guard, guard825,
+  compare, judges, tests).
 
 **B. The new composition.** A tier-1 smoke test under 20 s covers the NumPy event map and
 ledgers, the analytic checks and the refusals. The compiled runs go in tier 2 or 3.

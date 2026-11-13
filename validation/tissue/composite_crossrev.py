@@ -14,16 +14,17 @@ frozen-format definitions:
 compare checks the two saved sets: jaxpr text equality, and array dtype, shape and
 bytes. Identical programs on identical inputs run identically on a CPU.
 
-Three world sets: base (small worlds of every structure: routes, sheets, RK4, events,
+Four world sets: base (small worlds of every structure: routes, sheets, RK4, events,
 donors, padding), qualification (the guarded qualification worlds themselves:
-W1's trajectories, W2's arms and G2-Q1's cases) and injection (electrode injection
-without a field-input provider, the Rm1 egg included). For the qualification set, bindings
+W1's trajectories, W2's arms and G2-Q1's cases), injection (electrode injection
+without a field-input provider, the Rm1 egg included) and volume (replacement@2 over
+water, v2 design §2; recorded from its first revision on). For the qualification set, bindings
 are also saved at every step size of the dt studies the guards did not repeat (W1's
 and Q5's), since dt enters the bound inputs (step counts, event steps) as well as
 the traced program.
 
-Usage (PYTHONPATH at the revision under test; SET is base, the default, qualification or
-injection):
+Usage (PYTHONPATH at the revision under test; SET is base, the default, qualification,
+injection or volume):
   python -m validation.tissue.composite_crossrev jaxprs DIR [SET]
   python -m validation.tissue.composite_crossrev bindings DIR [SET]
   python -m validation.tissue.composite_crossrev compare A B
@@ -192,6 +193,33 @@ def injection_worlds():
     return dict(injection_cell=raw, injection_rm1=rm1.definition(1e-3))
 
 
+def volume_worlds():
+    """scheduled_cell_replacement@2 over water (v2 design §2): the heredity sheet with templates
+    at their own arrival volumes and a copy of the centre into the ring, and without events."""
+    from cells.core.cell_replacement_spec import exact_event_times
+    from validation.tissue import cell_replacement_fixtures as rfx
+
+    dt = 1e-3
+    t1, t2 = exact_event_times((10, 20), dt)
+    raw = rfx.heredity_sheet(1, 0, dt=dt, end_time=0.03)
+    raw["experiment"]["observation_times"] = [0.0, 0.03]
+    v0 = raw["model"]["cells"][0]["volume_pL"]
+    templates = [
+        rfx.template_from_cell(raw, "cell_1", "h"),
+        rfx.template_from_cell(raw, "cell_3", "d"),
+    ]
+    templates[0]["volume_pL"], templates[1]["volume_pL"] = 0.97 * v0, 1.03 * v0
+    events = (
+        (t1, "cell_0", "h", "n1"),
+        (t1, "cell_1", "d", "n2"),
+        (t2, "cell_0", None, "c1", "cell_3"),
+    )
+    return dict(
+        volume_events=rfx.over_water(raw, templates, events),
+        volume_idle=rfx.over_water(raw, templates),
+    )
+
+
 def _worlds(world_set, all_steps):
     if world_set == "base":
         return worlds()
@@ -199,7 +227,9 @@ def _worlds(world_set, all_steps):
         return qualification_worlds(all_steps)
     if world_set == "injection":
         return injection_worlds()
-    raise SystemExit(f"Unknown world set {world_set!r} (base, qualification or injection)")
+    if world_set == "volume":
+        return volume_worlds()
+    raise SystemExit(f"Unknown world set {world_set!r} (base, qualification, injection or volume)")
 
 
 def _setup(raw):

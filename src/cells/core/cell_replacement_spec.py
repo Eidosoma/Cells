@@ -354,14 +354,25 @@ def slot_routes(model, slot):
     return membranes, [c for c in model.channels if c.membrane_id in ids]
 
 
-def check_template_on_slot(template, slot, model):
-    """A template may only replace the slot's existing routes, on matching geometry."""
+TEMPLATE_VOLUME_RULES = ("slot", "arrival")
+
+
+def check_template_on_slot(template, slot, model, *, template_volume="slot"):
+    """A template may only replace the slot's existing routes, on matching geometry.
+
+    template_volume: "slot" (resolved_pump_replacement@1, the default) requires the
+    template's volume to equal the slot's declared volume. "arrival" leaves the volume to
+    the operator that owns it: scheduled_cell_replacement@2 checks a newcomer's arrival
+    volume against water's bounds (docs/PUMP_COMPOSITE_V2_DESIGN.md §2.2).
+    """
+    if template_volume not in TEMPLATE_VOLUME_RULES:
+        raise ConfigError("Template volume rule must be one of " + ", ".join(TEMPLATE_VOLUME_RULES))
     membranes, channels = slot_routes(model, slot)
     if not membranes:
         raise ConfigError(f"Replacement slot {slot} has no membrane")
     if template.amounts_fmol is not None:
         cell = next(c for c in model.cells if c.id == slot)
-        if template.volume_pL != cell.volume_pL:
+        if template_volume == "slot" and template.volume_pL != cell.volume_pL:
             raise ConfigError(f"Template {template.id} volume differs from slot {slot}")
         if template.fixed_charge_equivalent_fmol != cell.fixed_charge_equivalent_fmol:
             raise ConfigError(f"Template {template.id} fixed charge background differs from {slot}")
@@ -414,7 +425,8 @@ def exact_event_times(steps, dt):
     return [int(k) * dt for k in steps]
 
 
-def parse_events(raw, base, templates):
+def parse_events(raw, base, templates, *, template_volume="slot"):
+    """The replacement events; template_volume as check_template_on_slot's (default @1's)."""
     if type(raw) is not list:
         raise ConfigError("replacement_events requires an explicit list")
     m, dt, end = base.model, base.execution.dt, base.experiment.end_time
@@ -464,7 +476,7 @@ def parse_events(raw, base, templates):
     checked = set()
     for v in events:
         if v.template is not None and (v.template, v.slot) not in checked:
-            check_template_on_slot(names[v.template], v.slot, m)
+            check_template_on_slot(names[v.template], v.slot, m, template_volume=template_volume)
             checked.add((v.template, v.slot))
         if v.donor is not None and (v.donor, v.slot) not in checked:
             check_donor_on_slot(v.donor, v.slot, m)

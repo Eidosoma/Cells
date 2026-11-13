@@ -319,18 +319,24 @@ def event_map(state, due, control, p, *, xp=jnp):
     )
 
 
-def apply_events(state, control, p, *, xp=jnp):
-    """(state after the due replacements, schedule consistency) at a step start."""
+def apply_events(state, control, p, *, xp=jnp, event=None):
+    """(state after the due replacements, schedule consistency) at a step start.
+
+    event: the event map (default this law's, event_map). scheduled_cell_replacement@2
+    passes its own, which calls event_map and adds the slot's volume
+    (models/operators/cell_replacement_v2.py); the default's trace is unchanged.
+    """
+    event = event_map if event is None else event
     due = p.active & (control.generation == state.generation + 1)
     stale = p.active & ~due & (control.generation != state.generation)
     supplied = (control.template >= 1) | (control.donor >= 1)
     ok = ~xp.any(stale) & xp.all(xp.where(due, supplied, True))
     if xp is np:
-        return (event_map(state, due, control, p, xp=np) if np.any(due) else state), ok
+        return (event(state, due, control, p, xp=np) if np.any(due) else state), ok
     return (
         jax.lax.cond(
             jnp.any(due),
-            lambda s: event_map(s, due, control, p),
+            lambda s: event(s, due, control, p),
             lambda s: s,
             state,
         ),
@@ -492,15 +498,19 @@ def bind(spec, declaration, events):
     )
 
 
-def check_definition(spec, declaration, events, model):
+def check_definition(spec, declaration, events, model, *, apply=None):
     """Stage-1 scope, then each template in the domain at its first slot.
 
     The inner definition was checked by its own parser. A replaced slot needs a
     held node in its capacitor component. For each template, its first event is
     applied to the initial state (the event map on the host) and the occupant
-    state must lie in the composition's domain with a valid field.
+    state must lie in the composition's domain with a valid field. apply: the
+    events' host function (default apply_events; scheduled_cell_replacement@2 passes
+    its own, which also writes the newcomer's volume).
     """
     from cells.models.pump_composite import compact
+
+    apply = apply_events if apply is None else apply
 
     small = compact(spec)
     state, p = model.initial_values(small)
@@ -528,21 +538,23 @@ def check_definition(spec, declaration, events, model):
             template[i] = 0 if v.template is None else rows[v.template]
             donor[i] = 0 if v.donor is None else order[v.donor] + 1
             control = base._replace(generation=generation, template=template, donor=donor)
-            after, ok = apply_events(state, control, p, xp=np)
+            after, ok = apply(state, control, p, xp=np)
             if not ok or not model.control_domain_valid(after, control, p, p.active, xp=np):
                 raise ConfigError(
                     f"Newcomer {v.carrier_id} ({v.newcomer}) is outside the domain at {v.slot}"
                 )
 
 
-def worst_case(spec, declaration, events):
+def worst_case(spec, declaration, events, *, base=None):
     """The inner definition with each replaced slot's largest leak and pump routes.
 
     Each replaced slot takes the largest leak permeabilities and pump capacities over
     its founder and its templates (@3's explicit-rate and calcium bounds read them);
-    channel stiffness is refused in-step by @3 at the actual openings.
+    channel stiffness is refused in-step by @3 at the actual openings. base: the
+    definition the maxima are applied to (default the inner projection of spec);
+    scheduled_cell_replacement@2 passes water's minimum-volume definition.
     """
-    base = composite_spec.projection(spec)
+    base = composite_spec.projection(spec) if base is None else base
     m = base.model
     species = list(m.species_ids)
     names = {t.id: t for t in declaration.templates}
