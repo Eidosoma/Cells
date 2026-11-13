@@ -1,9 +1,16 @@
 # Stage S5: partition, bridge closure, lineage and the R-ops (design)
 
-**Status: draft for the lead's and the advisor's review (13 November 2026). No code is
-written before the review (D142).** Design basis: the
-[cell-division design](CELL_DIVISION_DESIGN.md) §2–§5, §8 and §9; the
-[v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §1, §3 and §4; the [S3 plan](CELL_DIVISION_S3_PLAN.md).
+**Status: reviewed by the lead and the advisor (13 November 2026); staging S5a and S5b
+approved.** The decisions as taken are in §12. Code starts once two things are back:
+- the probe of risk 1 (§13; its result is in §0);
+- the constants-aware crossrev baseline, which the checkpoint agent is producing (§8.4).
+
+S5a lands after the volume ledger (v2 design §2). The review's amendments are in §4.2, §5.5,
+§8.2–§8.4, §10.1, §13 and Appendix A. Appendix A states the equations the independent
+references are written from, without the engine's code.
+
+Design basis: the [cell-division design](CELL_DIVISION_DESIGN.md) §2–§5, §8 and §9; the
+[v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §1–§4; the [S3 plan](CELL_DIVISION_S3_PLAN.md).
 Evidence and log: `/mnt/workspaces/Cells/cell-division-s5-20261113-01/` (HANDOFF.md).
 
 Marks as in the division design: **S** our arithmetic or interpretation.
@@ -63,12 +70,36 @@ static topology. A partition changes the topology at run time, and three as-buil
    live facing patches (§5). Insertion@1 and lumen@1 stay registered and unchanged for S3's
    judged world.
 
-**Effort:** about 8.5 agent-days (range 8–10) plus 3–6 CPU hours, against the original 3–4
-days that also held J2. It can be staged as S5a (about 5.5 days) and S5b (about 3 days) (§11).
+**Effort:** about 9 agent-days (range 8.5–10.5) plus 3–6 CPU hours, the review's added guards
+included, against the original 3–4 days that also held J2. It is staged as S5a (about 5.5 days)
+and S5b (about 3.5 days), as the lead approved (§11).
 
-**S4:** supersede and report; no new run (§9).
+**S4:** superseded and reported, with no new run. The lead records the decision when this note
+lands (§9).
 
-**Decisions for the lead and the user:** §12.
+**The probe before code (risk 1, §13): clean, no drift.**
+- **The world.** Four quarter eggs on one held bath, at egg scale, with three species moving in
+  every cell (staggered pulses through one electrode per cell). The models are composite@1 over
+  @3 with injection only. It is built from the S0 smoke egg, with no S5 code and no partition.
+- **The run.** 1.78e6 steps at 0.25 ms (445 s), from a clean snapshot of b98702c, with device
+  checks on every row. No step was refused and no check failed.
+- **The electrode residual against its bound.**
+  - Its worst was 2.6e-4: −1.9e-26 C against 7.4e-23 C at the fifth step, an early transient
+    that the one-cell control shows too (1.8e-4).
+  - After the first window it stayed below 1.3e-8. At every window end it was 0 or ±1.0e-25 C, a
+    couple of ulps of the plate charge, while the bound grew to 6.3e-15 C.
+  - The later-half slope is −4e-32 C per step against the bound's 5.5e-21 C per step, an
+    asymptotic ratio of 8e-12.
+- **The one-cell control** (D148's exact case) gives the same picture, with an asymptotic ratio
+  of 1e-16.
+- **So the stop branch is not triggered.** That branch was an ordered node sum or an allowance,
+  with S5a at 1 → 2 only. Egg-scale 1 → 2 → 4 stays in the plan.
+- **Caveat.** The probe has no closer, so its program is not S5's. The S5 worlds' device checks
+  (Q1) measure the ratio again in their own program.
+- **Evidence.** `cell-division-s5-20261113-01/probe/` (unit `cells-s5-probe`; memory.events all
+  0; peak 0.9 GB).
+
+**Decisions:** §12, as taken on 13 November.
 
 ## 1. What the as-built engine imposes
 
@@ -117,6 +148,9 @@ close (`active`, `outside_active`, `membrane_active`, `face_active`, `junction_a
   order. Boolean conjunction is exact and independent of order.
 - **Closers or a provider, never both.** A composition in which one operator provides a mask
   (insertion@1) and another closes it is refused.
+- **A closer counts as the mask's provider for `CONFLICTS_VIEW`.** An operator that reads a
+  mask from the declared layout (replacement@1 and @2) is refused beside any closer of it
+  (§5.5).
 - **Propagation (adapter, after every closer).**
   - A patch of a closed cell is closed.
   - A population on a closed patch is closed.
@@ -321,7 +355,8 @@ static index arrays.
        they would be about (C_D1 + C_D2) V ≈ 3e-10 C, against a bound of order 1e-23 C. Q1
        would fail at row 0 on every S5 world (S).
    - **The fix (static: only with a closer).** Two constants are bound once from the definition
-     (R1):
+     (R1). They are layout arrays of the composition: bindings, one per world in a batch, never
+     constants closed over by the traced program (§8.3 Q6, §8.4).
      - E_ref = ½ Σ C0 V0² (declared) − ½ Σ C V² (view of the initial state);
      - q_ref = plates_declared(0) − plates_view(0), at the held nodes.
 
@@ -424,13 +459,14 @@ full or not at all.
 ### 4.1 Law and entry
 - **The bridge.** The bridge is an @3 junction between the two daughters, declared with:
   - the constant-field junction law (`coupling/selective.selective_flux`);
-  - P_s A_j = 2 a_0 D_s per species: area 2 a_0 × 1 m and permeability D_s / (1 m), as the
-    cleft's access face uses length 1 m;
+  - P_s A_j = 2 a_0 D_s^cyt per species: area 2 a_0 × 1 m and permeability D_s^cyt / (1 m),
+    as the cleft's access face uses length 1 m;
   - a gate fixed open (minimum open fraction 1, initial gate 1).
 
   For equal concentrations its conductance is 2 a σ, with σ = (F²/RT) Σ z_s² c_s D_s
   (Nernst–Einstein): the access conductance of an aperture in a thin wall (design §4.2).
-  The cytoplasmic diffusivities are to be sourced at build.
+  The cytoplasmic diffusivities are D_s^cyt = D_s σ_cyt / σ_free. σ_cyt is a declared
+  assumption until a source is found (§4.2; decision 12).
 - **The operator.**
   - Own state: `bridge_aperture_m[edge]`, a_0 until the bridge's birth.
   - View: `CONTROL_FACTORS = (junction,)`, availability × a/a_0, a product with any other
@@ -449,16 +485,33 @@ full or not at all.
 - **The bound (explicit term, design §5.4).** At 0.25 ms, dt × 2 G_b / C_D ≤ 1 with C_D about
   15.8 nF (half the old membrane's 31.7 nF) gives R_b ≥ about 32 kΩ (S).
 - **The aperture.** That is a_0 ≤ about 18–32 µm, depending on the cytoplasmic conductivity
-  (0.89 S/m with free-solution D, 0.5 S/m for about 2 Ω·m; to be sourced) (S).
-- **A numerical device, not a claim.**
-  - Each daughter's Rm is about twice dLB74's 488 kΩ for the whole egg, about 1 MΩ, so
-    R_b(a_0) ≪ Rm and the daughters start coupled at about 0.97 (S).
-  - Before the partition the cytosol is one node: valid while the bridge resistance is far
-    below the membrane's. It is about 3.5 kΩ at J1 (design §5.4), and coupling stays above 0.95.
+  σ_cyt (S).
+- **The cytoplasmic conductivity is a declared assumption** (no measurement was found in the
+  sources read; decision 12 waits for one).
+  - Default 0.5 S/m (about 2 Ω·m, the division design's working value), band 0.2–0.9 S/m.
+  - The upper end is the free-solution conductivity of the declared activity-basis cytosol,
+    σ_free = (F²/RT) Σ_s z_s² c_s D_s ≈ 0.89 S/m. It uses standard free-solution diffusivities:
+    Na 1.33, K 1.96 and Cl 2.03 × 10⁻⁹ m²/s, to be cited at build (S).
+  - The lower end allows an obstruction factor of 2–5 for yolk, organelles and bound ions (S).
+  - The bridge's cytoplasmic diffusivities are D_s^cyt = D_s (σ_cyt / σ_free): one obstruction
+    factor for every species.
+- **Partition time and a_0: an influence to measure, not a numerical device.**
+  - Before the partition the cytosol is one node. That is valid while the bridge resistance is
+    far below the membrane's: about 3.5 kΩ at J1 (design §5.4), with coupling above 0.95.
   - At birth the bridge carries no current: the potentials and concentrations are equal.
-  - **So the partition time and a_0 are numerical devices once R_b(a_0) ≪ Rm.** The closure
-    time τ_c is the physiological unknown (bridge closure was not measured) and needs a band
-    in any judged protocol.
+  - **While it is open, R_b matters at the quantities' own scale.**
+    - A daughter's input resistance with its sister behind R_b is Rm (R_b + Rm)/(2 Rm + R_b).
+    - At Rm ≈ 1 MΩ (about twice dLB74's 488 kΩ for the whole egg) and R_b = 32 kΩ, that is
+      about 508 kΩ. The limit R_b → 0 gives 500 kΩ, and the closed bridge gives 1 MΩ (S).
+    - The 8 kΩ difference is about 500 times S3's Rm tolerance of 15 Ω.
+  - **After closure** the bridge acts only through history: what the open interval exchanged.
+    For a symmetric division without injection that is nothing. Otherwise it is small, and it
+    is what Q10 measures.
+  - **So the partition time and a_0 are declared parameters.** Q10 (§8.3) registers each
+    compared quantity's sensitivity to them. A quantity is called insensitive only within its
+    registered tolerance; otherwise t_p and a_0 enter its band.
+  - The closure time τ_c is the physiological unknown (bridge closure was not measured). It
+    needs a band in any judged protocol.
 
 ### 4.3 The cleft lumen and the furrow membrane through closure
 - **Furrow membrane.**
@@ -481,7 +534,7 @@ full or not at all.
 ### 4.4 Refusals
 - a bridge junction that is not a contact between one division's two daughters, or whose gate
   is not fixed open;
-- P_s A_j ≠ 2 a_0 D_s for its declared diffusivities;
+- P_s A_j ≠ 2 a_0 D_s^cyt for its declared diffusivities and σ_cyt;
 - a start time other than its division's;
 - a negative or reopening aperture.
 
@@ -504,8 +557,8 @@ full or not at all.
   - It does not book the energy rule at the view (§5.3).
   - It reuses @1's law functions unmodified.
 - **Populations on onset patches** become admissible: the padded-slot rule gives them law code
-  0 until onset. This lifts the declared departure of design §6. Whether S5 admits them now,
-  with one smoke test, or keeps the refusal until a world needs them is decision 9.
+  0 until onset, which lifts the declared departure of design §6. Admitting them is deferred to
+  S5b (decision 9). In S5a, insertion@2 keeps insertion@1's refusal.
 
 ### 5.2 `restricted_cleft_lumen@2`
 - **Target.** V = V_on + w (Σ_live A_k − A_on)/2, the sum over the facing patches live in the
@@ -549,6 +602,33 @@ full or not at all.
   - a `core` spec helper;
   - the new insertion and lumen versions in new modules or new classes beside @1, without
     editing @1's code paths.
+
+### 5.5 Closers and `scheduled_cell_replacement@2` (v2 design §2, the volume ledger)
+- **Today they are refused together.**
+  - Replacement@2 runs @1's event map unchanged, which reads capacitances and activity masks
+    from the declared layout. So it declares `membrane_area`, `membrane_capacitance`, `active`,
+    `outside_active`, `membrane_active`, `channel_active` and `junction_active` in
+    `CONFLICTS_VIEW`. It books its image charge and capacitor terms on the declared layout,
+    without `BOOKS_AT_VIEW`.
+  - The composite checks `CONFLICTS_VIEW` against providers only, and a closer is not a
+    provider. S5's contract change therefore counts **a closer of a mask as its provider for
+    that check** (§2). [Replacement@1 or @2, any closer] is then refused when the composition is
+    built, as insertion@1 refuses a declared-layout booker today.
+  - They are also kept apart twice more: replacement@2 requires water, and the partition
+    refuses a volume provider (`CONFLICTS_VIEW` `volume`) and replacement explicitly (§3.8).
+- **Ownership stays per field.** The activity masks belong to their closers, combined by
+  conjunction; the volume to water; the amounts to @3. Each event books what it moves.
+- **Composing them later** (renewal and division in one tissue) needs three extensions, none in
+  S5:
+  - Replacement's event map books at the composite's view. That is the `BOOKS_AT_VIEW`
+    extension v2 §2.7 names for replacement during insertion. S5's event view (§3.1) is the
+    hook, and the same hook is what v2 §2.10's first open question proposes for `law_steady`.
+  - Replacement refuses a slot that is not live in the view (pending or retired).
+  - A partition law writes water's volume through water's `ACCEPTS_WRITES` on
+    `volume_increment_pL`: the parent's increment to 0, each daughter's f dv_P. It books water's
+    endpoint free energy (`node_free_energy_pJ`) for the touched nodes, as replacement@2 does.
+- **Landing order.** S5a lands after the volume ledger, so its closer-as-provider rule is
+  checked against replacement@2's declarations as landed.
 
 ## 6. Lineage, identity, slots and capacity
 
@@ -634,6 +714,12 @@ there too.
   qualified against the engine. It adds the graph solve, the bridge and the events.
 - **Cross-check.** On S3's one-cell cleft egg it reproduces R-full: target 1e-10 V on every
   pulse edge, a run of minutes. This checks the new reference itself.
+  - The cross-check reads the J1 inputs, so it calls R-tissue's static entry point
+    (`simulate_static`, no divisions) from a module of its own.
+  - Division runs use `simulate_divisions`. The J2 bright line's test tells the two apart
+    (§10.1).
+- **Written from this note alone.** A separate agent writes R-ops and R-tissue from Appendix A,
+  without reading the engine's partition, bridge, insertion@2 or lumen@2 code.
 
 ### 7.3 Analytic limits
 - **Symmetric division.** f = a_k = ½ gives:
@@ -679,8 +765,9 @@ there too.
   - No guard runs the 35-minute egg to reach one.
   - S3's cleft egg on insertion@2 and lumen@2 (§8.3, Q7) is a deliberate tier-3 run of about
     an hour; it has no partition.
-- **Not run in S5:** the J1-calibrated Xenopus egg through 1 → 2 → 4. Its blastomere potentials
-  would be J2's quantity (decision 10).
+- **Not run in S5:** anything inside the J2 bright line (§10.1), the J1-calibrated egg through
+  1 → 2 → 4 among it. The compact and egg-scale worlds are built from neither J1 input. The
+  egg-scale world takes the S0 smoke test's declared egg, as the risk-1 probe does.
 
 ### 8.2 Tier-1 smoke tests (under 20 s each, the v2 design's rule)
 - **Contract and composite:**
@@ -691,6 +778,15 @@ there too.
     ½ Σ C V²(t) − ½ Σ C V²(0) at the view, over a spread of states;
   - every ledger is 0 at row 0 and up to the first event in a world with pending slots (the
     offsets of §3.6 point 4);
+  - **an independent check of the t = 0 fix**, extending S2's energy test to live slots and
+    computed in NumPy.
+    - The states: before any event, after an onset, after a partition, and after a second
+      partition.
+    - The energy: @3's declared term, plus the correction, plus E_ref, must equal
+      ½ Σ_live C V²(t) − ½ Σ_live C V²(0).
+    - The electrode residual must equal transferred − (plates_live(t) − plates_live(0)).
+    - The right sides come from the live graph alone, by a nodal solve written in the test, not
+      the adapter's;
   - adjusted-row checks.
 - **Partition:**
   - one event on a tiny world: every @3 and own ledger closing on host and device;
@@ -712,18 +808,59 @@ there too.
 | Q3 | Trajectories after partition agree with R-tissue | Compact 1 → 2 → 4 | 3 × (step + reference) per quantity and record |
 | Q4 | Analytic limits (§7.3) | Compact | As stated |
 | Q5 | Observed order about 2 after partitions | Compact; 0.5, 0.25, 0.125 ms | Reported by inspection, with S3's stop condition (every step term decreases) |
-| Q6 | Restart at t_e − dt, t_e, t_e + dt (also through a written snapshot) is bitwise; vmap cohorts of 2 and 8 with per-world times, fractions and apertures | Compact | Bitwise; within 1e-12 relative of scalar runs, bitwise against reversed order |
-| Q7 | Idle and unchanged | See the items below | Bitwise, or within S3's tolerances where stated |
+| Q6 | Restart and batches (items below) | Compact | Bitwise for restart and against reversed order; within 1e-12 relative of scalar runs |
+| Q7 | Idle and unchanged (items below) | As listed | As listed |
 | Q8 | Each refusal (§3.8, §4.4, §5) | Compact | Refused with its message; the prior state is kept |
 | Q9 | Closed slots are @3 padding at the view; the lumen's padded-slot test | Compact | Domain valid at the view; observations of closed slots are padding |
+| Q10 | Sensitivity to the partition time and to a_0 (§4.2) | Compact 1 → 2 and 1 → 2 → 4, with and without injection into one daughter | Each compared quantity's change over the declared ranges is reported against its tolerance; "insensitive" only within it, otherwise t_p and a_0 enter its band |
+| Q11 | The retirement record is state wherever state goes (items below) | Compact; egg-scale | Every check passes; the negative control fails |
+
+The Q6 items:
+- **Restart** at t_e − dt, t_e and t_e + dt, bitwise.
+- **Restart from a checkpoint written after a partition** (at t_e + k dt, through a written
+  snapshot, loaded in a fresh process), bitwise against the uninterrupted run.
+- **Mixed batches.** S2's onset-mask bug was a static shape the batch signature could not see
+  (fixed in 00672e8). So every shape that decides a static branch enters the batch signature:
+  the division count and slot maps, the bridges, and the presence of closers and of the
+  offsets E_ref and q_ref (§3.6).
+  - A vector-window batch with device checks mixes worlds that differ only by value: events
+    within and beyond the horizon, onsets or none, fractions, apertures and closure times. Each
+    world equals its scalar run within 1e-12 of each field's scale, and the batch is bitwise
+    against itself reversed.
+  - A batch mixing a world with divisions and one without, or different slot maps, is refused
+    by the signature, with a message.
+  - E_ref and q_ref are bound arrays (bindings), one per world. They are never constants closed
+    over by the traced program, which the constants-aware crossrev checks (§8.4).
 
 The Q7 items:
 - a partition with no divisions declared is statically idle, and so is a bridge with no
   bridges: both bitwise against the composition without them;
 - the 19-cell sheet at the 64-node cap with idle division operators: bitwise;
-- S3's cleft egg on insertion@2 and lumen@2 reproduces S3's judged numbers. Bitwise is expected;
-  otherwise the result is reported, and S3's registered judge must pass with the new versions;
-- crossrev (§8.4): identical.
+- **S3's cleft egg on insertion@2 and lumen@2 (criterion fixed before any run):**
+  - **The pass criterion is S3's registered protocol against R-full.** S3's judge runs once, from
+    a clean snapshot, on S3's definition with the two new versions, under S3's registered
+    tolerances (Q1, Q2, Q4, Q5; Q3 reported).
+  - The comparison with S3's judged run is reported, bitwise or with each difference's size. It
+    is not a pass criterion.
+  - **Why this criterion.**
+    - Insertion@2 and lumen@2 are new law IDs, not re-expressions of one ID, which is the case
+      D143's bitwise rule covers. They are qualified as new laws are, by the registered protocol
+      of the world they reproduce.
+    - The engine does not promise identical bits across different compiled programs: XLA's
+      association differed between programs in S3's prerequisite (c). The composite's view and
+      the new offsets compile differently from insertion@1's own view. A bitwise criterion
+      would let fusion, not physics, decide the verdict.
+    - S3's tolerances are tight (1.0e-9 V on Em, 15.3 Ω on Rm, 2.6e-6 mM in the lumen; the
+      judged run sat at 0.36–0.51 of them). A physics error in the new versions would show.
+- crossrev (§8.4): identical jaxprs, constants and bindings.
+
+The Q11 items:
+- the history rows carry the record;
+- a checkpoint written after a partition carries it, and its restart is bitwise (Q6);
+- every host replay carries it: `check_values` on the saved history closes every ledger at the
+  event row; `observe_history`'s partition columns equal the record; the summary's totals add it;
+- a negative control: a replay with the record zeroed fails the local and outside ledgers at the
+  event row.
 
 The tolerance rule follows G2-Q1 and S3: 3 × (engine step term + reference term + rounding term),
 pinned at registration from development runs that are disclosed. The judged run is made once,
@@ -733,11 +870,18 @@ from a clean snapshot.
 - **What changes.** `contract.py`, `pump_composite.py` and `pump_composite_adapter.py` are
   shared by every composition. Every S5 change is a static branch (a closer, a retiring
   operator, a view-energy writer).
-- **Crossrev.**
-  - Run against the baseline of record (`cell-division-s3-20261113-01/crossrev-landing`): base
-    36 and 12, qualification 78 and 56, injection 6 and 2.
-  - S3's cleft egg is added to the set.
-  - The guard expects identical jaxprs and bindings.
+- **Crossrev, constants-aware.**
+  - "Static branch, identical jaxprs" is decided by the constants-aware baseline. The checkpoint
+    agent is producing it now: `composite_crossrev` records the dtype, shape and SHA-256 of
+    every constant each traced program closes over, and the device-check constants among the
+    bindings (aaa0044 on its branch).
+  - The old baseline (`cell-division-s3-20261113-01/crossrev-landing`: base 36 and 12,
+    qualification 78 and 56, injection 6 and 2) compared jaxpr text, which does not print
+    closed-over arrays.
+  - The t = 0 fix binds two constants, exactly what that old comparison could not see.
+  - S3's cleft egg and v2 §2's `volume` set join the sets.
+  - The guard expects identical jaxprs, constants and bindings for every existing composition.
+  - For S5's own worlds, it records E_ref and q_ref as bindings, never as closed-over constants.
 - **If any jaxpr of an existing composition differs**, the change is an in-place change to
   shared qualified code and needs D148's four criteria, fix against no fix.
 - **Gates.** Tier 1 and tier 2 before landing (AGENTS.md).
@@ -752,7 +896,7 @@ from a clean snapshot.
 
 Each step lands behind its tier-1 tests. Long runs go through `scripts/run_detached.sh`.
 
-## 9. S4: supersede and report (proposal)
+## 9. S4: superseded and reported (taken by the lead, 13 November)
 - **The arithmetic.**
   - S3's judged run gives the engine's Em at J1 under J1's registered defaults: +4.0e-10 V
     from R-full's −12.79494 mV, inside its 1.0e-9 V tolerance (Q1, PROGRESS 13 November).
@@ -767,7 +911,8 @@ Each step lands behind its tier-1 tests. Long runs go through `scripts/run_detac
   - a registered single-item S4 protocol applying the J1 window to S3's judged Q1 (bookkeeping
     only);
   - the full J1 band on the engine (23 egg runs, about 20 CPU hours): no new information.
-- The lead decides.
+- **Taken.** S4 is superseded and reported, with no run. The lead records the decision when this
+  note lands.
 
 ## 10. J2 later: how it would be registered (not computed)
 - **Prediction of record from R-tissue under J2's declared defaults**, registered before any
@@ -790,6 +935,60 @@ Each step lands behind its tier-1 tests. Long runs go through `scripts/run_detac
   user's decision.
 - **Effort after S5:** about 1.5–2 days.
 
+### 10.1 The J2 bright line: the barred set and its static test
+**The barred set.** Until the user releases J2, nothing in the repository computes either of:
+1. **J1 input plus a partition.** A world, definition or reference input built from the J1
+   declared inputs (`validation/division/j1_declared_inputs.json`) or the J1 record
+   (`validation/division/j1_prediction_of_record.json`), directly or through a function that
+   reads them, together with a partition. A partition here means any of:
+   - an `isopotential_partition@1` declaration;
+   - the partition definition helper;
+   - R-ops' partition map;
+   - R-tissue's division events.
+
+   This holds in any engine run, reference run, test or analysis.
+2. **DFS74 as input or target.** Any computation that takes DFS74's Table I or Fig. 2 values, or
+   its sampling phases, as an input or a comparison target.
+
+**Allowed:**
+- J1-built worlds without a partition: S3's egg and its judge, and R-tissue's static
+  cross-check against R-full;
+- partitions on worlds built from neither J1 input (§8.1);
+- the risk-1 probe (built from the S0 smoke egg, with no partition).
+
+**The test, `tests/unit/test_j2_bright_line.py`.** It is written with S5a's first code and
+mirrors `tests/unit/test_d147_drivers.py`.
+- **Scope.** It parses every module under `validation/`, `tests/` and `scripts/` with `ast`,
+  skipping docstrings, which cite the files freely. `current_injection.py`'s docstring names
+  the J1 inputs, for example.
+- **A J1 source in a module** is any of:
+  - a non-docstring string constant containing `j1_declared_inputs` or
+    `j1_prediction_of_record`;
+  - an import of a J1 module: `validation.division.cleft_egg_engine`, `static_cleft_egg_steps`,
+    `j1_diagnostic_runner`, `j1_combination_runner` and `cleft_rings_reference`;
+    `validation.tissue.injection_rm1`; `tests.division_fixtures`;
+  - the use of a J1-reading function of `validation.division.cleft_egg_reference` (`DECLARED`,
+    `load_declared`, `build`, `scalar_values`, `band_members`), counted at function level as
+    D147's `BUILDER_FUNCTIONS` are. R-tissue imports that module's transport laws (`ghk_flux`,
+    `access_flux`) without reading J1.
+- **A partition source** is any of:
+  - a non-docstring string constant `isopotential_partition@1`;
+  - an import of the engine's partition module or its definition helper (their paths are fixed
+    when built);
+  - an import of `validation.division.partition_reference` (R-ops);
+  - the use of `cleft_tissue_reference.simulate_divisions`. R-tissue keeps its static entry
+    point, `simulate_static`, apart, and its R-full cross-check lives in its own module.
+- **The rule.** A module that holds both a J1 source and a partition source fails, unless it is
+  listed in `EXEMPT` with its reason. `EXEMPT` starts empty. A J2 driver enters it only after the
+  user releases J2, citing that decision.
+- **Self-checks, as D147's:**
+  - each listed J1 module and function still holds a J1 source, so the list stays honest;
+  - synthetic sources show the scan catches each form: a literal, a module import, a function
+    import, an attribute use of a listed function, and the partition literal;
+  - a docstring mention is shown not to count.
+- **Limits, as D147's.** The check is static, at module granularity, and sees only the listed
+  sources. Use through an unlisted builder is outside its reach; the rule binds anyway.
+
 ## 11. Effort (revised)
 
 | Part | Agent-days |
@@ -798,13 +997,16 @@ Each step lands behind its tier-1 tests. Long runs go through `scripts/run_detac
 | Insertion@2 and lumen@2, with S3's re-expression guard (one run of about an hour) | 1.5 |
 | `isopotential_partition@1`: spec and helper, event map, retirement, bookings, refusals, lineage, R5; smoke tests and compiled runs | 2.0 |
 | `cytoplasmic_bridge_closure@1` | 0.5 |
-| R-ops and R-tissue, with R-tissue's cross-check against R-full | 1.5 |
+| R-ops and R-tissue, with R-tissue's cross-check against R-full (a separate agent, in parallel, from Appendix A) | 1.5 |
+| The review's added guards: the J2 bright-line test, the NumPy live-slot energy test, restart after a partition, mixed batches, Q10's sensitivity runs and Q11's record checks | 0.5 |
 | Worlds, development study, protocol, judged run | 1.5, plus 3–6 CPU hours |
-| **Total** | **8.5 (range 8–10)** |
+| **Total** | **9 (range 8.5–10.5)** |
 
-- **Staging (optional):**
-  - **S5a** (about 5.5 days): the first four parts and R-ops, with 1 → 2 on the compact world.
-  - **S5b** (about 3 days): R-tissue, 1 → 2 → 4, the egg-scale world, the protocol and the
+- **Staging (approved).**
+  - **S5a** (about 5.5 days): the first four parts and R-ops, with 1 → 2 on the compact world
+    and at egg scale. Also the bright-line test, which is written with S5a's first code.
+  - **S5b** (about 3.5 days): R-tissue, 1 → 2 → 4 (at egg scale too, since the risk-1 probe is
+    clean), the egg-scale world, populations on onset patches (decision 9), the protocol and the
     judged run.
 - **Against the original estimate.** The original 3–4 days assumed design §4.2's four
   operators on a static topology, and included J2. The difference is the as-built facts of §1:
@@ -815,35 +1017,49 @@ Each step lands behind its tier-1 tests. Long runs go through `scripts/run_detac
 
   J2 moves out (held).
 
-## 12. Decisions for the lead and the user
+## 12. Decisions (taken by the lead on 13 November, after the advisor's review)
 
-| # | Choice | Recommendation |
+| # | Choice | Taken |
 | --- | --- | --- |
-| 1 | Slot rule: fresh slots for both daughters (design §5.2), or reuse the parent's slot for one | Fresh slots: small increments, exact symmetric divisions, identical daughters |
-| 2 | Retirement: present the parent to @3 as padding with a record added back (§3.5), or keep the history and project the state for @3 | The record: local to the partition; @3's observations stay consistent |
-| 3 | Mask ownership: closers by conjunction (§2), or one topology-state owner with ledgered writers | Closers: the analogue of "factors multiply", with no new entity owner; the owner remains possible later |
-| 4 | Reference anchors at birth: declared exact fractions of the parent's declared anchors (D057 kept) | Accept. Triggered divisions with declared fractions need no re-anchoring either (§6.3) |
-| 5 | Slot reuse and capacity: none in S5 (2^(k+1) − 1 cells; 47 nodes at 16 cells) | Accept; reuse and re-anchoring at milestone 2 (user decision against D057) |
-| 6 | Lineage: declared carrier IDs, host records from applied flags, one record shape with replacement | Accept |
-| 7 | New versions insertion@2 and lumen@2; @1 stays registered for S3's world | Accept |
-| 8 | The composite owns the energy rule at the view (§5.3), referenced to the view of the initial state when a closer is present (§3.6 point 4) | Accept (the v2 design's own plan, plus the reference fix found in review) |
-| 9 | Populations on onset patches: admit now (one smoke test) or keep refused until a world needs them | Admit: the padding rule makes them valid; the Xenopus definitions keep passive membranes |
-| 10 | S5's worlds: compact and egg-scale nominal only; no J1-calibrated egg through partitions while J2 is held | Accept; the alternative is a ledger-only J1-calibrated run, which the lead may allow |
-| 11 | Scope refusals: pumps on dividing cells, water (volume provider), replacement, asymmetric egg-scale divisions until `check_definition`'s scale-aware bound | Accept; each has a later owner (pump state, v2 §2, the definition bound) |
-| 12 | Bridge: an @3 junction with P A = 2 a D_s and a fixed open gate, prescribed closure (linear or exponential), a_0 bounded by dt; cytoplasmic diffusivities to be sourced | Accept |
-| 13 | S4: superseded and reported, no run (§9) | Accept |
-| 14 | Effort 8.5 days; stage S5a and S5b? | The lead's |
+| 1 | Slot rule: fresh slots for both daughters (design §5.2), not reuse of the parent's slot for one | Accepted |
+| 2 | Retirement: the parent presented to @3 as padding, with a record added back (§3.5), not a projected state for @3 | Accepted |
+| 3 | Mask ownership: closers by conjunction (§2), not one topology-state owner with ledgered writers | Accepted |
+| 4 | Reference anchors at birth: declared exact fractions of the parent's declared anchors (D057 kept); triggered divisions with declared fractions need no re-anchoring either (§6.3) | Accepted |
+| 5 | Slot reuse and capacity: none in S5 (2^(k+1) − 1 cells; 47 nodes at 16 cells); reuse and re-anchoring at milestone 2 (a user decision against D057) | Accepted |
+| 6 | Lineage: declared carrier IDs, host records from applied flags, one record shape with replacement | Accepted |
+| 7 | New versions insertion@2 and lumen@2; @1 stays registered for S3's world | Accepted |
+| 8 | The composite owns the energy rule at the view (§5.3), referenced to the view of the initial state when a closer is present (§3.6 point 4) | Accepted |
+| 9 | Populations on onset patches: admitted by the padding rule | Deferred to S5b; insertion@2 keeps insertion@1's refusal in S5a |
+| 10 | S5's worlds: built from neither J1 input; the J2 bright line (§10.1) | Settled by the bright line and its static test |
+| 11 | Scope refusals: pumps on dividing cells, water (volume provider), replacement, asymmetric egg-scale divisions until `check_definition`'s scale-aware bound | Accepted |
+| 12 | Bridge: an @3 junction with P A = 2 a D_s and a fixed open gate, prescribed closure (linear or exponential), a_0 bounded by dt | Waits for the cytoplasmic conductivity's source; until then a declared assumption with a band (§4.2) |
+| 13 | S4: superseded and reported, no run (§9) | Accepted; the lead records it when this note lands |
+| 14 | Staging | S5a (about 5.5 days) and S5b (about 3 days) approved. S5a lands after the volume ledger; code starts after the risk-1 probe and the constants-aware baseline |
 
 ## 13. Risks
 1. **The electrode ledger at four cells.**
    - The bath couples to four charged free nodes.
    - D148's exactness condition (no held node coupled to three or more charged free nodes)
      fails there, so the electrode ledger rests on its bound, as in tissue worlds.
-   - Mitigation: the egg-scale world measures the ratio; on failure, stop and report (the S3
-     prerequisite (c) class).
-2. **Bitwise re-expression of S3's egg.** XLA's fusion of the composite's view and insertion@2
-   may differ in the last bit from insertion@1's own view (the prerequisite (c) lesson). The
-   fallback is S3's registered judge with the new versions.
+   - **Probed before any code** (the lead, 13 November).
+     - The probe: `validation/division/four_cell_electrode_probe.py`, a static egg-scale world
+       of four quarter eggs on one held bath. It uses no S5 code and is built from the S0 smoke
+       egg, not from J1.
+     - Three species move in every cell: K and Cl by pulses through one electrode per cell, Na
+       and K through the membranes.
+     - It runs at 0.25 ms for S3's bounded-probe length of 1.78e6 steps, with the one-cell
+       control, which is D148's exact case.
+     - **Result: clean, no drift** (§0). The residual stays within a couple of ulps of the plate
+       charge, with an asymptotic ratio of 8e-12 against the one-cell control's 1e-16.
+       Egg-scale 1 → 2 → 4 stays in the plan, and the S5 worlds' device checks measure the
+       ratio again.
+   - **If it drifts,** egg-scale 1 → 2 → 4 needs either an ordered node sum (another D148 round
+     in `surface_tissue.py`) or an allowance, which is the user's call. S5a then stops at 1 → 2
+     at egg scale, and four cells run on the compact world only.
+2. **Re-expression of S3's egg.** XLA's fusion of the composite's view and insertion@2 may differ
+   in the last bit from insertion@1's own view (the prerequisite (c) lesson). So the criterion,
+   fixed before any run, is S3's registered protocol against R-full, with the bitwise comparison
+   reported (§8.3, Q7).
 3. **Shared-code changes.** Static branches are expected to leave every existing jaxpr
    identical. If one changes, D148 applies, and the stop rule follows.
 4. **Composite complexity.** Closers, propagation, padding, retirement and the energy rule's
@@ -852,3 +1068,153 @@ Each step lands behind its tier-1 tests. Long runs go through `scripts/run_detac
    Xenopus physiology claim does (J2, held).
 6. **Cost.** Eleven field nodes refactorise every step (R3), cheap below 64. The development
    study and the judged run are a few CPU hours.
+
+## Appendix A. Equations for the independent references
+
+R-ops and R-tissue are written from this appendix and the physics, without the engine's
+partition, bridge, insertion@2 or lumen@2 code (§7). These conventions hold throughout:
+- **Units:** SI, except amounts in fmol and volumes in pL, so n/V is in mM = mol/m³.
+- **Constants:** F = N_A e and R = N_A k_B, the exact SI products, as R-full uses.
+- **Free energies:** in pJ.
+
+### A.1 The world
+- **Species:** s, with valence z_s: Na +1, K +1, Cl −1 in S5's worlds.
+- **Cells i.**
+  - State: amounts n_{s,i} (fmol).
+  - Declared: volume V_i (pL), fixed during S5, and a fixed background X_i (fmol of charge
+    equivalent, constant).
+  - Node charge Q_i = 10⁻¹⁵ F (Σ_s z_s n_{s,i} + X_i) (C).
+- **Finite outside nodes c (clefts).** Amounts n_{s,c} and volume V_c(t) (§A.5). No background:
+  Q_c = 10⁻¹⁵ F Σ_s z_s n_{s,c}.
+- **The held bath b.** Potential φ_b = 0 and composition c_{s,b}, fixed: it supplies whatever it
+  exchanges. Σ_s z_s c_{s,b} = 0.
+- **Patches k.**
+  - Endpoints: the inside cell i(k) and the outside node o(k).
+  - Area A_k (m²), capacitance C_k (F), and permeability per area P_{k,s} (m/s), constant per
+    patch.
+- **Faces f** (accesses): between two outside nodes (a cleft and the bath, or two clefts), with
+  k_{f,s} = (A/L)_f D_s (m³/s).
+- **Bridges e:** between two cells, with aperture a_e(t) (m) and P_{e,s} A_e = 2 a_e(t) D_s^cyt
+  (m³/s).
+- **Liveness.** Each cell, patch, node, face and bridge is live or not at time t (§A.4 onsets,
+  §A.6 partitions).
+  - A patch is live only if its cell and node are; a face only if both its nodes are; a bridge
+    only if both its cells are.
+  - Only live entities enter A.2 and A.3.
+
+### A.2 Electrostatics
+- **Nodes.** Free nodes are the live cells and the live clefts; the bath is held.
+- **The capacitor law.** K = Σ_{live k} C_k e_k e_kᵀ, with e_k = u_{i(k)} − u_{o(k)} (unit
+  vectors over the nodes).
+  - Node charges are Q = K φ.
+  - The free potentials solve K_ff φ_f = Q_f, since φ_b = 0.
+  - Every capacitor component holds the bath: every live cell has a live patch on it.
+- **Patch quantities.**
+  - Patch voltage V_k = φ_{i(k)} − φ_{o(k)}, and its cell-side charge q_k = C_k V_k.
+  - A cell's charge is Σ_{k: i(k)=i} q_k, and a cleft's is −Σ_{k: o(k)=c} q_k.
+- **The bath's plate charge:** q_b = (K φ)_b = −Σ_{live k: o(k)=b} C_k φ_{i(k)}.
+- **Capacitor energy:** U = ½ Σ_{live k} C_k V_k².
+
+### A.3 Transport rates
+- **Notation.** ψ(x) = x / (1 − e^{−x}), with ψ(0) = 1, and concentrations c = n/V. In fmol/pL
+  that is mM, which equals mol/m³, so the fluxes below are in mol/s with no conversion factor.
+- **Membrane patch k**, outward constant-field flux (mol/s):
+  J_{k,s} = P_{k,s} A_k ψ(x) (c_{s,i(k)} − c_{s,o(k)} e^{−x}), x = z_s F V_k / (R T). The
+  bath's concentrations are c_{s,b}.
+- **Face f from node c to node d.** One of R-full's two declared laws:
+  - log-mean: J = k_{f,s} L(c_c, c_d) [ln(c_c/c_d) + z_s F (φ_c − φ_d)/(R T)], with
+    L(a, b) = (a − b)/ln(a/b) and L(a, a) = a;
+  - constant field: k_{f,s} in place of P A, with x = z_s F (φ_c − φ_d)/(R T).
+- **Bridge e from cell 1 to cell 2:**
+  J_{e,s} = 2 a_e(t) D_s^cyt ψ(x) (c_{s,1} − c_{s,2} e^{−x}), x = z_s F (φ_1 − φ_2)/(R T).
+- **Current injection** I(t) into cell i (A; positive means cations in), with carrier fractions
+  f_K + f_Cl = 1: dn_K/dt gains +10¹⁵ f_K I / F, and dn_Cl/dt gains −10¹⁵ f_Cl I / F.
+- **Balances (fmol/s).**
+  - A cell loses 10¹⁵ J_{k,s} through each of its patches, and 10¹⁵ J_{e,s} through each bridge
+    it sends on, gaining the same from each bridge it receives on. Injection adds its terms.
+  - A cleft gains 10¹⁵ J_{k,s} from each patch facing it, loses 10¹⁵ J_{f,s} through each face
+    it sends on (gaining the same through each face it receives on), and gains its fill (§A.5).
+  - The bath supplies whatever it exchanges.
+
+### A.4 Insertion and onsets
+- **Insertion.** A patch k is inserted at a declared, piecewise-constant rate r_k(t) ≥ 0:
+  - dA_k/dt = r_k and dC_k/dt = c_d r_k, with P_{k,s} per area unchanged;
+  - the free-node charges stay fixed while C changes, and the potentials are re-solved by A.2;
+  - the bath supplies the image charge Δq_b;
+  - the insertion heat rate is ½ Σ_k c_d r_k V_k² ≥ 0 (pJ/s after × 10¹²), R-full's form.
+- **Onset** of an inserted patch k at t_on. The patch becomes live with its declared area A_on
+  and C = c_d A_on, together with its cleft c.
+  - The cleft opens at bath composition, n_{s,c} = c_{s,b} V_c(t_on), with zero charge.
+  - Its faces open when both their nodes are live.
+  - Patches facing c that are not live at t_on (pending daughters) stay closed until their
+    birth.
+
+### A.5 Lumens
+- **Volume.** V_c(t) = V_on + w (Σ_{live k: o(k)=c} A_k(t) − A_on)/2. Here A_on is the summed
+  area of the patches that open with c, V_on = w A_on / 2, and w is the declared gap width.
+- **Fill.** Bath fluid at bath composition, with no water flow: dn_{s,c}/dt gains
+  c_{s,b} dV_c/dt.
+- **Continuity.** A partition keeps the live facing area unchanged (§A.6), so V_c is continuous.
+
+### A.6 The partition map (R-ops)
+**Inputs at t_p:**
+- the parent P and its live patches k ∈ K_P;
+- the daughters D1 and D2, with daughter patches k¹ (in D1) and k² (in D2) for each k, facing
+  o(k);
+- the fractions f (volume) and a_k (patch k's area to D1), all in (0, 1);
+- the mismatch carriers, with t_s ≥ 0, Σ t_s = 1, charged species only;
+- the parent's declared anchors: reference amounts n̄_P, V_P, X_P.
+
+**The map:**
+1. **Pre-event state.** A.2 with P live gives q_k = C_k V_k for k ∈ K_P.
+2. **Mismatch.** δq = Σ_{k∈K_P} (a_k − f) q_k, and δ_s = 10¹⁵ t_s δq / (z_s F) fmol. δ = 0 when
+   every a_k = f.
+3. **Contents.**
+   - Amounts: n_{D1} = f n_P + δ and n_{D2} = n_P − n_{D1}.
+   - Volumes: V_{D1} = f V_P and V_{D2} = V_P − V_{D1}.
+   - Backgrounds: X_{D1} = f X_P and X_{D2} = X_P − X_{D1}.
+   - **The engine's increment form,** for comparing bookings:
+     - anchors n̄_{D1} = f n̄_P and n̄_{D2} = n̄_P − n̄_{D1};
+     - increments Δ = n − n̄: Δ_{D1} = f Δ_P + δ and Δ_{D2} = Δ_P − Δ_{D1};
+     - the parent's increment becomes 0, so the moved amounts are −Δ_P at P and +Δ_{D1}, +Δ_{D2}
+       at the daughters.
+4. **Patches.**
+   - A_{k¹} = a_k A_k and A_{k²} = A_k − A_{k¹}; C likewise; permeability per area unchanged.
+   - Populations, when present (S5b): abundances split by a_k, gates copied.
+5. **Liveness.**
+   - P and K_P stop being live (retired); their accumulated transfers and heats are kept, and
+     still count in the totals.
+   - D1, D2, their patches and the bridge between them (aperture a_0) become live.
+   - Outside nodes and faces are unchanged.
+6. **Identities and outputs.**
+   - Charge: Q_{D1} = Σ_k a_k q_k, and Q_{D1} + Q_{D2} = Q_P.
+   - Potentials after (A.2 with the new liveness): φ_{D1} = φ_{D2} = φ_P, and every outside
+     potential is unchanged.
+   - Plate charge and energy: Δq_b = 0 and ΔU = 0.
+   - Material: n_{D1} + n_{D2} = n_P per species, and the areas and capacitances sum to the
+     parent's.
+   - Free energy, with G(n, V) = 10⁻³ R T Σ_s n_s (ln(n_s/V) − 1) (pJ; n in fmol, V in pL):
+     ΔG = G(n_{D1}, V_{D1}) + G(n_{D2}, V_{D2}) − G(n_P, V_P) ≥ 0. To leading order this is
+     10⁻³ R T Σ_s δ_s² / (2 n_{s,P} f (1 − f)), and it is exactly 0 when δ = 0.
+   - The booked work: W = ΔG + 10¹² (ΔU − Σ_b φ_b Δq_b) (pJ; U from A.2 is in J). At a bath
+     held at 0 V, this is ΔG.
+7. **Refusal.** A daughter amount ≤ 0 refuses the event, which leaves the pre-event state.
+
+### A.7 The bridge closure
+- **Aperture.** a(t) = a_0 for t < t_b = t_p. After that it closes as one of:
+  - linear: a(t) = a_0 max(0, 1 − (t − t_b)/τ_c);
+  - exponential: a(t) = a_0 e^{−(t − t_b)/τ_c}.
+- **Diffusivities.** D_s^cyt = D_s σ_cyt / σ_free, with σ_free = (F²/RT) Σ_s z_s² c_s D_s
+  (S/m, c in mol/m³) at the cytosol's declared composition (§4.2).
+- **Conductance.** For equal concentrations on both sides it is G_b = 2 a σ_cyt.
+
+### A.8 What is compared with the engine
+- **R-ops.** Every output of A.6 steps 3–6, on 200 random states and on each world's events.
+  - Random states: positive amounts, backgrounds, volumes, areas, capacitances and charges, with
+    f and a_k in (0, 1) and random transference numbers.
+  - Pass: 64 eps × magnitude.
+- **R-tissue.** Radau at rtol 1e-10, with breakpoints at every onset, partition, closure end,
+  pulse edge and record. R-ops is applied at each partition. Compared at the records:
+  - each live cell's Vm, φ_i − φ_b;
+  - each lumen's composition and volume;
+  - each bridge's current, Σ_s z_s F J_{e,s} (A).
