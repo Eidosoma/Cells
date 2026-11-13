@@ -567,8 +567,9 @@ def compare_runs(args):
     --runs A B V...: run JSON files of the window part with --save; A and B are the baseline
     pair (the same program twice), each V a variant. Per window and state field: the
     largest |A - B| (the spread) and |A - V|. A variant is equivalent when every
-    difference is within the spread (bitwise when the baseline repeats are) and its
-    refusals and window end times are identical.
+    difference is within the spread (bitwise when the baseline repeats are), its refusals
+    and window end times are identical, and it saved at least one window. speedup: the
+    baseline's median seconds per window (windows 2 on) over the variant's.
     """
     records = [json.loads(Path(r).read_text()) for r in args.runs]
     if records[0]["part"] == "solve":
@@ -580,6 +581,11 @@ def compare_runs(args):
 
     def largest(x, y):
         return {k: float(np.max(np.abs(x[k] - y[k]), initial=0.0)) for k in x.files}
+
+    def window_seconds(record, variant):
+        """Median seconds until ready of windows 2 on (window 1 carries first-call costs)."""
+        ready = [c["ready"] for c in record[variant]["calls"] if "ready" in c][1:]
+        return float(np.median(ready)) if ready else None
 
     out = {"baseline": [str(r) for r in args.runs[:2]], "variants": {}}
     for variant in ("while", "masked"):
@@ -612,8 +618,19 @@ def compare_runs(args):
                     "windows": len(v),
                     "bitwise": all(d == 0.0 for w in differences for d in w.values()),
                     "beyond_spread": beyond[:10],
-                    "equivalent": not beyond and same_flags and len(v) == len(a),
+                    # No saved window (a refusal before the first) is never equivalent.
+                    "equivalent": not beyond and same_flags and len(v) == len(a) > 0,
                     "same_refusal_and_end_times": same_flags,
+                    "window_seconds": [
+                        window_seconds(records[0], variant),
+                        window_seconds(record, other),
+                    ],
+                    # Baseline over variant: above 1 means the variant is faster.
+                    "speedup": (
+                        window_seconds(records[0], variant) / window_seconds(record, other)
+                        if window_seconds(record, other)
+                        else None
+                    ),
                 }
     return out
 
