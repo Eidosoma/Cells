@@ -134,6 +134,14 @@ the GPU segment runs.
 The consumer of water plus replacement is the renewal assay (D144). It is built when that
 assay needs it, not before.
 
+**Secreted-species transport (D150).**
+- **Design landed** ([note](SECRETED_SPECIES_TRANSPORT_DESIGN.md)): one inventory in @3 (neutral
+  species rows), and split operators for turnover and for secretion and uptake.
+- **Version 1 code follows S5a.** Its checks before code are a five-species world through every
+  admitted path, a fixed-species-count audit, and its first acceptance decided.
+- **Deferred under D151:** a transport-only drift valence, and drawing on finite energy pools.
+  Secreted proteins in the catalogue belong to stage 3.
+
 ### Gate: lifecycle operators
 
 These are the cell-division stages S2–S5 and current injection.
