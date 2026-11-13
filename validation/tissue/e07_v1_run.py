@@ -23,6 +23,11 @@ Parts (each its own process: the analysis never runs in an arm's process):
 Seeds 1-8 are the registered seeds. Development runs use seeds of 101 or more and are
 labelled so; --end-s shortens a development run (its judged record may then not be reached).
 
+Supplementary readouts (protocol key supplementary_readouts) carry the label SUPPLEMENTARY
+in every output: the deviation from the null over the run's records (delta_J_over_records),
+added after the seed-101 dry run. They are reported, not judged, and no run class, group
+class or item depends on them.
+
 Output: DIR/runs/<arm>/seed<R>/ holds definition.json, plan.json, records.npz,
 checkpoint.npz, progress.jsonl, result.json, then outcome.json and opportunity.json from
 analyse; DIR/e1/ the gate's segments and verdict; DIR/summary.json.
@@ -48,6 +53,12 @@ ALL_H_TAIL_S = 60.0
 SAVE_EVERY_WALL_S = 900.0
 # The run classes (protocol analysis.run_class) and the group rule (analysis.group_rule).
 NEUTRAL_FRACTION, CLASS_FRACTION = 0.02, 0.05
+# The label of every readout that is not part of the registered protocol (protocol key
+# supplementary_readouts): reported, never judged, and no class or item depends on it.
+SUPPLEMENTARY = (
+    "supplementary: added to the driver after the seed-101 development dry run (49de1b1); "
+    "not judged; no run class, group class or item depends on it"
+)
 E1_SEGMENTS = {
     "a-fast-k1-d37-s1.0": dict(arm="a-donor-fast-k1-d37-s1.0", end_s=600.0, every_s=2.0),
     "b-tau40-d37-s1.0": dict(arm="b-iso-tau40-d37-s1.0", end_s=300.0, every_s=1.0),
@@ -374,7 +385,7 @@ def reading(record, result, t_all, d_all, osm_all, regular, *, abundance=None, g
     candidates = [r for r in templates if r["interior"] and r["d_neighbours"] >= 5]
     delta = 2.0 / size
     upto = t <= judged_t + 1e-9
-    # Reported beside the registered single-record dJ (not part of the run class): the
+    # Supplementary (SUPPLEMENTARY), reported beside the registered single-record dJ: the
     # deviation over the run's records to the judged record, and after the first turnover.
     dj = np.array([e - null_j[round(float(x), 9)] for x, e in zip(t, j_engine, strict=True)])
     window = upto & (t > 0)
@@ -388,6 +399,7 @@ def reading(record, result, t_all, d_all, osm_all, regular, *, abundance=None, g
         delta_J=delta_j,
         delta=delta,
         delta_J_over_records=dict(
+            status=SUPPLEMENTARY,
             mean=float(dj[window].mean()) if window.any() else None,
             min=float(dj[window].min()) if window.any() else None,
             max=float(dj[window].max()) if window.any() else None,
@@ -565,6 +577,7 @@ def part_summary(args):
             ],
         ),  # fmt: skip
         development_runs=sum(r["label"] == "development" for r in rows),
+        supplementary_readouts=dict(delta_J_over_records=SUPPLEMENTARY),
     )
     write_json(base / "summary.json", value)
     log(f"summary: {len(rows)} runs, groups {value['group_classes']}")

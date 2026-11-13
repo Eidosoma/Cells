@@ -1107,5 +1107,8 @@
   "bearing_on_predictions": "on this seed both s 1.0 runs of (a) classed neutral, where the registered predictions are erosion (fast k1: in at least 6 of 8 runs; fast k3: in all 3)",
   "other": "every definition used field solver version 2 (0 free offsets, declare(auto)), had donor P equal to the slot's P and a layout equal to sheet70's; no refusal; energy residual at most 6e-10 of flows; the E1 segment agreed between 5 ms and 1 ms within 1.2e-6 mV; 4.2-4.4 ms per step with one unit; arm processes peaked at 1.29-1.30 GB RSS; cells.slice memory.events unchanged over the run",
   "rules_and_predictions": "no rule, criterion, prediction, arm, seed or tolerance changed. The lead decided on 13 November, after the advisor's review, not to amend the class rule: a change after these data would be post hoc"
+ },
+ "supplementary_readouts": {
+  "delta_J_over_records": "the mean, minimum and maximum of dJ = J_engine - J_null over the run's 10 s records up to the judged record, the mean after the first turnover, and the count of records where it is non-zero: added to the driver after the seed-101 development dry run (49de1b1); supplementary, not judged; no run class, group class or item depends on them. The driver labels them so in every outcome and summary"
  }
 }

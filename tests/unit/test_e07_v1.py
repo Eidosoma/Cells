@@ -212,6 +212,7 @@ def test_deviation_over_records_is_reported_beside_the_judged_record():
     t_all, d_all, osm, regular = synthetic(rec)
     out = run.reading(rec, dict(stop="planned end"), t_all, d_all, osm, regular)
     over = out["delta_J_over_records"]
+    assert over["status"] == run.SUPPLEMENTARY and over["status"].startswith("supplementary")
     assert over["mean"] == 0.0 and over["min"] == 0.0 and over["nonzero_records"] == 0
     assert over["records"] == int(
         np.sum((t_all[regular] > 0) & (t_all[regular] <= out["judged_s"]))
