@@ -58,6 +58,40 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Stage S3 judged: the engine's cleft egg agrees with R-full (13 November; registered
+  protocol `486cc60`; verdict pass).**
+  - **Engine models:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with
+    `membrane_entity_state@1`, `scheduled_membrane_insertion@1`, `restricted_cleft_lumen@1`
+    and `electrode_current_injection@1`.
+  - **The run:** once, from a clean snapshot of main `4465b48` on CPU 4 (54 min, no OOM),
+    with device checks passing on every row. It reproduces the 0.25 ms development run
+    bitwise in every recorded number
+    ([protocol](validation/division/cleft_egg_protocol.json),
+    [evidence](/mnt/workspaces/Cells/cell-division-s3-20261113-01/judged/)).
+  - **Engine − R-full at 0.25 ms,** against 3 × (step term + integrator-only reference term):
+
+    | Quantity | Engine − R-full | Tolerance |
+    | --- | --- | --- |
+    | Em at J1 | +4.0e-10 V | 1.0e-9 V |
+    | Rm at J1 | +7.8 Ω | 15.3 Ω |
+    | Em at every pulse edge, 0–210 | at most 1.1e-7 V | 2.7e-7 V |
+    | Lumen K at J1 | −9.5e-7 mM | 2.6e-6 mM |
+    | Lumen Na at J1 | +7.6e-7 mM | 1.9e-6 mM |
+    | Rm1 (reported only) | +18 Ω | 41 Ω |
+
+    Each judged quantity is at 0.36–0.51 of its tolerance.
+  - **The reference term** covers R-full's integrator variants only. It was chosen after the
+    development data and disclosed as the stricter rule. The activation-area variant is
+    reported as a sensitivity both models share.
+  - **Crossrev baseline renewed at the landing commit (D148):** base 36/36 jaxprs and 12/12
+    bindings, qualification 78/78 and 56/56, injection 6/6 and 2/2, all identical to the
+    earlier runs.
+    - The new baseline of record is
+      [crossrev-landing](/mnt/workspaces/Cells/cell-division-s3-20261113-01/crossrev-landing/baseline-of-record.json).
+    - `8416a72` stays the earlier record.
+  - **Next in division:** S4–S5, partition and bridge closure, towards prescribed division
+    (milestone 1).
+
 - **Checkpoint continuity approved as tooling (13 November).** The user's words: "yes fix
   checkpoint continuty also". This approves the versioned checkpoint migration, which D145 listed
   as unapproved tooling; the public validation package is still unapproved.
