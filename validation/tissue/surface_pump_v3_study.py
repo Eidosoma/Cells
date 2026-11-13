@@ -44,14 +44,26 @@ ARS = "imex_ars222_face_electromigration@1"
 NA_LEAK_SCALE = 0.2  # Heredity pre-screen: Na leak x0.2 of BETSE's default.
 
 
-def tissue_definition(*, dt, end_time, channels=True, backend="cpu", observation_times=None):
-    """The 825-node scale world as @3, with NaV1.2 and Kir2.1 on every patch."""
+def tissue_definition(
+    *,
+    dt,
+    end_time,
+    channels=True,
+    backend="cpu",
+    observation_times=None,
+    field_solver="capacitive_reduction_gauged_damped_newton@2",
+):
+    """The 825-node scale world as @3, with NaV1.2 and Kir2.1 on every patch.
+
+    field_solver: as resolved_scale_world.definition (default: version 2, as before D147).
+    """
     raw = world.definition(
         dt=dt,
         end_time=end_time,
         solver=ARS,
         backend=backend,
         observation_times=observation_times,
+        field_solver=field_solver,
     )
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     m["id"] = "resolved_pump_tissue@3"

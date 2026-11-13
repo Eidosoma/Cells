@@ -262,6 +262,12 @@ resumes bitwise. It is tier 3 (over the 90 s cap). `test_field_floor_held.py` co
 at the floor accepted, one above it refused, and the held solve below; it is tier 2 (52 s).
 All 9 tests pass.
 
+**Row checks and ledgers cannot see field residuals, so version 3's safety rests on the
+state bound.** Anyone who later relies on the checks to catch an inaccurate field solve
+should know this: they passed under caps a billion times wider than version 3's (the
+positive control below). The field solve's own acceptance test is the only guard of its
+accuracy.
+
 **A solve held just under the cap passes every row check and ledger.**
 `field_floor_held.py` replaces the field solve on the host path. Each solve finds its root,
 then moves the free offsets along a direction until its residual is at 0.95 of version 3's
