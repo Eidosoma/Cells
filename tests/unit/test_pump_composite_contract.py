@@ -200,6 +200,27 @@ def test_structure_refusals_when_a_composition_is_built():
         pump_composite.Composition(pump3, (Dummy(), OtherDummy()))
 
 
+def test_factor_and_reset_names_are_checked_for_every_operator():
+    """Each operator's CONTROL_FACTORS and STATE_RESETS name inner fields, with or without a
+    closer, whatever the operator's place (an S5a edit had scoped these checks to the last
+    operator of a composition with closers; restored before landing)."""
+
+    class BadFactor(Operator):
+        LAW_ID = "bad_factor@1"
+        SPLIT = True
+        RK4 = "split"
+        CONTROL_FACTORS = ("no_such_control",)
+
+    class BadReset(Operator):
+        LAW_ID = "bad_reset@1"
+        EVENT = True
+        STATE_RESETS = ("no_such_state",)
+
+    errors = pump_composite.structure_errors(pump3, (BadFactor(), BadReset(), Dummy()))
+    assert any("multiplies no_such_control" in e for e in errors)
+    assert any("resets no_such_state" in e for e in errors)
+
+
 def test_operator_declarations_are_checked():
     class Unbooked(Operator):
         LAW_ID = "unbooked@1"

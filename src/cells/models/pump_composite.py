@@ -166,6 +166,12 @@ def structure_errors(inner, operators):
             if name in providers:
                 errors.append(f"two providers of the view field {name}")
             providers[name] = op.LAW_ID
+        for name in op.CONTROL_FACTORS:
+            if name not in inner.CONTROL_FIELDS:
+                errors.append(f"{op.LAW_ID} multiplies {name}, which is not an inner control")
+        for name in op.STATE_RESETS:
+            if name not in inner.STATE_FIELDS:
+                errors.append(f"{op.LAW_ID} resets {name}, which is not inner state")
     # Closers of activity masks (S5 design §2): masks combine by conjunction, a mask has
     # closers or a provider, never both, and a closer counts as the mask's provider for
     # CONFLICTS_VIEW (an operator reading the mask on the declared layout is refused).
@@ -181,12 +187,6 @@ def structure_errors(inner, operators):
             errors.append(
                 f"{name} has closers or a provider, never both ({providers[name]} provides it)"
             )
-        for name in op.CONTROL_FACTORS:
-            if name not in inner.CONTROL_FIELDS:
-                errors.append(f"{op.LAW_ID} multiplies {name}, which is not an inner control")
-        for name in op.STATE_RESETS:
-            if name not in inner.STATE_FIELDS:
-                errors.append(f"{op.LAW_ID} resets {name}, which is not inner state")
     accepted, provided, columns = {}, set(), {k: ["inner"] for k in inner.OBSERVATION_FIELDS}
     for op in operators:
         # Writers follow owners: an entity write targets inner state or a field an
