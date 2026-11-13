@@ -14,14 +14,16 @@ frozen-format definitions:
 compare checks the two saved sets: jaxpr text equality, and array dtype, shape and
 bytes. Identical programs on identical inputs run identically on a CPU.
 
-Two world sets: base (small worlds of every structure: routes, sheets, RK4, events,
-donors, padding) and qualification (the guarded qualification worlds themselves:
-W1's trajectories, W2's arms and G2-Q1's cases). For the qualification set, bindings
+Three world sets: base (small worlds of every structure: routes, sheets, RK4, events,
+donors, padding), qualification (the guarded qualification worlds themselves:
+W1's trajectories, W2's arms and G2-Q1's cases) and injection (electrode injection
+without a field-input provider, the Rm1 egg included). For the qualification set, bindings
 are also saved at every step size of the dt studies the guards did not repeat (W1's
 and Q5's), since dt enters the bound inputs (step counts, event steps) as well as
 the traced program.
 
-Usage (PYTHONPATH at the revision under test; SET is base, the default, or qualification):
+Usage (PYTHONPATH at the revision under test; SET is base, the default, qualification or
+injection):
   python -m validation.tissue.composite_crossrev jaxprs DIR [SET]
   python -m validation.tissue.composite_crossrev bindings DIR [SET]
   python -m validation.tissue.composite_crossrev compare A B
@@ -168,12 +170,36 @@ def _w37():
     return rfx.with_replacement(raw, [template], events)
 
 
+def injection_worlds():
+    """electrode_current_injection@1 without a field-input provider, as its runs use it: the
+    heredity cell with both polarities, and the Rm1 egg at its judged step (1 ms)."""
+    from cells.core import pump_composite_spec as cs
+    from validation.tissue import injection_rm1 as rm1
+    from validation.tissue import pump_water_fixtures as wfx
+
+    base = wfx.heredity_cell("H", dt=1e-3, end_time=0.004)
+    base["experiment"]["observation_times"] = [0.0, 0.004]
+    raw = cs.frozen_definition(base)
+    cell = raw["model"]["cells"][0]["id"]
+    carriers = {"K": 0.4912, "M": 0.5088}
+    raw["model"]["operators"] = [
+        dict(
+            law="electrode_current_injection@1", electrodes=[dict(cell_id=cell, carriers=carriers)]
+        )
+    ]
+    schedule = [dict(time=0.0, current_A=1e-12), dict(time=0.002, current_A=-1e-12)]
+    raw["experiment"]["injection_controls"] = [dict(cell_id=cell, schedule=schedule)]
+    return dict(injection_cell=raw, injection_rm1=rm1.definition(1e-3))
+
+
 def _worlds(world_set, all_steps):
     if world_set == "base":
         return worlds()
     if world_set == "qualification":
         return qualification_worlds(all_steps)
-    raise SystemExit(f"Unknown world set {world_set!r} (base or qualification)")
+    if world_set == "injection":
+        return injection_worlds()
+    raise SystemExit(f"Unknown world set {world_set!r} (base, qualification or injection)")
 
 
 def _setup(raw):

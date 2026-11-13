@@ -432,7 +432,7 @@ class Composition:
         h = 0.5 * dt
         splits = tuple(op for op in self.splits if op in active)
         for op in splits:
-            current, ok = op.half_step(current, h, control, p, xp=xp)
+            current, ok = self._half_step(op, current, h, control, p, xp=xp)
             valid = _and(valid, ok)
             valid = _and(valid, op.control_valid(control, p, xp=xp))
         process = self.process_operator
@@ -460,7 +460,7 @@ class Composition:
         current = current._replace(**moved._asdict())
         last = None
         for op in reversed(splits):
-            current, ok_half = op.half_step(current, h, control, p, xp=xp)
+            current, ok_half = self._half_step(op, current, h, control, p, xp=xp)
             last = _and(last, ok_half)
         if process is not None:
             current = process.book_process(current, state, applied, heat, p)
@@ -477,6 +477,13 @@ class Composition:
         return state._replace(**selected), valid
 
     imex_step = split_step
+
+    def _half_step(self, op, state, h, control, p, *, xp):
+        """op's half-step; one that books at the view gets the current view when a field
+        input is provided (static: otherwise the call is unchanged)."""
+        if op.BOOKS_AT_VIEW and self.field_inputs:
+            return op.half_step(state, h, control, p, xp=xp, view=self.view(p, state, xp=xp))
+        return op.half_step(state, h, control, p, xp=xp)
 
     def _end_domain(self, state, p, operators, *, xp):
         """Domain of the step's end state: the inner one at the view if a split moved it."""

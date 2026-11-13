@@ -179,3 +179,70 @@ def test_w2_reads_the_qualifications_own_judge_output(tmp_path):
     path = tmp_path / "w2-judge.json"
     path.write_text(json.dumps(dict(verdict="pass", items=[copy.deepcopy(item)])))
     assert agreement.load_run("w2", path) == w2_run()
+
+
+# ---------------------------------------------------------------- runs split over GPU gaps
+
+
+def saved(tmp_path, name, part, quantities, backend="L4"):
+    path = tmp_path / name
+    path.write_text(
+        json.dumps(dict(part=part, worlds=None, backend=backend, quantities=quantities))
+    )
+    return path
+
+
+def two_worlds(part):
+    """A whole run of two worlds, and its two partial files' quantities (run --worlds)."""
+    if part == "w1":
+        whole = w1_run()
+        whole["trajectories"]["P5"] = {"0.0": {"cell_volume_pL": [0.9]}}
+        first = dict(trajectories={"P1": whole["trajectories"]["P1"]}, stationary={})
+        second = dict(
+            trajectories={"P5": whole["trajectories"]["P5"]}, stationary=whole["stationary"]
+        )
+        return whole, (first, second)
+    run = w2_run() if part == "w2" else g2_run()
+    ((name, value),) = run.items()
+    other = "red_cell_4-lew_s1" if part == "w2" else "C9/isolated/literature"
+    whole = {name: value, other: copy.deepcopy(value)}
+    return whole, ({name: value}, {other: whole[other]})
+
+
+@pytest.mark.parametrize("part", ["w1", "w2", "g2"])
+def test_terms_merge_a_run_split_over_gaps(part, tmp_path):
+    """A and B spread over GPU gaps (run --worlds) give the terms of whole runs."""
+    whole, (first, second) = two_worlds(part)
+    reference = saved(tmp_path, "cpu.json", part, whole, backend="cpu")
+    a = [saved(tmp_path, f"a{i}.json", part, q) for i, q in enumerate((first, second))]
+    b = saved(tmp_path, "b.json", part, whole)
+    out = tmp_path / "split.json"
+    split_argv = ["--reference", str(reference), "--runs", ",".join(map(str, a)), str(b)]
+    agreement.main(["terms", "--part", part, *split_argv, "--output", str(out)])
+    joined = tmp_path / "whole.json"
+    whole_argv = ["--reference", str(reference), "--runs", str(b), str(b)]
+    agreement.main(["terms", "--part", part, *whole_argv, "--output", str(joined)])
+    split, single = json.loads(out.read_text()), json.loads(joined.read_text())
+    for key in ("backend", "run_to_run"):
+        assert split[key] == single[key], key
+    assert split["runs"][0] == [str(p) for p in a]
+    merged, backend = agreement.load_runs(part, a)
+    assert merged == whole and backend == "L4"
+
+
+def test_split_runs_are_refused_when_inconsistent(tmp_path):
+    whole, (first, second) = two_worlds("g2")
+    a1, a2 = (saved(tmp_path, f"a{i}.json", "g2", q) for i, q in enumerate((first, second)))
+    with pytest.raises(ValueError, match="measured twice"):
+        agreement.load_runs("g2", [a1, a1])
+    other = saved(tmp_path, "other.json", "g2", second, backend="cpu")
+    with pytest.raises(ValueError, match="different backends"):
+        agreement.load_runs("g2", [a1, other])
+    w2 = saved(tmp_path, "w2.json", "w2", w2_run())
+    with pytest.raises(ValueError, match="is a w2 run"):
+        agreement.load_runs("g2", [a1, w2])
+    reference = agreement.load_runs("g2", [saved(tmp_path, "cpu.json", "g2", whole)])[0]
+    partial = agreement.load_runs("g2", [a1])[0]
+    with pytest.raises(ValueError, match="run A lacks"):
+        agreement.same_worlds("g2", reference, partial, reference)
+    agreement.same_worlds("g2", reference, agreement.load_runs("g2", [a1, a2])[0], reference)

@@ -436,18 +436,79 @@ is its anchor (D057), already counted on the declared layout.
   from the start are inserted at their declared densities. The departure is recorded in
   division design §6 too.
 
-**S3 prerequisites** (accepted 13 November). S3 cannot start its egg until both are met:
-- **The onset energy.** A wide access face makes the onset a transient faster than the step.
-  It charges the patch to about V_m through the face, which an IMEX step books only to its
-  own tolerance: about ½ C_f V_m² of heat goes unbooked when the access time constant is far
-  below dt. Plain @3 gives the same residual bit for bit with the cleft active from t = 0
-  (−0.0015217 pJ in the S2 probe, against a host energy bound of a few 10⁻⁶ pJ). So the egg's
-  access is either resolved by the step (division design §5.4's step study), or the onset
-  books the charge the clamp supplies, with its RC heat, as an event.
-- **Image charge at the view.** Insertion refuses to compose with an operator that books
-  image charge on the declared layout (injection, replacement), whose bookings would miss
-  the changed capacitances. Rm during cleavage needs injection with insertion, so injection
-  books its image charge and capacitor free energy at the view first.
+**S3 prerequisites** (accepted 13 November; both resolved the same day, guards below).
+- **(a) The onset energy.** A wide access face makes the onset a transient faster than the
+  step. It charges the patch to about V_m through the face, which an IMEX step books only
+  to its own tolerance: about ½ C_f V_m² of heat goes unbooked when the access time
+  constant is far below dt. Plain @3 gives the same residual bit for bit with the cleft
+  active from t = 0 (−0.0015217 pJ in the S2 probe, against a host energy bound of a few
+  10⁻⁶ pJ).
+  - **Physics.** The zero-charge onset is right. The new membrane arrives uncharged, and
+    R-full opens its lumen at bath composition and zero charge too. Charging it through the
+    access then dissipates exactly ½ C_on V_m², whatever the access resistance.
+  - **Decision: neither book the charge nor resolve the access.** Booking the charge as an
+    event would be the τ → 0 limit of that physics, wrong for a slow access. Resolving
+    τ = C_on / G_acc ≈ 6.6 µs (0.94 µS access, 6.2 pF at activation) in the egg would
+    need microsecond steps.
+  - **The bound.** What IMEX leaves unbooked is at most ½ C_on V_m² ≈ 3.1 × 10⁻⁴ pJ
+    (V_m = −9.95 mV). The engine's own host energy bound at 420 s, measured on the
+    uncleaved Rm1 egg, is 4.5 × 10³ pJ, so that is 7 × 10⁻⁸ of it. The insertion's later
+    perturbations add 1.5 × 10⁻⁷ pJ per 0.5 ms step, 0.43 pJ to J1 (R-full's values;
+    composite-v2-20261112-01/s3-prereq).
+  - The host energy check stays the guard: in a world where the unbooked heat exceeds
+    the solver's tolerance, the run is refused, as the tiny S2 world's was.
+  - Tests: one coarse step leaves −½ C_on V_m² in the energy residual (within 10%); 0.1 µs
+    steps at a 5 µs access book the heat in the access (within 10%), with the residual
+    below 1% of it; and the 1 ms run of that small world is refused.
+- **(b) Image charge at the view.** Insertion refused to compose with an operator that
+  books image charge on the declared layout, whose bookings would miss the changed
+  capacitances, and Rm during cleavage needs injection with insertion.
+  - Built: a split part that `BOOKS_AT_VIEW` gets the composite's view in its half-steps
+    when a field input is provided. Injection then books the clamps' plate charges and the
+    capacitor energy change at the view (`adapter.charge_energy_change`). Without a field
+    input the call and the arithmetic are as before.
+  - Insertion now refuses only declared-layout bookers (replacement's event map).
+  - Guards: the two-clamp analytic image charge after insertion; every ledger closing; the
+    declared booking shown to leave the electrode ledger open; a compiled run of pulses into
+    a growing patch closing every host check; and crossrev of injection without field
+    inputs (the heredity cell, and the Rm1 egg that the judged Rm1 ran on), whose jaxprs
+    and bindings are identical to 00672e8.
+- **(c) Found 13 November, open: an electrode-ledger drift at egg scale, seeded by the
+  pulses** (composite-v2-20261112-01/s3-prereq/electrode_diag*.json).
+  - The uncleaved Rm1 egg, with its two pulses (0–12 s), run to 420 s at 1 ms fails the
+    host electrode ledger: 8.4 × 10⁻¹⁷ C at 420 s, 5 times its bound.
+  - Three arms:
+    - pulses: the residual is 1.6 × 10⁻²⁰ C after the pulses, 1.6 × 10⁻¹⁸ C at 270 s,
+      then grows linearly at 7.0 × 10⁻²² C per step;
+    - the electrode declared, with zero current throughout: exactly 0 at every sampled
+      row;
+    - no operator: exactly 0 at every one of the 420,001 rows.
+    So the operator's presence does not cause it; the pulses seed it.
+  - What the pulses leave: a nonzero Cl increment in the cell, −7.3 × 10⁻¹² fmol
+    (P_Cl = 0, so without them only Na and K ever move).
+  - The drift's signature:
+    - its knee comes between steps 290,000 and 300,000, where the Na increment crosses
+      2¹⁶ fmol (the K increment is its negative);
+    - after it, the rate is F × ulp(9.29 × 10⁴ fmol) / 2 = 7.02 × 10⁻²² C, half an ulp
+      of the charge terms per step.
+  - Hypothesis, not yet verified: @3's IMEX electrode increment
+    (`surface_pump.electrode_increment`) is a difference of plate charges evaluated at a
+    step's end and again at the next step's start. It telescopes only if those two
+    evaluations agree bit for bit, and with a third species carrying a nonzero increment
+    they evidently do not, for example by summing the species in different orders. The
+    egg's large increments (about 10⁵ fmol of Na and K by 420 s) make each disagreement
+    half an ulp of a large charge term.
+  - If so, this is @3's booking at egg-scale increments, not injection's, and any world
+    with three moving species at that scale is exposed (S3's cleft moves Cl through the
+    access).
+  - The fix, or a justified step-scaled allowance (2.5 eps × steps × F Σ |z Δn| covers
+    half an ulp per step), lives in `surface_pump*.py` and needs the lead's approval.
+  - Not caused by this round's change (the crossrev above). The judged Rm1 ran 12 s and
+    passed.
+  - S3 runs 2100 s with 210 pulses and increments of several 10⁵ fmol, so its egg runs
+    wait for (c).
+  - The same run gives the engine's energy bound used in (a). The pulses leave about
+    0.45 pJ each in the energy residual, scheme error within IMEX's tolerance.
 
 **R5 for insertion, as built.** The inner checks run on the definition with every inserted
 patch at its largest area over the schedule and its declared capacitance, which is the
