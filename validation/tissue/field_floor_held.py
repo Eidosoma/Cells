@@ -103,25 +103,38 @@ def held_solves(fraction=0.95, kind="uniform", records=None):
             records.append(dict(held=False, converged=bool(values.converged), exact=exact))
             return values
         d = direction(arguments, layout, offset, kind)
+
+        def accepted(shift):
+            return bool(at(arguments, layout, offset + shift * d).converged)
+
         low, high = 0.0, 1e-24
         for _ in range(200):  # Bracket the cap: 1e-24 V doubled up to 1e36 V.
-            if not bool(at(arguments, layout, offset + high * d).converged):
+            if not accepted(high):
                 break
             low, high = high, 2.0 * high
         else:
             raise RuntimeError("No refusal along the direction: the cap is not bracketed")
-        for _ in range(60):
-            middle = 0.5 * (low + high)
-            if bool(at(arguments, layout, offset + middle * d).converged):
-                low = middle
-            else:
-                high = middle
-        moved = offset + fraction * low * d
+        # Acceptance along a direction need not be one interval (each |R_k| is V-shaped in
+        # the shift). Bisect, then look for a refusal inside [0, low] and bisect again below
+        # it, so low is the first boundary seen from the root.
+        for _ in range(20):
+            for _ in range(60):
+                middle = 0.5 * (low + high)
+                low, high = (middle, high) if accepted(middle) else (low, middle)
+            inside = [j for j in range(1, 8) if not accepted(low * j / 8)]
+            if not inside:
+                break
+            low, high = low * (inside[0] - 1) / 8, low * inside[0] / 8
+        used = fraction
+        while used > 1e-3 and not accepted(used * low):
+            used *= 0.8  # A refused gap finer than the scan: back off toward the root.
+        moved = offset + used * low * d
         result = at(arguments, layout, moved)
         records.append(
             dict(
                 held=True,
-                shift_V=fraction * low,
+                shift_V=used * low,
+                fraction_used=used,
                 converged=bool(result.converged),
                 converged_at_0p9_cap=bool(
                     at(arguments, layout, moved, floor=0.9 * float(layout.current_floor)).converged
