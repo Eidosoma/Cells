@@ -24,7 +24,9 @@ idle, so neither adds a computed value.
 Refused: a bridge junction that is not a contact between one division's two daughters; a gate that
 is not fixed open; P_s A_j != 2 a_0 D_s^cyt (relative 1e-12); a start other than its division's
 time; a daughter that divides again before its bridge has closed (a linear closure ends at
-start + tau; an exponential one never ends, so its daughters may not divide again). The domain:
+start + tau). An exponential closure never ends, so version 1 admits it only for a terminal
+division: it is refused when either daughter is declared to divide again (a limitation; a
+declared closure threshold may lift it later). Linear is the closure for 1 -> 2 -> 4. The domain:
 0 <= a <= a_0, and a = a_0 until the start. a_0 is bounded by the step through @3's
 explicit-rate step check, which counts the bridge's declared conductance (§4.2).
 
@@ -199,17 +201,21 @@ def check_definition(spec, declaration, schedule, model):
         if b.junction_id in start and start[b.junction_id] != round(start[b.junction_id] / dt) * dt:
             raise ConfigError("A bridge's start is an exact multiple of dt")
         for later in divisions.divisions:
-            if later.parent in ends and later.id in when:
-                closed = (
-                    b.closure == "linear"
-                    and b.junction_id in start
-                    and start[b.junction_id] + b.closure_time_s <= when[later.id]
+            if later.parent not in ends:
+                continue
+            if b.closure == "exponential":  # Version 1: terminal divisions only (the lead).
+                raise ConfigError(
+                    f"Bridge {b.junction_id}: an exponential closure is admitted only for a "
+                    f"terminal division; it never ends, so {later.parent} may not divide again "
+                    "(use linear closure)"
                 )
-                if not closed:
-                    raise ConfigError(
-                        f"Bridge {b.junction_id} must have closed before {later.parent} divides "
-                        "(an exponential closure never ends)"
-                    )
+            closed = b.junction_id in start and start[b.junction_id] + b.closure_time_s <= when.get(
+                later.id, np.inf
+            )
+            if later.id in when and not closed:
+                raise ConfigError(
+                    f"Bridge {b.junction_id} must have closed before {later.parent} divides"
+                )
 
 
 def bind(spec, declaration):

@@ -12,8 +12,9 @@ In NumPy on the compact division world with a bridge between its daughters (no c
   a_0 exp(-t / tau). Before its start the aperture is selected bitwise, and the availability
   factor is a / a_0 on the bridge and exactly 1 elsewhere;
 * refusals: a gate not fixed open, P A off 2 a_0 D^cyt, a start off the division time, a
-  daughter dividing again before its bridge has closed, and an a_0 beyond the step's
-  explicit-rate bound (@3's step check, decision 12);
+  daughter dividing again before its bridge has closed, an exponential closure on a division
+  whose daughters are declared to divide again (version 1: terminal divisions only), and an
+  a_0 beyond the step's explicit-rate bound (@3's step check, decision 12);
 * a statically idle bridge set leaves the view and the ledgers bitwise unchanged.
 """
 
@@ -213,15 +214,35 @@ def test_definition_refusals(change, message):
         parse_spec(edit(fx.divided(bridge=("linear", TAU)), change))
 
 
-@pytest.mark.parametrize("law, tau", [("linear", 0.004), ("exponential", 0.0005)])
-def test_a_daughter_divides_only_after_its_bridge_has_closed(law, tau):
+def test_a_daughter_divides_only_after_its_bridge_has_closed():
     with pytest.raises(ConfigError, match="must have closed"):
-        parse_spec(fx.divided(bridge=(law, tau), second=0.003, end=0.005))
+        parse_spec(fx.divided(bridge=("linear", 0.004), second=0.003, end=0.005))
+
+
+def unscheduled_second(raw):
+    """The second divisions stay declared, without their events."""
+    events = raw["experiment"]["partition_events"]
+    raw["experiment"]["partition_events"] = [e for e in events if e["division"] == "first"]
+
+
+@pytest.mark.parametrize("scheduled", [True, False])
+def test_an_exponential_closure_is_for_terminal_divisions_only(scheduled):
+    """Version 1 (the lead's ruling): an exponential closure never ends, so it is refused when
+    either daughter is declared to divide again, scheduled or not."""
+    raw = fx.divided(bridge=("exponential", 0.0005), second=0.003, end=0.005)
+    if not scheduled:
+        unscheduled_second(raw)
+    with pytest.raises(ConfigError, match="terminal division"):
+        parse_spec(raw)
+    parse_spec(fx.divided(bridge=("exponential", 0.0005)))  # Terminal: admitted.
 
 
 def test_a_closed_bridge_admits_the_second_division():
     spec = parse_spec(fx.divided(bridge=("linear", 0.001), second=0.003, end=0.005))
     assert any(op.law == fx.BRIDGE for op in spec.model.operators)
+    raw = fx.divided(bridge=("linear", 0.004), second=0.003, end=0.005)
+    unscheduled_second(raw)  # Declared but never happening: nothing to close before.
+    parse_spec(raw)
 
 
 def test_an_aperture_beyond_the_step_bound_is_refused():

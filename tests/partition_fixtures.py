@@ -13,6 +13,7 @@ the parent, so the partition maps a contact; and a bridge between the daughters
 
 from cells.core import partition_spec as ps
 from cells.core import pump_composite_spec as cs
+from cells.models.operators.contract import Operator
 from tests import membrane_insertion_fixtures as ifx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import surface_pump_v3_fixtures as v3f
@@ -164,3 +165,33 @@ def diffusivity(raw):
     return ps.cytoplasmic_diffusivities(
         SIGMA_CYT, cytosol, FREE_D, valence, raw["model"]["temperature_K"]
     )
+
+
+class FollowsSplit(Operator):
+    """A stub split part whose view follows its split (VIEW_FOLLOWS_SPLIT, as water's does),
+    which changes nothing: it provides the declared pump capacity and its half-steps return
+    their start state. No registered operator with such a view can run beside a closer in
+    version 1 (water provides volume, which the partition refuses), so the composite's step-end
+    domain at the view with closers is exercised through this stub."""
+
+    LAW_ID = "stub_follows_split@1"
+    SPLIT = True
+    RK4 = "split"
+    VIEW_FOLLOWS_SPLIT = True
+    VIEW_FIELDS = ("pump_capacity",)
+
+    def view(self, state, p, q, *, xp):
+        return {"pump_capacity": q.pump_capacity}
+
+    def half_step(self, state, h, control, p, *, xp):
+        return state, None
+
+
+def with_follower(spec):
+    """spec's composition with FollowsSplit appended (built directly; the spec does not name
+    it, and it owns no state, layout or schedule)."""
+    from cells.models import pump_composite, pump_composite_adapter
+    from cells.models.operators import OPERATORS
+
+    operators = tuple(OPERATORS[d.law] for d in spec.model.operators)
+    return pump_composite.Composition(pump_composite_adapter, (*operators, FollowsSplit()))

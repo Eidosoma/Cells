@@ -10,13 +10,18 @@ retiring path: every check reads the record added back):
   that differ only by value (event times, a world whose division never happens) and reproduces
   each world's own run to 1e-12 of each field's scale, bitwise against the batch reversed. A
   batch mixing a world with divisions and one without is refused;
-* an idle partition (no divisions) runs bitwise as the composition without it (Q7).
+* an idle partition (no divisions) runs bitwise as the composition without it (Q7);
+* the step-end domain's closer branch under jit, through a stub whose view follows its split;
+* the neighbour variant (§8.1): a gated contact to a depolarised neighbour, carrying a real
+  history that retires into the record at the division;
+* a bridge closing over 1 ms after an asymmetric division, with a restart at the event.
 A few minutes on one core (each run compiles); the tier-1 smoke test is test_partition.py.
 """
 
 import json
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import jax
 import numpy as np
@@ -28,6 +33,7 @@ from cells.core.specs import parse_spec
 from cells.core.vector_windows import run_vector_windowed
 from cells.core.windows import WindowPolicy
 from cells.io import write_snapshot
+from cells.models.registry import get_model
 from tests import partition_fixtures as fx
 from validation.tissue import composite_guard as guard
 
@@ -152,6 +158,33 @@ def test_the_manifest_names_the_closer(division_run, tmp_path):
     manifest = json.loads((tmp_path / "run" / "manifest.json").read_text())
     views = manifest["field_owners"]["views"]
     assert views["active"]["closers"] == [fx.PARTITION]
+
+
+def test_the_step_end_domain_runs_on_the_device_with_a_closer():
+    """_end_domain's closer branch under jit, through a stub whose view follows its split
+    (fx.FollowsSplit): one step before the division and one with the bridge open and closing,
+    each valid and bitwise the step of the composition without the stub."""
+    spec = parse_spec(world(bridge=("linear", 0.001)))
+    plain, follower = get_model(spec.model), fx.with_follower(spec)
+    state, p = plain.initial_values(spec)
+    partition_op = next(op for op in plain.operators if op.LAW_ID == fx.PARTITION)
+    born, ok = partition_op.event(
+        state,
+        SimpleNamespace(partition_due=np.ones(1)),
+        p,
+        xp=np,
+        view=lambda s: plain.view(p, s, xp=np),
+    )
+    assert ok
+    steps = [jax.jit(lambda s, c, q, m=m: m.split_step(s, fx.DT, c, q)) for m in (plain, follower)]
+    for start, time in ((state, 0.0), (born, fx.EVENT)):
+        values = fx.cs.control_values(spec, [time])
+        control = plain.CONTROL_TYPE(*(np.asarray(v[0]) for v in values))
+        results = [step(start, control, p) for step in steps]
+        (a, valid_a), (b, valid_b) = results
+        assert bool(valid_a) and bool(valid_b), time
+        for name in type(a)._fields:
+            assert np.array_equal(np.asarray(getattr(a, name)), np.asarray(getattr(b, name))), name
 
 
 def test_a_neighbour_contact_runs_through_the_division():

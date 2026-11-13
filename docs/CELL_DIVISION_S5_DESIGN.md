@@ -575,7 +575,11 @@ full or not at all.
 - a start time other than its division's;
 - a negative or reopening aperture, or one below a_0 before its start (the domain);
 - as built: a daughter that divides again before its bridge has closed (a linear closure ends
-  at t_b + τ_c; an exponential one never ends);
+  at t_b + τ_c);
+- as built, a version-1 limitation (decision 16): an exponential closure never ends, so it is
+  admitted only for a terminal division and refused when either daughter is declared to
+  divide again, scheduled or not. Linear closure is the one for 1 → 2 → 4; a declared closure
+  threshold for exponential closure may lift this later;
 - as built: a_0 beyond the step bound of §4.2, by @3's explicit-rate step check, which counts
   the bridge's declared conductance against the daughters' capacitances.
 
@@ -1092,6 +1096,9 @@ mirrors `tests/unit/test_d147_drivers.py`.
 | 12 | Bridge: an @3 junction with P A = 2 a D_s and a fixed open gate, prescribed closure (linear or exponential), a_0 bounded by dt | Waits for the cytoplasmic conductivity's source; until then a declared assumption with a band. σ_cyt enters only through G_b0 = 2 a_0 σ_cyt, so the wait does not hold up S5a's code (§4.2) |
 | 13 | S4: superseded and reported, no run (§9) | Accepted; the lead records it when this note lands |
 | 14 | Staging | S5a (about 5.5 days) and S5b (about 3.5 days, with the review's guards) approved. S5a lands after the volume ledger; code starts after the risk-1 probe and the constants-aware baseline |
+| 15 | Closed contacts as @3 padding (§2): minimum 0 at the view, gate 0 in state (padded at bind, written by the closer at its events); @3's domain read at the view with closers; the A.6 addition (item 5) | Accepted (S5a part 2). The lead relays A.6's sentence to the references agent |
+| 16 | Bridge closure before a daughter divides again | Accepted. Version 1 admits exponential closure only for terminal divisions (refused when either daughter is declared to divide again); linear is the closure for 1 → 2 → 4. A limitation: a declared closure threshold for exponential closure may come later (§4.4) |
+| 17 | a_0 bounded through @3's explicit-rate step check; bridge domain 0 ≤ a ≤ a_0; with retirement, domain failures reported before ledger failures | Accepted |
 
 ## 13. Risks
 1. **The electrode ledger at four cells.**

@@ -381,6 +381,23 @@ def test_an_idle_partition_is_the_composition_without_it():
         assert np.array_equal(np.asarray(b1[name]), np.asarray(b2[name])), name
 
 
+def test_the_step_end_domain_reads_the_view_with_closers():
+    """_end_domain's closer branch (§2), through a stub whose view follows its split: at the
+    view with closers the bound state's padding is valid (the bridge's gate 0 below its declared
+    minimum 1), where the split view alone, without closers, refuses it; a closed contact
+    holding a gate is refused at the view."""
+    spec = parse_spec(fx.divided(bridge=("linear", 0.004)))
+    model = fx.with_follower(spec)
+    state, p = model.initial_values(spec)
+    assert model.domain_views and model.closers
+    assert model._end_domain(state, p, model.operators, xp=np)
+    split_only = model.inner.view(p, state, model.domain_views, xp=np)
+    inner = model.inner.inner_state(state)
+    assert not model.inner.domain_valid(inner, split_only, p.active, xp=np)
+    gated = state._replace(junction_gate=np.array([0.5]))
+    assert not model._end_domain(gated, p, model.operators, xp=np)
+
+
 def test_the_lineage_records_the_division():
     spec, model, _, _ = bind(fx.divided())
     entries = list(fx.cs.entries(spec))
