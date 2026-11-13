@@ -20,7 +20,7 @@ The overall order is set against the engine-feature queue (D136), currently:
 1. water and volume (qualified and on main, 11 November);
 2. cell replacement (G2: protocol registered; tolerances being pinned);
 3. Cortés-Poza Phase 0 (done);
-4. MG1 (judged run failed 52/57; being diagnosed);
+4. MG1 (v2 passed and landed; [Progress](../PROGRESS.md#plan-betse-parity-on-cpu-and-l4-then-jupiter-from-8-november));
 5. Cortés-Poza Phase 1 (unblocked: the junction-heat fix and the frozen-composition comparison are both in; next free slot);
 6. the gene-regulation layer (heredity Stage D, parity P8);
 7. REVERT reproduction.
