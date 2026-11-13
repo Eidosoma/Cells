@@ -24,7 +24,10 @@ Actions:
   run --part {w1,w2,g2} --output FILE [--worlds NAME,...]
       the part's judged quantities (raw engine values) with the backend used
   terms --part P --reference CPU --runs A B --output FILE
-      measured terms; W2 also reads the qualification's own w2-judge.json
+      measured terms; W2 also reads the qualification's own w2-judge.json. Each of CPU, A
+      and B is one file or a comma-separated list of the files of one run split over GPU
+      gaps with run --worlds: they are merged (each world once, one backend), and A and B
+      must cover the reference's worlds exactly
   variant --part P --terms FILE --output DIR
       variant.json (tolerances, stop rule, report rows) and protocol.json
 Everything written is PROPOSED until the lead registers it.
@@ -237,6 +240,59 @@ def load_run(part, path):
     return data["quantities"] if "quantities" in data else data
 
 
+def world_keys(part, quantities):
+    """The worlds a run's quantities hold (W1: its trajectories and stationary labels)."""
+    if part == "w1":
+        return {("trajectory", k) for k in quantities["trajectories"]} | {
+            ("stationary", k) for k in quantities["stationary"]
+        }
+    return set(quantities)
+
+
+def merge_runs(part, partial):
+    """One run's quantities from its partial files ({world: ...} each, W1 split by kind).
+
+    A run split over GPU gaps with run --worlds is the union of its parts. A world measured
+    twice is refused: one run measures each world once.
+    """
+    merged = dict(trajectories={}, stationary={}) if part == "w1" else {}
+    for quantities in partial:
+        groups = ("trajectories", "stationary") if part == "w1" else (None,)
+        for key in groups:
+            into, values = (merged, quantities) if key is None else (merged[key], quantities[key])
+            twice = sorted(set(into) & set(values))
+            if twice:
+                raise ValueError(f"{part}: worlds measured twice in one run: {twice}")
+            into.update(values)
+    return merged
+
+
+def load_runs(part, paths):
+    """(merged quantities, backend) of one run saved in one file or several (run --worlds).
+
+    Every file of one run must be of this part and from one backend (device and versions).
+    """
+    datas = [json.loads(Path(p).read_text()) for p in paths]
+    for path, data in zip(paths, datas, strict=True):
+        if data.get("part", part) != part:
+            raise ValueError(f"{path} is a {data['part']} run, not {part}")
+    backends = {json.dumps(d.get("backend"), sort_keys=True) for d in datas}
+    if len(backends) > 1:
+        raise ValueError(f"{part}: the files of one run come from different backends")
+    merged = merge_runs(part, [load_run(part, p) for p in paths])
+    return merged, datas[0].get("backend")
+
+
+def same_worlds(part, reference, a, b):
+    """Refuse runs that do not cover the reference's worlds exactly."""
+    expected = world_keys(part, reference)
+    for label, run in (("A", a), ("B", b)):
+        found = world_keys(part, run)
+        if found != expected:
+            missing, extra = sorted(expected - found), sorted(found - expected)
+            raise ValueError(f"{part}: run {label} lacks {missing} and adds {extra}")
+
+
 # ------------------------------------------------------------------ terms
 
 
@@ -409,10 +465,11 @@ def main(argv=None):
     one.add_argument("--part", choices=tuple(RUNS), required=True)
     one.add_argument("--output", type=Path, required=True)
     one.add_argument("--worlds", type=lambda s: s.split(","), default=None)
+    files = lambda s: [Path(x) for x in s.split(",")]  # noqa: E731 (one run, comma-separated)
     two = sub.add_parser("terms")
     two.add_argument("--part", choices=tuple(RUNS), required=True)
-    two.add_argument("--reference", type=Path, required=True)
-    two.add_argument("--runs", type=Path, nargs=2, required=True)
+    two.add_argument("--reference", type=files, required=True)
+    two.add_argument("--runs", type=files, nargs=2, required=True)
     two.add_argument("--output", type=Path, required=True)
     three = sub.add_parser("variant")
     three.add_argument("--part", choices=tuple(RUNS), required=True)
@@ -430,11 +487,15 @@ def main(argv=None):
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(record, indent=1) + "\n")
     elif args.action == "terms":
-        reference, a, b = (load_run(args.part, p) for p in (args.reference, *args.runs))
+        (reference, _), (a, backend_a), (b, backend_b) = (
+            load_runs(args.part, paths) for paths in (args.reference, *args.runs)
+        )
+        same_worlds(args.part, reference, a, b)
         record = dict(
             part=args.part,
-            reference=str(args.reference),
-            runs=[str(p) for p in args.runs],
+            reference=[str(p) for p in args.reference],
+            runs=[[str(p) for p in paths] for paths in args.runs],
+            backends=[backend_a, backend_b],
             **measured(args.part, reference, a, b),
         )
         args.output.write_text(json.dumps(record, indent=1) + "\n")

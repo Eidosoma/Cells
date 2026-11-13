@@ -352,7 +352,11 @@ def test_definition_refusals(raw, message):
         parse_spec(raw)
 
 
-def test_injection_and_the_node_cap_are_refused():
+def test_image_charge_on_the_declared_layout_and_the_node_cap_are_refused():
+    """Injection books at the view and composes with insertion; an operator that books image
+    charge on the declared layout (as replacement's event map does) is refused."""
+    from cells.models.operators.contract import Operator
+
     raw = fx.with_operators(fx.one_patch(), IDLE)
     cell = raw["model"]["cells"][0]["id"]
     raw["model"]["operators"].append(
@@ -364,8 +368,19 @@ def test_injection_and_the_node_cap_are_refused():
     raw["experiment"]["injection_controls"] = [
         dict(cell_id=cell, schedule=[dict(time=0.0, current_A=0.0)])
     ]
+    spec = parse_spec(raw)  # Injection composes.
+
+    class DeclaredBooker(Operator):
+        LAW_ID = "declared_booker@1"
+        EVENT = True
+        STATE_AXES = {"booked_C": ["extracellular_slot"]}
+        ENTITY_WRITES = {"electrode_charge_transferred_C": ("booked_C",)}
+
+    (_, declaration, schedule) = cs.entries(spec)[1]
     with pytest.raises(ConfigError, match="books image charge on the declared layout"):
-        parse_spec(raw)
+        insertion.check_definition(
+            spec, declaration, schedule, SimpleNamespace(operators=(DeclaredBooker(),))
+        )
     wide = fx.with_operators(fx.one_patch())
     wide["execution"].update(capacity=40, extracellular_capacity=25)
     with pytest.raises(ConfigError, match="limited to 64 field nodes"):

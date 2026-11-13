@@ -23,6 +23,7 @@
   "/mnt/workspaces/Cells/land-20261113a/measure-new/measured.json",
   "/mnt/workspaces/Cells/land-20261113b/measure-new/measured.json",
   "/mnt/workspaces/Cells/land-20261113c/measure-new/measured.json",
+  "/mnt/workspaces/Cells/land-20261113d/measure-new/measured.json",
   "/mnt/workspaces/Cells/field-floor-guards-20261113-01/guard6/measure-new/measured.json"
  ],
  "measured_provenance": [
@@ -192,6 +193,13 @@
    "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113c",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-13T02:53:54+00:00"
+  },
+  {
+   "git_revision": "7d61be41f3453eaf331b6d7207d2f244528be79e",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113d",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-13T04:37:11+00:00"
   },
   {
    "git_revision": "7a1f7f6af3d237502cdf0c08818321337e8a7755",
@@ -854,10 +862,10 @@
    },
    {
     "file": "tests/unit/test_composite_l4_agreement.py",
-    "seconds": 4.25,
+    "seconds": 3.13,
     "exit_code": 0,
     "counts": {
-     "passed": 15
+     "passed": 19
     }
    },
    {
@@ -911,10 +919,10 @@
    },
    {
     "file": "tests/unit/test_current_injection.py",
-    "seconds": 2.57,
+    "seconds": 3.68,
     "exit_code": 0,
     "counts": {
-     "passed": 9
+     "passed": 12
     }
    },
    {
@@ -1362,7 +1370,7 @@
    },
    {
     "file": "tests/unit/test_membrane_insertion.py",
-    "seconds": 3.43,
+    "seconds": 3.94,
     "exit_code": 0,
     "counts": {
      "passed": 23
@@ -2802,14 +2810,6 @@
     }
    },
    {
-    "file": "tests/unit/test_current_injection_runs.py",
-    "seconds": 81.17,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
-    }
-   },
-   {
     "file": "tests/unit/test_division_cleft_reference.py",
     "seconds": 72.33,
     "exit_code": 0,
@@ -3558,6 +3558,12 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_current_injection_runs.py",
+    "seconds": 90.14,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/unit/test_default_world_adapter.py",
     "seconds": 90.13,
     "exit_code": null,
@@ -3699,7 +3705,7 @@
    },
    {
     "file": "tests/unit/test_membrane_insertion_runs.py",
-    "seconds": 90.09,
+    "seconds": 90.1,
     "exit_code": null,
     "counts": {}
    },
