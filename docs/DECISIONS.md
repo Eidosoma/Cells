@@ -4819,6 +4819,12 @@ rename with no numerical change:
   `pump_water_fixtures.scale_world`) without the choice, unless it is exempted there with
   its reason. The check is static and sees only those builders: a driver that builds a
   free-offset world any other way must call `declare()` by this rule alone.
+- **The exemptions are narrow.** The studies recorded before this decision
+  (`batched_worlds_study`, `cell_replacement_cost`, `ledger_rounding_study`,
+  `resolved_scale_study`, `surface_pump_v3_study`) are exempt only for reproducing their
+  recorded runs. Any new run they make of a free-offset world declares its field solver
+  by this decision. The cross-revision guards, the judges and the floor tools are exempt
+  because they run definitions as declared, or both versions on purpose.
 - **Why.** Version 2 accepts a field solve only below `NEWTON_TARGET`. On the W1 hold's
   825-node tissue (172 free offsets), a converged root sits at 0.8–1.1 of that target,
   at the rounding floor of the current balance. Whether it is accepted then depends on
