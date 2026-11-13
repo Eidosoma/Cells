@@ -911,6 +911,10 @@ def terms(studies, judged=JUDGED_DT):
             observed_order=order,
             step_term_decreases=second < first or first == second == 0,
             judged=name in JUDGED,
+            # The engine's value at each step (the trajectory's 211 values stay in the studies).
+            values=None
+            if isinstance(mid[name], list)
+            else {repr(k): v[name] for k, v in by.items()},
         )
     stop = sorted(k for k, v in out.items() if v["judged"] and not v["step_term_decreases"])
     return dict(
@@ -937,6 +941,7 @@ def protocol_values(term_values, reference_values):
             observed_order=t["observed_order"],
             reference_term=ref_term,
             tolerance=3 * (step + ref_term),
+            engine_values_by_dt_s=t.get("values"),
         )
     return out
 

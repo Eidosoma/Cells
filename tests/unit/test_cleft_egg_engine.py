@@ -140,6 +140,11 @@ def test_quantities_terms_and_verdicts_follow_the_plan():
     assert (
         not result["terms"]["Q3_rm1_ohm"]["judged"] and result["terms"]["Q2_rm_at_j1_ohm"]["judged"]
     )
+    # The engine's value at each step, for the scalar quantities.
+    assert result["terms"]["Q4_em_trajectory_V"]["values"] is None
+    by_dt = result["terms"]["Q1_em_at_j1_V"]["values"]
+    assert set(by_dt) == {repr(dt) for dt in engine.STUDY_DTS}
+    assert by_dt[repr(engine.JUDGED_DT)] == studies[1]["quantities"]["Q1_em_at_j1_V"]
     # The registered stop condition: every judged step term decreases here, so no stop.
     assert not result["stop"] and result["non_converging"] == []
     # A judged step term that grows from the coarse pair to the judged pair stops the study.
