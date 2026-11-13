@@ -82,7 +82,8 @@ def _dumps():
     for arm in ("red_cell_4", "red_cell_15", "red_cell_20", "neuron_scale_model_derived"):
         names += [f"W2_{arm}-lew_s1", f"W2_{arm}-kaji_s0.12"]
     built = dumps.worlds()
-    return {name: built[name] for name in names}
+    # crossrev's base set has its own replacement_donors: the saved name keeps them apart.
+    return {("dumps_" + n if n == "replacement_donors" else n): built[n] for n in names}
 
 
 def _egg():
