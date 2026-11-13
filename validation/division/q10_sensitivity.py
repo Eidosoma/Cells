@@ -13,10 +13,11 @@ world; electrode_current_injection@1 in the injected variants.
 Worlds (tests/partition_fixtures; nominal values around the heredity cell, built from neither J1
 input, so the J2 bright line holds):
 * 1->2: the compact bridge world, end 6 ms;
-* 1->2->4: the daughters divide 2 ms after the first division, once the bridge has closed,
-  end 7 ms;
+* 1->2->4: the daughters divide at 5 ms, after every variant's bridge has closed, end 7 ms;
 * furrow 1->2: the furrow world (onset at 1 ms, cleft lumen), end 6 ms.
-Each world runs without and with 1 pA into d1 from its birth (until its own division).
+Each world runs without and with 1 pA into d1. The current flows over one window shared by every
+variant, from 3 ms (the latest partition time) until 6 ms, or until d1's own division at 5 ms.
+So a change of t_p does not change the injected charge.
 
 Ranges, declared here:
 * the partition time t_p in {1, 2, 3} ms (exact multiples of dt; the furrow world's {2, 3} ms,
@@ -53,6 +54,8 @@ STATUS = "Development study for Q10 (S5a); not judged; no tolerance registered"
 TAU = 0.001  # s, linear closure.
 APERTURES = (0.4, 1.0, 1.8)  # x fx.APERTURE_M.
 INJECTION_A = 1e-12
+INJECTION_START = 0.003  # s: the latest partition time, so the window is every variant's.
+SECOND = 0.005  # s: the 1->2->4 daughters' division, after every variant's closure.
 NOMINAL_TP = 0.002
 
 
@@ -60,15 +63,15 @@ def world(family, tp, scale, injected):
     """(raw, compare records) of one variant."""
     bridge = ("linear", TAU, scale * fx.APERTURE_M)
     current = INJECTION_A if injected else None
+    window = dict(injection=current, injection_start=INJECTION_START)
     if family == "1->2":
-        raw = fx.divided(at=tp, end=0.006, bridge=bridge, injection=current)
+        raw = fx.divided(at=tp, end=0.006, bridge=bridge, **window)
         records = [0.005, 0.006]
     elif family == "1->2->4":
-        second = fx.DT * round((tp + 0.002) / fx.DT)  # An exact multiple of dt.
-        raw = fx.divided(at=tp, end=0.007, second=second, bridge=bridge, injection=current)
+        raw = fx.divided(at=tp, end=0.007, second=SECOND, bridge=bridge, **window)
         records = [0.006, 0.007]
     else:
-        raw = fx.cleft_divided(at=tp, end=0.006, bridge=bridge, injection=current)
+        raw = fx.cleft_divided(at=tp, end=0.006, bridge=bridge, **window)
         records = [0.005, 0.006]
     raw["experiment"]["observation_times"] = [0.0, *records]
     return raw, records
@@ -158,6 +161,8 @@ def main(output):
             closure="linear",
             closure_time_s=TAU,
             injection_A=INJECTION_A,
+            injection_window_s=[INJECTION_START, "end, or d1's division at 5 ms (1->2->4)"],
+            second_division_s=SECOND,
         ),
         worlds={},
     )

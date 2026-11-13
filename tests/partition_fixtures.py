@@ -92,6 +92,7 @@ def divided(
     bridge=None,
     neighbour=False,
     injection=None,
+    injection_start=None,
 ):
     """The parent, its two daughters (d1, d2) and the partition, as a composition (raw).
 
@@ -100,8 +101,8 @@ def divided(
     closing at the first division, or None.
     neighbour: a neighbour cell (cell_1) with a gated contact to the parent, which the first
     division maps to d1 and d2 (a_e = 1/2).
-    injection: a current (A) into d1 from the first division on (until its own division, with
-    second), or None.
+    injection: a current (A) into d1 from injection_start (default the first division) on, until
+    its own division with second, or None.
     """
     raw = cs.frozen_definition(parent(end=end, neighbour=neighbour))
     blocks = [
@@ -153,7 +154,9 @@ def divided(
             ]
     raw["experiment"]["partition_events"] = schedule
     if injection is not None:
-        inject(raw, "d1", injection, at, stop=second)
+        inject(
+            raw, "d1", injection, at if injection_start is None else injection_start, stop=second
+        )
     return raw
 
 
@@ -181,6 +184,7 @@ def cleft_divided(
     events=True,
     bridge=None,
     injection=None,
+    injection_start=None,
 ):
     """The compact division world with a furrow (§8.1), as a composition (raw).
 
@@ -193,7 +197,8 @@ def cleft_divided(
     * restricted_cleft_lumen@2 (with lumen): the cleft, faced by the furrow and its daughters;
     * isopotential_partition@1: cell_0 into d1 and d2 at `at`, each patch split at
       area_fraction (default f);
-    * optionally a bridge (as divided()) and an injection into d1 from the division on.
+    * optionally a bridge (as divided()) and an injection into d1 from injection_start (default
+      the division) on.
     """
     base = ifx.cleft_cell(end=end, cleft_pL=CLEFT_PL)
     base["experiment"]["observation_times"] = [0.0, end]
@@ -274,7 +279,7 @@ def cleft_divided(
         [dict(division="first", time=at, carriers=["c1", "c2"])] if events else []
     )
     if injection is not None:
-        inject(raw, "d1", injection, at)
+        inject(raw, "d1", injection, at if injection_start is None else injection_start)
     return raw
 
 
