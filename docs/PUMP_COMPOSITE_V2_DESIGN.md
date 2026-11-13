@@ -661,13 +661,40 @@ is its anchor (D057), already counted on the declared layout.
     - At s3h, the regression test and the judge-imports test pass (8 tests).
     - The barrier's protection against recomputed stage amounts is dropped. The docstring
       states the exposure, and the regression test guards it.
-    - Not run on option 3's code, all for the landing round:
-      - the forward guard's other parts. Only the s3h side is needed, about 50 minutes on
-        CPU 4, because the s3f side is reusable;
-      - the composite test files: injection, insertion, adapter and replacement vector,
-        last run with the barrier body;
-      - the tier gate;
-      - the step timing and the kernel check. Those below are the barrier version's.
+  - **Option 3's landing evidence (13 November), fix against no fix (s3f):**
+    - Source: snapshot-s3i (f651bfe), option 3 merged with main 82f9308. Its src is option
+      3's. The branch head 3d2e7a6 adds main e33ad71, which brings the Q2 re-export once,
+      as its only further src change.
+    - The full forward guard, all 58 worlds in every program: physical fields are bitwise
+      identical (s3-fix/guard-s3i/compare.json).
+    - Every ledger case (D148's third criterion):
+      - `electrode_charge_transferred_C` changes in 18 worlds, each by its own unfixed
+        residual. The largest differences are the egg at 420 s (8.4 × 10⁻¹⁷ C), Rm1
+        (2.0 × 10⁻²⁰), W1's P2 from D and from H (2.7 × 10⁻²⁵ and 4.1 × 10⁻²⁶), and W1's
+        P6 (6.9 × 10⁻²⁸).
+      - The rest change by 10⁻³⁰ to 7 × 10⁻²⁸ C: W2's eight 1 s trajectories, the routes
+        on and off, water, water_on, symport and symport_none.
+      - Alongside: the electrode and global-charge residual diagnostics, and the device-check
+        values of injection_rm1, symport, symport_none and water.
+    - The composite test files at s3i all pass: the regression test 2, injection 12 and its
+      runs 5, insertion 23 and its runs 10, adapter 5, and replacement vector 1.
+    - Step time, s3f against s3i over four alternated runs each, by median (fastest in
+      brackets):
+      - the egg: 0.0511 (0.0485) against 0.0526 (0.0498) ms;
+      - the 825-node world as @3: 49.4 (47.8) against 49.9 (46.9) ms;
+      - with closed water: 48.8 (47.9) against 49.5 (47.1) ms.
+      Compile times are unchanged, so the differences lie within the run-to-run spread.
+    - The crossrev baseline, renewed at s3i (s3-fix/crossrev-s3i):
+      - every jaxpr that traces capacitor_change differs: base 22 of 36, qualification 52
+        of 78, injection 4 of 6. The counts are the same against 8416a72 and against
+        f0c8e46;
+      - the right-hand sides and every binding are identical: 12, 56 and 2.
+      Retaken at the head (snapshot-s3j, 3d2e7a6), every jaxpr and binding matches s3i's,
+      and the regression and judge-imports tests pass (8). It is retaken once more at the
+      landing commit (D148's fourth criterion).
+    - History: e32c20a introduced the barrier version, and f91ce9d supersedes it by
+      removing the barrier. Their messages and this note record why.
+    - Not run: the tier gate, which is the lead's landing gate.
   - **The barrier version's forward guard (s3g), fix against no fix: physical fields are
     identical**
     (composite-v2-20261112-01/s3-fix/guard/compare-final.json).
