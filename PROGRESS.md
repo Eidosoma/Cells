@@ -58,6 +58,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The S5 independent references, R-ops and R-tissue (13 November).** A separate agent wrote
+  them from Appendix A and §10.1 of the [S5 design](docs/CELL_DIVISION_S5_DESIGN.md). It read no
+  S5 engine code, and its read list is in the log.
+  - **R-ops** (`validation/division/partition_reference.py`) is the division map (A.6) in NumPy.
+  - **R-tissue** (`validation/division/cleft_tissue_reference.py`) generalises R-full to cells,
+    clefts, contacts, bridges and lumens. It integrates with Radau at rtol 1e-10 and applies
+    R-ops at each division.
+  - **Results:**
+    - R-tissue reproduces R-full on S3's egg at J1 to 6.4e-16 V (target 1e-10 V), and over all
+      211 pulses to 1.0e-14 V;
+    - R-ops' identities hold to 1.96 eps × magnitude on 200 random states;
+    - the symmetric, isopotential and bridge-open and bridge-closed limits hold;
+    - R-full is untouched.
+  - **Status:** they are the references for S5's Q2–Q5, and nothing is judged yet.
+  - **Gate:** tier 1 on the merged tree, 291 files, no changed outcome
+    ([gate](/mnt/workspaces/Cells/land-20261113r/)). Of the new files, one is in tier 1, two in
+    tier 2, and the J1 cross-check (about 110 s) in tier 3.
+  - [Evidence and log](/mnt/workspaces/Cells/cell-division-s5-references-20261113-01/HANDOFF.md).
+
 - **Crossrev now compares constants; earlier verdicts stand (13 November).** The
   checkpoint-continuity design found that `composite_crossrev.py` compared jaxpr text and
   bindings, but not the values of closed-over arrays or the device-check constants. A
