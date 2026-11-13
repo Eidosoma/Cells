@@ -261,7 +261,7 @@ background and gates, and @1's parser requires it to equal the slot's declared v
 - the template's state at its own volume lies in the composition's domain. This is @1's host
   check at the template's first slot, run with @2's event map.
 
-**Donor copies take the donor's volume (decision 10, proposed).** E07_V1_DESIGN §2 proposed this
+**Donor copies take the donor's volume (decision 10; accepted by the lead at landing, 13 November 2026).** E07_V1_DESIGN §2 proposed this
 and left the choice to §2. The alternatives are the slot's declared volume V0 and the occupant's
 volume V_old.
 - **A copy is a copy of state** (D139, [CELL_REPLACEMENT.md](CELL_REPLACEMENT.md)). Under water

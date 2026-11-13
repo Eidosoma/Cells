@@ -85,6 +85,11 @@ decision 4.
 §2's code has to choose between these. This note proposes the donor's volume for donor
 copies, since a copy is a copy of state, and leaves the decision to §2.
 
+**Dated note (13 November 2026).** §2 is built and landed: `scheduled_cell_replacement@2`,
+water plus replacement. A donor copy takes the donor's volume
+([composite v2 decision 10](PUMP_COMPOSITE_V2_DESIGN.md)). E07-v1 itself is unchanged: it stays
+registered at fixed volume (D151), and any run under water belongs to a later version, on @2.
+
 ## 3. Design
 
 **Questions.** The three sets are labelled and kept apart.
