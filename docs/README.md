@@ -131,6 +131,8 @@ the [project README](../README.md) gives the short feature overview.
   cue experiments.
 - [Granzyme K and tissue ageing review](PAPER_REVIEW_GZMK_AGEING.md) checks a supplied
   secondary assessment and places a secreted-protease ageing module against the gates.
+- [Kinetochore protein counts review](PAPER_REVIEW_KINETOCHORE_COUNTS.md) reads Hirano et al.'s
+  FCS-calibrated counts as an abundance-evidence standard for the protein catalogue.
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.

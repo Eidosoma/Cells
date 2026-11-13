@@ -4942,6 +4942,23 @@ emulator.
   needs its own user decision.
 
 
+## D150: Secreted-species transport is promoted now
+
+2026-11-13, user decision after the granzyme K review
+([PAPER_REVIEW_GZMK_AGEING.md](PAPER_REVIEW_GZMK_AGEING.md)): "we do have plans to be able to
+run special modes of Cells at differnt timescales, so down the road nothing right now but for
+sure the secreted-species transport now".
+- **Promoted now:** general secreted-species transport. A protein-scale species is secreted by
+  cells, moves in extracellular space, and is taken up or cleared, with conserved accounting and
+  a catalogue identity. It is a general, reusable engine feature (D136, D144), never specific to
+  granzyme K, and it also serves the roadmap's morphogen-source goal (ROADMAP item 9).
+- **Design first (D142),** then code behind the usual guards. Calibration comes from a measured
+  protein or morphogen gradient in the literature.
+- **Deferred:** organ-scale ageing timescales (months) wait for Cells' planned long-time modes.
+  Nothing is built for them now.
+- The checkpoint-continuity decision drafted as "D150" in its design note takes the next free
+  number when the user approves it.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
