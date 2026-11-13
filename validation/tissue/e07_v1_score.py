@@ -372,12 +372,14 @@ def score(base, protocol, development=False):
                    default=None)  # fmt: skip
         star_5 = max((tau for tau, x in per.items() if x["converted"]), default=None)
         entry = dict(per_tau={str(t_): x for t_, x in sorted(per.items())},
-                     tau_star_single_draw=star, tau_star_among_5plus_D=star_5,
-                     tau_star_definitions="items.E5: the largest ladder tau with at least one "
-                     "converted interior newcomer (tau_star_single_draw, scored); the driver's "
-                     "summary.json counts only interior newcomers arriving with five or more D "
-                     "neighbours (tau_star_among_5plus_D): a driver-versus-protocol discrepancy, "
-                     "reported whether or not the two values differ")  # fmt: skip
+                     tau_star_single_draw=star,
+                     tau_star_definition="items.E5: the largest ladder tau with at least one "
+                     "converted interior newcomer (scored)",
+                     tau_star_among_5plus_D=dict(
+                         status="supplementary: the driver's summary.json value, not judged; "
+                         "it counts only interior newcomers arriving with five or more D "
+                         "neighbours, a driver-versus-protocol discrepancy reported whether or "
+                         "not the two values differ", value=star_5))  # fmt: skip
         if s == 0.6:
             f = {tau: per[tau]["fraction"] if tau in per else None for tau in e7.LADDER_TAU_S}
             f300 = 0.0 if f[300.0] is None and 300.0 in per else f[300.0]
@@ -503,7 +505,7 @@ def score(base, protocol, development=False):
             group_classes_equal_summary=mine
             == {k: v["class_"] for k, v in sm["group_classes"].items()},
             tau_star_among_5plus_D_equals_summary={
-                str(s): e5[f"s{s}"]["tau_star_among_5plus_D"] for s in (0.6, 1.0)
+                str(s): e5[f"s{s}"]["tau_star_among_5plus_D"]["value"] for s in (0.6, 1.0)
                 if e5.get(f"s{s}", {}).get("per_tau")} == sm["tau_star_single_draw"],
             summary_runs=len(sm["runs"]), summary_development_runs=sm["development_runs"],
         )  # fmt: skip
