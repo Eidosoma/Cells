@@ -171,8 +171,13 @@ def rngs(seed):
     )
 
 
-def plan(*, scope, rule, size, residence_s, end_s, seed, dt=DT):
-    """Events [(step, slot, donor or None)] of one arm and seed, and the turnover times."""
+def plan(*, scope, rule, size, residence_s, end_s, seed, dt=DT, grid_dt=None):
+    """Events [(step, slot, donor or None)] of one arm and seed, and the turnover times.
+
+    grid_dt (numerics comparisons only) rounds event times on a coarser grid first, so
+    runs at different dt share event times; by default the grid is dt itself.
+    """
+    grid_dt = dt if grid_dt is None else grid_dt
     cells, _, neighbours = sheet()
     inside = disc(size)
     slots = list(range(len(cells))) if scope == "sheet" else sorted(inside)
@@ -183,7 +188,7 @@ def plan(*, scope, rule, size, residence_s, end_s, seed, dt=DT):
     n, interval = len(slots), residence_s / len(slots)
     events, j = [], 0
     while True:
-        step = int(round((j + 0.5) * interval / dt))
+        step = int(round((j + 0.5) * interval / grid_dt)) * int(round(grid_dt / dt))
         if step * dt >= end_s - dt:
             break
         slot = permutation[j % n]
