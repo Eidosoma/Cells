@@ -58,6 +58,41 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Field-solve acceptance: a convergence test with no margin on the full tissue; new
+  definitions with free field offsets declare solver version 3 (D147; 13 November).**
+  - **The defect.** Version 2 accepts a field solve when the normalized residual is ≤ 0.01.
+    On the W1 hold's 825-node tissue a converged root sits at 0.8–1.1 of that, at the
+    rounding floor of the current balance. So acceptance depends on how XLA compiled
+    the program.
+    - From t = 0, the vectorized CPU program refuses at 0.085 s and 0.186 s, and scalar
+      `jit` refuses at 0.45 s. The L4 accepted 0–6 s and more than 1,100 hold windows.
+  - **Exposure.**
+    - The W1, W2, G2-Q1 and sheet70/turnover worlds have no free field offsets (residual
+      exactly 0), so their results don't depend on this.
+    - The hold's tissue reaches 0.92–0.995 of the target from t = 0 (CPU), and 0.18–0.45
+      at 8 s.
+  - **Version 3** (`capacitive_reduction_gauged_damped_newton@3`, opt-in since 9 November)
+    also accepts residuals within 1e3 ulps of the attainable floor. It accepts every edge
+    state, with states bitwise equal to version 2's before them.
+    - **Guards:**
+      - crossrev on 41 worlds;
+      - dumps of W1, W2, G2-Q1, Q5, Q6, W37 and the 825-node world equal under v3;
+      - a solve held at 0.95 of the cap passes every row check and ledger, and moves
+        the state by ≤ 5e-13.
+    - Row checks and ledgers cannot see field residuals, so v3's safety rests on that
+      state bound.
+  - **D147:** a definition with free field offsets declares version 3. Version 2 and every
+    qualified ID are unchanged, and a switch is a new definition. `heredity_pilot.py
+    --field-solver auto|2|3` applies it (default `auto`), and `--field-solver 2` rebuilds
+    `source-09`'s definitions exactly.
+  - **The hold** stays on version 2. Its restart rule at the end of segment 1 is set by the
+    L4 dispatch test (`scripts/profile_dispatch.py`).
+  - Tier 1 + 2 gate: 359 files, no changed outcome
+    ([gate](/mnt/workspaces/Cells/land-20261113e/)).
+  - Evidence: [design note](docs/FIELD_FLOOR_ACCEPTANCE_DESIGN.md),
+    [guards](/mnt/workspaces/Cells/field-floor-guards-20261113-01/summary.json),
+    [driver](/mnt/workspaces/Cells/field-solver-driver-20261113-01/summary.json).
+
 - **S3 prerequisites (a) and (b) resolved; the L4 driver takes runs split across GPU gaps
   (13 November).**
   - **(b) Injection books at the view.** A split part declaring `BOOKS_AT_VIEW` receives
