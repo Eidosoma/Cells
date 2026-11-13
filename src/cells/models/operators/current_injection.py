@@ -18,6 +18,10 @@ and the charge f_s I h of each carrier sums to I h. Bookings, exact for each hal
   declared work field injection_work_pJ. The membrane's response dissipates through @3's
   own heat. The free-energy terms are @3's, from their declared owner (the adapter's
   chemical_free_energy_pJ and capacitor_free_energy_pJ; v2 design §1.1).
+* with a capacitance or mask view (membrane state, insertion: BOOKS_AT_VIEW), the clamps'
+  plate charges and the capacitor energy change are the view's (adapter.charge_energy_change),
+  so injection composes with insertion (v2 design §3, an S3 prerequisite). Without one, the
+  declared layout's terms are used, as before, bit for bit.
 Refusal: a half-step in which a cell could not supply a removed carrier (its amount would
 not stay positive). No electrode: statically idle. No current in a step: the half-step
 selects the start state. Current changes are exact multiples of dt.
@@ -157,8 +161,13 @@ def bind(spec, declaration, inner_layout):
     return state, layout
 
 
-def injected(state, current, h, p, *, xp=jnp):
-    """(state after h of injection, every removed carrier available) (module docstring)."""
+def injected(state, current, h, p, *, xp=jnp, view=None):
+    """(state after h of injection, every removed carrier available) (module docstring).
+
+    view: @3's layout at the current state when a field input is provided (BOOKS_AT_VIEW);
+    the clamps' plate charges and the capacitor energy are then the view's. Without it they
+    are the declared layout's, as before.
+    """
     n = p.active.size
     z = xp.reshape(p.valence, (-1,))  # @3 holds a [species, 1] column.
     valence = xp.where(z == 0, 1, z)  # Uncharged species carry nothing.
@@ -182,15 +191,19 @@ def injected(state, current, h, p, *, xp=jnp):
         injection_charge_C=state.injection_charge_C + dq,
     )
     # The clamps' image charge and work, and the source's work (as replacement books them).
-    q = adapter.inner_layout(p)
+    q = adapter.inner_layout(p) if view is None else view
     _, start, dv0 = tissue.capacitor_change(adapter.inner_state(state), q, xp=xp)
     _, end, dv1 = tissue.capacitor_change(adapter.inner_state(new), q, xp=xp)
     electrode = xp.where(p.reservoir, end[n:] - start[n:], 0.0)
     work = 1e12 * p.boundary_V * electrode
     g0 = adapter.chemical_free_energy_pJ(state.amount_increment, p, xp=xp)
     g1 = adapter.chemical_free_energy_pJ(increment, p, xp=xp)
-    e0 = adapter.capacitor_free_energy_pJ(dv0, p, xp=xp)
-    e1 = adapter.capacitor_free_energy_pJ(dv1, p, xp=xp)
+    if view is None:  # @3's capacitor term on the declared layout.
+        e0 = adapter.capacitor_free_energy_pJ(dv0, p, xp=xp)
+        e1 = adapter.capacitor_free_energy_pJ(dv1, p, xp=xp)
+    else:  # The change of the physical capacitor energy at the view (v2 design §3).
+        e0 = xp.zeros(())
+        e1 = adapter.charge_energy_change(adapter.inner_state(state), dv0, dv1, view, xp=xp)
     cells = xp.any(delta != 0, axis=0)
     count = xp.maximum(xp.sum(cells), 1)
     shared = (e1 - e0 - xp.sum(work)) / count
@@ -224,6 +237,7 @@ class ElectrodeCurrentInjection(Operator):
     LAW_ID = LAW_ID
     SPLIT = True
     RK4 = "split"
+    BOOKS_AT_VIEW = True
     STATE_AXES = STATE_AXES
     WORK_FIELDS = ("injection_work_pJ",)
     LAYOUT_FIELDS = ("injection_cell", "injection_carrier_fraction")
@@ -304,8 +318,8 @@ class ElectrodeCurrentInjection(Operator):
     def statically_idle(self, p):
         return p.injection_cell.shape[0] == 0
 
-    def half_step(self, state, h, control, p, *, xp):
-        return injected(state, control.injection_current_A, h, p, xp=xp)
+    def half_step(self, state, h, control, p, *, xp, view=None):
+        return injected(state, control.injection_current_A, h, p, xp=xp, view=view)
 
     def control_valid(self, control, p, *, xp):
         return xp.all(xp.isfinite(control.injection_current_A))

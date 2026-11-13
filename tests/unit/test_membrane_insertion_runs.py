@@ -130,6 +130,29 @@ def test_rk4_keeps_the_exact_half_steps():
     assert np.asarray(result.history.membrane_area_increment_m2)[-1][0] == pytest.approx(5e-13)
 
 
+def test_a_resolved_access_books_the_onsets_charging_heat():
+    """S3 prerequisite (a). With a fast access (about 5 us), 1 us steps resolve the furrow's
+    charging after the onset, and the host energy check holds far below its heat
+    1/2 C_on Vm^2; 1 ms steps book that heat only to the solver's tolerance, which this
+    small world's energy bound does not cover, so the run is refused."""
+    from cells.core.errors import NumericalError
+
+    def onset_world(dt, onset, end):
+        base = fx.cleft_cell(end=end, observation_times=[0.0, onset, end], access_area_m2=1e-9)
+        base["execution"].update(dt=dt, max_steps=int(round(end / dt)) + 8)
+        return parse_spec(fx.with_operators(base, fx.furrow_insertion(rate=0.0, onset=onset)))
+
+    fine = run(onset_world(1e-6, 1e-5, 6e-5))  # 50 steps after the onset, about 10 RC times.
+    furrow = float(fine.spec.model.membranes[1].capacitance_F)
+    vm = float(np.asarray(fine.observations.membrane_voltage_V)[1][0])
+    heat = 0.5e12 * furrow * vm**2
+    assert fine.diagnostics["max_energy_balance_error_pJ"] < 1e-2 * heat
+    face_heat = np.asarray(fine.history.face_dissipated_energy_pJ)[-1].sum()
+    assert face_heat == pytest.approx(heat, rel=0.1)  # The access booked the charging heat.
+    with pytest.raises(NumericalError, match="energy"):
+        run(onset_world(1e-3, 0.002, 0.004))
+
+
 def test_restart_across_onset_and_insertion_is_bitwise(cleft_run, tmp_path):
     spec, value = cleft_run
     for time in (0.001, ONSET, 0.003):  # Before, at and after the onset.

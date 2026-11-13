@@ -96,6 +96,10 @@ class Operator:
     # Its view inputs evolve in its split part: the inner domain is then evaluated
     # at the view and re-checked at the step end.
     VIEW_FOLLOWS_SPLIT = False
+    # Its split part books @3's capacitor terms (image charge, capacitor free energy) at
+    # the composite's view: when a field input is provided, the composite passes the
+    # current view to half_step (view=...); otherwise the declared layout applies.
+    BOOKS_AT_VIEW = False
     # Ledgers and readouts.
     LEDGERS = ()
     LEDGER_DIAGNOSTICS = ()
@@ -188,7 +192,9 @@ class Operator:
         raise NotImplementedError
 
     def half_step(self, state, h, control, p, *, xp):
-        """(state, valid or None) after h of the split part on its own variables."""
+        """(state, valid or None) after h of the split part on its own variables. An operator
+        that BOOKS_AT_VIEW also takes view=, @3's layout at the current state, when a field
+        input is provided."""
         raise NotImplementedError
 
     def control_valid(self, control, p, *, xp):

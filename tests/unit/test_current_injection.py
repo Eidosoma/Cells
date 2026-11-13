@@ -115,3 +115,64 @@ def test_the_rm1_judged_run_needs_a_registered_protocol_and_a_clean_snapshot(tmp
     assert protocol["tolerance_ohm"] == pytest.approx(
         3 * (protocol["engine_step_term_ohm"] + protocol["reference_term_ohm"]), rel=1e-15
     )
+
+
+# ---------------------------------------------------------------- at a capacitance view (S3)
+
+LAW = "electrode_current_injection@1"
+LIMITS = dict(charge=1e-24, electrode=1e-24, global_charge=1e-24)
+
+
+def at_view(current=0.0):
+    """Two clamps with the membrane state, insertion and an electrode (insertion's fixtures)."""
+    from tests import membrane_insertion_fixtures as mfx
+
+    raw = mfx.with_operators(mfx.two_clamps(), {"membrane_0": ({}, None, [(0.0, 0.0)])})
+    cell = raw["model"]["cells"][0]["id"]
+    raw["model"]["operators"].append(
+        dict(law=LAW, electrodes=[dict(cell_id=cell, carriers={"K": 0.4912, "M": 0.5088})])
+    )
+    schedule = [dict(time=0.0, current_A=current)]
+    raw["experiment"]["injection_controls"] = [dict(cell_id=cell, schedule=schedule)]
+    return raw
+
+
+def test_with_a_capacitance_view_injection_books_the_views_plate_charges():
+    """After insertion changed a capacitance, injection books the clamps' plate charges and
+    the capacitor energy at the view, so every ledger closes. The declared layout's booking,
+    which is used when no field input is provided, would leave the electrode ledger open."""
+    spec = parse_spec(at_view())
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    _, insertion, injection = model.operators
+    c = np.asarray(p.membrane_capacitance)
+    grow = SimpleNamespace(
+        insertion_rate_m2_s=np.array([0.3 * c[0] / 0.05 / (DT / 2), 0.0]),
+        insertion_open=np.ones(2),
+    )
+    grown, ok = insertion.half_step(state, DT / 2, grow, p, xp=np)
+    assert ok
+    current = 1e-12
+    control = SimpleNamespace(injection_current_A=np.array([current]))
+    view = model.view(p, grown, xp=np)
+    after, ok = injection.half_step(grown, DT / 2, control, p, xp=np, view=view)
+    assert ok
+    # One cell between two clamps: its potential moves by dQ / sum C at the view, and each
+    # clamp's plate charge by -C_b dQ / sum C.
+    view_c = c + np.asarray(grown.membrane_capacitance_increment_F)
+    image = -view_c * current * DT / 2 / view_c.sum()
+    booked = after.electrode_charge_transferred_C - grown.electrode_charge_transferred_C
+    np.testing.assert_allclose(booked, image, rtol=1e-10)
+    for name, residual in model.balances(after, p).items():
+        assert np.max(np.abs(residual), initial=0.0) < LIMITS.get(name, 1e-15), name
+    declared, _ = injection.half_step(grown, DT / 2, control, p, xp=np)  # No view.
+    assert np.max(np.abs(model.balances(declared, p)["electrode"])) > 1e-20
+
+
+def test_the_view_reaches_injection_only_with_a_field_input():
+    from cells.models.operators import OPERATORS
+
+    assert OPERATORS[LAW].BOOKS_AT_VIEW
+    alone = get_model(parse_spec(definition([(0, 1e-12)])).model)
+    assert not alone.field_inputs  # The half-step call is then the declared-layout one.
+    assert get_model(parse_spec(at_view()).model).field_inputs

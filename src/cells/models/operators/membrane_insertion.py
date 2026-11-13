@@ -39,8 +39,9 @@ Refusals:
 * an onset patch with channel populations or a pump, facing a held bath or a node with a
   nonzero charge anchor or with patches that open at another time, or whose node's volume an
   operator provides;
-* another operator that books image charge on the declared layout (injection, replacement):
-  those bookings would miss the changed capacitances;
+* another operator that books image charge on the declared layout (replacement): those
+  bookings would miss the changed capacitances. Injection books at the view (BOOKS_AT_VIEW)
+  and composes;
 * floating capacitor components, and more than 64 field nodes (the composite refuses both for
   any field-input provider).
 
@@ -315,10 +316,11 @@ def bind(spec, declaration, schedule):
 def check_definition(spec, declaration, schedule, model):
     """The composition rules (the onset rules are checked when the schedule is parsed)."""
     for op in model.operators:
-        if op.LAW_ID != LAW_ID and "electrode_charge_transferred_C" in op.ENTITY_WRITES:
+        books = op.LAW_ID != LAW_ID and "electrode_charge_transferred_C" in op.ENTITY_WRITES
+        if books and not op.BOOKS_AT_VIEW:
             raise ConfigError(
                 f"Insertion cannot run with {op.LAW_ID}, which books image charge on the "
-                "declared layout (bookings at the view are later work)"
+                "declared layout"
             )
     if onset_entities(spec, schedule)[0] and any(
         "extracellular_volume" in op.VIEW_FIELDS for op in model.operators

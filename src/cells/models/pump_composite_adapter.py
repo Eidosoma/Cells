@@ -371,6 +371,19 @@ def view_capacitor_terms(state, view, bound, *, xp):
     )
 
 
+def charge_energy_change(state, dv0, dv1, view, *, xp):
+    """The capacitor energy change (pJ) at the view of a change of charges only.
+
+    dv0 and dv1 are tissue.capacitor_change's patch voltages at the view before and after;
+    with V the view's patch voltages before, the change is 1/2 sum C dv (2 V + dv),
+    dv = dv1 - dv0, which subtracts no bulk energies (an injection half-step at the view).
+    """
+    v = patch_voltages(node_potentials(state, view, xp=xp), view, xp=xp)
+    c = xp.where(view.membrane_active, view.membrane_capacitance, 0.0)
+    dv = dv1 - dv0
+    return 0.5e12 * xp.sum(c * dv * (2 * v + dv))
+
+
 def fixed_charge_change(state, q, dc, bound, *, xp):
     """One capacitance change C -> C + dc at fixed free-node charges (division design §5.1).
 
