@@ -58,6 +58,29 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **S3 prerequisites (a) and (b) resolved; the L4 driver takes runs split across GPU gaps
+  (13 November).**
+  - **(b) Injection books at the view.** A split part declaring `BOOKS_AT_VIEW` receives
+    the composite's view in its half-steps when a field input is provided. Injection then
+    books plate charges and the capacitor-energy change there, so insertion and injection
+    compose. Without a field input the arithmetic is unchanged.
+    - Guards: the analytic two-clamp image charge after insertion; every ledger closing;
+      pulses across a masked furrow and its onset; restart mid-insertion; vmap.
+    - Crossrev against `8416a72` identical, and the injection world set identical to
+      `00672e8`, so the judged Rm1 stands.
+  - **(a) The onset energy.** The furrow opens uncharged at bath composition, which is
+    R-full's convention. Charging dissipates ½·C_on·Vm² whatever the access resistance.
+    - At the egg's 6.6 µs access time no admitted step resolves this. The unbooked part is
+      at most 3.1e-4 pJ, 7e-8 of the host energy bound, and tests pin it.
+  - **(c) Open: an egg-scale electrode-ledger drift**, about half an ulp per step after the
+    Na increment crosses 2¹⁶ fmol, seeded by the pulses. The mechanism is being pinned
+    before any fix; S3's egg runs wait for it.
+  - **S3 plan** (`docs/CELL_DIVISION_S3_PLAN.md`): the engine against R-full on the cleft
+    egg. Draft; the lead's choices are a judged step of 0.25 ms, lumen K and Na judged, and
+    Rm1 reported. Nothing has run.
+  - Tier 1 + 2 gate: 357 files, no changed outcome
+    ([gate](/mnt/workspaces/Cells/land-20261113d/)).
+
 - **Composite v2 §3, stage S2: membrane state and insertion landed (13 November).**
   `membrane_entity_state@1` owns area and capacitance as state (R2 views).
   `scheduled_membrane_insertion@1` inserts membrane on a patch as a split process, with
