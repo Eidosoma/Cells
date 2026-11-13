@@ -245,4 +245,4 @@ def test_fill_writes_a_proposed_draft_and_refuses_a_stopped_study(tmp_path):
     stopped = dict(result, stop=True, non_converging=["Q1_em_at_j1_V"])
     (tmp_path / "terms.json").write_text(json.dumps(stopped))
     with pytest.raises(SystemExit, match="stop condition"):
-        engine.fill(tmp_path / "terms.json", tmp_path / "reference.json")
+        engine.fill(tmp_path / "terms.json", tmp_path / "reference.json", protocol_path=draft)
