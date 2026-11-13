@@ -4,9 +4,11 @@
 revision is merged (D142).**
 - Decisions 1, 5, 6 and 7 are accepted.
 - Decisions 2 and 3 are accepted with the changes made here.
-- Decision 4, and §2 as a whole, stay open until the renewal assay asks for them. Only
-  §2's contract parts are approved: `VIEW_READS`, `ACCEPTS_WRITES` and `EVENT_REPLACES`,
-  which live in §1.
+- §2 was designed on 13 November and waits for the lead's and the advisor's review before
+  any code. Its contract parts (`VIEW_READS`, `ACCEPTS_WRITES` and `EVENT_REPLACES`) were
+  approved and built with §1. Decision 4 is settled for donor copies by
+  [E07_V1_DESIGN.md](E07_V1_DESIGN.md) §2 and reconciled in §2.2. Decisions 10–12 are
+  proposed.
 - Built and guarded on 13 November: §1, current injection (§4, Rm1 passed) and stage S2
   (§3, with decisions 8 and 9). S3's prerequisites are listed in §3.
 
@@ -31,8 +33,9 @@ Order of work:
    `surface_pump*.py` now;
 3. current injection (§4);
 4. stage S2, membrane state and insertion (§3);
-5. the entity volume ledger and water plus replacement (§2): open, built when the renewal
-   assay asks for it (D144).
+5. the entity volume ledger and water plus replacement (§2): designed 13 November, with
+   code after review. Its consumers are the composition gate and E07's donor-copy arms run
+   past the fixed-volume budget (§2, D144).
 
 Alongside: the L4 agreement (§5). Its CPU-only driver parts come once CPU 4 is free; the
 GPU runs come in a slot the lead gives.
@@ -198,62 +201,363 @@ Each rule is a build-time check with a refusal message.
   undeclared returned column, a write the owner does not accept, an event writing an
   undeclared field.
 
-## 2. The entity volume ledger: water plus replacement (open)
+## 2. The entity volume ledger: water plus replacement
 
-Open until the renewal assay asks for it. Its contract parts (`VIEW_READS`,
-`ACCEPTS_WRITES`, `EVENT_REPLACES`) are approved and built with §1. The rest is kept here
-as the plan.
+**Status: designed 13 November for the lead's and the advisor's review; no code yet.** Its
+contract parts (`VIEW_READS`, `ACCEPTS_WRITES`, `EVENT_REPLACES`) were built with §1. The
+composite already does the rest of what §2 needs: event maps run first and views are evaluated
+after them, an accepted writer's terms enter the owner's ledgers (§1.4), and a refused step
+returns the full start state. §2 changes no composite code.
 
-**Today the composition is refused:**
-- water provides `volume` and `extracellular_volume`;
-- replacement@1 declares them `CONFLICTS_VIEW`: its templates, formation law and free
-  energy use the declared volume V0;
-- under RK4, water's coupled part with an event map is refused as well.
+**The consumer.** The registered E07-v1 does not need §2: it runs at fixed volume and is judged
+by 70 min after the cue. §2 serves:
+- the composition gate's completion evidence ([CURRENT_PLAN.md](CURRENT_PLAN.md));
+- E07's donor-copy arms ([E07_V1_DESIGN.md](E07_V1_DESIGN.md) §3 (a)) run past about 95 min of
+  inherited loading. At fixed volume a D lineage's osmotic excess reaches the 15% censor there
+  (E07_V1_DESIGN §2). Under water the loading becomes swelling, and the copies need replacement
+  over water.
 
-So the composition is IMEX only, and it stays so.
+Its runs are labelled development until a protocol for the composition is registered (D143).
 
-**New law `scheduled_cell_replacement@2`** (replacement@1 unchanged):
-- **Newcomers declare volume and contents.** A template declares `volume_pL`, defaulting to
-  the slot's declared volume (replacement@1's meaning), and its amounts, as today.
-  - The water-side impermeant content must equal the slot's declared value in this first
-    slice; it is refused otherwise.
-  - A different impermeant content needs water-owned impermeant state, a later extension.
-- **The event map writes water's volume.** At an event on slot c with old volume
-  V_old = V0 + dv:
-  - `volume_increment_pL[c] ← V_new − V0`;
-  - `replacement_volume_removed_pL[c] += V_old` and
-    `replacement_volume_supplied_pL[c] += V_new`.
-  - Water's ledgers then read, per cell, `dv + moved_out − (supplied − removed) = 0`, and
-    in total `Σdv + Σdve − Σ bath supply − Σ(supplied − removed) = 0`.
-  - Material and charge are booked as today (removed and supplied amounts, charge, image
-    charge).
-- **Free energy:** the event books the change of the slot's summed free energy (@3's
-  chemical and capacitor terms, water's dilution and elastic terms) from (N_old, V_old) to
-  (N_new, V_new) as supplied work. The energy ledger then closes across the event.
-- **Transport sees the newcomer's volume.** The formation law and the inner step read the
-  view volume (`VIEW_READS`), so concentrations after the event are N_new / V_new.
-- **Refusal:** a newcomer volume outside water's bounds is refused when the definition is
-  checked and again in the event's domain check. A refused step returns the full start
-  state, water's volume included (the composite's existing refusal path).
+**Today the composition is refused.**
+- Water provides `volume` and `extracellular_volume`, and replacement@1 declares both in
+  `CONFLICTS_VIEW`. Its parser requires a template's volume to equal the slot's declared volume,
+  and its `law_steady` arrival gate solves the field at the declared volumes.
+- Both declare `membrane_area` in `CONFLICTS_VIEW`, since water's conductances and the
+  templates' pump densities are bound from declared areas. Neither provides it, so the two do not
+  conflict there.
+- Water's RK4 part is coupled, and a coupled RK4 composition refuses event maps. The
+  composition is IMEX only, and stays so.
 
-**Guards (from the S1 report):**
-1. Replacement@2 over closed water (availability 0), with template volume equal to the
-   declared volume, equals replacement@1 bitwise: the volume view is V0 + 0.0, and the
-   dilution and elastic changes are exact zeros.
-   - This holds for the free-energy accumulator only if @2 computes @3's terms with
-     replacement@1's own expressions, in the same order, and adds the other owners'
-     terms after them.
-   - Audit before code: whether @3's per-entity free-energy terms can be reached through
-     the adapter without copying. Today they live in the replacement law (`_chemical`,
-     `_electric`).
-2. Event-free replacement@2 over water equals water@1 bitwise.
-3. Water's volume and energy ledgers close across events on a world whose replaced cell
-   has swollen or shrunk; material and charge reconcile.
-4. After an event, the next step's concentrations are N_new / V_new (analytic).
-5. A refused event leaves the full prior state.
-6. Restart before, at and after an event; vmap with per-world events.
-7. The composition runs labelled development (`composition_status`) until a protocol for
-   it is registered.
+### 2.1 A new law, `scheduled_cell_replacement@2`
+
+Replacement@1 is unchanged. @2 is @1 over a volume owner: the same event map, formation law,
+templates, donor rule, route values and bookings, plus the slot's volume and water's free
+energy. Its declarations beyond @1's:
+
+| Item | @2 |
+| --- | --- |
+| `REQUIRES` | `ideal_osmosis_linear_compliance_water@1` before it (the symport's precedent) |
+| `VIEW_READS` | `volume`, read through water's own function (insertion and the lumen read membrane state's the same way) |
+| `CONFLICTS_VIEW` | `membrane_area` (pump densities scaled by the declared area, as in @1), and the capacitances and activity masks that @1's event map reads from the declared layout: `membrane_capacitance`, `active`, `outside_active`, `membrane_active`, `channel_active`, `junction_active` (§2.7). `volume` and `extracellular_volume` leave the list |
+| Owned state, added | `replacement_volume_removed_pL` and `replacement_volume_supplied_pL` (cell slot, ≥ 0); `replacement_water_free_energy_pJ` (cell slot, signed). All are zero for founders |
+| Layout, added | `template_volume_pL` [template rows]: each template's declared volume (padding 1.0, never selected) |
+| `ENTITY_WRITES` and `EVENT_REPLACES`, added | `volume_increment_pL` ← (`replacement_volume_removed_pL`, `replacement_volume_supplied_pL`) |
+| On water | `ACCEPTS_WRITES = {volume_increment_pL: (water_local, water_total)}`. Without a writer nothing changes (§1.4): no ledger term, and the same field map |
+| Refused | `gate_at_arrival: law_steady` (§2.6, decision 11); RK4, as today |
+
+### 2.2 Newcomers declare volume and contents
+
+**Templates.** @1's templates already declare `volume_pL` beside their amounts, fixed charge
+background and gates, and @1's parser requires it to equal the slot's declared volume V0. Under
+@2 it is the newcomer's volume on arrival, and it may differ from V0:
+- it lies strictly inside the slot's water bounds. This is checked with the definition, and
+  again by water's domain in the event's step;
+- the fixed charge background still equals the slot's, since @3's charge anchor is a
+  declaration (@1's rule);
+- the template's state at its own volume lies in the composition's domain. This is @1's host
+  check at the template's first slot, run with @2's event map.
+
+**Donor copies take the donor's volume (decision 10, proposed).** E07_V1_DESIGN §2 proposed this
+and left the choice to §2. The alternatives are the slot's declared volume V0 and the occupant's
+volume V_old.
+- **A copy is a copy of state** (D139, [CELL_REPLACEMENT.md](CELL_REPLACEMENT.md)). Under water
+  the volume is state too. The donor's amounts in any other volume would make a cell that never
+  existed, the same objection E07 §2 makes to mixing impermeant contents.
+- **What E07 asks about is intensive:** concentrations, voltage and gates. The donor's volume
+  keeps all of them.
+  - V0 would scale the copy's concentrations by V_d/V0 (1.03–1.06 at 70 min in W1's water arms)
+    and start an osmotic transient made by the bookkeeping, not by biology.
+  - V_old would mix the occupant's volume with the donor's contents.
+- **The accounting matches the amounts.** The donor keeps its volume, and the copy's volume is
+  supplied and booked, as its amounts are.
+- **It is exact.** The donor's declared volume and water compartment equal the slot's (admission,
+  below), so the copy's volume increment is the donor's and its volume is the donor's bit for
+  bit. Its amounts are @1's copy, (reference + increment of the donor) − the slot's reference.
+  That subtraction is exact when each amount lies within a factor of 2 of the slot's reference
+  (Sterbenz), and then the copy's amounts, concentrations, water potential and water free energy
+  are the donor's bit for bit too; otherwise they agree to rounding.
+- **The limit stays @1's.** A real division halves the donor. The copy models a division-born
+  newcomer's composition, not the division's mass balance.
+
+**Admission of a donor copy.** @1's conditions still hold: a shared junction, the slot's declared
+volume and fixed charge background, and one population of each gated law. @2 adds one: the
+donor's water compartment declaration equals the slot's (reference volume, bounds, impermeant
+amount, bulk modulus and pressure offset). The copy keeps the slot's routes, hydraulic
+permeabilities included, as @1's copy keeps the slot's channel routes.
+
+**Decision 4, reconciled with E07_V1_DESIGN §2.**
+- **Water's neutral impermeant amount X** (`impermeant_amount_fmol`) is a declaration of the
+  slot's compartment, not state.
+  - Every newcomer keeps the slot's X. A template cannot declare one, and a donor copy is
+    admitted only when the donor's compartment, X included, equals the slot's.
+  - So the copy's water state (N, X, V) is the donor's and is never mixed.
+  - A different X needs water-owned impermeant state, a later extension.
+  - This settles decision 4 for both kinds of newcomer.
+- **The charged impermeant species (E07's P)** is an amount. A copy takes the donor's amounts
+  exactly, P among them.
+  - E07 §2 settles that the newcomer gets the slot's declared content, and gives the refusal of a
+    differing donor to @2's definition check.
+  - A definition check sees declarations only. A donor's P at the event is state, set by its
+    lineage of events, and the engine has no classification of routeless species.
+  - So §2 proposes that the engine refuse a differing X only. E07's driver keeps the check it
+    already runs on every definition: P is equal in every cell, template and copy (open
+    question 5).
+
+### 2.3 The event map
+
+At the start of the step leaving t_e, for each due slot c, with V0 its declared volume and dv_c
+its volume increment:
+1. **@1's event map, called unchanged.** It removes and supplies the amounts, sets the gates,
+   restarts the junctions and advances the generation. It books the image charge with its work,
+   and @3's free-energy change in `replacement_free_energy_pJ`. Nothing in it depends on the
+   current volume:
+   - `capacitor_change` reads valences, amounts and the capacitor layout;
+   - @3's chemical term is on the declared volume by definition (§2.5);
+   - `law_steady`, whose field solve would read the volumes, is refused (§2.6).
+
+   So under water its bookings are the view's.
+2. **The volume.** V_old = V0 + dv_c, water's view. The newcomer's increment dv' is V_t − V0 for
+   template t, or dv_d for a copy of donor d. The donor's is read before any event at t_e, as its
+   amounts are. Then:
+   - `volume_increment_pL[c] ← dv'`;
+   - `replacement_volume_removed_pL[c] += V_old`;
+   - `replacement_volume_supplied_pL[c] += V0 + dv'`.
+3. **Water's free energy.** W_c is water's endpoint term of node c (§2.5), taken at the state
+   before step 1 and after step 2:
+   - `replacement_water_free_energy_pJ[c] += W_c(new) − W_c(old)`;
+   - `replacement_energy_magnitude_pJ[c] += |W_c(old)| + |W_c(new)|`.
+
+Untouched entries are selected, never offset by zero. @1's fields are written by @1's own code,
+in @1's order, and @2 adds only its own fields and one magnitude. With dv = dv' = 0 every @2 term
+is an exact zero, so @1's fields are @1's bit for bit (guard 6).
+
+**A separate free-energy field (decision 12, proposed).** The earlier draft of this section added
+water's change to `replacement_free_energy_pJ` after @3's terms. A field of its own keeps @1's
+accumulator @1's by construction. The alternative relies on additions of exact zeros in a program
+that XLA compiles differently. The separate field also shows each owner's share of an event's
+work.
+
+### 2.4 Volume in water's ledgers
+
+Water accepts the write. @2 adds its terms (`external_ledger_terms`) and their magnitudes
+(`external_magnitude_terms`) to water's ledgers (§1.4):
+- per cell, `water_local − (supplied − removed)`: dv + (water moved out) − (supplied − removed)
+  = 0;
+- in total, `water_total − Σ(supplied − removed)`: Σdv + Σdve − Σ(bath supply) − Σ(supplied −
+  removed) = 0;
+- magnitudes: removed + supplied, per cell and in total. Each event adds about 2 V0 to the
+  magnitudes, so the rounding allowance covers the rounding of V0 + dv at the event.
+
+`water_outside` and `bath_water_work` are untouched, since an event changes no outside node.
+Without events every term is an exact zero.
+
+### 2.5 Free energy: dilution and elastic
+
+**Water's endpoint term per node** is water's free-energy owner declaration of §1.1, built now.
+It is taken against V0 at the current amounts, on finite nodes:
+
+    W_j = −RT (Σ_s n_s,j + X_j) ln(V_j / V0_j) + P_j(V0_j) (V_j − V0_j) + ½ (K_j / Vref_j) (V_j − V0_j)²,
+
+with P(V0) = K (V0 / Vref − 1) + P0. These are exactly the per-node terms that `water_ledgers`
+sums into the energy ledger (the logarithm as log1p; 10⁻³ converts Pa·pL to pJ).
+
+**The split is exact.** For the ideal solution G(n, V) = RT Σ_s n_s (ln(n_s / V) − 1), and
+ln(n/V) = ln(n/V0) − ln(V/V0). So
+
+    G(N, V) − G(N0, V0) = [G(N, V0) − G(N0, V0)] − RT (Σ_s n_s) ln(V / V0).
+
+The first term is @3's own (`adapter.chemical_free_energy_pJ`, on the declared volume). The
+second, with X's −RT X ln(V / V0), is water's dilution. There is no cross term. The event
+therefore books as supplied work
+
+    W_event = [Δ(@3 chemical) + Δ(capacitor) − W_clamps]  (@1)  +  ΔW_c  (@2).
+
+That is the change of the slot's free energy from (N_old, V_old) to (N_new, V_new), elastic
+energy included, less the clamps' work. @2 subtracts Σ `replacement_water_free_energy_pJ` from
+the energy ledger after @1's terms, and the ledger closes across the event to rounding.
+
+**Water's ledger code does not change.**
+- The new per-node function mirrors its expressions, as the adapter's free-energy functions
+  mirror @3's balances.
+- A tier-1 test holds their sum equal to `water_ledgers`' terms to rounding.
+- Refactoring `water_ledgers` to call it would reorder its traced operations and change
+  water@1's and water@2's device-check jaxprs (open question 4).
+
+### 2.6 Transport at the view, and refusal
+
+**After an event, everything that depends on the volume reads the view.**
+- The composite evaluates views after events (R4).
+- Water's first half-step starts from (N_new, V_new).
+- @3's step at the view sees N_new / V_new in every flux, the field's Newton solve, the drift
+  weights and the explicit-stage refusal. This is water@1's existing path.
+- The formation law reads no volume.
+- @2's own reads of the volume (V_old, V_d) go through water's function, never through the
+  declared V0.
+
+**One declared-layout read is refused rather than moved (decision 11, proposed).** `law_steady`
+solves the field at the post-event state inside @1's event map, on the declared volumes. With
+floating components elsewhere in the world, the junction voltages it reads can depend on the
+volumes, through those components' offsets, which follow the currents. No consumer needs it over
+water: E07 uses `law_open`. The extension
+would have the composite pass its view to event maps that declare it, and @1's arrival gate take
+that layout (open question 1).
+
+**The update rules (§3) for the volume view:**
+
+| Rule | §2 |
+| --- | --- |
+| R1 | Bound once: V0, water's declarations, the template volumes, the event table |
+| R2 | The volume view is water's, from `volume_increment_pL`. The event writes it, and @2 reads it through water's function |
+| R3 | The volume is not a field input, so the 64-node cap does not apply (E07's 127-cell sheet has 254 field nodes). Nothing derived from the volume is bound, apart from the definition-time bounds (R5) |
+| R4 | Events first and the view after them; @3's domain at the view, re-checked at the step end (water's `VIEW_FOLLOWS_SPLIT`) |
+| R5 | @2's bound checks add the product of the two worst cases, which neither existing check covers. One is @3's explicit-rate and calcium bounds on @1's worst-case template routes at water's minimum volumes: water's checks read the declared routes, and @1's the declared volumes. The other is water's relaxation rate at each template's post-event state. @2's `inner_check_spec` applies @1's route maxima to the incoming check spec instead of discarding it |
+| R6 | Observations recompute the view from each saved row: the row after the event shows V_new and N_new / V_new in water's columns |
+| R7 | Restart saves nothing more: the volume is state |
+| R8 | Anchored at V0: a template at V0 writes dv' = 0.0, an exact zero |
+
+**Refusal.** A template volume outside water's bounds is refused when the definition is checked.
+In a step, water's first half-step refuses a state outside its domain. The composite then
+returns the full start state, water's volume and @2's accumulators included (the existing path;
+guard 10).
+
+### 2.7 How §2 uses the precedents
+
+- **Booking at the view (`BOOKS_AT_VIEW`).** Injection composed with insertion by booking the
+  clamps' plate charges and the capacitor energy at the composite's view. Replacement is the
+  remaining declared-layout booker.
+  - @2 books at the view what it reads there, the volume: water's terms at V_old and V_new.
+  - Its capacitor bookings stay @1's, on the declared layout. That layout is the view, because
+    @2 refuses every provider of capacitances and masks (`CONFLICTS_VIEW`). Today
+    `membrane_area` already excludes membrane state, and with it insertion.
+  - Booking those at the view too, with `adapter.charge_energy_change` as injection does, is the
+    extension for replacement during insertion. @2 does not declare `BOOKS_AT_VIEW` until then.
+- **The update rules R1–R8,** as tabulated above. The new case is a view input written by an
+  event rather than integrated by its provider's split part. R2 and R4 already cover it.
+- **The capacitor-energy correction against @3's declared-array term (decision 9).**
+  - S2 found that @3's capacitor term on the declared layout is not the physical energy once C
+    changes, and derived the correction against @3's actual term.
+  - The same derivation for the volume gives water's existing dilution term, with nothing left
+    over (§2.5). The chemical potential separates in V; the capacitor energy does not separate
+    in C.
+  - So @3's balances stay on the declared layout, water owns the correction, and an event books
+    the change of the sum of the owners' terms, never @3's declared term alone.
+  - The restricted lumen (S3) uses water's expression the same way.
+- **An earlier owner required, and read through its own function.** The symport requires water,
+  and insertion and the lumen read membrane state through its functions. @2 does both for water.
+
+### 2.8 Files
+
+| File | Change | Qualified code |
+| --- | --- | --- |
+| `src/cells/models/operators/cell_replacement_v2.py` | New: @2, a subclass of @1's operator, with its event map, ledger terms, domain, checks and observation | New |
+| `src/cells/models/operators/__init__.py` | Register @2 | The registry; no program changes |
+| `src/cells/models/operators/osmotic_water.py` | `ACCEPTS_WRITES`, and a new `node_free_energy_pJ` that water itself does not call | Water@1's and @2's module; no existing function changes |
+| `src/cells/models/operators/cell_replacement.py` | Host side only: `worst_case`'s route maxima applied to a given definition, and `check_definition` taking the event function. Device functions are unchanged. The alternative is duplicates in @2's module (open question 3) | @1's module |
+| `src/cells/core/cell_replacement_spec.py` | `parse_events` and `check_template_on_slot` take the template-volume rule, with @1's as the default. The file is under this round's core/ restriction, so this needs approval; otherwise @2 duplicates the event parser (open question 2) | @1's parser |
+| `validation/tissue/composite_crossrev.py` | A new `volume` world set (water with @2) for later baselines; the existing sets are unchanged | Tool |
+| `tests/unit/test_cell_replacement_v2.py`, `tests/unit/test_cell_replacement_v2_runs.py`, `tests/test_tiers.json` | Tier-1 smoke, compiled runs, and the tier rows (re-measured) | New |
+| `docs/PUMP_COMPOSITE.md`, `PROGRESS.md` | The operator table's row; status | Docs |
+
+Not changed: the composite, the adapter, `surface_tissue.py`, `surface_pump*.py`,
+`src/cells/numerics/`, `src/cells/core/` apart from the parser above, and the thin modules (@2
+has no frozen model).
+
+### 2.9 Guards
+
+**A. Shared qualified code (D148).** Every touched function is new, host side or a declaration,
+so no program of a qualified composition is expected to change. The check is registered with
+its stop rule before its runs, comparing §2's head against main at the landing commit:
+1. crossrev against the baseline the S3 agent renews at main's landing commit (D148's fourth
+   criterion): every jaxpr and binding of the base, qualification and injection sets identical,
+   and the 17 dumps bit-identical;
+2. the forward guard (`validation/tissue/inplace_fix_guard.py`, its 58 worlds in the scalar,
+   windowed, vector-window and batch programs): physical fields bitwise (the first criterion),
+   and here the ledger accumulators too;
+3. the registered judges, each compared with its rerun at main, every number identical apart
+   from provenance and timing (the second criterion):
+   - W1 (`pump_water_qualification.py`): trajectories and stationary step maps;
+   - W2 (`pump_water_kcc_qualification.py`): the eight arms and their step-map numbers;
+   - G2-Q1 (`cell_replacement_judge.py`): Q1 to Q7;
+   - Rm1 (`injection_rm1.py`).
+
+   W1 and W2 run although no water program is expected to change: a summation-order change
+   moved their step-map numbers once (§3, prerequisite (c));
+4. the qualified models' own test files and the composite test files pass.
+
+Any difference stops the work, and is reported. Under D148 the change then needs a new ID or the
+user's decision. These runs take a few hours of detached CPU time.
+
+**B. The new composition.** A tier-1 smoke test under 20 s covers the NumPy event map and
+ledgers, the analytic checks and the refusals. The compiled runs go in tier 2 or 3.
+
+5. **Idle:** [water, @2] with no event equals [water] bitwise: every state field, observation
+   column and `max_` diagnostic, under open water, with Euler and ARS(2,2,2), on the heredity cell
+   and a gated sheet.
+6. **Reduction to @1:** [closed water, @2] with templates at V0 and donor copies equals [@1] on
+   the shared fields, bitwise. @2's volume accumulators hold V0 per event, and its water free
+   energy is exactly 0. If XLA's fusion moves a booked accumulator by rounding, the cause is pinned
+   down before any tolerance is accepted (S1; §3, prerequisite (c)).
+7. **Analytic one-event checks** (NumPy). An occupant swollen or shrunk to V_old ≠ V0, with a
+   changed composition, is replaced by a template at V_t ≠ V0 and, separately, by a donor copy:
+   - dv', removed and supplied are as in §2.3, and water's local and total ledgers close;
+   - the booked work equals G(N_new, V_new) − G(N_old, V_old) + ΔU + Δ(capacitor) − W_clamps,
+     written out independently of the adapter and of water's code, to 10⁻¹² relative;
+   - the copy's volume equals the donor's bitwise, and so do its amounts, water potential and
+     water free energy, in a world built with every amount within a factor of 2 of the slot's
+     reference (§2.2).
+8. **Ledgers across events** (compiled, with device checks on every row): a held-bath sheet under
+   open water whose replaced cells have swollen or shrunk, with events of both kinds. Material,
+   charge, electrode, energy and water's four ledgers all close.
+9. **Later transport sees the newcomer's volume.** The step after an event reads N_new / V_new:
+   the composite's readouts are compared with @3's own on a layout with volume V_new. Water's
+   first flow equals the analytic Lp A (ψ(N_new, V_new) − ψ_out) to rounding.
+10. **A refused event leaves the full prior state.** A layout whose template volume lies outside
+    water's bounds (bypassing the definition check) gives an invalid step. Its returned state
+    equals the start state in every field, water's and @2's included. Each definition refusal of
+    §2.1–§2.2 has its own test.
+11. **Restart** before, at and after an event, also through a written snapshot, is bitwise. The
+    manifest's field owners name @2 as the writer of `volume_increment_pL`.
+12. **vmap:** a vector-window batch with device checks and per-world events (template volumes,
+    donor copies, none). It is bitwise against the same batch reversed, and within 10⁻¹² of each
+    field's scale against single runs (the S2 precedent: the vmapped program compiles
+    differently).
+13. **Cost:** @2's step on the 127-cell sheet, event-free and with events, against water alone.
+14. **Status:** runs are labelled development (`composition_status`). Qualification would come
+    from a registered protocol against an independent reference, not from this slice. One
+    candidate is R-full (`validation/tissue/cell_replacement_reference.py`) with open water and
+    volume events.
+
+### 2.10 Open questions for the lead
+
+1. **`law_steady` over water.** Proposed: refused in this slice. The alternative is for the
+   composite to pass its view to event maps that declare it, and for @1's arrival gate to take
+   that layout (a composite change and a static branch in @1's event map).
+2. **The template-volume rule in `core/cell_replacement_spec.py`.** Proposed: a keyword whose
+   default is @1's rule (host side, but under the core/ restriction). The alternative is a second
+   event parser in @2's module.
+3. **@1's host-side helpers** (`worst_case`, `check_definition`). Proposed: parameterised, with
+   @1's behaviour as the default. The alternative is duplicating them in @2's module.
+4. **Water's free energy per node.** Proposed: a new function beside an unchanged
+   `water_ledgers`. The alternative, refactoring `water_ledgers` to call it, changes water@1's and
+   water@2's device-check jaxprs and so needs D148's full run.
+5. **E07's charged impermeant P in donor copies.** E07 §2 gives the refusal to @2's definition
+   check. Proposed: the engine refuses a differing X only, and E07's driver keeps its P check. The
+   alternative is an engine check of each donor's lineage of events, with a classification of
+   routeless species.
+6. **Injection over water, found in this round.**
+   - [water, `electrode_current_injection@1`] is admitted under IMEX. Injection books @3's
+     chemical term on V0, but not water's dilution term.
+   - A probe (composite-v2-s2-20261113-01/probe_injection_water.json) applied one half-step of
+     1 nA for 0.5 ms. It left exactly −RT ΔN_tot ln(V/V0) unbooked: +1.15 × 10⁻⁵ pJ at 5%
+     swelling (the prediction met to 5 × 10⁻¹⁶ pJ), and 0 at V0.
+   - No test or registered run composes the two. An IMEX run's energy bound, 2 × 10⁻³ of the
+     flows, may not catch it.
+   - Proposed: injection@1 declares `volume` in `CONFLICTS_VIEW` now. That is a refusal and changes
+     no program. An injection law that books ΔW with `node_free_energy_pJ` follows when a consumer
+     needs injection under water.
+7. **Decisions 10, 11 and 12:** the donor's volume, `law_steady` refused, and a separate water
+   free-energy field.
 
 ## 3. Stage S2: membrane state as entity state
 
@@ -968,12 +1272,15 @@ It still needs:
 | 1 | The composite's model ID stays `resolved_pump_composite@1` through §1; new behaviour comes with new operator law IDs | Accepted. The identity is unchanged by declarations (Run identity, above) |
 | 2 | §1.1: an optional field-list argument to the family's energy-bound function, default unchanged | Accepted; it waits for the plan-validation fix to land |
 | 3 | §4: injection by a split part first | Accepted. The first acceptance is Rm1 on the uncleaved egg. Carrier fractions are declared per electrode (J1's rule as default), with both polarities, removal booked and a refusal |
-| 4 | §2: newcomers keep the slot's declared impermeant content | Open, with §2, until the renewal assay asks |
+| 4 | §2: newcomers keep the slot's declared impermeant content | Settled for donor copies in E07_V1_DESIGN §2 (13 November). Reconciled in §2.2: every newcomer keeps the slot's water impermeant amount X, a declaration; a donor copy needs the donor's water compartment to equal the slot's; charged species are copied as amounts (§2.10, question 5) |
 | 5 | §3: capacitance kept as state alongside area | Accepted |
 | 6 | §1.3: at most one in-step process per composition | Accepted |
 | 7 | §5: the verdict is each qualification's own judge with the variant tolerances | Accepted, with the stop rule before run C |
 | 8 | §3, R3: option (a), with a field-input provider refused above 64 field nodes | Accepted (13 November), from the measured cost; (b) or (c) before larger worlds |
 | 9 | §3: the capacitor energy at a view is corrected in operator ledger terms; @3's balances stay on the declared layout | Accepted (13 November). The requirement is on the total, ½ Σ C V² − ½ Σ C0 V0²; the correction is derived against @3's actual term |
+| 10 | §2.2: a donor copy takes the donor's volume, an exact state copy | Proposed (13 November), for review |
+| 11 | §2.6: `law_steady` is refused over water in the first slice | Proposed (13 November), for review |
+| 12 | §2.3: water's free-energy change at events is booked in a field of its own | Proposed (13 November), for review |
 
 Rough effort:
 
@@ -982,6 +1289,6 @@ Rough effort:
 | §1 | 1.5 |
 | §4 | 1 |
 | §3 (as the division plan estimates) | 2 |
-| §2, when the renewal assay needs it | 1.5 |
+| §2, after review | 1.5, plus a few hours of detached guard runs |
 | §5 driver | 0.5 |
 | §5 GPU runs | the slot you give |
