@@ -124,7 +124,7 @@ reference alike:
 | --- | --- | --- | --- |
 | Q1 | Em at J1 | V at the front edge of pulse 180 (1800 s) | −12.79494 mV |
 | Q2 | Rm at J1 | Pair (179, 180) | 488.000 kΩ (the A/L calibration target) |
-| Q3 | Rm1 | Pair (0, 1), before the onset | 852.000 kΩ |
+| Q3 | Rm1 (reported, not judged) | Pair (0, 1), before the onset | 852.000 kΩ |
 | Q4 | Em trajectory | V at the front edge of every pulse, 0 to 210; maximum difference | – |
 | Q5 | Lumen K and Na at J1 | mM, activity basis | about 29 and 21 mM |
 
@@ -134,7 +134,7 @@ quantity from the registered commit.
 
 **Tolerance per quantity: 3 × (engine step term + reference term)**, the rule Rm1's
 registered protocol uses:
-- engine step term: |Q(dt_j) − Q(dt_j / 2)| at the judged step dt_j, with the observed
+- engine step term: |Q(dt_j) − Q(dt_j / 2)| at the judged step dt_j = 0.25 ms, with the observed
   order checked (about 2 for ARS(2,2,2));
 - reference term: the largest |ΔQ| of R-full against rtol 10⁻⁸, BDF at rtol 10⁻¹⁰ and
   LSODA, plus the activation area 10⁻¹⁰ m², as J1's `reference_numerics` registers it.
@@ -161,13 +161,12 @@ implicit membrane–cleft term would then be a new solver version (division desi
 5. The registration draft, to the lead: references, terms, tolerances, judged step.
 6. The judged run, once.
 
-## 6. Choices for review
+## 6. Choices (decided by the lead, 13 November)
 
-- The judged step: 0.25 ms proposed, unless the study's step term at 0.5 ms is small
-  against the reference term.
-- Q5 (lumen composition) judged or reported. It is what J1's mechanism turns on, so
-  judging it is proposed.
-- Q3 (Rm1 with the S3 operators present) judged or reported. It repeats the Rm1
-  acceptance before the onset, so reporting it is proposed.
+- **The judged step is 0.25 ms.** The step study's terms are taken at 0.25 against
+  0.125 ms.
+- **Q5, lumen K and Na at J1, is judged.** The lumen operator is S3's new physics.
+- **Q3, Rm1, is reported only.** It was judged on the uncleaved egg in injection's
+  acceptance.
 - The back-loaded schedule (an in-band J1 member) is out of S3's comparison; the default
   schedule only.
