@@ -58,6 +58,46 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Hold segment 2 continues on version 2. The L4 dispatch test rules out loop control
+  (13 November).**
+  - **The hold.** Segment 1 ended cleanly at 14:48 UTC: 6,000 windows and snapshot
+    `t01206`, in 20.1 h. The restart rule gave no restart:
+    - command buffers ran at 1.00× and masked loops at 0.22×;
+    - the margin at the end of segment 1 is 0.21 of `NEWTON_TARGET` (at most 0.45 over the
+      snapshots).
+    - Segment 2 runs from `source-09` as `cells-w1-ft2-seg2`, from 15:48 UTC.
+  - **The finding.** One six-world step takes 48 ms on the L4: 23 ms of field solve, 25 ms
+    of the rest, and 9 ms more for the device checks. The rest and the checks run no loops.
+    - Removing all host-blocked loop time would give at most 1.37×, under the 1.4×
+      break-even.
+    - The cost is device execution. The leading hypothesis is dense float64 node-space
+      linear algebra per world, about 0.32 GFLOP per world-step: chiefly a Cholesky of the
+      825-node IMEX operator every step. This is read from the code, not timed.
+    - The L4 does not repeat bitwise, so an equivalence test there needs three or more
+      repeats.
+    - Version 3 accepted all 1,000 steps from t = 0 on the L4.
+    - [Note](/mnt/workspaces/Cells/window-timing-20261112-01/l4-dispatch-note.md).
+- **Combined landing: the S3 ledger fix (D148), stage S3's engine side and the phase markers
+  (13 November).** Tier 1 + 2 gate: 369 files. The one changed outcome was the D147 driver
+  guard catching the new D148 guard tool; it is now exempt with its reason and passes.
+  - **The ledger fix.** `surface_tissue.capacitor_change` sums species in a fixed order, so
+    @3's electrode ledger telescopes exactly at egg scale.
+    - Physical fields are bitwise in all 58 guard worlds, and the judges' registered numbers
+      are unchanged; only the electrode accumulator moves, by each world's former residual.
+    - D148 records when an in-place fix to qualified code is admissible.
+    - The crossrev baseline is renewed at this landing, and `8416a72` stays as the earlier
+      record.
+  - **`restricted_cleft_lumen@1`.** A restricted compartment filled from the bath as the
+    membrane area grows. It books volume work and mixing heat, and reads lumen composition
+    at the area of each saved time.
+  - **The cleft-egg engine definition** is built from R-full's own egg; all 30 fields agree.
+    - The development dt study gives, at 0.25 ms, engine − R-full of 4e-10 V in Em at J1,
+      7.8 Ω in Rm at J1, and under 1e-6 mM in the lumen.
+    - The S3 protocol uses an integrator-only reference term, chosen after the data and
+      disclosed as the stricter rule. Its judged run follows.
+  - **Phase markers.** Binding, plan validation, compile and the first window are reported as
+    they happen, and timings are grouped into phases. This is host-only and bitwise.
+
 - **Cell division S0b: the registered J1 combination round is parked (13 November;
   development, judged by its own registered criteria).** No eligible point passes, under
   either criterion form. Nothing is frozen and no C1 registration follows. R-full with the
