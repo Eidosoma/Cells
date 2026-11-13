@@ -827,7 +827,9 @@ def _probe(args, out, summary, parts):
         states = [
             ("checkpoint", w.world_id, w.simulation, checkpoints[w.world_id]) for w in spec.worlds
         ]
-        summary["H"] = dict(rows=host_replay(states + saved), saved_states=1 + len(saved))
+        summary["H"] = dict(  # Saved cohort states: the checkpoint and each --saved-state.
+            rows=host_replay(states + saved), saved_states=1 + len(args.saved_state)
+        )
         summary["timings"]["H_seconds"] = time.perf_counter() - tick
     if "O" in parts:
         wanted = min(max(record["minimum_overlap"], args.overlap_rounds or 0), len(rounds))
