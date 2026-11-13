@@ -67,6 +67,12 @@ def _rops():
 BATH = "bath"
 ORIGIN_WORLD = "world"
 ORIGIN_EGG = "rfull_egg"  # from_egg; refused by simulate_divisions (design §10.1)
+# Absolute tolerances per state kind (fmol, pJ): R-full's, at egg scale (node charges of order
+# 10 fmol), which the cross-check against R-full needs. Scale them to the world: on a cell of
+# tissue scale (node charges of order 1e-3 fmol) these defaults leave about 4e-10 V in Vm, where
+# atol = dict(cell_charge=1e-15, cleft_charge=1e-17, cell_amount=1e-12, cleft_amount=1e-14,
+# heat=1e-15) agrees with a thousandfold tighter set to 2e-14 V (the S5 references' evidence,
+# run-02/atol_check.json).
 ATOL = dict(cell_charge=1e-9, cell_amount=1e-6, cleft_charge=1e-9, cleft_amount=1e-9, heat=1e-12)
 
 
@@ -1056,7 +1062,8 @@ def simulate_static(world, t_end, *, record=(), rtol=1e-10, method="Radau", atol
 def simulate_divisions(world, t_end, *, record=(), rtol=1e-10, method="Radau", atol=None):
     """Integrate a world with prescribed divisions (R-ops at each); returns a TissueRun.
 
-    A world converted from an R-full egg is refused (the J2 bright line, design §10.1)."""
+    A world converted from an R-full egg is refused (the J2 bright line, design §10.1). Pass
+    atol scaled to the world: the defaults (ATOL) are R-full's, for egg-scale charges."""
     if world.origin != ORIGIN_WORLD:
         raise ValueError(
             "simulate_divisions refuses a world converted from an R-full egg "
