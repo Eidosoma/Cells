@@ -78,15 +78,20 @@ def quantities(result, spec):
     """{quantity: array} at the compare records (module docstring)."""
     model = get_model(spec.model)
     _, p = model.initial_values(spec)
-    h = result.history
-    count = len(np.asarray(result.times))
-    rows = [count - 2, count - 1]  # The compare records, the last two.
+    h, times = result.history, np.asarray(result.times)
+    # The compare records are the last two observation times. The history also holds a row at
+    # every schedule change, so its rows are found by time, and the observations' by position.
+    observed = np.asarray(result.observations.times)
+    seen = [len(observed) - 2, len(observed) - 1]
+    rows = [
+        int(np.flatnonzero(np.isclose(times, observed[k], rtol=0, atol=1e-12))[0]) for k in seen
+    ]
     e = [j.id for j in spec.model.junctions].index("bridge_1")
     out = {"patch_voltage_V": [], "cell_amount_fmol": [], "bridge_exchange_fmol": []}
     lumen = "lumen_volume_increment_pL" in type(h)._fields
     if lumen:
         out |= {"lumen_volume_pL": [], "lumen_concentration_mM": []}
-    for i in rows:
+    for i, k in zip(rows, seen, strict=True):
         state = model.STATE_TYPE(*(np.asarray(v[i]) for v in h))
         q = model.view(p, state, xp=np)
         v = adapter.patch_voltages(adapter.node_potentials(state, q, xp=np), q, xp=np)
@@ -100,9 +105,9 @@ def quantities(result, spec):
         out["bridge_exchange_fmol"].append(exchange)
         if lumen:
             cleft = [c.id for c in spec.model.extracellular].index("cleft")
-            out["lumen_volume_pL"].append(np.asarray(result.observations.lumen_volume_pL)[i, cleft])
+            out["lumen_volume_pL"].append(np.asarray(result.observations.lumen_volume_pL)[k, cleft])
             out["lumen_concentration_mM"].append(
-                np.asarray(result.observations.lumen_concentration_mM)[i, :, cleft]
+                np.asarray(result.observations.lumen_concentration_mM)[k, :, cleft]
             )
     return {k: np.asarray(v) for k, v in out.items()}
 
