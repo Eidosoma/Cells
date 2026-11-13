@@ -603,6 +603,11 @@ is its anchor (D057), already counted on the declared layout.
       judges).
     - Unchanged: the residuals Φ_T(u) − u, bitwise in all 72 entries, and every verdict
       (pass).
+    - W1's judge behaves the same way. Six step-map numbers in its two stationary items
+      move by about 10⁻¹³ relative, and its verdicts are unchanged. Its trajectory items
+      change only in ledger diagnostics: the electrode error goes to 0 and the
+      global-charge ratios fall.
+    - Rm1's judge changes only in ledger diagnostics.
     - The run without the fix reproduces the recorded judged run (10 November) bit for bit,
       and the only source change is `capacitor_change`. The moved quantity is therefore
       the step map's Jacobian J. The stationary analysis takes it by automatic
