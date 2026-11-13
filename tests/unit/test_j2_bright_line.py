@@ -61,6 +61,9 @@ PARTITION_MODULES = {
     "tests.partition_fixtures",  # S5's compact worlds (the lead, 13 November).
     "validation.division.q10_sensitivity",  # The Q10 driver.
     "validation.division.egg_division_world",  # S5's egg-scale accounting world.
+    "validation.division.q2_rops_comparison",  # Q2: the engine against R-ops.
+    "validation.division.q3_tissue_comparison",  # Q3: the engine against R-tissue.
+    "validation.division.q5_order",  # Q5: the observed order.
 }
 PARTITION_FUNCTIONS = {"validation.division.cleft_tissue_reference.simulate_divisions"}
 # Text that every source of each kind must contain (the pre-filter).
@@ -75,6 +78,9 @@ PARTITION_MARKERS = (
     "partition_fixtures",
     "q10_sensitivity",
     "egg_division_world",
+    "q2_rops_comparison",
+    "q3_tissue_comparison",
+    "q5_order",
 )
 EXEMPT = {}  # {path: reason}; a J2 driver enters only after the user releases J2.
 

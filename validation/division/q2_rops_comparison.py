@@ -24,8 +24,10 @@ Cases:
 * each world's events: the compact symmetric and asymmetric worlds, the neighbour contact, the
   bridge world's first and second divisions, the asymmetric furrow world with a bridge, and the
   second-onset world's first division;
-* 200 random pre-event states: random increments, histories, patch growth, abundances and
-  gates on the compact neighbour world.
+* 200 random pre-event states on each of two compact neighbour worlds, the symmetric one and
+  an asymmetric one (f 0.75, a 0.6, three carriers): random increments, histories, patch
+  growth, abundances and gates. The daughters' population abundances and gates are compared
+  too, from R-ops' post-event snapshot.
 
 Usage: python -m validation.division.q2_rops_comparison OUTPUT_DIR. It is NumPy only, about a
 minute.
@@ -305,6 +307,18 @@ def compare(world, d, before, after, result):
     )
     work = np.asarray(after.partition_work_pJ) - np.asarray(before.partition_work_pJ)
     out["work_pJ"] = ratio(work[index[d.parent]], v["work_pJ"], mag["work_pJ"])
+    # The daughters' populations, from R-ops' post-event snapshot: abundance and gates.
+    abundance, gates = 0.0, 0.0
+    for c in d.populations:
+        for name in c.daughters:
+            mine = w.channels.index(name)
+            theirs = result.snapshot.populations[name]
+            total = theirs.abundance_reference + theirs.abundance_increment
+            engine = p.channel_abundance[mine] + after.population_abundance_increment[mine]
+            abundance = max(abundance, ratio(engine, total, abs(engine) + abs(total)))
+            g = np.asarray(after.channel_gate)[: len(theirs.gates), mine]
+            gates = max(gates, ratio(g, theirs.gates, 1.0))
+    out["population_abundance"], out["population_gates"] = abundance, gates
     return out
 
 
@@ -389,19 +403,29 @@ def main(output):
         ratios = compare(world, d, state, after, result)
         report["cases"][label] = dict(engine_ok=ok, worst=max(ratios.values()), ratios=ratios)
         print(label, ok, f"{max(ratios.values()):.2f}", flush=True)
-    world = Bound(fx.divided(neighbour=True))
-    d = next(x for x in world.partition[1].divisions if x.id == "first")
     rng = np.random.default_rng(20261113)
-    worst = {}
-    for _ in range(RANDOM_STATES):
-        state = perturbed(world, rng)
-        result = rops.apply(world.snapshot(state), world.division(d, state))
-        after, ok = world.event(state, (1.0,))
-        assert ok
-        for key, value in compare(world, d, state, after, result).items():
-            worst[key] = max(worst.get(key, 0.0), value)
-    report["random"] = dict(states=RANDOM_STATES, worst=max(worst.values()), ratios=worst)
-    print("random", f"{max(worst.values()):.2f}", flush=True)
+    carriers = {"Na": 0.3, "K": 0.5, "M": 0.2}
+    for label, raw in (
+        ("symmetric neighbour world", fx.divided(neighbour=True)),
+        (
+            "asymmetric neighbour world (f 0.75, a 0.6, three carriers)",
+            fx.divided(neighbour=True, f=0.75, area_fraction=0.6, carriers=carriers),
+        ),
+    ):
+        world = Bound(raw)
+        d = next(x for x in world.partition[1].divisions if x.id == "first")
+        worst = {}
+        for _ in range(RANDOM_STATES):
+            state = perturbed(world, rng)
+            result = rops.apply(world.snapshot(state), world.division(d, state))
+            after, ok = world.event(state, (1.0,))
+            assert ok
+            for key, value in compare(world, d, state, after, result).items():
+                worst[key] = max(worst.get(key, 0.0), value)
+        report["random"][label] = dict(
+            states=RANDOM_STATES, worst=max(worst.values()), ratios=worst
+        )
+        print("random", label, f"{max(worst.values()):.2f}", flush=True)
     (output / "q2_rops.json").write_text(json.dumps(report, indent=1) + "\n")
 
 

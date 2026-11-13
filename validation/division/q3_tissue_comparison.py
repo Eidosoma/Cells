@@ -55,8 +55,10 @@ from validation.division import cleft_tissue_reference as rt
 STATUS = "Development comparison for Q3 (S5a); not judged; no tolerance registered"
 END = 0.010
 DT = 2.5e-4
-RECORDS = (0.0025, 0.003, 0.004, 0.006, 0.008, 0.010)  # Strictly after the divisions at 2, 5 ms;
-# 2.5 ms lies inside the bridge's open interval (2 to 3 ms), so its current is compared there.
+# Strictly after the divisions at 2 and 5 ms, and off the onset instants (1 and 3 ms): at an
+# event instant the engine's record is the state before the event and R-tissue's the state
+# after it. 2.5 ms lies inside the bridge's open interval (2 to 3 ms).
+RECORDS = (0.0025, 0.0035, 0.004, 0.006, 0.008, 0.010)
 SMALL = dict(
     cell_charge=1e-15, cleft_charge=1e-17, cell_amount=1e-12, cleft_amount=1e-14, heat=1e-15
 )
@@ -255,6 +257,9 @@ def differences(a, b):
     """{quantity: largest |a - b|} over the records (absolute, in each quantity's units)."""
     out = dict(V=0.0, lumen_volume_pL=0.0, lumen_mM=0.0, bridge_A=0.0)
     for t in RECORDS:
+        assert set(a[t]["V"]) == set(b[t]["V"]), (t, "live cells differ")
+        assert set(a[t]["lumens"]) == set(b[t]["lumens"]), (t, "live lumens differ")
+        assert (a[t]["bridge_A"] is None) == (b[t]["bridge_A"] is None), (t, "bridge liveness")
         for c, v in a[t]["V"].items():
             out["V"] = max(out["V"], abs(v - b[t]["V"][c]))
         for c, (vol, mm) in a[t]["lumens"].items():

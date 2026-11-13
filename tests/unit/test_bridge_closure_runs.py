@@ -8,8 +8,8 @@ V2 / V1 = Rm / (Rm + R_b).
 The voltages are the changes from the same world without current, about 1.5 s after the
 division. The worlds are passive (no channel populations), as §7.3's circuit limits and
 R-tissue's worlds are, and the current is small (0.01 pA). The bridge's own conductance in the
-run, its current over its voltage, is 2 a sigma_cyt to 1e-3. A few minutes on one core (four
-compiled runs).
+run, its current over its voltage, is 2 a sigma_cyt to 1e-3. The ratio holds to 1% at 0.25 ms
+(0.26% measured). A few minutes on one core (four compiled runs).
 """
 
 import math
@@ -28,9 +28,10 @@ from tests import partition_fixtures as fx
 END = 1.5
 CURRENT_A = 1e-14
 TAU = 1e4
-# 0.25 ms. The injection's split half-steps lag the bridge's fast antisymmetric mode (rate about
-# 490/s here) by half a step's charge, an O(dt) offset of V1 - V2 at the step's end: 8% of
-# 1 - V2/V1 at 1 ms, about 2% at 0.25 ms.
+# 0.25 ms. The injection's split half-steps and the bridge's fast antisymmetric mode (about
+# 490/s here) interact, offsetting V1 - V2 at the step's end. The offset is 7.8% of 1 - V2/V1 at
+# 1 ms, 1.6% at 0.5 ms and 0.26% at 0.25 ms: observed order 2.3 to 2.6, second order or better
+# (validation/division/bridge_coupling_order.py).
 DT = 2.5e-4
 
 
@@ -91,4 +92,4 @@ def test_an_open_bridge_couples_with_the_circuit_ratio():
     v1, v2 = coupled["d1"] - base["d1"], coupled["d2"] - base["d2"]
     assert current / (v1 - v2) == pytest.approx(1 / rb, rel=1e-3)
     assert rm > 50 * rb  # R_b << Rm.
-    assert 1 - v2 / v1 == pytest.approx(rb / (rm + rb), rel=0.05)
+    assert 1 - v2 / v1 == pytest.approx(rb / (rm + rb), rel=0.01)

@@ -247,7 +247,8 @@ def main(argv=None):
     rows, accepted, phases = [], [], []
 
     def keep(window):
-        """Each window's recorded rows (its observation times), after the window's checks."""
+        """Each window's recorded rows (every accepted step, as the policy records them),
+        after the window's checks."""
         rows.append([np.asarray(v) for v in window.history])
         accepted.append(np.asarray(window.times))
         phases.append(np.asarray(window.observations.partition_slot_phase))
