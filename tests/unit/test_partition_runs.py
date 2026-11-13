@@ -167,8 +167,8 @@ def test_the_record_is_state_wherever_state_goes(division_run, tmp_path):
     * check_values on the saved history closes every ledger at the event row;
     * the observer's record columns equal the history's;
     * the summary's totals add the record;
-    * the negative control: a replay with the record zeroed fails at the first row after the
-      event.
+    * the negative control: a replay with the record zeroed fails the local ledger at the
+      first row after the event.
     A checkpoint after a partition carries the record too: its restart is bitwise
     (test_restart_across_and_after_a_partition_is_bitwise)."""
     from cells.core.errors import NumericalError
@@ -196,7 +196,7 @@ def test_the_record_is_state_wherever_state_goes(division_run, tmp_path):
     blank = history._replace(
         **{k: np.zeros_like(getattr(history, k)) for k in partition.RECORD.values()}
     )
-    with pytest.raises(NumericalError):
+    with pytest.raises(NumericalError, match="accounting failed: local$"):
         model.check_values(blank, spec, steps)
 
 

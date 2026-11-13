@@ -19,12 +19,14 @@ Each world runs without and with 1 pA into d1. The current flows over one window
 variant, from 3 ms (the latest partition time) until 6 ms, or until d1's own division at 5 ms.
 So a change of t_p does not change the injected charge.
 
-Ranges, declared here:
+Ranges, declared here, one parameter at a time:
 * the partition time t_p in {1, 2, 3} ms (exact multiples of dt; the furrow world's {2, 3} ms,
-  after its onset), nominal 2 ms;
+  after its onset), against the nominal 2 ms;
 * the aperture a_0 in {0.4, 1, 1.8} x 2 nm. G_b0 = 2 a_0 sigma_cyt then spans the declared
   sigma_cyt band, 0.2 to 0.9 S/m, at the default 0.5 S/m: sigma_cyt enters only through G_b0
   (§4.2). The widest a_0 stays within the 1 ms step bound (0.88 of it in the symmetric worlds).
+  This range runs at t_p = 3 ms, against the t_p = 3 ms run. Only there is the bridge open
+  while the current flows; at the nominal t_p it has closed first and a_0 cannot act.
 
 Compared at the last two records, after every variant's divisions and closure:
 * each live patch's voltage;
@@ -115,12 +117,22 @@ def quantities(result, spec):
     return {k: np.asarray(v) for k, v in out.items()}
 
 
+APERTURE_TP = 0.003  # s: the a_0 range is run here, where the open bridge meets the current.
+
+
 def variants(family):
-    """[(label, t_p, aperture scale)]: the nominal, then each range one parameter at a time."""
+    """[(label, t_p, aperture scale, baseline label)], one parameter at a time.
+
+    The t_p range is compared with the nominal (2 ms). The a_0 range runs at t_p = 3 ms and is
+    compared with the t_p = 3 ms run: only there is the bridge open (3 to 4 ms) while the
+    current flows (from 3 ms), so only there can a_0 act. At the nominal t_p the bridge has
+    closed before any asymmetry, and the a_0 arm would read exactly zero.
+    """
     times = (0.002, 0.003) if family == "furrow 1->2" else (0.001, 0.002, 0.003)
-    rows = [("nominal", NOMINAL_TP, 1.0)]
-    rows += [(f"t_p={tp * 1e3:g} ms", tp, 1.0) for tp in times if tp != NOMINAL_TP]
-    rows += [(f"a_0={s:g}x", NOMINAL_TP, s) for s in APERTURES if s != 1.0]
+    rows = [("nominal", NOMINAL_TP, 1.0, None)]
+    rows += [(f"t_p={tp * 1e3:g} ms", tp, 1.0, "nominal") for tp in times if tp != NOMINAL_TP]
+    base = f"t_p={APERTURE_TP * 1e3:g} ms"
+    rows += [(f"a_0={s:g}x at {base}", APERTURE_TP, s, base) for s in APERTURES if s != 1.0]
     return rows
 
 
@@ -153,6 +165,7 @@ def main(output):
             "electrode_current_injection@1",
         ],
         ranges=dict(
+            aperture_range_at_partition_time_s=APERTURE_TP,
             partition_time_s=[0.001, 0.002, 0.003],
             furrow_partition_time_s=[0.002, 0.003],
             aperture_scale=list(APERTURES),
@@ -169,20 +182,25 @@ def main(output):
     for family in ("1->2", "1->2->4", "furrow 1->2"):
         for injected in (False, True):
             key = f"{family}{' + injection' if injected else ''}"
-            results = {}
-            for label, tp, scale in variants(family):
+            results, baselines, accepted = {}, {}, {}
+            for label, tp, scale, baseline in variants(family):
                 raw, records = world(family, tp, scale, injected)
                 spec = parse_spec(raw)
                 start = time.perf_counter()
                 result = run(spec)
                 results[label] = quantities(result, spec)
+                baselines[label] = baseline
+                accepted[label] = np.asarray(result.times).tolist()
                 print(f"{key} {label}: {time.perf_counter() - start:.1f} s", flush=True)
             nominal = results["nominal"]
             report["worlds"][key] = dict(
                 compared_at_s=records,
+                accepted_times_s=accepted,
                 nominal={k: v.tolist() for k, v in nominal.items()},
                 changes={
-                    label: changes(nominal, values)
+                    label: dict(
+                        against=baselines[label], **changes(results[baselines[label]], values)
+                    )
                     for label, values in results.items()
                     if label != "nominal"
                 },
