@@ -143,12 +143,16 @@ fingerprint differs from the driver's rebuilt definitions.
      - `open_calcium_bath_trajectory_production.py`, an INIT-to-SIM handoff from its own
        `last-state.npz`.
    - §7 classifies them all.
-7. **The crossrev guard cannot see constant values** (probe 2, §4.3).
+7. **The crossrev guard cannot see some constant values** (probes 2 and 4, §4.3).
    - jaxpr text omits the values of closed-over arrays.
-   - `composite_crossrev._traced` closes over `device_check_constants`: three arrays in the
-     probe's worlds.
-   - Its bindings omit them, so a change in a check constant's value passes crossrev as
-     identical.
+   - `composite_crossrev._traced` closes over `device_check_constants`. In the probe's
+     worlds that is a scalar (0.002) and a 4-element array (1e-10 each).
+     - The scalar appears in the text as a literal.
+     - The array is closed over as three constants: two of shape (4, 1) and one of shape
+       (4,), whose bytes equal the array's by digest. Their values appear nowhere in the
+       text.
+   - Crossrev's bindings omit the check constants. A change in the array's values would
+     therefore pass crossrev as identical.
    - This bears on D148's fourth criterion. It is an open question (§12).
 8. **The resume check in `heredity_pilot.py`** is at 2252–2254.
 
@@ -183,9 +187,13 @@ fingerprint differs from the driver's rebuilt definitions.
     - for every probed path, the jaxpr text of the program the path compiles, at the plan's
       own shapes;
     - the dtype, shape and bytes of every constant that jaxpr closes over, at any depth;
+    - the path's own lowered StableHLO (`as_text()`). It is deterministic, carries no
+      source locations, and carries the constants;
+    - the arguments the path passes to `.compile()`. jaxpr text of the bare function
+      cannot see a change to the `jax.jit(...)` wrapper or to the compile options;
     - crossrev's step-level texts: checked step or right-hand side, and device checks.
     - The first round's arguments are captured from the path's own entry point, which is
-      stopped before compiling.
+      stopped at `.compile()`.
   - **B, bindings:** every array the path binds, over the whole remaining horizon:
     - the resident inputs: start states, `parameters()`, active masks and check constants;
     - each round's arrays, from the path's own round builder;
@@ -198,11 +206,29 @@ fingerprint differs from the driver's rebuilt definitions.
       including this one), and on its saved observation rows where it recorded full
       histories;
     - the outputs must be identical.
-- No model step is executed and nothing is compiled.
+- No model program is compiled or executed. Vector windows' small gather of the resident
+  inputs does compile.
+- **The probe's own runtime.** B and H speak for the resuming run only if the probe ran under
+  the resuming runtime's host-side fields: python, numpy, scipy, ml_dtypes, opt_einsum, jax,
+  platform and machine.
+  - The record keeps the probe's runtime, and the loader checks those fields against `to`.
+  - Otherwise the probe is rerun under the resuming runtime (§3.4, host class).
+
+**Scope of the first landing.**
+- **CPU definitions only** (`execution.backend: "cpu"`), with `jit: true`.
+- **GPU definitions are not yet admitted.** For them, the probe would trace on CPU with
+  `execution_device` patched to the CPU device, and cross-lower the captured program for
+  `cuda` (probe 2). Device placement enters neither the jaxpr nor the bindings. This is not
+  probed.
+- **`jit: false` definitions are refused.** They execute eagerly, so there is no compiled
+  program to compare.
+- **No call site passes a record yet**, neither the CLI nor any other engine call site.
+  Only development drivers do, through the API.
 
 **What it decides.**
-- Identical jaxpr text, constants and bound inputs under an identical runtime give an
-  identical compiled program on identical inputs.
+- Identical programs (jaxpr text, constants, lowered StableHLO and compile arguments) and
+  identical bound inputs, under an identical runtime, give an identical compiled program on
+  identical inputs.
 - On CPU, the resumed run therefore equals S0's own continuation bitwise. CPU execution is
   deterministic, and complete restart is an engine property the tier tests already check.
 - On a GPU it is the same program, so the resumed run varies only as S0's continuation
@@ -247,8 +273,10 @@ Admissible only when all of the following hold. **Never automatic.**
      programs.
    - Their residual diagnostics then mix both programs.
 
-**The identity of record is jaxpr text plus constants.** That is what the D148 crossrev
-baselines hold, so the chain in 2 compares like with like.
+**The chain uses fresh probe outputs.** It compares outputs produced under B and A at
+admission time, with P, B and H as in case 1. It does not rely on the stored crossrev
+baselines, which hold step-level jaxpr text only and miss closed-over constants (§2.2,
+item 7).
 
 ### 3.3 Case 3: a definition, layout, solver or model ID changed: refused
 
@@ -278,6 +306,10 @@ keep their own records.
   between the manifest and the running installation.
 - Each named field carries its class and the test that covered it.
 - None is waived by argument.
+- **When a host-class test fails:**
+  - a P difference treats the change as compiler class, decided by tolerance;
+  - a B or H difference refuses. The program would bind different inputs, or record
+    different host results, so it is not the same run.
 
 | Field | Class | Test |
 | --- | --- | --- |
@@ -301,13 +333,17 @@ keep their own records.
   - n ≥ 3 repeats T₁…Tₙ on the target runtime;
   - for a same-device change, n ≥ 3 repeats O₁…Oₙ on the original runtime.
 - **Terms**, for each judged quantity with the protocol's own difference measure d:
-  - backend term: max over i of d(C, Tᵢ);
+  - backend term: max over i of d(C, Tᵢ). For a same-device change, it is the larger of
+    that and the cross term, max over i, j of d(Oᵢ, Tⱼ);
   - run-to-run term: max over **all pairs** i < j of d(Tᵢ, Tⱼ), not one pair, because a
-    third L4 repeat exceeded one pair's difference by up to 6× on 13 November;
-  - for a same-device change, the cross term: max over i, j of d(Oᵢ, Tⱼ).
-- **Tolerance.** The method's rule applies,
-  max(registered, up1(3 × (registered/3 + backend + run-to-run))), with its stop rule.
-  For a development run without a protocol, the run declares its tolerance before
+    third L4 repeat exceeded one pair's difference by up to 6× on 13 November. For a
+    same-device change, it is the larger of that and the same term over the Oᵢ.
+- **Tolerance.** The method's rule applies:
+  max(registered, up1(3 × (registered/3 + backend + run-to-run))).
+- **Stop rule, the method's.** Stop and diagnose, without registering, if a backend term
+  (cross term included) or a run-to-run term exceeds the registered sum, or a fixed
+  tolerance.
+- **Development runs.** A development run without a protocol declares its tolerance before
   measuring.
 - **Registration.** The variant is written as PROPOSED and registered by the lead before
   the continued run. The record cites it.
@@ -341,7 +377,8 @@ runtime. The runtime is then decided for S1.
    - the per-round arrays: held control tables, slot, index and origin rows;
    - the checkpoint's clock.
 
-**It extends to arbitrary definitions, batch snapshots included,** and probe 1 did so:
+**It extends to arbitrary definitions, batch snapshots included,** and probes 1 and 4 did
+so (probe 4 through all five paths' own entry points):
 - read the definitions and clocks from the snapshot;
 - build each path's arguments with the path's own planner and builders;
 - trace the path programs and digest the constants;
@@ -377,11 +414,15 @@ runtime. The runtime is then decided for S1.
 2. **P0, the entry capture.**
    - The probe calls the path's own entry point: `run`, `iter_windows`, `run_batch`,
      `iter_batch_windows` or `iter_vector_windows`.
-   - It replaces the module's jitted rollout object with a recorder. The recorder keeps the
-     arguments and static functions at `.lower()` and stops.
-   - Nothing compiles or executes.
-3. **P.** The jaxpr of the captured call, its constants, and crossrev's step-level texts
-   per distinct definition.
+   - It replaces the jitted rollout object with a recorder, **under the name the path looks
+     it up by**. `batch_windows`, for example, imports `_compiled_batch` by name, so the
+     probe patches it there.
+   - At `.lower()` the recorder keeps the arguments, the static functions, the jaxpr with
+     its constants, and the StableHLO. At `.compile()` it keeps the compile arguments and
+     stops.
+   - No model program compiles or executes.
+3. **P.** The captured program (jaxpr, constants, StableHLO and compile arguments) and
+   crossrev's step-level texts per distinct definition.
 4. **B.**
    - The captured arguments must equal the first round that the probe's builders produce.
      This shows the tool drives the builders as the path does.
@@ -397,19 +438,28 @@ runtime. The runtime is then decided for S1.
 
 **`verify_run.py`** checks the resumed run afterwards:
 - its manifest's `provenance` names the record;
-- its kind and policy are among those the record probed;
+- its kind and policy are the scope declared at load (§6);
 - its window schedule (`windows.jsonl`) matches the rounds the probe iterated.
 
-**Cost, measured** (probe 1: two `resolved_pump_replacement@1` worlds of the seven-cell
-sheet, step 0, CPU 4):
-- 35–37 s per source process, about 0.3–0.4 GB at peak;
-- per path program, 0.5–0.75 MB of jaxpr text and 1.3–1.8 MB of StableHLO.
+**The probe reads `state.npz` outside the loaders by design.** It is listed as exempt in
+the bypass guard (§7).
 
-The crossrev qualification set (78 jaxprs, including the 825-node worlds) took about 2
-minutes at 0.67 GB. Probes of large tissues are therefore minutes, not hours, and stay
-inside AGENTS.md's 30-minute rule.
+**Cost.**
+- **Measured** (probe 1: two `resolved_pump_replacement@1` worlds of the seven-cell sheet,
+  step 0, CPU 4):
+  - 25–37 s per source process, about 0.3–0.4 GB at peak;
+  - per path program, 0.5–0.75 MB of jaxpr text and 1.3–1.8 MB of StableHLO.
+- **Estimated, not measured:**
+  - **Large tissues.** All three crossrev sets, traced at step level only and including the
+    825-node worlds, took about 2 minutes at 0.67 GB. Path programs of 825-node worlds
+    should therefore take minutes.
+  - **Long horizons.** A run of 6,000 rounds adds one host round-builder call per round.
+    The probe's three rounds were too short to time.
+- Both must be measured on the first large checkpoint against AGENTS.md's 30-minute rule.
 
-### 4.3 This note's probes (trace only, CPU 4, through `run_detached.sh`; no OOM kills)
+### 4.3 This note's probes (trace only, CPU 4, through `run_detached.sh`)
+
+No unit's journal reports an out-of-memory kill (Appendix B).
 
 | Probe | Question | Result |
 | --- | --- | --- |
@@ -418,6 +468,8 @@ inside AGENTS.md's 30-minute rule.
 | 2 | Other toy questions | No object addresses in jaxpr text (custom_jvp included). StableHLO `as_text()` has no locations. Cross-lowering for `cuda` and `rocm` works on this CPU host. Serialized CPU executables are not a stable identity (§3.4) |
 | 3a | Host-only edits (a phase helper, a host attribute on `_Round`) against a program edit (an optimization barrier on `dt` in `pump_composite.checked_step`), on scratch copies | Host edits: `source_hashes()` differs (today's loader refuses), but programs, constants and bindings are **identical**, so case 1 admits. Program edit: every path program's jaxpr and StableHLO differ, with bindings identical, so case 1 refuses |
 | 3b | Comment and docstring edits inside traced model code (`checked_step` in `pump_composite.py`, `capacitor_change` in `surface_tissue.py`), which move lines | `source_hashes()` differs, but texts (12/12), constants and bindings (5/5) are **identical**, so case 1 admits. Neither jaxpr text nor StableHLO carries source positions |
+| 4 | P0, the entry capture: does driving each path's own entry point, with its jitted rollout replaced by a recorder where the path looks it up, capture the program it compiles? | Yes, on all five paths: `iter_vector_windows`, `iter_batch_windows` (its `_compiled_batch`, imported by name), `run_batch`, `run` and `iter_windows`. 19–25 s per process, 0.43 GB. The captured StableHLO equals the path's direct `.lower()`. Compile arguments are empty. The vector capture **equals the first round rebuilt from the builders**. Repeated, host-edit and program-edit trees as in probe 3a: the program edit changes all five captured programs, with arguments equal |
+| 4 | H, host replay on saved states (here the snapshot's step-0 states): does it catch an observer-only change that P and B miss? | Yes. A one-ulp change to every floating observation column except `times`, in the composite's `observe_history`, leaves programs and bindings identical, and changes `observe_history` in both worlds (`check_values` and `summarize` unchanged). Case 1 refuses. A first form, which scaled the first float column, scaled `times` (0 at step 0) and changed nothing. It is kept as evidence of a probe flaw, not of H |
 
 Details are in Appendix B.
 
@@ -449,6 +501,10 @@ Details are in Appendix B.
     "runtime": {"...": "runtime_identity(backend) of the resuming installation"}
   },
   "changed_files": ["core/phases.py", "core/vector_windows.py"],
+  "probe": {
+    "runtime": {"...": "runtime_identity('cpu') of the probe processes"},
+    "host_fields_equal_to_runtime": true
+  },
   "source_admission": {"case": "identical_programs"},
   "runtime_admission": {"case": "none", "fields": []},
   "scope": {
@@ -508,8 +564,14 @@ for tolerance the registered variant protocol.
   - It imports neither JAX nor subprocess, and traces nothing.
 - **`io.load_snapshot(directory, *, continuity=None)`.**
   - With `None`, the code path is today's.
-  - With a record, the two identity comparisons become `admission.require(...)`. Every
-    other check runs as before.
+  - Otherwise `continuity` is a `continuity.Request(record, path=..., policy=...)`. The
+    caller declares the path and window policy it will resume with.
+  - The two identity comparisons become `admission.require(...)`. Every other check runs as
+    before.
+  - The loader refuses if:
+    - the record's scope does not cover the declared path and policy;
+    - the probe's host-side runtime fields differ from the `to` runtime (§3.1);
+    - the definition is a GPU, `jit: false` or projective one (§3.1, first landing).
   - The returned `Snapshot` gains an `admission` field, defaulting to `None`. The manifest
     schema stays 1, because its field set is exact.
 - **`batch_io.load_batch_snapshot(directory, *, continuity=None)`.**
@@ -528,14 +590,14 @@ for tolerance the registered variant protocol.
 **Validation (`validation/continuity/`).** `probe.py`, `admit.py` and `verify_run.py`, with
 their tests.
 
-**The paths.**
-- The paths do not check path or policy.
-  - The record names the probed paths and policy.
-  - `verify_run.py` checks them afterwards.
-  - Adding a check now would mean four new checks inside the paths, which the
-    consolidation is about to replace.
-- The one production path (execution gate) takes this over:
-  - its shared admission checks path and policy at plan time;
+**The paths are unchanged.**
+- **The checks.** Path and policy are declared at load and refused there if the record does
+  not cover them. `verify_run.py` cross-checks the run's manifest afterwards.
+- **What remains.** A driver could declare one scope and then call another path. Closing
+  that would take four new checks inside the paths, which the consolidation is about to
+  replace.
+- **The one production path (execution gate) takes this over:**
+  - its shared admission checks the declared scope at plan time;
   - it exposes its rounds as a host-only generator that its executor consumes, which
     closes the driving-loop residual of §3.1.
 
@@ -565,6 +627,10 @@ under `validation/` or `scripts/` that:
 - reads a snapshot's `state.npz`, or constructs `Checkpoint` from loaded arrays, outside
   the loaders, unless the module is listed above with its reason;
 - passes `continuity=` and is not on the development allow-list.
+
+`validation/continuity/probe.py` is itself on the exempt list. It reads checkpoints without
+the identity comparison so that it can trace them under S0 and S1, keeps every other loader
+check, and never continues a run.
 
 The validation-side `Stepper` is a fifth execution path outside `src/cells`. That is noted
 for the consolidation (§12).
@@ -620,6 +686,9 @@ for any development checkpoint.
 | Running jobs (10 minutes or more detached) | Probes and tolerance repeats run through `scripts/run_detached.sh`, with caps from measured peaks |
 | Reference simulators | The tolerance step restates `up1` instead of importing from `validation/betse/`, as `composite_l4_agreement.py` does |
 | Lean workflow | One machine-readable record per resume, and one PROGRESS line per admitted resume. No new protocol documents |
+| Refusal stays the default (brief) | With `continuity=None`, the loaders run today's code path, with every refusal message unchanged (guard 1). A migration is one explicit `Request` per resume, backed by a record naming both sources, the evidence and who admitted it |
+| Registered runs are unchanged (brief) | No registered driver or judge passes a record (static test, guard 6). The W1 hold keeps `source-09`, E07-v1 its snapshot, and judges clean snapshots. The first consumer is a CPU development run |
+| One admission rule for all four execution paths (brief) | The rule sits in the two loaders, which every path's checkpoints pass through. The probe traces each path's own program: runner, scalar windows, batch, batch_windows and vector_windows. The consolidated path inherits the loader rule and the declared scope check |
 
 **Proposed wording, for the user to decide.** This design does not need it, but it makes the
 two-source provenance explicit. In "Milestones and provenance", replace:
@@ -659,7 +728,10 @@ fixes in the checkout and generate a new snapshot for a later run.":
    - a tampered `record_sha256`;
    - a missing `admitted_by`;
    - case 2 without its decision, before, after and guard fields;
-   - a tolerance case without a registered variant.
+   - a tolerance case without a registered variant;
+   - a declared path or policy outside the record's scope;
+   - a probe runtime whose host-side fields differ from `to`;
+   - in the first landing, a GPU, `jit: false` or projective definition.
 4. **Admitted cases, tested on small worlds, scalar and cohort, on scratch copies as in
    probe 3.**
    - A host-only edit and a comment edit are admitted. The resumed CPU run then equals the
@@ -700,8 +772,9 @@ fixes in the checkout and generate a new snapshot for a later run.":
 
 ## 12. Open questions for the lead
 
-1. **Path and policy.** Should they be enforced after the run (`verify_run.py`, as
-   proposed) until the consolidated path checks them at plan time?
+1. **Path and policy.** Is a scope declared at load (refused there if the record does not
+   cover it, and cross-checked by `verify_run.py`) enough until the consolidated path
+   checks it at plan time?
 2. **The host-analysis residual.** Is replay on the run's saved states enough for
    development runs? Or must runs that want continuity record full histories?
 3. **The driving-loop residual** (after round 1). Accept it until the consolidated path's
@@ -725,6 +798,23 @@ fixes in the checkout and generate a new snapshot for a later run.":
    definitions stay out and keep refusing.
 10. **The validation-side `Stepper`.** Should the consolidation bring it under the one
     production path?
+11. **Not yet probed.** These need probing before the implementation relies on them:
+    - **GPU definitions:** the `execution_device` patch, and `cuda` cross-lowering of
+      captured path programs. Cross-lowering was shown on a toy only.
+    - **Mid-run checkpoints.** Only step 0 was probed. A checkpoint with `start_step > 0`
+      exercises the planners' start and the remaining grid.
+    - **H on a real run's saved states:** periodic snapshots past step 0, and saved
+      observation rows of runs recording full histories.
+    - **B over a long horizon:** the cost of iterating the round builder over thousands of
+      rounds.
+    - **Capture against rebuilt first round on the other paths.** Probe 4 compared them for
+      vector windows only. The other four paths were captured, but not compared with a
+      rebuilt round.
+    - **Large worlds:** the 825-node tissue's path programs (cost estimated in §4.2).
+    - **Case 2's four-process chain**, on a real D148 change.
+    - **The runtime rules:** the host-side two-environment comparison, and the n-run
+      tolerance terms.
+    - **`jit: false` definitions** (refused in the first landing).
 
 ## Appendix A: draft D150
 
@@ -743,10 +833,15 @@ fixes in the checkout and generate a new snapshot for a later run.":
 >   - It names both sources and runtimes, the evidence and who admitted the resume.
 >   - It lives in the new run's folder, and the run's provenance names it.
 > - **Four cases:**
->   1. **Source changed, programs unchanged:** admitted when the continuity probe finds the
->      jaxprs with their constants, the bindings over the remaining horizon, and host
->      acceptance and observation on the run's saved states identical. The probe runs on
->      CPU, on the checkpoint's own definitions. No file is exempted by argument.
+>   1. **Source changed, programs unchanged:** admitted when the continuity probe finds
+>      three things identical:
+>      - the programs each path compiles: jaxpr, constants, lowered StableHLO and compile
+>        arguments;
+>      - the bindings over the remaining horizon;
+>      - host acceptance and observation on the run's saved states.
+>
+>      The probe runs on CPU, on the checkpoint's own definitions. No file is exempted by
+>      argument. The first landing covers CPU definitions with `jit: true`.
 >   2. **Programs or bindings changed, physical fields unchanged:** only with a D148 record
 >      covering those definitions, admitted by the lead. Never automatic.
 >   3. **Definition, layout, solver or model ID changed:** refused. No record relaxes these
@@ -763,18 +858,23 @@ fixes in the checkout and generate a new snapshot for a later run.":
 >   test lists the exempt tools with their reasons.
 > - **Evidence:** `/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/`. The probes
 >   show that:
->   - cohort programs traced from a batch snapshot repeat identically;
->   - jaxpr text omits constant values, so constants are digested;
->   - host-only edits leave programs and bindings identical, while a program edit does not.
+>   - cohort programs traced from a batch snapshot, and captured from all five paths'
+>     entry points, repeat identically;
+>   - jaxpr text omits constant values, so constants and the lowered StableHLO are
+>     compared;
+>   - host-only and comment edits leave programs, bindings and host replay identical;
+>   - a program edit changes every path's program;
+>   - an observer-only edit changes only the host replay.
 
 ## Appendix B: probe evidence
 
 All under `/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/probe/` (`HANDOFF.md`
 one level up):
-- the script: `probe_trace.py`;
-- the runners: `run.sh` and `run_comment.sh`;
-- the edits applied to scratch copies of `src/cells` at `f76876d`: `host-edit.patch`,
-  `program-edit.patch` and `comment-edit.patch`;
+- the scripts: `probe_trace.py` (probes 1–3) and `probe_entry.py` (probe 4);
+- the runners: `run.sh`, `run_comment.sh`, `run_entry.sh` and `run_entry_observer2.sh`;
+- the edits applied to scratch copies of `src/cells` at `f76876d` (the source is unchanged
+  at the later branch commits): `host-edit.patch`, `program-edit.patch`,
+  `comment-edit.patch`, `observer-edit.patch` and `observer-edit-2.patch`;
 - the outputs: `out/`, summarised in `out/probe-summary.json`;
 - the toy introspections: `introspect/`;
 - the first attempt, which failed on a digest helper and is kept as `out-attempt1/`.
@@ -786,8 +886,22 @@ one level up):
 | Program edit (`models/pump_composite.py`) | 10 of 12 differ | every path program's jaxpr and StableHLO differ; constants equal | 5/5 identical | differs |
 | Comment and docstring edits in traced code (`models/pump_composite.py`, `models/surface_tissue.py`) | 12/12 identical | all identical | 5/5 identical | identical (today's loader refuses) |
 
-**Constants.** Path programs close over 0 constants. Crossrev-style device-check texts close
-over 3, with shapes (4, 1), (4, 1) and (4,), and their values are absent from the text.
+**Probe 4** (`probe_entry.py`, `run_entry.sh`, `run_entry_observer2.sh`; P0 on five paths
+and H, compared with `entry-checkout-1`):
+
+| Tree | Captured programs (jaxpr, constants, StableHLO, arguments, compile arguments) | Host replay (`check_values`, `observe_history`, `summarize`) |
+| --- | --- | --- |
+| Checkout, second process | identical, 5 of 5 paths | identical |
+| Host-only edits | identical | identical |
+| Program edit | jaxpr and StableHLO differ on all 5 paths; arguments, constants and compile arguments equal | identical |
+| Observer edit, first form (scaled `times`, 0 at step 0) | identical | identical: the edit changed nothing (a probe flaw) |
+| Observer edit, second form (`observer-edit-2.patch`) | identical | `observe_history` differs in both worlds |
+
+**Constants.**
+- Path programs close over 0 constants.
+- Crossrev-style device-check texts close over 3, with shapes (4, 1), (4, 1) and (4,). By
+  digest, these are the bytes of `device_check_constants`' 4-element array (1e-10 each).
+- Those values are absent from the text; its scalar (0.002) appears as a literal.
 
 **Toy (JAX 0.11.1).**
 - **Constants.** Different constants give identical jaxpr text, differing constants and
@@ -800,5 +914,10 @@ over 3, with shapes (4, 1), (4, 1) and (4,), and their values are absent from th
   - Two fresh processes gave equal bytes.
   - The optimized HLO names the source file and changed when the defining line moved.
 
-**Resources.** Units `cells-ccont-probe1`, `-probe2`, `-consts`, `-serial` and `-probe3` on
-CPU 4: peaks of 0.25–0.31 GB per unit, with no OOM kills.
+**Resources.**
+- Units `cells-ccont-probe1`, `-probe2`, `-consts`, `-serial`, `-probe3`, `-probe4` and
+  `-probe4b`, on CPU 4.
+- Each unit's journal reports its memory peak: 0.07–0.35 GB where reported (`-consts`
+  reported none).
+- No unit's journal reports an out-of-memory kill. The units were collected on exit, so
+  their `memory.events` files no longer exist; the statement rests on the journal.
