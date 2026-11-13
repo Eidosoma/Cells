@@ -342,14 +342,17 @@ def capacitor_change(state, p, *, xp):
     Returns the charge increments, the plate-charge changes and the patch-voltage changes.
     The electrode ledger books differences of these plate charges between consecutive
     states (surface_pump.electrode_increment, injection, replacement) and checks the sum
-    against them, so every evaluation of one state must give the same bits. Two measures
-    make them one computation:
-    * the species are added explicitly in species order. XLA leaves the order of a reduce
-      unspecified, and on the Xenopus egg it chose differently at the start and at the end
-      of @3's step, so the electrode increments stopped telescoping (7e-22 C per step;
-      v2 design §3, S3 prerequisite (c));
-    * on the device the amounts pass an optimization barrier, so the sum never fuses with
-      the computation of the state, and never recomputes it.
+    against them, so every evaluation of one state must give the same bits. The species
+    are therefore added explicitly in species order. XLA leaves the order of a reduce
+    unspecified, and on the Xenopus egg it chose differently at the start and at the end
+    of @3's step, so the electrode increments stopped telescoping (7e-22 C per step; v2
+    design §3, S3 prerequisite (c)).
+    Known exposure: XLA may still fuse the sum with the computation of the state, and
+    recompute the state's amounts inside that kernel. On the CPU the recomputed amounts
+    have equalled the stored ones, but nothing guarantees it; the egg-scale regression test
+    (tests/unit/test_capacitor_change.py) guards it. An optimization barrier on the amounts
+    would close the exposure, but it changes the derivative programs: the step map's
+    Jacobian in W1's and W2's stationary judges.
     charge_increment, which the field solve uses, is unchanged. NumPy sums axis 0 in the
     same order, except for a single column of 8 or more species. Exact on the CPU when
     valences have magnitude 0, 1, 2, 4 or 8, which makes z n exact; the kernels contract
@@ -360,8 +363,6 @@ def capacitor_change(state, p, *, xp):
     their electrode ledgers still rest on the bound. Not claimed for GPUs.
     """
     amount, outside = state.amount_increment, state.extracellular_amount_increment
-    if xp is jnp:
-        amount, outside = jax.lax.optimization_barrier((amount, outside))
     q = CHARGE_PER_FMOL * xp.concatenate(
         (_species_sum(p.valence, amount), _species_sum(p.valence, outside))
     )
