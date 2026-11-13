@@ -961,6 +961,22 @@ The tolerance rule follows G2-Q1 and S3: 3 × (engine step term + reference term
 pinned at registration from development runs that are disclosed. The judged run is made once,
 from a clean snapshot.
 
+**Rulings for the protocol (the lead, 13 November, S5a part 2):**
+- **Q2's scale.** 64 eps × R-ops' own magnitudes, so the reference sets the tolerance scale, not
+  the code under test.
+- **Q3's timing.** Q3 compares only records strictly after each division instant. The instant
+  itself is Q2's, on each world's events.
+- **Q3's reference term.** R-tissue runs with atol scaled to the world: its `SMALL` set on the
+  compact world. Its default egg-scale set leaves about 3.7e-10 V in Vm there. The reference
+  term is measured against a set 1000 times tighter, as in S3.
+- **The references' independence.** R-ops (`validation/division/partition_reference.py`) and
+  R-tissue (`validation/division/cleft_tissue_reference.py`) land on main when S5a's
+  implementation is complete. Then they are run, and their source is not read while S5a's
+  qualification is open. A disagreement goes to the lead as a question about Appendix A; the
+  ruling enters Appendix A.
+- **The bright line.** After the merge, `validation.division.cleft_tissue_crosscheck`, a new J1
+  reader, joins the J1 module list of `tests/unit/test_j2_bright_line.py`.
+
 ### 8.4 Shared code: crossrev and D148
 - **What changes.** `contract.py`, `pump_composite.py` and `pump_composite_adapter.py` are
   shared by every composition. Every S5 change is a static branch (a closer, a retiring
