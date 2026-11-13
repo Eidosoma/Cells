@@ -381,20 +381,25 @@ rank update does not fit. Reuse does: in the hold the operator moves by under 5 
 
 Larger tissues are then limited by transport and memory rather than by n³.
 
-### 6.5 Changes that need no new method
+### 6.5 Definition-invariant waste: candidates (parked)
 
-Some definition-invariant work in §4 could be bound once:
-- the factor's per-step copy;
-- C @ boundary;
-- the junction product of an exact zero;
-- the floor's absolute incidences.
+These change `@3`'s step program without changing the method. They are parked by the lead
+(13 November): each needs its own round under D148 (an in-place fix to shared qualified code)
+with a crossrev renewal, sequenced after the volume-ledger guards land. Costs are CPU, hold
+world, from single-step programs. Inside a window's scan the compiler may already hoist some
+of them (§4).
 
-Each must still be shown bitwise (a guard like D147's guard 1) before it can land without a
-new ID. Adding an exact zero or skipping a copy is likely bitwise. Moving a product from the
-device to the host is not.
+| Candidate | Cost seen | Change | Expected bitwise status |
+| --- | --- | --- | --- |
+| C @ 0 in the potential-rate capacitor solve | one dense 825² product per field solve | Skip the product when the boundary is statically zero | Bitwise: C @ 0 is exactly 0, and q − 0 = q, signed zeros included |
+| Junction product of the offset Jacobian, an exact zero when no floating group holds a cell | 1.9 ms per Newton iteration | Skip it when the bound junction incidence is all zero (decided at bind time) | Bitwise in value. matrix + 0 = matrix, but an entry of −0.0 becomes +0.0, so the guard must compare the signs of zero too |
+| \|face incidence\| and \|junction incidence\| in version 3's floor | small | Bind them once | Bitwise: abs is exact |
+| The bound capacitor factor's per-step copy | about 7 ms per step | Bind the factor in the layout the triangular solve takes | Likely bitwise if the solve's call and order are unchanged and only the stored layout moves; not if it becomes a transposed solve |
+| C @ boundary in the base capacitor solve (boundary voltages are layout leaves) | one dense 825² product per field solve | Bind once | Not bitwise in general: a host or separately compiled product may sum in another order. It would need tolerance equality and a new ID, or a guard showing the bound value equals the in-step one |
+| Masks, clamp/free, diag(~free) | cheap | Bind once | Bitwise (exact operations) |
+| The four dense zero matrices the face Laplacian is scattered into | part of the 5.7 ms build | Scatter straight into one bound pattern | Not bitwise: the scatters' summation order changes (that belongs to §6.1, not here) |
 
-Their cost inside a window's scan is unverified (§4): the compiler may already hoist some of
-them.
+A guard like D147's guard 1 shows each bitwise claim on the guarded worlds before it lands.
 
 ## 7. Measurements before any field-solver code
 

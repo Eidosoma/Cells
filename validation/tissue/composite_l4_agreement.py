@@ -5,10 +5,14 @@ validation/betse/backend_variant.py. That module's tolerance helper is not impor
 it sits beside BETSE-side modules (AGENTS.md), so up1 is restated below. The variant keeps
 each protocol's worlds, quantities, references and judge. It adds measured backend terms:
 
-* backend |CPU reference - L4 run A| and run-to-run |A - B|, per world and quantity. Each
-  part uses its own difference measure: W1 absolute, max over records; W2 volume and route
-  cycles relative and voltage absolute, per arm and branch; G2-Q1 the judge's own
-  worst-difference function;
+* three blind L4 repeats A, B and D before the judged run C. The backend term is the
+  largest |CPU reference - X| over the three; the run-to-run term is the largest difference
+  between two of them (A-B, A-D, B-D), per world and quantity. One pair is not enough: on
+  the L4 dispatch test's saved windows a further run exceeded 3 x one pair's spread in 2.8%
+  of field entries (up to 13.6x), against 1.3% (up to 6.05x) for the spread of three runs
+  (window-timing-20261112-01/results/l4-repeats.json). Each part uses its own difference
+  measure: W1 absolute, max over records; W2 volume and route cycles relative and voltage
+  absolute, per arm and branch; G2-Q1 the judge's own worst-difference function;
 * a tolerance that is 3 x a sum of terms (W1's trajectories, G2-Q1) becomes
   max(registered, up1(3 x (registered / 3 + backend + run-to-run))). A fixed tolerance
   (W1's stationary bounds, W2) becomes max(registered, up1(3 x (backend + run-to-run))).
@@ -18,23 +22,31 @@ each protocol's worlds, quantities, references and judge. It adds measured backe
   (or a fixed tolerance), or if a W1 or W2 convergence or a W2 classification changed.
   Diagnose instead; do not register;
 * verdict: each qualification's own driver runs on C with the variant protocol written
-  here (its --protocol). C against the CPU reference is reported, not judged.
+  here (its --protocol). C against the CPU reference is reported, not judged; so is
+  |A - C| over the run-to-run term, per quantity (the deviation action): a judged run's
+  own scatter beyond the repeats' shows there.
 
 Actions:
   run --part {w1,w2,g2} --output FILE [--worlds NAME,...]
       the part's judged quantities (raw engine values) with the backend used
-  terms --part P --reference CPU --runs A B --output FILE
-      measured terms; W2 also reads the qualification's own w2-judge.json. Each of CPU, A
-      and B is one file or a comma-separated list of the files of one run split over GPU
-      gaps with run --worlds: they are merged (each world once, one backend), and A and B
-      must cover the reference's worlds exactly
+  terms --part P --reference CPU --runs A B D --output FILE
+      measured terms, with each repeat's backend term and each pair's run-to-run term; W2
+      also reads the qualification's own w2-judge.json. Each of CPU, A, B and D is one file
+      or a comma-separated list of the files of one run split over GPU gaps with run
+      --worlds: they are merged (each world once, one backend), and A, B and D must cover
+      the reference's worlds exactly
   variant --part P --terms FILE --output DIR
-      variant.json (tolerances, stop rule, report rows) and protocol.json
+      variant.json (tolerances, stop rule, report rows with every repeat's and pair's
+      term, the three repeats' files) and protocol.json
+  deviation --part P --terms FILE --judged C --output FILE
+      |A - C| per quantity (the part's own measure) and its ratio to the run-to-run term,
+      A being the terms' first repeat
 Everything written is PROPOSED until the lead registers it.
 """
 
 import argparse
 import copy
+import itertools
 import json
 import math
 import platform
@@ -50,6 +62,7 @@ if __name__ == "__main__":
             sys.path.insert(0, str(entry))
 
 MARGIN = 3.0
+REPEATS = ("A", "B", "D")  # The blind L4 repeats measured before the judged run C.
 TISSUE = ROOT / "validation" / "tissue"
 FILES = dict(
     w1=("pump_water_predictions.json", "pump_water_protocol.json"),
@@ -283,10 +296,10 @@ def load_runs(part, paths):
     return merged, datas[0].get("backend")
 
 
-def same_worlds(part, reference, a, b):
-    """Refuse runs that do not cover the reference's worlds exactly."""
+def same_worlds(part, reference, **runs):
+    """Refuse runs (by label: A, B, D or C) that do not cover the reference's worlds exactly."""
     expected = world_keys(part, reference)
-    for label, run in (("A", a), ("B", b)):
+    for label, run in runs.items():
         found = world_keys(part, run)
         if found != expected:
             missing, extra = sorted(expected - found), sorted(found - expected)
@@ -347,9 +360,84 @@ def terms_g2(x, y):
 TERMS = dict(w1=terms_w1, w2=terms_w2, g2=terms_g2)
 
 
-def measured(part, reference, a, b):
-    """The backend term (reference against A) and the run-to-run term (A against B)."""
-    return dict(backend=TERMS[part](reference, a), run_to_run=TERMS[part](a, b))
+def worst(trees):
+    """The elementwise worst of term trees of one part: the largest number, any change."""
+    first = trees[0]
+    if isinstance(first, dict):
+        keys = list(first)
+        for tree in trees[1:]:
+            keys += [k for k in tree if k not in keys]
+        return {k: worst([t[k] for t in trees if k in t]) for k in keys}
+    if isinstance(first, bool):
+        return any(trees)
+    return max(trees)
+
+
+def measured(part, reference, *runs):
+    """The terms of the three L4 repeats A, B and D (REPEATS), in that order.
+
+    backend: the largest |reference - X| over the repeats; run_to_run: the largest
+    difference between two of them; with each repeat's backend term (backend_each) and each
+    pair's run-to-run term (run_to_run_pairs), so a variant records all three.
+    """
+    if len(runs) != len(REPEATS):
+        raise ValueError(
+            f"{part}: the terms take {len(REPEATS)} L4 repeats ({', '.join(REPEATS)}), "
+            f"not {len(runs)}"
+        )
+    each = {x: TERMS[part](reference, run) for x, run in zip(REPEATS, runs, strict=True)}
+    pairs = {
+        f"{x}-{y}": TERMS[part](runs[i], runs[j])
+        for (i, x), (j, y) in itertools.combinations(enumerate(REPEATS), 2)
+    }
+    return dict(
+        backend=worst(list(each.values())),
+        run_to_run=worst(list(pairs.values())),
+        backend_each=each,
+        run_to_run_pairs=pairs,
+    )
+
+
+def ratios(deviation, run_to_run, path=()):
+    """[(path, |A - C|, run-to-run, ratio or None)] over every numeric quantity; the ratio
+    is None where the repeats agreed exactly but C differs (run-to-run 0, |A - C| > 0)."""
+    if isinstance(deviation, dict):
+        rows = []
+        for key, value in deviation.items():
+            inner = run_to_run.get(key, {}) if isinstance(run_to_run, dict) else {}
+            rows += ratios(value, inner, (*path, key))
+        return rows
+    if isinstance(deviation, bool) or deviation is None:
+        return []
+    spread = run_to_run if isinstance(run_to_run, int | float) else 0.0
+    ratio = deviation / spread if spread > 0 else (0.0 if deviation == 0 else None)
+    return [("/".join(path), deviation, spread, ratio)]
+
+
+def changes(tree, path=()):
+    """Paths of the changed convergences or classifications in a term tree."""
+    if isinstance(tree, dict):
+        return [p for k, v in tree.items() for p in changes(v, (*path, k))]
+    return ["/".join(path[:-1])] if path and path[-1] == "changed" and tree is True else []
+
+
+def deviation(part, a, c, run_to_run):
+    """|A - C| per quantity (the part's own measure) over the run-to-run term."""
+    terms = TERMS[part](a, c)
+    rows = ratios(terms, run_to_run)
+    finite = [r for _, _, _, r in rows if r is not None]
+    return dict(
+        deviation=terms,
+        rows=[dict(item=p, deviation=d, run_to_run=s, ratio=r) for p, d, s, r in rows],
+        summary=dict(
+            quantities=len(rows),
+            largest_ratio=max(finite, default=0.0),
+            above_1=sum(r > 1 for r in finite),
+            above_3=sum(r > 3 for r in finite),
+            unbounded=[p for p, _, _, r in rows if r is None],
+            changed=changes(terms),
+        ),
+    )
 
 
 # ------------------------------------------------------------------ variant
@@ -363,7 +451,9 @@ def widen(tolerance, backend, run_to_run, *, summed):
     return new, backend > (base if summed else tolerance)
 
 
-def _row(rows, name, tolerance, backend, run_to_run, *, summed):
+def _row(rows, name, tolerance, backend, run_to_run, *, summed, each, pairs):
+    """One tolerance's report row, with every repeat's backend term and every pair's
+    run-to-run term beside the largest of each (the ones the rule uses)."""
     new, stop = widen(tolerance, backend, run_to_run, summed=summed)
     rows.append(
         dict(
@@ -372,6 +462,8 @@ def _row(rows, name, tolerance, backend, run_to_run, *, summed):
             registered_sum=tolerance / MARGIN if summed else None,
             backend=backend,
             run_to_run=run_to_run,
+            backend_each=each,
+            run_to_run_pairs=pairs,
             tolerance=new,
             widening=new / tolerance,
             stop=stop,
@@ -380,24 +472,52 @@ def _row(rows, name, tolerance, backend, run_to_run, *, summed):
     return new
 
 
+def _largest(entries, bound):
+    """The largest value of one bound over worlds (0 where no world converged both)."""
+    return max((e.get(bound, 0.0) for e in entries.values()), default=0.0)
+
+
 def _fixed(rows, protocol_bounds, families, prefix):
-    """Fixed bounds (W1 stationary, W2): the maxima over worlds of each term."""
+    """Fixed bounds (W1 stationary, W2): the maxima over worlds of each term.
+
+    families: backend and run_to_run (the worst over repeats and pairs, world by world),
+    and backend_each and run_to_run_pairs ({label: that repeat's or pair's worlds}).
+    """
     changed = [k for k, v in families["backend"].items() if v["changed"]]
     changed += [k for k, v in families["run_to_run"].items() if v["changed"]]
     bounds = {b for entry in families["backend"].values() for b in entry if b != "changed"}
     for bound in sorted(bounds):
-        backend = max(e.get(bound, 0.0) for e in families["backend"].values())
-        again = max(e.get(bound, 0.0) for e in families["run_to_run"].values())
         protocol_bounds[bound] = _row(
-            rows, f"{prefix}{bound}", protocol_bounds[bound], backend, again, summed=False
+            rows,
+            f"{prefix}{bound}",
+            protocol_bounds[bound],
+            _largest(families["backend"], bound),
+            _largest(families["run_to_run"], bound),
+            summed=False,
+            each={x: _largest(e, bound) for x, e in families["backend_each"].items()},
+            pairs={x: _largest(e, bound) for x, e in families["run_to_run_pairs"].items()},
         )
     return changed
 
 
 def variant(part, protocol, terms):
-    """The variant protocol (the part's own format) and its report rows."""
+    """The variant protocol (the part's own format) and its report rows.
+
+    terms: measured()'s, or a terms file's (which also names the repeats' files). Terms of
+    fewer than the three repeats are refused.
+    """
+    each, pairs = terms.get("backend_each", {}), terms.get("run_to_run_pairs", {})
+    if sorted(each) != sorted(REPEATS) or len(pairs) != math.comb(len(REPEATS), 2):
+        raise ValueError(
+            f"{part}: the terms do not hold the {len(REPEATS)} repeats {', '.join(REPEATS)} "
+            "(terms from one pair are not accepted)"
+        )
     out, rows, changed = copy.deepcopy(protocol), [], []
     b, r = terms["backend"], terms["run_to_run"]
+
+    def at(trees, *path):
+        return {label: _at(tree, path) for label, tree in trees.items()}
+
     if part == "w1":
         for name, quantities in b["trajectories"].items():
             for key, tolerance in protocol["tolerances"][name].items():
@@ -408,12 +528,20 @@ def variant(part, protocol, terms):
                     quantities[key],
                     r["trajectories"][name][key],
                     summed=True,
+                    each=at(each, "trajectories", name, key),
+                    pairs=at(pairs, "trajectories", name, key),
                 )
         if b["stationary"]:
-            families = dict(backend=b["stationary"], run_to_run=r["stationary"])
+            families = dict(
+                backend=b["stationary"],
+                run_to_run=r["stationary"],
+                backend_each=at(each, "stationary"),
+                run_to_run_pairs=at(pairs, "stationary"),
+            )
             changed = _fixed(rows, out["stationary"], families, "P2_stationary/")
     elif part == "w2":
-        changed = _fixed(rows, out["stationary"], dict(backend=b, run_to_run=r), "")
+        families = dict(backend=b, run_to_run=r, backend_each=each, run_to_run_pairs=pairs)
+        changed = _fixed(rows, out["stationary"], families, "")
     else:
         pinned = out["pinned_tolerances"]["cases"]
         for name, by_key in b.items():
@@ -428,6 +556,8 @@ def variant(part, protocol, terms):
                     by_key[key],
                     r[name][key],
                     summed=True,
+                    each=at(each, name, key),
+                    pairs=at(pairs, name, key),
                 )
     stop = changed + [row["item"] for row in rows if row["stop"]]
     # The protocol's own fields (its status included) are kept; the variant's are here.
@@ -436,7 +566,16 @@ def variant(part, protocol, terms):
         base=BASES[part],
         rule="max(registered, up1(3 x (registered sum + backend + run-to-run))); fixed "
         "tolerances max(registered, up1(3 x (backend + run-to-run))); registered kept "
-        "exactly when nothing is added",
+        "exactly when nothing is added; backend: the largest |reference - X| over the L4 "
+        "repeats A, B and D; run-to-run: the largest difference between two of them",
+        repeats=dict(
+            labels=list(REPEATS),
+            reference=terms.get("reference"),
+            runs=dict(zip(REPEATS, terms["runs"], strict=True)) if "runs" in terms else None,
+            backends=dict(zip(REPEATS, terms["backends"], strict=True))
+            if "backends" in terms
+            else None,
+        ),
         stop=bool(stop),
         stop_items=stop,
         rows=rows,
@@ -469,12 +608,17 @@ def main(argv=None):
     two = sub.add_parser("terms")
     two.add_argument("--part", choices=tuple(RUNS), required=True)
     two.add_argument("--reference", type=files, required=True)
-    two.add_argument("--runs", type=files, nargs=2, required=True)
+    two.add_argument("--runs", type=files, nargs=len(REPEATS), required=True, help="A B D")
     two.add_argument("--output", type=Path, required=True)
     three = sub.add_parser("variant")
     three.add_argument("--part", choices=tuple(RUNS), required=True)
     three.add_argument("--terms", type=Path, required=True)
     three.add_argument("--output", type=Path, required=True)
+    four = sub.add_parser("deviation")
+    four.add_argument("--part", choices=tuple(RUNS), required=True)
+    four.add_argument("--terms", type=Path, required=True)
+    four.add_argument("--judged", type=files, required=True, help="the judged run C")
+    four.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.action == "run":
         import jax
@@ -487,18 +631,38 @@ def main(argv=None):
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(record, indent=1) + "\n")
     elif args.action == "terms":
-        (reference, _), (a, backend_a), (b, backend_b) = (
-            load_runs(args.part, paths) for paths in (args.reference, *args.runs)
-        )
-        same_worlds(args.part, reference, a, b)
+        reference, _ = load_runs(args.part, args.reference)
+        loaded = [load_runs(args.part, paths) for paths in args.runs]
+        runs = [quantities for quantities, _ in loaded]
+        same_worlds(args.part, reference, **dict(zip(REPEATS, runs, strict=True)))
         record = dict(
             part=args.part,
             reference=[str(p) for p in args.reference],
+            labels=list(REPEATS),
             runs=[[str(p) for p in paths] for paths in args.runs],
-            backends=[backend_a, backend_b],
-            **measured(args.part, reference, a, b),
+            backends=[backend for _, backend in loaded],
+            **measured(args.part, reference, *runs),
         )
         args.output.write_text(json.dumps(record, indent=1) + "\n")
+    elif args.action == "deviation":
+        terms = json.loads(args.terms.read_text())
+        a, _ = load_runs(args.part, terms["runs"][0])
+        c, backend = load_runs(args.part, args.judged)
+        same_worlds(args.part, a, C=c)
+        record = dict(
+            part=args.part,
+            terms=str(args.terms),
+            a=terms["runs"][0],
+            judged=[str(p) for p in args.judged],
+            backend=backend,
+            **deviation(args.part, a, c, terms["run_to_run"]),
+        )
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(record, indent=1) + "\n")
+        s = record["summary"]
+        print(args.part, s["quantities"], "quantities; largest |A - C| / run-to-run",
+              s["largest_ratio"], "; above 3:", s["above_3"], "; unbounded:",
+              len(s["unbounded"]), "; changed:", s["changed"])  # fmt: skip
     else:
         terms = json.loads(args.terms.read_text())
         out = variant(args.part, registered(args.part)[1], terms)
