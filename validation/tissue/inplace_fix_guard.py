@@ -15,6 +15,8 @@ Parts and their programs:
 * base, injection: crossrev's base and injection worlds (scalar, device checks);
 * egg: the Rm1 egg with its two pulses to 420 s (scalar; host checks recorded, not
   enforced, because without the fix its electrode ledger fails there);
+* base-recorded: crossrev's base world replacement_steady, which @3's dissipation check
+  refuses in both revisions, run with the host checks recorded (scalar, device checks);
 * qualification: G2-Q1's nine cases, W37, and the 825-node world as @3, as its empty
   composition, with closed water and with event-free replacement (scalar, device checks);
 * w1: W1's six judged trajectories at 1 ms (windowed, core/windows.run_windowed, as the
@@ -152,6 +154,16 @@ PARTS = {
         True,
     ),
     "egg": (_egg, "scalar-recorded", False),
+    # Base worlds that a host check refuses in both revisions, run with the checks recorded.
+    "base-recorded": (
+        lambda: {
+            k: (lambda v=v: v)
+            for k, v in _crossrev().worlds().items()
+            if k in ("replacement_steady",)
+        },
+        "scalar-recorded",
+        True,
+    ),
     "qualification": (_qualification, "scalar", True),
     "w1": (_w1, "windowed", False),
     "pump": (_pump, "scalar", True),
