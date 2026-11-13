@@ -111,6 +111,18 @@ def live_energy(state, q):
     return 0.5e12 * np.sum(c * v * v), phi
 
 
+def live_plates(state, q):
+    """[outside] the held nodes' plate charges (K phi) of the live graph, by the solve above."""
+    n, o = q.active.size, q.outside_active.size
+    _, phi = live_energy(state, q)
+    plates = np.zeros(o)
+    live = np.asarray(q.membrane_active)
+    for k in np.flatnonzero(live):
+        a, b = int(q.membrane_cell[k]), int(q.membrane_outside[k])
+        plates[b] -= q.membrane_capacitance[k] * (phi[a] - phi[n + b])
+    return np.where(q.reservoir, plates, 0.0)
+
+
 def test_pending_daughters_are_padding_at_the_view():
     _, model, state, p = bind(fx.divided())
     q = model.view(p, state, xp=np)
@@ -132,15 +144,47 @@ def test_every_ledger_is_zero_at_row_zero_with_pending_slots():
             assert np.all(np.asarray(value) == 0), name
 
 
-def test_the_capacitor_energy_is_referenced_to_the_initial_view():
-    """The composite's capacitor energy is 1/2 sum C V^2(t) - 1/2 sum C V^2(0) over live slots,
-    before the event and after it (an independent nodal solve)."""
-    _, model, state, p = bind(fx.divided())
-    e0, _ = live_energy(state, model.view(p, state, xp=np))
-    s = with_history(state, p)
-    for current in (s, divide(model, s, p)[0]):
+def live_slot_states(world):
+    """(model, p, the initial state, [states]) for §8.2's independent check of the t = 0 fix."""
+    if world == "two_partitions":
+        _, model, state, p = bind(fx.divided(second=0.003))
+        s = with_history(state, p)
+        first, ok = divide(model, s, p, due=(1.0, 0.0, 0.0))
+        assert ok
+        second, ok = divide(model, first, p, due=(1.0, 1.0, 1.0))
+        assert ok
+        return model, p, state, [s, first, second]
+    spec, model, state, p = bind(fx.cleft_divided())
+    values = fx.cs.control_values(spec, [fx.ONSET])
+    control = model.CONTROL_TYPE(*(np.asarray(v[0]) for v in values))
+    ins = next(op for op in model.operators if op.LAW_ID == fx.INSERTION2)
+    opened, ok = ins.event(
+        with_history(state, p), control, p, xp=np, view=lambda s: model.view(p, s, xp=np)
+    )
+    assert ok
+    grown, ok = ins.half_step(
+        opened, 0.5 * fx.DT, control, p, xp=np, view=model.view(p, opened, xp=np)
+    )
+    assert ok
+    born, ok = divide(model, grown, p)
+    assert ok
+    return model, p, state, [opened, grown, born]
+
+
+@pytest.mark.parametrize("world", ["two_partitions", "onset_and_partition"])
+def test_the_capacitor_energy_and_plates_are_referenced_to_the_initial_view(world):
+    """§8.2's independent check of the t = 0 fix, over live slots, by a nodal solve written here:
+    @3's declared term plus the correction plus E_ref is 1/2 sum C V^2(t) - 1/2 sum C V^2(0),
+    and the electrode residual is transferred - (plates(t) - plates(0)). The states: before any
+    event and after one and two partitions; after an onset, after an insertion on the open
+    furrow and after a partition (the cleft world)."""
+    model, p, state, states = live_slot_states(world)
+    q0 = model.view(p, state, xp=np)
+    e0, _ = live_energy(state, q0)
+    plates0 = live_plates(state, q0)
+    bound = adapter.inner_layout(p)
+    for current in states:
         q = model.view(p, current, xp=np)
-        bound = adapter.inner_layout(p)
         _, _, dv = adapter.tissue.capacitor_change(current, bound, xp=np)
         declared = 0.5e12 * np.sum(
             bound.membrane_capacitance * dv * (2 * bound.initial_membrane_voltage_V + dv)
@@ -148,6 +192,14 @@ def test_the_capacitor_energy_is_referenced_to_the_initial_view():
         energy = declared + model._view_energy_terms(current, p, xp=np)[0]
         e1, _ = live_energy(current, q)
         assert energy == pytest.approx(e1 - e0, rel=1e-9, abs=1e-12 * abs(e0))
+        residual = model.balances(current, p)["electrode"]
+        expected = np.where(
+            p.reservoir,
+            current.electrode_charge_transferred_C - (live_plates(current, q) - plates0),
+            0.0,
+        )
+        scale = np.max(np.abs(plates0)) + np.max(np.abs(live_plates(current, q)))
+        assert np.allclose(residual, expected, rtol=0, atol=1e-12 * scale)
 
 
 def test_a_symmetric_division_is_exact():
@@ -324,6 +376,16 @@ def add_pump(raw):
     raw["experiment"]["pump_controls"] = copy.deepcopy(base["experiment"]["pump_controls"])
 
 
+def extra_daughter_patch(raw):
+    patch = copy.deepcopy(next(m for m in raw["model"]["membranes"] if m["id"] == "membrane_0_d1"))
+    patch["id"] = "extra_d1"
+    raw["model"]["membranes"].append(patch)
+    raw["experiment"]["membrane_controls"].append(
+        dict(membrane_id="extra_d1", schedule=[dict(time=0.0, availability=1.0)])
+    )
+    raw["execution"]["membrane_capacity"] += 1
+
+
 def unborn_parent(raw):
     raw2 = fx.divided(second=0.003)
     raw.clear()
@@ -339,12 +401,47 @@ def unborn_parent(raw):
         (perturb_volume, "anchor rule"),
         (drop_population, "population"),
         (add_pump, "Pumps"),
+        (extra_daughter_patch, "patch 'extra_d1' of d1 is unmapped"),
         (unborn_parent, "after its parent's birth"),
     ],
 )
 def test_definition_refusals(change, message):
     with pytest.raises(ConfigError, match=message):
         parse_spec(edited(change))
+
+
+def test_injection_into_a_daughter_closes_every_ledger():
+    """electrode_current_injection@1 beside the partition (Q10's variant): a current into d1
+    from its birth on. Every ledger closes at row 0, across the event and after injection
+    half-steps at the view; a current into d1 before its birth is refused."""
+    spec, model, state, p = bind(fx.divided(injection=1e-12))
+    coulombs = ("charge", "electrode", "global_charge")
+
+    def closes(s, label):
+        for name, value in model.balances(s, p).items():
+            worst = np.max(np.abs(np.asarray(value)), initial=0.0)
+            assert worst <= (1e-26 if name in coulombs else 1e-15), (label, name, worst)
+
+    closes(state, "row 0")
+    born, ok = divide(model, state, p)
+    assert ok
+    closes(born, "after the division")
+    values = fx.cs.control_values(spec, [fx.EVENT])
+    control = model.CONTROL_TYPE(*(np.asarray(v[0]) for v in values))
+    injection = next(op for op in model.operators if op.LAW_ID == fx.INJECTION)
+    current = born
+    for _ in range(4):
+        current, ok = injection.half_step(
+            current, 0.5 * fx.DT, control, p, xp=np, view=model.view(p, current, xp=np)
+        )
+        assert ok
+    moved = np.asarray(current.amount_increment) - np.asarray(born.amount_increment)
+    assert np.abs(moved[:, 1]).max() > 0 and not moved[:, [0, 2]].any()  # Into d1 only.
+    closes(current, "after injection")
+    early = fx.divided()
+    fx.inject(early, "d1", 1e-12, 0.001)
+    with pytest.raises(ConfigError, match="outside its living interval"):
+        parse_spec(early)
 
 
 def test_a_provider_beside_a_closer_is_refused():

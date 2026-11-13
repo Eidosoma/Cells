@@ -11,10 +11,12 @@ from cells.models.operators.contract import check_declarations
 from cells.models.operators.current_injection import ElectrodeCurrentInjection
 from cells.models.operators.k_anion_symport import KAnionSymport
 from cells.models.operators.membrane_insertion import ScheduledMembraneInsertion
+from cells.models.operators.membrane_insertion_v2 import ScheduledMembraneInsertionV2
 from cells.models.operators.membrane_state import MembraneEntityState
 from cells.models.operators.osmotic_water import OsmoticWater
 from cells.models.operators.partition import IsopotentialPartition
 from cells.models.operators.restricted_lumen import RestrictedCleftLumen
+from cells.models.operators.restricted_lumen_v2 import RestrictedCleftLumenV2
 
 OPERATORS = {
     op.LAW_ID: op
@@ -28,5 +30,7 @@ OPERATORS = {
         check_declarations(RestrictedCleftLumen)(),
         check_declarations(IsopotentialPartition)(),
         check_declarations(CytoplasmicBridgeClosure)(),
+        check_declarations(ScheduledMembraneInsertionV2)(),
+        check_declarations(RestrictedCleftLumenV2)(),
     )
 }

@@ -43,7 +43,9 @@ non-finite value) refuses the step, which returns the full prior state.
 
 Refused at the definition (§3.8): pumps on a dividing cell; a volume provider (CONFLICTS_VIEW);
 replacement, insertion@1 and lumen@1 in the composition; unmapped parent patches, populations or
-contacts (a bridge between two daughters is not a contact to map); inexact anchors; a slot that is
+contacts (a bridge between two daughters is not a contact to map); a daughter's patch, population
+or contact that no map makes (a contact may be another division's target or a bridge); inexact
+anchors; a slot that is
 the parent or the daughter of two divisions; a division of an unborn parent; injection current
 into a slot outside its living interval.
 
@@ -309,6 +311,7 @@ def check_structure(base, declaration):
     if len(set(parents)) != len(parents) or len(set(daughters)) != len(daughters):
         raise ConfigError("A cell is the parent of at most one division and a daughter of one")
     links = bridges(base, declaration)
+    contact_targets = {x for d in declaration.divisions for e in d.contacts for x in e.daughters}
     for d in declaration.divisions:
         for cell in (d.parent, *d.daughters):
             if cell not in cells:
@@ -429,6 +432,24 @@ def check_structure(base, declaration):
             one_j, two_j = (junctions[x] for x in e.daughters)
             if not exact_split(source.area_m2, e.fraction, one_j.area_m2, two_j.area_m2):
                 raise ConfigError(f"Division {d.id}: contact areas follow the anchor rule")
+        # The daughters hold only mapped slots: an unmapped one would open at birth with no
+        # anchor from the parent (contacts may also be another division's targets or a bridge).
+        made_patches = {x for k in d.patches for x in k.daughters}
+        made_populations = {x for c in d.populations for x in c.daughters}
+        for daughter in d.daughters:
+            for p in m.membranes:
+                if p.inside == daughter and p.id not in made_patches:
+                    raise ConfigError(f"Division {d.id}: patch {p.id!r} of {daughter} is unmapped")
+            for c in m.channels:
+                if membranes[c.membrane_id].inside == daughter and c.id not in made_populations:
+                    raise ConfigError(
+                        f"Division {d.id}: population {c.id!r} of {daughter} is unmapped"
+                    )
+            for j in m.junctions:
+                if daughter in (j.sender, j.receiver) and j.id not in contact_targets | links:
+                    raise ConfigError(
+                        f"Division {d.id}: contact {j.id!r} of {daughter} is unmapped"
+                    )
         # Mismatch carriers: charged species, transference numbers summing to 1.
         uneven = any(k.fraction != f for k in d.patches)
         total = sum(t for _, t in d.mismatch_carriers)
@@ -955,10 +976,23 @@ class IsopotentialPartition(Operator):
         return 8 * ((2 * s + 4) * (x.capacity + x.membrane_capacity + x.channel_capacity))
 
     def summary(self, spec, declaration, schedule, history):
+        """The divisions, the lineage, and @3's history totals at the last row with the record
+        added (§3.5: the retired slots' transfers and heat still count)."""
         applied = None
         if hasattr(history, "division_applied") and len(np.asarray(history.division_applied)):
             applied = np.asarray(history.division_applied)[-1]
+        totals = {}
+        if hasattr(history, "division_applied") and len(np.asarray(history.division_applied)):
+            for field, record in RECORD.items():
+                inner = np.asarray(getattr(history, field))[-1]
+                kept = np.asarray(getattr(history, record))[-1]
+                totals[field] = dict(
+                    live=float(np.sum(inner)),
+                    record=float(np.sum(kept)),
+                    total=float(np.sum(inner + kept)),
+                )
         return {
+            "partition_history_totals": totals,
             "partition_law": LAW_ID,
             "partition_divisions": {
                 d.id: dict(

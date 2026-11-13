@@ -121,10 +121,11 @@ class PatchSchedule:
 # ------------------------------------------------------------------ definition
 
 
-def parse_insertion(raw, base):
+def parse_insertion(raw, base, *, law=LAW_ID):
+    """The declaration (law: this law's ID, or scheduled_membrane_insertion@2's; host side)."""
     _fields(raw, {"law", "patches"}, "insertion")
-    if raw["law"] != LAW_ID:
-        raise ConfigError("Insertion requires law " + LAW_ID)
+    if raw["law"] != law:
+        raise ConfigError("Insertion requires law " + law)
     if type(raw["patches"]) is not list or not raw["patches"]:
         raise ConfigError("Insertion declares its patches in a non-empty list")
     membranes = [p.id for p in base.model.membranes]
@@ -151,7 +152,7 @@ def parse_insertion(raw, base):
         patches.append(InsertedPatch(patch, cd, tuple(rows)))
     if len({p.membrane_id for p in patches}) != len(patches):
         raise ConfigError("One insertion entry per patch")
-    return Insertion(LAW_ID, tuple(patches))
+    return Insertion(law, tuple(patches))
 
 
 def insertion_to_dict(declaration):

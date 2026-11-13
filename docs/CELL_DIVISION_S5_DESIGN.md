@@ -443,6 +443,9 @@ so no whole-content event allowance is needed: this improves on design §5.4's e
 - **Anchors and fractions.**
   - Anchors that are not exact fractions, or domain parameters that differ (§3.2).
   - f or a_k outside (0, 1).
+  - As built (S5a part 2): a daughter's patch, population or contact that no map makes. It
+    would open at birth with no anchor from the parent. A contact may also be another
+    division's target, or the bridge.
   - A daughter without a patch on a held bath: a floating component, which needs topology
     epochs.
 - **Mismatch carriers.** They must be charged species with t_s ≥ 0 and Σ t_s = 1, and are
@@ -608,6 +611,26 @@ either retires, its history in the partition's record (§2, §3.4).
 - **Populations on onset patches** become admissible: the padded-slot rule gives them law code
   0 until onset, which lifts the declared departure of design §6. Admitting them is deferred to
   S5b (decision 9). In S5a, insertion@2 keeps insertion@1's refusal.
+- **As built (S5a part 2, `operators/membrane_insertion_v2.py`).**
+  - The onset rule, at the definition:
+    - every onset patch facing a node opens at one time, on a cell live then;
+    - every other patch facing the node is closed at that time: a partition daughter born
+      later, or a cell already retired.
+  - Version 1 refuses an onset at a division's time.
+  - Rates against the partition's schedule: while a patch's rate is positive, its cell is
+    live.
+  - Order: insertion@2 precedes the partition, whose step-check share (R5) reads the area
+    inserted on the parent.
+  - The step check before any onset removes every patch facing an onset node. That includes
+    pending daughters' patches facing it, which @1 never had.
+  - The half-step is @1's law function, rewritten with the composite's view in place of @1's
+    own view and with its mask for liveness. @1's module is unchanged apart from two host-side
+    parameters (`parse_insertion`'s law, `parse_controls`' onset rule).
+  - Its ledger terms are its heat; the view's capacitor terms are the composite's (§5.3).
+  - Tests:
+    - `tests/unit/test_membrane_insertion_v2.py`. @2 reproduces @1's half-steps and ledgers
+      to 1e-14 on two clamps and on the cleft cell with a charged history;
+    - `tests/unit/test_cleft_division_runs.py` runs the furrow world.
 
 ### 5.2 `restricted_cleft_lumen@2`
 - **Target.** V = V_on + w (Σ_live A_k − A_on)/2, the sum over the facing patches live in the
@@ -622,6 +645,17 @@ either retires, its history in the partition's record (§2, §3.4).
 - **Shrinkage.** A target below the held volume by no more than rounding is treated as no fill.
   Shrinkage beyond rounding is refused as before.
 - **Debt.** The padded-slot test of the lumen owed since S3 runs here.
+- **As built (S5a part 2, `operators/restricted_lumen_v2.py`).**
+  - The target is computed as (w/2) Σ_live (A_k − A_k,declared). This is A.5's formula,
+    because the live facing patches' declared areas sum to A_on exactly by the anchor rule.
+    For one live patch it is @1's target bitwise.
+  - The shrinkage allowance is 8 eps × (w/2) × Σ_live A_k.
+  - The domain check has no view. It bounds the volume by every facing patch's growth, which
+    equals the live growth while closed patches hold none: pending daughters hold none, and
+    the partition moves a retired parent's growth to its daughters. A test asserts both.
+  - Admission reads insertion@2's onset patches and the partition's patch maps.
+  - Tests: `tests/unit/test_restricted_lumen_v2.py`, where @2 reproduces @1's fills on the
+    cleft cell to 1e-14.
 
 ### 5.3 The composite owns the energy rule at the view
 - **The rule.** The composite books `adapter.view_capacitor_terms` (energy and electrode) once

@@ -33,6 +33,7 @@ from cells.core.specs import parse_spec
 from cells.core.vector_windows import run_vector_windowed
 from cells.core.windows import WindowPolicy
 from cells.io import write_snapshot
+from cells.models.operators import partition
 from cells.models.registry import get_model
 from tests import partition_fixtures as fx
 from validation.tissue import composite_guard as guard
@@ -158,6 +159,49 @@ def test_the_manifest_names_the_closer(division_run, tmp_path):
     manifest = json.loads((tmp_path / "run" / "manifest.json").read_text())
     views = manifest["field_owners"]["views"]
     assert views["active"]["closers"] == [fx.PARTITION]
+
+
+def test_the_record_is_state_wherever_state_goes(division_run, tmp_path):
+    """Q11 on the written run, replayed on the host:
+    * the history rows carry the record;
+    * check_values on the saved history closes every ledger at the event row;
+    * the observer's record columns equal the history's;
+    * the summary's totals add the record;
+    * the negative control: a replay with the record zeroed fails at the first row after the
+      event.
+    A checkpoint after a partition carries the record too: its restart is bitwise
+    (test_restart_across_and_after_a_partition_is_bitwise)."""
+    from cells.core.errors import NumericalError
+    from cells.io import write_run
+
+    spec, value = division_run
+    model = get_model(spec.model)
+    write_run(tmp_path / "run", value)
+    saved = np.load(tmp_path / "run" / "trajectory.npz")
+    history = model.STATE_TYPE(*(saved[name] for name in model.STATE_TYPE._fields))
+    times = np.asarray(saved["accepted_times"])
+    after = times > fx.EVENT + 1e-12
+    record = np.asarray(history.partition_retired_membrane_heat_pJ)
+    assert (record[after, 0] > 0).all() and not record[~after].any()
+    steps = np.rint(times / fx.DT).astype(int)
+    diagnostics = model.check_values(history, spec, steps)
+    assert np.isfinite(diagnostics["max_energy_balance_relative"])
+    for name in partition.RECORD.values():
+        assert np.array_equal(saved[f"observed_{name}"], saved[name]), name
+    summary = json.loads((tmp_path / "run" / "summary.json").read_text())
+    totals = summary["partition_history_totals"]["membrane_dissipated_energy_pJ"]
+    final = model._adjusted(model.STATE_TYPE(*(v[-1] for v in history)), _layout(spec), xp=np)
+    assert totals["record"] > 0
+    assert totals["total"] == pytest.approx(float(np.sum(final.membrane_dissipated_energy_pJ)))
+    blank = history._replace(
+        **{k: np.zeros_like(getattr(history, k)) for k in partition.RECORD.values()}
+    )
+    with pytest.raises(NumericalError):
+        model.check_values(blank, spec, steps)
+
+
+def _layout(spec):
+    return get_model(spec.model).initial_values(spec)[1]
 
 
 def test_the_step_end_domain_runs_on_the_device_with_a_closer():
