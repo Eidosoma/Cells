@@ -5518,6 +5518,14 @@ runs, at candidate A: c_m 0.01 F/m² (1 µF/cm²), with NaV1.2 1e-6, Kir2.1 1e-8
 references agent from the appendix at 99fddc35. It computes block-site junction voltages
 independently, including below s·r_gj = 10, where the engine's junction law refuses.
 
+## D171: The subagent cap rises to seven
+
+2026-11-14, the user: "lets have the cap to 7". At most seven subagents work on disjoint files
+under the lead (AGENTS.md); D155 had set six. The seventh slot came from the user's request for
+a Syn3A minimal-cell agent (docs/SOTA_SYN3A.md, the user's brief) while all six were in use. The
+inner-model (@4) design note's agent, paused to keep within six, resumes. Memory per detached
+unit, `--oom-first`, and one GPU process at a time are unchanged.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

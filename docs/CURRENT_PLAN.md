@@ -48,7 +48,7 @@ experiment).
 | Field-solver interface | Designed; code waits for the GH200 numbers |
 | One production execution path, compile policy, registry | Not started. D147's policy for composite definitions landed on 14 November |
 
-**The working order** (D156; six agents from 14 November, D155):
+**The working order** (D156; six agents from 14 November, D155, and seven from that evening, D171):
 1. **Now, in parallel:** the conduction probe on the engine as it is (Track E); D150's judged
    qualification; D152's MG0c with a compiled composition; the coupling design (Track R).
 2. **Next:** one minimal inventory → effective control → measurable electrical-response case,
