@@ -10,7 +10,12 @@ field solver version 2:
   quiescent; it has no channels, so its programs compile in about 20 s;
 - release: surface_pump_v3_fixtures' padded release world made a composite with no operators
   (pump_composite_spec.frozen_definition), the world composite_crossrev's replacement_padded
-  starts from (two cells, five outside nodes, NaV1.2 channels, IMEX only).
+  starts from (two cells, five outside nodes, NaV1.2 channels, IMEX only);
+- replacement: composite_crossrev's replacement_padded made a composite, the operator-bearing
+  case: that world under scheduled_cell_replacement@1 with two own-template events. Stepped under
+  versions 2 and 3 through both events it ran bitwise alike with equal diagnostics, about 80 s a
+  program on a shared CPU, too long for a test (the advisor's check of 14 November:
+  /mnt/workspaces/Cells/architecture-block-20261114-01/check-round.json).
 """
 
 import copy
@@ -48,6 +53,23 @@ def minimal(end=None):
 
 def release():
     return cs.frozen_definition(v3fx.definition("release", solver=IMEX))
+
+
+def replacement():
+    """composite_crossrev's replacement_padded, built as it builds it, made a composite."""
+    from cells.core.cell_replacement_spec import exact_event_times
+    from validation.tissue import cell_replacement_fixtures as rfx
+
+    padded = v3fx.definition("release", solver=IMEX)
+    padded["experiment"]["end_time"] = 0.0012
+    padded["experiment"]["observation_times"] = [0.0, 0.0012]
+    p1, p2 = exact_event_times((4, 9), padded["execution"]["dt"])
+    own = [
+        rfx.template_from_cell(padded, "cell_0", "own_0"),
+        rfx.template_from_cell(padded, "cell_1", "own_1"),
+    ]
+    events = ((p1, "cell_0", "own_0", "n1"), (p2, "cell_0", "own_0", "n2"))
+    return cs.frozen_definition(rfx.with_replacement(padded, own, events))
 
 
 def with_solver(raw, solver):

@@ -9,10 +9,12 @@ initialise(spec).layout, set by finite extracellular space with floating compone
 
 D156: a resolved_pump_composite@1 definition follows its inner model, whose field solve it
 runs. The composite admits resolved_pump_tissue@3 alone as its inner model, so a new composite
-with a free offset declares version 3 too, and one with none keeps its own. No composite world
-of the repository's builders had a free offset when this was added (the crossrev sets, the
-division and species worlds, S5's egg and D150's fixtures), so none of their definitions
-changes; frozen definitions are never redeclared (the guards and judges run them as declared).
+with a free offset declares version 3 too, and one with none keeps its own. No
+resolved_pump_composite@1 world of the repository's builders had a free offset when this was
+added (D150's fixtures; the crossrev injection, volume, division and species sets; D152's
+reaction worlds; S5's egg), so none of their definitions changes. The free-offset worlds of the
+crossrev base and qualification sets carry the water and replacement IDs, already in the family,
+and those guards run them as declared; frozen definitions are never redeclared.
 
 Drivers offer CHOICES: "auto" follows D147; "2" and "3" declare that version explicitly,
 and "2" reproduces the definitions made before D147.

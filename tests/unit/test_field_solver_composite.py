@@ -2,8 +2,9 @@
 
 validation/tissue/field_solver_choice.py decides a composite by its inner model
 (resolved_pump_composite@1 admits resolved_pump_tissue@3 alone, which accepts field solver
-versions 2 and 3). On the two free-offset composites of tests/field_solver_fixtures.py (minimal
-and release), without stepping (the runs are test_field_solver_composite_runs.py):
+versions 2 and 3). On the three free-offset composites of tests/field_solver_fixtures.py
+(minimal, release and replacement, the last carrying scheduled_cell_replacement@1 and two
+events), without stepping (the runs are test_field_solver_composite_runs.py):
 1. a free-offset composite declares version 3 by default and is admitted: it binds the floor
    layout;
 2. a held-bath composite is unchanged, and so is every composite world of the crossrev
@@ -22,11 +23,17 @@ from cells.core import pump_composite_spec as cs
 from cells.core.specs import parse_spec
 from cells.core.state import initialise
 from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
-from tests.field_solver_fixtures import minimal, refused_across_the_change, release, with_solver
+from tests.field_solver_fixtures import (
+    minimal,
+    refused_across_the_change,
+    release,
+    replacement,
+    with_solver,
+)
 from validation.tissue import field_solver_choice as choice
 from validation.tissue import secreted_species_fixtures as fx
 
-FREE = dict(minimal=minimal, release=release)
+FREE = dict(minimal=minimal, release=release, replacement=replacement)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -38,6 +45,8 @@ def x64():
 def test_a_free_offset_composite_declares_version_3_and_is_admitted(name):
     built = FREE[name]()
     assert built["model"]["id"] == cs.MODEL_ID and choice.in_family(built)
+    laws = [op.get("law") or op.get("id") for op in built["model"]["operators"]]
+    assert laws == (["scheduled_cell_replacement@1"] if name == "replacement" else [])
     assert choice.free_field_offsets(built) == 1
     assert built["execution"]["field_solver"] == FACTORED_SOLVER_ID
     auto = choice.declare(built)
