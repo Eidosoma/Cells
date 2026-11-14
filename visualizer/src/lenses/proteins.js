@@ -240,15 +240,17 @@ export class ProteinLens {
       },
       filter: {
         title: "Evidence for a law",
-        unit: "laws",
+        unit: "records",
         items: atlas.evidence.filter((item) => item.count).map((item) => ({ id: item.id, label: item.label, title: item.description, count: item.count })),
         active: this.evidence,
       },
       card: {
         heading: "The proteins Cells models",
         stats: [[counts.units, "functional units"], [counts.laws, "laws"], [counts.genes, "candidate genes"]],
-        text: atlas.summary,
-        check: `Made on ${day(stamp.created)} at engine ${stamp.read_at}. ${lost ? `${lost} of its ${stamp.records} law records are no longer found` : `All ${stamp.records} law records are still found`} at main ${stamp.checked_at}.`,
+        text: `${atlas.summary} The inventory was made on ${day(stamp.created)}, at engine ${stamp.read_at}.`,
+        check:
+          `${lost ? `${lost} of its ${stamp.records} law records are no longer found` : `All ${stamp.records} of its law records are still found`} at main ${stamp.checked_at}.` +
+          (stamp.gained?.added ? ` The engine has gained ${stamp.gained.added} identifiers since, most under ${stamp.gained.where[0][0]}. The inventory has not reviewed them, so a law added since would be missing here.` : ""),
         sources: atlas.sources,
         notCopied: atlas.not_copied,
       },

@@ -6,7 +6,7 @@ const KIND_ORDER = ["modelled_by", "shown_as", "implements", "requires", "reads"
 // How a relation reads from the far end.
 const INVERSE = {
   modelled_by: "holds the law for",
-  shown_as: "is drawn for",
+  shown_as: "stands in the cell view for",
   implements: "is behind",
   requires: "is required by",
   reads: "is read by",

@@ -1,7 +1,7 @@
 {
   "format": "cells.visualizer.protein_atlas_overlay@1",
   "title": "Protein atlas",
-  "summary": "The molecular machines Cells models: its own inventory, linked to the public protein atlases.",
+  "summary": "From Cells' own law inventory, with links out to the public protein atlases.",
   "caveat": "Shapes are schematic, drawn from subunit counts, and not to scale. A grey form is a generic law: no protein is assigned.",
   "plan": {
     "path": "docs/PROTEIN_CATALOGUE_PLAN.md",

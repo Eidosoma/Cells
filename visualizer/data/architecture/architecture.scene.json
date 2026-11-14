@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T16:04:39Z",
-  "revision": "265ed66",
+  "generated_at": "2026-11-14T16:13:37Z",
+  "revision": "d1c0216",
   "revision_date": "2026-11-14",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -26,8 +26,8 @@
     "unit": 49
    },
    "by_status": {
-    "qualified": 35,
-    "landed": 8,
+    "qualified": 34,
+    "landed": 9,
     "established": 61,
     "planned": 21,
     "designed": 7,
@@ -331,7 +331,7 @@
  ],
  "proteins": {
   "title": "Protein atlas",
-  "summary": "The molecular machines Cells models: its own inventory, linked to the public protein atlases.",
+  "summary": "From Cells' own law inventory, with links out to the public protein atlases.",
   "caveat": "Shapes are schematic, drawn from subunit counts, and not to scale. A grey form is a generic law: no protein is assigned.",
   "stamp": {
    "inventory": "cells.protein_catalogue.law_inventory@2",
@@ -349,7 +349,25 @@
      "to": "emt_mirna_pair@1"
     }
    ],
-   "checked_at": "265ed66"
+   "gained": {
+    "added": 35,
+    "removed": 2,
+    "where": [
+     [
+      "models/operators",
+      26
+     ],
+     [
+      "models",
+      5
+     ],
+     [
+      "core",
+      3
+     ]
+    ]
+   },
+   "checked_at": "d1c0216"
   },
   "counts": {
    "units": 49,
@@ -1283,9 +1301,9 @@
    "label": "Species turnover",
    "kind": "operator",
    "group": "operators",
-   "status": "qualified",
+   "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Production and clearance of secreted molecules, inside cells and between them. Its first-order clearance is numerically qualified, together with the transport between cells (D150 v1). Production is guarded by tests only.",
+   "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only.",
    "detail": "Operator scheduled_species_turnover@1: production and first-order clearance of neutral species.",
    "facts": [
     [
@@ -2941,8 +2959,15 @@
    "group": "laws",
    "status": "designed",
    "as_of": "2026-11-14",
-   "plain": "A species amount in the inventory sets how available a channel or junction is, so chemistry can change electrical behaviour. In design.",
+   "plain": "A species amount in the inventory sets how available a junction or channel is, so chemistry can change electrical behaviour. The design is accepted (14 November 2026): junctions first, with channels pending. Nothing is implemented yet.",
    "sources": [
+    {
+     "path": "docs/INVENTORY_COUPLING_DESIGN.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The inventory-coupling design (D155 item 1, scoped by D156) is accepted"
+    },
     {
      "path": "docs/DECISIONS.md",
      "where": "D155 and D156"

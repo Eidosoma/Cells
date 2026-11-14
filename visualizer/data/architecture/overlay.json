@@ -1053,8 +1053,15 @@
       "layer": "laws",
       "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "A species amount in the inventory sets how available a channel or junction is, so chemistry can change electrical behaviour. In design.",
+      "plain": "A species amount in the inventory sets how available a junction or channel is, so chemistry can change electrical behaviour. The design is accepted (14 November 2026): junctions first, with channels pending. Nothing is implemented yet.",
       "sources": [
+        {
+          "path": "docs/INVENTORY_COUPLING_DESIGN.md"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The inventory-coupling design (D155 item 1, scoped by D156) is accepted"
+        },
         {
           "path": "docs/DECISIONS.md",
           "where": "D155 and D156"
@@ -1926,12 +1933,12 @@
       },
       "scheduled_species_turnover@1": {
         "label": "Species turnover",
-        "status": "qualified",
+        "status": "landed",
         "as_of": "2026-11-14",
         "files": [
           "src/cells/models/operators/species_common.py"
         ],
-        "plain": "Production and clearance of secreted molecules, inside cells and between them. Its first-order clearance is numerically qualified, together with the transport between cells (D150 v1). Production is guarded by tests only.",
+        "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only.",
         "sources": [
           {
             "path": "PROGRESS.md",

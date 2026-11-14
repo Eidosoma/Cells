@@ -153,6 +153,7 @@ class Build:
         self.package = Package(repo / "src" / "cells", "cells")
         self.evaluator = Evaluator(self.package)
         self.files = [line for line in git(repo, "ls-files").splitlines() if line]
+        self.git = lambda *arguments: git(repo, *arguments)
         self.owner = {}  # repo-relative path -> entity id
         self.statuses = {status["id"] for status in overlay["statuses"]}
 
@@ -640,6 +641,8 @@ def main():
         print(f"protein inventory of {stamp['created']} (engine read at {stamp['read_at']}): {stamp['records']} law records, found {stamp['found']}")
         if stamp["renamed"]:
             print("  renamed since:", ", ".join(f"{item['from']} -> {item['to']}" for item in stamp["renamed"]))
+        if stamp["gained"]:
+            print(f"  identifiers the engine gained since, not reviewed by the inventory: {stamp['gained']['added']} ({stamp['gained']['where']})")
     for warning in build.warnings:
         print("warning:", warning)
     print(f"wrote {out.name} ({out.stat().st_size / 1024:.0f} KB)")

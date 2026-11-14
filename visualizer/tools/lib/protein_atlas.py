@@ -117,6 +117,29 @@ class Atlas:
                 self.build.warnings.append(f"protein inventory: {law['id']} is not found in the engine any more")
         return dict(found)
 
+    def gained_since(self, revision):
+        """Identifiers the engine has gained since the inventory's revision. The inventory has not reviewed them."""
+        def at(rev):
+            listing = self.build.git("grep", "-o", "-E", "[A-Za-z][A-Za-z0-9_]*@[0-9]+", rev, "--", "src/cells")
+            found = {}
+            for line in listing.splitlines():
+                _, path, name = line.split(":", 2)
+                found.setdefault(name, set()).add(path)
+            return found
+
+        before, now = at(revision), at("HEAD")
+        if not before or not now:
+            self.build.warnings.append(f"protein inventory: cannot compare the engine with revision {revision}")
+            return None
+        added = sorted(set(now) - set(before))
+        places = Counter()
+        for name in added:
+            # Counted once, in the folder that holds most of its uses.
+            folders = Counter("/".join(path.split("/")[2:-1]) or "the package root" for path in now[name])
+            places[min(folders, key=lambda folder: (-folders[folder], folder))] += 1
+        where = sorted(places.items(), key=lambda item: (-item[1], item[0]))[:3]
+        return {"added": len(added), "removed": len(set(before) - set(now)), "where": [list(item) for item in where]}
+
     def current(self, text):
         """Inventory text with identifiers that were renamed since brought up to date."""
         if not text:
@@ -361,6 +384,7 @@ class Atlas:
                 "records": len(snapshot["laws"]),
                 "found": found,
                 "renamed": [{"from": old, "to": new} for old, new in sorted(self.renamed.items())],
+                "gained": self.gained_since(described["read_at_revision"]),
             },
             "counts": {
                 "units": len(snapshot["units"]),
