@@ -246,6 +246,32 @@ def chain_propagates(V_rest, n, s_c, **kw):
     return chain_measures(chain(V_rest, n, s_c, **kw), peaks=False)["propagates"]
 
 
+def wave_outcome(V_rest, n, s_c, *, t_end=0.150, t_max=2.0, quiet=5.0, **kw):
+    """Propagation decided independently of the horizon: run to t_end; if a cell has not
+    activated, the wave counts as blocked only once no new activation has followed for
+    ``quiet`` times the median of the last three inter-cell intervals (and at least 20 ms);
+    otherwise the horizon is doubled (up to t_max) and the run repeated. Returns
+    dict(propagates, activation_s, t_end, decided_by)."""
+    while True:
+        run = chain(V_rest, n, s_c, t_end=t_end, **kw)
+        times = activation_times(run)
+        if all(t is not None for t in times):
+            return dict(propagates=True, activation_s=times, t_end=t_end, decided_by="all")
+        done = [t for t in times if t is not None]
+        if not done:
+            return dict(propagates=False, activation_s=times, t_end=t_end,
+                        decided_by="no activation")
+        gaps = np.diff(sorted(done))[-3:]
+        wait = max(quiet * (float(np.median(gaps)) if len(gaps) else 0.0), 0.020)
+        if t_end - max(done) >= wait:
+            return dict(propagates=False, activation_s=times, t_end=t_end,
+                        decided_by=f"quiet for {t_end - max(done):.4g} s >= {wait:.4g} s")
+        if t_end >= t_max:
+            return dict(propagates=None, activation_s=times, t_end=t_end,
+                        decided_by="undecided at t_max")
+        t_end = min(2.0 * t_end, t_max)
+
+
 def far_end_second_wave(run, t2):
     """Does the far cell activate again after S2's onset t2 (a second upward crossing after
     the first wave's)?"""
@@ -540,6 +566,35 @@ def main(argv=None):
         results["limits"] = limits_part(rtol)
         save()
     # Follow-up parts (not in the default list).
+    if "bracket_robust" in args.parts:  # §8.4's bracket and capture, horizon-independent
+        V2 = rests.get("point2", rest_potential("point2", rtol=rtol))
+        out = results["bracket_robust"] = dict(outcomes={})
+
+        def decided(s_c, **kw):
+            key = f"s_c={s_c:g}" + "".join(f",{k}={v:g}" for k, v in kw.items())
+            if key not in out["outcomes"]:
+                out["outcomes"][key] = wave_outcome(V2, 20, s_c, rtol=rtol, **kw)
+                log("   robust", key, out["outcomes"][key]["propagates"],
+                    out["outcomes"][key]["decided_by"])
+                save()
+            return bool(out["outcomes"][key]["propagates"])
+
+        grid = [3000.0, 1000.0, 300.0, 100.0, 30.0, 10.0, 3.0, 1.0, 0.3, 0.1]
+        seen = {s: decided(s) for s in grid}
+        out["brackets"] = []
+        for a, b in zip(sorted(seen), sorted(seen)[1:], strict=False):
+            if seen[a] != seen[b]:
+                pred = decided if not seen[a] else (lambda x: not decided(x))
+                found = bisect(pred, a, b, tol=tol["s_c"], log_scale=True, label="robust s_c")
+                found["kind"] = ("block below, propagation above" if not seen[a]
+                                 else "propagation below, block above")
+                out["brackets"].append(found)
+                save()
+        k = er.POINTS["point2"]["c_m"] / 0.05
+        out["capture_threshold"] = bisect(lambda P: decided(1000.0, P_stim=P), 1e-9 * k,
+                                          1e-6 * k, tol=tol["capture"], log_scale=True,
+                                          label="robust capture P")
+        save()
     if "segment_A_tight" in args.parts:  # the block-site values at rtol / 10, atol / 100
         tight = dict(rtol=rtol / 10.0, atol={k: v / 100.0 for k, v in er.ATOL.items()})
         results["segment_A_tight"] = {}
