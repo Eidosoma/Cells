@@ -1,0 +1,9 @@
+{
+ "note": "synthetic fixture",
+ "synthetic-sheet": {
+  "evidence_folder": "run-small",
+  "runs": [
+   "synthetic-s1.0/seed1"
+  ]
+ }
+}

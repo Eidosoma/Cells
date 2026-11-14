@@ -171,18 +171,27 @@ Rules that tighten the run view above:
     and is for drawing only: the viewer never prints it as a recorded number.
   - The record with id `t` holds the record times in seconds (`axes: ["time"]`); `view.time`
     is `{"unit": "s", "record": "t"}`. Times need not be evenly spaced.
-- **`view.sets[]`.** Cells of a sheet use `polygons` (`vertices` as `[x, y]` in
-  `view.space.unit`, `faces` as lists of vertex indices, one per cell, in the order of
-  `ids`). Junctions use `links` with `ends` as pairs of indices into the named set.
   - An optional `marks` lists values worth a line on the record's scale:
     `[{"value", "label"}]`, for example the voltage above which the experiment counts a cell
     as D. A mark is the experiment's own constant, read from its saved files, never chosen
     by the adapter or the viewer.
   - Records with the ids `regular` and `valid` (`uint8`, one per record time) carry the
     run's own flags when it saves them. A record that is not `valid` is never shown as data.
+    For E07-v1, `regular` marks the records on the 10 s grid; the others are taken at an
+    event's time and hold the state just before that event. `valid` says the field solve
+    behind the record converged.
+  - The records `t`, `regular` and `valid` have no `set` and no `layer`. A record may carry
+    a `note`.
+  - Event times keep the run's own precision, while `t` is stored in 32 bits: match the two
+    with a tolerance.
+- **`view.sets[]`.** Cells of a sheet use `polygons` (`vertices` as `[x, y]` in
+  `view.space.unit`, `faces` as lists of vertex indices, one per cell, in the order of
+  `ids`). Junctions use `links` with `ends` as pairs of indices into the named set.
 - **`view.regions[]`** (optional) name subsets the run's plan defines:
   `[{"id", "label", "set", "indices"}]`, for example the disc of cells that start in the
   written state. The viewer may outline a region; its label comes from the catalogue.
+- **`view.layers[].representation`** is `simulated`, `modelled`, `prescribed` or null. An
+  adapter leaves it null when the run's files do not state it, as today's do not.
 - **`view.events[]`** name entities by index: `{"time", "kind", "layer", "at": {"set": "cell",
   "index": 108}, "from": {"set": "cell", "index": 107}, "label"}`. `from` is optional.
 - **No machine paths and no host names** anywhere in a generated file.
@@ -214,6 +223,9 @@ Rules that tighten the run view above:
 
 The `experiments` entries are curated in `data/runs/overlay.json` (labels, plain lines
 and sources); the adapter copies the entry of each experiment it adapts and adds `runs`.
+A record's entry may give `shown_between`, `[low, high]` in the record's own unit: the
+limits its colour scale uses in every run of the experiment, so one value has one colour.
+A run that reaches beyond them widens the scale.
 
 ### How the page gets them
 

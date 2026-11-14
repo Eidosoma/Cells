@@ -3,7 +3,7 @@
 // protocol (Node's built-in WebSocket; no extra dependency). Screenshots set state by
 // query parameter and so never touch picking or the camera control; this does.
 //
-//   node tools/check_input.mjs            (CHECK_ONLY=engine|atlas|cell|zoom runs one part;
+//   node tools/check_input.mjs            (CHECK_ONLY=engine|atlas|experiments|cell|zoom runs one part;
 //                                          CHECK_RUNS=DIR serves replays from another folder)
 //
 // Only one browser runs at a time (tools/lib/browser_lock.mjs), so a call may wait its turn.
@@ -129,7 +129,7 @@ try {
   if (wants("atlas")) {
     await open("lens=proteins");
     const tabs = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".switch button")].map((button) => button.getAttribute("aria-label")).join(" | ")`);
-    check("atlas: the views are in the order asked for", tabs === "Cell and scales | Protein atlas | Engine", tabs);
+    check("atlas: the views are in the order asked for, with Engine last", /^Cell and scales \| Protein atlas \|( Experiments \|)? Engine$/.test(tabs), tabs);
     // A unit whose top is in plain view, with no label lying over the point clicked.
     const unit = await evaluate(`(() => {
       const viewer = ${VIEWER}, lens = viewer.current;
@@ -178,6 +178,94 @@ try {
     })()`);
     check("atlas: a unit's connection opens its engine part in the engine view", there.lens === "engine" && there.label === link.text, `${link.text} -> ${there.lens}: ${there.label}`);
     check("atlas: that engine part lists the units it holds the law for", /Holds the law for/.test(there.heads), there.heads);
+  }
+
+  // ---------------------------------------------------------------- experiments (replays)
+  if (wants("experiments")) {
+    await open("lens=experiments");
+    const shown = await evaluate(`${VIEWER}.state.lens`);
+    check("experiments: the view is offered when replays have been made", shown === "experiments", `${shown}; make them with npm run adapt:runs`);
+    if (shown === "experiments") {
+      const spot = (selector) =>
+        evaluate(`(() => {
+          const element = ${VIEWER}.shadowRoot.querySelector(${JSON.stringify(selector)});
+          if (!element) return null;
+          element.scrollIntoView({ block: "nearest" });
+          const box = element.getBoundingClientRect();
+          return { x: box.left + box.width / 2, y: box.top + box.height / 2, left: box.left, width: box.width, text: element.textContent };
+        })()`);
+      await evaluate(`${VIEWER}.current.ready.then(() => true)`);
+      await sleep(800);
+      const first = await evaluate(`({ run: ${VIEWER}.current.runId, cells: ${VIEWER}.current.sheet.cells.length, end: ${VIEWER}.current.run.end })`);
+      check("experiments: a run is loaded and drawn", first.cells > 0 && first.end > 0, JSON.stringify(first));
+
+      // A cell in plain view, with nothing lying over the point clicked.
+      const cell = await evaluate(`(() => {
+        const viewer = ${VIEWER}, lens = viewer.current, cells = lens.sheet.cells;
+        for (let index = 0; index < cells.length; index++) {
+          const out = cells[index].top.clone();
+          viewer.stage.project(cells[index].top, out);
+          const x = out.x, y = out.y;
+          if (x < 330 || x > 980 || y < 140 || y > 600) continue;
+          const hit = viewer.stage.pick(x, y, lens.pickRoots);
+          if (hit && hit.id === "cell:" + index && viewer.shadowRoot.elementFromPoint(x, y) === viewer.canvas) return { id: "cell:" + index, x, y };
+        }
+        return null;
+      })()`);
+      await click(cell.x, cell.y);
+      check("experiments: clicking a cell selects it", (await selected()) === cell.id, `${cell.id} -> ${await selected()}`);
+      check("experiments: the panel charts that cell's voltage", await evaluate(`Boolean(${VIEWER}.shadowRoot.querySelector("cells-panel cells-trace .trace-plot"))`));
+      await clear();
+
+      // The timeline: play moves the playhead, a click on the track jumps to that time.
+      const play = await spot("cells-timeline .tl-play");
+      const before = await evaluate(`${VIEWER}.current.player.time`);
+      await click(play.x, play.y);
+      await sleep(2000);
+      const during = await evaluate(`({ time: ${VIEWER}.current.player.time, playing: ${VIEWER}.current.player.playing })`);
+      await click(play.x, play.y);
+      const paused = await evaluate(`${VIEWER}.current.player.playing`);
+      check("timeline: play moves the playhead and pause stops it", during.playing && during.time > before && !paused, `${before.toFixed(1)} s -> ${during.time.toFixed(1)} s`);
+      const track = await spot("cells-timeline input.tl-range");
+      await click(track.left + track.width * 0.8, track.y);
+      const sought = await evaluate(`${VIEWER}.current.player.time / ${VIEWER}.current.run.end`);
+      check("timeline: a click on the track goes to that time", Math.abs(sought - 0.8) < 0.06, sought.toFixed(3));
+
+      // The other run: the card switches, and the recorded class follows the run.
+      const other = await evaluate(`(() => {
+        const row = ${VIEWER}.shadowRoot.querySelector('.run-row[aria-pressed="false"]');
+        const box = row.getBoundingClientRect();
+        return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+      })()`);
+      const classBefore = await evaluate(`${VIEWER}.current.catalogue.classOf(${VIEWER}.current.catalogue.byId.get(${VIEWER}.current.runId)).id`);
+      await click(other.x, other.y);
+      for (let tries = 0; tries < 60; tries++) {
+        if (await evaluate(`${VIEWER}.current.run && ${VIEWER}.current.run.id === ${VIEWER}.current.runId && ${VIEWER}.current.runId !== ${JSON.stringify(first.run)}`)) break;
+        await sleep(250);
+      }
+      const second = await evaluate(`(() => { const lens = ${VIEWER}.current; return { run: lens.runId, loaded: lens.run?.id, klass: lens.catalogue.classOf(lens.catalogue.byId.get(lens.runId)).id, recorded: lens.run?.view.run.class }; })()`);
+      check("experiments: picking the other run loads it", second.run !== first.run && second.loaded === second.run, JSON.stringify(second));
+      check("experiments: the class shown is the one the run's summary recorded", second.klass === second.recorded && second.klass !== classBefore, `${classBefore} -> ${second.klass}`);
+
+      // Run details lead to the engine parts the experiment ran.
+      const details = await spot(".run-actions button");
+      await click(details.x, details.y);
+      const run = await selected();
+      const link = await evaluate(`(() => {
+        const button = ${VIEWER}.shadowRoot.querySelector("cells-panel .link-button");
+        if (!button) return null;
+        button.scrollIntoView({ block: "center" });
+        const box = button.getBoundingClientRect();
+        return { text: button.textContent, x: box.left + Math.min(box.width / 2, 40), y: box.top + box.height / 2 };
+      })()`);
+      check("experiments: run details open in the panel with links to engine parts", String(run).startsWith("run:") && Boolean(link), `${run}; ${link?.text}`);
+      if (link) {
+        await click(link.x, link.y);
+        await sleep(900);
+        const there = await evaluate(`({ lens: ${VIEWER}.state.lens, label: ${VIEWER}.model.get(${VIEWER}.state.selected)?.label })`);
+        check("experiments: such a link opens the part in its own view", there.lens !== "experiments" && there.label === link.text, `${link.text} -> ${there.lens}: ${there.label}`);
+      }
+    }
   }
 
   // ---------------------------------------------------------------- cell lens

@@ -68,6 +68,24 @@ export class LabelLayer {
     return label;
   }
 
+  /** Change a label's words; its size is measured again. */
+  setText(label, text) {
+    if (label.text === text) return;
+    label.text = text;
+    label.element.lastChild.textContent = text;
+    label.width = label.element.offsetWidth;
+    label.height = label.element.offsetHeight;
+  }
+
+  remove(label) {
+    const index = this.labels.indexOf(label);
+    if (index < 0) return;
+    this.labels.splice(index, 1);
+    label.element.remove();
+    label.path?.remove();
+    label.dot?.remove();
+  }
+
   clear() {
     for (const label of this.labels) {
       label.element.remove();

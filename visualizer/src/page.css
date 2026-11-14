@@ -12,6 +12,9 @@
   --bio-signal: #e062a6; --bio-ion: #37b58c; --bio-wound: #e2574c; --bio-cell: #48b9a9;
   /* The protein atlas: a generic law, with no protein assigned, is drawn in this grey. */
   --atlas-generic: #8794a2;
+  /* A magnitude (a replay's voltage): one hue from little to much. Light to dark here, and dark
+     to light on a dark page, so "more" always stands out. Both ends stay clear of the page. */
+  --seq-0: #6da7ec; --seq-1: #3987e5; --seq-2: #256abf; --seq-3: #184f95; --seq-4: #0d366b;
   --is-dark: 0;
   --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -28,6 +31,7 @@
     --bio-mito: #ea7d3f; --bio-protein: #4a90ea; --bio-pump: #7482ee; --bio-fuel: #eeb02a; --bio-water: #58b4ee;
     --bio-signal: #e268ac; --bio-ion: #35ad86; --bio-wound: #e25c52; --bio-cell: #3aa797;
     --atlas-generic: #7d8c9c;
+    --seq-0: #1c5cab; --seq-1: #2a78d6; --seq-2: #5598e7; --seq-3: #86b6ef; --seq-4: #b7d3f6;
     --is-dark: 1;
     color-scheme: dark;
   }
@@ -42,6 +46,7 @@
   --bio-mito: #ea7d3f; --bio-protein: #4a90ea; --bio-pump: #7482ee; --bio-fuel: #eeb02a; --bio-water: #58b4ee;
   --bio-signal: #e268ac; --bio-ion: #35ad86; --bio-wound: #e25c52; --bio-cell: #3aa797;
   --atlas-generic: #7d8c9c;
+  --seq-0: #1c5cab; --seq-1: #2a78d6; --seq-2: #5598e7; --seq-3: #86b6ef; --seq-4: #b7d3f6;
   --is-dark: 1;
   color-scheme: dark;
 }

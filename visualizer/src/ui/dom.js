@@ -17,6 +17,22 @@ export function h(tag, props = {}, ...children) {
   return element;
 }
 
+const SVG = "http://www.w3.org/2000/svg";
+
+/** The same for SVG: attributes are set as written, children are elements or text. */
+export function svg(tag, attributes = {}, ...children) {
+  const element = document.createElementNS(SVG, tag);
+  for (const [key, value] of Object.entries(attributes || {})) {
+    if (value === null || value === undefined || value === false) continue;
+    element.setAttribute(key, value === true ? "" : String(value));
+  }
+  for (const child of children.flat(Infinity)) {
+    if (child === null || child === undefined || child === false) continue;
+    element.append(child.nodeType ? child : document.createTextNode(String(child)));
+  }
+  return element;
+}
+
 export function emit(element, name, detail) {
   element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
 }

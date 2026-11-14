@@ -1,6 +1,8 @@
 // The cell lens: what Cells can simulate, drawn where it happens. One cell opened by
-// a flat cut, the sheet of cells around it, and outlines of the organ and organism it
-// would belong to. Zooming is continuous: each scale fades in as the camera reaches it.
+// a flat cut and the sheet of cells around it. Beyond the sheet come two placeholder
+// outlines for the scales nothing simulates yet: a planarian's brain for the organ and
+// the worm for the whole organism. The sheet is not their tissue; it is shown beside
+// them to compare sizes. Zooming is continuous: each scale fades in as the camera reaches it.
 //
 // Three things are kept apart:
 //   status          built parts are solid, planned parts are sketches; the exact status
@@ -27,7 +29,9 @@ export const SIZE_MODES = ["schematic", "real"];
 const RANGES = {
   schematic: { molecules: { out: [7, 13] }, studs: { out: [120, 190] }, cell: { out: [120, 190] } },
   real: { molecules: { out: [0.45, 1.2] }, studs: { in: [0.5, 1.6], out: [120, 190] }, cell: { out: [120, 190] } },
-  shared: { tissue: { in: [100, 190], out: [2400, 4200] }, organ: { in: [2000, 4200], out: [34000, 52000] }, organism: { in: [30000, 52000] } },
+  // The brain is about 1 mm long and the worm 10 mm, so these follow the sizes in cell_parts.js.
+  // Each stop must lie where its own zone is fully shown, on a wide screen and on a tall one.
+  shared: { tissue: { in: [100, 190], out: [1000, 1800] }, organ: { in: [900, 1800], out: [7500, 12000] }, organism: { in: [7500, 12000] } },
 };
 
 let roundDot = null;
@@ -218,8 +222,8 @@ export class CellLens {
       this.cells[mode] = handles;
     }
     this.sheet = buildTissue(this.context(this.zone("tissue")));
-    buildOrgan(this.context(this.zone("organ")));
-    buildOrganism(this.context(this.zone("organism")));
+    // The larger scales are placeholder outlines; each returns the notes written beside it.
+    this.outlines = { organ: buildOrgan(this.context(this.zone("organ"))), organism: buildOrganism(this.context(this.zone("organism"))) };
     this.stops = Object.fromEntries(SIZE_MODES.map((mode) => [mode, this.makeStops(mode)]));
   }
 
@@ -248,8 +252,13 @@ export class CellLens {
       { id: "molecule", entity: entity("scale.molecule"), zone: "molecules", anchor: molecule.centre.clone().addScaledVector(out, molecule.view[1] * 0.3), size: molecule.view, target: molecule.centre.clone(), azimuth: molecule.fromInside ? Math.atan2(-out.x, -out.z) : Math.atan2(out.x, out.z), polar: molecule.fromInside ? 0.42 : 0.6 },
       { id: "cell", entity: entity("scale.cell"), zone: "cell", anchor: new THREE.Vector3(0, CUT + 2.6, -RIM - 1.6), size: [42, 31], target: new THREE.Vector3(0.8, CUT - 2.6, 0.2), azimuth: 0.52, polar: 0.84 },
       { id: "tissue", entity: entity("scale.tissue"), zone: "tissue", anchor: new THREE.Vector3(0, HEX.height * 2.6, -this.sheet.extent * 0.5), size: [this.sheet.extent * 1.42, this.sheet.extent * 1.0], target: new THREE.Vector3(0, -6, 0), azimuth: 0.55, polar: 0.86 },
-      { id: "organ", entity: entity("scale.organ"), zone: "organ", size: [ORGAN.radius * 2.9, ORGAN.radius * 2.6], target: ORGAN.centre.clone(), azimuth: 0.6, polar: 1.08 },
-      { id: "organism", entity: entity("scale.organism"), zone: "organism", size: [BODY.length * 1.3, BODY.length * 0.62], target: BODY.centre.clone(), azimuth: 0.25, polar: 1.12 },
+      // The brain with the head round it and the sheet's ring in front; then the whole worm.
+      // Both are seen from well above, because the worm is flat: the brain with the head round
+      // it and the sheet's ring in front, then the whole worm, clear of the panels at the sides.
+      // Their frames are as tall as a wide screen needs, so the height sets the distance there
+      // and the width only on a tall screen.
+      { id: "organ", entity: entity("scale.organ"), zone: "organ", size: [3000, 1950], target: ORGAN.centre.clone().add(new THREE.Vector3(0, 0, 250)), azimuth: 0, polar: 0.62 },
+      { id: "organism", entity: entity("scale.organism"), zone: "organism", size: [BODY.length * 1.56, BODY.length * 1.01], target: BODY.centre.clone().add(new THREE.Vector3(-BODY.length * 0.043, 0, BODY.width * 0.1)), azimuth: 0, polar: 0.7 },
     ];
   }
 
@@ -304,7 +313,8 @@ export class CellLens {
   scaleInfo() {
     const distance = this.stage.rig.distance;
     if (this.sizeMode === "schematic" && distance < 13) return { note: "Close-up not to scale" };
-    if (distance > 2400) return { micronsPerUnit: 1, note: "the outline is a placeholder" };
+    // From where the sheet starts to give way to the outlines, the bar says what they are.
+    if (distance > RANGES.shared.tissue.out[0]) return { micronsPerUnit: 1, note: "the outline is a placeholder" };
     return { micronsPerUnit: 1, note: this.sizeMode === "schematic" && distance < 190 ? "small parts enlarged" : null };
   }
 
@@ -330,7 +340,7 @@ export class CellLens {
     stage.sun.castShadow = false;
     stage.sun.position.set(55, 100, 80);
     stage.sun.target.position.set(0, 0, 0);
-    stage.rig.limits = { minDistance: 0.03, maxDistance: 130000, minPolar: 0.1, maxPolar: 2.35 };
+    stage.rig.limits = { minDistance: 0.03, maxDistance: BODY.length * 6, minPolar: 0.1, maxPolar: 2.35 };
     this.light();
     stage.rig.setView(this.stopView(this.currentStops.find((stop) => stop.id === this.activeStop)));
     this.buildLabels();
@@ -390,6 +400,13 @@ export class CellLens {
     for (const stop of this.currentStops) {
       if (!stop.anchor || !stop.entity) continue;
       zoneOf(stop.zone).labels.push(labels.add({ id: stop.entity.id, text: stop.entity.label, anchor: stop.anchor, priority: 300, kind: "scale", lift: 4 }));
+    }
+    // What the placeholder outlines are, and the sheet's size beside them.
+    for (const [name, outline] of Object.entries(this.outlines)) {
+      for (const note of outline.notes) {
+        if (note.roomy && this.stage.width < 600) continue; // it would run off a narrow screen
+        zoneOf(name).labels.push(labels.add({ text: note.text, anchor: note.anchor, priority: 280, kind: "note", lift: 0 }));
+      }
     }
     const molecule = this.cells[this.sizeMode].molecule;
     const text = this.sizeMode === "real" ? "To scale: the membrane is about 5 nm thick, the channel about 9 nm across" : "Illustration: channels and pumps are modelled as populations";

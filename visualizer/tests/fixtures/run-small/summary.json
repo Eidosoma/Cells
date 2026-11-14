@@ -1,0 +1,18 @@
+{
+ "kind": "synthetic.summary@0",
+ "runs": {
+  "synthetic-s1.0/seed1": {
+   "label": "synthetic fixture",
+   "group": "control",
+   "s": 1.0,
+   "size": 7,
+   "stop": "planned end",
+   "judged_s": 60.0,
+   "delta_J": -0.14285714285714285,
+   "run_class": "erosion"
+  }
+ },
+ "supplementary_readouts": {
+  "delta_J_over_records": "supplementary: synthetic fixture wording; not judged"
+ }
+}

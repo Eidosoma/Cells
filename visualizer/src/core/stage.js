@@ -159,7 +159,8 @@ export class Stage {
         if (node.userData.unpickable) passThrough = true;
         if (node.userData.blocker) blocker = true;
         if (node.userData.seeThrough) seeThrough = true;
-        if (id === null && node.userData.pick) id = node.userData.pick;
+        // One mesh may hold many parts: its pick is then a function of what was hit.
+        if (id === null && node.userData.pick) id = typeof node.userData.pick === "function" ? node.userData.pick(hit) : node.userData.pick;
       }
       if (!shown || passThrough) continue; // hidden things and illustrations do not stop a click
       if (blocker) break; // a solid surface such as a plate does

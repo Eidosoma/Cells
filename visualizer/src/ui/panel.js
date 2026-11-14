@@ -57,8 +57,33 @@ class CellsPanel extends HTMLElement {
       const title = entity.kind === "gate" ? "Deliverables" : "Contains";
       body.append(this.list(title, entity.members.map((member) => h("li", {}, member.label, member.detail ? h("span", { class: "quiet" }, ` · ${member.detail}`) : null))));
     }
+    if (entity.chart) {
+      // A record of this part over the run, with the playhead (the replay view).
+      const trace = document.createElement("cells-trace");
+      body.append(trace);
+      trace.data = entity.chart;
+    }
     for (const section of entity.sections || []) {
       if (section.items?.length) body.append(this.list(section.title, section.items.map(item), "items"));
+    }
+    // Background a reader may want but need not see at once (how a replay was derived).
+    for (const more of entity.disclosures || []) {
+      if (more.lines?.length) body.append(h("details", { class: "panel-more" }, h("summary", {}, more.title), h("ul", {}, more.lines.map((line) => h("li", {}, line)))));
+    }
+    // Parts of the scene this one points at without a relation of its own (a run and the engine parts it ran).
+    for (const group of entity.related || []) {
+      const parts = group.ids.map((id) => model.get(id)).filter(Boolean);
+      if (!parts.length) continue;
+      // Two parts may share a name (a model and the capability it gives), so each says where it sits.
+      const items = parts.map((part) =>
+        h(
+          "li",
+          {},
+          h("button", { class: "link-button", type: "button", onclick: () => emit(this, "cells-select", { id: part.id, fly: true }) }, statusSwatch(part.swatch || part.status), part.label),
+          h("span", { class: "quiet" }, ` · ${kindName(part, model)}`)
+        )
+      );
+      body.append(this.list(group.title, items, "connection"));
     }
     const connections = this.connections(model, entity);
     if (connections.length) body.append(h("h3", {}, "Connections"), ...connections);

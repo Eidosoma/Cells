@@ -1,7 +1,7 @@
 # Cells visualizer
 
-A 3D viewer for Cells: the architecture and the proteins it models today, experiment
-replays next.
+A 3D viewer for Cells: the architecture, the proteins it models, and replays of its
+experiments.
 
 It is tooling, asked for by the user on 14 November 2026. It reads a checkout and saved
 run outputs, and it is never imported by the engine (D006, D154). It settles the open
@@ -12,12 +12,13 @@ has a plain-language line first and the technical detail after it.
 
 ## What it shows
 
-One data file, the scene, drawn through three lenses, in this order:
+One data file, the scene, drawn through four lenses, in this order:
 
 | Lens | What you see |
 | --- | --- |
-| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and outlines of the organ and whole organism it would belong to. Zoom is continuous from molecules to organism, with a scale bar |
+| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The sheet is not their tissue; a ring beside them shows its size. Zoom is continuous from molecules to organism, with a scale bar |
 | **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases |
+| **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
 
 Selecting a part that belongs to another lens takes you there: a protein unit's connection
@@ -79,6 +80,35 @@ from the evidence folder. It is a snapshot, not a catalogue: the catalogue's des
 of the plan) has not begun and belongs to the engine. See `data/proteins/README.md` for the
 sources and licences.
 
+## Experiment replays
+
+A replay draws what a run saved, and nothing else.
+
+- **The class and the readouts are the run's own.** Each replay shows the class the
+  experiment's summary recorded and the values in the run's outcome file, under the
+  experiment's own names. A readout the run marks as supplementary says so. The viewer
+  computes no verdict.
+- **Positions are derived.** The runs save which cells are joined but no coordinates, so
+  the adapter lays the sheet out as the hexagonal lattice its junctions define. The replay
+  is marked as derived and lists each derived piece. Rotation and handedness are arbitrary.
+- **Run data is not in git.** `tools/adapt_run.py` reads the frozen run folders and writes
+  one file per run under `out/runs/` (about half a megabyte each), which is git-ignored.
+  Only the adapter, the labels in `data/runs/` and a small synthetic fixture are committed
+  (the user, 14 November 2026). The published page carries the chosen runs as files beside
+  it and loads one when it is first shown.
+- **The format is the viewer's side of D154.** `schema/RUN_VIEW.md` fixes it. When the
+  engine writes its own view file, the adapter is replaced and the view stays.
+
+The first replays are two runs of E07-v1's control, seed 1, which differ only in the
+junction coupling: at s 0.6 the summary records the run as neutral, at s 1.0 as erosion.
+To make them:
+
+```bash
+npm run adapt:runs -- --experiment e07-v1 --root /mnt/workspaces/Cells/e07-v1-judged-20261113-01
+```
+
+`data/runs/selection.json` lists the runs; pass `--run ARM/seedN` for others.
+
 ## Sizes in the cell view
 
 One unit is one micrometre, and the scale bar reads in real units at every zoom. The
@@ -96,6 +126,8 @@ indicative.
 | Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |
 | Channels, pumps, junction channels | thousands of dots; shapes about 10 nm across in the close-up | a few blocks set in the membrane |
 | Protein cages, ATP, ions, small molecules | dots and haze | a few beads and clusters |
+| Organ outline | a planarian's brain with its two nerve cords, drawn about 0.9 mm long: a placeholder, sizes indicative | the same |
+| Organism outline | a planarian flatworm, drawn 10 mm long and 1.3 mm wide: a placeholder, sizes indicative | the same |
 
 In "To scale" the close-up of the membrane is to scale as well: a bilayer about 4.5 nm
 thick, a channel about 9 nm across, and a 10 nm scale bar. For comparison, the cells of
@@ -112,7 +144,8 @@ npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load 
 npm test                    # scene, sources, page and allowed hosts; no browser needed
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas and its links)
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
-npm run export              # out/cells-architecture.html, the page as an artifact wants it
+npm run adapt:runs -- --experiment e07-v1 --root PATH   # make the replays under out/runs/ (not committed)
+npm run export              # out/cells-architecture.html, the page as an artifact wants it, and the list of run files to publish beside it
 ```
 
 From another machine, forward the port (`ssh -L 4173:127.0.0.1:4173 host`) or open the
@@ -138,6 +171,9 @@ run outputs ──adapters (next)── run view ──────────�
 | `data/architecture/architecture.scene.json` | The generated scene (committed, so changes show in diffs) |
 | `tools/import_protein_inventory.py` | Makes the slim snapshot of the law inventory. It leaves out machine paths, Xenbase identifiers and every field the view does not show |
 | `tools/lib/protein_atlas.py` | Turns the snapshot into the atlas's parts, and checks every law record against the checkout |
+| `tools/adapt_run.py` | Turns a saved run folder into a replay file. Standard library only; reads the frozen evidence and never writes there |
+| `data/runs/` | The labels and plain lines for each experiment's replays, from its own documents, and the runs chosen for the page |
+| `src/replay/`, `src/lenses/replay.js`, `src/ui/timeline.js` | Loading a replay, the Experiments view and its timeline |
 | `data/proteins/` | `inventory.snapshot.json` (generated, do not edit), `overlay.json` (districts, plain lines and the shape drawn for each kind of unit) and the sources notice |
 | `schema/RUN_VIEW.md` | Draft of what a run saves so it can be replayed (the consumer side of D154) |
 | `src/scene/model.js` | The scene format's reader and its structural checks |
@@ -178,7 +214,8 @@ The visualizer session publishes its own artifacts (the user, 14 November 2026).
 `artifacts.json` records each one's URL so that updates go to the same link.
 
 1. `npm run extract && npm test && npm run export`
-2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`.
+2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the run files
+   listed in `out/cells-architecture.files.json` beside it.
 
 Published pages load three.js from cdnjs, the preferred host of the artifact frame's
 allowlist; everything else is inside the page.
@@ -191,12 +228,12 @@ The user merges the branch when they choose.
 
 ## Next
 
-1. **Replays.** A second scene kind built from a run directory: positions, a timeline,
-   recorded channels and events. First target: a cell sheet, E07-v1 (127 cells, 623
-   records, replacement events). The engine will write a view file per run (D154);
-   until then adapters build the same structure from existing runs, deriving positions
-   from the saved junction topology. See `schema/RUN_VIEW.md`.
-2. **A replay catalogue**: every run of an experiment, by arm, seed and verdict.
+1. **More of each run.** The concentrations, the osmotic term and the junction gates are
+   saved but not yet shown, to keep a run near half a megabyte.
+2. **A replay catalogue**: every run of an experiment, by arm, seed and recorded class.
+   E07-v1's judged execution has 38.
+3. **Other experiments**, each with its own adapter until the engine writes a view file
+   per run (D154).
 
 For the protein atlas, each of these needs the user's approval first, because the plan
 counts fetching from the public atlases as data tooling (stage 5):
@@ -223,11 +260,15 @@ Ideas kept for after the basics (the user, 14 November 2026):
 - **Illustrative machinery driven by aggregates:** molecular motors and channels animated
   from the modelled populations' values, marked as illustration.
 - **Larger scales:** tissues beyond sheets, organs and whole animals, as the engine reaches
-  them. The outlines are placeholders today.
+  them. The outlines are placeholders today: a planarian and its brain (the user, 14
+  November 2026, in place of the first fish outline).
 
 ## Known limits
 
 - The molecular scale is one membrane patch with one channel and one pump.
+- The planarian and its brain are sketches with indicative sizes. One search gave about
+  20 mm by 2 mm for a planarian, from an unreviewed preprint, and no measurement of the
+  brain, so no species is named and the page labels both as placeholders.
 - The protein atlas is as current as its inventory (12 November 2026). A law added to the
   engine since then is not in it; the extractor only checks that the recorded laws still
   exist. Its shapes are schematic, and where an auxiliary subunit sits is textbook

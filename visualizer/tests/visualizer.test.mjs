@@ -7,6 +7,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import os from "node:os";
 import { buildPage, ROOT, THREE_CDN, DEFAULT_SCENE } from "../tools/lib/build_page.mjs";
 import { validate } from "../src/scene/model.js";
 
@@ -145,3 +147,46 @@ test("the page builds and loads scripts only from allowed hosts", async () => {
   }
   assert.ok(Buffer.byteLength(page) < 16 * 1024 * 1024, "over the 16 MB page limit");
 });
+
+// ---------------------------------------------------------------- replays in the page
+
+/** The scene as the page carries it. */
+const sceneOf = (page) => JSON.parse(/<script type="application\/json">(.*?)<\/script>/s.exec(page)[1]);
+
+test("the page carries the replay catalogue, and the runs themselves only when asked", async () => {
+  const folder = await mkdtemp(path.join(os.tmpdir(), "cells-runs-"));
+  try {
+    const empty = path.join(folder, "none");
+    await mkdir(empty);
+    assert.equal(sceneOf(await buildPage({ runsDir: empty })).replays, undefined, "no catalogue, no Experiments view");
+
+    const runs = path.join(folder, "runs");
+    await mkdir(runs);
+    const run = { format: "cells.visualizer.replay@1", view: { format: "cells.run_view@1" }, payload: { encoding: "base64", byte_length: 0, data: "" } };
+    await writeFile(path.join(runs, "x--arm--seed1.json"), JSON.stringify(run));
+    await writeFile(
+      path.join(runs, "index.json"),
+      JSON.stringify({ format: "cells.visualizer.replay_index@1", experiments: [{ id: "x", label: "X" }], runs: [{ id: "x--arm--seed1", experiment: "x", file: "runs/x--arm--seed1.json" }] })
+    );
+    const linked = await buildPage({ runsDir: runs });
+    assert.equal(sceneOf(linked).replays.runs[0].id, "x--arm--seed1");
+    assert.ok(!linked.includes('<script type="application/json" data-replay='), "by default a run stays in its own file beside the page");
+    const inline = await buildPage({ runsDir: runs, inlineRuns: true });
+    assert.ok(inline.includes('<script type="application/json" data-replay="x--arm--seed1">'), "a standalone page carries its runs");
+  } finally {
+    await rm(folder, { recursive: true, force: true });
+  }
+});
+
+test("every engine part an experiment's replays point at is on the map", async () => {
+  const replayOverlay = JSON.parse(await readFile(path.join(ROOT, "data", "runs", "overlay.json"), "utf8"));
+  const ids = new Set(scene.entities.map((entity) => entity.id));
+  const tracked = new Set(scene.entities.flatMap((entity) => (entity.sources || []).map((source) => source.path)));
+  for (const [name, experiment] of Object.entries(replayOverlay.experiments)) {
+    for (const id of experiment.engine_entities) assert.ok(ids.has(id), `${name}: ${id} is not a part of the scene`);
+    assert.ok(experiment.label && experiment.plain && experiment.sources.length, `${name} needs a label, a plain line and a source`);
+    assert.ok(experiment.classes.every((item) => item.id && item.label && item.description), `${name}: every class is described`);
+  }
+  assert.ok(tracked.size > 0);
+});
+

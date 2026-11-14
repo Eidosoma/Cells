@@ -10,9 +10,10 @@ const TOKENS = [
   "bio-membrane", "bio-cyto", "bio-nucleus", "bio-er", "bio-ribosome", "bio-mito", "bio-protein", "bio-pump",
   "bio-fuel", "bio-water", "bio-signal", "bio-ion", "bio-wound", "bio-cell",
   "atlas-generic",
+  "seq-0", "seq-1", "seq-2", "seq-3", "seq-4",
 ];
 
-const camel = (name) => name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+const camel = (name) => name.replace(/-([a-z0-9])/g, (_, letter) => letter.toUpperCase());
 
 export function readPalette(element) {
   const style = getComputedStyle(element);

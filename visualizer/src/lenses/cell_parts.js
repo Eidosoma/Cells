@@ -768,52 +768,242 @@ export function buildTissue(ctx) {
 }
 
 // ------------------------------------------------------------------ larger scales (placeholders)
+//
+// A planarian flatworm and its brain, drawn as outlines. Both are placeholders: nothing at
+// these scales is simulated, and the plan has chosen neither an organ nor a species. The
+// sheet above is not this animal's tissue. It lies beside the worm, outside its outline,
+// only so that the sizes can be compared.
+//
+// Sizes are indicative. The worm is drawn 10 mm long and 1.3 mm wide, with a brain a
+// little under 1 mm long. One web search (14 November 2026) gave roughly 20 mm by 2 mm
+// for a planarian, from an unreviewed preprint, and no measurement of the brain.
 
-export const ORGAN = { radius: 3200, centre: new THREE.Vector3(0, -3200, 0) };
-export const BODY = { length: 64000, centre: new THREE.Vector3(15000, -3200, 0) };
+const WORM = {
+  length: 10000,
+  halfWidth: 650, // at the widest part of the body
+  flatness: 0.32, // thickness over width
+  brainAt: 790, // from the front tip to the middle of the brain
+  aside: 850, // from the sheet to the worm's midline
+};
+/** The brain: about 0.9 mm long and 0.7 mm across. `radius` is half its longer side. */
+export const ORGAN = { length: 900, width: 700, radius: 450, centre: new THREE.Vector3(0, 0, -WORM.aside) };
+export const BODY = { length: WORM.length, width: WORM.halfWidth * 2, centre: new THREE.Vector3(WORM.length / 2 - WORM.brainAt, 0, -WORM.aside) };
+/** Where the worm's front tip is; everything below is built from there, along +x. */
+const WORM_ORIGIN = new THREE.Vector3(BODY.centre.x - WORM.length / 2, 0, BODY.centre.z);
+const SHEET_RADIUS = (HEX.radius * Math.sqrt(3) * (HEX.rings * 2 + 1)) / 2;
+const SHEET_NOTE = `The sheet of ${sheetCells().length} cells, at the same scale`;
 
-/** The organ: planned, so a wire sketch. The sheet above sits on its surface. */
-export function buildOrgan(ctx) {
-  const organ = ctx.scale("scale.organ", ORGAN.centre.clone().add(new THREE.Vector3(-ORGAN.radius * 0.95, ORGAN.radius * 0.78, 0)));
-  const geometry = new THREE.IcosahedronGeometry(ORGAN.radius, 4);
-  const position = geometry.attributes.position, point = new THREE.Vector3();
-  for (let index = 0; index < position.count; index++) {
-    point.fromBufferAttribute(position, index).normalize();
-    // A lobed, slightly bean-like body.
-    const bulge = 1 + 0.16 * Math.sin(point.x * 2.6 + 0.5) * Math.cos(point.z * 2.1) + 0.1 * Math.sin(point.y * 3.3);
-    const squash = point.y > 0.86 ? 1 - (point.y - 0.86) * 1.1 : 1; // flattened where the sheet sits
-    point.multiplyScalar(ORGAN.radius * bulge * squash);
-    position.setXYZ(index, point.x * 1.18, point.y * 0.92, point.z * 0.95);
-  }
-  geometry.computeVertexNormals();
-  const body = new THREE.Mesh(geometry, organ.material({ wire: true }));
-  body.position.copy(ORGAN.centre);
-  organ.add(body);
-  const patch = new THREE.Mesh(new THREE.RingGeometry(170, 230, 40), ctx.neutral({ opacity: 0.9, colour: "fg", side: THREE.DoubleSide }));
-  patch.rotation.x = -Math.PI / 2;
-  patch.position.y = 20;
-  ctx.illustrate(patch, "organ");
+const ease = (a, b, x) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+const WIDE = WORM.halfWidth / 650;
+
+/** Half the body's width at t (0 at the front tip, 1 at the tail tip), without the auricles. */
+function wormHalfWidth(t) {
+  // A rounded, triangular head, a slight neck, the widest part before the middle, a tapering tail.
+  const front = t < 0.05 ? 480 * Math.pow(t / 0.05, 0.58) : 470 + 10 * (1 - ease(0.05, 0.09, t)) + 180 * ease(0.09, 0.4, t);
+  const tail = t > 0.55 ? 1 - Math.pow((t - 0.55) / 0.45, 1.8) : 1;
+  return front * tail * WIDE;
 }
 
-/** The whole organism: a long-term goal. A tadpole-like outline, since the frog embryo is in the plan. */
-export function buildOrganism(ctx) {
-  const organism = ctx.scale("scale.organism", BODY.centre.clone().add(new THREE.Vector3(-BODY.length * 0.2, 13500, 0)));
-  const half = BODY.length / 2;
-  const profile = [];
-  for (let index = 0; index <= 44; index++) {
-    const t = index / 44; // 0 at the head, 1 at the tail tip
-    const s = (t - 0.45) / 0.55;
-    const radius = t < 0.45 ? 10500 * Math.pow(Math.sin((Math.PI * t) / 0.9), 0.62) : 10500 * (0.05 + 0.95 * Math.pow(1 - s, 1.7));
-    profile.push(new THREE.Vector2(Math.max(1, radius), -half + t * BODY.length));
+/** The auricles: a short flap on each side of the head, steep in front and swept back. */
+const auricle = (t) => 80 * WIDE * Math.exp(-Math.pow((t - 0.05) / (t < 0.05 ? 0.012 : 0.024), 2));
+
+/** A point on the worm's surface: t along the body, angle round it (0 on the right edge, a quarter turn on the back). */
+function wormSurface(t, angle) {
+  const half = wormHalfWidth(t);
+  const side = Math.cos(angle);
+  // The flaps are thin, so they add width only near the edges.
+  return new THREE.Vector3(t * WORM.length, half * WORM.flatness * Math.sin(angle), (half + auricle(t) * Math.pow(Math.abs(side), 6)) * side);
+}
+
+const pairs = (points, out, closed = false) => {
+  for (let index = 0; index + 1 < points.length; index++) out.push(points[index], points[index + 1]);
+  if (closed) out.push(points[points.length - 1], points[0]);
+};
+const lineGeometry = (segments) => new THREE.BufferGeometry().setFromPoints(segments);
+
+let planarian = null;
+/**
+ * The worm and its nervous system, built once in the worm's own frame and drawn at both
+ * scales, so the brain seen alone and the brain in the worm's head are the same shape.
+ */
+function planarianShapes() {
+  if (planarian) return planarian;
+  const LENGTH = WORM.length;
+  // Stations along the body, closer together in the head: a coarse list for the click
+  // skin and a fine one for the lines, so the head's outline stays smooth.
+  const stations = Array.from({ length: 73 }, (_, index) => Math.pow(index / 72, 1.45));
+  const fine = Array.from({ length: 261 }, (_, index) => Math.pow(index / 260, 1.35));
+
+  // The outline seen from above.
+  const edge = [];
+  for (const t of fine) edge.push(wormSurface(t, 0));
+  for (const t of [...fine].reverse().slice(1, -1)) edge.push(wormSurface(t, Math.PI));
+  const silhouette = lineGeometry(edge.flatMap((point, index) => [point, edge[(index + 1) % edge.length]]));
+
+  // The body: evenly spaced rings round it and lines along it.
+  const around = 20;
+  const body = [];
+  for (let t = 0.04; t < 0.97; t += 0.04) pairs(Array.from({ length: 28 }, (_, step) => wormSurface(t, (step / 28) * Math.PI * 2)), body, true);
+  for (const turn of [0.25, 0.5, 0.75, 1.25, 1.5, 1.75]) pairs(fine.map((t) => wormSurface(t, turn * Math.PI)), body);
+
+  // A skin of triangles over the same stations: it is never drawn, only clicked.
+  const skin = new THREE.BufferGeometry();
+  const corners = [], faces = [];
+  for (const t of stations) for (let step = 0; step < around; step++) corners.push(wormSurface(t, (step / around) * Math.PI * 2));
+  for (let row = 0; row + 1 < stations.length; row++) {
+    for (let step = 0; step < around; step++) {
+      const a = row * around + step, b = row * around + ((step + 1) % around);
+      faces.push(a, a + around, b, b, a + around, b + around); // wound to face outwards
+    }
   }
-  const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 26), organism.material({ wire: true }));
-  body.rotation.z = -Math.PI / 2;
-  body.scale.set(1, 1, 0.72);
-  body.position.copy(BODY.centre);
-  organism.add(body);
-  const spot = new THREE.Mesh(new THREE.SphereGeometry(ORGAN.radius * 1.1, 20, 14), ctx.neutral({ opacity: 0.85, colour: "fg" }));
-  spot.position.copy(ORGAN.centre);
-  ctx.illustrate(spot, "organism");
+  skin.setFromPoints(corners);
+  skin.setIndex(faces);
+
+  // Two eyespots on the back of the head, and the pharynx in the middle of the body.
+  const marks = [];
+  const eyes = [];
+  const loop = (centre, radiusX, radiusZ, count = 28) => Array.from({ length: count }, (_, step) => new THREE.Vector3(centre.x + Math.cos((step / count) * Math.PI * 2) * radiusX, centre.y, centre.z + Math.sin((step / count) * Math.PI * 2) * radiusZ));
+  for (const side of [-1, 1]) {
+    const at = 0.043, away = 175 * WIDE * side;
+    const height = wormHalfWidth(at) * WORM.flatness * Math.sqrt(Math.max(0, 1 - Math.pow(away / wormHalfWidth(at), 2))) + 4;
+    const centre = new THREE.Vector3(at * LENGTH, height, away);
+    pairs(loop(centre, 72 * WIDE, 60 * WIDE), marks, true);
+    eyes.push(new THREE.Vector3(centre.x + 8, centre.y + 1, centre.z - side * 22 * WIDE)); // the pigment cup sits towards the midline
+  }
+  const pharynx = new THREE.Vector3(0.55 * LENGTH, 0, 0);
+  pairs(loop(pharynx, 820, 185 * WIDE, 44), marks, true);
+  pairs(loop(new THREE.Vector3(pharynx.x + 700, 0, 0), 70, 70 * WIDE, 16), marks, true); // the mouth, at its hind end
+
+  // The nervous system. The brain is one bent body: back along one side, round the front
+  // and back along the other, so it reads as two lobes joined at the front. A nerve cord
+  // leaves the hind end of each lobe and runs to the tail, with links across like rungs.
+  const nerves = [];
+  const level = -30; // a little below the middle of the body
+  const BEND = 165, ARM = 640, SPLAY = 0.16; // the front bend's radius, a lobe's length, how far the lobes part
+  const FRONT = WORM.brainAt - 190; // where the bend's centre lies, from the front tip
+  const brainLength = 2 * ARM + Math.PI * BEND;
+  /** The brain's middle line at a distance along it: the point, which way it runs, the outer side, and half its width. */
+  const brainAt = (distance) => {
+    let point, run, half;
+    if (distance < ARM || distance > ARM + Math.PI * BEND) {
+      const side = distance < ARM ? -1 : 1;
+      const back = side < 0 ? ARM - distance : distance - ARM - Math.PI * BEND; // from the bend towards the tail
+      const q = back / ARM;
+      point = new THREE.Vector3(FRONT + back * Math.cos(SPLAY), level, side * (BEND + back * Math.sin(SPLAY)));
+      run = new THREE.Vector3(side * Math.cos(SPLAY), 0, Math.sin(SPLAY));
+      half = (112 + 44 * Math.sin(Math.PI * Math.min(1, q / 0.6))) * (1 - 0.66 * ease(0.45, 1, q));
+    } else {
+      const angle = -Math.PI / 2 + (distance - ARM) / BEND;
+      point = new THREE.Vector3(FRONT - BEND * Math.cos(angle), level, BEND * Math.sin(angle));
+      run = new THREE.Vector3(Math.sin(angle), 0, Math.cos(angle));
+      half = 112 - 20 * Math.cos(angle);
+    }
+    return { point, run, out: run.clone().cross(UP), half: half * WIDE };
+  };
+  const spine = Array.from({ length: 121 }, (_, index) => brainAt((index / 120) * brainLength));
+  const round = (station, count) => Array.from({ length: count }, (_, step) => {
+    const angle = (step / count) * Math.PI * 2;
+    return station.point.clone().addScaledVector(station.out, Math.cos(angle) * station.half).addScaledVector(UP, Math.sin(angle) * station.half * 0.6);
+  });
+  // Its outline seen from above, the ridge along its top and bottom, and rings round it.
+  const outer = spine.map((station) => station.point.clone().addScaledVector(station.out, station.half));
+  const inner = spine.map((station) => station.point.clone().addScaledVector(station.out, -station.half));
+  pairs([...outer, ...inner.reverse()], nerves, true);
+  for (const lift of [0.6, -0.6]) pairs(spine.map((station) => station.point.clone().addScaledVector(UP, station.half * lift)), nerves);
+  spine.forEach((station, index) => {
+    if (index % 8 === 4) pairs(round(station, 18), nerves, true);
+  });
+  // The same body as a skin of triangles: never drawn, only clicked.
+  const brainSkin = new THREE.BufferGeometry();
+  const sides = 10, hull = [], hullFaces = [];
+  for (const station of spine) hull.push(...round(station, sides));
+  for (let row = 0; row + 1 < spine.length; row++) {
+    for (let step = 0; step < sides; step++) {
+      const a = row * sides + step, b = row * sides + ((step + 1) % sides);
+      hullFaces.push(a, a + sides, b, b, a + sides, b + sides);
+    }
+  }
+  brainSkin.setFromPoints(hull);
+  brainSkin.setIndex(hullFaces);
+  // Short nerves from the outer side of the brain towards the edge of the head.
+  const forward = new THREE.Vector3(-1, 0, 0);
+  for (const [fraction, reach] of [[0.1, 150], [0.2, 190], [0.3, 215], [0.385, 215], [0.44, 180]]) {
+    for (const from of [fraction, 1 - fraction]) {
+      const station = brainAt(from * brainLength);
+      const root = station.point.clone().addScaledVector(station.out, station.half);
+      const tip = root.clone().add(station.out.clone().addScaledVector(forward, 0.45).normalize().multiplyScalar(reach * WIDE));
+      const room = wormHalfWidth(Math.max(0.004, tip.x / LENGTH)) - 35; // keep the tip inside the head
+      if (Math.abs(tip.z) > room) tip.z = Math.sign(tip.z) * room;
+      nerves.push(root, tip);
+    }
+  }
+  // The cords settle halfway between the midline and the edge, and meet in the tail.
+  const hind = brainAt(brainLength).point;
+  const cordAside = (t) => hind.z + (wormHalfWidth(t) * 0.5 - hind.z) * ease(hind.x / LENGTH, hind.x / LENGTH + 0.075, t);
+  for (const side of [-1, 1]) {
+    const cord = [new THREE.Vector3(hind.x, level, side * hind.z)];
+    for (let t = hind.x / LENGTH + 0.008; t < 0.972; t += 0.0125) cord.push(new THREE.Vector3(t * LENGTH, level, side * cordAside(t)));
+    cord.push(new THREE.Vector3(0.975 * LENGTH, level, 0));
+    pairs(cord, nerves);
+  }
+  for (let t = 0.175; t < 0.94; t += 0.045) nerves.push(new THREE.Vector3(t * LENGTH, level, -cordAside(t)), new THREE.Vector3(t * LENGTH, level, cordAside(t)));
+
+  planarian = { silhouette, body: lineGeometry(body), skin, marks: lineGeometry(marks), eyes, nerves: lineGeometry(nerves), brainSkin };
+  return planarian;
+}
+
+/** Puts something built in the worm's frame where the worm lies. */
+function inWorm(object) {
+  object.position.copy(WORM_ORIGIN);
+  return object;
+}
+
+/** A ring the size of the sheet, where the sheet is: beside the worm, never inside it. */
+function sheetRing(ctx, zoneName, band, noteAt, text, roomy = false) {
+  const ring = new THREE.Mesh(new THREE.RingGeometry(SHEET_RADIUS * (1 - band), SHEET_RADIUS * (1 + band), 48), ctx.neutral({ opacity: 0.9, colour: "fg", side: THREE.DoubleSide }));
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 1;
+  ctx.illustrate(ring, zoneName);
+  // "roomy" marks a note that is written only where the screen is wide enough for it.
+  return { text, anchor: new THREE.Vector3(roomy ? SHEET_RADIUS * 3 : 0, 0, noteAt), roomy };
+}
+
+/**
+ * The organ: planned, so a sketch. Drawn as a planarian's brain with its nerve cords.
+ * Returns the notes the lens writes beside it.
+ */
+export function buildOrgan(ctx) {
+  const shapes = planarianShapes();
+  const organ = ctx.scale("scale.organ", ORGAN.centre.clone().add(new THREE.Vector3(-520, 110, -WORM.halfWidth - 40)));
+  organ.add(inWorm(new THREE.LineSegments(shapes.nerves, organ.lineMaterial({ opacity: 0.95 }))));
+  organ.add(inWorm(new THREE.Mesh(shapes.brainSkin, organ.proxyMaterial())));
+  // The outline of the worm's head, faint, so the brain is seen where it lies.
+  ctx.illustrate(inWorm(new THREE.LineSegments(shapes.silhouette, ctx.neutralLine({ opacity: 0.4 }))), "organ");
+  const notes = [sheetRing(ctx, "organ", 0.018, -SHEET_RADIUS * 1.3, SHEET_NOTE)];
+  notes.push({ text: "A planarian's brain and nerve cords: a placeholder outline", anchor: ORGAN.centre.clone().add(new THREE.Vector3(330, 0, -WORM.halfWidth - 50)) });
+  return { notes };
+}
+
+/**
+ * The whole organism: a long-term goal, so a sketch. Drawn as a planarian flatworm, with
+ * the same brain in its head. Returns the notes the lens writes beside it.
+ */
+export function buildOrganism(ctx) {
+  const shapes = planarianShapes();
+  const organism = ctx.scale("scale.organism", BODY.centre.clone().add(new THREE.Vector3(0, 240, -WORM.halfWidth - 260)));
+  organism.add(inWorm(new THREE.LineSegments(shapes.body, organism.lineMaterial({ opacity: 0.5 }))));
+  organism.add(inWorm(new THREE.LineSegments(shapes.silhouette, organism.lineMaterial({ opacity: 1 }))));
+  organism.add(inWorm(new THREE.LineSegments(shapes.marks, organism.lineMaterial({ opacity: 0.9 }))));
+  organism.add(inWorm(new THREE.LineSegments(shapes.nerves, organism.lineMaterial({ opacity: 0.8 }))));
+  organism.add(inWorm(new THREE.Mesh(shapes.skin, organism.proxyMaterial())));
+  const cup = new THREE.CircleGeometry(30 * WIDE, 16).rotateX(-Math.PI / 2);
+  ctx.illustrate(instanced(cup, ctx.neutral({ opacity: 0.85, colour: "fg", side: THREE.DoubleSide }), shapes.eyes.map((eye) => ({ position: eye.clone().add(WORM_ORIGIN) }))), "organism");
+  const notes = [sheetRing(ctx, "organism", 0.09, SHEET_RADIUS + 620, "The sheet, at the same scale", true)];
+  notes.push({ text: "A planarian flatworm: a placeholder outline", anchor: BODY.centre.clone().add(new THREE.Vector3(BODY.length * 0.1, 0, WORM.halfWidth + 620)) });
+  return { notes };
 }
 
 export { glyphSprite };

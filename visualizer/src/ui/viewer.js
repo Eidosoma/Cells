@@ -11,17 +11,22 @@ import { h, formatDate } from "./dom.js";
 import "./legend.js";
 import "./index.js";
 import "./panel.js";
+import "./timeline.js";
 import { SceneModel } from "../scene/model.js";
 import { Stage } from "../core/stage.js";
 import { LabelLayer } from "../core/labels.js";
 import { StackLens } from "../lenses/stack.js";
 import { CellLens } from "../lenses/cell.js";
 import { ProteinLens } from "../lenses/proteins.js";
+import { ReplayLens } from "../lenses/replay.js";
+import { Catalogue } from "../replay/catalogue.js";
 
 // The views, in the order of the switch. "short" is the name on a narrow screen.
+// "needs" says what the scene must hold for the view to be offered.
 const LENSES = [
   { id: "cell", label: "Cell and scales", short: "Cell", make: (stage, model, labels) => new CellLens(stage, model, labels) },
-  { id: "proteins", label: "Protein atlas", short: "Proteins", needs: "proteins", make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
+  { id: "proteins", label: "Protein atlas", short: "Proteins", needs: (scene) => scene.proteins, make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
+  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
   { id: "engine", label: "Engine", short: "Engine", make: (stage, model, labels) => new StackLens(stage, model, labels) },
 ];
 
@@ -86,6 +91,7 @@ class CellsViewer extends HTMLElement {
     this.scaleText = h("span", { class: "scalebar-text" });
     this.scaleBar = h("div", { class: "scalebar", hidden: true }, this.scaleLine, this.scaleText);
     this.hint = h("p", { class: "hint" }, "Drag to turn · scroll to zoom · click a part");
+    this.timeline = h("cells-timeline", { class: "card", hidden: true });
     this.fallback = h("p", { class: "fallback", hidden: true });
     this.frame = h(
       "div",
@@ -94,6 +100,7 @@ class CellsViewer extends HTMLElement {
       h("header", { class: "bar" }, h("div", { class: "brand" }, h("b", {}, "Cells"), h("span", {}, "Architecture map")), this.switchBox, h("div", { class: "bar-end" }, this.stamp, this.indexButton)),
       this.hint,
       this.caveat,
+      this.timeline,
       this.rail,
       this.viewCard,
       this.scaleBar,
@@ -122,7 +129,9 @@ class CellsViewer extends HTMLElement {
     const meta = this.model.meta;
     this.mapStamp = [meta.as_of ? `As of ${formatDate(meta.as_of)}` : "", meta.revision ? `main ${meta.revision}` : ""].filter(Boolean).join(" · ");
     // A view is offered only if the scene holds what it draws.
-    this.views = LENSES.filter((lens) => !lens.needs || this.model.raw[lens.needs]);
+    this.views = LENSES.filter((lens) => !lens.needs || lens.needs(this.model.raw));
+    // The runs that can be replayed, read without the 3D stage so the list works without it.
+    this.replays = new Catalogue(this.model.raw.replays);
     for (const lens of this.views) {
       this.switchBox.append(
         h(
@@ -148,6 +157,7 @@ class CellsViewer extends HTMLElement {
         for (const lens of this.lenses.values()) lens.applyPalette(palette);
       });
       this.listen();
+      new ResizeObserver(() => this.fitCard()).observe(this);
       document.fonts?.ready.then(() => {
         this.labels.measure();
         this.stage.invalidate();
@@ -171,13 +181,22 @@ class CellsViewer extends HTMLElement {
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
     if (query.get("isolate")) this.setIsolate(query.get("isolate"));
     if (query.get("together")) this.current?.setTogether?.(query.get("together"));
-    if (query.get("select")) this.select(query.get("select"), { fly: true });
-    // A stated camera angle or distance has the last word, also over the flight to a selected part.
-    if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
-      const view = {};
-      for (const name of ["azimuth", "polar", "distance"]) if (query.get(name)) view[name] = Number(query.get(name));
-      this.stage.rig.setView(view);
-    }
+    // A replay: which run, where the playhead stands, which record colours the sheet.
+    if (query.get("time")) this.current?.seek?.(Number(query.get("time")));
+    const settle = () => {
+      if (query.get("record")) this.current?.setRecord?.(query.get("record"));
+      if (query.get("select")) this.select(query.get("select"), { fly: true });
+      // A stated camera angle or distance has the last word, also over the flight to a selected part.
+      if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
+        const view = {};
+        for (const name of ["azimuth", "polar", "distance"]) if (query.get(name)) view[name] = Number(query.get(name));
+        this.stage.rig.setView(view);
+      }
+    };
+    // A view that loads its data first (a run) is ready a moment later; the others are ready now.
+    const loading = query.get("run") ? this.current?.show?.(query.get("run")) : this.current?.ready;
+    if (loading?.then) loading.then(settle).then(() => query.get("play") && this.current?.player?.play());
+    else settle();
     if (query.get("index")) this.toggleIndex(true);
     window.addEventListener("hashchange", () => {
       const name = location.hash.slice(1);
@@ -203,7 +222,13 @@ class CellsViewer extends HTMLElement {
     if (this.stage) {
       if (!this.lenses.has(id)) {
         const lens = spec.make(this.stage, this.model, this.labels);
-        lens.onChrome = () => this.renderChrome();
+        lens.onChrome = () => {
+          if (this.current === lens) this.renderChrome();
+        };
+        // A view whose parts change under an open panel (another run is loaded) asks for it again.
+        lens.onPanel = () => {
+          if (this.current === lens) this.renderPanel();
+        };
         this.lenses.set(id, lens);
       }
       this.current = this.lenses.get(id);
@@ -228,15 +253,25 @@ class CellsViewer extends HTMLElement {
   /** The parts the current lens shows, with or without a stage. */
   shownEntities() {
     if (this.current) return this.current.entities();
+    if (this.state.lens === "experiments") return this.replays.entities();
     return this.model.inLens(this.state.lens);
   }
 
   shows(id) {
-    return Boolean(id) && this.shownEntities().some((entity) => entity.id === id);
+    if (!id) return false;
+    if (this.current) return this.current.has(id);
+    return this.shownEntities().some((entity) => entity.id === id);
+  }
+
+  /** A part by its id: one of the scene's, or one the current view makes itself (a run, a cell of a run). */
+  lookup(id) {
+    if (!id) return null;
+    return this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || null;
   }
 
   sections() {
     if (this.current) return this.current.sections();
+    if (this.state.lens === "experiments") return this.replays.sections();
     const groups = new Map();
     for (const entity of this.shownEntities()) {
       const key = entity.eyebrow || (entity.group === "biology" ? entity.scale || entity.kind : entity.group);
@@ -249,8 +284,9 @@ class CellsViewer extends HTMLElement {
   // ------------------------------------------------------------ state changes
 
   select(id, { fly = false } = {}) {
-    if (id && !this.model.get(id)) return;
+    if (id && !this.lookup(id)) return;
     if (id && !this.shows(id)) {
+      if (!this.model.get(id)) return; // a part of a view that is not the one shown
       // The part lives in another view: go there.
       const home = this.model.lensOf(this.model.get(id));
       if (home === this.state.lens || !this.views.some((lens) => lens.id === home)) return;
@@ -287,14 +323,24 @@ class CellsViewer extends HTMLElement {
     this.renderLegend();
     this.renderIndex();
     const chrome = this.current?.chrome?.() || {};
-    this.caveat.hidden = !chrome.caveat;
-    this.hint.hidden = Boolean(chrome.caveat) || !this.stage;
-    this.caveat.textContent = chrome.caveat || "";
+    // A caveat on the picture, or what a view is doing (loading a run, or why it could not).
+    const words = chrome.caveat || chrome.status || "";
+    this.caveat.hidden = !words;
+    this.hint.hidden = Boolean(words) || Boolean(chrome.quiet) || !this.stage;
+    this.caveat.textContent = words;
+    this.caveat.classList.toggle("is-status", Boolean(chrome.status));
     // A view whose data has its own date says so in place of the map's.
     this.stamp.textContent = chrome.stamp || this.mapStamp;
-    this.viewCard.hidden = !chrome.view && !chrome.card;
-    this.viewCard.classList.toggle("view-card", Boolean(chrome.card));
+    this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
+    this.viewCard.classList.toggle("view-card", Boolean(chrome.card || chrome.run));
+    this.viewCard.classList.toggle("run-card", Boolean(chrome.run));
     if (chrome.card) this.viewCard.replaceChildren(...this.card(chrome.card));
+    if (chrome.run) this.viewCard.replaceChildren(...this.runCard(chrome.run));
+    // A replay brings its playhead.
+    this.timeline.hidden = !chrome.timeline;
+    this.frame.classList.toggle("has-timeline", Boolean(chrome.timeline));
+    if (chrome.timeline) this.timeline.bind(chrome.timeline.player, chrome.timeline);
+    else this.timeline.unbind?.();
     if (chrome.view) {
       this.viewCard.replaceChildren(
         this.segmented("Colour", [["biology", "Biology"], ["status", "Status"]], chrome.view.colour, (value) => this.current.setColourBy(value)),
@@ -311,6 +357,7 @@ class CellsViewer extends HTMLElement {
         )
       );
     }
+    this.fitCard();
   }
 
   /** A view's own summary: headline numbers, what the data is, and where it came from. */
@@ -341,6 +388,68 @@ class CellsViewer extends HTMLElement {
     ];
   }
 
+  /** A replay's card: the experiment, its runs, and the class the experiment itself records for the run shown. */
+  runCard({ heading, text, experiments = [], runs, klass, colour, details }) {
+    const lens = this.current;
+    // With a run's details open, the details follow the run picked.
+    const pick = (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
+    const chooser = (id, label, options, active) => {
+      const select = h("select", { id, class: "run-select", "aria-label": label, onchange: () => pick(select.value) }, options.map(([value, text_]) => h("option", { value, selected: value === active }, text_)));
+      return select;
+    };
+    return [
+      h("p", { class: "eyebrow" }, "Experiment"),
+      experiments.length > 1
+        ? chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, item.label]), experiments.find((item) => item.active)?.first)
+        : null,
+      h("p", { class: "card-title" }, heading),
+      // The first sentence says what the experiment asks; the rest is a click away.
+      ...(() => {
+        const parts = /^(.*?[.?!])\s+(.+)$/s.exec(text || "");
+        if (!parts) return [h("p", { class: "card-text run-plain" }, text)];
+        return [h("p", { class: "card-text run-lead" }, parts[1]), h("details", { class: "run-plain" }, h("summary", {}, "How it is done"), h("p", { class: "card-text" }, parts[2]))];
+      })(),
+      h(
+        "div",
+        { class: "runs", role: "group", "aria-label": "Runs" },
+        h("span", { class: "seg-label" }, runs.length === 1 ? "Run" : "Runs"),
+        // A few runs are rows to press; many are a list to choose from.
+        runs.length > 8
+          ? chooser("cells-run", "Run", runs.map((run) => [run.id, `${run.title}, ${run.sub}${run.klass ? ` · ${run.klass.toLowerCase()}` : ""}`]), runs.find((run) => run.active)?.id)
+          : runs.map((run) =>
+              h(
+                "button",
+                { class: "run-row", type: "button", "aria-pressed": String(run.active), title: `${run.title}, ${run.sub}`, onclick: () => pick(run.id) },
+                h("span", { class: "run-name" }, run.title),
+                h("span", { class: "run-sub" }, run.sub, run.klass ? ` · recorded as ${run.klass.toLowerCase()}` : "")
+              )
+            )
+      ),
+      klass
+        ? h(
+            "div",
+            { class: "run-class" },
+            h("p", { class: "run-class-line" }, h("span", { class: "seg-label" }, "Recorded class"), h("span", { class: "chip chip-strong", title: klass.description }, klass.label)),
+            // The rule and where the class comes from open on request, so the card stays short.
+            h("details", { class: "run-class-note" }, h("summary", {}, "What this class means"), h("p", { class: "card-text" }, [klass.description, klass.note].filter(Boolean).join(" ")))
+          )
+        : null,
+      colour ? this.segmented("Colour", colour.options.map(([value, label]) => [value, label.replace(/^Membrane /, "").replace(/^./, (letter) => letter.toUpperCase())]), colour.active, (value) => lens.setRecord(value)) : null,
+      h("div", { class: "run-actions" }, h("button", { class: "pill-button pill-small", type: "button", onclick: () => this.select(details) }, "Run details")),
+    ].filter(Boolean);
+  }
+
+  /** The view's card sits above the legend; it takes the room the legend leaves and scrolls beyond that. */
+  fitCard() {
+    const card = this.viewCard;
+    if (card.hidden || this.clientWidth < 760) {
+      card.style.maxHeight = "";
+      return;
+    }
+    const legend = this.legend.hidden ? 0 : this.legend.offsetHeight + 16;
+    card.style.maxHeight = `${Math.max(150, this.clientHeight - card.offsetTop - legend - 12)}px`;
+  }
+
   segmented(label, options, active, onPick) {
     return h(
       "div",
@@ -357,7 +466,7 @@ class CellsViewer extends HTMLElement {
   /** Panels that labels must not run under, in the viewer's own coordinates. */
   blockedRects() {
     const origin = this.getBoundingClientRect();
-    return [this.legend, this.viewCard, this.rail, this.panel, this.index]
+    return [this.legend, this.viewCard, this.rail, this.panel, this.index, this.timeline]
       .filter((element) => !element.hidden)
       .map((element) => element.getBoundingClientRect())
       .filter((rect) => rect.width && rect.height)
@@ -393,6 +502,9 @@ class CellsViewer extends HTMLElement {
   renderLegend() {
     const chrome = this.current?.chrome?.() || {};
     const base = { isolate: this.state.isolate, open: this.state.legendOpen };
+    // Without the 3D stage a replay draws nothing, so it has nothing to explain.
+    this.legend.hidden = this.state.lens === "experiments" && !chrome.legend;
+    if (this.legend.hidden) return;
     const atlas = this.model.raw.proteins;
     if (chrome.legend || (this.state.lens === "proteins" && atlas)) {
       // The protein atlas: how sure each mapping is, in the inventory's own words.
@@ -421,7 +533,7 @@ class CellsViewer extends HTMLElement {
   }
 
   renderPanel() {
-    this.panel.show({ model: this.model, entity: this.state.selected ? this.model.get(this.state.selected) : null });
+    this.panel.show({ model: this.model, entity: this.lookup(this.state.selected) });
     this.frame.classList.toggle("has-panel", Boolean(this.state.selected));
     if (this.stage) {
       const open = Boolean(this.state.selected);
@@ -481,6 +593,11 @@ class CellsViewer extends HTMLElement {
     });
     canvas.addEventListener("keydown", (event) => {
       if (this.stage.rig.nudge(event.key)) event.preventDefault();
+      else if (event.key === " " && this.current?.player?.run) {
+        // In a replay, the space bar plays and pauses.
+        this.current.player.toggle();
+        event.preventDefault();
+      }
     });
     this.shadowRoot.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {

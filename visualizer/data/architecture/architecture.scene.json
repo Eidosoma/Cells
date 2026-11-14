@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T16:13:37Z",
-  "revision": "d1c0216",
+  "generated_at": "2026-11-14T17:15:07Z",
+  "revision": "8d6fd0ee",
   "revision_date": "2026-11-14",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -367,7 +367,7 @@
      ]
     ]
    },
-   "checked_at": "d1c0216"
+   "checked_at": "8d6fd0ee"
   },
   "counts": {
    "units": 49,
@@ -4698,6 +4698,9 @@
      "label": "One production execution path"
     },
     {
+     "label": "A closed internal compartment on the shared inventory (FR-1, high priority; D157)"
+    },
+    {
      "label": "A run-view output (D154: every experiment must eventually be visualizable)"
     },
     {
@@ -5395,6 +5398,7 @@
    "status": "planned",
    "order": 3,
    "plain": "A first whole organ, defined as data. Planned; the organ and species are not yet chosen.",
+   "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. Nothing at this scale is simulated, and the sheet of cells is not brain tissue: its ring lies beside the worm only to compare sizes. The sizes are indicative.",
    "sources": [
     {
      "path": "docs/ROADMAP.md",
@@ -5410,6 +5414,7 @@
    "status": "planned",
    "order": 4,
    "plain": "Interacting organ systems, and in time whole animals. A long-term goal; nothing is built.",
+   "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. Nothing at this scale is simulated, and no species has been chosen. The sizes are indicative.",
    "sources": [
     {
      "path": "README.md",

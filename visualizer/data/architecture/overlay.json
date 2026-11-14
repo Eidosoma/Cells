@@ -2630,6 +2630,7 @@
       "order": 3,
       "status": "planned",
       "plain": "A first whole organ, defined as data. Planned; the organ and species are not yet chosen.",
+      "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. Nothing at this scale is simulated, and the sheet of cells is not brain tissue: its ring lies beside the worm only to compare sizes. The sizes are indicative.",
       "sources": [
         {
           "path": "docs/ROADMAP.md",
@@ -2643,6 +2644,7 @@
       "order": 4,
       "status": "planned",
       "plain": "Interacting organ systems, and in time whole animals. A long-term goal; nothing is built.",
+      "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. Nothing at this scale is simulated, and no species has been chosen. The sizes are indicative.",
       "sources": [
         {
           "path": "README.md",
