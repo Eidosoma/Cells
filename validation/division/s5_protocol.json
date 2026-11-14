@@ -39,6 +39,11 @@
   "landing_order": "this protocol's frozen commit lands on main first, then the amended R-ops; A.8's 'pending in R-ops' is removed in that second landing (the lead, 14 November)",
   "development_runs": {
    "q2": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a34/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "1b2cfd6",
+    "pre_merge": false
+   },
+   "q2_merge": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a32/q2_rops_comparison/q2_rops.json",
     "snapshot_revision": "d8a0979",
     "pre_merge": false
@@ -470,8 +475,8 @@
   },
   "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' amended magnitudes: the cases, the simultaneous divisions, the judged sets and the controls under both scales, each passed to R-ops explicitly (charge_term False for the old, True for the new) and recorded in its scale's report; the verdict at the new scale, under the third amendment's rule",
   "preview_verdicts": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a32/q2_rops_comparison/q2_rops.json",
-   "snapshot_revision": "d8a0979",
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a34/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "1b2cfd6",
    "pre_merge": false,
    "note": "the verdict function on the seen sets: a preview only",
    "frozen_rule": {
@@ -488,8 +493,8 @@
    }
   },
   "development_old_scale": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a32/q2_rops_comparison/q2_rops.json",
-   "snapshot_revision": "d8a0979",
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a34/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "1b2cfd6",
    "pre_merge": false,
    "scale": "old",
    "fixed_cases": {
@@ -599,6 +604,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305391.1626036311
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.1963392743
       }
      },
      "parent charge": {
@@ -639,6 +650,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 833999.9701174648
+      },
+      "first_order_at_threshold": {
+       "amounts": 833999.9309945364
       }
      },
      "W": {
@@ -671,7 +688,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195808.72530709457,
+       "potentials": 844425.2213985586
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089118,
+       "potentials": 844424.9301319688
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -726,6 +751,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": false
+      },
+      "observed_at_threshold": {
+       "charges": 1305590.7922297423
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.196339274
       }
      },
      "parent charge": {
@@ -766,6 +797,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 24302.96966852532
+      },
+      "first_order_at_threshold": {
+       "amounts": 24302.970576255924
       }
      },
      "W": {
@@ -798,7 +835,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195757.97841122083,
+       "potentials": 844233.744194581
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089116,
+       "potentials": 844424.9301319189
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -853,6 +898,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305362.3909570703
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.1963392743
       }
      },
      "parent charge": {
@@ -893,6 +944,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 150214.18928098516
+      },
+      "first_order_at_threshold": {
+       "amounts": 150214.21538494003
       }
      },
      "W": {
@@ -925,7 +982,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195786.74691869572,
+       "potentials": 844377.9638387557
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089116,
+       "potentials": 844424.9301319986
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -980,6 +1045,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305363.0697549665
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.1963392743
       }
      },
      "parent charge": {
@@ -1020,6 +1091,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 34446.51657247033
+      },
+      "first_order_at_threshold": {
+       "amounts": 34446.87036335243
       }
      },
      "W": {
@@ -1052,7 +1129,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195811.196703507,
+       "potentials": 844565.8068195938
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089118,
+       "potentials": 844424.9301319114
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -1107,6 +1192,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305338.7311930477
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.1963392738
       }
      },
      "parent charge": {
@@ -1147,6 +1238,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 94451.48167327106
+      },
+      "first_order_at_threshold": {
+       "amounts": 94451.37280248862
       }
      },
      "W": {
@@ -1179,7 +1276,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195769.00917865813,
+       "potentials": 844343.5935649168
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.6794508911,
+       "potentials": 844424.9301318966
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -1234,6 +1339,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305369.8429703317
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.1963392743
       }
      },
      "parent charge": {
@@ -1274,6 +1385,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 141715.9900213071
+      },
+      "first_order_at_threshold": {
+       "amounts": 141716.15604203896
       }
      },
      "W": {
@@ -1306,7 +1423,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195793.29196995703,
+       "potentials": 844461.362856073
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089116,
+       "potentials": 844424.9301319633
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -1361,6 +1486,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305411.9891762773
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.1963392743
       }
      },
      "parent charge": {
@@ -1401,6 +1532,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 164790.31143773723
+      },
+      "first_order_at_threshold": {
+       "amounts": 164790.86152169452
       }
      },
      "W": {
@@ -1433,7 +1570,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195803.79381389075,
+       "potentials": 844476.1245227435
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089116,
+       "potentials": 844424.930131973
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -1488,6 +1633,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305404.5898841645
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.196339274
       }
      },
      "parent charge": {
@@ -1528,6 +1679,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 75045.1912558174
+      },
+      "first_order_at_threshold": {
+       "amounts": 75045.42632163409
       }
      },
      "W": {
@@ -1560,7 +1717,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195818.4153522489,
+       "potentials": 844503.754842249
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089116,
+       "potentials": 844424.9301319441
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -1615,6 +1780,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305418.547765065
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.196339274
       }
      },
      "parent charge": {
@@ -1655,6 +1826,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 82777.4132121587
+      },
+      "first_order_at_threshold": {
+       "amounts": 82777.26170523744
       }
      },
      "W": {
@@ -1687,7 +1864,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195887.2938684151,
+       "potentials": 844734.2985664088
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089116,
+       "potentials": 844424.930132027
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -1742,6 +1927,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305394.6952163079
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.1963392743
       }
      },
      "parent charge": {
@@ -1782,6 +1973,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 262904.01666614984
+      },
+      "first_order_at_threshold": {
+       "amounts": 262904.3465297652
       }
      },
      "W": {
@@ -1814,7 +2011,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195803.34841749672,
+       "potentials": 844463.3649814293
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089116,
+       "potentials": 844424.9301319547
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -1869,6 +2074,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1305421.4808963602
+      },
+      "first_order_at_threshold": {
+       "charges": 1305391.1963392743
       }
      },
      "parent charge": {
@@ -1909,6 +2120,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 228358.15176831387
+      },
+      "first_order_at_threshold": {
+       "amounts": 228358.17307265545
       }
      },
      "W": {
@@ -1941,7 +2158,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 195815.57962568066,
+       "potentials": 844486.0502860943
+      },
+      "first_order_at_threshold": {
+       "charges": 195808.67945089118,
+       "potentials": 844424.9301319357
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -1996,6 +2221,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1162423.1204215793
+      },
+      "first_order_at_threshold": {
+       "charges": 1162423.1504254683
       }
      },
      "parent charge": {
@@ -2036,6 +2267,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 432439.66348346067
+      },
+      "first_order_at_threshold": {
+       "amounts": 432439.6193737368
       }
      },
      "W": {
@@ -2068,7 +2305,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 174363.51339779596,
+       "potentials": 771928.135173769
+      },
+      "first_order_at_threshold": {
+       "charges": 174363.47256382025,
+       "potentials": 771927.8286716528
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -2093,8 +2338,8 @@
    }
   },
   "development_new_scale": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a32/q2_rops_comparison/q2_rops.json",
-   "snapshot_revision": "d8a0979",
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a34/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "1b2cfd6",
    "pre_merge": false,
    "scale": "new",
    "fixed_cases": {
@@ -2204,6 +2449,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 698232.4825111388
+      },
+      "first_order_at_threshold": {
+       "charges": 698232.5003675186
       }
      },
      "parent charge": {
@@ -2244,6 +2495,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 555999.9800783099
+      },
+      "first_order_at_threshold": {
+       "amounts": 555999.9539963575
       }
      },
      "W": {
@@ -2276,7 +2533,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 104734.89958286451,
+       "potentials": 562950.1475990391
+      },
+      "first_order_at_threshold": {
+       "charges": 104734.87505512782,
+       "potentials": 562949.9534213125
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -2331,6 +2596,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 420.5035581883633
+      },
+      "first_order_at_threshold": {
+       "charges": 420.4392724196185
       }
      },
      "parent charge": {
@@ -2371,6 +2642,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 435.97964229328625
+      },
+      "first_order_at_threshold": {
+       "amounts": 435.9796599629956
       }
      },
      "W": {
@@ -2403,7 +2680,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 63.0495611157454,
+       "potentials": 718.4829193360324
+      },
+      "first_order_at_threshold": {
+       "charges": 63.06589086294278,
+       "potentials": 718.6456276278285
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -2458,6 +2743,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 4383.745033370959
+      },
+      "first_order_at_threshold": {
+       "charges": 4383.841768308678
       }
      },
      "parent charge": {
@@ -2498,6 +2789,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 4503.388659445716
+      },
+      "first_order_at_threshold": {
+       "amounts": 4503.389453975184
       }
      },
      "W": {
@@ -2530,7 +2827,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 657.5026101220808,
+       "potentials": 7446.762522842294
+      },
+      "first_order_at_threshold": {
+       "charges": 657.5762652463018,
+       "potentials": 7447.176729331965
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -2585,6 +2890,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 901.2415058487586
+      },
+      "first_order_at_threshold": {
+       "charges": 901.260924642353
       }
      },
      "parent charge": {
@@ -2625,6 +2936,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 926.392971571681
+      },
+      "first_order_at_threshold": {
+       "amounts": 926.4024891849062
       }
      },
      "W": {
@@ -2657,7 +2974,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 135.19087664389426,
+       "potentials": 1540.00981115007
+      },
+      "first_order_at_threshold": {
+       "charges": 135.18913869635296,
+       "potentials": 1539.7529318406764
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -2712,6 +3037,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1107.9961158337696
+      },
+      "first_order_at_threshold": {
+       "charges": 1108.040648985319
       }
      },
      "parent charge": {
@@ -2752,6 +3083,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 1156.2631715938658
+      },
+      "first_order_at_threshold": {
+       "amounts": 1156.2618421873
       }
      },
      "W": {
@@ -2784,7 +3121,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 166.17242447309664,
+       "potentials": 1891.9277358190561
+      },
+      "first_order_at_threshold": {
+       "charges": 166.20609734779788,
+       "potentials": 1892.1099873434098
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -2839,6 +3184,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 4854.560128946207
+      },
+      "first_order_at_threshold": {
+       "charges": 4854.639539217263
       }
      },
      "parent charge": {
@@ -2879,6 +3230,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 4962.857766769849
+      },
+      "first_order_at_threshold": {
+       "amounts": 4962.863594024436
       }
      },
      "W": {
@@ -2911,7 +3268,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 728.1387061414075,
+       "potentials": 8241.505616598764
+      },
+      "first_order_at_threshold": {
+       "charges": 728.1959308825896,
+       "potentials": 8241.150052077302
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -2966,6 +3331,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 5051.287685286371
+      },
+      "first_order_at_threshold": {
+       "charges": 5051.207226319577
       }
      },
      "parent charge": {
@@ -3006,6 +3377,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 5183.629805116077
+      },
+      "first_order_at_threshold": {
+       "amounts": 5183.647121938088
       }
      },
      "W": {
@@ -3038,7 +3415,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 757.6621789905639,
+       "potentials": 8572.839009679468
+      },
+      "first_order_at_threshold": {
+       "charges": 757.6810839479367,
+       "potentials": 8572.319301356723
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -3093,6 +3478,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 4420.457808332877
+      },
+      "first_order_at_threshold": {
+       "charges": 4420.4124531054595
       }
      },
      "parent charge": {
@@ -3133,6 +3524,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 4407.510823545257
+      },
+      "first_order_at_threshold": {
+       "amounts": 4407.524641879543
       }
      },
      "W": {
@@ -3165,7 +3562,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 663.094836396834,
+       "potentials": 7531.446117198612
+      },
+      "first_order_at_threshold": {
+       "charges": 663.0618679658191,
+       "potentials": 7530.743143345671
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -3220,6 +3625,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 1458.6527271677346
+      },
+      "first_order_at_threshold": {
+       "charges": 1458.6221648110204
       }
      },
      "parent charge": {
@@ -3260,6 +3671,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 1513.2336710563604
+      },
+      "first_order_at_threshold": {
+       "amounts": 1513.2309058557428
       }
      },
      "W": {
@@ -3292,7 +3709,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 218.88116714942163,
+       "potentials": 2491.1832019902095
+      },
+      "first_order_at_threshold": {
+       "charges": 218.7933247216531,
+       "potentials": 2490.270851860392
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -3347,6 +3772,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 7379.739958957985
+      },
+      "first_order_at_threshold": {
+       "charges": 7379.720177213224
       }
      },
      "parent charge": {
@@ -3387,6 +3818,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 7606.2054915156
+      },
+      "first_order_at_threshold": {
+       "amounts": 7606.21505182151
       }
      },
      "W": {
@@ -3419,7 +3856,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 1106.9278888464016,
+       "potentials": 12481.109402730568
+      },
+      "first_order_at_threshold": {
+       "charges": 1106.9580265819836,
+       "potentials": 12480.541338346648
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -3474,6 +3919,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 4900.1011334903915
+      },
+      "first_order_at_threshold": {
+       "charges": 4899.987454607887
       }
      },
      "parent charge": {
@@ -3514,6 +3965,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 5076.775411706567
+      },
+      "first_order_at_threshold": {
+       "amounts": 5076.775897352739
       }
      },
      "W": {
@@ -3546,7 +4003,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 735.0240190628897,
+       "potentials": 8338.270363661632
+      },
+      "first_order_at_threshold": {
+       "charges": 734.9981181911833,
+       "potentials": 8337.666876641484
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -3601,6 +4066,12 @@
       },
       "targets_caught_at_threshold": {
        "charges": true
+      },
+      "observed_at_threshold": {
+       "charges": 647333.8289663062
+      },
+      "first_order_at_threshold": {
+       "charges": 647333.8455178058
       }
      },
      "parent charge": {
@@ -3641,6 +4112,12 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      },
+      "observed_at_threshold": {
+       "amounts": 296474.67924169725
+      },
+      "first_order_at_threshold": {
+       "amounts": 296474.6490006778
       }
      },
      "W": {
@@ -3673,7 +4150,15 @@
       "refused_by": [
        "isopotential"
       ],
-      "event_checks_agree_with_the_event_map": true
+      "event_checks_agree_with_the_event_map": true,
+      "observed_at_threshold": {
+       "charges": 97100.0995674232,
+       "potentials": 523234.0021766341
+      },
+      "first_order_at_threshold": {
+       "charges": 97100.07682767088,
+       "potentials": 523233.79442111694
+      }
      },
      "non-conservation": {
       "smallest_defect_caught": {
@@ -3702,6 +4187,12 @@
    "snapshot_revision": "4487d0a",
    "pre_merge": false,
    "note": "the a_k control at the new scale, estimated before R-ops lands: in every near-zero member a 1e-9 defect moves at least 1e-23 C of charge against a threshold of 1.2-4.1e-25 C, so it would be caught (an estimate, not a new-scale result). The new-scale run catches it on the charges at 1e-13-1.8e-10 in every case (development_new_scale)"
+  },
+  "development_at_the_merge": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a32/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "d8a0979",
+   "pre_merge": false,
+   "note": "the merged head's new-scale pass: the result the third amendment followed; protocol-dev-s5a34 reproduces it apart from the first-order records"
   },
   "development_at_the_second_amendment": {
    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a28/q2_rops_comparison/q2_rops.json",
@@ -3740,6 +4231,7 @@
    "a finding for the lead: one target misses 1e-9 at the new scale. The mismatch scale's charges in seen spread 1 draw 35 read 63.05 at delta = 1e-9 (charge_D1_C; D2 53.6) and are caught at 1.78e-9; its potentials, also a target, read 718. Target and threshold unchanged. So the frozen rule's preview verdict on the seen sets (not the judged verdict) fails, on that entry alone; the third amendment followed (negative_controls.third_amendment, preview_verdicts)",
    "the mechanism: on the charges the mismatch scale is the a_k control at |a - f| = 0.15 strength (their ratio at 1e-9 is 0.1499-0.1501 in all ten near-zero draws). Both move charge in proportion to the patch charges, which vanish with the parent potential; A.8's term (the anchor and the increments' content) does not. In draw 35 (V_P = -0.63 mV, the seen sets' nearest to 0 V) a 1e-9 defect moves 1.54e-24 C against 64 eps x M_D1 = 1.57e-24 C (M_D1 = 1.10e-10 C, its charge -6.2e-15 C; probe/q2_draw35_keys-s5a32.json). At that draw a_k's margin is 6.6 and transference's 6.8 (amounts); the parent charge, scaled by the declared charge, keeps 3.2e4",
    "recurrence: one such draw among the 207 admitted at spreads 1 and 3",
+   "the third amendment's snapshot (protocol-dev-s5a34, 1b2cfd6) reproduces protocol-dev-s5a32 apart from the first-order records, and the worktree run q2-dev-15 exactly. Its first-order check: in all ten near-zero cases each target of a_k, the mismatch scale and transference reads 0.99974-1.00040 of its first-order size at 1e-9, and the fixed cases 1.00000 (development_new_scale). Its preview verdicts: the frozen rule fails, on draw 35's mismatch-scale charges alone; the third amendment's rule passes (preview_verdicts)",
    "protocol-dev-s5a32's near_zero_set.json holds new-scale ratios under old_scale_potential_ratio: the probe (unedited) calls R-ops at its default, now the new scale. q2_near_zero stays at protocol-dev-s5a28"
   ],
   "before_the_freeze": {

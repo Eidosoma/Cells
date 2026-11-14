@@ -54,7 +54,8 @@ def registered(item, protocol_path=PROTOCOL, root=ROOT):
 
 EVIDENCE = Path("/mnt/workspaces/Cells/cell-division-s5-20261113-01")
 DEVELOPMENT = dict(
-    q2=EVIDENCE / "protocol-dev-s5a32/q2_rops_comparison/q2_rops.json",  # Both scales, merged.
+    q2=EVIDENCE / "protocol-dev-s5a34/q2_rops_comparison/q2_rops.json",  # The third amendment's.
+    q2_merge=EVIDENCE / "protocol-dev-s5a32/q2_rops_comparison/q2_rops.json",  # The merged head's.
     # s5a28's: at s5a32 the probe called R-ops at its new default (new_scale_findings).
     q2_near_zero=EVIDENCE / "protocol-dev-s5a28/near_zero_set.json",
     q2_second_amendment=EVIDENCE / "protocol-dev-s5a28/q2_rops_comparison/q2_rops.json",
@@ -80,6 +81,7 @@ DEVELOPMENT = dict(
     regression=EVIDENCE / "regression-s5a9/results.txt",
 )
 SNAPSHOTS = {
+    "protocol-dev-s5a34": "1b2cfd6",
     "protocol-dev-s5a32": "d8a0979",
     "protocol-dev-s5a28": "4487d0a",
     "protocol-dev-s5a25": "3c3f190",
@@ -204,6 +206,8 @@ def q10():
 
 # What an engine-side control's development summary keeps besides its catches.
 ENGINE_SIDE = ("engine_refuses_from", "refused_by", "event_checks_agree_with_the_event_map")
+# And what a NEAR_ZERO_REPORTED control's keeps (the third amendment).
+FIRST_ORDER = ("observed_at_threshold", "first_order_at_threshold")
 
 
 def q2(name="q2", scale="old"):
@@ -235,6 +239,7 @@ def q2(name="q2", scale="old"):
                         k: v[k] for k in ("smallest_defect_caught", "targets_caught_at_threshold")
                     }
                     | ({k: v[k] for k in ENGINE_SIDE if k in v} if "refused_by" in v else {})
+                    | {k: v[k] for k in FIRST_ORDER if k in v}
                 )
                 for kind, v in entry.items()
             }
@@ -635,6 +640,11 @@ def draft():
                 "new-scale result). The new-scale run catches it on the charges at "
                 "1e-13-1.8e-10 in every case (development_new_scale)",
             ),
+            "development_at_the_merge": dict(
+                where("q2_merge"),
+                note="the merged head's new-scale pass: the result the third amendment "
+                "followed; protocol-dev-s5a34 reproduces it apart from the first-order records",
+            ),
             "development_at_the_second_amendment": dict(
                 where("q2_second_amendment"),
                 note="the second amendment's controls before R-ops' amendment (old scale); "
@@ -744,6 +754,14 @@ def draft():
                 "draw a_k's margin is 6.6 and transference's 6.8 (amounts); the parent charge, "
                 "scaled by the declared charge, keeps 3.2e4",
                 "recurrence: one such draw among the 207 admitted at spreads 1 and 3",
+                "the third amendment's snapshot (protocol-dev-s5a34, 1b2cfd6) reproduces "
+                "protocol-dev-s5a32 apart from the first-order records, and the worktree run "
+                "q2-dev-15 exactly. Its first-order check: in all ten near-zero cases each "
+                "target of a_k, the mismatch scale and transference reads 0.99974-1.00040 of "
+                "its first-order size at 1e-9, and the fixed cases 1.00000 "
+                "(development_new_scale). Its preview verdicts: the frozen rule fails, on draw "
+                "35's mismatch-scale charges alone; the third amendment's rule passes "
+                "(preview_verdicts)",
                 "protocol-dev-s5a32's near_zero_set.json holds new-scale ratios under "
                 "old_scale_potential_ratio: the probe (unedited) calls R-ops at its default, "
                 "now the new scale. q2_near_zero stays at protocol-dev-s5a28",
