@@ -980,10 +980,11 @@ from a clean snapshot.
 - **The bright line.** After the merge, `validation.division.cleft_tissue_crosscheck`, a new J1
   reader, joins the J1 module list of `tests/unit/test_j2_bright_line.py`.
 
-**The protocol, PROPOSED (14 November, not registered).** It is
+**The protocol, registered by the lead (14 November).** It is
 `validation/division/s5_protocol.json`, drafted by `validation/division/s5_protocol.py` from the
 disclosed development runs it names; every tolerance number is computed there. Q2's frozen
-draws were fixed before R-ops' amended magnitudes land (A.8). The lead registers it after review.
+draws were fixed before R-ops' amended magnitudes landed (A.8). The lead registered it after
+review with the advisor; registration changed its status alone.
 
 ### 8.4 Shared code: crossrev and D148
 - **What changes.** `contract.py`, `pump_composite.py` and `pump_composite_adapter.py` are

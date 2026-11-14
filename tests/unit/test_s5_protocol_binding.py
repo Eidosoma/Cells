@@ -1,4 +1,4 @@
-"""The PROPOSED S5 protocol binds the drivers' frozen constants (the lead, 14 November).
+"""The registered S5 protocol binds the drivers' frozen constants (the lead, 14 November).
 
 Q2's seen seed, spreads, draws per set, defect ladder, threshold, families, targets and near-zero
 cases are stated in validation/division/s5_protocol.json and used by

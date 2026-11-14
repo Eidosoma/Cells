@@ -2,7 +2,7 @@
  "kind": "cells.cell_division_s5_protocol@1",
  "id": "s5a-partition-bridge-insertion2-lumen2",
  "title": "S5a: isopotential_partition@1, cytoplasmic_bridge_closure@1, scheduled_membrane_insertion@2 and restricted_cleft_lumen@2 against R-ops, R-tissue and the analytic limits",
- "status": "PROPOSED, not registered: drafted 14 November 2026 for the lead's review with the advisor; the lead's rulings of 14 November written in. No judged run has been made. Q2's judged seeds and its negative controls are frozen together in this commit, before R-ops' amended magnitudes (Appendix A.8, the increment form's term, pending in R-ops) land.",
+ "status": "registered by the lead (registrar), 14 November 2026, after the final review with the advisor. The rules, Q2's seeds and negative controls (three amendments, the last before registration), the thresholds and the tolerances are frozen as written. No judged run had been made at registration; each item's judged run follows once, from a fresh clean snapshot of main.",
  "engine_models": [
   "resolved_pump_composite@1",
   "resolved_pump_tissue@3",

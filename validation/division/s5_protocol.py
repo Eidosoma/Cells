@@ -1,9 +1,9 @@
-"""S5a's qualification protocol, PROPOSED and not registered: its draft from disclosed runs.
+"""S5a's qualification protocol, registered by the lead: its draft from disclosed runs.
 
 docs/CELL_DIVISION_S5_DESIGN.md §8.3, with the lead's rulings of 13 and 14 November. Every
 tolerance number in the draft is computed here from a development run named beside it
-(DEVELOPMENT); the rules are stated with them. The lead registers the protocol, after review
-with the advisor: registration changes the status. Judged runs use a fresh clean snapshot of
+(DEVELOPMENT); the rules are stated with them. The lead registered the protocol after review
+with the advisor; registration changed its status alone. Judged runs use a fresh clean snapshot of
 main, and every S5 judge entry (q2_rops_comparison, q3_tissue_comparison, q5_order,
 egg_division_world) starts with registered(), which refuses, before anything is computed, an
 unregistered protocol and a run outside a clean execution snapshot, as S3's judge does
@@ -106,10 +106,11 @@ EPS = float(np.finfo(float).eps)
 FLOOR_K = 64  # Q3's rounding floor: k eps x the quantity's scale, with k = 64 (as Q5's).
 ORDER_BAND = (1.8, 2.3)  # Q5's observed-order band (proposed).
 STATUS = (
-    "PROPOSED, not registered: drafted 14 November 2026 for the lead's review with the "
-    "advisor; the lead's rulings of 14 November written in. No judged run has been made. Q2's "
-    "judged seeds and its negative controls are frozen together in this commit, before R-ops' "
-    "amended magnitudes (Appendix A.8, the increment form's term, pending in R-ops) land."
+    "registered by the lead (registrar), 14 November 2026, after the final review with the "
+    "advisor. The rules, Q2's seeds and negative controls (three amendments, the last before "
+    "registration), the thresholds and the tolerances are frozen as written. No judged run had "
+    "been made at registration; each item's judged run follows once, from a fresh clean "
+    "snapshot of main."
 )
 # Q2's judged sets: fresh seeds, assigned by the lead (14 November). Read only by
 # q2_rops_comparison.judge, behind its guard; nobody runs them before the judged run.
