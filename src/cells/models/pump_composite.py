@@ -57,6 +57,7 @@ from cells.core.errors import NumericalError
 from cells.core.pump_composite_spec import MODEL_ID, entries, identity, projection
 from cells.core.specs import ChannelChange, ConfigError
 from cells.models import pump_composite_adapter as pump3
+from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.fixed_step import rk4_checked_step
 
@@ -81,6 +82,11 @@ def _and(a, b):
     if b is None:
         return a
     return a & b
+
+
+def _checked_above(row, p, active, *, xp):
+    """The domain of a row whose actual state was checked beforehand (retirement, S5 §3.5)."""
+    return xp.asarray(True)
 
 
 @cache
@@ -166,6 +172,21 @@ def structure_errors(inner, operators):
         for name in op.STATE_RESETS:
             if name not in inner.STATE_FIELDS:
                 errors.append(f"{op.LAW_ID} resets {name}, which is not inner state")
+    # Closers of activity masks (S5 design §2): masks combine by conjunction, a mask has
+    # closers or a provider, never both, and a closer counts as the mask's provider for
+    # CONFLICTS_VIEW (an operator reading the mask on the declared layout is refused).
+    closed = {}
+    for op in operators:
+        for name in op.CLOSES:
+            if name not in getattr(inner, "MASK_FIELDS", ()):
+                errors.append(f"{op.LAW_ID} closes {name}, which is not an inner activity mask")
+            closed.setdefault(name, op.LAW_ID)
+    if closed:  # Propagation rewrites every mask and pads closed slots: no provider of them.
+        padded = (*getattr(inner, "MASK_FIELDS", ()), *getattr(inner, "PADDED_FIELDS", ()))
+        for name in set(providers) & set(padded):
+            errors.append(
+                f"{name} has closers or a provider, never both ({providers[name]} provides it)"
+            )
     accepted, provided, columns = {}, set(), {k: ["inner"] for k in inner.OBSERVATION_FIELDS}
     for op in operators:
         # Writers follow owners: an entity write targets inner state or a field an
@@ -181,6 +202,7 @@ def structure_errors(inner, operators):
             if name not in provided:
                 errors.append(f"{op.LAW_ID} reads the view {name}; no earlier operator provides it")
         provided.update(op.VIEW_FIELDS)
+        provided.update(op.CLOSES)
         # One owner per observation column; replacement is a declared chain in order.
         for name in op.observed_columns():
             if name in columns:
@@ -198,6 +220,12 @@ def structure_errors(inner, operators):
                 errors.append(
                     f"{op.LAW_ID} reads {name} as declared, but {providers[name]} provides it"
                 )
+            if closed.get(name, op.LAW_ID) != op.LAW_ID:
+                errors.append(f"{op.LAW_ID} reads {name} as declared, but {closed[name]} closes it")
+    for i, op in enumerate(operators):  # A mask's reader follows every closer of it.
+        for name in set(op.VIEW_READS) & set(closed):
+            if any(name in later.CLOSES for later in operators[i:]):
+                errors.append(f"{op.LAW_ID} reads {name} before a closer of it")
     for i, op in enumerate(operators):
         for law in op.REQUIRES:
             if law not in laws[:i]:
@@ -235,6 +263,11 @@ def field_map(inner, operators):
         for op in operators
         for k in op.VIEW_FIELDS
     }
+    for k in dict.fromkeys(k for op in operators for k in op.CLOSES):  # Only with closers.
+        views[k] = {
+            "closers": [op.LAW_ID for op in operators if k in op.CLOSES],
+            "readers": [r.LAW_ID for r in operators if k in r.VIEW_READS],
+        }
     return dict(state=state, layout=layout, control=control, views=views, observations=columns)
 
 
@@ -281,7 +314,19 @@ class Composition:
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
             self.process_operator is not None
         )
-        self.field_inputs = any(set(op.VIEW_FIELDS) & set(inner.FIELD_INPUTS) for op in operators)
+        self.field_inputs = any(
+            set((*op.VIEW_FIELDS, *op.CLOSES)) & set(inner.FIELD_INPUTS) for op in operators
+        )
+        # Topology (S5 design §2, §3.5). With a closer the composite owns the capacitor-energy
+        # correction at the view, referenced to the view of the initial state through two
+        # bound layout arrays (COMPOSITE_LAYOUT_FIELDS); with a retiring operator its row
+        # checks read the adjusted row. Without either, nothing here changes a program.
+        self.closers = tuple(op for op in operators if op.CLOSES)
+        self.retiring = tuple(op for op in operators if op.RETIRES)
+        self.owns_view_energy = bool(self.closers)
+        self.COMPOSITE_LAYOUT_FIELDS = (
+            ("view_energy_reference_pJ", "view_plate_reference_C") if self.owns_view_energy else ()
+        )
         # Types: the inner model's fields, then each operator's, in declared order.
         self.STATE_AXES = dict(inner.STATE_AXES)
         for op in operators:
@@ -295,7 +340,10 @@ class Composition:
         for op in operators:
             roles |= {*op.HEAT_FIELDS, *op.WORK_FIELDS}
         self.ENERGY_FLOW_FIELDS = tuple(k for k in self.STATE_TYPE._fields if k in roles)
-        extra = tuple(k for op in operators for k in op.LAYOUT_FIELDS)
+        extra = (
+            *(k for op in operators for k in op.LAYOUT_FIELDS),
+            *self.COMPOSITE_LAYOUT_FIELDS,
+        )
         self.LAYOUT_TYPE = NamedTuple(
             "CompositeLayout", [(k, object) for k in (*inner.LAYOUT_TYPE._fields, *extra)]
         )
@@ -387,9 +435,60 @@ class Composition:
         kind = (
             self.FLOOR_LAYOUT_TYPE if type(p) is self.inner.FLOOR_LAYOUT_TYPE else self.LAYOUT_TYPE
         )
+        if self.owns_view_energy:
+            values = self._closed_initial_state(self.STATE_TYPE(**values), kind, layout)
+            layout.update(self._view_references(self.STATE_TYPE(**values), kind, layout))
         return self.STATE_TYPE(**values), kind(**layout)
 
+    def _closed_initial_state(self, state, kind, layout):
+        """The bound state with closed contacts' gates at @3's padded 0 (S5 design §2).
+
+        @3 binds every declared gate; a contact closed at the initial view holds 0 instead,
+        and the closer that opens it writes its gate at that event."""
+        o = layout["boundary_V"].size
+        zeros = dict(view_energy_reference_pJ=np.asarray(0.0), view_plate_reference_C=np.zeros(o))
+        p = kind(**layout, **zeros)
+        live = self._live_closers(p)
+        if not live:
+            return state._asdict()
+        view = self.inner.view(p, state, self.providers, live, xp=np)
+        return self.inner.close_state(state, view, xp=np)._asdict()
+
+    def _view_references(self, state, kind, layout):
+        """The energy rule's reference with a closer (S5 design §3.6 point 4), bound once (R1).
+
+        adapter.view_capacitor_terms measures against the declared layout at t = 0, where
+        pending slots are active. At the view of the initial state its two terms are the
+        offsets that bring the reference to that view: E_ref = 1/2 sum C0 V0^2 (declared) -
+        1/2 sum C V^2 (initial view) and q_ref = plates_declared(0) - plates_view(0) at the held
+        nodes. Every ledger then starts at zero (to rounding: a host bind against a device solve).
+        """
+        o = layout["boundary_V"].size
+        zeros = dict(view_energy_reference_pJ=np.asarray(0.0), view_plate_reference_C=np.zeros(o))
+        p = kind(**layout, **zeros)
+        live = self._live_closers(p)
+        if not live:
+            return zeros
+        view = self.inner.view(p, state, self.providers, live, xp=np)
+        energy, electrode, _, _ = self.inner.view_capacitor_terms(
+            state, view, self.inner.inner_layout(p), xp=np
+        )
+        return dict(
+            view_energy_reference_pJ=np.asarray(-energy, dtype=float),
+            view_plate_reference_C=np.asarray(-electrode, dtype=float),
+        )
+
+    def _live_retiring(self, p):
+        """The retiring operators not statically idle (static under jit)."""
+        return tuple(op for op in self.retiring if not op.statically_idle(p))
+
+    def _live_closers(self, p):
+        """The closers not statically idle (by layout shape: static under jit)."""
+        return tuple(op for op in self.closers if not op.statically_idle(p))
+
     def view(self, p, state, *, xp=jnp):
+        if self.closers:
+            return self.inner.view(p, state, self.providers, self._live_closers(p), xp=xp)
         return self.inner.view(p, state, self.providers, xp=xp)
 
     def control_view(self, control, state, p, *, xp=jnp):
@@ -427,7 +526,12 @@ class Composition:
         valid, current = None, state
         for op in self.events:
             if op in active:
-                current, ok = op.event(current, control, p, xp=xp)
+                if op.BOOKS_AT_VIEW and self.field_inputs:  # Static: S5's partition.
+                    current, ok = op.event(
+                        current, control, p, xp=xp, view=lambda s: self.view(p, s, xp=xp)
+                    )
+                else:
+                    current, ok = op.event(current, control, p, xp=xp)
                 valid = _and(valid, ok)
         h = 0.5 * dt
         splits = tuple(op for op in self.splits if op in active)
@@ -489,12 +593,12 @@ class Composition:
         """Domain of the step's end state: the inner one at the view if a split moved it."""
         valid = None
         if self.domain_views:
-            valid = self.inner.domain_valid(
-                self.inner.inner_state(state),
-                self.inner.view(p, state, self.domain_views, xp=xp),
-                p.active,
-                xp=xp,
+            view = (
+                self.view(p, state, xp=xp)  # Static: with S5's closers, the full view (§2).
+                if self.closers and self._live_closers(p)
+                else self.inner.view(p, state, self.domain_views, xp=xp)
             )
+            valid = self.inner.domain_valid(self.inner.inner_state(state), view, p.active, xp=xp)
         for op in operators:
             valid = op.domain_valid(state, p, valid, xp=xp)
         return valid
@@ -544,11 +648,14 @@ class Composition:
         return self.STATE_TYPE(*(xp.where(values.valid, v, xp.nan) for v in values.derivative))
 
     def _domain(self, state, p, active, *, xp=jnp):
-        layout = (
-            self.inner.view(p, state, self.domain_views, xp=xp)
-            if self.domain_views
-            else self.inner.inner_layout(p)
-        )
+        if self.closers and self._live_closers(p):
+            # Static: S5's closers (§2). Closed slots hold @3's padding, which the declared
+            # layout does not admit (a closed contact's gate 0 below its declared minimum).
+            layout = self.view(p, state, xp=xp)
+        elif self.domain_views:
+            layout = self.inner.view(p, state, self.domain_views, xp=xp)
+        else:
+            layout = self.inner.inner_layout(p)
         valid = self.inner.domain_valid(self.inner.inner_state(state), layout, active, xp=xp)
         for op in self.operators:
             valid = op.domain_valid(state, p, valid, xp=xp)
@@ -647,20 +754,47 @@ class Composition:
             row = op.adjust_inner(row, p, xp=xp)
         return row
 
-    def _ledgers(self, state, p, *, xp, own):
+    def _ledgers(self, state, p, *, xp, own, adjust=True):
         """The inner ledgers (declared layout) with the operators' terms, in declared
-        order, then (own) the operators' own ledgers; one ledger call per operator."""
-        row = self._adjusted(state, p, xp=xp)
+        order, then (own) the operators' own ledgers; one ledger call per operator.
+        adjust=False: state is already the adjusted row (a retiring composition's checks)."""
+        row = self._adjusted(state, p, xp=xp) if adjust else state
         inner = self.inner.balances if xp is np else self.inner.device_balances
         result = inner(self.inner.inner_state(row), self.inner.inner_layout(p))
         extra = {}
         for op in self.operators:
             result, ledgers = op.ledger_terms(result, row, p, xp=xp)
             extra |= ledgers
+        if self.owns_view_energy and self._live_closers(p):
+            energy, electrode = self._view_energy_terms(row, p, xp=xp)[:2]
+            result["energy"] = result["energy"] + energy
+            result["electrode"] = result["electrode"] - electrode
         for op in self.operators:
             if op.LAW_ID in self.writers_of:
                 extra |= self._with_writers(op, {k: extra[k] for k in op.LEDGERS}, row, p, xp=xp)
         return result | extra if own else result
+
+    def _view_energy_terms(self, row, p, *, xp):
+        """The energy rule at the view with a closer (S5 design §3.6 point 4, §5.3).
+
+        (energy pJ, electrode C [outside], energy magnitude pJ, electrode magnitude C [outside]):
+        adapter.view_capacitor_terms brings @3's capacitor term on the declared layout to the
+        physical 1/2 sum C V^2 at the view; the bound references then measure it, and the
+        clamps' plate charges, from the view of the initial state, so the energy is
+        1/2 sum C V^2(t) - 1/2 sum C V^2(0) and the electrode residual is transferred minus
+        (plates_view(t) - plates_view(0)).
+        """
+        view = self.view(p, row, xp=xp)
+        energy, electrode, e_mag, q_mag = self.inner.view_capacitor_terms(
+            row, view, self.inner.inner_layout(p), xp=xp
+        )
+        e_ref, q_ref = p.view_energy_reference_pJ, p.view_plate_reference_C
+        return (
+            energy + e_ref,
+            xp.where(p.reservoir, electrode + q_ref, 0.0),
+            e_mag + xp.abs(e_ref),
+            xp.where(p.reservoir, q_mag + xp.abs(q_ref), 0.0),
+        )
 
     def _with_writers(self, owner, values, row, p, *, xp, magnitudes=False):
         """An owner's own ledgers (or their magnitudes), {name: value}, with the terms
@@ -687,18 +821,18 @@ class Composition:
         named = self._with_writers(op, named, row, p, xp=xp, magnitudes=True)
         return tuple(named[k] for k in op.LEDGERS)
 
-    def inner_balances(self, state, p):
+    def inner_balances(self, state, p, *, adjust=True):
         """The inner ledgers with the operators' terms (host; the inner row checks)."""
-        return self._ledgers(state, p, xp=np, own=False)
+        return self._ledgers(state, p, xp=np, own=False, adjust=adjust)
 
-    def balances(self, state, p):
-        return self._ledgers(state, p, xp=np, own=True)
+    def balances(self, state, p, *, adjust=True):
+        return self._ledgers(state, p, xp=np, own=True, adjust=adjust)
 
-    def device_balances(self, state, p):
-        return self._ledgers(state, p, xp=jnp, own=True)
+    def device_balances(self, state, p, *, adjust=True):
+        return self._ledgers(state, p, xp=jnp, own=True, adjust=adjust)
 
-    def inner_magnitudes(self, row, p, *, xp=np):
-        adjusted = self._adjusted(row, p, xp=xp)
+    def inner_magnitudes(self, row, p, *, xp=np, adjust=True):
+        adjusted = self._adjusted(row, p, xp=xp) if adjust else row
         magnitudes = list(
             self.inner.magnitudes(
                 self.inner.inner_state(adjusted), self.inner.inner_layout(p), xp=xp
@@ -706,10 +840,14 @@ class Composition:
         )
         for op in self.operators:
             magnitudes = op.magnitude_terms(magnitudes, row, p, xp=xp)
+        if self.owns_view_energy and self._live_closers(p):
+            _, _, energy, electrode = self._view_energy_terms(row, p, xp=xp)
+            magnitudes[4] = electrode if magnitudes[4] is None else magnitudes[4] + electrode
+            magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return tuple(magnitudes)
 
-    def magnitudes(self, row, p, *, xp=np):
-        inner = self.inner_magnitudes(row, p, xp=xp)
+    def magnitudes(self, row, p, *, xp=np, adjust=True):
+        inner = self.inner_magnitudes(row, p, xp=xp, adjust=adjust)
         own = tuple(
             m for op in self.own_ledger_operators for m in self._own_magnitudes(op, row, p, xp=xp)
         )
@@ -743,13 +881,22 @@ class Composition:
         operator's own ledgers against their bounds (in declared order).
         """
         _, p = self.initial_values(spec)
+        domain = self.domain_valid
+        if self._live_retiring(p):  # S5 design §3.5: every check reads the record added back.
+            self._check_actual_domains(state, p)
+            domain = _checked_above
+            state = self._adjusted(state, p, xp=np)
+            balances = lambda s, q: self.inner_balances(s, q, adjust=False)  # noqa: E731
+            magnitudes = lambda r, q, *, xp=np: self.inner_magnitudes(r, q, xp=xp, adjust=False)  # noqa: E731
+        else:
+            balances, magnitudes = self.inner_balances, self.inner_magnitudes
         diagnostics = self.inner.checked_rows(
             state,
             spec,
             p,
-            domain=self.domain_valid,
-            balances=self.inner_balances,
-            magnitudes=self.inner_magnitudes,
+            domain=domain,
+            balances=balances,
+            magnitudes=magnitudes,
             dissipation=self.DISSIPATION_FIELDS,
             steps=steps,
         )
@@ -778,6 +925,21 @@ class Composition:
                         extra[key] = max(extra[key], float(np.max(np.abs(value), initial=0)))
         return diagnostics | extra
 
+    def _check_actual_domains(self, state, p):
+        """A retiring composition's domain, on each actual row at its view (S5 design §2): the
+        adjusted rows hold the retired history on closed slots, where @3 admits only padding."""
+        rows = (
+            [state]
+            if state.amount_increment.ndim == 2
+            else [
+                self.STATE_TYPE(*(v[i] for v in state)) for i in range(len(state.amount_increment))
+            ]
+        )
+        with np.errstate(all="ignore"):
+            for row in rows:
+                if not self.domain_valid(row, p, p.active, xp=np):
+                    raise NumericalError(DOMAIN_MESSAGE)
+
     def device_failure_message(self, check):
         for op in self.own_ledger_operators:
             if check in op.LEDGERS:
@@ -785,7 +947,26 @@ class Composition:
         return self.inner.device_failure_message(check)
 
     def device_checks(self, previous, row, p, constants, steps):
-        """check_values' tests for one accepted row on the device: (failed, diagnostics)."""
+        """check_values' tests for one accepted row on the device: (failed, diagnostics).
+
+        With a retiring operator both rows are the adjusted ones (the record added back), so
+        the domain, every ledger and each heat element's monotonicity read the history as if
+        nothing moved; the balances and magnitudes then do not adjust again (S5 design §3.5).
+        """
+        if self._live_retiring(p):
+            domain = self.domain_valid(row, p, p.active, xp=jnp)  # The actual row, at its view.
+            return row_checks(
+                self._adjusted(previous, p, xp=jnp),
+                self._adjusted(row, p, xp=jnp),
+                p,
+                constants,
+                steps,
+                domain_valid=lambda *_, **__: domain,
+                balances=lambda r, q: self.device_balances(r, q, adjust=False),
+                limits=self.ledger_limits,
+                magnitudes=lambda r, q, *, xp: self.magnitudes(r, q, xp=xp, adjust=False),
+                dissipation=self.DISSIPATION_FIELDS,
+            )
         return row_checks(
             previous,
             row,

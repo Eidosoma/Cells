@@ -150,8 +150,9 @@ close (`active`, `outside_active`, `membrane_active`, `face_active`, `junction_a
 `channel_active`). Its `closures(state, p, q, *, xp)` returns {mask: open}. Then:
 - **Conjunction.** The view's mask is the declared mask AND each closer's mask, in declared
   order. Boolean conjunction is exact and independent of order.
-- **Closers or a provider, never both.** A composition in which one operator provides a mask
-  (insertion@1) and another closes it is refused.
+- **Closers or a provider, never both** (as built: no provider of any mask or padded field
+  beside a closer). Propagation rewrites every mask and padding rewrites the padded fields, so
+  a composition with a closer and a provider of any of them (insertion@1) is refused.
 - **A closer counts as the mask's provider for `CONFLICTS_VIEW`.** An operator that reads a
   mask from the declared layout (replacement@1 and @2) is refused beside any closer of it
   (§5.5).
@@ -166,10 +167,25 @@ close (`active`, `outside_active`, `membrane_active`, `face_active`, `junction_a
 - **Padded-slot semantics (adapter).** When any closer is present, the view presents every
   closed slot as @3 padding:
   - `amount_reference` and `extracellular_amount_reference` read 0;
-  - `channel_laws` reads 0.
+  - the charge anchors `initial_cell_charge_C` and `initial_outside_charge_C` read 0. As
+    built: @3's field solve requires every inactive node to carry zero charge, and a pending
+    daughter's declared anchor is f q_P. Insertion@1 never met this, because its onset rules
+    force a zero anchor;
+  - `channel_laws` reads 0;
+  - a closed contact's `junction_minimum` reads 0, and its gate, which is state, holds 0. As
+    built (S5a part 2): @3's domain requires gate 0 on an inactive contact and a gate at or
+    above the minimum everywhere, and no declared gate may lie below its minimum. The composite
+    pads the bound state once (`adapter.close_state`: a contact closed at the initial view
+    holds gate 0). A closer that opens or closes a contact then writes its gate at that event
+    (§3.4 step 4).
 
-  The adapter's `VIEW_FIELDS` gains `amount_reference` and `channel_laws`. This is the only
-  place that knows @3's names.
+  The adapter lists the layout fields as `PADDED_FIELDS`. This is the only place that knows
+  @3's names.
+- **Domain at the view (as built, S5a part 2).** With a closer, the composite evaluates @3's
+  domain at its view, closers included, not on the declared layout: a closed contact's padded
+  gate 0 lies below its declared minimum there. This applies to the definition's domain check,
+  the step end, and the host and device row checks. With a retiring operator the row checks
+  read the domain on the actual row at its view and the ledgers on the adjusted row (§3.5).
 - **Field inputs.** A closer of `active`, `outside_active` or `membrane_active` counts as a
   field-input provider. It therefore triggers the device refresh, the 64-node cap and the
   refusal of floating components.
@@ -229,8 +245,12 @@ close (`active`, `outside_active`, `membrane_active`, `face_active`, `junction_a
   - Anchors stay immutable (D057), and active slots keep small increments.
 - **Exactness for f = a_k = ½.**
   - Halving is exact in binary floating point, and the complement Δ − ½Δ is exact (Sterbenz).
-  - So the event writes bitwise-identical daughter states, and every booking is an exact
-    zero.
+  - So the event writes bitwise-identical daughter states. The moved transfers and the
+    chemical part of the work are exact zeros.
+  - As built, two bookings are rounding-level rather than zero. They are the capacitor
+    energy's change ΔU and the clamps' plate-charge change, because each is a difference of
+    two solves over different topologies. In the compact world these are about 2e-17 pJ
+    against U ≈ 0.05 pJ, and about 2e-28 C.
   - Potentials solved afterwards may differ between the daughters in the last bit, by
     elimination order (§7.3).
 - **@3's definition charge check.**
@@ -268,10 +288,14 @@ At the start of the step leaving a division time, for each due division, in decl
    state, and the clamps' plate charges.
 3. **Content.** Write the daughters' increments and zero the parent's, booked as signed
    transfers. Write the area, capacitance and abundance increments the same way.
-4. **Intensive state.** Copy the gates.
+4. **Intensive state.** Copy the gates: the daughters' populations and mapped contacts take
+   the parent's.
 5. **Retirement.** Move the parent's @3 history into the record and zero it.
 6. **Apply.** Set `division_applied[d] = 1`. The closures now close the parent and open the
-   daughters, their patches, populations and contacts (the bridge included).
+   daughters, their patches, populations and contacts (the bridge included). As built: a
+   contact that opens without a map (the bridge) takes its declared gate, and every contact
+   closed at the post-event view holds gate 0, @3's padding (§2). The view reads no gate, so
+   the gates are written after it.
 7. **Post-event view and checks.**
    - Isopotential check: daughters at the parent's potential within a rounding allowance; the
      outside potentials unchanged.
@@ -299,8 +323,9 @@ static index arrays.
     (dissipated sum) and the charge ledgers.
 - **Checks on the adjusted row (composite, static).**
   - With an operator that declares `RETIRES`, the composite runs its host and device row checks
-    (domain, ledgers, dissipation) on the adjusted row, with balance and magnitude functions
-    that do not adjust again.
+    (ledgers, dissipation) on the adjusted row, with balance and magnitude functions that do
+    not adjust again. The domain is read on the actual row at its view (§2): the adjusted row
+    holds the retired history on closed slots, where @3 admits only padding.
   - Each heat element is then monotone across the event.
   - This changes only `pump_composite.py`, not `surface_pump*.py`. Compositions without a
     retiring operator are unchanged.
@@ -418,6 +443,9 @@ so no whole-content event allowance is needed: this improves on design §5.4's e
 - **Anchors and fractions.**
   - Anchors that are not exact fractions, or domain parameters that differ (§3.2).
   - f or a_k outside (0, 1).
+  - As built (S5a part 2): a daughter's patch, population or contact that no map makes. It
+    would open at birth with no anchor from the parent. A contact may also be another
+    division's target, or the bridge.
   - A daughter without a patch on a held bath: a floating component, which needs topology
     epochs.
 - **Mismatch carriers.** They must be charged species with t_s ≥ 0 and Σ t_s = 1, and are
@@ -548,7 +576,19 @@ full or not at all.
   is not fixed open;
 - P_s A_j ≠ 2 a_0 D_s^cyt for its declared diffusivities and σ_cyt;
 - a start time other than its division's;
-- a negative or reopening aperture.
+- a negative or reopening aperture, or one below a_0 before its start (the domain);
+- as built: a daughter that divides again before its bridge has closed (a linear closure ends
+  at t_b + τ_c);
+- as built, a version-1 limitation (decision 16): an exponential closure never ends, so it is
+  admitted only for a terminal division and refused when either daughter is declared to
+  divide again, scheduled or not. Linear closure is the one for 1 → 2 → 4; a declared closure
+  threshold for exponential closure may lift this later;
+- as built: a_0 beyond the step bound of §4.2, by @3's explicit-rate step check, which counts
+  the bridge's declared conductance against the daughters' capacitances.
+
+As built (S5a part 2), the bridge's slot is padding until both daughters are born (closed, gate
+0, minimum 0 at the view), opens with them at its declared gate 1, and is padding again once
+either retires, its history in the partition's record (§2, §3.4).
 
 ## 5. New versions of S2 and S3 operators
 
@@ -571,6 +611,26 @@ full or not at all.
 - **Populations on onset patches** become admissible: the padded-slot rule gives them law code
   0 until onset, which lifts the declared departure of design §6. Admitting them is deferred to
   S5b (decision 9). In S5a, insertion@2 keeps insertion@1's refusal.
+- **As built (S5a part 2, `operators/membrane_insertion_v2.py`).**
+  - The onset rule, at the definition:
+    - every onset patch facing a node opens at one time, on a cell live then;
+    - every other patch facing the node is closed at that time: a partition daughter born
+      later, or a cell already retired.
+  - Version 1 refuses an onset at a division's time.
+  - Rates against the partition's schedule: while a patch's rate is positive, its cell is
+    live.
+  - Order: insertion@2 precedes the partition, whose step-check share (R5) reads the area
+    inserted on the parent.
+  - The step check before any onset removes every patch facing an onset node. That includes
+    pending daughters' patches facing it, which @1 never had.
+  - The half-step is @1's law function, rewritten with the composite's view in place of @1's
+    own view and with its mask for liveness. @1's module is unchanged apart from two host-side
+    parameters (`parse_insertion`'s law, `parse_controls`' onset rule).
+  - Its ledger terms are its heat; the view's capacitor terms are the composite's (§5.3).
+  - Tests:
+    - `tests/unit/test_membrane_insertion_v2.py`. @2 reproduces @1's half-steps and ledgers
+      to 1e-14 on two clamps and on the cleft cell with a charged history;
+    - `tests/unit/test_cleft_division_runs.py` runs the furrow world.
 
 ### 5.2 `restricted_cleft_lumen@2`
 - **Target.** V = V_on + w (Σ_live A_k − A_on)/2, the sum over the facing patches live in the
@@ -585,6 +645,17 @@ full or not at all.
 - **Shrinkage.** A target below the held volume by no more than rounding is treated as no fill.
   Shrinkage beyond rounding is refused as before.
 - **Debt.** The padded-slot test of the lumen owed since S3 runs here.
+- **As built (S5a part 2, `operators/restricted_lumen_v2.py`).**
+  - The target is computed as (w/2) Σ_live (A_k − A_k,declared). This is A.5's formula,
+    because the live facing patches' declared areas sum to A_on exactly by the anchor rule.
+    For one live patch it is @1's target bitwise.
+  - The shrinkage allowance is 8 eps × (w/2) × Σ_live A_k.
+  - The domain check has no view. It bounds the volume by every facing patch's growth, which
+    equals the live growth while closed patches hold none: pending daughters hold none, and
+    the partition moves a retired parent's growth to its daughters. A test asserts both.
+  - Admission reads insertion@2's onset patches and the partition's patch maps.
+  - Tests: `tests/unit/test_restricted_lumen_v2.py`, where @2 reproduces @1's fills on the
+    cleft cell to 1e-14.
 
 ### 5.3 The composite owns the energy rule at the view
 - **The rule.** The composite books `adapter.view_capacitor_terms` (energy and electrode) once
@@ -736,7 +807,8 @@ there too.
 ### 7.3 Analytic limits
 - **Symmetric division.** f = a_k = ½ gives:
   - daughters' states bitwise identical at the event;
-  - every booking an exact 0;
+  - the moved transfers and the chemical part of the work exact zeros, with ΔU and the image
+    charge at rounding level (§3.2);
   - potentials equal to rounding afterwards. Elimination order can differ by an ulp, so the
     trajectories are equal to rounding, not bitwise.
 - **Asymmetric division.** The unmixing work equals RT Σ δ²/(2 n f (1 − f)) to leading order,
@@ -888,6 +960,22 @@ The Q11 items:
 The tolerance rule follows G2-Q1 and S3: 3 × (engine step term + reference term + rounding term),
 pinned at registration from development runs that are disclosed. The judged run is made once,
 from a clean snapshot.
+
+**Rulings for the protocol (the lead, 13 November, S5a part 2):**
+- **Q2's scale.** 64 eps × R-ops' own magnitudes, so the reference sets the tolerance scale, not
+  the code under test.
+- **Q3's timing.** Q3 compares only records strictly after each division instant. The instant
+  itself is Q2's, on each world's events.
+- **Q3's reference term.** R-tissue runs with atol scaled to the world: its `SMALL` set on the
+  compact world. Its default egg-scale set leaves about 3.7e-10 V in Vm there. The reference
+  term is measured against a set 1000 times tighter, as in S3.
+- **The references' independence.** R-ops (`validation/division/partition_reference.py`) and
+  R-tissue (`validation/division/cleft_tissue_reference.py`) land on main when S5a's
+  implementation is complete. Then they are run, and their source is not read while S5a's
+  qualification is open. A disagreement goes to the lead as a question about Appendix A; the
+  ruling enters Appendix A.
+- **The bright line.** After the merge, `validation.division.cleft_tissue_crosscheck`, a new J1
+  reader, joins the J1 module list of `tests/unit/test_j2_bright_line.py`.
 
 ### 8.4 Shared code: crossrev and D148
 - **What changes.** `contract.py`, `pump_composite.py` and `pump_composite_adapter.py` are
@@ -1058,6 +1146,15 @@ mirrors `tests/unit/test_d147_drivers.py`.
 | 12 | Bridge: an @3 junction with P A = 2 a D_s and a fixed open gate, prescribed closure (linear or exponential), a_0 bounded by dt | Waits for the cytoplasmic conductivity's source; until then a declared assumption with a band. σ_cyt enters only through G_b0 = 2 a_0 σ_cyt, so the wait does not hold up S5a's code (§4.2) |
 | 13 | S4: superseded and reported, no run (§9) | Accepted; the lead records it when this note lands |
 | 14 | Staging | S5a (about 5.5 days) and S5b (about 3.5 days, with the review's guards) approved. S5a lands after the volume ledger; code starts after the risk-1 probe and the constants-aware baseline |
+| 15 | Closed contacts as @3 padding (§2): minimum 0 at the view, gate 0 in state (padded at bind, written by the closer at its events); @3's domain read at the view with closers; the A.6 addition (item 5) | Accepted (S5a part 2). The lead relays A.6's sentence to the references agent |
+| 16 | Bridge closure before a daughter divides again | Accepted. Version 1 admits exponential closure only for terminal divisions (refused when either daughter is declared to divide again); linear is the closure for 1 → 2 → 4. A limitation: a declared closure threshold for exponential closure may come later (§4.4) |
+| 17 | a_0 bounded through @3's explicit-rate step check; bridge domain 0 ≤ a ≤ a_0; with retirement, domain failures reported before ledger failures | Accepted |
+| 18 | Insertion@2 as built (§5.1): an onset at any division time refused (version 1); an onset patch's cell live at its onset; every other facing patch closed then; rates only while the patch's cell is live; insertion@2 precedes every retiring operator (the R5 share reads the inserted area); the pre-onset step check removes every patch facing an onset node; its ledger terms are its heat | Accepted as built (the lead, 13 November) |
+| 19 | Lumen@2 as built (§5.2): the target (w/2) Σ_live (A_k − A_k,declared); an 8 eps × (w/2) × Σ_live A shrinkage allowance; the view-free domain bound over every facing patch; admission stricter than §5.2's wording (a facing patch that is neither an onset patch nor a partition-born descendant of one is refused, a never-live retired ancestor's included) | Accepted as built |
+| 20 | Partition as built: a daughter's unmapped patch, population or contact refused; the summary's `partition_history_totals` | Accepted as built |
+| 21 | The bright line: `tests.partition_fixtures` and `validation.division.q10_sensitivity` join the partition list; insertion@2 and lumen@2 stay off it on condition that neither reaches a partition module through its explicit imports (asserted by the scan; they read lifetimes and patch maps through the contract's host-side `living_intervals` and `patch_maps`). `validation.division.cleft_tissue_crosscheck` joins the J1 list after the references merge | Accepted (the lead) |
+| 22 | Q7 (S3's cleft egg on insertion@2 and lumen@2): S3's registered protocol and judge stay untouched; Q7 gets its own registered variant protocol; a change to the J1 judge is a new entry point or a parameter whose default is today's path; before the Q7 run, the registered S3 readings come out bitwise unchanged on their recorded inputs; the J2 bright line still passes | Ruled (the lead); not started |
+| 23 | Q10 (§8.3): raw development results accepted (`q10-s5a6`, no tolerance registered). The registered protocol varies a_0 at a t_p where the open bridge overlaps the asymmetry (the injection), and states t_p's range relative to the injection window | Accepted |
 
 ## 13. Risks
 1. **The electrode ledger at four cells.**
@@ -1224,6 +1321,9 @@ partition, bridge, insertion@2 or lumen@2 code (§7). These conventions hold thr
      still count in the totals.
    - D1, D2, their patches and the bridge between them (aperture a_0) become live.
    - Outside nodes and faces are unchanged.
+   - Gates of contacts (the engine's representation, added in S5a part 2): a contact that is
+     not live (pending, or with a retired endpoint) reads gate 0. The bridge becomes live with
+     its declared gate (1: fixed open, A.7); the daughter contacts e¹ and e² take g_e (step 4).
 6. **Identities and outputs.**
    - Charge: Q_{D1} = Σ_k a_k q_k, and Q_{D1} + Q_{D2} = Q_P.
    - Potentials after (A.2 with the new liveness): φ_{D1} = φ_{D2} = φ_P, and every outside

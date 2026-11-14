@@ -121,10 +121,11 @@ class PatchSchedule:
 # ------------------------------------------------------------------ definition
 
 
-def parse_insertion(raw, base):
+def parse_insertion(raw, base, *, law=LAW_ID):
+    """The declaration (law: this law's ID, or scheduled_membrane_insertion@2's; host side)."""
     _fields(raw, {"law", "patches"}, "insertion")
-    if raw["law"] != LAW_ID:
-        raise ConfigError("Insertion requires law " + LAW_ID)
+    if raw["law"] != law:
+        raise ConfigError("Insertion requires law " + law)
     if type(raw["patches"]) is not list or not raw["patches"]:
         raise ConfigError("Insertion declares its patches in a non-empty list")
     membranes = [p.id for p in base.model.membranes]
@@ -151,7 +152,7 @@ def parse_insertion(raw, base):
         patches.append(InsertedPatch(patch, cd, tuple(rows)))
     if len({p.membrane_id for p in patches}) != len(patches):
         raise ConfigError("One insertion entry per patch")
-    return Insertion(LAW_ID, tuple(patches))
+    return Insertion(law, tuple(patches))
 
 
 def insertion_to_dict(declaration):
@@ -172,8 +173,11 @@ def insertion_to_dict(declaration):
     )
 
 
-def parse_controls(raw, base, declaration):
-    """One rate schedule per inserted patch, in declaration order (retrieval is refused)."""
+def parse_controls(raw, base, declaration, *, onsets=None):
+    """One rate schedule per inserted patch, in declaration order (retrieval is refused).
+
+    onsets: the onset rule applied to the parsed schedule (default check_onsets, this law's;
+    scheduled_membrane_insertion@2 passes its own). Host side only."""
     by_patch = {}
     end = base.experiment.end_time
     for entry in raw["insertion_controls"]:
@@ -212,7 +216,7 @@ def parse_controls(raw, base, declaration):
     if set(by_patch) != set(declared):
         raise ConfigError("Every inserted patch, and only those, has an insertion schedule")
     schedule = tuple(by_patch[k] for k in declared)
-    check_onsets(base, schedule)
+    (check_onsets if onsets is None else onsets)(base, schedule)
     return schedule
 
 

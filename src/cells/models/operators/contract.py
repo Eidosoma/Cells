@@ -60,6 +60,25 @@ Declarations (class attributes):
     node until an onset opens it, so the node opens with its declared content (its
     anchor, D057); insertion's onset rule admits their providers (a restricted lumen's
     volume grows only with its patch's area after the onset).
+* Topology (docs/CELL_DIVISION_S5_DESIGN.md §2, §3.5):
+  - ``CLOSES``: activity masks it may close (the adapter's MASK_FIELDS), through
+    ``closures``. A slot is live only if every closer has it open: masks combine by
+    conjunction with the declared ones, as availability factors multiply. The adapter then
+    propagates closure down the entity hierarchy (cell to its patches, patch to its
+    populations, cell to its contacts, node to its faces) and presents every closed slot to
+    the inner model as padding. A closed contact's gate is state: the composite pads the bound
+    state (gate 0), and a closer that opens or closes a contact writes its gate at that event.
+    A mask has closers or a provider, never both, and a closer counts as the mask's provider
+    for ``CONFLICTS_VIEW``. With a closer the composite owns the capacitor-energy correction
+    at the view, referenced to the view of the initial state, and evaluates the inner domain
+    at the view;
+  - ``RETIRES``: its event moves retired slots' inner history (transfers and heat) into its
+    own record and zeroes them, so the inner model sees padding; its ``adjust_inner`` adds the
+    record back, and the composite runs its ledger and dissipation checks on that adjusted
+    row, so every inner ledger and every heat element read as if nothing moved (the domain is
+    read on the actual row, at the view);
+  - ``BOOKS_AT_VIEW`` on an event map: the composite passes ``view``, a function of state
+    giving its view, when a field input is provided.
 
 Methods take the composite's full state, control and layout NamedTuples, whose
 fields are the inner model's followed by each operator's in declared order.
@@ -118,6 +137,9 @@ class Operator:
     ACCEPTS_WRITES = MappingProxyType({})
     EVENT_REPLACES = MappingProxyType({})
     ONSET_ANCHORED_VIEWS = ()
+    # Topology (module docstring).
+    CLOSES = ()
+    RETIRES = False
 
     @classmethod
     def observed_columns(cls):
@@ -167,6 +189,21 @@ class Operator:
         evaluated at first use in check_steps' order (v2 design R5)."""
         return lambda steps: self.check_steps(spec, declaration, schedule, steps, None, model)
 
+    def living_intervals(self, spec, declaration, schedule):
+        """{cell id: (birth, retirement)} for the cells whose lives this operator decides (None:
+        from the start, or never). Host side: other operators' definition checks read slot
+        lifetimes through it, without importing the operator that decides them."""
+        return {}
+
+    def patch_maps(self, declaration):
+        """{patch id: the patch ids this operator maps it onto} (host side, as above)."""
+        return {}
+
+    def onset_patches(self, spec, declaration, schedule):
+        """{patch id: onset time} for the patches this operator opens at an onset (host side,
+        as above)."""
+        return {}
+
     def batch_signature(self, declaration):
         return (self.LAW_ID,)
 
@@ -190,6 +227,10 @@ class Operator:
 
     def control_factors(self, state, p, *, xp):
         """{inner control field: multiplier} for CONTROL_FACTORS."""
+        return {}
+
+    def closures(self, state, p, q, *, xp):
+        """{mask field: open (bool array)} for CLOSES, from state (q: the running view)."""
         return {}
 
     def event(self, state, control, p, *, xp):
@@ -335,6 +376,10 @@ def check_declarations(operator):
             raise ValueError(f"{name}: an accepted write {field} needs an owned field")
         if any(k not in operator.LEDGERS for k in ledgers):
             raise ValueError(f"{name}: an accepted write {field} is booked in its own ledgers")
+    if set(operator.CLOSES) & set(operator.VIEW_FIELDS):
+        raise ValueError(f"{name}: a mask is closed or provided, not both")
+    if operator.RETIRES and not operator.EVENT:
+        raise ValueError(f"{name}: retirement happens at events")
     if operator.EVENT_REPLACES and not operator.EVENT:
         raise ValueError(f"{name}: replaced fields need an event map")
     for field, accumulators in operator.EVENT_REPLACES.items():
