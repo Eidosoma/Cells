@@ -5324,6 +5324,17 @@ scope"), logged in [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-7--abundance-to-
   is a population abundance (a source-semantics door of the same operator).
 - **Most of its part (b)** is the coupling operator's channel target, in milestone 1.
 
+## D164: A qualified long-duration mode (FR-8) is logged at priority 2
+
+2026-11-14. The user supplied the request (FR-8), at the requester's priority 2, logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-8--a-qualified-long-duration-mode).
+- **The request:** keep the quasi-steady or multirate mode on the path. Its acceptance case is to
+  include an intervention applied during the slow phase. This is added to the compute-limits
+  gate's long-time deliverable.
+- **The gap recorded with it:** no composite operator has a long-time path (the coarse modes cover
+  @1 to @3). A design note is needed, for which the requester's benchmark specification is an
+  input.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

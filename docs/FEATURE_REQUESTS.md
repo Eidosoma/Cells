@@ -12,6 +12,7 @@ and a general feature, never one built for one study (D144).
 | [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Logged | A design note after FR-1's and FR-4's (below) |
 | [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)); no code yet.** Three narrower items are recorded as consumer registrations | The channel target in the coupling operator's milestone 1 (in progress); the routing door; the regulatory state as a prior condition (below) |
 | [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Logged; most of part (b) is the coupling operator's channel target | Considered when the closed molecular-to-physiology loop's unit is chosen (below) |
+| [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | Logged; it is the compute-limits gate's open long-time deliverable | Its acceptance gains an intervention applied during the slow phase; a long-time path for composite operators needs a design note (below) |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Logged | A design note after FR-1's, with the energy-pool and charged-reaction doors (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -356,3 +357,50 @@ use Cells' unit choice than ask for its own.
   species concentration. It is to be recorded in that note's doors when the channel target lands.
 - **The link to the preprints.** The response's persistence after the template is gone is the
   heredity question. A unit chosen for the loop should be one where that question is measurable.
+
+## FR-8 — A qualified long-duration mode
+
+**Logged 14 November 2026, priority 2** (the request's label). The request below is the requesting
+study's text, condensed. The lead's mapping follows.
+
+**The request.** Keep the quasi-steady electrical mode, or any qualified multirate method, on the
+path. When it is qualified, include **an intervention applied during the slow phase** in its
+acceptance case.
+
+**Why it is general.** Everything slow: turnover, regulation, reconstruction, the renewal assay, and
+the organ-scale ageing timescales D150 deferred for exactly this reason.
+
+**The requester's arithmetic, corrected 14 November** (its reading of Cells' reported costs; the
+requester is writing a benchmark specification for its own composition):
+- **Its stages and the step count.** The stages run at ms (electrical), minutes to hours (uptake,
+  acidification, escape) and 24–72 h (expression, protein turnover, response decay). At 1 ms that
+  is 3.6M steps per simulated hour.
+- **A 72 h trajectory, by field nodes:**
+
+  | Field nodes | Per step | 72 h |
+  | --- | --- | --- |
+  | 14 | 1.7 ms | about 5.1 days |
+  | 254 | 7.7 ms | about 23 days |
+  | 825 | 76 ms | about 228 days |
+
+- **Why that understates it:**
+  - those per-step costs are the empty composition, with operators cost on top;
+  - the 825-node figure varies by about 2× across the tree;
+  - the L4 buys ensembles, not one fast trajectory: about 26.7 ms one world at a time, and
+    2.10 ms per world-step only when amortised over 256 worlds.
+- **So duration is a numerical-method problem, not a hardware problem.** Projective
+  time-stepping failed its qualification, and the requester does not ask for it to be revisited.
+
+**The lead's mapping (not settled).**
+- **This is CURRENT_PLAN's open deliverable.** The compute-limits gate has "a verdict on
+  long-time methods: multirate or quasi-steady methods qualified, or bounded, on histories and
+  intervention responses". FR-8 adds that the acceptance case include an intervention applied
+  during the slow phase. That is recorded in the gate (D164).
+- **The gap the lead's architecture review named.** The coarse modes cover `resolved_pump_tissue@1`
+  to `@3` only, so no composite operator has a long-time path. That needs its own design note,
+  which does not exist yet.
+- **The requester's benchmark specification,** when it arrives, is an input to that note: its
+  composition, its accuracy needs and its interventions.
+- **The two-clock pattern helps where the physics separates.** Track E's plan runs a slow world
+  coarsely and short fast assays from frozen snapshots (D155). It is not a long-time method for
+  one coupled trajectory.
