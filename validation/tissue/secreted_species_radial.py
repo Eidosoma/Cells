@@ -49,12 +49,26 @@ class Geometry:
         e = self.edges
         return 4.0 / 3.0 * math.pi * (e[1:] ** 3 - e[:-1] ** 3) * PL_PER_M3
 
-    def faces(self):
-        """(sender, receiver, area m^2, length m) of every radial face, source to outer."""
+    def faces(self, kind="exact"):
+        """(sender, receiver, area m^2, length m) of every radial face, source to outer.
+
+        kind "exact": the exact spherical-shell conductance between the points each face joins,
+        4 pi r_a r_b over r_b - r_a (the lead's requirement on radial builders). kind "planar": the
+        probes' faces, area 4 pi r^2 at the shared edge over the same length, kept only as the
+        qualification's negative control (its first-order error at the curved source boundary made
+        the continuum gap 10 to 12.5 times larger, design §11.3)."""
         names = ["source", *(f"shell_{i}" for i in range(self.shells)), "outer"]
-        r = self.points
+        r, e = self.points, self.edges
+        if kind not in ("exact", "planar"):
+            raise ValueError("face kind is 'exact' or 'planar'")
+        edge = np.concatenate(([e[0]], e[1:-1], [e[-1]]))  # The edge each face crosses.
         return [
-            (names[i], names[i + 1], 4.0 * math.pi * r[i] * r[i + 1], r[i + 1] - r[i])
+            (
+                names[i],
+                names[i + 1],
+                4.0 * math.pi * (r[i] * r[i + 1] if kind == "exact" else edge[i] ** 2),
+                r[i + 1] - r[i],
+            )
             for i in range(len(names) - 1)
         ]
 
@@ -71,11 +85,17 @@ def world(
     end,
     solver=fx.IMEX,
     observation_every=None,
+    observation_times=None,
+    faces="exact",
 ):
     """The radial composite definition: @3 with S, and turnover's clearance at every shell.
 
     profile_mM: S in each shell at t = 0 (a pre-formed profile; the trace when None).
+    observation_times: explicit accepted times (else every observation_every, else start and end).
+    faces: Geometry.faces' kind ("exact"; "planar" only as a negative control).
     """
+    if observation_times is None and observation_every is not None:
+        observation_times = fx.grid_times(end, dt, observation_every)
     shells = [f"shell_{i}" for i in range(geometry.shells)]
     volumes = geometry.volumes_pL
     base = fx.world(
@@ -85,14 +105,12 @@ def world(
         contacts=tuple((f"contact_{i}", "cell", name) for i, name in enumerate(shells)),
         faces=tuple(
             (f"face_{i}", a, b, float(area), float(length))
-            for i, (a, b, area, length) in enumerate(geometry.faces())
+            for i, (a, b, area, length) in enumerate(geometry.faces(faces))
         ),
         dt=dt,
         end=end,
         solver=solver,
-        observation_times=None
-        if observation_every is None
-        else fx.grid_times(end, dt, observation_every),
+        observation_times=observation_times,
         trace_mM=trace_mM,
         concentrations_mM={
             "source": c0_mM,
@@ -111,13 +129,13 @@ def world(
     )
 
 
-def operator(geometry, *, diffusivity, clearance, c0_mM, outer_mM):
+def operator(geometry, *, diffusivity, clearance, c0_mM, outer_mM, faces="exact"):
     """(M, g): the declared system dc/dt = -M c + g on the shells (1/s, mM/s)."""
     n = geometry.shells
     v = geometry.volumes_pL
     a = np.zeros((n, n))
     b = np.zeros(n)
-    for i, (_, _, area, length) in enumerate(geometry.faces()):
+    for i, (_, _, area, length) in enumerate(geometry.faces(faces)):
         kappa = diffusivity * area / length * PL_PER_M3  # pL/s.
         left, right = i - 1, i  # Shell indices on each side (-1: source, n: outer).
         if left >= 0:
