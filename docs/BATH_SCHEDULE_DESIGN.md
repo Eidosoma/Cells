@@ -1,0 +1,426 @@
+# A scheduled bath composition in the composite (design)
+
+**Status: proposed, 14 November 2026; revised the same day after the lead's review with the
+advisor.** The departure from the lead's mapping is accepted, since the code confirms it (§2.1).
+Net-charged steps are refused. Door S comes early. The onset was probed on the engine as it is
+(§3.2). No engine code was added or changed.
+
+D166 logs the request (FR-10, [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family)).
+The decision reads:
+- **The feature:** a held bath's composition changes on the dt grid in the composite. The older
+  family's explicit ideal-reservoir law, with dose, compensating charge and external work, exists
+  and is re-expressed as a composite operator.
+- **Its consumers:** the requesting study's doses, E07-v2's osmotic step and FR-4's pH step.
+- **Design first (D142),** as a general feature (D144).
+
+**Engine models it runs (AGENTS.md milestone rule):** `resolved_pump_composite@1` over
+`resolved_pump_tissue@3`, with one new operator, `scheduled_bath_composition@1`: an event map and a
+view. No model, solver, law or shared function changes.
+
+**Basis.**
+- **The older law, cited and not copied:** `models/surface_bath_events.py` (`signal_values`;
+  `Adapter.balances`, "Its held electrode supplies the opposite charge") and
+  `core/surface_bath_events_binding.py`, whose policy is
+  `explicit_ideal_reservoir_dose_voltage_compensation_work@1`. Its documentation is
+  [TISSUE_GEOMETRY.md](TISSUE_GEOMETRY.md#schedule-ideal-reservoir-bath-composition).
+- **What is taken:** the accounting only, that is the dose and its work. Its compensating-charge rule
+  is cited as the door for a net-charged step, which version 1 refuses (§2.5).
+- **What is left:** its logistic phase clock (`phase_clock_rk_stage_native_logistic@1`), its K, Cl and
+  Na setter order and its counterion overwrites. These follow the pinned BETSE source
+  (TISSUE_GEOMETRY.md), and AGENTS.md keeps BETSE conventions out of the composite.
+- **The contract:** [PUMP_COMPOSITE.md](PUMP_COMPOSITE.md) and the [v2 design](PUMP_COMPOSITE_V2_DESIGN.md)
+  §1. **Species and their onset rules:** the [secreted-species design](SECRETED_SPECIES_TRANSPORT_DESIGN.md)
+  §7 and §11.4.
+
+**Evidence and log:** `/mnt/workspaces/Cells/closed-compartment-20261114-01/` (HANDOFF.md: the
+readers of the bath composition with their files; `probe1/`: the onset probe, its criterion written
+before the run). **S** marks our own derivation or reading.
+
+## 0. Summary
+
+**The departure from the lead's mapping, accepted on the code's confirmation.** The mapping books the
+dose "as reservoir supply" with the composition change's external work explicit. This note keeps the
+dose out of @3's `reservoir_supplied` and makes the work a record, not a work field. The reason is
+@3's frame: @3 pins a held bath's increment at zero (§2.1), so the bath's content is in neither its
+supply ledger nor its energy ledger. The dose and its work are still booked explicitly, in the
+operator's own fields.
+
+1. **The operator.** At declared times on the dt grid, an event map sets a declared held bath's
+   composition. The bath's held content is the operator's state. It reaches @3 through the view of
+   @3's `extracellular_amount_reference` at that bath (§1).
+2. **Neutral steps only.** A step is declared in formula units with integer counts, each neutral in
+   integer arithmetic, as D152 checks its moieties. A net-charged step is refused (§1.1, §2.5).
+3. **The bookings** (§2):
+   - the dose and its free-energy change are records;
+   - @3's reservoir-work ledger gains one reconciliation term, the operator's own ledger term, never
+     a write into @3's accumulator;
+   - the energy ledger needs no term.
+4. **Step checks see the schedule's worst composition** through `inner_check_spec` (§2.4).
+5. **The walls** (§3.1):
+   - D152's reactions list the field in `CONFLICTS_VIEW`: a nominal conflict, since D152 masks held
+     baths wherever it reads the field. Insertion@1's second provision is real. Closers pad the field.
+   - **Door S, slot-scoped provision, comes early as a general contract feature.** Without it any
+     dose world with D152 anywhere is refused, including the requester's natural first world.
+     Version 1's workaround is degradation by turnover's clearance.
+   - Water@1 reads the declared bath, so with water only isosmotic steps are admitted. E07-v2's
+     osmotic step needs door W, which the lead schedules.
+6. **The onset blocks acceptance** (§3.2). A dose from nothing is the consumer's main case, and it is
+   D150's unresolved switch-on by construction. Probe 1 measured it on the engine as it is:
+   - in a species-only world the runner refuses it on the energy ledger, first at row 1;
+   - in a mixed world it passes, with an onset-step energy residual of about 2% of that step's
+     species flows, unseen (0.16 of that world's bound).
+   - Version 1 is qualified between resolved levels, at a step ratio pinned at registration from a
+     development measurement, since no arm has yet stepped a bath between two levels. The
+     recommendation is D150's known-limit ruling extended to doses, with a staircase probe requested.
+7. **Effort:** about 1.75 agent-days (range 1.5 to 2.5). Door S adds 0.5 to 1, and door W about 1.
+
+## 1. The operator
+
+### 1.1 Declaration and schedule
+
+```json
+{
+  "law": "scheduled_bath_composition@1",
+  "baths": ["bath_a", "bath_b"],
+  "formula_units": {
+    "KCl": {"K": 1, "Cl": 1},
+    "NaCl": {"Na": 1, "Cl": 1},
+    "cargo": {"S": 1}
+  }
+}
+```
+
+- **`baths`:** held baths of @3 (`reservoir: true`), each scheduled by this operator alone.
+- **`formula_units`:** each has a name and integer counts over declared species. Counts are
+  `int`, at least 1. Each unit's charge Σ_s z_s ν_s is computed in integers from @3's integer
+  valences, and must be exactly 0.
+  - This is the form of D152's integer moiety check (`species_reactions._moieties` and `_kind`,
+    "in integer arithmetic; refused otherwise").
+  - A neutral species is its own formula unit.
+- **Experiment key `bath_composition_events`:** a list of `{time, baths, formula_units_mM}`.
+  - An event sets each of its baths to its declared composition plus Σ_f a_f ν_f, with a_f the
+    event's concentration of unit f (mM, signed). The offsets are absolute against the declared
+    composition, so successive events never accumulate rounding.
+  - So every step is neutral by construction: its charge is Σ_f a_f (Σ_s z_s ν_sf), with every
+    inner sum an exact integer zero.
+  - Every species must stay positive (D150's trace rule).
+  - A time is an exact multiple of dt, with 0 < t ≤ the end time, and times increase strictly for
+    each bath. The initial composition is the bath's declared one, so an event at time 0 is refused.
+- **Per-world control data.** The held content in force at each change time, [species, outside].
+  These are never closed-over constants (D150's crossrev rule). The batch signature carries the
+  scheduled bath IDs and the formula units.
+  - Before a bath's first event, its control is the declared reference amounts themselves, copied,
+    never recomputed. A recomputed value could differ by rounding and fire a spurious event at the
+    first step, which would break B5's idle promise.
+  - Each event's held content is computed once, on the host: the declared amounts plus
+    V_b Σ_f a_f ν_f.
+- **A ramp** is a declared staircase of steps. There is no logistic law.
+
+### 1.2 State, part and view
+
+| State field | Axes | Role |
+| --- | --- | --- |
+| `bath_held_amount_fmol` | species, outside | The held content in force: the declared content until the bath's first event. The view provides it |
+| `bath_dose_fmol` | species, outside | The cumulative dose: the controller's supply to the reservoir (a record) |
+| `bath_dose_free_energy_pJ` | outside | The cumulative free-energy change of the reservoir's content at its declared volume (a record) |
+| `bath_reservoir_work_term_pJ` | outside | B, the accumulator of §2.3's reconciliation term |
+| `bath_energy_magnitude_pJ` | outside | Magnitudes for the rounding allowance |
+
+- **Part: an event map at the step start.** Where the control's held content differs from the
+  state's, it sets the state from the control (the same floats, so nothing re-triggers). It books
+  the change Δn = n_new − n_old in the records and updates B. Elsewhere it selects the start state,
+  so a step with no event is bitwise idle.
+- **View:** `extracellular_amount_reference`, an adapter view field, is the held content at the
+  scheduled baths and the declared array elsewhere, selected and never offset by zero.
+- **RK4:** the event map runs around @3's RK4 step, as replacement@1's does. Beside a coupled part
+  (water), the composite's existing rule refuses event maps.
+
+### 1.3 Who reads the bath composition
+
+| Reader | Reads | With a schedule |
+| --- | --- | --- |
+| @3's step: transport through `physical_amounts`; the IMEX face weights and the reservoir μ_b (`surface_pump_v3.imex_step`); RK4's `derivative_from_field`; the run-time `membrane_rate` | The view | Sees the scheduled composition. Supply is booked at each epoch's μ_b |
+| @3's balances, on the host (`surface_tissue.balances`) and the device (`surface_pump_checks.tissue_balances`) | The declared layout | The chemical term is zero at a held bath. The reservoir-work ledger multiplies cumulative supply by the declared μ_b, so it needs §2.3's term |
+| `surface_pump.ledger_magnitudes` | The declared layout | Its reservoir-work magnitude needs §2.3's terms |
+| `surface_pump.explicit_rate_bound`, at the definition | The declared layout | Needs the worst case (§2.4) |
+| D150's exchange and turnover | Finite nodes only | Neither acts on a held bath, so they compose |
+| D152's `local_species_reactions@1` | `CONFLICTS_VIEW` lists the field | Refused, but nominally: §3.1 |
+| `scheduled_membrane_insertion@1` | It provides the field (onset nodes) | Two providers: refused; door S |
+| S5's closers | The adapter pads the field | A provider beside a closer is refused; door S |
+| Water@1 (`osmotic_water`) | The declared amounts for the bath's osmotic pressure; the bath's water potential bound at the definition | Sees the declared bath: §3.1 |
+| The restricted lumens | The declared bath for their fill and its supply work | Refused; they need insertion anyway |
+
+## 2. Bookings
+
+### 2.1 The frame: @3 pins a held bath's increment at zero
+
+- **The code** (read, not run).
+  - `models/surface_tissue.domain_valid`, lines 376–393: the mask of `extracellular_amount_increment`
+    is `outside_active & ~reservoir` (line 380), and every value outside its mask must be 0
+    (lines 392–393). So a held bath's increment is held at zero at every checked state.
+  - `numerics/surface_transport.transport`, lines 323–324: at a held bath the node's rate is zero
+    (`finite = where(reservoir, 0, outside)`), and its exchange with the tissue is supply
+    (`supply = where(reservoir, -outside, 0)`).
+- **So @3's tissue excludes the reservoir's content.** Its free energy is not in @3's chemical term,
+  and its supply to the tissue is booked at μ_b.
+- **The older family included it.** Its `physical_state` adds the dose to the bath's increment and to
+  its supply, and books the dose's chemical and electrical work as reservoir and electrode work.
+- **So in the composite:** the controller's action on its reservoir is recorded (§2.2), and @3's
+  books need one reconciliation term (§2.3). The energy ledger needs no term: at the event nothing in
+  the tissue moves, and afterwards @3 books every supply at the view's μ_b (**S**).
+
+### 2.2 The records: dose and work
+
+At an event that changes a bath's held content by Δn_s:
+- **The dose** is Δn_s, supply to the reservoir from the external controller: the older law's dose
+  (`signal_values`). It is kept apart from @3's `reservoir_supplied`, which is the reservoir's supply
+  to the tissue.
+- **Its free-energy change at the declared volume:**
+
+      ΔG_b = 10⁻³ RT Σ_s [Δn_s (ln(a_s/V_b) − 1) + (a_s + Δn_s) log1p(Δn_s/a_s)],
+
+  with a_s the held content before the event. This is the adapter's
+  `species_chemical_free_energy_pJ`, as D150's operators book, and the older law's "chemical work"
+  of a dose. A neutral step has no electrical part, so this is the composition change's whole
+  external work. The summary reports it.
+- **Why records, not work fields.**
+  - The reservoir's content is outside @3's energy ledger, so a work field would have nothing to
+    balance it.
+  - ΔG_b scales with the bath's nominal volume. As work it would enter the IMEX flow bound and loosen
+    it by an arbitrary amount.
+  - So no field ends in `_work_pJ`: the contract makes a field work exactly when it carries that
+    suffix.
+- **Its own ledgers:** the cumulative dose equals the held content less the declared one; the
+  cumulative ΔG_b equals G(held) − G(declared), within rounding.
+
+### 2.3 The reconciliation term in @3's reservoir-work ledger
+
+@3's ledger is W_res − 10⁻³ Σ_s μ_s⁰ S_s, with μ⁰ the declared bath's potential and S the cumulative
+supply. @3 books each epoch e's supply at that epoch's μ^e, so the term missing from the ledger is
+
+    K = 10⁻³ Σ_e Σ_s (μ_s^e − μ_s⁰) ΔS_s^e.
+
+The operator keeps it as K = B + 10⁻³ Σ_s (μ_s^now − μ_s⁰) S_s, with B updated at each event:
+B ← B + 10⁻³ Σ_s (μ_s^old − μ_s^new) S_s(t_e) (**S**).
+- The electrical parts z F φ_b cancel in the differences, so only RT ln(c^e/c⁰) enters.
+- **K is the operator's own ledger term.** Its `ledger_terms` add −K to `reservoir_work`, on the host
+  and the device, and its magnitude terms add |B| + 10⁻³ Σ_s |μ_s^now − μ_s⁰| S_s. It never writes
+  @3's `reservoir_work_pJ`, which @3 alone books.
+
+### 2.4 Step checks
+
+- @3's explicit-rate bound uses the declared concentrations of the patches that face each bath.
+- The operator's `inner_check_spec` presents each scheduled bath at its per-species maximum over the
+  schedule, as replacement presents its worst case.
+- That bounds every epoch, since the bound's slope term grows with max(c) (**S**).
+- At run time, @3's `membrane_rate` already reads the view.
+
+### 2.5 Net-charged steps: refused in version 1
+
+- No consumer needs one: a medium change is a combination of neutral salts and neutral solutes.
+  Electroneutral substitutions (Na for K, H for Na), salt doses, pH steps with their counterion and
+  neutral doses are all admitted.
+- **The door,** if a consumer ever needs a net-charged step: the older law's rule. The dose carries
+  q = F Σ_s z_s Δn_s, and the held electrode supplies −q ("Its held electrode supplies the opposite
+  charge", `Adapter.balances`); their electrical energies φ_b q and −φ_b q cancel. Since a held bath is
+  a fixed node of the field, leaving its charge anchor unchanged keeps the field and @3's electrode
+  ledger unchanged (**S**). It would be booked in records, as §2.2's are.
+
+## 3. Composition and the onset
+
+### 3.1 Composition
+
+**D150's species: a species dose.** A held bath already serves as a species' far-field source at a
+fixed concentration, so a scheduled concentration is a dose, neutral by construction. Exchange and
+turnover never act on a held bath, so they compose. Exchange refuses a patch on a held bath, so
+uptake into a cell runs from a finite node beside the bath, not from the bath itself.
+
+**Ions.** A substitution, a salt dose, or a pH step on a proton row (FR-4) with its counterion.
+
+**Water: which compositions admit an osmotic step.**
+- **Water@1 reads the declared bath.** It computes the bath's osmotic pressure from the declared
+  amounts, and books bath water work at a water potential bound at the definition.
+- **So with water@1 only isosmotic steps are admitted:** Σ_s c_s at each scheduled bath unchanged,
+  to a relative 1e-12. An anisosmotic step is refused at the definition.
+- **Door W, the osmotic step** (the lead's to schedule, D144). A water version reads the bath's held
+  content from this operator's state, as the lumen reads membrane state's area. It books bath water
+  work at each epoch's water potential, with a reconciliation term like §2.3's.
+  - E07-v2's osmotic challenge is then [`scheduled_bath_composition@1`, water's new version,
+    `scheduled_cell_replacement@2`], with ions as the osmolytes.
+  - A neutral species as the osmolyte (sucrose, say) waits for D150's version 1.1, since water and
+    the species operators are refused together.
+
+**The walls on the field.**
+- **D152: refused, but the conflict is nominal** (read, not run). Everywhere D152 reads the field it
+  masks held baths: `node_amounts` and `reactions_domain_valid` read finite nodes only
+  (`outside_active & ~reservoir`, `species_reactions.py`), and D152 refuses held-bath sites. Its
+  `CONFLICTS_VIEW` entry exists for insertion@1, which changes finite onset nodes' anchors. For the
+  architecture block's refusal matrix: D152 against this operator is **nominal**.
+- **Insertion@1: refused, a real conflict.** It provides the same field at its onset nodes, and the
+  composite admits one provider per field.
+- **S5's closers: refused.** The adapter pads the field beside a closer.
+- **Door S, slot-scoped provision: early, as a general contract feature.** A provider declares the
+  slots it provides, and a reader the slots it reads. The composite refuses only an intersection.
+  - This operator's view equals the declared array off its baths, so D152 (finite nodes) and
+    insertion (onset nodes) would compose. The nominal refusals become admissions, and the real ones
+    stay.
+  - **It gates the requester's natural first world:** a bath dose, uptake into the cytosol, loading
+    into an FR-1 compartment and reactions inside. Without it, version 1 runs that world with
+    degradation by turnover's clearance at the compartment node instead of D152's reactions. FR-4's
+    pH step with buffering inside a compartment needs it later.
+  - It is a host-only change to `contract.py` and `pump_composite.py`, under crossrev.
+
+**Composes:** @3, injection, D150's operators, replacement@1, membrane state, the coupling operator
+(D156), and FR-1's compartments, which are finite nodes, never baths.
+
+**Refused:**
+- a target that is not a held bath: a finite node cannot be clamped, as the older family also
+  refuses;
+- a net-charged formula unit (§2.5);
+- D152 (nominally), insertion@1, the closers and the lumens;
+- water@1 with an anisosmotic step;
+- the stationary analysis.
+
+### 3.2 The onset: a dose from nothing (probe 1)
+
+**The consumer's main case is D150's unresolved switch-on.** A dose from nothing, with the cargo
+absent until the dose, lifts the node beside the dosed bath from the trace by many decades in one
+step. D150 measured that a face books such a step's heat a few percent off (its §11.4).
+
+**The probe** (the lead's item 7). It is read-only, on the engine as it is: the clean snapshot of main
+at ced45c87, as unit `cells-fr10-probe1` on CPU 2 with a 3G cap, started after
+`cells-ccgpu-merge-gate` ended. Its criterion was written before the run (HANDOFF), and its evidence
+is in `probe1/`.
+- **The dose.** The engine has no bath schedule yet, so the dose is a jump start: the bath held at
+  1e-3 mM from t = 0, every cell and finite node at the trace. The neutral species is linear and
+  decoupled from the ions, so that is its state at a dose step after a resolved period at the trace.
+- **The worlds** have the first delivery world's topology: a held bath, a face to a finite node,
+  uptake into the cell, loading into a compartment and clearance there. The species-only world's ions
+  are quiescent. The mixed world is D150's heredity chain, its ions moving, with a compartment on
+  cell_5 and the dose at bath_5.
+- **Each arm** ran through the runner, and row by row through the model's own checked step, 500
+  steps.
+
+| Arm | World, trace, solver, dt | The runner | Rows over the energy bound | Largest residual / bound | Onset step: residual / its own flows | Other ledgers, largest / bound |
+| --- | --- | --- | --- | --- | --- | --- |
+| B1 | species-only, 1e-15 mM, ARS, 1 ms | Refused: "accounting failed: energy" | 13, rows 1 to 13 | 8.4, at row 1 | 2.1% | 0.035 |
+| B2 | species-only, 1e-15 mM, ARS, 0.1 ms | Refused, the same | 8, rows 1 to 8 | 2.8 | 1.8% | 0.014 |
+| B3 | species-only, 1e-9 mM, ARS, 1 ms | Refused, the same | 13 | 8.2 | 2.1% | 0.032 |
+| B4 | species-only, 1e-15 mM, RK4, 0.1 ms | Refused, the same | all 500 | 33 | 12.9% | 0.011 |
+| B5 | mixed, 1e-9 mM, ARS, 1 ms | **Passed** | none | 0.16, at row 1 | 0.03% of the world's flows | 0.052 |
+| B6 | species-only, resolved, ARS, 1 ms | Passed | none | 3.9e-6 | 1.9e-9 | 0.029 |
+
+No arm's step was refused by the model's own step. `model.check_values` refused exactly the rows over
+the bound.
+
+**What it shows.**
+- **The criterion's parts (i) to (iii) hold.** Every species-only jump start is refused by the host
+  energy ledger, first at row 1. The local, outside, total and reservoir-work ledgers stay within
+  their bounds everywhere, so the residual is the face's onset booking. The resolved control passes.
+- **Part (iv) fails as written, and what was measured instead is this.** The mixed run passes, but
+  the species' whole free-energy change at the end, −0.0105 pJ, is 4.3 times the mixed world's bound
+  (0.0024 pJ). So the ions' bound is not blind to the species at this dose. What it does not see is
+  the onset's misbooking.
+  - That misbooking is the same in both worlds: −7.8e-7 pJ at row 1 in B5 and in B3, with the same
+    face and trace.
+  - It is 0.16 of the mixed world's bound at row 1, and about 7e-5 of the species' free-energy change
+    by 0.5 s.
+- **What it does not show: a step between two resolved levels.** B6 was a resolved *start*, not a
+  step, and no arm stepped a bath between two levels.
+  - So "qualified between resolved levels" rests on a step ratio that no probe has measured. B2's K
+    step is tenfold, and B1's species step larger.
+  - The admissible ratio, the largest c′/c at an event per species, is pinned at registration from a
+    development measurement, as D150's resolved-start rule was. Until then, B1, B2 and B3 assume it.
+- **So a dose from nothing is D150's onset limit, unchanged:**
+  - transport is exact, by D150 §11.3's probe 4, not re-measured here;
+  - the onset step's energy residual is about 2% of that step's flows under ARS, and 13% under
+    RK4;
+  - a species-only world refuses it, and a mixed world passes it unseen.
+
+**The ways forward, for the lead's ruling, since this blocks acceptance:**
+- **(a) D150's known-limit ruling, extended to doses.** In a mixed world a dose from nothing runs,
+  with transport exact and an onset-step energy residual of about 2% of that step's flows. Species-only
+  guard worlds dose between resolved levels, at the step ratio pinned at registration. Version 1's
+  acceptance then covers those steps, and a dose from nothing carries the known limit in its summary.
+- **(b) A resolved dose.** A declared staircase from the trace, admitted only after a probe measures
+  it, as D150 §7 requires of ramps. This is the second probe request.
+- **(c) A booking change at the source.** @3's IMEX face-heat booking at an onset, as a D148 round or
+  a new IMEX ID: beyond this note.
+- **The recommendation:** (a) now, as D150 ruled for its own switch-on, with (b)'s probe requested.
+  (c) only if a consumer needs the onset's energy itself (**S**).
+
+## 4. Qualification
+
+Numerical, against references written from Appendix A by an agent that never reads the code.
+Tolerances are pinned from a dt study at registration.
+
+| Item | Check |
+| --- | --- |
+| B1. The view reaches @3 | A neutral species stepped between two resolved levels at a bath, at the step ratio pinned at registration, through a face chain: the engine against the matrix exponential with the stepped boundary, second order in dt |
+| B2. An ion step | A passive cell with a K leak on a held bath, a KCl-for-NaCl substitution raising K from 5 to 50 mM: the membrane voltage relaxes toward the new zero-current constant-field potential, against an independent ODE (constant-field flux and capacitor). The tenfold step is measured in development first, against the pinned ratio |
+| B3. The ledgers across an event | In a species-only world under RK4 (the absolute 2e-8 pJ bound), a step between resolved levels at the pinned ratio: the energy ledger at rounding at every row, before, at and after the event; the reservoir-work ledger closing with §2.3's term. **A control that drops the term must fail**, at the first supply after the event. That the energy ledger stays at rounding across a step is unmeasured until the development run |
+| B4. The records | The dose equals V_b Σ_f Δa_f ν_f exactly; ΔG_b against NumPy; the electrode and global-charge ledgers unchanged at every row |
+| B5. Idle | With no event, bitwise the composition without the operator (promised); not declared, every crossrev set identical (promised) |
+| B6. Restart and vmap | Restart at, before and after an event, bitwise; a vector batch with per-world schedules on the same baths |
+| B7. Step checks | A schedule beyond the explicit bound is refused at the definition, and passes at a smaller dt |
+| B8. Water@1 | An isosmotic substitution runs with water's ledgers closing; an anisosmotic schedule is refused at the definition |
+| B9. Neutrality | A formula unit whose integer charge is not 0 is refused at the parse, and a neutral unit with a large count is admitted: exact, with no floating tolerance |
+| B10. The dose from nothing | Under §3.2's way (a): a mixed world dosed from the trace runs, with its known limit reported; a species-only world dosed from the trace is refused by the energy ledger, which the item asserts as the limit's guard |
+
+**The probe request still open:** a staircase from the trace, measured as D150 §7 requires before a
+ramp is admitted (§3.2's way (b)).
+
+## 5. Effort and order
+
+| Part | Agent-days |
+| --- | --- |
+| The operator: parse (formula units, the integer neutrality check), schedule, event map, view, records, ledger and magnitude terms, `inner_check_spec`, refusals, summary, tier-1 tests | 1.0 |
+| References (Appendix A) and guards B1 to B9 | 0.75 |
+| **Version 1 total** | **1.75 (range 1.5 to 2.5)** |
+| Door S, slot-scoped provision (general, early) | 0.5–1.0 |
+| Door W, water's new version (for E07-v2's osmotic step; the lead schedules it) | about 1.0 |
+
+**Order.** It touches only a new operator module, disjoint from FR-1's contract addition. Door S
+touches `contract.py` and `pump_composite.py`, so it is coordinated with FR-1's addition in one
+change set or two consecutive ones.
+
+## 6. Questions for the lead
+
+1. **The onset's way forward** (§3.2), since it blocks acceptance.
+2. **Door S's slot declaration:** a static per-field slot mask on the provider and the reader, as
+   §3.1 sketches, or a provider-side mask only, with readers keeping their field-level
+   `CONFLICTS_VIEW`?
+3. **Formula units:** declared on the operator (as here), or on a composite-level species block when
+   D150's open question 3 is decided?
+
+## Appendix A. Equations for the independent references
+
+Units are @3's: fmol, pL, mM = fmol/pL, s, m and V. RT = 2.577 pJ/fmol at 310 K, F = 96485.33 C/mol.
+
+**A.1 The bath.** A held bath b has a declared volume V_b, potential φ_b, declared composition c⁰
+and a piecewise-constant composition c(t) = c⁰ + Σ_f a_f(t) ν_f, with steps at the declared times.
+Its potential is μ_s = RT ln c_s + z_s F φ_b.
+
+**A.2 A face chain with a stepped boundary.** dn_i/dt = Σ_faces κ_f (c_j − c_i) + κ_b (c_b(t) − c_i)
+at the node next to the bath, with κ_f = 10¹⁵ D_f A_f / L_f. It is linear, so each epoch is the
+matrix exponential with its constant boundary, started from the previous epoch's end.
+
+**A.3 An ion step on a passive cell.**
+- The constant-field flux of each species s across the patch, outward positive, is
+  J_s = 10¹⁵ P_s A u (c_i − c_o e^{−u}) / (1 − e^{−u}) fmol/s, with c in mM, P_s in m/s, A in m² and
+  u = z_s F V / RT, V the cell's potential less the bath's.
+- The capacitor gives C dV/dt = −F Σ_s z_s J_s, and the cytosol amounts change by J_s.
+- The zero-current constant-field potential at the new composition is the limit (Hille 2001).
+
+**A.4 The records.** At each event, Δn_s = V_b Σ_f Δa_f ν_sf, and ΔG_b is §2.2's expression. The
+step's charge F Σ_s z_s Δn_s is zero in exact arithmetic.
+
+**A.5 The reservoir-work ledger.** W_res(t) = 10⁻³ Σ_e Σ_s μ_s^e ΔS_s^e. §2.3's K is
+W_res − 10⁻³ Σ_s μ_s⁰ S_s.
+
+## References
+
+- Hille B. *Ion Channels of Excitable Membranes*, 3rd ed. Sinauer, 2001: the constant-field flux and
+  the zero-current potential (A.3). A textbook pointer; not fetched here.
+- The frozen family's law, cited by path in the basis above. Its scope there was guarded: ideal
+  reservoirs only, full bath trajectories out of scope, evidence at ns–µs horizons (FR-10's record).
