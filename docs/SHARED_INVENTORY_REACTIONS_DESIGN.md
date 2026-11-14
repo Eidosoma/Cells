@@ -2249,8 +2249,8 @@ perturbed in the reference by (1 + δ) on 38 rules:
 
 A control is kept when 10 × its smallest caught δ is at most 1e-2, and it is registered there.
 Every parameter keeps controls, so each is caught by a judged criterion at a small δ with a 10 ×
-margin. The criteria are `Control_k` to `Control_D_V`, and each requires every kept control to
-catch at its registered δ.
+margin. The criteria are `Control_k` to `Control_D_V`. Each requires every kept control of its
+parameter to catch at its registered δ, which is stricter than the ruling's "at least one".
 
 | Parameter | Kept (of 38) | Registered δ | Removed |
 | --- | --- | --- | --- |
@@ -2268,12 +2268,21 @@ catch at its registered δ.
   therefore moves the coefficient by about that much times δ, against a tolerance of about 3 × the
   step term. That estimate gives thresholds of 4e-3 to 0.27, within a factor of 5 of the measured
   5e-3 to 0.1. The same holds for k, a and b on L/ℓ = 6's fastest modes.
-- **Q6's a and b controls are caught at the grid's lowest point,** 1e-9, at both steps. a and b
-  set the uniform state, u* = (a + b) c*, which k and the diffusivities do not. A δ therefore moves
-  every element by about δ c* from the start, while at the early records the per-element tolerance
-  falls to 1.3e-14 mM. They are registered at 1e-8 (`controls.at_grid_floor`).
-- **The cutoff was fixed in advance.** The 1e-2 cutoff was set before the thresholds for a, b and
-  D_U were measured (`disclosures`).
+- **Q6's a and b controls are caught at the grid's lowest point,** 1e-9, at both steps, so they
+  are registered at 1e-8 (`controls.at_grid_floor`). The likely reason is inferred from the
+  tolerances, not measured. a and b set the uniform state, u* = (a + b) c*, which k and the
+  diffusivities do not, so a δ moves every element by about δ c* from the start. At the early
+  records the per-element tolerance falls to 1.3e-14 mM. The floor catch is consistent with this.
+- **Q1's passing path, checked on the host** (not a judged run;
+  `mg0c/q1_controls_at_registered.py`, `mg0c/q1-controls-at-registered-218eaa3.json`). The check
+  loads the registered deltas into the driver's own `controls()` and feeds it dev-7495288-q1's
+  stored arrays. All 155 kept Q1 controls catch at their registered δ. The stored arrays reproduce
+  every development smallest-caught δ exactly. Q6's 10 kept controls need re-integration and are
+  left to the rehearsal.
+- **What was in view when the cutoff was set.** The 1e-2 cutoff was set before the a, b and D_U
+  thresholds were measured. By then `mg0c/checks-r2.json` already held every Q1 mode's
+  slow-eigenvalue sensitivity to all five parameters, which estimates the thresholds to within
+  about 5 × (`disclosures`).
 
 **Findings:**
 1. **The 4.55 ratio is the scheme's higher-order term, not the floor.** The linearised
@@ -2295,14 +2304,21 @@ catch at its registered δ.
 - `Q4_near_ties_as_registered`;
 - §6.4's Q7 row;
 - unit b's 5 GiB cap;
-- `controls.at_grid_floor`.
+- `controls.at_grid_floor`;
+- each `Control_p` requires every kept control to catch, not just one.
 
 `test_mg0c_judged_refusal.py` now runs main against a PROPOSED copy, never the checked-in file.
 Once the file is registered, the old form would have failed from a checkout. Under judge-guards
 at the judged snapshot, it would have started a judged part (found by the advisor).
 
-**Question for the lead** (in the protocol): whether guard 2's passive world stays judged (item
-(a)).
+**Questions for the lead** (in the protocol):
+1. Does guard 2's passive world stay judged (item (a))?
+2. Ruling 7's consequence. With §11.1's pins in `test_species_reactions_accuracy.py`, the heat
+   and work comparisons against the true kinetics (`dr.integrate_node`) leave the judged list. The
+   judged guards keep dissipation in two forms: rounding-level agreement with `nr.run_half_steps`
+   (the same half-steps), and the passive relaxation's total heat against
+   `dr.passive_equilibrium`'s drop. The milestone-3 instruction kept the independent kinetic and
+   dissipation comparisons as guards of record. Is this split what the lead intends?
 
 **Next** (S5's and D150's path): the lead lands this revision. Then the rehearsal on main, after
 FR-9:

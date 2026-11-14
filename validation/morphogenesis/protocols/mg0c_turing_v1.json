@@ -465,7 +465,7 @@
   "what_the_rule_shows": "as D150's review found, the dt-study rule detects bias, not order: for a second-order error the ratio sits at 4/9 by structure, so the rule's power is its judged controls'; the orders are reported, and only their stop rules are judged",
   "orders": "per record, log2 of successive max-norm differences |q(dt) - q(dt/2)| / |q(dt/2) - q(dt/4)|, where both lie above 64 eps x the scale; the stop rule: every measurable difference decreases",
   "linearised_map": "ruling 3: Q1's engine against the linearised engine-order map within 1e-6 at 50 ms (the development's worst 1.3e-07); its control, the exact propagator, must fail it there (the development's smallest 3.3e-06). At 25 and 12.5 ms the agreement is reported (linearised_map_by_dt), since the smallest discretisation error there (8.2e-07 and 2.1e-07) lies below 1e-6",
-  "controls": "ruling (c), by parameter: each of k, a, b, D_U and D_V perturbed in the reference by (1 + delta) on Q1's items (the exact propagator with K = k J(a, b) and D, the whole 1-2-5 grid from 1e-14 to 0.5) and on Q6's (the reference re-integrated, bisected on the 1-2-5 grid from 1e-9 to 1e-1). A control is kept when 10 x its smallest caught delta is at most 1e-2 and is registered there; the others are removed with their reasons (controls.removed); every parameter keeps at least one, so each is caught by a judged criterion at a small delta with 10 x margin (Control_k to Control_D_V)",
+  "controls": "ruling (c), by parameter: each of k, a, b, D_U and D_V perturbed in the reference by (1 + delta) on Q1's items (the exact propagator with K = k J(a, b) and D, the whole 1-2-5 grid from 1e-14 to 0.5) and on Q6's (the reference re-integrated, bisected on the 1-2-5 grid from 1e-9 to 1e-1). A control is kept when 10 x its smallest caught delta is at most 1e-2 and is registered there; the others are removed with their reasons (controls.removed); every parameter keeps at least one, so each is caught by a judged criterion at a small delta with 10 x margin (Control_k to Control_D_V). Each criterion requires every kept control of its parameter to catch at its registered delta, stricter than the ruling's 'at least one'",
   "controls_evaluable": "why the control criteria fail outside a judged run: they read caught_at_registered, which the driver writes only when the registered deltas are loaded, that is under --protocol (a judged run, or a registered dry-run copy). A development run has no registered deltas, so the metric is missing and evaluate fails a missing metric (development_values names them not evaluable). Their passing path has never run for these five criteria (milestone 3's dry run loaded the old k and D_V deltas on Q1's quick part alone), so the rehearsal on main must run them to a pass on a registered dry-run copy before registration",
   "near_ties": "ruling 5: Q4's fit tolerance is Q3's 1e-2, relative; the fastest two candidates at a length are a near tie when their gap is below 2 x 1e-2 x the larger |rate|, from the references alone before any run, and such a length is excluded; the sign margin (the smallest |rate| over 1e-2 x the largest) is reported beside it",
   "judged_run": "once, after registration, from a fresh clean execution snapshot of main (validation/source_snapshot.py, no dirty patch), through scripts/run_detached.sh. A failure is recorded and diagnosed, never retuned",
@@ -1875,7 +1875,7 @@
     "q6.dt25ms.a",
     "q6.dt25ms.b"
    ],
-   "note": "each of these is caught at its grid's lowest point, so its threshold lies at or below it and its registered delta is at least 10 x the threshold. On Q6, a and b set the uniform state (u* = (a + b) c*, v* = b c* / (a + b)^2), which k and the diffusivities do not: a change of delta moves every element by order delta c* from the start, while at the early records, where the pattern is still small, the per-element tolerance falls toward the reference term (its smallest 1.3e-14 mM over the records, against elements of order 0.001 mM)"
+   "note": "each of these is caught at its grid's lowest point, so its threshold lies at or below it and its registered delta is at least 10 x the threshold (measured). Why, inferred from the tolerances, not measured: on Q6, a and b set the uniform state (u* = (a + b) c*, v* = b c* / (a + b)^2), which k and the diffusivities do not, so a change of delta moves every element by order delta c* from the start, while at the early records, where the pattern is still small, the per-element tolerance falls toward the reference term (its smallest 1.3e-14 mM over the records, against elements of order 0.001 mM); the floor catch is consistent with that"
   }
  },
  "q4_near_ties": {
@@ -1994,11 +1994,12 @@
  },
  "disclosures": [
   "Guard 2's rule (ruling 8), 1e-14 x steps x the scale from REFERENCES_USAGE.md, was chosen with D150's steps x eps x the scale in view, at which the development's passive world sits at 0.96 (8,000 steps at 12.5 ms); the long-double iteration shows that rounding is the engine's own, linear in steps",
-  "The small-delta cutoff (a kept control's registered delta at most 1e-2) and Q4's fit tolerance (Q3's 1e-2) were fixed before the a, b and D_U thresholds were measured; the k and D_V thresholds and Q4's top-two gaps were already in view",
+  "The small-delta cutoff (a kept control's registered delta at most 1e-2) and Q4's fit tolerance (Q3's 1e-2) were fixed before the a, b and D_U thresholds were measured, but with the k and D_V thresholds, Q4's top-two gaps and every Q1 mode's slow-eigenvalue sensitivity to all five parameters in view (mg0c/checks-r2.json, written before the cutoff); those sensitivities estimate the thresholds to within about 5 x (controls.removed)",
   "The development runs come from snapshots before FR-9 (D165, the species cap raised to 16); the rehearsal on main redrafts this protocol with one generator command"
  ],
  "questions_for_the_lead": [
-  "1. The scope line: guard 2's passive world runs the passive law in judged criteria (G2_passive_*), against the lead's 'driven mass action only'. Ruling 8 rules on that very criterion (D150's 0.96 is the passive world's ratio), so this draft keeps it judged and names it in the scope line. Keep it so, or move it to the guards (test_species_reactions_composition.py already runs it, 10 s)?"
+  "1. The scope line: guard 2's passive world runs the passive law in judged criteria (G2_passive_*), against the lead's 'driven mass action only'. Ruling 8 rules on that very criterion (D150's 0.96 is the passive world's ratio), so this draft keeps it judged and names it in the scope line. Keep it so, or move it to the guards (test_species_reactions_composition.py already runs it, 10 s)?",
+  "2. Ruling 7's consequence: with \u00a711.1's pins in test_species_reactions_accuracy.py, the comparisons of heat and work against the true kinetics (dr.integrate_node: the share onset, the background guard, the crossing, the reversal onset) leave the judged list. The judged guards keep dissipation as rounding-level agreement with nr.run_half_steps (the same half-steps) and the passive relaxation's total heat against dr.passive_equilibrium's drop (1e-12). The coordinator's milestone-3 instruction kept the independent kinetic and dissipation comparisons as guards of record: is this split what the lead intends?"
  ],
  "pre_registration_amendments": [],
  "outcome_rules": "pass when the combined verdict passes: every judged criterion and every guard of record. A failure is recorded and kept; a revised protocol gets a new id and is reported as weaker evidence",
@@ -2222,7 +2223,7 @@
   "drafted_by": {
    "kind": "checkout",
    "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
-   "git_revision": "3bb9ff00d16cbef4bf48bbe7b92ffac671b73127",
+   "git_revision": "a868e9d583a274f33ef865e361fb2985005ec7d8",
    "dirty": ""
   }
  },
