@@ -110,6 +110,25 @@ of it.
   `inventory-coupling-*` exist, but the coupling operator is not in `src` on main.
 - Whether further unversioned law-like functions exist beyond the operator modules read.
 
+## Addendum: main at `8497ff37`, later on 14 November 2026
+
+The engine gained three more identifiers after this review, 28 in all since the
+inventory. None is a channel, pump, transporter, junction-channel or assembly law, so 49
+still stands.
+
+| Identifier | What it does | Reading |
+| --- | --- | --- |
+| `species_regulated_availability@1` | An operator: a species amount sets how available a junction or a channel population is (milestone 1, development code) | Outside, as the redistribution operators are: it acts on units' availability and is not a unit |
+| `hill_regulated_two_state@1` | That operator's regulatory state: a two-state fraction per cell, driven by Hill factors of species | Outside. Its design calls the state phenomenological when its units are unnamed, with "no named molecular carrier". It bears on the scope question of item 5: a named regulator would be a protein that the scope's list of units does not cover |
+| `exact_two_state_half_steps@1` | How that state advances | Outside: numerics |
+
+- By its design, each species the operator lists carries the same catalogue reference and
+  kind of evidence as a secreted species does. So the unused hook of item 3 has a second
+  place where it could be set.
+- "Not determined" above says the coupling operator was not in `src` on main. It now is.
+- The feature-request log's row for FR-6 still reads "no code yet", while the progress
+  record says the operator's milestone 1 landed with the channel target accepted.
+
 ## Also noticed, outside the atlas
 
 `docs/CURRENT_PLAN.md` lists the closed internal compartment (FR-1) in the execution
