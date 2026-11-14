@@ -47,8 +47,10 @@ FINDINGS = (  # Disclosed with the draft: what the development runs showed befor
     "to 5, from a regrouping of 4 pi r_a r_b at dc2e494. Restored at a7e1869: 24/24 jaxpr texts, "
     "24/24 constants and 8/8 bindings identical, its check holding "
     f"({EVIDENCE}/crossrev/species/compare-a7e1869-vs-b102da4.txt)",
-    "Three step-term definitions compared on the first run's arms "
-    f"({EVIDENCE}/qualification-dev-dc2e494/step_term_compare.json): per element (S5's form) "
+    f"Three step-term definitions compared ({EVIDENCE}/step_term_compare.py: first from the "
+    "dirty worktree on the first run's arms, rerun from the clean snapshot of a7e1869 on the "
+    f"second's, {EVIDENCE}/qualification-dev-a7e1869/step_term_compare.json, with the same "
+    "controls and every fraction within 0.001): per element (S5's form) "
     "the controls catch k and D in error by 5e-10 and 5e-9 (IMEX), 1e-12 and 1e-11 (RK4); in the "
     "max norm per record 1e-3 (IMEX) and 5e-6 (RK4); the splitting term as the step term (max "
     "norm) 1e-3 and 2e-3, 5e-6 and 1e-5. The step map's exact fixed point used per element is no "

@@ -23,10 +23,16 @@ def copy(tmp_path, name, status):
     return path
 
 
-def test_the_checked_in_protocol_is_proposed_not_registered(tmp_path):
+def test_the_checked_in_protocol_is_refused_outside_a_clean_snapshot(tmp_path):
+    """Whatever its status: refused as unregistered while it is (PROPOSED now), and for the missing
+    snapshot once registered. Registration changes the status alone, so this test's outcome does not
+    change with it, and Q5 runs it at the judged snapshot."""
     data = json.loads(protocol.PROTOCOL.read_text())
-    assert data["status"].startswith("PROPOSED")
-    assert "not registered" in protocol.judged_run_refusal(data, tmp_path)
+    refusal = protocol.judged_run_refusal(data, tmp_path)
+    if data["status"].startswith("registered"):
+        assert "clean execution snapshot" in refusal
+    else:
+        assert "not registered" in refusal
 
 
 def test_the_refusal_follows_s3s_and_s5s(tmp_path):
