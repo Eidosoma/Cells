@@ -73,6 +73,39 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D152 v1 milestone 3 landed: MG0c's driver, its development runs and a PROPOSED protocol
+  (14 November).** Not registered, and no judged run
+  ([protocol](validation/morphogenesis/protocols/mg0c_turing_v1.json); design §11.3;
+  [evidence](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/HANDOFF.md)).
+  - **The D147 check, before drafting:** every MG0c world has 0 free field offsets and declares
+    @2, so the composite gap (D156) does not touch it.
+  - **The compiled composition:** a face-free composition of D150's export with the reactions,
+    plus turnover on a read row, replacement@1 with outside routes, and @3's faces.
+    - Transport and reactions see the same material: it equals the split map to 3.9e-15, and is
+      second order against the coupled exact solution.
+    - Supply is counted once across writers, to at most 1.1e-16 of scale.
+    - A rejected step restores every field bitwise, every writer's accumulators included.
+    - Restart and batching are bitwise.
+  - **The moved guards:**
+    - §3.4 guard 2: the engine matches `strang_mode_map` at 0.008–0.021 of its rule, second
+      order against exact;
+    - idle claim 3: ion rows bitwise with the network active;
+    - several sites with different multipliers, against the references.
+  - **MG0c development runs** (Schnakenberg on zero-flux chains):
+    - Q1: mode propagation, second order (ratios 3.98–4.55), with the dt rule at 0.44–0.46;
+    - Q2: the no-mode domain decays at the predicted rate;
+    - Q3: dominant modes 1, 2 and 3 on L/ℓ = 6, 11 and 16;
+    - Q4: all 53 lengths match the discrete argmax;
+    - Q5: every subcritical mode decays;
+    - Q6: the nonlinear pattern against the SciPy integration, order 2.005;
+    - Q7: the face-free world at 0.052 of rounding.
+  - **The PROPOSED protocol** has 52 criteria and 76 registered control deltas. Its ten questions
+    are for the lead's review with the advisor. The findings include that a batch of the domains
+    cannot run, since the route node is in the batch signature; a batch of seeds on one domain is
+    proposed.
+  - **Landing:** tier 1 at the merge 4a689a9, 316 files, no changed outcome. No `src/` change since
+    milestone 2.
+
 - **The inventory-coupling design (D155 item 1, scoped by D156) is accepted (14 November).** The
   lead, with the advisor; docs only ([note](docs/INVENTORY_COUPLING_DESIGN.md), rulings in §6.3;
   [evidence](/mnt/workspaces/Cells/inventory-coupling-20261114-01/HANDOFF.md)).
