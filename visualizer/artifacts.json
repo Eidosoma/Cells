@@ -52,6 +52,11 @@
           "date": "2026-11-14",
           "engine_revision": "8497ff37",
           "note": "The cell is drawn flat-sided, as a cell packed in the skin-like layer (the user: a bit more like a planarian skin cell): six sides with rounded corners, 13 µm tall like the sheet's cells, among six glass neighbours; what enters or leaves the cell sits at the corners. The map gained the operator species_regulated_availability@1 (milestone 1, development code) with its law and its references, the species cap at 16, excitable tissue accepted narrowly (D170) and the conduction probe's outcome. The atlas card says 28 identifiers gained, 25 of them reviewed. Built, checked (35 of 35) and exported from a clean checkout of the branch at 543bab87; the 59 run files are unchanged"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "8497ff37",
+          "note": "Species atlases: a Species switch on the protein atlas (Human, Planarian). The planarian atlas of Schmidtea mediterranea has an entry for all 49 units: products of the same family found for 38, a different family for 3 (gap junctions from innexins), nothing found for 2, nothing to look for in 6; 204 gene products, 200 of them candidates by family signature. A ring marks a unit where the species differs. The library of about 10,000 planarian proteins was found and not imported. Checked with 55 of 55 real-input checks and 93 tests (92 pass, 1 skipped) at 54850de6; the page is 1.14 MB, and the 59 run files are unchanged"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
