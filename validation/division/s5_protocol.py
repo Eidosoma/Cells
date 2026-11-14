@@ -1,9 +1,9 @@
-"""S5a's qualification protocol, PROPOSED and not registered: its draft from disclosed runs.
+"""S5a's qualification protocol, registered by the lead: its draft from disclosed runs.
 
 docs/CELL_DIVISION_S5_DESIGN.md §8.3, with the lead's rulings of 13 and 14 November. Every
 tolerance number in the draft is computed here from a development run named beside it
-(DEVELOPMENT); the rules are stated with them. The lead registers the protocol, after review
-with the advisor: registration changes the status. Judged runs use a fresh clean snapshot of
+(DEVELOPMENT); the rules are stated with them. The lead registered the protocol after review
+with the advisor; registration changed its status alone. Judged runs use a fresh clean snapshot of
 main, and every S5 judge entry (q2_rops_comparison, q3_tissue_comparison, q5_order,
 egg_division_world) starts with registered(), which refuses, before anything is computed, an
 unregistered protocol and a run outside a clean execution snapshot, as S3's judge does
@@ -67,7 +67,7 @@ DEVELOPMENT = dict(
     q5=EVIDENCE / "protocol-dev-s5a22/q5_order/q5_order.json",
     q5_bridge_coupling=EVIDENCE / "bridge-coupling-order.json",
     q7a=EVIDENCE / "protocol-dev-s5a22/test_division_idle_sheet_runs.log",
-    refusal=EVIDENCE / "protocol-dev-s5a22/test_s5_judged_refusal.log",
+    refusal=EVIDENCE / "rehearsal-s5a36/test_s5_judged_refusal.log",  # The rehearsal's.
     q10_dt=EVIDENCE / "protocol-dev-s5a22/q10_dt0.25ms/q10_sensitivity.json",
     q10_half=EVIDENCE / "protocol-dev-s5a22/q10_dt0.125ms/q10_sensitivity.json",
     egg=EVIDENCE / "egg-s5a8/egg_division.json",
@@ -81,6 +81,7 @@ DEVELOPMENT = dict(
     regression=EVIDENCE / "regression-s5a9/results.txt",
 )
 SNAPSHOTS = {
+    "rehearsal-s5a36": "198492d",
     "protocol-dev-s5a34": "1b2cfd6",
     "protocol-dev-s5a32": "d8a0979",
     "protocol-dev-s5a28": "4487d0a",
@@ -105,10 +106,11 @@ EPS = float(np.finfo(float).eps)
 FLOOR_K = 64  # Q3's rounding floor: k eps x the quantity's scale, with k = 64 (as Q5's).
 ORDER_BAND = (1.8, 2.3)  # Q5's observed-order band (proposed).
 STATUS = (
-    "PROPOSED, not registered: drafted 14 November 2026 for the lead's review with the "
-    "advisor; the lead's rulings of 14 November written in. No judged run has been made. Q2's "
-    "judged seeds and its negative controls are frozen together in this commit, before R-ops' "
-    "amended magnitudes (Appendix A.8, the increment form's term, pending in R-ops) land."
+    "registered by the lead (registrar), 14 November 2026, after the final review with the "
+    "advisor. The rules, Q2's seeds and negative controls (three amendments, the last before "
+    "registration), the thresholds and the tolerances are frozen as written. No judged run had "
+    "been made at registration; each item's judged run follows once, from a fresh clean "
+    "snapshot of main."
 )
 # Q2's judged sets: fresh seeds, assigned by the lead (14 November). Read only by
 # q2_rops_comparison.judge, behind its guard; nobody runs them before the judged run.
@@ -259,7 +261,12 @@ def q2_previews():
     for name, reported in (("frozen_rule", ()), ("third_amendment", q2d.NEAR_ZERO_REPORTED)):
         v = q2d.verdict(report, item, reported=reported)
         failing = [k for k, ok in v["controls"].items() if not ok]
-        out[name] = dict(verdict=v["verdict"], largest_ratio=v["largest_ratio"], failing=failing)
+        out[name] = dict(
+            verdict=v["verdict"],
+            largest_ratio=v["largest_ratio"],
+            failing=failing,
+            near_zero_counts=v["near_zero_counts"],
+        )
     return out
 
 
@@ -340,6 +347,13 @@ def draft():
             "judged_run": "once per item, after registration, from a fresh clean execution "
             "snapshot of main (validation/source_snapshot.py, no dirty patch). A failure is "
             "recorded and diagnosed, never retuned.",
+            "attempts": "an attempt killed by infrastructure before its verdict is written (an "
+            "out-of-memory kill, a unit stopped by the slice, a host crash) is not a verdict. It "
+            "is recorded with its logs and partial outputs and rerun once from the same "
+            "snapshot; each attempt writes its own output directory, since every judge entry "
+            "refuses an existing one. A second infrastructure kill goes to the lead, as does "
+            "any other ending without a verdict. A run that has written its verdict is final "
+            "(the lead, 14 November)",
             "judge_entries": {
                 "guard": "validation/division/s5_protocol.registered, each entry's first call: "
                 "it refuses an unregistered protocol and a source that is not a clean execution "
@@ -352,7 +366,13 @@ def draft():
                 "Q5": "python -m validation.division.q5_order judge OUT",
                 "Q4, Q6-Q9": "the test files at the judged snapshot",
                 "Q10": "none: reported, not judged",
-                "development": dict(passed("refusal")),
+                "development": dict(
+                    passed("refusal"),
+                    note="the pre-registration rehearsal's run (the lead, 14 November). The "
+                    "count went from 5 (protocol-dev-s5a22, the earlier pointer) to 6 because "
+                    "the freeze (0c7e2ac) added Q2 to test_each_judge_entry_refuses_first's "
+                    "parametrization after s5a22",
+                ),
             },
             "landing_order": "this protocol's frozen commit lands on main first, then the "
             "amended R-ops; A.8's 'pending in R-ops' is removed in that second landing (the "
@@ -585,6 +605,11 @@ def draft():
                     "Shown at first order in all ten near-zero cases before this amendment was "
                     "committed: each observed ratio at 1e-9 is within 0.04% of its first-order "
                     "size (development run q2-dev-15, worktree; first_order)",
+                    "first_order": "the charge and amount predictions use R-ops' own values and "
+                    "magnitudes alone; the mismatch scale's potential prediction is a linearity "
+                    "check, R-ops' carrier displacement through the engine's own field solve "
+                    "(corrected before registration: the amendment's first record said R-ops "
+                    "alone for all)",
                     "changes": [
                         "the parent charge (charges, potentials), non-conservation (image, "
                         "charges, amounts), f (amounts) and W (work) are judged in every case, "
@@ -622,6 +647,13 @@ def draft():
                     judged_sets="the rule applies unchanged to the judged sets: at the judged "
                     "run the near-zero cases are the judged sets' admitted draws within the "
                     "same 5 mV (the lead, 14 November)",
+                    empty_sets="a judged set with no admitted draw within 5 mV leaves its "
+                    "near-zero conditions vacuous for that set, not failed. The verdict reports "
+                    "the near-zero count of each of the asymmetric world's sets (the rule draws "
+                    "from those alone); if no judged set has a near-zero case it says plainly "
+                    "that the near-zero part went untested by the judged sets, tested only on "
+                    "the seen sets (the lead, 14 November). The seen sets hold 0, 9 and 1 at "
+                    "spreads 0.1, 1 and 3",
                 ),
             },
             "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' "

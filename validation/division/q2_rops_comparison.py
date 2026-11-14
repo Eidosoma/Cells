@@ -115,9 +115,16 @@ last before registration): a_k, the mismatch scale and transference (NEAR_ZERO_R
 charge in proportion to the patch charges, which vanish at 0 V while A.8's term does not, so on
 a near-zero case their smallest defect caught measures the vanishing effect, not Q2's power.
 They are judged on the fixed cases and, on the near-zero cases, reported beside their
-first-order size (first_order: the ratio a defect of THRESHOLD predicts from R-ops' own values
-and magnitudes). The parent charge, non-conservation, f and W are judged in every case. After
+first-order size (first_order: the ratio a defect of THRESHOLD predicts at first order). The
+charge and amount predictions use R-ops' own values and magnitudes alone; the potential
+prediction is a linearity check, R-ops' carrier displacement through the engine's own field
+solve. The parent charge, non-conservation, f and W are judged in every case. After
 registration a control that misses the threshold is a failed Q2, never a moved threshold.
+A judged set with no admitted draw within NEAR_ZERO_V of 0 V makes its near-zero conditions
+vacuous, not failed (the lead, 14 November). The verdict reports the near-zero count of each of
+the asymmetric world's sets (the rule draws from those alone), and says plainly when no judged
+set has one: the near-zero part then went untested by the judged sets, tested only on the
+seen sets.
 
 Disclosed out-of-domain run: comparisons-s5a9 (snapshot-s5a9, 6c2b118) drew uncompensated
 increments within 1e-3 of each amount. The asymmetric states reached 94.7 on the post-event
@@ -1170,13 +1177,24 @@ def main(output):
     return report
 
 
+def near_zero_counts(controls):
+    """{spread: near-zero cases} over the asymmetric world's sets, from the control cases'
+    labels ("... spread S draw I"); a set without one counts 0."""
+    counts = {f"spread {s:g}": 0 for s in SPREADS}
+    for label in controls:
+        if " spread " in label:
+            counts["spread " + label.split(" spread ")[1].split(" draw ")[0]] += 1
+    return counts
+
+
 def verdict(report, item, reported=NEAR_ZERO_REPORTED):
     """Q2's verdict at the new scale: every compared ratio of the cases, the simultaneous
     divisions and the judged sets within 64; every judged control's target families caught at
     or below THRESHOLD; each near-zero case passing undefected; and each case's engine-side
     construction faithful to the engine (construction_checks). On a near-zero case the
     controls in reported are reported, not judged (the third amendment); reported=() gives the
-    frozen rule before it."""
+    frozen rule before it. A set without a near-zero case leaves its near-zero conditions
+    vacuous, not failed; the near-zero count per set is reported (module docstring)."""
     new = report["scales"]["new"]
     worst = [v["worst"] for v in new["cases"].values()]
     worst += [e["worst"] for v in new["simultaneous"].values() for e in v.values()]
@@ -1193,8 +1211,25 @@ def verdict(report, item, reported=NEAR_ZERO_REPORTED):
             controls[f"{label}: {control}"] = passed
         controls[f"{label}: construction"] = entry["construction"]["faithful"]
     ok = comparisons and all(controls.values())
+    sets = report.get("sets", "judged")
+    counts = near_zero_counts(new["negative_controls"])
+    empty = [s for s, n in counts.items() if n == 0]
+    if not any(counts.values()):
+        near_zero = (
+            f"untested by the {sets} sets: none has an admitted draw within {NEAR_ZERO_V} V of "
+            "0 V, so the near-zero part was tested only on the seen sets"
+        )
+    else:
+        near_zero = f"{sum(counts.values())} near-zero cases in the {sets} sets" + (
+            f"; vacuous, not failed, for {', '.join(empty)} (no admitted draw within "
+            f"{NEAR_ZERO_V} V of 0 V)"
+            if empty
+            else ""
+        )
     return dict(
         rule="the third amendment" if reported else "the frozen rule",
+        near_zero_counts={f"{ASYMMETRIC}, {s}": n for s, n in counts.items()},
+        near_zero=near_zero,
         reported_on_near_zero=list(reported),
         largest_ratio=max(worst),
         comparisons_within_64=comparisons,
@@ -1202,6 +1237,11 @@ def verdict(report, item, reported=NEAR_ZERO_REPORTED):
         threshold=item["negative_controls"]["threshold"],
         verdict="pass" if ok else "fail",
     )
+
+
+def judged_seeds(item):
+    """The judged sets' seeds {world: {spread: seed}}, read from the protocol's Q2 item alone."""
+    return item["random_sets"]["judged"]["seeds"]
 
 
 def judge(output, protocol_path=None, root=None):
@@ -1215,7 +1255,7 @@ def judge(output, protocol_path=None, root=None):
     )
     if "new" not in scales():
         raise SystemExit("Refused: R-ops' amended magnitudes (A.8) have not landed")
-    seeds = item["frozen_draws"]["judged"]["seeds"]
+    seeds = judged_seeds(item)
     jax.config.update("jax_enable_x64", True)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)

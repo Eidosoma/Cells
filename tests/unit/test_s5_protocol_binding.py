@@ -1,4 +1,4 @@
-"""The PROPOSED S5 protocol binds the drivers' frozen constants (the lead, 14 November).
+"""The registered S5 protocol binds the drivers' frozen constants (the lead, 14 November).
 
 Q2's seen seed, spreads, draws per set, defect ladder, threshold, families, targets and near-zero
 cases are stated in validation/division/s5_protocol.json and used by
@@ -40,6 +40,8 @@ def test_q2s_random_sets_are_the_drivers():
     flat = [s for w in seeds.values() for s in w.values()]
     assert len(set(flat)) == len(flat) == 6 and q2.SEEN_SEED not in flat
     assert seeds == s5_protocol.JUDGED_SEEDS
+    # The judge entry reads them where the protocol holds them (no test runs it past its guard).
+    assert q2.judged_seeds(protocol()["Q2"]) == seeds
 
 
 def test_the_judged_seeds_are_the_protocols_alone():

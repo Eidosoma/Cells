@@ -1,4 +1,4 @@
-"""S5's judge entries refuse a judged run while the protocol is PROPOSED (the lead, 14 November).
+"""S5's judge entries refuse a judged run of an unregistered protocol or outside a clean snapshot.
 
 As S3's judge does (test_cleft_egg_engine.py): validation/division/s5_protocol.registered,
 every judge entry's first call, refuses an unregistered protocol and a source that is not a
@@ -27,10 +27,13 @@ def copy(tmp_path, name, status):
     return path
 
 
-def test_the_checked_in_protocol_is_proposed():
+def test_the_checked_in_protocol_is_registered(tmp_path):
+    """Registered by the lead (14 November): the status names the registrar, and only the
+    source check now stands between a judge entry and its judged run."""
     status = json.loads(s5_protocol.PROTOCOL.read_text())["status"]
-    assert status.startswith("PROPOSED")
-    assert "not registered" in s5_protocol.judged_run_refusal({"status": status})
+    assert status.startswith("registered by the lead")
+    refusal = s5_protocol.judged_run_refusal({"status": status}, tmp_path)
+    assert "clean execution snapshot" in refusal
 
 
 def test_the_refusal_follows_s3s(tmp_path):
