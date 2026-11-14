@@ -259,7 +259,7 @@ extended. The control propagates.
 | Quantity | Value |
 | --- | --- |
 | Capture threshold | 1.30717e-07 m/s; bracket 1.30607e-07 (no capture) to 1.30717e-07 (capture), 15 runs. About 3.2 times the single cell's §8.3 threshold. The no-capture end holds under `ep.wave_outcome`: no new activation for 0.147 s (`track-e-bracketcheck-02`) |
-| Far-end S1–S2 interval | 27.982 ms; bracket 27.976 to 27.982 ms, 17 runs. The far cell activates a second time when S2 starts at least this long after S1 |
+| Far-end S1–S2 interval | **Window-dependent.** 27.982 ms (bracket 27.976–27.982 ms, 17 runs) within the driver's window, which ends 30 ms after the first wave's far-end arrival plus S2's onset (about 69.5 ms). With a 300 ms window (`checks-final/`), Δ = 27.976 ms also gives a far-end second wave, a slow one arriving at 155.8 ms. So the long-window interval lies below 27.976 ms; it was not re-bracketed. §8.4 names no window |
 
 **§8.6, the 0.01 F/m² cells** (rests −79.558918 mV for A and −79.559338 mV for B):
 
@@ -269,6 +269,12 @@ extended. The control propagates.
 | B | 30.85115 (lower end 30.85110) | 35.773 (kick capped at 60 mV), 95.73, 8.108 | 35.725 | 37.643 | 24.571, 9.594 | 5412.0, 19.39 / 36.09 | 37.643, 36.088 |
 
 - Every run's largest V is below +60 mV. A's highest is the chain's end cell, at +56.620 mV.
+- **The stimulus rows.** Their largest dV/dt, 864.49 V/s for both A and B, is the stimulus
+  onset's, so the APD90 shown runs from 2 ms.
+  - Measured from the stimulus end, 3 ms (`checks-final/`): APD50 1.873 and 2.973 ms, APD90 3.876
+    and 8.594 ms for A and B.
+  - The upstroke merges with the stimulus: after 3 ms, dV/dt is largest at 3 ms itself, 172.9 and
+    78.6 V/s.
 - **The NaV-off and all-off arms** do not fire. They decay passively from the kick (`ep.single_panel`
   and the follow-up's `cm001_arms`).
 - **APD in the main run.** The main run (cd622adf) gave APD values for non-firing arms, measured
@@ -346,7 +352,8 @@ threshold brackets, set by the bisection tolerance, are wider than that.
    - In §8.4, a wave propagates when every cell activates; otherwise it is blocked.
    - In §8.5, block is the appendix's own definition: cell 15 activates and cell 24 does not.
 8. **The capture threshold and the far-end S1–S2 interval** are taken at s_c = 1000, the
-   coupling of §8.4's controls; the appendix does not name one.
+   coupling of §8.4's controls; the appendix does not name one. The far-end interval also
+   depends on the observation window, which the appendix does not name (see Results).
    - "Passive" has NaV, Kv and Kir unavailable, in §8.2's wording.
    - The far-end second wave is a second upward crossing of −30 mV by the last cell after S2's
      onset.
