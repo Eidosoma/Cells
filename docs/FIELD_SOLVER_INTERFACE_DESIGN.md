@@ -429,6 +429,26 @@ profiler.
 - the narrow form needs the four kernel classes at half or more of the attributed device time;
 - the broad form adds the n × n passes.
 
+**Result on the L4 (14 November): the narrow form holds.** The run: E07's world as version 3,
+the hold's as declared (version 2), step and checks.
+- **The device is busy.** Device time is 92–99% of each call's time to ready.
+- **Attribution is by kernel name.** On this jaxlib the device kernels carry their command
+  buffer as hlo_op, not the instruction, so they are classed by name. cuSOLVER and cuBLAS
+  kernels name their operation
+  ([read_gpu_trace.py](/mnt/workspaces/Cells/field-solver-limits-20261113-01/read_gpu_trace.py)).
+
+| Run | Ready | Four kernel classes | Triangular solves | Cholesky | Dense products | LU | Fusions | Copies |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| E07, 6 worlds | 52.1 ms | 79% | 61% | 11% | 5% | 2% | 17% | 4% |
+| Hold, 6 worlds | 57.5 ms | 78% | 58% | 11% | 5% | 4% | 18% | 4% |
+| E07, 256 worlds | 538 ms (2.10 ms per world-step) | 53% | 11% | 25% | 17% | 1% | 29% | 18% |
+
+- **At six worlds** the step is mostly cuBLAS's batched triangular solve (`batch_trsm_left_kernel`)
+  applied to single vectors: about 30 ms of a 52–58 ms step.
+- **At 256 worlds** the Cholesky and the dense products lead.
+- **The broad form cannot be read from kernel names.** It would add n × n fusions and copies; the
+  pieces compiled alone bound it at 65% (hold, 6 worlds) to 86% (E07, 256 worlds) of the step.
+
 **Decision after GH200.**
 - **If dense node-space work dominates at E07's batch size,** prototype the sparse IMEX
   operator (§6.1) with reuse (§6.3) first, as a new solver ID, and measure it on CPU, the L4
