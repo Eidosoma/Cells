@@ -51,7 +51,13 @@ Readings of Appendix A taken here (also in the S5 references' HANDOFF):
   there, so record + post-event = pre-event exactly (the add-back of design §3.5).
 * Magnitudes (for 64 eps x magnitude): the sum of the absolute values of the terms entering each
   quantity, where a solved potential enters with the componentwise forward-error scale of a
-  backward-stable solve, |K_ff^-1| (|K_ff| |phi_f| + |Q_f| + |K_fb| |phi_b|).
+  backward-stable solve, |K_ff^-1| (|K_ff| |phi_f| + M_f + |K_fb| |phi_b|).
+* The amendment to A.8 (the lead's ruling, 14 November): a cell's node charge, an input cell's and
+  a daughter's alike, has the magnitude M_i = |Q_i| + |Q-bar_i| + 1e-15 F sum_s |z_s Delta_s,i|,
+  with Q-bar_i its declared charge anchor and Delta_i its increments (for a daughter, its split
+  anchor and the increments this map computes); a cleft's is |Q_c|. The term enters every
+  potential's magnitude through |K_ff^-1| (above) and every output that depends on the charges
+  or the potentials. apply(..., charge_term=False) gives the magnitudes without it.
 * The bridge's closure law (A.7, design §4.1) is written here, beside the map that opens the
   bridge (aperture, bridge_diffusivities, bridge_conductance).
 """
@@ -214,14 +220,25 @@ class Result:
 # ---------------------------------------------------------------- capacitor network (A.2)
 
 
-def nodal_solve(free, held, edges, charges):
+def charge_term_C(cell, z):
+    """|Q-bar| + 1e-15 F sum_s |z_s Delta_s| (C): the amendment to A.8's magnitude of a cell's
+    node charge, from the cell's declared charge anchor and its increments (the lead's ruling,
+    14 November)."""
+    return abs(cell.charge_reference_C) + 1e-15 * F * math.fsum(
+        abs(zs * d) for zs, d in zip(z, cell.increment_fmol, strict=True)
+    )
+
+
+def nodal_solve(free, held, edges, charges, extra=None):
     """Potentials of the capacitor network K = sum_k C_k e_k e_k^T (A.2).
 
     free: the free nodes (the solve's order); held: {node: potential}; edges: [(inside, outside,
-    C)] over the live patches; charges: {free node: Q (C)}. K_ff phi_f = Q_f - K_fb phi_b.
+    C)] over the live patches; charges: {free node: Q (C)}; extra: {free node: an additional
+    magnitude of its charge (C)}, the cells' charge terms. K_ff phi_f = Q_f - K_fb phi_b.
     Returns (phi, magnitude): phi {node: V} over free and held nodes; magnitude {node: V}, for a
-    free node the componentwise forward-error scale of a backward-stable solve,
-    |K_ff^-1| (|K_ff| |phi_f| + |Q_f| + |K_fb| |phi_b|), and |phi_b| for a held node.
+    free node |K_ff^-1| (|K_ff| |phi_f| + |Q_f| + extra_f + |K_fb| |phi_b|) (the componentwise
+    forward-error scale of a backward-stable solve, with the charges' own terms carried through
+    it), and |phi_b| for a held node.
     """
     index = {node: i for i, node in enumerate(free)}
     n = len(free)
@@ -244,6 +261,8 @@ def nodal_solve(free, held, edges, charges):
         elif b is None:
             rhs[a] += c * held[outside]
             rhs_scale[a] += c * abs(held[outside])
+    for node, term in (extra or {}).items():
+        rhs_scale[index[node]] += term
     if n and np.linalg.cond(K) > 1e12:
         raise PartitionRefused("a capacitor component without a held node (floating)")
     phi_f = np.linalg.solve(K, rhs) if n else np.zeros(0)
@@ -264,11 +283,14 @@ def network(snapshot):
     return free, edges, charges
 
 
-def electrostatics(snapshot):
+def electrostatics(snapshot, charge_term=True):
     """A.2 on a snapshot: potentials, patch voltages and charges, plate charges, energy U (J),
-    each with its magnitude."""
+    each with its magnitude (with the cells' charge terms when charge_term)."""
     free, edges, charges = network(snapshot)
-    phi, mag_phi = nodal_solve(free, snapshot.held, edges, charges)
+    extra = None
+    if charge_term:
+        extra = {name: charge_term_C(c, snapshot.z) for name, c in snapshot.cells.items()}
+    phi, mag_phi = nodal_solve(free, snapshot.held, edges, charges, extra)
     v, q, mag_v, mag_q = {}, {}, {}, {}
     for name, p in snapshot.patches.items():
         v[name] = phi[p.cell] - phi[p.node]
@@ -468,10 +490,12 @@ def _split(total, fraction):
     return first, total - first
 
 
-def apply(snapshot, division):
+def apply(snapshot, division, *, charge_term=True):
     """The partition map of A.6 on one snapshot; returns a Result (the input is not modified).
 
     Raises PartitionRefused for an inadmissible division or a daughter amount <= 0 (A.6 step 7).
+    charge_term: the magnitudes carry the cells' charge terms (A.8 as amended on 14 November);
+    False gives the magnitudes without them (the values are the same either way).
     """
     s, d = snapshot, division
     _check(s, d)
@@ -483,8 +507,13 @@ def apply(snapshot, division):
     values, mags, identities = {}, {}, {}
 
     # 1. Pre-event electrostatics.
-    pre = electrostatics(s)
+    pre = electrostatics(s, charge_term)
     q, mag_q = pre["patch_q_C"], pre["patch_q_mag"]
+
+    def term(cell):
+        return charge_term_C(cell, s.z) if charge_term else 0.0
+
+    m_parent = abs(parent.charge_C) + term(parent)  # The parent's charge magnitude (A.8).
 
     # 2. Mismatch charge and its carriers.
     dq = math.fsum((a - f) * q[k] for k, (_, _, a) in d.patches.items())
@@ -522,8 +551,12 @@ def apply(snapshot, division):
     qref1, qref2 = _split(parent.charge_reference_C, f)
     charge1 = f * parent.charge_C + dq
     charge2 = parent.charge_C - charge1
-    mag_charge1 = f * abs(parent.charge_C) + mag_dq
-    mag_charge2 = abs(parent.charge_C) + mag_charge1
+    cell1 = Cell(tuple(ref1), tuple(inc1), v1, x1, charge1, qref1)
+    cell2 = Cell(tuple(ref2), tuple(inc2), v2, x2, charge2, qref2)
+    base1 = f * m_parent + mag_dq
+    base2 = m_parent + base1
+    mag_charge1 = base1 + term(cell1)  # Each daughter's own anchor and increments (A.8).
+    mag_charge2 = base2 + term(cell2)
     values.update(
         amounts_D1_fmol=n1,
         amounts_D2_fmol=n2,
@@ -572,12 +605,12 @@ def apply(snapshot, division):
     )
     identities["charge_sum"] = (
         charge1 + charge2 - parent.charge_C,
-        mag_charge1 + mag_charge2 + abs(parent.charge_C),
+        mag_charge1 + mag_charge2 + m_parent,
     )
     split_q = math.fsum(a * q[k] for k, (_, _, a) in d.patches.items())
     identities["charge_follows_patches"] = (
         charge1 - split_q,
-        mag_charge1 + math.fsum(mag_q[k] for k in d.patches) + abs(parent.charge_C),
+        mag_charge1 + math.fsum(mag_q[k] for k in d.patches) + m_parent,
     )
     content = 1e-15 * F * (math.fsum(z * n_p) + parent.background_fmol)
     content_mag = 1e-15 * F * (math.fsum(np.abs(z) * mag_n_p) + abs(parent.background_fmol))
@@ -590,7 +623,7 @@ def apply(snapshot, division):
         # Holds when the parent's explicit charge equals its content (to its rounding).
         identities[f"charge_content_{name}"] = (
             own - charge_d - (content - parent.charge_C) * (f if name == d1 else 1.0 - f),
-            own_mag + mag_charge_d + content_mag + abs(parent.charge_C),
+            own_mag + mag_charge_d + content_mag + m_parent,
         )
 
     # 4. Patches, populations, contacts, the record.
@@ -688,8 +721,8 @@ def apply(snapshot, division):
 
     # 5. Liveness and the post-event snapshot.
     cells = {name: c for name, c in s.cells.items() if name != d.parent}
-    cells[d1] = Cell(tuple(ref1), tuple(inc1), v1, x1, charge1, qref1)
-    cells[d2] = Cell(tuple(ref2), tuple(inc2), v2, x2, charge2, qref2)
+    cells[d1] = cell1
+    cells[d2] = cell2
     after = Snapshot(
         species=s.species,
         z=s.z,
@@ -704,8 +737,19 @@ def apply(snapshot, division):
         history=history,
     )
 
+    # Node charges and their magnitudes (A.8 as amended), before and after.
+    before_q = {name: c.charge_C for name, c in [*s.cells.items(), *s.clefts.items()]}
+    before_m = {name: abs(c.charge_C) + term(c) for name, c in s.cells.items()}
+    before_m.update({name: abs(c.charge_C) for name, c in s.clefts.items()})
+    after_q = {name: c.charge_C for name, c in [*cells.items(), *s.clefts.items()]}
+    after_m = {name: before_m[name] for name in cells if name not in (d1, d2)}
+    after_m.update({d1: mag_charge1, d2: mag_charge2})
+    after_m.update({name: abs(c.charge_C) for name, c in s.clefts.items()})
+    values.update(charges_before_C=before_q, charges_after_C=after_q)
+    mags.update(charges_before_C=before_m, charges_after_C=after_m)
+
     # 6. Identities of the post-event state.
-    post = electrostatics(after)
+    post = electrostatics(after, charge_term)
     phi0, phi1 = pre["phi"], post["phi"]
     m0, m1 = pre["phi_mag"], post["phi_mag"]
     values.update(
