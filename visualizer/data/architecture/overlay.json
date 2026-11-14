@@ -323,18 +323,34 @@
     },
     {
       "id": "exec.schedule",
-      "label": "Schedules and phases",
+      "label": "Schedules",
       "layer": "execution",
       "status": "established",
       "match": [
-        "src/cells/core/schedule.py",
-        "src/cells/core/phases.py"
+        "src/cells/core/schedule.py"
       ],
       "plain": "Timed changes an experiment makes, such as blocking a pump or a junction, applied at exact times.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE.md",
           "where": "Time and numerical integration"
+        }
+      ]
+    },
+    {
+      "id": "exec.phase_markers",
+      "label": "Phase markers",
+      "layer": "execution",
+      "status": "landed",
+      "as_of": "2026-11-14",
+      "match": [
+        "src/cells/core/phases.py"
+      ],
+      "plain": "Records that mark where each phase of a run ended. Completion records are implemented; start and failure records are pending.",
+      "sources": [
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Status on 14 November 2026, and the working order (D156)"
         }
       ]
     },
@@ -626,12 +642,12 @@
       "label": "Field-solver interface",
       "layer": "numerics",
       "status": "designed",
-      "as_of": "2026-11-13",
-      "plain": "An interface that keeps the field law and its checks while allowing sparse or matrix-free solvers. Proposed, with no code yet.",
+      "as_of": "2026-11-14",
+      "plain": "An interface that keeps the field law and its checks while allowing sparse or matrix-free solvers. Designed; its code waits for the GH200 measurements.",
       "sources": [
         {
-          "path": "PROGRESS.md",
-          "where": "Field-solver limits (13 November)"
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Status on 14 November 2026, and the working order (D156)"
         },
         {
           "path": "docs/FIELD_SOLVER_INTERFACE_DESIGN.md"
@@ -733,11 +749,15 @@
       "label": "Long-time methods",
       "layer": "numerics",
       "status": "planned",
-      "plain": "Multirate or quasi-steady stepping for hours to months of biology. A verdict on them is a deliverable of the compute-limits gate.",
+      "plain": "Multirate or quasi-steady stepping for hours to months of biology. A verdict on them is a deliverable of the compute-limits gate; its acceptance now includes an intervention applied during the slow phase (feature request FR-8, D164).",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Gate: compute limits"
+        },
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-8"
         }
       ]
     },
@@ -1053,7 +1073,7 @@
       "layer": "laws",
       "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "A species amount in the inventory sets how available a junction or channel is, so chemistry can change electrical behaviour. The design is accepted (14 November 2026): junctions first, with channels pending. Nothing is implemented yet.",
+      "plain": "A species amount in the inventory sets how available a junction or channel is, so chemistry can change electrical behaviour. The design is accepted (14 November 2026): junctions first, with channels pending. Nothing is implemented yet. It also answers feature request FR-6, species-driven control factors.",
       "sources": [
         {
           "path": "docs/INVENTORY_COUPLING_DESIGN.md"
@@ -1069,6 +1089,10 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Status on 14 November 2026, and the working order (D156)"
+        },
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-6"
         }
       ]
     },
@@ -1437,6 +1461,90 @@
       ]
     },
     {
+      "id": "fr.internal_compartment",
+      "label": "Internal compartment (FR-1)",
+      "layer": "operators",
+      "status": "planned",
+      "as_of": "2026-11-14",
+      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Logged; its design has not started.",
+      "sources": [
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-1"
+        }
+      ]
+    },
+    {
+      "id": "fr.internalisation",
+      "label": "Internalisation of membrane (FR-2)",
+      "layer": "operators",
+      "status": "planned",
+      "as_of": "2026-11-14",
+      "plain": "Membrane, with the populations on it, moves inward on a schedule and carries the compartment it forms: the reverse of membrane insertion. Logged; it follows the internal compartment.",
+      "sources": [
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-2"
+        }
+      ]
+    },
+    {
+      "id": "fr.site_occupancy",
+      "label": "Site occupancy (FR-3)",
+      "layer": "operators",
+      "status": "planned",
+      "as_of": "2026-11-14",
+      "plain": "Binding sites as state on a membrane domain or contact, with bound and free molecules in one material ledger. Logged; already specified as a door in the secreted-species design.",
+      "sources": [
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-3"
+        }
+      ]
+    },
+    {
+      "id": "fr.compartment_ph",
+      "label": "Compartment pH (FR-4)",
+      "layer": "operators",
+      "status": "planned",
+      "as_of": "2026-11-14",
+      "plain": "Protons as a species, a pump that acidifies a compartment against its gradient using the fuel pools, and buffering through the reactions operator. Logged; it comes after the internal compartment.",
+      "sources": [
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-4"
+        }
+      ]
+    },
+    {
+      "id": "fr.internal_transfer",
+      "label": "Transfer across an internal membrane (FR-5)",
+      "layer": "operators",
+      "status": "planned",
+      "as_of": "2026-11-14",
+      "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH. Logged; it depends on the internal compartment and on compartment pH.",
+      "sources": [
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-5"
+        }
+      ]
+    },
+    {
+      "id": "fr.bath_schedule",
+      "label": "Scheduled bath composition (FR-10)",
+      "layer": "operators",
+      "status": "planned",
+      "as_of": "2026-11-14",
+      "plain": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Logged; the law and its accounting exist in an older model family.",
+      "sources": [
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-10"
+        }
+      ]
+    },
+    {
       "id": "exp.parity",
       "label": "BETSE parity ladder",
       "layer": "experiments",
@@ -1478,6 +1586,37 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Status on 14 November 2026, and the working order (D156)"
+        }
+      ]
+    },
+    {
+      "id": "exp.d150",
+      "label": "D150: secreted-species qualification",
+      "layer": "experiments",
+      "status": "qualified",
+      "as_of": "2026-11-14",
+      "plain": "The registered protocol for secreted-species transport: checked against an exact finite-volume solution and a continuum closed form, with controls that must fail. Every item passed, in its stated scope.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "Secreted-species transport (D150 v1) is numerically qualified"
+        },
+        {
+          "path": "docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md"
+        }
+      ]
+    },
+    {
+      "id": "exp.l4_agreement",
+      "label": "Composite on the L4",
+      "layer": "experiments",
+      "status": "landed",
+      "as_of": "2026-11-14",
+      "plain": "Does the composite model give the same answers on the L4 GPU as on the CPU? Three repeats agreed, with backend differences of at most 4.2e-14 V, and the three variants are registered. The judged run comes next.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "The composite's L4 agreement under the three-repeat rule"
         }
       ]
     },
@@ -1595,11 +1734,15 @@
       "label": "Paper tests",
       "layer": "experiments",
       "status": "designed",
-      "as_of": "2026-11-11",
-      "plain": "Published models to reproduce and test in Cells. Three have test plans; the Cortés-Poza reproduction ran outside the engine.",
+      "as_of": "2026-11-14",
+      "plain": "Published models to reproduce and test in Cells. The user's high priority (14 November 2026) is a paper on Myc and cyclin T1 in the injured heart, to be modelled in two tracks: excitable tissue and regulation (D155). The Cortés-Poza reproduction ran outside the engine.",
       "sources": [
         {
           "path": "docs/PAPER_BACKLOG.md"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D155"
         }
       ]
     },
@@ -1673,13 +1816,18 @@
       "id": "ref.catalogue",
       "label": "Protein catalogue",
       "layer": "references",
-      "status": "designed",
-      "plain": "A curated list giving each modelled channel, pump and junction a stable identity linked to UniProt, the Human Protein Atlas, PDB and Reactome. Metadata only.",
+      "status": "planned",
+      "plain": "A curated list giving each modelled channel, pump and junction a stable identity linked to UniProt, the Human Protein Atlas, PDB and Reactome. Metadata only. Its facts are verified and the law inventory is made; its design has not begun and is held (D145).",
       "sources": [
         {
           "path": "docs/PROTEIN_CATALOGUE_PLAN.md"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Status on 14 November 2026, and the working order (D156)"
         }
-      ]
+      ],
+      "as_of": "2026-11-14"
     },
     {
       "id": "val.betse",
@@ -1743,7 +1891,7 @@
       "match": [
         "validation/reactions/**"
       ],
-      "plain": "Reference solutions for the planned reaction operator, written by an agent that never read the operator's code.",
+      "plain": "Reference solutions for the shared-inventory reactions operator, written by an agent that never read the operator's code.",
       "sources": [
         {
           "path": "validation/reactions/REFERENCES_USAGE.md"
@@ -1938,7 +2086,7 @@
         "files": [
           "src/cells/models/operators/species_common.py"
         ],
-        "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only.",
+        "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only. The shared species code holds at most 7 species today; a rise to 16 is accepted and queued (FR-9, D165).",
         "sources": [
           {
             "path": "PROGRESS.md",
@@ -1947,6 +2095,10 @@
           {
             "path": "docs/CURRENT_PLAN.md",
             "where": "Status on 14 November 2026, and the working order (D156)"
+          },
+          {
+            "path": "docs/FEATURE_REQUESTS.md",
+            "where": "FR-9"
           }
         ]
       },
@@ -2031,18 +2183,19 @@
       "execution": {
         "label": "Execution",
         "plain": "Make execution dependable: fast plan validation, live progress markers, one production path and a compile policy.",
-        "note": "The plan-validation fix was accepted on 12 November; phase-marker completion records are implemented. One production path, the compile policy and the registry are not started; the run-view output's design is pending (the plan, 14 November).",
+        "note": "The plan-validation fix was accepted on 12 November; phase-marker completion records are implemented. One production path, the compile policy and the registry are not started; the run-view output's design is pending (the plan, 14 November). The plan's table for this gate also lists the closed internal compartment (FR-1), added on 14 November.",
         "delivers": [
           "exec.one_path",
           "exec.compile_policy",
           "exec.vector_windows",
-          "exec.run_view"
+          "exec.run_view",
+          "fr.internal_compartment"
         ]
       },
       "composition": {
         "label": "Composition",
         "plain": "One composite physiology model with an explicit contract for who owns and who writes each piece of state.",
-        "note": "From the plan, 14 November: secreted-species version 1 is implemented and guarded, with its protocol registered; the reactions operator's milestones 1 and 2 have landed, and MG0c, its qualification, is in progress.",
+        "note": "From the plan, 14 November: secreted-species transport version 1 is numerically qualified in its stated scope; the reactions operator's milestones 1 and 2 have landed, and MG0c, its qualification, is in progress.",
         "delivers": [
           "models.composite",
           "op.contract",
@@ -2069,7 +2222,7 @@
       "compute limits": {
         "label": "Compute limits",
         "plain": "Measure where the cost goes, measure the GH200, define a field-solver interface and reach a verdict on long-time methods.",
-        "note": "A field-solver interface was proposed on 13 November, with no code (PROGRESS). GH200 measurements wait for access.",
+        "note": "From the plan, 14 November: the field-solver interface is designed, and its code waits for the GH200 numbers. GH200 measurements wait for access.",
         "delivers": [
           "num.field_interface",
           "num.long_time",
@@ -2425,6 +2578,7 @@
       "status": "established",
       "representation": "simulated",
       "runs_in": [
+        "composite",
         "resolved"
       ],
       "plain": "Chemical reactions inside compartments, with mass and energy accounted for. Reactions on the tissue's shared inventory are implemented and guarded; their qualification is in progress.",
@@ -2910,6 +3064,101 @@
       "to": "exec.io",
       "kind": "extends",
       "label": "a view file beside definition.json"
+    },
+    {
+      "from": "fr.internal_compartment",
+      "to": "models.composite",
+      "kind": "extends"
+    },
+    {
+      "from": "fr.internalisation",
+      "to": "fr.internal_compartment",
+      "kind": "extends"
+    },
+    {
+      "from": "fr.internalisation",
+      "to": "op.scheduled_membrane_insertion@1",
+      "kind": "extends",
+      "label": "the retrieval direction"
+    },
+    {
+      "from": "fr.site_occupancy",
+      "to": "models.composite",
+      "kind": "extends"
+    },
+    {
+      "from": "fr.compartment_ph",
+      "to": "fr.internal_compartment",
+      "kind": "extends"
+    },
+    {
+      "from": "fr.compartment_ph",
+      "to": "op.local_species_reactions@1",
+      "kind": "extends",
+      "label": "buffering"
+    },
+    {
+      "from": "fr.internal_transfer",
+      "to": "fr.internal_compartment",
+      "kind": "extends"
+    },
+    {
+      "from": "fr.internal_transfer",
+      "to": "fr.compartment_ph",
+      "kind": "extends"
+    },
+    {
+      "from": "fr.bath_schedule",
+      "to": "models.composite",
+      "kind": "extends"
+    },
+    {
+      "from": "exp.d150",
+      "to": "models.composite",
+      "kind": "runs"
+    },
+    {
+      "from": "exp.d150",
+      "to": "op.scheduled_species_turnover@1",
+      "kind": "runs"
+    },
+    {
+      "from": "exp.l4_agreement",
+      "to": "models.composite",
+      "kind": "runs"
+    },
+    {
+      "from": "exp.l4_agreement",
+      "to": "compute.l4",
+      "kind": "runs_on"
+    },
+    {
+      "from": "exp.division",
+      "to": "op.scheduled_membrane_insertion@2",
+      "kind": "runs"
+    },
+    {
+      "from": "exp.division",
+      "to": "op.restricted_cleft_lumen@2",
+      "kind": "runs"
+    },
+    {
+      "from": "exp.papers",
+      "to": "laws.excitable",
+      "kind": "extends",
+      "label": "the Myc and cyclin T1 paper, track one"
+    },
+    {
+      "from": "exp.papers",
+      "to": "laws.inventory_coupling",
+      "kind": "extends",
+      "label": "the Myc and cyclin T1 paper, track two"
+    },
+    {
+      "from": "ref.catalogue",
+      "to": "op.membrane_entity_state@1",
+      "kind": "extends",
+      "label": "its populations already declare a functional unit and a catalogue reference"
     }
   ],
   "relation_kinds": [

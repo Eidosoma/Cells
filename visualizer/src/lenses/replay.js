@@ -572,6 +572,8 @@ export class ReplayLens {
       run: {
         heading: experiment.label,
         text: experiment.plain || "",
+        // What the experiment found, in the record's words, so one run is not read as the whole result.
+        result: experiment.result?.text || "",
         // With runs of several experiments, the card also picks the experiment.
         experiments: [...this.catalogue.experiments.values()]
           .filter((item) => this.catalogue.runs.some((one) => one.experiment === item.id))

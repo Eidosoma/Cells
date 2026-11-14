@@ -410,6 +410,19 @@ def adapt_e07_v1(root, name, experiment, entry):
             raise Refused(f"{name}: the plan's disc names cells the sheet does not have")
         regions.append({"id": "disc", "label": entry.get("regions", {}).get("disc", {}).get("label", "The disc"), "set": "cell", "indices": indices})
         derivation.append("The disc is the plan's replacement order (permutation): in this arm only the disc's cells are replaced (scope 'disc'), so the plan lists exactly them.")
+    elif threshold is not None and isinstance(plan.get("size"), int):
+        # An arm that replaces the whole sheet names no disc. The disc is the written cells, so it
+        # is taken as the cells the experiment counts as D at the first record, and only if they
+        # are as many as the plan says the disc has.
+        first = saved["vm"].values[: len(cells)]
+        indices = [index for index, value in enumerate(first) if value > threshold]
+        if len(indices) == plan["size"]:
+            regions.append({"id": "disc", "label": entry.get("regions", {}).get("disc", {}).get("label", "The disc"), "set": "cell", "indices": indices})
+            derivation.append(
+                f"The disc is not named in this arm's files. It is taken as the cells above the D mark at the first record: {len(indices)} cells, the disc size the plan states."
+            )
+        else:
+            derivation.append(f"No disc is drawn: {len(indices)} cells are above the D mark at the first record, and the plan states a disc of {plan['size']}.")
 
     # ---- the run's own words
     supplementary = summary.get("supplementary_readouts") or {}

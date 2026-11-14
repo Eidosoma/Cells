@@ -389,7 +389,7 @@ class CellsViewer extends HTMLElement {
   }
 
   /** A replay's card: the experiment, its runs, and the class the experiment itself records for the run shown. */
-  runCard({ heading, text, experiments = [], runs, klass, colour, details }) {
+  runCard({ heading, text, result, experiments = [], runs, klass, colour, details }) {
     const lens = this.current;
     // With a run's details open, the details follow the run picked.
     const pick = (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
@@ -409,6 +409,7 @@ class CellsViewer extends HTMLElement {
         if (!parts) return [h("p", { class: "card-text run-plain" }, text)];
         return [h("p", { class: "card-text run-lead" }, parts[1]), h("details", { class: "run-plain" }, h("summary", {}, "How it is done"), h("p", { class: "card-text" }, parts[2]))];
       })(),
+      result ? h("details", { class: "run-plain run-result" }, h("summary", {}, "What the experiment found"), h("p", { class: "card-text" }, result)) : null,
       h(
         "div",
         { class: "runs", role: "group", "aria-label": "Runs" },

@@ -92,16 +92,20 @@ A replay draws what a run saved, and nothing else.
   the adapter lays the sheet out as the hexagonal lattice its junctions define. The replay
   is marked as derived and lists each derived piece. Rotation and handedness are arbitrary.
 - **Run data is not in git.** `tools/adapt_run.py` reads the frozen run folders and writes
-  one file per run under `out/runs/` (about half a megabyte each), which is git-ignored.
+  one file per run under `out/runs/` (0.45 to 0.75 MB each), which is git-ignored.
   Only the adapter, the labels in `data/runs/` and a small synthetic fixture are committed
   (the user, 14 November 2026). The published page carries the chosen runs as files beside
   it and loads one when it is first shown.
 - **The format is the viewer's side of D154.** `schema/RUN_VIEW.md` fixes it. When the
   engine writes its own view file, the adapter is replaced and the view stays.
 
-The first replays are two runs of E07-v1's control, seed 1, which differ only in the
-junction coupling: at s 0.6 the summary records the run as neutral, at s 1.0 as erosion.
-To make them:
+The first replays are three runs of E07-v1. One is of the inheritance route, which the
+experiment's judged result is about (fast k1 at s 1.0, seed 5, recorded as erosion). Two are
+of the control at seed 1 and differ only in the junction coupling: at s 0.6 the summary
+records the run as neutral, at s 1.0 as erosion. The card carries the experiment's judged
+result in the record's words, so one run is not read as the whole result. In an arm that
+replaces the whole sheet no file names the disc; it is then taken as the cells above the
+experiment's D threshold at the first record, and the replay says so. To make them:
 
 ```bash
 npm run adapt:runs -- --experiment e07-v1 --root /mnt/workspaces/Cells/e07-v1-judged-20261113-01

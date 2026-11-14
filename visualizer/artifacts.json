@@ -36,7 +36,7 @@
         {
           "date": "2026-11-14",
           "engine_revision": "8d6fd0ee",
-          "note": "Experiments added as the third of four views, before Engine: two E07-v1 control runs replayed (seed 1 at s 0.6, recorded as neutral, and at s 1.0, recorded as erosion), each about 0.45 MB, published as files beside the page; the organism outline is a planarian and the organ its brain"
+          "note": "Experiments added as the third of four views, before Engine: three E07-v1 runs replayed (the inheritance route, fast k1 at s 1.0, seed 5, recorded as erosion; and the control at seed 1, s 0.6 recorded as neutral and s 1.0 as erosion), 0.45 to 0.75 MB each, published as files beside the page; the organism outline is a planarian and the organ its brain; the map gained the feature requests of 14 November as planned parts and five corrections from a review against main"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
