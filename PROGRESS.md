@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-12 UTC.
+Last updated: 2026-11-14 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -11,6 +11,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **14 November 2026.** The levels and the working order are in
+  [CURRENT_PLAN](docs/CURRENT_PLAN.md#status-on-14-november-2026-and-the-working-order-d156)
+  (D156). The runs below are newest first.
+  - **Numerically qualified:** S2, S3, Rm1 and S5a.
+  - **Judged:**
+    - E07-v1. The disc did not renew under donor-copy turnover, and the coupling's effect was
+      far smaller than predicted.
+    - Composite GPU agreement (in progress).
+  - **Implemented and guarded:** D150 secreted species (its qualification is being registered),
+    D152 reactions (MG0c in progress), D153 checkpoint continuity, and water plus
+    replacement@2.
+  - **In design:** conduction (D155, first), coupling out of the inventory, and the D154
+    run-view output.
+- **Single lead agent from 8 November**, with at most six subagents on disjoint files from
+  14 November (four before; D155). Work continues on `main`, and milestones are tagged.
+
+**Background: the reset of 8 November.**
 - **Reset on 8 November: BETSE is an external reference, not part of the engine.**
   From 30 October the work drifted into re-hosting and transcribing BETSE inside
   `src/cells` (`betse_native_*`, about 110K lines; `betse_normal_*`, about 50K
@@ -24,8 +41,6 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   or wall-time layer. [Actual16](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-16/failure.json)
   stopped at its 1,800-second limit at 16:06:11 UTC, 20.5 minutes into phase
   construction. This track produced no numerical BETSE or Cells result.
-- **Single lead agent from 8 November**, with at most four subagents on disjoint
-  files. Work continues on `main`; milestones are tagged.
 
 ## Plan: BETSE parity on CPU and L4, then JUPITER (from 8 November)
 

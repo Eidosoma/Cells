@@ -5177,6 +5177,64 @@ ambition ("we want to be ambitous"), then answered "Yes lets raise it and I agre
     partition refuses replacement, so a cell born by division has no junction-formation law.
     The partition refuses water and pumps on the dividing cell.
 
+## D156: The external architecture follow-up of 14 November is adopted into the D145–D155 plan
+
+2026-11-14. The user supplied an external review of `62ca548` and asked: "check this also with
+your adviser then go as you see fit". The lead and the advisor checked it against the code and
+adopted it.
+- **A four-level status scale** is used in the entry documents: *implemented*, *guarded*,
+  *numerically qualified*, and *judged in an experiment*.
+- **Conduction is the next integrated milestone.** D155's probe on the engine as it is comes
+  first, with its success criteria defined before running:
+  - excitation that continues beyond the stimulated cells;
+  - passive, subthreshold and sodium-disabled controls;
+  - activation time, velocity, capture, recovery and block, each measured;
+  - stability under timestep refinement, with chain-length and boundary-distance checks;
+  - ledgers that keep passing.
+
+  Its verdict decides between proceeding with the existing mechanisms and naming the one
+  mechanism the excitable-tissue feature must add. The staged move of old families (lead's
+  option (b)) waits for that verdict.
+- **D155 item 1, corrected.** `CONTROL_FACTORS` multiplies the inner model's control fields
+  only.
+  - Version 1 of coupling out of the inventory is therefore a species setting @3's channel or
+    junction availability.
+  - Routing to another operator's control (a reaction multiplier, a turnover rate, an event
+    threshold) is a separate, named door, which the division trigger needs.
+  - The design note must settle target routing, source semantics (amount or concentration,
+    current volumes and masks, axis mapping, refusal of unsupported compositions) and
+    evaluation time (held through the inner step, or evaluated at its stages).
+  - The first integrated case is inventory → effective control → a measurable electrical
+    response, qualified against an independent coupled-ODE reference.
+- **The qualifications in flight finish as planned:** D150's registration and judged run, and
+  D152's MG0c with a compiled composition (several sites, a permitted second writer, supply
+  counted once, a rejected step restoring the whole state). Local accuracy at the consumer's
+  concentrations belongs to the coupling milestone's protocol.
+- **D147 for composite definitions** is a prospective gap, not a defect in any judged result.
+  `field_solver_choice` auto-selects only for the tissue, water and replacement IDs.
+  - Its explicit policy, with four tests, is the first freed slot's task: a free-offset composite
+    selects the intended solver; a held-bath composite is unchanged; the legacy solver is
+    reproduced explicitly; a checkpoint is refused after a solver change.
+  - Before registration, D150's judged definitions are checked for free offsets, and so are
+    MG0c's and Track E's.
+- **Newborn integration** comes as a reusable contact-maturation process that replacement or
+  division can initialise. Then four named steps follow: reaction state across partition;
+  contact formation after birth; newborn integration in a qualified conduction model; and
+  volume, pump and lifecycle interactions when a consumer needs them. The current refusals stay
+  until each step is qualified.
+- **Performance.** The field-solver measurement plan gains conduction workloads compared at
+  equal accuracy, and static-world capacity is kept apart from dynamic-field capacity (the
+  64-node limit). Invalidation and reuse rules at geometry and activity events are qualified
+  before lifecycle worlds are scaled.
+- **Two execution interfaces** go with the first freed slot, inside the existing paths:
+  - host-only start and failure records for the phase markers;
+  - D154's one shared run-view writer, exercised on a static conduction case and a
+    birth/partition event.
+- **The working order:** the conduction probe, the D150 and D152 qualifications and the
+  coupling design run in parallel now, with the documents reconciled alongside. Next comes the
+  minimal inventory → control → electrical-response case, then newborn integration and
+  state-triggered division. The full gene-regulation track stays held.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

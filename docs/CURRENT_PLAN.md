@@ -2,9 +2,10 @@
 
 Status: **adopted 12 November 2026 ([D145](DECISIONS.md#d145-the-current-plan-is-adopted-with-the-l4-now-and-gh200-next-week)).**
 GH200 access is expected by the end of next week, and the L4 is used fully meanwhile. The
-open choices were taken as the lead and the advisor suggested (D145). The two tooling items
-(a public validation package and checkpoint migration) still need the user's explicit
-approval.
+open choices were taken as the lead and the advisor suggested (D145). Of the two tooling items,
+checkpoint continuity was approved and landed (D153). The public validation package still
+needs the user's explicit approval. The status and working order at 14 November are in the
+next section (D156).
 
 **What this file holds.** It is an ordering document: what comes next, in what order, and
 the evidence that closes each gate.
@@ -23,6 +24,41 @@ the evidence that closes each gate.
   JUPITER"). Its status table stays as the record.
 - The order of the ROADMAP's current priorities 7–9: division, the protein catalogue and
   Golgi/trafficking. Their content stays.
+
+## Status on 14 November 2026, and the working order (D156)
+
+Levels: *implemented* (on main), *guarded* (tests, crossrev and frozen-model guards),
+*numerically qualified* (a registered protocol passed), *judged* (used in a registered
+experiment).
+
+| Item | Level today |
+| --- | --- |
+| The composite: @3 plus operators, the ownership and energy-role contract, bound step checks | Guarded. Numerically qualified on CPU through frozen-model guards; GPU agreement by tolerance in progress on the L4 (14 November). Judged in E07-v1 (`resolved_pump_replacement@1`) |
+| Water plus replacement@2 with the entity volume ledger | Implemented and guarded; not qualified on the heredity sheet |
+| Lifecycle operators: S2 membrane state, S3 insertion and lumen, Rm1 injection, S5a partition and bridge closure | Numerically qualified, against independent references for S5a. Division is prescribed; nothing yet judges endogenous proliferation |
+| Secreted-species transport (D150 v1) | Implemented and guarded; its protocol is being registered and judged |
+| Reactions on the shared inventory (D152 v1) | Implemented and guarded (milestones 1–2); MG0c, the qualification, is in progress |
+| Checkpoint continuity (D153) | Implemented and guarded for CPU vector windows. The GPU probe passed (14 November) and the GPU extension is being built |
+| Phase markers | Completion records implemented; start and failure records pending |
+| Run-view output (D154) | Requirement recorded; design pending |
+| Coupling out of the inventory (D155, scoped by D156) and excitable tissue (D155) | Design and the conduction probe in progress |
+| Field-solver interface | Designed; code waits for the GH200 numbers |
+| One production execution path, compile policy, registry, D147 policy for composite definitions | Not started. The D147 policy and the two execution interfaces take the first freed agent slot |
+
+**The working order** (D156; six agents from 14 November, D155):
+1. **Now, in parallel:** the conduction probe on the engine as it is (Track E); D150's judged
+   qualification; D152's MG0c with a compiled composition; the coupling design (Track R).
+2. **Next:** one minimal inventory → effective control → measurable electrical-response case,
+   qualified against an independent coupled-ODE reference.
+3. **Then:** newborn integration in four named steps, and state-triggered division (the
+   lifecycle gate's milestone 2).
+4. **The first freed slot:** D147's composite policy with its four tests, then a table of which
+   operators admit and refuse which, the phase start and failure records, and D154's writer.
+   Nothing under `src/` lands between D150's final dry run and its judged snapshot.
+5. **After GH200:** the sparse field solver, the parked D148 rounds, and the conduction
+   workloads in the measurement plan.
+6. **Held:** the full gene-regulation track and catalogue stage 3 (D145). E07-v2 is proposed,
+   with three questions waiting for the user.
 
 ## The aim, restated
 
@@ -130,10 +166,10 @@ the GPU segment runs.
 | The composite landed | Frozen-model guards (done on CPU); GPU agreement by **tolerance**, using the backend-variant method, because L4 repeats are not bitwise |
 | An explicit ownership and conflict contract | The entity table above; the combination rules checked when a model is built; heat and work fields declared, not recognised by suffix; observation ownership explicit |
 | An entity volume ledger | Newcomers declare volume and contents; volume changes from events are booked in water's ledgers; dilution and elastic free energy booked |
-| **Water plus replacement**, the first composition with real interaction. Today it is refused by a declared view conflict | Material, charge and free energy reconcile across replacement of a cell whose volume and composition have changed; later transport sees the newcomer's actual volume; a refused event leaves the full prior state |
+| **Water plus replacement**, the first composition with real interaction. Replacement@2 over water with the entity volume ledger is implemented and guarded (13 November) | Material, charge and free energy reconcile across replacement of a cell whose volume and composition have changed; later transport sees the newcomer's actual volume; a refused event leaves the full prior state |
 
-The consumer of water plus replacement is the renewal assay (D144). It is built when that
-assay needs it, not before.
+The consumer of water plus replacement is the renewal assay (D144). Its qualification on the
+heredity sheet comes with the assay that needs it.
 
 **Secreted-species transport (D150).**
 - **Design landed** ([note](SECRETED_SPECIES_TRANSPORT_DESIGN.md)): one inventory in @3 (neutral
@@ -179,8 +215,8 @@ come later. J2 and C1 stay held.
 | A fresh prediction after model selection | **C1** soon, on R-full, once candidate cleft models are frozen and its rule is registered; **J2** after the partition |
 | **Endogenous lifecycle** (milestone 2, later) | Division triggered by growth or regulation; daughters with conserved inventories and identities; repeated births and deaths. Needs decisions on reference anchors at birth, slot reuse and capacity, lineage across storage changes, conservation through topology changes, and checkpoints at events |
 
-Current injection, membrane domains and restricted compartments do not depend on the J1
-cleft answer. They are queued as soon as the composite lands.
+Current injection, membrane domains and restricted compartments did not depend on the J1
+cleft answer, and all three are now qualified (above).
 
 ### Gate: compute limits
 
@@ -303,8 +339,8 @@ that.
   - The E07-v1 redesign stays open until the turnover results exist.
 
 **Still open:**
-- The two tooling approvals: the public validation package and the versioned checkpoint
-  migration.
+- The public validation package (tooling; the user's approval). Checkpoint continuity was
+  approved (D153).
 - More RAM on the VM.
 - Linger: run `loginctl enable-linger robert` yourself. The agent's attempt was blocked as a
   persistence change.
