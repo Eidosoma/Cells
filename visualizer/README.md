@@ -243,6 +243,35 @@ The visualizer session publishes its own artifacts (the user, 14 November 2026).
 Published pages load three.js from cdnjs, the preferred host of the artifact frame's
 allowlist; everything else is inside the page.
 
+### From a fresh checkout
+
+Everything that makes the page is in this folder on the branch `visualizer`, except two
+things that are remade: `node_modules/`, and the replay files under `out/runs/`, which
+stay out of git (59 runs, 34 MB).
+
+1. `npm install`
+2. `npm run adapt:runs -- --evidence /mnt/workspaces/Cells` remakes `out/runs/` from the
+   frozen evidence folders that `data/replays/selection.json` names. Skip it when
+   `out/runs/` is still on disk.
+3. `npm run extract -- --strict && npm test`. The extractor reads the main checkout, so
+   the map states the revision main is at.
+4. `npm run check:input` (real input in headless Chrome; several minutes)
+5. `npm run export`
+6. Publish `out/cells-architecture.html` with every file listed in
+   `out/cells-architecture.files.json` beside it, under the same relative paths
+   (`runs/<run id>.json`). A later publish keeps the files it does not send, so only
+   changed runs need sending again.
+
+An artifact can be updated only by whoever published it, or by someone its owner has
+given edit access from the page's Share menu. Where that is not possible, publish a new
+artifact, send every run file with its first publish, and record the new URL in
+`artifacts.json`.
+
+Work that is not yet committed stays as files in the worktree
+(`.claude/worktrees/visualizer`). Only the coordinating session commits, so a file found
+modified or untracked there is an agent's unreviewed output: check it against its
+contract under `schema/` and run the steps above before committing it.
+
 ## Git
 
 This folder lives on the branch `visualizer`, in its own worktree, by agreement with the
