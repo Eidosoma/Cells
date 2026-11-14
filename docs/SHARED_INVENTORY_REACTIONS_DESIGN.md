@@ -2,8 +2,10 @@
 
 **Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §9.** Code follows
 D150 version 1's code (after S5a), as D152 orders. Milestones 1 and 2 are accepted and landed (§11,
-§11.1, §11.2). Milestone 3, MG0c's driver, its development runs and a PROPOSED protocol (§11.3),
-waits for the lead's review; no judged run is made before the lead registers the protocol.
+§11.1, §11.2). Milestone 3, MG0c's driver, its development runs and a PROPOSED protocol (§11.3), is
+landed. The lead's review of the protocol is answered in a revised PROPOSED protocol (§11.4). The
+rehearsal on main comes next, then the lead's final check and registration; no judged run is made
+before the lead registers the protocol.
 
 **History of this note:**
 - The lead's rulings on §9's questions are recorded against each question.
@@ -1385,11 +1387,14 @@ question 8).
 | Q3, the predicted wavelength | On L/ℓ = 6, 11 and 16, from seeded noise, the dominant mode during the linear phase and at saturation is the only admissible unstable mode, n = 1, 2 and 3 (wavelengths 2L, L and 2L/3), and its fitted growth rate matches σ_n. Prototype: dominant modes 1 and 2 on 6 and 11, as the reference integration gives (B2) |
 | Q4, the staircase | Over a declared sweep of L/ℓ from 4 to 30 (amended at milestone 1, §11), the fastest-growing mode among single-mode starts on the engine follows the discrete argmax of σ_n, including the no-mode point at 4 and the 7.5–8.5 gap |
 | Q5, the subcritical control | d = 8 < d_c: on every domain every mode decays, at its predicted rate |
-| Q6, the nonlinear pattern | From the same seeded start, the engine's pattern at its records (to saturation) against an independent integration of the same semi-discrete system (SciPy DOP853, rtol 1e-12); second order in dt. Prototype: 4.8e-4, 1.19e-4 and 2.97e-5 of c* on L/ℓ = 11 (ratios 4.02 and 4.01); amplitude 0.68 u0 (B2) |
-| Q7, accounting | Material ledgers at the species' floors; every host check; the face-free energy world at rounding (§3.4); positivity; restart through a written snapshot, bitwise; a vmap batch of the domains, each world within 1e-12 of its scalar run |
+| Q6, the nonlinear pattern | From the same seeded start, the engine's pattern at its records (to saturation) against an independent integration of the same semi-discrete system (SciPy DOP853, rtol 1e-12); second order in dt. Prototype: 4.8e-4, 1.19e-4 and 2.97e-5 of c* on L/ℓ = 11 (ratios 4.02 and 4.01). The saturated amplitude, max over nodes of \|u − mean(u)\| at 3000 s in the reference's own integration of Q6's start, is 0.43 c*, with u* = c* (corrected at the lead's review, §11.4; the prototype's "0.68 u0" was the range (max u − min u)/u* at 1500 s from its own start, B2) |
+| Q7, accounting | Material ledgers at the species' floors; every host check; the face-free energy world at rounding (§3.4); positivity; restart through a written snapshot, bitwise; a vmap batch of seeds on L/ℓ = 6, bitwise against its reverse and each world within 1e-12 of its scalar run (a batch of domains cannot run, since a route's node is in the batch signature; ruling 1, §11.4) |
 
 **Reported, not judged:** the discrete σ_n and k_n against the continuum, which converge at second
 order in h.
+
+The lead's review of the protocol (§11.4) sets how each check is judged: the tolerances, the
+controls by parameter, Q4's near ties and the scope line.
 
 **What MG0c does not show:**
 - any biological claim;
@@ -1703,7 +1708,7 @@ Cells code.
 | --- | --- |
 | A, the dispersion design | §6.3–§6.4: every Turing condition holds; d_c = 8.568; the band is 0.2 < k̃² < 0.5; the one-mode domains L/ℓ = 6, 11 and 16 and the no-mode domain 8; the staircase |
 | B1 and B1b, mode propagation on L/ℓ = 11 | Against expm of each mode's 2×2 discrete system: mode 1 (complex pair, −0.0548 ± 0.0443i s⁻¹), 3.2e-5, 8.0e-6 and 2.0e-6 (ratios 4.00 and 4.02); mode 2 (+5.71e-3 s⁻¹), 4.5e-4, 1.13e-4 and 2.8e-5 (4.01 and 4.00); mode 3 (−0.0146 s⁻¹), 1.25e-3, 3.1e-4 and 7.8e-5 (4.04 and 3.98); mode 4 (−0.0607 s⁻¹), 5.6e-4, 1.37e-4 and 3.4e-5 (4.07 and 4.03). B1's first windows for modes 1 and 4 had reached the rounding floor, so B1b measured them again over 3/|Re λ| |
-| B2, the nonlinear pattern against SciPy | L/ℓ = 11: 4.8e-4, 1.19e-4 and 2.97e-5 of c* (4.02 and 4.01), dominant mode 2, amplitude 0.68 u0 (reference 0.679). L/ℓ = 6: 4.8e-4 to 3.0e-5 (4.01 and 4.01), mode 1. L/ℓ = 8: the deviation fell to 1.4e-8 of u0, no pattern. Largest h_sub L: 0.0076. No step refused |
+| B2, the nonlinear pattern against SciPy | L/ℓ = 11: 4.8e-4, 1.19e-4 and 2.97e-5 of c* (4.02 and 4.01), dominant mode 2, amplitude 0.68 u0 (reference 0.679), the range (max u − min u)/u* at 1500 s (§11.4). L/ℓ = 6: 4.8e-4 to 3.0e-5 (4.01 and 4.01), mode 1. L/ℓ = 8: the deviation fell to 1.4e-8 of u0, no pattern. Largest h_sub L: 0.0076. No step refused |
 | B4, passive linear reaction–diffusion | §6.2: ratios 4.02 and 4.01; equilibrium 10.000; smallest half-step heat −1.1e-18 pJ, rounding against the −1e-12 pJ check |
 | B5, switch-on from a trace | Quadrature against exact ΔG in the first step: 27%, 11% and 0.07% at traces of 1e-12, 1e-9 and 1e-6 mM; below 1e-4 from the second step |
 | B6, a mixed node | The first draft's stage quadrature, since replaced at mixed nodes by the per-route hybrid (§3.3), against a SciPy dissipation integral: 2.0e-5, 2.35e-6 and 2.85e-7 (ratios 8.50 and 8.26); never negative; W − H − ΔG at most 2.7e-20 pJ. The hybrid's order there is the share's, 3.70 and 3.87 (probes 2d and 2g) |

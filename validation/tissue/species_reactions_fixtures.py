@@ -475,6 +475,45 @@ def reference_sites(raw):
     return sites
 
 
+def reference_rt(raw):
+    """RT (pJ/fmol) with the engine's R and the declared T, for the references."""
+    from cells.processes.electrochemistry import R
+    from validation.reactions import network_reference as nr
+
+    return nr.rt_pJ_per_fmol(R, raw["model"]["temperature_K"])
+
+
+def engine_network_rows(result):
+    """The engine's network amounts [T, S, N] and node fields [T, N] on the combined node axis
+    (cells, then outside nodes), and its route extents [T, routes]."""
+    from cells.models.registry import get_model
+
+    model = get_model(result.spec.model)
+    _, p = model.initial_values(result.spec)
+    h = result.history
+    increment = np.concatenate(
+        (np.asarray(h.amount_increment), np.asarray(h.extracellular_amount_increment)), axis=2
+    )
+    anchor = np.concatenate(
+        (np.asarray(p.amount_reference), np.asarray(p.extracellular_amount_reference)), axis=1
+    )
+    rows = np.asarray(p.reaction_rows)
+
+    def nodes(cell, outside):
+        return np.concatenate(
+            (np.asarray(getattr(h, cell)), np.asarray(getattr(h, outside))), axis=1
+        )
+
+    return dict(
+        amounts=anchor[rows][None] + increment[:, rows],
+        heat=nodes("reaction_dissipated_energy_pJ", "reaction_outside_dissipated_energy_pJ"),
+        work=nodes("reaction_work_pJ", "reaction_outside_work_pJ"),
+        standard=nodes("reaction_standard_energy_pJ", "reaction_outside_standard_energy_pJ"),
+        magnitude=nodes("reaction_energy_magnitude_pJ", "reaction_outside_energy_magnitude_pJ"),
+        extents=np.asarray(h.reaction_extent_fmol),
+    )
+
+
 def reference_amounts(raw):
     """([S, N] declared amounts of the network's species, fmol; [N] volumes, pL)."""
     block = next(b for b in raw["model"]["operators"] if b["law"] == REACTIONS)

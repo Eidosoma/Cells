@@ -58,7 +58,12 @@ Usage:
       clean execution snapshot (validation/source_snapshot.py) and DIR is new (injection_rm1.py's
       and D150's rules)
   python -m validation.morphogenesis.mg0c_turing judge --output DIR --protocol FILE --results R...
-      the verdict over the judged runs' results.json (one snapshot, every part once; no runs)
+      the parts' verdict over the judged runs' results.json (one snapshot, every part once,
+      every run complete; no runs)
+  python -m validation.morphogenesis.mg0c_turing judge-guards --output DIR --protocol FILE
+      the guards' verdict: pytest on the protocol's guards of record, uncapped per file
+  python -m validation.morphogenesis.mg0c_turing combine --output DIR --protocol FILE
+      --results PARTS_DIR GUARDS_DIR: the one qualification verdict
 """
 
 import argparse
@@ -67,6 +72,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import resource
 import subprocess
 import sys
@@ -1646,39 +1652,48 @@ def plain(value):
     return value
 
 
-def source_identity():
-    """The run's source: a frozen snapshot's manifest, or the checkout's revision and status."""
-    manifest = ROOT / "SNAPSHOT.json"
-    if manifest.exists():
-        snapshot = json.loads(manifest.read_text())
-        return dict(
-            kind="snapshot",
-            root=str(ROOT),
-            git_revision=snapshot.get("git_revision"),
-            patch_sha256=snapshot.get("patch_sha256"),
-            clean=snapshot.get("patch_sha256") == hashlib.sha256(b"").hexdigest(),
-        )
+def snapshot_identity(root=ROOT):
+    """The execution snapshot's identity at root (D150's shape): every judged run and verdict
+    carries it, so the judge and combine compare like with like."""
+    snapshot = json.loads((Path(root) / "SNAPSHOT.json").read_text())
+    return dict(
+        kind="snapshot",
+        git_revision=snapshot.get("git_revision"),
+        patch_sha256=snapshot.get("patch_sha256"),
+        status=snapshot.get("status"),
+    )
+
+
+def source_identity(root=ROOT):
+    """The run's source: a frozen snapshot's identity (snapshot_identity), or the checkout's
+    revision and status."""
+    if (Path(root) / "SNAPSHOT.json").exists():
+        return snapshot_identity(root)
 
     def git(*args):
         done = subprocess.run(
-            ["git", "-C", str(ROOT), *args], capture_output=True, text=True, check=False
+            ["git", "-C", str(root), *args], capture_output=True, text=True, check=False
         )
         return done.stdout.strip()
 
     return dict(
         kind="checkout",
-        root=str(ROOT),
+        root=str(root),
         git_revision=git("rev-parse", "HEAD"),
         dirty=git("status", "--porcelain"),
     )
 
 
 def judged_run_refusal(protocol, root=ROOT):
-    """Why a judged run may not start (None: it may): an unregistered protocol, or a source that is
-    not a clean execution snapshot (as validation/tissue/injection_rm1.py)."""
+    """Why a judged entry may not start (None: it may): an unregistered protocol (its status, and a
+    registration record matching it), or a source that is not a clean execution snapshot (D150's
+    and Rm1's guard)."""
     status = protocol.get("status")
     if not (isinstance(status, str) and status.lower().startswith("registered")):
         return "the MG0c protocol is not registered (its status does not begin 'registered')"
+    record = protocol.get("registration")
+    if not (isinstance(record, dict) and record.get("status") == status):
+        return "the MG0c protocol's registration record is missing or does not match its status"
     manifest = Path(root) / "SNAPSHOT.json"
     if not manifest.exists():
         return "a judged run comes from a clean execution snapshot of main, not a checkout"
@@ -1692,7 +1707,7 @@ def judged_run_refusal(protocol, root=ROOT):
 def registered(protocol_path, output, root=ROOT):
     """The protocol, or SystemExit("Refused: ...") before anything is computed or written: unless
     it is registered, the source is a clean execution snapshot and the output directory is new (each
-    attempt writes its own; D150's attempt rule)."""
+    attempt writes its own; D150's attempt rule). Every judged entry calls it first."""
     protocol = json.loads(Path(protocol_path).read_text())
     refusal = judged_run_refusal(protocol, root)
     if refusal is None and Path(output).exists():
@@ -1703,35 +1718,159 @@ def registered(protocol_path, output, root=ROOT):
 
 
 def judge(protocol_path, output, results_paths, root=ROOT):
-    """The verdict of a registered protocol from its judged runs (no runs here): every results file
-    a judged run of this protocol from one clean execution snapshot, every part in exactly one, the
-    merged results evaluated by mg0a_gradient.evaluate into OUTPUT/judgement.json (MG0b's judge
-    form). Refused before anything is written, as the judged runs are."""
+    """The parts' verdict (no runs here): the judged runs' results.json merged and evaluated by
+    mg0a_gradient.evaluate into OUTPUT/verdict.json (MG0b's judge form). Refused before anything is
+    written, by the guard, and unless every results file is a judged run of this protocol from the
+    snapshot at root, complete (every requested part has run: an incomplete run is an
+    infrastructure ending, its unit rerun once from the same snapshot), with every part of the
+    protocol in exactly one run."""
     protocol = registered(protocol_path, output, root)
-    parts, revisions, runs = {}, set(), []
+    source = snapshot_identity(root)
+    parts, runs = {}, []
     for path in results_paths:
         data = json.loads(Path(path).read_text())
         if data.get("status") != "Judged run of " + protocol["id"] or data.get("quick"):
             raise SystemExit(f"Refused: {path} is not a judged run of {protocol['id']}")
-        source = data["source"]
-        if source.get("kind") != "snapshot" or not source.get("clean"):
-            raise SystemExit(f"Refused: {path} does not come from a clean execution snapshot")
-        revisions.add(source["git_revision"])
+        if data.get("source") != source:
+            raise SystemExit(
+                f"Refused: {path} comes from another source than the snapshot at {root}"
+            )
+        requested = data.get("requested_parts") or []
+        if not data.get("complete") or sorted(data["parts"]) != sorted(requested):
+            raise SystemExit(
+                f"Refused: {path} is incomplete, an infrastructure ending (rerun its unit once "
+                "from the same snapshot into a new directory); no verdict is written"
+            )
         for name, value in data["parts"].items():
             if name in parts:
                 raise SystemExit(f"Refused: part {name} is in more than one judged run")
             parts[name] = value
-        runs.append(dict(path=str(path), source=source, parts=sorted(data["parts"])))
-    if len(revisions) != 1:
-        raise SystemExit(
-            f"Refused: the judged runs come from different snapshots {sorted(revisions)}"
-        )
+        runs.append(dict(path=str(path), parts=sorted(data["parts"])))
+    missing = sorted(set(protocol["judged_parts"]) - set(parts))
+    if missing:
+        raise SystemExit(f"Refused: the judged runs lack parts {missing}; no verdict is written")
     results = dict(parts=parts)
     results["accounting_summary"] = accounting_summary(results)
     verdict = evaluate(protocol, results)
+    record = dict(
+        item="parts",
+        protocol_id=protocol["id"],
+        protocol_status=protocol["status"],
+        source=source,
+        runs=runs,
+        criteria=verdict["criteria"],
+        passed=verdict["passed"],
+    )
     Path(output).mkdir(parents=True)
-    record = dict(protocol=protocol["id"], status=protocol["status"], runs=runs, verdict=verdict)
-    (Path(output) / "judgement.json").write_text(json.dumps(plain(record), indent=1) + "\n")
+    (Path(output) / "verdict.json").write_text(json.dumps(plain(record), indent=1) + "\n")
+    return record
+
+
+COUNTS = re.compile(r"(\d+) (passed|failed|errors?|skipped|xfailed|xpassed|deselected)")  # Tiers'.
+
+
+def _pytest_file(test, root, out):
+    """One guard file from root, in the tier runner's environment but with no cap: its exit code
+    (negative: ended by a signal), duration and counts (D150's judge-q5)."""
+    slug = test.replace("/", "__")
+    outputs, evidence = out / "outputs" / slug, out / "evidence" / slug
+    outputs.mkdir(parents=True)
+    evidence.mkdir(parents=True)
+    env = dict(
+        os.environ,
+        PYTHONPATH=str(root / "src"),
+        CUDA_VISIBLE_DEVICES="",
+        JAX_ENABLE_X64="1",
+        CELLS_OUTPUT_ROOT=str(outputs),
+        CELLS_COMPONENT_EVIDENCE=str(evidence),
+    )
+    log = out / f"{slug}.log"
+    command = [sys.executable, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider"]
+    command += ["--continue-on-collection-errors", test]
+    started = time.monotonic()
+    with log.open("w") as handle:
+        code = subprocess.run(
+            command, cwd=root, env=env, stdout=handle, stderr=subprocess.STDOUT, check=False
+        ).returncode
+    seconds = round(time.monotonic() - started, 2)
+    tail = log.read_text(errors="replace")[-2000:]
+    last = [line for line in tail.splitlines() if " in " in line and COUNTS.search(line)]
+    counts = {}
+    for number, kind in COUNTS.findall(last[-1] if last else ""):
+        counts[kind.rstrip("s") if kind.startswith("error") else kind] = int(number)
+    return dict(file=test, exit_code=code, seconds=seconds, counts=counts, log=str(log))
+
+
+def judge_guards(protocol_path, output, root=ROOT):
+    """The guards' verdict (rules.judge_entries.guards; D150's judge-q5): the guard first, then
+    pytest on the protocol's guards_of_record from the snapshot at root, one file at a time with no
+    per-file cap, into OUTPUT/verdict.json (each file's counts, exit code and duration; passed when
+    every file exits 0; a test failure or error in a completed file is a verdict). A file whose
+    process ends by a signal ends the attempt without a verdict: OUTPUT/infrastructure.json."""
+    protocol = registered(protocol_path, output, root)
+    out = Path(output).resolve()  # Absolute: each file's process runs from root.
+    out.mkdir(parents=True)
+    root = Path(root).resolve()
+    files = []
+    for test in protocol["guards_of_record"]["tests"]:
+        files.append(_pytest_file(test, root, out))
+        if files[-1]["exit_code"] < 0:
+            ending = dict(item="guards", source=snapshot_identity(root), files=files)
+            (out / "infrastructure.json").write_text(json.dumps(ending, indent=1) + "\n")
+            raise SystemExit(
+                f"Infrastructure ending: {test} ended by signal {-files[-1]['exit_code']}; no "
+                "verdict is written (the attempt rule: rerun once from the same snapshot)"
+            )
+    verdict = dict(
+        item="guards",
+        protocol_id=protocol["id"],
+        protocol_status=protocol["status"],
+        source=snapshot_identity(root),
+        files=files,
+        passed=bool(files) and all(f["exit_code"] == 0 for f in files),
+    )
+    (out / "verdict.json").write_text(json.dumps(verdict, indent=1) + "\n")
+    return verdict
+
+
+def combine(protocol_path, output, parts_output, guards_output, root=ROOT):
+    """The one qualification verdict (rules.judge_entries.combined; D150's combine): the guard
+    first; then the parts' verdict and the guards' verdict, refused unless both name this protocol
+    and the snapshot at root. OUTPUT/verdict.json carries every criterion, the guards' files, the
+    scope line and the snapshot's revision; it passes when both passed."""
+    protocol = registered(protocol_path, output, root)
+    source = snapshot_identity(root)
+    verdicts = {}
+    for name, where in (("parts", parts_output), ("guards", guards_output)):
+        path = Path(where) / "verdict.json"
+        if not path.exists():
+            raise SystemExit(f"Refused: no {name} verdict at {path}")
+        part = json.loads(path.read_text())
+        if (part.get("protocol_id"), part.get("protocol_status")) != (
+            protocol["id"],
+            protocol["status"],
+        ):
+            raise SystemExit(f"Refused: the {name} verdict is not this protocol's")
+        if part.get("source") != source:
+            raise SystemExit(f"Refused: the {name} verdict comes from another source than {root}")
+        verdicts[name] = (part, str(path))
+    (a, a_path), (b, b_path) = verdicts["parts"], verdicts["guards"]
+    keep = ("file", "exit_code", "seconds", "counts")
+    verdict = dict(
+        kind="cells.mg0c_qualification_verdict@1",
+        protocol_id=protocol["id"],
+        protocol_status=protocol["status"],
+        scope=protocol["scope"],
+        source=source,
+        snapshot_revision=source["git_revision"],
+        criteria=a["criteria"],
+        guards=dict(passed=b["passed"], files=[{k: f[k] for k in keep} for f in b["files"]]),
+        passed=bool(a["passed"] and b["passed"]),
+        not_judged=protocol["reported_not_judged"],
+        verdicts=dict(parts=a_path, guards=b_path),
+    )
+    Path(output).mkdir(parents=True)
+    (Path(output) / "verdict.json").write_text(json.dumps(plain(verdict), indent=1) + "\n")
     return verdict
 
 
@@ -1746,11 +1885,21 @@ def main(argv=None):
     parser.add_argument("--protocol")
     parser.add_argument("--results", nargs="*", default=[])
     args = parser.parse_args(argv)
-    if args.parts == ["judge"]:
-        if not args.protocol or not args.results:
-            raise SystemExit("judge takes --protocol and --results (the judged runs' results.json)")
-        verdict = judge(args.protocol, args.output, args.results)
-        print("verdict", "pass" if verdict["passed"] else "fail", flush=True)
+    entries = {"judge", "judge-guards", "combine"}
+    if args.parts and args.parts[0] in entries:
+        if len(args.parts) != 1 or not args.protocol:
+            raise SystemExit(f"{args.parts[0]} takes --protocol and --output alone")
+        if args.parts == ["judge"]:
+            if not args.results:
+                raise SystemExit("judge takes --results (the judged runs' results.json)")
+            verdict = judge(args.protocol, args.output, args.results)
+        elif args.parts == ["judge-guards"]:
+            verdict = judge_guards(args.protocol, args.output)
+        else:
+            if len(args.results) != 2:
+                raise SystemExit("combine takes --results PARTS_OUTPUT GUARDS_OUTPUT")
+            verdict = combine(args.protocol, args.output, *args.results)
+        print(args.parts[0], "pass" if verdict["passed"] else "fail", flush=True)
         return 0 if verdict["passed"] else 1
     protocol = None
     if args.protocol:
@@ -1791,7 +1940,7 @@ def main(argv=None):
     results["complete"] = True
     path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
     if protocol is not None:  # The verdict is the judge entry's, over every judged run.
-        results["verdict"] = "by the judge entry over the merged judged runs (judgement.json)"
+        results["verdict"] = "the judge entry's over the merged judged runs, then combine's"
         path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
     return 0 if all(p["ok"] for p in results["parts"].values()) else 1
 
