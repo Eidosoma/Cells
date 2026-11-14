@@ -15,8 +15,10 @@
      declared pieces.
    - A world uses only the pieces it declares, and nothing else is even compiled for it.
 2. **After that round, adding a new law changes nothing for worlds that do not use it** (§2.2).
-   That holds under five rules, which the round puts in place and which a check enforces at every
-   later landing. So the cost of the new physics is one re-verification round, not one per law.
+   That holds under five rules, which the round puts in place.
+   - A new kind of piece (transporters, for example) brings its own small insertion point, and its
+     landing shows by the routine check that no existing world changed.
+   - So the cost of the new physics is one re-verification round, not one per law.
 3. **The safety check.** "No backwards compatibility" drops old compiled programs, not qualified
    results. So the round must pass a results gate (§3) before it lands:
    - every existing world gives the same CPU results as before;
@@ -121,6 +123,17 @@ checks (§3).
 
 ### 2.2 Why later additions change nothing: the five rules
 
+**How static structure reaches the compiled step.**
+- **Today,** the only static switches are a layout leaf's shape and the `membrane_process` keyword
+  (§1.1). A new leaf, even an empty one, changes every program (P1).
+- **A plain @3 definition bypasses the composite's key:** `get_model` returns the bare @3 module
+  for it, so the composite's cached `implementation(inner, laws)` does not cover Track E's plain
+  worlds.
+- **The round therefore changes how the model is built.** For every definition of the inner
+  model, plain or composite, `get_model` returns one implementation object, cached per declared
+  structure, as the composite's is cached per operator list. Its step closes over the structure as
+  Python values. An undeclared piece is then absent from the program, with no leaf.
+
 After the round, adding a law (or a junction law, transporter, fuel kind or solver) leaves every
 world that does not declare it with the same compiled program. That is **text-identical under
 crossrev**, the check every operator already passes at landing. It holds by construction if the
@@ -140,10 +153,30 @@ round enforces five rules (**S**, each from §1.1's facts):
 5. **The structure is part of the program's identity.** The composite's implementation key and the
    batch signature carry the declared structure.
 
-**The cost is therefore one re-verification round,** not one per law. After it, a law lands as an
-operator lands today:
-- crossrev identical in every existing set;
-- its own worlds' guards and qualification.
+**Two kinds of later addition** (**S**):
+- **A new member of a kind the round installs:** a channel law, a junction conductance law, or a
+  fuel kind once fuel is a kind. It changes nothing for worlds that do not declare it, **by
+  construction** under the rules.
+- **A new kind** needs its own insertion point in the shared step: transporters, finite fuel,
+  stage reads and loop terms, the face-free stage term, implicit routes, the stage hook.
+  - The round installs insertion points only for today's kinds.
+  - Each new kind's landing adds its own, statically gated as the rules require.
+  - At that landing, crossrev identity for every existing world is **shown, not assumed**: the
+    standing check.
+
+**Every piece gets D136's idle guard:** declared but switched off (availability or capacity 0)
+against the world without it. The target is bitwise, as the coupling operator's claim 2: an
+exactly-zero contribution changes no sum.
+
+**The cost is therefore one re-verification round,** not one per law. After it:
+- a law of an existing kind lands as an operator lands today, crossrev identical in every
+  existing set, with its own worlds' guards and qualification;
+- a new kind lands the same way, its crossrev identity shown at its landing.
+
+**What the round does not touch.** @3's step calls code shared with @1 and @2, which stay outside
+D172: `surface_pump.py`, `surface_pump_v2.py`, `surface_tissue`, `numerics/surface_transport`.
+- The round calls them unchanged and edits none of their traced code.
+- The one shared-code edit is I0's host-only bound (§8.6), under D148 for @1 and @2.
 
 **What the rules do not cover:**
 - an edit to an existing law's behaviour, which is a new law ID by D147's rule, kept for pieces;
@@ -346,7 +379,7 @@ and its transformed ΔG°, at each stage. So fuel is a declaration on an unchang
 | What it is | The older family's pool law moved: ATP, ADP and Pi as the inner model's own state per cell, not inventory rows | ATP, ADP and Pi as rows of the one inventory (D150's neutral species), read by the pump law at each stage and moved by its cycles inside the step | A pool in the inner model for the pumps, plus inventory rows for the reactions, kept in step by a declared exchange in each half-step |
 | Accounting | The pool's free energy, with transformed potentials at declared pH and Mg, enters the inner ledger; pumps book heat and no external work; the regeneration port books the supplied work | One material ledger per molecule. Each writer of a fuel row (pumps in the step, D152's reactions, D150's operators) books its own standard-potential term with **one shared set of declared potentials**, checked at the definition. That is D152's own rule, an operator-owned standard-potential term, extended to every writer. D150's operators refuse fuel rows until they book that term | Two copies of each molecule, reconciled by the exchange. It breaks the plan's shared-state rule ("when two mechanisms affect the same physical thing, they must change the same state") and FR-3's "never a second copy" |
 | D152 composition | **None:** reactions act on inventory rows, so they can neither make nor spend pool fuel without a new door that makes reactions write pool state | **Natural:** reactions make and spend the same rows the pump uses; Strang splitting around the step stays second order. This is what Syn3A's metabolism needs | Through the exchange, at a rate whose stiffness must itself be bounded |
-| Cost (**S**) | 2–3 agent-days: the move plus a parity guard against the older family | 3–4 agent-days: the pump's in-step writes of neutral rows, the shared-potential rule and its check, D150's refusals, the guards. Each fuel species takes a row of the 16-species cap; Syn3A's metabolism may need a probe above 16 (FR-9's) | 4–5 agent-days, plus the exchange's stiffness and the duplicate bookkeeping |
+| Cost (**S**) | 2–3 agent-days: the move plus a parity guard against the older family | 3–4 agent-days: the pump's in-step writes of neutral rows, the shared-potential rule and its check, D150's refusals, the guards. **Plus a broken invariant to repair:** accepted designs assume the step never moves a neutral row with no route. The coupling operator admits an instantaneous factor only on "a row @3's step does not move", detected as neutral with no route (`species_common.check_impermeant`; coupling note §1.3–§1.4). A fuel row passes that test, yet the pump moves it in the step, so the factor would lag. Fuel rows must carry a declared "moved by the step" property that this admission, and every other user of `check_impermeant`, reads. Each fuel species also takes a row of the 16-species cap; Syn3A's metabolism may need a probe above 16 (FR-9's) | 4–5 agent-days, plus the exchange's stiffness and the duplicate bookkeeping |
 | Risks | Closes Syn3A's route until a door exists; two inventories of ATP once metabolism arrives | One standard-potential owner must be settled with D152's next version; protons from hydrolysis are a declared limit until FR-4's pH is dynamic (then untransformed potentials with explicit H⁺) | Drift between the copies; double booking |
 
 **Recommendation: F2.**
