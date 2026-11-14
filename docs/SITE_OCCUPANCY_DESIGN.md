@@ -467,7 +467,7 @@ may declare a first-order route (**S**, the standard form):
 | Item | Content |
 | --- | --- |
 | Rate | k_int ≥ 0 (s⁻¹), per (population, ligand); zero admitted (idle) |
-| The cargo | Lands in the destination's row of the same species. In version 1 that is the patch's own cell, the row D150's import routes write ("the shape the internalisation step writes into", D150 §2.5 requirement 1) |
+| The cargo | Lands in the destination's row of the same species. In version 1 that is the patch's own cell, the row D150's import routes write: "the shape the primitive's internalisation step would write into" (D150 §2.5 requirement 1; FR-3's mapping repeats it) |
 | The site | Returns at once, free, to the same population: R gains exactly the internalised amount. The site count is constant |
 | Role | Driven: endocytic machinery moves cargo regardless of the cytosol's concentration. It books signed work (§3.3), as D150's uptake does |
 | Sources | Receptor-trafficking models with binding, internalisation, recycling and synthesis (Lauffenburger & Linderman 1993, ch. 3; Wiley & Cunningham 1981; records verified, texts not read). The site-conserving form is their limit of instant recycling with no net loss of surface sites (**S**) |
@@ -618,8 +618,12 @@ state-function difference of a closed sub-system (**S**).
       Δg = μ° δ + RT [δ ln(a/S) + (a + δ) log1p(δ/a)]   (a > 0),     Δg = μ° δ + RT δ ln(δ/S)   (a = 0),
 
   selected by `where`, with every unselected branch finite (D152's ruling Q11 (a), benign padding).
-  @3's rows use the adapter's `species_chemical_free_energy_pJ` and `species_chemical_magnitude_pJ`
-  (D150 §2.4, as built), whose anchor is the current amount.
+  - **The a = 0 branch is a real branch, not padding.** It is the selected one at a population's
+    default start (B₀ = 0), where δ may be 0 too.
+  - It is evaluated as μ° δ + RT · xlogy(δ, δ/S), with x ln x taken as exactly 0 at x = 0. So an idle
+    pool at zero books exactly 0.
+  - @3's rows use the adapter's `species_chemical_free_energy_pJ` and
+    `species_chemical_magnitude_pJ` (D150 §2.4, as built), whose anchor is the current amount.
 - **What W is.** The endocytic machinery's free-energy change of the modelled inventory. Its own
   dissipation and fuel lie outside the model, a declared limit as in D150 §2.4. Drawing it from
   finite energy pools is the energy-pool door shared with FR-2 and FR-4 (D150 question 11, D152
@@ -1024,12 +1028,29 @@ lead's reading of MG0c (D152 question 9).
 Tolerances are pinned at registration from the dt studies and the references' own terms (D150 §6's
 rule). Each judged run is made once, from a clean snapshot.
 
+**No engine world holds a free concentration exactly** (**S**). Version 1 refuses sites facing a
+held bath, so a "fixed c" world is a large node. Its residual depletion is of relative order
+S/(V (K_d + c)).
+- **So every item judges the engine against R-ode, or R-eq, at the world's true V,** which carries
+  the depletion exactly.
+- **The fixed-c closed forms of A.4 are checked against R-ode on the reference side,** with the
+  depletion term stated, as Q1 (b) checks R-qss.
+- **The closed node's forms are exact for their worlds:** the Riccati solution and the depletion
+  quadratic. The engine is judged against them directly.
+
+**The expected order depends on the world** (**S**).
+- **Third order** where binding acts alone on its rows: no internalisation and no face. The
+  composite step is then two SSPRK(3,3) half-steps with nothing between them that touches those
+  rows. D152's B9 measured ratios of about 8 for that structure.
+- **Second order** where the palindrome's split acts (internalisation), and wherever faces carry
+  the ligand (Strang against transport).
+
 | Item | World | Shows | Criterion |
 | --- | --- | --- | --- |
-| **Q1, day one: the saturable-sink limit** | Face-free: one passive cell; an outward-facing population on its patch, facing a finite node of volume V; the ligand pre-formed at c₀ and B₀ at its quasi-steady value (the resolved start, against the initial layer); binding and internalisation. A sweep ε = (S/V)/(K_M + c₀) ∈ {10⁻¹, 10⁻², 10⁻³}, with rates fixed and S varied | (a) The engine against R-ode at each ε, under dt refinement. (b) R-ode against R-qss, with the unit map A·V_max = k_int S and K_M = (k_off + k_int)/k_on. (c) The engine at the smallest admitted ε against R-qss | (a) The dt study (D150's form), with the splitting bias against A.6's fixed point. (b) Reported: the observed order in ε, expected 1 (Segel & Slemrod 1989), the validity regime stated. (c) Within the ε term plus the dt term |
-| **Q2, equilibrium occupancy** | Large V (no depletion), one and two ligands; small V (depletion), one ligand; two cells' populations facing one node | Competitive Langmuir; the depletion quadratic; R-eq's shared-node root; the total heat to equilibrium | Long-time state within the steady tolerance; heat against G(start) − G(eq) |
-| **Q3, binding kinetics** | Fixed c (association, dissociation, competition); a closed node (depletion); internalisation at fixed c | Pseudo-first-order exponentials; the Riccati form; the matrix exponential of competition (Motulsky & Mahan's form); the linear internalisation closed form | Second order in dt against each, at every record |
-| **Q4, accessibility as a pure factor** | α ∈ {1, ½, ¼} (exact binary fractions), at c ≪ K_d and c = 100 K_d, no depletion; Q1's world at α = ½ | Equilibrium θ(α)/θ(1) = α in both regimes; saturation at α; relaxation rate independent of α; the sink's V_max ∝ α and K_M unchanged. **Negative controls:** (K) implemented instead fails at c ≪ K_d and in the rate; (A) fails at saturation and in K_M | Within the steady and dt tolerances; each control caught by a registered margin |
+| **Q1, day one: the saturable-sink limit** | Face-free: one passive cell; an outward-facing population on its patch, facing a finite node of volume V; the ligand pre-formed at c₀ and B₀ at its quasi-steady value (the resolved start, against the initial layer); binding and internalisation. A sweep ε = (S/V)/(K_M + c₀) ∈ {10⁻¹, 10⁻², 10⁻³}, with rates fixed and S varied | (a) The engine against R-ode at each ε, under dt refinement. (b) R-ode against R-qss, with the unit map A·V_max = k_int S and K_M = (k_off + k_int)/k_on. (c) The engine at the smallest admitted ε against R-qss | (a) The dt study (D150's form), second order. The splitting bias is reported against A.6's fixed point taken quasi-statically at the node's current concentration, which holds to O(ε) because the node changes at a rate of order ε Λ (**S**). A.6 itself is judged in Q3's large-V internalisation world. (b) Reported: the observed order in ε, expected 1 (Segel & Slemrod 1989), the validity regime stated. (c) Within the ε term plus the dt term |
+| **Q2, equilibrium occupancy** | Large V, one and two ligands; small V, one ligand; two cells' populations facing one node | The engine against R-eq at the true V in every world; against the depletion quadratic directly in the small-V world. On the reference side, R-eq against competitive Langmuir with the depletion term stated. The total heat to equilibrium | Long-time state within the steady tolerance; heat against G(start) − G(eq) |
+| **Q3, binding kinetics** | Large V (association, dissociation, competition); a closed node (depletion); internalisation in a large V | The engine against R-ode at the true V; against the Riccati form directly in the closed node. On the reference side, R-ode against the pseudo-first-order exponentials, the matrix exponential of competition (Motulsky & Mahan's form) and the linear internalisation form. A.6's fixed point in the internalisation world | Third order in the binding-only worlds, second in the internalisation world, at every record. The fixed point within its predicted bias |
+| **Q4, accessibility as a pure factor** | α ∈ {1, ½, ¼} (exact binary fractions), at c ≪ K_d and c = 100 K_d, in a large V; Q1's world at α = ½ | Equilibrium θ(α)/θ(1) = α in both regimes; saturation at α; relaxation rate independent of α; the sink's V_max ∝ α and K_M unchanged. **The depletion term scales with α**, so it enters the factor under test: Q4's worlds choose V so that S/(V (K_d + c)) lies at least 10³ times below Q4's registered margin (**S**). **Negative controls:** (K) implemented instead fails at c ≪ K_d and in the rate; (A) fails at saturation and in K_M. They differ from (C) by order one (at saturation, θ → 1 against α), far above the depletion term | The engine against R-ode and R-eq at the true V; the α-scaling within the margin; each control caught by a registered margin |
 | **Q5, accounting and energy** | §3.4's worlds | The material, moiety and system-total identities at the species' floors; the face-free residual at rounding; heat ≥ 0 on every row; the NumPy ΔG test; the negative controls; the background guard (a 10³ change of a trace well below K_d moves every compared quantity far below its tolerance) | As stated |
 | **Q6, idleness, restart, vmap, crossrev, signature, refusals** | Existing sets; Q1–Q3 worlds | §4.8's claims 1 and 2; restart bitwise at, before and after a multiplier change, also through a written snapshot; a vector batch mixing every parameter, bitwise against its reverse and within 1e-12 of each scalar run; the signature refusing different structures; each refusal with its message | As claimed |
 | **Q7, against D150's sink, engine to engine** | Q1's world twice: once with this operator, once with exchange's saturable import at the mapped A·V_max and K_M | The node's and cell's amounts agree to the ε term | Reported, not judged: two engine laws, one author per side |
@@ -1057,7 +1078,7 @@ rule). Each judged run is made once, from a clean snapshot.
 | Probe | Question | Criterion, written now |
 | --- | --- | --- |
 | P1, the contract fit (the code's milestone 1, as D152's C1) | The field map (one owner per row, the `ACCEPTS_WRITES` wiring with no writer), the ledgers at the species' floors, the face-free world at rounding, idle and restart | Bitwise idle; every ledger at its floor; residual/allowance ≤ 1 on every row |
-| P2, the split's bias (NumPy) | Does A.6's closed form predict the palindrome's fixed point? | Within 10% of the leading term at hλ ≤ 0.25; the scheme's fixed point with R(−λh) to rounding in the linear case |
+| P2, the split's bias (NumPy, which holds c fixed exactly) | Does A.6's closed form predict the palindrome's fixed point? | Within 10% of the leading term at hλ ≤ 0.25; the scheme's fixed point with R(−λh) to rounding in the linear case. The engine's own check is Q3's large-V world |
 | P3, the heat sign (NumPy) | Is H ≥ 0 at admitted steps with two ligands and with two populations sharing a node, across the binding equilibrium? | No negative heat beyond −1e-12 pJ over a declared sweep up to h max L = ½ |
 | P4, the trace | How far below K_d must c_bg sit for Q4's and Q1's tolerances? | The rule c_bg ≤ (tolerance) × K_d confirmed on Q1's world |
 
@@ -1200,7 +1221,9 @@ correction).
   W = Δ(Σ G) per receiving cell. The ledger: Δ(G_node) + Δ(G_site) + H − W = 0.
 - The per-mole free-energy change of binding is RT ln(K_d B/(c R)), zero at equilibrium.
 
-**A.4 Closed forms** (each with one ligand on one population unless stated; m = 1):
+**A.4 Closed forms** (each with one ligand on one population unless stated; m = 1). The fixed-c
+forms are large-V limits. The references check them against R-ode at the world's V, and the engine
+is judged against R-ode (§8.3). The closed node's forms are exact for their worlds.
 - **Association at fixed c:** B(t) = B_eq + (B₀ − B_eq) e^{−λt}, with λ = k_on c + k_off and
   B_eq = S c/(K_d + c).
 - **Dissociation** into a node held near zero: B(t) = B₀ e^{−k_off t}.
