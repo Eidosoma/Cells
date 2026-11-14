@@ -111,6 +111,33 @@ def capacitor_components(model):
     return {name: root(name) for name in parent}
 
 
+def refuse_ion_routes(model, node, bounding):
+    """Refusal 4: no ion route on the bounding patch (version 1), the charged door (§3.4)."""
+    channels = [c.id for c in model.channels if c.membrane_id == bounding.id]
+    if (
+        any(v != 0.0 for v in bounding.permeability_m_per_s)
+        or bounding.pump is not None
+        or bounding.calcium_pump is not None
+        or channels
+    ):
+        raise ConfigError(
+            f"{LAW_ID}: the bounding patch {bounding.id!r} of compartment {node!r} carries an ion "
+            "route (a nonzero permeability, a pump or a channel population). Version 1 is "
+            "neutral and silent: a charged compartment is the charged door (FR-4, FR-5), "
+            "since its patch's charge relaxation is outside @3's per-cell explicit bound"
+        )
+
+
+def refuse_charge_anchor(node, compartment):
+    """Refusal 5: electroneutral content (version 1), so V_b = 0 (§3.3)."""
+    if compartment.initial_charge_C != 0.0:
+        raise ConfigError(
+            f"{LAW_ID}: compartment {node!r} declares a nonzero charge anchor "
+            f"({compartment.initial_charge_C} C); version 1's content is electroneutral, so "
+            "V_b = 0 (a resting potential needs charged content: FR-4)"
+        )
+
+
 def parse_declaration(raw, base):
     _fields(raw, {"law", "compartments"}, "compartments declaration")
     if raw["law"] != LAW_ID:
@@ -164,27 +191,8 @@ def parse_declaration(raw, base):
                 f"{LAW_ID}: the patch {patch!r} of compartment {node!r} lies on "
                 f"{bounding.inside!r}, not on its declared owner {owner!r}"
             )
-        # 4. No ion route on the bounding patch: the charged door.
-        channels = [c.id for c in m.channels if c.membrane_id == patch]
-        if (
-            any(v != 0.0 for v in bounding.permeability_m_per_s)
-            or bounding.pump is not None
-            or bounding.calcium_pump is not None
-            or channels
-        ):
-            raise ConfigError(
-                f"{LAW_ID}: the bounding patch {patch!r} of compartment {node!r} carries an ion "
-                "route (a nonzero permeability, a pump or a channel population). Version 1 is "
-                "neutral and silent: a charged compartment is the charged door (FR-4, FR-5), "
-                "since its patch's charge relaxation is outside @3's per-cell explicit bound"
-            )
-        # 5. Electroneutral content.
-        if outside[node].initial_charge_C != 0.0:
-            raise ConfigError(
-                f"{LAW_ID}: compartment {node!r} declares a nonzero charge anchor "
-                f"({outside[node].initial_charge_C} C); version 1's content is electroneutral, so "
-                "V_b = 0 (a resting potential needs charged content: FR-4)"
-            )
+        refuse_ion_routes(m, node, bounding)  # 4.
+        refuse_charge_anchor(node, outside[node])  # 5.
         # 6. A held-bath topology.
         if components[owner] not in held:
             raise ConfigError(

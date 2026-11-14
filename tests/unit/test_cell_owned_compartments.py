@@ -2,10 +2,11 @@
 
 docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 to §1.6 and §4, in NumPy (no compile), on the silence world W
 (validation/tissue/compartment_fixtures.loaded_compartment):
-* the contract (§1.6, option (b), the lead's ruling): a DECLARATION_ONLY operator is admitted only
-  when nothing of it reaches the step; each excluded declaration and each overridden step method is
-  refused with its reason. The part-less operator with nothing at all (the contract test's
-  `Nothing`) stays refused. A part-less owner whose every owned field is an accepted write is
+* the contract (§1.6, option (b), the lead's rulings): a DECLARATION_ONLY operator may define only
+  contract.DECLARATION_MAY_DEFINE, fail closed: every other public attribute of Operator, data or
+  method (parts, fields, step methods, schedule and definition-check hooks), is refused with its
+  name, even restated at its default. The part-less operator with nothing at all (the contract
+  test's `Nothing`) stays refused. A part-less owner whose every owned field is an accepted write is
   admitted, and one with an owned field nothing writes is refused. Every registered operator is
   admitted, as before;
 * the declaration parses and round-trips, its refusals 1 to 7 fire with their reasons, and the
@@ -26,8 +27,7 @@ from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import OPERATORS
 from cells.models.operators import compartments as comp
 from cells.models.operators.contract import (
-    DECLARATION_EXCLUDES,
-    STEP_METHODS,
+    DECLARATION_MAY_DEFINE,
     Operator,
     check_declarations,
     declaration_errors,
@@ -98,28 +98,42 @@ def test_the_operator_with_nothing_at_all_stays_refused():
         check_declarations(Nothing)
 
 
-TRUTHY = {bool: True, str: "x", type(None): "x"}
+CONTRACT = sorted(n for n in dir(Operator) if not n.startswith("_"))
+FORBIDDEN = [n for n in CONTRACT if n not in DECLARATION_MAY_DEFINE]
 
 
-@pytest.mark.parametrize("attribute, what", DECLARATION_EXCLUDES)
-def test_a_declaration_that_declares_anything_of_the_step_is_refused(attribute, what):
-    default = getattr(Operator, attribute)
-    if isinstance(default, (bool, str, type(None))):
-        value = TRUTHY[type(default)]
-    elif hasattr(default, "keys"):
-        value = {"x_fmol": ("x",)}
-    else:
-        value = ("x",)
-    marked = type("Marked", (Minimal,), {attribute: value})
-    with pytest.raises(ValueError, match=rf"a declaration contributes nothing.*\({attribute}\)"):
+def test_the_check_covers_every_hook_the_lead_named():
+    for name in ("inner_check_spec", "check_steps", "control_values", "schedule_times"):
+        assert name in FORBIDDEN
+    assert set(DECLARATION_MAY_DEFINE) <= set(CONTRACT)
+
+
+@pytest.mark.parametrize("name", FORBIDDEN)
+def test_a_declaration_that_defines_anything_else_of_the_contract_is_refused(name):
+    """Fail closed: data or method, even at its default value, anything below Operator outside
+    DECLARATION_MAY_DEFINE is refused, with its name."""
+    value = (lambda self, *a, **k: None) if callable(getattr(Operator, name)) else ("x",)
+    marked = type("Marked", (Minimal,), {name: value})
+    with pytest.raises(ValueError, match=rf"a declaration contributes nothing.* {name}\b"):
         check_declarations(marked)
+    same = type("Same", (Minimal,), {name: getattr(Operator, name)})
+    if not callable(getattr(Operator, name)):  # Restating a default is still a definition.
+        with pytest.raises(ValueError, match=rf" {name}\b"):
+            check_declarations(same)
 
 
-@pytest.mark.parametrize("method", STEP_METHODS)
-def test_a_declaration_that_overrides_a_step_method_is_refused(method):
-    marked = type("Marked", (Minimal,), {method: lambda self, *a, **k: None})
-    with pytest.raises(ValueError, match=f"overrides the step method {method}"):
-        check_declarations(marked)
+def test_a_declaration_may_define_what_a_declaration_needs():
+    allowed = {
+        "CONFLICTS_VIEW": ("volume",),
+        "REQUIRES": (),
+        "parse": lambda self, raw, base, inner: None,
+        "to_dict": lambda self, declaration, base: {},
+        "check_definition": lambda self, spec, declaration, schedule, model: None,
+        "initial_values": lambda self, *a: ({}, {}),
+        "summary": lambda self, *a: {},
+    }
+    declared = type("Declared", (Minimal,), allowed)
+    assert check_declarations(declared) is declared
 
 
 def test_a_part_less_owner_of_accepted_writes_only_is_admitted():

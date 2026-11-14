@@ -32,9 +32,10 @@ Declarations (class attributes):
   declaration (``DECLARATION_ONLY``, docs/CLOSED_COMPARTMENT_DESIGN.md §1.6) has
   no part and contributes nothing to the step: it declares entities and their
   refusals at the definition (``check_definition``, ``CONFLICTS_VIEW``,
-  ``REQUIRES``) and its summary, and owns no field, schedule, view, factor,
-  closure, ledger, readout or energy role; its step methods are the idle
-  defaults below.
+  ``REQUIRES``) and its summary, and defines nothing else of the contract
+  (``DECLARATION_MAY_DEFINE``, checked fail closed at registration): no field,
+  schedule, view, factor, closure, ledger, readout, energy role, step method,
+  schedule hook or definition-check hook of its own.
   ``RK4`` declares a split part's behaviour under an RK4 inner step: "coupled"
   (its rates join the coupled right-hand side, which RK4 integrates unsplit) or
   "split" (exact half-steps kept around the inner RK4 step).
@@ -92,6 +93,7 @@ fields are the inner model's followed by each operator's in declared order.
 Defaults below are the idle answers: no parts, no terms, no columns.
 """
 
+import inspect
 from types import MappingProxyType
 
 HEAT_SUFFIX = "_dissipated_energy_pJ"
@@ -333,77 +335,37 @@ class Operator:
         return {k: getattr(state, k) for k in self.STATE_AXES}
 
 
-# The step's methods: a declaration keeps every one at the base's idle default.
-STEP_METHODS = (
-    "event",
-    "half_step",
-    "process",
-    "book_process",
-    "rates",
-    "rate_checks",
-    "energy_rate",
-    "view",
-    "control_factors",
-    "closures",
-    "control_valid",
-    "domain_valid",
-    "adjust_inner",
-    "ledger_terms",
-    "magnitude_terms",
-    "own_ledgers",
-    "own_magnitudes",
-    "own_bounds",
-    "external_ledger_terms",
-    "external_magnitude_terms",
-    "observe",
-    "idle_process",
-    "statically_idle",
-)
-# What a declaration may not declare: (attribute, what it is), each empty or false.
-DECLARATION_EXCLUDES = (
-    ("EVENT", "an event map"),
-    ("SPLIT", "a split part"),
-    ("PROCESS", "an in-step process"),
-    ("RK4", "an RK4 mode"),
-    ("STATE_AXES", "owned state"),
-    ("STATE_DTYPES", "state dtypes"),
-    ("HEAT_FIELDS", "heat fields"),
-    ("WORK_FIELDS", "work fields"),
-    ("LAYOUT_FIELDS", "layout fields"),
-    ("CONTROL_FIELDS", "control fields"),
-    ("EXPERIMENT_KEYS", "a schedule"),
-    ("VIEW_FIELDS", "view fields"),
-    ("CONTROL_FACTORS", "control factors"),
-    ("ENTITY_WRITES", "entity writes"),
-    ("STATE_RESETS", "state resets"),
-    ("VIEW_FOLLOWS_SPLIT", "a view that follows a split"),
-    ("BOOKS_AT_VIEW", "bookings at the view"),
-    ("LEDGERS", "own ledgers"),
-    ("READOUT", "a readout"),
-    ("READOUT_COLUMNS", "readout columns"),
-    ("FINITE_RATES", "rates"),
-    ("REPLACES", "replaced columns"),
-    ("VIEW_READS", "view reads"),
-    ("ACCEPTS_WRITES", "accepted writes"),
-    ("EVENT_REPLACES", "replaced fields"),
-    ("ONSET_ANCHORED_VIEWS", "onset-anchored views"),
-    ("CLOSES", "closures"),
-    ("RETIRES", "retirement"),
+# What a declaration (DECLARATION_ONLY) may define below Operator; everything else fails closed.
+DECLARATION_MAY_DEFINE = frozenset(
+    {
+        "LAW_ID",
+        "DECLARATION_ONLY",
+        "CONFLICTS_VIEW",
+        "REQUIRES",
+        "parse",
+        "to_dict",
+        "check_definition",
+        "initial_values",
+        "summary",
+    }
 )
 
 
 def declaration_errors(operator):
-    """Why a DECLARATION_ONLY operator class contributes to the step (empty: it does not)."""
-    errors = [
-        f"declares {what} ({attribute})"
-        for attribute, what in DECLARATION_EXCLUDES
-        if getattr(operator, attribute)
-    ]
-    errors += [
-        f"overrides the step method {method}"
-        for method in STEP_METHODS
-        if getattr(operator, method) is not getattr(Operator, method)
-    ]
+    """Why a DECLARATION_ONLY operator class is not a declaration (empty: it is one).
+
+    Fails closed: every public attribute of Operator, data or method, outside
+    DECLARATION_MAY_DEFINE must be Operator's own (inspect.getattr_static), so a declaration has
+    no part, field, schedule, view, factor, closure, view read, write, reset, ledger, readout,
+    replaced column, energy role, step method, schedule hook or definition-check hook of its own.
+    """
+    errors = []
+    for name in sorted(n for n in dir(Operator) if not n.startswith("_")):
+        if name in DECLARATION_MAY_DEFINE:
+            continue
+        if inspect.getattr_static(operator, name) is not inspect.getattr_static(Operator, name):
+            kind = "overrides" if callable(getattr(Operator, name)) else "declares"
+            errors.append(f"{kind} {name}")
     return errors
 
 
