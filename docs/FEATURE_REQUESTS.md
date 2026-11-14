@@ -7,6 +7,7 @@ and a general feature, never one built for one study (D144).
 | ID | Feature | Priority | Status | Next step |
 | --- | --- | --- | --- | --- |
 | [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | Logged; design not started | A design note for a fixed-topology compartment (below) |
+| [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; follows FR-1 | A design note after FR-1's, settling retrieval's energy source (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -79,3 +80,50 @@ checked the cited lines):
 
 **The plan entry.** It sits in CURRENT_PLAN's composition gate, high priority, after the work in
 flight.
+
+## FR-2 — Internalisation of membrane and its populations
+
+**Logged 14 November 2026, priority 2** (the request's label; the user: "first log this one"). The
+request below is the requesting study's text, condensed. The lead's mapping follows.
+
+**The request.** The retrieval direction of `scheduled_membrane_insertion@1`: membrane area,
+capacitance and the populations on it move inward at a scheduled rate, carrying the compartment they
+form (FR-1) with them.
+
+**Why it is general.**
+- endocytosis of every kind;
+- receptor down-regulation and recycling;
+- surface-population turnover, which the roadmap lists under membrane redistribution;
+- synaptic vesicle recycling;
+- membrane retrieval after division.
+
+**What is missing, in the requester's reading.**
+- Insertion@1 refuses retrieval because the capacitor's free energy would rise: its heat would be
+  negative, and the work would need a declared source. The lead checked this:
+  `membrane_insertion.py` refuses "a negative rate (retrieval: its heat would be negative, and the
+  work would need a declared …)".
+- The requester notes that finite ATP/ADP/Pi pools already exist, in the older calcium and energy
+  families. Letting species laws draw on energy pools is deferred: D150 question 11, D152
+  question 10 and D151.
+- So a declared ATP-coupled retrieval law looks like the same question arriving twice, and one
+  answer would serve both.
+
+**Why the study needs it.** Receptor-mediated uptake depletes the surface pool and returns it. A sink
+that never consumes its receptors cannot produce saturation, competition between neighbouring cells
+for a shared dose, or the cell-to-cell variation that makes delivery selective.
+
+**The lead's mapping (for its design note to test, not settled).**
+- **It depends on FR-1.** The retrieved membrane carries the compartment FR-1 creates, so FR-2's
+  design follows FR-1's.
+- **The energy source is the design question.** Retrieval's work could come from:
+  - a declared external reservoir, as D150's turnover and D152's driven routes book work today; or
+  - a finite energy pool.
+
+  The pools live in the older families, outside the composite, so drawing on them in the composite
+  is new work. The energy-pool coupling deferred by D150 and D152 should be designed once and serve
+  every consumer.
+- **Populations move with the membrane.** Channel and pump populations on the retrieved area move
+  inward with it: the receptor down-regulation the study needs. That touches membrane state's
+  populations, S2's domains and insertion@2's bookings, and needs their accounting.
+- **What it touches.** S3's insertion and membrane-state operators, D150 and D152's energy-pool door,
+  FR-1's compartment, and the composition walls (the species operators refuse insertion today).

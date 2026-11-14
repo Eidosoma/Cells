@@ -5252,6 +5252,17 @@ supplied the request (FR-1), and it is logged in
   design note to test.
 - **What it does not authorise:** code before the design note is accepted.
 
+## D158: Internalisation of membrane and its populations (FR-2) is logged as priority 2
+
+2026-11-14, user request ("first log this one"), the requester's priority 2. Logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-2--internalisation-of-membrane-and-its-populations).
+- **The feature:** the retrieval direction of membrane insertion. Area, capacitance and their
+  populations move inward at a scheduled rate, carrying the FR-1 compartment they form.
+- **Its open question:** retrieval's energy source. The capacitor's free energy rises, so a
+  declared work source is needed. One design of energy-pool coupling should serve FR-2 and the
+  pool doors deferred by D150 and D152.
+- **The order:** after FR-1, design first (D142), as a general feature (D144).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
