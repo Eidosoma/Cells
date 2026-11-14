@@ -436,8 +436,46 @@ export function buildCell(ctx, studsCtx, mode) {
   } else {
     // Mitochondria are about 0.6 µm wide and a few µm long; a cell holds hundreds.
     const many = scatter(120, (point) => inCytoplasm(point, 0.7) && point.y < CUT);
-    const capsule = mitochondria.material({ hue: "bioMito", clip: true, side: THREE.DoubleSide, roughness: 0.4 });
-    mitochondria.add(instanced(new THREE.CapsuleGeometry(0.3, 1.5, 6, 12), capsule, many.map((position) => ({ position, direction: unit(random), scale: 0.8 + random() * 0.5 }))));
+    // Each is a clear outer membrane, curved more or less, with the folds of its inner
+    // membrane (the cristae) showing through: stacked shelves across the long axis.
+    const shapes = [
+      { radius: 0.26, length: 1.1, bend: 0 },
+      { radius: 0.3, length: 1.8, bend: 0.26 },
+      { radius: 0.27, length: 2.7, bend: -0.42 },
+    ];
+    const curved = ({ radius, length, bend }) => {
+      const geometry = new THREE.CapsuleGeometry(radius, length, 8, 18);
+      const half = length / 2 + radius, spot = geometry.attributes.position;
+      for (let index = 0; index < spot.count; index++) spot.setX(index, spot.getX(index) + bend * (spot.getY(index) / half) ** 2);
+      geometry.computeVertexNormals();
+      return geometry;
+    };
+    const outer = mitochondria.material({ hue: "bioMito", shade: 0.1, opacity: 0.3, alphaRim: 0.55, rim: 0.45, clip: true, side: THREE.DoubleSide, roughness: 0.3, depthWrite: false });
+    const fold = mitochondria.material({ hue: "bioMito", shade: -0.06, clip: true, roughness: 0.5 });
+    const placed = shapes.map(() => []);
+    for (const position of many) placed[Math.floor(random() * shapes.length)].push({ position, turn: along(unit(random)), scale: 0.85 + random() * 0.35 });
+    const folds = [];
+    shapes.forEach((shape, which) => {
+      const bodies = instanced(curved(shape), outer, placed[which]);
+      bodies.renderOrder = 4; // after the folds, so they show through the membrane
+      mitochondria.add(bodies);
+      const half = shape.length / 2 + shape.radius;
+      const count = Math.max(3, Math.round(shape.length / 0.3));
+      for (const one of placed[which]) {
+        const base = new THREE.Matrix4().compose(one.position, one.turn, new THREE.Vector3().setScalar(one.scale));
+        for (let index = 0; index < count; index++) {
+          const y = -shape.length / 2 + (shape.length * (index + 0.5)) / count;
+          const side = index % 2 ? 1 : -1; // shelves reach in from alternate sides
+          const at = new THREE.Vector3(shape.bend * (y / half) ** 2 + side * 0.16 * shape.radius, y, 0);
+          const tilt = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, side * 0.14));
+          folds.push(base.clone().multiply(new THREE.Matrix4().compose(at, tilt, new THREE.Vector3(shape.radius * 0.74, 1, shape.radius * 0.82))));
+        }
+      }
+    });
+    const shelves = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 0.05, 14), fold, folds.length);
+    folds.forEach((matrix, index) => shelves.setMatrixAt(index, matrix));
+    shelves.instanceMatrix.needsUpdate = true;
+    mitochondria.add(shelves);
     mitochondria.anchor.copy(many.reduce((best, point) => (point.y > best.y ? point : best), many[0])).y += 0.5;
     // ATP is a small molecule: shown as a haze, densest beside the mitochondria.
     const haze = [];

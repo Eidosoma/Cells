@@ -5,31 +5,31 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T13:51:38Z",
-  "revision": "031ee42",
+  "generated_at": "2026-11-14T15:09:20Z",
+  "revision": "f7f0592",
   "revision_date": "2026-11-14",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
   "source_base_url": "https://github.com/Eidosoma/Cells/blob/main/",
   "counts": {
-   "engine_files": 500,
-   "engine_files_placed": 500,
-   "parts": 150,
-   "relations": 647,
+   "engine_files": 501,
+   "engine_files_placed": 501,
+   "parts": 154,
+   "relations": 668,
    "by_kind": {
-    "operator": 14,
-    "component": 96,
+    "operator": 15,
+    "component": 99,
     "state": 6,
     "gate": 8,
     "capability": 21,
     "scale": 5
    },
    "by_status": {
-    "qualified": 32,
-    "landed": 9,
+    "qualified": 33,
+    "landed": 10,
     "established": 61,
-    "planned": 20,
-    "designed": 6,
+    "planned": 21,
+    "designed": 7,
     "failed": 1,
     "external": 4,
     "unstated": 17
@@ -42,13 +42,13 @@
    "id": "qualified",
    "label": "Qualified or judged",
    "built": true,
-   "description": "Passed its registered protocol or acceptance in its declared scope, or an experiment judged under its registered rules."
+   "description": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
   },
   {
    "id": "landed",
-   "label": "Landed, in development",
+   "label": "Implemented and guarded",
    "built": true,
-   "description": "On main and running, but not yet judged. Integration grants no scientific acceptance."
+   "description": "On main with its tests and guards: the plan's 'implemented' and 'guarded' levels. Not yet qualified by a registered protocol."
   },
   {
    "id": "established",
@@ -484,7 +484,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-13",
-   "plain": "Cell replacement in a tissue whose volumes change: the newcomer brings its own volume, booked in water's accounts. No judged run uses it yet.",
+   "plain": "Cell replacement in a tissue whose volumes change: the newcomer brings its own volume, booked in water's accounts. Implemented and guarded; not qualified on the heredity sheet.",
    "detail": "Operator scheduled_cell_replacement@2: scheduled carrier replacement over water.",
    "facts": [
     [
@@ -535,6 +535,10 @@
     {
      "path": "PROGRESS.md",
      "where": "Water plus replacement (13 November)"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Status on 14 November 2026, and the working order (D156)"
     }
    ],
    "files": [
@@ -1024,7 +1028,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Production and clearance of secreted molecules, inside cells and between them. Development code; nothing is judged yet.",
+   "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded; its qualification protocol is registered and nothing is judged yet.",
    "detail": "Operator scheduled_species_turnover@1: production and first-order clearance of neutral species.",
    "facts": [
     [
@@ -1073,7 +1077,11 @@
     },
     {
      "path": "PROGRESS.md",
-     "where": "Secreted-species transport v1 (D150)"
+     "where": "The secreted-species (D150 v1) protocol is registered"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Status on 14 November 2026, and the working order (D156)"
     }
    ],
    "files": [
@@ -1088,7 +1096,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Secretion and uptake of molecules across the membrane. Development code; nothing is judged yet.",
+   "plain": "Secretion and uptake of molecules across the membrane. Implemented and guarded; its qualification protocol is registered and nothing is judged yet.",
    "detail": "Operator scheduled_species_exchange@1: secretion and uptake of neutral species across patches.",
    "facts": [
     [
@@ -1134,11 +1142,86 @@
     },
     {
      "path": "PROGRESS.md",
-     "where": "Secreted-species transport v1 (D150)"
+     "where": "The secreted-species (D150 v1) protocol is registered"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Status on 14 November 2026, and the working order (D156)"
     }
    ],
    "files": [
     "src/cells/models/operators/species_exchange.py"
+   ]
+  },
+  {
+   "id": "op.local_species_reactions@1",
+   "label": "Shared-inventory reactions",
+   "kind": "operator",
+   "group": "operators",
+   "status": "landed",
+   "as_of": "2026-11-14",
+   "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, is in progress.",
+   "detail": "Operator local_species_reactions@1: reactions on the shared species inventory (D152, version 1).",
+   "facts": [
+    [
+     "Law",
+     "local_species_reactions@1"
+    ],
+    [
+     "Class",
+     "LocalSpeciesReactions"
+    ],
+    [
+     "Parts of the step",
+     "split half-steps"
+    ],
+    [
+     "Step method",
+     "ssprk33_unidirectional_stage_condition_exact_bookings@1"
+    ],
+    [
+     "Under an RK4 inner step",
+     "split"
+    ],
+    [
+     "Schedule in a definition",
+     "reaction_controls"
+    ],
+    [
+     "Heat booked in",
+     "reaction_dissipated_energy_pJ, reaction_outside_dissipated_energy_pJ"
+    ],
+    [
+     "Work booked in",
+     "reaction_work_pJ, reaction_outside_work_pJ"
+    ],
+    [
+     "State it owns",
+     "13 fields"
+    ],
+    [
+     "Reads as declared",
+     "volume, extracellular_volume, active, outside_active, extracellular_amount_reference"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "src/cells/models/operators/species_reactions.py"
+    },
+    {
+     "path": "docs/SHARED_INVENTORY_REACTIONS_DESIGN.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Reactions on the shared inventory (D152 v1), milestones 1 and 2, landed"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Status on 14 November 2026, and the working order (D156)"
+    }
+   ],
+   "files": [
+    "src/cells/models/operators/species_reactions.py"
    ]
   },
   {
@@ -1553,6 +1636,25 @@
    "weight": 0
   },
   {
+   "id": "exec.run_view",
+   "label": "Run-view output",
+   "kind": "component",
+   "group": "execution",
+   "status": "planned",
+   "plain": "Every run will save what a viewer needs to replay it: geometry, identities, record metadata, events and how each layer is represented. The requirement is recorded (D154); its design note comes first.",
+   "sources": [
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Gate: execution"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D154"
+    }
+   ],
+   "weight": 0
+  },
+  {
    "id": "exec.devices",
    "label": "Device placement",
    "kind": "component",
@@ -1620,7 +1722,7 @@
    "group": "execution",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Lets a checkpoint written by one version of the code resume under another, but only through a recorded admission. Refusal stays the default.",
+   "plain": "Lets a checkpoint written by one version of the code resume under another, but only through a recorded admission. Refusal stays the default. In place for CPU runs; the GPU extension is being built.",
    "detail": "Checkpoint continuity: one recorded admission per resume across a source change.",
    "facts": [
     [
@@ -1639,6 +1741,10 @@
     {
      "path": "PROGRESS.md",
      "where": "Checkpoint continuity, first landing (D153)"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Status on 14 November 2026, and the working order (D156)"
     }
    ],
    "files": [
@@ -2572,6 +2678,46 @@
    "weight": 0
   },
   {
+   "id": "laws.inventory_coupling",
+   "label": "Coupling out of the inventory",
+   "kind": "component",
+   "group": "laws",
+   "status": "designed",
+   "as_of": "2026-11-14",
+   "plain": "A species amount in the inventory sets how available a channel or junction is, so chemistry can change electrical behaviour. In design.",
+   "sources": [
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D155 and D156"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Status on 14 November 2026, and the working order (D156)"
+    }
+   ],
+   "weight": 0
+  },
+  {
+   "id": "laws.excitable",
+   "label": "Excitable tissue",
+   "kind": "component",
+   "group": "laws",
+   "status": "designed",
+   "as_of": "2026-11-14",
+   "plain": "General physics for tissue that carries a travelling electrical wave, to be qualified against cable theory. A design note comes first.",
+   "sources": [
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D155"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Status on 14 November 2026, and the working order (D156)"
+    }
+   ],
+   "weight": 0
+  },
+  {
    "id": "laws.grn",
    "label": "Gene regulation in tissue",
    "kind": "component",
@@ -2937,9 +3083,9 @@
    "label": "Composite tissue model",
    "kind": "component",
    "group": "models",
-   "status": "landed",
-   "as_of": "2026-11-12",
-   "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Its guards are bitwise on CPU; agreement on the GPU is pending.",
+   "status": "qualified",
+   "as_of": "2026-11-14",
+   "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Numerically qualified on CPU through its frozen-model guards and judged in E07-v1; agreement on the GPU is in progress.",
    "detail": "resolved_pump_composite@1: resolved_pump_tissue@3's own step plus declared operators.",
    "facts": [
     [
@@ -2971,7 +3117,7 @@
     },
     {
      "path": "docs/CURRENT_PLAN.md",
-     "where": "90-day objectives"
+     "where": "Status on 14 November 2026, and the working order (D156)"
     }
    ],
    "files": [
@@ -3578,7 +3724,7 @@
     ],
     [
      "Lines of Python",
-     "434"
+     "436"
     ]
    ],
    "sources": [
@@ -3586,34 +3732,15 @@
      "path": "docs/PUMP_COMPOSITE_V2_DESIGN.md"
     },
     {
-     "path": "PROGRESS.md",
-     "where": "Energy roles declared (13 November)"
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Status on 14 November 2026, and the working order (D156)"
     }
    ],
    "files": [
     "src/cells/models/operators/__init__.py",
     "src/cells/models/operators/contract.py"
    ],
-   "weight": 434
-  },
-  {
-   "id": "op.local_species_reactions@1",
-   "label": "Shared-inventory reactions",
-   "kind": "component",
-   "group": "operators",
-   "status": "designed",
-   "as_of": "2026-11-14",
-   "plain": "Driven reactions between species in the tissue's one inventory, with exact energy bookings. The design is accepted; the code follows.",
-   "sources": [
-    {
-     "path": "docs/SHARED_INVENTORY_REACTIONS_DESIGN.md"
-    },
-    {
-     "path": "docs/CURRENT_PLAN.md",
-     "where": "Reactions on the shared inventory (D152)"
-    }
-   ],
-   "weight": 0
+   "weight": 436
   },
   {
    "id": "op.endogenous_lifecycle",
@@ -3670,13 +3797,13 @@
    "label": "MG0c: Turing patterns",
    "kind": "component",
    "group": "experiments",
-   "status": "designed",
+   "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Pattern formation by reaction and diffusion. It will be the first acceptance of the shared-inventory reactions.",
+   "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. In progress.",
    "sources": [
     {
      "path": "docs/CURRENT_PLAN.md",
-     "where": "Reactions on the shared inventory (D152)"
+     "where": "Status on 14 November 2026, and the working order (D156)"
     }
    ],
    "weight": 0
@@ -3761,6 +3888,26 @@
    "sources": [
     {
      "path": "docs/EXPERIMENT_PATH_PATTERN_RECOVERY.md"
+    }
+   ],
+   "weight": 0
+  },
+  {
+   "id": "exp.conduction",
+   "label": "Conduction probe",
+   "kind": "component",
+   "group": "experiments",
+   "status": "designed",
+   "as_of": "2026-11-14",
+   "plain": "Can the channel laws the composite admits carry an action potential along a chain of cells? A probe on the engine as it stands is in progress, with its success criteria set before it runs.",
+   "sources": [
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D156"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Status on 14 November 2026, and the working order (D156)"
     }
    ],
    "weight": 0
@@ -3935,14 +4082,14 @@
    "facts": [
     [
      "Files",
-     "306"
+     "308"
     ],
     [
      "Lines of Python",
-     "71,870"
+     "72,861"
     ]
    ],
-   "weight": 71870
+   "weight": 72861
   },
   {
    "id": "val.division",
@@ -4049,15 +4196,15 @@
    "facts": [
     [
      "Files",
-     "710"
+     "717"
     ],
     [
      "Lines of Python",
-     "223,023"
+     "226,105"
     ],
     [
      "Tier 1 test files",
-     "310"
+     "314"
     ],
     [
      "Tier 2 test files",
@@ -4065,7 +4212,7 @@
     ],
     [
      "Tier 3 test files",
-     "215"
+     "218"
     ]
    ],
    "sources": [
@@ -4074,7 +4221,7 @@
      "where": "Milestones and provenance"
     }
    ],
-   "weight": 223023
+   "weight": 226105
   },
   {
    "id": "state.compartment",
@@ -4248,7 +4395,7 @@
    "group": "plan",
    "order": 1,
    "plain": "Make execution dependable: fast plan validation, live progress markers, one production path and a compile policy.",
-   "note": "The plan-validation fix was accepted on 12 November and phase markers landed on 13 November (PROGRESS). The plan records no status for the rest.",
+   "note": "The plan-validation fix was accepted on 12 November; phase-marker completion records are implemented. One production path, the compile policy and the registry are not started; the run-view output's design is pending (the plan, 14 November).",
    "facts": [
     [
      "Order in the plan",
@@ -4289,7 +4436,7 @@
    "group": "plan",
    "order": 2,
    "plain": "One composite physiology model with an explicit contract for who owns and who writes each piece of state.",
-   "note": "From the plan, 14 November: secreted-species version 1 has landed milestones 1 and 2, and the reactions design note is accepted.",
+   "note": "From the plan, 14 November: secreted-species version 1 is implemented and guarded, with its protocol registered; the reactions operator's milestones 1 and 2 have landed, and MG0c, its qualification, is in progress.",
    "facts": [
     [
      "Order in the plan",
@@ -4307,7 +4454,7 @@
      "label": "An entity volume ledger"
     },
     {
-     "label": "Water plus replacement, the first composition with real interaction. Today it is refused by a declared view conflict"
+     "label": "Water plus replacement, the first composition with real interaction. Replacement@2 over water with the entity volume ledger is implemented and guarded (13 November)"
     }
    ],
    "sources": [
@@ -4776,7 +4923,7 @@
    ],
    "part": "cytoplasm",
    "scale": "cell",
-   "plain": "Chemical reactions inside compartments, with mass and energy accounted for. Reactions on the tissue's shared inventory are designed and come next.",
+   "plain": "Chemical reactions inside compartments, with mass and energy accounted for. Reactions on the tissue's shared inventory are implemented and guarded; their qualification is in progress.",
    "sources": [
     {
      "path": "docs/COMPARTMENT_REACTIONS.md"
@@ -4798,7 +4945,7 @@
    ],
    "part": "secretion",
    "scale": "cell",
-   "plain": "Cells release and take up signalling molecules that spread between cells. In development; nothing is judged yet.",
+   "plain": "Cells release and take up signalling molecules that spread between cells. Implemented and guarded; its qualification protocol is registered and nothing is judged yet.",
    "sources": [
     {
      "path": "docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md"
@@ -5061,6 +5208,13 @@
   },
   {
    "from": "op.ideal_osmosis_linear_compliance_water@1",
+   "to": "op.local_species_reactions@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "volume, extracellular_volume"
+  },
+  {
+   "from": "op.ideal_osmosis_linear_compliance_water@1",
    "to": "op.membrane_entity_state@1",
    "kind": "conflicts",
    "weight": 1,
@@ -5103,6 +5257,13 @@
   },
   {
    "from": "op.isopotential_partition@1",
+   "to": "op.local_species_reactions@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "active"
+  },
+  {
+   "from": "op.isopotential_partition@1",
    "to": "op.scheduled_cell_replacement@2",
    "kind": "conflicts",
    "weight": 1,
@@ -5121,6 +5282,34 @@
    "kind": "conflicts",
    "weight": 1,
    "label": "active"
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "op.restricted_cleft_lumen@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "op.restricted_cleft_lumen@2",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "op.scheduled_membrane_insertion@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "outside_active, extracellular_amount_reference"
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "op.scheduled_membrane_insertion@2",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "outside_active"
   },
   {
    "from": "op.membrane_entity_state@1",
@@ -5256,6 +5445,12 @@
   {
    "from": "gate.2",
    "to": "exec.one_path",
+   "kind": "delivers",
+   "weight": 1
+  },
+  {
+   "from": "gate.2",
+   "to": "exec.run_view",
    "kind": "delivers",
    "weight": 1
   },
@@ -5422,10 +5617,30 @@
    "weight": 1
   },
   {
+   "from": "exec.run_view",
+   "to": "exec.io",
+   "kind": "extends",
+   "weight": 1,
+   "label": "a view file beside definition.json"
+  },
+  {
+   "from": "laws.excitable",
+   "to": "laws.channels",
+   "kind": "extends",
+   "weight": 1
+  },
+  {
    "from": "laws.grn",
    "to": "laws.regulation",
    "kind": "extends",
    "weight": 1
+  },
+  {
+   "from": "laws.inventory_coupling",
+   "to": "op.contract",
+   "kind": "extends",
+   "weight": 1,
+   "label": "through the contract's control factors"
   },
   {
    "from": "laws.topology",
@@ -5485,12 +5700,6 @@
   {
    "from": "op.endogenous_lifecycle",
    "to": "op.isopotential_partition@1",
-   "kind": "extends",
-   "weight": 1
-  },
-  {
-   "from": "op.local_species_reactions@1",
-   "to": "models.composite",
    "kind": "extends",
    "weight": 1
   },
@@ -5754,6 +5963,12 @@
    "weight": 1
   },
   {
+   "from": "op.local_species_reactions@1",
+   "to": "models.composite",
+   "kind": "operator_of",
+   "weight": 1
+  },
+  {
    "from": "op.membrane_entity_state@1",
    "to": "models.composite",
    "kind": "operator_of",
@@ -5966,6 +6181,13 @@
    "weight": 1
   },
   {
+   "from": "exp.conduction",
+   "to": "models.composite",
+   "kind": "runs",
+   "weight": 1,
+   "label": "probes the channel laws the composite admits"
+  },
+  {
    "from": "exp.division",
    "to": "models.composite",
    "kind": "runs",
@@ -6040,7 +6262,7 @@
    "to": "op.local_species_reactions@1",
    "kind": "runs",
    "weight": 1,
-   "label": "will run"
+   "label": "its qualification"
   },
   {
    "from": "exp.mg1",
@@ -8114,6 +8336,12 @@
   },
   {
    "from": "op.contract",
+   "to": "op.local_species_reactions@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.contract",
    "to": "op.membrane_entity_state@1",
    "kind": "uses",
    "weight": 1
@@ -8363,6 +8591,48 @@
    "to": "op.ideal_osmosis_linear_compliance_water@1",
    "kind": "uses",
    "weight": 1
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "exec.registry",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 4
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "laws.electrodiffusion",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "laws.reactions",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "models.composite",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "op.contract",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "op.scheduled_species_turnover@1",
+   "kind": "uses",
+   "weight": 2
   },
   {
    "from": "op.membrane_entity_state@1",
@@ -8825,6 +9095,20 @@
   },
   {
    "from": "op.k_anion_symport_mass_action@1",
+   "to": "state.extracellular_environment",
+   "kind": "writes",
+   "weight": 1,
+   "label": "extracellular_amount_increment"
+  },
+  {
+   "from": "op.local_species_reactions@1",
+   "to": "state.compartment",
+   "kind": "writes",
+   "weight": 1,
+   "label": "amount_increment"
+  },
+  {
+   "from": "op.local_species_reactions@1",
    "to": "state.extracellular_environment",
    "kind": "writes",
    "weight": 1,

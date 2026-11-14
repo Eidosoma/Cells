@@ -20,8 +20,8 @@ One data file, the scene, drawn through two lenses:
 
 Three things are encoded, and kept apart:
 
-- **Status**: qualified or judged, landed, established, designed, planned, failed,
-  external reference. Built parts are solid; parts not built are sketches. In the engine
+- **Status**: qualified or judged, implemented and guarded, established, designed, planned,
+  failed, external reference. The first two follow the plan's four levels (D156). Built parts are solid; parts not built are sketches. In the engine
   lens colour shows status too. In the cell lens colour shows the kind of part by default
   (purple nucleus, orange mitochondria), and the dot beside each name shows its status;
   the "Colour" switch turns the cell to status colours.
@@ -52,7 +52,7 @@ indicative.
 | --- | --- | --- |
 | Cell | 20 µm across | the same |
 | Nucleus | 6 µm across | the same |
-| Mitochondria | 120 capsules, about 0.6 µm wide and 2 µm long (a real cell holds hundreds or more) | 9, about 2 µm wide, three cut open to show the folds |
+| Mitochondria | 120, about 0.6 µm wide and 1 to 3 µm long, some curved: a clear outer membrane with the inner folds showing (a real cell holds hundreds or more) | 9, about 2 µm wide, three cut open to show the folds |
 | Endoplasmic reticulum | thin sheets close together and tubules through the cell | four thick ribbons |
 | Ribosomes, vesicles | grey dots and clear bubbles: scenery, since protein synthesis and vesicles are not capabilities | grey beads and a few clear bubbles |
 | Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |

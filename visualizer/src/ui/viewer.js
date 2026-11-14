@@ -154,10 +154,9 @@ class CellsViewer extends HTMLElement {
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
     if (query.get("colour")) this.current?.setColourBy?.(query.get("colour"));
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
-    if (this.stage && (query.get("azimuth") || query.get("polar"))) {
+    if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
       const view = {};
-      if (query.get("azimuth")) view.azimuth = Number(query.get("azimuth"));
-      if (query.get("polar")) view.polar = Number(query.get("polar"));
+      for (const name of ["azimuth", "polar", "distance"]) if (query.get(name)) view[name] = Number(query.get(name));
       this.stage.rig.setView(view);
     }
     if (query.get("isolate")) this.setIsolate(query.get("isolate"));

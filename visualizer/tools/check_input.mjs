@@ -3,7 +3,7 @@
 // protocol (Node's built-in WebSocket; no extra dependency). Screenshots set state by
 // query parameter and so never touch picking or the camera control; this does.
 //
-//   node tools/check_input.mjs
+//   node tools/check_input.mjs            (CHECK_ONLY=engine|cell|zoom runs one part)
 
 import { spawn } from "node:child_process";
 import { createServer } from "./serve.mjs";
@@ -89,22 +89,39 @@ const wheel = (x, y, deltaY) => page("Input.dispatchMouseEvent", { type: "mouseW
 const screen = (point) =>
   evaluate(`(() => { const v = ${VIEWER}; const p = ${point}; const out = p.clone(); v.stage.project(p, out); return { x: out.x, y: out.y }; })()`);
 const selected = () => evaluate(`${VIEWER}.state.selected`);
+const only = process.env.CHECK_ONLY;
+const wants = (part) => !only || only === part;
+// The points clicked in the cell come from the lens (cell_parts.js), so they follow the layout.
+const probe = (name) => `${VIEWER}.current.probes.${name}.clone()`;
 const clear = () => evaluate(`${VIEWER}.select(null)`);
 
 try {
   // ---------------------------------------------------------------- engine lens
-  await open("lens=engine");
-  const block = await screen(`${VIEWER}.current.nodes.get("models.composite").top.clone()`);
-  await click(block.x, block.y + 5);
-  check("engine: clicking a block selects it", (await selected()) === "models.composite", String(await selected()));
-  check("engine: the panel opens", await evaluate(`!${VIEWER}.shadowRoot.querySelector("cells-panel").hidden`));
-  await click(40, 400);
-  check("engine: clicking empty space clears the selection", (await selected()) === null, String(await selected()));
+  if (wants("engine")) {
+    await open("lens=engine");
+    // A block can stand behind a taller neighbour, so ask the page for one whose top is in plain
+    // view, then check that a real click there selects it.
+    const block = await evaluate(`(() => {
+      const viewer = ${VIEWER}, lens = viewer.current;
+      const out = lens.nodes.values().next().value.top.clone();
+      for (const [id, node] of lens.nodes) {
+        if (node.entity.kind !== "component") continue;
+        viewer.stage.project(node.top, out);
+        const hit = viewer.stage.pick(out.x, out.y + 3, lens.pickRoots);
+        if (hit && hit.id === id && out.x > 300 && out.x < 900 && out.y > 90) return { id, x: out.x, y: out.y + 3 };
+      }
+      return null;
+    })()`);
+    await click(block.x, block.y);
+    check("engine: clicking a block selects it", (await selected()) === block.id, `${block.id} -> ${await selected()}`);
+    check("engine: the panel opens", await evaluate(`!${VIEWER}.shadowRoot.querySelector("cells-panel").hidden`));
+    await click(40, 400);
+    check("engine: clicking empty space clears the selection", (await selected()) === null, String(await selected()));
+  }
 
   // ---------------------------------------------------------------- cell lens
+  if (wants("cell")) {
   await open("lens=cell");
-  // The points clicked come from the lens (cell_parts.js PROBES), so they follow the layout.
-  const probe = (name) => `${VIEWER}.current.probes.${name}.clone()`;
   const nucleus = await screen(probe("nucleus"));
   await click(nucleus.x, nucleus.y); // through the sketched gene-network cage around it
   check("cell: clicking the nucleus selects regulatory circuits", (await selected()) === "cap.circuits", String(await selected()));
@@ -187,7 +204,10 @@ try {
   check("label: a plain click on a label selects its part", (await selected()) === tap.id, `${tap.id} -> ${await selected()}`);
   await clear();
 
+  }
+
   // ---------------------------------------------------------------- zoom across scales
+  if (wants("zoom")) {
   await open("lens=cell");
   for (let step = 0; step < 6; step++) {
     await wheel(640, 420, 240);
@@ -200,6 +220,7 @@ try {
   const cellOfSheet = await screen(`${VIEWER}.current.probes.sheetCell.clone()`);
   await click(cellOfSheet.x, cellOfSheet.y);
   check("zoom: at the sheet, a click selects the sheet and not the faded cell", (await selected()) === "cap.sheet", String(await selected()));
+  }
 } catch (error) {
   check("the run completed", false, error.message);
 } finally {
