@@ -338,9 +338,11 @@ def criteria_and_controls(results):
             ],
             "le",
             1.0,
-            "every run of every part: the energy residual and the network rows' material residuals "
-            "(at the species' floors) inside their host bounds (each run also passes every host "
-            "check on every window, or it raises and its part fails)",
+            "every run that records its accounting (every part's but Q4's, whose single-mode runs "
+            "record only their rates): the energy residual and the network rows' material "
+            "residuals (at the species' floors) inside their host bounds. Every run of every part, "
+            "Q4's included, also passes every host check on every window, or it raises and its "
+            "part fails",
         ),
         criterion(
             "S_dt_rule",
@@ -608,7 +610,7 @@ def draft(output, paths):
     )
     protocol["development_values"] = development_values(protocol, results)
     Path(output).write_text(json.dumps(protocol, indent=1) + "\n")
-    failed = [k for k, v in protocol["development_values"].items() if not v["passed"]]
+    failed = [k for k, v in protocol["development_values"].items() if v.get("passed") is False]
     print(
         f"{len(criteria)} criteria, {len(deltas)} registered deltas; "
         f"failing in development: {failed}"
