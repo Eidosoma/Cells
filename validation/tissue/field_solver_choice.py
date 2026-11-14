@@ -1,4 +1,4 @@
-"""The field solver a new definition declares (D147, docs/DECISIONS.md).
+"""The field solver a new definition declares (D147, docs/DECISIONS.md; D156 for composites).
 
 D147: a new definition of the resolved pump family (resolved_pump_tissue@1 to @3,
 resolved_pump_water@1 and @2, resolved_pump_replacement@1) with at least one free field
@@ -6,6 +6,13 @@ offset declares capacitive_reduction_gauged_damped_newton@3; a definition with n
 the solver it declares. The count needs only the definition: the field_offset_free leaf of
 initialise(spec).layout, set by finite extracellular space with floating components
 (docs/FIELD_FLOOR_ACCEPTANCE_DESIGN.md).
+
+D156: a resolved_pump_composite@1 definition follows its inner model, whose field solve it
+runs. The composite admits resolved_pump_tissue@3 alone as its inner model, so a new composite
+with a free offset declares version 3 too, and one with none keeps its own. No composite world
+of the repository's builders had a free offset when this was added (the crossrev sets, the
+division and species worlds, S5's egg and D150's fixtures), so none of their definitions
+changes; frozen definitions are never redeclared (the guards and judges run them as declared).
 
 Drivers offer CHOICES: "auto" follows D147; "2" and "3" declare that version explicitly,
 and "2" reproduces the definitions made before D147.
@@ -20,6 +27,16 @@ from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
 CHOICES = ("auto", "2", "3")
 SOLVERS = {"2": FACTORED_SOLVER_ID, "3": FLOOR_SOLVER_ID}
 FAMILY = ("resolved_pump_tissue@", "resolved_pump_water@", "resolved_pump_replacement@")
+COMPOSITE = "resolved_pump_composite@"  # D156: decided by its inner model.
+
+
+def in_family(raw):
+    """Whether D147's trigger applies to raw: a model of the resolved pump family, or a composite
+    whose inner model is one (D156)."""
+    model = raw["model"]
+    if model["id"].startswith(COMPOSITE):
+        return str(model.get("inner_model")).startswith(FAMILY)
+    return model["id"].startswith(FAMILY)
 
 
 def free_field_offsets(raw):
@@ -37,13 +54,13 @@ def free_field_offsets(raw):
 
 
 def solver_for(raw, choice="auto"):
-    """The field solver raw should declare under a choice (auto: D147)."""
+    """The field solver raw should declare under a choice (auto: D147, with D156's composites)."""
     if choice not in CHOICES:
         raise ValueError(f"Unknown field solver choice {choice!r} (one of {CHOICES})")
     if choice != "auto":
         return SOLVERS[choice]
     declared = raw["execution"].get("field_solver")
-    if not raw["model"]["id"].startswith(FAMILY):
+    if not in_family(raw):
         return declared
     return FLOOR_SOLVER_ID if free_field_offsets(raw) > 0 else declared
 
