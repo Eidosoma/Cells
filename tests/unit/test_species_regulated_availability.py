@@ -403,6 +403,14 @@ REFUSALS = {
         _edit(lambda r: block(r)["couplings"].append(copy.deepcopy(_coupling(r)))),
         "unique",
     ),
+    "duplicate state": (
+        _edit(lambda r: block(r)["states"].append(copy.deepcopy(_state(r)))),
+        "state IDs are unique",
+    ),
+    "species listed twice": (
+        _edit(lambda r: block(r)["species"].append(copy.deepcopy(block(r)["species"][0]))),
+        "lists a species twice",
+    ),
     "identity mismatch": (_identity_mismatch, "another identity"),
     "species cap": (_add_species(3), "at most 7 species"),
     "replaced slot": (_replaced("coupling"), "coupling c targets junction_1"),
