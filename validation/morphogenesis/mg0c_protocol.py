@@ -438,10 +438,11 @@ def criteria_for(parts):
             ["parts.d147.max_free_field_offsets"],
             "le",
             0,
-            "D147: a definition with free field offsets declares field solver @3; every MG0c world "
-            "has none (each chain node shares the cell's capacitor component with the held bath), "
-            "so the declared @2 stands. Composite IDs skip D147's automatic choice, so the count "
-            "is checked here",
+            "D147: a definition with free field offsets declares field solver @3, and since D156 a "
+            "composite follows its inner model (@3, in D147's family); every MG0c world has none "
+            "(each chain node shares the cell's capacitor component with the held bath), so the "
+            "declared @2 stands. The count is checked here because MG0c's worlds are declared "
+            "with @2, not through the automatic choice",
         )
     ]
     for world in ("passive", "open"):

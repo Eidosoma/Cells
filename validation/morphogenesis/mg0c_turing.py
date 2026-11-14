@@ -1578,10 +1578,12 @@ def part_sites(quick):
 
 def part_d147(quick):
     """D147's solver check (the coordinator's milestone-3 addition, before the protocol's draft):
-    validation/tissue/field_solver_choice.free_field_offsets(raw) and the declared field solver of
-    every MG0c world definition. Composite definitions skip D147's automatic choice, so the counts
-    are recorded, not applied. A floating capacitor component (one with no held bath) is a free
-    offset; every chain node shares the cell's capacitor component with the held bath."""
+    validation/tissue/field_solver_choice.free_field_offsets(raw), the declared field solver and
+    solver_for(raw)'s automatic choice for every MG0c world definition. Since D156 a composite
+    follows its inner model (@3, in D147's family), so the automatic choice applies to these
+    worlds: @3 with a free offset, the declared solver without one. A floating capacitor component
+    (one with no held bath) is a free offset; every chain node shares the cell's capacitor
+    component with the held bath."""
     from validation.tissue import field_solver_choice as fsc
 
     spacing = SPACING_M / length_scale_m()

@@ -2182,7 +2182,17 @@ The lead reviewed the PROPOSED protocol landed at e659ce4, with the advisor: ten
 items blocking registration. The revised protocol is still PROPOSED and is drafted by the generator
 alone (`python -m validation.morphogenesis.mg0c_protocol draft ...`). It draws on milestone 3's
 development runs, with three parts rerun from `snapshot-7495288`, the driver with the review's
-additions. `src/` is unchanged since a4e2f7e.
+additions. The branch adds no `src/` change. Main's `src/` changes since milestone 3 arrived
+through the merge of da94f81: FR-9's cap of 16 and the architecture block's items, among them
+D156, under which a composite follows its inner model's D147 choice.
+- **Which evidence is on which source:**
+  - The development runs and the reruns (q1, q6 and q7 from `snapshot-7495288`) predate the merge,
+    and so FR-9.
+  - These ran at the merged head: the four split files uncapped from `snapshot-454fa75` (1 + 10 + 9
+    + 7 = 27 passed, cgroup peak 2.81 GB), the tier measurement at 454fa75, and tier 1 at a98e6cd
+    (322 files, no changed outcome).
+  - A smoke of the driver at the final head is in HANDOFF.md: `d147` and `theory`, plus `--quick
+    q1`.
 - **Engine models run:** as §11.3: `resolved_pump_composite@1` over `resolved_pump_tissue@3` with
   `local_species_reactions@1`.
 - **Evidence:** `/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/` (HANDOFF.md,
