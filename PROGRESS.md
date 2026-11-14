@@ -58,6 +58,36 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D152's independent references landed (14 November).** An agent that never read the operator's
+  code or the design's prototype wrote them from the note's Appendix A and §6
+  ([usage](validation/reactions/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/reaction-references-20261114-01/), with the run of record
+  `crosschecks-3/` at 5fd695b).
+  - **What they are.**
+    - The node kinetics and bookings: the SSPRK(3,3) half-step and its stage condition, the exact
+      ΔG in floats and in 50-digit Decimal, the per-step node class and the mixed-node hybrid.
+    - The exact dissipation integral (DOP853).
+    - Closed-form linear reaction–diffusion on zero-flux chains.
+    - MG0c's Turing references: the dispersion relation, the discrete mode propagators and the
+      semi-discrete nonlinear integration.
+  - **Independent reproduction.** Every fully specified development number in the design:
+    - probes 2c, 2d, 2e/2f and 2g in every cell;
+    - §6.4: d_c 8.5676, the band (0.2, 0.5), σ_max 0.05719, the domain table and the staircase.
+  - **The tolerance basis.** Against a second float implementation, end amounts agree within
+    4.7 ε. ΔG is within 1.06 ε of the 50-digit value, and mixed-node H within 0.38 ε of its terms'
+    scale.
+  - **Corrections to the note it found,** to be made through the engine branch's amendments:
+    - the trace-sensitivity figures are relative changes of the whole heat, not pJ;
+    - k̃² at σ_max is 0.3185;
+    - Appendix A's RT uses R = 8.314; the references take RT as an input;
+    - Q4's "both gaps" needs L/ℓ = 4 in the sweep.
+  - **Checks.**
+    - 44 self-tests in 5.8 s, tier 1, including a static check that the references import
+      nothing from `cells`.
+    - Tier 1 at the merge db8111b: 308 files, no changed outcome.
+    - The tier record's merge conflict was resolved with the tier tool, re-measured on main's
+      record.
+
 - **E07-v1 judged (13–14 November): under donor-copy turnover the written disc did not renew.
   The pattern followed neutral copying closely, and 8 of 15 scored predictions held.**
   - **How it ran.** All 38 judged runs ran once each, from one clean snapshot of main at 4465b48,
