@@ -5099,6 +5099,37 @@ should be designed as a general engine feature.
   - a program edit changes every path's program;
   - an observer-only edit changes only the host replay.
 
+## D154: Every experiment must eventually be visualizable, through one run-view output
+
+2026-11-14. This is the user's request, relayed by the visualizer session that the user
+started the same day: "ask the lead to add this to the architecture in a general way, all
+experiments eventually must be visualizable".
+- **What it means.** Every run writes a view record beside `definition.json`, through one
+  shared output path, never one per driver. A viewer then needs nothing else. The record
+  holds:
+  - **geometry:** where each entity is, in physical units. That means cell centres or polygons
+    and their vertices, and contact endpoints, static or per record;
+  - **identity:** stable ids saying which column of each recorded array is which cell,
+    membrane, junction or channel;
+  - **record metadata:** for each recorded array, its name, unit, axes and time base;
+  - **events:** time, kind and entity ids, such as replacement, division, cue and injection;
+  - **representation per layer:** simulated, modelled in aggregate, or prescribed. Mixed runs
+    are expected; for example, an aggregate assembly model drawn with illustrative machines;
+  - **scale:** molecule, cell, tissue, organ or organism. One cell comes first; the larger
+    scales are placeholders.
+- **The engine side.** A separate view file is written by the shared run-output path.
+  - It is not fields in the definition, so definitions, bindings and crossrev stay unchanged.
+  - The exact file and field names come from a short design note (D142), aligned with the
+    consumer schema the visualizer drafts (`visualizer/schema/RUN_VIEW.md`).
+- **The viewer is a read-only consumer.** Rendering never sets simulation time or random draws
+  (ARCHITECTURE, "Analysis and viewing").
+- **Order.** The design note comes when an agent slot is free. Meanwhile the visualizer adapts
+  existing runs on its own side, so nothing waits.
+- **What it does not authorise:**
+  - any change to definitions or qualified models;
+  - view writers per driver;
+  - the visualizer committing outside `visualizer/`.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

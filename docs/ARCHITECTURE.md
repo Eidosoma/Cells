@@ -416,6 +416,19 @@ Reduced models for larger scales must be validated on held-out trajectories and
 interventions. A reduction that preserves current E/M labels but loses commitment
 is insufficient for memory experiments.
 
+**Run-view output (D154, requirement).** Every experiment must eventually be visualizable.
+- One shared run-output path writes a view record beside each run's `definition.json`. Drivers
+  do not each write their own.
+- The record holds:
+  - geometry in physical units;
+  - stable entity identity for every recorded array's columns;
+  - each array's name, unit, axes and time base;
+  - events with their entity ids;
+  - each layer's representation: simulated, modelled in aggregate, or prescribed;
+  - the scale.
+- It is kept out of the definition, so definitions, bindings and crossrev are unaffected.
+- Its exact form follows a short design note.
+
 ## Technical references
 
 - [JAX compilation and functional constraints](https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html)
