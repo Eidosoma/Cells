@@ -9,6 +9,7 @@ from cells.models.operators.bath_schedule import ScheduledBathComposition
 from cells.models.operators.bridge_closure import CytoplasmicBridgeClosure
 from cells.models.operators.cell_replacement import ScheduledReplacement
 from cells.models.operators.cell_replacement_v2 import ScheduledReplacementOverWater
+from cells.models.operators.compartments import CellOwnedCompartments
 from cells.models.operators.contract import check_declarations
 from cells.models.operators.current_injection import ElectrodeCurrentInjection
 from cells.models.operators.k_anion_symport import KAnionSymport
@@ -44,5 +45,6 @@ OPERATORS = {
         check_declarations(LocalSpeciesReactions)(),
         check_declarations(SpeciesRegulatedAvailability)(),
         check_declarations(ScheduledBathComposition)(),
+        check_declarations(CellOwnedCompartments)(),
     )
 }

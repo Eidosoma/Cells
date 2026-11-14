@@ -27,7 +27,14 @@ Declarations (class attributes):
   inner model's opt-in hook (``PROCESS``). One law may contribute several parts
   (scheduled replacement: its event map restarts its formation law's state). A
   state owner has no part: it holds entity state that later operators write
-  (``ACCEPTS_WRITES``) and provides it through the view (membrane_entity_state).
+  (``ACCEPTS_WRITES``) and provides it through the view (membrane_entity_state);
+  a part-less owner may instead own only fields that are accepted writes. A
+  declaration (``DECLARATION_ONLY``, docs/CLOSED_COMPARTMENT_DESIGN.md §1.6) has
+  no part and contributes nothing to the step: it declares entities and their
+  refusals at the definition (``check_definition``, ``CONFLICTS_VIEW``,
+  ``REQUIRES``) and its summary, and owns no field, schedule, view, factor,
+  closure, ledger, readout or energy role; its step methods are the idle
+  defaults below.
   ``RK4`` declares a split part's behaviour under an RK4 inner step: "coupled"
   (its rates join the coupled right-hand side, which RK4 integrates unsplit) or
   "split" (exact half-steps kept around the inner RK4 step).
@@ -140,6 +147,8 @@ class Operator:
     # Topology (module docstring).
     CLOSES = ()
     RETIRES = False
+    # A declaration with no part and no field (module docstring; check_declarations).
+    DECLARATION_ONLY = False
 
     @classmethod
     def observed_columns(cls):
@@ -324,21 +333,108 @@ class Operator:
         return {k: getattr(state, k) for k in self.STATE_AXES}
 
 
+# The step's methods: a declaration keeps every one at the base's idle default.
+STEP_METHODS = (
+    "event",
+    "half_step",
+    "process",
+    "book_process",
+    "rates",
+    "rate_checks",
+    "energy_rate",
+    "view",
+    "control_factors",
+    "closures",
+    "control_valid",
+    "domain_valid",
+    "adjust_inner",
+    "ledger_terms",
+    "magnitude_terms",
+    "own_ledgers",
+    "own_magnitudes",
+    "own_bounds",
+    "external_ledger_terms",
+    "external_magnitude_terms",
+    "observe",
+    "idle_process",
+    "statically_idle",
+)
+# What a declaration may not declare: (attribute, what it is), each empty or false.
+DECLARATION_EXCLUDES = (
+    ("EVENT", "an event map"),
+    ("SPLIT", "a split part"),
+    ("PROCESS", "an in-step process"),
+    ("RK4", "an RK4 mode"),
+    ("STATE_AXES", "owned state"),
+    ("STATE_DTYPES", "state dtypes"),
+    ("HEAT_FIELDS", "heat fields"),
+    ("WORK_FIELDS", "work fields"),
+    ("LAYOUT_FIELDS", "layout fields"),
+    ("CONTROL_FIELDS", "control fields"),
+    ("EXPERIMENT_KEYS", "a schedule"),
+    ("VIEW_FIELDS", "view fields"),
+    ("CONTROL_FACTORS", "control factors"),
+    ("ENTITY_WRITES", "entity writes"),
+    ("STATE_RESETS", "state resets"),
+    ("VIEW_FOLLOWS_SPLIT", "a view that follows a split"),
+    ("BOOKS_AT_VIEW", "bookings at the view"),
+    ("LEDGERS", "own ledgers"),
+    ("READOUT", "a readout"),
+    ("READOUT_COLUMNS", "readout columns"),
+    ("FINITE_RATES", "rates"),
+    ("REPLACES", "replaced columns"),
+    ("VIEW_READS", "view reads"),
+    ("ACCEPTS_WRITES", "accepted writes"),
+    ("EVENT_REPLACES", "replaced fields"),
+    ("ONSET_ANCHORED_VIEWS", "onset-anchored views"),
+    ("CLOSES", "closures"),
+    ("RETIRES", "retirement"),
+)
+
+
+def declaration_errors(operator):
+    """Why a DECLARATION_ONLY operator class contributes to the step (empty: it does not)."""
+    errors = [
+        f"declares {what} ({attribute})"
+        for attribute, what in DECLARATION_EXCLUDES
+        if getattr(operator, attribute)
+    ]
+    errors += [
+        f"overrides the step method {method}"
+        for method in STEP_METHODS
+        if getattr(operator, method) is not getattr(Operator, method)
+    ]
+    return errors
+
+
 def check_declarations(operator):
     """Refuse an operator class whose declarations break the contract."""
     name = operator.LAW_ID
     if not isinstance(name, str) or "@" not in name:
         raise ValueError(f"Operator {operator!r} needs a versioned law ID")
+    if operator.DECLARATION_ONLY:
+        errors = declaration_errors(operator)
+        if errors:
+            raise ValueError(
+                f"{name}: a declaration contributes nothing to the step, but it "
+                + "; ".join(errors)
+            )
     if operator.SPLIT and operator.RK4 not in RK4_MODES:
         raise ValueError(f"{name}: a split part declares its RK4 mode, one of {RK4_MODES}")
     if not operator.SPLIT and operator.RK4 is not None:
         raise ValueError(f"{name}: an RK4 mode needs a split part")
-    if not (operator.EVENT or operator.SPLIT or operator.PROCESS) and not (
-        operator.ACCEPTS_WRITES and operator.VIEW_FIELDS
+    if (
+        not operator.DECLARATION_ONLY
+        and not (operator.EVENT or operator.SPLIT or operator.PROCESS)
+        and not (
+            (operator.ACCEPTS_WRITES and operator.VIEW_FIELDS)
+            or (operator.STATE_AXES and set(operator.STATE_AXES) <= set(operator.ACCEPTS_WRITES))
+        )
     ):
         raise ValueError(
             f"{name}: an operator contributes at least one part, or is a state owner that "
-            "provides views of fields later operators write (ACCEPTS_WRITES)"
+            "provides views of fields later operators write (ACCEPTS_WRITES), or owns only "
+            "fields later operators write, or is a declaration (DECLARATION_ONLY)"
         )
     for field in operator.STATE_AXES:
         booked = field in operator.HEAT_FIELDS or field in operator.WORK_FIELDS
