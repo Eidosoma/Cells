@@ -430,6 +430,28 @@ def test_r_feedback_with_frozen_states_equals_r_tissue_with_the_product_gate():
             ref.at[t]["junctions"]["e"]["current_A"], rel=1e-8, abs=1e-22)
 
 
+def test_four_species_with_an_impermeant_anion_equal_r_tissue():
+    """The engine's worlds carry Na, K, M (permeant) and P (impermeant), §7.1 item 12: P, the last
+    charged species, is the follower recovered from the charge, and it must stay constant."""
+    from validation.division import cleft_tissue_reference as rt
+
+    sp, z, bath = ("Na", "K", "M", "P"), (1, 1, -1, -1), (145.0, 5.0, 140.0, 10.0)
+    cyt, leak = (6.0, 136.0, 7.0, 135.0), (5e-11, 1.3e-10, 1.3e-10, 0.0)
+    world = rc.World(CONST, sp, z, bath, cells={"c": rc.Cell(0.75, cyt, initial_V=-0.08)},
+                     patches={"c.m": rc.Patch("c", 3.26e-10, 1.63e-11, leak)})
+    run = rc.simulate(world, 0.5, record=(0.5,))
+    tw = rt.World(temperature_K=300.0, bath_mM=bath, species=sp, z=z,
+                  cells={"c": rt.CellSpec(volume_pL=0.75, mM=cyt, initial_V=-0.08)},
+                  patches={"c.m": rt.PatchSpec("c", "bath", leak, area_m2=3.26e-10,
+                                               capacitance_F=1.63e-11)})
+    ref = rt.simulate_static(tw, 0.5, record=(0.5,), atol=SMALL)
+    assert abs(run.at[0.5]["V"]["c"] - ref.at[0.5]["V"]["c"]) <= 1e-12
+    for x, y in zip(run.at[0.5]["amounts_fmol"]["c"], ref.at[0.5]["cells"]["c"]["amounts_fmol"],
+                    strict=True):
+        assert abs(x - y) <= 1e-10
+    assert run.at[0.5]["amounts_fmol"]["c"][3] == pytest.approx(135.0 * 0.75, abs=1e-10)
+
+
 def test_zero_availability_uncouples_the_cells():
     world = r_feedback(kon=0.0, koff=0.0, s0=0.0, law="state_fraction", b=0.0)
     run = rc.simulate(world, 1.0, record=(1.0,))
@@ -562,6 +584,7 @@ def test_sides_switches_products_and_a_state_sourced_population():
     )
     run = rc.simulate(world, 0.004, record=(0.001, 0.002, 0.003))
     on = float(fr.coupling_factor("hill_activation", 0.3, x=0.8, K=1.0, n=2.0))
+    assert run.slots == [("s1", "a"), ("s1", "b")]  # the engine's regulatory_slot order
     for t, before, after in ((0.001, on, on), (0.002, on, 1.0), (0.003, 1.0, 1.0)):
         r = run.at[t]
         sa, sb = r["s"][("s1", "a")], r["s"][("s1", "b")]
@@ -570,12 +593,13 @@ def test_sides_switches_products_and_a_state_sourced_population():
         assert F1 != fr.side_factor("second", "state_fraction", 0.1, first=sa, second=sb)
         c2 = r["routes"][("c2", "e")]
         assert c2["F_left"] == pytest.approx(before, rel=1e-15)
-        assert c2["F"] == pytest.approx(after, rel=1e-15)
+        assert c2["F_right"] == pytest.approx(after, rel=1e-15)
+        assert c2["F"] == c2["F_left"]  # as built: a row at a switch time shows the old switch
         e = r["elements"]["e"]
-        assert e["G"] == F1 * c2["F"] and e["G_left"] == F1 * c2["F_left"]
+        assert e["G_right"] == F1 * c2["F_right"] and e["G_left"] == F1 * c2["F_left"]
         assert e["a_eff"] == 0.5 * e["G"] and e["a_sched"] == e["a_sched_left"] == 0.5
         if t == 0.002:  # the same state on both sides: the flux scales with a_eff
-            assert e["current_A_left"] == pytest.approx(on * e["current_A"], rel=1e-12)
+            assert e["current_A_left"] == pytest.approx(on * e["current_A_right"], rel=1e-12)
         F3 = fr.coupling_factor("state_complement", 0.2, s=sa)
         assert r["routes"][("c3", "kleak_a")]["F"] == F3 == r["elements"]["kleak_a"]["a_eff"]
     _, _, floor = rc.floor(world, 0.004, (0.002, 0.004))
@@ -586,10 +610,11 @@ def test_records_at_a_schedule_change_give_both_sides():
     world = r_cell(None, schedule=((0.0, 1.0), (1.0, 0.25)))
     run = rc.simulate(world, 2.0, record=(1.0, 2.0))
     r = run.at[1.0]["elements"]["kleak"]
-    assert (r["a_sched_left"], r["a_sched"]) == (1.0, 0.25)
+    assert (r["a_sched_left"], r["a_sched_right"]) == (1.0, 0.25)
+    assert r["a_sched"] == r["a_sched_right"]  # as built: schedules from t on (§1.9)
     assert r["current_A_left"] == pytest.approx(4 * r["current_A"], rel=1e-12)
     late = run.at[2.0]["elements"]["kleak"]
-    assert late["a_sched_left"] == late["a_sched"] == 0.25
+    assert late["a_sched_left"] == late["a_sched"] == late["a_sched_right"] == 0.25
 
 
 def test_initial_state_rules():

@@ -160,8 +160,8 @@ b outside [0, 1), and a source not declared in a cell the coupling or state read
 | `amounts_fmol`, `mM`, `background_fmol` | Per cell, every species, in the world's order |
 | `regulators_mM` | `{(regulator, cell): c}` |
 | `s`, `U`, `u` | `{(state, cell): value}`: the state, its exposure ∫u dt from 0, and its input product |
-| `routes` | `{(coupling, element): {F, F_left}}` |
-| `elements` | `{element: {a_sched, G, a_eff, current_A}}`, each also as `*_left`. `current_A` is outward for a population and first to second for a contact |
+| `routes` | `{(coupling, element): {F, F_left, F_right}}` |
+| `elements` | `{element: {a_sched, G, a_eff, current_A}}`, each also as `*_left` and `*_right`. `current_A` is outward for a population and first to second for a contact |
 | `patch_current_A` | `{patch: outward leak current (A)}` |
 | `exchanged_fmol` | Cumulative bath-to-tissue exchange per species: the sum over cells of n(t) − n(0) equals it, a conservation check on the contacts |
 
@@ -171,16 +171,25 @@ Further, on the run:
 - **`run.crossings`** gives `{(state, cell): t*}` for each state with a crossing level: the first
   t with s ≥ θ, 0 if s₀ ≥ θ, inf if not by t_end.
 - **`run.crossing_step(state, cell, dt, theta=None)`** is R-state's k* helper.
+- **`run.slots`** is the list of (state, cell) pairs in declared order: states, then each
+  state's cells. It is the engine's flat `regulatory_slot` axis (§7.1 item 1).
 - **`run.steps`** and **`run.wall_s`** give the work done.
 
 **Both sides of an event time.**
 - Every record time and every schedule, switch and regulator-segment start is an integration
   breakpoint, so records are integration end points.
-- The state (V, amounts, s, U) is continuous. The quantities that use a schedule or a switch are
-  given just after t (`F`, `a_sched`, `G`, `a_eff`, `current_A`) and just before it (`*_left`).
-- The engine's convention (§1.9) shows, at an event time, the pre-event switch against the
-  post-change availability schedules. Compare an engine row at a switch time with `F_left`, and
-  at a schedule change with `a_sched`.
+- The state (V, amounts, s, U) is continuous. The quantities that use a schedule or a switch
+  (`F`, `a_sched`, `G`, `a_eff`, `current_A`) are given three ways:
+  - **unsuffixed: the as-built convention** (§7.1 item 3 with §1.9). A row saved at a switch's
+    time shows the switch in force before that time, against the availability schedules from that
+    time on. Compare engine rows with these keys.
+  - **`*_left`:** switches and schedules just before t.
+  - **`*_right`:** switches and schedules from t on.
+  - Away from an event time, the three coincide.
+- **Changed after §7:** the unsuffixed keys were the `*_right` values. The default now follows the
+  as-built convention, and the earlier values remain as `*_right`.
+- **Row 0.** The engine's own `_runs` comparison skips row 0 (§7.1 item 3), so compare from the
+  first step's row on.
 
 ### The two worlds of §4.3, as declared in the self-tests
 
@@ -240,26 +249,40 @@ An engine error is resolvable in a dt study only where it exceeds that floor. On
 worlds above, the floor sits near 1e-12 in s and in amounts (fmol).
 
 Evidence: `/mnt/workspaces/Cells/independent-references-20261114-01/` (`HANDOFF.md`;
-`track-r-crosschecks-01/crosschecks.json` and its log, run from the frozen snapshot
-`track-r-snapshot-01`).
+`track-r-crosschecks-02/crosschecks.json` and its log, run from the frozen snapshot
+`track-r-snapshot-02` of 91726e4c; run 01, from f8c9bca4, gave the same floor without the
+stiffness rows).
 
 ## Readings of the design taken here
 
-1. **"§7's as-built conventions"** are named in the commission, but main (2d2d9816) has no §7 and
-   Appendix A no head note listing them.
-   - The references follow Appendix A as written, and every engine-facing convention is an
-     explicit input or option here: sides, declared order, record sides, the start rule,
-     constants and tolerances.
-   - Check them against §7 once it exists.
+1. **§7, milestone 1 as built** (main 21b31f1, with the head note of Appendix A), read after these
+   references were first written. Each convention was checked against it:
+   - **The crossing record** (§7.1 item 3; the head note): k* is the smallest k with
+     s(k·dt) ≥ θ, and a declared s₀ ≥ θ is recorded at k = 0. `crossing_step` gives exactly this.
+     **Matches.** Writes are not modelled, so the head note's write rule (recorded at k + 1) does
+     not arise here.
+   - **Rows at an event time** (§7.1 item 3): the pre-event switch and state. **Changed:** the
+     unsuffixed record keys now follow it, and the previous values are kept as `*_right`.
+   - **The slots** (§7.1 item 1): the (state, cell) pairs in declared order. **Matches**, and is
+     now exposed as `run.slots`.
+   - **A per-cell s₀** (§7.2 item 3): `State(initial={cell: s₀})`. **Matches.**
+   - **The switch schedule** starts at 0, and later changes lie in 0 < t < end (§7.1 item 8). The
+     reference admits any increasing times from 0, a superset. **Matches.**
+   - **The sides, the declared order of factors, and the basal level per side.** §7 changes none.
+     **Matches.**
+   - **The worlds** (§7.1 item 12): Na, K, M and P (P impermeant) with a neutral regulator R.
+     Declare the ions as species, and R as a `Regulator` with its turnover, not as a species row.
+     The four-species case equals R-tissue (`test_four_species_with_an_impermeant_anion_...`).
 2. **The crossing at the start:** s₀ ≥ θ gives t* = 0 and k* = 0. Otherwise t* is the first upward
-   reach of θ, and k* = min{k ≥ 1 : s(k dt) ≥ θ}.
+   reach of θ, and k* = min{k ≥ 1 : s(k dt) ≥ θ}. This is §7's as-built rule.
 3. **The zero-current start** (neither `initial_V` nor `background_fmol`) includes populations at
    their availability at 0+, and excludes contacts. For an engine comparison, pass the engine's
    initial V or background explicitly.
 4. **An ion read by a Hill coupling** is admitted here as the true instantaneous coupling. It is the
    fast-state limit used in the self-tests; the engine refuses it (ruling 1).
 5. **The exposure U** accumulates from 0 and is never reset. `regulatory_writes` (state resets at
-   event times) are not modelled.
+   event times) are not modelled. §7.2 item 3's prior condition is covered by a per-cell s₀, and
+   its write at 0 is compared engine against engine (A2, as amended).
 6. **A regulator** is exogenous and closed-form in every cell that declares it. A neutral species
    that moves, or one the states feed back on, is outside version 1 and is not modelled.
 

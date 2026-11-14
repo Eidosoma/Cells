@@ -616,10 +616,21 @@ class CellsRun:
             for c in spec.cells:
                 self.crossings[(st, c)] = self.crossing(st, c, spec.crossing_level)
 
+    @property
+    def slots(self):
+        """The (state, cell) pairs in declared order: states, then each state's cells (the
+        engine's flat regulatory_slot axis, §7.1 item 1)."""
+        return list(self.model.pairs)
+
     def observe(self, t):
-        """The record at t. Discontinuous quantities (schedules, switches, the factors and
-        currents that use them) are given on both sides of t: "...", from t on, and
-        "..._left", just before t. The state itself (V, amounts, s, U) is continuous."""
+        """The record at t. The state (V, amounts, s, U) is continuous. Quantities that use a
+        schedule or a switch are given three ways:
+        * unsuffixed, the as-built convention (§7.1 item 3, §1.9): the switches in force before
+          t (a row at a switch time shows the pre-event switch) against the availability
+          schedules from t on;
+        * "..._left": switches and schedules just before t;
+        * "..._right": switches and schedules from t on.
+        Away from an event time the three coincide."""
         m, w = self.model, self.model.w
         y = self.run.state(t)
         pts = self.points
@@ -627,8 +638,11 @@ class CellsRun:
         right = (pts[j - 1], pts[j]) if j < len(pts) else (pts[-2], pts[-1])
         k = int(np.searchsorted(pts, t, side="left"))
         left = (pts[k - 1], pts[k]) if k >= 1 else right
-        ev = m.evaluate(t, y, *m.controls(*right))
-        ev_left = m.evaluate(t, y, *m.controls(*left))
+        sched_r, enabled_r = m.controls(*right)
+        sched_l, enabled_l = m.controls(*left)
+        ev_right = m.evaluate(t, y, sched_r, enabled_r)
+        ev_left = m.evaluate(t, y, sched_l, enabled_l)
+        ev = m.evaluate(t, y, sched_r, enabled_l)  # as built
         F = m.F
         rec = dict(t=t, V={}, charge_C={}, amounts_fmol={}, mM={}, background_fmol={})
         for i, c in enumerate(m.cells):
@@ -641,19 +655,21 @@ class CellsRun:
         rec["s"] = dict(ev["s"])
         rec["U"] = {pair: float(y[m.state_base + 2 * i + 1]) for i, pair in enumerate(m.pairs)}
         rec["u"] = dict(ev["u"])
-        rec["routes"] = {r: dict(F=ev["factors"][r], F_left=ev_left["factors"][r])
-                         for r in ev["factors"]}
+        rec["routes"] = {r: dict(F=ev["factors"][r], F_left=ev_left["factors"][r],
+                                 F_right=ev_right["factors"][r]) for r in ev["factors"]}
         rec["elements"] = {}
+
+        def current(e, element):
+            return F * math.fsum(zk * J for zk, J in zip(m.z, e["flux"][element][3],
+                                                       strict=True))
+
         for element in ev["avail"]:
-            a, g, eff = ev["avail"][element]
-            al, gl, effl = ev_left["avail"][element]
-            current = F * math.fsum(zk * J for zk, J in zip(m.z, ev["flux"][element][3],
-                                                           strict=True))
-            current_l = F * math.fsum(zk * J for zk, J in zip(m.z, ev_left["flux"][element][3],
-                                                             strict=True))
-            rec["elements"][element] = dict(a_sched=a, a_sched_left=al, G=g, G_left=gl,
-                                            a_eff=eff, a_eff_left=effl, current_A=current,
-                                            current_A_left=current_l)
+            entry = {}
+            for suffix, e in (("", ev), ("_left", ev_left), ("_right", ev_right)):
+                a, g, eff = e["avail"][element]
+                entry.update({f"a_sched{suffix}": a, f"G{suffix}": g, f"a_eff{suffix}": eff,
+                              f"current_A{suffix}": current(e, element)})
+            rec["elements"][element] = entry
         rec["patch_current_A"] = {p: F * math.fsum(zk * J for zk, J in
                                                    zip(m.z, ev["flux"][p][3], strict=True))
                                   for p in w.patches}
