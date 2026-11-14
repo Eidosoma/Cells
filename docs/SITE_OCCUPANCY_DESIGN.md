@@ -56,7 +56,8 @@ Each is a question for the lead (§11).
      - **It is a field-input provider.** It provides `membrane_capacitance`, so every composition
        with it pays the per-step field refresh and is capped at 64 field nodes.
      - **Three operators refuse it beside them:** exchange@1 (the sink this primitive replaces),
-       replacement@1 and water.
+       replacement@1 and water. FR-1's proposed compartment refuses it too, as a field-input
+       provider (§6.4).
    - §1.3 costs both options.
 2. **Version 1 has an internalisation step.** FR-3's mapping says "its internalisation step follows
    FR-2"; the brief's day-one guard needs one (lead question 3).
@@ -149,6 +150,9 @@ Each is a question for the lead (§11).
      RK4, the stationary analysis, and worlds above `MAX_SPECIES`. That cap is 16 once D165's D148
      change lands; it is 7 in code today.
    - It provides no field input, so the 64-node cap does not apply to it.
+   - **Beside FR-1's proposed compartment there is no field-input wall** (§6.4). It waits only for
+     FR-1's fail-closed admitted list. With membrane state as the owner (option M), the two could
+     not compose in version 1.
 10. **Qualification** (§8) is numerical first, against references written from Appendix A by an
     agent that never reads the code.
     - Day one: the saturable-sink limit as a sweep in the Segel–Slemrod parameter ε, with the unit
@@ -230,11 +234,13 @@ insertion writes membrane state @1 today.
 | With replacement@1 and water | Composes off replaced slots; water is refused for the volumes, as by D150 and D152 | Refused: both list `membrane_area` (`cell_replacement.py:625`, `osmotic_water.py:492`), and replacement@1 provides `channel_abundance` too (614–620), so one provider per field already excludes it |
 | What its parser admits | Any declared population | @1's admits exactly @3's channel populations (`membrane_state.py:105–108`). @2 needs a new population kind and a bitwise guard against @1 when none is declared |
 | FR-2 and the partition | Write both owners through `ACCEPTS_WRITES`. Insertion's inserted densities would need a site entry later | One population map serves them. The partition `REQUIRES` membrane state @1 (`partition.py:935`), so it changes in either option |
+| Beside FR-1's compartment (its proposed note refuses field-input providers, §6.4) | No field-input wall. The only bar is FR-1's admitted list, which fails closed until it lists this operator | Refused: FR-1 refuses membrane state as a field-input provider. Lifting it needs the compartment node under the field refresh and the 64-node cap (§6.4) |
 | Cost (**S**) | Included in §10 | About +1.5 agent-days: membrane state @2, its guards and the writer split |
 
-**The recommendation is option O.** The deciding facts are the field-input cap and the three
-refusals. A binding world with secretion, renewal or more than 64 nodes would otherwise wait for
-membrane state's own redesign.
+**The recommendation is option O.** The deciding facts are the field-input cap and the refusals:
+the three operators above, and FR-1's proposed refusal of field-input providers beside a
+compartment (§6.4). A binding world with secretion, renewal, a compartment or more than 64 nodes
+would otherwise wait for membrane state's own redesign.
 - **What is kept from requirement 2:** site abundance is a population's abundance with its
   catalogue reference. The declaration form is membrane state's.
 - **The owner and law split is the door.** The coupling note's ruling 2 took one operator in
@@ -907,13 +913,17 @@ FR-2 have no accepted design yet):
 | Release into the compartment | This operator's binding law, at the moved population's facing node | B → the compartment's free row (release at k_off; a pH-conditioned release is FR-4's and FR-5's routing door) | (species) inside the compartment, distinct from the cytosol |
 | Recycling or degradation | FR-2's exocytic direction, or a sink law | Sites back to the surface, or consumed | Population abundance |
 
-**What this note asks of FR-1** (lead question 11). The FR-1 agent's notes, read only, point to a
-face-free finite node bounded by one patch of its owning cell (D150's `face_free` topology).
-- If FR-1 presents the compartment's lumen as the bounding patch's outside node, an outward-facing
-  population on that patch faces the lumen. The outer leaflet faces the lumen after endocytosis
-  (**S**). Release then needs no new rule.
-- Internalisation from a patch that faces a compartment means nothing. FR-1 must let the site
-  operator tell an extracellular finite node from a compartment, and refuse it there.
+**What this note asks of FR-1** (lead question 11; §6.4).
+- **The lumen faces the population.** FR-1's proposed note makes the compartment a face-free finite
+  node, with the lumen as its bounding patch's outside node. So an outward-facing population on that
+  patch faces the lumen, and release needs no new rule. The outer leaflet faces the lumen after
+  endocytosis (**S**).
+- **The site operator can tell the nodes apart.** FR-1's declaration names each compartment node,
+  so the site operator can distinguish an extracellular finite node from a compartment and refuse
+  internalisation from a compartment-facing patch.
+- **FR-1's admitted list names `site_occupancy@1`.** That list fails closed today. Under option O
+  this operator provides no field input, so FR-1's refusal of field-input providers does not apply
+  to it.
 
 **What this note asks of FR-2.** Its retrieval moves this operator's pools by the same area fraction
 as the membrane, through `ACCEPTS_WRITES`. Its energy source, the shared energy-pool design, also
@@ -935,6 +945,7 @@ serves this operator's internalisation work (§3.3).
 | Water; the lumens; replacement@2 | Refused (volumes) | Concentrations and ΔG read the declared volume. The door is D150 §5.1's `VIEW_READS` with bookings at the view |
 | Insertion@1 and @2; the partition; the bridge | Refused (masks) | Insertion@1 provides the masks and outside anchors (`membrane_insertion.py:480–485`); the others are closers. The door is §5.1's liveness rule |
 | The k-anion symport | Waits | It requires water |
+| FR-1's `cell_owned_compartments@1` (proposed, not on main) | Not admitted until FR-1's admitted list names this operator | That list fails closed (FR-1's refusal 7). There is no field-input reason under option O. The conditions for listing it are in §6.4 |
 
 ### 6.2 Refusals
 
@@ -948,7 +959,8 @@ serves this operator's internalisation work (§3.3).
 - **Populations:** copies ≤ 0; sites per copy not a positive integer; α outside (0, 1]; no ligand;
   a ligand listed twice; initial occupancies negative or summing above 1.
 - **Laws:** k_on ≤ 0 or k_off ≤ 0; k_int < 0; internalisation on an inward-facing patch or a
-  contact; a destination other than `"cell"`.
+  contact; a destination other than `"cell"`. Once FR-1 lands, internalisation on a patch whose
+  outside node is a declared compartment is refused too, read from FR-1's declaration (§6.4).
 - **Slots:** a population on a patch of a replaced slot, or on a contact incident to one.
 - **Solvers:** RK4; the stationary analysis.
 - **View conflicts** (§1.5).
@@ -976,6 +988,64 @@ second half (D150 §2.2). The composite's dissipation check refuses a falling he
   written for this operator from D152 §4.2's equations, and D152's module stays untouched during
   MG0c. A later shared helper is adopted under crossrev, as the coupling note's ruling 7 did for the
   Hill factor.
+
+### 6.4 Beside FR-1's compartment: the field-input wall, and the door that lifts it
+
+This section was added at the lead's coordination note of 14 November 2026. FR-1's note
+(`docs/CLOSED_COMPARTMENT_DESIGN.md` on the FR-1 branch, proposed, not on main) was read for it.
+
+**What FR-1 proposes.**
+- **The compartment** is a finite outside node that is not a held bath and that no face joins. One
+  patch bounds it, and that patch's inside is the owner's cell. The lumen is therefore the bounding
+  patch's outside node.
+- **The declaration**, `cell_owned_compartments@1`, holds no state and runs no part.
+- **It refuses field-input providers beside a compartment,** counting `membrane_entity_state@1` and
+  insertion@1 and @2 among them. Its composition table names them "FR-2's and FR-3's doors".
+- **Its admitted-operator list fails closed:** "a new operator may treat outside nodes as
+  environment".
+
+**The wall, as it bears on each option.**
+- **Under option M,** every binding world needs membrane state, which is a field-input provider. So
+  in version 1 binding sites and a compartment could never compose. That is the wall the lead names.
+- **Under option O, recommended here (§1.3),** the site owner provides no field input (§3.2), so the
+  wall does not arise. Two things remain, and neither is a field-input matter:
+  1. **FR-1's fail-closed list must name `site_occupancy@1`.** That is a one-line, host-only change
+     in FR-1's declaration, once item 2 holds.
+  2. **This operator must treat a compartment node correctly.** It reads FR-1's declaration through
+     `composite_spec.entries`, as D150's operators read replacement's.
+     - **Binding and release** on an outward-facing population of a bounding patch are admitted. The
+       population faces the lumen. That is the delivery step of §5.3.
+     - **Internalisation from that patch** is refused. Its cargo would cross into the cytosol from
+       the lumen's side, which no law here describes (**S**).
+     - **A compartment-facing population's rates** are its owner's. In FR-1's version 1 the owner is
+       never replaced, so the occupant rule does not arise.
+
+**Does FR-3's first version need membrane state as the owner? No.**
+- **Option O's owner is not part-less.** It owns the pools and runs the binding law in its own split
+  part, so it is admissible under the contract as built: an operator with a part needs no
+  `VIEW_FIELDS`. It provides no field input, so it avoids the wall.
+- **A part-less site owner would also avoid the wall** (a state owner with the binding law as a
+  separate writer), as long as it provides no field input. But the contract refuses a part-less
+  operator without `VIEW_FIELDS` (`contract.py:335–341`), so it needs a host-only admission.
+  - FR-1 proposes one (`ENTITY_DECLARATION`), but for an operator with no owned state or ledger.
+  - A site owner holds state and ledgers, so the admission would have to cover a state owner with
+    `ACCEPTS_WRITES` and no views.
+  - If the lead wants the owner and law split (§1.3's door) early, one widened host-only admission
+    could serve FR-1 and FR-3 together (lead question 13).
+
+**The door that lifts the wall** (field-input providers beside a compartment node).
+- **What it needs.** The compartment node joins the field refresh and the solve wherever a
+  capacitance or mask provider composes.
+- **Its cost.** The compartment then counts against the 64-node cap. FR-1 §3.6 estimates that, with
+  one compartment per cell, a 64-node world holds about half as many cells (**S** there). Beyond the
+  cap the options are v2 §3's (b) and (c), or the field-solver interface's sparse IDs (the coupling
+  note's wall W3c).
+- **When it binds.** FR-3 does not need it under option O. FR-2 does in any case: retrieval moves
+  area and capacitance, so it is a field-input provider. The full chain of §5.3 (binding, then
+  internalisation with membrane, then release in the compartment) therefore meets the cap at FR-2,
+  not at FR-3.
+- **Under option O, binding beside compartments stays outside the cap** (**S**). Each compartment
+  is still one dense field node, against the dense solver's own bound (FR-1 §3.6).
 
 ## 7. Generality (D144): the consumers, against version 1 and the doors
 
@@ -1099,6 +1169,7 @@ S/(V (K_d + c)).
 | --- | --- |
 | Internalisation with membrane (FR-2) | FR-2's retrieval writing these pools through `ACCEPTS_WRITES`; its energy source |
 | A compartment destination (FR-1) | FR-1's node; a destination key value; refusal of internalisation from a compartment-facing patch |
+| Beside a compartment (FR-1) | FR-1's admitted list naming this operator, with the refusal above (§6.4). Field-input providers beside a compartment node, with the compartment under the refresh and the 64-node cap, is FR-1's and FR-2's door, not this operator's under option O |
 | Partition | A partition version writing these pools; the one liveness rule (coupling ruling 8) |
 | Replacement | D150's occupant tables; an event part at replacement's steps (§5.2) |
 | Volume (water, the lumens) | D150 §5.1's `VIEW_READS` fallback and bookings at the view |
@@ -1173,11 +1244,16 @@ through `scripts/run_detached.sh`. No GPU is needed.
 9. **The trace rule**, c_bg ≪ K_d, as a world-building rule checked by the background guard rather
    than a definition refusal?
 10. **The host-only identity list** in `species_common` (§6.3)?
-11. **FR-1's node shape** (§5.3): will FR-1 present the compartment's lumen as its bounding patch's
-    outside node? If so, outward-facing populations face the lumen with no new rule. This assumes
-    the FR-1 agent's notes, which are not yet a design.
+11. **FR-1** (§5.3, §6.4). FR-1's proposed note presents the lumen as its bounding patch's outside
+    node, so outward-facing populations face it with no new rule. Will FR-1 list `site_occupancy@1`
+    on its admitted list? This operator would then refuse internalisation from a compartment-facing
+    patch. Under option O there is no field-input wall between FR-1 and FR-3. The cap returns with
+    FR-2, whose retrieval is a field-input provider.
 12. **The pre-code probes** P1 to P4 (§8.5): P1 as milestone 1, and P2 to P4 before code or folded
     into the references?
+13. **One widened host-only admission** for part-less owners (§6.4): if the owner and law split is
+    wanted early, should FR-1's proposed `ENTITY_DECLARATION` admission also cover a state owner
+    with `ACCEPTS_WRITES` and no views?
 
 **For the user:**
 1. **Regulated accessibility.** Is the kinetic form, through the routing door and booking nothing,
