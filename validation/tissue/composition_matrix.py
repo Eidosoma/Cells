@@ -153,18 +153,25 @@ def matrix():
 
 REAL, NOMINAL = "real", "nominal"
 TURNOVER_CODE = (OPS + "species_turnover.py::turnover_half_step",)
+TURNOVER_RUNTIME = (*TURNOVER_CODE, OPS + "species_turnover.py::turnover_domain_valid")
 COUPLING_CODE = (
     OPS + "species_regulated_availability.py::route_factors",
     OPS + "species_regulated_availability.py::state_inputs",
+    OPS + "species_regulated_availability.py::state_half_step",
+    OPS + "species_regulated_availability.py::event_map",
 )
 TURNOVER_NO_PATCH = (
-    "Turnover reads no membrane mask and acts on no patch: its routes are at cells and finite "
-    "outside nodes (turnover_half_step)"
+    "Turnover's runtime reads are cells, finite outside nodes and its own fields "
+    "(turnover_half_step, turnover_domain_valid): it reads no patch and acts on none"
 )
 COUPLING_CELLS = (
-    "The coupling reads only cell rows, its sources' amounts and volumes at cells (route_factors, "
-    "state_inputs), and books nothing"
+    "The coupling's runtime reads are cell amounts, cell volumes and its own fields "
+    "(route_factors, state_inputs, state_half_step, event_map), and it books nothing"
 )
+ONSET_CHANNELS = {  # Insertion refuses channel populations on an onset patch.
+    INSERTION_1: OPS + "membrane_insertion.py::check_onsets",
+    INSERTION_2: OPS + "membrane_insertion_v2.py::check_onsets",
+}
 DECLARED_VOLUMES = {
     TURNOVER: "Turnover's exact update and work read the declared volumes at every cell and "
     "finite outside node (turnover_half_step)",
@@ -180,9 +187,10 @@ OUTSIDE_MASK = {
 CELL_MASK = {
     TURNOVER: "Turnover reads the declared cell mask (turnover_half_step); the partition retires "
     "cells",
-    EXCHANGE: "Exchange acts on route cells, which the partition can retire",
-    REACTIONS: "D152's cell sites can be in a cell the partition retires",
-    REPLACEMENT_2: "Replacement acts on cell slots, which the partition retires",
+    EXCHANGE: "Exchange acts on route cells, which the partition can retire (not shown nominal)",
+    REACTIONS: "D152's cell sites can be in a cell the partition retires (not shown nominal)",
+    REPLACEMENT_2: "Replacement acts on cell slots, which the partition retires (not shown "
+    "nominal)",
     COUPLING: "A coupling's source cell can retire: the partition moves its amounts to the "
     "daughters, so a route or state on it would read moved amounts (not shown nominal)",
 }
@@ -230,7 +238,7 @@ def _tags():
         ("providers", REPLACEMENT_1, STATE, "channel_abundance"): (
             REAL,
             "Both provide the abundance of the same populations: replacement its newcomers', "
-            "membrane state every population's",
+            "membrane state every population's (not shown nominal)",
             (),
         ),
         ("versions", REPLACEMENT_1, REPLACEMENT_2, None): (
@@ -310,13 +318,16 @@ def _tags():
         "(BATH_SCHEDULE_DESIGN.md §3.1)",
         (),
     )
-    for name in ("membrane_active",):
-        tags[("reads", TURNOVER, INSERTION_1, name)] = (NOMINAL, TURNOVER_NO_PATCH, TURNOVER_CODE)
-        tags[("reads-closed", TURNOVER, INSERTION_2, name)] = (
-            NOMINAL,
-            TURNOVER_NO_PATCH,
-            TURNOVER_CODE,
-        )
+    tags[("reads", TURNOVER, INSERTION_1, "membrane_active")] = (
+        NOMINAL,
+        TURNOVER_NO_PATCH,
+        TURNOVER_RUNTIME,
+    )
+    tags[("reads-closed", TURNOVER, INSERTION_2, "membrane_active")] = (
+        NOMINAL,
+        TURNOVER_NO_PATCH,
+        TURNOVER_RUNTIME,
+    )
     tags[("reads", COUPLING, WATER, "volume")] = (
         REAL,
         "The coupling's Hill factors read cell volumes as declared (route_factors, state_inputs); "
@@ -326,21 +337,23 @@ def _tags():
     for provider in (WATER, LUMEN_1, LUMEN_2):
         tags[("reads", COUPLING, provider, "extracellular_volume")] = (
             NOMINAL,
-            COUPLING_CELLS + "; it reads no outside volume",
+            COUPLING_CELLS + "; it reads no outside node",
             COUPLING_CODE,
         )
     for name in ("membrane_active", "outside_active"):
         tags[("reads", COUPLING, INSERTION_1, name)] = (
             NOMINAL,
             COUPLING_CELLS + "; it reads no mask, and insertion@1 writes no cell amount or volume "
-            "(its entity writes are membrane state's increments and the electrode charge)",
-            COUPLING_CODE,
+            "and refuses a channel population on an onset patch (check_onsets), so no coupling "
+            "target sits on one",
+            (*COUPLING_CODE, ONSET_CHANNELS[INSERTION_1]),
         )
         tags[("reads-closed", COUPLING, INSERTION_2, name)] = (
             NOMINAL,
-            COUPLING_CELLS + "; it reads no mask, insertion@2 writes no cell amount or volume, and "
-            "a factor on a closed onset patch's channel acts on padding",
-            COUPLING_CODE,
+            COUPLING_CELLS + "; it reads no mask, and insertion@2 closes only onset patches and "
+            "nodes, which hold no channel population (check_onsets), so nothing the coupling "
+            "reads or multiplies is padded",
+            (*COUPLING_CODE, ONSET_CHANNELS[INSERTION_2]),
         )
     tags[("reads-closed", COUPLING, PARTITION, "active")] = (REAL, CELL_MASK[COUPLING], ())
     for name in (
@@ -489,7 +502,7 @@ RULES = (
         check=OPS + "cell_replacement_v2.py::ScheduledReplacementOverWater.check_definition",
         test=TESTS + "test_cell_replacement_v2.py::test_the_definition_refusals",
         tag=REAL,
-        why="The gates' field solve reads the declared volumes",
+        why="Their field solve reads the declared volumes (v2 design §2.6)",
     ),
     dict(
         rule="rates belong to the occupant: templates for newcomers, donor copies only with the "
@@ -558,7 +571,8 @@ RULES = (
         check=OPS + "species_reactions.py::LocalSpeciesReactions.check_definition",
         test=TESTS + "test_species_reactions_refusals.py::test_rk4_is_refused_with_its_reasons",
         tag=REAL,
-        why="Its bookings are exact and checked on SSPRK(3,3) half-steps (D152 §4.6)",
+        why="Version 1's bookings are exact and checked at rounding under IMEX; D150's RK4 "
+        "worlds stay the transport's sharp reference, and no consumer needs it (D152 §4.6)",
     ),
 )
 
