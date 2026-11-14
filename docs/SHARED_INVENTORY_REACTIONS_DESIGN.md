@@ -659,7 +659,7 @@ probe 2d).
   - **W.** It carries the same absolute error. At 5 s it is −3.4%, −1.6% and −0.75% (quadrature) and
     −0.035%, −0.010% and −0.003% (attribution) at a 1e-12 trace.
 - **Trace sensitivity** (half-step 0.025 s, at 5 s; the true heat converges as the trace goes to
-  zero):
+  zero; relative changes of the whole heat, not pJ, amended at milestone 1, §11):
 
   | Change of trace | True H | Quadrature H | Attribution H |
   | --- | --- | --- | --- |
@@ -726,8 +726,8 @@ the lead with the advisor, 14 November 2026).
   | 1e-12 mM | 0.00625 s | no (the crossing falls in step 2) | −14% (the share) | −0.016% | – |
 
   - **The trace dependence.** At h = 0.0125 s, a 10³ change of the trace (1e-12 to 1e-9) moves the
-    hybrid's whole heat by −1.3e-3, against −1.4e-7 for the true heat. W carries the same absolute
-    error, and the closure stays exact.
+    hybrid's whole heat by −1.3e-3 of itself (a relative change, not pJ; §11), against −1.4e-7
+    for the true heat. W carries the same absolute error, and the closure stays exact.
 - **How it is recorded:** option (a), a known limit under the resolved-start rule.
   - Guard worlds and production worlds keep every passive route's species resolved at every step
     where a driven route could carry it across that route's equilibrium. That covers the start and
@@ -895,13 +895,13 @@ shared bound cannot see. The guards therefore check the residual itself, not the
      with the expected branch asserted for each state.
 5. **The background guard** (§6.5) covers H and W too.
    - A 10³ change of a negligible trace (1e-12 to 1e-9 mM) must move them by no more than the true
-     heat's own change plus a tolerance pinned from probe 2f. The true change there was 6.27e-5,
-     and the hybrid's 6.32e-5.
+     heat's own change plus a tolerance pinned from probe 2f. The true change there was −6.27e-5
+     of the whole heat, and the hybrid's −6.32e-5 (relative changes, not pJ; §11).
    - Under the first draft's quadrature this guard would have failed (1.7e-2). That is the collision
      the lead's review found.
    - **Its scope excludes the reversal onset** (§3.3's known limit). There the hybrid's heat moves
-     by −1.3e-3 for a 10³ trace change (probe 2g). The resolved-start rule keeps that configuration
-     out of the guard worlds.
+     by −1.3e-3 of itself for a 10³ trace change (probe 2g; a relative change). The resolved-start
+     rule keeps that configuration out of the guard worlds.
 
 **Independence of the references** (the lead's ruling with the advisor, 14 November 2026).
 - **The prototype is development evidence, not a reference of record.** Probes 2 to 2g, C3 and C3b share
@@ -1332,7 +1332,8 @@ sources, and the second is a sink.
 - J = [[0.8, 1], [−1.8, −1]], with trace −0.2 and determinant 1, so every Turing condition holds;
 - d_c = 8.568;
 - the band is 0.2 < k̃² < 0.5;
-- σ_max = 0.0572 at k̃² = 0.3186, a wavelength of 11.13 ℓ.
+- σ_max = 0.0572 at k̃² = 0.3185 (0.318545; amended at milestone 1, §11), a wavelength of
+  11.13 ℓ.
 
 **The dimensional scale** (synthetic, compressed): k = 0.1 s⁻¹, c* = 1 µM, D_U = 1e-11 m²/s and
 D_V = 1e-10 m²/s, so ℓ = 10 µm. The fastest mode then e-folds in 175 s, at a wavelength of 111 µm.
@@ -1375,7 +1376,7 @@ question 8).
 | Q1, mode propagation | On L/ℓ = 6, 11 and 16, single-mode starts (amplitude 1e-7 of c*) for every n ≤ 6: each mode's coefficient vector at its record against the exact discrete propagator; second order in dt. Prototype: 2.0e-6 to 1.25e-3 relative at 0.0125 to 0.05 s, ratios 3.98 to 4.07 (B1, B1b) |
 | Q2, admissible modes only | On L/ℓ = 8, from seeded noise (1e-3 of c*), the deviation from uniform decays at the slowest admissible rate (n = 2, σ = −0.065 k) and the pattern never forms. Prototype: 1.4e-8 of u0 at 1,500 s from 1e-3 (B2) |
 | Q3, the predicted wavelength | On L/ℓ = 6, 11 and 16, from seeded noise, the dominant mode during the linear phase and at saturation is the only admissible unstable mode, n = 1, 2 and 3 (wavelengths 2L, L and 2L/3), and its fitted growth rate matches σ_n. Prototype: dominant modes 1 and 2 on 6 and 11, as the reference integration gives (B2) |
-| Q4, the staircase | Over a declared sweep of L/ℓ (4.5 to 30), the fastest-growing mode among single-mode starts on the engine follows the discrete argmax of σ_n, including both gaps |
+| Q4, the staircase | Over a declared sweep of L/ℓ from 4 to 30 (amended at milestone 1, §11), the fastest-growing mode among single-mode starts on the engine follows the discrete argmax of σ_n, including the no-mode point at 4 and the 7.5–8.5 gap |
 | Q5, the subcritical control | d = 8 < d_c: on every domain every mode decays, at its predicted rate |
 | Q6, the nonlinear pattern | From the same seeded start, the engine's pattern at its records (to saturation) against an independent integration of the same semi-discrete system (SciPy DOP853, rtol 1e-12); second order in dt. Prototype: 4.8e-4, 1.19e-4 and 2.97e-5 of c* on L/ℓ = 11 (ratios 4.02 and 4.01); amplitude 0.68 u0 (B2) |
 | Q7, accounting | Material ledgers at the species' floors; every host check; the face-free energy world at rounding (§3.4); positivity; restart through a written snapshot, bitwise; a vmap batch of the domains, each world within 1e-12 of its scalar run |
@@ -1746,7 +1747,8 @@ for the table.
   half-step. The route reverses, the hybrid sends it to the quadrature, and the quadrature samples
   the log-singular start.
 - **The size.** The step books 5.4–5.6 times its true heat at a 1e-12 trace (+436% to +459%),
-  trace-dependently: −1.3e-3 for a 10³ change of the trace, against the true −1.4e-7. In this one
+  trace-dependently: −1.3e-3 of the whole heat for a 10³ change of the trace, against the true
+  −1.4e-7 (relative changes, §11). In this one
   world the whole heat at 1 s was off by 0.27–0.56%.
 - **When it vanishes.** At a step fine enough that the crossing falls after the first step.
 - **How it is recorded.** As a known limit under the resolved-start rule: option (a), ruled by the
@@ -1899,6 +1901,18 @@ and ruled on its readings as follows. Each ruling is the lead's, 14 November 202
       kinds or factor species), with a test.
 12. **Where rulings go (Q12):** dated amendments in this note, as D150's §12 does. This section.
 
+**Corrections found by the references' agent** (the coordinator, 14 November 2026, at milestone 2;
+amended in place where marked):
+1. **Units of the trace sensitivity.** The figures in §3.3's trace-sensitivity table, §3.4 guard 5
+   and probe 2g's −1.3e-3 and −1.4e-7 are relative changes of the whole heat, not pJ.
+2. **k̃² at σ_max** is 0.318545, which rounds to 0.3185, not 0.3186 (§6.4).
+3. **RT.** Appendix A's 2.5773 pJ/fmol uses R = 8.314; SI R at 310 K gives 2.5775. The engine's R
+   and T apply, and the references take RT as an input.
+4. **Q4's sweep** (§6.4). The 4.5–30 sweep contains only the 7.5–8.5 gap, not "both gaps". The
+   ruling: the sweep runs from L/ℓ = 4 to 30, so it includes the no-mode point at 4, judged
+   against the discrete argmax of σ_n. The discrete argmax differs from the continuum's at
+   L/ℓ = 30.5 (mode 6 against 5).
+
 **Added to milestone 2** (beyond §10.4 and the plan): the ledger and magnitude terms compiled, not
 only on the host; a test of the summary; the full energy-guard statement in the docstring, with C2's
 measured ratio; the idle tests re-run against the live half-step; tier 1 and tier 2 from the clean
@@ -1909,7 +1923,8 @@ head before hand-back; the independent references only through
 
 The references are written from these equations, not from engine code.
 - Units are @3's: fmol, pL, mM, s, m.
-- RT = 2.5773 pJ/fmol at 310 K.
+- RT is the engine's: 1e-3 R T pJ/fmol with the engine's R and T; the references take RT as an
+  input. (2.5773 pJ/fmol at 310 K uses R = 8.314; SI R gives 2.5775. Amended at milestone 1, §11.)
 - κ_f = D_f A_f/L_f in pL/s.
 
 **Node kinetics.** At node i, with c = n/V_i and route rates J_r(c) from §2.2:

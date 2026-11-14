@@ -23,6 +23,8 @@ with a species-scale material floor and a pre-formed (resolved) profile where th
 import copy
 import math
 
+import numpy as np
+
 from cells.core.inventory_species import add_inventory_species
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -335,3 +337,70 @@ def mixed_chain(level_mM, *, end=0.1, dt=1e-3, observation_times=None):
     ]
     moieties = [species("A", moieties={"X": 1}), species("B", moieties={"X": 1}, mu=-1.0)]
     return with_reactions(raw, moieties, reactions, always(["swap", "make", "drain"]))
+
+
+# ------------------------------------------------------------------ the references' inputs
+
+
+def reference_network(raw):
+    """The independent references' network (validation/reactions/network_reference, used through
+    REFERENCES_USAGE.md only), built from the raw declaration, never from a bound layout."""
+    from validation.reactions import network_reference as nr
+
+    block = next(b for b in raw["model"]["operators"] if b["law"] == REACTIONS)
+    species = tuple(
+        nr.Species(s["id"], s["standard_mu_RT"], dict(s["moieties"]) if s["moieties"] else None)
+        for s in block["species"]
+    )
+    reactions = []
+    for r in block["reactions"]:
+        factors = tuple(
+            nr.Factor(f["law"], f["species"], f["half_saturation_mM"], f["hill_coefficient"])
+            for f in r["factors"]
+        )
+        common = dict(reactants=dict(r["reactants"]), products=dict(r["products"]), factors=factors)
+        if r["law"] == PASSIVE:
+            law = dict(k_f_per_s=r["forward_rate_per_s"])
+        elif r["law"] == "mass_action":
+            law = dict(rate_constant=r["rate_constant"])
+        elif r["catalyst"] is not None:
+            law = dict(catalyst=r["catalyst"], k_cat_per_s=r["catalytic_rate_per_s"])
+        else:
+            law = dict(V_max_mM_per_s=r["max_rate_mM_per_s"])
+        if r["law"] == "michaelis_menten":
+            law["K_M_mM"] = r["saturation_mM"]
+        name = "passive" if r["law"] == PASSIVE else r["law"]
+        reactions.append(nr.Reaction(r["id"], name, **common, **law))
+    return nr.Network(
+        species=species, reactions=tuple(reactions), c0_mM=block["standard_concentration_mM"]
+    )
+
+
+def reference_nodes(raw):
+    """The raw nodes in the engine's combined order: cells, then outside nodes."""
+    m = raw["model"]
+    return [*m["cells"], *m["extracellular"]]
+
+
+def reference_sites(raw):
+    """[R, N] bool: the declared routes (reaction, node) on the combined node axis."""
+    block = next(b for b in raw["model"]["operators"] if b["law"] == REACTIONS)
+    nodes = [n["id"] for n in reference_nodes(raw)]
+    finite = [n["id"] for n in raw["model"]["extracellular"] if not n.get("reservoir")]
+    cells = [c["id"] for c in raw["model"]["cells"]]
+    sites = np.zeros((len(block["reactions"]), len(nodes)), dtype=bool)
+    for k, r in enumerate(block["reactions"]):
+        for kind, value in r["sites"].items():
+            ids = (cells if kind == "cells" else finite) if value == "all" else value
+            for node in ids:
+                sites[k, nodes.index(node)] = True
+    return sites
+
+
+def reference_amounts(raw):
+    """([S, N] declared amounts of the network's species, fmol; [N] volumes, pL)."""
+    block = next(b for b in raw["model"]["operators"] if b["law"] == REACTIONS)
+    nodes = reference_nodes(raw)
+    names = [s["id"] for s in block["species"]]
+    amounts = np.asarray([[n["initial_amount_fmol"][s] for n in nodes] for s in names], float)
+    return amounts, np.asarray([n["volume_pL"] for n in nodes], dtype=float)

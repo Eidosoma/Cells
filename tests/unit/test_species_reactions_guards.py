@@ -21,10 +21,12 @@
   standard term there.
 * **The stiff front** (§4.4): a species at 1e-15 mM under a fast sink at dt L = 0.99 and a product
   switched on from 1e-15 mM, through the compiled checked step: every step accepted and positive.
-Waiting for the independent references (validation/reactions/REFERENCES_USAGE.md, not yet on main):
-the share's and the quadrature's accuracy against the dissipation integral, the background guard on
-H and W, and the reversal onset's size against the true heat. Measured values are appended to
-species_reactions_guards.jsonl in the tier runner's CELLS_OUTPUT_ROOT. A few minutes of compiles.
+The comparisons against the independent references (validation/reactions, through
+REFERENCES_USAGE.md) are test_species_reactions_against_references.py (the per-law half-step,
+tier 1) and test_species_reactions_reference_runs.py (whole runs, and the share's, the
+quadrature's, the background's and the reversal onset's accuracy against the dissipation
+integral). Measured values are appended to species_reactions_guards.jsonl in the tier runner's
+CELLS_OUTPUT_ROOT. A few minutes of compiles.
 """
 
 import json
@@ -229,9 +231,11 @@ def test_the_class_follows_the_multipliers_mid_run():
 def test_the_reversal_onset_is_the_same_at_the_first_step_and_at_a_mid_run_switch_on():
     """The known limit (§3.3, option (a)): the half-step depends only on the state and the
     multipliers, so a switch-on mid-run from the trace books its first half-step exactly as a start
-    does (the same function on bitwise the same network rows), both on the quadrature; the two
-    compiled runs (different horizons, so different programs, §4.5) agree to rounding. Its size
-    against the true heat awaits the references."""
+    does (the same function on bitwise the same network rows, at the same h), both on the
+    quadrature. The two compiled runs agree to rounding only: the runner's step at 50 ms is a
+    difference of grid times, 3 dt - 2 dt = 0.02500000000000001 s on the float grid against the
+    first step's 0.025 s (the whole state at the switch-on is bitwise the start state). Its size
+    against the true heat is test_species_reactions_reference_runs.py's."""
     start = run(parse_spec(rfx.reversal_onset(1e-12, end=0.1, dt=0.025)))
     later = run(parse_spec(rfx.reversal_onset(1e-12, end=0.15, dt=0.025, switch_on=0.05)))
     closes_at_rounding(start, "reversal_onset_start")
@@ -373,6 +377,10 @@ def test_c2_the_shared_bound_is_blind_to_these_bookings_in_the_mixed_chain(mixed
         if name == "wrong_sign_heat":
             assert not unseen[name] and ("dissipation" in reason or "energy" in reason), name
     assert unseen["scaled_work"], unseen
+    # The operator's docstring (ENERGY_GUARD_STATEMENT) states these ratios: tie it to them.
+    stated = {1e-3: 0.35, 1e-6: 409.0}[level]
+    assert abs(bound / booking / stated - 1) < 0.02, (level, bound / booking)
+    assert f"{stated:g} times" in sr.ENERGY_GUARD_STATEMENT
     standard = abs(
         sum(
             np.sum(np.asarray(getattr(result.history, k))[-1])
