@@ -197,6 +197,15 @@ justify it. Thousands of cells do not by themselves need several GPUs.
 
 This is the heredity question: can a written state repeatedly renew?
 
+**Status (14 November 2026).** E07-v1 is judged ([PROGRESS](../PROGRESS.md)).
+- Under donor-copy turnover the written disc did not renew. B1 was false in every fast k1 run,
+  and J was 0.25–0.65, as neutral copying gives.
+- The coupling's effect was far smaller than predicted. 8 of 15 scored predictions held.
+- The s 1.0 control's collective falls await a 1 ms development check, and a readout of where
+  the lost D copies sat is pending.
+- E07-v2 is drafted as PROPOSED ([note](E07_V2_DESIGN.md)), for the lead's review with the
+  advisor, with three questions for the user.
+
 | Deliverable | Completion evidence |
 | --- | --- |
 | The revised cue, release and turnover assay (the E07-v1 redesign is the user's decision) | Cue-written starting states; water and volume regulation; the delayed junction-formation law; replacement schedules set relative to junction maturation; several complete founder turnovers |
