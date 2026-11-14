@@ -93,7 +93,6 @@ fields are the inner model's followed by each operator's in declared order.
 Defaults below are the idle answers: no parts, no terms, no columns.
 """
 
-import inspect
 from types import MappingProxyType
 
 HEAT_SUFFIX = "_dissipated_energy_pJ"
@@ -351,19 +350,27 @@ DECLARATION_MAY_DEFINE = frozenset(
 )
 
 
+def _defined_below_operator(operator, name):
+    """True when a class between `operator` and Operator in its MRO defines `name`."""
+    for klass in operator.__mro__:
+        if klass is Operator:
+            return False
+        if name in vars(klass):
+            return True
+    return True  # Not an Operator subclass: nothing of it is Operator's.
+
+
 def declaration_errors(operator):
     """Why a DECLARATION_ONLY operator class is not a declaration (empty: it is one).
 
-    Fails closed: every public attribute of Operator, data or method, outside
-    DECLARATION_MAY_DEFINE must be Operator's own (inspect.getattr_static), so a declaration has
-    no part, field, schedule, view, factor, closure, view read, write, reset, ledger, readout,
+    Fails closed: no class below Operator may define a public attribute of Operator, data or
+    method, outside DECLARATION_MAY_DEFINE, even at its default value. So a declaration has no
+    part, field, schedule, view, factor, closure, view read, write, reset, ledger, readout,
     replaced column, energy role, step method, schedule hook or definition-check hook of its own.
     """
     errors = []
     for name in sorted(n for n in dir(Operator) if not n.startswith("_")):
-        if name in DECLARATION_MAY_DEFINE:
-            continue
-        if inspect.getattr_static(operator, name) is not inspect.getattr_static(Operator, name):
+        if name not in DECLARATION_MAY_DEFINE and _defined_below_operator(operator, name):
             kind = "overrides" if callable(getattr(Operator, name)) else "declares"
             errors.append(f"{kind} {name}")
     return errors
