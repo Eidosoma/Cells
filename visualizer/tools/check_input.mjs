@@ -4,14 +4,15 @@
 // query parameter and so never touch picking or the camera control; this does.
 //
 //   node tools/check_input.mjs            (CHECK_ONLY=engine|atlas|experiments|cell|zoom runs one part;
-//                                          CHECK_RUNS=DIR serves replays from another folder)
+//                                          CHECK_RUNS=DIR serves replays from another folder;
+//                                          CHECK_SCENE=FILE draws another scene file)
 //
 // Only one browser runs at a time (tools/lib/browser_lock.mjs), so a call may wait its turn.
 
 import { spawn } from "node:child_process";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
-import { DEFAULT_RUNS } from "./lib/build_page.mjs";
+import { DEFAULT_RUNS, DEFAULT_SCENE } from "./lib/build_page.mjs";
 
 const chromeBinary = process.env.CHROME || "google-chrome";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,7 +24,7 @@ const check = (name, ok, detail = "") => {
 
 const pageLog = [];
 const release = await acquireBrowser();
-const server = createServer({ offline: true, runs: process.env.CHECK_RUNS || DEFAULT_RUNS, log: (line) => pageLog.push(line) });
+const server = createServer({ offline: true, runs: process.env.CHECK_RUNS || DEFAULT_RUNS, scene: process.env.CHECK_SCENE || DEFAULT_SCENE, log: (line) => pageLog.push(line) });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}/`;
 

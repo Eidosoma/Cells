@@ -3,14 +3,14 @@
 // change by looking at it. Starts its own preview server.
 //
 //   node tools/screenshot.mjs --out shot.png [--query "lens=engine&select=num.imex"]
-//        [--size 1440x900] [--theme dark] [--cdn] [--wait 6000] [--runs DIR]
+//        [--size 1440x900] [--theme dark] [--cdn] [--wait 6000] [--runs DIR] [--scene FILE]
 //
 // Only one browser runs at a time (tools/lib/browser_lock.mjs), so a call may wait its turn.
 
 import { spawn } from "node:child_process";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
-import { DEFAULT_RUNS } from "./lib/build_page.mjs";
+import { DEFAULT_RUNS, DEFAULT_SCENE } from "./lib/build_page.mjs";
 
 const args = process.argv.slice(2);
 const value = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -23,7 +23,7 @@ const chrome = process.env.CHROME || "google-chrome";
 
 const messages = [];
 const release = await acquireBrowser();
-const server = createServer({ offline: !args.includes("--cdn"), runs: value("--runs", DEFAULT_RUNS), log: (line) => messages.push(line) });
+const server = createServer({ offline: !args.includes("--cdn"), runs: value("--runs", DEFAULT_RUNS), scene: value("--scene", DEFAULT_SCENE), log: (line) => messages.push(line) });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const url = `http://127.0.0.1:${server.address().port}/?${query}`;
 const flags = [
