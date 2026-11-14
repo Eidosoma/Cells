@@ -5,6 +5,7 @@ Every state here is synthetic and random: no J1 input, no DFS74 value.
 """
 
 import math
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -518,6 +519,138 @@ def test_the_relative_entropy_term_is_accurate_near_one(x):
     m = 3.0
     exact = m * math.fsum((-1) ** k * x**k / (k * (k - 1)) for k in range(2, 400))
     assert rops.relative_entropy_term(m * (1.0 + x), m) == pytest.approx(exact, rel=1e-9)
+
+
+# ---------------------------------------------------------------- A.8 as amended (14 November)
+# A cell's node charge has the magnitude |Q| + |Q-bar| + 1e-15 F sum_s |z_s Delta_s|, carried
+# through the capacitor solve into every potential and on into every dependent output.
+
+
+def charge_term(cell):
+    """The amended term, from a Cell's own fields (an input cell, or a daughter R-ops wrote)."""
+    return abs(cell.charge_reference_C) + CHARGE_PER_FMOL * math.fsum(
+        abs(z * d) for z, d in zip(Z, cell.increment_fmol, strict=True)
+    )
+
+
+def free_matrix(snapshot):
+    """(free nodes, K_ff) of a snapshot, cells then clefts, assembled here from its patches."""
+    free = [*snapshot.cells, *snapshot.clefts]
+    index = {node: i for i, node in enumerate(free)}
+    K = np.zeros((len(free), len(free)))
+    for p in snapshot.patches.values():
+        a, b, c = index[p.cell], index.get(p.node), p.capacitance_F
+        K[a, a] += c
+        if b is not None:
+            K[b, b] += c
+            K[a, b] -= c
+            K[b, a] -= c
+    return free, K
+
+
+def same(a, b):
+    """Exact equality of two Result value trees (dicts, sequences, arrays and floats)."""
+    if isinstance(a, dict):
+        return isinstance(b, dict) and a.keys() == b.keys() and all(same(a[k], b[k]) for k in a)
+    if isinstance(a, (tuple, list)) and a and isinstance(a[0], (dict, tuple, list)):
+        return len(a) == len(b) and all(same(x, y) for x, y in zip(a, b, strict=True))
+    return np.array_equal(np.asarray(a, dtype=float), np.asarray(b, dtype=float))
+
+
+def flat(result):
+    """Every magnitude of a Result, its outputs' and its identities', as one array in key order."""
+    out = []
+
+    def walk(x):
+        if isinstance(x, dict):
+            for key in sorted(x):
+                walk(x[key])
+        else:
+            out.extend(np.ravel(np.asarray(x, dtype=float)))
+
+    walk(result.magnitudes)
+    walk({k: m for k, (_, m) in result.identities.items()})
+    return np.array(out)
+
+
+def test_the_charge_term_comes_from_the_inputs_and_the_maps_own_outputs():
+    rng = np.random.default_rng(23)
+    for _ in range(50):
+        snapshot, division, _ = random_state(rng)
+        amended = rops.apply(snapshot, division)
+        plain = rops.apply(snapshot, division, charge_term=False)
+        for name, cell in snapshot.cells.items():  # The input cells.
+            m = amended.magnitudes["charges_before_C"][name]
+            assert m == abs(cell.charge_C) + charge_term(cell)
+            assert plain.magnitudes["charges_before_C"][name] == abs(cell.charge_C)
+        for name, cleft in snapshot.clefts.items():  # Clefts are unchanged.
+            assert amended.magnitudes["charges_before_C"][name] == abs(cleft.charge_C)
+        f, t_parent = division.f, charge_term(snapshot.cells["P"])
+        # The mismatch's magnitude grows through the potentials (their charges' terms).
+        dq = amended.magnitudes["mismatch_C"] - plain.magnitudes["mismatch_C"]
+        assert dq > 0.0
+        # Q_D1 = f Q_P + dq and Q_D2 = Q_P - Q_D1, each with its own anchor and increments.
+        for d, share in (("D1", f), ("D2", 1.0 + f)):
+            t_daughter = charge_term(amended.snapshot.cells[d])  # R-ops' own output.
+            added = amended.magnitudes[f"charge_{d}_C"] - plain.magnitudes[f"charge_{d}_C"]
+            assert added == pytest.approx(share * t_parent + dq + t_daughter, rel=1e-12)
+            assert amended.magnitudes["charges_after_C"][d] == amended.magnitudes[f"charge_{d}_C"]
+        assert same(amended.values, plain.values)  # Only the magnitudes change.
+
+
+def test_a_potentials_magnitude_includes_its_charges_term():
+    rng = np.random.default_rng(29)
+    for _ in range(50):
+        snapshot, division, _ = random_state(rng)
+        amended = rops.apply(snapshot, division)
+        plain = rops.apply(snapshot, division, charge_term=False)
+        for snap, key in (
+            (snapshot, "potentials_before_V"),
+            (amended.snapshot, "potentials_after_V"),
+        ):
+            free, K = free_matrix(snap)
+            terms = np.array([charge_term(snap.cells[n]) if n in snap.cells else 0.0 for n in free])
+            carried = np.abs(np.linalg.inv(K)) @ terms  # |K_ff^-1| applied to the charges' terms
+            for i, node in enumerate(free):
+                added = amended.magnitudes[key][node] - plain.magnitudes[key][node]
+                assert carried[i] > 0.0
+                assert added == pytest.approx(carried[i], rel=1e-9)
+
+
+def test_no_magnitude_decreases_with_the_charge_term():
+    rng = np.random.default_rng(31)
+    for i in range(100):
+        snapshot, division, _ = random_state(rng, held_potential=0.0 if i % 2 else None)
+        amended, plain = (
+            flat(rops.apply(snapshot, division)),
+            flat(rops.apply(snapshot, division, charge_term=False)),
+        )
+        assert amended.shape == plain.shape
+        assert np.all(amended >= plain)
+        assert np.any(amended > plain)
+
+
+def test_a_zero_anchor_with_zero_increments_reproduces_the_magnitudes_exactly():
+    rng = np.random.default_rng(37)
+    for _ in range(20):
+        snapshot, division, _ = random_state(rng)
+        cells = {  # Every charge anchor 0, every increment 0 (the amounts as anchors).
+            name: rops.Cell(
+                tuple(c.amounts_fmol), (0.0,) * 3, c.volume_pL, c.background_fmol, c.charge_C
+            )
+            for name, c in snapshot.cells.items()
+        }
+        state = replace(snapshot, cells=cells)
+        # No mismatch, so the daughters' increments are zero as well.
+        even = replace(
+            division,
+            patches={k: (a, b, division.f) for k, (a, b, _) in division.patches.items()},
+            carriers={},
+        )
+        amended = rops.apply(state, even)
+        plain = rops.apply(state, even, charge_term=False)
+        assert np.all(amended.values["delta_fmol"] == 0.0)
+        assert np.array_equal(flat(amended), flat(plain))
 
 
 def test_the_closure_laws():

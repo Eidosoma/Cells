@@ -1361,11 +1361,13 @@ partition, bridge, insertion@2 or lumen@2 code (§7). These conventions hold thr
   - Random states: positive amounts, backgrounds, volumes, areas, capacitances and charges, with
     f and a_k in (0, 1) and random transference numbers.
   - Pass: 64 eps × magnitude.
-  - **Magnitudes: an added charge term (lead's ruling, 14 November 2026; pending in R-ops).**
+  - **Magnitudes: an added charge term (lead's ruling, 14 November 2026; in R-ops since 2a386d4).**
     For a cell's node charge, input and daughters alike, the magnitude adds
     |Q̄_i| + 10⁻¹⁵ F Σ_s |z_s Δ_{s,i}|. Q̄_i is the declared charge anchor and Δ the increments
     of A.6 step 3. R-ops carries the term through its own capacitor solve into the potentials.
-    Clefts are unchanged.
+    Clefts are unchanged. In the post-event solve each daughter's charge enters with its own
+    term only (R-ops' reading, accepted by the lead), so `charge_term=False` reproduces the
+    earlier magnitudes exactly.
     - **Why.** The increment form is in this appendix (A.6 step 3). Scaling the increments'
       ionic content 10× and 100× at fixed net charge moved the engine–R-ops difference
       9.3–10× and 96–112×. Without this term, the magnitude understated rounding near zero
