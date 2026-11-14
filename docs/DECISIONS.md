@@ -5446,8 +5446,12 @@ code check. The notes are [CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESI
 
 ## D170: Track E's design note accepted narrowly, for M1 and M2 on @3
 
-2026-11-14. The lead reviewed [EXCITABLE_TISSUE_DESIGN.md](EXCITABLE_TISSUE_DESIGN.md) with the
-advisor, together with the probe records in [the evidence folder](/mnt/workspaces/Cells/excitable-tissue-20261114-01/HANDOFF.md).
+2026-11-14. The lead reviewed [EXCITABLE_TISSUE_DESIGN.md](EXCITABLE_TISSUE_DESIGN.md) together
+with the probe records in [the evidence folder](/mnt/workspaces/Cells/excitable-tissue-20261114-01/HANDOFF.md).
+
+**Correction (the same evening).** The ruling was written and landed before the advisor saw it,
+though this record first said it was reviewed with the advisor. The advisor then reviewed it,
+confirmed it, and corrected one other statement here: which comparisons were blind (below).
 
 **What failed.** The note's acceptance was conditional on one cheap probe. Probe 2 at 0.05 F/m²
 failed S1 as registered: every perturbed segment blocked before cell 24. Its registered rule
@@ -5464,8 +5468,9 @@ runs, at candidate A: c_m 0.01 F/m² (1 µF/cm²), with NaV1.2 1e-6, Kir2.1 1e-8
     delay per cell is steady at about 0.121 ms, and interior peaks stay near +40 mV.
   - A's +56.65 mV is the chain's end cell, which has one neighbour. The isolated cell peaks at
     +56.0 mV.
-- **The independent reference agrees.** It was written blind: its values were recorded before
-  it read the engine's (Radau, rtol 1e-10, 40 cells, s = 1000;
+- **The independent reference agrees.** Its junction voltages were blind: they were recorded
+  before it read the engine's. Its peak was not blind, since the lead had given it the engine's
+  +56.65 mV (Radau, rtol 1e-10, 40 cells, s = 1000;
   [comparison](/mnt/workspaces/Cells/independent-references-20261114-01/block-site-A/COMPARISON.md)).
   - At the entry junction it gives 106.012 mV at r = 0.02 and 118.079 mV at r = 0.01, against
     the engine's 106 and 118.1.

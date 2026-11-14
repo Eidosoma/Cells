@@ -144,8 +144,9 @@ machine-readable inputs, results, checks and failures.
   - **The limits:**
     - the channel laws' +60 mV domain, against A's +56.65 mV at the chain's end cell;
     - the junction gate law's 120 mV domain at block sites (118.1 mV at s·r_gj = 10), so the floor
-      s·r_gj ≥ 20 is provisional. The independent reference, written blind, matches the engine
-      to 0.02 mV, and finds 10 unsafe in the coupling-only arm (120.6 mV);
+      s·r_gj ≥ 20 is provisional. The independent reference's junction voltages, computed
+      blind, match the engine's to 0.02 mV, and it finds 10 unsafe in the coupling-only arm
+      (120.6 mV);
     - `junction_ungated@1` named for the inner-model note.
   - **Landed:** the note, its equations appendix and the probe driver
     (`validation/tissue/excitable_probe.py`). Tier 1 at the merge 7bbda57: 323 files, no

@@ -1,6 +1,7 @@
 # Excitable tissue: design (proposed)
 
-**Accepted narrowly, 14 November 2026 (the lead, with the advisor; D170): for M1 and M2 on @3
+**Accepted narrowly, 14 November 2026 (the lead, D170; the advisor reviewed the ruling after it
+landed and confirmed it): for M1 and M2 on @3
 only.**
 - **The acceptance condition failed.** It was one cheap probe, and probe 2 failed S1 as
   registered: at 0.05 F/m² every perturbed segment blocked.
