@@ -697,3 +697,29 @@ def test_a_prior_condition_per_cell_and_by_a_write_at_time_zero():
     assert list(new.regulatory_state) == [0.7, 0.2]
     assert list(new.regulatory_writes_applied) == [1, 0]
     assert list(new.regulatory_crossing_step) == [0, -1]  # From the state before the write.
+
+
+def test_a_switch_change_mid_run_cuts_the_coupling():
+    """§1.13's cut: a change of c_r's switch at 10 ms is a schedule change time; the control holds 1
+    before it and 0 from it; the event map at that step start copies it, after which c_r's route
+    gives exactly 1 and c_s's routes are unchanged."""
+    raw = base()
+    raw["experiment"]["coupling_controls"][0]["schedule"].append(dict(time=0.01, enabled=0))
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    op = next(o for o in model.operators if o.LAW_ID == LAW)
+    _, _, schedule = next(e for e in cs.entries(spec) if e[0].LAW_ID == LAW)
+    assert 0.01 in op.schedule_times(schedule)
+    c = cs.control_values(spec, [0.0, 0.009, 0.01, 0.015])
+    assert c.coupling_switch.tolist() == [[1, 1], [1, 1], [0, 1], [0, 1]]
+    before = sra.route_factors(state, p, xp=np)
+    at = control(c.coupling_switch[2], c.regulatory_write_count[2], c.regulatory_write_value[2])
+    new, ok = op.event(state, at, p, xp=np)
+    assert bool(ok) and list(new.coupling_enabled) == [0.0, 1.0]
+    after = sra.route_factors(new, p, xp=np)
+    for route, coupling in enumerate(np.asarray(p.coupling_route_coupling)):
+        if coupling == 0:
+            assert before[route] < 1.0 and after[route] == 1.0
+        else:
+            assert after[route] == before[route]
