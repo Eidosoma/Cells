@@ -90,7 +90,12 @@ def cohort(end_steps=40, backend="cpu"):
     return BatchSpec(tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs)), 2, 10**6, 2**31)
 
 
-def engine_identity():
+def backend(spec):
+    """The cohort's backend (a batch holds one); the runtime identity is that backend's."""
+    return spec.worlds[0].simulation.execution.backend
+
+
+def engine_identity(spec):
     import cells
     from cells.core.specs import digest
     from cells.io import runtime_identity, source_hashes
@@ -101,7 +106,7 @@ def engine_identity():
     return dict(
         cells=str(Path(cells.__file__).resolve().parent),
         source_hashes_sha256=digest(source_hashes()),
-        runtime=runtime_identity("cpu"),
+        runtime=runtime_identity(backend(spec)),
         execution_snapshot=str(tree) if snapshot else None,
         git_revision=snapshot.get("git_revision"),
         dirty_diff=str(tree / "checkout.patch") if snapshot else None,
@@ -172,7 +177,7 @@ def execute(spec, policy, checkpoints, out, provenance, inputs, every):
             path=PATH,
             policy=policy.to_dict(),
             definition_sha256=spec.fingerprint,
-            runtime=runtime_identity("cpu"),
+            runtime=runtime_identity(backend(spec)),
             source_hashes=source_hashes(),
             provenance=provenance,
             rounds=rounds,
@@ -197,7 +202,7 @@ def run(args):
     inputs = dict(
         kind=KIND + ".inputs",
         argv=sys.argv,
-        engine=engine_identity(),
+        engine=engine_identity(spec),
         batch=str(Path(args.batch).resolve()),
         batch_sha256=sha256(args.batch),
         checkpoint=None,
@@ -221,7 +226,7 @@ def resume(args):
     inputs = dict(
         kind=KIND + ".inputs",
         argv=sys.argv,
-        engine=engine_identity(),
+        engine=None,  # Once the checkpoint's definitions, and so their backend, are read.
         checkpoint=str(snapshot),
         checkpoint_manifest_sha256=json.loads((snapshot / "manifest.json").read_text())[
             "manifest_sha256"
@@ -240,6 +245,7 @@ def resume(args):
         request = continuity.Request(record, path=PATH, policy=policy)
         saved = load_batch_snapshot(snapshot, continuity=request)
         provenance = continuity.provenance(saved.admission)
+    inputs["engine"] = engine_identity(saved.spec)
     execute(
         saved.spec, policy, dict(saved.checkpoints), out, provenance, inputs, args.snapshot_every
     )

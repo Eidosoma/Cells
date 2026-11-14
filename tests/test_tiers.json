@@ -52,7 +52,8 @@
   "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-6ab0cb0/measured.json",
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-q5entry/measured.json",
   "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/tiers/measure-merge/measured.json",
-  "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-2ba4dc1/measured.json"
+  "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-2ba4dc1/measured.json",
+  "/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/tiers/measure-gpu/measured.json"
  ],
  "measured_provenance": [
   {
@@ -432,6 +433,13 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T16:13:38+00:00"
+  },
+  {
+   "git_revision": "0644752708d06848a2ab503bed6125ca26f1ac54",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261114-ccgpu",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T18:26:04+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3335,6 +3343,14 @@
     "counts": {
      "passed": 34,
      "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_continuity_gpu.py",
+    "seconds": 22.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 14
     }
    },
    {
