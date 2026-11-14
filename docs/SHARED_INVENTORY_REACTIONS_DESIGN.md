@@ -1,9 +1,16 @@
 # Reactions on the shared inventory (design)
 
-**Status: proposed, 14 November 2026, for the lead's review with the advisor before acceptance
-(D142). No code.** Code follows D150 version 1's code (after S5a) and this note's acceptance
-(D152). Four pre-code probes ran the same day (§10), the last after the advisor's review corrected
-the stage condition for passive routes (§4.2). No engine code was added or changed.
+**Status: proposed, 14 November 2026; reviewed by the lead with the advisor the same day. No
+code.** Code follows D150 version 1's code (after S5a) and this note's acceptance (D152).
+
+**History of this note:**
+- The lead's rulings on §9's questions are recorded against each question.
+- The advisor's first review corrected the stage condition for passive routes (§4.2).
+- The lead's review made the mixed-node onset a blocking item. Probe 2d measured it, and the
+  mixed-node rule is now the average-vector-field attribution (§3.3).
+- Probe C3 set version 1's dt · L rule (§4.3).
+- Probe C4 measured finding 3 on the engine (§4.2, §10.3). It does not gate acceptance.
+- No engine code was added or changed.
 
 D152 asks for this feature. The user's words were: "Yes on the question and lets go as you see fit
 otherwise". The question was whether reactions acting on the same molecules that transport moves
@@ -46,7 +53,7 @@ per-node and per-species chemical term, which D150 v1 builds.
 **Evidence and log:** `/mnt/workspaces/Cells/shared-inventory-reactions-20261114-01/`:
 - HANDOFF.md;
 - the clean snapshot `snapshot-ac5a251`;
-- probes 1, 2, 2b and 2c of §10;
+- probes 1, 2, 2b, 2c, 2d, C3, C3b, C4, C4b and C4c of §10;
 - the citation records in `sources/`.
 
 **S** marks our arithmetic or interpretation, as in the division and secreted-species designs.
@@ -84,27 +91,36 @@ per-node and per-species chemical term, which D150 v1 builds.
    - Version 1 acts on neutral species only, so every charge term it touches is an exact zero.
 5. **Energy** (§3.3, §3.4). Per node and half-step, the operator books the exact free-energy change
    ΔG of the rows it wrote, so W − H = ΔG closes exactly.
-   - **The bookings:**
-     - at a node with driven routes only, W = ΔG;
-     - with passive routes only, H = −ΔG, which the dissipation check requires to be non-negative;
-     - with both, H is the stage quadrature of the passive dissipation (non-negative by
-       construction) and W = ΔG + H.
+   - **The attribution.** ΔG is attributed to routes through the average-vector-field discrete
+     gradient (McLachlan, Quispel & Robidoux 1999): ΔG_r = Δξ_r Σ_s ν_sr μ̄_s, with μ̄_s each
+     species' divided-difference potential over the half-step. It is exact in total.
+   - **The bookings:** H = −Σ_passive ΔG_r and W = Σ_driven ΔG_r.
+     - At a node with driven routes only, W = ΔG.
+     - With passive routes only, H = −ΔG, which the dissipation check requires to be
+       non-negative.
+     - With both, the attribution splits ΔG.
+   - **Why not the stage quadrature.** The first draft booked mixed-node heat as a stage quadrature
+     of RT·A·J. Probe 2d measured it overbooking a passive switch-on from a 1e-12 mM trace by 34–54%
+     in the first step, and by 1–6% of the whole heat after 5 s, with W carrying the same error and
+     the closure still exact. The attribution's errors are 0.06–0.3% and 0.005–0.06%. Its trace
+     dependence matches the true heat's.
    - **A finding: @3's chemical term has no standard potentials.** The operator therefore owns the
-     standard-potential term and adds it to the energy ledger. Without it, a passive conversion with
-     K ≠ 1 books negative heat (probe 2, B7).
-   - **Why exact bookings.** A quadrature booking mis-books a switch-on from a trace by 27% in its
-     first step (B5). The exact booking does not.
+     standard-potential term and adds it to the energy ledger as a declared free-energy term, not a
+     flow. Without it, a passive conversion with K ≠ 1 books negative heat (probe 2, B7).
    - **The guards of record** check the residual at rounding in a face-free species-only world,
      where the operator is the only energy flow, not against the shared bound, which is blind at
-     µM–nM (D150's lesson). A NumPy ΔG test per law and negative controls complete them.
+     µM–nM (D150's lesson). A NumPy ΔG test per law and negative controls complete them. They are
+     written by an agent that never reads the operator's code (§3.4).
 6. **Numerics** (§4).
-   - **The half-step:** SSPRK(3,3) sub-steps with a run-time stage condition h·L ≤ ½, which makes
-     positivity a theorem. A failure is refused, never repaired.
+   - **The half-step:** SSPRK(3,3) with a run-time stage condition h·L ≤ ½ on unidirectional
+     fluxes, which makes positivity a theorem. A failure is refused, never repaired.
+   - **Version 1 refuses dt · L > 1 at run time.** C3 measured second order up to dt · L of about 2
+     and order reduction beyond it, so version 1 takes one sub-step and the stage condition at θ = ½
+     is the rule.
    - **Order:** Strang splitting against transport is second order. The prototype's ratios are
      3.98 to 4.07 (probe 2).
    - **Idle:** bitwise idle at zero rate.
    - **Solvers:** IMEX only. RK4 and the stationary analysis are refused, with reasons (§4.6).
-     Kinetics too stiff for the step are refused at run time, a door for later.
 7. **Qualification** (§6). The first acceptance is numerical (D138). It runs against two textbook
    references: the closed-form linear reaction–diffusion solution, and the linear stability
    analysis of a two-species activator–inhibitor system. MG0c checks, on zero-flux chains:
@@ -116,22 +132,30 @@ per-node and per-species chemical term, which D150 v1 builds.
 8. **Pre-code probes** (§10).
    - **Probe 1, the engine as it is:** the MG0c transport world runs, its species-set step is
      admitted and second order, and the ions are bitwise unchanged.
-   - **Probes 2, 2b and 2c, a NumPy prototype:** they confirm the numerics, the bookings and the
-     dispersion design. Probe 2c tests the stage condition as corrected in review.
-   - **Proposed before code:** five further checks, chief among them a contract-fit probe with an
-     in-process operator once D150 v1 lands.
-9. **Limits** (§7). Version 1 is a static tissue with neutral species, at most 7 species and
-   non-stiff kinetics. It is refused beside water, the lumen, closers, RK4 and the stationary
-   analysis.
+   - **Probes 2, 2b, 2c, 2d and C3, a NumPy prototype:** they confirm the numerics, the bookings and
+     the dispersion design. The prototype is development evidence, not a reference of record.
+     - Probe 2c tests the stage condition as corrected in review.
+     - 2d measures the mixed-node onset.
+     - C3 measures stiffness relative to the split step.
+   - **Probe C4, the engine as it is:** finding 3, neutral species on junctions and membranes. It
+     is a separate track.
+   - **Still to come:** the contract fit (C1) is now the code branch's first milestone (§10.4).
+9. **Limits** (§7). Version 1 is a static tissue with neutral species, at most 7 species, and
+   kinetics with dt · L ≤ 1.
+   - It is refused beside water, the lumen, closers, RK4 and the stationary analysis.
+   - Cell routes on slots that replacement@1 replaces are refused.
 10. **Effort:** about 6 agent-days (range 5 to 7), plus about an hour of CPU for MG0c's judged runs
     (§8).
 
-**Two departures, for the lead to rule on:**
+**Two departures from the brief and from D150,** both ruled on by the lead with the advisor on
+14 November 2026:
 1. **The brief says the operator composes with D150's turnover.** It does, except on the rows the
    network writes. A turnover route on a reacting (species, node) is refused, so that each node's
-   local kinetics have one writer, and the production and clearance of a reacting species are
-   declared as source and sink reactions instead (§1.1; §9 question 3).
-2. **RK4 is refused, where D150 guards it** (§4.6; §9 question 5).
+   local kinetics have one writer. The production and clearance of a reacting species are declared
+   as source and sink reactions instead (§1.1). **Confirmed for version 1, with a door later**
+   (§9 question 3).
+2. **RK4 is refused, where D150 guards it.** **Confirmed,** with the framing corrected (§4.6;
+   §9 question 5).
 
 ## 1. Entities and ownership
 
@@ -161,7 +185,8 @@ and `extracellular_amount_increment` [species, outside].
 - Splitting one network's reactions between operators would split the very coupling that makes a
   Turing instability, at an unmeasured O(dt²).
 
-**One local-kinetics writer per (species, node)** (proposed for version 1, §9 question 3):
+**One local-kinetics writer per (species, node)** (confirmed for version 1 by the lead with the
+advisor, with a door later; §9 question 3):
 - **The refusal.** A turnover route on a (species, node) that a reaction writes (net coefficient
   ν ≠ 0 there) is refused at the definition. The production and clearance of a reacting species are
   declared in the network as source and sink reactions instead, where the integrator sees them with
@@ -300,7 +325,6 @@ This is D150 §1.5's form.
 ```json
 {"law": "local_species_reactions@1",
  "standard_concentration_mM": 1.0,
- "substeps": 1,
  "species": [{"id": "U", "moieties": {"M": 1}, "standard_mu_RT": 0.0, "reference": null}],
  "reactions": [
    {"id": "u_autocatalysis",
@@ -320,7 +344,10 @@ This is D150 §1.5's form.
 - **Reactants and products:** integer coefficients, with an empty side for a source or a sink
   (§3.1).
 - **Law and parameters** (§2.2), and **factors** (driven laws only).
-- **`substeps`:** the static sub-step count m of §4.2.
+- **No sub-step count in version 1.** Version 1 refuses dt · L > 1 (§4.3, from C3). At one
+  sub-step the stage condition at θ = 1/2 is that rule, so a declared count would add nothing.
+  Sub-steps are a door, opened with a splitting that holds its order where C3 measured order
+  reduction.
 
 **The schedule, `reaction_controls`:**
 - per reaction, and optionally per site, a piecewise-constant multiplier m_r(t) ≥ 0;
@@ -329,14 +356,16 @@ This is D150 §1.5's form.
 - on a passive reaction the multiplier scales both directions, as `compartment_reactions@1`'s does.
   It changes the kinetic barrier, adds no material and leaves the equilibrium unchanged.
 
-**Whose rates.**
-- **Outside routes** belong to their node, which is environment.
-- **Cell routes follow the occupant.** D150 §5.2's rule applies: carriers have identity, slots are
-  storage. Version 1 applies it to the per-site multipliers through D150's mechanism. A newcomer
-  takes its template's or donor's multipliers at the event step, and a donor copy whose route values
-  differ from the slot's is refused.
-- **Law parameters** are per reaction, shared by its sites, and per world. Per-carrier parameter sets
-  wait for version 1.1 (§9 question 6).
+**Whose rates** (the lead's ruling with the advisor, 14 November 2026; §9 question 6).
+- **Outside routes** belong to their node, which is environment. They compose with
+  replacement@1.
+- **Cell routes on replaced slots are refused in version 1.** A cell route on a slot that
+  `scheduled_cell_replacement@1` replaces is refused at the definition.
+  - **Why.** No version 1 consumer needs it, and D150's occupant mechanism is still being coded.
+  - **The door.** Version 1.1 applies D150 §5.2's rule, that carriers have identity and slots are
+    storage, through D150's mechanism once it lands. A newcomer would then take its template's or
+    donor's rates at the event step.
+- **Law parameters** are per reaction, shared by its sites, and per world.
 
 ### 2.2 The rate laws
 
@@ -392,7 +421,7 @@ binding E + S ⇌ C followed by a driven catalytic step C → E + P.
   arrays bound per world, so vmap batches may differ in them. Controls are per-world data. Neither
   is ever a closed-over constant, and the crossrev records show it (D148, "what crossrev compares").
 - **The static structure enters the batch signature:** species, routes, stoichiometry, law and
-  factor kinds and their species, roles, and `substeps`.
+  factor kinds and their species, and roles.
 
 ### 2.4 Generality (D144) and parameter sources
 
@@ -453,11 +482,12 @@ binding E + S ⇌ C followed by a driven catalytic step C → E + P.
 - the `CONFLICTS_VIEW` providers and closers (§5);
 - more than 7 species, D150's cap, refused with the cap named (D150 §2.6);
 - a turnover route on a (species, node) the network writes (§1.1);
+- a cell route on a slot that `scheduled_cell_replacement@1` replaces (§2.1);
 - RK4 (§4.6);
 - a catalogue reference that differs from another operator's.
 
-**At run time:** the stage condition, positivity and finiteness (§4.2), returned as the half-step's
-validity.
+**At run time:** the stage condition at one sub-step (h L ≤ 1/2, that is dt · L ≤ 1), positivity
+and finiteness (§4.2, §4.3), returned as the half-step's validity.
 
 ## 3. Accounting
 
@@ -522,33 +552,83 @@ is new.
 - **Only reactions move it.** Transport and baths never change it, since the standard potentials
   cancel there.
 
-**The booking rule.** ΔG_i is the exact change of G_i over the operator's half-step at node i. It is
-computed in the stable increment form, anchored at the half-step's start, so a protein-scale change
-is never a difference of large sums.
+**The booking rule: the exact ΔG, attributed to routes by the average-vector-field discrete
+gradient** (McLachlan, Quispel & Robidoux 1999).
+- **The exact change.** ΔG_i is the exact change of G_i over the operator's half-step at node i. It
+  is computed in the stable increment form, anchored at the half-step's start, so a protein-scale
+  change is never a difference of large sums.
+- **The divided-difference potential.** Per species,
 
-| Node holds, by the step's multipliers | Heat H_i | Work W_i | Closure |
-| --- | --- | --- | --- |
-| Driven routes only | 0 | ΔG_i | Exact |
-| Passive routes only | −ΔG_i, which the composite's dissipation check requires to be ≥ 0 | 0 | Exact |
-| Both | The stage quadrature h_sub Σ_k b_k RT Σ_passive A_r J_r(Y_k), ≥ 0 by construction | ΔG_i + H_i | Exact |
+      μ̄_s = [g_s(n'_s) − g_s(n_s)] / (n'_s − n_s),   g_s(n) = RT n (ln(n/V_i) − 1) + μ°'_s n.
 
-The node's case is selected per step from its controls, without branching (`where`). So a driven
-reaction switched off leaves a passive node, and no work is booked there.
+  It is evaluated in the stable form μ̄_s = RT [ln(n_s/V_i) + (1 + x) log1p(x)/x − 1] + μ°'_s, with
+  x = Δn_s/n_s, and by the series 1 + x/2 − x²/6 for the ratio near x = 0. With no change it is the
+  potential itself.
+- **The attribution.** G is separable, and Δn_s = Σ_r ν_sr Δξ_r, so Σ_s μ̄_s Δn_s = ΔG_i exactly.
+  Each route therefore gets ΔG_r = Δξ_r Σ_s ν_sr μ̄_s, and the routes' shares sum to ΔG_i exactly.
+- **The bookings.** H_i = −Σ_passive ΔG_r and W_i = Σ_driven ΔG_r, so W_i − H_i = ΔG_i to rounding.
+  Probe 2d's largest |W − H − ΔG| was 2e-18 pJ.
+- **One rule for every node:**
+  - with driven routes only, W = ΔG;
+  - with passive routes only, H = −ΔG, which the composite's dissipation check requires to be ≥ 0;
+  - with both, the attribution splits ΔG.
 
-**Why the exact ΔG** (D150's onset lesson; probe 2, B5):
-- **What goes wrong with a quadrature.** A switch-on from a trace is a nearly log-singular path in
-  μ, so a stage quadrature of ΔG_r J mis-books the first step. In B5, a catalysed S → P with P at a
-  trace of 1e-12 mM, it is 27% off; at 1e-9 mM, 11%; at 1e-6 mM, 0.07%. From the second step it
-  agrees to 1e-4 or better.
-- **What the exact booking does.** The state-function difference is exact at any switch-on, so the
-  onset limit D150 recorded for face heat (§11.4 there) does not arise in this operator's own
-  bookings. @3's face heat keeps it, so production worlds should still start resolved where species
-  diffuse (§3.4).
+  A driven reaction switched off by its multiplier books a zero share, with no branching.
+- **How accurate it is.**
+  - **At a node with one route, exact.** The path then is the straight segment along ν_r, and along
+    a straight segment the average-vector-field gradient is the exact line integral.
+  - **With several routes, an approximation.** It attributes ΔG along the straight segment from the
+    half-step's start to its end. That approximates the per-route path integrals at second order
+    (probe 2d's smooth mixed world: ratios 3.70 and 3.87).
+
+**Why not the stage quadrature at mixed nodes** (the first draft's rule; the lead's blocking item;
+probe 2d).
+- **The first draft.** It booked mixed-node heat as the stage quadrature h Σ_k b_k RT A_r J_r(Y_k),
+  with W = ΔG + H.
+- **What goes wrong.** A is log-singular at a trace, so a passive route switching on from a trace is
+  misbooked. W carries the same absolute error, and the closure stays exact, so no guard sees it.
+- **Probe 2d, the enzyme recipe.** Passive E + S ⇌ C (k_on 1e3 mM⁻¹ s⁻¹, K_d 1e-3 mM) and driven
+  C → E + P (k_cat 1 s⁻¹) at one 1 pL node, with E at 1e-4 mM and S at 1e-3 mM, and C and P starting
+  at a trace. The reference is an independent dissipation integral (SciPy DOP853, rtol 1e-13; it
+  agrees with rtol 1e-11 to 2e-11).
+
+  | Trace | Half-step | First-step H, quadrature | First-step H, attribution | Whole H at 5 s, quadrature | At 5 s, attribution |
+  | --- | --- | --- | --- | --- | --- |
+  | 1e-12 mM | 0.05, 0.025, 0.0125 s | +54%, +42%, +34% | +0.33%, +0.14%, +0.06% | +6.1%, +2.9%, +1.3% | +0.063%, +0.018%, +0.005% |
+  | 1e-9 mM | same | +24%, +17%, +12% | +0.33%, +0.14%, +0.06% | +2.7%, +1.2%, +0.49% | +0.063%, +0.018%, +0.005% |
+  | 1e-6 mM | same | +0.8%, +0.2%, +0.04% | +0.21%, +0.07%, +0.02% | +0.09%, +0.015%, +0.002% | +0.045%, +0.012%, +0.003% |
+
+  - **Why the quadrature's first-step error does not vanish with h.** The log-singular stage
+    dominates whatever the step.
+  - **W.** It carries the same absolute error. At 5 s it is −3.4%, −1.6% and −0.75% (quadrature) and
+    −0.035%, −0.010% and −0.003% (attribution) at a 1e-12 trace.
+- **Trace sensitivity** (half-step 0.025 s, at 5 s; the true heat converges as the trace goes to
+  zero):
+
+  | Change of trace | True H | Quadrature H | Attribution H |
+  | --- | --- | --- | --- |
+  | 1e-12 → 1e-9 mM | −6.27e-5 | −1.66e-2 | −6.32e-5 |
+  | 1e-9 → 1e-6 mM | −2.21e-2 | −3.31e-2 | −2.21e-2 |
+
+  The attribution's heat moves with the trace as the true heat does. The second row is physics: a
+  1e-6 mM complex is not negligible against the 3e-5 mM it reaches. So §6.5's background guard can
+  hold H and W to the true heat's own dependence (§3.4).
+- **For driven-only nodes nothing changes.** The state-function difference was already exact at any
+  switch-on (probe 2's B5: a stage quadrature of ΔG_r J would be 27% off at a 1e-12 trace).
+- **So the operator's own bookings no longer carry D150's onset limit.** @3's face heat keeps it, so
+  production worlds should still start resolved where species diffuse (§3.4).
 
 **Why heat ≥ 0 holds:**
-- **At mixed nodes, by construction.** Passive routes use detailed-balance mass action, whose rate
-  has exactly the sign of its affinity (`reversible_flux`: sign(J) = sign(A)). So each stage's
-  RT A J ≥ 0, and the weights (1/6, 1/6, 2/3) are positive.
+- **At mixed nodes, the dissipation check enforces it.** Construction no longer guarantees it.
+  - **What the check does.** It refuses a step whose heat falls, loudly.
+  - **What was measured.** No per-step attribution heat was negative in any probed case:
+    - probe 2d's onset runs, smallest 6.3e-7 pJ;
+    - its near-equilibrium runs (binding at equilibrium with k_cat 1e-3, 0.1 and 1 s⁻¹), smallest
+      1.3e-17, 1.0e-12 and 1.7e-9 pJ;
+    - its smooth mixed world, none.
+  - **The trade.** The quadrature's sign by construction, against an onset misbooking of 34–54% that
+    no guard sees; or the attribution's sign checked loudly, against an onset error of 0.06–0.33%.
+    The attribution is chosen (§9 question 2).
 - **At passive-only nodes,** −ΔG ≥ 0 holds for the exact flow, because G is a Lyapunov function of a
   closed detailed-balanced network. For the integrator it is proved in one case and measured in the
   others:
@@ -568,8 +648,8 @@ reaction switched off leaves a passive node, and no work is booked there.
   they cause.
 - **What W leaves out.** Their own dissipation lies outside the inventory, a declared limit (D150
   §2.4). Later they may draw on finite energy pools (§7.3).
-- **At mixed nodes,** W also absorbs the quadrature error of H, which is O(h³) (B6: order ratios
-  8.50 and 8.26).
+- **At mixed nodes,** H and W carry the same absolute error from the attribution, since their
+  difference is exact. That error is second order (probe 2d).
 
 **What exactness means, and what it does not.**
 - **The ledger closes.** The operator's part of the composite's energy ledger closes exactly in each
@@ -603,7 +683,10 @@ shared bound cannot see. The guards therefore check the residual itself, not the
      (`LEDGER_STEP_ROUNDING`). It is not judged against 2e-3 × the flows.
    - **The cases it must cover:**
      - driven-only, passive-only and mixed nodes;
-     - a switch-on from the trace (B5's case);
+     - a driven switch-on from the trace (B5's case);
+     - **a passive switch-on from the trace at a mixed node,** probe 2d's enzyme recipe at traces of
+       1e-12, 1e-9 and 1e-6 mM. Its H and W go against an independent dissipation integral, first
+       step and cumulative, within tolerances pinned from probe 2d's attribution errors;
      - a closed passive relaxation, with total heat = G(start) − G(equilibrium);
      - every row's heat non-negative and non-decreasing.
 2. **The species-only transport world.** This is probe 1's closed chain with the network, the MG0c
@@ -621,7 +704,7 @@ shared bound cannot see. The guards therefore check the residual itself, not the
    - each fails world 1 at the first row it touches;
    - in a mixed heredity world, the shared bound does not see the scaled work or the dropped
      standard term. The bound/booking ratio measured there goes into the docstring statement, as
-     D150's probe 2 part C did (§10.3, C2);
+     D150's probe 2 part C did (§10.4, C2);
    - a wrong-sign heat is still caught there by the composite's dissipation check. Only the bound
      is blind to it.
 4. **A NumPy ΔG test per law,** written from Appendix A, not from engine code. For each law, order,
@@ -629,14 +712,33 @@ shared bound cannot see. The guards therefore check the residual itself, not the
    It must show:
    - booked W − H equals the independently computed ΔG_i, standard term included, to 1e-12 of the
      summed |terms|;
-   - passive H ≥ 0 at mixed nodes, and H = −ΔG at passive-only nodes;
+   - the routes' attributed shares sum to ΔG_i to the same tolerance. At a single-route node the
+     share equals ΔG_i, and with several routes each share equals Δξ_r Σ_s ν_sr μ̄_s, computed
+     independently;
+   - H = −ΔG at passive-only nodes, and H ≥ 0 wherever the dissipation check would read it;
    - Δn = ν Δξ, and moiety totals change only through sources and sinks;
    - the standard term equals Σ ΔG°'_r Δξ_r;
    - zero multipliers select the start state bitwise;
    - a closed passive network relaxes to the equilibrium its potentials set. In probe 2's B4,
      c_B/c_A came out at 9.99999999999996 against K = 10;
-   - at mixed nodes, H converges to an independent dissipation integral at third order in h_sub.
-     B6's ratios were 8.50 and 8.26.
+   - at mixed nodes, H converges to an independent dissipation integral at second order in h (probe
+     2d's smooth mixed world: ratios 3.70 and 3.87), and the onset case of world 1 meets its
+     tolerances.
+5. **The background guard** (§6.5) covers H and W too.
+   - A 10³ change of a negligible trace (1e-12 to 1e-9 mM) must move them by no more than the true
+     heat's own change plus a tolerance pinned from probe 2d. The true change there was 6.27e-5,
+     and the attribution's 6.32e-5.
+   - Under the first draft's quadrature this guard would have failed (1.7e-2). That is the collision
+     the lead's review found.
+
+**Independence of the references** (the lead's ruling with the advisor, 14 November 2026).
+- **The prototype is development evidence, not a reference of record.** Probes 2 to 2d and C3 share
+  the operator's scheme and its author.
+- **Who writes the references.** Appendix A's ΔG tests (item 4) and MG0c's references (§6.4: the
+  dispersion relation, the mode propagators, the SciPy pattern) are written by an agent that never
+  reads the operator's code.
+- **How the engine agent runs them.** Only through a usage note, as in S5. The usage note gives
+  their inputs, outputs and tolerances, never their internals.
 
 ## 4. Numerics
 
@@ -647,7 +749,7 @@ shared bound cannot see. The guards therefore check the residual itself, not the
 | MG0c (synthetic, §6.4): k = 0.1 s⁻¹, ℓ = √(D_U/k) = 10 µm, D_U = 1e-11 and D_V = 1e-10 m²/s | L up to about 0.3 s⁻¹ while the pattern forms | at most 0.0076 at dt 0.05 s (probe 2, B2) |
 | Morphogen scale (D150 §4.1): k about 1e-4 s⁻¹ | – | about 5e-8 at 1 ms |
 | Catalysis (GZMK item 2): k_cat c_E/K_M, which no paper there reports | e.g. 1 s⁻¹ × 0.1 | about 5e-5 at 1 ms |
-| Fast binding, k_on c of about 1e2 to 1e4 s⁻¹ | stiff at 1 ms | refused unless m sub-steps bring it under θ; a door (§7.3) |
+| Fast binding, k_on c of about 1e2 to 1e4 s⁻¹ | stiff at 1 ms | refused where dt · L > 1 (§4.3); a door (§7.3) |
 
 **Who sets the transport's step:**
 - **Species-only worlds:** the species' own face rates set dt. Probe 1's chain (h = 10 µm,
@@ -657,8 +759,12 @@ shared bound cannot see. The guards therefore check the residual itself, not the
 
 ### 4.2 The half-step integrator
 
-**SSPRK(3,3)** (Shu & Osher 1988; Gottlieb, Shu & Tadmor 2001), with m static sub-steps (the
-declared `substeps`, default 1) of size h_sub = h/m:
+**SSPRK(3,3)** (Shu & Osher 1988; Gottlieb, Shu & Tadmor 2001), with m sub-steps of size
+h_sub = h/m.
+- **Version 1 takes m = 1** (h_sub = h = dt/2), because it refuses dt · L > 1 (§4.3).
+- **Larger m is the stiff door.** It is written here generally so that door stays open.
+
+The stages are:
 
     Y1 = n,  Y2 = n + h_sub ν J(Y1),  Y3 = n + h_sub ν (J(Y1) + J(Y2))/4,
     Δξ = h_sub (J(Y1) + J(Y2) + 4 J(Y3))/6,  n' = n + ν Δξ.
@@ -724,7 +830,8 @@ written with unidirectional fluxes:
 - **What a failure is.** A stage that fails the condition, or any non-finite or non-positive amount,
   invalidates the half-step.
 - **What follows.** The composite returns the start state, and the runner reports the refusal with
-  the operator's message: the largest h_sub L, and the advice to use more sub-steps or a smaller dt.
+  the operator's message: the largest h L and the step that admits it. Version 1 offers no
+  sub-steps, so the advice is a smaller dt.
 - **A property of the run.** As with @3's membrane-rate rule, the admissible step depends on the run,
   not on the definition.
 
@@ -748,10 +855,21 @@ the open linear network 0 → A, A → 0 against turnover's closed form, with ra
   junctions and membranes it bounds only charge relaxation, weighted by z².
 - **The gap.** A neutral species with a junction or membrane permeability therefore has no
   material-rate bound at the definition.
-- **What version 1 does.** It refuses reacting species with nonzero membrane or junction permeability.
-  D150's inventory species are impermeant anyway, so nothing a consumer needs is lost.
-- **For the lead.** Whether @3's bound should be extended is a D148 question (§9 question 7, §10.3
-  C4).
+- **What C4 measured on the engine** (§10.3).
+  - Nothing refuses at the definition, and the run-time membrane-rate rule reads 0 for a neutral
+    species.
+  - **In species-only worlds** the host energy ledger refuses at row 1 once the per-step relaxation
+    exponent x reaches 0.1. Below that, runs pass with small, second-order errors.
+  - **When other flows set the shared bound** (C4c), runs pass every host check up to x = 1, with
+    silent errors against the exact relaxation of up to 13% of the initial difference. From
+    x = 1.5 the energy ledger refuses. Beyond x = 2, the difference grows until positivity
+    refuses.
+- **What version 1 does** (the lead's ruling, §9 question 7). It keeps the refusal of reacting
+  species with nonzero membrane or junction permeability. D150's inventory species are impermeant
+  anyway, so nothing a consumer needs is lost.
+- **For the lead.** Whether @3's bound should gain the neutral material term (z = 0 junction and
+  membrane rates P A/V) is a D148 question. It bears on any @3 definition that declares a neutral
+  permeant species today. C4 does not gate this note's acceptance.
 
 ### 4.3 Splitting against transport, and stiffness
 
@@ -773,21 +891,65 @@ polynomial. Probe 1 confirmed that polynomial on the engine to 1.3e-14 at 32 nod
 the activator–inhibitor feedback is integrated whole, and only the reaction–transport coupling is
 split.
 
-**Stiffness relative to the split step.**
+**Stiffness relative to the split step (probe C3; the lead's ruling).**
 - **The risk.** With sub-steps, a network may be stiff relative to dt (dt · L > 1) while every
   sub-step meets the condition. Splitting stiff reactions from transport can then lose order
   (Hundsdorfer & Verwer 2003, ch. IV).
-- **Version 1's scope.** Version 1 admits such worlds only as labelled development runs, until a
-  probe measures their splitting order (§10.3, C3).
-- **The default.** The default of one sub-step keeps dt · L ≤ 2θ = 1.
+- **What C3 measured** (prototype; transport the ARS(2,2,2) polynomial). It used three worlds on a
+  zero-flux chain, with m = ceil(dt · L) sub-steps holding the stage condition, against exact or
+  stiff-solver references, at T = 50 s:
+
+  | dt · L | 0.25 → 0.5 | 0.5 → 1 | 1 → 2 | 2 → 5 | 5 → 10 | 10 → 20 |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | W1, fast buffering A ⇌ B (B immobile), on the slow manifold | 1.93 | 1.78 | 2.17 | 1.74 | 1.41 | 1.22 |
+  | W1, off the manifold | 1.97 | 1.91 | 1.98 | 1.63 | 1.25 | 1.10 |
+  | W3, a driven sink on half the domain | 1.97 | 1.92 | 2.03 | 1.77 | 1.47 | 1.39 |
+  | W2, nonlinear fast binding A + B ⇌ C (B, C immobile) | 0.47 | 1.06 | 3.00 | 0.98 | 0.61 | 1.13 |
+
+  These are observed orders between consecutive steps.
+  - **W1 and W3** hold second order up to dt · L of about 2, then fall toward first order.
+  - **W2 shows no clean order anywhere,** although its errors at dt · L ≤ 1 are small: 1.2e-6 to
+    3.5e-6 of the concentration scale, rising to 2.3e-4 at dt · L = 20. It is not the reference's
+    doing (Radau at rtol 1e-11 against DOP853 at rtol 1e-13: 1.6e-14). Nor is it the
+    sub-integrator's: 4× the sub-steps moved each error by at most 1.1%. So it is the splitting's
+    (C3b).
+- **The rule (version 1).**
+  - **dt · L > 1 is refused at run time.** With one sub-step that is the stage condition at θ = 1/2,
+    so version 1 declares no sub-step count (§2.1).
+  - **The measured margin.** Second order holds to about 2 in W1 and W3.
+  - **Below 1, each world's own dt study is its evidence.** W2 shows that a fast nonlinear binding
+    can split poorly even at dt · L ≤ 1. MG0c's worlds sit at dt · L ≤ 0.015, where probe 2 measured
+    ratios of 4.0.
+- **The door.** Sub-steps (m > 1) need a splitting that holds its order where C3 found reduction:
+  for example a stiff reaction treated implicitly in the transport step, or a different
+  composition. Each needs its own probe.
 
 ### 4.4 Positivity and the trace
 
 - **The trace background.** D150 §1.3's background holds: every species is positive everywhere, and
   a reacting species that is "absent" is a declared trace.
 - **Depletion is safe.** Rates vanish as consumed species vanish (§2.2), so depletion approaches zero
-  at worst as e^{−L t}, and the stage condition keeps every step positive. Underflow comes only
-  after L t ≈ 708 (D150 §1.3).
+  at worst as e^{−L t}, and the stage condition keeps every step positive.
+- **The anchored representation stalls, it does not underflow** (D150 v1's milestone 1; D150 §1.3,
+  as amended).
+  - **Why.** @3 stores an amount as anchor + increment, n = a + δ.
+  - **What a cleared pool does.** A pool cleared with no supply follows the closed form only until
+    L t ≈ 36, where e^{−L t} reaches ε. It then stalls, positive, at about ε × its anchor, and is
+    never refused.
+  - **Where kt ≈ 708 applies.** Only to amounts stored without an anchor.
+  - **For this operator.** A depleted reacting species stalls the same way. Its rates, computed from
+    the stalled amount, stay finite, and the stage condition is unaffected. Its half-step changes
+    round to nothing, and its share of ΔG is then zero.
+- **For the stiff-front guard the stall is expected, not a failure** (§6.5). The guard checks:
+  - that every accepted step stays positive;
+  - that the stage condition refuses where it must;
+  - that a species driven below about ε × its anchor stalls there, positive and unrefused.
+- **The prototype's representation.** The prototype (probes 2 to 2d, C3) stores amounts directly,
+  without an anchor. That is immaterial there:
+  - no probed species falls more than a factor of about 40 below its start. The largest fall is
+    C3's half-domain sink, 2.5e-5 against 1e-3 mM;
+  - there, the anchored rounding of about ε × the anchor is near 1e-14 relative, far below every
+    error the probes report.
 - **Production from the trace is positive by construction,** since sources add.
 - **The stiff-front guard** runs through the checked step map, as D150's ruling 7 does:
   - a species at 1e-15 mM consumed by a fast sink;
@@ -827,17 +989,26 @@ without them. XLA's reduction order over the route axis depends on the program.
 | Projective mode C and the other coarse modes | Not admitted | `execution.projective` supports @1 to @3 only |
 | vmap batches, windows, restart, snapshots | Admitted | Per-world parameters and controls are bindings; the static network enters the batch signature |
 
-**Why RK4 is refused:**
-- (a) The coupled RK4 path takes operator rates on owned fields only, and this operator writes @3's
-  rows (injection's finding, v2 §4.1). So RK4 could run only as a Strang split around the inner
-  step, at second order. Such a run is no fourth-order reference, and it would be mistaken for one.
-- (b) RK4's sharp absolute energy bound (2e-8 pJ) adds nothing here. The operator's bookings are
-  exact and are checked at rounding in the face-free world (§3.4).
-- (c) Its step limit of 1e-4 s multiplies the steps by 10 to 2,500.
-- (d) D150's RK4 guard worlds stay the transport's sharp reference, without the network.
+**Why RK4 is refused** (confirmed by the lead with the advisor, 14 November 2026, with this
+framing; §9 question 5):
+- (a) **The split is not what distinguishes this operator.**
+  - The coupled RK4 path takes operator rates on owned fields only, and this operator writes @3's
+    rows (injection's finding, v2 §4.1). Under RK4 it would therefore run "split", with half-steps
+    around the inner RK4 step.
+  - D150's turnover and exchange run the same way. D150's RK4 runs are not unsplit references for
+    its operators either: what they sharpen is @3's transport and face heat, under the absolute
+    bound (D150 §4.2).
+  - So (a) holds for both, and it is not a reason to treat them differently.
+- **What distinguishes it:**
+  - (b) **RK4's sharp absolute energy bound (2e-8 pJ) adds nothing for this operator's own
+    bookings.** They are exact and are checked at rounding in the face-free world under IMEX (§3.4).
+  - (d) **D150's RK4 guard worlds stay the transport's sharp reference,** without the network, so
+    nothing is lost.
+  - **No consumer needs it.** MG0c's references are NumPy, and its runs are IMEX (§6).
+- (c) **Cost.** RK4's step limit of 1e-4 s multiplies the steps by 10 to 2,500.
 
-  RK4 is admitted once a coupled-rates contract extension, operator rates on inner fields, makes an
-  unsplit RK4 a true reference. This differs from D150, where RK4 is guarded (§9 question 5).
+RK4 is admitted when a consumer needs it, or once a coupled-rates contract extension (operator rates
+on inner fields) makes an unsplit RK4 a reference for the coupled reaction–transport system.
 
 **Why the stationary analysis is refused:**
 - (e) It refuses the composite's ID (D150 probe 2).
@@ -850,8 +1021,9 @@ plus per-species scaling, and continuation of Turing bifurcations would be worth
 
 ### 4.7 Cost
 
-- **Per node and sub-step:** three rate evaluations and three stage-condition evaluations over the
-  node's routes. That is O(R) work for R routes, small beside the dense field (D150 §4.4).
+- **Per node and half-step:** three rate evaluations and three stage-condition evaluations over the
+  node's routes, plus one divided-difference potential per species for the attribution. That is
+  O(R) work for R routes, small beside the dense field (D150 §4.4).
 - **Probe 1.** The species-only chain costs 2.2 to 2.7 ms per step at 32 nodes and 4.1 ms at 128
   nodes, on one CPU core with host checks, after a compile of about 15 s. The network adds
   O(R × N) work per half-step (**S**).
@@ -873,7 +1045,7 @@ plus per-species scaling, and continuation of Turing bifurcations would be worth
 | @3 alone; `electrode_current_injection@1` | Composes | No view conflict. Injection refuses neutral carriers, so it never writes the reacting rows |
 | D150's `scheduled_species_turnover@1` | Composes, except a route on a (species, node) the network writes (§1.1) | Writers of the same rows; fluxes add |
 | D150's `scheduled_species_exchange@1` | Composes | Transport across a patch, split from the network at O(dt²) in the composite's symmetric order |
-| `scheduled_cell_replacement@1` | Composes | Cell routes follow the occupant through their multipliers (§2.1); both read declared volumes; the event swaps every species' pool (D150 §5.2) |
+| `scheduled_cell_replacement@1` | Outside routes compose; **cell routes on replaced slots are refused** (the lead's ruling, §2.1) | Both read declared volumes, and the event swaps every species' pool (D150 §5.2). No version 1 consumer needs cell routes on replaced slots, and D150's occupant mechanism is still being coded. Version 1.1 door: the occupant rule through that mechanism |
 | Water; `restricted_cleft_lumen@1/@2`; replacement@2 | Refused (`CONFLICTS_VIEW` volumes; @2 requires water) | Concentrations and ΔG read the declared volume. Version 1.1 books at the view through water's endpoint free energy (D150 §5.1) |
 | `membrane_entity_state@1` | Composes | It provides membrane views, which the network never reads |
 | Insertion@1/@2, partition, bridge closure | Refused | The partition and insertion@2 close masks the network reads (`active`, `outside_active`); insertion@1 provides `outside_active` and the outside anchors; bridge closure requires the partition. Version 1.1, under the S5 living-interval rule (D150 §5.3) |
@@ -899,6 +1071,20 @@ references, which take no paper's data and fit nothing:
 - the closed-form linear reaction–diffusion solution (§6.2);
 - the linear stability analysis of a two-species system (§6.3);
 - the exact solutions of the same discrete systems (§6.4).
+
+**Who writes the references** (the lead's ruling with the advisor; §3.4).
+- **An agent that never reads the operator's code** writes these references and Appendix A's ΔG
+  tests. The engine agent runs them only through a usage note, as in S5.
+- **The probe numbers quoted below are the prototype's.** That prototype shares the scheme and its
+  author, so its numbers are development evidence. They guided the design and will guide the
+  tolerances, but they are not references of record.
+
+**The lead's reading of D138** (§9 question 9). MG0c is within D138, proceeding unless the user
+objects:
+- D152 names MG0c as the qualification case;
+- the morphogenesis plan's row names the dispersion relation;
+- the check runs a new engine operator on a textbook network and compares it with mathematics, not
+  with a paper's results.
 
 ### 6.2 Reference 1: the closed-form linear reaction–diffusion solution
 
@@ -1003,8 +1189,11 @@ reported).
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Fastest admissible mode | none | 1 | none | 2 | 3 | 4 | 5 |
 
-**Judged items** (proposed; tolerances are pinned at registration from the dt study and the reference
-terms, D150 §6's rule, and each run is made once from a clean snapshot):
+**Judged items.** These are the basis for registration (the lead's ruling with the advisor; §9
+question 8).
+- Tolerances are pinned at registration from the dt study and the reference terms (D150 §6's rule).
+- Each run is made once, from a clean snapshot.
+- The references are written independently of the operator's code (§6.1).
 
 | Item | Check |
 | --- | --- |
@@ -1026,9 +1215,13 @@ order in h.
 - two-dimensional patterns (they need sparse field IDs, D150 §3);
 - recovery after damage, which is E15's question.
 
-**A second world, after D150 v1 lands** (proposed, §10.3, C5): the same network inside cells, with
-secretion and uptake by D150's exchange, and diffusion on faces. Its NumPy reference is the linear
-stability of the three-compartment system. It checks the composition, not only the operator.
+**The second world is a separate, later item, not part of MG0c's first acceptance** (the lead's
+ruling, §9 question 8).
+- **The world.** The same network inside cells, with secretion and uptake by D150's exchange, and
+  diffusion on faces.
+- **Its reference.** The linear stability of the three-compartment system.
+- **What it checks.** The composition, not only the operator.
+- **When.** It follows C5 (§10.4) and D150 v1's code.
 
 ### 6.5 Guards
 
@@ -1038,12 +1231,18 @@ stability of the three-compartment system. It checks the composition, not only t
 - **Ledgers at the species' scale.** @3's per-species ledgers with D150's species-scale floors, on
   host and device. The negative control: a misbooked accumulator fails the species' row while the
   ions pass.
-- **Energy:** §3.4's four guards.
+- **Energy:** §3.4's guards.
 - **Positivity:**
-  - the stiff-front guard (§4.4);
-  - background insensitivity (D150 §1.3): a 10³ change of the trace moves every compared quantity
-    far below its tolerance;
-  - the refusal of a step beyond the stage condition, with the prior state kept bitwise.
+  - **the stiff-front guard** (§4.4). A species driven below about ε × its anchor stalls there,
+    positive and unrefused; that is expected, not a failure;
+  - **background insensitivity** (D150 §1.3). A 10³ change of a negligible trace (1e-12 to 1e-9 mM)
+    moves every compared quantity far below its tolerance.
+    - That includes H and W at mixed nodes, which are held to the true heat's own dependence (§3.4,
+      guard 5).
+    - A trace that is not negligible against the amounts a species reaches (probe 2d's 1e-6 against
+      3e-5 mM) changes the physics, and lies outside this guard;
+  - **the refusal of a step beyond the stage condition** (dt · L > 1), with the prior state kept
+    bitwise.
 - **Restart and vmap:**
   - restart at, before and after a multiplier change, and through a written snapshot in a fresh
     process, bitwise;
@@ -1075,11 +1274,15 @@ stability of the three-compartment system. It checks the composition, not only t
   nodes, at the declared volumes.
 - Passive detailed-balanced mass action; driven mass action (orders 0 to 3) and Michaelis–Menten
   (with or without a catalyst); Hill activation and inhibition factors on driven laws.
-- Declared moieties, sources and sinks; the exact energy bookings with the owned standard-potential
-  term.
-- SSPRK(3,3) half-steps with the stage condition; IMEX inner steps; vmap, windows and restart.
-- Composition with @3, injection, D150's turnover (outside the network's rows) and exchange,
-  replacement@1 (by the occupant rule on multipliers) and `membrane_entity_state@1`.
+- Declared moieties, sources and sinks; the exact energy bookings, attributed to routes by the
+  average-vector-field discrete gradient, with the owned standard-potential term.
+- SSPRK(3,3) half-steps at one sub-step with the stage condition (dt · L ≤ 1); IMEX inner steps;
+  vmap, windows and restart.
+- Composition with:
+  - @3 and injection;
+  - D150's turnover (outside the network's rows) and exchange;
+  - replacement@1, for outside routes and for cells that are not replaced;
+  - `membrane_entity_state@1`.
 
 ### 7.2 What version 1 does not include, and refuses
 
@@ -1087,11 +1290,20 @@ stability of the three-compartment system. It checks the composition, not only t
 - Held-bath sites, membrane-surface reactions and occupancy.
 - Volume providers (water, the lumen, replacement@2) and closers (insertion, partition, bridge).
 - RK4, the stationary analysis and the coarse modes.
-- Kinetics too stiff for the step (refused at run time); development runs only where dt · L > 1
-  with sub-steps (§4.3).
+- Kinetics with dt · L > 1, refused at run time (§4.3, from C3); sub-steps.
 - More than 7 species per world (D150's cap).
 - Per-carrier parameter sets; reversible Michaelis–Menten; multi-substrate mechanisms; delays.
-- A turnover route on a reacting (species, node).
+- A turnover route on a reacting (species, node) (Q3).
+- A cell route on a slot that replacement@1 replaces (Q6).
+- **The combined effect of Q3 and Q6.** In version 1 a species cannot both react inside a replaced
+  cell and be produced there by turnover:
+  - Q6 refuses reactions on the replaced slot;
+  - Q3 refuses turnover on any reacting row;
+  - turnover alone may still act in a replaced cell, under D150's occupant rule.
+
+  That is fine for MG0c, which has no replacement, and for catalysis at outside nodes, whose routes
+  compose with replacement@1. A consumer that needs both, E15's regeneration being the likely first,
+  waits for version 1.1's occupant rule for cell routes.
 
 ### 7.3 The doors (version 1.1 and later; each needs its own design and qualification)
 
@@ -1100,7 +1312,9 @@ stability of the three-compartment system. It checks the composition, not only t
 | Volume (water, the lumen) | `VIEW_READS` with D150's fallback; bookings at the view through water's endpoint free energy (D150 §5.1) |
 | Closers | S5's living-interval rule (D150 §5.3) |
 | Charged closed reactions (buffering) | Σ_s z_s ν_sr = 0 checked in integers; the field and electrode exactness of D150 §3 re-argued |
-| Stiff kinetics | A positive implicit or linearly implicit half-step, with its own order and positivity probes |
+| Stiff kinetics (dt · L > 1) | Sub-steps with a splitting that holds its order where C3 found reduction; or a positive implicit or linearly implicit half-step. Each needs its own order and positivity probes |
+| Cell routes on replaced slots | D150's occupant mechanism, once it lands (Q6) |
+| Turnover on reacting rows | A measured splitting between turnover and the network, if a consumer needs it (Q3) |
 | Coupled RK4 and the stationary analysis | Operator rates on inner fields in the composite's coupled right-hand side; per-species Newton scaling |
 | Chemostats inside cells | A held species, an open passive law whose partner has a declared potential |
 | Energy pools | Driven routes drawing on finite energy pools, making their work a metabolic cost (D150 question 11) |
@@ -1124,57 +1338,103 @@ stability of the three-compartment system. It checks the composition, not only t
 | Part | Agent-days |
 | --- | --- |
 | The operator's spec, parser and refusals (moieties, roles, sites, the turnover overlap, the species cap), binding | 1.0 |
-| The laws and the half-step: rates, factors, SSPRK(3,3) sub-steps, the stage condition, extents, the exact bookings with the standard term, idle selection | 1.5 |
+| The laws and the half-step: rates, factors, SSPRK(3,3), the stage condition on unidirectional fluxes, extents, the exact bookings with the attribution and the standard term, idle selection | 1.5 |
 | Ledger terms, observations, the summary, the tier-1 smoke | 0.5 |
-| Guards: NumPy references (Appendix A), the face-free and transport species-only worlds, negative controls, positivity, restart, vmap, crossrev, tier gates | 1.5 |
-| MG0c: the driver, its NumPy references (dispersion, mode propagators, the SciPy pattern), registration, judged runs (CPU, about 1 h) | 1.5 |
+| Guards in the engine branch: the face-free and transport species-only worlds, negative controls, positivity, restart, vmap, crossrev, tier gates | 1.0 |
+| **Independent references, by a second agent that never reads the operator's code:** Appendix A's ΔG tests, MG0c's references (dispersion, mode propagators, the SciPy pattern), and their usage note | 1.0 |
+| MG0c: the driver, registration, judged runs (CPU, about 1 h) | 1.0 |
 | **Total** | **6 (range 5 to 7)** |
 
 **Order:**
-1. after D150 v1's code lands (the adapter addition and the inventory-species helper);
-2. the contract-fit probe C1 (§10.3);
-3. the operator;
-4. its guards;
+1. **After D150 v1's code lands** (the adapter addition and the inventory-species helper).
+2. **The code branch's first milestone is the contract fit, C1** (§10.4). It is in the checkout,
+   behind its guards.
+3. The operator.
+4. Its guards.
 5. MG0c.
+
+**The independent references run in parallel.** They come from their own agent, with no access to
+the operator's code. The engine agent runs them only through their usage note, as in S5.
 
 Each step lands behind its tier-1 tests. Long runs go through `scripts/run_detached.sh`.
 
-## 9. Open questions
+## 9. Questions and rulings
+
+Rulings marked *ruled* are the lead's, with the advisor, 14 November 2026.
 
 **For the lead:**
 1. **The shared-state decision:** `network_reactions@1` stays separate, neither migrated nor wrapped
-   (§1.2). Confirm.
+   (§1.2).
+   - *Ruled:* confirmed, separate.
 2. **The energy rule:** exact ΔG bookings, the three node cases, and the owned standard-potential
-   term as a free-energy field outside the flows (§3.3). Confirm, including the field's role in the
-   energy-role table.
+   term as a free-energy field outside the flows (§3.3).
+   - *Ruled:* confirmed: exact ΔG, the three node cases, and the owned standard-potential term as a
+     declared free-energy term, not a flow. This was subject to the mixed-node item, which the lead
+     made blocking.
+   - *That item's outcome* (probe 2d, §3.3):
+     - the mixed-node stage quadrature is replaced by the average-vector-field attribution of the
+       exact ΔG to routes, which keeps the network's coupling whole;
+     - the three node cases become special cases of one rule;
+     - H ≥ 0 at mixed nodes now rests on the dissipation check. Probe 2d found no negative step
+       heat.
+   - *Recommendation:* adopt the attribution. The lead confirms or rejects it at acceptance.
 3. **One local-kinetics writer per (species, node):** refuse a turnover route on a reacting row
-   (§1.1). Confirm, or relax it and measure the splitting.
-4. **Numerics:** SSPRK(3,3) with θ = 1/2 and static sub-steps; stiff kinetics refused at run time,
-   with a Patankar-type or implicit half-step as a later door (§4.2). Confirm θ and the choice.
-5. **RK4 refused,** not guarded as in D150 (§4.6). Confirm.
-6. **Replacement@1:** compose with the occupant rule on per-site multipliers and shared parameters,
-   or refuse reaction routes on replaced slots in version 1 (§2.1)?
-7. **Finding 3:** version 1 refuses reacting species with membrane or junction permeability. Should
-   @3's explicit bound gain the neutral material term (D148), and does that matter for D150 v1?
-8. **MG0c's registration:** the domains, items and tolerances of §6.4, and whether the second world
-   (cells with exchange) belongs to MG0c or to a later item.
+   (§1.1).
+   - *Ruled:* confirmed for version 1, with a door later (§7.3).
+4. **Numerics:** SSPRK(3,3), θ = 1/2, stiff kinetics refused at run time (§4.2).
+   - *Ruled:* confirmed: SSPRK(3,3), θ = 1/2 on the unidirectional-flux condition, refused not
+     repaired. A Patankar-type or implicit half-step stays a door.
+   - *Ruled:* the "labelled development runs" for dt · L > 1 with sub-steps are replaced by C3's
+     outcome; until C3 shows the order holds, version 1 refuses dt · L > 1 at run time.
+   - *C3's outcome* (§4.3): second order to dt · L of about 2 in two worlds, order reduction beyond,
+     and no clean order in the nonlinear binding world. So version 1 refuses dt · L > 1, takes one
+     sub-step, and declares no sub-step count.
+5. **RK4 refused,** not guarded as in D150 (§4.6).
+   - *Ruled:* refusal confirmed, with the framing fixed. D150's split parts also run "split" under
+     RK4, so the split applies to D150 too. The distinguishing reasons are:
+     - exact bookings, checked at rounding in the face-free world;
+     - D150's RK4 worlds stay the transport's sharp reference;
+     - no consumer needs it.
+
+     §4.6 is rewritten so that it no longer implies D150's RK4 runs are unsplit references for its
+     operators.
+6. **Replacement@1:** compose with the occupant rule, or refuse reaction routes on replaced slots in
+   version 1 (§2.1)?
+   - *Ruled:* in version 1, refuse cell routes on slots that replacement@1 replaces. Outside routes
+     compose. This is a version 1.1 door: no version 1 consumer needs it, and D150's occupant
+     mechanism is still being coded.
+   - §2.1, §5, §7.1 and §7.2 match, and §7.2 records the combined effect with question 3.
+7. **Finding 3:** version 1 refuses reacting species with membrane or junction permeability.
+   - *Ruled:* version 1 keeps the refusal. C4 runs on a separate track and does not gate acceptance.
+   - *C4's result* is in §10.3.
+8. **MG0c's registration:** §6.4's domains, items and tolerances, and the second world.
+   - *Ruled:* §6.4's domains and items are the basis, with tolerances pinned at registration from
+     the dt study.
+   - *Ruled:* the second world (cells with exchange) becomes a separate later item after C5. It is
+     not part of MG0c's first acceptance.
 
 **For the user:**
 
-9. MG0c uses Schnakenberg's textbook network as a declared test case, compared with mathematics
-   (the dispersion relation and exact discrete solutions), not with any paper's results. Is that
-   within D138 as written, as this note assumes?
+9. MG0c uses Schnakenberg's textbook network as a declared test case, compared with mathematics (the
+   dispersion relation and exact discrete solutions), not with any paper's results. Is that within
+   D138 as written?
+   - *The lead's reading, proceeding unless the user objects:* MG0c is within D138. D152 names MG0c
+     as the qualification case, and the plan's row names the dispersion relation. MG0c runs a new
+     engine operator on a textbook network and compares it with mathematics.
 10. Should reactions on charged species, such as buffering on the pump family, and driven routes
-    drawing on finite energy pools come later (§7.3)?
+    drawing on finite energy pools come later (§7.3)? *Open for the user.*
 11. Should `network_reactions@1`'s kinetic branches eventually be retired, or re-expressed through
-    this operator? Not authorised now; recorded only.
+    this operator? Not authorised now; recorded only. *Open for the user.*
 
 ## 10. Pre-code checks (14 November)
 
 No engine code was added or changed.
-- **Evidence:** the scripts, logs and JSON are in the evidence folder's `probe1/` and `probe2/`.
+- **Evidence:** the scripts, logs and JSON are in the evidence folder's `probe1/`, `probe2/` and
+  `probe3/`.
 - **Execution:** each probe ran as its own unit through `scripts/run_detached.sh` (`--oom-first`,
   `--wait-headroom`). memory.events were all zero.
+- **The prototype probes (2 to 2d, C3, C3b) are development evidence, not references of record**
+  (§3.4).
 
 | Probe | Question | Where | Exit, wall time, peak |
 | --- | --- | --- | --- |
@@ -1182,6 +1442,12 @@ No engine code was added or changed.
 | 2 (`cells-sir-probe2`) | The proposed numerics and bookings, and MG0c's dispersion design | NumPy and SciPy only (a prototype in the evidence folder, never under `validation/`), CPU 5, 2 GB cap | 0, 357 s, 49 MB |
 | 2b (`cells-sir-probe2b`) | Follow-ups: decaying modes over decay-matched windows; turnover's closed form | As probe 2, CPU 7, 1 GB cap | 0, 8 s, 46 MB |
 | 2c (`cells-sir-probe2c`) | After the advisor's review: the stage condition on a passive route running in reverse, and the heat sign near θ | As probe 2, CPU 5, 1 GB cap | 0, under 1 s, 44 MB |
+| 2d (`cells-sir-probe2d`) | The lead's blocking item: the mixed-node onset; the stage quadrature against the average-vector-field attribution | As probe 2, CPU 5, 1 GB cap | 0, 2 s, 46 MB |
+| C3 (`cells-sir-probe-c3`) | Stiffness relative to the split step, dt · L from 0.25 to 20 | As probe 2, CPU 7, 1 GB cap | 0, 16 s, 49 MB |
+| C3b (`cells-sir-probe-c3b`) | C3's nonlinear binding world: its reference and its sub-steps | As probe 2, CPU 5, 1 GB cap | 0, 36 s, 53 MB |
+| C4 (`cells-sir-probe-c4`) | Finding 3: a neutral species on a junction or membrane, z around 1 and 2 | Clean snapshot of ac5a251, CPU 7, 3 GB cap | 0, 113 s, 0.63 GB |
+| C4b (`cells-sir-probe-c4b`) | C4 at small z, and a mixed variant with ion leaks | As C4 | 0, 153 s, 0.62 GB |
+| C4c (`cells-sir-probe-c4c`) | C4 in a world whose shared bound is set by another species' resolved flows | As C4 | 0, 167 s, 0.75 GB |
 
 ### 10.1 Probe 1: MG0c's transport world on the engine
 
@@ -1234,30 +1500,74 @@ test the condition. Probe 2c does.
 **What the probes did not test:** the operator itself on the engine, which does not exist yet; JAX
 and GPU behaviour; the composite's contract plumbing for this operator. C1 covers the last.
 
-### 10.3 Proposed before code (for the lead)
+### 10.3 After the lead's review: 2d, C3 and C4
 
-- **C1, the contract fit, by an in-process probe operator.**
-  - **What.** A probe script defines the proposed operator class in its own process, registers it at
-    run time, and leaves the snapshot's source on disk unchanged. It runs probe 1's chain with the
-    Schnakenberg network inside the composite.
+**Probe 2d, the mixed-node onset** (blocking; prototype). See §3.3 for the world and the tables.
+- **The first draft's stage quadrature** overbooks a passive switch-on from a 1e-12 mM trace by 34–54%
+  in the first step, and by 1.3–6.1% of the whole heat at 5 s. W carries the same absolute error,
+  and the closure stays exact, so no guard sees it.
+- **The average-vector-field attribution** is within 0.06–0.33% in the first step, and within
+  0.005–0.063% at 5 s, which is second order.
+- **Trace sensitivity.** Across a 10³ change of a negligible trace the attribution moves with the
+  true heat: −6.32e-5 against −6.27e-5, where the quadrature moves −1.66e-2.
+- **Sign and closure.** No step heat was negative. The closure was at most 2e-18 pJ.
+- **Recommendation, adopted in §3.3:** the attribution, one rule for every node.
+
+**Probe C3, stiffness relative to the split step** (prototype; §4.3). W1 and W3 hold second order to
+dt · L of about 2 and fall toward first order beyond. W2, nonlinear fast binding, shows no clean
+order at any dt · L, with small errors at dt · L ≤ 1. C3b confirmed that this is neither W2's
+reference (1.6e-14 between two solvers) nor its sub-integrator (4× the sub-steps moved each error by
+at most 1.1%).
+- **The rule:** version 1 refuses dt · L > 1 at run time, with one sub-step and no declared count.
+
+**Probe C4, finding 3 on the engine as it is** (separate track; it does not gate acceptance).
+- **The worlds.** A neutral species X on a junction between two 1 pL cells, or on a membrane patch
+  between a 1 pL cell and a 1,000 pL node. The parameter is z = dt P A/V. The exact per-step
+  relaxation exponent of the concentration difference is x: 2z on the junction, about z on the
+  membrane.
+- **What the polynomial does.** For @3's explicit ARS(2,2,2) map the difference evolves by
+  g = 1 − x + x²/2 per step. g never changes sign, so the signature is slow decay for x up to 2 and
+  growth beyond, not oscillation.
+
+| What | Result |
+| --- | --- |
+| The definition | Never refuses: `explicit_rate_bound` is 0 in these worlds (no faces, impermeant ions), and the step checks pass at every z |
+| The run-time membrane-rate rule | dt × `membrane_rate` = 0 at every z: it is z²-weighted and cannot see X |
+| Species-only worlds, the host ledgers (C4, C4b) | Every run passes up to x = 0.04 (junction) and 0.05 (membrane), with errors against the exact relaxation of at most 1.0e-4 and 1.6e-4 of the initial difference. The energy ledger refuses at row 1 from x = 0.1 to 4 (the outside material ledger, at x ≈ 2 on the membrane) |
+| Positivity | For x > 2 the difference grows (g > 1) until the domain refuses: step 6 at x = 2.2 (junction) and step 8 at x = 3 (membrane) |
+| A world whose shared bound is set by other flows (C4c: a second neutral species on a face, about 26 pJ/s of resolved face heat) | **Passes silently up to x = 1.** Every host check passes, with errors of 6.6e-4, 2.3e-2 and 1.3e-1 of the initial difference at x = 0.1, 0.5 and 1.0 (junction and membrane alike, over 30 steps). From x = 1.5 the energy ledger refuses at row 1, and the dissipation check at x = 3 |
+| The mixed variant with ion leaks (C4b) | Uninformative: the ions' own leak onset (dt × membrane_rate 0.56 and 0.28) failed the energy ledger at row 1 at every z |
+
+- **So the gap is real.** It is loud in species-only worlds, where the energy ledger is at the
+  species' scale. It is silent wherever other flows set the shared bound, up to x of about 1: the
+  decay is too slow and nothing refuses. That is D150's blindness, applied to transport.
+- **The ruling stands:** version 1 keeps its refusal of reacting species with membrane or junction
+  permeability.
+- **For the lead (D148):** whether @3's `explicit_rate_bound` should gain the z = 0 junction and
+  membrane material rates. It bears on any @3 definition that declares a neutral permeant species
+  today.
+
+### 10.4 Still to come
+
+- **C1, the contract fit: the code branch's first milestone** (re-specified by the lead's ruling).
+  - **Why not a probe.** As first written, C1 was an operator class registered in-process from the
+    evidence folder. That would be a parallel implementation under `/mnt/workspaces`, which
+    AGENTS.md forbids.
+  - **Where it lives instead.** It is the first milestone of the code branch, in the checkout and
+    behind its guards.
   - **What it must show:**
     - the field map (one owner per row);
     - every host ledger at the species' floors;
     - the face-free energy world at rounding, and the negative controls;
     - zero multipliers bitwise idle;
     - restart and a vmap batch.
-  - **When.** After D150 v1 lands, since it uses D150's adapter addition and helper. It de-risks the
-    operator's code more than any other check.
+  - **When.** After D150 v1 lands, since it uses D150's adapter addition and helper.
 - **C2, the mixed-world blindness of these bookings.** D150's probe 2 part C method, in a heredity
-  world with a reacting pair at µM and nM: the bound/booking ratio for the docstring statement.
-- **C3, stiffness relative to the split step.** Worlds with dt · L of 2 to 20 handled by sub-steps:
-  the measured splitting order and the onset of any order reduction. It decides whether version 1
-  refuses dt · L > 1 or admits it with sub-steps.
-- **C4, finding 3 on the engine as it is.** A neutral species through a junction with dt P A/V near
-  and above 1: is the run refused (domain), or silently oscillatory? This informs question 7, which
-  also bears on D150 v1.
-- **C5, MG0c's second world.** The network in cells with D150's exchange and faces, against the
-  three-compartment linear stability analysis (NumPy). It needs D150 v1.
+  world with a reacting pair at µM and nM: the bound/booking ratio for the docstring statement. C4c's
+  masking result shows the same mechanism for transport.
+- **C5, the composition world.** The network in cells with D150's exchange and faces, against the
+  three-compartment linear stability analysis (NumPy). It needs D150 v1, and precedes the later
+  item that §6.4's second world becomes.
 
 ## Appendix A. Equations for the independent references
 
@@ -1288,11 +1598,19 @@ The unidirectional fluxes are used, never the signed net rate of a passive route
 
     ΔG_i = RT Σ_s [δ_s (ln(a_s/V_i) − 1) + (a_s + δ_s) log1p(δ_s/a_s)] + Σ_s μ°'_s δ_s.
 
-**Bookings.**
-- **Driven only:** W = ΔG and H = 0.
-- **Passive only:** H = −ΔG and W = 0.
-- **Mixed:** H = h_sub Σ_k b_k RT Σ_passive A_r J_r(Y_k), where
-  A_r = Σ α ln a − Σ β ln a − Σ ν μ°/RT; and W = ΔG + H.
+**Bookings: the average-vector-field attribution** (McLachlan, Quispel & Robidoux 1999).
+- **Per species,** with Δ_s = n'_s − n_s and x = Δ_s/n_s:
+
+      μ̄_s = RT [ln(n_s/V_i) + (1 + x) log1p(x)/x − 1] + μ°'_s
+          (the ratio is 1 + x/2 − x²/6 when |x| < 1e-6).
+
+  This is the divided difference [g_s(n'_s) − g_s(n_s)]/Δ_s of g_s(n) = RT n (ln(n/V_i) − 1) + μ°'_s n.
+  So Σ_s μ̄_s Δ_s = ΔG_i exactly.
+- **Per route:** ΔG_r = Δξ_r Σ_s ν_sr μ̄_s. Then Σ_r ΔG_r = ΔG_i, since Δ_s = Σ_r ν_sr Δξ_r.
+- **H = −Σ_passive ΔG_r** and **W = Σ_driven ΔG_r**. A node with one class gets W = ΔG or H = −ΔG.
+- **The dissipation integral for the references** (the independent check of H at mixed nodes):
+  dH/dt = RT Σ_passive J_r A_r, with A_r = Σ α ln a − Σ β ln a − Σ ν μ°/RT, integrated with the
+  amounts by a high-order solver at tight tolerance from the same start (probe 2d's method).
 - **The standard term** gains Σ_r ΔG°'_r Δξ_r, with ΔG°'_r = Σ_s ν_sr μ°'_s.
 - **The ledger:** Δ(chemical) + Δ(standard) + H − W = 0.
 
@@ -1352,6 +1670,9 @@ folder), with no project details sent. The books and the 1910 and 1913 papers we
 - Maini PK, Woolley TE. On the Turing model as cited by the [morphogenesis plan](MORPHOGENESIS_PLAN.md)
   (people.maths.ox.ac.uk/maini/PKM publications/462.pdf; its claim C2c in that plan's verified
   record).
+- McLachlan RI, Quispel GRW, Robidoux N. Geometric integration using discrete gradients. *Phil Trans
+  R Soc Lond A* 1999;357(1754):1021–1045. doi:10.1098/rsta.1999.0363 (the average-vector-field
+  discrete gradient of §3.3)
 - Michaelis L, Menten ML. Die Kinetik der Invertinwirkung. *Biochem Z* 1913;49:333–369.
 - Mielke A. A gradient structure for reaction–diffusion systems and for energy-drift-diffusion
   systems. *Nonlinearity* 2011;24(4):1329–1346. doi:10.1088/0951-7715/24/4/016 (the dissipative
