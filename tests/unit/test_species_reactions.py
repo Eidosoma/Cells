@@ -1,7 +1,7 @@
-"""Tier-1 smoke of local_species_reactions@1 at milestone 1, the contract fit (D152 version 1).
+"""Tier-1 smoke of local_species_reactions@1: its contract (D152 version 1, milestones 1 and 2).
 
-docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.4, §2.1-§2.5, §3.3, §4.5, §4.6 and §10.4 (C1). Host
-side, no compile, on the canonical enzyme network (validation/tissue/species_reactions_fixtures):
+docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.4, §2.1-§2.5, §3.3, §4.5, §4.6, §10.4 (C1) and §11.
+Host side, no compile, on the canonical enzyme network (species_reactions_fixtures):
 * the registration and the contract's declarations; the field map (one owner per row: @3 owns both
   amount fields and the operator writes them, booked in its own accumulators); the energy roles
   (heat and work fields in the flows and the dissipation check; the standard-potential term and the
@@ -9,12 +9,14 @@ side, no compile, on the canonical enzyme network (validation/tissue/species_rea
 * the definition round trip; every law parameter bound per world as a layout array and every
   multiplier a control (per-site overrides), with identities and parameters outside the batch
   signature and the static network in it;
-* idleness: no routes, statically idle; every multiplier zero, the start state selected bitwise (a
-  planted -0.0 kept); milestone 1 refuses a step with a positive multiplier;
+* idleness against the live half-step: no routes, statically idle; every multiplier zero, the
+  start state selected bitwise (planted -0.0 kept); with one route on, an idle node keeps every
+  field and a catalyst's row (read, never written) keeps its planted -0.0;
 * the ledger terms against @3's own balances: a hand-built consistent booking (c0 != 1, mu° != 0, a
   mixed cell and a driven outside node) closes the material ledgers exactly and the energy ledger at
   rounding, and three misbookings (the heat's sign, a dropped standard term, one accumulator) fail
-  the ledger each touches; the operator's domain refuses its own misbookings;
+  the ledger each touches; the operator's domain refuses its own misbookings (a heat element at
+  -1e-18 pJ is the dissipation check's);
 * the stationary analysis' refusal, and the energy-guard statement in the docstring.
 """
 
@@ -99,7 +101,7 @@ def test_the_field_map_gives_one_owner_per_row(bound):
     assert fields["control"]["reaction_multiplier"] == LAW
     assert fields["views"] == {}
     assert {k: v for k, v in fields["observations"].items() if v == [LAW]} == {
-        k: [LAW] for k in OWN
+        k: [LAW] for k in (*OWN, *species_reactions.READOUT_COLUMNS)
     }
 
 
@@ -272,30 +274,57 @@ def control(p, values):
     return SimpleNamespace(reaction_multiplier=np.asarray(values, dtype=float))
 
 
+def planted(spec, state):
+    """The start state with -0.0 planted where an added computed zero would flip it: an ion row,
+    the catalyst E's row at ecs_0 (read by the conversion, never written) and the cell's work."""
+    ecs = [c.id for c in spec.model.extracellular].index("ecs_0")
+    s = state._replace(
+        amount_increment=state.amount_increment.copy(),
+        extracellular_amount_increment=state.extracellular_amount_increment.copy(),
+        reaction_work_pJ=state.reaction_work_pJ.copy(),
+    )
+    s.amount_increment[row(spec, "Na"), 0] = -0.0
+    s.extracellular_amount_increment[row(spec, "E"), ecs] = -0.0
+    s.reaction_work_pJ[0] = -0.0
+    return s, ecs
+
+
+def bits(value):
+    return np.asarray(value).tobytes()
+
+
 def test_zero_multipliers_select_the_start_state_bitwise(bound):
-    """Structural at milestone 1 (the half-step is the skeleton); the same test bites at
-    milestone 2, where the half-step computes a new state and selects it by multiplier."""
-    _, _, op, state, p = bound
-    planted = state._replace(amount_increment=state.amount_increment.copy())
-    planted.amount_increment[0, 0] = -0.0  # An added 0.0 would flip it.
-    idle, ok = op.half_step(planted, 0.5, control(p, np.zeros(5)), p, xp=np)
+    """§4.5 against the live half-step: with every multiplier zero every field is its start value
+    bit for bit (planted -0.0 kept); the operator is not statically idle."""
+    spec, _, op, state, p = bound
+    start, _ = planted(spec, state)
+    idle, ok = op.half_step(start, 0.5, control(p, np.zeros(5)), p, xp=np)
     assert ok
-    for a, b in zip(idle, planted, strict=True):
-        assert np.asarray(a).tobytes() == np.asarray(b).tobytes()
+    for a, b in zip(idle, start, strict=True):
+        assert bits(a) == bits(b)
     assert not op.statically_idle(p)
 
 
-def test_milestone_1_refuses_an_active_step(bound):
-    _, _, op, state, p = bound
-    for k in range(5):
-        values = np.zeros(5)
-        values[k] = 1.0
-        moved, ok = op.half_step(state, 0.5, control(p, values), p, xp=np)
-        assert not ok
-        assert all(
-            np.asarray(a).tobytes() == np.asarray(b).tobytes()
-            for a, b in zip(moved, state, strict=True)
-        )
+def test_an_active_node_never_offsets_a_read_row_and_an_idle_node_stays_bitwise(bound):
+    """Only the conversion at ecs_0 is on: the cell, whose routes are all off, keeps every field
+    bit for bit; at ecs_0 the catalyst E's row (read, never written) keeps its planted -0.0, while
+    S and P move."""
+    spec, _, op, state, p = bound
+    start, ecs = planted(spec, state)
+    moved, ok = op.half_step(start, 0.01, control(p, [0.0, 0.0, 1.0, 0.0, 0.0]), p, xp=np)
+    assert ok
+    assert bits(moved.amount_increment) == bits(start.amount_increment)  # The idle cell.
+    for name in species_reactions.CELL_FIELDS:
+        assert bits(getattr(moved, name)) == bits(getattr(start, name)), name
+    outside = moved.extracellular_amount_increment
+    assert bits(outside[row(spec, "E"), ecs]) == bits(np.float64(-0.0))
+    assert outside[row(spec, "S"), ecs] < 0 < outside[row(spec, "P"), ecs]
+    others = [k for k in range(outside.shape[0]) if k not in (row(spec, "S"), row(spec, "P"))]
+    assert bits(outside[others]) == bits(start.extracellular_amount_increment[others])
+    extent = moved.reaction_extent_fmol
+    assert extent[2] > 0 and bits(extent[[0, 1, 3, 4]]) == bits(
+        start.reaction_extent_fmol[[0, 1, 3, 4]]
+    )
 
 
 def test_no_routes_is_statically_idle():
@@ -416,7 +445,6 @@ def test_the_domain_refuses_its_own_misbookings(bound):
     E, Na = row(spec, "E"), row(spec, "Na")
     cases = dict(
         negative_produced=("reaction_produced_fmol", (E, 0), -1e-18),
-        negative_heat=("reaction_outside_dissipated_energy_pJ", (1,), -1e-18),
         ion_row=("reaction_consumed_fmol", (Na, 0), 1e-18),
         held_bath=("reaction_outside_work_pJ", (0,), 1e-18),  # The bath (outside slot 0).
         driven_extent=("reaction_extent_fmol", (1,), -1e-18),
@@ -429,6 +457,13 @@ def test_the_domain_refuses_its_own_misbookings(bound):
     passive = np.array(state.reaction_extent_fmol, copy=True)
     passive[0] = -1e-18  # A passive route's extent is signed.
     assert op.domain_valid(state._replace(reaction_extent_fmol=passive), p, None, xp=np)
+    # A heat element at -1e-18 pJ (a passive-only node's -dG at rounding, §3.3) is the composite's
+    # dissipation check's to judge (-1e-12 pJ), not the domain's.
+    heat = np.array(state.reaction_outside_dissipated_energy_pJ, copy=True)
+    heat[1] = -1e-18
+    assert op.domain_valid(
+        state._replace(reaction_outside_dissipated_energy_pJ=heat), p, None, xp=np
+    )
 
 
 # ------------------------------------------------------------------ refusals and statements
@@ -445,11 +480,10 @@ def test_the_energy_guard_statement_is_in_the_docstring():
     def normalized(text):
         return re.sub(r"\s+", " ", text)
 
-    assert "ENERGY_GUARD_STATEMENT holds for these bookings" in normalized(
-        species_reactions.__doc__
-    )
     statement = normalized(species_reactions.ENERGY_GUARD_STATEMENT)
-    assert "face-free species-only world" in statement and "NumPy ΔG test per law" in statement
+    assert statement in normalized(species_reactions.__doc__)  # The full statement, as D150's.
+    for phrase in ("0.35 times", "409 times at nM", "face-free", "NumPy ΔG test per law"):
+        assert phrase in statement, phrase
 
 
 def test_padding_and_copies_do_not_change_the_contract():

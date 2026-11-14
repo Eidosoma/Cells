@@ -39,11 +39,38 @@ checked in integers; any other must be a pure source (every nu >= 0) or a pure s
 or it is refused, as is one that changes no species. Neutral species only, so every charge term the
 operator touches is an exact zero (§3.2).
 
+The half-step (§4.2, Appendix A): SSPRK(3,3) in Butcher form at one sub-step, h = dt/2, per node
+on the combined node axis (cells, then outside nodes): Y1 = n, Y2 = n + h nu J(Y1), Y3 = n + h nu
+(J(Y1) + J(Y2))/4, dxi = h (J(Y1) + J(Y2) + 4 J(Y3))/6, dn = nu dxi, so the material identity
+holds by construction. The stage condition h max L <= 1/2 at every stage, on unidirectional fluxes
+(a passive route's forward flux consumes its reactants and its reverse flux its products), is
+dt L <= 1; with it every stage is positive (the SSP property). A failure, or any non-finite or
+non-positive stage or result, refuses the step (refused, never repaired); stage_report diagnoses
+one on the host.
+
 Energy (§3.3). Per node, G = RT sum n (ln(n/V) - 1) + sum mu°' n with mu°' = RT (mu°/RT - ln c0):
 @3's chemical term on the touched rows plus the standard-potential term, which @3's term lacks and
-the operator owns as a declared free-energy term, not a flow (`reaction_standard_energy_pJ`). Heat
-(HEAT_FIELDS) is booked for spontaneous steps and work (WORK_FIELDS) for driven ones, so the energy
-ledger gains standard term + heat - work. ENERGY_GUARD_STATEMENT holds for these bookings.
+the operator owns as a declared free-energy term, not a flow (`reaction_standard_energy_pJ`).
+Per node and half-step the exact dG of the written rows, anchored at the half-step's start (D150's
+adapter.species_chemical_free_energy_pJ, @3's own term one row at a time, plus the standard term),
+is booked by the node's class in the step, which its multipliers set: driven only, W = dG and
+H = 0; passive only, H = -dG and W = 0; both, H = sum of the passive routes' H_r and W = dG + H,
+each H_r by the per-route hybrid: a route whose three stage rates and end-state affinity share one
+nonzero sign books its average-vector-field share -dxi_r sum_s nu_sr mu-bar_s (McLachlan, Quispel
+& Robidoux 1999), with mu-bar_s the divided-difference potential over the half-step; any other
+books its stage quadrature h sum_k b_k RT J_r(Y_k) A_r(Y_k) >= 0. So W - H = dG exactly, and the
+energy ledger gains standard term + heat - work. The known limit (§3.3, option (a)): at a half-step
+in which a driven route carries a trace species across a passive route's equilibrium, the
+quadrature samples the log-singular start and overbooks that step's heat (5.4-5.6 times at a
+1e-12 mM trace in probe 2g), W by the same amount; guard and production worlds stay resolved at
+every switch-on.
+
+Energy guards (ENERGY_GUARD_STATEMENT). Under the IMEX solvers the shared energy bound is set by the
+ions' flows, not by these bookings: in C2's mixed heredity chain it was 0.35 times this operator's
+booking |W - H| with the reacting pair at µM and 409 times at nM, so an error the size of a booking
+is seen at µM and unseen at nM, and a 1e-6 relative error is unseen at both; the face-free
+species-only world, where this operator is the only energy flow, judged at rounding, and a NumPy ΔG
+test per law are the guards of record.
 
 Schedule `reaction_controls` (§2.1): per reaction (site null) and optionally per site, a
 piecewise-constant multiplier m >= 0 from time 0, changing at exact multiples of dt inside the
@@ -58,18 +85,20 @@ declared volumes, masks and outside anchors (CONFLICTS_VIEW: water, the lumens, 
 water, insertion@1 and @2, the partition and the bridge). The stationary analysis refuses the
 composite by its own ID check (§4.6).
 
-Milestone 1 (the contract fit, §10.4): the declaration, the refusals, the binding, the contract
-parts (ENTITY_WRITES, the energy roles, the ledger and magnitude terms) and idleness. The half-step
-selects its start state when every multiplier is zero and refuses any step with a positive
-multiplier: the laws, the SSPRK(3,3) half-step under its stage condition and the bookings land at
-milestone 2.
+Benign padding (the lead's ruling Q11 (a)): padded nodes hold an amount of 1 and a volume of 1,
+padded factor slots K = 1 and n = 1 with kind 0, other laws' K_M 1, so every unused law branch and
+padded entry stays finite.
 
 Idle (§4.5): no route, statically idle; every multiplier zero in a step, the start state is selected
 (never offset by a computed zero), so every field is bitwise the composition's without the operator.
+Within a step, each (species, node) entry is written only where a route with a positive multiplier
+changes it, and each node's fields only where such a route acts: a catalyst's or factor's row is
+read, never offset, and an idle node beside an active one keeps every field bit for bit.
 """
 
 import math
 from dataclasses import dataclass
+from typing import NamedTuple
 
 import jax.numpy as jnp
 import numpy as np
@@ -77,11 +106,17 @@ import numpy as np
 from cells.core import pump_composite_spec as composite_spec
 from cells.core.multispecies_spec import identifier
 from cells.core.specs import ConfigError, _fields
+from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
+from cells.models.operators.species_turnover import row_sum, set_rows
+from cells.processes.electrochemistry import R
+from cells.processes.mass_action import reversible_flux
 
 LAW_ID = "local_species_reactions@1"
-STEP_ID = "idle_selection_active_steps_refused@1"  # Milestone 1; the half-step is milestone 2's.
+STEP_ID = "ssprk33_unidirectional_stage_condition_exact_bookings@1"
+THETA = 0.5  # The stage condition h max L <= THETA at every stage (dt L <= 1 at one sub-step).
+SERIES_BELOW = 1e-6  # |x| below which mu-bar's ratio (1 + x) log1p(x) / x takes its series.
 CONTROLS_KEY = "reaction_controls"
 TURNOVER_LAW = "scheduled_species_turnover@1"
 PASSIVE_LAW = "ideal_detailed_balance_mass_action@1"
@@ -101,12 +136,14 @@ CATALYTIC_RATE, MAX_RATE = "catalytic_rate_per_s", "max_rate_mM_per_s"
 REACTION_KEYS = {"id", "sites", "reactants", "products", "law", "factors"}
 MAX_MOLECULARITY = 3
 # D150's statement (secreted-species design §7, the lead's ruling 4), adapted to these bookings
-# (this note §3.4); this operator's own bound/booking ratio is C2's (§10.4).
+# with C2's measured ratios (this note §3.4, §10.4; tests/unit/test_species_reactions_guards.py).
 ENERGY_GUARD_STATEMENT = (
-    "Under the IMEX solvers the shared energy bound is set by the ions' flows and is blind to "
-    "species bookings at µM–nM (D150's probe 2: bound/change 1.7 to 1,721 in a mixed world); the "
-    "face-free species-only world, where this operator is the only energy flow, and a NumPy ΔG "
-    "test per law are the guards of record."
+    "Under the IMEX solvers the shared energy bound is set by the ions' flows, not by these "
+    "bookings: in C2's mixed heredity chain it was 0.35 times this operator's booking |W - H| "
+    "with the reacting pair at µM and 409 times at nM, so an error the size of a booking is seen "
+    "at µM and unseen at nM, and a 1e-6 relative error is unseen at both; the face-free "
+    "species-only world, where this operator is the only energy flow, judged at rounding, and a "
+    "NumPy ΔG test per law are the guards of record."
 )
 
 STATE_AXES = {
@@ -145,10 +182,21 @@ NON_NEGATIVE_FIELDS = (
     "reaction_consumed_fmol",
     "reaction_outside_produced_fmol",
     "reaction_outside_consumed_fmol",
-    "reaction_dissipated_energy_pJ",
-    "reaction_outside_dissipated_energy_pJ",
     "reaction_energy_magnitude_pJ",
     "reaction_outside_energy_magnitude_pJ",
+)
+SIGNED_FIELDS = (  # Finite; the heat's sign is the composite's dissipation check's (_own_valid).
+    "reaction_extent_fmol",
+    "reaction_dissipated_energy_pJ",
+    "reaction_outside_dissipated_energy_pJ",
+    "reaction_work_pJ",
+    "reaction_outside_work_pJ",
+    "reaction_standard_energy_pJ",
+    "reaction_outside_standard_energy_pJ",
+)
+READOUT_COLUMNS = (
+    "reaction_rate_fmol_per_s",  # [route] at each row's state and held controls.
+    "reaction_affinity_RT",  # [route] A/RT on passive routes, 0 on driven ones.
 )
 LAYOUT_FIELDS = (
     "reaction_rows",  # [species rows] int64: the network's species on @3's axis, declared order.
@@ -786,18 +834,286 @@ def _species_mask(rows, size, *, xp):
     return out
 
 
+def _to_nodes(values, node, size, *, xp):
+    """[rows, route] values summed onto [rows, node] by each route's node."""
+    if xp is jnp:
+        return jnp.zeros((values.shape[0], size), dtype=values.dtype).at[:, node].add(values)
+    out = np.zeros((values.shape[0], size))
+    np.add.at(out, (slice(None), np.asarray(node)), values)
+    return out
+
+
+def _node_sum(values, node, size, *, xp):
+    """[route] values summed onto [node]."""
+    if xp is jnp:
+        return jnp.zeros(size, dtype=values.dtype).at[node].add(values)
+    out = np.zeros(size)
+    np.add.at(out, np.asarray(node), values)
+    return out
+
+
+class Network(NamedTuple):
+    """The network's arrays for one half-step, on the combined node axis (cells, then outside)."""
+
+    node: object  # [route] combined node index.
+    size: int  # Cells plus outside slots (static).
+    mask: object  # [node] active cells and finite outside nodes.
+    volume: object  # [node] pL, declared.
+    route_volume: object  # [route] pL.
+    alpha: object  # [rows, route].
+    beta: object
+    nu: object
+    catalysis: object  # [rows, route]: alpha + the Michaelis-Menten catalyst's order 1.
+    passive: object  # [route] bool.
+    saturable: object  # [route] bool: Michaelis-Menten.
+    on: object  # [route] bool: a positive multiplier in this step.
+    driven_scale: object  # [route] m k V (driven laws), fmol/s per mM^q.
+    passive_scale: object  # [route] m V c0 k_f.
+    delta_mu_RT: object  # [route] sum nu mu°/RT.
+    standard_pJ: object  # [rows] mu°' = RT (mu°/RT - ln c0), pJ/fmol.
+    RT: object  # pJ/fmol.
+
+
+def network(p, multiplier, *, xp):
+    n = p.active.shape[0]
+    size = n + p.outside_active.shape[0]
+    node = xp.where(p.reaction_route_outside, n + p.reaction_route_node, p.reaction_route_node)
+    mask = xp.concatenate((p.active, p.outside_active & ~p.reservoir))
+    volume = xp.concatenate((p.volume, p.extracellular_volume))
+    route_volume = volume[node]
+    alpha, beta = p.reaction_reactants, p.reaction_products
+    law = p.reaction_route_law
+    c0, rate = p.reaction_standard_concentration_mM, p.reaction_rate_constant
+    nu = beta - alpha
+    RT = 1e-3 * R * p.temperature
+    return Network(
+        node=node,
+        size=size,
+        mask=mask,
+        volume=volume,
+        route_volume=route_volume,
+        alpha=alpha,
+        beta=beta,
+        nu=nu,
+        catalysis=alpha + p.reaction_catalyst,
+        passive=law == PASSIVE,
+        saturable=law == DRIVEN_MICHAELIS_MENTEN,
+        on=multiplier > 0,
+        driven_scale=multiplier * rate * route_volume,
+        passive_scale=multiplier * route_volume * c0 * rate,
+        delta_mu_RT=xp.sum(nu * p.reaction_standard_mu_RT[:, None], axis=0),
+        standard_pJ=RT * (p.reaction_standard_mu_RT - xp.log(c0)),
+        RT=RT,
+    )
+
+
+def node_amounts(state, p, *, xp):
+    """[rows, node] the network's amounts, cells then outside nodes (1 where masked: benign)."""
+    rows = p.reaction_rows
+    amounts = xp.concatenate(
+        (
+            p.amount_reference[rows] + state.amount_increment[rows],
+            p.extracellular_amount_reference[rows] + state.extracellular_amount_increment[rows],
+        ),
+        axis=1,
+    )
+    mask = xp.concatenate((p.active, p.outside_active & ~p.reservoir))
+    return xp.where(mask[None, :], amounts, 1.0)
+
+
+class Rates(NamedTuple):
+    rate: object  # [route] fmol/s, signed on passive routes.
+    affinity: object  # [route] A/RT on passive routes (finite padding elsewhere).
+    consumption: object  # [rows, route] fmol/s: what each route's fluxes consume of each row.
+
+
+def route_rates(amounts, net, p, *, xp):
+    """Each route's rate at the node amounts [rows, node] (§2.2, Appendix A)."""
+    held = amounts[:, net.node]  # [rows, route]
+    log_c = xp.log(held) - xp.log(net.route_volume)[None, :]
+    # Passive: the kernel's net rate and affinity, unchanged; its unidirectional fluxes from the
+    # same activity logarithms, for the stage condition only.
+    activity = held / (net.route_volume * p.reaction_standard_concentration_mM)[None, :]
+    net_rate, affinity = reversible_flux(
+        activity, net.alpha, net.beta, net.delta_mu_RT, net.passive_scale, xp=xp
+    )
+    log_a = xp.log(activity)
+    forward = net.passive_scale * xp.exp(xp.sum(net.alpha * log_a, axis=-2))
+    reverse = net.passive_scale * xp.exp(xp.sum(net.beta * log_a, axis=-2) + net.delta_mu_RT)
+    # Driven: m F k V prod c^alpha (mass action), m F k V c_E c_S / (K_M + c_S) (Michaelis-Menten,
+    # with or without its catalyst), the factors in log space.
+    x = xp.take_along_axis(log_c.T, p.reaction_factor_species, axis=1)  # [route, factor] ln x.
+    z = p.reaction_factor_coefficient * (x - xp.log(p.reaction_factor_half_saturation_mM))
+    kind = p.reaction_factor_kind
+    log_f = xp.where(
+        kind == 1, -xp.logaddexp(0.0, -z), xp.where(kind == 2, -xp.logaddexp(0.0, z), 0.0)
+    )
+    factor = xp.exp(xp.sum(log_f, axis=1))
+    substrate = xp.take_along_axis(held, p.reaction_route_substrate[None, :], axis=0)[0]
+    c_s = substrate / net.route_volume
+    saturation = xp.where(net.saturable, p.reaction_saturation_mM + c_s, 1.0)
+    driven = net.driven_scale * factor * xp.exp(xp.sum(net.catalysis * log_c, axis=0)) / saturation
+    rate = xp.where(net.passive, net_rate, driven)
+    consumed, produced = xp.maximum(-net.nu, 0.0), xp.maximum(net.nu, 0.0)
+    consumption = xp.where(
+        net.passive[None, :], consumed * forward + produced * reverse, consumed * driven
+    )
+    return Rates(rate, affinity, consumption)
+
+
+def stage_rates(amounts, net, p, h, *, xp):
+    """(Rates, the stage condition h max L <= 1/2 at these amounts, max h L)."""
+    rates = route_rates(amounts, net, p, xp=xp)
+    load = _to_nodes(rates.consumption, net.node, net.size, xp=xp) / amounts
+    hl = xp.where(net.mask[None, :], h * load, 0.0)
+    return rates, xp.all(hl <= THETA), xp.max(hl, initial=0.0)
+
+
+def _change(values, net, *, xp):
+    """[rows, node] sum_r nu_r values_r at each node."""
+    return _to_nodes(net.nu * values[None, :], net.node, net.size, xp=xp)
+
+
+def divided_potential(n, dn, net, *, xp):
+    """mu-bar [rows, node], pJ/fmol: the divided difference of g(n) = RT n (ln(n/V) - 1) + mu°' n
+    over the half-step, in its stable form (§3.3; the series 1 + x/2 - x^2/6 for |x| < 1e-6)."""
+    x = dn / n
+    small = xp.abs(x) < SERIES_BELOW
+    ratio = xp.where(
+        small, 1.0 + x / 2 - x * x / 6, (1.0 + x) * xp.log1p(x) / xp.where(small, 1.0, x)
+    )
+    mean = xp.log(n / net.volume[None, :]) + ratio - 1.0
+    return net.RT * mean + net.standard_pJ[:, None]
+
+
+class Step(NamedTuple):
+    """One half-step of the network: everything the state update and the bookings read."""
+
+    dn: object  # [rows, node] the net change.
+    extent: object  # [route] delta xi.
+    written: object  # [rows, node] bool: a row a route with a positive multiplier changes.
+    touched: object  # [node] bool: a node with a route with a positive multiplier.
+    mixed: object  # [node] bool.
+    passive_only: object
+    driven_only: object
+    free_energy: object  # [node] dG, standard term included, pJ.
+    standard: object  # [node] the standard-potential term, pJ.
+    magnitude: object  # [node] |terms| of the bookings, pJ.
+    heat: object  # [node] pJ.
+    work: object  # [node] pJ.
+    nonreversing: object  # [route] bool: the hybrid's branch (meaningful on passive routes).
+    route_heat: object  # [route] H_r at mixed nodes (0 on driven routes).
+    rates: object  # ([route] J at Y1, Y2, Y3), fmol/s.
+    affinities: object  # ([route] A/RT at Y1, Y2, Y3), and at the end state below.
+    end_affinity: object
+    max_hl: object  # The largest h L over the three stages.
+    valid: object
+
+
+def half_step_terms(state, multiplier, h, p, *, xp):
+    """SSPRK(3,3) over h on the network (§4.2, Appendix A) and the bookings (§3.3): a Step."""
+    net = network(p, multiplier, xp=xp)
+    n = node_amounts(state, p, xp=xp)
+    s1, ok1, l1 = stage_rates(n, net, p, h, xp=xp)
+    y2 = n + h * _change(s1.rate, net, xp=xp)
+    s2, ok2, l2 = stage_rates(y2, net, p, h, xp=xp)
+    y3 = n + h * _change(0.25 * (s1.rate + s2.rate), net, xp=xp)
+    s3, ok3, l3 = stage_rates(y3, net, p, h, xp=xp)
+    extent = h * (s1.rate + s2.rate + 4.0 * s3.rate) / 6.0
+    dn = _change(extent, net, xp=xp)
+    end = n + dn
+    rows = net.mask[None, :]
+    valid = ok1 & ok2 & ok3
+    for amounts in (y2, y3, end):
+        valid &= xp.all(xp.where(rows, xp.isfinite(amounts) & (amounts > 0), True))
+    # The node's class in this step, from its multipliers (§3.3).
+    on = xp.where(net.on, 1.0, 0.0)
+    driven_on = _node_sum(xp.where(net.passive, 0.0, on), net.node, net.size, xp=xp) > 0
+    passive_on = _node_sum(xp.where(net.passive, on, 0.0), net.node, net.size, xp=xp) > 0
+    touched = (driven_on | passive_on) & net.mask
+    mixed = driven_on & passive_on & net.mask
+    written = (_to_nodes(xp.abs(net.nu) * on[None, :], net.node, net.size, xp=xp) > 0) & rows
+    # The exact dG of the rows written, anchored at the half-step's start (@3's own term, one row at
+    # a time, plus the owned standard-potential term), with its absolute terms.
+    change = xp.where(written, dn, 0.0)
+    chemical = adapter.species_chemical_free_energy_pJ(
+        n, change, net.volume[None, :], p.temperature, xp=xp
+    )
+    chemical_terms = adapter.species_chemical_magnitude_pJ(
+        n, change, net.volume[None, :], p.temperature, xp=xp
+    )
+    standard_rows = net.standard_pJ[:, None] * change
+    free_energy = row_sum(chemical + standard_rows)
+    standard = row_sum(standard_rows)
+    magnitude = row_sum(chemical_terms + xp.abs(standard_rows))
+    # The hybrid at mixed nodes (§3.3): a passive route keeps its share unless it reverses within
+    # the step (three stage rates and the end-state affinity of one nonzero sign), else its stage
+    # quadrature of RT A J, which is non-negative by construction.
+    _, end_affinity = reversible_flux(
+        end[:, net.node] / (net.route_volume * p.reaction_standard_concentration_mM)[None, :],
+        net.alpha,
+        net.beta,
+        net.delta_mu_RT,
+        net.passive_scale,
+        xp=xp,
+    )
+    sign = xp.sign(s1.rate)
+    nonreversing = (
+        (sign != 0)
+        & (xp.sign(s2.rate) == sign)
+        & (xp.sign(s3.rate) == sign)
+        & (xp.sign(end_affinity) == sign)
+    )
+    potential = divided_potential(n, change, net, xp=xp)
+    share = -extent * xp.sum(net.nu * potential[:, net.node], axis=0)
+    quadrature = (
+        h
+        * net.RT
+        * (s1.rate * s1.affinity + s2.rate * s2.affinity + 4.0 * s3.rate * s3.affinity)
+        / 6.0
+    )
+    route_heat = xp.where(net.passive & net.on, xp.where(nonreversing, share, quadrature), 0.0)
+    mixed_heat = _node_sum(route_heat, net.node, net.size, xp=xp)
+    passive_only = passive_on & ~driven_on & net.mask
+    driven_only = driven_on & ~passive_on & net.mask
+    heat = xp.where(mixed, mixed_heat, xp.where(passive_only, -free_energy, 0.0))
+    work = xp.where(mixed, free_energy + heat, xp.where(driven_only, free_energy, 0.0))
+    magnitude = magnitude + xp.where(mixed, xp.abs(heat), 0.0)
+    for value in (free_energy, heat, work, magnitude):
+        valid &= xp.all(xp.where(net.mask, xp.isfinite(value), True))
+    max_hl = xp.maximum(xp.maximum(l1, l2), l3)
+    return Step(
+        dn,
+        extent,
+        written,
+        touched,
+        mixed,
+        passive_only,
+        driven_only,
+        free_energy,
+        standard,
+        magnitude,
+        heat,
+        work,
+        nonreversing,
+        route_heat,
+        (s1.rate, s2.rate, s3.rate),
+        (s1.affinity, s2.affinity, s3.affinity),
+        end_affinity,
+        max_hl,
+        valid,
+    )
+
+
 def _own_valid(state, p, *, xp):
+    """Finite, and signed as booked: the material accumulators and magnitudes >= 0, a driven
+    route's extent >= 0. The heat's sign is the composite's dissipation check's (-1e-12 pJ), since
+    a passive-only node books -dG, which rounding can leave at about -1e-18 pJ (§3.3)."""
     valid = xp.asarray(True)
     for name in NON_NEGATIVE_FIELDS:
         value = getattr(state, name)
         valid &= xp.all(xp.isfinite(value)) & xp.all(value >= 0)
-    for name in (
-        "reaction_extent_fmol",
-        "reaction_work_pJ",
-        "reaction_outside_work_pJ",
-        "reaction_standard_energy_pJ",
-        "reaction_outside_standard_energy_pJ",
-    ):
+    for name in SIGNED_FIELDS:
         valid &= xp.all(xp.isfinite(getattr(state, name)))
     driven = p.reaction_route_law != PASSIVE
     return valid & xp.all(xp.where(driven, state.reaction_extent_fmol >= 0, True))
@@ -822,14 +1138,93 @@ def reactions_domain_valid(state, p, *, xp):
     return valid
 
 
-def reactions_half_step(state, multiplier, h, p, *, xp=jnp):
-    """(state after h of the network, validity).
+def _split(values, n):
+    return values[..., :n], values[..., n:]
 
-    Milestone 1 (the contract fit): every multiplier zero selects the start state; any positive
-    multiplier refuses the step, since the laws and the SSPRK(3,3) half-step land at milestone 2.
-    """
-    flowing = xp.any(multiplier > 0)
-    return state, ~flowing
+
+def reactions_half_step(state, multiplier, h, p, *, xp=jnp):
+    """(state after h of the network, validity): the network's rows and the operator's own fields,
+    each entry selected where a route with a positive multiplier writes it, else its start value
+    (never offset by a computed zero, §4.5)."""
+    step = half_step_terms(state, multiplier, h, p, xp=xp)
+    rows = p.reaction_rows
+    n = p.active.shape[0]
+    cell_rows, outside_rows = _split(step.written, n)
+    cell_dn, outside_dn = _split(step.dn, n)
+    cell_on, outside_on = _split(step.touched, n)
+
+    def rows_update(full, written, values):
+        old = full[rows]
+        return set_rows(full, rows, xp.where(written, old + values, old), xp=xp)
+
+    def nodes_update(old, touched, values):
+        return xp.where(touched, old + values, old)
+
+    heat, work = _split(step.heat, n), _split(step.work, n)
+    standard, magnitude = _split(step.standard, n), _split(step.magnitude, n)
+    new = state._replace(
+        amount_increment=rows_update(state.amount_increment, cell_rows, cell_dn),
+        extracellular_amount_increment=rows_update(
+            state.extracellular_amount_increment, outside_rows, outside_dn
+        ),
+        reaction_extent_fmol=xp.where(
+            multiplier > 0, state.reaction_extent_fmol + step.extent, state.reaction_extent_fmol
+        ),
+        reaction_produced_fmol=rows_update(
+            state.reaction_produced_fmol, cell_rows, xp.maximum(cell_dn, 0.0)
+        ),
+        reaction_consumed_fmol=rows_update(
+            state.reaction_consumed_fmol, cell_rows, xp.maximum(-cell_dn, 0.0)
+        ),
+        reaction_outside_produced_fmol=rows_update(
+            state.reaction_outside_produced_fmol, outside_rows, xp.maximum(outside_dn, 0.0)
+        ),
+        reaction_outside_consumed_fmol=rows_update(
+            state.reaction_outside_consumed_fmol, outside_rows, xp.maximum(-outside_dn, 0.0)
+        ),
+        reaction_dissipated_energy_pJ=nodes_update(
+            state.reaction_dissipated_energy_pJ, cell_on, heat[0]
+        ),
+        reaction_outside_dissipated_energy_pJ=nodes_update(
+            state.reaction_outside_dissipated_energy_pJ, outside_on, heat[1]
+        ),
+        reaction_work_pJ=nodes_update(state.reaction_work_pJ, cell_on, work[0]),
+        reaction_outside_work_pJ=nodes_update(state.reaction_outside_work_pJ, outside_on, work[1]),
+        reaction_standard_energy_pJ=nodes_update(
+            state.reaction_standard_energy_pJ, cell_on, standard[0]
+        ),
+        reaction_outside_standard_energy_pJ=nodes_update(
+            state.reaction_outside_standard_energy_pJ, outside_on, standard[1]
+        ),
+        reaction_energy_magnitude_pJ=nodes_update(
+            state.reaction_energy_magnitude_pJ, cell_on, magnitude[0]
+        ),
+        reaction_outside_energy_magnitude_pJ=nodes_update(
+            state.reaction_outside_energy_magnitude_pJ, outside_on, magnitude[1]
+        ),
+    )
+    return new, step.valid & _own_valid(new, p, xp=xp)
+
+
+def stage_report(state, control, p, dt):
+    """Host-side diagnosis of a refused step (§4.2): the largest h L over the three stages at this
+    state and control (h = dt/2), the condition's verdict, and the largest dt that the start state's
+    own rates admit (dt L <= 1 at the first stage; the later stages can bind sooner)."""
+    step = half_step_terms(state, np.asarray(control.reaction_multiplier), 0.5 * dt, p, xp=np)
+    net = network(p, np.asarray(control.reaction_multiplier), xp=np)
+    n = node_amounts(state, p, xp=np)
+    rates = route_rates(n, net, p, xp=np)
+    load = np.where(
+        net.mask[None, :], _to_nodes(rates.consumption, net.node, net.size, xp=np) / n, 0
+    )
+    largest = float(np.max(load, initial=0.0))
+    return dict(
+        max_hL=float(step.max_hl),
+        admitted=bool(step.max_hl <= THETA),
+        valid=bool(step.valid),
+        start_rate_per_s=largest,
+        admissible_dt_at_start_s=math.inf if largest == 0 else 1.0 / largest,
+    )
 
 
 # ------------------------------------------------------------------ the operator
@@ -855,6 +1250,7 @@ class LocalSpeciesReactions(Operator):
         "outside_active",
         "extracellular_amount_reference",
     )
+    READOUT_COLUMNS = READOUT_COLUMNS
     ENTITY_WRITES = {
         "amount_increment": ("reaction_produced_fmol", "reaction_consumed_fmol"),
         "extracellular_amount_increment": (
@@ -968,7 +1364,8 @@ class LocalSpeciesReactions(Operator):
                 dict(reaction=route.reaction, site=route.node, **parameters(by_id[route.reaction]))
                 for route in declaration.routes
             ],
-            "reaction_step": "milestone 1: idle selection; an active step is refused",
+            "reaction_step": "SSPRK(3,3) half-steps under h max L <= 1/2 (dt L <= 1), exact "
+            "dG bookings with the per-route hybrid at mixed nodes",
         }
 
     # ------------------------------------------------------------ binding
@@ -1018,6 +1415,15 @@ class LocalSpeciesReactions(Operator):
             - xp.sum(row.reaction_outside_work_pJ)
         )
         return result, {}
+
+    def observe(self, row, state, control, p, view, model, spec):
+        columns = {k: getattr(state, k) for k in self.STATE_AXES}
+        multiplier = np.asarray(control.reaction_multiplier)
+        net = network(p, multiplier, xp=np)
+        rates = route_rates(node_amounts(state, p, xp=np), net, p, xp=np)
+        columns["reaction_rate_fmol_per_s"] = np.asarray(rates.rate)
+        columns["reaction_affinity_RT"] = np.where(net.passive, rates.affinity, 0.0)
+        return columns
 
     def magnitude_terms(self, magnitudes, row, p, *, xp):
         """The moved amounts in the material ledgers and the absolute terms of every booking in

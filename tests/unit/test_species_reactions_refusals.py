@@ -496,3 +496,44 @@ def test_a_volume_provider_is_refused_through_the_parser():
     )
     with pytest.raises(ConfigError, match="local_species_reactions@1 reads volume as declared"):
         parse_spec(raw)
+
+
+# ------------------------------------------------------------------ the batch signature (Q11 (c))
+
+
+def batch(*worlds):
+    from cells.core.batch import parse_batch
+
+    execution = dict(
+        mapping="lax_map", max_worlds=4, max_padded_steps=10**6, max_working_bytes=2**31
+    )
+    return parse_batch(
+        dict(
+            schema_version=1,
+            kind="independent_worlds",
+            worlds=[dict(world_id=i + 1, simulation=w) for i, w in enumerate(worlds)],
+            execution=execution,
+        )
+    )
+
+
+def test_the_batch_signature_refuses_two_structures_in_one_batch():
+    """The lead's ruling Q11 (c): one network per batch. Other parameters, potentials, c0 and
+    multipliers are per-world bindings and admitted; another stoichiometry, law kind or factor
+    species is refused."""
+    base = rfx.enzyme_network()
+    values = rfx.enzyme_network({"binding": 2.0, "supply": 0.0}, c0=0.5, mu=(0.1, 0.2, -1.0, -2.0))
+    reaction(values, "catalysis")["rate_constant"] = 3.0
+    reaction(values, "removal")["factors"][0]["half_saturation_mM"] = 2e-3
+    batch(base, values)  # Admitted: the same network.
+    stoichiometry = copy.deepcopy(base)
+    reaction(stoichiometry, "catalysis")["products"] = {"E": 1, "S": 1}
+    kind = copy.deepcopy(base)
+    binding = reaction(kind, "binding")
+    binding.update(law="mass_action", rate_constant=binding.pop("forward_rate_per_s"))
+    factor = copy.deepcopy(base)
+    reaction(factor, "removal")["factors"][0]["species"] = "E"
+    for other in (stoichiometry, kind, factor):
+        parse_spec(other)  # Each is a valid world on its own.
+        with pytest.raises(ConfigError, match="matching model array axes"):
+            batch(base, other)
