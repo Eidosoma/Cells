@@ -6,6 +6,7 @@ bound seven-cell sheet in NumPy (no compile): the factors and their product, exa
 and switched-off elements; the exact two-state half-step; zero rates selecting the start state; the
 event map (crossing record, writes, switches, counter, a stale write refused); static idleness
 from the declaration alone; the summary's unrecorded final crossing; a non-finite factor refused;
+a cell's prior condition, by a per-cell initial value or by a write at time 0 (FR-6, D162);
 and the composition structure (every provider of volumes and closer of masks refused, §1.12).
 The compiled runs are in the _runs and _bitwise files.
 """
@@ -206,6 +207,18 @@ REFUSALS = {
     "basal one": (_edit(lambda r: _coupling(r, 1).update(basal=1.0)), "[0, 1)"),
     "negative rate": (_edit(lambda r: _state(r).update(on_rate_per_s=-1.0)), "nonnegative"),
     "initial above one": (_edit(lambda r: _state(r).update(initial=1.5)), "initial value lies in"),
+    "initial per cell above one": (
+        _edit(lambda r: _state(r).update(initial={"cell_0": 0.2, "cell_3": 1.5})),
+        "initial value in cell_3 lies in",
+    ),
+    "initial missing a cell": (
+        _edit(lambda r: _state(r).update(initial={"cell_0": 0.2})),
+        "names each of its cells once",
+    ),
+    "initial in another cell": (
+        _edit(lambda r: _state(r).update(initial={"cell_0": 0.2, "cell_3": 0.2, "cell_5": 0.2})),
+        "names each of its cells once",
+    ),
     "level above one": (_edit(lambda r: _state(r).update(crossing_level=2.0)), "crossing level lies in"),
     "state without input": (_edit(lambda r: _state(r).update(inputs=[])), "at least one input"),
     "state not in the target's cell": (_edit(lambda r: _state(r).update(cells=["cell_0"])), "is not declared"),
@@ -235,9 +248,9 @@ REFUSALS = {
         _edit(lambda r: r["experiment"]["regulatory_writes"].append(dict(state_id="s", cell_id="cell_0", time=0.03, value=0.5))),
         "inside the horizon",
     ),
-    "write at time zero": (
-        _edit(lambda r: r["experiment"]["regulatory_writes"].append(dict(state_id="s", cell_id="cell_0", time=0.0, value=0.5))),
-        "inside the horizon",
+    "write at the horizon's end": (
+        _edit(lambda r: r["experiment"]["regulatory_writes"].append(dict(state_id="s", cell_id="cell_0", time=0.02, value=0.5))),
+        "0 <= t < end",
     ),
     "write above one": (
         _edit(lambda r: r["experiment"]["regulatory_writes"].append(dict(state_id="s", cell_id="cell_0", time=0.005, value=1.5))),
@@ -496,3 +509,37 @@ def test_a_non_finite_factor_refuses_the_step(bound):
     lost[rows[0], p.coupling_route_cell[0]] = -2.0 * np.asarray(p.amount_reference)[rows[0], p.coupling_route_cell[0]]
     with np.errstate(invalid="ignore"):  # The log of a negative amount: the case refused.
         assert not bool(op.domain_valid(state._replace(amount_increment=lost), p, None, xp=np))
+
+
+def test_a_prior_condition_per_cell_and_by_a_write_at_time_zero():
+    """A per-cell s0 binds per slot and round-trips (a number when every cell's is equal); a write
+    at time 0 is no schedule change time, its count is in the control at 0, and the first step
+    start's event map applies it after the crossing record."""
+    raw = base()
+    _state(raw).update(initial={"cell_0": 0.7, "cell_3": 0.2})
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    op = next(o for o in model.operators if o.LAW_ID == LAW)
+    assert list(state.regulatory_state) == [0.7, 0.2]
+    assert parse_spec(cs.to_dict(spec)).model.operators == spec.model.operators
+    assert block(cs.to_dict(spec))["states"][0]["initial"] == {"cell_0": 0.7, "cell_3": 0.2}
+    assert block(cs.to_dict(parse_spec(base())))["states"][0]["initial"] == 0.2
+
+    raw = base()
+    raw["experiment"]["regulatory_writes"].append(
+        dict(state_id="s", cell_id="cell_0", time=0.0, value=0.7)
+    )
+    spec = parse_spec(raw)
+    state, p = get_model(spec.model).initial_values(spec)
+    _, _, schedule = next(e for e in cs.entries(spec) if e[0].LAW_ID == LAW)
+    assert 0.0 not in op.schedule_times(schedule)
+    c = cs.control_values(spec, [0.0])
+    first = control(c.coupling_switch[0], c.regulatory_write_count[0], c.regulatory_write_value[0])
+    assert list(first.regulatory_write_count) == [1, 0]
+    lifted = state._replace(regulatory_state=np.asarray([0.6, 0.2]))
+    new, ok = op.event(lifted, first, p, xp=np)
+    assert bool(ok)
+    assert list(new.regulatory_state) == [0.7, 0.2]
+    assert list(new.regulatory_writes_applied) == [1, 0]
+    assert list(new.regulatory_crossing_step) == [0, -1]  # From the state before the write.

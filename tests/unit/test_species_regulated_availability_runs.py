@@ -5,7 +5,8 @@ clearing R in cell_0 (a moving, impermeant source read at once: a Hill inhibitio
 first side) and a regulatory state of Na in cell_0 and cell_3 (its complement, with basal 1/4, on
 junction_0's two sides) with a crossing level and one write. Every host check of every row passes
 (the runner), the observed factors equal an independent evaluation of the laws at each saved row,
-and the state, its write, its crossing record and the step counter behave as declared.
+and the state, its write, its crossing record and the step counter behave as declared. A cell's
+prior condition (FR-6, D162) set by its own s0 and set by a write at time 0 give the same trajectory.
 """
 
 import numpy as np
@@ -15,14 +16,14 @@ from cells.core.specs import parse_spec
 from validation.tissue import regulated_availability_fixtures as rf
 
 
-def world():
+def world(initial=0.2, writes=()):
     raw = rf.with_coupling(
         rf.sheet(end=0.02),
         species=["R", "Na"],
         states=[
             rf.state(
                 "s", ["cell_0", "cell_3"], [("hill_activation", "Na", 12.0, 2.0)],
-                on=5.0, off=1.0, initial=0.2, level=0.5,
+                on=5.0, off=1.0, initial=initial, level=0.5,
             )
         ],
         couplings=[
@@ -32,7 +33,7 @@ def world():
                 side="both", basal=0.25,
             ),
         ],
-        writes=[("s", "cell_3", 0.008, 0.9)],
+        writes=[("s", "cell_3", 0.008, 0.9), *writes],
     )
     return rf.with_turnover(raw, "cell_0", 50.0)
 
@@ -63,3 +64,30 @@ def test_a_run_of_every_part():
     # map of the next step start (9 ms, count 9) records the crossing. (s, cell_0) stays below.
     assert list(np.asarray(history.regulatory_crossing_step)[-1]) == [-1, 9]
     assert int(np.asarray(history.coupling_step_count)[-1, 0]) == len(result.times) - 1
+
+
+def test_a_prior_condition_by_its_initial_value_or_by_a_write_at_time_zero():
+    """(s, cell_0) at 0.7 from its own s0, and from s0 = 0.2 written to 0.7 at time 0: every @3
+    field of every row, and the state and its input integral from the first step on, are bitwise
+    equal; so are the observations after time 0 (at time 0 the write is not yet applied). The
+    crossing is recorded at the first step start from s0, and one step later from the write (the
+    record reads the state before writes)."""
+    by_initial = run(parse_spec(world(initial={"cell_0": 0.7, "cell_3": 0.2})))
+    by_write = run(parse_spec(world(writes=[("s", "cell_0", 0.0, 0.7)])))
+    fields, _ = rf.differing(by_initial, by_write)
+    assert not fields, fields
+    a, b = (np.asarray(r.history.regulatory_state) for r in (by_initial, by_write))
+    assert np.array_equal(a[1:], b[1:])
+    assert list(a[0]) == [0.7, 0.2] and list(b[0]) == [0.2, 0.2]  # Row 0: before the first step.
+    a, b = (np.asarray(r.history.regulatory_input_integral) for r in (by_initial, by_write))
+    assert np.array_equal(a, b)  # u reads Na, not s.
+    later = slice(1, None)
+    for name in vars(by_initial.observations):  # A dataclass: every observed column.
+        if name in ("regulatory_crossing_step", "regulatory_writes_applied"):
+            continue
+        a, b = (np.asarray(getattr(r.observations, name))[later] for r in (by_initial, by_write))
+        assert np.array_equal(a, b, equal_nan=True), name
+    assert list(np.asarray(by_initial.history.regulatory_crossing_step)[-1]) == [0, 9]
+    assert list(np.asarray(by_write.history.regulatory_crossing_step)[-1]) == [1, 9]
+    assert list(np.asarray(by_initial.history.regulatory_writes_applied)[-1]) == [0, 1]
+    assert list(np.asarray(by_write.history.regulatory_writes_applied)[-1]) == [1, 1]

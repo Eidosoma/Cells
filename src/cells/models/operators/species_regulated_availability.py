@@ -11,9 +11,12 @@ bit for bit (ruling 12; its acceptance into scope is the lead's).
 Declaration (§1.6): `species`, the rows the operator reads (a read-only list: any species of the
 world, ions included, with D150's identity form, never written; ruling 1); `states`, each with its
 law hill_regulated_two_state@1, its cells, its inputs (Hill factors of species read in the same
-cell, which multiply), on_rate_per_s, off_rate_per_s, initial and crossing_level (null or a level in
-[0, 1]); `couplings`, each with a target ({operator: "inner", control, ids, side}), a source
-({"species": id} or {"state": id}), a law and basal. Every key is explicit.
+cell, which multiply), on_rate_per_s, off_rate_per_s, initial (s0: one value for every cell of the
+state, or an object naming each of its cells once, a cell's prior condition) and crossing_level
+(null or a level in [0, 1]); `couplings`, each with a target ({operator: "inner", control, ids,
+side}), a source ({"species": id} or {"state": id}), a law and basal. Every key is explicit. The
+experiment's `regulatory_writes` set a (state, cell) at the start of the step leaving their time,
+0 <= t < end: a write at 0 is applied at the first step start, before any later event.
 
 Laws (§1.3, §1.5):
 * instantaneous: hill_activation x^n/(K^n + x^n) or hill_inhibition K^n/(K^n + x^n) of the
@@ -46,11 +49,12 @@ or has a route; an identity that differs from a D150 or D152 declaration; more t
 cap; a target operator other than "inner"; a control outside the admitted targets; an unknown or
 repeated element; a side on a channel or a junction side other than first, second or both; a law
 that does not match its source kind; K <= 0, n <= 0, b outside [0, 1), negative rates, an initial
-value or crossing level outside [0, 1]; a state with no input; a state source not declared in a cell
+value or crossing level outside [0, 1], an initial object that does not name each of the state's
+cells once; a state with no input; a state source not declared in a cell
 the coupling reads; a target, state cell or junction endpoint on a slot replacement@1 replaces;
 dt (k_on + k_off) > 1 (ruling 5); a switch schedule that does not start at 0 or holds a value other
-than 0 and 1; a later switch change or a write off the dt grid or outside 0 < t < end; a write to
-an undeclared (state, cell), outside [0, 1], or twice at one time; and (CONFLICTS_VIEW, D150's
+than 0 and 1; a later switch change off the dt grid or outside 0 < t < end; a write off the dt
+grid or outside 0 <= t < end, to an undeclared (state, cell), outside [0, 1], or twice at one time; and (CONFLICTS_VIEW, D150's
 static-tissue list) every provider of volumes and closer of masks. At run time a non-finite or
 out-of-range state or factor refuses the step (domain_valid, on every step's end state; also
 rate_checks, wherever the composite evaluates readouts), as does a stale write count (in the event
@@ -145,7 +149,7 @@ class RegulatoryState:
     inputs: tuple
     on_rate_per_s: float
     off_rate_per_s: float
-    initial: float
+    initial: tuple  # s0 per cell, aligned with cells.
     crossing_level: float | None
 
 
@@ -230,6 +234,16 @@ def parse_read_species(raw, base, law=LAW_ID):
     return tuple(species)
 
 
+def _parse_initial(raw, name, where):
+    """s0: one number for every cell of the state, or an object naming each of its cells once."""
+    if isinstance(raw, dict):
+        if set(raw) != set(where) or len(raw) != len(where):
+            raise ConfigError(f"{LAW_ID}: state {name}'s initial object names each of its cells once")
+        return tuple(_fraction(raw[c], f"state {name}'s initial value in {c}") for c in where)
+    value = _fraction(raw, f"state {name}'s initial value")
+    return tuple(value for _ in where)
+
+
 def _parse_states(raw, base, listed):
     if type(raw) is not list:
         raise ConfigError(f"{LAW_ID} declares its states in an explicit list")
@@ -285,7 +299,7 @@ def _parse_states(raw, base, listed):
                 tuple(inputs),
                 _number(entry["on_rate_per_s"], f"{LAW_ID}: state {name}'s on_rate_per_s"),
                 _number(entry["off_rate_per_s"], f"{LAW_ID}: state {name}'s off_rate_per_s"),
-                _fraction(entry["initial"], f"state {name}'s initial value"),
+                _parse_initial(entry["initial"], name, where),
                 None if level is None else _fraction(level, f"state {name}'s crossing level"),
             )
         )
@@ -400,6 +414,12 @@ def parse_declaration(raw, base):
     return Declaration(LAW_ID, species, states, couplings)
 
 
+def _initial_to_dict(state):
+    if len(set(state.initial)) == 1:
+        return state.initial[0]
+    return dict(zip(state.cells, state.initial, strict=True))
+
+
 def declaration_to_dict(declaration):
     if type(declaration) is not Declaration:
         raise ConfigError("Require explicit immutable species-regulated availability types")
@@ -429,7 +449,7 @@ def declaration_to_dict(declaration):
                 ],
                 on_rate_per_s=s.on_rate_per_s,
                 off_rate_per_s=s.off_rate_per_s,
-                initial=s.initial,
+                initial=_initial_to_dict(s),
                 crossing_level=s.crossing_level,
             )
             for s in declaration.states
@@ -457,15 +477,17 @@ def slots(declaration):
     return tuple((s.id, c) for s in declaration.states for c in s.cells)
 
 
-def _event_time(value, what, base):
-    """A switch change after time 0, or a write: an exact multiple of dt with 0 < t < end, the
-    composite's rule for event times (§1.11), refused here with its own message."""
+def _event_time(value, what, base, *, at_zero=False):
+    """A switch change after time 0 (0 < t < end, the composite's rule for event times, §1.11), or
+    a write (0 <= t < end: a write at 0 is applied at the first step start and is not a schedule
+    change time). An exact multiple of dt, refused here with its own message."""
     dt, end = base.execution.dt, base.experiment.end_time
     time = _number(value, f"{LAW_ID}: {what}")
     if time != round(time / dt) * dt:
         raise ConfigError(f"{LAW_ID}: {what} must be an exact multiple of dt (k * dt)")
-    if not 0.0 < time < end:
-        raise ConfigError(f"{LAW_ID}: {what} lies inside the horizon, 0 < t < end")
+    if not (0.0 <= time if at_zero else 0.0 < time) or not time < end:
+        bound = "0 <= t < end" if at_zero else "0 < t < end"
+        raise ConfigError(f"{LAW_ID}: {what} lies inside the horizon, {bound}")
     return time
 
 
@@ -511,7 +533,7 @@ def parse_schedule(raw, base, declaration):
         key = (row["state_id"], row["cell_id"])
         if key not in writes:
             raise ConfigError(f"{LAW_ID}: a write names an undeclared state and cell {key!r}")
-        time = _event_time(row["time"], "a write", base)
+        time = _event_time(row["time"], "a write", base, at_zero=True)
         writes[key].append((time, _fraction(row["value"], "a written value")))
     for key, entries in writes.items():
         times = [t for t, _ in entries]
@@ -626,7 +648,9 @@ def bind(spec, declaration, schedule):
         layout[field] = table
     switches = np.asarray([changes[0][1] for _, changes in schedule.switches], dtype=float)
     state = dict(
-        regulatory_state=np.asarray([by_state[s].initial for s, _ in slot_keys], dtype=float),
+        regulatory_state=np.asarray(
+            [by_state[s].initial[by_state[s].cells.index(c)] for s, c in slot_keys], dtype=float
+        ),
         regulatory_input_integral=np.zeros(k),
         regulatory_crossing_step=-np.ones(k, dtype=np.int64),
         regulatory_writes_applied=np.zeros(k, dtype=np.int64),
@@ -842,7 +866,7 @@ class SpeciesRegulatedAvailability(Operator):
 
     def schedule_times(self, schedule):
         times = {t for _, changes in schedule.switches for t, _ in changes if t > 0}
-        times |= {t for _, entries in schedule.writes for t, _ in entries}
+        times |= {t for _, entries in schedule.writes for t, _ in entries if t > 0}
         return tuple(sorted(times))
 
     def value_at(self, schedule, time):
@@ -909,7 +933,7 @@ class SpeciesRegulatedAvailability(Operator):
                     inputs=[(i.law, i.species, i.half_saturation_mM, i.hill_coefficient) for i in s.inputs],
                     on_rate_per_s=s.on_rate_per_s,
                     off_rate_per_s=s.off_rate_per_s,
-                    initial=s.initial,
+                    initial=dict(zip(s.cells, s.initial, strict=True)),
                     crossing_level=s.crossing_level,
                 )
                 for s in declaration.states
