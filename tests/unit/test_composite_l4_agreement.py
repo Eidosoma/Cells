@@ -43,6 +43,32 @@ def g2_run(voltage=-0.05):
     return {W7: [record]}
 
 
+def executions(tree):
+    """Every execution block in a predictions tree."""
+    if isinstance(tree, list):
+        return [e for v in tree for e in executions(v)]
+    if not isinstance(tree, dict):
+        return []
+    found = [tree["execution"]] if isinstance(tree.get("execution"), dict) else []
+    return found + [e for v in tree.values() for e in executions(v)]
+
+
+@pytest.mark.parametrize("part", ["w1", "w2", "g2"])
+def test_an_l4_run_declares_the_gpu_for_every_definition(part):
+    """The registered definitions declare the CPU; --backend gpu sets every one, on a copy."""
+    predictions = agreement.registered(part)[0]
+    before = copy.deepcopy(predictions)
+    declared = [e for e in executions(predictions) if "backend" in e]
+    assert declared and {e["backend"] for e in declared} == {"cpu"}
+    on_gpu, count = agreement.on_backend(predictions, "gpu")
+    assert count == len(declared)
+    assert {e["backend"] for e in executions(on_gpu) if "backend" in e} == {"gpu"}
+    assert predictions == before  # The registered tree is untouched.
+    blank = agreement.on_backend(on_gpu, "cpu")[0]
+    assert blank == predictions  # Only the backends differ.
+    assert agreement.predictions_for(part, None)[2] == 0
+
+
 def test_up1_is_the_methods_rounding():
     assert agreement.up1(2.543043109426435e-09) == 3e-09
     assert agreement.up1(1e-06) == 1e-06
