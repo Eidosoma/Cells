@@ -248,13 +248,17 @@ extended. The control propagates.
 - **The length check:** N = 40 at s_c = 1000 gives CV 2123.74 cells/s, against 2093.32 at N = 20.
 - **The coupling bracket:** block at s_c ≤ 42.090 and propagation at s_c ≥ 42.488, bisected in log
   s_c to 1%. No block appears above it, up to s_c = 1e4.
+  - **Its blocking end checked** (`track-e-bracketcheck-02`). At s_c = 42.090 the wave is still
+    blocked under `ep.wave_outcome`, the horizon-independent rule: no new activation for 0.148 s
+    after the last one, against a required 0.02 s.
+  - So the bracket is not an artefact of the 150 ms horizon.
 - **The end cell peaks highest,** at the sealed end, as in §8.5.
 
 **§8.4, continued** (s_c = 1000):
 
 | Quantity | Value |
 | --- | --- |
-| Capture threshold | 1.30717e-07 m/s; bracket 1.30607e-07 (no capture) to 1.30717e-07 (capture), 15 runs. About 3.2 times the single cell's §8.3 threshold |
+| Capture threshold | 1.30717e-07 m/s; bracket 1.30607e-07 (no capture) to 1.30717e-07 (capture), 15 runs. About 3.2 times the single cell's §8.3 threshold. The no-capture end holds under `ep.wave_outcome`: no new activation for 0.147 s (`track-e-bracketcheck-02`) |
 | Far-end S1–S2 interval | 27.982 ms; bracket 27.976 to 27.982 ms, 17 runs. The far cell activates a second time when S2 starts at least this long after S1 |
 
 **§8.6, the 0.01 F/m² cells** (rests −79.558918 mV for A and −79.559338 mV for B):
