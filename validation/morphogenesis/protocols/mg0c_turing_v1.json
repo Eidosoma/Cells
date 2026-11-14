@@ -11,7 +11,7 @@
   "local_species_reactions@1 (src/cells/models/operators/species_reactions.py): driven mass action; ideal_detailed_balance_mass_action@1 in guard 2's passive world",
   "cells.core.inventory_species (D150) declares the network's species"
  ],
- "scope": "MG0c's judged arms run local_species_reactions@1's driven mass action only, of orders 0, 1 and 3 (Schnakenberg's four reactions; guard 2's open world and the sites world, orders 0 and 1), at outside nodes, with resolved_pump_tissue@3's species transport on faces in resolved_pump_composite@1. One judged guard world departs from that, flagged for the lead (question 1): guard 2's passive world runs ideal_detailed_balance_mass_action@1 (A <-> B, linear) at outside nodes, judged against the engine order's exact map. Every other use of the passive law, Michaelis-Menten, Hill factors, cell routes, D150's writers and the mixed-node heat and work split enters only through test files; the heat and work split is guarded, not qualified, until the first mixed-node protocol. A qualified statement from this protocol carries this scope",
+ "scope": "MG0c's judged arms run local_species_reactions@1's driven mass action only, of orders 0, 1 and 3 (Schnakenberg's four reactions; guard 2's open world and the sites world, orders 0 and 1), at outside nodes, with resolved_pump_tissue@3's species transport on faces in resolved_pump_composite@1, with five species per world (three quiescent ions and the network's two), within the 7 species the scope stays at: D150's cap of 16 since FR-9 / D165 is not exercised. One judged guard world departs from driven mass action, flagged for the lead (question 1): guard 2's passive world runs ideal_detailed_balance_mass_action@1 (A <-> B, linear) at outside nodes, judged against the engine order's exact map. Every other use of the passive law, Michaelis-Menten, Hill factors, cell routes, D150's writers and the mixed-node heat and work split enters only through test files; the heat and work split is guarded, not qualified, until the first mixed-node protocol. A qualified statement from this protocol carries this scope",
  "driver": "validation/morphogenesis/mg0c_turing.py",
  "judged_parts": [
   "d147",
@@ -2223,7 +2223,7 @@
   "drafted_by": {
    "kind": "checkout",
    "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
-   "git_revision": "a868e9d583a274f33ef865e361fb2985005ec7d8",
+   "git_revision": "78f39573316d97a18f122bfd7778aeaaa1f1d6a5",
    "dirty": ""
   }
  },
