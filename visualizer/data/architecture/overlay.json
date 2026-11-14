@@ -504,7 +504,7 @@
       "match": [
         "src/cells/continuity.py"
       ],
-      "plain": "Lets a checkpoint written by one version of the code resume under another, but only through a recorded admission. Refusal stays the default. In place for CPU runs; the GPU extension is being built.",
+      "plain": "Lets a checkpoint written by one version of the code resume under another, but only through a recorded admission. Refusal stays the default. In place for CPU vector windows, and on the GPU for its first case, whose extension landed on 14 November 2026.",
       "sources": [
         {
           "path": "docs/CHECKPOINT_CONTINUITY_DESIGN.md"
@@ -512,6 +512,10 @@
         {
           "path": "PROGRESS.md",
           "where": "Checkpoint continuity, first landing (D153)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Checkpoint continuity's GPU extension of case 1 landed (D153"
         },
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -1109,11 +1113,18 @@
       "layer": "laws",
       "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "General physics for tissue that carries a travelling electrical wave, to be qualified against cable theory. A design note comes first.",
+      "plain": "General physics for tissue that carries a travelling electrical wave, to be qualified against cable theory. The design note is accepted narrowly (D170, 14 November 2026), for its first two milestones on the tissue model as it stands. The probe registered for the acceptance failed its first criterion, so the acceptance rests on a second probe, post hoc but written before its runs. The junction floor stays provisional. No new engine code yet.",
       "sources": [
         {
+          "path": "docs/EXCITABLE_TISSUE_DESIGN.md"
+        },
+        {
           "path": "docs/DECISIONS.md",
-          "where": "D155"
+          "where": "D155, and D170: Track E's design note accepted narrowly, for M1 and M2 on @3"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Track E (excitable tissue, D155): the design note accepted narrowly"
         },
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -1722,17 +1733,20 @@
       "id": "exp.conduction",
       "label": "Conduction probe",
       "layer": "experiments",
-      "status": "designed",
+      "status": "landed",
       "as_of": "2026-11-14",
-      "plain": "Can the channel laws the composite admits carry an action potential along a chain of cells? A probe on the engine as it stands is in progress, with its success criteria set before it runs.",
+      "plain": "Can the tissue model's channel laws carry an action potential along a chain of cells? An exploratory probe on the engine as it stands, not a qualification (14 November 2026). As registered, at 0.05 F/m², it failed its first criterion: every perturbed segment blocked. A second probe at 0.01 F/m², post hoc but written before its runs, met all four criteria. A reference written blind matches the engine to 0.02 mV.",
       "sources": [
         {
-          "path": "docs/DECISIONS.md",
-          "where": "D156"
+          "path": "PROGRESS.md",
+          "where": "Track E (excitable tissue, D155): the design note accepted narrowly"
         },
         {
-          "path": "docs/CURRENT_PLAN.md",
-          "where": "Status on 14 November 2026, and the working order (D156)"
+          "path": "docs/DECISIONS.md",
+          "where": "D156, and D170: Track E's design note accepted narrowly, for M1 and M2 on @3"
+        },
+        {
+          "path": "docs/EXCITABLE_TISSUE_DESIGN.md"
         }
       ]
     },
@@ -3110,9 +3124,9 @@
     },
     {
       "from": "exp.conduction",
-      "to": "models.composite",
+      "to": "models.pump_tissue",
       "kind": "runs",
-      "label": "probes the channel laws the composite admits"
+      "label": "runs the tissue model @3 with its five channel laws"
     },
     {
       "from": "laws.inventory_coupling",
