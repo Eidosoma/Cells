@@ -58,6 +58,30 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **S5a is qualified: every judged item passed (14 November).** Judged once each, in series, from a
+  fresh clean snapshot of main at 7f9c473 (src identical to baseline-21fb714's), after the
+  division crossrev matched that baseline. There were no infrastructure kills
+  ([judged outputs](/mnt/workspaces/Cells/cell-division-s5-20261113-01/judged-s5j1/)).
+  - **Q2, the event map against R-ops:** pass, under the registered rule (the third amendment).
+    - The worst ratio is 1.98 eps × magnitude, against a limit of 64.
+    - All 66 judged control entries are caught at or below 1e-9.
+    - The construction checks are faithful in all 12 cases.
+    - Ten near-zero cases were found in the judged sets. Spread 0.1 had none, so it is vacuous
+      there.
+    - Five readings of the three controls the third amendment exempts fall below 64 at 1e-9, at
+      first order (observed against predicted 0.998–1.003). They are reported, not judged.
+      Under the frozen rule they would have failed Q2.
+  - **Q3, trajectories against R-tissue:** pass. 33 rows, the largest difference 0.445 of its
+    tolerance.
+  - **Q5, observed order:** pass. Every step term decreases for all 8 measurable components.
+  - **Q1 and Q11, the egg-scale world:** pass. The replay is identical and the negative control
+    fails.
+  - **Q4 and Q6–Q9:** all 21 test files pass at the judged snapshot. Q10 is reported.
+  - **What this qualifies:** partition, bridge closure, insertion@2 and lumen@2 in division
+    worlds. Q7(b), S3's egg on @2, is deferred to its own registered variant.
+  - [Protocol](validation/division/s5_protocol.json);
+    [evidence and log](/mnt/workspaces/Cells/cell-division-s5-20261113-01/HANDOFF.md).
+
 - **The S5 protocol is registered (14 November).** The lead registered
   `validation/division/s5_protocol.json` after the final review with the advisor. The JSON's
   registration diff is the status line only.

@@ -151,6 +151,12 @@ The design note comes first, written against D150 v1's design. Code follows D150
 
 These are the cell-division stages S2–S5 and current injection.
 
+**Status (14 November 2026).** Membrane state (S2), insertion and the restricted lumen (S3, judged
+against R-full), current injection (Rm1) and S5a's partition, bridge closure, insertion@2 and
+lumen@2 are qualified. S5a passed its registered protocol against the independent references R-ops and
+R-tissue. Q7(b), S3's egg on the @2 operators, is deferred. S5b and the endogenous lifecycle
+come later. J2 and C1 stay held.
+
 | Deliverable | Completion evidence |
 | --- | --- |
 | Membrane state as entity state; insertion; a restricted compartment; **current-injection control**; partition; bridge closure | Conservation and event tests; restart across events; the engine agrees with R-full |

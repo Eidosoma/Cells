@@ -1,6 +1,12 @@
 # Stage S5: partition, bridge closure, lineage and the R-ops (design)
 
-**Status: reviewed by the lead and the advisor (13 November 2026); staging S5a and S5b
+**Status: S5a qualified (14 November 2026).** Its registered protocol
+(`validation/division/s5_protocol.json`) passed every judged item from a clean snapshot of main at
+7f9c473; see PROGRESS. Q7(b), S3's egg on insertion@2 and lumen@2, is deferred, so the @2
+operators count in division worlds only until it passes. S5b (populations on onset patches,
+decision 9) is later.
+
+**Earlier status: reviewed by the lead and the advisor (13 November 2026); staging S5a and S5b
 approved.** The decisions as taken are in §12. Code starts once two things are back:
 - the probe of risk 1 (§13; its result is in §0);
 - the constants-aware crossrev baseline, which the checkpoint agent is producing (§8.4).
