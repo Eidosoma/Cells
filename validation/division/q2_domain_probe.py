@@ -10,8 +10,10 @@ sampler:
 Reported per sampler:
 * how many draws pass the composite's domain check (@3's at the view and each operator's);
 * how many pass its control domain check at the event's control, which adds each operator's
-  control check and the readouts' validity (where the contact gate law's |V| <= 0.12 V
-  domain sits);
+  control check and the readouts' validity; and how many draws have a live patch voltage
+  outside the channel gate laws' domain, (-0.120, 0.060) V (processes/voltage_gates), or the
+  contact's |V_j| above the junction gate law's 0.120 V (processes/junction_gate), with the
+  draws where the control domain verdict and those two disagree (expected none);
 * how many pass Q2's charge bound (CHARGE_BAND);
 * the largest |V| of a live patch, and the largest |Q / Q_declared| of a live cell, over the
   draws and over those the control domain check admits;
@@ -32,6 +34,7 @@ import jax
 import numpy as np
 
 from cells.models import pump_composite_adapter as adapter
+from cells.processes import junction_gate, voltage_gates
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from tests import partition_fixtures as fx
 from validation.division import partition_reference as rops
@@ -53,19 +56,25 @@ def old_sampler(world, rng):
 
 
 def measure(world, state):
-    """(domain, control domain, charge bound, max |V|, max |Q / Q_declared|) of one draw."""
+    """(domain, control domain, charge bound, max |V|, max |Q / Q_declared|, a patch voltage
+    outside the channel gates' domain, the contact's |V_j| outside the junction gate's) of one
+    draw."""
     p = world.p
     domain = bool(world.model.domain_valid(state, p, p.active, xp=np))
     full, bounded = q2.admitted(world, state, fx.EVENT)
     q = world.view(state)
+    phi = adapter.node_potentials(state, q, xp=np)
+    v = q2.patch_voltages(world, state)
+    low, high = voltage_gates.VOLTAGE_DOMAIN_V
+    junction = abs(float(phi[world.cells.index("cell_0")] - phi[world.cells.index("cell_1")]))
+    outside = (bool(np.any((v < low) | (v > high))), junction > junction_gate.MAX_ABS_VOLTAGE_V)
     cells = np.flatnonzero(np.asarray(q.active))
     z = np.ravel(p.valence)
     charge = np.asarray(q.initial_cell_charge_C)[cells] + CHARGE_PER_FMOL * (
         z @ np.asarray(state.amount_increment)[:, cells]
     )
     ratio = np.abs(charge / np.asarray(p.initial_cell_charge_C)[cells])
-    voltage = float(np.max(np.abs(q2.patch_voltages(world, state))))
-    return domain, full, bounded, voltage, float(np.max(ratio))
+    return domain, full, bounded, float(np.max(np.abs(v))), float(np.max(ratio)), *outside
 
 
 def summary(world, d, states):
@@ -81,6 +90,10 @@ def summary(world, d, states):
         max_charge_over_declared=max(r[4] for r in rows),
         admitted_max_abs_V=max((r[3] for r in rows if r[1]), default=None),
         admitted_max_charge_over_declared=max((r[4] for r in rows if r[1]), default=None),
+        patch_voltage_outside_channel_gate_domain=sum(r[5] for r in rows),
+        contact_voltage_outside_junction_gate_domain=sum(r[6] for r in rows),
+        control_domain_fail_without_either=sum((not r[1]) and not (r[5] or r[6]) for r in rows),
+        control_domain_pass_with_either=sum(r[1] and (r[5] or r[6]) for r in rows),
     )
     worst, key, detail = 0.0, None, None
     for state in admitted:

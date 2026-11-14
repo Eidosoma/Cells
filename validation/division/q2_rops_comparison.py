@@ -53,8 +53,11 @@ Disclosed out-of-domain run: comparisons-s5a9 (snapshot-s5a9, 6c2b118) drew unco
 increments within 1e-3 of each amount. The asymmetric states reached 94.7 on the post-event
 potentials (and 73.6 on the moved amounts, 33.0 on a daughter's charge). Those draws (as
 q2_domain_probe redraws them) pass @3's bare domain check but fail the composite's control
-domain check in 197 of 200 (|V| up to 1.3 V against the contact gate law's 0.12 V domain), and
-the charge band in all 200 (net charge up to 61 times the declared). The cause of the ratio:
+domain check in 197 of 200, and the charge band in all 200 (|V| up to 1.3 V, net charge up to
+61 times the declared). The control domain check rejects them through the gating laws'
+voltage domains among the readouts' validity: each rejected draw has a live patch voltage
+outside the channel gates' (-0.120, 0.060) V, and most also a contact voltage above the
+junction gate's 0.120 V. The cause of the ratio:
 the engine forms node charges in increment form (anchor + F sum z dn), and its rounding there
 scales with the increments' ionic content, which R-ops' charge-form magnitudes do not count.
 (That run also passed population abundances per area; 5234ba8 passes units. q2-s5a10's draws
