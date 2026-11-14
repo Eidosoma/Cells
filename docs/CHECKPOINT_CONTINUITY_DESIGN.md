@@ -1099,6 +1099,50 @@ This blocks only the GPU extension of case 1; the first landing is CPU-only.
 - **Repeats:** the L4's non-repeatability doesn't enter. No GPU result is compared bitwise;
   only traces and CPU runs are.
 
+**Result (14 November, the L4 gap after the hold's segment 2).** The GPU part ran at
+12:39–12:41 UTC as one GPU process under the GPU lock, the CPU part on CPU 3, both from
+`source-s1-e8cdda0` (`impl/gpu-probe/out/`: `compare.json`, `queue.log`):
+1. a GPU cohort traces identically in two GPU-host processes: P0, P, B and H;
+2. the CPU-host trace, with `execution_device` patched, equals the GPU host's jaxprs,
+   constants, bindings and host replay;
+3. the cross-lowered `cuda` StableHLO equals the GPU host's own lowering (1,799,725
+   characters);
+4. the overlap repeats bitwise on the CPU for a GPU definition.
+
+So the first decision holds: **GPU definitions are probed on the CPU host and use no GPU
+time, and the record notes the patch.**
+
+**The GPU extension of case 1** (branch head `91ac058`, 14 November):
+- **Probe** (`probe.py`).
+  - A GPU cohort is decided, not refused. Before any child is read, `patch_execution_device()`
+    makes `execution_device` return the CPU device in every module that bound it, the devices
+    module included.
+  - P0 also cross-lowers the captured program for `cuda` and compares it, since that is the
+    program the GPU compiles; the native CPU lowering is compared too.
+  - O runs on the CPU. The summary records the patch.
+- **Admission** (`admit.py`).
+  - It refuses when the two probes' patches differ, and the record's `probe` gains
+    `execution_device`: the backend, the patch, the probe's device, the modules patched and the
+    lowering platforms.
+  - The `to` runtime is the checkpoint's own under S1's `cells_version`. The CPU host cannot
+    measure the GPU host's runtime, the first landing admits no runtime change, and the loader
+    on the GPU host checks it exactly.
+  - Both probes' host-side fields must equal it, with `jaxlib` added: question 3 held with jax
+    and jaxlib unchanged.
+  - A residual line states that O's outputs are CPU outputs.
+- **Loader** (`continuity.py`, the only `src` change, host-only). `probe.execution_device` is
+  optional, so the kind stays `@1`. It is required for a GPU definition and refused for a CPU
+  one; for a patched record the probe's `jaxlib` counts with its host-side fields.
+- **Evidence** (`impl/gpu-ext/`):
+  - The real L4 checkpoint (`gpu-probe/out/write/snap`, under `e8cdda0`) is admitted for
+    resumption under `91ac058`, decided on the CPU host: P, B and H identical, and O
+    identical over 2 of 4 remaining rounds.
+  - Its 20 changed files, main's work since `e8cdda0`, reach none of this cohort's programs,
+    bindings or host replay.
+  - Crossrev at `91ac058` is identical to the baseline of record in all five sets.
+- **Not run:** the resumed GPU run itself, which needs the L4. The loader's GPU path is tested
+  on this host with the device patched.
+
 ### 13.5 Correction for PROGRESS
 
 PROGRESS's "about 20 validation tools read saved `state.npz` files directly, an unrecorded
