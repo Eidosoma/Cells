@@ -67,10 +67,11 @@ permission, or a deposit of the library under an open licence. Or a new protein 
 derived from the 813 instrument files, which are open: that is a mass-spectrometry
 reanalysis against a protein reference, not a download.
 
-The user was asked on 14 November 2026 whether they hold the paper's supplementary table
-or can get it from the authors. A table placed under
-`/mnt/workspaces/Cells/visualizer-planarian-library/` can be imported. It may enter this
-public repository only with the authors' or the publisher's permission.
+The project does not contact authors (the user's rule, recorded in D173 on 14 November
+2026), so the first route waits for the list to appear in a public source under terms
+that allow a copy. A table the user already holds can be read from
+`/mnt/workspaces/Cells/visualizer-planarian-library/`; under the paper's present terms it
+stays outside this public repository.
 
 Other proteomics of the species exists and was not examined: five MassIVE datasets of
 2025 and 2026 from another group (MSV000098119, MSV000098120, MSV000099716, MSV000100775

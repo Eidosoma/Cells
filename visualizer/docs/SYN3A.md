@@ -21,9 +21,9 @@ note's claims were checked, and how sure each part is. Numbers are as built on
 
 **The viewer's data on Syn3A is made, and nothing in it claims a model.** The species
 file gives the organism two levels, molecules and one cell, so the multi-cell levels are
-off for it. Its state is `proposed`: a note proposes it, support in the engine is being
-worked on (D171), and nothing of it is in the engine. The project's record holds an
-evidence audit and a proposal, in which no engine model ran.
+off for it. Its state is `proposed`: it is the project's minimal-cell track (D173), and
+nothing of it is in the engine. The project's record holds an evidence audit and a
+proposal, in which no engine model ran.
 
 **"452 against 455" is settled: both are right.** The genome record GenBank CP016816.2
 holds 455 protein products. 452 were kept from *Mycoplasma mycoides*; 3 were added for
@@ -250,8 +250,9 @@ have to switch off multi-cell".
 
 - **In the viewer** the switch is the species: Syn3A has two levels, molecules and one
   cell, and a sentence where tissue, organ and body would be.
-- **In the engine** the work is the lead's. Decision D171 gives a Syn3A minimal-cell agent
-  under the lead, and D172 notes that its metabolism needs reactions that can make and
+- **In the engine** the work is the lead's. Decision D173 makes Syn3A the minimal-cell
+  track beside the current work, with its first milestone fixed after a capability probe;
+  D171 gives it an agent under the lead, and D172 notes that its metabolism needs reactions that can make and
   spend fuel. On main, the lead's proposal is `docs/SYN3A_MINIMAL_CELL_TRACK.md`, which the
   progress record calls "an assessment only; no engine model ran"; its review of the 2026
   whole-cell paper is

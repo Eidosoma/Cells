@@ -350,9 +350,11 @@ The user merges the branch when they choose.
    conduction probe needs a chain layout; the held sphere needs radial shells.
 
 For the species atlases, what remains is the measured library of about 10,000 proteins.
-It needs its list from the authors or the publisher, and their permission before it can
-enter this public repository; or a reanalysis of the study's open instrument files. A
-table placed under `/mnt/workspaces/Cells/visualizer-planarian-library/` can be imported.
+The project does not contact authors (D173), so its list has to appear in a public source
+under terms that allow a copy; the other route is a reanalysis of the study's open
+instrument files. A table the user already holds can be read from
+`/mnt/workspaces/Cells/visualizer-planarian-library/`, and stays outside this public
+repository under the paper's present terms.
 `docs/PLANARIAN_ATLAS.md` says what each would take.
 
 For the protein atlas, each of these needs the user's approval first, because the plan

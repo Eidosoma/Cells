@@ -875,7 +875,7 @@ def build_species(c):
         "made": MADE,
         "modelled": {
             "state": "proposed",
-            "text": "A note of 14 November 2026 proposes this organism as the first whole-cell validation organism for Cells. Support for it in the engine is being worked on (the user, 14 November 2026; decision D171 gives it an agent under the lead). Nothing of it is in the engine yet: the project's record holds an evidence audit and a proposal, in which no engine model ran.",
+            "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells. Nothing of it is in the engine yet: the project's record holds an evidence audit and a proposal, in which no engine model ran.",
         },
         "levels": [
             {"id": "molecules"},
