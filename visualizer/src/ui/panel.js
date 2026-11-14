@@ -2,9 +2,11 @@
 
 import { h, emit, formatDate, statusSwatch } from "./dom.js";
 
-const KIND_ORDER = ["implements", "requires", "reads", "writes", "provides", "conflicts", "operator_of", "wraps", "runs", "compared_with", "runs_on", "delivers", "extends", "uses"];
+const KIND_ORDER = ["modelled_by", "shown_as", "implements", "requires", "reads", "writes", "provides", "conflicts", "operator_of", "wraps", "runs", "compared_with", "runs_on", "delivers", "extends", "uses"];
 // How a relation reads from the far end.
 const INVERSE = {
+  modelled_by: "holds the law for",
+  shown_as: "is drawn for",
   implements: "is behind",
   requires: "is required by",
   reads: "is read by",
@@ -28,6 +30,10 @@ class CellsPanel extends HTMLElement {
     if (!entity) return;
     const status = model.statuses.get(entity.status);
     const chips = [];
+    // A part may bring its own chips (the protein atlas: how sure the mapping is, and where the law acts).
+    for (const chip of entity.chips || []) {
+      chips.push(h("span", { class: chip.swatch ? "chip" : "chip chip-plain", title: chip.title || "" }, chip.swatch ? statusSwatch(chip.swatch) : null, chip.label));
+    }
     if (status) {
       chips.push(h("span", { class: "chip", title: status.description }, statusSwatch(entity.status), status.label, entity.as_of ? ` · ${formatDate(entity.as_of)}` : ""));
     }
@@ -51,6 +57,9 @@ class CellsPanel extends HTMLElement {
       const title = entity.kind === "gate" ? "Deliverables" : "Contains";
       body.append(this.list(title, entity.members.map((member) => h("li", {}, member.label, member.detail ? h("span", { class: "quiet" }, ` · ${member.detail}`) : null))));
     }
+    for (const section of entity.sections || []) {
+      if (section.items?.length) body.append(this.list(section.title, section.items.map(item), "items"));
+    }
     const connections = this.connections(model, entity);
     if (connections.length) body.append(h("h3", {}, "Connections"), ...connections);
     if (entity.sources?.length) {
@@ -72,7 +81,7 @@ class CellsPanel extends HTMLElement {
       h(
         "header",
         { class: "panel-head" },
-        h("div", {}, h("p", { class: "eyebrow" }, kindName(entity, model)), h("h2", {}, entity.label)),
+        h("div", {}, h("p", { class: "eyebrow" }, entity.eyebrow || kindName(entity, model)), h("h2", {}, entity.label)),
         h("button", { class: "icon-button", type: "button", "aria-label": "Close", onclick: () => emit(this, "cells-select", { id: null }) }, "×")
       ),
       ...(chips.length ? [h("div", { class: "chips" }, chips)] : []),
@@ -99,7 +108,7 @@ class CellsPanel extends HTMLElement {
         return h(
           "li",
           {},
-          h("button", { class: "link-button", type: "button", onclick: () => emit(this, "cells-select", { id: other.id, fly: true }) }, statusSwatch(other.status), other.label),
+          h("button", { class: "link-button", type: "button", onclick: () => emit(this, "cells-select", { id: other.id, fly: true }) }, statusSwatch(other.swatch || other.status), other.label),
           link.relation.label ? h("span", { class: "quiet" }, ` · ${link.relation.label}`) : null
         );
       });
@@ -113,6 +122,25 @@ class CellsPanel extends HTMLElement {
     if (rest.length) block.append(h("details", {}, h("summary", {}, `Show ${rest.length} more`), h("ul", {}, rest)));
     return block;
   }
+}
+
+/** One entry of a part's own list: a law, a gene product, a reference structure. Links open outside the page. */
+function item(entry) {
+  const links = (entry.links || []).filter((link) => /^https:\/\//.test(link.url));
+  return h(
+    "li",
+    { class: "item" },
+    h(
+      "div",
+      { class: "item-head" },
+      h("span", { class: entry.code ? "item-label code" : "item-label" }, entry.label),
+      entry.tag ? h("span", { class: "tag", title: entry.tag_title || "" }, entry.tag) : null
+    ),
+    entry.detail ? h("p", { class: "item-detail" }, entry.detail) : null,
+    (entry.lines || []).map((line) => h("p", { class: "item-line" }, line)),
+    entry.note ? h("p", { class: "item-note" }, entry.note) : null,
+    links.length ? h("p", { class: "item-links" }, links.map((link, index) => [index ? " · " : null, h("a", { href: link.url, target: "_blank", rel: "noopener" }, link.text)])) : null
+  );
 }
 
 function kindName(entity, model) {

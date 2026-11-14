@@ -1926,16 +1926,16 @@
       },
       "scheduled_species_turnover@1": {
         "label": "Species turnover",
-        "status": "landed",
+        "status": "qualified",
         "as_of": "2026-11-14",
         "files": [
           "src/cells/models/operators/species_common.py"
         ],
-        "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded; its qualification protocol is registered and nothing is judged yet.",
+        "plain": "Production and clearance of secreted molecules, inside cells and between them. Its first-order clearance is numerically qualified, together with the transport between cells (D150 v1). Production is guarded by tests only.",
         "sources": [
           {
             "path": "PROGRESS.md",
-            "where": "The secreted-species (D150 v1) protocol is registered"
+            "where": "Secreted-species transport (D150 v1) is numerically qualified"
           },
           {
             "path": "docs/CURRENT_PLAN.md",
@@ -1947,11 +1947,11 @@
         "label": "Species exchange",
         "status": "landed",
         "as_of": "2026-11-14",
-        "plain": "Secretion and uptake of molecules across the membrane. Implemented and guarded; its qualification protocol is registered and nothing is judged yet.",
+        "plain": "Secretion and uptake of molecules across the membrane. Implemented and guarded: it entered the D150 v1 qualification only through its guard tests, so it is not yet qualified.",
         "sources": [
           {
             "path": "PROGRESS.md",
-            "where": "The secreted-species (D150 v1) protocol is registered"
+            "where": "Secreted-species transport (D150 v1) is numerically qualified"
           },
           {
             "path": "docs/CURRENT_PLAN.md",
@@ -2440,12 +2440,13 @@
       "label": "Secreted signals",
       "part": "secretion",
       "scale": "cell",
-      "status": "landed",
+      "status": "qualified",
+      "as_of": "2026-11-14",
       "representation": "simulated",
       "runs_in": [
         "composite"
       ],
-      "plain": "Cells release and take up signalling molecules that spread between cells. Implemented and guarded; its qualification protocol is registered and nothing is judged yet.",
+      "plain": "Signalling molecules spread between cells and are cleared. That transport and clearance are numerically qualified in the composite model, with a held source (D150 v1). Release, uptake and production are implemented and guarded by tests, not yet qualified.",
       "implemented_by": [
         "op.scheduled_species_turnover@1",
         "op.scheduled_species_exchange@1"
@@ -2453,6 +2454,10 @@
       "sources": [
         {
           "path": "docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Secreted-species transport (D150 v1) is numerically qualified"
         }
       ]
     },

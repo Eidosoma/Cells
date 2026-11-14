@@ -27,7 +27,7 @@ class CellsIndex extends HTMLElement {
     const blocks = [];
     for (const section of this.sections) {
       const rows = section.entities
-        .filter((entity) => !query || entity.label.toLowerCase().includes(query) || entity.id.toLowerCase().includes(query))
+        .filter((entity) => !query || [entity.label, entity.id, entity.short, entity.keywords].some((text) => text && text.toLowerCase().includes(query)))
         .map((entity) =>
           h(
             "button",
@@ -36,7 +36,7 @@ class CellsIndex extends HTMLElement {
               type: "button",
               onclick: () => emit(this, "cells-select", { id: entity.id, fly: true }),
             },
-            statusSwatch(entity.status),
+            statusSwatch(entity.swatch || entity.status),
             h("span", { class: "index-name" }, entity.label)
           )
         );

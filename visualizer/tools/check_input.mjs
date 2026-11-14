@@ -3,7 +3,7 @@
 // protocol (Node's built-in WebSocket; no extra dependency). Screenshots set state by
 // query parameter and so never touch picking or the camera control; this does.
 //
-//   node tools/check_input.mjs            (CHECK_ONLY=engine|cell|zoom runs one part)
+//   node tools/check_input.mjs            (CHECK_ONLY=engine|atlas|cell|zoom runs one part)
 
 import { spawn } from "node:child_process";
 import { createServer } from "./serve.mjs";
@@ -117,6 +117,61 @@ try {
     check("engine: the panel opens", await evaluate(`!${VIEWER}.shadowRoot.querySelector("cells-panel").hidden`));
     await click(40, 400);
     check("engine: clicking empty space clears the selection", (await selected()) === null, String(await selected()));
+  }
+
+  // ---------------------------------------------------------------- protein atlas
+  if (wants("atlas")) {
+    await open("lens=proteins");
+    const tabs = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".switch button")].map((button) => button.getAttribute("aria-label")).join(" | ")`);
+    check("atlas: the views are in the order asked for", tabs === "Cell and scales | Protein atlas | Engine", tabs);
+    // A unit whose top is in plain view, with no label lying over the point clicked.
+    const unit = await evaluate(`(() => {
+      const viewer = ${VIEWER}, lens = viewer.current;
+      for (const [id, node] of lens.nodes) {
+        const out = node.top.clone();
+        viewer.stage.project(node.top, out);
+        const x = out.x, y = out.y + 7;
+        if (x < 320 || x > 1000 || y < 130 || y > 560) continue;
+        const hit = viewer.stage.pick(x, y, lens.pickRoots);
+        if (hit && hit.id === id && viewer.shadowRoot.elementFromPoint(x, y) === viewer.canvas) return { id, x, y };
+      }
+      return null;
+    })()`);
+    await click(unit.x, unit.y);
+    check("atlas: clicking a unit selects it", (await selected()) === unit.id, `${unit.id} -> ${await selected()}`);
+    const panel = await evaluate(`(() => {
+      const panel = ${VIEWER}.shadowRoot.querySelector("cells-panel");
+      return { open: !panel.hidden, chip: panel.querySelector(".chip")?.textContent, hosts: [...new Set([...panel.querySelectorAll(".item-links a")].map((a) => a.hostname))].join(" ") };
+    })()`);
+    check("atlas: the panel states the mapping and links to the public atlases", panel.open && /Assigned|Candidate|Generic/.test(panel.chip || "") && panel.hosts.includes("proteinatlas.org"), `${panel.chip}; ${panel.hosts}`);
+
+    // The legend's "Generic" leaves only the generic laws lit.
+    const generic = await evaluate(`(() => {
+      const button = [...${VIEWER}.shadowRoot.querySelectorAll("cells-legend .legend-item")].find((item) => item.querySelector(".legend-label").textContent === "Generic");
+      const box = button.getBoundingClientRect();
+      return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+    })()`);
+    await click(generic.x, generic.y);
+    const lit = await evaluate(`(() => { const lens = ${VIEWER}.current; return { isolate: lens.isolate, lit: [...lens.nodes.values()].filter((node) => lens.lit(node.entity)).length, generic: lens.atlas.mappings.find((item) => item.id === "generic").count }; })()`);
+    check("atlas: the legend shows the generic laws alone", lit.isolate === "generic" && lit.lit === lit.generic && lit.lit > 0, JSON.stringify(lit));
+    await click(generic.x, generic.y);
+
+    // A unit's connection leads to the engine part that holds its law, in the engine view.
+    const link = await evaluate(`(() => {
+      const button = ${VIEWER}.shadowRoot.querySelector("cells-panel .connection .link-button");
+      button.scrollIntoView({ block: "center" });
+      const box = button.getBoundingClientRect();
+      return { text: button.textContent, x: box.left + Math.min(box.width / 2, 40), y: box.top + box.height / 2 };
+    })()`);
+    await click(link.x, link.y);
+    await sleep(900);
+    const there = await evaluate(`(() => {
+      const viewer = ${VIEWER}, entity = viewer.model.get(viewer.state.selected);
+      const heads = [...viewer.shadowRoot.querySelectorAll("cells-panel .connection h4")].map((item) => item.textContent).join(" | ");
+      return { lens: viewer.state.lens, label: entity?.label, heads };
+    })()`);
+    check("atlas: a unit's connection opens its engine part in the engine view", there.lens === "engine" && there.label === link.text, `${link.text} -> ${there.lens}: ${there.label}`);
+    check("atlas: that engine part lists the units it holds the law for", /Holds the law for/.test(there.heads), there.heads);
   }
 
   // ---------------------------------------------------------------- cell lens

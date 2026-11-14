@@ -380,7 +380,7 @@ export class StackLens {
     if (this.ladderInfo) labels.add({ text: this.ladderInfo.group.label, anchor: this.ladderInfo.anchor, priority: 500, kind: "layer", lift: 2 });
     for (const node of this.nodes.values()) {
       const entity = node.entity;
-      const degree = this.model.links(entity.id).filter((link) => link.relation.kind !== "uses").length;
+      const degree = this.model.links(entity.id).filter((link) => link.relation.kind !== "uses" && this.nodes.has(link.other)).length;
       const priority = (entity.kind === "gate" ? 80 : 0) + (this.model.isBuilt(entity) ? 0 : 12) + 16 * Math.log2(1 + degree) + Math.min(12, Math.log10(1 + (entity.weight || 0)) * 3);
       node.label = labels.add({ id: entity.id, text: entity.label, anchor: node.top, priority, kind: "part", lift: 9 });
     }

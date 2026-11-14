@@ -11,7 +11,8 @@
         {"date": "2026-11-14", "engine_revision": "031ee42", "note": "First version: the cell-and-scales lens and the engine lens"},
         {"date": "2026-11-14", "engine_revision": "031ee42", "note": "Input fixes after the real-input check; two capability claims reworded; second-provider conflicts drawn"},
         {"date": "2026-11-14", "engine_revision": "031ee42", "note": "Cell view redrawn after the README's biology map: flat cut, natural colours with status dots, labels on leader lines, schematic and to-scale size modes, scale bar"},
-        {"date": "2026-11-14", "engine_revision": "f7f0592", "note": "Data refreshed after merging main (reactions operator registered, D156's status levels, new in-design items); to-scale mitochondria drawn as clear curved membranes with their inner folds"}
+        {"date": "2026-11-14", "engine_revision": "f7f0592", "note": "Data refreshed after merging main (reactions operator registered, D156's status levels, new in-design items); to-scale mitochondria drawn as clear curved membranes with their inner folds"},
+        {"date": "2026-11-14", "engine_revision": "265ed66", "note": "Protein atlas added as the second of three views (Cell and scales, Protein atlas, Engine): the 49 functional units of the law inventory of 12 November 2026, linked to their engine parts and to the public atlases; secreted-species transport shown as numerically qualified in its stated scope"}
       ]
     }
   }

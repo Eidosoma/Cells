@@ -1,0 +1,6127 @@
+{
+ "format": "cells.visualizer.protein_inventory_snapshot@1",
+ "note": "A slim, read-only copy of the Cells law inventory, made for the viewer by visualizer/tools/import_protein_inventory.py. It is not a catalogue: the catalogue's design (docs/PROTEIN_CATALOGUE_PLAN.md, stage 3) has not begun. Do not edit; run the tool again.",
+ "inventory": {
+  "kind": "cells.protein_catalogue.law_inventory@2",
+  "created": "2026-11-12",
+  "read_at_revision": "fec863f",
+  "scope": "Every law or law-like function in src/cells that acts on a functional unit (channel, pump, transporter, exchanger, release channel, junction channel, organelle permeability, assembly), plus an accounting of every v1 row.",
+  "status_vocabulary": [
+   "assigned in source",
+   "candidate",
+   "generic, isoform not assigned"
+  ],
+  "counts": {
+   "records": 81,
+   "laws": 80,
+   "model_records": 1,
+   "functional_units": 49,
+   "laws_by_status": {
+    "assigned in source": 41,
+    "candidate": 7,
+    "generic, isoform not assigned": 32
+   },
+   "functional_units_by_status": {
+    "assigned in source": 29,
+    "candidate": 4,
+    "generic, isoform not assigned": 16
+   },
+   "assigned_laws_by_evidence_kind": {
+    "native current": 4,
+    "expressed isoform": 12,
+    "isoform named in title": 6,
+    "no detail in source": 5,
+    "neuron model": 2,
+    "derived reduction": 12
+   },
+   "candidate_genes": 93,
+   "candidate_genes_with_xenopus_laevis_entry": 81
+  }
+ },
+ "sources": [
+  {
+   "name": "Cells law inventory",
+   "holds": "functional units, laws, statuses, kinds of evidence, assembly statements and notes",
+   "licence": "MIT, with the Cells repository"
+  },
+  {
+   "name": "UniProt",
+   "url": "https://www.uniprot.org/",
+   "holds": "accessions, protein names and lengths of the candidate gene products: reviewed human entries, and Xenopus laevis entries found by gene name",
+   "release": "2026_04",
+   "accessed": "2026-11-12",
+   "licence": "CC BY 4.0",
+   "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)"
+  },
+  {
+   "name": "RCSB Protein Data Bank",
+   "url": "https://www.rcsb.org/",
+   "holds": "titles, methods, resolutions, assembly copies and symmetries, and primary citations of the reference structures",
+   "accessed": "2026-11-12",
+   "licence": "CC0 1.0",
+   "cite": "each structure's primary citation is kept with it"
+  }
+ ],
+ "not_copied": "No Xenbase data, no Human Protein Atlas data and no AlphaFold models are copied. The view only links to those sites.",
+ "units": [
+  {
+   "id": "U01",
+   "name": "NaV1.2 channel",
+   "kind": "voltage-gated Na channel",
+   "status": "assigned in source",
+   "laws": [
+    "nav1p2_m3h_regularized@1"
+   ],
+   "products": [
+    {
+     "gene": "SCN2A",
+     "role": "alpha",
+     "human_uniprot": "Q99250"
+    },
+    {
+     "gene": "SCN1B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q07699"
+    },
+    {
+     "gene": "SCN2B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O60939"
+    },
+    {
+     "gene": "SCN3B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY72"
+    },
+    {
+     "gene": "SCN4B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IWT1"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha (four-domain pseudotetramer) + beta subunits (beta2/beta4 disulfide-linked, beta1/beta3 non-covalent)",
+    "sources": [
+     "UniProt Q99250 SUBUNIT",
+     "PDB 6J8E (human Nav1.2 alpha : beta2 = 1:1, with toxin KIIIA)"
+    ]
+   }
+  },
+  {
+   "id": "U02",
+   "name": "NaV1.3 channel",
+   "kind": "voltage-gated Na channel",
+   "status": "assigned in source",
+   "laws": [
+    "nav1p3_m3h_regularized@1"
+   ],
+   "products": [
+    {
+     "gene": "SCN3A",
+     "role": "alpha",
+     "human_uniprot": "Q9NY46"
+    },
+    {
+     "gene": "SCN1B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q07699"
+    },
+    {
+     "gene": "SCN2B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O60939"
+    },
+    {
+     "gene": "SCN3B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY72"
+    },
+    {
+     "gene": "SCN4B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IWT1"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha + beta subunits",
+    "sources": [
+     "UniProt Q9NY46 SUBUNIT (as SCN2A)"
+    ]
+   }
+  },
+  {
+   "id": "U03",
+   "name": "NaV1.6 channel",
+   "kind": "voltage-gated Na channel",
+   "status": "assigned in source",
+   "laws": [
+    "nav1p6_persistent_m@1",
+    "nav_ml_instantaneous@1"
+   ],
+   "products": [
+    {
+     "gene": "SCN8A",
+     "role": "alpha",
+     "human_uniprot": "Q9UQD0"
+    },
+    {
+     "gene": "SCN1B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q07699"
+    },
+    {
+     "gene": "SCN2B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O60939"
+    },
+    {
+     "gene": "SCN3B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY72"
+    },
+    {
+     "gene": "SCN4B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IWT1"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha + beta subunits",
+    "sources": [
+     "UniProt Q9UQD0 SUBUNIT"
+    ]
+   }
+  },
+  {
+   "id": "U04",
+   "name": "Native neuronal Na current (isoform not named)",
+   "kind": "voltage-gated Na channel",
+   "status": "candidate",
+   "laws": [
+    "navrat2_m3h_regularized@1",
+    "navrat1_m3h_regularized@1",
+    "navrat3_m3h_regularized@1"
+   ],
+   "products": [
+    {
+     "gene": "SCN1A",
+     "role": "alpha, inference",
+     "human_uniprot": "P35498"
+    },
+    {
+     "gene": "SCN2A",
+     "role": "alpha, inference",
+     "human_uniprot": "Q99250"
+    },
+    {
+     "gene": "SCN3A",
+     "role": "alpha, inference",
+     "human_uniprot": "Q9NY46"
+    },
+    {
+     "gene": "SCN8A",
+     "role": "alpha, inference",
+     "human_uniprot": "Q9UQD0"
+    },
+    {
+     "gene": "SCN1B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q07699"
+    },
+    {
+     "gene": "SCN2B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O60939"
+    },
+    {
+     "gene": "SCN3B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY72"
+    },
+    {
+     "gene": "SCN4B",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IWT1"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha + beta subunits (if NaV)",
+    "sources": [
+     "UniProt SCN2A SUBUNIT"
+    ]
+   },
+   "note": "Rat neocortical / thalamocortical model currents; the gene mapping is our inference."
+  },
+  {
+   "id": "U05",
+   "name": "Kv1.1 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv1p1_mh2@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNA1",
+     "role": "alpha",
+     "human_uniprot": "Q09470"
+    },
+    {
+     "gene": "KCNAB1",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q14722"
+    },
+    {
+     "gene": "KCNAB2",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q13303"
+    },
+    {
+     "gene": "KCNAB3",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O43448"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha (homo- or heterotetramer) + up to 4 Kv-beta",
+    "sources": [
+     "UniProt Q09470 SUBUNIT",
+     "PDB 2A79 (rat Kv1.2 4 alpha + 4 beta2)"
+    ]
+   }
+  },
+  {
+   "id": "U06",
+   "name": "Kv1.2 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv1p2_mh@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNA2",
+     "role": "alpha",
+     "human_uniprot": "P16389"
+    },
+    {
+     "gene": "KCNAB1",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q14722"
+    },
+    {
+     "gene": "KCNAB2",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q13303"
+    },
+    {
+     "gene": "KCNAB3",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O43448"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha + 4 Kv-beta",
+    "sources": [
+     "PDB 2A79 (rat Kv1.2-beta2, 4:4)"
+    ]
+   }
+  },
+  {
+   "id": "U07",
+   "name": "Kv1.3 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv1p3_mh@1",
+    "kv1p3_ml_dynamic_m@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNA3",
+     "role": "alpha",
+     "human_uniprot": "P22001"
+    },
+    {
+     "gene": "KCNAB1",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q14722"
+    },
+    {
+     "gene": "KCNAB2",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q13303"
+    },
+    {
+     "gene": "KCNAB3",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O43448"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha (+ Kv-beta)",
+    "sources": [
+     "UniProt P22001 SUBUNIT",
+     "PDB 2A79 (family exemplar)"
+    ]
+   }
+  },
+  {
+   "id": "U08",
+   "name": "Kv1.4 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv1p4_mh@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNA4",
+     "role": "alpha",
+     "human_uniprot": "P22459"
+    },
+    {
+     "gene": "KCNAB1",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q14722"
+    },
+    {
+     "gene": "KCNAB2",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q13303"
+    },
+    {
+     "gene": "KCNAB3",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O43448"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha (+ Kv-beta)",
+    "sources": [
+     "UniProt P22459 SUBUNIT",
+     "PDB 2A79 (family exemplar)"
+    ]
+   }
+  },
+  {
+   "id": "U09",
+   "name": "Kv1.5 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv1p5_mh@1",
+    "kv1p5_ml_dynamic_m@1",
+    "kv1p5s_ml_slow_dynamic_m@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNA5",
+     "role": "alpha",
+     "human_uniprot": "P22460"
+    },
+    {
+     "gene": "KCNAB1",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q14722"
+    },
+    {
+     "gene": "KCNAB2",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q13303"
+    },
+    {
+     "gene": "KCNAB3",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O43448"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha (homo- or heterotetramer) + Kv-beta",
+    "sources": [
+     "UniProt P22460 SUBUNIT",
+     "PDB 2A79 (family exemplar)"
+    ]
+   }
+  },
+  {
+   "id": "U10",
+   "name": "Kv1.6 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv1p6_mh@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNA6",
+     "role": "alpha",
+     "human_uniprot": "P17658"
+    },
+    {
+     "gene": "KCNAB1",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q14722"
+    },
+    {
+     "gene": "KCNAB2",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q13303"
+    },
+    {
+     "gene": "KCNAB3",
+     "role": "Kv-beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O43448"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha (+ Kv-beta)",
+    "sources": [
+     "UniProt P17658 SUBUNIT",
+     "PDB 2A79 (family exemplar)"
+    ]
+   }
+  },
+  {
+   "id": "U11",
+   "name": "Kv2.1 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv2p1_mh@1",
+    "kv2p1_ml_dynamic_m@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNB1",
+     "role": "alpha",
+     "human_uniprot": "Q14721"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha (homotetramer, or with KCNB2 or silent KCNF/G/S/V alpha subunits)",
+    "sources": [
+     "UniProt Q14721 SUBUNIT"
+    ]
+   }
+  },
+  {
+   "id": "U12",
+   "name": "Kv2.2 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv2p2_mh@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNB2",
+     "role": "alpha",
+     "human_uniprot": "Q92953"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha",
+    "sources": [
+     "UniProt Q92953 SUBUNIT"
+    ]
+   }
+  },
+  {
+   "id": "U13",
+   "name": "Kv3.1 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv3p1_m@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNC1",
+     "role": "alpha",
+     "human_uniprot": "P48547"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha",
+    "sources": [
+     "UniProt P48547 SUBUNIT",
+     "PDB 7PHH (human Kv3.1 homotetramer)"
+    ]
+   }
+  },
+  {
+   "id": "U14",
+   "name": "Kv3.2 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv3p2_m2@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNC2",
+     "role": "alpha",
+     "human_uniprot": "Q96PR1"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha",
+    "sources": [
+     "UniProt Q96PR1 SUBUNIT"
+    ]
+   }
+  },
+  {
+   "id": "U15",
+   "name": "Kv3.3 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv3p3_m2h_long_tau@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNC3",
+     "role": "alpha",
+     "human_uniprot": "Q14003"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha",
+    "sources": [
+     "UniProt Q14003 SUBUNIT"
+    ]
+   }
+  },
+  {
+   "id": "U16",
+   "name": "Kv3.4 channel",
+   "kind": "voltage-gated K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kv3p4_mh@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNC4",
+     "role": "alpha",
+     "human_uniprot": "Q03721"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha",
+    "sources": [
+     "UniProt Q03721 SUBUNIT"
+    ]
+   }
+  },
+  {
+   "id": "U17",
+   "name": "Native fast-inactivating (A-type) K current",
+   "kind": "voltage-gated K channel",
+   "status": "candidate",
+   "laws": [
+    "k_fast_mh@1"
+   ],
+   "products": [
+    {
+     "gene": "KCND2",
+     "role": "alpha, inference",
+     "human_uniprot": "Q9NZV8"
+    },
+    {
+     "gene": "KCND3",
+     "role": "alpha, inference",
+     "human_uniprot": "Q9UK17"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "if Kv4: 4 alpha + KChIP + DPP6/10",
+    "sources": [
+     "UniProt Q9NZV8 SUBUNIT"
+    ]
+   },
+   "note": "Korngreen & Sakmann (2000) do not name the gene; Kv4 is our inference only."
+  },
+  {
+   "id": "U18",
+   "name": "Generic delayed-rectifier K current (Morris-Lecar default)",
+   "kind": "voltage-gated K channel",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "kv_ml1_dynamic_m@1"
+   ],
+   "assembly": {
+    "stoichiometry": "not defined"
+   },
+   "note": "Phenomenological default; no product."
+  },
+  {
+   "id": "U19",
+   "name": "Kir2.1 channel",
+   "kind": "inward-rectifier K channel",
+   "status": "assigned in source",
+   "laws": [
+    "kir2p1_mh2@1",
+    "kir_ml_instantaneous@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNJ2",
+     "role": "alpha",
+     "human_uniprot": "P63252"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha",
+    "sources": [
+     "UniProt P63252 SUBUNIT",
+     "PDB 7ZDZ (human Kir2.1 homotetramer)"
+    ]
+   }
+  },
+  {
+   "id": "U20",
+   "name": "HCN1 channel",
+   "kind": "HCN channel",
+   "status": "assigned in source",
+   "laws": [
+    "hcn1_m@1"
+   ],
+   "products": [
+    {
+     "gene": "HCN1",
+     "role": "alpha",
+     "human_uniprot": "O60741"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha",
+    "sources": [
+     "UniProt O60741 SUBUNIT",
+     "PDB 5U6O (human HCN1 homotetramer)"
+    ]
+   }
+  },
+  {
+   "id": "U21",
+   "name": "HCN2 channel",
+   "kind": "HCN channel",
+   "status": "assigned in source",
+   "laws": [
+    "hcn2_m@1",
+    "hcn2_camp_m@1",
+    "hcn2_ml_depolarization_activated_instantaneous@1"
+   ],
+   "products": [
+    {
+     "gene": "HCN2",
+     "role": "alpha",
+     "human_uniprot": "Q9UL51"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha",
+    "sources": [
+     "UniProt Q9UL51 SUBUNIT",
+     "PDB 5U6O (HCN1, family exemplar)"
+    ]
+   }
+  },
+  {
+   "id": "U22",
+   "name": "HCN4 channel",
+   "kind": "HCN channel",
+   "status": "assigned in source",
+   "laws": [
+    "hcn4_m@1",
+    "hcn4_camp_m@1",
+    "hcn4_ml_depolarization_activated_instantaneous@1"
+   ],
+   "products": [
+    {
+     "gene": "HCN4",
+     "role": "alpha",
+     "human_uniprot": "Q9Y3Q4"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "4 alpha",
+    "sources": [
+     "UniProt Q9Y3Q4 SUBUNIT",
+     "PDB 7NP3 (rabbit HCN4 homotetramer)"
+    ]
+   }
+  },
+  {
+   "id": "U23",
+   "name": "HCN-type always-open leak",
+   "kind": "background leak",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "hcn_leak_open@1"
+   ],
+   "products": [
+    {
+     "gene": "HCN2",
+     "role": "per source docstring text",
+     "human_uniprot": "Q9UL51"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "not defined (no gate)"
+   },
+   "note": "Always open with HCN permeability ratios; the BETSE docstring repeats the HCN2 text."
+  },
+  {
+   "id": "U24",
+   "name": "CaV1.2 channel (label)",
+   "kind": "voltage-gated Ca channel (HVA)",
+   "status": "assigned in source",
+   "laws": [
+    "cav1p2_m2h@1"
+   ],
+   "products": [
+    {
+     "gene": "CACNA1C",
+     "role": "alpha1",
+     "human_uniprot": "Q13936"
+    },
+    {
+     "gene": "CACNB1",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q02641"
+    },
+    {
+     "gene": "CACNB2",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q08289"
+    },
+    {
+     "gene": "CACNB3",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54284"
+    },
+    {
+     "gene": "CACNB4",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O00305"
+    },
+    {
+     "gene": "CACNA2D1",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54289"
+    },
+    {
+     "gene": "CACNA2D2",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY47"
+    },
+    {
+     "gene": "CACNA2D3",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IZS8"
+    },
+    {
+     "gene": "CACNA2D4",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q7Z3S7"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha1 + 1 beta + 1 alpha2delta",
+    "sources": [
+     "UniProt Q13936 SUBUNIT",
+     "PDB 7MIY (human CaV2.2:alpha2delta1:beta3 = 1:1:1)",
+     "PDB 5GJV (rabbit CaV1.1 with alpha2delta1, beta1, gamma1)"
+    ]
+   },
+   "note": "Cited data are a native L-type current in mouse spinal motoneurons."
+  },
+  {
+   "id": "U25",
+   "name": "CaV1.3 channel",
+   "kind": "voltage-gated Ca channel (HVA)",
+   "status": "assigned in source",
+   "laws": [
+    "cav1p3_m2h@1",
+    "cav_l_ml_instantaneous@1",
+    "cav_l_ml2_instantaneous@1"
+   ],
+   "products": [
+    {
+     "gene": "CACNA1D",
+     "role": "alpha1",
+     "human_uniprot": "Q01668"
+    },
+    {
+     "gene": "CACNB1",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q02641"
+    },
+    {
+     "gene": "CACNB2",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q08289"
+    },
+    {
+     "gene": "CACNB3",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54284"
+    },
+    {
+     "gene": "CACNB4",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O00305"
+    },
+    {
+     "gene": "CACNA2D1",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54289"
+    },
+    {
+     "gene": "CACNA2D2",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY47"
+    },
+    {
+     "gene": "CACNA2D3",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IZS8"
+    },
+    {
+     "gene": "CACNA2D4",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q7Z3S7"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha1 + 1 beta + 1 alpha2delta",
+    "sources": [
+     "UniProt Q01668 SUBUNIT",
+     "PDB 7MIY (HVA exemplar)"
+    ]
+   }
+  },
+  {
+   "id": "U26",
+   "name": "Native L-type Ca current (modified)",
+   "kind": "voltage-gated Ca channel (HVA)",
+   "status": "candidate",
+   "laws": [
+    "ca_l2_m2h@1",
+    "ca_l3_shift15_m2h@1"
+   ],
+   "products": [
+    {
+     "gene": "CACNA1C",
+     "role": "alpha1, inference",
+     "human_uniprot": "Q13936"
+    },
+    {
+     "gene": "CACNA1D",
+     "role": "alpha1, inference",
+     "human_uniprot": "Q01668"
+    },
+    {
+     "gene": "CACNB1",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q02641"
+    },
+    {
+     "gene": "CACNB2",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q08289"
+    },
+    {
+     "gene": "CACNB3",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54284"
+    },
+    {
+     "gene": "CACNB4",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O00305"
+    },
+    {
+     "gene": "CACNA2D1",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54289"
+    },
+    {
+     "gene": "CACNA2D2",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY47"
+    },
+    {
+     "gene": "CACNA2D3",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IZS8"
+    },
+    {
+     "gene": "CACNA2D4",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q7Z3S7"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha1 + 1 beta + 1 alpha2delta (if L-type)",
+    "sources": [
+     "PDB 5GJV (L-type exemplar)"
+    ]
+   },
+   "note": "BETSE modified Avery et al. currents."
+  },
+  {
+   "id": "U27",
+   "name": "Native HVA Ca current (generic)",
+   "kind": "voltage-gated Ca channel (HVA)",
+   "status": "candidate",
+   "laws": [
+    "cav_g_m2h_regularized@1"
+   ],
+   "products": [
+    {
+     "gene": "CACNA1C",
+     "role": "inference",
+     "human_uniprot": "Q13936"
+    },
+    {
+     "gene": "CACNA1D",
+     "role": "inference",
+     "human_uniprot": "Q01668"
+    },
+    {
+     "gene": "CACNA1A",
+     "role": "inference",
+     "human_uniprot": "O00555"
+    },
+    {
+     "gene": "CACNA1B",
+     "role": "inference",
+     "human_uniprot": "Q00975"
+    },
+    {
+     "gene": "CACNA1E",
+     "role": "inference",
+     "human_uniprot": "Q15878"
+    },
+    {
+     "gene": "CACNB1",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q02641"
+    },
+    {
+     "gene": "CACNB2",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q08289"
+    },
+    {
+     "gene": "CACNB3",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54284"
+    },
+    {
+     "gene": "CACNB4",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O00305"
+    },
+    {
+     "gene": "CACNA2D1",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54289"
+    },
+    {
+     "gene": "CACNA2D2",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY47"
+    },
+    {
+     "gene": "CACNA2D3",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IZS8"
+    },
+    {
+     "gene": "CACNA2D4",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q7Z3S7"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha1 + 1 beta + 1 alpha2delta",
+    "sources": [
+     "PDB 7MIY"
+    ]
+   },
+   "note": "Reuveni et al. neocortical HVA current; mixture."
+  },
+  {
+   "id": "U28",
+   "name": "CaV2.1 (P/Q) channel",
+   "kind": "voltage-gated Ca channel (HVA)",
+   "status": "assigned in source",
+   "laws": [
+    "cav2p1_m@1"
+   ],
+   "products": [
+    {
+     "gene": "CACNA1A",
+     "role": "alpha1",
+     "human_uniprot": "O00555"
+    },
+    {
+     "gene": "CACNB1",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q02641"
+    },
+    {
+     "gene": "CACNB2",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q08289"
+    },
+    {
+     "gene": "CACNB3",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54284"
+    },
+    {
+     "gene": "CACNB4",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O00305"
+    },
+    {
+     "gene": "CACNA2D1",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54289"
+    },
+    {
+     "gene": "CACNA2D2",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY47"
+    },
+    {
+     "gene": "CACNA2D3",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IZS8"
+    },
+    {
+     "gene": "CACNA2D4",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q7Z3S7"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha1 + 1 beta + 1 alpha2delta",
+    "sources": [
+     "UniProt O00555 SUBUNIT",
+     "PDB 7MIY (HVA exemplar)"
+    ]
+   }
+  },
+  {
+   "id": "U29",
+   "name": "CaV2.2 (N) channel",
+   "kind": "voltage-gated Ca channel (HVA)",
+   "status": "assigned in source",
+   "laws": [
+    "cav2p2_m2h_regularized@1",
+    "cav_n_ml_instantaneous@1"
+   ],
+   "products": [
+    {
+     "gene": "CACNA1B",
+     "role": "alpha1",
+     "human_uniprot": "Q00975"
+    },
+    {
+     "gene": "CACNB1",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q02641"
+    },
+    {
+     "gene": "CACNB2",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q08289"
+    },
+    {
+     "gene": "CACNB3",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54284"
+    },
+    {
+     "gene": "CACNB4",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O00305"
+    },
+    {
+     "gene": "CACNA2D1",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54289"
+    },
+    {
+     "gene": "CACNA2D2",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY47"
+    },
+    {
+     "gene": "CACNA2D3",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IZS8"
+    },
+    {
+     "gene": "CACNA2D4",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q7Z3S7"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha1 + 1 beta + 1 alpha2delta",
+    "sources": [
+     "PDB 7MIY (human CaV2.2:alpha2delta1:beta3 = 1:1:1)"
+    ]
+   }
+  },
+  {
+   "id": "U30",
+   "name": "CaV2.3 (R) channel",
+   "kind": "voltage-gated Ca channel (HVA)",
+   "status": "assigned in source",
+   "laws": [
+    "cav2p3_mh@1"
+   ],
+   "products": [
+    {
+     "gene": "CACNA1E",
+     "role": "alpha1",
+     "human_uniprot": "Q15878"
+    },
+    {
+     "gene": "CACNB1",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q02641"
+    },
+    {
+     "gene": "CACNB2",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q08289"
+    },
+    {
+     "gene": "CACNB3",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54284"
+    },
+    {
+     "gene": "CACNB4",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "O00305"
+    },
+    {
+     "gene": "CACNA2D1",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "P54289"
+    },
+    {
+     "gene": "CACNA2D2",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NY47"
+    },
+    {
+     "gene": "CACNA2D3",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q8IZS8"
+    },
+    {
+     "gene": "CACNA2D4",
+     "role": "alpha2delta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q7Z3S7"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha1 + 1 beta + 1 alpha2delta",
+    "sources": [
+     "UniProt Q15878 SUBUNIT",
+     "PDB 7MIY (HVA exemplar)"
+    ]
+   }
+  },
+  {
+   "id": "U31",
+   "name": "CaV3.1 (T) channel",
+   "kind": "voltage-gated Ca channel (LVA)",
+   "status": "assigned in source",
+   "laws": [
+    "cav3p1_mh_piecewise_tau_m@1",
+    "cav_t_ml_instantaneous@1"
+   ],
+   "products": [
+    {
+     "gene": "CACNA1G",
+     "role": "alpha1",
+     "human_uniprot": "O43497"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha1 (no obligatory auxiliary subunit)",
+    "sources": [
+     "PDB 6KZO (human CaV3.1 alpha1G alone)"
+    ]
+   }
+  },
+  {
+   "id": "U32",
+   "name": "CaV3.3 (T) channel",
+   "kind": "voltage-gated Ca channel (LVA)",
+   "status": "assigned in source",
+   "laws": [
+    "cav3p3_mh@1"
+   ],
+   "products": [
+    {
+     "gene": "CACNA1I",
+     "role": "alpha1",
+     "human_uniprot": "Q9P0X4"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha1",
+    "sources": [
+     "PDB 6KZO (CaV3 exemplar)"
+    ]
+   }
+  },
+  {
+   "id": "U33",
+   "name": "Ca- and voltage-activated K channel (BK/SK unresolved)",
+   "kind": "Ca-activated K channel",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "cagpotassium_numeric_mM_scale@1"
+   ],
+   "products": [
+    {
+     "gene": "KCNMA1",
+     "role": "alpha, from cited model (mslo)",
+     "human_uniprot": "Q12791"
+    },
+    {
+     "gene": "KCNN1",
+     "role": "alpha, per BETSE label 'SK'",
+     "human_uniprot": "Q92952"
+    },
+    {
+     "gene": "KCNN2",
+     "role": "alpha, per BETSE label",
+     "human_uniprot": "Q9H2S1"
+    },
+    {
+     "gene": "KCNN3",
+     "role": "alpha, per BETSE label",
+     "human_uniprot": "Q9UGI6"
+    },
+    {
+     "gene": "KCNMB1",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q16558"
+    },
+    {
+     "gene": "KCNMB2",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9Y691"
+    },
+    {
+     "gene": "KCNMB3",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q9NPA1"
+    },
+    {
+     "gene": "KCNMB4",
+     "role": "beta, auxiliary family; pairing not specified in source",
+     "human_uniprot": "Q86W47"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "BK: 4 alpha (+ up to 4 beta); SK: 4 alpha, each with calmodulin",
+    "sources": [
+     "UniProt Q12791 SUBUNIT",
+     "PDB 6V38 (human Slo1, 4 alpha)",
+     "PDB 6V22 (human Slo1:beta4 = 4:4)",
+     "UniProt Q9H2S1 SUBUNIT"
+    ]
+   },
+   "note": "BETSE calls it an SK channel but cites the BK (mslo) model of Cox, Cui & Aldrich (1997)."
+  },
+  {
+   "id": "U34",
+   "name": "Always-open single-ion and cation leak populations",
+   "kind": "background leak",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "naleak_always_open@1",
+    "kleak_always_open@1",
+    "caleak_always_open@1",
+    "clleak_always_open@1",
+    "catleak_na_k@1",
+    "catleak2_na_k_ca@1",
+    "neutral_mobile_leak@1"
+   ],
+   "assembly": {
+    "stoichiometry": "not defined"
+   },
+   "note": "Background conductances; not protein-specific."
+  },
+  {
+   "id": "U35",
+   "name": "Passive constant-field membrane permeability",
+   "kind": "background permeability",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "constant_field@1"
+   ],
+   "assembly": {
+    "stoichiometry": "not defined"
+   },
+   "note": "Lumped membrane permeability; not a protein population."
+  },
+  {
+   "id": "U36",
+   "name": "Gap-junction channel (generic)",
+   "kind": "gap-junction channel",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "junction_voltage_relaxation@1",
+    "symmetric_opposing_relaxation@1",
+    "delayed_first_order_junction_formation@1"
+   ],
+   "products": [
+    {
+     "gene": "GJA1",
+     "role": "connexin, worked case only",
+     "human_uniprot": "P17302"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "channel = 2 connexons; connexon = 6 connexins",
+    "sources": [
+     "UniProt P17302 SUBUNIT (hemichannel = hexamer)",
+     "PDB 7Z22 (12 x Cx43, D6)",
+     "Chen-Izu et al. 2001 (two connexons of 6 subunits)"
+    ]
+   },
+   "note": "Generic by its own sources; no connexin is implied."
+  },
+  {
+   "id": "U37",
+   "name": "Cx45/Cx45 homotypic gap-junction channel",
+   "kind": "gap-junction channel",
+   "status": "assigned in source",
+   "laws": [
+    "junction_flux() in the nominal profile of model bitsey_emt_pair@1 (no *_ID constant)"
+   ],
+   "products": [
+    {
+     "gene": "GJC1",
+     "role": "connexin-45",
+     "human_uniprot": "P36383"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "2 x 6 Cx45",
+    "sources": [
+     "Chen-Izu et al. 2001"
+    ]
+   },
+   "note": "Only in the nominal compatibility profile of bitsey_emt_pair@1."
+  },
+  {
+   "id": "U38",
+   "name": "Cx40/Cx37 heterotypic gap-junction channel",
+   "kind": "gap-junction channel",
+   "status": "assigned in source",
+   "laws": [
+    "junction_flux() in the nominal profile of model bitsey_emt_pair@1 (no *_ID constant)"
+   ],
+   "products": [
+    {
+     "gene": "GJA5",
+     "role": "connexin-40",
+     "human_uniprot": "P36382"
+    },
+    {
+     "gene": "GJA4",
+     "role": "connexin-37",
+     "human_uniprot": "P35212"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "6 Cx40 + 6 Cx37",
+    "sources": [
+     "Chen-Izu et al. 2001"
+    ]
+   },
+   "note": "Only in the nominal compatibility profile of bitsey_emt_pair@1."
+  },
+  {
+   "id": "U39",
+   "name": "Na+/K+-ATPase",
+   "kind": "P-type ATPase",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "nak_atp_mass_action_positive@1",
+    "nak_atp_affinity_tanh@1",
+    "membrane_flux() pump term in the nominal profile of model bitsey_emt_pair@1 (no *_ID constant)"
+   ],
+   "products": [
+    {
+     "gene": "ATP1A1",
+     "role": "alpha",
+     "human_uniprot": "P05023"
+    },
+    {
+     "gene": "ATP1A2",
+     "role": "alpha",
+     "human_uniprot": "P50993"
+    },
+    {
+     "gene": "ATP1A3",
+     "role": "alpha",
+     "human_uniprot": "P13637"
+    },
+    {
+     "gene": "ATP1A4",
+     "role": "alpha",
+     "human_uniprot": "Q13733"
+    },
+    {
+     "gene": "ATP1B1",
+     "role": "beta",
+     "human_uniprot": "P05026"
+    },
+    {
+     "gene": "ATP1B2",
+     "role": "beta",
+     "human_uniprot": "P14415"
+    },
+    {
+     "gene": "ATP1B3",
+     "role": "beta",
+     "human_uniprot": "P54709"
+    },
+    {
+     "gene": "FXYD1",
+     "role": "FXYD",
+     "human_uniprot": "O00168"
+    },
+    {
+     "gene": "FXYD2",
+     "role": "FXYD (gamma)",
+     "human_uniprot": "P54710"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 alpha + 1 beta (+ 1 FXYD); 3 Na out and 2 K in per ATP",
+    "sources": [
+     "UniProt P05023 SUBUNIT",
+     "PDB 7E1Z (human alpha1:beta1:FXYD2 = 1:1:1)",
+     "PDB 4HYT (pig alpha1:beta1:gamma)",
+     "law constants SODIUM_PER_CYCLE=-3, POTASSIUM_PER_CYCLE=2"
+    ]
+   }
+  },
+  {
+   "id": "U40",
+   "name": "Plasma-membrane Ca-ATPase (PMCA)",
+   "kind": "P-type ATPase",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "plasma_calcium_pump_positive@1",
+    "ca_atp_mass_action_positive@1",
+    "finite_atp_pmca_positive@1"
+   ],
+   "products": [
+    {
+     "gene": "ATP2B1",
+     "role": "catalytic",
+     "human_uniprot": "P20020"
+    },
+    {
+     "gene": "ATP2B2",
+     "role": "catalytic",
+     "human_uniprot": "Q01814"
+    },
+    {
+     "gene": "ATP2B3",
+     "role": "catalytic",
+     "human_uniprot": "Q16720"
+    },
+    {
+     "gene": "ATP2B4",
+     "role": "catalytic",
+     "human_uniprot": "P23634"
+    },
+    {
+     "gene": "NPTN",
+     "role": "partner",
+     "human_uniprot": "Q9Y639"
+    },
+    {
+     "gene": "BSG",
+     "role": "partner",
+     "human_uniprot": "P35613"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "1 catalytic subunit (+ neuroplastin or basigin); 1 Ca out per ATP",
+    "sources": [
+     "UniProt P20020 SUBUNIT",
+     "PDB 6A69 (human PMCA1:neuroplastin = 1:1)"
+    ]
+   },
+   "note": "H+ countertransport not modelled."
+  },
+  {
+   "id": "U41",
+   "name": "ER Ca pump (SERCA family)",
+   "kind": "P-type ATPase",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "er_calcium_pump_positive@1",
+    "finite_atp_er_1ca_positive@1"
+   ],
+   "products": [
+    {
+     "gene": "ATP2A1",
+     "role": "catalytic",
+     "human_uniprot": "O14983"
+    },
+    {
+     "gene": "ATP2A2",
+     "role": "catalytic",
+     "human_uniprot": "P16615"
+    },
+    {
+     "gene": "ATP2A3",
+     "role": "catalytic",
+     "human_uniprot": "Q93084"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "monomer (regulated by phospholamban / sarcolipin); physiologically 2 Ca per ATP, the law moves 1",
+    "sources": [
+     "UniProt P16615 SUBUNIT",
+     "PDB 1SU4 (rabbit SERCA1a monomer with two bound Ca)"
+    ]
+   },
+   "note": "Law is a formal one-Ca cycle (docs/ER_CALCIUM.md)."
+  },
+  {
+   "id": "U42",
+   "name": "Na+/Ca2+ exchanger (NCX)",
+   "kind": "secondary transporter",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "ncx_3na_1ca_symmetric_barrier@1"
+   ],
+   "products": [
+    {
+     "gene": "SLC8A1",
+     "role": "exchanger",
+     "human_uniprot": "P32418"
+    },
+    {
+     "gene": "SLC8A2",
+     "role": "exchanger",
+     "human_uniprot": "Q9UPR5"
+    },
+    {
+     "gene": "SLC8A3",
+     "role": "exchanger",
+     "human_uniprot": "P57103"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "monomer; 3 Na in : 1 Ca out",
+    "sources": [
+     "PDB 8SGJ (human NCX1, single chain + Fab)",
+     "Hilgemann et al. 1992 (3:1)"
+    ]
+   }
+  },
+  {
+   "id": "U43",
+   "name": "ER Ca release channel (IP3R-like)",
+   "kind": "intracellular release channel",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "er_calcium_release@1",
+    "ip3_er_release@1"
+   ],
+   "products": [
+    {
+     "gene": "ITPR1",
+     "role": "IP3R",
+     "human_uniprot": "Q14643"
+    },
+    {
+     "gene": "ITPR2",
+     "role": "IP3R",
+     "human_uniprot": "Q14571"
+    },
+    {
+     "gene": "ITPR3",
+     "role": "IP3R",
+     "human_uniprot": "Q14573"
+    },
+    {
+     "gene": "RYR1",
+     "role": "RyR, CICR alternative",
+     "human_uniprot": "P21817"
+    },
+    {
+     "gene": "RYR2",
+     "role": "RyR",
+     "human_uniprot": "Q92736"
+    },
+    {
+     "gene": "RYR3",
+     "role": "RyR",
+     "human_uniprot": "Q15413"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "homotetramer",
+    "sources": [
+     "UniProt Q14643 SUBUNIT",
+     "PDB 6DQJ (human IP3R3 homotetramer)",
+     "PDB 3J8H (rabbit RyR1 + FKBP12, 4:4)"
+    ]
+   },
+   "note": "BETSE: 'calcium-induced calcium release controlled by inositol-triphosphate'."
+  },
+  {
+   "id": "U44",
+   "name": "K+-Cl- cotransporter (KCC)",
+   "kind": "secondary transporter (SLC12)",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "kcc_reversible_tanh@1",
+    "k_anion_symport_mass_action@1"
+   ],
+   "products": [
+    {
+     "gene": "SLC12A4",
+     "role": "KCC1",
+     "human_uniprot": "Q9UP95"
+    },
+    {
+     "gene": "SLC12A5",
+     "role": "KCC2",
+     "human_uniprot": "Q9H2X9"
+    },
+    {
+     "gene": "SLC12A6",
+     "role": "KCC3",
+     "human_uniprot": "Q9UHW9"
+    },
+    {
+     "gene": "SLC12A7",
+     "role": "KCC4",
+     "human_uniprot": "Q9Y666"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "homodimer; 1 K : 1 Cl",
+    "sources": [
+     "UniProt Q9UP95 SUBUNIT",
+     "PDB 6KKR (human KCC1 dimer)",
+     "PDB 6M23 (human KCC2 dimer)",
+     "cotransport.named_stoichiometry"
+    ]
+   }
+  },
+  {
+   "id": "U45",
+   "name": "Na+-K+-2Cl- cotransporter (NKCC)",
+   "kind": "secondary transporter (SLC12)",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "nkcc_reversible_tanh@1"
+   ],
+   "products": [
+    {
+     "gene": "SLC12A2",
+     "role": "NKCC1",
+     "human_uniprot": "P55011"
+    },
+    {
+     "gene": "SLC12A1",
+     "role": "NKCC2",
+     "human_uniprot": "Q13621"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "homodimer; 1 Na : 1 K : 2 Cl",
+    "sources": [
+     "UniProt P55011 SUBUNIT",
+     "PDB 6PZT (human NKCC1 dimer)",
+     "cotransport.named_stoichiometry"
+    ]
+   }
+  },
+  {
+   "id": "U46",
+   "name": "Declared (configured) transporter",
+   "kind": "configured transporter",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "electroneutral_symport_reversible_tanh@1",
+    "cell_zone_transporter@1"
+   ],
+   "assembly": {
+    "stoichiometry": "declared per route"
+   },
+   "note": "Stoichiometry and identity come from each configuration."
+  },
+  {
+   "id": "U47",
+   "name": "Mitochondrial inner-membrane passive permeability",
+   "kind": "organelle permeability",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "mitochondrial_passive_continuous_si@1"
+   ],
+   "products": [
+    {
+     "gene": "MCU",
+     "role": "future channel named in BETSE comment",
+     "human_uniprot": "Q8NE86"
+    },
+    {
+     "gene": "SMDT1",
+     "role": "uniplex",
+     "human_uniprot": "Q9H4I9"
+    },
+    {
+     "gene": "MICU1",
+     "role": "uniplex",
+     "human_uniprot": "Q9BPX6"
+    },
+    {
+     "gene": "MICU2",
+     "role": "uniplex",
+     "human_uniprot": "Q8IYU8"
+    }
+   ],
+   "assembly": {
+    "stoichiometry": "lumped; MCU uniplex is 4 MCU : 4 EMRE : 1 MICU1 : 1 MICU2",
+    "sources": [
+     "UniProt Q8NE86 SUBUNIT",
+     "PDB 6WDN (human uniplex)"
+    ]
+   },
+   "note": "No respiration or ATP synthesis; the uniporter is only a future candidate."
+  },
+  {
+   "id": "U48",
+   "name": "mi3 engineered protein cage",
+   "kind": "protein assembly",
+   "status": "assigned in source",
+   "laws": [
+    "capsid_graph@1"
+   ],
+   "assembly": {
+    "stoichiometry": "20 trimers (60 subunits) on a dodecahedral G(10,2) contact graph",
+    "sources": [
+     "docs/CAPSID_ASSEMBLY.md (Asor et al. 2026, Suppl. Note 7)"
+    ]
+   },
+   "note": "Designed protein; no natural gene product."
+  },
+  {
+   "id": "U49",
+   "name": "Membrane water permeability (lumped hydraulic conductance)",
+   "kind": "background permeability",
+   "status": "generic, isoform not assigned",
+   "laws": [
+    "ideal_osmosis_linear_compliance_water@1"
+   ],
+   "assembly": {
+    "stoichiometry": "not defined"
+   },
+   "note": "Lumped interface conductance for water; aquaporins are not represented."
+  }
+ ],
+ "laws": [
+  {
+   "id": "nav1p2_m3h_regularized@1",
+   "record_type": "law",
+   "file": "src/cells/processes/sodium_channels.py",
+   "unit": "U01",
+   "status": "assigned in source",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Hamill OP, Huguenard JR, Prince DA. Patch-clamp studies of voltage-gated currents in identified neurons of the rat cerebral cortex. Cereb Cortex 1991;1:48-61 (BETSE spells the author 'Hammil')",
+    "organism": "rat",
+    "cell_type": "neocortical neurons",
+    "preparation": "native current",
+    "pmid": "1668364"
+   },
+   "docs": [
+    "docs/SODIUM_CHANNEL_CATALOG.md",
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Label names NaV1.2, but the cited data are a native neuronal current, not an expressed isoform."
+  },
+  {
+   "id": "nav1p3_m3h_regularized@1",
+   "record_type": "law",
+   "file": "src/cells/processes/sodium_catalog.py",
+   "unit": "U02",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Cummins TR et al. Nav1.3 sodium channel: rapid repriming and slow closed-state inactivation display quantitative differences after expression in a mammalian cell line and in spinal sensory neurons. J Neurosci 2001;21:5952-61",
+    "cell_type": "mammalian cell line and spinal sensory neurons (title)",
+    "preparation": "expressed isoform",
+    "pmid": "11487618"
+   },
+   "docs": [
+    "docs/SODIUM_CHANNEL_CATALOG.md"
+   ]
+  },
+  {
+   "id": "navrat2_m3h_regularized@1",
+   "record_type": "law",
+   "file": "src/cells/processes/sodium_catalog.py",
+   "unit": "U04",
+   "status": "candidate",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "McCormick DA et al. A model of the electrophysiological properties of thalamocortical relay neurons. J Neurophysiol 1992;68:1384-400",
+    "cell_type": "thalamocortical relay neurons (model)",
+    "preparation": "native current / neuron model"
+   },
+   "docs": [
+    "docs/SODIUM_CHANNEL_CATALOG.md"
+   ],
+   "notes": "BETSE calls it a generic vgNa channel; NavRat1 and NavRat3 share gate formulas (docs/SODIUM_CHANNEL_CATALOG.md)."
+  },
+  {
+   "id": "navrat1_m3h_regularized@1",
+   "record_type": "law",
+   "file": "src/cells/processes/sodium_catalog.py",
+   "unit": "U04",
+   "status": "candidate",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Huguenard JR et al. Developmental changes in Na+ conductances in rat neocortical neurons: appearance of a slowly inactivating component. J Neurophysiol 1988;59:778-95",
+    "organism": "rat",
+    "cell_type": "neocortical neurons",
+    "preparation": "native current / neuron model"
+   },
+   "docs": [
+    "docs/SODIUM_CHANNEL_CATALOG.md"
+   ],
+   "notes": "BETSE calls it a generic vgNa channel; NavRat1 and NavRat3 share gate formulas (docs/SODIUM_CHANNEL_CATALOG.md)."
+  },
+  {
+   "id": "navrat3_m3h_regularized@1",
+   "record_type": "law",
+   "file": "src/cells/processes/sodium_catalog.py",
+   "unit": "U04",
+   "status": "candidate",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "McCormick DA et al. J Neurophysiol 1992;68:1384-400 (as NavRat2)",
+    "cell_type": "thalamocortical relay neurons (model)",
+    "preparation": "native current / neuron model"
+   },
+   "docs": [
+    "docs/SODIUM_CHANNEL_CATALOG.md"
+   ],
+   "notes": "BETSE calls it a generic vgNa channel; NavRat1 and NavRat3 share gate formulas (docs/SODIUM_CHANNEL_CATALOG.md)."
+  },
+  {
+   "id": "nav1p6_persistent_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/sodium_catalog.py",
+   "unit": "U03",
+   "status": "assigned in source",
+   "evidence_kind": "isoform named in title",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Smith MR et al. Functional analysis of the mouse Scn8a sodium channel. J Neurosci 1998;18:6093-102",
+    "organism": "mouse (title)",
+    "preparation": "isoform named in title",
+    "pmid": "9698304"
+   },
+   "docs": [
+    "docs/SODIUM_CHANNEL_CATALOG.md"
+   ],
+   "notes": "Persistent m-only reduction; the source citation is background, not proof the reduced law reproduces the isoform (docs/SODIUM_CHANNEL_CATALOG.md)."
+  },
+  {
+   "id": "kv1p5_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/voltage_gates.py",
+   "unit": "U09",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Philipson LH et al. Sequence and functional expression in Xenopus oocytes of a human insulinoma and islet potassium channel. Proc Natl Acad Sci USA 1991;88:53-7",
+    "organism": "human",
+    "cell_type": "insulinoma and islet clone, expressed in Xenopus oocytes",
+    "preparation": "expressed isoform",
+    "pmid": "1986382"
+   },
+   "docs": [
+    "docs/VOLTAGE_GATED_CHANNEL_SPEC.md"
+   ],
+   "notes": "Also the law of the mobile joint-gate populations (processes/mobile_channel_gates.py) and voltage_gated_membrane@1."
+  },
+  {
+   "id": "kv1p1_mh2@1",
+   "record_type": "law",
+   "file": "src/cells/processes/kv1_channels.py",
+   "unit": "U05",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Christie MJ et al. Expression of a cloned rat brain potassium channel in Xenopus oocytes. Science 1989;244:221-4",
+    "organism": "rat",
+    "cell_type": "brain clone, expressed in Xenopus oocytes",
+    "preparation": "expressed isoform"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ]
+  },
+  {
+   "id": "kv1p2_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/kv1_channels.py",
+   "unit": "U06",
+   "status": "assigned in source",
+   "evidence_kind": "isoform named in title",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Sprunger LK et al. Effects of charybdotoxin on K+ channel (KV1.2) deactivation and inactivation kinetics. Eur J Pharmacol 1996;314:357-64",
+    "preparation": "isoform named in title"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ]
+  },
+  {
+   "id": "kv1p3_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/kv1_channels.py",
+   "unit": "U07",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Douglass J et al. Characterization and functional expression of a rat genomic DNA clone encoding a lymphocyte potassium channel. J Immunol 1990;144:4841-50",
+    "organism": "rat",
+    "cell_type": "lymphocyte channel clone",
+    "preparation": "expressed isoform"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ]
+  },
+  {
+   "id": "kv1p4_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/kv1_channels.py",
+   "unit": "U08",
+   "status": "assigned in source",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Stuhmer W et al. EMBO J 1989 Nov (no title in source)"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ]
+  },
+  {
+   "id": "kv1p6_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/kv1_channels.py",
+   "unit": "U10",
+   "status": "assigned in source",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Grupe A et al. EMBO J 1990 Jun (no title in source)"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ]
+  },
+  {
+   "id": "kir2p1_mh2@1",
+   "record_type": "law",
+   "file": "src/cells/processes/potassium_channels.py",
+   "unit": "U19",
+   "status": "assigned in source",
+   "evidence_kind": "isoform named in title",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Makary SM et al. A difference in inward rectification and polyamine block and permeation between the Kir2.1 and Kir3.1/Kir3.4 K+ channels. J Physiol 2005;568:749-66",
+    "preparation": "isoform named in title"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Coefficient provenance is BETSE's implementation; the Makary experiment was not refitted (docs/TISSUE_RETURN_CURRENT.md)."
+  },
+  {
+   "id": "kv2p1_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/potassium_catalog.py",
+   "unit": "U11",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "VanDongen AM et al. Alteration and restoration of K+ channel function by deletions at the N- and C-termini. Neuron 1990;5:433-43",
+    "preparation": "expressed clone"
+   },
+   "docs": [
+    "docs/POTASSIUM_CHANNEL_CATALOG.md"
+   ]
+  },
+  {
+   "id": "kv2p2_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/potassium_catalog.py",
+   "unit": "U12",
+   "status": "assigned in source",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Schmalz F et al. Am J Physiol 1998 May (no title in source)"
+   },
+   "docs": [
+    "docs/POTASSIUM_CHANNEL_CATALOG.md"
+   ]
+  },
+  {
+   "id": "kv3p1_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/potassium_catalog.py",
+   "unit": "U13",
+   "status": "assigned in source",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Rettig J et al. EMBO J 1992 Jul (no title in source)"
+   },
+   "docs": [
+    "docs/POTASSIUM_CHANNEL_CATALOG.md"
+   ]
+  },
+  {
+   "id": "kv3p2_m2@1",
+   "record_type": "law",
+   "file": "src/cells/processes/potassium_catalog.py",
+   "unit": "U14",
+   "status": "assigned in source",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Hernandez-Pineda R et al. J Neurophysiol 1999 Sep (no title in source)"
+   },
+   "docs": [
+    "docs/POTASSIUM_CHANNEL_CATALOG.md"
+   ]
+  },
+  {
+   "id": "kv3p3_m2h_long_tau@1",
+   "record_type": "law",
+   "file": "src/cells/processes/potassium_catalog.py",
+   "unit": "U15",
+   "status": "assigned in source",
+   "evidence_kind": "isoform named in title",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Desai R et al. Protein kinase C modulates inactivation of Kv3.3 channels. J Biol Chem 2008;283:22283-94",
+    "preparation": "isoform named in title"
+   },
+   "docs": [
+    "docs/POTASSIUM_CHANNEL_CATALOG.md"
+   ],
+   "notes": "Literal source recovery tau (about 1.6e5 s at -80 mV) retained (docs/POTASSIUM_CHANNEL_CATALOG.md)."
+  },
+  {
+   "id": "kv3p4_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/potassium_catalog.py",
+   "unit": "U16",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Vega-Saenz de Miera E et al. Cloning of ShIII (Shaw-like) cDNAs encoding a novel high-voltage-activating, TEA-sensitive, type-A K+ channel. Proc Biol Sci 1992;248:9-18",
+    "preparation": "expressed clone"
+   },
+   "docs": [
+    "docs/POTASSIUM_CHANNEL_CATALOG.md"
+   ]
+  },
+  {
+   "id": "k_fast_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/potassium_catalog.py",
+   "unit": "U17",
+   "status": "candidate",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Korngreen A, Sakmann B. Voltage-gated K+ channels in layer 5 neocortical pyramidal neurones from young rats: subtypes and gradients. J Physiol 2000;525:621-39",
+    "organism": "rat (P13-15)",
+    "cell_type": "layer 5 neocortical pyramidal neurons, nucleated patches",
+    "preparation": "native current",
+    "pmid": "10856117"
+   },
+   "docs": [
+    "docs/POTASSIUM_CHANNEL_CATALOG.md"
+   ],
+   "notes": "Abstract (PMID 10856117, read 12 Nov 2026) describes a fast-inactivating, 4-AP-sensitive, TEA-insensitive current and names no gene."
+  },
+  {
+   "id": "hcn1_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/hcn_channels.py",
+   "unit": "U20",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "Na",
+     0.2
+    ],
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Ca",
+     0.05
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Moosmang S et al. Cellular expression and functional characterization of four hyperpolarization-activated pacemaker channels in cardiac and neuronal tissues. Eur J Biochem 2001;268:1646-52",
+    "preparation": "expressed isoforms"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "No cAMP modulation; the unused h gate does not affect opening."
+  },
+  {
+   "id": "hcn2_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/hcn_channels.py",
+   "unit": "U21",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "Na",
+     0.2
+    ],
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Ca",
+     0.05
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Moosmang S et al. Cellular expression and functional characterization of four hyperpolarization-activated pacemaker channels in cardiac and neuronal tissues. Eur J Biochem 2001;268:1646-52",
+    "organism": "mouse (BETSE text for HCN2/HCN4)",
+    "cell_type": "BETSE text: '21 day old dorsal root ganglion of mouse'",
+    "preparation": "expressed isoforms"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "No cAMP modulation; the unused h gate does not affect opening."
+  },
+  {
+   "id": "hcn4_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/hcn_channels.py",
+   "unit": "U22",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "Na",
+     0.2
+    ],
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Ca",
+     0.05
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Moosmang S et al. Cellular expression and functional characterization of four hyperpolarization-activated pacemaker channels in cardiac and neuronal tissues. Eur J Biochem 2001;268:1646-52",
+    "organism": "mouse (BETSE text for HCN2/HCN4)",
+    "cell_type": "BETSE text: '21 day old dorsal root ganglion of mouse'",
+    "preparation": "expressed isoforms"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "No cAMP modulation; the unused h gate does not affect opening."
+  },
+  {
+   "id": "hcn_leak_open@1",
+   "record_type": "law",
+   "file": "src/cells/processes/hcn_extra_channels.py",
+   "unit": "U23",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "Na",
+     0.33
+    ],
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Ca",
+     0.05
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Moosmang S et al. Eur J Biochem 2001;268:1646-52 (docstring copied from HCN2)"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Always open; no gate state."
+  },
+  {
+   "id": "hcn2_camp_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/hcn_extra_channels.py",
+   "unit": "U21",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "Na",
+     0.2
+    ],
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Ca",
+     0.05
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Moosmang S et al. Eur J Biochem 2001;268:1646-52",
+    "preparation": "expressed isoforms"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Fixed cAMP voltage shift; not a model of cAMP binding."
+  },
+  {
+   "id": "hcn4_camp_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/hcn_extra_channels.py",
+   "unit": "U22",
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "Na",
+     0.2
+    ],
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Ca",
+     0.05
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Moosmang S et al. Eur J Biochem 2001;268:1646-52",
+    "preparation": "expressed isoforms"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Fixed cAMP voltage shift; not a model of cAMP binding."
+  },
+  {
+   "id": "cav1p2_m2h@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cav_channels.py",
+   "unit": "U24",
+   "status": "assigned in source",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Carlin KP et al. Characterization of calcium currents in functionally mature mouse spinal motoneurons. Eur J Neurosci 2000;12:1624-34",
+    "organism": "mouse",
+    "cell_type": "spinal motoneurons",
+    "preparation": "native current"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Same Carlin et al. model is labelled CaV1.3 by BETSE's Cav_L_ML class. Also processes/calcium_gates.py (LAW_ID); docs/PLASMA_CALCIUM.md."
+  },
+  {
+   "id": "cav1p3_m2h@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cav_channels.py",
+   "unit": "U25",
+   "status": "assigned in source",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Avery RB et al. Multiple channel types contribute to the low-voltage-activated calcium current in hippocampal CA3 pyramidal neurons. J Neurosci 1996;16:5567-82",
+    "cell_type": "hippocampal CA3 pyramidal neurons",
+    "preparation": "native current"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Label names CaV1.3; data are a native LVA component."
+  },
+  {
+   "id": "cav2p1_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cav_channels.py",
+   "unit": "U28",
+   "status": "assigned in source",
+   "evidence_kind": "neuron model",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Miyasho T et al. Low-threshold potassium channels and a low-threshold calcium channel regulate Ca2+ spike firing in the dendrites of cerebellar Purkinje neurons: a modeling study. Brain Res 2001;891:106-15",
+    "cell_type": "cerebellar Purkinje neuron dendrites",
+    "preparation": "neuron model"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ]
+  },
+  {
+   "id": "cav2p2_m2h_regularized@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cav_channels.py",
+   "unit": "U29",
+   "status": "assigned in source",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Huang SJ et al. Activation and inactivation properties of voltage-gated calcium currents in developing cat retinal ganglion cells. Neuroscience 1998;85:239-47",
+    "organism": "cat",
+    "cell_type": "developing retinal ganglion cells",
+    "preparation": "native current"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "N-type."
+  },
+  {
+   "id": "cav2p3_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cav_channels.py",
+   "unit": "U30",
+   "status": "assigned in source",
+   "evidence_kind": "neuron model",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Miyasho T et al. Brain Res 2001;891:106-15",
+    "cell_type": "cerebellar Purkinje neuron dendrites",
+    "preparation": "neuron model"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "R-type."
+  },
+  {
+   "id": "cav3p1_mh_piecewise_tau_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cav_channels.py",
+   "unit": "U31",
+   "status": "assigned in source",
+   "evidence_kind": "isoform named in title",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Traboulsie A et al. Subunit-specific modulation of T-type calcium channels by zinc. J Physiol 2007;578:159-71",
+    "preparation": "isoform named in title"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "T-type; source -0.01 mV branch threshold retained."
+  },
+  {
+   "id": "cav3p3_mh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cav_channels.py",
+   "unit": "U32",
+   "status": "assigned in source",
+   "evidence_kind": "isoform named in title",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Traboulsie A et al. J Physiol 2007;578:159-71",
+    "preparation": "isoform named in title"
+   },
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "T-type."
+  },
+  {
+   "id": "ca_l2_m2h@1",
+   "record_type": "law",
+   "file": "src/cells/processes/calcium_catalog_extra.py",
+   "unit": "U26",
+   "status": "candidate",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Avery RB et al. J Neurosci 1996;16:5567-82",
+    "cell_type": "hippocampal CA3 pyramidal neurons",
+    "preparation": "native current, modified"
+   },
+   "docs": [
+    "docs/CALCIUM_CHANNEL_EXTRAS.md"
+   ],
+   "notes": "BETSE: modified to activate at more depolarized Vmem."
+  },
+  {
+   "id": "ca_l3_shift15_m2h@1",
+   "record_type": "law",
+   "file": "src/cells/processes/calcium_catalog_extra.py",
+   "unit": "U26",
+   "status": "candidate",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Avery RB et al. J Neurosci 1996;16:5567-82",
+    "cell_type": "hippocampal CA3 pyramidal neurons",
+    "preparation": "native current, modified"
+   },
+   "docs": [
+    "docs/CALCIUM_CHANNEL_EXTRAS.md"
+   ],
+   "notes": "BETSE: modified for more depolarized and broader activation."
+  },
+  {
+   "id": "cav_g_m2h_regularized@1",
+   "record_type": "law",
+   "file": "src/cells/processes/calcium_catalog_extra.py",
+   "unit": "U27",
+   "status": "candidate",
+   "evidence_kind": "native current",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 coefficient set",
+   "published": {
+    "citation": "Reuveni I et al. Stepwise repolarization from Ca2+ plateaus in neocortical pyramidal cells: evidence for nonhomogeneous distribution of HVA Ca2+ channels in dendrites. J Neurosci 1993;13:4609-21",
+    "cell_type": "neocortical pyramidal cells",
+    "preparation": "native current"
+   },
+   "docs": [
+    "docs/CALCIUM_CHANNEL_EXTRAS.md"
+   ],
+   "notes": "BETSE: 'General calcium channel model'."
+  },
+  {
+   "id": "naleak_always_open@1",
+   "record_type": "law",
+   "file": "src/cells/processes/sodium_catalog.py",
+   "unit": "U34",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 class (no kinetics)",
+   "docs": [
+    "docs/LEAK_CHANNEL_CATALOG.md"
+   ],
+   "notes": "Always-open background route; no product is implied."
+  },
+  {
+   "id": "kleak_always_open@1",
+   "record_type": "law",
+   "file": "src/cells/processes/potassium_catalog.py",
+   "unit": "U34",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 class (no kinetics)",
+   "docs": [
+    "docs/LEAK_CHANNEL_CATALOG.md"
+   ],
+   "notes": "Always-open background route; no product is implied."
+  },
+  {
+   "id": "caleak_always_open@1",
+   "record_type": "law",
+   "file": "src/cells/processes/calcium_catalog_extra.py",
+   "unit": "U34",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 class (no kinetics)",
+   "docs": [
+    "docs/LEAK_CHANNEL_CATALOG.md"
+   ],
+   "notes": "Always-open background route; no product is implied."
+  },
+  {
+   "id": "clleak_always_open@1",
+   "record_type": "law",
+   "file": "src/cells/processes/leak_channels.py",
+   "unit": "U34",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "Cl",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 class (no kinetics)",
+   "docs": [
+    "docs/LEAK_CHANNEL_CATALOG.md"
+   ],
+   "notes": "Always-open background route; no product is implied."
+  },
+  {
+   "id": "catleak_na_k@1",
+   "record_type": "law",
+   "file": "src/cells/processes/leak_channels.py",
+   "unit": "U34",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ],
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Ca",
+     0.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 class (no kinetics)",
+   "docs": [
+    "docs/LEAK_CHANNEL_CATALOG.md"
+   ],
+   "notes": "Always-open background route; no product is implied."
+  },
+  {
+   "id": "catleak2_na_k_ca@1",
+   "record_type": "law",
+   "file": "src/cells/processes/leak_channels.py",
+   "unit": "U34",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ],
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 class (no kinetics)",
+   "docs": [
+    "docs/LEAK_CHANNEL_CATALOG.md"
+   ],
+   "notes": "Always-open background route; no product is implied."
+  },
+  {
+   "id": "cagpotassium_numeric_mM_scale@1",
+   "record_type": "law",
+   "file": "src/cells/processes/calcium_activated_potassium.py",
+   "unit": "U33",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "expressed isoform",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 legacy function (no call site in the pinned tree)",
+   "published": {
+    "citation": "Cox DH, Cui J, Aldrich RW. Allosteric gating of a large conductance Ca-activated K+ channel. J Gen Physiol 1997;110:257-81",
+    "organism": "mouse (mslo clone)",
+    "preparation": "expressed BK clone mslo (abstract)",
+    "pmid": "9276753"
+   },
+   "docs": [
+    "docs/CALCIUM_ACTIVATED_POTASSIUM.md"
+   ],
+   "notes": "BETSE's docstring calls it a 'high-conductance ... (SK channel)' while citing the BK model; Cells deliberately assigns no subtype."
+  },
+  {
+   "id": "kv_ml1_dynamic_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U18",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "Default delayed-rectifier K+ channel described in the Morris-Lecar literature (no specific citation).",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "kv2p1_ml_dynamic_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U11",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "Paralleling that of Korngreen et al, simplified Morris-Lecar formalism.",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "kv1p3_ml_dynamic_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U07",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "Paralleling the Kv1.3 channel of [author missing in source] et al.",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "kv1p5_ml_dynamic_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U09",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "Paralleling the Kv1.5 channel of [author missing in source] et al.",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "kv1p5s_ml_slow_dynamic_m@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U09",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "Slow Kv1.5 version with extended time constant for large time steps.",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "nav_ml_instantaneous@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U03",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "Na",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "Persistent NaV current based on NaV1.6 (no citation).",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "cav_l_ml_instantaneous@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U25",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "Persistent L-type current based on the model of Carlin et al (a CaV1.3 channel).",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ],
+   "notes": "Cav_L_ML cites the same Carlin et al. model that BETSE's Cav1p2 class labels CaV1.2."
+  },
+  {
+   "id": "cav_l_ml2_instantaneous@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U25",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "As Cav_L_ML (Carlin et al, 'a CaV1.3 channel').",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ],
+   "notes": "Cav_L_ML cites the same Carlin et al. model that BETSE's Cav1p2 class labels CaV1.2."
+  },
+  {
+   "id": "cav_n_ml_instantaneous@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U29",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "N-type current based on the CaV2.2 model of Huang et al.",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "cav_t_ml_instantaneous@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U31",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "Ca",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "T-type current based on the CaV3.1 model of Traboulsie et al.",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "kir_ml_instantaneous@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U19",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "Kir current based on the Kir2.1 model of 'Samy et al' (BETSE's Kir2p1 class cites Makary SM et al.).",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "hcn2_ml_depolarization_activated_instantaneous@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U21",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Na",
+     0.2
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "HCN2 current based on the HCN2 model of Moosmang et al.",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "hcn4_ml_depolarization_activated_instantaneous@1",
+   "record_type": "law",
+   "file": "src/cells/processes/morris_lecar_channels.py",
+   "unit": "U22",
+   "status": "assigned in source",
+   "evidence_kind": "derived reduction",
+   "ion_routes": [
+    [
+     "K",
+     1.0
+    ],
+    [
+     "Na",
+     0.2
+    ]
+   ],
+   "coefficients": "BETSE v1.5.0 Morris-Lecar class (simplified form of the named channel)",
+   "published": {
+    "citation": "HCN4 current 'based on HCN2 model of Moosmang et al.' (as written).",
+    "preparation": "derived reduction"
+   },
+   "docs": [
+    "docs/MORRIS_LECAR_CHANNELS.md"
+   ]
+  },
+  {
+   "id": "constant_field@1",
+   "record_type": "law",
+   "file": "src/cells/processes/electrochemistry.py",
+   "unit": "U35",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Goldman-Hodgkin-Katz constant-field flux (ghk_leak)",
+   "docs": [
+    "docs/MULTISPECIES_MEMBRANE_SPEC.md"
+   ],
+   "notes": "Named as MEMBRANE_LAW in core/spatial_extracellular_spec.py and passive mechanism in core/finite_extracellular_spec.py; also the unnamed leak of bioelectric_cell@1."
+  },
+  {
+   "id": "neutral_mobile_leak@1",
+   "record_type": "law",
+   "file": "src/cells/core/surface_redistribution_spec.py",
+   "unit": "U34",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells (always-open population with permeability at a reference density)",
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Membrane amounts as state, moved by fixed_surface_conservative_drift_diffusion@1: the existing precursor of 'membrane abundance as state'."
+  },
+  {
+   "id": "ideal_osmosis_linear_compliance_water@1",
+   "record_type": "law",
+   "file": "src/cells/numerics/osmotic_water.py",
+   "unit": "U49",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells ideal-osmosis law with linear volume compliance",
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Membrane water route of the water models; like constant_field@1 it is a lumped permeability, not a protein population."
+  },
+  {
+   "id": "junction_voltage_relaxation@1",
+   "record_type": "law",
+   "file": "src/cells/processes/junction_gate.py",
+   "unit": "U36",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "native current",
+   "coefficients": "BETSE v1.5.0 rate equations (lambda 0.0013, A1 0.077, A2 0.14)",
+   "published": {
+    "citation": "Harris AL, Spray DC, Bennett MV. Control of intercellular communication by voltage dependence of gap junctional conductance. J Neurosci 1983;3:79-100",
+    "organism": "Ambystoma mexicanum (axolotl), per BETSE docstring",
+    "cell_type": "early embryo blastomeres",
+    "preparation": "native junctions; connexin not identified",
+    "pmid": "6822860"
+   },
+   "docs": [
+    "docs/BETSE_GAP_JUNCTION_PLAN.md",
+    "docs/MULTISCALE_EXECUTION_ARCHITECTURE.md"
+   ],
+   "notes": "Docstring: 'No temperature scaling, connexin catalog or biological fit is implied.' Also GATE_LAW_ID of core/surface_pump_spec.py."
+  },
+  {
+   "id": "symmetric_opposing_relaxation@1",
+   "record_type": "law",
+   "file": "src/cells/core/physical_ionic_graph_spec.py",
+   "unit": "U36",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells synthetic phenomenological gate",
+   "published": {
+    "citation": "Context only: Chen-Izu Y, Moreno AP, Spangler RA. Opposing gates model for voltage gating of gap junction channels. Am J Physiol Cell Physiol 2001;281:C1604-13; Bukauskas FF et al. 2002 (Cx43 residual state)",
+    "pmid": "11600424"
+   },
+   "docs": [
+    "docs/PHYSICAL_IONIC_GRAPH_SPEC.md",
+    "docs/SELECTIVE_CONTACT_SPEC.md"
+   ],
+   "notes": "'Synthetic, not a fitted connexin or microscopic BETSE gate.' Also bioelectric_pair@1 and finite_extracellular specs."
+  },
+  {
+   "id": "delayed_first_order_junction_formation@1",
+   "record_type": "law",
+   "file": "src/cells/processes/junction_formation.py",
+   "unit": "U36",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells modelling choice 'loosely consistent with the cited time courses, not a fit'",
+   "published": {
+    "citation": "Jordan 2001; Piehl 2007; Lauf 2002; Rook 1990; Johnson 1974; Beardslee 1998; Fallon & Goodenough 1981 (connexin plaque formation and turnover)"
+   },
+   "docs": [
+    "docs/CELL_REPLACEMENT.md"
+   ],
+   "notes": "Acts on relative junction-channel abundance, the quantity the catalogue would give a population identity."
+  },
+  {
+   "identity": "junction_flux() in the nominal profile of model bitsey_emt_pair@1 (no *_ID constant)",
+   "record_type": "law",
+   "file": "src/cells/processes/source_electrochemistry.py",
+   "unit": "U37",
+   "also_in": [
+    "U38"
+   ],
+   "status": "assigned in source",
+   "evidence_kind": "expressed isoform",
+   "coefficients": "BITSEY GJ_lib gate kinds '45/45' and '40/37' (docs/SOURCE_COUPLING_MAP.md)",
+   "published": {
+    "citation": "Chen-Izu Y, Moreno AP, Spangler RA. Opposing gates model for voltage gating of gap junction channels. Am J Physiol Cell Physiol 2001;281:C1604-13, Table 1",
+    "cell_type": "Cx43/Cx45 data from Moreno et al. in N2A cells; Cx37/Cx40 data from Hennemann et al. (per Table 1 footnote)",
+    "preparation": "heterologous expression",
+    "pmid": "11600424"
+   },
+   "docs": [
+    "docs/SOURCE_COUPLING_MAP.md",
+    "docs/SOURCE_EMT_PAIR_SPEC.md"
+   ],
+   "notes": "Algebraic opposing-gate factor with upwind transport; a source-compatibility profile, not a physical law. Second unit: U38 (Cx40/Cx37)."
+  },
+  {
+   "id": "nak_atp_mass_action_positive@1",
+   "record_type": "law",
+   "file": "src/cells/processes/kinetic_pump.py",
+   "unit": "U39",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Form corresponds to BETSE v1.5.0 sim_toolbox.pumpNaKATP (930 matched-constant comparisons, docs/KINETIC_PUMP_PROCESS.md)",
+   "docs": [
+    "docs/KINETIC_PUMP_INTEGRATION.md",
+    "docs/KINETIC_PUMP_PROCESS.md"
+   ],
+   "notes": "BETSE's comment ties its default Km values to alpha1; that is a hint, not an assignment. Also used by resolved_redistribution@2 mobile pump populations."
+  },
+  {
+   "id": "nak_atp_affinity_tanh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/electrochemistry.py",
+   "unit": "U39",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells phenomenological law",
+   "docs": [
+    "docs/BIOELECTRIC_CELL.md",
+    "docs/MULTISPECIES_MEMBRANE_SPEC.md"
+   ],
+   "notes": "Named in core/multispecies_spec.py and core/finite_extracellular_spec.py; the same function is the unnamed pump of bioelectric_cell@1, bioelectric_pair@1 and physical_ionic_graph@1."
+  },
+  {
+   "identity": "membrane_flux() pump term in the nominal profile of model bitsey_emt_pair@1 (no *_ID constant)",
+   "record_type": "law",
+   "file": "src/cells/processes/source_electrochemistry.py",
+   "unit": "U39",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "BITSEY nominal pump constants (docs/SOURCE_EMT_PAIR_SPEC.md)",
+   "docs": [
+    "docs/SOURCE_EMT_PAIR_SPEC.md"
+   ]
+  },
+  {
+   "id": "plasma_calcium_pump_positive@1",
+   "record_type": "law",
+   "file": "src/cells/processes/plasma_calcium.py",
+   "unit": "U40",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "BETSE v1.5.0 sim_toolbox.pumpCaATP (positive-domain equation)",
+   "docs": [
+    "docs/PLASMA_CALCIUM.md"
+   ]
+  },
+  {
+   "id": "ca_atp_mass_action_positive@1",
+   "record_type": "law",
+   "file": "src/cells/processes/calcium_atpase.py",
+   "unit": "U40",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Neutral identity for the plasma_calcium_pump_positive@1 kernel with the 1 M standard-state convention"
+  },
+  {
+   "id": "finite_atp_pmca_positive@1",
+   "record_type": "law",
+   "file": "src/cells/processes/finite_calcium_pumps.py",
+   "unit": "U40",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Finite-ATP adapter of the PMCA kernel",
+   "docs": [
+    "docs/FINITE_CALCIUM_PUMPS.md"
+   ]
+  },
+  {
+   "id": "er_calcium_pump_positive@1",
+   "record_type": "law",
+   "file": "src/cells/processes/er_calcium.py",
+   "unit": "U41",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "BETSE v1.5.0 sim_toolbox.pumpCaER",
+   "docs": [
+    "docs/ER_CALCIUM.md"
+   ],
+   "notes": "One Ca per formal cycle; 'must not be interpreted as a biological two-calcium SERCA cycle'."
+  },
+  {
+   "id": "finite_atp_er_1ca_positive@1",
+   "record_type": "law",
+   "file": "src/cells/processes/finite_calcium_pumps.py",
+   "unit": "U41",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Finite-ATP adapter of the ER pump kernel",
+   "docs": [
+    "docs/FINITE_CALCIUM_PUMPS.md"
+   ]
+  },
+  {
+   "id": "ncx_3na_1ca_symmetric_barrier@1",
+   "record_type": "law",
+   "file": "src/cells/processes/plasma_calcium.py",
+   "unit": "U42",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells synthetic symmetric-barrier law ('neither a native BETSE NCX implementation nor a fitted model')",
+   "published": {
+    "citation": "Hilgemann DW et al. 1992 giant-patch experiments (3 Na : 1 Ca electrogenic exchange)",
+    "pmid": "1336540"
+   },
+   "docs": [
+    "docs/PLASMA_CALCIUM.md"
+   ]
+  },
+  {
+   "id": "er_calcium_release@1",
+   "record_type": "law",
+   "file": "src/cells/processes/er_calcium.py",
+   "unit": "U43",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "BETSE v1.5.0 EndoRetic.channels, calcium-only branch",
+   "docs": [
+    "docs/ER_CALCIUM.md"
+   ],
+   "notes": "BETSE describes 'calcium-induced calcium release controlled by inositol-triphosphate'; no source names a receptor."
+  },
+  {
+   "id": "ip3_er_release@1",
+   "record_type": "law",
+   "file": "src/cells/processes/ip3_release.py",
+   "unit": "U43",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "BETSE v1.5.0 EndoRetic.channels, IP3 branch (act_Km_IP3, act_n_IP3)",
+   "docs": [
+    "docs/PLASMA_CALCIUM.md"
+   ]
+  },
+  {
+   "id": "kcc_reversible_tanh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cotransport.py",
+   "unit": "U44",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells manufactured law ('not a fitted isoform model or a claim of native BETSE KCC/NKCC equivalence')",
+   "published": {
+    "citation": "Thermodynamic conditions follow KCC reversal experiments (doi:10.1152/jn.2000.84.1.281)"
+   },
+   "docs": [
+    "docs/COTRANSPORT.md",
+    "docs/TISSUE_COTRANSPORT.md"
+   ]
+  },
+  {
+   "id": "nkcc_reversible_tanh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cotransport.py",
+   "unit": "U45",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells manufactured law",
+   "published": {
+    "citation": "Thermodynamic and kinetic NKCC experiments (doi:10.1152/jn.01007.2007)"
+   },
+   "docs": [
+    "docs/COTRANSPORT.md",
+    "docs/TISSUE_COTRANSPORT.md"
+   ]
+  },
+  {
+   "id": "electroneutral_symport_reversible_tanh@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cotransport.py",
+   "unit": "U46",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells manufactured common kernel of the KCC and NKCC laws",
+   "docs": [
+    "docs/COTRANSPORT.md"
+   ]
+  },
+  {
+   "id": "k_anion_symport_mass_action@1",
+   "record_type": "law",
+   "file": "src/cells/processes/k_anion_symport.py",
+   "unit": "U44",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Cells mass-action law with volume factor exponential_volume_activation@1",
+   "published": {
+    "citation": "Lew VL, Freeman CJ, Ortiz OE, Bookchin RM. J Clin Invest 1991;87:100 (form); Kaji 1986 J Gen Physiol 88:719 (steepness); Jennings & Adame 2001 Am J Physiol Cell Physiol 281:C825 (1:1)",
+    "cell_type": "red cells (reticulocyte-rich and young cells for the capacity range)"
+   },
+   "docs": [
+    "docs/PUMP_WATER_MODEL.md"
+   ],
+   "notes": "Volume factor ID exponential_volume_activation@1 is part of this law."
+  },
+  {
+   "id": "cell_zone_transporter@1",
+   "record_type": "law",
+   "file": "src/cells/processes/cell_zone_transport.py",
+   "unit": "U46",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "Equations of the BETSE v1.5.0 transporter network (cited, no BETSE code)",
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "Identity of the transported unit belongs to each configuration; a catalogue reference would be declared per route."
+  },
+  {
+   "id": "mitochondrial_passive_continuous_si@1",
+   "record_type": "law",
+   "file": "src/cells/processes/mitochondrial_passive.py",
+   "unit": "U47",
+   "status": "generic, isoform not assigned",
+   "evidence_kind": "no detail in source",
+   "coefficients": "BETSE v1.5.0 mitochondrial ion/voltage component (source law mitochondrial_ion_voltage@1)",
+   "docs": [
+    "docs/TISSUE_RETURN_CURRENT.md"
+   ],
+   "notes": "No respiration or ATP production; the uniporter is a future candidate only."
+  },
+  {
+   "id": "capsid_graph@1",
+   "record_type": "model",
+   "file": "src/cells/assembly/__init__.py",
+   "unit": "U48",
+   "status": "assigned in source",
+   "evidence_kind": "designed protein",
+   "coefficients": "Asor et al., Nature (2026), Supplementary Note 7 (reconstructed event model)",
+   "published": {
+    "citation": "Asor et al. Nature 2026 (doi:10.1038/s41586-026-10948-z)",
+    "preparation": "engineered protein cage (mi3), mass photometry"
+   },
+   "docs": [
+    "docs/CAPSID_ASSEMBLY.md"
+   ],
+   "notes": "A model family, listed because it is the D140 assembly case. finite_bond_assembly@1 (assembly_pool) uses the same prescribed graph."
+  }
+ ],
+ "products": {
+  "ATP1A1": {
+   "human": {
+    "accession": "P05023",
+    "protein_name": "Sodium/potassium-transporting ATPase subunit alpha-1",
+    "length": 1023
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "Q92123",
+     "reviewed": true,
+     "gene": "atp1a1"
+    },
+    {
+     "accession": "A0A1L8HBQ3",
+     "reviewed": false,
+     "gene": "atp1a1.L atp1a1 atp1a1-a atp1a1-b atp1a1a.1 K-ATPase Na+K+ATPase"
+    },
+    {
+     "accession": "A0A8J1QU60",
+     "reviewed": false,
+     "gene": "atp1a1.S atp1a1 atp1a1-a atp1a1-b K-ATPase Na+K+ATPase"
+    }
+   ]
+  },
+  "ATP1A2": {
+   "human": {
+    "accession": "P50993",
+    "protein_name": "Sodium/potassium-transporting ATPase subunit alpha-2",
+    "length": 1020
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0TK88",
+     "reviewed": false,
+     "gene": "atp1a2.L"
+    },
+    {
+     "accession": "A0A9A9YXZ0",
+     "reviewed": false,
+     "gene": "atp1a2.S atp1a2 atp1a2.L fhm2 mhp2"
+    }
+   ]
+  },
+  "ATP1A3": {
+   "human": {
+    "accession": "P13637",
+    "protein_name": "Sodium/potassium-transporting ATPase subunit alpha-3",
+    "length": 1013
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0PQE1",
+     "reviewed": false,
+     "gene": "atp1a3.L atp1a3 atp1a3.S"
+    },
+    {
+     "accession": "A0A1L8FGU0",
+     "reviewed": false,
+     "gene": "atp1a3.S LOC108697760"
+    }
+   ]
+  },
+  "ATP1A4": {
+   "human": {
+    "accession": "Q13733",
+    "protein_name": "Sodium/potassium-transporting ATPase subunit alpha-4",
+    "length": 1029
+   }
+  },
+  "ATP1B1": {
+   "human": {
+    "accession": "P05026",
+    "protein_name": "Sodium/potassium-transporting ATPase subunit beta-1",
+    "length": 303
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8HFC8",
+     "reviewed": false,
+     "gene": "atp1b1.L"
+    },
+    {
+     "accession": "Q91580",
+     "reviewed": false,
+     "gene": "atp1b1.S atp1b1 atp1b1a"
+    }
+   ]
+  },
+  "ATP1B2": {
+   "human": {
+    "accession": "P14415",
+    "protein_name": "Sodium/potassium-transporting ATPase subunit beta-2",
+    "length": 290
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0PQ25",
+     "reviewed": false,
+     "gene": "atp1b2.L atp1b2"
+    },
+    {
+     "accession": "A0A8J0PX85",
+     "reviewed": false,
+     "gene": "atp1b2.S atp1b2 atp1b2.L"
+    },
+    {
+     "accession": "Q7ZX09",
+     "reviewed": false,
+     "gene": "atp1b2"
+    }
+   ]
+  },
+  "ATP1B3": {
+   "human": {
+    "accession": "P54709",
+    "protein_name": "Sodium/potassium-transporting ATPase subunit beta-3",
+    "length": 279
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "P21188",
+     "reviewed": true,
+     "gene": "atp1b3"
+    },
+    {
+     "accession": "A0A8J0PNZ7",
+     "reviewed": false,
+     "gene": "atp1b3.L atp1b3 atpb-3 beta-3"
+    },
+    {
+     "accession": "A0A8J0PRK2",
+     "reviewed": false,
+     "gene": "atp1b3.S atp1b3 atpb-3 atpb3 beta-3"
+    }
+   ]
+  },
+  "ATP2A1": {
+   "human": {
+    "accession": "O14983",
+    "protein_name": "Sarcoplasmic/endoplasmic reticulum calcium ATPase 1",
+    "length": 1001
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1LSE6",
+     "reviewed": false,
+     "gene": "atp2a1.L"
+    },
+    {
+     "accession": "A0A8J0PQA9",
+     "reviewed": false,
+     "gene": "atp2a1.S atp2a atp2a1 atp2a1.L atp2a2 atp2b ca-p60a dar serca1 serca2"
+    }
+   ]
+  },
+  "ATP2A2": {
+   "human": {
+    "accession": "P16615",
+    "protein_name": "Sarcoplasmic/endoplasmic reticulum calcium ATPase 2",
+    "length": 1042
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0PXQ8",
+     "reviewed": false,
+     "gene": "atp2a2.S atp2a atp2a1 atp2a2 atp2b dar serca1 serca2"
+    },
+    {
+     "accession": "Q6DCS6",
+     "reviewed": false,
+     "gene": "ATP2A2"
+    }
+   ]
+  },
+  "ATP2A3": {
+   "human": {
+    "accession": "Q93084",
+    "protein_name": "Sarcoplasmic/endoplasmic reticulum calcium ATPase 3",
+    "length": 999
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0Q1Q1",
+     "reviewed": false,
+     "gene": "atp2a3.L atp2a3 serca3"
+    },
+    {
+     "accession": "A0A1L8H8B2",
+     "reviewed": false,
+     "gene": "atp2a3.S"
+    }
+   ]
+  },
+  "ATP2B1": {
+   "human": {
+    "accession": "P20020",
+    "protein_name": "Plasma membrane calcium-transporting ATPase 1",
+    "length": 1220
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1MH84",
+     "reviewed": false,
+     "gene": "atp2b1.L atp2b1 atp2b1b PMCA"
+    },
+    {
+     "accession": "A0A8J0UXS3",
+     "reviewed": false,
+     "gene": "atp2b1.S"
+    }
+   ]
+  },
+  "ATP2B2": {
+   "human": {
+    "accession": "Q01814",
+    "protein_name": "Plasma membrane calcium-transporting ATPase 2",
+    "length": 1243
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "Q6DCT8",
+     "reviewed": false,
+     "gene": "atp2b2.L atp2b3-prov atp2b4 atp2b4.L"
+    },
+    {
+     "accession": "A0A8J0V3N5",
+     "reviewed": false,
+     "gene": "atp2b2.S atp2b4.S"
+    }
+   ]
+  },
+  "ATP2B3": {
+   "human": {
+    "accession": "Q16720",
+    "protein_name": "Plasma membrane calcium-transporting ATPase 3",
+    "length": 1220
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1LHU7",
+     "reviewed": false,
+     "gene": "atp2b3.L"
+    },
+    {
+     "accession": "A0A1L8F1Q4",
+     "reviewed": false,
+     "gene": "atp2b3.S"
+    }
+   ]
+  },
+  "ATP2B4": {
+   "human": {
+    "accession": "P23634",
+    "protein_name": "Plasma membrane calcium-transporting ATPase 4",
+    "length": 1241
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0PXB3",
+     "reviewed": false,
+     "gene": "atp2b4.L atp2b2 atp2b3 atp2b4 atp2b4.S mxra1 pmca4 pmca4b pmca4x"
+    },
+    {
+     "accession": "A0A8J1KJW9",
+     "reviewed": false,
+     "gene": "atp2b4.S"
+    }
+   ]
+  },
+  "BSG": {
+   "human": {
+    "accession": "P35613",
+    "protein_name": "Basigin",
+    "length": 385
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0Q778",
+     "reviewed": false,
+     "gene": "bsg.L CD147 gaso01"
+    },
+    {
+     "accession": "A0A8J0Q4A6",
+     "reviewed": false,
+     "gene": "bsg.S bsg CD147 prso03"
+    }
+   ]
+  },
+  "CACNA1A": {
+   "human": {
+    "accession": "O00555",
+    "protein_name": "Voltage-dependent P/Q-type calcium channel subunit alpha-1A",
+    "length": 2506
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1MSN8",
+     "reviewed": false,
+     "gene": "cacna1a.S"
+    },
+    {
+     "accession": "C5MKI3",
+     "reviewed": false,
+     "gene": "CACNA1A"
+    }
+   ]
+  },
+  "CACNA1B": {
+   "human": {
+    "accession": "Q00975",
+    "protein_name": "Voltage-dependent N-type calcium channel subunit alpha-1B",
+    "length": 2339
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0TIF4",
+     "reviewed": false,
+     "gene": "cacna1b.L cacna1b.S"
+    },
+    {
+     "accession": "A0A8J1LGS1",
+     "reviewed": false,
+     "gene": "cacna1b.S"
+    },
+    {
+     "accession": "C5MKI4",
+     "reviewed": false,
+     "gene": "CACNA1B"
+    }
+   ]
+  },
+  "CACNA1C": {
+   "human": {
+    "accession": "Q13936",
+    "protein_name": "Voltage-dependent L-type calcium channel subunit alpha-1C",
+    "length": 2221
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1MJD6",
+     "reviewed": false,
+     "gene": "cacna1c.L"
+    },
+    {
+     "accession": "A0A8J1MS62",
+     "reviewed": false,
+     "gene": "cacna1c.S"
+    },
+    {
+     "accession": "C5MKI5",
+     "reviewed": false,
+     "gene": "CACNA1C"
+    }
+   ]
+  },
+  "CACNA1D": {
+   "human": {
+    "accession": "Q01668",
+    "protein_name": "Voltage-dependent L-type calcium channel subunit alpha-1D",
+    "length": 2161
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1MYE4",
+     "reviewed": false,
+     "gene": "cacna1d.L"
+    },
+    {
+     "accession": "C5MKI6",
+     "reviewed": false,
+     "gene": "CACNA1D"
+    }
+   ]
+  },
+  "CACNA1E": {
+   "human": {
+    "accession": "Q15878",
+    "protein_name": "Voltage-dependent R-type calcium channel subunit alpha-1E",
+    "length": 2313
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0UX71",
+     "reviewed": false,
+     "gene": "cacna1e.L"
+    },
+    {
+     "accession": "C5MKI7",
+     "reviewed": false,
+     "gene": "CACNA1E"
+    }
+   ]
+  },
+  "CACNA1G": {
+   "human": {
+    "accession": "O43497",
+    "protein_name": "Voltage-dependent T-type calcium channel subunit alpha-1G",
+    "length": 2377
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1LU85",
+     "reviewed": false,
+     "gene": "cacna1g.L"
+    },
+    {
+     "accession": "C5MKI9",
+     "reviewed": false,
+     "gene": "CACNA1G"
+    }
+   ]
+  },
+  "CACNA1I": {
+   "human": {
+    "accession": "Q9P0X4",
+    "protein_name": "Voltage-dependent T-type calcium channel subunit alpha-1I",
+    "length": 2223
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8GNV0",
+     "reviewed": false,
+     "gene": "cacna1i.L"
+    },
+    {
+     "accession": "A0A1L8GGZ1",
+     "reviewed": false,
+     "gene": "cacna1i.S"
+    },
+    {
+     "accession": "C5MKJ1",
+     "reviewed": false,
+     "gene": "CACNA1I"
+    }
+   ]
+  },
+  "CACNA2D1": {
+   "human": {
+    "accession": "P54289",
+    "protein_name": "Voltage-dependent calcium channel subunit alpha-2/delta-1",
+    "length": 1103
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1MN54",
+     "reviewed": false,
+     "gene": "cacna2d1.L"
+    },
+    {
+     "accession": "A0A8J1MRM7",
+     "reviewed": false,
+     "gene": "cacna2d1.S"
+    }
+   ]
+  },
+  "CACNA2D2": {
+   "human": {
+    "accession": "Q9NY47",
+    "protein_name": "Voltage-dependent calcium channel subunit alpha-2/delta-2",
+    "length": 1150
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1MZM5",
+     "reviewed": false,
+     "gene": "cacna2d2.L"
+    },
+    {
+     "accession": "A0A8J1KJY9",
+     "reviewed": false,
+     "gene": "cacna2d2.S"
+    }
+   ]
+  },
+  "CACNA2D3": {
+   "human": {
+    "accession": "Q8IZS8",
+    "protein_name": "Voltage-dependent calcium channel subunit alpha-2/delta-3",
+    "length": 1091
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1N0X5",
+     "reviewed": false,
+     "gene": "cacna2d3.L"
+    },
+    {
+     "accession": "A0A8J0PN66",
+     "reviewed": false,
+     "gene": "cacna2d3.S cacna2d3 cacna2d3-A"
+    }
+   ]
+  },
+  "CACNA2D4": {
+   "human": {
+    "accession": "Q7Z3S7",
+    "protein_name": "Voltage-dependent calcium channel subunit alpha-2/delta-4",
+    "length": 1137
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0U4Z7",
+     "reviewed": false,
+     "gene": "cacna2d4.L LOC108704584"
+    }
+   ]
+  },
+  "CACNB1": {
+   "human": {
+    "accession": "Q02641",
+    "protein_name": "Voltage-dependent L-type calcium channel subunit beta-1",
+    "length": 598
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8ES38",
+     "reviewed": false,
+     "gene": "cacnb1.L"
+    },
+    {
+     "accession": "A0A1L8EKT8",
+     "reviewed": false,
+     "gene": "cacnb1.S"
+    }
+   ]
+  },
+  "CACNB2": {
+   "human": {
+    "accession": "Q08289",
+    "protein_name": "Voltage-dependent L-type calcium channel subunit beta-2",
+    "length": 660
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1KWW7",
+     "reviewed": false,
+     "gene": "cacnb2.L"
+    },
+    {
+     "accession": "A0A8J1L1G5",
+     "reviewed": false,
+     "gene": "cacnb2.S"
+    }
+   ]
+  },
+  "CACNB3": {
+   "human": {
+    "accession": "P54284",
+    "protein_name": "Voltage-dependent L-type calcium channel subunit beta-3",
+    "length": 484
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0PN15",
+     "reviewed": false,
+     "gene": "cacnb3.L cacnb3 cacnb3-a cacnb3-b cacnlb3 VGCC xo28 xo32"
+    },
+    {
+     "accession": "A0A8J0PMZ3",
+     "reviewed": false,
+     "gene": "cacnb3.S cacnb3 cacnb3-a cacnb3-b cacnlb3 o32-a vgcc xo28 xo32"
+    }
+   ]
+  },
+  "CACNB4": {
+   "human": {
+    "accession": "O00305",
+    "protein_name": "Voltage-dependent L-type calcium channel subunit beta-4",
+    "length": 520
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8EVV0",
+     "reviewed": false,
+     "gene": "cacnb4.L LOC108701326"
+    },
+    {
+     "accession": "A0A8J0U3D6",
+     "reviewed": false,
+     "gene": "cacnb4.S LOC108702958"
+    }
+   ]
+  },
+  "FXYD1": {
+   "human": {
+    "accession": "O00168",
+    "protein_name": "Phospholemman",
+    "length": 92
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0PY80",
+     "reviewed": false,
+     "gene": "fxyd1.L fxyd1 plm"
+    },
+    {
+     "accession": "A0A8J0Q772",
+     "reviewed": false,
+     "gene": "fxyd1.S plm"
+    }
+   ]
+  },
+  "FXYD2": {
+   "human": {
+    "accession": "P54710",
+    "protein_name": "Sodium/potassium-transporting ATPase subunit gamma",
+    "length": 66
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "O13001",
+     "reviewed": true,
+     "gene": "fxyd2"
+    }
+   ]
+  },
+  "GJA1": {
+   "human": {
+    "accession": "P17302",
+    "protein_name": "Gap junction alpha-1 protein",
+    "length": 382
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "P16863",
+     "reviewed": true,
+     "gene": "gja1"
+    },
+    {
+     "accession": "A0A1L8G2N0",
+     "reviewed": false,
+     "gene": "gja1.S"
+    }
+   ]
+  },
+  "GJA4": {
+   "human": {
+    "accession": "P35212",
+    "protein_name": "Gap junction alpha-4 protein",
+    "length": 333
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "P51914",
+     "reviewed": true,
+     "gene": "gja4 cx41"
+    },
+    {
+     "accession": "A0A8J0PWD3",
+     "reviewed": false,
+     "gene": "gja4.S cx37 cx41 gja4 gja4-b gja4a"
+    }
+   ]
+  },
+  "GJA5": {
+   "human": {
+    "accession": "P36382",
+    "protein_name": "Gap junction alpha-5 protein",
+    "length": 358
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8HC88",
+     "reviewed": false,
+     "gene": "gja5.L"
+    },
+    {
+     "accession": "A0A1L8H5G0",
+     "reviewed": false,
+     "gene": "gja5.S"
+    }
+   ]
+  },
+  "GJC1": {
+   "human": {
+    "accession": "P36383",
+    "protein_name": "Gap junction gamma-1 protein",
+    "length": 396
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "Q7ZXS7",
+     "reviewed": true,
+     "gene": "gjc1 gja7"
+    },
+    {
+     "accession": "A0A9B5NQ71",
+     "reviewed": false,
+     "gene": "gjc1.L"
+    }
+   ]
+  },
+  "HCN1": {
+   "human": {
+    "accession": "O60741",
+    "protein_name": "Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel 1",
+    "length": 890
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8I2Q4",
+     "reviewed": false,
+     "gene": "hcn1.L"
+    },
+    {
+     "accession": "A0A1L8HRP1",
+     "reviewed": false,
+     "gene": "hcn1.S"
+    }
+   ]
+  },
+  "HCN2": {
+   "human": {
+    "accession": "Q9UL51",
+    "protein_name": "Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel 2",
+    "length": 889
+   }
+  },
+  "HCN4": {
+   "human": {
+    "accession": "Q9Y3Q4",
+    "protein_name": "Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel 4",
+    "length": 1203
+   }
+  },
+  "ITPR1": {
+   "human": {
+    "accession": "Q14643",
+    "protein_name": "Inositol 1,4,5-trisphosphate-gated calcium channel ITPR1",
+    "length": 2758
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0V3E4",
+     "reviewed": false,
+     "gene": "itpr1.L LOC108714625"
+    },
+    {
+     "accession": "A0A8J1N0E4",
+     "reviewed": false,
+     "gene": "itpr1.S ip3r itpr1 xip3r"
+    }
+   ]
+  },
+  "ITPR2": {
+   "human": {
+    "accession": "Q14571",
+    "protein_name": "Inositol 1,4,5-trisphosphate-gated calcium channel ITPR2",
+    "length": 2701
+   }
+  },
+  "ITPR3": {
+   "human": {
+    "accession": "Q14573",
+    "protein_name": "Inositol 1,4,5-trisphosphate-gated calcium channel ITPR3",
+    "length": 2671
+   }
+  },
+  "KCNA1": {
+   "human": {
+    "accession": "Q09470",
+    "protein_name": "Potassium voltage-gated channel subfamily A member 1",
+    "length": 495
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8GWG3",
+     "reviewed": false,
+     "gene": "kcna1.L"
+    },
+    {
+     "accession": "A0A1L8GR18",
+     "reviewed": false,
+     "gene": "kcna1.S k(v)1.1 kcna1 kcna1-A Kv 1.1 kv1.1 XSha1"
+    }
+   ]
+  },
+  "KCNA2": {
+   "human": {
+    "accession": "P16389",
+    "protein_name": "Potassium voltage-gated channel subfamily A member 2",
+    "length": 499
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "P22739",
+     "reviewed": true,
+     "gene": "kcna2"
+    },
+    {
+     "accession": "A0A1L8HE21",
+     "reviewed": false,
+     "gene": "kcna2.L k(v)1.2 kcna2 kcna2-a kcna2.S kv1.2 XSha2"
+    },
+    {
+     "accession": "A0A1L8H665",
+     "reviewed": false,
+     "gene": "kcna2.S"
+    }
+   ]
+  },
+  "KCNA3": {
+   "human": {
+    "accession": "P22001",
+    "protein_name": "Potassium voltage-gated channel subfamily A member 3",
+    "length": 575
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8HE56",
+     "reviewed": false,
+     "gene": "kcna3.L"
+    },
+    {
+     "accession": "A0A8J0PNC7",
+     "reviewed": false,
+     "gene": "kcna3.S k(v)1.3 kcna3 kcna3b-a kv1.3 Kv1.3B"
+    }
+   ]
+  },
+  "KCNA4": {
+   "human": {
+    "accession": "P22459",
+    "protein_name": "Potassium voltage-gated channel subfamily A member 4",
+    "length": 653
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8GDL1",
+     "reviewed": false,
+     "gene": "kcna4.S k(v)1.4 kcna4 Kv1.4"
+    }
+   ]
+  },
+  "KCNA5": {
+   "human": {
+    "accession": "P22460",
+    "protein_name": "Potassium voltage-gated channel subfamily A member 5",
+    "length": 613
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8GWI9",
+     "reviewed": false,
+     "gene": "kcna5.L"
+    }
+   ]
+  },
+  "KCNA6": {
+   "human": {
+    "accession": "P17658",
+    "protein_name": "Potassium voltage-gated channel subfamily A member 6",
+    "length": 529
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8GWF7",
+     "reviewed": false,
+     "gene": "kcna6.L"
+    },
+    {
+     "accession": "A0A1L8GR00",
+     "reviewed": false,
+     "gene": "kcna6.S"
+    }
+   ]
+  },
+  "KCNAB1": {
+   "human": {
+    "accession": "Q14722",
+    "protein_name": "Voltage-gated potassium channel subunit beta-1",
+    "length": 419
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8GAG5",
+     "reviewed": false,
+     "gene": "kcnab1.L LOC108717042"
+    },
+    {
+     "accession": "A0A1L8G4C6",
+     "reviewed": false,
+     "gene": "kcnab1.S"
+    }
+   ]
+  },
+  "KCNAB2": {
+   "human": {
+    "accession": "Q13303",
+    "protein_name": "Voltage-gated potassium channel subunit beta-2",
+    "length": 367
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "Q9PTM5",
+     "reviewed": true,
+     "gene": "kcnab2 kvb-A kvb2"
+    },
+    {
+     "accession": "A0A8J0T963",
+     "reviewed": false,
+     "gene": "kcnab2.L akr6a5 kcna2b kcnab2 kvb-a kvb2 kvbeta2 kvbeta2.1 kvbeta2.2"
+    },
+    {
+     "accession": "A0A8J0TCW4",
+     "reviewed": false,
+     "gene": "kcnab2.S LOC108697683"
+    }
+   ]
+  },
+  "KCNAB3": {
+   "human": {
+    "accession": "O43448",
+    "protein_name": "Voltage-gated potassium channel subunit beta-3",
+    "length": 404
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "Q9PTM4",
+     "reviewed": true,
+     "gene": "kcnab3 kvb-B kvb4"
+    },
+    {
+     "accession": "A0ABE4MJ08",
+     "reviewed": false,
+     "gene": "kcnab3.L"
+    },
+    {
+     "accession": "A0A8J0U216",
+     "reviewed": false,
+     "gene": "kcnab3.S"
+    }
+   ]
+  },
+  "KCNB1": {
+   "human": {
+    "accession": "Q14721",
+    "protein_name": "Potassium voltage-gated channel subfamily B member 1",
+    "length": 858
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8EL93",
+     "reviewed": false,
+     "gene": "kcnb1.S drk1 kcnb1 kcnb1-A kcnb1.L kv2.1 XShab9"
+    }
+   ]
+  },
+  "KCNB2": {
+   "human": {
+    "accession": "Q92953",
+    "protein_name": "Potassium voltage-gated channel subfamily B member 2",
+    "length": 911
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0PN13",
+     "reviewed": false,
+     "gene": "kcnb2.S kcnb2 kcnb2-a kcnb2-b kv2.2 XShab12"
+    }
+   ]
+  },
+  "KCNC1": {
+   "human": {
+    "accession": "P48547",
+    "protein_name": "Voltage-gated potassium channel KCNC1",
+    "length": 511
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1LBC5",
+     "reviewed": false,
+     "gene": "kcnc1.S kcnc1 kcnc3-A Kv3.1"
+    }
+   ]
+  },
+  "KCNC2": {
+   "human": {
+    "accession": "Q96PR1",
+    "protein_name": "Voltage-gated potassium channel KCNC2",
+    "length": 638
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1MSU5",
+     "reviewed": false,
+     "gene": "kcnc2.S"
+    }
+   ]
+  },
+  "KCNC3": {
+   "human": {
+    "accession": "Q14003",
+    "protein_name": "Voltage-gated potassium channel KCNC3",
+    "length": 757
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0Q5B1",
+     "reviewed": false,
+     "gene": "kcnc3.L kcnc1 kcnc3 kshiiid kv3.1 kv3.3 sca13"
+    }
+   ]
+  },
+  "KCNC4": {
+   "human": {
+    "accession": "Q03721",
+    "protein_name": "Voltage-gated potassium channel KCNC4",
+    "length": 635
+   }
+  },
+  "KCND2": {
+   "human": {
+    "accession": "Q9NZV8",
+    "protein_name": "A-type voltage-gated potassium channel KCND2",
+    "length": 630
+   }
+  },
+  "KCND3": {
+   "human": {
+    "accession": "Q9UK17",
+    "protein_name": "A-type voltage-gated potassium channel KCND3",
+    "length": 655
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0PN21",
+     "reviewed": false,
+     "gene": "kcnd3.L K(v)4.3 kcnd3 kcnd3-A kv4.3 xKv4.3"
+    }
+   ]
+  },
+  "KCNJ2": {
+   "human": {
+    "accession": "P63252",
+    "protein_name": "Inward rectifier potassium channel 2",
+    "length": 427
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0TWJ4",
+     "reviewed": false,
+     "gene": "kcnj2.L LOC108704331"
+    },
+    {
+     "accession": "A0A1L8EM43",
+     "reviewed": false,
+     "gene": "kcnj2.S"
+    }
+   ]
+  },
+  "KCNMA1": {
+   "human": {
+    "accession": "Q12791",
+    "protein_name": "Calcium-activated potassium channel subunit alpha-1",
+    "length": 1236
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "Q90ZC7",
+     "reviewed": true,
+     "gene": "kcnma1 kcnma xslo"
+    },
+    {
+     "accession": "A0A8J0U6A6",
+     "reviewed": false,
+     "gene": "kcnma1.L bktm kcnma1 kcnma1-A sakca Slo"
+    }
+   ]
+  },
+  "KCNMB1": {
+   "human": {
+    "accession": "Q16558",
+    "protein_name": "Calcium-activated potassium channel subunit beta-1",
+    "length": 191
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8GXG5",
+     "reviewed": false,
+     "gene": "kcnmb1.L"
+    },
+    {
+     "accession": "A0A1L8GVE4",
+     "reviewed": false,
+     "gene": "kcnmb1.S"
+    }
+   ]
+  },
+  "KCNMB2": {
+   "human": {
+    "accession": "Q9Y691",
+    "protein_name": "Calcium-activated potassium channel subunit beta-2",
+    "length": 235
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8G425",
+     "reviewed": false,
+     "gene": "kcnmb2.S"
+    }
+   ]
+  },
+  "KCNMB3": {
+   "human": {
+    "accession": "Q9NPA1",
+    "protein_name": "Calcium-activated potassium channel subunit beta-3",
+    "length": 279
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0VLG4",
+     "reviewed": false,
+     "gene": "kcnmb3.S"
+    }
+   ]
+  },
+  "KCNMB4": {
+   "human": {
+    "accession": "Q86W47",
+    "protein_name": "Calcium-activated potassium channel subunit beta-4",
+    "length": 210
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8GYP8",
+     "reviewed": false,
+     "gene": "kcnmb4.L"
+    },
+    {
+     "accession": "A0A1L8GUG4",
+     "reviewed": false,
+     "gene": "kcnmb4.S"
+    }
+   ]
+  },
+  "KCNN1": {
+   "human": {
+    "accession": "Q92952",
+    "protein_name": "Small conductance calcium-activated potassium channel protein 1",
+    "length": 543
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1KRJ1",
+     "reviewed": false,
+     "gene": "kcnn1.L"
+    },
+    {
+     "accession": "A0A8J1M2P4",
+     "reviewed": false,
+     "gene": "kcnn1.S"
+    }
+   ]
+  },
+  "KCNN2": {
+   "human": {
+    "accession": "Q9H2S1",
+    "protein_name": "Small conductance calcium-activated potassium channel protein 2",
+    "length": 579
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8I1I8",
+     "reviewed": false,
+     "gene": "kcnn2.L"
+    },
+    {
+     "accession": "A0A8J1M3U9",
+     "reviewed": false,
+     "gene": "kcnn2.S"
+    }
+   ]
+  },
+  "KCNN3": {
+   "human": {
+    "accession": "Q9UGI6",
+    "protein_name": "Small conductance calcium-activated potassium channel protein 3",
+    "length": 731
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8FD22",
+     "reviewed": false,
+     "gene": "kcnn3.L"
+    },
+    {
+     "accession": "A0A1L8F514",
+     "reviewed": false,
+     "gene": "kcnn3.S"
+    }
+   ]
+  },
+  "MCU": {
+   "human": {
+    "accession": "Q8NE86",
+    "protein_name": "Calcium uniporter protein, mitochondrial",
+    "length": 351
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0TB05",
+     "reviewed": false,
+     "gene": "mcu.L"
+    },
+    {
+     "accession": "A0A1L8FF17",
+     "reviewed": false,
+     "gene": "mcu.S"
+    }
+   ]
+  },
+  "MICU1": {
+   "human": {
+    "accession": "Q9BPX6",
+    "protein_name": "Calcium uptake protein 1, mitochondrial",
+    "length": 476
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1L5C0",
+     "reviewed": false,
+     "gene": "micu1.L"
+    },
+    {
+     "accession": "A0A8J0TEW2",
+     "reviewed": false,
+     "gene": "micu1.S"
+    }
+   ]
+  },
+  "MICU2": {
+   "human": {
+    "accession": "Q8IYU8",
+    "protein_name": "Calcium uptake protein 2, mitochondrial",
+    "length": 434
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8HJ34",
+     "reviewed": false,
+     "gene": "micu2.L"
+    },
+    {
+     "accession": "Q4V7I0",
+     "reviewed": false,
+     "gene": "micu2.S MGC115690 micu2"
+    }
+   ]
+  },
+  "NPTN": {
+   "human": {
+    "accession": "Q9Y639",
+    "protein_name": "Neuroplastin",
+    "length": 398
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8H008",
+     "reviewed": false,
+     "gene": "nptn.L nptn"
+    },
+    {
+     "accession": "A0A8J0Q2J9",
+     "reviewed": false,
+     "gene": "nptn.S"
+    }
+   ]
+  },
+  "RYR1": {
+   "human": {
+    "accession": "P21817",
+    "protein_name": "Ryanodine receptor 1",
+    "length": 5038
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0TL64",
+     "reviewed": false,
+     "gene": "ryr1.L"
+    }
+   ]
+  },
+  "RYR2": {
+   "human": {
+    "accession": "Q92736",
+    "protein_name": "Ryanodine receptor 2",
+    "length": 4967
+   }
+  },
+  "RYR3": {
+   "human": {
+    "accession": "Q15413",
+    "protein_name": "Ryanodine receptor 3",
+    "length": 4870
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J1LKN8",
+     "reviewed": false,
+     "gene": "ryr3.L"
+    },
+    {
+     "accession": "A0A8J1LLD9",
+     "reviewed": false,
+     "gene": "ryr3.S"
+    }
+   ]
+  },
+  "SCN1A": {
+   "human": {
+    "accession": "P35498",
+    "protein_name": "Sodium channel protein type 1 subunit alpha",
+    "length": 2009
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0TT52",
+     "reviewed": false,
+     "gene": "scn1a.S"
+    }
+   ]
+  },
+  "SCN1B": {
+   "human": {
+    "accession": "Q07699",
+    "protein_name": "Sodium channel regulatory subunit beta-1",
+    "length": 218
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8FPK6",
+     "reviewed": false,
+     "gene": "scn1b.L"
+    },
+    {
+     "accession": "A0A8J0T7R5",
+     "reviewed": false,
+     "gene": "scn1b.S"
+    }
+   ]
+  },
+  "SCN2A": {
+   "human": {
+    "accession": "Q99250",
+    "protein_name": "Sodium channel protein type 2 subunit alpha",
+    "length": 2005
+   }
+  },
+  "SCN2B": {
+   "human": {
+    "accession": "O60939",
+    "protein_name": "Sodium channel regulatory subunit beta-2",
+    "length": 215
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0Q1G5",
+     "reviewed": false,
+     "gene": "scn2b.L scn2b"
+    }
+   ]
+  },
+  "SCN3A": {
+   "human": {
+    "accession": "Q9NY46",
+    "protein_name": "Sodium channel protein type 3 subunit alpha",
+    "length": 2000
+   }
+  },
+  "SCN3B": {
+   "human": {
+    "accession": "Q9NY72",
+    "protein_name": "Sodium channel regulatory subunit beta-3",
+    "length": 215
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "Q6DE47",
+     "reviewed": false,
+     "gene": "scn3b.L scn3b scn3b-prov"
+    },
+    {
+     "accession": "A0A1L8FFJ8",
+     "reviewed": false,
+     "gene": "scn3b.S"
+    }
+   ]
+  },
+  "SCN4B": {
+   "human": {
+    "accession": "Q8IWT1",
+    "protein_name": "Sodium channel regulatory subunit beta-4",
+    "length": 228
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0PT10",
+     "reviewed": false,
+     "gene": "scn4b.L scn4b"
+    },
+    {
+     "accession": "A0A1L8FFX0",
+     "reviewed": false,
+     "gene": "scn4b.S"
+    }
+   ]
+  },
+  "SCN8A": {
+   "human": {
+    "accession": "Q9UQD0",
+    "protein_name": "Sodium channel protein type 8 subunit alpha",
+    "length": 1980
+   }
+  },
+  "SLC12A1": {
+   "human": {
+    "accession": "Q13621",
+    "protein_name": "Solute carrier family 12 member 1",
+    "length": 1099
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8H0K3",
+     "reviewed": false,
+     "gene": "slc12a1.L"
+    }
+   ]
+  },
+  "SLC12A2": {
+   "human": {
+    "accession": "P55011",
+    "protein_name": "Solute carrier family 12 member 2",
+    "length": 1212
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8I1I1",
+     "reviewed": false,
+     "gene": "slc12a2.L bsc bsc2 nkcc1 slc12a2 xnkcc1"
+    },
+    {
+     "accession": "A0A8J1M3S6",
+     "reviewed": false,
+     "gene": "slc12a2.S"
+    }
+   ]
+  },
+  "SLC12A4": {
+   "human": {
+    "accession": "Q9UP95",
+    "protein_name": "Solute carrier family 12 member 4",
+    "length": 1085
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8HZL0",
+     "reviewed": false,
+     "gene": "slc12a4.L"
+    },
+    {
+     "accession": "A0A1L8GE62",
+     "reviewed": false,
+     "gene": "slc12a4.S LOC108715345"
+    }
+   ]
+  },
+  "SLC12A5": {
+   "human": {
+    "accession": "Q9H2X9",
+    "protein_name": "Solute carrier family 12 member 5",
+    "length": 1139
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0TVZ3",
+     "reviewed": false,
+     "gene": "slc12a5.L"
+    },
+    {
+     "accession": "A0A1L8EMD3",
+     "reviewed": false,
+     "gene": "slc12a5.S LOC108702731"
+    }
+   ]
+  },
+  "SLC12A6": {
+   "human": {
+    "accession": "Q9UHW9",
+    "protein_name": "Solute carrier family 12 member 6",
+    "length": 1150
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8HPR2",
+     "reviewed": false,
+     "gene": "slc12a6.S LOC108707044"
+    }
+   ]
+  },
+  "SLC12A7": {
+   "human": {
+    "accession": "Q9Y666",
+    "protein_name": "Solute carrier family 12 member 7",
+    "length": 1083
+   }
+  },
+  "SLC8A1": {
+   "human": {
+    "accession": "P32418",
+    "protein_name": "Sodium/calcium exchanger 1",
+    "length": 973
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0VFP2",
+     "reviewed": false,
+     "gene": "slc8a1.L LOC108716640"
+    },
+    {
+     "accession": "A0A1L8G1Y3",
+     "reviewed": false,
+     "gene": "slc8a1.S"
+    }
+   ]
+  },
+  "SLC8A2": {
+   "human": {
+    "accession": "Q9UPR5",
+    "protein_name": "Sodium/calcium exchanger 2",
+    "length": 921
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A1L8F8Z8",
+     "reviewed": false,
+     "gene": "slc8a2.L"
+    },
+    {
+     "accession": "A0A1L8F3Z5",
+     "reviewed": false,
+     "gene": "slc8a2.S"
+    }
+   ]
+  },
+  "SLC8A3": {
+   "human": {
+    "accession": "P57103",
+    "protein_name": "Sodium/calcium exchanger 3",
+    "length": 927
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "A0A8J0TJD7",
+     "reviewed": false,
+     "gene": "slc8a3.L"
+    },
+    {
+     "accession": "A0A8J0PYI1",
+     "reviewed": false,
+     "gene": "slc8a3.S ncx3 slc8a2 slc8a3 slc8a3.L"
+    }
+   ]
+  },
+  "SMDT1": {
+   "human": {
+    "accession": "Q9H4I9",
+    "protein_name": "Essential MCU regulator, mitochondrial",
+    "length": 107
+   },
+   "xenopus_laevis": [
+    {
+     "accession": "Q5XG64",
+     "reviewed": true,
+     "gene": "smdt1 emre"
+    },
+    {
+     "accession": "A0A1L8GNG8",
+     "reviewed": false,
+     "gene": "smdt1.L"
+    }
+   ]
+  }
+ },
+ "structures": [
+  {
+   "pdb": "7Z22",
+   "title": "Connexin43 gap junction channel structure in nanodisc",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 2.95,
+   "released": "2023-03-08",
+   "assembly": {
+    "copies": 12,
+    "kind": "Homo 12-mer",
+    "symmetry": "D6"
+   },
+   "citation": {
+    "title": "Structure of the connexin-43 gap junction channel in a putative closed state.",
+    "journal": "Elife",
+    "year": 2023,
+    "doi": "10.7554/eLife.87616",
+    "pmid": 37535063
+   },
+   "entities": [
+    {
+     "description": "Gap junction alpha-1 protein",
+     "uniprot": [
+      "P17302"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 12
+    }
+   ]
+  },
+  {
+   "pdb": "6J8E",
+   "title": "Human Nav1.2-beta2-KIIIA ternary complex",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.0,
+   "released": "2019-02-27",
+   "assembly": {
+    "copies": 3,
+    "kind": "Hetero 3-mer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Molecular basis for pore blockade of human Na+channel Nav1.2 by the mu-conotoxin KIIIA.",
+    "journal": "Science",
+    "year": 2019,
+    "doi": "10.1126/science.aaw2999",
+    "pmid": 30765605
+   },
+   "entities": [
+    {
+     "description": "Mu-conotoxin KIIIA",
+     "uniprot": [
+      "P0C195"
+     ],
+     "organism": [
+      "Conus kinoshitai"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Sodium channel protein type 2 subunit alpha",
+     "uniprot": [
+      "Q99250"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Sodium channel subunit beta-2",
+     "uniprot": [
+      "O60939"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "7PHH",
+   "title": "Human voltage-gated potassium channel Kv3.1 (apo condition)",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.2,
+   "released": "2022-03-02",
+   "assembly": {
+    "copies": 4,
+    "kind": "Homo 4-mer",
+    "symmetry": "C4"
+   },
+   "citation": {
+    "title": "Cryo-EM structure of the human Kv3.1 channel reveals gating control by the cytoplasmic T1 domain.",
+    "journal": "Nat Commun",
+    "year": 2022,
+    "doi": "10.1038/s41467-022-29594-w",
+    "pmid": 35840580
+   },
+   "entities": [
+    {
+     "description": "Potassium voltage-gated channel, Shaw-related subfamily, member 1",
+     "uniprot": [
+      "P48547"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 4
+    }
+   ]
+  },
+  {
+   "pdb": "7ZDZ",
+   "title": "Cryo-EM structure of the human inward-rectifier potassium 2.1 channel (Kir2.1)",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 4.3,
+   "released": "2022-09-28",
+   "assembly": {
+    "copies": 4,
+    "kind": "Homo 4-mer",
+    "symmetry": "C4"
+   },
+   "citation": {
+    "title": "Cryo-electron microscopy unveils unique structural features of the human Kir2.1 channel.",
+    "journal": "Sci Adv",
+    "year": 2022,
+    "doi": "10.1126/sciadv.abq8489",
+    "pmid": 36149965
+   },
+   "entities": [
+    {
+     "description": "Inward rectifier potassium channel 2",
+     "uniprot": [
+      "P63252"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 4
+    }
+   ]
+  },
+  {
+   "pdb": "5U6O",
+   "title": "Structure of the human HCN1 hyperpolarization-activated cyclic nucleotide-gated ion channel",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.5,
+   "released": "2017-01-25",
+   "assembly": {
+    "copies": 4,
+    "kind": "Homo 4-mer",
+    "symmetry": "C4"
+   },
+   "citation": {
+    "title": "Structures of the Human HCN1 Hyperpolarization-Activated Channel.",
+    "journal": "Cell",
+    "year": 2017,
+    "doi": "10.1016/j.cell.2016.12.023",
+    "pmid": 28086084
+   },
+   "entities": [
+    {
+     "description": "Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel 1",
+     "uniprot": [
+      "O60741"
+     ],
+     "organism": [
+      "Homo sapiens",
+      "Homo sapiens"
+     ],
+     "copies": 4
+    }
+   ]
+  },
+  {
+   "pdb": "7NP3",
+   "title": "cAMP-free rabbit HCN4 stabilized in LMNG-CHS detergent mixture",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.3,
+   "released": "2021-08-11",
+   "assembly": {
+    "copies": 4,
+    "kind": "Homo 4-mer",
+    "symmetry": "C4"
+   },
+   "citation": {
+    "title": "Gating movements and ion permeation in HCN4 pacemaker channels.",
+    "journal": "Mol.Cell",
+    "year": 2021,
+    "doi": "10.1016/j.molcel.2021.05.033",
+    "pmid": 34166608
+   },
+   "entities": [
+    {
+     "description": "Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel 4,Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel 4",
+     "uniprot": [
+      "Q9TV66"
+     ],
+     "organism": [
+      "Oryctolagus cuniculus",
+      "Oryctolagus cuniculus"
+     ],
+     "copies": 4
+    }
+   ]
+  },
+  {
+   "pdb": "7MIY",
+   "title": "Human N-type voltage-gated calcium channel Cav2.2 at 3.1 Angstrom resolution",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.1,
+   "released": "2021-07-07",
+   "assembly": {
+    "copies": 3,
+    "kind": "Hetero 3-mer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Structure of human Ca v 2.2 channel blocked by the painkiller ziconotide.",
+    "journal": "Nature",
+    "year": 2021,
+    "doi": "10.1038/s41586-021-03699-6",
+    "pmid": 34234349
+   },
+   "entities": [
+    {
+     "description": "Voltage-dependent calcium channel subunit alpha-2/delta-1",
+     "uniprot": [
+      "P54289"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Voltage-dependent L-type calcium channel subunit beta-3",
+     "uniprot": [
+      "P54284"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Voltage-dependent N-type calcium channel subunit alpha-1B",
+     "uniprot": [
+      "Q00975"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "5GJV",
+   "title": "Structure of the mammalian voltage-gated calcium channel Cav1.1 complex at near atomic resolution",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.6,
+   "released": "2016-09-14",
+   "assembly": {
+    "copies": 5,
+    "kind": "Hetero 5-mer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Structure of the voltage-gated calcium channel Cav1.1 at 3.6 angstrom resolution",
+    "journal": "Nature",
+    "year": 2016,
+    "doi": "10.1038/nature19321",
+    "pmid": 27580036
+   },
+   "entities": [
+    {
+     "description": "Voltage-dependent calcium channel subunit alpha-2/delta-1",
+     "uniprot": [
+      "P13806"
+     ],
+     "organism": [
+      "Oryctolagus cuniculus"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Voltage-dependent calcium channel gamma-1 subunit",
+     "uniprot": [
+      "P19518"
+     ],
+     "organism": [
+      "Oryctolagus cuniculus"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Voltage-dependent L-type calcium channel subunit beta-1",
+     "uniprot": [
+      "P19517"
+     ],
+     "organism": [
+      "Oryctolagus cuniculus"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Voltage-dependent L-type calcium channel subunit beta-1",
+     "uniprot": [
+      "P19517"
+     ],
+     "organism": [
+      "Oryctolagus cuniculus"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Voltage-dependent L-type calcium channel subunit alpha-1S",
+     "uniprot": [
+      "P07293"
+     ],
+     "organism": [
+      "Oryctolagus cuniculus"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "6V38",
+   "title": "Cryo-EM structure of Ca2+-bound hsSlo1 channel",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.8,
+   "released": "2019-12-25",
+   "assembly": {
+    "copies": 4,
+    "kind": "Homo 4-mer",
+    "symmetry": "C4"
+   },
+   "citation": {
+    "title": "Molecular structures of the human Slo1 K + channel in complex with beta 4.",
+    "journal": "Elife",
+    "year": 2019,
+    "doi": "10.7554/eLife.51409",
+    "pmid": 31815672
+   },
+   "entities": [
+    {
+     "description": "Calcium-activated potassium channel subunit alpha-1",
+     "uniprot": [
+      "Q12791"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 4
+    }
+   ]
+  },
+  {
+   "pdb": "6V22",
+   "title": "Cryo-EM structure of Ca2+-bound hsSlo1-beta4 channel complex",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.2,
+   "released": "2019-12-25",
+   "assembly": {
+    "copies": 8,
+    "kind": "Hetero 8-mer",
+    "symmetry": "C4"
+   },
+   "citation": {
+    "title": "Molecular structures of the human Slo1 K + channel in complex with beta 4.",
+    "journal": "Elife",
+    "year": 2019,
+    "doi": "10.7554/eLife.51409",
+    "pmid": 31815672
+   },
+   "entities": [
+    {
+     "description": "Calcium-activated potassium channel subunit beta-4",
+     "uniprot": [
+      "Q86W47"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 4
+    },
+    {
+     "description": "Calcium-activated potassium channel subunit alpha-1",
+     "uniprot": [
+      "Q12791"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 4
+    }
+   ]
+  },
+  {
+   "pdb": "4HYT",
+   "title": "Na,K-ATPase in the E2P state with bound ouabain and Mg2+ in the cation-binding site",
+   "method": [
+    "X-RAY DIFFRACTION"
+   ],
+   "resolution_A": 3.404,
+   "released": "2013-06-26",
+   "assembly": {
+    "copies": 3,
+    "kind": "Hetero 3-mer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Crystal structure of the high-affinity Na+,K+-ATPase-ouabain complex with Mg2+ bound in the cation binding site.",
+    "journal": "Proc.Natl.Acad.Sci.USA",
+    "year": 2013,
+    "doi": "10.1073/pnas.1222308110",
+    "pmid": 23776223
+   },
+   "entities": [
+    {
+     "description": "Sodium/potassium-transporting ATPase subunit alpha-1",
+     "uniprot": [
+      "P05024"
+     ],
+     "organism": [
+      "Sus scrofa"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Na+/K+ ATPase gamma subunit transcript variant a",
+     "uniprot": [
+      "Q58K79"
+     ],
+     "organism": [
+      "Sus scrofa"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Sodium/potassium-transporting ATPase subunit beta-1",
+     "uniprot": [
+      "P05027"
+     ],
+     "organism": [
+      "Sus scrofa"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "7E1Z",
+   "title": "Cryo EM structure of a Na+-bound Na+,K+-ATPase in the E1 state",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.2,
+   "released": "2022-06-15",
+   "assembly": {
+    "copies": 3,
+    "kind": "Hetero 3-mer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Cryo-EM structures of recombinant human sodium-potassium pump determined in three different states.",
+    "journal": "Nat Commun",
+    "year": 2022,
+    "doi": "10.1038/s41467-022-31602-y",
+    "pmid": 35803952
+   },
+   "entities": [
+    {
+     "description": "Sodium/potassium-transporting ATPase subunit gamma",
+     "uniprot": [
+      "P54710"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Sodium/potassium-transporting ATPase subunit beta-1",
+     "uniprot": [
+      "P05026"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Sodium/potassium-transporting ATPase subunit alpha-1",
+     "uniprot": [
+      "P05023"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "6A69",
+   "title": "Cryo-EM structure of a P-type ATPase",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 4.11,
+   "released": "2018-09-19",
+   "assembly": {
+    "copies": 2,
+    "kind": "Hetero 2-mer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Structure of the human plasma membrane Ca2+-ATPase 1 in complex with its obligatory subunit neuroplastin.",
+    "journal": "Nat Commun",
+    "year": 2018,
+    "doi": "10.1038/s41467-018-06075-7",
+    "pmid": 30190470
+   },
+   "entities": [
+    {
+     "description": "Neuroplastin",
+     "uniprot": [
+      "Q9Y639"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Plasma membrane calcium-transporting ATPase 1",
+     "uniprot": [
+      "P20020"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "1SU4",
+   "title": "Crystal structure of calcium ATPase with two bound calcium ions",
+   "method": [
+    "X-RAY DIFFRACTION"
+   ],
+   "resolution_A": 2.4,
+   "released": "2004-05-04",
+   "assembly": {
+    "copies": 1,
+    "kind": "Monomer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Crystal structure of the calcium pump of sarcoplasmic reticulum at 2.6 A resolution",
+    "journal": "Nature",
+    "year": 2000,
+    "doi": "10.1038/35015017",
+    "pmid": 10864315
+   },
+   "entities": [
+    {
+     "description": "Sarcoplasmic/endoplasmic reticulum calcium ATPase 1",
+     "uniprot": [
+      "P04191"
+     ],
+     "organism": [
+      "Oryctolagus cuniculus"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "6DQJ",
+   "title": "Human type 3 1,4,5-inositol trisphosphate receptor in a ligand-free state",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.49,
+   "released": "2018-08-01",
+   "assembly": {
+    "copies": 4,
+    "kind": "Homo 4-mer",
+    "symmetry": "C4"
+   },
+   "citation": {
+    "title": "Structural basis for the regulation of inositol trisphosphate receptors by Ca2+and IP3.",
+    "journal": "Nat. Struct. Mol. Biol.",
+    "year": 2018,
+    "doi": "10.1038/s41594-018-0089-6",
+    "pmid": 30013099
+   },
+   "entities": [
+    {
+     "description": "Inositol 1,4,5-trisphosphate receptor type 3",
+     "uniprot": [
+      "Q14573"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 4
+    }
+   ]
+  },
+  {
+   "pdb": "3J8H",
+   "title": "Structure of the rabbit ryanodine receptor RyR1 in complex with FKBP12 at 3.8 Angstrom resolution",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.8,
+   "released": "2014-12-10",
+   "assembly": {
+    "copies": 8,
+    "kind": "Hetero 8-mer",
+    "symmetry": "C4"
+   },
+   "citation": {
+    "title": "Structure of the rabbit ryanodine receptor RyR1 at near-atomic resolution.",
+    "journal": "Nature",
+    "year": 2015,
+    "doi": "10.1038/nature14063",
+    "pmid": 25517095
+   },
+   "entities": [
+    {
+     "description": "Peptidyl-prolyl cis-trans isomerase FKBP1A",
+     "uniprot": [
+      "P62943"
+     ],
+     "organism": [
+      "Oryctolagus cuniculus"
+     ],
+     "copies": 4
+    },
+    {
+     "description": "Ryanodine receptor 1",
+     "uniprot": [
+      "P11716"
+     ],
+     "organism": [
+      "Oryctolagus cuniculus"
+     ],
+     "copies": 4
+    }
+   ]
+  },
+  {
+   "pdb": "6M23",
+   "title": "Overall structure of KCC2",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.2,
+   "released": "2020-11-04",
+   "assembly": {
+    "copies": 2,
+    "kind": "Homo 2-mer",
+    "symmetry": "C2"
+   },
+   "citation": {
+    "title": "Cryo-EM structures of the full-length human KCC2 and KCC3 cation-chloride cotransporters.",
+    "journal": "Cell Res.",
+    "year": 2021,
+    "doi": "10.1038/s41422-020-00437-x",
+    "pmid": 33199848
+   },
+   "entities": [
+    {
+     "description": "Solute carrier family 12 member 5",
+     "uniprot": [
+      "Q9H2X9"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 2
+    }
+   ]
+  },
+  {
+   "pdb": "6PZT",
+   "title": "cryo-EM structure of human NKCC1",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.46,
+   "released": "2020-03-25",
+   "assembly": {
+    "copies": 2,
+    "kind": "Homo 2-mer",
+    "symmetry": "C2"
+   },
+   "citation": {
+    "title": "Structure of the human cation-chloride cotransporter NKCC1 determined by single-particle electron cryo-microscopy.",
+    "journal": "Nat Commun",
+    "year": 2020,
+    "doi": "10.1038/s41467-020-14790-3",
+    "pmid": 32081947
+   },
+   "entities": [
+    {
+     "description": "Solute carrier family 12 member 2",
+     "uniprot": [
+      "P55011"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 2
+    }
+   ]
+  },
+  {
+   "pdb": "6WDN",
+   "title": "Cryo-EM structure of mitochondrial calcium uniporter holocomplex in low Ca2+",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.2,
+   "released": "2020-05-27",
+   "assembly": {
+    "copies": 10,
+    "kind": "Hetero 10-mer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Structure and mechanism of the mitochondrial Ca2+uniporter holocomplex.",
+    "journal": "Nature",
+    "year": 2020,
+    "doi": "10.1038/s41586-020-2309-6",
+    "pmid": 32494073
+   },
+   "entities": [
+    {
+     "description": "Calcium uniporter protein, mitochondrial",
+     "uniprot": [
+      "Q8NE86"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 4
+    },
+    {
+     "description": "Essential MCU regulator, mitochondrial",
+     "uniprot": [
+      "Q9H4I9"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 4
+    },
+    {
+     "description": "Calcium uptake protein 1, mitochondrial",
+     "uniprot": [
+      "Q9BPX6"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Calcium uptake protein 2, mitochondrial",
+     "uniprot": [
+      "Q8IYU8"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "8SGJ",
+   "title": "Cryo-EM structure of human NCX1 in apo inactivated state",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.1,
+   "released": "2023-10-11",
+   "assembly": {
+    "copies": 3,
+    "kind": "Hetero 3-mer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Structural mechanisms of the human cardiac sodium-calcium exchanger NCX1.",
+    "journal": "Nat Commun",
+    "year": 2023,
+    "doi": "10.1038/s41467-023-41885-4",
+    "pmid": 37794011
+   },
+   "entities": [
+    {
+     "description": "Fab heavy chain",
+     "organism": [
+      "Mus musculus"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Fab light chain",
+     "organism": [
+      "Mus musculus"
+     ],
+     "copies": 1
+    },
+    {
+     "description": "Sodium/calcium exchanger 1",
+     "uniprot": [
+      "P32418"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "6KZO",
+   "title": "membrane protein",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 3.3,
+   "released": "2019-12-18",
+   "assembly": {
+    "copies": 1,
+    "kind": "Monomer",
+    "symmetry": "C1"
+   },
+   "citation": {
+    "title": "Cryo-EM structures of apo and antagonist-bound human Cav3.1.",
+    "journal": "Nature",
+    "year": 2019,
+    "doi": "10.1038/s41586-019-1801-3",
+    "pmid": 31766050
+   },
+   "entities": [
+    {
+     "description": "Voltage-dependent T-type calcium channel subunit alpha-1G",
+     "uniprot": [
+      "O43497"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 1
+    }
+   ]
+  },
+  {
+   "pdb": "6KKR",
+   "title": "human KCC1 structure determined in KCl and detergent GDN",
+   "method": [
+    "ELECTRON MICROSCOPY"
+   ],
+   "resolution_A": 2.9,
+   "released": "2019-10-23",
+   "assembly": {
+    "copies": 2,
+    "kind": "Homo 2-mer",
+    "symmetry": "C2"
+   },
+   "citation": {
+    "title": "Cryo-EM structures of the human cation-chloride cotransporter KCC1.",
+    "journal": "Science",
+    "year": 2019,
+    "doi": "10.1126/science.aay3129",
+    "pmid": 31649201
+   },
+   "entities": [
+    {
+     "description": "Solute carrier family 12 member 4",
+     "uniprot": [
+      "Q9UP95"
+     ],
+     "organism": [
+      "Homo sapiens"
+     ],
+     "copies": 2
+    }
+   ]
+  },
+  {
+   "pdb": "2A79",
+   "title": "Mammalian Shaker Kv1.2 potassium channel- beta subunit complex",
+   "method": [
+    "X-RAY DIFFRACTION"
+   ],
+   "resolution_A": 2.9,
+   "released": "2005-07-12",
+   "assembly": {
+    "copies": 16,
+    "kind": "Hetero 16-mer",
+    "symmetry": "C4"
+   },
+   "citation": {
+    "title": "Crystal structure of a mammalian voltage-dependent Shaker family K+ channel.",
+    "journal": "Science",
+    "year": 2005,
+    "doi": "10.1126/science.1116269",
+    "pmid": 16002581
+   },
+   "entities": [
+    {
+     "description": "poly-unknown chain",
+     "organism": [
+      "Rattus norvegicus"
+     ],
+     "copies": 4
+    },
+    {
+     "description": "poly-unknown chain",
+     "organism": [
+      "Rattus norvegicus"
+     ],
+     "copies": 4
+    },
+    {
+     "description": "Potassium voltage-gated channel subfamily A member 2",
+     "uniprot": [
+      "P63142"
+     ],
+     "organism": [
+      "Rattus norvegicus"
+     ],
+     "copies": 4
+    },
+    {
+     "description": "Voltage-gated potassium channel beta-2 subunit",
+     "uniprot": [
+      "P62483"
+     ],
+     "organism": [
+      "Rattus norvegicus"
+     ],
+     "copies": 4
+    }
+   ]
+  }
+ ]
+}

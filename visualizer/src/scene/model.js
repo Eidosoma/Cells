@@ -14,6 +14,7 @@ export class SceneModel {
     this.statuses = new Map(scene.statuses.map((status) => [status.id, status]));
     this.kinds = new Map(scene.relation_kinds.map((kind) => [kind.id, kind]));
     this.groups = scene.groups;
+    this.groupById = new Map(scene.groups.map((group) => [group.id, group]));
     this.outgoing = new Map();
     this.incoming = new Map();
     for (const relation of scene.relations) {
@@ -24,6 +25,15 @@ export class SceneModel {
 
   get(id) {
     return this.byId.get(id);
+  }
+
+  /** The lens that shows this part: each group of the scene belongs to one lens. */
+  lensOf(entity) {
+    return this.groupById.get(entity?.group)?.lens || "engine";
+  }
+
+  inLens(lens) {
+    return this.entities.filter((entity) => this.lensOf(entity) === lens);
   }
 
   inGroup(groupId) {
@@ -72,13 +82,16 @@ export function validate(scene) {
   const statuses = new Set(scene.statuses.map((status) => status.id));
   const kinds = new Set(scene.relation_kinds.map((kind) => kind.id));
   const groups = new Set(scene.groups.map((group) => group.id));
+  // The protein atlas keeps the inventory's own words for a mapping; they are not statuses.
+  const mappings = new Set((scene.proteins?.mappings || []).map((mapping) => mapping.id));
   const ids = new Set();
   for (const entity of scene.entities) {
     if (!entity.id || !entity.label) problems.push(`a part lacks an id or label`);
     if (ids.has(entity.id)) problems.push(`duplicate id ${entity.id}`);
     ids.add(entity.id);
     if (entity.status && !statuses.has(entity.status)) problems.push(`${entity.id}: unknown status ${entity.status}`);
-    if (entity.group !== "biology" && !groups.has(entity.group)) problems.push(`${entity.id}: unknown group ${entity.group}`);
+    if (!groups.has(entity.group)) problems.push(`${entity.id}: unknown group ${entity.group}`);
+    if (entity.mapping && !mappings.has(entity.mapping)) problems.push(`${entity.id}: unknown mapping ${entity.mapping}`);
   }
   for (const relation of scene.relations) {
     if (!ids.has(relation.from) || !ids.has(relation.to)) problems.push(`relation ${relation.from} -> ${relation.to}: unknown part`);

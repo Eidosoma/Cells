@@ -1,0 +1,611 @@
+{
+  "format": "cells.visualizer.protein_atlas_overlay@1",
+  "title": "Protein atlas",
+  "summary": "The molecular machines Cells models: its own inventory, linked to the public protein atlases.",
+  "caveat": "Shapes are schematic, drawn from subunit counts, and not to scale. A grey form is a generic law: no protein is assigned.",
+  "plan": {
+    "path": "docs/PROTEIN_CATALOGUE_PLAN.md",
+    "where": "What the engine models today (stage 2 inventory)"
+  },
+  "links": {
+    "uniprot": {
+      "text": "UniProt {id}",
+      "url": "https://www.uniprot.org/uniprotkb/{id}/entry"
+    },
+    "alphafold": {
+      "text": "AlphaFold DB",
+      "url": "https://alphafold.ebi.ac.uk/entry/{id}"
+    },
+    "hpa": {
+      "text": "Human Protein Atlas",
+      "url": "https://www.proteinatlas.org/search/{id}"
+    },
+    "rcsb": {
+      "text": "RCSB PDB",
+      "url": "https://www.rcsb.org/structure/{id}"
+    },
+    "pubmed": {
+      "text": "PubMed",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/{id}/"
+    },
+    "doi": {
+      "text": "Paper",
+      "url": "https://doi.org/{id}"
+    }
+  },
+  "alphafold_longest": 2700,
+  "renamed": {
+    "bitsey_emt_pair@1": {
+      "to": "emt_mirna_pair@1",
+      "source": "docs/PROTEIN_CATALOGUE_PLAN.md"
+    }
+  },
+  "mappings": [
+    {
+      "id": "assigned",
+      "inventory": "assigned in source",
+      "label": "Assigned in source",
+      "description": "The law, its documents or the source it cites names the protein. This records a label; the kind of evidence on each law says what stands behind it.",
+      "note": ""
+    },
+    {
+      "id": "candidate",
+      "inventory": "candidate",
+      "label": "Candidate",
+      "description": "The law models a named native current or channel class. Which gene products carry it is the inventory's inference.",
+      "note": "Which protein carries this current is the inventory's inference. The shape drawn is the candidate's."
+    },
+    {
+      "id": "generic",
+      "inventory": "generic, isoform not assigned",
+      "label": "Generic",
+      "description": "The law is deliberately generic, phenomenological or manufactured. Products are listed as candidates only.",
+      "note": "The law is generic: it names no protein. The grey form is a plain stand-in, and any products below are candidates only."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "expressed isoform",
+      "label": "Expressed isoform",
+      "description": "The cited data come from the named isoform, expressed on its own."
+    },
+    {
+      "id": "isoform named in title",
+      "label": "Isoform named in the title",
+      "description": "The cited source names the isoform in its title; the inventory read no further detail."
+    },
+    {
+      "id": "native current",
+      "label": "Native current",
+      "description": "The cited data are a current recorded from native cells, not from an isolated isoform."
+    },
+    {
+      "id": "neuron model",
+      "label": "Neuron model",
+      "description": "The cited source is a model of a neuron."
+    },
+    {
+      "id": "derived reduction",
+      "label": "Derived reduction",
+      "description": "A reduced (Morris-Lecar) form of the named channel."
+    },
+    {
+      "id": "designed protein",
+      "label": "Designed protein",
+      "description": "An engineered protein with no natural gene product."
+    },
+    {
+      "id": "no detail in source",
+      "label": "No detail in the source",
+      "description": "The source gives no detail on what the coefficients were measured from."
+    }
+  ],
+  "sites": [
+    {
+      "id": "plasma",
+      "label": "Plasma membrane"
+    },
+    {
+      "id": "junction",
+      "label": "Between two cells"
+    },
+    {
+      "id": "er",
+      "label": "ER membrane"
+    },
+    {
+      "id": "mito",
+      "label": "Mitochondrial inner membrane"
+    },
+    {
+      "id": "cytoplasm",
+      "label": "Cytoplasm"
+    }
+  ],
+  "site_note": "Where the engine's law acts, read from the law's name and documents.",
+  "districts": [
+    {
+      "id": "sodium",
+      "label": "Sodium channels",
+      "band": 0,
+      "columns": 2
+    },
+    {
+      "id": "potassium",
+      "label": "Potassium channels",
+      "band": 0,
+      "columns": 6
+    },
+    {
+      "id": "hcn",
+      "label": "HCN channels",
+      "band": 0,
+      "columns": 1
+    },
+    {
+      "id": "calcium",
+      "label": "Calcium channels",
+      "band": 0,
+      "columns": 3
+    },
+    {
+      "id": "leaks",
+      "label": "Leaks and lumped permeabilities",
+      "band": 1,
+      "columns": 2
+    },
+    {
+      "id": "pumps",
+      "label": "Pumps",
+      "band": 1,
+      "columns": 2
+    },
+    {
+      "id": "transporters",
+      "label": "Transporters",
+      "band": 1,
+      "columns": 2
+    },
+    {
+      "id": "junctions",
+      "label": "Gap junctions",
+      "band": 1,
+      "columns": 3
+    },
+    {
+      "id": "er",
+      "label": "ER membrane",
+      "band": 2,
+      "columns": 2
+    },
+    {
+      "id": "mitochondria",
+      "label": "Mitochondrial inner membrane",
+      "band": 2,
+      "columns": 1
+    },
+    {
+      "id": "assembly",
+      "label": "Protein cage",
+      "band": 2,
+      "columns": 1
+    }
+  ],
+  "kinds": {
+    "voltage-gated Na channel": {
+      "district": "sodium",
+      "site": "plasma",
+      "cell_view": "cap.channels",
+      "plain": "A sodium channel that opens when the membrane voltage rises. One long protein chain folds into four repeats around a single pore, and smaller beta subunits sit beside it.",
+      "assembly": {
+        "shape": "chain",
+        "repeats": 4,
+        "aux": [
+          {
+            "role": "beta",
+            "side": "out",
+            "count": 1,
+            "when": "beta",
+            "firm_if": null
+          }
+        ]
+      },
+      "expects": "^1 alpha"
+    },
+    "voltage-gated K channel": {
+      "district": "potassium",
+      "site": "plasma",
+      "cell_view": "cap.channels",
+      "plain": "A potassium channel that opens with the membrane voltage. Four subunits surround one pore.",
+      "plain_generic": "A voltage-gated potassium current in a simple phenomenological form.",
+      "assembly": {
+        "shape": "ring",
+        "subunits": 4,
+        "aux": [
+          {
+            "role": "Kv-beta",
+            "side": "in",
+            "count": 4,
+            "when": "Kv-beta",
+            "firm_if": "\\+ 4 Kv-beta"
+          }
+        ]
+      },
+      "expects": "4 alpha",
+      "neutral": {
+        "shape": "pore"
+      }
+    },
+    "inward-rectifier K channel": {
+      "district": "potassium",
+      "site": "plasma",
+      "cell_view": "cap.channels",
+      "plain": "A potassium channel that conducts best near the resting voltage and helps to hold the cell there. Four subunits surround one pore.",
+      "assembly": {
+        "shape": "ring",
+        "subunits": 4
+      },
+      "expects": "^4 alpha"
+    },
+    "Ca-activated K channel": {
+      "district": "potassium",
+      "site": "plasma",
+      "cell_view": "cap.channels",
+      "plain": "A potassium channel opened by calcium inside the cell.",
+      "neutral": {
+        "shape": "pore"
+      }
+    },
+    "HCN channel": {
+      "district": "hcn",
+      "site": "plasma",
+      "cell_view": "cap.channels",
+      "plain": "A channel that opens when the membrane voltage falls, and passes both potassium and sodium. Four subunits surround one pore.",
+      "assembly": {
+        "shape": "ring",
+        "subunits": 4
+      },
+      "expects": "^4 alpha"
+    },
+    "background leak": {
+      "district": "leaks",
+      "site": "plasma",
+      "cell_view": "cap.channels",
+      "plain": "An always-open path for ions through the membrane: a background conductance.",
+      "neutral": {
+        "shape": "pore"
+      }
+    },
+    "background permeability": {
+      "district": "leaks",
+      "site": "plasma",
+      "plain": "A property of the membrane as a whole: how easily ions or water cross it. No protein population stands behind it.",
+      "neutral": {
+        "shape": "patch"
+      }
+    },
+    "voltage-gated Ca channel (HVA)": {
+      "district": "calcium",
+      "site": "plasma",
+      "cell_view": "cap.channels",
+      "plain": "A calcium channel that opens at high voltage. One long chain folds into four repeats around the pore, with a beta subunit inside the cell and an alpha2-delta subunit outside.",
+      "assembly": {
+        "shape": "chain",
+        "repeats": 4,
+        "aux": [
+          {
+            "role": "beta",
+            "side": "in",
+            "count": 1,
+            "when": "1 beta",
+            "firm_if": "1 beta"
+          },
+          {
+            "role": "alpha2delta",
+            "side": "out",
+            "count": 1,
+            "when": "1 alpha2delta",
+            "firm_if": "1 alpha2delta"
+          }
+        ]
+      },
+      "expects": "^1 alpha1 \\+ 1 beta \\+ 1 alpha2delta"
+    },
+    "voltage-gated Ca channel (LVA)": {
+      "district": "calcium",
+      "site": "plasma",
+      "cell_view": "cap.channels",
+      "plain": "A calcium channel that opens at low voltage (T-type). One long chain forms the pore on its own.",
+      "assembly": {
+        "shape": "chain",
+        "repeats": 4
+      },
+      "expects": "^1 alpha1(?! \\+)"
+    },
+    "gap-junction channel": {
+      "district": "junctions",
+      "site": "junction",
+      "cell_view": "cap.junctions",
+      "plain": "A channel that joins two neighbouring cells, so ions and small molecules pass straight from one to the other. Each cell contributes a ring of six connexins.",
+      "plain_generic": "A channel that joins two neighbouring cells, so ions and small molecules pass straight from one to the other.",
+      "assembly": {
+        "shape": "junction",
+        "subunits": 6,
+        "hetero_if": "6 Cx\\d+ \\+ 6 Cx\\d+"
+      },
+      "expects": "2 x 6|6 Cx\\d+ \\+ 6 Cx\\d+",
+      "neutral": {
+        "shape": "junction"
+      }
+    },
+    "P-type ATPase": {
+      "district": "pumps",
+      "site": "plasma",
+      "cell_view": "cap.pumps",
+      "plain": "A pump: it spends ATP to move ions against their gradient.",
+      "neutral": {
+        "shape": "pump"
+      }
+    },
+    "secondary transporter": {
+      "district": "transporters",
+      "site": "plasma",
+      "plain": "An exchanger: it moves one ion uphill by letting another run downhill.",
+      "neutral": {
+        "shape": "carrier"
+      }
+    },
+    "secondary transporter (SLC12)": {
+      "district": "transporters",
+      "site": "plasma",
+      "plain": "A cotransporter: it carries chloride together with potassium, or with sodium and potassium, and moves no net charge.",
+      "neutral": {
+        "shape": "carrier"
+      }
+    },
+    "configured transporter": {
+      "district": "transporters",
+      "site": "plasma",
+      "plain": "A transporter that each model configuration declares: its stoichiometry and identity come from the configuration.",
+      "neutral": {
+        "shape": "carrier"
+      }
+    },
+    "intracellular release channel": {
+      "district": "er",
+      "site": "er",
+      "cell_view": "cap.calcium",
+      "plain": "A channel in the ER membrane that releases stored calcium into the cell.",
+      "neutral": {
+        "shape": "pore",
+        "wide": true
+      }
+    },
+    "organelle permeability": {
+      "district": "mitochondria",
+      "site": "mito",
+      "cell_view": "cap.mitochondria",
+      "plain": "The passive permeability of the mitochondrial inner membrane, lumped into one term.",
+      "neutral": {
+        "shape": "patch"
+      }
+    },
+    "protein assembly": {
+      "district": "assembly",
+      "site": "cytoplasm",
+      "cell_view": "cap.assembly",
+      "plain": "An engineered protein cage: 60 subunits in 20 three-part units, which assemble into a closed shell.",
+      "assembly": {
+        "shape": "cage",
+        "trimers": 20
+      },
+      "expects": "20 trimers \\(60 subunits\\)"
+    }
+  },
+  "units": {
+    "U01": {
+      "name": "NaV1.2 channel",
+      "short": "NaV1.2"
+    },
+    "U02": {
+      "name": "NaV1.3 channel",
+      "short": "NaV1.3"
+    },
+    "U03": {
+      "name": "NaV1.6 channel",
+      "short": "NaV1.6"
+    },
+    "U04": {
+      "name": "Native neuronal Na current (isoform not named)",
+      "short": "Native Na"
+    },
+    "U05": {
+      "name": "Kv1.1 channel",
+      "short": "Kv1.1"
+    },
+    "U06": {
+      "name": "Kv1.2 channel",
+      "short": "Kv1.2"
+    },
+    "U07": {
+      "name": "Kv1.3 channel",
+      "short": "Kv1.3"
+    },
+    "U08": {
+      "name": "Kv1.4 channel",
+      "short": "Kv1.4"
+    },
+    "U09": {
+      "name": "Kv1.5 channel",
+      "short": "Kv1.5"
+    },
+    "U10": {
+      "name": "Kv1.6 channel",
+      "short": "Kv1.6"
+    },
+    "U11": {
+      "name": "Kv2.1 channel",
+      "short": "Kv2.1"
+    },
+    "U12": {
+      "name": "Kv2.2 channel",
+      "short": "Kv2.2"
+    },
+    "U13": {
+      "name": "Kv3.1 channel",
+      "short": "Kv3.1"
+    },
+    "U14": {
+      "name": "Kv3.2 channel",
+      "short": "Kv3.2"
+    },
+    "U15": {
+      "name": "Kv3.3 channel",
+      "short": "Kv3.3"
+    },
+    "U16": {
+      "name": "Kv3.4 channel",
+      "short": "Kv3.4"
+    },
+    "U17": {
+      "name": "Native fast-inactivating (A-type) K current",
+      "short": "A-type K",
+      "aux": false
+    },
+    "U18": {
+      "name": "Generic delayed-rectifier K current (Morris-Lecar default)",
+      "short": "Delayed K"
+    },
+    "U19": {
+      "name": "Kir2.1 channel",
+      "short": "Kir2.1"
+    },
+    "U20": {
+      "name": "HCN1 channel",
+      "short": "HCN1"
+    },
+    "U21": {
+      "name": "HCN2 channel",
+      "short": "HCN2"
+    },
+    "U22": {
+      "name": "HCN4 channel",
+      "short": "HCN4"
+    },
+    "U23": {
+      "name": "HCN-type always-open leak",
+      "short": "HCN-type leak"
+    },
+    "U24": {
+      "name": "CaV1.2 channel (label)",
+      "short": "CaV1.2"
+    },
+    "U25": {
+      "name": "CaV1.3 channel",
+      "short": "CaV1.3"
+    },
+    "U26": {
+      "name": "Native L-type Ca current (modified)",
+      "short": "Native L-type"
+    },
+    "U27": {
+      "name": "Native HVA Ca current (generic)",
+      "short": "Native HVA"
+    },
+    "U28": {
+      "name": "CaV2.1 (P/Q) channel",
+      "short": "CaV2.1"
+    },
+    "U29": {
+      "name": "CaV2.2 (N) channel",
+      "short": "CaV2.2"
+    },
+    "U30": {
+      "name": "CaV2.3 (R) channel",
+      "short": "CaV2.3"
+    },
+    "U31": {
+      "name": "CaV3.1 (T) channel",
+      "short": "CaV3.1"
+    },
+    "U32": {
+      "name": "CaV3.3 (T) channel",
+      "short": "CaV3.3"
+    },
+    "U33": {
+      "name": "Ca- and voltage-activated K channel (BK/SK unresolved)",
+      "short": "KCa"
+    },
+    "U34": {
+      "name": "Always-open single-ion and cation leak populations",
+      "short": "Ion leaks"
+    },
+    "U35": {
+      "name": "Passive constant-field membrane permeability",
+      "short": "Constant field",
+      "cell_view": "cap.membrane"
+    },
+    "U36": {
+      "name": "Gap-junction channel (generic)",
+      "short": "Junction channel"
+    },
+    "U37": {
+      "name": "Cx45/Cx45 homotypic gap-junction channel",
+      "short": "Cx45/Cx45"
+    },
+    "U38": {
+      "name": "Cx40/Cx37 heterotypic gap-junction channel",
+      "short": "Cx40/Cx37"
+    },
+    "U39": {
+      "name": "Na+/K+-ATPase",
+      "short": "Na/K pump"
+    },
+    "U40": {
+      "name": "Plasma-membrane Ca-ATPase (PMCA)",
+      "short": "PMCA"
+    },
+    "U41": {
+      "name": "ER Ca pump (SERCA family)",
+      "short": "ER Ca pump",
+      "district": "er",
+      "site": "er",
+      "cell_view": "cap.calcium",
+      "flip": true
+    },
+    "U42": {
+      "name": "Na+/Ca2+ exchanger (NCX)",
+      "short": "NCX"
+    },
+    "U43": {
+      "name": "ER Ca release channel (IP3R-like)",
+      "short": "ER Ca release"
+    },
+    "U44": {
+      "name": "K+-Cl- cotransporter (KCC)",
+      "short": "KCC",
+      "cell_view": "cap.water"
+    },
+    "U45": {
+      "name": "Na+-K+-2Cl- cotransporter (NKCC)",
+      "short": "NKCC"
+    },
+    "U46": {
+      "name": "Declared (configured) transporter",
+      "short": "Configured"
+    },
+    "U47": {
+      "name": "Mitochondrial inner-membrane passive permeability",
+      "short": "Passive permeability"
+    },
+    "U48": {
+      "name": "mi3 engineered protein cage",
+      "short": "mi3 cage"
+    },
+    "U49": {
+      "name": "Membrane water permeability (lumped hydraulic conductance)",
+      "short": "Water",
+      "cell_view": "cap.water"
+    }
+  }
+}

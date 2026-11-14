@@ -1,6 +1,7 @@
 # Cells visualizer
 
-A 3D viewer for Cells: the architecture today, experiment replays next.
+A 3D viewer for Cells: the architecture and the proteins it models today, experiment
+replays next.
 
 It is tooling, asked for by the user on 14 November 2026. It reads a checkout and saved
 run outputs, and it is never imported by the engine (D006, D154). It settles the open
@@ -11,12 +12,16 @@ has a plain-language line first and the technical detail after it.
 
 ## What it shows
 
-One data file, the scene, drawn through two lenses:
+One data file, the scene, drawn through three lenses, in this order:
 
 | Lens | What you see |
 | --- | --- |
 | **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and outlines of the organ and whole organism it would belong to. Zoom is continuous from molecules to organism, with a scale bar |
+| **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
+
+Selecting a part that belongs to another lens takes you there: a protein unit's connection
+opens the engine part that holds its law, and that part lists the units it holds laws for.
 
 Three things are encoded, and kept apart:
 
@@ -40,6 +45,39 @@ Rules the map keeps, so it can be shown outside the team:
 - The cell picture carries the README's caveat: capabilities vary by model, and
   whole-cell integration is ongoing. The legend's "Runs together in" filter shows which
   parts run together in one model today.
+
+## The protein atlas
+
+The atlas shows Cells' own law inventory (stage 2 of `docs/PROTEIN_CATALOGUE_PLAN.md`): 49
+functional units, the 80 engine laws that act on them, and their 93 candidate gene
+products. It is not content from the Human Protein Atlas or any other public atlas. It
+links out to UniProt, the RCSB PDB, the AlphaFold DB and the Human Protein Atlas.
+
+It keeps the inventory's own vocabulary, apart from the engine's statuses:
+
+| Mapping | Means | Drawn as |
+| --- | --- | --- |
+| **Assigned in source** | The law, its documents or its cited source names the protein | A solid blue assembly, from the stated subunit counts |
+| **Candidate** | The law models a named native current; the gene mapping is the inventory's inference | The candidate's assembly, clear |
+| **Generic** | The law is generic, phenomenological or manufactured | A plain grey stand-in with no subunits |
+
+- **A generic law stays generic.** The sodium-potassium pump and the generic junction
+  channel are grey stand-ins, and their products are listed as candidates only. A test
+  checks that no generic unit is drawn with subunits.
+- **"Assigned" records a label.** Each law also carries the kind of evidence behind it
+  (expressed isoform, native current, neuron model, and so on). The legend's second block
+  filters by it, and the panel states it per law.
+- **Every shape is schematic.** It is drawn from counts the inventory states, such as four
+  subunits or two rings of six, and the extractor warns if a drawn shape disagrees with the
+  stated stoichiometry. Nothing is a measured structure, and nothing is to scale.
+- **The inventory has its own date.** It was made on 12 November 2026 at engine `fec863f`.
+  The extractor checks every law record against the checkout it reads, and applies one
+  recorded rename (`emt_mirna_pair@1`). The view states both revisions.
+
+The data is a slim snapshot of the inventory, made by `tools/import_protein_inventory.py`
+from the evidence folder. It is a snapshot, not a catalogue: the catalogue's design (stage 3
+of the plan) has not begun and belongs to the engine. See `data/proteins/README.md` for the
+sources and licences.
 
 ## Sizes in the cell view
 
@@ -69,9 +107,10 @@ the E07 sheet are about 11 µm across by their declared volume (0.75 pL).
 cd visualizer
 npm install                 # three.js 0.170.0 and esbuild, both pinned
 npm run extract             # read the main checkout, write data/architecture/architecture.scene.json
+npm run import:proteins -- --inventory PATH/law_inventory_v2.json   # only when the inventory changes
 npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load three.js locally)
 npm test                    # scene, sources, page and allowed hosts; no browser needed
-npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom between scales)
+npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas and its links)
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run export              # out/cells-architecture.html, the page as an artifact wants it
 ```
@@ -87,7 +126,8 @@ would be blocked when published is reported in the terminal while developing.
 
 ```
 checkout (src/, docs/) ──tools/extract_architecture.py──┐
-data/architecture/overlay.json (curated, sourced) ──────┼─▶ scene JSON ─▶ <cells-viewer> ─┬─▶ npm run serve
+data/architecture/overlay.json (curated, sourced) ──────┤
+law inventory ──import──▶ data/proteins/ (snapshot) ────┼─▶ scene JSON ─▶ <cells-viewer> ─┬─▶ npm run serve
 run outputs ──adapters (next)── run view ───────────────┘                                 └─▶ npm run export ─▶ artifact
 ```
 
@@ -96,14 +136,19 @@ run outputs ──adapters (next)── run view ──────────�
 | `tools/extract_architecture.py`, `tools/lib/static_eval.py` | The extractor. Standard library only; parses source with `ast` and never imports `cells` |
 | `data/architecture/overlay.json` | The curated layer: layers, statuses with sources and dates, plain lines, planned parts, the capability map |
 | `data/architecture/architecture.scene.json` | The generated scene (committed, so changes show in diffs) |
+| `tools/import_protein_inventory.py` | Makes the slim snapshot of the law inventory. It leaves out machine paths, Xenbase identifiers and every field the view does not show |
+| `tools/lib/protein_atlas.py` | Turns the snapshot into the atlas's parts, and checks every law record against the checkout |
+| `data/proteins/` | `inventory.snapshot.json` (generated, do not edit), `overlay.json` (districts, plain lines and the shape drawn for each kind of unit) and the sources notice |
 | `schema/RUN_VIEW.md` | Draft of what a run saves so it can be replayed (the consumer side of D154) |
 | `src/scene/model.js` | The scene format's reader and its structural checks |
 | `src/core/` | Stage (renderer, camera, picking), camera control, labels, theme, status materials |
-| `src/lenses/` | `stack.js` (engine), `cell.js` and `cell_parts.js` (cell and scales) |
+| `src/lenses/` | `stack.js` (engine), `cell.js` and `cell_parts.js` (cell and scales), `proteins.js` and `protein_parts.js` (protein atlas) |
 | `src/ui/` | `<cells-viewer>` and its parts: panel, legend, list |
 | `src/page.html`, `src/page.css` | The page and its colour tokens, light and dark |
 | `tools/lib/build_page.mjs`, `serve.mjs`, `export_page.mjs`, `screenshot.mjs` | One page builder for every delivery mode |
 | `tests/`, `tools/check_input.mjs` | Browser-free checks, and a real-input check driven through Chrome's DevTools protocol |
+
+Each group of the scene belongs to one lens, so the scene says where a part is shown.
 
 **What comes from the code** and so cannot drift: the files in each part and their sizes,
 which part uses which (imports), the registered operators with their contract declarations
@@ -153,6 +198,14 @@ The user merges the branch when they choose.
    from the saved junction topology. See `schema/RUN_VIEW.md`.
 2. **A replay catalogue**: every run of an experiment, by arm, seed and verdict.
 
+For the protein atlas, each of these needs the user's approval first, because the plan
+counts fetching from the public atlases as data tooling (stage 5):
+
+- **Real structures:** draw the cited PDB or AlphaFold models in place of the schematic
+  shapes.
+- **Where each protein is found:** tissue and subcellular location from the Human Protein
+  Atlas, kept apart from what the engine models.
+
 Ideas kept for after the basics (the user, 14 November 2026):
 
 - **Space–time block:** stack a sheet's records vertically, so a pattern that persists
@@ -171,6 +224,13 @@ Ideas kept for after the basics (the user, 14 November 2026):
 ## Known limits
 
 - The molecular scale is one membrane patch with one channel and one pump.
+- The protein atlas is as current as its inventory (12 November 2026). A law added to the
+  engine since then is not in it; the extractor only checks that the recorded laws still
+  exist. Its shapes are schematic, and where an auxiliary subunit sits is textbook
+  knowledge, not a field of the inventory.
+- Only one hue marks a named protein in the atlas. Six family colours could not be told
+  apart under colour-vision deficiency (the palette check failed), so families are told by
+  their labelled districts.
 - "To scale" sizes are generic textbook values, as the table above says. No capability's
   dots are counted from a model's actual abundances yet; that would be a good use of the
   run view once replays exist.

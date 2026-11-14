@@ -8,6 +8,7 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "extract": "python3 tools/extract_architecture.py",
+    "import:proteins": "python3 tools/import_protein_inventory.py",
     "check": "npm run extract -- --strict && npm test",
     "serve": "node tools/serve.mjs",
     "export": "node tools/export_page.mjs",

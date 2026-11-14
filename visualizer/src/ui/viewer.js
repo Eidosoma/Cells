@@ -16,10 +16,13 @@ import { Stage } from "../core/stage.js";
 import { LabelLayer } from "../core/labels.js";
 import { StackLens } from "../lenses/stack.js";
 import { CellLens } from "../lenses/cell.js";
+import { ProteinLens } from "../lenses/proteins.js";
 
+// The views, in the order of the switch. "short" is the name on a narrow screen.
 const LENSES = [
-  { id: "cell", label: "Cell and scales", make: (stage, model, labels) => new CellLens(stage, model, labels) },
-  { id: "engine", label: "Engine", make: (stage, model, labels) => new StackLens(stage, model, labels) },
+  { id: "cell", label: "Cell and scales", short: "Cell", make: (stage, model, labels) => new CellLens(stage, model, labels) },
+  { id: "proteins", label: "Protein atlas", short: "Proteins", needs: "proteins", make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
+  { id: "engine", label: "Engine", short: "Engine", make: (stage, model, labels) => new StackLens(stage, model, labels) },
 ];
 
 class CellsViewer extends HTMLElement {
@@ -117,9 +120,18 @@ class CellsViewer extends HTMLElement {
       return;
     }
     const meta = this.model.meta;
-    this.stamp.textContent = [meta.as_of ? `As of ${formatDate(meta.as_of)}` : "", meta.revision ? `main ${meta.revision}` : ""].filter(Boolean).join(" · ");
-    for (const lens of LENSES) {
-      this.switchBox.append(h("button", { type: "button", dataset: { lens: lens.id }, "aria-pressed": "false", onclick: () => this.setLens(lens.id, true) }, lens.label));
+    this.mapStamp = [meta.as_of ? `As of ${formatDate(meta.as_of)}` : "", meta.revision ? `main ${meta.revision}` : ""].filter(Boolean).join(" · ");
+    // A view is offered only if the scene holds what it draws.
+    this.views = LENSES.filter((lens) => !lens.needs || this.model.raw[lens.needs]);
+    for (const lens of this.views) {
+      this.switchBox.append(
+        h(
+          "button",
+          { type: "button", dataset: { lens: lens.id }, "aria-pressed": "false", "aria-label": lens.label, onclick: () => this.setLens(lens.id, true) },
+          h("span", { class: "long" }, lens.label),
+          h("span", { class: "short" }, lens.short)
+        )
+      );
     }
     try {
       this.stage = new Stage({ canvas: this.canvas, host: this });
@@ -148,24 +160,28 @@ class CellsViewer extends HTMLElement {
     }
     const query = new URLSearchParams(location.search);
     // "still" turns transitions off, so a screenshot shows the settled state.
-    if (query.get("still")) this.frame.classList.add("is-still");
-    const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || LENSES[0].id;
-    this.setLens(LENSES.some((lens) => lens.id === wanted) ? wanted : LENSES[0].id);
+    if (query.get("still")) {
+      this.frame.classList.add("is-still");
+      if (this.stage) this.stage.rig.instant = true;
+    }
+    const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || this.views[0].id;
+    this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
     if (query.get("colour")) this.current?.setColourBy?.(query.get("colour"));
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
+    if (query.get("isolate")) this.setIsolate(query.get("isolate"));
+    if (query.get("together")) this.current?.setTogether?.(query.get("together"));
+    if (query.get("select")) this.select(query.get("select"), { fly: true });
+    // A stated camera angle or distance has the last word, also over the flight to a selected part.
     if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
       const view = {};
       for (const name of ["azimuth", "polar", "distance"]) if (query.get(name)) view[name] = Number(query.get(name));
       this.stage.rig.setView(view);
     }
-    if (query.get("isolate")) this.setIsolate(query.get("isolate"));
-    if (query.get("together")) this.current?.setTogether?.(query.get("together"));
-    if (query.get("select")) this.select(query.get("select"), { fly: true });
     if (query.get("index")) this.toggleIndex(true);
     window.addEventListener("hashchange", () => {
       const name = location.hash.slice(1);
-      if (LENSES.some((lens) => lens.id === name) && name !== this.state.lens) this.setLens(name);
+      if (this.views.some((lens) => lens.id === name) && name !== this.state.lens) this.setLens(name);
     });
     this.dispatchEvent(new CustomEvent("cells-ready", { bubbles: true, composed: true }));
   }
@@ -179,7 +195,7 @@ class CellsViewer extends HTMLElement {
   // ------------------------------------------------------------ lenses
 
   setLens(id, fromUser = false) {
-    const spec = LENSES.find((lens) => lens.id === id);
+    const spec = this.views?.find((lens) => lens.id === id);
     if (!spec || !this.model) return;
     this.current?.deactivate();
     this.state.lens = id;
@@ -212,7 +228,7 @@ class CellsViewer extends HTMLElement {
   /** The parts the current lens shows, with or without a stage. */
   shownEntities() {
     if (this.current) return this.current.entities();
-    return this.state.lens === "cell" ? this.model.entities.filter((entity) => entity.group === "biology") : this.model.entities.filter((entity) => entity.group !== "biology");
+    return this.model.inLens(this.state.lens);
   }
 
   shows(id) {
@@ -223,7 +239,7 @@ class CellsViewer extends HTMLElement {
     if (this.current) return this.current.sections();
     const groups = new Map();
     for (const entity of this.shownEntities()) {
-      const key = entity.group === "biology" ? entity.scale || entity.kind : entity.group;
+      const key = entity.eyebrow || (entity.group === "biology" ? entity.scale || entity.kind : entity.group);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(entity);
     }
@@ -235,10 +251,11 @@ class CellsViewer extends HTMLElement {
   select(id, { fly = false } = {}) {
     if (id && !this.model.get(id)) return;
     if (id && !this.shows(id)) {
-      // The part lives in the other lens: go there.
-      const other = LENSES.find((lens) => lens.id !== this.state.lens);
+      // The part lives in another view: go there.
+      const home = this.model.lensOf(this.model.get(id));
+      if (home === this.state.lens || !this.views.some((lens) => lens.id === home)) return;
       this.state.selected = id;
-      this.setLens(other.id, true);
+      this.setLens(home, true);
       if (!this.shows(id)) this.state.selected = null;
     }
     this.state.selected = id && this.shows(id) ? id : null;
@@ -273,7 +290,11 @@ class CellsViewer extends HTMLElement {
     this.caveat.hidden = !chrome.caveat;
     this.hint.hidden = Boolean(chrome.caveat) || !this.stage;
     this.caveat.textContent = chrome.caveat || "";
-    this.viewCard.hidden = !chrome.view;
+    // A view whose data has its own date says so in place of the map's.
+    this.stamp.textContent = chrome.stamp || this.mapStamp;
+    this.viewCard.hidden = !chrome.view && !chrome.card;
+    this.viewCard.classList.toggle("view-card", Boolean(chrome.card));
+    if (chrome.card) this.viewCard.replaceChildren(...this.card(chrome.card));
     if (chrome.view) {
       this.viewCard.replaceChildren(
         this.segmented("Colour", [["biology", "Biology"], ["status", "Status"]], chrome.view.colour, (value) => this.current.setColourBy(value)),
@@ -290,6 +311,34 @@ class CellsViewer extends HTMLElement {
         )
       );
     }
+  }
+
+  /** A view's own summary: headline numbers, what the data is, and where it came from. */
+  card({ heading, stats, text, check, sources, notCopied }) {
+    return [
+      h("p", { class: "card-title" }, heading),
+      h("div", { class: "stats" }, stats.map(([value, label]) => h("div", { class: "stat" }, h("b", {}, String(value)), h("span", {}, label)))),
+      h("p", { class: "card-text" }, text),
+      h("p", { class: "card-text" }, check),
+      h(
+        "details",
+        {},
+        h("summary", {}, "Sources and licences"),
+        h(
+          "ul",
+          {},
+          sources.map((source) =>
+            h(
+              "li",
+              {},
+              source.url ? h("a", { href: source.url, target: "_blank", rel: "noopener" }, source.name) : h("b", {}, source.name),
+              `: ${source.holds}. ${[source.release ? `Release ${source.release}` : "", source.accessed ? `read ${formatDate(source.accessed)}` : "", source.licence].filter(Boolean).join(", ")}.${source.cite ? ` Cite: ${source.cite}.` : ""}`
+            )
+          ),
+          h("li", {}, notCopied)
+        )
+      ),
+    ];
   }
 
   segmented(label, options, active, onPick) {
@@ -342,10 +391,29 @@ class CellsViewer extends HTMLElement {
   }
 
   renderLegend() {
+    const chrome = this.current?.chrome?.() || {};
+    const base = { isolate: this.state.isolate, open: this.state.legendOpen };
+    const atlas = this.model.raw.proteins;
+    if (chrome.legend || (this.state.lens === "proteins" && atlas)) {
+      // The protein atlas: how sure each mapping is, in the inventory's own words.
+      const legend = chrome.legend || { title: "Mapping", items: atlas.mappings.map((item) => ({ ...item, swatch: `map-${item.id}` })) };
+      this.legend.render({ ...base, ...legend, filter: chrome.filter });
+      return;
+    }
     const counts = new Map();
     for (const entity of this.shownEntities()) if (entity.status) counts.set(entity.status, (counts.get(entity.status) || 0) + 1);
-    const chrome = this.current?.chrome?.() || {};
-    this.legend.render({ model: this.model, counts, isolate: this.state.isolate, lens: this.state.lens, open: this.state.legendOpen, together: chrome.together, togetherActive: chrome.togetherActive, view: chrome.view });
+    const items = this.model.raw.statuses.map((status) => ({ id: status.id, label: status.label, description: status.description, count: counts.get(status.id) || 0, swatch: status.id }));
+    // Which parts run together in one model today: the answer to "is this one whole cell yet?"
+    const filter = chrome.together?.length ? { title: "Runs together in", items: chrome.together, active: chrome.togetherActive } : null;
+    let note = null;
+    if (this.state.lens === "cell") {
+      const text =
+        chrome.view?.colour === "status"
+          ? "Colour and form show status. Clear glass shapes and grey lines are scenery."
+          : "Colour shows the kind of part. The dot beside each name is its status; planned parts are grey sketches. Clear glass shapes are scenery.";
+      note = { swatch: "illustration", text };
+    }
+    this.legend.render({ ...base, title: "Status", items, filter, note });
   }
 
   renderIndex() {

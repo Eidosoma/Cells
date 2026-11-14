@@ -13,6 +13,10 @@ What comes from the overlay (data/architecture/overlay.json), each with a source
   * statuses, plain-language lines and planned parts;
   * the capability map drawn on the cell, and the experiments and references.
 
+What comes from the protein inventory's snapshot (data/proteins/, see
+tools/import_protein_inventory.py): the functional units of the protein atlas, each linked
+to the engine part that holds its law. Every law record is checked against the checkout.
+
 Standard library only. It parses source with ``ast`` and never imports ``cells``.
 
     python3 tools/extract_architecture.py            # reads the main checkout
@@ -34,6 +38,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
+from lib.protein_atlas import LENS_GROUPS, RELATION_KINDS, Atlas  # noqa: E402
 from lib.static_eval import Evaluator, Package, Unresolved, plain  # noqa: E402
 
 SCENE_FORMAT = "cells.visualizer.scene@1"
@@ -137,9 +142,11 @@ def join_names(names, limit=6):
 
 
 class Build:
-    def __init__(self, repo, overlay):
+    def __init__(self, repo, overlay, proteins=None):
         self.repo = repo
         self.overlay = overlay
+        self.protein_data = proteins  # (snapshot, overlay) of the protein atlas, or None
+        self.proteins = None
         self.warnings = []
         self.entities = {}
         self.relations = {}
@@ -531,6 +538,8 @@ class Build:
         self.capabilities()
         self.operator_relations()
         self.uses()
+        if self.protein_data:
+            self.proteins = Atlas(self, *self.protein_data).run()
         for relation in self.overlay["relations"]:
             self.pending.append((relation["from"], relation["to"], relation["kind"], relation.get("label")))
         kinds = {kind["id"] for kind in self.overlay["relation_kinds"]}
@@ -565,16 +574,24 @@ def main():
     parser.add_argument("--repo", help="the Cells checkout to read (default: the main checkout)")
     parser.add_argument("--overlay", default=str(HERE.parent / "data" / "architecture" / "overlay.json"))
     parser.add_argument("--out", default=str(HERE.parent / "data" / "architecture" / "architecture.scene.json"))
+    parser.add_argument("--proteins", default=str(HERE.parent / "data" / "proteins"), help="folder with the protein inventory's snapshot and overlay")
     parser.add_argument("--strict", action="store_true", help="exit with an error if anything is warned about")
     arguments = parser.parse_args()
 
     repo = find_repo(arguments.repo)
     overlay = json.loads(Path(arguments.overlay).read_text(encoding="utf-8"))
-    build = Build(repo, overlay)
+    folder = Path(arguments.proteins)
+    proteins = None
+    if (folder / "inventory.snapshot.json").is_file():
+        proteins = tuple(json.loads((folder / name).read_text(encoding="utf-8")) for name in ("inventory.snapshot.json", "overlay.json"))
+    build = Build(repo, overlay, proteins)
     entities, relations, coverage = build.run()
 
     revision = git(repo, "rev-parse", "--short", "HEAD").strip()
-    dirty = bool(git(repo, "status", "--porcelain", "--", "src", "docs", "PROGRESS.md").strip())
+    if build.proteins:
+        build.proteins["stamp"]["checked_at"] = revision
+    # Only tracked files are read, so an untracked file does not make the reading dirty.
+    dirty = bool(git(repo, "status", "--porcelain", "--untracked-files=no", "--", "src", "docs", "PROGRESS.md").strip())
     scene = {
         "format": SCENE_FORMAT,
         "kind": "architecture",
@@ -600,8 +617,9 @@ def main():
         "statuses": overlay["statuses"],
         "representations": overlay["representations"],
         "model_groups": overlay["model_groups"],
-        "relation_kinds": overlay["relation_kinds"],
-        "groups": overlay["layers"],
+        "relation_kinds": overlay["relation_kinds"] + (RELATION_KINDS if build.proteins else []),
+        "groups": [{**layer, "lens": "engine"} for layer in overlay["layers"]] + LENS_GROUPS,
+        "proteins": build.proteins,
         "entities": entities,
         "relations": relations,
         "timeline": None,
@@ -617,6 +635,11 @@ def main():
           f"{counts['engine_files_placed']} of {counts['engine_files']} engine files placed")
     print("by kind:", counts["by_kind"])
     print("by status:", counts["by_status"])
+    if build.proteins:
+        stamp = build.proteins["stamp"]
+        print(f"protein inventory of {stamp['created']} (engine read at {stamp['read_at']}): {stamp['records']} law records, found {stamp['found']}")
+        if stamp["renamed"]:
+            print("  renamed since:", ", ".join(f"{item['from']} -> {item['to']}" for item in stamp["renamed"]))
     for warning in build.warnings:
         print("warning:", warning)
     print(f"wrote {out.name} ({out.stat().st_size / 1024:.0f} KB)")

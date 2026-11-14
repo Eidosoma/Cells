@@ -20,6 +20,8 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .label-part { font-size: 11.5px; font-weight: 500; line-height: 1.2; padding: 2px 6px; border-radius: 5px; color: var(--fg); background: color-mix(in srgb, var(--bg) 80%, transparent); }
 .label-part::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 8px; background: var(--muted); opacity: .7; }
 .label-part.is-callout::after { display: none; }
+.label-unit { font-size: 10.5px; padding: 1px 5px; }
+.label-unit::after { height: 6px; }
 .label-part .swatch { width: 8px; height: 8px; margin-right: 6px; vertical-align: 0; }
 .label-part .swatch-failed::before, .label-part .swatch-failed::after { width: 7px; }
 .leaders { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
@@ -33,6 +35,7 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .label-part.is-dim { opacity: .38; }
 .label-part.is-focus { background: var(--fg); color: var(--bg); font-weight: 600; opacity: 1; }
 .label-layer { font-family: var(--font-display); font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); pointer-events: none; }
+.label-district { font-size: 11px; color: var(--fg); padding: 1px 7px; border-radius: 5px; background: color-mix(in srgb, var(--bg) 58%, transparent); }
 .label-scale { font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--fg); padding: 3px 9px; border-radius: 999px; border: 1px dashed var(--ghost); background: color-mix(in srgb, var(--bg) 82%, transparent); }
 .label-note { font-size: 11px; color: var(--muted); font-style: italic; pointer-events: none; }
 
@@ -45,6 +48,7 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .switch { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); }
 .switch button { padding: 6px 14px; border-radius: 999px; font-weight: 500; color: var(--muted); }
 .switch button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.switch .short { display: none; }
 .bar-end { margin-left: auto; display: flex; align-items: center; gap: 12px; min-width: 0; }
 .stamp { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pill-button { padding: 6px 13px; border-radius: 999px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); font-weight: 500; }
@@ -64,7 +68,8 @@ cells-legend { position: absolute; left: max(16px, env(safe-area-inset-left, 0px
 .legend-item.is-empty { opacity: .45; }
 .legend-count { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .legend-title { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 8px 8px 3px; border-top: 1px solid var(--line); margin-top: 4px; }
-.legend-group { grid-template-columns: 14px 1fr; }
+.legend-group { grid-template-columns: 14px 1fr auto; }
+.legend-unit { float: right; font-weight: 500; letter-spacing: 0; text-transform: none; }
 .legend-radio { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--muted); justify-self: center; }
 .legend-group.is-on .legend-radio { background: var(--fg); border-color: var(--fg); }
 .legend-note { display: grid; grid-template-columns: 14px 1fr; gap: 9px; align-items: start; padding: 6px 8px 4px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 4px; }
@@ -80,6 +85,10 @@ cells-legend { position: absolute; left: max(16px, env(safe-area-inset-left, 0px
 .swatch-planned { border: 1.5px dashed var(--ghost); }
 .swatch-illustration { border: 1.5px solid var(--ghost); border-radius: 50%; margin-top: 3px; }
 .swatch-failed { background: var(--st-failed); }
+/* The protein atlas's mappings: a named protein, a candidate, a generic law. */
+.swatch-map-assigned { background: var(--bio-protein); }
+.swatch-map-candidate { background: color-mix(in srgb, var(--bio-protein) 26%, transparent); box-shadow: inset 0 0 0 1.5px var(--bio-protein); }
+.swatch-map-generic { background: var(--atlas-generic); border-radius: 50%; }
 .swatch-failed::before, .swatch-failed::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 1.5px; background: var(--bg-raised); transform: translate(-50%, -50%) rotate(45deg); }
 .swatch-failed::after { transform: translate(-50%, -50%) rotate(-45deg); }
 
@@ -109,6 +118,15 @@ cells-panel { position: absolute; top: 64px; right: max(16px, env(safe-area-inse
 .link-button:hover { text-decoration-color: currentColor; }
 details summary { cursor: pointer; font-size: 12.5px; color: var(--muted); padding: 3px 0; }
 .sources { display: grid; gap: 3px; font-size: 12.5px; }
+.items ul { gap: 11px; }
+.item-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 8px; }
+.item-label { font-weight: 600; overflow-wrap: anywhere; }
+.item-label.code { font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+.tag { font-size: 11px; line-height: 1.5; padding: 0 7px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); white-space: nowrap; }
+.item-detail, .item-line, .item-note { font-size: 12.5px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+.item-note { padding-left: 8px; border-left: 2px solid var(--line); }
+.item-links { font-size: 12.5px; margin-top: 3px; }
+.item-links a, .view details a { color: var(--accent); }
 .sources a { color: var(--accent); overflow-wrap: anywhere; }
 
 /* ---------------------------------------------------------------- index */
@@ -143,6 +161,14 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .seg button { padding: 4px 6px; border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--muted); }
 .seg button[aria-pressed="true"] { background: var(--bg-raised); color: var(--fg); box-shadow: 0 0 0 1px var(--line); }
 .view-note { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.view-card { width: 268px; gap: 8px; padding: 11px 12px 10px; }
+.card-title { font-family: var(--font-display); font-weight: 600; font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat b { display: block; font-family: var(--font-display); font-size: 21px; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat span { display: block; font-size: 11px; line-height: 1.25; color: var(--muted); }
+.card-text { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.view details { font-size: 11.5px; line-height: 1.4; }
+.view details ul { display: grid; gap: 5px; margin-top: 5px; color: var(--muted); max-height: 190px; overflow-y: auto; }
 .scalebar { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; justify-items: end; gap: 4px; pointer-events: none; }
 .scalebar-line { height: 5px; border: 1.5px solid var(--fg); border-top: 0; }
 .scalebar-text { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--fg); background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1px 6px; border-radius: 5px; }
@@ -154,6 +180,11 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
   .brand span, .stamp { display: none; }
   .bar { gap: 8px 10px; padding-block: 10px; }
   .switch button { padding: 6px 11px; }
+  .switch .long { display: none; }
+  .switch .short { display: inline; }
+  .view-card { width: 216px; padding: 8px 10px; }
+  .view-card .card-text, .view-card details { display: none; }
+  .stat b { font-size: 17px; }
   .hint { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
   cells-legend { width: auto; right: auto; max-width: calc(100% - 32px); }
   .legend-toggle { display: flex; gap: 14px; }

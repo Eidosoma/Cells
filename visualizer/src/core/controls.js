@@ -21,6 +21,7 @@ export class OrbitRig {
     this.flight = null;
     this.dragged = false;
     this.enabled = true;
+    this.instant = false; // set for still pictures: flights arrive at once
     this.pointers = new Map();
     this.listen();
     this.apply();
@@ -43,9 +44,9 @@ export class OrbitRig {
     this.onChange();
   }
 
-  /** Animate to a view. With reduced motion the camera jumps there. */
+  /** Animate to a view. With reduced motion, or when asked to be instant, the camera jumps there. */
   flyTo(view, milliseconds = 900) {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches || milliseconds <= 0) {
+    if (this.instant || matchMedia("(prefers-reduced-motion: reduce)").matches || milliseconds <= 0) {
       this.setView(view);
       return;
     }
