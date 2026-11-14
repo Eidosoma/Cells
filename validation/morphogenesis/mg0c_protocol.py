@@ -167,8 +167,10 @@ DISCLOSURES = [
     "0.96 (8,000 steps at 12.5 ms); the long-double iteration shows that rounding is the engine's "
     "own, linear in steps",
     "The small-delta cutoff (a kept control's registered delta at most 1e-2) and Q4's fit "
-    "tolerance (Q3's 1e-2) were fixed before the a, b and D_U thresholds were measured; the k and "
-    "D_V thresholds and Q4's top-two gaps were already in view",
+    "tolerance (Q3's 1e-2) were fixed before the a, b and D_U thresholds were measured, but with "
+    "the k and D_V thresholds, Q4's top-two gaps and every Q1 mode's slow-eigenvalue sensitivity "
+    "to all five parameters in view (mg0c/checks-r2.json, written before the cutoff); those "
+    "sensitivities estimate the thresholds to within about 5 x (controls.removed)",
     "The development runs come from snapshots before FR-9 (D165, the species cap raised to 16); "
     "the rehearsal on main redrafts this protocol with one generator command",
 ]
@@ -178,6 +180,13 @@ QUESTIONS = [
     "criterion (D150's 0.96 is the passive world's ratio), so this draft keeps it judged and "
     "names it in the scope line. Keep it so, or move it to the guards "
     "(test_species_reactions_composition.py already runs it, 10 s)?",
+    "2. Ruling 7's consequence: with §11.1's pins in test_species_reactions_accuracy.py, the "
+    "comparisons of heat and work against the true kinetics (dr.integrate_node: the share onset, "
+    "the background guard, the crossing, the reversal onset) leave the judged list. The judged "
+    "guards keep dissipation as rounding-level agreement with nr.run_half_steps (the same "
+    "half-steps) and the passive relaxation's total heat against dr.passive_equilibrium's drop "
+    "(1e-12). The coordinator's milestone-3 instruction kept the independent kinetic and "
+    "dissipation comparisons as guards of record: is this split what the lead intends?",
 ]
 CHECKS_R2 = (  # The round-2 host check behind the 4.55 answer (evidence, not a run part).
     "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/checks-r2.json: the "
@@ -396,18 +405,19 @@ def controls_by_parameter(parts):
     }
     floor_note = (
         "each of these is caught at its grid's lowest point, so its threshold lies at or below "
-        "it and its registered delta is at least 10 x the threshold"
+        "it and its registered delta is at least 10 x the threshold (measured)"
     )
     if at_floor and all(n.startswith("q6.") and n.rsplit(".", 1)[1] in "ab" for n in at_floor):
         arrays = parts["q6"]["arrays"]
         tolerances = [float(np.min(arrays["tolerances"][dt])) for dt in DT_JUDGED]
         floor_note += (
-            ". On Q6, a and b set the uniform state (u* = (a + b) c*, v* = b c* / (a + b)^2), "
-            "which k and the diffusivities do not: a change of delta moves every element by "
-            "order delta c* from the start, while at the early records, where the pattern is "
-            "still small, the per-element tolerance falls toward the reference term (its "
-            f"smallest {min(tolerances):.2g} mM over the records, against elements of order "
-            f"{mg.C_STAR_MM:g} mM)"
+            ". Why, inferred from the tolerances, not measured: on Q6, a and b set the uniform "
+            "state (u* = (a + b) c*, v* = b c* / (a + b)^2), which k and the diffusivities do "
+            "not, so a change of delta moves every element by order delta c* from the start, "
+            "while at the early records, where the pattern is still small, the per-element "
+            "tolerance falls toward the reference term (its smallest "
+            f"{min(tolerances):.2g} mM over the records, against elements of order "
+            f"{mg.C_STAR_MM:g} mM); the floor catch is consistent with that"
         )
     out = dict(kept=kept, removed=removed, coverage=coverage)
     out["at_grid_floor"] = dict(controls=at_floor, note=floor_note) if at_floor else {}
@@ -931,7 +941,9 @@ def draft(output, paths):
                 "when 10 x its smallest caught delta is at most 1e-2 and is registered there; the "
                 "others are removed with their reasons (controls.removed); every parameter keeps "
                 "at least one, so each is caught by a judged criterion at a small delta with 10 x "
-                "margin (Control_k to Control_D_V)"
+                "margin (Control_k to Control_D_V). Each criterion requires every kept control "
+                "of its parameter to catch at its registered delta, stricter than the ruling's "
+                "'at least one'"
             ),
             controls_evaluable=(
                 "why the control criteria fail outside a judged run: they read "
