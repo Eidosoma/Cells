@@ -1587,6 +1587,10 @@ Code on the branch, `src/` unchanged throughout:
   test.
 - af2d2b4 to acbc27f: the lead's review — judged controls, the scope line, the PDE check, the
   step-map guard, and the protocol redrafted.
+- 1d96232 to ce78af6: the step-map guard moved out of Q5's judged list, as a tier-2 regression
+  guard.
+- d198ebb to 0353b29: the pre-registration amendments after the rehearsal on main — judge-q5,
+  combine, the attempt rule's timeouts and the timing rule.
 
 The engine arms ran twice, from the clean snapshots of dc2e494 and of a7e1869. The tolerances
 come from the second run. It was analysed first from the snapshot of a7e1869, then, after the
