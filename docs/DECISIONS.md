@@ -5360,6 +5360,27 @@ priority 2 ("small"). It is logged in
 - **Its consumers:** this study's doses, E07-v2's osmotic step and FR-4's pH step.
 - **Design first (D142),** as a general feature (D144).
 
+## D167: The feature-request order and the staged move of old-family physics are adopted
+
+2026-11-14, user decision: "lets continue and use all the agents and priorities the new feature
+request in the order you suggtest". This answers the lead's proposed order for FR-1 to FR-10 and its
+parity plan (option (b) of the architecture report).
+- **The feature-request order:**
+  1. FR-9, the species cap to 16, now;
+  2. FR-1's design note, then FR-10's;
+  3. FR-3's design alongside;
+  4. FR-4, with the shared energy-pool design, which also serves FR-2;
+  5. then FR-5;
+  6. FR-8's long-time design note after the GH200 numbers.
+  - FR-6 and FR-7 are registered consumers of the coupling operator's doors.
+- **The staged move of old-family physics** (option (b)): move each capability into the composite
+  when a consumer needs it, and freeze the old family as a reference once it is covered.
+  - The order: the channel library (through Track E, its start set by the conduction probe's
+    verdict); bath doses (FR-10); energy pools (FR-2, FR-4); calcium handling, with excitable
+    tissue; repair (FR-5); tissue removal (E15); mitochondria, when needed.
+  - It is not a wholesale migration, and the registry covers the composite only.
+- **Agents.** All six slots are used, on disjoint files.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
