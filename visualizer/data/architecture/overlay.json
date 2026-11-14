@@ -1071,12 +1071,19 @@
       "id": "laws.inventory_coupling",
       "label": "Coupling out of the inventory",
       "layer": "laws",
-      "status": "designed",
+      "status": "landed",
       "as_of": "2026-11-14",
-      "plain": "A species amount in the inventory sets how available a junction or channel is, so chemistry can change electrical behaviour. The design is accepted (14 November 2026): junctions first, with channels pending. Nothing is implemented yet. It also answers feature request FR-6, species-driven control factors.",
+      "match": [
+        "src/cells/processes/hill_factors.py"
+      ],
+      "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Its first part is in the engine since 14 November 2026: the Hill factors, and the operator that applies them to junctions and to channels. It is development code, guarded by tests; its qualification comes later. It also answers feature request FR-6, species-driven control factors.",
       "sources": [
         {
           "path": "docs/INVENTORY_COUPLING_DESIGN.md"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed"
         },
         {
           "path": "PROGRESS.md",
@@ -1916,6 +1923,26 @@
       ]
     },
     {
+      "id": "val.coupling",
+      "label": "Coupling references",
+      "layer": "references",
+      "status": "landed",
+      "as_of": "2026-11-14",
+      "match": [
+        "validation/coupling/**"
+      ],
+      "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The engine has not yet been judged against them.",
+      "sources": [
+        {
+          "path": "validation/coupling/REFERENCES_USAGE.md"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Track R's independent references landed (14 November 2026)"
+        }
+      ]
+    },
+    {
       "id": "val.other",
       "catch_all": true,
       "label": "Other validation areas",
@@ -2103,7 +2130,7 @@
         "files": [
           "src/cells/models/operators/species_common.py"
         ],
-        "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only. The shared species code holds at most 7 species today; a rise to 16 is accepted and queued (FR-9, D165).",
+        "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only. The shared species code holds up to 16 species since 14 November 2026 (FR-9, D165); the transport's judged scope stays at 7 species or fewer.",
         "sources": [
           {
             "path": "PROGRESS.md",
@@ -2116,6 +2143,10 @@
           {
             "path": "docs/FEATURE_REQUESTS.md",
             "where": "FR-9"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "The architecture block's first items landed (14 November 2026)"
           }
         ]
       },
@@ -2151,6 +2182,22 @@
           {
             "path": "docs/CURRENT_PLAN.md",
             "where": "Status on 14 November 2026, and the working order (D156)"
+          }
+        ]
+      },
+      "species_regulated_availability@1": {
+        "label": "Regulated availability",
+        "status": "landed",
+        "as_of": "2026-11-14",
+        "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestone 1 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, and a starting condition for each cell. It is development code, guarded by tests; its qualification comes later. Milestone 2 (the regulatory state compiled, restart, batches and compositions) is in progress.",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed"
+          },
+          {
+            "path": "docs/INVENTORY_COUPLING_DESIGN.md",
+            "where": "7. Milestone 1 as built (14 November 2026)"
           }
         ]
       }
@@ -2776,7 +2823,7 @@
       "label": "One cell",
       "order": 1,
       "plain": "The current focus: a coherent model of one cell, where many processes share the same inventories.",
-      "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue. Its round shape is the picture's choice: the engine gives a cell a volume and a membrane area, not a shape. The neighbours drawn round it are scenery.",
+      "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a planarian's skin cell. Its shape is the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, and the height of the sheet's cells. The engine gives a cell a volume and a membrane area, not a shape. The cut removes the outer face, which is kept as a dashed outline. The neighbours, that outline and the lined plate under the layer are scenery. The plate marks where a flatworm's skin rests on a basement membrane, which Cells does not model.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",

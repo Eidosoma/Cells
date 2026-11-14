@@ -16,7 +16,7 @@ One data file, the scene, drawn through four lenses, in this order:
 
 | Lens | What you see |
 | --- | --- |
-| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar |
+| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar |
 | **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
@@ -136,7 +136,7 @@ indicative.
 
 | Part | Drawn to scale as | In schematic mode |
 | --- | --- | --- |
-| Cell | 20 µm across | the same |
+| Cell | six-sided, 18 µm between opposite sides and 20 µm between corners, 13 µm tall like the sheet's cells; the shape is the picture's choice | the same, 17.5 µm between sides so that the gap to each neighbour shows |
 | Nucleus | 6 µm across | the same |
 | Mitochondria | 120, about 0.6 µm wide and 1 to 3 µm long, some curved: a clear outer membrane with the inner folds showing (a real cell holds hundreds or more) | 9, about 2 µm wide, three cut open to show the folds |
 | Endoplasmic reticulum | thin sheets close together and tubules through the cell | four thick ribbons |
@@ -144,7 +144,9 @@ indicative.
 | Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |
 | Channels, pumps, junction channels | thousands of dots; shapes about 10 nm across in the close-up | a few blocks set in the membrane |
 | Protein cages, ATP, ions, small molecules | dots and haze | a few beads and clusters |
-| Neighbouring cells | six faint glass outlines round the cell: scenery | the same |
+| Space between cells | 40 nm wide, far below one pixel: a dotted line round the cut edge, and dots where three cells meet | a 0.9 µm gap with a few ions in it |
+| Neighbouring cells | six faint glass cells against the cell's sides, 40 nm away, standing where the sheet's own cells stand: scenery | the same, 0.9 µm away |
+| Cut-away top, and the plate under the layer | a dashed outline of the outer face that the cut removes, and a lined plate where a flatworm's skin rests on a basement membrane, which Cells does not model: scenery | the same |
 | Layer beyond the sheet | five rings of cell outlines, fading: scenery | the same |
 | Organ outline | a planarian's brain with its two nerve cords, drawn about 0.9 mm long: a placeholder, sizes indicative | the same |
 | Organism outline | a planarian flatworm, drawn 10 mm long and 1.3 mm wide: a placeholder, sizes indicative | the same |

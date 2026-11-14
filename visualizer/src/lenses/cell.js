@@ -20,7 +20,7 @@ import { statusToken } from "../core/theme.js";
 import { glyphSprite, soften } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
 import { makeEnvironment } from "../core/environment.js";
-import { R, CUT, RIM, CUT_PLANES, HEX, ORGAN, BODY, buildCell, buildMolecules, buildTissue, buildOrgan, buildOrganism } from "./cell_parts.js";
+import { R, CUT, CUT_PLANES, HEX, ORGAN, BODY, buildCell, buildMolecules, buildTissue, buildOrgan, buildOrganism } from "./cell_parts.js";
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -198,7 +198,7 @@ export class CellLens {
         return this.neutral(zone, material, { opacity });
       },
       neutralLine: (options = {}) =>
-        this.neutral(zone, options.dashed ? new THREE.LineDashedMaterial({ transparent: true, dashSize: 3, gapSize: 2.2 }) : new THREE.LineBasicMaterial({ transparent: true }), options),
+        this.neutral(zone, options.dashed ? new THREE.LineDashedMaterial({ transparent: true, dashSize: options.dash ?? 3, gapSize: options.gap ?? 2.2 }) : new THREE.LineBasicMaterial({ transparent: true }), options),
       illustrate: (object, zoneName) => {
         object.userData.unpickable = true;
         (zoneName ? this.zones.find((item) => item.name === zoneName) : zone).root.add(object);
@@ -254,7 +254,7 @@ export class CellLens {
     const out = molecule.outward;
     return [
       { id: "molecule", entity: entity("scale.molecule"), zone: "molecules", anchor: molecule.centre.clone().addScaledVector(out, molecule.view[1] * 0.3), size: molecule.view, target: molecule.centre.clone(), azimuth: molecule.fromInside ? Math.atan2(-out.x, -out.z) : Math.atan2(out.x, out.z), polar: molecule.fromInside ? 0.42 : 0.6 },
-      { id: "cell", entity: entity("scale.cell"), zone: "cell", anchor: new THREE.Vector3(0, CUT + 2.6, -RIM - 1.6), size: [42, 31], target: new THREE.Vector3(0.8, CUT - 2.6, 0.2), azimuth: 0.52, polar: 0.84 },
+      { id: "cell", entity: entity("scale.cell"), zone: "cell", anchor: this.cells[mode].shape.point(-Math.PI / 2, 1.6, CUT + 2.6), size: [42, 31], target: new THREE.Vector3(0.8, CUT - 2.6, 0.2), azimuth: 0.52, polar: 0.84 },
       { id: "tissue", entity: entity("scale.tissue"), zone: "tissue", anchor: new THREE.Vector3(0, HEX.height * 2.6, -this.sheet.extent * 0.5), size: [this.sheet.extent * 1.42, this.sheet.extent * 1.0], target: new THREE.Vector3(0, -6, 0), azimuth: 0.55, polar: 0.86 },
       // The brain with the head round it and the sheet's ring in front; then the whole worm.
       // Both are seen at a slant from the worm's front quarter, so they have depth: the brain
@@ -563,7 +563,7 @@ export class CellLens {
       this.onChrome?.();
     }
     // The camera may come close at the cut edge, but looking at the middle of the cell it stays outside.
-    const atEdge = smooth(RIM * 0.72, RIM * 0.97, Math.hypot(rig.target.x, rig.target.z));
+    const atEdge = 1 - smooth(0.3, 2.8, this.cells[this.sizeMode].shape.depth(rig.target));
     rig.limits.minDistance = R + 6 + (0.03 - R - 6) * atEdge;
     return changed;
   }
@@ -588,7 +588,7 @@ export class CellLens {
       stream.drops.forEach((drop, index) => {
         const t = (time * 0.2 + index / stream.drops.length) % 1;
         const offset = stream.inward ? stream.reach - t * stream.reach * 1.9 : -stream.reach * 0.9 + t * stream.reach * 1.9;
-        drop.position.set(Math.cos(stream.angle) * (RIM + offset), CUT + 0.28, Math.sin(stream.angle) * (RIM + offset));
+        drop.position.copy(stream.at(offset));
         drop.scale.setScalar(0.55 + 0.45 * Math.sin(Math.PI * t));
       });
     }

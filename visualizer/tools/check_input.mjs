@@ -300,7 +300,7 @@ try {
   check("cell: clicking the nucleus selects regulatory circuits", (await selected()) === "cap.circuits", String(await selected()));
   await clear();
 
-  // Inside the cut-away octant the membrane is clipped; a click there must not select it.
+  // Above the cut the membrane is clipped; a click there must not select it.
   const cut = await screen(probe("cutGel"));
   await click(cut.x, cut.y);
   const inCut = await selected();
