@@ -2,7 +2,7 @@
 
 **Accepted, 14 November 2026 (the lead, with the advisor; D169).** The silence claims S1–S5 are pending milestone 1, with their criteria fixed. This protocol is exchange's first judged acceptance.
 
-**Milestone 1 built, 14 November 2026 (§12).** The declaration, the contract's marker and the composite's branch for declarations alone are built. S5 is identical in all four pairs, and crossrev is identical in all seven sets. S1–S3 hold on every row of a live world's scalar program (P2's chain). In the other programs they have run only in a quiescent world, where they cannot fail. S4 and P2 are reported. Integration grants no acceptance: C1–C13 and their references come next.
+**Milestone 1 built, 14 November 2026 (§12).** The declaration, the contract's fail-closed marker and the composite's branch for declarations alone are built. S1–S3 hold on every row of every program in a live-owner world, and a planted control breaks them in each program family. S5 is identical in all four pairs, and crossrev is identical in all seven sets. S4 and P2 (on the heredity sheet) are reported. Integration grants no acceptance: C1–C13 and their references come next.
 
 **Status: proposed, 14 November 2026, for the lead's review with the advisor; revised the same day
 after that review.** No engine code was added or changed. One read-only probe ran on the engine as
@@ -910,99 +910,103 @@ beside D150's, D152's and D156's work on disjoint files. FR-10's operator is dis
 ## 12. Milestone 1 as built (14 November 2026)
 
 The engine agent built milestone 1 after D169, on its branch, with the lead's rulings of the same
-evening. The evidence and log are in `/mnt/workspaces/Cells/closed-compartment-m1-20261114-01/`
-(HANDOFF.md). The D148 record and its stop rule were written there before any run, and the silence
+evening, and reworked it after the lead's review of the first hand-back. The evidence and log are in
+`/mnt/workspaces/Cells/closed-compartment-m1-20261114-01/` (HANDOFF.md). The D148 record, its stop
+rule and every world and control below were written there before their runs, and the silence
 criteria of §3.3 were copied there verbatim.
 
-**The contract's admission is option (b), an explicit marker** (the lead's ruling; §1.6's "every
-owned field an accepted write" alone would also have admitted the contract test's `Nothing`, an
-operator with nothing at all, and so changed an existing outcome):
-- `contract.Operator.DECLARATION_ONLY`. `check_declarations` admits a marked operator only when it
-  declares no part, owned, layout or control field, schedule, view, factor, closure, view read,
-  write, reset, own ledger, readout, replaced column or energy role, and overrides none of the
-  step's methods (`contract.STEP_METHODS`). `CONFLICTS_VIEW` and `REQUIRES` stay available, since
-  they act in the composite's structure check on the host.
-- The part-less clause also admits an owner whose every owned field is an accepted write (FR-3's
-  site owner, §1.6). Every registered operator is admitted as before, and `Nothing` stays refused.
-- `pump_composite.Composition.checked_step` runs the inner step itself for a composition of
-  declarations alone, as it does for the empty composition (the lead's yes to option (b) of S5's
-  scope). No existing composition contains a declaration, so each takes the branch it took before.
+**The contract's admission** (D169's rule, with the lead's option (b)):
+- **D169's clause.** A part-less operator is admitted when it has `ACCEPTS_WRITES` and
+  `VIEW_FIELDS`, as before, or when it owns fields and every one is an accepted write (FR-3's site
+  owner, §1.6).
+- **A declaration** carries `contract.Operator.DECLARATION_ONLY`. That clause alone would also have
+  admitted the contract test's `Nothing`, an operator with nothing at all, so the marker keeps
+  `Nothing` refused.
+- **The marker's check fails closed** (`contract.declaration_errors`, the lead's ruling). A marked
+  class may define only `DECLARATION_MAY_DEFINE`: `LAW_ID`, `DECLARATION_ONLY`, `CONFLICTS_VIEW`,
+  `REQUIRES`, `parse`, `to_dict`, `check_definition`, `initial_values` and `summary`.
+  - It refuses every other public name of `Operator` that any class below `Operator` defines,
+    whether data or method and even at its default value. That covers the parts, fields, step
+    methods, and the schedule and definition-check hooks (`inner_check_spec`, `check_steps`,
+    `control_values` and the rest).
+  - Every registered operator is admitted as before.
+- **`pump_composite.Composition.checked_step`** runs the inner step itself for a composition of
+  declarations alone, as it does for the empty composition (option (b) of S5's scope). No existing
+  composition contains a declaration, so each takes the branch it took before.
 
 **The declaration:** `models/operators/compartments.py`, `cell_owned_compartments@1`, registered
 with one import and one line.
 - Each compartment names its node, its bounding patch and its owner, with a label and a reference
   as metadata.
 - §1.4's refusals 1 to 7 fire with their reasons: the node, the patch, one compartment per node, no
-  ion route on the bounding patch, a zero charge anchor, a held-bath topology, and §4's admitted
-  list, which fails closed, with replacement@1 kept away from owners and from owners as donors.
-- `CONFLICTS_VIEW` (the volumes, the areas, the capacitances and the masks) refuses water and what
-  requires it, membrane state, insertion@1 and @2, the partition, the bridge and the lumens through
-  the composite's structure check.
+  ion route on the bounding patch (`refuse_ion_routes`), a zero charge anchor
+  (`refuse_charge_anchor`), a held-bath topology, and §4's admitted list. The list fails closed,
+  and keeps replacement@1 away from owners, also as donors.
+- `CONFLICTS_VIEW` lists the volumes, the areas, the capacitances and the masks. Through the
+  composite's structure check it refuses water and what requires it, membrane state, insertion@1
+  and @2, the partition, the bridge and the lumens.
 - The summary carries §1.5's identity block. A label or reference changes no binding.
 
-**Fixtures:** `validation/tissue/compartment_fixtures.py`: the silence world W (D150's face-free
-topology, with exchange loading S into the compartment), S4's world without the node, and the S1
-to S3 and S5 helpers.
+**Fixtures:** `validation/tissue/compartment_fixtures.py`.
+- **W**, D150's face-free topology with exchange loading S into the compartment. W's ions are
+  quiescent, so every potential is 0 and silence cannot fail there; S5's traced pairs use it.
+- **W+**, the live-owner world (the lead's ruling):
+  - a cytosol at K 140, Na 10 and Cl 20 mM;
+  - a K leak of 5e-10 m/s on the owner's wall;
+  - an initial owner potential of −0.06 V through its charge anchor.
+  K leaves the cell and the owner's potential moves toward E_K, while the compartment must stay
+  silent.
+- **The planted controls:** (a) a K route of 1e-13 m/s on the bounding patch, and (b) a
+  compartment charge anchor of 1e-17 C. Tests reach them by bypassing refusals 4 and 5 through
+  monkeypatch, a test-only way.
 
-**The gates.** They ran from the clean snapshot of the branch head c67e2cf (after main's merge
-d494361), as unit `cells-fr1-m1-c67e2cf` on CPU 2 with a 3G cap and a memory peak of 2.3 GB. The
-load average was 8 to 11 on 8 CPUs, so the times are loaded. The earlier unit at 2dc06ed is in
-HANDOFF.
+**The gates.** They ran from clean snapshots on CPU 2 with a 3G cap, every unit launched with
+`--oom-first` (and, from 01eb558, `--wait-headroom 2G`). The load averages were 8 to 18 on 8 CPUs,
+so the times are loaded; the lead measures tiers on clean CPUs at landing.
 
 | Gate | Result |
 | --- | --- |
-| The tier-1 smoke, `tests/unit/test_cell_owned_compartments.py` (NumPy) | 90 passed in 8.0 s: the contract's admission and its refusals, refusals 1 to 7, the identity block, the label's non-binding, the structure check |
-| S5, `_identity.py` and `_identity_more.py` (tracing, no compile) | **Identical**, in all four pairs: W under ARS and under RK4, W with clearance at the node beside exchange, and the declaration alone against no operators at all. At 2dc06ed, before the composite's branch change, the declaration alone differed, as the code reading foresaw |
-| S1 to S3 in W, `_silence.py`, `_silence_rk4.py`, `_windowed.py`, `_vector.py`, `_batch.py` | Pass on every row of the scalar program (ARS, with a restart in process and through a snapshot, each bitwise), RK4, the windowed program, three worlds in the vector-window program and the batch program, while S loads into the compartment. **But W cannot fail them:** its ions are quiescent and every node sits at the bath's composition with a zero anchor, so every potential is 0 and V_b is 0 − 0. Loaded times: 117, 114, 82, 138 and 37 s |
-| S1 to S3 in a live world: P2's chain run (`reported/s4_p2.py` version 2, `run-c67e2cf/reported-2/`) | **Hold on every row** of the scalar ARS program, 101 rows. Here cell_5 sits near 0.08 V and its ion rows move. comp_5's ion rows stay bitwise at their initial values. \|V_b\| on bound_5 is at most 2.8e-17 V, 9.3e-6 of S2's bound, and the capacitor energy is 8.6e-11 of S3's. comp_5 floats with its owner (max \|φ\| 0.0796 V for both). The criteria are §3.3's, applied to a second world, the amendment written in HANDOFF before the rerun |
-| The contract's and composite's existing guards | `test_pump_composite_contract.py` 16 passed (its `Nothing` still refused); `test_membrane_state.py` 12 passed; `test_pump_composite_identity.py` 9 passed (the empty composition still equals @3 bitwise, compiled, uncompiled, batched and restarted) |
-| D148 criterion 1: crossrev, all seven sets against the baseline of record at da94f81 | **Identical.** Base 36/36 jaxpr texts, 36/36 constants, 12/12 bindings; qualification 78/78, 78/78, 56/56; injection and volume 6/6, 6/6, 2/2 each; division 27/27, 27/27, 9/9, its check holding; species and reactions 24/24, 24/24, 8/8 each, their checks holding |
-| D148 criterion 2 | The registered operators are admitted as before, and the targeted guards above passed. The tier 1+2 gate is the lead's, at landing |
+| The tier-1 smoke, `tests/unit/test_cell_owned_compartments.py` (NumPy) | At 09c83bf, 109 passed in 4.2 s. It covers the admission, the fail-closed marker check name by name, refusals 1 to 7, the identity block, the label's non-binding and the structure check. At 01eb558, 31 of its new cases failed: a data default restated at the same object passed the first, identity-based form of the check. Fixed in 09c83bf |
+| S5, `_identity.py` and `_identity_more.py` (tracing, no compile) | **Identical in all four pairs:** W under ARS and under RK4, W with clearance at the node beside exchange, and the declaration alone against no operators at all. At 2dc06ed, before the composite's branch change, the declaration alone differed, as the code reading foresaw |
+| S1 to S3 in W+, with a planted control in each program family | **They hold on every row, and every planted control breaks them** (01eb558). In each live check the owner's K row moves and \|φ_owner\| is at least 0.05 V. The programs: the scalar program, with (a) and (b); a restart from a checkpoint in process and through a snapshot, each bitwise, with (a) resumed; RK4 at 0.1 ms; the windowed program; the vector-window program, three live worlds with (a) as a fourth; and the batch program, likewise. Loaded times: 52, 107, 97, 53, 73 and 50 s |
+| The contract's and composite's existing guards | `test_pump_composite_contract.py` 16 passed, its `Nothing` still refused; `test_membrane_state.py` 12 passed. `test_pump_composite_identity.py` 9 passed at c67e2cf: the empty composition still equals @3 bitwise, compiled, uncompiled, batched and restarted |
+| D148 criterion 1: crossrev, all seven sets against the baseline of record at da94f81 | **Identical at c67e2cf and at 01eb558.** Base: 36/36 jaxpr texts, 36/36 constants, 12/12 bindings. Qualification: 78/78, 78/78, 56/56. Injection and volume: 6/6, 6/6, 2/2 each. Division: 27/27, 27/27, 9/9, its check holding. Species and reactions: 24/24, 24/24, 8/8 each, their checks holding. 09c83bf changes only the host-side registration check |
+| D148 criteria 2 and 4 | The lead's landing gate (tier 1+2) and baseline renewal |
 | D148 criterion 3 | No ledger accumulator or diagnostic changes: the list of cases is empty |
 
-**The reported claims** (`reported/s4_p2.py`, `run-c67e2cf/reported/`; no pass rule):
-- **S4 in W** is identical in every field, but only trivially. W's ions are quiescent and its
-  export was set to 0 for S4, so every potential and flux is zero, with or without the node.
-- **P2** ran on D150's heredity chain, not the heredity sheet §9 names, with `comp_5` on `cell_5`,
-  the ions moving, ARS at 1 ms for 0.1 s. **The largest relative changes in the flows are about
-  1.3e-8 in the electrode current (of its 1.8e-13 A scale) and about 1e-9 in the face fluxes and
-  the bath supply they drive.**
-  - **The amounts are identical.**
-  - The cell potentials and membrane voltages differ by at most 6.9e-17 V, 5 ulps of their scale
-    (0.08 V).
-  - The amount increments and membrane fluxes differ by 49 to 158 ulps of their own much smaller
-    scales.
-  - The extracellular potentials, about 3.5e-7 V, differ by 8.8e-17 V. That is 1.7e6 ulps of their
-    own scale but about 6 ulps of the potentials' scale. Our reading (**S**): the dense solve's
-    rounding, relative to its largest potentials, falls on these small differences, and the face
-    fluxes and bath supply follow.
-  - The capacitor residual and the electrode current differ at 8e-28 C and 2e-21 A, far below
-    @3's tolerances.
-  - This fits §3.3's expectation (**S**): equal in exact arithmetic, with the solve gaining a row
-    that rounds differently.
+**Superseded, not deleted:** the five silence program files' passes in W at c67e2cf
+(`run-c67e2cf/tests/`), which could not fail, and S4 in W, identical only because nothing moved.
 
-**Open for the lead:**
-- **S1–S3 in the other programs.** The windowed, vector-window, batch, restart and RK4 checks
-  should move to a live-owner world before the claims leave "pending": for example W with a K leak
-  on the owner's wall patch and a nonzero owner potential.
-- **The tier record.** None of the eight new test files is measured into `tests/test_tiers.json`
-  yet. Under load, `_silence`, `_silence_rk4` and `_vector` ran over 90 s.
-- **D148 criterion 2's tier clause.** Tier 1+2 has not run on this branch, so it waits for the
-  landing gate.
-- **The admission is two widenings:** the marker, and a part-less owner whose every owned field is
-  an accepted write. §1.6 and D169 describe only the second, as "today's clause, or every owned
-  field an accepted write".
-- **The marker's check** covers parts, fields and step methods, not the schedule and
-  definition-check hooks (`schedule_times`, `control_values`, `inner_check_spec`, `check_steps`).
-  A declaration has no `EXPERIMENT_KEYS` or `CONTROL_FIELDS`, so these idle hooks are unused, but
-  `inner_check_spec` could still be overridden.
+**The reported claims** (no pass rule; `reported/s4_live_p2_sheet.py`, `run-01eb558/reported/`):
+- **S4 in W+**, with the export at 0, against the same world without the node, 21 rows:
+  - The node is silent and the owner live (\|φ\| up to 0.062 V).
+  - Every ionic field of the rest of the world is within 4 ulps of its scale (relative 7e-16).
+  - The exception is the energy-balance rate, a near-zero balance that differs at 2.6e-18 pJ/s.
+- **P2 on §9's heredity sheet** (`cell_replacement_fixtures.heredity_sheet(1, None)`): comp_0 on
+  cell_0, ARS at 1 ms for 0.1 s, 101 rows.
+  - comp_0 is silent on every row: S1 bitwise, S2 at 4.6e-6 of its bound, S3 at 2.1e-11. It floats
+    with its owner at up to 0.0797 V.
+  - The ionic fields differ from the sheet without it by at most 1.0e-12 relative (the electrode
+    current), 5.6e-13 (the amount increments) and 4.1e-13 (the membrane fluxes and bath supply).
+  - The capacitor residual and the energy balance differ by rounding around zero.
+- **P2 first ran on D150's heredity chain**, a deviation from §9 (`run-c67e2cf/reported/`):
+  - The chain's amounts are identical.
+  - Its largest relative changes are about 1.3e-8 in the electrode current and about 1e-9 in the
+    face fluxes and bath supply.
+  - Its extracellular potentials, about 3.5e-7 V, differ by 8.8e-17 V. On our reading (**S**), the
+    dense solve's rounding, relative to its largest potentials, falls on these small differences
+    through the chain's faces.
+  - comp_5 was silent there too, on 101 rows, with S2 at 9.3e-6 of its bound.
+- Both fit §3.3's expectation (**S**): equal in exact arithmetic, with the solve gaining a row that
+  rounds differently.
 
 **Not in milestone 1:**
 - the acceptance items C3 to C13 and their independent references (a separate agent, D169);
 - probes P1 and P3;
 - door S;
-- the composition matrix's tags for this operator. The architecture block's generator
-  (`validation/tissue/composition_matrix.py`) regenerates them at landing, the lead's note.
+- the composition matrix's tags for this operator. They are added when the architecture block's
+  generator (`validation/tissue/composition_matrix.py`) lands on main, before the hand-back for
+  landing.
 
 ## Appendix A. Equations for the independent references
 
