@@ -1,8 +1,9 @@
 # Coupling out of the inventory: species-regulated availability (design)
 
-**Status: proposed, 14 November 2026, for the lead's review with the advisor (D142).** No engine code
-was added or changed, and no probe was run. D155 item 1 authorises the design of one general
-feature, *coupling out of the inventory*. D145's gene-regulation hold is narrowed, not lifted.
+**Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §6.3.** The accepted
+scope is the junction target; the channel target is pending milestone 1 (ruling 12). No engine code
+was added or changed for this note. D155 item 1 authorises the design of one general feature,
+*coupling out of the inventory*. D145's gene-regulation hold is narrowed, not lifted.
 
 D155 item 1 reads:
 - a species amount sets another operator's control, through the contract's `CONTROL_FACTORS`;
@@ -11,8 +12,8 @@ D155 item 1 reads:
 
 **The three contracts this note settles** (the lead's scope correction, from an external
 architecture review that the advisor confirmed):
-1. **Target routing** (§1.2). Version 1 targets @3's junction and channel-population availabilities.
-   Routing to another operator's controls (a reaction multiplier, a turnover rate, an event's due
+1. **Target routing** (§1.2). Version 1 targets @3's junction availability; the channel-population
+   availability is pending milestone 1 (ruling 12). Routing to another operator's controls (a reaction multiplier, a turnover rate, an event's due
    flag) is a separate door. Its shape is designed in §2 because the division trigger needs it; it is
    not built.
 2. **Source semantics** (§1.3). The source is the physical inventory itself, sensed as a
@@ -47,8 +48,10 @@ architecture review that the advisor confirmed):
   with closed-form kinetics, and the first consumer's world runs D152's `local_species_reactions@1`
   (§4).
 
-No model, solver or shared function changes in version 1. Its first code milestone exercises a path
-no operator has used: a factor on @3's channel availability (§1.1, milestone 1).
+No model or solver changes in version 1. Its one change to shared code is manifest-only: the
+composite's field map gains a `factors` entry (ruling 6), which changes no program. Its first code
+milestone exercises a path no operator has used: a factor on @3's channel availability (§1.1,
+milestone 1).
 
 **Basis.**
 - The contract: [PUMP_COMPOSITE.md](PUMP_COMPOSITE.md); the [v2 design](PUMP_COMPOSITE_V2_DESIGN.md)
@@ -71,10 +74,10 @@ interpretation, as in the D150 and D152 notes.
    *couplings*, each a factor on @3's junction or channel availability. It also holds declared
    *regulatory states*, each a slow or fast two-state fraction per cell. Its parts are an event map
    and a split part, so it fits the contract as built (§1.1, §1.6).
-2. **Target routing** (§1.2). The first target is the junction availability, per contact; replacement
-   and the bridge already use its factor path. The channel-population availability, per population,
-   comes in the same version, after milestone 1 checks its path. Leaks and pumps come next, on the
-   same path. Other operators' controls are §2's door.
+2. **Target routing** (§1.2). The accepted target is the junction availability, per contact;
+   replacement and the bridge already use its factor path. The channel-population availability, per
+   population, is pending milestone 1, which checks its path (ruling 12). Leaks and pumps come next,
+   on the same path. Other operators' controls are §2's door.
 3. **Source semantics** (§1.3).
    - Sensing reads @3's own amount rows, never a copy, as the concentration c = n/V in the target's
      own cell (a junction's two cells).
@@ -86,7 +89,8 @@ interpretation, as in the D150 and D152 notes.
    rows. A source that @3's step moves, such as an ion, enters only through a *regulatory state*,
    whose half-steps read the source before and after @3's step. That keeps the composite step
    Strang-symmetric, second order (**S**, measured by acceptance A4). An instantaneous factor of a
-   moving row would lag within the step, and is refused. Its door is a hook in @3's stages.
+   moving row would lag within the step, and is refused. Its door is a hook in @3's stages. Ions are
+   admitted through a state (ruling 1), and the definition refuses dt·(k_on + k_off) > 1 (ruling 5).
 5. **The regulatory state** (§1.5): ds/dt = k_on u (1 − s) − k_off s, with u a product of Hill
    factors of the cell's species.
    - Retention is 1/k_off. With k_off = 0 it is a saturating integrator of the input (the review's
@@ -191,8 +195,8 @@ calcium-energy family's regulation.
 
 | Target | Inner control | Element | Version |
 | --- | --- | --- | --- |
-| **Junction availability** | `junction` | One contact | **1, first**: its factor path is exercised today |
-| **Channel-population availability** | `channel` | One population | **1, after milestone 1** shows its path (§1.1) |
+| **Junction availability** | `junction` | One contact | **1, the accepted scope** (ruling 12): its factor path is exercised today |
+| **Channel-population availability** | `channel` | One population | **1, pending milestone 1** (ruling 12), which shows its path (§1.1) |
 | Passive leak availability | `membrane` | One patch, all its leak species | 1.1: the same path, with its own first-use check |
 | Na/K or Ca pump rate | `pump`, `calcium_pump` | One patch's pump | 1.1, as above; on dividing cells it meets wall W3a (§3.2) |
 | Another operator's rate control | That operator's control | Per its axes | Door (§2.1): a rate route |
@@ -200,8 +204,9 @@ calcium-energy family's regulation.
 
 - **Scope of a version 1 target.** It is an element of a live cell that replacement@1 does not
   replace, in a static tissue. Its factor lies in [b, 1].
-- The class declares `CONTROL_FACTORS = ("junction", "channel")`. A field that no coupling targets is
-  not returned, a static choice by layout shape. An untargeted element selects exactly 1.
+- The class declares `CONTROL_FACTORS = ("junction",)` until milestone 1 passes, and refuses channel
+  targets until then; it then declares `("junction", "channel")`. A field that no coupling targets
+  is not returned, a static choice by layout shape. An untargeted element selects exactly 1.
 - **The declaration names the target's operator** (`"operator": "inner"`), so §2's routes extend
   this declaration without changing its form (§1.6).
 
@@ -211,18 +216,31 @@ calcium-energy family's regulation.
 | --- | --- |
 | **Entity** | A cell's cytosolic amount of one of @3's species rows: the compartment entity's material. Sensing reads @3's state, n = `amount_reference` + `amount_increment`, never a second copy |
 | **Sensing** | **Concentration**, c = n/V in mM (fmol/pL), with V the cell's declared volume. **Amount sensing is rejected.** A half-saturation is a dissociation constant, which is a concentration, so a law of the amount would ignore dilution and depend on the declared volume's scale |
-| **Species admitted** | *Instantaneous factors:* neutral, impermeant inventory species, under D150's declaration rules (`species_common.parse_species`). These are the rows that @3's step does not move (§1.4). *Regulatory-state inputs:* any species row of the world, ions included, through a read-only list (D152 §7.3's door "reads of charged or permeant species": reads book nothing). Admitting ions is the lead's question 1 (§6.3) |
+| **Species admitted** | *Instantaneous factors:* neutral, impermeant inventory species, under D150's declaration rules (`species_common.parse_species`). These are the rows that @3's step does not move (§1.4). *Regulatory-state inputs:* any species row of the world, ions included, through a read-only list (D152 §7.3's door "reads of charged or permeant species": reads book nothing). Ions are admitted through regulatory states only (ruling 1), by the read-only read below |
 | **Laws** | `hill_activation` x^n/(K^n + x^n) and `hill_inhibition` K^n/(K^n + x^n), D152's forms and log-space evaluation. `state_fraction` s and `state_complement` 1 − s of a regulatory state (§1.5). Every coupling then applies F = b + (1 − b) f |
 | **Units** | K in mM; n > 0, dimensionless; rates in s⁻¹; b, s and F dimensionless |
 | **Target domain** | F ∈ [b, 1] ⊂ [0, 1], with 0 ≤ b < 1. The effective availability is a_sched × Π F ≤ a_sched ≤ 1. Hill factors are positive at positive c; a state factor reaches exactly 0 only when b = 0 and s = 0 or 1 |
-| **Axes** | A channel population k lives on patch `channel_membranes[k]`, whose cell is `membrane_cell[...]`. A contact e joins `junction_sender[e]` and `junction_receiver[e]`. The side is `sender`, `receiver` or `both`, where both is the product of the two cells' factors. A route is (coupling, element). Its cell, species or state, and element indices are integer layout arrays bound once (R1) |
+| **Axes** | A channel population k lives on patch `channel_membranes[k]`, whose cell is `membrane_cell[...]`. A contact e joins `junction_sender[e]` and `junction_receiver[e]`. The side is `first`, `second` or `both` (ruling 4): first and second are the contact's declared cells (@3's `junction_sender` and `junction_receiver`), and both is the product of the two cells' factors. A route is (coupling, element). Its cell, species or state, and element indices are integer layout arrays bound once (R1) |
 | **Locality** | A target reads only its own cell, or a contact's two cells. No cell reads another cell's inventory. Outside-node sources (paracrine sensing) are a door (§1.4) |
 | **Volumes and masks** | The declared ones. Every provider of a volume and every closer of a mask is refused at the definition (§1.12). Concentration sensing at the current volume and the live masks is the water and closer door, and it needs the view in `control_factors` and in half-steps (§1.12) |
 | **Failure** | Unsupported combinations fail at the definition (parse and `check_definition`), or at binding where an index map is built. None fails at run time |
 
 **The "both" product (S, a modelling choice).** Each endpoint's hemichannels are taken to be
 regulated by their own cytoplasm, independently, so the contact's available fraction is the product.
-A declared side is the alternative.
+A declared side, first or second, is the alternative (ruling 4).
+
+**The read-only read (ruling 1): one mechanism, reused by D152.** It serves every operator that reads
+a row it does not write.
+- **A read-only species list** in the declaration, parsed by one shared function beside D150's
+  `species_common.parse_species`. It admits any species row of the world, ions included, with D150's
+  identity form (null for an ion). A read-only species is never a write target of the reader.
+- **A read of a row that @3's step moves** is evaluated only in half-steps, which read it before and
+  after @3's step. It is never frozen through @3's stages.
+- **Reads book nothing.**
+- **D152's version 1.1 door**, "reads of charged or permeant species" (its §7.3), reuses this list
+  and this rule for its factors and catalysts rather than building a second mechanism. Its
+  half-steps already read before and after @3's step, so its reads are second order in the same way
+  (**S**).
 
 ### 1.4 Contract 3: evaluation time
 
@@ -232,7 +250,7 @@ depend on what the source row does inside @3's step.
 | Source | What @3's step does to it | Coupling form admitted | Order of the composite step |
 | --- | --- | --- | --- |
 | A neutral, impermeant species in a cell (D150 and D152 inventory) | Nothing: zero membrane and junction permeability, refused otherwise, and no face touches a cell | Instantaneous or kinetic | Second order (**S**). Freezing F through @3's step is exact, since its argument is constant there, so only the operators' Strang splitting remains (Strang 1968; Hundsdorfer & Verwer 2003, ch. IV) |
-| An ion in a cell | Moves it: channels, leaks, pumps, junctions | **Kinetic only**, through a regulatory state | Second order (**S**). The state's two halves read the ion before and after @3's step, and @3 sees the state's midpoint value. That is Strang splitting of the state's flow against @3's flow with the state as a parameter; acceptance A4 measures it |
+| An ion in a cell | Moves it: channels, leaks, pumps, junctions | **Kinetic only**, through a regulatory state (ruling 1) | Second order (**S**). The state's two halves read the ion before and after @3's step, and @3 sees the state's midpoint value. That is Strang splitting of the state's flow against @3's flow with the state as a parameter; acceptance A4 measures it |
 | An outside node's species (paracrine sensing) | Moves it through the faces | Refused in version 1 | Door: through a regulatory state, as for ions; probe P2 |
 | A permeant neutral species | Would move it | Refused (D150's rule; the D148 round for neutral species on junctions comes first) | – |
 
@@ -260,15 +278,17 @@ where the source does not move.
 - **The recommendation:** after the writers, and after replacement, so the order of factors is
   abundance, then aperture, then regulation (§1.7).
 
-**Stability (S, measured, not derived).** The state's half-step is exact and unconditionally stable.
-The loop through @3 is integrated by splitting.
-- Its gain per step is the state's change times the target's effect on the source over one step.
-- For cell ions this is far below 1 at millisecond steps: a cell's ion content relaxes over seconds
-  to minutes.
-- A4 measures it, including a fast-rate arm, where the state tracks its quasi-steady value within a
-  step and the order constant grows.
-- Version 1 declares no run-time loop bound. Whether one is needed is question 5 for the lead
-  (§6.3).
+**Stability and the rate limit (ruling 5: no unenforced limit).** The state's half-step is exact and
+unconditionally stable, but the splitting is not. A state that relaxes within one step makes @3's
+held midpoint value an endpoint value.
+- **The rule.** u is a product of Hill factors in [0, 1], so λ = k_on u + k_off ≤ k_on + k_off. The
+  definition refuses dt·(k_on + k_off) > 1, as D152 refuses dt·L > 1. The rule is enforced, not a
+  declared regime.
+- **The loop (S).** Its gain per step is the state's change times the target's effect on the source
+  over one step. For cell ions this is far below 1 at millisecond steps: a cell's ion content
+  relaxes over seconds to minutes.
+- **A4** measures the order, including a fast arm at the largest admitted rates, dt·(k_on + k_off)
+  near 1, and reports the order constant there.
 
 ### 1.5 The regulatory state
 
@@ -295,6 +315,7 @@ multiply). At least one input is required, and s(0) = s₀ ∈ [0, 1].
   is selected.
 - **Zero rates are admitted.** k_on = k_off = 0 gives a frozen state, held at s₀ or at its last
   write. A3's zero and pass-through cases use it.
+- **The rate limit.** The definition refuses dt·(k_on + k_off) > 1 (§1.4, ruling 5).
 - **What it can be (S):**
   - a fast binding step, for ion feedback;
   - a low-pass filter of its input, with time constant 1/λ;
@@ -321,7 +342,7 @@ multiply). At least one input is required, and s(0) = s₀ ∈ [0, 1].
 | --- | --- | --- |
 | Retention | Declared k_off: half-life ln 2 / k_off; with k_off = 0 the state is held | Its own law |
 | Reset by intervention | `regulatory_writes` sets s to a declared value at the start of the step leaving t | This operator's event map |
-| Reset at replacement | **Refused** on slots that replacement@1 replaces | 1.1, for prescribed events: this operator's event map at replacement's event steps, which it reads from replacement's schedule at the definition. A template's newcomer takes the template's declared value; a donor copy takes the donor's s, an inheritance route as D139 defines one |
+| Reset at replacement | **Refused** on slots that replacement@1 replaces | 1.1, when the coupled-renewal gate asks (ruling 10, D144), for prescribed events: this operator's event map at replacement's event steps, which it reads from replacement's schedule at the definition. A template's newcomer takes the template's declared value; a donor copy takes the donor's s, an inheritance route as D139 defines one |
 | Transfer at division | **Refused** (closers, §1.12) | Prescribed divisions: this operator's event map, after the partition's, copies the parent's s to both daughters (an intensive copy, as the partition copies gates) or sets a declared newborn value. Triggered divisions: **no path exists** (§1.1). It needs a carry mechanism in the contract (§2.4) |
 
 **Why it needs no ledger.**
@@ -346,8 +367,15 @@ is better written as D152 species.
 - The operator's state is for regulatory states with no named carrier, and for binding kinetics on a
   target.
 
-**Why the state is in version 1.** It is the only second-order route for feedback under the held
-evaluation (§1.4). It is also the first consumer's gate (§4.5).
+**Why a regulatory state rather than species (ruling 1).** It is not the only second-order route for
+feedback: a D152 species pair with read-only reads of the ion would also be Strang second order,
+since its half-steps read the ion before and after @3's step. Three reasons hold:
+- there is no named molecular carrier, so there is no moiety to conserve and no free energy to book;
+- the species cap: a pair costs two of the world's seven rows (W4, §3.2);
+- binding kinetics on a target belong to the target's regulation, not to a molecule in the
+  inventory.
+
+It is also the first consumer's gate (§4.5).
 
 ### 1.6 Declaration and parts
 
@@ -370,7 +398,8 @@ evaluation (§1.4). It is also the first consumer's gate (§4.5).
     "half_saturation_mM": 1e-4, "hill_coefficient": 1.0, "basal": 0.0}]}
 ```
 
-The values are illustrative and synthetic.
+The values are illustrative and synthetic. The channel coupling is admitted once milestone 1 passes
+(ruling 12).
 - **Every key is explicit** (D152's amendment). Hill laws take `half_saturation_mM` and
   `hill_coefficient`; state laws take neither.
 - **Species.** Each listed species carries D150's identity form (catalogue reference and kind of
@@ -440,9 +469,11 @@ The values are illustrative and synthetic.
   replacement's exact 1.0 on untouched contacts. Version 1.1's replacement composition is the first
   to multiply two non-trivial factors on one element. Its guard: the product against an independent
   evaluation, and order invariance to rounding.
-- **The manifest.** The field map records each control's owner (`inner`) but not the chain of
-  factors. A `factors` entry, {control: [laws in declared order]}, would be a manifest-only addition
-  (question 6, §6.3).
+- **The manifest (ruling 6).** The field map records each control's owner (`inner`) but not the
+  chain of factors. Version 1 adds a `factors` entry, {control: [laws in declared order]}, in
+  `pump_composite.field_map`. It is manifest-only: no program changes, so crossrev is identical. The
+  manifests of compositions with replacement@1 or the bridge gain the key too. Earlier manifests
+  lack it, and readers treat it as optional, as with `field_owners`.
 
 ### 1.8 Energy: a factor books nothing
 
@@ -488,10 +519,14 @@ conclusion for the guards.
 - **The factor's evaluation.** z = n (ln x − ln K); activation is ln f = −logaddexp(0, −z), inhibition
   ln f = −logaddexp(0, z). This is D152's kernel form, finite at the trace (D150 §1.3) and at large x.
   The basal combination is linear, so b = 0 gives f exactly.
-- **Shared code.** Whether the Hill evaluation becomes a neutral helper that D152 adopts later under
-  crossrev, or is repeated with a bitwise-agreement test against D152's kernel, is question 7 (§6.3).
-- **Step bounds:** none of its own. `inner_check_spec` is unchanged, because a factor ≤ 1 keeps @3's
-  bound, taken at availability 1, valid. @3's run-time refusal reads the effective availability.
+- **Shared code (ruling 7).** D152's evaluation is inline in `species_reactions.route_rates` (around
+  line 947, `-logaddexp(0, ∓z)`), not a function, so it cannot be called unchanged. Version 1 writes
+  a neutral helper for the log-space Hill factors, used by this operator, with a bitwise-agreement
+  test against D152's expression. D152 stays untouched during MG0c and adopts the helper at its next
+  version, under crossrev.
+- **Step bounds.** One of its own: dt·(k_on + k_off) ≤ 1 for every state (§1.4), checked at the
+  definition. `inner_check_spec` is unchanged, because a factor ≤ 1 keeps @3's bound, taken at
+  availability 1, valid. @3's run-time refusal reads the effective availability.
 - **Cost (S).** O(routes) per step for the factors and O(states × cells) per half-step. Both are
   negligible beside @3's field solves. The operator provides no field input, so the 64-node cap does
   not apply to it.
@@ -509,9 +544,10 @@ conclusion for the guards.
 ### 1.10 Idleness (D136), crossrev and the batch signature
 
 There are three claims, in D150's and D152's form.
-1. **Not declared. Promised.** The operator is a new module, and version 1 changes no shared code.
-   Every existing composition's jaxprs, constants and bindings are identical under the
-   constants-aware crossrev, in all five sets. The operator's own set gets its first record at
+1. **Not declared. Promised.** The operator and the Hill helper are new modules. Version 1's one
+   shared change is the field map's `factors` entry, which is manifest-only (§1.7). Every existing
+   composition's jaxprs, constants and bindings are identical under the constants-aware crossrev, in
+   all five sets. The operator's own set gets its first record at
    landing.
 2. **Declared, but idle or switched off. Promised:** every field is bitwise equal to the composition
    without the operator. That covers three cases:
@@ -538,9 +574,11 @@ the crossrev records show it (D148).
   species in the world (D150's cap and message).
 - **Targets.** A target operator other than `inner` in version 1. A control other than `junction` or
   `channel`. An unknown element id, or an element named twice by one coupling. A side on a channel
-  target, or a junction side other than sender, receiver or both.
+  target, or a junction side other than first, second or both. A channel target before milestone 1
+  passes (ruling 12).
 - **Laws.** A law that does not match its source kind. K ≤ 0, n ≤ 0, b outside [0, 1), negative
-  rates, s₀ or θ outside [0, 1], a state with no input.
+  rates, s₀ or θ outside [0, 1], a state with no input, a state with dt·(k_on + k_off) > 1
+  (ruling 5).
 - **Locality.** A state source not declared in every cell the coupling reads.
 - **Replacement.** A coupling target, a state cell or a junction endpoint on a slot that
   replacement@1 replaces.
@@ -561,7 +599,7 @@ write count. Either refuses the step, which returns the start state.
 | `membrane_entity_state@1` | Composes | It provides membrane views; this operator multiplies controls |
 | D150's turnover and exchange | Composes | They write rows this operator reads. Any order is second order (§1.4) |
 | D152's reactions | Composes | Reads are not writes (§1.7) |
-| `scheduled_cell_replacement@1` | Composes on slots it does not replace | Rates and couplings belong to the occupant (D150 §5.2), and the state needs a reset rule. The 1.1 door: D150's occupant tables for parameters, and §1.5's reset and inheritance |
+| `scheduled_cell_replacement@1` | Composes on slots it does not replace | Rates and couplings belong to the occupant (D150 §5.2), and the state needs a reset rule. The 1.1 door, when the coupled-renewal gate asks (ruling 10): D150's occupant tables for parameters, and §1.5's reset and inheritance |
 | Water; the lumens; replacement@2 | Refused (volumes) | See below |
 | Insertion@1 and @2; the partition; the bridge | Refused (masks) | See below |
 | The k-anion symport | Waits | It requires water |
@@ -647,6 +685,9 @@ decision is the user's question 2 (§6.4).
 
   Option (a) keeps the condition with the state's owner and the event with its operator, so one
   mechanism serves every event operator. This note leans to (a); it does not settle it.
+- **The operator's split comes with this door** (ruling 2). Version 1 keeps one operator. The trigger
+  is the first reader of a state outside it, so the state owner and the factor provider separate
+  when this door is designed.
 
 ### 2.3 What prescription binds at the definition today
 
@@ -712,7 +753,7 @@ decision is the user's question 2 (§6.4).
 
 | # | Wall: the refusal in code | What is missing | Lifting it requires | Door or new | Owner |
 | --- | --- | --- | --- | --- | --- |
-| W1 | D150's turnover and exchange, D152's reactions and this operator refuse closers (the masks in `CONFLICTS_VIEW`) | Reads and writes at the view; no evolution on closed slots; daughters as new carriers; per-carrier state carried at birth | **One liveness rule**: select by the view's liveness at run time, which serves triggered births too, where definition-time living intervals cannot. D150 §5.2's daughters as new carriers. This operator's states copied or declared at birth. The view in half-steps and factors (contract) | Doors: D150 §5.3 (v1.1), D152 §7.3 ("Closers"), this note's 1.1 | D150's and D152's notes and this note; the contract change is the lead's |
+| W1 | D150's turnover and exchange, D152's reactions and this operator refuse closers (the masks in `CONFLICTS_VIEW`) | Reads and writes at the view; no evolution on closed slots; daughters as new carriers; per-carrier state carried at birth | **One liveness rule, designed once, as step 1 of newborn integration** (ruling 8): select by the view's liveness at run time, which serves triggered births too, where definition-time living intervals cannot. D150 §5.2's daughters as new carriers. This operator's states copied or declared at birth. The view in half-steps and factors (contract) | Doors: D150 §5.3 (v1.1), D152 §7.3 ("Closers"), this note's 1.1 | D150's and D152's notes and this note; the contract change is the lead's |
 | W1b | The bridge beside inventory species | A material-rate bound for neutral species on junctions | @3's queued D148 round (probe C4), then D150 v1.1's bridge | Door, queued | The lead (D148) |
 | W2 | The partition refuses replacement, and the formation law lives inside replacement@1 and @2 | A maturation law any arrival can initialise; one owner of junction abundance | §3.3's contact-maturation process, with replacement preserved through a guarded composition | **New work** | A short design note in the lifecycle line (milestone 2) |
 | W2b | The partition beside replacement (renewal and division in one tissue) | Replacement books on the declared layout and does not refuse a slot that is not live | S5 §5.5's three extensions | Door | S5's note |
@@ -774,7 +815,7 @@ than 7 species.
 
 | Step | Content | Walls it lifts | Prerequisites |
 | --- | --- | --- | --- |
-| **1. The reaction inventory and its state across partition** | D152's network, D150's turnover and exchange, and this operator's states through prescribed 1 → 2 and 1 → 2 → 4 divisions. Species split by f with the partition's bookings, daughters' rates as new carriers, states copied or declared at birth | W1 (W4 if needed) | Version 1; D150's and D152's acceptances |
+| **1. The reaction inventory and its state across partition** | The one liveness rule, designed once here for D150's, D152's and this operator (ruling 8). D152's network, D150's turnover and exchange, and this operator's states through prescribed 1 → 2 and 1 → 2 → 4 divisions. Species split by f with the partition's bookings, daughters' rates as new carriers, states copied or declared at birth | W1 (W4 if needed) | Version 1; D150's and D152's acceptances |
 | **2. Contact formation after birth** | §3.3's process, initialised by the partition's births. The guarded replacement composition, if the lead wants it now | W2 | The user's start-state decision (§3.5) and its sources |
 | **3. The effect of newborn integration on an already qualified conduction model** | The slow world (division and maturation) feeds conduction assays (D155's two clocks). An assay can run as a new run from imported state (D153), with no closer, so the 64-node cap binds only the slow world (**S**) | W3c, for sheet-scale slow worlds | Track E's excitable tissue qualified (D155 item 4); steps 1 and 2 |
 | **4. Volume-dependent and pump or lifecycle interactions, when a consumer needs them** | Water beside the partition, with this operator's water door; pumps on dividing cells; replacement beside the partition; slot reuse and re-anchoring | W3b, W3a, W2b; milestone 2's anchor and reuse decisions | A consumer's need |
@@ -804,6 +845,7 @@ plaques. Division is different, and S5 today keeps the mother's junctions (§3.1
   first (D136).
 - The lead's suggestion, for the user to rule on: admit (C) as the general rule, with (A) and (B) as
   its cases, once the sources are read.
+- **Held by the lead** until the division sources are read (§6.4).
 
 ## 4. Qualification
 
@@ -855,12 +897,12 @@ of record are therefore value checks:
 
 | Item | World | Shows | Criterion |
 | --- | --- | --- | --- |
-| **M1 (milestone 1, contract fit)** | Tiny worlds, each of the two targets | The first factored `channel` path through `control_view` and `held_schedules`: step and observation equal the same availability scheduled | Bitwise. If a shared path needs a fix, D148 applies and the lead decides |
+| **M1 (milestone 1, contract fit), first** | Tiny worlds, each of the two targets | The first factored `channel` path through `control_view` and `held_schedules`: step and observation equal the same availability scheduled. With A3 it is the replay check of the electrical leg (ruling 12) | Bitwise. If a shared path needs a fix, D148 applies and the lead decides. The channel target enters the accepted scope only when M1 passes |
 | **A1 Factor values** | Host and device evaluations over grids of c, K, n, b and s | Each law and side, the products | Within a few ulps of R-fac |
 | **A2 The state** | One cell; regulator cleared first order by turnover; also a production pulse | s(t), U(t), the crossing step | Frozen input: exact to rounding at every dt. Moving input: second order, against R-state |
 | **A3 Identity, zero and multiple factors** | One cell and two cells | *Identity* (switched off, or untargeted): no regulation; equal to the world without the operator. *Zero* (b = 0 and s = 0 under `state_fraction`): the target unavailable, carrying no transport and no heat while its gate still evolves; equal to availability 0 scheduled. *Multiple* (two couplings on one element times a schedule below 1): independent mechanisms multiply; equal to the product scheduled | Bitwise against the comparison world, using exactly representable values (s = 0.5, 0.25, a schedule of 0.5) |
-| **A4 Reciprocal feedback** | R-feedback's two cells | Inventory → effective control → electrical response → inventory, under dt refinement at four step sizes, plus a fast-rate arm | Against the coupled-ODE reference: expected order 2 (**S**), with the error at the production dt reported against its tolerance and the fast arm's order constant reported |
-| **A5 The channel response** | R-cell's one cell; a neutral regulator with closed-form kinetics, instantaneous form | The first integrated milestone: inventory → effective control → measurable electrical response (voltage and amounts) | Against R-cell, tolerance from the dt study |
+| **A4 Reciprocal feedback** | R-feedback's two cells: the junction target, an ion source through a regulatory state (ruling 1) | Inventory → effective control → electrical response → inventory, under dt refinement at four step sizes, plus a fast arm at the largest admitted rates, dt·(k_on + k_off) near 1 (ruling 5) | Against the coupled-ODE reference: expected order 2 (**S**), with the error at the production dt reported against its tolerance and the fast arm's order constant reported |
+| **A5 The channel response** (after M1) | R-cell's one cell; a neutral regulator with closed-form kinetics, instantaneous form | The first integrated milestone: inventory → effective control → measurable electrical response (voltage and amounts) | Against R-cell, tolerance from the dt study |
 | **A6 Locality** | Two cells with no path between them; two species | *An unrelated cell:* every control and the whole trajectory of a cell the coupling does not target is bitwise unchanged. *An unrelated species:* perturbing a species the coupling does not read leaves every factor bitwise unchanged, and the operator writes no species row | Bitwise |
 | **A7 Volume** | Water, a lumen, replacement@2 | A conserved amount with changing volume is refused at the definition in version 1, with the reason named. The water door's own acceptance, concentration following n/V(t) at conserved n, is recorded for 1.1 | Refusal |
 | **A8 Restart, windows and observation** | A2's and A4's worlds | Bitwise state across a restart at, before and after writes, switches and crossings; across window boundaries; through a written snapshot. Identical crossing steps. Identical observed factors at identical rows | Bitwise |
@@ -933,8 +975,8 @@ The test is whether a benchmark exercises species → physical control, or node 
 
 | Part | Agent-days |
 | --- | --- |
-| Milestone 1: the contract fit, the first factored channel path, the parser, refusals and binding | 1.0 |
-| The laws: factors, the exact two-state half-step; the event map (switches, writes, crossings, counter) | 1.0 |
+| Milestone 1: the contract fit, the first factored channel path, the parser, refusals and binding; the field map's `factors` entry | 1.0 |
+| The laws: the neutral Hill helper and its agreement test against D152's expression, the factors, the exact two-state half-step; the event map (switches, writes, crossings, counter) | 1.0 |
 | Observation, the summary and the tier-1 smoke (under 20 s) | 0.5 |
 | Guards in the branch: idleness, the crossrev set, restart and windows, vmap, refusals, A3 and A6 | 1.0 |
 | **Independent references, by a second agent that never reads the operator's code**: R-fac, R-state, R-cell and R-feedback from R-tissue, and the usage note | 1.0–1.5 |
@@ -950,46 +992,82 @@ The test is whether a benchmark exercises species → physical control, or node 
 
 ### 6.2 Order of work
 
-1. **This note's review**, the lead with the advisor.
-2. **Version 1's code.** Milestone 1 (the channel path) first, then the operator and its guards. The
-   independent references run in parallel. Nothing blocks the code: D150 v1's and D152 v1's code is
-   on main.
-3. **The judged numerical qualification**, after D150 v1's acceptance, since its references use
-   turnover's closed forms. Whether A1–A9 may be judged earlier with frozen and constant regulators
-   only is question 11.
-4. **The first consumer**, Track R version 2 (§4.5), after D152's acceptance (MG0c).
-5. **Then §3.4's four steps**, with §2's doors placed as stated there.
+1. **This note's review**, the lead with the advisor: accepted on 14 November 2026 (§6.3).
+2. **Version 1's code.** Milestone 1 first: the factored channel path and, with A3, the replay check
+   of the electrical leg (ruling 12). Then the operator and its guards. Nothing blocks the code:
+   D150 v1's and D152 v1's code is on main.
+3. **The independent references.** Their agent starts once milestone 1 has fixed the declaration
+   (ruling 11).
+4. **The judged numerical qualification**, after the code (ruling 11). Its references use
+   turnover's closed forms, so D150 v1's acceptance comes first.
+5. **The first consumer**, Track R version 2 (§4.5), after D152's acceptance (MG0c).
+6. **Then §3.4's four steps**, with §2's doors placed as stated there.
 
-### 6.3 Questions for the lead
+### 6.3 Questions for the lead, and the rulings
+
+The lead, with the advisor, ruled on every question on 14 November 2026. Each ruling is recorded
+against its question, and the in-text changes are marked with the ruling's number.
 
 1. **Ion sources in version 1**, the largest step beyond "a species sets availability". They enter
    through the kinetic form only, by a read-only species list: D152's unopened door "reads of
-   charged or permeant species" (its §7.3), taken here for this operator alone. The consequence of
-   refusing them: version 1 has no admissible reciprocal-feedback world, because nothing electrical
-   moves a neutral, impermeant source. A4 would then wait for the ion door, and version 1 would be
-   one-way coupling only.
+   charged or permeant species" (its §7.3). The consequence of refusing them: version 1 has no
+   admissible reciprocal-feedback world, because nothing electrical moves a neutral, impermeant
+   source.
+   - *Ruled:* **yes, through the regulatory state only.** Instantaneous factors of moving rows stay
+     refused.
+   - §1.5's claim that the state is "the only second-order route" is corrected. A D152 species pair
+     with read-only ion reads would also be Strang second order, since its half-steps read the ion
+     before and after @3's step. The reasons that hold (§1.5): there is no named molecular carrier,
+     so no moiety and no free energy; the species cap, since a pair costs two rows; and binding
+     kinetics on a target.
+   - The read-only read of a charged source is one mechanism, designed here, which D152's v1.1 door
+     reuses rather than building a second (§1.3).
+   - A4's reference, R-feedback built from R-tissue with a(t) on P·A, stays within §6.1's 1.0–1.5
+     days.
 2. **One operator, or two?** As here, one operator holds states and couplings. The alternative is a
    state owner and a factor provider, with a cross-operator state read added to the contract now.
-   That would pay off when the trigger, D152's factors or a gene-regulation layer read states.
+   - *Ruled:* **one operator in version 1.** The split into a state owner and a factor provider
+     comes with the trigger door (§2.2).
 3. **The basal level b** (the four-parameter Hill form, Goutelle et al. 2008) in version 1?
+   - *Ruled:* **yes.**
 4. **The junction side "both"** in version 1, as our modelling choice (S)?
+   - *Ruled:* **"both" (S), plus "first" and "second"** (§1.3).
 5. **A run-time loop bound for feedback** (§1.4), or A4's measured regime as the declared limit?
+   - *Ruled:* **no unenforced limit.** u is a product of Hill factors in [0, 1], so
+     λ ≤ k_on + k_off. The definition refuses dt·(k_on + k_off) > 1, as D152 refuses dt·L > 1. A4's
+     fast arm lies inside the admitted range and reports the order constant there (§1.4).
 6. **A `factors` entry** in the manifest's field map, recording the chain of factors?
+   - *Ruled:* **yes** (§1.7).
 7. **The Hill evaluation:** a neutral helper that D152 adopts later under crossrev, or repeated with a
    bitwise-agreement test against D152's kernel?
+   - *Ruled:* D152's evaluation is inline (`species_reactions.py`, around line 947:
+     `-logaddexp(0, ∓z)`), not a function, so it cannot be called unchanged. **A neutral helper** is
+     written for this operator, with a bitwise-agreement test against D152's expression. D152 stays
+     untouched during MG0c and adopts the helper at its next version, under crossrev (§1.9).
 8. **One liveness rule** for D150, D152 and this operator beside closers, designed once, at run time
    rather than from definition-time living intervals (W1)?
+   - *Ruled:* **one liveness rule, designed once, as step 1 of newborn integration** (§3.2, §3.4).
 9. **The crossing record and step counter** in version 1, for A8 and A10's threshold time, or deferred
    to the trigger door?
+   - *Ruled:* **yes, in version 1.**
 10. **Version 1.1's replacement rule** (D150's occupant tables; reset and inheritance at replacement):
     next after version 1, or when the coupled-renewal gate asks?
+    - *Ruled:* **when the coupled-renewal gate asks** (D144).
 11. **The judged qualification's timing:** after D150's acceptance, or partly now with frozen and
     constant regulators?
-12. **Probe P1** (the channel path) before this note's acceptance, if the lead prefers it to
-    milestone 1. The door probes P2 (outside-node sources through a state) and P3 (an instantaneous
-    factor of a moving row) wait for their consumers.
+    - *Ruled:* **after the code.** The references agent starts once the code's milestone 1 has fixed
+      the declaration (§6.2).
+12. **Probe P1** (the channel path) before this note's acceptance, or as milestone 1. The door probes
+    P2 (outside-node sources through a state) and P3 (an instantaneous factor of a moving row) wait
+    for their consumers.
+    - *Ruled:* **the accepted scope is the junction target; the channel target is pending
+      milestone 1.** M1's bitwise comparison, the factored path against the same availability
+      scheduled, is with A3 the replay check of the electrical leg, and it stays first (§4.4).
 
 ### 6.4 Questions for the user
+
+**Held by the lead (14 November 2026).** None blocks version 1, and they stay here. Question 3 (§3.5)
+waits until the division sources are read.
 
 1. **The benchmark.** The yeast cell-cycle model tests a network, not this coupling (§4.6). Do you
    accept a numerical first acceptance now, with a biological benchmark of species → physical
