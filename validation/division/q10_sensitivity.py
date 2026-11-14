@@ -34,8 +34,13 @@ Compared at the last two records, after every variant's divisions and closure:
 * the bridge's exchange (its transfer plus its record);
 * the furrow world's lumen volume and composition.
 
-Usage: python -m validation.division.q10_sensitivity OUTPUT_DIR (through
-scripts/run_detached.sh; about 30 runs, each compiling, about 15 minutes on one core).
+The step: dt, 1 ms by default (the fixtures'). Q5 puts the bridge exchange's step term at 7.6%
+between 0.5 and 0.25 ms, so changes measured at 1 ms are not converged; the registered Q10 runs
+at 0.25 ms or finer (the lead). Every time above is an exact k * dt at 1, 0.5, 0.25 and 0.125 ms,
+and the run checks it.
+
+Usage: python -m validation.division.q10_sensitivity OUTPUT_DIR [DT] (through
+scripts/run_detached.sh; about 30 runs, each compiling, about 15 minutes on one core at 1 ms).
 """
 
 import json
@@ -61,8 +66,13 @@ SECOND = 0.005  # s: the 1->2->4 daughters' division, after every variant's clos
 NOMINAL_TP = 0.002
 
 
-def world(family, tp, scale, injected):
-    """(raw, compare records) of one variant."""
+def on_grid(time, dt):
+    """True when time is exactly k * dt for an integer k (the schedules' own test)."""
+    return round(time / dt) * dt == time
+
+
+def world(family, tp, scale, injected, dt=fx.DT):
+    """(raw, compare records) of one variant at step dt."""
     bridge = ("linear", TAU, scale * fx.APERTURE_M)
     current = INJECTION_A if injected else None
     window = dict(injection=current, injection_start=INJECTION_START)
@@ -76,6 +86,9 @@ def world(family, tp, scale, injected):
         raw = fx.cleft_divided(at=tp, end=0.006, bridge=bridge, **window)
         records = [0.005, 0.006]
     raw["experiment"]["observation_times"] = [0.0, *records]
+    raw["execution"]["dt"] = dt
+    times = (tp, TAU, INJECTION_START, SECOND, fx.ONSET, raw["experiment"]["end_time"], *records)
+    assert all(on_grid(t, dt) for t in times), (dt, times)
     return raw, records
 
 
@@ -149,12 +162,13 @@ def changes(nominal, other):
     return out
 
 
-def main(output):
+def main(output, dt=fx.DT):
     jax.config.update("jax_enable_x64", True)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     report = dict(
         status=STATUS,
+        dt_s=dt,
         engine_models=[
             "resolved_pump_composite@1",
             "resolved_pump_tissue@3",
@@ -185,7 +199,7 @@ def main(output):
             key = f"{family}{' + injection' if injected else ''}"
             results, baselines, accepted = {}, {}, {}
             for label, tp, scale, baseline in variants(family):
-                raw, records = world(family, tp, scale, injected)
+                raw, records = world(family, tp, scale, injected, dt)
                 spec = parse_spec(raw)
                 start = time.perf_counter()
                 result = run(spec)
@@ -211,4 +225,4 @@ def main(output):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], *(float(x) for x in sys.argv[2:3]))

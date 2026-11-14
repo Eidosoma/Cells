@@ -24,15 +24,41 @@ Cases:
 * each world's events: the compact symmetric and asymmetric worlds, the neighbour contact, the
   bridge world's first and second divisions, the asymmetric furrow world with a bridge, and the
   second-onset world's first division;
+* the simultaneous second divisions as the engine applies them: in the bridge world and in the
+  second-onset world (each daughter with its old patch, its first furrow and its own second
+  furrow onto its own cleft), both daughters divide at one time, and the engine's one event (its
+  due vector from the schedule) is compared with R-ops applying the two divisions one after the
+  other, in both orders. Each division's daughter fields compare with its own application; the
+  potentials with the last application's; the clamps' image charge with the sum of both;
 * 200 random pre-event states on each of two compact neighbour worlds, the symmetric one and
   an asymmetric one (f 0.75, a 0.6, three carriers): random increments, histories, patch
   growth, abundances and gates. The daughters' population abundances and gates are compared
   too, from R-ops' post-event snapshot.
 
+The random states' sampling rule (the lead's ruling: inside @3's domain). Each draw (perturbed)
+changes each live cell's content by uniform fractions within 1e-3 of each amount, made neutral
+by M (the permeant anion), plus a net charge, carried by K, uniform within 10% of the cell's
+declared charge; the patches, populations and contact get random histories, growth,
+abundances and gates. A draw is admitted only if it passes the composite's own domain check
+with the control at the event (@3's domain at the view, each operator's domain and control
+checks, and the readouts' validity) and the charge bound: every live cell's net charge within
+CHARGE_BAND (10%) of its declared charge. A rejected draw is redrawn, and the report counts
+draws and rejections. The tolerance is 64 eps x R-ops' magnitudes throughout; no magnitude is
+taken from the engine's representation.
+
+Disclosed out-of-domain run: comparisons-s5a9 (snapshot-s5a9, 6c2b118) drew uncompensated
+increments within 1e-3 of each amount: net charges about four times the membrane's, potentials
+near 0.3 V. The asymmetric states reached 94.7 on the post-event potentials (and 73.6 on the
+moved amounts, 33.0 on a daughter's charge). The cause: the engine forms node charges in
+increment form (anchor + F sum z dn), and its rounding there scales with the increments' ionic
+content, which R-ops' charge-form magnitudes do not count. (That run also passed population
+abundances per area; 5234ba8 passes units.)
+
 Usage: python -m validation.division.q2_rops_comparison OUTPUT_DIR. It is NumPy only, about a
 minute.
 """
 
+import dataclasses
 import json
 import sys
 from pathlib import Path
@@ -51,6 +77,8 @@ from validation.division import partition_reference as rops
 
 STATUS = "Development comparison for Q2 (S5a); not judged"
 RANDOM_STATES = 200
+CHARGE_BAND = 0.1  # The charge bound: |Q - Q_declared| <= 0.1 |Q_declared| for every live cell.
+MAX_DRAWS = 20  # Draws allowed for one admitted random state.
 EPS = float(np.finfo(float).eps)
 
 
@@ -225,8 +253,8 @@ def ratio(engine, reference, magnitude):
     return float(np.max(delta / np.maximum(EPS * magnitude, np.finfo(float).tiny)))
 
 
-def compare(world, d, before, after, result):
-    """{key: worst ratio} of one division (module docstring)."""
+def compare(world, d, before, after, result, *, skip=()):
+    """{key: worst ratio} of one division (module docstring), without the keys in skip."""
     w, v, mag = world, result.values, result.magnitudes
     p, z = w.p, np.ravel(w.p.valence)
     q1 = w.view(after)
@@ -309,6 +337,8 @@ def compare(world, d, before, after, result):
         ratio(image[w.nodes.index(b)], value, mag["image_charge_C"][b])
         for b, value in v["image_charge_C"].items()
     )
+    for key in skip:
+        del out[key]
     work = np.asarray(after.partition_work_pJ) - np.asarray(before.partition_work_pJ)
     out["work_pJ"] = ratio(work[index[d.parent]], v["work_pJ"], mag["work_pJ"])
     # The daughters' populations, from R-ops' post-event snapshot: abundance and gates.
@@ -344,7 +374,12 @@ def perturbed(world, rng):
     delta[k] += rng.uniform(-0.1, 0.1, len(cells)) * charge / CHARGE_PER_FMOL
     fields["amount_increment"][:, cells] = delta
     live = [world.patches.index(k) for k in ("membrane_0", "membrane_1")]
-    fields["membrane_transferred"][:, live] = rng.normal(0, 1e-4, (amounts.shape[0], len(live)))
+    # Histories only on routes @3 admits: a species a patch or contact does not pass, and a gate
+    # row a population does not have, hold 0 (@3's domain).
+    permeable = np.asarray(world.p.membrane_permeability)[:, live] > 0
+    fields["membrane_transferred"][:, live] = permeable * rng.normal(
+        0, 1e-4, (amounts.shape[0], len(live))
+    )
     fields["membrane_dissipated_energy_pJ"][live] = rng.uniform(0, 1e-5, len(live))
     growth = rng.uniform(0, 1e-12, len(live))
     fields["membrane_area_increment_m2"][live] = growth
@@ -354,12 +389,14 @@ def perturbed(world, rng):
         if world.patches.index(c.membrane_id) in live
     ]  # fmt: skip
     fields["population_abundance_increment"][channels] = rng.uniform(0, 1e8, len(channels))
-    fields["channel_gate"][:, channels] = rng.uniform(
+    gated = np.asarray(world.p.channel_gate_active)[:, channels]
+    fields["channel_gate"][:, channels] = gated * rng.uniform(
         0, 1, (fields["channel_gate"].shape[0], len(channels))
     )
     contact = world.junctions.index("contact")
     fields["junction_gate"][contact] = rng.uniform(0.1, 1.0)
-    fields["junction_transferred"][:, contact] = rng.normal(0, 1e-5, amounts.shape[0])
+    passes = np.asarray(world.p.junction_permeability)[:, contact] > 0
+    fields["junction_transferred"][:, contact] = passes * rng.normal(0, 1e-5, amounts.shape[0])
     fields["junction_dissipated_energy_pJ"][contact] = rng.uniform(0, 1e-6)
     return type(s)(**fields)
 
@@ -390,12 +427,47 @@ def cases():
     return out
 
 
+def control_at(world, time):
+    """The composite's control at one time of the schedule (NumPy)."""
+    values = fx.cs.control_values(world.spec, [time])
+    return world.model.CONTROL_TYPE(*(np.asarray(x[0]) for x in values))
+
+
+def admitted(world, state, time):
+    """(domain, charge) of a random draw (the sampling rule, module docstring): the composite's
+    own domain check with the control at time, and the charge bound on every live cell."""
+    p = world.p
+    with np.errstate(all="ignore"):
+        domain = world.model.domain_valid.with_control(
+            state, control_at(world, time), p, p.active, xp=np
+        )
+    q = world.view(state)
+    cells = np.flatnonzero(np.asarray(q.active))
+    z = np.ravel(p.valence)
+    delta = np.asarray(state.amount_increment)[:, cells]
+    charge = np.asarray(q.initial_cell_charge_C)[cells] + CHARGE_PER_FMOL * (z @ delta)
+    declared = np.asarray(p.initial_cell_charge_C)[cells]
+    return bool(domain), bool(np.all(np.abs(charge - declared) <= CHARGE_BAND * np.abs(declared)))
+
+
+def patch_voltages(world, state):
+    """Each live patch's voltage at the view (V)."""
+    q, p = world.view(state), world.p
+    phi = adapter.node_potentials(state, q, xp=np)
+    n = len(world.cells)
+    return np.array(
+        [
+            phi[int(p.membrane_cell[k])] - phi[n + int(p.membrane_outside[k])]
+            for k in np.flatnonzero(np.asarray(q.membrane_active))
+        ]
+    )
+
+
 def opened(world):
     """The furrow worlds' state after the first onset and one insertion half-step: the furrow
     and its cleft are live, and the furrow has grown, as at the division."""
     ops = {op.LAW_ID: op for op in world.model.operators}
-    values = fx.cs.control_values(world.spec, [fx.ONSET])
-    control = world.model.CONTROL_TYPE(*(np.asarray(x[0]) for x in values))
+    control = control_at(world, fx.ONSET)
     state, ok = ops[fx.INSERTION2].event(world.state, control, world.p, xp=np, view=world.view)
     assert ok
     state, ok = ops[fx.INSERTION2].half_step(
@@ -405,11 +477,93 @@ def opened(world):
     return state
 
 
+def simultaneous_cases():
+    """(label, world, pre-event state, time) of each world's simultaneous second divisions."""
+    out = []
+    world = Bound(fx.divided(bridge=("linear", 0.001), second=0.003, end=0.005))
+    first, ok = world.event(world.state, control_at(world, fx.EVENT).partition_due)
+    assert ok
+    closed = first._replace(bridge_aperture_m=np.zeros_like(first.bridge_aperture_m))
+    out.append(("bridge world", world, closed, 0.003))
+    world = Bound(fx.cleft_quartered())
+    out.append(("second-onset world", world, before_second(world), fx.SECOND))
+    return out
+
+
+def before_second(world):
+    """The second-onset world before its second divisions: the first onset with one insertion
+    half-step, the first division, both second onsets with one half-step (each daughter's first
+    furrow and its second furrow grow), and the bridge closed, as its linear closure has it."""
+    ops = {op.LAW_ID: op for op in world.model.operators}
+    state, ok = world.event(opened(world), control_at(world, fx.EVENT).partition_due)
+    assert ok
+    control = control_at(world, fx.SECOND_ONSET)
+    state, ok = ops[fx.INSERTION2].event(state, control, world.p, xp=np, view=world.view)
+    assert ok
+    state, ok = ops[fx.INSERTION2].half_step(
+        state, 0.5 * fx.DT, control, world.p, xp=np, view=world.view(state)
+    )
+    assert ok
+    return state._replace(bridge_aperture_m=np.zeros_like(state.bridge_aperture_m))
+
+
+def live_history(snapshot):
+    """A post-event snapshot as the next application's input. Its history still names the
+    retired slots, where it reads 0 (REFERENCES_USAGE: Result), and an input's history names
+    live slots only; those zero entries are dropped (asserted zero)."""
+    live = dict(
+        patch=set(snapshot.patches),
+        junction={*snapshot.contacts, *snapshot.bridges},
+        channel=set(snapshot.populations),
+    )
+    history = {}
+    for kind, slots in snapshot.history.items():
+        names = live[RECORD[kind][1]]
+        history[kind] = {k: v for k, v in slots.items() if k in names}
+        assert not any(np.any(v) for k, v in slots.items() if k not in names), kind
+    return dataclasses.replace(snapshot, history=history)
+
+
+def simultaneous(world, state, time, order):
+    """{key: worst ratio}: the engine's one event at time, every division due there applied
+    together as the engine applies them, against R-ops applying them one by one in order."""
+    due = np.asarray(control_at(world, time).partition_due)
+    divisions = {d.id: d for d in world.partition[1].divisions}
+    names = [d.id for d in world.partition[1].divisions]
+    pending = {names[k] for k in np.flatnonzero((due > 0) & (state.division_applied == 0))}
+    assert pending == set(order), (pending, order)
+    after, ok = world.event(state, due)
+    assert ok
+    snapshot, results = world.snapshot(state), []
+    for name in order:
+        result = rops.apply(snapshot, world.division(divisions[name], state))
+        results.append(result)
+        snapshot = live_history(result.snapshot)
+    out = {}
+    for k, (name, result) in enumerate(zip(order, results, strict=True)):
+        last = k == len(order) - 1
+        skip = ("image_charge_C",) if last else ("image_charge_C", "potentials_after_V")
+        for key, value in compare(world, divisions[name], state, after, result, skip=skip).items():
+            out[f"{name} {key}"] = value
+    image = np.asarray(after.electrode_charge_transferred_C) - np.asarray(
+        state.electrode_charge_transferred_C
+    )
+    out["image_charge_C"] = max(
+        ratio(
+            image[world.nodes.index(b)],
+            sum(r.values["image_charge_C"][b] for r in results),
+            sum(r.magnitudes["image_charge_C"][b] for r in results),
+        )
+        for b in results[0].values["image_charge_C"]
+    )
+    return out
+
+
 def main(output):
     jax.config.update("jax_enable_x64", True)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
-    report = dict(status=STATUS, tolerance_eps=64, cases={}, random={})
+    report = dict(status=STATUS, tolerance_eps=64, cases={}, simultaneous={}, random={})
     for label, world, state, due, division_id in cases():
         d = next(x for x in world.partition[1].divisions if x.id == division_id)
         result = rops.apply(world.snapshot(state), world.division(d, state))
@@ -417,6 +571,13 @@ def main(output):
         ratios = compare(world, d, state, after, result)
         report["cases"][label] = dict(engine_ok=ok, worst=max(ratios.values()), ratios=ratios)
         print(label, ok, f"{max(ratios.values()):.2f}", flush=True)
+    for label, world, state, time in simultaneous_cases():
+        entry = {}
+        for order in (("second_d1", "second_d2"), ("second_d2", "second_d1")):
+            ratios = simultaneous(world, state, time, order)
+            entry[" then ".join(order)] = dict(worst=max(ratios.values()), ratios=ratios)
+            print("simultaneous", label, order, f"{max(ratios.values()):.2f}", flush=True)
+        report["simultaneous"][label] = entry
     rng = np.random.default_rng(20261113)
     carriers = {"Na": 0.3, "K": 0.5, "M": 0.2}
     for label, raw in (
@@ -428,16 +589,40 @@ def main(output):
     ):
         world = Bound(raw)
         d = next(x for x in world.partition[1].divisions if x.id == "first")
-        worst = {}
+        worst, drawn, rejected = {}, 0, dict(domain=0, charge=0)
+        voltage, deviation = 0.0, 0.0
         for _ in range(RANDOM_STATES):
-            state = perturbed(world, rng)
+            for _ in range(MAX_DRAWS):
+                state = perturbed(world, rng)
+                drawn += 1
+                domain, charge = admitted(world, state, fx.EVENT)
+                rejected["domain"] += not domain
+                rejected["charge"] += not charge
+                if domain and charge:
+                    break
+            else:
+                raise RuntimeError(f"No admitted draw in {MAX_DRAWS} on the {label}")
+            voltage = max(voltage, float(np.max(np.abs(patch_voltages(world, state)))))
+            q = world.view(state)
+            cells = np.flatnonzero(np.asarray(q.active))
+            net = np.asarray(q.initial_cell_charge_C)[cells] + CHARGE_PER_FMOL * (
+                np.ravel(world.p.valence) @ np.asarray(state.amount_increment)[:, cells]
+            )
+            declared = np.asarray(world.p.initial_cell_charge_C)[cells]
+            deviation = max(deviation, float(np.max(np.abs(net / declared - 1.0))))
             result = rops.apply(world.snapshot(state), world.division(d, state))
             after, ok = world.event(state, (1.0,))
             assert ok
             for key, value in compare(world, d, state, after, result).items():
                 worst[key] = max(worst.get(key, 0.0), value)
         report["random"][label] = dict(
-            states=RANDOM_STATES, worst=max(worst.values()), ratios=worst
+            states=RANDOM_STATES,
+            draws=drawn,
+            rejected=rejected,
+            max_abs_patch_voltage_V=voltage,
+            max_net_charge_deviation=deviation,
+            worst=max(worst.values()),
+            ratios=worst,
         )
         print("random", label, f"{max(worst.values()):.2f}", flush=True)
     (output / "q2_rops.json").write_text(json.dumps(report, indent=1) + "\n")

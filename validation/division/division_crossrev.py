@@ -13,11 +13,12 @@ a J1 module, and the J2 bright line bars a module from holding a J1 source and a
 view_plate_reference_C) and partition_birth_gate are bindings, never compiled in.
 * Each is saved among every world's bound layout arrays.
 * Two value twins: a world and its copy with the cells' declared charges scaled by about 1.01
-  (through the fixed background; the daughters' re-split by the anchor rule) and, in the neighbour world, the contact's declared
-  gate moved. The twin's three references differ (E_ref and q_ref only, in a world whose one
-  junction is the fixed-open bridge), and its traced programs must equal the original's in text
-  and in every closed-over constant. A value compiled in would show in one or the other: a
-  scalar as a literal in the text, an array among the constants.
+  (through the fixed background; the daughters' re-split by the anchor rule) and, in the
+  neighbour world, the contact's declared gate moved. The twin's three references differ
+  (E_ref and q_ref only, in a world whose one junction is the fixed-open bridge), and its
+  traced programs must equal the original's in text and in every closed-over constant. A value
+  compiled in would show in one or the other: a scalar as a literal in the text, an array among
+  the constants.
 * No non-zero reference coincides with a closed-over constant of its own world's programs
   (dtype, shape and bytes). An all-zero array is not distinguishable this way and is reported.
 
