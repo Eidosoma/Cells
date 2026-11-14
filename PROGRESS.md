@@ -73,6 +73,29 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Checkpoint continuity's GPU extension of case 1 landed (D153, design §13.4; 14 November).** GPU
+  definitions are now admitted through the CPU-host probe, with `execution_device` patched, and the
+  admission record notes the patch
+  ([evidence](/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/impl/gpu-ext/)).
+  - **The code:** `src/cells/continuity.py`, which is host-only, with the probe, admission and
+    verification tools.
+    - A patched record also requires the probe's `jaxlib` to equal the resuming runtime's.
+    - The `to` runtime is the checkpoint's own, checked exactly on the GPU host.
+  - **A real L4 checkpoint:**
+    - It was admitted on the CPU host: P, B and H identical, the cuda module identical (1,799,725
+      characters).
+    - It then resumed on the L4 for its remaining four rounds, through a replacement event.
+    - The GPU-host loader checked the runtime and `jaxlib` exactly. Copies of the record with
+      `jaxlib` or the GPU platform version changed were refused.
+    - `verify_run` passed 17 of 17 checks, after a stand-in `inputs.json` for the probe's origin.
+      That is a limit for checkpoints written outside `dev_run.py`, noted as a follow-up.
+  - **Gates.**
+    - Crossrev identical in all five sets.
+    - Tier 1 and 2 at 266f5f1: 398 files, no changed outcome.
+    - Tier 1 after merging main, at 0644752: 316 files, no changed outcome.
+    - The new `test_continuity_gpu.py` (14 tests, 22.8 s) is added to the tier record at landing.
+      It had been run by the agent, not by the gates.
+
 - **D152 v1 milestone 3 landed: MG0c's driver, its development runs and a PROPOSED protocol
   (14 November).** Not registered, and no judged run
   ([protocol](validation/morphogenesis/protocols/mg0c_turing_v1.json); design §11.3;
