@@ -435,17 +435,24 @@ the one shared file it touches (the operator registry). The evidence and log are
   check (read, not tested here).
 - **Fixtures:** `validation/tissue/bath_schedule_fixtures.py`, the species-only dose leg.
 
-**The gates.** Each ran from a clean snapshot of the branch: the operator's commit 2a7e594, and the
-head c36a3fa, after the merge of main (species_regulated_availability@1's landing). Units
-`cells-fr10-m1-*` ran on CPU 2 with a 3G cap.
+**The gates.** Each ran from a clean snapshot of the branch, in units `cells-fr10-m1-*` on CPU 2
+with a 3G cap:
+- the operator's commit 2a7e594;
+- c36a3fa, the head after the first merge of main (species_regulated_availability@1's landing);
+- dae57ff, the tests stage alone, after the second merge of main (the architecture block's first
+  items and Track R). It is listed below the table.
 
 | Gate | Result |
 | --- | --- |
-| The tier-1 smoke, `tests/unit/test_bath_schedule.py` (NumPy) | At the head, 36 passed in 3.8 s: 22 at 2a7e594 in 3.5 s, plus the structure-check and end-time cases |
+| The tier-1 smoke, `tests/unit/test_bath_schedule.py` (NumPy) | At c36a3fa's tests stage, 36 passed in 3.8 s by pytest's clock (5 s wall). Every later figure from the tier tool was taken under load. At 2a7e594, 22 passed in 3.5 s; the extra cases are the structure-check and end-time ones |
 | B3, `tests/unit/test_bath_schedule_runs.py` (RK4 at 0.1 ms; a step from 1e-3 to 1.5e-3 mM at step 20 of 60) | Passed in 45 s, with every host check on every row. The record (`run-c36a3fa/b3-2/`) follows |
 | B5, idleness, `tests/unit/test_bath_schedule_idle.py` | Passed in 40 s: with no event, every inner field is bitwise equal to the composition without the operator |
-| Crossrev, every existing set, against the baseline of record at 21fb714 | Identical at 2a7e594 and at the head. Base: 36/36 jaxpr texts, 36/36 constants, 12/12 bindings. Qualification: 78/78, 78/78, 56/56. Injection and volume: 6/6, 6/6, 2/2 each. Division: 27/27, 27/27, 9/9, with its check holding |
-| The tier record | Committed from the third measure at the head, as the lead ruled. All three measures ran on an oversubscribed machine (load 15 to 22 on 8 CPUs), so load pushed every file across a tier boundary: the smoke to tier 2 (24.5 s), and B3 and B5 past the 90 s cap to tier 3. The lead re-measures them at a quiet time (HANDOFF) |
+| Crossrev, the five sets of the baseline of record at 21fb714 | Identical at 2a7e594 and at c36a3fa. Base: 36/36 jaxpr texts, 36/36 constants, 12/12 bindings. Qualification: 78/78, 78/78, 56/56. Injection and volume: 6/6, 6/6, 2/2 each. Division: 27/27, 27/27, 9/9, with its check holding. Main has since renewed the baseline of record at da94f81, with seven sets. Its species and reactions sets have not run on this branch |
+| The tier record | Committed from the third measure at c36a3fa, as the lead ruled. All three measures ran on an oversubscribed machine (load 15 to 22 on 8 CPUs), so load pushed every file across a tier boundary: the smoke to tier 2 (24.5 s), and B3 and B5 past the 90 s cap to tier 3. The lead re-measures them at a quiet time (HANDOFF) |
+
+**At dae57ff,** after the second merge of main, the tests stage passed all three files again,
+on the loaded machine (load average about 21): the smoke with 36 passed (17.5 s), B3 (193 s) and B5
+(126 s). The only commits after it change documentation, which lies outside the snapshot's scope.
 
 **B3's record:**
 - **The energy ledger is at rounding on every row.** Its largest residual is 8.5e-22 pJ before the
