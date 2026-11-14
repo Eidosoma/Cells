@@ -152,6 +152,7 @@ interfaces have one owner, the lead.
 | Live phase markers (a follow-on, not added to the fix in flight) | Binding, plan validation, compile and first window reported as they happen; preparation, execution, observation and output timed separately |
 | A bound-definition object, if the fix shows the need | Definition-invariant quantities bound once. State-dependent views (volumes under water, capacitance and masks under division) keep explicit update rules |
 | One production execution path | Vector windows for families with qualified device checks; the other paths declared as reference paths; shared admission and checkpoint validation |
+| **A closed internal compartment on the shared inventory (FR-1, high priority; D157)** | A cell-owned finite node with its own volume and inventory rows, bounded by one patch of its owning cell, with transfer to the cytosol that reconciles on both sides. Fixed topology and volume first. Dynamic internalisation (FR-2, priority 2, D158) follows, with retrieval's energy source designed together with the energy-pool doors. The site-occupancy primitive (FR-3, priority 2, D159) is designed alongside. Compartment pH (FR-4, the requester's priority 1, D160) follows FR-1, with the energy-pool and charged-reaction doors. State-conditioned transfer with leak and reseal (FR-5, the requester's priority 1, D161) follows FR-1 and FR-4. Design notes first ([FEATURE_REQUESTS.md](FEATURE_REQUESTS.md)) |
 | A run-view output (D154: every experiment must eventually be visualizable) | One shared path writes, beside `definition.json`, each run's geometry, entity identity, record metadata, events, representation per layer and scale; a short design note first (D142), aligned with the visualizer's consumer schema |
 | A compile policy | A rule for traced inputs and built-in constants, plus a resource budget around the existing executable cache |
 
@@ -225,7 +226,7 @@ cleft answer, and all three are now qualified (above).
 | A full profile of a representative step | Only 41.5 of the 154 ms batch step at 64 worlds is accounted for today |
 | GH200 measurements (needs access) | End-to-end cost, host and device memory, numerical agreement with CPU and L4 |
 | A field-solver interface | It keeps the field law and residual checks. Sparse or matrix-free alternatives are compared on one device, covering the IMEX, capacitor and offset solves and the 2,048-node limit |
-| A verdict on long-time methods | Multirate or quasi-steady methods qualified, or bounded, on histories and intervention responses (projective failed its qualification) |
+| A verdict on long-time methods | Multirate or quasi-steady methods qualified, or bounded, on histories and intervention responses (projective failed its qualification). The acceptance case includes an intervention applied during the slow phase (FR-8, D164). The coarse modes cover @1–@3 only, so a long-time path for composite operators needs a design note |
 
 Partitioning one world across devices is introduced only when single-device measurements
 justify it. Thousands of cells do not by themselves need several GPUs.
@@ -262,7 +263,7 @@ This is the heredity question: can a written state repeatedly renew?
 | One regulated functional-unit population | A regulated production rate; a finite precursor inventory; assembly and trafficking delays; insertion and removal; a quantitative abundance-to-function relation; partition at division |
 | One material account | All of these reconcile in one account and predict a measured physiological response |
 
-The choice of unit is the user's. Candidates where abundance is already state:
+The choice of unit is the user's. FR-7 (D163) asks that the chosen loop admit a species-driven production rate and an abundance-sourced factor in the composite. Candidates where abundance is already state:
 - the redistribution pumps (`resolved_redistribution@1/@2`);
 - junction formation.
 
