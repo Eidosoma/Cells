@@ -1,6 +1,6 @@
 # Secreted-species transport (design)
 
-**Status: accepted by the lead with the advisor, 13 November 2026 (merged at ffc985a). Version 1
+**Status: version 1 numerically qualified, 14 November 2026: its registered protocol passed every item, judged from a clean snapshot of main at f7f0592 (PROGRESS; tag `secreted-species-v1-qualified-2026-11-14`), within the protocol's stated scope.** Design accepted by the lead with the advisor, 13 November 2026 (merged at ffc985a). Version 1
 code: milestones 1 and 2 landed on main, 14 November 2026 (merge bbbc922), with the lead's
 rulings at milestone 1 in §12. Milestone 3 landed on main (merges 780f5d9 and 0698713). Its
 protocol was registered by the lead (registrar) on 14 November 2026 (§12.2). No judged run had
