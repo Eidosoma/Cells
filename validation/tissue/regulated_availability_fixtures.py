@@ -30,8 +30,10 @@ FLOOR_FMOL = 1e-20
 D_REGULATOR = 1e-10
 
 
-def sheet(*, end=0.02, dt=1e-3, observation_times=None, regulator_mM=REGULATOR_mM):
-    raw = rfx.heredity_sheet(radius=1, disc=0, dt=dt, end_time=end)
+def sheet(*, end=0.02, dt=1e-3, observation_times=None, regulator_mM=REGULATOR_mM, solver=None):
+    """The seven-cell sheet with R declared; `solver` as the sheet's (None: its IMEX default; "rk4"
+    needs dt near 2.5e-6, @3's explicit bound on this sheet)."""
+    raw = rfx.heredity_sheet(radius=1, disc=0, dt=dt, end_time=end, solver=solver)
     times = observation_times or sfx.grid_times(end, dt, end / 4)
     raw["experiment"]["observation_times"] = list(times)
     raw = add_inventory_species(
@@ -128,6 +130,35 @@ def frozen(name, cells, value):
 def fraction(name, control, ids, state_id, *, side=None):
     """A coupling F = s of a state on `ids` of `control` (b = 0)."""
     return coupling(name, control, ids, ("state", state_id), "state_fraction", side=side)
+
+
+SHARED_JUNCTION, SHARED_CHANNEL = "junction_0", "kir_3"  # cell_0 (H) to cell_3 (D); cell_3's Kir.
+SHARED_COUPLINGS = ("a", "b", "d", "k")
+
+
+def scheduled(*, junction=1.0, channel=1.0, end=0.03):
+    """The sheet without the operator, junction_0 and kir_3 held at the given availabilities."""
+    raw = schedule_junction(sheet(end=end), SHARED_JUNCTION, junction)
+    return schedule_channel(raw, SHARED_CHANNEL, channel)
+
+
+def shared_structure(*, on=(), s0=(1.0, 1.0), junction=1.0, channel=1.0, end=0.03):
+    """One coupled structure for every bitwise arm (one compiled program): a frozen state s in
+    cell_0 and cell_3 (s0 per cell) and four state_fraction couplings (b = 0), each switched on (in
+    `on`) or off from time 0: a on junction_0's first side, b on its second, d on both sides, k on
+    kir_3."""
+    return with_coupling(
+        scheduled(junction=junction, channel=channel, end=end),
+        species=[REGULATOR],
+        states=[frozen("s", ["cell_0", "cell_3"], dict(cell_0=s0[0], cell_3=s0[1]))],
+        couplings=[
+            fraction("a", "junction", [SHARED_JUNCTION], "s", side="first"),
+            fraction("b", "junction", [SHARED_JUNCTION], "s", side="second"),
+            fraction("d", "junction", [SHARED_JUNCTION], "s", side="both"),
+            fraction("k", "channel", [SHARED_CHANNEL], "s"),
+        ],
+        switches={c: [(0.0, int(c in on))] for c in SHARED_COUPLINGS},
+    )
 
 
 def differing(a, b):
