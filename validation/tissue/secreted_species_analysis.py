@@ -18,15 +18,18 @@ forms (secreted_species_closed_forms).
   Reported beside them: the composite step's exact fixed point (the steady bias in full), and the
   step map iterated in NumPy (design §4.2: ARS's explicit stages or RK4's polynomial for the
   transport, the clearance's exact half-steps around it), which predicts the engine's error at every
-  shell and record.
+  shell and record; its agreement with the engine is measured against n_steps x eps x the scale
+  (a guard, not a judged item: tests/unit/test_secreted_species_step_map.py).
 * **Q2, the continuum closed forms** (space and time), per element and record: the 24 coarse 5 um
   shells' averages, the amount M, the source's cumulative supply, the outer bath's and the
   clearance, for the judged IMEX arm; the spatial step |q(2.5 um) - q(1.25 um)| at 0.5 ms; the time
   step |q(1 ms) - q(0.5 ms)| at 2.5 um; the reference term 64 eps x the scale (the closed form is
   exact); tolerance 3 x (spatial + time + reference).
-* **Controls** (development only). Q1's tolerances against references with k or D in error by a
-  relative delta: the smallest delta each rule catches, and where; Q2's against the planar-face arm
-  (the probes' faces).
+* **Controls** (judged, the lead's review of 14 November). Q1's: the judged arm's output against
+  R-discrete with k or D in error by a relative delta. Development finds the smallest delta each
+  rule catches, and where; the judged run uses a registered delta per rule and arm, CONTROL_MARGIN
+  x the larger of k's and D's, which every rule must catch for both. Q2's: the planar-face arm (the
+  probes' faces) must fail every quantity's tolerance.
 * **Q3, the orders** (S5's Q5 form: reported, the stop rules judged): spatial at 5, 2.5 and
   1.25 um (0.5 ms), temporal at 1, 0.5 and 0.25 ms (2.5 um). The stop rule is on successive
   differences per quantity and record, in the max norm over the quantity's elements:
@@ -54,6 +57,7 @@ Q1_ARMS = (
 DELTAS = tuple(m * 10.0**e for e in range(-14, 0) for m in (1, 2, 5))
 SCALARS = ("amount_fmol", "source_supplied_fmol", "outer_supplied_fmol", "cleared_fmol")
 QUANTITIES = ("coarse", *SCALARS)
+CONTROL_MARGIN = 10.0  # The judged controls' delta over the smallest caught (the lead).
 
 
 def load(out):
@@ -186,6 +190,50 @@ def smallest_caught(arm, measure, tolerance):
     return found
 
 
+def registered_delta(smallest):
+    """The judged control's delta for one rule and arm (the lead's review): CONTROL_MARGIN x the
+    larger of the smallest k and D deltas the rule caught in development (None if either was not
+    caught)."""
+    if any(v is None for v in smallest.values()):
+        return None
+    return float(f"{CONTROL_MARGIN * max(v[0] for v in smallest.values()):.3g}")
+
+
+def q1_measures(c):
+    """Each Q1 rule's measure of |engine - a reference| for the engine's concentrations c."""
+    return dict(dt_study=lambda ref: np.abs(c - ref), splitting_term=lambda ref: norm(c - ref))
+
+
+def control_fractions(arm, measure, tolerance, delta):
+    """{clearance, diffusivity: the largest fraction of the tolerance} of the measure against
+    R-discrete with that parameter x (1 + delta): above 1 the rule catches the control."""
+    tolerance = np.asarray(tolerance, dtype=float)
+    return {
+        name: float(np.max(measure(discrete(arm, **{name: value * (1.0 + delta)})) / tolerance))
+        for name, value in (("clearance", q.K), ("diffusivity", q.D))
+    }
+
+
+def step_map_agreement(arm):
+    """The engine against the step map iterated in NumPy (the lead's guard, reported in the judged
+    run): the largest |engine - map| over shells and records, against the rounding rule
+    n_steps x eps x the scale, and the engine's distance from R-discrete on the same bound."""
+    c = engine(arm)["concentration"]
+    n_steps = int(round(arm["times_s"][-1] / arm["dt_s"]))
+    scale = float(np.max(np.abs(c)))
+    bound = n_steps * q.EPS * scale
+    gap = float(np.max(np.abs(c - scheme_map(arm))))
+    exact = float(np.max(np.abs(c - discrete(arm))))
+    return dict(
+        n_steps=n_steps,
+        scale_mM=scale,
+        bound_mM=bound,
+        max_abs_mM=gap,
+        fraction_of_bound=gap / bound,
+        engine_minus_exact_over_bound=exact / bound,
+    )
+
+
 def q1_errors(arm):
     """[record, shell] |engine - R-discrete| (mM): Q1's judged quantity."""
     return np.abs(engine(arm)["concentration"] - discrete(arm))
@@ -202,6 +250,18 @@ def q1(arms, judged, half):
     formula, fixed = splitting_term(arm)
     split_tolerance = np.full(len(c), 3.0 * (abs(formula) + floor(scale)))
     predicted = scheme_map(arm)
+    measures = q1_measures(c)
+    controls = {}
+    for rule, tol in (("dt_study", tolerance), ("splitting_term", split_tolerance)):
+        smallest = smallest_caught(arm, measures[rule], tol)
+        delta = registered_delta(smallest)
+        controls[rule] = dict(
+            control_smallest_relative_error_caught=smallest,
+            control_registered_delta=delta,
+            control_fractions_at_registered_delta=None
+            if delta is None
+            else control_fractions(arm, measures[rule], tol, delta),
+        )
     return dict(
         judged=judged,
         step_arm=half,
@@ -216,9 +276,7 @@ def q1(arms, judged, half):
             fraction_by_record=np.max(error / tolerance, axis=1).tolist(),
             fraction_max=float(np.max(error / tolerance)),
             worst_shell=int(np.argmax(np.max(error / tolerance, axis=0))),
-            control_smallest_relative_error_caught=smallest_caught(
-                arm, lambda wrong: np.abs(c - wrong), tolerance
-            ),
+            **controls["dt_study"],
         ),
         splitting_term=dict(
             formula_first_shell_mM=formula,
@@ -226,18 +284,20 @@ def q1(arms, judged, half):
             error_max_norm_mM=norm(c - ref).tolist(),
             fraction_by_record=(norm(c - ref) / split_tolerance).tolist(),
             fraction_max=float(np.max(norm(c - ref) / split_tolerance)),
-            control_smallest_relative_error_caught=smallest_caught(
-                arm, lambda wrong: norm(c - wrong), split_tolerance
-            ),
+            **controls["splitting_term"],
         ),
         predictions=dict(
             formula_first_shell_of_c0=formula / q.C0,
             fixed_point_first_shell_of_c0=fixed / q.C0,
             first_shell_error_of_c0_by_record=((c[:, 0] - ref[:, 0]) / q.C0).tolist(),
             first_shell_step_term_of_c0_by_record=(step[:, 0] / q.C0).tolist(),
+            fixed_point_over_first_shell_error_minus_1_by_record=(
+                fixed / (c[:, 0] - ref[:, 0]) - 1.0
+            ).tolist(),
             error_max_norm_of_c0_by_record=(norm(c - ref) / q.C0).tolist(),
             scheme_map_error_max_norm_of_c0_by_record=(norm(predicted - ref) / q.C0).tolist(),
             engine_minus_scheme_map_max_of_c0=float(np.max(np.abs(c - predicted))) / q.C0,
+            step_map_agreement=step_map_agreement(arm),
         ),
     )
 

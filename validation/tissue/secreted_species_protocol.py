@@ -2,17 +2,19 @@
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §6, §7 and §12, with the lead's rulings of 13 and 14
 November. The protocol (validation/tissue/secreted_species_protocol.json) is PROPOSED: drafted here
-from the development runs named beside its numbers, for the lead's review with the advisor. Only
-the lead registers it, and registration changes its status alone.
+from the development runs named beside its numbers and revised after the lead's review with the
+advisor (14 November: the controls judged, the scope line, the closed form checked against the PDE,
+the step map a guard). Only the lead registers it, and registration changes its status alone.
 
 * judged_run_refusal / registered: the judge's first call. Before anything is computed or written,
   it refuses an unregistered protocol and a source that is not a clean execution snapshot
   (validation/source_snapshot.py), as S3's and S5's judges do.
 * draft DEVELOPMENT_DIR OUTPUT_JSON: the protocol from a development run's analysis.json
   (validation/tissue/secreted_species_analysis.py), every tolerance computed from it.
-* judge OUT (python -m validation.tissue.secreted_species_qualification judge OUT): the judged and
-  order arms, once, from a clean snapshot of main, against the frozen tolerances. It refuses an
-  existing OUT, since every attempt writes its own directory (S5's attempt rule).
+* judge OUT (python -m validation.tissue.secreted_species_qualification judge OUT): the judged,
+  order and control arms, once, from a clean snapshot of main, against the frozen tolerances and
+  registered controls; the step map's agreement is reported, not judged. It refuses an existing OUT,
+  since every attempt writes its own directory (S5's attempt rule).
 
 Usage: python -m validation.tissue.secreted_species_protocol draft DEVELOPMENT_DIR OUTPUT_JSON
 """
@@ -27,13 +29,14 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 PROTOCOL = ROOT / "validation/tissue/secreted_species_protocol.json"
 STATUS = (
-    "PROPOSED (drafted 14 November 2026 from the development runs named beside its numbers, for "
-    "the lead's review with the advisor; not registered, and no judged run is made before the "
-    "lead registers it)"
+    "PROPOSED (drafted 14 November 2026 from the development runs named beside its numbers and "
+    "revised the same day after the lead's review with the advisor; not registered, and no judged "
+    "run is made before the lead registers it)"
 )
 JUDGED_ARMS = ("dr2.5_dt1", "rk4_dr2.5_dt0.1")
 ORDER_ARMS = ("dr5_dt0.5", "dr2.5_dt0.5", "dr1.25_dt0.5", "dr2.5_dt0.25")
 TIME_ORDER = ("dr2.5_dt1", "dr2.5_dt0.5", "dr2.5_dt0.25")
+CONTROL_ARMS = ("planar_dr2.5_dt1",)  # Q2's judged control (the lead's review).
 EVIDENCE = "/mnt/workspaces/Cells/secreted-species-v1-20261114-01"
 FINDINGS = (  # Disclosed with the draft: what the development runs showed before any registration.
     "Two development runs. The first (qualification-dev-dc2e494, the arms from the clean snapshot "
@@ -61,8 +64,10 @@ FINDINGS = (  # Disclosed with the draft: what the development runs showed befor
     "element by element then failed at one coarse shell of 120, where the spatial error changes "
     "sign; hence successive differences in the max norm (Q3.why_the_max_norm)",
     "A preview verdict (S5's precedent: the judge's code on copies of the development arms, the "
-    f"guard bypassed in-process; {EVIDENCE}/qualification-dev-a7e1869-preview/verdict.json): "
-    "every item passes. It is no verdict",
+    "guard bypassed in-process), first before the lead's review "
+    f"({EVIDENCE}/qualification-dev-a7e1869-preview/verdict.json) and again with the judged "
+    f"controls after it ({EVIDENCE}/qualification-dev-a7e1869-preview-review/verdict.json): every "
+    "item passes, and every control is caught. It is no verdict",
 )
 GUARD_TESTS = (
     "tests/unit/test_species_turnover.py",
@@ -70,6 +75,7 @@ GUARD_TESTS = (
     "tests/unit/test_secreted_species.py",
     "tests/unit/test_secreted_species_closed_forms.py",
     "tests/unit/test_secreted_species_judged_refusal.py",
+    "tests/unit/test_secreted_species_step_map.py",
     "tests/unit/test_secreted_species_runs.py",
     "tests/unit/test_secreted_species_ions.py",
     "tests/unit/test_secreted_species_guards.py",
@@ -111,8 +117,50 @@ def _within(error, tolerance):
     return dict(passed=bool(np.all(error <= tolerance)), worst=float(np.max(error / tolerance)))
 
 
+def _q1_item(analysis, arm, entry):
+    """Q1 for one judged arm: both rules' bounds and their registered controls (k and D)."""
+    c = analysis.engine(arm)["concentration"]
+    error = np.abs(c - analysis.discrete(arm))
+    measures = analysis.q1_measures(c)
+    rules = {}
+    for rule, measured in (("dt_study", error), ("splitting_term", analysis.norm(error))):
+        tolerance = entry[rule]["tolerance_mM"]
+        bound = _within(measured, tolerance)
+        delta = entry[rule]["control_registered_delta"]
+        fractions = analysis.control_fractions(arm, measures[rule], tolerance, delta)
+        caught = all(f > 1.0 for f in fractions.values())
+        rules[rule] = dict(
+            bound=bound,
+            control=dict(delta=delta, fractions=fractions, caught=caught),
+            passed=bound["passed"] and caught,
+        )
+    return dict(passed=all(r["passed"] for r in rules.values()), **rules)
+
+
+def _q2_item(analysis, arms, refused, protocol):
+    """Q2: the judged IMEX arm within every tolerance; the planar-face arm, its control, outside
+    every quantity's."""
+    quantities = protocol["Q2"]["quantities"]
+    if "dr2.5_dt1" in refused:
+        return dict(passed=False, reason="arm dr2.5_dt1 refused")
+    errors = analysis.q2_errors(arms["dr2.5_dt1"])
+    bounds = {k: _within(errors[k], v["tolerance"]) for k, v in quantities.items()}
+    if "planar_dr2.5_dt1" in refused:
+        control = dict(caught=False, reason="arm planar_dr2.5_dt1 refused")
+    else:
+        planar = analysis.q2_errors(arms["planar_dr2.5_dt1"])
+        fractions = {
+            k: float(np.max(planar[k] / np.asarray(v["tolerance"], dtype=float)))
+            for k, v in quantities.items()
+        }
+        control = dict(fractions=fractions, caught=all(f > 1.0 for f in fractions.values()))
+    passed = all(v["passed"] for v in bounds.values()) and control["caught"]
+    return dict(passed=passed, quantities=bounds, planar_control=control)
+
+
 def judge(out, protocol_path=PROTOCOL, root=ROOT):
-    """The judged run (module docstring): refused first; then the judged and order arms, once."""
+    """The judged run (module docstring): refused first; then the judged, order and control arms,
+    once."""
     protocol = registered(protocol_path, root)
     out = Path(out)
     if out.exists():
@@ -122,32 +170,17 @@ def judge(out, protocol_path=PROTOCOL, root=ROOT):
     from validation.tissue import secreted_species_analysis as analysis
     from validation.tissue import secreted_species_qualification as qualification
 
-    qualification.develop(out, (*JUDGED_ARMS, *ORDER_ARMS))
+    qualification.develop(out, (*JUDGED_ARMS, *ORDER_ARMS, *CONTROL_ARMS))
     arms = analysis.load(out)
     refused = sorted(k for k, v in arms.items() if "refused" in v)
-    items = {}
+    items, reported = {}, {}
     for key, arm, _ in analysis.Q1_ARMS:
         if arm in refused:
             items[key] = dict(passed=False, reason=f"arm {arm} refused")
             continue
-        entry = protocol["Q1"]["arms"][arm]
-        error = analysis.q1_errors(arms[arm])
-        dt_study = _within(error, entry["dt_study"]["tolerance_mM"])
-        split = _within(analysis.norm(error), entry["splitting_term"]["tolerance_mM"])
-        items[key] = dict(
-            passed=dt_study["passed"] and split["passed"],
-            dt_study=dt_study,
-            splitting_term=split,
-            error_max_norm_mM=analysis.norm(error).tolist(),
-        )
-    if "dr2.5_dt1" in refused:
-        items["Q2"] = dict(passed=False, reason="arm dr2.5_dt1 refused")
-    else:
-        errors = analysis.q2_errors(arms["dr2.5_dt1"])
-        q2 = {
-            k: _within(errors[k], v["tolerance"]) for k, v in protocol["Q2"]["quantities"].items()
-        }
-        items["Q2"] = dict(passed=all(v["passed"] for v in q2.values()), quantities=q2)
+        items[key] = _q1_item(analysis, arms[arm], protocol["Q1"]["arms"][arm])
+        reported[f"{key}_step_map"] = analysis.step_map_agreement(arms[arm])
+    items["Q2"] = _q2_item(analysis, arms, refused, protocol)
     orders = analysis.orders(arms)
     stops = [v["every_difference_decreases"] for part in orders.values() for v in part.values()]
     items["Q3"] = dict(
@@ -162,6 +195,7 @@ def judge(out, protocol_path=PROTOCOL, root=ROOT):
         refused_arms=refused,
         items=items,
         passed=not refused and all(v["passed"] for v in items.values()),
+        reported_not_judged=reported,
         q5="judged separately: the guard tests at the judged snapshot (Q5's judge entry)",
     )
     (out / "verdict.json").write_text(json.dumps(verdict, indent=1, default=float) + "\n")
@@ -175,6 +209,18 @@ def judge(out, protocol_path=PROTOCOL, root=ROOT):
 def _q1_arm(x, arms, name):
     width, dt, solver, faces, end = arms[name]
     d, s, p = x["dt_study"], x["splitting_term"], x["predictions"]
+
+    def control(rule):
+        return dict(
+            control_registered_delta=rule["control_registered_delta"],
+            development_control_fractions_at_registered_delta=rule[
+                "control_fractions_at_registered_delta"
+            ],
+            development_control_smallest_relative_error_caught=rule[
+                "control_smallest_relative_error_caught"
+            ],
+        )
+
     return dict(
         grid=dict(width_m=width, dt_s=dt, solver=solver, faces=faces, end_s=end),
         records_s=x["records_s"],
@@ -186,14 +232,14 @@ def _q1_arm(x, arms, name):
             elements_at_floor=d["elements_at_floor"],
             development_fraction_max=d["fraction_max"],
             development_fraction_by_record=d["fraction_by_record"],
-            control_smallest_relative_error_caught=d["control_smallest_relative_error_caught"],
+            **control(d),
         ),
         splitting_term=dict(
             formula_first_shell_mM=s["formula_first_shell_mM"],
             tolerance_mM=s["tolerance_mM"],
             development_fraction_max=s["fraction_max"],
             development_fraction_by_record=s["fraction_by_record"],
-            control_smallest_relative_error_caught=s["control_smallest_relative_error_caught"],
+            **control(s),
         ),
         predictions_reported=p,
     )
@@ -216,6 +262,19 @@ def draft(development, output):
         drafted_by=q.source_identity(),
     )
     stop_rule_count = len(a["Q3"]["space"]) + len(a["Q3"]["time"])
+    for key in ("Q1_imex", "Q1_rk4"):
+        for rule in ("dt_study", "splitting_term"):
+            caught = a[key][rule]["control_fractions_at_registered_delta"]
+            if caught is None or min(caught.values()) <= 1.0:
+                raise SystemExit(f"Refused: {key}'s {rule} control is not caught in development")
+    planar = [v.get("planar_control_fraction_max") for v in a["Q2"]["quantities"].values()]
+    if None in planar or min(planar) <= 1.0:
+        raise SystemExit("Refused: the planar control does not fail every Q2 quantity")
+    fixed = {
+        k: a[k]["predictions"]["fixed_point_over_first_shell_error_minus_1_by_record"]
+        for k in ("Q1_imex", "Q1_rk4")
+    }
+    maps = {k: a[k]["predictions"]["step_map_agreement"] for k in ("Q1_imex", "Q1_rk4")}
     protocol = dict(
         kind="cells.secreted_species_v1_protocol@1",
         id="d150-v1-held-sphere",
@@ -231,6 +290,17 @@ def draft(development, output):
             "scheduled_species_turnover@1",
             "scheduled_species_exchange@1 (Q5's guards of record)",
         ],
+        scope=(
+            "the lead's review: the judged arms run resolved_pump_tissue@3's faces with exact "
+            "radial conductances (4 pi r_a r_b over r_b - r_a between the points each face joins) "
+            "and scheduled_species_turnover@1's first-order clearance at every shell, with a "
+            "held-bath source (the source bath at c0) and an outer bath at the trace, in "
+            "resolved_pump_composite@1. scheduled_species_exchange@1, turnover's production and "
+            "the occupant rule enter only through Q5's guard test files. This is design §6's first "
+            "acceptance (the held sphere with decay, the finite-domain steady state, the exact "
+            "finite-volume solution), so no arm is missing; a qualified statement from this "
+            "protocol carries this scope"
+        ),
         references={
             "R-discrete": (
                 "validation/tissue/secreted_species_radial.py solution: each arm's own declared "
@@ -242,12 +312,19 @@ def draft(development, output):
                 "solution of the held sphere with first-order decay through v = r u, its steady "
                 "state plus a finite sum of sine modes, every quantity an exact integral (the "
                 "shells' averages, the amount, the two baths' supplies and the clearance); "
-                "tests/unit/test_secreted_species_closed_forms.py checks it against quadrature and "
-                "its own mass balance"
+                "tests/unit/test_secreted_species_closed_forms.py checks it against the PDE itself "
+                "without the builder (the residual of u_t = D lap u - k u by fourth-order "
+                "differences, both boundary conditions over time, the start and the steady state "
+                "against their sinh forms), against quadrature and against its own mass balance"
             ),
             "independence": (
                 "both NumPy, written from the design's Appendix A, never from engine code; neither "
                 "takes measured data or fits anything (D151)"
+            ),
+            "common_mode": (
+                "R-discrete shares the builder's declared system, so a builder error would be "
+                "common-mode in Q1; Q2 against R-continuum covers it, as its planar control shows "
+                "(the lead's review)"
             ),
         },
         world=dict(
@@ -286,7 +363,13 @@ def draft(development, output):
             },
             judged_arms=list(JUDGED_ARMS),
             order_arms=list(ORDER_ARMS),
-            development_only_arms=["rk4_dr2.5_dt0.05", "planar_dr2.5_dt1"],
+            control_arms=list(CONTROL_ARMS),
+            development_only_arms=["rk4_dr2.5_dt0.05"],
+            disclosures=[
+                "dr1.25_dt0.5 runs at dt K_ii 0.384, beyond the probed 0.30; it passed every host "
+                "check in development and carries Q2's spatial term and Q3's spatial order "
+                "(accepted at the lead's review, with this disclosure)",
+            ],
         ),
         rules=dict(
             tolerances=(
@@ -350,9 +433,25 @@ def draft(development, output):
         ),
         Q1=dict(
             claim=(
-                "The engine integrates the declared finite-volume system in time to its step term, "
-                "and that step term is the clearance splitting's: the judged arms against "
-                "R-discrete"
+                "The engine's time integration of the declared finite-volume system is bounded a "
+                "priori by the splitting's leading term (within 3 x it at every record), and lies "
+                "within 3 x its own step term (S5's dt study): the judged arms (2.5 um; IMEX at "
+                "1 ms, RK4 at 0.1 ms) against R-discrete"
+            ),
+            what_the_rules_show=(
+                "the lead's review: the dt-study rule detects bias, not order. For a second-order "
+                "error against an exact reference, 3 x the halving difference puts the pass "
+                "fraction near 4/9 (development: "
+                f"{a['Q1_imex']['dt_study']['fraction_max']:.3f} IMEX, "
+                f"{a['Q1_rk4']['dt_study']['fraction_max']:.3f} RK4); a first-order scheme would "
+                "give about 2/3 and still pass, so order is Q3's. The splitting-term rule is the "
+                "one judged bound not scaled from the engine's own runs; it is one-sided, so it "
+                "bounds the step term and does not identify it. The identification is reported: "
+                "the step map's fixed point matches the first shell's error to "
+                f"{abs(fixed['Q1_imex'][0]):.1e} (IMEX) and {abs(fixed['Q1_rk4'][0]):.1e} (RK4) "
+                f"at the first record, and to {abs(fixed['Q1_imex'][-1]):.1e} and "
+                f"{abs(fixed['Q1_rk4'][-1]):.1e} at the last (relative). The judged controls show "
+                "that each rule can fail"
             ),
             records="each arm's records after t = 0",
             quantity="each shell's |engine - R-discrete| (mM)",
@@ -370,17 +469,24 @@ def draft(development, output):
                 "floor). The term is the leading order of the composite step's steady bias: the "
                 "split scheme's first shell runs low by it"
             ),
-            verdict_rule="pass when both rules hold at every record, for both arms",
+            verdict_rule=(
+                "pass when, for both arms, both rules hold at every record and both rules catch "
+                "their registered controls for k and for D"
+            ),
             predictions=(
                 "reported, not judged: the step map's exact fixed point (the steady bias in full) "
                 "and the step map iterated in NumPy (ARS's explicit stages or RK4's polynomial, "
                 "the clearance's exact half-steps around them), whose distance from R-discrete "
-                "predicts the engine's error at every shell and record"
+                "predicts the engine's error at every shell and record. The map's agreement with "
+                "the engine is a guard (Q5), not a judged item: one author wrote both sides"
             ),
             controls=(
-                "development only: references with the clearance or diffusivity in error by a "
-                "relative delta (1e-14 to 0.5); the smallest delta each rule catches, with "
-                "[record, shell] or [record] where"
+                "judged (the lead's review, S5's form): the judged arm's output against R-discrete "
+                "with the clearance, and separately the diffusivity, x (1 + delta), at each rule's "
+                "and arm's registered delta: 10 x the larger of the smallest deltas that rule "
+                "caught for k and for D in development (a 1-2-5 grid from 1e-14 to 0.5; where, as "
+                "[record, shell] or [record]). Each rule must catch both: its measure exceeds its "
+                "tolerance somewhere"
             ),
             development="rules.development_runs.closed_form",
             arms={
@@ -407,10 +513,20 @@ def draft(development, output):
             time_step_term_rule="|q(1 ms) - q(0.5 ms)| at 2.5 um, per element and record",
             reference_term_rule="64 eps x the quantity's scale (the closed form is exact)",
             tolerance_rule="3 x (spatial + time + reference) per element and record",
-            verdict_rule="pass when every element's |engine - R-continuum| is within its tolerance",
+            verdict_rule=(
+                "pass when every element's |engine - R-continuum| is within its tolerance and the "
+                "planar control fails every quantity's"
+            ),
+            what_the_rule_shows=(
+                "as with Q1's dt study, a pass fraction near 4/9 is structural for second-order "
+                "errors (development: 0.44 to 0.47), so the tolerance's power is its judged "
+                f"control's: the probes' planar faces exceed it {min(planar):.0f} to "
+                f"{max(planar):.0f} times in development"
+            ),
             control=(
-                "development only: the probes' planar faces (arm planar_dr2.5_dt1) against the "
-                "same tolerances"
+                "judged (the lead's review): the planar-face arm (planar_dr2.5_dt1: the probes' "
+                "faces, area 4 pi r^2 at the edge, otherwise the judged arm) against R-continuum "
+                "must fail every quantity's tolerance (its largest fraction above 1)"
             ),
             development="rules.development_runs.closed_form",
             quantities={
@@ -476,7 +592,8 @@ def draft(development, output):
             claim="The switch-on against the Danckwerts form near the source",
             judged=False,
             reason=(
-                "pre-formed starts only (the lead's ruling 5): a switch-on cannot pass the host "
+                "reported only, under the resolved-start rule (rules.resolved_start; the lead's "
+                "ruling 5, confirmed at the lead's review): a switch-on cannot pass the host "
                 "energy ledger (§11.4), so it would run through the checked step map without the "
                 "runner's host checks, and the infinite-medium form differs from the finite "
                 "domain's at the outer bath"
@@ -498,28 +615,59 @@ def draft(development, output):
                 "cap and the stationary refusal (test_species_turnover, test_species_exchange, "
                 "test_secreted_species)",
                 "the ion rows bitwise with the operators active (test_secreted_species_ions)",
-                "the closed forms' own checks and the judged-run refusal",
+                "the step map's agreement with the engine (test_secreted_species_step_map, tier "
+                "2): the judged configuration shortened to 500 steps per solver, through the "
+                "runner, max |engine - map| <= n_steps x eps x the scale (the largest "
+                "concentration over the records), the rounding rule fixed at the lead's review "
+                "before any judged run. A guard, not a judged item: one author wrote both sides. "
+                "Development, on the full judged arms: "
+                f"{maps['Q1_imex']['fraction_of_bound']:.2g} (IMEX, "
+                f"{maps['Q1_imex']['n_steps']} steps) and "
+                f"{maps['Q1_rk4']['fraction_of_bound']:.2g} (RK4, {maps['Q1_rk4']['n_steps']} "
+                "steps) of the bound",
+                "R-continuum's independence check (the lead's review; "
+                "test_secreted_species_closed_forms): the closed form against the PDE itself, "
+                "without the builder: the residual of u_t = D lap u - k u in spherical form by "
+                "fourth-order differences at sample points in r and t, both boundary conditions "
+                "over time, the start and the steady state against their independent sinh forms; "
+                "and the judged-run refusal",
             ],
             verdict_rule="pass when every test in these files passes",
         ),
-        open_questions=[
-            "The step term: Q1 judges both the dt study per shell (S5's form, the tolerances "
-            "pinned from the dt study) and the splitting term per record (the instruction's). Keep "
-            "both, or one? The formula is leading order: 9.4% below the step map's fixed point "
-            "under ARS at dt K_ii 0.19, 0.4% under RK4; the fixed point gives the observed "
-            "first-shell error to 8e-4 or better (relative). Q2's time term stays the dt study's, "
-            "since the formula has no per-element form for the transient far field",
-            "The RK4 arm (2.5 um, 0.1 ms, to 0.5 s) as a judged arm of Q1",
-            "Q4: the Danckwerts switch-on reported only (probe 4's record), not judged",
-            "dr1.25_dt0.5 runs at dt K_ii 0.384, beyond the probed 0.30: it passed every host "
-            "check in development; it carries Q2's spatial term and Q3's spatial order",
-            "Q3's stop rule in the max norm per quantity and record, where S5's Q5 counted "
-            "components (a development finding: per element, one coarse shell of 120, at a sign "
-            "change of the spatial error, does not fall)",
-            "The step map's agreement with the engine (reported in Q1's predictions) could become "
-            "a judged item with a rounding rule (for example n_steps x eps x the scale), decided "
-            "before any judged run",
-        ],
+        review=dict(
+            by="the lead with the advisor, 14 November 2026, on the PROPOSED draft at 392c633",
+            rulings=[
+                "1. Q1 keeps both rules; its claim reads 'bounded a priori by the splitting's "
+                "leading term', and the identification is reported (Q1.what_the_rules_show)",
+                "2. The RK4 arm is judged, in Q1",
+                "3. Q4 (Danckwerts) is reported only, under the resolved-start rule",
+                "4. The 1.25 um arm at dt K_ii 0.384 is accepted, with the disclosure "
+                "(world.disclosures)",
+                "5. Q3's max norm is accepted, with the per-element count reported; both rule "
+                "changes stay disclosed (development_findings)",
+                "6. The step map's agreement is no judged item (one author wrote both sides): a "
+                "guard test with a rounding rule fixed now (Q5), reported in the judged run",
+            ],
+            changes=[
+                "(a) the controls judged, as S5 did: Q1's k and D controls at a registered delta "
+                "per rule and arm; the planar-face arm as Q2's judged control",
+                "(b) the scope line (scope)",
+                "(c) an independence check on R-continuum: the closed form against the PDE itself "
+                "(Q5; test_secreted_species_closed_forms)",
+            ],
+            order_after=(
+                "S5's: land on main as PROPOSED, rehearse on main, dry-run every judge entry, "
+                "register, then one judged run from a clean snapshot"
+            ),
+        ),
+        reported_in_the_judged_run=dict(
+            step_map=(
+                "each judged arm's engine against the step map iterated in NumPy: the largest "
+                "|engine - map| over the rounding bound n_steps x eps x the scale, and the "
+                "engine's distance from R-discrete over the same bound"
+            ),
+            orders="Q3's observed orders, beside its judged stop rules",
+        ),
         development_findings=list(FINDINGS),
     )
     Path(output).write_text(json.dumps(protocol, indent=1, default=float) + "\n")

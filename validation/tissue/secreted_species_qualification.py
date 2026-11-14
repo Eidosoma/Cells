@@ -79,8 +79,10 @@ def records(name):
     return RK4_RECORDS if ARMS[name][2] == "rk4" else RECORDS
 
 
-def arm_world(name):
-    width, dt, solver, faces, end = ARMS[name]
+def arm_world(name, *, end=None, times=None):
+    """The arm's world. end and times (the records after t = 0) override the arm's own, for the
+    step-map guard's shortened arms; omitted, the arm's world is unchanged."""
+    width, dt, solver, faces, arm_end = ARMS[name]
     g = geometry(width)
     return radial.world(
         g,
@@ -90,9 +92,9 @@ def arm_world(name):
         trace_mM=TRACE,
         profile_mM=problem().shell_averages(g.edges, 0.0),
         dt=dt,
-        end=end,
+        end=arm_end if end is None else end,
         solver=solver,
-        observation_times=[0.0, *records(name)],
+        observation_times=[0.0, *(records(name) if times is None else times)],
         faces=faces,
     )
 
@@ -120,15 +122,16 @@ def source_identity():
     return dict(kind="checkout", git_revision=head, dirty=bool(dirty))
 
 
-def run_arm(name):
-    """One arm through the runner (every host check): its records as a JSON-ready dict."""
+def run_arm(name, *, end=None, times=None):
+    """One arm through the runner (every host check): its records as a JSON-ready dict (end and
+    times as in arm_world)."""
     import jax
 
     jax.config.update("jax_enable_x64", True)
     from cells.core.runner import run
     from cells.core.specs import parse_spec
 
-    spec = parse_spec(arm_world(name))
+    spec = parse_spec(arm_world(name, end=end, times=times))
     started = time.perf_counter()
     result = run(spec)
     seconds = time.perf_counter() - started
