@@ -425,6 +425,7 @@ def main(argv=None):
                                  "cm001", "limits", "convergence"])
     parser.add_argument("--rtol", type=float, default=1e-10)
     parser.add_argument("--points", nargs="+", default=["heredity", "point2", "A", "B"])
+    parser.add_argument("--main", help="the main run's results.json, for bracket_check")
     parser.add_argument("--quick", action="store_true",
                         help="a smoke run: rtol 1e-8 and coarse bisection tolerances")
     args = parser.parse_args(argv)
@@ -566,6 +567,24 @@ def main(argv=None):
         results["limits"] = limits_part(rtol)
         save()
     # Follow-up parts (not in the default list).
+    if "bracket_check" in args.parts:  # the blocking ends of the main run's brackets, re-decided
+        main_results = json.loads(Path(args.main).read_text())["chain"]
+        V2 = main_results["V_rest"]
+        out = results["bracket_check"] = {}
+        for i, b in enumerate(main_results.get("coupling_bracket", [])):
+            blocked_end = b["lo"] if b.get("kind", "").startswith("block below") else b["hi"]
+            if blocked_end is not None:
+                out[f"coupling_{i}"] = dict(s_c=blocked_end, bracket=b,
+                                            **wave_outcome(V2, 20, blocked_end, rtol=rtol))
+                log("  bracket check", out[f"coupling_{i}"]["propagates"],
+                    out[f"coupling_{i}"]["decided_by"])
+                save()
+        c = main_results.get("capture_threshold") or {}
+        if c.get("lo") is not None:
+            out["capture"] = dict(P_stim=c["lo"], bracket=c,
+                                  **wave_outcome(V2, 20, 1000.0, P_stim=c["lo"], rtol=rtol))
+            log("  capture check", out["capture"]["propagates"], out["capture"]["decided_by"])
+            save()
     if "bracket_robust" in args.parts:  # §8.4's bracket and capture, horizon-independent
         V2 = rests.get("point2", rest_potential("point2", rtol=rtol))
         out = results["bracket_robust"] = dict(outcomes={})
