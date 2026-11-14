@@ -2050,7 +2050,10 @@ Milestone 3 adds no engine code: `src/` is unchanged since the landed head a4e2f
   - a several-sites test in `test_species_reactions_reference_runs.py` (tier 3);
   - `rfx.several_sites` and `rfx.reference_multipliers`.
 
-**Where the moved items are:**
+**Where the moved items are.** The figures in this table and in the coordinator's additions
+below come from the tier-3 files' run from `snapshot-3e7399a`, `tests/m3-3e7399a`:
+`_composition.py` 8 passed and `_reference_runs.py` 19 passed. The checkout's development checks
+gave the same values.
 
 | Item | Where | Development result |
 | --- | --- | --- |
@@ -2098,8 +2101,8 @@ Milestone 3 adds no engine code: `src/` is unchanged since the landed head a4e2f
 | Q3 | Dominant modes 1, 2 and 3 on L/ℓ = 6, 11 and 16, from 50, 50 and 350 s to saturation (0.42–0.43 c*). Fitted rates within 1.7e-5, 4.1e-5 and 2.8e-6 of the discrete-time rates (σ_n is 4e-4 above them) | `tu`, `cr` |
 | Q4 | The staircase covers every L/ℓ from 4 to 30 in steps of 0.5: 53 lengths and 163 single-mode starts of 100 s. At every length the engine's fastest-growing start is the discrete argmax of σ_n, and its growing set is the admissible unstable set (none at 4 and 7.5–8.5, then modes 1 to 5). The smallest predicted |rate| among the candidates is 3.8e-5 /s, and the smallest top-two gap is 3.2e-4 /s. The fitted rates match the predicted ones to a median of 3e-9. The worst, up to 6%, are strongly decaying modes near k̃² = 0.1: there the two eigenvalues are close, so the transient outlasts the fit window. None of them is near the argmax or a change of sign | `tu.staircase` (discrete) |
 | Q5 | Every one of the 24 modes on L/ℓ = 6, 8, 11 and 16 decays at d = 8. The dt rule against the exact propagator at d = 8 is 0.44–0.47 (6.4e-6 to 1.2e-3 at 50 ms). Fitted rates are within 5e-10 to 6e-7 of the predicted ones, except the complex-eigenvalue modes (L/ℓ = 8, 11 and 16 at n = 1, and 16 at n = 2), whose oscillating norm fits 3e-3 to 0.40 off. Those rates are reported only | `cr.mode_propagator` at d = 8 |
-| Q6 | 5.4e-4, 1.4e-4 and 3.4e-5 of c* at 50, 25 and 12.5 ms over 3000 s (ratios 4.01, orders 2.005 at every record; the prototype's 4.8e-4/1.19e-4/2.97e-5). The rule is 0.446/0.445 over 528 elements, none exceeding. Controls caught k at 1e-5 and 1e-6, D_V at 1e-4 and 1e-5. The reference's own rtol difference is 8.3e-13 of c* | `cr.integrate_chain` |
-| Q7 | The face-free world's energy residual is 0.052 of the rounding allowance at every one of 4,000 rows. Restart through a snapshot read in a fresh process is bitwise. The batch of three seeds on L/ℓ = 6 is bitwise against its reverse and equal to the scalar runs. The worst accounting over every run of every part: the energy residual 2.2e-3 of its bound, the network rows' material residuals 6.7e-3 of theirs | — |
+| Q6 | 5.4e-4, 1.4e-4 and 3.4e-5 of c* at 50, 25 and 12.5 ms over 3000 s (ratios 4.01, orders 2.005 at every record; the prototype's 4.8e-4/1.19e-4/2.97e-5). The rule is 0.446/0.445 over 528 elements, none exceeding. Controls caught k at 1e-5 and 1e-6, D_V at 1e-4 and 1e-5. The reference's own rtol difference is 8.3e-13 of c*. §6.4's 0.68 u0 (the prototype's B2) measures something else: in the reference's own integration of Q6's start at 3000 s, max |u − ū| is 0.43, the peak to peak 0.85 and the mode-2 coefficient 0.43. B2 is not specified fully, and the engine matches the reference to 5.4e-4 of c* | `cr.integrate_chain` |
+| Q7 | The face-free world's energy residual is 0.052 of the rounding allowance at every one of 4,000 rows. Restart through a snapshot read in a fresh process is bitwise. The batch of three seeds on L/ℓ = 6 is bitwise against its reverse and equal to the scalar runs. The worst accounting comes from every run that records it, which is every part's but Q4's: Q4's 163 runs pass every host check on every window but record only their rates. Over those runs the energy residual is 2.2e-3 of its bound and the network rows' material residuals 6.7e-3 of theirs | — |
 
 **The PROPOSED protocol.** It is `validation/morphogenesis/protocols/mg0c_turing_v1.json`, not
 registered. `mg0c_protocol.py` drafts it from dev-d4cee87-a, -b and -c and dev-3e7399a-d.
@@ -2125,13 +2128,20 @@ registered. `mg0c_protocol.py` drafts it from dev-d4cee87-a, -b and -c and dev-3
   snapshot of main, then the judge entry over the merged results.
 - **Questions for the lead** (in the protocol):
   1. Q7's batch over seeds instead of over domains.
-  2. Q1's records, capped at 600 s.
-  3. The linearised-map tolerance.
+  2. The records' 600 s cap. It never binds in Q1, whose longest record is 590.5 s; in Q5 it binds
+     for the near-marginal modes, which would run to 640–1,100 s.
+  3. The linearised-map tolerance. No single tolerance separates the two scales with margin: the
+     worst floor at the 1e-7 start is 1.3e-7, while the smallest discretisation error is 2.1e-7
+     (L/ℓ = 16, n = 1 at 12.5 ms).
   4. The fit-limited rate tolerances.
   5. Q4's candidate modes.
   6. Q6's control grid.
   7. §11.1's pins.
-  8. Guard 2's rounding rule.
+  8. Guard 2's rounding rule: 0.021 of the usage note's, against 0.96 of D150's at 8,000 steps.
+  9. The judged run's memory caps (unit b peaked at 3.5 GB of its 4 GiB).
+  10. The composition file's place: a judged guard, or a regression guard outside the judged list.
+      Its same-material test uses an exchange map the engine agent wrote from D150's documented
+      law, and its idle claim 3 is reported, not promised.
 
 **Findings for the lead:**
 1. **Q7's "vmap batch of the domains" cannot run.** A route's node is in the batch signature, so
@@ -2148,8 +2158,16 @@ registered. `mg0c_protocol.py` drafts it from dev-d4cee87-a, -b and -c and dev-3
 5. **The dt rule's power lies in its controls.** It sits at 4/9 for a clean second-order error,
    D150's structural finding. Some controls are weak: D_V on L/ℓ = 6's fast modes at 50 ms is
    caught only at 0.1, so it is registered at 1.0.
-6. **Memory.** Unit b's cgroup peak was 3.5 GB of its 4 GB cap, from q7's vector batch. The judged
-   run should give that group 5 GB or run q7 on its own.
+6. **Memory.** Unit b's cgroup peak was 3.5 GB of its 4 GiB cap, from q7's vector batch (question
+   9).
+7. **The judged path has run only as a dry run** (not evidence; `mg0c/judge-dry-run-cc32976-b`).
+   - The judge entry, on copies of the development results rewritten as judged runs of one clean
+     snapshot, merged the four runs and evaluated all 52 criteria. Only the four control criteria
+     failed: `caught_at_registered` exists only in a judged run.
+   - With the registered deltas loaded, Q1's quick part (L/ℓ = 11; n = 1 at its full record)
+     caught both controls at 50 ms.
+   - The development launcher `mg0c/dev.sh` creates its output directory first, so it cannot start
+     a judged run, which refuses an existing directory.
 
 ## Appendix A. Equations for the independent references
 
