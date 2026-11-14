@@ -539,6 +539,38 @@ def main(argv=None):
     if "limits" in args.parts:
         results["limits"] = limits_part(rtol)
         save()
+    # Follow-up parts (not in the default list).
+    if "segment_A_tight" in args.parts:  # the block-site values at rtol / 10, atol / 100
+        tight = dict(rtol=rtol / 10.0, atol={k: v / 100.0 for k, v in er.ATOL.items()})
+        results["segment_A_tight"] = {}
+        for name, r in (("control", 1.0), ("combined_0.5", 0.5), ("combined_0.2", 0.2),
+                        ("combined_0.02", 0.02), ("combined_0.01", 0.01)):
+            results["segment_A_tight"][name] = dict(
+                r_na=r, r_gj=r, **segment_measures(segment_chain(rests["A"], "A", r_na=r,
+                                                                 r_gj=r, **tight)))
+            log("  A tight", name, results["segment_A_tight"][name]["entry_junction_max_abs_V"])
+            save()
+    if "segment_A_coupling_only" in args.parts:  # coupling-only rungs down to s_c r_gj = 5
+        results["segment_A_coupling_only"] = {}
+        for r in (0.1, 0.05, 0.02, 0.01, 0.005):
+            results["segment_A_coupling_only"][f"coupling_{r:g}"] = dict(
+                r_na=1.0, r_gj=r, **segment_measures(segment_chain(rests["A"], "A", r_gj=r,
+                                                                   rtol=rtol)))
+            log("  A coupling-only", r, results["segment_A_coupling_only"][f"coupling_{r:g}"]
+                ["entry_junction_max_abs_V"])
+            save()
+    if "cm001_arms" in args.parts:  # §8.2's NaV-off and all-off arms at §8.6's kicks
+        results["cm001_arms"] = {}
+        for p in [x for x in args.points if x in ("A", "B")]:
+            V = rests[p]
+            entry = results["cm001_arms"][p] = {}
+            for target in (-0.020, 0.0):
+                for arm, kw in (("nav_off", dict(nav=0.0)),
+                                ("all_off", dict(nav=0.0, kv=0.0, kir=0.0))):
+                    run = single(p, V, kick=target - V, rtol=rtol, **kw)
+                    entry[f"kick_to_{target * 1e3:g}mV_{arm}"] = dict(
+                        kick_V=target - V, **ap_measures(run, V))
+            save()
     if "convergence" in args.parts:
         results["convergence"] = convergence_part(results, rtol)
         save()
