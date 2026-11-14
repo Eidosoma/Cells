@@ -70,7 +70,6 @@ from cells.core.multispecies_spec import identifier
 from cells.core.specs import ConfigError, _fields, _number
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
-from cells.models.operators.membrane_state import parse_catalogue
 from cells.processes import hill_factors
 
 LAW_ID = "species_regulated_availability@1"
@@ -121,15 +120,6 @@ TARGET_TABLES = {"junction": "coupling_junction_routes", "channel": "coupling_ch
 
 
 # ------------------------------------------------------------------ declaration
-
-
-@dataclass(frozen=True)
-class ReadSpecies:
-    """A species row the operator reads, never writes (ruling 1: one read-only mechanism)."""
-
-    id: str
-    catalogue: tuple | None
-    evidence: str | None
 
 
 @dataclass(frozen=True)
@@ -206,31 +196,6 @@ def _id_list(raw, what):
     if len(set(ids)) != len(ids):
         raise ConfigError(f"{LAW_ID}: {what} names an element twice")
     return ids
-
-
-def parse_read_species(raw, base, law=LAW_ID):
-    """The read-only species list: any species of the world, with D150's identity form."""
-    if type(raw) is not list:
-        raise ConfigError(f"{law} lists the species it reads in an explicit list")
-    declared = set(base.model.species_ids)
-    species = []
-    for entry in raw:
-        _fields(entry, {"id", "catalogue", "evidence"}, f"{law} species")
-        name = identifier(entry["id"])
-        if name not in declared:
-            raise ConfigError(f"{law} reads a species the model does not declare: {name!r}")
-        catalogue, evidence = parse_catalogue(entry["catalogue"]), entry["evidence"]
-        if catalogue is None and evidence is not None:
-            raise ConfigError(f"{law}: the kind of evidence is given with a catalogue reference")
-        if catalogue is not None and evidence not in common.EVIDENCE_KINDS:
-            raise ConfigError(
-                f"{law}: a catalogue reference records its kind of evidence, one of "
-                + ", ".join(common.EVIDENCE_KINDS)
-            )
-        species.append(ReadSpecies(name, catalogue, evidence))
-    if len({s.id for s in species}) != len(species):
-        raise ConfigError(f"{law} lists a species twice")
-    return tuple(species)
 
 
 def _parse_initial(raw, name, where):
@@ -429,7 +394,7 @@ def parse_declaration(raw, base):
     _fields(raw, {"law", "species", "states", "couplings"}, "species-regulated availability")
     if raw["law"] != LAW_ID:
         raise ConfigError("Species-regulated availability requires law " + LAW_ID)
-    species = parse_read_species(raw["species"], base)
+    species = common.parse_read_species(raw["species"], base, LAW_ID)
     listed = {s.id for s in species}
     states = _parse_states(raw["states"], base, listed)
     couplings = _parse_couplings(raw["couplings"], base, listed, states)

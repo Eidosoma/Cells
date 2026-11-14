@@ -64,7 +64,9 @@
   "/mnt/workspaces/Cells/independent-references-20261114-01/tiers-r/measure/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261114-01/tiers-r/measure-02/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261114-01/tiers-r/measure-04/measured.json",
-  "/mnt/workspaces/Cells/bath-schedule-20261114-01/run-c36a3fa/tiers-3/measured.json"
+  "/mnt/workspaces/Cells/bath-schedule-20261114-01/run-c36a3fa/tiers-3/measured.json",
+  "/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/land-measure-3a7fbfb/measured.json",
+  "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-454fa75/measured.json"
  ],
  "measured_provenance": [
   {
@@ -529,6 +531,20 @@
    "root": "/mnt/workspaces/Cells/bath-schedule-20261114-01/snapshot-c36a3fa",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T20:56:13+00:00"
+  },
+  {
+   "git_revision": "3a7fbfb43aa1fc8d0e91a7300496bdfced169abe",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261114-combo",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T21:12:29+00:00"
+  },
+  {
+   "git_revision": "454fa750b5ceef292e48d2e3b7993ccbf80b0a10",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T20:34:45+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -848,6 +864,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_bath_schedule.py",
+    "seconds": 6.24,
+    "exit_code": 0,
+    "counts": {
+     "passed": 36
     }
    },
    {
@@ -1883,10 +1907,10 @@
    },
    {
     "file": "tests/unit/test_mg0c_judged_refusal.py",
-    "seconds": 1.93,
+    "seconds": 7.02,
     "exit_code": 0,
     "counts": {
-     "passed": 4
+     "passed": 11
     }
    },
    {
@@ -2779,10 +2803,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 5.83,
+    "seconds": 16.59,
     "exit_code": 0,
     "counts": {
-     "passed": 76
+     "passed": 83
     }
    },
    {
@@ -3415,11 +3439,19 @@
     }
    },
    {
-    "file": "tests/unit/test_bath_schedule.py",
-    "seconds": 24.51,
+    "file": "tests/unit/test_bath_schedule_idle.py",
+    "seconds": 56.96,
     "exit_code": 0,
     "counts": {
-     "passed": 36
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_bath_schedule_runs.py",
+    "seconds": 67.23,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
@@ -3734,50 +3766,66 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability_bitwise.py",
-    "seconds": 45.85,
+    "seconds": 59.9,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_locality.py",
+    "seconds": 45.16,
     "exit_code": 0,
     "counts": {
      "passed": 3
     }
    },
    {
-    "file": "tests/unit/test_species_regulated_availability_bitwise_both.py",
-    "seconds": 42.03,
+    "file": "tests/unit/test_species_regulated_availability_restart.py",
+    "seconds": 68.04,
     "exit_code": 0,
     "counts": {
-     "passed": 1
-    }
-   },
-   {
-    "file": "tests/unit/test_species_regulated_availability_bitwise_channel.py",
-    "seconds": 41.0,
-    "exit_code": 0,
-    "counts": {
-     "passed": 1
-    }
-   },
-   {
-    "file": "tests/unit/test_species_regulated_availability_bitwise_idle.py",
-    "seconds": 39.05,
-    "exit_code": 0,
-    "counts": {
-     "passed": 1
-    }
-   },
-   {
-    "file": "tests/unit/test_species_regulated_availability_bitwise_products.py",
-    "seconds": 44.16,
-    "exit_code": 0,
-    "counts": {
-     "passed": 1
+     "passed": 10
     }
    },
    {
     "file": "tests/unit/test_species_regulated_availability_runs.py",
-    "seconds": 28.86,
+    "seconds": 52.35,
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_state.py",
+    "seconds": 71.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_with_injection.py",
+    "seconds": 42.66,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_with_reactions.py",
+    "seconds": 55.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_with_replacement.py",
+    "seconds": 54.79,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {
@@ -4301,18 +4349,6 @@
     "counts": {}
    },
    {
-    "file": "tests/unit/test_bath_schedule_idle.py",
-    "seconds": 90.62,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_bath_schedule_runs.py",
-    "seconds": 90.16,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
     "file": "tests/unit/test_betse_spatial_active.py",
     "seconds": 90.05,
     "exit_code": null,
@@ -4755,8 +4791,14 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_species_reactions_accuracy.py",
+    "seconds": 90.37,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/unit/test_species_reactions_composition.py",
-    "seconds": 90.11,
+    "seconds": 90.34,
     "exit_code": null,
     "counts": {}
    },
@@ -4768,13 +4810,31 @@
    },
    {
     "file": "tests/unit/test_species_reactions_reference_runs.py",
-    "seconds": 90.1,
+    "seconds": 90.13,
     "exit_code": null,
     "counts": {}
    },
    {
     "file": "tests/unit/test_species_reactions_runs.py",
     "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_species_reactions_same_material.py",
+    "seconds": 90.15,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_execution.py",
+    "seconds": 90.19,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_guards.py",
+    "seconds": 90.22,
     "exit_code": null,
     "counts": {}
    },
