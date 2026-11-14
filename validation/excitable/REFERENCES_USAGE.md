@@ -250,8 +250,78 @@ extended. The control propagates.
   s_c to 1%. No block appears above it, up to s_c = 1e4.
 - **The end cell peaks highest,** at the sealed end, as in §8.5.
 
-**Still running when this was committed:** the far-end S1–S2 interval, §8.6, the limits and the
-convergence check (results.json). They are added when the run completes.
+**§8.4, continued** (s_c = 1000):
+
+| Quantity | Value |
+| --- | --- |
+| Capture threshold | 1.30717e-07 m/s; bracket 1.30607e-07 (no capture) to 1.30717e-07 (capture), 15 runs. About 3.2 times the single cell's §8.3 threshold |
+| Far-end S1–S2 interval | 27.982 ms; bracket 27.976 to 27.982 ms, 17 runs. The far cell activates a second time when S2 starts at least this long after S1 |
+
+**§8.6, the 0.01 F/m² cells** (rests −79.558918 mV for A and −79.559338 mV for B):
+
+| Cell | Kick threshold (mV) | Twice threshold, capped: peak (mV), largest dV/dt (V/s), APD90 (ms) | Kick to −20 mV: peak (mV) | Kick to 0 mV: peak (mV) | Stimulus 2e-7: peak (mV), APD90 (ms) | Chain, s_c 1000: CV (cells/s), peak interior / end (mV) | Largest V: single, chain (mV) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A | 24.84478 (lower end 24.84472) | 55.610, 247.40, 3.830 | 55.857 | 56.019 | 34.317, 4.876 | 8361.6, 41.26 / 56.62 | 56.019, 56.620 |
+| B | 30.85115 (lower end 30.85110) | 35.773 (kick capped at 60 mV), 95.73, 8.108 | 35.725 | 37.643 | 24.571, 9.594 | 5412.0, 19.39 / 36.09 | 37.643, 36.088 |
+
+- Every run's largest V is below +60 mV. A's highest is the chain's end cell, at +56.620 mV.
+- **The NaV-off and all-off arms** do not fire. They decay passively from the kick (`ep.single_panel`
+  and the follow-up's `cm001_arms`).
+- **APD in the main run.** The main run (cd622adf) gave APD values for non-firing arms, measured
+  from a "largest dV/dt" that falls after the peak, some of them negative. These are not action
+  potentials, and their APD is undefined. Since 868ae4c9 `ap_measures` reports None for them.
+  Every APD in the tables above is of a firing run.
+
+**The limits.**
+- **The passive cable** (point 2, N = 20, s_c = 1000, NaV, Kv and Kir unavailable; stimulus on
+  cells 0–2 for [2, 3) ms):
+
+  | Quantity | Value |
+  | --- | --- |
+  | g_m | 1.4773e-11 S |
+  | g_j | 1.0457e-07 S |
+  | Space constant | 84.1 cells |
+  | Passive rest current at V_r | −4.83e-13 A (the passive cell drifts from point 2's rest) |
+
+  - The nonlinear chain against the linear discrete cable, as a largest difference and the
+    response's size:
+
+    | P_stim | Largest difference | Response |
+    | --- | --- | --- |
+    | 1e-9 | 1.2e-8 V | 0.76 mV |
+    | 2e-9 | 2.6e-8 V | 1.4 mV |
+    | 4e-9 | 5.7e-8 V | 2.7 mV |
+
+  - The difference grows with the stimulus: the composition change the linearisation freezes,
+    and the linearisation's second order.
+- **The strong-coupling limit** (point 2, N = 20, against the lumped cell with the stimulus
+  averaged over the chain): the largest difference in V at 5, 10 and 30 ms.
+
+  | s_c | 5 ms | 10 ms | 30 ms |
+  | --- | --- | --- | --- |
+  | 1e4 | 15.7 mV | 8.87 mV | 1.33 mV |
+  | 1e5 | 4.83 mV | 1.30 mV | 0.19 mV |
+  | 1e6 | 0.51 mV | 0.13 mV | 0.021 mV |
+
+  - It is first order in 1/s_c from 1e5. At 5 ms, inside the action potential's upstroke, the
+    approach is slower.
+
+**§9's convergence check** (rtol 1e-11 with atol / 100, against rtol 1e-10):
+
+| Observable | Difference |
+| --- | --- |
+| Point 2's rest | 2.8e-14 V |
+| Peak (twice-threshold runs) | ≤ 8.9e-15 V |
+| Largest dV/dt | ≤ 3.1e-12 V/s |
+| Its time | ≤ 5.0e-11 s |
+| APD50 and APD90 | ≤ 4.0e-12 s |
+| Chain activation times (s_c = 1000) | ≤ 2.4e-16 s |
+| Chain peaks | ≤ 1.6e-14 V |
+| CV | 7.2e-11 cells/s |
+
+Both kick-threshold brackets hold at the tighter tolerances. With §8.5's block-site check, this
+puts the reference's own error at 1e-11 or below on every reported observable. The quoted
+threshold brackets, set by the bisection tolerance, are wider than that.
 
 ## Readings of the appendix taken here
 
