@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T17:23:14Z",
-  "revision": "8d6fd0ee",
+  "generated_at": "2026-11-14T17:37:16Z",
+  "revision": "e659ce49",
   "revision_date": "2026-11-14",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -367,7 +367,7 @@
      ]
     ]
    },
-   "checked_at": "8d6fd0ee"
+   "checked_at": "e659ce49"
   },
   "counts": {
    "units": 49,
@@ -4218,8 +4218,12 @@
    "group": "experiments",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. In progress.",
+   "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed with a proposed protocol; it is not registered, and nothing is judged yet.",
    "sources": [
+    {
+     "path": "PROGRESS.md",
+     "where": "D152 v1 milestone 3 landed"
+    },
     {
      "path": "docs/CURRENT_PLAN.md",
      "where": "Status on 14 November 2026, and the working order (D156)"
@@ -4549,10 +4553,10 @@
     ],
     [
      "Lines of Python",
-     "72,979"
+     "73,057"
     ]
    ],
-   "weight": 72979
+   "weight": 73057
   },
   {
    "id": "val.division",
@@ -4588,14 +4592,14 @@
    "facts": [
     [
      "Files",
-     "18"
+     "21"
     ],
     [
      "Lines of Python",
-     "6,057"
+     "8,388"
     ]
    ],
-   "weight": 6057
+   "weight": 8388
   },
   {
    "id": "val.reactions",
@@ -4659,15 +4663,15 @@
    "facts": [
     [
      "Files",
-     "718"
+     "720"
     ],
     [
      "Lines of Python",
-     "226,194"
+     "226,850"
     ],
     [
      "Tier 1 test files",
-     "315"
+     "316"
     ],
     [
      "Tier 2 test files",
@@ -4675,7 +4679,7 @@
     ],
     [
      "Tier 3 test files",
-     "218"
+     "219"
     ]
    ],
    "sources": [
@@ -4684,7 +4688,7 @@
      "where": "Milestones and provenance"
     }
    ],
-   "weight": 226194
+   "weight": 226850
   },
   {
    "id": "state.compartment",
@@ -5580,7 +5584,7 @@
    "status": "planned",
    "order": 3,
    "plain": "A first whole organ, defined as data. Planned; the organ and species are not yet chosen.",
-   "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. Nothing at this scale is simulated, and the sheet of cells is not brain tissue: its ring lies beside the worm only to compare sizes. The sizes are indicative.",
+   "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. Nothing at this scale is simulated. The sheet of cells is drawn on the worm's head, above the brain, so that the scales follow one another; it is not the worm's tissue. The sizes are indicative.",
    "sources": [
     {
      "path": "docs/ROADMAP.md",
@@ -5596,7 +5600,7 @@
    "status": "planned",
    "order": 4,
    "plain": "Interacting organ systems, and in time whole animals. A long-term goal; nothing is built.",
-   "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. Nothing at this scale is simulated, and no species has been chosen. The sizes are indicative.",
+   "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. Nothing at this scale is simulated, and no species has been chosen. The sheet of cells is drawn on its head for the scales only. The sizes are indicative.",
    "sources": [
     {
      "path": "README.md",

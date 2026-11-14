@@ -1,8 +1,10 @@
 // The cell lens: what Cells can simulate, drawn where it happens. One cell opened by
 // a flat cut and the sheet of cells around it. Beyond the sheet come two placeholder
 // outlines for the scales nothing simulates yet: a planarian's brain for the organ and
-// the worm for the whole organism. The sheet is not their tissue; it is shown beside
-// them to compare sizes. Zooming is continuous: each scale fades in as the camera reaches it.
+// the worm for the whole organism. The scales are nested: the sheet lies on the worm's
+// head, above its brain, so zooming out leads from tissue into organ into organism. The
+// sheet is placed there for the scales only; it is not the worm's tissue.
+// Zooming is continuous: each scale fades in as the camera reaches it.
 //
 // Three things are kept apart:
 //   status          built parts are solid, planned parts are sketches; the exact status
@@ -253,12 +255,12 @@ export class CellLens {
       { id: "cell", entity: entity("scale.cell"), zone: "cell", anchor: new THREE.Vector3(0, CUT + 2.6, -RIM - 1.6), size: [42, 31], target: new THREE.Vector3(0.8, CUT - 2.6, 0.2), azimuth: 0.52, polar: 0.84 },
       { id: "tissue", entity: entity("scale.tissue"), zone: "tissue", anchor: new THREE.Vector3(0, HEX.height * 2.6, -this.sheet.extent * 0.5), size: [this.sheet.extent * 1.42, this.sheet.extent * 1.0], target: new THREE.Vector3(0, -6, 0), azimuth: 0.55, polar: 0.86 },
       // The brain with the head round it and the sheet's ring in front; then the whole worm.
-      // Both are seen from well above, because the worm is flat: the brain with the head round
-      // it and the sheet's ring in front, then the whole worm, clear of the panels at the sides.
-      // Their frames are as tall as a wide screen needs, so the height sets the distance there
-      // and the width only on a tall screen.
-      { id: "organ", entity: entity("scale.organ"), zone: "organ", size: [3000, 1950], target: ORGAN.centre.clone().add(new THREE.Vector3(0, 0, 250)), azimuth: 0, polar: 0.62 },
-      { id: "organism", entity: entity("scale.organism"), zone: "organism", size: [BODY.length * 1.56, BODY.length * 1.01], target: BODY.centre.clone().add(new THREE.Vector3(-BODY.length * 0.043, 0, BODY.width * 0.1)), azimuth: 0, polar: 0.7 },
+      // Both are seen at a slant from the worm's front quarter, so they have depth: the brain
+      // inside the head with the sheet's ring on the back above it, then the whole worm running
+      // away from the head. Their frames are as tall as a wide screen needs, so the height sets
+      // the distance there and the width only on a tall screen.
+      { id: "organ", entity: entity("scale.organ"), zone: "organ", size: [2900, 1900], target: ORGAN.centre.clone().add(new THREE.Vector3(120, 0, 0)), azimuth: -0.42, polar: 0.92 },
+      { id: "organism", entity: entity("scale.organism"), zone: "organism", size: [BODY.length * 1.5, BODY.length * 0.96], target: BODY.centre.clone().add(new THREE.Vector3(-BODY.length * 0.04, 0, 0)), azimuth: -0.3, polar: 0.98 },
     ];
   }
 
