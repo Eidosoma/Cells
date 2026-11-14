@@ -6,7 +6,8 @@ known orders exercise the judge's resolution rule, its band and its control verd
 * A second-order record is in band; a first-order one is caught; a record under 100 floors, or
   under its rounding scale, is reported, not judged; a pair whose error is zero is not resolved.
 * The generator refuses a judged run of an unregistered protocol before writing anything.
-* A control law exists only inside its `registered` block.
+* A control law exists only inside its `registered` block, and the registry is restored after
+  the block whether it ends normally, raises or exits.
 """
 
 import json
@@ -138,3 +139,26 @@ def test_a_control_law_exists_only_inside_its_block(kind):
         factors = op.control_factors(state, p, xp=np)
         assert set(factors) == {"junction", "channel"}
     assert law not in OPERATORS
+
+
+@pytest.mark.parametrize("kind", sorted(controls.CONTROLS))
+def test_the_registry_is_restored_after_the_block_even_when_it_raises(kind):
+    """The lead's condition for planted defects: the registry after a control block is the
+    registry before it, whether the block ends normally, raises, or exits; a second registration
+    of the same control inside a block is refused and leaves the outer one in place."""
+    law, before = controls.law_of(kind), dict(OPERATORS)
+    with pytest.raises(RuntimeError, match="inside the block"):
+        with controls.registered(kind):
+            assert law in OPERATORS
+            raise RuntimeError("inside the block")
+    assert OPERATORS == before
+    with pytest.raises(SystemExit):
+        with controls.registered(kind):
+            raise SystemExit(1)
+    assert OPERATORS == before
+    with controls.registered(kind):
+        with pytest.raises(RuntimeError, match="already registered"):
+            with controls.registered(kind):
+                pass
+        assert law in OPERATORS
+    assert OPERATORS == before and law not in OPERATORS
