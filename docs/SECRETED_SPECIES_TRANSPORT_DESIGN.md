@@ -1702,6 +1702,62 @@ review with the advisor.
 - The judged entries follow once each, in order (judge, judge-q5, combine), from one fresh clean
   snapshot of main at the registration commit.
 
+## 13. FR-9 / D165: the species cap raised to 16, an in-place change under D148 (14 November 2026)
+
+Written before the change, as D148 asks: the four criteria and the stop rule first. A study's first
+world definition is blocked by the cap, which counts every species, ions included; a six-ion world
+leaves one free row.
+
+**The change.** `species_common.MAX_SPECIES` from 7 to 16, with its refusal message.
+- The cap is a definition-time refusal in `check_species_cap`, which scheduled_species_turnover@1,
+  scheduled_species_exchange@1 and local_species_reactions@1 (D152) all call. It is D150's own
+  shared definition code, which D152's operator imports.
+- It appears in no traced program: the W4 probe's step jaxpr is identical with the cap at 7 and
+  at 16.
+
+**The basis: the W4 probe.** It ran from the clean snapshot of f7f0592, with the cap raised in its
+own process only: `/mnt/workspaces/Cells/inventory-coupling-20261114-01/w4-cap-probe/`.
+- Every composition D150 and D152 admit ran at 7, 8, 12 and 16 species, with every host check on
+  every accepted row: heredity chains and one-cell worlds with all three operators acting, and
+  D152's face-free energy world at 7 and 12.
+- The device ledgers held on vector-window batches, and a reversed batch was bitwise at 16.
+- A restart at 16 resumed both in process and through a snapshot.
+- Claim 2 held bitwise at 16: operators declared at zero rate against none.
+- The cap's stated reason is real but harmless. At 8 or more terms NumPy's host sum takes the
+  pairwise order. In `cell_charged_9`, nine species with seven moving charged rows, NumPy's
+  `charge_increment` differs from the explicit species-order sum in 4 of 6 rows, by up to 6 ulp.
+- No ledger, guard or promised idleness depends on that order. Every ledger's species sum is the
+  explicit species-order sum (`capacitor_change`, D148), which equals the device's bitwise.
+
+**The four criteria (D148), fix against no fix.**
+1. **Physical fields are bitwise identical in every qualified world and program.** Every world the
+   cap admitted before, at most 7 species, defines and compiles the same programs, because the cap
+   is in no traced program. Evidence: the crossrev, identical in every set.
+2. **Verdicts and registered numbers are unchanged.** No registered or qualified world has more
+   than 7 species, so none changes. Tier 1 and tier 2 must show no changed outcome apart from the
+   three tests that assert the cap's value.
+3. **Ledger accumulators change only at rounding level.** They are unchanged in every existing
+   world, by criterion 1. In the newly admitted worlds (8 to 16 species), the host checks add the
+   species in NumPy's order, which can differ from the explicit order at rounding level. The case
+   listed is `cell_charged_9`: up to 6 ulp in `charge_increment`, in 4 of 6 rows. The ledgers
+   themselves use the explicit order.
+4. **The crossrev baseline** is renewed at the landing commit by the lead. The species and reactions
+   sets' records are compared as well.
+
+**The stop rule.** The change stops and goes back to the lead if any of these happens; no new ID
+is taken without the user's choice (D148):
+- any crossrev set differs in a jaxpr text, a constant or a binding;
+- tier 1 or tier 2 changes any outcome other than the three tests that assert the cap;
+- the new 9-species guard world fails any host check on any accepted row.
+
+**Recorded with it.**
+- **D150's claim 3 stays reported, not judged.** The claim is that extra neutral species leave
+  the base species' rows unchanged. The probe's 12-species chain departed: amount increments,
+  transfers and reservoir supply by up to about 3,600 ulp, and the face and reservoir energies by
+  the extra species' own contributions.
+- **Worlds above 7 species are outside D150's judged scope** until a protocol covers them.
+- **Above 16 species needs another probe.**
+
 ## Appendix A. Equations for the independent references
 
 The references are written from these equations, not from engine code. Units are @3's (fmol,
