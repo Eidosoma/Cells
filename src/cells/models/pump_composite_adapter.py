@@ -369,6 +369,50 @@ def capacitor_free_energy_pJ(dv, p, *, xp):
     return 0.5e12 * xp.sum(p.membrane_capacitance * dv * (2 * p.initial_membrane_voltage_V + dv))
 
 
+# @3's chemical term per node and per species row (docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §2.4),
+# for both node kinds. New beside chemical_free_energy_pJ, which stays as it is; no existing program
+# calls these. The secreted-species operators (scheduled_species_turnover@1 and
+# scheduled_species_exchange@1) book their work with them, one species row at a time, so a
+# protein-scale change is never computed as a difference of ion-scale sums.
+
+
+def species_chemical_free_energy_pJ(anchor, change, volume, temperature, *, xp):
+    """@3's chemical term per element, pJ: the change of RT n (ln(n/V) - 1) from n = anchor to
+    anchor + change at the declared volume V, written as balances writes it,
+    1e-3 RT [change (ln(anchor/V) - 1) + (anchor + change) log1p(change/anchor)].
+
+    With anchor the declared reference and change the stored increment it is balances' own term of
+    one species at one node; with anchor the current amount and change a moved amount it is the
+    exact free-energy change of that move, with no difference of bulk terms. Arrays broadcast: pass
+    one species row (or rows) of cells with their volumes, or of outside nodes with theirs; mask
+    padding with a positive anchor and a zero change (the term is then 0).
+
+    Under the IMEX solvers the shared energy bound is set by the ions' flows and is blind to these
+    bookings at µM–nM (bound/change 1.7 to 1,721 in a probed mixed world); the species-only world
+    and a NumPy ΔG test per law are the guards of record.
+    """
+    return (
+        1e-3
+        * R
+        * temperature
+        * (change * (xp.log(anchor / volume) - 1) + (anchor + change) * xp.log1p(change / anchor))
+    )
+
+
+def species_chemical_magnitude_pJ(anchor, change, volume, temperature, *, xp):
+    """The absolute terms of species_chemical_free_energy_pJ, pJ (the rounding allowance's
+    magnitudes)."""
+    return (
+        1e-3
+        * R
+        * temperature
+        * (
+            xp.abs(change * (xp.log(anchor / volume) - 1))
+            + xp.abs((anchor + change) * xp.log1p(change / anchor))
+        )
+    )
+
+
 # @3's capacitor field at a view (v2 design §3, the energy rule; division design §5.1). @3's
 # balances run on the declared layout, so their capacitor term is 1/2 sum C0 dv_b (2 V0 + dv_b)
 # = 1/2 sum C0 (Vb^2 - V0^2), with Vb = V0 + dv_b the patch voltages that the declared
