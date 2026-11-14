@@ -140,14 +140,15 @@ def test_idle_claim_3_ion_rows_are_bitwise_with_the_network_active():
 
 # ------------------------------------------------------------------ other writers (§5)
 
-EVENT = 0.25
+EVENT = 0.006
 
 
-def composition(end=0.5, dt=0.025):
-    """Two cells and their nodes leaking to the bath (D150's swapped world): S exported from both
-    cells; E (the catalyst) and P at the nodes; replacement of cell_0 at EVENT; the network on
-    outside routes only: Michaelis-Menten S -> P catalysed by E at ecs_0, passive S <-> P at
-    ecs_1, P -> 0 inhibited by S at both nodes (at ecs_1 at half the rate)."""
+def composition(end=0.01, dt=1e-3):
+    """Two cells and their nodes leaking to the bath (D150's swapped world, at its 1 ms step, which
+    the junction gate's kinetic bound needs): S exported from both cells; E (the catalyst) and P
+    at the nodes; replacement of cell_0 at EVENT; the network on outside routes only:
+    Michaelis-Menten S -> P catalysed by E at ecs_0, passive S <-> P at ecs_1, P -> 0 inhibited
+    by S at both nodes (at ecs_1 at half the rate)."""
     base = fx.world(
         cells=(("cell_0", 1.0), ("cell_1", 1.0)),
         nodes=(("ecs_0", 1.0), ("ecs_1", 1.0)),
@@ -156,7 +157,7 @@ def composition(end=0.5, dt=0.025):
         junctions=(("junction_0", "cell_0", "cell_1"),),
         dt=dt,
         end=end,
-        observation_times=fx.grid_times(end, dt, end / 4),
+        observation_times=[0.0, 0.003, EVENT, 0.008, end],
         concentrations_mM=dict(cell_0=1e-3, cell_1=1e-3, ecs_0=5e-4, ecs_1=5e-4),
     )
     for name, profile in (("E", dict(ecs_0=1e-4)), ("P", dict(ecs_0=1e-5, ecs_1=1e-5))):

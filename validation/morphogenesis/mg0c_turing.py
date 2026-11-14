@@ -53,8 +53,11 @@ Parts (development runs take no --protocol):
 
 Usage:
   python -m validation.morphogenesis.mg0c_turing PART [PART ...] --output DIR [--quick]
-  ... --protocol FILE: a judged run, refused unless the protocol is registered and the source is
-      a clean execution snapshot (validation/source_snapshot.py), as in injection_rm1.py
+  ... --protocol FILE: a judged run, refused unless the protocol is registered, the source is a
+      clean execution snapshot (validation/source_snapshot.py) and DIR is new (injection_rm1.py's
+      and D150's rules)
+  python -m validation.morphogenesis.mg0c_turing judge --output DIR --protocol FILE --results R...
+      the verdict over the judged runs' results.json (one snapshot, every part once; no runs)
 """
 
 import argparse
@@ -77,6 +80,7 @@ from validation.tissue import species_reactions_fixtures as rfx
 
 ROOT = Path(__file__).resolve().parents[2]
 PROTOCOL = ROOT / "validation/morphogenesis/protocols/mg0c_turing_v1.json"
+OUTPUT = None  # The run's output directory (set by main), for parts that write as they go.
 STATUS = "Development run of MG0c (D152 v1, milestone 3); not judged."
 
 # ------------------------------------------------------------------ the world (§6.4)
@@ -100,6 +104,9 @@ DOMAINS = {6: 12, 8: 16, 11: 22, 16: 32}  # L/l: nodes at h = l/2.
 DTS = (0.05, 0.025, 0.0125)
 STAIRCASE = tuple(4.0 + 0.5 * i for i in range(53))  # 4 to 30 (amended at milestone 1, §11).
 WINDOW_STEPS = 1000
+SEEDS = dict(
+    q2=152, q3={6: 13, 11: 18, 16: 23}, q6=11, q7_face_free=5, q7_restart=3, q7_batch=(3, 4, 5)
+)
 
 
 def length_scale_m():
@@ -564,7 +571,8 @@ def dt_rule(values, truth, scale, reference=None):
     engine at the same records for each dt of DTS (each the next's double); truth [record, ...];
     reference: the reference's own term per element (default 64 eps x scale, an exact reference).
     For each dt with a half: the step term |q(dt) - q(dt/2)|, the tolerance 3 x (step term +
-    reference term) and the error |q(dt) - truth|. Returns (summary, tolerances {dt index: array}).
+    reference term) and the error |q(dt) - truth|; where the worst ratio lies ([record, ...]) and
+    how many elements exceed. Returns (summary, tolerances {dt index: array}).
     The summary also has the observed orders per record (log2 of successive max-norm differences,
     where both lie above the floor 64 eps x scale) and the stop rule (every measurable difference
     decreases)."""
@@ -577,11 +585,16 @@ def dt_rule(values, truth, scale, reference=None):
         tolerance = FACTOR * (step + ref)
         error = np.abs(values[i] - truth)
         tolerances[i] = tolerance
+        ratio = error / tolerance
         summary[dt_key(DTS[i])] = dict(
             max_error=float(np.max(error)),
             max_error_of_scale=float(np.max(error)) / scale,
             max_step_term=float(np.max(step)),
-            max_ratio=float(np.max(error / tolerance)),
+            max_ratio=float(np.max(ratio)),
+            max_ratio_at=[int(j) for j in np.unravel_index(np.argmax(ratio), ratio.shape)],
+            elements=int(ratio.size),
+            exceeding=int(np.count_nonzero(ratio > 1.0)),
+            passes=bool(np.max(ratio) <= 1.0),
             within_fraction=float(np.mean(error <= tolerance)),
             error_le_step_fraction=float(np.mean(error <= step)),
         )
@@ -615,12 +628,17 @@ def smallest_caught(value, tolerance, perturbed, deltas=DELTAS):
 REGISTERED_DELTAS = {}
 
 
-def controls(path, value, tolerance, perturbed, deltas=DELTAS):
+def controls(path, value, tolerance, perturbed, passes, deltas=DELTAS):
     """The controls of one rule at one judged dt: per kind, the smallest caught delta on the grid
-    (development) and, in a judged run, whether the registered delta is caught."""
+    (development) and, in a judged run, whether the registered delta is caught. A control means
+    nothing where the unperturbed rule already fails (passes False): it is then recorded so, and
+    the protocol's draft refuses it."""
     out = {}
     for kind, function in perturbed.items():
-        entry = dict(smallest_caught=smallest_caught(value, tolerance, function, deltas))
+        entry = dict(
+            rule_passes_unperturbed=bool(passes),
+            smallest_caught=smallest_caught(value, tolerance, function, deltas) if passes else None,
+        )
         registered = REGISTERED_DELTAS.get(f"{path}.{kind}")
         if registered is not None:
             entry["registered_delta"] = registered
@@ -738,16 +756,17 @@ def _modes(value):
     return [] if value is None else sorted(int(n) for n in np.atleast_1d(value))
 
 
-def _iterate_maps(K, D, n_nodes, dt, steps, a0, source):
-    """Coefficients after `steps` engine-order steps, mode by mode (strang_mode_map iterated)."""
+def _iterate_maps(K, D, n_nodes, dt, steps, a0, source, dtype=np.float64):
+    """Coefficients after `steps` engine-order steps, mode by mode (strang_mode_map iterated), in
+    `dtype` (np.longdouble isolates the engine's own rounding from the iteration's)."""
     from validation.reactions import chain_reference as cr
 
-    out = np.zeros_like(a0)
+    out = np.zeros(a0.shape, dtype=dtype)
     for n in range(n_nodes):
         M, q = cr.strang_mode_map(K, D, _lam(n_nodes, n), dt, source=source if n == 0 else None)
-        M = np.asarray(M)
-        q = np.zeros(a0.shape[0]) if q is None else np.asarray(q)
-        a = a0[:, n].copy()
+        M = np.asarray(M, dtype=np.float64).astype(dtype)
+        q = np.zeros(a0.shape[0], dtype=dtype) if q is None else np.asarray(q).astype(dtype)
+        a = np.asarray(a0[:, n], dtype=np.float64).astype(dtype)
         for _ in range(steps):
             a = M @ a + q
         out[:, n] = a
@@ -789,14 +808,30 @@ def part_linear(quick):
             a[:, :, 0] += np.asarray([base[s] * VOLUME_PL for s in names]) / run["volume"][0]
             start, scale = a[0], float(np.max(np.abs(a[0])))
             worst_map = worst_rule = worst_note = 0.0
-            exact = []
+            exact, per_record = [], []
             for t, value in zip(run["times"][1:], a[1:], strict=True):
                 steps = int(round(t / dt))
                 mapped = _iterate_maps(K, D, n_nodes, dt, steps, start, source)
+                long = _iterate_maps(K, D, n_nodes, dt, steps, start, source, np.longdouble)
                 difference = float(np.max(np.abs(value - mapped)))
                 worst_map = max(worst_map, difference / scale)
                 worst_rule = max(worst_rule, difference / (steps * EPS * scale))
                 worst_note = max(worst_note, difference / (USAGE_NOTE_PER_STEP * steps * scale))
+                per_record.append(
+                    dict(
+                        time_s=t,
+                        steps=steps,
+                        engine_vs_map_over_steps_eps=difference / (steps * EPS * scale),
+                        engine_vs_long_map_over_steps_eps=float(
+                            np.max(np.abs(value - long.astype(np.float64)))
+                        )
+                        / (steps * EPS * scale),
+                        map_vs_long_map_over_steps_eps=float(
+                            np.max(np.abs((mapped - long).astype(np.float64)))
+                        )
+                        / (steps * EPS * scale),
+                    )
+                )
                 exact.append(
                     np.asarray(
                         cr.propagate_modes(K, D, n_nodes, SPACING_M, start, t, source=source)
@@ -808,6 +843,7 @@ def part_linear(quick):
                 against_engine_order_map=worst_map,
                 map_over_rounding_rule=worst_rule,
                 map_over_usage_note_rule=worst_note,
+                by_record=per_record,
                 against_exact=float(np.max(np.abs(a[1:] - np.asarray(exact)))) / scale,
                 steps_at_end=int(round(stop / dt)),
                 accounting=accounting(run),
@@ -916,6 +952,7 @@ def _mode_study(
                     k=lambda x: exact_with(K * (1 + x), D),
                     D_V=lambda x: exact_with(K, D * np.asarray([1.0, 1 + x])),
                 ),
+                rule[dt_key(dts[i])]["passes"],
             )
     errors = [entry[dt_key(dt)]["against_exact"] for dt in dts]
     entry["exact_ratios"] = [errors[i] / errors[i + 1] for i in range(len(errors) - 1)]
@@ -957,7 +994,7 @@ def part_q2(quick):
     from validation.reactions import chain_reference as cr
 
     end = 600.0 if quick else 1500.0
-    run = _noise_run(8, 152, end, 0.05)
+    run = _noise_run(8, SEEDS["q2"], end, 0.05)
     K, D = schnakenberg_rates()
     n_nodes = DOMAINS[8]
     rates = {n: discrete_rate(K, D, n_nodes, n, 0.05) for n in range(1, n_nodes)}
@@ -993,7 +1030,7 @@ def part_q3(quick):
     end = 1500.0 if quick else 3000.0
     out = {}
     for L in (6, 11) if quick else (6, 11, 16):
-        run = _noise_run(L, 7 + L, end, 0.05)
+        run = _noise_run(L, SEEDS["q3"][L], end, 0.05)
         n_nodes = DOMAINS[L]
         expected = tu.fastest_admissible_mode(J, 1.0, D_RATIO, L, spacing=spacing)
         u = np.abs(coefficients(run)[:, 0, :])
@@ -1053,20 +1090,31 @@ def part_q4(quick):
             cost += run["wall_s"]
         growing = sorted(n for n, r in rates.items() if r > 0)
         fastest = max(growing, key=rates.get) if growing else None
-        out.append(
-            dict(
-                L=L,
-                nodes=n_nodes,
-                candidates=candidates,
-                rates_per_s={str(n): r for n, r in rates.items()},
-                engine_fastest=fastest,
-                discrete_argmax=expected,
-                engine_growing=growing,
-                admissible_unstable=admissible,
-                agrees=bool(fastest == expected and growing == admissible),
-                wall_s=cost,
-            )
+        K, D = schnakenberg_rates()
+        predicted = {n: discrete_rate(K, D, n_nodes, n, dt) for n in candidates}
+        order = sorted(predicted.values(), reverse=True)
+        point = dict(
+            L=L,
+            nodes=n_nodes,
+            candidates=candidates,
+            rates_per_s={str(n): r for n, r in rates.items()},
+            predicted_discrete_time_rates_per_s={str(n): r for n, r in predicted.items()},
+            smallest_predicted_abs_rate_per_s=min(abs(r) for r in predicted.values()),
+            predicted_top_two_gap_per_s=order[0] - order[1] if len(order) > 1 else None,
+            engine_fastest=fastest,
+            discrete_argmax=expected,
+            engine_growing=growing,
+            admissible_unstable=admissible,
+            agrees=bool(fastest == expected and growing == admissible),
+            wall_s=cost,
         )
+        out.append(point)
+        if OUTPUT:  # Each point as it finishes (a long part).
+            with (Path(OUTPUT) / "q4_points.jsonl").open("a") as sink:
+                sink.write(json.dumps(plain(point)) + "\n")
+        import jax
+
+        jax.clear_caches()  # Each chain size compiles its own programs; keep memory bounded.
     return dict(
         points=out,
         all_agree=bool(all(p["agrees"] for p in out)),
@@ -1127,7 +1175,7 @@ def part_q6(quick):
     end = 1000.0 if quick else 3000.0
     every = 250.0
     dts = DTS[:2] if quick else DTS
-    profile = noise_profile(n_nodes, 11)
+    profile = noise_profile(n_nodes, SEEDS["q6"])
     records, _ = grid_times(0.05, [every * i for i in range(1, int(end / every) + 1)], end)
     raw = chain_world(profile, end=end, observation_times=records)
     net = rfx.reference_network(raw)
@@ -1183,6 +1231,7 @@ def part_q6(quick):
             values[i],
             tolerance,
             {kind: (lambda x, kind=kind: perturbed(kind, x)) for kind in ("k", "D_V")},
+            rule[dt_key(dts[i])]["passes"],
             grid,
         )
     out["controls_s"] = time.perf_counter() - started
@@ -1224,14 +1273,20 @@ def part_q7(quick, output):
     end = 20.0 if quick else 200.0
     times, stop = grid_times(0.05, [end / 2], end)
     raw = chain_world(
-        noise_profile(n_nodes, 5), dt=0.05, end=stop, observation_times=times, faces=False
+        noise_profile(n_nodes, SEEDS["q7_face_free"]),
+        dt=0.05,
+        end=stop,
+        observation_times=times,
+        faces=False,
     )
     out["face_free"] = accounting(run_chain(raw, uniform_mM(), every_row=True))
     # Restart through a written snapshot, read back in a fresh process.
     end = 10.0 if quick else 50.0
     times, stop = grid_times(0.05, [end / 2], end)
     spec = parse_spec(
-        chain_world(noise_profile(n_nodes, 3), dt=0.05, end=stop, observation_times=times)
+        chain_world(
+            noise_profile(n_nodes, SEEDS["q7_restart"]), dt=0.05, end=stop, observation_times=times
+        )
     )
     full = run(spec)
     checkpoint = full.checkpoint_at(times[1])
@@ -1268,7 +1323,7 @@ def part_q7(quick, output):
     end = 10.0 if quick else 100.0
     specs = [
         parse_spec(chain_world(noise_profile(n_nodes, s), end=end, observation_times=[0.0, end]))
-        for s in (3, 4, 5)
+        for s in SEEDS["q7_batch"]
     ]
 
     def batch(order):
@@ -1460,6 +1515,39 @@ def registered(protocol_path, output, root=ROOT):
     return protocol
 
 
+def judge(protocol_path, output, results_paths, root=ROOT):
+    """The verdict of a registered protocol from its judged runs (no runs here): every results file
+    a judged run of this protocol from one clean execution snapshot, every part in exactly one, the
+    merged results evaluated by mg0a_gradient.evaluate into OUTPUT/judgement.json (MG0b's judge
+    form). Refused before anything is written, as the judged runs are."""
+    protocol = registered(protocol_path, output, root)
+    parts, revisions, runs = {}, set(), []
+    for path in results_paths:
+        data = json.loads(Path(path).read_text())
+        if data.get("status") != "Judged run of " + protocol["id"] or data.get("quick"):
+            raise SystemExit(f"Refused: {path} is not a judged run of {protocol['id']}")
+        source = data["source"]
+        if source.get("kind") != "snapshot" or not source.get("clean"):
+            raise SystemExit(f"Refused: {path} does not come from a clean execution snapshot")
+        revisions.add(source["git_revision"])
+        for name, value in data["parts"].items():
+            if name in parts:
+                raise SystemExit(f"Refused: part {name} is in more than one judged run")
+            parts[name] = value
+        runs.append(dict(path=str(path), source=source, parts=sorted(data["parts"])))
+    if len(revisions) != 1:
+        raise SystemExit(
+            f"Refused: the judged runs come from different snapshots {sorted(revisions)}"
+        )
+    results = dict(parts=parts)
+    results["accounting_summary"] = accounting_summary(results)
+    verdict = evaluate(protocol, results)
+    Path(output).mkdir(parents=True)
+    record = dict(protocol=protocol["id"], status=protocol["status"], runs=runs, verdict=verdict)
+    (Path(output) / "judgement.json").write_text(json.dumps(plain(record), indent=1) + "\n")
+    return verdict
+
+
 def main(argv=None):
     import jax
 
@@ -1469,7 +1557,14 @@ def main(argv=None):
     parser.add_argument("--output", required=True)
     parser.add_argument("--quick", action="store_true")
     parser.add_argument("--protocol")
+    parser.add_argument("--results", nargs="*", default=[])
     args = parser.parse_args(argv)
+    if args.parts == ["judge"]:
+        if not args.protocol or not args.results:
+            raise SystemExit("judge takes --protocol and --results (the judged runs' results.json)")
+        verdict = judge(args.protocol, args.output, args.results)
+        print("verdict", "pass" if verdict["passed"] else "fail", flush=True)
+        return 0 if verdict["passed"] else 1
     protocol = None
     if args.protocol:
         protocol = registered(args.protocol, args.output)
@@ -1480,6 +1575,8 @@ def main(argv=None):
         raise SystemExit(f"Unknown parts: {unknown}")
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
+    global OUTPUT
+    OUTPUT = output
     results = dict(
         driver="validation/morphogenesis/mg0c_turing.py",
         status=STATUS if protocol is None else "Judged run of " + protocol["id"],
@@ -1502,8 +1599,8 @@ def main(argv=None):
         results["accounting_summary"] = accounting_summary(results)
         path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
         print(name, entry["ok"], round(entry["seconds"], 1), flush=True)
-    if protocol is not None:
-        results["verdict"] = evaluate(protocol, results)
+    if protocol is not None:  # The verdict is the judge entry's, over every judged run.
+        results["verdict"] = "by the judge entry over the merged judged runs (judgement.json)"
         path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
     return 0 if all(p["ok"] for p in results["parts"].values()) else 1
 

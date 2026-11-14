@@ -7,11 +7,12 @@ and registration changes its status alone. The rules follow D150's reviewed prot
 (validation/tissue/secreted_species_protocol.json): S5's dt-study rule per element and record, the
 observed orders with their stop rules, judged controls at registered deltas, the attempt rule.
 
-The judged entry is the driver's --protocol (validation/morphogenesis/mg0c_turing.py: registered,
-its first call, refuses an unregistered protocol, a source that is not a clean execution snapshot
-and an existing output directory). Every judged criterion is evaluated on the judged run's
-results.json by validation/morphogenesis/mg0a_gradient.evaluate (metric paths, comparisons,
-thresholds); a missing metric fails its criterion.
+The judged runs are the driver's --protocol runs (validation/morphogenesis/mg0c_turing.py:
+registered, their first call, refuses an unregistered protocol, a source that is not a clean
+execution snapshot and an existing output directory), one per part group; the verdict is the
+driver's judge entry over their merged results.json (one snapshot, every part once), each
+criterion evaluated by validation/morphogenesis/mg0a_gradient.evaluate (metric paths, comparisons,
+thresholds; a missing metric fails its criterion).
 
 Usage: python -m validation.morphogenesis.mg0c_protocol OUTPUT_JSON RESULTS_JSON [RESULTS_JSON ...]
   (each RESULTS_JSON a development run of the driver; together they hold every judged part once)
@@ -22,7 +23,7 @@ import sys
 from pathlib import Path
 
 from validation.morphogenesis import mg0c_turing as mg
-from validation.morphogenesis.mg0a_gradient import evaluate
+from validation.morphogenesis.mg0a_gradient import _lookup, evaluate
 
 STATUS = (
     "PROPOSED (drafted 14 November 2026 by the D152 engine agent from the development runs named "
@@ -60,8 +61,8 @@ def merged(paths):
 
 
 def snap_up(value):
-    """The smallest point of the driver's 1-2-5 grid at or above value."""
-    return next(d for d in mg.DELTAS if d >= value * (1 - 1e-12))
+    """The smallest point of the driver's 1-2-5 grid at or above value (the value past the grid)."""
+    return next((d for d in mg.DELTAS if d >= value * (1 - 1e-12)), value)
 
 
 def criterion(id_, metrics, comparison, threshold, basis):
@@ -330,6 +331,10 @@ def criteria_and_controls(results):
     ]
     registered = {}
     for item, rule in deltas.items():
+        if not all(v["rule_passes_unperturbed"] for v in rule.values()):
+            raise SystemExit(
+                f"Refused: {item}'s rule fails unperturbed, so its controls mean nothing"
+            )
         caught = [v["smallest_caught"] for v in rule.values()]
         if None in caught:
             raise SystemExit(f"Refused: a control of {item} is not caught in development")
@@ -342,9 +347,23 @@ BOUNDS = ("energy_over_bound", "material_over_bound")
 
 
 def development_values(protocol, results):
-    """Each criterion's development values and its development verdict (not judged)."""
+    """Each criterion's development values and its development verdict (not judged). A control's
+    caught_at_registered exists only in a judged run: there the development's smallest caught
+    deltas stand beside the registered ones instead."""
     verdict = evaluate(dict(criteria=protocol["criteria"]), results)
-    return {v["id"]: dict(passed=v["passed"], values=v["values"]) for v in verdict["criteria"]}
+    out = {}
+    for v, c in zip(verdict["criteria"], protocol["criteria"], strict=True):
+        if c["id"].endswith("_controls"):
+            out[v["id"]] = dict(
+                evaluable="in the judged run only (caught_at_registered)",
+                smallest_caught_in_development=[
+                    _lookup(results, m.replace("caught_at_registered", "smallest_caught"))
+                    for m in c["metrics"]
+                ],
+            )
+        else:
+            out[v["id"]] = dict(passed=v["passed"], values=v["values"])
+    return out
 
 
 def draft(output, paths):
@@ -378,10 +397,14 @@ def draft(output, paths):
         ],
         driver="validation/morphogenesis/mg0c_turing.py",
         command=(
+            "From a fresh clean execution snapshot of main, through scripts/run_detached.sh: "
             "PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= python -m "
             "validation.morphogenesis.mg0c_turing PARTS --output RUN_DIR --protocol THIS_FILE, "
-            "from a fresh clean execution snapshot of main, through scripts/run_detached.sh "
-            "(the parts split over units as development_runs.units)"
+            "one unit per part group (development_runs.units), each into its own new RUN_DIR; then "
+            "python -m validation.morphogenesis.mg0c_turing judge --output JUDGE_DIR --protocol "
+            "THIS_FILE --results RUN_DIR/results.json ..., the verdict over the merged runs (one "
+            "snapshot, every part once); then the guards of record (guards_of_record.tests) with "
+            "pytest from the same snapshot"
         ),
         theory_sources=dict(
             turing="Turing 1952, Phil Trans R Soc B 237:37, doi:10.1098/rstb.1952.0012",
@@ -428,7 +451,7 @@ def draft(output, paths):
             material_floor_fmol=mg.FLOOR_FMOL,
             single_mode_amplitude_of_c_star=mg.AMPLITUDE,
             noise_amplitude_of_c_star=mg.NOISE,
-            seeds=dict(q2=152, q3={"L6": 13, "L11": 18, "L16": 23}, q6=11, q7_face_free=5),
+            seeds=mg.SEEDS,
             q1_records=(
                 "3 / |Re lambda| of each mode's slowest eigenvalue (the usage note's record), "
                 "capped at 600 s, rounded to 50 ms, with records at 1/3 and 2/3 of it"
