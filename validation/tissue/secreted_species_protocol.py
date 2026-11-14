@@ -16,13 +16,22 @@ changes its status alone.
   order and control arms, once, from a clean snapshot of main, against the frozen tolerances and
   registered controls; the step map's agreement is reported, not judged. It refuses an existing OUT,
   since every attempt writes its own directory (S5's attempt rule).
+* judge-q5 OUT: Q5, the same guard first, then pytest on the protocol's Q5 list from the snapshot,
+  one file at a time with no per-file cap; OUT/verdict.json with each file's counts, exit code and
+  duration. A file whose process ends by a signal ends the attempt without a verdict.
+* combine OUT Q1_Q2_Q3_OUT Q5_OUT: the same guard; the one qualification verdict from the other two,
+  which must name this protocol and the snapshot it runs from.
 
 Usage: python -m validation.tissue.secreted_species_protocol draft DEVELOPMENT_DIR OUTPUT_JSON
 """
 
 import hashlib
 import json
+import os
+import re
+import subprocess
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -64,6 +73,14 @@ FINDINGS = (  # Disclosed with the draft: what the development runs showed befor
     "error changes sign from 5 to 2.5 um at 0.25 s and grows there. Successive differences "
     "element by element then failed at one coarse shell of 120, where the spatial error changes "
     "sign; hence successive differences in the max norm (Q3.why_the_max_norm)",
+    "The rehearsal on main (the clean snapshot of 6f339ab, after the milestone-3 merge 780f5d9; "
+    f"{EVIDENCE}/rehearsal-6f339ab/rehearsal-summary.json): the crossrev of the five existing sets "
+    "identical against the baseline of record and of the species set against its record "
+    "(b102da4); the eight arms and the analysis reproduced every frozen number bitwise (0 "
+    "differences in 1212 protocol, 2256 analysis and 2480 arm-record leaves); the dry runs on a "
+    "registered dry-run copy (S5's form) reached their verdicts with every control caught, the "
+    "judge's arms identical to the rehearsal's; the real entry refused the PROPOSED protocol and "
+    "an existing OUT. Its two findings led to the pre-registration amendments",
     "A preview verdict (S5's precedent: the judge's code on copies of the development arms, the "
     "guard bypassed in-process), first before the lead's review "
     f"({EVIDENCE}/qualification-dev-a7e1869-preview/verdict.json) and again with the judged "
@@ -71,6 +88,38 @@ FINDINGS = (  # Disclosed with the draft: what the development runs showed befor
     "item passes, and every control is caught. It is no verdict",
 )
 REGRESSION_GUARDS = ("tests/unit/test_secreted_species_step_map.py",)  # Tier 2, not judged.
+REHEARSAL_SECONDS = {"judge": 457, "judge-q5": 1011}  # The rehearsal on main, under load.
+RUNTIME_MAX = {"judge": 1400, "judge-q5": 3100, "combine": 600}  # Seconds: about 3 x those.
+AMENDMENTS = (  # Before registration (the lead, 14 November 2026, after the rehearsal on main).
+    dict(
+        finding=(
+            "the rehearsal found that Q5 had no executable entry in the repo: it ran through the "
+            "rehearsal script's shell function, its verdict assembled afterwards; nothing wrote a "
+            "Q5 verdict and Q5 had no registration guard, so no single artifact carried the "
+            "qualification"
+        ),
+        change=(
+            "judge-q5 (secreted_species_protocol.judge_q5) and combine "
+            "(secreted_species_protocol.combine), each refusing an unregistered protocol, a source "
+            "other than a clean snapshot and an existing OUT before anything runs, tested in "
+            "tests/unit/test_secreted_species_judged_refusal.py; rules.judge_entries"
+        ),
+    ),
+    dict(
+        finding=(
+            "under load the rehearsal's Q5 files took up to 439 s (test_secreted_species_runs) "
+            "and 336 s (ions), beyond the tier runner's 300 s per-file cap, and the judge 457 s; "
+            "the attempt rule named infrastructure kills but not a harness timeout"
+        ),
+        change=(
+            "Q5 runs uncapped per file in a unit with wide --runtime-max (rules.timing); the "
+            "attempt rule counts a harness timeout, a unit killed by its runtime limit and a Q5 "
+            "file ended by a signal as infrastructure endings, rerun once from the same "
+            "snapshot, while a test failure or error inside a completed run stays a verdict "
+            "(rules.attempts)"
+        ),
+    ),
+)
 GUARD_TESTS = (
     "tests/unit/test_species_turnover.py",
     "tests/unit/test_species_exchange.py",
@@ -197,8 +246,148 @@ def judge(out, protocol_path=PROTOCOL, root=ROOT):
         items=items,
         passed=not refused and all(v["passed"] for v in items.values()),
         reported_not_judged=reported,
-        q5="judged separately: the guard tests at the judged snapshot (Q5's judge entry)",
+        q5="judged separately by judge-q5; combine writes the one qualification verdict",
     )
+    (out / "verdict.json").write_text(json.dumps(verdict, indent=1, default=float) + "\n")
+    print(json.dumps({k: v["passed"] for k, v in items.items()} | {"passed": verdict["passed"]}))
+    return verdict
+
+
+# ------------------------------------------------------------------ Q5 and the combined verdict
+
+COUNTS = re.compile(r"(\d+) (passed|failed|errors?|skipped|xfailed|xpassed|deselected)")  # Tiers'.
+
+
+def snapshot_identity(root=ROOT):
+    """The source a judged entry runs from: the execution snapshot's manifest at root."""
+    snapshot = json.loads((Path(root) / "SNAPSHOT.json").read_text())
+    return dict(
+        kind="snapshot",
+        git_revision=snapshot.get("git_revision"),
+        patch_sha256=snapshot.get("patch_sha256"),
+        status=snapshot.get("status"),
+    )
+
+
+def _fresh(out):
+    out = Path(out)
+    if out.exists():
+        raise SystemExit(
+            "Refused: the output directory exists; every attempt writes its own (the attempt rule)"
+        )
+    return out
+
+
+def _pytest_file(test, root, out):
+    """One Q5 file from root, as scripts/test_tiers.py's _run_file runs a file (the gate's
+    environment, its count parser) but with no cap: its exit code (negative: ended by a signal),
+    duration and counts."""
+    slug = test.replace("/", "__")
+    outputs, evidence = out / "outputs" / slug, out / "evidence" / slug
+    outputs.mkdir(parents=True)
+    evidence.mkdir(parents=True)
+    env = dict(
+        os.environ,
+        PYTHONPATH=str(root / "src"),
+        CUDA_VISIBLE_DEVICES="",
+        JAX_ENABLE_X64="1",
+        CELLS_OUTPUT_ROOT=str(outputs),
+        CELLS_COMPONENT_EVIDENCE=str(evidence),
+    )
+    log = out / f"{slug}.log"
+    command = [sys.executable, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider"]
+    command += ["--continue-on-collection-errors", test]
+    start = time.monotonic()
+    with log.open("w") as handle:
+        code = subprocess.run(
+            command, cwd=root, env=env, stdout=handle, stderr=subprocess.STDOUT
+        ).returncode
+    seconds = round(time.monotonic() - start, 2)
+    tail = log.read_text(errors="replace")[-2000:]
+    last = [line for line in tail.splitlines() if " in " in line and COUNTS.search(line)]
+    counts = {}
+    for number, kind in COUNTS.findall(last[-1] if last else ""):
+        counts[kind.rstrip("s") if kind.startswith("error") else kind] = int(number)
+    return dict(file=test, exit_code=code, seconds=seconds, counts=counts, log=str(log))
+
+
+def judge_q5(out, protocol_path=PROTOCOL, root=ROOT):
+    """Q5's judged run (rules.judge_entries.Q5): refused first by the same guard and for an existing
+    OUT; then pytest on the protocol's Q5 list from the snapshot at root, one file at a time with
+    no per-file cap. OUT/verdict.json records each file's counts, exit code and duration; Q5
+    passes when every file exits 0, and a test failure or error in a completed file is a verdict.
+    A file whose process ends by a signal (an out-of-memory kill, a stop) ends the attempt without
+    a verdict (the attempt rule): its record goes to OUT/infrastructure.json, and the entry exits
+    nonzero."""
+    protocol = registered(protocol_path, root)
+    out = _fresh(out).resolve()  # Absolute: each file's process runs from root.
+    out.mkdir(parents=True)
+    root = Path(root).resolve()
+    files = []
+    for test in protocol["Q5"]["tests"]:
+        files.append(_pytest_file(test, root, out))
+        if files[-1]["exit_code"] < 0:
+            ending = dict(item="Q5", source=snapshot_identity(root), files=files)
+            (out / "infrastructure.json").write_text(json.dumps(ending, indent=1) + "\n")
+            raise SystemExit(
+                f"Infrastructure ending: {test} ended by signal {-files[-1]['exit_code']}; no "
+                "verdict is written (the attempt rule: rerun once from the same snapshot)"
+            )
+    verdict = dict(
+        item="Q5",
+        protocol_id=protocol["id"],
+        protocol_status=protocol["status"],
+        source=snapshot_identity(root),
+        files=files,
+        passed=bool(files) and all(f["exit_code"] == 0 for f in files),
+    )
+    (out / "verdict.json").write_text(json.dumps(verdict, indent=1) + "\n")
+    print(json.dumps(dict(Q5=verdict["passed"], files=len(files))))
+    return verdict
+
+
+def combine(out, q1_q2_q3, q5, protocol_path=PROTOCOL, root=ROOT):
+    """The one qualification verdict (rules.judge_entries.combined): refused first by the same
+    guard and for an existing OUT; then the Q1-Q3 verdict (Q1_Q2_Q3/verdict.json) and the Q5
+    verdict (Q5/verdict.json), refused unless both name this protocol and the snapshot at root.
+    OUT/verdict.json carries every item, the scope line, the snapshot's revision and the reported,
+    unjudged step-map ratios; it passes when both parts passed."""
+    protocol = registered(protocol_path, root)
+    out = _fresh(out)
+    source = snapshot_identity(root)
+    parts = {}
+    for name, where in (("Q1_Q2_Q3", q1_q2_q3), ("Q5", q5)):
+        path = Path(where) / "verdict.json"
+        if not path.exists():
+            raise SystemExit(f"Refused: no {name} verdict at {path}")
+        part = json.loads(path.read_text())
+        if (part.get("protocol_id"), part.get("protocol_status")) != (
+            protocol["id"],
+            protocol["status"],
+        ):
+            raise SystemExit(f"Refused: the {name} verdict is not this protocol's")
+        if part.get("source") != source:
+            raise SystemExit(f"Refused: the {name} verdict comes from another source than {root}")
+        parts[name] = (part, str(path))
+    (a, a_path), (b, b_path) = parts["Q1_Q2_Q3"], parts["Q5"]
+    keep = ("file", "exit_code", "seconds", "counts")
+    items = dict(
+        a["items"], Q5=dict(passed=b["passed"], files=[{k: f[k] for k in keep} for f in b["files"]])
+    )
+    verdict = dict(
+        kind="cells.secreted_species_v1_qualification_verdict@1",
+        protocol_id=protocol["id"],
+        protocol_status=protocol["status"],
+        scope=protocol["scope"],
+        source=source,
+        snapshot_revision=source["git_revision"],
+        refused_arms=a["refused_arms"],
+        items=items,
+        passed=a["passed"] and b["passed"],
+        not_judged=dict(Q4=protocol["Q4"]["reason"], step_map=a["reported_not_judged"]),
+        verdicts=dict(Q1_Q2_Q3=a_path, Q5=b_path),
+    )
+    out.mkdir(parents=True)
     (out / "verdict.json").write_text(json.dumps(verdict, indent=1, default=float) + "\n")
     print(json.dumps({k: v["passed"] for k, v in items.items()} | {"passed": verdict["passed"]}))
     return verdict
@@ -384,13 +573,25 @@ def draft(development, output):
                 "A failure is recorded and diagnosed, never retuned"
             ),
             attempts=(
-                "an attempt killed by infrastructure before its verdict is written (an "
-                "out-of-memory kill, a unit stopped by the slice, a host crash) is not a verdict. "
-                "It is recorded with its logs and partial outputs and rerun once from the same "
-                "snapshot; each attempt writes its own output directory, since the judge entry "
-                "refuses an existing one. A second infrastructure kill goes to the lead, as does "
-                "any other ending without a verdict. A run that has written its verdict is final "
-                "(S5's rule). An arm the engine refuses is a verdict: its items fail"
+                "an attempt that ends by infrastructure before its verdict is written is not a "
+                "verdict: an out-of-memory kill, a unit stopped by the slice, a host crash, a "
+                "harness timeout, a unit killed by its runtime limit (--runtime-max), or a Q5 test "
+                "file whose process ends by a signal (judge-q5 then writes infrastructure.json, "
+                "not verdict.json). It is recorded with its logs and partial outputs and rerun "
+                "once from the same snapshot; each attempt writes its own output directory, since "
+                "every judge entry refuses an existing one. A second infrastructure ending goes to "
+                "the lead, as does any other ending without a verdict. A run that has written its "
+                "verdict is final (S5's rule). An arm the engine refuses is a verdict: its items "
+                "fail; a test failure or error inside a completed run is a verdict too "
+                "(pre_registration_amendments)"
+            ),
+            timing=(
+                "each judged entry runs through scripts/run_detached.sh with --oom-first in its "
+                f"own unit: the judge with --runtime-max {RUNTIME_MAX['judge']} (about 3 x the "
+                f"rehearsal's {REHEARSAL_SECONDS['judge']} s), judge-q5 with --runtime-max "
+                f"{RUNTIME_MAX['judge-q5']} (about 3 x the rehearsal's Q5 total of "
+                f"{REHEARSAL_SECONDS['judge-q5']} s under load, its longest file 439 s) and no "
+                f"per-file cap, combine with --runtime-max {RUNTIME_MAX['combine']}"
             ),
             resolved_start=(
                 "every judged arm runs through the runner with every host check, from a pre-formed "
@@ -416,13 +617,23 @@ def draft(development, output):
                     "validation/tissue/secreted_species_protocol.registered, the judge's first "
                     "call: it refuses an unregistered protocol and a source that is not a clean "
                     "execution snapshot before anything is computed or written; "
-                    "tests/unit/test_secreted_species_judged_refusal.py tests it on edited copies"
+                    "tests/unit/test_secreted_species_judged_refusal.py tests it, with judge_q5 "
+                    "and combine, on edited copies"
                 ),
                 Q1_Q2_Q3="python -m validation.tissue.secreted_species_qualification judge OUT",
                 Q5=(
-                    "python -m pytest on Q5's test files from the judged snapshot, through "
-                    "scripts/run_detached.sh"
+                    "python -m validation.tissue.secreted_species_qualification judge-q5 OUT: the "
+                    "same guard, then pytest on Q5's list from the snapshot, one file at a time "
+                    "with no per-file cap; OUT/verdict.json with each file's counts, exit code and "
+                    "duration"
                 ),
+                combined=(
+                    "python -m validation.tissue.secreted_species_qualification combine OUT "
+                    "Q1_Q2_Q3_OUT Q5_OUT: the same guard; the one qualification verdict (every "
+                    "item, the scope line, the snapshot's revision, the reported step-map ratios), "
+                    "refusing verdicts of another protocol or from another snapshot"
+                ),
+                existing_out="every entry refuses an existing OUT before anything runs",
             ),
             development_runs=dict(
                 closed_form=named,
@@ -624,7 +835,9 @@ def draft(development, output):
                 "over time, the start and the steady state against their independent sinh forms; "
                 "and the judged-run refusal",
             ],
-            verdict_rule="pass when every test in these files passes",
+            verdict_rule=(
+                "pass when every test in these files passes (judge-q5: every file exits 0)"
+            ),
         ),
         regression_guards=dict(
             judged=False,
@@ -692,6 +905,7 @@ def draft(development, output):
             orders="Q3's observed orders, beside its judged stop rules",
         ),
         development_findings=list(FINDINGS),
+        pre_registration_amendments=list(AMENDMENTS),
     )
     Path(output).write_text(json.dumps(protocol, indent=1, default=float) + "\n")
     print(output)

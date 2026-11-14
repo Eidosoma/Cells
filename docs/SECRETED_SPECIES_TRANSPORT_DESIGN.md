@@ -1658,6 +1658,30 @@ The review's rulings and changes are recorded in the protocol (`review`). What f
 order: land on main as PROPOSED, rehearse on main, dry-run every judge entry, register, then one
 judged run from a clean snapshot.
 
+**The rehearsal on main and the pre-registration amendments** (14 November). The rehearsal ran
+from the clean snapshot of main at 6f339ab (`rehearsal-6f339ab/` in the evidence folder):
+- The crossrev was identical in all five existing sets against the baseline of record, and in the
+  species set against its record.
+- Every frozen number was reproduced bitwise: 0 differences in 1212 protocol leaves, 2256
+  analysis leaves and 2480 arm-record leaves.
+- The dry runs on a registered dry-run copy, in S5's form, reached their verdicts with every
+  control caught.
+- The real entry refused the PROPOSED protocol and an existing OUT.
+
+Its two findings became amendments before registration, recorded in the protocol's
+`pre_registration_amendments`:
+- **Q5 now has repo entries.** Q5 had no executable entry. `judge-q5 OUT` applies the same guard,
+  then runs pytest on the protocol's Q5 list one file at a time, with no per-file cap, and writes
+  a Q5 verdict. `combine OUT Q1_Q2_Q3_OUT Q5_OUT` writes the one qualification verdict: every
+  item, the scope line, the snapshot's revision and the reported step-map ratios. Every entry
+  refuses an existing OUT, and the refusal test covers all three.
+- **Timing and the attempt rule.** Q5 files took up to 439 s under load, beyond the tier runner's
+  300 s cap. The judged entries now run with a wide `--runtime-max`: about 3× the rehearsal's
+  times, 1400 s for the judge and 3100 s for judge-q5.
+  - A harness timeout, a unit killed by its runtime limit, or a Q5 file ended by a signal counts
+    as an infrastructure ending. It is rerun once from the same snapshot.
+  - A test failure or error inside a completed run stays a verdict.
+
 ## Appendix A. Equations for the independent references
 
 The references are written from these equations, not from engine code. Units are @3's (fmol,

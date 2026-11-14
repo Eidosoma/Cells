@@ -29,6 +29,12 @@ Usage (PYTHONPATH at the source tree under test):
   python -m validation.tissue.secreted_species_qualification develop OUT [ARM ...]
   python -m validation.tissue.secreted_species_qualification analyse OUT
   python -m validation.tissue.secreted_species_qualification judge OUT   (after registration only)
+  python -m validation.tissue.secreted_species_qualification judge-q5 OUT   (after registration)
+  python -m validation.tissue.secreted_species_qualification combine OUT Q1_Q2_Q3_OUT Q5_OUT
+
+The three judged entries (secreted_species_protocol.judge, judge_q5 and combine) each refuse an
+unregistered protocol, a source other than a clean execution snapshot and an existing OUT before
+anything runs; combine writes the one qualification verdict from the other two.
 """
 
 import json
@@ -192,5 +198,17 @@ if __name__ == "__main__":
         from validation.tissue.secreted_species_protocol import judge
 
         judge(target)
+    elif action == "judge-q5":
+        from validation.tissue.secreted_species_protocol import judge_q5
+
+        judge_q5(target)
+    elif action == "combine":
+        from validation.tissue.secreted_species_protocol import combine
+
+        if len(rest) != 2:
+            raise SystemExit("Usage: combine OUT Q1_Q2_Q3_OUT Q5_OUT")
+        combine(target, *rest)
     else:
-        raise SystemExit(f"Unknown action {action!r} (develop, analyse or judge)")
+        raise SystemExit(
+            f"Unknown action {action!r} (develop, analyse, judge, judge-q5 or combine)"
+        )
