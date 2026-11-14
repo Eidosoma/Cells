@@ -307,6 +307,9 @@ class Composition:
         self.writers_of = accepted_writers(operators)
         self.observed_keys = {op.LAW_ID: {*op.observed_columns(), *op.REPLACES} for op in operators}
         self.laws = tuple(op.LAW_ID for op in operators)
+        # Declarations contribute nothing to the step (contract.DECLARATION_ONLY): a composition
+        # of declarations alone steps as the empty composition does (FR-1 design §1.6, S5).
+        self.stepping = tuple(op for op in operators if not op.DECLARATION_ONLY)
         self.MODEL_ID = MODEL_ID
         self.OBSERVER_ID = OBSERVER_ID
         self.OBSERVATION_SAMPLING = inner.OBSERVATION_SAMPLING
@@ -512,7 +515,7 @@ class Composition:
 
     def checked_step(self, state, dt, control, p, active):
         """The composite step (module docstring); RK4 for an empty tableau."""
-        if not self.operators:  # The empty composition is the inner step.
+        if not self.stepping:  # The empty composition (or declarations only) is the inner step.
             moved, ok = self.inner.checked_step(
                 self.inner.inner_state(state),
                 dt,
