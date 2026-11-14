@@ -238,8 +238,9 @@
     "parent charge": "R-ops given the parent's node charge Q_P + delta |Q_declared| (the snapshot's charge anchor), which does not vanish as Q_P nears 0",
     "f": "R-ops given the volume fraction f + delta",
     "transference": "R-ops given the first carrier's t + delta and the second's t - delta, their sum kept 1",
-    "W": "R-ops' daughters' free energy evaluated at V_D (1 + delta), a booking defect in the free-energy volume: W moves by -1e-3 RT N_D ln(1 + delta), first order (the amendment)",
-    "image": "the engine moves (1 + delta) times the mismatch, its carrier fractions scaled in its layout, which breaks isopotentiality at first order (an engine-side defect, since R-ops keeps the transference numbers summing to 1; the amendment); a delta its own event checks refuse is reported"
+    "W": "R-ops' daughters' free energy evaluated at V_D (1 + delta), a booking defect in the free-energy volume: W moves by -1e-3 RT N_D ln(1 + delta), first order (the amendment; accepted as built). It is applied to R-ops' output through the usage note's G(n, V): the engine books free energy relative to its anchors, so a volume defect there would touch only the increments, about 1e-3 of the effect at the bound state",
+    "mismatch scale": "the engine moves (1 + delta) times the mismatch, its carrier fractions scaled in its layout, which breaks isopotentiality at first order (an engine-side defect, since R-ops keeps the transference numbers summing to 1; the amendment, formerly 'image'); a delta its event map refuses is reported",
+    "non-conservation": "D2 takes slightly more than the rest: Delta_D2 -> (Delta_P - Delta_D1)(1 + delta), applied to the engine's state after its event, its D2 increment and moved amount and the image it books (plates1 - plates0, the partition's capacitor_state) (the second amendment). The partition's event checks, re-applied to the defective state with its constants, report the delta they refuse"
    },
    "deltas": [
     1e-16,
@@ -339,9 +340,14 @@
     "W": [
      "work"
     ],
-    "image": [
-     "image",
+    "mismatch scale": [
+     "charges",
      "potentials"
+    ],
+    "non-conservation": [
+     "image",
+     "charges",
+     "amounts"
     ]
    },
    "statistic": "per control and family, the smallest delta whose ratio passes 64 (None if none does; 'baseline above 64' where the undefected case already fails at that scale)",
@@ -355,6 +361,16 @@
      "W leaves f's targets; f's effect on W is reported as information",
      "W takes its own first-order control (the daughters' free energy at V_D (1 + delta))",
      "the image charge takes its own control (the mismatch scaled, delta -> (1 + delta) delta)"
+    ]
+   },
+   "second_amendment": {
+    "when": "the lead, 14 November, after the first amendment (3c3f190) and before any new-scale run; the threshold stays 1e-9",
+    "finding": "the mismatch-scale control (then 'image') does not reach the image charge: it missed in 10 of 12 cases, and its two catches were rounding where the undefected image ratio is near 64 (old scale, protocol-dev-s5a25)",
+    "reason": "a held node's plate charge is minus the total charge of the patches facing it; a split that conserves charge leaves it unchanged, and so does the furrow world's floating cleft, whose charge is fixed. No charge-conserving defect can move the image charge",
+    "changes": [
+     "the delta-scaling control, renamed 'mismatch scale', targets the charges and potentials, no longer the image charge",
+     "a non-conservation control, the defect class the image charge exists to catch: Delta_D2 -> (Delta_P - Delta_D1)(1 + delta), targeting the image charge and the charge and material sums",
+     "the W control is accepted as built"
     ]
    },
    "scales": "old and new (R-ops' charge_term)",

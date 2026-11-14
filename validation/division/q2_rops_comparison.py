@@ -80,10 +80,22 @@ delta of DEFECTS (1e-16 to 1e-2 in quarter decades):
   delta = 0 the daughters' concentrations equal the parent's, d dG / d delta = ln c_D1 - ln c_D2
   = 0), so a map defect reaches W only at second order (W equals dG here, the bath at 0 V);
   f's effect on W is reported;
-* image (the amendment): the engine moves (1 + delta) times the mismatch, its carrier
-  fractions scaled, which breaks isopotentiality at first order: the image charge and the
-  potentials (an engine-side defect; R-ops' interface keeps the transference numbers summing
-  to 1). A delta at which the engine's own event checks refuse is reported.
+* mismatch scale (the amendment; formerly "image"): the engine moves (1 + delta) times the
+  mismatch, its carrier fractions scaled, which breaks isopotentiality at first order: the
+  potentials and the charges (an engine-side defect; R-ops' interface keeps the transference
+  numbers summing to 1). It cannot reach the image charge: a held node's plate charge is minus
+  the total charge of the patches facing it, which a charge-conserving split leaves unchanged
+  (the second amendment, the lead, 14 November);
+* non-conservation (the second amendment): D2 takes slightly more than the rest, Delta_D2 ->
+  (Delta_P - Delta_D1)(1 + delta), applied to the engine's state after its event (its D2
+  increment and moved amount, and the image it books, plates1 - plates0, recomputed with the
+  partition's capacitor_state). It reaches the image charge and the charge and material sums
+  at first order.
+For the two engine-side controls the delta at which the engine's own event checks refuse is
+reported: the event map's verdict for the mismatch scale, and for non-conservation the
+partition's event checks (isopotential, outside potentials, plate charges, positivity, with
+its constants) re-applied to the defective state, since the event map conserves by
+construction.
 The near-zero rule applies unchanged to the judged sets: the judged run's near-zero cases are
 the judged sets' admitted draws within NEAR_ZERO_V of 0 V.
 The statistic is the smallest delta whose ratio passes 64, per family (CONTROL_GROUPS); the
@@ -173,7 +185,11 @@ CONTROL_TARGETS = {
     "f": ("amounts",),
     "transference": ("amounts",),
     "W": ("work",),
-    "image": ("image", "potentials"),
+    # The second amendment (the lead, 14 November): the delta-scaling control (formerly "image")
+    # cannot reach the image charge, since a held node's plate charge is minus the total charge
+    # facing it and the split conserves charge; the non-conservation control does.
+    "mismatch scale": ("charges", "potentials"),
+    "non-conservation": ("image", "charges", "amounts"),
 }
 CONTROL_PATCH = "membrane_0"
 # The near-zero cases: the asymmetric world's admitted seen draws whose parent patch sits within
@@ -836,23 +852,63 @@ def booked_volume_defect(result, temperature_K, x):
     return SimpleNamespace(values=values, magnitudes=result.magnitudes, snapshot=result.snapshot)
 
 
+def event_checks(world, d, before, new):
+    """(the held nodes' image charge, valid): the partition's event checks re-applied to a state
+    after the event, as event_map applies them (its isopotential, outside-potential,
+    plate-charge and positivity bounds, its constants and capacitor_state)."""
+    p, n = world.p, len(world.cells)
+    phi0, _, _, plates0, _ = partition.capacitor_state(before, world.view(before), xp=np)
+    q1 = world.view(new)
+    phi1, _, _, plates1, _ = partition.capacitor_state(new, q1, xp=np)
+    scale = partition.POTENTIAL_RTOL * np.max(np.abs(phi0)) + partition.POTENTIAL_ATOL_V
+    parent = world.cells.index(d.parent)
+    kids = [world.cells.index(c) for c in d.daughters]
+    valid = all(abs(phi1[k] - phi0[parent]) <= scale for k in kids)
+    outside = np.asarray(q1.outside_active) & ~np.asarray(p.reservoir)
+    valid &= bool(np.all(np.where(outside, np.abs(phi1[n:] - phi0[n:]) <= scale, True)))
+    image = np.where(np.asarray(p.reservoir), plates1 - plates0, 0.0)
+    bound = partition.PLATE_RTOL * np.abs(plates0) + partition.PLATE_ATOL_C
+    valid &= bool(np.all(np.abs(image) <= bound))
+    amounts = np.asarray(p.amount_reference) + np.asarray(new.amount_increment)
+    valid &= bool(np.all(amounts[:, kids] > 0))
+    return image, valid
+
+
 def control_runs(world, d, state, due, after, base, division, snapshot, scale, refused):
     """{control: delta -> (the engine's state after the event, R-ops' result)}. The four map
-    defects and W's are given to R-ops against the engine's own event; the image control is the
-    engine's (its carrier fractions scaled by 1 + delta, so it moves (1 + delta) delta of the
-    mismatch); a delta at which the engine's own event checks refuse is appended to refused."""
+    defects and W's are given to R-ops against the engine's own event; the mismatch scale and
+    non-conservation are the engine's (module docstring). A delta at which the engine's own
+    event checks refuse is appended to refused."""
     reference = defects(division, snapshot, d.parent)
     runs = {c: (lambda x, c=c: (after, apply(*reference[c](x), scale))) for c in reference}
     runs["W"] = lambda x: (after, booked_volume_defect(base, snapshot.temperature_K, x))
 
-    def image(x):
+    def mismatch_scale(x):
         fraction = world.p.partition_carrier_fraction * (1 + x)
         new, valid = world.event(state, due, world.p._replace(partition_carrier_fraction=fraction))
         if not valid:
             refused.append(x)
         return new, base
 
-    runs["image"] = image
+    def nonconserving(x):
+        one, two, parent = (world.cells.index(c) for c in (*d.daughters, d.parent))
+        rest = np.asarray(state.amount_increment)[:, parent] - after.amount_increment[:, one]
+        increment = np.array(after.amount_increment, copy=True)
+        increment[:, two] = rest * (1 + x)
+        moved = np.array(after.partition_moved_fmol, copy=True)
+        moved[:, two] = np.asarray(state.partition_moved_fmol)[:, two] + rest * (1 + x)
+        new = after._replace(amount_increment=increment, partition_moved_fmol=moved)
+        image, valid = event_checks(world, d, state, new)
+        new = new._replace(
+            electrode_charge_transferred_C=np.asarray(state.electrode_charge_transferred_C) + image,
+            partition_image_charge_C=np.asarray(state.partition_image_charge_C) + np.abs(image),
+        )
+        if not valid:
+            refused.append(x)
+        return new, base
+
+    runs["mismatch scale"] = mismatch_scale
+    runs["non-conservation"] = nonconserving
     return runs
 
 
