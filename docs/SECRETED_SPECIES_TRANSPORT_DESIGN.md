@@ -1579,13 +1579,21 @@ closed-form comparison against the continuum is milestone 3.
 
 ### 12.2 Milestone 3: the closed-form development run and the PROPOSED protocol (14 November 2026)
 
-Code on the branch: dc2e494 (the held sphere's closed forms, the radial builder's faces kind, the
-driver), 8d94451 (the analysis, the protocol's guard, judge and draft), a7e1869 (the builder's
-exact areas evaluated as before; two tier-1 files) and a40a332 / d717170 (the draft's findings,
-the PROPOSED protocol); `src/` unchanged. The engine arms ran twice, from the clean snapshots of
-dc2e494 and of a7e1869; the tolerances come from the second, analysed from the same snapshot.
-Evidence: `qualification-dev-a7e1869/` (and `-dc2e494/`) in the evidence folder (HANDOFF.md).
-These are development runs: nothing here is judged.
+Code on the branch, `src/` unchanged throughout:
+- dc2e494: the held sphere's closed forms, the radial builder's faces kind, the driver.
+- 8d94451: the analysis, and the protocol's guard, judge and draft.
+- a7e1869: the builder's exact areas evaluated as before; two tier-1 files.
+- a40a332 to 392c633: the draft's findings, the PROPOSED protocol, the status-following refusal
+  test.
+- af2d2b4 to acbc27f: the lead's review — judged controls, the scope line, the PDE check, the
+  step-map guard, and the protocol redrafted.
+
+The engine arms ran twice, from the clean snapshots of dc2e494 and of a7e1869. The tolerances
+come from the second run. It was analysed first from the snapshot of a7e1869, then, after the
+review, from the snapshot of af2d2b4, with every judged number identical and the controls and the
+step map's ratios added. No arm ran again after a7e1869: the eight worlds' definitions are
+byte-identical. Evidence: `qualification-dev-a7e1869/` (and `-dc2e494/`) in the evidence folder
+(HANDOFF.md). These are development runs: nothing here is judged.
 
 | Item | Development result | Where |
 | --- | --- | --- |
@@ -1597,7 +1605,7 @@ These are development runs: nothing here is judged.
 | Q3, the orders | Space at 0.5 ms, in the max norm per record: the coarse shells 1.92-1.93; the scalars 0.85-3.28 by record (the source's supply irregular at 0.25-0.5 s, during the start's transient near the source; 2.0-2.1 from 2 s). Time at 2.5 µm: 2.00-2.09. Every stop rule holds. Element by element, one coarse shell of 120 (shell 19 at 2 s) does not fall where the spatial error changes sign: the reason the stop rule takes the max norm | Q3 |
 | The two runs | Every fraction of tolerance within 0.001; the dt study's tolerances within 1.2e-5 (IMEX) and 1.3e-3 (RK4, at step terms of 5e-18 mM, about 1e3 times their own rounding) relative, Q2's within 1.4e-9 | the two `analysis.json` |
 | The species crossrev (the new operators' set) | From the clean snapshot of 8d94451 it found the radial world's bindings changed against its first record (b102da4): face factors by up to 2 ulp, anchors by up to 5, from a regrouping of 4π r_a r_b at dc2e494. Restored at a7e1869: 24/24 jaxpr texts, 24/24 constants, 8/8 bindings identical, its check holding. `src/` is unchanged, so the five existing sets are untouched | `crossrev/species/` |
-| A preview verdict (S5's precedent: the judge's code on copies of the development arms, the guard bypassed in-process) | Every item passes (Q1 IMEX and RK4, Q2, Q3). It is no verdict | `qualification-dev-a7e1869-preview/` |
+| A preview verdict (S5's precedent: the judge's code on copies of the development arms, the guard bypassed in-process) | Before the review: every item passes (Q1 IMEX and RK4, Q2, Q3). After it, with the judged controls: every item passes and every control is caught (Q1's k and D at the registered δ by 13 to 79 times the tolerance, Q2's planar arm by 28 to 248 times). It is no verdict | `qualification-dev-a7e1869-preview/`, `-preview-review/` |
 | The closed forms' own checks (tier 1) | Both boundary conditions and a positive start; exact shell integrals against Gauss-Legendre to 1e-12; the mass balance to 1e-13 of the supply; the declared system's exact solution converges to them at second order (1.95-2.14, then 1.99-2.04 at 2 s) | `tests/unit/test_secreted_species_closed_forms.py` |
 
 **The protocol** (`validation/tissue/secreted_species_protocol.json`, PROPOSED, not registered;
@@ -1625,7 +1633,8 @@ revised after the lead's review with the advisor, the same day):
   added at the review:
   - **The step-map guard** (`tests/unit/test_secreted_species_step_map.py`, tier 2). The judged
     configuration is shortened to 500 steps, with max |engine − map| ≤ n_steps ε × the scale.
-    The development results are 0.041 (IMEX) and 0.32 (RK4) of that bound. It is a guard, not a
+    The development results, from the clean snapshot of af2d2b4, are 0.041 (IMEX) and 0.32 (RK4)
+    of that bound. It is a guard, not a
     judged item, since one author wrote both sides; the judged run reports it on the full arms
     (0.0055 and 0.095 there).
   - **R-continuum's independence check.** The closed form is tested against the PDE itself,
