@@ -36,6 +36,8 @@ EXEMPT = {
     "validation/tissue/cell_replacement_judge.py": "G2-Q1's judge: registered definitions",
     "validation/tissue/composite_crossrev.py": "cross-revision guard: the same definitions",
     "validation/tissue/composite_guard.py": "cross-revision guard: the same definitions",
+    "validation/tissue/e07_v1_dloss.py": "post-processing of saved outputs: THRESHOLD_V only",
+    "validation/tissue/e07_v1_dtcheck.py": "builds through e07_v1_run.build, which declares",
     "validation/tissue/e07_v1_losses.py": "post-processing of saved outputs: THRESHOLD_V only",
     "validation/tissue/e07_v1_score.py": "E07-v1's frozen scorer: THRESHOLD_V only, no world",
     "validation/tissue/e07_v2_challenge_builds.py": "definition-time builds, held-bath sheets only",
