@@ -44,6 +44,7 @@ scripts/run_detached.sh; about 30 runs, each compiling, about 15 minutes on one 
 """
 
 import json
+import math
 import sys
 import time
 from pathlib import Path
@@ -86,8 +87,9 @@ def world(family, tp, scale, injected, dt=fx.DT):
         raw = fx.cleft_divided(at=tp, end=0.006, bridge=bridge, **window)
         records = [0.005, 0.006]
     raw["experiment"]["observation_times"] = [0.0, *records]
-    raw["execution"]["dt"] = dt
-    times = (tp, TAU, INJECTION_START, SECOND, fx.ONSET, raw["experiment"]["end_time"], *records)
+    end = raw["experiment"]["end_time"]
+    raw["execution"].update(dt=dt, max_steps=int(math.ceil(end / dt)) + 8)  # As q5_order's.
+    times = (tp, TAU, INJECTION_START, SECOND, fx.ONSET, end, *records)
     assert all(on_grid(t, dt) for t in times), (dt, times)
     return raw, records
 

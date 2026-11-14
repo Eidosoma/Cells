@@ -1,18 +1,26 @@
 """Q2's sampling rule against the engine's own checks (development; S5 design §8.3, Q2).
 
-For Q2's two random-state samplers, 200 draws on each neighbour world (q2_rops_comparison's
-seed and worlds):
-* the in-domain sampler (q2_rops_comparison.perturbed, the lead's ruling);
+On each of Q2's two neighbour worlds (q2_rops_comparison's seed and worlds), 200 draws per
+sampler:
 * the disclosed out-of-domain sampler of comparisons-s5a9 (6c2b118): increments within 1e-3 of
-  each amount, not compensated, on the same route-restricted histories, so only the content
-  differs.
-Reported per sampler: how many draws pass the composite's domain check (@3's at the view and
-each operator's), its control domain check at the event's control (adding each operator's
-control check and the readouts' validity, where the contact gate law's |V| <= 0.12 V domain
-sits), and Q2's charge bound; the largest |V| of a live patch; the largest |Q / Q_declared| of
-a live cell.
+  each amount, not compensated, on the current sampler's route-restricted histories, so only
+  the content differs;
+* q2_rops_comparison.perturbed at net-charge spreads SPREADS (fractions of each cell's declared
+  charge; 0.1 is Q2's sampler).
+Reported per sampler:
+* how many draws pass the composite's domain check (@3's at the view and each operator's);
+* how many pass its control domain check at the event's control, which adds each operator's
+  control check and the readouts' validity (where the contact gate law's |V| <= 0.12 V
+  domain sits);
+* how many pass Q2's charge bound (CHARGE_BAND);
+* the largest |V| of a live patch, and the largest |Q / Q_declared| of a live cell, over the
+  draws and over those the control domain check admits;
+* over the draws the control domain check admits, Q2's comparison (64 eps x R-ops'
+  magnitudes): the worst ratio and its key.
+This answers whether the engine's checks alone could define Q2's domain: they could if the
+worst ratio over their admitted draws stays within 64 at every spread.
 
-Usage: python -m validation.division.q2_domain_probe OUTPUT_JSON (NumPy only, seconds).
+Usage: python -m validation.division.q2_domain_probe OUTPUT_JSON (NumPy only, about a minute).
 """
 
 import json
@@ -21,10 +29,13 @@ import sys
 import jax
 import numpy as np
 
-from cells.models import pump_composite_adapter as adapter
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from tests import partition_fixtures as fx
+from validation.division import partition_reference as rops
 from validation.division import q2_rops_comparison as q2
+
+DRAWS = 200
+SPREADS = (0.1, 0.3, 1.0, 3.0, 10.0)
 
 
 def old_sampler(world, rng):
@@ -39,25 +50,47 @@ def old_sampler(world, rng):
 
 
 def measure(world, state):
+    """(domain, control domain, charge bound, max |V|, max |Q / Q_declared|) of one draw."""
     p = world.p
-    values = fx.cs.control_values(world.spec, [fx.EVENT])
-    control = world.model.CONTROL_TYPE(*(np.asarray(x[0]) for x in values))
     domain = bool(world.model.domain_valid(state, p, p.active, xp=np))
-    with np.errstate(all="ignore"):
-        full = bool(world.model.domain_valid.with_control(state, control, p, p.active, xp=np))
-    _, bounded = q2.admitted(world, state, fx.EVENT)
+    full, bounded = q2.admitted(world, state, fx.EVENT)
     q = world.view(state)
-    phi = adapter.node_potentials(state, q, xp=np)
-    n = len(world.cells)
-    live = np.flatnonzero(np.asarray(q.membrane_active))
-    v = [phi[int(p.membrane_cell[k])] - phi[n + int(p.membrane_outside[k])] for k in live]
-    z = np.ravel(p.valence)
     cells = np.flatnonzero(np.asarray(q.active))
-    charge = np.asarray(q.initial_cell_charge_C)[cells] + CHARGE_PER_FMOL * np.sum(
-        z[:, None] * np.asarray(state.amount_increment)[:, cells], axis=0
+    z = np.ravel(p.valence)
+    charge = np.asarray(q.initial_cell_charge_C)[cells] + CHARGE_PER_FMOL * (
+        z @ np.asarray(state.amount_increment)[:, cells]
     )
     ratio = np.abs(charge / np.asarray(p.initial_cell_charge_C)[cells])
-    return domain, full, float(np.max(np.abs(v))), float(np.max(ratio)), bounded
+    voltage = float(np.max(np.abs(q2.patch_voltages(world, state))))
+    return domain, full, bounded, voltage, float(np.max(ratio))
+
+
+def summary(world, d, states):
+    """The report of one sampler's draws (module docstring)."""
+    rows = [measure(world, s) for s in states]
+    admitted = [s for s, r in zip(states, rows, strict=True) if r[1]]
+    out = dict(
+        draws=len(rows),
+        domain_pass=sum(r[0] for r in rows),
+        control_domain_pass=sum(r[1] for r in rows),
+        charge_bound_pass=sum(r[2] for r in rows),
+        max_abs_V=max(r[3] for r in rows),
+        max_charge_over_declared=max(r[4] for r in rows),
+        admitted_max_abs_V=max((r[3] for r in rows if r[1]), default=None),
+        admitted_max_charge_over_declared=max((r[4] for r in rows if r[1]), default=None),
+    )
+    worst, key = 0.0, None
+    for state in admitted:
+        result = rops.apply(world.snapshot(state), world.division(d, state))
+        after, ok = world.event(state, (1.0,))
+        if not ok:
+            out["engine_refused"] = out.get("engine_refused", 0) + 1
+            continue
+        for name, value in q2.compare(world, d, state, after, result).items():
+            if value > worst:
+                worst, key = value, name
+    out |= dict(admitted_worst_ratio=worst, admitted_worst_key=key)
+    return out
 
 
 def main(output):
@@ -67,21 +100,21 @@ def main(output):
         "symmetric": fx.divided(neighbour=True),
         "asymmetric": fx.divided(neighbour=True, f=0.75, area_fraction=0.6, carriers=carriers),
     }
-    report = {}
+    report = dict(status=q2.STATUS, tolerance_eps=64, charge_band=q2.CHARGE_BAND, worlds={})
     for label, raw in worlds.items():
         world = q2.Bound(raw)
-        samplers = (("in-domain (5234ba8)", q2.perturbed), ("old (6c2b118)", old_sampler))
-        for name, sampler in samplers:
-            rng = np.random.default_rng(20261113)
-            rows = [measure(world, sampler(world, rng)) for _ in range(200)]
-            report[f"{label}, {name}"] = dict(
-                domain_pass=sum(r[0] for r in rows),
-                control_domain_pass=sum(r[1] for r in rows),
-                max_abs_V=max(r[2] for r in rows),
-                max_charge_over_declared=max(r[3] for r in rows),
-                charge_bound_pass=sum(r[4] for r in rows),
+        d = next(x for x in world.partition[1].divisions if x.id == "first")
+        samplers = {"out-of-domain (6c2b118's increments)": old_sampler}
+        for spread in SPREADS:
+            samplers[f"perturbed, spread {spread:g}"] = lambda w, r, s=spread: q2.perturbed(
+                w, r, spread=s
             )
-            print(label, name, report[f"{label}, {name}"], flush=True)
+        entry = {}
+        for name, sampler in samplers.items():
+            rng = np.random.default_rng(20261113)
+            entry[name] = summary(world, d, [sampler(world, rng) for _ in range(DRAWS)])
+            print(label, name, entry[name], flush=True)
+        report["worlds"][label] = entry
     with open(output, "w") as f:
         json.dump(report, f, indent=1)
 

@@ -356,8 +356,9 @@ def compare(world, d, before, after, result, *, skip=()):
     return out
 
 
-def perturbed(world, rng):
-    """A random pre-event state of the neighbour world: increments, histories, growth, gates."""
+def perturbed(world, rng, *, spread=CHARGE_BAND):
+    """A random pre-event state of the neighbour world: increments, histories, growth, gates;
+    each cell's net charge drawn within spread of its declared charge."""
     s = world.state
     fields = {k: np.array(getattr(s, k), copy=True) for k in type(s)._fields}
     cells = [world.cells.index(c) for c in ("cell_0", "cell_1")]
@@ -371,7 +372,7 @@ def perturbed(world, rng):
     delta[m] += np.sum(z[:, None] * delta, axis=0)  # z_M = -1: the content is now neutral.
     charge = np.abs(np.asarray(world.p.initial_cell_charge_C)[cells])
     k = list(world.spec.model.species_ids).index("K")
-    delta[k] += rng.uniform(-0.1, 0.1, len(cells)) * charge / CHARGE_PER_FMOL
+    delta[k] += rng.uniform(-spread, spread, len(cells)) * charge / CHARGE_PER_FMOL
     fields["amount_increment"][:, cells] = delta
     live = [world.patches.index(k) for k in ("membrane_0", "membrane_1")]
     # Histories only on routes @3 admits: a species a patch or contact does not pass, and a gate
