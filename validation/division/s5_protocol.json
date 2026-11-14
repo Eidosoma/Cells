@@ -39,12 +39,17 @@
   "landing_order": "this protocol's frozen commit lands on main first, then the amended R-ops; A.8's 'pending in R-ops' is removed in that second landing (the lead, 14 November)",
   "development_runs": {
    "q2": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",
-    "snapshot_revision": "0c7e2ac",
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "3c3f190",
     "pre_merge": false
    },
    "q2_near_zero": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a23/near_zero_set.json",
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/near_zero_set.json",
+    "snapshot_revision": "3c3f190",
+    "pre_merge": false
+   },
+   "q2_frozen": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",
     "snapshot_revision": "0c7e2ac",
     "pre_merge": false
    },
@@ -412,8 +417,8 @@
   },
   "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' amended magnitudes: the cases, the simultaneous divisions, the judged sets and the controls under both scales; the verdict at the new scale",
   "development_old_scale": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",
-   "snapshot_revision": "0c7e2ac",
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "3c3f190",
    "pre_merge": false,
    "fixed_cases": {
     "compact symmetric": 0.3928037841814018,
@@ -535,8 +540,7 @@
        "any key": 1.7782794100389227e-14
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -550,6 +554,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": 0.0001,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": true
       }
      }
     },
@@ -599,8 +630,7 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -614,6 +644,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": 1.7782794100389228e-12,
+       "amounts": 1e-11,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "potentials": false
       }
      }
     },
@@ -663,8 +720,7 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -678,6 +734,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389228e-12,
+       "work": 0.005623413251903491,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": false
       }
      }
     },
@@ -727,8 +810,7 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -742,6 +824,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 3.162277660168379e-13,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": 1e-11,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": false
       }
      }
     },
@@ -791,8 +900,7 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -806,6 +914,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 3.1622776601683794e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": false
       }
      }
     },
@@ -855,8 +990,7 @@
        "any key": 1.7782794100389227e-14
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -870,6 +1004,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": null,
+       "amounts": 1.7782794100389228e-12,
+       "work": 0.005623413251903491,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": true
       }
      }
     },
@@ -919,8 +1080,7 @@
        "any key": 1.7782794100389227e-14
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -934,6 +1094,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1.7782794100389227e-14,
+       "image": null,
+       "amounts": 1.7782794100389228e-12,
+       "work": 0.005623413251903491,
+       "any key": 1.7782794100389227e-14
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": true
       }
      }
     },
@@ -983,8 +1170,7 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -998,6 +1184,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 3.162277660168379e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 3.1622776601683794e-12,
+       "work": 0.01,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": false
       }
      }
     },
@@ -1047,8 +1260,7 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -1062,6 +1274,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": "baseline above 64",
+       "image": 5.62341325190349e-13,
+       "amounts": 3.1622776601683794e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "potentials": false
       }
      }
     },
@@ -1111,8 +1350,7 @@
        "any key": 1.7782794100389227e-14
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -1126,6 +1364,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": null,
+       "amounts": 1e-12,
+       "work": 0.005623413251903491,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": true
       }
      }
     },
@@ -1175,8 +1440,7 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -1190,6 +1454,33 @@
       },
       "targets_caught_at_threshold": {
        "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 3.162277660168379e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1e-12,
+       "work": 0.005623413251903491,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": false
       }
      }
     },
@@ -1239,8 +1530,7 @@
        "any key": 1.7782794100389227e-14
       },
       "targets_caught_at_threshold": {
-       "amounts": true,
-       "work": false
+       "amounts": true
       }
      },
      "transference": {
@@ -1255,20 +1545,55 @@
       "targets_caught_at_threshold": {
        "amounts": true
       }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "image": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": 5.623413251903491e-05,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "potentials": true
+      }
      }
     }
    }
   },
   "development_estimate": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a23/near_zero_set.json",
-   "snapshot_revision": "0c7e2ac",
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/near_zero_set.json",
+   "snapshot_revision": "3c3f190",
    "pre_merge": false,
    "note": "the a_k control at the new scale, estimated before R-ops lands: in every near-zero member a 1e-9 defect moves at least 1e-23 C of charge against a threshold of 1.2-4.1e-25 C, so it would be caught (an estimate, not a new-scale result)"
   },
+  "development_at_the_freeze": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "0c7e2ac",
+   "pre_merge": false,
+   "note": "the frozen controls before the amendment (old scale): their W finding led to it"
+  },
   "development_findings": [
    "W is reached by no map defect at 1e-9 (old scale, protocol-dev-s5a23): f at 1.0-1.8e-5 or never, transference at 3.2-5.6e-5 or never, a_k at 1.0-1.8e-5, the parent charge at 1-1.8e-4. dG is stationary at the correct split, so a map defect reaches W only at second order; the lead removed W from f's targets and gave W and the image charge their own controls (negative_controls.amendment)",
+   "the amended W control is caught on W at 5.6e-13 in all 12 cases (old scale, protocol-dev-s5a25), and f on the amounts at 1.8e-14",
+   "a finding for the lead: the image control does not reach the image charge. A held node's plate charge is minus the total charge of the patches facing it; a split that conserves charge (the engine's always does, D2 taking the rest) leaves it unchanged, and so does the floating cleft's fixed charge in the furrow world. So the image target misses in 10 of 12 cases (never caught, or the undefected ratio above 64), and the two catches (seen spread 1 draws 35 and 180, at 1.8e-12 and 5.6e-13) sit where the undefected image ratio is near 64: rounding, not a reach. The image control reaches the potentials at 1.8e-14-1e-13 and the charges at 3.2-5.6e-13 where measurable. The engine's own event checks refuse it from 3.2e-9 to 1.8e-7. Target unchanged, threshold unmoved",
    "the engine does not output delta q or delta separately: the transference control reaches them through the increments and moved amounts (caught at 1.0-1.8e-13 old scale); free-energy changes are observed only within W",
-   "no map defect reaches the image charge, zero in exact arithmetic for an isopotential split; the amendment's image control breaks the isopotentiality",
+   "no map defect reaches the image charge, zero in exact arithmetic for an isopotential split, and nor does the amendment's image control (above)",
    "at the old scale the near-zero cases' undefected potentials (and draw 35's charges) exceed 64, so those families read 'baseline above 64' there; where measurable the parent charge is caught on the charges at 3.2e-16-5.6e-15"
   ],
   "before_the_freeze": {

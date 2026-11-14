@@ -54,8 +54,9 @@ def registered(item, protocol_path=PROTOCOL, root=ROOT):
 
 EVIDENCE = Path("/mnt/workspaces/Cells/cell-division-s5-20261113-01")
 DEVELOPMENT = dict(
-    q2=EVIDENCE / "protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",  # The frozen commit's.
-    q2_near_zero=EVIDENCE / "protocol-dev-s5a23/near_zero_set.json",
+    q2=EVIDENCE / "protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",  # The amended controls'.
+    q2_near_zero=EVIDENCE / "protocol-dev-s5a25/near_zero_set.json",
+    q2_frozen=EVIDENCE / "protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",  # The freeze's.
     q3=EVIDENCE / "protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
     q4_tests=EVIDENCE / "protocol-dev-s5a21/test_division_limits_runs.log",
     q4_measure=EVIDENCE / "protocol-dev-s5a21/q4_limits_measure.json",
@@ -76,6 +77,7 @@ DEVELOPMENT = dict(
     regression=EVIDENCE / "regression-s5a9/results.txt",
 )
 SNAPSHOTS = {
+    "protocol-dev-s5a25": "3c3f190",
     "protocol-dev-s5a23": "0c7e2ac",
     "protocol-dev-s5a22": "1e73543",
     "protocol-dev-s5a21": "67b22b0",
@@ -487,17 +489,35 @@ def draft():
                 "threshold of 1.2-4.1e-25 C, so it would be caught (an estimate, not a "
                 "new-scale result)",
             ),
+            "development_at_the_freeze": dict(
+                where("q2_frozen"),
+                note="the frozen controls before the amendment (old scale): their W finding "
+                "led to it",
+            ),
             "development_findings": [
                 "W is reached by no map defect at 1e-9 (old scale, protocol-dev-s5a23): f at "
                 "1.0-1.8e-5 or never, transference at 3.2-5.6e-5 or never, a_k at 1.0-1.8e-5, "
                 "the parent charge at 1-1.8e-4. dG is stationary at the correct split, so a map "
                 "defect reaches W only at second order; the lead removed W from f's targets and "
                 "gave W and the image charge their own controls (negative_controls.amendment)",
+                "the amended W control is caught on W at 5.6e-13 in all 12 cases (old scale, "
+                "protocol-dev-s5a25), and f on the amounts at 1.8e-14",
+                "a finding for the lead: the image control does not reach the image charge. A "
+                "held node's plate charge is minus the total charge of the patches facing it; a "
+                "split that conserves charge (the engine's always does, D2 taking the rest) "
+                "leaves it unchanged, and so does the floating cleft's fixed charge in the "
+                "furrow world. So the image target misses in 10 of 12 cases (never caught, or "
+                "the undefected ratio above 64), and the two catches (seen spread 1 draws 35 "
+                "and 180, at 1.8e-12 and 5.6e-13) sit where the undefected image ratio is near "
+                "64: rounding, not a reach. The image control reaches the potentials at "
+                "1.8e-14-1e-13 and the charges at 3.2-5.6e-13 where measurable. The engine's "
+                "own event checks refuse it from 3.2e-9 to 1.8e-7. Target unchanged, threshold "
+                "unmoved",
                 "the engine does not output delta q or delta separately: the transference "
                 "control reaches them through the increments and moved amounts (caught at "
                 "1.0-1.8e-13 old scale); free-energy changes are observed only within W",
                 "no map defect reaches the image charge, zero in exact arithmetic for an "
-                "isopotential split; the amendment's image control breaks the isopotentiality",
+                "isopotential split, and nor does the amendment's image control (above)",
                 "at the old scale the near-zero cases' undefected potentials (and draw 35's "
                 "charges) exceed 64, so those families read 'baseline above 64' there; where "
                 "measurable the parent charge is caught on the charges at 3.2e-16-5.6e-15",
