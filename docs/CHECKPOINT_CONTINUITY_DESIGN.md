@@ -1169,12 +1169,12 @@ The draft decision (number assigned at landing) waits for the user's answers.
   (probe, admit, verify_run and the first consumer's dev_run) and their tests. The evidence,
   the first consumer's admitted and refused resumes included, is in `impl/`.
 
-## Appendix A: the draft decision (number assigned at landing)
+## Appendix A: the decision (D153)
 
 **The user's answer** to §13.6 is in §13.7. It is drafted as of the coordinator's answers; the
 first landing's scope, vector windows on CPU, is in §13.1.
 
-> ## D1xx (number assigned at landing): Checkpoints resume across a source or runtime change only through a recorded admission
+> ## D153: Checkpoints resume across a source or runtime change only through a recorded admission
 >
 > 2026-11-13, user approval of the tooling, with the lead's design reviewed by the advisor
 > (draft; it lands with the implementation,

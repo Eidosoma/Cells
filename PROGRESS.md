@@ -58,6 +58,74 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Checkpoint continuity, first landing (D153; 14 November).** A checkpoint written under one
+  source resumes under another only through a recorded admission. Refusal stays the default
+  ([design](docs/CHECKPOINT_CONTINUITY_DESIGN.md)).
+  - **Engine:**
+    - `cells/continuity.py` verifies and binds records on the host;
+    - `load_snapshot` and `load_batch_snapshot` take `continuity=`, and with `None` today's
+      code path and messages are unchanged.
+  - **Tools** (`validation/continuity/`):
+    - `probe.py` compares programs, constants, StableHLO and bindings, replays the host
+      side, and runs a bitwise CPU overlap;
+    - `admit.py` and `verify_run.py`;
+    - `dev_run.py` drives the first consumer.
+  - **Scope:**
+    - vector windows only, on CPU definitions with `jit: true`;
+    - case 1 (source changed, programs unchanged) is admitted by the probe;
+    - case 2 needs a D148 record, admitted by the lead;
+    - cases 3 and 4 are refused.
+  - **Evidence:**
+    - an admitted resume across a source change is bitwise equal to the uninterrupted run
+      and passes `verify_run` (17 checks);
+    - a program edit is refused;
+    - 100 tests pass: loaders 54, bypass guard 17, tools 18, acceptance 11.
+  - **D148 for the landing:** crossrev on the landing tree (21fb714) is identical in all five
+    sets: base, qualification, injection, volume and division. The renewed baseline of record is
+    [baseline-21fb714](/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/baseline-21fb714/baseline-of-record.json).
+  - **Not yet:**
+    - the GPU probe (§13.4), queued for the next L4 gap;
+    - rule (b) records for four tools;
+    - scalar snapshots, which answer "cannot decide".
+  - [Evidence and log](/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/HANDOFF.md).
+- **Cell division S5a, qualification pending (14 November).** `isopotential_partition@1`,
+  `cytoplasmic_bridge_closure@1`, `scheduled_membrane_insertion@2` and
+  `restricted_cleft_lumen@2` land at S5a's 1691dc2, with closers and the contract's host-side
+  liveness methods ([design](docs/CELL_DIVISION_S5_DESIGN.md)).
+  - **Guards:**
+    - crossrev is identical in every existing set (base, qualification, injection, volume);
+    - S5's own set records E_ref, q_ref and `partition_birth_gate` as bindings;
+    - the J2 bright line holds, including a fresh-process test that S5's crossrev tool never
+      loads a J1 module.
+  - **Development comparisons with the independent references, at this commit:**
+    - **Q3**, trajectories after partition against R-tissue on the compact 1→2→4 world: each
+      difference is about 4/3 of the engine's step term (Vm 1.13e-7 V against 8.5e-8 V),
+      within 3 × (step + reference).
+    - **Q5**, observed order 1.99–2.06.
+    - **Q4:** the open-bridge limit holds to 1e-3, and the symmetric, asymmetric and
+      isopotential limits hold in NumPy.
+    - **Q1 and Q11** at egg scale, 120,000 steps through 1→2→4:
+      - energy balance 4.2e-7;
+      - charge at 0.0087 of its bound;
+      - electrode charge error 3.4e-23 C.
+    - **Q2 is open.** It sat within 64 eps × magnitude only under a 10% net-charge band, now
+      withdrawn; near zero potential the ratio reached 860.6.
+      - The cause is confirmed: rounding in charge formation from increments.
+      - The lead's ruling adds an increment-form charge term to R-ops' magnitudes (A.8,
+        pending in R-ops).
+  - **Scope change:** S3's cleft egg on insertion@2 and lumen@2 (Q7b) is deferred to its own
+    registered variant in S3's protocol family. Until it passes, the @2 operators count only
+    in division worlds, and S3's egg stays on @1.
+  - **Not yet:**
+    - the registered protocol and its judged runs;
+    - the second Q3 world, the closed-bridge limits and the PROPOSED protocol, which exist so
+      far only on S5's branch.
+  - **Gate:** tiers 1 and 2 on the combined tree with checkpoint continuity, 382 files, no
+    changed outcome. The four slow new files also pass uncapped on the same tree: partition
+    runs 11, division runs 5, bridge runs 1, continuity acceptance 11
+    ([gate](/mnt/workspaces/Cells/land-20261114a/)).
+  - [Evidence and log](/mnt/workspaces/Cells/cell-division-s5-20261113-01/HANDOFF.md).
+
 - **Water plus replacement: `scheduled_cell_replacement@2`, the volume ledger (composite v2
   §2; 13 November).** @2 runs @1's event map unchanged, then:
   - gives the newcomer its volume: a template's declared volume, or for a donor copy the donor's

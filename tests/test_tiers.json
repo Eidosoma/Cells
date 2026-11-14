@@ -36,7 +36,8 @@
   "/mnt/workspaces/Cells/land-20261113o/measure-new2/measured.json",
   "/mnt/workspaces/Cells/land-20261113p/measure-new/measured.json",
   "/mnt/workspaces/Cells/land-20261113r/measure-new/measured.json",
-  "/mnt/workspaces/Cells/land-20261113s/measure-new/measured.json"
+  "/mnt/workspaces/Cells/land-20261113s/measure-new/measured.json",
+  "/mnt/workspaces/Cells/land-20261114a/measure-new/measured.json"
  ],
  "measured_provenance": [
   {
@@ -304,6 +305,13 @@
    "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261113s",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-13T22:57:43+00:00"
+  },
+  {
+   "git_revision": "21fb714f9c6747aa3247572c82d3584c5d2f3fa7",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261114a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T01:08:38+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -859,6 +867,14 @@
     }
    },
    {
+    "file": "tests/unit/test_bridge_closure.py",
+    "seconds": 3.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 15
+    }
+   },
+   {
     "file": "tests/unit/test_calcium_activated_potassium.py",
     "seconds": 4.24,
     "exit_code": 0,
@@ -1011,6 +1027,30 @@
     "exit_code": 1,
     "counts": {
      "failed": 19
+    }
+   },
+   {
+    "file": "tests/unit/test_continuity_bypass.py",
+    "seconds": 16.16,
+    "exit_code": 0,
+    "counts": {
+     "passed": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_continuity_loaders.py",
+    "seconds": 15.0,
+    "exit_code": 0,
+    "counts": {
+     "passed": 54
+    }
+   },
+   {
+    "file": "tests/unit/test_continuity_tools.py",
+    "seconds": 4.66,
+    "exit_code": 0,
+    "counts": {
+     "passed": 18
     }
    },
    {
@@ -1416,6 +1456,14 @@
     }
    },
    {
+    "file": "tests/unit/test_j2_bright_line.py",
+    "seconds": 16.61,
+    "exit_code": 0,
+    "counts": {
+     "passed": 27
+    }
+   },
+   {
     "file": "tests/unit/test_joint_water_epoch_reference_refinement.py",
     "seconds": 1.8,
     "exit_code": 1,
@@ -1534,6 +1582,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 23
+    }
+   },
+   {
+    "file": "tests/unit/test_membrane_insertion_v2.py",
+    "seconds": 4.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
     }
    },
    {
@@ -1770,6 +1826,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_partition.py",
+    "seconds": 6.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
     }
    },
    {
@@ -2032,6 +2096,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 18
+    }
+   },
+   {
+    "file": "tests/unit/test_restricted_lumen_v2.py",
+    "seconds": 5.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
     }
    },
    {
@@ -3554,6 +3626,12 @@
     "counts": {}
    },
    {
+    "file": "tests/integration/test_continuity_acceptance.py",
+    "seconds": 90.01,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/integration/test_joint_water_barrier_phase_cli.py",
     "seconds": 90.02,
     "exit_code": null,
@@ -3758,6 +3836,12 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_bridge_closure_runs.py",
+    "seconds": 90.15,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/unit/test_calcium_activated_catalog.py",
     "seconds": 90.19,
     "exit_code": null,
@@ -3784,6 +3868,12 @@
    {
     "file": "tests/unit/test_channel_catalog_v2.py",
     "seconds": 90.15,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_cleft_division_runs.py",
+    "seconds": 90.17,
     "exit_code": null,
     "counts": {}
    },
@@ -4076,6 +4166,12 @@
    {
     "file": "tests/unit/test_owned_calcium_profile_phase_handoff.py",
     "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_partition_runs.py",
+    "seconds": 90.11,
     "exit_code": null,
     "counts": {}
    },
