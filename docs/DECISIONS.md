@@ -5349,6 +5349,17 @@ every composition D150 and D152 admit.
   - Worlds above 7 species are outside D150's judged scope until a protocol covers them.
   - Above 16 needs another probe.
 
+## D166: A scheduled bath composition in the composite (FR-10) is logged at priority 2
+
+2026-11-14. The user supplied the request (FR-10), the last of the block, at the requester's
+priority 2 ("small"). It is logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family).
+- **The feature:** a held bath's composition changes on the dt grid in the composite. The older
+  family's explicit ideal-reservoir law, with dose, compensating charge and external work, exists
+  and is re-expressed as a composite operator.
+- **Its consumers:** this study's doses, E07-v2's osmotic step and FR-4's pH step.
+- **Design first (D142),** as a general feature (D144).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

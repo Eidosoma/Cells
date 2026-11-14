@@ -14,6 +14,7 @@ and a general feature, never one built for one study (D144).
 | [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Logged; most of part (b) is the coupling operator's channel target | Considered when the closed molecular-to-physiology loop's unit is chosen (below) |
 | [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | Logged; it is the compute-limits gate's open long-time deliverable | Its acceptance gains an intervention applied during the slow phase; a long-time path for composite operators needs a design note (below) |
 | [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Accepted: the raise to 16 is queued** as a D148 change to `species_common` (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
+| [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | Logged; the law and its accounting exist in a frozen family | A short design note re-expressing it as a composite operator (below) |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Logged | A design note after FR-1's, with the energy-pool and charged-reaction doors (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -448,3 +449,49 @@ PROGRESS's "when a consumer needs it" waited for.
   - Worlds above 7 species are outside D150's judged scope until a protocol covers them.
   - Above 16 needs another probe.
 - **The requester's species list,** with its world definition, confirms the need (16 or fewer).
+
+## FR-10 — A dose schedule: scheduled bath composition in the pump family
+
+**Logged 14 November 2026, priority 2, small** (the request's label). The request below is the
+requesting study's text, condensed. The lead's mapping follows.
+
+**The request.** Let a held bath's composition change on the dt grid in the composite, as the older
+surface families already allow for K, Cl and Na.
+
+**Why it is general.** Any medium change:
+- a wash-in or wash-out;
+- a drug dose;
+- an ion substitution;
+- a pH step;
+- a nutrient step;
+- an osmotic challenge.
+
+E07-v2's design wants an osmotic step as a post-release challenge, which is this feature (its §8:
+"none found" in the pump family).
+
+**What exists** (the lead checked the source).
+- `resolved_open_calcium_energy_bath_events@1` programs an ideal reservoir's bath composition on
+  the 56-law calcium/ER and finite-fuel owner.
+  - The ion dose, the compensating electrode charge and the external work are kept explicit
+    (`core/surface_bath_events_binding.py`, policy
+    `explicit_ideal_reservoir_dose_voltage_compensation_work@1`).
+  - So the law and its accounting already exist, in a frozen family.
+- Its status there is guarded, with full bath trajectories out of scope and evidence at ns–µs
+  horizons.
+- In the pump family, nothing does this.
+
+**The lead's mapping (not settled).**
+- **A small composite operator.** An event map at dt-grid times sets a declared held bath's
+  composition. It books the dose as reservoir supply and the composition change's external work
+  explicitly. For a charged step it keeps the older law's compensating-charge rule.
+- **It re-expresses an older family's law,** a case of D156's open decision on moving old-family
+  physics. It has at least three consumers (this study's doses, E07-v2's osmotic step, FR-4's pH
+  step), so a targeted re-expression fits D144.
+- **D150's species.** A held bath already serves as a species' far-field source or sink at a fixed
+  concentration. A scheduled change of that concentration is a species dose with no charge
+  compensation, since the species are neutral.
+- **Water.** An osmotic step needs water plus a bath change. Water composes with the composite,
+  but water plus the species operators is refused (version 1.1). The note must state which
+  compositions an osmotic step admits.
+- **The order.** It is small and has several consumers, so it is a candidate for an early slot,
+  after FR-1's design. Its design note should be short.
