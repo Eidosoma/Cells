@@ -31,6 +31,8 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
+
 from validation.morphogenesis import mg0c_turing as mg
 from validation.morphogenesis.mg0a_gradient import _lookup, evaluate
 
@@ -98,9 +100,14 @@ GUARDS_DEVELOPMENT = dict(  # The guard files' seconds before the split (evidenc
         "before the review's split); tests/test_tiers.json (the tier-1 files)"
     ),
 )
-UNITS = dict(  # Ruling 9: q7 alone, with a cap of at least 5 GiB.
+UNIT_B_MEMORY = (  # Why unit b keeps a 5 GiB cap until the rehearsal (the round-2 reruns).
+    "q7 alone peaked at 1.8 GB and q6 alone at 0.87 GB (cgroup peaks, dev-7495288-q7 and -q6), "
+    "so the old unit b's 3.5 GB (q6, q3, q5 and q7 in one process) was not q7's batch alone; "
+    "unit b is that run's prefix, so its peak is at most 3.5 GB, but unmeasured"
+)
+UNITS = dict(  # Ruling 9: q7 alone, with a cap of at least 5 GiB; unit b too (UNIT_B_MEMORY).
     a=dict(parts=["d147", "theory", "timing", "linear", "floor", "q1", "q2", "sites"], cpu=5),
-    b=dict(parts=["q6", "q3", "q5"], cpu=7),
+    b=dict(parts=["q6", "q3", "q5"], cpu=7, min_cap_GiB=5),
     q7=dict(parts=["q7"], cpu=5, min_cap_GiB=5),
     c=dict(parts=["q4"], cpu=7),
     guards=dict(entry="judge-guards", cpu=5),
@@ -135,7 +142,9 @@ REVIEW = dict(
         "(test_species_reactions_accuracy.py), and the scope line says the heat and work split "
         "is guarded, not qualified",
         "8": "the usage note's rule, 1e-14 x steps x the scale (disclosures)",
-        "9": "q7 in its own unit, with a cap of at least 5 GiB (development_runs.units)",
+        "9": "q7 in its own unit, with a cap of at least 5 GiB (development_runs.units); q7 alone "
+        "peaked at 1.8 GB, so unit b keeps a 5 GiB cap too until the rehearsal measures it "
+        "(resources)",
         "10": "split by file: the same-material test is a regression guard outside the judged "
         "list; supply counted once, the rejected step, restart and batch stay judged guards",
     },
@@ -306,8 +315,9 @@ def controls_by_parameter(parts):
     """Ruling (c): per parameter, the kept controls (registered at 10 x the smallest caught delta,
     at most SMALL_DELTA) and the removed ones with their reasons; refused unless every parameter
     keeps at least one."""
-    kept, removed, deltas = {p: [] for p in mg.PARAMETERS}, [], {}
+    kept, removed, deltas, at_floor = {p: [] for p in mg.PARAMETERS}, [], {}, []
     for item, dt, rule, scale, entry in _control_items(parts):
+        floor = mg.Q6_GRID[0] if item == "q6" else mg.DELTAS[0]  # Each item's lowest grid point.
         for p in mg.PARAMETERS:
             control = rule["controls"][p]
             if not control["rule_passes_unperturbed"]:
@@ -317,6 +327,8 @@ def controls_by_parameter(parts):
             if smallest is not None and CONTROL_FACTOR * smallest <= SMALL_DELTA * (1 + 1e-12):
                 deltas[name] = snap_up(CONTROL_FACTOR * smallest)
                 kept[p].append(name)
+                if abs(smallest - floor) <= 1e-9 * floor:
+                    at_floor.append(name)
                 continue
             reason = dict(
                 control=name,
@@ -340,11 +352,13 @@ def controls_by_parameter(parts):
                 )
                 if smallest is not None and predicted / 5 <= smallest <= 5 * predicted:
                     fast = structure.get("fast_over_slow_at_first_record")
+                    factor = max(predicted / smallest, smallest / predicted)
                     reason["why"] += (
                         f"; the mode's slow eigenvalue moves by |d lambda / d ln {p}| t = "
                         f"{sensitivity:.3g} over its record, so a delta shifts the coefficient by "
                         f"about {sensitivity:.3g} delta against the rule's tolerance of about 3 x "
-                        f"its step term ({3 * step:.2g}): predicted {predicted:.2g}, matching"
+                        f"its step term ({3 * step:.2g}): a threshold of about {predicted:.2g}, "
+                        f"within {factor:.1f} x of the measured one"
                         + (
                             f"; the fast component has decayed to {fast:.2g} of the slow one "
                             "by the first record"
@@ -380,7 +394,24 @@ def controls_by_parameter(parts):
         )
         for p, names in kept.items()
     }
-    return criteria, deltas, dict(kept=kept, removed=removed, coverage=coverage)
+    floor_note = (
+        "each of these is caught at its grid's lowest point, so its threshold lies at or below "
+        "it and its registered delta is at least 10 x the threshold"
+    )
+    if at_floor and all(n.startswith("q6.") and n.rsplit(".", 1)[1] in "ab" for n in at_floor):
+        arrays = parts["q6"]["arrays"]
+        tolerances = [float(np.min(arrays["tolerances"][dt])) for dt in DT_JUDGED]
+        floor_note += (
+            ". On Q6, a and b set the uniform state (u* = (a + b) c*, v* = b c* / (a + b)^2), "
+            "which k and the diffusivities do not: a change of delta moves every element by "
+            "order delta c* from the start, while at the early records, where the pattern is "
+            "still small, the per-element tolerance falls toward the reference term (its "
+            f"smallest {min(tolerances):.2g} mM over the records, against elements of order "
+            f"{mg.C_STAR_MM:g} mM)"
+        )
+    out = dict(kept=kept, removed=removed, coverage=coverage)
+    out["at_grid_floor"] = dict(controls=at_floor, note=floor_note) if at_floor else {}
+    return criteria, deltas, out
 
 
 BOUNDS = ("energy_over_bound", "material_over_bound")
@@ -942,7 +973,8 @@ def draft(output, paths):
                 "unit, its --runtime-max about 3 x its development seconds plus 10 min "
                 "(development_runs.timing: development's figures until the rehearsal measures "
                 "them; judge-guards from the guard files' seconds, uncapped per file; judge and "
-                "combine, which run nothing, 600 s), q7 with a cap of at least 5 GiB (ruling 9). "
+                "combine, which run nothing, 600 s), q7 with a cap of at least 5 GiB (ruling 9) "
+                "and unit b likewise (resources). "
                 "The judged units run without "
                 "--wait-headroom: the lead launches each only after checking that the slice has "
                 "room for the unit's development peak plus a margin, so each runtime limit "
@@ -1056,8 +1088,9 @@ def draft(output, paths):
         ),
         resources=(
             "CPUs 5 and 7 (CPU backend only), each unit detached through scripts/run_detached.sh "
-            "with --oom-first; memory caps 4 GiB for units a, b and c and at least 5 GiB for q7 "
-            "(ruling 9: a cap kill would spend the single rerun); judge-guards uncapped per file; "
+            "with --oom-first; memory caps 4 GiB for units a and c, at least 5 GiB for q7 (ruling "
+            "9: a cap kill would spend the single rerun) and, by the same reasoning, for unit b "
+            f"until the rehearsal measures it ({UNIT_B_MEMORY}); judge-guards uncapped per file; "
             "the development peaks and seconds in development_runs.timing"
         ),
         development_runs=dict(
