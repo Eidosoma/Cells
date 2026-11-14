@@ -58,6 +58,30 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **E07-v1 follow-ups (14 November).** Both are descriptive or development work, and no verdict or
+  class changed ([readout](/mnt/workspaces/Cells/e07-v1-judged-20261113-01/loss-positions.json),
+  [1 ms check](/mnt/workspaces/Cells/e07-v1-dtcheck-20261114-01/HANDOFF.md)).
+  - **Where losses sat,** over all 16 inheritance runs with any loss:
+    - Of the 41 lost D copies, 33 were strays outside the disc, 8 sat on the rim, and none was
+      interior.
+    - Of the 21 lost founders, 20 were rim cells and 1 interior.
+    - The erosion and small-bias classes therefore mix trimming of strays, which raises J, with
+      rim erosion, which lowers it. Fast k3 s 1.0 seed 1 (ΔJ +0.044) is pure trimming.
+  - **The s 1.0 control's collective falls at 1 ms.**
+    - The same cells fell at the same records as at 5 ms: 6 at 436 s, 6 at 512 s and 2 at 514 s
+      at 2 s resolution.
+    - The D sets were identical at all 61 records, with |ΔVm| ≤ 0.21 µV.
+    - A 5 ms rerun reproduced the judged run bitwise.
+    - The falls are not a step-size artefact. It is still one run.
+  - **The E07-v2 note** (still PROPOSED) carries the review fixes:
+    - §2 leads with the pattern's fate;
+    - fresh against long-held has its matched variables named, with a prediction;
+    - 1-D chain screens come before the lesion arms only.
+    - Its three questions are with the user.
+  - **Landing.** The D147 guard exempts the two new scripts, with reasons: one is THRESHOLD_V
+    only, and the other builds through e07_v1_run.build, which declares the solver. Tier 1 at
+    23c979f: 310 files, no changed outcome.
+
 - **Secreted-species v1 (D150), milestone 3 landed: the qualification protocol, PROPOSED
   (14 November).** It is not registered, and no judged run has been made
   ([protocol](validation/tissue/secreted_species_protocol.json); design §12.2;
