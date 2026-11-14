@@ -500,11 +500,21 @@ try {
   check("label: a drag that starts on a label turns the camera", Math.abs(afterDrag - before.azimuth) > 0.2, `${before.azimuth.toFixed(2)} -> ${afterDrag.toFixed(2)}`);
   check("label: that drag selects nothing", (await selected()) === null, String(await selected()));
 
-  const tap = await evaluate(`(() => {
+  // The drag leaves the camera gliding; on a busy machine it glides for longer than a fixed
+  // wait. Read the label's place only once it has stopped moving, then click there.
+  const place = () => evaluate(`(() => {
     const el = ${VIEWER}.shadowRoot.querySelector(".label-part:not(.is-off)");
     const box = el.getBoundingClientRect();
     return { id: el.dataset.label, x: box.left + box.width / 2, y: box.top + box.height / 2 };
   })()`);
+  let tap = await place();
+  for (let tries = 0; tries < 40; tries++) {
+    await sleep(150);
+    const next = await place();
+    const still = next.id === tap.id && Math.abs(next.x - tap.x) < 0.5 && Math.abs(next.y - tap.y) < 0.5;
+    tap = next;
+    if (still) break;
+  }
   await click(tap.x, tap.y);
   check("label: a plain click on a label selects its part", (await selected()) === tap.id, `${tap.id} -> ${await selected()}`);
   await clear();
