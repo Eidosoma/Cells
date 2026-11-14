@@ -322,8 +322,13 @@ def definition(
     booking=None,
     control="excitable",
     obs_dt=1e-3,
+    cell_nav=None,
+    junction_availability=None,
 ):
     """n heredity cells (own held baths) with Kv1.5; a chain of junctions at coupling s.
+
+    cell_nav {cell: availability} and junction_availability {junction: availability} hold a
+    segment's NaV1.2 and junction availabilities from t = 0 (probe 2, PLAN amendment 3).
 
     kicks {cell: mV}; stim dict(cells, pulses [(on_step, off_step)], m_s) declares the
     stimulus populations on its cells (always declared when given, so worlds share shapes);
@@ -377,6 +382,9 @@ def definition(
         kind = group["channel_id"].split("_")[0]
         if kind in CONTROLS[control]:
             group["schedule"] = [dict(time=0.0, availability=CONTROLS[control][kind])]
+        cell = group["channel_id"].split("_")[-1]
+        if kind == "nav" and cell_nav and int(cell) in cell_nav:
+            group["schedule"] = [dict(time=0.0, availability=float(cell_nav[int(cell)]))]
     x["channel_capacity"] = len(m["channels"])
     if s is not None and n > 1:
         j, gate = junction_gate_block(gated)
@@ -392,8 +400,12 @@ def definition(
             )
             for k in range(n - 1)
         ]
+        held = junction_availability or {}
         e["junction_controls"] = [
-            dict(junction_id=f"junction_{k}", schedule=[dict(time=0.0, availability=1.0)])
+            dict(
+                junction_id=f"junction_{k}",
+                schedule=[dict(time=0.0, availability=float(held.get(k, 1.0)))],
+            )
             for k in range(n - 1)
         ]
         x["edge_capacity"] = n - 1
@@ -1246,6 +1258,234 @@ def part_chain(args):
     write_json(path, out)
 
 
+def segment_case(args, label, r_na, r_gj, dt):
+    """One probe-2 run: the chain with its segment held at (r_na, r_gj) (PLAN amendment 3)."""
+    n, (lo, hi) = args.n_segment, args.segment
+    on, width = int(round(2e-3 / dt)), int(round(1e-3 / dt))
+    stim = dict(
+        cells=list(range(args.stim_cells)),
+        pulses=[(on, on + width)],
+        m_s=args.stim_m_s * stimulus_scale(),
+    )
+    raw = definition(
+        n,
+        dt=dt,
+        end_time=args.chain_end,
+        kv_m_s=args.kv,
+        s=args.s_main,
+        booking=args.booking,
+        stim=stim,
+        cell_nav=None if r_na == 1.0 else {i: r_na for i in range(lo, hi + 1)},
+        junction_availability=None if r_gj == 1.0 else {k: r_gj for k in range(lo - 1, hi + 1)},
+    )
+    stim_end = (on + width) * dt
+
+    def stop(o):  # The far end fired and 15 ms passed, or every cell quiet for 25 ms.
+        t = o["times"]
+        if not t or t[-1] < stim_end + 0.01:
+            return False
+        vm = np.asarray(o["vm"])
+        far = crossings(t, vm[:, -1], -0.030)
+        if far and t[-1] > far[-1] + 0.015:
+            return True
+        recent = np.asarray(t) > t[-1] - 0.025
+        return bool(np.all(vm[recent] < -0.030) and t[-1] > stim_end + 0.03)
+
+    r = execute(raw, stop=stop)
+    rec = record(raw, r, label=label, r_na=r_na, r_gj=r_gj, segment=[lo, hi], n=n)
+    if len(r["times"]) > 2:
+        t, vm = np.asarray(r["times"]), np.asarray(r["vm"])
+        act = [
+            crossings(t, vm[:, i], -0.030, start=int(np.searchsorted(t, on * dt))) for i in range(n)
+        ]
+        first = [a[0] if a else None for a in act]
+
+        def cv(a, b):
+            if all(first[i] is not None for i in range(a, b + 1)):
+                slope = np.polyfit(np.arange(a, b + 1), [first[i] for i in range(a, b + 1)], 1)[0]
+                return 1.0 / slope if slope > 0 else None
+            return None
+
+        reached = [i for i in range(n) if first[i] is not None]
+        vj = np.asarray(r["vj"])
+        rec["measures"] = dict(
+            activation_s=first,
+            last_activated_cell=max(reached) if reached else None,
+            reaches_segment=first[lo - 1] is not None,
+            exits_segment=first[hi + 1] is not None,
+            segment_delay_s=None
+            if first[lo - 1] is None or first[hi + 1] is None
+            else first[hi + 1] - first[lo - 1],
+            upstream_cv_cells_per_s=cv(6, lo - 2),
+            segment_cv_cells_per_s=cv(lo, hi),
+            downstream_cv_cells_per_s=cv(hi + 2, min(hi + 8, n - 9)),
+            peak_V=vm.max(axis=0).tolist(),
+            vm_max_V=float(vm.max()),
+            segment_vj_abs_max_V=float(np.abs(vj[:, lo - 1 : hi + 1]).max()) if vj.size else 0.0,
+            vj_abs_max_V=float(np.abs(vj).max()) if vj.size else 0.0,
+        )
+    m = rec.get("measures", {})
+    log(
+        f"segment {label} dt {dt:g}: last {m.get('last_activated_cell')} "
+        f"exits {m.get('exits_segment')} "
+        f"delay {m.get('segment_delay_s')} vj {m.get('segment_vj_abs_max_V')} "
+        f"refusal {rec['refusal'] and rec['refusal']['message'][:90]}"
+    )
+    return rec
+
+
+def part_segment(args):
+    """Probe 2: a wave meeting a mid-chain segment of reduced NaV1.2 and coupling."""
+    set_point(args.nav, args.kir, args.cm)
+    out = dict(
+        provenance=provenance(),
+        plan=PLAN,
+        part="segment",
+        point=dict(nav_m_s=args.nav, kir_m_s=args.kir, cm_F_m2=args.cm, kv_m_s=args.kv),
+        n=args.n_segment,
+        segment=list(args.segment),
+        s=args.s_main,
+        cases=[],
+    )
+    out["rest"] = relax_rest(args.kv)
+    path = Path(args.output) / "segment.json"
+    cases = [("control", 1.0, 1.0)]
+    cases += [(f"combined {r:g}", r, r) for r in args.combined]
+    cases += [(f"sodium-only {r:g}", r, 1.0) for r in args.sodium_only]
+    cases += [(f"coupling-only {r:g}", 1.0, r) for r in args.coupling_only]
+    for dt in args.segment_dt:
+        for label, r_na, r_gj in cases:
+            out["cases"].append(dict(dt_s=dt, **segment_case(args, label, r_na, r_gj, dt)))
+            write_json(path, out)
+    if not any(
+        c.get("measures", {}).get("reaches_segment")
+        and not c.get("measures", {}).get("exits_segment")
+        for c in out["cases"]
+    ):
+        out["extension"] = "no case blocked: the combined series extended to 0.02 and 0.01"
+        for dt in args.segment_dt:
+            for r in (0.02, 0.01):
+                out["cases"].append(
+                    dict(dt_s=dt, **segment_case(args, f"combined {r:g}", r, r, dt))
+                )
+                write_json(path, out)
+    # The criteria of amendment 3.
+    by = {}
+    for c in out["cases"]:
+        by.setdefault(c["label"], {})[c["dt_s"]] = c
+    control = by["control"][min(args.segment_dt)]
+    d0 = control.get("measures", {}).get("segment_delay_s")
+    fine, coarse = min(args.segment_dt), max(args.segment_dt)
+    rows = []
+    for label, steps in by.items():
+        a, b = steps.get(coarse, {}), steps.get(fine, {})
+        ma, mb = a.get("measures", {}), b.get("measures", {})
+        da, db = ma.get("segment_delay_s"), mb.get("segment_delay_s")
+        rows.append(
+            dict(
+                label=label,
+                r_na=a.get("r_na"),
+                r_gj=a.get("r_gj"),
+                outcome_coarse=(ma.get("exits_segment"), ma.get("last_activated_cell")),
+                outcome_fine=(mb.get("exits_segment"), mb.get("last_activated_cell")),
+                delay_coarse_s=da,
+                delay_fine_s=db,
+                delay_step_relative=None if da is None or db is None else abs(da - db) / db,
+                delay_over_control=None if db is None or d0 is None else db / d0,
+                refused=bool(a.get("refusal") or b.get("refusal")),
+                segment_vj_abs_max_V=max(
+                    ma.get("segment_vj_abs_max_V", 0.0), mb.get("segment_vj_abs_max_V", 0.0)
+                ),
+                vm_max_V=max(ma.get("vm_max_V", -1.0), mb.get("vm_max_V", -1.0)),
+            )
+        )
+    combined = sorted(
+        [r for r in rows if r["label"].startswith("combined")], key=lambda r: -r["r_na"]
+    )
+    exits = [r["delay_fine_s"] for r in combined if r["outcome_fine"][0]]
+    out["criteria"] = dict(
+        rows=rows,
+        S1_slowing=any(r["outcome_fine"][0] and (r["delay_over_control"] or 0) > 1.10 for r in rows)
+        and all(b >= a - 1e-12 for a, b in zip(exits, exits[1:], strict=False)),
+        S2_block=any(
+            by[r["label"]][fine].get("measures", {}).get("reaches_segment")
+            and not r["outcome_fine"][0]
+            for r in rows
+        ),
+        S3_refinement=all(
+            r["outcome_coarse"] == r["outcome_fine"]
+            and (r["delay_step_relative"] is None or r["delay_step_relative"] < 0.02)
+            for r in rows
+        ),
+        S4_accounting=not any(r["refused"] for r in rows),
+        segment_vj_abs_max_V=max(r["segment_vj_abs_max_V"] for r in rows),
+        vm_max_V=max(r["vm_max_V"] for r in rows),
+    )
+    log(f"segment criteria: { {k: v for k, v in out['criteria'].items() if k != 'rows'} }")
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+
+
+def part_domain(args):
+    """Probe 2: the 0.01 F/m^2 point against the +60 mV domain (PLAN amendment 3)."""
+    import argparse as _argparse
+
+    out = dict(provenance=provenance(), plan=PLAN, part="domain", candidates=[])
+    path = Path(args.output) / "domain.json"
+    for name, nav, kir, kv in (("A", 1e-6, 1e-8, 3e-7), ("B", 2.5e-7, 1e-8, 1e-7)):
+        set_point(nav, kir, 0.01)
+        row = dict(name=name, point=dict(nav_m_s=nav, kir_m_s=kir, cm_F_m2=0.01, kv_m_s=kv))
+        row["rest"] = relax_rest(kv)
+        rest_v = POINT["rest"][0]
+        singles = {}
+        for label, target in (("kick to -20 mV", -0.020), ("kick to 0 mV", 0.0)):
+            rec, _ = single_run(kv, dt=5e-6, kick=1e3 * (target - rest_v))
+            singles[label] = rec
+        on, width = int(round(2e-3 / 5e-6)), int(round(1e-3 / 5e-6))
+        rec, _ = single_run(
+            kv,
+            dt=5e-6,
+            stim=dict(cells=[0], pulses=[(on, on + width)], m_s=1e-6 * stimulus_scale()),
+        )
+        singles["stimulus 1 ms"] = rec
+        row["single"] = singles
+        a = _argparse.Namespace(**vars(args))
+        a.kv, a.n = kv, args.n_segment
+        row["chain"] = chain_run(a, args.s_main, n=args.n_segment, dt=5e-6)
+        f = singles["kick to -20 mV"].get("features", {})
+        cm_ = row["chain"].get("measures", {})
+        refusals = [k for k, v in singles.items() if v.get("refusal")] + (
+            ["chain"] if row["chain"].get("refusal") else []
+        )
+        row["criteria"] = dict(
+            fires=bool(f.get("peak_V", -1) > 0 and f.get("max_dVdt_V_s", 0) > 10),
+            repolarises=bool(f.get("repolarised")),
+            propagates=bool(cm_.get("c1_regeneration")),
+            inside_domain=not refusals,
+            refusals=refusals,
+            vm_max_V=max(
+                [v.get("features", {}).get("peak_V", -1.0) for v in singles.values()]
+                + [row["chain"].get("vm_max_V", -1.0)]
+            ),
+        )
+        row["passes"] = all(
+            row["criteria"][k] for k in ("fires", "repolarises", "propagates", "inside_domain")
+        )
+        out["candidates"].append(row)
+        log(f"domain {name}: {row['criteria']} passes {row['passes']}")
+        write_json(path, out)
+        if row["passes"]:
+            break
+    passing = [c["name"] for c in out["candidates"] if c["passes"]]
+    out["ruling_input"] = (
+        f"0.01 F/m^2 at candidate {passing[0]}"
+        if passing
+        else "0.05 F/m^2 (no 0.01 candidate passed)"
+    )
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+
+
 def part_device(args):
     """The model's device row checks (vector windows) on the main accepted cases."""
     from cells.core.batch import BatchSpec, WorldSpec
@@ -1588,6 +1828,8 @@ def part_verdict(args):
 
 
 PARTS = dict(
+    segment=part_segment,
+    domain=part_domain,
     single=part_single,
     scan=part_scan,
     chain=part_chain,
@@ -1613,6 +1855,12 @@ def main(argv=None):
     a.add_argument("--kick-to-scan", type=float, default=-0.020)
     a.add_argument("--h-rest", action="store_true", help="chain/device: start at H as declared")
     a.add_argument("--scan-json", default=None, help="verdict: the scan's record")
+    a.add_argument("--n-segment", type=int, default=40)
+    a.add_argument("--segment", type=int, nargs=2, default=[16, 23])
+    a.add_argument("--segment-dt", type=float, nargs="+", default=[5e-6, 2.5e-6])
+    a.add_argument("--combined", type=float, nargs="+", default=[0.5, 0.3, 0.2, 0.1, 0.05])
+    a.add_argument("--sodium-only", type=float, nargs="+", default=[0.3, 0.1])
+    a.add_argument("--coupling-only", type=float, nargs="+", default=[0.1, 0.03])
     a.add_argument("--kv-values", type=float, nargs="+", default=[0.0, 1e-8, 3e-8, 1e-7, 3e-7])
     a.add_argument("--bisections", type=int, default=7)
     a.add_argument(
@@ -1637,7 +1885,7 @@ def main(argv=None):
         help="the chain's junction-heat booking (E07-v1's registered one by default)",
     )
     args = a.parse_args(argv)
-    if args.part in ("chain", "device") and args.kv is None:
+    if args.part in ("chain", "device", "segment") and args.kv is None:
         a.error("chain and device need --kv explicitly")
     if args.part == "device" and args.kick_to is None:
         a.error("device needs --kick-to explicitly")
