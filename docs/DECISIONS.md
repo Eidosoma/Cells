@@ -5014,6 +5014,66 @@ should be designed as a general engine feature.
   - a law or species named for one experiment (D144);
   - reproducing a paper's model (D138).
 
+## D153: Checkpoints resume across a source or runtime change only through a recorded admission
+
+2026-11-13, user approval of the tooling, with the lead's design reviewed by the advisor
+([CHECKPOINT_CONTINUITY_DESIGN.md](CHECKPOINT_CONTINUITY_DESIGN.md)). Landed with the first implementation on
+14 November 2026; see PROGRESS for its evidence.
+- **The approval.** The user's words were "yes fix checkpoint continuty also". This
+  approves the versioned checkpoint migration that D145 listed as unapproved tooling. The
+  public validation package stays unapproved.
+- **The attestation question.** The user delegated it ("lets go as you see fit otherwise").
+  After the lead told the user that it had taken the delegation to cover the question (the
+  case-1 probe is within AGENTS.md's rule, AGENTS.md unchanged), the user confirmed it on
+  13 November: "sounds good".
+- **Refusal stays the default.** `load_snapshot` and `load_batch_snapshot` refuse any
+  change of source or runtime unless given a continuity record
+  (`cells.checkpoint_continuity@1`).
+  - A record binds one checkpoint manifest and one pair of identities.
+  - It names both sources and runtimes, the evidence and who admitted the resume.
+  - It lives in the new run's folder, and the run's provenance names it.
+- **Four cases:**
+  1. **Source changed, programs unchanged:** admitted when the continuity probe finds
+     four things identical:
+     - the programs the path compiles: jaxpr, constants, lowered StableHLO and compile
+       arguments;
+     - the bindings over the remaining horizon;
+     - host acceptance and observation on the run's saved states;
+     - a bitwise overlap: the first rounds of the resume, run on CPU under both trees,
+       past the next event and observation, with each round's bound arguments and
+       outputs compared.
+
+     The probe runs on CPU, on the checkpoint's own definitions. No file is exempted by
+     argument. The record states the overlap's length. A driving-loop change that first
+     moves an output after it is the stated residual.
+  2. **Programs or bindings changed, physical fields unchanged:** only with a D148 record
+     covering those definitions, admitted by the lead. Never automatic.
+  3. **Definition, layout, solver or model ID changed:** refused. No record relaxes these
+     checks. D146 and D147 stand: no aliases, no migration.
+  4. **Runtime changed:** every differing field is named in the record, and the first
+     landing refuses them all. The rules are parked until a run needs them:
+     - host-side fields, decided at trace level on CPU;
+     - compiler and device fields, decided by tolerance with the backend-variant method,
+       at least three repeats, and terms taken over all pairs.
+- **The first landing:** the vector-windows path, CPU definitions with `jit: true`. Other
+  paths answer "cannot decide" until the consolidation.
+- **Who admits:** the probe decides case 1 and the lead records it; the lead admits
+  case 2; any registered run is the user's.
+- **Unchanged:** registered runs. The W1 hold stays on `source-09`, E07-v1 on its
+  snapshot, and judges on clean snapshots. The first consumer is a CPU development run.
+- **Bypasses.** Execution from saved state either loads through the loaders or declares
+  itself a new run started from imported state, recorded and judged on its own. A static
+  test lists the exempt tools with their reasons.
+- **Evidence:** `/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/`. The probes
+  show that:
+  - cohort programs traced from a batch snapshot, and captured from all five paths'
+    entry points, repeat identically;
+  - jaxpr text omits constant values, so constants and the lowered StableHLO are
+    compared;
+  - host-only and comment edits leave programs, bindings and host replay identical;
+  - a program edit changes every path's program;
+  - an observer-only edit changes only the host replay.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
