@@ -5130,6 +5130,53 @@ experiments eventually must be visualizable".
   - view writers per driver;
   - the visualizer committing outside `visualizer/`.
 
+## D155: The Myc–cyclin T1 heart paper is modelled in two tracks; excitable tissue and coupling out of the inventory are designed now
+
+2026-11-14, user decisions on the [review](PAPER_REVIEW_MYC_CYCLINT1_HEART.md) (Boikova et al.
+2026). They follow the lead's recommendations, reviewed by the advisor. The user asked for
+ambition ("we want to be ambitous"), then answered "Yes lets raise it and I agree, lets go".
+- **Two tracks.**
+  - **Track E, excitable tissue.** Do weakly coupled cells with low sodium conductance slow or
+    block conduction, and does clustering matter? It needs excitable tissue and a prescribed
+    perturbation, not the pulse, the gate or division.
+  - **Track R, regulation:** the pulse, a gate on cycle entry, then division triggered by state.
+  - The tracks join at newborn-cell integration.
+  - There are two clocks: the slow world runs coarsely, and short conduction assays run from its
+    frozen snapshots.
+- **1. D145 is narrowed, not lifted.** One general feature is authorised for design (D142):
+  *coupling out of the inventory*.
+  - A species amount sets another operator's control, through the contract's
+    `CONTROL_FACTORS`.
+  - Later, it triggers an event such as division.
+  - The rest of the gene-regulation track stays held.
+- **2. Comparisons with this paper's data** are approved at every stage, each with its
+  predictions registered before its runs. The paper deposits no model, so nothing is
+  reproduced. The user is asked for Supplementary Tables 1–2 and the source data.
+- **3. The first target is conduction.**
+  - A probe on the engine as it is comes first: can the channel laws the composite admits
+    propagate an action potential along a chain, at a feasible step?
+  - The passive sheet, with junction availability perturbed on a schedule, becomes Track E's
+    control arm.
+- **4. Excitable tissue enters the engine-feature queue now** as general excitable-tissue
+  physics, not a cardiac mode.
+  - A design note comes first.
+  - It is qualified against cable theory, with independent references.
+  - Its wavelength is checked against the 127-cell sheet. Re-entry is expected to need the
+    sparse solver and GH200.
+- **5. Species** is decided in that design note: a generic cell for qualification, mouse for the
+  first comparison, human second.
+- **6. The protein catalogue's scope** is deferred; it blocks nothing.
+- **The agent cap.** At most six subagents from 14 November 2026, raised from four, on disjoint
+  files. AGENTS.md is updated.
+- **What it does not authorise:**
+  - the full gene-regulation track, or D145's other holds;
+  - a feature built for this paper (D144).
+- **The review's own findings** (its §6) are the starting point.
+  - The composite carries five channel laws today.
+  - There are three composition walls on Track R. Turnover and reactions refuse closers. The
+    partition refuses replacement, so a cell born by division has no junction-formation law.
+    The partition refuses water and pumps on the dividing cell.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
