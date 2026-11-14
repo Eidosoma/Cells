@@ -169,3 +169,18 @@ def silence(spec, observations):
         rows=int(v.shape[0]),
         loaded=float(increment[-1, s, j] - increment[0, s, j]),
     )
+
+
+def identity_differences(build):
+    """S5's comparison of build(True) (declared) with build(False): what differs (empty: none).
+
+    Each traced program's jaxpr text and closed-over constants, then the bindings by name."""
+    with_it, without = build(True), build(False)
+    a, b = traced(with_it), traced(without)
+    found = [] if a.keys() == b.keys() else ["programs: " + str(sorted(set(a) ^ set(b)))]
+    for kind in sorted(set(a) & set(b)):
+        if a[kind][0] != b[kind][0]:
+            found.append(f"{kind}: jaxpr text")
+        if a[kind][1] != b[kind][1]:
+            found.append(f"{kind}: closed-over constants")
+    return found + [f"binding {k}" for k in same_bindings(bindings(with_it), bindings(without))]

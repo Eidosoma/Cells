@@ -198,7 +198,14 @@ def faced_world():
 
 
 def shared_node():
-    raw = two_cells(contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_0")))
+    raw = fx.world(
+        cells=(("cell_0", 1.0), ("cell_1", 1.0)),
+        nodes=(("ecs_0", 1.0),),
+        contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_0")),
+        faces=(),
+        end=END,
+        concentrations_mM=dict(cell_0=1e-3, cell_1=1e-3, ecs_0=1e-6),
+    )
     return cfx.with_compartments(raw, [cfx.compartment()])
 
 

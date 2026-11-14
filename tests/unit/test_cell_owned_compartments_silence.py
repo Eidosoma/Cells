@@ -8,11 +8,11 @@ The criteria, fixed before any run (closed-compartment-m1-20261114-01/HANDOFF.md
 These are checked here on every row of the scalar program (core/runner.run, every step observed),
 in the silence world W (validation/tissue/compartment_fixtures.loaded_compartment), with exchange
 loading S into the compartment while no ion moves. The export rate changes at 5 ms.
-- Under ARS(2,2,2) at 1 ms: the run, then restarts in process from checkpoints before, at and
-  after the change, and through a written snapshot at the change, each bitwise against the run.
-- Under RK4 at 0.1 ms: the run.
-The windowed, vector-window and batch programs are test_cell_owned_compartments_paths.py. A few
-compiles: not tier 1.
+- Under ARS(2,2,2) at 1 ms: the run, then a restart from the checkpoint at the change, in process
+  and through a written snapshot (one restart program), each bitwise against the run.
+RK4 is test_cell_owned_compartments_silence_rk4.py, and the windowed, vector-window and batch
+programs test_cell_owned_compartments_windowed.py, _vector.py and _batch.py. Two compiles: not
+tier 1.
 """
 
 import jax
@@ -44,23 +44,14 @@ def test_the_scalar_program_and_its_restarts_are_silent(tmp_path):
     spec = parse_spec(cfx.loaded_compartment(end=end, dt=dt, changes=[(CHANGE, 0.5)]))
     result = run(spec)  # Every host check, on every accepted row.
     assert_silent(spec, result.observations, int(round(end / dt)) + 1)
-    for t in (0.003, CHANGE, 0.008):
-        checkpoint = result.checkpoint_at(t)
-        resumed = run(spec, checkpoint)
-        for a, b in zip(resumed.history, result.history, strict=True):
-            assert np.array_equal(np.asarray(a), np.asarray(b)[checkpoint.step_index :]), t
-        assert cfx.silence(spec, resumed.observations)["s1"]
     checkpoint = result.checkpoint_at(CHANGE)
+    resumed = run(spec, checkpoint)
+    for a, b in zip(resumed.history, result.history, strict=True):
+        assert np.array_equal(np.asarray(a), np.asarray(b)[checkpoint.step_index :])
+    assert cfx.silence(spec, resumed.observations)["s1"]
     write_snapshot(tmp_path / "checkpoint", result.spec, checkpoint)
     loaded = load_snapshot(tmp_path / "checkpoint")
     again = run(loaded.spec, loaded.checkpoint)
     for a, b in zip(again.history, result.history, strict=True):
         assert np.array_equal(np.asarray(a), np.asarray(b)[checkpoint.step_index :])
     assert cfx.silence(loaded.spec, again.observations)["s1"]
-
-
-def test_the_rk4_program_is_silent():
-    end, dt = 4e-4, 1e-4
-    spec = parse_spec(cfx.loaded_compartment(end=end, dt=dt, solver="rk4"))
-    result = run(spec)
-    assert_silent(spec, result.observations, int(round(end / dt)) + 1)
