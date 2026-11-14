@@ -32,12 +32,14 @@ class CellsIndex extends HTMLElement {
           h(
             "button",
             {
-              class: "index-row" + (entity.id === this.selected ? " is-on" : ""),
+              class: "index-row" + (entity.id === this.selected ? " is-on" : "") + (entity.sign ? " has-sign" : ""),
               type: "button",
               onclick: () => emit(this, "cells-select", { id: entity.id, fly: true }),
             },
             statusSwatch(entity.swatch || entity.status),
-            h("span", { class: "index-name" }, entity.label)
+            h("span", { class: "index-name" }, entity.label),
+            // A further sign with its words (the protein atlas: where a species differs).
+            entity.sign ? h("span", { class: `swatch swatch-${entity.sign.swatch}`, role: "img", title: entity.sign.title, "aria-label": entity.sign.title }) : null
           )
         );
       if (rows.length) blocks.push(h("section", {}, h("h3", {}, section.label), rows));

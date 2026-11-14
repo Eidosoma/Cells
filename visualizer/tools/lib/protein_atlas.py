@@ -12,18 +12,29 @@ at an earlier revision:
 
 The atlas keeps the inventory's own words for how sure a mapping is ("mapping") and what
 stands behind a law ("evidence"). They are not engine statuses and never go in ``status``.
+
+A unit has no species; which gene products would make it does. The inventory's candidates
+are human. Every other species comes from a file (schema/SPECIES_ATLAS.md) that is checked
+against its contract here, and each unit carries what each species' atlas says of it. The
+laws, the mappings and the shapes drawn are the engine's and the same for every species.
 """
 
 from __future__ import annotations
 
+import json
 import re
 from collections import Counter
+from pathlib import Path
 
 from .static_eval import Unresolved, plain
 
 IDENTIFIER = re.compile(r"\b[A-Za-z][A-Za-z0-9_]*@\d+")
 PDB = re.compile(r"PDB (\d[A-Z0-9]{3})")
 GROUP = "proteins"
+SPECIES_FORMAT = "cells.visualizer.species_atlas@1"
+MACHINE = re.compile(r"/home/|/mnt/|/Users/|/tmp/|file://|\blocalhost\b")
+DAY = re.compile(r"\d{4}-\d{2}-\d{2}$")
+MOST_WARNINGS = 12  # for one species file; beyond that only their number is given
 
 
 def _strings(value, out):
@@ -43,8 +54,10 @@ def _fill(template, value):
 
 
 class Atlas:
-    def __init__(self, build, snapshot, overlay):
+    def __init__(self, build, snapshot, overlay, atlases=None):
         self.build = build
+        # The species atlases, read from a folder of files (none, if there is no folder).
+        self.species = Species(snapshot, overlay, read_species_files(atlases)) if overlay.get("species") else None
         self.snapshot = snapshot
         self.overlay = overlay
         self.repo = build.repo
@@ -296,13 +309,14 @@ class Atlas:
             facts.append(["Assembly from", "; ".join(unit["assembly"]["sources"])])
         facts.append(["Engine laws", str(len(laws))])
 
-        sections = [{"title": "Engine laws", "items": [self.law_item(law) for law in laws]}]
+        # The keys let the view put a species' gene products in the place of the inventory's.
+        sections = [{"key": "laws", "title": "Engine laws", "items": [self.law_item(law) for law in laws]}]
         if unit.get("products"):
-            sections.append({"title": "Candidate products", "items": [self.product_item(product) for product in unit["products"]]})
+            sections.append({"key": "products", "title": "Candidate products", "items": [self.product_item(product) for product in unit["products"]]})
         cited = [pdb for source in unit["assembly"].get("sources", []) for pdb in PDB.findall(source)]
         shown = [structures[pdb] for pdb in dict.fromkeys(cited) if pdb in structures]
         if shown:
-            sections.append({"title": "Reference structures", "items": [self.structure_item(item) for item in shown]})
+            sections.append({"key": "structures", "title": "Reference structures", "items": [self.structure_item(item) for item in shown]})
 
         tracked = set(build.files)
         sources = [{"path": overlay["plan"]["path"], "where": overlay["plan"]["where"]}]
@@ -342,6 +356,8 @@ class Atlas:
                 "sections": sections,
                 "sources": sources,
                 "keywords": " ".join([*[law["id"] for law in laws if law.get("id")], *genes, *cited]),
+                # What each species atlas says of this unit; the inventory's own candidates stay in "sections".
+                **({"species": self.species.of_unit(unit["id"])} if self.species and self.species.atlases else {}),
             }
         )
         for law in laws:
@@ -382,6 +398,17 @@ class Atlas:
             )
         evidence_laws = Counter(law["evidence_kind"] for law in snapshot["laws"])
         described = snapshot["inventory"]
+        species = {}
+        if self.species:
+            self.build.warnings.extend(self.species.warnings)
+            words = self.overlay["species"]
+            species = {
+                "atlases": self.species.summary(),
+                "findings": words["findings"],
+                "product_evidence": words["evidence"],
+                "no_entry": words["no_entry"],
+                "remarks": self.species.remarks,  # for the build's report; not written to the scene
+            }
         return {
             "title": overlay["title"],
             "summary": overlay["summary"],
@@ -414,7 +441,349 @@ class Atlas:
             "districts": [{**item, "count": by_district[item["id"]]} for item in overlay["districts"]],
             "sources": snapshot["sources"],
             "not_copied": snapshot["not_copied"],
+            **species,
         }
+
+
+# ---------------------------------------------------------------- species atlases
+
+
+def _key(text):
+    """A database's name as it is compared: letters and digits only, in lower case."""
+    return re.sub(r"[^a-z0-9]", "", str(text).lower())
+
+
+def _text(value):
+    """A string with something in it, or None."""
+    return value.strip() if isinstance(value, str) and value.strip() else None
+
+
+def read_species_files(folder):
+    """Every species atlas in a folder, as (name, data, problem). No folder is no atlas.
+
+    A file that is still being written, or is not JSON, is reported and left out. It never stops the build.
+    """
+    files = []
+    folder = Path(folder) if folder else None
+    if folder is None or not folder.is_dir():
+        return files
+    for path in sorted(folder.glob("*.json")):
+        try:
+            files.append((path.stem, json.loads(path.read_text(encoding="utf-8")), None))
+        except (OSError, ValueError) as error:
+            files.append((path.stem, None, f"could not be read as JSON ({type(error).__name__})"))
+    return files
+
+
+class Species:
+    """The species atlases: which gene products would make each unit, species by species.
+
+    The human atlas is the inventory's own. Its products already stand in every unit, so it
+    is only described here, and it states no findings: the snapshot does not. Every other
+    atlas is a file under the contract in schema/SPECIES_ATLAS.md. Whatever breaks the
+    contract is a warning and is left out of the scene; the rest of the file is kept.
+    Nothing here reads the checkout, so the checks run on their own.
+    """
+
+    def __init__(self, snapshot, overlay, files=()):
+        self.snapshot = snapshot
+        self.words = overlay["species"]
+        self.links = overlay["links"]
+        self.findings = {item["id"]: item for item in self.words["findings"]}
+        self.evidence = {item["id"]: item for item in self.words["evidence"]}
+        self.unit_ids = [unit["id"] for unit in snapshot["units"]]
+        self.warnings = []
+        self.remarks = []  # within the contract's letter, but worth a look
+        self.atlases = []
+        for name, data, problem in files:
+            self.read(name, data, problem)
+
+    def read(self, name, data, problem):
+        said, noted = [], []
+        atlas = None
+        if problem:
+            said.append(f"left out, the file {problem}")
+        else:
+            atlas = self.check(name, data, said.append, noted.append)
+        if len(said) > MOST_WARNINGS:
+            said = said[:MOST_WARNINGS] + [f"and {len(said) - MOST_WARNINGS} more problems"]
+        self.warnings += [f"species atlas {name}: {text}" for text in said]
+        self.remarks += [f"species atlas {name}: {text}" for text in noted]
+        if atlas:
+            self.atlases.append(atlas)
+
+    # ------------------------------------------------------------ the contract
+
+    def check(self, name, data, warn, note):
+        """One file against the contract. Returns what is sound in it, or None if it cannot be shown."""
+        if not isinstance(data, dict) or data.get("format") != SPECIES_FORMAT:
+            found = data.get("format") if isinstance(data, dict) else type(data).__name__
+            warn(f"left out, its format is {found!r}, not {SPECIES_FORMAT!r}")
+            return None
+        species = data.get("species") if isinstance(data.get("species"), dict) else {}
+        identifier, label = _text(species.get("id")), _text(species.get("label"))
+        if not identifier or not label:
+            warn("left out, its species block lacks an id or a label")
+            return None
+        if identifier in {self.words["reference"]["id"], *(atlas["species"]["id"] for atlas in self.atlases)}:
+            warn(f"left out, the species id '{identifier}' is already taken")
+            return None
+        if identifier != name:
+            warn(f"its species id is '{identifier}', but the file is named {name}.json")
+        lacking = [key for key in ("organism", "plain") if not _text(species.get(key))]
+        if not isinstance(species.get("taxon"), int) or isinstance(species.get("taxon"), bool):
+            lacking.append("taxon")
+        if not (isinstance(data.get("made"), str) and DAY.match(data["made"])):
+            lacking.append("made (a date)")
+        method = [line for line in data.get("method") or [] if _text(line)] if isinstance(data.get("method"), list) else []
+        if not method:
+            lacking.append("method")
+        if not _text(data.get("not_copied")):
+            lacking.append("not_copied")
+        sources = []
+        for source in data.get("sources") if isinstance(data.get("sources"), list) else []:
+            if not isinstance(source, dict) or not _text(source.get("name")):
+                warn("one of its sources has no name")
+                continue
+            missing = [key for key in ("licence", "holds") if not _text(source.get(key))]
+            if missing:
+                warn(f"its source {source['name']} lacks: {', '.join(missing)}")
+            kept = {key: source[key] for key in ("name", "url", "release", "accessed", "licence", "cite", "holds") if _text(source.get(key))}
+            if "url" in kept and not kept["url"].startswith("https://"):
+                # The contract sets no rule on the address; the page links out over https only.
+                note(f"its source {source['name']} has an address that is not https, so it is named but not linked")
+                del kept["url"]
+            sources.append(kept)
+        if not sources:
+            lacking.append("sources")
+        if lacking:
+            warn(f"it lacks: {', '.join(lacking)}")
+        if MACHINE.search(json.dumps(data)):
+            warn("it holds a machine path or a host name")
+
+        units = data.get("units") if isinstance(data.get("units"), dict) else {}
+        missing = [unit for unit in self.unit_ids if unit not in units]
+        if missing:
+            warn(f"it has no entry for {len(missing)} of the inventory's {len(self.unit_ids)} units: {', '.join(missing)}")
+        unknown = sorted(set(units) - set(self.unit_ids))
+        if unknown:
+            warn(f"it names units the inventory does not have: {', '.join(unknown)}")
+        databases = {_key(source["name"]): source for source in sources}
+        self.unlisted = {}  # a database no source lists -> where it is first named, and how often
+        kept = {}
+        for unit in self.unit_ids:
+            if unit not in units:
+                continue
+            entry = units[unit] if isinstance(units[unit], dict) else {}
+            finding = entry.get("finding")
+            if finding not in self.findings:
+                warn(f"{unit}: unknown finding {finding!r}")
+                continue
+            listed = entry.get("products") if isinstance(entry.get("products"), list) else []
+            products = [product for product in (self.product(item, unit, databases, warn, note) for item in listed) if product]
+            words = _text(entry.get("note"))
+            if finding in ("found", "different family") and not listed:
+                note(f"{unit} is '{finding}' but lists no product")
+            if finding in ("none found", "nothing to look for") and listed:
+                note(f"{unit} is '{finding}' but lists {len(listed)} products")
+            if finding in ("different family", "none found") and not words:
+                note(f"{unit} is '{finding}' without a note")
+            kept[unit] = {"finding": finding, "note": words, "products": products}
+        extra = []
+        for item in data.get("extra") if isinstance(data.get("extra"), list) else []:
+            product = self.product(item, "extra", databases, warn, note)
+            if product and not product["why"]:
+                note(f"extra: {product['label']} has no 'why'")
+            if product:
+                extra.append(product)
+        for database, (where, count) in self.unlisted.items():
+            warn(f"it names the database '{database}' ({count} times, first on {where}), which is neither uniprot, pdb nor one of its sources")
+        return {
+            "species": {"id": identifier, "label": label, **{key: species[key] for key in ("organism", "taxon", "plain") if species.get(key) is not None}},
+            "made": data.get("made") if isinstance(data.get("made"), str) else None,
+            "method": method,
+            "sources": sources,
+            "databases": databases,
+            "not_copied": _text(data.get("not_copied")),
+            "units": kept,
+            "extra": extra,
+        }
+
+    def product(self, product, where, databases, warn, note):
+        """One gene product, as far as it holds to the contract; None if it cannot be shown."""
+        if not isinstance(product, dict):
+            warn(f"{where}: a product is not an object")
+            return None
+        name, gene = _text(product.get("name")), _text(product.get("gene"))
+        label = gene or name
+        if not label:
+            warn(f"{where}: a product has neither a name nor a gene")
+            return None
+        evidence = self.evidence.get(product.get("evidence"))
+        if evidence is None:
+            warn(f"{where}: unknown evidence {product.get('evidence')!r} on {label}")
+            return None
+        citation = product.get("citation")
+        cited = isinstance(citation, dict) and _text(citation.get("text"))
+        if evidence.get("cited") and not cited:
+            warn(f"{where}: {label} is named in a publication, but has no citation with a text")
+            return None
+        if citation is not None and not cited:
+            warn(f"{where}: the citation on {label} has no text")
+        if any(isinstance(value, str) and re.match(r"https?://", value) for value in product.values()):
+            warn(f"{where}: {label} holds a web address; the file names entries and the viewer builds the links")
+        ids = []
+        for entry in product.get("ids") if isinstance(product.get("ids"), list) else []:
+            database, value = (entry.get("db"), entry.get("id")) if isinstance(entry, dict) else (None, None)
+            if not _text(database) or value in (None, ""):
+                warn(f"{where}: an id on {label} lacks its db or its id")
+                continue
+            value = str(value).strip()
+            if "://" in value:
+                warn(f"{where}: an id on {label} is a web address; the file names entries and the viewer builds the links")
+                continue
+            if _key(database) not in self.words["databases"] and _key(database) not in databases:
+                first, count = self.unlisted.get(database, (f"{where}, {label}", 0))
+                self.unlisted[database] = (first, count + 1)
+                continue
+            ids.append([_key(database), value])
+        length = product.get("length")
+        if length is not None and (not isinstance(length, int) or isinstance(length, bool) or length <= 0):
+            note(f"{where}: the length of {label} is not a count of amino acids")
+            length = None
+        if not ids and not cited:
+            note(f"{where}: {label} names no database entry and no paper")
+        doi = _text(citation.get("doi")) if cited else None
+        pmid = citation.get("pmid") if cited else None
+        return {
+            "label": label,
+            "name": name,
+            "gene": gene,
+            "role": _text(product.get("role")),
+            "ids": ids,
+            "length": length,
+            "evidence": evidence["id"],
+            "evidence_note": _text(product.get("evidence_note")),
+            "citation": {
+                "text": cited,
+                "doi": re.sub(r"^(https?://(dx\.)?doi\.org/|doi:\s*)", "", doi, flags=re.I) if doi else None,
+                "pmid": str(pmid).strip() if str(pmid or "").strip().isdigit() else None,
+            } if cited else None,
+            "why": _text(product.get("why")),
+        }
+
+    # ------------------------------------------------------------ what the scene carries
+
+    def item(self, product, atlas):
+        """A gene product as the panel lists it: its evidence in the contract's words, and links built from its ids."""
+        evidence = self.evidence[product["evidence"]]
+        databases = atlas["databases"]
+        # How one entry of a species' database is addressed, where that was checked (the overlay says when).
+        entries = self.words.get("entries", {}).get(atlas["species"]["id"], {})
+        lines, links = [], []
+        if product["length"]:
+            lines.append(f"{product['length']:,} amino acids")
+        said = product["evidence_note"]
+        if evidence.get("candidate"):
+            # Found by signature or by similarity: a candidate, and the atlas says so.
+            lines.append(f"Candidate, not an established counterpart: {said}" if said else "Candidate, not an established counterpart.")
+        elif said:
+            lines.append(said)
+        for database, value in product["ids"]:
+            template = entries.get(database) or self.links.get(self.words["databases"].get(database, database))
+            if template:
+                link = _fill(template, value)
+                if database == "pdb":
+                    link["text"] = f"PDB {value}"
+                links.append(link)
+                continue
+            # A species database: the contract gives its address, not the address of one entry.
+            # Without a checked pattern the entry is named in words, beside a link to the database.
+            source = databases[database]
+            lines.append(f"{source['name']}: {value}")
+            if source.get("url") and not any(link["url"] == source["url"] for link in links):
+                links.append({"text": source["name"], "url": source["url"]})
+        citation = product["citation"]
+        if citation:
+            lines.append(citation["text"])
+            if citation["doi"]:
+                links.append(_fill(self.links["doi"], citation["doi"]))
+            if citation["pmid"]:
+                links.append(_fill(self.links["pubmed"], citation["pmid"]))
+        # Under a gene's name: the protein's name and its role, unless one only repeats the other.
+        name, gene, role = product["name"], product["gene"], product["role"]
+        named = name if gene and name and name.lower() != gene.lower() else None
+        part = role if role and not (name and role.lower() in name.lower()) else None
+        return {
+            "label": product["label"],
+            "detail": ", ".join(text for text in (named, part) if text) or None,
+            "tag": evidence["label"],
+            "tag_title": evidence["description"],
+            "lines": lines,
+            "links": links,
+        }
+
+    def of_unit(self, unit_id):
+        """What each species atlas says of one unit: {species id: {finding, note, items, keywords}}."""
+        said = {}
+        for atlas in self.atlases:
+            entry = atlas["units"].get(unit_id)
+            if entry is None:
+                said[atlas["species"]["id"]] = {"finding": None, "note": None, "items": []}
+                continue
+            words = [text for product in entry["products"] for text in (product["gene"], product["name"], *(value for _, value in product["ids"])) if text]
+            said[atlas["species"]["id"]] = {
+                "finding": entry["finding"],
+                "note": entry["note"],
+                "items": [self.item(product, atlas) for product in entry["products"]],
+                "keywords": " ".join(dict.fromkeys(words)),
+            }
+        return said
+
+    def summary(self):
+        """The scene's list of atlases: the reference first, then one for each species file."""
+        snapshot = self.snapshot
+        listed = [
+            {
+                **self.words["reference"],
+                "reference": True,
+                "made": snapshot["inventory"]["created"],
+                "sources": snapshot["sources"],
+                "not_copied": snapshot["not_copied"],
+                "counts": {
+                    "units": len(self.unit_ids),
+                    "with_products": sum(1 for unit in snapshot["units"] if unit.get("products")),
+                    "products": len(snapshot["products"]),
+                },
+            }
+        ]
+        for atlas in self.atlases:
+            # A product that serves several units is counted once.
+            distinct = {}
+            for entry in atlas["units"].values():
+                for product in entry["products"]:
+                    distinct.setdefault(tuple(product["ids"][0]) if product["ids"] else ("", product["label"]), product)
+            by_finding = Counter(entry["finding"] for entry in atlas["units"].values())
+            by_evidence = Counter(product["evidence"] for product in distinct.values())
+            listed.append(
+                {
+                    **atlas["species"],
+                    "made": atlas["made"],
+                    "method": atlas["method"],
+                    "sources": atlas["sources"],
+                    "not_copied": atlas["not_copied"],
+                    "counts": {
+                        "units": len(self.unit_ids),
+                        "with_products": sum(1 for entry in atlas["units"].values() if entry["products"]),
+                        "products": len(distinct),
+                        "candidates": sum(count for kind, count in by_evidence.items() if self.evidence[kind].get("candidate")),
+                    },
+                    "findings": [{"id": word["id"], "count": by_finding[word["id"]]} for word in self.words["findings"]],
+                    "evidence": [{"id": word["id"], "count": by_evidence[word["id"]]} for word in self.words["evidence"]],
+                    "extra": [{**self.item(product, atlas), "note": product["why"]} for product in atlas["extra"]],
+                }
+            )
+        return listed
 
 
 RELATION_KINDS = [

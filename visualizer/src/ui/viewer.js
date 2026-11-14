@@ -10,14 +10,14 @@ import { css } from "./styles.js";
 import { h, formatDate, svg } from "./dom.js";
 import "./legend.js";
 import "./index.js";
-import "./panel.js";
+import { item as listed } from "./panel.js";
 import "./timeline.js";
 import { SceneModel } from "../scene/model.js";
 import { Stage } from "../core/stage.js";
 import { LabelLayer } from "../core/labels.js";
 import { StackLens } from "../lenses/stack.js";
 import { CellLens } from "../lenses/cell.js";
-import { ProteinLens } from "../lenses/proteins.js";
+import { ProteinLens, defaultAtlas, inSpecies } from "../lenses/proteins.js";
 import { ReplayLens } from "../lenses/replay.js";
 import { Catalogue } from "../replay/catalogue.js";
 
@@ -37,7 +37,8 @@ class CellsViewer extends HTMLElement {
 
   constructor() {
     super();
-    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false };
+    // "atlas" is the species whose atlas the protein view shows; it stays while the page is open.
+    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, atlas: null };
     this.lenses = new Map();
   }
 
@@ -113,6 +114,7 @@ class CellsViewer extends HTMLElement {
     root.addEventListener("cells-select", (event) => this.select(event.detail.id, event.detail));
     root.addEventListener("cells-isolate", (event) => this.setIsolate(event.detail));
     root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
+    root.addEventListener("cells-finding", (event) => this.current?.setFinding?.(event.detail));
     root.addEventListener("cells-legend-toggle", () => {
       this.state.legendOpen = !this.state.legendOpen;
       this.renderLegend();
@@ -132,6 +134,9 @@ class CellsViewer extends HTMLElement {
     this.views = LENSES.filter((lens) => !lens.needs || lens.needs(this.model.raw));
     // The runs that can be replayed, read without the 3D stage so the list works without it.
     this.replays = new Catalogue(this.model.raw.replays);
+    // The protein atlas opens on the inventory's own species.
+    this.state.atlas = defaultAtlas(this.model.raw.proteins);
+    if (this.state.atlas) this.dataset.atlas = this.state.atlas;
     for (const lens of this.views) {
       this.switchBox.append(
         h(
@@ -174,6 +179,7 @@ class CellsViewer extends HTMLElement {
       this.frame.classList.add("is-still");
       if (this.stage) this.stage.rig.instant = true;
     }
+    if (query.get("atlas")) this.setAtlas(query.get("atlas"));
     const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || this.views[0].id;
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
@@ -181,6 +187,7 @@ class CellsViewer extends HTMLElement {
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
     if (query.get("isolate")) this.setIsolate(query.get("isolate"));
     if (query.get("together")) this.current?.setTogether?.(query.get("together"));
+    if (query.get("finding")) this.current?.setFinding?.(query.get("finding"));
     // A replay: which run, where the playhead stands, which record colours the sheet.
     if (query.get("time")) this.current?.seek?.(Number(query.get("time")));
     const settle = () => {
@@ -232,6 +239,7 @@ class CellsViewer extends HTMLElement {
         this.lenses.set(id, lens);
       }
       this.current = this.lenses.get(id);
+      this.current.setAtlas?.(this.state.atlas);
       this.current.activate();
       this.current.setIsolate(null);
       this.current.setSelection(this.current.has(this.state.selected) ? this.state.selected : null);
@@ -266,14 +274,17 @@ class CellsViewer extends HTMLElement {
   /** A part by its id: one of the scene's, or one the current view makes itself (a run, a cell of a run). */
   lookup(id) {
     if (!id) return null;
-    return this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || null;
+    const entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || null;
+    // In the protein atlas a unit is shown as the chosen species' atlas has it.
+    return this.state.lens === "proteins" ? inSpecies(entity, this.model.raw.proteins, this.state.atlas) : entity;
   }
 
   sections() {
     if (this.current) return this.current.sections();
     if (this.state.lens === "experiments") return this.replays.sections();
     const groups = new Map();
-    for (const entity of this.shownEntities()) {
+    for (const part of this.shownEntities()) {
+      const entity = this.state.lens === "proteins" ? inSpecies(part, this.model.raw.proteins, this.state.atlas) : part;
       const key = entity.eyebrow || (entity.group === "biology" ? entity.scale || entity.kind : entity.group);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(entity);
@@ -307,6 +318,21 @@ class CellsViewer extends HTMLElement {
     this.state.isolate = status || null;
     this.current?.setIsolate(this.state.isolate);
     this.renderLegend();
+  }
+
+  /** Show another species' atlas in the protein atlas. The choice is kept while the page is open, also across views. */
+  setAtlas(id) {
+    const atlas = (this.model?.raw.proteins?.atlases || []).find((item) => item.id === id);
+    if (!atlas || atlas.id === this.state.atlas) return;
+    this.state.atlas = atlas.id;
+    this.dataset.atlas = atlas.id;
+    this.lenses.get("proteins")?.setAtlas(atlas.id);
+    if (this.state.lens === "proteins") {
+      this.renderChrome();
+      this.renderPanel();
+      this.stage?.invalidate();
+    }
+    this.dispatchEvent(new CustomEvent("cells-atlas", { detail: { id: atlas.id }, bubbles: true, composed: true }));
   }
 
   toggleIndex(force) {
@@ -361,12 +387,43 @@ class CellsViewer extends HTMLElement {
   }
 
   /** A view's own summary: headline numbers, what the data is, and where it came from. */
-  card({ heading, stats, text, check, sources, notCopied }) {
+  card({ heading, species, organism, stats, text, check, method, extra, sources, notCopied }) {
+    const outside = (url) => /^https:\/\//.test(url || "");
+    const read = (date) => (/^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDate(date) : date);
+    // Pressing a species redraws the card, so the focus is put back on the button pressed.
+    const pick = (id) => {
+      this.setAtlas(id);
+      [...this.viewCard.querySelectorAll("[data-atlas]")].find((button) => button.dataset.atlas === id)?.focus({ preventScroll: true });
+    };
     return [
       h("p", { class: "card-title" }, heading),
+      // Which species' atlas is shown. It takes any number of species: the buttons wrap onto more rows.
+      species
+        ? h(
+            "div",
+            { class: "seg-row seg-species" },
+            h("span", { class: "seg-label" }, "Species"),
+            h(
+              "div",
+              { class: "seg seg-many", role: "group", "aria-label": "Species" },
+              species.options.map(([id, label, title]) => h("button", { type: "button", dataset: { atlas: id }, title: title || "", "aria-pressed": String(id === species.active), onclick: () => pick(id) }, label))
+            )
+          )
+        : null,
+      organism ? h("p", { class: "card-organism" }, organism) : null,
       h("div", { class: "stats" }, stats.map(([value, label]) => h("div", { class: "stat" }, h("b", {}, String(value)), h("span", {}, label)))),
-      h("p", { class: "card-text" }, text),
-      h("p", { class: "card-text" }, check),
+      text ? h("p", { class: "card-text" }, text) : null,
+      check ? h("p", { class: "card-text" }, check) : null,
+      method?.length ? h("details", {}, h("summary", {}, "How it was made"), h("ul", {}, method.map((line) => h("li", {}, line)))) : null,
+      // Proteins of the species that bear on the picture but make none of the units drawn.
+      extra?.length
+        ? h(
+            "details",
+            {},
+            h("summary", {}, `${extra.length} more ${extra.length === 1 ? "protein" : "proteins"}, matched to no unit`),
+            h("ul", { class: "card-extra" }, extra.map(listed))
+          )
+        : null,
       h(
         "details",
         {},
@@ -374,18 +431,19 @@ class CellsViewer extends HTMLElement {
         h(
           "ul",
           {},
-          sources.map((source) =>
-            h(
+          sources.map((source) => {
+            const facts = [source.release ? `Release ${source.release}` : "", source.accessed ? `read ${read(source.accessed)}` : "", source.licence].filter(Boolean).join(", ");
+            return h(
               "li",
               {},
-              source.url ? h("a", { href: source.url, target: "_blank", rel: "noopener" }, source.name) : h("b", {}, source.name),
-              `: ${source.holds}. ${[source.release ? `Release ${source.release}` : "", source.accessed ? `read ${formatDate(source.accessed)}` : "", source.licence].filter(Boolean).join(", ")}.${source.cite ? ` Cite: ${source.cite}.` : ""}`
-            )
-          ),
-          h("li", {}, notCopied)
+              outside(source.url) ? h("a", { href: source.url, target: "_blank", rel: "noopener" }, source.name) : h("b", {}, source.name),
+              `: ${[source.holds, facts].filter(Boolean).join(". ")}.${source.cite ? ` Cite: ${source.cite}.` : ""}`
+            );
+          }),
+          notCopied ? h("li", {}, notCopied) : null
         )
       ),
-    ];
+    ].filter(Boolean);
   }
 
   /** A replay's card: the experiment, its runs, and the class the experiment itself records for the run shown. */
@@ -545,7 +603,9 @@ class CellsViewer extends HTMLElement {
     if (chrome.legend || (this.state.lens === "proteins" && atlas)) {
       // The protein atlas: how sure each mapping is, in the inventory's own words.
       const legend = chrome.legend || { title: "Mapping", items: atlas.mappings.map((item) => ({ ...item, swatch: `map-${item.id}` })) };
-      this.legend.render({ ...base, ...legend, filter: chrome.filter, folded: this.clientHeight < 880 });
+      // A species' findings add a block. On all but a tall window the evidence block then starts closed, so the card keeps its room.
+      const filter = chrome.findings && chrome.filter && this.clientHeight < 1040 ? { ...chrome.filter, folded: true } : chrome.filter;
+      this.legend.render({ ...base, ...legend, filter, findings: chrome.findings, folded: this.clientHeight < 880 });
       return;
     }
     const counts = new Map();

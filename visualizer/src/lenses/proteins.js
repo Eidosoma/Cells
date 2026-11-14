@@ -9,12 +9,17 @@
 //   candidate            the candidate's assembly, drawn clear;
 //   generic              a plain grey stand-in with no subunits: no protein is assigned.
 // These are the inventory's words, not engine statuses.
+//
+// A unit has no species; which gene products would make it does. The inventory's candidates
+// are human. Another species' atlas (schema/SPECIES_ATLAS.md) changes what the panel lists
+// and puts a flat ring beside each unit where that species differs. The units, their forms
+// and the engine's laws are the same in every atlas.
 
 import * as THREE from "../three.js";
 import { soften } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
 import { makeEnvironment } from "../core/environment.js";
-import { SHEET, UPPER, buildUnit, membrane, outline } from "./protein_parts.js";
+import { SHEET, UPPER, buildUnit, findingMark, membrane, outline } from "./protein_parts.js";
 
 const PITCH = 11.5; // spacing of units within a district
 const GUTTER = 9; // between districts
@@ -51,6 +56,83 @@ function gainedNote(gained) {
   return `${review.count} of them were reviewed on ${day(review.date)}; the rest are unreviewed, so a law added since would be missing here.`;
 }
 
+const lower = (text) => text.charAt(0).toLowerCase() + text.slice(1);
+const LAWS_NOTE = "The same laws for every species.";
+
+/** One species' atlas in the scene's protein block, or null. */
+export function atlasOf(proteins, id) {
+  return (proteins?.atlases || []).find((atlas) => atlas.id === id) || null;
+}
+
+/** The atlas the view opens on: the inventory's own, else the first; null in a scene without atlases. */
+export function defaultAtlas(proteins) {
+  const atlases = proteins?.atlases || [];
+  return (atlases.find((atlas) => atlas.reference) || atlases[0])?.id ?? null;
+}
+
+/**
+ * A unit as one species' atlas shows it: the same unit, form and engine laws, with that
+ * species' finding and its gene products where the inventory's candidates stood.
+ * In the inventory's own atlas (human) a unit is the scene's part, untouched.
+ */
+export function inSpecies(entity, proteins, id) {
+  const atlas = atlasOf(proteins, id);
+  if (!entity || entity.kind !== "unit" || !atlas || atlas.reference) return entity;
+  const own = entity.species?.[atlas.id] || {};
+  const word = (proteins.findings || []).find((item) => item.id === own.finding) || null;
+  const swatch = word?.mark ? `find-${word.mark}` : null;
+  const said = `${atlas.label}: ${word ? lower(word.label) : "no entry"}`;
+  const sections = (entity.sections || [])
+    .filter((section) => section.key !== "products")
+    .map((section) => (section.key === "laws" ? { ...section, note: LAWS_NOTE } : section));
+  sections.splice(sections.findIndex((section) => section.key === "laws") + 1, 0, { key: "products", title: `${atlas.label} gene products`, items: own.items || [] });
+  return {
+    ...entity,
+    chips: [...(entity.chips || []), { label: said, title: word?.description || proteins.no_entry, swatch }],
+    finding: { title: atlas.label, organism: atlas.organism, swatch, text: word?.sentence || proteins.no_entry, note: own.note || null, more: word?.more || null },
+    sections,
+    sign: swatch ? { swatch, title: said } : null,
+    keywords: [entity.keywords, own.keywords].filter(Boolean).join(" "),
+  };
+}
+
+/**
+ * What the view says on a species other than the inventory's own: the species' counts, sources
+ * and findings. The units and laws are named as the engine's, the same for every species, and
+ * nothing here says the engine models the species' proteins. It reads the data only.
+ */
+export function speciesWords(proteins, species) {
+  const name = lower(species.label);
+  const counts = species.counts;
+  const words = new Map((proteins.findings || []).map((word) => [word.id, word]));
+  const some = counts.candidates === counts.products ? (counts.products === 1 ? "The one product was" : `All ${counts.products} products were`) : `${counts.candidates} of the ${counts.products} products were`;
+  return {
+    caveat: `Shapes are schematic and show what the engine's law names, the same for every species. A ring marks a unit where the ${name} atlas differs.`,
+    stamp: `${species.label} atlas${species.made ? ` of ${day(species.made)}` : ""} · inventory of ${day(proteins.stamp.created)}`,
+    findings: {
+      title: "In this species",
+      unit: "units",
+      items: (species.findings || []).map((item) => {
+        const word = words.get(item.id);
+        return { id: item.id, label: word?.label || item.id, title: word?.description, count: item.count, swatch: word?.mark ? `find-${word.mark}` : null };
+      }),
+    },
+    card: {
+      heading: `${species.label} atlas`,
+      organism: species.organism,
+      stats: [[counts.with_products, `of ${counts.units} units have products`], [counts.products, "gene products"], [counts.candidates, "of them candidates"]],
+      text: species.plain,
+      check:
+        `The ${counts.units} units and their laws are the engine's, the same for every species. Listed here are the ${name} gene products that would make each machine, not anything the engine models.` +
+        (counts.candidates ? ` ${some} found by signature or similarity: candidates, not established counterparts.` : ""),
+      method: species.method,
+      extra: species.extra,
+      sources: species.sources || [],
+      notCopied: species.not_copied,
+    },
+  };
+}
+
 export class ProteinLens {
   constructor(stage, model, labels) {
     this.id = "proteins";
@@ -67,6 +149,11 @@ export class ProteinLens {
     this.hovered = null;
     this.isolate = null; // a mapping id
     this.evidence = null; // a kind of evidence
+    this.shown = defaultAtlas(this.atlas); // the id of the atlas shown
+    this.species = null; // that atlas, when it is another species than the inventory's own
+    this.finding = null; // one thing the species' atlas found, shown alone
+    this.marks = []; // the rings beside the units where the species differs
+    this.markMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
     this.active = false;
     this.environment = makeEnvironment(stage.renderer);
     this.build();
@@ -232,28 +319,45 @@ export class ProteinLens {
   }
 
   sections() {
-    return this.districts.map((district) => ({ label: district.label, entities: district.units }));
+    return this.districts.map((district) => ({ label: district.label, entities: district.units.map((unit) => this.present(unit)) }));
+  }
+
+  /** A unit as the atlas shown has it (see inSpecies). */
+  present(entity) {
+    return inSpecies(entity, this.atlas, this.shown);
   }
 
   chrome() {
     const { atlas } = this;
     const { stamp, counts } = atlas;
     const lost = stamp.found.missing || 0;
+    // The switch between species, offered once the scene holds more than one atlas.
+    const atlases = atlas.atlases || [];
+    const choice = atlases.length > 1 ? { options: atlases.map((item) => [item.id, item.label, item.organism]), active: this.shown } : null;
+    // The mapping and the evidence describe the engine's laws: they are the same in every atlas.
+    const legend = {
+      title: "Mapping",
+      items: atlas.mappings.map((item) => ({ id: item.id, label: item.label, description: item.description, count: item.count, swatch: `map-${item.id}` })),
+    };
+    const filter = {
+      title: "Evidence for a law",
+      unit: "records",
+      items: atlas.evidence.filter((item) => item.count).map((item) => ({ id: item.id, label: item.label, title: item.description, count: item.count })),
+      active: this.evidence,
+    };
+    if (this.species) {
+      // Another species: its own counts, sources and findings, beside the engine's unchanged legend.
+      const said = speciesWords(atlas, this.species);
+      return { ...said, legend, filter, findings: { ...said.findings, active: this.finding }, card: { ...said.card, species: choice } };
+    }
     return {
       caveat: atlas.caveat,
       stamp: `Inventory of ${day(stamp.created)} · engine ${stamp.read_at}`,
-      legend: {
-        title: "Mapping",
-        items: atlas.mappings.map((item) => ({ id: item.id, label: item.label, description: item.description, count: item.count, swatch: `map-${item.id}` })),
-      },
-      filter: {
-        title: "Evidence for a law",
-        unit: "records",
-        items: atlas.evidence.filter((item) => item.count).map((item) => ({ id: item.id, label: item.label, title: item.description, count: item.count })),
-        active: this.evidence,
-      },
+      legend,
+      filter,
       card: {
         heading: "The proteins Cells models",
+        species: choice,
         stats: [[counts.units, "functional units"], [counts.laws, "laws"], [counts.genes, "candidate genes"]],
         text: `${atlas.summary} The inventory was made on ${day(stamp.created)}, at engine ${stamp.read_at}.`,
         check:
@@ -326,7 +430,51 @@ export class ProteinLens {
     }
     for (const side of this.sides) labels.add({ text: side.text, anchor: side.anchor, priority: 400, kind: "note", lift: 0 });
     for (const node of this.nodes.values()) {
-      node.label = labels.add({ id: node.entity.id, text: node.entity.short || node.entity.label, anchor: node.top, priority: 20, kind: "part label-unit", lift: 6 });
+      // Where the species shown differs, the name carries the same sign as the ring beside the unit.
+      const sign = this.present(node.entity).sign;
+      node.label = labels.add({ id: node.entity.id, text: node.entity.short || node.entity.label, anchor: node.top, priority: sign ? 26 : 20, kind: "part label-unit", lift: 6, swatch: sign?.swatch });
+    }
+  }
+
+  /** Show one species' atlas. The units, their forms and the engine's laws stay as they are. */
+  setAtlas(id) {
+    const atlas = atlasOf(this.atlas, id) || atlasOf(this.atlas, defaultAtlas(this.atlas));
+    const species = atlas && !atlas.reference ? atlas : null;
+    this.shown = atlas?.id ?? null;
+    if (species === this.species) return;
+    this.species = species;
+    this.finding = null;
+    this.buildMarks();
+    if (this.active) {
+      this.buildLabels();
+      this.refresh();
+    }
+  }
+
+  /**
+   * A flat ring on the membrane beside each unit where the species shown differs from the
+   * inventory's candidates: unbroken for another protein family, broken for nothing found.
+   * The ring lies in the scene, outside the unit's own group, so the unit's form (which
+   * says what the engine's law names) is left alone. The inventory's own atlas has none.
+   */
+  buildMarks() {
+    for (const mark of this.marks) this.root.remove(mark.mesh);
+    this.marks = [];
+    if (!this.species) return;
+    const words = new Map((this.atlas.findings || []).map((word) => [word.id, word]));
+    for (const node of this.nodes.values()) {
+      const kind = words.get(node.entity.species?.[this.species.id]?.finding)?.mark;
+      if (!kind) continue;
+      // Inside the ring of the unit in focus, and clear of the neighbouring units.
+      const radius = (node.reach.floats ? node.reach.radius : Math.min(node.reach.radius, 4.3)) + 0.7;
+      const mesh = new THREE.Mesh(findingMark(kind, radius), this.markMaterial);
+      mesh.position.copy(node.ringAt);
+      mesh.position.y -= 0.06;
+      mesh.renderOrder = 3;
+      mesh.userData.pick = node.entity.id; // a click on the ring picks its unit
+      this.root.add(mesh);
+      mesh.updateMatrixWorld(); // so it can be picked at once, before the next frame is drawn
+      this.marks.push({ mesh, node });
     }
   }
 
@@ -355,9 +503,17 @@ export class ProteinLens {
     this.onChrome?.();
   }
 
+  /** Show only the units for which the species' atlas found one thing (the legend's third block). */
+  setFinding(finding) {
+    this.finding = this.species && (this.atlas.findings || []).some((word) => word.id === finding) ? finding : null;
+    this.refresh();
+    this.onChrome?.();
+  }
+
   lit(entity) {
     if (this.isolate && entity.mapping !== this.isolate) return false;
     if (this.evidence && !(entity.evidence || []).includes(this.evidence)) return false;
+    if (this.finding && entity.species?.[this.species?.id]?.finding !== this.finding) return false;
     return true;
   }
 
@@ -375,6 +531,7 @@ export class ProteinLens {
         node.label.element.classList.toggle("is-focus", id === this.selected);
       }
     }
+    for (const mark of this.marks) mark.mesh.visible = this.lit(mark.node.entity);
     this.mark(this.ring, this.selected);
     this.mark(this.hoverRing, this.hovered && this.hovered !== this.selected ? this.hovered : null);
     this.stage.invalidate();
@@ -421,6 +578,7 @@ export class ProteinLens {
     this.dashes.color.set(palette.ghost);
     this.ring.material.color.set(palette.fg);
     this.hoverRing.material.color.set(palette.fg);
+    this.markMaterial.color.set(palette.fg);
     if (this.active) this.light();
     this.stage.invalidate();
   }
@@ -431,6 +589,7 @@ export class ProteinLens {
       lit.dispose();
       dim.dispose();
     }
+    this.markMaterial.dispose();
     this.environment?.dispose();
   }
 }

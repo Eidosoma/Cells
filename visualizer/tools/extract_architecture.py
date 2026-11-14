@@ -16,6 +16,9 @@ What comes from the overlay (data/architecture/overlay.json), each with a source
 What comes from the protein inventory's snapshot (data/proteins/, see
 tools/import_protein_inventory.py): the functional units of the protein atlas, each linked
 to the engine part that holds its law. Every law record is checked against the checkout.
+Species atlases beside it (data/proteins/atlases/, see schema/SPECIES_ATLAS.md) say which
+gene products of another species would make each unit; each file is checked against its
+contract, and a file that breaks it is warned about.
 
 Standard library only. It parses source with ``ast`` and never imports ``cells``.
 
@@ -145,7 +148,7 @@ class Build:
     def __init__(self, repo, overlay, proteins=None):
         self.repo = repo
         self.overlay = overlay
-        self.protein_data = proteins  # (snapshot, overlay) of the protein atlas, or None
+        self.protein_data = proteins  # (snapshot, overlay, folder of species atlases) of the protein atlas, or None
         self.proteins = None
         self.warnings = []
         self.entities = {}
@@ -576,6 +579,7 @@ def main():
     parser.add_argument("--overlay", default=str(HERE.parent / "data" / "architecture" / "overlay.json"))
     parser.add_argument("--out", default=str(HERE.parent / "data" / "architecture" / "architecture.scene.json"))
     parser.add_argument("--proteins", default=str(HERE.parent / "data" / "proteins"), help="folder with the protein inventory's snapshot and overlay")
+    parser.add_argument("--atlases", help="folder with the species atlases (default: atlases/ in the proteins folder; it need not exist)")
     parser.add_argument("--strict", action="store_true", help="exit with an error if anything is warned about")
     arguments = parser.parse_args()
 
@@ -585,12 +589,16 @@ def main():
     proteins = None
     if (folder / "inventory.snapshot.json").is_file():
         proteins = tuple(json.loads((folder / name).read_text(encoding="utf-8")) for name in ("inventory.snapshot.json", "overlay.json"))
+        # The species atlases beside them (schema/SPECIES_ATLAS.md): any number of files, or none.
+        proteins += (Path(arguments.atlases) if arguments.atlases else folder / "atlases",)
     build = Build(repo, overlay, proteins)
     entities, relations, coverage = build.run()
 
     revision = git(repo, "rev-parse", "--short", "HEAD").strip()
+    remarks = []
     if build.proteins:
         build.proteins["stamp"]["checked_at"] = revision
+        remarks = build.proteins.pop("remarks", [])  # on the species atlases; reported below, not written
     # Only tracked files are read, so an untracked file does not make the reading dirty.
     dirty = bool(git(repo, "status", "--porcelain", "--untracked-files=no", "--", "src", "docs", "PROGRESS.md").strip())
     scene = {
@@ -643,6 +651,13 @@ def main():
             print("  renamed since:", ", ".join(f"{item['from']} -> {item['to']}" for item in stamp["renamed"]))
         if stamp["gained"]:
             print(f"  identifiers the engine gained since, not reviewed by the inventory: {stamp['gained']['added']} ({stamp['gained']['where']})")
+        for atlas in build.proteins.get("atlases", []):
+            if not atlas.get("reference"):
+                counts = atlas["counts"]
+                print(f"species atlas {atlas['id']} of {atlas['made']}: products for {counts['with_products']} of {counts['units']} units, "
+                      f"{counts['products']} gene products, {counts['candidates']} of them candidates")
+    for remark in remarks:
+        print("remark:", remark)
     for warning in build.warnings:
         print("warning:", warning)
     print(f"wrote {out.name} ({out.stat().st_size / 1024:.0f} KB)")

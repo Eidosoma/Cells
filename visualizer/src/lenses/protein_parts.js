@@ -256,3 +256,37 @@ export function membrane(width, depth, radius = 6) {
   group.userData.unpickable = true; // a click on the membrane reaches what stands in it
   return { group, body, faces };
 }
+
+const marks = new Map();
+/**
+ * A flat ring on a membrane around a unit: what a species' atlas found, where it differs
+ * from the inventory's own candidates. It is a mark beside the unit, never part of its form.
+ *   band     an unbroken ring: the species builds the machine from another protein family;
+ *   dashes   a broken ring: nothing was found in the species.
+ * radius is the ring's inner edge. Geometries are shared between units of one size.
+ */
+export function findingMark(kind, radius) {
+  const key = `${kind}:${radius.toFixed(2)}`;
+  if (marks.has(key)) return marks.get(key);
+  const outer = radius + 0.5;
+  let geometry;
+  if (kind === "dashes") {
+    // Arcs with gaps as long as themselves, joined into one geometry.
+    const count = 2 * Math.round(radius * 1.15);
+    const arcs = Array.from({ length: count }, (_, index) => new THREE.RingGeometry(radius, outer, 5, 1, (index / count) * TAU, (TAU / count) * 0.5).toNonIndexed());
+    const positions = new Float32Array(arcs.reduce((sum, arc) => sum + arc.attributes.position.array.length, 0));
+    let offset = 0;
+    for (const arc of arcs) {
+      positions.set(arc.attributes.position.array, offset);
+      offset += arc.attributes.position.array.length;
+      arc.dispose();
+    }
+    geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  } else {
+    geometry = new THREE.RingGeometry(radius, outer, 72, 1);
+  }
+  geometry.rotateX(-Math.PI / 2); // flat on the membrane
+  marks.set(key, geometry);
+  return geometry;
+}

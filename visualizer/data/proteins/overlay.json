@@ -42,9 +42,9 @@
   },
   "gained_review": {
     "date": "2026-11-14",
-    "count": 25,
-    "at": "ced45c87",
-    "text": "A review on 14 November 2026 found no channel, pump, transporter or junction law among them. One case, secretion and uptake, is the lead's to classify.",
+    "count": 28,
+    "at": "8497ff37",
+    "text": "Reviews on 14 November 2026 found no channel, pump, transporter or junction law among them. One case, secretion and uptake, is the lead's to classify.",
     "doc": "visualizer/docs/PROTEIN_ATLAS_REVIEW.md"
   },
   "mappings": [
@@ -130,6 +130,89 @@
     }
   ],
   "site_note": "Where the engine's law acts, read from the law's name and documents.",
+  "species": {
+    "format": "cells.visualizer.species_atlas@1",
+    "contract": "visualizer/schema/SPECIES_ATLAS.md",
+    "reference": {
+      "id": "human",
+      "label": "Human",
+      "organism": "Homo sapiens",
+      "taxon": 9606,
+      "plain": "The inventory names its candidate gene products by their human genes. Every other species is read against them.",
+      "method": [
+        "Each unit's candidate gene products are the law inventory's own.",
+        "Accessions, protein names and lengths are from reviewed human UniProt entries."
+      ]
+    },
+    "databases": {
+      "uniprot": "uniprot",
+      "pdb": "rcsb"
+    },
+    "entries": {
+      "planarian": {
+        "wormbaseparasite": {
+          "text": "WormBase ParaSite {id}",
+          "url": "https://parasite.wormbase.org/Schmidtea_mediterranea_s2f19h1prjna885486/Gene/Summary?g={id}",
+          "checked": "2026-11-14: asked for gene model h1SMcG0020152, the site answered with that gene's page. The address holds the genome annotation the planarian atlas uses (WBPS19, schMedS3 haplotype 1)."
+        }
+      }
+    },
+    "findings": [
+      {
+        "id": "found",
+        "label": "Found",
+        "description": "Gene products of the same family as the unit's candidates were found in this species.",
+        "sentence": "Gene products of the same family as this unit's candidates were found."
+      },
+      {
+        "id": "different family",
+        "label": "A different family",
+        "description": "This species builds the machine from another protein family.",
+        "sentence": "This species builds the machine from another protein family.",
+        "more": "The description above, the shape drawn, the assembly and the reference structures all belong to the family the engine's law names.",
+        "mark": "band"
+      },
+      {
+        "id": "none found",
+        "label": "Nothing found",
+        "description": "The search found no gene product for this unit in this species.",
+        "sentence": "The search found no gene product for this unit.",
+        "mark": "dashes"
+      },
+      {
+        "id": "nothing to look for",
+        "label": "Nothing to look for",
+        "description": "The inventory names no natural gene product for this unit: it is a lumped property, a default form of a current, a slot that a configuration fills, or a designed protein. Nothing was searched.",
+        "sentence": "The inventory names no natural gene product for this unit, so there is nothing to look for in any species."
+      }
+    ],
+    "no_entry": "This atlas has no entry for this unit.",
+    "evidence": [
+      {
+        "id": "reviewed entry",
+        "label": "Reviewed entry",
+        "description": "A curated database entry for this species."
+      },
+      {
+        "id": "named in a publication",
+        "label": "Named in a publication",
+        "description": "A paper names this gene or protein in this species.",
+        "cited": true
+      },
+      {
+        "id": "family signature",
+        "label": "Family signature",
+        "description": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+        "candidate": true
+      },
+      {
+        "id": "similarity search",
+        "label": "Similarity search",
+        "description": "Found by sequence similarity to a named protein of another species. A candidate, not an established counterpart.",
+        "candidate": true
+      }
+    ]
+  },
   "districts": [
     {
       "id": "sodium",

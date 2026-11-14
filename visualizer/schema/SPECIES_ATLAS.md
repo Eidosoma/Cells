@@ -1,7 +1,9 @@
 # Species atlas: one species' side of the protein atlas
 
 Status: **fixed for the viewer, 14 November 2026**, so that the planarian catalogue and
-the species switch can be built side by side. The user asked for "a full catalogue of
+the species switch can be built side by side. Revised the same day when the two were put
+together: the fourth finding was `not a protein`, which was false for a default current,
+a configured slot and a designed protein. The user asked for "a full catalogue of
 Planerian proteins" and to "switch between Human and Planerian (later others) atlases".
 
 The protein atlas draws the functional units of Cells' law inventory. A unit is a machine
@@ -64,7 +66,9 @@ design (`docs/PROTEIN_CATALOGUE_PLAN.md`, stage 3) has not begun and belongs to 
   - `different family`: the species builds this machine from another protein family
     (the note names both);
   - `none found`: the search found nothing; the note says what was searched;
-  - `not a protein`: the unit is a lumped property with no protein behind it.
+  - `nothing to look for`: the inventory names no natural gene product for the unit, so
+    nothing was searched. The unit is a lumped property, a default form of a current, a
+    slot that each configuration fills, or a designed protein.
 - **`evidence`** on each product is one of:
   - `reviewed entry`: a curated database entry for this species;
   - `named in a publication`: a paper names this gene or protein in this species;

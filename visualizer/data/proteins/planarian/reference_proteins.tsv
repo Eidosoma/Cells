@@ -1,0 +1,230 @@
+db	id	length	kind	name	gene	interpro	match	note
+wormbase_parasite	h1SMcG0000076	2710	gene model	Voltage-dependent calcium channel, alpha-1 subunit; Voltage-dependent calcium channel, L-type, alpha-1 subunit		IPR002077;IPR005446;IPR005821;IPR014873;IPR027359;IPR031649		h1SMcT0000076.2 +3
+wormbase_parasite	h1SMcG0000087	284	gene model	Innexin		IPR000990		h1SMcT0000087.1
+wormbase_parasite	h1SMcG0000088	435	gene model	Innexin		IPR000990		h1SMcT0000088.1
+wormbase_parasite	h1SMcG0000188	1643	gene model	Voltage-dependent calcium channel, alpha-1 subunit		IPR002077;IPR005821;IPR014873;IPR027359;IPR031649		h1SMcT0000188.1
+wormbase_parasite	h1SMcG0000194	1968	gene model	Voltage-dependent calcium channel, alpha-1 subunit; Voltage-dependent calcium channel, L-type, alpha-1 subunit		IPR002077;IPR005446;IPR005821;IPR014873;IPR027359;IPR031649		h1SMcT0000194.1 +1
+wormbase_parasite	h1SMcG0000396	457	gene model	Innexin		IPR000990		h1SMcT0000396.1 +1
+wormbase_parasite	h1SMcG0000426	464	gene model	Innexin		IPR000990		h1SMcT0000426.1 +1
+wormbase_parasite	h1SMcG0000432	411	gene model	Innexin		IPR000990		h1SMcT0000432.1
+wormbase_parasite	h1SMcG0000569	386	gene model	Innexin		IPR000990		h1SMcT0000569.1
+wormbase_parasite	h1SMcG0000634	261	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0000634.1
+wormbase_parasite	h1SMcG0000709	2262	gene model	Voltage-dependent calcium channel, alpha-1 subunit		IPR002077;IPR005821;IPR014873;IPR027359;IPR031649		h1SMcT0000709.1 +3
+wormbase_parasite	h1SMcG0000727	197	gene model	Potassium channel, calcium-activated, BK, beta subunit		IPR003930		h1SMcT0000727.1
+wormbase_parasite	h1SMcG0000849	374	gene model	Innexin		IPR000990		h1SMcT0000849.1 +1
+wormbase_parasite	h1SMcG0001022	432	gene model	Innexin		IPR000990		h1SMcT0001022.2 +1
+wormbase_parasite	h1SMcG0001155	811	gene model	Potassium channel, voltage-dependent, EAG/ELK/ERG-like		IPR000595;IPR003938;IPR005821;IPR013621;IPR014710;IPR018488;IPR018490;IPR027359		h1SMcT0001155.2 +1
+wormbase_parasite	h1SMcG0001288	1174	gene model	K/Cl co-transporter; SLC12A transporter family		IPR000076;IPR004841;IPR004842;IPR018491	A0A0H3YK51	h1SMcT0001288.1
+wormbase_parasite	h1SMcG0001455	262	gene model	Potassium channel, calcium-activated, BK, beta subunit		IPR003930		h1SMcT0001455.1
+wormbase_parasite	h1SMcG0001481	404	gene model	Innexin		IPR000990		h1SMcT0001481.1
+wormbase_parasite	h1SMcG0001482	319	gene model	Innexin		IPR000990		h1SMcT0001482.1
+wormbase_parasite	h1SMcG0001550	106	gene model	Innexin		IPR000990		h1SMcT0001550.1
+wormbase_parasite	h1SMcG0001582	437	gene model	Innexin		IPR000990		h1SMcT0001582.1
+wormbase_parasite	h1SMcG0001586	271	gene model	Innexin		IPR000990		h1SMcT0001586.1
+wormbase_parasite	h1SMcG0001646	306	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0001646.1 +1
+wormbase_parasite	h1SMcG0001647	306	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0001647.1
+wormbase_parasite	h1SMcG0001648	316	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0001648.1
+wormbase_parasite	h1SMcG0001651	320	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0001651.1
+wormbase_parasite	h1SMcG0001694	544	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0001694.1
+wormbase_parasite	h1SMcG0001988	366	gene model	Innexin		IPR000990		h1SMcT0001988.1
+wormbase_parasite	h1SMcG0001996	399	gene model	Innexin		IPR000990		h1SMcT0001996.1
+wormbase_parasite	h1SMcG0002088	412	gene model	Innexin		IPR000990	I1ZIL2	h1SMcT0002088.1
+wormbase_parasite	h1SMcG0002095	529	gene model	Calcium uptake protein 1/2/3		IPR002048;IPR011992;IPR018247;IPR039800		h1SMcT0002095.3 +2
+wormbase_parasite	h1SMcG0002187	488	gene model	Innexin		IPR000990		h1SMcT0002187.1
+wormbase_parasite	h1SMcG0002457	442	gene model	Innexin		IPR000990		h1SMcT0002457.1
+wormbase_parasite	h1SMcG0002659	528	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0002659.1
+wormbase_parasite	h1SMcG0002720	1167	gene model			IPR002035;IPR013608;IPR013680;IPR036465		h1SMcT0002720.3 +4
+wormbase_parasite	h1SMcG0002996	473	gene model	Innexin		IPR000990		h1SMcT0002996.1
+wormbase_parasite	h1SMcG0003177	647	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv4		IPR000210;IPR003131;IPR003968;IPR003975;IPR005821;IPR011333;IPR021645;IPR027359		h1SMcT0003177.1 +3
+wormbase_parasite	h1SMcG0003214	1217	gene model	P-type ATPase; P-type ATPase, subfamily IIB		IPR001757;IPR004014;IPR006068;IPR006408;IPR008250;IPR018303;IPR022141;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0003214.2 +3
+wormbase_parasite	h1SMcG0003371	371	gene model	Innexin		IPR000990		h1SMcT0003371.1
+wormbase_parasite	h1SMcG0003422	466	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv4		IPR003131;IPR003968;IPR003975;IPR005821;IPR011333;IPR027359		h1SMcT0003422.2 +2
+wormbase_parasite	h1SMcG0003478	433	gene model	Innexin		IPR000990		h1SMcT0003478.1
+wormbase_parasite	h1SMcG0003500	399	gene model	Innexin		IPR000990		h1SMcT0003500.1
+wormbase_parasite	h1SMcG0003799	399	gene model	Innexin		IPR000990		h1SMcT0003799.1
+wormbase_parasite	h1SMcG0003961	1143	gene model			IPR002035;IPR013608;IPR036465		h1SMcT0003961.1
+wormbase_parasite	h1SMcG0004125	413	gene model	Two pore domain potassium channel		IPR003280;IPR013099	A0A0A1CVW0	h1SMcT0004125.1
+wormbase_parasite	h1SMcG0004246	586	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0004246.2 +1
+wormbase_parasite	h1SMcG0004284	538	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0004284.1 +3
+wormbase_parasite	h1SMcG0004490	546	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0004490.1 +1
+wormbase_parasite	h1SMcG0004502	418	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0004502.1
+wormbase_parasite	h1SMcG0004632	354	gene model	Innexin		IPR000990		h1SMcT0004632.1
+wormbase_parasite	h1SMcG0004724	581	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0004724.1
+wormbase_parasite	h1SMcG0004909	491	gene model	Innexin		IPR000990		h1SMcT0004909.1
+wormbase_parasite	h1SMcG0004941	2709	gene model	Inositol 1,4,5-trisphosphate receptor; Ryanodine/Inositol 1,4,5-trisphosphate receptor		IPR000493;IPR000699;IPR005821;IPR013662;IPR014821;IPR015925;IPR016093;IPR035910;IPR036300		h1SMcT0004941.1
+wormbase_parasite	h1SMcG0004969	424	gene model	Potassium channel, calcium-activated, SK		IPR004178;IPR013099;IPR015449;IPR036122		h1SMcT0004969.1 +2
+wormbase_parasite	h1SMcG0005006	810	gene model			IPR000595;IPR005821;IPR013621;IPR014710;IPR018488;IPR018490	A0A1Z1R0Y6	h1SMcT0005006.1 +1
+wormbase_parasite	h1SMcG0005093	218	gene model	Potassium channel, calcium-activated, BK, beta subunit		IPR003930		h1SMcT0005093.1
+wormbase_parasite	h1SMcG0005277	1011	gene model	P-type ATPase; P-type ATPase, subfamily IIA, SERCA-type		IPR001757;IPR004014;IPR005782;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0005277.1 +7
+wormbase_parasite	h1SMcG0005317	468	gene model	Calcium uptake protein 1/2/3		IPR002048;IPR011992;IPR018247;IPR039800		h1SMcT0005317.1 +3
+wormbase_parasite	h1SMcG0005851	380	gene model	Innexin		IPR000990		h1SMcT0005851.1
+wormbase_parasite	h1SMcG0005853	397	gene model	Innexin		IPR000990		h1SMcT0005853.1 +1
+wormbase_parasite	h1SMcG0005893	5295	gene model	Ryanodine receptor; Ryanodine/Inositol 1,4,5-trisphosphate receptor		IPR000699;IPR001870;IPR002048;IPR003032;IPR003877;IPR005821;IPR009460;IPR011992;IPR013320;IPR013333;IPR013662;IPR014821;IPR015925;IPR016093;IPR018247;IPR035761;IPR035910;IPR036300;IPR043136;IPR048581		h1SMcT0005893.1 +2
+wormbase_parasite	h1SMcG0005969	674	gene model	Potassium channel, calcium-activated, SK		IPR004178;IPR013099;IPR015449;IPR036122		h1SMcT0005969.1
+wormbase_parasite	h1SMcG0005984	483	gene model	Innexin		IPR000990		h1SMcT0005984.2 +3
+wormbase_parasite	h1SMcG0006048	642	gene model	Potassium channel, calcium-activated, SK		IPR004178;IPR013099;IPR015449;IPR036122		h1SMcT0006048.1
+wormbase_parasite	h1SMcG0006353	860	gene model	P-type ATPase; P-type ATPase, subfamily IIB		IPR001757;IPR006068;IPR006408;IPR018303;IPR022141;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0006353.3 +2
+wormbase_parasite	h1SMcG0006398	504	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0006398.1
+wormbase_parasite	h1SMcG0006554	399	gene model	Innexin		IPR000990		h1SMcT0006554.1
+wormbase_parasite	h1SMcG0006726	592	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0006726.1 +3
+wormbase_parasite	h1SMcG0006763	438	gene model	Innexin		IPR000990		h1SMcT0006763.1
+wormbase_parasite	h1SMcG0006773	415	gene model	Innexin		IPR000990		h1SMcT0006773.2 +1
+wormbase_parasite	h1SMcG0006774	467	gene model	Innexin		IPR000990		h1SMcT0006774.1
+wormbase_parasite	h1SMcG0006783	591	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0006783.2 +2
+wormbase_parasite	h1SMcG0006815	360	gene model	Innexin		IPR000990		h1SMcT0006815.1 +1
+wormbase_parasite	h1SMcG0007076	1053	gene model	Calcium-activated potassium channel slowpoke-like		IPR003929;IPR005821;IPR027359;IPR036291;IPR047871;IPR048735		h1SMcT0007076.1
+wormbase_parasite	h1SMcG0007092	446	gene model	Innexin		IPR000990		h1SMcT0007092.1
+wormbase_parasite	h1SMcG0007093	460	gene model	Innexin		IPR000990		h1SMcT0007093.1
+wormbase_parasite	h1SMcG0007094	427	gene model	Innexin		IPR000990		h1SMcT0007094.1 +1
+wormbase_parasite	h1SMcG0007095	460	gene model	Innexin		IPR000990		h1SMcT0007095.1
+wormbase_parasite	h1SMcG0007169	555	gene model	Voltage-dependent calcium channel, L-type, beta subunit		IPR000584;IPR001452;IPR008145;IPR027417;IPR036028;IPR046937		h1SMcT0007169.1
+wormbase_parasite	h1SMcG0007446	630	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0007446.1 +3
+wormbase_parasite	h1SMcG0007452	291	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0007452.1
+wormbase_parasite	h1SMcG0007480	107	gene model			IPR004114		h1SMcT0007480.1
+wormbase_parasite	h1SMcG0007481	403	gene model	Innexin		IPR000990		h1SMcT0007481.1
+wormbase_parasite	h1SMcG0007482	395	gene model	Innexin		IPR000990		h1SMcT0007482.1
+wormbase_parasite	h1SMcG0007556	414	gene model	Innexin		IPR000990		h1SMcT0007556.1 +6
+wormbase_parasite	h1SMcG0008021	486	gene model	Innexin		IPR000990		h1SMcT0008021.1
+wormbase_parasite	h1SMcG0008120	505	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0008120.1 +1
+wormbase_parasite	h1SMcG0008204	2406	gene model	Voltage-dependent calcium channel, alpha-1 subunit; Voltage-dependent calcium channel, T-type, alpha-1 subunit; Voltage-gated cation channel calcium and sodium		IPR002077;IPR005445;IPR005821;IPR027359;IPR043203		h1SMcT0008204.1 +2
+wormbase_parasite	h1SMcG0008205	292	gene model	MCU family		IPR006769;IPR039055		h1SMcT0008205.1 +1
+wormbase_parasite	h1SMcG0008230	523	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0008230.2 +1
+wormbase_parasite	h1SMcG0008231	528	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0008231.1
+wormbase_parasite	h1SMcG0008245	197	gene model	Potassium channel, calcium-activated, BK, beta subunit		IPR003930		h1SMcT0008245.1
+wormbase_parasite	h1SMcG0008430	527	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv5/Kv9		IPR000210;IPR003131;IPR003968;IPR003971;IPR005821;IPR011333;IPR027359	A0A0A1CQL4	h1SMcT0008430.1
+wormbase_parasite	h1SMcG0008486	431	gene model	Innexin		IPR000990		h1SMcT0008486.1
+wormbase_parasite	h1SMcG0008746	502	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0008746.1
+wormbase_parasite	h1SMcG0008944	1017	gene model	P-type ATPase; P-type ATPase subfamily IIC, subunit alpha		IPR001757;IPR004014;IPR005775;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0008944.1
+wormbase_parasite	h1SMcG0008945	297	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0008945.3 +3
+wormbase_parasite	h1SMcG0008950	412	gene model	Innexin		IPR000990		h1SMcT0008950.1
+wormbase_parasite	h1SMcG0009704	377	gene model	Innexin		IPR000990		h1SMcT0009704.1
+wormbase_parasite	h1SMcG0009706	205	gene model					h1SMcT0009706.1
+wormbase_parasite	h1SMcG0009796	921	gene model	Sodium/calcium exchanger protein		IPR003644;IPR004836;IPR004837;IPR032452;IPR038081;IPR044880	A0A0H3YF68	h1SMcT0009796.1
+wormbase_parasite	h1SMcG0009859	402	gene model	Innexin		IPR000990		h1SMcT0009859.1
+wormbase_parasite	h1SMcG0010103	297	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0010103.1
+wormbase_parasite	h1SMcG0010104	294	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0010104.3 +2
+wormbase_parasite	h1SMcG0010517	1110	gene model	P-type ATPase; P-type ATPase, subfamily IIB		IPR001757;IPR004014;IPR006068;IPR006408;IPR008250;IPR018303;IPR022141;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0010517.2 +1
+wormbase_parasite	h1SMcG0010573	674	gene model	Mitochondrial carrier protein; Calcium uptake protein 1/2/3		IPR002048;IPR002067;IPR011992;IPR018108;IPR018247;IPR023395;IPR039800	A0A0H3YFE4	h1SMcT0010573.1 +3
+wormbase_parasite	h1SMcG0010768	367	gene model	Calcium-activated potassium channel slowpoke-like		IPR013099;IPR047871		h1SMcT0010768.1
+wormbase_parasite	h1SMcG0010769	1046	gene model	Two pore domain potassium channel; Calcium-activated potassium channel slowpoke-like		IPR003280;IPR003929;IPR013099;IPR036291;IPR047871;IPR048735		h1SMcT0010769.1 +1
+wormbase_parasite	h1SMcG0010770	1017	gene model	Calcium-activated potassium channel slowpoke-like		IPR003929;IPR013099;IPR047871;IPR048735		h1SMcT0010770.1 +1
+wormbase_parasite	h1SMcG0010814	579	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0010814.1
+wormbase_parasite	h1SMcG0010815	448	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0010815.1
+wormbase_parasite	h1SMcG0010953	430	gene model	Innexin		IPR000990		h1SMcT0010953.1
+wormbase_parasite	h1SMcG0011192	1121	gene model	Calcium-activated potassium channel slowpoke-like		IPR003929;IPR013099;IPR027359;IPR036291;IPR047871;IPR048735		h1SMcT0011192.1
+wormbase_parasite	h1SMcG0011221	851	gene model	Sodium/calcium exchanger protein		IPR003644;IPR004836;IPR004837;IPR032452;IPR038081;IPR044880	A0A0H3YIW4	h1SMcT0011221.1 +1
+wormbase_parasite	h1SMcG0011283	916	gene model	Sodium/calcium exchanger protein		IPR003644;IPR004836;IPR004837;IPR032452;IPR038081;IPR044880	A0A0H3YEY7	h1SMcT0011283.1
+wormbase_parasite	h1SMcG0011537	690	gene model	Potassium channel, calcium-activated, SK		IPR004178;IPR013099;IPR015449;IPR036122		h1SMcT0011537.2 +2
+wormbase_parasite	h1SMcG0011964	643	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0011964.2 +2
+wormbase_parasite	h1SMcG0011965	606	gene model	Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0011965.1
+wormbase_parasite	h1SMcG0011966	674	gene model	Potassium channel, voltage dependent, Kv3		IPR003131;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0011966.1
+wormbase_parasite	h1SMcG0011979	400	gene model	Innexin		IPR000990		h1SMcT0011979.1
+wormbase_parasite	h1SMcG0011981	675	gene model	Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0011981.1
+wormbase_parasite	h1SMcG0011983	672	gene model	Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0011983.1
+wormbase_parasite	h1SMcG0011985	411	gene model	Potassium channel, calcium-activated, SK		IPR013099;IPR015449		h1SMcT0011985.1
+wormbase_parasite	h1SMcG0011989	676	gene model	Potassium channel, voltage dependent, Kv3		IPR003131;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0011989.1
+wormbase_parasite	h1SMcG0012122	654	gene model	Voltage-dependent calcium channel, L-type, beta subunit		IPR000584;IPR008145;IPR027417;IPR036028		h1SMcT0012122.2 +2
+wormbase_parasite	h1SMcG0012192	645	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0012192.2 +1
+wormbase_parasite	h1SMcG0012399	386	gene model	Innexin		IPR000990		h1SMcT0012399.1
+wormbase_parasite	h1SMcG0012920	1007	gene model	P-type ATPase; P-type ATPase subfamily IIC, subunit alpha		IPR001757;IPR004014;IPR005775;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0012920.1
+wormbase_parasite	h1SMcG0013028	1020	gene model	P-type ATPase; P-type ATPase subfamily IIC, subunit alpha		IPR001757;IPR004014;IPR005775;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0013028.1
+wormbase_parasite	h1SMcG0013029	1017	gene model	P-type ATPase; P-type ATPase subfamily IIC, subunit alpha		IPR001757;IPR004014;IPR005775;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0013029.1
+wormbase_parasite	h1SMcG0013103	1166	gene model			IPR013608;IPR013680;IPR036465		h1SMcT0013103.1
+wormbase_parasite	h1SMcG0013104	1349	gene model			IPR002035;IPR013608;IPR013680;IPR036465		h1SMcT0013104.1 +2
+wormbase_parasite	h1SMcG0013155	1855	gene model	Voltage gated sodium channel, alpha subunit; Voltage-gated cation channel calcium and sodium		IPR001696;IPR002048;IPR005821;IPR027359;IPR043203;IPR044564	A0A0A1CRL5;A0A0A1CVW3	h1SMcT0013155.1
+wormbase_parasite	h1SMcG0013205	527	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0013205.1 +1
+wormbase_parasite	h1SMcG0013213	470	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0013213.1
+wormbase_parasite	h1SMcG0013413	411	gene model	Innexin		IPR000990		h1SMcT0013413.1
+wormbase_parasite	h1SMcG0013644	445	gene model	Innexin		IPR000990		h1SMcT0013644.1
+wormbase_parasite	h1SMcG0013678	432	gene model	Innexin		IPR000990		h1SMcT0013678.1
+wormbase_parasite	h1SMcG0013828	556	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0013828.2 +1
+wormbase_parasite	h1SMcG0013897	710	gene model	Potassium channel, calcium-activated, SK		IPR004178;IPR013099;IPR015449;IPR036122		h1SMcT0013897.2 +1
+wormbase_parasite	h1SMcG0013937	472	gene model	Potassium channel, calcium-activated, SK		IPR004178;IPR013099;IPR015449;IPR036122		h1SMcT0013937.1 +2
+wormbase_parasite	h1SMcG0013969	608	gene model			IPR000595;IPR005821;IPR013621;IPR014710;IPR018488;IPR018490		h1SMcT0013969.1 +1
+wormbase_parasite	h1SMcG0014013	406	gene model	Innexin		IPR000990		h1SMcT0014013.1
+wormbase_parasite	h1SMcG0014050	351	gene model	Potassium channel, voltage-dependent, beta subunit, KCNAB-related; Potassium channel, voltage-dependent, beta subunit, KCNAB1; Potassium channel, voltage-dependent, beta subunit, KCNAB		IPR005399;IPR005400;IPR005983;IPR023210;IPR036812		h1SMcT0014050.1 +1
+wormbase_parasite	h1SMcG0014164	1279	gene model	P-type ATPase; P-type ATPase, subfamily IIB		IPR001757;IPR004014;IPR006068;IPR006408;IPR008250;IPR018303;IPR022141;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0014164.2 +1
+wormbase_parasite	h1SMcG0014223	445	gene model	Potassium channel, calcium-activated, SK		IPR004178;IPR013099;IPR015449;IPR036122		h1SMcT0014223.1
+wormbase_parasite	h1SMcG0014350	2049	gene model	Voltage-dependent calcium channel, alpha-1 subunit; Voltage-dependent calcium channel, T-type, alpha-1 subunit; Voltage-gated cation channel calcium and sodium		IPR002077;IPR005445;IPR005821;IPR027359;IPR043203		h1SMcT0014350.1 +1
+wormbase_parasite	h1SMcG0014796	1800	gene model	Voltage gated sodium channel, alpha subunit; Voltage-gated cation channel calcium and sodium		IPR001696;IPR005821;IPR027359;IPR043203;IPR044564	A0A0A1CQM0	h1SMcT0014796.1 +1
+wormbase_parasite	h1SMcG0014942	342	gene model	Innexin		IPR000990		h1SMcT0014942.1
+wormbase_parasite	h1SMcG0015486	865	gene model	Sodium/calcium exchanger protein		IPR003644;IPR004836;IPR004837;IPR032452;IPR038081;IPR044880	A0A0H3YJ09	h1SMcT0015486.1
+wormbase_parasite	h1SMcG0015487	861	gene model	Sodium/calcium exchanger protein		IPR003644;IPR004836;IPR004837;IPR032452;IPR038081;IPR044880	A0A0H3YK36	h1SMcT0015487.3 +2
+wormbase_parasite	h1SMcG0015707	1219	gene model	Calcium-activated potassium channel slowpoke-like		IPR003929;IPR013099;IPR047871		h1SMcT0015707.7 +8
+wormbase_parasite	h1SMcG0015880	1022	gene model	P-type ATPase; P-type ATPase subfamily IIC, subunit alpha		IPR001757;IPR004014;IPR005775;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492	M4LUP7	h1SMcT0015880.1
+wormbase_parasite	h1SMcG0015930	375	gene model	Innexin		IPR000990		h1SMcT0015930.1
+wormbase_parasite	h1SMcG0015979	528	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0015979.1 +1
+wormbase_parasite	h1SMcG0015986	586	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0015986.1
+wormbase_parasite	h1SMcG0016076	767	gene model	Potassium channel, voltage-dependent, EAG/ELK/ERG-like		IPR000595;IPR003938;IPR005821;IPR013621;IPR014710;IPR018488;IPR018490		h1SMcT0016076.1
+wormbase_parasite	h1SMcG0016082	448	gene model	Innexin		IPR000990		h1SMcT0016082.1
+wormbase_parasite	h1SMcG0016257	437	gene model	Potassium channel, calcium-activated, SK		IPR004178;IPR013099;IPR015449;IPR036122		h1SMcT0016257.1 +1
+wormbase_parasite	h1SMcG0016310	294	gene model	Major intrinsic protein		IPR000425;IPR022357;IPR023271		h1SMcT0016310.1
+wormbase_parasite	h1SMcG0016335	301	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0016335.1
+wormbase_parasite	h1SMcG0016375	465	gene model	Innexin		IPR000990		h1SMcT0016375.1
+wormbase_parasite	h1SMcG0016465	987	gene model	Calcium-activated potassium channel slowpoke-like		IPR003929;IPR013099;IPR036291;IPR047871;IPR048735		h1SMcT0016465.1
+wormbase_parasite	h1SMcG0016615	1030	gene model	P-type ATPase; P-type ATPase subfamily IIC, subunit alpha		IPR001757;IPR004014;IPR005775;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0016615.1
+wormbase_parasite	h1SMcG0016626	791	gene model	Calcium-activated potassium channel slowpoke-like		IPR003929;IPR005821;IPR047871		h1SMcT0016626.1
+wormbase_parasite	h1SMcG0016828	1809	gene model	Voltage gated sodium channel, alpha subunit; Voltage-gated cation channel calcium and sodium		IPR001696;IPR005821;IPR027359;IPR043203;IPR044564		h1SMcT0016828.1
+wormbase_parasite	h1SMcG0017114	300	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0017114.1 +1
+wormbase_parasite	h1SMcG0017115	299	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0017115.1 +1
+wormbase_parasite	h1SMcG0017204	2679	gene model	Inositol 1,4,5-trisphosphate receptor; Ryanodine/Inositol 1,4,5-trisphosphate receptor		IPR000493;IPR000699;IPR005821;IPR013662;IPR014821;IPR015925;IPR016093;IPR035910;IPR036300		h1SMcT0017204.1 +1
+wormbase_parasite	h1SMcG0017344	437	gene model	Innexin		IPR000990		h1SMcT0017344.1
+wormbase_parasite	h1SMcG0017346	480	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0017346.1
+wormbase_parasite	h1SMcG0017431	658	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv4		IPR000210;IPR003131;IPR003968;IPR003975;IPR005821;IPR011333;IPR021645;IPR027359		h1SMcT0017431.1 +1
+wormbase_parasite	h1SMcG0017745	469	gene model	Innexin		IPR000990		h1SMcT0017745.2 +1
+wormbase_parasite	h1SMcG0017880	1185	gene model	P-type ATPase; P-type ATPase, subfamily IIB		IPR001757;IPR004014;IPR006068;IPR006408;IPR008250;IPR018303;IPR022141;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0017880.1 +2
+wormbase_parasite	h1SMcG0018006	819	gene model	Potassium channel, voltage-dependent, EAG/ELK/ERG-like		IPR000595;IPR003938;IPR005821;IPR013621;IPR014710;IPR018488;IPR018490		h1SMcT0018006.1
+wormbase_parasite	h1SMcG0018061	1019	gene model	P-type ATPase; P-type ATPase, subfamily IIA, SERCA-type		IPR001757;IPR004014;IPR005782;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0018061.1 +3
+wormbase_parasite	h1SMcG0018092	1020	gene model	Potassium channel, voltage-dependent, EAG/ELK/ERG-like		IPR000595;IPR003938;IPR005821;IPR013621;IPR014710;IPR018488;IPR018490		h1SMcT0018092.1 +1
+wormbase_parasite	h1SMcG0018120	521	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR000210;IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0018120.1
+wormbase_parasite	h1SMcG0018142	471	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv5/Kv9; Potassium channel, voltage dependent, Kv2		IPR003131;IPR003968;IPR003971;IPR003973;IPR005821;IPR011333;IPR027359		h1SMcT0018142.1 +1
+wormbase_parasite	h1SMcG0018182	632	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0018182.2 +2
+wormbase_parasite	h1SMcG0018254	150	gene model	Major intrinsic protein; Aquaporin transporter		IPR000425;IPR022357;IPR023271;IPR034294		h1SMcT0018254.1
+wormbase_parasite	h1SMcG0018296	654	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0018296.2 +1
+wormbase_parasite	h1SMcG0018465	423	gene model	Innexin		IPR000990		h1SMcT0018465.1
+wormbase_parasite	h1SMcG0018693	403	gene model	Innexin		IPR000990		h1SMcT0018693.1
+wormbase_parasite	h1SMcG0019013	399	gene model	Innexin		IPR000990		h1SMcT0019013.1 +1
+wormbase_parasite	h1SMcG0019646	1247	gene model	P-type ATPase; P-type ATPase, subfamily IIB		IPR001757;IPR004014;IPR006068;IPR006408;IPR008250;IPR018303;IPR022141;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0019646.2 +4
+wormbase_parasite	h1SMcG0019680	884	gene model	Calcium-activated potassium channel slowpoke-like		IPR003929;IPR005821;IPR027359;IPR036291;IPR047871;IPR048735		h1SMcT0019680.1
+wormbase_parasite	h1SMcG0019795	414	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0019795.1
+wormbase_parasite	h1SMcG0019797	414	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv1		IPR003131;IPR003968;IPR003972;IPR005821;IPR011333;IPR027359		h1SMcT0019797.1
+wormbase_parasite	h1SMcG0019860	209	gene model	Sodium/potassium-transporting ATPase subunit beta		IPR000402;IPR038702		h1SMcT0019860.1
+wormbase_parasite	h1SMcG0019963	1169	gene model			IPR002110;IPR005821;IPR036770	A0A291IA19;I1ZIL0	h1SMcT0019963.1
+wormbase_parasite	h1SMcG0020152	492	gene model	Innexin		IPR000990;IPR001781	A7RDN9	h1SMcT0020152.1 +4
+wormbase_parasite	h1SMcG0020292	449	gene model	Innexin		IPR000990	H9CXU2	h1SMcT0020292.1 +3
+wormbase_parasite	h1SMcG0020455	863	gene model	Potassium channel, voltage-dependent, EAG/ELK/ERG-like		IPR000595;IPR003938;IPR005821;IPR013621;IPR014710;IPR018488;IPR018490		h1SMcT0020455.1
+wormbase_parasite	h1SMcG0020481	1029	gene model	P-type ATPase; P-type ATPase, subfamily IIA, SERCA-type		IPR001757;IPR004014;IPR005782;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492		h1SMcT0020481.1 +2
+wormbase_parasite	h1SMcG0020674	1647	gene model	Voltage-dependent calcium channel, alpha-1 subunit		IPR002077;IPR005821;IPR014873;IPR027359;IPR031649		h1SMcT0020674.1
+wormbase_parasite	h1SMcG0020675	1680	gene model	Voltage-dependent calcium channel, alpha-1 subunit		IPR002077;IPR005821;IPR014873;IPR027359;IPR031649		h1SMcT0020675.1
+wormbase_parasite	h1SMcG0020732	228	gene model	Potassium channel, calcium-activated, BK, beta subunit		IPR003930		h1SMcT0020732.1
+wormbase_parasite	h1SMcG0021519	493	gene model	Voltage-dependent calcium channel, L-type, beta subunit		IPR000584;IPR008145;IPR027417		h1SMcT0021519.1
+wormbase_parasite	h1SMcG0021740	414	gene model	Innexin		IPR000990		h1SMcT0021740.1 +1
+wormbase_parasite	h1SMcG0021860	697	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv4		IPR000210;IPR003131;IPR003968;IPR003975;IPR005821;IPR011333;IPR021645;IPR024587;IPR027359		h1SMcT0021860.1
+wormbase_parasite	h1SMcG0022089	323	gene model	Major intrinsic protein; Aquaporin transporter		IPR000425;IPR022357;IPR023271;IPR034294		h1SMcT0022089.1
+wormbase_parasite	h1SMcG0022090	292	gene model	Major intrinsic protein; Aquaporin transporter		IPR000425;IPR022357;IPR023271;IPR034294		h1SMcT0022090.1 +2
+wormbase_parasite	h1SMcG0022141	588	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0022141.1
+wormbase_parasite	h1SMcG0022467	686	gene model	Potassium channel, voltage dependent, Kv; Potassium channel, voltage dependent, Kv3		IPR000210;IPR003131;IPR003968;IPR003974;IPR005821;IPR011333;IPR027359		h1SMcT0022467.1 +1
+wormbase_parasite	h1SMcG0022620	488	gene model	Innexin		IPR000990		h1SMcT0022620.1
+wormbase_parasite	h1SMcG0022706	351	gene model	Potassium channel, voltage-dependent, beta subunit, KCNAB-related; Potassium channel, voltage-dependent, beta subunit, KCNAB1; Potassium channel, voltage-dependent, beta subunit, KCNAB		IPR005399;IPR005400;IPR005983;IPR023210;IPR036812		h1SMcT0022706.2 +3
+wormbase_parasite	h1SMcG0022952	161	gene model	Innexin		IPR000990		h1SMcT0022952.1
+wormbase_parasite	h1SMcG0023035	278	gene model	Innexin		IPR000990		h1SMcT0023035.1
+wormbase_parasite	h1SMcG0023063	269	gene model			IPR002035;IPR036465		h1SMcT0023063.1
+uniprot	A0A0A1CQL4	305	unreviewed entry	Kcnb	kcnb	IPR003968;IPR003973;IPR005821;IPR027359;IPR028325	h1SMcG0008430	evidence at transcript level
+uniprot	A0A0A1CQM0	91	unreviewed entry	Scna-2	scna-2	IPR005821;IPR043203	h1SMcG0014796	evidence at transcript level
+uniprot	A0A0A1CRL5	141	unreviewed entry	Scna-3	scna-3	IPR005821;IPR043203;IPR044564	h1SMcG0013155	evidence at transcript level
+uniprot	A0A0A1CVW0	202	unreviewed entry	Kcnka	kcnka	IPR003280;IPR013099	h1SMcG0004125	evidence at transcript level
+uniprot	A0A0A1CVW3	614	unreviewed entry	Scna-1	scna-1	IPR005821;IPR027359;IPR043203	h1SMcG0013155	evidence at transcript level
+uniprot	A0A0H3YEY7	917	unreviewed entry	Slc8a-1	slc8a-1	IPR003644;IPR004836;IPR004837;IPR032452;IPR038081;IPR044880;IPR051171	h1SMcG0011283	evidence at transcript level
+uniprot	A0A0H3YF68	573	unreviewed entry	Slc8a-3	slc8a-3	IPR003644;IPR004836;IPR004837;IPR038081;IPR044880;IPR051171	h1SMcG0009796	evidence at transcript level
+uniprot	A0A0H3YFE4	672	unreviewed entry	Slc25a-9	slc25a-9	IPR002048;IPR002067;IPR011992;IPR018108;IPR018247;IPR023395;IPR051028	h1SMcG0010573	evidence at transcript level
+uniprot	A0A0H3YIW4	851	unreviewed entry	Slc8a-2	slc8a-2	IPR003644;IPR004836;IPR004837;IPR032452;IPR038081;IPR044880;IPR051171	h1SMcG0011221	evidence at transcript level
+uniprot	A0A0H3YJ09	865	unreviewed entry	Slc8a-5	slc8a-5	IPR003644;IPR004836;IPR004837;IPR032452;IPR038081;IPR044880;IPR051171	h1SMcG0015486	evidence at transcript level
+uniprot	A0A0H3YK36	730	unreviewed entry	Slc8a-4	slc8a-4	IPR003644;IPR004836;IPR004837;IPR032452;IPR038081;IPR044880;IPR051171	h1SMcG0015487	evidence at transcript level
+uniprot	A0A0H3YK51	1131	unreviewed entry	Slc12a-4	slc12a-4	IPR000076;IPR004841;IPR004842;IPR018491	h1SMcG0001288	evidence at transcript level
+uniprot	A0A1Z1R0Y6	721	unreviewed entry	Cyclic nucleotide gated channel 1		IPR000595;IPR003938;IPR005821;IPR013621;IPR014710;IPR018488;IPR018490;IPR051413	h1SMcG0005006	evidence at transcript level
+uniprot	A0A291IA19	1169	unreviewed entry	Transient receptor potential cation channel subfamily A, member 1	TRPA1	IPR002110;IPR005821;IPR036770;IPR052076	h1SMcG0019963	evidence at transcript level
+uniprot	A7RDN9	437	unreviewed entry	Innexin	inx	IPR000990	h1SMcG0020152	evidence at transcript level
+uniprot	H9CXU2	449	unreviewed entry	Innexin	inx	IPR000990	h1SMcG0020292	evidence at transcript level
+uniprot	I1ZIL0	686	unreviewed entry	Transient receptor potential cation channel subfamily A member-1		IPR002110;IPR036770;IPR050663	h1SMcG0019963	evidence at transcript level
+uniprot	I1ZIL2	412	unreviewed entry	Innexin	inx	IPR000990	h1SMcG0002088	evidence at transcript level
+uniprot	M4LUP7	1022	unreviewed entry	Sodium/potassium-transporting ATPase subunit alpha	ATP12A	IPR001757;IPR004014;IPR005775;IPR006068;IPR008250;IPR018303;IPR023214;IPR023298;IPR023299;IPR036412;IPR044492;IPR050510;IPR059000	h1SMcG0015880	evidence at transcript level

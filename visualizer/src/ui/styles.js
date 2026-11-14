@@ -297,6 +297,36 @@ cells-trace { display: grid; gap: 4px; }
 .trace-table tr.is-event td { font-weight: 600; }
 .panel-more ul { display: grid; gap: 6px; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
 
+/* ---------------------------------------------------------------- protein atlas: one species' side */
+/* The switch between species takes any number of them and wraps onto more rows. */
+.seg-many { display: flex; flex-wrap: wrap; gap: 2px; }
+.seg-many button { flex: 1 1 auto; padding: 4px 9px; white-space: nowrap; }
+.card-organism { font-size: 12.5px; font-style: italic; margin-top: -3px; }
+/* A species file may hold a long word (a file's name, an identifier): it wraps inside the card. */
+.view-card:not(.run-card) > * { min-width: 0; }
+.view-card:not(.run-card) .card-text, .view-card:not(.run-card) details li { overflow-wrap: anywhere; }
+.view .card-extra { gap: 9px; }
+.card-extra .item-label { font-size: 12px; color: var(--fg); }
+.card-extra .item-detail, .card-extra .item-line, .card-extra .item-note, .card-extra .item-links { font-size: 11.5px; }
+/* What a species' atlas found, where it differs: a ring beside the unit, never the unit's form.
+   An unbroken ring is another protein family; a broken ring is nothing found. */
+.swatch-find-band { border: 3px solid currentColor; border-radius: 50%; }
+.swatch-find-dashes { border: 2px dashed currentColor; border-radius: 50%; }
+.label-part .swatch-find-band, .label-part .swatch-find-dashes { width: 9px; height: 9px; margin-right: 4px; vertical-align: -1px; }
+.label-part .swatch-find-band { border-width: 2.5px; }
+.label-part .swatch-find-dashes { border-width: 1.5px; }
+.legend-fold > summary { padding: 8px 8px 5px; }
+.legend-fold .legend-item { width: 100%; margin-top: 1px; }
+.index-row.has-sign { grid-template-columns: 14px 1fr auto; }
+.panel-finding { display: grid; gap: 5px; padding: 9px 11px 10px; border-radius: 9px; box-shadow: inset 0 0 0 1px var(--line); background: color-mix(in srgb, var(--fg) 4%, transparent); }
+.finding-title { font-size: 12px; font-weight: 600; }
+.finding-title i { font-weight: 400; color: var(--muted); }
+.finding-line { display: flex; align-items: baseline; gap: 7px; font-size: 14px; font-weight: 600; line-height: 1.35; }
+.finding-line .swatch { flex: none; align-self: center; }
+.finding-note { font-size: 13px; }
+.finding-more, .list-note { font-size: 12px; color: var(--muted); }
+.list-note { margin: -1px 0 5px; }
+
 /* ---------------------------------------------------------------- narrow screens */
 @media (max-width: 760px) {
   .brand span, .stamp { display: none; }
@@ -319,6 +349,9 @@ cells-trace { display: grid; gap: 4px; }
   .has-panel .scalebar, .has-panel .view { display: none; }
   .scalebar { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
   .seg button { padding: 4px 2px; font-size: 12px; white-space: nowrap; }
+  .seg-many button { padding: 4px 7px; }
+  .seg-row.seg-species { grid-template-columns: 1fr; }
+  .seg-species .seg-label { display: none; }
   .caveat { width: calc(100% - 32px); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
   .rail { top: 124px; transform: none; right: max(10px, env(safe-area-inset-right, 0px)); }
   .rail .rail-title { display: none; }

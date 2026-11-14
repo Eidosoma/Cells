@@ -48,6 +48,20 @@ class CellsPanel extends HTMLElement {
     if (entity.plain) body.append(h("p", { class: "panel-plain" }, entity.plain));
     if (entity.note) body.append(h("p", { class: "panel-note" }, entity.note));
     if (entity.detail) body.append(h("p", { class: "panel-detail" }, entity.detail));
+    // What one species' atlas found for this unit (the protein atlas, on a species other than the inventory's).
+    if (entity.finding) {
+      const found = entity.finding;
+      body.append(
+        h(
+          "div",
+          { class: "panel-finding" },
+          h("p", { class: "finding-title" }, found.title, found.organism ? h("i", {}, ` · ${found.organism}`) : null),
+          h("p", { class: "finding-line" }, found.swatch ? statusSwatch(found.swatch) : null, found.text),
+          found.note ? h("p", { class: "finding-note" }, found.note) : null,
+          found.more ? h("p", { class: "finding-more" }, found.more) : null
+        )
+      );
+    }
     if (entity.facts?.length) {
       body.append(
         h("dl", { class: "facts" }, entity.facts.map(([label, value]) => [h("dt", {}, label), h("dd", {}, value)]))
@@ -64,7 +78,7 @@ class CellsPanel extends HTMLElement {
       trace.data = entity.chart;
     }
     for (const section of entity.sections || []) {
-      if (section.items?.length) body.append(this.list(section.title, section.items.map(item), "items"));
+      if (section.items?.length) body.append(this.list(section.title, section.items.map(item), "items", section.note));
     }
     // Background a reader may want but need not see at once (how a replay was derived).
     for (const more of entity.disclosures || []) {
@@ -141,16 +155,16 @@ class CellsPanel extends HTMLElement {
     });
   }
 
-  list(title, items, className = "") {
+  list(title, items, className = "", note = null) {
     const first = items.slice(0, SHOWN), rest = items.slice(SHOWN);
-    const block = h("div", { class: `panel-list ${className}` }, h("h4", {}, title, h("span", { class: "quiet" }, ` ${items.length}`)), h("ul", {}, first));
+    const block = h("div", { class: `panel-list ${className}` }, h("h4", {}, title, h("span", { class: "quiet" }, ` ${items.length}`)), note ? h("p", { class: "list-note" }, note) : null, h("ul", {}, first));
     if (rest.length) block.append(h("details", {}, h("summary", {}, `Show ${rest.length} more`), h("ul", {}, rest)));
     return block;
   }
 }
 
 /** One entry of a part's own list: a law, a gene product, a reference structure. Links open outside the page. */
-function item(entry) {
+export function item(entry) {
   const links = (entry.links || []).filter((link) => /^https:\/\//.test(link.url));
   return h(
     "li",
