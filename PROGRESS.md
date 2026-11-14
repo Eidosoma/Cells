@@ -73,6 +73,29 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Track R's independent references landed (14 November 2026)** in `validation/coupling/`.
+  They are R-fac, R-state, R-cell and R-feedback, written by a separate agent that read no engine
+  code ([usage](validation/coupling/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/independent-references-20261114-01/HANDOFF.md)).
+  - **What they cover:** every factor law, side and basal combination; the two-state regulatory
+    fraction (closed forms, adaptive integration, the crossing time t*); one cell with a gated
+    K leak; and two cells whose shared junction is set by each cell's own regulatory state,
+    integrated with the ions by Radau.
+  - **Conventions:** reconciled with the coupling note's §7, the milestone 1 as built. Every
+    engine-facing convention is an explicit input whose default is the as-built one.
+  - **The floor** at the recommended settings (Radau, rtol 1e-10) against rtol 1e-12: s about
+    2e-12, amounts about 2e-12 fmol, V ≤ 1.5e-12 V. `rc.floor` measures it on the engine's own
+    world, where A4's tolerance is to be pinned.
+  - **Self-tests:** `tests/unit/test_coupling_references.py`, 44 passed, tier 1, including a
+    no-`cells`-import check; J2 still passes.
+  - **Landing:** tier 1 at the merge 9d6b1bc, 323 files, no changed outcome
+    ([summary](/mnt/workspaces/Cells/independent-references-20261114-01/tiers-r/land-gate1-9d6b1bcb/summary.json)).
+- **The crossrev baseline of record is renewed at da94f81** (D148 criterion 4 for FR-9). All
+  seven sets are identical to their earlier records: base, qualification, injection, volume and
+  division against baseline-21fb714; species against b102da4; reactions against 5de1c96.
+  Species and reactions are now records of their own, and the earlier records stay
+  ([records](/mnt/workspaces/Cells/architecture-block-20261114-01/baseline-da94f81/)).
+
 - **The architecture block's first items landed (14 November 2026):** D147 for composite
   definitions, the J2 bright line restored, and FR-9's species cap raised to 16 (D165)
   ([evidence](/mnt/workspaces/Cells/architecture-block-20261114-01/HANDOFF.md)).
