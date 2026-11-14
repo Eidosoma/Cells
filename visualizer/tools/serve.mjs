@@ -2,7 +2,7 @@
 // Local preview. Rebuilds the page on every request and serves it under a policy
 // close to the artifact frame's, so what works here works when published.
 //
-//   node tools/serve.mjs [--port 4173] [--scene PATH] [--offline]
+//   node tools/serve.mjs [--port 4173] [--scene PATH] [--runs DIR] [--offline]
 //
 // --offline loads three.js from node_modules instead of the CDN.
 // Query parameters for checking a state: ?theme=dark&lens=engine&select=ID&scale=tissue&isolate=planned&index=1
@@ -10,7 +10,7 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { buildPage, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE } from "./lib/build_page.mjs";
+import { buildPage, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE, DEFAULT_RUNS } from "./lib/build_page.mjs";
 
 // Reports script errors and blocked loads back to this server, in previews only.
 const REPORTER = `<script>
@@ -22,7 +22,7 @@ const REPORTER = `<script>
 })();
 </script>`;
 
-export function createServer({ scene = DEFAULT_SCENE, offline = false, log = console.log } = {}) {
+export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offline = false, log = console.log } = {}) {
   return http.createServer(async (request, response) => {
     const url = new URL(request.url, "http://localhost");
     try {
@@ -40,8 +40,16 @@ export function createServer({ scene = DEFAULT_SCENE, offline = false, log = con
         response.writeHead(200, { "content-type": "text/javascript", "cache-control": "max-age=3600" }).end(file);
         return;
       }
+      // Replays are served beside the page, as the published artifact serves them.
+      const run = /^\/runs\/([a-z0-9.-]+\.json)$/.exec(url.pathname);
+      if (run) {
+        const file = await readFile(path.join(runs, run[1])).catch(() => null);
+        if (!file) response.writeHead(404).end("not found");
+        else response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }).end(file);
+        return;
+      }
       if (url.pathname === "/") {
-        const content = await buildPage({ scenePath: scene, three: offline ? THREE_LOCAL : THREE_CDN });
+        const content = await buildPage({ scenePath: scene, runsDir: runs, three: offline ? THREE_LOCAL : THREE_CDN });
         const html = wrap(content, { theme: url.searchParams.get("theme"), head: REPORTER });
         response.writeHead(200, {
           "content-type": "text/html; charset=utf-8",
@@ -63,6 +71,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const value = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
   const port = Number(value("--port", 4173));
-  const server = createServer({ scene: value("--scene", DEFAULT_SCENE), offline: args.includes("--offline") });
+  const server = createServer({ scene: value("--scene", DEFAULT_SCENE), runs: value("--runs", DEFAULT_RUNS), offline: args.includes("--offline") });
   server.listen(port, "127.0.0.1", () => console.log(`Cells visualizer at http://127.0.0.1:${port}/  (Ctrl+C to stop)`));
 }

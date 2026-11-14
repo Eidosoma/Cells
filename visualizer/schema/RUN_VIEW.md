@@ -123,6 +123,108 @@ an existing run directory and mark it `"derived": true`, with a line saying how 
 piece was derived. For E07-v1 the sheet is a regular hexagonal sheet, so positions are
 derived from the saved junction topology. Adapters read saved files only.
 
+## Packaged for the viewer: `cells.visualizer.replay@1`
+
+This part is the viewer's own and is fixed, so that the adapter and the replay view can
+be built side by side (14 November 2026). It wraps a run view for a browser: metadata as
+JSON and the arrays as one binary payload. Generated files are never committed.
+
+```
+out/runs/index.json          the catalogue the page embeds
+out/runs/<run-id>.json       one run: its view and its arrays
+```
+
+`<run-id>` is `<experiment>--<arm>--seed<n>` in lower-case letters, digits, dots and
+hyphens, for example `e07-v1--c-disconly-fast-k1-d37-s1.0--seed1`.
+
+### One run
+
+```json
+{
+  "format": "cells.visualizer.replay@1",
+  "view": { "format": "cells.run_view@1", "derived": true, "...": "as above, with the rules below" },
+  "payload": { "encoding": "base64", "byte_length": 524288, "data": "…" }
+}
+```
+
+Rules that tighten the run view above:
+
+- **`view.derived` and `view.derivation`.** An adapter sets `derived: true` and lists, one
+  line each, how every piece the run did not save was derived.
+- **`view.run`** adds to the fields above: `id` (the run id), `label` and `group` as the
+  run's plan gives them, `stop`, `end_s`, `class` (the class the experiment's own summary
+  records, verbatim), `judged_s`, `parameters` and `readouts`.
+  - `parameters`: `[{"id", "value"}]`, the run's plan values, in the plan's names.
+  - `readouts`: `[{"id", "value", "supplementary", "status"}]`, the run's outcome values in
+    the outcome's names; a nested value is named with dots (`delta_J_over_records.mean`).
+    `supplementary` is true only where the run's own files say so, and `status` then
+    carries their words. The adapter judges nothing: it does not decide which readouts were
+    judged, and a replay never computes a verdict of its own.
+  - Labels for parameters, readouts and classes come from the catalogue (below), keyed by
+    these ids. The adapter copies only the ids the catalogue names.
+- **`view.records[]`** describe arrays in the payload, not in the run's own files:
+  `{"id", "label", "unit", "set", "layer", "axes", "dtype", "offset", "shape", "range"}`.
+  - `dtype` is `float32`, `uint8`, `uint16` or `int32`, little-endian, in C order.
+  - `offset` is in bytes from the start of the decoded payload and is a multiple of 4.
+  - `range` is `[min, max]` over the array's finite values.
+  - An optional `scale` means value = stored × scale. Such an array is `"quantised": true`
+    and is for drawing only: the viewer never prints it as a recorded number.
+  - The record with id `t` holds the record times in seconds (`axes: ["time"]`); `view.time`
+    is `{"unit": "s", "record": "t"}`. Times need not be evenly spaced.
+- **`view.sets[]`.** Cells of a sheet use `polygons` (`vertices` as `[x, y]` in
+  `view.space.unit`, `faces` as lists of vertex indices, one per cell, in the order of
+  `ids`). Junctions use `links` with `ends` as pairs of indices into the named set.
+  - An optional `marks` lists values worth a line on the record's scale:
+    `[{"value", "label"}]`, for example the voltage above which the experiment counts a cell
+    as D. A mark is the experiment's own constant, read from its saved files, never chosen
+    by the adapter or the viewer.
+  - Records with the ids `regular` and `valid` (`uint8`, one per record time) carry the
+    run's own flags when it saves them. A record that is not `valid` is never shown as data.
+- **`view.regions[]`** (optional) name subsets the run's plan defines:
+  `[{"id", "label", "set", "indices"}]`, for example the disc of cells that start in the
+  written state. The viewer may outline a region; its label comes from the catalogue.
+- **`view.events[]`** name entities by index: `{"time", "kind", "layer", "at": {"set": "cell",
+  "index": 108}, "from": {"set": "cell", "index": 107}, "label"}`. `from` is optional.
+- **No machine paths and no host names** anywhere in a generated file.
+
+### The catalogue
+
+```json
+{
+  "format": "cells.visualizer.replay_index@1",
+  "experiments": [{
+    "id": "e07-v1", "label": "…", "plain": "…",
+    "sources": [{"path": "docs/E07_V1_DESIGN.md", "where": "…"}],
+    "engine_entities": ["…ids of scene parts this experiment runs…"],
+    "groups": {"control": {"label": "…", "plain": "…"}},
+    "classes": [{"id": "neutral", "label": "Neutral", "description": "…"}],
+    "regions": {"disc": {"label": "…", "plain": "…"}},
+    "records": {"vm": {"label": "…", "plain": "…"}},
+    "events": {"replacement": {"label": "…", "plain": "…"}},
+    "parameters": {"s": {"label": "…", "unit": "…"}},
+    "readouts": {"delta_J": {"label": "…", "plain": "…"}}
+  }],
+  "runs": [{
+    "id": "e07-v1--…--seed1", "experiment": "e07-v1", "arm": "…", "seed": 1,
+    "label": "registered seed", "group": "control", "class": "erosion", "stop": "planned end",
+    "records": 318, "end_s": 2340.0, "file": "runs/e07-v1--…--seed1.json", "bytes": 700000
+  }]
+}
+```
+
+The `experiments` entries are curated in `data/runs/overlay.json` (labels, plain lines
+and sources); the adapter copies the entry of each experiment it adapts and adds `runs`.
+
+### How the page gets them
+
+- The page builder puts the catalogue into the scene as `scene.replays`. The Experiments
+  view is offered only when it holds at least one run.
+- A run is loaded when it is first shown. The viewer looks for
+  `<script type="application/json" data-replay="<run-id>">` in the page; if there is none
+  it fetches the run's `file`, a URL relative to the page. The local server and the
+  published artifact serve `runs/<run-id>.json` beside the page; a standalone file carries
+  the runs inline.
+
 ## Open points for the engine-side note
 
 - The file's name and whether it is one file per run or one per experiment with per-run parts.
