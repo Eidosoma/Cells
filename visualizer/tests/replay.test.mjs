@@ -251,3 +251,31 @@ test("adapted runs, when present, are read by the loader", { skip: !existsSync(p
     }
   }
 });
+
+test("what an experiment found is two facts from the record, and a run's class is not one of them", () => {
+  const catalogue = new Catalogue({
+    experiments: [
+      { id: "a", label: "A", outcome: { judged: true, status: "Judged", answer: "no", label: "It did not hold", text: "The record's line.", sources: [{ path: "PROGRESS.md" }] }, stops: { "planned end": { label: "Ran to its planned end" }, halted: { label: "Stopped early", early: true } } },
+      { id: "b", label: "B", outcome: { judged: false, status: "Development runs", answer: "yes", label: "ignored", text: "Nothing is judged." } },
+      { id: "c", label: "C" },
+    ],
+    runs: [
+      { id: "a--x--seed1", experiment: "a", arm: "x", seed: 1, class: "erosion", stop: "planned end" },
+      { id: "a--x--seed2", experiment: "a", arm: "x", seed: 2, stop: "halted", refusal: "a refusal the run records" },
+      { id: "b--y--seed1", experiment: "b", arm: "y", seed: 1, stop: "something else" },
+    ],
+  });
+  const judged = catalogue.outcomeOf(catalogue.experiments.get("a"));
+  assert.deepEqual([judged.judgedMark, judged.judgedLabel, judged.answerMark, judged.label], ["yes", "Judged", "no", "It did not hold"]);
+  assert.equal(judged.spoken, "Judged. It did not hold");
+  // Nothing judged means no answer, whatever the entry says.
+  const open = catalogue.outcomeOf(catalogue.experiments.get("b"));
+  assert.deepEqual([open.judgedMark, open.answer, open.answerMark, open.label], ["none", null, "none", ""]);
+  assert.equal(catalogue.outcomeOf(catalogue.experiments.get("c")), null);
+  // A run says how it ended; its class stays a class.
+  assert.deepEqual(catalogue.endOf(catalogue.byId.get("a--x--seed1")), { label: "Ran to its planned end", early: false, refusal: null });
+  assert.deepEqual(catalogue.endOf(catalogue.byId.get("a--x--seed2")), { label: "Stopped early", early: true, refusal: "a refusal the run records" });
+  assert.equal(catalogue.endOf(catalogue.byId.get("b--y--seed1")).label, "Stopped: something else");
+  assert.equal(catalogue.classOf(catalogue.byId.get("a--x--seed2")), null, "a run without a class shows none");
+});
+

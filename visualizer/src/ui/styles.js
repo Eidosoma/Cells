@@ -193,6 +193,26 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .run-class { display: grid; gap: 4px; }
 .run-class-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .chip-strong { font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--fg); }
+/* A fact from the record: a mark and its words. The mark's colour repeats what the sign says. */
+.mark { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; flex: none; background: var(--muted); }
+.mark svg { width: 15px; height: 15px; fill: none; stroke: var(--bg-raised); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.mark-yes { background: var(--st-qualified); }
+.mark-no { background: var(--st-failed); }
+.mark-mixed { background: var(--st-designed); }
+.fact { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; }
+.experiments { display: grid; gap: 3px; }
+.exp-row { display: grid; gap: 2px; text-align: left; padding: 5px 8px; border-radius: 7px; box-shadow: inset 0 0 0 1px var(--line); }
+.exp-row:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.exp-row[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 10%, transparent); box-shadow: inset 0 0 0 1.5px var(--fg); }
+.exp-name { font-family: var(--font-display); font-weight: 600; font-size: 13px; }
+.exp-found { display: flex; flex-wrap: wrap; gap: 3px 10px; color: var(--muted); }
+.exp-found .fact { font-size: 11.5px; font-weight: 400; }
+.found { display: grid; gap: 4px; }
+.found-facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.run-ended { display: flex; align-items: center; gap: 6px; }
+.legend-keys { padding: 2px 8px 4px; font-size: 12px; }
+.legend-keys summary { color: var(--muted); padding: 2px 0; }
+.legend-key-note { color: var(--muted); }
 .run-actions { display: flex; gap: 8px; }
 .pill-small { padding: 4px 11px; font-size: 12.5px; box-shadow: inset 0 0 0 1px var(--line); background: none; }
 .pill-small:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }

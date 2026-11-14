@@ -29,6 +29,36 @@ export class Catalogue {
     return (experiment.classes || []).find((item) => item.id === run.class) || { id: run.class, label: capitalise(run.class), description: "" };
   }
 
+  /**
+   * What an experiment found, as the record states it: whether it was judged, and what the
+   * answer was. Two facts, shown side by side and never merged; the viewer derives neither.
+   * Each fact has a mark (yes, no, mixed or none) that is drawn with words beside it.
+   */
+  outcomeOf(experiment) {
+    const outcome = experiment?.outcome;
+    if (!outcome) return null;
+    const answer = outcome.judged && ["yes", "no", "mixed"].includes(outcome.answer) ? outcome.answer : null;
+    return {
+      judged: Boolean(outcome.judged),
+      judgedMark: outcome.judged ? "yes" : "none",
+      judgedLabel: outcome.judged ? "Judged" : "Not judged",
+      status: outcome.status || "",
+      answer,
+      answerMark: answer || "none",
+      label: answer ? outcome.label || "" : "",
+      text: outcome.text || "",
+      sources: outcome.sources || [],
+      spoken: [outcome.judged ? "Judged" : "Not judged", answer ? outcome.label : ""].filter(Boolean).join(". "),
+    };
+  }
+
+  /** How a run ended: the experiment's plain words for the run's own stop, and any refusal the run records. */
+  endOf(run) {
+    if (!run) return null;
+    const words = this.experimentOf(run).stops?.[run.stop];
+    return { label: words?.label || (run.stop ? `Stopped: ${run.stop}` : ""), early: Boolean(words?.early), refusal: run.refusal || null };
+  }
+
   /** A short name for a run in a list: its arm and seed, as the run's plan names them. */
   title(run) {
     return `${run.arm}, seed ${run.seed}`;

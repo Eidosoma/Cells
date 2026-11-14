@@ -14,8 +14,9 @@ class CellsLegend extends HTMLElement {
    * note     { swatch, text } or null
    * scale    { label, unit, gradient, ticks: [{ at, text }], marks: [{ at, text }], steps: [{ colour, text }] } or null
    * keys     [{ key, text }]: other marks drawn in the scene, each with a small picture
+   * folded   the keys and the note start closed (a short window)
    */
-  render({ title, items = [], isolate, open, filter, note, scale, keys }) {
+  render({ title, items = [], isolate, open, filter, note, scale, keys, folded = false }) {
     this.replaceChildren();
     const rows = items.map((item) =>
       h(
@@ -33,9 +34,10 @@ class CellsLegend extends HTMLElement {
       )
     );
     const body = h("div", { class: "legend-body" }, scale ? this.scale(scale) : null, rows);
-    for (const item of keys || []) {
-      body.append(h("p", { class: "legend-key" }, h("span", { class: `key key-${item.key}`, "aria-hidden": "true" }), item.text));
-    }
+    const lines = (keys || []).map((item) => h("p", { class: "legend-key" }, h("span", { class: `key key-${item.key}`, "aria-hidden": "true" }), item.text));
+    // On a short window the marks fold away, so the card above the legend has room.
+    if (lines.length && folded) body.append(h("details", { class: "legend-keys" }, h("summary", {}, "Marks on the sheet"), lines));
+    else body.append(...lines);
     if (filter?.items?.length) {
       body.append(
         h("p", { class: "legend-title" }, filter.title, filter.unit ? h("span", { class: "legend-unit" }, filter.unit) : null),
@@ -56,7 +58,8 @@ class CellsLegend extends HTMLElement {
         )
       );
     }
-    if (note) body.append(h("p", { class: note.swatch ? "legend-note" : "legend-note legend-note-plain" }, note.swatch ? statusSwatch(note.swatch) : null, note.text));
+    if (note && !(folded && lines.length)) body.append(h("p", { class: note.swatch ? "legend-note" : "legend-note legend-note-plain" }, note.swatch ? statusSwatch(note.swatch) : null, note.text));
+    else if (note) body.querySelector(".legend-keys")?.append(h("p", { class: "legend-key legend-key-note" }, note.text));
     this.append(
       h(
         "button",

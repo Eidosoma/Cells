@@ -7,7 +7,7 @@
 // Events: "cells-ready" once drawn; "cells-selected" with { id } when the selection changes.
 
 import { css } from "./styles.js";
-import { h, formatDate } from "./dom.js";
+import { h, formatDate, svg } from "./dom.js";
 import "./legend.js";
 import "./index.js";
 import "./panel.js";
@@ -389,7 +389,7 @@ class CellsViewer extends HTMLElement {
   }
 
   /** A replay's card: the experiment, its runs, and the class the experiment itself records for the run shown. */
-  runCard({ heading, text, result, experiments = [], runs, klass, colour, details }) {
+  runCard({ heading, text, outcome, experiments = [], runs, klass, ended, colour, details }) {
     const lens = this.current;
     // With a run's details open, the details follow the run picked.
     const pick = (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
@@ -397,32 +397,65 @@ class CellsViewer extends HTMLElement {
       const select = h("select", { id, class: "run-select", "aria-label": label, onchange: () => pick(select.value) }, options.map(([value, text_]) => h("option", { value, selected: value === active }, text_)));
       return select;
     };
+    // A fact from the record is drawn as a mark with its words beside it, never as a colour alone.
+    // The signs are drawn, not typed, so they do not depend on a font having them.
+    const SIGNS = { yes: "M4 7.8l2.4 2.4L11 5.2", no: "M4.6 4.6l5.8 5.8M10.4 4.6l-5.8 5.8", mixed: "M7.5 3.4v5M5 5.9h5M5 11.2h5", none: "M4.6 7.5h5.8" };
+    const mark = (kind) => h("span", { class: `mark mark-${kind}`, "aria-hidden": "true" }, svg("svg", { viewBox: "0 0 15 15" }, svg("path", { d: SIGNS[kind] })));
+    const found = (item) =>
+      item
+        ? [
+            h("span", { class: "fact", title: item.status }, mark(item.judgedMark), item.judgedLabel),
+            item.answer ? h("span", { class: "fact" }, mark(item.answerMark), item.label) : null,
+          ]
+        : [];
     return [
-      h("p", { class: "eyebrow" }, "Experiment"),
-      experiments.length > 1
-        ? chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, item.label]), experiments.find((item) => item.active)?.first)
-        : null,
-      h("p", { class: "card-title" }, heading),
+      h("p", { class: "eyebrow" }, experiments.length > 1 ? "Experiments" : "Experiment"),
+      // Several experiments: a row each, with what the record says it found. Many: a list to choose from.
+      experiments.length > 6
+        ? chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)
+        : experiments.length > 1
+          ? h(
+              "div",
+              { class: "experiments", role: "group", "aria-label": "Experiments" },
+              experiments.map((item) =>
+                h(
+                  "button",
+                  { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.outcome?.spoken || ""}`, onclick: () => pick(item.first) },
+                  h("span", { class: "exp-name" }, item.label),
+                  h("span", { class: "exp-found" }, found(item.outcome))
+                )
+              )
+            )
+          : h("p", { class: "card-title" }, heading),
       // The first sentence says what the experiment asks; the rest is a click away.
       ...(() => {
         const parts = /^(.*?[.?!])\s+(.+)$/s.exec(text || "");
         if (!parts) return [h("p", { class: "card-text run-plain" }, text)];
         return [h("p", { class: "card-text run-lead" }, parts[1]), h("details", { class: "run-plain" }, h("summary", {}, "How it is done"), h("p", { class: "card-text" }, parts[2]))];
       })(),
-      result ? h("details", { class: "run-plain run-result" }, h("summary", {}, "What the experiment found"), h("p", { class: "card-text" }, result)) : null,
+      // What the experiment found: whether it was judged, and what the answer was, in the record's words.
+      outcome
+        ? h(
+            "div",
+            { class: "found" },
+            h("span", { class: "seg-label" }, "What it found"),
+            h("p", { class: "found-facts" }, found(outcome)),
+            h("details", { class: "run-plain" }, h("summary", {}, outcome.status || "In the record's words"), h("p", { class: "card-text" }, outcome.text))
+          )
+        : null,
       h(
         "div",
         { class: "runs", role: "group", "aria-label": "Runs" },
-        h("span", { class: "seg-label" }, runs.length === 1 ? "Run" : "Runs"),
+        h("span", { class: "seg-label" }, runs.length === 1 ? "Run" : `Runs · ${runs.length}`),
         // A few runs are rows to press; many are a list to choose from.
         runs.length > 8
-          ? chooser("cells-run", "Run", runs.map((run) => [run.id, `${run.title}, ${run.sub}${run.klass ? ` · ${run.klass.toLowerCase()}` : ""}`]), runs.find((run) => run.active)?.id)
+          ? chooser("cells-run", "Run", runs.map((run) => [run.id, `${run.title}, ${run.sub}${run.klass ? ` · ${run.klass.toLowerCase()}` : ""}${run.early ? " · stopped early" : ""}`]), runs.find((run) => run.active)?.id)
           : runs.map((run) =>
               h(
                 "button",
                 { class: "run-row", type: "button", "aria-pressed": String(run.active), title: `${run.title}, ${run.sub}`, onclick: () => pick(run.id) },
                 h("span", { class: "run-name" }, run.title),
-                h("span", { class: "run-sub" }, run.sub, run.klass ? ` · recorded as ${run.klass.toLowerCase()}` : "")
+                h("span", { class: "run-sub" }, run.sub, run.klass ? ` · recorded as ${run.klass.toLowerCase()}` : "", run.early ? " · stopped early" : "")
               )
             )
       ),
@@ -435,6 +468,8 @@ class CellsViewer extends HTMLElement {
             h("details", { class: "run-class-note" }, h("summary", {}, "What this class means"), h("p", { class: "card-text" }, [klass.description, klass.note].filter(Boolean).join(" ")))
           )
         : null,
+      // How this run ended, in the experiment's plain words, and any refusal the run records.
+      ended?.label ? h("p", { class: "card-text run-ended" }, mark(ended.refusal ? "no" : ended.early ? "mixed" : "yes"), ended.label, ended.refusal ? ` Refused: ${ended.refusal}` : "") : null,
       colour ? this.segmented("Colour", colour.options.map(([value, label]) => [value, label.replace(/^Membrane /, "").replace(/^./, (letter) => letter.toUpperCase())]), colour.active, (value) => lens.setRecord(value)) : null,
       h("div", { class: "run-actions" }, h("button", { class: "pill-button pill-small", type: "button", onclick: () => this.select(details) }, "Run details")),
     ].filter(Boolean);
@@ -510,7 +545,7 @@ class CellsViewer extends HTMLElement {
     if (chrome.legend || (this.state.lens === "proteins" && atlas)) {
       // The protein atlas: how sure each mapping is, in the inventory's own words.
       const legend = chrome.legend || { title: "Mapping", items: atlas.mappings.map((item) => ({ ...item, swatch: `map-${item.id}` })) };
-      this.legend.render({ ...base, ...legend, filter: chrome.filter });
+      this.legend.render({ ...base, ...legend, filter: chrome.filter, folded: this.clientHeight < 880 });
       return;
     }
     const counts = new Map();

@@ -231,21 +231,44 @@ try {
       const sought = await evaluate(`${VIEWER}.current.player.time / ${VIEWER}.current.run.end`);
       check("timeline: a click on the track goes to that time", Math.abs(sought - 0.8) < 0.06, sought.toFixed(3));
 
-      // The other run: the card switches, and the recorded class follows the run.
+      // Another run of the same experiment: the card switches, and the recorded class follows the run.
+      // A few runs are rows to press; many are a list, which is set as a person choosing would set it.
+      const loaded = async (not) => {
+        for (let tries = 0; tries < 80; tries++) {
+          if (await evaluate(`${VIEWER}.current.run && ${VIEWER}.current.run.id === ${VIEWER}.current.runId && ${VIEWER}.current.runId !== ${JSON.stringify(not)}`)) return;
+          await sleep(250);
+        }
+      };
       const other = await evaluate(`(() => {
-        const row = ${VIEWER}.shadowRoot.querySelector('.run-row[aria-pressed="false"]');
-        const box = row.getBoundingClientRect();
-        return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+        const root = ${VIEWER}.shadowRoot;
+        const row = root.querySelector('.run-row[aria-pressed="false"]');
+        if (row) { const box = row.getBoundingClientRect(); return { how: "row", x: box.left + box.width / 2, y: box.top + box.height / 2 }; }
+        const list = root.querySelector("#cells-run");
+        if (!list) return null;
+        const next = [...list.options].find((option) => !option.selected && ${VIEWER}.current.catalogue.byId.get(option.value)?.class !== ${VIEWER}.current.catalogue.byId.get(${VIEWER}.current.runId)?.class) || [...list.options].find((option) => !option.selected);
+        list.value = next.value;
+        list.dispatchEvent(new Event("change"));
+        return { how: "list" };
       })()`);
-      const classBefore = await evaluate(`${VIEWER}.current.catalogue.classOf(${VIEWER}.current.catalogue.byId.get(${VIEWER}.current.runId)).id`);
-      await click(other.x, other.y);
-      for (let tries = 0; tries < 60; tries++) {
-        if (await evaluate(`${VIEWER}.current.run && ${VIEWER}.current.run.id === ${VIEWER}.current.runId && ${VIEWER}.current.runId !== ${JSON.stringify(first.run)}`)) break;
-        await sleep(250);
+      if (other) {
+        if (other.how === "row") await click(other.x, other.y);
+        await loaded(first.run);
+        const second = await evaluate(`(() => { const lens = ${VIEWER}.current, entry = lens.catalogue.byId.get(lens.runId); return { run: lens.runId, loaded: lens.run?.id, klass: entry.class || null, recorded: lens.run?.view.run.class || null, shown: ${VIEWER}.shadowRoot.querySelector(".run-class .chip")?.textContent || null }; })()`);
+        check(`experiments: picking another run (${other.how}) loads it`, second.run !== first.run && second.loaded === second.run, JSON.stringify(second));
+        check("experiments: the class shown is the one the run's summary recorded", second.klass === second.recorded && (second.klass === null ? second.shown === null : second.shown?.toLowerCase() === second.klass), JSON.stringify(second));
       }
-      const second = await evaluate(`(() => { const lens = ${VIEWER}.current; return { run: lens.runId, loaded: lens.run?.id, klass: lens.catalogue.classOf(lens.catalogue.byId.get(lens.runId)).id, recorded: lens.run?.view.run.class }; })()`);
-      check("experiments: picking the other run loads it", second.run !== first.run && second.loaded === second.run, JSON.stringify(second));
-      check("experiments: the class shown is the one the run's summary recorded", second.klass === second.recorded && second.klass !== classBefore, `${classBefore} -> ${second.klass}`);
+
+      // Another experiment, when there is one: the selector switches, and what it found follows.
+      const experiments = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".exp-row")].length`);
+      if (experiments > 1) {
+        const before = await evaluate(`({ run: ${VIEWER}.current.runId, experiment: ${VIEWER}.current.catalogue.byId.get(${VIEWER}.current.runId).experiment })`);
+        const row = await spot('.exp-row[aria-pressed="false"]');
+        await click(row.x, row.y);
+        await loaded(before.run);
+        const after = await evaluate(`(() => { const lens = ${VIEWER}.current, entry = lens.catalogue.byId.get(lens.runId), outcome = lens.catalogue.outcomeOf(lens.catalogue.experimentOf(entry)); return { experiment: entry.experiment, loaded: lens.run?.view.run.experiment, facts: [...${VIEWER}.shadowRoot.querySelectorAll(".found-facts .fact")].map((item) => item.textContent).join(" | "), expected: [outcome?.judgedLabel, outcome?.answer ? outcome.label : null].filter(Boolean).join(" | ") }; })()`);
+        check("experiments: the selector switches experiment", after.experiment !== before.experiment && after.loaded === after.experiment, `${before.experiment} -> ${after.experiment}`);
+        check("experiments: what it found is the catalogue's two facts for that experiment", after.facts === after.expected && after.facts.length > 0, after.facts);
+      }
 
       // Run details lead to the engine parts the experiment ran.
       const details = await spot(".run-actions button");
