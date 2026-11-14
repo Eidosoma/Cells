@@ -141,7 +141,7 @@ All were ruled on by the lead with the advisor, 14 November 2026 (§11).
    replaced slots.
    - It refuses volume providers, closers, sites facing a held bath, charged or permeant ligands, a
      trace above 10⁻⁶ K_d, RK4, the stationary analysis, and worlds above `MAX_SPECIES`. That cap is
-     16 once D165's D148 change lands, and 7 in code today.
+     16 since D165's D148 change landed (14 November 2026).
    - Beside a compartment, as FR-1 proposes, it raises no field-input wall (§6.4).
 10. **Qualification** (§8) is numerical first, against references written from Appendix A by an
     agent that never reads the code.
@@ -1086,8 +1086,8 @@ second half (D150 §2.2). The composite's dissipation check refuses a falling he
   stages and hybrid bookings are written for it from D152 §3.3, §4.2 and Appendix A's equations, and
   D152's module stays untouched during MG0c. A later shared helper is adopted under crossrev, as the
   coupling note's ruling 7 did for the Hill factor.
-- **The species cap** is referenced symbolically, through `check_species_cap`. It is 7 in code until
-  D165's D148 change lands, then 16. Code may start before that; worlds above 7 species wait for it.
+- **The species cap** is referenced symbolically, through `check_species_cap`. It is 16 in code since
+  D165's D148 change landed (14 November 2026).
 - **D148 items later:** the shared identity list (§1.6), after FR-9 and outside MG0c's window.
 
 ### 6.4 Beside a compartment, as FR-1 proposes
@@ -1273,8 +1273,8 @@ Contacts are included (about 0.25–0.5 of the first row). Option M (§1.3) woul
 **Order:**
 1. **This note's acceptance,** after the lead's review with the advisor.
 2. **Milestone 1**, the contract fit, in the checkout behind its guards. Nothing blocks it: @3, D150's
-   adapter functions and helpers, and D152's equations are on main. Worlds stay at 7 species or fewer
-   until D165 lands.
+   adapter functions and helpers, and D152's equations are on main, as is D165's cap
+   of 16.
 3. **The operator and its guards.**
 4. **The references agent** starts once milestone 1 has fixed the declaration, as for the coupling
    note (its ruling 11).

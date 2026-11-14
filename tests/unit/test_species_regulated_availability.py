@@ -412,7 +412,7 @@ REFUSALS = {
         "lists a species twice",
     ),
     "identity mismatch": (_identity_mismatch, "another identity"),
-    "species cap": (_add_species(3), "at most 7 species"),
+    "species cap": (_add_species(12), "at most 16 species"),
     "replaced slot": (_replaced("coupling"), "coupling c targets junction_1"),
     "state on a replaced slot": (_replaced("state"), "state s is declared in cell_1"),
     "permeant instantaneous source": (
