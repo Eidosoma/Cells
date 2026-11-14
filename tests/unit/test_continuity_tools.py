@@ -340,3 +340,102 @@ def test_admit_proposes_what_the_loader_and_parse_record_accept():
         "record_sha256",
     }
     assert Path(admit.__file__).parent == Path(probe.__file__).parent
+
+
+def test_a_gpu_cohorts_to_runtime_is_the_checkpoints_own():
+    """Section 13.4: the CPU host cannot measure the GPU host's runtime; no runtime change is
+    admissible, so to is the checkpoint's runtime under the resuming tree's cells_version."""
+    probe_runtime = io.runtime_identity("cpu")
+    manifest = {**probe_runtime, "cells_version": "0.0.1", "gpu": {"device_kind": "NVIDIA L4"}}
+    runtime, fields = admit.resuming_runtime(manifest, probe_runtime, None)
+    assert runtime is probe_runtime and fields == continuity.HOST_FIELDS  # A CPU cohort.
+    runtime, fields = admit.resuming_runtime(manifest, probe_runtime, {"backend": "gpu"})
+    assert runtime == {**manifest, "cells_version": probe_runtime["cells_version"]}
+    assert fields == (*continuity.HOST_FIELDS, "packages.jaxlib")
+
+
+def test_the_probe_decides_gpu_cohorts_and_refuses_the_rest():
+    def batch(*backends, jit=True, projective=None):
+        return SimpleNamespace(
+            worlds=[
+                SimpleNamespace(
+                    world_id=i,
+                    simulation=SimpleNamespace(
+                        execution=SimpleNamespace(backend=b, jit=jit), projective=projective
+                    ),
+                )
+                for i, b in enumerate(backends)
+            ]
+        )
+
+    assert probe.require_scope(batch("cpu", "cpu")) == "cpu"
+    assert probe.require_scope(batch("gpu", "gpu")) == "gpu"
+    for refused, message in (
+        (batch("gpu", jit=False), "jit: false"),
+        (batch("gpu", projective=object()), "projective"),
+        (batch("tpu"), "a tpu definition"),
+        (batch("cpu", "gpu"), "mixes backends"),
+    ):
+        with pytest.raises(probe.CannotDecide, match=message):
+            probe.require_scope(refused)
+
+
+def test_the_device_patch_reaches_every_binding_and_is_recorded():
+    """In a fresh process, as the probe runs: no module keeps the unpatched function."""
+    import subprocess
+    import sys
+
+    root = Path(__file__).resolve().parents[2]
+    code = (
+        "import sys, json\n"
+        "from validation.continuity import probe\n"
+        "first = dict(probe.patch_execution_device())\n"
+        "second = probe.patch_execution_device()\n"
+        "from cells.core import devices\n"
+        "from cells.core.specs import parse_spec\n"
+        "from cells.core.state import initialise\n"
+        "from cells.numerics import surface_imex as imex\n"
+        "from validation.tissue import surface_pump_fixtures as fx\n"
+        "kept = [n for n, m in sys.modules.items()\n"
+        "        if getattr(getattr(m, 'execution_device', None), '__name__', '') "
+        "== 'execution_device']\n"
+        "bound = sorted(n for n, m in sys.modules.items()\n"
+        "               if getattr(m, 'execution_device', None) is devices.execution_device)\n"
+        "raw = fx.definition('clamped', backend='gpu', solver=imex.ARS222_ID)\n"
+        "start = initialise(parse_spec(raw))  # Imports execution_device inside the function.\n"
+        "placed = sorted({d.platform for v in start.state for d in v.devices()})\n"
+        "print(json.dumps(dict(first=first, same=first == second, kept=kept, bound=bound,\n"
+        "                      placed=placed)))\n"
+    )
+    done = subprocess.run(
+        [sys.executable, "-B", "-c", code],
+        env={
+            "PYTHONPATH": f"{root / 'src'}:{root}",
+            "PATH": "/usr/bin:/bin",
+            "JAX_PLATFORMS": "cpu",
+            "CUDA_VISIBLE_DEVICES": "",
+        },
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    found = json.loads(done.stdout.strip().splitlines()[-1])
+    assert found["same"] and found["kept"] == [] and found["placed"] == ["cpu"]
+    path_modules = {
+        "cells.core.devices",
+        "cells.core.runner",
+        "cells.core.batch",
+        "cells.core.batch_windows",
+        "cells.core.vector_windows",
+        "cells.io",
+    }
+    assert path_modules <= set(found["bound"])
+    assert found["first"] == {
+        "backend": "gpu",
+        "patched": True,
+        "probe_device": "cpu",
+        "modules_patched": found["first"]["modules_patched"],
+        "lowering_platforms": ["cpu", "cuda"],
+    }
+    assert found["first"]["modules_patched"] >= len(path_modules)
+    continuity._device_patch(found["first"])  # The note parse_record accepts.

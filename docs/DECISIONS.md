@@ -5082,6 +5082,10 @@ should be designed as a general engine feature.
        at least three repeats, and terms taken over all pairs.
 - **The first landing:** the vector-windows path, CPU definitions with `jit: true`. Other
   paths answer "cannot decide" until the consolidation.
+- **GPU definitions** have been admitted since 14 November 2026, through the CPU-host probe
+  with `execution_device` patched (design §13.4: every question was identical on the L4), and
+  the record notes the patch. An admitted L4 checkpoint resumed on the L4, where the loader
+  checked the runtime and `jaxlib` exactly.
 - **Who admits:** the probe decides case 1 and the lead records it; the lead admits
   case 2; any registered run is the user's.
 - **Unchanged:** registered runs. The W1 hold stays on `source-09`, E07-v1 on its
@@ -5380,6 +5384,28 @@ parity plan (option (b) of the architecture report).
     tissue; repair (FR-5); tissue removal (E15); mitochondria, when needed.
   - It is not a wholesale migration, and the registry covers the composite only.
 - **Agents.** All six slots are used, on disjoint files.
+
+## D168: G2-Q1's Q7 on the L4: a deterministic setting first, then a tolerance item if needed
+
+2026-11-14, user decision ("lets go") on the lead's recommendation, after the advisor's review.
+Q7, replacement with no events bitwise equal to `@3` on the 825-node tissue, failed in the L4 judged
+run C. Development runs show that `@3` against itself already differs on the L4 at 825 nodes, up to
+1.6e-11 relative, and the replacement's scatter matches it.
+- **First,** in the next L4 gap after hold segment 3 (about 5 min), test whether this jaxlib has a
+  deterministic GPU execution setting under which `@3` repeats bitwise at 825 nodes across separate
+  processes.
+  - If it does, Q7 is judged as registered under that setting, and the setting carries to GH200.
+  - It is never applied to the hold, whose snapshots check the XLA flags.
+- **If not,** a tolerance-based Q7 as a new item, labelled weaker evidence, registered after
+  attribution, with a judge change. It needs:
+  - repeats in separate processes, with all pairs;
+  - per-field scales;
+  - residual diagnostics judged against their own bounds;
+  - a planted wrapper effect of registered size as a judged control that must fail.
+
+  The user allows this allowance in place of bitwise equality (D148's last clause, by analogy).
+- **The record:** Q7 stays a failed item of C until one of these settles it. The composition gate's
+  GPU condition is met for W1, W2 and G2's Q1–Q6, and open for Q7.
 
 ## Implementation choices and remaining work
 

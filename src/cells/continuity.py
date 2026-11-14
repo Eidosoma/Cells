@@ -16,14 +16,20 @@ is assigned at landing).
   out of process, by the continuity probe (validation/continuity/probe.py and admit.py). This
   module only parses and binds: it is host-only, imports neither JAX nor subprocess, and
   traces nothing.
-- **The first landing** (section 13.1) decides the vector-windows path, for CPU definitions
-  with ``jit: true``:
+- **The first landing** (section 13.1) decides the vector-windows path, for definitions with
+  ``jit: true``:
   - a request that declares another path cannot decide, and is refused;
   - every runtime change is refused (case 4 is parked); ``cells_version`` is a source field,
     because a change in it is a change of ``cells/__init__.py``, which the source admission
     covers;
-  - GPU, ``jit: false`` and projective definitions are refused;
+  - ``jit: false`` and projective definitions are refused;
   - case 2 (a D148 record) is admitted only with the lead named as its admitter.
+- **GPU definitions** (section 13.4, the L4 probe of 14 November) are admitted through the
+  CPU-host probe, which uses no GPU: it patches execution_device to the CPU device, compares the
+  program's cuda cross-lowering as well as its native one, and runs the overlap on the CPU. The
+  record notes the patch (probe.execution_device), required for a GPU definition and refused for
+  a CPU one; the probe's jaxlib then counts with its host-side fields, since the cross-lowering
+  was shown equal to the GPU host's own with jax and jaxlib unchanged.
 - **The run's provenance** names the record: a driver passes provenance(admission) to its
   writer, and validation/continuity/verify_run.py checks the run afterwards.
 """
@@ -57,6 +63,14 @@ HOST_FIELDS = (
     "packages.jax",
     "platform",
     "machine",
+)
+# probe.execution_device, the patch of a GPU definition's CPU-host probe (section 13.4).
+DEVICE_PATCH_FIELDS = (
+    "backend",
+    "patched",
+    "probe_device",
+    "modules_patched",
+    "lowering_platforms",
 )
 RECORD_FIELDS = (
     "kind",
@@ -279,11 +293,16 @@ def parse_record(value):
     if source["tree_reproduces_manifest"] is not True:
         _fail("the from tree must reproduce the manifest's source_hashes exactly")
     _texts(value["changed_files"], "changed_files", ordered=True)
-    probe = _object(value["probe"], ("runtime", "host_fields_equal_to_runtime"), "probe")
+    probe_fields = ("runtime", "host_fields_equal_to_runtime")
+    if isinstance(value["probe"], dict) and "execution_device" in value["probe"]:
+        probe_fields += ("execution_device",)  # A GPU definition's patch (section 13.4).
+    probe = _object(value["probe"], probe_fields, "probe")
     if not isinstance(probe["runtime"], dict) or not probe["runtime"]:
         _fail("probe.runtime must be the probe processes' runtime identity")
     if probe["host_fields_equal_to_runtime"] is not True:
         _fail("probe.host_fields_equal_to_runtime must be true (rerun the probe otherwise)")
+    if "execution_device" in probe:
+        _device_patch(probe["execution_device"])
     admission = value["source_admission"]
     case = admission.get("case") if isinstance(admission, dict) else None
     if case not in SOURCE_CASES:
@@ -354,6 +373,18 @@ def parse_record(value):
         _fail("case 2 (a D148 record) is admitted by the lead")
     _text(value["admitted_utc"], "admitted_utc")
     return value
+
+
+def _device_patch(patch):
+    """probe.execution_device: the GPU definition was probed on the CPU host (section 13.4)."""
+    _object(patch, DEVICE_PATCH_FIELDS, "probe.execution_device")
+    if patch["backend"] != "gpu" or patch["patched"] is not True or patch["probe_device"] != "cpu":
+        _fail("probe.execution_device notes a GPU definition patched to the CPU device")
+    _count(patch["modules_patched"], "probe.execution_device.modules_patched", minimum=1)
+    platforms = patch["lowering_platforms"]
+    if not isinstance(platforms, list) or "cuda" not in platforms or "cpu" not in platforms:
+        _fail("probe.execution_device.lowering_platforms must name cpu and cuda")
+    return patch
 
 
 def seal(record):
@@ -459,6 +490,7 @@ class _Binding:
             raise ConfigError("Continuity record's definitions are not the checkpoint's")
         for key, spec in definitions.items():
             _require_definition(key, spec)
+            _require_device(key, spec, self.record["probe"].get("execution_device"))
         for key, clock in (clocks or {}).items():
             if checkpoint["clocks"].get(key) != clock:
                 raise ConfigError(f"Continuity record's clock of {key} is not the checkpoint's")
@@ -553,7 +585,10 @@ def _require_runtime(record, runtime, current_runtime):
     if after.get("numerical_environment.JAX_DISABLE_JIT") is not None:
         raise ConfigError("JAX_DISABLE_JIT is set: execution without JIT is refused")
     probe = flatten(record["probe"]["runtime"])
-    moved = [f for f in HOST_FIELDS if probe.get(f, _MISSING) != after.get(f, _MISSING)]
+    fields = HOST_FIELDS
+    if "execution_device" in record["probe"]:  # The cuda cross-lowering is jaxlib's too.
+        fields += ("packages.jaxlib",)
+    moved = [f for f in fields if probe.get(f, _MISSING) != after.get(f, _MISSING)]
     if moved:
         raise ConfigError(
             f"The probe's host-side runtime differs from the resuming runtime ({moved}); "
@@ -561,12 +596,28 @@ def _require_runtime(record, runtime, current_runtime):
         )
 
 
-def _require_definition(key, spec):
-    if spec.execution.backend != "cpu":
+def _require_device(key, spec, patch):
+    """A GPU definition through the CPU-host probe's patch (section 13.4), a CPU one without.
+
+    patch is the record's probe.execution_device, or None.
+    """
+    backend = spec.execution.backend
+    if backend == "gpu" and patch is None:
         raise ConfigError(
-            f"Definition {key}: GPU definitions are not yet admitted (first landing; "
-            "docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 13.4)"
+            f"Definition {key}: a GPU definition is admitted only through the CPU-host probe "
+            "with execution_device patched (docs/CHECKPOINT_CONTINUITY_DESIGN.md, section "
+            "13.4), and the record notes no patch"
         )
+    if backend == "cpu" and patch is not None:
+        raise ConfigError(
+            f"Definition {key}: the record notes a device patch, but this is a CPU definition"
+        )
+
+
+def _require_definition(key, spec):
+    """The definitions the probe decides: CPU or GPU, jit: true, no projective block."""
+    if spec.execution.backend not in ("cpu", "gpu"):
+        raise ConfigError(f"Definition {key}: backend {spec.execution.backend!r} is not decided")
     if spec.execution.jit is not True:
         raise ConfigError(
             f"Definition {key}: jit: false definitions are refused; they execute eagerly, "
