@@ -18,7 +18,7 @@ and the lead's rulings are in §11:
   energy booking is a known limit, so production worlds should start resolved too;
 - RK4 with a diffusing species is guarded, not refused;
 - version 1 refuses a donor copy with different route values, the stationary analysis on the
-  composite, and worlds of more than 7 species.
+  composite, and worlds of more than 16 species (7 until FR-9 / D165, §13).
 
 D150 promoted this feature. The user's words were: "we do have plans to be able to run special
 modes of Cells at differnt timescales, so down the road nothing right now but for sure the
@@ -100,7 +100,7 @@ division design.
    refuses these, by the lead's rulings (§11.5):
    - a donor copy whose route values differ from the slot's;
    - the stationary analysis on the composite;
-   - worlds of more than 7 species.
+   - worlds of more than 16 species (7 until FR-9 / D165, §13).
 8. **The guards of record** (§7, §11.4).
    - **Energy.** The shared IMEX energy bound is the ions' and cannot see the species' bookings
      at µM–nM: it is 1.7 to 1,721 times the species' whole free-energy change. So the energy
@@ -557,13 +557,17 @@ primitive replaces the sink as a new law ID, and transport is unchanged.
 - **No ECM entity** (its item 5).
 - **No convection.**
 - **A continuum** (§1.3).
-- **At most 7 species per world** (the lead's ruling, §11.5).
-  - **The refusal.** The two new operators' definition checks refuse a world with more, and the
-    refusal names the cap and its reason. No model changes.
-  - **The reason.** Host-side NumPy sums over the species axis switch to pairwise summation at
-    8 or more terms. Host checks could then add the species in a different order from the
-    device's explicit species-order adds (D148).
-  - So version 1 admits at most 7 species until that is checked.
+- **At most 16 species per world** (FR-9 / D165, §13; the lead's ruling at 7, §11.5). The cap
+  counts every species, ions included.
+  - **The refusal.** Every species operator's definition check refuses a world with more:
+    turnover, exchange and D152's local reactions. The refusal names the cap and its reason. No
+    model changes.
+  - **The old reason, checked.** Host-side NumPy sums over the species axis switch to pairwise
+    summation at 8 or more terms, so host checks could add the species in a different order from
+    the device's explicit species-order adds (D148). The W4 probe (§13) found that order real,
+    and that nothing depends on it: every ledger adds the species in explicit species order.
+  - **The scope.** Worlds above 7 species are outside D150's judged scope until a protocol covers
+    them, and claim 3 stays reported. Above 16 needs another probe.
 - **The onset energy booking in mixed worlds** (a known limit, the lead's ruling, §11.4).
   - A switch-on from the trace is transported exactly.
   - Under the ions' bound, the species' onset energy booking is off by a few percent and goes
@@ -1476,13 +1480,14 @@ stays in every later row.
    §10, question 9).
 2. **The stationary analysis is not admitted on the composite in version 1.** Per-species
    tolerance scaling is required before trace or nM species use the plain @3 path (§8).
-3. **At most 7 species per world in version 1** (§2.6).
+3. **At most 7 species per world in version 1** (§2.6). *Raised to 16 by FR-9 / D165 on 14
+   November 2026, after the W4 probe (§13).*
    - The two new operators' definition checks refuse a world with more, with a message naming
      the cap. No model changes.
    - The reason: host-side NumPy sums over the species axis switch to pairwise summation at 8
      or more terms. Host checks could then add the species in a different order from the
      device's explicit species-order adds (D148).
-   - The cap holds until that is checked.
+   - The cap holds until that is checked; the W4 probe checked it up to 16 (§13).
 4. **The energy guards of record** are those of item 4: the species-only world and a NumPy ΔG
    test per law, with the docstring statement (§7).
 5. **The ramped-source arm.** Version 1 guard worlds use a pre-formed profile only, the measured
@@ -1701,6 +1706,62 @@ review with the advisor.
   source pointers. judge-q5's pytest processes ran on the unit's own CPU, inheriting its affinity.
 - The judged entries follow once each, in order (judge, judge-q5, combine), from one fresh clean
   snapshot of main at the registration commit.
+
+## 13. FR-9 / D165: the species cap raised to 16, an in-place change under D148 (14 November 2026)
+
+Written before the change, as D148 asks: the four criteria and the stop rule first. A study's first
+world definition is blocked by the cap, which counts every species, ions included; a six-ion world
+leaves one free row.
+
+**The change.** `species_common.MAX_SPECIES` from 7 to 16, with its refusal message.
+- The cap is a definition-time refusal in `check_species_cap`, which scheduled_species_turnover@1,
+  scheduled_species_exchange@1 and local_species_reactions@1 (D152) all call. It is D150's own
+  shared definition code, which D152's operator imports.
+- It appears in no traced program: the W4 probe's step jaxpr is identical with the cap at 7 and
+  at 16.
+
+**The basis: the W4 probe.** It ran from the clean snapshot of f7f0592, with the cap raised in its
+own process only: `/mnt/workspaces/Cells/inventory-coupling-20261114-01/w4-cap-probe/`.
+- Every composition D150 and D152 admit ran at 7, 8, 12 and 16 species, with every host check on
+  every accepted row: heredity chains and one-cell worlds with all three operators acting, and
+  D152's face-free energy world at 7 and 12.
+- The device ledgers held on vector-window batches, and a reversed batch was bitwise at 16.
+- A restart at 16 resumed both in process and through a snapshot.
+- Claim 2 held bitwise at 16: operators declared at zero rate against none.
+- The cap's stated reason is real but harmless. At 8 or more terms NumPy's host sum takes the
+  pairwise order. In `cell_charged_9`, nine species with seven moving charged rows, NumPy's
+  `charge_increment` differs from the explicit species-order sum in 4 of 6 rows, by up to 6 ulp.
+- No ledger, guard or promised idleness depends on that order. Every ledger's species sum is the
+  explicit species-order sum (`capacitor_change`, D148), which equals the device's bitwise.
+
+**The four criteria (D148), fix against no fix.**
+1. **Physical fields are bitwise identical in every qualified world and program.** Every world the
+   cap admitted before, at most 7 species, defines and compiles the same programs, because the cap
+   is in no traced program. Evidence: the crossrev, identical in every set.
+2. **Verdicts and registered numbers are unchanged.** No registered or qualified world has more
+   than 7 species, so none changes. Tier 1 and tier 2 must show no changed outcome apart from the
+   three tests that assert the cap's value.
+3. **Ledger accumulators change only at rounding level.** They are unchanged in every existing
+   world, by criterion 1. In the newly admitted worlds (8 to 16 species), the host checks add the
+   species in NumPy's order, which can differ from the explicit order at rounding level. The case
+   listed is `cell_charged_9`: up to 6 ulp in `charge_increment`, in 4 of 6 rows. The ledgers
+   themselves use the explicit order.
+4. **The crossrev baseline** is renewed at the landing commit by the lead. The species and reactions
+   sets' records are compared as well.
+
+**The stop rule.** The change stops and goes back to the lead if any of these happens; no new ID
+is taken without the user's choice (D148):
+- any crossrev set differs in a jaxpr text, a constant or a binding;
+- tier 1 or tier 2 changes any outcome other than the three tests that assert the cap;
+- the new 9-species guard world fails any host check on any accepted row.
+
+**Recorded with it.**
+- **D150's claim 3 stays reported, not judged.** The claim is that extra neutral species leave
+  the base species' rows unchanged. The probe's 12-species chain departed: amount increments,
+  transfers and reservoir supply by up to about 3,600 ulp, and the face and reservoir energies by
+  the extra species' own contributions.
+- **Worlds above 7 species are outside D150's judged scope** until a protocol covers them.
+- **Above 16 species needs another probe.**
 
 ## Appendix A. Equations for the independent references
 

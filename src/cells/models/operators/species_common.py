@@ -11,8 +11,9 @@ are built.
   evidence (the protein catalogue plan's constraint 6), given exactly when a reference is. The
   identity reaches the summary and the definition, never the arrays. Two operators that declare
   one species must declare the same identity.
-* **At most 7 species per world** (the lead's ruling 3, §2.6), refused in both operators'
-  definition checks, with the reason in the message.
+* **At most 16 species per world** (§2.6; FR-9 / D165 raised it from 7 on the W4 probe, §13),
+  refused in every species operator's definition check, with the reason in the message. The cap
+  counts every species, ions included.
 * **Rates belong to the occupant** (§5.2, the lead's decision of 13 November). Cell-side rates
   are properties of the carrier that occupies a slot, not of the slot:
   - founders' rates come from schedules keyed by the founder's carrier ID (its cell ID), from
@@ -43,7 +44,7 @@ from cells.models.operators.membrane_state import parse_catalogue
 
 REPLACEMENT_LAW = "scheduled_cell_replacement@1"
 SPECIES_LAWS = ("scheduled_species_turnover@1", "scheduled_species_exchange@1")
-MAX_SPECIES = 7
+MAX_SPECIES = 16  # FR-9 / D165 (from 7): the W4 probe; above it, another.
 EVIDENCE_KINDS = ("label_only", "expressed_isoform", "native_current", "model")
 # Version 1 is transport on a static tissue (§5.5): both operators read the declared volumes and
 # masks, so no other operator may provide them, and a closer counts as a mask's provider (S5). This
@@ -166,11 +167,11 @@ def check_species_cap(spec, law):
     count = len(spec.model.species_ids)
     if count > MAX_SPECIES:
         raise ConfigError(
-            f"{law} admits at most {MAX_SPECIES} species per world in version 1 (this world "
-            f"declares {count}): host-side NumPy sums over the species axis switch to pairwise "
-            "summation at 8 or more terms, so the host checks could add the species in a different "
-            "order from the device's explicit species-order adds (D148). The cap holds until that "
-            "is checked"
+            f"{law} admits at most {MAX_SPECIES} species per world (this world declares "
+            f"{count}; the cap counts every species, ions included). Up to 16 the W4 probe found "
+            "no ledger, guard or promised idleness that depends on NumPy's pairwise sum order over "
+            "the species axis, since every ledger adds the species in explicit species order "
+            "(D148); a larger world needs another probe (FR-9 / D165)"
         )
 
 

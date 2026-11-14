@@ -57,9 +57,10 @@ from the trace is a few percent off and passes unseen under the ions' bound, a k
 RK4 is guarded, not refused: exact half-steps around @3's RK4 step ("split").
 
 Refusals. At the definition: a charged species, a patch on a held bath, an import with a flux law,
-a saturable export, a negative rate, K_M <= 0, a schedule change off the dt grid, more than 7
-species per world, an occupant without its rates, a donor copy whose route values differ from the
-slot's, and every provider or closer of the volumes, the activity masks and the membrane areas
+a saturable export, a negative rate, K_M <= 0, a schedule change off the dt grid, more than 16
+species per world (FR-9 / D165), an occupant without its rates, a donor copy whose route values
+differ from the slot's, and every provider or closer of the volumes, the activity masks and the
+membrane areas
 (CONFLICTS_VIEW: version 1 reads the declared volume and area, so water, the lumens, membrane state,
 insertion and S5's operators are refused). At run time: a supply shortfall, a failed saturable
 solve, non-finite values and any written amount that would not stay positive; each half-step returns

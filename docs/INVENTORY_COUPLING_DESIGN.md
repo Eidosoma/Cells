@@ -1084,7 +1084,192 @@ waits until the division sources are read.
 6. **Energy pools.** Should a regulatory state's maintenance cost be drawn from finite energy pools
    later, as D150's question 11 and D152's question 10 ask for their laws?
 
+## 7. Milestone 1 as built (14 November 2026)
+
+Milestone 1, the contract fit (§4.4's M1), is in the checkout:
+- the operator, `models/operators/species_regulated_availability.py`;
+- the neutral Hill helper, `processes/hill_factors.py`;
+- the worlds, `validation/tissue/regulated_availability_fixtures.py`;
+- eight test files, `tests/unit/test_hill_factors.py` and
+  `tests/unit/test_species_regulated_availability*.py`.
+
+This section records where the build departs from §1 or sharpens it, the second consumer's items
+(FR-6, D162), and milestone 1's results. It grants no acceptance beyond M1's own checks:
+- the channel target's entry into the accepted scope is the lead's (ruling 12);
+- the judged qualification (A1–A10) follows, and the references agent starts from Appendix A
+  (ruling 11).
+
+Evidence is in `/mnt/workspaces/Cells/inventory-coupling-v1-20261114-01/`: HANDOFF.md, the record
+runs from frozen snapshots, P1's record (`p1.json`) and the crossrev.
+
+### 7.1 Where the build departs from §1, or sharpens it
+
+1. **One flat slot axis.** The state fields run over `regulatory_slot`, the declared
+   (state, cell) pairs in declared order (states, then each state's cells), not over
+   [state, cell].
+   - No undeclared (state, cell) exists, so §1.5's start-value rule for one does not arise.
+   - Routes and inputs index slots.
+2. **Static idleness from the declaration alone:** no state and no coupling.
+   - `statically_idle` reads the layout, which holds no schedule, so §1.6's wider rule (no
+     scheduled change and no crossing level) is not used.
+   - A world of constant-schedule couplings and no state therefore runs its event map: it copies
+     the switches and advances the counter.
+   - A3's identity cases hold bitwise either way.
+3. **The event map's order** is:
+   1. the crossing record, from the state at the step start before any write, with the counter's
+      value k, which is §1.5's step end k·dt;
+   2. due writes;
+   3. the switches;
+   4. the counter.
+
+   A record is set once. A declared s₀ ≥ θ is recorded at k = 0. A write that lifts s to θ or above
+   is recorded at the end of the step it starts.
+
+   A row saved at a write's or a switch's time shows the state before that event, since the event
+   map runs at the start of the step leaving that time. So the observed factor and @3's observed
+   availability there are the pre-event values; the `_runs` comparison skips row 0 for this
+   reason.
+4. **A stale write count** is refused in the event map, through the step's flag, as replacement's
+   stale generation is. `control_valid` checks the switch values, the written values and the
+   counts' signs.
+5. **The factor's run-time domain** (§1.11). Every route's F must be finite and in [0, 1].
+   - It is checked in `domain_valid`, on every step's end state and, at the definition, on the
+     initial state.
+   - It is also checked in `rate_checks`, wherever the composite evaluates readouts (the coupled
+     RK4 right-hand side, and the definition's check at every control change).
+   - The factor at the control view, after the first half-steps, is not checked again. It reads
+     amounts that D150's and D152's own domains keep positive (**S**).
+6. **The read-only list's parser** (`parse_read_species`, ruling 1) is in this module, not beside
+   `species_common.parse_species`.
+   - That file's owner is raising the species cap.
+   - The parser takes the reader's law for its messages, so moving it there is a pure move, and
+     D152's 1.1 door calls it.
+7. **`CONTROL_FACTORS`** was ("junction",) for the junction evidence. It became ("junction",
+   "channel") when P1 passed.
+   - `control_factors` returns only the controls with a route, a static branch on the route
+     table's width. A junction-only world multiplies no channel.
+   - `held_schedules` holds both controls in every composition with the operator (§1.10). The
+     junction cases were rerun at the head to check it.
+8. **The schedules follow the composite's event-time rule.** Every change is an exact multiple of
+   dt before the horizon's end.
+   - A switch schedule starts at 0, and its later changes lie in 0 < t < end.
+   - Writes lie in 0 ≤ t < end. A write at 0 is in the control at 0 and is applied at the first
+     step start. It is not a schedule change time (§7.2, item 3).
+9. **The `factors` manifest entry** (ruling 6) is not built.
+   - The manifest writer is in files the D156 agent works in, so the entry waits for the lead's
+     coordination.
+   - Milestone 1 changes one shared file, the operator registry (`models/operators/__init__.py`).
+10. **The Hill helper** agrees with D152's inline expression bit for bit on the host.
+    - Jitted, its log factor agrees within 4 ε, since XLA's `log` and `logaddexp` are not NumPy's.
+    - D152's code is untouched. Its live rates are the guard; there is no source-text check.
+11. **The summary** names the mechanism its factor stands for (§1.7). It also reports
+    `coupling_unrecorded_final_crossings`, §1.5's known limit.
+12. **The worlds and their cost.**
+    - Every world is the seven-cell heredity sheet (Na, K, M, P and a neutral regulator R; 20–30
+      steps at 1 ms).
+    - The tier-1 smoke is host-side (NumPy, no compile).
+    - One compiled program of the sheet takes about 20–45 s on one CPU, so each file that compares
+      two programs took 47–111 s there across the records (§7.3). That spans tier 2 and the tier
+      measurement's 90 s cap. D150's and D152's run files are in tier 3.
+    - The bitwise files could share one coupled structure, with couplings switched off and
+      per-cell s₀. That would roughly halve their one-CPU total (the idle operator keeps its own
+      program), if the tiers want it.
+
+### 7.2 The second consumer (FR-6, D162; with FR-5 and FR-7)
+
+1. **The channel target** is the consumer's main need: a delivered template's electrical effect
+   runs through channel availability.
+   - P1 passed (§7.3).
+   - **Leaks** (`membrane`) and **pumps** (`pump`, `calcium_pump`) are the next targets on the same
+     path, for version 1.1. Each needs its own P1-style bitwise probe.
+   - `control_view` multiplies any inner control, and `held_schedules` already holds all five.
+2. **The routing door's shape stays general.** §2.1's rate route already names D152's
+   `reaction_multiplier` and D150's production, clearance, secretion and uptake rates. Those are a
+   turnover rate, an exchange rate and a reaction multiplier, the three that FR-5 and FR-7 ask for.
+   Nothing is built.
+3. **A cell's prior condition, set before a dose.**
+   - `initial` takes one value for every cell of the state, or an object naming each of its cells
+     once. The canonical form is the number when every cell's value is equal.
+   - `regulatory_writes` admit t = 0.
+   - So the condition is set in one of two ways:
+     - a per-cell s₀;
+     - a write at or before the dose's step. At the dose's own step start, the write precedes the
+       dose's event when this operator is declared before the dosing operator, since event maps run
+       in declared operator order (`pump_composite.py`: `self.events` keeps the operators' order,
+       and `split_step` runs them in turn).
+   - Milestone 1 tests both. The `_runs` file compares a per-cell s₀ with the same value written
+     at 0: bitwise from the first step on.
+   - **Amendment to §4.4.** A2 tests a per-cell s₀ against the same value written at 0. A8 tests a
+     restart across a write placed before a dose's step.
+4. **FR-7 (b)'s source door.** A population's abundance would be a factor's source beside a species
+   concentration, read from `membrane_entity_state@1`'s view.
+   - It is recorded here as a door of §1.3, now that P1 has passed. It is not built.
+   - It needs a `VIEW_READS` of the abundance and the view passed to `control_factors`: the same
+     kind of contract change as §1.12's water and closer doors (**S**).
+
+### 7.3 Milestone 1's results
+
+Every comparison runs on the seven-cell sheet for 30 steps at 1 ms. "Bitwise" means every @3 state
+field of every accepted row and every @3 observation column, NaN-aware, against the comparison
+world.
+
+| Check | Arms | Result | File |
+| --- | --- | --- | --- |
+| **M1, the junction** | F = 1/2 on junction_0 against 1/2 scheduled; on over 1 against off over 1/2 | Bitwise. Not vacuous: 1/2 changes the step | `_bitwise` |
+| **A3, zero** | F = 0 against 0 scheduled | Bitwise. No transfer and no heat through junction_0, while its gate evolves | `_bitwise` |
+| **A3, identity** | Switched off against the world without the operator; the idle operator against it | Bitwise | `_bitwise`, `_bitwise_idle` |
+| **A3, multiple** | Side both (two routes of 1/2), and two couplings of 1/2, over 1/2, against 1/8 scheduled | Bitwise. Not vacuous: 1/8 and 1/2 differ | `_bitwise_both`, `_bitwise_products` |
+| **P1, the channel** | kir_3 at 1/2, 0 and 1 against the same availability scheduled | (a) The step and (b) the observations bitwise in every arm, with the observed factor exact. The negative control differs in 15 state fields | `_bitwise_channel` (`p1.json`) |
+| **The Hill helper** | D152's own rates over a grid of K, n and x | Bit for bit on the host; jitted log factors within 4 ε | `test_hill_factors.py` |
+| **The prior condition** (FR-6) | A per-cell s₀ against the same value written at 0 | Bitwise from the first step on. The crossing is recorded at step 0 and at step 1 | `_runs`; tier 1 |
+| **A compiled run of every part** | R cleared by turnover; a state of Na; a write; a crossing | The observed factors match an independent evaluation within 1e-13. The write, the crossing record and the counter behave as declared | `_runs` |
+| **Refusals and composition** | §1.11's 46 definition cases; 8 refused and 9 admitted operator lists | Each with its message | tier 1 |
+| **The parts in NumPy** | The factors (junction and channel), the half-step, the event map, idleness, the summary, the factor's domain, the prior condition, a switch change mid-run (§1.13's cut) | As declared | tier 1 |
+| **Crossrev** (§1.10, claim 1) | The seven sets (base, qualification, injection, volume, division, species, reactions), main d1c0216 against d8559cb6: jaxprs and bindings, and each tool's check | Identical in every set. No set declares the operator; its own set is a landing item | `crossrev/` |
+
+**P1's verdict.** P1 met its criterion, which was written before any run: (a) and (b) both held in
+every arm, so the stop rule did not apply. The channel target's entry into scope is the lead's
+(ruling 12).
+
+**The record runs.** Each ran from a clean frozen snapshot, with every file pinned to one CPU as
+the tier runner pins.
+
+| Record | Commit | Files | Result |
+| --- | --- | --- | --- |
+| A | 5af0f08 (`CONTROL_FACTORS` = junction) | Tier 1, the Hill helper, `_runs`, `_bitwise`, `_bitwise_idle`, `_bitwise_products`, `_bitwise_both` | All passed |
+| B | 768581c8 (the channel admitted) | `_bitwise_channel` (P1), tier 1 | Passed |
+| C | d8559cb6 (the prior condition) | All eight | All passed; the crossrev ran at this commit |
+| D | 01908d9f (two refusal cases added) | All eight, and the seven tier-1 files that use the operator registry (the contract, adapter, partition, membrane-state, injection and D152's two) | All passed |
+| E | 0d0fbb09 (the code at the head: a switch change mid-run added) | Tier 1, and the five tier-1 files that inventory `src/cells` (the BETSE boundary, the source-profile boundary, the continuity bypass, D147's drivers, J2's bright line) | All passed except one continuity-bypass test, which fails identically from main's snapshot. The snapshots exclude `scripts/`, so its exemptions for four scripts look stale. Its scan of `src/cells` and `validation` passes |
+
+Commits 4457844a, 01908d9f and 0d0fbb09 change no program after C.
+- The first is ruff's format and line lengths. Each file's AST without docstrings is unchanged,
+  apart from an unused import removed.
+- The other two add tests: two refusal cases, and a switch change mid-run.
+- `ast_same-d8559cb6-0d0fbb09.txt` in the evidence folder records this.
+
+**One-CPU seconds per file, the range over the records:** tier 1, 7–12; the Hill helper, 3–7;
+`_runs`, 27–65; the five bitwise files, 47–111. The same bitwise files took 47–55 s in record D
+and 87–111 s in records A and C, on the same pinned CPUs; the cause of that spread is not
+established. At 47–55 s they are tier 2, and at the upper end they reach the 90 s cap. The tier-1
+and tier-2 gate itself was not run; it is the lead's before landing.
+
 ## Appendix A. Equations for the independent references
+
+**Milestone 1's amendments apply here (§7).**
+- **The crossing record** reads s at a step start before that step's writes (§7.1, item 3). So
+  A.3's k* is the smallest k with s(k·dt) ≥ θ, where s(k·dt) is the state the previous step
+  produced, or s₀ at k = 0.
+  - An s₀ ≥ θ is recorded at k = 0.
+  - A write at the start of step k that lifts s to θ or above is recorded at k + 1, if s still
+    holds there.
+- **A.4's event map** runs in this order: the crossing record, the due writes, the switches, then
+  the counter.
+- **The declaration** (§7.1, item 8; §7.2, item 3):
+  - s₀ may be given per cell;
+  - writes admit 0 ≤ t < end, and a write at t sets s at the start of the step leaving t;
+  - later switch changes lie in 0 < t < end.
+- **A row saved at a write's or a switch's time** shows the state before that event (§7.1, item 3).
 
 **A.1 Notation.**
 - Cell i has declared volume V_i (pL). A species row s has amount n_si = reference + increment

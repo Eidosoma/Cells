@@ -1,10 +1,11 @@
 """Tier-1 tests of the secreted-species definitions (D150 version 1; host side, no compile).
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §1.3, §1.5, §2.6, §5.2, §5.5, §8 and §11.5: the inventory
-helper, the 7-species cap with its reason, identity on the declarations (never in the arrays), the
-version 1 composition refusals, the stationary analysis' refusal of the composite, the required
-energy-guard statement, and the occupant rule (rates belong to the carrier; donor copies admitted
-only with the slot's route values; schedules keyed by carrier).
+helper, the species cap with its reason (16 since FR-9 / D165, 7 before), identity on the
+declarations (never in the arrays), the version 1 composition refusals, the stationary analysis'
+refusal of the composite, the required energy-guard statement, and the occupant rule (rates belong
+to the carrier; donor copies admitted only with the slot's route values; schedules keyed by
+carrier).
 """
 
 import copy
@@ -107,22 +108,24 @@ def test_the_helper_declares_a_neutral_impermeant_species_at_a_trace():
 # ------------------------------------------------------------------ cap, identity, composition
 
 
-def test_more_than_seven_species_are_refused_with_the_reason():
+def test_more_than_sixteen_species_are_refused_with_the_reason():
+    """FR-9 / D165: the cap is 16, every species counted, ions included (it was 7)."""
     raw = turnover_world()
-    for i in range(4):  # 3 ions, S and 4 more: 8 species.
+    for i in range(13):  # 3 ions, S and 13 more: 17 species.
         raw = add_inventory_species(
             raw, f"X{i}", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
         )
-    with pytest.raises(ConfigError, match="at most 7 species per world") as error:
+    with pytest.raises(ConfigError, match="at most 16 species per world") as error:
         parse_spec(raw)
-    assert "pairwise summation at 8 or more terms" in str(error.value)
-    assert "species-order adds (D148)" in str(error.value)
-    seven = turnover_world()
-    for i in range(3):
-        seven = add_inventory_species(
-            seven, f"X{i}", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    assert "ions included" in str(error.value)
+    assert "explicit species order (D148)" in str(error.value)
+    assert "another probe (FR-9 / D165)" in str(error.value)
+    sixteen = turnover_world()
+    for i in range(12):
+        sixteen = add_inventory_species(
+            sixteen, f"X{i}", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
         )
-    parse_spec(seven)  # Seven are admitted.
+    parse_spec(sixteen)  # Sixteen are admitted.
 
 
 def both(turnover_identity, exchange_identity):
@@ -398,7 +401,7 @@ def test_the_definition_round_trips():
 
 
 @pytest.mark.parametrize("operator", ["turnover", "exchange"])
-def test_each_operator_refuses_more_than_seven_species(operator):
+def test_each_operator_refuses_more_than_sixteen_species(operator):
     base = fx.secreting_cell()
     if operator == "turnover":
         routes, controls = [("p", "cell_0", "production")], [("p", "cell_0", [(0.0, 1e-6)])]
@@ -407,11 +410,11 @@ def test_each_operator_refuses_more_than_seven_species(operator):
         routes = [("s", "contact_0", "export", "first_order")]
         raw = fx.with_exchange(base, routes, [("s", "cell_0", [(0.0, 0.1)])])
         law = fx.EXCHANGE
-    for i in range(4):
+    for i in range(13):  # 3 ions, S and 13 more: 17 species.
         raw = add_inventory_species(
             raw, f"X{i}", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
         )
-    with pytest.raises(ConfigError, match=re.escape(law) + " admits at most 7 species"):
+    with pytest.raises(ConfigError, match=re.escape(law) + " admits at most 16 species"):
         parse_spec(raw)
 
 
