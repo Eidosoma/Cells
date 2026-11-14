@@ -211,7 +211,7 @@ calcium-energy family's regulation.
 | --- | --- |
 | **Entity** | A cell's cytosolic amount of one of @3's species rows: the compartment entity's material. Sensing reads @3's state, n = `amount_reference` + `amount_increment`, never a second copy |
 | **Sensing** | **Concentration**, c = n/V in mM (fmol/pL), with V the cell's declared volume. **Amount sensing is rejected.** A half-saturation is a dissociation constant, which is a concentration, so a law of the amount would ignore dilution and depend on the declared volume's scale |
-| **Species admitted** | *Instantaneous factors:* neutral, impermeant inventory species, under D150's declaration rules (`species_common.parse_species`). These are the rows that @3's step does not move (§1.4). *Regulatory-state inputs:* any species row of the world, ions included, through a read-only list (D152 §7.3's door "reads of charged or permeant species": reads book nothing) |
+| **Species admitted** | *Instantaneous factors:* neutral, impermeant inventory species, under D150's declaration rules (`species_common.parse_species`). These are the rows that @3's step does not move (§1.4). *Regulatory-state inputs:* any species row of the world, ions included, through a read-only list (D152 §7.3's door "reads of charged or permeant species": reads book nothing). Admitting ions is the lead's question 1 (§6.3) |
 | **Laws** | `hill_activation` x^n/(K^n + x^n) and `hill_inhibition` K^n/(K^n + x^n), D152's forms and log-space evaluation. `state_fraction` s and `state_complement` 1 − s of a regulatory state (§1.5). Every coupling then applies F = b + (1 − b) f |
 | **Units** | K in mM; n > 0, dimensionless; rates in s⁻¹; b, s and F dimensionless |
 | **Target domain** | F ∈ [b, 1] ⊂ [0, 1], with 0 ≤ b < 1. The effective availability is a_sched × Π F ≤ a_sched ≤ 1. Hill factors are positive at positive c; a state factor reaches exactly 0 only when b = 0 and s = 0 or 1 |
@@ -267,7 +267,7 @@ The loop through @3 is integrated by splitting.
   to minutes.
 - A4 measures it, including a fast-rate arm, where the state tracks its quasi-steady value within a
   step and the order constant grows.
-- Version 1 declares no run-time loop bound. Whether one is needed is question 4 for the lead
+- Version 1 declares no run-time loop bound. Whether one is needed is question 5 for the lead
   (§6.3).
 
 ### 1.5 The regulatory state
@@ -293,6 +293,8 @@ multiply). At least one input is required, and s(0) = s₀ ∈ [0, 1].
   quasi-steady value s* = k_on u / λ, so s stays in [0, 1]. In floating point a value outside
   [0, 1] is refused, never clipped. Where λ = 0, or for an undeclared (state, cell), the start value
   is selected.
+- **Zero rates are admitted.** k_on = k_off = 0 gives a frozen state, held at s₀ or at its last
+  write. A3's zero and pass-through cases use it.
 - **What it can be (S):**
   - a fast binding step, for ion feedback;
   - a low-pass filter of its input, with time constant 1/λ;
@@ -309,6 +311,9 @@ multiply). At least one input is required, and s(0) = s₀ ∈ [0, 1].
   Their energy role is diagnostic (v2 §1.1). They give the first consumer its exposure and its
   threshold time at step resolution, whatever the observation interval (§4.5), and they are the
   trigger's detection half (§2.2).
+- **A known limit of the crossing record.** A crossing in a run's final step is never recorded,
+  because no later step start runs the event map. The summary reports a final row with s ≥ θ and no
+  record as such, and the trigger door inherits the rule.
 
 **Retention, reset and transfer** (GZMK item 6's three, and who writes the state at each):
 
@@ -437,7 +442,7 @@ The values are illustrative and synthetic.
   evaluation, and order invariance to rounding.
 - **The manifest.** The field map records each control's owner (`inner`) but not the chain of
   factors. A `factors` entry, {control: [laws in declared order]}, would be a manifest-only addition
-  (question 5, §6.3).
+  (question 6, §6.3).
 
 ### 1.8 Energy: a factor books nothing
 
@@ -448,7 +453,7 @@ The values are illustrative and synthetic.
 2. **A factor is a schedule written by state.** Within a step it is a constant in [0, 1] multiplying a
    scheduled availability in [0, 1], held through @3's step. That is the same object as a scheduled
    availability that changes at that step, which @3 admits at every step. @3 books each gated flux,
-   with its heat and, for pumps, its work, at the effective availability. Acceptance A3 shows the
+   with its heat and, for version 1.1's pump targets, its work, at the effective availability. Acceptance A3 shows the
    equivalence bit for bit.
 3. **The sign (S).** Each gated rate is the availability times a function that vanishes, and changes
    sign, with its own driving force. For constant-field leaks, channels and junctions that force is
@@ -484,7 +489,7 @@ conclusion for the guards.
   ln f = −logaddexp(0, z). This is D152's kernel form, finite at the trace (D150 §1.3) and at large x.
   The basal combination is linear, so b = 0 gives f exactly.
 - **Shared code.** Whether the Hill evaluation becomes a neutral helper that D152 adopts later under
-  crossrev, or is repeated with a bitwise-agreement test against D152's kernel, is question 6 (§6.3).
+  crossrev, or is repeated with a bitwise-agreement test against D152's kernel, is question 7 (§6.3).
 - **Step bounds:** none of its own. `inner_check_spec` is unchanged, because a factor ≤ 1 keeps @3's
   bound, taken at availability 1, valid. @3's run-time refusal reads the effective availability.
 - **Cost (S).** O(routes) per step for the factors and O(states × cells) per half-step. Both are
@@ -494,6 +499,12 @@ conclusion for the guards.
   seconds.
 - **Mean field.** D150 §1.3's caution applies. Below about 10² molecules per cell, a Hill factor of a
   regulator is not meaningful.
+- **Rows saved at an event time.** The state saved at a switch or write time t_e is the end of the
+  step that ends at t_e, before the event map of the step leaving t_e runs. The controls observed at
+  t_e are the schedules' values from t_e, the composite's convention for every event operator. Such
+  a row therefore shows the pre-event state (the old switch, the unwritten state) against the
+  post-change schedules of @3's availabilities. An analysis reads an event's effect from the next
+  row, and A8 checks that the convention holds across restarts and windows.
 
 ### 1.10 Idleness (D136), crossrev and the batch signature
 
@@ -829,6 +840,15 @@ of record are therefore value checks:
   - R-feedback joins two cells by a contact with a fixed open gate. Its availability is set by each
     cell's state, which senses that cell's intracellular Na. The state equations are integrated
     together with the ions, by Radau at rtol 1e-10, R-tissue's setting.
+- **Pump-free worlds.** R-tissue has no pumps, so R-cell's and R-feedback's worlds declare leaks,
+  the gated route and a held bath only. Their species are Na, K and Cl with a fixed background, as in
+  S5's worlds, and they are compared over transients of seconds to minutes, before the unpumped
+  gradients run down.
+- **Written afresh, inside the J2 bright line** (S5 §10.1). The new references are written from
+  Appendix A. They may import R-full's transport laws (`ghk_flux`), as R-tissue does. They never
+  import `simulate_divisions`, a J1 builder of `cleft_egg_reference` or any J1 input, so
+  `tests/unit/test_j2_bright_line.py` sees no J1 source in them. The later division-world references
+  of §3.4 steps 1 and 2 use R-tissue's division path only on worlds built from neither J1 input.
 - **A usage note.** The engine agent runs the references only through it, as in S5 and D152.
 
 ### 4.4 The acceptance items
@@ -936,30 +956,36 @@ The test is whether a benchmark exercises species → physical control, or node 
    on main.
 3. **The judged numerical qualification**, after D150 v1's acceptance, since its references use
    turnover's closed forms. Whether A1–A9 may be judged earlier with frozen and constant regulators
-   only is question 10.
+   only is question 11.
 4. **The first consumer**, Track R version 2 (§4.5), after D152's acceptance (MG0c).
 5. **Then §3.4's four steps**, with §2's doors placed as stated there.
 
 ### 6.3 Questions for the lead
 
-1. **One operator, or two?** As here, one operator holds states and couplings. The alternative is a
+1. **Ion sources in version 1**, the largest step beyond "a species sets availability". They enter
+   through the kinetic form only, by a read-only species list: D152's unopened door "reads of
+   charged or permeant species" (its §7.3), taken here for this operator alone. The consequence of
+   refusing them: version 1 has no admissible reciprocal-feedback world, because nothing electrical
+   moves a neutral, impermeant source. A4 would then wait for the ion door, and version 1 would be
+   one-way coupling only.
+2. **One operator, or two?** As here, one operator holds states and couplings. The alternative is a
    state owner and a factor provider, with a cross-operator state read added to the contract now.
    That would pay off when the trigger, D152's factors or a gene-regulation layer read states.
-2. **The basal level b** (the four-parameter Hill form, Goutelle et al. 2008) in version 1?
-3. **The junction side "both"** in version 1, as our modelling choice (S)?
-4. **A run-time loop bound for feedback** (§1.4), or A4's measured regime as the declared limit?
-5. **A `factors` entry** in the manifest's field map, recording the chain of factors?
-6. **The Hill evaluation:** a neutral helper that D152 adopts later under crossrev, or repeated with a
+3. **The basal level b** (the four-parameter Hill form, Goutelle et al. 2008) in version 1?
+4. **The junction side "both"** in version 1, as our modelling choice (S)?
+5. **A run-time loop bound for feedback** (§1.4), or A4's measured regime as the declared limit?
+6. **A `factors` entry** in the manifest's field map, recording the chain of factors?
+7. **The Hill evaluation:** a neutral helper that D152 adopts later under crossrev, or repeated with a
    bitwise-agreement test against D152's kernel?
-7. **One liveness rule** for D150, D152 and this operator beside closers, designed once, at run time
+8. **One liveness rule** for D150, D152 and this operator beside closers, designed once, at run time
    rather than from definition-time living intervals (W1)?
-8. **The crossing record and step counter** in version 1, for A8 and A10's threshold time, or deferred
+9. **The crossing record and step counter** in version 1, for A8 and A10's threshold time, or deferred
    to the trigger door?
-9. **Version 1.1's replacement rule** (D150's occupant tables; reset and inheritance at replacement):
-   next after version 1, or when the coupled-renewal gate asks?
-10. **The judged qualification's timing:** after D150's acceptance, or partly now with frozen and
+10. **Version 1.1's replacement rule** (D150's occupant tables; reset and inheritance at replacement):
+    next after version 1, or when the coupled-renewal gate asks?
+11. **The judged qualification's timing:** after D150's acceptance, or partly now with frozen and
     constant regulators?
-11. **Probe P1** (the channel path) before this note's acceptance, if the lead prefers it to
+12. **Probe P1** (the channel path) before this note's acceptance, if the lead prefers it to
     milestone 1. The door probes P2 (outside-node sources through a state) and P3 (an instantaneous
     factor of a moving row) wait for their consumers.
 
@@ -1033,12 +1059,22 @@ the step. A state's two halves read its inputs before and after @3's step. The r
 reproduce this sequence; the dt study measures its order against them.
 
 **A.5 The bioelectric references.**
-- They use R-tissue's equations: constant-field membranes and contacts, the capacitor graph and the
-  held bath (S5 Appendix A).
-- The gated route's P A is multiplied by a(t) from A.2.
-- In R-feedback, a(t) depends on the two cells' states, whose equations (A.3) are integrated together
-  with the ions, so the system is coupled.
-- The contact's gate is fixed open (g = 1).
+- **Electrostatics and transport** are S5 Appendix A.2 (the capacitor graph and the held bath) and
+  A.3: the constant-field flux J_{k,s} = P_{k,s} A_k ψ(x) (c_{s,i} − c_{s,o} e^{−x}), with
+  x = z_s F V_k/(R T) and ψ(x) = x/(1 − e^{−x}). The worlds are pump-free.
+- **A channel population on patch k** (R-cell) adds one more route for each permeant species s, the
+  same constant-field flux with P_{k,s} A_k replaced by P r_s N o a(t) A_k:
+  - P is the population's declared permeability and r_s its relative permeability for s (1 for K
+    under `kleak_always_open@1`);
+  - N is its declared abundance, and o its opening, which is 1 for a gate-free law;
+  - a(t) is the effective availability of A.2.
+- **A contact e between cells a and b** (R-feedback) carries J_{e,s} = P_{e,s} A_e g a(t) ψ(x)
+  (c_{s,a} − c_{s,b} e^{−x}), with x = z_s F (φ_a − φ_b)/(R T) and its gate fixed open (g = 1).
+  Here a(t) is the product of the two cells' factors (side "both").
+- **The regulator in R-cell** is a neutral, impermeant species: it enters neither the electrostatics
+  nor the transport, so a(t) = F(c(t)) comes from its closed form (A.3, D150's turnover), one way.
+- **In R-feedback**, a(t) depends on the two cells' states, which sense each cell's c_Na. Their
+  equations (A.3) are integrated together with the ions, so the system is coupled.
 
 **A.6 What is compared:**
 - s(t), U(t) and F_r(t) at saved rows;
