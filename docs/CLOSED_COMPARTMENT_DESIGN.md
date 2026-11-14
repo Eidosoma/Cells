@@ -516,7 +516,8 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
    with no face-free node carrying an ion route is unchanged.
    - It touches the same two functions as the queued D148 round for neutral species on membranes and
      junctions (finding 3, probe C4). The two should be one round.
-   - It makes the steps honest, but realistic lysosomes would then need steps of about 0.1 ms.
+   - It makes the steps honest, but the chloride route above would then need dt ≤ 1/(4.8 × 10³ s⁻¹),
+     about 0.2 ms (**S**).
 2. **An implicit treatment.** The bounding patch's electrodiffusion joins the implicit part of the
    IMEX step, as face drift does. That is a new IMEX ID (D147: a change to a solver's iterations is a
    new ID), with its own qualification. FR-5's pores, with permeabilities orders of magnitude above
