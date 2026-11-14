@@ -1,0 +1,479 @@
+{
+ "format": "cells.visualizer.species_atlas@1",
+ "species": {
+  "id": "syn3a",
+  "label": "Syn3A",
+  "organism": "JCVI-syn3A",
+  "taxon": 2144189,
+  "plain": "A bacterium with a designed, minimised genome of 452 protein-coding genes, proposed as the first whole-cell validation organism for Cells; the units of the law inventory are machines of animal cells, and it has none of them."
+ },
+ "made": "2026-11-14",
+ "method": [
+  "The organism's proteins are the 455 protein products of one frozen genome annotation, GenBank CP016816.2 (annotation of 12 April 2018): 452 kept from Mycoplasma mycoides and 3 added for genetic manipulation. UniProtKB holds no entry of the organism; UniProt's archive (UniParc) holds exactly these 455 sequences, with the family signatures on each.",
+  "Licences were read before anything was copied; each is stated in sources, and what was read but not copied is in not_copied.",
+  "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the planarian atlas asks. The build checks that the candidates carry them.",
+  "Each signature was looked for on all 455 sequences. None was found, for any unit.",
+  "A control for every zero: the same signature was asked of the UniProtKB entries of all mollicutes, the class of bacteria the organism was made from; each unit's note gives what came back.",
+  "Eight further signatures, of the ion channels a bacterium could have (potassium, chloride, magnesium, water and membrane-stretch channels), were looked for as well, and none was found, although each is carried by UniProtKB entries of other mollicutes.",
+  "Under extra are nine of the organism's own membrane machines that bear on what the atlas draws and match no unit. Five are named for this organism in Breuer and others 2019, whose saved text the build checks; four are listed by the signature on their sequence. All are assigned by annotation, not measured in this strain.",
+  "No similarity search was run, and nothing is called an ortholog."
+ ],
+ "sources": [
+  {
+   "name": "GenBank",
+   "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2",
+   "release": "CP016816.2, annotation of 12 April 2018",
+   "accessed": "2026-11-14",
+   "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\". Submitters may claim rights in what they submitted; this record states none.",
+   "cite": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2.",
+   "holds": "the locus tags, gene names, products, protein identifiers and lengths of the organism's proteins"
+  },
+  {
+   "name": "UniProt",
+   "url": "https://www.uniprot.org/",
+   "release": "2026_04",
+   "accessed": "2026-11-14",
+   "licence": "CC BY 4.0",
+   "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
+   "holds": "which archived sequences of the organism carry each family signature; the signatures of the units' human candidates; the control counts"
+  },
+  {
+   "name": "InterPro",
+   "url": "https://www.ebi.ac.uk/interpro/",
+   "accessed": "2026-11-14",
+   "licence": "CC0 1.0",
+   "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
+   "holds": "the identifiers and names of the family signatures, as UniProt gives them"
+  },
+  {
+   "name": "Breuer and others 2019",
+   "url": "https://doi.org/10.7554/elife.36842",
+   "accessed": "2026-11-14",
+   "licence": "CC BY 4.0",
+   "cite": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
+   "holds": "the names the paper gives five of the organism's transport proteins"
+  },
+  {
+   "name": "Europe PMC",
+   "url": "https://europepmc.org/",
+   "accessed": "2026-11-14",
+   "licence": "Bibliographic facts only (authors, title, journal, year, identifiers). Open texts were read to check names and are not copied.",
+   "cite": "Europe PMC Consortium, Europe PMC, https://europepmc.org/.",
+   "holds": "the record of the paper cited"
+  }
+ ],
+ "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. The 2022 whole-cell paper (CC BY-NC-ND) was read for numbers and one short quotation, and the 2021 division paper for its abstract; nothing else was taken from them. The 2026 whole-cell paper and the archive of its model were not read for this file, and the instrument files of the 2019 proteomics (PXD008159) were not downloaded.",
+ "units": {
+  "U01": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U02": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U03": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U04": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U05": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U06": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U07": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U08": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U09": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U10": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U11": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U12": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U13": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U14": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U15": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U16": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U17": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of Kv4-type potassium channels (IPR003975). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U18": {
+   "finding": "nothing to look for",
+   "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel. No potassium channel of any family searched was found in this organism.",
+   "products": []
+  },
+  "U19": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U20": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U21": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U22": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U23": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U24": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U25": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U26": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U27": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U28": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U29": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U30": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U31": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U32": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U33": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of BK calcium-activated potassium channels, SK calcium-activated potassium channels and BK channel beta subunits (IPR047871, IPR015449, IPR003930). UniProtKB holds 4 entries of other mollicutes, the class of bacteria it was made from, that carry one of them. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "products": []
+  },
+  "U34": {
+   "finding": "nothing to look for",
+   "note": "A background conductance that the inventory ties to no protein.",
+   "products": []
+  },
+  "U35": {
+   "finding": "nothing to look for",
+   "note": "A lumped permeability of the whole membrane, not a population of proteins.",
+   "products": []
+  },
+  "U36": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+   "products": []
+  },
+  "U37": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+   "products": []
+  },
+  "U38": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+   "products": []
+  },
+  "U39": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of the sodium-potassium pump's alpha subunit, its beta subunit and its FXYD regulators (IPR005775, IPR000402, IPR000272). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. The wider family, the P-type ATPases, has two members here, both annotated as magnesium transporters (loci JCVISYN3A_0787 and JCVISYN3A_0879, listed under extra). Neither carries the mark of the sodium-potassium pump.",
+   "products": []
+  },
+  "U40": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of plasma-membrane calcium pumps (IPR006408). UniProtKB holds 6 entries of other mollicutes, the class of bacteria it was made from, that carry it. The unit's human candidates carry it, so the search finds the family where it exists. One of its two P-type ATPases, locus JCVISYN3A_0879, has been suggested to carry calcium, and the 2019 reconstruction of its metabolism uses it as the calcium importer. It does not carry this signature, and it is listed under extra.",
+   "products": []
+  },
+  "U41": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of SERCA-type calcium pumps (IPR005782). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
+   "products": []
+  },
+  "U42": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of sodium-calcium exchangers (IPR004836). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Nothing in its annotation is named a sodium-calcium exchanger.",
+   "products": []
+  },
+  "U43": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
+   "products": []
+  },
+  "U44": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of potassium-chloride cotransporters and the wider SLC12 transporter family (IPR000076, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
+   "products": []
+  },
+  "U45": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of sodium-potassium-chloride cotransporters and the wider SLC12 transporter family (IPR002443, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
+   "products": []
+  },
+  "U46": {
+   "finding": "nothing to look for",
+   "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species. This organism's own transporters are in its protein catalogue.",
+   "products": []
+  },
+  "U47": {
+   "finding": "none found",
+   "note": "None of the 455 protein products of its genome carries the signature of the mitochondrial calcium uniporter, its regulator EMRE and its MICU regulators (IPR039055, IPR006769, IPR018782, IPR039800). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium and has no mitochondria.",
+   "products": []
+  },
+  "U48": {
+   "finding": "nothing to look for",
+   "note": "A protein cage designed in the laboratory, with no gene in any organism, so there is nothing to look for in this one.",
+   "products": []
+  },
+  "U49": {
+   "finding": "nothing to look for",
+   "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it. No protein of this organism carries the aquaporin family's signature.",
+   "products": []
+  }
+ },
+ "extra": [
+  {
+   "name": "ATP synthase, F1 alpha subunit",
+   "gene": "atpA",
+   "role": "catalytic head",
+   "ids": [
+    {
+     "db": "genbank",
+     "id": "AVX54961.1"
+    }
+   ],
+   "length": 525,
+   "evidence": "family signature",
+   "evidence_note": "Locus JCVISYN3A_0792, product \"F0F1 ATP synthase subunit alpha\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
+   "citation": null,
+   "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its eight subunits are listed here. In mycoplasmas this machine typically runs backwards, spending ATP to pump protons out, which was measured in related species and not in this strain. The law inventory has no F-type ATPase."
+  },
+  {
+   "name": "ATP synthase, F1 beta subunit",
+   "gene": "atpD",
+   "role": "catalytic head",
+   "ids": [
+    {
+     "db": "genbank",
+     "id": "AVX54959.1"
+    }
+   ],
+   "length": 475,
+   "evidence": "family signature",
+   "evidence_note": "Locus JCVISYN3A_0790, product \"F0F1 ATP synthase subunit beta\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
+   "citation": null,
+   "why": "The other subunit of the ATP synthase's catalytic head. The 2019 paper found the genes of this machine essential."
+  },
+  {
+   "name": "ATP synthase, F0 c subunit",
+   "gene": "atpE",
+   "role": "proton-carrying ring",
+   "ids": [
+    {
+     "db": "genbank",
+     "id": "AVX54964.1"
+    }
+   ],
+   "length": 101,
+   "evidence": "family signature",
+   "evidence_note": "Locus JCVISYN3A_0795, product \"F0F1 ATP synthase subunit C\" in the genome record. Its sequence carries IPR000454 (ATP synthase, F0 complex, subunit C) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
+   "citation": null,
+   "why": "The ring of the ATP synthase that carries protons across the membrane."
+  },
+  {
+   "name": "ATP synthase, F0 a subunit",
+   "gene": "atpB",
+   "role": "proton path",
+   "ids": [
+    {
+     "db": "genbank",
+     "id": "AVX54965.1"
+    }
+   ],
+   "length": 287,
+   "evidence": "family signature",
+   "evidence_note": "Locus JCVISYN3A_0796, product \"F0F1 ATP synthase subunit A\" in the genome record. Its sequence carries IPR000568 (ATP synthase, F0 complex, subunit A) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
+   "citation": null,
+   "why": "The membrane subunit of the ATP synthase beside the ring, where protons enter and leave."
+  },
+  {
+   "name": "P-type ATPase MgtA",
+   "gene": "mgtA",
+   "role": "ion pump",
+   "ids": [
+    {
+     "db": "genbank",
+     "id": "AVX54957.1"
+    }
+   ],
+   "length": 942,
+   "evidence": "named in a publication",
+   "evidence_note": "Locus JCVISYN3A_0787, product \"Magnesium-translocating P-type ATPase\" in the genome record. Breuer and others 2019 name it: the annotation lists it as an importer of magnesium. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+   "citation": {
+    "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
+    "doi": "10.7554/elife.36842",
+    "pmid": "30657448"
+   },
+   "why": "A pump of the same superfamily as the sodium-potassium and calcium pumps of animal cells, of another branch: its annotation calls it magnesium-translocating."
+  },
+  {
+   "name": "P-type ATPase annotated as CorA",
+   "gene": "corA",
+   "role": "ion pump",
+   "ids": [
+    {
+     "db": "genbank",
+     "id": "AVX55014.1"
+    }
+   ],
+   "length": 885,
+   "evidence": "named in a publication",
+   "evidence_note": "Locus JCVISYN3A_0879, product \"Magnesium transporter\" in the genome record. Breuer and others 2019 name it: a putative magnesium importer that could carry calcium as well; the paper's reconstruction uses it as the calcium importer. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+   "citation": {
+    "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
+    "doi": "10.7554/elife.36842",
+    "pmid": "30657448"
+   },
+   "why": "Its annotation calls it a magnesium transporter and names it corA, but its signatures are those of a cation-transporting P-type ATPase and not of the CorA channel family. It is the nearest thing this organism has to a calcium pump."
+  },
+  {
+   "name": "Potassium uptake protein KtrB-like",
+   "gene": "natA",
+   "role": "membrane part of KtrAB",
+   "ids": [
+    {
+     "db": "genbank",
+     "id": "AVX54923.1"
+    }
+   ],
+   "length": 533,
+   "evidence": "named in a publication",
+   "evidence_note": "Locus JCVISYN3A_0685, product \"Sodium transporter\" in the genome record. Breuer and others 2019 name it: with locus 0686, the KtrAB potassium import system; the paper's reconstruction gives it an ATP-consuming exchange of potassium for sodium. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+   "citation": {
+    "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
+    "doi": "10.7554/elife.36842",
+    "pmid": "30657448"
+   },
+   "why": "The membrane part of the cell's potassium uptake system. This is how the organism takes up potassium without a sodium-potassium pump or a potassium channel. Its annotation calls it a sodium transporter (natA)."
+  },
+  {
+   "name": "Potassium uptake protein KtrA-like",
+   "gene": "trkA",
+   "role": "regulatory part of KtrAB",
+   "ids": [
+    {
+     "db": "genbank",
+     "id": "AVX54924.1"
+    }
+   ],
+   "length": 242,
+   "evidence": "named in a publication",
+   "evidence_note": "Locus JCVISYN3A_0686, product \"Potassium transporter\" in the genome record. Breuer and others 2019 name it: with locus 0685, the KtrAB potassium import system. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+   "citation": {
+    "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
+    "doi": "10.7554/elife.36842",
+    "pmid": "30657448"
+   },
+   "why": "The cytoplasmic partner of the potassium uptake system, annotated trkA."
+  },
+  {
+   "name": "Glucose transporter PtsG",
+   "gene": "ptsG",
+   "role": "sugar uptake",
+   "ids": [
+    {
+     "db": "genbank",
+     "id": "AVX54956.1"
+    }
+   ],
+   "length": 745,
+   "evidence": "named in a publication",
+   "evidence_note": "Locus JCVISYN3A_0779, product \"PTS sugar transporter\" in the genome record. Breuer and others 2019 name it: part of the glucose phosphotransferase system, the only annotated sugar importer. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+   "citation": {
+    "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
+    "doi": "10.7554/elife.36842",
+    "pmid": "30657448"
+   },
+   "why": "The membrane part of the system that brings in glucose, the cell's fuel. All of its ATP comes from breaking that sugar down."
+  }
+ ]
+}
