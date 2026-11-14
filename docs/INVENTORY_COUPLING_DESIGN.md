@@ -1124,6 +1124,11 @@ runs from frozen snapshots, P1's record (`p1.json`) and the crossrev.
 
    A record is set once. A declared s₀ ≥ θ is recorded at k = 0. A write that lifts s to θ or above
    is recorded at the end of the step it starts.
+
+   A row saved at a write's or a switch's time shows the state before that event, since the event
+   map runs at the start of the step leaving that time. So the observed factor and @3's observed
+   availability there are the pre-event values; the `_runs` comparison skips row 0 for this
+   reason.
 4. **A stale write count** is refused in the event map, through the step's flag, as replacement's
    stale generation is. `control_valid` checks the switch values, the written values and the
    counts' signs.
@@ -1163,10 +1168,9 @@ runs from frozen snapshots, P1's record (`p1.json`) and the crossrev.
     - Every world is the seven-cell heredity sheet (Na, K, M, P and a neutral regulator R; 20–30
       steps at 1 ms).
     - The tier-1 smoke is host-side (NumPy, no compile).
-    - One compiled program of the sheet takes about 20–45 s on one CPU, depending on the machine's
-      load, so each file that compares two programs takes 47–111 s there (§7.3). That is tier 2 on
-      a quiet machine and at the tier measurement's 90 s cap under load. D150's and D152's run
-      files are in tier 3.
+    - One compiled program of the sheet takes about 20–45 s on one CPU, so each file that compares
+      two programs took 47–111 s there across the records (§7.3). That spans tier 2 and the tier
+      measurement's 90 s cap. D150's and D152's run files are in tier 3.
     - The bitwise files could share one coupled structure, with couplings switched off and
       per-cell s₀. That would roughly halve their one-CPU total (the idle operator keeps its own
       program), if the tiers want it.
@@ -1191,17 +1195,17 @@ runs from frozen snapshots, P1's record (`p1.json`) and the crossrev.
      - a per-cell s₀;
      - a write at or before the dose's step. At the dose's own step start, the write precedes the
        dose's event when this operator is declared before the dosing operator, since event maps run
-       in declared operator order.
+       in declared operator order (`pump_composite.py`: `self.events` keeps the operators' order,
+       and `split_step` runs them in turn).
    - Milestone 1 tests both. The `_runs` file compares a per-cell s₀ with the same value written
      at 0: bitwise from the first step on.
    - **Amendment to §4.4.** A2 tests a per-cell s₀ against the same value written at 0. A8 tests a
      restart across a write placed before a dose's step.
 4. **FR-7 (b)'s source door.** A population's abundance would be a factor's source beside a species
    concentration, read from `membrane_entity_state@1`'s view.
-   - It is recorded here as a door of §1.3, now that the channel target has landed. It is not
-     built.
-   - It needs a `VIEW_READS` of the abundance and the view passed to `control_factors`. That is the
-     contract change of §1.12's water and closer doors.
+   - It is recorded here as a door of §1.3, now that P1 has passed. It is not built.
+   - It needs a `VIEW_READS` of the abundance and the view passed to `control_factors`: the same
+     kind of contract change as §1.12's water and closer doors (**S**).
 
 ### 7.3 Milestone 1's results
 
@@ -1220,7 +1224,7 @@ world.
 | **The prior condition** (FR-6) | A per-cell s₀ against the same value written at 0 | Bitwise from the first step on. The crossing is recorded at step 0 and at step 1 | `_runs`; tier 1 |
 | **A compiled run of every part** | R cleared by turnover; a state of Na; a write; a crossing | The observed factors match an independent evaluation within 1e-13. The write, the crossing record and the counter behave as declared | `_runs` |
 | **Refusals and composition** | §1.11's 46 definition cases; 8 refused and 9 admitted operator lists | Each with its message | tier 1 |
-| **The parts in NumPy** | The factors, the half-step, the event map, idleness, the summary, the factor's domain, the prior condition | As declared | tier 1 |
+| **The parts in NumPy** | The factors (junction and channel), the half-step, the event map, idleness, the summary, the factor's domain, the prior condition, a switch change mid-run (§1.13's cut) | As declared | tier 1 |
 | **Crossrev** (§1.10, claim 1) | The seven sets (base, qualification, injection, volume, division, species, reactions), main d1c0216 against d8559cb6: jaxprs and bindings, and each tool's check | Identical in every set. No set declares the operator; its own set is a landing item | `crossrev/` |
 
 **P1's verdict.** P1 met its criterion, which was written before any run: (a) and (b) both held in
@@ -1235,18 +1239,37 @@ the tier runner pins.
 | A | 5af0f08 (`CONTROL_FACTORS` = junction) | Tier 1, the Hill helper, `_runs`, `_bitwise`, `_bitwise_idle`, `_bitwise_products`, `_bitwise_both` | All passed |
 | B | 768581c8 (the channel admitted) | `_bitwise_channel` (P1), tier 1 | Passed |
 | C | d8559cb6 (the prior condition) | All eight | All passed; the crossrev ran at this commit |
-| D | 01908d9f (the code at the head) | All eight, and the seven tier-1 files that use the operator registry (the contract, adapter, partition, membrane-state, injection and D152's two) | All passed |
+| D | 01908d9f (two refusal cases added) | All eight, and the seven tier-1 files that use the operator registry (the contract, adapter, partition, membrane-state, injection and D152's two) | All passed |
+| E | 0d0fbb09 (the code at the head: a switch change mid-run added) | Tier 1, and the five tier-1 files that inventory `src/cells` (the BETSE boundary, the source-profile boundary, the continuity bypass, D147's drivers, J2's bright line) | All passed except one continuity-bypass test, which fails identically from main's snapshot. The snapshots exclude `scripts/`, so its exemptions for four scripts look stale. Its scan of `src/cells` and `validation` passes |
 
-Commits 4457844a and 01908d9f change no program after C. The first is ruff's format and line
-lengths: each file's AST without docstrings is unchanged, apart from an unused import removed. The
-second adds two refusal cases.
+Commits 4457844a, 01908d9f and 0d0fbb09 change no program after C.
+- The first is ruff's format and line lengths. Each file's AST without docstrings is unchanged,
+  apart from an unused import removed.
+- The other two add tests: two refusal cases, and a switch change mid-run.
+- `ast_same-d8559cb6-0d0fbb09.txt` in the evidence folder records this.
 
 **One-CPU seconds per file, the range over the records:** tier 1, 7–12; the Hill helper, 3–7;
-`_runs`, 27–65; the five bitwise files, 47–111. The bitwise files took 47–55 s on a quiet machine
-(record D), which is tier 2; under load they reached the 90 s cap. The tier-1 and tier-2 gate
-itself was not run; it is the lead's before landing.
+`_runs`, 27–65; the five bitwise files, 47–111. The same bitwise files took 47–55 s in record D
+and 87–111 s in records A and C, on the same pinned CPUs; the cause of that spread is not
+established. At 47–55 s they are tier 2, and at the upper end they reach the 90 s cap. The tier-1
+and tier-2 gate itself was not run; it is the lead's before landing.
 
 ## Appendix A. Equations for the independent references
+
+**Milestone 1's amendments apply here (§7).**
+- **The crossing record** reads s at a step start before that step's writes (§7.1, item 3). So
+  A.3's k* is the smallest k with s(k·dt) ≥ θ, where s(k·dt) is the state the previous step
+  produced, or s₀ at k = 0.
+  - An s₀ ≥ θ is recorded at k = 0.
+  - A write at the start of step k that lifts s to θ or above is recorded at k + 1, if s still
+    holds there.
+- **A.4's event map** runs in this order: the crossing record, the due writes, the switches, then
+  the counter.
+- **The declaration** (§7.1, item 8; §7.2, item 3):
+  - s₀ may be given per cell;
+  - writes admit 0 ≤ t < end, and a write at t sets s at the start of the step leaving t;
+  - later switch changes lie in 0 < t < end.
+- **A row saved at a write's or a switch's time** shows the state before that event (§7.1, item 3).
 
 **A.1 Notation.**
 - Cell i has declared volume V_i (pL). A species row s has amount n_si = reference + increment
