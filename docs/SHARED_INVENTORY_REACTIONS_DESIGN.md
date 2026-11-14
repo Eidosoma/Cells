@@ -1,7 +1,8 @@
 # Reactions on the shared inventory (design)
 
-**Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §9. No code.** Code
-follows D150 version 1's code (after S5a), as D152 orders.
+**Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §9.** Code follows
+D150 version 1's code (after S5a), as D152 orders. Milestone 1 (the contract fit) is accepted, with
+the lead's amendments in §11 (14 November 2026).
 
 **History of this note:**
 - The lead's rulings on §9's questions are recorded against each question.
@@ -350,7 +351,8 @@ This is D150 §1.5's form.
 ```json
 {"law": "local_species_reactions@1",
  "standard_concentration_mM": 1.0,
- "species": [{"id": "U", "moieties": {"M": 1}, "standard_mu_RT": 0.0, "reference": null}],
+ "species": [{"id": "U", "moieties": {"M": 1}, "standard_mu_RT": 0.0,
+              "catalogue": null, "evidence": null}],
  "reactions": [
    {"id": "u_autocatalysis",
     "sites": {"outside": ["node_0", "node_1"]},
@@ -358,6 +360,10 @@ This is D150 §1.5's form.
     "law": "mass_action", "rate_constant": 1e5,
     "factors": []}]}
 ```
+
+(Amended at milestone 1, §11: the identity keys are D150's `catalogue` and `evidence`; every key is
+explicit; Michaelis–Menten declares `catalytic_rate_per_s` with a catalyst and `max_rate_mM_per_s`
+without one; a passive law declares `forward_rate_per_s`.)
 
 **What each part declares:**
 - **Species:** neutral species already declared in @3 (§3.2), with:
@@ -653,7 +659,7 @@ probe 2d).
   - **W.** It carries the same absolute error. At 5 s it is −3.4%, −1.6% and −0.75% (quadrature) and
     −0.035%, −0.010% and −0.003% (attribution) at a 1e-12 trace.
 - **Trace sensitivity** (half-step 0.025 s, at 5 s; the true heat converges as the trace goes to
-  zero):
+  zero; relative changes of the whole heat, not pJ, amended at milestone 1, §11):
 
   | Change of trace | True H | Quadrature H | Attribution H |
   | --- | --- | --- | --- |
@@ -720,8 +726,8 @@ the lead with the advisor, 14 November 2026).
   | 1e-12 mM | 0.00625 s | no (the crossing falls in step 2) | −14% (the share) | −0.016% | – |
 
   - **The trace dependence.** At h = 0.0125 s, a 10³ change of the trace (1e-12 to 1e-9) moves the
-    hybrid's whole heat by −1.3e-3, against −1.4e-7 for the true heat. W carries the same absolute
-    error, and the closure stays exact.
+    hybrid's whole heat by −1.3e-3 of itself (a relative change, not pJ; §11), against −1.4e-7
+    for the true heat. W carries the same absolute error, and the closure stays exact.
 - **How it is recorded:** option (a), a known limit under the resolved-start rule.
   - Guard worlds and production worlds keep every passive route's species resolved at every step
     where a driven route could carry it across that route's equilibrium. That covers the start and
@@ -889,13 +895,13 @@ shared bound cannot see. The guards therefore check the residual itself, not the
      with the expected branch asserted for each state.
 5. **The background guard** (§6.5) covers H and W too.
    - A 10³ change of a negligible trace (1e-12 to 1e-9 mM) must move them by no more than the true
-     heat's own change plus a tolerance pinned from probe 2f. The true change there was 6.27e-5,
-     and the hybrid's 6.32e-5.
+     heat's own change plus a tolerance pinned from probe 2f. The true change there was −6.27e-5
+     of the whole heat, and the hybrid's −6.32e-5 (relative changes, not pJ; §11).
    - Under the first draft's quadrature this guard would have failed (1.7e-2). That is the collision
      the lead's review found.
    - **Its scope excludes the reversal onset** (§3.3's known limit). There the hybrid's heat moves
-     by −1.3e-3 for a 10³ trace change (probe 2g). The resolved-start rule keeps that configuration
-     out of the guard worlds.
+     by −1.3e-3 of itself for a 10³ trace change (probe 2g; a relative change). The resolved-start
+     rule keeps that configuration out of the guard worlds.
 
 **Independence of the references** (the lead's ruling with the advisor, 14 November 2026).
 - **The prototype is development evidence, not a reference of record.** Probes 2 to 2g, C3 and C3b share
@@ -1326,7 +1332,8 @@ sources, and the second is a sink.
 - J = [[0.8, 1], [−1.8, −1]], with trace −0.2 and determinant 1, so every Turing condition holds;
 - d_c = 8.568;
 - the band is 0.2 < k̃² < 0.5;
-- σ_max = 0.0572 at k̃² = 0.3186, a wavelength of 11.13 ℓ.
+- σ_max = 0.0572 at k̃² = 0.3185 (0.318545; amended at milestone 1, §11), a wavelength of
+  11.13 ℓ.
 
 **The dimensional scale** (synthetic, compressed): k = 0.1 s⁻¹, c* = 1 µM, D_U = 1e-11 m²/s and
 D_V = 1e-10 m²/s, so ℓ = 10 µm. The fastest mode then e-folds in 175 s, at a wavelength of 111 µm.
@@ -1369,7 +1376,7 @@ question 8).
 | Q1, mode propagation | On L/ℓ = 6, 11 and 16, single-mode starts (amplitude 1e-7 of c*) for every n ≤ 6: each mode's coefficient vector at its record against the exact discrete propagator; second order in dt. Prototype: 2.0e-6 to 1.25e-3 relative at 0.0125 to 0.05 s, ratios 3.98 to 4.07 (B1, B1b) |
 | Q2, admissible modes only | On L/ℓ = 8, from seeded noise (1e-3 of c*), the deviation from uniform decays at the slowest admissible rate (n = 2, σ = −0.065 k) and the pattern never forms. Prototype: 1.4e-8 of u0 at 1,500 s from 1e-3 (B2) |
 | Q3, the predicted wavelength | On L/ℓ = 6, 11 and 16, from seeded noise, the dominant mode during the linear phase and at saturation is the only admissible unstable mode, n = 1, 2 and 3 (wavelengths 2L, L and 2L/3), and its fitted growth rate matches σ_n. Prototype: dominant modes 1 and 2 on 6 and 11, as the reference integration gives (B2) |
-| Q4, the staircase | Over a declared sweep of L/ℓ (4.5 to 30), the fastest-growing mode among single-mode starts on the engine follows the discrete argmax of σ_n, including both gaps |
+| Q4, the staircase | Over a declared sweep of L/ℓ from 4 to 30 (amended at milestone 1, §11), the fastest-growing mode among single-mode starts on the engine follows the discrete argmax of σ_n, including the no-mode point at 4 and the 7.5–8.5 gap |
 | Q5, the subcritical control | d = 8 < d_c: on every domain every mode decays, at its predicted rate |
 | Q6, the nonlinear pattern | From the same seeded start, the engine's pattern at its records (to saturation) against an independent integration of the same semi-discrete system (SciPy DOP853, rtol 1e-12); second order in dt. Prototype: 4.8e-4, 1.19e-4 and 2.97e-5 of c* on L/ℓ = 11 (ratios 4.02 and 4.01); amplitude 0.68 u0 (B2) |
 | Q7, accounting | Material ledgers at the species' floors; every host check; the face-free energy world at rounding (§3.4); positivity; restart through a written snapshot, bitwise; a vmap batch of the domains, each world within 1e-12 of its scalar run |
@@ -1490,6 +1497,7 @@ ruling, §9 question 8).
 | Regulation from other layers | The gene-regulation layer (held, D145) as a factor source or a production law, not an edit to these laws |
 | More than 7 species | D150's check of host-side summation order at 8 or more terms |
 | Occupancy and surface catalysis | D150 §2.5's primitive and its four requirements |
+| Reads of charged or permeant species (added at milestone 1, §11) | Factors and catalysts that read charged or permeant species, for example calcium-regulated production. Reads book nothing, so they need only a read-only species list beside the written one. E15's coupling from bioelectric to chemical signalling is the likely consumer |
 
 ### 7.4 What this note does not authorise
 
@@ -1739,7 +1747,8 @@ for the table.
   half-step. The route reverses, the hybrid sends it to the quadrature, and the quadrature samples
   the log-singular start.
 - **The size.** The step books 5.4–5.6 times its true heat at a 1e-12 trace (+436% to +459%),
-  trace-dependently: −1.3e-3 for a 10³ change of the trace, against the true −1.4e-7. In this one
+  trace-dependently: −1.3e-3 of the whole heat for a 10³ change of the trace, against the true
+  −1.4e-7 (relative changes, §11). In this one
   world the whole heat at 1 s was off by 0.27–0.56%.
 - **When it vanishes.** At a step fine enough that the crossing falls after the first step.
 - **How it is recorded.** As a known limit under the resolved-start rule: option (a), ruled by the
@@ -1838,11 +1847,149 @@ for the table.
   three-compartment linear stability analysis (NumPy). It needs D150 v1, and precedes the later
   item that §6.4's second world becomes.
 
+## 11. Amendments at milestone 1 (the lead, 14 November 2026)
+
+Version 1's first milestone is the contract fit, C1 of §10.4 (branch commits 04499a8 and 8e6438d;
+the design-to-code checklist and the runs in
+`/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/HANDOFF.md`). The lead accepted it
+and ruled on its readings as follows. Each ruling is the lead's, 14 November 2026, at milestone 1.
+
+1. **The milestone-1 half-step (Q1).** Until milestone 2 the half-step selects its start state when
+   every multiplier is zero and refuses any step with a positive multiplier, through the half-step's
+   validity (not `control_valid`). Accepted as a temporary state.
+2. **Identity keys (Q2).** D150's `catalogue` and `evidence` (`species_common.parse_species`), not
+   `reference`. §2.1's example is amended to match.
+3. **Read-only species (Q3).** Accepted for version 1: catalysts and factor species are listed, and
+   so are neutral and impermeant. A version 1.1 door is recorded in §7.3: factors and catalysts that
+   read charged or permeant species (calcium-regulated production, say). Reads book nothing, so they
+   need only a read-only species list. E15's coupling from bioelectric to chemical signalling is its
+   likely consumer.
+4. **A reaction that changes no species is refused (Q4)**, as a typo guard (§3.1's spirit), beside
+   §2.5's list.
+5. **No defaults (Q5).** Every key is explicit. `moieties: null` is the species as its own moiety,
+   and `standard_mu_RT` is required.
+6. **Schedules (Q6).** A route takes its site's schedule, else its reaction's (site null). Every
+   schedule starts at time 0. A reaction-level schedule that applies to no site is refused.
+7. **Sites (Q7).** `"all"` is every cell, or every finite outside node, never a held bath. Routes are
+   ordered cells, then outside nodes, each in declared order (model order for `"all"`).
+8. **Parameter names (Q8).**
+   - `rate_constant` stays for mass action, whose order sets its units (k in mM^(1−q) s⁻¹), as
+     D150's "rate" does.
+   - Michaelis–Menten does not flip one key's meaning on its catalyst:
+     - `catalytic_rate_per_s` (k_cat) when a catalyst is declared;
+     - `max_rate_mM_per_s` (V_max) when none is;
+     - the other case's key is refused, with the reason.
+   - `saturation_mM`, `forward_rate_per_s`, `half_saturation_mM` and `hill_coefficient` stand.
+   - One internal rate array (`reaction_rate_constant`) is fine. The summary reports each route's
+     parameters under their law-specific names and units.
+9. **The consumed species absent from its law's rate (Q9)** is unreachable by construction, tested
+   through the Michaelis–Menten refusals. Accepted.
+10. **The domain (Q10)** also refuses the operator's accumulators off its species rows, on padded
+    slots and at held baths, and a negative extent on a driven route. Accepted.
+11. **The layout (Q11): accepted, with three conditions.** Structure as bound layout arrays (law
+    codes, stoichiometry, catalysts, factor kinds), kept apart by the batch signature; per-reaction
+    parameters repeated per route; one internal rate array; a dense route × factor array with kind 0
+    as padding. This matches D150's practice and keeps programs stable, with per-world values as
+    bindings.
+    - (a) **Benign padding.** Every unused law branch and padded entry stays finite, with positive
+      padding for K_M, K, c0 and amounts. A compiled test with every law and factor kind present,
+      plus padding, checks that no intermediate or output is NaN or infinite.
+    - (b) **The bindings check.** As D150's crossrev driver: two worlds with different network
+      parameters and multipliers but the same structure give identical jaxpr text and constants;
+      only the bound arrays differ.
+    - (c) **The batch signature** refuses two different structures in one batch (stoichiometry, law
+      kinds or factor species), with a test.
+12. **Where rulings go (Q12):** dated amendments in this note, as D150's §12 does. This section.
+
+**Corrections found by the references' agent** (the coordinator, 14 November 2026, at milestone 2;
+amended in place where marked):
+1. **Units of the trace sensitivity.** The figures in §3.3's trace-sensitivity table, §3.4 guard 5
+   and probe 2g's −1.3e-3 and −1.4e-7 are relative changes of the whole heat, not pJ.
+2. **k̃² at σ_max** is 0.318545, which rounds to 0.3185, not 0.3186 (§6.4).
+3. **RT.** Appendix A's 2.5773 pJ/fmol uses R = 8.314; SI R at 310 K gives 2.5775. The engine's R
+   and T apply, and the references take RT as an input.
+4. **Q4's sweep** (§6.4). The 4.5–30 sweep contains only the 7.5–8.5 gap, not "both gaps". The
+   ruling: the sweep runs from L/ℓ = 4 to 30, so it includes the no-mode point at 4, judged
+   against the discrete argmax of σ_n. The discrete argmax differs from the continuum's at
+   L/ℓ = 30.5 (mode 6 against 5).
+
+**Added to milestone 2** (beyond §10.4 and the plan): the ledger and magnitude terms compiled, not
+only on the host; a test of the summary; the full energy-guard statement in the docstring, with C2's
+measured ratio; the idle tests re-run against the live half-step; tier 1 and tier 2 from the clean
+head before hand-back; the independent references only through
+`validation/reactions/REFERENCES_USAGE.md`, once it is on main.
+
+### 11.1 Milestone 2: the half-step and its guards, as built and run (14 November 2026)
+
+The code is on the branch from aaf2f67, the amendments and ruling Q8, through 2b31f88, the
+half-step, and the merge of main with the independent references (0f88501). The evidence is in
+`/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/`: HANDOFF.md, `tests/`,
+`crossrev/`, `tiers/`. The records in the tables come from the clean head 5de1c96 (the source at
+6ab0cb0 plus the tier record), and its snapshot `snapshot-5de1c96`.
+- **Negative controls** are edits of saved histories, judged by the face-free world's residual
+  against its rounding allowance, not misbookings inside the compiled program.
+- **The references** (`validation/reactions`) were used only through `REFERENCES_USAGE.md`.
+
+| Guard | Result | Where |
+| --- | --- | --- |
+| The per-law ΔG test of record (§3.4 guard 4): the half-step against `nr.half_step` on random states | 4 world variants × 60 trials (every law, mass action of orders 0 to 3, a coefficient of 2, Michaelis–Menten with and without its catalyst, both factor kinds, cells and outside nodes of 0.7 and 1.9 pL, c0 = 0.4 mM): 174 admitted and 57 refused half-steps, every node class, 92 share and 28 quadrature branches. Every comparison within the usage note's tolerances | `test_species_reactions_against_references.py` |
+| Whole compiled face-free runs against `nr.run_half_steps` | The amounts, extents, heat, work and standard term at every row agree to 7e-15 of their scales or better (the share onsets, crossings, class switch, reversal onset at the start and mid-run, a 400-step relaxation); the relaxation ends at `dr.passive_equilibrium`'s state, its heat its free-energy drop to 1e-15 | `test_species_reactions_reference_runs.py` |
+| The face-free energy world (§3.4 guard 1): the residual over 2.5 ε × steps × the energy magnitudes at every row | At most 0.26 (driven only), 0.066 (passive relaxation), 0.04–0.15 (the share's onsets), 0.10–0.35 (the quadrature's crossings), 0.071 (the class switch), 0.19 and 0.11 (the reversal onset at the start and mid-run) | `test_species_reactions_guards.py` |
+| Negative controls (§3.4 guard 3) | Each fails the face-free world at row 1, its first touched row: scaled work 6.0e8 × the allowance, a dropped standard term 6.7e12 ×, a wrong-sign heat 4.0e13 × (and the dissipation check) | guards |
+| C2 (§10.4): the shared bound over the booking \|W − H\| in the mixed heredity chain | 0.35 at µM and 409 at nM (the docstring's statement, tied to the test). A 1e-6 relative work error is unseen at both, and a wrong-sign heat is refused at both by the dissipation check | guards |
+| Benign padding (ruling Q11 (a)) | With every law, both factor kinds, and padded cell, outside and factor slots, no intermediate is NaN or infinite: NumPy raising on divide, invalid and overflow, and eager JAX under `jax_debug_nans` and `jax_debug_infs`. The jitted outputs are finite. A planted zero padding (a factor's K) raises in both | `test_species_reactions_halfstep.py`, `_runs.py` |
+| The bindings (ruling Q11 (b)) | The operator's own crossrev set (eight worlds, its first record): both value twins (every parameter, potential, c0 and multiplier changed) are identical in jaxpr text and constants, only the parameter layout arrays and the multiplier controls differ, and no bound row equals a closed-over constant (c0 included) | `crossrev/reactions/5de1c96` |
+| The batch signature (ruling Q11 (c)) | Another stoichiometry, law kind or factor species is refused in one batch; other parameters, potentials, c0 and multipliers are admitted | `_refusals.py` |
+| Idle (§4.5) against the live half-step | Zero multipliers and no routes: every field, observation and diagnostic bitwise the composition's without the operator. An idle node beside an active one, and a catalyst's row at an active node, keep their planted −0.0 | `_runs.py`, smoke |
+| Restart and vmap (§6.5) | Restart at 10, 20, 25, 30 and 40 ms around a multiplier change, in process and through a snapshot loaded in a fresh process: bitwise. A vector batch of three worlds mixing every parameter and multiplier: bitwise against its reverse, within 1e-12 of each scalar run, its device energy diagnostics equal to the host's to the terms' rounding. The device row checks refuse a misbooked accumulator (local), work (energy) and heat sign (dissipation) | `_runs.py` |
+| Crossrev of record (snapshot-5de1c96: 2,945 files, empty patch; the tools unchanged) | Against the baseline of record: base 36/36 texts, 36/36 constants, 12/12 bindings; qualification 78/78, 78/78, 56/56; injection 6/6, 6/6, 2/2; volume 6/6, 6/6, 2/2; division 27/27, 27/27, 9/9 with its check holding: identical. D150's species set against its record at 17d00b4: 24/24, 24/24, 8/8, its check holding: identical | `crossrev/` |
+| Tiers | Tier 1 is 312 files: `_halfstep.py` and `_against_references.py` join. Tier 2 is 82. Tier 3 is 218: `_runs.py` moves there from tier 2, beside `_guards.py` and `_reference_runs.py` | `tests/test_tiers.json` |
+| Gates | Tier 1 + 2 from the clean head 5de1c96 (dirty 0): 394 files, no changed outcome against the record. The three tier-3 files, also from that head, all passed: `_runs.py` 6, `_guards.py` 14 and `_reference_runs.py` 18 | `tiers/gate12-5de1c96`, `tests/final-5de1c96-*` |
+| The stage condition, positivity | Compiled: dt L = 0.98 admitted, 1.02 refused with the start state bitwise, always tested either side of the bound. A passive route in reverse is read on its reverse flux. 200 compiled steps at dt L = 0.99 from 1e-15 mM traces: all accepted and positive, the cleared amounts stalling at about ε × their anchors | `_halfstep.py`, `_runs.py`, guards |
+
+**The scheme's accuracy, beside the note's figures** (the reference's half-steps equal the engine's
+to rounding, above, so these are the engine's; the pins are proposals for the lead):
+
+| Item | Engine against the true kinetics (`dr.integrate_node`) | The note's figure (the prototype's) | Proposed pin |
+| --- | --- | --- | --- |
+| The share's onset (probe 2d), the first half-step's heat at h = 0.05, 0.025 and 0.0125 s | 1e-12 mM: +0.332%, +0.137%, +0.059%. 1e-9: +0.331%, +0.136%, +0.058%. 1e-6: +0.212%, +0.067%, +0.020% | +0.33/0.14/0.06%; +0.21/0.07/0.02% | ≤ 0.5% at h ≤ 0.05 s |
+| The share's onset, the whole heat at 5 s | 1e-12 and 1e-9: +0.063%, +0.018%, +0.0051%. 1e-6: +0.045%, +0.012%, +0.0030% | +0.063/0.018/0.005%; +0.045/0.012/0.003% | ≤ 0.1% at h ≤ 0.05 s, second order |
+| W at 5 s (W carries H's absolute error) | 1e-12: 0.035%, 0.010%, 0.0029% of \|W\| | 0.035/0.010/0.003% | as H |
+| The background guard (§3.4 guard 5; h = 0.025 s, 5 s): the whole heat's relative change for a trace of 1e-12 → 1e-9 mM | Engine −6.324e-5, true −6.273e-5 (a difference of 5.1e-7). Work: +3.62e-5 against +3.65e-5 | −6.32e-5 against −6.27e-5 | \|engine − true\| ≤ 2e-6 of the whole heat and work |
+| The crossing's quadrature (probe 2e, offset 0.01 above the equilibrium) | +6.9% (k_d = 1, h L = 0.05), +7.6% (k_d = 1, h L = 0.1), +10.3% (k_d = 10, h L = 0.275); never negative | +7.9% at h L = 0.05 to +127% at 0.5, at the sweep's crossing | 0 ≤ error ≤ probe 2f's figure at that h L |
+| The reversal onset (probe 2g, the known limit), the booked first half-step over its true heat | 1e-12 mM: 5.59 and 5.36 (h = 0.025 and 0.0125 s). 1e-9: 3.67 and 3.43. 1e-6: 1.80 and 1.59 | 5.4–5.6, 3.4–3.7, 1.6–1.8 | documented, not judged (option (a)) |
+
+**Findings for the lead:**
+1. **§3.4 guard 3 holds at nM only.** In C2's chain at µM the shared bound (0.35 of the booking)
+   sees an error of a booking's size: the dropped standard term, 0.76 of the booking, is refused
+   by the energy ledger. The note expected the bound to be blind to it. At nM it is unseen (bound
+   432 × the term). The docstring's statement now says so.
+2. **"Reproduces it exactly" (§3.3) holds for the half-step, not for two compiled runs.** At a
+   mid-run switch-on the whole state is bitwise the start state, and the half-step at the same
+   (state, multipliers, h) is bitwise. The runner's step at 50 ms, however, is a difference of grid
+   times: 3 dt − 2 dt = 0.02500000000000001 s on the float grid (`EventGrid`'s k × dt), against
+   the first step's 0.025 s. So the two runs' first active steps agree to rounding (8.5e-21 pJ),
+   not bitwise. This is a property of the runner's clock, not of the operator. No change is
+   proposed (D148).
+3. **The standard term** is booked in species form, Σ_s μ°'_s δ_s; the references book it in route
+   form, Σ_r ΔG°'_r Δξ_r. They agree to rounding (the per-law test compares them at 1e-12 of the
+   terms). A reading, recorded.
+
+**Changes from milestone 1:**
+- The domain no longer requires heat ≥ 0 exactly. A passive-only node's −ΔG can be −1e-18 pJ by
+  rounding, and the composite's dissipation check judges it (at −1e-12 pJ).
+- The readout columns `reaction_rate_fmol_per_s` and `reaction_affinity_RT`.
+- `STEP_ID` is `ssprk33_unidirectional_stage_condition_exact_bookings@1`.
+- `stage_report` diagnoses a refused step on the host, since the runner's message is generic. No
+  runner edit is proposed.
+- The docstring carries the full guard statement, with C2's ratios.
+
 ## Appendix A. Equations for the independent references
 
 The references are written from these equations, not from engine code.
 - Units are @3's: fmol, pL, mM, s, m.
-- RT = 2.5773 pJ/fmol at 310 K.
+- RT is the engine's: 1e-3 R T pJ/fmol with the engine's R and T; the references take RT as an
+  input. (2.5773 pJ/fmol at 310 K uses R = 8.314; SI R gives 2.5775. Amended at milestone 1, §11.)
 - κ_f = D_f A_f/L_f in pL/s.
 
 **Node kinetics.** At node i, with c = n/V_i and route rates J_r(c) from §2.2:
