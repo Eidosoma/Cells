@@ -90,6 +90,8 @@ FINDINGS = (  # Disclosed with the draft: what the development runs showed befor
 REGRESSION_GUARDS = ("tests/unit/test_secreted_species_step_map.py",)  # Tier 2, not judged.
 REHEARSAL_SECONDS = {"judge": 457, "judge-q5": 1011}  # The rehearsal on main, under load.
 RUNTIME_MAX = {"judge": 1400, "judge-q5": 3100, "combine": 600}  # Seconds: about 3 x those.
+DRY_RUN_PEAK_GB = {"judge": 1.8, "judge-q5": 2.1}  # The dry runs at 0353b29 (memory.peak).
+FREE_GB = 3  # Slice room checked before each judged unit starts, in place of --wait-headroom.
 AMENDMENTS = (  # Before registration (the lead, 14 November 2026, after the rehearsal on main).
     dict(
         finding=(
@@ -117,6 +119,18 @@ AMENDMENTS = (  # Before registration (the lead, 14 November 2026, after the reh
             "file ended by a signal as infrastructure endings, rerun once from the same "
             "snapshot, while a test failure or error inside a completed run stays a verdict "
             "(rules.attempts)"
+        ),
+    ),
+    dict(
+        finding=(
+            "scripts/run_detached.sh's --wait-headroom loop runs inside the unit, so a wait for "
+            "slice memory would count against --runtime-max: a long wait could reach the limit, "
+            "an infrastructure ending that spends the single rerun"
+        ),
+        change=(
+            "the judged units run without --wait-headroom; the lead launches each only after "
+            "checking that the slice has room for the rehearsal's peak plus a margin, so each "
+            "runtime limit measures the entry alone (rules.timing; the lead, 14 November)"
         ),
     ),
 )
@@ -591,7 +605,12 @@ def draft(development, output):
                 f"rehearsal's {REHEARSAL_SECONDS['judge']} s), judge-q5 with --runtime-max "
                 f"{RUNTIME_MAX['judge-q5']} (about 3 x the rehearsal's Q5 total of "
                 f"{REHEARSAL_SECONDS['judge-q5']} s under load, its longest file 439 s) and no "
-                f"per-file cap, combine with --runtime-max {RUNTIME_MAX['combine']}"
+                f"per-file cap, combine with --runtime-max {RUNTIME_MAX['combine']}. The judged "
+                "units run without --wait-headroom: the lead launches each only after checking "
+                f"that the slice has about {FREE_GB} GB free for judge and for judge-q5 (the "
+                f"dry runs' peaks {DRY_RUN_PEAK_GB['judge']} and {DRY_RUN_PEAK_GB['judge-q5']} "
+                "GB, plus a margin), so each runtime limit measures the entry alone and no wait "
+                "can spend the single rerun"
             ),
             resolved_start=(
                 "every judged arm runs through the runner with every host check, from a pre-formed "

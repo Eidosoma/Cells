@@ -1682,6 +1682,9 @@ Its two findings became amendments before registration, recorded in the protocol
 - **Timing and the attempt rule.** Q5 files took up to 439 s under load, beyond the tier runner's
   300 s cap. The judged entries now run with a wide `--runtime-max`: about 3× the rehearsal's
   times, 1400 s for the judge and 3100 s for judge-q5.
+  - The judged units run without `--wait-headroom`, whose wait would count against the limit.
+    The lead launches each one after checking that about 3 GB is free, so a limit measures the
+    entry alone.
   - A harness timeout, a unit killed by its runtime limit, or a Q5 file ended by a signal counts
     as an infrastructure ending. It is rerun once from the same snapshot.
   - A test failure or error inside a completed run stays a verdict.
