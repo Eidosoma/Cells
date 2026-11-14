@@ -137,9 +137,14 @@ assay needs it, not before.
 **Secreted-species transport (D150).**
 - **Design landed** ([note](SECRETED_SPECIES_TRANSPORT_DESIGN.md)): one inventory in @3 (neutral
   species rows), and split operators for turnover and for secretion and uptake.
-- **Version 1 code follows S5a.** Its checks before code are done ([note §11](SECRETED_SPECIES_TRANSPORT_DESIGN.md)):
-  ions unchanged in every admitted path, no fixed species counts (at most 7 species), and a
-  numerical first acceptance.
+- **Version 1 code landed (14 November 2026): milestones 1 and 2.**
+  - `scheduled_species_turnover@1` and `scheduled_species_exchange@1`, with their guards.
+  - Crossrev was identical in all five sets, and the tier 1 and 2 gates showed no changed outcome.
+  - Integration grants no acceptance.
+  - Milestone 3 is next: the comparison with the continuum closed forms, then the PROPOSED
+    protocol. The lead reviews it with the advisor before registering.
+  - The pre-code checks are in [note §11](SECRETED_SPECIES_TRANSPORT_DESIGN.md), and the rulings
+    at milestone 1 in §12.
 - **Deferred under D151:** a transport-only drift valence, and drawing on finite energy pools.
   Secreted proteins in the catalogue belong to stage 3.
 

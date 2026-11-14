@@ -1,7 +1,7 @@
 # Secreted-species transport (design)
 
 **Status: accepted by the lead with the advisor, 13 November 2026 (merged at ffc985a). Version 1
-code: milestones 1 and 2 built and guarded on the branch, 14 November 2026, with the lead's
+code: milestones 1 and 2 landed on main, 14 November 2026 (merge bbbc922), with the lead's
 rulings at milestone 1 in §12. Development status: no judged run.** The main choices stand: one inventory in @3 as neutral species
 rows, uptake as a plain sink (a), and identity on the operator declarations. The lead's
 pre-code checks (probes 2 to 5) were run the same day. Their results, the amendments they bring

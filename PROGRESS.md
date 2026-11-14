@@ -58,6 +58,48 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Secreted-species transport v1 (D150): milestones 1 and 2 landed (14 November).** This is
+  development code; nothing is judged yet
+  ([evidence](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/HANDOFF.md); design §12 and
+  §12.1).
+  - **What landed.**
+    - The operators `scheduled_species_turnover@1` and `scheduled_species_exchange@1`, and the
+      inventory-species helper.
+    - Two additive adapter functions for @3's per-species chemical term. No existing function
+      changed.
+    - A definition-time refusal of an inventory species with a membrane, junction or channel
+      route of @3's.
+    - The tests, a crossrev driver for the new operators, and a radial builder with exact shell
+      conductances.
+  - **Landing checks.**
+    - Crossrev ran from a clean snapshot of 17d00b4 against baseline-21fb714 and was identical in
+      all five sets: base 36, qualification 78, injection 6, volume 6 and division 27 programs.
+    - The tier 1 and 2 gates at 806eec9: 388 files, no changed outcome. Tier 1 at the merge
+      bbbc922: 306 files, no changed outcome.
+      - The merge's first tier-1 attempt ran the system Python, which has no pytest, so every file
+        failed to start. It is kept as `land-gate1-bbbc922-failed-system-python`; it is not a test
+        result.
+    - The tier-3 files pass: compiled runs 7/7, ion guards 3/3, energy and radial guards 6/6.
+  - **Guards.**
+    - Ion fields are bitwise unchanged with both operators active, in scalar runs, restarts, a
+      vector batch and a replacement event.
+    - Booked work matches the exact ΔG per law, computed independently in 50-digit Decimal.
+    - Exchange's kind order, run as a palindrome, is second order.
+    - The RK4 radial world's energy residual is 4.5e-14 pJ.
+    - The IMEX radial world is second order in dt (ratio 4.05).
+    - A stiff front run from a 1e-15 mM trace stays positive, with no step refused.
+    - A thousandfold change of the trace moves the profile by 0.947 times that change.
+  - **Findings.**
+    - **The IMEX energy guard is coarse.** It sees a booking error only above about 2e-3 of the
+      species' flows. A 1% face-heat error passes under IMEX at 0.89 of the bound and is refused
+      under RK4. So RK4 and the per-law ΔG tests are the sensitive guards (design §7, amended).
+    - **The radial errors are turnover's splitting:** dt²·k·(g − k·c_ss)/12 under RK4 and /4
+      under ARS. That is negligible at morphogen rates.
+    - **Anchored amounts** stall positive near ε × their anchor after kt ≈ 36 (design §1.3,
+      corrected).
+    - **S5's bridge.** The impermeability refusal blocks the bridge for inventory species until
+      the queued D148 round for @3.
+
 - **The shared-inventory reactions design (D152) is accepted (14 November).** The lead, with the
   advisor; docs only ([note](docs/SHARED_INVENTORY_REACTIONS_DESIGN.md), rulings in §9). Every probe
   ran on CPU through `run_detached.sh`
