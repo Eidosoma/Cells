@@ -54,8 +54,9 @@ def registered(item, protocol_path=PROTOCOL, root=ROOT):
 
 EVIDENCE = Path("/mnt/workspaces/Cells/cell-division-s5-20261113-01")
 DEVELOPMENT = dict(
-    q2=EVIDENCE / "protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",  # The amended controls'.
-    q2_near_zero=EVIDENCE / "protocol-dev-s5a25/near_zero_set.json",
+    q2=EVIDENCE / "protocol-dev-s5a28/q2_rops_comparison/q2_rops.json",  # The second amendment's.
+    q2_near_zero=EVIDENCE / "protocol-dev-s5a28/near_zero_set.json",
+    q2_first_amendment=EVIDENCE / "protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
     q2_frozen=EVIDENCE / "protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",  # The freeze's.
     q3=EVIDENCE / "protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
     q4_tests=EVIDENCE / "protocol-dev-s5a21/test_division_limits_runs.log",
@@ -77,6 +78,7 @@ DEVELOPMENT = dict(
     regression=EVIDENCE / "regression-s5a9/results.txt",
 )
 SNAPSHOTS = {
+    "protocol-dev-s5a28": "4487d0a",
     "protocol-dev-s5a25": "3c3f190",
     "protocol-dev-s5a23": "0c7e2ac",
     "protocol-dev-s5a22": "1e73543",
@@ -197,6 +199,10 @@ def q10():
     return worlds
 
 
+# What an engine-side control's development summary keeps besides its catches.
+ENGINE_SIDE = ("engine_refuses_from", "refused_by", "event_checks_agree_with_the_event_map")
+
+
 def q2(name="q2"):
     """Q2's development observations (old scale) from a run's report."""
     if DEVELOPMENT[name] is None:
@@ -220,9 +226,11 @@ def q2(name="q2"):
             label: {
                 kind: (
                     v
-                    if kind == "baseline"
-                    else {k: v[k] for k in v if k in ("smallest_defect_caught", "targets")}
-                    | {k: v[k] for k in v if k == "targets_caught_at_threshold"}
+                    if kind in ("baseline", "construction")
+                    else {
+                        k: v[k] for k in ("smallest_defect_caught", "targets_caught_at_threshold")
+                    }
+                    | ({k: v[k] for k in ENGINE_SIDE if k in v} if "refused_by" in v else {})
                 )
                 for kind, v in entry.items()
             }
@@ -538,6 +546,11 @@ def draft():
                 note="the frozen controls before the amendment (old scale): their W finding "
                 "led to it",
             ),
+            "development_at_the_first_amendment": dict(
+                where("q2_first_amendment"),
+                note="the first amendment's controls (old scale): their image finding led to "
+                "the second amendment",
+            ),
             "development_findings": [
                 "W is reached by no map defect at 1e-9 (old scale, protocol-dev-s5a23): f at "
                 "1.0-1.8e-5 or never, transference at 3.2-5.6e-5 or never, a_k at 1.0-1.8e-5, "
@@ -545,7 +558,8 @@ def draft():
                 "defect reaches W only at second order; the lead removed W from f's targets and "
                 "gave W and the image charge their own controls (negative_controls.amendment)",
                 "the amended W control is caught on W at 5.6e-13 in all 12 cases (old scale, "
-                "protocol-dev-s5a25), and f on the amounts at 1.8e-14",
+                "protocol-dev-s5a25, unchanged at protocol-dev-s5a28), and f on the amounts at "
+                "1.8e-14",
                 "a finding for the lead: the image control does not reach the image charge. A "
                 "held node's plate charge is minus the total charge of the patches facing it; a "
                 "split that conserves charge (the engine's always does, D2 taking the rest) "
@@ -555,15 +569,38 @@ def draft():
                 "and 180, at 1.8e-12 and 5.6e-13) sit where the undefected image ratio is near "
                 "64: rounding, not a reach. The image control reaches the potentials at "
                 "1.8e-14-1e-13 and the charges at 3.2-5.6e-13 where measurable. The engine's "
-                "own event checks refuse it from 3.2e-9 to 1.8e-7. Target unchanged, threshold "
-                "unmoved",
+                "own event checks refuse it from 3.2e-9 to 1.8e-7. The threshold was not "
+                "moved: the lead's second amendment took the image charge from this control's "
+                "targets and gave it the non-conservation control "
+                "(negative_controls.second_amendment)",
+                "the non-conservation control (old scale, protocol-dev-s5a28) is caught on the "
+                "image charge at 1.0e-15-5.6e-13 and on the charges at 1.8e-15-5.6e-13, each in "
+                "11 of 12 cases, and on the amounts at 1.0-3.2e-13 in all 12. Its two misses "
+                "are old-scale baselines above 64 (draw 77's image charge, draw 35's charges), "
+                "which only the new scale settles. D2's net charge increment is 1.9-3.5e-13 C "
+                "in magnitude, so no case is electroneutral. The engine's own event checks "
+                "refuse it from 5.6e-11 to 3.2e-9: the plate-charge check in 9 of the 10 "
+                "near-zero draws (5.6e-11-3.2e-10), the isopotential check in the two fixed "
+                "cases (3.2e-9) and in spread 3 draw 32 (1.0e-10)",
+                "the mismatch-scale control (old scale, protocol-dev-s5a28) is caught on the "
+                "charges at 3.2-5.6e-13 in 11 of 12 cases and on the potentials at "
+                "1.8e-14-1.0e-13 in 5; its misses are old-scale baselines above 64 (draw 35's "
+                "charges, seven near-zero draws' potentials). The event map refuses it from "
+                "3.2e-9 to 1.8e-7, by its isopotential check in every case",
+                "the construction checks hold in all 12 cases (protocol-dev-s5a28): at delta = "
+                "0 the non-conservation construction reproduces the engine's event in every "
+                "field, bit for bit; the re-applied event checks pass the event; and they "
+                "agree with the event map's verdict and booked image at every delta of the "
+                "mismatch-scale ladder",
                 "the engine does not output delta q or delta separately: the transference "
                 "control reaches them through the increments and moved amounts (caught at "
                 "1.0-1.8e-13 old scale); free-energy changes are observed only within W",
-                "no map defect reaches the image charge, zero in exact arithmetic for an "
-                "isopotential split, and nor does the amendment's image control (above)",
+                "no charge-conserving defect reaches the image charge, zero in exact "
+                "arithmetic for an isopotential split: neither the map defects nor the mismatch "
+                "scale (above); the non-conservation control does (above)",
                 "at the old scale the near-zero cases' undefected potentials (and draw 35's "
-                "charges) exceed 64, so those families read 'baseline above 64' there; where "
+                "charges and draw 77's image charge) exceed 64, so those families read "
+                "'baseline above 64' there; where "
                 "measurable the parent charge is caught on the charges at 3.2e-16-5.6e-15",
             ],
             "before_the_freeze": dict(

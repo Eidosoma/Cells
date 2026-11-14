@@ -39,12 +39,17 @@
   "landing_order": "this protocol's frozen commit lands on main first, then the amended R-ops; A.8's 'pending in R-ops' is removed in that second landing (the lead, 14 November)",
   "development_runs": {
    "q2": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
-    "snapshot_revision": "3c3f190",
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a28/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "4487d0a",
     "pre_merge": false
    },
    "q2_near_zero": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/near_zero_set.json",
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a28/near_zero_set.json",
+    "snapshot_revision": "4487d0a",
+    "pre_merge": false
+   },
+   "q2_first_amendment": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
     "snapshot_revision": "3c3f190",
     "pre_merge": false
    },
@@ -435,8 +440,8 @@
   },
   "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' amended magnitudes: the cases, the simultaneous divisions, the judged sets and the controls under both scales; the verdict at the new scale",
   "development_old_scale": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
-   "snapshot_revision": "3c3f190",
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a28/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "4487d0a",
    "pre_merge": false,
    "fixed_cases": {
     "compact symmetric": 0.3928037841814018,
@@ -521,6 +526,19 @@
       "work": 0.07031047991682063,
       "any key": 0.3928037841814018
      },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": -1.945909623578043e-13,
+      "faithful": true
+     },
      "a_k": {
       "smallest_defect_caught": {
        "charges": 5.6234132519034906e-14,
@@ -587,7 +605,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 5.62341325190349e-13,
        "potentials": 1e-13,
@@ -597,9 +615,33 @@
        "any key": 1e-13
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": true
-      }
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": 5.62341325190349e-13,
+       "amounts": 3.162277660168379e-13,
+       "work": null,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 1 draw 35": {
@@ -610,6 +652,19 @@
       "amounts": 0.8415305153991092,
       "work": 0.056096598464052676,
       "any key": 860.5552472480347
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.201997204873493e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -677,7 +732,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": "baseline above 64",
        "potentials": "baseline above 64",
@@ -687,9 +742,33 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "image": true,
+       "charges": false,
        "potentials": false
-      }
+      },
+      "engine_refuses_from": 1.7782794100389227e-07,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": 1e-15,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": false,
+       "amounts": true
+      },
+      "engine_refuses_from": 5.6234132519034906e-11,
+      "refused_by": [
+       "plate_charges"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 1 draw 45": {
@@ -700,6 +779,19 @@
       "amounts": 0.5983112018057142,
       "work": 0.0261632385812835,
       "any key": 82.01288215760894
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.052054505365497e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -767,7 +859,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 5.62341325190349e-13,
        "potentials": "baseline above 64",
@@ -777,9 +869,33 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": false
-      }
+      },
+      "engine_refuses_from": 5.6234132519034905e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1e-14,
+       "potentials": "baseline above 64",
+       "image": 1.7782794100389227e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1.778279410038923e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 1 draw 77": {
@@ -790,6 +906,19 @@
       "amounts": 0.5982326599042757,
       "work": 0.0568985753662916,
       "any key": 203.060962908443
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.190716683405357e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -857,7 +986,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 3.162277660168379e-13,
        "potentials": "baseline above 64",
@@ -867,9 +996,33 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": false
-      }
+      },
+      "engine_refuses_from": 1e-07,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 5.623413251903491e-15,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 5.6234132519034906e-11,
+      "refused_by": [
+       "plate_charges"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 1 draw 111": {
@@ -880,6 +1033,19 @@
       "amounts": 0.834299462881011,
       "work": 0.08608976034934587,
       "any key": 174.80323446004587
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.1546758278137514e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -947,7 +1113,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 5.62341325190349e-13,
        "potentials": "baseline above 64",
@@ -957,9 +1123,33 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": false
-      }
+      },
+      "engine_refuses_from": 5.6234132519034905e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1.7782794100389227e-15,
+       "potentials": "baseline above 64",
+       "image": 1e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 1 draw 143": {
@@ -970,6 +1160,19 @@
       "amounts": 0.8416618326262447,
       "work": 0.14289159846853564,
       "any key": 61.63708798791947
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 2.9554284000053023e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -1037,7 +1240,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 5.62341325190349e-13,
        "potentials": 1e-13,
@@ -1047,9 +1250,33 @@
        "any key": 1e-13
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": true
-      }
+      },
+      "engine_refuses_from": 1.7782794100389228e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1.7782794100389227e-14,
+       "potentials": 5.623413251903491e-15,
+       "image": 3.1622776601683796e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": 5.623413251903491e-15
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 1 draw 149": {
@@ -1060,6 +1287,19 @@
       "amounts": 0.841561360740458,
       "work": 0.02525738266804936,
       "any key": 63.23755832492964
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 2.991241762106854e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -1127,7 +1367,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 5.62341325190349e-13,
        "potentials": 1.7782794100389227e-14,
@@ -1137,9 +1377,33 @@
        "any key": 1.7782794100389227e-14
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": true
-      }
+      },
+      "engine_refuses_from": 1.7782794100389228e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1.7782794100389227e-14,
+       "potentials": 5.623413251903491e-15,
+       "image": 1.7782794100389227e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": 5.623413251903491e-15
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 1 draw 171": {
@@ -1150,6 +1414,19 @@
       "amounts": 0.8418431235108529,
       "work": 0.10322110092194504,
       "any key": 85.39744590520102
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.118225441993714e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -1217,7 +1494,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 3.162277660168379e-13,
        "potentials": "baseline above 64",
@@ -1227,9 +1504,33 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": false
-      }
+      },
+      "engine_refuses_from": 5.6234132519034905e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1e-14,
+       "potentials": "baseline above 64",
+       "image": 1e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1.778279410038923e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 1 draw 180": {
@@ -1240,6 +1541,19 @@
       "amounts": 0.8414428404425042,
       "work": 0.14614102336916313,
       "any key": 236.2837582751508
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.1662147247187893e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -1307,7 +1621,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 5.62341325190349e-13,
        "potentials": "baseline above 64",
@@ -1317,9 +1631,33 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "image": true,
+       "charges": true,
        "potentials": false
-      }
+      },
+      "engine_refuses_from": 1e-07,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1e-14,
+       "potentials": "baseline above 64",
+       "image": 5.623413251903491e-15,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 1 draw 191": {
@@ -1330,6 +1668,19 @@
       "amounts": 0.8419116671377137,
       "work": 0.10070145055009104,
       "any key": 10.604912692244255
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.0029016700368306e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -1397,7 +1748,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 5.62341325190349e-13,
        "potentials": 1e-13,
@@ -1407,9 +1758,33 @@
        "any key": 1e-13
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": true
-      }
+      },
+      "engine_refuses_from": 3.162277660168379e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1.7782794100389227e-14,
+       "potentials": 3.1622776601683794e-15,
+       "image": 1.7782794100389227e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": 3.1622776601683794e-15
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
      }
     },
     "asymmetric neighbour world, seen spread 3 draw 32": {
@@ -1420,6 +1795,19 @@
       "amounts": 0.8420121948954025,
       "work": 0.008362971353531886,
       "any key": 152.6151550304683
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.500387903994425e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -1487,7 +1875,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 3.162277660168379e-13,
        "potentials": "baseline above 64",
@@ -1497,9 +1885,33 @@
        "any key": "baseline above 64"
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": false
-      }
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1e-14,
+       "potentials": "baseline above 64",
+       "image": 1e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1e-10,
+      "refused_by": [
+       "isopotential"
+      ]
      }
     },
     "asymmetric furrow world (two patches a cell)": {
@@ -1510,6 +1922,19 @@
       "amounts": 0.17889967116438438,
       "work": 0.1107632626201573,
       "any key": 0.39248487553257416
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": -1.945909623578043e-13,
+      "faithful": true
      },
      "a_k": {
       "smallest_defect_caught": {
@@ -1577,7 +2002,7 @@
        "work": true
       }
      },
-     "image": {
+     "mismatch scale": {
       "smallest_defect_caught": {
        "charges": 5.62341325190349e-13,
        "potentials": 1e-13,
@@ -1587,16 +2012,40 @@
        "any key": 1e-13
       },
       "targets_caught_at_threshold": {
-       "image": false,
+       "charges": true,
        "potentials": true
-      }
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": 5.62341325190349e-13,
+       "amounts": 3.162277660168379e-13,
+       "work": null,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ]
      }
     }
    }
   },
   "development_estimate": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/near_zero_set.json",
-   "snapshot_revision": "3c3f190",
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a28/near_zero_set.json",
+   "snapshot_revision": "4487d0a",
    "pre_merge": false,
    "note": "the a_k control at the new scale, estimated before R-ops lands: in every near-zero member a 1e-9 defect moves at least 1e-23 C of charge against a threshold of 1.2-4.1e-25 C, so it would be caught (an estimate, not a new-scale result)"
   },
@@ -1606,13 +2055,22 @@
    "pre_merge": false,
    "note": "the frozen controls before the amendment (old scale): their W finding led to it"
   },
+  "development_at_the_first_amendment": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "3c3f190",
+   "pre_merge": false,
+   "note": "the first amendment's controls (old scale): their image finding led to the second amendment"
+  },
   "development_findings": [
    "W is reached by no map defect at 1e-9 (old scale, protocol-dev-s5a23): f at 1.0-1.8e-5 or never, transference at 3.2-5.6e-5 or never, a_k at 1.0-1.8e-5, the parent charge at 1-1.8e-4. dG is stationary at the correct split, so a map defect reaches W only at second order; the lead removed W from f's targets and gave W and the image charge their own controls (negative_controls.amendment)",
-   "the amended W control is caught on W at 5.6e-13 in all 12 cases (old scale, protocol-dev-s5a25), and f on the amounts at 1.8e-14",
-   "a finding for the lead: the image control does not reach the image charge. A held node's plate charge is minus the total charge of the patches facing it; a split that conserves charge (the engine's always does, D2 taking the rest) leaves it unchanged, and so does the floating cleft's fixed charge in the furrow world. So the image target misses in 10 of 12 cases (never caught, or the undefected ratio above 64), and the two catches (seen spread 1 draws 35 and 180, at 1.8e-12 and 5.6e-13) sit where the undefected image ratio is near 64: rounding, not a reach. The image control reaches the potentials at 1.8e-14-1e-13 and the charges at 3.2-5.6e-13 where measurable. The engine's own event checks refuse it from 3.2e-9 to 1.8e-7. Target unchanged, threshold unmoved",
+   "the amended W control is caught on W at 5.6e-13 in all 12 cases (old scale, protocol-dev-s5a25, unchanged at protocol-dev-s5a28), and f on the amounts at 1.8e-14",
+   "a finding for the lead: the image control does not reach the image charge. A held node's plate charge is minus the total charge of the patches facing it; a split that conserves charge (the engine's always does, D2 taking the rest) leaves it unchanged, and so does the floating cleft's fixed charge in the furrow world. So the image target misses in 10 of 12 cases (never caught, or the undefected ratio above 64), and the two catches (seen spread 1 draws 35 and 180, at 1.8e-12 and 5.6e-13) sit where the undefected image ratio is near 64: rounding, not a reach. The image control reaches the potentials at 1.8e-14-1e-13 and the charges at 3.2-5.6e-13 where measurable. The engine's own event checks refuse it from 3.2e-9 to 1.8e-7. The threshold was not moved: the lead's second amendment took the image charge from this control's targets and gave it the non-conservation control (negative_controls.second_amendment)",
+   "the non-conservation control (old scale, protocol-dev-s5a28) is caught on the image charge at 1.0e-15-5.6e-13 and on the charges at 1.8e-15-5.6e-13, each in 11 of 12 cases, and on the amounts at 1.0-3.2e-13 in all 12. Its two misses are old-scale baselines above 64 (draw 77's image charge, draw 35's charges), which only the new scale settles. D2's net charge increment is 1.9-3.5e-13 C in magnitude, so no case is electroneutral. The engine's own event checks refuse it from 5.6e-11 to 3.2e-9: the plate-charge check in 9 of the 10 near-zero draws (5.6e-11-3.2e-10), the isopotential check in the two fixed cases (3.2e-9) and in spread 3 draw 32 (1.0e-10)",
+   "the mismatch-scale control (old scale, protocol-dev-s5a28) is caught on the charges at 3.2-5.6e-13 in 11 of 12 cases and on the potentials at 1.8e-14-1.0e-13 in 5; its misses are old-scale baselines above 64 (draw 35's charges, seven near-zero draws' potentials). The event map refuses it from 3.2e-9 to 1.8e-7, by its isopotential check in every case",
+   "the construction checks hold in all 12 cases (protocol-dev-s5a28): at delta = 0 the non-conservation construction reproduces the engine's event in every field, bit for bit; the re-applied event checks pass the event; and they agree with the event map's verdict and booked image at every delta of the mismatch-scale ladder",
    "the engine does not output delta q or delta separately: the transference control reaches them through the increments and moved amounts (caught at 1.0-1.8e-13 old scale); free-energy changes are observed only within W",
-   "no map defect reaches the image charge, zero in exact arithmetic for an isopotential split, and nor does the amendment's image control (above)",
-   "at the old scale the near-zero cases' undefected potentials (and draw 35's charges) exceed 64, so those families read 'baseline above 64' there; where measurable the parent charge is caught on the charges at 3.2e-16-5.6e-15"
+   "no charge-conserving defect reaches the image charge, zero in exact arithmetic for an isopotential split: neither the map defects nor the mismatch scale (above); the non-conservation control does (above)",
+   "at the old scale the near-zero cases' undefected potentials (and draw 35's charges and draw 77's image charge) exceed 64, so those families read 'baseline above 64' there; where measurable the parent charge is caught on the charges at 3.2e-16-5.6e-15"
   ],
   "before_the_freeze": {
    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q2_rops_comparison/q2_rops.json",
