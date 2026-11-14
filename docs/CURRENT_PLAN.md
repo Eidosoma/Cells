@@ -37,13 +37,16 @@ experiment).
 | Water plus replacement@2 with the entity volume ledger | Implemented and guarded; not qualified on the heredity sheet |
 | Lifecycle operators: S2 membrane state, S3 insertion and lumen, Rm1 injection, S5a partition and bridge closure | Numerically qualified, against independent references for S5a. Division is prescribed; nothing yet judges endogenous proliferation |
 | Secreted-species transport (D150 v1) | **Numerically qualified** (14 November): the held sphere with decay, the faces with exact radial conductances and turnover's clearance. Exchange, production and the occupant rule are guarded only, through the Q5 tests |
-| Reactions on the shared inventory (D152 v1) | Implemented and guarded (milestones 1–2); MG0c, the qualification, is in progress |
-| Checkpoint continuity (D153) | Implemented and guarded for CPU vector windows. The GPU probe passed (14 November) and the GPU extension is being built |
+| Reactions on the shared inventory (D152 v1) | Implemented and guarded (milestones 1–2). MG0c's protocol is revised and PROPOSED, with its rehearsal on main next |
+| Checkpoint continuity (D153) | Implemented and guarded for CPU vector windows and on the GPU (the extension landed on 14 November) |
 | Phase markers | Completion records implemented; start and failure records pending |
 | Run-view output (D154) | Requirement recorded; design pending |
-| Coupling out of the inventory (D155, scoped by D156) and excitable tissue (D155) | Design and the conduction probe in progress |
+| Coupling out of the inventory (D155, scoped by D156) | Design accepted. Milestone 1 implemented and guarded: the junction and channel targets are bitwise against scheduled availability. Milestone 2 implemented and guarded: the regulatory state, restart, batches and compositions. Milestone 3, A4 and A5 against the independent references, in progress |
+| Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs |
+| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestone 1 landed; FR-1's milestone 1 in progress |
+| The inner-model (@4) design note | Not started; the lead commissions it. It gathers Track E's new laws (the slow-recovery j gate, Ca-dependent inactivation, possibly a Kv4-type transient outward current), `junction_ungated@1` (D170), FR-4's pump, FR-1's implicit bounding patch, the coupling stage hook and the bound-term fixes |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
-| One production execution path, compile policy, registry, D147 policy for composite definitions | Not started. The D147 policy and the two execution interfaces take the first freed agent slot |
+| One production execution path, compile policy, registry | Not started. D147's policy for composite definitions landed on 14 November |
 
 **The working order** (D156; six agents from 14 November, D155):
 1. **Now, in parallel:** the conduction probe on the engine as it is (Track E); D150's judged
@@ -52,9 +55,10 @@ experiment).
    qualified against an independent coupled-ODE reference.
 3. **Then:** newborn integration in four named steps, and state-triggered division (the
    lifecycle gate's milestone 2).
-4. **The first freed slot:** D147's composite policy with its four tests, then a table of which
-   operators admit and refuse which, the phase start and failure records, and D154's writer.
-   Nothing under `src/` lands between D150's final dry run and its judged snapshot.
+4. **The architecture block** (one agent): D147's composite policy and FR-9's cap landed on 14
+   November. Next come the table of which operators admit and refuse which, the phase start and
+   failure records, and D154's writer. Nothing under `src/` lands between MG0c's rehearsal and
+   its registration.
 5. **After GH200:** the sparse field solver, the parked D148 rounds, and the conduction
    workloads in the measurement plan.
 6. **Held:** the full gene-regulation track and catalogue stage 3 (D145). E07-v2 is proposed,
