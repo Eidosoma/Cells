@@ -1,5 +1,7 @@
 # A closed compartment owned by a cell (design)
 
+**Accepted, 14 November 2026 (the lead, with the advisor; D169).** The silence claims S1–S5 are pending milestone 1, with their criteria fixed. This protocol is exchange's first judged acceptance.
+
 **Status: proposed, 14 November 2026, for the lead's review with the advisor; revised the same day
 after that review.** No engine code was added or changed. One read-only probe ran on the engine as
 it is, as the lead directed: FR-10's probe 1, which also carried this note's D147 record and its

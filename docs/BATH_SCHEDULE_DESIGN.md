@@ -1,5 +1,7 @@
 # A scheduled bath composition in the composite (design)
 
+**Accepted, 14 November 2026 (the lead, with the advisor; D169).** A dose from nothing is a known limit (way (a), extending D150's resolved-start ruling). Version 1 is qualified on steps between resolved levels, and a staircase probe is requested.
+
 **Status: proposed, 14 November 2026; revised the same day after the lead's review with the
 advisor.** The departure from the lead's mapping is accepted, since the code confirms it (§2.1).
 Net-charged steps are refused. Door S comes early. The onset was probed on the engine as it is

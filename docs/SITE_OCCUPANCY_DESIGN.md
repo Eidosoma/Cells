@@ -1,5 +1,7 @@
 # Site occupancy: binding sites as owned state (design)
 
+**Accepted, 14 November 2026 (the lead, with the advisor; D169).** It uses D152's unsplit SSPRK(3,3) with the per-route hybrid; the palindrome was measured and rejected. α is static in version 1. The day-one guard is judged against an independent integration of the full kinetics.
+
 **Status: PROPOSED, 14 November 2026. Revised the same day after the lead's review with the
 advisor; the rulings are recorded in §11.** No engine code was added or changed. One pre-acceptance
 probe was run, at the lead's request: a NumPy and SciPy prototype that took 14 s on one thread
