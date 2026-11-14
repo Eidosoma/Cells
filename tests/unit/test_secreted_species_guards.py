@@ -81,6 +81,22 @@ def steps_of(result):
     return np.rint(np.asarray(result.times) / result.spec.execution.dt).astype(int)
 
 
+def face_heat_control(result, label):
+    """A systematic 1% error in the booked face heat (every face, every row), checked by the host
+    ledgers: (refused, max over rows of the error over the energy bound without rounding)."""
+    model = get_model(result.spec.model)
+    heat = np.asarray(result.history.face_dissipated_energy_pJ)
+    ratio = 0.01 * np.sum(np.abs(heat), axis=1) / bounds(result)
+    wrong = result.history._replace(face_dissipated_energy_pJ=1.01 * heat)
+    try:
+        model.check_values(wrong, result.spec, steps=steps_of(result))
+        refused = False
+    except NumericalError as failure:
+        refused = str(failure).endswith("energy")
+    record("face_heat_control", world=label, refused=refused, max_ratio=np.max(ratio))
+    return refused, float(np.max(ratio))
+
+
 def face_free(operator, end=0.1):
     """A species-only world whose energy flow is one law's work alone: a cell secreting into its
     node (exchange), or a node clearing (turnover), with no face (so no face heat or bath work)."""
@@ -241,13 +257,18 @@ def test_the_rk4_radial_world_books_face_heat_and_clearance_to_the_absolute_boun
         error_of_c0=error / C0,
     )
     assert error <= 1e-6 * C0  # Turnover's splitting around the RK4 step, O(dt^2).
+    # The face heat's negative control: RK4's absolute bound sees a 1% error in it.
+    refused, ratio = face_heat_control(result, "rk4_radial")
+    assert refused and ratio > 1, ratio
 
 
 def test_the_imex_radial_world_closes_every_host_check_and_is_second_order_in_dt():
     """ARS(2,2,2) transport with turnover's exact half-steps around it (Strang): the error against
     the exact discrete solution is the splitting's and the scheme's, both second order in dt (at
-    1 ms, dt K_ii = 0.049, it is about 1e-5 of c0; the splitting of a uniform clearance from the
-    held boundaries' sources sets most of it)."""
+    1 ms, dt K_ii = 0.049, it is about 1e-5 of c0). The splitting of the uniform clearance from the
+    held boundaries' sources sets its steady part, dt^2 k (g - k c_ss) / 4 at the first shell under
+    ARS (/12 under exact transport), with g the source face's kappa c0 / V0 (the evidence folder's
+    splitting_bias.json)."""
     errors = {}
     for dt in (1e-3, 5e-4):
         spec, profile = pre_formed(TRACE, dt=dt, end=0.5)
@@ -257,6 +278,9 @@ def test_the_imex_radial_world_closes_every_host_check_and_is_second_order_in_dt
         m, g = radial.operator(GEOMETRY, diffusivity=D, clearance=K, c0_mM=C0, outer_mM=TRACE)
         exact = radial.solution(m, g, profile, np.asarray(result.observations.times))
         errors[dt] = float(np.max(np.abs(concentrations - exact)))
+        if dt == 1e-3:  # The face heat's negative control under the IMEX bound.
+            refused, ratio = face_heat_control(result, "imex_radial")
+            assert refused == (ratio > 1), (refused, ratio)
         record(
             "imex_radial",
             dt=dt,
