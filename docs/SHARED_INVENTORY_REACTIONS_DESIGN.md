@@ -1,7 +1,8 @@
 # Reactions on the shared inventory (design)
 
-**Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §9. No code.** Code
-follows D150 version 1's code (after S5a), as D152 orders.
+**Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §9.** Code follows
+D150 version 1's code (after S5a), as D152 orders. Milestone 1 (the contract fit) is accepted, with
+the lead's amendments in §11 (14 November 2026).
 
 **History of this note:**
 - The lead's rulings on §9's questions are recorded against each question.
@@ -350,7 +351,8 @@ This is D150 §1.5's form.
 ```json
 {"law": "local_species_reactions@1",
  "standard_concentration_mM": 1.0,
- "species": [{"id": "U", "moieties": {"M": 1}, "standard_mu_RT": 0.0, "reference": null}],
+ "species": [{"id": "U", "moieties": {"M": 1}, "standard_mu_RT": 0.0,
+              "catalogue": null, "evidence": null}],
  "reactions": [
    {"id": "u_autocatalysis",
     "sites": {"outside": ["node_0", "node_1"]},
@@ -358,6 +360,10 @@ This is D150 §1.5's form.
     "law": "mass_action", "rate_constant": 1e5,
     "factors": []}]}
 ```
+
+(Amended at milestone 1, §11: the identity keys are D150's `catalogue` and `evidence`; every key is
+explicit; Michaelis–Menten declares `catalytic_rate_per_s` with a catalyst and `max_rate_mM_per_s`
+without one; a passive law declares `forward_rate_per_s`.)
 
 **What each part declares:**
 - **Species:** neutral species already declared in @3 (§3.2), with:
@@ -1490,6 +1496,7 @@ ruling, §9 question 8).
 | Regulation from other layers | The gene-regulation layer (held, D145) as a factor source or a production law, not an edit to these laws |
 | More than 7 species | D150's check of host-side summation order at 8 or more terms |
 | Occupancy and surface catalysis | D150 §2.5's primitive and its four requirements |
+| Reads of charged or permeant species (added at milestone 1, §11) | Factors and catalysts that read charged or permeant species, for example calcium-regulated production. Reads book nothing, so they need only a read-only species list beside the written one. E15's coupling from bioelectric to chemical signalling is the likely consumer |
 
 ### 7.4 What this note does not authorise
 
@@ -1837,6 +1844,66 @@ for the table.
 - **C5, the composition world.** The network in cells with D150's exchange and faces, against the
   three-compartment linear stability analysis (NumPy). It needs D150 v1, and precedes the later
   item that §6.4's second world becomes.
+
+## 11. Amendments at milestone 1 (the lead, 14 November 2026)
+
+Version 1's first milestone is the contract fit, C1 of §10.4 (branch commits 04499a8 and 8e6438d;
+the design-to-code checklist and the runs in
+`/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/HANDOFF.md`). The lead accepted it
+and ruled on its readings as follows. Each ruling is the lead's, 14 November 2026, at milestone 1.
+
+1. **The milestone-1 half-step (Q1).** Until milestone 2 the half-step selects its start state when
+   every multiplier is zero and refuses any step with a positive multiplier, through the half-step's
+   validity (not `control_valid`). Accepted as a temporary state.
+2. **Identity keys (Q2).** D150's `catalogue` and `evidence` (`species_common.parse_species`), not
+   `reference`. §2.1's example is amended to match.
+3. **Read-only species (Q3).** Accepted for version 1: catalysts and factor species are listed, and
+   so are neutral and impermeant. A version 1.1 door is recorded in §7.3: factors and catalysts that
+   read charged or permeant species (calcium-regulated production, say). Reads book nothing, so they
+   need only a read-only species list. E15's coupling from bioelectric to chemical signalling is its
+   likely consumer.
+4. **A reaction that changes no species is refused (Q4)**, as a typo guard (§3.1's spirit), beside
+   §2.5's list.
+5. **No defaults (Q5).** Every key is explicit. `moieties: null` is the species as its own moiety,
+   and `standard_mu_RT` is required.
+6. **Schedules (Q6).** A route takes its site's schedule, else its reaction's (site null). Every
+   schedule starts at time 0. A reaction-level schedule that applies to no site is refused.
+7. **Sites (Q7).** `"all"` is every cell, or every finite outside node, never a held bath. Routes are
+   ordered cells, then outside nodes, each in declared order (model order for `"all"`).
+8. **Parameter names (Q8).**
+   - `rate_constant` stays for mass action, whose order sets its units (k in mM^(1−q) s⁻¹), as
+     D150's "rate" does.
+   - Michaelis–Menten does not flip one key's meaning on its catalyst:
+     - `catalytic_rate_per_s` (k_cat) when a catalyst is declared;
+     - `max_rate_mM_per_s` (V_max) when none is;
+     - the other case's key is refused, with the reason.
+   - `saturation_mM`, `forward_rate_per_s`, `half_saturation_mM` and `hill_coefficient` stand.
+   - One internal rate array (`reaction_rate_constant`) is fine. The summary reports each route's
+     parameters under their law-specific names and units.
+9. **The consumed species absent from its law's rate (Q9)** is unreachable by construction, tested
+   through the Michaelis–Menten refusals. Accepted.
+10. **The domain (Q10)** also refuses the operator's accumulators off its species rows, on padded
+    slots and at held baths, and a negative extent on a driven route. Accepted.
+11. **The layout (Q11): accepted, with three conditions.** Structure as bound layout arrays (law
+    codes, stoichiometry, catalysts, factor kinds), kept apart by the batch signature; per-reaction
+    parameters repeated per route; one internal rate array; a dense route × factor array with kind 0
+    as padding. This matches D150's practice and keeps programs stable, with per-world values as
+    bindings.
+    - (a) **Benign padding.** Every unused law branch and padded entry stays finite, with positive
+      padding for K_M, K, c0 and amounts. A compiled test with every law and factor kind present,
+      plus padding, checks that no intermediate or output is NaN or infinite.
+    - (b) **The bindings check.** As D150's crossrev driver: two worlds with different network
+      parameters and multipliers but the same structure give identical jaxpr text and constants;
+      only the bound arrays differ.
+    - (c) **The batch signature** refuses two different structures in one batch (stoichiometry, law
+      kinds or factor species), with a test.
+12. **Where rulings go (Q12):** dated amendments in this note, as D150's §12 does. This section.
+
+**Added to milestone 2** (beyond §10.4 and the plan): the ledger and magnitude terms compiled, not
+only on the host; a test of the summary; the full energy-guard statement in the docstring, with C2's
+measured ratio; the idle tests re-run against the live half-step; tier 1 and tier 2 from the clean
+head before hand-back; the independent references only through
+`validation/reactions/REFERENCES_USAGE.md`, once it is on main.
 
 ## Appendix A. Equations for the independent references
 

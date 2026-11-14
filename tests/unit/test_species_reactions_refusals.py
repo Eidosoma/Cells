@@ -46,6 +46,13 @@ def species_entry(raw, name):
     return next(s for s in block(raw)["species"] if s["id"] == name)
 
 
+def uncatalysed(raw, rate):
+    """The conversion without its catalyst, so declared with a maximum rate (V_max, mM/s)."""
+    conversion = reaction(raw, "conversion")
+    conversion.update(catalyst=None, max_rate_mM_per_s=rate)
+    del conversion["catalytic_rate_per_s"]
+
+
 CASES = {
     # The species.
     "charged": (lambda raw: species_entry(raw, "S").update(id="Na"), "neutral species only"),
@@ -161,8 +168,21 @@ CASES = {
         "rate_constant must be >= 0",
     ),
     "negative catalytic rate": (
-        lambda raw: reaction(raw, "conversion").update(rate_constant=-1.0),
-        "rate_constant must be >= 0",
+        lambda raw: reaction(raw, "conversion").update(catalytic_rate_per_s=-1.0),
+        "catalytic_rate_per_s must be >= 0",
+    ),
+    "maximum rate with a catalyst": (
+        lambda raw: reaction(raw, "conversion").update(max_rate_mM_per_s=1e-3),
+        "declares a catalyst, so its rate is catalytic_rate_per_s",
+    ),
+    "catalytic rate without a catalyst": (
+        lambda raw: reaction(raw, "conversion").update(catalyst=None),
+        "declares no catalyst, so its rate is max_rate_mM_per_s",
+    ),
+    "negative maximum rate": (lambda raw: uncatalysed(raw, -1.0), "max_rate_mM_per_s must be >= 0"),
+    "no catalyst key": (
+        lambda raw: reaction(raw, "conversion").pop("catalyst"),
+        "declares its catalyst",
     ),
     "forward rate": (
         lambda raw: reaction(raw, "binding").update(forward_rate_per_s=0.0),

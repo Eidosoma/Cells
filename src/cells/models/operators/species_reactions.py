@@ -19,9 +19,10 @@ Laws (§2.2), with c = n/V at the declared volume V and m the scheduled multipli
 * `mass_action` (driven): J = m F k V prod c^alpha, `rate_constant` k >= 0 in mM^(1-q)/s, order
   q = sum alpha <= 3;
 * `michaelis_menten` (driven): J = m F V k_cat c_E c_S / (K_M + c_S) with `catalyst` E (read, never
-  written), or m F V V_max c_S / (K_M + c_S) without (`catalyst` null); `rate_constant` k_cat (1/s)
-  or V_max (mM/s) >= 0, `saturation_mM` K_M > 0; reactants exactly {S: 1}, so no other species is
-  consumed without appearing in the rate;
+  written) and `catalytic_rate_per_s` k_cat >= 0, or m F V V_max c_S / (K_M + c_S) with `catalyst`
+  null and `max_rate_mM_per_s` V_max >= 0 (the other case's key is refused, with the reason);
+  `saturation_mM` K_M > 0; reactants exactly {S: 1}, so no other species is consumed without
+  appearing in the rate;
 * `ideal_detailed_balance_mass_action@1` (passive): J = m V c0 k_f [prod a^alpha -
   exp(sum nu mu°/RT) prod a^beta], a = c/c0, `forward_rate_per_s` k_f > 0; closed, no factors,
   each side of molecularity <= 3; through processes/mass_action.reversible_flux, unchanged;
@@ -94,11 +95,9 @@ CODES = {
     MICHAELIS_MENTEN: DRIVEN_MICHAELIS_MENTEN,
 }
 FACTOR_LAWS = {"hill_activation": 1, "hill_inhibition": 2}
-LAW_KEYS = {
-    PASSIVE_LAW: {"forward_rate_per_s"},
-    MASS_ACTION: {"rate_constant"},
-    MICHAELIS_MENTEN: {"catalyst", "rate_constant", "saturation_mM"},
-}
+LAW_KEYS = {PASSIVE_LAW: {"forward_rate_per_s"}, MASS_ACTION: {"rate_constant"}}
+# Michaelis-Menten's rate key by case (the lead's ruling Q8): k_cat with a catalyst, V_max without.
+CATALYTIC_RATE, MAX_RATE = "catalytic_rate_per_s", "max_rate_mM_per_s"
 REACTION_KEYS = {"id", "sites", "reactants", "products", "law", "factors"}
 MAX_MOLECULARITY = 3
 # D150's statement (secreted-species design §7, the lead's ruling 4), adapted to these bookings
@@ -399,12 +398,37 @@ def _kind(reactants, products, species, name):
     )
 
 
+def _law_keys(raw, law):
+    """The law's parameter keys; Michaelis-Menten's rate key follows its catalyst (ruling Q8)."""
+    if law != MICHAELIS_MENTEN:
+        return LAW_KEYS[law]
+    if "catalyst" not in raw:
+        raise ConfigError(
+            f"{LAW_ID}: a michaelis_menten reaction declares its catalyst (a listed species, or "
+            "null)"
+        )
+    catalysed = raw["catalyst"] is not None
+    key, other = (CATALYTIC_RATE, MAX_RATE) if catalysed else (MAX_RATE, CATALYTIC_RATE)
+    if other in raw:
+        raise ConfigError(
+            f"{LAW_ID}: michaelis_menten reaction {raw.get('id')!r} "
+            + (
+                "declares a catalyst, so its rate is catalytic_rate_per_s (k_cat, 1/s: J = V k_cat "
+                "c_E c_S / (K_M + c_S)), not max_rate_mM_per_s"
+                if catalysed
+                else "declares no catalyst, so its rate is max_rate_mM_per_s (V_max, mM/s: J = V "
+                "V_max c_S / (K_M + c_S)), not catalytic_rate_per_s"
+            )
+        )
+    return {"catalyst", "saturation_mM", key}
+
+
 def _reaction(raw, base, species):
     listed = {s.identity.id for s in species}
     if not isinstance(raw, dict) or raw.get("law") not in LAWS:
         raise ConfigError(f"{LAW_ID}: a reaction's law is one of " + ", ".join(LAWS))
     law = raw["law"]
-    _fields(raw, REACTION_KEYS | LAW_KEYS[law], f"{law} reaction")
+    _fields(raw, REACTION_KEYS | _law_keys(raw, law), f"{law} reaction")
     name = identifier(raw["id"])
     sites, routes = _sites(raw["sites"], base, name)
     reactants = _side(raw["reactants"], listed, name, "reactants")
@@ -451,7 +475,8 @@ def _reaction(raw, base, species):
                     f"{LAW_ID}: reaction {name}'s catalyst is read, never written (it is not a "
                     "reactant or a product)"
                 )
-        rate = _number(raw["rate_constant"], f"{name}'s rate_constant", low=0)
+        key = CATALYTIC_RATE if catalyst is not None else MAX_RATE
+        rate = _number(raw[key], f"{name}'s {key}", low=0)
         saturation = _number(raw["saturation_mM"], f"{name}'s saturation_mM", low=0, strict=True)
     reaction = Reaction(
         name, sites, reactants, products, law, rate, saturation, catalyst, factors, kind
@@ -517,8 +542,9 @@ def reactions_to_dict(declaration):
         elif r.law == MASS_ACTION:
             entry["rate_constant"] = r.rate_constant
         else:
+            key = CATALYTIC_RATE if r.catalyst is not None else MAX_RATE
             entry.update(
-                catalyst=r.catalyst, rate_constant=r.rate_constant, saturation_mM=r.saturation_mM
+                {"catalyst": r.catalyst, key: r.rate_constant, "saturation_mM": r.saturation_mM}
             )
         reactions.append(entry)
     return dict(
@@ -527,6 +553,37 @@ def reactions_to_dict(declaration):
         species=species,
         reactions=reactions,
     )
+
+
+ORDER_UNITS = ("mM/s", "1/s", "1/(mM s)", "1/(mM^2 s)")  # Mass action's k by order q = 0 to 3.
+
+
+def parameters(reaction):
+    """{law, parameters, units, factors}: a reaction's parameters under their law-specific names and
+    units (the lead's ruling Q8), as each of its routes uses them."""
+    if reaction.law == MASS_ACTION:
+        order = sum(c for _, c in reaction.reactants)
+        values = {"rate_constant": reaction.rate_constant}
+        units = {"rate_constant": ORDER_UNITS[order]}
+    elif reaction.law == MICHAELIS_MENTEN:
+        key = CATALYTIC_RATE if reaction.catalyst is not None else MAX_RATE
+        values = {key: reaction.rate_constant, "saturation_mM": reaction.saturation_mM}
+        units = {key: "1/s" if reaction.catalyst is not None else "mM/s", "saturation_mM": "mM"}
+        if reaction.catalyst is not None:
+            values["catalyst"] = reaction.catalyst
+    else:
+        values = {"forward_rate_per_s": reaction.rate_constant}
+        units = {"forward_rate_per_s": "1/s"}
+    factors = [
+        dict(
+            law=f.law,
+            species=f.species,
+            half_saturation_mM=f.half_saturation_mM,
+            hill_coefficient=f.hill_coefficient,
+        )
+        for f in reaction.factors
+    ]
+    return dict(law=reaction.law, parameters=values, units=units, factors=factors)
 
 
 # ------------------------------------------------------------------ the schedule
@@ -885,6 +942,7 @@ class LocalSpeciesReactions(Operator):
 
     def summary(self, spec, declaration, schedule, history):
         identities = common.summary_identities(tuple(s.identity for s in declaration.species))
+        by_id = {r.id: r for r in declaration.reactions}
         return {
             "reaction_law": LAW_ID,
             "reaction_standard_concentration_mM": declaration.standard_concentration_mM,
@@ -906,6 +964,10 @@ class LocalSpeciesReactions(Operator):
                 )
                 for r in declaration.reactions
             },
+            "reaction_routes": [
+                dict(reaction=route.reaction, site=route.node, **parameters(by_id[route.reaction]))
+                for route in declaration.routes
+            ],
             "reaction_step": "milestone 1: idle selection; an active step is refused",
         }
 

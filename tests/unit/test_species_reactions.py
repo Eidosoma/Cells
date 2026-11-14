@@ -171,7 +171,7 @@ def test_parameters_are_per_world_bindings_and_the_network_is_the_signature(boun
     raw = rfx.enzyme_network(c0=0.25, mu=(0.1, 0.2, -1.5, -0.5))
     block = raw["model"]["operators"][0]
     for reaction in block["reactions"]:
-        for key in ("rate_constant", "forward_rate_per_s"):
+        for key in ("rate_constant", "forward_rate_per_s", "catalytic_rate_per_s"):
             if key in reaction:
                 reaction[key] *= 1.7
         if "saturation_mM" in reaction:
@@ -219,6 +219,50 @@ def test_multipliers_are_controls_with_site_overrides():
     assert sorted(op.schedule_times(spec.experiment.operators[0].data)) == sorted(
         [0.0] * 4 + [0.0, 0.002, 0.0, 0.001]
     )
+
+
+def test_the_summary_reports_each_routes_parameters_under_their_law_names(bound):
+    """The lead's ruling Q8: law-specific names and units per route; one internal rate array."""
+    spec, _, op, _, _ = bound
+    summary = op.summary(spec, spec.model.operators[0], None, None)
+    routes = summary["reaction_routes"]
+    assert [(r["reaction"], r["site"]) for r in routes] == [
+        ("binding", "cell_0"),
+        ("catalysis", "cell_0"),
+        ("conversion", "ecs_0"),
+        ("supply", "cell_0"),
+        ("removal", "ecs_0"),
+    ]
+    by = {r["reaction"]: r for r in routes}
+    assert by["binding"]["parameters"] == {"forward_rate_per_s": 10.0}
+    assert by["binding"]["units"] == {"forward_rate_per_s": "1/s"}
+    assert by["catalysis"]["units"] == {"rate_constant": "1/s"}  # First order.
+    assert by["supply"]["units"] == {"rate_constant": "mM/s"}  # Zeroth order.
+    assert by["conversion"]["parameters"] == {
+        "catalytic_rate_per_s": 1.0,
+        "saturation_mM": 5e-4,
+        "catalyst": "E",
+    }
+    assert by["conversion"]["units"] == {"catalytic_rate_per_s": "1/s", "saturation_mM": "mM"}
+    assert by["removal"]["factors"] == [
+        dict(law="hill_inhibition", species="S", half_saturation_mM=1e-3, hill_coefficient=2.0)
+    ]
+    assert summary["reaction_species"]["C"] == dict(
+        catalogue=None, evidence=None, moieties={"X": 1, "Y": 1}, standard_mu_RT=-2.0
+    )
+    assert summary["reaction_network"]["supply"]["kind"] == "source"
+    assert summary["reaction_standard_concentration_mM"] == 0.5
+    raw = rfx.enzyme_network()
+    conversion = next(
+        r for r in raw["model"]["operators"][0]["reactions"] if r["id"] == "conversion"
+    )
+    conversion.update(catalyst=None, max_rate_mM_per_s=2e-3)
+    del conversion["catalytic_rate_per_s"]
+    plain = parse_spec(raw)
+    entry = get_model(plain.model).operators[0].summary(plain, plain.model.operators[0], None, None)
+    (uncatalysed,) = [r for r in entry["reaction_routes"] if r["reaction"] == "conversion"]
+    assert uncatalysed["parameters"] == {"max_rate_mM_per_s": 2e-3, "saturation_mM": 5e-4}
+    assert uncatalysed["units"] == {"max_rate_mM_per_s": "mM/s", "saturation_mM": "mM"}
 
 
 # ------------------------------------------------------------------ idleness

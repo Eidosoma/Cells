@@ -76,17 +76,19 @@ def mass_action(name, sites, reactants, products, k, factors=()):
 
 
 def michaelis_menten(name, sites, substrate, products, rate, km, *, catalyst=None, factors=()):
-    return dict(
-        id=name,
-        sites=copy.deepcopy(sites),
-        reactants={substrate: 1},
-        products=dict(products),
-        law="michaelis_menten",
-        catalyst=catalyst,
-        rate_constant=rate,
-        saturation_mM=km,
-        factors=list(factors),
-    )
+    """rate: k_cat (1/s) with a catalyst, V_max (mM/s) without (the law's two keys, ruling Q8)."""
+    key = "catalytic_rate_per_s" if catalyst is not None else "max_rate_mM_per_s"
+    return {
+        "id": name,
+        "sites": copy.deepcopy(sites),
+        "reactants": {substrate: 1},
+        "products": dict(products),
+        "law": "michaelis_menten",
+        "catalyst": catalyst,
+        key: rate,
+        "saturation_mM": km,
+        "factors": list(factors),
+    }
 
 
 def passive(name, sites, reactants, products, kf):
