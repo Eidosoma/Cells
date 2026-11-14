@@ -19,8 +19,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     - E07-v1. The disc did not renew under donor-copy turnover, and the coupling's effect was
       far smaller than predicted.
     - Composite GPU agreement (in progress).
-  - **Implemented and guarded:** D150 secreted species (its qualification is being registered),
-    D152 reactions (MG0c in progress), D153 checkpoint continuity, and water plus
+  - **Numerically qualified, later the same day:** D150 secreted species (its stated scope).
+  - **Implemented and guarded:** D152 reactions (MG0c in progress), D153 checkpoint continuity, and water plus
     replacement@2.
   - **In design:** conduction (D155, first), coupling out of the inventory, and the D154
     run-view output.
@@ -72,6 +72,58 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **The composite's L4 agreement under the three-repeat rule: the variants are registered and C is
+  next (14 November).** This ran in the L4 gap after hold segment 2, one GPU process at a time under a
+  GPU lock ([evidence](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/)).
+  - **The kernel profile (19.9 min on the L4).** On the GPU the narrow hypothesis holds: four
+    kernel classes take 79% (E07) and 78% (hold) of device time at 6 worlds, and 53% at 256.
+    - At 6 worlds most of a step is cuBLAS's batched triangular solve applied to single vectors.
+      Cholesky is 11% at 6 worlds and 25% at 256.
+    - On CPU it failed narrowly, at 45%.
+  - **A blocker found and fixed before the runs.** The registered W1, W2 and G2 definitions declare
+    `backend: cpu`, so an "L4" run would have computed on the CPU. The driver and the three judges
+    gained `--backend gpu`, which sets the backend on a copy and leaves the default unchanged.
+  - **The repeats A, B and D:** 101 min of GPU in total. All exited 0, and nothing was refused or
+    killed.
+    - The backend terms are at most 4.2e-14 V and 2.8e-14 fmol.
+    - The run-to-run term is exactly 0: the three L4 repeats are bitwise identical on every judged
+      quantity, unlike the hold's 825-node windows.
+    - No stop rule fired. Tolerances widened only by rounding to one significant figure, by at
+      most ×1.315.
+  - **Registration.** The lead registered the three variants in the repo,
+    `validation/tissue/l4_variants/`. Each is accepted by the judges' own check as a registered
+    backend variant of its base protocol.
+  - **Two of the external review's claims, checked read-only.**
+    - The effective control is computed once per step and held through @3's stages (Track R's
+      note).
+    - The field refresh always computes new arrays before selecting, about 2 to 2k+3 times a step,
+      by design under vmap. That is why the 64-node cap exists.
+  - **Landing:** tier 1 at 322a0fa, 315 files, no changed outcome. No `src/` change.
+  - **Next:** judged run C on the L4, about 1.6 h, then the deviation reports, then hold segment 3.
+
+- **Secreted-species transport (D150 v1) is numerically qualified: every item of its registered
+  protocol passed (14 November).** It was judged once, in series, from one fresh clean snapshot of
+  main at f7f0592, whose in-scope content is the registration commit's. The lead launched each unit
+  after checking headroom; there were no infrastructure endings and no refused arm
+  ([verdict](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/judged-f7f0592/combined/verdict.json)).
+  - **Q1, against the exact finite-volume solution:** pass.
+    - IMEX worst 0.468 of tolerance under the dt study, and 0.368 under the a priori splitting
+      bound.
+    - RK4 0.449 and 0.335.
+    - The k and D controls are caught at 13.0–79.2× tolerance at their registered δ.
+  - **Q2, against the continuum closed form** (the coarse shells, the amount, both supplies and
+    the clearance): pass, worst 0.443–0.465. The planar-face control fails every quantity, at 28–248×.
+  - **Q3, the orders:** pass. Every stop rule holds; space about 1.92 and time about 2.0.
+  - **Q5, the guards of record:** all eight files pass, with the counts on record.
+  - **Reported, not judged:** Q4 (Danckwerts, under the resolved-start rule), and the step map's
+    agreement at 0.0055 (IMEX) and 0.095 (RK4) of its bound.
+  - **Times and peaks:** judge 512 s, judge-q5 913 s, combine 1 s; peaks 1.79, 2.12 and 0.08 GB.
+    memory.events was 0 throughout.
+  - **Scope, as the qualified statement carries it:** @3's faces with exact radial conductances,
+    and turnover's first-order clearance, with a held-bath source, in the composite.
+    Exchange, turnover's production and the occupant rule entered only through Q5's test files.
+  - **Tag:** `secreted-species-v1-qualified-2026-11-14`.
 
 - **The secreted-species (D150 v1) protocol is registered (14 November).** The lead registered it
   after check 1 and the D147 check. No judged run had been made before registration

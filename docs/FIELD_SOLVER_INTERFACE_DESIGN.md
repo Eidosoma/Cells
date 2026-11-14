@@ -429,6 +429,58 @@ profiler.
 - the narrow form needs the four kernel classes at half or more of the attributed device time;
 - the broad form adds the n × n passes.
 
+**Result on the L4 (14 November): the narrow form holds.** The run: E07's world as version 3,
+the hold's as declared (version 2), step and checks.
+- **The device is busy.** Device time is 92–99% of each call's time to ready.
+- **Attribution is by kernel name.** On this jaxlib the device kernels carry their command
+  buffer as hlo_op, not the instruction, so they are classed by name. cuSOLVER and cuBLAS
+  kernels name their operation
+  ([read_gpu_trace.py](/mnt/workspaces/Cells/field-solver-limits-20261113-01/read_gpu_trace.py)).
+
+| Run | Ready | Four kernel classes | Triangular solves | Cholesky | Dense products | LU | Fusions | Copies |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| E07, 6 worlds | 52.1 ms | 79% | 61% | 11% | 5% | 2% | 17% | 4% |
+| Hold, 6 worlds | 57.5 ms | 78% | 58% | 11% | 5% | 4% | 18% | 4% |
+| E07, 256 worlds | 538 ms (2.10 ms per world-step) | 53% | 11% | 25% | 17% | 1% | 29% | 18% |
+
+- **At six worlds** the step is mostly cuBLAS's batched triangular solve (`batch_trsm_left_kernel`)
+  applied to single vectors: about 30 ms of a 52–58 ms step.
+- **At 256 worlds** the Cholesky and the dense products lead.
+- **The broad form cannot be read from kernel names.** It would add n × n fusions and copies; the
+  pieces compiled alone bound it at 65% (hold, 6 worlds) to 86% (E07, 256 worlds) of the step.
+
+**The conduction workload belongs in the same plan (added 14 November, from an external
+architecture review the advisor confirmed).** Everything above was measured in slow,
+quasi-steady hold states. These do not establish conditioning or safe reuse intervals during
+an active wave. The L4 and GH200 measurements therefore add the following. The Track E
+conduction probe's numbers fill them when they land.
+- **Excitation onset, propagation and recovery** as measured workloads, alongside the hold:
+  - the operator's conditioning through each phase, and its drift between steps and between
+    windows (the drift part, at states saved through a wave);
+  - the Newton iterations and backtracking trials per step;
+  - the per-class device time. Reuse (§6.3) and PCG (§6.2) are judged on these phases, not
+    only on the hold's 5 × 10⁻⁵ over 1,200 s.
+- **Complete workloads compared at equal numerical accuracy,** never piece against piece, for
+  each solver candidate against the dense ID. The candidate must meet the same acceptance
+  checks and the same ledger tolerances, and the plan records for it:
+  - time per assay and ensemble throughput (world-steps per second);
+  - compile cost;
+  - host and device memory;
+  - the solve residuals against their acceptance bounds;
+  - rejection rates (refused steps and refined or repeated solves).
+- **Static-world capacity apart from dynamic-field capacity.**
+  - A world whose topology, capacitances and masks are fixed can bind every factor once.
+  - A world with dynamic capacitance or activity masks refactorises: the composite's field
+    refresh runs every view and is capped at `FIELD_INPUT_NODE_CAP` = 64 field nodes.
+  - Node bounds and throughput are stated separately for the two; a static-world figure
+    does not carry to a dynamic one.
+- **Qualified invalidation or reuse rules at the events that change geometry or activity,
+  before any lifecycle worlds are scaled.** Insertion, replacement, division and mask
+  closures each change the operator or its pattern. A bound factor, ordering or symbolic
+  factorisation must be invalidated, refreshed or shown still valid by a declared rule at each
+  such event. That rule is qualified (exact at the event, as R3's option (b) requires, or within
+  the acceptance checks) before lifecycle worlds grow past the current caps.
+
 **Decision after GH200.**
 - **If dense node-space work dominates at E07's batch size,** prototype the sparse IMEX
   operator (§6.1) with reuse (§6.3) first, as a new solver ID, and measure it on CPU, the L4

@@ -132,6 +132,12 @@ def main():
     parser.add_argument("--protocol", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--arms", nargs="*", default=[])
+    parser.add_argument(
+        "--backend",
+        choices=("cpu", "gpu"),
+        help="set every definition's execution backend on a copy of the predictions (an L4 "
+        "run: gpu); default: as registered",
+    )
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
@@ -140,6 +146,8 @@ def main():
     # other file is marked a dry run (composite_l4_agreement.judged_protocol).
     from validation.tissue import composite_l4_agreement as agreement
 
+    # The registered definitions declare the CPU; their declared backend picks the device.
+    predictions, backend = agreement.with_backend(predictions, args.backend)
     protocol, judged, acceptance = agreement.judged_protocol("w2", args.protocol)
     arms = args.arms or list(predictions["arms"])
     items = []
@@ -158,6 +166,8 @@ def main():
             protocol_acceptance=acceptance,
             items=items,
         )
+        if backend is not None:
+            result["backend"] = backend
         (out / "w2-judge.json").write_text(json.dumps(result, indent=2, default=float) + "\n")
     except Exception:
         (out / "failure.json").write_text(

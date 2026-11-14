@@ -36,7 +36,7 @@ experiment).
 | The composite: @3 plus operators, the ownership and energy-role contract, bound step checks | Guarded. Numerically qualified on CPU through frozen-model guards; GPU agreement by tolerance in progress on the L4 (14 November). Judged in E07-v1 (`resolved_pump_replacement@1`) |
 | Water plus replacement@2 with the entity volume ledger | Implemented and guarded; not qualified on the heredity sheet |
 | Lifecycle operators: S2 membrane state, S3 insertion and lumen, Rm1 injection, S5a partition and bridge closure | Numerically qualified, against independent references for S5a. Division is prescribed; nothing yet judges endogenous proliferation |
-| Secreted-species transport (D150 v1) | Implemented and guarded; its protocol is being registered and judged |
+| Secreted-species transport (D150 v1) | **Numerically qualified** (14 November): the held sphere with decay, the faces with exact radial conductances and turnover's clearance. Exchange, production and the occupant rule are guarded only, through the Q5 tests |
 | Reactions on the shared inventory (D152 v1) | Implemented and guarded (milestones 1–2); MG0c, the qualification, is in progress |
 | Checkpoint continuity (D153) | Implemented and guarded for CPU vector windows. The GPU probe passed (14 November) and the GPU extension is being built |
 | Phase markers | Completion records implemented; start and failure records pending |

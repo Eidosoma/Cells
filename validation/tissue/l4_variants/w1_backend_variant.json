@@ -1,0 +1,655 @@
+{
+ "kind": "cells.pump_water_qualification_protocol@1",
+ "predictions": "/mnt/workspaces/Cells/water-volume-pump-20261110-01/w1-protocol-03/source/validation/tissue/pump_water_predictions.json",
+ "dt_study": [
+  "/mnt/workspaces/Cells/water-volume-pump-20261110-01/w1-dt-study-02a/out/dt-study.json",
+  "/mnt/workspaces/Cells/water-volume-pump-20261110-01/w1-dt-study-02b/out/dt-study.json"
+ ],
+ "rule": "tolerance = 3 x (step-error term at 1 ms + reference stability), max over times",
+ "tolerances": {
+  "P1": {
+   "cell_volume_pL": 2.543043109426435e-09
+  },
+  "P2_from_H": {
+   "cell_volume_pL": 8.957279362675763e-12,
+   "membrane_voltage_V": 5e-10,
+   "cell_concentration_mM": 1.7494414805696579e-09
+  },
+  "P2_from_D": {
+   "cell_volume_pL": 4.533162734077223e-11,
+   "membrane_voltage_V": 6e-10,
+   "cell_concentration_mM": 1.4538450443524198e-08
+  },
+  "P4": {
+   "cell_volume_pL": 6.702805421809899e-09,
+   "membrane_voltage_V": 2e-08,
+   "cell_concentration_mM": 1.9962590371847e-06
+  },
+  "P5": {
+   "cell_volume_pL": 5.652988632753875e-09,
+   "cell_concentration_mM": 1.0602591089536872e-06,
+   "extracellular_volume_pL": 5.652988632753875e-09
+  },
+  "P6": {
+   "cell_volume_pL": 2.547133615138364e-09,
+   "membrane_voltage_V": 4e-09,
+   "cell_concentration_mM": 4.972922056367679e-07
+  }
+ },
+ "terms": {
+  "P1": {
+   "cell_volume_pL": {
+    "step_error_1ms": 8.476810364754783e-10,
+    "reference_stability": 0.0
+   }
+  },
+  "P2_from_H": {
+   "cell_volume_pL": {
+    "step_error_1ms": 2.9582262565478836e-12,
+    "reference_stability": 2.7533531010703882e-14
+   },
+   "membrane_voltage_V": {
+    "step_error_1ms": 1.4278493202605583e-10,
+    "reference_stability": 1.3600232051658168e-15
+   },
+   "cell_concentration_mM": {
+    "step_error_1ms": 5.777186136886788e-10,
+    "reference_stability": 5.4285465012071654e-12
+   }
+  },
+  "P2_from_D": {
+   "cell_volume_pL": {
+    "step_error_1ms": 1.501317588766445e-11,
+    "reference_stability": 9.736655925962623e-14
+   },
+   "membrane_voltage_V": {
+    "step_error_1ms": 1.9856334632084582e-10,
+    "reference_stability": 3.0912772341906702e-15
+   },
+   "cell_concentration_mM": {
+    "step_error_1ms": 4.8299781951754994e-09,
+    "reference_stability": 1.617195266589988e-11
+   }
+  },
+  "P4": {
+   "cell_volume_pL": {
+    "step_error_1ms": 2.234134803084468e-09,
+    "reference_stability": 1.3367085216486885e-13
+   },
+   "membrane_voltage_V": {
+    "step_error_1ms": 5.0694348348775025e-09,
+    "reference_stability": 7.563394355258879e-15
+   },
+   "cell_concentration_mM": {
+    "step_error_1ms": 6.653917405211965e-07,
+    "reference_stability": 2.793854037008714e-11
+   }
+  },
+  "P5": {
+   "cell_volume_pL": {
+    "step_error_1ms": 1.8843294332289893e-09,
+    "reference_stability": 1.1102230246251565e-16
+   },
+   "cell_concentration_mM": {
+    "step_error_1ms": 3.53419674562853e-07,
+    "reference_stability": 2.842170943040401e-14
+   },
+   "extracellular_volume_pL": {
+    "step_error_1ms": 1.8843294332289893e-09,
+    "reference_stability": 1.1102230246251565e-16
+   }
+  },
+  "P6": {
+   "cell_volume_pL": {
+    "step_error_1ms": 8.489992412800499e-10,
+    "reference_stability": 4.529709940470639e-14
+   },
+   "membrane_voltage_V": {
+    "step_error_1ms": 1.28158822443325e-09,
+    "reference_stability": 2.1899149160731213e-14
+   },
+   "cell_concentration_mM": {
+    "step_error_1ms": 1.6575491675515272e-07,
+    "reference_stability": 9.15179043659009e-12
+   }
+  }
+ },
+ "observed_orders": {
+  "P1": {
+   "cell_volume_pL": [
+    2.018367932322567,
+    2.071026135461767,
+    2.322232079075166
+   ],
+   "membrane_voltage_V": [
+    null,
+    null,
+    null
+   ],
+   "cell_concentration_mM": [
+    2.0183679438657345,
+    2.0710262409606117,
+    2.3222318154104937
+   ]
+  },
+  "P2_from_H": {
+   "cell_volume_pL": [
+    2.0128998551947506,
+    2.0675904542981,
+    2.3203123409028326
+   ],
+   "membrane_voltage_V": [
+    1.9714292680856595,
+    2.0396634501016546,
+    2.3047814786220475
+   ],
+   "cell_concentration_mM": [
+    2.0129109634427897,
+    2.0675716936013013,
+    2.320490733095889
+   ]
+  },
+  "P2_from_D": {
+   "cell_volume_pL": [
+    2.0070562562993297,
+    2.0477973938521665,
+    2.303176164798033
+   ],
+   "membrane_voltage_V": [
+    1.6464042127357719,
+    0.8585333206243352,
+    1.7394363809622653
+   ],
+   "cell_concentration_mM": [
+    1.8737356789475847,
+    2.009460999690607,
+    2.298160685964329
+   ]
+  },
+  "P4": {
+   "cell_volume_pL": [
+    0.7071103789695151,
+    1.8015247003477937,
+    2.453876457452177
+   ],
+   "membrane_voltage_V": [
+    2.0708286835078287,
+    2.087589580492086,
+    2.3271105179647074
+   ],
+   "cell_concentration_mM": [
+    1.3819139913649652,
+    1.7438079522192242,
+    2.153169353825457
+   ]
+  },
+  "P5": {
+   "cell_volume_pL": [
+    2.020129216020659,
+    2.0718918781825235,
+    2.3226448247215266
+   ],
+   "membrane_voltage_V": [
+    null,
+    null,
+    null
+   ],
+   "cell_concentration_mM": [
+    2.020129187760908,
+    2.071891889425422,
+    2.3226447794849667
+   ],
+   "extracellular_volume_pL": [
+    2.020129216020659,
+    2.0718918781825235,
+    2.3226448247215266
+   ]
+  },
+  "P6": {
+   "cell_volume_pL": [
+    2.018337646757181,
+    2.071007041352308,
+    2.3222205355949628
+   ],
+   "membrane_voltage_V": [
+    1.9700874042893568,
+    2.0372997913242563,
+    2.3031817151412577
+   ],
+   "cell_concentration_mM": [
+    2.018474464132472,
+    2.0710986493670602,
+    2.322271976605454
+   ]
+  }
+ },
+ "order_requirement": "ARS(2,2,2): observed order >= 1.8 on 4-2-1-0.5 ms where errors exceed rounding",
+ "stationary": {
+  "volume_relative": 1e-06,
+  "voltage_V": 1e-06,
+  "identity_relative": 1e-09,
+  "step_map_correction": 1e-08
+ },
+ "backend_variant": {
+  "status": "registered by the lead (registrar), 14 November 2026, from the three-repeat L4 terms (A, B and D) before judged run C",
+  "base": "validation/tissue/pump_water_protocol.json",
+  "rule": "max(registered, up1(3 x (registered sum + backend + run-to-run))); fixed tolerances max(registered, up1(3 x (backend + run-to-run))); registered kept exactly when nothing is added; backend: the largest |reference - X| over the L4 repeats A, B and D; run-to-run: the largest difference between two of them",
+  "repeats": {
+   "labels": [
+    "A",
+    "B",
+    "D"
+   ],
+   "reference": [
+    "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/w1/cpu.json"
+   ],
+   "runs": {
+    "A": [
+     "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/w1/a.json"
+    ],
+    "B": [
+     "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/w1/b.json"
+    ],
+    "D": [
+     "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/w1/d.json"
+    ]
+   },
+   "backends": {
+    "A": {
+     "backend": "gpu",
+     "devices": [
+      "cuda:0"
+     ],
+     "jax": "0.11.1",
+     "python": "3.13.5",
+     "declared": "gpu",
+     "definitions_set": 7
+    },
+    "B": {
+     "backend": "gpu",
+     "devices": [
+      "cuda:0"
+     ],
+     "jax": "0.11.1",
+     "python": "3.13.5",
+     "declared": "gpu",
+     "definitions_set": 7
+    },
+    "D": {
+     "backend": "gpu",
+     "devices": [
+      "cuda:0"
+     ],
+     "jax": "0.11.1",
+     "python": "3.13.5",
+     "declared": "gpu",
+     "definitions_set": 7
+    }
+   }
+  },
+  "stop": false,
+  "stop_items": [],
+  "rows": [
+   {
+    "item": "P1/cell_volume_pL",
+    "registered": 2.543043109426435e-09,
+    "registered_sum": 8.476810364754783e-10,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 2.543043109426435e-09,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P2_from_H/cell_volume_pL",
+    "registered": 8.957279362675763e-12,
+    "registered_sum": 2.9857597875585875e-12,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 8.957279362675763e-12,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P2_from_H/membrane_voltage_V",
+    "registered": 4.28358876147783e-10,
+    "registered_sum": 1.42786292049261e-10,
+    "backend": 4.163336342344337e-17,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 4.163336342344337e-17,
+     "B": 4.163336342344337e-17,
+     "D": 4.163336342344337e-17
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 5e-10,
+    "widening": 1.1672455687074428,
+    "stop": false
+   },
+   {
+    "item": "P2_from_H/cell_concentration_mM",
+    "registered": 1.7494414805696579e-09,
+    "registered_sum": 5.83147160189886e-10,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 1.7494414805696579e-09,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P2_from_D/cell_volume_pL",
+    "registered": 4.533162734077223e-11,
+    "registered_sum": 1.5110542446924075e-11,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 4.533162734077223e-11,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P2_from_D/membrane_voltage_V",
+    "registered": 5.9569931279424e-10,
+    "registered_sum": 1.9856643759808001e-10,
+    "backend": 1.6653345369377348e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.6653345369377348e-16,
+     "B": 1.6653345369377348e-16,
+     "D": 1.6653345369377348e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 6e-10,
+    "widening": 1.007219560461782,
+    "stop": false
+   },
+   {
+    "item": "P2_from_D/cell_concentration_mM",
+    "registered": 1.4538450443524198e-08,
+    "registered_sum": 4.846150147841399e-09,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 1.4538450443524198e-08,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P4/cell_volume_pL",
+    "registered": 6.702805421809899e-09,
+    "registered_sum": 2.2342684739366328e-09,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 6.702805421809899e-09,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P4/membrane_voltage_V",
+    "registered": 1.5208327194815574e-08,
+    "registered_sum": 5.069442398271858e-09,
+    "backend": 1.3183898417423734e-15,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.3183898417423734e-15,
+     "B": 1.3183898417423734e-15,
+     "D": 1.3183898417423734e-15
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 2e-08,
+    "widening": 1.315069023950108,
+    "stop": false
+   },
+   {
+    "item": "P4/cell_concentration_mM",
+    "registered": 1.9962590371847e-06,
+    "registered_sum": 6.654196790615666e-07,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 1.9962590371847e-06,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P5/cell_volume_pL",
+    "registered": 5.652988632753875e-09,
+    "registered_sum": 1.8843295442512917e-09,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 5.652988632753875e-09,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P5/cell_concentration_mM",
+    "registered": 1.0602591089536872e-06,
+    "registered_sum": 3.5341970298456243e-07,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 1.0602591089536872e-06,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P5/extracellular_volume_pL",
+    "registered": 5.652988632753875e-09,
+    "registered_sum": 1.8843295442512917e-09,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 5.652988632753875e-09,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P6/cell_volume_pL",
+    "registered": 2.547133615138364e-09,
+    "registered_sum": 8.490445383794546e-10,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 2.547133615138364e-09,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P6/membrane_voltage_V",
+    "registered": 3.844830370747232e-09,
+    "registered_sum": 1.2816101235824107e-09,
+    "backend": 1.3877787807814457e-17,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.3877787807814457e-17,
+     "B": 1.3877787807814457e-17,
+     "D": 1.3877787807814457e-17
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 4e-09,
+    "widening": 1.0403579909359204,
+    "stop": false
+   },
+   {
+    "item": "P6/cell_concentration_mM",
+    "registered": 4.972922056367679e-07,
+    "registered_sum": 1.657640685455893e-07,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 4.972922056367679e-07,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P2_stationary/voltage_V",
+    "registered": 1e-06,
+    "registered_sum": null,
+    "backend": 2.1017909634934995e-14,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 2.1017909634934995e-14,
+     "B": 2.1017909634934995e-14,
+     "D": 2.1017909634934995e-14
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 1e-06,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "P2_stationary/volume_relative",
+    "registered": 1e-06,
+    "registered_sum": null,
+    "backend": 5.053583761996992e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 5.053583761996992e-16,
+     "B": 5.053583761996992e-16,
+     "D": 5.053583761996992e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 1e-06,
+    "widening": 1.0,
+    "stop": false
+   }
+  ]
+ }
+}
