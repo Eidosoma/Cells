@@ -723,3 +723,149 @@ def test_a_switch_change_mid_run_cuts_the_coupling():
             assert before[route] < 1.0 and after[route] == 1.0
         else:
             assert after[route] == before[route]
+
+
+# ------------------------------------------------------------------ A7 and A9, at the definition
+
+
+def _with_idle_operator(raw):
+    raw["model"]["operators"].append(dict(law=LAW, species=[], states=[], couplings=[]))
+    raw["experiment"]["coupling_controls"] = []
+    raw["experiment"]["regulatory_writes"] = []
+    return raw
+
+
+def _lumen(version):
+    from tests import membrane_insertion_fixtures as ifx
+
+    raw = ifx.with_operators(ifx.cleft_cell(), ifx.furrow_insertion(onset=0.002))
+    lumen = dict(
+        law="restricted_cleft_lumen@1",
+        lumens=[dict(node_id="cleft", source_id="bath_0", gap_width_m=2e-6)],
+    )
+    raw["model"]["operators"].append(lumen)
+    if version == 2:
+        later = {
+            "scheduled_membrane_insertion@1": "scheduled_membrane_insertion@2",
+            "restricted_cleft_lumen@1": "restricted_cleft_lumen@2",
+        }
+        for entry in raw["model"]["operators"]:
+            entry["law"] = later.get(entry["law"], entry["law"])
+    return _with_idle_operator(raw)
+
+
+def _replacement_over_water():
+    from cells.core.cell_replacement_spec import exact_event_times
+
+    raw = crfx.heredity_sheet(1, 0, dt=1e-3, end_time=0.02)
+    raw["experiment"]["observation_times"] = [0.0, 0.02]
+    (t,) = exact_event_times((10,), 1e-3)
+    template = crfx.template_from_cell(raw, "cell_1", "h")
+    return _with_idle_operator(crfx.over_water(raw, [template], ((t, "cell_0", "h", "n1"),)))
+
+
+WATER_REASON = "reads volume as declared, but ideal_osmosis_linear_compliance_water@1 provides it"
+VOLUME_PROVIDERS = {  # A7: a conserved amount with a changing volume, refused with its reason.
+    "water": (_watered, WATER_REASON),
+    "replacement@2 over water": (_replacement_over_water, WATER_REASON),
+    "lumen@1": (
+        lambda: _lumen(1),
+        "reads extracellular_volume as declared, but restricted_cleft_lumen@1 provides it",
+    ),
+    "lumen@2": (
+        lambda: _lumen(2),
+        "reads extracellular_volume as declared, but restricted_cleft_lumen@2 provides it",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(VOLUME_PROVIDERS))
+def test_a7_a_changing_volume_is_refused_at_the_definition(name):
+    make, reason = VOLUME_PROVIDERS[name]
+    with pytest.raises(ConfigError) as error:
+        parse_spec(make())
+    assert reason in str(error.value), str(error.value)
+
+
+def test_a9_a_batch_refuses_worlds_of_another_structure():
+    from cells.core.batch import BatchSpec, WorldSpec, parse_batch
+
+    def batch(*raws):
+        worlds = tuple(WorldSpec(i + 1, parse_spec(r)) for i, r in enumerate(raws))
+        return parse_batch(BatchSpec(worlds, len(worlds), 10**6, 2**31).to_dict())
+
+    first = rf.pair_world()
+    varied = rf.pair_world(
+        on=8.0,
+        off=2.0,
+        s0=(0.4, 0.1),
+        level=0.3,
+        half_saturation=2e-3,
+        coefficient=2.0,
+        basal=0.1,
+        write=(0.005, 0.8),
+        switch=(0.004, 0.01),
+    )
+    batch(first, varied)  # Parameters, s0, the level, the switch and the write are data.
+    other_side = copy.deepcopy(first)
+    block(other_side)["couplings"][0]["target"]["side"] = "second"
+    other_law = copy.deepcopy(first)
+    block(other_law)["couplings"][1]["law"] = "state_fraction"
+    more_species = copy.deepcopy(first)
+    block(more_species)["species"].append(dict(id="Na", catalogue=None, evidence=None))
+    for other in (other_side, other_law, more_species):
+        with pytest.raises(ConfigError, match="matching model array axes"):
+            batch(first, other)
+
+
+def test_the_field_map_records_each_factored_controls_chain_and_only_then():
+    """Ruling 6, with the lead's rule of 14 November 2026: the `factors` entry appears only with a
+    factor operator, so every other composition's field map (and its manifests) is unchanged."""
+    inner = "resolved_pump_tissue@3"
+    replacement, bridge = "scheduled_cell_replacement@1", "cytoplasmic_bridge_closure@1"
+    keys = {"state", "layout", "control", "views", "observations"}
+    for laws in (
+        (),
+        ("ideal_osmosis_linear_compliance_water@1",),
+        ("electrode_current_injection@1",),
+        ("scheduled_species_turnover@1", "local_species_reactions@1"),
+    ):
+        assert set(pump_composite.implementation(inner, laws).FIELD_MAP) == keys, laws
+    chains = {
+        (replacement, LAW): {"junction": [replacement, LAW], "channel": [LAW]},
+        (LAW, replacement): {"junction": [LAW, replacement], "channel": [LAW]},
+        (replacement,): {"junction": [replacement]},
+        ("membrane_entity_state@1", "isopotential_partition@1", bridge): {"junction": [bridge]},
+    }
+    for laws, chain in chains.items():
+        field_map = pump_composite.implementation(inner, laws).FIELD_MAP
+        assert set(field_map) == keys | {"factors"} and field_map["factors"] == chain, laws
+
+
+def test_a_state_with_two_inputs_multiplies_an_activation_and_an_inhibition():
+    """u = f_act(Na) f_inh(R) per cell (D152's rule: factors multiply), and the half-step is the
+    exact solution with that u, against the Hill forms written out directly."""
+    raw = base()
+    _state(raw)["inputs"].append(
+        dict(law="hill_inhibition", species="R", half_saturation_mM=1e-3, hill_coefficient=1.0)
+    )
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    op = next(o for o in model.operators if o.LAW_ID == LAW)
+    u = np.asarray(sra.state_inputs(state, p, xp=np))
+    expected = []
+    for cell in ("cell_0", "cell_3"):
+        na = _concentration(spec, state, p, "Na", cell)
+        r = _concentration(spec, state, p, "R", cell)
+        expected.append(
+            _hill(na, 12.0, 2.0, "hill_activation") * _hill(r, 1e-3, 1.0, "hill_inhibition")
+        )
+    np.testing.assert_allclose(u, expected, rtol=1e-14)
+    new, valid = op.half_step(state, 0.5, control([1, 1], [0, 0], [0, 0]), p, xp=np)
+    assert bool(valid)
+    lam = 5.0 * np.asarray(expected) + 1.0
+    target = 5.0 * np.asarray(expected) / lam
+    np.testing.assert_allclose(
+        new.regulatory_state, target + (0.2 - target) * np.exp(-lam * 0.5), rtol=1e-14
+    )
