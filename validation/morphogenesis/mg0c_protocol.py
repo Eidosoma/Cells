@@ -1,34 +1,45 @@
-"""MG0c's qualification protocol (D152 version 1, milestone 3): its draft from disclosed runs.
+"""MG0c's qualification protocol (D152 version 1): its draft from disclosed runs and registration.
 
-docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §6.4, with §11 and §11.2. The protocol
-(validation/morphogenesis/protocols/mg0c_turing_v1.json) is PROPOSED: drafted here from the
-development runs named in it, for the lead's review with the advisor. Only the lead registers it,
-and registration changes its status alone. The rules follow D150's reviewed protocol
-(validation/tissue/secreted_species_protocol.json): S5's dt-study rule per element and record, the
-observed orders with their stop rules, judged controls at registered deltas, the attempt rule.
+docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §6.4, with §11 to §11.4. The protocol
+(validation/morphogenesis/protocols/mg0c_turing_v1.json) is PROPOSED. It was drafted here from the
+development runs named in it, and revised after the lead's review with the advisor (14 November
+2026, review); its criteria, thresholds, registered deltas and development values come from those
+runs. The rules carry over D150's reviewed and registered protocol
+(validation/tissue/secreted_species_protocol.json and its module):
+- S5's dt-study rule per element and record;
+- the observed orders with their stop rules;
+- judged controls by parameter at registered deltas;
+- the attempt rule, with the judged entries' guard, judge-guards and combine.
 
-The judged runs are the driver's --protocol runs (validation/morphogenesis/mg0c_turing.py:
-registered, their first call, refuses an unregistered protocol, a source that is not a clean
-execution snapshot and an existing output directory), one per part group; the verdict is the
-driver's judge entry over their merged results.json (one snapshot, every part once), each
-criterion evaluated by validation/morphogenesis/mg0a_gradient.evaluate (metric paths, comparisons,
+Only the lead registers it, through register, which changes the status and adds the lead's
+registration record alone.
+
+The judged entries are the driver's (validation/morphogenesis/mg0c_turing.py: registered, their
+first call; judge, judge-guards, combine; rules.judge_entries). Every judged criterion is
+evaluated by validation/morphogenesis/mg0a_gradient.evaluate (metric paths, comparisons,
 thresholds; a missing metric fails its criterion).
 
-Usage: python -m validation.morphogenesis.mg0c_protocol OUTPUT_JSON RESULTS_JSON [RESULTS_JSON ...]
-  (each RESULTS_JSON a development run of the driver; together they hold every judged part once)
+Usage:
+  python -m validation.morphogenesis.mg0c_protocol draft OUTPUT_JSON RESULTS_JSON [...]
+      each RESULTS_JSON a complete development run of the driver, in order: a later run's part
+      replaces an earlier run's (the reruns after the review), each part's run recorded
+  python -m validation.morphogenesis.mg0c_protocol register PROTOCOL_JSON RECORD_JSON
+      the lead's registration: RECORD_JSON is the lead's record (its status begins 'registered')
 """
 
 import json
 import sys
 from pathlib import Path
 
+import numpy as np
+
 from validation.morphogenesis import mg0c_turing as mg
 from validation.morphogenesis.mg0a_gradient import _lookup, evaluate
 
 STATUS = (
     "PROPOSED (drafted 14 November 2026 by the D152 engine agent from the development runs named "
-    "in development_runs, for the lead's review with the advisor; not registered, and no judged "
-    "run is made before the lead registers it)"
+    "in development_runs, revised the same day after the lead's review with the advisor (review); "
+    "not registered, and no judged run is made before the lead registers it)"
 )
 JUDGED_PARTS = (
     "d147",
@@ -45,32 +56,248 @@ JUDGED_PARTS = (
     "sites",
 )
 DT_JUDGED = (mg.dt_key(mg.DTS[0]), mg.dt_key(mg.DTS[1]))  # Each with its half: the step term.
-LINEARISED_MAP_TOLERANCE = 1e-6  # Proposed a priori (question 3 for the lead).
-RATE_TOLERANCE = dict(q2=1e-3, q3=1e-2, q5=1e-2)  # Fit-limited, proposed a priori (question 4).
+LINEARISED_MAP_DT = mg.dt_key(mg.DTS[0])  # Ruling 3: judged at 50 ms, with its control.
+LINEARISED_MAP_TOLERANCE = 1e-6  # Ruling 3.
+RATE_TOLERANCE = dict(q2=1e-3, q3=1e-2)  # Ruling 4, against the discrete-time rate.
 DOMINANT_FROM_S = 500.0  # Q3: the predicted mode dominates from this record to the end.
-CONTROL_FACTOR = 10.0  # D150's: 10 x the larger of the smallest deltas caught in development.
+CONTROL_FACTOR = 10.0  # D150's: a registered delta is 10 x the smallest caught in development.
+SMALL_DELTA = 1e-2  # Ruling (c): a kept control's registered delta is at most this (1 %).
+GUARD_TESTS = (  # Judged (judge-guards); reference-independent or against independent references.
+    "tests/unit/test_species_reactions.py",
+    "tests/unit/test_species_reactions_refusals.py",
+    "tests/unit/test_species_reactions_halfstep.py",
+    "tests/unit/test_species_reactions_against_references.py",
+    "tests/unit/test_species_reactions_runs.py",
+    "tests/unit/test_species_reactions_guards.py",
+    "tests/unit/test_species_reactions_reference_runs.py",
+    "tests/unit/test_species_reactions_composition.py",
+    "tests/unit/test_mg0c_judged_refusal.py",
+    "tests/unit/test_reaction_references.py",
+)
+REGRESSION_GUARDS = {  # Tier 3, not judged (rulings 7 and 10).
+    "tests/unit/test_species_reactions_same_material.py": (
+        "ruling 10: its exchange map is the engine agent's own, written from D150's documented "
+        "law (one author on both sides, as D150's step map)"
+    ),
+    "tests/unit/test_species_reactions_accuracy.py": (
+        "ruling 7: §11.1's pins, the scheme's accuracy against the exact node kinetics, with loose "
+        "bounds; the mixed-node heat and work split is guarded, not qualified, until the first "
+        "mixed-node protocol"
+    ),
+}
+GUARDS_DEVELOPMENT = dict(  # The guard files' seconds before the split (evidence, not a run part).
+    seconds={
+        "test_species_reactions_guards.py": 315,
+        "test_species_reactions_runs.py": 310,
+        "test_species_reactions_reference_runs.py": 329,
+        "test_species_reactions_composition.py": 802,
+        "the six tier-1 files": 31,
+    },
+    peak_GB=3.28,
+    evidence=(
+        "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tests/: "
+        "final-5de1c96-guards, final-5de1c96-runs and m3-3e7399a (the tier-3 files under load, "
+        "before the review's split); tests/test_tiers.json (the tier-1 files)"
+    ),
+)
+UNIT_B_MEMORY = (  # Why unit b keeps a 5 GiB cap until the rehearsal (the round-2 reruns).
+    "q7 alone peaked at 1.8 GB and q6 alone at 0.87 GB (cgroup peaks, dev-7495288-q7 and -q6), "
+    "so the old unit b's 3.5 GB (q6, q3, q5 and q7 in one process) was not q7's batch alone; "
+    "unit b is that run's prefix, so its peak is at most 3.5 GB, but unmeasured"
+)
+UNITS = dict(  # Ruling 9: q7 alone, with a cap of at least 5 GiB; unit b too (UNIT_B_MEMORY).
+    a=dict(parts=["d147", "theory", "timing", "linear", "floor", "q1", "q2", "sites"], cpu=5),
+    b=dict(parts=["q6", "q3", "q5"], cpu=7, min_cap_GiB=5),
+    q7=dict(parts=["q7"], cpu=5, min_cap_GiB=5),
+    c=dict(parts=["q4"], cpu=7),
+    guards=dict(entry="judge-guards", cpu=5),
+)
+SCOPE = (
+    "MG0c's judged arms run local_species_reactions@1's driven mass action only, of orders 0, 1 "
+    "and 3 (Schnakenberg's four reactions; guard 2's open world and the sites world, orders 0 and "
+    "1), at outside nodes, with resolved_pump_tissue@3's species transport on faces in "
+    "resolved_pump_composite@1, with five species per world (three quiescent ions and the "
+    "network's two), within the 7 species the scope stays at: D150's cap of 16 since FR-9 / D165 "
+    "is not exercised. One judged guard world departs from driven mass action, flagged for the "
+    "lead (question 1): guard 2's passive world runs ideal_detailed_balance_mass_action@1 "
+    "(A <-> B, linear) at outside nodes, judged against the engine order's exact map. Every other "
+    "use of "
+    "the passive law, Michaelis-Menten, Hill factors, cell routes, D150's writers and the "
+    "mixed-node heat and work split enters only through test files; the heat and work split is "
+    "guarded, not qualified, until the first mixed-node protocol. A qualified statement from this "
+    "protocol carries this scope"
+)
+REVIEW = dict(
+    by="the lead with the advisor, 14 November 2026, on the PROPOSED draft landed at e659ce4",
+    rulings={
+        "1": "accepted: a batch of seeds on L/l = 6, bitwise against its reverse and within 1e-12 "
+        "of each scalar run (Q7_batch, Q7_batch_scalar)",
+        "2": "accepted: the 600 s cap; it binds in Q5 only (cap_binds_in_q5)",
+        "3": "the linearised-map tolerance 1e-6, judged at 50 ms with a judged control from the "
+        "other side: the exact propagator must fail it there (Q1_linearised_map_control); the "
+        "25 and 12.5 ms values reported (reported_not_judged). The 4.55 ratio (findings)",
+        "4": "accepted: Q2 at 1e-3 and Q3 at 1e-2 against the discrete-time rate; Q5's fitted "
+        "rates reported only",
+        "5": "accepted, with the smallest top-two gap against the fit tolerance reported and near "
+        "ties excluded up front (Q4_staircase; q4_near_ties)",
+        "6": "accepted: Q6's controls at rtol 1e-12",
+        "7": "§11.1's pins are regression guards with loose bounds, not judged "
+        "(test_species_reactions_accuracy.py), and the scope line says the heat and work split "
+        "is guarded, not qualified",
+        "8": "the usage note's rule, 1e-14 x steps x the scale (disclosures)",
+        "9": "q7 in its own unit, with a cap of at least 5 GiB (development_runs.units); q7 alone "
+        "peaked at 1.8 GB, so unit b keeps a 5 GiB cap too until the rehearsal measures it "
+        "(resources)",
+        "10": "split by file: the same-material test is a regression guard outside the judged "
+        "list; supply counted once, the rejected step, restart and batch stay judged guards",
+    },
+    blocking={
+        "a": "the scope line (scope), with guard 2's passive world flagged (question 1)",
+        "b": "D150's pre-registration amendments carried over: judge-guards with its own verdict, "
+        "uncapped per file; one combine verdict; the attempt rule's infrastructure endings; "
+        "rules.timing; register with the lead's record, read by the guard; why the control "
+        "criteria are evaluable only in a judged run (rules.controls_evaluable)",
+        "c": "controls by parameter (rules.controls; controls.coverage, controls.removed)",
+        "d": "§6.4's amplitude corrected to a defined, measured quantity, and the prototype's 0.68 "
+        "identified as another measure, time and start (findings.amplitude; the design note's "
+        "§6.4 and §11.4)",
+    },
+    d147="done and recorded: every MG0c world has 0 free field offsets with solver @2 (d147)",
+)
+DISCLOSURES = [
+    "Guard 2's rule (ruling 8), 1e-14 x steps x the scale from REFERENCES_USAGE.md, was chosen "
+    "with D150's steps x eps x the scale in view, at which the development's passive world sits at "
+    "0.96 (8,000 steps at 12.5 ms); the long-double iteration shows that rounding is the engine's "
+    "own, linear in steps",
+    "The small-delta cutoff (a kept control's registered delta at most 1e-2) and Q4's fit "
+    "tolerance (Q3's 1e-2) were fixed before the a, b and D_U thresholds were measured, but with "
+    "the k and D_V thresholds, Q4's top-two gaps and every Q1 mode's slow-eigenvalue sensitivity "
+    "to all five parameters in view (mg0c/checks-r2.json, written before the cutoff); those "
+    "sensitivities estimate the thresholds to within about 5 x (controls.removed)",
+    "The development runs come from snapshots before FR-9 (D165, the species cap raised to 16); "
+    "the rehearsal on main redrafts this protocol with one generator command",
+]
+QUESTIONS = [
+    "1. The scope line: guard 2's passive world runs the passive law in judged criteria "
+    "(G2_passive_*), against the lead's 'driven mass action only'. Ruling 8 rules on that very "
+    "criterion (D150's 0.96 is the passive world's ratio), so this draft keeps it judged and "
+    "names it in the scope line. Keep it so, or move it to the guards "
+    "(test_species_reactions_composition.py already runs it, 10 s)?",
+    "2. Ruling 7's consequence: with §11.1's pins in test_species_reactions_accuracy.py, the "
+    "comparisons of heat and work against the true kinetics (dr.integrate_node: the share onset, "
+    "the background guard, the crossing, the reversal onset) leave the judged list. The judged "
+    "guards keep dissipation as rounding-level agreement with nr.run_half_steps (the same "
+    "half-steps) and the passive relaxation's total heat against dr.passive_equilibrium's drop "
+    "(1e-12). The coordinator's milestone-3 instruction kept the independent kinetic and "
+    "dissipation comparisons as guards of record: is this split what the lead intends?",
+]
+CHECKS_R2 = (  # The round-2 host check behind the 4.55 answer (evidence, not a run part).
+    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/checks-r2.json: the "
+    "linearised engine-order map alone (cr.strang_mode_map, K = k J) against the exact propagator "
+    "at L/l = 6, n = 6 gives 1.27e-3, 2.79e-4 and 6.61e-5 at 50, 25 and 12.5 ms (ratios 4.549 and "
+    "4.223), with dt D_V lambda_6 = 0.40 at 50 ms"
+)
+PROTOTYPE_B2 = (  # §6.4's 0.68 u0, identified in the prototype's record (evidence, not a run part).
+    "the prototype's B2 (/mnt/workspaces/Cells/shared-inventory-reactions-20261114-01/probe2/: "
+    "reaction_numerics_probe.py part_b2, probe2.json B2_nonlinear_pattern) recorded the range "
+    "(max u - min u) / u* at 1500 s, from its own start (1e-3 relative noise on U and V, seed "
+    "20261114): 0.678 to 0.679 at 50 to 12.5 ms on L/l = 11, its reference 0.679"
+)
+
+
+def _peak_gb(results_path):
+    """The development unit's cgroup memory peak beside its results.json (dev.sh), in GB."""
+    path = Path(results_path).parent / "memory.peak"
+    try:
+        return round(int(path.read_text().split()[0]) / 1e9, 2)
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def linearised_map_summary(parts):
+    """Ruling 3's figures per dt over Q1's eighteen modes: the worst floor (the engine against the
+    linearised map) and the smallest discretisation error (the engine against the exact
+    propagator), each with its mode."""
+    out = {}
+    for dt in mg.DTS:
+        key = mg.dt_key(dt)
+        rows = [
+            (q1_entry[key]["against_linearised_map"], q1_entry[key]["against_exact"], f"L{L}_{n}")
+            for L in (6, 11, 16)
+            for n, q1_entry in parts["q1"][mg.key("L", L)].items()
+            if n.startswith("n")
+        ]
+        floor = max(rows, key=lambda r: r[0])
+        exact = min(rows, key=lambda r: r[1])
+        out[key] = dict(
+            worst_floor=floor[0],
+            worst_floor_at=floor[2],
+            smallest_against_exact=exact[1],
+            smallest_against_exact_at=exact[2],
+            floor_margin=LINEARISED_MAP_TOLERANCE / floor[0],
+            control_margin=exact[1] / LINEARISED_MAP_TOLERANCE,
+        )
+    return out
+
+
+def findings(parts):
+    """The answers the review asked for, from the runs (and, for the 4.55, the round-2 check)."""
+    entry = parts["q1"][mg.key("L", 6)]["n6"]
+    ratios = entry["exact_ratios"]
+    floor = entry[mg.dt_key(mg.DTS[0])]["against_linearised_map"]
+    q3 = {L: parts["q3"][mg.key("L", L)]["saturated_amplitude_of_c_star"] for L in (6, 11, 16)}
+    return dict(
+        ratio_4_55=(
+            f"Q1's {ratios[0]:.3g} (L/l = 6, n = 6, the 50 and 25 ms pair; then {ratios[1]:.3g}) "
+            "is the scheme's higher-order term, not the floor: the map alone against the exact "
+            f"propagator gives the same ratios ({CHECKS_R2}); the floor there is {floor:.2g} at "
+            "50 ms, under 1e-3 of the engine's 50 ms error"
+        ),
+        amplitude=(
+            "MG0c's measure: max over nodes of |u - mean(u)| at the last record (3000 s), in c* "
+            "(u* = c*), in the reference's own integration of Q6's start on L/l = 11 "
+            "(cr.integrate_chain, rtol 1e-13; amplitude_end_of_c_star): "
+            f"{parts['q6']['amplitude_end_of_c_star']:.3g}. Q3's saturated_amplitude_of_c_star "
+            "(max over nodes of |u - u*| at its end, the engine): "
+            + ", ".join(f"{v:.3g} on L/l = {L}" for L, v in q3.items())
+            + f". §6.4's '0.68 u0' is another measure, time and start: {PROTOTYPE_B2}. Reported, "
+            "not judged"
+        ),
+    )
 
 
 def merged(paths):
-    """Every part from exactly one development run, with the runs named."""
-    parts, runs = {}, []
+    """Every judged part from a complete development run, a later run's part replacing an earlier
+    run's; each part's run recorded. Q4's near-tie verdict is derived with the driver's own
+    q4_verdict where a run predates it."""
+    parts, origin, runs = {}, {}, []
     for path in paths:
         data = json.loads(Path(path).read_text())
         if data.get("quick"):
             raise SystemExit(f"Refused: {path} is a quick run")
+        if data.get("complete") is False:
+            raise SystemExit(f"Refused: {path} is incomplete")
         for name, value in data["parts"].items():
-            if name in parts:
-                raise SystemExit(f"Refused: part {name} is in more than one run")
             if not value.get("ok"):
                 raise SystemExit(f"Refused: part {name} failed in {path}")
-            parts[name] = value
-        runs.append(dict(path=str(path), source=data["source"], parts=sorted(data["parts"])))
+            parts[name], origin[name] = value, str(path)
+        runs.append(
+            dict(
+                path=str(path),
+                source=data["source"],
+                parts=sorted(data["parts"]),
+                peak_GB=_peak_gb(path),
+            )
+        )
     missing = sorted(set(JUDGED_PARTS) - set(parts))
     if missing:
         raise SystemExit(f"Refused: the development runs lack parts {missing}")
+    if "all_agree_outside_near_ties" not in parts["q4"]:
+        parts["q4"] = dict(parts["q4"], **mg.q4_verdict(parts["q4"]["points"]))
+        parts["q4"]["q4_verdict_derived"] = "by mg0c_turing.q4_verdict at drafting"
     results = dict(parts=parts)
     results["accounting_summary"] = mg.accounting_summary(results)
-    return results, runs
+    return results, runs, origin
 
 
 def snap_up(value):
@@ -82,27 +309,142 @@ def criterion(id_, metrics, comparison, threshold, basis):
     return dict(id=id_, metrics=metrics, comparison=comparison, threshold=threshold, basis=basis)
 
 
-def criteria_and_controls(results):
-    """The judged criteria (metric paths into the judged run's results.json) and the registered
-    control deltas, from the development results' structure and controls."""
-    p = results["parts"]
-    out, deltas = [], {}
-    if p["d147"]["max_free_field_offsets"] > 0:
-        raise SystemExit(
-            "Refused: an MG0c world has free field offsets (D147): tell the lead first"
+def _control_items(parts):
+    """(item path, dt key, the rule's summary at dt, its scale, the Q1 entry or None) for every
+    controlled rule."""
+    for L in (6, 11, 16):
+        for n in range(1, 7):
+            entry = parts["q1"][mg.key("L", L)][f"n{n}"]
+            rule = entry["dt_rule"]
+            for dt in DT_JUDGED:
+                yield f"q1.{mg.key('L', L)}.n{n}", dt, rule[dt], rule["scale"], entry
+    rule = parts["q6"]["dt_rule"]
+    for dt in DT_JUDGED:
+        yield "q6", dt, rule[dt], rule["scale"], None
+
+
+def controls_by_parameter(parts):
+    """Ruling (c): per parameter, the kept controls (registered at 10 x the smallest caught delta,
+    at most SMALL_DELTA) and the removed ones with their reasons; refused unless every parameter
+    keeps at least one."""
+    kept, removed, deltas, at_floor = {p: [] for p in mg.PARAMETERS}, [], {}, []
+    for item, dt, rule, scale, entry in _control_items(parts):
+        floor = mg.Q6_GRID[0] if item == "q6" else mg.DELTAS[0]  # Each item's lowest grid point.
+        for p in mg.PARAMETERS:
+            control = rule["controls"][p]
+            if not control["rule_passes_unperturbed"]:
+                raise SystemExit(f"Refused: {item} {dt}'s rule fails unperturbed")
+            smallest = control["smallest_caught"]
+            name = f"{item}.{dt}.{p}"
+            if smallest is not None and CONTROL_FACTOR * smallest <= SMALL_DELTA * (1 + 1e-12):
+                deltas[name] = snap_up(CONTROL_FACTOR * smallest)
+                kept[p].append(name)
+                if abs(smallest - floor) <= 1e-9 * floor:
+                    at_floor.append(name)
+                continue
+            reason = dict(
+                control=name,
+                smallest_caught=smallest,
+                why=(
+                    "not caught on the grid"
+                    if smallest is None
+                    else f"caught only at {smallest:g}: 10 x is above the small-delta cutoff "
+                    f"{SMALL_DELTA:g}"
+                ),
+            )
+            if entry is not None:
+                structure = entry["mode_structure"]
+                sensitivity = structure["slow_log_sensitivity_times_record"][p]
+                step = rule["max_step_term"] / scale
+                predicted = 3 * step / max(sensitivity, 1e-300)  # The rule's tolerance over it.
+                reason.update(
+                    slow_log_sensitivity_times_record=sensitivity,
+                    fast_over_slow_at_first_record=structure.get("fast_over_slow_at_first_record"),
+                    predicted_threshold=predicted,
+                )
+                if smallest is not None and predicted / 5 <= smallest <= 5 * predicted:
+                    fast = structure.get("fast_over_slow_at_first_record")
+                    factor = max(predicted / smallest, smallest / predicted)
+                    reason["why"] += (
+                        f"; the mode's slow eigenvalue moves by |d lambda / d ln {p}| t = "
+                        f"{sensitivity:.3g} over its record, so a delta shifts the coefficient by "
+                        f"about {sensitivity:.3g} delta against the rule's tolerance of about 3 x "
+                        f"its step term ({3 * step:.2g}): a threshold of about {predicted:.2g}, "
+                        f"within {factor:.1f} x of the measured one"
+                        + (
+                            f"; the fast component has decayed to {fast:.2g} of the slow one "
+                            "by the first record"
+                            if fast is not None
+                            else ""
+                        )
+                    )
+            removed.append(reason)
+    lacking = [p for p, names in kept.items() if not names]
+    if lacking:
+        raise SystemExit(f"Refused: no kept control for parameters {lacking}")
+    criteria = [
+        criterion(
+            f"Control_{p}",
+            [
+                f"parts.{name.rsplit('.', 1)[0].replace('.dt', '.dt_rule.dt', 1)}"
+                f".controls.{p}.caught_at_registered"
+                for name in names
+            ],
+            "ge",
+            1,
+            f"{p} times (1 + delta) in the reference, at each kept control's registered delta "
+            "(10 x its smallest caught delta, at most 1e-2), fails that rule somewhere: the rule "
+            "can fail for an error in this parameter",
         )
-    out.append(
+        for p, names in kept.items()
+    ]
+    coverage = {
+        p: dict(
+            kept=len(names),
+            smallest_registered_delta=min(deltas[n] for n in names),
+            largest_registered_delta=max(deltas[n] for n in names),
+        )
+        for p, names in kept.items()
+    }
+    floor_note = (
+        "each of these is caught at its grid's lowest point, so its threshold lies at or below "
+        "it and its registered delta is at least 10 x the threshold (measured)"
+    )
+    if at_floor and all(n.startswith("q6.") and n.rsplit(".", 1)[1] in "ab" for n in at_floor):
+        arrays = parts["q6"]["arrays"]
+        tolerances = [float(np.min(arrays["tolerances"][dt])) for dt in DT_JUDGED]
+        floor_note += (
+            ". Why, inferred from the tolerances, not measured: on Q6, a and b set the uniform "
+            "state (u* = (a + b) c*, v* = b c* / (a + b)^2), which k and the diffusivities do "
+            "not, so a change of delta moves every element by order delta c* from the start, "
+            "while at the early records, where the pattern is still small, the per-element "
+            "tolerance falls toward the reference term (its smallest "
+            f"{min(tolerances):.2g} mM over the records, against elements of order "
+            f"{mg.C_STAR_MM:g} mM); the floor catch is consistent with that"
+        )
+    out = dict(kept=kept, removed=removed, coverage=coverage)
+    out["at_grid_floor"] = dict(controls=at_floor, note=floor_note) if at_floor else {}
+    return criteria, deltas, out
+
+
+BOUNDS = ("energy_over_bound", "material_over_bound")
+
+
+def criteria_for(parts):
+    """The judged criteria (metric paths into the judged runs' merged results.json)."""
+    out = [
         criterion(
             "D147_no_free_field_offsets",
             ["parts.d147.max_free_field_offsets"],
             "le",
             0,
-            "D147: a definition with free field offsets declares field solver @3; every MG0c world "
-            "has none (each chain node shares the cell's capacitor component with the held bath), "
-            "so the declared @2 stands. Composite IDs skip D147's automatic choice, so the count "
-            "is checked here",
+            "D147: a definition with free field offsets declares field solver @3, and since D156 a "
+            "composite follows its inner model (@3, in D147's family); every MG0c world has none "
+            "(each chain node shares the cell's capacitor component with the held bath), so the "
+            "declared @2 stands. The count is checked here because MG0c's worlds are declared "
+            "with @2, not through the automatic choice",
         )
-    )
+    ]
     for world in ("passive", "open"):
         base = f"parts.linear.{world}"
         out += [
@@ -112,9 +454,8 @@ def criteria_and_controls(results):
                 "le",
                 1.0,
                 "|engine - strang_mode_map iterated| <= 1e-14 x steps x the scale at every "
-                "record (REFERENCES_USAGE.md's accumulation, a priori; D150's steps x eps x the "
-                "scale reported, question 8): the composite's order P(dt/2) I(dt) P(dt/2) with "
-                "@3's species transport, mode by mode",
+                "record (REFERENCES_USAGE.md's accumulation; ruling 8, disclosures): the "
+                "composite's order P(dt/2) I(dt) P(dt/2) with @3's species transport, mode by mode",
             ),
             criterion(
                 f"G2_{world}_dt_rule",
@@ -138,22 +479,20 @@ def criteria_and_controls(results):
                 "the energy and the network rows' material residuals inside their host bounds",
             ),
         ]
+    modes = [f"n{n}" for n in range(1, 7)]
+    maps = linearised_map_summary(parts)[LINEARISED_MAP_DT]
     for L in (6, 11, 16):
         base = f"parts.q1.{mg.key('L', L)}"
-        modes = [f"n{n}" for n in range(1, 7)]
         out += [
             criterion(
                 f"Q1_L{L}_linearised_map",
-                [
-                    f"{base}.{n}.{mg.dt_key(dt)}.against_linearised_map"
-                    for n in modes
-                    for dt in mg.DTS
-                ],
+                [f"{base}.{n}.{LINEARISED_MAP_DT}.against_linearised_map" for n in modes],
                 "le",
                 LINEARISED_MAP_TOLERANCE,
-                "the engine against the linearised engine-order map (strang_mode_map with "
-                "K = k J), relative to each record's largest coefficient: the implementation at "
-                "the floor of the 1e-7 start (floor part)",
+                "ruling 3: the engine against the linearised engine-order map (strang_mode_map "
+                "with K = k J) at 50 ms, relative to each record's largest coefficient, within "
+                f"1e-6 ({maps['floor_margin']:.2g} x over the worst development floor, "
+                f"{maps['worst_floor']:.2g} at {maps['worst_floor_at']})",
             ),
             criterion(
                 f"Q1_L{L}_dt_rule",
@@ -170,24 +509,24 @@ def criteria_and_controls(results):
                 "every measurable step-term difference decreases (the orders are reported)",
             ),
         ]
-        paths = []
-        for n in modes:
-            for dt in DT_JUDGED:
-                rule = p["q1"][mg.key("L", L)][n]["dt_rule"][dt]["controls"]
-                deltas[f"q1.{mg.key('L', L)}.{n}.{dt}"] = rule
-                paths += [
-                    f"{base}.{n}.dt_rule.{dt}.controls.{k}.caught_at_registered" for k in rule
-                ]
-        out.append(
-            criterion(
-                f"Q1_L{L}_controls",
-                paths,
-                "ge",
-                1,
-                "the exact propagator with k, and separately D_V, times (1 + delta) at the "
-                "registered delta fails the dt-study rule somewhere (the rule can fail)",
-            )
+    out.append(
+        criterion(
+            "Q1_linearised_map_control",
+            [
+                f"parts.q1.{mg.key('L', L)}.{n}.{LINEARISED_MAP_DT}.against_exact"
+                for L in (6, 11, 16)
+                for n in modes
+            ],
+            "ge",
+            LINEARISED_MAP_TOLERANCE,
+            "ruling 3's control from the other side: the exact propagator, offered as the "
+            "linearised map, fails Q1's linearised-map criterion at 50 ms for every mode (the "
+            f"smallest development value {maps['smallest_against_exact']:.2g} at "
+            f"{maps['smallest_against_exact_at']}, {maps['control_margin']:.2g} x above the "
+            "tolerance)",
         )
+    )
+    p = parts
     out += [
         criterion(
             "Q2_never_above_start",
@@ -241,20 +580,33 @@ def criteria_and_controls(results):
                 "discrete-time rate (sigma_n reported beside it)",
             ),
         ]
-    out.append(
+    q4 = p["q4"]
+    if q4["near_ties_excluded"]:
+        raise SystemExit("Refused: Q4 has near ties; register them before drafting a criterion")
+    out += [
         criterion(
             "Q4_staircase",
-            ["parts.q4.all_agree"],
+            ["parts.q4.all_agree_outside_near_ties"],
             "ge",
             1,
-            "at every L/l from 4 to 30 (step 0.5), the fastest-growing single-mode start on the "
+            "at every L/l from 4 to 30 (step 0.5) outside the near ties excluded up front from the "
+            "references alone (ruling 5: none), the fastest-growing single-mode start on the "
             "engine is the discrete argmax of sigma_n (none at 4 and 7.5 to 8.5), and the growing "
             "set is the admissible unstable set",
-        )
-    )
+        ),
+        criterion(
+            "Q4_near_ties_as_registered",
+            ["parts.q4.smallest_gap_over_allowance"],
+            "ge",
+            1.0,
+            "the near ties, from the references' predicted rates alone, are as registered: none, "
+            "so no length is excluded (in development the smallest top-two gap is "
+            f"{q4['smallest_gap_over_allowance']:.3g} x its allowance, at L/l = "
+            f"{q4['smallest_gap_L']:g})",
+        ),
+    ]
     for L in (6, 8, 11, 16):
         base = f"parts.q5.{mg.key('L', L)}"
-        modes = [f"n{n}" for n in range(1, 7)]
         out += [
             criterion(
                 f"Q5_L{L}_decays",
@@ -271,16 +623,10 @@ def criteria_and_controls(results):
                 "at its predicted rate: S5's dt-study rule against mode_propagator at d = 8",
             ),
         ]
-    base = "parts.q6"
-    paths = []
-    for dt in DT_JUDGED:
-        rule = p["q6"]["dt_rule"][dt]["controls"]
-        deltas[f"q6.{dt}"] = rule
-        paths += [f"{base}.dt_rule.{dt}.controls.{k}.caught_at_registered" for k in rule]
     out += [
         criterion(
             "Q6_dt_rule",
-            [f"{base}.dt_rule.{dt}.max_ratio" for dt in DT_JUDGED],
+            [f"parts.q6.dt_rule.{dt}.max_ratio" for dt in DT_JUDGED],
             "le",
             1.0,
             "S5's dt-study rule against cr.integrate_chain (DOP853 at rtol 1e-13, its own term "
@@ -288,18 +634,10 @@ def criteria_and_controls(results):
         ),
         criterion(
             "Q6_orders",
-            [f"{base}.dt_rule.stop_rule_differences_decrease"],
+            ["parts.q6.dt_rule.stop_rule_differences_decrease"],
             "ge",
             1,
             "every measurable step-term difference decreases (the orders are reported)",
-        ),
-        criterion(
-            "Q6_controls",
-            paths,
-            "ge",
-            1,
-            "the reference re-integrated with k, and separately D_V, times (1 + delta) at the "
-            "registered delta fails the rule somewhere",
         ),
         criterion(
             "Q7_face_free",
@@ -321,14 +659,14 @@ def criteria_and_controls(results):
             ["parts.q7.batch_bitwise_against_reverse"],
             "ge",
             1,
-            "a vector batch over seeds on one domain: bitwise against the reversed batch",
+            "ruling 1: a vector batch of seeds on L/l = 6, bitwise against the reversed batch",
         ),
         criterion(
             "Q7_batch_scalar",
             ["parts.q7.batch_against_scalar_relative"],
             "le",
             1e-12,
-            "each world within 1e-12 of its scalar run (§6.5)",
+            "ruling 1: each world within 1e-12 of its scalar run (§6.5)",
         ),
         criterion(
             "Q7_accounting",
@@ -360,33 +698,19 @@ def criteria_and_controls(results):
             "every measurable step-term difference decreases",
         ),
     ]
-    registered = {}
-    for item, rule in deltas.items():
-        if not all(v["rule_passes_unperturbed"] for v in rule.values()):
-            raise SystemExit(
-                f"Refused: {item}'s rule fails unperturbed, so its controls mean nothing"
-            )
-        caught = [v["smallest_caught"] for v in rule.values()]
-        if None in caught:
-            raise SystemExit(f"Refused: a control of {item} is not caught in development")
-        delta = snap_up(CONTROL_FACTOR * max(caught))
-        registered.update({f"{item}.{kind}": delta for kind in rule})
-    return out, registered
-
-
-BOUNDS = ("energy_over_bound", "material_over_bound")
+    return out
 
 
 def development_values(protocol, results):
     """Each criterion's development values and its development verdict (not judged). A control's
-    caught_at_registered exists only in a judged run: there the development's smallest caught
-    deltas stand beside the registered ones instead."""
+    caught_at_registered exists only in a run with the registered deltas loaded (rules.
+    controls_evaluable): there the development's smallest caught deltas stand beside them."""
     verdict = evaluate(dict(criteria=protocol["criteria"]), results)
     out = {}
     for v, c in zip(verdict["criteria"], protocol["criteria"], strict=True):
-        if c["id"].endswith("_controls"):
+        if c["id"].startswith("Control_"):
             out[v["id"]] = dict(
-                evaluable="in the judged run only (caught_at_registered)",
+                evaluable="in a run with the registered deltas loaded only (caught_at_registered)",
                 smallest_caught_in_development=[
                     _lookup(results, m.replace("caught_at_registered", "smallest_caught"))
                     for m in c["metrics"]
@@ -397,10 +721,96 @@ def development_values(protocol, results):
     return out
 
 
+def unit_timing(results, runs, origin):
+    """Development seconds per judged unit (the parts' own seconds) and the runtime limits at about
+    3 x them, labelled development's until the rehearsal measures them; the development peaks."""
+    seconds = {n: results["parts"][n]["seconds"] for n in results["parts"]}
+    out = {}
+    for unit, spec in UNITS.items():
+        if "parts" not in spec:
+            continue
+        total = sum(seconds.get(n, 0.0) for n in spec["parts"])
+        out[unit] = dict(
+            development_seconds=round(total),
+            runtime_max_seconds=int(3 * total + 600),
+            source_runs=sorted({origin[n] for n in spec["parts"] if n in origin}),
+        )
+    total = sum(GUARDS_DEVELOPMENT["seconds"].values())
+    out["guards"] = dict(
+        development_seconds=round(total),
+        runtime_max_seconds=int(3 * total + 600),
+        source=GUARDS_DEVELOPMENT["evidence"],
+    )
+    peaks = {run["path"]: run["peak_GB"] for run in runs}
+    peaks["guards"] = GUARDS_DEVELOPMENT["peak_GB"]
+    return dict(units=out, development_peaks_GB=peaks)
+
+
+def q4_near_ties(q4):
+    """Ruling 5's report: the near ties excluded up front (from the references alone), the
+    smallest top-two gap against its allowance, the sign margin, and the fits' accuracy for each
+    length's smallest-|rate| candidate (what a sign rests on)."""
+    marginal, every = [], []
+    for point in q4["points"]:
+        predicted, fitted = point["predicted_discrete_time_rates_per_s"], point["rates_per_s"]
+        relative = {n: abs(fitted[n] - v) / abs(v) for n, v in predicted.items()}
+        every += relative.values()
+        n = min(predicted, key=lambda m: abs(predicted[m]))
+        marginal.append((relative[n], point["L"], int(n)))
+    worst = max(marginal)
+    every.sort()
+    out = dict(
+        fit_tolerance=mg.Q4_FIT_TOLERANCE,
+        excluded=q4["near_ties_excluded"],
+        smallest_gap_over_allowance=q4["smallest_gap_over_allowance"],
+        smallest_gap_L=q4.get("smallest_gap_L"),
+        smallest_gap_per_s=q4.get("gap"),
+        smallest_sign_margin=q4["smallest_sign_margin"],
+        smallest_sign_margin_L=q4.get("smallest_sign_margin_L"),
+        smallest_rate_fit_largest_relative_difference=worst[0],
+        smallest_rate_fit_largest_at=dict(L=worst[1], mode=worst[2]),
+        every_fit_median_relative_difference=every[len(every) // 2],
+    )
+    below = out["smallest_sign_margin"] < 1
+    out["note"] = (
+        (
+            f"the sign margin is below 1 at L/l = {out['smallest_sign_margin_L']:g}: a "
+            "near-marginal candidate's |rate| is under 1e-2 of the fastest one's there. "
+            if below
+            else "the sign margin is at least 1 at every length. "
+        )
+        + "A sign rests on each candidate's own fit, and each length's smallest-|rate| candidate "
+        f"fits its predicted rate to at most {worst[0]:.2g} relative (L/l = {worst[1]:g}, n = "
+        f"{worst[2]}), so no sign is in doubt and no length is excluded for it"
+    )
+    return out
+
+
+def q5_cap_binds(parts):
+    """Ruling 2: the Q5 modes whose 3 / |Re lambda| record the 600 s cap shortens, each with the
+    record it would have (the driver's record_time without the cap, at d = 8)."""
+    K, D = mg.schnakenberg_rates(mg.SUBCRITICAL)
+    out = {}
+    for L in (6, 8, 11, 16):
+        for n in range(1, 7):
+            if abs(parts["q5"][mg.key("L", L)][f"n{n}"]["record_s"] - 600.0) < 1e-9:
+                uncapped = mg.record_time(K, D, mg.DOMAINS[L], n, cap=float("inf"))
+                out[f"L{L}_n{n}"] = dict(record_s=600.0, uncapped_record_s=round(uncapped, 1))
+    return out
+
+
 def draft(output, paths):
-    results, runs = merged(paths)
-    criteria, deltas = criteria_and_controls(results)
-    theory = results["parts"]["theory"]
+    results, runs, origin = merged(paths)
+    parts = results["parts"]
+    criteria = criteria_for(parts)
+    control_criteria, deltas, controls = controls_by_parameter(parts)
+    criteria += control_criteria
+    theory = parts["theory"]
+    timing = unit_timing(results, runs, origin)
+    q4 = parts["q4"]
+    q1 = parts["q1"]
+    maps = linearised_map_summary(parts)
+    judged_map, others = maps[LINEARISED_MAP_DT], [maps[mg.dt_key(dt)] for dt in mg.DTS[1:]]
     protocol = dict(
         schema="cells.morphogenesis_protocol@1",
         id="mg0c-turing-v1",
@@ -426,17 +836,9 @@ def draft(output, paths):
             "mass action; ideal_detailed_balance_mass_action@1 in guard 2's passive world",
             "cells.core.inventory_species (D150) declares the network's species",
         ],
+        scope=SCOPE,
         driver="validation/morphogenesis/mg0c_turing.py",
-        command=(
-            "From a fresh clean execution snapshot of main, through scripts/run_detached.sh: "
-            "PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= python -m "
-            "validation.morphogenesis.mg0c_turing PARTS --output RUN_DIR --protocol THIS_FILE, "
-            "one unit per part group (development_runs.units), each into its own new RUN_DIR; then "
-            "python -m validation.morphogenesis.mg0c_turing judge --output JUDGE_DIR --protocol "
-            "THIS_FILE --results RUN_DIR/results.json ..., the verdict over the merged runs (one "
-            "snapshot, every part once); then the guards of record (guards_of_record.tests) with "
-            "pytest from the same snapshot"
-        ),
+        judged_parts=list(JUDGED_PARTS),
         theory_sources=dict(
             turing="Turing 1952, Phil Trans R Soc B 237:37, doi:10.1098/rstb.1952.0012",
             schnakenberg="Schnakenberg 1979, J Theor Biol 81:389, doi:10.1016/0022-5193(79)90042-0",
@@ -483,10 +885,18 @@ def draft(output, paths):
             single_mode_amplitude_of_c_star=mg.AMPLITUDE,
             noise_amplitude_of_c_star=mg.NOISE,
             seeds=mg.SEEDS,
-            q1_records=(
+            records=(
                 "3 / |Re lambda| of each mode's slowest eigenvalue (the usage note's record), "
-                "capped at 600 s, rounded to 50 ms, with records at 1/3 and 2/3 of it"
+                "capped at 600 s (ruling 2), rounded to 50 ms, with records at 1/3 and 2/3 of it "
+                "(Q5: at 0.4 to 0.9 of it)"
             ),
+            cap_binds_in_q5=q5_cap_binds(parts),
+            cap_binds_in_q1=[
+                f"L{L}_n{n}"
+                for L in (6, 11, 16)
+                for n in range(1, 7)
+                if abs(q1[mg.key("L", L)][f"n{n}"]["record_s"] - 600.0) < 1e-9
+            ],
         ),
         predictions_at_drafting=dict(
             analysis=theory["analysis"],
@@ -510,7 +920,7 @@ def draft(output, paths):
             ),
             what_the_rule_shows=(
                 "as D150's review found, the dt-study rule detects bias, not order: for a "
-                "second-order error the pass fraction is structural, so the rule's power is its "
+                "second-order error the ratio sits at 4/9 by structure, so the rule's power is its "
                 "judged controls'; the orders are reported, and only their stop rules are judged"
             ),
             orders=(
@@ -518,12 +928,42 @@ def draft(output, paths):
                 "|q(dt/2) - q(dt/4)|, where both lie above 64 eps x the scale; the stop rule: "
                 "every measurable difference decreases"
             ),
+            linearised_map=(
+                "ruling 3: Q1's engine against the linearised engine-order map within 1e-6 at 50 "
+                f"ms (the development's worst {judged_map['worst_floor']:.2g}); its control, the "
+                "exact propagator, must fail it there (the development's smallest "
+                f"{judged_map['smallest_against_exact']:.2g}). At 25 and 12.5 ms the agreement is "
+                "reported (linearised_map_by_dt), since the smallest discretisation error there ("
+                + " and ".join(f"{m['smallest_against_exact']:.2g}" for m in others)
+                + ") lies below 1e-6"
+            ),
             controls=(
-                "judged (D150's form): the judged run's output against the reference with k, and "
-                "separately D_V, times (1 + delta) at the registered delta, 10 x the larger of the "
-                "smallest deltas that caught k and D_V in development on a 1-2-5 grid from 1e-14 "
-                "to 0.5 (Q6: 1e-9 to 1e-2 by decades), snapped up to the grid; each must fail the "
-                "rule somewhere"
+                "ruling (c), by parameter: each of k, a, b, D_U and D_V perturbed in the "
+                "reference by (1 + delta) on Q1's items (the exact propagator with K = k J(a, b) "
+                "and D, the whole 1-2-5 grid from 1e-14 to 0.5) and on Q6's (the reference "
+                "re-integrated, bisected on the 1-2-5 grid from 1e-9 to 1e-1). A control is kept "
+                "when 10 x its smallest caught delta is at most 1e-2 and is registered there; the "
+                "others are removed with their reasons (controls.removed); every parameter keeps "
+                "at least one, so each is caught by a judged criterion at a small delta with 10 x "
+                "margin (Control_k to Control_D_V). Each criterion requires every kept control "
+                "of its parameter to catch at its registered delta, stricter than the ruling's "
+                "'at least one'"
+            ),
+            controls_evaluable=(
+                "why the control criteria fail outside a judged run: they read "
+                "caught_at_registered, which the driver writes only when the registered deltas "
+                "are loaded, that is under --protocol (a judged run, or a registered dry-run "
+                "copy). A development run has no registered deltas, so the metric is missing and "
+                "evaluate fails a missing metric (development_values names them not evaluable). "
+                "Their passing path has never run for these five criteria (milestone 3's dry run "
+                "loaded the old k and D_V deltas on Q1's quick part alone), so the rehearsal on "
+                "main must run them to a pass on a registered dry-run copy before registration"
+            ),
+            near_ties=(
+                "ruling 5: Q4's fit tolerance is Q3's 1e-2, relative; the fastest two candidates "
+                "at a length are a near tie when their gap is below 2 x 1e-2 x the larger |rate|, "
+                "from the references alone before any run, and such a length is excluded; the "
+                "sign margin (the smallest |rate| over 1e-2 x the largest) is reported beside it"
             ),
             judged_run=(
                 "once, after registration, from a fresh clean execution snapshot of main "
@@ -531,56 +971,104 @@ def draft(output, paths):
                 "A failure is recorded and diagnosed, never retuned"
             ),
             attempts=(
-                "an attempt killed by infrastructure before its verdict is written is not a "
-                "verdict: it is recorded with its logs and rerun once from the same snapshot into "
-                "a new directory (the driver refuses an existing one); a second goes to the lead. "
-                "A part the engine refuses is a verdict: its criteria fail"
+                "an attempt that ends by infrastructure before its verdict is written is not a "
+                "verdict: an out-of-memory kill, a unit stopped by the slice, a host crash, a "
+                "harness timeout, a unit killed by its runtime limit (--runtime-max), a part run "
+                "that ends incomplete (the judge refuses it: results.json's requested parts and "
+                "complete), or a guard file whose process ends by a signal (judge-guards then "
+                "writes infrastructure.json, not verdict.json). It is recorded with its logs and "
+                "partial outputs and rerun once from the same snapshot; each attempt writes its "
+                "own output directory, since every judged entry refuses an existing one. A second "
+                "infrastructure ending goes to the lead, as does any other ending without a "
+                "verdict. A run that has written its verdict is final (S5's rule). A part the "
+                "engine refuses is a verdict: its criteria fail; a test failure or error inside a "
+                "completed guards run is a verdict too"
+            ),
+            timing=(
+                "each judged unit runs through scripts/run_detached.sh with --oom-first in its own "
+                "unit, its --runtime-max about 3 x its development seconds plus 10 min "
+                "(development_runs.timing: development's figures until the rehearsal measures "
+                "them; judge-guards from the guard files' seconds, uncapped per file; judge and "
+                "combine, which run nothing, 600 s), q7 with a cap of at least 5 GiB (ruling 9) "
+                "and unit b likewise (resources). "
+                "The judged units run without "
+                "--wait-headroom: the lead launches each only after checking that the slice has "
+                "room for the unit's development peak plus a margin, so each runtime limit "
+                "measures the entry alone and no wait can spend the single rerun"
             ),
             resolved_start=(
                 "every run starts resolved: the uniform state with a mode of 1e-7 c* or seeded "
                 "noise of 1e-3 c*, never a switch-on from the trace"
             ),
+            judge_entries=dict(
+                environment=(
+                    "every entry from the snapshot's root with PYTHONPATH=src:. JAX_ENABLE_X64=1 "
+                    "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= and "
+                    "/mnt/workspaces/Cells/venv-cpu/bin/python (CPU backend only, float64)"
+                ),
+                guard=(
+                    "mg0c_turing.registered, every judged entry's first call: it refuses an "
+                    "unregistered protocol (its status and a registration record matching it), "
+                    "a source that is not a clean execution snapshot and an existing output "
+                    "directory before anything is computed or written; "
+                    "tests/unit/test_mg0c_judged_refusal.py tests it with every entry"
+                ),
+                parts=(
+                    "per unit (development_runs.units): python -m "
+                    "validation.morphogenesis.mg0c_turing PARTS --output RUN_DIR --protocol "
+                    "THIS_FILE, each into its own new RUN_DIR, logs beside it (mg0c/dev.sh, which "
+                    "creates its output directory first, is the development launcher only)"
+                ),
+                judge=(
+                    "python -m validation.morphogenesis.mg0c_turing judge --output OUT --protocol "
+                    "THIS_FILE --results RUN_DIR/results.json ...: the parts' verdict, refusing "
+                    "runs of another protocol, from another snapshot or incomplete"
+                ),
+                guards=(
+                    "python -m validation.morphogenesis.mg0c_turing judge-guards --output OUT "
+                    "--protocol THIS_FILE: pytest on guards_of_record.tests from the snapshot, one "
+                    "file at a time with no per-file cap; OUT/verdict.json with each file's "
+                    "counts, exit code and duration"
+                ),
+                combined=(
+                    "python -m validation.morphogenesis.mg0c_turing combine --output OUT "
+                    "--protocol THIS_FILE --results PARTS_OUT GUARDS_OUT: the one qualification "
+                    "verdict (every criterion, the guards' files, the scope line, the snapshot's "
+                    "revision), refusing verdicts of another protocol or from another snapshot"
+                ),
+                register=(
+                    "python -m validation.morphogenesis.mg0c_protocol register THIS_FILE "
+                    "RECORD_JSON: the lead's registration; the status and the lead's record alone"
+                ),
+            ),
         ),
         criteria=criteria,
         registered_control_deltas=deltas,
+        controls=controls,
+        q4_near_ties=q4_near_ties(q4),
         guards_of_record=dict(
-            tests=[
-                "tests/unit/test_species_reactions.py",
-                "tests/unit/test_species_reactions_refusals.py",
-                "tests/unit/test_species_reactions_halfstep.py",
-                "tests/unit/test_species_reactions_against_references.py",
-                "tests/unit/test_species_reactions_runs.py",
-                "tests/unit/test_species_reactions_guards.py",
-                "tests/unit/test_species_reactions_reference_runs.py",
-                "tests/unit/test_species_reactions_composition.py",
-                "tests/unit/test_mg0c_judged_refusal.py",
-                "tests/unit/test_reaction_references.py",
-            ],
+            tests=list(GUARD_TESTS),
             covers=[
                 "the energy guards of record (§3.4): the face-free world at rounding on every "
                 "booking path, and the per-law dG test against network_reference",
-                "the independent kinetic and dissipation comparisons (test_species_reactions_"
-                "reference_runs: whole runs against nr.run_half_steps, H and W against "
-                "dr.integrate_node), kept with their documented trace-scale limits (the reversal "
-                "onset, §3.3; the background guard; the stiff front's stall at about eps x its "
-                "anchor, §4.4), because W = dG + H: a closed ledger cannot show heat and work "
-                "separately (the coordinator's milestone-3 addition)",
-                "the composed world (test_species_reactions_composition): transport and reactions "
-                "see the same material under the declared splitting (the face-free export and "
-                "reactions against E R I R E at rounding, second order to the coupled solution); "
-                "supply counted once across writers (each species' inventory against its writers' "
-                "sources at every row); restart and a vector batch preserve its results; a "
-                "rejected step restores every field bitwise, the other writers' accumulators "
-                "included",
-                "the definition-time refusals, the batch signature, restart and vmap (§6.5)",
-                "guard 2's linear chain against the engine order's map, idle claim 3 (reported), "
-                "the development composition with D150's writers and replacement@1",
+                "the independent kinetic and dissipation comparisons as implementation checks "
+                "(test_species_reactions_reference_runs: whole runs against nr.run_half_steps at "
+                "rounding), kept with their documented trace-scale limits (the reversal onset, "
+                "§3.3; the stiff front's stall at about eps x its anchor, §4.4), because W = dG + "
+                "H: a closed ledger cannot show heat and work separately",
+                "the composed world (test_species_reactions_composition): supply counted once "
+                "across writers, the rejected step restoring every field bitwise, restart and a "
+                "vector batch; guard 2's linear chain; idle claim 3 (reported, as D150's ion "
+                "test); the development composition with D150's writers and replacement@1",
                 "reactions at several sites with their own multipliers against nr.run_half_steps",
-                "the judged-run refusal",
+                "the definition-time refusals, the batch signature, restart and vmap (§6.5)",
+                "the judged entries' refusals and verdicts (test_mg0c_judged_refusal)",
             ],
-            verdict_rule="pass when every test in these files passes, from the judged snapshot",
+            verdict_rule="pass when every file exits 0, from the judged snapshot (judge-guards)",
         ),
+        regression_guards=REGRESSION_GUARDS,
         reported_not_judged=[
+            "Q1's linearised-map agreement at 25 and 12.5 ms (ruling 3)",
             "the discrete sigma_n and k_n against the continuum (theory.domains; second order "
             "in h)",
             "the floor part: the linearised map's agreement against the start's amplitude",
@@ -588,11 +1076,14 @@ def draft(output, paths):
             "the timing part: cost per step and compile per chain size",
             "Q3's sigma_n beside the discrete-time rate, the saturated amplitude, the dominant "
             "mode at every record",
-            "Q5's fitted rates beside the predicted ones",
-            "§11.1's accuracy pins (proposals for the lead; the face-free guards' accuracy)",
+            "Q5's fitted rates beside the predicted ones (ruling 4)",
+            "Q4's top-two gap and sign margin against the fit tolerance (ruling 5)",
+            "the modes' structure (q1 mode_structure) and the removed controls' reasons",
         ],
         what_mg0c_does_not_show=[
             "any biological claim (the parameters are synthetic)",
+            "the mixed-node heat and work split, Michaelis-Menten, Hill factors and cell routes, "
+            "which only test files exercise (scope)",
             "local accuracy at a consumer's concentrations (concentration over time, integrated "
             "exposure, effective control and threshold time): the coupling milestone's protocol, "
             "not MG0c's (the coordinator, milestone 3)",
@@ -600,79 +1091,69 @@ def draft(output, paths):
             "two-dimensional patterns (they need sparse field IDs, D150 §3)",
             "recovery after damage (E15's question)",
         ],
+        review=REVIEW,
+        findings=findings(parts),
+        linearised_map_by_dt=maps,
+        disclosures=DISCLOSURES,
         questions_for_the_lead=QUESTIONS,
+        pre_registration_amendments=[],
         outcome_rules=(
-            "pass when every judged criterion passes and the guards of record pass. A failure is "
-            "recorded and kept; a revised protocol gets a new id and is reported as weaker evidence"
+            "pass when the combined verdict passes: every judged criterion and every guard of "
+            "record. A failure is recorded and kept; a revised protocol gets a new id and is "
+            "reported as weaker evidence"
         ),
-        resources=RESOURCES,
-        development_runs=dict(runs=runs, units=UNITS, drafted_by=mg.source_identity()),
+        resources=(
+            "CPUs 5 and 7 (CPU backend only), each unit detached through scripts/run_detached.sh "
+            "with --oom-first; memory caps 4 GiB for units a and c, at least 5 GiB for q7 (ruling "
+            "9: a cap kill would spend the single rerun) and, by the same reasoning, for unit b "
+            f"until the rehearsal measures it ({UNIT_B_MEMORY}); judge-guards uncapped per file; "
+            "the development peaks and seconds in development_runs.timing"
+        ),
+        development_runs=dict(
+            runs=runs,
+            part_sources=origin,
+            units=UNITS,
+            timing=timing,
+            drafted_by=mg.source_identity(),
+        ),
     )
     protocol["development_values"] = development_values(protocol, results)
-    Path(output).write_text(json.dumps(protocol, indent=1) + "\n")
+    Path(output).write_text(json.dumps(mg.plain(protocol), indent=1) + "\n")
     failed = [k for k, v in protocol["development_values"].items() if v.get("passed") is False]
     print(
-        f"{len(criteria)} criteria, {len(deltas)} registered deltas; "
-        f"failing in development: {failed}"
+        f"{len(criteria)} criteria, {len(deltas)} registered deltas, "
+        f"{len(controls['removed'])} controls removed; failing in development: {failed}"
     )
     return protocol
 
 
-QUESTIONS = [
-    "1. Q7's 'a vmap batch of the domains' cannot run: a route's node is part of the operator's "
-    "batch signature (ruling Q11 (c)), so domains of different N are refused in one batch. "
-    "Proposed: a vector batch over seeds on one domain (L/l = 6), bitwise against its reverse and "
-    "within 1e-12 of each scalar run",
-    "2. The records: 3 / |Re lambda| of each mode's slowest eigenvalue, capped at 600 s. The cap "
-    "never binds in Q1 (its longest record, L/l = 6 n = 1, is 590.5 s); it binds in Q5, where the "
-    "near-marginal modes at d = 8 would run to 640, 1,030 and 1,100 s (L/l = 6 n = 1, 11 n = 2, "
-    "16 n = 3)",
-    "3. Q1's linearised-map tolerance (1e-6 relative, proposed). No single tolerance separates "
-    "the two scales with margin: the worst floor at the 1e-7 start is 1.3e-7 (L/l = 6 n = 6 at 50 "
-    "ms, a fast mode at e^-3 of its start), while the smallest discretisation error, the size an "
-    "order mistake would take, is 8.2e-7 at 25 ms and 2.1e-7 at 12.5 ms (L/l = 16 n = 1). 1e-6 "
-    "keeps every development value at 8 x or more below it but would not see an error of the "
-    "smallest discretisation's size on that mode; the choice is the lead's",
-    "4. The fit-limited rate tolerances (Q2 1e-3, Q3 1e-2, relative to the engine order's "
-    "discrete-time rate, not the continuous sigma_n, which differs by O(dt^2)); Q5's fitted "
-    "rates reported only",
-    "5. Q4's candidate modes: every mode whose discrete k^2 lies in [0.1, 0.7] l^-2 (real "
-    "eigenvalues; the band is (0.2, 0.5)), at least two per domain, 100 s each, fitted from 50 s",
-    "6. Q6's controls are integrated at rtol 1e-12 on a decade grid (each costs an integration)",
-    "7. §11.1's accuracy pins: adopted as guards, or kept as proposals",
-    "8. Guard 2's rounding rule: REFERENCES_USAGE.md's 1e-14 x steps x the scale (development: "
-    "0.008 to 0.021), or D150's steps x eps x the scale (development: up to 0.96, at 8,000 steps "
-    "in the passive world at 12.5 ms; the long-double iteration shows the engine's own rounding, "
-    "linear in steps)",
-    "9. Memory: development unit b (q6, q3, q5, q7) peaked at 3.5 GB in its cgroup (q7's vector "
-    "batch) against the 4 GiB cap; the judged run's cap is the coordinator's to set (5 GiB for "
-    "that group, or q7 in a unit of its own)",
-    "10. The guards of record list test_species_reactions_composition.py. Its same-material test "
-    "uses an exchange map written by the engine agent from D150's documented law (one author on "
-    "both sides, as D150's step map, which the lead moved out of D150's judged list to a "
-    "regression guard), and its idle claim 3 is reported, not promised. Judged guard, or a "
-    "regression guard outside the judged list?",
-]
-RESOURCES = (
-    "CPUs 5 and 7 (CPU backend only), detached through scripts/run_detached.sh. Development: "
-    "unit a 52 min and 2.6 GB, unit b 90 min and 3.5 GB (cgroup peak, against its 4 GiB cap: "
-    "question 9), unit c 52 min and 1.1 GB, the d147 part 8 s"
-)
-UNITS = dict(
-    a="CPU 5: d147, theory, timing, linear, floor, q1, q2, sites",
-    b="CPU 7: q6, q3, q5, q7",
-    c="CPU 5, after a: q4",
-    note=(
-        "development's split, d147 run separately (dev-3e7399a-d); the judged run keeps the split "
-        "with d147 in unit a, each unit into its own new directory, then the judge entry. "
-        "mg0c/dev.sh, the development launcher, creates its output directory first and so cannot "
-        "start a judged run, which refuses an existing directory: a judged launcher writes its "
-        "logs beside the run's directory"
-    ),
-)
+def register(protocol_path, record_path):
+    """The lead's registration through the generator's path: the PROPOSED protocol takes the
+    record's status and, after it, the record itself (the lead's, never pre-filled here); every
+    other leaf stays as drafted. Refused for a protocol already registered or recorded, or a record
+    whose status does not begin 'registered'."""
+    path = Path(protocol_path)
+    protocol = json.loads(path.read_text())
+    record = json.loads(Path(record_path).read_text())
+    if not str(protocol.get("status")).startswith("PROPOSED") or "registration" in protocol:
+        raise SystemExit("Refused: only a PROPOSED protocol without a registration record")
+    if not (isinstance(record, dict) and str(record.get("status", "")).startswith("registered")):
+        raise SystemExit("Refused: the registration record's status must begin 'registered'")
+    out = {}
+    for key, value in protocol.items():
+        out[key] = record["status"] if key == "status" else value
+        if key == "status":
+            out["registration"] = dict(record)
+    path.write_text(json.dumps(out, indent=1) + "\n")
+    print(path)
+    return out
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
+    action, *arguments = sys.argv[1:] or [""]
+    if action == "draft" and len(arguments) >= 2:
+        draft(arguments[0], arguments[1:])
+    elif action == "register" and len(arguments) == 2:
+        register(*arguments)
+    else:
         raise SystemExit(__doc__)
-    draft(sys.argv[1], sys.argv[2:])
