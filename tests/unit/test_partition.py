@@ -12,8 +12,9 @@ In NumPy on bound compact worlds (no compile), all built from neither J1 input:
   the event changes no ledger, and heat stays monotone on the adjusted row;
 * an asymmetric division with mismatch carriers: the charge follows the patches and the booked
   work is the unmixing term, RT sum delta^2 / (2 n f (1 - f));
-* refusals: inexact anchors, an unmapped population, a pump, a provider beside a closer, a
-  daughter amount driven <= 0, and a division of an unborn parent;
+* refusals: inexact anchors, an unmapped population, a pump, a provider beside a closer,
+  replacement@2 beside a closer (§5.5, as landed), a daughter amount driven <= 0, and a
+  division of an unborn parent;
 * an idle partition is bitwise the composition without it; the lineage summary.
 The compiled guards are test_partition_runs.py.
 """
@@ -465,6 +466,23 @@ def test_a_provider_beside_a_closer_is_refused():
     ]
     with pytest.raises(ConfigError, match="closers or a provider|cannot run with"):
         parse_spec(raw)
+
+
+@pytest.mark.parametrize(
+    "closer, mask",
+    ((partition.LAW_ID, "active"), ("scheduled_membrane_insertion@2", "membrane_active")),
+)
+def test_replacement_over_water_is_refused_beside_a_closer(closer, mask):
+    """§5.5, against replacement@2 as landed: it reads the masks on the declared layout
+    (CONFLICTS_VIEW), and a closer counts as a mask's provider for that check."""
+    from cells.models import pump_composite
+    from cells.models.operators import OPERATORS, cell_replacement_v2, osmotic_water
+
+    replacement = cell_replacement_v2.LAW_ID
+    water = osmotic_water.LAW_ID
+    for laws in ((water, replacement, closer), (closer, water, replacement)):
+        errors = pump_composite.structure_errors(adapter, tuple(OPERATORS[k] for k in laws))
+        assert f"{replacement} reads {mask} as declared, but {closer} closes it" in errors
 
 
 def test_an_idle_partition_is_the_composition_without_it():
