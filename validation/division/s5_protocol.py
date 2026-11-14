@@ -20,19 +20,20 @@ import numpy as np
 EVIDENCE = Path("/mnt/workspaces/Cells/cell-division-s5-20261113-01")
 DEVELOPMENT = dict(
     q2=EVIDENCE / "protocol-dev-s5a20/q2_rops_comparison/q2_rops.json",
-    q3=EVIDENCE / "protocol-dev-s5a20/q3_tissue_comparison/q3_tissue.json",
-    q4_tests=EVIDENCE / "protocol-dev-s5a20/test_division_limits_runs.log",
-    q4_measure=EVIDENCE / "protocol-dev-s5a20/limits_measure.json",
+    q3=EVIDENCE / "protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
+    q4_tests=EVIDENCE / "protocol-dev-s5a21/test_division_limits_runs.log",
+    q4_measure=EVIDENCE / "protocol-dev-s5a21/q4_limits_measure.json",
     q5=EVIDENCE / "comparisons-s5a9/q5_order/q5_order.json",
     q10_dt=EVIDENCE / "gaps-s5a13/q10_sensitivity_dt0.25ms/q10_sensitivity.json",
     q10_half=EVIDENCE / "q10-s5a14-dt0.000125/q10_sensitivity.json",
     egg=EVIDENCE / "egg-s5a8/egg_division.json",
-    q2_probe=EVIDENCE / "probe-q2-s5a16/q2_domain_probe.json",
-    q2_cause=EVIDENCE / "head-s5a18/q2_rounding_cause.json",
+    q2_probe=EVIDENCE / "protocol-dev-s5a21/q2_domain_probe.json",
+    q2_cause=EVIDENCE / "protocol-dev-s5a21/q2_rounding_cause.json",
     q2_out_of_domain=EVIDENCE / "comparisons-s5a9/q2_rops_comparison/q2_rops.json",
     regression=EVIDENCE / "regression-s5a9/results.txt",
 )
 SNAPSHOTS = {
+    "protocol-dev-s5a21": "67b22b0",
     "protocol-dev-s5a20": "5e6f9cb",
     "head-s5a18": "1691dc2",
     "probe-q2-s5a16": "cbbe55b",
@@ -42,6 +43,10 @@ SNAPSHOTS = {
     "regression-s5a9": "6c2b118",
     "egg-s5a8": "c37ffa2",
 }
+# Runs from before main's merge of the volume ledger (08c6a10). S5's own crossrev set is
+# identical across the merge (crossrev-s5a10-division), but it covers the nine compact worlds
+# only; the egg-scale world and Q5's worlds are outside it.
+PRE_MERGE = {"comparisons-s5a9", "regression-s5a9", "egg-s5a8"}
 EPS = float(np.finfo(float).eps)
 FLOOR_K = 64  # Q3's rounding floor: k eps x the quantity's scale, with k = 64 (as Q5's).
 ORDER_BAND = (1.8, 2.3)  # Q5's observed-order band (proposed).
@@ -60,7 +65,7 @@ def where(name):
     """A development run's path and its snapshot's revision."""
     path = DEVELOPMENT[name]
     run = next((k for k in SNAPSHOTS if k in str(path)), None)
-    return dict(path=str(path), snapshot_revision=SNAPSHOTS.get(run))
+    return dict(path=str(path), snapshot_revision=SNAPSHOTS.get(run), pre_merge=run in PRE_MERGE)
 
 
 def tolerance(step, reference, scale):
@@ -82,6 +87,8 @@ def q3():
                 continue
             rows = {}
             for t, row in world["per_record"].items():
+                if not row["live"][q]:  # Not live at this record: nothing is compared.
+                    continue
                 step, ref = row["engine_step_term"][q], row["reference_term"][q]
                 value, floored = tolerance(step, ref, scale)
                 seen = row["engine_minus_reference"][q]
@@ -211,6 +218,12 @@ def draft():
             "driver refuses an unregistered protocol and a run outside a clean snapshot (to be "
             "added at registration). A failure is recorded and diagnosed, never retuned.",
             "development_runs": {k: where(k) for k in DEVELOPMENT},
+            "pre_merge": "runs marked pre_merge ran before main's merge of the volume ledger "
+            "(08c6a10). S5's own crossrev set is identical across the merge "
+            "(crossrev-s5a10-division against crossrev-s5a11), but it covers the nine compact "
+            "worlds only; the egg-scale world and Q5's worlds are outside it, and the only merged "
+            "source they execute (current_injection.py) changed by a declaration "
+            "(CONFLICTS_VIEW volume).",
         },
         "Q1": {
             "claim": "Every @3 and operator ledger closes on host and device across partitions, "
@@ -257,6 +270,12 @@ def draft():
                 "rule": "every draw the composite's control domain check admits, with the "
                 "control at the event, is compared; no other bound applies, and no draw is "
                 "redrawn",
+                "open_question": "one seed feeds all six sets: both worlds draw the same "
+                "stream (so their admitted counts match, 200, 148 and 59), and the three spreads "
+                "differ only in the net-charge term. These are q2_domain_probe's draws, whose "
+                "old-scale results are known (9.06, 860.56, 152.62). Distinct seeds per world "
+                "and spread would be independent sets. The lead's choice, before R-ops' "
+                "amended magnitudes land.",
             },
             "tolerance": "64 eps x R-ops' own magnitude per compared quantity (the lead's "
             "ruling). For a cell's node charge, input and daughters alike, R-ops' magnitude "

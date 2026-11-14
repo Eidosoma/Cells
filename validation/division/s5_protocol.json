@@ -24,53 +24,66 @@
   "development_runs": {
    "q2": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q2_rops_comparison/q2_rops.json",
-    "snapshot_revision": "5e6f9cb"
+    "snapshot_revision": "5e6f9cb",
+    "pre_merge": false
    },
    "q3": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q3_tissue_comparison/q3_tissue.json",
-    "snapshot_revision": "5e6f9cb"
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
    },
    "q4_tests": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/test_division_limits_runs.log",
-    "snapshot_revision": "5e6f9cb"
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/test_division_limits_runs.log",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
    },
    "q4_measure": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/limits_measure.json",
-    "snapshot_revision": "5e6f9cb"
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q4_limits_measure.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
    },
    "q5": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/comparisons-s5a9/q5_order/q5_order.json",
-    "snapshot_revision": "6c2b118"
+    "snapshot_revision": "6c2b118",
+    "pre_merge": true
    },
    "q10_dt": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/gaps-s5a13/q10_sensitivity_dt0.25ms/q10_sensitivity.json",
-    "snapshot_revision": "0ae7bef"
+    "snapshot_revision": "0ae7bef",
+    "pre_merge": false
    },
    "q10_half": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/q10-s5a14-dt0.000125/q10_sensitivity.json",
-    "snapshot_revision": "e448687"
+    "snapshot_revision": "e448687",
+    "pre_merge": false
    },
    "egg": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/egg-s5a8/egg_division.json",
-    "snapshot_revision": "c37ffa2"
+    "snapshot_revision": "c37ffa2",
+    "pre_merge": true
    },
    "q2_probe": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/probe-q2-s5a16/q2_domain_probe.json",
-    "snapshot_revision": "cbbe55b"
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q2_domain_probe.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
    },
    "q2_cause": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/head-s5a18/q2_rounding_cause.json",
-    "snapshot_revision": "1691dc2"
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q2_rounding_cause.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
    },
    "q2_out_of_domain": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/comparisons-s5a9/q2_rops_comparison/q2_rops.json",
-    "snapshot_revision": "6c2b118"
+    "snapshot_revision": "6c2b118",
+    "pre_merge": true
    },
    "regression": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/regression-s5a9/results.txt",
-    "snapshot_revision": "6c2b118"
+    "snapshot_revision": "6c2b118",
+    "pre_merge": true
    }
-  }
+  },
+  "pre_merge": "runs marked pre_merge ran before main's merge of the volume ledger (08c6a10). S5's own crossrev set is identical across the merge (crossrev-s5a10-division against crossrev-s5a11), but it covers the nine compact worlds only; the egg-scale world and Q5's worlds are outside it, and the only merged source they execute (current_injection.py) changed by a declaration (CONFLICTS_VIEW volume)."
  },
  "Q1": {
   "claim": "Every @3 and operator ledger closes on host and device across partitions, with insertion, lumen, bridge and injection.",
@@ -85,7 +98,8 @@
   "development": {
    "egg": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/egg-s5a8/egg_division.json",
-    "snapshot_revision": "c37ffa2"
+    "snapshot_revision": "c37ffa2",
+    "pre_merge": true
    },
    "egg_diagnostics": {
     "max_balance_error_fmol": 2.0375523490656633e-10,
@@ -113,6 +127,7 @@
    "regression": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/regression-s5a9/results.txt",
     "snapshot_revision": "6c2b118",
+    "pre_merge": true,
     "files_passed": 19
    }
   }
@@ -137,7 +152,8 @@
    "draws_per_world_and_spread": 200,
    "seed": "numpy default_rng(20261113), fresh per world and spread",
    "sampler": "validation/division/q2_rops_comparison.perturbed",
-   "rule": "every draw the composite's control domain check admits, with the control at the event, is compared; no other bound applies, and no draw is redrawn"
+   "rule": "every draw the composite's control domain check admits, with the control at the event, is compared; no other bound applies, and no draw is redrawn",
+   "open_question": "one seed feeds all six sets: both worlds draw the same stream (so their admitted counts match, 200, 148 and 59), and the three spreads differ only in the net-charge term. These are q2_domain_probe's draws, whose old-scale results are known (9.06, 860.56, 152.62). Distinct seeds per world and spread would be independent sets. The lead's choice, before R-ops' amended magnitudes land."
   },
   "tolerance": "64 eps x R-ops' own magnitude per compared quantity (the lead's ruling). For a cell's node charge, input and daughters alike, R-ops' magnitude adds |Q| + 1e-15 F sum |z dn|, the increment form's term, carried through its own solve (Appendix A.8, pending in R-ops); clefts unchanged. A key without an R-ops magnitude compares at 64 eps x (|engine| + |R-ops|).",
   "negative_controls": {
@@ -150,6 +166,7 @@
   "development_old_scale": {
    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q2_rops_comparison/q2_rops.json",
    "snapshot_revision": "5e6f9cb",
+   "pre_merge": false,
    "fixed_cases": {
     "compact symmetric": 0.3928037841814018,
     "compact asymmetric": 0.3928037841814018,
@@ -281,15 +298,18 @@
    "out_of_domain_94.7": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/comparisons-s5a9/q2_rops_comparison/q2_rops.json",
     "snapshot_revision": "6c2b118",
+    "pre_merge": true,
     "note": "uncompensated increments; the states pass @3's bare domain check but fail the composite's control domain check in 197 of 200 (the gating laws' voltage domains) and the dropped 10% band in all 200. Cause: the engine forms charges in increment form, and its rounding scales with the increments' ionic content."
    },
    "domain_probe": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/probe-q2-s5a16/q2_domain_probe.json",
-    "snapshot_revision": "cbbe55b"
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q2_domain_probe.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
    },
    "rounding_cause": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/head-s5a18/q2_rounding_cause.json",
-    "snapshot_revision": "1691dc2",
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q2_rounding_cause.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false,
     "note": "|engine - R-ops| scales with the increments' ionic content at fixed net charge: median ratio 9.3-10.0 at 10x and 96-112 at 100x (asymmetric world); A.1's whole content is about 1,370 times the increments'."
    }
   }
@@ -305,8 +325,9 @@
   "tolerance_rule": "3 x (step + reference) per quantity and record; where both terms fall below it, the floor 64 eps x the quantity's scale (its largest |value| over the world's records, the engine's at the judged step) serves instead",
   "verdict_rule": "pass when every |engine - R-tissue| at each record is within its tolerance",
   "tolerances": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q3_tissue_comparison/q3_tissue.json",
-   "snapshot_revision": "5e6f9cb",
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
+   "snapshot_revision": "67b22b0",
+   "pre_merge": false,
    "worlds": {
     "quartered furrow": {
      "records_s": [
@@ -507,30 +528,6 @@
          "reference_term": 0.0,
          "development_engine_minus_reference": 0.0,
          "development_fraction_of_tolerance": 0.0
-        },
-        "0.006": {
-         "tolerance": 7.806049053852498e-28,
-         "floor_applies": true,
-         "engine_step_term": 0.0,
-         "reference_term": 0.0,
-         "development_engine_minus_reference": 0.0,
-         "development_fraction_of_tolerance": 0.0
-        },
-        "0.008": {
-         "tolerance": 7.806049053852498e-28,
-         "floor_applies": true,
-         "engine_step_term": 0.0,
-         "reference_term": 0.0,
-         "development_engine_minus_reference": 0.0,
-         "development_fraction_of_tolerance": 0.0
-        },
-        "0.01": {
-         "tolerance": 7.806049053852498e-28,
-         "floor_applies": true,
-         "engine_step_term": 0.0,
-         "reference_term": 0.0,
-         "development_engine_minus_reference": 0.0,
-         "development_fraction_of_tolerance": 0.0
         }
        }
       }
@@ -671,11 +668,12 @@
    "sealed cleft (A/L = 0): R_j = 1/G_f1 + 1/G_f2 = 2 r_new / A_face to 1%, the coupling to 1% (test_division_limits_runs.py)"
   ],
   "development": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/test_division_limits_runs.log",
-   "snapshot_revision": "5e6f9cb",
-   "tests": "4 passed in 280.60s (0:04:40)",
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/test_division_limits_runs.log",
+   "snapshot_revision": "67b22b0",
+   "pre_merge": false,
+   "tests": "4 passed in 362.36s (0:06:02)",
    "measure": {
-    "t-network": {
+    "t_network": {
      "conductances_S": {
       "G1": 1.0157319597551858e-09,
       "G2": 1.0157319597551858e-09,
@@ -721,131 +719,106 @@
      "fields": {
       "amount_increment": {
        "difference": 0.0,
-       "scale": 0.00019670060187703477,
-       "eps_scale": 0.0
+       "scale": 0.00019670060187703477
       },
       "membrane_transferred": {
        "difference": 0.0,
-       "scale": 0.0001887642646545823,
-       "eps_scale": 0.0
+       "scale": 0.0001887642646545823
       },
       "membrane_dissipated_energy_pJ": {
        "difference": 0.0,
-       "scale": 0.003002776316743494,
-       "eps_scale": 0.0
+       "scale": 0.003002776316743494
       },
       "channel_gate": {
        "difference": 0.0,
-       "scale": 0.9812913496615078,
-       "eps_scale": 0.0
+       "scale": 0.9812913496615078
       },
       "channel_transferred": {
        "difference": 0.0,
-       "scale": 0.00012440849537591537,
-       "eps_scale": 0.0
+       "scale": 0.00012440849537591537
       },
       "channel_dissipated_energy_pJ": {
        "difference": 0.0,
-       "scale": 0.00010927011239226627,
-       "eps_scale": 0.0
+       "scale": 0.00010927011239226627
       },
       "pump_cycles": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "pump_dissipated_energy_pJ": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "metabolic_work_pJ": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "calcium_pump_cycles": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "calcium_pump_dissipated_energy_pJ": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "calcium_metabolic_work_pJ": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "membrane_area_increment_m2": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "membrane_capacitance_increment_F": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "population_abundance_increment": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "partition_moved_fmol": {
        "difference": 0.0,
-       "scale": 1.579460678250787e-05,
-       "eps_scale": 0.0
+       "scale": 1.579460678250787e-05
       },
       "partition_area_moved_m2": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "partition_capacitance_moved_F": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "partition_units_moved": {
        "difference": 0.0,
-       "scale": 0.0,
-       "eps_scale": 0.0
+       "scale": 0.0
       },
       "partition_retired_membrane_transferred_fmol": {
        "difference": 0.0,
-       "scale": 1.57917175868247e-05,
-       "eps_scale": 0.0
+       "scale": 1.57917175868247e-05
       },
       "partition_retired_membrane_heat_pJ": {
        "difference": 0.0,
-       "scale": 0.00025172232355650213,
-       "eps_scale": 0.0
+       "scale": 0.00025172232355650213
       },
       "partition_retired_channel_transferred_fmol": {
        "difference": 0.0,
-       "scale": 1.0022021190154796e-05,
-       "eps_scale": 0.0
+       "scale": 1.0022021190154796e-05
       },
       "partition_retired_channel_heat_pJ": {
        "difference": 0.0,
-       "scale": 8.445878656435762e-06,
-       "eps_scale": 0.0
+       "scale": 8.445878656435762e-06
       },
       "partition_work_pJ": {
        "difference": 0.0,
-       "scale": 2.17938053539122e-17,
-       "eps_scale": 0.0
+       "scale": 2.17938053539122e-17
       },
       "partition_energy_magnitude_pJ": {
        "difference": 0.0,
-       "scale": 0.10324793487175853,
-       "eps_scale": 0.0
+       "scale": 0.10324793487175853
       }
      },
-     "potential_eps": 0.0
+     "potential_difference_in_eps": 0.0
     }
    }
   }
@@ -858,6 +831,7 @@
   "development": {
    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/comparisons-s5a9/q5_order/q5_order.json",
    "snapshot_revision": "6c2b118",
+   "pre_merge": true,
    "steps_s": [
     0.0005,
     0.00025,
@@ -976,11 +950,13 @@
   "tolerances": {
    "quarter": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/gaps-s5a13/q10_sensitivity_dt0.25ms/q10_sensitivity.json",
-    "snapshot_revision": "0ae7bef"
+    "snapshot_revision": "0ae7bef",
+    "pre_merge": false
    },
    "eighth": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/q10-s5a14-dt0.000125/q10_sensitivity.json",
-    "snapshot_revision": "e448687"
+    "snapshot_revision": "e448687",
+    "pre_merge": false
    },
    "worlds": {
     "1->2": {
@@ -1521,6 +1497,7 @@
   "development": {
    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/egg-s5a8/egg_division.json",
    "snapshot_revision": "c37ffa2",
+   "pre_merge": true,
    "negative_control": "Resolved pump accounting failed: local",
    "record_after_first_partition_pJ": 17556.799122939745
   }
