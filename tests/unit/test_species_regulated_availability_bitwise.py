@@ -17,8 +17,8 @@ switched off gives over both availabilities scheduled:
 Every @3 state field of every accepted row and every @3 observation column is compared, and each
 arm's observed factors are exact. Non-vacuous: at 1 both elements carry transfer that the zero arm
 removes, and 1/8 and 1/2 differ in the step. That every coupling switched off is the world without
-the operator at each of these schedules, and that a declared idle operator is too, is in _identity
-(three programs, tier 3: D136's claim 2).
+the operator at each of these schedules, and that a declared idle operator is too, is in _guards
+(tier 3: D136's claim 2).
 """
 
 import numpy as np
