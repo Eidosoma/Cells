@@ -5,6 +5,7 @@ Each operator implements the contract of models/operators/contract.py for one la
 (core/pump_composite_spec.py), not model families (D142, D143).
 """
 
+from cells.models.operators.bath_schedule import ScheduledBathComposition
 from cells.models.operators.bridge_closure import CytoplasmicBridgeClosure
 from cells.models.operators.cell_replacement import ScheduledReplacement
 from cells.models.operators.cell_replacement_v2 import ScheduledReplacementOverWater
@@ -40,5 +41,6 @@ OPERATORS = {
         check_declarations(ScheduledSpeciesTurnover)(),
         check_declarations(ScheduledSpeciesExchange)(),
         check_declarations(LocalSpeciesReactions)(),
+        check_declarations(ScheduledBathComposition)(),
     )
 }
