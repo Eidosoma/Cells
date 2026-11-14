@@ -43,7 +43,8 @@
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-17c3407/measured.json",
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-7cbff00/measured.json",
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-7d8c226/measured.json",
-  "/mnt/workspaces/Cells/reaction-references-20261114-01/tiers/measure-1/measured.json"
+  "/mnt/workspaces/Cells/reaction-references-20261114-01/tiers/measure-1/measured.json",
+  "/mnt/workspaces/Cells/reaction-references-20261114-01/tiers/measure-2/measured.json"
  ],
  "measured_provenance": [
   {
@@ -360,6 +361,13 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a41e532afaa537ef5",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T11:03:06+00:00"
+  },
+  {
+   "git_revision": "19ddd2a1d15c168e939a4e03823fb134d9582b55",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a41e532afaa537ef5",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T11:16:17+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2020,10 +2028,10 @@
    },
    {
     "file": "tests/unit/test_reaction_references.py",
-    "seconds": 6.19,
+    "seconds": 5.81,
     "exit_code": 0,
     "counts": {
-     "passed": 39
+     "passed": 44
     }
    },
    {
