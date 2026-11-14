@@ -47,6 +47,11 @@
           "date": "2026-11-14",
           "engine_revision": "2d2d9816",
           "note": "An experiment selector with what each experiment found as two facts from the record; 59 runs of two experiments (all 38 of E07-v1 and the 21-arm turnover pre-screen; 34.5 MB, largest 0.87 MB); the sheet stands for skin-like tissue over the brain, with the cell among its neighbours; the atlas counts 25 gained identifiers with a dated review; three feature requests shown as designed"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "8497ff37",
+          "note": "The cell is drawn flat-sided, as a cell packed in the skin-like layer (the user: a bit more like a planarian skin cell): six sides with rounded corners, 13 µm tall like the sheet's cells, among six glass neighbours; what enters or leaves the cell sits at the corners. The map gained the operator species_regulated_availability@1 (milestone 1, development code) with its law and its references, the species cap at 16, excitable tissue accepted narrowly (D170) and the conduction probe's outcome. The atlas card says 28 identifiers gained, 25 of them reviewed. Built, checked (35 of 35) and exported from a clean checkout of the branch at 543bab87; the 59 run files are unchanged"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
