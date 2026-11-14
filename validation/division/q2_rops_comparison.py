@@ -30,28 +30,45 @@ Cases:
   due vector from the schedule) is compared with R-ops applying the two divisions one after the
   other, in both orders. Each division's daughter fields compare with its own application; the
   potentials with the last application's; the clamps' image charge with the sum of both;
-* 200 random pre-event states on each of two compact neighbour worlds, the symmetric one and
-  an asymmetric one (f 0.75, a 0.6, three carriers): random increments, histories, patch
-  growth, abundances and gates. The daughters' population abundances and gates are compared
-  too, from R-ops' post-event snapshot.
+* the frozen random draws on each of two compact neighbour worlds, the symmetric one and an
+  asymmetric one (f 0.75, a 0.6, three carriers): random increments, histories, patch growth,
+  abundances and gates. The daughters' population abundances and gates are compared too, from
+  R-ops' post-event snapshot;
+* the a_k negative control (negative_controls).
 
-The random states' sampling rule (the lead, 14 November): a draw is admitted when it passes
-the composite's control domain check with the control at the event (@3's domain at the view,
-each operator's domain and control checks, and the readouts' validity, where the gating laws'
-voltage domains sit), and only then. Each draw (perturbed) changes each live cell's content by
-uniform fractions within 1e-3 of each amount, made neutral by M (the permeant anion), plus a
-net charge, carried by K, uniform within SPREAD of the cell's declared charge; the patches,
+The frozen draws (the lead, 14 November; frozen before R-ops' amended magnitudes land). For each
+world and each net-charge spread of SPREADS (0.1, 1 and 3 declared charges): RANDOM_STATES (200)
+draws of perturbed from a fresh numpy generator seeded SEED (20261113), the draws
+q2_domain_probe makes. Every draw the composite's control domain check admits, with the
+control at the event (@3's domain at the view, each operator's domain and control checks, and
+the readouts' validity, where the gating laws' voltage domains sit), is compared, and no other
+bound applies: no draw is redrawn. Each draw changes each live cell's content by uniform
+fractions within 1e-3 of each amount, made neutral by M (the permeant anion), plus a net
+charge, carried by K, uniform within the spread times the cell's declared charge; the patches,
 populations and contact get random histories (on admitted routes only), growth, abundances and
-gates. A rejected draw is redrawn, and the report counts draws and rejections, and how many
-admitted draws lie outside the earlier 10% net-charge band (CHARGE_BAND), which the lead
-dropped: it kept |V| away from zero and so bounded the ratio by construction.
+gates. The report counts the admitted draws, and how many lie outside the earlier 10%
+net-charge band (CHARGE_BAND), which the lead dropped: it kept |V| away from zero and so
+bounded the ratio by construction.
 
 Q2 is open (the lead, 14 November). Within the control domain check alone the asymmetric world
 exceeds 64 eps x R-ops' present magnitudes (q2_domain_probe), and the difference scales with
-the increments' ionic content (q2_rounding_cause). R-ops' magnitudes are to gain the content
-term of Appendix A.1's charge formula, and Q2 reruns under both scales then. SPREAD stays at
-0.1, where no admitted draw lies outside the dropped band, until the lead sets the rerun's
-spread.
+the increments' ionic content (q2_rounding_cause). R-ops' magnitudes for a cell's node charge,
+input and daughters alike, are to add |Q| + 1e-15 F sum |z dn| and carry it through R-ops' own
+solve (Appendix A.8, pending in R-ops); Q2 reruns under both scales then.
+
+The negative controls (the lead, 14 November: aimed at the changed scale). In the asymmetric
+neighbour world (its bound state, and its admitted spread-1 draw whose daughter sits nearest
+0 V after the event) and the asymmetric furrow world, R-ops is applied with a defect against the
+engine's own event, for defects from 1e-16 to 1e-2 in quarter decades:
+* a_k: the parent patch membrane_0's share a_k + delta (to first order, an engine defect of
+  -delta). Its charge and capacitance split together, so each daughter patch keeps its
+  parent's voltage: the potentials do not depend on a_k at all, and only the charges (and the
+  areas, capacitances and moved amounts) can show it;
+* the parent's node charge, Q_P + delta |Q_P|, as R-ops receives it: a charge-formation defect,
+  which reaches the daughters' charges and their potentials.
+Reported per kind: the ratios with no defect, and the smallest delta caught (ratio above 64) on
+the daughters' charges, on the potentials and on any key; where the ratio with no defect is
+already above 64, no defect is measurable at that scale, and the report says so.
 
 Disclosed out-of-domain run: comparisons-s5a9 (snapshot-s5a9, 6c2b118) drew uncompensated
 increments within 1e-3 of each amount. The asymmetric states reached 94.7 on the post-event
@@ -90,10 +107,17 @@ from tests import partition_fixtures as fx
 from validation.division import partition_reference as rops
 
 STATUS = "Development comparison for Q2 (S5a); not judged"
-RANDOM_STATES = 200
+RANDOM_STATES = 200  # Draws per world and spread (the frozen draws).
+SPREADS = (0.1, 1.0, 3.0)  # Net-charge half-widths, in declared charges (the frozen draws).
+SEED = 20261113  # A fresh generator per world and spread (q2_domain_probe's draws).
 CHARGE_BAND = 0.1  # The dropped net-charge band, |Q - Q_declared| <= 0.1 |Q_declared|: reported.
-SPREAD = 0.1  # The net-charge draw's half-width, in declared charges (module docstring).
-MAX_DRAWS = 20  # Draws allowed for one admitted random state.
+SPREAD = 0.1  # perturbed's default half-width (q2_domain_probe and q2_rounding_cause).
+# The a_k control: defects 1e-16 to 1e-2 in a quarter-decade ladder.
+DEFECTS = tuple(10.0 ** (k / 4) for k in range(-64, -7))
+CONTROL_KEYS = dict(
+    charges=("charge_D1_C", "charge_D2_C"),
+    potentials=("potentials_after_V",),
+)
 EPS = float(np.finfo(float).eps)
 
 
@@ -576,6 +600,129 @@ def simultaneous(world, state, time, order):
     return out
 
 
+def random_worlds():
+    carriers = {"Na": 0.3, "K": 0.5, "M": 0.2}
+    return {
+        "symmetric neighbour world": fx.divided(neighbour=True),
+        "asymmetric neighbour world (f 0.75, a 0.6, three carriers)": fx.divided(
+            neighbour=True, f=0.75, area_fraction=0.6, carriers=carriers
+        ),
+    }
+
+
+def frozen_draws(world, spread):
+    """The frozen draws (module docstring): RANDOM_STATES draws of perturbed at spread, from a
+    fresh generator seeded SEED, and the draws the composite's control domain check admits."""
+    rng = np.random.default_rng(SEED)
+    draws = [perturbed(world, rng, spread=spread) for _ in range(RANDOM_STATES)]
+    return draws, [s for s in draws if admitted(world, s, fx.EVENT)[0]]
+
+
+def random_case(world, d, spread):
+    """Every admitted frozen draw at one spread against R-ops (module docstring)."""
+    draws, kept = frozen_draws(world, spread)
+    worst, voltage, deviation, outside = {}, 0.0, 0.0, 0
+    for state in kept:
+        outside += not admitted(world, state, fx.EVENT)[1]
+        voltage = max(voltage, float(np.max(np.abs(patch_voltages(world, state)))))
+        q = world.view(state)
+        cells = np.flatnonzero(np.asarray(q.active))
+        net = np.asarray(q.initial_cell_charge_C)[cells] + CHARGE_PER_FMOL * (
+            np.ravel(world.p.valence) @ np.asarray(state.amount_increment)[:, cells]
+        )
+        declared = np.asarray(world.p.initial_cell_charge_C)[cells]
+        deviation = max(deviation, float(np.max(np.abs(net / declared - 1.0))))
+        result = rops.apply(world.snapshot(state), world.division(d, state))
+        after, ok = world.event(state, (1.0,))
+        assert ok
+        for key, value in compare(world, d, state, after, result).items():
+            worst[key] = max(worst.get(key, 0.0), value)
+    return dict(
+        seed=SEED,
+        spread=spread,
+        draws=len(draws),
+        admitted=len(kept),
+        outside_dropped_band=outside,
+        max_abs_patch_voltage_V=voltage,
+        max_net_charge_deviation=deviation,
+        worst=max(worst.values()),
+        worst_key=max(worst, key=worst.get),
+        ratios=worst,
+    )
+
+
+def control_cases():
+    """(label, world, pre-event state, due) of the a_k control (negative_controls)."""
+    raw = random_worlds()["asymmetric neighbour world (f 0.75, a 0.6, three carriers)"]
+    world = Bound(raw)
+    out = [("asymmetric neighbour world, bound state", world, world.state, (1.0,))]
+    d = next(x for x in world.partition[1].divisions if x.id == "first")
+    _, kept = frozen_draws(world, 1.0)
+
+    def nearest_zero(state):  # A daughter's post-event potential nearest 0 V.
+        after, _ = world.event(state, (1.0,))
+        phi = adapter.node_potentials(after, world.view(after), xp=np)
+        return min(abs(float(phi[world.cells.index(c)])) for c in d.daughters)
+
+    near = min(kept, key=nearest_zero)
+    out.append(("asymmetric neighbour world, the spread-1 draw nearest 0 V", world, near, (1.0,)))
+    carriers = {"Na": 0.5, "K": 0.5}
+    raw = fx.cleft_divided(f=0.75, area_fraction=0.6, carriers=carriers, bridge=("linear", 0.001))
+    world = Bound(raw)
+    out.append(("asymmetric furrow world (two patches a cell)", world, opened(world), (1.0,)))
+    return out
+
+
+def negative_controls(patch="membrane_0"):
+    """The negative controls (module docstring): for each case and each defect of DEFECTS, R-ops
+    applied with the defect against the engine's own event. Reported per defect kind: the
+    baseline (no defect) ratios, the smallest defect whose ratio passes 64 on the daughters'
+    charges, on the post-event potentials and on any key (None if none does), and the ladder."""
+    out = {}
+    for label, world, state, due in control_cases():
+        d = next(x for x in world.partition[1].divisions if x.id == "first")
+        division, snapshot = world.division(d, state), world.snapshot(state)
+        after, ok = world.event(state, due)
+        assert ok
+        one, two, share = division.patches[patch]
+        parent = snapshot.cells[d.parent]
+
+        def share_defect(x, one=one, two=two, share=share, division=division, snapshot=snapshot):
+            changed = {**division.patches, patch: (one, two, share + x)}
+            return snapshot, dataclasses.replace(division, patches=changed)
+
+        def charge_defect(x, parent=parent, division=division, snapshot=snapshot, name=d.parent):
+            cell = dataclasses.replace(parent, charge_C=parent.charge_C + x * abs(parent.charge_C))
+            return dataclasses.replace(snapshot, cells={**snapshot.cells, name: cell}), division
+
+        baseline = compare(world, d, state, after, rops.apply(snapshot, division))
+        groups = {**CONTROL_KEYS, "any key": tuple(baseline)}
+        entry = dict(
+            baseline={group: max(baseline[k] for k in keys) for group, keys in groups.items()}
+        )
+        kinds = {
+            f"a_k of {patch} (share {share:g}) + delta": share_defect,
+            "the parent's node charge + delta |Q_P|": charge_defect,
+        }
+        for kind, defect in kinds.items():
+            ladder = [(x, compare(world, d, state, after, rops.apply(*defect(x)))) for x in DEFECTS]
+            caught = {  # A baseline above 64 already fails: no defect is measurable there.
+                group: "baseline above 64"
+                if entry["baseline"][group] > 64
+                else min((x for x, r in ladder if max(r[k] for k in keys) > 64), default=None)
+                for group, keys in groups.items()
+            }
+            rows = []
+            for x, r in ladder:
+                row = dict(delta=x, worst=max(r.values()), worst_key=max(r, key=r.get))
+                row.update({k: r[k] for keys in CONTROL_KEYS.values() for k in keys})
+                rows.append(row)
+            entry[kind] = dict(smallest_defect_caught=caught, ladder=rows)
+            print("negative control", label, kind, caught, flush=True)
+        out[label] = entry
+    return out
+
+
 def main(output):
     jax.config.update("jax_enable_x64", True)
     output = Path(output)
@@ -595,55 +742,16 @@ def main(output):
             entry[" then ".join(order)] = dict(worst=max(ratios.values()), ratios=ratios)
             print("simultaneous", label, order, f"{max(ratios.values()):.2f}", flush=True)
         report["simultaneous"][label] = entry
-    rng = np.random.default_rng(20261113)
-    carriers = {"Na": 0.3, "K": 0.5, "M": 0.2}
-    for label, raw in (
-        ("symmetric neighbour world", fx.divided(neighbour=True)),
-        (
-            "asymmetric neighbour world (f 0.75, a 0.6, three carriers)",
-            fx.divided(neighbour=True, f=0.75, area_fraction=0.6, carriers=carriers),
-        ),
-    ):
+    for label, raw in random_worlds().items():
         world = Bound(raw)
         d = next(x for x in world.partition[1].divisions if x.id == "first")
-        worst, drawn, rejected, outside = {}, 0, 0, 0
-        voltage, deviation = 0.0, 0.0
-        for _ in range(RANDOM_STATES):
-            for _ in range(MAX_DRAWS):
-                state = perturbed(world, rng)
-                drawn += 1
-                domain, banded = admitted(world, state, fx.EVENT)
-                rejected += not domain
-                if domain:
-                    outside += not banded
-                    break
-            else:
-                raise RuntimeError(f"No admitted draw in {MAX_DRAWS} on the {label}")
-            voltage = max(voltage, float(np.max(np.abs(patch_voltages(world, state)))))
-            q = world.view(state)
-            cells = np.flatnonzero(np.asarray(q.active))
-            net = np.asarray(q.initial_cell_charge_C)[cells] + CHARGE_PER_FMOL * (
-                np.ravel(world.p.valence) @ np.asarray(state.amount_increment)[:, cells]
-            )
-            declared = np.asarray(world.p.initial_cell_charge_C)[cells]
-            deviation = max(deviation, float(np.max(np.abs(net / declared - 1.0))))
-            result = rops.apply(world.snapshot(state), world.division(d, state))
-            after, ok = world.event(state, (1.0,))
-            assert ok
-            for key, value in compare(world, d, state, after, result).items():
-                worst[key] = max(worst.get(key, 0.0), value)
-        report["random"][label] = dict(
-            states=RANDOM_STATES,
-            draws=drawn,
-            rejected=rejected,
-            outside_dropped_band=outside,
-            spread=SPREAD,
-            max_abs_patch_voltage_V=voltage,
-            max_net_charge_deviation=deviation,
-            worst=max(worst.values()),
-            ratios=worst,
-        )
-        print("random", label, f"{max(worst.values()):.2f}", flush=True)
+        entry = {}
+        for spread in SPREADS:
+            entry[f"spread {spread:g}"] = random_case(world, d, spread)
+            worst = entry[f"spread {spread:g}"]["worst"]
+            print("random", label, spread, f"{worst:.2f}", flush=True)
+        report["random"][label] = entry
+    report["negative_controls"] = negative_controls()
     (output / "q2_rops.json").write_text(json.dumps(report, indent=1) + "\n")
 
 
