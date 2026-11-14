@@ -10,7 +10,8 @@ as built on 14 November 2026; the build prints them again.
 | | |
 | --- | --- |
 | The atlas | `data/proteins/atlases/planarian.json`, in the form `schema/SPECIES_ATLAS.md` fixes (283 KB) |
-| The proteins it names | `data/proteins/planarian/reference_proteins.tsv` (229 proteins: the 227 it names and 2 joined to them; 35 KB) and its `README.md` |
+| The open set, whole | `data/proteins/planarian/predicted_proteins.tsv` (18,882 proteins: 17,294 gene models and 1,588 UniProtKB entries; 2.2 MB, no sequences), brought in by the user's decision of 14 November 2026 |
+| The proteins the atlas names | `data/proteins/planarian/reference_proteins.tsv` (229 proteins: the 227 it names and 2 joined to them; 35 KB) and the folder's `README.md` |
 | The tool | `tools/build_planarian_atlas.py`: `fetch` uses the network, `build` does not |
 | The check | `node --test tests/planarian_atlas.test.mjs` |
 | The evidence | `/mnt/workspaces/Cells/visualizer-planarian-proteins-20261114-01` (65 MB): 179 requests on record, one of them a refusal, and every response that came back |
@@ -19,8 +20,14 @@ as built on 14 November 2026; the build prints them again.
 
 **The library of about 10,000 proteins was found and could not be imported.** It is the
 spectral library of Ying and others (2025). Its list of proteins is not in the study's
-public deposits, and the paper reserves all rights. Nothing was put in its place. The
-details are in the next section.
+public deposits, and the paper reserves all rights. The details are in the next section.
+
+**The open set was brought in whole in the meantime.** Offered that set until the
+library's list can be had with permission, the user chose it on 14 November 2026: the
+18,882 proteins on open record for the species, in
+`data/proteins/planarian/predicted_proteins.tsv`. They are predicted from the genome and
+from transcripts, not measured. The table is not the library and does not stand in for
+it.
 
 **The atlas itself is complete: all 49 units have an entry.** For 38 units, planarian
 gene products of the same family were found; for 3 the planarian uses a different
@@ -29,8 +36,9 @@ found by a sequence signature, not an established counterpart.
 
 **The answers are drawn from gene predictions, and say so.** UniProt holds 1,588 entries
 for the species and only four curated ones, none of a family the atlas draws. So the
-candidates come from the 17,294 predicted proteins of one genome annotation. Only the
-227 proteins the atlas names, and 2 joined to them, are in the repository.
+candidates come from the 17,294 predicted proteins of one genome annotation. The 227
+proteins the atlas names, and 2 joined to them, are also listed apart, in
+`reference_proteins.tsv`.
 
 ## The library of about 10,000 proteins
 
@@ -59,13 +67,20 @@ permission, or a deposit of the library under an open licence. Or a new protein 
 derived from the 813 instrument files, which are open: that is a mass-spectrometry
 reanalysis against a protein reference, not a download.
 
+The user was asked on 14 November 2026 whether they hold the paper's supplementary table
+or can get it from the authors. A table placed under
+`/mnt/workspaces/Cells/visualizer-planarian-library/` can be imported. It may enter this
+public repository only with the authors' or the publisher's permission.
+
 Other proteomics of the species exists and was not examined: five MassIVE datasets of
 2025 and 2026 from another group (MSV000098119, MSV000098120, MSV000099716, MSV000100775
 and MSV000102685). None is the library the user named.
 
 ### Other catalogues that were sized
 
-None of these is about 10,000 proteins, and none was imported as "the catalogue".
+None of these is about 10,000 proteins, and none is the library. The open set now in the
+repository is the first of them and, of the third, the 17,294 gene models of haplotype 1
+that have a predicted protein.
 
 | What | Size | Terms |
 | --- | --- | --- |
@@ -238,9 +253,9 @@ Each line is what a reader outside the field needs, then what it rests on.
   three, and the designed cage stood under `none found` although nothing was searched.
   The coordinating session changed the word when the atlas and the switch were put
   together (14 November 2026).
-- **The whole table of predicted proteins is not in the repository.** It was not asked
-  for. The build writes it on request (`--full-table FILE`: 18,882 lines, 2.2 MB), and a
-  copy is with the evidence under `built/`.
+- **The whole open set is in the repository,** by the user's decision of 14 November 2026:
+  `predicted_proteins.tsv`, 18,882 proteins in 2.2 MB, without sequences. It is, byte for
+  byte, the table the first build left with the evidence under `built/`.
 - **A link for gene models.** The viewer opens a gene model's own page at WormBase
   ParaSite, from a link template in `data/proteins/overlay.json`, keyed
   `wormbaseparasite`:
@@ -265,8 +280,9 @@ to cite it. Xenbase is not used at all.
 
 Two different things go by that name.
 
-- **The predicted proteome.** The build can write its base: 17,294 gene models with
-  lengths and signatures. A catalogue proper would add the sequences (33,445 predicted
+- **The predicted proteome.** Its base is in the repository now: 17,294 gene models with
+  lengths and signatures, and the species' 1,588 UniProtKB entries. A catalogue proper
+  would add the sequences (33,445 predicted
   proteins with their alternative forms, about 6 MB compressed), the second haplotype,
   current signatures for every model, and names. Names need a similarity search against
   curated proteins of other species: a few CPU-hours, and the first use of the
@@ -290,13 +306,12 @@ node --test tests/planarian_atlas.test.mjs                    # set PLANARIAN_EV
 
 `fetch` asks only what is not yet saved, waits and asks again when a service is busy, and
 records each request in `DIR/requests.json`. `build` reads only `DIR` and the inventory
-snapshot and writes the same bytes every time; the test rebuilds and compares. Add
-`--full-table FILE` to `build` for the whole table of predicted proteins and entries.
+snapshot and writes the same bytes every time; the test rebuilds and compares.
 The families, the units' notes and the claims about papers are tables at the top of the
 tool; the numbers in the notes are read from the evidence.
 
-The committed atlas was built by the tool as committed in `714cde36`, from the saved
-responses. The evidence folder's `inputs/` holds the tool and a provenance note as they
+The committed atlas was first built by the tool as committed in `714cde36`, from the saved
+responses, and the tool as it stands rebuilds the same bytes. The evidence folder's `inputs/` holds the tool and a provenance note as they
 were at the first build, with the tool still untracked and before the fourth finding
 was renamed. The note names revision `6102c0fa`. That revision is `543bab87` on this
 branch today: the same files but for one README passage, in a history that was later

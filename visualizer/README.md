@@ -129,10 +129,16 @@ differ and what could not be determined.
 November 2026: "there is one catalog of 10k ones, let's get all those in just first in
 your data sub folder") was found and not imported. It is the mass-spectrometry spectral
 library of Ying and others (2025, doi:10.1016/j.devcel.2025.08.015). Its list of proteins
-is not in the study's public deposits, and the paper reserves all rights. Nothing was put
-in its place; `data/proteins/planarian/README.md` records what was found and what an
-import needs. Joining any catalogue to the engine's protein catalogue is for the user and
-the lead.
+is not in the study's public deposits, and the paper reserves all rights.
+`data/proteins/planarian/README.md` records what was found and what an import needs.
+
+**The open set is in the folder in the meantime,** by the user's decision of 14 November
+2026, until the library's list can be had with permission:
+`data/proteins/planarian/predicted_proteins.tsv`. It holds the 18,882 proteins on open
+record for the species, 17,294 gene models of one genome annotation and 1,588 UniProtKB
+entries, in 2.2 MB without sequences. They are predicted from the genome and from
+transcripts, not measured, and the table is not the library. The viewer does not read it.
+Joining any catalogue to the engine's protein catalogue is for the user and the lead.
 
 ## Experiment replays
 
@@ -343,12 +349,11 @@ The user merges the branch when they choose.
    per run (D154): division needs a geometry that is not a sheet and a thinning rule; the
    conduction probe needs a chain layout; the held sphere needs radial shells.
 
-For the species atlases, the open decision is the user's: which catalogue of planarian
-proteins to bring in whole. The measured library of about 10,000 proteins needs its
-authors' or publisher's permission, or a reanalysis of its open instrument files. The
-predicted set (17,294 gene models and 1,588 UniProt entries, a 2.2 MB table) is open and
-is built on request (`build --full-table FILE`). `docs/PLANARIAN_ATLAS.md` says what each
-would take.
+For the species atlases, what remains is the measured library of about 10,000 proteins.
+It needs its list from the authors or the publisher, and their permission before it can
+enter this public repository; or a reanalysis of the study's open instrument files. A
+table placed under `/mnt/workspaces/Cells/visualizer-planarian-library/` can be imported.
+`docs/PLANARIAN_ATLAS.md` says what each would take.
 
 For the protein atlas, each of these needs the user's approval first, because the plan
 counts fetching from the public atlases as data tooling (stage 5):

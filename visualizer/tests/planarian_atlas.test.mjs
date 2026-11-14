@@ -1,6 +1,7 @@
 // The planarian side of the protein atlas (data/proteins/atlases/planarian.json) is held
 // to its contract, schema/SPECIES_ATLAS.md, and to what it may and may not claim. The
-// table of the proteins it names (data/proteins/planarian/) is checked against it. Where
+// tables beside it (data/proteins/planarian/) are checked against it: the proteins it
+// names, and the whole open set of the species' proteins they were drawn from. Where
 // the folder of saved responses is on this machine, the build tool must reproduce the
 // files from it, byte for byte; elsewhere that one check is skipped.
 //
@@ -19,6 +20,7 @@ import { ROOT } from "../tools/lib/build_page.mjs";
 const ATLAS = path.join(ROOT, "data", "proteins", "atlases", "planarian.json");
 const FOLDER = path.join(ROOT, "data", "proteins", "planarian");
 const TABLE = path.join(FOLDER, "reference_proteins.tsv");
+const WHOLE = path.join(FOLDER, "predicted_proteins.tsv");
 const README = path.join(FOLDER, "README.md");
 const TOOL = path.join(ROOT, "tools", "build_planarian_atlas.py");
 const EVIDENCE = process.env.PLANARIAN_EVIDENCE || "/mnt/workspaces/Cells/visualizer-planarian-proteins-20261114-01";
@@ -32,6 +34,7 @@ const text = await readFile(ATLAS, "utf8");
 const atlas = JSON.parse(text);
 const snapshot = JSON.parse(await readFile(path.join(ROOT, "data", "proteins", "inventory.snapshot.json"), "utf8"));
 const table = await readFile(TABLE, "utf8");
+const whole = await readFile(WHOLE, "utf8");
 const readme = await readFile(README, "utf8");
 const units = Object.entries(atlas.units);
 const products = [...units.flatMap(([id, unit]) => unit.products.map((product) => [id, product])), ...atlas.extra.map((product) => ["extra", product])];
@@ -146,7 +149,7 @@ test("extra products each say why they are there, and are few", () => {
 });
 
 test("no machine path, no host name, and no web address on a unit or a product", () => {
-  for (const [name, content] of [["atlas", text], ["reference table", table], ["README", readme]]) {
+  for (const [name, content] of [["atlas", text], ["reference table", table], ["whole table", whole], ["README", readme]]) {
     assert.ok(!MACHINE.test(content), `machine path in the ${name}`);
     assert.ok(!content.includes(os.hostname()) && !/localhost/.test(content), `host name in the ${name}`);
   }
@@ -186,27 +189,54 @@ function byId(rows) {
   return new Map(rows.map((row) => [`${row[0]}:${row[1]}`, row]));
 }
 
+test("the whole open set has the counts its README states, and holds every line of the reference table", () => {
+  const lines = whole.trimEnd().split("\n");
+  assert.equal(lines.shift(), table.split("\n")[0], "the two tables have the same columns");
+  const rows = lines.map((line) => line.split("\t"));
+  assert.ok(rows.every((row) => row.length === 9), "a line has another number of columns");
+  const stated = readme.match(/([\d,]+) lines, each one protein, tab-separated under a header line: ([\d,]+) gene models\s+with a predicted protein, then ([\d,]+) UniProtKB entries/);
+  assert.ok(stated, "the README does not state the whole table's counts");
+  const [all, models, entries] = stated.slice(1).map((count) => Number(count.replace(/,/g, "")));
+  assert.equal(rows.length, all);
+  assert.equal(rows.filter((row) => row[0] === "wormbase_parasite" && row[3] === "gene model").length, models);
+  assert.equal(rows.filter((row) => row[0] === "uniprot").length, entries);
+  assert.equal(new Set(rows.map((row) => `${row[0]}:${row[1]}`)).size, rows.length, "an identifier is listed twice");
+  const held = new Set(lines);
+  for (const line of table.trimEnd().split("\n").slice(1)) assert.ok(held.has(line), `not in the whole table: ${line.slice(0, 60)}`);
+  // What the README says of how each entry is known is what the table holds.
+  const levels = new Map();
+  for (const row of rows.filter((row) => row[0] === "uniprot")) levels.set(row[8], (levels.get(row[8]) || 0) + 1);
+  for (const [level, count] of levels) assert.ok(readme.includes(`${count.toLocaleString("en-US")} "${level}"`), `the README does not give ${count} for ${level}`);
+  // The user's bound for data in git: no file of several megabytes, and no sequences.
+  assert.ok(whole.length < 3_000_000, "the whole table has grown past 3 MB");
+  assert.ok(!/\t[ACDEFGHIKLMNPQRSTVWY]{60,}(\t|$)/m.test(whole), "the table holds a protein sequence");
+});
+
+test("the open set is said to be predicted and not measured, and not to stand in for the library", () => {
+  const said = readme.replace(/\s+/g, " ");
+  assert.match(said, /predicted from the genome and from transcripts, not measured/);
+  assert.match(said, /Nothing here says which of these proteins the animal makes/);
+  // The count given where the README first names the table is the table's own.
+  const lines = whole.trimEnd().split("\n").length - 1;
+  assert.ok(said.includes(`the ${lines.toLocaleString("en-US")} proteins on open record for the species`), "the opening count is not the table's");
+});
+
 test("the README says plainly that the library of about 10,000 proteins was not imported", () => {
-  assert.match(readme, /library of about 10,000 proteins was not imported/);
-  assert.match(readme, /It is not the library and does not\s+stand in for it/);
+  const said = readme.replace(/\s+/g, " ");
+  assert.match(said, /library of about 10,000 proteins was not imported/);
+  assert.match(said, /It is not the library and does not stand in for it/);
   assert.match(readme, /doi:10\.1016\/j\.devcel\.2025\.08\.015/);
   assert.match(atlas.not_copied, /10,000/);
   assert.ok(!/engine (uses|reads) (it|this)/i.test(readme.replace(/nothing in the\s+engine reads it/g, "")));
 });
 
-test("the build tool reproduces the atlas, the reference table and the README from the saved responses", { skip: existsSync(path.join(EVIDENCE, "requests.json")) ? false : "the folder of saved responses is not on this machine (set PLANARIAN_EVIDENCE)" }, async () => {
+test("the build tool reproduces the atlas, both tables and the README from the saved responses", { skip: existsSync(path.join(EVIDENCE, "requests.json")) ? false : "the folder of saved responses is not on this machine (set PLANARIAN_EVIDENCE)" }, async () => {
   const out = await mkdtemp(path.join(os.tmpdir(), "planarian-atlas-"));
   try {
-    const run = spawnSync("python3", [TOOL, "build", "--evidence", EVIDENCE, "--out-atlas", path.join(out, "planarian.json"), "--out-reference", path.join(out, "planarian"), "--full-table", path.join(out, "full.tsv")], { encoding: "utf8", timeout: 600000 });
+    const run = spawnSync("python3", [TOOL, "build", "--evidence", EVIDENCE, "--out-atlas", path.join(out, "planarian.json"), "--out-reference", path.join(out, "planarian")], { encoding: "utf8", timeout: 600000 });
     assert.equal(run.status, 0, run.stderr || run.stdout);
-    // The whole table, which is not in the repository, holds every line of the one that is,
-    // and as many proteins as the README says the atlas's were drawn from.
-    const full = (await readFile(path.join(out, "full.tsv"), "utf8")).trimEnd().split("\n");
-    const whole = new Set(full);
-    for (const line of table.trimEnd().split("\n")) assert.ok(whole.has(line), `not in the whole table: ${line.slice(0, 60)}`);
-    const drawn = readme.match(/drawn from ([\d,]+) gene models and ([\d,]+) UniProtKB entries/);
-    assert.equal(full.length - 1, Number(drawn[1].replace(/,/g, "")) + Number(drawn[2].replace(/,/g, "")));
     assert.equal(await readFile(path.join(out, "planarian.json"), "utf8"), text, "the atlas differs from what the tool builds");
+    assert.equal(await readFile(path.join(out, "planarian", "predicted_proteins.tsv"), "utf8"), whole, "the whole table differs from what the tool builds");
     assert.equal(await readFile(path.join(out, "planarian", "reference_proteins.tsv"), "utf8"), table, "the reference table differs from what the tool builds");
     assert.equal(await readFile(path.join(out, "planarian", "README.md"), "utf8"), readme, "the README differs from what the tool builds");
   } finally {
