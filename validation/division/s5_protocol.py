@@ -243,6 +243,21 @@ def q2(name="q2", scale="old"):
     )
 
 
+def q2_previews():
+    """The verdict function on the seen sets' development report under the frozen rule and
+    under the third amendment's: a preview, not the judged verdict."""
+    from validation.division import q2_rops_comparison as q2d  # As draft imports it.
+
+    report = load("q2")
+    item = {"negative_controls": {"threshold": q2d.THRESHOLD}}
+    out = dict(where("q2"), note="the verdict function on the seen sets: a preview only")
+    for name, reported in (("frozen_rule", ()), ("third_amendment", q2d.NEAR_ZERO_REPORTED)):
+        v = q2d.verdict(report, item, reported=reported)
+        failing = [k for k, ok in v["controls"].items() if not ok]
+        out[name] = dict(verdict=v["verdict"], largest_ratio=v["largest_ratio"], failing=failing)
+    return out
+
+
 def q4():
     log = DEVELOPMENT["q4_tests"].read_text()
     summary = re.findall(r"^(\d+ passed.*|.*failed.*)$", log, re.M)
@@ -402,16 +417,21 @@ def draft():
                     seeds=JUDGED_SEEDS,
                     role="the judged sets, assigned by the lead; read only by "
                     "q2_rops_comparison.judge behind its guard. Nobody runs them, at either "
-                    "scale, before the judged run",
+                    "scale, before the judged run, nor draws the judged states, inputs "
+                    "included (the lead, 14 November)",
                 ),
             },
             "tolerance": "64 eps x R-ops' own magnitude per compared quantity (the lead's "
-            "ruling). For a cell's node charge, input and daughters alike, R-ops' magnitude "
-            "adds |Q-bar| + 1e-15 F sum |z dn| (Q-bar the declared charge anchor), the "
-            "increment form's term (the lead's ruling of 14 November: not A.1's whole content, "
-            "about 1,370 times larger on these draws), carried through its own solve "
-            "(Appendix A.8; in R-ops since 2a386d4); clefts unchanged. A key without an R-ops "
-            "magnitude compares at 64 eps x (|engine| + |R-ops|).",
+            "ruling). A cell's node charge, input and daughters alike, has R-ops' magnitude "
+            "M = |Q| + |Q-bar| + 1e-15 F sum_s |z_s Delta_s|: Q-bar its declared charge anchor "
+            "and Delta its increments (an input cell's own; a daughter's split anchor and the "
+            "increments the map computes). The added term is the increment form's (the lead's "
+            "ruling of 14 November: not A.1's whole content, about 1,370 times larger on these "
+            "draws). A daughter's magnitude also carries what enters its charge form: f M_P + "
+            "mag(delta q) for D1, M_P plus that for D2. Each cell's term |Q-bar| + 1e-15 F sum "
+            "|z Delta| is carried through R-ops' own solve into the potentials and everything "
+            "downstream (Appendix A.8; in R-ops since 2a386d4); a cleft's charge keeps |Q_c|. "
+            "A key without an R-ops magnitude compares at 64 eps x (|engine| + |R-ops|).",
             "a8_loosening": dict(
                 where("a8_ratios"),
                 note="the references agent's measure of A.8's loosening (new/old per output "
@@ -449,9 +469,10 @@ def draft():
                     "event, its D2 increment and moved amount and the image it books (plates1 "
                     "- plates0, the partition's capacitor_state) (the second amendment). At "
                     "first order it moves the amounts by delta Delta_D2, and the charges and "
-                    "the image charge by delta F sum_s z_s Delta_D2,s, zero where D2's "
-                    "increment is electroneutral: a miss there is read as such, as for W "
-                    "(each case records D2's net charge increment). The work bookings keep the "
+                    "the image charge by delta F sum_s z_s Delta_D2,s, which vanishes only "
+                    "where D2's increment is electroneutral (the condition, stated by the third "
+                    "amendment; each case records D2's net charge increment). The work bookings "
+                    "keep the "
                     "engine's undefected values, so its work entries are uninformative. The "
                     "partition's event checks, re-applied to the defective state with its "
                     "constants, report the delta they refuse and the checks that refuse it",
@@ -483,11 +504,15 @@ def draft():
                 "(None if none does; 'baseline above 64' where the undefected case already "
                 "fails at that scale)",
                 "threshold": q2d.THRESHOLD,
-                "pass": "every control's target families caught at or below the threshold "
-                "wherever the undefected case passes; at the new scale each near-zero case "
-                "passes undefected and fails with the parent-charge defect; and each case's "
-                "construction checks hold. A control that misses the threshold is a finding, "
+                "pass": "at the new scale each near-zero case passes undefected; every judged "
+                "control's target families are caught at or below the threshold; and each "
+                "case's construction checks hold. Judged in every case, near-zero included: "
+                "the parent charge, non-conservation, f and W. Judged on the fixed cases "
+                "only: a_k, the mismatch scale and transference (near_zero_reported), which "
+                "on the near-zero cases are reported beside their first-order size (the "
+                "third amendment). After registration any control miss is a failed Q2, "
                 "never a moved threshold",
+                "near_zero_reported": list(q2d.NEAR_ZERO_REPORTED),
                 "amendment": {
                     "when": "the lead, 14 November, after the freeze (0c7e2ac) and before any "
                     "new-scale run; the threshold stays 1e-9",
@@ -538,6 +563,42 @@ def draft():
                         "own checks a follow-up, since they need a src change",
                     ],
                 },
+                "third_amendment": {
+                    "when": "the lead with the advisor, 14 November, after a new-scale result "
+                    "on the seen sets (protocol-dev-s5a32); the last amendment before "
+                    "registration: after registration, any control miss is a failed Q2",
+                    "finding": "at the new scale one target misses 1e-9: the mismatch scale's "
+                    "charges in seen spread 1 draw 35 (63.05 at delta = 1e-9, caught at "
+                    "1.78e-9). The frozen rule's preview verdict on the seen sets fails, on "
+                    "that entry alone (preview_verdicts)",
+                    "cause": "a_k, the mismatch scale and transference move charge in "
+                    "proportion to the patch charges (x q_k, x dq, x dq / (z F)), which vanish "
+                    "at 0 V, while A.8's term (the anchor and the increments' content) does "
+                    "not. On a near-zero case their smallest defect caught therefore measures "
+                    "the vanishing effect, not Q2's power: at draw 35 (V_P = -0.63 mV) a_k's "
+                    "margin is 6.6, transference's 6.8 and the mismatch scale's charges below 1. "
+                    "Shown at first order in all ten near-zero cases before this amendment was "
+                    "committed: each observed ratio at 1e-9 is within 0.04% of its first-order "
+                    "size (development run q2-dev-15, worktree; first_order)",
+                    "changes": [
+                        "the parent charge (charges, potentials), non-conservation (image, "
+                        "charges, amounts), f (amounts) and W (work) are judged in every case, "
+                        "near-zero included",
+                        "a_k, the mismatch scale and transference (near_zero_reported) are "
+                        "judged on the fixed cases, every target at 1e-9; on the near-zero "
+                        "cases they are reported beside their first-order size at 1e-9 "
+                        "(first_order_at_threshold, observed_at_threshold)",
+                        "the near-zero cases still pass undefected at the new scale",
+                    ],
+                    "unchanged": "the defect definitions, the 1e-9 threshold, the statistic, "
+                    "the seeds and the comparison rule",
+                    "condition": "non-conservation's charge and image effect, delta F sum z "
+                    "Delta_D2, vanishes only where D2's increment is electroneutral. Each case "
+                    "records D2's net charge increment (construction); no seen case is "
+                    "electroneutral (1.9-3.5e-13 C in magnitude)",
+                    "judged_states": "nobody draws the judged states before the judged run, "
+                    "inputs included",
+                },
                 "scales": "old and new (R-ops' charge_term)",
                 "cases": [
                     "the asymmetric neighbour world's bound state",
@@ -560,7 +621,10 @@ def draft():
             },
             "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' "
             "amended magnitudes: the cases, the simultaneous divisions, the judged sets and the "
-            "controls under both scales; the verdict at the new scale",
+            "controls under both scales, each passed to R-ops explicitly (charge_term False "
+            "for the old, True for the new) and recorded in its scale's report; the verdict "
+            "at the new scale, under the third amendment's rule",
+            "preview_verdicts": q2_previews(),
             "development_old_scale": q2(),
             "development_new_scale": q2(scale="new"),
             "development_estimate": dict(
@@ -666,9 +730,10 @@ def draft():
                 "a finding for the lead: one target misses 1e-9 at the new scale. The mismatch "
                 "scale's charges in seen spread 1 draw 35 read 63.05 at delta = 1e-9 "
                 "(charge_D1_C; D2 53.6) and are caught at 1.78e-9; its potentials, also a "
-                "target, read 718. Target and threshold unchanged. So the verdict function on "
-                "the seen sets (a development preview, not the judged verdict) says fail, on "
-                "that entry alone",
+                "target, read 718. Target and threshold unchanged. So the frozen rule's "
+                "preview verdict on the seen sets (not the judged verdict) fails, on that "
+                "entry alone; the third amendment followed (negative_controls.third_amendment, "
+                "preview_verdicts)",
                 "the mechanism: on the charges the mismatch scale is the a_k control at "
                 "|a - f| = 0.15 strength (their ratio at 1e-9 is 0.1499-0.1501 in all ten "
                 "near-zero draws). Both move charge in proportion to the patch charges, which "

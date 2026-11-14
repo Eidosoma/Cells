@@ -56,6 +56,10 @@ def test_q2s_controls_are_the_drivers():
     assert controls["families"] == {k: list(v) for k, v in q2.CONTROL_GROUPS.items()}
     assert controls["targets"] == {k: list(v) for k, v in q2.CONTROL_TARGETS.items()}
     assert set(controls["defects"]) == set(q2.CONTROL_TARGETS)
+    # The third amendment: these three are reported, not judged, on the near-zero cases.
+    assert controls["near_zero_reported"] == list(q2.NEAR_ZERO_REPORTED)
+    judged = set(q2.CONTROL_TARGETS) - set(q2.NEAR_ZERO_REPORTED)
+    assert judged == {"parent charge", "non-conservation", "f", "W"}
     near = controls["near_zero"]
     assert near["members"] == [list(x) for x in q2.NEAR_ZERO]
     assert near["worst_seen"] == list(q2.WORST_SEEN) and q2.WORST_SEEN in q2.NEAR_ZERO
