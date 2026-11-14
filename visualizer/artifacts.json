@@ -3,7 +3,14 @@
   "artifacts": {
     "architecture": {
       "title": "Cells Architecture Map",
-      "url": "https://claude.ai/artifact/7Pnsy6G25c2kRqgwk5TuaB",
+      "url": "https://claude.ai/artifact/Szv7SqgCkgtAZg4c27fwCb",
+      "previous": [
+        {
+          "url": "https://claude.ai/artifact/7Pnsy6G25c2kRqgwk5TuaB",
+          "until": "2026-11-14",
+          "note": "An earlier link to this page, holding an older copy: its version 11, the species atlases. It is no longer updated."
+        }
+      ],
       "page": "out/cells-architecture.html",
       "scene": "data/architecture/architecture.scene.json",
       "sharing": "private; the owner shares it from the page's Share menu",
@@ -57,6 +64,11 @@
           "date": "2026-11-14",
           "engine_revision": "8497ff37",
           "note": "Species atlases: a Species switch on the protein atlas (Human, Planarian). The planarian atlas of Schmidtea mediterranea has an entry for all 49 units: products of the same family found for 38, a different family for 3 (gap junctions from innexins), nothing found for 2, nothing to look for in 6; 204 gene products, 200 of them candidates by family signature. A ring marks a unit where the species differs. The library of about 10,000 planarian proteins was found and not imported. Checked with 55 of 55 real-input checks and 93 tests (92 pass, 1 skipped) at 54850de6; the page is 1.14 MB, and the 59 run files are unchanged"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "8497ff37",
+          "note": "First version at the new link: the same page as the last version at the earlier link, with two corrections (the conduction probe shown as designed, since its driver has no test; the human atlas says its Xenopus entries are links only). The page and all 59 run files were published together (60 files, 35.7 MB). Tests and checks at 4ba6710c: 93 tests (92 pass, 1 skipped); the species and engine parts of the input check after the corrections, and all 55 checks before them"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
