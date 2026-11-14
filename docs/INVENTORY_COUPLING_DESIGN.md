@@ -362,8 +362,8 @@ is better written as D152 species.
 - Such an amount splits at division, swaps at replacement and carries an identity.
 - An example is a two-species modification cycle M ⇄ M*: a Hill-factored driven activation and a
   first-order driven return. Its moiety is conserved and its work is booked.
-- It costs two species rows against the 7-species cap (W4, §3.2) and books free energy for a
-  molecule.
+- It costs two species rows against the species cap (16 since FR-9, D165; W4, §3.2) and books
+  free energy for a molecule.
 - The operator's state is for regulatory states with no named carrier, and for binding kinetics on a
   target.
 
@@ -371,7 +371,8 @@ is better written as D152 species.
 feedback: a D152 species pair with read-only reads of the ion would also be Strang second order,
 since its half-steps read the ion before and after @3's step. Three reasons hold:
 - there is no named molecular carrier, so there is no moiety to conserve and no free energy to book;
-- the species cap: a pair costs two of the world's seven rows (W4, §3.2);
+- the species cap: a pair costs two of the world's rows, 16 since FR-9 (D165; 7 when this was
+  written; W4, §3.2);
 - binding kinetics on a target belong to the target's regulation, not to a molecule in the
   inventory.
 
@@ -570,8 +571,8 @@ the crossrev records show it (D148).
 
 **At the definition:**
 - **Species.** An instantaneous source that is not a neutral, impermeant inventory species. A species
-  the model does not declare. An identity that differs from a D150 or D152 declaration. More than 7
-  species in the world (D150's cap and message).
+  the model does not declare. An identity that differs from a D150 or D152 declaration. More than 16
+  species in the world (D150's cap and message; 7 until FR-9, D165).
 - **Targets.** A target operator other than `inner` in version 1. A control other than `junction` or
   `channel`. An unknown element id, or an element named twice by one coupling. A side on a channel
   target, or a junction side other than first, second or both. A channel target before milestone 1
@@ -760,11 +761,12 @@ decision is the user's question 2 (§6.4).
 | W3a | Pumps on a dividing cell | Pump capacity as entity state | The next `membrane_entity_state` version providing the pump views from state; a partition version splitting them by a_k; R5's worst case over the daughters | Door (S5 §3.3, "later work") | S5's line |
 | W3b | Water beside the partition | The partition writing water's volume | S5 §5.5's third extension, booking water's endpoint free energy | Door | S5's line |
 | W3c | 64 padded field nodes, held baths only, with any field-input provider (every closer is one) | A refresh policy that scales | (a) a raised cap at the measured cost (+20% per step at 254 nodes, +48% at 825, one CPU core; GPU unmeasured); (b) declared epochs, which do not serve triggered events or per-world predicates under vmap; (c) rank-k updates; or the field-solver interface's sparse IDs | A decision, then a door | The v2 note §3 (the lead), with the field-solver interface note |
-| W4 | 7 species per world, ions included (`check_species_cap`) | A host-side summation-order check at 8 or more terms | D150's check (D148) | Door | D150's note |
+| W4 | 16 species per world, ions included (`check_species_cap`); 7 until FR-9 (D165) | Above 16, another probe | Lifted to 16 by FR-9 (D165, a D148 change): the W4 probe, with the host-side summation-order guard at 8 or more terms in `tests/unit/test_species_cap.py` | Done to 16 | D150's note; D165 |
 
-**The count that makes W4 bind (S).** The heredity world has 4 species (Na, K, M, P). Track R's
-minimal chain adds 3: an activator, a partner and their complex. That is exactly 7. The regulatory
-state takes no species row, which is one reason it is the gate.
+**The count that made W4 bind (S).** The heredity world has 4 species (Na, K, M, P). Track R's
+minimal chain adds 3: an activator, a partner and their complex. That is exactly 7, the cap when
+this was written; since FR-9 (D165) the cap is 16. The regulatory state takes no species row, which
+is one reason it is the gate.
 
 ### 3.3 The contact-maturation process (new work)
 
@@ -810,8 +812,8 @@ Each step carries four checks:
 - **event boundary:** an event on a window boundary, or coinciding with a write or switch, equal to
   the run without the boundary.
 
-**Before the steps.** This operator's version 1 (§1), and W4's check if Track R's network needs more
-than 7 species.
+**Before the steps.** This operator's version 1 (§1). W4's check, which a network of more than 7
+species needed, is done to 16 (FR-9, D165).
 
 | Step | Content | Walls it lifts | Prerequisites |
 | --- | --- | --- | --- |
@@ -1253,6 +1255,119 @@ Commits 4457844a, 01908d9f and 0d0fbb09 change no program after C.
 and 87–111 s in records A and C, on the same pinned CPUs; the cause of that spread is not
 established. At 47–55 s they are tier 2, and at the upper end they reach the 90 s cap. The tier-1
 and tier-2 gate itself was not run; it is the lead's before landing.
+
+## 8. Milestone 2 as built (14 November 2026)
+
+Milestone 2 covers the guards the lead listed after milestone 1's acceptance, with the rulings
+that followed it. It runs `species_regulated_availability@1` in `resolved_pump_composite@1` over
+`resolved_pump_tissue@3`, with D150's turnover, replacement@1, injection and D152's reactions in
+its compositions. It grants no acceptance beyond its own checks; A4 and A5 wait for the
+independent references (Appendix A). Evidence:
+`/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/` (HANDOFF.md, with the criteria for A2
+and A6 written before any run).
+
+### 8.1 What it supersedes in §7
+
+- **§7.1, item 6:** the read-only list's parser (`parse_read_species`, with `ReadSpecies`) is in
+  `species_common`, beside D150's `parse_species`. It moved unchanged once FR-9's cap work landed,
+  and the law is now a required argument.
+- **§7.1, item 9:** the `factors` entry is built (§8.3).
+- **§7.1, item 12, and §7.3's file names:** the bitwise checks are now one routine file with one
+  compiled program, `_bitwise`, and the tier-3 `_guards` (§8.2). `_bitwise_idle`,
+  `_bitwise_products`, `_bitwise_both` and `_bitwise_channel` are deleted; P1's record stays in
+  milestone 1's evidence.
+
+### 8.2 The test layout follows the compiled programs
+
+A file's cost is the number of distinct programs it compiles, about 20–45 s each for IMEX on one
+CPU (57 s for RK4 on the sheet), whatever the number of runs: dt is data under `run()`, and under
+`run_windowed` with a fixed window length the step count is data too (`reuse_probe.log`). So:
+- **routine files hold one program each** (tier 2): `_bitwise` (every factored arm against every
+  coupling switched off over the same schedules), `_state` (A2), `_restart` (A8), `_locality`
+  (A6), the three compositions and `_runs`;
+- **two tier-3 files hold what needs the world without the operator or a second program** (the
+  lead's rulings, as D152's compiled guards; two files so a landing gate can run them in
+  parallel): `_guards` (D136's claim 2, switched off and idle against the world without the
+  operator; RK4) and `_execution` (the vmap batch, windows against one scan, a snapshot resumed in
+  a fresh process);
+- **the tier-1 smoke** stays host-side and keeps the declaration-only idleness check.
+
+**The species cap is 16** since FR-9 (D165), with a host-side summation-order guard at 8 or more
+terms (`tests/unit/test_species_cap.py`). §1.5, §1.11, §3.2's W4 row and §3.4's preamble now say so.
+The operator calls `check_species_cap`, so it admits up to 16. It books nothing and sums nothing over
+species, and `_guards` runs a world of nine species (§8.4).
+
+### 8.3 The `factors` entry (ruling 6)
+
+`pump_composite.field_map` gains `factors`: each factored inner control's chain of factor
+operators' laws, in declared (multiplication) order, built from CONTROL_FACTORS. It is omitted when
+no operator provides CONTROL_FACTORS (the lead's rule), so every other composition's field map and
+manifests are byte-identical. It is manifest-only: no program, binding or checkpoint manifest
+changes (checkpoint manifests carry no `field_owners`).
+- **The compositions it reaches** are those with replacement@1, replacement@2 (which inherits
+  CONTROL_FACTORS), the bridge or this operator; their new run manifests carry
+  `field_owners.factors`.
+  - Nine of the crossrev sets' 67 worlds gain the key: the division set's four bridge worlds,
+    D150's three replacement@1 worlds and the volume set's two replacement@2 worlds
+    (`field_maps/compare.json`, dumps at main and at the head).
+  - The frozen `resolved_pump_replacement@1` model keeps its own field map. Only a composition
+    with replacement@1 gains the key.
+- **What it shares with every engine change:** `io.source_hashes` covers every module under
+  `src/cells`, so checkpoints written before this head load here only through D153's continuity
+  path, as after milestone 1's new modules.
+
+### 8.4 Results
+
+| Check | Arms | Result | File |
+| --- | --- | --- | --- |
+| **M1, A3 and P1 in one program** | Every factored arm (junction and channel at 1/2, at 0, two couplings and both sides at 1/2 over 1/2, the identity) against every coupling off over the same schedules | Bitwise, with exact observed factors; non-vacuous (the zero arm removes both elements' transfer; 1/8 and 1/2 differ) | `_bitwise` |
+| **D136's claim 2** | Switched off at each schedule, and the idle operator, against the world without the operator | Bitwise | `_guards` |
+| **A2, frozen input and retention** | dt 10, 5, 2.5 and 1.25 ms | At most 0.5 ε per step (the bound was 64 ε per step) | `_state` |
+| **A2, moving input** | Commitment under clearance (closed form); clearance with k_off 5 and a production pulse (an ODE solve) | Observed order 2.00 for s and U at every pair; at 1.25 ms the errors are 2.1e-7 and 3.0e-6 in s | `_state` |
+| **A2, the crossing step** | θ with t* = 23.6 ms, off every grid by more than 5% of dt | Steps 3, 5, 10 and 19: (k - 1) dt < t* ≤ k dt at every dt | `_state` |
+| **A2, the prior condition** (§7.2) | s0 per cell against s0 written at 0 | Bitwise from the first step on; the crossing at steps 0 and 1 | `_state` |
+| **A8** | Restarts at eight times (before, at and after a write, the crossing, between the write and a dose, at the dose, at both switch changes, late); a snapshot read back in process, and in a fresh process | Bitwise in every state field and observation column; the step counter ends at the real count; int64 fields stay int64 | `_restart`, `_execution` |
+| **Windows** | 4- and 7-step windows against one scan | Bitwise | `_execution`, `_restart` |
+| **vmap** | Three moving worlds, every parameter, s0, θ, the dose, the switch and the write varied | Each world's own windowed run within 1e-12 (integers exact); the reversed batch bitwise; a factor parameter alone changes junction_0's transfer | `_execution` |
+| **RK4, admitted "split"** | The sheet at 2.5 µs | Factored against the world without the operator, bitwise (the schedules change the step); a moving state's closed form to rounding | `_guards` |
+| **A6** | Two cells no junction joins | (i) the operator's locality and (ii) the untargeted cell's whole trajectory, both bitwise: the stop rule did not apply | `_locality` |
+| **Compositions** | replacement@1 replacing cell_1; injection with K as the state's input; D152 making R | Every host check passes; junction_0's availability is replacement's exact 1 times the operator's product, bit for bit; the polarity moves K and s oppositely; R rises at the reaction's rate | `_with_replacement`, `_with_injection`, `_with_reactions` |
+| **A7** | Water, replacement@2 over water, lumen@1, lumen@2 | Refused at the definition, each with its reason | tier 1 |
+| **A9** | A batch with another side, law or read species; parameter-only variants | Refused with "matching model array axes"; the variants admitted | tier 1 |
+| **Nine species** (FR-9's cap at 16) | The sheet with four more neutral species: a and k at 1/2, at 0, and two couplings over 1/2 | Against every coupling off over the same schedules, and every coupling off against the world without the operator: bitwise | `_guards` |
+| **The `factors` entry** | The crossrev sets' 67 worlds, field maps dumped at main and at the head (2d2d9816 against af8a5b92, and da94f813 against d2871f4d) | 58 byte-identical; 9 differ by the added key only (four bridge worlds of the division set, D150's three replacement@1 worlds, the volume set's two replacement@2 worlds); the four run tests that read `field_owners` pass | `field_maps/`, tier 1, `_runs` |
+| **Crossrev** (§1.10, claim 1) | The seven sets: main da94f813 (the baseline of record's commit) against the final head d2871f4d, and before it main 2d2d9816 against af8a5b92 | Identical in every set, both times | `crossrev/` |
+| **The operator's own set** | Six worlds with two value twins, at af8a5b92 and at d2871f4d | Its check holds: every parameter is a binding; the twins' programs are identical. Its first record is the landing's | `crossrev/own/` |
+
+**The records.** Every file ran from a clean frozen snapshot, pinned to one CPU.
+- **Three heads.** The records ran at af8a5b92 (`tests/final-*`), at 4734c950 after milestone 1
+  landed (`tests/last-*`), and at the final head d2871f4d (`tests/end-*`). The final head adds
+  main's FR-9 (the cap at 16), the parser's move and the nine-species guards.
+- **Outcomes.** Every file passed at the last two heads. At af8a5b92, `_state` failed on a local
+  name that hid its record helper; the fix is 09d1d35e.
+- **The closing checks at d2871f4d** (`phase3.log`):
+  - the field-map dumps against main da94f813, and the seven-set crossrev against it (the commit
+    the baseline of record is named for);
+  - the operator's own set;
+  - fourteen existing tier-1 files. All pass except `test_continuity_bypass`, whose exemption
+    check fails identically from main's snapshot, because the snapshots exclude `scripts/`.
+- **The four `field_owners` run tests** passed at af8a5b92. The field-map code has not changed
+  since.
+- **One-CPU seconds on a quieter machine** (4734c950): tier 1, 8; the Hill helper, 3; `_bitwise`, 29;
+  `_runs`, 27; `_state`, 37; `_restart`, 47; `_locality`, 22; the compositions, 30–46. In tier 3,
+  `_guards` took 159 and `_execution` 172, before the nine-species arms were added.
+- **Under heavy load.** At d2871f4d (load about 17 on 8 cores) the same files took 2–4 times as
+  long, and `_guards`, with the nine species, took 681 s.
+- The tier-1 and tier-2 gate itself was not run; it is the lead's, at the landing.
+
+### 8.5 Not done, or done in part
+
+- The vmap and RK4 guards, D136's claim 2 and the fresh-process snapshot are in tier 3 only.
+- A state with two inputs runs on the host (tier 1); no compiled world uses one.
+- A4 (reciprocal feedback) and A5 (the channel response) wait for the independent references
+  (R-fac, R-state, R-cell, R-feedback), which land as `validation/coupling/`. They are to be used
+  through its `REFERENCES_USAGE.md` only, with A4's tolerance pinned at the floor measured on its own
+  world.
 
 ## Appendix A. Equations for the independent references
 
