@@ -51,9 +51,13 @@ Judged execution: `/mnt/workspaces/Cells/e07-v1-judged-20261113-01/`. Its output
     is small.
 - **At s 1.0 the disc was not maintained even with disc donors, in the one run.** The (c)
   control at s 1.0 lost 14 founders and 6 D copies. J was 0.784 at the judged record
-  (minimum 0.649), and the largest fall was 8 cells in one 10 s step at 520 s. At s 0.6, J was
-  1 at every record. This is one run per s. v2's challenges therefore run first at s 0.6,
-  and s 1.0 is a boundary case.
+  (minimum 0.649).
+  - **The losses came in two collective falls**, of 6 founders at 440 s and 8 at 520 s. Most
+    were rim cells with 3–4 D neighbours of 6; the rim D copies followed at 710–1850 s
+    (`e4-losses.json`).
+  - At s 0.6, J was 1 at every record.
+  - This is one run per s. v2's challenges therefore run first at s 0.6, and s 1.0 is a
+    boundary case.
 - **Naive templates erased the mark within about one turnover at every τ run** (40, 120 and
   300 s; v1 ran no isolated newcomers at the literature brackets). The (b) sheets were all H
   at 940–1050 s (s 0.6) and 550–630 s (s 1.0). The conversions of interior newcomers that
