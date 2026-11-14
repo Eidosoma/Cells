@@ -107,6 +107,7 @@ def parse_species(raw, base, law):
                 f"{law} acts on neutral species only (valence 0); {name!r} has valence "
                 f"{valence[name]}"
             )
+        check_impermeant(m, name, law)
         catalogue, evidence = parse_catalogue(entry["catalogue"]), entry["evidence"]
         if catalogue is None and evidence is not None:
             raise ConfigError(f"{law}: the kind of evidence is given with a catalogue reference")
@@ -119,6 +120,33 @@ def parse_species(raw, base, law):
     if len({s.id for s in species}) != len(species):
         raise ConfigError(f"{law} lists a species twice")
     return tuple(species)
+
+
+def check_impermeant(model, name, law):
+    """Refuse a species with a membrane, junction or channel route of @3's (version 1).
+
+    @3's explicit-rate bound (surface_pump.explicit_rate_bound) covers every species on faces, but
+    on membranes and junctions it bounds only the z^2-weighted charge relaxation, and so do the
+    channels' in-step refusal (membrane_rate): a neutral species moving through a membrane, junction
+    or channel would have no material-rate bound. Templates cannot add such a route either, since a
+    template replaces only routes the slot already has (core/cell_replacement_spec)."""
+    row = model.species_ids.index(name)
+    routes = [f"membrane {p.id}" for p in model.membranes if p.permeability_m_per_s[row] != 0] + [
+        f"junction {j.id}" for j in model.junctions if j.permeability_m_per_s[row] != 0
+    ]
+    routes += [
+        f"channel {c.id}"
+        for c in model.channels
+        if any(i.species_id == name and i.relative_permeability != 0 for i in c.permeant_ions)
+    ]
+    if routes:
+        raise ConfigError(
+            f"{law} acts on species with zero membrane, junction and channel permeability only; "
+            f"{name!r} has a route through {routes[0]}: @3's explicit-rate bound covers a neutral "
+            "species on faces alone, and on membranes and junctions bounds only the z^2-weighted "
+            "charge relaxation, so such a species would have no material-rate bound at the "
+            "definition"
+        )
 
 
 def species_to_dict(identities):

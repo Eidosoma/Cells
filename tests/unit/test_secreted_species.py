@@ -415,6 +415,43 @@ def test_each_operator_refuses_more_than_seven_species(operator):
         parse_spec(raw)
 
 
+@pytest.mark.parametrize(
+    ("operator", "route"),
+    [("turnover", "membrane"), ("exchange", "membrane"), ("turnover", "junction")],
+)
+def test_a_species_with_a_membrane_or_junction_route_is_refused(operator, route):
+    """@3's explicit-rate bound covers a neutral species on faces alone (on membranes and junctions
+    it bounds the z^2-weighted charge relaxation), so version 1 refuses an inventory species with
+    nonzero membrane or junction permeability, with the reason (the lead's question from the
+    D152 review)."""
+    base = pair()
+    if route == "membrane":
+        patch = next(p for p in base["model"]["membranes"] if p["id"] == "contact_1")
+        patch["permeability_m_per_s"]["S"] = 1e-9
+    else:
+        base["model"]["junctions"][0]["permeability_m_per_s"]["S"] = 1e-9
+    if operator == "turnover":
+        raw = fx.with_turnover(
+            base, [("p", "cell_0", "production")], [("p", "cell_0", [(0.0, 1e-6)])]
+        )
+    else:
+        raw = fx.with_exchange(
+            base, [("s", "contact_0", "export", "first_order")], [("s", "cell_0", [(0.0, 0.1)])]
+        )
+    expected = "contact_1" if route == "membrane" else "junction_0"
+    with pytest.raises(ConfigError, match="zero membrane, junction and channel permeability") as e:
+        parse_spec(raw)
+    assert expected in str(e.value) and "no material-rate bound" in str(e.value)
+    parse_spec(without_permeability(raw))  # The same world with the routes at zero is admitted.
+
+
+def without_permeability(raw):
+    out = copy.deepcopy(raw)
+    for p in (*out["model"]["membranes"], *out["model"]["junctions"]):
+        p["permeability_m_per_s"]["S"] = 0.0
+    return out
+
+
 def test_padded_capacities_and_a_species_scale_energy_negative_control():
     """With every capacity padded, both half-steps leave the padding at zero and close every host
     check; a misbooked work far below the ions' scale is caught by the energy ledger of this
