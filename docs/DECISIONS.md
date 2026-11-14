@@ -5315,6 +5315,15 @@ supplied the request (FR-1), and it is logged in
   - the regulatory state as a cell's prior condition, through its declared initial value and
     writes.
 
+## D163: Abundance-to-function in the composite (FR-7) is logged at priority 3
+
+2026-11-14. The user supplied the request (FR-7), at the requester's priority 3 ("ordering, not
+scope"), logged in [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-7--abundance-to-function-exposed-in-the-composite).
+- **The request:** when the closed loop's unit is chosen (the user's choice), the loop admits a
+  species-driven production rate (the coupling operator's routing door), and a factor whose source
+  is a population abundance (a source-semantics door of the same operator).
+- **Most of its part (b)** is the coupling operator's channel target, in milestone 1.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

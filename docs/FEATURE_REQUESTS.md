@@ -11,6 +11,7 @@ and a general feature, never one built for one study (D144).
 | [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; specified as a door in D150 §2.5 | A design note from its own sources (below) |
 | [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Logged | A design note after FR-1's and FR-4's (below) |
 | [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)); no code yet.** Three narrower items are recorded as consumer registrations | The channel target in the coupling operator's milestone 1 (in progress); the routing door; the regulatory state as a prior condition (below) |
+| [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Logged; most of part (b) is the coupling operator's channel target | Considered when the closed molecular-to-physiology loop's unit is chosen (below) |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Logged | A design note after FR-1's, with the energy-pool and charged-reaction doors (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -319,3 +320,39 @@ an accepted design, with no code yet.** The inventory-coupling note (D155 item 1
 **Why it was general, for the record:** morphogen concentration driving a response, quorum sensing,
 substrate induction, and any drug–effect relation. The note's own consumers: Track R's cycle gate,
 GZMK item 6, the causal-carriers row and E15.
+
+## FR-7 — Abundance-to-function, exposed in the composite
+
+**Logged 14 November 2026, priority 3** (the request's label: "ordering, not scope"). The request
+below is the requesting study's text, condensed. The lead's mapping follows.
+
+**The request.** No new scope. When the closed molecular-to-physiology loop's functional unit is
+chosen:
+- (a) the loop admits a production rate driven by a declared species (FR-6 item 2), not only a
+  scheduled one;
+- (b) the quantitative abundance-to-function relation is reachable in the composite. Today it is
+  state only in `resolved_redistribution@1/@2`.
+
+**The requester's update, 14 November.** The coupling design's channel-availability target (its
+milestone 1) is most of (b): a factor on a channel population's availability is an
+abundance-to-function path in the composite. If that lands, (b) narrows to "and let the factor's
+source be a population abundance, not only a species concentration".
+
+**Why the study cares.** This is stage 5 of its table, and the one place where Cells already has the
+better part of the answer. "A transient template changes a protein abundance, which changes a
+measurable physiological response, and the response outlives or does not outlive the template" is
+both the study's therapeutic question and *Plastic Heredity*'s question. The requester would rather
+use Cells' unit choice than ask for its own.
+
+**The lead's mapping (not settled).**
+- **The unit choice stays the user's** (CURRENT_PLAN's closed molecular-to-physiology loop
+  gate). The candidates where abundance is already state: the redistribution pumps
+  (`resolved_redistribution@1/@2`, an older family) and junction formation. This request asks only
+  that the chosen loop admit (a) and (b).
+- **Part (a) is the coupling operator's routing door** (D156): a factor on a production operator's
+  rate. FR-6 already records it, with this as a further consumer.
+- **Part (b), narrowed, is a source-semantics door of the coupling operator.** The factor's source
+  would be a population's abundance, read from `membrane_entity_state@1`'s view, as well as a
+  species concentration. It is to be recorded in that note's doors when the channel target lands.
+- **The link to the preprints.** The response's persistence after the template is gone is the
+  heredity question. A unit chosen for the loop should be one where that question is measurable.

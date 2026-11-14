@@ -263,7 +263,7 @@ This is the heredity question: can a written state repeatedly renew?
 | One regulated functional-unit population | A regulated production rate; a finite precursor inventory; assembly and trafficking delays; insertion and removal; a quantitative abundance-to-function relation; partition at division |
 | One material account | All of these reconcile in one account and predict a measured physiological response |
 
-The choice of unit is the user's. Candidates where abundance is already state:
+The choice of unit is the user's. FR-7 (D163) asks that the chosen loop admit a species-driven production rate and an abundance-sourced factor in the composite. Candidates where abundance is already state:
 - the redistribution pumps (`resolved_redistribution@1/@2`);
 - junction formation.
 
