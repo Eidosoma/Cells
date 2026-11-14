@@ -250,11 +250,14 @@ fingerprint differs from the driver's rebuilt definitions.
   batch_windows) answer "cannot decide" until the consolidation gives one path. A request
   that declares another path is refused. Probe 4 captured all five, so the extension is
   the consolidation's to make.
-- **CPU definitions only** (`execution.backend: "cpu"`), with `jit: true`.
-- **GPU definitions are not yet admitted.** For them, the probe would trace on CPU with
-  `execution_device` patched to the CPU device, and cross-lower the captured program for
-  `cuda` (probe 2). Device placement enters neither the jaxpr nor the bindings. This is not
-  probed.
+- **CPU and GPU definitions**, with `jit: true`. GPU definitions were added on 14 November 2026
+  by the GPU extension of case 1 (§13.4; the lead's update at landing).
+  - **How GPU definitions are probed:** on the CPU host, with `execution_device` patched to the
+    CPU device, and the captured program cross-lowered for `cuda`. Every question of §13.4 was
+    identical on the L4.
+  - **What the record holds:** the patch. The resuming GPU host checks the `to` runtime and the
+    probe's `jaxlib` exactly.
+  - **Device placement** enters neither the jaxpr nor the bindings.
 - **`jit: false` definitions are refused.** They execute eagerly, so there is no compiled
   program to compare.
 - **No call site passes a record yet**, neither the CLI nor any other engine call site.
@@ -1062,7 +1065,7 @@ bitwise on CPU.
 
 ### 13.4 Plan: a GPU batch snapshot traced twice from one source (next L4 gap)
 
-This blocks only the GPU extension of case 1; the first landing is CPU-only.
+This blocked only the GPU extension of case 1. The first landing was CPU-only, and the extension landed on 14 November 2026 after every question below came out identical.
 
 **Questions.**
 1. Does a `backend: "gpu"` cohort trace identically in two processes from one source on

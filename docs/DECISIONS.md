@@ -5082,6 +5082,10 @@ should be designed as a general engine feature.
        at least three repeats, and terms taken over all pairs.
 - **The first landing:** the vector-windows path, CPU definitions with `jit: true`. Other
   paths answer "cannot decide" until the consolidation.
+- **GPU definitions** have been admitted since 14 November 2026, through the CPU-host probe
+  with `execution_device` patched (design §13.4: every question was identical on the L4), and
+  the record notes the patch. An admitted L4 checkpoint resumed on the L4, where the loader
+  checked the runtime and `jaxlib` exactly.
 - **Who admits:** the probe decides case 1 and the lead records it; the lead admits
   case 2; any registered run is the user's.
 - **Unchanged:** registered runs. The W1 hold stays on `source-09`, E07-v1 on its
