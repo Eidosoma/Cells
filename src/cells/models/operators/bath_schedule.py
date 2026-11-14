@@ -46,8 +46,8 @@ undeclared unit, or leaving a species of a bath non-positive; an anisosmotic ste
 whose bath water potential is bound at the definition (the design's door W). The composite's own
 structure check refuses local_species_reactions@1 (it reads the field as declared, a nominal
 conflict: the design's door S), scheduled_membrane_insertion@1 (a second provider of the field),
-the closers (the field is padded beside them) and so the lumens. At run time: a target that is not
-finite and positive.
+the closers (the field is padded beside them) and so the lumens. The stationary analysis does not
+admit the composite (its own ID check). At run time: a target that is not finite and positive.
 
 Idle: a step with no event due selects the start state, and before a bath's first event its control
 is its declared reference amounts themselves, so with no event the view is the declared array bit

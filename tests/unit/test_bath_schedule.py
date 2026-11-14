@@ -3,8 +3,13 @@
 In NumPy (no compile), on the species-only dose leg (validation/tissue/bath_schedule_fixtures):
 * the definition refusals with their messages: a net-charged formula unit (exact, in integers), a
   count that is not a positive int, an unknown species, a finite node as a target, an event at time
-  0, off the dt grid or out of order, an undeclared unit or an unscheduled bath, a step that leaves
-  a species non-positive, and an anisosmotic step beside water@1 (an isosmotic one is admitted);
+  0 or at the end, off the dt grid or out of order, an undeclared unit or an unscheduled bath, a
+  step that leaves a species non-positive, and an anisosmotic step beside water@1 (an isosmotic one
+  is admitted);
+* the composite's structure check: insertion@1 (a second provider of the field), the closers
+  insertion@2 and the partition (the field is padded beside them), the lumens over either, and D152
+  (reading it as declared, nominally) refused in either order; what version 1 composes with
+  admitted;
 * before a bath's first event its control is its declared content bit for bit, so the event map
   selects the start state;
 * an event sets the held content to the target bit for bit and books the dose, its free-energy
@@ -28,6 +33,9 @@ import pytest
 
 from cells.core import pump_composite_spec as cs
 from cells.core.specs import ConfigError, parse_spec
+from cells.models import pump_composite
+from cells.models import pump_composite_adapter as adapter
+from cells.models.operators import OPERATORS
 from cells.models.registry import get_model
 from cells.processes.electrochemistry import R
 from validation.tissue import bath_schedule_fixtures as bfx
@@ -212,6 +220,7 @@ REFUSALS = [
     (dict(units=_units(bad={"X": 1})), "does not declare"),
     (dict(baths=("ecs_0",), events=[]), "finite node"),
     (dict(events=[(0.0, ["bath"], {"cargo": DOSE})]), "after time 0"),
+    (dict(events=[(0.05, ["bath"], {"cargo": DOSE})]), "before the end time"),
     (dict(events=[(EVENT + DT / 3, ["bath"], {"cargo": DOSE})]), "exact multiple of dt"),
     (dict(events=[(EVENT, ["bath"], {"nope": 1.0})]), "undeclared formula unit"),
     (dict(events=[(EVENT, ["ecs_0"], {"cargo": DOSE})]), "unscheduled bath"),
@@ -242,3 +251,58 @@ def test_a_dose_beside_reactions_is_refused_by_the_composites_structure_check():
     )
     with pytest.raises(ConfigError, match="reads extracellular_amount_reference as declared"):
         parse_spec(raw)
+
+
+STATE = "membrane_entity_state@1"
+STRUCTURE_REFUSED = {
+    "insertion@1, a second provider": (
+        (STATE, "scheduled_membrane_insertion@1"),
+        "two providers of the view field extracellular_amount_reference",
+    ),
+    "insertion@2, a closer": (
+        (STATE, "scheduled_membrane_insertion@2"),
+        "extracellular_amount_reference has closers or a provider, never both",
+    ),
+    "the partition, a closer": (
+        (STATE, "isopotential_partition@1"),
+        "extracellular_amount_reference has closers or a provider, never both",
+    ),
+    "lumen@1, over insertion@1": (
+        (STATE, "scheduled_membrane_insertion@1", "restricted_cleft_lumen@1"),
+        "two providers of the view field extracellular_amount_reference",
+    ),
+    "lumen@2, over insertion@2": (
+        (STATE, "scheduled_membrane_insertion@2", "restricted_cleft_lumen@2"),
+        "extracellular_amount_reference has closers or a provider, never both",
+    ),
+    "D152, reading it as declared (nominal)": (
+        ("local_species_reactions@1",),
+        "local_species_reactions@1 reads extracellular_amount_reference as declared",
+    ),
+}
+STRUCTURE_ADMITTED = (
+    ("electrode_current_injection@1",),
+    (STATE,),
+    ("scheduled_cell_replacement@1",),
+    ("scheduled_species_turnover@1",),
+    ("scheduled_species_exchange@1",),
+    ("scheduled_species_turnover@1", "scheduled_species_exchange@1"),
+    ("ideal_osmosis_linear_compliance_water@1",),  # Isosmotic steps only, at the definition.
+)
+
+
+@pytest.mark.parametrize("name", sorted(STRUCTURE_REFUSED))
+def test_the_composites_structure_check_refuses_the_other_writers_of_the_field(name):
+    """Design §3.1: insertion@1 provides the field, the closers pad it, the lumens need one of them,
+    and D152 reads it as declared. Each refusal is the composite's own rule, in either order."""
+    laws, message = STRUCTURE_REFUSED[name]
+    for order in ((*laws, bfx.LAW), (bfx.LAW, *laws)):
+        errors = pump_composite.structure_errors(adapter, tuple(OPERATORS[k] for k in order))
+        assert any(message in e for e in errors), (order, errors)
+
+
+@pytest.mark.parametrize("laws", STRUCTURE_ADMITTED, ids="+".join)
+def test_the_composites_structure_check_admits_what_version_1_composes_with(laws):
+    for order in ((*laws, bfx.LAW), (bfx.LAW, *laws)):
+        errors = pump_composite.structure_errors(adapter, tuple(OPERATORS[k] for k in order))
+        assert errors == [], (order, errors)
