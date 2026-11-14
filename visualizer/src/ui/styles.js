@@ -15,7 +15,7 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 
 /* ---------------------------------------------------------------- labels */
-.label { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: auto; will-change: transform; transition: opacity .16s ease; }
+.label { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: auto; touch-action: none; user-select: none; will-change: transform; transition: opacity .16s ease; }
 .labels .label.is-off { opacity: 0; pointer-events: none; }
 .label-part { font-size: 11.5px; font-weight: 500; line-height: 1.2; padding: 2px 6px; border-radius: 5px; color: var(--fg); background: color-mix(in srgb, var(--bg) 80%, transparent); }
 .label-part::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 8px; background: var(--muted); opacity: .7; }

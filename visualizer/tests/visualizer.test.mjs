@@ -22,7 +22,7 @@ test("the extractor placed every engine file and raised no warning", () => {
   assert.deepEqual(scene.meta.warnings, []);
 });
 
-test("every status claim carries a source, and every dated one a date", () => {
+test("every status claim beyond established carries a source", () => {
   for (const entity of scene.entities) {
     if (!entity.status || entity.kind === "scale") continue;
     const catchAll = /^Other /.test(entity.label) || entity.plain?.includes("not grouped elsewhere");

@@ -40,6 +40,7 @@ class Part {
     this.group = new THREE.Group();
     if (entity) this.group.userData.pick = entity.id;
     else this.group.userData.unpickable = true;
+    this.group.userData.seeThrough = this.status === "planned";
     zone.root.add(this.group);
     zone.parts.push(this);
   }

@@ -79,7 +79,7 @@ export function buildCell(ctx, studsCtx) {
   // Cytoplasm: the three cut faces, and small molecules in the opened octant.
   const chemistry = ctx.part("cytoplasm", new THREE.Vector3(7.0, 0.3, 4.6));
   const faceMaterial = chemistry.material({ opacity: 0.2, side: THREE.DoubleSide, roughness: 1, depthWrite: false });
-  for (const turn of [new THREE.Euler(0, 0, 0), new THREE.Euler(-Math.PI / 2, 0, 0), new THREE.Euler(0, -Math.PI / 2, 0)]) {
+  for (const turn of [new THREE.Euler(0, 0, 0), new THREE.Euler(Math.PI / 2, 0, 0), new THREE.Euler(0, -Math.PI / 2, 0)]) {
     const face = new THREE.Mesh(new THREE.CircleGeometry(R - 0.02, 48, 0, Math.PI / 2), faceMaterial);
     face.rotation.copy(turn);
     face.renderOrder = 1;

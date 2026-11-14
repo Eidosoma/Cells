@@ -309,9 +309,34 @@ class CellsViewer extends HTMLElement {
     canvas.addEventListener("pointerdown", () => this.hint.classList.add("is-off"), { once: true });
     canvas.addEventListener("wheel", () => this.hint.classList.add("is-off"), { once: true, passive: true });
     canvas.addEventListener("pointerup", (event) => {
+      const label = this.pressedLabel;
+      this.pressedLabel = null;
       if (this.stage.rig.dragged || event.button > 0) return;
+      if (label) {
+        this.select(label);
+        return;
+      }
       const hit = this.stage.pick(event.clientX, event.clientY, this.current.pickRoots);
       this.select(hit?.id || null);
+    });
+    // Labels lie over the canvas. A press on one is handed to the camera control, which
+    // captures the pointer on the canvas: a drag turns the view, a plain click selects the label.
+    const labels = this.labelBox;
+    labels.addEventListener("pointerdown", (event) => {
+      const button = event.target.closest("[data-label]");
+      if (!button || event.button > 0) return;
+      this.pressedLabel = button.dataset.label;
+      this.hint.classList.add("is-off");
+      this.stage.rig.down(event);
+      event.preventDefault();
+    });
+    labels.addEventListener("wheel", (event) => this.stage.rig.wheel(event), { passive: false });
+    labels.addEventListener("pointerover", (event) => {
+      const button = event.target.closest("[data-label]");
+      if (button && !event.buttons) this.current?.setHover(button.dataset.label);
+    });
+    labels.addEventListener("pointerout", (event) => {
+      if (event.target.closest("[data-label]") && !event.buttons) this.current?.setHover(null);
     });
     canvas.addEventListener("keydown", (event) => {
       if (this.stage.rig.nudge(event.key)) event.preventDefault();

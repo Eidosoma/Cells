@@ -148,21 +148,29 @@ export class Stage {
     this.pointer.set(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
     this.raycaster.setFromCamera(this.pointer, this.camera);
     const hits = this.raycaster.intersectObjects(roots, true);
+    let sketch = null;
     for (const hit of hits) {
       // pickFilter lets a shape ignore hits on parts of it that are clipped away.
       if (hit.object.userData.pickFilter && !hit.object.userData.pickFilter(hit)) continue;
-      let id = null, shown = true, passThrough = false, blocker = false;
+      let id = null, shown = true, passThrough = false, blocker = false, seeThrough = false;
       for (let node = hit.object; node; node = node.parent) {
         if (!node.visible) shown = false;
         if (node.userData.unpickable) passThrough = true;
         if (node.userData.blocker) blocker = true;
+        if (node.userData.seeThrough) seeThrough = true;
         if (id === null && node.userData.pick) id = node.userData.pick;
       }
       if (!shown || passThrough) continue; // hidden things and illustrations do not stop a click
-      if (blocker) return null; // a solid surface such as a plate does
-      if (id) return { id, object: hit.object, point: hit.point };
+      if (blocker) break; // a solid surface such as a plate does
+      if (!id) continue;
+      if (seeThrough) {
+        // A sketched part is picked only if nothing solid is seen through it.
+        sketch ??= { id, object: hit.object, point: hit.point };
+        continue;
+      }
+      return { id, object: hit.object, point: hit.point };
     }
-    return null;
+    return sketch;
   }
 
   /** Project a world point to pixel coordinates; z > 1 means behind the camera or beyond. */

@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T13:16:24Z",
+  "generated_at": "2026-11-14T13:51:38Z",
   "revision": "031ee42",
   "revision_date": "2026-11-14",
   "dirty": false,
@@ -15,7 +15,7 @@
    "engine_files": 500,
    "engine_files_placed": 500,
    "parts": 150,
-   "relations": 643,
+   "relations": 647,
    "by_kind": {
     "operator": 14,
     "component": 96,
@@ -25,9 +25,9 @@
     "scale": 5
    },
    "by_status": {
-    "qualified": 34,
+    "qualified": 32,
     "landed": 9,
-    "established": 59,
+    "established": 61,
     "planned": 20,
     "designed": 6,
     "failed": 1,
@@ -168,7 +168,7 @@
    "label": "cannot combine with",
    "directed": false,
    "origin": "code",
-   "description": "One operator reads a value as declared while the other changes it, so the composite refuses the pair."
+   "description": "The composite refuses this pair: one operator reads a value as declared while the other changes it, or both provide the same value."
   },
   {
    "id": "wraps",
@@ -4505,7 +4505,7 @@
    "label": "Ion channels",
    "kind": "capability",
    "group": "biology",
-   "status": "qualified",
+   "status": "established",
    "representation": "modelled",
    "runs_in": [
     "composite",
@@ -4513,11 +4513,15 @@
    ],
    "part": "channels",
    "scale": "cell",
-   "plain": "Channels open and close with the membrane voltage. Each kind is a population with gates, not individual proteins. NaV1.2 and Kir2.1 pass parity; the catalogue holds 56 laws.",
+   "plain": "Channels open and close with the membrane voltage. Each kind is a population with gates, not individual proteins. The catalogue holds 56 laws. NaV1.2 and Kir2.1, the channels the heredity experiments use, pass the BETSE comparison; channel time constants are still open.",
    "sources": [
     {
      "path": "PROGRESS.md",
      "where": "Parity P4b, the heredity carrier channels"
+    },
+    {
+     "path": "README.md",
+     "where": "Where things stand: Checking the physics against BETSE"
     }
    ]
   },
@@ -4534,7 +4538,7 @@
    ],
    "part": "pumps",
    "scale": "cell",
-   "plain": "The sodium–potassium pump and calcium pumps move ions uphill and spend ATP. Each is a population with a rate law.",
+   "plain": "The sodium–potassium pump and calcium pumps move ions uphill and spend ATP. Each is a population with a rate law. The calcium pump's comparison passed on a second protocol, after the first failed on one item.",
    "sources": [
     {
      "path": "PROGRESS.md",
@@ -4886,7 +4890,7 @@
    "label": "Cell sheets",
    "kind": "capability",
    "group": "biology",
-   "status": "qualified",
+   "status": "established",
    "representation": "simulated",
    "runs_in": [
     "composite",
@@ -4894,11 +4898,15 @@
    ],
    "part": "sheet",
    "scale": "tissue",
-   "plain": "Sheets of 127 to 825 coupled cells run today. Larger tissues need faster field solvers.",
+   "plain": "A sheet of 127 coupled cells runs on ordinary processors today; the judged heredity experiment E07-v1 used it. The full tissue of 825 electrical nodes needs faster hardware or a long-time method.",
    "sources": [
     {
      "path": "docs/CURRENT_PLAN.md",
-     "where": "Gate: coupled renewal, scale"
+     "where": "Gate: coupled renewal, 'Scale is named, not assumed'"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "E07-v1 judged (13–14 November)"
     }
    ]
   },
@@ -5060,6 +5068,20 @@
   },
   {
    "from": "op.ideal_osmosis_linear_compliance_water@1",
+   "to": "op.restricted_cleft_lumen@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "both provide extracellular_volume"
+  },
+  {
+   "from": "op.ideal_osmosis_linear_compliance_water@1",
+   "to": "op.restricted_cleft_lumen@2",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "both provide extracellular_volume"
+  },
+  {
+   "from": "op.ideal_osmosis_linear_compliance_water@1",
    "to": "op.scheduled_cell_replacement@1",
    "kind": "conflicts",
    "weight": 2,
@@ -5104,15 +5126,15 @@
    "from": "op.membrane_entity_state@1",
    "to": "op.scheduled_cell_replacement@1",
    "kind": "conflicts",
-   "weight": 1,
-   "label": "membrane_area"
+   "weight": 3,
+   "label": "membrane_area, both provide channel_abundance"
   },
   {
    "from": "op.membrane_entity_state@1",
    "to": "op.scheduled_cell_replacement@2",
    "kind": "conflicts",
-   "weight": 2,
-   "label": "membrane_area, membrane_capacitance"
+   "weight": 4,
+   "label": "membrane_area, membrane_capacitance, both provide channel_abundance"
   },
   {
    "from": "op.membrane_entity_state@1",
@@ -5123,6 +5145,13 @@
   },
   {
    "from": "op.restricted_cleft_lumen@1",
+   "to": "op.restricted_cleft_lumen@2",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "both provide extracellular_volume"
+  },
+  {
+   "from": "op.restricted_cleft_lumen@1",
    "to": "op.scheduled_cell_replacement@1",
    "kind": "conflicts",
    "weight": 1,
@@ -5162,6 +5191,13 @@
    "kind": "conflicts",
    "weight": 1,
    "label": "extracellular_volume"
+  },
+  {
+   "from": "op.scheduled_cell_replacement@1",
+   "to": "op.scheduled_cell_replacement@2",
+   "kind": "conflicts",
+   "weight": 10,
+   "label": "both provide channel_permeability, both provide channel_abundance, both provide membrane_permeability, both provide pump_capacity, both provide calcium_pump_capacity"
   },
   {
    "from": "op.scheduled_cell_replacement@2",

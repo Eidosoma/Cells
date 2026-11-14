@@ -8,7 +8,8 @@
       "scene": "data/architecture/architecture.scene.json",
       "sharing": "private; the owner shares it from the page's Share menu",
       "versions": [
-        {"date": "2026-11-14", "engine_revision": "031ee42", "note": "First version: the cell-and-scales lens and the engine lens"}
+        {"date": "2026-11-14", "engine_revision": "031ee42", "note": "First version: the cell-and-scales lens and the engine lens"},
+        {"date": "2026-11-14", "engine_revision": "031ee42", "note": "Input fixes after the real-input check; two capability claims reworded; second-provider conflicts drawn"}
       ]
     }
   }

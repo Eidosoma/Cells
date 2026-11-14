@@ -304,6 +304,11 @@ class Build:
                 for other in providers.get(field, []) + closers.get(field, []):
                     if other != identifier:
                         self.link(identifier, other, "conflicts", field)
+            # Each view field has exactly one provider: the composite refuses a second one.
+            for field in values.get("VIEW_FIELDS") or []:
+                for other in providers.get(field, []):
+                    if other != identifier:
+                        self.link(identifier, other, "conflicts", f"both provide {field}")
             for label, key in (("Provides", "VIEW_FIELDS"), ("Reads as declared", "CONFLICTS_VIEW")):
                 if values.get(key):
                     entity["facts"].append([label, join_names(values[key])])
@@ -537,6 +542,11 @@ class Build:
                 raise SystemExit(f"relation {source} -> {target}: unknown kind {kind}")
             self.link(source, target, kind, label)
         coverage = self.coverage()
+        tracked = set(self.files)
+        for entity in self.entities.values():
+            for source in entity.get("sources", []):
+                if source["path"] not in tracked:
+                    self.warnings.append(f"{entity['id']}: cited source {source['path']} is not a tracked file")
         relations = []
         for relation in self.relations.values():
             labels = relation.pop("labels")

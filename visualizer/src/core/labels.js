@@ -12,10 +12,6 @@ export class LabelLayer {
     this.labels = [];
     this.keepClear = { top: 56 }; // the top bar: labels stay out from under it
     this.scratch = new THREE.Vector3();
-    this.container.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-label]");
-      if (button) this.onPick(button.dataset.label);
-    });
   }
 
   /**

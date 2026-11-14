@@ -12,6 +12,7 @@
     "serve": "node tools/serve.mjs",
     "export": "node tools/export_page.mjs",
     "shot": "node tools/screenshot.mjs",
+    "check:input": "node tools/check_input.mjs",
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {

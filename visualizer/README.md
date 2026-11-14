@@ -44,6 +44,7 @@ npm install                 # three.js 0.170.0 and esbuild, both pinned
 npm run extract             # read the main checkout, write data/architecture/architecture.scene.json
 npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load three.js locally)
 npm test                    # scene, sources, page and allowed hosts; no browser needed
+npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom between scales)
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run export              # out/cells-architecture.html, the page as an artifact wants it
 ```
@@ -75,7 +76,7 @@ run outputs ──adapters (next)── run view ──────────�
 | `src/ui/` | `<cells-viewer>` and its parts: panel, legend, list |
 | `src/page.html`, `src/page.css` | The page and its colour tokens, light and dark |
 | `tools/lib/build_page.mjs`, `serve.mjs`, `export_page.mjs`, `screenshot.mjs` | One page builder for every delivery mode |
-| `tests/` | Browser-free checks |
+| `tests/`, `tools/check_input.mjs` | Browser-free checks, and a real-input check driven through Chrome's DevTools protocol |
 
 **What comes from the code** and so cannot drift: the files in each part and their sizes,
 which part uses which (imports), the registered operators with their contract declarations
@@ -145,3 +146,10 @@ Ideas kept for after the basics (the user, 14 November 2026):
 - The molecular scale is one illustrative membrane patch.
 - Statuses are as of the date in the top bar; the map does not update itself.
 - Screenshots use software WebGL; performance on real hardware is not measured.
+- Established (slate) and landed (blue) differ mainly in saturation. The four status hues
+  pass the colour-blindness checks on both backgrounds; slate is a neutral and is not part
+  of that check, so the panel and the list always name the status in words.
+- The page has run locally under an approximation of the artifact frame's policy. A check
+  inside the real frame is by eye.
+- A capability marked qualified cites the pass it rests on, but a line-by-line review of
+  each claim against the record is still owed before the map is shared outside the team.

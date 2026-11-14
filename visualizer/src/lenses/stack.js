@@ -153,6 +153,7 @@ export class StackLens {
     const group = new THREE.Group();
     group.position.copy(position);
     group.userData.pick = entity.id;
+    group.userData.seeThrough = status === "planned";
 
     let geometry, height;
     if (entity.kind === "gate") {
