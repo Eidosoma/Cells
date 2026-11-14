@@ -314,9 +314,11 @@ def main(argv=None):
         windows=result.resources.get("windows"),
         rows_replayed=int(len(times)),
     )
-    if args.judge:
-        report["verdict"] = verdict(report)
     (output / "egg_division.json").write_text(json.dumps(report, indent=1) + "\n")
+    if args.judge:  # The run first, then its verdict on what was written.
+        report = json.loads((output / "egg_division.json").read_text())
+        report["verdict"] = verdict(report)
+        (output / "egg_judged.json").write_text(json.dumps(report, indent=1) + "\n")
     print(json.dumps(report, indent=1), flush=True)
 
 

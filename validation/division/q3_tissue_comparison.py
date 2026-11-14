@@ -509,8 +509,13 @@ def judge(output, protocol_path=None, root=None):
     report = dict(status="Judged run of Q3", worlds={})
     for name in WORLDS:
         report["worlds"][name] = compare(name, judged=True)
+    # The run first, then its verdict, computed on what was written: the JSON round trip
+    # gives the record keys the protocol's form ("0.0025").
+    path = output / "q3_judged.json"
+    path.write_text(json.dumps(report, indent=1, default=float) + "\n")
+    report = json.loads(path.read_text())
     report["verdict"] = verdict(report, item)
-    (output / "q3_judged.json").write_text(json.dumps(report, indent=1, default=float) + "\n")
+    path.write_text(json.dumps(report, indent=1, default=float) + "\n")
     return report
 
 

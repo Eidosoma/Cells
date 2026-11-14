@@ -929,8 +929,12 @@ def judge(output, protocol_path=None, root=None):
     report = dict(status="Judged run of Q2", sets="judged", scales={})
     for scale in ("old", "new"):
         report["scales"][scale] = run_all(scale, seeds)
+    # The run first, then its verdict, computed on what was written (the JSON round trip).
+    path = output / "q2_judged.json"
+    path.write_text(json.dumps(report, indent=1) + "\n")
+    report = json.loads(path.read_text())
     report["verdict"] = verdict(report, item)
-    (output / "q2_judged.json").write_text(json.dumps(report, indent=1) + "\n")
+    path.write_text(json.dumps(report, indent=1) + "\n")
     return report
 
 

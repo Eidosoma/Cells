@@ -148,7 +148,8 @@ def judge(output, protocol_path=None, root=None):
     from validation.division import s5_protocol
 
     s5_protocol.registered("Q5", protocol_path or s5_protocol.PROTOCOL, root or s5_protocol.ROOT)
-    report = main(output)
+    main(output)  # The run first (it writes q5_order.json), then its verdict on what was written.
+    report = json.loads((Path(output) / "q5_order.json").read_text())
     report["verdict"] = verdict(report)
     (Path(output) / "q5_judged.json").write_text(json.dumps(report, indent=1) + "\n")
     return report
