@@ -17,7 +17,8 @@ with a species-scale material floor and a pre-formed (resolved) profile where th
 * the guard worlds of §3.4 (face-free: the network is the only energy flow): driven_only,
   passive_relaxation, enzyme_recipe (probe 2d's share case; resolved for the class switch),
   crossing (probe 2e's quadrature case), reversal_onset (probe 2g's known limit, at the first step
-  or a mid-run switch-on); and mixed_chain, C2's heredity chain with a reacting pair.
+  or a mid-run switch-on); mixed_chain, C2's heredity chain with a reacting pair; and
+  several_sites, reactions at several sites of unequal volumes with their own multipliers.
 """
 
 import copy
@@ -337,6 +338,83 @@ def mixed_chain(level_mM, *, end=0.1, dt=1e-3, observation_times=None):
     ]
     moieties = [species("A", moieties={"X": 1}), species("B", moieties={"X": 1}, mu=-1.0)]
     return with_reactions(raw, moieties, reactions, always(["swap", "make", "drain"]))
+
+
+def several_sites(*, end=0.5, dt=0.025, switch=0.25):
+    """Reactions at several sites with their own multipliers in the face-free world: two cells
+    (0.7 and 1.9 pL) and three outside nodes (0.5, 1.0 and 2.0 pL) joined only by impermeant
+    patches; the enzyme network's laws on every cell and every finite node, each node at its own
+    resolved profile; per-site schedules: catalysis and supply off in cell_1 (a passive-only node
+    beside the mixed cell_0), supply at 0.5 in cell_0 (supply has no reaction-level schedule: both
+    its sites have their own), conversion at 2.5 at ecs_1, removal at ecs_2 changed from 1 to 0.3
+    at `switch`."""
+    profile = dict(
+        S=dict(cell_0=1e-3, cell_1=8e-4, ecs_0=5e-4, ecs_1=4e-4, ecs_2=6e-4),
+        E=dict(cell_0=1e-4, cell_1=1e-4, ecs_0=1e-4, ecs_1=2e-4, ecs_2=5e-5),
+        C=dict(cell_0=1e-5, cell_1=2e-5),
+        P=dict(cell_0=1e-5, cell_1=1e-5, ecs_0=1e-5, ecs_1=2e-5, ecs_2=1e-5),
+    )
+    raw = species_world(
+        ("E", "C", "P"),
+        profile=profile,
+        faces=False,
+        cells=(("cell_0", 0.7), ("cell_1", 1.9)),
+        nodes=(("ecs_0", 0.5), ("ecs_1", 1.0), ("ecs_2", 2.0)),
+        contacts=(
+            ("contact_0", "cell_0", "ecs_0"),
+            ("contact_1", "cell_1", "ecs_1"),
+            ("contact_2", "cell_1", "ecs_2"),
+        ),
+        end=end,
+        dt=dt,
+        observation_times=sorted({*fx.grid_times(end, dt, end / 4), switch}),
+    )
+    cells, nodes = {"cells": "all"}, {"outside": "all"}
+    reactions = [
+        passive("binding", cells, {"E": 1, "S": 1}, {"C": 1}, 10.0),
+        mass_action("catalysis", cells, {"C": 1}, {"E": 1, "P": 1}, 1.0),
+        michaelis_menten("conversion", nodes, "S", {"P": 1}, 1.0, 5e-4, catalyst="E"),
+        mass_action("supply", cells, {}, {"S": 1}, 1e-4),
+        mass_action(
+            "removal", nodes, {"P": 1}, {}, 0.5, factors=[hill("hill_inhibition", "S", 1e-3, 2.0)]
+        ),
+    ]
+    controls = [
+        *always(["binding", "catalysis", "conversion", "removal"]),
+        ("catalysis", "cell_1", [(0.0, 0.0)]),
+        ("supply", "cell_0", [(0.0, 0.5)]),
+        ("supply", "cell_1", [(0.0, 0.0)]),
+        ("conversion", "ecs_1", [(0.0, 2.5)]),
+        ("removal", "ecs_2", [(0.0, 1.0), (switch, 0.3)]),
+    ]
+    return with_reactions(raw, enzyme_species(), reactions, controls)
+
+
+def reference_multipliers(raw):
+    """A callable k -> [R, N] for nr.run_half_steps: each route's multiplier at half-step k from
+    the declared schedules (its site's, else its reaction's), at the start of the step that
+    half-step belongs to (two half-steps per step), on the combined node axis."""
+    block = next(b for b in raw["model"]["operators"] if b["law"] == REACTIONS)
+    reactions = [r["id"] for r in block["reactions"]]
+    nodes = [n["id"] for n in reference_nodes(raw)]
+    sites = reference_sites(raw)
+    dt = raw["execution"]["dt"]
+    schedules = {
+        (c["reaction_id"], c["site"]): c["schedule"] for c in raw["experiment"]["reaction_controls"]
+    }
+
+    def value(schedule, t):
+        return [c["multiplier"] for c in schedule if c["time"] <= t][-1]
+
+    def multipliers(k):
+        t = (k // 2) * dt
+        out = np.zeros(sites.shape)
+        for r, i in zip(*np.nonzero(sites), strict=True):
+            schedule = schedules.get((reactions[r], nodes[i]), schedules.get((reactions[r], None)))
+            out[r, i] = value(schedule, t)
+        return out
+
+    return multipliers
 
 
 # ------------------------------------------------------------------ the references' inputs
