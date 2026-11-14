@@ -729,7 +729,11 @@ def test_jit_false_definitions_are_refused(spec, monkeypatch, tmp_path):
     )
 
 
-def test_gpu_and_projective_definitions_are_refused():
+def test_gpu_definitions_need_the_patch_and_projective_ones_are_refused():
+    """Design section 13.4: a GPU definition only through the CPU-host probe's patch.
+
+    The loader-level GPU cases are tests/unit/test_continuity_gpu.py.
+    """
     from types import SimpleNamespace
 
     def spec(backend="cpu", jit=True, projective=None):
@@ -737,9 +741,14 @@ def test_gpu_and_projective_definitions_are_refused():
             execution=SimpleNamespace(backend=backend, jit=jit), projective=projective
         )
 
-    continuity._require_definition("1", spec())
-    with pytest.raises(ConfigError, match="^Definition 1: GPU definitions are not yet admitted"):
-        continuity._require_definition("1", spec(backend="gpu"))
+    for each in (spec(), spec(backend="gpu")):
+        continuity._require_definition("1", each)
+    continuity._require_device("1", spec(), None)
+    with pytest.raises(ConfigError, match="^Definition 1: a GPU definition is admitted only"):
+        continuity._require_device("1", spec(backend="gpu"), None)
+    continuity._require_device("1", spec(backend="gpu"), {"backend": "gpu"})
+    with pytest.raises(ConfigError, match="notes a device patch, but this is a CPU definition"):
+        continuity._require_device("1", spec(), {"backend": "gpu"})
     with pytest.raises(ConfigError, match="^Definition 2: projective definitions are refused"):
         continuity._require_definition("2", spec(projective=object()))
 

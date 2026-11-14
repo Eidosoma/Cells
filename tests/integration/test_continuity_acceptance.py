@@ -21,6 +21,12 @@ Scratch copies of src/cells in tmp_path, never trees under /mnt/workspaces:
   | observer | one ulp on every floating observation column but times      | refused by H   |
   | missing  | no _Round in core/vector_windows (renamed)                  | cannot decide  |
 
+- GPU definitions (section 13.4): the same cohort as GPU definitions, a step-0 snapshot
+  written under S0 with the probe's device patch (a test artifact: its "gpu" runtime describes
+  the CPU). The host variant is admitted with the patch noted, its to runtime the checkpoint's,
+  and the record loads in the host tree's process with the device patched; the program variant
+  is refused on both lowerings, the native and the cuda one.
+
 - The host variant's record admits the resume through batch_io.load_batch_snapshot; the
   resumed run is bitwise equal to the uninterrupted run at every round, and verify_run.py
   passes. The same record is refused under another tree, and a tampered run fails
@@ -186,7 +192,7 @@ class Launcher:
 
     def __call__(self, command, env, log, label, args):
         out = Path(command[command.index("--out") + 1])
-        key = command[command.index("--parts") + 1]
+        key = (command[command.index("--checkpoint") + 1], command[command.index("--parts") + 1])
         if env["PYTHONPATH"].startswith(self.s0 + ":") and key in self.cache:
             shutil.copytree(self.cache[key][0], out)
             shutil.copy(self.cache[key][1], log)
@@ -211,12 +217,12 @@ def world(tmp_path_factory):
     return dict(base=base, s0=s0, launcher=Launcher(s0), run0=base / "run0")
 
 
-def admission(world, s1, out):
-    """admit.py propose's arguments: the checkpoint after round 1, S0 against s1."""
+def admission(world, s1, out, checkpoint=None, run=None):
+    """admit.py propose's arguments: by default the checkpoint after round 1, S0 against s1."""
     argv = [
         "propose",
-        "--checkpoint", world["run0"] / "snapshots" / "round-000001",
-        "--checkpoint-run", world["run0"],
+        "--checkpoint", checkpoint or world["run0"] / "snapshots" / "round-000001",
+        "--checkpoint-run", run or world["run0"],
         "--from-tree", world["s0"],
         "--to-tree", s1,
         "--out", out,
@@ -226,12 +232,63 @@ def admission(world, s1, out):
     return admit.arguments([str(a) for a in argv])
 
 
-def propose(world, name):
-    s1 = tree(world["base"], name, EDITS.get(name, ()))
+def propose(world, name, edits=None, checkpoint=None, run=None):
+    s1 = tree(world["base"], name, EDITS.get(edits or name, ()))
     out = world["base"] / f"run-{name}" / "continuity"
-    code = admit.propose(admission(world, s1, out), launcher=world["launcher"])
+    code = admit.propose(admission(world, s1, out, checkpoint, run), launcher=world["launcher"])
     verdict = json.loads((out / ("proposed.json" if code == 0 else "refusal.json")).read_text())
     return code, verdict, s1, out
+
+
+# A GPU-definition cohort snapshot written on this CPU host, as the probe runs it: the device
+# patched (section 13.4). A test artifact: its manifest's "gpu" runtime describes the CPU.
+GPU_CHECKPOINT = (
+    "import sys\n"
+    "from validation.continuity import probe\n"
+    "probe.patch_execution_device()\n"
+    "from cells.batch_io import write_batch_snapshot\n"
+    "from cells.core.state import initialise\n"
+    "from validation.continuity.dev_run import cohort\n"
+    "spec = cohort(40, backend='gpu')\n"
+    "write_batch_snapshot(sys.argv[1], spec, {w.world_id: initialise(w.simulation)\n"
+    "                                         for w in spec.worlds})\n"
+)
+# The admitted record's load, in a process of the resuming tree with the device patched.
+GPU_LOAD = (
+    "import sys\n"
+    "from validation.continuity import probe\n"
+    "probe.patch_execution_device()\n"
+    "from cells import continuity\n"
+    "from cells.batch_io import load_batch_snapshot\n"
+    "request = continuity.Request(sys.argv[2], path='vector_windows',\n"
+    "                             policy={'window_steps': 8, 'recording': 'checkpoints'})\n"
+    "saved = load_batch_snapshot(sys.argv[1], continuity=request)\n"
+    "print(saved.admission.case, saved.spec.worlds[0].simulation.execution.backend)\n"
+)
+
+
+def run_code(code, *args, source):
+    env = dict(
+        PATH=os.environ.get("PATH", "/usr/bin:/bin"),
+        PYTHONPATH=f"{source / 'src'}:{ROOT}",
+        JAX_PLATFORMS="cpu",
+        CUDA_VISIBLE_DEVICES="",
+        PYTHONDONTWRITEBYTECODE="1",
+    )
+    return subprocess.run(
+        [sys.executable, "-B", "-c", code, *map(str, args)], env=env, capture_output=True, text=True
+    )
+
+
+@pytest.fixture(scope="module")
+def gpu(world):
+    """A step-0 GPU cohort (events and observations ahead), written under S0 with the patch."""
+    checkpoint = world["base"] / "gpu-run0" / "snapshot"
+    done = run_code(GPU_CHECKPOINT, checkpoint, source=world["s0"])
+    assert done.returncode == 0, done.stderr
+    manifest = world["base"] / "gpu-run0" / "manifest.json"
+    manifest.write_text(json.dumps({"provenance": {"operation": "fresh"}}))
+    return dict(checkpoint=checkpoint, run=manifest.parent)
 
 
 def test_host_only_edits_are_admitted_and_resume_bitwise(world):
@@ -346,3 +403,40 @@ def test_a_tree_without_an_entry_point_cannot_decide(world):
     refusal = json.loads((out / "refusal.json").read_text())
     assert refusal["verdict"] == "cannot_decide"
     assert "cells.core.vector_windows._Round" in refusal["reason"]
+
+
+def test_a_gpu_checkpoint_is_admitted_with_the_patch_noted(world, gpu):
+    """Section 13.4: probed on the CPU host with no GPU; the record notes the patch."""
+    code, proposed, s1, out = propose(
+        world, "gpu-host", "host", checkpoint=gpu["checkpoint"], run=gpu["run"]
+    )
+    assert code == 0, proposed.get("reason")
+    patch = proposed["probe"]["execution_device"]
+    assert patch["backend"] == "gpu" and patch["lowering_platforms"] == ["cpu", "cuda"]
+    manifest = json.loads((gpu["checkpoint"] / "manifest.json").read_text())
+    assert proposed["to"]["runtime"] == manifest["runtime"]  # The checkpoint's, cells_version too.
+    assert "gpu" in proposed["to"]["runtime"] and "gpu" not in proposed["probe"]["runtime"]
+    for side in ("probe-s0", "probe-s1"):
+        summary = json.loads((out / side / "summary.json").read_text())
+        assert summary["execution_device"] == patch
+        assert summary["P0"]["program"]["cuda_stablehlo_chars"] > 0  # The program the GPU runs.
+    assert any("cuda cross-lowering" in line for line in proposed["residual"])
+    done = run_tool(
+        "admit", "finalise", "--proposed", out / "proposed.json",
+        "--admitted-by", "test suite", "--role", "test",
+        source=s1,
+    )  # fmt: skip
+    assert done.returncode == 0, done.stderr
+    done = run_code(GPU_LOAD, gpu["checkpoint"], out / "record.json", source=s1)
+    assert done.returncode == 0, done.stderr
+    assert done.stdout.split() == ["identical_programs", "gpu"]
+
+
+def test_a_gpu_program_edit_is_refused_on_both_lowerings(world, gpu):
+    code, refusal, _, out = propose(
+        world, "gpu-program", "program", checkpoint=gpu["checkpoint"], run=gpu["run"]
+    )
+    assert code == 2
+    texts = refusal["comparison"]["texts"]["differences"]
+    assert "vector_window.cuda.stablehlo.txt" in texts and "vector_window.stablehlo.txt" in texts
+    assert not (out / "overlap-s1").exists()
