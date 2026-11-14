@@ -3,7 +3,9 @@
 // outlines for the scales nothing simulates yet: a planarian's brain for the organ and
 // the worm for the whole organism. The scales are nested: the sheet lies on the worm's
 // head, above its brain, so zooming out leads from tissue into organ into organism. The
-// sheet is placed there for the scales only; it is not the worm's tissue.
+// sheet stands for skin-like tissue, a single layer of cells, and the cell is one cell of
+// that layer with its neighbours round it. The sheet is placed on the worm for the scales
+// only; it is not the worm's tissue.
 // Zooming is continuous: each scale fades in as the camera reaches it.
 //
 // Three things are kept apart:
@@ -403,12 +405,20 @@ export class CellLens {
       if (!stop.anchor || !stop.entity) continue;
       zoneOf(stop.zone).labels.push(labels.add({ id: stop.entity.id, text: stop.entity.label, anchor: stop.anchor, priority: 300, kind: "scale", lift: 4 }));
     }
-    // What the placeholder outlines are, and the sheet's size beside them.
+    // Notes beside the drawing: what the cell and the sheet stand for, and what the
+    // placeholder outlines are. A narrow screen gets the short form, or none if it is "roomy".
+    const narrow = this.stage.width < 600;
+    const note = (zoneName, item) => {
+      if (item.roomy && narrow) return;
+      zoneOf(zoneName).labels.push(labels.add({ text: narrow && item.short ? item.short : item.text, anchor: item.anchor, priority: item.priority ?? 280, kind: "note", lift: item.lift ?? 0 }));
+    };
+    // What the cell and the sheet stand for sits just under each stop's name. These two
+    // notes give way to the names of parts, so they never hide one.
+    const under = (stopId, line = 0) => ({ anchor: this.currentStops.find((stop) => stop.id === stopId).anchor, lift: -19 - line * 20, priority: 30 });
+    this.cells[this.sizeMode].notes.forEach((item, line) => note("cell", { ...item, ...under("cell", line) }));
+    this.sheet.notes.forEach((item, line) => note("tissue", { ...item, ...under("tissue", line) }));
     for (const [name, outline] of Object.entries(this.outlines)) {
-      for (const note of outline.notes) {
-        if (note.roomy && this.stage.width < 600) continue; // it would run off a narrow screen
-        zoneOf(name).labels.push(labels.add({ text: note.text, anchor: note.anchor, priority: 280, kind: "note", lift: 0 }));
-      }
+      for (const item of outline.notes) note(name, item);
     }
     const molecule = this.cells[this.sizeMode].molecule;
     const text = this.sizeMode === "real" ? "To scale: the membrane is about 5 nm thick, the channel about 9 nm across" : "Illustration: channels and pumps are modelled as populations";

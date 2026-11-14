@@ -18,7 +18,7 @@ import { Ramp, luminance, parse } from "../src/replay/ramp.js";
 import { clock, duration, niceDomain, number, reading } from "../src/replay/format.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const overlay = JSON.parse(await readFile(path.join(ROOT, "data", "runs", "overlay.json"), "utf8"));
+const overlay = JSON.parse(await readFile(path.join(ROOT, "data", "replays", "overlay.json"), "utf8"));
 const { file, entry } = syntheticRun();
 const copy = () => JSON.parse(JSON.stringify(file));
 

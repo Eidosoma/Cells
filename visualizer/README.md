@@ -16,7 +16,7 @@ One data file, the scene, drawn through four lenses, in this order:
 
 | Lens | What you see |
 | --- | --- |
-| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. It is placed there for the scales only and is not the worm's tissue. Zoom is continuous from molecules to organism, with a scale bar |
+| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar |
 | **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
@@ -92,26 +92,40 @@ A replay draws what a run saved, and nothing else.
   the adapter lays the sheet out as the hexagonal lattice its junctions define. The replay
   is marked as derived and lists each derived piece. Rotation and handedness are arbitrary.
 - **Run data is not in git.** `tools/adapt_run.py` reads the frozen run folders and writes
-  one file per run under `out/runs/` (0.45 to 0.75 MB each), which is git-ignored.
-  Only the adapter, the labels in `data/runs/` and a small synthetic fixture are committed
+  one file per run under `out/runs/` (0.2 to 0.9 MB each), which is git-ignored.
+  Only the adapter, the labels in `data/replays/` and a small synthetic fixture are committed
   (the user, 14 November 2026). The published page carries the chosen runs as files beside
   it and loads one when it is first shown.
 - **The format is the viewer's side of D154.** `schema/RUN_VIEW.md` fixes it. When the
   engine writes its own view file, the adapter is replaced and the view stays.
 
-The first replays are three runs of E07-v1. One is of the inheritance route, which the
-experiment's judged result is about (fast k1 at s 1.0, seed 5, recorded as erosion). Two are
-of the control at seed 1 and differ only in the junction coupling: at s 0.6 the summary
-records the run as neutral, at s 1.0 as erosion. The card carries the experiment's judged
-result in the record's words, so one run is not read as the whole result. In an arm that
-replaces the whole sheet no file names the disc; it is then taken as the cells above the
-experiment's D threshold at the first record, and the replay says so. To make them:
+Two experiments are replayed today, 59 runs in all (34.5 MB; the largest run file is
+0.87 MB, and each is loaded only when it is shown):
+
+| Experiment | Runs | What the record says it found |
+| --- | --- | --- |
+| E07-v1: renewal | all 38 of its judged execution | Judged. The disc did not renew; 8 of 15 scored predictions held |
+| The turnover pre-screen | the 21 arms that have an outcome | A development pre-screen, not judged |
+
+- **An experiment selector** heads the card. Beside each experiment stand two separate
+  facts from the record: whether it was judged, and what the answer was. A judged
+  experiment whose answer is no is shown as exactly that. Each run says how it ended.
+- **The first run shown** is of E07-v1's inheritance route, which its judged result is
+  about; the control at two couplings follows.
+- **Where an arm's files name no disc,** it is taken as the cells above the experiment's D
+  threshold at the first record, and the replay says so.
+- **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
+  as a replacement and the pilot's events are a cue in many cells at once.
+
+To make them all:
 
 ```bash
-npm run adapt:runs -- --experiment e07-v1 --root /mnt/workspaces/Cells/e07-v1-judged-20261113-01
+npm run adapt:runs -- --evidence /mnt/workspaces/Cells
 ```
 
-`data/runs/selection.json` lists the runs; pass `--run ARM/seedN` for others.
+`data/replays/selection.json` lists the runs per experiment, and
+`data/replays/overlay.json` holds each experiment's labels, plain lines and what it found,
+with the record's line and its source.
 
 ## Sizes in the cell view
 
@@ -130,6 +144,8 @@ indicative.
 | Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |
 | Channels, pumps, junction channels | thousands of dots; shapes about 10 nm across in the close-up | a few blocks set in the membrane |
 | Protein cages, ATP, ions, small molecules | dots and haze | a few beads and clusters |
+| Neighbouring cells | six faint glass outlines round the cell: scenery | the same |
+| Layer beyond the sheet | five rings of cell outlines, fading: scenery | the same |
 | Organ outline | a planarian's brain with its two nerve cords, drawn about 0.9 mm long: a placeholder, sizes indicative | the same |
 | Organism outline | a planarian flatworm, drawn 10 mm long and 1.3 mm wide: a placeholder, sizes indicative | the same |
 
@@ -148,7 +164,7 @@ npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load 
 npm test                    # scene, sources, page and allowed hosts; no browser needed
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas and its links)
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
-npm run adapt:runs -- --experiment e07-v1 --root PATH   # make the replays under out/runs/ (not committed)
+npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
 npm run export              # out/cells-architecture.html, the page as an artifact wants it, and the list of run files to publish beside it
 ```
 
@@ -176,7 +192,8 @@ run outputs ──adapters (next)── run view ──────────�
 | `tools/import_protein_inventory.py` | Makes the slim snapshot of the law inventory. It leaves out machine paths, Xenbase identifiers and every field the view does not show |
 | `tools/lib/protein_atlas.py` | Turns the snapshot into the atlas's parts, and checks every law record against the checkout |
 | `tools/adapt_run.py` | Turns a saved run folder into a replay file. Standard library only; reads the frozen evidence and never writes there |
-| `data/runs/` | The labels and plain lines for each experiment's replays, from its own documents, and the runs chosen for the page |
+| `data/replays/` | For each experiment: labels, plain lines and what the record says it found, and the runs chosen for the page. (Not `data/runs/`: the repository ignores every folder of that name) |
+| `docs/` | Reviews written for the lead: `PROTEIN_ATLAS_REVIEW.md` |
 | `src/replay/`, `src/lenses/replay.js`, `src/ui/timeline.js` | Loading a replay, the Experiments view and its timeline |
 | `data/proteins/` | `inventory.snapshot.json` (generated, do not edit), `overlay.json` (districts, plain lines and the shape drawn for each kind of unit) and the sources notice |
 | `schema/RUN_VIEW.md` | Draft of what a run saves so it can be replayed (the consumer side of D154) |
@@ -232,12 +249,14 @@ The user merges the branch when they choose.
 
 ## Next
 
-1. **More of each run.** The concentrations, the osmotic term and the junction gates are
-   saved but not yet shown, to keep a run near half a megabyte.
-2. **A replay catalogue**: every run of an experiment, by arm, seed and recorded class.
-   E07-v1's judged execution has 38.
+1. **Events that are not replacements.** The W1 pilot's cue needs its own drawing; its
+   two runs already adapt.
+2. **More of each run.** The concentrations, the osmotic term and the junction gates are
+   saved but not yet shown, to keep a run under a megabyte. The pilot's 70-minute arms
+   need a smaller number type or fewer records to fit.
 3. **Other experiments**, each with its own adapter until the engine writes a view file
-   per run (D154).
+   per run (D154): division needs a geometry that is not a sheet and a thinning rule; the
+   conduction probe needs a chain layout; the held sphere needs radial shells.
 
 For the protein atlas, each of these needs the user's approval first, because the plan
 counts fetching from the public atlases as data tooling (stage 5):

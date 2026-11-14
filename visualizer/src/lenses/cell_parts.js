@@ -3,6 +3,10 @@
 // Nothing is drawn that looks like a capability without being one.
 //
 // Units: 1 is one micrometre. The cell is a generic animal cell about 20 µm across.
+// It is drawn as one cell of a layer: the sheet stands for skin-like tissue, a single
+// layer of cells, and the cell's neighbours lie round it as scenery. The cell is round
+// because the picture chose so: the engine gives a cell a volume and a membrane area,
+// not a shape.
 // Two size modes share one layout:
 //   schematic  parts enlarged and few, so each can be seen (like a textbook cutaway);
 //   real       sizes and numbers nearer a real cell; what is too small to see at this
@@ -87,6 +91,9 @@ const SPOT = {
   furrow: 2.32,
   charges: [2.78, 3.25, 4.15, 4.72],
 };
+// The cell's neighbours in the layer, as turns round the cell from the junction: six, a sixth of a turn apart.
+const NEIGHBOUR_TURNS = [0, 1, 2, 3, 4, 5].map((step) => (step * Math.PI) / 3);
+const GAP_TURN = (-5 * Math.PI) / 6; // midway between two neighbours, on the side the space between cells is named
 const NUCLEUS = new THREE.Vector3(2.6, CUT - 0.3, -2.2);
 const ER_FACING = 2.42; // the side of the nucleus the ER wraps, as an angle
 const GOLGI = new THREE.Vector3(-4.9, CUT + 0.15, 4.3);
@@ -230,24 +237,36 @@ export function buildCell(ctx, studsCtx, mode) {
     pumpDust.add(dots(onSkin(2400).map((spot) => spot.position), pumpDust.points({ hue: "bioPump", size: 1.9 })));
   }
 
-  // ---------------------------------------------------------------- gap junctions and the neighbour
+  // ---------------------------------------------------------------- gap junctions and the neighbours
+  // The cell is one of a layer, so its neighbours lie round it in the plane of the cut,
+  // six as in a packed sheet. They are scenery: faint glass that cannot be clicked. The one
+  // the junction leads to is drawn a little stronger, as before; the others are only a
+  // thin outline where the cut passes through them, so nothing outside the membrane is hidden.
   const toward = radial(SPOT.junction);
   const neighbourAt = toward.clone().multiplyScalar(2 * R + style.neighbourGap);
+  const neighbours = NEIGHBOUR_TURNS.map((turn) => radial(SPOT.junction + turn).multiplyScalar(2 * R + style.neighbourGap));
+  const ball = new THREE.SphereGeometry(R, 64, 40);
   const glass = ctx.neutral({ opacity: 0.035, glass: 0.2, clip: true, side: THREE.DoubleSide });
-  const neighbour = new THREE.Mesh(new THREE.SphereGeometry(R, 64, 40), glass);
-  neighbour.position.copy(neighbourAt);
-  neighbour.renderOrder = 7;
-  ctx.illustrate(neighbour);
-  if (real) {
-    const line = new THREE.LineLoop(edgeLine(), ctx.neutralLine({ opacity: 0.6 }));
-    line.position.copy(neighbourAt);
-    ctx.illustrate(line);
-  } else {
-    const neighbourBand = new THREE.Mesh(new THREE.RingGeometry(RIM - style.band * 0.72, RIM + style.band * 0.28, 120), ctx.neutral({ opacity: 0.3, side: THREE.DoubleSide }));
-    neighbourBand.rotation.x = -Math.PI / 2;
-    neighbourBand.position.copy(neighbourAt).setY(CUT + 0.004);
-    ctx.illustrate(neighbourBand);
-  }
+  const fainter = ctx.neutral({ opacity: 0.014, glass: 0.09, clip: true, side: THREE.DoubleSide });
+  const neighbourLine = ctx.neutralLine({ opacity: real ? 0.6 : 0.5 });
+  const fainterLine = ctx.neutralLine({ opacity: 0.3 });
+  neighbours.forEach((at, index) => {
+    const first = index === 0;
+    const neighbour = new THREE.Mesh(ball, first ? glass : fainter);
+    neighbour.position.copy(at);
+    neighbour.renderOrder = 7;
+    ctx.illustrate(neighbour);
+    if (real || !first) {
+      const line = new THREE.LineLoop(edgeLine(), first ? neighbourLine : fainterLine);
+      line.position.copy(at);
+      ctx.illustrate(line);
+    } else {
+      const neighbourBand = new THREE.Mesh(new THREE.RingGeometry(RIM - style.band * 0.72, RIM + style.band * 0.28, 120), ctx.neutral({ opacity: 0.3, side: THREE.DoubleSide }));
+      neighbourBand.rotation.x = -Math.PI / 2;
+      neighbourBand.position.copy(at).setY(CUT + 0.004);
+      ctx.illustrate(neighbourBand);
+    }
+  });
   const junctions = ctx.part("junctions", onRim(SPOT.junction, RIM + 0.6, CUT + 0.6));
   if (!real) {
     const bridge = [];
@@ -584,19 +603,24 @@ export function buildCell(ctx, studsCtx, mode) {
   handles.signals = Array.from({ length: real ? 24 : 9 }, () => new THREE.Mesh(new THREE.SphereGeometry(style.bead, 12, 9), signal));
   handles.signals.forEach((bead) => secretion.add(bead));
 
-  const outside = ctx.part("extracellular", new THREE.Vector3(-12.2, CUT - 0.5, -4.5));
+  // Its name points into the gap where the cell and two of its neighbours meet.
+  const outside = ctx.part("extracellular", radial(SPOT.junction + GAP_TURN).multiplyScalar((2 * R + style.neighbourGap) / Math.sqrt(3)).setY(CUT - 0.5));
   const beyond = (count) => {
     const found = [];
     let guard = 0;
-    while (found.length < count && guard++ < count * 40) {
+    while (found.length < count && guard++ < count * 80) {
       const point = unit(random).multiplyScalar(R + (real ? 0.25 : 1.3) + random() * 6);
-      if (point.y > CUT + 0.6 || point.distanceTo(neighbourAt) < R + (real ? 0.2 : 1)) continue;
+      if (point.y > CUT + 0.6 || neighbours.some((at) => point.distanceTo(at) < R + (real ? 0.2 : 1))) continue;
       found.push(point);
     }
     return found;
   };
   if (real) outside.add(dots(beyond(6000), outside.points({ hue: "bioIon", size: 1.3, opacity: 0.5 })));
   else outside.add(instanced(new THREE.SphereGeometry(0.14, 8, 6), outside.material({ hue: "bioIon", opacity: 0.9 }), beyond(120).map((position) => ({ position, scale: 0.6 + random() * 0.7 }))));
+
+  // What the picture says in words beside the cell (the lens writes them under the stop's name).
+  // Two short lines, so they stay clear of the names in the columns beside the cell.
+  handles.notes = [{ text: "One cell of the skin-like layer" }, { text: "Its round shape is the picture's choice", roomy: true }];
 
   handles.probes = {
     nucleus: NUCLEUS.clone().add(new THREE.Vector3(-0.9, style.nucleusRadius * 0.9, 0.9)),
@@ -677,6 +701,8 @@ export function buildMolecules(ctx, mode) {
 // ------------------------------------------------------------------ tissue
 
 export const HEX = { radius: 10.6, height: 13, rings: 6 };
+// How far the layer is drawn beyond the sheet, as outlines: out to this ring, at this strength.
+const LAYER_BEYOND = [[HEX.rings + 2, 0.34], [HEX.rings + 4, 0.2], [HEX.rings + 5, 0.1]];
 
 /** Axial coordinates of a hexagonal sheet: 127 cells for six rings. */
 export function sheetCells(rings = HEX.rings) {
@@ -764,7 +790,31 @@ export function buildTissue(ctx) {
       mechanics.add(knot);
     }
   }
-  return { extent: HEX.radius * Math.sqrt(3) * (HEX.rings * 2 + 1) };
+  // The layer goes on beyond the sheet: more cells of the same size, drawn as outlines only
+  // and fainter with distance. Scenery: it says the sheet is a patch of a larger layer. It
+  // ends where the back of the worm's head begins to curve away from the flat sheet.
+  const ringOf = (cell) => Math.max(Math.abs(cell.q), Math.abs(cell.r), Math.abs(cell.q + cell.r));
+  const drawn = new Set();
+  let inner = HEX.rings;
+  for (const [outer, opacity] of LAYER_BEYOND) {
+    const segments = [];
+    for (const cell of sheetCells(outer)) {
+      if (ringOf(cell) <= inner) continue;
+      for (let index = 0; index < 6; index++) {
+        const a = corner(cell, index), b = corner(cell, (index + 1) % 6);
+        const key = [a, b].map((point) => `${point.x.toFixed(1)},${point.z.toFixed(1)}`).sort().join("|");
+        if (drawn.has(key)) continue;
+        drawn.add(key);
+        segments.push(a, b);
+      }
+    }
+    ctx.illustrate(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(segments), ctx.neutralLine({ opacity })));
+    inner = outer;
+  }
+
+  // What the sheet stands for (the lens writes it under the stop's name).
+  const notes = [{ text: "The sheet stands for skin-like tissue: a single layer of cells", short: "Stands for skin-like tissue" }];
+  return { extent: HEX.radius * Math.sqrt(3) * (HEX.rings * 2 + 1), notes };
 }
 
 // ------------------------------------------------------------------ larger scales (placeholders)
@@ -775,8 +825,10 @@ export function buildTissue(ctx) {
 // The scales are nested, so zooming out leads from one into the next (the user, 14 November
 // 2026: with the worm beside the sheet it "is just hanging there"). The sheet lies on the
 // back of the worm's head, the brain lies in the head under it, and the head is the front
-// of the whole worm. The sheet is placed there for the scales only: the simulated sheet is
-// not this animal's tissue, and the notes say so.
+// of the whole worm. The sheet stands for skin-like tissue, a single layer of cells lying
+// over the brain; it is placed there for the scales only, the simulated sheet is not this
+// animal's tissue, and the notes say so. The brain's own cells are neurons and glia, which
+// Cells does not model.
 //
 // Sizes are indicative. The worm is drawn 10 mm long and 1.3 mm wide, with a brain a
 // little under 1 mm long. One web search (14 November 2026) gave roughly 20 mm by 2 mm
@@ -804,7 +856,7 @@ const WORM_ORIGIN = new THREE.Vector3(-WORM.brainAt, -wormHalfWidth(WORM.brainAt
 export const ORGAN = { length: 900, width: 700, radius: 450, centre: new THREE.Vector3(0, WORM_ORIGIN.y + WORM.brainLevel, 0) };
 export const BODY = { length: WORM.length, width: WORM.halfWidth * 2, centre: new THREE.Vector3(WORM_ORIGIN.x + WORM.length / 2, WORM_ORIGIN.y, 0) };
 const SHEET_RADIUS = (HEX.radius * Math.sqrt(3) * (HEX.rings * 2 + 1)) / 2;
-const SHEET_NOTE = `The sheet of ${sheetCells().length} cells, to scale`;
+const SHEET_NOTE = "The sheet, to scale: it stands for skin-like tissue over the brain";
 
 /** Half the body's width at t (0 at the front tip, 1 at the tail tip), without the auricles. */
 function wormHalfWidth(t) {
@@ -993,7 +1045,9 @@ export function buildOrgan(ctx) {
   ctx.illustrate(inWorm(new THREE.LineSegments(shapes.silhouette, ctx.neutralLine({ opacity: 0.4 }))), "organ");
   ctx.illustrate(inWorm(new THREE.Mesh(shapes.fill, ctx.neutral({ opacity: 0.06, side: THREE.DoubleSide }))), "organ");
   const notes = [sheetRing(ctx, "organ", 0.018, SHEET_RADIUS * 1.5, SHEET_NOTE)];
-  notes.push({ text: "A planarian's brain and nerve cords: a placeholder outline", anchor: ORGAN.centre.clone().add(new THREE.Vector3(330, 0, WORM.halfWidth + 120)) });
+  const beside = ORGAN.centre.clone().add(new THREE.Vector3(330, 0, WORM.halfWidth + 120));
+  notes.push({ text: "A planarian's brain and nerve cords: a placeholder outline", anchor: beside });
+  notes.push({ text: "The brain's own cells, neurons and glia, are not modelled", anchor: beside, lift: -22, roomy: true });
   return { notes };
 }
 

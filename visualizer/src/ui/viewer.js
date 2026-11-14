@@ -449,13 +449,13 @@ class CellsViewer extends HTMLElement {
         h("span", { class: "seg-label" }, runs.length === 1 ? "Run" : `Runs · ${runs.length}`),
         // A few runs are rows to press; many are a list to choose from.
         runs.length > 8
-          ? chooser("cells-run", "Run", runs.map((run) => [run.id, `${run.title}, ${run.sub}${run.klass ? ` · ${run.klass.toLowerCase()}` : ""}${run.early ? " · stopped early" : ""}`]), runs.find((run) => run.active)?.id)
+          ? chooser("cells-run", "Run", runs.map((run) => [run.id, [[run.title, run.sub].filter(Boolean).join(", "), run.klass ? run.klass.toLowerCase() : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · ")]), runs.find((run) => run.active)?.id)
           : runs.map((run) =>
               h(
                 "button",
-                { class: "run-row", type: "button", "aria-pressed": String(run.active), title: `${run.title}, ${run.sub}`, onclick: () => pick(run.id) },
+                { class: "run-row", type: "button", "aria-pressed": String(run.active), title: [run.title, run.sub].filter(Boolean).join(", "), onclick: () => pick(run.id) },
                 h("span", { class: "run-name" }, run.title),
-                h("span", { class: "run-sub" }, run.sub, run.klass ? ` · recorded as ${run.klass.toLowerCase()}` : "", run.early ? " · stopped early" : "")
+                h("span", { class: "run-sub" }, [run.sub, run.klass ? `recorded as ${run.klass.toLowerCase()}` : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · "))
               )
             )
       ),
@@ -558,7 +558,7 @@ class CellsViewer extends HTMLElement {
       const text =
         chrome.view?.colour === "status"
           ? "Colour and form show status. Clear glass shapes and grey lines are scenery."
-          : "Colour shows the kind of part. The dot beside each name is its status; planned parts are grey sketches. Clear glass shapes are scenery.";
+          : "Colour shows the kind of part. The dot beside each name is its status; planned parts are grey sketches. Clear glass shapes and grey outlines are scenery.";
       note = { swatch: "illustration", text };
     }
     this.legend.render({ ...base, title: "Status", items, filter, note });

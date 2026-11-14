@@ -580,7 +580,7 @@ export class ReplayLens {
           .map((item) => ({ id: item.id, label: item.label, active: item.id === entry?.experiment, first: this.catalogue.runs.find((one) => one.experiment === item.id).id, outcome: this.catalogue.outcomeOf(item) })),
         runs: this.catalogue.runs
           .filter((item) => item.experiment === entry?.experiment)
-          .map((item) => ({ id: item.id, title: item.arm, sub: `seed ${item.seed}`, klass: this.catalogue.classOf(item)?.label || "", early: this.catalogue.endOf(item).early, active: item.id === this.runId })),
+          .map((item) => ({ id: item.id, title: item.arm, sub: item.seed === null || item.seed === undefined ? "" : `seed ${item.seed}`, klass: this.catalogue.classOf(item)?.label || "", early: this.catalogue.endOf(item).early, active: item.id === this.runId })),
         ended: this.catalogue.endOf(entry),
         klass: klass ? { label: klass.label, description: klass.description, note: experiment.class_note || "" } : null,
         colour: records.length > 1 ? { options: records.map((record) => [record.id, this.recordLabel(record)]), active: this.recordId } : null,

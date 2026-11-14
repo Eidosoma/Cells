@@ -56,12 +56,15 @@ export class Catalogue {
   endOf(run) {
     if (!run) return null;
     const words = this.experimentOf(run).stops?.[run.stop];
-    return { label: words?.label || (run.stop ? `Stopped: ${run.stop}` : ""), early: Boolean(words?.early), refusal: run.refusal || null };
+    // A refusal is the run's own record; it is put in a sentence, never judged here.
+    const record = run.refusal;
+    const refusal = !record ? null : typeof record === "string" ? record : [record.failed, record.time_s !== undefined ? `at ${record.time_s} s` : null].filter(Boolean).join(" ") || "recorded by the run";
+    return { label: words?.label || (run.stop ? `Stopped: ${run.stop}` : ""), early: Boolean(words?.early), refusal };
   }
 
   /** A short name for a run in a list: its arm and seed, as the run's plan names them. */
   title(run) {
-    return `${run.arm}, seed ${run.seed}`;
+    return run.seed === null || run.seed === undefined ? run.arm : `${run.arm}, seed ${run.seed}`;
   }
 
   /** The runs as parts the list and the panel can show, grouped by experiment. */
@@ -97,7 +100,7 @@ export class Catalogue {
     if (experiment.class_note) notes.push(experiment.class_note);
     const facts = [
       ["Arm", run.arm],
-      ["Seed", String(run.seed)],
+      ...(run.seed === null || run.seed === undefined ? [] : [["Seed", String(run.seed)]]),
     ];
     if (run.label) facts.push(["Label", run.label]);
     if (Number.isFinite(run.end_s)) facts.push(["Length of the run", clock(run.end_s)]);

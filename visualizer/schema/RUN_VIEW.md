@@ -221,7 +221,7 @@ Rules that tighten the run view above:
 }
 ```
 
-The `experiments` entries are curated in `data/runs/overlay.json` (labels, plain lines
+The `experiments` entries are curated in `data/replays/overlay.json` (labels, plain lines
 and sources); the adapter copies the entry of each experiment it adapts and adds `runs`.
 A record's entry may give `shown_between`, `[low, high]` in the record's own unit: the
 limits its colour scale uses in every run of the experiment, so one value has one colour.

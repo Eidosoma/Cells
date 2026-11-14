@@ -179,7 +179,7 @@ test("the page carries the replay catalogue, and the runs themselves only when a
 });
 
 test("every engine part an experiment's replays point at is on the map", async () => {
-  const replayOverlay = JSON.parse(await readFile(path.join(ROOT, "data", "runs", "overlay.json"), "utf8"));
+  const replayOverlay = JSON.parse(await readFile(path.join(ROOT, "data", "replays", "overlay.json"), "utf8"));
   const ids = new Set(scene.entities.map((entity) => entity.id));
   const tracked = new Set(scene.entities.flatMap((entity) => (entity.sources || []).map((source) => source.path)));
   for (const [name, experiment] of Object.entries(replayOverlay.experiments)) {

@@ -1,0 +1,21 @@
+{
+ "kind": "synthetic.pilot_run@0",
+ "resumed_from": null,
+ "phases_s": {
+  "preparation_end": 2.0,
+  "cue_on": 3.0,
+  "cue_off": 4.0,
+  "end": 5.0,
+  "baseline": 1.0,
+  "cue": 1.0,
+  "retention": 1.0
+ },
+ "observations_per_world": 13,
+ "worlds": {
+  "1": {
+   "seed": 3,
+   "s": 1.0,
+   "disc_cells": 7
+  }
+ }
+}

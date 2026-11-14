@@ -14,7 +14,7 @@ import { syntheticRun } from "../tests/helpers/synthetic_replay.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
 const out = path.resolve(args.includes("--out") ? args[args.indexOf("--out") + 1] : path.join(root, "out", "runs-dev"));
-const overlay = JSON.parse(await readFile(path.join(root, "data", "runs", "overlay.json"), "utf8"));
+const overlay = JSON.parse(await readFile(path.join(root, "data", "replays", "overlay.json"), "utf8"));
 
 await mkdir(out, { recursive: true });
 // Three made-up experiments, so the selector and each kind of outcome can be seen:

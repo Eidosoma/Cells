@@ -42,6 +42,11 @@
           "date": "2026-11-14",
           "engine_revision": "e659ce49",
           "note": "The scales are nested again (the user: the planarian was just hanging there): the sheet lies on the worm's head above its brain, with slanted views, so zooming out leads from tissue into organ into organism"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "2d2d9816",
+          "note": "An experiment selector with what each experiment found as two facts from the record; 59 runs of two experiments (all 38 of E07-v1 and the 21-arm turnover pre-screen; 34.5 MB, largest 0.87 MB); the sheet stands for skin-like tissue over the brain, with the cell among its neighbours; the atlas counts 25 gained identifiers with a dated review; three feature requests shown as designed"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"

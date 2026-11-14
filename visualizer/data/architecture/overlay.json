@@ -1464,10 +1464,13 @@
       "id": "fr.internal_compartment",
       "label": "Internal compartment (FR-1)",
       "layer": "operators",
-      "status": "planned",
+      "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Logged; its design has not started.",
+      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026); code comes next, in milestones.",
       "sources": [
+        {
+          "path": "docs/CLOSED_COMPARTMENT_DESIGN.md"
+        },
         {
           "path": "docs/FEATURE_REQUESTS.md",
           "where": "FR-1"
@@ -1492,10 +1495,13 @@
       "id": "fr.site_occupancy",
       "label": "Site occupancy (FR-3)",
       "layer": "operators",
-      "status": "planned",
+      "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "Binding sites as state on a membrane domain or contact, with bound and free molecules in one material ledger. Logged; already specified as a door in the secreted-species design.",
+      "plain": "Binding sites as state on a membrane domain or contact, with bound and free molecules in one material ledger. Its design is accepted (D169, 14 November 2026); code follows the internal compartment.",
       "sources": [
+        {
+          "path": "docs/SITE_OCCUPANCY_DESIGN.md"
+        },
         {
           "path": "docs/FEATURE_REQUESTS.md",
           "where": "FR-3"
@@ -1534,10 +1540,13 @@
       "id": "fr.bath_schedule",
       "label": "Scheduled bath composition (FR-10)",
       "layer": "operators",
-      "status": "planned",
+      "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Logged; the law and its accounting exist in an older model family.",
+      "plain": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Its design is accepted (D169, 14 November 2026); code comes next.",
       "sources": [
+        {
+          "path": "docs/BATH_SCHEDULE_DESIGN.md"
+        },
         {
           "path": "docs/FEATURE_REQUESTS.md",
           "where": "FR-10"
@@ -1616,11 +1625,15 @@
       "layer": "experiments",
       "status": "landed",
       "as_of": "2026-11-14",
-      "plain": "Does the composite model give the same answers on the L4 GPU as on the CPU? Three repeats agreed, with backend differences of at most 4.2e-14 V, and the three variants are registered. The judged run comes next.",
+      "plain": "Does the composite model give the same answers on the L4 GPU as on the CPU, within a registered tolerance? On the judged run, W1 and W2 pass and G2-Q1 passes Q1 to Q6. Q7, which asks for bitwise equality, fails because of the L4's own nondeterminism at 825 nodes, and stays open.",
       "sources": [
         {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Status on 14 November 2026, and the working order (D156)"
+        },
+        {
           "path": "PROGRESS.md",
-          "where": "The composite's L4 agreement under the three-repeat rule"
+          "where": "The composite's L4 agreement"
         }
       ]
     },
@@ -2763,6 +2776,7 @@
       "label": "One cell",
       "order": 1,
       "plain": "The current focus: a coherent model of one cell, where many processes share the same inventories.",
+      "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue. Its round shape is the picture's choice: the engine gives a cell a volume and a membrane area, not a shape. The neighbours drawn round it are scenery.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -2775,6 +2789,7 @@
       "label": "Tissue",
       "order": 2,
       "plain": "Sheets of coupled cells run today. An integrated tissue unit with mechanics and the lifecycle is a later gate.",
+      "note": "The sheet stands for skin-like tissue: a single layer of cells. It is drawn lying over the brain of the placeholder worm for the scales only; the simulated sheet is not that animal's tissue. The cells outlined beyond the sheet's edge are scenery.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -2788,7 +2803,7 @@
       "order": 3,
       "status": "planned",
       "plain": "A first whole organ, defined as data. Planned; the organ and species are not yet chosen.",
-      "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. Nothing at this scale is simulated. The sheet of cells is drawn on the worm's head, above the brain, so that the scales follow one another; it is not the worm's tissue. The sizes are indicative.",
+      "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. Nothing at this scale is simulated. The sheet of cells stands for skin-like tissue lying over the brain, drawn on the worm's head so that the scales follow one another; it is not the worm's tissue. The brain's own cells are neurons and glia, which Cells does not model. The sizes are indicative.",
       "sources": [
         {
           "path": "docs/ROADMAP.md",
@@ -2802,7 +2817,7 @@
       "order": 4,
       "status": "planned",
       "plain": "Interacting organ systems, and in time whole animals. A long-term goal; nothing is built.",
-      "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. Nothing at this scale is simulated, and no species has been chosen. The sheet of cells is drawn on its head for the scales only. The sizes are indicative.",
+      "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. Nothing at this scale is simulated, and no species has been chosen. The sheet of cells stands for skin-like tissue and is drawn on the worm's head for the scales only. The sizes are indicative.",
       "sources": [
         {
           "path": "README.md",

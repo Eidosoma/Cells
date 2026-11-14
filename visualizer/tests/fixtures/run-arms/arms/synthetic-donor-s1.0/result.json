@@ -1,0 +1,29 @@
+{
+ "arm": "synthetic-donor-s1.0",
+ "engine_models": [
+  "none (synthetic fixture: no engine ran)"
+ ],
+ "dt": 0.005,
+ "end_step": 6000,
+ "end_s": 30.0,
+ "planned_end_s": 60.0,
+ "stop": "refusal",
+ "refusal": {
+  "step": 6200,
+  "time_s": 31.0,
+  "failed": [
+   "field_not_converged"
+  ],
+  "state_kept": "the last accepted row before the refusal"
+ },
+ "records": 6,
+ "provenance": {
+  "argv": [
+   "/home/nobody/checkout/validation/driver.py",
+   "arm"
+  ],
+  "host": "fixture-host-01",
+  "revision": null,
+  "source": "/mnt/nowhere/run-arms/source-01/validation/tissue/heredity_turnover_literature.py"
+ }
+}

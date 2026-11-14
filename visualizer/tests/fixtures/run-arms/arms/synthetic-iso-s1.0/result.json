@@ -1,0 +1,22 @@
+{
+ "arm": "synthetic-iso-s1.0",
+ "engine_models": [
+  "none (synthetic fixture: no engine ran)"
+ ],
+ "dt": 0.005,
+ "end_step": 12000,
+ "end_s": 60.0,
+ "planned_end_s": 60.0,
+ "stop": "planned end",
+ "refusal": null,
+ "records": 10,
+ "provenance": {
+  "argv": [
+   "/home/nobody/checkout/validation/driver.py",
+   "arm"
+  ],
+  "host": "fixture-host-01",
+  "revision": null,
+  "source": "/mnt/nowhere/run-arms/source-01/validation/tissue/heredity_turnover_literature.py"
+ }
+}
