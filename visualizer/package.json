@@ -1,0 +1,23 @@
+{
+  "name": "cells-visualizer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "3D viewer for the Cells architecture map and, later, experiment replays. Tooling: reads the checkout and saved run outputs; never part of the engine.",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "extract": "python3 tools/extract_architecture.py",
+    "check": "node tools/check_scene.mjs data/architecture/architecture.scene.json",
+    "serve": "node tools/serve.mjs",
+    "export": "node tools/export_page.mjs",
+    "shot": "node tools/screenshot.mjs",
+    "test": "node --test tests/"
+  },
+  "dependencies": {
+    "three": "0.170.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

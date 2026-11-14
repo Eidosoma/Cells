@@ -1,0 +1,5 @@
+# Dependencies and generated pages. Sources live here; exported pages go to
+# out/ or to /mnt/workspaces/Cells (see README.md).
+node_modules/
+out/
+*.log
