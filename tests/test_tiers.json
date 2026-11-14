@@ -42,7 +42,8 @@
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-9400bc6/measured.json",
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-17c3407/measured.json",
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-7cbff00/measured.json",
-  "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-7d8c226/measured.json"
+  "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-7d8c226/measured.json",
+  "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-8d94451/measured.json"
  ],
  "measured_provenance": [
   {
@@ -352,6 +353,13 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T08:59:44+00:00"
+  },
+  {
+   "git_revision": "8d9445171f303268225eec01e3d3b0c9ecd7b650",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T10:58:00+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2176,6 +2184,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 20
+    }
+   },
+   {
+    "file": "tests/unit/test_secreted_species_closed_forms.py",
+    "seconds": 1.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_secreted_species_judged_refusal.py",
+    "seconds": 0.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {

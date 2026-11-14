@@ -62,11 +62,15 @@ class Geometry:
         if kind not in ("exact", "planar"):
             raise ValueError("face kind is 'exact' or 'planar'")
         edge = np.concatenate(([e[0]], e[1:-1], [e[-1]]))  # The edge each face crosses.
+        # 4 pi r_a r_b evaluated left to right, as before the planar kind was added: the default
+        # world's bindings stay bitwise (the species crossrev's record at b102da4).
         return [
             (
                 names[i],
                 names[i + 1],
-                4.0 * math.pi * (r[i] * r[i + 1] if kind == "exact" else edge[i] ** 2),
+                4.0 * math.pi * r[i] * r[i + 1]
+                if kind == "exact"
+                else 4.0 * math.pi * edge[i] ** 2,
                 r[i + 1] - r[i],
             )
             for i in range(len(names) - 1)
