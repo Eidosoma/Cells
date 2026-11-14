@@ -10,6 +10,7 @@ and a general feature, never one built for one study (D144).
 | [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; follows FR-1 | A design note after FR-1's, settling retrieval's energy source (below) |
 | [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; specified as a door in D150 §2.5 | A design note from its own sources (below) |
 | [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Logged | A design note after FR-1's and FR-4's (below) |
+| [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)); no code yet.** Three narrower items are recorded as consumer registrations | The channel target in the coupling operator's milestone 1 (in progress); the routing door; the regulatory state as a prior condition (below) |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Logged | A design note after FR-1's, with the energy-pool and charged-reaction doors (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -280,3 +281,41 @@ Calibration is the requester's to supply, with measurements.
 - **The accounting is FR-1's transfer bookings,** with both sides reconciled.
 - **Exocytic fusion** is FR-2's direction in reverse, with the compartment's contents released.
 - **The order.** After FR-1 and FR-4, with the routing door, as its dependencies require.
+
+## FR-6 — Species-driven control factors
+
+**Logged 14 November 2026, priority 2** (the request's label). The general request is **addressed by
+an accepted design, with no code yet.** The inventory-coupling note (D155 item 1, scoped by D156;
+[INVENTORY_COUPLING_DESIGN.md](INVENTORY_COUPLING_DESIGN.md)) was accepted on 14 November.
+- **What it specifies:** `species_regulated_availability@1` reads a concentration from @3's own amount
+  rows, through Hill laws, into a factor F ∈ [b, 1]. `hill_regulated_two_state@1` serves slow
+  sources.
+- **What the requester withdraws:** the general request. Its code started on 14 November, with
+  milestone 1 (the contract fit) in progress.
+
+**Three narrower items remain, recorded as consumer registrations, in the requester's order:**
+1. **The channel-population availability target** (the note's milestone 1; ruling 12).
+   - The junction target is accepted. The channel target is the one this study needs, because a
+     delivered template's effect on a cell's electrical behaviour runs through channel
+     availability.
+   - Leaks and pumps on the same path would cover the rest.
+   - *Mapping:* probe P1, the channel path, is in milestone 1 now. Leaks and pumps are the note's
+     next targets on the same path.
+2. **The routing door (§2): a factor on another operator's control,** specifically a turnover rate,
+   an exchange rate and a reaction multiplier.
+   - This study needs it twice: for a release rate that reads a compartment's pH (FR-5 part 2),
+     and for a production rate driven by a delivered template (FR-7).
+   - The requester asks for nothing to be built now. It registers as a second consumer, so the
+     door is not designed for one.
+   - *Mapping:* recorded against D156's named door, beside the division trigger.
+3. **The two-state regulatory fraction as a per-cell slow state,** used for a cell's *prior*
+   condition, set before a dose arrives. That is the variable the study turns on: the same
+   formulation given to differently conditioned cells.
+   - It matches the GZMK review's "slow, writable per-cell state" row.
+   - *Mapping:* the note's state has a declared initial value per cell (s₀), and interventions
+     write it (`regulatory_writes`). So a prior condition is a declared s₀ or a write before the
+     dose. Its version 1 refuses replaced slots (version 1.1).
+
+**Why it was general, for the record:** morphogen concentration driving a response, quorum sensing,
+substrate induction, and any drug–effect relation. The note's own consumers: Track R's cycle gate,
+GZMK item 6, the causal-carriers row and E15.

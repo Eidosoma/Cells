@@ -5303,6 +5303,18 @@ supplied the request (FR-1), and it is logged in
   - re-expressing the injury law in the composite, a case of the old-family decision (D156).
 - **Design first (D142),** as a general feature (D144).
 
+## D162: Species-driven control factors (FR-6) are logged as addressed by the accepted coupling design
+
+2026-11-14. The user supplied the request (FR-6), at the requester's priority 2, logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-6--species-driven-control-factors).
+- **The general request is addressed by the accepted inventory-coupling design** (D155, D156), with
+  no code yet.
+- **Three narrower items are recorded as consumer registrations:**
+  - the channel target, in the coupling operator's milestone 1;
+  - the routing door to other operators' controls, with a second consumer (FR-5, FR-7);
+  - the regulatory state as a cell's prior condition, through its declared initial value and
+    writes.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
