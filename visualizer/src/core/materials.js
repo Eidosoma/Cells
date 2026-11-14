@@ -138,3 +138,34 @@ export function glyphSprite(text, colour, size = 1) {
   sprite.scale.setScalar(size);
   return sprite;
 }
+
+/**
+ * Gives a standard material a soft rim: a little extra light where the surface turns
+ * away from the viewer, and optionally more opacity there (glass). The uniform objects
+ * exist from the start, so colours can be set before the shader is compiled.
+ */
+export function soften(material, { rim = 0.3, power = 2.4, alphaRim = 0 } = {}) {
+  const uniforms = {
+    uRimColor: { value: new THREE.Color(1, 1, 1) },
+    uRimStrength: { value: rim },
+    uRimPower: { value: power },
+    uAlphaRim: { value: alphaRim },
+  };
+  material.userData.rim = uniforms;
+  material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, uniforms);
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", "#include <common>\nuniform vec3 uRimColor;\nuniform float uRimStrength;\nuniform float uRimPower;\nuniform float uAlphaRim;")
+      .replace(
+        "#include <opaque_fragment>",
+        [
+          "float rimTerm = pow(1.0 - clamp(abs(dot(normalize(vViewPosition), normal)), 0.0, 1.0), uRimPower);",
+          "outgoingLight += uRimColor * rimTerm * uRimStrength;",
+          "diffuseColor.a = clamp(diffuseColor.a + uAlphaRim * rimTerm, 0.0, 1.0);",
+          "#include <opaque_fragment>",
+        ].join("\n")
+      );
+  };
+  material.customProgramCacheKey = () => "cells-soft-rim";
+  return material;
+}

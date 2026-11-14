@@ -71,7 +71,8 @@ export class Stage {
   }
 
   frame(time) {
-    const dt = Math.min(100, time - this.last);
+    // A frame's timestamp can be a little earlier than the clock read when it was asked for.
+    const dt = Math.max(0, Math.min(100, time - this.last));
     this.last = time;
     let animating = this.rig.update(dt);
     if (document.visibilityState === "visible") {

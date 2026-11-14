@@ -19,6 +19,16 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .labels .label.is-off { opacity: 0; pointer-events: none; }
 .label-part { font-size: 11.5px; font-weight: 500; line-height: 1.2; padding: 2px 6px; border-radius: 5px; color: var(--fg); background: color-mix(in srgb, var(--bg) 80%, transparent); }
 .label-part::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 8px; background: var(--muted); opacity: .7; }
+.label-part.is-callout::after { display: none; }
+.label-part .swatch { width: 8px; height: 8px; margin-right: 6px; vertical-align: 0; }
+.label-part .swatch-failed::before, .label-part .swatch-failed::after { width: 7px; }
+.leaders { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.leaders path { fill: none; stroke: var(--muted); stroke-width: 1; opacity: .7; }
+.leaders circle { fill: var(--bg-raised); stroke: var(--fg); stroke-width: 1.2; }
+.leaders .lead-off { display: none; }
+.leaders .lead-dim { opacity: .2; }
+.leaders path.lead-focus { stroke: var(--fg); stroke-width: 1.6; opacity: 1; }
+.leaders circle.lead-focus { fill: var(--fg); }
 .label-part:hover { background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); }
 .label-part.is-dim { opacity: .38; }
 .label-part.is-focus { background: var(--fg); color: var(--bg); font-weight: 600; opacity: 1; }
@@ -126,6 +136,17 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .rail .rail-title { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 4px 8px 2px; }
 .has-panel .rail { display: none; }
 
+.view { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 64px; padding: 8px 10px 9px; display: grid; gap: 6px; width: 236px; }
+.seg-row { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 8px; }
+.seg-label { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; padding: 2px; border-radius: 8px; background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.seg button { padding: 4px 6px; border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--bg-raised); color: var(--fg); box-shadow: 0 0 0 1px var(--line); }
+.view-note { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.scalebar { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; justify-items: end; gap: 4px; pointer-events: none; }
+.scalebar-line { height: 5px; border: 1.5px solid var(--fg); border-top: 0; }
+.scalebar-text { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--fg); background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1px 6px; border-radius: 5px; }
+.has-panel .scalebar { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 376px); }
 .fallback { position: absolute; inset: 64px 0 0 0; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); color: var(--muted); }
 
 /* ---------------------------------------------------------------- narrow screens */
@@ -139,8 +160,14 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
   cells-legend:not(.is-open) .legend-body { display: none; }
   cells-panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 56%; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 3; }
   cells-index { top: 56px; }
+  .view { top: 54px; width: 208px; padding: 6px 8px; gap: 4px; }
+  .view-note { display: none; }
+  .seg-row { grid-template-columns: 46px 1fr; }
+  .has-panel .scalebar, .has-panel .view { display: none; }
+  .scalebar { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
+  .seg button { padding: 4px 2px; font-size: 12px; white-space: nowrap; }
   .caveat { width: calc(100% - 32px); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
-  .rail { top: 104px; transform: none; right: max(10px, env(safe-area-inset-right, 0px)); }
+  .rail { top: 124px; transform: none; right: max(10px, env(safe-area-inset-right, 0px)); }
   .rail .rail-title { display: none; }
   .rail button { padding: 5px 8px 5px 6px; font-size: 12.5px; }
   .has-panel cells-legend, .has-panel .caveat { display: none; }

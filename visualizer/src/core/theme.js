@@ -7,6 +7,8 @@ const TOKENS = [
   "st-qualified", "st-landed", "st-established", "st-designed", "st-planned",
   "st-failed", "st-external", "st-unstated",
   "kind-requires", "kind-writes", "kind-conflicts", "kind-runs", "kind-extends",
+  "bio-membrane", "bio-cyto", "bio-nucleus", "bio-er", "bio-ribosome", "bio-mito", "bio-protein", "bio-pump",
+  "bio-fuel", "bio-water", "bio-signal", "bio-ion", "bio-wound", "bio-cell",
 ];
 
 const camel = (name) => name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());

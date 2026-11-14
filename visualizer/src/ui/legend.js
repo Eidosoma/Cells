@@ -3,7 +3,7 @@
 import { h, emit, statusSwatch } from "./dom.js";
 
 class CellsLegend extends HTMLElement {
-  render({ model, counts, isolate, lens, open, together, togetherActive }) {
+  render({ model, counts, isolate, lens, open, together, togetherActive, view }) {
     this.replaceChildren();
     const items = model.raw.statuses.map((status) => {
       const count = counts.get(status.id) || 0;
@@ -43,9 +43,11 @@ class CellsLegend extends HTMLElement {
       );
     }
     if (lens === "cell") {
-      body.append(
-        h("p", { class: "legend-note" }, statusSwatch("illustration"), "Grey outlines and lines are drawn for orientation only.")
-      );
+      const how =
+        view?.colour === "status"
+          ? "Colour and form show status. Clear glass shapes and grey lines are scenery."
+          : "Colour shows the kind of part. The dot beside each name is its status; planned parts are grey sketches. Clear glass shapes are scenery.";
+      body.append(h("p", { class: "legend-note" }, statusSwatch("illustration"), how));
     }
     this.append(
       h(

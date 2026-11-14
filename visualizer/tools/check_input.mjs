@@ -111,7 +111,7 @@ try {
   await clear();
 
   // Inside the cut-away octant the membrane is clipped; a click there must not select it.
-  const cut = await screen(probe("cutFloor"));
+  const cut = await screen(probe("cutGel"));
   await click(cut.x, cut.y);
   const inCut = await selected();
   check("cell: a click in the cut-away does not select the membrane", inCut !== "cap.membrane" && inCut !== null, String(inCut));
@@ -123,6 +123,32 @@ try {
   const onSkin = await selected();
   check("cell: a click on the uncut side reaches the membrane", ["cap.membrane", "cap.channels", "cap.pumps", "cap.division"].includes(onSkin), String(onSkin));
   await clear();
+
+  // ---------------------------------------------------------------- the view switches
+  const press = async (text) => {
+    const spot = await evaluate(`(() => {
+      const button = [...${VIEWER}.shadowRoot.querySelectorAll(".seg button")].find((item) => item.textContent === "__TEXT__");
+      const box = button.getBoundingClientRect();
+      return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+    })()`.replace("__TEXT__", text));
+    await click(spot.x, spot.y);
+  };
+  await press("Status");
+  check("switch: Colour to Status recolours the cell", (await evaluate(`${VIEWER}.current.colourBy`)) === "status");
+  await press("Biology");
+  await press("To scale");
+  const real = await evaluate(`(() => { const lens = ${VIEWER}.current; return { mode: lens.sizeMode, shown: lens.zones.filter((zone) => zone.root.visible).map((zone) => zone.name + ":" + zone.mode).join(" ") }; })()`);
+  check("switch: Sizes to To scale shows the to-scale cell and hides the schematic one", real.mode === "real" && real.shown.includes("cell:real") && !real.shown.includes("cell:schematic"), real.shown);
+  const nucleusToScale = await screen(probe("nucleus"));
+  await click(nucleusToScale.x, nucleusToScale.y);
+  check("switch: the to-scale nucleus can be clicked", (await selected()) === "cap.circuits", String(await selected()));
+  await clear();
+  await press("Schematic");
+  // Labels are rebuilt for the mode and shown after the next drawn frame; wait for one.
+  for (let tries = 0; tries < 60; tries++) {
+    if (await evaluate(`Boolean(${VIEWER}.shadowRoot.querySelector(".label-part:not(.is-off)"))`)) break;
+    await sleep(250);
+  }
 
   // ---------------------------------------------------------------- input that starts on a label
   const label = await evaluate(`(() => {
@@ -168,7 +194,7 @@ try {
     await sleep(60);
   }
   await sleep(700);
-  const zoomed = await evaluate(`(() => { const lens = ${VIEWER}.current; return { distance: lens.stage.rig.distance, cell: lens.zones.cell.fade, tissue: lens.zones.tissue.fade, stop: lens.activeStop }; })()`);
+  const zoomed = await evaluate(`(() => { const lens = ${VIEWER}.current; const fade = (name) => lens.zones.find((zone) => zone.name === name && lens.shows(zone)).fade; return { distance: lens.stage.rig.distance, cell: fade("cell"), tissue: fade("tissue"), stop: lens.activeStop }; })()`);
   check("zoom: wheeling out from the cell fades in the sheet", zoomed.tissue > 0.9 && zoomed.cell < 0.1, JSON.stringify(zoomed));
   check("zoom: the scale rail follows", zoomed.stop === "tissue", zoomed.stop);
   const cellOfSheet = await screen(`${VIEWER}.current.probes.sheetCell.clone()`);

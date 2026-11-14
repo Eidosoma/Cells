@@ -72,7 +72,7 @@ export class OrbitRig {
     if (this.flight) {
       const flight = this.flight;
       flight.elapsed += dt;
-      const t = ease(Math.min(1, flight.elapsed / flight.duration));
+      const t = ease(Math.max(0, Math.min(1, flight.elapsed / flight.duration)));
       this.target.lerpVectors(flight.from.target, flight.to.target, t);
       this.distance = Math.exp(Math.log(flight.from.distance) * (1 - t) + Math.log(flight.to.distance) * t);
       this.azimuth = flight.from.azimuth + (flight.to.azimuth - flight.from.azimuth) * t;

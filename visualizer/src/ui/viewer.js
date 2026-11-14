@@ -78,6 +78,10 @@ class CellsViewer extends HTMLElement {
     this.index = h("cells-index", { class: "card", hidden: true });
     this.caveat = h("p", { class: "caveat", hidden: true });
     this.rail = h("nav", { class: "rail card", hidden: true, "aria-label": "Scale" });
+    this.viewCard = h("div", { class: "view card", hidden: true });
+    this.scaleLine = h("span", { class: "scalebar-line" });
+    this.scaleText = h("span", { class: "scalebar-text" });
+    this.scaleBar = h("div", { class: "scalebar", hidden: true }, this.scaleLine, this.scaleText);
     this.hint = h("p", { class: "hint" }, "Drag to turn · scroll to zoom · click a part");
     this.fallback = h("p", { class: "fallback", hidden: true });
     this.frame = h(
@@ -88,6 +92,8 @@ class CellsViewer extends HTMLElement {
       this.hint,
       this.caveat,
       this.rail,
+      this.viewCard,
+      this.scaleBar,
       this.legend,
       this.index,
       this.panel,
@@ -122,7 +128,9 @@ class CellsViewer extends HTMLElement {
     }
     if (this.stage) {
       this.labels = new LabelLayer(this.labelBox, this.stage, (id) => this.select(id, { fly: false }));
+      this.labels.blocked = () => this.blockedRects();
       this.stage.afterRender.add(() => this.labels.layout());
+      this.stage.afterRender.add(() => this.updateScaleBar());
       this.stage.onTick((dt, time) => this.current?.update(dt, time) || false);
       this.stage.onPalette((palette) => {
         for (const lens of this.lenses.values()) lens.applyPalette(palette);
@@ -143,6 +151,8 @@ class CellsViewer extends HTMLElement {
     if (query.get("still")) this.frame.classList.add("is-still");
     const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || LENSES[0].id;
     this.setLens(LENSES.some((lens) => lens.id === wanted) ? wanted : LENSES[0].id);
+    if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
+    if (query.get("colour")) this.current?.setColourBy?.(query.get("colour"));
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
     if (this.stage && (query.get("azimuth") || query.get("polar"))) {
       const view = {};
@@ -263,6 +273,14 @@ class CellsViewer extends HTMLElement {
     this.caveat.hidden = !chrome.caveat;
     this.hint.hidden = Boolean(chrome.caveat) || !this.stage;
     this.caveat.textContent = chrome.caveat || "";
+    this.viewCard.hidden = !chrome.view;
+    if (chrome.view) {
+      this.viewCard.replaceChildren(
+        this.segmented("Colour", [["biology", "Biology"], ["status", "Status"]], chrome.view.colour, (value) => this.current.setColourBy(value)),
+        this.segmented("Sizes", [["schematic", "Schematic"], ["real", "To scale"]], chrome.view.size, (value) => this.current.setSizeMode(value)),
+        h("p", { class: "view-note" }, chrome.view.size === "real" ? "Sizes and numbers nearer a real cell, about 20 µm across. Dots stand for what is too small to see; counts are indicative." : "Parts are enlarged and few, so each can be seen.")
+      );
+    }
     this.rail.hidden = !chrome.rail;
     if (chrome.rail) {
       this.rail.replaceChildren(
@@ -274,11 +292,60 @@ class CellsViewer extends HTMLElement {
     }
   }
 
+  segmented(label, options, active, onPick) {
+    return h(
+      "div",
+      { class: "seg-row" },
+      h("span", { class: "seg-label" }, label),
+      h(
+        "div",
+        { class: "seg", role: "group", "aria-label": label },
+        options.map(([value, text]) => h("button", { type: "button", "aria-pressed": String(value === active), onclick: () => onPick(value) }, text))
+      )
+    );
+  }
+
+  /** Panels that labels must not run under, in the viewer's own coordinates. */
+  blockedRects() {
+    const origin = this.getBoundingClientRect();
+    return [this.legend, this.viewCard, this.rail, this.panel, this.index]
+      .filter((element) => !element.hidden)
+      .map((element) => element.getBoundingClientRect())
+      .filter((rect) => rect.width && rect.height)
+      .map((rect) => ({ left: rect.left - origin.left, top: rect.top - origin.top, right: rect.right - origin.left, bottom: rect.bottom - origin.top }));
+  }
+
+  /** A bar of a round physical length at the distance the camera is looking at. */
+  updateScaleBar() {
+    const info = this.current?.scaleInfo?.();
+    let key = "none", width = 0, text = "";
+    if (info?.micronsPerUnit) {
+      const { camera, rig, height } = this.stage;
+      const pixelsPerMicron = height / (2 * rig.distance * Math.tan((camera.fov * Math.PI) / 360)) / info.micronsPerUnit;
+      const most = 150 / pixelsPerMicron; // the longest bar we would draw, in micrometres
+      const power = Math.pow(10, Math.floor(Math.log10(most)));
+      const length = [5, 2, 1].map((step) => step * power).find((value) => value <= most) ?? power;
+      width = Math.round(length * pixelsPerMicron);
+      const size = length >= 10000 ? `${length / 10000} cm` : length >= 1000 ? `${length / 1000} mm` : length >= 1 ? `${length} µm` : `${Math.round(length * 1000)} nm`;
+      text = info.note ? `${size} · ${info.note}` : size;
+      key = `${width}|${text}`;
+    } else if (info?.note) {
+      text = info.note;
+      key = text;
+    }
+    if (key === this.scaleKey) return;
+    this.scaleKey = key;
+    this.scaleBar.hidden = key === "none";
+    this.scaleLine.hidden = !width;
+    this.scaleLine.style.width = `${width}px`;
+    this.scaleText.textContent = text;
+  }
+
   renderLegend() {
     const counts = new Map();
     for (const entity of this.shownEntities()) if (entity.status) counts.set(entity.status, (counts.get(entity.status) || 0) + 1);
     const chrome = this.current?.chrome?.() || {};
-    this.legend.render({ model: this.model, counts, isolate: this.state.isolate, lens: this.state.lens, open: this.state.legendOpen, together: chrome.together, togetherActive: chrome.togetherActive });
+    this.legend.render({ model: this.model, counts, isolate: this.state.isolate, lens: this.state.lens, open: this.state.legendOpen, together: chrome.together, togetherActive: chrome.togetherActive, view: chrome.view });
   }
 
   renderIndex() {

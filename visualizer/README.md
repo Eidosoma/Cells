@@ -15,16 +15,21 @@ One data file, the scene, drawn through two lenses:
 
 | Lens | What you see |
 | --- | --- |
-| **Cell and scales** | What Cells can simulate, drawn where it happens: a cutaway cell, the sheet of cells around it, and outlines of the organ and whole organism it would belong to. Zoom is continuous from molecules to organism |
+| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and outlines of the organ and whole organism it would belong to. Zoom is continuous from molecules to organism, with a scale bar |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
 
-Two things are encoded, and kept apart:
+Three things are encoded, and kept apart:
 
-- **Status** sets colour and form: qualified or judged, landed, established, designed,
-  planned, failed, external reference. Built parts are solid; parts not built are ghosts.
+- **Status**: qualified or judged, landed, established, designed, planned, failed,
+  external reference. Built parts are solid; parts not built are sketches. In the engine
+  lens colour shows status too. In the cell lens colour shows the kind of part by default
+  (purple nucleus, orange mitochondria), and the dot beside each name shows its status;
+  the "Colour" switch turns the cell to status colours.
 - **Representation** says how the engine treats a capability: simulated, modelled in
   aggregate, prescribed, or illustration only. Shapes that stand for modelled populations
   (channels, pumps, protein cages) are illustrations and are labelled so.
+- **Size mode** (cell lens): "Schematic" enlarges parts and shows few, so each can be
+  seen. "To scale" draws sizes and numbers nearer a real cell; see below.
 
 Rules the map keeps, so it can be shown outside the team:
 
@@ -35,6 +40,27 @@ Rules the map keeps, so it can be shown outside the team:
 - The cell picture carries the README's caveat: capabilities vary by model, and
   whole-cell integration is ongoing. The legend's "Runs together in" filter shows which
   parts run together in one model today.
+
+## Sizes in the cell view
+
+One unit is one micrometre, and the scale bar reads in real units at every zoom. The
+"To scale" mode uses typical textbook values for a generic animal cell. They are orders
+of magnitude, not measurements of the cells that Cells simulates, and counts are
+indicative.
+
+| Part | Drawn to scale as | In schematic mode |
+| --- | --- | --- |
+| Cell | 20 µm across | the same |
+| Nucleus | 6 µm across | the same |
+| Mitochondria | 120 capsules, about 0.6 µm wide and 2 µm long (a real cell holds hundreds or more) | 9, about 2 µm wide, three cut open to show the folds |
+| Endoplasmic reticulum | thin sheets close together, tubules through the cell, ribosomes as dots | four thick ribbons with ribosome beads |
+| Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |
+| Channels, pumps, junction channels | thousands of dots; shapes about 10 nm across in the close-up | a few blocks set in the membrane |
+| Protein cages, ATP, ions, small molecules | dots and haze | a few beads and clusters |
+
+In "To scale" the close-up of the membrane is to scale as well: a bilayer about 4.5 nm
+thick, a channel about 9 nm across, and a 10 nm scale bar. For comparison, the cells of
+the E07 sheet are about 11 µm across by their declared volume (0.75 pL).
 
 ## Run it
 
@@ -143,7 +169,10 @@ Ideas kept for after the basics (the user, 14 November 2026):
 
 ## Known limits
 
-- The molecular scale is one illustrative membrane patch.
+- The molecular scale is one membrane patch with one channel and one pump.
+- "To scale" sizes are generic textbook values, as the table above says. No capability's
+  dots are counted from a model's actual abundances yet; that would be a good use of the
+  run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
 - Screenshots use software WebGL; performance on real hardware is not measured.
 - Established (slate) and landed (blue) differ mainly in saturation. The four status hues

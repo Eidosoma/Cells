@@ -6,6 +6,10 @@
   --st-qualified: #1baf7a; --st-landed: #2a78d6; --st-established: #71869c; --st-designed: #eda100;
   --st-planned: #9aa8b6; --st-failed: #d03b3b; --st-external: #a1978c; --st-unstated: #aebbc8;
   --kind-requires: #12283a; --kind-writes: #12283a; --kind-runs: #12283a; --kind-conflicts: #d03b3b; --kind-extends: #77889a;
+  /* What each kind of part is drawn in when colour shows biology, not status. */
+  --bio-membrane: #2fb3a3; --bio-cyto: #a3c9ee; --bio-nucleus: #8d68d6; --bio-er: #b59ae8; --bio-ribosome: #f0a24e;
+  --bio-mito: #f0874a; --bio-protein: #3f86e0; --bio-pump: #6877e6; --bio-fuel: #f3b72f; --bio-water: #55b5ef;
+  --bio-signal: #e062a6; --bio-ion: #37b58c; --bio-wound: #e2574c; --bio-cell: #48b9a9;
   --is-dark: 0;
   --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -18,6 +22,9 @@
     --st-qualified: #199e70; --st-landed: #3987e5; --st-established: #6f849a; --st-designed: #c98500;
     --st-planned: #6c7e90; --st-failed: #d03b3b; --st-external: #8f867d; --st-unstated: #52667a;
     --kind-requires: #e6edf3; --kind-writes: #e6edf3; --kind-runs: #e6edf3; --kind-conflicts: #e66767; --kind-extends: #8496a8;
+    --bio-membrane: #2aa596; --bio-cyto: #5f93c8; --bio-nucleus: #8a66d8; --bio-er: #a88ce0; --bio-ribosome: #e8963f;
+    --bio-mito: #ea7d3f; --bio-protein: #4a90ea; --bio-pump: #7482ee; --bio-fuel: #eeb02a; --bio-water: #58b4ee;
+    --bio-signal: #e268ac; --bio-ion: #35ad86; --bio-wound: #e25c52; --bio-cell: #3aa797;
     --is-dark: 1;
     color-scheme: dark;
   }
@@ -28,6 +35,9 @@
   --st-qualified: #199e70; --st-landed: #3987e5; --st-established: #6f849a; --st-designed: #c98500;
   --st-planned: #6c7e90; --st-failed: #d03b3b; --st-external: #8f867d; --st-unstated: #52667a;
   --kind-requires: #e6edf3; --kind-writes: #e6edf3; --kind-runs: #e6edf3; --kind-conflicts: #e66767; --kind-extends: #8496a8;
+  --bio-membrane: #2aa596; --bio-cyto: #5f93c8; --bio-nucleus: #8a66d8; --bio-er: #a88ce0; --bio-ribosome: #e8963f;
+  --bio-mito: #ea7d3f; --bio-protein: #4a90ea; --bio-pump: #7482ee; --bio-fuel: #eeb02a; --bio-water: #58b4ee;
+  --bio-signal: #e268ac; --bio-ion: #35ad86; --bio-wound: #e25c52; --bio-cell: #3aa797;
   --is-dark: 1;
   color-scheme: dark;
 }
