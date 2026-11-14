@@ -15,8 +15,8 @@ listed under [Readings](#readings-of-the-design-taken-here); disagreements go to
 | `validation/reactions/turing_reference.py` | MG0c: Schnakenberg as four mass-action reactions, the dispersion relation, d_c, the band, the fastest mode, the domain modes and the staircase |
 | `validation/reactions/reference_crosschecks.py` | A driver that re-derives the design's development numbers and the tolerance evidence below (`--out DIR`; about 70 s) |
 
-Self-tests: `tests/unit/test_reaction_references.py` (tier 1, about 4 s), which also checks that
-nothing in this folder imports `cells`.
+Self-tests: `tests/unit/test_reaction_references.py` (tier 1, about 6 s under the tier tool),
+which also checks that nothing in this folder imports `cells`.
 
 ## Conventions
 
@@ -91,6 +91,7 @@ All fields are `[R, N]` except `consumption_rate`.
 | `affinity` | – (units of RT) | A_r = Σ α ln a − Σ β ln a − Σ ν μ°/RT on passive routes, 0 on driven ones (the engine's `reaction_affinity_RT`). It is reported whatever m is. |
 | `factor` | – | F_r, the product of the route's Hill factors (1 if none). |
 | `consumption_rate` | s⁻¹ | L_s `[S, N]`, the consumption per amount written with unidirectional fluxes. |
+| `affinity_terms` | – | Σ α \|ln a\| + Σ β \|ln a\| + \|Σ ν μ°/RT\| on passive routes, 0 on driven ones: the scale of A's rounding. |
 
 ### `nr.half_step(net, amounts_fmol, volumes_pL, h_s, RT_pJ_per_fmol, multipliers=None, sites=None, theta=0.5) -> HalfStep`
 
@@ -100,8 +101,9 @@ One SSPRK(3,3) half-step of length h at every node, with its checks and bookings
 | --- | --- | --- |
 | `start`, `end` | [S, N] fmol | n, and the candidate n′ = n + δ. At an idle node `end` is the start array's values, bitwise. |
 | `accepted` | [S, N] fmol | `end` if `admitted`, else `start` (the composite keeps the start state). |
-| `delta` | [S, N] fmol | δ = ν Δξ, computed once (exactly `end − start` at non-idle nodes; Δn = ν Δξ by construction). |
+| `delta` | [S, N] fmol | δ = ν Δξ, computed once (Δn = ν Δξ by construction). What holds bitwise is `end == start + delta`. In floats `end − start` differs from δ by up to ε × `end`. |
 | `extents` | [R, N] fmol | Δξ_r = h (J(Y1) + J(Y2) + 4 J(Y3))/6; 0 at idle nodes. |
+| `gross_extents` | [R, N] fmol | h Σ_k b_k (J⁺ + J⁻)(Y_k), the scale for comparing extents (equal to Δξ on driven routes). |
 | `stages` | [3, S, N] fmol | Y1 = n, Y2, Y3. |
 | `stage_net`, `stage_forward`, `stage_reverse`, `stage_affinity` | [3, R, N] | J, J⁺ (or J), J⁻ (or 0) and A at each stage. |
 | `end_net`, `end_affinity` | [R, N] | J and A at n′. |
@@ -113,16 +115,17 @@ One SSPRK(3,3) half-step of length h at every node, with its checks and bookings
 | `node_class` | [N] str | `"idle"`, `"driven"`, `"passive"` or `"mixed"`, from the multipliers (m > 0 on a sited route). |
 | `non_reversing` | [R, N] bool | The branch test on passive routes at non-idle nodes: sign J(Y1) = sign J(Y2) = sign J(Y3) = sign A(n′), all nonzero. It is reported at passive-only nodes too, where it does not select anything. |
 | `branch` | [R, N] str | Passive routes: `"share"` or `"quadrature"` at mixed nodes, `"node"` at single-class nodes (booked through the node's ΔG), `"idle"` at idle nodes. Driven routes: `""`. |
-| `sign_margin` | [R, N] | min |A| over the three stages and the end (passive routes; NaN elsewhere). Below about 1e-12 the branch is rounding-ambiguous. |
+| `sign_margin` | [R, N] | min \|A\| over the three stages and the end (passive routes; NaN elsewhere). Treat the branch as rounding-ambiguous below 1e-10. |
 | `heat_share`, `heat_quadrature` | [R, N] pJ | Both candidate heats of every passive route at every non-idle node: −Δξ_r Σ_s ν_sr μ̄_s, and h Σ_k b_k RT J_r A_r with b = (1/6, 1/6, 2/3). |
 | `route_heat` | [R, N] pJ | The booked H_r at mixed nodes (the selected candidate), 0 elsewhere. |
-| `mu_bar` | [S, N] pJ/fmol | μ̄_s, the divided-difference potentials (Appendix A's stable form, series below |x| = 1e-6). |
+| `mu_bar` | [S, N] pJ/fmol | μ̄_s, the divided-difference potentials (Appendix A's stable form, series below \|x\| = 1e-6). |
 | `heat`, `work` | [N] pJ | H and W: driven only W = ΔG, H = 0; passive only H = −ΔG, W = 0; mixed H = Σ_passive H_r, W = ΔG + H; idle 0. |
 | `delta_G` | [N] pJ | ΔG_i in the increment form: `chemical + standard_species`. |
 | `chemical` | [N] pJ | RT Σ_s [δ_s (ln(n_s/V) − 1) + (n_s + δ_s) log1p(δ_s/n_s)]. |
 | `standard` | [N] pJ | The booked standard term Σ_r ΔG°′_r Δξ_r, ΔG°′_r = Σ_s ν_sr μ°′_s. |
 | `standard_species` | [N] pJ | Σ_s μ°′_s δ_s, μ°′_s = RT (μ°_s/RT − ln c0); equal to `standard` to rounding. |
-| `delta_G_terms` | [N] pJ | The sum of the absolute values of ΔG's terms, the scale for rounding checks. |
+| `delta_G_terms` | [N] pJ | The sum of the absolute values of ΔG's terms, the scale for rounding checks of ΔG and the standard term. |
+| `heat_terms` | [N] pJ | The rounding scale of H; W's is `heat_terms + delta_G_terms`. At a mixed node it sums, over the passive routes, \|Δξ_r\| Σ_s \|ν_sr μ̄_s\| + RT G_r T_r A_r, where G_r is `gross_extents`, T_r the largest `affinity_terms` and A_r the largest \|A\| over the stages and the end. It covers either branch, including near equilibrium, where H is of order A² but its rounding is of order A. At a passive-only node it is `delta_G_terms`. |
 | `ledger_residual` | [N] pJ | chemical + standard + H − W. |
 
 ### `nr.run_half_steps(net, amounts_fmol, volumes_pL, h_s, count, RT_pJ_per_fmol, multipliers=None, sites=None, theta=0.5) -> HalfStepRun`
@@ -213,8 +216,8 @@ worlds (1e-10 m²) have exactly that.
 | `chain_laplacian(N, spacing_m)` | | The zero-flux Laplacian [N, N] (m⁻²), whose eigenvalues are −λ_n. |
 | `mode_coefficients(field)` | [..., N] | a [..., N]: a_0 is the mean; a_n = (2/N) Σ_i f_i C[n, i] for n ≥ 1. |
 | `field_from_modes(a)` | [..., N] | f_i = Σ_n a_n C[n, i]. |
-| `dominant_mode(field, species=0)` | [S, N] or [N] | argmax over n ≥ 1 of |a_n| for that species row. Pass the deviation from uniform, or the field itself (a_0 is excluded). |
-| `fit_growth_rate(times, amplitudes)` | s, any | (slope of ln|a| in s⁻¹, RMS residual in ln). |
+| `dominant_mode(field, species=0)` | [S, N] or [N] | argmax over n ≥ 1 of \|a_n\| for that species row. Pass the deviation from uniform, or the field itself (a_0 is excluded). |
+| `fit_growth_rate(times, amplitudes)` | s, any | (slope of ln\|a\| in s⁻¹, RMS residual in ln). |
 | `linear_rates(net, multipliers=None)` | multipliers [R] | (K [S, S] in s⁻¹, p [S] in mM/s) with dc/dt = K c + p. Valid for mass action of order 0 or 1 and A ⇌ B passive routes without factors; otherwise it raises ValueError. |
 | `mode_propagator(K, D, lam, t)` | D [S] m²/s, λ m⁻², t s | expm[(K − λ diag(D)) t] [S, S]. MG0c's 2×2 propagator is `mode_propagator(k * J, (D_U, D_V), λ_n, t)`. |
 | `propagate_modes(K, D, N, h, a0, t, source=None)` | a0 [S, N] | Exact coefficients at t. `source` [S] (field units per second) enters mode 0 only. |
@@ -274,26 +277,33 @@ What the self-tests confirm against §6.4, at a = 0.1, b = 0.9, d = 10:
 
 ## Recommended comparisons and tolerances
 
-The measurements are from `reference_crosschecks.py`
-(`/mnt/workspaces/Cells/reaction-references-20261114-01/crosschecks-2/`). ε = 2.2e-16.
+The measurements are from `reference_crosschecks.py` at commit 5fd695b
+(`/mnt/workspaces/Cells/reaction-references-20261114-01/crosschecks-3/`). ε = 2.2e-16.
+
+The second implementation (the "variant") differs from the reference in its evaluation orders:
+- exp-log mass action, against the reference's product of powers;
+- the passive net rate as J⁺ − J⁻, against the expm1 form;
+- Shu–Osher stages, against Butcher stages;
+- its own groupings of ΔG, μ̄, the share and the quadrature.
 
 | Comparison | Tolerance | Why |
 | --- | --- | --- |
-| Half-step end amounts against `half_step(...).end` | 1e-12 relative, per species and node | The same formulas. Two correct float implementations with different evaluation orders (exp-log against product mass action, J⁺ − J⁻ against the expm1 form, Shu–Osher against Butcher stages) differed by at most 4.7 ε. |
-| Extents against `.extents` | 1e-12 × the gross extent h Σ_k b_k (J⁺ + J⁻)(Y_k) (for driven routes, J) | Near equilibrium a passive route's net extent is a small difference of gross fluxes. The same pair differed by at most 21 ε of the gross extent. |
-| Δn = ν Δξ and moiety changes | bitwise if the engine forms Δn as ν Δξ once; otherwise 4 ε Σ|ν Δξ| | By construction. |
-| ΔG (that is, W − H at every node) | 1e-12 × `terms` from `exact_energy_change(delta_fmol=engine δ)` (§3.4 item 4) | This reference's float increment form is within 1.06 ε of the 50-digit value. An engine within a few tens of ε is at rounding; 1e-12 is the note's bar. |
+| Half-step end amounts against `half_step(...).end` | 1e-12 relative, per species and node | The same formulas. The variant differed from the reference by at most 4.7 ε (57 admitted random trials over every law). |
+| Extents against `.extents` | 1e-12 × `gross_extents` | Near equilibrium a passive route's net extent is a small difference of gross fluxes. The variant differed by at most 42 ε of `gross_extents`. |
+| Δn = ν Δξ and moiety changes | bitwise if the engine forms Δn as ν Δξ once; otherwise 4 ε Σ\|ν Δξ\| | By construction. |
+| ΔG (that is, W − H at every node) | 1e-12 × `terms` from `exact_energy_change(delta_fmol=engine δ)` (§3.4 item 4) | This reference's float increment form is within 1.06 ε of the 50-digit value, and the variant within 2.7 ε of `delta_G_terms`. 1e-12 is the note's bar. |
 | Standard term | 1e-12 × `terms`, against `standard_routes` from `exact_energy_change(extents_fmol=engine Δξ)` | As for ΔG. |
 | Single-class H and W | as ΔG; W = 0 or H = 0 exactly | The booking is ±ΔG. |
-| Mixed-node H (and W = ΔG + H) against `.heat` | 1e-12 × (Σ_r |route_heat| + `delta_G_terms`) | Same formulas, rounding only, provided the branches agree. |
-| The branch per passive route | must equal `.branch` wherever `sign_margin` > 1e-10 | The selection is a sign test. Where |A| is within rounding of 0 (a state built exactly at the selection), either branch is correct, and the node's H may then match either candidate (`heat_share` or `heat_quadrature`). |
-| Refusals | `admitted`, `stage_condition_ok` and `positive_ok` must agree wherever |hL_max − θ| > 1e-12 θ | An inclusive comparison at the bound is decided by rounding. For example, probe 2c's h(k_f + k_r) = 0.55 sits exactly at h L = 1/2, and this reference refuses it at h L = 0.5000000000000001. Test either side, not at equality. |
+| Mixed-node H against `.heat` | 1e-12 × `heat_terms` | Measured over 932 mixed nodes from 233 admitted of 240 trials. Half the trials started every passive route within about 1e-6 of its equilibrium, and half were at h L ≈ 0.4. There were 479 routes on the quadrature and no branch disagreements. H differed by at most 0.38 ε of `heat_terms`. Do not use \|H\| as the scale: against \|H\| the same differences reach 4.4e-11, because near equilibrium H is of order A² while its rounding is of order A. |
+| Mixed-node W | 1e-12 × (`heat_terms` + `delta_G_terms`) | W = ΔG + H. The variant differed by at most 6.9 ε of that scale. |
+| The branch per passive route | must equal `.branch` wherever `sign_margin` > 1e-10 | The selection is a sign test. Where \|A\| is within rounding of 0 (a state built exactly at the selection), either branch is correct, and the node's H may then match either candidate (`heat_share` or `heat_quadrature`). |
+| Refusals | `admitted`, `stage_condition_ok` and `positive_ok` must agree wherever \|hL_max − θ\| > 1e-12 θ | An inclusive comparison at the bound is decided by rounding. For example, probe 2c's h(k_f + k_r) = 0.55 sits exactly at h L = 1/2, and this reference refuses it at h L = 0.5000000000000001. Test either side, not at equality. |
 | Idle nodes, and zero multipliers everywhere | bitwise against the start | The start is selected. |
 | H and W against `integrate_node` (dt studies, onset and crossing cases) | judge the engine's error; the reference's own error is ≤ 1e-12 relative | Between rtol 1e-11 and 1e-13, H agreed to 6e-13, and the closure was ≤ 5e-17 pJ. For a pinned tolerance, run at two rtols. |
 | Closed forms (turnover, Michaelis–Menten, equilibria) | rounding (Michaelis–Menten: a few ε × (1 + V_max t/K_M), the problem's own conditioning) | Analytic. |
 | Linear chain against `propagate_modes` | the engine's second-order error; the reference is exact to about 1e-14 | Mode-wise expm agreed with the full matrix exponential to ≤ 1e-13 of the field (B4 measured 2.5e-14). |
-| The engine's linear worlds against `strang_mode_map` iterated k times | about 1e-12 × max|a| per step, accumulating at most about k ε (for example 1e-10 for 10⁴ steps) | The engine's own discrete map, if its order is P(dt/2) I(dt) P(dt/2) and the transport is Appendix A's polynomial. A mismatch above rounding is an implementation or composition finding, not a discretisation error. |
-| MG0c Q1 (single-mode starts) against `mode_propagator` | the engine's second-order error, pinned from the dt study | Exact for the linearised system. Against the nonlinear chain at amplitude 1e-7, on L/ℓ = 11 for n = 1–6 at 3/|Re λ|, the difference was ≤ 1.2e-8 of the mode at rtol 1e-13 (≤ 1.4e-7 at 1e-12, which is the integrator's floor). The prototype's smallest dt error was 2e-6. |
+| The engine's linear worlds against `strang_mode_map` iterated k times | about 1e-12 × max\|a\| per step, accumulating at most about k ε (for example 1e-10 for 10⁴ steps) | The engine's own discrete map, if its order is P(dt/2) I(dt) P(dt/2) and the transport is Appendix A's polynomial. A mismatch above rounding is an implementation or composition finding, not a discretisation error. |
+| MG0c Q1 (single-mode starts) against `mode_propagator` | the engine's second-order error, pinned from the dt study | Exact for the linearised system. Against the nonlinear chain at amplitude 1e-7, on L/ℓ = 11 for n = 1–6 at 3/\|Re λ\|, the difference was ≤ 1.2e-8 of the mode at rtol 1e-13 (≤ 1.4e-7 at 1e-12, which is the integrator's floor). The prototype's smallest dt error was 2e-6. |
 | MG0c Q6 (the nonlinear pattern) against `integrate_chain` | the engine's error (4.8e-4 to 3e-5 of c* in the prototype) | At rtol 1e-12 the reference's error is many orders below that; confirm at 1e-13 for the judged run. |
 | σ_n, d_c, the band, the staircase | exact (closed forms, about 1e-15) | Q3's fitted growth rate is limited by the fit and the run, not by σ_n. |
 
