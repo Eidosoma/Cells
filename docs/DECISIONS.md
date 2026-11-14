@@ -5581,8 +5581,10 @@ contacting the authors and we will search for the missing data also help if need
 - **Never contact authors.** The missing Pelletier 2021 division data are searched for in public
   sources only, by the user's side and the agent.
 - **Agreed:** values from non-commercial papers are cited, but their tables are never copied into
-  the repository. The 4D model's outputs come at the metabolism stage (D138). *M. pneumoniae* is
-  audited after the first milestone.
+  the repository. The 4D model's outputs come at the metabolism stage (D138).
+- ***M. pneumoniae* is audited soon,** amended the same evening by the user: "But also M. pneumoniae
+  soon for validation if we have more real public data there". The Syn3A agent audits it next,
+  for real measured public data to validate against, and says whether it should lead any stage.
 
 ## Implementation choices and remaining work
 
