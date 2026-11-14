@@ -5263,6 +5263,18 @@ supplied the request (FR-1), and it is logged in
   pool doors deferred by D150 and D152.
 - **The order:** after FR-1, design first (D142), as a general feature (D144).
 
+## D159: The site-occupancy primitive (FR-3) is logged as priority 2
+
+2026-11-14, user request ("then next one"), the requester's priority 2. Logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-3--the-site-occupancy-primitive).
+- **The feature:** binding sites as state with one owner. Bound and free share one material
+  ledger, and accessibility is a factor separate from stoichiometry. Partition and reset rules
+  at division and replacement are declared. It is D150 §2.5's door, with its analytic
+  saturable-sink guard.
+- **The order:** its design may precede FR-1's code, since its first version needs only membrane
+  state and @3's free inventory. Its internalisation step follows FR-2. Design first (D142), as
+  a general feature (D144).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

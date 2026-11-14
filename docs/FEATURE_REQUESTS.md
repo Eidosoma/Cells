@@ -8,6 +8,7 @@ and a general feature, never one built for one study (D144).
 | --- | --- | --- | --- | --- |
 | [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | Logged; design not started | A design note for a fixed-topology compartment (below) |
 | [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; follows FR-1 | A design note after FR-1's, settling retrieval's energy source (below) |
+| [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; specified as a door in D150 §2.5 | A design note from its own sources (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -127,3 +128,49 @@ for a shared dose, or the cell-to-cell variation that makes delivery selective.
   populations, S2's domains and insertion@2's bookings, and needs their accounting.
 - **What it touches.** S3's insertion and membrane-state operators, D150 and D152's energy-pool door,
   FR-1's compartment, and the composition walls (the species operators refuse insertion today).
+
+## FR-3 — The site-occupancy primitive
+
+**Logged 14 November 2026, priority 2** (the request's label; the user: "then next one"). The request
+below is the requesting study's text, condensed. The lead's mapping follows.
+
+**The request.** Promote the primitive already specified as a door in
+[D150 §2.5](SECRETED_SPECIES_TRANSPORT_DESIGN.md):
+- binding sites as state on a membrane domain or contact, with one owner;
+- bound and free in one material ledger, never a second copy;
+- accessibility as a factor separate from stoichiometry;
+- declared partition and reset rules at division and replacement.
+
+**Why it is general.** D150's own list: kinetochore sites, junction docking and surface catalysis.
+Add to it ligand–receptor signalling generally, and the engineered quorum-sensing consortia in the
+13 November reading list, where a finite receptor pool reads the shared signal.
+
+**What it builds on.**
+- `membrane_entity_state@1`'s populations are the owner D150 identified.
+- The day-one analytic guard is already derived (D150 §2.5; the lead checked it). The saturable
+  sink is the quasi-steady limit of binding with internalisation:
+  J = k_int R_T c / (K_M + c), K_M = (k_off + k_int)/k_on.
+
+**Why the study needs it.** Accessibility separate from stoichiometry is not a detail. Uptake of the
+same formulation differs by cell type through surface composition. The 2026 glycocalyx and
+protein-corona work found heparan-sulfate dependence in some tested lines and not in others.
+Accessibility is where that enters a model without naming a receptor.
+
+**The lead's mapping (for its design note to test, not settled).**
+- **D150 §2.5's four requirements are the contract.**
+  - The bound amount is state on the site's owner. Binding and release are booked transfers
+    with @3's free inventory, as `exchange_moved_fmol` is.
+  - Version 1's import routes are the shape the internalisation step writes into.
+- **Accessibility as a factor.**
+  - It is a declared multiplier on the binding rate, separate from the site count.
+  - It fits the coupling operator's factor form (D155 and D156: F ∈ [b, 1]) when accessibility
+    is regulated, and is a plain per-domain parameter otherwise.
+- **The links to FR-1 and FR-2.** Receptor-mediated uptake binds at the surface (FR-3),
+  internalises the bound sites with their membrane (FR-2) and delivers the cargo into a
+  compartment (FR-1). The three should be designed so the bound pool's identity survives each
+  transfer.
+- **The design order.** FR-3 can be designed before FR-1's code lands: its first version needs only
+  membrane state and @3's free inventory, and its guard is analytic. Its internalisation step
+  follows FR-2.
+- **The sources.** The primitive must be designed from its own sources (kinetochore counting, the
+  Hirano 2026 review in the paper backlog, receptor kinetics), not shaped by one consumer (D144).
