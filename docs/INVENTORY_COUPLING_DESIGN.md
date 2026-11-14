@@ -1364,10 +1364,119 @@ changes (checkpoint manifests carry no `field_owners`).
 
 - The vmap and RK4 guards, D136's claim 2 and the fresh-process snapshot are in tier 3 only.
 - A state with two inputs runs on the host (tier 1); no compiled world uses one.
-- A4 (reciprocal feedback) and A5 (the channel response) wait for the independent references
-  (R-fac, R-state, R-cell, R-feedback), which land as `validation/coupling/`. They are to be used
-  through its `REFERENCES_USAGE.md` only, with A4's tolerance pinned at the floor measured on its own
-  world.
+- A4 (reciprocal feedback) and A5 (the channel response) were run against the independent
+  references in milestone 3 (§9).
+
+## 9. Milestone 3: A4 and A5 against the independent references (14 November 2026)
+
+Milestone 3 runs `species_regulated_availability@1` in `resolved_pump_composite@1` over
+`resolved_pump_tissue@3`, with D150's `scheduled_species_turnover@1` for A5's regulator. It compares
+the engine with the independent references R-feedback (A4) and R-cell (A5) from
+`validation/coupling/`, used through `REFERENCES_USAGE.md` and their API only. It needed no `src/`
+change and found no engine gap. Evidence: `/mnt/workspaces/Cells/inventory-coupling-m3-20261114-01/`
+(HANDOFF.md, with the criterion written before any engine run, and the amendments made before the
+record).
+
+### 9.1 The worlds and their match
+
+`validation/tissue/regulated_availability_references.py` builds each reference `World` from the
+documented classes and translates it into the engine's definition. Both sides use the same:
+- pump-free 2 pL cells, each on one constant-field patch of 4 pF facing a held bath at 0 V;
+- gate-free K leaks (`kleak_always_open@1`), and contacts with the junction gate held at exactly 1
+  (its minimum set to 1; every run checks it);
+- the engine's F and R at 310 K;
+- the reference's zero-current start, which the engine takes as each cell's charge and background
+  (row 0 agrees within 7e-18 V).
+
+**A4 (R-feedback):**
+- cells a (Na 40 mM) and b (Na 12 mM), joined by a contact of P 2e-8 m/s;
+- a state s1 of Na in both (a Hill activation, K 20 mM, n 4, k_on 5/s, k_off 1/s), its complement
+  on the contact (side both, b 0.2);
+- 2 s, recorded every 0.1 s, started from the reference's own state at 50 ms, after the contact
+  has equalized the two cells' voltages;
+- the fast arm runs k_on 750/s and k_off 150/s, so dt (k_on + k_off) = 0.9 at 1 ms.
+
+**A5 (R-cell):**
+- one cell with a K-leak population of P 2e-9 m/s;
+- a neutral regulator X held at 1 µM by D150's turnover, and driven toward 10 µM over [0.2, 0.5) s;
+- X read at once on the population (a Hill inhibition, K 3 µM, n 2, b 0.1);
+- 1 s, recorded every 50 ms.
+
+The criterion's amendments, all made before the record:
+- A5's uncoupled baseline steps the population's schedule, since at rest it shows nothing.
+- A4 was shortened to 2 s and started relaxed, because a row costs 5–8 ms on a loaded machine.
+- A4's contact is 2e-8 m/s, the most the explicit-rate bound of @3's IMEX step admits at 1 ms.
+- A dimensionless error below 1e-13 is rounding, not an order.
+
+### 9.2 The dt study
+
+`validation/tissue/regulated_availability_dt_study.py` runs the engine at dt 1, 0.5, 0.25 and
+0.125 ms through one window program per world. It compares V, the amounts, a_eff, s, U and F with
+`rc.simulate` at its defaults (Radau, rtol 1e-10). An order counts only where the finer error is at
+least 100 times the reference's floor (`rc.floor` on the same world) and, for dimensionless
+quantities, above rounding.
+
+**The record** ran from the clean snapshot of aa4a5161 on one CPU (`record-aa4a5161.json`). Its
+errors equal the development run's (`dev3.json`) bit for bit at every dt and in every arm. Every
+engine run kept the contact's gate at exactly 1.
+
+**Observed orders** for the pairs 1→0.5, 0.5→0.25 and 0.25→0.125 ms. "Floor" marks a pair whose
+finer error is under 100 floors (or, for a dimensionless quantity, under 1e-13), so its ratio is not
+counted.
+
+| World, arm | V | amounts | U | s | a_eff, F |
+| --- | --- | --- | --- | --- | --- |
+| A4, uncoupled | 2.01, 2.00, 2.00 | 2.02, then floor | 2.33 (see below), then floor | 2.00, then floor | exact (no coupling) |
+| A4, coupled | 2.08, 2.04, 2.02 | 2.00, 2.00, then floor | 2.00, 2.00, 2.00 | 2.00, 1.99, 1.94 (floor) | 2.01, 2.03, 2.11 (floor) |
+| A4, fast arm | 1.99, 2.00, 1.99 | 1.98, 2.00, 2.00 | 1.98, 2.00, 2.00 | 1.97, 1.99, 1.99 | 1.97, 1.99, 1.99 |
+| A5, uncoupled (stepped schedule) | 2.01, 2.00, 2.00 | 2.01, 2.01, then floor | – | – | – |
+| A5, coupled | 2.00, 2.00, 2.00 | 2.00, 2.00, then floor | – | – | 3e-16 to 1.2e-15: exact to rounding |
+
+- **The fast arm's e/dt² is constant:** s 5.75e-3, 5.88e-3, 5.92e-3, 5.94e-3; V 4.05e-4 to 4.09e-4 V/s².
+- **The one pair out of band** is A4's uncoupled U at 2.33. Its errors there, 8.6e-13 and 1.7e-13 s,
+  are at the scale of U's accumulated rounding over the run: about N ε max U, which is 3.5e-13 s at
+  4,000 steps. They are not an order. In the coupled and fast arms U is resolved and in band.
+- **@3's uncoupled step is second order,** so no stop rule applied.
+
+**At the production dt, 1 ms: the proposed tolerances** (to be registered before a judged run):
+
+| World | Observable | Error at 1 ms | Error / floor | Proposed tolerance | Error / tolerance |
+| --- | --- | --- | --- | --- | --- |
+| A4 | V | 7.5e-9 V | 1.8e7 | 1.5e-8 V | 0.50 |
+| A4 | amounts | 2.3e-9 fmol | 5.0e3 | 4.6e-9 fmol | 0.50 |
+| A4 | U | 8.1e-11 s | 2.8e4 | 1.6e-10 s | 0.50 |
+| A4 | s | 3.5e-11 | 2.1e2 | 7.0e-11 | 0.50 |
+| A4 | a_eff, F | 9.6e-12 | 1.1e2 | 1.9e-11 | 0.50 |
+| A5 | V | 2.9e-8 V | 1.1e6 | 5.8e-8 V | 0.50 |
+| A5 | amounts | 1.1e-9 fmol | 3.1e3 | 2.1e-9 fmol | 0.50 |
+| A5 | a_eff, F | 3.3e-16 | – (closed form) | 1e-13 (rounding) | 0.003 |
+
+**The planted controls** (each must fail at its tolerance, with a margin of about 10):
+- **A4:** the contact's basal level scaled by 1 + 1.36e-9 moves a_eff by 2.0e-10, which is
+  10.5 times its tolerance. It fails as required.
+- **A5:** the population's basal level scaled by 1 + 3.9e-4 moves V by 5.9e-7 V, which is
+  10.1 times its tolerance. It fails as required.
+
+A4's a_eff and s tolerances sit only about 100–200 floors above the reference. A judged run on
+another machine should keep that margin in view.
+
+### 9.3 What it shows, and what it does not
+
+- **Reciprocal feedback converges at second order** (A4): inventory → effective control →
+  electrical response → inventory, against a coupled-ODE reference, in every resolvable
+  observable. The fast arm at dt (k_on + k_off) = 0.9 is second order too.
+- **A channel population's availability set by a species** gives the electrical response the
+  reference gives (A5), at second order in V and the amounts. The factor itself is exact to
+  rounding, since D150's turnover is exact on the grid.
+- **The uncoupled baselines are second order as well**, so the coupling does not lower @3's order.
+- **The tolerances are proposals,** to be registered before a judged run:
+  - the 1 ms error × 2, at least 100 floors and at least 1e-13 for dimensionless quantities;
+  - each comes with its planted control, a basal level scaled by 1 + δ, which exceeds it about
+    tenfold.
+- **Not covered:**
+  - A4 and A5 at horizons beyond 2 s and 1 s;
+  - worlds with pumps or gated channels (the references do not model them);
+  - the first consumer's local accuracy (A10, §4.5).
 
 ## Appendix A. Equations for the independent references
 
