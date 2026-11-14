@@ -102,7 +102,8 @@ export function inSpecies(entity, proteins, id) {
  * nothing here says the engine models the species' proteins. It reads the data only.
  */
 export function speciesWords(proteins, species) {
-  const name = lower(species.label);
+  // A species named by a plain word is written small in a sentence ("the planarian atlas"); a name such as Syn3A keeps its letters.
+  const name = /^[A-Z][a-z]+$/.test(species.label) ? lower(species.label) : species.label;
   const counts = species.counts;
   const words = new Map((proteins.findings || []).map((word) => [word.id, word]));
   const some = counts.candidates === counts.products ? (counts.products === 1 ? "The one product was" : `All ${counts.products} products were`) : `${counts.candidates} of the ${counts.products} products were`;

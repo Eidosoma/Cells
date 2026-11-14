@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T23:11:46Z",
-  "revision": "6ae5b388",
+  "generated_at": "2026-11-14T23:42:50Z",
+  "revision": "e2a86708",
   "revision_date": "2026-11-14",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -14,11 +14,11 @@
   "counts": {
    "engine_files": 504,
    "engine_files_placed": 504,
-   "parts": 214,
-   "relations": 816,
+   "parts": 216,
+   "relations": 818,
    "by_kind": {
     "operator": 17,
-    "component": 108,
+    "component": 110,
     "state": 6,
     "gate": 8,
     "capability": 21,
@@ -27,9 +27,9 @@
    },
    "by_status": {
     "qualified": 35,
-    "landed": 15,
+    "landed": 16,
     "established": 61,
-    "planned": 25,
+    "planned": 26,
     "designed": 7,
     "failed": 1,
     "external": 4,
@@ -375,7 +375,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "6ae5b388"
+   "checked_at": "e2a86708"
   },
   "counts": {
    "units": 49,
@@ -875,6 +875,320 @@
        }
       ],
       "note": "An aquaporin-family gene model: the kind of water channel that the lumped water-permeability unit does not represent."
+     }
+    ]
+   },
+   {
+    "id": "syn3a",
+    "label": "Syn3A",
+    "organism": "JCVI-syn3A",
+    "taxon": 2144189,
+    "plain": "A bacterium with a designed, minimised genome of 452 protein-coding genes, proposed as the first whole-cell validation organism for Cells; the units of the law inventory are machines of animal cells, and it has none of them.",
+    "made": "2026-11-14",
+    "method": [
+     "The organism's proteins are the 455 protein products of one frozen genome annotation, GenBank CP016816.2 (annotation of 12 April 2018): 452 kept from Mycoplasma mycoides and 3 added for genetic manipulation. UniProtKB holds no entry of the organism; UniProt's archive (UniParc) holds exactly these 455 sequences, with the family signatures on each.",
+     "Licences were read before anything was copied; each is stated in sources, and what was read but not copied is in not_copied.",
+     "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the planarian atlas asks. The build checks that the candidates carry them.",
+     "Each signature was looked for on all 455 sequences. None was found, for any unit.",
+     "A control for every zero: the same signature was asked of the UniProtKB entries of all mollicutes, the class of bacteria the organism was made from; each unit's note gives what came back.",
+     "Eight further signatures, of the ion channels a bacterium could have (potassium, chloride, magnesium, water and membrane-stretch channels), were looked for as well, and none was found, although each is carried by UniProtKB entries of other mollicutes.",
+     "Under extra are nine of the organism's own membrane machines that bear on what the atlas draws and match no unit. Five are named for this organism in Breuer and others 2019, whose saved text the build checks; four are listed by the signature on their sequence. All are assigned by annotation, not measured in this strain.",
+     "No similarity search was run, and nothing is called an ortholog."
+    ],
+    "sources": [
+     {
+      "name": "GenBank",
+      "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2",
+      "release": "CP016816.2, annotation of 12 April 2018",
+      "accessed": "2026-11-14",
+      "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\". Submitters may claim rights in what they submitted; this record states none.",
+      "cite": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2.",
+      "holds": "the locus tags, gene names, products, protein identifiers and lengths of the organism's proteins"
+     },
+     {
+      "name": "UniProt",
+      "url": "https://www.uniprot.org/",
+      "release": "2026_04",
+      "accessed": "2026-11-14",
+      "licence": "CC BY 4.0",
+      "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
+      "holds": "which archived sequences of the organism carry each family signature; the signatures of the units' human candidates; the control counts"
+     },
+     {
+      "name": "InterPro",
+      "url": "https://www.ebi.ac.uk/interpro/",
+      "accessed": "2026-11-14",
+      "licence": "CC0 1.0",
+      "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
+      "holds": "the identifiers and names of the family signatures, as UniProt gives them"
+     },
+     {
+      "name": "Breuer and others 2019",
+      "url": "https://doi.org/10.7554/elife.36842",
+      "accessed": "2026-11-14",
+      "licence": "CC BY 4.0",
+      "cite": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
+      "holds": "the names the paper gives five of the organism's transport proteins"
+     },
+     {
+      "name": "Europe PMC",
+      "url": "https://europepmc.org/",
+      "accessed": "2026-11-14",
+      "licence": "Bibliographic facts only (authors, title, journal, year, identifiers). Open texts were read to check names and are not copied.",
+      "cite": "Europe PMC Consortium, Europe PMC, https://europepmc.org/.",
+      "holds": "the record of the paper cited"
+     }
+    ],
+    "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. The 2022 whole-cell paper (CC BY-NC-ND) was read for numbers and one short quotation, and the 2021 division paper for its abstract; nothing else was taken from them. The 2026 whole-cell paper and the archive of its model were not read for this file, and the instrument files of the 2019 proteomics (PXD008159) were not downloaded.",
+    "counts": {
+     "units": 49,
+     "with_products": 0,
+     "products": 0,
+     "candidates": 0
+    },
+    "findings": [
+     {
+      "id": "found",
+      "count": 0
+     },
+     {
+      "id": "different family",
+      "count": 0
+     },
+     {
+      "id": "none found",
+      "count": 43
+     },
+     {
+      "id": "nothing to look for",
+      "count": 6
+     }
+    ],
+    "evidence": [
+     {
+      "id": "reviewed entry",
+      "count": 0
+     },
+     {
+      "id": "named in a publication",
+      "count": 0
+     },
+     {
+      "id": "family signature",
+      "count": 0
+     },
+     {
+      "id": "similarity search",
+      "count": 0
+     }
+    ],
+    "extra": [
+     {
+      "label": "atpA",
+      "detail": "ATP synthase, F1 alpha subunit, catalytic head",
+      "tag": "Family signature",
+      "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+      "lines": [
+       "525 amino acids",
+       "Candidate, not an established counterpart: Locus JCVISYN3A_0792, product \"F0F1 ATP synthase subunit alpha\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
+       "GenBank: AVX54961.1"
+      ],
+      "links": [
+       {
+        "text": "GenBank",
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+       }
+      ],
+      "note": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its eight subunits are listed here. In mycoplasmas this machine typically runs backwards, spending ATP to pump protons out, which was measured in related species and not in this strain. The law inventory has no F-type ATPase."
+     },
+     {
+      "label": "atpD",
+      "detail": "ATP synthase, F1 beta subunit, catalytic head",
+      "tag": "Family signature",
+      "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+      "lines": [
+       "475 amino acids",
+       "Candidate, not an established counterpart: Locus JCVISYN3A_0790, product \"F0F1 ATP synthase subunit beta\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
+       "GenBank: AVX54959.1"
+      ],
+      "links": [
+       {
+        "text": "GenBank",
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+       }
+      ],
+      "note": "The other subunit of the ATP synthase's catalytic head. The 2019 paper found the genes of this machine essential."
+     },
+     {
+      "label": "atpE",
+      "detail": "ATP synthase, F0 c subunit, proton-carrying ring",
+      "tag": "Family signature",
+      "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+      "lines": [
+       "101 amino acids",
+       "Candidate, not an established counterpart: Locus JCVISYN3A_0795, product \"F0F1 ATP synthase subunit C\" in the genome record. Its sequence carries IPR000454 (ATP synthase, F0 complex, subunit C) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
+       "GenBank: AVX54964.1"
+      ],
+      "links": [
+       {
+        "text": "GenBank",
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+       }
+      ],
+      "note": "The ring of the ATP synthase that carries protons across the membrane."
+     },
+     {
+      "label": "atpB",
+      "detail": "ATP synthase, F0 a subunit, proton path",
+      "tag": "Family signature",
+      "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+      "lines": [
+       "287 amino acids",
+       "Candidate, not an established counterpart: Locus JCVISYN3A_0796, product \"F0F1 ATP synthase subunit A\" in the genome record. Its sequence carries IPR000568 (ATP synthase, F0 complex, subunit A) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
+       "GenBank: AVX54965.1"
+      ],
+      "links": [
+       {
+        "text": "GenBank",
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+       }
+      ],
+      "note": "The membrane subunit of the ATP synthase beside the ring, where protons enter and leave."
+     },
+     {
+      "label": "mgtA",
+      "detail": "P-type ATPase MgtA, ion pump",
+      "tag": "Named in a publication",
+      "tag_title": "A paper names this gene or protein in this species.",
+      "lines": [
+       "942 amino acids",
+       "Locus JCVISYN3A_0787, product \"Magnesium-translocating P-type ATPase\" in the genome record. Breuer and others 2019 name it: the annotation lists it as an importer of magnesium. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+       "GenBank: AVX54957.1",
+       "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
+      ],
+      "links": [
+       {
+        "text": "GenBank",
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+       },
+       {
+        "text": "Paper",
+        "url": "https://doi.org/10.7554/elife.36842"
+       },
+       {
+        "text": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/30657448/"
+       }
+      ],
+      "note": "A pump of the same superfamily as the sodium-potassium and calcium pumps of animal cells, of another branch: its annotation calls it magnesium-translocating."
+     },
+     {
+      "label": "corA",
+      "detail": "P-type ATPase annotated as CorA, ion pump",
+      "tag": "Named in a publication",
+      "tag_title": "A paper names this gene or protein in this species.",
+      "lines": [
+       "885 amino acids",
+       "Locus JCVISYN3A_0879, product \"Magnesium transporter\" in the genome record. Breuer and others 2019 name it: a putative magnesium importer that could carry calcium as well; the paper's reconstruction uses it as the calcium importer. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+       "GenBank: AVX55014.1",
+       "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
+      ],
+      "links": [
+       {
+        "text": "GenBank",
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+       },
+       {
+        "text": "Paper",
+        "url": "https://doi.org/10.7554/elife.36842"
+       },
+       {
+        "text": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/30657448/"
+       }
+      ],
+      "note": "Its annotation calls it a magnesium transporter and names it corA, but its signatures are those of a cation-transporting P-type ATPase and not of the CorA channel family. It is the nearest thing this organism has to a calcium pump."
+     },
+     {
+      "label": "natA",
+      "detail": "Potassium uptake protein KtrB-like, membrane part of KtrAB",
+      "tag": "Named in a publication",
+      "tag_title": "A paper names this gene or protein in this species.",
+      "lines": [
+       "533 amino acids",
+       "Locus JCVISYN3A_0685, product \"Sodium transporter\" in the genome record. Breuer and others 2019 name it: with locus 0686, the KtrAB potassium import system; the paper's reconstruction gives it an ATP-consuming exchange of potassium for sodium. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+       "GenBank: AVX54923.1",
+       "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
+      ],
+      "links": [
+       {
+        "text": "GenBank",
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+       },
+       {
+        "text": "Paper",
+        "url": "https://doi.org/10.7554/elife.36842"
+       },
+       {
+        "text": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/30657448/"
+       }
+      ],
+      "note": "The membrane part of the cell's potassium uptake system. This is how the organism takes up potassium without a sodium-potassium pump or a potassium channel. Its annotation calls it a sodium transporter (natA)."
+     },
+     {
+      "label": "trkA",
+      "detail": "Potassium uptake protein KtrA-like, regulatory part of KtrAB",
+      "tag": "Named in a publication",
+      "tag_title": "A paper names this gene or protein in this species.",
+      "lines": [
+       "242 amino acids",
+       "Locus JCVISYN3A_0686, product \"Potassium transporter\" in the genome record. Breuer and others 2019 name it: with locus 0685, the KtrAB potassium import system. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+       "GenBank: AVX54924.1",
+       "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
+      ],
+      "links": [
+       {
+        "text": "GenBank",
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+       },
+       {
+        "text": "Paper",
+        "url": "https://doi.org/10.7554/elife.36842"
+       },
+       {
+        "text": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/30657448/"
+       }
+      ],
+      "note": "The cytoplasmic partner of the potassium uptake system, annotated trkA."
+     },
+     {
+      "label": "ptsG",
+      "detail": "Glucose transporter PtsG, sugar uptake",
+      "tag": "Named in a publication",
+      "tag_title": "A paper names this gene or protein in this species.",
+      "lines": [
+       "745 amino acids",
+       "Locus JCVISYN3A_0779, product \"PTS sugar transporter\" in the genome record. Breuer and others 2019 name it: part of the glucose phosphotransferase system, the only annotated sugar importer. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
+       "GenBank: AVX54956.1",
+       "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
+      ],
+      "links": [
+       {
+        "text": "GenBank",
+        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+       },
+       {
+        "text": "Paper",
+        "url": "https://doi.org/10.7554/elife.36842"
+       },
+       {
+        "text": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/30657448/"
+       }
+      ],
+      "note": "The membrane part of the system that brings in glucose, the cell's fuel. All of its ATP comes from breaking that sugar down."
      }
     ]
    }
@@ -1886,7 +2200,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestones 1 and 2 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, a starting condition for each cell, and the regulatory state with restart, batches and compositions. It is development code, guarded by tests; its qualification comes later. Milestone 3, the check against the independent references, is in progress.",
+   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestones 1 and 2 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, a starting condition for each cell, and the regulatory state with restart, batches and compositions. In milestone 3 its development runs agree with the independent references at second order. It is development code, guarded by tests; no protocol is registered and nothing is judged yet.",
    "detail": "Operator species_regulated_availability@1: coupling out of the inventory (D155 item 1, D156).",
    "facts": [
     [
@@ -1941,6 +2255,14 @@
     {
      "path": "docs/INVENTORY_COUPLING_DESIGN.md",
      "where": "8. Milestone 2 as built (14 November 2026)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator's milestone 3, and Track E's independent references, landed"
+    },
+    {
+     "path": "docs/INVENTORY_COUPLING_DESIGN.md",
+     "where": "9. Milestone 3: A4 and A5 against the independent references (14 November 2026)"
     }
    ],
    "files": [
@@ -4928,6 +5250,29 @@
    "weight": 0
   },
   {
+   "id": "exp.syn3a",
+   "label": "Syn3A minimal-cell track",
+   "kind": "component",
+   "group": "experiments",
+   "status": "planned",
+   "as_of": "2026-11-14",
+   "plain": "A track beside the current work: the minimal bacterial cell JCVI-syn3A as the organism for checking whole-cell mechanisms against public measurements (D173, 14 November 2026). So far it is an evidence audit and a proposal: 15 public resources were checked at their sources, and no engine model ran. Its first milestone is fixed after a capability probe: a vesicle without channels or pumps under the water operator. Authors are never contacted; missing data are looked for in public sources only.",
+   "sources": [
+    {
+     "path": "PROGRESS.md",
+     "where": "Syn3A, the proposed minimal-cell track: the evidence audit"
+    },
+    {
+     "path": "docs/SYN3A_MINIMAL_CELL_TRACK.md"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D173: Syn3A becomes the minimal-cell track; no contact with authors"
+    }
+   ],
+   "weight": 0
+  },
+  {
    "id": "exp.papers",
    "label": "Paper tests",
    "kind": "component",
@@ -5087,14 +5432,14 @@
    "facts": [
     [
      "Files",
-     "315"
+     "317"
     ],
     [
      "Lines of Python",
-     "75,762"
+     "76,522"
     ]
    ],
-   "weight": 75762
+   "weight": 76522
   },
   {
    "id": "val.division",
@@ -5179,7 +5524,7 @@
    "group": "references",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The engine's check against them is the operator's third milestone, in progress.",
+   "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The operator's development runs agree with them at second order (14 November 2026); that is not yet a judged qualification.",
    "facts": [
     [
      "Files",
@@ -5187,7 +5532,7 @@
     ],
     [
      "Lines of Python",
-     "1,985"
+     "1,993"
     ]
    ],
    "sources": [
@@ -5197,6 +5542,10 @@
     {
      "path": "PROGRESS.md",
      "where": "Track R's independent references landed (14 November 2026)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator's milestone 3, and Track E's independent references, landed"
     }
    ],
    "files": [
@@ -5207,7 +5556,42 @@
     "validation/coupling/reference_crosschecks.py",
     "validation/coupling/state_reference.py"
    ],
-   "weight": 1985
+   "weight": 1993
+  },
+  {
+   "id": "val.excitable",
+   "label": "Excitable-tissue references",
+   "kind": "component",
+   "group": "references",
+   "status": "landed",
+   "as_of": "2026-11-14",
+   "plain": "Reference solutions for the excitable-tissue probe, written by a separate agent that read no engine code: the single cell, the passive cable and its limits, and the chain protocols. Their own tests are in the routine gate. In a blind check, their junction voltages at block sites match the engine's to 0.02 mV.",
+   "facts": [
+    [
+     "Files",
+     "4"
+    ],
+    [
+     "Lines of Python",
+     "1,599"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "validation/excitable/REFERENCES_USAGE.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator's milestone 3, and Track E's independent references, landed"
+    }
+   ],
+   "files": [
+    "validation/excitable/REFERENCES_USAGE.md",
+    "validation/excitable/excitable_limits.py",
+    "validation/excitable/excitable_protocols.py",
+    "validation/excitable/excitable_reference.py"
+   ],
+   "weight": 1599
   },
   {
    "id": "val.other",
@@ -5238,15 +5622,15 @@
    "facts": [
     [
      "Files",
-     "747"
+     "749"
     ],
     [
      "Lines of Python",
-     "231,437"
+     "231,780"
     ],
     [
      "Tier 1 test files",
-     "324"
+     "326"
     ],
     [
      "Tier 2 test files",
@@ -5263,7 +5647,7 @@
      "where": "Milestones and provenance"
     }
    ],
-   "weight": 231437
+   "weight": 231780
   },
   {
    "id": "state.compartment",
@@ -6563,6 +6947,12 @@
       }
      ],
      "keywords": "scna-1 Scna-1 A0A0A1CVW3 h1SMcG0013155 scna-2 Scna-2 A0A0A1CQM0 h1SMcG0014796 scna-3 Scna-3 A0A0A1CRL5 Voltage-gated sodium channel alpha subunit, gene model h1SMcG0016828 h1SMcG0016828"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -6912,6 +7302,12 @@
       }
      ],
      "keywords": "scna-1 Scna-1 A0A0A1CVW3 h1SMcG0013155 scna-2 Scna-2 A0A0A1CQM0 h1SMcG0014796 scna-3 Scna-3 A0A0A1CRL5 Voltage-gated sodium channel alpha subunit, gene model h1SMcG0016828 h1SMcG0016828"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -7281,6 +7677,12 @@
       }
      ],
      "keywords": "scna-1 Scna-1 A0A0A1CVW3 h1SMcG0013155 scna-2 Scna-2 A0A0A1CQM0 h1SMcG0014796 scna-3 Scna-3 A0A0A1CRL5 Voltage-gated sodium channel alpha subunit, gene model h1SMcG0016828 h1SMcG0016828"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -7721,6 +8123,12 @@
       }
      ],
      "keywords": "scna-1 Scna-1 A0A0A1CVW3 h1SMcG0013155 scna-2 Scna-2 A0A0A1CQM0 h1SMcG0014796 scna-3 Scna-3 A0A0A1CRL5 Voltage-gated sodium channel alpha subunit, gene model h1SMcG0016828 h1SMcG0016828"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -8225,6 +8633,12 @@
       }
      ],
      "keywords": "Kv1-type voltage-gated potassium channel, gene model h1SMcG0002659 h1SMcG0002659 Kv1-type voltage-gated potassium channel, gene model h1SMcG0004502 h1SMcG0004502 Kv1-type voltage-gated potassium channel, gene model h1SMcG0006398 h1SMcG0006398 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008120 h1SMcG0008120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008230 h1SMcG0008230 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008231 h1SMcG0008231 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010814 h1SMcG0010814 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010815 h1SMcG0010815 Kv1-type voltage-gated potassium channel, gene model h1SMcG0013213 h1SMcG0013213 Kv1-type voltage-gated potassium channel, gene model h1SMcG0015979 h1SMcG0015979 Kv1-type voltage-gated potassium channel, gene model h1SMcG0017346 h1SMcG0017346 Kv1-type voltage-gated potassium channel, gene model h1SMcG0018120 h1SMcG0018120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019795 h1SMcG0019795 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019797 h1SMcG0019797 Potassium channel Kv-beta subunit, gene model h1SMcG0014050 h1SMcG0014050 Potassium channel Kv-beta subunit, gene model h1SMcG0022706 h1SMcG0022706"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -8729,6 +9143,12 @@
       }
      ],
      "keywords": "Kv1-type voltage-gated potassium channel, gene model h1SMcG0002659 h1SMcG0002659 Kv1-type voltage-gated potassium channel, gene model h1SMcG0004502 h1SMcG0004502 Kv1-type voltage-gated potassium channel, gene model h1SMcG0006398 h1SMcG0006398 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008120 h1SMcG0008120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008230 h1SMcG0008230 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008231 h1SMcG0008231 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010814 h1SMcG0010814 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010815 h1SMcG0010815 Kv1-type voltage-gated potassium channel, gene model h1SMcG0013213 h1SMcG0013213 Kv1-type voltage-gated potassium channel, gene model h1SMcG0015979 h1SMcG0015979 Kv1-type voltage-gated potassium channel, gene model h1SMcG0017346 h1SMcG0017346 Kv1-type voltage-gated potassium channel, gene model h1SMcG0018120 h1SMcG0018120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019795 h1SMcG0019795 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019797 h1SMcG0019797 Potassium channel Kv-beta subunit, gene model h1SMcG0014050 h1SMcG0014050 Potassium channel Kv-beta subunit, gene model h1SMcG0022706 h1SMcG0022706"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -9253,6 +9673,12 @@
       }
      ],
      "keywords": "Kv1-type voltage-gated potassium channel, gene model h1SMcG0002659 h1SMcG0002659 Kv1-type voltage-gated potassium channel, gene model h1SMcG0004502 h1SMcG0004502 Kv1-type voltage-gated potassium channel, gene model h1SMcG0006398 h1SMcG0006398 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008120 h1SMcG0008120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008230 h1SMcG0008230 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008231 h1SMcG0008231 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010814 h1SMcG0010814 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010815 h1SMcG0010815 Kv1-type voltage-gated potassium channel, gene model h1SMcG0013213 h1SMcG0013213 Kv1-type voltage-gated potassium channel, gene model h1SMcG0015979 h1SMcG0015979 Kv1-type voltage-gated potassium channel, gene model h1SMcG0017346 h1SMcG0017346 Kv1-type voltage-gated potassium channel, gene model h1SMcG0018120 h1SMcG0018120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019795 h1SMcG0019795 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019797 h1SMcG0019797 Potassium channel Kv-beta subunit, gene model h1SMcG0014050 h1SMcG0014050 Potassium channel Kv-beta subunit, gene model h1SMcG0022706 h1SMcG0022706"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -9753,6 +10179,12 @@
       }
      ],
      "keywords": "Kv1-type voltage-gated potassium channel, gene model h1SMcG0002659 h1SMcG0002659 Kv1-type voltage-gated potassium channel, gene model h1SMcG0004502 h1SMcG0004502 Kv1-type voltage-gated potassium channel, gene model h1SMcG0006398 h1SMcG0006398 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008120 h1SMcG0008120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008230 h1SMcG0008230 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008231 h1SMcG0008231 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010814 h1SMcG0010814 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010815 h1SMcG0010815 Kv1-type voltage-gated potassium channel, gene model h1SMcG0013213 h1SMcG0013213 Kv1-type voltage-gated potassium channel, gene model h1SMcG0015979 h1SMcG0015979 Kv1-type voltage-gated potassium channel, gene model h1SMcG0017346 h1SMcG0017346 Kv1-type voltage-gated potassium channel, gene model h1SMcG0018120 h1SMcG0018120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019795 h1SMcG0019795 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019797 h1SMcG0019797 Potassium channel Kv-beta subunit, gene model h1SMcG0014050 h1SMcG0014050 Potassium channel Kv-beta subunit, gene model h1SMcG0022706 h1SMcG0022706"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -10291,6 +10723,12 @@
       }
      ],
      "keywords": "Kv1-type voltage-gated potassium channel, gene model h1SMcG0002659 h1SMcG0002659 Kv1-type voltage-gated potassium channel, gene model h1SMcG0004502 h1SMcG0004502 Kv1-type voltage-gated potassium channel, gene model h1SMcG0006398 h1SMcG0006398 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008120 h1SMcG0008120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008230 h1SMcG0008230 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008231 h1SMcG0008231 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010814 h1SMcG0010814 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010815 h1SMcG0010815 Kv1-type voltage-gated potassium channel, gene model h1SMcG0013213 h1SMcG0013213 Kv1-type voltage-gated potassium channel, gene model h1SMcG0015979 h1SMcG0015979 Kv1-type voltage-gated potassium channel, gene model h1SMcG0017346 h1SMcG0017346 Kv1-type voltage-gated potassium channel, gene model h1SMcG0018120 h1SMcG0018120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019795 h1SMcG0019795 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019797 h1SMcG0019797 Potassium channel Kv-beta subunit, gene model h1SMcG0014050 h1SMcG0014050 Potassium channel Kv-beta subunit, gene model h1SMcG0022706 h1SMcG0022706"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -10795,6 +11233,12 @@
       }
      ],
      "keywords": "Kv1-type voltage-gated potassium channel, gene model h1SMcG0002659 h1SMcG0002659 Kv1-type voltage-gated potassium channel, gene model h1SMcG0004502 h1SMcG0004502 Kv1-type voltage-gated potassium channel, gene model h1SMcG0006398 h1SMcG0006398 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008120 h1SMcG0008120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008230 h1SMcG0008230 Kv1-type voltage-gated potassium channel, gene model h1SMcG0008231 h1SMcG0008231 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010814 h1SMcG0010814 Kv1-type voltage-gated potassium channel, gene model h1SMcG0010815 h1SMcG0010815 Kv1-type voltage-gated potassium channel, gene model h1SMcG0013213 h1SMcG0013213 Kv1-type voltage-gated potassium channel, gene model h1SMcG0015979 h1SMcG0015979 Kv1-type voltage-gated potassium channel, gene model h1SMcG0017346 h1SMcG0017346 Kv1-type voltage-gated potassium channel, gene model h1SMcG0018120 h1SMcG0018120 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019795 h1SMcG0019795 Kv1-type voltage-gated potassium channel, gene model h1SMcG0019797 h1SMcG0019797 Potassium channel Kv-beta subunit, gene model h1SMcG0014050 h1SMcG0014050 Potassium channel Kv-beta subunit, gene model h1SMcG0022706 h1SMcG0022706"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -10975,6 +11419,12 @@
       }
      ],
      "keywords": "kcnb Kcnb A0A0A1CQL4 h1SMcG0008430 Kv2-type voltage-gated potassium channel, gene model h1SMcG0018142 h1SMcG0018142"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -11135,6 +11585,12 @@
       }
      ],
      "keywords": "kcnb Kcnb A0A0A1CQL4 h1SMcG0008430 Kv2-type voltage-gated potassium channel, gene model h1SMcG0018142 h1SMcG0018142"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -11652,6 +12108,12 @@
       }
      ],
      "keywords": "Kv3-type voltage-gated potassium channel, gene model h1SMcG0001694 h1SMcG0001694 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004246 h1SMcG0004246 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004284 h1SMcG0004284 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004490 h1SMcG0004490 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004724 h1SMcG0004724 Kv3-type voltage-gated potassium channel, gene model h1SMcG0006726 h1SMcG0006726 Kv3-type voltage-gated potassium channel, gene model h1SMcG0006783 h1SMcG0006783 Kv3-type voltage-gated potassium channel, gene model h1SMcG0007446 h1SMcG0007446 Kv3-type voltage-gated potassium channel, gene model h1SMcG0008746 h1SMcG0008746 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011964 h1SMcG0011964 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011965 h1SMcG0011965 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011966 h1SMcG0011966 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011981 h1SMcG0011981 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011983 h1SMcG0011983 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011989 h1SMcG0011989 Kv3-type voltage-gated potassium channel, gene model h1SMcG0012192 h1SMcG0012192 Kv3-type voltage-gated potassium channel, gene model h1SMcG0013205 h1SMcG0013205 Kv3-type voltage-gated potassium channel, gene model h1SMcG0013828 h1SMcG0013828 Kv3-type voltage-gated potassium channel, gene model h1SMcG0015986 h1SMcG0015986 Kv3-type voltage-gated potassium channel, gene model h1SMcG0018182 h1SMcG0018182 Kv3-type voltage-gated potassium channel, gene model h1SMcG0018296 h1SMcG0018296 Kv3-type voltage-gated potassium channel, gene model h1SMcG0022141 h1SMcG0022141 Kv3-type voltage-gated potassium channel, gene model h1SMcG0022467 h1SMcG0022467"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -12144,6 +12606,12 @@
       }
      ],
      "keywords": "Kv3-type voltage-gated potassium channel, gene model h1SMcG0001694 h1SMcG0001694 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004246 h1SMcG0004246 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004284 h1SMcG0004284 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004490 h1SMcG0004490 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004724 h1SMcG0004724 Kv3-type voltage-gated potassium channel, gene model h1SMcG0006726 h1SMcG0006726 Kv3-type voltage-gated potassium channel, gene model h1SMcG0006783 h1SMcG0006783 Kv3-type voltage-gated potassium channel, gene model h1SMcG0007446 h1SMcG0007446 Kv3-type voltage-gated potassium channel, gene model h1SMcG0008746 h1SMcG0008746 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011964 h1SMcG0011964 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011965 h1SMcG0011965 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011966 h1SMcG0011966 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011981 h1SMcG0011981 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011983 h1SMcG0011983 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011989 h1SMcG0011989 Kv3-type voltage-gated potassium channel, gene model h1SMcG0012192 h1SMcG0012192 Kv3-type voltage-gated potassium channel, gene model h1SMcG0013205 h1SMcG0013205 Kv3-type voltage-gated potassium channel, gene model h1SMcG0013828 h1SMcG0013828 Kv3-type voltage-gated potassium channel, gene model h1SMcG0015986 h1SMcG0015986 Kv3-type voltage-gated potassium channel, gene model h1SMcG0018182 h1SMcG0018182 Kv3-type voltage-gated potassium channel, gene model h1SMcG0018296 h1SMcG0018296 Kv3-type voltage-gated potassium channel, gene model h1SMcG0022141 h1SMcG0022141 Kv3-type voltage-gated potassium channel, gene model h1SMcG0022467 h1SMcG0022467"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -12636,6 +13104,12 @@
       }
      ],
      "keywords": "Kv3-type voltage-gated potassium channel, gene model h1SMcG0001694 h1SMcG0001694 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004246 h1SMcG0004246 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004284 h1SMcG0004284 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004490 h1SMcG0004490 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004724 h1SMcG0004724 Kv3-type voltage-gated potassium channel, gene model h1SMcG0006726 h1SMcG0006726 Kv3-type voltage-gated potassium channel, gene model h1SMcG0006783 h1SMcG0006783 Kv3-type voltage-gated potassium channel, gene model h1SMcG0007446 h1SMcG0007446 Kv3-type voltage-gated potassium channel, gene model h1SMcG0008746 h1SMcG0008746 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011964 h1SMcG0011964 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011965 h1SMcG0011965 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011966 h1SMcG0011966 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011981 h1SMcG0011981 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011983 h1SMcG0011983 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011989 h1SMcG0011989 Kv3-type voltage-gated potassium channel, gene model h1SMcG0012192 h1SMcG0012192 Kv3-type voltage-gated potassium channel, gene model h1SMcG0013205 h1SMcG0013205 Kv3-type voltage-gated potassium channel, gene model h1SMcG0013828 h1SMcG0013828 Kv3-type voltage-gated potassium channel, gene model h1SMcG0015986 h1SMcG0015986 Kv3-type voltage-gated potassium channel, gene model h1SMcG0018182 h1SMcG0018182 Kv3-type voltage-gated potassium channel, gene model h1SMcG0018296 h1SMcG0018296 Kv3-type voltage-gated potassium channel, gene model h1SMcG0022141 h1SMcG0022141 Kv3-type voltage-gated potassium channel, gene model h1SMcG0022467 h1SMcG0022467"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -13125,6 +13599,12 @@
       }
      ],
      "keywords": "Kv3-type voltage-gated potassium channel, gene model h1SMcG0001694 h1SMcG0001694 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004246 h1SMcG0004246 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004284 h1SMcG0004284 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004490 h1SMcG0004490 Kv3-type voltage-gated potassium channel, gene model h1SMcG0004724 h1SMcG0004724 Kv3-type voltage-gated potassium channel, gene model h1SMcG0006726 h1SMcG0006726 Kv3-type voltage-gated potassium channel, gene model h1SMcG0006783 h1SMcG0006783 Kv3-type voltage-gated potassium channel, gene model h1SMcG0007446 h1SMcG0007446 Kv3-type voltage-gated potassium channel, gene model h1SMcG0008746 h1SMcG0008746 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011964 h1SMcG0011964 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011965 h1SMcG0011965 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011966 h1SMcG0011966 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011981 h1SMcG0011981 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011983 h1SMcG0011983 Kv3-type voltage-gated potassium channel, gene model h1SMcG0011989 h1SMcG0011989 Kv3-type voltage-gated potassium channel, gene model h1SMcG0012192 h1SMcG0012192 Kv3-type voltage-gated potassium channel, gene model h1SMcG0013205 h1SMcG0013205 Kv3-type voltage-gated potassium channel, gene model h1SMcG0013828 h1SMcG0013828 Kv3-type voltage-gated potassium channel, gene model h1SMcG0015986 h1SMcG0015986 Kv3-type voltage-gated potassium channel, gene model h1SMcG0018182 h1SMcG0018182 Kv3-type voltage-gated potassium channel, gene model h1SMcG0018296 h1SMcG0018296 Kv3-type voltage-gated potassium channel, gene model h1SMcG0022141 h1SMcG0022141 Kv3-type voltage-gated potassium channel, gene model h1SMcG0022467 h1SMcG0022467"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -13341,6 +13821,12 @@
       }
      ],
      "keywords": "Kv4-type voltage-gated potassium channel, gene model h1SMcG0003177 h1SMcG0003177 Kv4-type voltage-gated potassium channel, gene model h1SMcG0003422 h1SMcG0003422 Kv4-type voltage-gated potassium channel, gene model h1SMcG0017431 h1SMcG0017431 Kv4-type voltage-gated potassium channel, gene model h1SMcG0021860 h1SMcG0021860"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of Kv4-type potassium channels (IPR003975). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -13427,6 +13913,12 @@
     "planarian": {
      "finding": "nothing to look for",
      "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel. Planarian candidates for voltage-gated potassium channels are listed under the Kv units.",
+     "items": [],
+     "keywords": ""
+    },
+    "syn3a": {
+     "finding": "nothing to look for",
+     "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel. No potassium channel of any family searched was found in this organism.",
      "items": [],
      "keywords": ""
     }
@@ -13599,6 +14091,12 @@
     "planarian": {
      "finding": "none found",
      "note": "No planarian sequence carries the signature of inward-rectifier potassium channels: no gene model, no UniProtKB entry of the species, and none of the planarian sequences in UniProt's archive, for this signature or for 2 others of the family. The same search finds the family in 21 UniProtKB entries of other flatworms and in 16 reviewed human entries, so the search can find it where it exists.",
+     "items": [],
+     "keywords": ""
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
     }
@@ -13870,6 +14368,12 @@
       }
      ],
      "keywords": "Cyclic nucleotide gated channel 1 A0A1Z1R0Y6 h1SMcG0005006 HCN-type channel, gene model h1SMcG0001155 h1SMcG0001155 HCN-type channel, gene model h1SMcG0013969 h1SMcG0013969 HCN-type channel, gene model h1SMcG0016076 h1SMcG0016076 HCN-type channel, gene model h1SMcG0018006 h1SMcG0018006 HCN-type channel, gene model h1SMcG0018092 h1SMcG0018092 HCN-type channel, gene model h1SMcG0020455 h1SMcG0020455"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -14168,6 +14672,12 @@
       }
      ],
      "keywords": "Cyclic nucleotide gated channel 1 A0A1Z1R0Y6 h1SMcG0005006 HCN-type channel, gene model h1SMcG0001155 h1SMcG0001155 HCN-type channel, gene model h1SMcG0013969 h1SMcG0013969 HCN-type channel, gene model h1SMcG0016076 h1SMcG0016076 HCN-type channel, gene model h1SMcG0018006 h1SMcG0018006 HCN-type channel, gene model h1SMcG0018092 h1SMcG0018092 HCN-type channel, gene model h1SMcG0020455 h1SMcG0020455"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -14466,6 +14976,12 @@
       }
      ],
      "keywords": "Cyclic nucleotide gated channel 1 A0A1Z1R0Y6 h1SMcG0005006 HCN-type channel, gene model h1SMcG0001155 h1SMcG0001155 HCN-type channel, gene model h1SMcG0013969 h1SMcG0013969 HCN-type channel, gene model h1SMcG0016076 h1SMcG0016076 HCN-type channel, gene model h1SMcG0018006 h1SMcG0018006 HCN-type channel, gene model h1SMcG0018092 h1SMcG0018092 HCN-type channel, gene model h1SMcG0020455 h1SMcG0020455"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -14699,6 +15215,12 @@
       }
      ],
      "keywords": "Cyclic nucleotide gated channel 1 A0A1Z1R0Y6 h1SMcG0005006 HCN-type channel, gene model h1SMcG0001155 h1SMcG0001155 HCN-type channel, gene model h1SMcG0013969 h1SMcG0013969 HCN-type channel, gene model h1SMcG0016076 h1SMcG0016076 HCN-type channel, gene model h1SMcG0018006 h1SMcG0018006 HCN-type channel, gene model h1SMcG0018092 h1SMcG0018092 HCN-type channel, gene model h1SMcG0020455 h1SMcG0020455"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -15274,6 +15796,12 @@
       }
      ],
      "keywords": "L-type calcium channel alpha-1 subunit, gene model h1SMcG0000076 h1SMcG0000076 L-type calcium channel alpha-1 subunit, gene model h1SMcG0000194 h1SMcG0000194 Calcium channel beta subunit, gene model h1SMcG0007169 h1SMcG0007169 Calcium channel beta subunit, gene model h1SMcG0012122 h1SMcG0012122 Calcium channel beta subunit, gene model h1SMcG0021519 h1SMcG0021519 Calcium channel alpha-2/delta subunit, gene model h1SMcG0002720 h1SMcG0002720 Calcium channel alpha-2/delta subunit, gene model h1SMcG0003961 h1SMcG0003961 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013103 h1SMcG0013103 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013104 h1SMcG0013104 Calcium channel alpha-2/delta subunit, gene model h1SMcG0023063 h1SMcG0023063"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -15862,6 +16390,12 @@
       }
      ],
      "keywords": "L-type calcium channel alpha-1 subunit, gene model h1SMcG0000076 h1SMcG0000076 L-type calcium channel alpha-1 subunit, gene model h1SMcG0000194 h1SMcG0000194 Calcium channel beta subunit, gene model h1SMcG0007169 h1SMcG0007169 Calcium channel beta subunit, gene model h1SMcG0012122 h1SMcG0012122 Calcium channel beta subunit, gene model h1SMcG0021519 h1SMcG0021519 Calcium channel alpha-2/delta subunit, gene model h1SMcG0002720 h1SMcG0002720 Calcium channel alpha-2/delta subunit, gene model h1SMcG0003961 h1SMcG0003961 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013103 h1SMcG0013103 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013104 h1SMcG0013104 Calcium channel alpha-2/delta subunit, gene model h1SMcG0023063 h1SMcG0023063"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -16460,6 +16994,12 @@
       }
      ],
      "keywords": "L-type calcium channel alpha-1 subunit, gene model h1SMcG0000076 h1SMcG0000076 L-type calcium channel alpha-1 subunit, gene model h1SMcG0000194 h1SMcG0000194 Calcium channel beta subunit, gene model h1SMcG0007169 h1SMcG0007169 Calcium channel beta subunit, gene model h1SMcG0012122 h1SMcG0012122 Calcium channel beta subunit, gene model h1SMcG0021519 h1SMcG0021519 Calcium channel alpha-2/delta subunit, gene model h1SMcG0002720 h1SMcG0002720 Calcium channel alpha-2/delta subunit, gene model h1SMcG0003961 h1SMcG0003961 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013103 h1SMcG0013103 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013104 h1SMcG0013104 Calcium channel alpha-2/delta subunit, gene model h1SMcG0023063 h1SMcG0023063"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -17196,6 +17736,12 @@
       }
      ],
      "keywords": "Calcium channel alpha-1 subunit, gene model h1SMcG0000076 h1SMcG0000076 Calcium channel alpha-1 subunit, gene model h1SMcG0000188 h1SMcG0000188 Calcium channel alpha-1 subunit, gene model h1SMcG0000194 h1SMcG0000194 Calcium channel alpha-1 subunit, gene model h1SMcG0000709 h1SMcG0000709 Calcium channel alpha-1 subunit, gene model h1SMcG0020674 h1SMcG0020674 Calcium channel alpha-1 subunit, gene model h1SMcG0020675 h1SMcG0020675 Calcium channel beta subunit, gene model h1SMcG0007169 h1SMcG0007169 Calcium channel beta subunit, gene model h1SMcG0012122 h1SMcG0012122 Calcium channel beta subunit, gene model h1SMcG0021519 h1SMcG0021519 Calcium channel alpha-2/delta subunit, gene model h1SMcG0002720 h1SMcG0002720 Calcium channel alpha-2/delta subunit, gene model h1SMcG0003961 h1SMcG0003961 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013103 h1SMcG0013103 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013104 h1SMcG0013104 Calcium channel alpha-2/delta subunit, gene model h1SMcG0023063 h1SMcG0023063"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -17783,6 +18329,12 @@
       }
      ],
      "keywords": "Calcium channel alpha-1 subunit, gene model h1SMcG0000188 h1SMcG0000188 Calcium channel alpha-1 subunit, gene model h1SMcG0000709 h1SMcG0000709 Calcium channel alpha-1 subunit, gene model h1SMcG0020674 h1SMcG0020674 Calcium channel alpha-1 subunit, gene model h1SMcG0020675 h1SMcG0020675 Calcium channel beta subunit, gene model h1SMcG0007169 h1SMcG0007169 Calcium channel beta subunit, gene model h1SMcG0012122 h1SMcG0012122 Calcium channel beta subunit, gene model h1SMcG0021519 h1SMcG0021519 Calcium channel alpha-2/delta subunit, gene model h1SMcG0002720 h1SMcG0002720 Calcium channel alpha-2/delta subunit, gene model h1SMcG0003961 h1SMcG0003961 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013103 h1SMcG0013103 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013104 h1SMcG0013104 Calcium channel alpha-2/delta subunit, gene model h1SMcG0023063 h1SMcG0023063"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -18390,6 +18942,12 @@
       }
      ],
      "keywords": "Calcium channel alpha-1 subunit, gene model h1SMcG0000188 h1SMcG0000188 Calcium channel alpha-1 subunit, gene model h1SMcG0000709 h1SMcG0000709 Calcium channel alpha-1 subunit, gene model h1SMcG0020674 h1SMcG0020674 Calcium channel alpha-1 subunit, gene model h1SMcG0020675 h1SMcG0020675 Calcium channel beta subunit, gene model h1SMcG0007169 h1SMcG0007169 Calcium channel beta subunit, gene model h1SMcG0012122 h1SMcG0012122 Calcium channel beta subunit, gene model h1SMcG0021519 h1SMcG0021519 Calcium channel alpha-2/delta subunit, gene model h1SMcG0002720 h1SMcG0002720 Calcium channel alpha-2/delta subunit, gene model h1SMcG0003961 h1SMcG0003961 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013103 h1SMcG0013103 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013104 h1SMcG0013104 Calcium channel alpha-2/delta subunit, gene model h1SMcG0023063 h1SMcG0023063"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -18977,6 +19535,12 @@
       }
      ],
      "keywords": "Calcium channel alpha-1 subunit, gene model h1SMcG0000188 h1SMcG0000188 Calcium channel alpha-1 subunit, gene model h1SMcG0000709 h1SMcG0000709 Calcium channel alpha-1 subunit, gene model h1SMcG0020674 h1SMcG0020674 Calcium channel alpha-1 subunit, gene model h1SMcG0020675 h1SMcG0020675 Calcium channel beta subunit, gene model h1SMcG0007169 h1SMcG0007169 Calcium channel beta subunit, gene model h1SMcG0012122 h1SMcG0012122 Calcium channel beta subunit, gene model h1SMcG0021519 h1SMcG0021519 Calcium channel alpha-2/delta subunit, gene model h1SMcG0002720 h1SMcG0002720 Calcium channel alpha-2/delta subunit, gene model h1SMcG0003961 h1SMcG0003961 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013103 h1SMcG0013103 Calcium channel alpha-2/delta subunit, gene model h1SMcG0013104 h1SMcG0013104 Calcium channel alpha-2/delta subunit, gene model h1SMcG0023063 h1SMcG0023063"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -19182,6 +19746,12 @@
       }
      ],
      "keywords": "T-type calcium channel alpha-1 subunit, gene model h1SMcG0008204 h1SMcG0008204 T-type calcium channel alpha-1 subunit, gene model h1SMcG0014350 h1SMcG0014350"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -19367,6 +19937,12 @@
       }
      ],
      "keywords": "T-type calcium channel alpha-1 subunit, gene model h1SMcG0008204 h1SMcG0008204 T-type calcium channel alpha-1 subunit, gene model h1SMcG0014350 h1SMcG0014350"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -20123,6 +20699,12 @@
       }
      ],
      "keywords": "BK (Slowpoke-like) calcium-activated potassium channel, gene model h1SMcG0007076 h1SMcG0007076 BK (Slowpoke-like) calcium-activated potassium channel, gene model h1SMcG0010768 h1SMcG0010768 BK (Slowpoke-like) calcium-activated potassium channel, gene model h1SMcG0010769 h1SMcG0010769 BK (Slowpoke-like) calcium-activated potassium channel, gene model h1SMcG0010770 h1SMcG0010770 BK (Slowpoke-like) calcium-activated potassium channel, gene model h1SMcG0011192 h1SMcG0011192 BK (Slowpoke-like) calcium-activated potassium channel, gene model h1SMcG0015707 h1SMcG0015707 BK (Slowpoke-like) calcium-activated potassium channel, gene model h1SMcG0016465 h1SMcG0016465 BK (Slowpoke-like) calcium-activated potassium channel, gene model h1SMcG0016626 h1SMcG0016626 BK (Slowpoke-like) calcium-activated potassium channel, gene model h1SMcG0019680 h1SMcG0019680 SK calcium-activated potassium channel, gene model h1SMcG0004969 h1SMcG0004969 SK calcium-activated potassium channel, gene model h1SMcG0005969 h1SMcG0005969 SK calcium-activated potassium channel, gene model h1SMcG0006048 h1SMcG0006048 SK calcium-activated potassium channel, gene model h1SMcG0011537 h1SMcG0011537 SK calcium-activated potassium channel, gene model h1SMcG0011985 h1SMcG0011985 SK calcium-activated potassium channel, gene model h1SMcG0013897 h1SMcG0013897 SK calcium-activated potassium channel, gene model h1SMcG0013937 h1SMcG0013937 SK calcium-activated potassium channel, gene model h1SMcG0014223 h1SMcG0014223 SK calcium-activated potassium channel, gene model h1SMcG0016257 h1SMcG0016257 BK channel beta subunit, gene model h1SMcG0000727 h1SMcG0000727 BK channel beta subunit, gene model h1SMcG0001455 h1SMcG0001455 BK channel beta subunit, gene model h1SMcG0005093 h1SMcG0005093 BK channel beta subunit, gene model h1SMcG0008245 h1SMcG0008245 BK channel beta subunit, gene model h1SMcG0009706 h1SMcG0009706 BK channel beta subunit, gene model h1SMcG0020732 h1SMcG0020732"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of BK calcium-activated potassium channels, SK calcium-activated potassium channels and BK channel beta subunits (IPR047871, IPR015449, IPR003930). UniProtKB holds 4 entries of other mollicutes, the class of bacteria it was made from, that carry one of them. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -20296,6 +20878,12 @@
      "note": "A background conductance that the inventory ties to no protein. Planarian two-pore-domain potassium channels, a usual molecular basis of a potassium leak, are noted under extra.",
      "items": [],
      "keywords": ""
+    },
+    "syn3a": {
+     "finding": "nothing to look for",
+     "note": "A background conductance that the inventory ties to no protein.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -20378,6 +20966,12 @@
    "keywords": "constant_field@1",
    "species": {
     "planarian": {
+     "finding": "nothing to look for",
+     "note": "A lumped permeability of the whole membrane, not a population of proteins.",
+     "items": [],
+     "keywords": ""
+    },
+    "syn3a": {
      "finding": "nothing to look for",
      "note": "A lumped permeability of the whole membrane, not a population of proteins.",
      "items": [],
@@ -21696,6 +22290,12 @@
       }
      ],
      "keywords": "smedinx-11 Innexin A7RDN9 h1SMcG0020152 inx H9CXU2 h1SMcG0020292 I1ZIL2 h1SMcG0002088 Innexin, gene model h1SMcG0000087 h1SMcG0000087 Innexin, gene model h1SMcG0000088 h1SMcG0000088 Innexin, gene model h1SMcG0000396 h1SMcG0000396 Innexin, gene model h1SMcG0000426 h1SMcG0000426 Innexin, gene model h1SMcG0000432 h1SMcG0000432 Innexin, gene model h1SMcG0000569 h1SMcG0000569 Innexin, gene model h1SMcG0000849 h1SMcG0000849 Innexin, gene model h1SMcG0001022 h1SMcG0001022 Innexin, gene model h1SMcG0001481 h1SMcG0001481 Innexin, gene model h1SMcG0001482 h1SMcG0001482 Innexin, gene model h1SMcG0001550 h1SMcG0001550 Innexin, gene model h1SMcG0001582 h1SMcG0001582 Innexin, gene model h1SMcG0001586 h1SMcG0001586 Innexin, gene model h1SMcG0001988 h1SMcG0001988 Innexin, gene model h1SMcG0001996 h1SMcG0001996 Innexin, gene model h1SMcG0002187 h1SMcG0002187 Innexin, gene model h1SMcG0002457 h1SMcG0002457 Innexin, gene model h1SMcG0002996 h1SMcG0002996 Innexin, gene model h1SMcG0003371 h1SMcG0003371 Innexin, gene model h1SMcG0003478 h1SMcG0003478 Innexin, gene model h1SMcG0003500 h1SMcG0003500 Innexin, gene model h1SMcG0003799 h1SMcG0003799 Innexin, gene model h1SMcG0004632 h1SMcG0004632 Innexin, gene model h1SMcG0004909 h1SMcG0004909 Innexin, gene model h1SMcG0005851 h1SMcG0005851 Innexin, gene model h1SMcG0005853 h1SMcG0005853 Innexin, gene model h1SMcG0005984 h1SMcG0005984 Innexin, gene model h1SMcG0006554 h1SMcG0006554 Innexin, gene model h1SMcG0006763 h1SMcG0006763 Innexin, gene model h1SMcG0006773 h1SMcG0006773 Innexin, gene model h1SMcG0006774 h1SMcG0006774 Innexin, gene model h1SMcG0006815 h1SMcG0006815 Innexin, gene model h1SMcG0007092 h1SMcG0007092 Innexin, gene model h1SMcG0007093 h1SMcG0007093 Innexin, gene model h1SMcG0007094 h1SMcG0007094 Innexin, gene model h1SMcG0007095 h1SMcG0007095 Innexin, gene model h1SMcG0007480 h1SMcG0007480 Innexin, gene model h1SMcG0007481 h1SMcG0007481 Innexin, gene model h1SMcG0007482 h1SMcG0007482 Innexin, gene model h1SMcG0007556 h1SMcG0007556 Innexin, gene model h1SMcG0008021 h1SMcG0008021 Innexin, gene model h1SMcG0008486 h1SMcG0008486 Innexin, gene model h1SMcG0008950 h1SMcG0008950 Innexin, gene model h1SMcG0009704 h1SMcG0009704 Innexin, gene model h1SMcG0009859 h1SMcG0009859 Innexin, gene model h1SMcG0010953 h1SMcG0010953 Innexin, gene model h1SMcG0011979 h1SMcG0011979 Innexin, gene model h1SMcG0012399 h1SMcG0012399 Innexin, gene model h1SMcG0013413 h1SMcG0013413 Innexin, gene model h1SMcG0013644 h1SMcG0013644 Innexin, gene model h1SMcG0013678 h1SMcG0013678 Innexin, gene model h1SMcG0014013 h1SMcG0014013 Innexin, gene model h1SMcG0014942 h1SMcG0014942 Innexin, gene model h1SMcG0015930 h1SMcG0015930 Innexin, gene model h1SMcG0016082 h1SMcG0016082 Innexin, gene model h1SMcG0016375 h1SMcG0016375 Innexin, gene model h1SMcG0017344 h1SMcG0017344 Innexin, gene model h1SMcG0017745 h1SMcG0017745 Innexin, gene model h1SMcG0018465 h1SMcG0018465 Innexin, gene model h1SMcG0018693 h1SMcG0018693 Innexin, gene model h1SMcG0019013 h1SMcG0019013 Innexin, gene model h1SMcG0021740 h1SMcG0021740 Innexin, gene model h1SMcG0022620 h1SMcG0022620 Innexin, gene model h1SMcG0022952 h1SMcG0022952 Innexin, gene model h1SMcG0023035 h1SMcG0023035"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -22941,6 +23541,12 @@
       }
      ],
      "keywords": "smedinx-11 Innexin A7RDN9 h1SMcG0020152 inx H9CXU2 h1SMcG0020292 I1ZIL2 h1SMcG0002088 Innexin, gene model h1SMcG0000087 h1SMcG0000087 Innexin, gene model h1SMcG0000088 h1SMcG0000088 Innexin, gene model h1SMcG0000396 h1SMcG0000396 Innexin, gene model h1SMcG0000426 h1SMcG0000426 Innexin, gene model h1SMcG0000432 h1SMcG0000432 Innexin, gene model h1SMcG0000569 h1SMcG0000569 Innexin, gene model h1SMcG0000849 h1SMcG0000849 Innexin, gene model h1SMcG0001022 h1SMcG0001022 Innexin, gene model h1SMcG0001481 h1SMcG0001481 Innexin, gene model h1SMcG0001482 h1SMcG0001482 Innexin, gene model h1SMcG0001550 h1SMcG0001550 Innexin, gene model h1SMcG0001582 h1SMcG0001582 Innexin, gene model h1SMcG0001586 h1SMcG0001586 Innexin, gene model h1SMcG0001988 h1SMcG0001988 Innexin, gene model h1SMcG0001996 h1SMcG0001996 Innexin, gene model h1SMcG0002187 h1SMcG0002187 Innexin, gene model h1SMcG0002457 h1SMcG0002457 Innexin, gene model h1SMcG0002996 h1SMcG0002996 Innexin, gene model h1SMcG0003371 h1SMcG0003371 Innexin, gene model h1SMcG0003478 h1SMcG0003478 Innexin, gene model h1SMcG0003500 h1SMcG0003500 Innexin, gene model h1SMcG0003799 h1SMcG0003799 Innexin, gene model h1SMcG0004632 h1SMcG0004632 Innexin, gene model h1SMcG0004909 h1SMcG0004909 Innexin, gene model h1SMcG0005851 h1SMcG0005851 Innexin, gene model h1SMcG0005853 h1SMcG0005853 Innexin, gene model h1SMcG0005984 h1SMcG0005984 Innexin, gene model h1SMcG0006554 h1SMcG0006554 Innexin, gene model h1SMcG0006763 h1SMcG0006763 Innexin, gene model h1SMcG0006773 h1SMcG0006773 Innexin, gene model h1SMcG0006774 h1SMcG0006774 Innexin, gene model h1SMcG0006815 h1SMcG0006815 Innexin, gene model h1SMcG0007092 h1SMcG0007092 Innexin, gene model h1SMcG0007093 h1SMcG0007093 Innexin, gene model h1SMcG0007094 h1SMcG0007094 Innexin, gene model h1SMcG0007095 h1SMcG0007095 Innexin, gene model h1SMcG0007480 h1SMcG0007480 Innexin, gene model h1SMcG0007481 h1SMcG0007481 Innexin, gene model h1SMcG0007482 h1SMcG0007482 Innexin, gene model h1SMcG0007556 h1SMcG0007556 Innexin, gene model h1SMcG0008021 h1SMcG0008021 Innexin, gene model h1SMcG0008486 h1SMcG0008486 Innexin, gene model h1SMcG0008950 h1SMcG0008950 Innexin, gene model h1SMcG0009704 h1SMcG0009704 Innexin, gene model h1SMcG0009859 h1SMcG0009859 Innexin, gene model h1SMcG0010953 h1SMcG0010953 Innexin, gene model h1SMcG0011979 h1SMcG0011979 Innexin, gene model h1SMcG0012399 h1SMcG0012399 Innexin, gene model h1SMcG0013413 h1SMcG0013413 Innexin, gene model h1SMcG0013644 h1SMcG0013644 Innexin, gene model h1SMcG0013678 h1SMcG0013678 Innexin, gene model h1SMcG0014013 h1SMcG0014013 Innexin, gene model h1SMcG0014942 h1SMcG0014942 Innexin, gene model h1SMcG0015930 h1SMcG0015930 Innexin, gene model h1SMcG0016082 h1SMcG0016082 Innexin, gene model h1SMcG0016375 h1SMcG0016375 Innexin, gene model h1SMcG0017344 h1SMcG0017344 Innexin, gene model h1SMcG0017745 h1SMcG0017745 Innexin, gene model h1SMcG0018465 h1SMcG0018465 Innexin, gene model h1SMcG0018693 h1SMcG0018693 Innexin, gene model h1SMcG0019013 h1SMcG0019013 Innexin, gene model h1SMcG0021740 h1SMcG0021740 Innexin, gene model h1SMcG0022620 h1SMcG0022620 Innexin, gene model h1SMcG0022952 h1SMcG0022952 Innexin, gene model h1SMcG0023035 h1SMcG0023035"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -24216,6 +24822,12 @@
       }
      ],
      "keywords": "smedinx-11 Innexin A7RDN9 h1SMcG0020152 inx H9CXU2 h1SMcG0020292 I1ZIL2 h1SMcG0002088 Innexin, gene model h1SMcG0000087 h1SMcG0000087 Innexin, gene model h1SMcG0000088 h1SMcG0000088 Innexin, gene model h1SMcG0000396 h1SMcG0000396 Innexin, gene model h1SMcG0000426 h1SMcG0000426 Innexin, gene model h1SMcG0000432 h1SMcG0000432 Innexin, gene model h1SMcG0000569 h1SMcG0000569 Innexin, gene model h1SMcG0000849 h1SMcG0000849 Innexin, gene model h1SMcG0001022 h1SMcG0001022 Innexin, gene model h1SMcG0001481 h1SMcG0001481 Innexin, gene model h1SMcG0001482 h1SMcG0001482 Innexin, gene model h1SMcG0001550 h1SMcG0001550 Innexin, gene model h1SMcG0001582 h1SMcG0001582 Innexin, gene model h1SMcG0001586 h1SMcG0001586 Innexin, gene model h1SMcG0001988 h1SMcG0001988 Innexin, gene model h1SMcG0001996 h1SMcG0001996 Innexin, gene model h1SMcG0002187 h1SMcG0002187 Innexin, gene model h1SMcG0002457 h1SMcG0002457 Innexin, gene model h1SMcG0002996 h1SMcG0002996 Innexin, gene model h1SMcG0003371 h1SMcG0003371 Innexin, gene model h1SMcG0003478 h1SMcG0003478 Innexin, gene model h1SMcG0003500 h1SMcG0003500 Innexin, gene model h1SMcG0003799 h1SMcG0003799 Innexin, gene model h1SMcG0004632 h1SMcG0004632 Innexin, gene model h1SMcG0004909 h1SMcG0004909 Innexin, gene model h1SMcG0005851 h1SMcG0005851 Innexin, gene model h1SMcG0005853 h1SMcG0005853 Innexin, gene model h1SMcG0005984 h1SMcG0005984 Innexin, gene model h1SMcG0006554 h1SMcG0006554 Innexin, gene model h1SMcG0006763 h1SMcG0006763 Innexin, gene model h1SMcG0006773 h1SMcG0006773 Innexin, gene model h1SMcG0006774 h1SMcG0006774 Innexin, gene model h1SMcG0006815 h1SMcG0006815 Innexin, gene model h1SMcG0007092 h1SMcG0007092 Innexin, gene model h1SMcG0007093 h1SMcG0007093 Innexin, gene model h1SMcG0007094 h1SMcG0007094 Innexin, gene model h1SMcG0007095 h1SMcG0007095 Innexin, gene model h1SMcG0007480 h1SMcG0007480 Innexin, gene model h1SMcG0007481 h1SMcG0007481 Innexin, gene model h1SMcG0007482 h1SMcG0007482 Innexin, gene model h1SMcG0007556 h1SMcG0007556 Innexin, gene model h1SMcG0008021 h1SMcG0008021 Innexin, gene model h1SMcG0008486 h1SMcG0008486 Innexin, gene model h1SMcG0008950 h1SMcG0008950 Innexin, gene model h1SMcG0009704 h1SMcG0009704 Innexin, gene model h1SMcG0009859 h1SMcG0009859 Innexin, gene model h1SMcG0010953 h1SMcG0010953 Innexin, gene model h1SMcG0011979 h1SMcG0011979 Innexin, gene model h1SMcG0012399 h1SMcG0012399 Innexin, gene model h1SMcG0013413 h1SMcG0013413 Innexin, gene model h1SMcG0013644 h1SMcG0013644 Innexin, gene model h1SMcG0013678 h1SMcG0013678 Innexin, gene model h1SMcG0014013 h1SMcG0014013 Innexin, gene model h1SMcG0014942 h1SMcG0014942 Innexin, gene model h1SMcG0015930 h1SMcG0015930 Innexin, gene model h1SMcG0016082 h1SMcG0016082 Innexin, gene model h1SMcG0016375 h1SMcG0016375 Innexin, gene model h1SMcG0017344 h1SMcG0017344 Innexin, gene model h1SMcG0017745 h1SMcG0017745 Innexin, gene model h1SMcG0018465 h1SMcG0018465 Innexin, gene model h1SMcG0018693 h1SMcG0018693 Innexin, gene model h1SMcG0019013 h1SMcG0019013 Innexin, gene model h1SMcG0021740 h1SMcG0021740 Innexin, gene model h1SMcG0022620 h1SMcG0022620 Innexin, gene model h1SMcG0022952 h1SMcG0022952 Innexin, gene model h1SMcG0023035 h1SMcG0023035"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -24935,6 +25547,12 @@
       }
      ],
      "keywords": "P-type ATPase IIC alpha subunit, gene model h1SMcG0008944 h1SMcG0008944 P-type ATPase IIC alpha subunit, gene model h1SMcG0012920 h1SMcG0012920 P-type ATPase IIC alpha subunit, gene model h1SMcG0013028 h1SMcG0013028 P-type ATPase IIC alpha subunit, gene model h1SMcG0013029 h1SMcG0013029 P-type ATPase IIC alpha subunit, gene model h1SMcG0016615 h1SMcG0016615 Sodium-potassium pump beta subunit, gene model h1SMcG0000634 h1SMcG0000634 Sodium-potassium pump beta subunit, gene model h1SMcG0001646 h1SMcG0001646 Sodium-potassium pump beta subunit, gene model h1SMcG0001647 h1SMcG0001647 Sodium-potassium pump beta subunit, gene model h1SMcG0001648 h1SMcG0001648 Sodium-potassium pump beta subunit, gene model h1SMcG0001651 h1SMcG0001651 Sodium-potassium pump beta subunit, gene model h1SMcG0007452 h1SMcG0007452 Sodium-potassium pump beta subunit, gene model h1SMcG0008945 h1SMcG0008945 Sodium-potassium pump beta subunit, gene model h1SMcG0010103 h1SMcG0010103 Sodium-potassium pump beta subunit, gene model h1SMcG0010104 h1SMcG0010104 Sodium-potassium pump beta subunit, gene model h1SMcG0016335 h1SMcG0016335 Sodium-potassium pump beta subunit, gene model h1SMcG0017114 h1SMcG0017114 Sodium-potassium pump beta subunit, gene model h1SMcG0017115 h1SMcG0017115 Sodium-potassium pump beta subunit, gene model h1SMcG0019860 h1SMcG0019860"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of the sodium-potassium pump's alpha subunit, its beta subunit and its FXYD regulators (IPR005775, IPR000402, IPR000272). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. The wider family, the P-type ATPases, has two members here, both annotated as magnesium transporters (loci JCVISYN3A_0787 and JCVISYN3A_0879, listed under extra). Neither carries the mark of the sodium-potassium pump.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -25358,6 +25976,12 @@
       }
      ],
      "keywords": "Plasma-membrane calcium pump, gene model h1SMcG0003214 h1SMcG0003214 Plasma-membrane calcium pump, gene model h1SMcG0006353 h1SMcG0006353 Plasma-membrane calcium pump, gene model h1SMcG0010517 h1SMcG0010517 Plasma-membrane calcium pump, gene model h1SMcG0014164 h1SMcG0014164 Plasma-membrane calcium pump, gene model h1SMcG0017880 h1SMcG0017880 Plasma-membrane calcium pump, gene model h1SMcG0019646 h1SMcG0019646"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of plasma-membrane calcium pumps (IPR006408). UniProtKB holds 6 entries of other mollicutes, the class of bacteria it was made from, that carry it. The unit's human candidates carry it, so the search finds the family where it exists. One of its two P-type ATPases, locus JCVISYN3A_0879, has been suggested to carry calcium, and the 2019 reconstruction of its metabolism uses it as the calcium importer. It does not carry this signature, and it is listed under extra.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -25633,6 +26257,12 @@
       }
      ],
      "keywords": "SERCA-type calcium pump, gene model h1SMcG0005277 h1SMcG0005277 SERCA-type calcium pump, gene model h1SMcG0018061 h1SMcG0018061 SERCA-type calcium pump, gene model h1SMcG0020481 h1SMcG0020481"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of SERCA-type calcium pumps (IPR005782). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -25948,6 +26578,12 @@
       }
      ],
      "keywords": "slc8a-1 Slc8a-1 A0A0H3YEY7 h1SMcG0011283 slc8a-3 Slc8a-3 A0A0H3YF68 h1SMcG0009796 slc8a-2 Slc8a-2 A0A0H3YIW4 h1SMcG0011221 slc8a-5 Slc8a-5 A0A0H3YJ09 h1SMcG0015486 slc8a-4 Slc8a-4 A0A0H3YK36 h1SMcG0015487"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of sodium-calcium exchangers (IPR004836). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Nothing in its annotation is named a sodium-calcium exchanger.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -26284,6 +26920,12 @@
       }
      ],
      "keywords": "Inositol trisphosphate receptor, gene model h1SMcG0004941 h1SMcG0004941 Inositol trisphosphate receptor, gene model h1SMcG0017204 h1SMcG0017204 Ryanodine receptor, gene model h1SMcG0005893 h1SMcG0005893"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -26572,6 +27214,12 @@
       }
      ],
      "keywords": "slc12a-4 Slc12a-4 A0A0H3YK51 h1SMcG0001288"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of potassium-chloride cotransporters and the wider SLC12 transporter family (IPR000076, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -26751,6 +27399,12 @@
      "note": "No planarian sequence carries the signature of the sodium-potassium-chloride branch of this transporter family. The same signature finds no UniProtKB entry of any flatworm and only 2 reviewed human entries, so it may not recognise flatworm forms. 5 planarian gene models carry the signature of the wider family (SLC12), of which one carries the potassium-chloride signature; whether any of the others moves sodium, potassium and chloride together is not known from these sources.",
      "items": [],
      "keywords": ""
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of sodium-potassium-chloride cotransporters and the wider SLC12 transporter family (IPR002443, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -26852,6 +27506,12 @@
     "planarian": {
      "finding": "nothing to look for",
      "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species.",
+     "items": [],
+     "keywords": ""
+    },
+    "syn3a": {
+     "finding": "nothing to look for",
+     "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species. This organism's own transporters are in its protein catalogue.",
      "items": [],
      "keywords": ""
     }
@@ -27156,6 +27816,12 @@
       }
      ],
      "keywords": "Mitochondrial calcium uniporter, gene model h1SMcG0008205 h1SMcG0008205 Mitochondrial calcium uptake protein (MICU), gene model h1SMcG0002095 h1SMcG0002095 Mitochondrial calcium uptake protein (MICU), gene model h1SMcG0005317 h1SMcG0005317 Mitochondrial calcium uptake protein (MICU), gene model h1SMcG0010573 h1SMcG0010573"
+    },
+    "syn3a": {
+     "finding": "none found",
+     "note": "None of the 455 protein products of its genome carries the signature of the mitochondrial calcium uniporter, its regulator EMRE and its MICU regulators (IPR039055, IPR006769, IPR018782, IPR039800). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium and has no mitochondria.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -27248,6 +27914,12 @@
      "note": "A protein cage designed in the laboratory, with no gene in any animal, so there is nothing to look for in a planarian.",
      "items": [],
      "keywords": ""
+    },
+    "syn3a": {
+     "finding": "nothing to look for",
+     "note": "A protein cage designed in the laboratory, with no gene in any organism, so there is nothing to look for in this one.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -27334,11 +28006,24 @@
      "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it. Planarian aquaporin-family gene models are noted under extra.",
      "items": [],
      "keywords": ""
+    },
+    "syn3a": {
+     "finding": "nothing to look for",
+     "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it. No protein of this organism carries the aquaporin family's signature.",
+     "items": [],
+     "keywords": ""
     }
    }
   }
  ],
  "relations": [
+  {
+   "from": "exp.conduction",
+   "to": "val.excitable",
+   "kind": "compared_with",
+   "weight": 1,
+   "label": "junction voltages at block sites, computed blind"
+  },
   {
    "from": "exp.division",
    "to": "val.division",
@@ -27901,6 +28586,13 @@
    "kind": "extends",
    "weight": 1,
    "label": "the Myc and cyclin T1 paper, track two"
+  },
+  {
+   "from": "exp.syn3a",
+   "to": "op.ideal_osmosis_linear_compliance_water@1",
+   "kind": "extends",
+   "weight": 1,
+   "label": "its capability probe: a vesicle under the water operator"
   },
   {
    "from": "fr.compartment_ph",
