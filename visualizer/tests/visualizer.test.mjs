@@ -127,6 +127,34 @@ test("the protein atlas links out only to the named public resources, and copies
   assert.ok(snapshot.sources.some((source) => source.name === "UniProt" && source.licence === "CC BY 4.0" && source.release), "the UniProt notice with its release");
 });
 
+test("a species atlas links out only to its named sources, over https", () => {
+  // The hosts a species' side of the atlas may link to: the databases its ids name, the
+  // papers it cites, and the home pages of the sources it states.
+  const allowed = ["www.uniprot.org", "www.rcsb.org", "parasite.wormbase.org", "www.ebi.ac.uk", "europepmc.org", "pubmed.ncbi.nlm.nih.gov", "doi.org"];
+  const links = [];
+  const collect = (node, where) => {
+    if (Array.isArray(node)) return node.forEach((item) => collect(item, where));
+    if (!node || typeof node !== "object") return;
+    if (typeof node.url === "string") links.push([where, node.url]);
+    for (const value of Object.values(node)) collect(value, where);
+  };
+  for (const unit of units) collect(unit.species, unit.id);
+  collect(scene.proteins.atlases, "atlases");
+  for (const [where, link] of links) {
+    const url = new URL(link);
+    assert.equal(url.protocol, "https:", `${where}: ${link}`);
+    assert.ok(allowed.includes(url.hostname), `${where}: ${link}`);
+  }
+  const others = (scene.proteins.atlases || []).filter((atlas) => !atlas.reference);
+  if (others.length) assert.ok(links.length > 0, "a species atlas should carry its links out");
+  // Each further species states where its entries came from and under what terms.
+  for (const atlas of others) {
+    assert.ok(atlas.sources.length > 0, `${atlas.id} names no source`);
+    for (const source of atlas.sources) assert.ok(source.name && source.licence, `${atlas.id}: a source without a name or its terms`);
+    assert.ok(!/xenbase|XB-GENE/i.test(JSON.stringify(atlas)), `Xenbase content in the ${atlas.id} atlas`);
+  }
+});
+
 test("every part belongs to a view", () => {
   const lensOf = new Map(scene.groups.map((group) => [group.id, group.lens]));
   const lenses = new Set(scene.entities.map((entity) => lensOf.get(entity.group)));

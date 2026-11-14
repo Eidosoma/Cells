@@ -17,7 +17,7 @@ One data file, the scene, drawn through four lenses, in this order:
 | Lens | What you see |
 | --- | --- |
 | **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar |
-| **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases |
+| **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases. A Species switch shows, for another species, the gene products that would make each machine: Human and Planarian today |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
 
@@ -79,6 +79,60 @@ The data is a slim snapshot of the inventory, made by `tools/import_protein_inve
 from the evidence folder. It is a snapshot, not a catalogue: the catalogue's design (stage 3
 of the plan) has not begun and belongs to the engine. See `data/proteins/README.md` for the
 sources and licences.
+
+### Species atlases
+
+The user, 14 November 2026: "start an agent to create a full catalogue of Planerian
+proteins - then another one to be able to switch between Human and Planerian (later
+others) atlases".
+
+A unit is a machine that a law acts on, so it has no species. The 49 units drawn, their
+laws, their mapping and their shapes are the engine's and stay the same whichever species
+is shown. What changes is the gene products that would make each machine in that species,
+and how sure that is. Nothing here says the engine models a species' protein.
+
+- **The switch** is the Species control on the atlas's card. The human atlas is the
+  inventory's own candidates. `atlas=planarian` in the address sets the species, and
+  `finding=` sets the legend's species filter.
+- **One file per species:** `data/proteins/atlases/<species>.json`, in the form
+  `schema/SPECIES_ATLAS.md` fixes. The extractor reads every file there (`--atlases DIR`
+  for another folder) and checks it against the contract; a strict build fails on a
+  breach. A further species needs a file and no new code.
+- **Four findings** per unit: found, a different family, nothing found, nothing to look
+  for. A ring on the membrane marks a unit where the species differs: unbroken for a
+  different family, broken for nothing found. The legend's "In this species" block
+  filters by finding.
+- **Four kinds of evidence** per product: reviewed entry, named in a publication, family
+  signature, similarity search. A product found by signature or similarity is called a
+  candidate, never an established counterpart.
+
+**The planarian atlas** is of *Schmidtea mediterranea*, the planarian the databases know
+best. It has an entry for all 49 units:
+
+| Finding | Units | |
+| --- | --- | --- |
+| Found | 38 | gene products of the same family |
+| A different family | 3 | the gap junctions: planarians build them from innexins, not connexins |
+| Nothing found | 2 | Kir2.1 and NKCC |
+| Nothing to look for | 6 | lumped properties, a default current, a configured slot and the designed cage |
+
+It lists 204 gene products. Four are named in a publication; the other 200 are candidates
+found by a family signature, in UniProt's entries and in the gene models of one genome
+annotation. Nothing is called an ortholog. Its sources are UniProt, WormBase ParaSite,
+InterPro, the European Nucleotide Archive and Europe PMC, each with its terms stated in
+the file. `tools/build_planarian_atlas.py` rebuilds it, byte for byte, from the responses
+saved in `/mnt/workspaces/Cells/visualizer-planarian-proteins-20261114-01`, which stay
+outside git. `docs/PLANARIAN_ATLAS.md` gives the method, the counts, where planarians
+differ and what could not be determined.
+
+**The library of about 10,000 planarian proteins** that the user named (the user, 14
+November 2026: "there is one catalog of 10k ones, let's get all those in just first in
+your data sub folder") was found and not imported. It is the mass-spectrometry spectral
+library of Ying and others (2025, doi:10.1016/j.devcel.2025.08.015). Its list of proteins
+is not in the study's public deposits, and the paper reserves all rights. Nothing was put
+in its place; `data/proteins/planarian/README.md` records what was found and what an
+import needs. Joining any catalogue to the engine's protein catalogue is for the user and
+the lead.
 
 ## Experiment replays
 
@@ -164,7 +218,7 @@ npm run extract             # read the main checkout, write data/architecture/ar
 npm run import:proteins -- --inventory PATH/law_inventory_v2.json   # only when the inventory changes
 npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load three.js locally)
 npm test                    # scene, sources, page and allowed hosts; no browser needed
-npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas and its links)
+npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species switch and its links)
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
 npm run export              # out/cells-architecture.html, the page as an artifact wants it, and the list of run files to publish beside it
@@ -289,6 +343,13 @@ The user merges the branch when they choose.
    per run (D154): division needs a geometry that is not a sheet and a thinning rule; the
    conduction probe needs a chain layout; the held sphere needs radial shells.
 
+For the species atlases, the open decision is the user's: which catalogue of planarian
+proteins to bring in whole. The measured library of about 10,000 proteins needs its
+authors' or publisher's permission, or a reanalysis of its open instrument files. The
+predicted set (17,294 gene models and 1,588 UniProt entries, a 2.2 MB table) is open and
+is built on request (`build --full-table FILE`). `docs/PLANARIAN_ATLAS.md` says what each
+would take.
+
 For the protein atlas, each of these needs the user's approval first, because the plan
 counts fetching from the public atlases as data tooling (stage 5):
 
@@ -322,7 +383,12 @@ Ideas kept for after the basics (the user, 14 November 2026):
 - The molecular scale is one membrane patch with one channel and one pump.
 - The planarian and its brain are sketches with indicative sizes. One search gave about
   20 mm by 2 mm for a planarian, from an unreviewed preprint, and no measurement of the
-  brain, so no species is named and the page labels both as placeholders.
+  brain, so the outlines name no species and the page labels both as placeholders. The
+  protein atlas does name one, *Schmidtea mediterranea*, because its entries come from
+  that species' database records.
+- A species atlas repeats a family's candidates on every unit of that family (68 innexin
+  candidates on each of three units), which makes the scene about twice as large. The
+  no-WebGL list has no species switch.
 - The protein atlas is as current as its inventory (12 November 2026). A law added to the
   engine since then is not in it; the extractor only checks that the recorded laws still
   exist. Its shapes are schematic, and where an auxiliary subunit sits is textbook

@@ -3,7 +3,7 @@
 // protocol (Node's built-in WebSocket; no extra dependency). Screenshots set state by
 // query parameter and so never touch picking or the camera control; this does.
 //
-//   node tools/check_input.mjs            (CHECK_ONLY=engine|atlas|experiments|cell|zoom runs one part;
+//   node tools/check_input.mjs            (CHECK_ONLY=engine|atlas|species|experiments|cell|zoom runs one part;
 //                                          CHECK_RUNS=DIR serves replays from another folder;
 //                                          CHECK_SCENE=FILE draws another scene file)
 //
@@ -101,6 +101,49 @@ const wants = (part) => !only || only === part;
 // The points clicked in the cell come from the lens (cell_parts.js), so they follow the layout.
 const probe = (name) => `${VIEWER}.current.probes.${name}.clone()`;
 const clear = () => evaluate(`${VIEWER}.select(null)`);
+// The middle of an element inside the viewer, found by a selector, and a real click there.
+const middle = (selector) =>
+  evaluate(`(() => { const found = ${VIEWER}.shadowRoot.querySelector(${JSON.stringify(selector)}); if (!found) return null; found.scrollIntoView({ block: "nearest" }); const box = found.getBoundingClientRect(); return { x: box.left + box.width / 2, y: box.top + box.height / 2 }; })()`);
+const press = async (selector) => {
+  const at = await middle(selector);
+  if (!at) throw new Error(`nothing matches ${selector}`);
+  await click(at.x, at.y);
+  await sleep(250);
+};
+// What the protein atlas shows of its species: the card, the legend, the rings and the panel.
+const speciesState = () =>
+  evaluate(`(() => {
+    const viewer = ${VIEWER}, root = viewer.shadowRoot, lens = viewer.lenses.get("proteins");
+    const text = (selector) => root.querySelector(selector)?.textContent ?? null;
+    const panel = root.querySelector("cells-panel");
+    return {
+      lens: viewer.state.lens,
+      atlas: viewer.state.atlas ?? null,
+      attribute: viewer.dataset.atlas ?? null,
+      species: [...root.querySelectorAll(".view-card [data-atlas]")].map((button) => ({ id: button.dataset.atlas, label: button.textContent, pressed: button.getAttribute("aria-pressed") === "true" })),
+      heading: text(".view-card .card-title"),
+      organism: text(".view-card .card-organism"),
+      stats: [...root.querySelectorAll(".view-card .stat b")].map((item) => item.textContent).join(" "),
+      details: [...root.querySelectorAll(".view-card details summary")].map((item) => item.textContent).join(" | "),
+      findings: [...root.querySelectorAll("cells-legend [data-finding]")].map((button) => button.dataset.finding + "=" + button.querySelector(".legend-count").textContent + (button.getAttribute("aria-pressed") === "true" ? "*" : "")).join(", "),
+      mapping: [...root.querySelectorAll("cells-legend .legend-body > .legend-item:not(.legend-group)")].map((button) => button.textContent).join(", "),
+      units: lens ? lens.nodes.size : null,
+      marks: lens ? lens.marks.length : null,
+      marksShown: lens ? lens.marks.filter((mark) => mark.mesh.visible).length : null,
+      lit: lens ? [...lens.nodes.values()].filter((node) => lens.lit(node.entity)).length : null,
+      finding: lens ? lens.finding ?? null : null,
+      caveat: text(".caveat"),
+      selected: viewer.state.selected,
+      panel: panel.hidden ? null : {
+        chips: [...panel.querySelectorAll(".chip")].map((chip) => chip.textContent).join(" | "),
+        finding: panel.querySelector(".panel-finding")?.textContent ?? null,
+        heads: [...panel.querySelectorAll(".panel-list h4")].map((head) => head.textContent).join(" | "),
+        lawNote: panel.querySelector(".list-note")?.textContent ?? null,
+        tags: [...panel.querySelectorAll(".tag")].map((tag) => tag.textContent).join(" | "),
+        hosts: [...new Set([...panel.querySelectorAll(".item-links a")].map((link) => new URL(link.href).hostname))].join(" "),
+      },
+    };
+  })()`);
 
 try {
   // ---------------------------------------------------------------- engine lens
@@ -179,6 +222,95 @@ try {
     })()`);
     check("atlas: a unit's connection opens its engine part in the engine view", there.lens === "engine" && there.label === link.text, `${link.text} -> ${there.lens}: ${there.label}`);
     check("atlas: that engine part lists the units it holds the law for", /Holds the law for/.test(there.heads), there.heads);
+  }
+
+  // ---------------------------------------------------------------- species atlases
+  if (wants("species")) {
+    await open("lens=proteins");
+    let s = await speciesState();
+    const other = s.species.find((item) => !item.pressed);
+    if (!other) {
+      check("species: a scene with one atlas shows no switch, and no rings", s.species.length === 0 && s.marks === 0, JSON.stringify(s.species));
+    } else {
+      const human = s;
+      check("species: the atlas opens on the inventory's own, with the switch in its card", s.atlas === s.species[0].id && s.species[0].pressed && s.marks === 0 && s.findings === "", JSON.stringify([s.atlas, s.species, s.marks, s.findings]));
+
+      await press(`.view-card [data-atlas="${other.id}"]`);
+      s = await speciesState();
+      check("species: a click on another species shows its atlas", s.atlas === other.id && s.attribute === other.id && s.heading !== human.heading && s.species.find((item) => item.id === other.id).pressed, JSON.stringify([s.atlas, s.attribute, s.heading]));
+      check("species: the card gives the species' own name, counts and sources", Boolean(s.organism) && s.stats !== human.stats && /How it was made/.test(s.details) && /Sources and licences/.test(s.details), JSON.stringify([s.organism, s.stats, s.details]));
+      check("species: the units drawn and the legend's mapping counts are the engine's, unchanged", s.units === human.units && s.mapping === human.mapping, `${s.units} units; ${s.mapping}`);
+      check("species: the legend lists the species' findings in the contract's words", /^found=\d+, different family=\d+, none found=\d+, nothing to look for=\d+$/.test(s.findings), s.findings);
+      const differ = Number(/different family=(\d+)/.exec(s.findings)?.[1]) + Number(/none found=(\d+)/.exec(s.findings)?.[1]);
+      check("species: one ring for each unit with another family or nothing found, and no other", s.marks === differ && s.marksShown === s.marks, `${s.marks} rings, ${differ} units`);
+      check("species: the page says the laws are the same for every species", /same for every species/.test(s.caveat || ""), s.caveat);
+
+      // A real click on a ring picks its unit.
+      const ring = await evaluate(`(() => {
+        const viewer = ${VIEWER}, lens = viewer.current;
+        for (const mark of lens.marks) {
+          mark.mesh.geometry.computeBoundingBox();
+          const reach = mark.mesh.geometry.boundingBox.max.x - 0.25;
+          for (let angle = 0.05; angle < 6.28; angle += 0.1) {
+            const point = mark.mesh.position.clone();
+            point.x += Math.cos(angle) * reach;
+            point.z += Math.sin(angle) * reach;
+            const out = point.clone();
+            viewer.stage.project(point, out);
+            if (out.x < 320 || out.x > 1000 || out.y < 110 || out.y > 640) continue;
+            const hit = viewer.stage.pick(out.x, out.y, lens.pickRoots);
+            if (hit && hit.id === mark.node.entity.id && hit.object === mark.mesh && viewer.shadowRoot.elementFromPoint(out.x, out.y) === viewer.canvas) return { id: hit.id, x: out.x, y: out.y };
+          }
+        }
+        return null;
+      })()`);
+      check("species: a ring can be found under the pointer", Boolean(ring), JSON.stringify(ring));
+      if (ring) {
+        await click(ring.x, ring.y);
+        s = await speciesState();
+        check("species: clicking a ring selects its unit", s.selected === ring.id, `${ring.id} -> ${s.selected}`);
+        check("species: the panel states the species' finding beside the engine's mapping", Boolean(s.panel) && s.panel.chips.includes(`${other.label}: `) && /Assigned|Candidate|Generic/.test(s.panel.chips) && Boolean(s.panel.finding), JSON.stringify(s.panel));
+        check("species: the panel says the laws are the same for every species", s.panel?.lawNote === "The same laws for every species.", String(s.panel?.lawNote));
+      }
+
+      // A unit built from another family lists the species' products, each with how it was found.
+      const family = await evaluate(`[...${VIEWER}.current.nodes.values()].find((node) => node.entity.species?.[${JSON.stringify(other.id)}]?.finding === "different family")?.entity.id ?? null`);
+      if (family) {
+        await evaluate(`${VIEWER}.select(${JSON.stringify(family)})`);
+        await sleep(300);
+        s = await speciesState();
+        check("species: a unit of another family lists the species' products with their evidence", Boolean(s.panel) && s.panel.heads.includes(`${other.label} gene products`) && !/Candidate products/.test(s.panel.heads) && /Family signature|Similarity search|Named in a publication|Reviewed entry/.test(s.panel.tags), JSON.stringify([s.panel?.heads, s.panel?.tags.slice(0, 120)]));
+        check("species: its links go to the databases", /www\.uniprot\.org|wormbase/.test(s.panel?.hosts || ""), String(s.panel?.hosts));
+      }
+
+      // A finding in the legend shows its units alone; a second press shows all again.
+      await press('cells-legend [data-finding="none found"]');
+      s = await speciesState();
+      const none = Number(/none found=(\d+)\*/.exec(s.findings)?.[1] ?? -1);
+      check("species: a finding in the legend shows its units alone", s.finding === "none found" && s.lit === none && s.marksShown === none, JSON.stringify([s.finding, s.lit, s.marksShown, s.findings]));
+      await press('cells-legend [data-finding="none found"]');
+      s = await speciesState();
+      check("species: pressing it again shows every unit", s.finding === null && s.lit === s.units && s.marksShown === s.marks, JSON.stringify([s.finding, s.lit, s.marksShown]));
+
+      // The choice is kept across views, and the inventory's atlas comes back as it was.
+      await press('.switch [data-lens="engine"]');
+      await press('.switch [data-lens="proteins"]');
+      s = await speciesState();
+      check("species: the species is kept when another view is visited", s.lens === "proteins" && s.atlas === other.id && s.marks > 0, JSON.stringify([s.lens, s.atlas, s.marks]));
+      if (family) await evaluate(`${VIEWER}.select(${JSON.stringify(family)})`);
+      await press(`.view-card [data-atlas="${human.atlas}"]`);
+      s = await speciesState();
+      check("species: back on the inventory's atlas, the card, the legend and the picture are as before", s.atlas === human.atlas && s.heading === human.heading && s.stats === human.stats && s.findings === "" && s.marks === 0 && s.lit === s.units && s.mapping === human.mapping, JSON.stringify([s.atlas, s.heading, s.findings, s.marks, s.lit]));
+      check("species: the selected unit lists the inventory's candidates again", !family || (Boolean(s.panel) && s.panel.finding === null && /Candidate products/.test(s.panel.heads) && s.panel.lawNote === null), JSON.stringify(s.panel));
+
+      // The address can set the species, also while another view is shown; an unknown one is ignored.
+      await open(`lens=cell&atlas=${other.id}`);
+      s = await speciesState();
+      check("species: atlas= in the address is taken while another view is shown", s.lens === "cell" && s.atlas === other.id, JSON.stringify([s.lens, s.atlas]));
+      await open("lens=proteins&atlas=no-such-species");
+      s = await speciesState();
+      check("species: an unknown species in the address is ignored", s.atlas === human.atlas && s.heading === human.heading, JSON.stringify([s.atlas, s.heading]));
+    }
   }
 
   // ---------------------------------------------------------------- experiments (replays)
