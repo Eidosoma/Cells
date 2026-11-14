@@ -1,7 +1,8 @@
 # Secreted-species transport (design)
 
 **Status: accepted by the lead with the advisor, 13 November 2026 (merged at ffc985a). Version 1
-code follows S5a. No code yet.** The main choices stand: one inventory in @3 as neutral species
+code: milestones 1 and 2 built and guarded on the branch, 14 November 2026, with the lead's
+rulings at milestone 1 in §12. Development status: no judged run.** The main choices stand: one inventory in @3 as neutral species
 rows, uptake as a plain sink (a), and identity on the operator declarations. The lead's
 pre-code checks (probes 2 to 5) were run the same day. Their results, the amendments they bring
 and the lead's rulings are in §11:
@@ -222,10 +223,15 @@ cell, node, bath and replacement template.
   10⁻⁹ and 10⁻⁶ of c0 moved the profile by 0.947 times the trace, linear and below c_bg (§11.2).
 - **Rejected:** a positivity-free @3 version. It would be heavy, and μ and the free energy are
   undefined at zero.
-- **Underflow.** A node cleared at rate k with no supply decays as e^{−kt}, reaching the smallest
-  normal float after kt ≈ 708. At k = 1e-4/s that is 82 days (**S**), beyond any planned run. A
-  non-positive amount is refused, never repaired. Nodes joined to a held bath stay at or above
-  its c_bg.
+- **Underflow and resolution** (amended by the lead, 14 November 2026, at milestone 1; §12). @3
+  stores an amount as its declared anchor plus an increment, so it resolves to about ε × its anchor.
+  - A node cleared at rate k with no supply follows e^{−kt} until about ε × its anchor, reached at
+    kt ≈ ln(1/ε) ≈ 36. Below that it stalls at about one rounding unit of its anchor: it stays
+    positive and is never refused (`tests/unit/test_species_turnover.py` measures it).
+  - Compared quantities are chosen far above that resolution. kt ≈ 708, the smallest normal float,
+    applies only to amounts stored without an anchor.
+  - A non-positive amount is refused, never repaired. Nodes joined to a held bath stay at or above
+    its c_bg.
 
 **The mean-field limit** (**S**).
 - 1 nM in 1 pL is 1e-6 fmol, about 600 molecules; in a 0.01 pL cleft it is about 6.
@@ -351,7 +357,9 @@ processes, so the cleared amount is shared in proportion to the rate constants.
 - `turnover_outside_cleared_fmol` [species, outside];
 - `turnover_work_pJ` [cell];
 - `turnover_outside_work_pJ` [outside];
-- `turnover_energy_magnitude_pJ` [cell + outside], the rounding allowance's magnitudes.
+- `turnover_energy_magnitude_pJ` [cell] and `turnover_outside_energy_magnitude_pJ` [outside], the
+  rounding allowance's magnitudes (split by node kind; the lead, 14 November 2026, at milestone 1,
+  §12 ruling 3).
 
 **Ledger terms.**
 - Local, outside and total each gain (removed − supplied), as injection's do.
@@ -398,9 +406,19 @@ it through replacement (§5.2).
   into a held bath is clearance, and its composition is held.
 - An import lands in the cell's inventory: the same species, in the same cell.
 
-**Combining routes.** First-order routes leaving one node combine exactly, shared by rate.
-Otherwise routes apply in declared order, and the splitting between them is O(h²) relative to
-their rates (§4.3).
+**Combining routes** (amended by the lead, 14 November 2026, at milestone 1; §12 ruling 2).
+Routes apply by kind, in a fixed order, run as a palindrome within each half-step:
+1. first-order exports, combined exactly per cell and shared by rate;
+2. flux exports;
+3. first-order imports, combined exactly per node and shared by rate;
+4. saturable uptake: routes leaving one node in declared order, one rank each.
+
+The half-step applies each stage for h/2 in this order, the last for h, then the others for h/2 in
+reverse. Routes of different kinds do not depend on their declared order. The palindrome makes the
+splitting between non-commuting routes (secretion into a node that another route takes up from)
+second order: the local error ratio per halving of h measured 6.90, 7.43, 7.71 and 7.85, approaching
+8 (`tests/unit/test_species_exchange.py`). This replaces the earlier "otherwise routes apply in
+declared order".
 
 **Supply.** A sustained source is production plus export:
 - **from the pool:** turnover produces into the cell, and exchange exports from it. A pre-loaded
@@ -424,7 +442,9 @@ opposite signs, and the total gains nothing.
   - a charged species;
   - a patch on a held bath;
   - an import law with a flux;
-  - a non-positive K_M, V_max or k_u;
+  - a negative rate (J, k_e, k_u or V_max), and a non-positive K_M (K_M > 0 strictly). Zero rates
+    are admitted: they are the idle state (D136) and a swap to a zero-rate template (the lead,
+    14 November 2026, at milestone 1; §12 ruling 1);
   - schedule changes off the dt grid;
   - `CONFLICTS_VIEW` (`volume`, `extracellular_volume`, `membrane_area`) and closers.
 - At run time: a supply shortfall, a failed saturable solve and non-finite values. As in §2.2,
@@ -448,6 +468,13 @@ sums).
   That is new code beside the existing function, which stays as it is. No existing program calls
   it, so crossrev stays identical.
 - **Sequenced after S5a,** which owns the adapter now.
+- **As built** (accepted by the lead, 14 November 2026, at milestone 1; §12 ruling 7): two
+  functions per element, `species_chemical_free_energy_pJ(anchor, change, volume, temperature)`
+  and its absolute terms, `species_chemical_magnitude_pJ`. With the declared reference as the
+  anchor and the increment as the change it is balances' own term; with the current amount as the
+  anchor and a moved amount as the change it is that move's exact free-energy change, with no
+  difference of bulk terms. The caller selects the species rows and the node kind. The D152
+  operator will reuse `species_chemical_free_energy_pJ`.
 
 | Process | Owner of the booking | Energy booked | Sign |
 | --- | --- | --- | --- |
@@ -542,6 +569,12 @@ primitive replaces the sink as a new law ID, and transport is unchanged.
   - Production worlds should also start from a resolved switch-on.
 - **No stationary analysis on the composite** (§8).
 - **No donor copy whose route values differ from the slot's** (§5.2).
+- **No membrane, junction or channel route of @3's for an inventory species** (17c3407, accepted by
+  the lead at milestone 1; §12). @3's explicit-rate bound covers every species on faces, but on
+  membranes and junctions it bounds only the z²-weighted charge relaxation, so such a species would
+  have no material-rate bound at the definition. Both operators refuse it, naming the route.
+- **Bridge closure stays refused for inventory species in version 1.1** until neutral species on
+  junctions have a material-rate bound (§5.3; a D148 question, §12).
 
 ## 3. Charge: neutral
 
@@ -812,6 +845,11 @@ zero bookings. The species is never a mismatch carrier, because those are charge
   - While the bridge is open, the daughters' pools equilibrate through it. That is physical:
     the cytoplasm is continuous.
   - It does not change the bridge's conductance, since z = 0.
+  - **A version 1.1 limit** (the lead, 14 November 2026, at milestone 1). Version 1 refuses an
+    inventory species with junction permeability, since @3's explicit-rate bound covers junctions
+    only through the z²-weighted charge relaxation. So bridge closure stays refused for inventory
+    species until neutral species on junctions have a material-rate bound. That is a D148
+    question; the D152 agent's probe C4 is measuring @3's behaviour there.
 
 ### 5.4 The protein catalogue
 
@@ -1058,7 +1096,8 @@ code):
 - a stiff-front world (source 1e-3 mM into a 1e-15 mM trace) at the planned dt, through the
   checked step map: every step accepted and every amount positive (probe 4: 2,000 steps, none
   refused). The runner's host energy ledger refuses this start (§11.4), so this guard checks the
-  domain at every row, not the energy ledger;
+  domain at every row, not the energy ledger. It expects the anchored-amount stall (§1.3): an
+  amount below about ε × its anchor holds positive, and that is not a failure;
 - background insensitivity (§1.3);
 - the refusal of an export flux beyond the pool, with the prior state kept bitwise.
 
@@ -1448,6 +1487,61 @@ stays in every later row.
    - The species-only world and the NumPy ΔG test per law certify the laws.
    - Production worlds should also start from a resolved switch-on (§2.6, §11.4).
 7. **This round's five proposals are accepted** (items 7 to 11 above).
+
+## 12. Amendments at milestone 1 (the lead, 14 November 2026, at milestone 1)
+
+Version 1's first milestone is the two operators with their unit tests (branch commits 9400bc6 to
+79044bb; evidence and the design-to-code checklist in
+`/mnt/workspaces/Cells/secreted-species-v1-20261114-01/HANDOFF.md`). The lead ruled on its
+questions as follows. Each ruling is the lead's, 14 November 2026, at milestone 1.
+
+1. **Zero rates are admitted.** Zero V_max and k_u (and zero J, k_e, P and k) are the idle state
+   (D136) and a swap to a zero-rate template. Negative values are refused, and K_M > 0 strictly.
+   §2.3's refusal line is amended to match.
+2. **The fixed kind order is accepted**, run as a palindrome within each half-step: first-order
+   exports combined per cell, then flux exports, then first-order imports combined per node, then
+   saturable uptake in declared order (§2.3, amended). It replaces "otherwise routes apply in
+   declared order": routes of different kinds do not depend on their declared order. The evidence
+   is the measured local error ratios per halving, 6.90, 7.43, 7.71 and 7.85, approaching 8.
+3. **The turnover magnitude field is split** into a cell field and an outside field
+   (`turnover_energy_magnitude_pJ`, `turnover_outside_energy_magnitude_pJ`; §2.2, amended). The
+   D152 operator will use the same convention.
+4. **Donor copies, as read in version 1, are accepted**; they are consistent with §5.2 and D139:
+   - the slot's ion route values are its declared ones (D139's newcomer values);
+   - the slot's secretion route values are the rates in force just before the event, so an
+     admitted copy leaves the slot's controls unchanged across it;
+   - a donor copy naming a route-only template is refused;
+   - the newcomer takes the slot's rates, which equal the donor's by admission.
+5. **Evidence kinds.** The catalogue plan's four kinds (`label_only`, `expressed_isoform`,
+   `native_current`, `model`) are accepted for version 1, given exactly when a catalogue reference
+   is. `native_current` was written for channel products; a secreted product would need a
+   native-measurement kind, to be decided at catalogue stage 3 (held, D145). No new kind is added
+   now.
+6. **The schema is accepted:**
+   - `templates` carry the rates of newcomers from replacement templates, keyed by template ID, then
+     route ID;
+   - schedules are entries of `route_id` and `carrier_id`: per carrier for cell-side routes (a
+     founder's from time 0), per node (`carrier_id` null) for outside-node clearance;
+   - a newcomer starts from its template's rate, or for a donor copy the slot's, then follows its
+     own schedule strictly inside its life; schedule entries outside a carrier's life are refused.
+7. **The adapter addition as two functions** with an explicit anchor and a separate magnitude
+   function is accepted (§2.4, amended). The D152 operator will reuse
+   `species_chemical_free_energy_pJ`.
+8. **Crossrev:** the existing tools run unchanged, from a clean snapshot of the head, against the
+   baseline of record (`/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/baseline-21fb714/
+   baseline-of-record.json`); all five sets (base, qualification, injection, volume, division) must
+   be identical. The new operators' bindings driver lives in the checkout, under `validation/tissue/`
+   (as `validation/division/division_crossrev.py` does for S5), importing the crossrev library, with
+   its records in the evidence folder.
+
+**Also accepted at milestone 1:**
+- **The impermeability refusal** (17c3407; §2.6). Both operators refuse an inventory species with a
+  membrane, junction or channel route of @3's, naming the route and the reason.
+- **The §1.3 finding.** An anchored amount resolves to about ε × its anchor, reached at kt ≈ 36;
+  below that it stalls positive and is never refused. kt ≈ 708 applies only to amounts stored
+  without an anchor (§1.3, amended). The stiff-front guard expects the stall (§7, amended).
+- **The bridge consequence** is a version 1.1 limit (§2.6, §5.3): bridge closure stays refused for
+  inventory species until neutral species on junctions have a material-rate bound, a D148 question.
 
 ## Appendix A. Equations for the independent references
 
