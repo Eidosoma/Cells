@@ -12,7 +12,10 @@ Covered, exactly:
   validation/tissue/secreted_species_crossrev.species_worlds (D150's operators);
   validation/tissue/species_reactions_crossrev.reaction_worlds (D152's operator);
 - D150's registered qualification arms (secreted_species_qualification.arm_world, all eight);
-- the registered eggs: S5's (egg_division_world.definition) and S3's (cleft_egg_engine.definition).
+- S5's registered egg (egg_division_world.definition). S3's cleft egg, a J1 world
+  (cleft_egg_engine.definition), is checked in test_field_solver_enforcement_cleft_egg.py: no
+  module may hold a J1 source beside a partition source (the J2 bright line,
+  tests/unit/test_j2_bright_line.py), and this one holds partition sources.
 Not covered: the other registered protocols' worlds, built inside their own drivers (many before
 D147), and E07-v1's arms, which its run driver declares by construction (e07_v1_run.build).
 
@@ -49,7 +52,7 @@ def raw_of(value):
 
 
 def worlds():
-    from validation.division import cleft_egg_engine, division_crossrev, egg_division_world
+    from validation.division import division_crossrev, egg_division_world
     from validation.tissue import composite_crossrev as cx
     from validation.tissue import secreted_species_crossrev as species
     from validation.tissue import secreted_species_qualification as d150
@@ -64,9 +67,7 @@ def worlds():
         species=species.species_worlds(),
         reactions=reactions.reaction_worlds(),
         d150_arms={name: d150.arm_world(name) for name in d150.ARMS},
-        eggs=dict(
-            s5_egg=egg_division_world.definition(), s3_cleft_egg=cleft_egg_engine.definition()
-        ),
+        eggs=dict(s5_egg=egg_division_world.definition()),
     )
     return {f"{s}/{name}": raw_of(v) for s, members in sets.items() for name, v in members.items()}
 
