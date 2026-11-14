@@ -50,6 +50,31 @@ function instanced(geometry, material, placements) {
 
 // ------------------------------------------------------------------ one cell
 
+// Where things sit. The nucleus is near the centre; organelles are spread through the
+// whole cell, so it looks populated from any side. Each capability has one clear instance
+// in the opening for the default view. Sketched (planned) parts sit in the opening only:
+// they are drawn translucent, and the membrane hides translucent things behind it.
+const NUCLEUS = new THREE.Vector3(0.9, 0.6, 0.9);
+const NUCLEUS_RADIUS = 3.0;
+const GOLGI = new THREE.Vector3(6.1, 2.2, 3.0);
+const MACHINE = new THREE.Vector3(2.0, 7.2, 2.8);
+const CAGES = [new THREE.Vector3(1.6, 2.9, 7.4), new THREE.Vector3(-5.2, 3.8, -3.6), new THREE.Vector3(3.6, -5.6, -3.2)];
+const MITOCHONDRIA = [
+  [4.7, 5.5, 2.3], [2.2, 5.1, 5.5], [4.6, 1.5, 6.3], // in the opening
+  [-5.4, 2.4, 4.2], [-3.0, -5.6, 3.6], [4.6, -4.8, -3.4], [-4.4, 4.6, -4.4], [2.4, 3.4, -6.6], [-6.2, -2.6, -3.0],
+].map((xyz) => new THREE.Vector3(...xyz));
+const ER_SIDES = [new THREE.Vector3(-0.35, 0.8, 0.5), new THREE.Vector3(0.78, -0.3, 0.55), new THREE.Vector3(-0.6, -0.4, -0.7)].map((side) => side.normalize());
+const DROP = new THREE.SphereGeometry(0.19, 12, 8);
+const BEAD = new THREE.SphereGeometry(0.2, 12, 8);
+
+/** Points the input check clicks, kept beside the layout they depend on. */
+export const PROBES = {
+  nucleus: NUCLEUS.clone().addScaledVector(new THREE.Vector3(1, 1, 1).normalize(), NUCLEUS_RADIUS - 0.3),
+  cutFloor: new THREE.Vector3(8.6, 0.02, 0.9),
+  uncutSide: new THREE.Vector3(-6.2, -5.6, 5.4),
+  sheetCell: new THREE.Vector3(73.4, 6.5, 31.8),
+};
+
 export function buildCell(ctx, studsCtx) {
   const random = seeded(7);
 
@@ -61,6 +86,7 @@ export function buildCell(ctx, studsCtx) {
   );
   shell.userData.pickFilter = (hit) => !inCut(hit.point);
   membrane.add(shell);
+  // The rim and the charge marks are cell-scale drawing: they give way to lipids up close.
   const edge = studsCtx.part("membrane");
   const rimMaterial = edge.material({ roughness: 0.4, shade: -0.18 });
   for (const turn of [new THREE.Euler(0, 0, 0), new THREE.Euler(Math.PI / 2, 0, 0), new THREE.Euler(0, -Math.PI / 2, 0)]) {
@@ -76,8 +102,8 @@ export function buildCell(ctx, studsCtx) {
     studsCtx.sprite(edge, "−", direction.clone().multiplyScalar(R - 0.8), 0.8);
   }
 
-  // Cytoplasm: the three cut faces, and small molecules in the opened octant.
-  const chemistry = ctx.part("cytoplasm", new THREE.Vector3(7.0, 0.3, 4.6));
+  // Cytoplasm: the three cut faces, and small molecules all through the cell.
+  const chemistry = ctx.part("cytoplasm", new THREE.Vector3(8.3, 0.3, 4.2));
   const faceMaterial = chemistry.material({ opacity: 0.2, side: THREE.DoubleSide, roughness: 1, depthWrite: false });
   for (const turn of [new THREE.Euler(0, 0, 0), new THREE.Euler(Math.PI / 2, 0, 0), new THREE.Euler(0, -Math.PI / 2, 0)]) {
     const face = new THREE.Mesh(new THREE.CircleGeometry(R - 0.02, 48, 0, Math.PI / 2), faceMaterial);
@@ -86,11 +112,11 @@ export function buildCell(ctx, studsCtx) {
     chemistry.add(face);
   }
   const specks = [];
-  while (specks.length < 46) {
-    const point = new THREE.Vector3(random() * 8.6, random() * 8.6, random() * 8.6);
-    if (point.length() < 8.8 && point.distanceTo(NUCLEUS) > 4.3) specks.push({ position: point, scale: 0.6 + random() * 0.8 });
+  while (specks.length < 150) {
+    const point = unit(random).multiplyScalar(8.7 * Math.cbrt(random()));
+    if (point.distanceTo(NUCLEUS) > NUCLEUS_RADIUS + 1.4) specks.push({ position: point, scale: 0.6 + random() * 0.8 });
   }
-  chemistry.add(instanced(new THREE.SphereGeometry(0.1, 8, 6), chemistry.material({ opacity: 0.85 }), specks));
+  chemistry.add(instanced(new THREE.SphereGeometry(0.1, 8, 6), chemistry.material({ shade: 0.12 }), specks));
 
   // Channels and pumps stud the membrane. Each stands for a population, not single proteins.
   const studs = (count, minGap) => {
@@ -166,55 +192,53 @@ export function buildCell(ctx, studsCtx) {
   belt.rotation.set(Math.PI / 2 - 0.28, 0, 0.2);
   furrow.add(belt);
 
-  // Nucleus: regulatory circuits today; gene regulation coupled to tissue is a planned cage around it.
-  const nucleus = ctx.part("nucleus", NUCLEUS.clone().add(new THREE.Vector3(0.4, 3.3, 0)));
-  const core = new THREE.Mesh(new THREE.SphereGeometry(2.7, 48, 32), nucleus.material({ roughness: 0.55, shade: 0.08 }));
+  // Nucleus, near the centre: regulatory circuits today. A translucent envelope round a solid core.
+  const towardOpening = new THREE.Vector3(1, 1, 1).normalize();
+  const nucleus = ctx.part("nucleus", NUCLEUS.clone().addScaledVector(towardOpening, NUCLEUS_RADIUS * 0.72));
+  const core = new THREE.Mesh(new THREE.SphereGeometry(NUCLEUS_RADIUS - 0.42, 48, 32), nucleus.material({ roughness: 0.55, shade: -0.06 }));
+  const envelope = new THREE.Mesh(new THREE.SphereGeometry(NUCLEUS_RADIUS, 48, 32), nucleus.material({ opacity: 0.4, roughness: 0.4, shade: 0.2, depthWrite: false }));
   core.position.copy(NUCLEUS);
-  const nucleolus = new THREE.Mesh(new THREE.SphereGeometry(1.0, 24, 16), nucleus.material({ shade: -0.25 }));
-  nucleolus.position.copy(NUCLEUS).add(new THREE.Vector3(1.45, 1.2, 1.55));
-  nucleus.add(core, nucleolus);
+  envelope.position.copy(NUCLEUS);
+  envelope.renderOrder = 2;
+  nucleus.add(core, envelope);
 
-  const genome = ctx.part("genome", NUCLEUS.clone().add(new THREE.Vector3(3.2, -1.6, 2.6)));
-  const cage = new THREE.Mesh(new THREE.IcosahedronGeometry(3.45, 1), genome.material({ wire: true }));
+  // Gene regulation coupled to tissue is planned: a sketched network round the nucleus.
+  const genome = ctx.part("genome", NUCLEUS.clone().add(new THREE.Vector3(3.0, -1.2, 2.5)));
+  const cage = new THREE.Mesh(new THREE.IcosahedronGeometry(NUCLEUS_RADIUS + 0.55, 1), genome.material({ wire: true }));
   cage.position.copy(NUCLEUS);
   genome.add(cage);
 
-  // Endoplasmic reticulum: sheets wrapped round the far side of the nucleus; the calcium store.
-  const erSide = new THREE.Vector3(-0.55, 0.15, 0.82).normalize();
-  const er = ctx.part("er", NUCLEUS.clone().addScaledVector(erSide, 5.6).add(new THREE.Vector3(0, 1.2, 0)));
+  // Endoplasmic reticulum, the calcium store: stacks of sheet on three sides of the nucleus.
+  const er = ctx.part("er", NUCLEUS.clone().addScaledVector(ER_SIDES[0], 5.0));
   const sheetMaterial = er.material({ side: THREE.DoubleSide, roughness: 0.6, shade: 0.34 });
-  [3.45, 3.95, 4.45, 4.95].forEach((radius, index) => {
-    const sheet = new THREE.Mesh(new THREE.SphereGeometry(radius, 40, 14, index * 0.5, 2.5, 0.18, 0.72), sheetMaterial);
-    sheet.position.copy(NUCLEUS);
-    sheet.quaternion.copy(along(erSide)).multiply(new THREE.Quaternion().setFromAxisAngle(UP, 1.1 + index * 0.35));
-    er.add(sheet);
+  ER_SIDES.forEach((erSide, group) => {
+    [3.55, 4.05, 4.55].forEach((radius, index) => {
+      const sheet = new THREE.Mesh(new THREE.SphereGeometry(radius, 40, 14, index * 0.5, 2.3, 0.2, 0.62), sheetMaterial);
+      sheet.position.copy(NUCLEUS);
+      sheet.quaternion.copy(along(erSide)).multiply(new THREE.Quaternion().setFromAxisAngle(UP, 1.1 + group * 1.7 + index * 0.35));
+      er.add(sheet);
+    });
   });
 
   // Golgi and trafficking: planned, so only sketched.
-  const golgiAt = new THREE.Vector3(6.6, 2.4, 1.2);
-  const golgi = ctx.part("golgi", golgiAt.clone().add(new THREE.Vector3(0.4, 1.9, 0.4)));
+  const golgi = ctx.part("golgi", GOLGI.clone().add(new THREE.Vector3(0.4, 1.9, 0.4)));
   const golgiMaterial = golgi.material({ wire: true });
   for (let index = 0; index < 5; index++) {
     const cisterna = new THREE.Mesh(new THREE.TorusGeometry(1.25 + index * 0.13, 0.15, 5, 16, 2.3), golgiMaterial);
-    cisterna.position.copy(golgiAt).add(new THREE.Vector3(0, (index - 2) * 0.36, 0));
+    cisterna.position.copy(GOLGI).add(new THREE.Vector3(0, (index - 2) * 0.36, 0));
     cisterna.rotation.set(Math.PI / 2, 0, 0.5);
     golgi.add(cisterna);
   }
   for (const offset of [[1.7, 0.5, 0.9], [2.1, -0.2, 0.2], [1.5, -0.7, 1.4]]) {
     const vesicle = new THREE.Mesh(new THREE.IcosahedronGeometry(0.24, 1), golgiMaterial);
-    vesicle.position.copy(golgiAt).add(new THREE.Vector3(...offset));
+    vesicle.position.copy(GOLGI).add(new THREE.Vector3(...offset));
     golgi.add(vesicle);
   }
 
-  // Mitochondria, and the fuel they are drawn with.
-  const mitochondria = ctx.part("mitochondria", new THREE.Vector3(6.2, 2.3, 5.6));
+  // Mitochondria all through the cytoplasm, and the fuel drawn beside some of them.
+  const mitochondria = ctx.part("mitochondria", MITOCHONDRIA[0].clone().add(new THREE.Vector3(0, 1.5, 0)));
   const mitoMaterial = mitochondria.material({ roughness: 0.5, shade: -0.22 });
-  const mitoSpots = [
-    { at: new THREE.Vector3(1.2, 5.7, 1.6), turn: new THREE.Euler(0.4, 0.3, 1.1) },
-    { at: new THREE.Vector3(3.4, 6.6, 0.9), turn: new THREE.Euler(1.2, 0.2, 0.3) },
-    { at: new THREE.Vector3(6.2, 1.1, 5.4), turn: new THREE.Euler(0.2, 1.0, 1.4) },
-  ];
-  for (const spot of mitoSpots) {
+  for (const at of MITOCHONDRIA) {
     const body = new THREE.Group();
     body.add(new THREE.Mesh(new THREE.CapsuleGeometry(0.62, 1.7, 8, 20), mitoMaterial));
     for (const y of [-0.55, 0, 0.55]) {
@@ -223,42 +247,46 @@ export function buildCell(ctx, studsCtx) {
       band.position.y = y;
       body.add(band);
     }
-    body.position.copy(spot.at);
-    body.rotation.copy(spot.turn);
+    body.position.copy(at);
+    body.quaternion.copy(along(unit(random)));
     mitochondria.add(body);
   }
-  const fuel = ctx.part("atp", new THREE.Vector3(2.6, 8.2, 1.0));
+  const fuel = ctx.part("atp", MITOCHONDRIA[1].clone().add(new THREE.Vector3(-0.6, 1.9, 0.6)));
   const sparks = [];
-  for (const spot of mitoSpots.slice(0, 2)) {
-    for (let index = 0; index < 9; index++) {
-      const offset = unit(random).multiplyScalar(1.1 + random() * 0.9);
-      const point = spot.at.clone().add(offset);
-      if (point.x > 0.2 && point.y > 0.2 && point.z > 0.2 && point.length() < 9) sparks.push({ position: point, scale: 0.8 + random() * 0.6 });
+  for (const at of [MITOCHONDRIA[1], MITOCHONDRIA[0], MITOCHONDRIA[3], MITOCHONDRIA[5], MITOCHONDRIA[7]]) {
+    for (let index = 0; index < 8; index++) {
+      const point = at.clone().add(unit(random).multiplyScalar(1.15 + random() * 0.8));
+      if (point.length() < 8.9 && point.distanceTo(NUCLEUS) > NUCLEUS_RADIUS + 0.8) sparks.push({ position: point, scale: 0.8 + random() * 0.6 });
     }
   }
   fuel.add(instanced(new THREE.OctahedronGeometry(0.17), fuel.material({ shade: 0.5, emissive: 0.3 }), sparks));
 
-  // Protein cage: assembled from folded subunits; drawn whole with three free subunits.
-  const cageAt = new THREE.Vector3(4.3, 6.1, 3.9);
-  const assembly = ctx.part("cage", cageAt.clone().add(new THREE.Vector3(0, 1.5, 0)));
-  const shellCage = new THREE.Mesh(new THREE.DodecahedronGeometry(0.95), assembly.material({ flat: true, roughness: 0.5 }));
-  shellCage.position.copy(cageAt);
-  assembly.spin = shellCage;
-  assembly.add(shellCage);
-  for (const offset of [[1.5, 0.3, 0.2], [0.9, -0.9, 1.0], [-0.4, 0.5, 1.5]]) {
-    const subunit = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.09, 5), assembly.material({ flat: true, shade: 0.15 }));
-    subunit.position.copy(cageAt).add(new THREE.Vector3(...offset));
-    subunit.rotation.set(offset[0], offset[1], offset[2]);
-    assembly.add(subunit);
-  }
+  // Protein cages, assembled from folded subunits; free subunits drift beside each.
+  const assembly = ctx.part("cage", CAGES[0].clone().add(new THREE.Vector3(0, 1.5, 0)));
+  const cageMaterial = assembly.material({ flat: true, roughness: 0.5 });
+  const subunitMaterial = assembly.material({ flat: true, shade: 0.15 });
+  assembly.spins = [];
+  CAGES.forEach((at, which) => {
+    const shellCage = new THREE.Mesh(new THREE.DodecahedronGeometry(0.95), cageMaterial);
+    shellCage.position.copy(at);
+    assembly.spins.push(shellCage);
+    assembly.add(shellCage);
+    for (let index = 0; index < 3; index++) {
+      const offset = unit(random).multiplyScalar(1.4 + random() * 0.5);
+      if (which === 0) offset.set(Math.abs(offset.x), offset.y * 0.5, -Math.abs(offset.z) * 0.6); // keep the first group in the opening
+      const subunit = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.09, 5), subunitMaterial);
+      subunit.position.copy(at).add(offset);
+      subunit.rotation.set(offset.x, offset.y, offset.z);
+      assembly.add(subunit);
+    }
+  });
 
   // Larger molecular machines: a goal, so sketched. Stacked rings, like a proteasome.
-  const machineAt = new THREE.Vector3(2.2, 7.4, 4.5);
-  const machine = ctx.part("machine", machineAt.clone().add(new THREE.Vector3(-0.2, 1.5, 0.3)));
+  const machine = ctx.part("machine", MACHINE.clone().add(new THREE.Vector3(-0.2, 1.5, 0.3)));
   const machineMaterial = machine.material({ wire: true });
   for (let index = 0; index < 4; index++) {
     const stack = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.2, 5, 10), machineMaterial);
-    stack.position.copy(machineAt).add(new THREE.Vector3(0, (index - 1.5) * 0.4, 0));
+    stack.position.copy(MACHINE).add(new THREE.Vector3(0, (index - 1.5) * 0.4, 0));
     stack.rotation.x = Math.PI / 2;
     machine.add(stack);
   }
@@ -274,22 +302,16 @@ export function buildCell(ctx, studsCtx) {
 
   // The space between cells: ions in the fluid around the cell.
   const outside = ctx.part("extracellular", new THREE.Vector3(-11.8, 8.2, -1.0));
-  const view = new THREE.Vector3(0.57, 0.54, 0.62);
   const ions = [];
   let guard = 0;
-  while (ions.length < 64 && guard++ < 6000) {
-    const direction = unit(random);
-    if (Math.abs(direction.dot(view)) > 0.5) continue; // keep the view of the cell clear
-    const point = direction.multiplyScalar(R + 1.6 + random() * 5.5);
+  while (ions.length < 110 && guard++ < 6000) {
+    const point = unit(random).multiplyScalar(R + 1.6 + random() * 5.5);
+    if (point.x > -1 && point.y > -1 && point.z > -1) continue; // keep the opening clear
     if (point.distanceTo(neighbour.position) < R + 1) continue;
     ions.push({ position: point, scale: 0.6 + random() * 0.6 });
   }
   outside.add(instanced(new THREE.SphereGeometry(0.15, 8, 6), outside.material({ opacity: 0.85, shade: 0.1 }), ions));
 }
-
-const NUCLEUS = new THREE.Vector3(2.9, 2.5, 2.9);
-const DROP = new THREE.SphereGeometry(0.19, 12, 8);
-const BEAD = new THREE.SphereGeometry(0.2, 12, 8);
 
 // ------------------------------------------------------------------ molecules
 

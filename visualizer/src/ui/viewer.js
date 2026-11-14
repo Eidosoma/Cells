@@ -144,6 +144,12 @@ class CellsViewer extends HTMLElement {
     const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || LENSES[0].id;
     this.setLens(LENSES.some((lens) => lens.id === wanted) ? wanted : LENSES[0].id);
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
+    if (this.stage && (query.get("azimuth") || query.get("polar"))) {
+      const view = {};
+      if (query.get("azimuth")) view.azimuth = Number(query.get("azimuth"));
+      if (query.get("polar")) view.polar = Number(query.get("polar"));
+      this.stage.rig.setView(view);
+    }
     if (query.get("isolate")) this.setIsolate(query.get("isolate"));
     if (query.get("select")) this.select(query.get("select"), { fly: true });
     if (query.get("index")) this.toggleIndex(true);

@@ -88,7 +88,6 @@ const wheel = (x, y, deltaY) => page("Input.dispatchMouseEvent", { type: "mouseW
 // Screen position of a world point, given as an expression that yields a Vector3.
 const screen = (point) =>
   evaluate(`(() => { const v = ${VIEWER}; const p = ${point}; const out = p.clone(); v.stage.project(p, out); return { x: out.x, y: out.y }; })()`);
-const vector = (x, y, z) => `new (${VIEWER}.stage.rig.target.constructor)(${x}, ${y}, ${z})`;
 const selected = () => evaluate(`${VIEWER}.state.selected`);
 const clear = () => evaluate(`${VIEWER}.select(null)`);
 
@@ -104,20 +103,22 @@ try {
 
   // ---------------------------------------------------------------- cell lens
   await open("lens=cell");
-  const nucleus = await screen(vector(2.9, 2.5, 2.9));
-  await click(nucleus.x - 14, nucleus.y + 6); // through the sketched gene-network cage around it
+  // The points clicked come from the lens (cell_parts.js PROBES), so they follow the layout.
+  const probe = (name) => `${VIEWER}.current.probes.${name}.clone()`;
+  const nucleus = await screen(probe("nucleus"));
+  await click(nucleus.x, nucleus.y); // through the sketched gene-network cage around it
   check("cell: clicking the nucleus selects regulatory circuits", (await selected()) === "cap.circuits", String(await selected()));
   await clear();
 
   // Inside the cut-away octant the membrane is clipped; a click there must not select it.
-  const cut = await screen(vector(7.6, 0.02, 1.6));
+  const cut = await screen(probe("cutFloor"));
   await click(cut.x, cut.y);
   const inCut = await selected();
   check("cell: a click in the cut-away does not select the membrane", inCut !== "cap.membrane" && inCut !== null, String(inCut));
   await clear();
 
   // On the uncut side the membrane (or a channel or pump standing on it) is what a click reaches.
-  const skin = await screen(vector(-6.2, -5.6, 5.4));
+  const skin = await screen(probe("uncutSide"));
   await click(skin.x, skin.y);
   const onSkin = await selected();
   check("cell: a click on the uncut side reaches the membrane", ["cap.membrane", "cap.channels", "cap.pumps", "cap.division"].includes(onSkin), String(onSkin));
@@ -170,7 +171,7 @@ try {
   const zoomed = await evaluate(`(() => { const lens = ${VIEWER}.current; return { distance: lens.stage.rig.distance, cell: lens.zones.cell.fade, tissue: lens.zones.tissue.fade, stop: lens.activeStop }; })()`);
   check("zoom: wheeling out from the cell fades in the sheet", zoomed.tissue > 0.9 && zoomed.cell < 0.1, JSON.stringify(zoomed));
   check("zoom: the scale rail follows", zoomed.stop === "tissue", zoomed.stop);
-  const cellOfSheet = await screen(vector(73.4, 6.5, 31.8));
+  const cellOfSheet = await screen(`${VIEWER}.current.probes.sheetCell.clone()`);
   await click(cellOfSheet.x, cellOfSheet.y);
   check("zoom: at the sheet, a click selects the sheet and not the faded cell", (await selected()) === "cap.sheet", String(await selected()));
 } catch (error) {

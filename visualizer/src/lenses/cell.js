@@ -10,7 +10,7 @@ import * as THREE from "../three.js";
 import { statusToken } from "../core/theme.js";
 import { glyphSprite } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
-import { R, CUT_PLANES, MOLECULE_PATCH, HEX, ORGAN, BODY, buildCell, buildMolecules, buildTissue, buildOrgan, buildOrganism } from "./cell_parts.js";
+import { R, CUT_PLANES, MOLECULE_PATCH, HEX, ORGAN, BODY, PROBES, buildCell, buildMolecules, buildTissue, buildOrgan, buildOrganism } from "./cell_parts.js";
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -117,6 +117,7 @@ export class CellLens {
     this.together = null;
     this.activeStop = "cell";
     this.clock = 0;
+    this.probes = PROBES; // world points the input check clicks
     this.capabilityByPart = new Map(model.ofKind("capability").map((entity) => [entity.part, entity]));
     this.build();
     this.applyPalette(stage.palette);
@@ -416,7 +417,7 @@ export class CellLens {
       });
     }
     const cage = cell("cage");
-    if (cage?.spin) cage.spin.rotation.set(time * 0.25, time * 0.4, 0);
+    cage?.spins?.forEach((shell, index) => shell.rotation.set(time * 0.25 + index, time * 0.4 + index * 2, 0));
     const channel = this.byEntity.get(this.capabilityByPart.get("channels")?.id)?.find((part) => part.zone.name === "molecules");
     if (channel?.ions) {
       channel.ions.forEach((ion, index) => {
