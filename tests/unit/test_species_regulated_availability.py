@@ -69,7 +69,7 @@ def block(raw):
 def test_registered_with_its_declarations():
     op = OPERATORS[LAW]
     assert check_declarations(type(op)) is type(op)
-    assert op.CONTROL_FACTORS == ("junction",)
+    assert op.CONTROL_FACTORS == ("junction", "channel")
     assert op.EVENT and op.SPLIT and op.RK4 == "split"
     assert not op.ENTITY_WRITES and not op.LEDGERS and not op.HEAT_FIELDS and not op.WORK_FIELDS
 
@@ -175,9 +175,17 @@ REFUSALS = {
         "inner model's controls only",
     ),
     "leak control": (_edit(lambda r: _coupling(r)["target"].update(control="membrane")), "admitted targets"),
-    "channel before milestone 1": (
-        _edit(lambda r: _coupling(r)["target"].update(control="channel", ids=["kir_0"], side=None)),
-        "admitted targets",
+    "side on a channel": (
+        _edit(lambda r: _coupling(r)["target"].update(control="channel", ids=["kir_0"], side="first")),
+        "channel target takes no side",
+    ),
+    "unknown channel": (
+        _edit(lambda r: _coupling(r)["target"].update(control="channel", ids=["kir_99"], side=None)),
+        "unknown channel",
+    ),
+    "state not in the channel's cell": (
+        _edit(lambda r: _coupling(r, 1)["target"].update(control="channel", ids=["kir_1"], side=None)),
+        "is not declared",
     ),
     "unknown junction": (_edit(lambda r: _coupling(r)["target"].update(ids=["junction_99"])), "unknown junction"),
     "element twice": (
@@ -371,6 +379,32 @@ def test_factors_at_the_bound_state(bound):
     np.testing.assert_allclose(factors["junction"][j0], r * complement * complement, rtol=1e-14)
     others = np.delete(np.asarray(factors["junction"]), j0)
     assert np.all(others == 1.0)  # Untargeted elements select exactly 1.
+
+
+def test_channel_factors_at_the_bound_state():
+    """A state coupling on cell_0's Kir population: its factor is s there; every other channel 1,
+    and the junction product is unchanged by the channel route."""
+    raw = base()
+    block(raw)["couplings"].append(
+        rf.coupling("c_k", "channel", ["kir_0"], ("state", "s"), "state_fraction")
+    )
+    raw["experiment"]["coupling_controls"].append(
+        dict(coupling_id="c_k", schedule=[dict(time=0.0, enabled=1)])
+    )
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    op = next(o for o in model.operators if o.LAW_ID == LAW)
+    factors = op.control_factors(state, p, xp=np)
+    assert set(factors) == {"junction", "channel"}
+    channels = [c.id for c in spec.model.channels]
+    k = channels.index("kir_0")
+    assert factors["channel"][k] == 0.2
+    assert np.all(np.delete(np.asarray(factors["channel"]), k) == 1.0)
+    plain = parse_spec(base())
+    plain_state, plain_p = get_model(plain.model).initial_values(plain)
+    reference = op.control_factors(plain_state, plain_p, xp=np)
+    assert np.array_equal(factors["junction"], reference["junction"])
 
 
 def test_the_half_step_is_the_exact_two_state_solution(bound):

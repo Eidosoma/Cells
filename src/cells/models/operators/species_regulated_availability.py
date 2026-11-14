@@ -4,8 +4,9 @@ docs/INVENTORY_COUPLING_DESIGN.md (accepted 14 November 2026; rulings in §6.3, 
 §7). A species amount on @3's cell rows sets @3's availability of a declared target through the
 contract's CONTROL_FACTORS, either at once (an instantaneous Hill factor) or through a regulatory
 state, a two-state fraction per cell with declared on- and off-rates. Version 1 targets @3's
-junction availability; the channel-population availability joins once milestone 1's probe P1 shows
-its path through control_view and held_schedules bit for bit (ruling 12).
+junction and channel-population availabilities; the channel target was admitted when milestone 1's
+probe P1 matched its path through control_view and held_schedules to the scheduled availability,
+bit for bit (ruling 12; its acceptance into scope is the lead's).
 
 Declaration (§1.6): `species`, the rows the operator reads (a read-only list: any species of the
 world, ions included, with D150's identity form, never written; ruling 1); `states`, each with its
@@ -73,8 +74,9 @@ LAW_ID = "species_regulated_availability@1"
 STEP_ID = "exact_two_state_half_steps@1"
 STATE_LAW = "hill_regulated_two_state@1"
 REACTIONS_LAW = "local_species_reactions@1"
-# Admitted targets: @3's junction availability; "channel" joins after milestone 1's probe P1.
-TARGET_CONTROLS = ("junction",)
+# Admitted targets: @3's junction and channel-population availabilities (the channel after
+# milestone 1's probe P1). The leak (membrane) and pump availabilities are later targets.
+TARGET_CONTROLS = ("junction", "channel")
 SIDES = ("first", "second", "both")
 SPECIES_LAWS = hill_factors.KINDS  # hill_activation 1, hill_inhibition 2.
 STATE_FRACTION, STATE_COMPLEMENT = 3, 4
@@ -110,7 +112,7 @@ LAYOUT_FIELDS = (
     "coupling_route_basal",  # [route]
     "coupling_route_coupling",  # [route] int64 its coupling (for the switch)
     "coupling_junction_routes",  # [edge capacity, width] int64 route per element (-1 pads)
-    "coupling_channel_routes",  # [channel capacity, width] int64 (width 0 in version 1)
+    "coupling_channel_routes",  # [channel capacity, width] int64 route per element (-1 pads)
 )
 TARGET_TABLES = {"junction": "coupling_junction_routes", "channel": "coupling_channel_routes"}
 
