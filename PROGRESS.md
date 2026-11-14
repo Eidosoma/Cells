@@ -73,6 +73,32 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed
+  (14 November).** This is development code; its qualification comes later
+  ([note](docs/INVENTORY_COUPLING_DESIGN.md) §7;
+  [evidence](/mnt/workspaces/Cells/inventory-coupling-v1-20261114-01/HANDOFF.md)).
+  - **What landed:**
+    - the operator and every refusal in §1.11;
+    - the neutral Hill helper (`processes/hill_factors.py`), which matches D152's rates bit for bit
+      on the host;
+    - the junction and channel targets (CONTROL_FACTORS "junction" and "channel");
+    - FR-6's per-cell prior condition (a per-cell `initial`, and writes at t = 0).
+  - **The bitwise checks** on the seven-cell heredity sheet, over every @3 state field and every
+    observation column:
+    - M1: a factor equals the same availability scheduled, on junctions.
+    - P1: the same on channels, at 1/2, 0 and 1. So the channel target is accepted into scope.
+    - A3: identity, zero and multiple factors.
+    - Idleness against the world without the operator.
+  - **Crossrev:** main against the branch in all seven sets (base, qualification, injection,
+    volume, division, species, reactions): identical.
+  - **Landing:**
+    - tier 1 and 2 at fbcec48: 407 files, no changed outcome;
+    - tier 1 after merging main, at 9eafe05: 318 files, no changed outcome;
+    - the eight new test files in the tier record: two in tier 1, six in tier 2.
+  - **Next, milestone 2,** in progress: the regulatory state compiled; restart and windows; batches;
+    compositions; the factors manifest entry; A4 and A5 against the independent references, which
+    are being written.
+
 - **Checkpoint continuity's GPU extension of case 1 landed (D153, design §13.4; 14 November).** GPU
   definitions are now admitted through the CPU-host probe, with `execution_device` patched, and the
   admission record notes the patch
