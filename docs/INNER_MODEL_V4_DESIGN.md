@@ -1,689 +1,511 @@
-# The inner model after `resolved_pump_tissue@3` (@4): design (proposed)
+# The inner model made modular, in place (design)
 
-**Status: proposed, 14 November 2026, for the lead's review with the advisor.**
-- No engine code was added or changed.
-- One read-only probe ran: an as-is trace of @3 (§10).
-- Every request in this note is a design. Code follows the note's acceptance (D142).
+**Status: proposed, 14 and 15 November 2026, revised for D172.**
+- The user's route (D172): "lets just have one model for now, we don't need backwards compatbility
+  at this early stage", then "but lets keep the core design we do modular".
+- This note replaces the route (c) draft of the same day, which proposed a second inner ID beside
+  a frozen @3. The commits on this branch keep that draft.
+- No engine code was added or changed. Three read-only probes ran (§12).
 
-**Why this note exists.** @3 is the composite's one inner model (`pump_composite.INNERS`,
-`pump_composite_spec.INNER_MODEL_IDS`). It is qualified and frozen. Four design notes of 14
-November each want something inside it, and two bound-term fixes are queued. The lead ruled that
-tracks do not fork @3 separately, so this one note gathers them:
-1. **Track E's channel laws as declarations,** `junction_ungated@1`, and D167's staged move of the
-   old catalogue's laws ([EXCITABLE_TISSUE_DESIGN.md](EXCITABLE_TISSUE_DESIGN.md) §3.2–§3.4, §4,
-   §7, §11; D170).
-2. **FR-4's acidifying pump and the shared energy pool,** which FR-2 and FR-5 also meet
-   ([FEATURE_REQUESTS.md](FEATURE_REQUESTS.md), FR-2, FR-4 and FR-5 with the lead's mappings;
-   D158, D160, D161).
-3. **FR-1's charged door:** a face-free-node bound term, then an implicit treatment of the bounding
-   patch as a new IMEX ID ([CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESIGN.md) §3.4, §8,
-   §9, §11).
-4. **The coupling note's stage hook** ([INVENTORY_COUPLING_DESIGN.md](INVENTORY_COUPLING_DESIGN.md)
-   §1.4, with §7 and §8 as built).
-5. **The bound-term fixes:** finding 3, the z = 0 material term
-   ([SHARED_INVENTORY_REACTIONS_DESIGN.md](SHARED_INVENTORY_REACTIONS_DESIGN.md) §4.2, §9 question
-   7, §10.3; D152), and the face-free-node term of item 3.
+## The decisions, in plain terms
 
-**Engine models it concerns (AGENTS.md milestone rule):**
-- `resolved_pump_tissue@3`, frozen;
-- `resolved_pump_composite@1` over @3 and over the proposed `resolved_pump_tissue@4`;
-- the definition-time bound shared by the resolved pump family (`surface_pump.explicit_rate_bound`).
+1. **One inner model, changed once.** Today's model (`resolved_pump_tissue@3`) is restructured in
+   one batched round, called R here.
+   - Afterwards its channel laws, junction laws, pumps, fuel sources and solvers are separate
+     declared pieces.
+   - A world uses only the pieces it declares, and nothing else is even compiled for it.
+2. **After that round, adding a new law changes nothing for worlds that do not use it** (§2.2).
+   That holds under five rules, which the round puts in place and which a check enforces at every
+   later landing. So the cost of the new physics is one re-verification round, not one per law.
+3. **The safety check.** "No backwards compatibility" drops old compiled programs, not qualified
+   results. So the round must pass a results gate (§3) before it lands:
+   - every existing world gives the same CPU results as before;
+   - every registered protocol is re-run from a new snapshot;
+   - a deliberately planted change must be caught.
+4. **Grouped or per-law** (§4). Track E asked for every law to be its own piece. Keeping today's
+   five laws as one group is the conservative alternative. A probe tested whether per-law changes
+   any result. *Result and recommendation: §4 (P2).*
+5. **The GPU** (§5). The three registered L4 tolerance sets were measured on today's compiled
+   programs. If the round changes those programs, they are re-measured in an L4 gap.
+6. **The name** (§6). Recommended: keep `resolved_pump_tissue@3`, so registered protocols re-run
+   unchanged. Old records stay unambiguous through their snapshots and a tag on main just before
+   the round.
+7. **Fuel for pumps** (§8.3), which may go to the user. Three options are set out. Recommended:
+   fuel molecules (ATP, ADP, Pi) as ordinary rows of the shared inventory, so the reactions that
+   Syn3A's metabolism needs can make and spend the same fuel the pumps use.
+8. **When.** After MG0c and Track R's qualification are judged on today's model; with Track E's M2
+   judged wholly before or wholly after; with in-flight `src/` branches re-gated after it; at a
+   quiet point, with main tagged first (§10).
+9. **Effort** (§10): the round is about 10–14 agent-days, plus CPU hours for the re-runs and an
+   L4 gap if the programs change. Each later law is then a small, ordinary landing.
 
-Each milestone in §7 names the models it runs.
+**What this note gathers.**
+- Track E's channel laws, `junction_ungated@1` and D167's move of the old catalogue
+  ([EXCITABLE_TISSUE_DESIGN.md](EXCITABLE_TISSUE_DESIGN.md) §3.2–§3.4, §4, §7, §11; D170).
+- FR-4's pump and the energy pool, with FR-2 and FR-5 ([FEATURE_REQUESTS.md](FEATURE_REQUESTS.md);
+  D158, D160, D161).
+- FR-1's charged door ([CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESIGN.md) §3.4, §8–§11).
+- The coupling note's stage hook ([INVENTORY_COUPLING_DESIGN.md](INVENTORY_COUPLING_DESIGN.md)
+  §1.4).
+- The bound-term fixes (finding 3, [SHARED_INVENTORY_REACTIONS_DESIGN.md](SHARED_INVENTORY_REACTIONS_DESIGN.md)
+  §4.2, §9 Q7, §10.3; the face-free term).
+
+**Engine models:** `resolved_pump_tissue@3` (restructured) and `resolved_pump_composite@1` over it,
+with every operator that composes over it; the definition-time bound shared with @1 and @2
+(`surface_pump.explicit_rate_bound`).
 
 **Evidence and log:** [inner-model-v4-20261114-01](/mnt/workspaces/Cells/inner-model-v4-20261114-01/)
-(HANDOFF.md: what was read, the code facts with their files and functions, the probe's criterion
-written before its run, and its records). **S** marks our own derivation or interpretation, as in
-the D150 and D152 notes.
+(HANDOFF.md holds every probe's criterion, written before its run, and the records). **S** marks
+our own derivation or interpretation.
 
-## 0. Summary
+## 1. The code facts the design turns on (read at f2ada38d)
 
-1. **Recommended route: (c), a hybrid** (§2).
-   - Everything that touches @3's traced code, or the shape of its state or layout, goes into a
-     new inner ID, `resolved_pump_tissue@4`, beside a frozen @3. @4 is built on @3 as @3 was built
-     on @2, so a definition that declares only @3's structures runs @3's own programs.
-   - One D148 round on the host changes no compiled program. It adds the two bound terms to the
-     definition-time bound, and a refusal on @3 of channels and pumps on a face-free node's patch,
-     which @3's bounds cannot see (§5.6). The state-dependent stage terms are @4's.
-2. **Why not in place.** @3's step has one static switch, layout shape (§1.1). The probe found the
-   law table's length as a literal in every @3 program, and an empty layout leaf as an input of
-   every jaxpr (§10). So any in-place addition to @3's traced code is flagged by crossrev in every
-   world. It then needs D148 with the baseline renewed and D153 case 2 for live checkpoints, round
-   after round. A third gate row, Ca²⁺ channels, a third pump family and per-junction laws change
-   shapes or semantics, so they need a new ID anyway (D147).
-3. **@4 is open by declaration** (§2.4, §4). A new law, junction law, transporter, fuel or implicit
-   route is a new declaration, traced only where a definition declares it. Adding one changes no
-   existing program. Crossrev is the standing guard, and a new mechanism takes a new law ID, not a
-   new inner ID.
-4. **@3's identity under @4** (§3). @3's five laws stay one base group, evaluated by @3's own
-   kernels. That is required, because @3 traces all three gated laws for every population, even in
-   a channel-free world, and most guarded worlds declare only Kir2.1 and NaV1.2.
-   - **The check:** the jaxpr text, constants and bindings, as crossrev compares them, plus the
-     lowered StableHLO, as the continuity probe compares it. Both inners are traced in one
-     revision, over every crossrev set, with @3's test and qualification worlds run on CPU. It is
-     not L4 bitwise equality (D168).
-5. **The declarations** (§4). Each law declares:
-   - its kinetics and opening, and its gate count;
-   - its permeant ions with their valences, and the species rows it reads at each stage;
-   - its own voltage domain, its bound term and its RK4 reference step;
-   - its provenance status.
-
-   Stage reads of moving rows are one mechanism. It serves Ca-dependent inactivation, a pump fed
-   by a pool and, later, the coupling hook.
-6. **Placement** (§5).
-   - **Track E:** the moved catalogue laws and `fast_sodium_m3hj@1` in I3; the L-type current with
-     Ca-dependent inactivation in M5's calcium work; `junction_ungated@1` in I2.
-   - **FR-4's pump:** a declared transporter on an unchanged fuel interface in I4, with the fuel
-     source declared as today (`metabolism.kind`), and a finite pool moved from the older energy
-     family.
-   - **FR-1's charged door:** the bound term in I0, and the implicit bounding patch in I5's
-     implicit-route solver family, which also hosts Track E's junction-implicit solver.
-   - **The stage hook:** a closed door in version 1.
-7. **Order** (§7). I0 (the bound round), then I1 (@4 with @3's identity), then I2
-   (`junction_ungated@1`), then I3, I4 and I5 as their consumers need them.
-   - I1 and I2 are about 5–6 agent-days together.
-   - Track E's M4 needs I1–I3, and I5's junction route if EXCITABLE_TISSUE_DESIGN §4.2's condition
-     fails.
-   - FR-4 needs I0, I1 and I4, and I5's patch route for millisecond steps; FR-5 follows FR-4.
-8. **Open questions** (§9). The main one is for the user: D143 adopted one composite over @3, and
-   a second inner ID needs that decision's extension. Recommended: yes.
-
-## 1. The code facts the route turns on (read at f2ada38d)
-
-### 1.1 How @3 can be changed without changing its programs
-
-- **@3's step has one static switch: layout shape.**
-  - `surface_pump_v3.checked_step(state, dt, control, p, active)` takes RK4 when
-    `p.imex_explicit.shape[0] == 0`. Otherwise it calls `imex_step(state, dt, control, p)`.
-  - Every layout field is a traced argument.
-  - The `membrane_process` hook is a keyword of `imex_step` and `readouts` only. The composite
-    reaches it by calling `imex_step` directly when an operator declares `PROCESS`
-    (`Composition.split_step`).
-- **The one in-place precedent predates program identity.**
-  - `junction_heat_trapezoid` is a layout leaf whose shape, 0 or 1, selects the junction-heat
-    booking (`trapezoid_nonnegative@1`, commit 8e486406, 11 November).
-  - It entered every @3 layout, guarded then by "default runs and fingerprints unchanged" and
-    bitwise trajectories (PROGRESS, gap A).
-  - D148, of 13 November, and the composite's crossrev came after it.
-- **What an in-place addition costs now** (probe, §10).
-  - An empty leaf is an input of every @3 jaxpr, which crossrev compares. The lowered StableHLO
-    can drop it, since `jax.jit` drops unused arguments by default; world (b) dropped it. The
-    text still differs, and D153's case 1 requires the jaxpr to be identical.
-  - So each leaf-gated round on @3 costs four things:
-    - D148's four criteria with the baseline renewed;
-    - the bitwise guard in every qualified world and program kind, the judges' derivative
-      programs included (D148's own first case moved 49 judge numbers through a Jacobian);
-    - D153 case 2, admitted by the lead, for live checkpoints;
-    - a renewed crossrev baseline for every set.
-- **Host-only code changes no program.** `surface_pump.explicit_rate_bound` and the `StepChecks`
-  classes run on the host at the definition. @1, @2, @3, water, replacement, the composite and
-  projective mode share them.
-
-### 1.2 What is closed in @3
+### 1.1 What is fixed in today's model
 
 | Item | Where | What it fixes |
 | --- | --- | --- |
-| The law table | `surface_pump_v3_spec.LAW_CODES`: five laws, codes 0–4 | `domain_valid`'s `laws < len(LAW_CODES)`, a literal `5` in every @3 program, the channel-free one included (probe C1) |
-| Gated laws and the gate axis | `GATED_CODES = 3`, `GATE_COUNTS`; `channel_gate` is [2, channel_slot] | Two relaxation gates or none. A j gate needs a third row, which changes the state's shape |
-| The dispatch | `channel_kinetics` → `sodium_channels.kinetics` → `potassium_channels.kinetics` | The Kv1.5, Kir2.1 and NaV1.2 kinetics are traced for every population and selected by code, even with no population at all (probe C2) |
-| The channel ions | `SPECIES_VALENCE = {"Na": 1, "K": 1}`, `LAW_PERMEABILITIES` | No Ca²⁺ channel, so no L-type current |
-| The voltage domain | `VOLTAGE_DOMAIN_V = (−0.120, 0.060)`, `channel_domain_valid` | One domain for every active population, leaks included |
-| The kinetics' inputs | `potential_kinetics(potential, p)` at each IMEX stage | Voltage only. `explicit_rates` holds the stage concentrations `ci` and `co`, but no kinetics read them |
-| The junction law | `junction_gate.domain_valid`, \|V\| ≤ 0.120, with gate state on every junction | Applied to every junction, pinned and closed ones included (EXCITABLE_TISSUE_DESIGN §2.2) |
-| The pumps | Na/K (`nak_atp_mass_action_positive@1`) and the calcium pump, each with its own state fields and control (`pump`, `calcium_pump`, `HELD_SCHEDULES`) | Two hard-wired families. The fuel is already a declaration: `metabolism.kind = maintained_chemical_reservoirs@1`, the only kind `kinetic_finite_spec.parse_pump` admits |
-| The bounds | `explicit_rate_bound` (host, at the declared state, on the channel-free projection); `membrane_rate` (traced, at each stage's actual openings, z²-weighted) | No z = 0 material term (finding 3) and no face-free-node term (CLOSED_COMPARTMENT_DESIGN §3.4) |
-| The implicit set | `numerics/surface_imex.py`: (C + a dt L) φ = q with L the face Laplacian | "Membranes, junctions, pumps, gates and face diffusion stay explicit." The solver IDs are `imex_euler_face_electromigration@1` and `imex_ars222_face_electromigration@1` |
+| The law table | `surface_pump_v3_spec.LAW_CODES`: five laws, codes 0–4 | `domain_valid`'s `laws < len(LAW_CODES)`, a literal 5 in every program, the channel-free one included (P1) |
+| Gate rows | `GATED_CODES = 3`; `channel_gate` is [2, channel_slot] | Two relaxation gates or none. A j gate needs a third row |
+| The dispatch | `channel_kinetics` → `sodium_channels.kinetics` → `potassium_channels.kinetics` | The Kv1.5, Kir2.1 and NaV1.2 kinetics are traced for every population and selected by code, even with no population (P1). The heredity cells of W1, W2, G2-Q1 and E07, and the 825-node world, declare only Kir2.1 and NaV1.2 |
+| Channel ions | `SPECIES_VALENCE = {"Na": 1, "K": 1}` | No Ca²⁺ channel |
+| The voltage domain | `VOLTAGE_DOMAIN_V = (−0.120, 0.060)` | One domain for every population, leaks included |
+| Kinetics' inputs | `potential_kinetics(potential, p)` | Voltage only, although `explicit_rates` holds the stage concentrations |
+| The junction law | `junction_gate.domain_valid`, \|V\| ≤ 0.120, with gate state on every junction | Applied to every junction, pinned and closed ones included |
+| The pumps | Na/K (`nak_atp_mass_action_positive@1`) and the calcium pump: fixed state fields and controls | Two families. Fuel is already a declaration, `metabolism.kind = maintained_chemical_reservoirs@1` (the only kind `kinetic_finite_spec.parse_pump` admits) |
+| The bounds | `explicit_rate_bound` (host, declared state, channel-free projection); `membrane_rate` (traced, every stage, actual openings, z²-weighted) | No z = 0 material term (finding 3); no face-free-node term |
+| The implicit set | `numerics/surface_imex.py`: (C + a dt L_face) φ = q | "Membranes, junctions, pumps, gates and face diffusion stay explicit" |
+| The step's static switch | `checked_step` branches on layout shape only; `membrane_process` is a keyword of `imex_step` | Every optional piece is selected by a layout leaf's shape, and an empty leaf is still a jaxpr input (P1) |
 
-### 1.3 What the composite and the operators assume
+### 1.2 What the composite and the operators assume
 
-- **One inner identity.**
-  - `INNERS = {@3}`, and `INNER_MODEL_IDS = (@3,)`.
-  - `CompositeModel` and `projection` are built from @3's dataclass at import.
-  - But `implementation(inner, laws)` is cached per inner identity, and every
-    `Operator.parse(raw, base, inner_model)` receives the inner. The contract was built for more
-    than one inner.
-- **What the operators declare about the inner** (their class declarations, with their imports):
+- **One inner.** `INNERS`, `INNER_MODEL_IDS` and the composite spec's `CompositeModel` and
+  `projection` are built from @3's dataclass. Under D172 that stays: one inner, restructured.
+- **The operators,** by their class declarations and imports:
 
-| Operator | Declarations that touch @3's structures | Direct @3 imports or shapes |
+| Operator | What touches @3's structures |
+| --- | --- |
+| `scheduled_cell_replacement@1` and `@2` | `STATE_RESETS = (channel_gate, junction_gate)`. Per-population views of `channel_permeability` and `channel_abundance` from template tables keyed by @3's `LAW_CODES`, with `template_channel_gate` [rows, 2, law]. Events call `junction_gate.kinetics` and the formation law |
+| `isopotential_partition@1` | `CLOSES = (active,)`: closed contacts' gates are padded at 0. `STATE_RESETS = (channel_gate, junction_gate)` |
+| `cytoplasmic_bridge_closure@1` | `CONTROL_FACTORS = (junction,)`. It requires the partition and writes no gate |
+| `ideal_osmosis_linear_compliance_water@1`, `k_anion_symport_mass_action@1` | Direct imports of `surface_pump_v3`; the symport is @3's in-step process (`PROCESS`) |
+| `scheduled_membrane_insertion@1` and `@2`, `restricted_cleft_lumen@1` and `@2` | `surface_pump_v3_spec` types; views of masks, areas and outside volumes; insertion@2 closes patch and node masks |
+| `membrane_entity_state@1` | Views of area, capacitance and per-population `channel_abundance` (generic over the population axis) |
+| Injection, the bath schedule, D150's turnover and exchange, D152's reactions, the coupling operator | The adapter only: amount rows, electrode fields and the `junction` and `channel` controls |
+| `cell_owned_compartments@1` (FR-1, on its branch) | Declaration only: no @3 import, no part, no program. **But** its refusal 4 names @3's route kinds (a permeability, the two pumps, a channel population), so it must fail closed over every route kind the restructured model declares (§9) |
+
+### 1.3 Checks and checkpoints
+
+- **Crossrev** compares one definition across two revisions: jaxpr text, constants and bindings.
+  The continuity probe (D153) adds the lowered StableHLO.
+- **Checkpoints.** `io.source_hashes` covers every module. Under D172, old checkpoints are not
+  carried across the round; old evidence stays reproducible from its snapshots and tags.
+
+## 2. The route under D172
+
+### 2.1 What the round makes modular
+
+The round turns today's structures into declarations. Nothing new is added in it:
+
+| Declaration kind | Today's members, declared | Later members (each its own landing) |
 | --- | --- | --- |
-| `scheduled_cell_replacement@1` and `@2` | `STATE_RESETS = (channel_gate, junction_gate)`. `VIEW_FIELDS`: per-population `channel_permeability` and `channel_abundance`, `membrane_permeability`, both pump capacities. `CONTROL_FACTORS = (junction,)` | `LAW_CODES` sizes its template tables; `template_channel_gate` is [rows, 2, law]; events call `junction_gate.kinetics` and the formation law |
-| `isopotential_partition@1` (S5a) | `CLOSES = (active,)`, so closure propagates to patches, populations and contacts, and closed contacts' gates are padded at 0. `STATE_RESETS = (channel_gate, junction_gate)` | The adapter |
-| `cytoplasmic_bridge_closure@1` | `CONTROL_FACTORS = (junction,)`, the aperture on bridges. It requires the partition and writes no gate | The partition module |
-| `membrane_entity_state@1` | `VIEW_FIELDS`: `membrane_area`, `membrane_capacitance` and the per-population `channel_abundance` | `surface_pump` |
-| `scheduled_membrane_insertion@1` and `@2` | Views of the masks and outside references; `@2` `CLOSES` patch and node masks; writes membrane state's area, capacitance and population abundance | `surface_pump_v3_spec` |
-| `ideal_osmosis_linear_compliance_water@1`; the lumens | `VIEW_FIELDS`: the volumes | water imports `surface_pump_v3`; the lumens import the insertion modules |
-| `k_anion_symport_mass_action@1` | `PROCESS`, through @3's hook | `surface_pump_v3` |
-| `species_regulated_availability@1` | `CONTROL_FACTORS = (junction, channel)` | None |
-| Injection, the bath schedule, D150's turnover and exchange, D152's reactions | Writes to amount rows and electrode fields, booked; views of the outside references (the bath schedule); `CONFLICTS_VIEW` of the volumes and masks | The adapter only |
+| Channel law | The five laws: one group or five modules (§4) | The moved catalogue laws, `fast_sodium_m3hj@1`, the transient outward current, `l_type_calcium_cdi@1` (§8.1) |
+| Junction conductance law, per junction | `junction_voltage_relaxation@1` (the default) | `junction_ungated@1` (§8.2) |
+| Pump family | Na/K and the calcium pump, unchanged | Transporters, among them FR-4's acidifying pump (§8.3) |
+| Fuel kind | `maintained_chemical_reservoirs@1` | Finite fuel (§8.3) |
+| Solver | RK4 (reference runs), `imex_euler_face_electromigration@1`, `imex_ars222_face_electromigration@1` | Implicit-route solvers (§8.4) |
+| Stage contributions | — | Stage reads of moving rows, and the closed stage hook (§7.3, §8.5) |
 
-### 1.4 Crossrev, continuity and checkpoints
+**Kept out of the round on purpose:** new kinds and new laws arrive with their consumers' designs
+(D142). The round's own claim is "same results, modular structure", which the results gate
+checks (§3).
 
-- **Crossrev** (`validation/tissue/composite_crossrev.py` and the operator-specific tools) compares
-  one definition across two revisions: jaxpr text, closed-over constants and bindings.
-  - It does not lower StableHLO; `validation/continuity/probe.py` does (D153).
-  - It does not compare rollout programs or host checks (D148).
-  - Comparing two inner identities within one revision is a new mode of the tool (§3.2).
-- **Checkpoints.** `io.source_hashes` covers every module under `src/cells`.
-  - So every landing makes older checkpoints resume only through D153's continuity records.
-  - A @3 checkpoint cannot resume as @4: that is D153 case 3, a model ID change, which no record
-    relaxes.
-  - A @4 run starts fresh, or from imported state as a new run (D153 rule (b); Track E's importer,
-    EXCITABLE_TISSUE_DESIGN §4.5, names "@3 (and @4)").
+### 2.2 Why later additions change nothing: the five rules
 
-## 2. The route
+After the round, adding a law (or a junction law, transporter, fuel kind or solver) leaves every
+world that does not declare it with the same compiled program. That is **text-identical under
+crossrev**, the check every operator already passes at landing. It holds by construction if the
+round enforces five rules (**S**, each from §1.1's facts):
 
-### 2.1 What each item touches
+1. **Static dispatch.** Only declared pieces are traced. There is no "evaluate every registered law,
+   then select".
+2. **No literal depends on the registry.** Today's `len(LAW_CODES)` is a literal in every program
+   (P1, C1). After the round, a definition's codes are checked against its own declared set. A
+   grouped five-law form keeps its own literal 5, which a new law does not change.
+3. **Shapes come from declarations.**
+   - Gate rows are the largest declared gate count: two for today's laws.
+   - A kind no world declares contributes **no** layout or state leaf. Absent, not empty: an
+     empty leaf is a jaxpr input (P1, C3).
+4. **Codes are stable data.** Each law has a fixed registry code, bound per definition, so a new
+   law renumbers nothing.
+5. **The structure is part of the program's identity.** The composite's implementation key and the
+   batch signature carry the declared structure.
 
-| What it touches | Items | What it allows |
+**The cost is therefore one re-verification round,** not one per law. After it, a law lands as an
+operator lands today:
+- crossrev identical in every existing set;
+- its own worlds' guards and qualification.
+
+**What the rules do not cover:**
+- an edit to an existing law's behaviour, which is a new law ID by D147's rule, kept for pieces;
+- an edit to the shared step or a shared kernel, which changes existing worlds and needs its own
+  gate.
+
+### 2.3 What changes in the same round
+
+- **The inner model:** `surface_pump_v3_spec.py`, `surface_pump_v3.py` and the composite adapter
+  are restructured to the declarations of §2.1 and the rules of §2.2.
+- **The @3-tied operators change in the same round** (§9). Replacement@1 and @2, the partition,
+  the bridge, water@1 and the symport, insertion@1 and @2, and the lumens read the declared
+  structures, not @3's closed table and two gate rows.
+- **The bound terms (I0):** they can ride in the round (§8.6, after P3's sweep).
+- **The crossrev baseline is renewed at the landing.** From then on crossrev identity is the
+  standing check for every later addition.
+
+## 3. The results gate (replacing program identity)
+
+"No backwards compatibility" drops old programs, not qualified results. The round lands only if
+all three parts pass:
+
+| Part | What is compared | Pass |
 | --- | --- | --- |
-| **Host only** (`explicit_rate_bound`, `StepChecks`) | Finding 3's z = 0 material term; the face-free-node term at the declared state | A D148 round that changes no program |
-| **Traced code** (`membrane_rate`, the dispatch, `imex_step`) | Each further law's stage term; the face-free term at stage concentrations; stage reads; the stage hook | In place, a new leaf in every @3 program (§1.1); otherwise a new ID |
-| **State or layout shape, or new semantics** | A third gate row; Ca²⁺ and other channel ions; per-law domains; a junction law per junction; a third pump family and its controls; fuel pools; implicit routes | A new ID only (D147; D148's criterion 1 cannot hold when a field's shape changes) |
+| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's own test worlds, run on CPU from the tag before the round and from the new snapshot. Every state field, observation column and `max_` diagnostic of every accepted row is compared, and every refusal: its step and its message | Bitwise, NaN-aware, bit patterns compared. A stated rounding is used only if §4's choice requires it; it is fixed before the run and reported field by field |
+| **G2, registered protocols re-run** | Every registered protocol whose engine models include the inner model or the composite, re-run from the new snapshot with its own judge. Today: W1, W2, G2-Q1, S2, S3, Rm1, S5a, D150's judged run and E07-v1; MG0c and Track R once judged; Track E's M2 if judged before the round | Every verdict unchanged. Numbers bitwise, or within the protocol's own tolerances where G1 allows rounding |
+| **G3, planted changes** | (a) one law coefficient moved by one ulp in a test double (P2's planted arm shows the effect's size); (b) one world parameter moved by one ulp | The gate must fail both. If it passes either, it is void |
 
-### 2.2 The options and their costs
+**Two cost-savers, for the lead to rule on:**
+- **If G1 is bitwise,** a judged experiment's re-run can be a sample: for E07-v1, its E1 segments
+  and one arm per group, about 5 core-hours instead of about 50 (E07-v1's budget).
+- **Judges that read derivative programs** (W1's and W2's stationary parts, which differentiate
+  the step) re-run in full whatever G1 shows. A forward-identical change can still move a
+  Jacobian: D148's first case moved 49 judge numbers this way.
 
-| Cost | (a) A new ID, @4, for everything | (b) D148 rounds on @3 | (c) A hybrid: @4, plus one host-only D148 round (recommended) |
-| --- | --- | --- | --- |
-| **Admissible for the new laws?** | Yes | **No.** New laws, gate rows, ions and pump families are new semantics (D147). A j gate changes the state's shape, so criterion 1 cannot hold | Yes, through @4 |
-| **Crossrev** | @3's programs unchanged; the composite's generalization guarded across revisions; a new cross-inner mode (§3.2) | Every @3 program flagged in every set, at every round | As (a). The host-only round changes no program, so its crossrev is identical by construction |
-| **Requalification** | None for @3. @4 with @3's structures inherits by program identity (status: the lead's, §9 Q2). Each new law, route or solver is qualified on its own | Every round: bitwise runs in every qualified world and program kind | As (a). The host-only round changes refusals only for definitions no qualified world contains (§5.6) |
-| **The composite's single-inner rule** | Two inner identities; `CompositeModel` and `projection` per inner; D143's extension, for the user | Unchanged | As (a) |
-| **Operators** | Each declares the inners and @4 features it admits. @3-identical declarations carry over under the identity guard (Q2) | Unchanged contract, but every operator's guard reruns at each round | As (a) |
-| **Checkpoints (D153)** | Case 1 for @3 runs across the landing: programs unchanged, decided by the probe. @3 → @4 is refused (case 3) | Case 2, admitted by the lead, after every round | As (a). The host round needs case 1 only |
-| **Recurring cost** | None per new law: static dispatch (§4.2) | One round per law: about ten in M4 alone (EXCITABLE_TISSUE_DESIGN §3.3) | As (a) |
-| **Risk** | Two inner models to maintain. Mitigated: @4 imports @3's functions and copies none, and the identity guard runs at every @4 landing | Drift of the frozen, qualified model | As (a) |
+**Also in the gate:** tiers 1 to 3, the tier re-measurement, and every in-flight `src/` branch
+re-gated on the new main (§10).
 
-### 2.3 The recommendation: (c)
+## 4. Grouped or per-law dispatch (probe P2)
 
-- **@4 is a new inner ID, `resolved_pump_tissue@4`, beside a frozen @3.**
-  - It is built on @3 as @3 was built on @2. @3's module docstring: "each rate below is @2's
-    sequence of operations with the channel terms appended, so with no channels this identity
-    reproduces resolved_pump_tissue@2".
-  - @4 reproduces @3's programs exactly when a definition declares only @3's structures.
-  - It imports @3's functions and copies none.
-- **The definition-time bound terms go in one D148 round on the host** (§5.6). It changes no
-  compiled program, and @3 and @4 both use it. On @3 it also refuses channels and pumps on a
-  face-free node's patch: @3's definition-time bound runs on the channel-free projection, and its
-  stage rule divides by the cell's capacitance, so neither sees them. The state-dependent run-time
-  terms go in @4 only.
-- **@4 is a composite inner only,** not a standalone registered model. A plain @4 tissue is a
-  `resolved_pump_composite@1` definition with `inner_model: resolved_pump_tissue@4` and no
-  operators. That keeps one composite model (D143), one parser path and the composite's checks for
-  every run.
-- **Route (b) is used for nothing else.**
+**The choice.**
+- **Grouped:** today's five laws stay one group, evaluated together for every population, as
+  today. New laws are per-law modules.
+- **Per-law:** every law, today's five included, is its own module, traced only where declared
+  (Track E's request, EXCITABLE_TISSUE_DESIGN §3.2).
 
-### 2.4 What @4's ID promises
+**What P2 tested.** It is a prototype in the probe only, never under `src/`. Each arm ran in its own
+process on CPU:
+- `base`: today's code;
+- `perlaw`: per-law kernels for the declared laws only;
+- `planted`: per-law with one coefficient moved by one ulp.
 
-- **@4's step is @3's.**
-  - Face electromigration is implicit; every other rate is explicit at stage potentials, with
-    exponential stage gates and the explicit-stage refusal.
-  - Declared laws are evaluated by their own IDs.
-- **A definition's programs are fixed by its declarations.** Adding a law, junction law,
-  transporter, fuel source or implicit route to @4's registry changes no existing definition's
-  program.
-- **New mechanisms take new law IDs.** A change to the step itself takes a new solver ID, as the
-  implicit routes do (§5.4). Neither takes a new inner ID.
-- **The standing guard** is crossrev over every set at every @4 landing, plus the cross-inner
-  identity of §3 for @3's structures.
-- **Version 1 refuses every structure whose milestone has not landed,** each with its reason.
+The worlds:
+- the heredity cell;
+- the five-law padded world;
+- the seven-cell gated sheet;
+- Track E's generic cell through an action potential at 5 µs;
+- the RK4 single patch.
 
-## 3. @3's identity under @4
+Every state field of every step was compared bitwise, with the Jacobians of the right-hand side
+and of one step for the heredity cell.
 
-### 3.1 What identity forces
+*The result and the recommendation are written here from P2's records (§12).*
 
-- **State, layout and control leaves** equal in order, shape and dtype. A @4 structure that a
-  definition does not declare contributes no leaf: it is **absent, not empty**, because an empty
-  leaf is a jaxpr input (§10, C3).
-- **The bindings:** `channel_laws` holds codes 0–4 for @3's laws.
-- **The literals:** the `len(LAW_CODES)` literal 5, `GATED_CODES`, the scalar `VOLTAGE_DOMAIN_V`
-  and the gate axis of two.
-- **@3's five laws are one base group, evaluated by @3's unchanged kernels.**
-  - @3 traces all three gated kinetics for every population (§10, C2). A per-law dispatch would
-    trace less, so its text could not equal @3's.
-  - Most guarded worlds declare a strict subset: the heredity cells of W1, W2, G2-Q1 and E07 carry
-    Kir2.1 and NaV1.2 only, and so does the 825-node world.
-  - "Declares only @3's structures" therefore means: @3's five laws or any subset, gated
-    junctions, @3's two pump slots with maintained fuel, and @3's three solvers (RK4 for reference
-    runs, and its two IMEX tableaux). Such a definition traces exactly @3's program.
-- **Mixed definitions.** A definition that also declares a further structure keeps the base group,
-  with its domain check restricted to its own populations, and adds one kernel per further law
-  (§4.2). Its program is new by design; identity is not claimed for it.
+## 5. The GPU: the L4 variants
 
-### 3.2 The check
+- **The three registered L4 variants'** terms (`validation/tissue/l4_variants/`: W1, W2, G2-Q1)
+  are measured on today's compiled programs.
+  - The backend term is the largest difference between the CPU reference and each of the three
+    L4 repeats (A, B, D).
+  - The run-to-run term is the largest difference between two repeats.
+- **So they depend on the compiled programs.** A different program fuses and reduces differently
+  on the GPU, and its CPU reference may move too.
+  - **If the round changes W1's, W2's or G2-Q1's programs** (crossrev not identical for the
+    qualification set), the three terms are re-measured in an L4 gap (repeats A, B and D, as the
+    agreement driver takes them) before any L4 item is judged on the new code.
+  - **If those programs stay text-identical,** the terms carry over.
+- **Per-law dispatch changes those programs by construction:** the heredity cells trace fewer
+  kernels.
+- **Q7** (D168) is open in either case.
 
-| Part | What is compared | Where |
+## 6. The name
+
+| Option | For | Against |
 | --- | --- | --- |
-| Programs | For every world of the crossrev sets, the same definition with `inner_model` @3 and @4, traced in one revision: the checked step, the right-hand side and the device row checks. The jaxpr text, constants (dtype, shape, digest) and bindings are compared, as crossrev compares them | A new mode of `composite_crossrev.py` (a validation extension in I1, which runs @3 and @4) |
-| Lowered programs | The lowered StableHLO of the checked step, and the vector-window program as `validation/continuity/probe.py` captures it at `.lower()` | The same mode, reusing the probe's capture |
-| CPU runs | @3's own test worlds, written as empty compositions over @4, against the same worlds over @3. The composite's empty composition is @3's own step (PUMP_COMPOSITE.md, equivalence (a)), RK4 included. The qualification worlds (W1's trajectories, W2's arms, G2-Q1's cases, W37, the 825-node world) run short and are compared bitwise with @3, with every accepted row's host checks | Detached, about an hour of CPU (**S**: two traces per world of about 10–17 s each, from the probe, plus short runs) |
+| **Keep `resolved_pump_tissue@3`** (recommended) | One model, in the user's words. Registered protocols re-run unchanged: their definitions name @3 and its law IDs | One ID covers two codes, before and after the tag. That is resolved by provenance: every run records its revision, dirty diff and snapshot (AGENTS.md), and main is tagged just before the round |
+| Rename once (`resolved_pump_tissue@4`) | Old records unambiguous by ID alone | Every registered protocol's definitions name @3, so each would need an amendment, that is a re-registration, for no change in physics. Old definitions would be refused, which D172 accepts, but the protocols would be stranded |
 
-- **Not L4 bitwise equality.** At 825 nodes @3 does not repeat bitwise against itself on the L4
-  (D168). Identical programs on identical inputs are what the check establishes. Any GPU item for
-  a new structure is a tolerance item of its own.
-- **When it runs:** at I1's landing, and as a standing set at every later @4 landing.
+**D147's amendment** (D172 already amends D147 for the inner model): the inner model's ID names
+the model, not one compiled program.
+- A restructure that passes the results gate keeps the ID.
+- Every **piece** keeps D147's rule: a law, junction law, transporter, fuel kind or solver whose
+  behaviour changes takes a new ID.
+- The composite ID `resolved_pump_composite@1` is unchanged.
+- PROGRESS records the tag that separates the two codes.
 
-### 3.3 What identity confers
+## 7. Declarations and static dispatch
 
-That is the lead's ruling to make (§9, Q2). Integration grants no acceptance (D143).
+### 7.1 A law's declaration
 
-## 4. Declarations and static dispatch
+The definition's population format stays as it is: `id`, `membrane_id`, `kinetic_law`,
+`max_permeability_m_per_s`, `abundance`, `initial_gate`, `permeant_ions`. The law, by its ID, declares:
 
-### 4.1 The law declaration
+| Field | Meaning |
+| --- | --- |
+| `LAW_ID` | Versioned and named for its mechanism, never a protein (EXCITABLE_TISSUE_DESIGN §3.3) |
+| Gates | Names and count of relaxation gates, each advanced by `exponential_mean_rate_linear_target_gates@1` |
+| `kinetics(V, reads)` | Target and time constant per gate |
+| `opening(gates, V, reads)` | A product of gates, or an instantaneous function |
+| Permeant ions | Species, valence and relative permeability, matched exactly by the parser |
+| Reads | Species rows read at each stage, on the cell or outside side, with their domains |
+| Voltage domain | Its own interval |
+| Stage term | Its contribution to the stage rule: by default today's constant-field slope at the actual opening. An instantaneous opening adds its declared opening-slope term; a reading law adds its loop term |
+| RK4 reference step | Its own limit |
+| Provenance | `parity` (moved from the catalogue; moving is not calibrating), `cited` or `calibrated` |
+| Component reference | A test against an independent evaluation of its equations |
 
-A registry module beside @4 holds one declaration object per law ID. The definition's population
-format stays @3's: `id`, `membrane_id`, `kinetic_law`, `max_permeability_m_per_s`, `abundance`,
-`initial_gate`, `permeant_ions`.
+### 7.2 Static dispatch
 
-| Field | Meaning | @3's five laws |
+- **The declared structure** is the law set, the junction laws, the pump families and fuel kinds,
+  and the solver with its implicit routes. It is a hashable record: static, in the implementation
+  key and the batch signature.
+- **Each declared piece is traced once,** selected per population by code. An undeclared piece is
+  not traced and has no leaf.
+- **Gate rows** are the largest declared count. A law's rows beyond its own count are inactive.
+
+### 7.3 Stage reads of moving rows
+
+- **One mechanism, three consumers:** Ca-dependent inactivation reads the cell's Ca²⁺; a pump on
+  finite fuel reads its fuel; the coupling hook (§8.5) would read an ion.
+- **What is read.** A read takes the stage's own state, the amounts `imex_step` already forms at
+  each stage, so ARS(2,2,2) stays second order (**S**). This is the coupling note's own argument for
+  evaluation inside the stages (its §1.4). The precedent is the old catalogue's
+  `opening(..., calcium_free_mM=)`.
+- **A reading law declares a loop term,** because the loop it closes is invisible to a
+  voltage-only bound (the coupling note's §1.4 concern).
+
+### 7.4 Domains and bound terms
+
+| Check | Today | After the round |
 | --- | --- | --- |
-| `LAW_ID` | Versioned, named for its mechanism, never for a protein (EXCITABLE_TISSUE_DESIGN §3.3) | As today |
-| Gates | Names and count of relaxation gates, each advanced by `exponential_mean_rate_linear_target_gates@1` | 2, or 0 for the leaks |
-| `kinetics(V, reads)` | Target and time constant per gate | Voltage only |
-| `opening(gates, V, reads)` | A product of gates, or an instantaneous function of V and reads | m·h, m·h², m³·h, 1 |
-| Permeant ions | Species, valence and relative permeability, matched exactly by the parser, as `LAW_PERMEABILITIES` | Na⁺ or K⁺ |
-| Reads | Species rows read at each stage, on the cell or outside side, each with its domain (positive and finite) | None |
-| Voltage domain | Its own interval | (−0.120, 0.060), shared |
-| Stage term | Its contribution to the stage rule (§4.4): by default @3's constant-field slope at the actual opening; an instantaneous opening adds its declared opening-slope term | The default |
-| RK4 reference step | Its own limit | 2.5 µs (NaV1.2), 25 µs (gated K) |
-| Provenance | `parity` (moved from the catalogue; moving is not calibrating, EXCITABLE_TISSUE_DESIGN §3.3), `cited` (a new law from a source), or `calibrated` | `parity` |
-| Component reference | A test against an independent evaluation of its equations (EXCITABLE_TISSUE_DESIGN §3.3) | Existing |
+| Definition time (host) | `explicit_rate_bound` at the declared state; the calcium-pump and junction-gate bounds; RK4 law steps | The same, plus I0's terms (§8.6). A law adds a definition-time term only if it declares one |
+| Run time (every explicit stage) | `dt × membrane_rate ≤ 1` at the actual openings | Each declared law's stage term (today's laws: unchanged), plus loop terms and the face-free term where declared |
+| Domains | One channel domain for all; the junction gate's ±120 mV on every junction | Each law's own domains on its own populations; the gate law's domain on gated junctions only |
 
-**Junction laws, transporters and fuel** are declared in the same way (§5.2, §5.3), each with
-its own domain and terms.
+## 8. The gathered items
 
-### 4.2 Static dispatch
+Each item comes after the round, as its own landing, crossrev-identical for every world that does
+not declare it.
 
-- **The declared structure** is a hashable record of what a definition declares:
-  - the law set and the junction laws;
-  - the transporters and fuel kinds;
-  - the implicit routes.
+### 8.1 Track E's channel laws, and D167's move
 
-  It enters the batch signature and the composite's implementation key:
-  `implementation(inner, structure, laws)`. Today's `(inner, laws)` stays exact for @3.
-- **What gets traced.**
-  - The base group is traced when any of @3's laws is declared, and then exactly as @3 traces it.
-  - Each further law is traced once, by its own kernel, selected per population by code. This is
-    @3's own selection, applied only to declared laws.
-  - An undeclared law, structure or route is not traced and has no leaf.
-- **Gate rows.** `channel_gate` is [G, slot], with G the largest gate count declared: two for @3's
-  structures, three with a j gate. Each law's rows beyond its own count are inactive.
-- **Codes.** Further laws take stable codes in @4's registry, from 5. Codes are data, so a batch
-  shares one structure and its worlds may differ in values (D148's per-world bindings).
+- **The catalogue's laws move first** (EXCITABLE_TISSUE_DESIGN §3.3's table).
+  - Each becomes a per-law kernel in the registry, with an agreement test against the old family's
+    kernel on a voltage grid, to rounding. The precedent is the Hill helper (coupling note §7.1,
+    item 10).
+  - Each keeps its parity status. The old family stays frozen as the reference (D167).
+- **New laws, only where the moved ones cannot serve:**
+  - `fast_sodium_m3hj@1`: three gates, its own domain (EXCITABLE_TISSUE_DESIGN §7.3);
+  - `transient_outward_potassium@1`, if needed;
+  - `l_type_calcium_cdi@1`: Ca²⁺ permeant, reading the cell's free Ca²⁺. Its calcium needs are:
+    - a Ca²⁺ row, already legal;
+    - the stage read (§7.3);
+    - buffering, through the rapid-buffer or charged closed-reaction door (D152 §7.3, shared with
+      FR-4);
+    - a store, either a compartment carrying Ca²⁺ (FR-1 with the charged door) or a moved ER law;
+    - an exchanger, as a transporter law.
 
-### 4.3 Stage reads of moving rows
+    These are M5's calcium-handling move.
+- **Qualification:** component references, then Track E's M4 protocol.
+- **Closed in version 1:** Markov-form laws and subspace calcium.
 
-- **One mechanism, three consumers.** Ca-dependent inactivation reads the cell's Ca²⁺; a pump fed
-  by a pool reads the pool's ATP, ADP and Pi; the coupling hook (§5.5) would read an ion.
-- **What is read.** Each read is evaluated on the stage's own state: the amounts after the stage's
-  explicit and implicit increments, which `imex_step` already forms (`stage`). It is the same
-  sequence that gives the stage voltages.
-- **Order (S).** A read enters the explicit rates and the gate targets as any explicit term does,
-  so ARS(2,2,2) stays second order. That is the coupling note's own argument for evaluation inside
-  the stages (§1.4: "Second order would need the factor evaluated inside @3's stages").
-- **The precedent:** the old catalogue's opening `(..., calcium_free_mM=)`
-  (`calcium_activated_catalog`).
-- **Stability.** The coupling note's loop-gain concern (§1.4) applies to every read: a read closes
-  a feedback loop that a voltage-only bound cannot see. So a reading law declares a loop term with
-  its stage term (§4.4). For the consumers above the loop is slow beside the step (**S**: cell ion
-  and fuel contents relax over seconds or longer, coupling note §1.4's argument), but the term is
-  declared, not assumed.
+### 8.2 `junction_ungated@1`
 
-### 4.4 Domains and bound terms in `StepChecks` and the stage rule
-
-| Check | @3 | @4 |
-| --- | --- | --- |
-| Definition time (host, `StepChecks`) | Face, junction and membrane terms of `explicit_rate_bound` at the declared state; the calcium-pump bound; the junction-gate bound; RK4 law steps | The same, from the shared function, with I0's two terms (§5.6). A further law adds a definition-time term only if it declares one; by default channels are left to the stage rule, as in @3 |
-| Run time (traced, every explicit stage) | `dt × membrane_rate ≤ EXPLICIT_STEP_BOUND`, at the actual openings | The base group's term unchanged; each further law's stage term and loop term; the face-free-node term at stage concentrations, present only when a definition declares an ion route, channel or transporter on a face-free node's patch (§5.4) |
-| Domains | One channel domain for every population; the junction gate's ±120 mV on every junction | Each law's own voltage and read domains on its own populations, at the definition (every schedule change, as `check_definition`) and at every stage; the gate law's domain on gated junctions only (§5.2) |
-
-## 5. The gathered items
-
-Each item below gives its milestone (§7), what qualifies it, what version 1 refuses, and the
-doors left closed.
-
-### 5.1 Track E's channel laws, and D167's move of the catalogue
-
-- **Milestone I3:** the schema of §4 in full (gate rows, reads, per-law domains and terms, Ca²⁺ and
-  other channel ions), with every law as a declaration.
-- **The catalogue's laws move first** (D167; EXCITABLE_TISSUE_DESIGN §3.3's table).
-  - Moving a law means a per-law kernel in @4's registry. An agreement test checks it against the
-    old family's code-dispatched kernel on a voltage grid, to rounding. The precedent is the Hill
-    helper against D152's inline expression (coupling note §7.1, item 10).
-  - The law keeps its source and parity status.
-  - The old family stays frozen as the reference once covered (D167).
-  - Only the laws a consumer needs move: for M4, the inactivating, instantaneous and sustained K
-    laws and the L-type CaV law of §3.3's table.
-- **The new mechanisms** (EXCITABLE_TISSUE_DESIGN §3.3), each written only if the moved laws
-  cannot serve:
-  - `fast_sodium_m3hj@1`: three gates, with the j gate setting slow recovery. It has its own
-    domain (EXCITABLE_TISSUE_DESIGN §7.3).
-  - `transient_outward_potassium@1`, if needed: a Kv4-type law, two gates.
-  - `l_type_calcium_cdi@1`: Ca²⁺ permeant, with a stage read of the cell's free Ca²⁺. It needs:
-    - a Ca²⁺ row in each cell, already legal in @3's specification;
-    - the read of §4.3;
-    - buffering: the rapid-buffer or charged closed-reaction door (D152 §7.3), shared with FR-4's
-      pH. Whether the row is free or total Ca²⁺ follows that choice;
-    - release and uptake: an ER or SR store, either a cell-owned compartment carrying Ca²⁺ (FR-1's
-      entity with the charged door) or a moved ER law;
-    - an exchanger, a transporter law (§5.3).
-
-    These are M5's calcium-handling move (D167; EXCITABLE_TISSUE_DESIGN §11). A subspace
-    calcium compartment is not in version 1.
-- **Qualification:** each law's component reference, then Track E's M4 references and protocol
-  (EXCITABLE_TISSUE_DESIGN §6, §11).
-- **Refused in version 1:**
-  - replacement@1 and @2 and the partition beside a gate count above two, because their tables and
-    resets assume two rows, until each is generalized under its own guard;
-  - projective and coarse modes (@1–@3 only);
-  - a law named after a protein.
-- **Closed doors:** Markov-form laws, which are a second law if a comparison follows such a model
-  (EXCITABLE_TISSUE_DESIGN §3.3); subspace calcium.
-
-### 5.2 `junction_ungated@1`
-
-- **Milestone I2,** right after I1. It is Track E's M4 prerequisite, and its M3 prerequisite if the
+- **The first law after the round.** It is small, it is M4's prerequisite, and it is M3's if the
   sheet's block sites need s·r_gj below 20 (D170, ruling 3).
-- **The declaration.** Each junction declares its conductance law. The default is
-  `junction_voltage_relaxation@1`: @3's gate, gate state and ±120 mV domain. `junction_ungated@1`
-  is the constant-field flux at the junction's availability, with no gate state and a domain that
-  asks only for finite voltages (EXCITABLE_TISSUE_DESIGN §3.3).
-- **Static.** An ungated junction carries no gate. A definition with no gated junction does not
-  trace the gate law.
+- **The law:** the constant-field flux at availability, with no gate state and a domain of finite
+  voltages only.
 - **Qualification:** EXCITABLE_TISSUE_DESIGN §3.4's four checks.
-  - Inside 120 mV it reproduces @3's pinned-open junction to rounding, in CPU runs of @3's chain
-    worlds.
-  - Beyond it, a two-cell case matches the appendix's flux, computed independently.
-  - Conservation and non-negative heat hold.
-  - Probe 2's segment case runs below s·r_gj = 10 without refusal.
-- **Refused in version 1:**
-  - an ungated junction beside replacement@1 and @2, which reset `junction_gate` and restart the
-    formation law at events;
-  - beside the partition, which resets `junction_gate` and, as a closer, pads closed contacts'
-    gates at 0, and so beside the bridge, which requires the partition. The bridge itself only
-    multiplies the junction's availability;
-  - beside any other closer;
-  - the coupling operator's junction factor on an ungated junction, until its guard reruns.
+- **Refused in version 1** beside replacement@1 and @2 and the partition (they reset
+  `junction_gate`), any closer (it pads it), and so the bridge.
 
-### 5.3 FR-4's pump and the shared energy pool
+### 8.3 FR-4's pump and fuel (options; this may go to the user)
 
-- **Milestone I4.** A third pump family enters as a list of declared **transporter populations**,
-  absent unless declared.
-  - Each population names a law, a patch, a capacity density, its fuel and an availability
-    schedule (`transporter_controls`).
-  - Its state is cycles, transferred amounts per species, heat and work, as @3's pumps book them.
-  - @3's two pump slots stay exactly as they are, which identity requires.
-  - The law (stoichiometry, sources, neutral name) is FR-4's own note's. This note fixes only how
-    it enters.
-- **A transporter law declares:**
-  - its roles and stoichiometry, matched exactly by the parser, as the Na/K pump's −3/+2;
-  - its rate kernel, in the positive-domain mass-action form of `kinetic_pump` (D111);
-  - its domains, as `kinetic_pump`'s affinity bounds;
-  - the fuel kinds it admits;
-  - its energy roles: heat ≥ 0 from the cycle free energy, and work from its fuel, declared as the
-    composite's energy-role table requires (v2 design §1.1);
-  - its bound terms: definition time, as `calcium_rate_bound`, and stage time.
-- **The fuel is a declaration on an unchanged pump law.** That is how the older family does it:
-  `finite_energy.pump_parameters` is a stage-local bridge that hands the unchanged
-  `nak_atp_mass_action_positive@1` the pool's current ATP, ADP and Pi concentrations and its
-  transformed ΔG°, in place of the maintained parameters.
+**How a new pump family enters.** As a declared transporter list, absent unless declared.
+- Each population names its law, patch, capacity density, fuel and availability schedule, and books
+  cycles, transfers, heat and work as today's pumps do.
+- The law itself (stoichiometry, sources) is FR-4's own note's.
+- **FR-4's first milestone needs no finite fuel:** maintained fuel (today's kind) serves it. So the
+  fuel decision blocks only the consumers of finite fuel: FR-2's retrieval work, D150's and D152's
+  pool doors, Syn3A's stage 4 and the molecular-to-physiology gate.
 
-| Fuel option | Where the pool lives | Stage reads | Energy accounting | Cost |
-| --- | --- | --- | --- | --- |
-| `maintained_chemical_reservoirs@1` (today) | Parameters | None needed | Metabolic work booked as supplied | None |
-| **`finite_energy_pool@1`, moved from the older energy family (recommended)** | @4 state per cell: ATP, ADP and Pi amounts, absent unless declared, with `energy_pools` and `regeneration_ports` (`driven_atp_regeneration_tanh@1`) as `resolved_energy@1` declares them | Yes, through the stage-local bridge (§4.3) | The pool's free energy enters @4's energy ledger. Pumps book heat and no external work; the regeneration port books the supplied work | New state, absent unless declared |
-| Pools as inventory rows (D150) | The one inventory | Yes | The standard potentials would need one owner, but D152's operator owns its own standard-potential term (D152) | The species cap, identity rules, and the standard potentials' owner |
-| A pool owned by an operator | A composite operator | No: held through the inner step | Booked from the applied cycles after the step | A lag of first order in the coupling (coupling note §1.4's argument) |
+**The precedent for finite fuel.** The older energy family declares `finite_energy_pool@1`
+(`energy_pools` per cell, `regeneration_ports` with `driven_atp_regeneration_tanh@1`).
+`finite_energy.pump_parameters` hands the **unchanged** pump law the pool's current ATP, ADP and Pi,
+and its transformed ΔG°, at each stage. So fuel is a declaration on an unchanged pump law.
 
-- **Operators draw on a pool through the contract's entity writes.** An operator lists the pool's
-  inner state in `ENTITY_WRITES`, with owned accumulators and ledger terms, so the pool's ledger
-  closes with its draws.
-  - That is the energy-pool door of D150 question 11, D152 question 10 and FR-2's retrieval work.
-  - Each consumer's note designs its own draw. Version 1 of the pool admits only @4's transporters
-    and pumps.
-- **Charge.** The older pool law's species "are not ionic charges": pH and Mg are declared and
-  buffered. Booking hydrolysis protons on FR-4's H⁺ row is a declared limit in version 1, and a
-  door.
-- **Qualification:**
-  - each transporter law's component reference and NumPy ΔG test (D150's pattern);
-  - the moved pool law's agreement with the older family's kernels;
-  - conservation of adenylate and phosphorus (`finite_energy.invariants`);
-  - the energy ledger closing to rounding with the regeneration port's work.
-- **Refused in version 1:**
-  - operator draws on a pool;
-  - a pool beside replacement@1 and @2 and the partition, until their reset and partition rules
-    are written;
-  - a transporter on a dividing cell (the partition's existing wall W3a);
-  - water with a pool, whose amounts would need the dilution term.
-- **Closed doors:** pH-coupled hydrolysis; operator draws; inheritance at division.
+| | **F1. Pool state in the inner model** | **F2. Fuel as inventory rows** (recommended) | **F3. A hybrid: pool state coupled to rows** |
+| --- | --- | --- | --- |
+| What it is | The older family's pool law moved: ATP, ADP and Pi as the inner model's own state per cell, not inventory rows | ATP, ADP and Pi as rows of the one inventory (D150's neutral species), read by the pump law at each stage and moved by its cycles inside the step | A pool in the inner model for the pumps, plus inventory rows for the reactions, kept in step by a declared exchange in each half-step |
+| Accounting | The pool's free energy, with transformed potentials at declared pH and Mg, enters the inner ledger; pumps book heat and no external work; the regeneration port books the supplied work | One material ledger per molecule. Each writer of a fuel row (pumps in the step, D152's reactions, D150's operators) books its own standard-potential term with **one shared set of declared potentials**, checked at the definition. That is D152's own rule, an operator-owned standard-potential term, extended to every writer. D150's operators refuse fuel rows until they book that term | Two copies of each molecule, reconciled by the exchange. It breaks the plan's shared-state rule ("when two mechanisms affect the same physical thing, they must change the same state") and FR-3's "never a second copy" |
+| D152 composition | **None:** reactions act on inventory rows, so they can neither make nor spend pool fuel without a new door that makes reactions write pool state | **Natural:** reactions make and spend the same rows the pump uses; Strang splitting around the step stays second order. This is what Syn3A's metabolism needs | Through the exchange, at a rate whose stiffness must itself be bounded |
+| Cost (**S**) | 2–3 agent-days: the move plus a parity guard against the older family | 3–4 agent-days: the pump's in-step writes of neutral rows, the shared-potential rule and its check, D150's refusals, the guards. Each fuel species takes a row of the 16-species cap; Syn3A's metabolism may need a probe above 16 (FR-9's) | 4–5 agent-days, plus the exchange's stiffness and the duplicate bookkeeping |
+| Risks | Closes Syn3A's route until a door exists; two inventories of ATP once metabolism arrives | One standard-potential owner must be settled with D152's next version; protons from hydrolysis are a declared limit until FR-4's pH is dynamic (then untransformed potentials with explicit H⁺) | Drift between the copies; double booking |
 
-### 5.4 FR-1's charged door, and the implicit set
+**Recommendation: F2.**
+- The fuel is shared physical state, and the metabolism that makes it (Syn3A's stage 4, the
+  closed molecular-to-physiology gate) is reactions on the shared inventory.
+- The older family's pool law (F1's content) keeps its value as the parity reference: its
+  transformed potentials are F2's first parameter set, checked against it on a world without
+  metabolism.
+- This is a user-level choice because it fixes where fuel lives for every later consumer.
+
+### 8.4 FR-1's charged door, and the implicit routes
 
 - **The bound term:**
-  - the definition-time half at the declared state in **I0**, the host round (§5.6), with @3's
-    refusal of channels and pumps on such a patch. It is specified after FR-1's probe P1, as the
-    lead ruled;
-  - the stage-time half at stage concentrations in @4 only (§4.4).
-
-  With the bound alone, CLOSED_COMPARTMENT_DESIGN §3.4's lysosomal chloride route needs
-  dt ≤ about 0.2 ms.
-- **The implicit set is one family of solver IDs** (**S**). These are FR-1's bounding patch
+  - the definition-time half at the declared state rides in I0 (§8.6), with a refusal of
+    channels and pumps on a face-free node's patch in the inner model;
+  - the stage-time half (concentrations move) is a declared stage term (§7.4), present only where
+    a definition declares an ion route, channel or transporter on such a patch.
+- **Implicit routes are one family of solver IDs** (**S**): FR-1's bounding patch
   (CLOSED_COMPARTMENT_DESIGN §3.4, door 2) and Track E's junction-implicit solver
   (EXCITABLE_TISSUE_DESIGN §4.2).
   - Both add electromigration to the operator: (C + a dt (L_face + L_junction + L_patch)).
-  - Both are solver IDs in `execution.solver`, with the implicit routes declared and static.
-  - A new method is a new solver ID (D147;
-    [FIELD_SOLVER_INTERFACE_DESIGN.md](FIELD_SOLVER_INTERFACE_DESIGN.md) §6).
-- **Milestone I5.** Each route kind is designed and qualified in its own note:
-  - the patch in FR-4's note, which owns the first charged compartment;
-  - the junctions in Track E's note, when §4.2's condition fails. It is an M4 prerequisite for
-    mouse coupling on small cells, and an M3 option at s = 1000 and 5 µs.
+  - Both declare their routes statically.
+  - Each route kind is designed in its consumer's note (the patch in FR-4's, the junctions in
+    Track E's) and qualified on its own: P1's two-volume relaxation for the patch (FR-1 §9), R-cable
+    and R-wave for the junctions.
+  - The field-solver interface owns the operator's factor and solve
+    ([FIELD_SOLVER_INTERFACE_DESIGN.md](FIELD_SOLVER_INTERFACE_DESIGN.md) §6). Junction routes add
+    cell-to-cell entries to its pattern.
 
-  Each route needs its own flux form for the implicit part: constant-field routes linearly implicit
-  under frozen slope conductances, as the faces use frozen weights (**S**). Each also needs its own
-  heat booking, which the faces book as J²RT/W ≥ 0.
-- **The field-solver interface owns the operator's factor and solve** (its §6). Junction routes
-  add cell-to-cell entries to the operator's pattern, which a sparse solver's bind must take.
-  Field-solver code waits for the GH200 numbers, so I5's dense version comes first, under its own
-  ID, and the sparse version under the interface's.
-- **Qualification:**
-  - P1's reference, the exact two-volume relaxation (CLOSED_COMPARTMENT_DESIGN §9), for the patch;
-  - R-cable and R-wave (EXCITABLE_TISSUE_DESIGN §6) for the junctions;
-  - at an implicit route's limit of zero conductance, agreement with the explicit ID.
-- **Refused in version 1 of @4:** every implicit route until I5. FR-1 version 1's refusal of ion
-  routes on a bounding patch stays in force until then.
+### 8.5 The coupling note's stage hook
 
-### 5.5 The coupling note's stage hook
-
-- **A closed door in version 1.**
+- **Closed in version 1.**
   - No consumer is named: ions already enter through regulatory states at second order (coupling
-    note §1.4; A2's moving input measured order 2.00, §8.4; A4's reciprocal feedback waits for its
-    references, §8.5).
-  - The coupling note's probe P3, which measures the lag of an instantaneous factor of a moving
-    row, comes first.
-- **Its shape, when a consumer asks:**
-  - a static keyword of @4's `imex_step`, as `membrane_process` is;
-  - a factor operator declares stage factors in the contract, an addition that is a strict
-    superset;
-  - its factors are evaluated on each stage's state (§4.3) and multiply the availabilities at
-    every explicit stage;
-  - each such factor declares its loop term (§4.4);
-  - it is absent unless declared, so no program changes.
-- **Qualification:** the coupling note's A4, against R-feedback, at second order with an
-  instantaneous factor of an ion row.
+    note §1.4; A2's measured order 2.00, §8.4).
+  - The coupling note's probe P3 comes first.
+- **Its shape:** a static keyword of the step, as `membrane_process` is, evaluating a factor
+  operator's declared stage factors on each stage's state, with a declared loop term.
 
-### 5.6 The bound-term fixes: one host-only D148 round (I0)
+### 8.6 The bound-term fixes (I0)
 
-| Term | Its shape | Run-time half? |
+| Term | Shape | Run-time half |
 | --- | --- | --- |
-| **Finding 3's z = 0 material term** on junctions and membranes | A Gershgorin term of the face term's form: 2 × the maximum over neutral species and nodes of Σ P·A/V over that node's junctions and membrane routes (**S**). It is evaluated on the operator-adjusted check specification, so R5's worst cases apply: water's minimum volumes and insertion's largest areas (`inner_check_spec`) | **Not needed (S).** P·A/V depends on neither openings nor concentrations, and an availability factor of at most 1 only lowers it. The ruling (D152 §9, Q7) names both functions, so the lead decides (§9, Q3) |
-| **The face-free-node term** | The maximum over **free** face-free finite nodes of Σ_m G_m / C_node, with G_m the passive constant-field slope at the larger side's declared concentration, as the membrane term takes plasma membranes (CLOSED_COMPARTMENT_DESIGN §3.4, door 1). Held baths and the gauge are excluded: the per-cell term already covers a cell against a fixed node. The near miss is P5 in `validation/tissue/pump_water_predictions.json` (water@1 under ARS(2,2,2)), whose face-free gauge `bath_0` carries an ion route (CLOSED_COMPARTMENT_DESIGN §3.4's sweep). Counting fixed nodes would refuse it | **On @3: none, replaced by a refusal.** @3 refuses, at the definition, a channel population or pump on a patch facing a free face-free node. Its definition-time bound runs on the channel-free projection, and its stage rule divides by the cell's capacitance, so neither sees such routes; passive routes keep @3's convention, the declared state. **On @4: yes** (§4.4), where the term is evaluated at stage concentrations and openings. This departs from the earlier ruling, which named both functions (§9, Q3) |
+| Finding 3's z = 0 material term | 2 × the maximum over neutral species and nodes of Σ P·A/V over junction and membrane routes, on the operator-adjusted check specification (R5's worst cases: water's minimum volumes, insertion's largest areas) | None needed (**S**): it depends on neither openings nor concentrations. The earlier ruling named both functions (D152 §9, Q7); the lead decides |
+| The face-free-node term | The maximum over **free** face-free finite nodes of Σ_m G_m / C_node at the declared state. Held baths and the gauge are excluded; P5 in `pump_water_predictions.json`, a face-free gauge with an ion route, is the near miss | In the inner model, a declared stage term (§8.4). With a refusal of channels and pumps on such a patch until that term exists |
 
-**D148's four criteria:**
-1. **Physical fields: by construction.** Every caller of `explicit_rate_bound` runs on the host:
-   @3's and `surface_pump`'s `StepChecks`, the step checks of insertion, water and replacement@2,
-   and validation tools (a grep at f2ada38d). The refusal is host-side too, so no program changes.
-2. **Verdicts: by sweep, not by construction.** The existing-world sweeps (D152 §10.3;
-   CLOSED_COMPARTMENT_DESIGN §3.4) were static and ran at earlier commits. They are rerun at the
-   landing commit, extended to channels and pumps on face-free patches. A qualified world that
-   either term or the refusal would refuse stops the round.
-3. **Ledgers:** no ledger changes.
-4. **Crossrev:** the baseline is renewed at the landing, and is identical.
+**Where it lands, and the parking question.**
+- **CURRENT_PLAN's "parked D148 rounds"** (item 5, "after GH200") are FIELD_SOLVER_INTERFACE_DESIGN
+  §6.5's performance candidates. They change the step program for speed, and the lead parked them
+  on 13 November until their value is measured.
+  - That reason does not apply to I0, which changes no program and is a stability refusal.
+  - I0 is the separate round "queued after D150 v1" (CURRENT_PLAN's composition gate), and D150 v1
+    has landed.
+- **"Changes no program" is not "changes no outcome":** a tighter bound or a new refusal can refuse
+  a world that runs today. P3 swept the registered and PROPOSED protocols' worlds at their
+  registered dt.
 
-**What the round adds is refusals at the definition,** with a test per term and for the
-refusal. They catch raw definitions that today run silently wrong: C4c's 13% at x = 1, and
-FR-1's dt × rate of 4.8 at 1 ms.
-- **Engine models:** the resolved pump family that shares the function; @3 and the composite are
-  the ones that matter.
-- **Effort:** 1.0–1.5 agent-days (CLOSED_COMPARTMENT_DESIGN §10).
+*P3's result is written here (§12).*
 
-## 6. Operators over @4
+- **The recommendation, if P3 refuses nothing:** I0 rides in the round, so there is one
+  re-verification. For @1 and @2, which share the function and stay outside D172, it carries a
+  D148 record.
 
-- **The declaration.** Each operator declares the inners it admits and, for @4, the features it
-  admits. It checks them in `parse(raw, base, inner_model)`, which already receives the inner.
-  This implements the lead's Q2 (EXCITABLE_TISSUE_DESIGN §12).
-- **At I1,** every operator admits @4 with no feature. Its compositions are then @3's programs,
-  and the cross-inner identity of §3.2, over every crossrev set, is their guard.
-- **Each later feature** is admitted per operator, with that operator's own guard:
+## 9. The operators in the round
 
-| Feature | Admitted at its milestone | Refused until generalized |
+**What changes in each @3-tied operator,** so that it reads declarations instead of @3's closed
+table:
+
+| Operator | What changes in the round | Effort (**S**) |
 | --- | --- | --- |
-| Further channel laws (gate count of 2 or less) | Injection, D150's and D152's operators, the coupling operator, the bath schedule, membrane state (its `channel_abundance` view is per population) | Replacement@1 and @2: template tables and per-population views keyed by @3's codes |
-| A gate count above 2 | As above | Replacement@1 and @2 and the partition, which reset `channel_gate` on two rows; the bridge, through the partition |
-| `junction_ungated@1` | As above, except the coupling operator's junction target until its guard reruns | Replacement@1 and @2 and the partition, which reset `junction_gate`; every closer, which pads it; the bridge, through the partition |
-| Transporters, pools | Injection, D150's and D152's operators | Water and what requires it, replacement, the partition, insertion |
-| Implicit routes | Decided in each route's note | — |
+| Replacement@1 and @2 | Template tables keyed by declared law IDs, gate rows from the structure; formation and gate resets on gated junctions only | 1.5–2 |
+| The partition, and the bridge through it | Resets over the declared gate rows; gated junctions only | 1–1.5 |
+| Water@1 and the symport | Their direct imports go through the restructured module; the symport's process hook unchanged | 0.5–1 |
+| Insertion@1 and @2, the lumens | The restructured spec types | 0.5–1 |
+| Membrane state, injection, the bath schedule, D150's and D152's operators, the coupling operator | Nothing but the re-gate | — |
+| **FR-1's `cell_owned_compartments@1`** (in flight) | Generic in code (declaration only, no program), but its refusal 4 must refuse **every** declared route kind on a bounding patch, failing closed on kinds it does not know, or a later transporter would slip past it | 0.25, at its re-gate |
 
-- **The operator matrix.** The architecture block's table of which operators admit and refuse
-  which gains the inner as an axis. That is coordinated through the lead.
+**Who needs what:**
+- **FR-4's first world needs none of the @3-tied operators.** It uses the bath schedule, the
+  compartments, exchange, turnover, reactions (the buffering door) and the coupling operator, all
+  generic.
+- **The lifecycle gate's milestone 2** (endogenous division) needs the partition, the bridge,
+  insertion@2, lumen@2, water@1 and replacement@2. All are adapted in the round for today's
+  structures.
+- **Admissions for new features** come with their consumers, each with that operator's own guard:
+  a third gate row, ungated junctions, transporters and finite fuel beside replacement, the
+  partition and water.
 
-## 7. Order and effort
+## 10. Order and effort
 
-| Milestone | Engine models | Content | Qualification | Effort (agent-days) | Blocks |
-| --- | --- | --- | --- | --- | --- |
-| **I0** | The resolved pump family's shared bound; @3 and the composite | §5.6: finding 3's term now; the face-free term, and @3's refusal of channels and pumps on face-free patches, after P1 | D148's four criteria, with the sweeps rerun at the landing commit; a refusal test per term | 1.0–1.5 | FR-4 (the safety net); D150 v1.1's bridge for permeant neutral species |
-| **I1** | `resolved_pump_composite@1` over @3 and @4 | The composite's inner generalization (`INNERS`, `CompositeModel`, `projection` and the implementation key per inner); @4's spec (@3's schema with every further key refused); the registry with @3's base group; static dispatch; operators' admission declarations; the cross-inner crossrev mode | §3.2; crossrev across revisions for @3 as the inner; tier files | 3–4 (**S**), plus about an hour of CPU | Everything below |
-| **I2** | @4 | `junction_ungated@1` (§5.2) | EXCITABLE_TISSUE_DESIGN §3.4's four checks | 1.5–2 (**S**) | Track E's M4; its M3 if the floor fails |
-| **I3** | @4 | §4's schema in full; the moved catalogue laws; `fast_sodium_m3hj@1`, and the transient outward current if needed | Component references; Track E's M4 protocol | 2–3 for the schema (**S**). The laws are within M4's 10–15 (EXCITABLE_TISSUE_DESIGN §11) | Track E's M4 |
-| **I4** | @4 | Transporters with maintained fuel, then `finite_energy_pool@1` and its regeneration port (§5.3) | §5.3's list | 3–4, plus 2–3 for the pool (**S**) | FR-4; FR-2's energy source |
-| **I5** | @4 with new solver IDs | The implicit routes: the bounding patch, junctions (§5.4) | Each route's own note | 3–5 per route kind (**S**), after its note | FR-4 at millisecond steps; FR-5's pores; Track E's mouse coupling on small cells |
-| M5 calcium | @4 | `l_type_calcium_cdi@1` with calcium handling moved (D167) and the buffering door | Track E's M5 | A track of its own (EXCITABLE_TISSUE_DESIGN §11) | Track E's plateau and slow-conduction comparisons |
-| (I6) | — | The stage hook: closed (§5.5) | A4 | — | Instantaneous ion sensing, if a consumer asks |
+**The round R** is one batched landing at a quiet point:
+- after MG0c and Track R's qualification are judged on today's model;
+- with Track E's M2 judged wholly before or wholly after it;
+- with main tagged just before it;
+- with in-flight `src/` branches (FR-1's milestone 1, the phase records, FR-10's milestone 2)
+  re-gated on the new main.
+
+| Step | Engine models | Content | Effort |
+| --- | --- | --- | --- |
+| **R** | The inner model restructured; the composite and every operator over it | §2.1–§2.3: today's structures as declarations, the five rules, the @3-tied operators (§9), I0 if P3 is clean; then the results gate (§3) | About 4–6 agent-days for the model, 4–5.5 for the operators and 1–1.5 for the gate tooling: **about 10–14 agent-days** (**S**). CPU: G1 about an hour; G2 the protocols' own costs (E07-v1 about 50 core-hours in full, about 5 as a sample if G1 is bitwise). An L4 gap if §5 applies |
+| `junction_ungated@1` | The inner model | §8.2 | 1.5–2 |
+| Track E's laws | The inner model | §8.1: the schema's law fields in use, the moved laws, `fast_sodium_m3hj@1` | Within M4's 10–15 (EXCITABLE_TISSUE_DESIGN §11) |
+| Transporters and fuel | The inner model | §8.3: transporters on maintained fuel, then the fuel option chosen | 3–4, plus F2's 3–4 |
+| Implicit routes | The inner model with new solver IDs | §8.4, each route kind after its note | 3–5 per route kind |
+| The stage hook | — | Closed | — |
 
 **What blocks what:**
-- **Track E's M1–M3** run on @3 and are not blocked. M3 needs I1 and I2 only if its grid goes below
-  s·r_gj = 20 (D170, ruling 3).
-- **Track E's M4** needs I1–I3, and I5's junction route if §4.2's condition fails. It also needs
-  the user's D138 approval and the paper's Supplementary Tables 1–2.
-- **FR-4 needs:** FR-1's milestone 1, P1, FR-4's own note, I0, I1, I4, the buffering door (D152's
-  charged closed reactions) and, for millisecond steps, I5's patch route.
-- **FR-5 needs** FR-1, FR-4, the coupling note's routing door (its §2) and the injury law as an
-  operator (D167). From I3 it needs a law reading the compartment's H⁺ on the outside side, and from
-  I5 the pores' implicit patch.
-- **FR-2 needs** FR-1, I4's pool and the operator-draw door.
-- **Track R's second-order factors** need I6, which stays closed until a consumer and the coupling
-  note's P3.
+- **Track E:** M1–M3 run on today's model (M3 needs `junction_ungated@1` only if its floor fails).
+  M4 needs R, `junction_ungated@1`, the laws, and the junction route if §4.2's condition fails.
+- **FR-4** needs FR-1's milestone 1, P1, its own note, R, I0 and the transporters, plus the patch
+  route for millisecond steps.
+- **FR-5** follows FR-4.
+- **FR-2 and Syn3A's stage 4** need the fuel option.
+- **Track R's second-order factors** need the closed stage hook.
 
-**Constraints already in the documents:**
-- **Landing windows** (CURRENT_PLAN): nothing under `src/` lands between MG0c's rehearsal and its
-  registration. The parked D148 rounds come after GH200, so I0's timing is the lead's (§9, Q4).
-- **The field solver** (D147, D156): `field_solver_choice`'s family list gains @4, so a @4
-  definition with free offsets declares version 3.
-- **Long-time modes:** projective and coarse modes stay @1–@3. A @4 long-time path belongs to
-  FR-8's note.
-- **Tiers:** they are re-measured after each landing (AGENTS.md).
-- **Checkpoints:** each landing needs D153 case 1 records for CPU runs resumed across it.
-  Registered runs stay on their snapshots.
+## 11. Open questions, with recommendations
 
-## 8. Refused in version 1 of @4, collected
+1. **Grouped or per-law** (§4). *Recommendation from P2's result: §4.*
+2. **The name** (§6). Recommended: keep `resolved_pump_tissue@3`, with D147 amended as in §6.
+3. **The fuel** (§8.3), possibly the user's. Recommended: F2, fuel as inventory rows with one
+   shared set of standard potentials.
+4. **The gate's cost-savers** (§3): a sampled re-run of E07-v1 if G1 is bitwise. Recommended: yes;
+   derivative-program judges always in full.
+5. **I0** (§8.6): it rides in the round if P3 refuses nothing; finding 3's term needs no run-time
+   half; the face-free run-time half is a declared stage term. Recommended as written.
+6. **§6.5's parked performance candidates.** The round changes the step program anyway, so the
+   candidates expected to be bitwise could ride in it. Recommended: not until GH200's profile shows
+   their value; the round's claim stays "same results".
+7. **The stage hook:** closed until a named consumer and the coupling note's P3.
 
-- Every structure whose milestone has not landed: further laws before I3, transporters and pools
-  before I4, implicit routes before I5, the stage hook.
-- The feature walls of §6's table.
-- Projective and coarse modes, and the stationary analysis, which refuses the composite (D150
-  probe 2).
-- A @3 checkpoint resumed as @4 (D153 case 3).
-- Laws named after proteins, and features for one paper (D144).
+## 12. The probes
 
-## 9. Open questions, with recommendations
+**P1, an as-is trace of today's model** (14 November).
+- **The run:** the snapshot of 1f3cb36, CPU 0, 43 s, 0.18 GB. Trace and lower only.
+- **The findings:**
+  - The literal 5 (`len(LAW_CODES)`) is in every program, the channel-free one included.
+  - Every gated law's kinetics are traced even with no channel.
+  - An empty layout leaf is a jaxpr input in every program, though `jax.jit` dropped it from the
+    lowered StableHLO in one world.
 
-1. **For the user: a second inner ID beside @3.** D143 adopted one composite over @3.
-   - **Recommended: yes.**
-     - The composite stays one model: the inner is already a declared field (`inner_model`), and
-       the implementation is cached per inner.
-     - @3 stays frozen for its qualified worlds and existing definitions.
-     - New mechanisms go to @4 as declarations rather than new model families, which keeps D142's
-       and D143's intent.
-   - **The alternative,** rounds on @3, is not admissible for most items (§2.2).
-2. **For the lead: what @3's identity under @4 confers.**
-   - **Recommended:** a @4 definition that declares only @3's structures inherits @3's guarded and
-     numerically qualified status for the same worlds and programs, as the thin compositions
-     inherited the frozen models' (PUMP_COMPOSITE.md, "Thin compositions"). Judged status still
-     comes only from registered protocols (D143).
-3. **For the lead: the run-time halves.** Both earlier rulings name the two functions:
-   finding 3's (D152 §9, Q7) and the face-free term's (CLOSED_COMPARTMENT_DESIGN §3.4, §11).
-   - **Recommended for finding 3:** no run-time half. The material term is state-independent, so
-     the host term, on R5's worst cases, is exact.
-   - **Recommended for the face-free term:** no run-time half on @3. In its place, @3 refuses
-     channels and pumps on a face-free node's patch at the definition, and passive routes keep @3's
-     declared-state convention. The run-time half lives in @4 only, where it is static by
-     declaration.
-   - **Why:** on @3, a run-time half needs a new layout leaf, which flags every program (§1.1).
-4. **For the lead: I0's timing.**
-   - **Recommended:** land the host-only round when a landing window opens, before GH200. It
-     changes no program, so the reason for parking D148 rounds until after GH200 does not apply.
-   - The face-free part waits for P1.
-5. **For the lead: the base group.**
-   - **Recommended:** @3's five laws as one group evaluated by @3's kernels, and per-law kernels for
-     every further law (§3.1).
-   - Per-law dispatch for all would give up program identity for nearly every guarded world.
-6. **For the lead: `junction_ungated@1` right after I1,** even if M3's floor holds.
-   - **Recommended: yes.** It is small, it is M4's prerequisite, and it is the first test of the
-     declaration path.
-7. **For the lead and FR-4's note: the energy pool.**
-   - **Recommended:** @4's own pool state, moving `finite_energy_pool@1`, with fuel as a pump
-     declaration (§5.3).
-   - Not inventory rows, because the standard potential would have two owners.
-8. **For the lead: the implicit set.**
-   - **Recommended:** one solver-ID family with declared route kinds, each kind designed in its
-     consumer's note (the patch in FR-4's, the junctions in Track E's).
-   - The field-solver agent is consulted on the operator's pattern (§5.4).
-9. **For the lead: the stage hook.**
-   - **Recommended:** a closed door until a named consumer and the coupling note's P3.
+**P2, grouped against per-law, on CPU.**
+- **The run:** a clean snapshot of Track R's commit 73d7fba5 (`src/` identical to main), on CPU 0.
+- *The records and verdicts are entered here after the run.*
 
-## 10. The probe
-
-**P1, an as-is trace of @3** (unit `cells-inner-v4-probe1`).
-- **The run:** a clean snapshot of 1f3cb36 (source identical to main's f2ada38d under `src/`), on
-  CPU 0 with 3G. It took 43 s, peaked at 0.18 GB, and its memory events were all zero.
-- **The method:** trace and lower only. Nothing was patched and nothing compiled. JAX 0.11.1, with
-  x64 on.
-- **The criterion** was written in HANDOFF.md before the run. Its records are in `probe1/`.
-
-| Criterion | (a) Heredity cell D: Kir2.1, NaV1.2 | (b) v3 release: five laws, padded | (c) No channel | Verdict |
-| --- | --- | --- | --- | --- |
-| C0: two traces identical | Yes | Yes | Yes | The control holds |
-| C1: `lt … 5:i64[]` | 2 | 2 | 2 | The table's length is in every @3 program |
-| C2: Kv1.5's literals | Present | Present | Present | Every gated law is traced, even with no channel. Kir2.1's and NaV1.2's literals are present in (c) too |
-| C3: the empty `junction_heat_trapezoid` leaf in the jaxpr | Input 105 of 106, `float64[0]` | The same | The same | An empty leaf is an input of every jaxpr |
-| C3: the lowered StableHLO | 98 of 106 arguments kept | 99 of 106; no zero-size argument kept | 96 of 106 | `jax.jit` drops unused arguments. In (b) the empty leaf is not in the lowered module; (a) and (c) cannot tell |
-
-**What it settles.**
-- Adding a law code changes every @3 program.
-- Per-law dispatch cannot reproduce @3's text.
-- An in-place leaf is flagged by crossrev, and fails D153's case 1, even where the lowered module
-  may be unchanged.
-- @4's undeclared structures must therefore be absent, not empty.
+**P3, the I0 sweep.**
+- **The run:** the same snapshot, host-only.
+- *The records and verdicts are entered here after the run.*
 
 ## Sources
 
-The design notes and decisions cited by section above, and the code read at f2ada38d:
+The design notes and decisions cited by section, D172 on main, and the code read at f2ada38d:
 - `models/surface_pump_v3.py`, `core/surface_pump_v3_spec.py`, `models/surface_pump.py`;
 - `models/pump_composite.py`, `models/pump_composite_adapter.py`, `core/pump_composite_spec.py`;
-- `models/operators/` (the contract and every operator's imports);
+- `models/operators/` (the contract and every operator's declarations);
+- FR-1's `models/operators/compartments.py` on its branch;
 - `numerics/surface_imex.py`, `numerics/exponential_gates.py`;
-- `processes/sodium_channels.py`, `potassium_channels.py`, `voltage_gates.py`, `junction_gate.py`,
-  `kinetic_pump.py`, `finite_energy.py`, `calcium_activated_catalog.py`, `cav_channels.py`;
+- `processes/` (the channel kernels, `junction_gate.py`, `kinetic_pump.py`, `finite_energy.py`,
+  `cav_channels.py`, `calcium_activated_catalog.py`);
 - `core/kinetic_finite_spec.py`, `core/surface_energy_spec.py`, `io.py`;
-- `validation/tissue/composite_crossrev.py`, `validation/continuity/probe.py`.
+- `validation/tissue/composite_crossrev.py`, `validation/continuity/probe.py`;
+- `validation/tissue/l4_variants/`.
 
-No literature was added by this note. The laws' sources are those of the notes that propose them.
+No literature is added by this note.
