@@ -185,17 +185,103 @@ def differing(a, b):
 def with_turnover(raw, cell, clearance_per_s):
     """D150's turnover clearing R in `cell` (first order): a regulator that moves in its own
     split part, never in @3's step."""
+    return with_regulator_turnover(
+        raw, [("clear_R", cell, "clearance")], [("clear_R", cell, [(0.0, clearance_per_s)])]
+    )
+
+
+def dynamic_world(
+    *,
+    end=0.03,
+    dt=1e-3,
+    clearance=50.0,
+    dose=(0.012, 1.0),
+    half_saturation=1e-3,
+    coefficient=1.0,
+    basal=0.25,
+    on=5.0,
+    off=1.0,
+    s0=(0.2, 0.2),
+    level=0.5,
+    write=(0.010, 0.9),
+    switch=(0.015, 0.020),
+):
+    """Milestone 2's moving world (A8, the batches): the sheet, observed at every step, with
+    * R cleared in cell_0 by D150's turnover (`clearance`, 1/s) and dosed there from dose[0], at
+      dose[1] times the rate that holds R at its anchor (production = clearance x anchor);
+    * a state of Na in cell_0 and cell_3 (on and off rates, s0 per cell, a crossing level);
+    * c_r, a Hill inhibition of R on junction_0's first side, switched off over [switch[0],
+      switch[1]); c_s, the state's complement on both sides with a basal level;
+    * a write to (s, cell_3) at write[0], placed before the dose's step.
+    Every argument is data: the worlds share one compiled program (one batch signature)."""
+    raw = sheet(end=end, dt=dt, observation_times=sfx.grid_times(end, dt, dt))
+    anchor = (
+        REGULATOR_mM * next(c for c in raw["model"]["cells"] if c["id"] == "cell_0")["volume_pL"]
+    )
+    raw = with_coupling(
+        raw,
+        species=[REGULATOR, "Na"],
+        states=[
+            state(
+                "s",
+                ["cell_0", "cell_3"],
+                [("hill_activation", "Na", 12.0, 2.0)],
+                on=on,
+                off=off,
+                initial=dict(cell_0=s0[0], cell_3=s0[1]),
+                level=level,
+            )
+        ],
+        couplings=[
+            hill_coupling(
+                "c_r",
+                "junction",
+                ["junction_0"],
+                REGULATOR,
+                "hill_inhibition",
+                half_saturation,
+                coefficient,
+                side="first",
+            ),
+            coupling(
+                "c_s",
+                "junction",
+                ["junction_0"],
+                ("state", "s"),
+                "state_complement",
+                side="both",
+                basal=basal,
+            ),
+        ],
+        switches={"c_r": [(0.0, 1), (switch[0], 0), (switch[1], 1)], "c_s": [(0.0, 1)]},
+        writes=[("s", "cell_3", write[0], write[1])],
+    )
+    return with_regulator_turnover(
+        raw,
+        [("clear_R", "cell_0", "clearance"), ("dose_R", "cell_0", "production")],
+        [
+            ("clear_R", "cell_0", [(0.0, clearance)]),
+            ("dose_R", "cell_0", [(0.0, 0.0), (dose[0], dose[1] * clearance * anchor)]),
+        ],
+    )
+
+
+def with_regulator_turnover(raw, routes, controls):
+    """D150's turnover of R, first in the operator list. routes: (id, cell, kind); controls:
+    (route id, carrier cell, [(time, rate), ...]), rates in 1/s (clearance) or fmol/s
+    (production)."""
     out = copy.deepcopy(raw)
     out["model"]["operators"].insert(
         0,
         dict(
             law=sfx.TURNOVER,
             species=identities([REGULATOR]),
-            routes=[dict(id="clear_R", species=REGULATOR, node=cell, kind="clearance")],
+            routes=[dict(id=r, species=REGULATOR, node=n, kind=k) for r, n, k in routes],
             templates=[],
         ),
     )
     out["experiment"]["turnover_controls"] = [
-        dict(route_id="clear_R", carrier_id=cell, schedule=[dict(time=0.0, rate=clearance_per_s)])
+        dict(route_id=r, carrier_id=c, schedule=[dict(time=t, rate=v) for t, v in changes])
+        for r, c, changes in controls
     ]
     return out
