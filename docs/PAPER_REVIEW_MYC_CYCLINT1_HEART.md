@@ -42,11 +42,13 @@ no electrical quantity at all** (§2.11). Cells has gap junctions, membrane
 voltage and generic voltage-gated channel laws, and it has division operators;
 it has no cardiac action-potential model, no contractility and no scar.
 
-Three things follow.
-1. **There is a real version 0 that could run soon** (§6c), using only landed or
-   next-to-land features, and it targets the spatial-restriction question rather
-   than the paper's headline efficacy numbers. It would show something genuine
-   and would not show regeneration, function or arrhythmia.
+Four things follow.
+1. **There is a real version 0 that could run soon** (§6c), using **only
+   already-qualified laws with nothing blocking it** — it needs no new engine
+   feature and not even the two operators landing this week. It targets the
+   spatial-restriction question rather than the paper's headline efficacy
+   numbers. It would show something genuine, and it would not show regeneration,
+   function or arrhythmia.
 2. **The paper's headline readouts — LVEF, scar, survival — are out of reach and
    should not be promised.** They are organ-scale and need contractility,
    fibroblasts and a matrix the engine does not have (§6b). Chasing them would
@@ -55,6 +57,13 @@ Three things follow.
    backlog: a protein-pulse shape with timed measurements (§2.2) and a cited Myc
    protein half-life of 20–40 min. Both are generic kinetics, not cardiac
    parameters.
+4. **Three composition walls, not missing physics, are what actually set the
+   staging.** The operators refuse each other in ways that forbid assembling the
+   paper's causal chain in one world even if every missing model existed: the
+   species pulse refuses division, division refuses replacement **and therefore
+   the only junction-formation law**, and division refuses water and is capped at
+   64 field nodes. These are explicit, reasoned refusals in the operator code,
+   and §6a lists them so that no stage is planned as though they were not there.
 
 No simulator change, parameter fit, run or scientific acceptance follows from
 this review. It adds notes and a plan only.
@@ -641,25 +650,49 @@ requires.
 
 | Piece the paper needs | What exists in `src/cells` | Status |
 | --- | --- | --- |
-| **A transient expression pulse** — scheduled production and first-order clearance of a species | `scheduled_species_turnover@1` (production at cells, clearance at nodes) and `scheduled_species_exchange@1` (secretion and uptake), both **landed 14 November 2026** under D150 v1, with their guards; crossrev identical in all five sets and no changed tier-1/tier-2 outcome | **Landed, not accepted.** Milestone 3 — comparison with the continuum closed forms, then the PROPOSED protocol — is still to come, and CURRENT_PLAN states plainly "integration grants no acceptance" |
-| **Complex formation** — cyclin T1 + CDK9 ⇌ P-TEFb as reversible binding | `local_species_reactions@1`, one reaction network per composition, writing @3's neutral species rows, reusing the neutral detailed-balance kernel `mass_action.reversible_flux` unchanged | **Design accepted 14 November 2026** ([note](SHARED_INVENTORY_REACTIONS_DESIGN.md), rulings in §9). **Code has not landed**; it follows D150 v1's code, ~6 agent-days. First acceptance is **MG0c** (Turing patterning at the predicted wavelength), not this paper |
-| **Division** | `isopotential_partition@1` and `cytoplasmic_bridge_closure@1`, with `scheduled_membrane_insertion@1/@2`, `restricted_cleft_lumen@2` and `membrane_entity_state@1` | **S5a qualified** (CURRENT_PLAN, 14 November): it passed its registered protocol against the independent references R-ops and R-tissue. Division is **prescribed**, not state-triggered |
-| **Newborn cells' junction formation** | `delayed_first_order_junction_formation@1` (`processes/junction_formation.py`), E07's engine model for how a newcomer acquires coupling | In use in E07; the formation **shape is a modelling choice, not a fit** (CURRENT_PLAN, coupled-renewal robustness row) |
+| **A transient expression pulse** — scheduled production and first-order clearance of a species | `scheduled_species_turnover@1`: routes of kind production (**cells only**, P in fmol/s) or clearance (k in 1/s), exact over each half-step as n′ = n·e^(−kh) + P(1 − e^(−kh))/k. Plus `scheduled_species_exchange@1` for secretion and uptake (flux export, first-order export/import, saturable import) | **Landed 14 November 2026, not accepted:** the protocol at `validation/tissue/secreted_species_protocol.json` is **PROPOSED, not registered, with no judged run**, and CURRENT_PLAN states "integration grants no acceptance". **Three scope limits that shape the plan:** neutral species only (**ions cannot be produced**), **at most 7 species per world**, and rates are **scheduled, never state-dependent**. It also **refuses water, the lumens, insertion, and S5's partition and bridge** — "version 1 is transport on a static tissue" (`operators/species_turnover.py`) — though it **does** work with `scheduled_cell_replacement@1` |
+| **Complex formation** — cyclin T1 + CDK9 ⇌ P-TEFb as reversible binding | `local_species_reactions@1`, one reaction network per composition, writing @3's neutral species rows. Its passive law is `ideal_detailed_balance_mass_action@1` (`forward_rate_per_s`, per-species `standard_mu_RT`, `standard_concentration_mM`, reverse rate from detailed balance), reusing `processes/mass_action.py` unchanged. Reactions must be closed with each side of molecularity ≤ 3, which covers A + B ⇌ C | **Landed on `main` 14 November 2026** (merge `a4e2f7e`) — *after* this worktree branched, so it is absent here. **Development code: no judged run.** First acceptance is **MG0c** (Turing patterning at the predicted wavelength), whose driver and protocol are not yet written. Not this paper's to qualify. Also available already: the standalone `compartment_reactions@1`, the same law in closed fixed-volume compartments, qualified 27 September (pre-reset record) |
+| **Division** | `isopotential_partition@1` (a parent becomes two pre-declared daughter slots at scheduled `partition_events`, splitting volume, patch area and contacts by declared fractions, with unmixing work booked) and `cytoplasmic_bridge_closure@1` (owns the aperture, multiplying the bridge junction's availability by a/a₀), with `scheduled_membrane_insertion@1/@2`, `restricted_cleft_lumen@1/@2` and `membrane_entity_state@1` | **S5a qualified** 14 November against the independent references R-ops and R-tissue, **in division worlds only**. Division is **prescribed, never state-triggered**. **Hard limits for planning:** partition refuses **pumps on the dividing cell**, a volume provider (so **water**), and **replacement**; worlds whose operators provide or close field inputs are capped at **64 field nodes with held baths only** (`FIELD_INPUT_NODE_CAP`), and every division world run so far is egg scale — **at most 16 cells, 47 nodes**, S3 judged at 0.25 ms. J1 fails on R-full; J2 and C1 are held |
+| **Newborn cells' junction formation** | `delayed_first_order_junction_formation@1` (`processes/junction_formation.py`): A(age) = 1 − (1 − A₀)·exp(−max(0, age − lag)/τ), with `initial_abundance`, `lag_s` and `time_constant_s` (τ ≥ 40 s required), multiplying @3's junction availability on every junction incident to the newcomer | Qualified within G2-Q1; the curve's shape is **"a modelling choice … not a fit"** (D139). **A constraint that matters a great deal here:** it is used **only** by `scheduled_cell_replacement@1/@2`, and `isopotential_partition@1` **refuses `scheduled_cell_replacement`** in the same composition ("replacement books at the declared layout", `operators/partition.py`). **So a cell born by division has no junction-formation law today** — see §6b item 4 and version 3 |
 | **Cell replacement** | `scheduled_cell_replacement@1/@2`, and `resolved_pump_replacement@1` as the composite with replacement over `resolved_pump_tissue@3` | In use in E07-v1 |
-| **The composite physiology** | `resolved_pump_composite@1`, with water and volume (`resolved_pump_water@1/@2`, `ideal_osmosis_linear_compliance_water@1`) | Water and volume **qualified and on main** (11 November); the composite's landing is the current gate |
-| **Gap junctions and coupling** | `junction_voltage_relaxation@1`, `symmetric_opposing_relaxation@1`, junction gating (`junction_gate.py`), plus formation above | Qualified in the BETSE-parity track; junction abundance is **entity state**, so it can be set per contact. **Worth noting for this paper:** the opposing-gate law's steady voltage dependence is already sourced from a **cardiac** gap-junction measurement — Chen-Izu, Moreno & Spangler (2001), cited in [SELECTIVE_CONTACT_SPEC.md](SELECTIVE_CONTACT_SPEC.md) §"opposing-gate literature" — though the relaxation time is declared there as "our phenomenological model, not a reproduction of the full microscopic gating scheme" |
-| **Voltage-gated channel laws** | A broad catalogue: `voltage_gates.py`, `sodium_channels`, `kv1_channels`, `cav_channels`, `hcn_channels` (`hcn1_m@1`, `hcn2_m@1`, `hcn4_m@1`), `potassium_channels`, `leak_channels`, `kinetic_pump`, `cotransport`, calcium handling (`er_calcium.py`, `calcium_atpase.py`, `ip3_release.py`, `plasma_calcium.py`), and a **Morris–Lecar family** (`morris_lecar_channels.py`) that includes `nav_ml_instantaneous@1`, `cav_l_ml_instantaneous@1`, `cav_t_ml_instantaneous@1`, `kir_ml_instantaneous@1`, `hcn2_ml_…@1` and `hcn4_ml_…@1` | **The ingredients of excitability exist as generic laws under neutral names.** See the next row for what does not |
+| **The composite physiology** | `resolved_pump_composite@1` over its one inner model `resolved_pump_tissue@3`, with water and volume (`resolved_pump_water@1/@2`, `ideal_osmosis_linear_compliance_water@1`, `k_anion_symport_mass_action@1`) | Water and volume **qualified** (W1 25/25 and W2 24/24, 11 November); the **composite itself landed 12 November**, and what remains of that gate is **GPU agreement by tolerance**. Note that every composite run is labelled **"development composition" unconditionally** (`DEVELOPMENT_STATUS`, `models/pump_composite.py`): a combination is not qualified by its parts (D143) |
+| **Gap junctions and coupling** | In @3, each junction is declared **per cell pair**: `area_m2`, per-species `permeability_m_per_s`, and a gate `junction_voltage_relaxation@1` (`threshold_voltage_V`, `minimum_open_fraction`, `initial_gate`), with parallel contacts allowed. **Crucially for version 0, the experiment's `junction_controls` set a per-junction `availability` in [0, 1] on a schedule** (a list of `{junction_id, schedule: [{time, availability}]}`, parsed through the @1 chain that @3 inherits) | Qualified through BETSE parity (protocols D and F, P2–P4b) and MG0b. **There is no state- or chemistry-dependent junction rule and no connexin-specific law.** Junction *abundance* as general contact state is in CURRENT_PLAN's planned entity table, **not built**: today it exists only as replacement's formation state. **Correction worth recording:** `symmetric_opposing_relaxation@1` — whose steady voltage dependence *is* sourced from a **cardiac** gap-junction study (Chen-Izu, Moreno & Spangler 2001, per [SELECTIVE_CONTACT_SPEC.md](SELECTIVE_CONTACT_SPEC.md), with its relaxation time declared phenomenological) — belongs to `physical_ionic_graph@1` and `finite_extracellular@1–@3`, **not** to the composite or the BETSE-parity pump track |
+| **Voltage-gated channel laws** | **Two tiers, and the distinction is decisive.** (i) **What the composite actually carries:** `resolved_pump_tissue@3` has exactly **five** channel laws — `kv1p5_mh@1`, `kir2p1_mh2@1`, **`nav1p2_m3h_regularized@1`** (a fast sodium law with m³h inactivation), `kleak_always_open@1`, `naleak_always_open@1` — plus the Na/K and Ca ATPases and the junction gate. **There is no calcium channel in this family.** (ii) **A much wider 56-law BETSE-v1.5-derived catalogue** (Na, K, CaV1.x/2.x/3.x, HCN1/2/4, leaks, and a 13-law **Morris–Lecar** family including `nav_ml_instantaneous@1`, L- and T-type calcium, `kir_ml_instantaneous@1` and HCN2/HCN4) exists in `processes/shared_channel_catalog*.py` → `morris_lecar_catalog.py` → `hcn_extra_catalog.py` | (i) is BETSE-parity qualified on CPU and L4 (P4, P4b) — **parity, not a biological calibration**. (ii) lives **only in the older `resolved_tissue@12`, `resolved_calcium@11` and `resolved_calcium_energy@5` families, which do not take the composite operators**, and its qualification is a pre-8-November scoped CPU record over ~50 µs histories. **S So the wide catalogue is not reachable from a model built on the composite**, which is the single most important engine fact in this table: version 4 is not "wire up existing channels", it is a composition-and-calibration job |
 | **An intracellular calcium store** | `er_calcium.py`: a BETSE-1.5-sourced ER pump (`SERCA`-like but, per its own header, "deliberately does not imply a two-Ca SERCA cycle") and an **instantaneous, activation- and inhibition-gated release law** `er_calcium_release@1`; plus `finite_calcium_pumps.py`, `calcium_atpase.py`, `ip3_release.py`, `plasma_calcium.py`, `calcium_gates.py`, `calcium_activated_potassium.py` | Present under neutral names. **S** The shape of a store-release feedback exists; cardiac **RyR2** kinetics and release-to-contraction coupling do not |
 | **A cardiac action potential** | **Nothing.** Grepping `src/` for `Luo–Rudy`, `ten Tusscher`, `O'Hara`, `Beeler`, `Nav1.5`, `Scn5a`, "action potential", `ryanodine` and "excitation–contraction" returns **no match for any of them**. No ventricular or nodal action-potential model, no `Scn5a`-calibrated fast sodium current with the right inactivation, no `Ito`/`IKr`/`IKs`, no excitation–contraction coupling, and no conduction observables (activation time, conduction velocity, refractoriness, capture, block) | **Absent.** The closest are the Morris–Lecar family above — a generic excitable-membrane formulation carrying `nav_ml_instantaneous@1`, L- and T-type calcium, `kir_ml_instantaneous@1` and HCN2/HCN4 — and the BETSE-sourced HCN laws, whose own header notes they "do not implement cAMP modulation or a native update clock" |
 | **Mechanics** | 2-D vertex mechanics (`vertex_mechanics.py`, `apical_vertex.py`, `mechanical_equilibrium.py`, `junction_tension_inference.py`). It **does** carry a perimeter-**contractility** parameter Γ_c ≥ 0 in the energy (`0.5 · Γ_c · perimeter²`), the standard vertex-model cortical term | MG1's v2 passed and landed. **S** But that is a *passive, static* cortical tension parameter, not active force generation: there is **no time-varying contraction, no calcium-to-force coupling, no stroke or pump measure, and no mechanosensitive channel** (the bone-mechanosensing review reached the same conclusion) |
 | **Gene regulation** | `emt_mirna.py` / `emt_mirna_pair@1` is the nearest: regulatory equations with no ions, voltage or contacts, deliberately isolated | There is **no gene-regulation layer**. The GRN track is **held under D145**, with catalogue stage 3 and Cortés-Poza Phase 1 |
 | **Scar, fibroblasts, cell types** | Cells have stable identity, membership and ancestry; `tissue_removal.py` and `fixed_polygon_removal.py` remove tissue; `finite_ecm_polygon_geometry.py` is a geometric cell/ECM partition | **No ECM with composition, no fibroblast population, no differentiated cell types, no scar.** The GZMK review reached the same conclusion for fibrosis |
 
-**S The one-sentence summary of 6a:** Cells can already express *a timed
-molecular pulse in a coupled, voltage-bearing, volume-regulating cell sheet whose
-cells can be made to divide and whose newborns acquire junctions on a declared
-law* — which is a surprisingly good match to the paper's *spatial* question, and
-no match at all to its functional readouts.
+**S The one-sentence summary of 6a:** Cells can already express *a coupled,
+voltage-bearing cell sheet in which individual contacts can be opened and closed
+on a schedule, carrying a fast sodium law and an inward rectifier* — which is a
+surprisingly good match to the paper's **spatial** question, and no match at all
+to its functional readouts.
+
+**S Three composition walls run right through this plan, and they set the
+staging more than any missing physics does.** They are all explicit refusals in
+the operator code, not oversights:
+1. **The pulse cannot coexist with division.** `scheduled_species_turnover@1`
+   refuses partition and bridge (it is "transport on a static tissue").
+2. **Division cannot coexist with replacement — and so not with the
+   junction-formation law**, which only replacement uses. A divided cell
+   therefore has no maturation law today.
+3. **Division cannot coexist with water**, and is capped at 64 field nodes with
+   held baths, having run at most 16 cells.
+
+So the paper's full causal chain — *pulse → competence → division → electrical
+integration* — cannot be assembled in one composition today even if every
+missing model existed. Each version below says which wall it meets.
+
+**A documentation note for the lead, found while checking the above.** The code
+registry is authoritative and some docs lag it: [PUMP_COMPOSITE.md](PUMP_COMPOSITE.md)'s
+operator table omits the four S5 operators and D152's; the channel-catalogue docs
+still describe themselves as a "standalone component", which predates their
+integration into `resolved_tissue@8`–`@12`; and
+[EXPERIMENT_PATH_PATTERN_RECOVERY.md](EXPERIMENT_PATH_PATTERN_RECOVERY.md)'s
+"in flight" list is stale. Every status in the table above was taken from
+`src/cells`, the protocol JSONs and CURRENT_PLAN, not from those tables.
 
 ### 6b. What is missing, each as a general feature
 
@@ -690,13 +723,17 @@ for this paper.
    physics that Cells' channel catalogue, junctions and field solver are already
    shaped for — and because without it none of the paper's safety question is
    reachable.
-4. **The electrical integration of newborn cells.** A newborn cell's junction
-   formation law exists (`delayed_first_order_junction_formation@1`), but nothing
-   declares how a *newly divided, dedifferentiated* cell's membrane differs while
-   it matures. As a general feature: a declared maturation trajectory for a
-   newborn cell's channel abundances and junction coupling, with the timescale
-   as a parameter. This is the mechanism behind the paper's own hypothesis
-   (§2.8).
+4. **The electrical integration of newborn cells.** Two distinct gaps, and the
+   first is sharper than it first appears. (a) **A junction-formation law exists
+   but cannot reach a divided cell**: `delayed_first_order_junction_formation@1`
+   is used only by replacement, and partition refuses replacement (§6a). The
+   general feature is **a maturation law that applies to any newcomer, however it
+   arrived** — by replacement or by division. (b) Nothing declares how a *newly
+   divided, dedifferentiated* cell's **membrane** differs while it matures: a
+   declared maturation trajectory for a newborn's channel abundances and junction
+   coupling, with the timescale as a parameter. Together these are the mechanism
+   behind the paper's own hypothesis (§2.8), and (a) is a prerequisite for
+   version 3 rather than a refinement of it.
 5. **Active contractility.** A time-varying contraction driven by calcium, and a
    tissue-level pump measure. MG1 gives **passive** 2-D vertex mechanics with a
    static cortical-contractility parameter (§6a), which is not the same thing:
@@ -727,12 +764,21 @@ for this paper.
   junction coupling and gain altered membrane conductance, how do the sheet's
   voltage field, its coupling structure and its recovery depend on *f* and on the
   spatial arrangement at fixed *f*?
-- **Engine models it runs.** `resolved_pump_composite@1` on
-  `resolved_pump_tissue@3` (the qualified pump–channel tissue with its junction
-  laws), with `scheduled_species_turnover@1` supplying the timed pulse that
-  drives the perturbation, and the existing junction abundance as the perturbed
-  state. No new engine feature. The 127-cell sheet on CPU, the scale
-  CURRENT_PLAN already names for coupled renewal.
+- **Engine models it runs.** `resolved_pump_composite@1` over
+  `resolved_pump_tissue@3` — the BETSE-parity-qualified pump–channel tissue with
+  its five channel laws and `junction_voltage_relaxation@1` — and **the
+  perturbation is applied through the experiment's own `junction_controls`**: a
+  per-junction `availability` in [0, 1] on a schedule, which already exists and
+  needs no operator at all. **No new engine feature, and no operator conflict.**
+  The 127-cell held-bath sheet on CPU, the scale CURRENT_PLAN names for coupled
+  renewal and that E07-v1 used (judged at 5 ms with a 1 ms check).
+- **S Why this is better than driving it with a species pulse.** My first draft
+  used `scheduled_species_turnover@1` for the pulse. That is unnecessary — the
+  thing version 0 perturbs *is* junction availability, which is already
+  schedulable — and it would also forbid water in the same composition. Keeping
+  the pulse out of version 0 makes it smaller, legal in one composition, and
+  leaves water available if the sheet should regulate volume. Turnover enters at
+  version 1, where a *molecular* pulse is the actual subject.
 - **What it would show.** Whether spatial arrangement, at fixed dose, changes the
   tissue-level bioelectric consequence — and if so, over what clustering scale
   and with what dependence on junction coupling. That is a *general* result about
@@ -742,13 +788,14 @@ for this paper.
   not ejection fraction, not scar, and **not arrhythmia** — a passive sheet has
   no propagation, so "conduction block" is not yet definable. It also would not
   reproduce any number in the paper.
-- **Prerequisites and gate.** The composite's landing (today's commitments) and
-  D150 v1's milestone 3. It sits naturally as a small case in the **composition**
-  gate, reusing the coupled-renewal gate's 127-cell sheet. **S** It should be
-  registered with a pre-declared readout, like any other.
+- **Prerequisites and gate.** **None blocking** — the composite landed on 12
+  November and every law version 0 uses is already qualified. It needs no part of
+  D150 or D152. It sits as a small case in the **composition** gate, reusing the
+  coupled-renewal sheet. **S** It should be registered with a pre-declared
+  readout like any other, and its runs will carry the standard "development
+  composition" label (D143).
 - **Effort.** ~2–3 agent-days for the driver, world definitions and analysis, as
-  a `validation/` experiment driver over unchanged engine models, plus CPU hours
-  only.
+  a `validation/` experiment driver over **unchanged** engine models, CPU only.
 - **Decisions it needs.** Only whether to spend the slot (§6d, decision 3). It
   needs **no** new engine feature and **no** D145 relief.
 
@@ -765,22 +812,30 @@ for this paper.
   competence factor with its kinase partner to form the active complex. The
   readout is the **time integral of the active complex per cell** — a dose, not a
   decision.
-- **Engine models.** `local_species_reactions@1` (once coded and MG0c-qualified),
-  over @3. **A hard constraint found in the design note:** a turnover route on a
-  (species, node) that a reaction writes is **refused at the definition**, so the
-  pulse's production and clearance must be declared **inside** the network as
-  source and sink reactions, not through `scheduled_species_turnover@1`
-  ([note](SHARED_INVENTORY_REACTIONS_DESIGN.md) §1.1). Version 1 of that operator
-  is also **refused beside water and the lumen**, caps species at **7**, allows
-  **neutral species only**, and refuses cell routes on replaced slots (§7, §9
-  there). **S** So version 1 of *this* model cannot run with water and volume, and
-  cannot combine the pulse with replacement — both are version-2 problems.
+- **Engine models.** `local_species_reactions@1` (**on `main` since 14 November
+  as development code**, awaiting MG0c), over @3, with
+  `ideal_detailed_balance_mass_action@1` for the binding. **A hard constraint in
+  the design note:** a turnover route on a (species, node) that a reaction writes
+  is **refused at the definition**, so the pulse's production and clearance are
+  declared **inside** the network as source and sink reactions, not through
+  `scheduled_species_turnover@1`
+  ([note](SHARED_INVENTORY_REACTIONS_DESIGN.md) §1.1) — which is tidy, since the
+  integrator then sees the whole local kinetics. The operator refuses **water,
+  lumens, insertion, partition, bridge, replacement@2 and charged reacting
+  species**, caps species at **7**, and enforces a stage condition dt·L ≤ 1. Its
+  energy guard of record is a species-only world plus a per-law NumPy ΔG test,
+  because the shared IMEX energy bound is blind at nM.
+- **S So version 1 is a quiet, static, water-free world** whose only subject is
+  the kinetics. That is the right scope for it, and it meets wall 1: the pulse
+  cannot also divide anything.
 - **What it would show.** That the engine reproduces the paper's own kinetic
   separation: a driver present for hours, a response integrated over days, and a
   competence factor without which the integral stays near zero. Calibrated on
   §2.2's numbers, which are generic protein kinetics.
-- **Prerequisites and gate.** D152's code and **MG0c's acceptance first** — this
-  model is a *second consumer*, never the qualification case. Composition gate.
+- **Prerequisites and gate.** **MG0c's acceptance** — the operator itself is
+  already on main as development code, so the gating item is its qualification,
+  not its arrival. This model is a *second consumer*, never the qualification
+  case. Composition gate.
 - **Effort.** ~2 agent-days on top of D152, assuming MG0c has landed.
 - **Decisions.** Whether a comparison with the paper's measured kinetics counts
   as a per-paper comparison under D138 (§6d, decision 2).
@@ -807,9 +862,17 @@ for this paper.
 - **Adds.** Features 2 and 4: division triggered by the competent state, and a
   declared maturation trajectory for the newborn cell's channels and coupling.
 - **Engine models.** `isopotential_partition@1`, `cytoplasmic_bridge_closure@1`,
-  `scheduled_membrane_insertion@2`, `restricted_cleft_lumen@2`,
-  `delayed_first_order_junction_formation@1`, over the composite, plus version
-  2's gate.
+  `scheduled_membrane_insertion@2`, `restricted_cleft_lumen@2`, over the
+  composite, plus version 2's gate.
+- **S It meets all three walls at once, and this is the stage to be honest
+  about.** Partition refuses replacement, so
+  `delayed_first_order_junction_formation@1` **cannot be used here at all** —
+  §6b item 4(a) must be built first. Partition also refuses water and the pulse
+  operator, and caps the world at **64 field nodes with held baths**, against
+  the 127-cell sheet version 0 uses and the ~16 cells division has actually run.
+  So version 3 is not "version 2 plus division": it needs a newcomer-maturation
+  law that works for partition, a decision about running division at sheet
+  scale, and a way to drive division from state without the turnover operator.
 - **What it would show.** **The first thing that is recognisably about this
   paper**: a localised pulse produces new cells in a border region, and the
   model reports whether and how fast they become electrically part of the sheet
@@ -825,9 +888,17 @@ for this paper.
 **Version 4 — excitability and conduction: the paper's open question.**
 - **Adds.** Feature 3: a calibrated excitable cardiomyocyte membrane and
   propagation, with conduction observables.
-- **Engine models.** A new cardiac excitable-membrane composition, built from the
-  existing generic channel laws where they serve, over the junction and field
-  machinery; plus version 3.
+- **Engine models.** A new excitable-membrane composition over the junction and
+  field machinery, plus version 3. **S And the §6a correction matters most
+  here:** the wide 56-law catalogue (Morris–Lecar, HCN4, CaV1.2/3.x) is **not
+  reachable from the composite** — it lives in the older `resolved_tissue@12` and
+  `resolved_calcium*` families, which do not take the operators. The composite
+  carries five laws, of which `nav1p2_m3h_regularized@1` (fast sodium with m³h
+  inactivation) and `kir2p1_mh2@1` (an inward rectifier) are genuinely useful
+  starting points, **but there is no calcium channel in the family at all**. So
+  version 4 is a composition-and-calibration job, not a wiring job, and its
+  honest description is "bring excitability into the composite", which is a
+  general engine need well beyond this paper.
 - **What it would show.** Whether a transient, spatially restricted population of
   cells with reduced sodium conductance and reduced coupling — the paper's
   `Scn5a`/`Gja1` observation — produces **conduction slowing, block or
@@ -850,11 +921,11 @@ fraction on any current gate.
 
 | Version | Runs these engine models | Prerequisite | Gate | Effort | Needs from the user |
 | --- | --- | --- | --- | --- | --- |
-| **0** | `resolved_pump_composite@1` / `@3`, junction laws, `scheduled_species_turnover@1` | Composite landing; D150 v1 m3 | Composition | 2–3 agent-days, CPU only | A slot (decision 3) |
-| **1** | + `local_species_reactions@1` | D152 code, **MG0c accepted** | Composition | ~2 agent-days | Decision 2 |
-| **2** | + a competence-gate operator | **D145 hold lifted**; design note | Before the molecular loop | 4–6 agent-days | Decision 1 |
-| **3** | + partition, bridge closure, insertion, junction formation | **Lifecycle milestone 2** | Lifecycle | A gate, not a task | Milestone 2's decisions |
-| **4** | + a cardiac excitable membrane and conduction | A design note and its own references | New | A feature track | Decision 4 |
+| **0** | `resolved_pump_composite@1` over `resolved_pump_tissue@3`, its junction gate, and the experiment's own `junction_controls` | **None blocking** (composite landed 12 Nov) | Composition | 2–3 agent-days, CPU only | A slot (decision 3) |
+| **1** | + `local_species_reactions@1` (on main, development) | **MG0c accepted** | Composition | ~2 agent-days | Decision 2 |
+| **2** | + a competence-gate operator | **D145 hold narrowed**; design note | Before the molecular loop | 4–6 agent-days | Decision 1 |
+| **3** | + partition, bridge closure, insertion, lumen@2 | **Lifecycle milestone 2**, *and* a newcomer-maturation law that works for partition (§6b 4a), *and* division beyond 64 nodes | Lifecycle | A gate, not a task | Milestone 2's decisions |
+| **4** | + excitability and conduction **brought into the composite** | A design note and its own references | New | A feature track | Decision 4 |
 | **5** | + contractility, matrix, fibroblasts, long-time modes | Several gates | — | Not planned | — |
 
 ### 6d. The decisions the user must make
