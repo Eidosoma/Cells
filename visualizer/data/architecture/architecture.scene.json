@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T22:40:40Z",
-  "revision": "f2ada38d",
+  "generated_at": "2026-11-14T23:11:46Z",
+  "revision": "6ae5b388",
   "revision_date": "2026-11-14",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -375,7 +375,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "f2ada38d"
+   "checked_at": "6ae5b388"
   },
   "counts": {
    "units": 49,

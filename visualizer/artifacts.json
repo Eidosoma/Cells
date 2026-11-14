@@ -69,6 +69,11 @@
           "date": "2026-11-14",
           "engine_revision": "8497ff37",
           "note": "First version at the new link: the same page as the last version at the earlier link, with two corrections (the conduction probe shown as designed, since its driver has no test; the human atlas says its Xenopus entries are links only). The page and all 59 run files were published together (60 files, 35.7 MB). Tests and checks at 4ba6710c: 93 tests (92 pass, 1 skipped); the species and engine parts of the input check after the corrections, and all 55 checks before them"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "6ae5b388",
+          "note": "The map at main 6ae5b388: the scheduled bath is a registered operator (FR-10's first milestone, development code); the coupling operator's first two milestones are in; MG0c's protocol is revised and still proposed; the conduction probe's text says what was compared blind. The page is otherwise unchanged, and the 59 run files were not sent again. Checked at 3ce44705: 55 of 55 real-input checks on a clean checkout (one label check had failed once under heavy machine load and was made to wait for the label to hold still); 95 tests (94 pass, 1 skipped)"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
