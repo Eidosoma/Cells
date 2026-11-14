@@ -18,13 +18,21 @@ A partition source is any of:
 * a string constant naming the partition law;
 * an import of the engine's partition operator or its definition helper, of R-ops, of S5's compact
   worlds (tests/partition_fixtures), of the Q10 driver, of the egg-scale division world, of the
-  Q2, Q3 and Q5 comparison drivers, of Q2's domain probe or of S5's own crossrev set;
+  Q2, Q3 and Q5 comparison drivers, of Q2's domain and rounding probes or of S5's own crossrev
+  set;
 * the use of R-tissue's division entry point. R-tissue's static entry point is kept apart, so its
   cross-check against R-full may read J1.
 
 insertion@2 and lumen@2 stay off the partition list, because Q7 puts them beside a J1 module, on
 the lead's condition: neither reaches a partition module through its explicit imports,
-transitively (the scan at the end, with a positive control).
+transitively (the scan near the end, with a positive control).
+
+A lazy reach is exempt only by name (LAZY_EXEMPT, the lead, 14 November): a module with a
+partition source whose explicit imports reach a J1 module only through an import inside a
+function it never calls. The direct scan does not see such a reach; the explicit-import scan
+does. Each entry must still reach a J1 module, and a fresh process that runs the module must
+load no J1 module and open no J1 file; a second fresh process takes the lazy path alone, a
+positive control that the reach is real and that the check sees it (the scan at the end).
 
 The check is static, at module granularity, and sees only the listed sources, as D147's driver
 test does. Use through an unlisted builder is outside its reach; the rule binds anyway (§10.1).
@@ -34,6 +42,10 @@ marker of both kinds are parsed, which keeps the scan fast.
 
 import ast
 import functools
+import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -66,6 +78,7 @@ PARTITION_MODULES = {
     "validation.division.q3_tissue_comparison",  # Q3: the engine against R-tissue.
     "validation.division.q5_order",  # Q5: the observed order.
     "validation.division.q2_domain_probe",  # Q2's sampling rule against the engine's checks.
+    "validation.division.q2_rounding_cause",  # Q2's rounding against the ionic content.
     "validation.division.division_crossrev",  # S5's own crossrev world set (§8.4).
 }
 PARTITION_FUNCTIONS = {"validation.division.cleft_tissue_reference.simulate_divisions"}
@@ -85,6 +98,7 @@ PARTITION_MARKERS = (
     "q3_tissue_comparison",
     "q5_order",
     "q2_domain_probe",
+    "q2_rounding_cause",
     "division_crossrev",
 )
 EXEMPT = {}  # {path: reason}; a J2 driver enters only after the user releases J2.
@@ -322,3 +336,80 @@ def test_the_import_scan_sees_a_partition_through_a_chain():
     # The bridge imports the partition directly, and lumen@2 reaches insertion@2.
     assert "cells.models.operators.partition" in reached("cells.models.operators.bridge_closure")
     assert "cells.models.operators.membrane_insertion_v2" in reached(CLEAN[1])
+
+
+# ---------------------------------------------------------------- lazy reaches (the lead, 14 Nov)
+LAZY_EXEMPT = {  # {module: reason}
+    "validation.division.division_crossrev": (
+        "S5's own crossrev set reuses composite_crossrev's tracing, records and comparison. "
+        "composite_crossrev.injection_worlds() imports injection_rm1 inside the function; "
+        "division_crossrev builds its own worlds and never calls it."
+    ),
+}
+# {module: (its runs as argv after the module name, {out} a fresh directory; files the runs
+# must write; the lazy path)}.
+LAZY_RUNS = {
+    "validation.division.division_crossrev": (
+        (("bindings", "{out}/bindings"), ("jaxprs", "{out}/jaxprs", "division_compact")),
+        ("bindings/division_quartered_values.npz", "jaxprs/division_compact.checked_step.txt"),
+        "validation.tissue.composite_crossrev:injection_worlds",
+    ),
+}
+FRESH = """
+import builtins, io, json, runpy, sys
+mode, target, runs, out, j1_modules, j1_files = sys.argv[1:7]
+j1_modules, j1_files = set(json.loads(j1_modules)), json.loads(j1_files)
+opened, original = [], io.open
+def watched(file, *args, **kwargs):
+    if any(k in str(file) for k in j1_files):
+        opened.append(str(file))
+    return original(file, *args, **kwargs)
+io.open = builtins.open = watched
+if mode == "run":
+    for argv in json.loads(runs):
+        sys.argv = [target, *(a.format(out=out) for a in argv)]
+        runpy.run_module(target, run_name="__main__", alter_sys=True)
+else:
+    module, function = target.split(":")
+    getattr(__import__(module, fromlist=[function]), function)()
+print(json.dumps(dict(loaded=sorted(set(sys.modules) & j1_modules), opened=opened)))
+"""
+
+
+def fresh(mode, target, runs, out):
+    """(loaded J1 modules, opened J1 files) of a fresh process (FRESH)."""
+    env = dict(os.environ, PYTHONPATH=os.pathsep.join((str(ROOT / "src"), str(ROOT))))
+    env.update(PYTHONDONTWRITEBYTECODE="1", JAX_PLATFORMS="cpu")
+    arguments = (mode, target, json.dumps(runs), str(out), json.dumps(sorted(J1_MODULES)))
+    completed = subprocess.run(
+        [sys.executable, "-B", "-c", FRESH, *arguments, json.dumps(J1_FILES)],
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=600,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr[-4000:]
+    report = json.loads(completed.stdout.strip().splitlines()[-1])
+    return report["loaded"], report["opened"]
+
+
+@pytest.mark.parametrize("module", sorted(LAZY_EXEMPT))
+def test_lazy_exemptions_are_still_needed(module):
+    _, partition = sources(module_file(module).read_text(), module)
+    assert partition, f"{module} holds no partition source: remove it from LAZY_EXEMPT"
+    assert reached(module) & J1_MODULES, f"{module} reaches no J1 module: remove it"
+    assert set(LAZY_RUNS) == set(LAZY_EXEMPT)
+
+
+@pytest.mark.parametrize("module", sorted(LAZY_EXEMPT))
+def test_a_lazy_exemption_runs_without_j1(module, tmp_path):
+    runs, written, lazy = LAZY_RUNS[module]
+    loaded, opened = fresh("run", module, runs, tmp_path)
+    assert all((tmp_path / name).is_file() for name in written), "the runs did not run"
+    assert (loaded, opened) == ([], []), f"{module} loaded {loaded} and opened {opened}"
+    # The positive control, in a process of its own: the lazy path loads a J1 module the
+    # explicit-import scan finds from the exempt module, and opens J1 files.
+    loaded, opened = fresh("lazy", lazy, (), tmp_path)
+    assert set(loaded) & reached(module), f"the lazy path {lazy} loads no J1 module {loaded}"
+    assert opened, f"the lazy path {lazy} opens no J1 file"

@@ -22,9 +22,10 @@ view_plate_reference_C) and partition_birth_gate are bindings, never compiled in
 * No non-zero reference coincides with a closed-over constant of its own world's programs
   (dtype, shape and bytes). An all-zero array is not distinguishable this way and is reported.
 
-Usage (PYTHONPATH at the revision under test):
-  python -m validation.division.division_crossrev jaxprs DIR
-  python -m validation.division.division_crossrev bindings DIR
+Usage (PYTHONPATH at the revision under test; WORLD names restrict jaxprs and bindings to those
+worlds, as the bright line's fresh-process test does; a record of the set takes them all):
+  python -m validation.division.division_crossrev jaxprs DIR [WORLD ...]
+  python -m validation.division.division_crossrev bindings DIR [WORLD ...]
   python -m validation.division.division_crossrev check DIR
   python -m validation.tissue.composite_crossrev compare A B
 """
@@ -117,21 +118,30 @@ def division_worlds():
     )
 
 
-def jaxprs(directory):
+def selected(names=()):
+    """division_worlds(), restricted to names when any are given."""
+    worlds = division_worlds()
+    unknown = set(names) - set(worlds)
+    if unknown:
+        raise SystemExit(f"Unknown worlds {sorted(unknown)} (the set has {sorted(worlds)})")
+    return {k: v for k, v in worlds.items() if not names or k in names}
+
+
+def jaxprs(directory, names=()):
     """composite_crossrev.jaxprs on this set: each program's text and constant record."""
     import jax
 
     jax.config.update("jax_enable_x64", True)
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
-    for name, raw in division_worlds().items():
+    for name, raw in selected(names).items():
         for kind, closed in crossrev._traced(*crossrev._setup(raw)).items():
             (directory / f"{name}.{kind}.txt").write_text(str(closed))
             (directory / f"{name}.{kind}.consts.json").write_text(crossrev.const_record(closed))
         print(name, flush=True)
 
 
-def bindings(directory):
+def bindings(directory, names=()):
     """composite_crossrev.bindings on this set: every bound state, layout, control (at every
     schedule time) and device-check array."""
     import jax
@@ -143,7 +153,7 @@ def bindings(directory):
 
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
-    for name, raw in division_worlds().items():
+    for name, raw in selected(names).items():
         spec = parse_spec(raw)
         model = get_model(spec.model)
         state, layout = model.initial_values(spec)
@@ -230,11 +240,11 @@ def check(directory):
 
 
 if __name__ == "__main__":
-    action, target = sys.argv[1], sys.argv[2]
+    action, target, *worlds = sys.argv[1:]
     if action == "jaxprs":
-        jaxprs(target)
+        jaxprs(target, worlds)
     elif action == "bindings":
-        bindings(target)
+        bindings(target, worlds)
     elif action == "check":
         sys.exit(0 if check(target) else 1)
     else:
