@@ -243,19 +243,26 @@ def test_the_rk4_radial_world_books_face_heat_and_clearance_to_the_absolute_boun
     assert error <= 1e-6 * C0  # Turnover's splitting around the RK4 step, O(dt^2).
 
 
-@pytest.mark.parametrize("dt", [1e-3])
-def test_the_imex_radial_world_closes_every_host_check(dt):
-    spec, profile = pre_formed(TRACE, dt=dt, end=0.5)
-    result = run(spec)
-    assert result.diagnostics["max_energy_balance_relative"] < 2e-3
-    concentrations = radial.shell_concentrations(spec, result.observations, GEOMETRY)
-    m, g = radial.operator(GEOMETRY, diffusivity=D, clearance=K, c0_mM=C0, outer_mM=TRACE)
-    exact = radial.solution(m, g, profile, np.asarray(result.observations.times))
-    error = np.max(np.abs(concentrations - exact))
-    record(
-        "imex_radial",
-        dt=dt,
-        energy_relative=result.diagnostics["max_energy_balance_relative"],
-        error_of_c0=error / C0,
-    )
-    assert error <= 1e-5 * C0
+def test_the_imex_radial_world_closes_every_host_check_and_is_second_order_in_dt():
+    """ARS(2,2,2) transport with turnover's exact half-steps around it (Strang): the error against
+    the exact discrete solution is the splitting's and the scheme's, both second order in dt (at
+    1 ms, dt K_ii = 0.049, it is about 1e-5 of c0; the splitting of a uniform clearance from the
+    held boundaries' sources sets most of it)."""
+    errors = {}
+    for dt in (1e-3, 5e-4):
+        spec, profile = pre_formed(TRACE, dt=dt, end=0.5)
+        result = run(spec)  # Every host check.
+        assert result.diagnostics["max_energy_balance_relative"] < 2e-3
+        concentrations = radial.shell_concentrations(spec, result.observations, GEOMETRY)
+        m, g = radial.operator(GEOMETRY, diffusivity=D, clearance=K, c0_mM=C0, outer_mM=TRACE)
+        exact = radial.solution(m, g, profile, np.asarray(result.observations.times))
+        errors[dt] = float(np.max(np.abs(concentrations - exact)))
+        record(
+            "imex_radial",
+            dt=dt,
+            energy_relative=result.diagnostics["max_energy_balance_relative"],
+            error_of_c0=errors[dt] / C0,
+        )
+    ratio = errors[1e-3] / errors[5e-4]
+    record("imex_radial_order", ratio=ratio)
+    assert errors[1e-3] <= 3e-5 * C0 and 3.5 < ratio < 4.5
