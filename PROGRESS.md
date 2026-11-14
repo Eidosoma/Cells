@@ -58,6 +58,48 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Secreted-species v1 (D150), milestone 3 landed: the qualification protocol, PROPOSED
+  (14 November).** It is not registered, and no judged run has been made
+  ([protocol](validation/tissue/secreted_species_protocol.json); design §12.2;
+  [evidence](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/HANDOFF.md)).
+  - **Scope.** The protocol judges @3's faces, with exact radial-shell conductances, and turnover's
+    first-order clearance around a held-bath source: the held sphere with decay.
+    - Q1: against the exact discrete solution, on the IMEX and RK4 arms. Two rules: the dt study,
+      and an a priori bound by the splitting's leading term.
+    - Q2: against the continuum closed form.
+    - Q3: the observed orders, judged by stop rules only.
+    - Q5: the guards of record, which are the RK4 face heat and the per-law ΔG tests, plus the
+      runs, ions, definitions and refusal test files.
+    - Exchange, production and the occupant rule enter only through Q5's test files.
+  - **Judged controls.**
+    - k and D put in error at a registered δ per rule and arm. In development every one was
+      caught, at 13–79 times tolerance.
+    - The planar-face arm against Q2. It fails at 28–248 times.
+  - **Development.**
+    - All eight arms pass every host check.
+    - Q1 on IMEX reaches 0.47 of tolerance under the dt study and 0.37 under the splitting term;
+      on RK4, 0.45 and 0.34.
+    - Q2 reaches 0.44–0.47. The orders are 1.92–1.93 in space and 2.00–2.09 in time.
+    - Pass fractions near 4/9 are structural for a second-order scheme; the controls are what
+      show the test can fail.
+    - The first-shell error equals the step map's fixed point to 5.8e-4 (reported).
+  - **The review (the lead, with the advisor).**
+    - Q1's claim is reworded to an a priori bound.
+    - The controls are judged, and the scope is stated.
+    - R-continuum is checked against the PDE itself: a fourth-order residual, both boundary
+      conditions and the start.
+    - The step map's agreement stays a tier-2 regression guard, not a judged item.
+  - **Found and fixed in development.**
+    - A radial-builder regrouping moved bindings by up to 5 ulp. The species crossrev caught it.
+    - A refusal test would have failed once the protocol was registered.
+  - **Landing:** tier 1 at the merge 780f5d9 310 files, no changed outcome; the new tier-2 step-map guard
+    2 passed.
+  - **Next:**
+    - a rehearsal on main: all five crossrev sets and the species set from a clean snapshot, and
+      a dry run of every judge entry;
+    - the lead's final check with the advisor;
+    - registration, then one judged run.
+
 - **D152's independent references landed (14 November).** An agent that never read the operator's
   code or the design's prototype wrote them from the note's Appendix A and §6
   ([usage](validation/reactions/REFERENCES_USAGE.md);
