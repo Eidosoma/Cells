@@ -73,6 +73,110 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Combined landing (14 November 2026):** FR-10's milestone 1, the coupling operator's
+  milestone 2 and MG0c's revised protocol. Tier 1 and 2 at the merge f0e154a: 420 files, no
+  changed outcome ([summary](/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/land-gate12-f0e154a0/summary.json)). The coupling operator's two tier-3 files
+  passed at the merge ([logs](/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/land-tier3-f0e154a0-r2)).
+  - **FR-10, `scheduled_bath_composition@1`, milestone 1**
+    ([note](docs/BATH_SCHEDULE_DESIGN.md) §7;
+    [evidence](/mnt/workspaces/Cells/bath-schedule-20261114-01/HANDOFF.md)). Development code;
+    its qualification comes later.
+    - **The engine models it runs:** the operator in the composite on `resolved_pump_tissue@3`.
+    - **What it does:** dose events on the dt grid. The dose, its work and the compensating charge
+      are the operator's own records, and the reconciliation term is its own ledger term.
+    - **B3:** the energy ledger is at rounding on every row across an event, at most 2.6 ε of the
+      flows. The control without the term fails from the first row after the event.
+    - **B5:** with no event, a run is bitwise identical to the composition without the operator.
+    - **Crossrev:** identical in the five 21fb714 sets.
+    - **The staircase probe** (criterion written first):
+      - a dose from nothing is admissible as stairs of 100× (six stairs of three face times);
+      - a step between resolved levels is admissible at 10×, under ARS at 1 ms and RK4 at 0.1 ms;
+      - the limit depends on the step's absolute size as well as its ratio.
+    - **Milestone 2:** a definition-time refusal of oversized steps, `check_species_cap` with a
+      world above 7 species, and FR-1's milestone 1 continues on the same branch.
+  - **`species_regulated_availability@1`, milestone 2** ([note](docs/INVENTORY_COUPLING_DESIGN.md)
+    §8; [evidence](/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/HANDOFF.md)).
+    Development code; its qualification comes later.
+    - **A2:** frozen input and retention are exact to rounding, and moving inputs converge at
+      order 2.00. The crossing record brackets t* at every dt.
+    - **A8:** restarts at eight times and snapshot round trips, in process and in a fresh process,
+      are bitwise. Windowed runs equal a single scan bitwise.
+    - **vmap:** three moving worlds match their own runs within 1e-12.
+    - **RK4 ("split"):** the factored path equals the world without the operator, bitwise.
+    - **A6:** locality held bitwise.
+    - **Compositions:** with replacement@1, injection and D152.
+    - **Nine species:** bitwise against every coupling switched off.
+    - **The `factors` manifest entry** is omitted when empty. 58 of 67 crossrev field maps are
+      byte-identical; the other 9 differ by that key only.
+    - **Crossrev:** identical in all seven sets against main da94f81.
+    - **The parser** moved into `species_common` in its own commit.
+    - **Next, milestone 3:** A4 and A5 against the independent references, with A4's tolerance
+      measured against the reference's floor on the engine's own world and registered before its
+      judged run.
+  - **MG0c (D152), the protocol revised after the lead's review, still PROPOSED**
+    ([protocol](validation/morphogenesis/protocols/mg0c_turing_v1.json);
+    [evidence](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/HANDOFF.md)).
+    - It has 55 judged criteria and 165 registered control deltas. Every criterion a
+      development run can evaluate passes.
+    - The rulings applied:
+      - Q7 as a batch of seeds;
+      - the linearised map judged at 50 ms with an exact-propagator control;
+      - controls kept by parameter at 10× their smallest caught δ, with 25 decaying-mode controls
+        removed with reasons;
+      - the amplitude defined as max |u − mean u| at 3000 s (0.432 c*);
+      - D150's amendments carried over.
+    - **Disclosed:** the 1e-2 control cutoff was set after the mode sensitivities were known, and
+      the development runs predate FR-9.
+    - **Next:** the rehearsal on main (CPUs 5 and 7, about 2.5 h), the final check, registration
+      and one judged run. `src/` landings are held from the rehearsal to registration.
+
+- **Track E (excitable tissue, D155): the design note accepted narrowly, for M1 and M2 on @3
+  (D170, 14 November 2026)** ([note](docs/EXCITABLE_TISSUE_DESIGN.md);
+  [evidence](/mnt/workspaces/Cells/excitable-tissue-20261114-01/HANDOFF.md)).
+  - **Engine model run:** `resolved_pump_tissue@3`, with its five channel laws, the
+    constant-field leaks and junctions, the pump and the junction gate.
+  - **Probe 2 failed S1 as registered at 0.05 F/m²:** every perturbed segment blocked. So the
+    acceptance condition, one cheap probe, failed.
+  - **The acceptance rests on amendment 4** at candidate A (0.01 F/m²), which is post hoc but
+    was written before its runs. S1–S4 were met.
+    - Segment delays were 1.08–2.02 times the control, with block at combined 0.02 and 0.01.
+    - Refinement was identical at 5 and 2.5 µs, and the energy residual at most 2.1e-4.
+  - **The limits:**
+    - the channel laws' +60 mV domain, against A's +56.65 mV at the chain's end cell;
+    - the junction gate law's 120 mV domain at block sites (118.1 mV at s·r_gj = 10), so the floor
+      s·r_gj ≥ 20 is provisional. The independent reference, written blind, matches the engine
+      to 0.02 mV, and finds 10 unsafe in the coupling-only arm (120.6 mV);
+    - `junction_ungated@1` named for the inner-model note.
+  - **Landed:** the note, its equations appendix and the probe driver
+    (`validation/tissue/excitable_probe.py`). Tier 1 at the merge 7bbda57: 323 files, no
+    changed outcome ([summary](/mnt/workspaces/Cells/excitable-tissue-20261114-01/tiers/land-gate1-7bbda575/summary.json)).
+  - **Next:** M1, when a slot frees. Its first development runs are the sheet's block-site
+    voltages, the block threshold and the peaks at lightly loaded cells, with B's segment run as
+    the fallback's evidence.
+
+- **Track R's independent references landed (14 November 2026)** in `validation/coupling/`.
+  They are R-fac, R-state, R-cell and R-feedback, written by a separate agent that read no engine
+  code ([usage](validation/coupling/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/independent-references-20261114-01/HANDOFF.md)).
+  - **What they cover:** every factor law, side and basal combination; the two-state regulatory
+    fraction (closed forms, adaptive integration, the crossing time t*); one cell with a gated
+    K leak; and two cells whose shared junction is set by each cell's own regulatory state,
+    integrated with the ions by Radau.
+  - **Conventions:** reconciled with the coupling note's §7, the milestone 1 as built. Every
+    engine-facing convention is an explicit input whose default is the as-built one.
+  - **The floor** at the recommended settings (Radau, rtol 1e-10) against rtol 1e-12: s about
+    2e-12, amounts about 2e-12 fmol, V ≤ 1.5e-12 V. `rc.floor` measures it on the engine's own
+    world, where A4's tolerance is to be pinned.
+  - **Self-tests:** `tests/unit/test_coupling_references.py`, 44 passed, tier 1, including a
+    no-`cells`-import check; J2 still passes.
+  - **Landing:** tier 1 at the merge 9d6b1bc, 323 files, no changed outcome
+    ([summary](/mnt/workspaces/Cells/independent-references-20261114-01/tiers-r/land-gate1-9d6b1bcb/summary.json)).
+- **The crossrev baseline of record is renewed at da94f81** (D148 criterion 4 for FR-9). All
+  seven sets are identical to their earlier records: base, qualification, injection, volume and
+  division against baseline-21fb714; species against b102da4; reactions against 5de1c96.
+  Species and reactions are now records of their own, and the earlier records stay
+  ([records](/mnt/workspaces/Cells/architecture-block-20261114-01/baseline-da94f81/)).
+
 - **The architecture block's first items landed (14 November 2026):** D147 for composite
   definitions, the J2 bright line restored, and FR-9's species cap raised to 16 (D165)
   ([evidence](/mnt/workspaces/Cells/architecture-block-20261114-01/HANDOFF.md)).

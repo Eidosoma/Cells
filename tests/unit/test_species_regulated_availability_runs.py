@@ -10,10 +10,13 @@ prior condition (FR-6, D162) set by its own s0 and set by a write at time 0 give
 trajectory.
 """
 
+import json
+
 import numpy as np
 
 from cells.core.runner import run
 from cells.core.specs import parse_spec
+from cells.io import write_run
 from validation.tissue import regulated_availability_fixtures as rf
 
 
@@ -51,9 +54,13 @@ def world(initial=0.2, writes=()):
     return rf.with_turnover(raw, "cell_0", 50.0)
 
 
-def test_a_run_of_every_part():
+def test_a_run_of_every_part(tmp_path):
     spec = parse_spec(world())
     result = run(spec)
+    write_run(tmp_path / "run", result)  # The manifest records the factor chains (ruling 6).
+    owners = json.loads((tmp_path / "run" / "manifest.json").read_text())["field_owners"]
+    law = rf.LAW
+    assert owners["factors"] == {"junction": [law], "channel": [law]}
     history, obs = result.history, result.observations
     species = list(spec.model.species_ids)
     cells = [c.id for c in spec.model.cells]

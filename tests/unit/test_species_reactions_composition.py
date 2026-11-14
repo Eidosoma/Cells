@@ -20,13 +20,10 @@ design §3.4 guard 2, §4.5 claim 3, §5).
   - replacement@1 replacing cell_0 mid-run, with the network on outside routes only (cell routes
     on a replaced slot are refused, §2.1).
 * **The composed world's accounting and execution** (the coordinator's milestone-3 additions,
-  from an external architecture review the advisor confirmed):
-  - transport and reactions see the same material. Under the declared splitting, a face-free
-    linear composition of the first-order export and the reactions equals the composed map
-    E(dt/2) R(dt/2) I(dt) R(dt/2) E(dt/2) at rounding. E is the export's exact half-step (D150's
-    documented law), R is SSPRK(3,3)'s map from chain_reference.half_step_linear_map, and I is the
-    identity here. The composition converges at second order to the coupled system's exact
-    solution;
+  from an external architecture review the advisor confirmed). These are reference-independent,
+  so they stay judged guards (the lead's ruling 10). The same-material test, whose exchange map
+  is the engine agent's own, lives in test_species_reactions_same_material.py, a regression
+  guard outside the judged list:
   - supply is counted once across writers. Each network species' inventory over the cells and
     finite nodes changes at every row by exactly its writers' booked sources, each once: the
     reactions, the turnover, the replacement and the held bath's supply through the faces. At
@@ -50,7 +47,6 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
-from scipy.linalg import expm
 
 from cells.core import pump_composite_spec as cs
 from cells.core.inventory_species import add_inventory_species
@@ -267,85 +263,6 @@ def test_a_development_composition_with_exchange_turnover_and_replacement():
 
 
 # ------------------------------------------------------------------ the composed world's accounting
-
-KE, KR, KD = 0.5, 1.0, 0.3  # The export, the conversion and the decay (1/s).
-
-
-def linear_composition(dt, end=2.0):
-    """Face-free (one 1 pL cell and its 1 pL node, no face): S exported from the cell at first
-    order (D150's law: J = k_e n_c, its exact half-step moving n_c (1 - e^{-k_e h})); at ecs_0, S
-    -> P at k_r and P -> 0 at k_d. The exchange is declared before the network, so the composite's
-    split order is E R I R E."""
-    raw = rfx.species_world(
-        ("P",),
-        profile=dict(S=dict(cell_0=1e-3, ecs_0=1e-4), P=dict(ecs_0=1e-5)),
-        faces=False,
-        dt=dt,
-        end=end,
-        observation_times=fx.grid_times(end, dt, end / 4),
-    )
-    raw = fx.with_exchange(
-        raw, [("sec", "contact_0", "export", "first_order")], [("sec", "cell_0", [(0.0, KE)])]
-    )
-    node = {"outside": ["ecs_0"]}
-    reactions = [
-        rfx.mass_action("convert", node, {"S": 1}, {"P": 1}, KR),
-        rfx.mass_action("decay", node, {"P": 1}, {}, KD),
-    ]
-    species = [rfx.species("S", moieties={"X": 1}), rfx.species("P", moieties={"X": 1})]
-    return rfx.with_reactions(raw, species, reactions, rfx.always(["convert", "decay"]))
-
-
-def linear_amounts(result):
-    """[T, 3]: S in the cell, S and P at ecs_0 (fmol), anchors plus increments."""
-    spec = result.spec
-    model = get_model(spec.model)
-    _, p = model.initial_values(spec)
-    ids = list(spec.model.species_ids)
-    s, q = ids.index("S"), ids.index("P")
-    o = [c.id for c in spec.model.extracellular].index("ecs_0")
-    h = result.history
-    cell = np.asarray(p.amount_reference)[s, 0] + np.asarray(h.amount_increment)[:, s, 0]
-    node_s = (
-        np.asarray(p.extracellular_amount_reference)[s, o]
-        + np.asarray(h.extracellular_amount_increment)[:, s, o]
-    )
-    node_p = (
-        np.asarray(p.extracellular_amount_reference)[q, o]
-        + np.asarray(h.extracellular_amount_increment)[:, q, o]
-    )
-    return np.stack([cell, node_s, node_p], axis=1)
-
-
-def test_exchange_and_reactions_see_the_same_material_under_the_declared_splitting():
-    K = np.array([[-KR, 0.0], [KR, -KD]])
-    G = np.array([[-KE, 0.0, 0.0], [KE, -KR, 0.0], [0.0, KR, -KD]])  # The coupled system.
-    errors, worst = [], 0.0
-    for dt in (0.05, 0.025):
-        result = run(parse_spec(linear_composition(dt)))  # Every host check on every row.
-        x = linear_amounts(result)
-        h = 0.5 * dt
-        e = np.exp(-KE * h)
-        E = np.array([[e, 0.0, 0.0], [1.0 - e, 1.0, 0.0], [0.0, 0.0, 1.0]])
-        M, q = cr.half_step_linear_map(K, h)
-        assert q is None or np.all(np.asarray(q) == 0)
-        R = np.eye(3)
-        R[1:, 1:] = np.asarray(M)
-        step = E @ R @ R @ E  # Applied right to left: E, R, I (identity here), R, E.
-        other = R @ E @ E @ R  # The other order, for contrast.
-        times = np.asarray(result.times)
-        steps = np.rint(times / dt).astype(int)
-        scale = float(np.max(np.abs(x)))
-        mapped = np.asarray([np.linalg.matrix_power(step, k) @ x[0] for k in steps])
-        swapped = np.asarray([np.linalg.matrix_power(other, k) @ x[0] for k in steps])
-        exact = np.asarray([expm(G * t) @ x[0] for t in times])
-        difference = float(np.max(np.abs(x - mapped))) / scale
-        worst = max(worst, difference)
-        assert difference <= 1e-13  # Rounding over 40 and 80 steps.
-        assert float(np.max(np.abs(x - swapped))) / scale > 1e3 * difference  # The order shows.
-        errors.append(float(np.max(np.abs(x - exact))) / scale)
-    record("same_material", against_composed_map=worst, against_exact=errors)
-    assert 3.6 <= errors[0] / errors[1] <= 4.4  # Second order to the coupled system's solution.
 
 
 def network_inventory(result, names):
