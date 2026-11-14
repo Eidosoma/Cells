@@ -1,8 +1,9 @@
 # A closed compartment owned by a cell (design)
 
-**Status: proposed, 14 November 2026, for the lead's review with the advisor.** No engine code was
-added or changed for this note, and no engine code was run. The probes it would like are requests
-(§9).
+**Status: proposed, 14 November 2026, for the lead's review with the advisor; revised the same day
+after that review.** No engine code was added or changed. One read-only probe ran on the engine as
+it is, as the lead directed: FR-10's probe 1, which also carried this note's D147 record and its
+loading-from-a-trace arms (§9). The other probes are requests (§9).
 
 D157 logs the request (FR-1, [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-1--a-closed-internal-compartment-on-the-shared-inventory)).
 The user's words were: "here is a new feature request please log as high prioriity". The decision
@@ -24,8 +25,8 @@ reads:
   `local_species_reactions@1`, both unchanged (§4).
 
 No model, solver or law changes. The one change to shared code is one widened, host-only admission
-in the contract's registration check, which also serves FR-3's part-less site owner (§1.6). It is an
-addition, not a change to existing behaviour.
+in the contract's registration check, which can also serve a part-less site owner for FR-3 (§1.6). It
+is an addition, not a change to existing behaviour.
 
 **Basis.**
 - The [secreted-species design](SECRETED_SPECIES_TRANSPORT_DESIGN.md) (D150): one inventory, the
@@ -39,10 +40,16 @@ addition, not a change to existing behaviour.
 - The older family's ER capacitor, [ER_CALCIUM.md](ER_CALCIUM.md).
 
 **Evidence and log:** `/mnt/workspaces/Cells/closed-compartment-20261114-01/`:
-- HANDOFF.md: the code facts with their files and functions, and the citation records;
+- HANDOFF.md: the code facts with their files and functions, the citation records, the probe's
+  criterion (written before its run) and its results;
 - `arithmetic/`: the script and output behind every number marked **S** here;
 - `sources/`: the two papers' open-access JATS XML from Europe PMC, from which the quoted sentences
-  were extracted by text search.
+  were extracted by text search;
+- `sweep/`: the static sweep of the existing worlds (§3.4);
+- `probe1/`: FR-10's probe 1, with this note's arms D1 and D2 and the D147 record (§9);
+- `snapshot-main-ced45c8/`: the probe's clean snapshot of main at ced45c87, frozen by
+  `validation/source_snapshot.py` from `main-clone/`, a clone of the repository detached at that
+  revision (the worktree may not touch the main checkout).
 
 **S** marks our own derivation, arithmetic or interpretation, as in the D150 and D152 notes.
 
@@ -62,7 +69,8 @@ addition, not a change to existing behaviour.
    - It refuses what would break identity: replacement events on an owner's slot, closers, volume
      providers, field-input providers, and ion routes on the bounding patch.
    - It holds no state and runs no part. The contract refuses such an operator today, so it gains
-     one widened, host-only admission, which also serves FR-3's part-less site owner (§1.6).
+     one widened, host-only admission, a strict superset of today's rule, which can also serve a
+     part-less site owner for FR-3 (§1.6).
 3. **The transfer law is D150's exchange, unchanged** (§2).
    - Loading is an export route, release an import route, and a passive permeation an
      export–import pair.
@@ -300,26 +308,32 @@ owner, not as extracellular space.
 - `contract.check_declarations` (`models/operators/contract.py`, lines 336–342) refuses an operator
   with no part unless it has both `ACCEPTS_WRITES` and `VIEW_FIELDS`. Every registered operator
   passes through it at import (`models/operators/__init__.py`).
-- `membrane_entity_state@1` is today's only part-less operator. Its three owned fields are exactly
-  its three accepted writes, and it provides three view fields.
-- So a declaration that owns nothing is refused today. FR-3's part-less site owner, which owns
-  fields that later operators write but provides no view, would be refused too (FR-3's lead
-  question 13).
+- `membrane_entity_state@1` is today's only part-less operator: of the registered operator classes in
+  `models/operators/` at main's ced45c87, it alone declares no event, split or process part (a grep).
+  Its three owned fields are exactly its three accepted writes, and it provides three view fields.
+- So a declaration that owns nothing is refused today. A part-less site owner for FR-3, owning fields
+  that later operators write but providing no view, would be refused too (FR-3's lead question 13).
 - **The composite itself needs no change.** `Composition.__init__` builds its event, split,
   provider, factor and closer lists from the declarations (`models/pump_composite.py`). An operator
   in none of them contributes only the contract's idle defaults: no ledger term, no column and no
   domain term.
 
 **The recommendation: one widened, host-only admission.**
-- **The rule.** An operator with no part is admitted when every field it owns is an accepted write
-  (its `STATE_AXES` lie within its `ACCEPTS_WRITES`). One that owns no field may not provide views,
-  factors or closures either.
-- **What it admits:**
-  - `membrane_entity_state@1`, unchanged, since its owned fields are its accepted writes;
-  - FR-3's part-less site owner, with or without a view;
-  - this declaration, which owns no field.
-- **What it still refuses:** a part-less operator that owns a field no part and no writer can
-  change; and a stateless operator that would change the inner layout or controls without state.
+- **The rule: the existing clause, or a new one.** An operator with no part is admitted when
+  *either*:
+  - (existing) it has `ACCEPTS_WRITES` and `VIEW_FIELDS`, exactly as today; *or*
+  - (new) every field it owns is an accepted write (its `STATE_AXES` lie within its
+    `ACCEPTS_WRITES`). One that owns no field at all may not provide views, factors or closures.
+- **So it is a strict superset by construction.** Every operator that passes today passes the
+  existing clause unchanged. The new clause's restriction on field-less operators cannot touch one
+  that passes the existing clause, since an accepted write must be an owned field.
+- **What the new clause admits:**
+  - this declaration, which owns no field;
+  - a part-less site owner for FR-3, **if** every field its owner holds is an accepted write. That
+    condition is stated here without reading FR-3's note.
+- **What it still refuses:** a part-less operator that owns a field no part and no writer can change,
+  unless the existing clause admits it; and a stateless operator that would change the inner layout
+  or controls without state.
 - **D148 status.** It is an addition, not a change to existing behaviour. It is a check at
   registration, on the host. Every operator registered today is admitted as before, and no program,
   binding or number changes, so D148's four criteria hold trivially. Crossrev of every set stays
@@ -504,8 +518,8 @@ basis is the code reading of §3.1 (**S**).
 | Claim | Kind | Criterion, fixed now |
 | --- | --- | --- |
 | S1. The compartment's ion rows never change | Promised, bitwise | At every accepted row, every ion row of the node's `extracellular_amount_increment` equals its initial value bitwise: in scalar, windowed, vector-window and batch runs, and across a restart through a snapshot. The reason: no route with a nonzero coefficient touches them; the constant-field flux at zero permeability is zero; no face or drift reaches the node |
-| S2. V_b stays at −q/C_b = 0 | Promised, to rounding | At every accepted row, \|V_b\| ≤ 64 ε max(\|φ_cell\|, \|φ_comp\|), and the node's capacitor-ledger row is within @3's charge tolerance |
-| S3. No capacitor energy flows through the patch | Promised, to rounding | ½ C_b V_b² ≤ ½ C_b (64 ε max \|φ\|)² at every row (S2's consequence) |
+| S2. V_b stays at −q/C_b = 0 | Promised, to @3's charge tolerance | At every accepted row, the node's row holds within @3's own charge tolerance, so \|V_b\| ≤ (CHARGE_ATOL_C + CHARGE_RTOL · max(\|q_comp\|, \|C_b V_b\|)) / C_b, with q_comp = 0 exactly (`surface_field.CHARGE_ATOL_C` = 3e-25 C, `CHARGE_RTOL` = 2e-12). Every accepted solve already enforces this tolerance on the node's row. A tighter bound in ulps of the potentials is not promised: a backward-stable solve can leave a residual on the node's row that scales with the largest capacitance, so for a small C_b, V_b's rounding may lie well above ε \|φ\| |
+| S3. No capacitor energy flows through the patch | Promised, to @3's charge tolerance | ½ C_b V_b² ≤ ½ (CHARGE_ATOL_C + CHARGE_RTOL · \|C_b V_b\|)² / C_b at every row (S2's consequence) |
 | S4. The rest of the world against the same world without the node and its patch | Reported, not promised | The largest difference of every other field over the run, in ulps of the field. There is no pass rule |
 | S5. The declaration is pure identity | Promised, exact | The same world with and without the declaration traces to identical program text and constants: the jaxpr text of the checked step, the right-hand side and the device row checks, with scalar constants as literals; the dtype, shape and SHA-256 of every closed-over array; and the bindings (D148's "what crossrev compares"). The reason: the declaration runs no part |
 
@@ -649,7 +663,7 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
 | Water, the k-anion symport, replacement@2 | Refused | Volume: door V (§5.3). The symport and replacement@2 require water |
 | `membrane_entity_state@1` | Refused: **the membrane-state wall** | Membrane state provides the patches' capacitance, so it is a field-input provider (§3.6). FR-3 makes it the owner of binding sites, so sites on a bounding patch wait for this wall's door; the 64-node cap and the held-bath topology then apply. FR-3's note names the same wall |
 | Insertion@1 and @2 | Refused | Field-input providers; exchange also refuses an area provider. FR-2's door (§7) |
-| `site_occupancy@1` (FR-3) | Refused: the list fails closed | **Door:** admitted by a host-only, one-line addition when FR-3's operator exists, on two conditions: binding and release only on a bounding patch's outward-facing populations, which face the lumen; and refusal of internalisation from a compartment-facing patch, read from this declaration. It also needs the membrane-state wall's door |
+| `site_occupancy@1` (FR-3) | Refused: the list fails closed | **Door:** admitted by a host-only, one-line addition when FR-3's operator exists, on two conditions: binding and release only on a bounding patch's outward-facing populations, which face the lumen; and refusal of internalisation from a compartment-facing patch, read from this declaration. **That line is not sufficient alone:** the declaration's own `CONFLICTS_VIEW` refuses membrane state, the sites' owner (the membrane-state wall), so the wall's door comes first or with it |
 | The partition; the bridge | Refused | Closers; door D |
 | The restricted lumens | Refused | They require insertion; a compartment is not a lumen's onset node |
 | The stationary analysis | Refused | It does not admit the composite (D150 ruling 2) |
@@ -763,7 +777,7 @@ snapshot.
 | C8. The uptake path | An extracellular node to the cytosol (an import on a plasma patch) to the compartment (an export on the bounding patch): a three-node chain against its matrix exponential, every host check passing | A.8 |
 | C9. Electrical silence (pending milestone 1) | §3.3's S1 to S4, with their criteria as fixed there before any run: the ion rows bitwise, V_b and the patch energy to rounding, the rest of the world reported | A.9 |
 | C10. Energy | A NumPy ΔG test per law at the compartment's volume; the RK4 face-free world within the absolute 2e-8 pJ; the IMEX species-only world | A.10 |
-| C11. Loading from a trace | D150's onset error was @3's face heat, and a compartment has no face; exchange books the exact ΔG of each moved amount. FR-10's probe 1 (arms D1 and D2, §9) found it booked at rounding on the engine as it is. The judged item repeats it: a compartment loaded from a trace under RK4 (the absolute bound) and IMEX, every row at rounding | A.2, A.10 |
+| C11. Loading from a trace | D150's onset error was @3's face heat, and a compartment has no face; exchange books the exact ΔG of each moved amount. FR-10's probe 1 (arms D1 and D2, §9) found a first-order export booked at rounding in one world, on the engine as it is. The judged item covers every loading and release law: a compartment loaded from a trace under RK4 (the absolute bound) and IMEX, every row at rounding | A.2, A.10 |
 | C12. Restart and vmap | Restart at, before and after a schedule change, and through a snapshot: bitwise. A vector batch of worlds with different compartment volumes and rates: each world within 1e-12 of its scalar run, bitwise against the reversed batch | – |
 | C13. Negative controls | A misbooked move fails the compartment's outside ledger while the cytosol's passes; a misbooked work fails the RK4 world | – |
 
@@ -779,7 +793,7 @@ snapshot.
 | Request | What it needs from this design | What it adds |
 | --- | --- | --- |
 | **FR-2, internalisation** | The compartment entity, with door C: a pending compartment slot opened at an event, its content enclosed from the adjacent extracellular node (§5.3's mixing and move bookings), its bounding patch's area and capacitance taken from the plasma membrane | Retrieval's energy source (D158); insertion's reverse direction, with populations moving onto the bounding patch; the 64-node cap, since insertion is a field-input provider (§3.6) |
-| **FR-3, site occupancy** | Bound cargo keeps its identity: D150 §2.5's one material ledger spans bound sites on the bounding patch's populations and the free row at the node. Version 1 adds no bound state and closes no door: binding and release would be booked transfers between the two, as exchange's moves are. `site_occupancy@1` is admitted beside a compartment by §4's door, past the membrane-state wall | Sites as population state (`membrane_entity_state@1`), which brings the cap; accessibility as a factor; its part-less site owner uses §1.6's widened admission |
+| **FR-3, site occupancy** | Bound cargo keeps its identity: D150 §2.5's one material ledger spans bound sites on the bounding patch's populations and the free row at the node. Version 1 adds no bound state and closes no door: binding and release would be booked transfers between the two, as exchange's moves are. `site_occupancy@1` is admitted beside a compartment by §4's door, past the membrane-state wall | Sites as population state (`membrane_entity_state@1`), which brings the cap; accessibility as a factor; a part-less site owner can use §1.6's widened admission, if every field it holds is an accepted write |
 | **FR-4, compartment pH** | The charged door (§3.4): a proton row and counterions on the bounding patch, the capacitor relation of §3.2 with buffer charge, and the implicit or bounded patch | The acidifying pump and its fuel (the energy-pool door); buffering (D152's charged closed reactions and its stiff-kinetics door); the µM–nM numerics of D150 |
 | **FR-5, leak and reseal** | The transfer bookings of §2.2 and door T1's passive law for neutral species; @3's permeability on the bounding patch, with the charged door, for ions; the coupling's compartment source and rate route (§4) | The re-expressed injury law as an operator (D156's open decision); pores' stiffness, which needs §3.4's implicit treatment; exocytic fusion through door F |
 
@@ -814,9 +828,11 @@ clean snapshot of main at ced45c87, CPU 2, 3G; evidence in `probe1/`):
   - Both pass the runner and every row. Under ARS at 1 ms (D1), the energy residual is at most
     5.9e-11 of its bound, and the onset step's residual 2.7e-16 of its own flows. Under RK4 at
     0.1 ms (D2), against the absolute 2e-8 pJ, it is at most 3.0e-11 of the bound.
-  - So D150's resolved-start rule does not bind on a compartment's exchange routes: exchange books
-    the exact ΔG of each moved amount, and a compartment has no face. The rule still binds wherever a
-    face carries a switch-on, as at a dosed bath ([FR-10's note](BATH_SCHEDULE_DESIGN.md) §3.2).
+  - So, for a first-order export in this one world, D150's resolved-start rule does not bind on a
+    compartment's exchange route: exchange books the exact ΔG of each moved amount, and a compartment
+    has no face. The other exchange laws, and other worlds, are C11's to show. The rule still binds
+    wherever a face carries a switch-on, as at a dosed bath ([FR-10's note](BATH_SCHEDULE_DESIGN.md)
+    §3.2).
   - The unit exited 0 in 499 s, with a peak of 1.73 GB and `memory.events` all zero.
 - **The existing-worlds sweep** of §3.4 (static, `sweep/`).
 
@@ -876,13 +892,16 @@ beside D150's, D152's and D156's work on disjoint files. FR-10's operator is dis
 
 **For the lead:**
 1. **The declaration's home:** the operator form, with §1.6's one widened admission for part-less
-   operators, shared with FR-3's site owner. Confirm the rule and its D148 status (an addition).
-2. **The transfer law:** exchange@1 unchanged for version 1, with its three limits declared, door T1
+   operators (today's clause, or every owned field an accepted write), which can serve FR-3's site
+   owner too. Confirm the rule and its D148 status (an addition).
+2. **S2's criterion** (§3.3): V_b through @3's own charge tolerance on the node's row, rather than a
+   bound in ulps of the potentials. Confirm.
+3. **The transfer law:** exchange@1 unchanged for version 1, with its three limits declared, door T1
    deferred to FR-5, and FR-1's protocol as exchange's first judged acceptance (§2, §6.1).
-3. **The silence claims' criteria** (§3.3), fixed now for milestone 1. Confirm S1 to S5 and their
+4. **The silence claims' criteria** (§3.3), fixed now for milestone 1. Confirm S1 to S5 and their
    kinds before any run.
-4. **Probes P1 to P3** (§9): which to run before the code. P1 sizes FR-4's door. P4's question is
-   answered by FR-10's probe 1, arms D1 and D2.
+5. **Probes P1 to P3** (§9): which to run before the code. P1 sizes FR-4's door. P4's question is
+   answered, for a first-order export in one world, by FR-10's probe 1, arms D1 and D2.
 
 ## Appendix A. Equations for the independent references
 

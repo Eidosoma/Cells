@@ -115,8 +115,8 @@ two operators. It has no reactions inside, no binding sites and no pH.
   has zero ion permeability and no pump or channel. The content is electroneutral (a zero charge
   anchor): the cargo at a trace, the ions at a declared complement.
 - **Species:** the ions and the neutral cargo, declared by `inventory_species.add_inventory_species`
-  (valence 0, impermeant on every membrane and junction). The cap is 16 in all once D165's raise
-  lands, and 7 until then.
+  (valence 0, impermeant on every membrane and junction). **The cap in force is 7 in all**
+  (`species_common.MAX_SPECIES` at main's ced45c87). D165's raise to 16 is queued, not landed.
 
 **The refusals the definition meets,** each refused with its reason:
 - **Exchange:** a route on a patch facing a held bath; a charged or permeant species; saturable
@@ -145,7 +145,8 @@ engine as it is, in this world's topology ([BATH_SCHEDULE_DESIGN.md](BATH_SCHEDU
 - loading the compartment from a trace books at rounding, by exchange's exact bookings.
 
 So the definition can dose from nothing in a mixed world under the known limit, if the lead extends
-D150's ruling to doses (FR-10 §3.2, way (a)). Guard worlds dose between resolved levels.
+D150's ruling to doses (FR-10 §3.2, way (a)). Guard worlds dose between resolved levels, at a step
+ratio that registration pins; no probe has yet stepped a bath between two levels.
 
 **Status.** Exchange and turnover exist; the declaration and the bath schedule are designs, not code.
 FR-1's protocol is exchange's first judged acceptance. Until the two new operators land, the same

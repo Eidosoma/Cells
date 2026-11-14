@@ -69,8 +69,9 @@ operator's own fields.
    - in a species-only world the runner refuses it on the energy ledger, first at row 1;
    - in a mixed world it passes, with an onset-step energy residual of about 2% of that step's
      species flows, unseen (0.16 of that world's bound).
-   - Version 1 is qualified between resolved levels. The recommendation is D150's known-limit ruling
-     extended to doses, with a staircase probe requested.
+   - Version 1 is qualified between resolved levels, at a step ratio pinned at registration from a
+     development measurement, since no arm has yet stepped a bath between two levels. The
+     recommendation is D150's known-limit ruling extended to doses, with a staircase probe requested.
 7. **Effort:** about 1.75 agent-days (range 1.5 to 2.5). Door S adds 0.5 to 1, and door W about 1.
 
 ## 1. The operator
@@ -324,6 +325,12 @@ the bound.
     face and trace.
   - It is 0.16 of the mixed world's bound at row 1, and about 7e-5 of the species' free-energy change
     by 0.5 s.
+- **What it does not show: a step between two resolved levels.** B6 was a resolved *start*, not a
+  step, and no arm stepped a bath between two levels.
+  - So "qualified between resolved levels" rests on a step ratio that no probe has measured. B2's K
+    step is tenfold, and B1's species step larger.
+  - The admissible ratio, the largest c′/c at an event per species, is pinned at registration from a
+    development measurement, as D150's resolved-start rule was. Until then, B1, B2 and B3 assume it.
 - **So a dose from nothing is D150's onset limit, unchanged:**
   - transport is exact, by D150 §11.3's probe 4, not re-measured here;
   - the onset step's energy residual is about 2% of that step's flows under ARS, and 13% under
@@ -333,8 +340,8 @@ the bound.
 **The ways forward, for the lead's ruling, since this blocks acceptance:**
 - **(a) D150's known-limit ruling, extended to doses.** In a mixed world a dose from nothing runs,
   with transport exact and an onset-step energy residual of about 2% of that step's flows. Species-only
-  guard worlds dose between resolved levels. Version 1's acceptance then covers resolved steps, and a
-  dose from nothing carries the known limit in its summary.
+  guard worlds dose between resolved levels, at the step ratio pinned at registration. Version 1's
+  acceptance then covers those steps, and a dose from nothing carries the known limit in its summary.
 - **(b) A resolved dose.** A declared staircase from the trace, admitted only after a probe measures
   it, as D150 §7 requires of ramps. This is the second probe request.
 - **(c) A booking change at the source.** @3's IMEX face-heat booking at an onset, as a D148 round or
@@ -349,9 +356,9 @@ Tolerances are pinned from a dt study at registration.
 
 | Item | Check |
 | --- | --- |
-| B1. The view reaches @3 | A neutral species stepped between two resolved levels at a bath, through a face chain: the engine against the matrix exponential with the stepped boundary, second order in dt |
-| B2. An ion step | A passive cell with a K leak on a held bath, a KCl-for-NaCl substitution raising K from 5 to 50 mM: the membrane voltage relaxes toward the new zero-current constant-field potential, against an independent ODE (constant-field flux and capacitor) |
-| B3. The ledgers across an event | In a species-only world under RK4 (the absolute 2e-8 pJ bound), a step between resolved levels: the energy ledger at rounding at every row, before, at and after the event; the reservoir-work ledger closing with §2.3's term. **A control that drops the term must fail**, at the first supply after the event |
+| B1. The view reaches @3 | A neutral species stepped between two resolved levels at a bath, at the step ratio pinned at registration, through a face chain: the engine against the matrix exponential with the stepped boundary, second order in dt |
+| B2. An ion step | A passive cell with a K leak on a held bath, a KCl-for-NaCl substitution raising K from 5 to 50 mM: the membrane voltage relaxes toward the new zero-current constant-field potential, against an independent ODE (constant-field flux and capacitor). The tenfold step is measured in development first, against the pinned ratio |
+| B3. The ledgers across an event | In a species-only world under RK4 (the absolute 2e-8 pJ bound), a step between resolved levels at the pinned ratio: the energy ledger at rounding at every row, before, at and after the event; the reservoir-work ledger closing with §2.3's term. **A control that drops the term must fail**, at the first supply after the event. That the energy ledger stays at rounding across a step is unmeasured until the development run |
 | B4. The records | The dose equals V_b Σ_f Δa_f ν_f exactly; ΔG_b against NumPy; the electrode and global-charge ledgers unchanged at every row |
 | B5. Idle | With no event, bitwise the composition without the operator (promised); not declared, every crossrev set identical (promised) |
 | B6. Restart and vmap | Restart at, before and after an event, bitwise; a vector batch with per-world schedules on the same baths |
