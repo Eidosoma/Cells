@@ -1,8 +1,8 @@
 # Excitable-tissue probe: the active equations, for an independent reference (draft)
 
 **Status.** Draft of 14 November 2026, by Track E (D155). It is the equations appendix for the
-independent reference that the coordinator commissions if the probe's single cell
-regenerates. It states the equations the conduction probe
+independent reference that the lead commissions. One fresh agent writes the reference for both
+Track E and Track R. The appendix states the equations the conduction probe
 (`validation/tissue/excitable_probe.py`) runs, completely enough to implement them without
 reading the engine.
 
@@ -11,8 +11,10 @@ reading the engine.
   results are saved.
 - This appendix is self-contained. The documents cited below are provenance and are not
   needed to implement it.
-- §7.2 gives the two cells to compute: the heredity cell (the plan's) and point 2 (the
-  chain's).
+- §7.2 gives the cells to compute: the heredity cell (the plan's) and point 2 (the chain's).
+  §8.6 adds the two 0.01 F/m² cells.
+- §8.5 is the first experiment's configuration: a mid-chain segment of reduced NaV1.2 and
+  coupling.
 
 **Sources.** The gate laws are BETSE v1.5.0's Kv1p5, Kir2p1 and Nav1p2 channel classes
 (BETSE commit `5269a714`), as restated in Cells' docs
@@ -211,6 +213,47 @@ Everything below is per cell unless stated.
   - the coupling bracket between block and propagation;
   - the capture threshold in P_stim;
   - the S1–S2 interval for a second wave at the far end.
+
+### 8.5 Chain with a mid-chain segment (the first experiment's configuration)
+
+- **Set-up:** the chain of §8.4 with N = 40 and s_c = 1000, for two cells: point 2's, and
+  §8.6's candidate A. Cells 0–2 are stimulated as in §8.4, at the stimulus scaled for the
+  cell's c_m.
+- **The segment** is cells 16–23, held from t = 0:
+  - every NaV1.2 population on cells 16–23 at availability r_Na;
+  - the junctions joining cells 15–16, 16–17, …, 23–24 (nine junctions, entry to exit) at
+    availability r_gj, which multiplies that junction's flux.
+- **Cases at point 2:**
+  - the control (r_Na = r_gj = 1);
+  - combined, with r_Na = r_gj = r for r ∈ {0.5, 0.3, 0.2, 0.1, 0.05}, extended to 0.02 and
+    0.01 if none of them blocks;
+  - sodium-only, r_Na ∈ {0.3, 0.1};
+  - coupling-only, r_gj ∈ {0.1, 0.03}.
+- **Cases at §8.6's candidate A** (the generic cell):
+  - the control;
+  - combined, r ∈ {0.9, 0.8, 0.7, 0.6, 0.5}, extended to 0.02 and 0.01 if none of them blocks;
+  - sodium-only, r_Na ∈ {0.7, 0.5};
+  - coupling-only, r_gj ∈ {0.5, 0.3}.
+  Its stimulus is 2e-7 m/s per ion.
+- **Report for each case:**
+  - every cell's activation time;
+  - whether cells 15 and 24 activate;
+  - the segment delay t(24) − t(15);
+  - CV over cells 6–14, 16–23 and 25–31;
+  - the last activated cell;
+  - the largest |V_i − V_{i+1}| over the nine segment junctions;
+  - the largest V anywhere.
+- **Block of a travelling wave** means cell 15 activates and cell 24 does not.
+
+### 8.6 The 0.01 F/m² cells
+
+The single-cell protocols of §8.2 apply, with kicks to −20 mV and to 0 mV and the 1 ms
+stimulus at 2e-7 m/s per ion. The chain of §8.4 applies at s_c = 1000. Two cells, each from its
+own §8.1 rest:
+- **candidate A:** c_m 0.01 with P_NaV 1e-6, P_Kir 1e-8 and P_Kv 3e-7 m/s;
+- **candidate B:** c_m 0.01 with P_NaV 2.5e-7, P_Kir 1e-8 and P_Kv 1e-7 m/s.
+
+Report the largest V of every run against +60 mV.
 
 ## 9. What the reference must provide
 

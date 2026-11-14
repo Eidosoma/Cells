@@ -1,7 +1,9 @@
 # Excitable tissue: design (proposed)
 
-**Status.** Proposed on 14 November 2026 by Track E (D155), for the lead's review with the
-advisor. **It contains no code** (D142: design before code).
+**Status.** Proposed on 14 November 2026 by Track E (D155). **It contains no code** (D142:
+design before code). The lead reviewed it with the advisor on 14 November and accepts it only
+for the generic-cell work on @3, and only after one cheap probe. Probe 2 (§1.2) is that probe.
+This revision carries its result and the lead's rulings (§12).
 
 **The question it serves.** D155's: do weakly coupled cells with low sodium conductance, as
 dividing cardiomyocytes become, slow or block conduction, and does their clustering matter? It
@@ -10,7 +12,7 @@ serves that question as **general excitable-tissue physics, not a cardiac mode**
 **Evidence.**
 - The conduction probe is in
   [excitable-tissue-20261114-01](/mnt/workspaces/Cells/excitable-tissue-20261114-01/):
-  `HANDOFF.md` holds the numbers, and `PLAN.md` the criteria and both amendments.
+  `HANDOFF.md` holds the numbers, and `PLAN.md` the criteria and amendments 1–4.
 - Its driver is `validation/tissue/excitable_probe.py`.
 - Its equations, for the independent reference, are in
   [the equations appendix](EXCITABLE_TISSUE_EQUATIONS.md).
@@ -25,7 +27,9 @@ serves that question as **general excitable-tissue physics, not a cardiac mode**
 - field solver version 2, declared through `field_solver_choice.declare()`, with 0 free
   offsets in every world.
 
-## 1. The probe's verdict, and how it was reached
+## 1. The probes' verdict, and how it was reached
+
+### 1.1 Probe 1: one cell and a uniform chain
 
 **The decision was:** proceed with the existing mechanisms, or name the particular missing
 mechanism the feature must add.
@@ -83,7 +87,69 @@ the step probes.
   - recovery for a second wave 25–30 ms;
   - device row checks passed.
 
-## 2. What the probe shows about the engine
+### 1.2 Probe 2: a wave meeting a modified mid-chain segment (the first experiment's configuration)
+
+This is the lead's blocking probe. Probe 1 saw block only at the first unstimulated cell, but
+the first experiment is a wave meeting a cluster in mid-tissue. The chain has 40 cells at
+s = 1000, and its segment, cells 16–23, holds NaV1.2 availability r_Na and the availability
+r_gj of the segment's nine junctions. Criteria S1–S4 (slowing; block of a travelling wave;
+step refinement at the segment; accounting and domains) were written first, in PLAN
+amendment 3.
+
+**At point 2 (0.05 F/m²), as registered: S1 failed, so the verdict does not stand on that
+run.** S2–S4 held.
+- **Everything stopped before the exit.** Every perturbed case stopped before cell 24:
+  - combined r = 0.5 to 0.05;
+  - sodium-only 0.3 and 0.1;
+  - coupling-only 0.1 and 0.03.
+- **How they stopped.** Combined 0.5 and the sodium-only cases conducted decrementally. Only
+  coupling-only 0.1 fired through the segment, at 550 cells/s (3.9× slower than the
+  control), and then failed at its exit junction.
+- **S3:** outcomes and in-segment activation times (to 6.5 ns) were the same at 5 and 2.5 µs.
+- **S4:** no refusal; |Vj| reached at most 91 mV.
+
+**At candidate A (0.01 F/m²; NaV1.2 1e-6, Kir2.1 1e-8, Kv1.5 3e-7 m/s): S1–S4 met.** This is
+amendment 4: post hoc, the last amendment, dated before its runs, with milder strengths added.
+
+| Case at A | Segment CV (cells/s) | Delay over control |
+| --- | --- | --- |
+| Control | 8,277 | 1.00 |
+| Combined 0.9 / 0.8 / 0.7 / 0.6 / 0.5 | 7,614 / 6,920 / 6,189 / 5,416 / 4,590 | 1.09 / 1.20 / 1.34 / 1.54 / 1.83 |
+| Sodium-only 0.7 / 0.5 | 7,627 / 7,052 | 1.08 / 1.16 |
+| Coupling-only 0.5 / 0.3 | 5,678 / 4,342 | 1.50 / 2.02 |
+| Combined 0.02 / 0.01 | block at the segment's entry | — |
+
+- **Refinement.** Outcomes were identical at 5 and 2.5 µs. Delays agree to about 1e-5, and
+  in-segment activation times to 14 ns.
+- **No refusal, but the margins are thin.** At the blocking cases the segment's |Vj| reaches
+  106 mV and **118.1 mV, 1.9 mV inside the junction gate law's 120 mV**, which applies even to
+  pinned gates. Vm reaches at most **+56.65 mV, 3.35 mV inside +60**.
+
+**The 0.01 F/m² point** (PLAN amendment 3, domain part):
+- **Candidate A** fires (230–248 V/s), repolarises (APD90 3.8 ms) and propagates (8,277
+  cells/s), with every chain cell from cell 6 overshooting and nothing refused. So it passes by
+  the amendment's text.
+- **The driver's test was stricter.** It added C1's after-the-stimulus clause: A's fast wave
+  activates cells 6 and 7 inside the 1 ms stimulus. The driver therefore also ran candidate B
+  (NaV1.2 2.5e-7, Kv1.5 1e-7 m/s), which met that stricter test too, by 0.14 ms (5,117 cells/s,
+  peaks at most +37.6 mV). That margin is no sign that B propagates better.
+- **By the lead's ruling the generic cell is 0.01 F/m² at candidate A** (§7.2), with the
+  margins above recorded.
+
+**The verdict, in the decision's terms: for the generic-cell work on @3, proceed with the
+existing mechanisms.** The evidence is amendment 4's S1–S4 at candidate A. It rests on a
+post-hoc amendment, and probe 2's registered run at point 2 did not support it.
+
+**The named limit that comes within reach is the junction gate law's 120 mV domain at block
+sites.** Probe 2 reached 118.1 mV.
+- **For any cell whose amplitude exceeds 120 mV**, as cardiac cells' do (rest about −85 mV,
+  peak about +40 mV, §7.3), a block site would be refused.
+- **So the first mechanism the species stage (M4) must add** is a junction law, ungated or
+  with its own domain, that covers the full action-potential amplitude. The constant-field
+  junction flux itself has no such limit; the domain comes from
+  `junction_voltage_relaxation@1`.
+
+## 2. What the probes show about the engine
 
 ### 2.1 Reusable as it is
 
@@ -100,8 +166,8 @@ the step probes.
   availability (Track E's perturbation and control arm), and the voltage gate pinned open or
   as declared.
   - The BETSE-derived gate (15 mV, minimum 0.1) changed CV by 1.8 % at s = 1000.
-  - **The ±120 mV junction domain was not reached.** The largest |Vj| was 95 mV, at s = 10, so
-    the domain is untested.
+  - **The ±120 mV junction domain** was not reached in probe 1 (95 mV at most). In probe 2 at
+    the 0.01 cell it came within 1.9 mV (118.1 mV) at a block site (§2.2).
 - **Stimuli and controls.** Scheduled `channel_controls` give cation-conductance stimuli,
   sodium-disabled controls and passive controls. `electrode_current_injection@1` (composite)
   gives current stimuli.
@@ -112,7 +178,9 @@ the step probes.
 
 | Limit | Where it was found | Scope |
 | --- | --- | --- |
-| **The channel laws' −120 to +60 mV domain** (`channel_domain_valid`, for every active population of a cell, leaks included) | One scan corner, c_m 0.01, NaV1.2 1e-6, Kv1.5 1e-7: a 247 V/s upstroke reached +59.7 mV and was refused at every sub-step | Its neighbour at Kv1.5 1e-6 peaked at +45 mV and passed. In the chain, point 2's mid-chain peak is +11 mV, against +35 mV alone. §7.3 checks published overshoots against it |
+| **The channel laws' −120 to +60 mV domain** (`channel_domain_valid`, for every active population of a cell, leaks included) | One scan corner, c_m 0.01, NaV1.2 1e-6, Kv1.5 1e-7: a 247 V/s upstroke reached +59.7 mV and was refused at every sub-step. The chosen 0.01 cell (A) peaks at +56.65 mV, 3.35 mV inside | Its neighbour at Kv1.5 1e-6 peaked at +45 mV and passed. At 0.05, point 2's mid-chain peak is +11 mV against +35 mV alone. §7.3 checks published overshoots against it |
+| **The junction gate law's ±120 mV domain** (`junction_voltage_relaxation@1`'s `domain_valid`, applied to every active junction, pinned gates included) | Probe 2 at A: at the blocking segment the entry junction reached 106 mV (r = 0.02) and 118.1 mV (r = 0.01) | Not refused, but 1.9 mV inside. Any cell whose amplitude exceeds 120 mV, cardiac cells included (§7.3), would be refused at a block site. **The first mechanism the species stage must add** (§1.2, §11) |
+| **A low safety factor at 0.05 F/m²** | Probe 2 at point 2: every perturbed segment blocked; coupling-only 0.1 fired through at 3.9× slower and failed at the exit | A property of the 0.05 cell's weak, graded excitability. At 0.01 the same segment slows conduction up to 2× before it blocks (§1.2) |
 | **The default junction-heat booking** (`explicit_tableau`) | Refused by the host dissipation check mid-wave, at 4.29 ms in the chain | It books a negative increment where Vj crosses zero. `trapezoid_nonnegative@1`, the booking E07-v1 registered, runs clean |
 | **Large steps on the upstroke** | At point 2, ARS(2,2,2) at 0.25 ms and above refuses itself: dt × membrane_rate reaches 3.6 at 1 ms. The host energy-ledger check (relative residual above 2e-3) refuses at 100 µs at point 2, at 25 µs at the chain's stimulus onset, and at 0.25–1 ms in the heredity cell | 5 µs is accepted in chains and 50 µs in a single cell from a kick. The 25 µs chain refusal falls at the stimulus onset, so the wave's own largest step is not yet established. The planned 10 µs never ran: the driver's ladder excluded its own cap |
 | **The explicit junction bound** dt ≤ 1/(2 max_i Σ_j G_j/C_i) | Static, at definition time | In the chain, 39 µs at s = 1000, scaling as 1/s (13 µs at s = 3000). A hexagon interior cell's bound is a third of the chain's (§8); §4.2 covers cardiomyocyte sizes |
@@ -120,9 +188,10 @@ the step probes.
 
 **Not established:**
 - whether the heredity densities themselves propagate (no chain ran at point 1);
-- the c_m 0.01 points, beyond the scan's kick test;
-- block of a wave already travelling: block was seen only at the first unstimulated cell;
-- the wave's largest admissible step.
+- the block threshold at A between r = 0.5 (exits) and 0.02 (blocks), which was not sampled;
+- slow conduction within a block-adjacent regime at A, and any exit block there;
+- the wave's largest admissible step;
+- any sheet run: every value is from chains.
 
 ## 3. Entities, state and laws (D142)
 
@@ -136,37 +205,87 @@ the step probes.
 | Cell | Volume, inventory, charge, voltage | Nothing new. Activation and recovery records are observations (§5), not state of the cell |
 | Extracellular | Held baths (v1); finite extracellular space later | v1 assays use held baths. Finite extracellular conduction waits for the sparse solver (§4.3) |
 
-### 3.2 Where new laws enter
+### 3.2 Where new laws enter: pending M4
 
 New laws take **new law IDs** (D147, D148). **Qualified @3 changes nowhere.**
 - @3's `LAW_CODES` is a closed table, and its dispatch evaluates every law for every
   population. Adding a code therefore changes every @3 program, which crossrev would flag.
 - The composite takes one inner identity (`INNER_MODEL_IDS`, `pump_composite.INNERS`).
 
-Three routes were weighed.
+**The route is not ruled here** (the lead, 14 November). Four notes of that day want something
+inside @3, and two bound-term fixes are queued as well:
+- these new laws;
+- FR-4's pump;
+- FR-1's implicit bounding patch;
+- the coupling note's stage hook.
 
-| Route | What it is | Assessment |
-| --- | --- | --- |
-| **A. A new inner identity, `resolved_pump_tissue@4`** | @3's state, step, checks and ledgers, with the channel laws taken from a **law registry**. Each law object declares its kinetics, opening, gate count, permeant ions, voltage domain and conductance-bound term. Dispatch is static: only the laws a definition declares are traced | **Recommended.** Every channel current stays inside the IMEX explicit stages, under the exponential gates and the explicit-stage refusal. Each law carries its own domain, the precondition for §7.3. Guard: @4 restricted to @3's five laws equals @3 bitwise on @3's test and qualification worlds (as the composite's identity guard did), and enters `INNER_MODEL_IDS` only then |
-| B. A composite split operator for excitable currents | Excitable currents and gates in half-steps around @3's step (reaction–diffusion splitting) | Rejected. The upstroke would be split from the coupling that propagates it. The operator would need its own voltage solve, stability rule and ledgers, duplicating the population concept |
-| C. @3's in-step `membrane_process` hook | An extra explicit membrane flux | Not admissible. The hook's contract forbids added conductance outside the family's bound, and changing that is an edit to @3 |
+They become **one inner-model design note, which the lead commissions**. Tracks do not fork @3
+separately, so the route stays "pending M4".
 
-**The generic cell needs no new law** (§1). Route A is designed now and built when the mouse
-comparison is approved (§7, §11).
+**What Track E needs from that note:**
+- **Laws as declarations.** Each law declares its kinetics, opening, gate count, permeant ions,
+  its own voltage domain and its conductance-bound term.
+- **Static dispatch.** Only the laws a definition declares are traced.
+- **The currents stay in the explicit stages.** Every channel current stays inside the IMEX
+  explicit stages, under the exponential gates and the explicit-stage refusal.
+- **@3's laws unchanged.** @3's five laws give the same results under the new inner model as
+  under @3. The check is **program identity plus CPU runs**: the checked step's jaxpr,
+  constants and lowered StableHLO, as crossrev compares them, with @3's test and
+  qualification worlds run on CPU. It is not L4 bitwise equality: at 825 nodes @3 does not
+  repeat bitwise against itself on the L4 (D168, G2-Q1's Q7).
+- **Operators carry over only with their guards.** Each composition over the new inner model
+  gets its own guard (the lead's ruling on Q2).
+
+**Routes already weighed, as input to that note:**
+- **A composite split operator for the excitable currents** is unsuitable: it would split the
+  upstroke from the coupling that propagates it, and duplicate the population concept.
+- **@3's `membrane_process` hook** is not admissible: its contract forbids conductance outside
+  the family's bound.
+
+**The generic cell needs no new law** (§1). Its work runs on @3 itself.
 
 ### 3.3 The laws (new IDs, mechanism names, cited)
 
 Each law states its source, units, domain and conductance bound, uses no protein name (the
 protein-catalogue rule), and has a component reference test.
 
+**The old catalogue comes first (D167).** D167's staged move takes old-family physics into the
+composite when a consumer needs it. The channel library goes first, through Track E, and
+calcium handling goes with excitable tissue. So before any law is written from a cardiac
+paper, the mouse currents are matched to the 56-law catalogue's process modules
+(`processes/`):
+
+| Mouse current | Already in the old catalogue (moved first) | Missing, so a new law from a paper |
+| --- | --- | --- |
+| Fast sodium | `nav1p2_m3h_regularized@1` (in @3), `nav1p3_m3h_regularized@1`, `navrat1/2/3_m3h_regularized@1` (m³h, fast inactivation); `nav1p6_persistent_m@1`; `nav_ml_instantaneous@1` | The slow-recovery (j) gate, if the comparison needs slow recovery |
+| Transient outward K (Ito) | `kv1p4_mh@1`, an inactivating Kv1 law (mouse Ito,s is attributed to Kv1.4; source not re-checked here); `kv3p4_mh@1`; `k_fast_mh@1` | Kv4-type kinetics for Ito,f, only if the catalogue's A-type laws cannot stand in |
+| Inward rectifier IK1 | `kir_ml_instantaneous@1`, an instantaneous rectifier (Morris–Lecar family); `kir2p1_mh2@1` (in @3, kinetic) | None |
+| Sustained delayed rectifiers (IKur, IKss) | `kv1p5_mh@1` (in @3; mouse IKur is attributed to Kv1.5, London et al. 2001), `kv2p1_mh@1`, `kv2p2_mh@1`, the ML laws `kv1p5_ml_dynamic_m@1`, `kv1p5s_ml_slow_dynamic_m@1`, `kv2p1_ml_dynamic_m@1` | None, for a first comparison |
+| L-type Ca | `cav1p2_m2h@1`, `cav1p3_m2h@1`, `ca_l2_m2h@1`, `ca_l3_shift15_m2h@1`, `cav_l_ml_instantaneous@1`, `cav_l_ml2_instantaneous@1` (voltage-gated). Owned cytosolic Ca, ER and IP3 in `resolved_calcium@11` | Ca-dependent inactivation |
+
+**The genuinely new mechanisms are short.** They are the fast sodium current's slow-recovery
+gate, the L-type current's Ca-dependent inactivation and, perhaps, Kv4-type Ito,f kinetics.
+Everything else is moved from the catalogue under D167. The catalogue's laws keep their
+BETSE-parity status: moving one is not calibrating it.
+
+The proposed IDs for the new mechanisms, written only if the moved catalogue laws cannot
+serve:
+
 | Law (proposed ID) | Mechanism | For | Sources |
 | --- | --- | --- | --- |
-| *(none for v1)* | The generic cell uses @3's five laws | Qualification (§6) | BETSE v1.5.0 classes, as in the equations appendix |
-| `fast_sodium_m3hj@1` | Fast sodium current with fast (h) and slow (j) inactivation, the j gate setting slow recovery; its own declared domain (§7.3) | Mouse, then human | Beeler and Reuter 1977 introduced the j gate; Luo and Rudy 1991 re-fitted it; the ten Tusscher and O'Hara models keep it. Bondarenko et al. 2004's mouse INa is a Markov model, so a Markov form is a second law if the mouse comparison follows that model |
-| `transient_outward_potassium@1` | Fast transient outward K current, activation and inactivation gates | Mouse (Ito,f; Ito,s); human (Ito) | Bondarenko et al. 2004; O'Hara et al. 2011 |
-| `inward_rectifier_instantaneous@1` | Time-independent inward rectifier (Beeler and Reuter 1977; Luo and Rudy 1991; ten Tusscher et al. 2004 and 2006). @3's Kir2.1 law has a kinetic m gate instead. O'Hara et al. 2011 add a time-dependent inactivation gate to the instantaneous rectification (a later variant) | Mouse and human IK1 | As named |
-| `sustained_delayed_rectifier@1` | Non-inactivating (or slowly inactivating) delayed rectifier | Mouse (IKur, IKss); human (IKr, IKs as separate laws later) | Bondarenko et al. 2004; O'Hara et al. 2011. The mouse IKur is attributed to Kv1.5, as the 4-AP-sensitive component of IK,slow (London et al. 2001). @3's `kv1p5_mh@1` is BETSE's parity law, not that current's kinetics |
-| `l_type_calcium_cdi@1` | L-type Ca current with voltage activation and inactivation and Ca-dependent inactivation | The plateau and APD; slow conduction under reduced coupling (Shaw and Rudy 1997) | Luo and Rudy 1994 (two papers on the dynamic model), and the species models above. **This needs cytosolic Ca, its buffering and a minimal release and uptake, which @3's inventory lacks.** It is a milestone of its own (§11) |
+| *(none for the generic cell)* | The generic cell uses @3's five laws | Qualification (§6) | BETSE v1.5.0 classes, as in the equations appendix |
+| `fast_sodium_m3hj@1` | Fast sodium current with fast (h) and slow (j) inactivation, the j gate setting slow recovery; its own declared domain (§7.3) | Mouse, then human | Beeler and Reuter 1977 introduced the j gate; Luo and Rudy 1991 re-fitted it; the ten Tusscher and O'Hara models keep it. Bondarenko et al. 2004's mouse INa is a Markov model, so a Markov form is a second law if the comparison follows that model |
+| `l_type_calcium_cdi@1` | L-type Ca current with voltage activation and inactivation and Ca-dependent inactivation, built on the moved catalogue CaV law and the moved calcium handling | The plateau and APD; slow conduction under reduced coupling (Shaw and Rudy 1997) | Luo and Rudy 1994 (the dynamic model's two papers), and the species models. It needs cytosolic Ca, buffering and minimal release and uptake: D167 moves calcium handling with excitable tissue (M5) |
+| `transient_outward_potassium@1` (only if needed) | Kv4-type fast transient outward K current | Mouse Ito,f; human Ito | Bondarenko et al. 2004; O'Hara et al. 2011 |
+
+**Covered by moved catalogue laws, so no new law:**
+- **The instantaneous inward rectifier,** by `kir_ml_instantaneous@1`. The cardiac models' IK1
+  is time-independent (Beeler and Reuter 1977; Luo and Rudy 1991; ten Tusscher et al. 2004
+  and 2006). O'Hara et al. 2011 add a time-dependent gate, a later variant if a comparison
+  needs it.
+- **The sustained delayed rectifiers,** by the Kv1.5 and Kv2 laws.
+- **Each moved law keeps its source and parity status.** Fitting one to a mouse current is a
+  calibration step, recorded as such.
 
 ### 3.4 Gap-junction conduction
 
@@ -197,19 +316,40 @@ arm both act on availability.
 ### 4.2 Propagation and the IMEX split
 
 @3 makes only face electromigration implicit. Membranes and **junctions** stay explicit
-(`numerics/surface_imex.py`), so the junction bound dt ≤ 1/(2 max_i Σ_j G_j/C_i) applies.
+(`numerics/surface_imex.py`). So the static bound dt ≤ 1/(2 max_i Σ_j g_j/C_i) applies, and it
+depends on **g_j/C, not g_j alone**.
 
-| Cell | C | g_j | Neighbours | Bound |
-| --- | --- | --- | --- | --- |
-| The probe's (9.25 µm) | 16.3 pF | 104.5 nS (s = 1000) | 2 | 39 µs |
-| Adult mouse ventricular myocyte | about 140 pF (Xu, Guo and Nerbonne 1999; Brunet et al. 2004) | 558–588 nS (mouse pairs, end-to-end and side-to-side: Yao et al. 2003, abstract; adult rat pairs about 0.5 µS: Metzger and Weingart 1985, Weingart 1986) | about 4 effective | about 2 × 4 × 4,100/s, so dt ≤ 30 µs |
+| Configuration | C | g_j per junction | Junctions per cell | Σ g_j/C | Bound |
+| --- | --- | --- | --- | --- | --- |
+| 0.05 cell, s = 1000 (probe 1) | 16.3 pF | 104.5 nS | 2 (chain) | 12,800/s | 39 µs |
+| 0.05 cell, s = 1000, hexagon interior | 16.3 pF | 104.5 nS | 6 | 38,500/s | 13 µs (`StepChecks`: 13.0) |
+| **0.01 cell (the generic cell), s = 1000, chain** | 3.26 pF | 104.5 nS | 2 | 64,100/s | 7.8 µs |
+| **0.01 cell, s = 1000, hexagon interior** | 3.26 pF | 104.5 nS | 6 | 192,000/s | **2.6 µs** (`StepChecks`) |
+| 0.01 cell, s = 300, hexagon interior | 3.26 pF | 31.4 nS | 6 | 57,700/s | 8.7 µs (`StepChecks`) |
+| **Mouse coupling on the generic cell** (s ≈ 5,400) | 16.3 pF | 558–588 nS (Yao et al. 2003, abstract) | 2 / 6 | 70,000 / 210,000/s | **7 µs / 2.4 µs** |
+| Mouse coupling on a mouse-sized cell | about 140 pF (Xu, Guo and Nerbonne 1999; Brunet et al. 2004) | 558–588 nS | 2 / 6 | 8,200 / 24,600/s | 61 µs / 20 µs |
 
-**At cardiomyocyte scale the junction bound does not bind** at the 5–10 µs the upstroke needs
-anyway. A junction-implicit IMEX (a new solver ID, with junction electromigration under
-frozen junction weights in the operator C + a dt (L_face + L_junction)) is therefore
-**deferred until a consumer needs larger steps or small, strongly coupled cells.** Its
-operator is SPD and sparse on the junction graph, and its heat could be booked like the faces'
-(J²RT/W, non-negative).
+**Mouse coupling on the 16 pF generic cell binds:** about 7 µs in a chain and 2.4 µs in the
+sheet. Mouse coupling on a mouse-sized cell does not, at about 20–61 µs.
+
+So **the junction-implicit IMEX is deferred only on a condition**, and that condition is an
+M4 prerequisite (§11). The solver would be a new solver ID, with junction electromigration
+under frozen junction weights in the operator C + a dt (L_face + L_junction). Its operator is
+SPD and sparse on the junction graph, and its heat could be booked like the faces' (J²RT/W,
+non-negative).
+- **The condition:** every M4 world declares its cells at their own capacitance, and keeps
+  2 Σ_j g_j/C below 1/dt at the step the upstroke needs (5 µs: Σ_j g_j/C below 100,000/s).
+- **If it fails, the solver is an M4 prerequisite.** That happens for mouse coupling on small
+  cells.
+- **The generic cell at 0.01 F/m² already meets this in the sheet.** At s = 1000 the hexagon's
+  bound is 2.6 µs (the engine's `StepChecks`, 127 cells, 342 junctions), so 5 µs is refused.
+  M2 and M3 therefore take one of two settings, decided in the protocol:
+  - s = 1000 at 2.5 µs, which doubles the steps;
+  - a baseline of s = 300, whose bound is 8.7 µs, at 5 µs.
+
+  Chains at s = 1000 stay at 5 µs (bound 7.8 µs).
+- **The junction-implicit solver is therefore an M3 option, not only an M4 one,** if the
+  first experiment needs s = 1000 at 5 µs on the 0.01 sheet.
 
 ### 4.3 The field solve
 
@@ -226,10 +366,10 @@ operator is SPD and sparse on the junction graph, and its heat could be booked l
 
 ### 4.4 Ledgers
 
-- **Excitable definitions should declare `trapezoid_nonnegative@1`.**
-  - Until @4 exists this is a **driver rule**: @3 is not changed.
-  - In @4 it becomes a definition check, refusing `explicit_tableau` for definitions with gated
-    sodium populations and junctions. This is a decision for the lead.
+- **Excitable runs declare `trapezoid_nonnegative@1` by driver rule** (the lead's ruling on
+  Q4). There is no "excitable world" predicate for a definition check to refuse on.
+- **The rule is backed by the run-time refusal.** The probe showed the host dissipation check
+  refusing the default booking mid-wave, so a run that breaks the rule stops.
 - **The energy rule stays as it is.** It is what refuses coarse steps.
 
 ### 4.5 Two clocks (D155; D153)
@@ -245,8 +385,8 @@ operator is SPD and sparse on the junction graph, and its heat could be booked l
   continuity, and is judged on its own.
 - **Why not a branch.** `branch_checkpoint` refuses a change of execution settings (dt), and
   `refinement_times` admit only `resolved_cotransport_water@1`.
-- **The import.** The existing pattern is `heredity_turnover_literature.start_state` with its
-  `importcheck`. That check runs the imported definition without events at the source's own
+- **The import belongs with D153's open rule (b) records** (the lead's ruling on Q5). The
+  existing pattern is `heredity_turnover_literature.start_state` with its `importcheck`. That check runs the imported definition without events at the source's own
   step (5 ms) for 60 s. It compares Vm at the source's record times (largest |ΔVm|) and the
   layout (largest absolute difference) with the source. It is an agreement check, not a
   bitwise one.
@@ -255,8 +395,15 @@ operator is SPD and sparse on the junction graph, and its heat could be booked l
     own step.
   - **Whether a bitwise check is attainable is to be tested.** An import re-bases the amounts
     and zeroes the ledgers, so rounding can differ from the source's next step.
-- **The slow clock is safe by construction.** An action potential arising in the slow world at
-  1 ms is refused (§4.1), not silently mis-integrated.
+  - **An unstimulated imported state must stay at rest.** At the assay's own step, with no
+    stimulus, for the protocol's length, every cell stays within a declared band of its
+    imported voltage. An import that drifts or fires is refused before any stimulus runs.
+- **What refuses if a slow-world cell fires at 1 ms.** The run stops with a refusal, never
+  integrating silently.
+  - A fast upstroke (point 2) is refused by @3's explicit-stage bound: dt × membrane_rate
+    reached 3.6 at 1 ms.
+  - A slower one (the heredity cell) is refused by the host energy-ledger check (relative
+    residual above 2e-3).
 - **v1 is one-way.** Assay results are readouts of the slow world's state, with no feedback
   into it.
 - **The cost ratio.** 100 ms of assay is 20,000 steps, about 20 s of slow-world time at 1 ms.
@@ -279,9 +426,11 @@ D154's run view).
 - **In v1, on the host.** M2 and M3 run `resolved_pump_tissue@3` itself, with activation times
   taken on the host from @3's own readouts, compiled on each window's accepted history. That is
   what the probe did, because the observer costs 2.3–5 ms per row.
-- **Later, in state.** For GH200 batches an observation-only operator,
-  `activation_time_record@1`, would hold per cell the first and last crossing time and the
-  crossing count. It writes no inner field.
+- **Later, in state, through one shared door.** Track R's crossing record is the same
+  mechanism (the lead's ruling on Q3). So in-state event times have **one door**: an
+  observation-only operator, provisionally `threshold_crossing_record@1`, shared by Track E's
+  activation times and Track R's crossings. Per entity it holds a declared variable's first
+  and last crossing of a declared level and the crossing count. It writes no inner field.
   - Runs that use it are `resolved_pump_composite@1` development compositions (D143).
   - They are outside D147's automatic solver choice, so each world records its free field
     offsets and its declared solver.
@@ -289,11 +438,12 @@ D154's run view).
 
 ## 6. Qualification
 
-The first qualification is **on the generic cell, point 2, running `resolved_pump_tissue@3`**
-(no operator), against independent references.
-- **Who writes them.** A separate agent writes them from
-  [the equations appendix](EXCITABLE_TISSUE_EQUATIONS.md) and never reads the driver or the
-  engine, as in S5's R-ops and R-tissue and D152's references.
+The first qualification is **on the generic cell (0.01 F/m², candidate A of §1.2), running
+`resolved_pump_tissue@3`** (no operator), against independent references.
+- **Who writes them.** One fresh agent writes them, for both Track E and Track R, from
+  [the equations appendix](EXCITABLE_TISSUE_EQUATIONS.md). It never reads the driver or the
+  engine, as in S5's R-ops and R-tissue and D152's references. The appendix carries the
+  mid-chain segment case and the 0.01 F/m² cells (its §8.5–§8.6).
 - **The protocol.** PROPOSED, then registered, with its tolerances set before the judged run.
 
 | Reference | What it checks | Source |
@@ -324,9 +474,31 @@ The first qualification is **on the generic cell, point 2, running `resolved_pum
     `resolved_tissue@8`.
   - No probe run backs this yet.
 
+**The protocol carries D150's and MG0c's lessons from the start** (the lead's ruling on Q6):
+- **a scope line:** generic cell, held-bath chains and the 127-cell sheet, `resolved_pump_tissue@3`,
+  the step and coupling range, and what it does not qualify;
+- **one judged bound not scaled from the engine's own runs.** Each tolerance comes from the
+  references' own convergence or from a stated physical scale, never from the engine's spread;
+- **judged controls by parameter:** planted errors of registered size in a parameter (a
+  junction permeability, a NaV1.2 density) that the judge must catch;
+- **a guards entry and a combined verdict:** the static guards and the crossrev identity of
+  the run's programs listed beside the judged items, and one verdict over both;
+- **timing rules:** what is timed, on which core, and when timing is not judged;
+- **near-threshold block cases excluded up front.** Block brackets are judged on cases
+  declared away from the threshold. Near-threshold cases are reported, not judged, because
+  the probe showed long-latency graded responses there;
+- **the backend named:** CPU for the judged run. The L4 is not bitwise at scale (D168), so any
+  GPU item is a tolerance item of its own.
+
 **Development runs before registration**, which close the probe's C4 and C5 gaps:
 - 10 µs and 25 µs with the stimulus onset excluded from the measured window;
 - length checks at s = 100 and 3000, as well as 1000;
+- **a stimulus shorter than 1 ms, or a later first measured cell.** At the 0.01 cell, C1's
+  after-the-stimulus clause fails with a 1 ms stimulus: the wave activates cells 6 and 7 before
+  the stimulus ends;
+- **the segment cases at the generic cell,** with the block threshold bracketed between
+  r = 0.5 and 0.02, and the junction voltage at the blocking boundary reported against
+  120 mV;
 - chains of 80 cells, with spans that exclude the first ten cells beyond the stimulus and the
   last ten;
 - CV at two stimulus strengths;
@@ -358,8 +530,8 @@ The generic cell's action potential is not cardiac.
 
 | | Generic (qualification) | Mouse (first comparison) | Human (second) |
 | --- | --- | --- | --- |
-| Cell | Heredity cell geometry: area 3.26e-10 m², volume 0.75 pL, 9.25 µm spacing | 122–147 pF (Brunet et al. 2004); 142 ± 4 pF (Xu, Guo and Nerbonne 1999); about 132 × 21 × 10 µm (Benndorf et al. 1985, chamber unstated) | Per the human model (O'Hara et al. 2011) |
-| Currents | @3's five laws at point 2 | Bondarenko et al. 2004 (298 K) or Morotti et al. 2014 (37 °C) | O'Hara et al. 2011; ten Tusscher and Panfilov 2006 |
+| Cell | Heredity cell geometry (area 3.26e-10 m², volume 0.75 pL, 9.25 µm spacing) at **0.01 F/m²**, 3.26 pF, by the lead's ruling after probe 2 | 122–147 pF (Brunet et al. 2004); 142 ± 4 pF (Xu, Guo and Nerbonne 1999); about 132 × 21 × 10 µm (Benndorf et al. 1985, chamber unstated) | Per the human model (O'Hara et al. 2011) |
+| Currents | @3's five laws at candidate A: NaV1.2 1e-6, Kir2.1 1e-8 and Kv1.5 3e-7 m/s, with the leaks and pump of the heredity cell. Peak +56.65 mV and |Vj| at block 118 mV, both inside their domains by under 4 mV | Bondarenko et al. 2004 (298 K) or Morotti et al. 2014 (37 °C) | O'Hara et al. 2011; ten Tusscher and Panfilov 2006 |
 | Coupling | g_j from the factor s | 558–588 nS (Yao et al. 2003, mouse pairs; abstract only, culture status unverified); Cx43-knockout pairs 4–11 nS | From the model's tissue conductivity |
 | Targets | None (the qualification is numerical) | CV 30–60 cm/s; APD about 50 ms; ERP 33–80 ms; heart rate 500–724/min (Kaese and Verheule 2012) | CV 45 cm/s at 1 Hz, 70 from rest (O'Hara et al. 2011); ERP 223–257 ms (Kaese and Verheule 2012) |
 | Newborn or immature cells | Reduced NaV and coupling availability | The paper's reductions (Supplementary Tables 1–2, requested) | hiPSC-CM models (Paci et al. 2013): immature INa, If and IK1 |
@@ -411,9 +583,10 @@ cells, so the longest circuits are 24–36 cells (rings 4–6).
 
 | Cell and coupling | CV | Refractory period | λ | Re-entry in 127 cells? |
 | --- | --- | --- | --- | --- |
-| Generic, s = 1000 | 2,086–2,124 cells/s | 25–30 ms (chain S1–S2) | 52–64 cells | No |
-| Generic, s = 300 | 1,110 cells/s | 25–30 ms (assumed) | 28–33 cells | Marginal |
-| Generic, s = 100 | 572 cells/s | 25–30 ms (assumed) | 14–17 cells | Fits |
+| 0.01 cell (the generic cell), s = 1000 | 8,277 cells/s (probe 2, A) | Not measured (APD90 3.8 ms) | Unmeasured; at an assumed 10 ms, about 80 cells | No |
+| 0.05 cell, s = 1000 | 2,086–2,124 cells/s | 25–30 ms (chain S1–S2) | 52–64 cells | No |
+| 0.05 cell, s = 300 | 1,110 cells/s | 25–30 ms (assumed) | 28–33 cells | Marginal |
+| 0.05 cell, s = 100 | 572 cells/s | 25–30 ms (assumed) | 14–17 cells | Fits |
 | Mouse, normal | 30–60 cm/s | ERP 33–80 ms | 1.0–4.8 cm, so 75–360 cells of about 132 µm | No: a circuit needs a radius of 12–58 cells, a sheet of about 450–10,000 cells; the top end exceeds the dense solver's 2,048 nodes |
 | Mouse, near block | 1–5 cm/s, an assumed slow range (Shaw and Rudy's model reached 0.26 cm/s) | About 50 ms | 4–19 cells | Fits |
 | Human, normal | 45–80 cm/s | 223–257 ms | 10–20 cm, so 1,000–2,000 cells | No: needs at least 10⁵ cells, so the sparse solver and GH200 |
@@ -447,7 +620,8 @@ a third of the chain's:
 | Run | Execution | Host checks and observer | Note |
 | --- | --- | --- | --- |
 | Single cell, ARS(2,2,2) | 0.13–0.21 ms per step | 2.3–3.5 ms per row | Host checks dominate |
-| 20-cell chain, 5 µs | 1.07 ms per step | 5.2 ms per row | Host checks dominate |
+| 20-cell chain, 5 µs (0.05 cell) | 1.07 ms per step | 5.2 ms per row | Host checks dominate |
+| 40-cell chain, 5 and 2.5 µs (probe 2; 0.05 and 0.01 cells) | 1.15–1.36 ms per step | 3.5–3.8 ms per row | 26–47 s per case; the 0.01 sweep (24 cases) took 16.5 min |
 | Vector-window path with device checks | 0.78 ms per world-step | — | 2 × 10,000 steps in 15.5 s |
 
 Compiles take 20–40 s and are cached afterwards. Peak memory is 1.4–1.7 GB.
@@ -462,6 +636,8 @@ fractions × 7 arrangements, the scattered ones by seed).
 - At 10 ms per step, 100 ms at 5 µs is 20,000 steps, about 200 s per world. That makes about
   5 CPU-hours per stimulus site on the vector path; host checks on every row would multiply
   it.
+- That is for s = 300 at 5 µs. At the 0.01 cell with s = 1000, the sheet needs 2.5 µs (§4.2),
+  which doubles it to about 10 CPU-hours per stimulus site.
 - On the L4, a batch of 84 should take tens of minutes. That is an estimate: @3 on the 825-node
   world measured 2.28 ms per world-step at 256 worlds, and the 254-node sheet is unmeasured.
 
@@ -470,14 +646,14 @@ fractions × 7 arrangements, the scattered ones by seed).
 | | |
 | --- | --- |
 | **Question** | In a coupled excitable sheet, does a cluster of cells with reduced sodium availability and reduced coupling slow or block conduction more than the same fraction scattered? |
-| **Engine models** | `resolved_pump_tissue@3` (generic cell at point 2, `trapezoid_nonnegative@1`), with activation analysed on the host (§5). Later the mouse law set through @4 |
-| **World** | The 127-cell held-bath hexagon (`validation/stationary/worlds.hexagon(6)`), each cell at the point's relaxed rest. Baseline coupling s = 1000 (g_j 104.5 nS), whose interior-cell explicit bound is 13 µs, so the experiment runs at 5 µs. The perturbation only loosens the bound |
+| **Engine models** | `resolved_pump_tissue@3` (the generic 0.01 F/m² cell, `trapezoid_nonnegative@1`), with activation analysed on the host (§5). Later the mouse law set through @4 |
+| **World** | The 127-cell held-bath hexagon (`validation/stationary/worlds.hexagon(6)`), each cell the generic 0.01 F/m² cell at its relaxed rest. At s = 1000 the sheet's bound is 2.6 µs, so the protocol chooses between s = 1000 at 2.5 µs and s = 300 (bound 8.7 µs) at 5 µs (§4.2). The perturbation only loosens the bound |
 | **Stimulus** | A planar edge stimulus or a corner stimulus, declared per arm |
 | **Perturbation** | For a fraction f of cells: NaV1.2 availability × r_Na (`channel_controls`) and availability × r_gj on every junction incident to them (`junction_controls`), from t = 0 |
 | **Sweep** | f ∈ {0, 0.05, 0.1, 0.2, 0.3, 0.5}. At fixed f, the arrangements are one compact disc, two discs, and scattered (5 seeds), with a clustering index (cluster-internal junction fraction) |
 | **Passive control arm** | The same sweep on the passive sheet (every voltage-gated population unavailable), with junction availability on the same schedule and a weak current or conductance stimulus. It reports electrotonic spread (space constant, input resistance, attenuation map) and so separates coupling geometry from excitability |
 | **Readouts** | Activation map; total activation time; activation delays across and beyond the cluster against the unperturbed sheet; block (cells not activated); capture; and, from §8, any re-entry in the slow regime. A local CV inside the cluster is reported only if §6's length checks show one exists at that coupling |
-| **Values** | r_Na and r_gj wait for the paper's Supplementary Tables 1–2 (asked of the user, D155). The mapping from transcript fold change to availability is a declared assumption, swept around its value |
+| **Values** | A generic sweep: r_Na and r_gj over a declared grid, informed by probe 2's segment results (§1). The paper's Supplementary Tables 1–2 are not needed for it; they enter at M4, where a mouse comparison maps transcript fold changes to availabilities under a declared assumption |
 | **Predictions** | Registered before runs (D155 item 2). Candidates: (P1) at equal f, a compact cluster blocks at a higher r than scattered cells (source–sink); (P2) scattered cells slow conduction more at low f (Prudat and Kucera 2014's meandering); (P3) the passive arm's attenuation map predicts the excitable arm's block sites; (P4) where a cluster's boundary is a source–sink mismatch, partial uniform uncoupling can restore conduction (Rohr et al. 1997) |
 | **Gate** | After the qualification's judged run |
 
@@ -487,13 +663,14 @@ fractions × 7 arrangements, the scattered ones by seed).
 | --- | --- | --- | --- |
 | M0 (done) | `resolved_pump_tissue@3` | The probe and this note | — |
 | M1 | `resolved_pump_tissue@3` | The conduction observables as a host analysis (§5); the rule (b) assay importer with its agreement check (§4.5); the trapezoid booking as a driver rule; the qualification protocol, PROPOSED, with §6's development runs. The importer is validation tooling used by a milestone that runs @3; if the lead reads it as tooling on its own, it needs the user's approval | About 4–6 agent-days, 1 CPU-hour |
-| M2 | `resolved_pump_tissue@3` | R-cell, R-cable, R-wave and R-limit by a separate agent; the protocol registered; the judged qualification on the generic cell | About 4 agent-days (references), about 3 CPU-hours |
-| M3 | `resolved_pump_tissue@3` | The first experiment, registered with its predictions once Supplementary Tables 1–2 are in hand | About 3 agent-days, about 5 CPU-hours or under an L4-hour |
-| M4 | `resolved_pump_tissue@4`; later `resolved_pump_composite@1` over @4 | Route A: @4 with the law registry, its bitwise guard against @3, then `INNER_MODEL_IDS`. Then the mouse law set (§3.3) with component references, and optionally `activation_time_record@1` with its idle guard | About 10–15 agent-days; needs the user's D138 decision |
-| M5 | @4 with the calcium laws | Cytosolic Ca with buffering and minimal release and uptake for `l_type_calcium_cdi@1`; then the human law set; re-entry on large sheets with the sparse solver and GH200 | A track of its own |
+| M2 | `resolved_pump_tissue@3` | R-cell, R-cable, R-wave and R-limit by one fresh agent (for Tracks E and R); the protocol registered; the judged qualification on the generic 0.01 F/m² cell | About 4 agent-days (references), about 3 CPU-hours |
+| M3 | `resolved_pump_tissue@3` | The first experiment as a generic sweep, registered with its predictions; s = 1000 at 2.5 µs or s = 300 at 5 µs on the sheet (§4.2) | About 3 agent-days; about 5 CPU-hours per stimulus site at s = 300, about 10 at s = 1000 and 2.5 µs, or under an L4-hour |
+| M4 | The inner model of the lead's inner-model note; compositions over it as `resolved_pump_composite@1` | The catalogue laws of §3.3 moved under D167, then the few new laws (§3.3) with component references; optionally `threshold_crossing_record@1` (§5) with its idle guard. **Prerequisites:** a junction law covering the full action-potential amplitude, the named mechanism of §1.2; the lead's inner-model design note (§3.2); the user's D138 approval for assembling and comparing against a published whole-cell model (single cited laws need none); the paper's Supplementary Tables 1–2; and §4.2's condition, failing which the junction-implicit solver comes first | About 10–15 agent-days |
+| M5 | That inner model with the calcium laws | Calcium handling moved from the old calcium families (D167's order), with Ca-dependent inactivation for the L-type current; then the human law set; re-entry on large sheets with the sparse solver and GH200 | A track of its own |
 
 **Refused in v1:**
-- `explicit_tableau` junction heat in excitable definitions (§4.4; a driver rule until @4);
+- `explicit_tableau` junction heat in excitable runs (§4.4; a driver rule, backed by the
+  run-time dissipation refusal);
 - channel voltages outside each law's domain (already enforced);
 - RK4 beyond small reference worlds;
 - finite extracellular conduction (§4.3);
@@ -507,41 +684,39 @@ fractions × 7 arrangements, the scattered ones by seed).
 - reproducing a published cardiac model's AP as a benchmark without the user's approval
   (D138, D151).
 
-## 12. Open questions
+## 12. Rulings and open questions
 
-**For the lead:**
-1. **Route A** (an inner identity with a law registry), or another route for new laws (§3.2)?
-   Recommended: A, built at M4.
-   - If @4's bitwise guard against @3 fails, @4 does not enter `INNER_MODEL_IDS`. D148's
-     summation-order case shows a restructured evaluation can move bits. The choice then is
-     a D148-style record, or @4 carrying @3's laws through @3's own dispatch unchanged.
-   - Do operators qualified over @3 (water, replacement, the S5 operators, injection) carry to
-     @4, or does each composition over @4 need its own guard? Recommended: each needs a guard,
-     as a development composition (D143).
-2. **Activation times recorded in state** by an observation-only operator, or by host
-   analysis (§5)? Recommended: the operator, for GH200 batches.
-3. **Refuse `explicit_tableau`** for excitable definitions (§4.4)? Recommended: yes, as a
-   definition check in @4. Until then, as a driver rule.
-4. **The rule (b) importer**: where it lives (validation, as `start_state` does) and its
-   import check (§4.5).
-   - What does it carry from a Track R composite: volumes under water, and junction
-     availability with replacement's formation factor (an availability multiplier)?
-   - Recommended: the effective availability at the import time, frozen, with the factor's
-     source recorded. Water's volumes are refused until the assay's identity takes water.
-5. **The qualification's tolerances**, and whether the probe's driver becomes the protocol's
-   development driver. Its step ladder must then include its cap.
+**The lead's rulings** (14 November, with the advisor):
+- **Q1, the route for new laws:** pending M4, not ruled. One inner-model design note, which the
+  lead commissions, gathers every request to change @3 (§3.2). Its check against @3 is program
+  identity plus CPU runs.
+- **Q2:** each composition over the new inner model gets its own guard.
+- **Q3:** activation times are taken on the host for now. In-state event times later go
+  through one door shared with Track R's crossing record (§5).
+- **Q4:** the trapezoid booking is a driver rule, backed by the run-time dissipation refusal
+  (§4.4).
+- **Q5:** the importer belongs with D153's open rule (b) records. An unstimulated imported
+  state must stay at rest, and a slow-world cell firing at 1 ms is refused (§4.5).
+- **Q6:** the protocol carries D150's and MG0c's lessons (§6).
+- **Capacitance:** the generic cell uses 0.01 F/m² if probe 2 shows it fires, repolarises and
+  propagates inside the domain; otherwise 0.05, with the reason.
+  - **Applied:** candidate A passes by amendment 3's text, so the generic cell is 0.01 F/m² at
+    candidate A (§7.2).
+  - **Its margins are recorded:** +56.65 mV against +60, and 118.1 mV against 120 at a block
+    site.
+  - Candidate B also passed the domain part. Its smaller amplitude (about 117 mV, against
+    A's 136) gives more channel margin. Its junction margin at a block site is untested.
+- **The user:** no questions now. D138 gates M4 only, and the Supplementary Tables are M4
+  prerequisites (§11).
 
-**For the user:**
-1. **The perturbation's values.** Supplementary Tables 1–2 and the source data of the paper
-   (D155).
-2. **D138.** May Track E implement the current formulations of a published mouse model
-   (Bondarenko et al. 2004 or Morotti et al. 2014), and later a human one (O'Hara et al.
-   2011; ten Tusscher and Panfilov 2006), as Cells laws under mechanism names, and compare
-   with their published action potentials and the N-version benchmark? Approval is per paper.
-3. **The generic cell's specific capacitance.** BETSE's default 0.05 F/m² (the probe's
-   point 2), or the physiological 0.01 F/m² that the scan showed gives faster, sharper
-   action potentials?
-4. **GH200 time** for re-entry at normal conduction (§8), when it becomes a target.
+**Still open, for the lead:**
+1. **The importer's carriage** from a Track R composite: volumes under water, and junction
+   availability with replacement's formation factor. Recommended: the effective availability at
+   the import time, frozen, with the factor's source recorded. Water's volumes are refused
+   until the assay's identity takes water.
+2. **The qualification's tolerances**, and whether the probe's driver becomes the protocol's
+   development driver. Its step ladder must then include its own cap.
+3. **GH200 time** for re-entry at normal conduction (§8), when it becomes a target.
 
 ## 13. Sources
 
