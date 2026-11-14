@@ -123,6 +123,42 @@ def parse_species(raw, base, law):
     return tuple(species)
 
 
+@dataclass(frozen=True)
+class ReadSpecies:
+    """A species row the operator reads, never writes (ruling 1: one read-only mechanism)."""
+
+    id: str
+    catalogue: tuple | None
+    evidence: str | None
+
+
+def parse_read_species(raw, base, law):
+    """The read-only species list: any species of the world, ions included, with D150's identity
+    form; read, never written (docs/INVENTORY_COUPLING_DESIGN.md §1.3, ruling 1: one mechanism,
+    which D152's 1.1 door reuses). Moved here from species_regulated_availability@1."""
+    if type(raw) is not list:
+        raise ConfigError(f"{law} lists the species it reads in an explicit list")
+    declared = set(base.model.species_ids)
+    species = []
+    for entry in raw:
+        _fields(entry, {"id", "catalogue", "evidence"}, f"{law} species")
+        name = identifier(entry["id"])
+        if name not in declared:
+            raise ConfigError(f"{law} reads a species the model does not declare: {name!r}")
+        catalogue, evidence = parse_catalogue(entry["catalogue"]), entry["evidence"]
+        if catalogue is None and evidence is not None:
+            raise ConfigError(f"{law}: the kind of evidence is given with a catalogue reference")
+        if catalogue is not None and evidence not in EVIDENCE_KINDS:
+            raise ConfigError(
+                f"{law}: a catalogue reference records its kind of evidence, one of "
+                + ", ".join(EVIDENCE_KINDS)
+            )
+        species.append(ReadSpecies(name, catalogue, evidence))
+    if len({s.id for s in species}) != len(species):
+        raise ConfigError(f"{law} lists a species twice")
+    return tuple(species)
+
+
 def check_impermeant(model, name, law):
     """Refuse a species with a membrane, junction or channel route of @3's (version 1).
 
