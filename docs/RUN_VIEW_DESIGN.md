@@ -40,14 +40,14 @@ and S5's compact partition world with a birth and a division (§5).
 | Part | Source | New declaration |
 | --- | --- | --- |
 | `run` | The caller: experiment, arm, seed and the source revision it records. The engine: the engine models (model ID; for a composite, inner and ordered operator IDs, as the manifest's `composition`) | None |
-| `time` | The record file's time array (`trajectory.npz`: `accepted_times`, `observation_times`; the window files' times) | None |
-| `sets` | The definition's entities in slot order: cells, membranes, junctions, channels, outside nodes and faces, then each operator's own (electrodes, lumens, divisions). Slots past the declared entities are padding, listed as null | The writer maps the declared axis names (`STATE_AXES`: `cell_slot`, `membrane_slot`, `extracellular_slot`, `face_slot`, `edge_slot`, `channel_slot`, `species`) to sets |
-| `sets[].lifetimes` | `living_intervals`, already in the operator contract: each cell's birth and retirement (partition, replacement's carriers) | None |
+| `time` | The run's time bases, each named with its file and array: `trajectory.npz` has two, `accepted_times` (the state's rows) and `observation_times` (the observed columns), and the window files have their own. Each record names its base | None |
+| `sets` | The definition's entities in slot order: cells, membranes, junctions, channels, outside nodes and faces, then each operator's own (electrodes, lumens, divisions, routes). Slots past the declared entities are padding, listed as null | The writer maps the declared axis names to sets. @3's own `STATE_AXES` use `cell_slot`, `membrane_slot`, `extracellular_slot`, `face_slot`, `edge_slot`, `channel_slot`, `gate` and `species`; operators add their own (`division_slot`, `exchange_route`, `reaction_route`, `regulatory_slot`), which map to their sets |
+| `sets[].lifetimes` | `living_intervals`, already in the operator contract: each cell's birth and retirement. Today only the partition implements it. Replacement keeps the slot and changes its occupant, which the view gives as events and the `generation` record | None |
 | `sets[].geometry` | The world's builder, passed to the writer by the caller (§4) | A `ViewGeometry` value; absent, the geometry is null |
 | `space` | The geometry's unit and dimensions | With the geometry |
 | `records` | Every array of the record file, with its axes and unit | Units and observation axes (§3) |
-| `layers` | The inner model's and each operator's declared layers | `VIEW_LAYERS` (§3) |
-| `events` | Each event operator's schedule | `view_events` (§3) |
+| `layers` | The inner model's declared layers, and each operator's (by default one per law, §3) | `VIEW_LAYERS` (§3) |
+| `events` | Each operator's schedule and lifetimes (by default, §3) | `view_events` (§3) |
 
 ## 3. What models and operators declare (D142)
 
@@ -64,23 +64,30 @@ say.
   composite family resolves to no unit.
 - **Observation axes.** `OBSERVATION_AXES` for the observation fields, as `STATE_AXES` gives the
   state's (for example `membrane_voltage_V`: membrane; `amount`: species, cell).
-- **Layers.** `VIEW_LAYERS` on the inner model and on each operator: `{id, label,
-  representation}`, the representation one of `simulated`, `modelled` or `prescribed`. For
-  example @3: membrane and ions simulated, channel populations modelled; replacement, partition,
-  insertion and the bath schedule prescribed; water simulated. Each record's layer is its owner's,
-  which the composition's field map already names (state owners, observation owner chains).
+- **Layers.** `VIEW_LAYERS`: `{id, label, representation}`, the representation one of
+  `simulated`, `modelled`, `prescribed` or null (the draft allows null). The inner model declares
+  its own (for @3: membrane and ions simulated, channel populations modelled). The contract's
+  default gives each operator one layer named by its law, with representation null. Each record's
+  layer is its owner's, which the composition's field map already names (state owners,
+  observation owner chains).
 - **Events.** A contract method `view_events(spec, declaration, schedule)`, returning
-  `{time, kind, layer, at, from, label}` entries with entities by id, default none. Each event
-  operator implements it from its own schedule: replacement (slot, donor, carrier), partition
-  (parent, daughters), insertion (onset patches and nodes), the bath schedule (baths and doses),
-  injection (current changes) and the coupling operator (switches and writes).
+  `{time, kind, layer, at, from, label}` entries with entities by id. The contract's default
+  derives them from what every operator already declares: its `schedule_times` (kind: the law)
+  and its `living_intervals` (births and retirements, with the cells by id). So S5's division
+  event, the parent's retirement and the daughters' births, needs no edit to the partition.
+- **Version 1 touches no operator's file.** It changes the contract (the two defaults), the inner
+  model's declarations, the writer and its call sites. An operator's richer layer or events (a
+  replacement's slot, donor and carrier; a dose's baths) come later from that operator's owner, in
+  that operator's own milestone. That keeps S5's files, D152's, the coupling operator's and the
+  bath schedule's with their owners.
 
 ## 4. The writer
 
 - **One module, `cells/run_view.py`:** `view(spec, record_files, *, run=None, geometry=None)`
   returns the record; `write_view(directory, ...)` writes it.
-- **Its callers are the shared output paths:** `io.write_run`, `window_io.write_windowed_run`,
-  `batch_io.write_batch_run` and `batch_window_io.write_windowed_batch`. A driver that writes its
+- **Its callers are the shared output paths,** all four wired in version 1: `io.write_run`,
+  `window_io.write_windowed_run`, `batch_io.write_batch_run` and
+  `batch_window_io.write_windowed_batch`. A driver that writes its
   own record files (E07-v1's `records.npz`) calls `write_view` with a description of those arrays
   (id, axes, unit); it writes no view field itself.
 - **Geometry is the caller's input.** Definitions hold no coordinates, and D154 keeps them out.
@@ -97,10 +104,12 @@ say.
 - **A static world:** a heredity sheet run through `io.write_run`, with the builder's geometry.
   Every named array exists with its stated shape; ids and order are the definition's; layers and
   units resolve; the bytes repeat.
-- **A birth and a division:** S5's compact partition world (`tests/partition_fixtures.py`). The
-  parent's slot retires and the daughters' slots are born at the division (lifetimes from
-  `living_intervals`), and the division event names the parent and both daughters. The test
-  imports partition sources only, never a J1 source (the J2 bright line).
+- **A birth and a division:** S5's compact partition world (`tests/partition_fixtures.py`),
+  through the windowed path. The parent's slot retires and the daughters' slots are born at the
+  division (lifetimes from `living_intervals`), and the default events name the parent and both
+  daughters. The test imports partition sources only, never a J1 source (the J2 bright line).
+- **The batch paths:** a batch of two worlds writes two views, each beside its world's
+  definition.
 - **Unchanged:** every definition and fingerprint; crossrev identical in all seven sets of the
   da94f81 record; tier 1 and tier 2 with no changed outcome.
 
@@ -113,6 +122,10 @@ say.
 - **Layer and representation:** declared by models and operators (§3), never by a driver.
 - **Record names:** the engine's state and observation field names. They are stable within a
   model ID, since a renamed field is a model change; units come from §3.
+- **Where this note departs from the draft:** `time` names several bases and each record names
+  its own; `sets[].lifetimes` is new; padding slots are null in `ids`; a layer's representation
+  may be null (the draft allows it in the replay, and the engine uses it for operators' default
+  layers).
 
 ## 7. Options considered
 
@@ -140,5 +153,7 @@ say.
 4. **The `src/` work:** the declarations of §3, the writer and its four call sites. They are
    host-only and change no program, so crossrev stays identical. Version 1 would be one
    milestone after MG0c's `src/` hold, with tier 1 and tier 2. The inner model's declarations
-   could come with D172's restructure round, and the operators', the writer and its call sites
-   before it.
+   could come with D172's restructure round, and the contract defaults, the writer and its call
+   sites before it.
+5. **Operators' own layers and events** (§3): from each operator's owner after version 1, so that
+   version 1 edits no operator's file?
