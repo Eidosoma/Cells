@@ -37,13 +37,13 @@ experiment).
 | Water plus replacement@2 with the entity volume ledger | Implemented and guarded; not qualified on the heredity sheet |
 | Lifecycle operators: S2 membrane state, S3 insertion and lumen, Rm1 injection, S5a partition and bridge closure | Numerically qualified, against independent references for S5a. Division is prescribed; nothing yet judges endogenous proliferation |
 | Secreted-species transport (D150 v1) | **Numerically qualified** (14 November): the held sphere with decay, the faces with exact radial conductances and turnover's clearance. Exchange, production and the occupant rule are guarded only, through the Q5 tests |
-| Reactions on the shared inventory (D152 v1) | Implemented and guarded (milestones 1–2); MG0c, the qualification, is in progress |
+| Reactions on the shared inventory (D152 v1) | Implemented and guarded (milestones 1–2). MG0c's protocol is revised and PROPOSED, with its rehearsal on main next |
 | Checkpoint continuity (D153) | Implemented and guarded for CPU vector windows and on the GPU (the extension landed on 14 November) |
 | Phase markers | Completion records implemented; start and failure records pending |
 | Run-view output (D154) | Requirement recorded; design pending |
-| Coupling out of the inventory (D155, scoped by D156) | Design accepted. Milestone 1 implemented and guarded: the junction and channel targets are bitwise against scheduled availability. Milestone 2 in progress, with its independent references on main |
+| Coupling out of the inventory (D155, scoped by D156) | Design accepted. Milestone 1 implemented and guarded: the junction and channel targets are bitwise against scheduled availability. Milestone 2 implemented and guarded: the regulatory state, restart, batches and compositions. Milestone 3, A4 and A5 against the independent references, in progress |
 | Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs |
-| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169); FR-10's code in progress |
+| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestone 1 landed; FR-1's milestone 1 in progress |
 | The inner-model (@4) design note | Not started; the lead commissions it. It gathers Track E's new laws (the slow-recovery j gate, Ca-dependent inactivation, possibly a Kv4-type transient outward current), `junction_ungated@1` (D170), FR-4's pump, FR-1's implicit bounding patch, the coupling stage hook and the bound-term fixes |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
 | One production execution path, compile policy, registry | Not started. D147's policy for composite definitions landed on 14 November |
