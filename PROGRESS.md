@@ -58,6 +58,37 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The S5 protocol, frozen as PROPOSED, then R-ops' A.8 amendment (14 November).** They land
+  as two merges in that order, so the freeze is on main before the new Q2 scale.
+  - **The protocol** (`validation/division/s5_protocol.json`, built by `s5_protocol.py`) is
+    PROPOSED, not registered. The S5 drivers refuse a judged run until it is registered from a
+    clean snapshot. It fixes in advance:
+    - **Q2's draws:** seen sets (development evidence) and judged sets with fresh seeds the lead
+      assigned. The judged sets have never been run at either scale.
+    - **Negative controls:** their targets, the 1e-9 threshold and the smallest-defect-caught
+      statistic. Two amendments record findings:
+      - ΔG is stationary at the correct split, so W can be reached only at second order. W
+        gets its own free-energy control.
+      - The bath's image charge moves only under a non-conserving defect, so it gets a
+        non-conservation control.
+    - **Q5 and Q10:** reported, not judged. Q5 keeps its stop rules.
+    - **Q7(a):** the 19-cell sheet with idle division operators is bitwise.
+    - **Q7(b):** deferred. S3's egg on @2 needs its own registered variant, so the @2
+      operators count only in division worlds until it passes.
+  - **R-ops' A.8 amendment.**
+    - A cell's node-charge magnitude adds |Q̄| + 10⁻¹⁵ F Σ|zΔ|, carried through R-ops' own
+      solve. `charge_term=False` gives the earlier magnitudes.
+    - It loosens charges and potentials 70–160× on the usage example, and amounts barely.
+    - On R-ops' own random states, which have large increments, it loosens them up to 1e9
+      ([ratios](/mnt/workspaces/Cells/cell-division-s5-references-20261113-01/a8-ratios/a8_ratios.json)).
+  - **Next:**
+    1. the new-scale development pass: the seen sets under both scales, and every control;
+    2. the advisor's review;
+    3. registration and the judged runs.
+  - **Gate:** tier 1 on the merged tree, 303 files, no changed outcome. The two new runs files
+    pass uncapped: limits 4 tests, idle sheet 2 ([gate](/mnt/workspaces/Cells/land-20261114b/)).
+  - [Evidence and log](/mnt/workspaces/Cells/cell-division-s5-20261113-01/HANDOFF.md).
+
 - **Checkpoint continuity, first landing (D153; 14 November).** A checkpoint written under one
   source resumes under another only through a recorded admission. Refusal stays the default
   ([design](docs/CHECKPOINT_CONTINUITY_DESIGN.md)).
