@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-12 UTC.
+Last updated: 2026-11-14 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -11,6 +11,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **14 November 2026.** The levels and the working order are in
+  [CURRENT_PLAN](docs/CURRENT_PLAN.md#status-on-14-november-2026-and-the-working-order-d156)
+  (D156). The runs below are newest first.
+  - **Numerically qualified:** S2, S3, Rm1 and S5a.
+  - **Judged:**
+    - E07-v1. The disc did not renew under donor-copy turnover, and the coupling's effect was
+      far smaller than predicted.
+    - Composite GPU agreement (in progress).
+  - **Implemented and guarded:** D150 secreted species (its qualification is being registered),
+    D152 reactions (MG0c in progress), D153 checkpoint continuity, and water plus
+    replacement@2.
+  - **In design:** conduction (D155, first), coupling out of the inventory, and the D154
+    run-view output.
+- **Single lead agent from 8 November**, with at most six subagents on disjoint files from
+  14 November (four before; D155). Work continues on `main`, and milestones are tagged.
+
+**Background: the reset of 8 November.**
 - **Reset on 8 November: BETSE is an external reference, not part of the engine.**
   From 30 October the work drifted into re-hosting and transcribing BETSE inside
   `src/cells` (`betse_native_*`, about 110K lines; `betse_normal_*`, about 50K
@@ -24,8 +41,6 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   or wall-time layer. [Actual16](/mnt/workspaces/Cells/native-basic-end-to-end-20261105-01/actual-original-16/failure.json)
   stopped at its 1,800-second limit at 16:06:11 UTC, 20.5 minutes into phase
   construction. This track produced no numerical BETSE or Cells result.
-- **Single lead agent from 8 November**, with at most four subagents on disjoint
-  files. Work continues on `main`; milestones are tagged.
 
 ## Plan: BETSE parity on CPU and L4, then JUPITER (from 8 November)
 
@@ -57,6 +72,93 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **The secreted-species (D150 v1) protocol is registered (14 November).** The lead registered it
+  after check 1 and the D147 check. No judged run had been made before registration
+  ([evidence](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/dryrun-1456a08/)).
+  - **Check 1:** judge, judge-q5 and combine ran on a registered dry-run copy from a clean snapshot
+    of main at 1456a08, with D152's operator included. All passed. 0 of 3,282 leaves differ from
+    the earlier dry run, excluding wall times and source pointers.
+  - **The D147 check:** `free_field_offsets` is 0 for all eight arms. They are composite
+    definitions declaring field solver @2, which D147's automatic choice would keep, so the
+    composite gap (D156) does not touch this run.
+  - **Registration.** It was made through the generator (`register`). The leaf diff against
+    1456a08's protocol shows the status changed and the 8-leaf registration record added, with
+    nothing else touched. The guard now reads the record.
+  - **Landing.**
+    - Tier 1 at the registration commit f2785cb: 314 files, no changed outcome.
+    - The merge 90cf2fd differs from f2785cb only in documentation (DECISIONS, CURRENT_PLAN,
+      PROGRESS, the review notes and the paper reviews), so that gate stands.
+  - **Next:** one fresh clean snapshot of main at 90cf2fd's landed commit, then judge, judge-q5
+    and combine once each. The lead launches each unit after checking the slice's headroom
+    (`rules.timing`).
+
+- **The secreted-species protocol's rehearsal on main, and its final pre-registration amendments
+  (14 November).** The protocol is still PROPOSED, with no judged run
+  ([evidence](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/HANDOFF.md): `rehearsal-6f339ab/`,
+  `dryrun-0353b29/`).
+  - **The rehearsal, from a clean snapshot of main at 6f339ab.**
+    - All five crossrev sets and the species set are identical.
+    - The development pipeline reproduced every frozen number bitwise: 1,212 protocol leaves,
+      2,256 analysis leaves and 2,480 arm-record leaves.
+    - A dry run of the Q1–Q3 judge on a registered copy passed every item and caught every
+      control.
+  - **Amendments before registration.**
+    - A Q5 entry (`judge-q5`) and a `combine` entry now write one qualification verdict holding
+      every item, the scope, the snapshot's revision and the unjudged step-map ratios.
+    - The attempt rule counts a harness timeout, a runtime-limit kill or a Q5 file ended by a
+      signal as an infrastructure ending, rerun once.
+    - `rules.timing` sets runtime limits of about 3× the rehearsal's times. The judged units run
+      without `--wait-headroom`: the lead launches each only when the slice has about 3 GB free.
+    - Every judge entry was dry-run to a pass on a registered copy (judge 310 s, judge-q5 772 s,
+      combine 0 s).
+  - **Landing:** tier 1 at the merge 0698713: 314 files, no changed outcome. The tier-2 step-map
+    guard passed 2 of 2.
+  - **Next:** the advisor's check 1, which reruns judge, judge-q5 and combine on a registered
+    dry-run copy from a clean snapshot of this main and compares them leaf by leaf with
+    `dryrun-0353b29`. Then registration, through the generator, as a status-only change.
+
+- **Reactions on the shared inventory (D152 v1): `local_species_reactions@1`, milestones 1 and 2,
+  landed (14 November).** This is development code, with no judged run; MG0c's qualification is
+  milestone 3 ([note](docs/SHARED_INVENTORY_REACTIONS_DESIGN.md) §11;
+  [evidence](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/HANDOFF.md)).
+  - **What landed.**
+    - The operator and its declaration parser, with every refusal the note lists.
+    - The contract parts, including the standard-potential term the operator owns.
+    - The laws: mass action of orders 0–3, Michaelis–Menten with or without a catalyst, passive
+      detailed balance, and Hill factors.
+    - SSPRK(3,3) half-steps under the stage condition at θ = 1/2. dt·L > 1 is refused.
+    - Exact ΔG bookings, the per-step node class, and the mixed-node hybrid.
+  - **Against the independent references** (run through their usage note only):
+    - the per-law ΔG test of record agrees within the references' tolerances over 4 world
+      variants × 60 trials, with every law, class and branch reached;
+    - whole compiled face-free runs agree to ≤ 7e-15 in amounts and ≤ 2.5e-16 of scale in
+      energies;
+    - the development figures are reproduced: the share at onset +0.33% in the first half-step,
+      the background guard −6.32e-5 against the true −6.27e-5, and the reversal onset 5.4–5.6×
+      at a 1e-12 mM trace.
+  - **Guards.**
+    - The face-free energy world stays within 0.26 of the rounding allowance on every booking
+      path, and its three negative controls fail at the first row they touch.
+    - C2: the shared bound is 0.35× the booking at µM and 409× at nM.
+    - Benign padding: no NaN or infinity anywhere.
+    - Identical programs across parameter twins. The batch signature refuses different
+      structures.
+    - Idleness is bitwise against the live half-step. Restart is bitwise, including through a
+      snapshot.
+    - Vector batches are bitwise against their reverse.
+    - dt·L = 0.98 is admitted and 1.02 refused, with the state kept bitwise.
+  - **Crossrev of record:** all five sets and D150's species set are identical. The reactions set
+    has its first record.
+  - **Landing checks.**
+    - Tier 1 and 2 at the merge a4e2f7e: 397 files, no changed outcome.
+    - D152's three tier-3 files pass: runs 6, guards 14, reference runs 18.
+  - **For milestone 3:**
+    - §3.4 guard 2, the transport world with the network;
+    - a compiled composition with another writer;
+    - idle claim 3, reported;
+    - multi-site runs;
+    - MG0c's driver and a PROPOSED protocol.
 
 - **The checkpoint-continuity GPU probe (design §13.4): every question identical (14 November).** It
   ran in the L4 gap after hold segment 2 ended, as one GPU process under the GPU lock (about

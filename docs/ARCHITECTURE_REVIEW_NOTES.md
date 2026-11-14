@@ -15,6 +15,31 @@ nothing in it has been started.
   design note's §3 ([CELL_DIVISION_DESIGN.md](CELL_DIVISION_DESIGN.md)) with D142–D144 in
   [DECISIONS.md](DECISIONS.md).
 
+## Status on 14 November 2026 (D156)
+
+This review is dated 12 November. Since then, on the four-level scale (implemented, guarded,
+numerically qualified, judged):
+- **Operator contract hardening (follow-up 8):** declared heat and work fields, observation
+  ownership, `ENTITY_WRITES`, `CONFLICTS_VIEW` and `CONTROL_FACTORS` are implemented and
+  guarded. The in-step membrane-process hook still admits one process per composition, and a
+  typed entity schema is not verified.
+- **Live progress (4):** completion markers are implemented. Host-only start and failure records
+  are pending (D156).
+- **Bound-definition object (2):** the plan-validation fix binds step checks once, accepted on
+  the L4 on 12 November. The remaining definition-invariant waste is listed and parked as a
+  D148 round ([field-solver design](FIELD_SOLVER_INTERFACE_DESIGN.md) §6.5).
+- **GPU measurement (6):** the CPU profile and the L4 kernel profile are done. On 14 November,
+  four kernel classes took 79% of device time at 6 worlds and 53% at 256. GH200 is pending.
+- **One production execution path (3), compile policy (5), declarative registry (1) and device
+  checks for other families (7):** not started. The compile policy is being set case by case,
+  in D148's crossrev rule, D150's controls as bindings and D152's layout ruling.
+- **"Two architectures side by side"** still holds.
+  - The composite now carries water, replacement, the lifecycle operators, injection, and
+    D150's and D152's operators.
+  - The older families (about 116 `surface_*` modules, and `get_model`'s 138 isinstance
+    branches) are unchanged.
+  - Moving their physics waits for D155's conduction probe (D156).
+
 ## Summary
 
 The composite model's rule is the right architecture:

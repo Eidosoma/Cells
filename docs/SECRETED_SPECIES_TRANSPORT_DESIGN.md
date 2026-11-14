@@ -2,8 +2,9 @@
 
 **Status: accepted by the lead with the advisor, 13 November 2026 (merged at ffc985a). Version 1
 code: milestones 1 and 2 landed on main, 14 November 2026 (merge bbbc922), with the lead's
-rulings at milestone 1 in §12. Development status: no judged run. Milestone 3 on the branch: the
-closed-form development run and a PROPOSED protocol, not registered (§12.2).** The main choices stand: one inventory in @3 as neutral species
+rulings at milestone 1 in §12. Milestone 3 landed on main (merges 780f5d9 and 0698713). Its
+protocol was registered by the lead (registrar) on 14 November 2026 (§12.2). No judged run had
+been made at registration.** The main choices stand: one inventory in @3 as neutral species
 rows, uptake as a plain sink (a), and identity on the operator declarations. The lead's
 pre-code checks (probes 2 to 5) were run the same day. Their results, the amendments they bring
 and the lead's rulings are in §11:
@@ -1587,6 +1588,10 @@ Code on the branch, `src/` unchanged throughout:
   test.
 - af2d2b4 to acbc27f: the lead's review — judged controls, the scope line, the PDE check, the
   step-map guard, and the protocol redrafted.
+- 1d96232 to ce78af6: the step-map guard moved out of Q5's judged list, as a tier-2 regression
+  guard.
+- d198ebb to 0353b29: the pre-registration amendments after the rehearsal on main — judge-q5,
+  combine, the attempt rule's timeouts and the timing rule.
 
 The engine arms ran twice, from the clean snapshots of dc2e494 and of a7e1869. The tolerances
 come from the second run. It was analysed first from the snapshot of a7e1869, then, after the
@@ -1657,6 +1662,45 @@ protocol's status, so registration leaves its outcome unchanged.
 The review's rulings and changes are recorded in the protocol (`review`). What follows is S5's
 order: land on main as PROPOSED, rehearse on main, dry-run every judge entry, register, then one
 judged run from a clean snapshot.
+
+**The rehearsal on main and the pre-registration amendments** (14 November). The rehearsal ran
+from the clean snapshot of main at 6f339ab (`rehearsal-6f339ab/` in the evidence folder):
+- The crossrev was identical in all five existing sets against the baseline of record, and in the
+  species set against its record.
+- Every frozen number was reproduced bitwise: 0 differences in 1212 protocol leaves, 2256
+  analysis leaves and 2480 arm-record leaves.
+- The dry runs on a registered dry-run copy, in S5's form, reached their verdicts with every
+  control caught.
+- The real entry refused the PROPOSED protocol and an existing OUT.
+
+Its two findings became amendments before registration, recorded in the protocol's
+`pre_registration_amendments`:
+- **Q5 now has repo entries.** Q5 had no executable entry. `judge-q5 OUT` applies the same guard,
+  then runs pytest on the protocol's Q5 list one file at a time, with no per-file cap, and writes
+  a Q5 verdict. `combine OUT Q1_Q2_Q3_OUT Q5_OUT` writes the one qualification verdict: every
+  item, the scope line, the snapshot's revision and the reported step-map ratios. Every entry
+  refuses an existing OUT, and the refusal test covers all three.
+- **Timing and the attempt rule.** Q5 files took up to 439 s under load, beyond the tier runner's
+  300 s cap. The judged entries now run with a wide `--runtime-max`: about 3× the rehearsal's
+  times, 1400 s for the judge and 3100 s for judge-q5.
+  - The judged units run without `--wait-headroom`, whose wait would count against the limit.
+    The lead launches each one after checking that about 3 GB is free, so a limit measures the
+    entry alone.
+  - A harness timeout, a unit killed by its runtime limit, or a Q5 file ended by a signal counts
+    as an infrastructure ending. It is rerun once from the same snapshot.
+  - A test failure or error inside a completed run stays a verdict.
+
+**Registration** (14 November 2026). The lead (registrar) registered the protocol after the final
+review with the advisor.
+- `secreted_species_protocol.register`, the generator's path, changed the status to "registered by
+  the lead (registrar), 14 November 2026" and added the registration record, which the guard reads
+  beside the status. Nothing else changed: a leaf diff against the protocol on main at 1456a08 shows
+  only those two.
+- Before it, the dry run of judge, judge-q5 and combine on the pre-registration main (1456a08,
+  D152's operator included) matched the 0353b29 dry run leaf by leaf, apart from wall times and
+  source pointers. judge-q5's pytest processes ran on the unit's own CPU, inheriting its affinity.
+- The judged entries follow once each, in order (judge, judge-q5, combine), from one fresh clean
+  snapshot of main at the registration commit.
 
 ## Appendix A. Equations for the independent references
 

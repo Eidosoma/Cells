@@ -47,7 +47,10 @@
   "/mnt/workspaces/Cells/reaction-references-20261114-01/tiers/measure-1/measured.json",
   "/mnt/workspaces/Cells/reaction-references-20261114-01/tiers/measure-2/measured.json",
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-8d94451/measured.json",
-  "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-af2d2b4/measured.json"
+  "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-af2d2b4/measured.json",
+  "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-04499a8/measured.json",
+  "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-6ab0cb0/measured.json",
+  "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-q5entry/measured.json"
  ],
  "measured_provenance": [
   {
@@ -392,6 +395,27 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T11:48:08+00:00"
+  },
+  {
+   "git_revision": "04499a859f8029ed6bf4e8f10c299e2ff6cf8f99",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T10:50:34+00:00"
+  },
+  {
+   "git_revision": "6ab0cb0d8defe88a7ce7e53bb46c714f4213fefa",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T12:07:38+00:00"
+  },
+  {
+   "git_revision": "199f94f272d778a5b588b4e5593fadde1127387d",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T13:05:18+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2244,10 +2268,10 @@
    },
    {
     "file": "tests/unit/test_secreted_species_judged_refusal.py",
-    "seconds": 0.47,
+    "seconds": 1.47,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 8
     }
    },
    {
@@ -2542,6 +2566,38 @@
     "exit_code": 0,
     "counts": {
      "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_species_reactions.py",
+    "seconds": 3.08,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_species_reactions_against_references.py",
+    "seconds": 10.66,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_species_reactions_halfstep.py",
+    "seconds": 4.53,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_species_reactions_refusals.py",
+    "seconds": 5.28,
+    "exit_code": 0,
+    "counts": {
+     "passed": 81
     }
    },
    {
@@ -4418,6 +4474,24 @@
    {
     "file": "tests/unit/test_spatial_calcium.py",
     "seconds": 90.18,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_species_reactions_guards.py",
+    "seconds": 90.11,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_species_reactions_reference_runs.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_species_reactions_runs.py",
+    "seconds": 90.1,
     "exit_code": null,
     "counts": {}
    },
