@@ -1,15 +1,13 @@
-"""Compiled runs of scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §4).
+"""B3, a compiled run of scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §4).
 
-* B3, the ledgers across an event. The species-only dose leg (validation/tissue/
-  bath_schedule_fixtures) under RK4 at 0.1 ms, whose energy bound is the absolute 2e-8 pJ, from a
-  resolved profile, with the bath's S stepped from 1e-3 to 1.5e-3 mM at step 20 (a step between
-  resolved levels). Every host check passes on every row through the runner, so the energy ledger
-  stays within its bound before, at and after the event, and the reservoir-work ledger closes with
-  the operator's term. **The control drops the term:** @3's own reservoir-work ledger, which reads
-  the declared potential, then fails its bound from the first row after the event.
-* Idleness (B5): the operator declared with no event runs every inner field bitwise equal to the
-  same composition without it (ARS at 1 ms).
-A few compiles: not tier 1.
+The ledgers across an event. The species-only dose leg (validation/tissue/bath_schedule_fixtures)
+under RK4 at 0.1 ms, whose energy bound is the absolute 2e-8 pJ, from a resolved profile, with the
+bath's S stepped from 1e-3 to 1.5e-3 mM at step 20 (a step between resolved levels). Every host
+check passes on every row through the runner, so the energy ledger stays within its bound before,
+at and after the event, and the reservoir-work ledger closes with the operator's term. **The control
+drops the term:** @3's own reservoir-work ledger, which reads the declared potential, then fails its
+bound from the first row after the event. One RK4 compile: not tier 1 (idleness, B5, is
+test_bath_schedule_idle.py).
 """
 
 import numpy as np
@@ -24,12 +22,12 @@ from validation.tissue import secreted_species_fixtures as fx
 DT_RK4, STEPS, EVENT_STEP = 1e-4, 60, 20
 
 
-def b3_world(*, events=True):
+def b3_world():
     end = STEPS * DT_RK4
     raw = bfx.dosed_world(
         dt=DT_RK4, end=end, solver="rk4", observation_times=fx.grid_times(end, DT_RK4, DT_RK4)
     )
-    timeline = [(EVENT_STEP * DT_RK4, ["bath"], {"cargo": 5e-4})] if events else []
+    timeline = [(EVENT_STEP * DT_RK4, ["bath"], {"cargo": 5e-4})]
     return bfx.with_bath_schedule(raw, ["bath"], bfx.CARGO, timeline)
 
 
@@ -70,16 +68,3 @@ def test_b3_the_ledgers_close_across_an_event_and_fail_without_the_term():
     held = np.asarray(final.bath_held_amount_fmol)[:, j]
     s = list(spec.model.species_ids).index(fx.SPECIES)
     assert held[s] == np.asarray(p.extracellular_amount_reference)[s, j] + 5e-4 * 1.0
-
-
-def test_b5_an_operator_with_no_event_runs_bitwise_as_the_composition_without_it():
-    end = 0.03
-    plain = bfx.dosed_world(dt=1e-3, end=end, observation_times=fx.grid_times(end, 1e-3, 1e-3))
-    idle = bfx.with_bath_schedule(plain, ["bath"], bfx.CARGO, [])
-    a, b = run(parse_spec(plain)), run(parse_spec(idle))
-    inner = get_model(a.spec.model).STATE_TYPE._fields
-    for name in inner:
-        assert (
-            np.asarray(getattr(a.history, name)).tobytes()
-            == np.asarray(getattr(b.history, name)).tobytes()
-        ), name
