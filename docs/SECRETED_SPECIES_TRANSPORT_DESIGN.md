@@ -1056,7 +1056,12 @@ PMID 19741606. **Record verified.**
     pool's energies are only about 1e-5 pJ.
   - So it uses µM-scale amounts in pL nodes: about 1e-3 fmol and energies of about 1e-2 pJ, some
     5 × 10⁵ times the floor (**S**).
-  - This is the guard of the face heat.
+  - This is the guard of the face heat. **Measured at milestone 2 (§12.1):** under IMEX it sees a
+    booking error only above 2e-3 of the species' total accumulated flows, so its sensitivity to
+    one term is that term's share of the flows. A 1% error in the face heat of the radial world
+    reached 0.89 of the bound and passed; under RK4's absolute bound it was refused 6.1e4-fold. The
+    RK4 worlds are therefore the sensitive guards of the face heat and the operators' work, the
+    IMEX species-only world a coarse one, and the NumPy dG test per law the exact one.
 - **The guard-world rule: a resolved switch-on, by a pre-formed profile** (the lead's ruling).
   Every version 1 guard world that reaches the host energy ledger starts the species from a
   pre-formed profile, the measured arm. Half the steady profile passes every row under ARS at
@@ -1545,20 +1550,23 @@ questions as follows. Each ruling is the lead's, 14 November 2026, at milestone 
 
 ### 12.1 Milestone 2: the guards, as built and run (14 November 2026)
 
-Code at b102da4 to 806eec9 on the branch (tests and validation only; `src/` unchanged since
-17c3407). Every run is a development run from a clean head, through `scripts/run_detached.sh`, with
-memory.events zero; evidence in `/mnt/workspaces/Cells/secreted-species-v1-20261114-01/`
-(HANDOFF.md; `tests/`, `crossrev/`, `tiers/`).
+Code at b102da4 onward on the branch (tests and validation only; `src/` unchanged since 17c3407).
+The runs in this table are development runs from clean heads, through `scripts/run_detached.sh`;
+evidence in `/mnt/workspaces/Cells/secreted-species-v1-20261114-01/` (HANDOFF.md; `tests/`,
+`crossrev/`, `tiers/`, `splitting_bias.json`). The negative controls are edits of saved histories
+checked by the host ledgers, not misbookings inside the compiled program.
 
 | Guard (§7) | Result | Where |
 | --- | --- | --- |
-| Crossrev of every existing set, constants included, from a clean snapshot of b102da4 (2,924 files, empty patch), the tools unchanged, against the baseline of record | Identical: base 36/36 jaxpr texts, 36/36 constants, 12/12 bindings; qualification 78/78, 78/78, 56/56; injection 6/6, 6/6, 2/2; volume 6/6, 6/6, 2/2; division 27/27, 27/27, 9/9, its check holding | `crossrev/` |
+| Crossrev of every existing set, constants included, from a clean snapshot of the branch head at hand-back 2 (first at b102da4, 2,924 files, empty patch; rerun at the final head, revision in HANDOFF), the tools unchanged, against the baseline of record | Identical: base 36/36 jaxpr texts, 36/36 constants, 12/12 bindings; qualification 78/78, 78/78, 56/56; injection 6/6, 6/6, 2/2; volume 6/6, 6/6, 2/2; division 27/27, 27/27, 9/9, its check holding | `crossrev/` |
 | The new operators' bindings (`validation/tissue/secreted_species_crossrev.py`, eight worlds, its first record) | Holds: in two value twins (every rate and K_M changed) the traced programs are identical in text and constants and only control arrays differ; no nonzero control row equals a closed-over constant | `crossrev/species/b102da4/check.json` |
 | Ion fields with both operators active, the mixed heredity chain against the same world without the species (idle claim 3, reported) | Bitwise on the scalar run, restart (in process and through a snapshot), a three-world vector batch (also bitwise against its reverse) and a replacement event; only the face heat and the baths' supply work differ (with the replacement's free-energy terms by the species' share) | `tests/unit/test_secreted_species_ions.py` |
 | Energy, the species-only world (ruling 4), negative control | A systematic 1% error in a law's booked work, in a species-only world whose flow is that law's work: 3.17 (exchange) and 4.90 (turnover) times the IMEX bound at the last row, refused; the same error in the mixed world: 2.9e-4 and 3.0e-3 of its bound, unseen (the known blindness) | `tests/unit/test_secreted_species_guards.py` |
-| RK4, the species-only radial world (ruling 6) | Energy residual 4.5e-14 pJ against the absolute 2e-8 pJ; 2.1e-8 of c0 from the exact discrete solution (turnover's splitting around the RK4 step) | guards |
-| IMEX radial world, pre-formed | Every host check; 9.93e-6 and 2.45e-6 of c0 from the exact discrete solution at 1 and 0.5 ms, ratio 4.05 (second order; turnover's Strang splitting sets most of it at k = 1/s) | guards |
-| Stiff front (§7, item 7 of §11.5) | From a 1e-15 mM trace under 1e-3 mM, 2,000 steps of 1 ms through the checked step map (dt K_ii 0.049): none refused, every amount positive, 6.2-6.6e-6 of c0 from the exact discrete solution | guards |
+| The IMEX energy guard's sensitivity (a finding) | Under IMEX the species-only world sees a law's booking error only above 2e-3 of the species' total accumulated flows. In the secreting cell whose node leaks to a trace bath, the face heat dominates those flows: a 1% error in the secretion work was 0.02 of the bound at the last row, and was caught only at row 1, where the flows were one step's. RK4's absolute bound and the NumPy dG test per law cover what the IMEX ledger cannot see | b102da4 record, HANDOFF |
+| Face heat, negative control (a finding) | A systematic 1% error in the booked face heat: refused by RK4's absolute bound in the radial world (6.1e4 times the bound). Under IMEX the same error reaches 0.89 of the bound at its largest and passes: the face heat is about a fifth of the radial world's flows (the source bath's supply work and the clearance's work carry the rest), so the IMEX ledger sees a face-heat error above about 1.1% only. The RK4 world is the face heat's sensitive guard, the IMEX species-only world a coarse one (§7, amended) | guards |
+| RK4, the species-only radial world (ruling 6) | Energy residual 4.5e-14 pJ against the absolute 2e-8 pJ; 2.06e-8 of c0 from the exact discrete solution, which is the splitting's steady bias: the composite step's fixed point predicts 2.08e-8 at the first shell, the closed form dt² k (g − k c_ss)/12 2.05e-8 | guards, `splitting_bias.json` |
+| IMEX radial world, pre-formed | Every host check; 9.93e-6 and 2.45e-6 of c0 from the exact discrete solution at 1 and 0.5 ms, ratio 4.05 (second order). The splitting's steady bias under ARS is dt² k (g − k c_ss)/4 at the first shell (6.14e-6 of c0 at 1 ms; the fixed point gives 6.21e-6), with g the source face's κ c0 / V0: milestone 3's step term. It scales with k, so it is negligible at k = 1e-4/s | guards, `splitting_bias.json` |
+| Stiff front (§7, item 7 of §11.5) | From a 1e-15 mM trace under 1e-3 mM, 2,000 steps of 1 ms through the checked step map (dt K_ii 0.049): none refused, every amount positive, 6.2-6.6e-6 of c0 from the exact discrete solution; at 2 s, 6.209e-6, the splitting's steady bias to four digits. The run does not reach the anchored-amount stall (kt = 2); the tier-1 turnover test exercises it | guards |
 | The trace background (§1.3) | A thousandfold trace moves the pre-formed profile by 0.947 times the trace's change, below it (as probe 3 measured) | guards |
 | Unit and smoke tests (milestone 1) | Tier 1: turnover 18, exchange 16, definitions 20; the compiled runs 7 (tier 3) | `tests/unit/test_species_*.py`, `test_secreted_species*.py` |
 
