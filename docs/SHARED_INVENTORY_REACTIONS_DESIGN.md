@@ -2,7 +2,8 @@
 
 **Status: proposed, 14 November 2026, for the lead's review with the advisor before acceptance
 (D142). No code.** Code follows D150 version 1's code (after S5a) and this note's acceptance
-(D152). Three pre-code probes ran the same day (§10). No engine code was added or changed.
+(D152). Four pre-code probes ran the same day (§10), the last after the advisor's review corrected
+the stage condition for passive routes (§4.2). No engine code was added or changed.
 
 D152 asks for this feature. The user's words were: "Yes on the question and lets go as you see fit
 otherwise". The question was whether reactions acting on the same molecules that transport moves
@@ -45,7 +46,7 @@ per-node and per-species chemical term, which D150 v1 builds.
 **Evidence and log:** `/mnt/workspaces/Cells/shared-inventory-reactions-20261114-01/`:
 - HANDOFF.md;
 - the clean snapshot `snapshot-ac5a251`;
-- probes 1, 2 and 2b of §10;
+- probes 1, 2, 2b and 2c of §10;
 - the citation records in `sources/`.
 
 **S** marks our arithmetic or interpretation, as in the division and secreted-species designs.
@@ -115,8 +116,8 @@ per-node and per-species chemical term, which D150 v1 builds.
 8. **Pre-code probes** (§10).
    - **Probe 1, the engine as it is:** the MG0c transport world runs, its species-set step is
      admitted and second order, and the ions are bitwise unchanged.
-   - **Probes 2 and 2b, a NumPy prototype:** they confirm the numerics, the bookings and the
-     dispersion design.
+   - **Probes 2, 2b and 2c, a NumPy prototype:** they confirm the numerics, the bookings and the
+     dispersion design. Probe 2c tests the stage condition as corrected in review.
    - **Proposed before code:** five further checks, chief among them a contract-fit probe with an
      in-process operator once D150 v1 lands.
 9. **Limits** (§7). Version 1 is a static tissue with neutral species, at most 7 species and
@@ -124,6 +125,13 @@ per-node and per-species chemical term, which D150 v1 builds.
    analysis.
 10. **Effort:** about 6 agent-days (range 5 to 7), plus about an hour of CPU for MG0c's judged runs
     (§8).
+
+**Two departures, for the lead to rule on:**
+1. **The brief says the operator composes with D150's turnover.** It does, except on the rows the
+   network writes. A turnover route on a reacting (species, node) is refused, so that each node's
+   local kinetics have one writer, and the production and clearance of a reacting species are
+   declared as source and sink reactions instead (§1.1; §9 question 3).
+2. **RK4 is refused, where D150 guards it** (§4.6; §9 question 5).
 
 ## 1. Entities and ownership
 
@@ -354,6 +362,10 @@ This is D150 §1.5's form.
 - **Rates vanish as consumed species vanish** (the premise of §4.2's positivity):
   - mass action consumes only its reactants, each at order α ≥ 1;
   - Michaelis–Menten consumes only S, at order 1 near zero;
+  - a passive route has two unidirectional fluxes. Its forward flux J⁺ = m V c0 k_f ∏ a^{α}
+    consumes its reactants, and its reverse flux J⁻ = m V c0 k_f exp(Σ_s ν_s μ°_s/RT) ∏ a^{β}
+    consumes its products. Each vanishes with every species it consumes. Its net rate, J⁺ − J⁻, can
+    have either sign, so a positivity argument must use the two fluxes, not the net rate (§4.2);
   - a zeroth-order consumption is refused. That is a sink whose rate does not vanish with the
     species, such as a constant-flux removal.
 - **Passive reactions are closed and take no factors** in version 1.
@@ -538,10 +550,17 @@ reaction switched off leaves a passive node, and no work is booked there.
   has exactly the sign of its affinity (`reversible_flux`: sign(J) = sign(A)). So each stage's
   RT A J ≥ 0, and the weights (1/6, 1/6, 2/3) are positive.
 - **At passive-only nodes,** −ΔG ≥ 0 holds for the exact flow, because G is a Lyapunov function of a
-  closed detailed-balanced network. It also holds for the integrator at the admitted steps, to
-  rounding. In probe 2's B4, the smallest half-step heat at any node was −1.1e-18 pJ, rounding in
-  energies of about 1e-3 pJ, against the dissipation check's −1e-12 pJ tolerance (S).
-- **Otherwise the check refuses, loudly.**
+  closed detailed-balanced network. For the integrator it is proved in one case and measured in the
+  others:
+  - **For a linear A ⇌ B (S).** The corrected stage condition bounds h (k_f + k_r) ≤ 1, since
+    max L ≥ (k_f + k_r)/2. There SSPRK(3,3)'s amplification R(z), with z = −h (k_f + k_r), lies in
+    [1/3, 1). So the deviation from equilibrium shrinks without changing sign, and G falls.
+  - **Measured.** In probe 2's B4 (h k about 0.014), the smallest half-step heat at any node was
+    −1.1e-18 pJ. That is rounding in energies of about 1e-3 pJ, against the dissipation check's
+    −1e-12 pJ tolerance. In probe 2c, at every step the corrected condition admits, the heat was
+    positive: at least 1.1e-11 pJ near equilibrium, up to h (k_f + k_r) = 0.55.
+  - **Not proved for general passive networks.** It rests on these measurements and on the
+    dissipation check, which refuses a step whose heat falls, loudly.
 
 **What the work means.**
 - **What W is.** Driven routes exchange free energy with an undeclared reservoir: synthesis
@@ -600,8 +619,11 @@ shared bound cannot see. The guards therefore check the residual itself, not the
 
    **What they must show:**
    - each fails world 1 at the first row it touches;
-   - each passes the shared bound in a mixed heredity world. The bound/booking ratio measured there
-     goes into the docstring statement, as D150's probe 2 part C did (§10.3, C2).
+   - in a mixed heredity world, the shared bound does not see the scaled work or the dropped
+     standard term. The bound/booking ratio measured there goes into the docstring statement, as
+     D150's probe 2 part C did (§10.3, C2);
+   - a wrong-sign heat is still caught there by the composite's dissipation check. Only the bound
+     is blind to it.
 4. **A NumPy ΔG test per law,** written from Appendix A, not from engine code. For each law, order,
    factor and node kind, it takes random positive states, volumes and parameters and one half-step.
    It must show:
@@ -644,26 +666,47 @@ declared `substeps`, default 1) of size h_sub = h/m:
 This is the Butcher form. It is extent-consistent, so the material identity Δn = ν Δξ holds by
 construction.
 
-**The stage condition.**
-- Let L_s(Y) = Σ_r max(−ν_sr, 0) J_r(Y)/Y_s. It is the rate at which reactions that net-consume s
-  remove it, per amount, at the node.
-- At every stage of every sub-step, h_sub max_{s,i} L_s ≤ θ = 1/2.
-- Probe 2 used the stricter gross form, with α in place of max(−ν, 0). It is an upper bound on
-  this one.
+**The stage condition.** L_s(Y) is the rate at which the node's routes consume species s, per amount,
+written with unidirectional fluxes:
+
+    L_s(Y) = [ Σ_driven max(−ν_sr, 0) J_r(Y) + Σ_passive (max(−ν_sr, 0) J⁺_r(Y) + max(ν_sr, 0) J⁻_r(Y)) ] / Y_s.
+
+- **A driven route** has one flux J_r ≥ 0, which consumes the species it net-consumes.
+- **A passive route's** forward flux consumes its net reactants, and its reverse flux its net
+  products (§2.2).
+- **The rule:** at every stage of every sub-step, h_sub max_{s,i} L_s ≤ θ = 1/2.
+- **Which fluxes come from where.** The operator computes J⁺ and J⁻ itself from the same activity
+  logarithms, for the condition only. The net rate it integrates still comes from
+  `reversible_flux`, called unchanged, whose expm1 form stays accurate near equilibrium.
+- **A correction, found in review.** The signed net rate must not be used in place of the two
+  fluxes. For a passive route running in reverse (J_r < 0), the signed form makes the condition pass
+  vacuously while its products are consumed.
+  - Probe 2's stage check had exactly that flaw for passive routes. Its passive cases (B4, B6, B7)
+    ran forward at h k of about 0.01, so they did not test the condition.
+  - Probe 2c tested the corrected definition (§10.2). On a passive A ⇌ B running in reverse, the
+    signed form read 0 and admitted steps up to h (k_f + k_r) = 1.5. The corrected form admitted up
+    to 0.55 and refused beyond.
 
 **Positivity is then a theorem** (**S**, the SSP property).
 - In Shu–Osher form each stage is a convex combination of the start state and forward-Euler steps
   Y + h_sub f(Y).
-- Write f = P − C, with production P ≥ 0 at positive states and consumption C_s = L_s Y_s (§2.2:
-  rates vanish as consumed species vanish).
+- Write f = P − C. Production P_s = Σ_driven max(ν_sr, 0) J_r +
+  Σ_passive (max(ν_sr, 0) J⁺_r + max(−ν_sr, 0) J⁻_r) is non-negative at positive states.
+  Consumption is C_s = L_s Y_s (§2.2: every flux vanishes with the species it consumes).
 - Then Y + h_sub f(Y) ≥ Y (1 − h_sub L(Y)) > 0, component by component.
 - So with θ < 1 every stage and the result are positive. At θ = 1/2 each Euler step keeps at least
   half of every amount, a margin that rounding cannot cross.
+- **The backstop.** The half-step also refuses any non-positive stage or result directly (its
+  validity, §2.5). In probe 2c that refusal caught the one negative stage, at h (k_f + k_r) = 3,
+  under both forms.
+- **What the corrected condition adds** is the theorem and the accuracy and stability role of θ, not
+  only a refusal after the fact.
 
 **Stability and accuracy.**
-- **The bound.** The condition bounds each species' own consumption slope by α_max θ ≤ 1.5 (for
-  mass action ∂C_s/∂n_s ≤ α_max L_s; for Michaelis–Menten, ≤ L_s). That is inside SSPRK(3,3)'s real
-  stability interval of [−2.51, 0] (**S**).
+- **The bound.** The condition bounds each species' own consumption slope by α_max θ ≤ 1.5. For mass
+  action and for each unidirectional flux of a passive route, ∂C_s/∂n_s ≤ α_max L_s, since each flux
+  is a power of the amount of order at most 3. For Michaelis–Menten, the slope is at most L_s. That
+  is inside SSPRK(3,3)'s real stability interval of [−2.51, 0] (**S**).
 - **What it leaves out.** It does not bound the full spectrum: couplings between species can add
   complex eigenvalues.
 - **So the dt study measures accuracy and stability at the admitted steps; it does not prove them.**
@@ -1138,6 +1181,7 @@ No engine code was added or changed.
 | 1 (`cells-sir-probe1`) | MG0c's transport world on the engine as it is | Clean snapshot of ac5a251, CPU 7, 3 GB cap | 0, 88 s, 0.95 GB |
 | 2 (`cells-sir-probe2`) | The proposed numerics and bookings, and MG0c's dispersion design | NumPy and SciPy only (a prototype in the evidence folder, never under `validation/`), CPU 5, 2 GB cap | 0, 357 s, 49 MB |
 | 2b (`cells-sir-probe2b`) | Follow-ups: decaying modes over decay-matched windows; turnover's closed form | As probe 2, CPU 7, 1 GB cap | 0, 8 s, 46 MB |
+| 2c (`cells-sir-probe2c`) | After the advisor's review: the stage condition on a passive route running in reverse, and the heat sign near θ | As probe 2, CPU 5, 1 GB cap | 0, under 1 s, 44 MB |
 
 ### 10.1 Probe 1: MG0c's transport world on the engine
 
@@ -1164,7 +1208,7 @@ No engine code was added or changed.
 
 These hold for the CPU programs probed (D150 §1.2's caveat on reduce order).
 
-### 10.2 Probes 2 and 2b: the prototype
+### 10.2 Probes 2, 2b and 2c: the prototype
 
 **The prototype** implements the proposed half-step (§4.2), Strang composition with @3's species
 transport as the ARS(2,2,2) polynomial that probe 1 verified, and the bookings of §3.3. It imports no
@@ -1181,6 +1225,11 @@ Cells code.
 | B7, the standard-potential term | §3.3: with it every heat ≥ 5.4e-5 pJ; without it −1.3e-6 pJ from the first step, down to −2.4e-5 pJ |
 | B8, the stage condition near depletion | §4.2's table |
 | B9, turnover's closed form | 1.25e-6, 1.53e-7 and 1.89e-8 (8.19 and 8.10) |
+| 2c, the corrected stage condition | A ⇌ B with K = 10, started at c_B/c_A = 1e4 so that it runs in reverse. Over h (k_f + k_r) from 0.05 to 3, the signed form read 0 below 1.1 and admitted steps up to 1.5. There the deviation shrinks by R = 0.0625 against an exact 0.223. The corrected form admitted up to 0.55 and refused from 0.9. The one negative stage, at 3, was refused under both. Every admitted step's heat was positive, at least 1.1e-11 pJ near equilibrium |
+
+**The correction this changes** (§4.2). Probe 2's own stage check used the signed net rate for
+passive routes. Its passive cases ran forward at small h k, so their results stand, but they do not
+test the condition. Probe 2c does.
 
 **What the probes did not test:** the operator itself on the engine, which does not exist yet; JAX
 and GPU behaviour; the composite's contract plumbing for this operator. C1 covers the last.
@@ -1227,7 +1276,12 @@ The references are written from these equations, not from engine code.
 exp(−logaddexp(0, ∓n(ln x − ln K))).
 
 **The half-step.** SSPRK(3,3) in Butcher form (§4.2), with weights (1/6, 1/6, 2/3) at stages
-(0, 1, 1/2), and the stage condition h_sub max L ≤ 1/2, where L_s = Σ_r max(−ν_sr, 0) J_r/n_s.
+(0, 1, 1/2), and the stage condition h_sub max L ≤ 1/2, where
+
+    L_s = [Σ_driven max(−ν_sr, 0) J_r + Σ_passive (max(−ν_sr, 0) J⁺_r + max(ν_sr, 0) J⁻_r)] / n_s,
+    J⁺_r = m V c0 k_f exp(Σ α ln a),   J⁻_r = m V c0 k_f exp(Σ β ln a + Σ ν μ°/RT).
+
+The unidirectional fluxes are used, never the signed net rate of a passive route.
 
 **Free energy.** G_i = RT Σ_s n_s (ln(n_s/V_i) − 1) + Σ_s μ°'_s n_s, with
 μ°'_s = RT (μ°_s/RT − ln c0). The increment form over a half-step from a (start) to a + δ:
