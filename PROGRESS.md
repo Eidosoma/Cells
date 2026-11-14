@@ -95,6 +95,38 @@ machine-readable inputs, results, checks and failures.
     - Tier 1 after merging main, at 0644752: 316 files, no changed outcome.
     - The new `test_continuity_gpu.py` (14 tests, 22.8 s) is added to the tier record at landing.
       It had been run by the agent, not by the gates.
+- **The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7.**
+  C ran once on the L4 under the GPU lock, from a clean snapshot of main at 265ed66, against the
+  three registered backend variants. Every definition declared the GPU (117 min of GPU; nothing was
+  refused or killed) ([evidence](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/c/)).
+  - **W1:** 25 of 25 items pass. **W2:** 24 of 24 pass.
+  - **G2-Q1:** Q1–Q6 pass. **Q7 fails.** Q7 judges replacement with no events against
+    `resolved_pump_tissue@3` bitwise on the 825-node tissue. On the L4, almost every state field
+    and diagnostic differs.
+  - **The deviation reports:** |A − C| is 0 on every judged quantity of W1 (25), W2 (72) and G2
+    (18). C reproduced the repeats A, B and D exactly.
+  - **The diagnosis (development evidence, not judged):** one process ran two plain `@3` runs and
+    one replacement run, which gives no terms under the three-repeat rule.
+    - `@3` against `@3`, the identical program, already differs bitwise: 17 of 22 state fields, up
+      to 1.6e-11 relative.
+    - Replacement against `@3` shows the same scatter, the same fields at the same sizes.
+    - So the failure is the L4's own nondeterminism at 825 nodes. Nothing in it is attributable to
+      the wrapper at this resolution.
+    - Three rounding-level residual diagnostics differ by up to 2.8× their own size.
+  - **A process finding.** The variant carried an item with no tolerance site (Q7 is bitwise) on a
+    world where the plan already said L4 repeats are not bitwise. So the variant method could not
+    widen it.
+  - **Status of the composition gate's GPU condition:** met for water (W1, W2) and for
+    replacement's Q1–Q6; **open for Q7.**
+  - **Next.**
+    - In the next L4 gap (about 5 min, never applied to the hold, whose snapshots check the XLA
+      flags), test whether this jaxlib has a deterministic execution setting under which `@3`
+      repeats bitwise at 825 nodes across processes. If it does, Q7 is judged as registered.
+    - Otherwise, a tolerance-based Q7 would be a new item, not a variant. It would need a judge
+      change and its own rule, registered after attribution and labelled weaker evidence: repeats
+      in separate processes with all pairs, per-field scales, residual diagnostics against their
+      own bounds, and a planted wrapper effect as a judged control. Whether to allow it is the
+      user's call (D148's last clause, by analogy).
 
 - **D152 v1 milestone 3 landed: MG0c's driver, its development runs and a PROPOSED protocol
   (14 November).** Not registered, and no judged run
